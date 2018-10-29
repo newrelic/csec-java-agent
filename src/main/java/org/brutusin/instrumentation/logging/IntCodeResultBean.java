@@ -8,6 +8,7 @@ import com.k2.org.json.simple.JSONArray;
 public class IntCodeResultBean {
 
 	private Integer pid;
+	private String applicationUUID;
 	private Long startTime;
 	private String source;
 	private String userClassName;
@@ -20,8 +21,16 @@ public class IntCodeResultBean {
 	public IntCodeResultBean() {
 	}
 
-	public IntCodeResultBean(Long startTime, String source, JSONArray parameters, Integer pid) {
+	public IntCodeResultBean(Long startTime, String source, Integer pid, String applicationUUID) {
 		this.setPid(pid);
+		this.applicationUUID = applicationUUID;
+		this.source = source;
+		this.startTime = startTime;
+	}
+	
+	public IntCodeResultBean(Long startTime, String source, JSONArray parameters, Integer pid, String applicationUUID) {
+		this.setPid(pid);
+		this.applicationUUID = applicationUUID;
 		this.source = source;
 		this.parameters = parameters;
 		this.startTime = startTime;
@@ -131,4 +140,20 @@ public class IntCodeResultBean {
 	public void setEventGenerationTime(Long eventGenerationTime) {
 		this.eventGenerationTime = eventGenerationTime;
 	}
+
+	/**
+	 * @return the applicationUUID
+	 */
+	public String getApplicationUUID() {
+		return applicationUUID;
+	}
+
+	/**
+	 * @param applicationUUID the applicationUUID to set
+	 */
+	public void setApplicationUUID(String applicationUUID) {
+		this.applicationUUID = applicationUUID;
+	}
+
+	
 }

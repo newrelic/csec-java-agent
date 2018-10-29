@@ -8,14 +8,18 @@ import com.k2.org.json.simple.JSONArray;
 public class ApplicationInfoBean {
 
 	private Integer pid;
-	private String applicatioNname;
+	private String applicationName;
+	private Boolean isHost;
+	private String containerID;
 	private JSONArray jvmArguments;
 	private Long startTime;
+	private String applicationUUID;
 	
 	public ApplicationInfoBean() {}
 	
-	public ApplicationInfoBean(Integer pid) {
+	public ApplicationInfoBean(Integer pid, String applicationUUID) {
 		this.pid = pid;
+		this.applicationUUID = applicationUUID;
 		this.startTime = System.currentTimeMillis();
 	}
 	/**
@@ -29,18 +33,6 @@ public class ApplicationInfoBean {
 	 */
 	public void setPid(Integer pid) {
 		this.pid = pid;
-	}
-	/**
-	 * @return the applicatioNname
-	 */
-	public String getApplicatioNname() {
-		return applicatioNname;
-	}
-	/**
-	 * @param applicatioNname the applicatioNname to set
-	 */
-	public void setApplicatioNname(String applicatioNname) {
-		this.applicatioNname = applicatioNname;
 	}
 	/**
 	 * @return the jvmArguments
@@ -74,6 +66,62 @@ public class ApplicationInfoBean {
 	 */
 	public void setStartTime(Long startTime) {
 		this.startTime = startTime;
+	}
+
+	/**
+	 * @return the applicationName
+	 */
+	public String getApplicationName() {
+		return applicationName;
+	}
+
+	/**
+	 * @param applicationName the applicationName to set
+	 */
+	public void setApplicationName(String applicationName) {
+		this.applicationName = applicationName;
+	}
+
+	/**
+	 * @return the applicationUUID
+	 */
+	public String getApplicationUUID() {
+		return applicationUUID;
+	}
+
+	/**
+	 * @param applicationUUID the applicationUUID to set
+	 */
+	public void setApplicationUUID(String applicationUUID) {
+		this.applicationUUID = applicationUUID;
+	}
+	
+	/**
+	 * @return the containerID
+	 */
+	public String getContainerID() {
+		return containerID;
+	}
+
+	/**
+	 * @param containerID the containerID to set
+	 */
+	public void setContainerID(String containerID) {
+		this.containerID = containerID;
+	}
+
+	/**
+	 * @return the isHost
+	 */
+	public Boolean getIsHost() {
+		return isHost;
+	}
+
+	/**
+	 * @param isHost the isHost to set
+	 */
+	public void setIsHost(Boolean isHost) {
+		this.isHost = isHost;
 	}
 	
 }
