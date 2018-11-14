@@ -44,11 +44,6 @@ https://github.com/k2io/k2-asm
 git clone https://github.com/k2io/k2-asm.git
 ```
 
-https://github.com/k2io/k2-asm
-```
-git clone https://github.com/k2io/k2-asm.git
-```
-
 https://github.com/k2io/k2-json-simple
 ```
 git clone https://github.com/k2io/k2-json-simple.git
@@ -61,16 +56,6 @@ git clone https://github.com/k2io/K2-JavaAgent
 
 ## Build
 Build Sequence is important, follow the below sequence.
-
-go to directory to K2-Instrumentation, use below command
-```
-cd K2-Instrumentation
-```
-
-use below maven command to make the build of K2-Instrumentation
-```
-mvn clean install
-```
 
 go to directory to k2-jnr-unixsocket, use below command to make the build of jnr-unixsocket
 ```
@@ -90,19 +75,18 @@ cd k2-asm
 mvn clean install
 ```
 
-go to directory to k2-asm, use below command to make the build of k2-asm
-```
-cd k2-asm
-mvn clean install
-```
-
 go to directory to k2-json-simple, use below command to make the build of json-simple
 ```
 cd k2-json-simple
 mvn clean install
 ```
 
-use below maven command to make the build of k2-json-simple
+go to directory to K2-Instrumentation, use below command
+```
+cd K2-Instrumentation
+```
+
+use below maven command to make the build of K2-Instrumentation
 ```
 mvn clean install
 ```
