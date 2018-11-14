@@ -35,6 +35,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.UUID;
 import java.util.regex.Pattern;
@@ -43,7 +44,6 @@ import org.brutusin.commons.json.spi.JsonCodec;
 import org.brutusin.instrumentation.Interceptor;
 
 import com.k2.org.json.simple.JSONArray;
-import com.k2.org.json.simple.JSONObject;
 import com.k2.org.objectweb.asm.tree.ClassNode;
 import com.k2.org.objectweb.asm.tree.MethodNode;
 
@@ -53,12 +53,10 @@ import jnr.unixsocket.UnixSocketChannel;
 public class LoggingInterceptor extends Interceptor {
 
 	private File rootFile;
-	private static final Set<String> methodMap;
 	private static final Set<String> allClasses;
 	private static final Map<String, List<String>> interceptMethod;
 	private static final Pattern PATTERN;
-	private static final Set<String> executorMathods;
-	private static JSONArray intCodeInterceptedResult;
+	private static final Set<String> executorMethods;
 	private static PrintWriter writer;
 	private static UnixSocketChannel channel;
 	private static Integer VMPID;
@@ -68,12 +66,12 @@ public class LoggingInterceptor extends Interceptor {
 
 		applicationUUID = UUID.randomUUID().toString();
 		PATTERN = Pattern.compile(IAgentConstants.TRACE_REGEX);
-		methodMap = new HashSet<String>(Arrays.asList(IAgentConstants.COMPLETE_LIST));
 		allClasses = new HashSet<String>(Arrays.asList(IAgentConstants.ALL_CLASSES));
-		executorMathods = new HashSet<String>(Arrays.asList(IAgentConstants.EXECUTORS));
+		executorMethods = new HashSet<String>(Arrays.asList(IAgentConstants.EXECUTORS));
 		interceptMethod = new HashMap<String, List<String>>();
 		for (int i = 0; i < IAgentConstants.ALL_METHODS.length; i++) {
-			interceptMethod.put(IAgentConstants.ALL_CLASSES[i], new ArrayList<String>(Arrays.asList(IAgentConstants.ALL_METHODS[i])));
+			interceptMethod.put(IAgentConstants.ALL_CLASSES[i],
+					new ArrayList<String>(Arrays.asList(IAgentConstants.ALL_METHODS[i])));
 		}
 
 	}
@@ -98,7 +96,7 @@ public class LoggingInterceptor extends Interceptor {
 				if (index > -1) {
 					return st.substring(index + 7);
 				}
-				//To support docker older versions
+				// To support docker older versions
 				index = st.lastIndexOf("lxc/");
 				if (index > -1) {
 					return st.substring(index + 4);
@@ -149,23 +147,22 @@ public class LoggingInterceptor extends Interceptor {
 			writer.flush();
 
 		} catch (Exception e) {
+			
 		}
-		intCodeInterceptedResult = new JSONArray();
 	}
 
 	private String getCmdLineArgsByProc(Integer pid) {
-		File cmdlineFile = new File("/proc/"+pid+"/cmdline");
+		File cmdlineFile = new File("/proc/" + pid + "/cmdline");
 		if (!cmdlineFile.isFile())
 			return null;
 		BufferedReader br = null;
 		try {
 			br = new BufferedReader(new FileReader(cmdlineFile));
 			String cmdline = br.readLine();
-			if(!cmdline.isEmpty())
+			if (!cmdline.isEmpty())
 				return cmdline;
 		} catch (IOException e) {
-		}
-		finally {
+		} finally {
 			try {
 				br.close();
 			} catch (IOException e) {
@@ -187,9 +184,9 @@ public class LoggingInterceptor extends Interceptor {
 		return interceptMethod.get(cn.name).contains(mn.name);
 	}
 
-	@SuppressWarnings({ "unchecked", "rawtypes" })
+	@SuppressWarnings({ "rawtypes" })
 	@Override
-	protected synchronized void doOnStart(Object source, Object[] arg, String executionId) {
+	protected void doOnStart(Object source, Object[] arg, String executionId) {
 		String sourceString = null;
 		Method m = null;
 		Constructor c = null;
@@ -203,7 +200,7 @@ public class LoggingInterceptor extends Interceptor {
 			// System.out.println(c.toGenericString());
 		}
 
-		if (sourceString != null && methodMap.contains(sourceString)) {
+		if (sourceString != null && executorMethods.contains(sourceString)) {
 			long start = System.currentTimeMillis();
 			// if (sourceString.equals(IAgentConstants.SYSYTEM_CALL_START)) {
 			// System.out.println("Found : " + sourceString + "Param : " +
@@ -218,35 +215,33 @@ public class LoggingInterceptor extends Interceptor {
 			// if(fileExecutors.contains(sourceString)) {
 			// fileExecute = true;
 			// }
-			
+
 			IntCodeResultBean intCodeResultBean = new IntCodeResultBean(start, sourceString, VMPID, applicationUUID);
-			if (executorMathods.contains(sourceString)) {
-				String klassName = null;
-				// String methodName = null;
-				StackTraceElement[] trace = Thread.currentThread().getStackTrace();
-				for (int i = 0; i < trace.length; i++) {
-					klassName = trace[i].getClassName();
-					if (!PATTERN.matcher(klassName).matches()) {
-						intCodeResultBean.setParameters(toString(arg));
-						intCodeResultBean.setUserAPIInfo(trace[i].getLineNumber(), klassName, trace[i].getMethodName());
-						if (i > 0)
-							intCodeResultBean.setCurrentMethod(trace[i - 1].getMethodName());
-						break;
-					}
-				}
-				if (intCodeResultBean.getUserClassName() != null && !intCodeResultBean.getUserClassName().isEmpty()) {
-					generateEvent(intCodeResultBean);
-				} else if (IAgentConstants.SYSYTEM_CALL_START.equals(sourceString)) {
-					int traceId = getClassNameForSysytemCallStart(trace, intCodeResultBean);
-					intCodeResultBean.setUserAPIInfo(trace[traceId].getLineNumber(), klassName, trace[traceId].getMethodName());
+
+			String klassName = null;
+			// String methodName = null;
+			StackTraceElement[] trace = Thread.currentThread().getStackTrace();
+			for (int i = 0; i < trace.length; i++) {
+				klassName = trace[i].getClassName();
+				if (!PATTERN.matcher(klassName).matches()) {
 					intCodeResultBean.setParameters(toString(arg));
-					if (traceId > 0)
-						intCodeResultBean.setCurrentMethod(trace[traceId - 1].getMethodName());
-					generateEvent(intCodeResultBean);
-				} else
-					intCodeInterceptedResult.clear();
-			} else
-				intCodeInterceptedResult.add(intCodeResultBean);
+					intCodeResultBean.setUserAPIInfo(trace[i].getLineNumber(), klassName, trace[i].getMethodName());
+					if (i > 0)
+						intCodeResultBean.setCurrentMethod(trace[i - 1].getMethodName());
+					break;
+				}
+			}
+			if (intCodeResultBean.getUserClassName() != null && !intCodeResultBean.getUserClassName().isEmpty()) {
+				generateEvent(intCodeResultBean);
+			} else if (IAgentConstants.SYSYTEM_CALL_START.equals(sourceString)) {
+				int traceId = getClassNameForSysytemCallStart(trace, intCodeResultBean);
+				intCodeResultBean.setUserAPIInfo(trace[traceId].getLineNumber(), klassName,
+						trace[traceId].getMethodName());
+				intCodeResultBean.setParameters(toString(arg));
+				if (traceId > 0)
+					intCodeResultBean.setCurrentMethod(trace[traceId - 1].getMethodName());
+				generateEvent(intCodeResultBean);
+			}
 
 		}
 	}
@@ -262,11 +257,10 @@ public class LoggingInterceptor extends Interceptor {
 		return -1;
 	}
 
-	@SuppressWarnings("unchecked")
 	private void generateEvent(IntCodeResultBean intCodeResultBean) {
 		// trace(logFile, intCodeInterceptedResult.toString());
-		System.out.println("publish event: "+intCodeResultBean);
-		if(!channel.isConnected()) {
+		System.out.println("publish event: " + intCodeResultBean);
+		if (!channel.isConnected()) {
 			System.out.println("try re connect");
 			if (!rootFile.exists()) {
 				throw new RuntimeException("Root doesn't exists, Please start the K2-IntCode Agent");
@@ -276,16 +270,13 @@ public class LoggingInterceptor extends Interceptor {
 				channel.connect(address);
 				writer = new PrintWriter(Channels.newOutputStream(channel));
 				System.out.println("K2 UDSServer Connection restablished!!!");
-			}
-			catch (IOException e) {
+			} catch (IOException e) {
 				throw new RuntimeException(e.getMessage());
 			}
 		}
 		intCodeResultBean.setEventGenerationTime(System.currentTimeMillis());
-		intCodeInterceptedResult.add(intCodeResultBean);
-		writer.println(intCodeInterceptedResult.toString());
+		writer.println(intCodeResultBean.toString());
 		writer.flush();
-		intCodeInterceptedResult.clear();
 	}
 
 	@Override
@@ -298,29 +289,29 @@ public class LoggingInterceptor extends Interceptor {
 
 	@Override
 	protected void doOnFinish(Object source, Object result, String executionId) {
-		String sourceString = null;
-		Method m = null;
-		if (source instanceof Method) {
-			m = (Method) source;
-			sourceString = m.toGenericString();
-		}
-
-		if (IAgentConstants.MSSQL_EXECUTOR.equals(sourceString)) {
-			String klassName;
-			StackTraceElement[] trace = Thread.currentThread().getStackTrace();
-			IntCodeResultBean intCodeResultBean = (IntCodeResultBean) intCodeInterceptedResult.get(0);
-			for (int i = 0; i < trace.length; i++) {
-				klassName = trace[i].getClassName();
-				if (!PATTERN.matcher(klassName).matches()) {
-					intCodeResultBean.setUserAPIInfo(trace[i].getLineNumber(), klassName, trace[i].getMethodName());
-					if (i > 0)
-						intCodeResultBean.setCurrentMethod(trace[i - 1].getMethodName());
-					break;
-				}
-			}
-			intCodeInterceptedResult.remove(0);
-			generateEvent(intCodeResultBean);
-		}
+//		String sourceString = null;
+//		Method m = null;
+//		if (source instanceof Method) {
+//			m = (Method) source;
+//			sourceString = m.toGenericString();
+//		}
+//
+//		if (IAgentConstants.MSSQL_EXECUTOR.equals(sourceString)) {
+//			String klassName;
+//			StackTraceElement[] trace = Thread.currentThread().getStackTrace();
+//			IntCodeResultBean intCodeResultBean = (IntCodeResultBean) intCodeInterceptedResult.get(0);
+//			for (int i = 0; i < trace.length; i++) {
+//				klassName = trace[i].getClassName();
+//				if (!PATTERN.matcher(klassName).matches()) {
+//					intCodeResultBean.setUserAPIInfo(trace[i].getLineNumber(), klassName, trace[i].getMethodName());
+//					if (i > 0)
+//						intCodeResultBean.setCurrentMethod(trace[i - 1].getMethodName());
+//					break;
+//				}
+//			}
+//			intCodeInterceptedResult.remove(0);
+//			generateEvent(intCodeResultBean);
+//		}
 	}
 
 	@SuppressWarnings("unused")
@@ -341,26 +332,127 @@ public class LoggingInterceptor extends Interceptor {
 		}
 	}
 
-	private static String getParameterValue(Object obj) {
-		try {
-			Field f = obj.getClass().getDeclaredField("setterDTV");
-			f.setAccessible(true);
-			Object objx = f.get(obj);
-			if (objx.getClass().getName().contains("DTV")) {
-				Field f2 = objx.getClass().getDeclaredField("impl");
-				f2.setAccessible(true);
-				Object objA = f2.get(objx);
-				if (objA.getClass().getName().contains("AppDTVImpl")) {
-					f = objA.getClass().getDeclaredField("value");
-					f.setAccessible(true);
-					return JsonCodec.getInstance().transform(f.get(objA).toString());
-				}
+	/**
+	 * This method is used for MSSQL parameter Extraction
+	 *
+	 * @param obj        the object in argument of Instrumented Method
+	 * @param parameters the parameter list as a JSONArray
+	 * @return void
+	 * @throws NoSuchFieldException     the no such field exception
+	 * @throws SecurityException        the security exception
+	 * @throws IllegalArgumentException the illegal argument exception
+	 * @throws IllegalAccessException   the illegal access exception
+	 */
+	@SuppressWarnings("unchecked")
+	private static void getParameterValue(Object obj, JSONArray parameters)
+			throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
+		String className = obj.getClass().getCanonicalName();
+
+		// Extraction of Connection params
+		{
+			Field field = obj.getClass().getDeclaredField("this$0");
+			field.setAccessible(true);
+			Object child = field.get(obj);
+			Field childField = null;
+
+			if (child.getClass().getName().equals("com.microsoft.sqlserver.jdbc.SQLServerStatement")) {
+				childField = child.getClass().getDeclaredField("connection");
+			} else if (child.getClass().getName().equals("com.microsoft.sqlserver.jdbc.SQLServerPreparedStatement")) {
+				childField = child.getClass().getSuperclass().getDeclaredField("connection");
+			} else {
+				childField = child.getClass().getSuperclass().getSuperclass().getDeclaredField("connection");
 			}
-		} catch (Exception e) {
+			childField.setAccessible(true);
+
+			child = childField.get(child);
+			childField = child.getClass().getDeclaredField("activeConnectionProperties");
+			childField.setAccessible(true);
+
+			Properties connectionProperties = (Properties) childField.get(child);
+			parameters.add(connectionProperties.toString());
 		}
-		return null;
+
+		// Extraction of query for different query methods
+		if (className.contains("com.microsoft.sqlserver.jdbc.SQLServerPreparedStatement")) {
+			Field field = obj.getClass().getDeclaredField("stmt");
+
+			field.setAccessible(true);
+			Object child = field.get(obj);
+			
+			// extract Query
+			Field childField = null;
+			if (child.getClass().getName().equals("com.microsoft.sqlserver.jdbc.SQLServerPreparedStatement")) {
+				childField = child.getClass().getDeclaredField("userSQL");
+			} else {
+				// for JAVA compilation before 7.1, an instance of class
+				// com.microsoft.sqlserver.jdbc.SQLServerPreparedStatement42 is made instead of
+				// com.microsoft.sqlserver.jdbc.SQLServerPreparedStatement
+				childField = child.getClass().getSuperclass().getDeclaredField("userSQL");
+			}
+			childField.setAccessible(true);
+			parameters.add(childField.get(child));
+
+			ArrayList<Object[]> params = null;
+			
+			// extract Values passed to Prepared Statement
+			if (className.equals("com.microsoft.sqlserver.jdbc.SQLServerPreparedStatement.PrepStmtBatchExecCmd")) {
+
+				if (child.getClass().getName().equals("com.microsoft.sqlserver.jdbc.SQLServerPreparedStatement")) {
+					childField = child.getClass().getDeclaredField("batchParamValues");
+				} else {
+					childField = child.getClass().getSuperclass().getDeclaredField("batchParamValues");
+				}
+				childField.setAccessible(true);
+				params = (ArrayList<Object[]>) childField.get(child);
+
+			} else {
+
+				if (child.getClass().getName().equals("com.microsoft.sqlserver.jdbc.SQLServerPreparedStatement")) {
+					childField = child.getClass().getSuperclass().getDeclaredField("inOutParam");
+				} else {
+					// for JAVA compilation before 7.1, an instance of class
+					// com.microsoft.sqlserver.jdbc.SQLServerPreparedStatement42 is made instead of
+					// com.microsoft.sqlserver.jdbc.SQLServerPreparedStatement
+					childField = child.getClass().getSuperclass().getSuperclass().getDeclaredField("inOutParam");
+				}
+				childField.setAccessible(true);
+
+				Object[] outParams = (Object[]) childField.get(child);
+				params = new ArrayList<Object[]>();
+				params.add(outParams);
+			}
+			addParamValuesMSSQL(params, parameters);
+
+		} else if (className.equals("com.microsoft.sqlserver.jdbc.SQLServerStatement.StmtExecCmd")) {
+			Field field = obj.getClass().getDeclaredField("sql");
+			field.setAccessible(true);
+			parameters.add(field.get(obj));
+
+		} else if (className.equals("com.microsoft.sqlserver.jdbc.SQLServerStatement.StmtBatchExecCmd")) {
+			Field field = obj.getClass().getDeclaredField("stmt");
+			field.setAccessible(true);
+			Object child = field.get(obj);
+			Field childField = child.getClass().getDeclaredField("batchStatementBuffer");
+			childField.setAccessible(true);
+			parameters.add(childField.get(child).toString());
+
+		} else if (className.equals("com.microsoft.sqlserver.jdbc.SQLServerStatement.StmtExecCmd")) {
+			Field field = obj.getClass().getDeclaredField("sql");
+			field.setAccessible(true);
+			parameters.add(field.get(obj));
+		} else {
+
+		}
+
 	}
 
+	/**
+	 * This method is used to extract All the required parameters through the
+	 * arguments of instrumented method
+	 * 
+	 * @param obj the obj
+	 * @return the JSON array
+	 */
 	@SuppressWarnings({ "unchecked", "unused" })
 	private static JSONArray toString(Object[] obj) {
 		if (obj == null) {
@@ -384,16 +476,17 @@ public class LoggingInterceptor extends Interceptor {
 			// b.append(toString((Object[]) obj[i]));
 			else
 				try {
-					if (obj[i].getClass().getName().equals("com.microsoft.sqlserver.jdbc.Parameter")) {
-						JSONObject objx = new JSONObject();
-						parameters.add(getParameterValue(obj[i]));
-						// b.append(getParameterValue(obj[i]));
+					if (obj[i] != null && obj[i].getClass() != null && obj[i].getClass().getSuperclass() != null
+							&& obj[i].getClass().getSuperclass().getName()
+									.equals("com.microsoft.sqlserver.jdbc.TDSCommand")) {
+						getParameterValue(obj[i], parameters);
 					} else {
 						parameters.add(JsonCodec.getInstance().transform(obj[i]));
 						// b.append(JsonCodec.getInstance().transform(obj[i]));
 					}
 				} catch (Throwable th) {
 					parameters.add((obj[i] != null) ? JsonCodec.getInstance().transform(obj[i].toString()) : null);
+//					th.printStackTrace();
 				}
 			// if (i != obj.length - 1)
 			// b.append(',');
@@ -403,4 +496,35 @@ public class LoggingInterceptor extends Interceptor {
 		return parameters;
 	}
 
+	/**
+	 * Adds the Values passed to a MSSQL prepared statement into ParameterList.
+	 *
+	 * @param paramList  the param list
+	 * @param parameters the parameters
+	 * @throws NoSuchFieldException     the no such field exception
+	 * @throws SecurityException        the security exception
+	 * @throws IllegalArgumentException the illegal argument exception
+	 * @throws IllegalAccessException   the illegal access exception
+	 */
+	@SuppressWarnings({ "unused", "unchecked" })
+	private static void addParamValuesMSSQL(ArrayList<Object[]> paramList, JSONArray parameters)
+			throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
+		for (Object[] outParams : paramList) {
+			JSONArray params = new JSONArray();
+
+			for (int counter = 0; counter < outParams.length; counter++) {
+				Field param = outParams[counter].getClass().getDeclaredField("inputDTV");
+				param.setAccessible(true);
+				Object value = param.get(outParams[counter]);
+				param = value.getClass().getDeclaredField("impl");
+				param.setAccessible(true);
+				value = param.get(value);
+				param = value.getClass().getDeclaredField("value");
+				param.setAccessible(true);
+				value = param.get(value);
+				params.add(value.toString());
+			}
+			parameters.add(params.toString());
+		}
+	}
 }

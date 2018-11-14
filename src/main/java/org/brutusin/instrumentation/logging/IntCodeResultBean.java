@@ -5,7 +5,7 @@ import org.brutusin.com.fasterxml.jackson.databind.ObjectMapper;
 import com.k2.org.json.simple.JSONArray;
 
 
-public class IntCodeResultBean {
+public class IntCodeResultBean extends AgentBasicInfo {
 
 	private Integer pid;
 	private String applicationUUID;
