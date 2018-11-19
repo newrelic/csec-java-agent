@@ -199,7 +199,7 @@ public class LoggingInterceptor extends Interceptor {
 			sourceString = c.toGenericString();
 			// System.out.println(c.toGenericString());
 		}
-
+		// System.out.println(executorMethods.contains(sourceString)+"::executorMethods.contains(sourceString)\n"+sourceString);
 		if (sourceString != null && executorMethods.contains(sourceString)) {
 			long start = System.currentTimeMillis();
 			// if (sourceString.equals(IAgentConstants.SYSYTEM_CALL_START)) {
@@ -434,7 +434,12 @@ public class LoggingInterceptor extends Interceptor {
 			Object child = field.get(obj);
 			Field childField = child.getClass().getDeclaredField("batchStatementBuffer");
 			childField.setAccessible(true);
-			parameters.add(childField.get(child).toString());
+			ArrayList<String> queries = (ArrayList<String>) childField.get(child);
+			parameters.add(queries.size());
+			for (Object query : queries) {
+				parameters.add(query);
+			}
+			
 
 		} else if (className.equals("com.microsoft.sqlserver.jdbc.SQLServerStatement.StmtExecCmd")) {
 			Field field = obj.getClass().getDeclaredField("sql");
@@ -445,7 +450,48 @@ public class LoggingInterceptor extends Interceptor {
 		}
 
 	}
+	
+	
+	
+	/**
+	 * Gets the MySQL parameter values.
+	 *
+	 * @param args the arguments of Instrumented Method
+	 * @param parameters the parameters
+	 * @return the my SQL parameter value
+	 */
+	@SuppressWarnings("unchecked")
+	private static void getMySQLParameterValue(Object[] args, JSONArray parameters) {
+		for (Object obj : args) {
+			if(obj.getClass().getName().contains("PreparedStatement")) {
+				int start = obj.toString().indexOf(":");
+				parameters.add(obj.toString().substring(0, start));
+				parameters.add(obj.toString().substring(start + 1));
+				
+			} else if (obj instanceof byte[]) {
+				try {
+					String byteParam = new String((byte[]) obj, "UTF-8");
+					parameters.add(byteParam.trim());
+				} catch (UnsupportedEncodingException e) {
+					e.printStackTrace();
+				}
+			} else if (obj instanceof Object[]) {
+				JSONArray params =  new JSONArray();
+				getMySQLParameterValue((Object[]) obj,params);
+				parameters.add(params);
+			} else {
+				try {
+					parameters.add(JsonCodec.getInstance().transform(obj));
+				} catch (Throwable e) {
+					parameters.add(obj.toString());
+				}
+			}
+		}
 
+	}
+	
+	
+	
 	/**
 	 * This method is used to extract All the required parameters through the
 	 * arguments of instrumented method
@@ -458,39 +504,46 @@ public class LoggingInterceptor extends Interceptor {
 		if (obj == null) {
 			return null;
 		}
+
 		JSONArray parameters = new JSONArray();
+		try {
+			Object firstElement = obj[0];
+
+			if (firstElement != null && firstElement.getClass() != null
+					&& obj[0].getClass().getName().contains("com.microsoft.sqlserver")) {
+				getParameterValue(obj[0], parameters);
+			} else if (firstElement != null && firstElement.getClass().getName().contains("mysql")) {
+				getMySQLParameterValue(obj, parameters);
+			} else {
+				for (int i = 0; i < obj.length; i++) {
+					if (obj[i] instanceof byte[]) {
+						try {
+							String byteParam = new String((byte[]) obj[i], "UTF-8");
+							parameters.add(byteParam.trim());
+						} catch (UnsupportedEncodingException e) {
+							e.printStackTrace();
+						}
+					} else if (obj[i] instanceof Object[]) {
+						parameters.add(toString((Object[]) obj[i]));
+					}
+					// b.append(toString((Object[]) obj[i]));
+					else
+
+						parameters.add(JsonCodec.getInstance().transform(obj[i]));
+					// b.append(JsonCodec.getInstance().transform(obj[i]));
+					// if (i != obj.length - 1)
+					// b.append(',');
+				}
+			}
+
+		} catch (Throwable th) {
+			parameters.add((obj != null) ? JsonCodec.getInstance().transform(obj.toString()) : null);
+			// th.printStackTrace();
+		}
 
 		// StringBuilder b = new StringBuilder();
 		// b.append('[');
-		for (int i = 0; i < obj.length; i++) {
-			if (obj[i] instanceof byte[]) {
-				try {
-					String byteParam = new String((byte[]) obj[i], "UTF-8");
-					parameters.add(byteParam.trim());
-				} catch (UnsupportedEncodingException e) {
-					e.printStackTrace();
-				}
-			} else if (obj[i] instanceof Object[]) {
-				parameters.add(toString((Object[]) obj[i]));
-			}
-			// b.append(toString((Object[]) obj[i]));
-			else
-				try {
-					if (obj[i] != null && obj[i].getClass() != null && obj[i].getClass().getSuperclass() != null
-							&& obj[i].getClass().getSuperclass().getName()
-									.equals("com.microsoft.sqlserver.jdbc.TDSCommand")) {
-						getParameterValue(obj[i], parameters);
-					} else {
-						parameters.add(JsonCodec.getInstance().transform(obj[i]));
-						// b.append(JsonCodec.getInstance().transform(obj[i]));
-					}
-				} catch (Throwable th) {
-					parameters.add((obj[i] != null) ? JsonCodec.getInstance().transform(obj[i].toString()) : null);
-//					th.printStackTrace();
-				}
-			// if (i != obj.length - 1)
-			// b.append(',');
-		}
+
 		// b.append(']');
 		// return b.toString();
 		return parameters;
