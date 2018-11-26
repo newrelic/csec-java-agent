@@ -219,6 +219,10 @@ public class LoggingInterceptor extends Interceptor {
 			IntCodeResultBean intCodeResultBean = new IntCodeResultBean(start, sourceString, VMPID, applicationUUID);
 
 			String klassName = null;
+			
+			
+			
+			
 			// String methodName = null;
 			StackTraceElement[] trace = Thread.currentThread().getStackTrace();
 			for (int i = 0; i < trace.length; i++) {
@@ -490,6 +494,193 @@ public class LoggingInterceptor extends Interceptor {
 
 	}
 	
+	/**
+	 * Gets the mongo parameters.
+	 *
+	 * @param args the arguments of Instrumented Method
+	 * @param parameters the parameters
+	 * @return the my SQL parameter value
+	 * @throws NoSuchFieldException the no such field exception
+	 * @throws SecurityException the security exception
+	 * @throws IllegalArgumentException the illegal argument exception
+	 * @throws IllegalAccessException the illegal access exception
+	 */
+	@SuppressWarnings("unchecked")
+	public static void getMongoParameterValue(Object[] args, JSONArray parameters) throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
+		Object protocol = args[0];		
+		// for Connecter v 6.0 and above
+		try {
+			
+			Field f = protocol.getClass().getDeclaredField("command");
+			f.setAccessible(true);
+			Object command = f.get(protocol);
+			parameters.add(command.toString());
+			f = protocol.getClass().getDeclaredField("payload");
+			f.setAccessible(true);
+			Object payload = f.get(protocol);
+			if(payload != null ) {
+				f = payload.getClass().getDeclaredField("payload");
+				f.setAccessible(true);
+				payload = f.get(payload);
+				parameters.add(payload.toString());
+			}
+		} catch (Exception e) {
+			// for Connecter v 5.0 and below
+			
+			String namespace = null; 
+			Field f = null;
+			
+			
+			Class<? extends Object> nsClass = protocol.getClass();
+			int depth = 0;
+			// for getting the namespace 
+			while (namespace == null && nsClass != null && depth<4) {
+				try {
+					f = nsClass.getDeclaredField("namespace");
+					f.setAccessible(true);
+					Object ns = f.get(protocol);
+					namespace = ns.toString();
+					parameters.add(namespace);
+					
+				} catch (Exception ex) {
+					nsClass = nsClass.getSuperclass();
+					depth++;
+				}
+			}
+			
+			// fetch query parameters
+			 if (protocol.getClass().getName().contains("Delete")) {
+				f = protocol.getClass().getDeclaredField("deleteRequests");
+				f.setAccessible(true);
+				List<Object> deleteRequests = (List<Object>) f.get(protocol);
+				
+				for(Object obj : deleteRequests) {
+					try {
+						f = obj.getClass().getDeclaredField("elementData");
+						f.setAccessible(true);
+						Object[] elementData = (Object[]) f.get(obj);
+						
+						for(Object request : elementData) {
+							if( request!=null ) {
+								f = request.getClass().getDeclaredField("filter");
+								f.setAccessible(true);
+								Object filter = f.get(request);
+								parameters.add(filter.toString());
+							}
+						}
+						
+						
+					}catch (NoSuchFieldException synchedDelete) {
+						f = obj.getClass().getDeclaredField("filter");
+						f.setAccessible(true);
+						Object filter = f.get(obj);
+						parameters.add(filter.toString());
+					}
+					
+				}
+			} else if (protocol.getClass().getName().contains("Update")) {
+				List<Object> updates =  null;
+				if (protocol.getClass().getName().contains("FindAndUpdateOperation")) {
+					updates = new ArrayList<Object>();
+					updates.add(protocol);
+				} else {
+					f = protocol.getClass().getDeclaredField("updates");
+					f.setAccessible(true);
+					updates = (List<Object>) f.get(protocol);
+				}
+				for (Object obj : updates) {
+					f = obj.getClass().getDeclaredField("filter");
+					f.setAccessible(true);
+					Object filter = f.get(obj);
+					parameters.add(filter.toString());
+					f = obj.getClass().getDeclaredField("update");
+					f.setAccessible(true);
+					Object update = f.get(obj);
+					parameters.add(update.toString());
+				}
+			} else if (protocol.getClass().getName().contains("Insert")){
+				
+				f = protocol.getClass().getDeclaredField("insertRequests");
+				f.setAccessible(true);
+				List<Object> insertRequests = (List<Object>) f.get(protocol);
+				for(Object request : insertRequests) {
+					f = request.getClass().getDeclaredField("document");
+					f.setAccessible(true);
+					Object document = f.get(request);
+					parameters.add(document.toString());
+				}
+				
+			} else if (protocol.getClass().getName().contains("Find")){
+				
+				f = protocol.getClass().getDeclaredField("filter");
+				f.setAccessible(true);
+				Object filter = f.get(protocol);
+				parameters.add(filter.toString());
+				
+			} else if(protocol.getClass().getName().contains("Command")) {
+				f = protocol.getClass().getDeclaredField("command");
+				f.setAccessible(true);
+				Object insertRequests = f.get(protocol);
+				parameters.add(insertRequests.toString());
+			} else if (protocol.getClass().getName().contains("Write")){
+				
+				f = protocol.getClass().getDeclaredField("writeRequests");
+				f.setAccessible(true);
+				List<Object> writeRequests = (List<Object>) f.get(protocol);
+				
+				
+				
+				for(Object request : writeRequests) {
+					
+					if(request.getClass().getName().contains("Update")) {
+					f = request.getClass().getDeclaredField("update");
+					f.setAccessible(true);
+					Object update = f.get(request);
+					parameters.add(update.toString());
+					f = request.getClass().getDeclaredField("filter");
+					f.setAccessible(true);
+					Object filter = f.get(request);
+					parameters.add(filter.toString());
+					
+					
+					parameters.add(update.toString());
+					} else if(request.getClass().getName().contains("Delete")) {
+						f = request.getClass().getDeclaredField("filter");
+						f.setAccessible(true);
+						Object filter = f.get(request);
+						parameters.add(filter.toString());
+						
+					}else {
+						f = request.getClass().getDeclaredField("document");
+						f.setAccessible(true);
+						Object document = f.get(request);
+						parameters.add(document.toString());
+						
+					}
+					
+				}
+				
+			}  else if (protocol.getClass().getName().contains("Distinct")){
+				
+				f = protocol.getClass().getDeclaredField("fieldName");
+				f.setAccessible(true);
+				Object fieldName =  f.get(protocol);
+				parameters.add(fieldName.toString());
+				f = protocol.getClass().getDeclaredField("filter");
+				f.setAccessible(true);
+				Object filter =  f.get(protocol);
+				parameters.add(filter.toString());
+				
+			} else {
+				
+				System.out.println(protocol.getClass().getName());
+				
+			}
+			
+		}
+	}
+		
+		
 	
 	
 	/**
@@ -514,6 +705,8 @@ public class LoggingInterceptor extends Interceptor {
 				getParameterValue(obj[0], parameters);
 			} else if (firstElement != null && firstElement.getClass().getName().contains("mysql")) {
 				getMySQLParameterValue(obj, parameters);
+			} else if (firstElement != null && firstElement.getClass().getName().contains("mongo")) {
+					getMongoParameterValue(obj, parameters);
 			} else {
 				for (int i = 0; i < obj.length; i++) {
 					if (obj[i] instanceof byte[]) {
