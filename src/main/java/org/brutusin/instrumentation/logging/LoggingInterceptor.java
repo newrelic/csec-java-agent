@@ -15,6 +15,55 @@
  */
 package org.brutusin.instrumentation.logging;
 
+
+import static org.brutusin.instrumentation.logging.IAgentConstants.MSSQL_IDENTIFIER;
+import static org.brutusin.instrumentation.logging.IAgentConstants.MYSQL_IDENTIFIER;
+import static org.brutusin.instrumentation.logging.IAgentConstants.MONGO_IDENTIFIER;
+
+import static org.brutusin.instrumentation.logging.IAgentConstants.MSSQL_CURRENT_OBJECT;
+import static org.brutusin.instrumentation.logging.IAgentConstants.MSSQL_BATCH_STATEMENT_BUFFER_FIELD;
+import static org.brutusin.instrumentation.logging.IAgentConstants.MSSQL_SQL_FIELD;
+import static org.brutusin.instrumentation.logging.IAgentConstants.MSSQL_CONNECTION_FIELD;
+import static org.brutusin.instrumentation.logging.IAgentConstants.MSSQL_ACTIVE_CONNECTION_PROP_FIELD;
+import static org.brutusin.instrumentation.logging.IAgentConstants.MSSQL_STATEMENT_FIELD;
+import static org.brutusin.instrumentation.logging.IAgentConstants.MSSQL_USER_SQL_FIELD;
+import static org.brutusin.instrumentation.logging.IAgentConstants.MSSQL_IN_OUT_PARAM_FIELD;
+import static org.brutusin.instrumentation.logging.IAgentConstants.MSSQL_BATCH_PARAM_VALUES_FIELD;
+import static org.brutusin.instrumentation.logging.IAgentConstants.MSSQL_SERVER_STATEMENT_CLASS;
+import static org.brutusin.instrumentation.logging.IAgentConstants.MSSQL_PREPARED_STATEMENT_CLASS;
+import static org.brutusin.instrumentation.logging.IAgentConstants.MSSQL_PREPARED_BATCH_STATEMENT_CLASS;
+import static org.brutusin.instrumentation.logging.IAgentConstants.MSSQL_STATEMENT_EXECUTE_CMD_CLASS;
+import static org.brutusin.instrumentation.logging.IAgentConstants.MSSQL_BATCH_STATEMENT_EXECUTE_CMD_CLASS;
+
+import static org.brutusin.instrumentation.logging.IAgentConstants.MYSQL_PREPARED_STATEMENT;
+
+import static org.brutusin.instrumentation.logging.IAgentConstants.MSSQL_INPUT_DTV_FIELD;
+import static org.brutusin.instrumentation.logging.IAgentConstants.MSSQL_IMPL_FIELD;
+import static org.brutusin.instrumentation.logging.IAgentConstants.MSSQL_VALUE_FIELD;
+import static org.brutusin.instrumentation.logging.IAgentConstants.MONGO_NAMESPACE_FIELD;
+import static org.brutusin.instrumentation.logging.IAgentConstants.MONGO_COMMAND_FIELD;
+import static org.brutusin.instrumentation.logging.IAgentConstants.MONGO_PAYLOAD_FIELD;
+import static org.brutusin.instrumentation.logging.IAgentConstants.MONGO_DELETE_REQUEST_FIELD;
+import static org.brutusin.instrumentation.logging.IAgentConstants.MOGNO_ELEMENT_DATA_FIELD;
+import static org.brutusin.instrumentation.logging.IAgentConstants.MONGO_FILTER_FIELD;
+import static org.brutusin.instrumentation.logging.IAgentConstants.MONGO_MULTIPLE_UPDATES_FIELD;
+import static org.brutusin.instrumentation.logging.IAgentConstants.MONGO_SINGLE_UPDATE_FIELD;
+import static org.brutusin.instrumentation.logging.IAgentConstants.MONGO_INSERT_REQUESTS_FIELD;
+import static org.brutusin.instrumentation.logging.IAgentConstants.MONGO_DOCUMENT_FIELD;
+import static org.brutusin.instrumentation.logging.IAgentConstants.MONGO_WRITE_REQUEST_FIELD;
+import static org.brutusin.instrumentation.logging.IAgentConstants.MONGO_FIELD_NAME_FIELD;
+import static org.brutusin.instrumentation.logging.IAgentConstants.MONGO_DELETE_CLASS_FRAGMENT;
+import static org.brutusin.instrumentation.logging.IAgentConstants.MONGO_UPDATE_CLASS_FRAGMENT;
+import static org.brutusin.instrumentation.logging.IAgentConstants.MONGO_FIND_AND_UPDATE_CLASS_FRAGMENT;
+import static org.brutusin.instrumentation.logging.IAgentConstants.MONGO_INSERT_CLASS_FRAGMENT;
+import static org.brutusin.instrumentation.logging.IAgentConstants.MONGO_FIND_CLASS_FRAGMENT;
+import static org.brutusin.instrumentation.logging.IAgentConstants.MONGO_COMMAND_CLASS_FRAGMENT;
+import static org.brutusin.instrumentation.logging.IAgentConstants.MONGO_WRITE_CLASS_FRAGMENT;
+import static org.brutusin.instrumentation.logging.IAgentConstants.MONGO_DISTINCT_CLASS_FRAGMENT;
+import static org.brutusin.instrumentation.logging.IAgentConstants.MONGO_COLLECTION_WILDCARD;
+import static org.brutusin.instrumentation.logging.IAgentConstants.MONGO_COLLECTION_FIELD;
+import static org.brutusin.instrumentation.logging.IAgentConstants.MONGO_COMMAND_NAME_FIELD;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -44,6 +93,7 @@ import org.brutusin.commons.json.spi.JsonCodec;
 import org.brutusin.instrumentation.Interceptor;
 
 import com.k2.org.json.simple.JSONArray;
+import com.k2.org.json.simple.JSONObject;
 import com.k2.org.objectweb.asm.tree.ClassNode;
 import com.k2.org.objectweb.asm.tree.MethodNode;
 
@@ -354,22 +404,22 @@ public class LoggingInterceptor extends Interceptor {
 
 		// Extraction of Connection params
 		{
-			Field field = obj.getClass().getDeclaredField("this$0");
+			Field field = obj.getClass().getDeclaredField(MSSQL_CURRENT_OBJECT);
 			field.setAccessible(true);
 			Object child = field.get(obj);
 			Field childField = null;
 
-			if (child.getClass().getName().equals("com.microsoft.sqlserver.jdbc.SQLServerStatement")) {
-				childField = child.getClass().getDeclaredField("connection");
-			} else if (child.getClass().getName().equals("com.microsoft.sqlserver.jdbc.SQLServerPreparedStatement")) {
-				childField = child.getClass().getSuperclass().getDeclaredField("connection");
+			if (child.getClass().getName().equals(MSSQL_SERVER_STATEMENT_CLASS)) {
+				childField = child.getClass().getDeclaredField(MSSQL_CONNECTION_FIELD);
+			} else if (child.getClass().getName().equals(MSSQL_PREPARED_STATEMENT_CLASS)) {
+				childField = child.getClass().getSuperclass().getDeclaredField(MSSQL_CONNECTION_FIELD);
 			} else {
-				childField = child.getClass().getSuperclass().getSuperclass().getDeclaredField("connection");
+				childField = child.getClass().getSuperclass().getSuperclass().getDeclaredField(MSSQL_CONNECTION_FIELD);
 			}
 			childField.setAccessible(true);
 
 			child = childField.get(child);
-			childField = child.getClass().getDeclaredField("activeConnectionProperties");
+			childField = child.getClass().getDeclaredField(MSSQL_ACTIVE_CONNECTION_PROP_FIELD);
 			childField.setAccessible(true);
 
 			Properties connectionProperties = (Properties) childField.get(child);
@@ -377,21 +427,21 @@ public class LoggingInterceptor extends Interceptor {
 		}
 
 		// Extraction of query for different query methods
-		if (className.contains("com.microsoft.sqlserver.jdbc.SQLServerPreparedStatement")) {
-			Field field = obj.getClass().getDeclaredField("stmt");
+		if (className.contains(MSSQL_PREPARED_STATEMENT_CLASS)) {
+			Field field = obj.getClass().getDeclaredField(MSSQL_STATEMENT_FIELD);
 
 			field.setAccessible(true);
 			Object child = field.get(obj);
 			
 			// extract Query
 			Field childField = null;
-			if (child.getClass().getName().equals("com.microsoft.sqlserver.jdbc.SQLServerPreparedStatement")) {
-				childField = child.getClass().getDeclaredField("userSQL");
+			if (child.getClass().getName().equals(MSSQL_PREPARED_STATEMENT_CLASS)) {
+				childField = child.getClass().getDeclaredField(MSSQL_USER_SQL_FIELD);
 			} else {
 				// for JAVA compilation before 7.1, an instance of class
 				// com.microsoft.sqlserver.jdbc.SQLServerPreparedStatement42 is made instead of
 				// com.microsoft.sqlserver.jdbc.SQLServerPreparedStatement
-				childField = child.getClass().getSuperclass().getDeclaredField("userSQL");
+				childField = child.getClass().getSuperclass().getDeclaredField(MSSQL_USER_SQL_FIELD);
 			}
 			childField.setAccessible(true);
 			parameters.add(childField.get(child));
@@ -399,25 +449,25 @@ public class LoggingInterceptor extends Interceptor {
 			ArrayList<Object[]> params = null;
 			
 			// extract Values passed to Prepared Statement
-			if (className.equals("com.microsoft.sqlserver.jdbc.SQLServerPreparedStatement.PrepStmtBatchExecCmd")) {
+			if (className.equals(MSSQL_PREPARED_BATCH_STATEMENT_CLASS)) {
 
-				if (child.getClass().getName().equals("com.microsoft.sqlserver.jdbc.SQLServerPreparedStatement")) {
-					childField = child.getClass().getDeclaredField("batchParamValues");
+				if (child.getClass().getName().equals(MSSQL_PREPARED_STATEMENT_CLASS)) {
+					childField = child.getClass().getDeclaredField(MSSQL_BATCH_PARAM_VALUES_FIELD);
 				} else {
-					childField = child.getClass().getSuperclass().getDeclaredField("batchParamValues");
+					childField = child.getClass().getSuperclass().getDeclaredField(MSSQL_BATCH_PARAM_VALUES_FIELD);
 				}
 				childField.setAccessible(true);
 				params = (ArrayList<Object[]>) childField.get(child);
 
 			} else {
 
-				if (child.getClass().getName().equals("com.microsoft.sqlserver.jdbc.SQLServerPreparedStatement")) {
-					childField = child.getClass().getSuperclass().getDeclaredField("inOutParam");
+				if (child.getClass().getName().equals(MSSQL_PREPARED_STATEMENT_CLASS)) {
+					childField = child.getClass().getSuperclass().getDeclaredField(MSSQL_IN_OUT_PARAM_FIELD);
 				} else {
 					// for JAVA compilation before 7.1, an instance of class
 					// com.microsoft.sqlserver.jdbc.SQLServerPreparedStatement42 is made instead of
 					// com.microsoft.sqlserver.jdbc.SQLServerPreparedStatement
-					childField = child.getClass().getSuperclass().getSuperclass().getDeclaredField("inOutParam");
+					childField = child.getClass().getSuperclass().getSuperclass().getDeclaredField(MSSQL_IN_OUT_PARAM_FIELD);
 				}
 				childField.setAccessible(true);
 
@@ -427,16 +477,16 @@ public class LoggingInterceptor extends Interceptor {
 			}
 			addParamValuesMSSQL(params, parameters);
 
-		} else if (className.equals("com.microsoft.sqlserver.jdbc.SQLServerStatement.StmtExecCmd")) {
+		} else if (className.equals(MSSQL_STATEMENT_EXECUTE_CMD_CLASS)) {
 			Field field = obj.getClass().getDeclaredField("sql");
 			field.setAccessible(true);
 			parameters.add(field.get(obj));
 
-		} else if (className.equals("com.microsoft.sqlserver.jdbc.SQLServerStatement.StmtBatchExecCmd")) {
-			Field field = obj.getClass().getDeclaredField("stmt");
+		} else if (className.equals(MSSQL_BATCH_STATEMENT_EXECUTE_CMD_CLASS)) {
+			Field field = obj.getClass().getDeclaredField(MSSQL_STATEMENT_FIELD);
 			field.setAccessible(true);
 			Object child = field.get(obj);
-			Field childField = child.getClass().getDeclaredField("batchStatementBuffer");
+			Field childField = child.getClass().getDeclaredField(MSSQL_BATCH_STATEMENT_BUFFER_FIELD);
 			childField.setAccessible(true);
 			ArrayList<String> queries = (ArrayList<String>) childField.get(child);
 			parameters.add(queries.size());
@@ -445,8 +495,8 @@ public class LoggingInterceptor extends Interceptor {
 			}
 			
 
-		} else if (className.equals("com.microsoft.sqlserver.jdbc.SQLServerStatement.StmtExecCmd")) {
-			Field field = obj.getClass().getDeclaredField("sql");
+		} else if (className.equals(MSSQL_STATEMENT_EXECUTE_CMD_CLASS)) {
+			Field field = obj.getClass().getDeclaredField(MSSQL_SQL_FIELD);
 			field.setAccessible(true);
 			parameters.add(field.get(obj));
 		} else {
@@ -467,7 +517,7 @@ public class LoggingInterceptor extends Interceptor {
 	@SuppressWarnings("unchecked")
 	private static void getMySQLParameterValue(Object[] args, JSONArray parameters) {
 		for (Object obj : args) {
-			if(obj.getClass().getName().contains("PreparedStatement")) {
+			if(obj.getClass().getName().contains(MYSQL_PREPARED_STATEMENT)) {
 				int start = obj.toString().indexOf(":");
 				parameters.add(obj.toString().substring(0, start));
 				parameters.add(obj.toString().substring(start + 1));
@@ -508,61 +558,70 @@ public class LoggingInterceptor extends Interceptor {
 	@SuppressWarnings("unchecked")
 	public static void getMongoParameterValue(Object[] args, JSONArray parameters) throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
 		Object protocol = args[0];		
+		
+		String namespace = null; 
+		Field f = null;
+		
+		
+		Class<? extends Object> nsClass = protocol.getClass();
+		int depth = 0;
+		String keyspaceName = null;
+		
+		JSONObject queryDetailObj = new JSONObject();
+		// for getting the namespace 
+		while (namespace == null && nsClass != null && depth<4) {
+			try {
+				f = nsClass.getDeclaredField(MONGO_NAMESPACE_FIELD);
+				f.setAccessible(true);
+				Object ns = f.get(protocol);
+				namespace = ns.toString();
+				
+				queryDetailObj.put(MONGO_NAMESPACE_FIELD,namespace);
+				keyspaceName = namespace.split("[.]")[1];
+				if(!keyspaceName.equals(MONGO_COLLECTION_WILDCARD)) {
+					queryDetailObj.put(MONGO_COLLECTION_FIELD,keyspaceName);
+				}
+				
+			} catch (Exception ex) {
+				nsClass = nsClass.getSuperclass();
+				depth++;
+			}
+		}
+		
 		// for Connecter v 6.0 and above
 		try {
 			
-			Field f = protocol.getClass().getDeclaredField("command");
+			f = protocol.getClass().getDeclaredField(MONGO_COMMAND_FIELD);
 			f.setAccessible(true);
 			Object command = f.get(protocol);
 			parameters.add(command.toString());
-			f = protocol.getClass().getDeclaredField("payload");
+			f = protocol.getClass().getDeclaredField(MONGO_PAYLOAD_FIELD);
 			f.setAccessible(true);
 			Object payload = f.get(protocol);
 			if(payload != null ) {
-				f = payload.getClass().getDeclaredField("payload");
+				f = payload.getClass().getDeclaredField(MONGO_PAYLOAD_FIELD);
 				f.setAccessible(true);
 				payload = f.get(payload);
 				parameters.add(payload.toString());
 			}
 		} catch (Exception e) {
 			// for Connecter v 5.0 and below
-			
-			String namespace = null; 
-			Field f = null;
-			
-			
-			Class<? extends Object> nsClass = protocol.getClass();
-			int depth = 0;
-			// for getting the namespace 
-			while (namespace == null && nsClass != null && depth<4) {
-				try {
-					f = nsClass.getDeclaredField("namespace");
-					f.setAccessible(true);
-					Object ns = f.get(protocol);
-					namespace = ns.toString();
-					parameters.add(namespace);
-					
-				} catch (Exception ex) {
-					nsClass = nsClass.getSuperclass();
-					depth++;
-				}
-			}
-			
 			// fetch query parameters
-			 if (protocol.getClass().getName().contains("Delete")) {
-				f = protocol.getClass().getDeclaredField("deleteRequests");
+			 if (protocol.getClass().getName().contains(MONGO_DELETE_CLASS_FRAGMENT)) {
+				 queryDetailObj.put(MONGO_COMMAND_NAME_FIELD, MONGO_DELETE_CLASS_FRAGMENT.toLowerCase());
+				f = protocol.getClass().getDeclaredField(MONGO_DELETE_REQUEST_FIELD);
 				f.setAccessible(true);
 				List<Object> deleteRequests = (List<Object>) f.get(protocol);
 				
 				for(Object obj : deleteRequests) {
 					try {
-						f = obj.getClass().getDeclaredField("elementData");
+						f = obj.getClass().getDeclaredField(MOGNO_ELEMENT_DATA_FIELD);
 						f.setAccessible(true);
 						Object[] elementData = (Object[]) f.get(obj);
 						
 						for(Object request : elementData) {
 							if( request!=null ) {
-								f = request.getClass().getDeclaredField("filter");
+								f = request.getClass().getDeclaredField(MONGO_FILTER_FIELD);
 								f.setAccessible(true);
 								Object filter = f.get(request);
 								parameters.add(filter.toString());
@@ -571,60 +630,59 @@ public class LoggingInterceptor extends Interceptor {
 						
 						
 					}catch (NoSuchFieldException synchedDelete) {
-						f = obj.getClass().getDeclaredField("filter");
+						f = obj.getClass().getDeclaredField(MONGO_FILTER_FIELD);
 						f.setAccessible(true);
 						Object filter = f.get(obj);
 						parameters.add(filter.toString());
 					}
 					
 				}
-			} else if (protocol.getClass().getName().contains("Update")) {
+			} else if (protocol.getClass().getName().contains(MONGO_UPDATE_CLASS_FRAGMENT)) {
+				queryDetailObj.put(MONGO_COMMAND_NAME_FIELD, MONGO_UPDATE_CLASS_FRAGMENT.toLowerCase());
 				List<Object> updates =  null;
-				if (protocol.getClass().getName().contains("FindAndUpdateOperation")) {
+				if (protocol.getClass().getName().contains(MONGO_FIND_AND_UPDATE_CLASS_FRAGMENT)) {
 					updates = new ArrayList<Object>();
 					updates.add(protocol);
 				} else {
-					f = protocol.getClass().getDeclaredField("updates");
+					f = protocol.getClass().getDeclaredField(MONGO_MULTIPLE_UPDATES_FIELD);
 					f.setAccessible(true);
 					updates = (List<Object>) f.get(protocol);
 				}
 				for (Object obj : updates) {
-					f = obj.getClass().getDeclaredField("filter");
+					f = obj.getClass().getDeclaredField(MONGO_FILTER_FIELD);
 					f.setAccessible(true);
 					Object filter = f.get(obj);
 					parameters.add(filter.toString());
-					f = obj.getClass().getDeclaredField("update");
+					f = obj.getClass().getDeclaredField(MONGO_SINGLE_UPDATE_FIELD);
 					f.setAccessible(true);
 					Object update = f.get(obj);
 					parameters.add(update.toString());
 				}
-			} else if (protocol.getClass().getName().contains("Insert")){
-				
-				f = protocol.getClass().getDeclaredField("insertRequests");
+			} else if (protocol.getClass().getName().contains(MONGO_INSERT_CLASS_FRAGMENT)){
+				queryDetailObj.put(MONGO_COMMAND_NAME_FIELD, MONGO_INSERT_CLASS_FRAGMENT.toLowerCase());
+
+				f = protocol.getClass().getDeclaredField(MONGO_INSERT_REQUESTS_FIELD);
 				f.setAccessible(true);
 				List<Object> insertRequests = (List<Object>) f.get(protocol);
 				for(Object request : insertRequests) {
-					f = request.getClass().getDeclaredField("document");
+					f = request.getClass().getDeclaredField(MONGO_DOCUMENT_FIELD);
 					f.setAccessible(true);
 					Object document = f.get(request);
 					parameters.add(document.toString());
 				}
 				
-			} else if (protocol.getClass().getName().contains("Find")){
-				
-				f = protocol.getClass().getDeclaredField("filter");
+			} else if (protocol.getClass().getName().contains(MONGO_FIND_CLASS_FRAGMENT)){
+				queryDetailObj.put(MONGO_COMMAND_NAME_FIELD, MONGO_FIND_CLASS_FRAGMENT.toLowerCase());
+
+				f = protocol.getClass().getDeclaredField(MONGO_FILTER_FIELD);
 				f.setAccessible(true);
 				Object filter = f.get(protocol);
 				parameters.add(filter.toString());
 				
-			} else if(protocol.getClass().getName().contains("Command")) {
-				f = protocol.getClass().getDeclaredField("command");
-				f.setAccessible(true);
-				Object insertRequests = f.get(protocol);
-				parameters.add(insertRequests.toString());
-			} else if (protocol.getClass().getName().contains("Write")){
-				
-				f = protocol.getClass().getDeclaredField("writeRequests");
+			} else if (protocol.getClass().getName().contains(MONGO_WRITE_CLASS_FRAGMENT)){
+				queryDetailObj.put(MONGO_COMMAND_NAME_FIELD, MONGO_WRITE_CLASS_FRAGMENT.toLowerCase());
+
+				f = protocol.getClass().getDeclaredField(MONGO_WRITE_REQUEST_FIELD);
 				f.setAccessible(true);
 				List<Object> writeRequests = (List<Object>) f.get(protocol);
 				
@@ -632,26 +690,26 @@ public class LoggingInterceptor extends Interceptor {
 				
 				for(Object request : writeRequests) {
 					
-					if(request.getClass().getName().contains("Update")) {
-					f = request.getClass().getDeclaredField("update");
+					if(request.getClass().getName().contains(MONGO_UPDATE_CLASS_FRAGMENT)) {
+					f = request.getClass().getDeclaredField(MONGO_SINGLE_UPDATE_FIELD);
 					f.setAccessible(true);
 					Object update = f.get(request);
 					parameters.add(update.toString());
-					f = request.getClass().getDeclaredField("filter");
+					f = request.getClass().getDeclaredField(MONGO_FILTER_FIELD);
 					f.setAccessible(true);
 					Object filter = f.get(request);
 					parameters.add(filter.toString());
 					
 					
 					parameters.add(update.toString());
-					} else if(request.getClass().getName().contains("Delete")) {
-						f = request.getClass().getDeclaredField("filter");
+					} else if(request.getClass().getName().contains(MONGO_DELETE_CLASS_FRAGMENT)) {
+						f = request.getClass().getDeclaredField(MONGO_FILTER_FIELD);
 						f.setAccessible(true);
 						Object filter = f.get(request);
 						parameters.add(filter.toString());
 						
 					}else {
-						f = request.getClass().getDeclaredField("document");
+						f = request.getClass().getDeclaredField(MONGO_DOCUMENT_FIELD);
 						f.setAccessible(true);
 						Object document = f.get(request);
 						parameters.add(document.toString());
@@ -660,17 +718,25 @@ public class LoggingInterceptor extends Interceptor {
 					
 				}
 				
-			}  else if (protocol.getClass().getName().contains("Distinct")){
-				
-				f = protocol.getClass().getDeclaredField("fieldName");
+			}  else if (protocol.getClass().getName().contains(MONGO_DISTINCT_CLASS_FRAGMENT)){
+				queryDetailObj.put(MONGO_COMMAND_NAME_FIELD, MONGO_DISTINCT_CLASS_FRAGMENT.toLowerCase());
+
+				f = protocol.getClass().getDeclaredField(MONGO_FIELD_NAME_FIELD);
 				f.setAccessible(true);
 				Object fieldName =  f.get(protocol);
 				parameters.add(fieldName.toString());
-				f = protocol.getClass().getDeclaredField("filter");
+				f = protocol.getClass().getDeclaredField(MONGO_FILTER_FIELD);
 				f.setAccessible(true);
 				Object filter =  f.get(protocol);
 				parameters.add(filter.toString());
 				
+			} else if(protocol.getClass().getName().contains(MONGO_COMMAND_CLASS_FRAGMENT)) {
+				queryDetailObj.put(MONGO_COMMAND_NAME_FIELD, MONGO_COMMAND_CLASS_FRAGMENT.toLowerCase());
+
+				f = protocol.getClass().getDeclaredField(MONGO_COMMAND_FIELD);
+				f.setAccessible(true);
+				Object insertRequests = f.get(protocol);
+				parameters.add(insertRequests.toString());
 			} else {
 				
 				System.out.println(protocol.getClass().getName());
@@ -678,6 +744,8 @@ public class LoggingInterceptor extends Interceptor {
 			}
 			
 		}
+		// add Query Details
+		parameters.add(queryDetailObj.toString());
 	}
 		
 		
@@ -701,11 +769,11 @@ public class LoggingInterceptor extends Interceptor {
 			Object firstElement = obj[0];
 
 			if (firstElement != null && firstElement.getClass() != null
-					&& obj[0].getClass().getName().contains("com.microsoft.sqlserver")) {
+					&& obj[0].getClass().getName().contains(MSSQL_IDENTIFIER)) {
 				getParameterValue(obj[0], parameters);
-			} else if (firstElement != null && firstElement.getClass().getName().contains("mysql")) {
+			} else if (firstElement != null && firstElement.getClass().getName().contains(MYSQL_IDENTIFIER)) {
 				getMySQLParameterValue(obj, parameters);
-			} else if (firstElement != null && firstElement.getClass().getName().contains("mongo")) {
+			} else if (firstElement != null && firstElement.getClass().getName().contains(MONGO_IDENTIFIER)) {
 					getMongoParameterValue(obj, parameters);
 			} else {
 				for (int i = 0; i < obj.length; i++) {
@@ -759,13 +827,13 @@ public class LoggingInterceptor extends Interceptor {
 			JSONArray params = new JSONArray();
 
 			for (int counter = 0; counter < outParams.length; counter++) {
-				Field param = outParams[counter].getClass().getDeclaredField("inputDTV");
+				Field param = outParams[counter].getClass().getDeclaredField(MSSQL_INPUT_DTV_FIELD);
 				param.setAccessible(true);
 				Object value = param.get(outParams[counter]);
-				param = value.getClass().getDeclaredField("impl");
+				param = value.getClass().getDeclaredField(MSSQL_IMPL_FIELD);
 				param.setAccessible(true);
 				value = param.get(value);
-				param = value.getClass().getDeclaredField("value");
+				param = value.getClass().getDeclaredField(MSSQL_VALUE_FIELD);
 				param.setAccessible(true);
 				value = param.get(value);
 				params.add(value.toString());

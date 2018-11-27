@@ -101,4 +101,65 @@ public interface IAgentConstants {
 				{ "execute" },
 				{ "execute" },
 			};
+
+	/** DB NAMES */
+	String MSSQL_IDENTIFIER = "com.microsoft.sqlserver";
+	String MYSQL_IDENTIFIER = "mysql";
+	String MONGO_IDENTIFIER = "mongo";
+	
+	/** MSSQL FIELD CONSTANTS */
+	String MSSQL_CURRENT_OBJECT = "this$0";
+	String MSSQL_BATCH_STATEMENT_BUFFER_FIELD = "batchStatementBuffer";
+	String MSSQL_SQL_FIELD = "sql";
+	String MSSQL_CONNECTION_FIELD = "connection";
+	String MSSQL_ACTIVE_CONNECTION_PROP_FIELD = "activeConnectionProperties";
+	String MSSQL_STATEMENT_FIELD = "stmt";
+	String MSSQL_USER_SQL_FIELD = "userSQL";
+	String MSSQL_IN_OUT_PARAM_FIELD = "inOutParam";
+	String MSSQL_BATCH_PARAM_VALUES_FIELD = "batchParamValues";
+	String MSSQL_INPUT_DTV_FIELD = "inputDTV";
+	String MSSQL_IMPL_FIELD = "impl";
+	String MSSQL_VALUE_FIELD = "value";
+	
+	/** MSSQL CLASS CONSTANTS */
+	String MSSQL_SERVER_STATEMENT_CLASS = "com.microsoft.sqlserver.jdbc.SQLServerStatement";
+	String MSSQL_PREPARED_STATEMENT_CLASS = "com.microsoft.sqlserver.jdbc.SQLServerPreparedStatement";
+	String MSSQL_PREPARED_BATCH_STATEMENT_CLASS = "com.microsoft.sqlserver.jdbc.SQLServerPreparedStatement.PrepStmtBatchExecCmd";
+	String MSSQL_STATEMENT_EXECUTE_CMD_CLASS = "com.microsoft.sqlserver.jdbc.SQLServerStatement.StmtExecCmd";
+	String MSSQL_BATCH_STATEMENT_EXECUTE_CMD_CLASS = "com.microsoft.sqlserver.jdbc.SQLServerStatement.StmtBatchExecCmd";
+	
+	String MYSQL_PREPARED_STATEMENT = "PreparedStatement";
+	
+	
+	/** Mongo constants */
+	
+	String MONGO_NAMESPACE_FIELD = "namespace";
+	String MONGO_COMMAND_FIELD = "command";
+	String MONGO_PAYLOAD_FIELD = "payload";
+	String MONGO_DELETE_REQUEST_FIELD = "deleteRequests";
+	String MOGNO_ELEMENT_DATA_FIELD = "elementData";
+	String MONGO_FILTER_FIELD = "filter";
+	String MONGO_MULTIPLE_UPDATES_FIELD = "updates";
+	String MONGO_SINGLE_UPDATE_FIELD = "update";
+	String MONGO_INSERT_REQUESTS_FIELD = "insertRequests";
+	String MONGO_DOCUMENT_FIELD = "document";
+	String MONGO_WRITE_REQUEST_FIELD = "writeRequests";
+	String MONGO_FIELD_NAME_FIELD = "fieldName";
+	
+	String MONGO_DELETE_CLASS_FRAGMENT = "Delete";
+	String MONGO_UPDATE_CLASS_FRAGMENT = "Update";
+	String MONGO_FIND_AND_UPDATE_CLASS_FRAGMENT = "FindAndUpdateOperation";
+	String MONGO_INSERT_CLASS_FRAGMENT = "Insert";
+	String MONGO_FIND_CLASS_FRAGMENT = "Find";
+	String MONGO_COMMAND_CLASS_FRAGMENT = "Command";
+	String MONGO_WRITE_CLASS_FRAGMENT = "Write";
+	String MONGO_DISTINCT_CLASS_FRAGMENT = "Distinct";
+	
+	String MONGO_COLLECTION_WILDCARD = "$cmd";
+	String MONGO_COLLECTION_FIELD = "collectionName";
+	String MONGO_COMMAND_NAME_FIELD = "commandName";
+	
+	
+	
+	
 }
