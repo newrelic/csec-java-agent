@@ -2,7 +2,7 @@ package org.brutusin.instrumentation.logging;
 
 public interface IAgentConstants {
 
-	String TRACE_REGEX = "((?!org\\.apache\\.jsp.*))((^javax.*)|(^java\\.lang.*)|(^java\\.io.*)|(^org\\.apache.*)|(^java\\.nio.*)|(^java\\.util.*)|(^java\\.net.*)|(^sun.*)|(^java\\.security.*)|(^org\\.brutusin.*)|(^com\\.microsoft\\.sqlserver.*)|(^com\\.mysql.*)|(^sun\\.reflect.*)|(^java\\.sql.*)|(com\\.mongodb.*)|(org\\.apache\\.commons.*)|(org\\.mongodb.*)|(^com\\.sun\\.org\\.apache.*)|(^com\\.sun\\.naming.*)|(^org\\.eclipse\\.jetty.*)|(^net\\.sourceforge\\.eclipsejetty.*)|(^java\\.awt.*)|(org\\.springframework.*)|(org\\.slf4j.*)|(com\\.sun\\.jmx.*)|(org\\.eclipse\\.jdt.*)|(com\\.opensymphony\\.xwork2.*)|(org\\.objectweb\\.asm.*)|(freemarker\\.cache.*))";
+	String TRACE_REGEX = "((?!org\\.apache\\.jsp.*))((^javax.*)|(^java\\.lang.*)|(^java\\.io.*)|(^org\\.apache.*)|(^java\\.nio.*)|(^java\\.util.*)|(^java\\.net.*)|(^sun.*)|(^java\\.security.*)|(^org\\.brutusin.*)|(^com\\.microsoft\\.sqlserver.*)|(^com\\.mysql.*)|(^sun\\.reflect.*)|(^org\\.hibernate.*)|(^java\\.sql.*)|(^com\\.mongodb.*)|(^org\\.apache\\.commons.*)|(^org\\.mongodb.*)|(^com\\.sun\\.org\\.apache.*)|(^com\\.sun\\.naming.*)|(^org\\.eclipse\\.jetty.*)|(^net\\.sourceforge\\.eclipsejetty.*)|(^java\\.awt.*)|(org\\.springframework.*)|(org\\.slf4j.*)|(com\\.sun\\.jmx.*)|(org\\.eclipse\\.jdt.*)|(com\\.opensymphony\\.xwork2.*)|(org\\.objectweb\\.asm.*)|(freemarker\\.cache.*))";
 
 	String SYSYTEM_CALL_START = "static java.lang.Process java.lang.ProcessImpl.start(java.lang.String[],java.util.Map<java.lang.String, java.lang.String>,java.lang.String,java.lang.ProcessBuilder$Redirect[],boolean) throws java.io.IOException";
 
@@ -29,91 +29,137 @@ public interface IAgentConstants {
 					"processContextConfig" },
 			{ "org.apache.catalina.authenticator.jaspic.AuthConfigFactoryImpl", "<clinit>" }, { "java.net.URL", "openConnection" } };
 
-	String[] COMPLETE_LIST = {
-			"final com.mysql.jdbc.ResultSetInternalMethods com.mysql.jdbc.MysqlIO.sqlQueryDirect(com.mysql.jdbc.StatementImpl,java.lang.String,java.lang.String,com.mysql.jdbc.Buffer,int,int,int,boolean,java.lang.String,com.mysql.jdbc.Field[]) throws java.lang.Exception",
-			SYSYTEM_CALL_START,
-			"final void com.microsoft.sqlserver.jdbc.SQLServerStatement.executeStatement(com.microsoft.sqlserver.jdbc.TDSCommand) throws com.microsoft.sqlserver.jdbc.SQLServerException",
-			"void com.microsoft.sqlserver.jdbc.TDSWriter.writeString(java.lang.String) throws com.microsoft.sqlserver.jdbc.SQLServerException",
-			"java.lang.String com.microsoft.sqlserver.jdbc.SQLServerConnection.replaceParameterMarkers(java.lang.String,com.microsoft.sqlserver.jdbc.Parameter[],boolean) throws com.microsoft.sqlserver.jdbc.SQLServerException",
-			"private final boolean com.microsoft.sqlserver.jdbc.SQLServerPreparedStatement.buildPreparedStrings(com.microsoft.sqlserver.jdbc.Parameter[],boolean) throws com.microsoft.sqlserver.jdbc.SQLServerException",
-			"public com.mongodb.bulk.BulkWriteResult com.mongodb.connection.DefaultServerConnection.insertCommand(com.mongodb.MongoNamespace,boolean,com.mongodb.WriteConcern,java.lang.Boolean,java.util.List<com.mongodb.bulk.InsertRequest>)",
-			"public void com.mongodb.connection.DefaultServerConnection.insertCommandAsync(com.mongodb.MongoNamespace,boolean,com.mongodb.WriteConcern,java.lang.Boolean,java.util.List<com.mongodb.bulk.InsertRequest>,com.mongodb.async.SingleResultCallback<com.mongodb.bulk.BulkWriteResult>)",
-			"public void com.mongodb.connection.DefaultServerConnection.insertAsync(com.mongodb.MongoNamespace,boolean,com.mongodb.bulk.InsertRequest,com.mongodb.async.SingleResultCallback<com.mongodb.WriteConcernResult>)",
-			"public com.mongodb.WriteConcernResult com.mongodb.connection.DefaultServerConnection.insert(com.mongodb.MongoNamespace,boolean,com.mongodb.WriteConcern,java.util.List<com.mongodb.bulk.InsertRequest>)",
-			"public com.mongodb.WriteConcernResult com.mongodb.connection.DefaultServerConnection.insert(com.mongodb.MongoNamespace,boolean,com.mongodb.bulk.InsertRequest)",
-			"public com.mongodb.WriteConcernResult com.mongodb.connection.DefaultServerConnection.update(com.mongodb.MongoNamespace,boolean,com.mongodb.WriteConcern,java.util.List<com.mongodb.bulk.UpdateRequest>)",
-			"public com.mongodb.WriteConcernResult com.mongodb.connection.DefaultServerConnection.update(com.mongodb.MongoNamespace,boolean,com.mongodb.bulk.UpdateRequest)",
-			"public com.mongodb.WriteConcernResult com.mongodb.connection.DefaultServerConnection.delete(com.mongodb.MongoNamespace,boolean,com.mongodb.WriteConcern,java.util.List<com.mongodb.bulk.DeleteRequest>)",
-			"public com.mongodb.WriteConcernResult com.mongodb.connection.DefaultServerConnection.delete(com.mongodb.MongoNamespace,boolean,com.mongodb.bulk.DeleteRequest)",
-			"public <T> T com.mongodb.connection.DefaultServerConnection.command(java.lang.String,org.bson.BsonDocument,boolean,org.bson.FieldNameValidator,org.bson.codecs.Decoder<T>)",
-			"public <T> T com.mongodb.connection.DefaultServerConnection.command(java.lang.String,org.bson.BsonDocument,org.bson.FieldNameValidator,com.mongodb.ReadPreference,org.bson.codecs.Decoder<T>,com.mongodb.session.SessionContext,boolean,com.mongodb.connection.SplittablePayload,org.bson.FieldNameValidator)",
-			"public void com.mongodb.connection.DefaultServerConnection.updateAsync(com.mongodb.MongoNamespace,boolean,com.mongodb.WriteConcern,java.util.List<com.mongodb.bulk.UpdateRequest>,com.mongodb.async.SingleResultCallback<com.mongodb.WriteConcernResult>)",
-			"public void com.mongodb.connection.DefaultServerConnection.updateAsync(com.mongodb.MongoNamespace,boolean,com.mongodb.bulk.UpdateRequest,com.mongodb.async.SingleResultCallback<com.mongodb.WriteConcernResult>)",
-			"public void com.mongodb.connection.DefaultServerConnection.deleteAsync(com.mongodb.MongoNamespace,boolean,com.mongodb.WriteConcern,java.util.List<com.mongodb.bulk.DeleteRequest>,com.mongodb.async.SingleResultCallback<com.mongodb.WriteConcernResult>)",
-			"public void com.mongodb.connection.DefaultServerConnection.deleteAsync(com.mongodb.MongoNamespace,boolean,com.mongodb.bulk.DeleteRequest,com.mongodb.async.SingleResultCallback<com.mongodb.WriteConcernResult>)",
-			"public com.mongodb.bulk.BulkWriteResult com.mongodb.connection.DefaultServerConnection.updateCommand(com.mongodb.MongoNamespace,boolean,com.mongodb.WriteConcern,java.lang.Boolean,java.util.List<com.mongodb.bulk.UpdateRequest>)",
-			"public void com.mongodb.connection.DefaultServerConnection.updateCommandAsync(com.mongodb.MongoNamespace,boolean,com.mongodb.WriteConcern,java.lang.Boolean,java.util.List<com.mongodb.bulk.UpdateRequest>,com.mongodb.async.SingleResultCallback<com.mongodb.bulk.BulkWriteResult>)",
-			"public com.mongodb.bulk.BulkWriteResult com.mongodb.connection.DefaultServerConnection.deleteCommand(com.mongodb.MongoNamespace,boolean,com.mongodb.WriteConcern,java.util.List<com.mongodb.bulk.DeleteRequest>)",
-			"public void com.mongodb.connection.DefaultServerConnection.deleteCommandAsync(com.mongodb.MongoNamespace,boolean,com.mongodb.WriteConcern,java.util.List<com.mongodb.bulk.DeleteRequest>,com.mongodb.async.SingleResultCallback<com.mongodb.bulk.BulkWriteResult>)",
-			"public <T> void com.mongodb.connection.DefaultServerConnection.commandAsync(java.lang.String,org.bson.BsonDocument,boolean,org.bson.FieldNameValidator,org.bson.codecs.Decoder<T>,com.mongodb.async.SingleResultCallback<T>)",
-			"public <T> void com.mongodb.connection.DefaultServerConnection.commandAsync(java.lang.String,org.bson.BsonDocument,org.bson.FieldNameValidator,com.mongodb.ReadPreference,org.bson.codecs.Decoder<T>,com.mongodb.session.SessionContext,boolean,com.mongodb.connection.SplittablePayload,org.bson.FieldNameValidator,com.mongodb.async.SingleResultCallback<T>)",
-			"public <T> com.mongodb.connection.QueryResult<T> com.mongodb.connection.DefaultServerConnection.query(com.mongodb.MongoNamespace,org.bson.BsonDocument,org.bson.BsonDocument,int,int,boolean,boolean,boolean,boolean,boolean,boolean,org.bson.codecs.Decoder<T>)",
-			"public <T> com.mongodb.connection.QueryResult<T> com.mongodb.connection.DefaultServerConnection.query(com.mongodb.MongoNamespace,org.bson.BsonDocument,org.bson.BsonDocument,int,int,int,boolean,boolean,boolean,boolean,boolean,boolean,org.bson.codecs.Decoder<T>)",
-			"public <T> void com.mongodb.connection.DefaultServerConnection.queryAsync(com.mongodb.MongoNamespace,org.bson.BsonDocument,org.bson.BsonDocument,int,int,boolean,boolean,boolean,boolean,boolean,boolean,org.bson.codecs.Decoder<T>,com.mongodb.async.SingleResultCallback<com.mongodb.connection.QueryResult<T>>)",
-			"public <T> void com.mongodb.connection.DefaultServerConnection.queryAsync(com.mongodb.MongoNamespace,org.bson.BsonDocument,org.bson.BsonDocument,int,int,int,boolean,boolean,boolean,boolean,boolean,boolean,org.bson.codecs.Decoder<T>,com.mongodb.async.SingleResultCallback<com.mongodb.connection.QueryResult<T>>)",
-
-			// FileWriter
-//			"public java.io.OutputStream java.nio.file.spi.FileSystemProvider.newOutputStream(java.nio.file.Path,java.nio.file.OpenOption...) throws java.io.IOException",
-//			"public java.io.File(java.lang.String,java.lang.String)", "public java.io.File(java.lang.String)" 
-			};
 
 	String[] FILE_OPEN_EXECUTORS = { "public java.io.File(java.lang.String,java.lang.String)", "public java.io.File(java.lang.String)" };
 
-	String[] ALL_CLASSES = { "com/mysql/jdbc/MysqlIO", "java/lang/ProcessImpl", "com/microsoft/sqlserver/jdbc/SQLServerStatement",
-			"com/microsoft/sqlserver/jdbc/TDSWriter", "com/microsoft/sqlserver/jdbc/SQLServerConnection",
-			"com/microsoft/sqlserver/jdbc/SQLServerPreparedStatement", "com/mongodb/connection/DefaultServerConnection",
-			// FileWriter
-			"java/nio/file/spi/FileSystemProvider", "java/io/File" };
 
 	String[] EXECUTORS = {
 			SYSYTEM_CALL_START,
-			"final com.mysql.jdbc.ResultSetInternalMethods com.mysql.jdbc.MysqlIO.sqlQueryDirect(com.mysql.jdbc.StatementImpl,java.lang.String,java.lang.String,com.mysql.jdbc.Buffer,int,int,int,boolean,java.lang.String,com.mysql.jdbc.Field[]) throws java.lang.Exception",
-			"public com.mongodb.bulk.BulkWriteResult com.mongodb.connection.DefaultServerConnection.insertCommand(com.mongodb.MongoNamespace,boolean,com.mongodb.WriteConcern,java.lang.Boolean,java.util.List<com.mongodb.bulk.InsertRequest>)",
-			"public void com.mongodb.connection.DefaultServerConnection.insertCommandAsync(com.mongodb.MongoNamespace,boolean,com.mongodb.WriteConcern,java.lang.Boolean,java.util.List<com.mongodb.bulk.InsertRequest>,com.mongodb.async.SingleResultCallback<com.mongodb.bulk.BulkWriteResult>)",
-			"public void com.mongodb.connection.DefaultServerConnection.insertAsync(com.mongodb.MongoNamespace,boolean,com.mongodb.bulk.InsertRequest,com.mongodb.async.SingleResultCallback<com.mongodb.WriteConcernResult>)",
-			"public com.mongodb.WriteConcernResult com.mongodb.connection.DefaultServerConnection.insert(com.mongodb.MongoNamespace,boolean,com.mongodb.WriteConcern,java.util.List<com.mongodb.bulk.InsertRequest>)",
-			"public com.mongodb.WriteConcernResult com.mongodb.connection.DefaultServerConnection.insert(com.mongodb.MongoNamespace,boolean,com.mongodb.bulk.InsertRequest)",
-			"public com.mongodb.WriteConcernResult com.mongodb.connection.DefaultServerConnection.update(com.mongodb.MongoNamespace,boolean,com.mongodb.WriteConcern,java.util.List<com.mongodb.bulk.UpdateRequest>)",
-			"public com.mongodb.WriteConcernResult com.mongodb.connection.DefaultServerConnection.update(com.mongodb.MongoNamespace,boolean,com.mongodb.bulk.UpdateRequest)",
-			"public com.mongodb.WriteConcernResult com.mongodb.connection.DefaultServerConnection.delete(com.mongodb.MongoNamespace,boolean,com.mongodb.WriteConcern,java.util.List<com.mongodb.bulk.DeleteRequest>)",
-			"public com.mongodb.WriteConcernResult com.mongodb.connection.DefaultServerConnection.delete(com.mongodb.MongoNamespace,boolean,com.mongodb.bulk.DeleteRequest)",
-			"public <T> T com.mongodb.connection.DefaultServerConnection.command(java.lang.String,org.bson.BsonDocument,boolean,org.bson.FieldNameValidator,org.bson.codecs.Decoder<T>)",
-			"public <T> T com.mongodb.connection.DefaultServerConnection.command(java.lang.String,org.bson.BsonDocument,org.bson.FieldNameValidator,com.mongodb.ReadPreference,org.bson.codecs.Decoder<T>,com.mongodb.session.SessionContext,boolean,com.mongodb.connection.SplittablePayload,org.bson.FieldNameValidator)",
-			"public void com.mongodb.connection.DefaultServerConnection.updateAsync(com.mongodb.MongoNamespace,boolean,com.mongodb.WriteConcern,java.util.List<com.mongodb.bulk.UpdateRequest>,com.mongodb.async.SingleResultCallback<com.mongodb.WriteConcernResult>)",
-			"public void com.mongodb.connection.DefaultServerConnection.updateAsync(com.mongodb.MongoNamespace,boolean,com.mongodb.bulk.UpdateRequest,com.mongodb.async.SingleResultCallback<com.mongodb.WriteConcernResult>)",
-			"public void com.mongodb.connection.DefaultServerConnection.deleteAsync(com.mongodb.MongoNamespace,boolean,com.mongodb.WriteConcern,java.util.List<com.mongodb.bulk.DeleteRequest>,com.mongodb.async.SingleResultCallback<com.mongodb.WriteConcernResult>)",
-			"public void com.mongodb.connection.DefaultServerConnection.deleteAsync(com.mongodb.MongoNamespace,boolean,com.mongodb.bulk.DeleteRequest,com.mongodb.async.SingleResultCallback<com.mongodb.WriteConcernResult>)",
-			"public com.mongodb.bulk.BulkWriteResult com.mongodb.connection.DefaultServerConnection.updateCommand(com.mongodb.MongoNamespace,boolean,com.mongodb.WriteConcern,java.lang.Boolean,java.util.List<com.mongodb.bulk.UpdateRequest>)",
-			"public void com.mongodb.connection.DefaultServerConnection.updateCommandAsync(com.mongodb.MongoNamespace,boolean,com.mongodb.WriteConcern,java.lang.Boolean,java.util.List<com.mongodb.bulk.UpdateRequest>,com.mongodb.async.SingleResultCallback<com.mongodb.bulk.BulkWriteResult>)",
-			"public com.mongodb.bulk.BulkWriteResult com.mongodb.connection.DefaultServerConnection.deleteCommand(com.mongodb.MongoNamespace,boolean,com.mongodb.WriteConcern,java.util.List<com.mongodb.bulk.DeleteRequest>)",
-			"public void com.mongodb.connection.DefaultServerConnection.deleteCommandAsync(com.mongodb.MongoNamespace,boolean,com.mongodb.WriteConcern,java.util.List<com.mongodb.bulk.DeleteRequest>,com.mongodb.async.SingleResultCallback<com.mongodb.bulk.BulkWriteResult>)",
-			"public <T> void com.mongodb.connection.DefaultServerConnection.commandAsync(java.lang.String,org.bson.BsonDocument,boolean,org.bson.FieldNameValidator,org.bson.codecs.Decoder<T>,com.mongodb.async.SingleResultCallback<T>)",
-			"public <T> void com.mongodb.connection.DefaultServerConnection.commandAsync(java.lang.String,org.bson.BsonDocument,org.bson.FieldNameValidator,com.mongodb.ReadPreference,org.bson.codecs.Decoder<T>,com.mongodb.session.SessionContext,boolean,com.mongodb.connection.SplittablePayload,org.bson.FieldNameValidator,com.mongodb.async.SingleResultCallback<T>)",
-			"public <T> com.mongodb.connection.QueryResult<T> com.mongodb.connection.DefaultServerConnection.query(com.mongodb.MongoNamespace,org.bson.BsonDocument,org.bson.BsonDocument,int,int,boolean,boolean,boolean,boolean,boolean,boolean,org.bson.codecs.Decoder<T>)",
-			"public <T> com.mongodb.connection.QueryResult<T> com.mongodb.connection.DefaultServerConnection.query(com.mongodb.MongoNamespace,org.bson.BsonDocument,org.bson.BsonDocument,int,int,int,boolean,boolean,boolean,boolean,boolean,boolean,org.bson.codecs.Decoder<T>)",
-			"public <T> void com.mongodb.connection.DefaultServerConnection.queryAsync(com.mongodb.MongoNamespace,org.bson.BsonDocument,org.bson.BsonDocument,int,int,boolean,boolean,boolean,boolean,boolean,boolean,org.bson.codecs.Decoder<T>,com.mongodb.async.SingleResultCallback<com.mongodb.connection.QueryResult<T>>)",
-			"public <T> void com.mongodb.connection.DefaultServerConnection.queryAsync(com.mongodb.MongoNamespace,org.bson.BsonDocument,org.bson.BsonDocument,int,int,int,boolean,boolean,boolean,boolean,boolean,boolean,org.bson.codecs.Decoder<T>,com.mongodb.async.SingleResultCallback<com.mongodb.connection.QueryResult<T>>)",
-			// FileWriter
+			
+			// asynchronous mongo calls
+			"public <T> void com.mongodb.async.client.MongoClientImpl$2.execute(com.mongodb.operation.AsyncReadOperation<T>,com.mongodb.ReadPreference,com.mongodb.async.SingleResultCallback<T>)",
+			"public <T> void com.mongodb.async.client.MongoClientImpl$2.execute(com.mongodb.operation.AsyncWriteOperation<T>,com.mongodb.async.SingleResultCallback<T>)",
+			"public <T> void com.mongodb.async.client.AsyncOperationExecutorImpl.execute(com.mongodb.operation.AsyncWriteOperation<T>,com.mongodb.session.ClientSession,com.mongodb.async.SingleResultCallback<T>)",
+			"public <T> void com.mongodb.async.client.AsyncOperationExecutorImpl.execute(com.mongodb.operation.AsyncReadOperation<T>,com.mongodb.ReadPreference,com.mongodb.session.ClientSession,com.mongodb.async.SingleResultCallback<T>)",
+			"public <T> void com.mongodb.async.client.OperationExecutorImpl.execute(com.mongodb.operation.AsyncReadOperation<T>,com.mongodb.ReadPreference,com.mongodb.ReadConcern,com.mongodb.async.client.ClientSession,com.mongodb.async.SingleResultCallback<T>)",
+			"public <T> void com.mongodb.async.client.OperationExecutorImpl.execute(com.mongodb.operation.AsyncWriteOperation<T>,com.mongodb.ReadConcern,com.mongodb.async.client.ClientSession,com.mongodb.async.SingleResultCallback<T>)",
+			
+			
+			// synchronous mongo calls
+			"private <T> T com.mongodb.connection.DefaultServerConnection.executeProtocol(com.mongodb.connection.CommandProtocol<T>,com.mongodb.session.SessionContext)",
+			"private <T> T com.mongodb.connection.DefaultServerConnection.executeProtocol(com.mongodb.connection.LegacyProtocol<T>)",
+			"private <T> T com.mongodb.internal.connection.DefaultServerConnection.executeProtocol(com.mongodb.internal.connection.CommandProtocol<T>,com.mongodb.session.SessionContext)",
+			"private <T> T com.mongodb.internal.connection.DefaultServerConnection.executeProtocol(com.mongodb.internal.connection.LegacyProtocol<T>)",
+			"private <T> T com.mongodb.connection.DefaultServerConnection.executeProtocol(com.mongodb.connection.Protocol<T>)",
+			
+			// mssql calls
+			"final void com.microsoft.sqlserver.jdbc.SQLServerStatement.executeStatement(com.microsoft.sqlserver.jdbc.TDSCommand) throws com.microsoft.sqlserver.jdbc.SQLServerException,java.sql.SQLTimeoutException",
+			"final void com.microsoft.sqlserver.jdbc.SQLServerStatement.executeStatement(com.microsoft.sqlserver.jdbc.TDSCommand) throws com.microsoft.sqlserver.jdbc.SQLServerException",
+			
+			// mysql calls
+			"final com.mysql.jdbc.ResultSet com.mysql.jdbc.MysqlIO.sqlQueryDirect(com.mysql.jdbc.Statement,java.lang.String,java.lang.String,com.mysql.jdbc.Buffer,int,com.mysql.jdbc.Connection,int,int,boolean,java.lang.String,boolean) throws java.lang.Exception",	// Mysql Connector/J 5.0.5
+			"final com.mysql.jdbc.ResultSetInternalMethods com.mysql.jdbc.MysqlIO.sqlQueryDirect(com.mysql.jdbc.StatementImpl,java.lang.String,java.lang.String,com.mysql.jdbc.Buffer,int,int,int,boolean,java.lang.String,com.mysql.jdbc.Field[]) throws java.lang.Exception",	// Mysql Connector/J 5.1.x
+			"public final <T> T com.mysql.cj.mysqla.io.MysqlaProtocol.sqlQueryDirect(com.mysql.cj.jdbc.StatementImpl,java.lang.String,java.lang.String,com.mysql.cj.api.mysqla.io.PacketPayload,int,boolean,java.lang.String,com.mysql.cj.api.mysqla.result.ColumnDefinition,com.mysql.cj.api.io.Protocol$GetProfilerEventHandlerInstanceFunction,com.mysql.cj.api.mysqla.io.ProtocolEntityFactory<T>) throws java.io.IOException", // Mysql Connector/J 6.x
+			"public <T> T com.mysql.cj.NativeSession.execSQL(com.mysql.cj.Query,java.lang.String,int,com.mysql.cj.protocol.a.NativePacketPayload,boolean,com.mysql.cj.protocol.ProtocolEntityFactory<T, com.mysql.cj.protocol.a.NativePacketPayload>,java.lang.String,com.mysql.cj.protocol.ColumnDefinition,boolean)", // Mysql Connector/J 8.x
+			
+//			// FileWriter
 //			"public java.io.OutputStream java.nio.file.spi.FileSystemProvider.newOutputStream(java.nio.file.Path,java.nio.file.OpenOption...) throws java.io.IOException",
 //			"public java.io.File(java.lang.String,java.lang.String)", "public java.io.File(java.lang.String)" 
 			};
 
-	String MSSQL_EXECUTOR = "final void com.microsoft.sqlserver.jdbc.SQLServerStatement.executeStatement(com.microsoft.sqlserver.jdbc.TDSCommand) throws com.microsoft.sqlserver.jdbc.SQLServerException";
+	String MSSQL_EXECUTOR = "boolean com.microsoft.sqlserver.jdbc.SQLServerConnection.executeCommand(com.microsoft.sqlserver.jdbc.TDSCommand) throws com.microsoft.sqlserver.jdbc.SQLServerException";
 
 	String[] CONSTRUCTOR = { "<init>" };
+	
+	String[] ALL_CLASSES = { 
+				"com/mysql/jdbc/MysqlIO", 
+				"java/lang/ProcessImpl", 
+				// FileWriter
+				"java/nio/file/spi/FileSystemProvider", 
+				"java/io/File", 
+				"com/microsoft/sqlserver/jdbc/SQLServerStatement",
+				"com/mysql/cj/mysqla/io/MysqlaProtocol", 
+				"com/mysql/cj/NativeSession",
+				"com/mongodb/connection/DefaultServerConnection",
+				"com/mongodb/internal/connection/DefaultServerConnection",
+				"com/mongodb/async/client/MongoClientImpl$2",
+				"com/mongodb/async/client/AsyncOperationExecutorImpl",
+				"com/mongodb/async/client/OperationExecutorImpl",
+			};
 
-	String[][] ALL_METHODS = { { "sqlQueryDirect" }, { "start" }, { "executeStatement", "replaceMarkerWithNull" }, { "writeString" },
-			{ "replaceParameterMarkers" }, { "buildPreparedStrings" }, { "insertCommand", "updateCommand", "deleteCommand", "insert", "update",
-					"delete", "updateAsync", "insertAsync", "deleteAsync", "query", "command", "commandAsync", "query", "queryAsync" },
-			{ "newOutputStream" }, CONSTRUCTOR };
+	String[][] ALL_METHODS = { 
+				{ "sqlQueryDirect" },
+				{ "start" }, 
+				{ "newOutputStream" }, 
+				CONSTRUCTOR , 
+				{"executeStatement"}, 
+				{"sqlQueryDirect"}, 
+				{"execSQL"},
+				{ "executeProtocol"  },
+				{ "executeProtocol" },
+				{ "execute" },
+				{ "execute" },
+				{ "execute" },
+			};
+
+	/** DB NAMES */
+	String MSSQL_IDENTIFIER = "com.microsoft.sqlserver";
+	String MYSQL_IDENTIFIER = "mysql";
+	String MONGO_IDENTIFIER = "mongo";
+	
+	/** MSSQL FIELD CONSTANTS */
+	String MSSQL_CURRENT_OBJECT = "this$0";
+	String MSSQL_BATCH_STATEMENT_BUFFER_FIELD = "batchStatementBuffer";
+	String MSSQL_SQL_FIELD = "sql";
+	String MSSQL_CONNECTION_FIELD = "connection";
+	String MSSQL_ACTIVE_CONNECTION_PROP_FIELD = "activeConnectionProperties";
+	String MSSQL_STATEMENT_FIELD = "stmt";
+	String MSSQL_USER_SQL_FIELD = "userSQL";
+	String MSSQL_IN_OUT_PARAM_FIELD = "inOutParam";
+	String MSSQL_BATCH_PARAM_VALUES_FIELD = "batchParamValues";
+	String MSSQL_INPUT_DTV_FIELD = "inputDTV";
+	String MSSQL_IMPL_FIELD = "impl";
+	String MSSQL_VALUE_FIELD = "value";
+	
+	/** MSSQL CLASS CONSTANTS */
+	String MSSQL_SERVER_STATEMENT_CLASS = "com.microsoft.sqlserver.jdbc.SQLServerStatement";
+	String MSSQL_PREPARED_STATEMENT_CLASS = "com.microsoft.sqlserver.jdbc.SQLServerPreparedStatement";
+	String MSSQL_PREPARED_BATCH_STATEMENT_CLASS = "com.microsoft.sqlserver.jdbc.SQLServerPreparedStatement.PrepStmtBatchExecCmd";
+	String MSSQL_STATEMENT_EXECUTE_CMD_CLASS = "com.microsoft.sqlserver.jdbc.SQLServerStatement.StmtExecCmd";
+	String MSSQL_BATCH_STATEMENT_EXECUTE_CMD_CLASS = "com.microsoft.sqlserver.jdbc.SQLServerStatement.StmtBatchExecCmd";
+	
+	String MYSQL_PREPARED_STATEMENT = "PreparedStatement";
+	
+	
+	/** Mongo constants */
+	
+	String MONGO_NAMESPACE_FIELD = "namespace";
+	String MONGO_COMMAND_FIELD = "command";
+	String MONGO_PAYLOAD_FIELD = "payload";
+	String MONGO_DELETE_REQUEST_FIELD = "deleteRequests";
+	String MOGNO_ELEMENT_DATA_FIELD = "elementData";
+	String MONGO_FILTER_FIELD = "filter";
+	String MONGO_MULTIPLE_UPDATES_FIELD = "updates";
+	String MONGO_SINGLE_UPDATE_FIELD = "update";
+	String MONGO_INSERT_REQUESTS_FIELD = "insertRequests";
+	String MONGO_DOCUMENT_FIELD = "document";
+	String MONGO_WRITE_REQUEST_FIELD = "writeRequests";
+	String MONGO_FIELD_NAME_FIELD = "fieldName";
+	
+	String MONGO_DELETE_CLASS_FRAGMENT = "Delete";
+	String MONGO_UPDATE_CLASS_FRAGMENT = "Update";
+	String MONGO_FIND_AND_UPDATE_CLASS_FRAGMENT = "FindAndUpdateOperation";
+	String MONGO_INSERT_CLASS_FRAGMENT = "Insert";
+	String MONGO_FIND_CLASS_FRAGMENT = "Find";
+	String MONGO_COMMAND_CLASS_FRAGMENT = "Command";
+	String MONGO_WRITE_CLASS_FRAGMENT = "Write";
+	String MONGO_DISTINCT_CLASS_FRAGMENT = "Distinct";
+	
+	String MONGO_COLLECTION_WILDCARD = "$cmd";
+	String MONGO_COLLECTION_FIELD = "collectionName";
+	String MONGO_COMMAND_NAME_FIELD = "commandName";
+	
+	
+	
+	
 }

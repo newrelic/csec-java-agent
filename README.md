@@ -57,9 +57,9 @@ git clone https://github.com/k2io/K2-JavaAgent
 ## Build
 Build Sequence is important, follow the below sequence.
 
-go to directory to k2-jnr-unixsocket, use below command to make the build of jnr-unixsocket
+go to directory to k2-asm, use below command to make the build of k2-asm
 ```
-cd k2-jnr-unixsocket
+cd k2-asm
 mvn clean install
 ```
 
@@ -69,9 +69,9 @@ cd k2-jnr-ffi
 mvn clean install
 ```
 
-go to directory to k2-asm, use below command to make the build of k2-asm
+go to directory to k2-jnr-unixsocket, use below command to make the build of jnr-unixsocket
 ```
-cd k2-asm
+cd k2-jnr-unixsocket
 mvn clean install
 ```
 
