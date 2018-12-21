@@ -146,6 +146,10 @@ public class LoggingInterceptor extends Interceptor {
 				if (index > -1) {
 					return st.substring(index + 7);
 				}
+				index = st.indexOf("kubepods/");
+				if (index > -1) {
+					return st.substring(st.lastIndexOf('/')+1);
+				}
 				// To support docker older versions
 				index = st.lastIndexOf("lxc/");
 				if (index > -1) {
