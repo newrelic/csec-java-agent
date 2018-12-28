@@ -19,23 +19,14 @@ public class AgentBasicInfo {
 	/** Json version number. */
 	private String version;
 
+	private static Properties props;
 
-	/**
-	 * Instantiates a new agent basic info according to the source class object.
-	 */
-	public AgentBasicInfo() {
-		Properties props = new Properties();
+	{
+		props = new Properties();
 		InputStream in = null;
 		try {
 			in = AgentBasicInfo.class.getResourceAsStream("/application.properties");
 			props.load(in);
-			setVersion(props.getProperty("k2.javaagent.version"));
-			if (this.getClass().getName().equals("org.brutusin.instrumentation.logging.ApplicationInfoBean")) {
-				setJsonName(props.getProperty("k2.javaagent.jsonname.applicationinfobean"));
-			} else if (this.getClass().getName().equals("org.brutusin.instrumentation.logging.IntCodeResultBean")) {
-				setJsonName(props.getProperty("k2.javaagent.jsonname.intcoderesultbean"));
-			}
-
 		} catch (IOException e) {
 			throw new RuntimeException(e.getMessage());
 		} finally {
@@ -46,6 +37,22 @@ public class AgentBasicInfo {
 					throw new RuntimeException(e.getMessage());
 				}
 			}
+		}
+
+	}
+
+
+	/**
+	 * Instantiates a new agent basic info according to the source class object.
+	 */
+	public AgentBasicInfo() {
+		setVersion(props.getProperty("k2.javaagent.version"));
+		if (this instanceof  ApplicationInfoBean) {
+			setJsonName(props.getProperty("k2.javaagent.jsonname.applicationinfobean"));
+		} else if (this instanceof IntCodeResultBean) {
+			setJsonName(props.getProperty("k2.javaagent.jsonname.intcoderesultbean"));
+		} else if(this instanceof JarPathBean){
+			setJsonName(props.getProperty("k2.javaagent.jsonname.jarpathbean"));
 		}
 	}
 

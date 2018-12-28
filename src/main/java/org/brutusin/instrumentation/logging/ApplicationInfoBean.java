@@ -18,6 +18,7 @@ public class ApplicationInfoBean extends AgentBasicInfo {
 	public ApplicationInfoBean() {}
 	
 	public ApplicationInfoBean(Integer pid, String applicationUUID) {
+	    super();
 		this.pid = pid;
 		this.applicationUUID = applicationUUID;
 		this.startTime = System.currentTimeMillis();

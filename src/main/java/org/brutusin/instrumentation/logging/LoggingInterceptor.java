@@ -78,18 +78,14 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.nio.channels.Channels;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
 import org.brutusin.commons.json.spi.JsonCodec;
+import org.brutusin.instrumentation.Agent;
 import org.brutusin.instrumentation.Interceptor;
 
 import com.k2.org.json.simple.JSONArray;
@@ -113,7 +109,6 @@ public class LoggingInterceptor extends Interceptor {
 	private static final String applicationUUID;
 
 	static {
-
 		applicationUUID = UUID.randomUUID().toString();
 		PATTERN = Pattern.compile(IAgentConstants.TRACE_REGEX);
 		allClasses = new HashSet<String>(Arrays.asList(IAgentConstants.ALL_CLASSES));
@@ -168,8 +163,42 @@ public class LoggingInterceptor extends Interceptor {
 		return null;
 	}
 
+
+    /**
+     * Method to poll for Agent.getJarPathResultExecutorService to complete jarPathSet population & then create & send
+     * desired JarPathBean .
+     */
+    public static void getJarPath() {
+        Runnable jarPathPool = new Runnable() {
+            public void run() {
+                    System.out.println("Pooling getJarPathResultExecutorService to fetch results.");
+                try {
+                    if(Agent.getJarPathResultExecutorService.awaitTermination(5, TimeUnit.MINUTES)) {
+                        if(!Agent.jarPathSet.isEmpty()){
+                            JarPathBean jarPathBean = new JarPathBean(applicationUUID, new ArrayList<String>(Agent.jarPathSet));
+                            writer.println(jarPathBean.toString());
+                            writer.flush();
+                            System.out.println("getJarPathResultExecutorService result fetched successfully.");
+                        } else {
+                            System.err.println("getJarPathResultExecutorService result is empty.");
+                        }
+                    } else {
+                        System.err.println("Timeout reached waiting for getJarPathResultExecutorService.");
+                    }
+                } catch (InterruptedException e) {
+                    System.err.println("Error occured while waiting for getJarPathResultExecutorService.");
+                    e.printStackTrace();
+                }
+            }
+        };
+
+        ScheduledExecutorService jarPathPoolExecutorService = Executors.newSingleThreadScheduledExecutor();
+        jarPathPoolExecutorService.schedule(jarPathPool, 240, TimeUnit.SECONDS);
+        jarPathPoolExecutorService.shutdown();
+    }
+
 	@Override
-	public void init(String arg) throws Exception {
+	public void  init(String arg) throws Exception {
 		this.rootFile = new File("/tmp/K2-instrumentation-logging/events.sock");
 		if (!rootFile.exists()) {
 			throw new RuntimeException("Root doesn't exists, Please start the K2-IntCode Agent");
@@ -183,8 +212,9 @@ public class LoggingInterceptor extends Interceptor {
 			throw new RuntimeException(ex);
 		}
 		try {
-			RuntimeMXBean runtimeMXBean = ManagementFactory.getRuntimeMXBean();
-			String runningVM = runtimeMXBean.getName();
+            getJarPath();
+		    RuntimeMXBean runtimeMXBean = ManagementFactory.getRuntimeMXBean();
+    		String runningVM = runtimeMXBean.getName();
 			VMPID = Integer.parseInt(runningVM.substring(0, runningVM.indexOf('@')));
 			ApplicationInfoBean applicationInfoBean = new ApplicationInfoBean(VMPID, applicationUUID);
 			String containerId = getContainerID();
@@ -199,6 +229,7 @@ public class LoggingInterceptor extends Interceptor {
 			applicationInfoBean.setJvmArguments(new JSONArray(cmdlineArgs));
 			writer.println(applicationInfoBean.toString());
 			writer.flush();
+
 
 		} catch (Exception e) {
 			

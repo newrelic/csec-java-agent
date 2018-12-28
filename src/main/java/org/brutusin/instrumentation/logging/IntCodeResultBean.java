@@ -19,9 +19,11 @@ public class IntCodeResultBean extends AgentBasicInfo {
 	private Long eventGenerationTime;
 
 	public IntCodeResultBean() {
+	    super();
 	}
 
 	public IntCodeResultBean(Long startTime, String source, Integer pid, String applicationUUID) {
+	    this();
 		this.setPid(pid);
 		this.applicationUUID = applicationUUID;
 		this.source = source;
@@ -29,6 +31,7 @@ public class IntCodeResultBean extends AgentBasicInfo {
 	}
 	
 	public IntCodeResultBean(Long startTime, String source, JSONArray parameters, Integer pid, String applicationUUID) {
+	    this();
 		this.setPid(pid);
 		this.applicationUUID = applicationUUID;
 		this.source = source;
