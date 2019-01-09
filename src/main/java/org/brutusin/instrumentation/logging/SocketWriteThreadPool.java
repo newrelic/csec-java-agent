@@ -1,6 +1,5 @@
 package org.brutusin.instrumentation.logging;
 
-import java.util.concurrent.CancellationException;
 import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.RejectedExecutionException;
@@ -21,8 +20,8 @@ public class SocketWriteThreadPool {
 		LinkedBlockingQueue<Runnable> processQueue;
 
 		// load the settings
-		int queueSize = 100;
-		int maxPoolSize = 30;
+		int queueSize = 500;
+		int maxPoolSize = 50;
 		int corePoolSize = 15;
 		long keepAliveTime = 5;
 
