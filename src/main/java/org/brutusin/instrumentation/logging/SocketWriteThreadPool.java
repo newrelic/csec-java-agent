@@ -20,10 +20,10 @@ public class SocketWriteThreadPool {
 		LinkedBlockingQueue<Runnable> processQueue;
 
 		// load the settings
-		int queueSize = 500;
-		int maxPoolSize = 50;
+		int queueSize = 1000;
+		int maxPoolSize = 150;
 		int corePoolSize = 15;
-		long keepAliveTime = 5;
+		long keepAliveTime = 2;
 
 		TimeUnit timeUnit = TimeUnit.SECONDS;
 
@@ -36,7 +36,7 @@ public class SocketWriteThreadPool {
 		}
 
 		executor = new ThreadPoolExecutor(corePoolSize, maxPoolSize, keepAliveTime, timeUnit, processQueue,
-				new ValidationAbortPolicy()) {
+				new EventAbortPolicy()) {
 
 			@Override
 			protected void afterExecute(Runnable r, Throwable t) {
@@ -75,11 +75,11 @@ public class SocketWriteThreadPool {
 	 * A handler for rejected tasks that throws a
 	 * {@code RejectedExecutionException}.
 	 */
-	public static class ValidationAbortPolicy implements RejectedExecutionHandler {
+	public static class EventAbortPolicy implements RejectedExecutionHandler {
 		/**
 		 * Creates an {@code ValidationAbortPolicy}.
 		 */
-		public ValidationAbortPolicy() {
+		public EventAbortPolicy() {
 		}
 
 		/**
@@ -94,7 +94,6 @@ public class SocketWriteThreadPool {
 		 */
 		public void rejectedExecution(Runnable r, ThreadPoolExecutor e) {
 			System.out.println("Event Task " + r.toString() + " rejected from {} " + e.toString());
-			throw new RejectedExecutionException("Task " + r.toString() + " rejected from " + e.toString());
 		}
 	}
 
