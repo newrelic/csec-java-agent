@@ -83,16 +83,19 @@ public class ProcessorThread implements Runnable {
 	private Object source;
 	private Object[] arg;
 	private String executionId;
+	private StackTraceElement[] stackTrace;
 
 	/**
 	 * @param source
 	 * @param arg
 	 * @param executionId
+	 * @param stackTrace 
 	 */
-	public ProcessorThread(Object source, Object[] arg, String executionId) {
+	public ProcessorThread(Object source, Object[] arg, String executionId, StackTraceElement[] stackTrace) {
 		this.source = source;
 		this.arg = arg;
 		this.executionId = executionId;
+		this.stackTrace = stackTrace;
 	}
 
 	/**
@@ -176,7 +179,7 @@ public class ProcessorThread implements Runnable {
 			String klassName = null;
 
 			// String methodName = null;
-			StackTraceElement[] trace = Thread.currentThread().getStackTrace();
+			StackTraceElement[] trace = this.stackTrace;
 			for (int i = 0; i < trace.length; i++) {
 				klassName = trace[i].getClassName();
 				if (!PATTERN.matcher(klassName).matches()) {

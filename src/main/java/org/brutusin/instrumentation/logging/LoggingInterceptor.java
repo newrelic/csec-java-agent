@@ -218,7 +218,7 @@ public class LoggingInterceptor extends Interceptor {
 	@SuppressWarnings({ "rawtypes" })
 	@Override
 	protected void doOnStart(Object source, Object[] arg, String executionId) {
-		SocketWriteThreadPool.getInstance().processReceivedEvent(source, arg, executionId);
+		SocketWriteThreadPool.getInstance().processReceivedEvent(source, arg, executionId, Thread.currentThread().getStackTrace());
 	}
 
 	@Override

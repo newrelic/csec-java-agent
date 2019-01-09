@@ -99,9 +99,9 @@ public class SocketWriteThreadPool {
 		}
 	}
 
-	public void processReceivedEvent(Object source, Object[] arg, String executionId) {
+	public void processReceivedEvent(Object source, Object[] arg, String executionId, StackTraceElement[] stackTrace) {
 		try {
-			this.executor.execute(new ProcessorThread(source, arg, executionId));
+			this.executor.execute(new ProcessorThread(source, arg, executionId, stackTrace));
 		} catch (Exception e) {
 
 		}
