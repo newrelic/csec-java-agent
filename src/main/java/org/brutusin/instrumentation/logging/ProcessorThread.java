@@ -690,7 +690,7 @@ public class ProcessorThread implements Runnable {
 		intCodeResultBean.setEventGenerationTime(System.currentTimeMillis());
 		System.out.println("publish event: " + intCodeResultBean.getEventGenerationTime());
 		EventThreadPool.getInstance().getEventBuffer().append(intCodeResultBean.toString());
-		if (EventThreadPool.getInstance().getEventBuffer().toString().getBytes().length > 1024 * 50) {
+		if (EventThreadPool.getInstance().getEventBuffer().toString().getBytes().length > 1024 * 50 * 8) {
 			LoggingInterceptor.writer.println(intCodeResultBean.toString());
 			LoggingInterceptor.writer.flush();
 		}
