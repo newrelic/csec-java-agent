@@ -107,6 +107,10 @@ public class EventThreadPool {
 
 		}
 	}
+	
+	protected boolean isQueueEmpty() {
+		return this.executor.getQueue().isEmpty();
+	}
 
 	/**
 	 * @return the eventBuffer
