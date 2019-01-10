@@ -65,11 +65,11 @@ import com.k2.org.json.simple.JSONArray;
 import com.k2.org.json.simple.JSONObject;
 
 public class ProcessorThread implements Runnable {
-	
+
 	private static final Map<String, List<String>> interceptMethod;
 	private static final Pattern PATTERN;
 	private static final Set<String> executorMethods;
-	
+
 	static {
 		PATTERN = Pattern.compile(IAgentConstants.TRACE_REGEX);
 		executorMethods = new HashSet<String>(Arrays.asList(IAgentConstants.EXECUTORS));
@@ -89,7 +89,7 @@ public class ProcessorThread implements Runnable {
 	 * @param source
 	 * @param arg
 	 * @param executionId
-	 * @param stackTrace 
+	 * @param stackTrace
 	 */
 	public ProcessorThread(Object source, Object[] arg, String executionId, StackTraceElement[] stackTrace) {
 		this.source = source;
@@ -174,7 +174,8 @@ public class ProcessorThread implements Runnable {
 			// fileExecute = true;
 			// }
 
-			IntCodeResultBean intCodeResultBean = new IntCodeResultBean(start, sourceString, LoggingInterceptor.VMPID, LoggingInterceptor.applicationUUID);
+			IntCodeResultBean intCodeResultBean = new IntCodeResultBean(start, sourceString, LoggingInterceptor.VMPID,
+					LoggingInterceptor.applicationUUID);
 
 			String klassName = null;
 
@@ -204,7 +205,7 @@ public class ProcessorThread implements Runnable {
 
 		}
 	}
-	
+
 	private int getClassNameForSysytemCallStart(StackTraceElement[] trace, IntCodeResultBean intCodeResultBean) {
 		boolean classRuntimeFound = false;
 		for (int i = 0; i < trace.length; i++) {
@@ -215,7 +216,7 @@ public class ProcessorThread implements Runnable {
 		}
 		return -1;
 	}
-	
+
 	/**
 	 * This method is used for MSSQL parameter Extraction
 	 *
@@ -577,7 +578,7 @@ public class ProcessorThread implements Runnable {
 				parameters.add(insertRequests.toString());
 			} else {
 
-//				System.out.println(protocol.getClass().getName());
+				// System.out.println(protocol.getClass().getName());
 
 			}
 
@@ -585,7 +586,7 @@ public class ProcessorThread implements Runnable {
 		// add Query Details
 		parameters.add(queryDetailObj.toString());
 	}
-	
+
 	/**
 	 * This method is used to extract All the required parameters through the
 	 * arguments of instrumented method
@@ -683,13 +684,16 @@ public class ProcessorThread implements Runnable {
 			parameters.add(params.toString());
 		}
 	}
-	
+
 	private void generateEvent(IntCodeResultBean intCodeResultBean) {
 		// trace(logFile, intCodeInterceptedResult.toString());
-		System.out.println("publish event: " + intCodeResultBean.getEventGenerationTime());
 		intCodeResultBean.setEventGenerationTime(System.currentTimeMillis());
-		LoggingInterceptor.writer.println(intCodeResultBean.toString());
-		LoggingInterceptor.writer.flush();
+		System.out.println("publish event: " + intCodeResultBean.getEventGenerationTime());
+		EventThreadPool.getInstance().getEventBuffer().append(intCodeResultBean.toString());
+		if (EventThreadPool.getInstance().getEventBuffer().toString().getBytes().length > 1024 * 50) {
+			LoggingInterceptor.writer.println(intCodeResultBean.toString());
+			LoggingInterceptor.writer.flush();
+		}
 	}
 
 }

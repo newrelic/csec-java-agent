@@ -9,14 +9,16 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class SocketWriteThreadPool {
+public class EventThreadPool {
 
 	/** Thread pool executor. */
 	private ThreadPoolExecutor executor;
 
-	private static SocketWriteThreadPool instance;
+	private static EventThreadPool instance;
+	
+	private StringBuffer eventBuffer;
 
-	private SocketWriteThreadPool() {
+	private EventThreadPool() {
 		LinkedBlockingQueue<Runnable> processQueue;
 
 		// load the settings
@@ -53,6 +55,7 @@ public class SocketWriteThreadPool {
 			}
 
 		};
+		this.eventBuffer = new StringBuffer();
 		executor.allowCoreThreadTimeOut(allowCoreThreadTimeOut);
 		executor.setThreadFactory(new ThreadFactory() {
 			private final AtomicInteger threadNumber = new AtomicInteger(1);
@@ -65,9 +68,9 @@ public class SocketWriteThreadPool {
 		});
 	}
 
-	protected static SocketWriteThreadPool getInstance() {
+	protected static EventThreadPool getInstance() {
 		if (instance == null)
-			instance = new SocketWriteThreadPool();
+			instance = new EventThreadPool();
 		return instance;
 	}
 
@@ -103,6 +106,13 @@ public class SocketWriteThreadPool {
 		} catch (Exception e) {
 
 		}
+	}
+
+	/**
+	 * @return the eventBuffer
+	 */
+	public StringBuffer getEventBuffer() {
+		return eventBuffer;
 	}
 
 }
