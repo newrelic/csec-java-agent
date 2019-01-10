@@ -577,7 +577,7 @@ public class ProcessorThread implements Runnable {
 				parameters.add(insertRequests.toString());
 			} else {
 
-				System.out.println(protocol.getClass().getName());
+//				System.out.println(protocol.getClass().getName());
 
 			}
 
@@ -686,7 +686,7 @@ public class ProcessorThread implements Runnable {
 	
 	private void generateEvent(IntCodeResultBean intCodeResultBean) {
 		// trace(logFile, intCodeInterceptedResult.toString());
-		System.out.println("publish event: " + intCodeResultBean);
+		System.out.println("publish event: " + intCodeResultBean.getEventGenerationTime());
 		intCodeResultBean.setEventGenerationTime(System.currentTimeMillis());
 		LoggingInterceptor.writer.println(intCodeResultBean.toString());
 		LoggingInterceptor.writer.flush();

@@ -20,8 +20,8 @@ public class SocketWriteThreadPool {
 		LinkedBlockingQueue<Runnable> processQueue;
 
 		// load the settings
-		int queueSize = 1000;
-		int maxPoolSize = 150;
+		int queueSize = 1500;
+		int maxPoolSize = 75;
 		int corePoolSize = 15;
 		long keepAliveTime = 2;
 
