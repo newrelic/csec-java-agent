@@ -692,8 +692,9 @@ public class ProcessorThread implements Runnable {
 		EventThreadPool.getInstance().getEventBuffer().append(intCodeResultBean.toString());
 		if (EventThreadPool.getInstance().getEventBuffer().toString().getBytes().length > 4009600
 				|| EventThreadPool.getInstance().isQueueEmpty()) {
-			LoggingInterceptor.writer.println(intCodeResultBean.toString());
-			System.out.println("write : " + intCodeResultBean.toString());
+			System.out.println("write : " + EventThreadPool.getInstance().getEventBuffer());
+			LoggingInterceptor.writer.println(EventThreadPool.getInstance().getEventBuffer().toString());
+			EventThreadPool.getInstance().renewEventBuffer();
 			LoggingInterceptor.writer.flush();
 		}
 	}

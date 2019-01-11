@@ -159,7 +159,7 @@ public class LoggingInterceptor extends Interceptor {
 			throw new RuntimeException(ex);
 		}
 		try {
-//			getJarPath();
+			getJarPath();
 			RuntimeMXBean runtimeMXBean = ManagementFactory.getRuntimeMXBean();
 			String runningVM = runtimeMXBean.getName();
 			VMPID = Integer.parseInt(runningVM.substring(0, runningVM.indexOf('@')));

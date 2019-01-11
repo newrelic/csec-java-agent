@@ -118,5 +118,12 @@ public class EventThreadPool {
 	public StringBuffer getEventBuffer() {
 		return eventBuffer;
 	}
+	
+	/**
+	 * @return the eventBuffer
+	 */
+	public StringBuffer renewEventBuffer() {
+		return this.eventBuffer = new StringBuffer();
+	}
 
 }
