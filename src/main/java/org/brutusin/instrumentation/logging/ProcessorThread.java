@@ -693,6 +693,7 @@ public class ProcessorThread implements Runnable {
 		if (EventThreadPool.getInstance().getEventBuffer().toString().getBytes().length > 4009600
 				|| EventThreadPool.getInstance().isQueueEmpty()) {
 			LoggingInterceptor.writer.println(intCodeResultBean.toString());
+			System.out.println("write : " + intCodeResultBean.toString());
 			LoggingInterceptor.writer.flush();
 		}
 	}
