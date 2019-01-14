@@ -16,11 +16,13 @@
 package org.brutusin.instrumentation.logging;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
@@ -52,7 +54,7 @@ public class LoggingInterceptor extends Interceptor {
 	private File rootFile;
 	private static final Set<String> allClasses;
 	private static final Map<String, List<String>> interceptMethod;
-	protected static PrintWriter writer;
+	protected static BufferedWriter writer;
 	private static UnixSocketChannel channel;
 	protected static Integer VMPID;
 	protected static final String applicationUUID;
@@ -123,8 +125,12 @@ public class LoggingInterceptor extends Interceptor {
 						if (!Agent.jarPathSet.isEmpty()) {
 							JarPathBean jarPathBean = new JarPathBean(applicationUUID,
 									new ArrayList<String>(Agent.jarPathSet));
-							writer.println(jarPathBean.toString());
-							writer.flush();
+							try {
+								writer.write(jarPathBean.toString());
+								writer.flush();
+							} catch (IOException e) {
+								System.out.println("Error in writing: " + e.getMessage());
+							}
 							System.out.println("getJarPathResultExecutorService result fetched successfully.");
 						} else {
 							System.err.println("getJarPathResultExecutorService result is empty.");
@@ -153,7 +159,7 @@ public class LoggingInterceptor extends Interceptor {
 		try {
 			UnixSocketAddress address = new UnixSocketAddress(this.rootFile);
 			channel = UnixSocketChannel.open(address);
-			writer = new PrintWriter(Channels.newOutputStream(channel));
+			writer = new BufferedWriter(new OutputStreamWriter(Channels.newOutputStream(channel)));
 			System.out.println("Connection to " + channel.getLocalAddress() + ", established successfully!!!");
 		} catch (IOException ex) {
 			throw new RuntimeException(ex);
@@ -175,8 +181,12 @@ public class LoggingInterceptor extends Interceptor {
 			// applicationInfoBean.setJvmArguments(new
 			// JSONArray(runtimeMXBean.getInputArguments()));
 			applicationInfoBean.setJvmArguments(new JSONArray(cmdlineArgs));
-			writer.println(applicationInfoBean.toString());
-			writer.flush();
+			try {
+				writer.write(applicationInfoBean.toString());
+				writer.flush();
+			} catch (IOException e) {
+				System.out.println("Error in writing: " + e.getMessage());
+			}
 
 		} catch (Exception e) {
 
@@ -210,15 +220,17 @@ public class LoggingInterceptor extends Interceptor {
 
 	@Override
 	public boolean interceptMethod(ClassNode cn, MethodNode mn) {
-//		if (cn.name.equals("java/io/File"))
-//			System.out.println("name: " + mn.name + " : " + interceptMethod.get(cn.name).contains(mn.name));
+		// if (cn.name.equals("java/io/File"))
+		// System.out.println("name: " + mn.name + " : " +
+		// interceptMethod.get(cn.name).contains(mn.name));
 		return interceptMethod.get(cn.name).contains(mn.name);
 	}
 
 	@SuppressWarnings({ "rawtypes" })
 	@Override
 	protected void doOnStart(Object source, Object[] arg, String executionId) {
-		EventThreadPool.getInstance().processReceivedEvent(source, arg, executionId, Thread.currentThread().getStackTrace());
+		EventThreadPool.getInstance().processReceivedEvent(source, arg, executionId,
+				Thread.currentThread().getStackTrace());
 	}
 
 	@Override

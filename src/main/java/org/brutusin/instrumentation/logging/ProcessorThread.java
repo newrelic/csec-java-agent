@@ -45,6 +45,7 @@ import static org.brutusin.instrumentation.logging.IAgentConstants.MSSQL_VALUE_F
 import static org.brutusin.instrumentation.logging.IAgentConstants.MYSQL_IDENTIFIER;
 import static org.brutusin.instrumentation.logging.IAgentConstants.MYSQL_PREPARED_STATEMENT;
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -689,8 +690,12 @@ public class ProcessorThread implements Runnable {
 		// trace(logFile, intCodeInterceptedResult.toString());
 		intCodeResultBean.setEventGenerationTime(System.currentTimeMillis());
 		System.out.println("publish event: " + intCodeResultBean.getEventGenerationTime());
-		LoggingInterceptor.writer.println(intCodeResultBean);
-		LoggingInterceptor.writer.flush();
+		try {
+			LoggingInterceptor.writer.write(intCodeResultBean.toString());
+			LoggingInterceptor.writer.flush();
+		} catch (IOException e) {
+			System.out.println("Error in writing: " + e.getMessage());
+		}
 		System.out.println("Publish success: " + intCodeResultBean);
 	}
 
