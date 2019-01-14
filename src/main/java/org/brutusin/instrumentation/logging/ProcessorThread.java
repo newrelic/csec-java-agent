@@ -691,7 +691,7 @@ public class ProcessorThread implements Runnable {
 		intCodeResultBean.setEventGenerationTime(System.currentTimeMillis());
 		System.out.println("publish event: " + intCodeResultBean.getEventGenerationTime());
 		try {
-			LoggingInterceptor.writer.write(intCodeResultBean.toString());
+			LoggingInterceptor.writer.write(intCodeResultBean.toString()+"\n");
 			LoggingInterceptor.writer.flush();
 		} catch (IOException e) {
 			System.out.println("Error in writing: " + e.getMessage());
