@@ -53,6 +53,8 @@ public class AgentBasicInfo {
 			setJsonName(props.getProperty("k2.javaagent.jsonname.intcoderesultbean"));
 		} else if(this instanceof JarPathBean){
 			setJsonName(props.getProperty("k2.javaagent.jsonname.jarpathbean"));
+		} else if(this instanceof DynamicJarPathBean){
+			setJsonName(props.getProperty("k2.javaagent.jsonname.dynamicjarpathbean"));
 		}
 	}
 

@@ -43,6 +43,7 @@ import static org.brutusin.instrumentation.logging.IAgentConstants.MSSQL_STATEME
 import static org.brutusin.instrumentation.logging.IAgentConstants.MSSQL_USER_SQL_FIELD;
 import static org.brutusin.instrumentation.logging.IAgentConstants.MSSQL_VALUE_FIELD;
 import static org.brutusin.instrumentation.logging.IAgentConstants.MYSQL_IDENTIFIER;
+import static org.brutusin.instrumentation.logging.IAgentConstants.CLASS_LOADER_IDENTIFIER;
 import static org.brutusin.instrumentation.logging.IAgentConstants.MYSQL_PREPARED_STATEMENT;
 
 import java.io.IOException;
@@ -61,9 +62,12 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.brutusin.commons.json.spi.JsonCodec;
+import org.brutusin.instrumentation.Agent;
 
 import com.k2.org.json.simple.JSONArray;
 import com.k2.org.json.simple.JSONObject;
+import com.k2.org.json.simple.parser.JSONParser;
+import com.k2.org.json.simple.parser.ParseException;
 
 public class ProcessorThread implements Runnable {
 
@@ -589,6 +593,28 @@ public class ProcessorThread implements Runnable {
 	}
 
 	/**
+	 * @param obj
+	 * @param parameters
+	 */
+	private static void getClassLoaderParameterValue(Object[] args, JSONArray parameters) {
+		for (Object obj : args) {
+			try {
+				JSONArray jsonArray = (JSONArray) new JSONParser().parse(JsonCodec.getInstance().transform(obj));
+				for (int i = 0; i < jsonArray.size(); i++) {
+					String value = jsonArray.get(i).toString();
+					if (value.startsWith("file://")) {
+						parameters.add(value.substring(7));
+					}
+				}
+			} catch (ParseException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+
+	}
+
+	/**
 	 * This method is used to extract All the required parameters through the
 	 * arguments of instrumented method
 	 * 
@@ -613,6 +639,8 @@ public class ProcessorThread implements Runnable {
 				getMySQLParameterValue(obj, parameters);
 			} else if (firstElement != null && firstElement.getClass().getName().contains(MONGO_IDENTIFIER)) {
 				getMongoParameterValue(obj, parameters);
+			} else if (firstElement != null && firstElement.getClass().getName().contains(CLASS_LOADER_IDENTIFIER)) {
+				getClassLoaderParameterValue(obj, parameters);
 			} else {
 				for (int i = 0; i < obj.length; i++) {
 					if (obj[i] instanceof byte[]) {
@@ -690,13 +718,29 @@ public class ProcessorThread implements Runnable {
 		// trace(logFile, intCodeInterceptedResult.toString());
 		intCodeResultBean.setEventGenerationTime(System.currentTimeMillis());
 		System.out.println("publish event: " + intCodeResultBean.getEventGenerationTime());
-		try {
-			LoggingInterceptor.writer.write(intCodeResultBean.toString()+"\n");
-			LoggingInterceptor.writer.flush();
-		} catch (IOException e) {
-			System.out.println("Error in writing: " + e.getMessage());
+		if (intCodeResultBean.getSource() != null && (intCodeResultBean.getSource()
+				.equals("public java.net.URLClassLoader(java.net.URL[])")
+				|| intCodeResultBean.getSource().equals(
+						"public static java.net.URLClassLoader java.net.URLClassLoader.newInstance(java.net.URL[])"))) {
+			List<String> list = (List<String>) intCodeResultBean.getParameters();
+			DynamicJarPathBean dynamicJarPathBean = new DynamicJarPathBean(LoggingInterceptor.applicationUUID,
+					System.getProperty("user.dir"), new ArrayList<String>(Agent.jarPathSet), list);
+			System.out.println("dynamic jar path bean : " + dynamicJarPathBean);
+			try {
+				LoggingInterceptor.writer.write(dynamicJarPathBean.toString() + "\n");
+				LoggingInterceptor.writer.flush();
+			} catch (IOException e) {
+				System.out.println("Error in writing: " + e.getMessage());
+			}
+		} else {
+			try {
+				LoggingInterceptor.writer.write(intCodeResultBean.toString() + "\n");
+				LoggingInterceptor.writer.flush();
+			} catch (IOException e) {
+				System.out.println("Error in writing: " + e.getMessage());
+			}
+			System.out.println("Publish success: " + intCodeResultBean);
 		}
-		System.out.println("Publish success: " + intCodeResultBean);
 	}
 
 }
