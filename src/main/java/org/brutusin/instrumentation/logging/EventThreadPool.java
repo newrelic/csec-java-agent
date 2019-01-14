@@ -23,8 +23,8 @@ public class EventThreadPool {
 
 		// load the settings
 		int queueSize = 1500;
-		int maxPoolSize = 75;
-		int corePoolSize = 15;
+		int maxPoolSize = 15;
+		int corePoolSize = 5;
 		long keepAliveTime = 2;
 
 		TimeUnit timeUnit = TimeUnit.SECONDS;
