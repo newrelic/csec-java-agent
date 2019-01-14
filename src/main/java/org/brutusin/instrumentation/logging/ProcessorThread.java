@@ -691,6 +691,7 @@ public class ProcessorThread implements Runnable {
 		System.out.println("publish event: " + intCodeResultBean.getEventGenerationTime());
 		LoggingInterceptor.writer.println(intCodeResultBean);
 		LoggingInterceptor.writer.flush();
+		System.out.println("Publish success: " + intCodeResultBean);
 	}
 
 }
