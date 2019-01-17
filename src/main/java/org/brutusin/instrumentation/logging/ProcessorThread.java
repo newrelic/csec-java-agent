@@ -732,15 +732,15 @@ public class ProcessorThread implements Runnable {
 			} catch (IOException e) {
 				System.out.println("Error in writing: " + e.getMessage());
 			}
-		} else {
-			try {
-				LoggingInterceptor.writer.write(intCodeResultBean.toString() + "\n");
-				LoggingInterceptor.writer.flush();
-			} catch (IOException e) {
-				System.out.println("Error in writing: " + e.getMessage());
-			}
-			System.out.println("Publish success: " + intCodeResultBean);
+		} 
+		try {
+			LoggingInterceptor.writer.write(intCodeResultBean.toString() + "\n");
+			LoggingInterceptor.writer.flush();
+		} catch (IOException e) {
+			System.out.println("Error in writing: " + e.getMessage());
 		}
+		System.out.println("Publish success: " + intCodeResultBean);
+		
 	}
 
 }
