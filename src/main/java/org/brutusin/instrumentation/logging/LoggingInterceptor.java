@@ -32,6 +32,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.Executors;
@@ -163,8 +164,13 @@ public class LoggingInterceptor extends Interceptor {
 		 * ", established successfully!!!"); } catch (IOException ex) { throw new
 		 * RuntimeException(ex); }
 		 */
-		try {
-			oos = new DataOutputStream(new Socket(InetAddress.getLoopbackAddress(), 54321).getOutputStream());
+		try (FileReader reader = new FileReader("/etc/k2-adp/customer.properties")) {
+			Properties properties = new Properties();
+			properties.load(reader);
+			String hostip = properties.getProperty("host.ip");
+			if (hostip == null || hostip.equals(""))
+				throw new RuntimeException("Host ip not found");
+			oos = new DataOutputStream(new Socket(hostip, 54321).getOutputStream());
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
