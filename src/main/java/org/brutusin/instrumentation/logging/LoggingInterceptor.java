@@ -163,7 +163,7 @@ public class LoggingInterceptor extends Interceptor {
 		 * ", established successfully!!!"); } catch (IOException ex) { throw new
 		 * RuntimeException(ex); }
 		 */
-		try (Socket socket = new Socket(InetAddress.getLoopbackAddress(), 10000)) {
+		try (Socket socket = new Socket(InetAddress.getLoopbackAddress(), 54321)) {
 			oos = new DataOutputStream(socket.getOutputStream());
 		} catch (Exception e) {
 			throw new RuntimeException(e);
