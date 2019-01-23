@@ -163,8 +163,8 @@ public class LoggingInterceptor extends Interceptor {
 		 * ", established successfully!!!"); } catch (IOException ex) { throw new
 		 * RuntimeException(ex); }
 		 */
-		try (Socket socket = new Socket(InetAddress.getLoopbackAddress(), 54321)) {
-			oos = new DataOutputStream(socket.getOutputStream());
+		try {
+			oos = new DataOutputStream(new Socket(InetAddress.getLoopbackAddress(), 54321).getOutputStream());
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
@@ -193,7 +193,8 @@ public class LoggingInterceptor extends Interceptor {
 
 		} catch (IOException e) {
 			System.out.println("Error in writing: " + e.getMessage());
-		} catch (Exception e) {}
+		} catch (Exception e) {
+		}
 	}
 
 	private String getCmdLineArgsByProc(Integer pid) {
