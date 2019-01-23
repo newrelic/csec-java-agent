@@ -164,13 +164,11 @@ public class LoggingInterceptor extends Interceptor {
 		 * ", established successfully!!!"); } catch (IOException ex) { throw new
 		 * RuntimeException(ex); }
 		 */
-		try (FileReader reader = new FileReader("/etc/k2-adp/hostip.properties")) {
-			Properties properties = new Properties();
-			properties.load(reader);
-			String hostip = properties.getProperty("host.ip");
+		try (BufferedReader reader = new BufferedReader(new FileReader("/etc/k2-adp/hostip.properties"))) {
+			String hostip = reader.readLine();
 			if (hostip == null || hostip.equals(""))
 				throw new RuntimeException("Host ip not found");
-			oos = new DataOutputStream(new Socket(hostip, 54321).getOutputStream());
+			oos = new DataOutputStream(new Socket(hostip.trim(), 54321).getOutputStream());
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
