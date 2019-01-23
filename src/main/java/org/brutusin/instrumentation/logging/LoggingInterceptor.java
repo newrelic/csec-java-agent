@@ -164,7 +164,7 @@ public class LoggingInterceptor extends Interceptor {
 		 * ", established successfully!!!"); } catch (IOException ex) { throw new
 		 * RuntimeException(ex); }
 		 */
-		try (FileReader reader = new FileReader("/etc/k2-adp/customer.properties")) {
+		try (FileReader reader = new FileReader("/etc/k2-adp/hostip.properties")) {
 			Properties properties = new Properties();
 			properties.load(reader);
 			String hostip = properties.getProperty("host.ip");
