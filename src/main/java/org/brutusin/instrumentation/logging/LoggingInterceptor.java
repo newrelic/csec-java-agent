@@ -186,6 +186,7 @@ public class LoggingInterceptor extends Interceptor {
 			// JSONArray(runtimeMXBean.getInputArguments()));
 			applicationInfoBean.setJvmArguments(new JSONArray(cmdlineArgs));
 			oos.writeUTF(applicationInfoBean.toString());
+			System.out.println("application info posted : " + applicationInfoBean);
 			oos.flush();
 			/*
 			 * writer.write(applicationInfoBean.toString()); writer.flush();
