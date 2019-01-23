@@ -8,9 +8,9 @@
 		<version>1.0.1</version>
 	</parent>
 	<groupId>org.brutusin</groupId>
-	<artifactId>logging-instrumentation</artifactId>
-	<version>1.0.0-SNAPSHOT</version>
-	<name>${project.groupId}:${project.artifactId}</name>
+	<artifactId>K2-JavaAgent</artifactId>
+	<version>1.0.0</version>
+	<name>K2-JavaAgent</name>
 	<description>A configurable java agent to log programs running on the JVM</description>
 	<url>https://github.com/brutusin/logging-instrumentation</url>
 
@@ -44,12 +44,6 @@
 			<version>1.0.0</version>
 		</dependency>
 
-		<!-- https://mvnrepository.com/artifact/com.github.jnr/jnr-unixsocket -->
-		<dependency>
-			<groupId>com.github.jnr</groupId>
-			<artifactId>k2-jnr-unixsocket</artifactId>
-			<version>1.0.0</version>
-		</dependency>
 		<dependency>
 			<groupId>org.brutusin</groupId>
 			<artifactId>json-codec-jackson</artifactId>

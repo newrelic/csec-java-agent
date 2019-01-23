@@ -727,20 +727,20 @@ public class ProcessorThread implements Runnable {
 					System.getProperty("user.dir"), new ArrayList<String>(Agent.jarPathSet), list);
 			System.out.println("dynamic jar path bean : " + dynamicJarPathBean);
 			try {
-				LoggingInterceptor.writer.write(dynamicJarPathBean.toString() + "\n");
-				LoggingInterceptor.writer.flush();
+				LoggingInterceptor.oos.writeUTF(dynamicJarPathBean.toString() + "\n");
+				LoggingInterceptor.oos.flush();
 			} catch (IOException e) {
 				System.out.println("Error in writing: " + e.getMessage());
 			}
-		} 
-		try {
-			LoggingInterceptor.writer.write(intCodeResultBean.toString() + "\n");
-			LoggingInterceptor.writer.flush();
-		} catch (IOException e) {
-			System.out.println("Error in writing: " + e.getMessage());
+		} else {
+			try {
+				LoggingInterceptor.oos.writeUTF(intCodeResultBean.toString() + "\n");
+				LoggingInterceptor.oos.flush();
+			} catch (IOException e) {
+				System.out.println("Error in writing: " + e.getMessage());
+			}
+			System.out.println("Publish success: " + intCodeResultBean);
 		}
-		System.out.println("Publish success: " + intCodeResultBean);
-		
 	}
 
 }

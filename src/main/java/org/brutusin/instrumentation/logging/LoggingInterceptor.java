@@ -16,17 +16,16 @@
 package org.brutusin.instrumentation.logging;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
-import java.nio.channels.Channels;
+import java.net.InetAddress;
+import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -46,23 +45,21 @@ import com.k2.org.json.simple.JSONArray;
 import com.k2.org.objectweb.asm.tree.ClassNode;
 import com.k2.org.objectweb.asm.tree.MethodNode;
 
-import jnr.unixsocket.UnixSocketAddress;
-import jnr.unixsocket.UnixSocketChannel;
-
 public class LoggingInterceptor extends Interceptor {
 
-	private File rootFile;
+	// private File rootFile;
 	private static final Set<String> allClasses;
 	private static final Map<String, List<String>> interceptMethod;
-	protected static BufferedWriter writer;
-	private static UnixSocketChannel channel;
+	// protected static BufferedWriter writer;
+	// private static UnixSocketChannel channel;
+	protected static DataOutputStream oos;
 	protected static Integer VMPID;
 	protected static final String applicationUUID;
 
 	static {
 		applicationUUID = UUID.randomUUID().toString();
 		allClasses = new HashSet<String>(Arrays.asList(IAgentConstants.ALL_CLASSES));
-		interceptMethod = new HashMap<String, List<String>>();
+		interceptMethod = new HashMap<>();
 		for (int i = 0; i < IAgentConstants.ALL_METHODS.length; i++) {
 			interceptMethod.put(IAgentConstants.ALL_CLASSES[i],
 					new ArrayList<String>(Arrays.asList(IAgentConstants.ALL_METHODS[i])));
@@ -126,8 +123,11 @@ public class LoggingInterceptor extends Interceptor {
 							JarPathBean jarPathBean = new JarPathBean(applicationUUID,
 									new ArrayList<String>(Agent.jarPathSet));
 							try {
-								writer.write(jarPathBean.toString());
-								writer.flush();
+								oos.writeUTF(jarPathBean.toString());
+								oos.flush();
+								/*
+								 * writer.write(jarPathBean.toString()); writer.flush();
+								 */
 							} catch (IOException e) {
 								System.out.println("Error in writing: " + e.getMessage());
 							}
@@ -152,17 +152,21 @@ public class LoggingInterceptor extends Interceptor {
 
 	@Override
 	public void init(String arg) throws Exception {
-		this.rootFile = new File("/tmp/K2-instrumentation-logging/events.sock");
-		if (!rootFile.exists()) {
-			throw new RuntimeException("Root doesn't exists, Please start the K2-IntCode Agent");
-		}
-		try {
-			UnixSocketAddress address = new UnixSocketAddress(this.rootFile);
-			channel = UnixSocketChannel.open(address);
-			writer = new BufferedWriter(new OutputStreamWriter(Channels.newOutputStream(channel)));
-			System.out.println("Connection to " + channel.getLocalAddress() + ", established successfully!!!");
-		} catch (IOException ex) {
-			throw new RuntimeException(ex);
+		/*
+		 * this.rootFile = new File("/tmp/K2-instrumentation-logging/events.sock"); if
+		 * (!rootFile.exists()) { throw new
+		 * RuntimeException("Root doesn't exists, Please start the K2-IntCode Agent"); }
+		 * try { UnixSocketAddress address = new UnixSocketAddress(this.rootFile);
+		 * channel = UnixSocketChannel.open(address); writer = new BufferedWriter(new
+		 * OutputStreamWriter(Channels.newOutputStream(channel)));
+		 * System.out.println("Connection to " + channel.getLocalAddress() +
+		 * ", established successfully!!!"); } catch (IOException ex) { throw new
+		 * RuntimeException(ex); }
+		 */
+		try (Socket socket = new Socket(InetAddress.getLoopbackAddress(), 10000)) {
+			oos = new DataOutputStream(socket.getOutputStream());
+		} catch (Exception e) {
+			throw new RuntimeException(e);
 		}
 		try {
 			getJarPath();
@@ -181,16 +185,15 @@ public class LoggingInterceptor extends Interceptor {
 			// applicationInfoBean.setJvmArguments(new
 			// JSONArray(runtimeMXBean.getInputArguments()));
 			applicationInfoBean.setJvmArguments(new JSONArray(cmdlineArgs));
-			try {
-				writer.write(applicationInfoBean.toString());
-				writer.flush();
-			} catch (IOException e) {
-				System.out.println("Error in writing: " + e.getMessage());
-			}
+			oos.writeUTF(applicationInfoBean.toString());
+			oos.flush();
+			/*
+			 * writer.write(applicationInfoBean.toString()); writer.flush();
+			 */
 
-		} catch (Exception e) {
-
-		}
+		} catch (IOException e) {
+			System.out.println("Error in writing: " + e.getMessage());
+		} catch (Exception e) {}
 	}
 
 	private String getCmdLineArgsByProc(Integer pid) {
