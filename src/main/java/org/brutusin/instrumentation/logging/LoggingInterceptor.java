@@ -169,7 +169,7 @@ public class LoggingInterceptor extends Interceptor {
 			if (hostip == null || hostip.equals(""))
 				throw new RuntimeException("Host ip not found");
 			System.out.println("hostip found: " + hostip);
-			oos = new DataOutputStream(new Socket(hostip.trim(), 54321).getOutputStream());
+			oos = new DataOutputStream(new Socket(InetAddress.getByName(hostip.trim()), 54321).getOutputStream());
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
