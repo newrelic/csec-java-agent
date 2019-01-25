@@ -22,7 +22,7 @@ public class EventThreadPool {
 		LinkedBlockingQueue<Runnable> processQueue;
 
 		// load the settings
-		int queueSize = 1500;
+		int queueSize = 700;
 		int maxPoolSize = 15;
 		int corePoolSize = 1;
 		long keepAliveTime = 2;
