@@ -156,7 +156,7 @@ public class ProcessorThread implements Runnable {
 		if (source instanceof Method) {
 			m = (Method) source;
 			sourceString = m.toGenericString();
-			// System.out.println(m.toGenericString());
+//			 System.out.println(m.toGenericString());
 		} else if (source instanceof Constructor) {
 			c = (Constructor) source;
 			sourceString = c.toGenericString();
@@ -281,7 +281,8 @@ public class ProcessorThread implements Runnable {
 				childField = child.getClass().getDeclaredField(MSSQL_USER_SQL_FIELD);
 			} else {
 				// for JAVA compilation before 7.1, an instance of class
-				// com.microsoft.sqlserver.jdbc.SQLServerPreparedStatement42 is made instead of
+				// com.microsoft.sqlserver.jdbc.SQLServerPreparedStatement42 is
+				// made instead of
 				// com.microsoft.sqlserver.jdbc.SQLServerPreparedStatement
 				childField = child.getClass().getSuperclass().getDeclaredField(MSSQL_USER_SQL_FIELD);
 			}
@@ -307,7 +308,8 @@ public class ProcessorThread implements Runnable {
 					childField = child.getClass().getSuperclass().getDeclaredField(MSSQL_IN_OUT_PARAM_FIELD);
 				} else {
 					// for JAVA compilation before 7.1, an instance of class
-					// com.microsoft.sqlserver.jdbc.SQLServerPreparedStatement42 is made instead of
+					// com.microsoft.sqlserver.jdbc.SQLServerPreparedStatement42
+					// is made instead of
 					// com.microsoft.sqlserver.jdbc.SQLServerPreparedStatement
 					childField = child.getClass().getSuperclass().getSuperclass()
 							.getDeclaredField(MSSQL_IN_OUT_PARAM_FIELD);
@@ -607,8 +609,6 @@ public class ProcessorThread implements Runnable {
 					}
 				}
 			} catch (ParseException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
 			}
 		}
 

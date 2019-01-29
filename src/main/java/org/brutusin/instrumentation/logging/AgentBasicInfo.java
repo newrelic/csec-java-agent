@@ -21,7 +21,7 @@ public class AgentBasicInfo {
 
 	private static Properties props;
 
-	{
+	static {
 		props = new Properties();
 		InputStream in = null;
 		try {
