@@ -124,6 +124,11 @@ public class LoggingInterceptor extends Interceptor {
 						if (!Agent.jarPathSet.isEmpty()) {
 							JarPathBean jarPathBean = new JarPathBean(applicationUUID,
 									new ArrayList<String>(Agent.jarPathSet));
+							String containerId = getContainerID();
+							if (containerId != null) {
+								jarPathBean.setIsHost(false);
+							} else
+								jarPathBean.setIsHost(true);
 							try {
 								oos.writeUTF(jarPathBean.toString());
 								oos.flush();
