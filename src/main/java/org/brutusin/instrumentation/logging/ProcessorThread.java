@@ -201,6 +201,8 @@ public class ProcessorThread implements Runnable {
 					klassName.equals(MSSQL_PREPARED_BATCH_STATEMENT_CLASS) ||
 					klassName.contains(MYSQL_PREPARED_STATEMENT)) {
 					intCodeResultBean.setValidationBypass(true);
+				}else if (klassName.equals("java.sql.DriverManager") && trace[i].getMethodName().equals("getConnection")) {
+					intCodeResultBean.setValidationBypass(true);
 				}
 
 				if (!PATTERN.matcher(klassName).matches()) {
