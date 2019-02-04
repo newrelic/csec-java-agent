@@ -197,6 +197,8 @@ public class ProcessorThread implements Runnable {
 			StackTraceElement[] trace = this.stackTrace;
 			for (int i = 0; i < trace.length; i++) {
 				klassName = trace[i].getClassName();
+				System.out.println("Klass Name : "+klassName + "\t||\t" + trace[i].getMethodName());
+
 				if (klassName.equals(MSSQL_PREPARED_STATEMENT_CLASS) ||
 					klassName.equals(MSSQL_PREPARED_BATCH_STATEMENT_CLASS) ||
 					klassName.contains(MYSQL_PREPARED_STATEMENT)) {
