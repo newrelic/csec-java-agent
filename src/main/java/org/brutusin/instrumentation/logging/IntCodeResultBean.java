@@ -14,6 +14,7 @@ public class IntCodeResultBean extends AgentBasicInfo {
 	private String userClassName;
 	private String userMethodName;
 	private String currentMethod;
+	private boolean validationBypass;
 	private Integer lineNumber;
 	private JSONArray parameters;
 	private Long eventGenerationTime;
@@ -92,6 +93,11 @@ public class IntCodeResultBean extends AgentBasicInfo {
 	public void setParameters(JSONArray parameters) {
 		this.parameters = parameters;
 	}
+
+	public boolean getValidationBypass() { return validationBypass;	}
+
+	public void setValidationBypass(boolean validationBypass) { this.validationBypass = validationBypass; }
+
 
 	@Override
 	public String toString() {

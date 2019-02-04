@@ -74,10 +74,15 @@ public class ProcessorThread implements Runnable {
 	private static final Map<String, List<String>> interceptMethod;
 	private static final Pattern PATTERN;
 	private static final Set<String> executorMethods;
+	private static final Set<String> mongoExecutorMethods;
+
 
 	static {
 		PATTERN = Pattern.compile(IAgentConstants.TRACE_REGEX);
 		executorMethods = new HashSet<String>(Arrays.asList(IAgentConstants.EXECUTORS));
+		executorMethods.addAll(Arrays.asList(IAgentConstants.MONGO_EXECUTORS));
+
+		mongoExecutorMethods = new HashSet<String>(Arrays.asList(IAgentConstants.MONGO_EXECUTORS));
 		interceptMethod = new HashMap<String, List<String>>();
 		for (int i = 0; i < IAgentConstants.ALL_METHODS.length; i++) {
 			interceptMethod.put(IAgentConstants.ALL_CLASSES[i],
@@ -184,10 +189,20 @@ public class ProcessorThread implements Runnable {
 
 			String klassName = null;
 
+			if (mongoExecutorMethods.contains(sourceString)) {
+				intCodeResultBean.setValidationBypass(true);
+			}
+
 			// String methodName = null;
 			StackTraceElement[] trace = this.stackTrace;
 			for (int i = 0; i < trace.length; i++) {
 				klassName = trace[i].getClassName();
+				if (klassName.equals(MSSQL_PREPARED_STATEMENT_CLASS) ||
+					klassName.equals(MSSQL_PREPARED_BATCH_STATEMENT_CLASS) ||
+					klassName.contains(MYSQL_PREPARED_STATEMENT)) {
+					intCodeResultBean.setValidationBypass(true);
+				}
+
 				if (!PATTERN.matcher(klassName).matches()) {
 					intCodeResultBean.setParameters(toString(arg));
 					intCodeResultBean.setUserAPIInfo(trace[i].getLineNumber(), klassName, trace[i].getMethodName());
