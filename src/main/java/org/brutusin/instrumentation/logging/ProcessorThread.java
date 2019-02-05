@@ -78,11 +78,11 @@ public class ProcessorThread implements Runnable {
 
 	static {
 		PATTERN = Pattern.compile(IAgentConstants.TRACE_REGEX);
-		executorMethods = new HashSet<String>(Arrays.asList(IAgentConstants.EXECUTORS));
+		executorMethods = new HashSet<>(Arrays.asList(IAgentConstants.EXECUTORS));
 		executorMethods.addAll(Arrays.asList(IAgentConstants.MONGO_EXECUTORS));
 
-		mongoExecutorMethods = new HashSet<String>(Arrays.asList(IAgentConstants.MONGO_EXECUTORS));
-		interceptMethod = new HashMap<String, List<String>>();
+		mongoExecutorMethods = new HashSet<>(Arrays.asList(IAgentConstants.MONGO_EXECUTORS));
+		interceptMethod = new HashMap<>();
 		for (int i = 0; i < IAgentConstants.ALL_METHODS.length; i++) {
 			interceptMethod.put(IAgentConstants.ALL_CLASSES[i],
 					new ArrayList<String>(Arrays.asList(IAgentConstants.ALL_METHODS[i])));
@@ -732,7 +732,6 @@ public class ProcessorThread implements Runnable {
 			} catch (IOException e) {
 				System.out.println("Error in writing: " + e.getMessage());
 			}
-			System.out.println("Publish success: " + intCodeResultBean);
 		}
 	}
 

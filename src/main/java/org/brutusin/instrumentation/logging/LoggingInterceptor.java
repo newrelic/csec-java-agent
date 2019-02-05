@@ -24,16 +24,13 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
-import java.net.InetAddress;
 import java.net.Socket;
-import java.net.SocketAddress;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.Executors;
@@ -60,7 +57,7 @@ public class LoggingInterceptor extends Interceptor {
 
 	static {
 		applicationUUID = UUID.randomUUID().toString();
-		allClasses = new HashSet<String>(Arrays.asList(IAgentConstants.ALL_CLASSES));
+		allClasses = new HashSet<>(Arrays.asList(IAgentConstants.ALL_CLASSES));
 		interceptMethod = new HashMap<>();
 		for (int i = 0; i < IAgentConstants.ALL_METHODS.length; i++) {
 			interceptMethod.put(IAgentConstants.ALL_CLASSES[i],
@@ -202,6 +199,7 @@ public class LoggingInterceptor extends Interceptor {
 			/*
 			 * writer.write(applicationInfoBean.toString()); writer.flush();
 			 */
+			System.out.println("K2-JavaAgent installed successfully.");
 
 		} catch (IOException e) {
 			System.out.println("Error in writing: " + e.getMessage());
