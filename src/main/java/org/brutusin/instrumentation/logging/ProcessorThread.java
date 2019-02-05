@@ -76,7 +76,6 @@ public class ProcessorThread implements Runnable {
 	private static final Set<String> executorMethods;
 	private static final Set<String> mongoExecutorMethods;
 
-
 	static {
 		PATTERN = Pattern.compile(IAgentConstants.TRACE_REGEX);
 		executorMethods = new HashSet<String>(Arrays.asList(IAgentConstants.EXECUTORS));
@@ -116,8 +115,7 @@ public class ProcessorThread implements Runnable {
 	}
 
 	/**
-	 * @param source
-	 *            the source to set
+	 * @param source the source to set
 	 */
 	public void setSource(Object source) {
 		this.source = source;
@@ -131,8 +129,7 @@ public class ProcessorThread implements Runnable {
 	}
 
 	/**
-	 * @param arg
-	 *            the arg to set
+	 * @param arg the arg to set
 	 */
 	public void setArg(Object[] arg) {
 		this.arg = arg;
@@ -146,8 +143,7 @@ public class ProcessorThread implements Runnable {
 	}
 
 	/**
-	 * @param executionId
-	 *            the executionId to set
+	 * @param executionId the executionId to set
 	 */
 	public void setExecutionId(String executionId) {
 		this.executionId = executionId;
@@ -197,11 +193,12 @@ public class ProcessorThread implements Runnable {
 			StackTraceElement[] trace = this.stackTrace;
 			for (int i = 0; i < trace.length; i++) {
 				klassName = trace[i].getClassName();
-				if (klassName.equals(MSSQL_PREPARED_STATEMENT_CLASS) ||
-					klassName.equals(MSSQL_PREPARED_BATCH_STATEMENT_CLASS) ||
-					klassName.contains(MYSQL_PREPARED_STATEMENT)) {
+				if (klassName.equals(MSSQL_PREPARED_STATEMENT_CLASS)
+						|| klassName.equals(MSSQL_PREPARED_BATCH_STATEMENT_CLASS)
+						|| klassName.contains(MYSQL_PREPARED_STATEMENT)) {
 					intCodeResultBean.setValidationBypass(true);
-				}else if (klassName.equals("java.sql.DriverManager") && trace[i].getMethodName().equals("getConnection")) {
+				} else if (IAgentConstants.MYSQL_GET_CONNECTION_MAP.containsKey(klassName) && 
+						IAgentConstants.MYSQL_GET_CONNECTION_MAP.get(klassName).equals(trace[i].getMethodName())) {
 					intCodeResultBean.setValidationBypass(true);
 				}
 
@@ -242,19 +239,13 @@ public class ProcessorThread implements Runnable {
 	/**
 	 * This method is used for MSSQL parameter Extraction
 	 *
-	 * @param obj
-	 *            the object in argument of Instrumented Method
-	 * @param parameters
-	 *            the parameter list as a JSONArray
+	 * @param obj        the object in argument of Instrumented Method
+	 * @param parameters the parameter list as a JSONArray
 	 * @return void
-	 * @throws NoSuchFieldException
-	 *             the no such field exception
-	 * @throws SecurityException
-	 *             the security exception
-	 * @throws IllegalArgumentException
-	 *             the illegal argument exception
-	 * @throws IllegalAccessException
-	 *             the illegal access exception
+	 * @throws NoSuchFieldException     the no such field exception
+	 * @throws SecurityException        the security exception
+	 * @throws IllegalArgumentException the illegal argument exception
+	 * @throws IllegalAccessException   the illegal access exception
 	 */
 	@SuppressWarnings("unchecked")
 	private static void getParameterValue(Object obj, JSONArray parameters)
@@ -369,10 +360,8 @@ public class ProcessorThread implements Runnable {
 	/**
 	 * Gets the MySQL parameter values.
 	 *
-	 * @param args
-	 *            the arguments of Instrumented Method
-	 * @param parameters
-	 *            the parameters
+	 * @param args       the arguments of Instrumented Method
+	 * @param parameters the parameters
 	 * @return the my SQL parameter value
 	 */
 	@SuppressWarnings("unchecked")
@@ -408,19 +397,13 @@ public class ProcessorThread implements Runnable {
 	/**
 	 * Gets the mongo parameters.
 	 *
-	 * @param args
-	 *            the arguments of Instrumented Method
-	 * @param parameters
-	 *            the parameters
+	 * @param args       the arguments of Instrumented Method
+	 * @param parameters the parameters
 	 * @return the my SQL parameter value
-	 * @throws NoSuchFieldException
-	 *             the no such field exception
-	 * @throws SecurityException
-	 *             the security exception
-	 * @throws IllegalArgumentException
-	 *             the illegal argument exception
-	 * @throws IllegalAccessException
-	 *             the illegal access exception
+	 * @throws NoSuchFieldException     the no such field exception
+	 * @throws SecurityException        the security exception
+	 * @throws IllegalArgumentException the illegal argument exception
+	 * @throws IllegalAccessException   the illegal access exception
 	 */
 	@SuppressWarnings("unchecked")
 	public static void getMongoParameterValue(Object[] args, JSONArray parameters)
@@ -635,8 +618,7 @@ public class ProcessorThread implements Runnable {
 	 * This method is used to extract All the required parameters through the
 	 * arguments of instrumented method
 	 * 
-	 * @param obj
-	 *            the obj
+	 * @param obj the obj
 	 * @return the JSON array
 	 */
 	@SuppressWarnings({ "unchecked", "unused" })
@@ -696,18 +678,12 @@ public class ProcessorThread implements Runnable {
 	/**
 	 * Adds the Values passed to a MSSQL prepared statement into ParameterList.
 	 *
-	 * @param paramList
-	 *            the param list
-	 * @param parameters
-	 *            the parameters
-	 * @throws NoSuchFieldException
-	 *             the no such field exception
-	 * @throws SecurityException
-	 *             the security exception
-	 * @throws IllegalArgumentException
-	 *             the illegal argument exception
-	 * @throws IllegalAccessException
-	 *             the illegal access exception
+	 * @param paramList  the param list
+	 * @param parameters the parameters
+	 * @throws NoSuchFieldException     the no such field exception
+	 * @throws SecurityException        the security exception
+	 * @throws IllegalArgumentException the illegal argument exception
+	 * @throws IllegalAccessException   the illegal access exception
 	 */
 	@SuppressWarnings({ "unused", "unchecked" })
 	private static void addParamValuesMSSQL(ArrayList<Object[]> paramList, JSONArray parameters)

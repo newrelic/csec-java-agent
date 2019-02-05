@@ -1,5 +1,9 @@
 package org.brutusin.instrumentation.logging;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+
 public interface IAgentConstants {
 
 	String TRACE_REGEX = "((?!org\\.apache\\.jsp.*))((^javax.*)|(^java\\.lang.*)|(^java\\.io.*)|(^org\\.apache.*)|(^java\\.nio.*)|(^java\\.util.*)|(^java\\.net.*)|(^sun.*)|(^java\\.security.*)|(^org\\.brutusin.*)|(^com\\.microsoft\\.sqlserver.*)|(^com\\.mysql.*)|(^sun\\.reflect.*)|(^org\\.hibernate.*)|(^java\\.sql.*)|(^com\\.mongodb.*)|(^org\\.apache\\.commons.*)|(^org\\.mongodb.*)|(^com\\.sun\\.org\\.apache.*)|(^com\\.sun\\.naming.*)|(^org\\.eclipse\\.jetty.*)|(^net\\.sourceforge\\.eclipsejetty.*)|(^java\\.awt.*)|(org\\.springframework.*)|(org\\.slf4j.*)|(com\\.sun\\.jmx.*)|(org\\.eclipse\\.jdt.*)|(com\\.opensymphony\\.xwork2.*)|(org\\.objectweb\\.asm.*)|(freemarker\\.cache.*)|(com\\.mchange\\.v2.*))";
@@ -37,7 +41,12 @@ public interface IAgentConstants {
 
 	String[] FILE_OPEN_EXECUTORS = { "public java.io.File(java.lang.String,java.lang.String)",
 			"public java.io.File(java.lang.String)" };
-
+	
+	Map<String, String> MYSQL_GET_CONNECTION_MAP = new HashMap() {{
+		put("java.sql.DriverManager", "getConnection");
+		put("com.mysql.jdbc.ConnectionImpl", "getInstance");
+	}};
+	
 	String[] MONGO_EXECUTORS = {
 			// asynchronous mongo calls
 			"public <T> void com.mongodb.async.client.MongoClientImpl$2.execute(com.mongodb.operation.AsyncReadOperation<T>,com.mongodb.ReadPreference,com.mongodb.async.SingleResultCallback<T>)",
