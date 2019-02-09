@@ -23,22 +23,11 @@ public class AgentBasicInfo {
 
 	static {
 		props = new Properties();
-		InputStream in = null;
 		try {
-			in = AgentBasicInfo.class.getResourceAsStream("/application.properties");
-			props.load(in);
+			props.load(Thread.currentThread().getContextClassLoader().getResourceAsStream("application.properties"));
 		} catch (IOException e) {
-			throw new RuntimeException(e.getMessage());
-		} finally {
-			if (in != null) {
-				try {
-					in.close();
-				} catch (IOException e) {
-					throw new RuntimeException(e.getMessage());
-				}
-			}
+			System.out.println("Could not load properties");
 		}
-
 	}
 
 
@@ -47,6 +36,7 @@ public class AgentBasicInfo {
 	 */
 	public AgentBasicInfo() {
 		setVersion(props.getProperty("k2.javaagent.version"));
+		setK2JAToolId(props.getProperty("k2.javaagent.tool.id"));
 		if (this instanceof  ApplicationInfoBean) {
 			setJsonName(props.getProperty("k2.javaagent.jsonname.applicationinfobean"));
 		} else if (this instanceof IntCodeResultBean) {
