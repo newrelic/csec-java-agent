@@ -198,7 +198,7 @@ public class ProcessorThread implements Runnable {
 						|| klassName.contains(MYSQL_PREPARED_STATEMENT)) {
 					intCodeResultBean.setValidationBypass(true);
 				} else if (IAgentConstants.MYSQL_GET_CONNECTION_MAP.containsKey(klassName) && 
-						IAgentConstants.MYSQL_GET_CONNECTION_MAP.get(klassName).equals(trace[i].getMethodName())) {
+						IAgentConstants.MYSQL_GET_CONNECTION_MAP.get(klassName).contains(trace[i].getMethodName())) {
 					intCodeResultBean.setValidationBypass(true);
 				}
 

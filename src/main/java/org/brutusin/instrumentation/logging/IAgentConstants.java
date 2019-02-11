@@ -1,7 +1,9 @@
 package org.brutusin.instrumentation.logging;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public interface IAgentConstants {
@@ -42,9 +44,9 @@ public interface IAgentConstants {
 	String[] FILE_OPEN_EXECUTORS = { "public java.io.File(java.lang.String,java.lang.String)",
 			"public java.io.File(java.lang.String)" };
 	
-	Map<String, String> MYSQL_GET_CONNECTION_MAP = new HashMap() {{
-		put("java.sql.DriverManager", "getConnection");
-		put("com.mysql.jdbc.ConnectionImpl", "getInstance");
+	Map<String, List<String>> MYSQL_GET_CONNECTION_MAP = new HashMap() {{
+		put("java.sql.DriverManager", Collections.singletonList("getConnection"));
+		put("com.mysql.jdbc.ConnectionImpl", Arrays.asList("getInstance","isReadOnly"));
 	}};
 	
 	String[] MONGO_EXECUTORS = {
