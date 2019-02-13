@@ -744,9 +744,9 @@ public class ProcessorThread implements Runnable {
 				System.out.println("K2-JavaAgent re-installed successfully.");
 
 			} catch (IOException e) {
-				System.out.println("Error in writing: " + e.getMessage());
+				System.err.println("Error in writing: " + e.getMessage());
 			} catch (Exception e) {
-				System.out.println("Error while connecting : "+e.getMessage());
+				System.err.println("Error while connecting : "+e.getMessage());
 			}
 		}
 
@@ -765,7 +765,7 @@ public class ProcessorThread implements Runnable {
 					LoggingInterceptor.oos.writeUTF(dynamicJarPathBean.toString() + "\n");
 					LoggingInterceptor.oos.flush();
 				} catch (IOException e) {
-					System.out.println("Error in writing: " + e.getMessage());
+					System.err.println("Error in writing: " + e.getMessage());
 					try {
 						LoggingInterceptor.oos.close();
 					} catch (IOException e1) {
@@ -777,7 +777,7 @@ public class ProcessorThread implements Runnable {
 					LoggingInterceptor.oos.writeUTF(intCodeResultBean.toString() + "\n");
 					LoggingInterceptor.oos.flush();
 				} catch (IOException e) {
-					System.out.println("Error in writing: " + e.getMessage());
+					System.err.println("Error in writing: " + e.getMessage());
 					try {
 						LoggingInterceptor.oos.close();
 					} catch (IOException e1) {
