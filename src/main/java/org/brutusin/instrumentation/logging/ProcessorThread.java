@@ -747,28 +747,30 @@ public class ProcessorThread implements Runnable {
 			}
 		}
 
-		intCodeResultBean.setEventGenerationTime(System.currentTimeMillis());
-		System.out.println("publish event: " + intCodeResultBean.getEventGenerationTime());
-		if (intCodeResultBean.getSource() != null && (intCodeResultBean.getSource()
-				.equals("public java.net.URLClassLoader(java.net.URL[])")
-				|| intCodeResultBean.getSource().equals(
-						"public static java.net.URLClassLoader java.net.URLClassLoader.newInstance(java.net.URL[])"))) {
-			List<String> list = (List<String>) intCodeResultBean.getParameters();
-			DynamicJarPathBean dynamicJarPathBean = new DynamicJarPathBean(LoggingInterceptor.applicationUUID,
-					System.getProperty("user.dir"), new ArrayList<String>(Agent.jarPathSet), list);
-			System.out.println("dynamic jar path bean : " + dynamicJarPathBean);
-			try {
-				LoggingInterceptor.oos.writeUTF(dynamicJarPathBean.toString() + "\n");
-				LoggingInterceptor.oos.flush();
-			} catch (IOException e) {
-				System.out.println("Error in writing: " + e.getMessage());
-			}
-		} else {
-			try {
-				LoggingInterceptor.oos.writeUTF(intCodeResultBean.toString() + "\n");
-				LoggingInterceptor.oos.flush();
-			} catch (IOException e) {
-				System.out.println("Error in writing: " + e.getMessage());
+		if (!LoggingInterceptor.socket.isConnected() || LoggingInterceptor.socket.isClosed()) {
+			intCodeResultBean.setEventGenerationTime(System.currentTimeMillis());
+			System.out.println("publish event: " + intCodeResultBean.getEventGenerationTime());
+			if (intCodeResultBean.getSource() != null && (intCodeResultBean.getSource()
+					.equals("public java.net.URLClassLoader(java.net.URL[])")
+					|| intCodeResultBean.getSource().equals(
+							"public static java.net.URLClassLoader java.net.URLClassLoader.newInstance(java.net.URL[])"))) {
+				List<String> list = (List<String>) intCodeResultBean.getParameters();
+				DynamicJarPathBean dynamicJarPathBean = new DynamicJarPathBean(LoggingInterceptor.applicationUUID,
+						System.getProperty("user.dir"), new ArrayList<String>(Agent.jarPathSet), list);
+				System.out.println("dynamic jar path bean : " + dynamicJarPathBean);
+				try {
+					LoggingInterceptor.oos.writeUTF(dynamicJarPathBean.toString() + "\n");
+					LoggingInterceptor.oos.flush();
+				} catch (IOException e) {
+					System.out.println("Error in writing: " + e.getMessage());
+				}
+			} else {
+				try {
+					LoggingInterceptor.oos.writeUTF(intCodeResultBean.toString() + "\n");
+					LoggingInterceptor.oos.flush();
+				} catch (IOException e) {
+					System.out.println("Error in writing: " + e.getMessage());
+				}
 			}
 		}
 	}

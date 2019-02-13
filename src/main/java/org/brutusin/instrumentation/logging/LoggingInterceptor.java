@@ -210,9 +210,8 @@ public class LoggingInterceptor extends Interceptor {
 			createApplicationInfoBean();
 			System.out.println("K2-JavaAgent installed successfully.");
 
-		} catch (IOException e) {
-			System.out.println("Error in writing: " + e.getMessage());
 		} catch (Exception e) {
+			throw new RuntimeException("Can't connect to IC, agent installation failed.");
 		}
 	}
 
