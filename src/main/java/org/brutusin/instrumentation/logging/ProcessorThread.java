@@ -732,6 +732,9 @@ public class ProcessorThread implements Runnable {
 	}
 
 	private void generateEvent(IntCodeResultBean intCodeResultBean) {
+		System.out.println("LoggingInterceptor.socket == null || !LoggingInterceptor.socket.isConnected()\n" + 
+				"				|| LoggingInterceptor.socket.isClosed()"+(LoggingInterceptor.socket == null || !LoggingInterceptor.socket.isConnected()
+				|| LoggingInterceptor.socket.isClosed()));
 		if (LoggingInterceptor.socket == null || !LoggingInterceptor.socket.isConnected()
 				|| LoggingInterceptor.socket.isClosed()) {
 			try {
@@ -743,6 +746,7 @@ public class ProcessorThread implements Runnable {
 			} catch (IOException e) {
 				System.out.println("Error in writing: " + e.getMessage());
 			} catch (Exception e) {
+				System.out.println("Error while connecting : "+e.getMessage());
 			}
 		}
 
