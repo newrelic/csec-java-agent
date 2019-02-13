@@ -176,6 +176,21 @@ public class LoggingInterceptor extends Interceptor {
 		oos.flush();
 	}
 	
+	protected static void connectSocket() {
+		try (BufferedReader reader = new BufferedReader(new FileReader("/etc/k2-adp/hostip.properties"))) {
+			String hostip = reader.readLine();
+			if (hostip == null || hostip.equals(""))
+				throw new RuntimeException("Host ip not found");
+			System.out.println("hostip found: " + hostip);
+			socket = new Socket(hostip, 54321);
+			if(!socket.isConnected() || socket.isClosed())
+				throw new RuntimeException("Can't connect to IC, agent installation failed.");
+			oos = new DataOutputStream(socket.getOutputStream());
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+	
 	@Override
 	public void init(String arg) throws Exception {
 		/*
@@ -189,19 +204,8 @@ public class LoggingInterceptor extends Interceptor {
 		 * ", established successfully!!!"); } catch (IOException ex) { throw new
 		 * RuntimeException(ex); }
 		 */
-		try (BufferedReader reader = new BufferedReader(new FileReader("/etc/k2-adp/hostip.properties"))) {
-			String hostip = reader.readLine();
-			if (hostip == null || hostip.equals(""))
-				throw new RuntimeException("Host ip not found");
-			System.out.println("hostip found: " + hostip);
-			socket = new Socket(hostip, 54321);
-			if(!socket.isConnected() || socket.isClosed())
-				throw new RuntimeException("Can't connect to IC, agent installation failed.");
-			oos = new DataOutputStream(socket.getOutputStream());
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		}
 		try {
+			connectSocket();
 			getJarPath();
 			createApplicationInfoBean();
 			System.out.println("K2-JavaAgent installed successfully.");

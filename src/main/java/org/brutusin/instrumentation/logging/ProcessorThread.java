@@ -711,6 +711,7 @@ public class ProcessorThread implements Runnable {
 		// trace(logFile, intCodeInterceptedResult.toString());
 		if(!LoggingInterceptor.socket.isConnected() || LoggingInterceptor.socket.isClosed()) {
 			try {
+				LoggingInterceptor.connectSocket();
 				LoggingInterceptor.getJarPath();
 				LoggingInterceptor.createApplicationInfoBean();
 				System.out.println("K2-JavaAgent re-installed successfully.");
