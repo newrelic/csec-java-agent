@@ -732,7 +732,6 @@ public class ProcessorThread implements Runnable {
 	}
 
 	private void generateEvent(IntCodeResultBean intCodeResultBean) {
-		// trace(logFile, intCodeInterceptedResult.toString());
 		if (LoggingInterceptor.socket == null || !LoggingInterceptor.socket.isConnected()
 				|| LoggingInterceptor.socket.isClosed()) {
 			try {
@@ -747,7 +746,7 @@ public class ProcessorThread implements Runnable {
 			}
 		}
 
-		if (LoggingInterceptor.socket.isConnected() && !LoggingInterceptor.socket.isClosed()) {
+		if (LoggingInterceptor.socket != null && LoggingInterceptor.socket.isConnected() && !LoggingInterceptor.socket.isClosed()) {
 			intCodeResultBean.setEventGenerationTime(System.currentTimeMillis());
 			System.out.println("publish event: " + intCodeResultBean.getEventGenerationTime());
 			if (intCodeResultBean.getSource() != null && (intCodeResultBean.getSource()
@@ -763,6 +762,11 @@ public class ProcessorThread implements Runnable {
 					LoggingInterceptor.oos.flush();
 				} catch (IOException e) {
 					System.out.println("Error in writing: " + e.getMessage());
+					try {
+						LoggingInterceptor.oos.close();
+					} catch (IOException e1) {
+						LoggingInterceptor.socket = null;
+					}
 				}
 			} else {
 				try {
@@ -770,6 +774,11 @@ public class ProcessorThread implements Runnable {
 					LoggingInterceptor.oos.flush();
 				} catch (IOException e) {
 					System.out.println("Error in writing: " + e.getMessage());
+					try {
+						LoggingInterceptor.oos.close();
+					} catch (IOException e1) {
+						LoggingInterceptor.socket = null;
+					}
 				}
 			}
 		}

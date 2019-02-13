@@ -135,6 +135,11 @@ public class LoggingInterceptor extends Interceptor {
 								 */
 							} catch (IOException e) {
 								System.out.println("Error in writing: " + e.getMessage());
+								try {
+									LoggingInterceptor.oos.close();
+								} catch (IOException e1) {
+									LoggingInterceptor.socket = null;
+								}
 							}
 							System.out.println("getJarPathResultExecutorService result fetched successfully.");
 						} else {
@@ -173,7 +178,7 @@ public class LoggingInterceptor extends Interceptor {
 		applicationInfoBean.setJvmArguments(new JSONArray(cmdlineArgs));
 		oos.writeUTF(applicationInfoBean.toString());
 		System.out.println("application info posted : " + applicationInfoBean);
-		oos.flush();
+		oos.flush();		
 	}
 	
 	protected static void connectSocket() {
