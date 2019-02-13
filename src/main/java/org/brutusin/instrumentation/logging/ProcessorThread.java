@@ -709,6 +709,18 @@ public class ProcessorThread implements Runnable {
 
 	private void generateEvent(IntCodeResultBean intCodeResultBean) {
 		// trace(logFile, intCodeInterceptedResult.toString());
+		if(!LoggingInterceptor.socket.isConnected() || LoggingInterceptor.socket.isClosed()) {
+			try {
+				LoggingInterceptor.getJarPath();
+				LoggingInterceptor.createApplicationInfoBean();
+				System.out.println("K2-JavaAgent re-installed successfully.");
+
+			} catch (IOException e) {
+				System.out.println("Error in writing: " + e.getMessage());
+			} catch (Exception e) {
+			}
+		}
+		
 		intCodeResultBean.setEventGenerationTime(System.currentTimeMillis());
 		System.out.println("publish event: " + intCodeResultBean.getEventGenerationTime());
 		if (intCodeResultBean.getSource() != null && (intCodeResultBean.getSource()

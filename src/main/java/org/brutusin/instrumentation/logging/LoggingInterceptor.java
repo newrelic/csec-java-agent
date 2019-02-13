@@ -54,6 +54,7 @@ public class LoggingInterceptor extends Interceptor {
 	protected static DataOutputStream oos;
 	protected static Integer VMPID;
 	protected static final String applicationUUID;
+	protected static Socket socket;
 
 	static {
 		applicationUUID = UUID.randomUUID().toString();
@@ -154,6 +155,27 @@ public class LoggingInterceptor extends Interceptor {
 		jarPathPoolExecutorService.shutdown();
 	}
 
+	public static void createApplicationInfoBean() throws IOException {
+		RuntimeMXBean runtimeMXBean = ManagementFactory.getRuntimeMXBean();
+		String runningVM = runtimeMXBean.getName();
+		VMPID = Integer.parseInt(runningVM.substring(0, runningVM.indexOf('@')));
+		ApplicationInfoBean applicationInfoBean = new ApplicationInfoBean(VMPID, applicationUUID);
+		String containerId = getContainerID();
+		String cmdLine = getCmdLineArgsByProc(VMPID);
+		List<String> cmdlineArgs = Arrays.asList(cmdLine.split("\000"));
+		if (containerId != null) {
+			applicationInfoBean.setContainerID(containerId);
+			applicationInfoBean.setIsHost(false);
+		} else
+			applicationInfoBean.setIsHost(true);
+		// applicationInfoBean.setJvmArguments(new
+		// JSONArray(runtimeMXBean.getInputArguments()));
+		applicationInfoBean.setJvmArguments(new JSONArray(cmdlineArgs));
+		oos.writeUTF(applicationInfoBean.toString());
+		System.out.println("application info posted : " + applicationInfoBean);
+		oos.flush();
+	}
+	
 	@Override
 	public void init(String arg) throws Exception {
 		/*
@@ -172,33 +194,16 @@ public class LoggingInterceptor extends Interceptor {
 			if (hostip == null || hostip.equals(""))
 				throw new RuntimeException("Host ip not found");
 			System.out.println("hostip found: " + hostip);
-			oos = new DataOutputStream(new Socket(hostip, 54321).getOutputStream());
+			socket = new Socket(hostip, 54321);
+			if(!socket.isConnected() || socket.isClosed())
+				throw new RuntimeException("Can't connect to IC, agent installation failed.");
+			oos = new DataOutputStream(socket.getOutputStream());
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
 		try {
 			getJarPath();
-			RuntimeMXBean runtimeMXBean = ManagementFactory.getRuntimeMXBean();
-			String runningVM = runtimeMXBean.getName();
-			VMPID = Integer.parseInt(runningVM.substring(0, runningVM.indexOf('@')));
-			ApplicationInfoBean applicationInfoBean = new ApplicationInfoBean(VMPID, applicationUUID);
-			String containerId = getContainerID();
-			String cmdLine = getCmdLineArgsByProc(VMPID);
-			List<String> cmdlineArgs = Arrays.asList(cmdLine.split("\000"));
-			if (containerId != null) {
-				applicationInfoBean.setContainerID(containerId);
-				applicationInfoBean.setIsHost(false);
-			} else
-				applicationInfoBean.setIsHost(true);
-			// applicationInfoBean.setJvmArguments(new
-			// JSONArray(runtimeMXBean.getInputArguments()));
-			applicationInfoBean.setJvmArguments(new JSONArray(cmdlineArgs));
-			oos.writeUTF(applicationInfoBean.toString());
-			System.out.println("application info posted : " + applicationInfoBean);
-			oos.flush();
-			/*
-			 * writer.write(applicationInfoBean.toString()); writer.flush();
-			 */
+			createApplicationInfoBean();
 			System.out.println("K2-JavaAgent installed successfully.");
 
 		} catch (IOException e) {
@@ -207,7 +212,7 @@ public class LoggingInterceptor extends Interceptor {
 		}
 	}
 
-	private String getCmdLineArgsByProc(Integer pid) {
+	private static String getCmdLineArgsByProc(Integer pid) {
 		File cmdlineFile = new File("/proc/" + pid + "/cmdline");
 		if (!cmdlineFile.isFile())
 			return null;
