@@ -747,7 +747,7 @@ public class ProcessorThread implements Runnable {
 			}
 		}
 
-		if (!LoggingInterceptor.socket.isConnected() || LoggingInterceptor.socket.isClosed()) {
+		if (LoggingInterceptor.socket.isConnected() && !LoggingInterceptor.socket.isClosed()) {
 			intCodeResultBean.setEventGenerationTime(System.currentTimeMillis());
 			System.out.println("publish event: " + intCodeResultBean.getEventGenerationTime());
 			if (intCodeResultBean.getSource() != null && (intCodeResultBean.getSource()
