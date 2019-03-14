@@ -45,6 +45,7 @@ import static org.brutusin.instrumentation.logging.IAgentConstants.MSSQL_VALUE_F
 import static org.brutusin.instrumentation.logging.IAgentConstants.MYSQL_IDENTIFIER;
 import static org.brutusin.instrumentation.logging.IAgentConstants.CLASS_LOADER_IDENTIFIER;
 import static org.brutusin.instrumentation.logging.IAgentConstants.MYSQL_PREPARED_STATEMENT;
+import static org.brutusin.instrumentation.logging.IAgentConstants.HTTP_REQUEST_OBJECT_CLASS;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -160,7 +161,7 @@ public class ProcessorThread implements Runnable {
 		if (source instanceof Method) {
 			m = (Method) source;
 			sourceString = m.toGenericString();
-			// System.out.println(m.toGenericString());
+			System.out.println(m.toGenericString());
 		} else if (source instanceof Constructor) {
 			c = (Constructor) source;
 			sourceString = c.toGenericString();
@@ -169,9 +170,9 @@ public class ProcessorThread implements Runnable {
 		// System.out.println(executorMethods.contains(sourceString)+"::executorMethods.contains(sourceString)\n"+sourceString);
 		if (sourceString != null && executorMethods.contains(sourceString)) {
 			long start = System.currentTimeMillis();
-			// if (sourceString.equals(IAgentConstants.SYSYTEM_CALL_START)) {
-			// System.out.println("Found : " + sourceString + "Param : " +
-			// toString(arg));
+			if (sourceString.equals("protected void javax.servlet.http.HttpServlet.service(javax.servlet.http.HttpServletRequest,javax.servlet.http.HttpServletResponse) throws javax.servlet.ServletException,java.io.IOException")) {
+				System.out.println("Found : " + sourceString + "Param : " + toString(arg));
+			}
 			// StackTraceElement[] trace =
 			// Thread.currentThread().getStackTrace();
 			// for (int i = 0; i < trace.length; i++) {
@@ -641,6 +642,7 @@ public class ProcessorThread implements Runnable {
 	 */
 	@SuppressWarnings({ "unchecked", "unused" })
 	private static JSONArray toString(Object[] obj) {
+
 		if (obj == null) {
 			return null;
 		}
@@ -648,6 +650,7 @@ public class ProcessorThread implements Runnable {
 		JSONArray parameters = new JSONArray();
 		try {
 			Object firstElement = obj[0];
+			System.out.println("Dummy Check :::: " + checkInterface(firstElement, HTTP_REQUEST_OBJECT_CLASS));
 
 			if (firstElement != null && firstElement.getClass() != null
 					&& obj[0].getClass().getName().contains(MSSQL_IDENTIFIER)) {
@@ -658,7 +661,18 @@ public class ProcessorThread implements Runnable {
 				getMongoParameterValue(obj, parameters);
 			} else if (firstElement != null && firstElement.getClass().getName().contains(CLASS_LOADER_IDENTIFIER)) {
 				getClassLoaderParameterValue(obj, parameters);
-			} else {
+			} else if (firstElement != null && checkInterface(firstElement, HTTP_REQUEST_OBJECT_CLASS)){
+				System.out.println("getDeclaredMethods:::"+firstElement.getClass().getDeclaredMethods());
+				System.out.println("getMethods:::"+firstElement.getClass().getMethods());
+				Method getParameterMap =  firstElement.getClass().getDeclaredMethod("getParameterMap");
+				Method getQueryString =  firstElement.getClass().getDeclaredMethod("getQueryString");
+				Map<String, String[]> parameterMap = (Map<String, String[]>) getParameterMap.invoke(firstElement, null);
+				String queryString = (String) getQueryString.invoke(firstElement, null);
+				parameters.add(parameterMap);
+				parameters.add(queryString);
+				System.out.println("Parameter Map : "+ parameterMap);
+				System.out.println("query String is : "+ queryString);
+			}else {
 				for (int i = 0; i < obj.length; i++) {
 					if (obj[i] instanceof byte[]) {
 						try {
@@ -746,7 +760,8 @@ public class ProcessorThread implements Runnable {
 			}
 		}
 
-		if (LoggingInterceptor.socket != null && LoggingInterceptor.socket.isConnected() && !LoggingInterceptor.socket.isClosed()) {
+		if (LoggingInterceptor.socket != null && LoggingInterceptor.socket.isConnected()
+				&& !LoggingInterceptor.socket.isClosed()) {
 			intCodeResultBean.setEventGenerationTime(System.currentTimeMillis());
 			System.out.println("publish event: " + intCodeResultBean.getEventGenerationTime());
 			if (intCodeResultBean.getSource() != null && (intCodeResultBean.getSource()
@@ -782,6 +797,19 @@ public class ProcessorThread implements Runnable {
 				}
 			}
 		}
+	}
+	
+	
+	public static boolean checkInterface(Object obj, String interfaceName) {
+		Class<?>[] interfaces = obj.getClass().getInterfaces();
+		for (Class<?> klass : interfaces) {
+			System.out.println("Checking interfaces : "+ klass.getCanonicalName() + "::" + klass.getName() + "::" + klass.getSimpleName());
+			if (interfaceName.contains(klass.getSimpleName())) {
+				return true;
+			}
+		}
+		return false;
+		
 	}
 
 }

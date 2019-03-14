@@ -8,7 +8,7 @@ import java.util.Map;
 
 public interface IAgentConstants {
 
-	String TRACE_REGEX = "((?!org\\.apache\\.jsp.*))((^javax.*)|(^java\\.lang.*)|(^java\\.io.*)|(^org\\.apache.*)|(^java\\.nio.*)|(^java\\.util.*)|(^java\\.net.*)|(^sun.*)|(^java\\.security.*)|(^org\\.brutusin.*)|(^com\\.microsoft\\.sqlserver.*)|(^com\\.mysql.*)|(^sun\\.reflect.*)|(^org\\.hibernate.*)|(^java\\.sql.*)|(^com\\.mongodb.*)|(^org\\.apache\\.commons.*)|(^org\\.mongodb.*)|(^com\\.sun\\.org\\.apache.*)|(^com\\.sun\\.naming.*)|(^org\\.eclipse\\.jetty.*)|(^net\\.sourceforge\\.eclipsejetty.*)|(^java\\.awt.*)|(org\\.springframework.*)|(org\\.slf4j.*)|(com\\.sun\\.jmx.*)|(org\\.eclipse\\.jdt.*)|(com\\.opensymphony\\.xwork2.*)|(org\\.objectweb\\.asm.*)|(freemarker\\.cache.*)|(com\\.mchange\\.v2.*))";
+	String TRACE_REGEX = "((?!(org\\.apache\\.jsp.*)|(javax\\.servlet\\.http.*)))((^javax.*)|(^java\\.lang.*)|(^java\\.io.*)|(^org\\.apache.*)|(^java\\.nio.*)|(^java\\.util.*)|(^java\\.net.*)|(^sun.*)|(^java\\.security.*)|(^org\\.brutusin.*)|(^com\\.microsoft\\.sqlserver.*)|(^com\\.mysql.*)|(^sun\\.reflect.*)|(^org\\.hibernate.*)|(^java\\.sql.*)|(^com\\.mongodb.*)|(^org\\.apache\\.commons.*)|(^org\\.mongodb.*)|(^com\\.sun\\.org\\.apache.*)|(^com\\.sun\\.naming.*)|(^org\\.eclipse\\.jetty.*)|(^net\\.sourceforge\\.eclipsejetty.*)|(^java\\.awt.*)|(org\\.springframework.*)|(org\\.slf4j.*)|(com\\.sun\\.jmx.*)|(org\\.eclipse\\.jdt.*)|(com\\.opensymphony\\.xwork2.*)|(org\\.objectweb\\.asm.*)|(freemarker\\.cache.*)|(com\\.mchange\\.v2.*))";
 
 	String SYSYTEM_CALL_START = "static java.lang.Process java.lang.ProcessImpl.start(java.lang.String[],java.util.Map<java.lang.String, java.lang.String>,java.lang.String,java.lang.ProcessBuilder$Redirect[],boolean) throws java.io.IOException";
 
@@ -43,12 +43,14 @@ public interface IAgentConstants {
 
 	String[] FILE_OPEN_EXECUTORS = { "public java.io.File(java.lang.String,java.lang.String)",
 			"public java.io.File(java.lang.String)" };
-	
-	Map<String, List<String>> MYSQL_GET_CONNECTION_MAP = new HashMap() {{
-		put("java.sql.DriverManager", Collections.singletonList("getConnection"));
-		put("com.mysql.jdbc.ConnectionImpl", Arrays.asList("getInstance","isReadOnly"));
-	}};
-	
+
+	Map<String, List<String>> MYSQL_GET_CONNECTION_MAP = new HashMap() {
+		{
+			put("java.sql.DriverManager", Collections.singletonList("getConnection"));
+			put("com.mysql.jdbc.ConnectionImpl", Arrays.asList("getInstance", "isReadOnly"));
+		}
+	};
+
 	String[] MONGO_EXECUTORS = {
 			// asynchronous mongo calls
 			"public <T> void com.mongodb.async.client.MongoClientImpl$2.execute(com.mongodb.operation.AsyncReadOperation<T>,com.mongodb.ReadPreference,com.mongodb.async.SingleResultCallback<T>)",
@@ -63,10 +65,9 @@ public interface IAgentConstants {
 			"private <T> T com.mongodb.connection.DefaultServerConnection.executeProtocol(com.mongodb.connection.LegacyProtocol<T>)",
 			"private <T> T com.mongodb.internal.connection.DefaultServerConnection.executeProtocol(com.mongodb.internal.connection.CommandProtocol<T>,com.mongodb.session.SessionContext)",
 			"private <T> T com.mongodb.internal.connection.DefaultServerConnection.executeProtocol(com.mongodb.internal.connection.LegacyProtocol<T>)",
-			"private <T> T com.mongodb.connection.DefaultServerConnection.executeProtocol(com.mongodb.connection.Protocol<T>)"
-	};
+			"private <T> T com.mongodb.connection.DefaultServerConnection.executeProtocol(com.mongodb.connection.Protocol<T>)" };
 
-	String[] EXECUTORS = {SYSYTEM_CALL_START,
+	String[] EXECUTORS = { SYSYTEM_CALL_START,
 
 			// mssql calls
 			"final void com.microsoft.sqlserver.jdbc.SQLServerStatement.executeStatement(com.microsoft.sqlserver.jdbc.TDSCommand) throws com.microsoft.sqlserver.jdbc.SQLServerException,java.sql.SQLTimeoutException",
@@ -96,8 +97,13 @@ public interface IAgentConstants {
 			"public static java.net.URLClassLoader java.net.URLClassLoader.newInstance(java.net.URL[])",
 
 			// File Input
-//			"public java.io.FileInputStream(java.lang.String) throws java.io.FileNotFoundException",
-//			"public java.io.FileInputStream(java.io.File) throws java.io.FileNotFoundException",
+			// "public java.io.FileInputStream(java.lang.String) throws
+			// java.io.FileNotFoundException",
+			// "public java.io.FileInputStream(java.io.File) throws
+			// java.io.FileNotFoundException",
+			
+			//http request
+			"protected void javax.servlet.http.HttpServlet.service(javax.servlet.http.HttpServletRequest,javax.servlet.http.HttpServletResponse) throws javax.servlet.ServletException,java.io.IOException",
 
 	};
 
@@ -111,18 +117,20 @@ public interface IAgentConstants {
 			"com/mysql/cj/mysqla/io/MysqlaProtocol", "com/mysql/cj/NativeSession",
 			"com/mongodb/connection/DefaultServerConnection", "com/mongodb/internal/connection/DefaultServerConnection",
 			"com/mongodb/async/client/MongoClientImpl$2", "com/mongodb/async/client/AsyncOperationExecutorImpl",
-			"com/mongodb/async/client/OperationExecutorImpl", "java/net/URLClassLoader"};
+			"com/mongodb/async/client/OperationExecutorImpl", "java/net/URLClassLoader",
+			// http request
+			"javax/servlet/http/HttpServlet" };
 
 	String[][] ALL_METHODS = { { "sqlQueryDirect" }, { "start" }, { "newOutputStream" }, CONSTRUCTOR,
 			{ "executeStatement" }, { "sqlQueryDirect" }, { "execSQL" }, { "executeProtocol" }, { "executeProtocol" },
-			{ "execute" }, { "execute" }, { "execute" }, { "<init>", "newInstance" } };
+			{ "execute" }, { "execute" }, { "execute" }, { "<init>", "newInstance" }, { "service" } };
 
 	/** DB NAMES */
 	String MSSQL_IDENTIFIER = "com.microsoft.sqlserver";
 	String MYSQL_IDENTIFIER = "mysql";
 	String MONGO_IDENTIFIER = "mongo";
 	String CLASS_LOADER_IDENTIFIER = "java.net.URL";
-	
+
 	/** MSSQL FIELD CONSTANTS */
 	String MSSQL_CURRENT_OBJECT = "this$0";
 	String MSSQL_BATCH_STATEMENT_BUFFER_FIELD = "batchStatementBuffer";
@@ -173,5 +181,7 @@ public interface IAgentConstants {
 	String MONGO_COLLECTION_WILDCARD = "$cmd";
 	String MONGO_COLLECTION_FIELD = "collectionName";
 	String MONGO_COMMAND_NAME_FIELD = "commandName";
-
+	
+	/* Request	*/
+	String HTTP_REQUEST_OBJECT_CLASS="javax.servlet.http.HttpServletRequest"; 
 }

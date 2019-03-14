@@ -247,9 +247,8 @@ public class LoggingInterceptor extends Interceptor {
 
 	@Override
 	public boolean interceptMethod(ClassNode cn, MethodNode mn) {
-		// if (cn.name.equals("java/io/File"))
-		// System.out.println("name: " + mn.name + " : " +
-		// interceptMethod.get(cn.name).contains(mn.name));
+		if (cn.name.equals("javax/servlet/http/HttpServlet"))
+			System.out.println("name: " + mn.name + " : " + interceptMethod.get(cn.name).contains(mn.name));
 		return interceptMethod.get(cn.name).contains(mn.name);
 	}
 
