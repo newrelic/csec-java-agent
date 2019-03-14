@@ -125,11 +125,12 @@ public interface IAgentConstants {
 			{ "executeStatement" }, { "sqlQueryDirect" }, { "execSQL" }, { "executeProtocol" }, { "executeProtocol" },
 			{ "execute" }, { "execute" }, { "execute" }, { "<init>", "newInstance" }, { "service" } };
 
-	/** DB NAMES */
+	/** Source Method Identifiers for argument resolution */
 	String MSSQL_IDENTIFIER = "com.microsoft.sqlserver";
-	String MYSQL_IDENTIFIER = "mysql";
-	String MONGO_IDENTIFIER = "mongo";
-	String CLASS_LOADER_IDENTIFIER = "java.net.URL";
+	String MYSQL_IDENTIFIER = "com.mysql";
+	String MONGO_IDENTIFIER = "com.mongo";
+	String CLASS_LOADER_IDENTIFIER = "java.net.URLClassLoader";
+	String SERVLET_REQUEST_IDENTIFIER="javax.servlet.http.HttpServletRequest"; 
 
 	/** MSSQL FIELD CONSTANTS */
 	String MSSQL_CURRENT_OBJECT = "this$0";
@@ -181,7 +182,4 @@ public interface IAgentConstants {
 	String MONGO_COLLECTION_WILDCARD = "$cmd";
 	String MONGO_COLLECTION_FIELD = "collectionName";
 	String MONGO_COMMAND_NAME_FIELD = "commandName";
-	
-	/* Request	*/
-	String HTTP_REQUEST_OBJECT_CLASS="javax.servlet.http.HttpServletRequest"; 
 }

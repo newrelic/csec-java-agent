@@ -45,7 +45,7 @@ import static org.brutusin.instrumentation.logging.IAgentConstants.MSSQL_VALUE_F
 import static org.brutusin.instrumentation.logging.IAgentConstants.MYSQL_IDENTIFIER;
 import static org.brutusin.instrumentation.logging.IAgentConstants.CLASS_LOADER_IDENTIFIER;
 import static org.brutusin.instrumentation.logging.IAgentConstants.MYSQL_PREPARED_STATEMENT;
-import static org.brutusin.instrumentation.logging.IAgentConstants.HTTP_REQUEST_OBJECT_CLASS;
+import static org.brutusin.instrumentation.logging.IAgentConstants.SERVLET_REQUEST_IDENTIFIER;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -171,7 +171,7 @@ public class ProcessorThread implements Runnable {
 		if (sourceString != null && executorMethods.contains(sourceString)) {
 			long start = System.currentTimeMillis();
 			if (sourceString.equals("protected void javax.servlet.http.HttpServlet.service(javax.servlet.http.HttpServletRequest,javax.servlet.http.HttpServletResponse) throws javax.servlet.ServletException,java.io.IOException")) {
-				System.out.println("Found : " + sourceString + "Param : " + toString(arg));
+				System.out.println("Found : " + sourceString + "Param : " + toString(arg,sourceString));
 			}
 			// StackTraceElement[] trace =
 			// Thread.currentThread().getStackTrace();
@@ -207,7 +207,7 @@ public class ProcessorThread implements Runnable {
 				}
 
 				if (!PATTERN.matcher(klassName).matches()) {
-					intCodeResultBean.setParameters(toString(arg));
+					intCodeResultBean.setParameters(toString(arg,sourceString));
 					intCodeResultBean.setUserAPIInfo(trace[i].getLineNumber(), klassName, trace[i].getMethodName());
 					if (i > 0)
 						intCodeResultBean.setCurrentMethod(trace[i - 1].getMethodName());
@@ -220,7 +220,7 @@ public class ProcessorThread implements Runnable {
 				int traceId = getClassNameForSysytemCallStart(trace, intCodeResultBean);
 				intCodeResultBean.setUserAPIInfo(trace[traceId].getLineNumber(), klassName,
 						trace[traceId].getMethodName());
-				intCodeResultBean.setParameters(toString(arg));
+				intCodeResultBean.setParameters(toString(arg,sourceString));
 				if (traceId > 0)
 					intCodeResultBean.setCurrentMethod(trace[traceId - 1].getMethodName());
 				generateEvent(intCodeResultBean);
@@ -641,7 +641,7 @@ public class ProcessorThread implements Runnable {
 	 * @return the JSON array
 	 */
 	@SuppressWarnings({ "unchecked", "unused" })
-	private static JSONArray toString(Object[] obj) {
+	private static JSONArray toString(Object[] obj, String sourceString) {
 
 		if (obj == null) {
 			return null;
@@ -649,30 +649,15 @@ public class ProcessorThread implements Runnable {
 
 		JSONArray parameters = new JSONArray();
 		try {
-			Object firstElement = obj[0];
-			System.out.println("Dummy Check :::: " + checkInterface(firstElement, HTTP_REQUEST_OBJECT_CLASS));
-
-			if (firstElement != null && firstElement.getClass() != null
-					&& obj[0].getClass().getName().contains(MSSQL_IDENTIFIER)) {
+			if (obj[0] != null && sourceString.contains(MSSQL_IDENTIFIER)) {
 				getParameterValue(obj[0], parameters);
-			} else if (firstElement != null && firstElement.getClass().getName().contains(MYSQL_IDENTIFIER)) {
+			} else if (obj[0] != null && sourceString.contains(MYSQL_IDENTIFIER)) {
 				getMySQLParameterValue(obj, parameters);
-			} else if (firstElement != null && firstElement.getClass().getName().contains(MONGO_IDENTIFIER)) {
+			} else if (obj[0] != null && sourceString.contains(MONGO_IDENTIFIER)) {
 				getMongoParameterValue(obj, parameters);
-			} else if (firstElement != null && firstElement.getClass().getName().contains(CLASS_LOADER_IDENTIFIER)) {
+			} else if (obj[0] != null && sourceString.contains(CLASS_LOADER_IDENTIFIER)) {
 				getClassLoaderParameterValue(obj, parameters);
-			} else if (firstElement != null && checkInterface(firstElement, HTTP_REQUEST_OBJECT_CLASS)){
-				System.out.println("getDeclaredMethods:::"+firstElement.getClass().getDeclaredMethods());
-				System.out.println("getMethods:::"+firstElement.getClass().getMethods());
-				Method getParameterMap =  firstElement.getClass().getDeclaredMethod("getParameterMap");
-				Method getQueryString =  firstElement.getClass().getDeclaredMethod("getQueryString");
-				Map<String, String[]> parameterMap = (Map<String, String[]>) getParameterMap.invoke(firstElement, null);
-				String queryString = (String) getQueryString.invoke(firstElement, null);
-				parameters.add(parameterMap);
-				parameters.add(queryString);
-				System.out.println("Parameter Map : "+ parameterMap);
-				System.out.println("query String is : "+ queryString);
-			}else {
+			} else {
 				for (int i = 0; i < obj.length; i++) {
 					if (obj[i] instanceof byte[]) {
 						try {
@@ -682,7 +667,7 @@ public class ProcessorThread implements Runnable {
 							e.printStackTrace();
 						}
 					} else if (obj[i] instanceof Object[]) {
-						parameters.add(toString((Object[]) obj[i]));
+						parameters.add(toString((Object[]) obj[i],sourceString));
 					}
 					// b.append(toString((Object[]) obj[i]));
 					else
