@@ -1,5 +1,6 @@
 package org.brutusin.instrumentation.logging;
 
+import static org.brutusin.instrumentation.logging.IAgentConstants.CLASS_LOADER_IDENTIFIER;
 import static org.brutusin.instrumentation.logging.IAgentConstants.MOGNO_ELEMENT_DATA_FIELD;
 import static org.brutusin.instrumentation.logging.IAgentConstants.MONGO_COLLECTION_FIELD;
 import static org.brutusin.instrumentation.logging.IAgentConstants.MONGO_COLLECTION_WILDCARD;
@@ -43,9 +44,7 @@ import static org.brutusin.instrumentation.logging.IAgentConstants.MSSQL_STATEME
 import static org.brutusin.instrumentation.logging.IAgentConstants.MSSQL_USER_SQL_FIELD;
 import static org.brutusin.instrumentation.logging.IAgentConstants.MSSQL_VALUE_FIELD;
 import static org.brutusin.instrumentation.logging.IAgentConstants.MYSQL_IDENTIFIER;
-import static org.brutusin.instrumentation.logging.IAgentConstants.CLASS_LOADER_IDENTIFIER;
 import static org.brutusin.instrumentation.logging.IAgentConstants.MYSQL_PREPARED_STATEMENT;
-import static org.brutusin.instrumentation.logging.IAgentConstants.SERVLET_REQUEST_IDENTIFIER;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -88,24 +87,26 @@ public class ProcessorThread implements Runnable {
 			interceptMethod.put(IAgentConstants.ALL_CLASSES[i],
 					new ArrayList<String>(Arrays.asList(IAgentConstants.ALL_METHODS[i])));
 		}
-
 	}
 	private Object source;
 	private Object[] arg;
 	private String executionId;
 	private StackTraceElement[] stackTrace;
+	private Long threadId;
 
 	/**
 	 * @param source
 	 * @param arg
 	 * @param executionId
 	 * @param stackTrace
+	 * @param tId
 	 */
-	public ProcessorThread(Object source, Object[] arg, String executionId, StackTraceElement[] stackTrace) {
+	public ProcessorThread(Object source, Object[] arg, String executionId, StackTraceElement[] stackTrace, long tId) {
 		this.source = source;
 		this.arg = arg;
 		this.executionId = executionId;
 		this.stackTrace = stackTrace;
+		this.threadId = tId;
 	}
 
 	/**
@@ -168,11 +169,9 @@ public class ProcessorThread implements Runnable {
 			// System.out.println(c.toGenericString());
 		}
 		// System.out.println(executorMethods.contains(sourceString)+"::executorMethods.contains(sourceString)\n"+sourceString);
+
 		if (sourceString != null && executorMethods.contains(sourceString)) {
 			long start = System.currentTimeMillis();
-			if (sourceString.equals("protected void javax.servlet.http.HttpServlet.service(javax.servlet.http.HttpServletRequest,javax.servlet.http.HttpServletResponse) throws javax.servlet.ServletException,java.io.IOException")) {
-				System.out.println("Found : " + sourceString + "Param : " + toString(arg,sourceString));
-			}
 			// StackTraceElement[] trace =
 			// Thread.currentThread().getStackTrace();
 			// for (int i = 0; i < trace.length; i++) {
@@ -184,9 +183,13 @@ public class ProcessorThread implements Runnable {
 			// fileExecute = true;
 			// }
 
+			//
+
+			if (!LoggingInterceptor.requestMap.containsKey(this.threadId))
+				return;
 			IntCodeResultBean intCodeResultBean = new IntCodeResultBean(start, sourceString, LoggingInterceptor.VMPID,
 					LoggingInterceptor.applicationUUID);
-
+			intCodeResultBean.setServletInfo(LoggingInterceptor.requestMap.get(this.threadId));
 			String klassName = null;
 
 			if (mongoExecutorMethods.contains(sourceString)) {
@@ -783,18 +786,18 @@ public class ProcessorThread implements Runnable {
 			}
 		}
 	}
-	
-	
+
 	public static boolean checkInterface(Object obj, String interfaceName) {
 		Class<?>[] interfaces = obj.getClass().getInterfaces();
 		for (Class<?> klass : interfaces) {
-			System.out.println("Checking interfaces : "+ klass.getCanonicalName() + "::" + klass.getName() + "::" + klass.getSimpleName());
+			System.out.println("Checking interfaces : " + klass.getCanonicalName() + "::" + klass.getName() + "::"
+					+ klass.getSimpleName());
 			if (interfaceName.contains(klass.getSimpleName())) {
 				return true;
 			}
 		}
 		return false;
-		
+
 	}
 
 }

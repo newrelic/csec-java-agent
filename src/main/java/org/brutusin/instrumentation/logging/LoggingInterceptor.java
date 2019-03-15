@@ -24,6 +24,9 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -55,6 +58,7 @@ public class LoggingInterceptor extends Interceptor {
 	protected static Integer VMPID;
 	protected static final String applicationUUID;
 	protected static Socket socket;
+	protected static Map<Long, ServletInfo> requestMap;
 
 	static {
 		applicationUUID = UUID.randomUUID().toString();
@@ -64,7 +68,7 @@ public class LoggingInterceptor extends Interceptor {
 			interceptMethod.put(IAgentConstants.ALL_CLASSES[i],
 					new ArrayList<String>(Arrays.asList(IAgentConstants.ALL_METHODS[i])));
 		}
-
+		requestMap = new HashMap<>();
 	}
 
 	public static String getContainerID() {
@@ -255,8 +259,49 @@ public class LoggingInterceptor extends Interceptor {
 	@SuppressWarnings({ "rawtypes" })
 	@Override
 	protected void doOnStart(Object source, Object[] arg, String executionId) {
+		String sourceString = null;
+		Method m = null;
+		if (source instanceof Method) {
+			m = (Method) source;
+			sourceString = m.toGenericString();
+			System.out.println(m.toGenericString());
+		}
+		if (sourceString != null && IAgentConstants.HTTP_SERVLET_SERVICE.equals(sourceString)) {
+			ServletInfo servletInfo = new ServletInfo();
+			Object firstElement = arg[0];
+			Method getParameterMap;
+			try {
+				getParameterMap = firstElement.getClass().getMethod("getParameterMap");
+				Method getQueryString = firstElement.getClass().getMethod("getQueryString");
+				Method getRemoteAddr = firstElement.getClass().getMethod("getRemoteAddr");
+				Method getMethod = firstElement.getClass().getMethod("getMethod");
+
+				servletInfo.setParameters((Map<String, String[]>) getParameterMap.invoke(firstElement, null));
+				servletInfo.setQueryString((String) getQueryString.invoke(firstElement, null));
+				servletInfo.setSourceIp((String) getRemoteAddr.invoke(firstElement, null));
+				servletInfo.setRequestMethod((String) getMethod.invoke(firstElement, null));
+
+			} catch (NoSuchMethodException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (SecurityException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IllegalAccessException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IllegalArgumentException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (InvocationTargetException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			requestMap.put(Thread.currentThread().getId(), servletInfo);
+			return;
+		}
 		EventThreadPool.getInstance().processReceivedEvent(source, arg, executionId,
-				Thread.currentThread().getStackTrace());
+				Thread.currentThread().getStackTrace(), Thread.currentThread().getId());
 	}
 
 	@Override
@@ -269,6 +314,21 @@ public class LoggingInterceptor extends Interceptor {
 
 	@Override
 	protected void doOnFinish(Object source, Object result, String executionId) {
+//		String sourceString = null;
+//		Method m = null;
+//		Constructor c = null;
+//		if (source instanceof Method) {
+//			m = (Method) source;
+//			sourceString = m.toGenericString();
+//			System.out.println(m.toGenericString());
+//		} else if (source instanceof Constructor) {
+//			c = (Constructor) source;
+//			sourceString = c.toGenericString();
+//			// System.out.println(c.toGenericString());
+//		}
+//		if (sourceString != null && IAgentConstants.HTTP_SERVLET_SERVICE.equals(sourceString)) {
+//			Thread.currentThread().getId();
+//		}
 	}
 
 	@SuppressWarnings("unused")

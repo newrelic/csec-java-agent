@@ -12,35 +12,6 @@ public interface IAgentConstants {
 
 	String SYSYTEM_CALL_START = "static java.lang.Process java.lang.ProcessImpl.start(java.lang.String[],java.util.Map<java.lang.String, java.lang.String>,java.lang.String,java.lang.ProcessBuilder$Redirect[],boolean) throws java.io.IOException";
 
-	String[][] SKIP_LIST = { { "sun.usagetracker.UsageTrackerClient", "run" },
-			{ "java.lang.ClassLoader", "loadClass", "loadLibrary", "getResourceAsStream" },
-			{ "java.io.DeleteOnExitHook", "runHooks" }, { "java.util.jar.JarFile", "<init>" },
-			{ "java.util.logging.LogManager", "readConfiguration" },
-			{ "org.apache.catalina.startup.Bootstrap", "<clinit>" },
-			{ "org.apache.catalina.startup.ClassLoaderFactory", "createClassLoader", "validateFile" },
-			{ "com.sun.org.apache.xerces.internal.utils.SecuritySupport", "readJAXPProperty" },
-			{ "org.apache.catalina.startup.CatalinaProperties", "loadProperties" },
-			{ "org.apache.catalina.startup.Catalina", "stopServer", "configFile", "initDirs" },
-			{ "javax.xml.parsers.FactoryFinder", "find" }, { "org.apache.tomcat.util.modeler.Registry", "load" },
-			{ "org.apache.catalina.startup.ContextConfig", "<clinit>" }, { "org.apache.tomcat.jni.Library", "<init>" },
-			{ "org.apache.catalina.util.ServerInfo", "<clinit>" },
-			{ "org.apache.catalina.util.ExtensionValidator", "addFolderList", "<clinit>" },
-			{ "org.apache.catalina.core.StandardContext", "postWorkDirectory" },
-			{ "org.apache.catalina.util.CharsetMapper", "<init>" },
-			{ "org.apache.catalina.webresources.AbstractFileResourceSet", "initInternal" },
-			{ "org.apache.catalina.webresources.StandardRoot", "createMainResourceSet" },
-			{ "org.apache.catalina.startup.ContextConfig", "fixDocBase", "processContextConfig", "contextConfig" },
-			{ "org.apache.catalina.core.StandardHost", "getConfigBaseFile", "getAppBaseFile" },
-			{ "org.apache.tomcat.util.file.ConfigFileLoader", "getInputStream", "<clinit>" },
-			{ "com.sun.naming.internal.VersionHelper12$4", "run" },
-			{ "org.apache.catalina.startup.WebappServiceLoader", "parseConfigFile" },
-			{ "org.apache.catalina.loader.WebappClassLoaderBase", "getResourceAsStream" },
-			{ "org.apache.tomcat.util.buf.B2CConverter", "<clinit>" },
-			{ "org.apache.catalina.startup.ContextConfig", "getDefaultWebXmlFragment", "getWebXmlSource", "<clinit>",
-					"fixDocBase", "contextConfig", "processContextConfig" },
-			{ "org.apache.catalina.authenticator.jaspic.AuthConfigFactoryImpl", "<clinit>" },
-			{ "java.net.URL", "openConnection" } };
-
 	String[] FILE_OPEN_EXECUTORS = { "public java.io.File(java.lang.String,java.lang.String)",
 			"public java.io.File(java.lang.String)" };
 
@@ -106,6 +77,8 @@ public interface IAgentConstants {
 			"protected void javax.servlet.http.HttpServlet.service(javax.servlet.http.HttpServletRequest,javax.servlet.http.HttpServletResponse) throws javax.servlet.ServletException,java.io.IOException",
 
 	};
+	
+	String HTTP_SERVLET_SERVICE = "protected void javax.servlet.http.HttpServlet.service(javax.servlet.http.HttpServletRequest,javax.servlet.http.HttpServletResponse) throws javax.servlet.ServletException,java.io.IOException";
 
 	String MSSQL_EXECUTOR = "boolean com.microsoft.sqlserver.jdbc.SQLServerConnection.executeCommand(com.microsoft.sqlserver.jdbc.TDSCommand) throws com.microsoft.sqlserver.jdbc.SQLServerException";
 
