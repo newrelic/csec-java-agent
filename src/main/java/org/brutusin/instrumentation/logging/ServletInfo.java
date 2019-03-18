@@ -18,6 +18,38 @@ public class ServletInfo implements Serializable {
 	private String sourceIp;
 	
 	private String requestMethod;
+	
+	private String rawParameters;
+	
+	private String contentType;
+	
+	/**
+	 * @return the rawParameters
+	 */
+	public String getRawParameters() {
+		return rawParameters;
+	}
+
+	/**
+	 * @param rawParameters the rawParameters to set
+	 */
+	public void setRawParameters(String rawParameters) {
+		this.rawParameters = rawParameters;
+	}
+
+	/**
+	 * @return the contentType
+	 */
+	public String getContentType() {
+		return contentType;
+	}
+
+	/**
+	 * @param contentType the contentType to set
+	 */
+	public void setContentType(String contentType) {
+		this.contentType = contentType;
+	}
 
 	/**
 	 * @return the queryString

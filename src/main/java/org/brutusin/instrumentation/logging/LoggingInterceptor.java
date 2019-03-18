@@ -247,27 +247,8 @@ public class LoggingInterceptor extends Interceptor {
 		return null;
 	}
 	
-	private static String readCharBuffer(CharBuffer cb) {
-		System.out.println("Object 1 : " + cb);
-		System.out.println("Object 1 limit : " + cb.limit());
-		System.out.println("remaining 1    "+cb.remaining());
-		cb.rewind();
-		StringBuffer stringBuffer = new StringBuffer(); 
-		while(cb.remaining() > 0) {
-			stringBuffer.append(cb.get());
-		}
-		cb.rewind();
-		return stringBuffer.toString();
-		
-	}
-	
 	private static String readByteBuffer(ByteBuffer buffer) {
 		int currPos = buffer.position();
-		System.out.println("Object 2 : " + buffer);
-		System.out.println("Object 2 limit : " + buffer.limit());
-		System.out.println("remaining 2    "+ buffer.remaining());
-		
-//		buffer.rewind();
 		StringBuffer stringBuffer = new StringBuffer(); 
 		while(buffer.remaining() > 0) {
 			stringBuffer.append((char)buffer.get());
@@ -304,7 +285,6 @@ public class LoggingInterceptor extends Interceptor {
 			Method getParameterMap;
 			
 			ByteBuffer bb = null;
-			CharBuffer cb = null;
 			try {
 				System.out.println("class "+firstElement.getClass());
 				System.out.println("fields "+Arrays.asList(firstElement.getClass().getDeclaredFields()));
@@ -312,19 +292,26 @@ public class LoggingInterceptor extends Interceptor {
 				Method getQueryString = firstElement.getClass().getMethod("getQueryString");
 				Method getRemoteAddr = firstElement.getClass().getMethod("getRemoteAddr");
 				Method getMethod = firstElement.getClass().getMethod("getMethod");
-				// extract ByteBuffer into bb and cb
+				Method getContentType = firstElement.getClass().getMethod("getContentType");
+				
+				servletInfo.setParameters((Map<String, String[]>) getParameterMap.invoke(firstElement, null));
+				servletInfo.setQueryString((String) getQueryString.invoke(firstElement, null));
+				servletInfo.setSourceIp((String) getRemoteAddr.invoke(firstElement, null));
+				servletInfo.setRequestMethod((String) getMethod.invoke(firstElement, null));
+				servletInfo.setContentType((String) getContentType.invoke(firstElement, null));
+				
+				// extract ByteBuffer into bb
 				Field requestField = firstElement.getClass().getDeclaredField("request");
 				requestField.setAccessible(true);
 				Object requestObj = requestField.get(firstElement);
-				
+								
 				System.out.println("class 2"+requestObj.getClass());
 				System.out.println("fields 2"+Arrays.asList(requestObj.getClass().getDeclaredFields()));
 				
 				Field inputBufferField = requestObj.getClass().getDeclaredField("inputBuffer");
 				inputBufferField.setAccessible(true);
 				Object inputBuffer = inputBufferField.get(requestObj);
-				
-				
+								
 				Field coyoteRequestField = inputBuffer.getClass().getDeclaredField("coyoteRequest");
 				coyoteRequestField.setAccessible(true);
 				Object coyoteRequest = coyoteRequestField.get(inputBuffer);
@@ -336,21 +323,8 @@ public class LoggingInterceptor extends Interceptor {
 				Field bytes = coyoteInputBuffer.getClass().getDeclaredField("byteBuffer");
 				bytes.setAccessible(true);
 				bb = (ByteBuffer) bytes.get(coyoteInputBuffer);
-				
-//				Field bytes = inputBuffer.getClass().getDeclaredField("bb");
-//				bytes.setAccessible(true);
-//				bb = (ByteBuffer) bytes.get(inputBuffer);
-//				
-//				
-//				
-//				Field chars = inputBuffer.getClass().getDeclaredField("cb");
-//				chars.setAccessible(true);
-//				cb = (CharBuffer) chars.get(inputBuffer);			
-//				
-				servletInfo.setParameters((Map<String, String[]>) getParameterMap.invoke(firstElement, null));
-				servletInfo.setQueryString((String) getQueryString.invoke(firstElement, null));
-				servletInfo.setSourceIp((String) getRemoteAddr.invoke(firstElement, null));
-				servletInfo.setRequestMethod((String) getMethod.invoke(firstElement, null));
+								
+				servletInfo.setRequestMethod(readByteBuffer(bb));
 
 			} catch (NoSuchMethodException e) {
 				// TODO Auto-generated catch block
@@ -371,8 +345,6 @@ public class LoggingInterceptor extends Interceptor {
 				e.printStackTrace();
 			}
 			
-			System.out.println("ByteBuffer out : " + readByteBuffer(bb));
-//			System.out.println("CharBuffer out : " + readCharBuffer(cb));
 			requestMap.put(Thread.currentThread().getId(), servletInfo);
 			return;
 		}
