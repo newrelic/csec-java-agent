@@ -185,9 +185,9 @@ public class LoggingInterceptor extends Interceptor {
 		applicationInfoBean.setJvmArguments(new JSONArray(cmdlineArgs));
 		oos.writeUTF(applicationInfoBean.toString());
 		System.out.println("application info posted : " + applicationInfoBean);
-		oos.flush();		
+		oos.flush();
 	}
-	
+
 	protected static void connectSocket() {
 		try (BufferedReader reader = new BufferedReader(new FileReader("/etc/k2-adp/hostip.properties"))) {
 			String hostip = reader.readLine();
@@ -195,14 +195,14 @@ public class LoggingInterceptor extends Interceptor {
 				throw new RuntimeException("Host ip not found");
 			System.out.println("hostip found: " + hostip);
 			socket = new Socket(hostip, 54321);
-			if(!socket.isConnected() || socket.isClosed())
+			if (!socket.isConnected() || socket.isClosed())
 				throw new RuntimeException("Can't connect to IC, agent installation failed.");
 			oos = new DataOutputStream(socket.getOutputStream());
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
 	}
-	
+
 	@Override
 	public void init(String arg) throws Exception {
 		/*
@@ -246,17 +246,17 @@ public class LoggingInterceptor extends Interceptor {
 		}
 		return null;
 	}
-	
+
 	private static String readByteBuffer(ByteBuffer buffer) {
 		int currPos = buffer.position();
-		StringBuffer stringBuffer = new StringBuffer(); 
-		while(buffer.remaining() > 0) {
-			stringBuffer.append((char)buffer.get());
+		StringBuffer stringBuffer = new StringBuffer();
+		while (buffer.remaining() > 0) {
+			stringBuffer.append((char) buffer.get());
 		}
 		buffer.position(currPos);
-		return stringBuffer.toString();		
+		return stringBuffer.toString();
 	}
-	
+
 	@Override
 	public boolean interceptClass(String className, byte[] byteCode) {
 		return allClasses.contains(className);
@@ -264,7 +264,7 @@ public class LoggingInterceptor extends Interceptor {
 
 	@Override
 	public boolean interceptMethod(ClassNode cn, MethodNode mn) {
-		if (cn.name.equals("javax/servlet/http/HttpServlet"))
+		if (cn.name.equals("org/apache/catalina/connector/CoyoteAdapter"))
 			System.out.println("name: " + mn.name + " : " + interceptMethod.get(cn.name).contains(mn.name));
 		return interceptMethod.get(cn.name).contains(mn.name);
 	}
@@ -279,73 +279,71 @@ public class LoggingInterceptor extends Interceptor {
 			sourceString = m.toGenericString();
 			System.out.println(m.toGenericString());
 		}
-		if (sourceString != null && IAgentConstants.HTTP_SERVLET_SERVICE.equals(sourceString)) {
+		if (sourceString != null && IAgentConstants.TOMCAT_COYOTE_ADAPTER_SERVICE.equals(sourceString)) {
 			ServletInfo servletInfo = new ServletInfo();
 			Object firstElement = arg[0];
-			Method getParameterMap;
-			
+
 			ByteBuffer bb = null;
 			try {
-				System.out.println("class "+firstElement.getClass());
-				System.out.println("fields "+Arrays.asList(firstElement.getClass().getFields()));
-				System.out.println("methods "+Arrays.asList(firstElement.getClass().getMethods()));
 
-				getParameterMap = firstElement.getClass().getMethod("getParameterMap");
-				Method getQueryString = firstElement.getClass().getMethod("getQueryString");
-				Method getRemoteAddr = firstElement.getClass().getMethod("getRemoteAddr");
-				Method getMethod = firstElement.getClass().getMethod("getMethod");
-				Method getContentType = firstElement.getClass().getMethod("getContentType");
-				
-				servletInfo.setParameters((Map<String, String[]>) getParameterMap.invoke(firstElement, null));
-				servletInfo.setQueryString((String) getQueryString.invoke(firstElement, null));
-				servletInfo.setSourceIp((String) getRemoteAddr.invoke(firstElement, null));
-				servletInfo.setRequestMethod((String) getMethod.invoke(firstElement, null));
-				servletInfo.setContentType((String) getContentType.invoke(firstElement, null));
-				
-				// extract ByteBuffer into bb
-				Object requestObj = firstElement.getClass().getMethod("getRequest").invoke(firstElement, null);
-								
-				System.out.println("class 2"+requestObj.getClass());
-				System.out.println("fields 2"+Arrays.asList(requestObj.getClass().getDeclaredFields()));
-				
-				Field inputBufferField = requestObj.getClass().getDeclaredField("inputBuffer");
+				// // extract ByteBuffer into bb
+				// Object requestObj =
+				// firstElement.getClass().getMethod("getRequest").invoke(firstElement, null);
+				//
+				// System.out.println("class 2"+requestObj.getClass());
+				// System.out.println("fields
+				// 2"+Arrays.asList(requestObj.getClass().getDeclaredFields()));
+
+				Field inputBufferField = firstElement.getClass().getDeclaredField("inputBuffer");
 				inputBufferField.setAccessible(true);
-				Object inputBuffer = inputBufferField.get(requestObj);
-								
-				Field coyoteRequestField = inputBuffer.getClass().getDeclaredField("coyoteRequest");
-				coyoteRequestField.setAccessible(true);
-				Object coyoteRequest = coyoteRequestField.get(inputBuffer);
-				
-				Field coyoteInputBufferField = coyoteRequest.getClass().getDeclaredField("inputBuffer");
-				coyoteInputBufferField.setAccessible(true);
-				Object coyoteInputBuffer = coyoteInputBufferField.get(coyoteRequest);
-				
-				Field bytes = coyoteInputBuffer.getClass().getDeclaredField("byteBuffer");
-				bytes.setAccessible(true);
-				bb = (ByteBuffer) bytes.get(coyoteInputBuffer);
-								
-				servletInfo.setRequestMethod(readByteBuffer(bb));
+				Object inputBuffer = inputBufferField.get(firstElement);
 
-			} catch (NoSuchMethodException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (SecurityException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (IllegalAccessException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (IllegalArgumentException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (InvocationTargetException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (NoSuchFieldException e) {
+				// Field coyoteRequestField =
+				// inputBuffer.getClass().getDeclaredField("coyoteRequest");
+				// coyoteRequestField.setAccessible(true);
+				// Object coyoteRequest = coyoteRequestField.get(inputBuffer);
+				//
+				// Field coyoteInputBufferField =
+				// coyoteRequest.getClass().getDeclaredField("inputBuffer");
+				// coyoteInputBufferField.setAccessible(true);
+				// Object coyoteInputBuffer = coyoteInputBufferField.get(coyoteRequest);
+
+				Field bytes = inputBuffer.getClass().getDeclaredField("byteBuffer");
+				bytes.setAccessible(true);
+				bb = (ByteBuffer) bytes.get(inputBuffer);
+
+				servletInfo.setRawParameters(readByteBuffer(bb));
+				System.out.println(servletInfo.getRawParameters());
+
+			} catch (Exception e) {
 				e.printStackTrace();
 			}
-			
+
 			requestMap.put(Thread.currentThread().getId(), servletInfo);
+			return;
+		} else if (sourceString != null && IAgentConstants.HTTP_SERVLET_SERVICE.equals(sourceString)) {
+			ServletInfo servletInfo = requestMap.get(Thread.currentThread().getId());
+			if (servletInfo != null) {
+				Object firstElement = arg[0];
+				Method getParameterMap;
+				try {
+					getParameterMap = firstElement.getClass().getMethod("getParameterMap");
+
+					Method getQueryString = firstElement.getClass().getMethod("getQueryString");
+					Method getRemoteAddr = firstElement.getClass().getMethod("getRemoteAddr");
+					Method getMethod = firstElement.getClass().getMethod("getMethod");
+					Method getContentType = firstElement.getClass().getMethod("getContentType");
+
+					servletInfo.setParameters((Map<String, String[]>) getParameterMap.invoke(firstElement, null));
+					servletInfo.setQueryString((String) getQueryString.invoke(firstElement, null));
+					servletInfo.setSourceIp((String) getRemoteAddr.invoke(firstElement, null));
+					servletInfo.setRequestMethod((String) getMethod.invoke(firstElement, null));
+					servletInfo.setContentType((String) getContentType.invoke(firstElement, null));
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
 			return;
 		}
 		EventThreadPool.getInstance().processReceivedEvent(source, arg, executionId,
@@ -362,21 +360,22 @@ public class LoggingInterceptor extends Interceptor {
 
 	@Override
 	protected void doOnFinish(Object source, Object result, String executionId) {
-//		String sourceString = null;
-//		Method m = null;
-//		Constructor c = null;
-//		if (source instanceof Method) {
-//			m = (Method) source;
-//			sourceString = m.toGenericString();
-//			System.out.println(m.toGenericString());
-//		} else if (source instanceof Constructor) {
-//			c = (Constructor) source;
-//			sourceString = c.toGenericString();
-//			// System.out.println(c.toGenericString());
-//		}
-//		if (sourceString != null && IAgentConstants.HTTP_SERVLET_SERVICE.equals(sourceString)) {
-//			Thread.currentThread().getId();
-//		}
+		// String sourceString = null;
+		// Method m = null;
+		// Constructor c = null;
+		// if (source instanceof Method) {
+		// m = (Method) source;
+		// sourceString = m.toGenericString();
+		// System.out.println(m.toGenericString());
+		// } else if (source instanceof Constructor) {
+		// c = (Constructor) source;
+		// sourceString = c.toGenericString();
+		// // System.out.println(c.toGenericString());
+		// }
+		// if (sourceString != null &&
+		// IAgentConstants.HTTP_SERVLET_SERVICE.equals(sourceString)) {
+		// Thread.currentThread().getId();
+		// }
 	}
 
 	@SuppressWarnings("unused")

@@ -38,6 +38,9 @@ public interface IAgentConstants {
 			"private <T> T com.mongodb.internal.connection.DefaultServerConnection.executeProtocol(com.mongodb.internal.connection.LegacyProtocol<T>)",
 			"private <T> T com.mongodb.connection.DefaultServerConnection.executeProtocol(com.mongodb.connection.Protocol<T>)" };
 
+	
+
+	String SERVLET_REQUEST_FACADE = "public org.apache.catalina.connector.RequestFacade(org.apache.catalina.connector.Request)";
 	String[] EXECUTORS = { SYSYTEM_CALL_START,
 
 			// mssql calls
@@ -92,11 +95,16 @@ public interface IAgentConstants {
 			"com/mongodb/async/client/MongoClientImpl$2", "com/mongodb/async/client/AsyncOperationExecutorImpl",
 			"com/mongodb/async/client/OperationExecutorImpl", "java/net/URLClassLoader",
 			// http request
-			"javax/servlet/http/HttpServlet" };
+			"javax/servlet/http/HttpServlet",
+			"org/apache/catalina/connector/CoyoteAdapter"};
 
 	String[][] ALL_METHODS = { { "sqlQueryDirect" }, { "start" }, { "newOutputStream" }, CONSTRUCTOR,
 			{ "executeStatement" }, { "sqlQueryDirect" }, { "execSQL" }, { "executeProtocol" }, { "executeProtocol" },
-			{ "execute" }, { "execute" }, { "execute" }, { "<init>", "newInstance" }, { "service" } };
+			{ "execute" }, { "execute" }, { "execute" }, { "<init>", "newInstance" }, 
+			{ "service" },
+			{ "service" },
+//			CONSTRUCTOR 
+			};
 
 	/** Source Method Identifiers for argument resolution */
 	String MSSQL_IDENTIFIER = "com.microsoft.sqlserver";
@@ -104,7 +112,8 @@ public interface IAgentConstants {
 	String MONGO_IDENTIFIER = "com.mongo";
 	String CLASS_LOADER_IDENTIFIER = "java.net.URLClassLoader";
 	String SERVLET_REQUEST_IDENTIFIER="javax.servlet.http.HttpServletRequest"; 
-
+	String TOMCAT_COYOTE_ADAPTER_SERVICE = "public void org.apache.catalina.connector.CoyoteAdapter.service(org.apache.coyote.Request,org.apache.coyote.Response) throws java.lang.Exception";
+	
 	/** MSSQL FIELD CONSTANTS */
 	String MSSQL_CURRENT_OBJECT = "this$0";
 	String MSSQL_BATCH_STATEMENT_BUFFER_FIELD = "batchStatementBuffer";
