@@ -23,6 +23,13 @@ public class ServletInfo implements Serializable {
 	
 	private String contentType;
 	
+	public ServletInfo() {
+	}
+	
+	public ServletInfo(Map<String, String[]> paramMap) {
+		this.parameters = paramMap;
+	}
+
 	/**
 	 * @return the rawParameters
 	 */

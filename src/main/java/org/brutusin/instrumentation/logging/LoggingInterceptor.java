@@ -24,13 +24,11 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.Socket;
 import java.nio.ByteBuffer;
-import java.nio.CharBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -269,85 +267,83 @@ public class LoggingInterceptor extends Interceptor {
 		return interceptMethod.get(cn.name).contains(mn.name);
 	}
 
+//	public void furnishServletInfo(Object firstElement, ServletInfo servletInfo, String sourceString, long threadId) {
+//		try {
+//			if (IAgentConstants.TOMCAT_COYOTE_ADAPTER_SERVICE.equals(sourceString)) {
+//				ByteBuffer bb = null;
+//				
+//				Field inputBufferField = firstElement.getClass().getDeclaredField("inputBuffer");
+//				inputBufferField.setAccessible(true);
+//				Object inputBuffer = inputBufferField.get(firstElement);
+//
+//				Field bytes = inputBuffer.getClass().getDeclaredField("byteBuffer");
+//				bytes.setAccessible(true);
+//				bb = (ByteBuffer) bytes.get(inputBuffer);
+//
+//				servletInfo.setRawParameters(readByteBuffer(bb));
+//				System.out.println(servletInfo.getRawParameters());
+//				
+//			} else if (IAgentConstants.HTTP_SERVLET_SERVICE.equals(sourceString)) {
+//				Method getQueryString = firstElement.getClass().getMethod("getQueryString");
+//				Method getRemoteAddr = firstElement.getClass().getMethod("getRemoteAddr");
+//				Method getMethod = firstElement.getClass().getMethod("getMethod");
+//				Method getContentType = firstElement.getClass().getMethod("getContentType");
+//
+//				servletInfo.setQueryString((String) getQueryString.invoke(firstElement, null));
+//				servletInfo.setSourceIp((String) getRemoteAddr.invoke(firstElement, null));
+//				servletInfo.setRequestMethod((String) getMethod.invoke(firstElement, null));
+//				servletInfo.setContentType((String) getContentType.invoke(firstElement, null));
+//			}
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//			requestMap.remove(threadId);
+//		}
+//	}
+
 	@SuppressWarnings({ "rawtypes" })
 	@Override
 	protected void doOnStart(Object source, Object[] arg, String executionId) {
 		String sourceString = null;
 		Method m = null;
+		ServletInfo servletInfo = null;
+		long threadId = Thread.currentThread().getId();
+
 		if (source instanceof Method) {
 			m = (Method) source;
 			sourceString = m.toGenericString();
 			System.out.println(m.toGenericString());
 		}
-		if (sourceString != null && IAgentConstants.TOMCAT_COYOTE_ADAPTER_SERVICE.equals(sourceString)) {
-			ServletInfo servletInfo = new ServletInfo();
-			Object firstElement = arg[0];
 
-			ByteBuffer bb = null;
+		if (sourceString != null && IAgentConstants.HTTP_SERVLET_SERVICE.equals(sourceString)) {
+			Map<String, String[]> paramMap = null;
+
 			try {
-
-				// // extract ByteBuffer into bb
-				// Object requestObj =
-				// firstElement.getClass().getMethod("getRequest").invoke(firstElement, null);
-				//
-				// System.out.println("class 2"+requestObj.getClass());
-				// System.out.println("fields
-				// 2"+Arrays.asList(requestObj.getClass().getDeclaredFields()));
-
-				Field inputBufferField = firstElement.getClass().getDeclaredField("inputBuffer");
-				inputBufferField.setAccessible(true);
-				Object inputBuffer = inputBufferField.get(firstElement);
-
-				// Field coyoteRequestField =
-				// inputBuffer.getClass().getDeclaredField("coyoteRequest");
-				// coyoteRequestField.setAccessible(true);
-				// Object coyoteRequest = coyoteRequestField.get(inputBuffer);
-				//
-				// Field coyoteInputBufferField =
-				// coyoteRequest.getClass().getDeclaredField("inputBuffer");
-				// coyoteInputBufferField.setAccessible(true);
-				// Object coyoteInputBuffer = coyoteInputBufferField.get(coyoteRequest);
-
-				Field bytes = inputBuffer.getClass().getDeclaredField("byteBuffer");
-				bytes.setAccessible(true);
-				bb = (ByteBuffer) bytes.get(inputBuffer);
-
-				servletInfo.setRawParameters(readByteBuffer(bb));
-				System.out.println(servletInfo.getRawParameters());
-
+				paramMap = (Map<String, String[]>) arg[0].getClass().getMethod("getParameterMap").invoke(arg[0], null);
 			} catch (Exception e) {
 				e.printStackTrace();
+				return;
 			}
-
-			requestMap.put(Thread.currentThread().getId(), servletInfo);
-			return;
-		} else if (sourceString != null && IAgentConstants.HTTP_SERVLET_SERVICE.equals(sourceString)) {
-			ServletInfo servletInfo = requestMap.get(Thread.currentThread().getId());
-			if (servletInfo != null) {
-				Object firstElement = arg[0];
-				Method getParameterMap;
-				try {
-					getParameterMap = firstElement.getClass().getMethod("getParameterMap");
-
-					Method getQueryString = firstElement.getClass().getMethod("getQueryString");
-					Method getRemoteAddr = firstElement.getClass().getMethod("getRemoteAddr");
-					Method getMethod = firstElement.getClass().getMethod("getMethod");
-					Method getContentType = firstElement.getClass().getMethod("getContentType");
-
-					servletInfo.setParameters((Map<String, String[]>) getParameterMap.invoke(firstElement, null));
-					servletInfo.setQueryString((String) getQueryString.invoke(firstElement, null));
-					servletInfo.setSourceIp((String) getRemoteAddr.invoke(firstElement, null));
-					servletInfo.setRequestMethod((String) getMethod.invoke(firstElement, null));
-					servletInfo.setContentType((String) getContentType.invoke(firstElement, null));
-				} catch (Exception e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
+			
+			if (!requestMap.containsKey(threadId)) {
+				requestMap.put(threadId, new ServletInfo(paramMap));
+			} else {
+				servletInfo = requestMap.get(threadId);
+				servletInfo.setParameters(paramMap);
 			}
-			return;
-		}
-		EventThreadPool.getInstance().processReceivedEvent(source, arg, executionId,
-				Thread.currentThread().getStackTrace(), Thread.currentThread().getId());
+			// TODO submit to executor for servletInfo furnishing
+			ServletEventPool.getInstance().processReceivedEvent(arg[0], servletInfo, sourceString, threadId);
+		} else if (sourceString != null && IAgentConstants.TOMCAT_COYOTE_ADAPTER_SERVICE.equals(sourceString)) {
+			if (!requestMap.containsKey(threadId)) {
+				servletInfo = new ServletInfo();
+			} else {
+				servletInfo = requestMap.get(threadId);
+			}
+			// TODO submit to executor for servletInfo furnishing
+			ServletEventPool.getInstance().processReceivedEvent(arg[0], servletInfo, sourceString, threadId);
+		} else {
+			EventThreadPool.getInstance().processReceivedEvent(source, arg, executionId,
+					Thread.currentThread().getStackTrace(), Thread.currentThread().getId());
+		}	
 	}
 
 	@Override
