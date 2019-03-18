@@ -287,7 +287,9 @@ public class LoggingInterceptor extends Interceptor {
 			ByteBuffer bb = null;
 			try {
 				System.out.println("class "+firstElement.getClass());
-				System.out.println("fields "+Arrays.asList(firstElement.getClass().getDeclaredFields()));
+				System.out.println("fields "+Arrays.asList(firstElement.getClass().getFields()));
+				System.out.println("methods "+Arrays.asList(firstElement.getClass().getMethods()));
+
 				getParameterMap = firstElement.getClass().getMethod("getParameterMap");
 				Method getQueryString = firstElement.getClass().getMethod("getQueryString");
 				Method getRemoteAddr = firstElement.getClass().getMethod("getRemoteAddr");
