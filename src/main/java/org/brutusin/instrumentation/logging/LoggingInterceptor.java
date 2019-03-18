@@ -25,9 +25,11 @@ import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.Socket;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -275,7 +277,24 @@ public class LoggingInterceptor extends Interceptor {
 				Method getQueryString = firstElement.getClass().getMethod("getQueryString");
 				Method getRemoteAddr = firstElement.getClass().getMethod("getRemoteAddr");
 				Method getMethod = firstElement.getClass().getMethod("getMethod");
-
+				
+				// extract ByteBuffer into bb and cb
+				ByteBuffer bb = null , cb = null;
+				try {
+					Field inputBufferField = firstElement.getClass().getField("inputbuffer");
+					inputBufferField.setAccessible(true);
+					Object inputBuffer = inputBufferField.get(firstElement);
+					Field bytes = inputBuffer.getClass().getField("bb");
+					bytes.setAccessible(true);
+					bb = (ByteBuffer) bytes.get(inputBuffer);
+					bytes = inputBuffer.getClass().getField("cb");
+					bytes.setAccessible(true);
+					cb = (ByteBuffer) bytes.get(inputBuffer);
+				} catch (NoSuchFieldException e) {
+					e.printStackTrace();
+				}
+				
+				
 				servletInfo.setParameters((Map<String, String[]>) getParameterMap.invoke(firstElement, null));
 				servletInfo.setQueryString((String) getQueryString.invoke(firstElement, null));
 				servletInfo.setSourceIp((String) getRemoteAddr.invoke(firstElement, null));

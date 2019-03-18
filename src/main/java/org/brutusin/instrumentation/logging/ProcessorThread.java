@@ -787,17 +787,4 @@ public class ProcessorThread implements Runnable {
 		}
 	}
 
-	public static boolean checkInterface(Object obj, String interfaceName) {
-		Class<?>[] interfaces = obj.getClass().getInterfaces();
-		for (Class<?> klass : interfaces) {
-			System.out.println("Checking interfaces : " + klass.getCanonicalName() + "::" + klass.getName() + "::"
-					+ klass.getSimpleName());
-			if (interfaceName.contains(klass.getSimpleName())) {
-				return true;
-			}
-		}
-		return false;
-
-	}
-
 }
