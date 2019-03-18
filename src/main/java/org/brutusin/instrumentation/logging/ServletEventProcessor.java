@@ -77,6 +77,7 @@ public class ServletEventProcessor implements Runnable {
 	@Override
 	public void run() {
 		try {
+			Thread.sleep(10000);
 			if (IAgentConstants.TOMCAT_COYOTE_ADAPTER_SERVICE.equals(sourceString)) {
 				ByteBuffer bb = null;
 				

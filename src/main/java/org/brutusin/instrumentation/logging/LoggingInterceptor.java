@@ -267,39 +267,6 @@ public class LoggingInterceptor extends Interceptor {
 		return interceptMethod.get(cn.name).contains(mn.name);
 	}
 
-//	public void furnishServletInfo(Object firstElement, ServletInfo servletInfo, String sourceString, long threadId) {
-//		try {
-//			if (IAgentConstants.TOMCAT_COYOTE_ADAPTER_SERVICE.equals(sourceString)) {
-//				ByteBuffer bb = null;
-//				
-//				Field inputBufferField = firstElement.getClass().getDeclaredField("inputBuffer");
-//				inputBufferField.setAccessible(true);
-//				Object inputBuffer = inputBufferField.get(firstElement);
-//
-//				Field bytes = inputBuffer.getClass().getDeclaredField("byteBuffer");
-//				bytes.setAccessible(true);
-//				bb = (ByteBuffer) bytes.get(inputBuffer);
-//
-//				servletInfo.setRawParameters(readByteBuffer(bb));
-//				System.out.println(servletInfo.getRawParameters());
-//				
-//			} else if (IAgentConstants.HTTP_SERVLET_SERVICE.equals(sourceString)) {
-//				Method getQueryString = firstElement.getClass().getMethod("getQueryString");
-//				Method getRemoteAddr = firstElement.getClass().getMethod("getRemoteAddr");
-//				Method getMethod = firstElement.getClass().getMethod("getMethod");
-//				Method getContentType = firstElement.getClass().getMethod("getContentType");
-//
-//				servletInfo.setQueryString((String) getQueryString.invoke(firstElement, null));
-//				servletInfo.setSourceIp((String) getRemoteAddr.invoke(firstElement, null));
-//				servletInfo.setRequestMethod((String) getMethod.invoke(firstElement, null));
-//				servletInfo.setContentType((String) getContentType.invoke(firstElement, null));
-//			}
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//			requestMap.remove(threadId);
-//		}
-//	}
-
 	@SuppressWarnings({ "rawtypes" })
 	@Override
 	protected void doOnStart(Object source, Object[] arg, String executionId) {
