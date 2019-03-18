@@ -245,7 +245,17 @@ public class LoggingInterceptor extends Interceptor {
 		}
 		return null;
 	}
-
+	
+	private static String readByteBuffer(ByteBuffer buffer) {
+		StringBuffer stringBuffer = new StringBuffer(); 
+		while(buffer.remaining() > 0) {
+			stringBuffer.append(buffer.getChar());
+		}
+		buffer.rewind();
+		return stringBuffer.toString();
+		
+	}
+	
 	@Override
 	public boolean interceptClass(String className, byte[] byteCode) {
 		return allClasses.contains(className);
@@ -272,28 +282,23 @@ public class LoggingInterceptor extends Interceptor {
 			ServletInfo servletInfo = new ServletInfo();
 			Object firstElement = arg[0];
 			Method getParameterMap;
+			
+			ByteBuffer bb = null , cb = null;
 			try {
 				getParameterMap = firstElement.getClass().getMethod("getParameterMap");
 				Method getQueryString = firstElement.getClass().getMethod("getQueryString");
 				Method getRemoteAddr = firstElement.getClass().getMethod("getRemoteAddr");
 				Method getMethod = firstElement.getClass().getMethod("getMethod");
-				
 				// extract ByteBuffer into bb and cb
-				ByteBuffer bb = null , cb = null;
-				try {
-					Field inputBufferField = firstElement.getClass().getField("inputbuffer");
-					inputBufferField.setAccessible(true);
-					Object inputBuffer = inputBufferField.get(firstElement);
-					Field bytes = inputBuffer.getClass().getField("bb");
-					bytes.setAccessible(true);
-					bb = (ByteBuffer) bytes.get(inputBuffer);
-					bytes = inputBuffer.getClass().getField("cb");
-					bytes.setAccessible(true);
-					cb = (ByteBuffer) bytes.get(inputBuffer);
-				} catch (NoSuchFieldException e) {
-					e.printStackTrace();
-				}
-				
+				Field inputBufferField = firstElement.getClass().getField("inputbuffer");
+				inputBufferField.setAccessible(true);
+				Object inputBuffer = inputBufferField.get(firstElement);
+				Field bytes = inputBuffer.getClass().getField("bb");
+				bytes.setAccessible(true);
+				bb = (ByteBuffer) bytes.get(inputBuffer);
+				bytes = inputBuffer.getClass().getField("cb");
+				bytes.setAccessible(true);
+				cb = (ByteBuffer) bytes.get(inputBuffer);			
 				
 				servletInfo.setParameters((Map<String, String[]>) getParameterMap.invoke(firstElement, null));
 				servletInfo.setQueryString((String) getQueryString.invoke(firstElement, null));
@@ -315,7 +320,12 @@ public class LoggingInterceptor extends Interceptor {
 			} catch (InvocationTargetException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
+			} catch (NoSuchFieldException e) {
+				e.printStackTrace();
 			}
+			
+			System.out.println("ByteBuffer out : " + readByteBuffer(bb));
+			System.out.println("CharBuffer out : " + readByteBuffer(cb));
 			requestMap.put(Thread.currentThread().getId(), servletInfo);
 			return;
 		}
