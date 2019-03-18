@@ -30,6 +30,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.Socket;
 import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -246,14 +247,33 @@ public class LoggingInterceptor extends Interceptor {
 		return null;
 	}
 	
-	private static String readByteBuffer(ByteBuffer buffer) {
+	private static String readCharBuffer(CharBuffer cb) {
+		System.out.println("Object 1 : " + cb);
+		System.out.println("Object 1 limit : " + cb.limit());
+		System.out.println("remaining 1    "+cb.remaining());
+		cb.rewind();
 		StringBuffer stringBuffer = new StringBuffer(); 
-		while(buffer.remaining() > 0) {
-			stringBuffer.append(buffer.getChar());
+		while(cb.remaining() > 0) {
+			stringBuffer.append(cb.get());
 		}
-		buffer.rewind();
+		cb.rewind();
 		return stringBuffer.toString();
 		
+	}
+	
+	private static String readByteBuffer(ByteBuffer buffer) {
+		int currPos = buffer.position();
+		System.out.println("Object 2 : " + buffer);
+		System.out.println("Object 2 limit : " + buffer.limit());
+		System.out.println("remaining 2    "+ buffer.remaining());
+		
+//		buffer.rewind();
+		StringBuffer stringBuffer = new StringBuffer(); 
+		while(buffer.remaining() > 0) {
+			stringBuffer.append((char)buffer.get());
+		}
+		buffer.position(currPos);
+		return stringBuffer.toString();		
 	}
 	
 	@Override
@@ -283,23 +303,50 @@ public class LoggingInterceptor extends Interceptor {
 			Object firstElement = arg[0];
 			Method getParameterMap;
 			
-			ByteBuffer bb = null , cb = null;
+			ByteBuffer bb = null;
+			CharBuffer cb = null;
 			try {
+				System.out.println("class "+firstElement.getClass());
+				System.out.println("fields "+Arrays.asList(firstElement.getClass().getDeclaredFields()));
 				getParameterMap = firstElement.getClass().getMethod("getParameterMap");
 				Method getQueryString = firstElement.getClass().getMethod("getQueryString");
 				Method getRemoteAddr = firstElement.getClass().getMethod("getRemoteAddr");
 				Method getMethod = firstElement.getClass().getMethod("getMethod");
 				// extract ByteBuffer into bb and cb
-				Field inputBufferField = firstElement.getClass().getField("inputbuffer");
-				inputBufferField.setAccessible(true);
-				Object inputBuffer = inputBufferField.get(firstElement);
-				Field bytes = inputBuffer.getClass().getField("bb");
-				bytes.setAccessible(true);
-				bb = (ByteBuffer) bytes.get(inputBuffer);
-				bytes = inputBuffer.getClass().getField("cb");
-				bytes.setAccessible(true);
-				cb = (ByteBuffer) bytes.get(inputBuffer);			
+				Field requestField = firstElement.getClass().getDeclaredField("request");
+				requestField.setAccessible(true);
+				Object requestObj = requestField.get(firstElement);
 				
+				System.out.println("class 2"+requestObj.getClass());
+				System.out.println("fields 2"+Arrays.asList(requestObj.getClass().getDeclaredFields()));
+				
+				Field inputBufferField = requestObj.getClass().getDeclaredField("inputBuffer");
+				inputBufferField.setAccessible(true);
+				Object inputBuffer = inputBufferField.get(requestObj);
+				
+				
+				Field coyoteRequestField = inputBuffer.getClass().getDeclaredField("coyoteRequest");
+				coyoteRequestField.setAccessible(true);
+				Object coyoteRequest = coyoteRequestField.get(inputBuffer);
+				
+				Field coyoteInputBufferField = coyoteRequest.getClass().getDeclaredField("inputBuffer");
+				coyoteInputBufferField.setAccessible(true);
+				Object coyoteInputBuffer = coyoteInputBufferField.get(coyoteRequest);
+				
+				Field bytes = coyoteInputBuffer.getClass().getDeclaredField("byteBuffer");
+				bytes.setAccessible(true);
+				bb = (ByteBuffer) bytes.get(coyoteInputBuffer);
+				
+//				Field bytes = inputBuffer.getClass().getDeclaredField("bb");
+//				bytes.setAccessible(true);
+//				bb = (ByteBuffer) bytes.get(inputBuffer);
+//				
+//				
+//				
+//				Field chars = inputBuffer.getClass().getDeclaredField("cb");
+//				chars.setAccessible(true);
+//				cb = (CharBuffer) chars.get(inputBuffer);			
+//				
 				servletInfo.setParameters((Map<String, String[]>) getParameterMap.invoke(firstElement, null));
 				servletInfo.setQueryString((String) getQueryString.invoke(firstElement, null));
 				servletInfo.setSourceIp((String) getRemoteAddr.invoke(firstElement, null));
@@ -325,7 +372,7 @@ public class LoggingInterceptor extends Interceptor {
 			}
 			
 			System.out.println("ByteBuffer out : " + readByteBuffer(bb));
-			System.out.println("CharBuffer out : " + readByteBuffer(cb));
+//			System.out.println("CharBuffer out : " + readCharBuffer(cb));
 			requestMap.put(Thread.currentThread().getId(), servletInfo);
 			return;
 		}
