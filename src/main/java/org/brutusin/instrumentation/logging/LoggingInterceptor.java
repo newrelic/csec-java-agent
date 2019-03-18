@@ -301,9 +301,7 @@ public class LoggingInterceptor extends Interceptor {
 				servletInfo.setContentType((String) getContentType.invoke(firstElement, null));
 				
 				// extract ByteBuffer into bb
-				Field requestField = firstElement.getClass().getDeclaredField("request");
-				requestField.setAccessible(true);
-				Object requestObj = requestField.get(firstElement);
+				Object requestObj = firstElement.getClass().getMethod("getRequest").invoke(firstElement, null);
 								
 				System.out.println("class 2"+requestObj.getClass());
 				System.out.println("fields 2"+Arrays.asList(requestObj.getClass().getDeclaredFields()));
