@@ -171,6 +171,8 @@ public class ProcessorThread implements Runnable {
 
 		if (sourceString != null && executorMethods.contains(sourceString)) {
 			long start = System.currentTimeMillis();
+			System.out.println("Thread ID in ProcessorThread : "+ threadId);
+			System.out.println("Request Map in ProcessorThread : "+ LoggingInterceptor.requestMap);
 			if (!LoggingInterceptor.requestMap.containsKey(this.threadId))
 				return;
 			IntCodeResultBean intCodeResultBean = new IntCodeResultBean(start, sourceString, LoggingInterceptor.VMPID,
