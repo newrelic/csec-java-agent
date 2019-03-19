@@ -3,6 +3,7 @@ package org.brutusin.instrumentation.logging;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
+import java.util.concurrent.TimeUnit;
 
 import org.brutusin.com.fasterxml.jackson.core.JsonProcessingException;
 import org.brutusin.com.fasterxml.jackson.databind.ObjectMapper;
@@ -85,7 +86,6 @@ public class ServletEventProcessor implements Runnable {
 	@Override
 	public void run() {
 		try {
-			System.out.println("sourceString : " + sourceString);
 			if (IAgentConstants.TOMCAT_COYOTE_ADAPTER_SERVICE.equals(sourceString)) {
 				ByteBuffer bb = null;
 
@@ -107,9 +107,9 @@ public class ServletEventProcessor implements Runnable {
 						break;
 					}
 				}
-
-				servletInfo.setRawParameters(readByteBuffer(bb));
-				System.out.println("servletInfo.getRawParameters()::" + servletInfo.getRawParameters());
+				Method getContentLength = firstElement.getClass().getMethod("getContentLength");
+				int contentLength = (int) getContentLength.invoke(firstElement, null);	
+				servletInfo.setRawParameters(readByteBuffer(bb, contentLength));
 
 			} else if (IAgentConstants.HTTP_SERVLET_SERVICE.equals(sourceString)
 					|| IAgentConstants.FACES_SERVLET.equals(sourceString)) {
@@ -117,12 +117,13 @@ public class ServletEventProcessor implements Runnable {
 				Method getRemoteAddr = firstElement.getClass().getMethod("getRemoteAddr");
 				Method getMethod = firstElement.getClass().getMethod("getMethod");
 				Method getContentType = firstElement.getClass().getMethod("getContentType");
+				Method getRequestURI = firstElement.getClass().getMethod("getRequestURI");
 
 				servletInfo.setQueryString((String) getQueryString.invoke(firstElement, null));
 				servletInfo.setSourceIp((String) getRemoteAddr.invoke(firstElement, null));
 				servletInfo.setRequestMethod((String) getMethod.invoke(firstElement, null));
 				servletInfo.setContentType((String) getContentType.invoke(firstElement, null));
-				System.out.println("servletInfo::" + servletInfo);
+				servletInfo.setRequestURI((String) getRequestURI.invoke(firstElement, null));
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -130,11 +131,13 @@ public class ServletEventProcessor implements Runnable {
 		}
 	}
 
-	private static String readByteBuffer(ByteBuffer buffer) {
+	private static String readByteBuffer(ByteBuffer buffer, int contentLength) {
 		if (buffer == null) {
 			return "";
 		}
 		int currPos = buffer.position();
+		if (contentLength > 0)
+			buffer.position(buffer.limit() - contentLength);
 		StringBuffer stringBuffer = new StringBuffer();
 		while (buffer.remaining() > 0) {
 			stringBuffer.append((char) buffer.get());

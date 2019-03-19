@@ -26,6 +26,22 @@ public class ServletInfo implements Serializable {
 	
 	private String contentType;
 	
+	private String requestURI;
+	
+	/**
+	 * @return the requestURI
+	 */
+	public String getRequestURI() {
+		return requestURI;
+	}
+
+	/**
+	 * @param requestURI the requestURI to set
+	 */
+	public void setRequestURI(String requestURI) {
+		this.requestURI = requestURI;
+	}
+
 	public ServletInfo() {
 	}
 	

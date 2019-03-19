@@ -280,8 +280,6 @@ public class LoggingInterceptor extends Interceptor {
 		if (source instanceof Method) {
 			m = (Method) source;
 			sourceString = m.toGenericString();
-			System.out.println("sourceString received : " + sourceString);
-			System.out.println("Thread ID : " + threadId);
 			if (sourceString != null && IAgentConstants.HTTP_SERVLET_SERVICE.equals(sourceString)) {
 				Map<String, String[]> paramMap = null;
 				try {
@@ -308,7 +306,6 @@ public class LoggingInterceptor extends Interceptor {
 				}
 				ServletEventPool.getInstance().processReceivedEvent(arg[0], servletInfo, sourceString, threadId);
 			} else {
-				System.out.println("Thread ID in else : " + threadId);
 				EventThreadPool.getInstance().processReceivedEvent(source, arg, executionId,
 						Thread.currentThread().getStackTrace(), threadId);
 			}
