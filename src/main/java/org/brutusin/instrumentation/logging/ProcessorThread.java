@@ -162,7 +162,7 @@ public class ProcessorThread implements Runnable {
 		if (source instanceof Method) {
 			m = (Method) source;
 			sourceString = m.toGenericString();
-//			System.out.println(m.toGenericString());
+			System.out.println(m.toGenericString());
 		} else if (source instanceof Constructor) {
 			c = (Constructor) source;
 			sourceString = c.toGenericString();

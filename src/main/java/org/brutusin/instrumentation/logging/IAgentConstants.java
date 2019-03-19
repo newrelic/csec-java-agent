@@ -96,14 +96,16 @@ public interface IAgentConstants {
 			"com/mongodb/async/client/OperationExecutorImpl", "java/net/URLClassLoader",
 			// http request
 			"javax/servlet/http/HttpServlet",
-			"org/apache/catalina/connector/CoyoteAdapter"};
+			"org/apache/catalina/connector/CoyoteAdapter",
+			"javax/faces/webapp/FacesServlet"};
 
 	String[][] ALL_METHODS = { { "sqlQueryDirect" }, { "start" }, { "newOutputStream" }, CONSTRUCTOR,
 			{ "executeStatement" }, { "sqlQueryDirect" }, { "execSQL" }, { "executeProtocol" }, { "executeProtocol" },
 			{ "execute" }, { "execute" }, { "execute" }, { "<init>", "newInstance" }, 
 			{ "service" },
 			{ "service" },
-//			CONSTRUCTOR 
+//			CONSTRUCTOR
+			{ "service" },
 			};
 
 	/** Source Method Identifiers for argument resolution */
@@ -113,6 +115,7 @@ public interface IAgentConstants {
 	String CLASS_LOADER_IDENTIFIER = "java.net.URLClassLoader";
 	String SERVLET_REQUEST_IDENTIFIER="javax.servlet.http.HttpServletRequest"; 
 	String TOMCAT_COYOTE_ADAPTER_SERVICE = "public void org.apache.catalina.connector.CoyoteAdapter.service(org.apache.coyote.Request,org.apache.coyote.Response) throws java.lang.Exception";
+	String FACES_SERVLET = "public void javax.faces.webapp.FacesServlet.service(javax.servlet.ServletRequest,javax.servlet.ServletResponse) throws java.io.IOException,javax.servlet.ServletException";
 	
 	/** MSSQL FIELD CONSTANTS */
 	String MSSQL_CURRENT_OBJECT = "this$0";

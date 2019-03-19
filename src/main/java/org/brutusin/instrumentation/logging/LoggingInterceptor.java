@@ -264,7 +264,7 @@ public class LoggingInterceptor extends Interceptor {
 	public boolean interceptMethod(ClassNode cn, MethodNode mn) {
 		if (cn.name.equals("org/apache/catalina/connector/CoyoteAdapter"))
 			System.out.println("name: " + mn.name + " : " + interceptMethod.get(cn.name).contains(mn.name));
-		else if (cn.name.equals("javax/servlet/http/HttpServlet"))
+		else if (cn.name.equals("javax/faces/webapp/FacesServlet"))
 			System.out.println("name: " + mn.name + " : " + interceptMethod.get(cn.name).contains(mn.name));
 		return interceptMethod.get(cn.name).contains(mn.name);
 	}
@@ -276,16 +276,17 @@ public class LoggingInterceptor extends Interceptor {
 		Method m = null;
 		ServletInfo servletInfo = null;
 		long threadId = Thread.currentThread().getId();
-		
+
 		if (source instanceof Method) {
 			m = (Method) source;
 			sourceString = m.toGenericString();
-			System.out.println("sourceString received : "+sourceString);
-			System.out.println("Thread ID : "+ threadId);
+			System.out.println("sourceString received : " + sourceString);
+			System.out.println("Thread ID : " + threadId);
 			if (sourceString != null && IAgentConstants.HTTP_SERVLET_SERVICE.equals(sourceString)) {
 				Map<String, String[]> paramMap = null;
 				try {
-					paramMap = (Map<String, String[]>) arg[0].getClass().getMethod("getParameterMap").invoke(arg[0],null);
+					paramMap = (Map<String, String[]>) arg[0].getClass().getMethod("getParameterMap").invoke(arg[0],
+							null);
 				} catch (Exception e) {
 					return;
 				}
@@ -297,7 +298,8 @@ public class LoggingInterceptor extends Interceptor {
 					servletInfo.setParameters(paramMap);
 				}
 				ServletEventPool.getInstance().processReceivedEvent(arg[0], servletInfo, sourceString, threadId);
-			} else if (sourceString != null && IAgentConstants.TOMCAT_COYOTE_ADAPTER_SERVICE.equals(sourceString)) {
+			} else if (sourceString != null && (IAgentConstants.TOMCAT_COYOTE_ADAPTER_SERVICE.equals(sourceString)
+					|| IAgentConstants.FACES_SERVLET.equals(sourceString))) {
 				if (!requestMap.containsKey(threadId)) {
 					servletInfo = new ServletInfo();
 					requestMap.put(threadId, servletInfo);
@@ -306,7 +308,7 @@ public class LoggingInterceptor extends Interceptor {
 				}
 				ServletEventPool.getInstance().processReceivedEvent(arg[0], servletInfo, sourceString, threadId);
 			} else {
-				System.out.println("Thread ID in else : "+ threadId);
+				System.out.println("Thread ID in else : " + threadId);
 				EventThreadPool.getInstance().processReceivedEvent(source, arg, executionId,
 						Thread.currentThread().getStackTrace(), threadId);
 			}
