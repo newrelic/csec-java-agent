@@ -276,10 +276,11 @@ public class LoggingInterceptor extends Interceptor {
 		Method m = null;
 		ServletInfo servletInfo = null;
 		long threadId = Thread.currentThread().getId();
-
+		
 		if (source instanceof Method) {
 			m = (Method) source;
 			sourceString = m.toGenericString();
+			System.out.println("sourceString received : "+sourceString);
 			if (sourceString != null && IAgentConstants.HTTP_SERVLET_SERVICE.equals(sourceString)) {
 				Map<String, String[]> paramMap = null;
 				try {
