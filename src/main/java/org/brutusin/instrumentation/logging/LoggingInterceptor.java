@@ -281,8 +281,7 @@ public class LoggingInterceptor extends Interceptor {
 			if (sourceString != null && IAgentConstants.HTTP_SERVLET_SERVICE.equals(sourceString)) {
 				Map<String, String[]> paramMap = null;
 				try {
-					paramMap = (Map<String, String[]>) arg[0].getClass().getMethod("getParameterMap").invoke(arg[0],
-							null);
+					paramMap = (Map<String, String[]>) arg[0].getClass().getMethod("getParameterMap").invoke(arg[0],null);
 				} catch (Exception e) {
 					return;
 				}
