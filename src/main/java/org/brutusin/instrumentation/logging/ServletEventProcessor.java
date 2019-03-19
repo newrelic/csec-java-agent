@@ -90,10 +90,12 @@ public class ServletEventProcessor implements Runnable {
 					String fieldName = field.getName(); 
 					if(fieldName.equals("buf")) {
 						Field bytes = inputBuffer.getClass().getDeclaredField("buf");
+						bytes.setAccessible(true);
 						bb = ByteBuffer.wrap((byte[])bytes.get(inputBuffer));
 						break;
 					} else if (fieldName.equals("byteBuffer")) {
 						Field bytes = inputBuffer.getClass().getDeclaredField("byteBuffer");
+						bytes.setAccessible(true);
 						bb = (ByteBuffer) bytes.get(inputBuffer);
 						break;
 					}
