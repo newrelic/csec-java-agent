@@ -262,8 +262,10 @@ public class LoggingInterceptor extends Interceptor {
 
 	@Override
 	public boolean interceptMethod(ClassNode cn, MethodNode mn) {
-//		if (cn.name.equals("org/apache/catalina/connector/CoyoteAdapter"))
-//			System.out.println("name: " + mn.name + " : " + interceptMethod.get(cn.name).contains(mn.name));
+		if (cn.name.equals("org/apache/catalina/connector/CoyoteAdapter"))
+			System.out.println("name: " + mn.name + " : " + interceptMethod.get(cn.name).contains(mn.name));
+		else if (cn.name.equals("javax/servlet/http/HttpServlet"))
+			System.out.println("name: " + mn.name + " : " + interceptMethod.get(cn.name).contains(mn.name));
 		return interceptMethod.get(cn.name).contains(mn.name);
 	}
 
@@ -318,22 +320,17 @@ public class LoggingInterceptor extends Interceptor {
 
 	@Override
 	protected void doOnFinish(Object source, Object result, String executionId) {
-		// String sourceString = null;
-		// Method m = null;
-		// Constructor c = null;
-		// if (source instanceof Method) {
-		// m = (Method) source;
-		// sourceString = m.toGenericString();
-		// System.out.println(m.toGenericString());
-		// } else if (source instanceof Constructor) {
-		// c = (Constructor) source;
-		// sourceString = c.toGenericString();
-		// // System.out.println(c.toGenericString());
-		// }
-		// if (sourceString != null &&
-		// IAgentConstants.HTTP_SERVLET_SERVICE.equals(sourceString)) {
-		// Thread.currentThread().getId();
-		// }
+		String sourceString = null;
+		Method m = null;
+		long threadId = Thread.currentThread().getId();
+
+		if (source instanceof Method) {
+			m = (Method) source;
+			sourceString = m.toGenericString();
+			if (sourceString != null && IAgentConstants.HTTP_SERVLET_SERVICE.equals(sourceString)) {
+				requestMap.remove(threadId);
+			}
+		}
 	}
 
 	@SuppressWarnings("unused")
