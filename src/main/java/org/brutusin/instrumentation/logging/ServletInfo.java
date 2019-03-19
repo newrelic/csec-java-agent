@@ -4,6 +4,9 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
+import org.brutusin.com.fasterxml.jackson.core.JsonProcessingException;
+import org.brutusin.com.fasterxml.jackson.databind.ObjectMapper;
+
 public class ServletInfo implements Serializable {
 
 	/**
@@ -114,4 +117,12 @@ public class ServletInfo implements Serializable {
 		this.parameters = parameters;
 	}
 	
+	@Override
+	public String toString() {
+		try {
+			return new ObjectMapper().writeValueAsString(this);
+		} catch (JsonProcessingException e) {
+			return null;
+		}
+	}
 }

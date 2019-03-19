@@ -4,6 +4,8 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
 
+import org.brutusin.com.fasterxml.jackson.core.JsonProcessingException;
+import org.brutusin.com.fasterxml.jackson.databind.ObjectMapper;
 import org.brutusin.org.joda.time.chrono.AssembledChronology.Fields;
 
 public class ServletEventProcessor implements Runnable {
@@ -102,6 +104,7 @@ public class ServletEventProcessor implements Runnable {
 				}
 
 				servletInfo.setRawParameters(readByteBuffer(bb));
+				System.out.println("servletInfo.getRawParameters()::"+servletInfo.getRawParameters());
 				
 			} else if (IAgentConstants.HTTP_SERVLET_SERVICE.equals(sourceString)) {
 				Method getQueryString = firstElement.getClass().getMethod("getQueryString");
@@ -113,6 +116,7 @@ public class ServletEventProcessor implements Runnable {
 				servletInfo.setSourceIp((String) getRemoteAddr.invoke(firstElement, null));
 				servletInfo.setRequestMethod((String) getMethod.invoke(firstElement, null));
 				servletInfo.setContentType((String) getContentType.invoke(firstElement, null));
+				System.out.println("servletInfo::"+servletInfo);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -132,5 +136,6 @@ public class ServletEventProcessor implements Runnable {
 		buffer.position(currPos);
 		return stringBuffer.toString();
 	}
+	
 
 }
