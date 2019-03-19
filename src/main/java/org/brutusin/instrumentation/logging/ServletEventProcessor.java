@@ -4,6 +4,8 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
 
+import org.brutusin.org.joda.time.chrono.AssembledChronology.Fields;
+
 public class ServletEventProcessor implements Runnable {
 
 	private Object firstElement;
@@ -83,10 +85,19 @@ public class ServletEventProcessor implements Runnable {
 				Field inputBufferField = firstElement.getClass().getDeclaredField("inputBuffer");
 				inputBufferField.setAccessible(true);
 				Object inputBuffer = inputBufferField.get(firstElement);
-
-				Field bytes = inputBuffer.getClass().getDeclaredField("byteBuffer");
-				bytes.setAccessible(true);
-				bb = (ByteBuffer) bytes.get(inputBuffer);
+					
+				for (Field field : inputBuffer.getClass().getDeclaredFields()) {
+					String fieldName = field.getName(); 
+					if(fieldName.equals("buf")) {
+						Field bytes = inputBuffer.getClass().getDeclaredField("buf");
+						bb = ByteBuffer.wrap((byte[])bytes.get(inputBuffer));
+						break;
+					} else if (fieldName.equals("byteBuffer")) {
+						Field bytes = inputBuffer.getClass().getDeclaredField("byteBuffer");
+						bb = (ByteBuffer) bytes.get(inputBuffer);
+						break;
+					}
+				}
 
 				servletInfo.setRawParameters(readByteBuffer(bb));
 				
@@ -108,6 +119,9 @@ public class ServletEventProcessor implements Runnable {
 	}
 	
 	private static String readByteBuffer(ByteBuffer buffer) {
+		if (buffer == null) {
+			return "";
+		}
 		int currPos = buffer.position();
 		StringBuffer stringBuffer = new StringBuffer();
 		while (buffer.remaining() > 0) {
