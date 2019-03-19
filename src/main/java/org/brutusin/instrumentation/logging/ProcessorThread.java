@@ -162,29 +162,15 @@ public class ProcessorThread implements Runnable {
 		if (source instanceof Method) {
 			m = (Method) source;
 			sourceString = m.toGenericString();
-			System.out.println(m.toGenericString());
+//			System.out.println(m.toGenericString());
 		} else if (source instanceof Constructor) {
 			c = (Constructor) source;
 			sourceString = c.toGenericString();
-			 System.out.println(c.toGenericString());
+//			 System.out.println(c.toGenericString());
 		}
-		// System.out.println(executorMethods.contains(sourceString)+"::executorMethods.contains(sourceString)\n"+sourceString);
 
 		if (sourceString != null && executorMethods.contains(sourceString)) {
 			long start = System.currentTimeMillis();
-			// StackTraceElement[] trace =
-			// Thread.currentThread().getStackTrace();
-			// for (int i = 0; i < trace.length; i++) {
-			// System.err.println("\t" + trace[i].getClassName());
-			// }
-			// }
-			// boolean fileExecute = false;
-			// if(fileExecutors.contains(sourceString)) {
-			// fileExecute = true;
-			// }
-
-			//
-
 			if (!LoggingInterceptor.requestMap.containsKey(this.threadId))
 				return;
 			IntCodeResultBean intCodeResultBean = new IntCodeResultBean(start, sourceString, LoggingInterceptor.VMPID,

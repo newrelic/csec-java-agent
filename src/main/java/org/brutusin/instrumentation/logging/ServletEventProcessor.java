@@ -77,7 +77,6 @@ public class ServletEventProcessor implements Runnable {
 	@Override
 	public void run() {
 		try {
-			Thread.sleep(10000);
 			if (IAgentConstants.TOMCAT_COYOTE_ADAPTER_SERVICE.equals(sourceString)) {
 				ByteBuffer bb = null;
 				
@@ -90,7 +89,7 @@ public class ServletEventProcessor implements Runnable {
 				bb = (ByteBuffer) bytes.get(inputBuffer);
 
 				servletInfo.setRawParameters(readByteBuffer(bb));
-				System.out.println(servletInfo.getRawParameters());
+				System.out.println("firstElement: "+firstElement+".   "+servletInfo.getRawParameters());
 				
 			} else if (IAgentConstants.HTTP_SERVLET_SERVICE.equals(sourceString)) {
 				Method getQueryString = firstElement.getClass().getMethod("getQueryString");
@@ -98,6 +97,7 @@ public class ServletEventProcessor implements Runnable {
 				Method getMethod = firstElement.getClass().getMethod("getMethod");
 				Method getContentType = firstElement.getClass().getMethod("getContentType");
 
+				System.out.println("firstElement: "+firstElement+". getQueryString: " + getQueryString +"getRemoteAddr: " + getRemoteAddr +"getMethod: " + getMethod +"getContentType: " + getContentType);
 				servletInfo.setQueryString((String) getQueryString.invoke(firstElement, null));
 				servletInfo.setSourceIp((String) getRemoteAddr.invoke(firstElement, null));
 				servletInfo.setRequestMethod((String) getMethod.invoke(firstElement, null));

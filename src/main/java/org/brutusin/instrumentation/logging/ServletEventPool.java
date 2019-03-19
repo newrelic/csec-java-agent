@@ -9,8 +9,6 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.brutusin.instrumentation.logging.EventThreadPool.EventAbortPolicy;
-
 public class ServletEventPool {
 
 	/** Thread pool executor. */
@@ -23,7 +21,7 @@ public class ServletEventPool {
 
 		// load the settings
 		int queueSize = 700;
-		int maxPoolSize = 15;
+		int maxPoolSize = 25;
 		int corePoolSize = 1;
 		long keepAliveTime = 2;
 

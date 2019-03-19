@@ -262,8 +262,8 @@ public class LoggingInterceptor extends Interceptor {
 
 	@Override
 	public boolean interceptMethod(ClassNode cn, MethodNode mn) {
-		if (cn.name.equals("org/apache/catalina/connector/CoyoteAdapter"))
-			System.out.println("name: " + mn.name + " : " + interceptMethod.get(cn.name).contains(mn.name));
+//		if (cn.name.equals("org/apache/catalina/connector/CoyoteAdapter"))
+//			System.out.println("name: " + mn.name + " : " + interceptMethod.get(cn.name).contains(mn.name));
 		return interceptMethod.get(cn.name).contains(mn.name);
 	}
 
@@ -278,39 +278,35 @@ public class LoggingInterceptor extends Interceptor {
 		if (source instanceof Method) {
 			m = (Method) source;
 			sourceString = m.toGenericString();
-			System.out.println(m.toGenericString());
+			if (sourceString != null && IAgentConstants.HTTP_SERVLET_SERVICE.equals(sourceString)) {
+				Map<String, String[]> paramMap = null;
+				try {
+					paramMap = (Map<String, String[]>) arg[0].getClass().getMethod("getParameterMap").invoke(arg[0],
+							null);
+				} catch (Exception e) {
+					return;
+				}
+				if (!requestMap.containsKey(threadId)) {
+					servletInfo = new ServletInfo(paramMap);
+					requestMap.put(threadId, servletInfo);
+				} else {
+					servletInfo = requestMap.get(threadId);
+					servletInfo.setParameters(paramMap);
+				}
+				ServletEventPool.getInstance().processReceivedEvent(arg[0], servletInfo, sourceString, threadId);
+			} else if (sourceString != null && IAgentConstants.TOMCAT_COYOTE_ADAPTER_SERVICE.equals(sourceString)) {
+				if (!requestMap.containsKey(threadId)) {
+					servletInfo = new ServletInfo();
+					requestMap.put(threadId, servletInfo);
+				} else {
+					servletInfo = requestMap.get(threadId);
+				}
+				ServletEventPool.getInstance().processReceivedEvent(arg[0], servletInfo, sourceString, threadId);
+			} else {
+				EventThreadPool.getInstance().processReceivedEvent(source, arg, executionId,
+						Thread.currentThread().getStackTrace(), Thread.currentThread().getId());
+			}
 		}
-
-		if (sourceString != null && IAgentConstants.HTTP_SERVLET_SERVICE.equals(sourceString)) {
-			Map<String, String[]> paramMap = null;
-
-			try {
-				paramMap = (Map<String, String[]>) arg[0].getClass().getMethod("getParameterMap").invoke(arg[0], null);
-			} catch (Exception e) {
-				e.printStackTrace();
-				return;
-			}
-			
-			if (!requestMap.containsKey(threadId)) {
-				requestMap.put(threadId, new ServletInfo(paramMap));
-			} else {
-				servletInfo = requestMap.get(threadId);
-				servletInfo.setParameters(paramMap);
-			}
-			// TODO submit to executor for servletInfo furnishing
-			ServletEventPool.getInstance().processReceivedEvent(arg[0], servletInfo, sourceString, threadId);
-		} else if (sourceString != null && IAgentConstants.TOMCAT_COYOTE_ADAPTER_SERVICE.equals(sourceString)) {
-			if (!requestMap.containsKey(threadId)) {
-				servletInfo = new ServletInfo();
-			} else {
-				servletInfo = requestMap.get(threadId);
-			}
-			// TODO submit to executor for servletInfo furnishing
-			ServletEventPool.getInstance().processReceivedEvent(arg[0], servletInfo, sourceString, threadId);
-		} else {
-			EventThreadPool.getInstance().processReceivedEvent(source, arg, executionId,
-					Thread.currentThread().getStackTrace(), Thread.currentThread().getId());
-		}	
 	}
 
 	@Override
