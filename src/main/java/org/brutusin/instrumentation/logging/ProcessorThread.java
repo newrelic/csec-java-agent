@@ -176,6 +176,7 @@ public class ProcessorThread implements Runnable {
 			IntCodeResultBean intCodeResultBean = new IntCodeResultBean(start, sourceString, LoggingInterceptor.VMPID,
 					LoggingInterceptor.applicationUUID);
 			intCodeResultBean.setServletInfo(LoggingInterceptor.requestMap.get(this.threadId));
+			System.out.println("Inside processor servlet info found: threadId: "+this.threadId +". "+ intCodeResultBean.getServletInfo());
 			String klassName = null;
 
 			if (mongoExecutorMethods.contains(sourceString)) {
