@@ -281,7 +281,8 @@ public class LoggingInterceptor extends Interceptor {
 			m = (Method) source;
 			sourceString = m.toGenericString();
 		}
-		if (sourceString != null && IAgentConstants.HTTP_SERVLET_SERVICE.equals(sourceString)) {
+		if (sourceString != null && (IAgentConstants.HTTP_SERVLET_SERVICE.equals(sourceString)
+				|| IAgentConstants.FACES_SERVLET.equals(sourceString))) {
 			Map<String, String[]> paramMap = null;
 			try {
 				paramMap = (Map<String, String[]>) arg[0].getClass().getMethod("getParameterMap").invoke(arg[0], null);
@@ -296,8 +297,7 @@ public class LoggingInterceptor extends Interceptor {
 				servletInfo.setParameters(paramMap);
 			}
 			ServletEventPool.getInstance().processReceivedEvent(arg[0], servletInfo, sourceString, threadId);
-		} else if (sourceString != null && (IAgentConstants.TOMCAT_COYOTE_ADAPTER_SERVICE.equals(sourceString)
-				|| IAgentConstants.FACES_SERVLET.equals(sourceString))) {
+		} else if (sourceString != null && IAgentConstants.TOMCAT_COYOTE_ADAPTER_SERVICE.equals(sourceString)) {
 			if (!requestMap.containsKey(threadId)) {
 				servletInfo = new ServletInfo();
 				requestMap.put(threadId, servletInfo);
@@ -328,7 +328,8 @@ public class LoggingInterceptor extends Interceptor {
 		if (source instanceof Method) {
 			m = (Method) source;
 			sourceString = m.toGenericString();
-			if (sourceString != null && IAgentConstants.HTTP_SERVLET_SERVICE.equals(sourceString)) {
+			if (sourceString != null && (IAgentConstants.HTTP_SERVLET_SERVICE.equals(sourceString)
+					|| IAgentConstants.FACES_SERVLET.equals(sourceString))) {
 				requestMap.remove(threadId);
 			}
 		}
