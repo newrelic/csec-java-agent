@@ -337,20 +337,19 @@ public class LoggingInterceptor extends Interceptor {
 
 	@Override
 	protected void doOnFinish(Object source, Object result, String executionId) {
-//		String sourceString = null;
-//		Method m = null;
-//		long threadId = Thread.currentThread().getId();
-//
-//		if (source instanceof Method) {
-//			m = (Method) source;
-//			sourceString = m.toGenericString();
-//			if (sourceString != null && (IAgentConstants.HTTP_SERVLET_SERVICE.equals(sourceString)
-//					|| IAgentConstants.FACES_SERVLET.equals(sourceString))) {
-//				requestMap.remove(threadId);
+		String sourceString = null;
+		Method m = null;
+		long threadId = Thread.currentThread().getId();
+
+		if (source instanceof Method) {
+			m = (Method) source;
+			sourceString = m.toGenericString();
+			if (sourceString != null && IAgentConstants.TOMCAT_COYOTE_ADAPTER_SERVICE.equals(sourceString)) {
+				requestMap.remove(threadId);
 //				System.out.println("Request map entry removed for threadID " +threadId);
 //				System.out.println("Current request map : "+ requestMap);
-//			}
-//		}
+			}
+		}
 	}
 
 	@SuppressWarnings("unused")

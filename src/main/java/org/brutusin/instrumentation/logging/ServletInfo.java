@@ -16,19 +16,19 @@ public class ServletInfo implements Serializable {
 	private static final long serialVersionUID = 5693096693182224287L;
 
 	private Map<String, String[]> parameters;
-	
+
 	private String queryString;
-	
+
 	private String sourceIp;
-	
+
 	private String requestMethod;
-	
+
 	private String rawParameters;
-	
+
 	private String contentType;
-	
+
 	private String requestURI;
-	
+
 	/**
 	 * @return the requestURI
 	 */
@@ -37,7 +37,8 @@ public class ServletInfo implements Serializable {
 	}
 
 	/**
-	 * @param requestURI the requestURI to set
+	 * @param requestURI
+	 *            the requestURI to set
 	 */
 	public void setRequestURI(String requestURI) {
 		this.requestURI = requestURI;
@@ -45,13 +46,14 @@ public class ServletInfo implements Serializable {
 
 	public ServletInfo() {
 	}
-	
+
 	public ServletInfo(Map<String, String[]> paramMap) {
 		this.parameters = paramMap;
 	}
 
 	public ServletInfo(ServletInfo servletInfo) {
-		this.parameters = new HashMap<>(servletInfo.getParameters());
+		if (servletInfo.getParameters() != null)
+			this.parameters = new HashMap<>(servletInfo.getParameters());
 		this.queryString = servletInfo.getQueryString();
 		this.sourceIp = servletInfo.getSourceIp();
 		this.requestMethod = servletInfo.getRequestMethod();
@@ -68,7 +70,8 @@ public class ServletInfo implements Serializable {
 	}
 
 	/**
-	 * @param rawParameters the rawParameters to set
+	 * @param rawParameters
+	 *            the rawParameters to set
 	 */
 	public void setRawParameters(String rawParameters) {
 		this.rawParameters = rawParameters;
@@ -82,7 +85,8 @@ public class ServletInfo implements Serializable {
 	}
 
 	/**
-	 * @param contentType the contentType to set
+	 * @param contentType
+	 *            the contentType to set
 	 */
 	public void setContentType(String contentType) {
 		this.contentType = contentType;
@@ -96,7 +100,8 @@ public class ServletInfo implements Serializable {
 	}
 
 	/**
-	 * @param queryString the queryString to set
+	 * @param queryString
+	 *            the queryString to set
 	 */
 	public void setQueryString(String queryString) {
 		this.queryString = queryString;
@@ -110,7 +115,8 @@ public class ServletInfo implements Serializable {
 	}
 
 	/**
-	 * @param sourceIp the sourceIp to set
+	 * @param sourceIp
+	 *            the sourceIp to set
 	 */
 	public void setSourceIp(String sourceIp) {
 		this.sourceIp = sourceIp;
@@ -124,7 +130,8 @@ public class ServletInfo implements Serializable {
 	}
 
 	/**
-	 * @param requestMethod the requestMethod to set
+	 * @param requestMethod
+	 *            the requestMethod to set
 	 */
 	public void setRequestMethod(String requestMethod) {
 		this.requestMethod = requestMethod;
@@ -138,12 +145,13 @@ public class ServletInfo implements Serializable {
 	}
 
 	/**
-	 * @param parameters the parameters to set
+	 * @param parameters
+	 *            the parameters to set
 	 */
 	public void setParameters(Map<String, String[]> parameters) {
 		this.parameters = parameters;
 	}
-	
+
 	@Override
 	public String toString() {
 		try {
