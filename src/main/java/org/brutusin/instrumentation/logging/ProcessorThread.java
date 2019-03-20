@@ -171,12 +171,14 @@ public class ProcessorThread implements Runnable {
 
 		if (sourceString != null && executorMethods.contains(sourceString)) {
 			long start = System.currentTimeMillis();
-			if (!LoggingInterceptor.requestMap.containsKey(this.threadId))
+			if (!LoggingInterceptor.requestMap.containsKey(this.threadId)) {
+//				System.out.println("throwing back for threadid : "+this.threadId+". ss: "+sourceString);
 				return;
+			}
 			IntCodeResultBean intCodeResultBean = new IntCodeResultBean(start, sourceString, LoggingInterceptor.VMPID,
 					LoggingInterceptor.applicationUUID);
 			intCodeResultBean.setServletInfo(LoggingInterceptor.requestMap.get(this.threadId));
-			System.out.println("Inside processor servlet info found: threadId: "+this.threadId +". "+ intCodeResultBean.getServletInfo());
+//			System.out.println("Inside processor servlet info found: threadId: "+this.threadId +". "+ intCodeResultBean.getServletInfo());
 			String klassName = null;
 
 			if (mongoExecutorMethods.contains(sourceString)) {

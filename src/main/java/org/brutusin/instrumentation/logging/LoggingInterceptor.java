@@ -282,18 +282,18 @@ public class LoggingInterceptor extends Interceptor {
 			sourceString = m.toGenericString();
 		}
 		
-		System.out.println("doOnStart : " + threadId+" : " + sourceString+" : " + servletInfo);
+//		System.out.println("doOnStart : " + threadId+" : " + sourceString+" : " + servletInfo);
 		if (sourceString != null && (IAgentConstants.HTTP_SERVLET_SERVICE.equals(sourceString)
 				|| IAgentConstants.FACES_SERVLET.equals(sourceString))) {
 			Map<String, String[]> paramMap = null;
-			System.out.println("Servlet : " + threadId+" : " + sourceString+" : " + servletInfo + " : "+ paramMap);
+//			System.out.println("Servlet : " + threadId+" : " + sourceString+" : " + servletInfo + " : "+ paramMap);
 			try {
-				paramMap = (Map<String, String[]>) arg[0].getClass().getMethod("getParameterMap").invoke(arg[0], null);
+				paramMap = new HashMap<>((Map<String, String[]>) arg[0].getClass().getMethod("getParameterMap").invoke(arg[0], null));
 			} catch (Exception e) {
 				e.printStackTrace();
 				return;
 			}
-			System.out.println("Servlet : " + threadId+" : " + sourceString+" : " + servletInfo + " : "+ paramMap);
+//			System.out.println("Servlet : " + threadId+" : " + sourceString+" : " + servletInfo + " : "+ paramMap);
 			if (!requestMap.containsKey(threadId)) {
 				servletInfo = new ServletInfo(paramMap);
 				requestMap.put(threadId, servletInfo);
@@ -301,11 +301,11 @@ public class LoggingInterceptor extends Interceptor {
 				servletInfo = requestMap.get(threadId);
 				servletInfo.setParameters(paramMap);
 			}
-			System.out.println("Servlet submitting : " + threadId+" : " + sourceString+" : " + servletInfo + " : "+ paramMap);
-			System.out.println("Servlet Current request map : "+ requestMap);
+//			System.out.println("Servlet submitting : " + threadId+" : " + sourceString+" : " + servletInfo + " : "+ paramMap);
+//			System.out.println("Servlet Current request map : "+ requestMap);
 			ServletEventPool.getInstance().processReceivedEvent(arg[0], servletInfo, sourceString, threadId);
 		} else if (sourceString != null && IAgentConstants.TOMCAT_COYOTE_ADAPTER_SERVICE.equals(sourceString)) {
-			System.out.println("Coyote : " + threadId+" : " + sourceString+" : " + servletInfo);
+//			System.out.println("Coyote : " + threadId+" : " + sourceString+" : " + servletInfo);
 
 			if (!requestMap.containsKey(threadId)) {
 				servletInfo = new ServletInfo();
@@ -313,18 +313,18 @@ public class LoggingInterceptor extends Interceptor {
 			} else {
 				servletInfo = requestMap.get(threadId);
 			}
-			System.out.println("Coyote submitting : " + threadId+" : " + sourceString+" : " + servletInfo);
-			System.out.println("Coyote Current request map : "+ requestMap);
+//			System.out.println("Coyote submitting : " + threadId+" : " + sourceString+" : " + servletInfo);
+//			System.out.println("Coyote Current request map : "+ requestMap);
 			ServletEventPool.getInstance().processReceivedEvent(arg[0], servletInfo, sourceString, threadId);
 		} else {
-			System.out.println("Other event : " + threadId+" : " + sourceString+" : " + servletInfo);
-			System.out.println("Other event current request map : "+ requestMap);
+//			System.out.println("Other event : " + threadId+" : " + sourceString+" : " + servletInfo);
+//			System.out.println("Other event current request map : "+ requestMap);
 
 			EventThreadPool.getInstance().processReceivedEvent(source, arg, executionId,
 					Thread.currentThread().getStackTrace(), threadId);
 		}
 		
-		System.out.println("started sourceString : "+ sourceString);
+//		System.out.println("started sourceString : "+ sourceString);
 	}
 
 	@Override
@@ -337,20 +337,20 @@ public class LoggingInterceptor extends Interceptor {
 
 	@Override
 	protected void doOnFinish(Object source, Object result, String executionId) {
-		String sourceString = null;
-		Method m = null;
-		long threadId = Thread.currentThread().getId();
-
-		if (source instanceof Method) {
-			m = (Method) source;
-			sourceString = m.toGenericString();
-			if (sourceString != null && (IAgentConstants.HTTP_SERVLET_SERVICE.equals(sourceString)
-					|| IAgentConstants.FACES_SERVLET.equals(sourceString))) {
-				requestMap.remove(threadId);
-				System.out.println("Request map entry removed for threadID " +threadId);
-				System.out.println("Current request map : "+ requestMap);
-			}
-		}
+//		String sourceString = null;
+//		Method m = null;
+//		long threadId = Thread.currentThread().getId();
+//
+//		if (source instanceof Method) {
+//			m = (Method) source;
+//			sourceString = m.toGenericString();
+//			if (sourceString != null && (IAgentConstants.HTTP_SERVLET_SERVICE.equals(sourceString)
+//					|| IAgentConstants.FACES_SERVLET.equals(sourceString))) {
+//				requestMap.remove(threadId);
+//				System.out.println("Request map entry removed for threadID " +threadId);
+//				System.out.println("Current request map : "+ requestMap);
+//			}
+//		}
 	}
 
 	@SuppressWarnings("unused")

@@ -88,7 +88,7 @@ public class ServletEventProcessor implements Runnable {
 		try {
 			if (IAgentConstants.TOMCAT_COYOTE_ADAPTER_SERVICE.equals(sourceString)) {
 				ByteBuffer bb = null;
-				System.out.println("Inside coyote adapter for threadId " + this.threadId + " source "+ this.sourceString);
+//				System.out.println("Inside coyote adapter for threadId " + this.threadId + " source "+ this.sourceString);
 				Field inputBufferField = firstElement.getClass().getDeclaredField("inputBuffer");
 				inputBufferField.setAccessible(true);
 				Object inputBuffer = inputBufferField.get(firstElement);
@@ -110,10 +110,10 @@ public class ServletEventProcessor implements Runnable {
 				Method getContentLength = firstElement.getClass().getMethod("getContentLength");
 				int contentLength = (int) getContentLength.invoke(firstElement, null);	
 				servletInfo.setRawParameters(readByteBuffer(bb, contentLength));
-				System.out.println("Exiting coyote adapter for threadId " + this.threadId + " source "+ this.sourceString);
+//				System.out.println("Exiting coyote adapter for threadId " + this.threadId + " source "+ this.sourceString);
 			} else if (IAgentConstants.HTTP_SERVLET_SERVICE.equals(sourceString)
 					|| IAgentConstants.FACES_SERVLET.equals(sourceString)) {
-				System.out.println("Inside servlet for threadId " + this.threadId + " source "+ this.sourceString);
+//				System.out.println("Inside servlet for threadId " + this.threadId + " source "+ this.sourceString);
 				Method getQueryString = firstElement.getClass().getMethod("getQueryString");
 				Method getRemoteAddr = firstElement.getClass().getMethod("getRemoteAddr");
 				Method getMethod = firstElement.getClass().getMethod("getMethod");
@@ -125,13 +125,13 @@ public class ServletEventProcessor implements Runnable {
 				servletInfo.setRequestMethod((String) getMethod.invoke(firstElement, null));
 				servletInfo.setContentType((String) getContentType.invoke(firstElement, null));
 				servletInfo.setRequestURI((String) getRequestURI.invoke(firstElement, null));
-				System.out.println("Exiting servlet for threadId " + this.threadId + " source "+ this.sourceString);
+//				System.out.println("Exiting servlet for threadId " + this.threadId + " source "+ this.sourceString);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
 			LoggingInterceptor.requestMap.remove(this.threadId);
-			System.out.println("Request map entry removed inside event processor for threadID " + this.threadId + " source "+ this.sourceString);
-			System.out.println("Current request map inside event processor : "+ LoggingInterceptor.requestMap);
+//			System.out.println("Request map entry removed inside event processor for threadID " + this.threadId + " source "+ this.sourceString);
+//			System.out.println("Current request map inside event processor : "+ LoggingInterceptor.requestMap);
 		}
 	}
 
