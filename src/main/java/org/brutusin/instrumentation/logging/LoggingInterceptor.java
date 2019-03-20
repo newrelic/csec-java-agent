@@ -280,35 +280,34 @@ public class LoggingInterceptor extends Interceptor {
 		if (source instanceof Method) {
 			m = (Method) source;
 			sourceString = m.toGenericString();
-			if (sourceString != null && IAgentConstants.HTTP_SERVLET_SERVICE.equals(sourceString)) {
-				Map<String, String[]> paramMap = null;
-				try {
-					paramMap = (Map<String, String[]>) arg[0].getClass().getMethod("getParameterMap").invoke(arg[0],
-							null);
-				} catch (Exception e) {
-					return;
-				}
-				if (!requestMap.containsKey(threadId)) {
-					servletInfo = new ServletInfo(paramMap);
-					requestMap.put(threadId, servletInfo);
-				} else {
-					servletInfo = requestMap.get(threadId);
-					servletInfo.setParameters(paramMap);
-				}
-				ServletEventPool.getInstance().processReceivedEvent(arg[0], servletInfo, sourceString, threadId);
-			} else if (sourceString != null && (IAgentConstants.TOMCAT_COYOTE_ADAPTER_SERVICE.equals(sourceString)
-					|| IAgentConstants.FACES_SERVLET.equals(sourceString))) {
-				if (!requestMap.containsKey(threadId)) {
-					servletInfo = new ServletInfo();
-					requestMap.put(threadId, servletInfo);
-				} else {
-					servletInfo = requestMap.get(threadId);
-				}
-				ServletEventPool.getInstance().processReceivedEvent(arg[0], servletInfo, sourceString, threadId);
-			} else {
-				EventThreadPool.getInstance().processReceivedEvent(source, arg, executionId,
-						Thread.currentThread().getStackTrace(), threadId);
+		}
+		if (sourceString != null && IAgentConstants.HTTP_SERVLET_SERVICE.equals(sourceString)) {
+			Map<String, String[]> paramMap = null;
+			try {
+				paramMap = (Map<String, String[]>) arg[0].getClass().getMethod("getParameterMap").invoke(arg[0], null);
+			} catch (Exception e) {
+				return;
 			}
+			if (!requestMap.containsKey(threadId)) {
+				servletInfo = new ServletInfo(paramMap);
+				requestMap.put(threadId, servletInfo);
+			} else {
+				servletInfo = requestMap.get(threadId);
+				servletInfo.setParameters(paramMap);
+			}
+			ServletEventPool.getInstance().processReceivedEvent(arg[0], servletInfo, sourceString, threadId);
+		} else if (sourceString != null && (IAgentConstants.TOMCAT_COYOTE_ADAPTER_SERVICE.equals(sourceString)
+				|| IAgentConstants.FACES_SERVLET.equals(sourceString))) {
+			if (!requestMap.containsKey(threadId)) {
+				servletInfo = new ServletInfo();
+				requestMap.put(threadId, servletInfo);
+			} else {
+				servletInfo = requestMap.get(threadId);
+			}
+			ServletEventPool.getInstance().processReceivedEvent(arg[0], servletInfo, sourceString, threadId);
+		} else {
+			EventThreadPool.getInstance().processReceivedEvent(source, arg, executionId,
+					Thread.currentThread().getStackTrace(), threadId);
 		}
 	}
 
