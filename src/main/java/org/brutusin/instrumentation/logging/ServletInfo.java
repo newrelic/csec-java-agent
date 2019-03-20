@@ -1,6 +1,7 @@
 package org.brutusin.instrumentation.logging;
 
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -47,6 +48,16 @@ public class ServletInfo implements Serializable {
 	
 	public ServletInfo(Map<String, String[]> paramMap) {
 		this.parameters = paramMap;
+	}
+
+	public ServletInfo(ServletInfo servletInfo) {
+		this.parameters = new HashMap<>(servletInfo.getParameters());
+		this.queryString = servletInfo.getQueryString();
+		this.sourceIp = servletInfo.getSourceIp();
+		this.requestMethod = servletInfo.getRequestMethod();
+		this.rawParameters = servletInfo.getRawParameters();
+		this.contentType = servletInfo.getContentType();
+		this.requestURI = servletInfo.getRequestURI();
 	}
 
 	/**
