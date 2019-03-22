@@ -119,7 +119,14 @@ public class ServletEventProcessor implements Runnable {
 				Method getMethod = firstElement.getClass().getMethod("getMethod");
 				Method getContentType = firstElement.getClass().getMethod("getContentType");
 				Method getRequestURI = firstElement.getClass().getMethod("getRequestURI");
-
+				
+				// set all methods accessible
+				getQueryString.setAccessible(true);
+				getRemoteAddr.setAccessible(true);
+				getMethod.setAccessible(true);
+				getContentType.setAccessible(true);
+				getRequestURI.setAccessible(true);
+				
 				servletInfo.setQueryString((String) getQueryString.invoke(firstElement, null));
 				servletInfo.setSourceIp((String) getRemoteAddr.invoke(firstElement, null));
 				servletInfo.setRequestMethod((String) getMethod.invoke(firstElement, null));

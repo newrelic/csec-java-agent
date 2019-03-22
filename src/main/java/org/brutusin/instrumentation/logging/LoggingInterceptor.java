@@ -288,7 +288,9 @@ public class LoggingInterceptor extends Interceptor {
 			Map<String, String[]> paramMap = null;
 //			System.out.println("Servlet : " + threadId+" : " + sourceString+" : " + servletInfo + " : "+ paramMap);
 			try {
-				paramMap = new HashMap<>((Map<String, String[]>) arg[0].getClass().getMethod("getParameterMap").invoke(arg[0], null));
+				Method getParameterMapMethod = arg[0].getClass().getMethod("getParameterMap");
+				getParameterMapMethod.setAccessible(true);
+				paramMap = new HashMap<>((Map<String, String[]>) getParameterMapMethod.invoke(arg[0], null));
 			} catch (Exception e) {
 				e.printStackTrace();
 				return;
