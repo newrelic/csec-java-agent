@@ -136,7 +136,7 @@ public class ServletEventProcessor implements Runnable {
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
-			LoggingInterceptor.requestMap.remove(this.threadId);
+//			LoggingInterceptor.requestMap.remove(this.threadId);
 //			System.out.println("Request map entry removed inside event processor for threadID " + this.threadId + " source "+ this.sourceString);
 //			System.out.println("Current request map inside event processor : "+ LoggingInterceptor.requestMap);
 		}
