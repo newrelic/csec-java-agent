@@ -2,7 +2,6 @@ package org.brutusin.instrumentation.logging;
 
 import java.io.Serializable;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.brutusin.com.fasterxml.jackson.core.JsonProcessingException;
