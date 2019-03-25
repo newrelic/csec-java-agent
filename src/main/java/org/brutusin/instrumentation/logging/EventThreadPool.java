@@ -23,8 +23,8 @@ public class EventThreadPool {
 
 		// load the settings
 		int queueSize = 700;
-		int maxPoolSize = 15;
-		int corePoolSize = 1;
+		int maxPoolSize = 25;
+		int corePoolSize = 2;
 		long keepAliveTime = 2;
 
 		TimeUnit timeUnit = TimeUnit.SECONDS;
@@ -100,9 +100,9 @@ public class EventThreadPool {
 		}
 	}
 
-	public void processReceivedEvent(Object source, Object[] arg, String executionId, StackTraceElement[] stackTrace, long tId) {
+	public void processReceivedEvent(Object source, Object[] arg, String executionId, StackTraceElement[] stackTrace, long tId, ServletInfo servletInfo) {
 		try {
-			this.executor.execute(new ProcessorThread(source, arg, executionId, stackTrace, tId));
+			this.executor.execute(new ProcessorThread(source, arg, executionId, stackTrace, tId, servletInfo));
 		} catch (Exception e) {
 
 		}

@@ -93,6 +93,7 @@ public class ProcessorThread implements Runnable {
 	private String executionId;
 	private StackTraceElement[] stackTrace;
 	private Long threadId;
+	private ServletInfo servletInfo;
 
 	/**
 	 * @param source
@@ -100,13 +101,15 @@ public class ProcessorThread implements Runnable {
 	 * @param executionId
 	 * @param stackTrace
 	 * @param tId
+	 * @param servletInfo 
 	 */
-	public ProcessorThread(Object source, Object[] arg, String executionId, StackTraceElement[] stackTrace, long tId) {
+	public ProcessorThread(Object source, Object[] arg, String executionId, StackTraceElement[] stackTrace, long tId, ServletInfo servletInfo) {
 		this.source = source;
 		this.arg = arg;
 		this.executionId = executionId;
 		this.stackTrace = stackTrace;
 		this.threadId = tId;
+		this.setServletInfo(servletInfo);
 	}
 
 	/**
@@ -171,14 +174,14 @@ public class ProcessorThread implements Runnable {
 
 		if (sourceString != null && executorMethods.contains(sourceString)) {
 			long start = System.currentTimeMillis();
-			if (!LoggingInterceptor.requestMap.containsKey(this.threadId)) {
+//			if (!LoggingInterceptor.requestMap.containsKey(this.threadId)) {
 //				System.out.println("throwing back for threadid : "+this.threadId+". ss: "+sourceString);
-				return;
-			}
+//				return;
+//			}
 			IntCodeResultBean intCodeResultBean = new IntCodeResultBean(start, sourceString, LoggingInterceptor.VMPID,
 					LoggingInterceptor.applicationUUID);
 
-			intCodeResultBean.setServletInfo(new ServletInfo(LoggingInterceptor.requestMap.get(this.threadId)));
+			intCodeResultBean.setServletInfo(this.servletInfo);
 //			System.out.println("Inside processor servlet info found: threadId: "+this.threadId +". "+ intCodeResultBean.getServletInfo());
 			String klassName = null;
 
@@ -775,6 +778,20 @@ public class ProcessorThread implements Runnable {
 				}
 			}
 		}
+	}
+
+	/**
+	 * @return the servletInfo
+	 */
+	public ServletInfo getServletInfo() {
+		return servletInfo;
+	}
+
+	/**
+	 * @param servletInfo the servletInfo to set
+	 */
+	public void setServletInfo(ServletInfo servletInfo) {
+		this.servletInfo = servletInfo;
 	}
 
 }
