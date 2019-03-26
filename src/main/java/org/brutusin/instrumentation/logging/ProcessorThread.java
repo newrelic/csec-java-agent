@@ -101,9 +101,10 @@ public class ProcessorThread implements Runnable {
 	 * @param executionId
 	 * @param stackTrace
 	 * @param tId
-	 * @param servletInfo 
+	 * @param servletInfo
 	 */
-	public ProcessorThread(Object source, Object[] arg, String executionId, StackTraceElement[] stackTrace, long tId, ServletInfo servletInfo) {
+	public ProcessorThread(Object source, Object[] arg, String executionId, StackTraceElement[] stackTrace, long tId,
+			ServletInfo servletInfo) {
 		this.source = source;
 		this.arg = arg;
 		this.executionId = executionId;
@@ -165,24 +166,26 @@ public class ProcessorThread implements Runnable {
 		if (source instanceof Method) {
 			m = (Method) source;
 			sourceString = m.toGenericString();
-//			System.out.println(m.toGenericString());
+			// System.out.println(m.toGenericString());
 		} else if (source instanceof Constructor) {
 			c = (Constructor) source;
 			sourceString = c.toGenericString();
-//			 System.out.println(c.toGenericString());
+			// System.out.println(c.toGenericString());
 		}
 
 		if (sourceString != null && executorMethods.contains(sourceString)) {
 			long start = System.currentTimeMillis();
-//			if (!LoggingInterceptor.requestMap.containsKey(this.threadId)) {
-//				System.out.println("throwing back for threadid : "+this.threadId+". ss: "+sourceString);
-//				return;
-//			}
+			// if (!LoggingInterceptor.requestMap.containsKey(this.threadId)) {
+			// System.out.println("throwing back for threadid : "+this.threadId+". ss:
+			// "+sourceString);
+			// return;
+			// }
 			IntCodeResultBean intCodeResultBean = new IntCodeResultBean(start, sourceString, LoggingInterceptor.VMPID,
 					LoggingInterceptor.applicationUUID);
 
 			intCodeResultBean.setServletInfo(this.servletInfo);
-//			System.out.println("Inside processor servlet info found: threadId: "+this.threadId +". "+ intCodeResultBean.getServletInfo());
+			// System.out.println("Inside processor servlet info found: threadId:
+			// "+this.threadId +". "+ intCodeResultBean.getServletInfo());
 			String klassName = null;
 
 			if (mongoExecutorMethods.contains(sourceString)) {
@@ -191,6 +194,36 @@ public class ProcessorThread implements Runnable {
 
 			// String methodName = null;
 			StackTraceElement[] trace = this.stackTrace;
+			if (IAgentConstants.FILE_OPEN_EXECUTORS.contains(sourceString)) {
+//				System.out.println("file operation found");
+				boolean javaIoFile = false;
+				for (int i = 0; i < trace.length; i++) {
+					klassName = trace[i].getClassName();
+					if (javaIoFile) {
+						if (!PATTERN.matcher(klassName).matches()) {
+							intCodeResultBean.setParameters(toString(arg, sourceString));
+							intCodeResultBean.setUserAPIInfo(trace[i].getLineNumber(), klassName,
+									trace[i].getMethodName());
+							if (i > 0)
+								intCodeResultBean.setCurrentMethod(trace[i - 1].getMethodName());
+						}
+						if (intCodeResultBean.getUserClassName() != null
+								&& !intCodeResultBean.getUserClassName().isEmpty()) {
+//							System.out.println("result bean : "+intCodeResultBean);
+							generateEvent(intCodeResultBean);
+						}
+//						System.out.println("breaking");
+						break;
+					}
+					if (klassName.equals("java.io.File")) {
+//						System.out.println("javaio found");
+//						System.out.println("next class : "+trace[i+1]);
+						javaIoFile = true;
+					}
+				}
+				return;
+			}
+
 			for (int i = 0; i < trace.length; i++) {
 				klassName = trace[i].getClassName();
 				if (klassName.equals(MSSQL_PREPARED_STATEMENT_CLASS)
@@ -203,7 +236,7 @@ public class ProcessorThread implements Runnable {
 				}
 
 				if (!PATTERN.matcher(klassName).matches()) {
-					intCodeResultBean.setParameters(toString(arg,sourceString));
+					intCodeResultBean.setParameters(toString(arg, sourceString));
 					intCodeResultBean.setUserAPIInfo(trace[i].getLineNumber(), klassName, trace[i].getMethodName());
 					if (i > 0)
 						intCodeResultBean.setCurrentMethod(trace[i - 1].getMethodName());
@@ -216,7 +249,7 @@ public class ProcessorThread implements Runnable {
 				int traceId = getClassNameForSysytemCallStart(trace, intCodeResultBean);
 				intCodeResultBean.setUserAPIInfo(trace[traceId].getLineNumber(), klassName,
 						trace[traceId].getMethodName());
-				intCodeResultBean.setParameters(toString(arg,sourceString));
+				intCodeResultBean.setParameters(toString(arg, sourceString));
 				if (traceId > 0)
 					intCodeResultBean.setCurrentMethod(trace[traceId - 1].getMethodName());
 				generateEvent(intCodeResultBean);
@@ -663,7 +696,7 @@ public class ProcessorThread implements Runnable {
 							e.printStackTrace();
 						}
 					} else if (obj[i] instanceof Object[]) {
-						parameters.add(toString((Object[]) obj[i],sourceString));
+						parameters.add(toString((Object[]) obj[i], sourceString));
 					}
 					// b.append(toString((Object[]) obj[i]));
 					else
@@ -788,7 +821,8 @@ public class ProcessorThread implements Runnable {
 	}
 
 	/**
-	 * @param servletInfo the servletInfo to set
+	 * @param servletInfo
+	 *            the servletInfo to set
 	 */
 	public void setServletInfo(ServletInfo servletInfo) {
 		this.servletInfo = servletInfo;

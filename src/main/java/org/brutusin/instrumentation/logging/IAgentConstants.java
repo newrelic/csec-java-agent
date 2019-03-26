@@ -12,8 +12,7 @@ public interface IAgentConstants {
 
 	String SYSYTEM_CALL_START = "static java.lang.Process java.lang.ProcessImpl.start(java.lang.String[],java.util.Map<java.lang.String, java.lang.String>,java.lang.String,java.lang.ProcessBuilder$Redirect[],boolean) throws java.io.IOException";
 
-	String[] FILE_OPEN_EXECUTORS = { "public java.io.File(java.lang.String,java.lang.String)",
-			"public java.io.File(java.lang.String)" };
+	List<String> FILE_OPEN_EXECUTORS = Arrays.asList(new String[] { "public java.io.File(java.lang.String,java.lang.String)", "public java.io.File(java.lang.String)" });
 
 	Map<String, List<String>> MYSQL_GET_CONNECTION_MAP = new HashMap() {
 		{
