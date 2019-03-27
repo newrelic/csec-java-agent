@@ -17,7 +17,7 @@ public interface IAgentConstants {
 	Map<String, List<String>> MYSQL_GET_CONNECTION_MAP = new HashMap() {
 		{
 			put("java.sql.DriverManager", Collections.singletonList("getConnection"));
-			put("com.mysql.jdbc.ConnectionImpl", Arrays.asList("getInstance", "isReadOnly"));
+//			put("com.mysql.jdbc.ConnectionImpl", Arrays.asList("getInstance", "isReadOnly"));
 		}
 	};
 
