@@ -3,6 +3,7 @@ package org.brutusin.instrumentation.logging;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
 import org.brutusin.com.fasterxml.jackson.core.JsonProcessingException;
@@ -133,6 +134,34 @@ public class ServletEventProcessor implements Runnable {
 				servletInfo.setContentType((String) getContentType.invoke(firstElement, null));
 				servletInfo.setRequestURI((String) getRequestURI.invoke(firstElement, null));
 //				System.out.println("Exiting servlet for threadId " + this.threadId + " source "+ this.sourceString);
+				
+				// extract raw params if the request is from jetty
+//				System.out.println("Request Class Name:" + firstElement.getClass().getName());
+				if (firstElement.getClass().getName().equals(IAgentConstants.JETTY_SERVLET_REQUEST_IDENTIFIER)) {
+					// buffer located in request > _channel > _httpConnection > _requestBuffer
+					
+					ByteBuffer bb = null;
+					
+					Field channelField = firstElement.getClass().getDeclaredField("_channel");
+					channelField.setAccessible(true);
+					Object _channel = channelField.get(firstElement);
+
+					Field httpConnectionField = _channel.getClass().getDeclaredField("_httpConnection");
+					httpConnectionField.setAccessible(true);
+					Object _httpConnection = httpConnectionField.get(_channel);
+					
+					
+					Field bytes = _httpConnection.getClass().getDeclaredField("_requestBuffer");
+					bytes.setAccessible(true);
+					bb = (ByteBuffer) bytes.get(_httpConnection);
+					
+					Method getContentLength = firstElement.getClass().getMethod("getContentLength");
+					int contentLength = (int) getContentLength.invoke(firstElement, null);	
+					servletInfo.setRawParameters(readByteBuffer(bb, contentLength));	
+				}
+				
+//				System.out.println("Current request map inside event processor : "+ LoggingInterceptor.requestMap);
+
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
