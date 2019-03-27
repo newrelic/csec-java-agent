@@ -226,15 +226,14 @@ public class ProcessorThread implements Runnable {
 
 			for (int i = 0; i < trace.length; i++) {
 				klassName = trace[i].getClassName();
-				if (klassName.equals(MSSQL_PREPARED_STATEMENT_CLASS)
-						|| klassName.equals(MSSQL_PREPARED_BATCH_STATEMENT_CLASS)
-						|| klassName.contains(MYSQL_PREPARED_STATEMENT)) {
-					intCodeResultBean.setValidationBypass(true);
-				} else if (IAgentConstants.MYSQL_GET_CONNECTION_MAP.containsKey(klassName)
-						&& IAgentConstants.MYSQL_GET_CONNECTION_MAP.get(klassName).contains(trace[i].getMethodName())) {
-					intCodeResultBean.setValidationBypass(true);
-				}
-
+//				if (klassName.equals(MSSQL_PREPARED_STATEMENT_CLASS)
+//						|| klassName.equals(MSSQL_PREPARED_BATCH_STATEMENT_CLASS)
+//						|| klassName.contains(MYSQL_PREPARED_STATEMENT)) {
+//					intCodeResultBean.setValidationBypass(true);
+//				} else if (IAgentConstants.MYSQL_GET_CONNECTION_MAP.containsKey(klassName)
+//						&& IAgentConstants.MYSQL_GET_CONNECTION_MAP.get(klassName).contains(trace[i].getMethodName())) {
+//					intCodeResultBean.setValidationBypass(true);
+//				}
 				if (!PATTERN.matcher(klassName).matches()) {
 					intCodeResultBean.setParameters(toString(arg, sourceString));
 					intCodeResultBean.setUserAPIInfo(trace[i].getLineNumber(), klassName, trace[i].getMethodName());
