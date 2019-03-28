@@ -16,8 +16,8 @@ public interface IAgentConstants {
 
 	Map<String, List<String>> MYSQL_GET_CONNECTION_MAP = new HashMap() {
 		{
-//			put("java.sql.DriverManager", Collections.singletonList("getConnection"));
-//			put("com.mysql.jdbc.ConnectionImpl", Arrays.asList("getInstance", "isReadOnly"));
+			put("java.sql.DriverManager", Collections.singletonList("getConnection"));
+			put("com.mysql.jdbc.ConnectionImpl", Arrays.asList("getInstance", "isReadOnly"));
 		}
 	};
 
@@ -82,6 +82,8 @@ public interface IAgentConstants {
 	
 	String HTTP_SERVLET_SERVICE = "protected void javax.servlet.http.HttpServlet.service(javax.servlet.http.HttpServletRequest,javax.servlet.http.HttpServletResponse) throws javax.servlet.ServletException,java.io.IOException";
 
+	String STRUTS2_DO_FILTER = "public void org.apache.struts2.dispatcher.ng.filter.StrutsPrepareAndExecuteFilter.doFilter(javax.servlet.ServletRequest,javax.servlet.ServletResponse,javax.servlet.FilterChain) throws java.io.IOException,javax.servlet.ServletException";
+	
 	String MSSQL_EXECUTOR = "boolean com.microsoft.sqlserver.jdbc.SQLServerConnection.executeCommand(com.microsoft.sqlserver.jdbc.TDSCommand) throws com.microsoft.sqlserver.jdbc.SQLServerException";
 
 	String[] CONSTRUCTOR = { "<init>" };
@@ -93,10 +95,14 @@ public interface IAgentConstants {
 			"com/mongodb/connection/DefaultServerConnection", "com/mongodb/internal/connection/DefaultServerConnection",
 			"com/mongodb/async/client/MongoClientImpl$2", "com/mongodb/async/client/AsyncOperationExecutorImpl",
 			"com/mongodb/async/client/OperationExecutorImpl", "java/net/URLClassLoader",
+			
 			// http request
 			"javax/servlet/http/HttpServlet",
 			"org/apache/catalina/connector/CoyoteAdapter",
-			"javax/faces/webapp/FacesServlet"};
+			"javax/faces/webapp/FacesServlet",
+			"org/apache/struts2/dispatcher/ng/filter/StrutsPrepareAndExecuteFilter"
+			
+	};
 
 	String[][] ALL_METHODS = { { "sqlQueryDirect" }, { "start" }, { "newOutputStream" }, CONSTRUCTOR,
 			{ "executeStatement" }, { "sqlQueryDirect" }, { "execSQL" }, { "executeProtocol" }, { "executeProtocol" },
@@ -105,6 +111,7 @@ public interface IAgentConstants {
 			{ "service" },
 //			CONSTRUCTOR
 			{ "service" },
+			{ "doFilter" }
 			};
 
 	/** Source Method Identifiers for argument resolution */

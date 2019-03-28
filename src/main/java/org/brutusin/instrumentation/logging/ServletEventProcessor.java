@@ -113,8 +113,11 @@ public class ServletEventProcessor implements Runnable {
 				servletInfo.setRawParameters(readByteBuffer(bb, contentLength));
 //				System.out.println("Exiting coyote adapter for threadId " + this.threadId + " source "+ this.sourceString);
 			} else if (IAgentConstants.HTTP_SERVLET_SERVICE.equals(sourceString)
-					|| IAgentConstants.FACES_SERVLET.equals(sourceString)) {
+					|| IAgentConstants.FACES_SERVLET.equals(sourceString)
+					|| IAgentConstants.STRUTS2_DO_FILTER.equals(sourceString)) {
+				
 //				System.out.println("Inside servlet for threadId " + this.threadId + " source "+ this.sourceString);
+				
 				Method getQueryString = firstElement.getClass().getMethod("getQueryString");
 				Method getRemoteAddr = firstElement.getClass().getMethod("getRemoteAddr");
 				Method getMethod = firstElement.getClass().getMethod("getMethod");

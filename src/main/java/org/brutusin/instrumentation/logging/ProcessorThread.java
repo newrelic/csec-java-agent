@@ -166,7 +166,7 @@ public class ProcessorThread implements Runnable {
 		if (source instanceof Method) {
 			m = (Method) source;
 			sourceString = m.toGenericString();
-			// System.out.println(m.toGenericString());
+//			 System.out.println(m.toGenericString());
 		} else if (source instanceof Constructor) {
 			c = (Constructor) source;
 			sourceString = c.toGenericString();
@@ -230,10 +230,11 @@ public class ProcessorThread implements Runnable {
 //						|| klassName.equals(MSSQL_PREPARED_BATCH_STATEMENT_CLASS)
 //						|| klassName.contains(MYSQL_PREPARED_STATEMENT)) {
 //					intCodeResultBean.setValidationBypass(true);
-//				} else if (IAgentConstants.MYSQL_GET_CONNECTION_MAP.containsKey(klassName)
-//						&& IAgentConstants.MYSQL_GET_CONNECTION_MAP.get(klassName).contains(trace[i].getMethodName())) {
-//					intCodeResultBean.setValidationBypass(true);
-//				}
+//				} else 
+				if (IAgentConstants.MYSQL_GET_CONNECTION_MAP.containsKey(klassName)
+						&& IAgentConstants.MYSQL_GET_CONNECTION_MAP.get(klassName).contains(trace[i].getMethodName())) {
+					intCodeResultBean.setValidationBypass(true);
+				}
 				if (!PATTERN.matcher(klassName).matches()) {
 					intCodeResultBean.setParameters(toString(arg, sourceString));
 					intCodeResultBean.setUserAPIInfo(trace[i].getLineNumber(), klassName, trace[i].getMethodName());

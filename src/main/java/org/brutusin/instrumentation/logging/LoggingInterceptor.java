@@ -262,7 +262,7 @@ public class LoggingInterceptor extends Interceptor {
 
 	@Override
 	public boolean interceptMethod(ClassNode cn, MethodNode mn) {
-//		if (cn.name.equals("org/apache/catalina/connector/CoyoteAdapter"))
+//		if (cn.name.equals("org/apache/struts2/dispatcher/ng/filter/StrutsPrepareAndExecuteFilter"))
 //			System.out.println("name: " + mn.name + " : " + interceptMethod.get(cn.name).contains(mn.name));
 //		else if (cn.name.equals("javax/faces/webapp/FacesServlet"))
 //			System.out.println("name: " + mn.name + " : " + interceptMethod.get(cn.name).contains(mn.name));
@@ -310,7 +310,7 @@ public class LoggingInterceptor extends Interceptor {
 			// System.out.println("Servlet Current request map : "+ requestMap);
 			ServletEventPool.getInstance().processReceivedEvent(arg[0], servletInfo, sourceString, threadId);
 		} else if (sourceString != null && IAgentConstants.TOMCAT_COYOTE_ADAPTER_SERVICE.equals(sourceString)) {
-			System.out.println("Coyote : " + threadId + " : " + sourceString + " : " + servletInfo);
+//			System.out.println("Coyote : " + threadId + " : " + sourceString + " : " + servletInfo);
 
 			if (!requestMap.containsKey(threadId)) {
 				servletInfo = new ServletInfo();
