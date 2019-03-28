@@ -285,7 +285,8 @@ public class LoggingInterceptor extends Interceptor {
 		// System.out.println("doOnStart : " + threadId+" : " + sourceString+" : " +
 		// servletInfo);
 		if (sourceString != null && (IAgentConstants.HTTP_SERVLET_SERVICE.equals(sourceString)
-				|| IAgentConstants.FACES_SERVLET.equals(sourceString))) {
+				|| IAgentConstants.FACES_SERVLET.equals(sourceString))
+				|| IAgentConstants.STRUTS2_DO_FILTER.equals(sourceString)) {
 			Map<String, String[]> paramMap = null;
 //			System.out.println("Servlet : " + threadId + " : " + sourceString + " : " + servletInfo + " : " + paramMap);
 			try {
