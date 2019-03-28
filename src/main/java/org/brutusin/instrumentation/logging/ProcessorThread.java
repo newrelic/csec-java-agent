@@ -1,5 +1,6 @@
 package org.brutusin.instrumentation.logging;
 
+import static org.brutusin.instrumentation.logging.IAgentConstants.CLASS_LOADER_IDENTIFIER;
 import static org.brutusin.instrumentation.logging.IAgentConstants.MOGNO_ELEMENT_DATA_FIELD;
 import static org.brutusin.instrumentation.logging.IAgentConstants.MONGO_COLLECTION_FIELD;
 import static org.brutusin.instrumentation.logging.IAgentConstants.MONGO_COLLECTION_WILDCARD;
@@ -43,7 +44,6 @@ import static org.brutusin.instrumentation.logging.IAgentConstants.MSSQL_STATEME
 import static org.brutusin.instrumentation.logging.IAgentConstants.MSSQL_USER_SQL_FIELD;
 import static org.brutusin.instrumentation.logging.IAgentConstants.MSSQL_VALUE_FIELD;
 import static org.brutusin.instrumentation.logging.IAgentConstants.MYSQL_IDENTIFIER;
-import static org.brutusin.instrumentation.logging.IAgentConstants.CLASS_LOADER_IDENTIFIER;
 import static org.brutusin.instrumentation.logging.IAgentConstants.MYSQL_PREPARED_STATEMENT;
 
 import java.io.IOException;
@@ -87,24 +87,30 @@ public class ProcessorThread implements Runnable {
 			interceptMethod.put(IAgentConstants.ALL_CLASSES[i],
 					new ArrayList<String>(Arrays.asList(IAgentConstants.ALL_METHODS[i])));
 		}
-
 	}
 	private Object source;
 	private Object[] arg;
 	private String executionId;
 	private StackTraceElement[] stackTrace;
+	private Long threadId;
+	private ServletInfo servletInfo;
 
 	/**
 	 * @param source
 	 * @param arg
 	 * @param executionId
 	 * @param stackTrace
+	 * @param tId
+	 * @param servletInfo
 	 */
-	public ProcessorThread(Object source, Object[] arg, String executionId, StackTraceElement[] stackTrace) {
+	public ProcessorThread(Object source, Object[] arg, String executionId, StackTraceElement[] stackTrace, long tId,
+			ServletInfo servletInfo) {
 		this.source = source;
 		this.arg = arg;
 		this.executionId = executionId;
 		this.stackTrace = stackTrace;
+		this.threadId = tId;
+		this.setServletInfo(servletInfo);
 	}
 
 	/**
@@ -160,32 +166,26 @@ public class ProcessorThread implements Runnable {
 		if (source instanceof Method) {
 			m = (Method) source;
 			sourceString = m.toGenericString();
-			// System.out.println(m.toGenericString());
+//			 System.out.println(m.toGenericString());
 		} else if (source instanceof Constructor) {
 			c = (Constructor) source;
 			sourceString = c.toGenericString();
 			// System.out.println(c.toGenericString());
 		}
-		// System.out.println(executorMethods.contains(sourceString)+"::executorMethods.contains(sourceString)\n"+sourceString);
+
 		if (sourceString != null && executorMethods.contains(sourceString)) {
 			long start = System.currentTimeMillis();
-			// if (sourceString.equals(IAgentConstants.SYSYTEM_CALL_START)) {
-			// System.out.println("Found : " + sourceString + "Param : " +
-			// toString(arg));
-			// StackTraceElement[] trace =
-			// Thread.currentThread().getStackTrace();
-			// for (int i = 0; i < trace.length; i++) {
-			// System.err.println("\t" + trace[i].getClassName());
+			// if (!LoggingInterceptor.requestMap.containsKey(this.threadId)) {
+			// System.out.println("throwing back for threadid : "+this.threadId+". ss:
+			// "+sourceString);
+			// return;
 			// }
-			// }
-			// boolean fileExecute = false;
-			// if(fileExecutors.contains(sourceString)) {
-			// fileExecute = true;
-			// }
-
 			IntCodeResultBean intCodeResultBean = new IntCodeResultBean(start, sourceString, LoggingInterceptor.VMPID,
 					LoggingInterceptor.applicationUUID);
 
+			intCodeResultBean.setServletInfo(this.servletInfo);
+			// System.out.println("Inside processor servlet info found: threadId:
+			// "+this.threadId +". "+ intCodeResultBean.getServletInfo());
 			String klassName = null;
 
 			if (mongoExecutorMethods.contains(sourceString)) {
@@ -194,19 +194,49 @@ public class ProcessorThread implements Runnable {
 
 			// String methodName = null;
 			StackTraceElement[] trace = this.stackTrace;
+			if (IAgentConstants.FILE_OPEN_EXECUTORS.contains(sourceString)) {
+//				System.out.println("file operation found");
+				boolean javaIoFile = false;
+				for (int i = 0; i < trace.length; i++) {
+					klassName = trace[i].getClassName();
+					if (javaIoFile) {
+						if (!PATTERN.matcher(klassName).matches()) {
+							intCodeResultBean.setParameters(toString(arg, sourceString));
+							intCodeResultBean.setUserAPIInfo(trace[i].getLineNumber(), klassName,
+									trace[i].getMethodName());
+							if (i > 0)
+								intCodeResultBean.setCurrentMethod(trace[i - 1].getMethodName());
+						}
+						if (intCodeResultBean.getUserClassName() != null
+								&& !intCodeResultBean.getUserClassName().isEmpty()) {
+//							System.out.println("result bean : "+intCodeResultBean);
+							generateEvent(intCodeResultBean);
+						}
+//						System.out.println("breaking");
+						break;
+					}
+					if (klassName.equals("java.io.File")) {
+//						System.out.println("javaio found");
+//						System.out.println("next class : "+trace[i+1]);
+						javaIoFile = true;
+					}
+				}
+				return;
+			}
+
 			for (int i = 0; i < trace.length; i++) {
 				klassName = trace[i].getClassName();
-				if (klassName.equals(MSSQL_PREPARED_STATEMENT_CLASS)
-						|| klassName.equals(MSSQL_PREPARED_BATCH_STATEMENT_CLASS)
-						|| klassName.contains(MYSQL_PREPARED_STATEMENT)) {
-					intCodeResultBean.setValidationBypass(true);
-				} else if (IAgentConstants.MYSQL_GET_CONNECTION_MAP.containsKey(klassName)
+//				if (klassName.equals(MSSQL_PREPARED_STATEMENT_CLASS)
+//						|| klassName.equals(MSSQL_PREPARED_BATCH_STATEMENT_CLASS)
+//						|| klassName.contains(MYSQL_PREPARED_STATEMENT)) {
+//					intCodeResultBean.setValidationBypass(true);
+//				} else 
+				if (IAgentConstants.MYSQL_GET_CONNECTION_MAP.containsKey(klassName)
 						&& IAgentConstants.MYSQL_GET_CONNECTION_MAP.get(klassName).contains(trace[i].getMethodName())) {
 					intCodeResultBean.setValidationBypass(true);
 				}
-
 				if (!PATTERN.matcher(klassName).matches()) {
-					intCodeResultBean.setParameters(toString(arg));
+					intCodeResultBean.setParameters(toString(arg, sourceString));
 					intCodeResultBean.setUserAPIInfo(trace[i].getLineNumber(), klassName, trace[i].getMethodName());
 					if (i > 0)
 						intCodeResultBean.setCurrentMethod(trace[i - 1].getMethodName());
@@ -219,7 +249,7 @@ public class ProcessorThread implements Runnable {
 				int traceId = getClassNameForSysytemCallStart(trace, intCodeResultBean);
 				intCodeResultBean.setUserAPIInfo(trace[traceId].getLineNumber(), klassName,
 						trace[traceId].getMethodName());
-				intCodeResultBean.setParameters(toString(arg));
+				intCodeResultBean.setParameters(toString(arg, sourceString));
 				if (traceId > 0)
 					intCodeResultBean.setCurrentMethod(trace[traceId - 1].getMethodName());
 				generateEvent(intCodeResultBean);
@@ -640,23 +670,21 @@ public class ProcessorThread implements Runnable {
 	 * @return the JSON array
 	 */
 	@SuppressWarnings({ "unchecked", "unused" })
-	private static JSONArray toString(Object[] obj) {
+	private static JSONArray toString(Object[] obj, String sourceString) {
+
 		if (obj == null) {
 			return null;
 		}
 
 		JSONArray parameters = new JSONArray();
 		try {
-			Object firstElement = obj[0];
-
-			if (firstElement != null && firstElement.getClass() != null
-					&& obj[0].getClass().getName().contains(MSSQL_IDENTIFIER)) {
+			if (obj[0] != null && sourceString.contains(MSSQL_IDENTIFIER)) {
 				getParameterValue(obj[0], parameters);
-			} else if (firstElement != null && firstElement.getClass().getName().contains(MYSQL_IDENTIFIER)) {
+			} else if (obj[0] != null && sourceString.contains(MYSQL_IDENTIFIER)) {
 				getMySQLParameterValue(obj, parameters);
-			} else if (firstElement != null && firstElement.getClass().getName().contains(MONGO_IDENTIFIER)) {
+			} else if (obj[0] != null && sourceString.contains(MONGO_IDENTIFIER)) {
 				getMongoParameterValue(obj, parameters);
-			} else if (firstElement != null && firstElement.getClass().getName().contains(CLASS_LOADER_IDENTIFIER)) {
+			} else if (obj[0] != null && sourceString.contains(CLASS_LOADER_IDENTIFIER)) {
 				getClassLoaderParameterValue(obj, parameters);
 			} else {
 				for (int i = 0; i < obj.length; i++) {
@@ -668,7 +696,7 @@ public class ProcessorThread implements Runnable {
 							e.printStackTrace();
 						}
 					} else if (obj[i] instanceof Object[]) {
-						parameters.add(toString((Object[]) obj[i]));
+						parameters.add(toString((Object[]) obj[i], sourceString));
 					}
 					// b.append(toString((Object[]) obj[i]));
 					else
@@ -746,7 +774,8 @@ public class ProcessorThread implements Runnable {
 			}
 		}
 
-		if (LoggingInterceptor.socket != null && LoggingInterceptor.socket.isConnected() && !LoggingInterceptor.socket.isClosed()) {
+		if (LoggingInterceptor.socket != null && LoggingInterceptor.socket.isConnected()
+				&& !LoggingInterceptor.socket.isClosed()) {
 			intCodeResultBean.setEventGenerationTime(System.currentTimeMillis());
 			System.out.println("publish event: " + intCodeResultBean.getEventGenerationTime());
 			if (intCodeResultBean.getSource() != null && (intCodeResultBean.getSource()
@@ -782,6 +811,21 @@ public class ProcessorThread implements Runnable {
 				}
 			}
 		}
+	}
+
+	/**
+	 * @return the servletInfo
+	 */
+	public ServletInfo getServletInfo() {
+		return servletInfo;
+	}
+
+	/**
+	 * @param servletInfo
+	 *            the servletInfo to set
+	 */
+	public void setServletInfo(ServletInfo servletInfo) {
+		this.servletInfo = servletInfo;
 	}
 
 }

@@ -18,6 +18,7 @@ public class IntCodeResultBean extends AgentBasicInfo {
 	private Integer lineNumber;
 	private JSONArray parameters;
 	private Long eventGenerationTime;
+	private ServletInfo servletInfo;
 
 	public IntCodeResultBean() {
 	    super();
@@ -162,6 +163,20 @@ public class IntCodeResultBean extends AgentBasicInfo {
 	 */
 	public void setApplicationUUID(String applicationUUID) {
 		this.applicationUUID = applicationUUID;
+	}
+
+	/**
+	 * @return the servletInfo
+	 */
+	public ServletInfo getServletInfo() {
+		return servletInfo;
+	}
+
+	/**
+	 * @param servletInfo the servletInfo to set
+	 */
+	public void setServletInfo(ServletInfo servletInfo) {
+		this.servletInfo = servletInfo;
 	}
 
 	

@@ -9,22 +9,20 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class EventThreadPool {
+public class ServletEventPool {
 
 	/** Thread pool executor. */
 	private ThreadPoolExecutor executor;
 
-	private static EventThreadPool instance;
+	private static ServletEventPool instance;
 	
-	private StringBuffer eventBuffer;
-
-	private EventThreadPool() {
+	private ServletEventPool() {
 		LinkedBlockingQueue<Runnable> processQueue;
 
 		// load the settings
 		int queueSize = 700;
 		int maxPoolSize = 25;
-		int corePoolSize = 2;
+		int corePoolSize = 1;
 		long keepAliveTime = 2;
 
 		TimeUnit timeUnit = TimeUnit.SECONDS;
@@ -55,7 +53,6 @@ public class EventThreadPool {
 			}
 
 		};
-		this.eventBuffer = new StringBuffer();
 		executor.allowCoreThreadTimeOut(allowCoreThreadTimeOut);
 		executor.setThreadFactory(new ThreadFactory() {
 			private final AtomicInteger threadNumber = new AtomicInteger(1);
@@ -67,13 +64,13 @@ public class EventThreadPool {
 			}
 		});
 	}
-
-	protected static EventThreadPool getInstance() {
+	
+	protected static ServletEventPool getInstance() {
 		if (instance == null)
-			instance = new EventThreadPool();
+			instance = new ServletEventPool();
 		return instance;
 	}
-
+	
 	/**
 	 * A handler for rejected tasks that throws a
 	 * {@code RejectedExecutionException}.
@@ -100,30 +97,12 @@ public class EventThreadPool {
 		}
 	}
 
-	public void processReceivedEvent(Object source, Object[] arg, String executionId, StackTraceElement[] stackTrace, long tId, ServletInfo servletInfo) {
+	public void processReceivedEvent(Object firstElement, ServletInfo servletInfo, String sourceString, long threadId) {
 		try {
-			this.executor.execute(new ProcessorThread(source, arg, executionId, stackTrace, tId, servletInfo));
+			this.executor.execute(new ServletEventProcessor(firstElement, servletInfo, sourceString, threadId));
 		} catch (Exception e) {
 
 		}
-	}
-	
-	protected boolean isQueueEmpty() {
-		return this.executor.getQueue().isEmpty();
-	}
-
-	/**
-	 * @return the eventBuffer
-	 */
-	public StringBuffer getEventBuffer() {
-		return eventBuffer;
-	}
-	
-	/**
-	 * @return the eventBuffer
-	 */
-	public StringBuffer renewEventBuffer() {
-		return this.eventBuffer = new StringBuffer();
 	}
 
 }

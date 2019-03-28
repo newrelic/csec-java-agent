@@ -8,47 +8,19 @@ import java.util.Map;
 
 public interface IAgentConstants {
 
-	String TRACE_REGEX = "((?!org\\.apache\\.jsp.*))((^javax.*)|(^java\\.lang.*)|(^java\\.io.*)|(^org\\.apache.*)|(^java\\.nio.*)|(^java\\.util.*)|(^java\\.net.*)|(^sun.*)|(^java\\.security.*)|(^org\\.brutusin.*)|(^com\\.microsoft\\.sqlserver.*)|(^com\\.mysql.*)|(^sun\\.reflect.*)|(^org\\.hibernate.*)|(^java\\.sql.*)|(^com\\.mongodb.*)|(^org\\.apache\\.commons.*)|(^org\\.mongodb.*)|(^com\\.sun\\.org\\.apache.*)|(^com\\.sun\\.naming.*)|(^org\\.eclipse\\.jetty.*)|(^net\\.sourceforge\\.eclipsejetty.*)|(^java\\.awt.*)|(org\\.springframework.*)|(org\\.slf4j.*)|(com\\.sun\\.jmx.*)|(org\\.eclipse\\.jdt.*)|(com\\.opensymphony\\.xwork2.*)|(org\\.objectweb\\.asm.*)|(freemarker\\.cache.*)|(com\\.mchange\\.v2.*))";
+	String TRACE_REGEX = "((?!(org\\.apache\\.jsp.*)|(javax\\.servlet\\.http.*)))((^javax.*)|(^java\\.lang.*)|(^java\\.io.*)|(^org\\.apache.*)|(^java\\.nio.*)|(^java\\.util.*)|(^java\\.net.*)|(^sun.*)|(^java\\.security.*)|(^org\\.brutusin.*)|(^com\\.microsoft\\.sqlserver.*)|(^com\\.mysql.*)|(^sun\\.reflect.*)|(^org\\.hibernate.*)|(^java\\.sql.*)|(^com\\.mongodb.*)|(^org\\.apache\\.commons.*)|(^org\\.mongodb.*)|(^com\\.sun.*)|(^org\\.eclipse\\.jetty.*)|(^net\\.sourceforge\\.eclipsejetty.*)|(^java\\.awt.*)|(^org\\.springframework.*)|(^org\\.slf4j.*)|(^org\\.eclipse\\.jdt.*)|(^com\\.opensymphony\\.xwork2.*)|(^org\\.objectweb\\.asm.*)|(^freemarker\\.cache.*)|(^com\\.mchange.*)|(^ch\\.qos\\.logback.*)|(^io\\.micrometer.*))";
 
 	String SYSYTEM_CALL_START = "static java.lang.Process java.lang.ProcessImpl.start(java.lang.String[],java.util.Map<java.lang.String, java.lang.String>,java.lang.String,java.lang.ProcessBuilder$Redirect[],boolean) throws java.io.IOException";
 
-	String[][] SKIP_LIST = { { "sun.usagetracker.UsageTrackerClient", "run" },
-			{ "java.lang.ClassLoader", "loadClass", "loadLibrary", "getResourceAsStream" },
-			{ "java.io.DeleteOnExitHook", "runHooks" }, { "java.util.jar.JarFile", "<init>" },
-			{ "java.util.logging.LogManager", "readConfiguration" },
-			{ "org.apache.catalina.startup.Bootstrap", "<clinit>" },
-			{ "org.apache.catalina.startup.ClassLoaderFactory", "createClassLoader", "validateFile" },
-			{ "com.sun.org.apache.xerces.internal.utils.SecuritySupport", "readJAXPProperty" },
-			{ "org.apache.catalina.startup.CatalinaProperties", "loadProperties" },
-			{ "org.apache.catalina.startup.Catalina", "stopServer", "configFile", "initDirs" },
-			{ "javax.xml.parsers.FactoryFinder", "find" }, { "org.apache.tomcat.util.modeler.Registry", "load" },
-			{ "org.apache.catalina.startup.ContextConfig", "<clinit>" }, { "org.apache.tomcat.jni.Library", "<init>" },
-			{ "org.apache.catalina.util.ServerInfo", "<clinit>" },
-			{ "org.apache.catalina.util.ExtensionValidator", "addFolderList", "<clinit>" },
-			{ "org.apache.catalina.core.StandardContext", "postWorkDirectory" },
-			{ "org.apache.catalina.util.CharsetMapper", "<init>" },
-			{ "org.apache.catalina.webresources.AbstractFileResourceSet", "initInternal" },
-			{ "org.apache.catalina.webresources.StandardRoot", "createMainResourceSet" },
-			{ "org.apache.catalina.startup.ContextConfig", "fixDocBase", "processContextConfig", "contextConfig" },
-			{ "org.apache.catalina.core.StandardHost", "getConfigBaseFile", "getAppBaseFile" },
-			{ "org.apache.tomcat.util.file.ConfigFileLoader", "getInputStream", "<clinit>" },
-			{ "com.sun.naming.internal.VersionHelper12$4", "run" },
-			{ "org.apache.catalina.startup.WebappServiceLoader", "parseConfigFile" },
-			{ "org.apache.catalina.loader.WebappClassLoaderBase", "getResourceAsStream" },
-			{ "org.apache.tomcat.util.buf.B2CConverter", "<clinit>" },
-			{ "org.apache.catalina.startup.ContextConfig", "getDefaultWebXmlFragment", "getWebXmlSource", "<clinit>",
-					"fixDocBase", "contextConfig", "processContextConfig" },
-			{ "org.apache.catalina.authenticator.jaspic.AuthConfigFactoryImpl", "<clinit>" },
-			{ "java.net.URL", "openConnection" } };
+	List<String> FILE_OPEN_EXECUTORS = Arrays.asList(new String[] { "public java.io.File(java.lang.String,java.lang.String)", "public java.io.File(java.lang.String)" });
 
-	String[] FILE_OPEN_EXECUTORS = { "public java.io.File(java.lang.String,java.lang.String)",
-			"public java.io.File(java.lang.String)" };
-	
-	Map<String, List<String>> MYSQL_GET_CONNECTION_MAP = new HashMap() {{
-		put("java.sql.DriverManager", Collections.singletonList("getConnection"));
-		put("com.mysql.jdbc.ConnectionImpl", Arrays.asList("getInstance","isReadOnly"));
-	}};
-	
+	Map<String, List<String>> MYSQL_GET_CONNECTION_MAP = new HashMap() {
+		{
+			put("java.sql.DriverManager", Collections.singletonList("getConnection"));
+			put("com.mysql.jdbc.ConnectionImpl", Arrays.asList("getInstance", "isReadOnly"));
+		}
+	};
+
 	String[] MONGO_EXECUTORS = {
 			// asynchronous mongo calls
 			"public <T> void com.mongodb.async.client.MongoClientImpl$2.execute(com.mongodb.operation.AsyncReadOperation<T>,com.mongodb.ReadPreference,com.mongodb.async.SingleResultCallback<T>)",
@@ -63,10 +35,12 @@ public interface IAgentConstants {
 			"private <T> T com.mongodb.connection.DefaultServerConnection.executeProtocol(com.mongodb.connection.LegacyProtocol<T>)",
 			"private <T> T com.mongodb.internal.connection.DefaultServerConnection.executeProtocol(com.mongodb.internal.connection.CommandProtocol<T>,com.mongodb.session.SessionContext)",
 			"private <T> T com.mongodb.internal.connection.DefaultServerConnection.executeProtocol(com.mongodb.internal.connection.LegacyProtocol<T>)",
-			"private <T> T com.mongodb.connection.DefaultServerConnection.executeProtocol(com.mongodb.connection.Protocol<T>)"
-	};
+			"private <T> T com.mongodb.connection.DefaultServerConnection.executeProtocol(com.mongodb.connection.Protocol<T>)" };
 
-	String[] EXECUTORS = {SYSYTEM_CALL_START,
+	
+
+	String SERVLET_REQUEST_FACADE = "public org.apache.catalina.connector.RequestFacade(org.apache.catalina.connector.Request)";
+	String[] EXECUTORS = { SYSYTEM_CALL_START,
 
 			// mssql calls
 			"final void com.microsoft.sqlserver.jdbc.SQLServerStatement.executeStatement(com.microsoft.sqlserver.jdbc.TDSCommand) throws com.microsoft.sqlserver.jdbc.SQLServerException,java.sql.SQLTimeoutException",
@@ -96,11 +70,20 @@ public interface IAgentConstants {
 			"public static java.net.URLClassLoader java.net.URLClassLoader.newInstance(java.net.URL[])",
 
 			// File Input
-//			"public java.io.FileInputStream(java.lang.String) throws java.io.FileNotFoundException",
-//			"public java.io.FileInputStream(java.io.File) throws java.io.FileNotFoundException",
+			// "public java.io.FileInputStream(java.lang.String) throws
+			// java.io.FileNotFoundException",
+			// "public java.io.FileInputStream(java.io.File) throws
+			// java.io.FileNotFoundException",
+			
+			//http request
+			"protected void javax.servlet.http.HttpServlet.service(javax.servlet.http.HttpServletRequest,javax.servlet.http.HttpServletResponse) throws javax.servlet.ServletException,java.io.IOException",
 
 	};
+	
+	String HTTP_SERVLET_SERVICE = "protected void javax.servlet.http.HttpServlet.service(javax.servlet.http.HttpServletRequest,javax.servlet.http.HttpServletResponse) throws javax.servlet.ServletException,java.io.IOException";
 
+	String STRUTS2_DO_FILTER = "public void org.apache.struts2.dispatcher.ng.filter.StrutsPrepareAndExecuteFilter.doFilter(javax.servlet.ServletRequest,javax.servlet.ServletResponse,javax.servlet.FilterChain) throws java.io.IOException,javax.servlet.ServletException";
+	
 	String MSSQL_EXECUTOR = "boolean com.microsoft.sqlserver.jdbc.SQLServerConnection.executeCommand(com.microsoft.sqlserver.jdbc.TDSCommand) throws com.microsoft.sqlserver.jdbc.SQLServerException";
 
 	String[] CONSTRUCTOR = { "<init>" };
@@ -111,17 +94,35 @@ public interface IAgentConstants {
 			"com/mysql/cj/mysqla/io/MysqlaProtocol", "com/mysql/cj/NativeSession",
 			"com/mongodb/connection/DefaultServerConnection", "com/mongodb/internal/connection/DefaultServerConnection",
 			"com/mongodb/async/client/MongoClientImpl$2", "com/mongodb/async/client/AsyncOperationExecutorImpl",
-			"com/mongodb/async/client/OperationExecutorImpl", "java/net/URLClassLoader"};
+			"com/mongodb/async/client/OperationExecutorImpl", "java/net/URLClassLoader",
+			
+			// http request
+			"javax/servlet/http/HttpServlet",
+			"org/apache/catalina/connector/CoyoteAdapter",
+			"javax/faces/webapp/FacesServlet",
+			"org/apache/struts2/dispatcher/ng/filter/StrutsPrepareAndExecuteFilter"
+			
+	};
 
 	String[][] ALL_METHODS = { { "sqlQueryDirect" }, { "start" }, { "newOutputStream" }, CONSTRUCTOR,
 			{ "executeStatement" }, { "sqlQueryDirect" }, { "execSQL" }, { "executeProtocol" }, { "executeProtocol" },
-			{ "execute" }, { "execute" }, { "execute" }, { "<init>", "newInstance" } };
+			{ "execute" }, { "execute" }, { "execute" }, { "<init>", "newInstance" }, 
+			{ "service" },
+			{ "service" },
+//			CONSTRUCTOR
+			{ "service" },
+			{ "doFilter" }
+			};
 
-	/** DB NAMES */
+	/** Source Method Identifiers for argument resolution */
 	String MSSQL_IDENTIFIER = "com.microsoft.sqlserver";
-	String MYSQL_IDENTIFIER = "mysql";
-	String MONGO_IDENTIFIER = "mongo";
-	String CLASS_LOADER_IDENTIFIER = "java.net.URL";
+	String MYSQL_IDENTIFIER = "com.mysql";
+	String MONGO_IDENTIFIER = "com.mongo";
+	String CLASS_LOADER_IDENTIFIER = "java.net.URLClassLoader";
+	String SERVLET_REQUEST_IDENTIFIER="javax.servlet.http.HttpServletRequest"; 
+	String TOMCAT_COYOTE_ADAPTER_SERVICE = "public void org.apache.catalina.connector.CoyoteAdapter.service(org.apache.coyote.Request,org.apache.coyote.Response) throws java.lang.Exception";
+	String FACES_SERVLET = "public void javax.faces.webapp.FacesServlet.service(javax.servlet.ServletRequest,javax.servlet.ServletResponse) throws java.io.IOException,javax.servlet.ServletException";
+	String JETTY_SERVLET_REQUEST_IDENTIFIER = "org.eclipse.jetty.server.Request";
 	
 	/** MSSQL FIELD CONSTANTS */
 	String MSSQL_CURRENT_OBJECT = "this$0";
@@ -173,5 +174,4 @@ public interface IAgentConstants {
 	String MONGO_COLLECTION_WILDCARD = "$cmd";
 	String MONGO_COLLECTION_FIELD = "collectionName";
 	String MONGO_COMMAND_NAME_FIELD = "commandName";
-
 }
