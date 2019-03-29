@@ -49,16 +49,14 @@ import com.k2.org.objectweb.asm.tree.MethodNode;
 
 public class LoggingInterceptor extends Interceptor {
 
-	// private File rootFile;
 	private static final Set<String> allClasses;
 	private static final Map<String, List<String>> interceptMethod;
-	// protected static BufferedWriter writer;
-	// private static UnixSocketChannel channel;
 	protected static DataOutputStream oos;
 	protected static Integer VMPID;
 	protected static final String applicationUUID;
 	protected static Socket socket;
 	protected static Map<Long, ServletInfo> requestMap;
+	protected static ScheduledExecutorService eventPoolExecutor;
 
 	static {
 		applicationUUID = UUID.randomUUID().toString();
@@ -133,7 +131,7 @@ public class LoggingInterceptor extends Interceptor {
 								jarPathBean.setIsHost(true);
 							try {
 								oos.writeUTF(jarPathBean.toString());
-								oos.flush();
+//								oos.flush();
 								/*
 								 * writer.write(jarPathBean.toString()); writer.flush();
 								 */
@@ -217,6 +215,7 @@ public class LoggingInterceptor extends Interceptor {
 			connectSocket();
 			getJarPath();
 			createApplicationInfoBean();
+			eventWritePool();
 			System.out.println("K2-JavaAgent installed successfully.");
 
 		} catch (Exception e) {
@@ -224,6 +223,18 @@ public class LoggingInterceptor extends Interceptor {
 		}
 	}
 
+	private static void eventWritePool() {
+		eventPoolExecutor = Executors.newScheduledThreadPool(1);
+		eventPoolExecutor.scheduleWithFixedDelay(new Runnable() {
+			@Override
+			public void run() {
+				if (!ProcessorThread.eventQueue.isEmpty()) {
+					ProcessorThread.queuePooler();
+				}
+			}
+		}, 2, 2, TimeUnit.SECONDS);
+	}
+	
 	private static String getCmdLineArgsByProc(Integer pid) {
 		File cmdlineFile = new File("/proc/" + pid + "/cmdline");
 		if (!cmdlineFile.isFile())
