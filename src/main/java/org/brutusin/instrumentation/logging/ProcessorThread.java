@@ -788,7 +788,7 @@ public class ProcessorThread implements Runnable {
 				System.out.println("dynamic jar path bean : " + dynamicJarPathBean);
 				try {
 					LoggingInterceptor.oos.writeUTF(dynamicJarPathBean.toString() + "\n");
-					LoggingInterceptor.oos.flush();
+//					LoggingInterceptor.oos.flush();
 				} catch (IOException e) {
 					System.err.println("Error in writing: " + e.getMessage());
 					try {
@@ -800,7 +800,7 @@ public class ProcessorThread implements Runnable {
 			} else {
 				try {
 					LoggingInterceptor.oos.writeUTF(intCodeResultBean.toString() + "\n");
-					LoggingInterceptor.oos.flush();
+//					LoggingInterceptor.oos.flush();
 				} catch (IOException e) {
 					System.err.println("Error in writing: " + e.getMessage());
 					try {
