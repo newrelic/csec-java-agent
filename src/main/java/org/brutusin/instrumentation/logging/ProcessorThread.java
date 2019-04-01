@@ -192,7 +192,7 @@ public class ProcessorThread implements Runnable {
 		if (source instanceof Method) {
 			m = (Method) source;
 			sourceString = m.toGenericString();
-			// System.out.println(m.toGenericString());
+			 System.out.println(m.toGenericString());
 		} else if (source instanceof Constructor) {
 			c = (Constructor) source;
 			sourceString = c.toGenericString();
@@ -209,9 +209,8 @@ public class ProcessorThread implements Runnable {
 			IntCodeResultBean intCodeResultBean = new IntCodeResultBean(start, sourceString, LoggingInterceptor.VMPID,
 					LoggingInterceptor.applicationUUID);
 
+			System.out.println("Inside processor servlet info found: "+ intCodeResultBean.getServletInfo());
 			intCodeResultBean.setServletInfo(this.servletInfo);
-			// System.out.println("Inside processor servlet info found: threadId:
-			// "+this.threadId +". "+ intCodeResultBean.getServletInfo());
 			String klassName = null;
 
 			if (mongoExecutorMethods.contains(sourceString)) {
@@ -803,7 +802,7 @@ public class ProcessorThread implements Runnable {
 		if (LoggingInterceptor.socket != null && LoggingInterceptor.socket.isConnected()
 				&& !LoggingInterceptor.socket.isClosed()) {
 			intCodeResultBean.setEventGenerationTime(System.currentTimeMillis());
-			System.out.println("publish event: " + intCodeResultBean.getEventGenerationTime());
+			System.out.println("publish event: " + intCodeResultBean);
 			if (intCodeResultBean.getSource() != null && (intCodeResultBean.getSource()
 					.equals("public java.net.URLClassLoader(java.net.URL[])")
 					|| intCodeResultBean.getSource().equals(

@@ -97,9 +97,9 @@ public class ServletEventPool {
 		}
 	}
 
-	public void processReceivedEvent(Object firstElement, ServletInfo servletInfo, String sourceString, long threadId) {
+	public void processReceivedEvent(Object firstElement, Object request, ServletInfo servletInfo, String sourceString, long threadId) {
 		try {
-			this.executor.execute(new ServletEventProcessor(firstElement, servletInfo, sourceString, threadId));
+			this.executor.execute(new ServletEventProcessor(firstElement, request, servletInfo, sourceString, threadId));
 		} catch (Exception e) {
 
 		}

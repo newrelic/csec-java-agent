@@ -97,21 +97,21 @@ public interface IAgentConstants {
 			"com/mongodb/async/client/OperationExecutorImpl", "java/net/URLClassLoader",
 			
 			// http request
-			"javax/servlet/http/HttpServlet",
+//			"javax/servlet/http/HttpServlet",
 			"org/apache/catalina/connector/CoyoteAdapter",
-			"javax/faces/webapp/FacesServlet",
-			"org/apache/struts2/dispatcher/ng/filter/StrutsPrepareAndExecuteFilter"
+//			"javax/faces/webapp/FacesServlet",
+//			"org/apache/struts2/dispatcher/ng/filter/StrutsPrepareAndExecuteFilter"
 			
 	};
 
 	String[][] ALL_METHODS = { { "sqlQueryDirect" }, { "start" }, { "newOutputStream" }, CONSTRUCTOR,
 			{ "executeStatement" }, { "sqlQueryDirect" }, { "execSQL" }, { "executeProtocol" }, { "executeProtocol" },
 			{ "execute" }, { "execute" }, { "execute" }, { "<init>", "newInstance" }, 
-			{ "service" },
-			{ "service" },
+//			{ "service" },
+			{ "service", "postParseRequest" },
 //			CONSTRUCTOR
-			{ "service" },
-			{ "doFilter" }
+//			{ "service" },
+//			{ "doFilter" }
 			};
 
 	/** Source Method Identifiers for argument resolution */
@@ -120,7 +120,9 @@ public interface IAgentConstants {
 	String MONGO_IDENTIFIER = "com.mongo";
 	String CLASS_LOADER_IDENTIFIER = "java.net.URLClassLoader";
 	String SERVLET_REQUEST_IDENTIFIER="javax.servlet.http.HttpServletRequest"; 
+	String TOMCAT_COYOTE_ADAPTER_PARSE_POST = "protected boolean org.apache.catalina.connector.CoyoteAdapter.postParseRequest(org.apache.coyote.Request,org.apache.catalina.connector.Request,org.apache.coyote.Response,org.apache.catalina.connector.Response) throws java.io.IOException,javax.servlet.ServletException";
 	String TOMCAT_COYOTE_ADAPTER_SERVICE = "public void org.apache.catalina.connector.CoyoteAdapter.service(org.apache.coyote.Request,org.apache.coyote.Response) throws java.lang.Exception";
+
 	String FACES_SERVLET = "public void javax.faces.webapp.FacesServlet.service(javax.servlet.ServletRequest,javax.servlet.ServletResponse) throws java.io.IOException,javax.servlet.ServletException";
 	String JETTY_SERVLET_REQUEST_IDENTIFIER = "org.eclipse.jetty.server.Request";
 	

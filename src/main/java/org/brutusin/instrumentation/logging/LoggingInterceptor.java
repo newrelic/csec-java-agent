@@ -24,6 +24,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.net.Socket;
 import java.nio.ByteBuffer;
@@ -131,7 +132,7 @@ public class LoggingInterceptor extends Interceptor {
 								jarPathBean.setIsHost(true);
 							try {
 								oos.writeUTF(jarPathBean.toString());
-//								oos.flush();
+								// oos.flush();
 								/*
 								 * writer.write(jarPathBean.toString()); writer.flush();
 								 */
@@ -234,7 +235,7 @@ public class LoggingInterceptor extends Interceptor {
 			}
 		}, 2, 2, TimeUnit.SECONDS);
 	}
-	
+
 	private static String getCmdLineArgsByProc(Integer pid) {
 		File cmdlineFile = new File("/proc/" + pid + "/cmdline");
 		if (!cmdlineFile.isFile())
@@ -255,16 +256,6 @@ public class LoggingInterceptor extends Interceptor {
 		return null;
 	}
 
-	private static String readByteBuffer(ByteBuffer buffer) {
-		int currPos = buffer.position();
-		StringBuffer stringBuffer = new StringBuffer();
-		while (buffer.remaining() > 0) {
-			stringBuffer.append((char) buffer.get());
-		}
-		buffer.position(currPos);
-		return stringBuffer.toString();
-	}
-
 	@Override
 	public boolean interceptClass(String className, byte[] byteCode) {
 		return allClasses.contains(className);
@@ -272,10 +263,13 @@ public class LoggingInterceptor extends Interceptor {
 
 	@Override
 	public boolean interceptMethod(ClassNode cn, MethodNode mn) {
-//		if (cn.name.equals("org/apache/struts2/dispatcher/ng/filter/StrutsPrepareAndExecuteFilter"))
-//			System.out.println("name: " + mn.name + " : " + interceptMethod.get(cn.name).contains(mn.name));
-//		else if (cn.name.equals("javax/faces/webapp/FacesServlet"))
-//			System.out.println("name: " + mn.name + " : " + interceptMethod.get(cn.name).contains(mn.name));
+		// if
+		// (cn.name.equals("org/apache/struts2/dispatcher/ng/filter/StrutsPrepareAndExecuteFilter"))
+		// System.out.println("name: " + mn.name + " : " +
+		// interceptMethod.get(cn.name).contains(mn.name));
+		// else if (cn.name.equals("javax/faces/webapp/FacesServlet"))
+		// System.out.println("name: " + mn.name + " : " +
+		// interceptMethod.get(cn.name).contains(mn.name));
 		return interceptMethod.get(cn.name).contains(mn.name);
 	}
 
@@ -284,59 +278,45 @@ public class LoggingInterceptor extends Interceptor {
 	protected void doOnStart(Object source, Object[] arg, String executionId) {
 		String sourceString = null;
 		Method m = null;
-		ServletInfo servletInfo = null;
 		long threadId = Thread.currentThread().getId();
 
 		if (source instanceof Method) {
 			m = (Method) source;
 			sourceString = m.toGenericString();
+//			System.out.println(m.toGenericString());
 		}
 
 		// System.out.println("doOnStart : " + threadId+" : " + sourceString+" : " +
 		// servletInfo);
-		if (sourceString != null && (IAgentConstants.HTTP_SERVLET_SERVICE.equals(sourceString)
-				|| IAgentConstants.FACES_SERVLET.equals(sourceString))
-				|| IAgentConstants.STRUTS2_DO_FILTER.equals(sourceString)) {
-			Map<String, String[]> paramMap = null;
-//			System.out.println("Servlet : " + threadId + " : " + sourceString + " : " + servletInfo + " : " + paramMap);
+		if (sourceString != null && IAgentConstants.TOMCAT_COYOTE_ADAPTER_PARSE_POST.equals(sourceString)) {
+			// System.out.println("Coyote : " + threadId + " : " + sourceString + " : " +
+			// servletInfo);
+			ServletInfo servletInfo = new ServletInfo();
+
 			try {
-				Method getParameterMapMethod = arg[0].getClass().getMethod("getParameterMap");
-				getParameterMapMethod.setAccessible(true);
-				paramMap = new HashMap<>((Map<String, String[]>) getParameterMapMethod.invoke(arg[0], null));
+				Object secondElement = null;
+				if (arg.length < 2) {
+					return;
+				}
+				secondElement = arg[1];
+				Field facadeField = secondElement.getClass().getDeclaredField("facade");
+				facadeField.setAccessible(true);
+				Object facade = facadeField.get(secondElement);
+				if(facade == null)
+					return;
+//				System.out.println("Coyote submitting : " + threadId + " : " + sourceString + " : " + servletInfo);
+//				System.out.println("Coyote Current request map : " + requestMap);
+				requestMap.put(threadId, servletInfo);
+				ServletEventPool.getInstance().processReceivedEvent(arg[0], facade, servletInfo, sourceString,
+						threadId);
 			} catch (Exception e) {
 				e.printStackTrace();
-				return;
 			}
-			// System.out.println("Servlet : " + threadId+" : " + sourceString+" : " +
-			// servletInfo + " : "+ paramMap);
-			if (!requestMap.containsKey(threadId)) {
-				servletInfo = new ServletInfo(paramMap);
-				requestMap.put(threadId, servletInfo);
-			} else {
-				servletInfo = requestMap.get(threadId);
-				servletInfo.setParameters(paramMap);
-			}
-			// System.out.println("Servlet submitting : " + threadId+" : " + sourceString+"
-			// : " + servletInfo + " : "+ paramMap);
-			// System.out.println("Servlet Current request map : "+ requestMap);
-			ServletEventPool.getInstance().processReceivedEvent(arg[0], servletInfo, sourceString, threadId);
-		} else if (sourceString != null && IAgentConstants.TOMCAT_COYOTE_ADAPTER_SERVICE.equals(sourceString)) {
-//			System.out.println("Coyote : " + threadId + " : " + sourceString + " : " + servletInfo);
-
-			if (!requestMap.containsKey(threadId)) {
-				servletInfo = new ServletInfo();
-				requestMap.put(threadId, servletInfo);
-			} else {
-				servletInfo = requestMap.get(threadId);
-			}
-			// System.out.println("Coyote submitting : " + threadId+" : " + sourceString+" :
-			// " + servletInfo);
-			// System.out.println("Coyote Current request map : "+ requestMap);
-			ServletEventPool.getInstance().processReceivedEvent(arg[0], servletInfo, sourceString, threadId);
+//TODO add else if for jetty on http service method
 		} else {
 //			System.out.println("Other event : " + threadId + " : " + sourceString + " : " + requestMap.get(threadId)
-//					+ "  :   " + arg[0] + "  :  " + arg[1]);
-			// System.out.println("Other event current request map : "+ requestMap);
+//					+ " : " + arg[0] + " : " + arg[1]);
+//			System.out.println("Other event current request map : " + requestMap);
 			if (requestMap.containsKey(threadId))
 				EventThreadPool.getInstance().processReceivedEvent(source, arg, executionId,
 						Thread.currentThread().getStackTrace(), threadId, new ServletInfo(requestMap.get(threadId)));
@@ -364,8 +344,8 @@ public class LoggingInterceptor extends Interceptor {
 			sourceString = m.toGenericString();
 			if (sourceString != null && IAgentConstants.TOMCAT_COYOTE_ADAPTER_SERVICE.equals(sourceString)) {
 				requestMap.remove(threadId);
-//				System.out.println("Request map entry removed for threadID " + threadId);
-				// System.out.println("Current request map : "+ requestMap);
+//				 System.out.println("Request map entry removed for threadID " + threadId);
+//				 System.out.println("Current request map : "+ requestMap);
 			}
 		}
 	}
