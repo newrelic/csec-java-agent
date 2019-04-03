@@ -192,11 +192,11 @@ public class ProcessorThread implements Runnable {
 		if (source instanceof Method) {
 			m = (Method) source;
 			sourceString = m.toGenericString();
-			 System.out.println(m.toGenericString());
+//			 System.out.println(m.toGenericString());
 		} else if (source instanceof Constructor) {
 			c = (Constructor) source;
 			sourceString = c.toGenericString();
-			// System.out.println(c.toGenericString());
+			 System.out.println(c.toGenericString());
 		}
 
 		if (sourceString != null && executorMethods.contains(sourceString)) {
@@ -209,7 +209,7 @@ public class ProcessorThread implements Runnable {
 			IntCodeResultBean intCodeResultBean = new IntCodeResultBean(start, sourceString, LoggingInterceptor.VMPID,
 					LoggingInterceptor.applicationUUID);
 
-			System.out.println("Inside processor servlet info found: "+ intCodeResultBean.getServletInfo());
+//			System.out.println("Inside processor servlet info found: "+ intCodeResultBean.getServletInfo());
 			intCodeResultBean.setServletInfo(this.servletInfo);
 			String klassName = null;
 

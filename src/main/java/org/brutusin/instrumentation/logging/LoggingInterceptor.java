@@ -24,10 +24,10 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.net.Socket;
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -56,7 +56,7 @@ public class LoggingInterceptor extends Interceptor {
 	protected static Integer VMPID;
 	protected static final String applicationUUID;
 	protected static Socket socket;
-	protected static Map<Long, ServletInfo> requestMap;
+	// protected static Map<Long, ServletInfo> requestMap;
 	protected static ScheduledExecutorService eventPoolExecutor;
 
 	static {
@@ -67,7 +67,6 @@ public class LoggingInterceptor extends Interceptor {
 			interceptMethod.put(IAgentConstants.ALL_CLASSES[i],
 					new ArrayList<String>(Arrays.asList(IAgentConstants.ALL_METHODS[i])));
 		}
-		requestMap = new ConcurrentHashMap<>();
 	}
 
 	public static String getContainerID() {
@@ -278,12 +277,15 @@ public class LoggingInterceptor extends Interceptor {
 	protected void doOnStart(Object source, Object[] arg, String executionId) {
 		String sourceString = null;
 		Method m = null;
+		Constructor c = null;
 		long threadId = Thread.currentThread().getId();
 
 		if (source instanceof Method) {
 			m = (Method) source;
 			sourceString = m.toGenericString();
-//			System.out.println(m.toGenericString());
+		} else if (source instanceof Constructor) {
+			c = (Constructor) source;
+			sourceString = c.toGenericString();
 		}
 
 		// System.out.println("doOnStart : " + threadId+" : " + sourceString+" : " +
@@ -294,32 +296,36 @@ public class LoggingInterceptor extends Interceptor {
 			ServletInfo servletInfo = new ServletInfo();
 
 			try {
-				Object secondElement = null;
-				if (arg.length < 2) {
-					return;
-				}
-				secondElement = arg[1];
+				Object secondElement = arg[1];
 				Field facadeField = secondElement.getClass().getDeclaredField("facade");
 				facadeField.setAccessible(true);
 				Object facade = facadeField.get(secondElement);
-				if(facade == null)
-					return;
-//				System.out.println("Coyote submitting : " + threadId + " : " + sourceString + " : " + servletInfo);
-//				System.out.println("Coyote Current request map : " + requestMap);
-				requestMap.put(threadId, servletInfo);
+				ServletEventPool.getInstance().getRequestMap().put(threadId, servletInfo);
+				// if (facade == null) {
+				// System.out.println("facade null");
+				// return;
+				// }
+				// System.out.println("Coyote submitting : " + threadId + " : " + sourceString +
+				// " : " + servletInfo);
+				// System.out.println("Coyote Current request map : " + requestMap);
 				ServletEventPool.getInstance().processReceivedEvent(arg[0], facade, servletInfo, sourceString,
 						threadId);
 			} catch (Exception e) {
-				e.printStackTrace();
 			}
-//TODO add else if for jetty on http service method
+			// TODO add else if for jetty on http service method
+		} else if (sourceString != null && IAgentConstants.TOMCAT_REQUEST_FACADE.equals(sourceString)
+				&& ServletEventPool.getInstance().getRequestMap().containsKey(threadId)) {
+			ServletEventPool.getInstance().processReceivedEvent(null, arg[0],
+					ServletEventPool.getInstance().getRequestMap().get(threadId), sourceString, threadId);
 		} else {
-//			System.out.println("Other event : " + threadId + " : " + sourceString + " : " + requestMap.get(threadId)
-//					+ " : " + arg[0] + " : " + arg[1]);
-//			System.out.println("Other event current request map : " + requestMap);
-			if (requestMap.containsKey(threadId))
+			// System.out.println("Other event : " + threadId + " : " + sourceString + " : "
+			// + requestMap.get(threadId)
+			// + " : " + arg[0] + " : " + arg[1]);
+			// System.out.println("Other event current request map : " + requestMap);
+			if (ServletEventPool.getInstance().getRequestMap().containsKey(threadId))
 				EventThreadPool.getInstance().processReceivedEvent(source, arg, executionId,
-						Thread.currentThread().getStackTrace(), threadId, new ServletInfo(requestMap.get(threadId)));
+						Thread.currentThread().getStackTrace(), threadId,
+						new ServletInfo(ServletEventPool.getInstance().getRequestMap().get(threadId)));
 		}
 
 		// System.out.println("started sourceString : "+ sourceString);
@@ -343,9 +349,9 @@ public class LoggingInterceptor extends Interceptor {
 			m = (Method) source;
 			sourceString = m.toGenericString();
 			if (sourceString != null && IAgentConstants.TOMCAT_COYOTE_ADAPTER_SERVICE.equals(sourceString)) {
-				requestMap.remove(threadId);
-//				 System.out.println("Request map entry removed for threadID " + threadId);
-//				 System.out.println("Current request map : "+ requestMap);
+				ServletEventPool.getInstance().getRequestMap().remove(threadId);
+				// System.out.println("Request map entry removed for threadID " + threadId);
+				// System.out.println("Current request map : "+ requestMap);
 			}
 		}
 	}

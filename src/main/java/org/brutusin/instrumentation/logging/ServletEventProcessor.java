@@ -85,31 +85,58 @@ public class ServletEventProcessor implements Runnable {
 	public void run() {
 		try {
 			if (IAgentConstants.TOMCAT_COYOTE_ADAPTER_PARSE_POST.equals(sourceString)) {
-				ByteBuffer bb = null;
-				// System.out.println("Inside coyote adapter for threadId " + this.threadId + "
-				// source "+ this.sourceString);
-				Field inputBufferField = firstElement.getClass().getDeclaredField("inputBuffer");
-				inputBufferField.setAccessible(true);
-				Object inputBuffer = inputBufferField.get(firstElement);
+				System.out.println("init servletInfo. " + servletInfo);
+				if (firstElement != null) {
+					ByteBuffer bb = null;
+					// System.out.println("Inside coyote adapter for threadId " + this.threadId + "
+					// source "+ this.sourceString);
+					Field inputBufferField = firstElement.getClass().getDeclaredField("inputBuffer");
+					inputBufferField.setAccessible(true);
+					Object inputBuffer = inputBufferField.get(firstElement);
 
-				for (Field field : inputBuffer.getClass().getDeclaredFields()) {
-					String fieldName = field.getName();
-					if (fieldName.equals("buf")) {
-						Field bytes = inputBuffer.getClass().getDeclaredField("buf");
-						bytes.setAccessible(true);
-						bb = ByteBuffer.wrap((byte[]) bytes.get(inputBuffer));
-						break;
-					} else if (fieldName.equals("byteBuffer")) {
-						Field bytes = inputBuffer.getClass().getDeclaredField("byteBuffer");
-						bytes.setAccessible(true);
-						bb = (ByteBuffer) bytes.get(inputBuffer);
-						break;
+					for (Field field : inputBuffer.getClass().getDeclaredFields()) {
+						String fieldName = field.getName();
+						if (fieldName.equals("buf")) {
+							Field bytes = inputBuffer.getClass().getDeclaredField("buf");
+							bytes.setAccessible(true);
+							bb = ByteBuffer.wrap((byte[]) bytes.get(inputBuffer)).duplicate();
+							break;
+						} else if (fieldName.equals("byteBuffer")) {
+							Field bytes = inputBuffer.getClass().getDeclaredField("byteBuffer");
+							bytes.setAccessible(true);
+							bb = ((ByteBuffer) bytes.get(inputBuffer)).duplicate();
+							break;
+						}
 					}
+					Method getContentLength = firstElement.getClass().getMethod("getContentLength");
+					int contentLength = (int) getContentLength.invoke(firstElement, null);
+					servletInfo.setRawParameters(readByteBuffer(bb, contentLength));
 				}
-				Method getContentLength = firstElement.getClass().getMethod("getContentLength");
-				int contentLength = (int) getContentLength.invoke(firstElement, null);
-				servletInfo.setRawParameters(readByteBuffer(bb, contentLength));
+				if (request != null) {
+					Method getQueryString = request.getClass().getMethod("getQueryString");
+					Method getRemoteAddr = request.getClass().getMethod("getRemoteAddr");
+					Method getMethod = request.getClass().getMethod("getMethod");
+					Method getContentType = request.getClass().getMethod("getContentType");
+					Method getRequestURI = request.getClass().getMethod("getRequestURI");
 
+					// set all methods accessible
+					getQueryString.setAccessible(true);
+					getRemoteAddr.setAccessible(true);
+					getMethod.setAccessible(true);
+					getContentType.setAccessible(true);
+					getRequestURI.setAccessible(true);
+
+					servletInfo.setQueryString((String) getQueryString.invoke(request, null));
+					servletInfo.setSourceIp((String) getRemoteAddr.invoke(request, null));
+					servletInfo.setRequestMethod((String) getMethod.invoke(request, null));
+					servletInfo.setContentType((String) getContentType.invoke(request, null));
+					servletInfo.setRequestURI((String) getRequestURI.invoke(request, null));
+				}
+				System.out.println("serrrr servletInfo. " + servletInfo);
+				// System.out.println(
+				// "Exiting coyote adapter for threadId " + this.threadId + " source " +
+				// this.sourceString);
+			} else if (IAgentConstants.TOMCAT_REQUEST_FACADE.equals(sourceString)) {
 				Method getQueryString = request.getClass().getMethod("getQueryString");
 				Method getRemoteAddr = request.getClass().getMethod("getRemoteAddr");
 				Method getMethod = request.getClass().getMethod("getMethod");
@@ -128,9 +155,7 @@ public class ServletEventProcessor implements Runnable {
 				servletInfo.setRequestMethod((String) getMethod.invoke(request, null));
 				servletInfo.setContentType((String) getContentType.invoke(request, null));
 				servletInfo.setRequestURI((String) getRequestURI.invoke(request, null));
-				System.out.println("serrrr servletInfo.   " + servletInfo);
-				System.out.println(
-						"Exiting coyote adapter for threadId " + this.threadId + " source " + this.sourceString);
+				System.out.println("serrrr servletInfo. facade " + servletInfo);
 			} else if (IAgentConstants.HTTP_SERVLET_SERVICE.equals(sourceString)
 					|| IAgentConstants.FACES_SERVLET.equals(sourceString)
 					|| IAgentConstants.STRUTS2_DO_FILTER.equals(sourceString)) {
@@ -189,7 +214,7 @@ public class ServletEventProcessor implements Runnable {
 
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
+			// e.printStackTrace();
 			// LoggingInterceptor.requestMap.remove(this.threadId);
 			// System.out.println("Request map entry removed inside event processor for
 			// threadID " + this.threadId + " source "+ this.sourceString);

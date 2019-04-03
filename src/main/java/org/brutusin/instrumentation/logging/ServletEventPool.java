@@ -1,5 +1,7 @@
 package org.brutusin.instrumentation.logging;
 
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.RejectedExecutionException;
@@ -16,9 +18,11 @@ public class ServletEventPool {
 
 	private static ServletEventPool instance;
 	
+	private Map<Long, ServletInfo> requestMap;
+	
 	private ServletEventPool() {
 		LinkedBlockingQueue<Runnable> processQueue;
-
+		this.setRequestMap(new ConcurrentHashMap<>());
 		// load the settings
 		int queueSize = 700;
 		int maxPoolSize = 25;
@@ -103,6 +107,20 @@ public class ServletEventPool {
 		} catch (Exception e) {
 
 		}
+	}
+
+	/**
+	 * @return the requestMap
+	 */
+	public Map<Long, ServletInfo> getRequestMap() {
+		return requestMap;
+	}
+
+	/**
+	 * @param requestMap the requestMap to set
+	 */
+	public void setRequestMap(Map<Long, ServletInfo> requestMap) {
+		this.requestMap = requestMap;
 	}
 
 }
