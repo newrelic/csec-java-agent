@@ -19,10 +19,13 @@ public class ServletEventPool {
 	private static ServletEventPool instance;
 	
 	private Map<Long, ServletInfo> requestMap;
+	private Map<Long, Long> servletInfoReferenceRecord;
 	
 	private ServletEventPool() {
 		LinkedBlockingQueue<Runnable> processQueue;
 		this.setRequestMap(new ConcurrentHashMap<>());
+		this.setServletInfoReferenceRecord(new ConcurrentHashMap<>());
+		
 		// load the settings
 		int queueSize = 700;
 		int maxPoolSize = 25;
@@ -123,4 +126,46 @@ public class ServletEventPool {
 		this.requestMap = requestMap;
 	}
 
+	/**
+	 * @return the servletInfoReferenceRecord
+	 */
+	public Map<Long, Long> getServletInfoReferenceRecord (){
+		return servletInfoReferenceRecord;
+	}
+
+	/**
+	 * @param servletInfoReferenceRecord the servletInfoReferenceRecord to set
+	 */
+	public void setServletInfoReferenceRecord(Map<Long, Long> servletInfoReferenceRecord) {
+		this.servletInfoReferenceRecord = servletInfoReferenceRecord;
+	}
+	
+	/**
+	 * 
+	 */
+	public Long decrementServletInfoReference(Long threadId) {
+		Long refCount = -1l;
+		try {
+			this.servletInfoReferenceRecord.put(threadId, this.servletInfoReferenceRecord.get(threadId) - 1);
+			refCount = this.servletInfoReferenceRecord.get(threadId);
+		} catch (Exception e) {}
+		return refCount;
+	}
+	
+	/**
+	 * 
+	 */
+	public Long incrementServletInfoReference(Long threadId) {
+		Long refCount = -1l;
+		try {
+			if ( this.servletInfoReferenceRecord.containsKey(threadId)) {
+				this.servletInfoReferenceRecord.put(threadId, this.servletInfoReferenceRecord.get(threadId) + 1);
+			}
+			else {
+				this.servletInfoReferenceRecord.put(threadId, 1l);
+			}
+			refCount = this.servletInfoReferenceRecord.get(threadId);
+		} catch (Exception e) {}
+		return refCount;
+	}
 }

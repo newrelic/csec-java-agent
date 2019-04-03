@@ -83,6 +83,7 @@ public class ProcessorThread implements Runnable {
 	private String executionId;
 	private StackTraceElement[] stackTrace;
 	private ServletInfo servletInfo;
+	private Long threadId;
 
 	static {
 		PATTERN = Pattern.compile(IAgentConstants.TRACE_REGEX);
@@ -111,6 +112,7 @@ public class ProcessorThread implements Runnable {
 		this.arg = arg;
 		this.executionId = executionId;
 		this.stackTrace = stackTrace;
+		this.threadId = tId;
 		this.setServletInfo(servletInfo);
 	}
 
@@ -785,6 +787,7 @@ public class ProcessorThread implements Runnable {
 	}
 
 	private void generateEvent(IntCodeResultBean intCodeResultBean) {
+		
 		if (LoggingInterceptor.socket == null || !LoggingInterceptor.socket.isConnected()
 				|| LoggingInterceptor.socket.isClosed()) {
 			try {
@@ -823,6 +826,10 @@ public class ProcessorThread implements Runnable {
 					}
 				}
 			} else {
+				intCodeResultBean.setServletInfo(new ServletInfo(ServletEventPool.getInstance().getRequestMap().get(this.threadId)));
+				if (ServletEventPool.getInstance().decrementServletInfoReference(this.threadId) <= 0) {
+					ServletEventPool.getInstance().getRequestMap().remove(this.threadId);
+				}				
 				eventQueue.add(intCodeResultBean);
 				// LoggingInterceptor.oos.writeUTF(intCodeResultBean.toString() + "\n");
 				// LoggingInterceptor.oos.flush();

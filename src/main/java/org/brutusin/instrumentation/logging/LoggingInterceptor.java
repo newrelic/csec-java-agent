@@ -291,6 +291,7 @@ public class LoggingInterceptor extends Interceptor {
 		// System.out.println("doOnStart : " + threadId+" : " + sourceString+" : " +
 		// servletInfo);
 		if (sourceString != null && IAgentConstants.TOMCAT_COYOTE_ADAPTER_PARSE_POST.equals(sourceString)) {
+			ServletEventPool.getInstance().incrementServletInfoReference(threadId);
 			// System.out.println("Coyote : " + threadId + " : " + sourceString + " : " +
 			// servletInfo);
 			ServletInfo servletInfo = new ServletInfo();
@@ -322,10 +323,12 @@ public class LoggingInterceptor extends Interceptor {
 			// + requestMap.get(threadId)
 			// + " : " + arg[0] + " : " + arg[1]);
 			// System.out.println("Other event current request map : " + requestMap);
-			if (ServletEventPool.getInstance().getRequestMap().containsKey(threadId))
+			if (ServletEventPool.getInstance().getRequestMap().containsKey(threadId)) {
+				ServletEventPool.getInstance().incrementServletInfoReference(threadId);
 				EventThreadPool.getInstance().processReceivedEvent(source, arg, executionId,
 						Thread.currentThread().getStackTrace(), threadId,
 						new ServletInfo(ServletEventPool.getInstance().getRequestMap().get(threadId)));
+			}
 		}
 
 		// System.out.println("started sourceString : "+ sourceString);
@@ -349,7 +352,10 @@ public class LoggingInterceptor extends Interceptor {
 			m = (Method) source;
 			sourceString = m.toGenericString();
 			if (sourceString != null && IAgentConstants.TOMCAT_COYOTE_ADAPTER_SERVICE.equals(sourceString)) {
-				ServletEventPool.getInstance().getRequestMap().remove(threadId);
+				if ( ServletEventPool.getInstance().decrementServletInfoReference(threadId) <= 0 ) {
+					ServletEventPool.getInstance().getRequestMap().remove(threadId);
+				} 
+
 				// System.out.println("Request map entry removed for threadID " + threadId);
 				// System.out.println("Current request map : "+ requestMap);
 			}
