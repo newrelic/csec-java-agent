@@ -85,7 +85,7 @@ public class ServletEventProcessor implements Runnable {
 	public void run() {
 		try {
 			if (IAgentConstants.TOMCAT_COYOTE_ADAPTER_PARSE_POST.equals(sourceString)) {
-				System.out.println("init servletInfo. " + servletInfo);
+//				System.out.println("init servletInfo. " + servletInfo);
 				if (firstElement != null) {
 					ByteBuffer bb = null;
 					// System.out.println("Inside coyote adapter for threadId " + this.threadId + "
@@ -132,7 +132,7 @@ public class ServletEventProcessor implements Runnable {
 					servletInfo.setContentType((String) getContentType.invoke(request, null));
 					servletInfo.setRequestURI((String) getRequestURI.invoke(request, null));
 				}
-				System.out.println("serrrr servletInfo. " + servletInfo);
+//				System.out.println("serrrr servletInfo. " + servletInfo);
 				// System.out.println(
 				// "Exiting coyote adapter for threadId " + this.threadId + " source " +
 				// this.sourceString);
@@ -155,7 +155,7 @@ public class ServletEventProcessor implements Runnable {
 				servletInfo.setRequestMethod((String) getMethod.invoke(request, null));
 				servletInfo.setContentType((String) getContentType.invoke(request, null));
 				servletInfo.setRequestURI((String) getRequestURI.invoke(request, null));
-				System.out.println("serrrr servletInfo. facade " + servletInfo);
+//				System.out.println("serrrr servletInfo. facade " + servletInfo);
 			} else if (IAgentConstants.HTTP_SERVLET_SERVICE.equals(sourceString)
 					|| IAgentConstants.FACES_SERVLET.equals(sourceString)
 					|| IAgentConstants.STRUTS2_DO_FILTER.equals(sourceString)) {

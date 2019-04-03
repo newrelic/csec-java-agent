@@ -106,14 +106,12 @@ public class ProcessorThread implements Runnable {
 	 * @param tId
 	 * @param servletInfo
 	 */
-	public ProcessorThread(Object source, Object[] arg, String executionId, StackTraceElement[] stackTrace, long tId,
-			ServletInfo servletInfo) {
+	public ProcessorThread(Object source, Object[] arg, String executionId, StackTraceElement[] stackTrace, long tId) {
 		this.source = source;
 		this.arg = arg;
 		this.executionId = executionId;
 		this.stackTrace = stackTrace;
 		this.threadId = tId;
-		this.setServletInfo(servletInfo);
 	}
 
 	/**
@@ -194,25 +192,18 @@ public class ProcessorThread implements Runnable {
 		if (source instanceof Method) {
 			m = (Method) source;
 			sourceString = m.toGenericString();
-//			 System.out.println(m.toGenericString());
+			// System.out.println(m.toGenericString());
 		} else if (source instanceof Constructor) {
 			c = (Constructor) source;
 			sourceString = c.toGenericString();
-			 System.out.println(c.toGenericString());
+//			System.out.println(c.toGenericString());
 		}
 
 		if (sourceString != null && executorMethods.contains(sourceString)) {
 			long start = System.currentTimeMillis();
-			// if (!LoggingInterceptor.requestMap.containsKey(this.threadId)) {
-			// System.out.println("throwing back for threadid : "+this.threadId+". ss:
-			// "+sourceString);
-			// return;
-			// }
 			IntCodeResultBean intCodeResultBean = new IntCodeResultBean(start, sourceString, LoggingInterceptor.VMPID,
 					LoggingInterceptor.applicationUUID);
 
-//			System.out.println("Inside processor servlet info found: "+ intCodeResultBean.getServletInfo());
-			intCodeResultBean.setServletInfo(this.servletInfo);
 			String klassName = null;
 
 			if (mongoExecutorMethods.contains(sourceString)) {
@@ -787,7 +778,7 @@ public class ProcessorThread implements Runnable {
 	}
 
 	private void generateEvent(IntCodeResultBean intCodeResultBean) {
-		
+
 		if (LoggingInterceptor.socket == null || !LoggingInterceptor.socket.isConnected()
 				|| LoggingInterceptor.socket.isClosed()) {
 			try {
@@ -805,7 +796,6 @@ public class ProcessorThread implements Runnable {
 		if (LoggingInterceptor.socket != null && LoggingInterceptor.socket.isConnected()
 				&& !LoggingInterceptor.socket.isClosed()) {
 			intCodeResultBean.setEventGenerationTime(System.currentTimeMillis());
-			System.out.println("publish event: " + intCodeResultBean);
 			if (intCodeResultBean.getSource() != null && (intCodeResultBean.getSource()
 					.equals("public java.net.URLClassLoader(java.net.URL[])")
 					|| intCodeResultBean.getSource().equals(
@@ -826,17 +816,22 @@ public class ProcessorThread implements Runnable {
 					}
 				}
 			} else {
-				intCodeResultBean.setServletInfo(new ServletInfo(ServletEventPool.getInstance().getRequestMap().get(this.threadId)));
+//				System.out.println("Final request map 1: "
+//						+ ServletEventPool.getInstance().getRequestMap().get(this.threadId) + "  count: "
+//						+ ServletEventPool.getInstance().getServletInfoReferenceRecord().get(threadId));
+				intCodeResultBean.setServletInfo(
+						new ServletInfo(ServletEventPool.getInstance().getRequestMap().get(this.threadId)));
+//				System.out.println("Final request map 2: "
+//						+ ServletEventPool.getInstance().getRequestMap().get(this.threadId) + "  count: "
+//						+ ServletEventPool.getInstance().getServletInfoReferenceRecord().get(threadId));
+				System.out.println("publish event: " + intCodeResultBean);
+				eventQueue.add(intCodeResultBean);
 				if (ServletEventPool.getInstance().decrementServletInfoReference(this.threadId) <= 0) {
 					ServletEventPool.getInstance().getRequestMap().remove(this.threadId);
-				}				
-				eventQueue.add(intCodeResultBean);
-				// LoggingInterceptor.oos.writeUTF(intCodeResultBean.toString() + "\n");
-				// LoggingInterceptor.oos.flush();
+				}
 			}
 		}
 	}
-
 
 	/**
 	 * @return the servletInfo

@@ -302,13 +302,6 @@ public class LoggingInterceptor extends Interceptor {
 				facadeField.setAccessible(true);
 				Object facade = facadeField.get(secondElement);
 				ServletEventPool.getInstance().getRequestMap().put(threadId, servletInfo);
-				// if (facade == null) {
-				// System.out.println("facade null");
-				// return;
-				// }
-				// System.out.println("Coyote submitting : " + threadId + " : " + sourceString +
-				// " : " + servletInfo);
-				// System.out.println("Coyote Current request map : " + requestMap);
 				ServletEventPool.getInstance().processReceivedEvent(arg[0], facade, servletInfo, sourceString,
 						threadId);
 			} catch (Exception e) {
@@ -326,8 +319,7 @@ public class LoggingInterceptor extends Interceptor {
 			if (ServletEventPool.getInstance().getRequestMap().containsKey(threadId)) {
 				ServletEventPool.getInstance().incrementServletInfoReference(threadId);
 				EventThreadPool.getInstance().processReceivedEvent(source, arg, executionId,
-						Thread.currentThread().getStackTrace(), threadId,
-						new ServletInfo(ServletEventPool.getInstance().getRequestMap().get(threadId)));
+						Thread.currentThread().getStackTrace(), threadId);
 			}
 		}
 
@@ -352,12 +344,12 @@ public class LoggingInterceptor extends Interceptor {
 			m = (Method) source;
 			sourceString = m.toGenericString();
 			if (sourceString != null && IAgentConstants.TOMCAT_COYOTE_ADAPTER_SERVICE.equals(sourceString)) {
-				if ( ServletEventPool.getInstance().decrementServletInfoReference(threadId) <= 0 ) {
+				if (ServletEventPool.getInstance().decrementServletInfoReference(threadId) <= 0) {
+//					System.out.println("Request map entry removed for threadID " + threadId);
+//					System.out.println("Current request map : " + ServletEventPool.getInstance().getRequestMap());
 					ServletEventPool.getInstance().getRequestMap().remove(threadId);
-				} 
+				}
 
-				// System.out.println("Request map entry removed for threadID " + threadId);
-				// System.out.println("Current request map : "+ requestMap);
 			}
 		}
 	}

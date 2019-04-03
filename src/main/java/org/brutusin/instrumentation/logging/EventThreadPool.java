@@ -100,9 +100,9 @@ public class EventThreadPool {
 		}
 	}
 
-	public void processReceivedEvent(Object source, Object[] arg, String executionId, StackTraceElement[] stackTrace, long tId, ServletInfo servletInfo) {
+	public void processReceivedEvent(Object source, Object[] arg, String executionId, StackTraceElement[] stackTrace, long tId) {
 		try {
-			this.executor.execute(new ProcessorThread(source, arg, executionId, stackTrace, tId, servletInfo));
+			this.executor.execute(new ProcessorThread(source, arg, executionId, stackTrace, tId));
 		} catch (Exception e) {
 
 		}
