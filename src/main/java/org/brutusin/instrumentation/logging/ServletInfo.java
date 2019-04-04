@@ -1,8 +1,6 @@
 package org.brutusin.instrumentation.logging;
 
 import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.brutusin.com.fasterxml.jackson.core.JsonProcessingException;
 import org.brutusin.com.fasterxml.jackson.databind.ObjectMapper;
@@ -14,8 +12,6 @@ public class ServletInfo implements Serializable {
 	 */
 	private static final long serialVersionUID = 5693096693182224287L;
 
-	private Map<String, String[]> parameters;
-
 	private String queryString;
 
 	private String sourceIp;
@@ -25,7 +21,7 @@ public class ServletInfo implements Serializable {
 	private String rawParameters;
 
 	private String contentType;
-
+	
 	private String requestURI;
 
 	/**
@@ -46,13 +42,8 @@ public class ServletInfo implements Serializable {
 	public ServletInfo() {
 	}
 
-	public ServletInfo(Map<String, String[]> paramMap) {
-		this.parameters = paramMap;
-	}
 
 	public ServletInfo(ServletInfo servletInfo) {
-		if (servletInfo.getParameters() != null)
-			this.parameters = new HashMap<>(servletInfo.getParameters());
 		this.queryString = servletInfo.getQueryString();
 		this.sourceIp = servletInfo.getSourceIp();
 		this.requestMethod = servletInfo.getRequestMethod();
@@ -134,21 +125,6 @@ public class ServletInfo implements Serializable {
 	 */
 	public void setRequestMethod(String requestMethod) {
 		this.requestMethod = requestMethod;
-	}
-
-	/**
-	 * @return the parameters
-	 */
-	public Map<String, String[]> getParameters() {
-		return parameters;
-	}
-
-	/**
-	 * @param parameters
-	 *            the parameters to set
-	 */
-	public void setParameters(Map<String, String[]> parameters) {
-		this.parameters = parameters;
 	}
 
 	@Override

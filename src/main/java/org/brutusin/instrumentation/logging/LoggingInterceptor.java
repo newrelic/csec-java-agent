@@ -24,9 +24,11 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
+
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+
 import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -50,16 +52,15 @@ import com.k2.org.objectweb.asm.tree.MethodNode;
 
 public class LoggingInterceptor extends Interceptor {
 
-	// private File rootFile;
 	private static final Set<String> allClasses;
 	private static final Map<String, List<String>> interceptMethod;
-	// protected static BufferedWriter writer;
-	// private static UnixSocketChannel channel;
 	protected static DataOutputStream oos;
 	protected static Integer VMPID;
 	protected static final String applicationUUID;
 	protected static Socket socket;
-	protected static Map<Long, ServletInfo> requestMap;
+
+	// protected static Map<Long, ServletInfo> requestMap;
+	protected static ScheduledExecutorService eventPoolExecutor;
 
 	static {
 		applicationUUID = UUID.randomUUID().toString();
@@ -69,7 +70,6 @@ public class LoggingInterceptor extends Interceptor {
 			interceptMethod.put(IAgentConstants.ALL_CLASSES[i],
 					new ArrayList<String>(Arrays.asList(IAgentConstants.ALL_METHODS[i])));
 		}
-		requestMap = new HashMap<>();
 	}
 
 	public static String getContainerID() {
@@ -134,7 +134,7 @@ public class LoggingInterceptor extends Interceptor {
 								jarPathBean.setIsHost(true);
 							try {
 								oos.writeUTF(jarPathBean.toString());
-								oos.flush();
+								// oos.flush();
 								/*
 								 * writer.write(jarPathBean.toString()); writer.flush();
 								 */
@@ -218,11 +218,24 @@ public class LoggingInterceptor extends Interceptor {
 			connectSocket();
 			getJarPath();
 			createApplicationInfoBean();
+			eventWritePool();
 			System.out.println("K2-JavaAgent installed successfully.");
 
 		} catch (Exception e) {
 			System.err.println("Can't connect to IC, agent installation failed.");
 		}
+	}
+
+	private static void eventWritePool() {
+		eventPoolExecutor = Executors.newScheduledThreadPool(1);
+		eventPoolExecutor.scheduleWithFixedDelay(new Runnable() {
+			@Override
+			public void run() {
+				if (!ProcessorThread.eventQueue.isEmpty()) {
+					ProcessorThread.queuePooler();
+				}
+			}
+		}, 2, 2, TimeUnit.SECONDS);
 	}
 
 	private static String getCmdLineArgsByProc(Integer pid) {
@@ -262,10 +275,13 @@ public class LoggingInterceptor extends Interceptor {
 
 	@Override
 	public boolean interceptMethod(ClassNode cn, MethodNode mn) {
-//		if (cn.name.equals("org/apache/struts2/dispatcher/ng/filter/StrutsPrepareAndExecuteFilter"))
-//			System.out.println("name: " + mn.name + " : " + interceptMethod.get(cn.name).contains(mn.name));
-//		else if (cn.name.equals("javax/faces/webapp/FacesServlet"))
-//			System.out.println("name: " + mn.name + " : " + interceptMethod.get(cn.name).contains(mn.name));
+		// if
+		// (cn.name.equals("org/apache/struts2/dispatcher/ng/filter/StrutsPrepareAndExecuteFilter"))
+		// System.out.println("name: " + mn.name + " : " +
+		// interceptMethod.get(cn.name).contains(mn.name));
+		// else if (cn.name.equals("javax/faces/webapp/FacesServlet"))
+		// System.out.println("name: " + mn.name + " : " +
+		// interceptMethod.get(cn.name).contains(mn.name));
 		return interceptMethod.get(cn.name).contains(mn.name);
 	}
 
@@ -273,65 +289,75 @@ public class LoggingInterceptor extends Interceptor {
 	@Override
 	protected void doOnStart(Object source, Object[] arg, String executionId) {
 		String sourceString = null;
-		Method m = null;
-		ServletInfo servletInfo = null;
+
 		long threadId = Thread.currentThread().getId();
 
 		if (source instanceof Method) {
-			m = (Method) source;
-			sourceString = m.toGenericString();
+			sourceString = ((Method) source).toGenericString();
+			// System.out.println(m.toGenericString());
+		} else if (source instanceof Constructor) {
+			sourceString = ((Constructor) source).toGenericString();
 		}
 
 		// System.out.println("doOnStart : " + threadId+" : " + sourceString+" : " +
 		// servletInfo);
-		if (sourceString != null && (IAgentConstants.HTTP_SERVLET_SERVICE.equals(sourceString)
-				|| IAgentConstants.FACES_SERVLET.equals(sourceString))
-				|| IAgentConstants.STRUTS2_DO_FILTER.equals(sourceString)) {
-			Map<String, String[]> paramMap = null;
-//			System.out.println("Servlet : " + threadId + " : " + sourceString + " : " + servletInfo + " : " + paramMap);
+
+		if (sourceString == null)
+			return;
+		if (IAgentConstants.JETTY_REQUEST_HANDLE.equals(sourceString)) {
+
+			ServletEventPool.getInstance().incrementServletInfoReference(threadId);
+			ServletInfo servletInfo = new ServletInfo();
 			try {
-				Method getParameterMapMethod = arg[0].getClass().getMethod("getParameterMap");
-				getParameterMapMethod.setAccessible(true);
-				paramMap = new HashMap<>((Map<String, String[]>) getParameterMapMethod.invoke(arg[0], null));
+				ByteBuffer bb = null;
+
+				Field channelField = arg[2].getClass().getDeclaredField("_channel");
+				channelField.setAccessible(true);
+				Object _channel = channelField.get(arg[2]);
+
+				Field httpConnectionField = _channel.getClass().getDeclaredField("_httpConnection");
+				httpConnectionField.setAccessible(true);
+				Object _httpConnection = httpConnectionField.get(_channel);
+
+				Field bytes = _httpConnection.getClass().getDeclaredField("_requestBuffer");
+				bytes.setAccessible(true);
+				bb = (ByteBuffer) bytes.get(_httpConnection);
+
+				ServletEventPool.getInstance().getRequestMap().put(threadId, servletInfo);
+				ServletEventPool.getInstance().processReceivedEvent(bb.duplicate(), arg[2], servletInfo, sourceString, threadId);
 			} catch (Exception e) {
-				e.printStackTrace();
-				return;
 			}
-			// System.out.println("Servlet : " + threadId+" : " + sourceString+" : " +
-			// servletInfo + " : "+ paramMap);
-			if (!requestMap.containsKey(threadId)) {
-				servletInfo = new ServletInfo(paramMap);
-				requestMap.put(threadId, servletInfo);
-			} else {
-				servletInfo = requestMap.get(threadId);
-				servletInfo.setParameters(paramMap);
-			}
-			// System.out.println("Servlet submitting : " + threadId+" : " + sourceString+"
-			// : " + servletInfo + " : "+ paramMap);
-			// System.out.println("Servlet Current request map : "+ requestMap);
-			ServletEventPool.getInstance().processReceivedEvent(arg[0], servletInfo, sourceString, threadId);
-		} else if (sourceString != null && IAgentConstants.TOMCAT_COYOTE_ADAPTER_SERVICE.equals(sourceString)) {
-//			System.out.println("Coyote : " + threadId + " : " + sourceString + " : " + servletInfo);
+		} else if (IAgentConstants.TOMCAT_COYOTE_ADAPTER_PARSE_POST.equals(sourceString)) {
+			ServletEventPool.getInstance().incrementServletInfoReference(threadId);
+			// System.out.println("Coyote : " + threadId + " : " + sourceString + " : " +
+			// servletInfo);
+			ServletInfo servletInfo = new ServletInfo();
 
-			if (!requestMap.containsKey(threadId)) {
-				servletInfo = new ServletInfo();
-				requestMap.put(threadId, servletInfo);
-			} else {
-				servletInfo = requestMap.get(threadId);
+			try {
+				Object secondElement = arg[1];
+				Field facadeField = secondElement.getClass().getDeclaredField("facade");
+				facadeField.setAccessible(true);
+				Object facade = facadeField.get(secondElement);
+				ServletEventPool.getInstance().getRequestMap().put(threadId, servletInfo);
+				ServletEventPool.getInstance().processReceivedEvent(arg[0], facade, servletInfo, sourceString,
+						threadId);
+			} catch (Exception e) {
 			}
-			// System.out.println("Coyote submitting : " + threadId+" : " + sourceString+" :
-			// " + servletInfo);
-			// System.out.println("Coyote Current request map : "+ requestMap);
-			ServletEventPool.getInstance().processReceivedEvent(arg[0], servletInfo, sourceString, threadId);
+		} else if (IAgentConstants.TOMCAT_REQUEST_FACADE.equals(sourceString)
+				&& ServletEventPool.getInstance().getRequestMap().containsKey(threadId)) {
+			ServletEventPool.getInstance().processReceivedEvent(null, arg[0],
+					ServletEventPool.getInstance().getRequestMap().get(threadId), sourceString, threadId);
 		} else {
-//			System.out.println("Other event : " + threadId + " : " + sourceString + " : " + requestMap.get(threadId)
-//					+ "  :   " + arg[0] + "  :  " + arg[1]);
-			// System.out.println("Other event current request map : "+ requestMap);
-			if (requestMap.containsKey(threadId))
+			// System.out.println("Other event : " + threadId + " : " + sourceString + " : "
+			// + requestMap.get(threadId)
+			// + " : " + arg[0] + " : " + arg[1]);
+			// System.out.println("Other event current request map : " + requestMap);
+			if (ServletEventPool.getInstance().getRequestMap().containsKey(threadId)) {
+				ServletEventPool.getInstance().incrementServletInfoReference(threadId);
 				EventThreadPool.getInstance().processReceivedEvent(source, arg, executionId,
-						Thread.currentThread().getStackTrace(), threadId, new ServletInfo(requestMap.get(threadId)));
+						Thread.currentThread().getStackTrace(), threadId, sourceString);
+			}
 		}
-
 		// System.out.println("started sourceString : "+ sourceString);
 	}
 
@@ -352,10 +378,14 @@ public class LoggingInterceptor extends Interceptor {
 		if (source instanceof Method) {
 			m = (Method) source;
 			sourceString = m.toGenericString();
-			if (sourceString != null && IAgentConstants.TOMCAT_COYOTE_ADAPTER_SERVICE.equals(sourceString)) {
-				requestMap.remove(threadId);
-//				System.out.println("Request map entry removed for threadID " + threadId);
-				// System.out.println("Current request map : "+ requestMap);
+			if (sourceString != null && (IAgentConstants.TOMCAT_COYOTE_ADAPTER_SERVICE.equals(sourceString)
+					|| IAgentConstants.JETTY_REQUEST_HANDLE.equals(sourceString))) {
+				if (ServletEventPool.getInstance().decrementServletInfoReference(threadId) <= 0) {
+					// System.out.println("Request map entry removed for threadID " + threadId);
+					// System.out.println("Current request map : " +
+					// ServletEventPool.getInstance().getRequestMap());
+					ServletEventPool.getInstance().getRequestMap().remove(threadId);
+				}
 			}
 		}
 	}
