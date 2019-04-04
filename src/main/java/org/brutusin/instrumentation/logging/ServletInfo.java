@@ -22,8 +22,6 @@ public class ServletInfo implements Serializable {
 
 	private String contentType;
 	
-	private String contentLength;
-
 	private String requestURI;
 
 	/**
