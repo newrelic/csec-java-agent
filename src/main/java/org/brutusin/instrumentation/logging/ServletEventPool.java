@@ -1,5 +1,6 @@
 package org.brutusin.instrumentation.logging;
 
+
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Future;
@@ -18,6 +19,7 @@ public class ServletEventPool {
 
 	private static ServletEventPool instance;
 	
+
 	private Map<Long, ServletInfo> requestMap;
 	private Map<Long, Long> servletInfoReferenceRecord;
 	
@@ -104,6 +106,7 @@ public class ServletEventPool {
 		}
 	}
 
+
 	public void processReceivedEvent(Object firstElement, Object request, ServletInfo servletInfo, String sourceString, long threadId) {
 		try {
 			this.executor.execute(new ServletEventProcessor(firstElement, request, servletInfo, sourceString, threadId));
@@ -111,6 +114,7 @@ public class ServletEventPool {
 
 		}
 	}
+
 
 	/**
 	 * @return the requestMap

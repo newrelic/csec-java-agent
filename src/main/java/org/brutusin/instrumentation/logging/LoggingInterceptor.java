@@ -24,9 +24,11 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
+
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+
 import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -56,6 +58,7 @@ public class LoggingInterceptor extends Interceptor {
 	protected static Integer VMPID;
 	protected static final String applicationUUID;
 	protected static Socket socket;
+
 	// protected static Map<Long, ServletInfo> requestMap;
 	protected static ScheduledExecutorService eventPoolExecutor;
 
@@ -255,6 +258,16 @@ public class LoggingInterceptor extends Interceptor {
 		return null;
 	}
 
+	private static String readByteBuffer(ByteBuffer buffer) {
+		int currPos = buffer.position();
+		StringBuffer stringBuffer = new StringBuffer();
+		while (buffer.remaining() > 0) {
+			stringBuffer.append((char) buffer.get());
+		}
+		buffer.position(currPos);
+		return stringBuffer.toString();
+	}
+
 	@Override
 	public boolean interceptClass(String className, byte[] byteCode) {
 		return allClasses.contains(className);
@@ -276,6 +289,7 @@ public class LoggingInterceptor extends Interceptor {
 	@Override
 	protected void doOnStart(Object source, Object[] arg, String executionId) {
 		String sourceString = null;
+
 		long threadId = Thread.currentThread().getId();
 
 		if (source instanceof Method) {
@@ -287,6 +301,7 @@ public class LoggingInterceptor extends Interceptor {
 
 		// System.out.println("doOnStart : " + threadId+" : " + sourceString+" : " +
 		// servletInfo);
+
 		if (sourceString == null)
 			return;
 		if (IAgentConstants.JETTY_REQUEST_HANDLE.equals(sourceString)) {
@@ -343,7 +358,6 @@ public class LoggingInterceptor extends Interceptor {
 						Thread.currentThread().getStackTrace(), threadId, sourceString);
 			}
 		}
-
 		// System.out.println("started sourceString : "+ sourceString);
 	}
 
@@ -372,7 +386,6 @@ public class LoggingInterceptor extends Interceptor {
 					// ServletEventPool.getInstance().getRequestMap());
 					ServletEventPool.getInstance().getRequestMap().remove(threadId);
 				}
-
 			}
 		}
 	}

@@ -108,12 +108,14 @@ public class ProcessorThread implements Runnable {
 	 * @param tId
 	 * @param servletInfo
 	 */
+
 	public ProcessorThread(Object source, Object[] arg, String executionId, StackTraceElement[] stackTrace, long tId, String sourceString) {
 		this.source = source;
 		this.arg = arg;
 		this.executionId = executionId;
 		this.stackTrace = stackTrace;
 		this.threadId = tId;
+
 		this.sourceString = sourceString;
 	}
 
@@ -189,11 +191,16 @@ public class ProcessorThread implements Runnable {
 
 	@Override
 	public void run() {
+
 		if (executorMethods.contains(sourceString)) {
 			long start = System.currentTimeMillis();
+
 			IntCodeResultBean intCodeResultBean = new IntCodeResultBean(start, sourceString, LoggingInterceptor.VMPID,
 					LoggingInterceptor.applicationUUID);
 
+			intCodeResultBean.setServletInfo(this.servletInfo);
+			// System.out.println("Inside processor servlet info found: threadId:
+			// "+this.threadId +". "+ intCodeResultBean.getServletInfo());
 			String klassName = null;
 			if (mongoExecutorMethods.contains(sourceString)) {
 				intCodeResultBean.setValidationBypass(true);
@@ -202,6 +209,7 @@ public class ProcessorThread implements Runnable {
 			// String methodName = null;
 			StackTraceElement[] trace = this.stackTrace;
 			if (IAgentConstants.FILE_OPEN_EXECUTORS.contains(sourceString)) {
+
 				// System.out.println("file operation found");
 				boolean javaIoFile = false;
 				for (int i = 0; i < trace.length; i++) {
@@ -216,6 +224,7 @@ public class ProcessorThread implements Runnable {
 						}
 						if (intCodeResultBean.getUserClassName() != null
 								&& !intCodeResultBean.getUserClassName().isEmpty()) {
+
 							// System.out.println("result bean : "+intCodeResultBean);
 							generateEvent(intCodeResultBean);
 						}
@@ -233,6 +242,7 @@ public class ProcessorThread implements Runnable {
 
 			for (int i = 0; i < trace.length; i++) {
 				klassName = trace[i].getClassName();
+
 				// if (klassName.equals(MSSQL_PREPARED_STATEMENT_CLASS)
 				// || klassName.equals(MSSQL_PREPARED_BATCH_STATEMENT_CLASS)
 				// || klassName.contains(MYSQL_PREPARED_STATEMENT)) {

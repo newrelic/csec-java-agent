@@ -44,6 +44,7 @@ public class ServletInfo implements Serializable {
 	public ServletInfo() {
 	}
 
+
 	public ServletInfo(ServletInfo servletInfo) {
 		this.queryString = servletInfo.getQueryString();
 		this.sourceIp = servletInfo.getSourceIp();

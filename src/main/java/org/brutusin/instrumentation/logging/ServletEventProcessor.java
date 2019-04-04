@@ -7,6 +7,7 @@ import java.nio.ByteBuffer;
 public class ServletEventProcessor implements Runnable {
 
 	private Object firstElement;
+
 	private Object request;
 	private ServletInfo servletInfo;
 	private String sourceString;
@@ -84,6 +85,7 @@ public class ServletEventProcessor implements Runnable {
 	@Override
 	public void run() {
 		try {
+
 			if (IAgentConstants.JETTY_REQUEST_HANDLE.equals(sourceString)) {
 
 				Method getContentLength = request.getClass().getMethod("getContentLength");
@@ -195,6 +197,7 @@ public class ServletEventProcessor implements Runnable {
 			// threadID " + this.threadId + " source "+ this.sourceString);
 			// System.out.println("Current request map inside event processor : "+
 			// LoggingInterceptor.requestMap);
+
 		}
 	}
 
@@ -211,6 +214,7 @@ public class ServletEventProcessor implements Runnable {
 		buffer.position(currPos);
 		return stringBuffer.toString();
 	}
+
 
 	/**
 	 * @return the request

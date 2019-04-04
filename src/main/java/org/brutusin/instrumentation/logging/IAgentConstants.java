@@ -102,8 +102,7 @@ public interface IAgentConstants {
 			"org/apache/catalina/connector/RequestFacade",
 			"org/eclipse/jetty/server/handler/HandlerWrapper"
 //			"javax/faces/webapp/FacesServlet",
-//			"org/apache/struts2/dispatcher/ng/filter/StrutsPrepareAndExecuteFilter"
-			
+//			"org/apache/struts2/dispatcher/ng/filter/StrutsPrepareAndExecuteFilter"		
 	};
 
 	String[][] ALL_METHODS = { { "sqlQueryDirect" }, { "start" }, { "newOutputStream" }, CONSTRUCTOR,
@@ -123,6 +122,7 @@ public interface IAgentConstants {
 	String MONGO_IDENTIFIER = "com.mongo";
 	String CLASS_LOADER_IDENTIFIER = "java.net.URLClassLoader";
 	String SERVLET_REQUEST_IDENTIFIER="javax.servlet.http.HttpServletRequest"; 
+
 	String TOMCAT_COYOTE_ADAPTER_PARSE_POST = "protected boolean org.apache.catalina.connector.CoyoteAdapter.postParseRequest(org.apache.coyote.Request,org.apache.catalina.connector.Request,org.apache.coyote.Response,org.apache.catalina.connector.Response) throws java.io.IOException,javax.servlet.ServletException";
 	String TOMCAT_COYOTE_ADAPTER_SERVICE = "public void org.apache.catalina.connector.CoyoteAdapter.service(org.apache.coyote.Request,org.apache.coyote.Response) throws java.lang.Exception";
 	String TOMCAT_REQUEST_FACADE = "public org.apache.catalina.connector.RequestFacade(org.apache.catalina.connector.Request)";
