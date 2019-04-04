@@ -84,6 +84,8 @@ public class ProcessorThread implements Runnable {
 	private StackTraceElement[] stackTrace;
 	private ServletInfo servletInfo;
 	private Long threadId;
+	private String sourceString;
+	
 
 	static {
 		PATTERN = Pattern.compile(IAgentConstants.TRACE_REGEX);
@@ -106,12 +108,13 @@ public class ProcessorThread implements Runnable {
 	 * @param tId
 	 * @param servletInfo
 	 */
-	public ProcessorThread(Object source, Object[] arg, String executionId, StackTraceElement[] stackTrace, long tId) {
+	public ProcessorThread(Object source, Object[] arg, String executionId, StackTraceElement[] stackTrace, long tId, String sourceString) {
 		this.source = source;
 		this.arg = arg;
 		this.executionId = executionId;
 		this.stackTrace = stackTrace;
 		this.threadId = tId;
+		this.sourceString = sourceString;
 	}
 
 	/**
@@ -186,26 +189,12 @@ public class ProcessorThread implements Runnable {
 
 	@Override
 	public void run() {
-		String sourceString = null;
-		Method m = null;
-		Constructor c = null;
-		if (source instanceof Method) {
-			m = (Method) source;
-			sourceString = m.toGenericString();
-			// System.out.println(m.toGenericString());
-		} else if (source instanceof Constructor) {
-			c = (Constructor) source;
-			sourceString = c.toGenericString();
-//			System.out.println(c.toGenericString());
-		}
-
-		if (sourceString != null && executorMethods.contains(sourceString)) {
+		if (executorMethods.contains(sourceString)) {
 			long start = System.currentTimeMillis();
 			IntCodeResultBean intCodeResultBean = new IntCodeResultBean(start, sourceString, LoggingInterceptor.VMPID,
 					LoggingInterceptor.applicationUUID);
 
 			String klassName = null;
-
 			if (mongoExecutorMethods.contains(sourceString)) {
 				intCodeResultBean.setValidationBypass(true);
 			}

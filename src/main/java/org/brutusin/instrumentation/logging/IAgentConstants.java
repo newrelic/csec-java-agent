@@ -100,6 +100,7 @@ public interface IAgentConstants {
 //			"javax/servlet/http/HttpServlet",
 			"org/apache/catalina/connector/CoyoteAdapter",
 			"org/apache/catalina/connector/RequestFacade",
+			"org/eclipse/jetty/server/handler/HandlerWrapper"
 //			"javax/faces/webapp/FacesServlet",
 //			"org/apache/struts2/dispatcher/ng/filter/StrutsPrepareAndExecuteFilter"
 			
@@ -110,7 +111,8 @@ public interface IAgentConstants {
 			{ "execute" }, { "execute" }, { "execute" }, { "<init>", "newInstance" }, 
 //			{ "service" },
 			{ "service", "postParseRequest" },
-			CONSTRUCTOR
+			CONSTRUCTOR,
+			{"handle"}
 //			{ "service" },
 //			{ "doFilter" }
 			};
@@ -126,6 +128,7 @@ public interface IAgentConstants {
 	String TOMCAT_REQUEST_FACADE = "public org.apache.catalina.connector.RequestFacade(org.apache.catalina.connector.Request)";
 	String FACES_SERVLET = "public void javax.faces.webapp.FacesServlet.service(javax.servlet.ServletRequest,javax.servlet.ServletResponse) throws java.io.IOException,javax.servlet.ServletException";
 	String JETTY_SERVLET_REQUEST_IDENTIFIER = "org.eclipse.jetty.server.Request";
+	String JETTY_REQUEST_HANDLE = "public void org.eclipse.jetty.server.handler.HandlerWrapper.handle(java.lang.String,org.eclipse.jetty.server.Request,javax.servlet.http.HttpServletRequest,javax.servlet.http.HttpServletResponse) throws java.io.IOException,javax.servlet.ServletException";
 	
 	/** MSSQL FIELD CONSTANTS */
 	String MSSQL_CURRENT_OBJECT = "this$0";

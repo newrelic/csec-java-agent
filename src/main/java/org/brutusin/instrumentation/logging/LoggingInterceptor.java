@@ -28,6 +28,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.net.Socket;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -36,7 +37,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -276,21 +276,43 @@ public class LoggingInterceptor extends Interceptor {
 	@Override
 	protected void doOnStart(Object source, Object[] arg, String executionId) {
 		String sourceString = null;
-		Method m = null;
-		Constructor c = null;
 		long threadId = Thread.currentThread().getId();
 
 		if (source instanceof Method) {
-			m = (Method) source;
-			sourceString = m.toGenericString();
+			sourceString = ((Method) source).toGenericString();
+			// System.out.println(m.toGenericString());
 		} else if (source instanceof Constructor) {
-			c = (Constructor) source;
-			sourceString = c.toGenericString();
+			sourceString = ((Constructor) source).toGenericString();
 		}
 
 		// System.out.println("doOnStart : " + threadId+" : " + sourceString+" : " +
 		// servletInfo);
-		if (sourceString != null && IAgentConstants.TOMCAT_COYOTE_ADAPTER_PARSE_POST.equals(sourceString)) {
+		if (sourceString == null)
+			return;
+		if (IAgentConstants.JETTY_REQUEST_HANDLE.equals(sourceString)) {
+
+			ServletEventPool.getInstance().incrementServletInfoReference(threadId);
+			ServletInfo servletInfo = new ServletInfo();
+			try {
+				ByteBuffer bb = null;
+
+				Field channelField = arg[2].getClass().getDeclaredField("_channel");
+				channelField.setAccessible(true);
+				Object _channel = channelField.get(arg[2]);
+
+				Field httpConnectionField = _channel.getClass().getDeclaredField("_httpConnection");
+				httpConnectionField.setAccessible(true);
+				Object _httpConnection = httpConnectionField.get(_channel);
+
+				Field bytes = _httpConnection.getClass().getDeclaredField("_requestBuffer");
+				bytes.setAccessible(true);
+				bb = (ByteBuffer) bytes.get(_httpConnection);
+
+				ServletEventPool.getInstance().getRequestMap().put(threadId, servletInfo);
+				ServletEventPool.getInstance().processReceivedEvent(bb.duplicate(), arg[2], servletInfo, sourceString, threadId);
+			} catch (Exception e) {
+			}
+		} else if (IAgentConstants.TOMCAT_COYOTE_ADAPTER_PARSE_POST.equals(sourceString)) {
 			ServletEventPool.getInstance().incrementServletInfoReference(threadId);
 			// System.out.println("Coyote : " + threadId + " : " + sourceString + " : " +
 			// servletInfo);
@@ -306,8 +328,7 @@ public class LoggingInterceptor extends Interceptor {
 						threadId);
 			} catch (Exception e) {
 			}
-			// TODO add else if for jetty on http service method
-		} else if (sourceString != null && IAgentConstants.TOMCAT_REQUEST_FACADE.equals(sourceString)
+		} else if (IAgentConstants.TOMCAT_REQUEST_FACADE.equals(sourceString)
 				&& ServletEventPool.getInstance().getRequestMap().containsKey(threadId)) {
 			ServletEventPool.getInstance().processReceivedEvent(null, arg[0],
 					ServletEventPool.getInstance().getRequestMap().get(threadId), sourceString, threadId);
@@ -319,7 +340,7 @@ public class LoggingInterceptor extends Interceptor {
 			if (ServletEventPool.getInstance().getRequestMap().containsKey(threadId)) {
 				ServletEventPool.getInstance().incrementServletInfoReference(threadId);
 				EventThreadPool.getInstance().processReceivedEvent(source, arg, executionId,
-						Thread.currentThread().getStackTrace(), threadId);
+						Thread.currentThread().getStackTrace(), threadId, sourceString);
 			}
 		}
 
@@ -343,10 +364,12 @@ public class LoggingInterceptor extends Interceptor {
 		if (source instanceof Method) {
 			m = (Method) source;
 			sourceString = m.toGenericString();
-			if (sourceString != null && IAgentConstants.TOMCAT_COYOTE_ADAPTER_SERVICE.equals(sourceString)) {
+			if (sourceString != null && (IAgentConstants.TOMCAT_COYOTE_ADAPTER_SERVICE.equals(sourceString)
+					|| IAgentConstants.JETTY_REQUEST_HANDLE.equals(sourceString))) {
 				if (ServletEventPool.getInstance().decrementServletInfoReference(threadId) <= 0) {
-//					System.out.println("Request map entry removed for threadID " + threadId);
-//					System.out.println("Current request map : " + ServletEventPool.getInstance().getRequestMap());
+					// System.out.println("Request map entry removed for threadID " + threadId);
+					// System.out.println("Current request map : " +
+					// ServletEventPool.getInstance().getRequestMap());
 					ServletEventPool.getInstance().getRequestMap().remove(threadId);
 				}
 

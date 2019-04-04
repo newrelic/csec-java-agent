@@ -1,8 +1,6 @@
 package org.brutusin.instrumentation.logging;
 
 import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.brutusin.com.fasterxml.jackson.core.JsonProcessingException;
 import org.brutusin.com.fasterxml.jackson.databind.ObjectMapper;
@@ -23,6 +21,8 @@ public class ServletInfo implements Serializable {
 	private String rawParameters;
 
 	private String contentType;
+	
+	private String contentLength;
 
 	private String requestURI;
 

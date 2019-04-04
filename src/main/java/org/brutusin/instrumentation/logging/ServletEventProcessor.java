@@ -84,8 +84,39 @@ public class ServletEventProcessor implements Runnable {
 	@Override
 	public void run() {
 		try {
-			if (IAgentConstants.TOMCAT_COYOTE_ADAPTER_PARSE_POST.equals(sourceString)) {
-//				System.out.println("init servletInfo. " + servletInfo);
+			if (IAgentConstants.JETTY_REQUEST_HANDLE.equals(sourceString)) {
+
+				Method getContentLength = request.getClass().getMethod("getContentLength");
+				int contentLength = (int) getContentLength.invoke(request, null);
+
+				if (firstElement != null) {
+					servletInfo.setRawParameters(readByteBuffer((ByteBuffer) firstElement, contentLength));
+				}
+
+				Method getQueryString = request.getClass().getMethod("getQueryString");
+				Method getRemoteAddr = request.getClass().getMethod("getRemoteAddr");
+				Method getMethod = request.getClass().getMethod("getMethod");
+				Method getContentType = request.getClass().getMethod("getContentType");
+				Method getRequestURI = request.getClass().getMethod("getRequestURI");
+
+				// set all methods accessible
+				getQueryString.setAccessible(true);
+				getRemoteAddr.setAccessible(true);
+				getMethod.setAccessible(true);
+				getContentType.setAccessible(true);
+				getRequestURI.setAccessible(true);
+
+				servletInfo.setQueryString((String) getQueryString.invoke(request, null));
+				servletInfo.setSourceIp((String) getRemoteAddr.invoke(request, null));
+				servletInfo.setRequestMethod((String) getMethod.invoke(request, null));
+				servletInfo.setContentType((String) getContentType.invoke(request, null));
+				servletInfo.setRequestURI((String) getRequestURI.invoke(request, null));
+
+				// System.out.println("Current request map inside event processor : "+
+				// LoggingInterceptor.requestMap);
+
+			} else if (IAgentConstants.TOMCAT_COYOTE_ADAPTER_PARSE_POST.equals(sourceString)) {
+				// System.out.println("init servletInfo. " + servletInfo);
 				if (firstElement != null) {
 					ByteBuffer bb = null;
 					// System.out.println("Inside coyote adapter for threadId " + this.threadId + "
@@ -132,7 +163,7 @@ public class ServletEventProcessor implements Runnable {
 					servletInfo.setContentType((String) getContentType.invoke(request, null));
 					servletInfo.setRequestURI((String) getRequestURI.invoke(request, null));
 				}
-//				System.out.println("serrrr servletInfo. " + servletInfo);
+				// System.out.println("serrrr servletInfo. " + servletInfo);
 				// System.out.println(
 				// "Exiting coyote adapter for threadId " + this.threadId + " source " +
 				// this.sourceString);
@@ -155,66 +186,10 @@ public class ServletEventProcessor implements Runnable {
 				servletInfo.setRequestMethod((String) getMethod.invoke(request, null));
 				servletInfo.setContentType((String) getContentType.invoke(request, null));
 				servletInfo.setRequestURI((String) getRequestURI.invoke(request, null));
-//				System.out.println("serrrr servletInfo. facade " + servletInfo);
-			} else if (IAgentConstants.HTTP_SERVLET_SERVICE.equals(sourceString)
-					|| IAgentConstants.FACES_SERVLET.equals(sourceString)
-					|| IAgentConstants.STRUTS2_DO_FILTER.equals(sourceString)) {
-
-				// System.out.println("Inside servlet for threadId " + this.threadId + " source
-				// "+ this.sourceString);
-
-				Method getQueryString = firstElement.getClass().getMethod("getQueryString");
-				Method getRemoteAddr = firstElement.getClass().getMethod("getRemoteAddr");
-				Method getMethod = firstElement.getClass().getMethod("getMethod");
-				Method getContentType = firstElement.getClass().getMethod("getContentType");
-				Method getRequestURI = firstElement.getClass().getMethod("getRequestURI");
-
-				// set all methods accessible
-				getQueryString.setAccessible(true);
-				getRemoteAddr.setAccessible(true);
-				getMethod.setAccessible(true);
-				getContentType.setAccessible(true);
-				getRequestURI.setAccessible(true);
-
-				servletInfo.setQueryString((String) getQueryString.invoke(firstElement, null));
-				servletInfo.setSourceIp((String) getRemoteAddr.invoke(firstElement, null));
-				servletInfo.setRequestMethod((String) getMethod.invoke(firstElement, null));
-				servletInfo.setContentType((String) getContentType.invoke(firstElement, null));
-				servletInfo.setRequestURI((String) getRequestURI.invoke(firstElement, null));
-				// System.out.println("Exiting servlet for threadId " + this.threadId + " source
-				// "+ this.sourceString);
-
-				// extract raw params if the request is from jetty
-				// System.out.println("Request Class Name:" +
-				// firstElement.getClass().getName());
-				if (firstElement.getClass().getName().equals(IAgentConstants.JETTY_SERVLET_REQUEST_IDENTIFIER)) {
-					// buffer located in request > _channel > _httpConnection > _requestBuffer
-
-					ByteBuffer bb = null;
-
-					Field channelField = firstElement.getClass().getDeclaredField("_channel");
-					channelField.setAccessible(true);
-					Object _channel = channelField.get(firstElement);
-
-					Field httpConnectionField = _channel.getClass().getDeclaredField("_httpConnection");
-					httpConnectionField.setAccessible(true);
-					Object _httpConnection = httpConnectionField.get(_channel);
-
-					Field bytes = _httpConnection.getClass().getDeclaredField("_requestBuffer");
-					bytes.setAccessible(true);
-					bb = (ByteBuffer) bytes.get(_httpConnection);
-
-					Method getContentLength = firstElement.getClass().getMethod("getContentLength");
-					int contentLength = (int) getContentLength.invoke(firstElement, null);
-					servletInfo.setRawParameters(readByteBuffer(bb, contentLength));
-				}
-
-				// System.out.println("Current request map inside event processor : "+
-				// LoggingInterceptor.requestMap);
-
+				// System.out.println("serrrr servletInfo. facade " + servletInfo);
 			}
 		} catch (Exception e) {
-			// e.printStackTrace();
+			e.printStackTrace();
 			// LoggingInterceptor.requestMap.remove(this.threadId);
 			// System.out.println("Request map entry removed inside event processor for
 			// threadID " + this.threadId + " source "+ this.sourceString);
@@ -224,9 +199,6 @@ public class ServletEventProcessor implements Runnable {
 	}
 
 	private static String readByteBuffer(ByteBuffer buffer, int contentLength) {
-		if (buffer == null) {
-			return "";
-		}
 		int currPos = buffer.position();
 		if (contentLength > 0 && (buffer.limit() - contentLength) > 0)
 			buffer.position(buffer.limit() - contentLength);
