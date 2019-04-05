@@ -15,8 +15,8 @@
 	<url>https://github.com/brutusin/logging-instrumentation</url>
 
 	<properties>
-		<maven.compiler.source>1.8</maven.compiler.source>
-		<maven.compiler.target>1.8</maven.compiler.target>
+		<maven.compiler.source>1.7</maven.compiler.source>
+		<maven.compiler.target>1.7</maven.compiler.target>
 		<buildId>201902050702_UTC_0c876e5</buildId>
 		<buildTime>2019-02-05_07:08:07UTC</buildTime>
 		<commitId>0c876e5</commitId>
