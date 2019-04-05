@@ -25,8 +25,8 @@ public class ServletEventPool {
 	
 	private ServletEventPool() {
 		LinkedBlockingQueue<Runnable> processQueue;
-		this.setRequestMap(new ConcurrentHashMap<>());
-		this.setServletInfoReferenceRecord(new ConcurrentHashMap<>());
+		this.setRequestMap(new ConcurrentHashMap<Long, ServletInfo>());
+		this.setServletInfoReferenceRecord(new ConcurrentHashMap<Long, Long>());
 		
 		// load the settings
 		int queueSize = 700;
