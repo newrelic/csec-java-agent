@@ -92,7 +92,8 @@ public class ServletEventProcessor implements Runnable {
 				int contentLength = (int) getContentLength.invoke(request, null);
 
 				if (firstElement != null) {
-					servletInfo.setRawParameters(readByteBuffer((ByteBuffer) firstElement, contentLength));
+					servletInfo
+							.setRawParameters(readByteBuffer(((ByteBuffer) firstElement).duplicate(), contentLength));
 				}
 
 				Method getQueryString = request.getClass().getMethod("getQueryString");
@@ -202,6 +203,8 @@ public class ServletEventProcessor implements Runnable {
 	}
 
 	private static String readByteBuffer(ByteBuffer buffer, int contentLength) {
+		if (buffer == null)
+			return "";
 		int currPos = buffer.position();
 		if (contentLength > 0 && (buffer.limit() - contentLength) > 0)
 			buffer.position(buffer.limit() - contentLength);
@@ -214,7 +217,6 @@ public class ServletEventProcessor implements Runnable {
 		buffer.position(currPos);
 		return stringBuffer.toString();
 	}
-
 
 	/**
 	 * @return the request

@@ -324,7 +324,7 @@ public class LoggingInterceptor extends Interceptor {
 				bb = (ByteBuffer) bytes.get(_httpConnection);
 
 				ServletEventPool.getInstance().getRequestMap().put(threadId, servletInfo);
-				ServletEventPool.getInstance().processReceivedEvent(bb.duplicate(), arg[2], servletInfo, sourceString, threadId);
+				ServletEventPool.getInstance().processReceivedEvent(bb, arg[2], servletInfo, sourceString, threadId);
 			} catch (Exception e) {
 			}
 		} else if (IAgentConstants.TOMCAT_COYOTE_ADAPTER_PARSE_POST.equals(sourceString)) {
