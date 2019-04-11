@@ -2,8 +2,8 @@ package org.brutusin.instrumentation.logging;
 
 import java.io.Serializable;
 
-import org.brutusin.com.fasterxml.jackson.core.JsonProcessingException;
-import org.brutusin.com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class ServletInfo implements Serializable {
 

@@ -1,9 +1,9 @@
 package org.brutusin.instrumentation.logging;
 
-import org.brutusin.com.fasterxml.jackson.core.JsonProcessingException;
-import org.brutusin.com.fasterxml.jackson.databind.ObjectMapper;
+import org.json.simple.JSONArray;
 
-import com.k2.org.json.simple.JSONArray;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class ApplicationInfoBean extends AgentBasicInfo {
 

@@ -24,11 +24,9 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
-
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-
 import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -45,10 +43,9 @@ import java.util.concurrent.TimeUnit;
 
 import org.brutusin.instrumentation.Agent;
 import org.brutusin.instrumentation.Interceptor;
-
-import com.k2.org.json.simple.JSONArray;
-import com.k2.org.objectweb.asm.tree.ClassNode;
-import com.k2.org.objectweb.asm.tree.MethodNode;
+import org.json.simple.JSONArray;
+import org.objectweb.asm.tree.ClassNode;
+import org.objectweb.asm.tree.MethodNode;
 
 public class LoggingInterceptor extends Interceptor {
 
@@ -180,7 +177,9 @@ public class LoggingInterceptor extends Interceptor {
 			applicationInfoBean.setIsHost(true);
 		// applicationInfoBean.setJvmArguments(new
 		// JSONArray(runtimeMXBean.getInputArguments()));
-		applicationInfoBean.setJvmArguments(new JSONArray(cmdlineArgs));
+		JSONArray jsonArray = new JSONArray();
+		jsonArray.addAll(cmdlineArgs);
+		applicationInfoBean.setJvmArguments(jsonArray);
 		oos.writeUTF(applicationInfoBean.toString());
 		System.out.println("application info posted : " + applicationInfoBean);
 		oos.flush();
@@ -275,13 +274,13 @@ public class LoggingInterceptor extends Interceptor {
 
 	@Override
 	public boolean interceptMethod(ClassNode cn, MethodNode mn) {
-		// if
-		// (cn.name.equals("org/apache/struts2/dispatcher/ng/filter/StrutsPrepareAndExecuteFilter"))
-		// System.out.println("name: " + mn.name + " : " +
-		// interceptMethod.get(cn.name).contains(mn.name));
-		// else if (cn.name.equals("javax/faces/webapp/FacesServlet"))
-		// System.out.println("name: " + mn.name + " : " +
-		// interceptMethod.get(cn.name).contains(mn.name));
+//		 if
+//		 (cn.name.equals("org/apache/struts2/dispatcher/ng/filter/StrutsPrepareAndExecuteFilter"))
+//		 System.out.println("name: " + mn.name + " : " +
+//		 interceptMethod.get(cn.name).contains(mn.name));
+//		 else if (cn.name.equals("javax/faces/webapp/FacesServlet"))
+//		 System.out.println("name: " + mn.name + " : " +
+//		 interceptMethod.get(cn.name).contains(mn.name));
 		return interceptMethod.get(cn.name).contains(mn.name);
 	}
 
@@ -329,8 +328,7 @@ public class LoggingInterceptor extends Interceptor {
 			}
 		} else if (IAgentConstants.TOMCAT_COYOTE_ADAPTER_PARSE_POST.equals(sourceString)) {
 			ServletEventPool.getInstance().incrementServletInfoReference(threadId);
-			// System.out.println("Coyote : " + threadId + " : " + sourceString + " : " +
-			// servletInfo);
+//			 System.out.println("Coyote : " + threadId + " : " + sourceString );
 			ServletInfo servletInfo = new ServletInfo();
 
 			try {
