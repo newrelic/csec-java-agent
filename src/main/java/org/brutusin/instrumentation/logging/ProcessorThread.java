@@ -82,14 +82,13 @@ public class ProcessorThread implements Runnable {
 	private ServletInfo servletInfo;
 	private Long threadId;
 	private String sourceString;
-	private static ObjectMapper mapper;
+	private ObjectMapper mapper;
+	private JSONParser parser;
 
 	static {
 		PATTERN = Pattern.compile(IAgentConstants.TRACE_REGEX);
 		executorMethods = new HashSet<>(Arrays.asList(IAgentConstants.EXECUTORS));
 		executorMethods.addAll(Arrays.asList(IAgentConstants.MONGO_EXECUTORS));
-		mapper = new ObjectMapper();
-
 		mongoExecutorMethods = new HashSet<>(Arrays.asList(IAgentConstants.MONGO_EXECUTORS));
 		interceptMethod = new HashMap<>();
 		for (int i = 0; i < IAgentConstants.ALL_METHODS.length; i++) {
@@ -114,8 +113,9 @@ public class ProcessorThread implements Runnable {
 		this.executionId = executionId;
 		this.stackTrace = stackTrace;
 		this.threadId = tId;
-
 		this.sourceString = sourceString;
+		this.mapper = new ObjectMapper();
+		this.parser = new JSONParser();
 	}
 
 	/**
@@ -293,7 +293,7 @@ public class ProcessorThread implements Runnable {
 	 * @throws IllegalAccessException   the illegal access exception
 	 */
 	@SuppressWarnings("unchecked")
-	private static void getParameterValue(Object obj, JSONArray parameters)
+	private static void getMSSQLParameterValue(Object obj, JSONArray parameters)
 			throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
 		String className = obj.getClass().getCanonicalName();
 
@@ -410,7 +410,7 @@ public class ProcessorThread implements Runnable {
 	 * @return the my SQL parameter value
 	 */
 	@SuppressWarnings("unchecked")
-	private static void getMySQLParameterValue(Object[] args, JSONArray parameters) {
+	private void getMySQLParameterValue(Object[] args, JSONArray parameters) {
 		for (Object obj : args) {
 			if (obj.getClass().getName().contains(MYSQL_PREPARED_STATEMENT)) {
 				int start = obj.toString().indexOf(":");
@@ -422,12 +422,11 @@ public class ProcessorThread implements Runnable {
 					String byteParam = new String((byte[]) obj, "UTF-8");
 					parameters.add(byteParam.trim());
 				} catch (UnsupportedEncodingException e) {
-					e.printStackTrace();
 				}
 			} else if (obj instanceof Object[]) {
 				JSONArray params = new JSONArray();
 				getMySQLParameterValue((Object[]) obj, params);
-				parameters.add(params);
+				parameters.addAll(params);
 			} else {
 				try {
 //					parameters.add(JsonCodec.getInstance().transform(obj));
@@ -644,10 +643,10 @@ public class ProcessorThread implements Runnable {
 	 * @param obj
 	 * @param parameters
 	 */
-	private static void getClassLoaderParameterValue(Object[] args, JSONArray parameters) {
+	private void getClassLoaderParameterValue(Object[] args, JSONArray parameters) {
 		for (Object obj : args) {
 			try {
-				JSONArray jsonArray = (JSONArray) new JSONParser().parse(mapper.writeValueAsString(obj));
+				JSONArray jsonArray = (JSONArray) parser.parse(mapper.writeValueAsString(obj));
 				for (int i = 0; i < jsonArray.size(); i++) {
 					String value = jsonArray.get(i).toString();
 					if (value.startsWith("file://")) {
@@ -668,7 +667,7 @@ public class ProcessorThread implements Runnable {
 	 * @return the JSON array
 	 */
 	@SuppressWarnings({ "unchecked", "unused" })
-	private static JSONArray toString(Object[] obj, String sourceString) {
+	private JSONArray toString(Object[] obj, String sourceString) {
 
 		if (obj == null) {
 			return null;
@@ -677,7 +676,7 @@ public class ProcessorThread implements Runnable {
 		JSONArray parameters = new JSONArray();
 		try {
 			if (obj[0] != null && sourceString.contains(MSSQL_IDENTIFIER)) {
-				getParameterValue(obj[0], parameters);
+				getMSSQLParameterValue(obj[0], parameters);
 			} else if (obj[0] != null && sourceString.contains(MYSQL_IDENTIFIER)) {
 				getMySQLParameterValue(obj, parameters);
 			} else if (obj[0] != null && sourceString.contains(MONGO_IDENTIFIER)) {
@@ -685,26 +684,27 @@ public class ProcessorThread implements Runnable {
 			} else if (obj[0] != null && sourceString.contains(CLASS_LOADER_IDENTIFIER)) {
 				getClassLoaderParameterValue(obj, parameters);
 			} else {
-				for (int i = 0; i < obj.length; i++) {
-					if (obj[i] instanceof byte[]) {
-						try {
-							String byteParam = new String((byte[]) obj[i], "UTF-8");
-							parameters.add(byteParam.trim());
-						} catch (UnsupportedEncodingException e) {
-							e.printStackTrace();
-						}
-					} else if (obj[i] instanceof Object[]) {
-						parameters.add(toString((Object[]) obj[i], sourceString));
-					}
-					// b.append(toString((Object[]) obj[i]));
-					else
-						parameters.add(mapper.writeValueAsString(obj));
-
-//						parameters.add(JsonCodec.getInstance().transform(obj[i]));
-					// b.append(JsonCodec.getInstance().transform(obj[i]));
-					// if (i != obj.length - 1)
-					// b.append(',');
-				}
+				parameters.add(mapper.writeValueAsString(obj));
+//				for (int i = 0; i < obj.length; i++) {
+//					if (obj[i] instanceof byte[]) {
+//						try {
+//							String byteParam = new String((byte[]) obj[i], "UTF-8");
+//							parameters.add(byteParam.trim());
+//						} catch (UnsupportedEncodingException e) {
+//							e.printStackTrace();
+//						}
+////					} else if (obj[i] instanceof Object[]) {
+////						parameters.add(toString((Object[]) obj[i], sourceString));
+//					}
+//					// b.append(toString((Object[]) obj[i]));
+//					else
+//						parameters.add(parser.parse(mapper.writeValueAsString(obj)));
+//
+////						parameters.add(JsonCodec.getInstance().transform(obj[i]));
+//					// b.append(JsonCodec.getInstance().transform(obj[i]));
+//					// if (i != obj.length - 1)
+//					// b.append(',');
+//				}
 			}
 
 		} catch (Throwable th) {
