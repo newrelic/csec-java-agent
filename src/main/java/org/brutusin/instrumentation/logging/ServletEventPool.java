@@ -1,6 +1,5 @@
 package org.brutusin.instrumentation.logging;
 
-
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Future;
@@ -18,16 +17,15 @@ public class ServletEventPool {
 	private ThreadPoolExecutor executor;
 
 	private static ServletEventPool instance;
-	
 
 	private Map<Long, ServletInfo> requestMap;
 	private Map<Long, Long> servletInfoReferenceRecord;
-	
+
 	private ServletEventPool() {
 		LinkedBlockingQueue<Runnable> processQueue;
 		this.setRequestMap(new ConcurrentHashMap<Long, ServletInfo>());
 		this.setServletInfoReferenceRecord(new ConcurrentHashMap<Long, Long>());
-		
+
 		// load the settings
 		int queueSize = 700;
 		int maxPoolSize = 25;
@@ -37,12 +35,7 @@ public class ServletEventPool {
 		TimeUnit timeUnit = TimeUnit.SECONDS;
 
 		boolean allowCoreThreadTimeOut = false;
-
-		if (queueSize == 0) {
-			processQueue = new LinkedBlockingQueue<>();
-		} else {
-			processQueue = new LinkedBlockingQueue<>(queueSize);
-		}
+		processQueue = new LinkedBlockingQueue<>(queueSize);
 
 		executor = new ThreadPoolExecutor(corePoolSize, maxPoolSize, keepAliveTime, timeUnit, processQueue,
 				new EventAbortPolicy()) {
@@ -73,13 +66,13 @@ public class ServletEventPool {
 			}
 		});
 	}
-	
+
 	protected static ServletEventPool getInstance() {
 		if (instance == null)
 			instance = new ServletEventPool();
 		return instance;
 	}
-	
+
 	/**
 	 * A handler for rejected tasks that throws a
 	 * {@code RejectedExecutionException}.
@@ -106,15 +99,15 @@ public class ServletEventPool {
 		}
 	}
 
-
-	public void processReceivedEvent(Object firstElement, Object request, ServletInfo servletInfo, String sourceString, long threadId) {
+	public void processReceivedEvent(Object firstElement, Object request, ServletInfo servletInfo, String sourceString,
+			long threadId) {
 		try {
-			this.executor.execute(new ServletEventProcessor(firstElement, request, servletInfo, sourceString, threadId));
+			this.executor
+					.execute(new ServletEventProcessor(firstElement, request, servletInfo, sourceString, threadId));
 		} catch (Exception e) {
 
 		}
 	}
-
 
 	/**
 	 * @return the requestMap
@@ -124,7 +117,8 @@ public class ServletEventPool {
 	}
 
 	/**
-	 * @param requestMap the requestMap to set
+	 * @param requestMap
+	 *            the requestMap to set
 	 */
 	public void setRequestMap(Map<Long, ServletInfo> requestMap) {
 		this.requestMap = requestMap;
@@ -133,17 +127,18 @@ public class ServletEventPool {
 	/**
 	 * @return the servletInfoReferenceRecord
 	 */
-	public Map<Long, Long> getServletInfoReferenceRecord (){
+	public Map<Long, Long> getServletInfoReferenceRecord() {
 		return servletInfoReferenceRecord;
 	}
 
 	/**
-	 * @param servletInfoReferenceRecord the servletInfoReferenceRecord to set
+	 * @param servletInfoReferenceRecord
+	 *            the servletInfoReferenceRecord to set
 	 */
 	public void setServletInfoReferenceRecord(Map<Long, Long> servletInfoReferenceRecord) {
 		this.servletInfoReferenceRecord = servletInfoReferenceRecord;
 	}
-	
+
 	/**
 	 * 
 	 */
@@ -152,24 +147,25 @@ public class ServletEventPool {
 		try {
 			this.servletInfoReferenceRecord.put(threadId, this.servletInfoReferenceRecord.get(threadId) - 1);
 			refCount = this.servletInfoReferenceRecord.get(threadId);
-		} catch (Exception e) {}
+		} catch (Exception e) {
+		}
 		return refCount;
 	}
-	
+
 	/**
 	 * 
 	 */
 	public Long incrementServletInfoReference(Long threadId) {
 		Long refCount = -1l;
 		try {
-			if ( this.servletInfoReferenceRecord.containsKey(threadId)) {
+			if (this.servletInfoReferenceRecord.containsKey(threadId)) {
 				this.servletInfoReferenceRecord.put(threadId, this.servletInfoReferenceRecord.get(threadId) + 1);
-			}
-			else {
+			} else {
 				this.servletInfoReferenceRecord.put(threadId, 1l);
 			}
 			refCount = this.servletInfoReferenceRecord.get(threadId);
-		} catch (Exception e) {}
+		} catch (Exception e) {
+		}
 		return refCount;
 	}
 }
