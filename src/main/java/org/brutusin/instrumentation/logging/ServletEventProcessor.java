@@ -122,6 +122,8 @@ public class ServletEventProcessor implements Runnable {
 
 			} else if (IAgentConstants.TOMCAT_COYOTE_ADAPTER_PARSE_POST.equals(sourceString)) {
 				// System.out.println("init servletInfo. " + servletInfo);
+				System.out.println("Current firstelement: "+ new ObjectMapper().writeValueAsString(firstElement));
+				System.out.println("Current request: "+ new ObjectMapper().writeValueAsString(request));
 				if (firstElement != null) {
 					ByteBuffer bb = null;
 					// System.out.println("Inside coyote adapter for threadId " + this.threadId + "
