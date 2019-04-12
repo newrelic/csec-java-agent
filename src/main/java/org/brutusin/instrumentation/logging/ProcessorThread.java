@@ -126,7 +126,8 @@ public class ProcessorThread implements Runnable {
 	}
 
 	/**
-	 * @param source the source to set
+	 * @param source
+	 *            the source to set
 	 */
 	public void setSource(Object source) {
 		this.source = source;
@@ -140,7 +141,8 @@ public class ProcessorThread implements Runnable {
 	}
 
 	/**
-	 * @param arg the arg to set
+	 * @param arg
+	 *            the arg to set
 	 */
 	public void setArg(Object[] arg) {
 		this.arg = arg;
@@ -154,7 +156,8 @@ public class ProcessorThread implements Runnable {
 	}
 
 	/**
-	 * @param executionId the executionId to set
+	 * @param executionId
+	 *            the executionId to set
 	 */
 	public void setExecutionId(String executionId) {
 		this.executionId = executionId;
@@ -195,7 +198,8 @@ public class ProcessorThread implements Runnable {
 					LoggingInterceptor.applicationUUID);
 
 			intCodeResultBean.setServletInfo(this.servletInfo);
-//			System.out.println("Inside processor servlet info found: threadId: "+this.threadId +". "+ intCodeResultBean.getServletInfo());
+			// System.out.println("Inside processor servlet info found: threadId:
+			// "+this.threadId +". "+ intCodeResultBean.getServletInfo());
 			String klassName = null;
 			if (mongoExecutorMethods.contains(sourceString)) {
 				intCodeResultBean.setValidationBypass(true);
@@ -284,13 +288,19 @@ public class ProcessorThread implements Runnable {
 	/**
 	 * This method is used for MSSQL parameter Extraction
 	 *
-	 * @param obj        the object in argument of Instrumented Method
-	 * @param parameters the parameter list as a JSONArray
+	 * @param obj
+	 *            the object in argument of Instrumented Method
+	 * @param parameters
+	 *            the parameter list as a JSONArray
 	 * @return void
-	 * @throws NoSuchFieldException     the no such field exception
-	 * @throws SecurityException        the security exception
-	 * @throws IllegalArgumentException the illegal argument exception
-	 * @throws IllegalAccessException   the illegal access exception
+	 * @throws NoSuchFieldException
+	 *             the no such field exception
+	 * @throws SecurityException
+	 *             the security exception
+	 * @throws IllegalArgumentException
+	 *             the illegal argument exception
+	 * @throws IllegalAccessException
+	 *             the illegal access exception
 	 */
 	@SuppressWarnings("unchecked")
 	private static void getMSSQLParameterValue(Object obj, JSONArray parameters)
@@ -405,8 +415,10 @@ public class ProcessorThread implements Runnable {
 	/**
 	 * Gets the MySQL parameter values.
 	 *
-	 * @param args       the arguments of Instrumented Method
-	 * @param parameters the parameters
+	 * @param args
+	 *            the arguments of Instrumented Method
+	 * @param parameters
+	 *            the parameters
 	 * @return the my SQL parameter value
 	 */
 	@SuppressWarnings("unchecked")
@@ -429,7 +441,7 @@ public class ProcessorThread implements Runnable {
 				parameters.addAll(params);
 			} else {
 				try {
-//					parameters.add(JsonCodec.getInstance().transform(obj));
+					// parameters.add(JsonCodec.getInstance().transform(obj));
 					parameters.add(parser.parse(mapper.writeValueAsString(obj)));
 				} catch (Throwable e) {
 					parameters.add(obj.toString());
@@ -442,13 +454,19 @@ public class ProcessorThread implements Runnable {
 	/**
 	 * Gets the mongo parameters.
 	 *
-	 * @param args       the arguments of Instrumented Method
-	 * @param parameters the parameters
+	 * @param args
+	 *            the arguments of Instrumented Method
+	 * @param parameters
+	 *            the parameters
 	 * @return the my SQL parameter value
-	 * @throws NoSuchFieldException     the no such field exception
-	 * @throws SecurityException        the security exception
-	 * @throws IllegalArgumentException the illegal argument exception
-	 * @throws IllegalAccessException   the illegal access exception
+	 * @throws NoSuchFieldException
+	 *             the no such field exception
+	 * @throws SecurityException
+	 *             the security exception
+	 * @throws IllegalArgumentException
+	 *             the illegal argument exception
+	 * @throws IllegalAccessException
+	 *             the illegal access exception
 	 */
 	@SuppressWarnings("unchecked")
 	public static void getMongoParameterValue(Object[] args, JSONArray parameters)
@@ -663,7 +681,8 @@ public class ProcessorThread implements Runnable {
 	 * This method is used to extract All the required parameters through the
 	 * arguments of instrumented method
 	 * 
-	 * @param obj the obj
+	 * @param obj
+	 *            the obj
 	 * @return the JSON array
 	 */
 	@SuppressWarnings({ "unchecked", "unused" })
@@ -684,31 +703,32 @@ public class ProcessorThread implements Runnable {
 			} else if (obj[0] != null && sourceString.contains(CLASS_LOADER_IDENTIFIER)) {
 				getClassLoaderParameterValue(obj, parameters);
 			} else {
-				parameters.add(parser.parse(mapper.writeValueAsString(obj)));
-//				for (int i = 0; i < obj.length; i++) {
-//					if (obj[i] instanceof byte[]) {
-//						try {
-//							String byteParam = new String((byte[]) obj[i], "UTF-8");
-//							parameters.add(byteParam.trim());
-//						} catch (UnsupportedEncodingException e) {
-//							e.printStackTrace();
-//						}
-////					} else if (obj[i] instanceof Object[]) {
-////						parameters.add(toString((Object[]) obj[i], sourceString));
-//					}
-//					// b.append(toString((Object[]) obj[i]));
-//					else
-//						parameters.add(parser.parse(mapper.writeValueAsString(obj)));
-//
-////						parameters.add(JsonCodec.getInstance().transform(obj[i]));
-//					// b.append(JsonCodec.getInstance().transform(obj[i]));
-//					// if (i != obj.length - 1)
-//					// b.append(',');
-//				}
+				parameters.addAll((List<String>) parser.parse(mapper.writeValueAsString(obj)));
+				// for (int i = 0; i < obj.length; i++) {
+				// if (obj[i] instanceof byte[]) {
+				// try {
+				// String byteParam = new String((byte[]) obj[i], "UTF-8");
+				// parameters.add(byteParam.trim());
+				// } catch (UnsupportedEncodingException e) {
+				// e.printStackTrace();
+				// }
+				//// } else if (obj[i] instanceof Object[]) {
+				//// parameters.add(toString((Object[]) obj[i], sourceString));
+				// }
+				// // b.append(toString((Object[]) obj[i]));
+				// else
+				// parameters.add(parser.parse(mapper.writeValueAsString(obj)));
+				//
+				//// parameters.add(JsonCodec.getInstance().transform(obj[i]));
+				// // b.append(JsonCodec.getInstance().transform(obj[i]));
+				// // if (i != obj.length - 1)
+				// // b.append(',');
+				// }
 			}
 
 		} catch (Throwable th) {
-//			parameters.add((obj != null) ? JsonCodec.getInstance().transform(obj.toString()) : null);
+			// parameters.add((obj != null) ?
+			// JsonCodec.getInstance().transform(obj.toString()) : null);
 			parameters.add((obj != null) ? obj.toString() : null);
 			// th.printStackTrace();
 		}
@@ -724,12 +744,18 @@ public class ProcessorThread implements Runnable {
 	/**
 	 * Adds the Values passed to a MSSQL prepared statement into ParameterList.
 	 *
-	 * @param paramList  the param list
-	 * @param parameters the parameters
-	 * @throws NoSuchFieldException     the no such field exception
-	 * @throws SecurityException        the security exception
-	 * @throws IllegalArgumentException the illegal argument exception
-	 * @throws IllegalAccessException   the illegal access exception
+	 * @param paramList
+	 *            the param list
+	 * @param parameters
+	 *            the parameters
+	 * @throws NoSuchFieldException
+	 *             the no such field exception
+	 * @throws SecurityException
+	 *             the security exception
+	 * @throws IllegalArgumentException
+	 *             the illegal argument exception
+	 * @throws IllegalAccessException
+	 *             the illegal access exception
 	 */
 	@SuppressWarnings({ "unused", "unchecked" })
 	private static void addParamValuesMSSQL(ArrayList<Object[]> paramList, JSONArray parameters)
@@ -754,7 +780,7 @@ public class ProcessorThread implements Runnable {
 	}
 
 	private void generateEvent(IntCodeResultBean intCodeResultBean) {
-//		System.out.println("inside Event generate : " + intCodeResultBean);
+		// System.out.println("inside Event generate : " + intCodeResultBean);
 		if (LoggingInterceptor.socket == null || !LoggingInterceptor.socket.isConnected()
 				|| LoggingInterceptor.socket.isClosed()) {
 			try {
@@ -792,14 +818,18 @@ public class ProcessorThread implements Runnable {
 					}
 				}
 			} else {
-//				System.out.println("Final request map 1: "
-//						+ ServletEventPool.getInstance().getRequestMap().get(this.threadId) + "  count: "
-//						+ ServletEventPool.getInstance().getServletInfoReferenceRecord().get(threadId));
+				// System.out.println("Final request map 1: "
+				// + ServletEventPool.getInstance().getRequestMap().get(this.threadId) + "
+				// count: "
+				// +
+				// ServletEventPool.getInstance().getServletInfoReferenceRecord().get(threadId));
 				intCodeResultBean.setServletInfo(
 						new ServletInfo(ServletEventPool.getInstance().getRequestMap().get(this.threadId)));
-//				System.out.println("Final request map 2: "
-//						+ ServletEventPool.getInstance().getRequestMap().get(this.threadId) + "  count: "
-//						+ ServletEventPool.getInstance().getServletInfoReferenceRecord().get(threadId));
+				// System.out.println("Final request map 2: "
+				// + ServletEventPool.getInstance().getRequestMap().get(this.threadId) + "
+				// count: "
+				// +
+				// ServletEventPool.getInstance().getServletInfoReferenceRecord().get(threadId));
 				System.out.println("publish event: " + intCodeResultBean);
 				eventQueue.add(intCodeResultBean);
 				if (ServletEventPool.getInstance().decrementServletInfoReference(this.threadId) <= 0) {
@@ -817,7 +847,8 @@ public class ProcessorThread implements Runnable {
 	}
 
 	/**
-	 * @param servletInfo the servletInfo to set
+	 * @param servletInfo
+	 *            the servletInfo to set
 	 */
 	public void setServletInfo(ServletInfo servletInfo) {
 		this.servletInfo = servletInfo;
