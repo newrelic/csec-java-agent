@@ -430,7 +430,7 @@ public class ProcessorThread implements Runnable {
 			} else {
 				try {
 //					parameters.add(JsonCodec.getInstance().transform(obj));
-					parameters.add(mapper.writeValueAsString(obj));
+					parameters.add(parser.parse(mapper.writeValueAsString(obj)));
 				} catch (Throwable e) {
 					parameters.add(obj.toString());
 				}
@@ -684,7 +684,7 @@ public class ProcessorThread implements Runnable {
 			} else if (obj[0] != null && sourceString.contains(CLASS_LOADER_IDENTIFIER)) {
 				getClassLoaderParameterValue(obj, parameters);
 			} else {
-				parameters.add(mapper.writeValueAsString(obj));
+				parameters.add(parser.parse(mapper.writeValueAsString(obj)));
 //				for (int i = 0; i < obj.length; i++) {
 //					if (obj[i] instanceof byte[]) {
 //						try {
