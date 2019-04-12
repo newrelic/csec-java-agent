@@ -4,6 +4,8 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 public class ServletEventProcessor implements Runnable {
 
 	private Object firstElement;
@@ -115,7 +117,7 @@ public class ServletEventProcessor implements Runnable {
 				servletInfo.setContentType((String) getContentType.invoke(request, null));
 				servletInfo.setRequestURI((String) getRequestURI.invoke(request, null));
 
-				// System.out.println("Current request map inside event processor : "+
+				System.out.println("Current request map inside event processor : "+ new ObjectMapper().writeValueAsString(request));
 				// LoggingInterceptor.requestMap);
 
 			} else if (IAgentConstants.TOMCAT_COYOTE_ADAPTER_PARSE_POST.equals(sourceString)) {
