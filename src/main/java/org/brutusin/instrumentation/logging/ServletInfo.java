@@ -40,6 +40,7 @@ public class ServletInfo implements Serializable {
 	}
 
 	public ServletInfo() {
+		this.rawParameters = "";
 	}
 
 

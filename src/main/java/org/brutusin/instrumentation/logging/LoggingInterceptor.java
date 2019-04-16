@@ -28,7 +28,9 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.net.Socket;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -40,6 +42,8 @@ import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+
+import javax.xml.bind.annotation.adapters.HexBinaryAdapter;
 
 import org.brutusin.instrumentation.Agent;
 import org.brutusin.instrumentation.Interceptor;
@@ -304,27 +308,36 @@ public class LoggingInterceptor extends Interceptor {
 		if (sourceString == null)
 			return;
 		if (IAgentConstants.JETTY_REQUEST_HANDLE.equals(sourceString)) {
-
 			ServletEventPool.getInstance().incrementServletInfoReference(threadId);
-			ServletInfo servletInfo = new ServletInfo();
-			try {
-				ByteBuffer bb = null;
+		} else if (IAgentConstants.JETTY_PARSE_NEXT.equals(sourceString)) {
+			System.out.println("Jetty me aaya : " + arg[0].getClass().getName());
+//			System.out.println("ByteBuffer : " + Arrays.asList(ByteBuffer.class.getFields()) + " : " + Arrays.asList(ByteBuffer.class.getDeclaredFields()));
+//			System.out.println("Buffer : " + Arrays.asList(Buffer.class.getFields()) + " : " + Arrays.asList(Buffer.class.getDeclaredFields()));
 
-				Field channelField = arg[2].getClass().getDeclaredField("_channel");
-				channelField.setAccessible(true);
-				Object _channel = channelField.get(arg[2]);
+			ServletInfo servletInfo;
 
-				Field httpConnectionField = _channel.getClass().getDeclaredField("_httpConnection");
-				httpConnectionField.setAccessible(true);
-				Object _httpConnection = httpConnectionField.get(_channel);
-
-				Field bytes = _httpConnection.getClass().getDeclaredField("_requestBuffer");
-				bytes.setAccessible(true);
-				bb = (ByteBuffer) bytes.get(_httpConnection);
-
+			if (!ServletEventPool.getInstance().getRequestMap().containsKey(threadId)) {
+				servletInfo = new ServletInfo();
 				ServletEventPool.getInstance().getRequestMap().put(threadId, servletInfo);
-				ServletEventPool.getInstance().processReceivedEvent(bb, arg[2], servletInfo, sourceString, threadId);
+			}
+			servletInfo = ServletEventPool.getInstance().getRequestMap().get(threadId);
+			try {
+				String requestContent = null;
+				Field limit = Buffer.class.getDeclaredField("limit");
+				limit.setAccessible(true);
+				int limitHb = (Integer) limit.get(arg[0]);
+				if (limitHb > 0) {
+
+					Field hb = ByteBuffer.class.getDeclaredField("hb");
+					hb.setAccessible(true);
+					byte[] hbContent = (byte[]) hb.get(arg[0]);
+
+					requestContent = new String(hbContent, 0, limitHb, StandardCharsets.UTF_8);
+					servletInfo.setRawParameters(servletInfo.getRawParameters() + requestContent);
+					System.out.println("Request Param : " + servletInfo);
+				}
 			} catch (Exception e) {
+				e.printStackTrace();
 			}
 		} else if (IAgentConstants.TOMCAT_COYOTE_ADAPTER_PARSE_POST.equals(sourceString)) {
 			ServletEventPool.getInstance().incrementServletInfoReference(threadId);

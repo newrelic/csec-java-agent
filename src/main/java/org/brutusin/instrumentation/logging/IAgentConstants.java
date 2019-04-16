@@ -105,7 +105,8 @@ public interface IAgentConstants {
 //			"javax/servlet/http/HttpServlet",
 			"org/apache/catalina/connector/CoyoteAdapter",
 			"org/apache/catalina/connector/RequestFacade",
-			"org/eclipse/jetty/server/handler/HandlerWrapper"
+			"org/eclipse/jetty/server/handler/HandlerWrapper",
+			"org/eclipse/jetty/http/HttpParser",
 //			"javax/faces/webapp/FacesServlet",
 //			"org/apache/struts2/dispatcher/ng/filter/StrutsPrepareAndExecuteFilter"		
 	};
@@ -116,7 +117,8 @@ public interface IAgentConstants {
 //			{ "service" },
 			{ "service", "postParseRequest" },
 			CONSTRUCTOR,
-			{"handle"}
+			{"handle"},
+			{"parseNext"}
 //			{ "service" },
 //			{ "doFilter" }
 			};
@@ -134,7 +136,8 @@ public interface IAgentConstants {
 	String FACES_SERVLET = "public void javax.faces.webapp.FacesServlet.service(javax.servlet.ServletRequest,javax.servlet.ServletResponse) throws java.io.IOException,javax.servlet.ServletException";
 	String JETTY_SERVLET_REQUEST_IDENTIFIER = "org.eclipse.jetty.server.Request";
 	String JETTY_REQUEST_HANDLE = "public void org.eclipse.jetty.server.handler.HandlerWrapper.handle(java.lang.String,org.eclipse.jetty.server.Request,javax.servlet.http.HttpServletRequest,javax.servlet.http.HttpServletResponse) throws java.io.IOException,javax.servlet.ServletException";
-	
+	String JETTY_PARSE_NEXT = "public boolean org.eclipse.jetty.http.HttpParser.parseNext(java.nio.ByteBuffer)";
+
 	/** MSSQL FIELD CONSTANTS */
 	String MSSQL_CURRENT_OBJECT = "this$0";
 	String MSSQL_BATCH_STATEMENT_BUFFER_FIELD = "batchStatementBuffer";
