@@ -23,6 +23,8 @@ public class ServletInfo implements Serializable {
 	private String contentType;
 	
 	private String requestURI;
+	
+	private boolean dataTruncated;
 
 	/**
 	 * @return the requestURI
@@ -41,6 +43,7 @@ public class ServletInfo implements Serializable {
 
 	public ServletInfo() {
 		this.rawParameters = "";
+		this.dataTruncated = false;
 	}
 
 
@@ -51,6 +54,7 @@ public class ServletInfo implements Serializable {
 		this.rawParameters = servletInfo.getRawParameters();
 		this.contentType = servletInfo.getContentType();
 		this.requestURI = servletInfo.getRequestURI();
+		this.dataTruncated = servletInfo.isDataTruncated();
 	}
 
 	/**
@@ -135,5 +139,19 @@ public class ServletInfo implements Serializable {
 		} catch (JsonProcessingException e) {
 			return null;
 		}
+	}
+
+	/**
+	 * @return the dataTruncated
+	 */
+	public boolean isDataTruncated() {
+		return dataTruncated;
+	}
+
+	/**
+	 * @param dataTruncated the dataTruncated to set
+	 */
+	public void setDataTruncated(boolean dataTruncated) {
+		this.dataTruncated = dataTruncated;
 	}
 }

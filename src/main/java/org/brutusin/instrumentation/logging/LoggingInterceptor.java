@@ -338,7 +338,11 @@ public class LoggingInterceptor extends Interceptor {
 					byte[] hbContent = (byte[]) hb.get(arg[0]);
 
 					requestContent = new String(hbContent, 0, limitHb, StandardCharsets.UTF_8);
-					servletInfo.setRawParameters(servletInfo.getRawParameters() + requestContent);
+					if (servletInfo.getRawParameters().length() > 8192 || servletInfo.isDataTruncated()) {
+						servletInfo.setDataTruncated(true);
+					} else {
+						servletInfo.setRawParameters(servletInfo.getRawParameters() + requestContent);
+					}
 //					System.out.println("Request Param : " + servletInfo);
 				}
 			} catch (Exception e) {
