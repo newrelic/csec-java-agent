@@ -76,7 +76,7 @@ public interface IAgentConstants {
 			// java.io.FileNotFoundException",
 			
 			//http request
-			"protected void javax.servlet.http.HttpServlet.service(javax.servlet.http.HttpServletRequest,javax.servlet.http.HttpServletResponse) throws javax.servlet.ServletException,java.io.IOException",
+//			"protected void javax.servlet.http.HttpServlet.service(javax.servlet.http.HttpServletRequest,javax.servlet.http.HttpServletResponse) throws javax.servlet.ServletException,java.io.IOException",
 
 	};
 	
@@ -104,7 +104,7 @@ public interface IAgentConstants {
 			// http request
 //			"javax/servlet/http/HttpServlet",
 			"org/apache/catalina/connector/CoyoteAdapter",
-			"org/apache/catalina/connector/RequestFacade",
+			"org/apache/catalina/connector/InputBuffer",
 			"org/eclipse/jetty/server/handler/HandlerWrapper",
 			"org/eclipse/jetty/http/HttpParser",
 //			"javax/faces/webapp/FacesServlet",
@@ -115,10 +115,10 @@ public interface IAgentConstants {
 			{ "executeStatement" }, { "sqlQueryDirect" }, { "execSQL" }, { "executeProtocol" }, { "executeProtocol" },
 			{ "execute" }, { "execute" }, { "execute" }, { "<init>", "newInstance" }, 
 //			{ "service" },
-			{ "service", "postParseRequest" },
-			CONSTRUCTOR,
+			{ "service" },
+			{ "setByteBuffer" },
 			{"handle"},
-			{"parseNext"}
+			{"parseNext"},
 //			{ "service" },
 //			{ "doFilter" }
 			};
@@ -130,9 +130,9 @@ public interface IAgentConstants {
 	String CLASS_LOADER_IDENTIFIER = "java.net.URLClassLoader";
 	String SERVLET_REQUEST_IDENTIFIER="javax.servlet.http.HttpServletRequest"; 
 
-	String TOMCAT_COYOTE_ADAPTER_PARSE_POST = "protected boolean org.apache.catalina.connector.CoyoteAdapter.postParseRequest(org.apache.coyote.Request,org.apache.catalina.connector.Request,org.apache.coyote.Response,org.apache.catalina.connector.Response) throws java.io.IOException,javax.servlet.ServletException";
 	String TOMCAT_COYOTE_ADAPTER_SERVICE = "public void org.apache.catalina.connector.CoyoteAdapter.service(org.apache.coyote.Request,org.apache.coyote.Response) throws java.lang.Exception";
-	String TOMCAT_REQUEST_FACADE = "public org.apache.catalina.connector.RequestFacade(org.apache.catalina.connector.Request)";
+	String TOMCAT_SETBYTEBUFFER = "public void org.apache.catalina.connector.InputBuffer.setByteBuffer(java.nio.ByteBuffer)";
+	
 	String FACES_SERVLET = "public void javax.faces.webapp.FacesServlet.service(javax.servlet.ServletRequest,javax.servlet.ServletResponse) throws java.io.IOException,javax.servlet.ServletException";
 	String JETTY_SERVLET_REQUEST_IDENTIFIER = "org.eclipse.jetty.server.Request";
 	String JETTY_REQUEST_HANDLE = "public void org.eclipse.jetty.server.handler.HandlerWrapper.handle(java.lang.String,org.eclipse.jetty.server.Request,javax.servlet.http.HttpServletRequest,javax.servlet.http.HttpServletResponse) throws java.io.IOException,javax.servlet.ServletException";

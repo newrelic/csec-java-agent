@@ -781,6 +781,7 @@ public class ProcessorThread implements Runnable {
 
 	private void generateEvent(IntCodeResultBean intCodeResultBean) {
 		// System.out.println("inside Event generate : " + intCodeResultBean);
+		ServletEventPool.getInstance().incrementServletInfoReference(threadId);
 		if (LoggingInterceptor.socket == null || !LoggingInterceptor.socket.isConnected()
 				|| LoggingInterceptor.socket.isClosed()) {
 			try {

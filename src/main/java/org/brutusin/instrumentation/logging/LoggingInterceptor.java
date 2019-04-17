@@ -297,7 +297,7 @@ public class LoggingInterceptor extends Interceptor {
 
 		if (source instanceof Method) {
 			sourceString = ((Method) source).toGenericString();
-			// System.out.println(m.toGenericString());
+//			System.out.println(sourceString);
 		} else if (source instanceof Constructor) {
 			sourceString = ((Constructor) source).toGenericString();
 		}
@@ -306,11 +306,16 @@ public class LoggingInterceptor extends Interceptor {
 		// servletInfo);
 
 		if (sourceString == null)
-			return;
+			return;		
+		
 		if (IAgentConstants.JETTY_REQUEST_HANDLE.equals(sourceString)) {
+//			System.out.println("RequestMap : " + ServletEventPool.getInstance().getRequestMap() );
+//			System.out.println("RequestMapRef : " + ServletEventPool.getInstance().getServletInfoReferenceRecord() );
 			ServletEventPool.getInstance().incrementServletInfoReference(threadId);
 		} else if (IAgentConstants.JETTY_PARSE_NEXT.equals(sourceString)) {
-			System.out.println("Jetty me aaya : " + arg[0].getClass().getName());
+//			System.out.println("RequestMap : " + ServletEventPool.getInstance().getRequestMap() );
+//			System.out.println("RequestMapRef : " + ServletEventPool.getInstance().getServletInfoReferenceRecord() );
+//			System.out.println("Jetty me aaya : " + arg[0].getClass().getName());
 //			System.out.println("ByteBuffer : " + Arrays.asList(ByteBuffer.class.getFields()) + " : " + Arrays.asList(ByteBuffer.class.getDeclaredFields()));
 //			System.out.println("Buffer : " + Arrays.asList(Buffer.class.getFields()) + " : " + Arrays.asList(Buffer.class.getDeclaredFields()));
 
@@ -334,37 +339,81 @@ public class LoggingInterceptor extends Interceptor {
 
 					requestContent = new String(hbContent, 0, limitHb, StandardCharsets.UTF_8);
 					servletInfo.setRawParameters(servletInfo.getRawParameters() + requestContent);
-					System.out.println("Request Param : " + servletInfo);
+//					System.out.println("Request Param : " + servletInfo);
 				}
 			} catch (Exception e) {
-				e.printStackTrace();
+//				e.printStackTrace();
 			}
-		} else if (IAgentConstants.TOMCAT_COYOTE_ADAPTER_PARSE_POST.equals(sourceString)) {
-			ServletEventPool.getInstance().incrementServletInfoReference(threadId);
-//			 System.out.println("Coyote : " + threadId + " : " + sourceString );
-			ServletInfo servletInfo = new ServletInfo();
-
-			try {
-				Object secondElement = arg[1];
-				Field facadeField = secondElement.getClass().getDeclaredField("facade");
-				facadeField.setAccessible(true);
-				Object facade = facadeField.get(secondElement);
+		} else if (IAgentConstants.TOMCAT_SETBYTEBUFFER.equals(sourceString)) {
+//			System.out.println("RequestMap : " + ServletEventPool.getInstance().getRequestMap() );
+//			System.out.println("RequestMapRef : " + ServletEventPool.getInstance().getServletInfoReferenceRecord() );
+//			System.out.println("Coyote : " + threadId + " : " + sourceString );
+			ServletInfo servletInfo;
+			if (!ServletEventPool.getInstance().getRequestMap().containsKey(threadId)) {
+				servletInfo = new ServletInfo();
 				ServletEventPool.getInstance().getRequestMap().put(threadId, servletInfo);
-				ServletEventPool.getInstance().processReceivedEvent(arg[0], facade, servletInfo, sourceString,
-						threadId);
-			} catch (Exception e) {
 			}
-		} else if (IAgentConstants.TOMCAT_REQUEST_FACADE.equals(sourceString)
-				&& ServletEventPool.getInstance().getRequestMap().containsKey(threadId)) {
-			ServletEventPool.getInstance().processReceivedEvent(null, arg[0],
-					ServletEventPool.getInstance().getRequestMap().get(threadId), sourceString, threadId);
+			servletInfo = ServletEventPool.getInstance().getRequestMap().get(threadId);
+			try {
+				String requestContent = null;
+				Field limit = Buffer.class.getDeclaredField("limit");
+				limit.setAccessible(true);
+				int limitHb = (Integer) limit.get(arg[0]);
+				if (limitHb > 0) {
+
+					Field hb = ByteBuffer.class.getDeclaredField("hb");
+					hb.setAccessible(true);
+					byte[] hbContent = (byte[]) hb.get(arg[0]);
+
+					requestContent = new String(hbContent, 0, limitHb, StandardCharsets.UTF_8);
+					servletInfo.setRawParameters(requestContent);
+//					System.out.println("Request Param : " + servletInfo);
+				}
+			} catch (Exception e) {
+//				e.printStackTrace();
+			}
+		} else if (IAgentConstants.TOMCAT_COYOTE_ADAPTER_SERVICE.equals(sourceString)) {
+//			System.out.println("RequestMap : " + ServletEventPool.getInstance().getRequestMap() );
+//			System.out.println("RequestMapRef : " + ServletEventPool.getInstance().getServletInfoReferenceRecord() );
+			ServletEventPool.getInstance().incrementServletInfoReference(threadId);
+//			System.out.println("Coyote Service: " + threadId + " : " + sourceString );
+			ServletInfo servletInfo = new ServletInfo();
+			ServletEventPool.getInstance().getRequestMap().put(threadId, servletInfo);
+			try {
+				String requestContent = null;
+				
+				Field inputBufferField = arg[0].getClass().getDeclaredField("inputBuffer");
+				inputBufferField.setAccessible(true);
+				Object inputBuffer = inputBufferField.get(arg[0]);
+				
+				Field byteBufferField = inputBuffer.getClass().getDeclaredField("byteBuffer");
+				byteBufferField.setAccessible(true);
+				Object byteBuffer = byteBufferField.get(inputBuffer);
+				
+				Field limit = Buffer.class.getDeclaredField("limit");
+				limit.setAccessible(true);
+				int limitHb = (Integer) limit.get(byteBuffer);
+				if (limitHb > 0) {
+
+					Field hb = ByteBuffer.class.getDeclaredField("hb");
+					hb.setAccessible(true);
+					byte[] hbContent = (byte[]) hb.get(byteBuffer);
+
+					requestContent = new String(hbContent, 0, limitHb, StandardCharsets.UTF_8);
+					servletInfo.setRawParameters(requestContent);
+//					System.out.println("Request Param : " + servletInfo);
+				}
+			} catch (Exception e) {
+//				e.printStackTrace();
+			}
 		} else {
+//			System.out.println("RequestMap : " + ServletEventPool.getInstance().getRequestMap() );
+//			System.out.println("RequestMapRef : " + ServletEventPool.getInstance().getServletInfoReferenceRecord() );
 			// System.out.println("Other event : " + threadId + " : " + sourceString + " : "
 			// + requestMap.get(threadId)
 			// + " : " + arg[0] + " : " + arg[1]);
 			// System.out.println("Other event current request map : " + requestMap);
 			if (ServletEventPool.getInstance().getRequestMap().containsKey(threadId)) {
-				ServletEventPool.getInstance().incrementServletInfoReference(threadId);
 				EventThreadPool.getInstance().processReceivedEvent(source, arg, executionId,
 						Thread.currentThread().getStackTrace(), threadId, sourceString);
 			}

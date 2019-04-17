@@ -142,7 +142,7 @@ public class ServletEventPool {
 	/**
 	 * 
 	 */
-	public Long decrementServletInfoReference(Long threadId) {
+	public synchronized Long decrementServletInfoReference(Long threadId) {
 		Long refCount = -1l;
 		try {
 			this.servletInfoReferenceRecord.put(threadId, this.servletInfoReferenceRecord.get(threadId) - 1);
@@ -155,7 +155,7 @@ public class ServletEventPool {
 	/**
 	 * 
 	 */
-	public Long incrementServletInfoReference(Long threadId) {
+	public synchronized Long incrementServletInfoReference(Long threadId) {
 		Long refCount = -1l;
 		try {
 			if (this.servletInfoReferenceRecord.containsKey(threadId)) {
