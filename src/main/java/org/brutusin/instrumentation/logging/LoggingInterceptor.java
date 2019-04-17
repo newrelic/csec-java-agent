@@ -43,8 +43,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import javax.xml.bind.annotation.adapters.HexBinaryAdapter;
-
 import org.brutusin.instrumentation.Agent;
 import org.brutusin.instrumentation.Interceptor;
 import org.json.simple.JSONArray;
@@ -338,10 +336,10 @@ public class LoggingInterceptor extends Interceptor {
 					byte[] hbContent = (byte[]) hb.get(arg[0]);
 
 					requestContent = new String(hbContent, 0, limitHb, StandardCharsets.UTF_8);
-					if (servletInfo.getRawParameters().length() > 8192 || servletInfo.isDataTruncated()) {
+					if (servletInfo.getRawRequest().length() > 8192 || servletInfo.isDataTruncated()) {
 						servletInfo.setDataTruncated(true);
 					} else {
-						servletInfo.setRawParameters(servletInfo.getRawParameters() + requestContent);
+						servletInfo.setRawRequest(servletInfo.getRawRequest() + requestContent);
 					}
 //					System.out.println("Request Param : " + servletInfo);
 				}
@@ -370,7 +368,7 @@ public class LoggingInterceptor extends Interceptor {
 					byte[] hbContent = (byte[]) hb.get(arg[0]);
 
 					requestContent = new String(hbContent, 0, limitHb, StandardCharsets.UTF_8);
-					servletInfo.setRawParameters(requestContent);
+					servletInfo.setRawRequest(requestContent);
 //					System.out.println("Request Param : " + servletInfo);
 				}
 			} catch (Exception e) {
@@ -404,7 +402,7 @@ public class LoggingInterceptor extends Interceptor {
 					byte[] hbContent = (byte[]) hb.get(byteBuffer);
 
 					requestContent = new String(hbContent, 0, limitHb, StandardCharsets.UTF_8);
-					servletInfo.setRawParameters(requestContent);
+					servletInfo.setRawRequest(requestContent);
 //					System.out.println("Request Param : " + servletInfo);
 				}
 			} catch (Exception e) {

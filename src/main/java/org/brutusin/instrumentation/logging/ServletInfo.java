@@ -12,124 +12,34 @@ public class ServletInfo implements Serializable {
 	 */
 	private static final long serialVersionUID = 5693096693182224287L;
 
-	private String queryString;
-
-	private String sourceIp;
-
-	private String requestMethod;
-
-	private String rawParameters;
-
-	private String contentType;
-	
-	private String requestURI;
+	private String rawRequest;
 	
 	private boolean dataTruncated;
 
-	/**
-	 * @return the requestURI
-	 */
-	public String getRequestURI() {
-		return requestURI;
-	}
-
-	/**
-	 * @param requestURI
-	 *            the requestURI to set
-	 */
-	public void setRequestURI(String requestURI) {
-		this.requestURI = requestURI;
-	}
-
 	public ServletInfo() {
-		this.rawParameters = "";
+		this.rawRequest = "";
 		this.dataTruncated = false;
 	}
 
 
 	public ServletInfo(ServletInfo servletInfo) {
-		this.queryString = servletInfo.getQueryString();
-		this.sourceIp = servletInfo.getSourceIp();
-		this.requestMethod = servletInfo.getRequestMethod();
-		this.rawParameters = servletInfo.getRawParameters();
-		this.contentType = servletInfo.getContentType();
-		this.requestURI = servletInfo.getRequestURI();
+		this.rawRequest = servletInfo.getRawRequest();
 		this.dataTruncated = servletInfo.isDataTruncated();
 	}
 
 	/**
-	 * @return the rawParameters
+	 * @return the rawRequest
 	 */
-	public String getRawParameters() {
-		return rawParameters;
+	public String getRawRequest() {
+		return rawRequest;
 	}
 
 	/**
-	 * @param rawParameters
-	 *            the rawParameters to set
+	 * @param rawRequest
+	 *            the rawRequest to set
 	 */
-	public void setRawParameters(String rawParameters) {
-		this.rawParameters = rawParameters;
-	}
-
-	/**
-	 * @return the contentType
-	 */
-	public String getContentType() {
-		return contentType;
-	}
-
-	/**
-	 * @param contentType
-	 *            the contentType to set
-	 */
-	public void setContentType(String contentType) {
-		this.contentType = contentType;
-	}
-
-	/**
-	 * @return the queryString
-	 */
-	public String getQueryString() {
-		return queryString;
-	}
-
-	/**
-	 * @param queryString
-	 *            the queryString to set
-	 */
-	public void setQueryString(String queryString) {
-		this.queryString = queryString;
-	}
-
-	/**
-	 * @return the sourceIp
-	 */
-	public String getSourceIp() {
-		return sourceIp;
-	}
-
-	/**
-	 * @param sourceIp
-	 *            the sourceIp to set
-	 */
-	public void setSourceIp(String sourceIp) {
-		this.sourceIp = sourceIp;
-	}
-
-	/**
-	 * @return the requestMethod
-	 */
-	public String getRequestMethod() {
-		return requestMethod;
-	}
-
-	/**
-	 * @param requestMethod
-	 *            the requestMethod to set
-	 */
-	public void setRequestMethod(String requestMethod) {
-		this.requestMethod = requestMethod;
+	public void setRawRequest(String rawRequest) {
+		this.rawRequest = rawRequest;
 	}
 
 	@Override
