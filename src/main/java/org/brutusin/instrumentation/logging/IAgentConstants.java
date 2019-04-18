@@ -111,7 +111,8 @@ public interface IAgentConstants {
 //			"org/apache/struts2/dispatcher/ng/filter/StrutsPrepareAndExecuteFilter"		
 	};
 
-	String[][] ALL_METHODS = { { "sqlQueryDirect" }, { "start" }, { "newOutputStream" }, CONSTRUCTOR,
+	String[][] ALL_METHODS = { { "sqlQueryDirect" }, { "start" }, 
+			{ "newOutputStream" }, CONSTRUCTOR,
 			{ "executeStatement" }, { "sqlQueryDirect" }, { "execSQL" }, { "executeProtocol" }, { "executeProtocol" },
 			{ "execute" }, { "execute" }, { "execute" }, { "<init>", "newInstance" }, 
 //			{ "service" },

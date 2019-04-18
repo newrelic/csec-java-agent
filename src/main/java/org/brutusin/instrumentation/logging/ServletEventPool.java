@@ -148,6 +148,7 @@ public class ServletEventPool {
 			this.servletInfoReferenceRecord.put(threadId, this.servletInfoReferenceRecord.get(threadId) - 1);
 			refCount = this.servletInfoReferenceRecord.get(threadId);
 		} catch (Exception e) {
+			e.printStackTrace();
 		}
 		return refCount;
 	}
@@ -165,6 +166,7 @@ public class ServletEventPool {
 			}
 			refCount = this.servletInfoReferenceRecord.get(threadId);
 		} catch (Exception e) {
+			e.printStackTrace();
 		}
 		return refCount;
 	}

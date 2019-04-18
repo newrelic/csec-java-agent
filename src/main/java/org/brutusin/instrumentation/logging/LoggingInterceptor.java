@@ -304,8 +304,8 @@ public class LoggingInterceptor extends Interceptor {
 		// servletInfo);
 
 		if (sourceString == null)
-			return;		
-		
+			return;
+
 		if (IAgentConstants.JETTY_REQUEST_HANDLE.equals(sourceString)) {
 //			System.out.println("RequestMap : " + ServletEventPool.getInstance().getRequestMap() );
 //			System.out.println("RequestMapRef : " + ServletEventPool.getInstance().getServletInfoReferenceRecord() );
@@ -328,8 +328,11 @@ public class LoggingInterceptor extends Interceptor {
 				String requestContent = null;
 				Field limit = Buffer.class.getDeclaredField("limit");
 				limit.setAccessible(true);
+				Field positionField = Buffer.class.getDeclaredField("position");
+				positionField.setAccessible(true);
+				int positionHb = (Integer) positionField.get(arg[0]);
 				int limitHb = (Integer) limit.get(arg[0]);
-				if (limitHb > 0) {
+				if (limitHb > 0 && positionHb == 0) {
 
 					Field hb = ByteBuffer.class.getDeclaredField("hb");
 					hb.setAccessible(true);
@@ -344,12 +347,12 @@ public class LoggingInterceptor extends Interceptor {
 //					System.out.println("Request Param : " + servletInfo);
 				}
 			} catch (Exception e) {
-//				e.printStackTrace();
+				e.printStackTrace();
 			}
 		} else if (IAgentConstants.TOMCAT_SETBYTEBUFFER.equals(sourceString)) {
-//			System.out.println("RequestMap : " + ServletEventPool.getInstance().getRequestMap() );
-//			System.out.println("RequestMapRef : " + ServletEventPool.getInstance().getServletInfoReferenceRecord() );
-//			System.out.println("Coyote : " + threadId + " : " + sourceString );
+//			System.out.println("RequestMap : " + ServletEventPool.getInstance().getRequestMap());
+//			System.out.println("RequestMapRef : " + ServletEventPool.getInstance().getServletInfoReferenceRecord());
+//			System.out.println("Coyote : " + threadId + " : " + sourceString);
 			ServletInfo servletInfo;
 			if (!ServletEventPool.getInstance().getRequestMap().containsKey(threadId)) {
 				servletInfo = new ServletInfo();
@@ -360,6 +363,10 @@ public class LoggingInterceptor extends Interceptor {
 				String requestContent = null;
 				Field limit = Buffer.class.getDeclaredField("limit");
 				limit.setAccessible(true);
+				Field positionField = Buffer.class.getDeclaredField("position");
+				positionField.setAccessible(true);
+				int positionHb = (Integer) positionField.get(arg[0]);
+
 				int limitHb = (Integer) limit.get(arg[0]);
 				if (limitHb > 0) {
 
@@ -367,31 +374,35 @@ public class LoggingInterceptor extends Interceptor {
 					hb.setAccessible(true);
 					byte[] hbContent = (byte[]) hb.get(arg[0]);
 
-					requestContent = new String(hbContent, 0, limitHb, StandardCharsets.UTF_8);
-					servletInfo.setRawRequest(requestContent);
+					requestContent = new String(hbContent, positionHb, limitHb - positionHb, StandardCharsets.UTF_8);
+					if (servletInfo.getRawRequest().length() > 8192 || servletInfo.isDataTruncated()) {
+						servletInfo.setDataTruncated(true);
+					} else {
+						servletInfo.setRawRequest(servletInfo.getRawRequest() + requestContent);
+					}
 //					System.out.println("Request Param : " + servletInfo);
 				}
 			} catch (Exception e) {
-//				e.printStackTrace();
+				e.printStackTrace();
 			}
 		} else if (IAgentConstants.TOMCAT_COYOTE_ADAPTER_SERVICE.equals(sourceString)) {
-//			System.out.println("RequestMap : " + ServletEventPool.getInstance().getRequestMap() );
-//			System.out.println("RequestMapRef : " + ServletEventPool.getInstance().getServletInfoReferenceRecord() );
+//			System.out.println("RequestMap : " + ServletEventPool.getInstance().getRequestMap());
+//			System.out.println("RequestMapRef : " + ServletEventPool.getInstance().getServletInfoReferenceRecord());
+//			System.out.println("Coyote Service: " + threadId + " : " + sourceString);
 			ServletEventPool.getInstance().incrementServletInfoReference(threadId);
-//			System.out.println("Coyote Service: " + threadId + " : " + sourceString );
 			ServletInfo servletInfo = new ServletInfo();
 			ServletEventPool.getInstance().getRequestMap().put(threadId, servletInfo);
 			try {
 				String requestContent = null;
-				
+
 				Field inputBufferField = arg[0].getClass().getDeclaredField("inputBuffer");
 				inputBufferField.setAccessible(true);
 				Object inputBuffer = inputBufferField.get(arg[0]);
-				
+
 				Field byteBufferField = inputBuffer.getClass().getDeclaredField("byteBuffer");
 				byteBufferField.setAccessible(true);
 				Object byteBuffer = byteBufferField.get(inputBuffer);
-				
+
 				Field limit = Buffer.class.getDeclaredField("limit");
 				limit.setAccessible(true);
 				int limitHb = (Integer) limit.get(byteBuffer);
@@ -406,7 +417,7 @@ public class LoggingInterceptor extends Interceptor {
 //					System.out.println("Request Param : " + servletInfo);
 				}
 			} catch (Exception e) {
-//				e.printStackTrace();
+				e.printStackTrace();
 			}
 		} else {
 //			System.out.println("RequestMap : " + ServletEventPool.getInstance().getRequestMap() );
@@ -415,10 +426,16 @@ public class LoggingInterceptor extends Interceptor {
 			// + requestMap.get(threadId)
 			// + " : " + arg[0] + " : " + arg[1]);
 			// System.out.println("Other event current request map : " + requestMap);
-			if (ServletEventPool.getInstance().getRequestMap().containsKey(threadId)) {
-				EventThreadPool.getInstance().processReceivedEvent(source, arg, executionId,
-						Thread.currentThread().getStackTrace(), threadId, sourceString);
+			
+			try {
+				if (ServletEventPool.getInstance().getRequestMap().containsKey(threadId)) {
+					ServletEventPool.getInstance().incrementServletInfoReference(threadId);
+					EventThreadPool.getInstance().processReceivedEvent(source, arg, executionId,
+							Thread.currentThread().getStackTrace(), threadId, sourceString);
+				}
+			} catch (Exception e) {
 			}
+
 		}
 		// System.out.println("started sourceString : "+ sourceString);
 	}
@@ -446,6 +463,7 @@ public class LoggingInterceptor extends Interceptor {
 					// System.out.println("Request map entry removed for threadID " + threadId);
 					// System.out.println("Current request map : " +
 					// ServletEventPool.getInstance().getRequestMap());
+//					System.out.println(threadId + ": remove from coyote");
 					ServletEventPool.getInstance().getRequestMap().remove(threadId);
 				}
 			}

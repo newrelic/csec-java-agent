@@ -236,6 +236,10 @@ public class ProcessorThread implements Runnable {
 						javaIoFile = true;
 					}
 				}
+				if (ServletEventPool.getInstance().decrementServletInfoReference(threadId) <= 0) {
+//					System.out.println(threadId + " : remove from another method");
+					ServletEventPool.getInstance().getRequestMap().remove(threadId);
+				}
 				return;
 			}
 
@@ -271,6 +275,10 @@ public class ProcessorThread implements Runnable {
 				generateEvent(intCodeResultBean);
 			}
 
+		}
+		if (ServletEventPool.getInstance().decrementServletInfoReference(threadId) <= 0) {
+//			System.out.println(threadId + " : remove from another method");
+			ServletEventPool.getInstance().getRequestMap().remove(threadId);
 		}
 	}
 
@@ -781,7 +789,6 @@ public class ProcessorThread implements Runnable {
 
 	private void generateEvent(IntCodeResultBean intCodeResultBean) {
 		// System.out.println("inside Event generate : " + intCodeResultBean);
-		ServletEventPool.getInstance().incrementServletInfoReference(threadId);
 		if (LoggingInterceptor.socket == null || !LoggingInterceptor.socket.isConnected()
 				|| LoggingInterceptor.socket.isClosed()) {
 			try {
@@ -833,9 +840,7 @@ public class ProcessorThread implements Runnable {
 				// ServletEventPool.getInstance().getServletInfoReferenceRecord().get(threadId));
 				System.out.println("publish event: " + intCodeResultBean);
 				eventQueue.add(intCodeResultBean);
-				if (ServletEventPool.getInstance().decrementServletInfoReference(this.threadId) <= 0) {
-					ServletEventPool.getInstance().getRequestMap().remove(this.threadId);
-				}
+				
 			}
 		}
 	}

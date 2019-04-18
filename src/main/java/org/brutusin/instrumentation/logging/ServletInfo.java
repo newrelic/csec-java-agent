@@ -31,7 +31,7 @@ public class ServletInfo implements Serializable {
 	 * @return the rawRequest
 	 */
 	public String getRawRequest() {
-		return rawRequest;
+		return this.rawRequest;
 	}
 
 	/**
@@ -55,7 +55,7 @@ public class ServletInfo implements Serializable {
 	 * @return the dataTruncated
 	 */
 	public boolean isDataTruncated() {
-		return dataTruncated;
+		return this.dataTruncated;
 	}
 
 	/**
