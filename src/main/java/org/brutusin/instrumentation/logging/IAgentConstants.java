@@ -90,7 +90,7 @@ public interface IAgentConstants {
 
 	String[] ALL_CLASSES = { "com/mysql/jdbc/MysqlIO", "java/lang/ProcessImpl",
 			// FileWriter
-			"java/nio/file/spi/FileSystemProvider", "java/io/File", 
+//			"java/nio/file/spi/FileSystemProvider", "java/io/File", 
 			
 			//SQL
 			"com/microsoft/sqlserver/jdbc/SQLServerStatement",
@@ -112,7 +112,7 @@ public interface IAgentConstants {
 	};
 
 	String[][] ALL_METHODS = { { "sqlQueryDirect" }, { "start" }, 
-			{ "newOutputStream" }, CONSTRUCTOR,
+//			{ "newOutputStream" }, CONSTRUCTOR,
 			{ "executeStatement" }, { "sqlQueryDirect" }, { "execSQL" }, { "executeProtocol" }, { "executeProtocol" },
 			{ "execute" }, { "execute" }, { "execute" }, { "<init>", "newInstance" }, 
 //			{ "service" },
