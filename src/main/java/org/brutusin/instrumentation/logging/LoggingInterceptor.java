@@ -295,11 +295,11 @@ public class LoggingInterceptor extends Interceptor {
 
 		if (source instanceof Method) {
 			sourceString = ((Method) source).toGenericString();
-//			System.out.println(sourceString);
+
 		} else if (source instanceof Constructor) {
 			sourceString = ((Constructor) source).toGenericString();
 		}
-
+//		System.out.println(sourceString);
 		// System.out.println("doOnStart : " + threadId+" : " + sourceString+" : " +
 		// servletInfo);
 

@@ -59,7 +59,10 @@ public interface IAgentConstants {
 			"public <T> T com.mysql.cj.NativeSession.execSQL(com.mysql.cj.Query,java.lang.String,int,com.mysql.cj.protocol.a.NativePacketPayload,boolean,com.mysql.cj.protocol.ProtocolEntityFactory<T, com.mysql.cj.protocol.a.NativePacketPayload>,java.lang.String,com.mysql.cj.protocol.ColumnDefinition,boolean)", // Mysql
 			// Connector/J
 			// 8.x
-
+			
+			// oracle db
+			"final void oracle.jdbc.driver.T4CTTIfun.doRPC() throws java.io.IOException,java.sql.SQLException",
+			
 			// // FileWriter
 //			"public java.io.OutputStream java.nio.file.spi.FileSystemProvider.newOutputStream(java.nio.file.Path,java.nio.file.OpenOption...) throws java.io.IOException",
 //			"public java.io.File(java.lang.String,java.lang.String)", "public java.io.File(java.lang.String)",
@@ -101,6 +104,9 @@ public interface IAgentConstants {
 			"com/mongodb/async/client/MongoClientImpl$2", "com/mongodb/async/client/AsyncOperationExecutorImpl",
 			"com/mongodb/async/client/OperationExecutorImpl", "java/net/URLClassLoader",
 			
+			// Oracle DB
+			"oracle/jdbc/driver/T4CTTIfun",
+			
 			// http request
 //			"javax/servlet/http/HttpServlet",
 			"org/apache/catalina/connector/CoyoteAdapter",
@@ -115,6 +121,7 @@ public interface IAgentConstants {
 //			{ "newOutputStream" }, CONSTRUCTOR,
 			{ "executeStatement" }, { "sqlQueryDirect" }, { "execSQL" }, { "executeProtocol" }, { "executeProtocol" },
 			{ "execute" }, { "execute" }, { "execute" }, { "<init>", "newInstance" }, 
+			{ "doRPC" },
 //			{ "service" },
 			{ "service" },
 			{ "setByteBuffer" },
@@ -189,4 +196,9 @@ public interface IAgentConstants {
 	String MONGO_COLLECTION_WILDCARD = "$cmd";
 	String MONGO_COLLECTION_FIELD = "collectionName";
 	String MONGO_COMMAND_NAME_FIELD = "commandName";
+	
+	/** Oracle DB constatns */
+	String ORACLE_DB_IDENTIFIER = "oracle.jdbc.driver";
+	String ORACLE_CONNECTION_IDENTIFIER = "oracle.jdbc.driver.T4C8Oall";
+	String ORACLE_STATEMENT_CLASS_IDENTIFIER = "oracle.jdbc.driver.OracleStatement"; 
 }

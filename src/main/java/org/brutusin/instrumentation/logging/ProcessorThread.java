@@ -45,6 +45,9 @@ import static org.brutusin.instrumentation.logging.IAgentConstants.MSSQL_USER_SQ
 import static org.brutusin.instrumentation.logging.IAgentConstants.MSSQL_VALUE_FIELD;
 import static org.brutusin.instrumentation.logging.IAgentConstants.MYSQL_IDENTIFIER;
 import static org.brutusin.instrumentation.logging.IAgentConstants.MYSQL_PREPARED_STATEMENT;
+import static org.brutusin.instrumentation.logging.IAgentConstants.ORACLE_DB_IDENTIFIER;
+import static org.brutusin.instrumentation.logging.IAgentConstants.ORACLE_CONNECTION_IDENTIFIER;
+import static org.brutusin.instrumentation.logging.IAgentConstants.ORACLE_STATEMENT_CLASS_IDENTIFIER;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -684,6 +687,39 @@ public class ProcessorThread implements Runnable {
 		}
 
 	}
+	
+	/**
+	 * @param obj: this pointer object
+	 * @param parameters
+	 */
+	private void getOracleParameterValue(Object thisPointer, JSONArray parameters) {
+		Class<?> thisPointerClass = thisPointer.getClass();
+		try {
+			if (thisPointerClass.getName().contains(ORACLE_CONNECTION_IDENTIFIER)) {
+				
+
+				Field oracleStatementField = thisPointerClass.getDeclaredField("oracleStatement");
+				oracleStatementField.setAccessible(true);
+				Object oracleStatement = oracleStatementField.get(thisPointer);
+				
+				
+				Class<?> statementKlass = oracleStatement.getClass();
+				while (!statementKlass.getName().equals(ORACLE_STATEMENT_CLASS_IDENTIFIER)) {
+					statementKlass = statementKlass.getSuperclass();
+				}
+				
+				Field sqlObjectField = statementKlass.getDeclaredField("sqlObject");
+				sqlObjectField.setAccessible(true);
+				Object sqlObject = sqlObjectField.get(oracleStatement);
+				System.out.println("sqlObject.toString()::::::" + sqlObject.toString());
+				parameters.add(sqlObject.toString());
+
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+	}
 
 	/**
 	 * This method is used to extract All the required parameters through the
@@ -699,7 +735,6 @@ public class ProcessorThread implements Runnable {
 		if (obj == null) {
 			return null;
 		}
-
 		JSONArray parameters = new JSONArray();
 		try {
 			if (obj[0] != null && sourceString.contains(MSSQL_IDENTIFIER)) {
@@ -708,6 +743,8 @@ public class ProcessorThread implements Runnable {
 				getMySQLParameterValue(obj, parameters);
 			} else if (obj[0] != null && sourceString.contains(MONGO_IDENTIFIER)) {
 				getMongoParameterValue(obj, parameters);
+			} else if (obj[0] != null && sourceString.contains(ORACLE_DB_IDENTIFIER)) {
+				getOracleParameterValue(arg[arg.length-1], parameters);
 			} else if (obj[0] != null && sourceString.contains(CLASS_LOADER_IDENTIFIER)) {
 				getClassLoaderParameterValue(obj, parameters);
 			} else {
