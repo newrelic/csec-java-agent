@@ -1,6 +1,6 @@
 package org.brutusin.instrumentation.logging;
 
-import static org.brutusin.instrumentation.logging.IAgentConstants.CLASS_LOADER_IDENTIFIER;
+import static org.brutusin.instrumentation.logging.IAgentConstants.*;
 import static org.brutusin.instrumentation.logging.IAgentConstants.MOGNO_ELEMENT_DATA_FIELD;
 import static org.brutusin.instrumentation.logging.IAgentConstants.MONGO_COLLECTION_FIELD;
 import static org.brutusin.instrumentation.logging.IAgentConstants.MONGO_COLLECTION_WILDCARD;
@@ -65,7 +65,9 @@ import org.brutusin.instrumentation.Agent;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class ProcessorThread implements Runnable {
@@ -126,8 +128,7 @@ public class ProcessorThread implements Runnable {
 	}
 
 	/**
-	 * @param source
-	 *            the source to set
+	 * @param source the source to set
 	 */
 	public void setSource(Object source) {
 		this.source = source;
@@ -141,8 +142,7 @@ public class ProcessorThread implements Runnable {
 	}
 
 	/**
-	 * @param arg
-	 *            the arg to set
+	 * @param arg the arg to set
 	 */
 	public void setArg(Object[] arg) {
 		this.arg = arg;
@@ -156,8 +156,7 @@ public class ProcessorThread implements Runnable {
 	}
 
 	/**
-	 * @param executionId
-	 *            the executionId to set
+	 * @param executionId the executionId to set
 	 */
 	public void setExecutionId(String executionId) {
 		this.executionId = executionId;
@@ -296,19 +295,13 @@ public class ProcessorThread implements Runnable {
 	/**
 	 * This method is used for MSSQL parameter Extraction
 	 *
-	 * @param obj
-	 *            the object in argument of Instrumented Method
-	 * @param parameters
-	 *            the parameter list as a JSONArray
+	 * @param obj        the object in argument of Instrumented Method
+	 * @param parameters the parameter list as a JSONArray
 	 * @return void
-	 * @throws NoSuchFieldException
-	 *             the no such field exception
-	 * @throws SecurityException
-	 *             the security exception
-	 * @throws IllegalArgumentException
-	 *             the illegal argument exception
-	 * @throws IllegalAccessException
-	 *             the illegal access exception
+	 * @throws NoSuchFieldException     the no such field exception
+	 * @throws SecurityException        the security exception
+	 * @throws IllegalArgumentException the illegal argument exception
+	 * @throws IllegalAccessException   the illegal access exception
 	 */
 	@SuppressWarnings("unchecked")
 	private static void getMSSQLParameterValue(Object obj, JSONArray parameters)
@@ -423,10 +416,8 @@ public class ProcessorThread implements Runnable {
 	/**
 	 * Gets the MySQL parameter values.
 	 *
-	 * @param args
-	 *            the arguments of Instrumented Method
-	 * @param parameters
-	 *            the parameters
+	 * @param args       the arguments of Instrumented Method
+	 * @param parameters the parameters
 	 * @return the my SQL parameter value
 	 */
 	@SuppressWarnings("unchecked")
@@ -462,19 +453,13 @@ public class ProcessorThread implements Runnable {
 	/**
 	 * Gets the mongo parameters.
 	 *
-	 * @param args
-	 *            the arguments of Instrumented Method
-	 * @param parameters
-	 *            the parameters
+	 * @param args       the arguments of Instrumented Method
+	 * @param parameters the parameters
 	 * @return the my SQL parameter value
-	 * @throws NoSuchFieldException
-	 *             the no such field exception
-	 * @throws SecurityException
-	 *             the security exception
-	 * @throws IllegalArgumentException
-	 *             the illegal argument exception
-	 * @throws IllegalAccessException
-	 *             the illegal access exception
+	 * @throws NoSuchFieldException     the no such field exception
+	 * @throws SecurityException        the security exception
+	 * @throws IllegalArgumentException the illegal argument exception
+	 * @throws IllegalAccessException   the illegal access exception
 	 */
 	@SuppressWarnings("unchecked")
 	public static void getMongoParameterValue(Object[] args, JSONArray parameters)
@@ -689,8 +674,7 @@ public class ProcessorThread implements Runnable {
 	 * This method is used to extract All the required parameters through the
 	 * arguments of instrumented method
 	 * 
-	 * @param obj
-	 *            the obj
+	 * @param obj the obj
 	 * @return the JSON array
 	 */
 	@SuppressWarnings({ "unchecked", "unused" })
@@ -710,60 +694,70 @@ public class ProcessorThread implements Runnable {
 				getMongoParameterValue(obj, parameters);
 			} else if (obj[0] != null && sourceString.contains(CLASS_LOADER_IDENTIFIER)) {
 				getClassLoaderParameterValue(obj, parameters);
+			} else if (sourceString.equals(PSQLV3_EXECUTOR) || sourceString.equals(PSQLV2_EXECUTOR)) {
+				getPSQLParameterValue(obj, parameters);
 			} else {
-				parameters.addAll((List<String>) parser.parse(mapper.writeValueAsString(obj)));
-				// for (int i = 0; i < obj.length; i++) {
-				// if (obj[i] instanceof byte[]) {
-				// try {
-				// String byteParam = new String((byte[]) obj[i], "UTF-8");
-				// parameters.add(byteParam.trim());
-				// } catch (UnsupportedEncodingException e) {
-				// e.printStackTrace();
-				// }
-				//// } else if (obj[i] instanceof Object[]) {
-				//// parameters.add(toString((Object[]) obj[i], sourceString));
-				// }
-				// // b.append(toString((Object[]) obj[i]));
-				// else
-				// parameters.add(parser.parse(mapper.writeValueAsString(obj)));
-				//
-				//// parameters.add(JsonCodec.getInstance().transform(obj[i]));
-				// // b.append(JsonCodec.getInstance().transform(obj[i]));
-				// // if (i != obj.length - 1)
-				// // b.append(',');
-				// }
+				for (int i = 0; i < obj.length; i++) {
+					if (obj[i] instanceof Object[]) {
+						Object json = parser.parse(mapper.writeValueAsString(obj[i]));
+						if (json instanceof JSONArray)
+							parameters.addAll((JSONArray) json);
+						else
+							parameters.add(json);
+					} else {
+						Object json = parser.parse(mapper.writeValueAsString(obj[i]));
+						if (json instanceof JSONArray)
+							parameters.addAll((JSONArray) json);
+						else
+							parameters.add(json);
+					}
+				}
+//				parameters.addAll((List<String>) parser.parse(mapper.writeValueAsString(obj)));
 			}
 
 		} catch (Throwable th) {
-			// parameters.add((obj != null) ?
-			// JsonCodec.getInstance().transform(obj.toString()) : null);
 			parameters.add((obj != null) ? obj.toString() : null);
-			// th.printStackTrace();
+//			th.printStackTrace();
 		}
-
-		// StringBuilder b = new StringBuilder();
-		// b.append('[');
-
-		// b.append(']');
-		// return b.toString();
 		return parameters;
+	}
+
+	private void getPSQLParameterValue(Object[] obj, JSONArray parameters) {
+		String sql  = "";
+		if (obj.length >= 0) {
+			sql = obj[0].toString();
+		}
+		if (obj.length >= 1) {
+			Object simpleParameter = obj[1];
+			Field paramValuesField;
+			try {
+				paramValuesField = simpleParameter.getClass().getDeclaredField("paramValues");
+				paramValuesField.setAccessible(true);
+				Object[] paramValues = (Object[])paramValuesField.get(simpleParameter);
+				List<Object> paramArray = new ArrayList<>();
+				for(int i=0; i<paramValues.length; i++) {
+					String param = mapper.writeValueAsString(paramValues[i]);
+					sql = sql.replaceFirst("\\?", param);
+					paramArray.add(param);
+				}
+				parameters.add(sql);
+				parameters.add(paramArray);
+			} catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException | JsonProcessingException e) {
+//				e.printStackTrace();
+			}
+			
+		}
 	}
 
 	/**
 	 * Adds the Values passed to a MSSQL prepared statement into ParameterList.
 	 *
-	 * @param paramList
-	 *            the param list
-	 * @param parameters
-	 *            the parameters
-	 * @throws NoSuchFieldException
-	 *             the no such field exception
-	 * @throws SecurityException
-	 *             the security exception
-	 * @throws IllegalArgumentException
-	 *             the illegal argument exception
-	 * @throws IllegalAccessException
-	 *             the illegal access exception
+	 * @param paramList  the param list
+	 * @param parameters the parameters
+	 * @throws NoSuchFieldException     the no such field exception
+	 * @throws SecurityException        the security exception
+	 * @throws IllegalArgumentException the illegal argument exception
+	 * @throws IllegalAccessException   the illegal access exception
 	 */
 	@SuppressWarnings({ "unused", "unchecked" })
 	private static void addParamValuesMSSQL(ArrayList<Object[]> paramList, JSONArray parameters)
@@ -840,7 +834,7 @@ public class ProcessorThread implements Runnable {
 				// ServletEventPool.getInstance().getServletInfoReferenceRecord().get(threadId));
 				System.out.println("publish event: " + intCodeResultBean);
 				eventQueue.add(intCodeResultBean);
-				
+
 			}
 		}
 	}
@@ -853,8 +847,7 @@ public class ProcessorThread implements Runnable {
 	}
 
 	/**
-	 * @param servletInfo
-	 *            the servletInfo to set
+	 * @param servletInfo the servletInfo to set
 	 */
 	public void setServletInfo(ServletInfo servletInfo) {
 		this.servletInfo = servletInfo;
