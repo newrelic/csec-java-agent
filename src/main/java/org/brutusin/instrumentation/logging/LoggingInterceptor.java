@@ -435,6 +435,14 @@ public class LoggingInterceptor extends Interceptor {
 				position.setAccessible(true);
 				int positionHb = (Integer) position.get(byteBuffer);
 				
+				Method getRemoteAddr = arg[0].getClass().getDeclaredMethod("remoteAddr", null);
+				getRemoteAddr.setAccessible(true);
+				Object remoteAddr = getRemoteAddr.invoke(arg[0], null);
+				
+				if(remoteAddr !=null) {
+					servletInfo.setSourceIp(remoteAddr.toString());
+				}
+				
 				if (positionHb > 0) {
 
 					Field hb = ByteBuffer.class.getDeclaredField("hb");

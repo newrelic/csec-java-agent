@@ -15,6 +15,8 @@ public class ServletInfo implements Serializable {
 	private String rawRequest;
 	
 	private boolean dataTruncated;
+	
+	private String sourceIp;
 
 	public ServletInfo() {
 		this.rawRequest = "";
@@ -63,5 +65,21 @@ public class ServletInfo implements Serializable {
 	 */
 	public void setDataTruncated(boolean dataTruncated) {
 		this.dataTruncated = dataTruncated;
+	}
+
+
+	/**
+	 * @return the sourceIp
+	 */
+	public String getSourceIp() {
+		return sourceIp;
+	}
+
+
+	/**
+	 * @param sourceIp the sourceIp to set
+	 */
+	public void setSourceIp(String sourceIp) {
+		this.sourceIp = sourceIp;
 	}
 }
