@@ -694,7 +694,7 @@ public class ProcessorThread implements Runnable {
 				getMongoParameterValue(obj, parameters);
 			} else if (obj[0] != null && sourceString.contains(CLASS_LOADER_IDENTIFIER)) {
 				getClassLoaderParameterValue(obj, parameters);
-			} else if (sourceString.equals(PSQLV3_EXECUTOR) || sourceString.equals(PSQLV2_EXECUTOR)) {
+			} else if (sourceString.equals(PSQLV3_EXECUTOR) || sourceString.equals(PSQLV2_EXECUTOR) || sourceString.equals(PSQL42_EXECUTOR)) {
 				getPSQLParameterValue(obj, parameters);
 			} else {
 				for (int i = 0; i < obj.length; i++) {
