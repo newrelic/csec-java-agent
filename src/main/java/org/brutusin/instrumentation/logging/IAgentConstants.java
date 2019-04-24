@@ -62,6 +62,7 @@ public interface IAgentConstants {
 			
 			// oracle db
 			"final void oracle.jdbc.driver.T4CTTIfun.doRPC() throws java.io.IOException,java.sql.SQLException",
+			"void oracle.jdbc.driver.OraclePreparedStatement.setupBindBuffers(int,int) throws java.sql.SQLException",
 			
 			// // FileWriter
 //			"public java.io.OutputStream java.nio.file.spi.FileSystemProvider.newOutputStream(java.nio.file.Path,java.nio.file.OpenOption...) throws java.io.IOException",
@@ -106,6 +107,7 @@ public interface IAgentConstants {
 			
 			// Oracle DB
 			"oracle/jdbc/driver/T4CTTIfun",
+			"oracle/jdbc/driver/OraclePreparedStatement",
 			
 			// http request
 //			"javax/servlet/http/HttpServlet",
@@ -122,6 +124,7 @@ public interface IAgentConstants {
 			{ "executeStatement" }, { "sqlQueryDirect" }, { "execSQL" }, { "executeProtocol" }, { "executeProtocol" },
 			{ "execute" }, { "execute" }, { "execute" }, { "<init>", "newInstance" }, 
 			{ "doRPC" },
+			{ "setupBindBuffers" },
 //			{ "service" },
 			{ "service" },
 			{ "setByteBuffer" },
@@ -200,5 +203,18 @@ public interface IAgentConstants {
 	/** Oracle DB constatns */
 	String ORACLE_DB_IDENTIFIER = "oracle.jdbc.driver";
 	String ORACLE_CONNECTION_IDENTIFIER = "oracle.jdbc.driver.T4C8Oall";
-	String ORACLE_STATEMENT_CLASS_IDENTIFIER = "oracle.jdbc.driver.OracleStatement"; 
+	String ORACLE_STATEMENT_CLASS_IDENTIFIER = "oracle.jdbc.driver.OracleStatement";
+	String ORACLE_PREPARED_STATEMENT_CLASS_IDENTIFIER = "oracle.jdbc.driver.OraclePreparedStatement";
+	String ORACLE_DYNAMIC_BYTE_ARRAY_CLASS_IDENTIFIER = "oracle.jdbc.driver.DynamicByteArray";
+	String ORACLE_SQL_CHAR_SET_CLASS_IDENTIFIER = "oracle.sql.CharacterSet";
+	String ORACLE_CHARSET_AL32UTF8 = "AL32UTF8";
+	String ORACLE_CHARSET_AL16UTF16 = "AL16UTF16";
+	String ORACLE_SETUP_BINDER_METHOD_SIGNATURE = "void oracle.jdbc.driver.OraclePreparedStatement.setupBindBuffers(int,int) throws java.sql.SQLException";
+	String []ORACLE_CLASS_SKIP_LIST = {
+		"oracle.jdbc.driver.T4C7Ocommoncall",
+		"oracle.jdbc.driver.T4CTTIoauthenticate",
+		"oracle.jdbc.driver.T4C7Oversion"
+	};
+	
+	String BYTE_ARRAY_CLASS = "[B";
 }

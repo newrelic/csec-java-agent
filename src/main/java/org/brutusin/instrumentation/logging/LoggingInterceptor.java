@@ -15,6 +15,9 @@
  */
 package org.brutusin.instrumentation.logging;
 
+import static org.brutusin.instrumentation.logging.IAgentConstants.ORACLE_PREPARED_STATEMENT_CLASS_IDENTIFIER;
+import static org.brutusin.instrumentation.logging.IAgentConstants.ORACLE_STATEMENT_CLASS_IDENTIFIER;
+
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.File;
@@ -49,6 +52,8 @@ import org.json.simple.JSONArray;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.MethodNode;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 public class LoggingInterceptor extends Interceptor {
 
 	private static final Set<String> allClasses;
@@ -57,7 +62,8 @@ public class LoggingInterceptor extends Interceptor {
 	protected static Integer VMPID;
 	protected static final String applicationUUID;
 	protected static Socket socket;
-
+	static final int MAX_DEPTH_LOOKUP = 4; // Max number of superclasses to lookup for a field
+	private ObjectMapper mapper = null;
 	// protected static Map<Long, ServletInfo> requestMap;
 	protected static ScheduledExecutorService eventPoolExecutor;
 
@@ -69,6 +75,7 @@ public class LoggingInterceptor extends Interceptor {
 			interceptMethod.put(IAgentConstants.ALL_CLASSES[i],
 					new ArrayList<String>(Arrays.asList(IAgentConstants.ALL_METHODS[i])));
 		}
+		
 	}
 
 	public static String getContainerID() {
@@ -225,6 +232,7 @@ public class LoggingInterceptor extends Interceptor {
 		} catch (Exception e) {
 			System.err.println("Can't connect to IC, agent installation failed.");
 		}
+		mapper = new ObjectMapper();
 	}
 
 	private static void eventWritePool() {
@@ -276,13 +284,11 @@ public class LoggingInterceptor extends Interceptor {
 
 	@Override
 	public boolean interceptMethod(ClassNode cn, MethodNode mn) {
-//		 if
-//		 (cn.name.equals("org/apache/struts2/dispatcher/ng/filter/StrutsPrepareAndExecuteFilter"))
-//		 System.out.println("name: " + mn.name + " : " +
-//		 interceptMethod.get(cn.name).contains(mn.name));
-//		 else if (cn.name.equals("javax/faces/webapp/FacesServlet"))
-//		 System.out.println("name: " + mn.name + " : " +
-//		 interceptMethod.get(cn.name).contains(mn.name));
+		// if
+		// (cn.name.equals("org/apache/struts2/dispatcher/ng/filter/StrutsPrepareAndExecuteFilter"))
+		// System.out.println("name: " + mn.name + " : " + interceptMethod.get(cn.name).contains(mn.name));
+		// else if (cn.name.equals("javax/faces/webapp/FacesServlet"))
+		// System.out.println("name: " + mn.name + " : " + interceptMethod.get(cn.name).contains(mn.name));
 		return interceptMethod.get(cn.name).contains(mn.name);
 	}
 
@@ -307,15 +313,15 @@ public class LoggingInterceptor extends Interceptor {
 			return;
 
 		if (IAgentConstants.JETTY_REQUEST_HANDLE.equals(sourceString)) {
-//			System.out.println("RequestMap : " + ServletEventPool.getInstance().getRequestMap() );
-//			System.out.println("RequestMapRef : " + ServletEventPool.getInstance().getServletInfoReferenceRecord() );
+			// System.out.println("RequestMap : " + ServletEventPool.getInstance().getRequestMap() );
+			// System.out.println("RequestMapRef : " + ServletEventPool.getInstance().getServletInfoReferenceRecord() );
 			ServletEventPool.getInstance().incrementServletInfoReference(threadId);
 		} else if (IAgentConstants.JETTY_PARSE_NEXT.equals(sourceString)) {
-//			System.out.println("RequestMap : " + ServletEventPool.getInstance().getRequestMap() );
-//			System.out.println("RequestMapRef : " + ServletEventPool.getInstance().getServletInfoReferenceRecord() );
-//			System.out.println("Jetty me aaya : " + arg[0].getClass().getName());
-//			System.out.println("ByteBuffer : " + Arrays.asList(ByteBuffer.class.getFields()) + " : " + Arrays.asList(ByteBuffer.class.getDeclaredFields()));
-//			System.out.println("Buffer : " + Arrays.asList(Buffer.class.getFields()) + " : " + Arrays.asList(Buffer.class.getDeclaredFields()));
+			// System.out.println("RequestMap : " + ServletEventPool.getInstance().getRequestMap() );
+			// System.out.println("RequestMapRef : " +ServletEventPool.getInstance().getServletInfoReferenceRecord() );
+			// System.out.println("Jetty me aaya : " + arg[0].getClass().getName());
+			// System.out.println("ByteBuffer : " + Arrays.asList(ByteBuffer.class.getFields()) + " : " + Arrays.asList(ByteBuffer.class.getDeclaredFields()));
+			// System.out.println("Buffer : " + Arrays.asList(Buffer.class.getFields()) + " : " + Arrays.asList(Buffer.class.getDeclaredFields()));
 
 			ServletInfo servletInfo;
 
@@ -344,15 +350,15 @@ public class LoggingInterceptor extends Interceptor {
 					} else {
 						servletInfo.setRawRequest(servletInfo.getRawRequest() + requestContent);
 					}
-//					System.out.println("Request Param : " + servletInfo);
+					// System.out.println("Request Param : " + servletInfo);
 				}
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
 		} else if (IAgentConstants.TOMCAT_SETBYTEBUFFER.equals(sourceString)) {
-//			System.out.println("RequestMap : " + ServletEventPool.getInstance().getRequestMap());
-//			System.out.println("RequestMapRef : " + ServletEventPool.getInstance().getServletInfoReferenceRecord());
-//			System.out.println("Coyote : " + threadId + " : " + sourceString);
+			// System.out.println("RequestMap : " + ServletEventPool.getInstance().getRequestMap());
+			// System.out.println("RequestMapRef : " + ServletEventPool.getInstance().getServletInfoReferenceRecord());
+			// System.out.println("Coyote : " + threadId + " : " + sourceString);
 			ServletInfo servletInfo;
 			if (!ServletEventPool.getInstance().getRequestMap().containsKey(threadId)) {
 				servletInfo = new ServletInfo();
@@ -380,15 +386,15 @@ public class LoggingInterceptor extends Interceptor {
 					} else {
 						servletInfo.setRawRequest(servletInfo.getRawRequest() + requestContent);
 					}
-//					System.out.println("Request Param : " + servletInfo);
+					// System.out.println("Request Param : " + servletInfo);
 				}
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
 		} else if (IAgentConstants.TOMCAT_COYOTE_ADAPTER_SERVICE.equals(sourceString)) {
-//			System.out.println("RequestMap : " + ServletEventPool.getInstance().getRequestMap());
-//			System.out.println("RequestMapRef : " + ServletEventPool.getInstance().getServletInfoReferenceRecord());
-//			System.out.println("Coyote Service: " + threadId + " : " + sourceString);
+			// System.out.println("RequestMap : " + ServletEventPool.getInstance().getRequestMap());
+			// System.out.println("RequestMapRef : " + ServletEventPool.getInstance().getServletInfoReferenceRecord());
+			// System.out.println("Coyote Service: " + threadId + " : " + sourceString);
 			ServletEventPool.getInstance().incrementServletInfoReference(threadId);
 			ServletInfo servletInfo = new ServletInfo();
 			ServletEventPool.getInstance().getRequestMap().put(threadId, servletInfo);
@@ -414,25 +420,87 @@ public class LoggingInterceptor extends Interceptor {
 
 					requestContent = new String(hbContent, 0, limitHb, StandardCharsets.UTF_8);
 					servletInfo.setRawRequest(requestContent);
-//					System.out.println("Request Param : " + servletInfo);
+					// System.out.println("Request Param : " + servletInfo);
 				}
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
-		} else {
-//			System.out.println("RequestMap : " + ServletEventPool.getInstance().getRequestMap() );
-//			System.out.println("RequestMapRef : " + ServletEventPool.getInstance().getServletInfoReferenceRecord() );
-			// System.out.println("Other event : " + threadId + " : " + sourceString + " : "
-			// + requestMap.get(threadId)
-			// + " : " + arg[0] + " : " + arg[1]);
-			// System.out.println("Other event current request map : " + requestMap);
-			
+			// in case of executeInternal()
+		} else if (sourceString.equals(IAgentConstants.ORACLE_SETUP_BINDER_METHOD_SIGNATURE)) {
 			try {
-				if (ServletEventPool.getInstance().getRequestMap().containsKey(threadId)) {
-					ServletEventPool.getInstance().incrementServletInfoReference(threadId);
-					EventThreadPool.getInstance().processReceivedEvent(source, arg, executionId,
-							Thread.currentThread().getStackTrace(), threadId, sourceString);
+				Class<?> oraclePreparedStatementClass = Class.forName(ORACLE_PREPARED_STATEMENT_CLASS_IDENTIFIER, true,
+						ClassLoader.getSystemClassLoader());
+
+				Class<?> OracleStatementClass = Class.forName(ORACLE_STATEMENT_CLASS_IDENTIFIER, true,
+						ClassLoader.getSystemClassLoader());
+				Object thisPointer = arg[arg.length - 1];
+				JSONArray parameters = new JSONArray();
+
+				Field bindersField = oraclePreparedStatementClass.getDeclaredField("binders");
+				bindersField.setAccessible(true);
+				Object[][] allBinders = (Object[][]) bindersField.get(thisPointer);
+
+				Field sqlObjectField = OracleStatementClass.getDeclaredField("sqlObject");
+				sqlObjectField.setAccessible(true);
+				Object sqlObject = sqlObjectField.get(thisPointer);
+
+				String eventIdentifier = threadId + "" + sqlObject.hashCode();
+
+				EventThreadPool.getInstance().getStatementParameterMap().put(eventIdentifier, parameters);
+
+				String rawSql = String.valueOf(sqlObject);
+
+				for (Object[] binders : allBinders) {
+					String batchSqlStatement = new String(rawSql);
+					JSONArray paramValues = new JSONArray();
+					for (Object binder : binders) {
+						String paramVal = null;
+						if (binder != null) {
+
+							Field paramValField = null;
+							Class<?> binderClass = binder.getClass();
+							int depthCount = 0;
+							while (paramValField == null && depthCount++ < MAX_DEPTH_LOOKUP) {
+								Field[] fields = binderClass.getDeclaredFields();
+								for (Field field : fields) {
+									if (field.getName().equals("paramVal")) {
+										paramValField = field;
+										break;
+									}
+								}
+								binderClass = binderClass.getSuperclass();
+							}
+							paramValField.setAccessible(true);
+							paramVal = mapper.writeValueAsString(paramValField.get(binder));
+							paramValues.add(paramVal);
+
+						} else {
+							break;
+						}
+						batchSqlStatement = batchSqlStatement.replaceFirst("\\?", paramVal);
+					}
+					if (!batchSqlStatement.equals(rawSql)) {
+						parameters.add(batchSqlStatement);
+						parameters.add(paramValues);
+					}
 				}
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			System.out.println(sourceString);
+		} else {
+			// System.out.println("RequestMap : " +
+			// ServletEventPool.getInstance().getRequestMap() );
+			// System.out.println("RequestMapRef : " + ServletEventPool.getInstance().getServletInfoReferenceRecord() );
+			// System.out.println("Other event : " + threadId + " : " + sourceString + " : " + requestMap.get(threadId) + " : " + arg[0] + " : " + arg[1]);
+			// System.out.println("Other event current request map : " + requestMap);
+
+			try {
+				 if (ServletEventPool.getInstance().getRequestMap().containsKey(threadId)) {
+				ServletEventPool.getInstance().incrementServletInfoReference(threadId);
+				EventThreadPool.getInstance().processReceivedEvent(source, arg, executionId,
+						Thread.currentThread().getStackTrace(), threadId, sourceString);
+				 }
 			} catch (Exception e) {
 			}
 
@@ -461,9 +529,8 @@ public class LoggingInterceptor extends Interceptor {
 					|| IAgentConstants.JETTY_REQUEST_HANDLE.equals(sourceString))) {
 				if (ServletEventPool.getInstance().decrementServletInfoReference(threadId) <= 0) {
 					// System.out.println("Request map entry removed for threadID " + threadId);
-					// System.out.println("Current request map : " +
-					// ServletEventPool.getInstance().getRequestMap());
-//					System.out.println(threadId + ": remove from coyote");
+					// System.out.println("Current request map : " + ServletEventPool.getInstance().getRequestMap());
+					// System.out.println(threadId + ": remove from coyote");
 					ServletEventPool.getInstance().getRequestMap().remove(threadId);
 				}
 			}

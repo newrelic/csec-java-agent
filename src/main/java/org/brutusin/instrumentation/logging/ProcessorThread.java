@@ -45,8 +45,8 @@ import static org.brutusin.instrumentation.logging.IAgentConstants.MSSQL_USER_SQ
 import static org.brutusin.instrumentation.logging.IAgentConstants.MSSQL_VALUE_FIELD;
 import static org.brutusin.instrumentation.logging.IAgentConstants.MYSQL_IDENTIFIER;
 import static org.brutusin.instrumentation.logging.IAgentConstants.MYSQL_PREPARED_STATEMENT;
-import static org.brutusin.instrumentation.logging.IAgentConstants.ORACLE_DB_IDENTIFIER;
 import static org.brutusin.instrumentation.logging.IAgentConstants.ORACLE_CONNECTION_IDENTIFIER;
+import static org.brutusin.instrumentation.logging.IAgentConstants.ORACLE_DB_IDENTIFIER;
 import static org.brutusin.instrumentation.logging.IAgentConstants.ORACLE_STATEMENT_CLASS_IDENTIFIER;
 
 import java.io.IOException;
@@ -240,7 +240,7 @@ public class ProcessorThread implements Runnable {
 					}
 				}
 				if (ServletEventPool.getInstance().decrementServletInfoReference(threadId) <= 0) {
-//					System.out.println(threadId + " : remove from another method");
+					// System.out.println(threadId + " : remove from another method");
 					ServletEventPool.getInstance().getRequestMap().remove(threadId);
 				}
 				return;
@@ -259,10 +259,15 @@ public class ProcessorThread implements Runnable {
 					intCodeResultBean.setValidationBypass(true);
 				}
 				if (!PATTERN.matcher(klassName).matches()) {
-					intCodeResultBean.setParameters(toString(arg, sourceString));
-					intCodeResultBean.setUserAPIInfo(trace[i].getLineNumber(), klassName, trace[i].getMethodName());
-					if (i > 0)
-						intCodeResultBean.setCurrentMethod(trace[i - 1].getMethodName());
+					JSONArray params = toString(arg, sourceString);
+					if (params != null) {
+						intCodeResultBean.setParameters(params);
+						intCodeResultBean.setUserAPIInfo(trace[i].getLineNumber(), klassName, trace[i].getMethodName());
+						if (i > 0)
+							intCodeResultBean.setCurrentMethod(trace[i - 1].getMethodName());
+					} else {
+						return;
+					}
 					break;
 				}
 			}
@@ -280,7 +285,7 @@ public class ProcessorThread implements Runnable {
 
 		}
 		if (ServletEventPool.getInstance().decrementServletInfoReference(threadId) <= 0) {
-//			System.out.println(threadId + " : remove from another method");
+			// System.out.println(threadId + " : remove from another method");
 			ServletEventPool.getInstance().getRequestMap().remove(threadId);
 		}
 	}
@@ -687,38 +692,64 @@ public class ProcessorThread implements Runnable {
 		}
 
 	}
-	
+
 	/**
-	 * @param obj: this pointer object
+	 * @param obj:
+	 *            this pointer object
 	 * @param parameters
 	 */
-	private void getOracleParameterValue(Object thisPointer, JSONArray parameters) {
+	private JSONArray getOracleParameterValue(Object thisPointer, JSONArray parameters, String sourceString) {
+
 		Class<?> thisPointerClass = thisPointer.getClass();
 		try {
+			if (Arrays.asList(IAgentConstants.ORACLE_CLASS_SKIP_LIST).contains(thisPointerClass.getName())) {
+				return null;
+			}
+			// in case of doRPC()
 			if (thisPointerClass.getName().contains(ORACLE_CONNECTION_IDENTIFIER)) {
-				
+
+				Field cursorField = thisPointerClass.getDeclaredField("cursor");
+				cursorField.setAccessible(true);
+				Object cursor = cursorField.get(thisPointer);
+
+				// ignore batch fetch events
+				System.out.println("Cursor:::::" + String.valueOf(cursor));
+				if (!String.valueOf(cursor).equals("0") || String.valueOf(cursor).equals("null")) {
+					return null;
+				}
 
 				Field oracleStatementField = thisPointerClass.getDeclaredField("oracleStatement");
 				oracleStatementField.setAccessible(true);
 				Object oracleStatement = oracleStatementField.get(thisPointer);
-				
-				
+
 				Class<?> statementKlass = oracleStatement.getClass();
 				while (!statementKlass.getName().equals(ORACLE_STATEMENT_CLASS_IDENTIFIER)) {
 					statementKlass = statementKlass.getSuperclass();
 				}
-				
+
 				Field sqlObjectField = statementKlass.getDeclaredField("sqlObject");
 				sqlObjectField.setAccessible(true);
 				Object sqlObject = sqlObjectField.get(oracleStatement);
-				System.out.println("sqlObject.toString()::::::" + sqlObject.toString());
-				parameters.add(sqlObject.toString());
+
+				String eventIdentifier = this.threadId + "" + sqlObject.hashCode();
+
+				if (EventThreadPool.getInstance().getStatementParameterMap().containsKey(eventIdentifier)) {
+					JSONArray oldParams = EventThreadPool.getInstance().getStatementParameterMap().get(eventIdentifier);
+
+					parameters = new JSONArray();
+					parameters.addAll(oldParams);
+					EventThreadPool.getInstance().getStatementParameterMap().remove(eventIdentifier);
+
+				} else {
+					parameters.add(String.valueOf(sqlObject));
+				}
 
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-
+//		System.out.println("PATRAMETERS::::" + parameters);
+		return parameters;
 	}
 
 	/**
@@ -744,7 +775,7 @@ public class ProcessorThread implements Runnable {
 			} else if (obj[0] != null && sourceString.contains(MONGO_IDENTIFIER)) {
 				getMongoParameterValue(obj, parameters);
 			} else if (obj[0] != null && sourceString.contains(ORACLE_DB_IDENTIFIER)) {
-				getOracleParameterValue(arg[arg.length-1], parameters);
+				parameters = getOracleParameterValue(arg[arg.length - 1], parameters, sourceString);
 			} else if (obj[0] != null && sourceString.contains(CLASS_LOADER_IDENTIFIER)) {
 				getClassLoaderParameterValue(obj, parameters);
 			} else {
@@ -877,7 +908,7 @@ public class ProcessorThread implements Runnable {
 				// ServletEventPool.getInstance().getServletInfoReferenceRecord().get(threadId));
 				System.out.println("publish event: " + intCodeResultBean);
 				eventQueue.add(intCodeResultBean);
-				
+
 			}
 		}
 	}

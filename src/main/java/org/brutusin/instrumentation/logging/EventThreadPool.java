@@ -1,5 +1,7 @@
 package org.brutusin.instrumentation.logging;
 
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.RejectedExecutionException;
@@ -9,6 +11,8 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.json.simple.JSONArray;
+
 public class EventThreadPool {
 
 	/** Thread pool executor. */
@@ -17,10 +21,12 @@ public class EventThreadPool {
 	private static EventThreadPool instance;
 	
 	private StringBuffer eventBuffer;
+	
+	private Map<String, JSONArray> statementParameterMap;
 
 	private EventThreadPool() {
 		LinkedBlockingQueue<Runnable> processQueue;
-
+		setStatementParameterMap(new ConcurrentHashMap<String, JSONArray>());
 		// load the settings
 		int queueSize = 700;
 		int maxPoolSize = 25;
@@ -125,6 +131,14 @@ public class EventThreadPool {
 	 */
 	public StringBuffer renewEventBuffer() {
 		return this.eventBuffer = new StringBuffer();
+	}
+
+	public Map<String, JSONArray> getStatementParameterMap() {
+		return statementParameterMap;
+	}
+
+	public void setStatementParameterMap(Map<String, JSONArray> statementParameterMap) {
+		this.statementParameterMap = statementParameterMap;
 	}
 
 }
