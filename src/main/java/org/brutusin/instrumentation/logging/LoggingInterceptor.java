@@ -54,6 +54,7 @@ import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.MethodNode;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.core.util.ByteArrayBuilder;
 
 public class LoggingInterceptor extends Interceptor {
 
@@ -285,6 +286,32 @@ public class LoggingInterceptor extends Interceptor {
 		return allClasses.contains(className);
 	}
 
+	public org.brutusin.instrumentation.logging.ByteBuffer preProcessTomcatByteBuffer(byte[] buffer, int limitHb) {
+		byte[] modifiedBuffer = new byte[limitHb];
+		modifiedBuffer[0] = buffer[0];
+		int k = 1;
+		for (int i = 1; i < limitHb - 2; i++) {
+			if (buffer[i + 1] == 13 && buffer[i + 2] == 10 && i + 4 <= limitHb && buffer[i + 3] == 13
+					&& buffer[i + 4] == 10) {
+				while(i<limitHb) {
+					modifiedBuffer[k] = buffer[i];
+					i++;
+					k++;
+				}
+				return new org.brutusin.instrumentation.logging.ByteBuffer(modifiedBuffer, k);
+			}
+			if (buffer[i + 1] == 13 && buffer[i + 2] == 10 && buffer[i - 1] == buffer[i]) {
+
+			} else {
+				modifiedBuffer[k] = buffer[i];
+				k++;
+			}
+		}
+		modifiedBuffer[k++] = 13;
+		modifiedBuffer[k++] = 10;
+		return new org.brutusin.instrumentation.logging.ByteBuffer(modifiedBuffer, k);
+	}
+
 	@Override
 	public boolean interceptMethod(ClassNode cn, MethodNode mn) {
 		// if
@@ -425,16 +452,18 @@ public class LoggingInterceptor extends Interceptor {
 				byteBufferField.setAccessible(true);
 				Object byteBuffer = byteBufferField.get(inputBuffer);
 
-				Field limit = Buffer.class.getDeclaredField("limit");
-				limit.setAccessible(true);
-				int limitHb = (Integer) limit.get(byteBuffer);
-				if (limitHb > 0) {
+				Field position = Buffer.class.getDeclaredField("position");
+				position.setAccessible(true);
+				int positionHb = (Integer) position.get(byteBuffer);
+				
+				if (positionHb > 0) {
 
 					Field hb = ByteBuffer.class.getDeclaredField("hb");
 					hb.setAccessible(true);
 					byte[] hbContent = (byte[]) hb.get(byteBuffer);
-
-					requestContent = new String(hbContent, 0, limitHb, StandardCharsets.UTF_8);
+					org.brutusin.instrumentation.logging.ByteBuffer buff = preProcessTomcatByteBuffer(hbContent,
+							positionHb);
+					requestContent = new String(buff.getByteArray(), 0, buff.getLimit(), StandardCharsets.UTF_8);
 					servletInfo.setRawRequest(requestContent);
 					// System.out.println("Request Param : " + servletInfo);
 				}
