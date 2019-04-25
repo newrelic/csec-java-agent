@@ -1,5 +1,6 @@
 package org.brutusin.instrumentation.logging;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -8,7 +9,7 @@ import java.util.Map;
 
 public interface IAgentConstants {
 
-	String TRACE_REGEX = "((?!(org\\.apache\\.jsp.*)|(javax\\.servlet\\.http.*)))((^javax.*)|(^java\\.lang.*)|(^java\\.io.*)|(^org\\.apache.*)|(^java\\.nio.*)|(^java\\.util.*)|(^java\\.net.*)|(^sun.*)|(^java\\.security.*)|(^k2\\.org\\.brutusin.*)|(^com\\.microsoft\\.sqlserver.*)|(^com\\.mysql.*)|(^sun\\.reflect.*)|(^org\\.hibernate.*)|(^java\\.sql.*)|(^com\\.mongodb.*)|(^org\\.apache\\.commons.*)|(^org\\.mongodb.*)|(^com\\.sun.*)|(^org\\.eclipse\\.jetty.*)|(^net\\.sourceforge\\.eclipsejetty.*)|(^java\\.awt.*)|(^org\\.springframework.*)|(^org\\.slf4j.*)|(^org\\.eclipse\\.jdt.*)|(^com\\.opensymphony\\.xwork2.*)|(^k2\\.org\\.objectweb\\.asm.*)|(^freemarker\\.cache.*)|(^com\\.mchange.*)|(^org\\.postgresql.*)|(^ch\\.qos\\.logback.*)|(^io\\.micrometer.*)|(^k2\\.org\\.json.*)|(^k2\\.com\\.fasterxml.*))";
+	String TRACE_REGEX = "((?!(org\\.apache\\.jsp.*)|(javax\\.servlet\\.http.*)))((^javax.*)|(^java\\.lang.*)|(^java\\.io.*)|(^org\\.apache.*)|(^java\\.nio.*)|(^java\\.util.*)|(^java\\.net.*)|(^sun.*)|(^java\\.security.*)|(^k2\\.org\\.brutusin.*)|(^com\\.microsoft\\.sqlserver.*)|(^com\\.mysql.*)|(^sun\\.reflect.*)|(^org\\.hibernate.*)|(^java\\.sql.*)|(^com\\.mongodb.*)|(^org\\.apache\\.commons.*)|(^org\\.mongodb.*)|(^com\\.sun.*)|(^org\\.eclipse\\.jetty.*)|(^net\\.sourceforge\\.eclipsejetty.*)|(^java\\.awt.*)|(^org\\.springframework.*)|(^org\\.slf4j.*)|(^org\\.eclipse\\.jdt.*)|(^com\\.opensymphony\\.xwork2.*)|(^k2\\.org\\.objectweb\\.asm.*)|(^freemarker\\.cache.*)|(^com\\.mchange.*)|(^org\\.postgresql.*)|(^oracle\\.jdbc.*)|(^ch\\.qos\\.logback.*)|(^io\\.micrometer.*)|(^k2\\.org\\.json.*)|(^k2\\.com\\.fasterxml.*))";
 
 	String SYSYTEM_CALL_START = "static java.lang.Process java.lang.ProcessImpl.start(java.lang.String[],java.util.Map<java.lang.String, java.lang.String>,java.lang.String,java.lang.ProcessBuilder$Redirect[],boolean) throws java.io.IOException";
 
@@ -68,7 +69,6 @@ public interface IAgentConstants {
 			
 			// oracle db
 			"final void oracle.jdbc.driver.T4CTTIfun.doRPC() throws java.io.IOException,java.sql.SQLException",
-			"void oracle.jdbc.driver.OraclePreparedStatement.setupBindBuffers(int,int) throws java.sql.SQLException",
 
 			//postgresql
 			PSQLV3_EXECUTOR,
@@ -119,7 +119,6 @@ public interface IAgentConstants {
 			
 			// Oracle DB
 			"oracle/jdbc/driver/T4CTTIfun",
-			"oracle/jdbc/driver/OraclePreparedStatement",
 			
 			// http request
 //			"javax/servlet/http/HttpServlet",
@@ -138,7 +137,6 @@ public interface IAgentConstants {
 			
 			//Oracle methods
 			{ "doRPC" },
-			{ "setupBindBuffers" },
 
 //			{ "service" },
 			{ "service" }, { "setByteBuffer" }, { "handle" }, { "parseNext" },
@@ -213,26 +211,21 @@ public interface IAgentConstants {
 	String MONGO_COLLECTION_FIELD = "collectionName";
 	String MONGO_COMMAND_NAME_FIELD = "commandName";
 	
-	/** Oracle DB constatns */
+	/** Oracle DB constants */
 	String ORACLE_DB_IDENTIFIER = "oracle.jdbc.driver";
 	String ORACLE_CONNECTION_IDENTIFIER = "oracle.jdbc.driver.T4C8Oall";
 	String ORACLE_STATEMENT_CLASS_IDENTIFIER = "oracle.jdbc.driver.OracleStatement";
-	String ORACLE_PREPARED_STATEMENT_CLASS_IDENTIFIER = "oracle.jdbc.driver.OraclePreparedStatement";
-	String ORACLE_DYNAMIC_BYTE_ARRAY_CLASS_IDENTIFIER = "oracle.jdbc.driver.DynamicByteArray";
-	String ORACLE_DATABASE_METADATA_CLASS_IDENTIFIER = "oracle.jdbc.OracleDatabaseMetaData";
-	String ORACLE_SQL_CHAR_SET_CLASS_IDENTIFIER = "oracle.sql.CharacterSet";
-	String ORACLE_CHARSET_AL32UTF8 = "AL32UTF8";
-	String ORACLE_CHARSET_AL16UTF16 = "AL16UTF16";
-	String ORACLE_SETUP_BINDER_METHOD_SIGNATURE = "void oracle.jdbc.driver.OraclePreparedStatement.setupBindBuffers(int,int) throws java.sql.SQLException";
-	String ORACLE_DRIVER_API_VERSION_6 = "4.0";
-	String ORACLE_DRIVER_API_VERSION_7 = "4.1";
-	String ORACLE_DRIVER_API_VERSION_8 = "4.2";
+
 	
-	String []ORACLE_CLASS_SKIP_LIST = {
-		"oracle.jdbc.driver.T4C7Ocommoncall",
-		"oracle.jdbc.driver.T4CTTIoauthenticate",
-		"oracle.jdbc.driver.T4C7Oversion"
-	};
+	ArrayList ORACLE_CLASS_SKIP_LIST = new ArrayList<String>(){
+		
+		private static final long serialVersionUID = -1406453087946498488L;
+
+	{
+		add("oracle.jdbc.driver.T4C7Ocommoncall");
+		add("oracle.jdbc.driver.T4CTTIoauthenticate");
+		add("oracle.jdbc.driver.T4C7Oversion");
+	}};
 	
 	String BYTE_ARRAY_CLASS = "[B";
 }

@@ -1,6 +1,6 @@
 package org.brutusin.instrumentation.logging;
 
-import static org.brutusin.instrumentation.logging.IAgentConstants.*;
+import static org.brutusin.instrumentation.logging.IAgentConstants.CLASS_LOADER_IDENTIFIER;
 import static org.brutusin.instrumentation.logging.IAgentConstants.MOGNO_ELEMENT_DATA_FIELD;
 import static org.brutusin.instrumentation.logging.IAgentConstants.MONGO_COLLECTION_FIELD;
 import static org.brutusin.instrumentation.logging.IAgentConstants.MONGO_COLLECTION_WILDCARD;
@@ -48,6 +48,9 @@ import static org.brutusin.instrumentation.logging.IAgentConstants.MYSQL_PREPARE
 import static org.brutusin.instrumentation.logging.IAgentConstants.ORACLE_CONNECTION_IDENTIFIER;
 import static org.brutusin.instrumentation.logging.IAgentConstants.ORACLE_DB_IDENTIFIER;
 import static org.brutusin.instrumentation.logging.IAgentConstants.ORACLE_STATEMENT_CLASS_IDENTIFIER;
+import static org.brutusin.instrumentation.logging.IAgentConstants.PSQL42_EXECUTOR;
+import static org.brutusin.instrumentation.logging.IAgentConstants.PSQLV2_EXECUTOR;
+import static org.brutusin.instrumentation.logging.IAgentConstants.PSQLV3_EXECUTOR;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -68,7 +71,6 @@ import org.brutusin.instrumentation.Agent;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -687,7 +689,7 @@ public class ProcessorThread implements Runnable {
 
 		Class<?> thisPointerClass = thisPointer.getClass();
 		try {
-			if (Arrays.asList(IAgentConstants.ORACLE_CLASS_SKIP_LIST).contains(thisPointerClass.getName())) {
+			if (IAgentConstants.ORACLE_CLASS_SKIP_LIST.contains(thisPointerClass.getName())) {
 				return null;
 			}
 			// in case of doRPC()
@@ -714,19 +716,8 @@ public class ProcessorThread implements Runnable {
 				Field sqlObjectField = statementKlass.getDeclaredField("sqlObject");
 				sqlObjectField.setAccessible(true);
 				Object sqlObject = sqlObjectField.get(oracleStatement);
-
-				String eventIdentifier = this.threadId + "" + sqlObject.hashCode();
-
-				if (EventThreadPool.getInstance().getStatementParameterMap().containsKey(eventIdentifier)) {
-					JSONArray oldParams = EventThreadPool.getInstance().getStatementParameterMap().get(eventIdentifier);
-
-					parameters = new JSONArray();
-					parameters.addAll(oldParams);
-					EventThreadPool.getInstance().getStatementParameterMap().remove(eventIdentifier);
-
-				} else {
-					parameters.add(String.valueOf(sqlObject));
-				}
+				
+				parameters.add(String.valueOf(sqlObject));
 
 			}
 		} catch (Exception e) {

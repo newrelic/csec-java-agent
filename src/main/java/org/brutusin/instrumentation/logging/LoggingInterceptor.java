@@ -15,10 +15,6 @@
  */
 package org.brutusin.instrumentation.logging;
 
-import static org.brutusin.instrumentation.logging.IAgentConstants.ORACLE_PREPARED_STATEMENT_CLASS_IDENTIFIER;
-import static org.brutusin.instrumentation.logging.IAgentConstants.ORACLE_STATEMENT_CLASS_IDENTIFIER;
-import static org.brutusin.instrumentation.logging.IAgentConstants.ORACLE_DATABASE_METADATA_CLASS_IDENTIFIER;
-
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.File;
@@ -53,9 +49,6 @@ import org.json.simple.JSONArray;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.MethodNode;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.core.util.ByteArrayBuilder;
-
 public class LoggingInterceptor extends Interceptor {
 
 	private static final Set<String> allClasses;
@@ -65,12 +58,9 @@ public class LoggingInterceptor extends Interceptor {
 	protected static final String applicationUUID;
 	protected static Socket socket;
 	static final int MAX_DEPTH_LOOKUP = 4; // Max number of superclasses to lookup for a field
-	private ObjectMapper mapper = null;
 	// protected static Map<Long, ServletInfo> requestMap;
 	protected static ScheduledExecutorService eventPoolExecutor;
-	Class<?> oraclePreparedStatementClass;
-	Class<?> oracleStatementClass;
-	String oracleDriverVersion;
+
 	static {
 		applicationUUID = UUID.randomUUID().toString();
 		allClasses = new HashSet<>(Arrays.asList(IAgentConstants.ALL_CLASSES));
@@ -236,7 +226,6 @@ public class LoggingInterceptor extends Interceptor {
 		} catch (Exception e) {
 			System.err.println("Can't connect to IC, agent installation failed.");
 		}
-		mapper = new ObjectMapper();
 	}
 
 	private static void eventWritePool() {
@@ -471,85 +460,6 @@ public class LoggingInterceptor extends Interceptor {
 				e.printStackTrace();
 			}
 			// in case of executeInternal()
-		} else if (sourceString.equals(IAgentConstants.ORACLE_SETUP_BINDER_METHOD_SIGNATURE)) {
-			try {
-				if (this.oracleDriverVersion == null) {
-					this.oraclePreparedStatementClass = Class.forName(ORACLE_PREPARED_STATEMENT_CLASS_IDENTIFIER, true,
-							Thread.currentThread().getContextClassLoader());
-					this.oracleStatementClass = Class.forName(ORACLE_STATEMENT_CLASS_IDENTIFIER, true,
-							Thread.currentThread().getContextClassLoader());
-					Class<?> oracleDatabaseMetaClass = Class.forName(ORACLE_DATABASE_METADATA_CLASS_IDENTIFIER, true,
-							Thread.currentThread().getContextClassLoader());
-					Field majorVersionField = oracleDatabaseMetaClass.getDeclaredField("DRIVER_API_MAJOR_VERSION");
-					majorVersionField.setAccessible(true);
-					int majorVersion = majorVersionField.getInt(null);
-					Field minorVersionField = oracleDatabaseMetaClass.getDeclaredField("DRIVER_API_MINOR_VERSION");
-					minorVersionField.setAccessible(true);
-					int minorVersion = minorVersionField.getInt(null);
-					this.oracleDriverVersion = majorVersion + "." + minorVersion;
-				}
-				if (this.oracleDriverVersion.equals(IAgentConstants.ORACLE_DRIVER_API_VERSION_8)) {
-					Object thisPointer = arg[arg.length - 1];
-					JSONArray parameters = new JSONArray();
-
-					Field bindersField = oraclePreparedStatementClass.getDeclaredField("binders");
-					bindersField.setAccessible(true);
-					Object[][] allBinders = (Object[][]) bindersField.get(thisPointer);
-
-					Field sqlObjectField = oracleStatementClass.getDeclaredField("sqlObject");
-					sqlObjectField.setAccessible(true);
-					Object sqlObject = sqlObjectField.get(thisPointer);
-
-					String eventIdentifier = threadId + "" + sqlObject.hashCode();
-
-					EventThreadPool.getInstance().getStatementParameterMap().put(eventIdentifier, parameters);
-
-					String rawSql = String.valueOf(sqlObject);
-
-					for (Object[] binders : allBinders) {
-						String batchSqlStatement = new String(rawSql);
-						JSONArray paramValues = new JSONArray();
-						for (Object binder : binders) {
-							String paramVal = null;
-							if (binder != null) {
-
-								Field paramValField = null;
-								Class<?> binderClass = binder.getClass();
-								int depthCount = 0;
-								while (paramValField == null && depthCount++ < MAX_DEPTH_LOOKUP) {
-									Field[] fields = binderClass.getDeclaredFields();
-									for (Field field : fields) {
-										if (field.getName().equals("paramVal")) {
-											paramValField = field;
-											break;
-										}
-									}
-									binderClass = binderClass.getSuperclass();
-								}
-								paramValField.setAccessible(true);
-								paramVal = mapper.writeValueAsString(paramValField.get(binder));
-								paramValues.add(paramVal);
-
-							} else {
-								break;
-							}
-							batchSqlStatement = batchSqlStatement.replaceFirst("\\?", paramVal);
-						}
-						if (!batchSqlStatement.equals(rawSql)) {
-							parameters.add(batchSqlStatement);
-							parameters.add(paramValues);
-						}
-					}
-				} else if (this.oracleDriverVersion.equals(IAgentConstants.ORACLE_DRIVER_API_VERSION_7)
-						|| this.oracleDriverVersion.equals(IAgentConstants.ORACLE_DRIVER_API_VERSION_6)) {
-					System.out.println("Implementation Under Progress..");
-				} else {
-
-				}
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-
 		} else {
 			// System.out.println("RequestMap : " +
 			// ServletEventPool.getInstance().getRequestMap() );
