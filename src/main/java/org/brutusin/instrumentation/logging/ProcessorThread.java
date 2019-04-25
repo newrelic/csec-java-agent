@@ -713,7 +713,6 @@ public class ProcessorThread implements Runnable {
 				Object cursor = cursorField.get(thisPointer);
 
 				// ignore batch fetch events
-				System.out.println("Cursor:::::" + String.valueOf(cursor));
 				if (!String.valueOf(cursor).equals("0") || String.valueOf(cursor).equals("null")) {
 					return null;
 				}
@@ -748,7 +747,6 @@ public class ProcessorThread implements Runnable {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-//		System.out.println("PATRAMETERS::::" + parameters);
 		return parameters;
 	}
 

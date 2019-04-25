@@ -206,10 +206,15 @@ public interface IAgentConstants {
 	String ORACLE_STATEMENT_CLASS_IDENTIFIER = "oracle.jdbc.driver.OracleStatement";
 	String ORACLE_PREPARED_STATEMENT_CLASS_IDENTIFIER = "oracle.jdbc.driver.OraclePreparedStatement";
 	String ORACLE_DYNAMIC_BYTE_ARRAY_CLASS_IDENTIFIER = "oracle.jdbc.driver.DynamicByteArray";
+	String ORACLE_DATABASE_METADATA_CLASS_IDENTIFIER = "oracle.jdbc.OracleDatabaseMetaData";
 	String ORACLE_SQL_CHAR_SET_CLASS_IDENTIFIER = "oracle.sql.CharacterSet";
 	String ORACLE_CHARSET_AL32UTF8 = "AL32UTF8";
 	String ORACLE_CHARSET_AL16UTF16 = "AL16UTF16";
 	String ORACLE_SETUP_BINDER_METHOD_SIGNATURE = "void oracle.jdbc.driver.OraclePreparedStatement.setupBindBuffers(int,int) throws java.sql.SQLException";
+	String ORACLE_DRIVER_API_VERSION_6 = "4.0";
+	String ORACLE_DRIVER_API_VERSION_7 = "4.1";
+	String ORACLE_DRIVER_API_VERSION_8 = "4.2";
+	
 	String []ORACLE_CLASS_SKIP_LIST = {
 		"oracle.jdbc.driver.T4C7Ocommoncall",
 		"oracle.jdbc.driver.T4CTTIoauthenticate",
