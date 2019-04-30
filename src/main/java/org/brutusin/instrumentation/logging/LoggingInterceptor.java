@@ -341,14 +341,14 @@ public class LoggingInterceptor extends Interceptor {
 		String sourceString = null;
 
 		long threadId = Thread.currentThread().getId();
-		System.out.println("Thread Id: " + threadId);
+//		System.out.println("Thread Id: " + threadId);
 		if (source instanceof Method) {
 			sourceString = ((Method) source).toGenericString();
 
 		} else if (source instanceof Constructor) {
 			sourceString = ((Constructor) source).toGenericString();
 		}
-		System.out.println(sourceString);
+//		System.out.println(sourceString);
 		// System.out.println("doOnStart : " + threadId+" : " + sourceString+" : " +
 		// servletInfo);
 
