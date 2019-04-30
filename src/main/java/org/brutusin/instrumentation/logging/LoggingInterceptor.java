@@ -282,7 +282,7 @@ public class LoggingInterceptor extends Interceptor {
 		for (int i = 1; i < limitHb - 2; i++) {
 			if (buffer[i + 1] == 13 && buffer[i + 2] == 10 && i + 4 <= limitHb && buffer[i + 3] == 13
 					&& buffer[i + 4] == 10) {
-				while(i<limitHb) {
+				while (i < limitHb) {
 					modifiedBuffer[k] = buffer[i];
 					i++;
 					k++;
@@ -311,6 +311,28 @@ public class LoggingInterceptor extends Interceptor {
 		// System.out.println("name: " + mn.name + " : " +
 		// interceptMethod.get(cn.name).contains(mn.name));
 		return interceptMethod.get(cn.name).contains(mn.name);
+	}
+
+	private void onTerminationOfHookedMethods(Object source) {
+		String sourceString = null;
+		Method m = null;
+		long threadId = Thread.currentThread().getId();
+//		System.out.println("In doOnThrowableThrown init :" + sourceString + " : " + executionId +  " : " + threadId);
+		if (source instanceof Method) {
+			m = (Method) source;
+			sourceString = m.toGenericString();
+//			System.out.println("In doOnThrowableThrown :" + sourceString + " : " + executionId +  " : " + threadId);
+			if (sourceString != null && (IAgentConstants.TOMCAT_COYOTE_ADAPTER_SERVICE.equals(sourceString)
+					|| IAgentConstants.JETTY_REQUEST_HANDLE.equals(sourceString))) {
+				if (ServletEventPool.getInstance().decrementServletInfoReference(threadId) <= 0) {
+					// System.out.println("Request map entry removed for threadID " + threadId);
+					// System.out.println("Current request map : " +
+					// ServletEventPool.getInstance().getRequestMap());
+					// System.out.println(threadId + ": remove from coyote");
+					ServletEventPool.getInstance().getRequestMap().remove(threadId);
+				}
+			}
+		}
 	}
 
 	@SuppressWarnings({ "rawtypes" })
@@ -444,7 +466,7 @@ public class LoggingInterceptor extends Interceptor {
 				Field position = Buffer.class.getDeclaredField("position");
 				position.setAccessible(true);
 				int positionHb = (Integer) position.get(byteBuffer);
-				
+
 				if (positionHb > 0) {
 
 					Field hb = ByteBuffer.class.getDeclaredField("hb");
@@ -470,11 +492,11 @@ public class LoggingInterceptor extends Interceptor {
 			// System.out.println("Other event current request map : " + requestMap);
 
 			try {
-				 if (ServletEventPool.getInstance().getRequestMap().containsKey(threadId)) {
-				ServletEventPool.getInstance().incrementServletInfoReference(threadId);
-				EventThreadPool.getInstance().processReceivedEvent(source, arg, executionId,
-						Thread.currentThread().getStackTrace(), threadId, sourceString);
-				 }
+				if (ServletEventPool.getInstance().getRequestMap().containsKey(threadId)) {
+					ServletEventPool.getInstance().incrementServletInfoReference(threadId);
+					EventThreadPool.getInstance().processReceivedEvent(source, arg, executionId,
+							Thread.currentThread().getStackTrace(), threadId, sourceString);
+				}
 			} catch (Exception e) {
 			}
 
@@ -484,32 +506,17 @@ public class LoggingInterceptor extends Interceptor {
 
 	@Override
 	protected void doOnThrowableThrown(Object source, Throwable throwable, String executionId) {
+		onTerminationOfHookedMethods(source);
 	}
 
 	@Override
 	protected void doOnThrowableUncatched(Object source, Throwable throwable, String executionId) {
+		onTerminationOfHookedMethods(source);
 	}
 
 	@Override
 	protected void doOnFinish(Object source, Object result, String executionId) {
-		String sourceString = null;
-		Method m = null;
-		long threadId = Thread.currentThread().getId();
-
-		if (source instanceof Method) {
-			m = (Method) source;
-			sourceString = m.toGenericString();
-			if (sourceString != null && (IAgentConstants.TOMCAT_COYOTE_ADAPTER_SERVICE.equals(sourceString)
-					|| IAgentConstants.JETTY_REQUEST_HANDLE.equals(sourceString))) {
-				if (ServletEventPool.getInstance().decrementServletInfoReference(threadId) <= 0) {
-					// System.out.println("Request map entry removed for threadID " + threadId);
-					// System.out.println("Current request map : " +
-					// ServletEventPool.getInstance().getRequestMap());
-					// System.out.println(threadId + ": remove from coyote");
-					ServletEventPool.getInstance().getRequestMap().remove(threadId);
-				}
-			}
-		}
+		onTerminationOfHookedMethods(source);
 	}
 
 	@SuppressWarnings("unused")

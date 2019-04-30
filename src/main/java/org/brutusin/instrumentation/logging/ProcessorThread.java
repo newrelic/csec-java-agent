@@ -267,6 +267,10 @@ public class ProcessorThread implements Runnable {
 						if (i > 0)
 							intCodeResultBean.setCurrentMethod(trace[i - 1].getMethodName());
 					} else {
+						if (ServletEventPool.getInstance().decrementServletInfoReference(threadId) <= 0) {
+							// System.out.println(threadId + " : remove from another method");
+							ServletEventPool.getInstance().getRequestMap().remove(threadId);
+						}
 						return;
 					}
 					break;
@@ -889,7 +893,7 @@ public class ProcessorThread implements Runnable {
 				// count: "
 				// +
 				// ServletEventPool.getInstance().getServletInfoReferenceRecord().get(threadId));
-				System.out.println("publish event: " + intCodeResultBean);
+				System.out.println("publish event: "  + executionId + " : " + intCodeResultBean);
 				eventQueue.add(intCodeResultBean);
 
 			}
