@@ -685,8 +685,7 @@ public class ProcessorThread implements Runnable {
 	}
 
 	/**
-	 * @param obj:
-	 *            this pointer object
+	 * @param            obj: this pointer object
 	 * @param parameters
 	 */
 	private JSONArray getOracleParameterValue(Object thisPointer, JSONArray parameters, String sourceString) {
@@ -720,7 +719,7 @@ public class ProcessorThread implements Runnable {
 				Field sqlObjectField = statementKlass.getDeclaredField("sqlObject");
 				sqlObjectField.setAccessible(true);
 				Object sqlObject = sqlObjectField.get(oracleStatement);
-				
+
 				parameters.add(String.valueOf(sqlObject));
 
 			}
@@ -755,28 +754,20 @@ public class ProcessorThread implements Runnable {
 				parameters = getOracleParameterValue(arg[arg.length - 1], parameters, sourceString);
 			} else if (obj[0] != null && sourceString.contains(CLASS_LOADER_IDENTIFIER)) {
 				getClassLoaderParameterValue(obj, parameters);
-			} else if (sourceString.equals(PSQLV3_EXECUTOR) || sourceString.equals(PSQLV2_EXECUTOR) || sourceString.equals(PSQL42_EXECUTOR)) {
+			} else if (sourceString.equals(PSQLV3_EXECUTOR) || sourceString.equals(PSQLV2_EXECUTOR)
+					|| sourceString.equals(PSQL42_EXECUTOR)) {
 				getPSQLParameterValue(obj, parameters);
 			} else {
 				for (int i = 0; i < obj.length; i++) {
-					if (obj[i] instanceof Object[]) {
-						Object json = parser.parse(mapper.writeValueAsString(obj[i]));
-						if (json instanceof JSONArray)
-							parameters.addAll((JSONArray) json);
-						else
-							parameters.add(json);
-					} else {
-						Object json = parser.parse(mapper.writeValueAsString(obj[i]));
-						if (json instanceof JSONArray)
-							parameters.addAll((JSONArray) json);
-						else
-							parameters.add(json);
-					}
+					Object json = parser.parse(mapper.writeValueAsString(obj[i]));
+					parameters.add(json);
 				}
 //				parameters.addAll((List<String>) parser.parse(mapper.writeValueAsString(obj)));
 			}
 
-		} catch (Throwable th) {
+		} catch (
+
+		Throwable th) {
 			parameters.add((obj != null) ? obj.toString() : null);
 //			th.printStackTrace();
 		}
@@ -784,7 +775,7 @@ public class ProcessorThread implements Runnable {
 	}
 
 	private void getPSQLParameterValue(Object[] obj, JSONArray parameters) {
-		String sql  = "";
+		String sql = "";
 		if (obj.length >= 0) {
 			sql = obj[0].toString();
 		}
@@ -794,19 +785,20 @@ public class ProcessorThread implements Runnable {
 			try {
 				paramValuesField = simpleParameter.getClass().getDeclaredField("paramValues");
 				paramValuesField.setAccessible(true);
-				Object[] paramValues = (Object[])paramValuesField.get(simpleParameter);
+				Object[] paramValues = (Object[]) paramValuesField.get(simpleParameter);
 				List<Object> paramArray = new ArrayList<>();
-				for(int i=0; i<paramValues.length; i++) {
+				for (int i = 0; i < paramValues.length; i++) {
 					String param = mapper.writeValueAsString(paramValues[i]);
 					sql = sql.replaceFirst("\\?", param);
 					paramArray.add(param);
 				}
 				parameters.add(sql);
 				parameters.add(paramArray);
-			} catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException | JsonProcessingException e) {
+			} catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException
+					| JsonProcessingException e) {
 //				e.printStackTrace();
 			}
-			
+
 		}
 	}
 
