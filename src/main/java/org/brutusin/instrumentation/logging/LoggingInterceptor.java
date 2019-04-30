@@ -282,7 +282,7 @@ public class LoggingInterceptor extends Interceptor {
 		for (int i = 1; i < limitHb - 2; i++) {
 			if (buffer[i + 1] == 13 && buffer[i + 2] == 10 && i + 4 <= limitHb && buffer[i + 3] == 13
 					&& buffer[i + 4] == 10) {
-				while(i<limitHb) {
+				while (i < limitHb) {
 					modifiedBuffer[k] = buffer[i];
 					i++;
 					k++;
@@ -319,14 +319,14 @@ public class LoggingInterceptor extends Interceptor {
 		String sourceString = null;
 
 		long threadId = Thread.currentThread().getId();
-
+		System.out.println("Thread Id: " + threadId);
 		if (source instanceof Method) {
 			sourceString = ((Method) source).toGenericString();
 
 		} else if (source instanceof Constructor) {
 			sourceString = ((Constructor) source).toGenericString();
 		}
-		// System.out.println(sourceString);
+		System.out.println(sourceString);
 		// System.out.println("doOnStart : " + threadId+" : " + sourceString+" : " +
 		// servletInfo);
 
@@ -334,22 +334,8 @@ public class LoggingInterceptor extends Interceptor {
 			return;
 
 		if (IAgentConstants.JETTY_REQUEST_HANDLE.equals(sourceString)) {
-			// System.out.println("RequestMap : " +
-			// ServletEventPool.getInstance().getRequestMap() );
-			// System.out.println("RequestMapRef : " +
-			// ServletEventPool.getInstance().getServletInfoReferenceRecord() );
 			ServletEventPool.getInstance().incrementServletInfoReference(threadId);
 		} else if (IAgentConstants.JETTY_PARSE_NEXT.equals(sourceString)) {
-			// System.out.println("RequestMap : " +
-			// ServletEventPool.getInstance().getRequestMap() );
-			// System.out.println("RequestMapRef : "
-			// +ServletEventPool.getInstance().getServletInfoReferenceRecord() );
-			// System.out.println("Jetty me aaya : " + arg[0].getClass().getName());
-			// System.out.println("ByteBuffer : " +
-			// Arrays.asList(ByteBuffer.class.getFields()) + " : " +
-			// Arrays.asList(ByteBuffer.class.getDeclaredFields()));
-			// System.out.println("Buffer : " + Arrays.asList(Buffer.class.getFields()) + "
-			// : " + Arrays.asList(Buffer.class.getDeclaredFields()));
 
 			ServletInfo servletInfo;
 
@@ -384,11 +370,6 @@ public class LoggingInterceptor extends Interceptor {
 				e.printStackTrace();
 			}
 		} else if (IAgentConstants.TOMCAT_SETBYTEBUFFER.equals(sourceString)) {
-			// System.out.println("RequestMap : " +
-			// ServletEventPool.getInstance().getRequestMap());
-			// System.out.println("RequestMapRef : " +
-			// ServletEventPool.getInstance().getServletInfoReferenceRecord());
-			// System.out.println("Coyote : " + threadId + " : " + sourceString);
 			ServletInfo servletInfo;
 			if (!ServletEventPool.getInstance().getRequestMap().containsKey(threadId)) {
 				servletInfo = new ServletInfo();
@@ -444,7 +425,7 @@ public class LoggingInterceptor extends Interceptor {
 				Field position = Buffer.class.getDeclaredField("position");
 				position.setAccessible(true);
 				int positionHb = (Integer) position.get(byteBuffer);
-				
+
 				if (positionHb > 0) {
 
 					Field hb = ByteBuffer.class.getDeclaredField("hb");
@@ -470,11 +451,11 @@ public class LoggingInterceptor extends Interceptor {
 			// System.out.println("Other event current request map : " + requestMap);
 
 			try {
-				 if (ServletEventPool.getInstance().getRequestMap().containsKey(threadId)) {
-				ServletEventPool.getInstance().incrementServletInfoReference(threadId);
-				EventThreadPool.getInstance().processReceivedEvent(source, arg, executionId,
-						Thread.currentThread().getStackTrace(), threadId, sourceString);
-				 }
+				if (ServletEventPool.getInstance().getRequestMap().containsKey(threadId)) {
+					ServletEventPool.getInstance().incrementServletInfoReference(threadId);
+					EventThreadPool.getInstance().processReceivedEvent(source, arg, executionId,
+							Thread.currentThread().getStackTrace(), threadId, sourceString);
+				}
 			} catch (Exception e) {
 			}
 
