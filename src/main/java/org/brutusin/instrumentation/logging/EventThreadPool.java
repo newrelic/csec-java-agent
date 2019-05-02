@@ -1,5 +1,7 @@
 package org.brutusin.instrumentation.logging;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.RejectedExecutionException;
@@ -17,6 +19,8 @@ public class EventThreadPool {
 	private static EventThreadPool instance;
 	
 	private StringBuffer eventBuffer;
+	
+	private Map<String,String> mySqlPreparedStatementsMap;
 	
 	private EventThreadPool() {
 		LinkedBlockingQueue<Runnable> processQueue;
@@ -55,6 +59,7 @@ public class EventThreadPool {
 
 		};
 		this.eventBuffer = new StringBuffer();
+		this.mySqlPreparedStatementsMap = new HashMap<String,String>();
 		executor.allowCoreThreadTimeOut(allowCoreThreadTimeOut);
 		executor.setThreadFactory(new ThreadFactory() {
 			private final AtomicInteger threadNumber = new AtomicInteger(1);
@@ -124,6 +129,21 @@ public class EventThreadPool {
 	 */
 	public StringBuffer renewEventBuffer() {
 		return this.eventBuffer = new StringBuffer();
+	}
+
+	public String getMySqlPreparedStatementsMap(String id) {
+		if(this.mySqlPreparedStatementsMap.containsKey(id)) {
+			return this.mySqlPreparedStatementsMap.get(id);
+		}
+		return null;
+	}
+	
+	public void setMySqlPreparedStatementsMap(String id, String sql) {
+		if (sql==null && this.mySqlPreparedStatementsMap.containsKey(id)) {
+			this.mySqlPreparedStatementsMap.remove(id);
+		} else {
+			this.mySqlPreparedStatementsMap.put(id, sql);
+		}
 	}
 
 }

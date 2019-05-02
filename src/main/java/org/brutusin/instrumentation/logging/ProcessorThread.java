@@ -44,7 +44,11 @@ import static org.brutusin.instrumentation.logging.IAgentConstants.MSSQL_STATEME
 import static org.brutusin.instrumentation.logging.IAgentConstants.MSSQL_USER_SQL_FIELD;
 import static org.brutusin.instrumentation.logging.IAgentConstants.MSSQL_VALUE_FIELD;
 import static org.brutusin.instrumentation.logging.IAgentConstants.MYSQL_IDENTIFIER;
-import static org.brutusin.instrumentation.logging.IAgentConstants.MYSQL_PREPARED_STATEMENT;
+import static org.brutusin.instrumentation.logging.IAgentConstants.MYSQL_PREPARED_STATEMENT_5;
+import static org.brutusin.instrumentation.logging.IAgentConstants.MYSQL_PREPARED_STATEMENT_6;
+import static org.brutusin.instrumentation.logging.IAgentConstants.MYSQL_PREPARED_QUERY_8;
+import static org.brutusin.instrumentation.logging.IAgentConstants.MYSQL_PREPARED_STATEMENT_8;
+import static org.brutusin.instrumentation.logging.IAgentConstants.MYSQL_PREPARED_STATEMENT_42;
 import static org.brutusin.instrumentation.logging.IAgentConstants.ORACLE_CONNECTION_IDENTIFIER;
 import static org.brutusin.instrumentation.logging.IAgentConstants.ORACLE_DB_IDENTIFIER;
 import static org.brutusin.instrumentation.logging.IAgentConstants.ORACLE_STATEMENT_CLASS_IDENTIFIER;
@@ -427,6 +431,29 @@ public class ProcessorThread implements Runnable {
 
 	}
 
+	@SuppressWarnings("unchecked")
+	private void getMySQLParameterValue(Object[] args, JSONArray parameters) {
+		try {
+			Object obj = args[0];
+			Class<?> objClass = obj.getClass();
+			if (objClass.getName().equals(IAgentConstants.MYSQL_PREPARED_STATEMENT_5)
+					|| objClass.getName().equals(IAgentConstants.MYSQL_PREPARED_STATEMENT_42)
+					|| objClass.getName().equals(IAgentConstants.MYSQL_PREPARED_STATEMENT_6)
+					|| objClass.getName().equals(IAgentConstants.MYSQL_PREPARED_STATEMENT_8)) {
+				String id = threadId + ":" + obj.hashCode();
+				String originalSql = EventThreadPool.getInstance().getMySqlPreparedStatementsMap(id);
+				if (originalSql != null) {
+					EventThreadPool.getInstance().setMySqlPreparedStatementsMap(id, null);
+					parameters.add(originalSql);
+				}
+			} else {
+				parameters.add(arg[1]);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
 	/**
 	 * Gets the MySQL parameter values.
 	 *
@@ -434,35 +461,43 @@ public class ProcessorThread implements Runnable {
 	 * @param parameters the parameters
 	 * @return the my SQL parameter value
 	 */
-	@SuppressWarnings("unchecked")
-	private void getMySQLParameterValue(Object[] args, JSONArray parameters) {
-		for (Object obj : args) {
-			if (obj.getClass().getName().contains(MYSQL_PREPARED_STATEMENT)) {
-				int start = obj.toString().indexOf(":");
-				parameters.add(obj.toString().substring(0, start));
-				parameters.add(obj.toString().substring(start + 1));
-
-			} else if (obj instanceof byte[]) {
-				try {
-					String byteParam = new String((byte[]) obj, "UTF-8");
-					parameters.add(byteParam.trim());
-				} catch (UnsupportedEncodingException e) {
-				}
-			} else if (obj instanceof Object[]) {
-				JSONArray params = new JSONArray();
-				getMySQLParameterValue((Object[]) obj, params);
-				parameters.addAll(params);
-			} else {
-				try {
-					// parameters.add(JsonCodec.getInstance().transform(obj));
-					parameters.add(parser.parse(mapper.writeValueAsString(obj)));
-				} catch (Throwable e) {
-					parameters.add(obj.toString());
-				}
-			}
-		}
-
-	}
+//	@SuppressWarnings("unchecked")
+//	private void getMySQLParameterValue(Object[] args, JSONArray parameters) {
+//		for (Object obj : args) {
+//			Class<?> objClass = obj.getClass(); 
+//			if (objClass.getName().equals(IAgentConstants.MYSQL_PREPARED_STATEMENT_5)
+//					|| objClass.getName().equals(IAgentConstants.MYSQL_PREPARED_STATEMENT_42) 
+//					|| objClass.getName().equals(IAgentConstants.MYSQL_PREPARED_STATEMENT_6) 
+//					|| objClass.getName().equals(IAgentConstants.MYSQL_PREPARED_STATEMENT_8)) {
+//				// compute id and pull from map
+//				String id = threadId + ":" + obj.hashCode();
+//				String originalSql = EventThreadPool.getInstance().getMySqlPreparedStatementsMap(id);
+//				if(originalSql!=null) {
+//					EventThreadPool.getInstance().setMySqlPreparedStatementsMap(id,null);
+//					parameters.add(originalSql);
+//				}
+//			}
+//			if (obj instanceof byte[]) {
+//				try {
+//					String byteParam = new String((byte[]) obj, "UTF-8");
+//					parameters.add(byteParam.trim());
+//				} catch (UnsupportedEncodingException e) {
+//				}
+//			} else if (obj instanceof Object[]) {
+//				JSONArray params = new JSONArray();
+//				getMySQLParameterValue((Object[]) obj, params);
+//				parameters.addAll(params);
+//			} else {
+//				try {
+//					// parameters.add(JsonCodec.getInstance().transform(obj));
+//					parameters.add(parser.parse(mapper.writeValueAsString(obj)));
+//				} catch (Throwable e) {
+//					parameters.add(obj.toString());
+//				}
+//			}
+//		}
+//
+//	}
 
 	/**
 	 * Gets the mongo parameters.

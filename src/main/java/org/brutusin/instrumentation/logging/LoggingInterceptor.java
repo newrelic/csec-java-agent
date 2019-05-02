@@ -317,11 +317,13 @@ public class LoggingInterceptor extends Interceptor {
 		String sourceString = null;
 		Method m = null;
 		long threadId = Thread.currentThread().getId();
-//		System.out.println("In doOnThrowableThrown init :" + sourceString + " : " + executionId +  " : " + threadId);
+		// System.out.println("In doOnThrowableThrown init :" + sourceString + " : " +
+		// executionId + " : " + threadId);
 		if (source instanceof Method) {
 			m = (Method) source;
 			sourceString = m.toGenericString();
-//			System.out.println("In doOnThrowableThrown :" + sourceString + " : " + executionId +  " : " + threadId);
+			// System.out.println("In doOnThrowableThrown :" + sourceString + " : " +
+			// executionId + " : " + threadId);
 			if (sourceString != null && (IAgentConstants.TOMCAT_COYOTE_ADAPTER_SERVICE.equals(sourceString)
 					|| IAgentConstants.JETTY_REQUEST_HANDLE.equals(sourceString))) {
 				if (ServletEventPool.getInstance().decrementServletInfoReference(threadId) <= 0) {
@@ -341,14 +343,14 @@ public class LoggingInterceptor extends Interceptor {
 		String sourceString = null;
 
 		long threadId = Thread.currentThread().getId();
-//		System.out.println("Thread Id: " + threadId);
+		// System.out.println("Thread Id: " + threadId);
 		if (source instanceof Method) {
 			sourceString = ((Method) source).toGenericString();
 
 		} else if (source instanceof Constructor) {
 			sourceString = ((Constructor) source).toGenericString();
 		}
-//		System.out.println(sourceString);
+		// System.out.println(sourceString);
 		// System.out.println("doOnStart : " + threadId+" : " + sourceString+" : " +
 		// servletInfo);
 
@@ -464,6 +466,11 @@ public class LoggingInterceptor extends Interceptor {
 			}
 			// in case of executeInternal()
 		} else {
+
+			if (IAgentConstants.MYSQL_SOURCE_METHOD_LIST.contains(sourceString) && arg[0] != null) {
+				processMysqlStatement(arg[0], threadId, sourceString);
+			}
+
 			// System.out.println("RequestMap : " +
 			// ServletEventPool.getInstance().getRequestMap() );
 			// System.out.println("RequestMapRef : " +
@@ -498,6 +505,62 @@ public class LoggingInterceptor extends Interceptor {
 	@Override
 	protected void doOnFinish(Object source, Object result, String executionId) {
 		onTerminationOfHookedMethods(source);
+	}
+
+	private void processMysqlStatement(Object obj, long threadId, String sourceString) {
+
+		Class<?> objClass = obj.getClass();
+		if (objClass.getName().equals(IAgentConstants.MYSQL_PREPARED_STATEMENT_5)
+				|| objClass.getName().equals(IAgentConstants.MYSQL_PREPARED_STATEMENT_42)) {
+			try {
+				objClass = Class.forName(IAgentConstants.MYSQL_PREPARED_STATEMENT_5, true,
+						Thread.currentThread().getContextClassLoader());
+				Field originalSqlField = objClass.getDeclaredField("originalSql");
+				originalSqlField.setAccessible(true);
+				String originalSql = (String) originalSqlField.get(obj);
+
+				// compute id and push in map
+				String id = threadId + ":" + obj.hashCode();
+				EventThreadPool.getInstance().setMySqlPreparedStatementsMap(id, originalSql);
+
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		} else if (objClass.getName().equals(IAgentConstants.MYSQL_PREPARED_STATEMENT_6)
+				&& sourceString.equals(IAgentConstants.MYSQL_CONNECTOR_6_SOURCE)) {
+			try {
+				Field originalSqlField = objClass.getDeclaredField("originalSql");
+				originalSqlField.setAccessible(true);
+				String originalSql = (String) originalSqlField.get(obj);
+
+				// compute id and push in map
+				String id = threadId + ":" + obj.hashCode();
+				EventThreadPool.getInstance().setMySqlPreparedStatementsMap(id, originalSql);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		} else if (objClass.getName().equals(IAgentConstants.MYSQL_PREPARED_STATEMENT_8)
+				&& sourceString.equals(IAgentConstants.MYSQL_CONNECTOR_8_SOURCE)) {
+			try {
+				Field queryField = objClass.getSuperclass().getDeclaredField("query");
+				queryField.setAccessible(true);
+				Object query = queryField.get(obj);
+				if (query != null && query.getClass().getName().equals(IAgentConstants.MYSQL_PREPARED_QUERY_8)) {
+					objClass = Class.forName(IAgentConstants.MYSQL_PREPARED_STATEMENT_SOURCE_8, true, Thread.currentThread().getContextClassLoader());
+					Field originalSqlField = objClass.getDeclaredField("originalSql");
+					originalSqlField.setAccessible(true);
+					String originalSql = (String) originalSqlField.get(query);
+
+					// compute id and push in map
+					String id = threadId + ":" + obj.hashCode();
+					EventThreadPool.getInstance().setMySqlPreparedStatementsMap(id, originalSql);
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+
+		}
+
 	}
 
 	@SuppressWarnings("unused")
