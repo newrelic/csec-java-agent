@@ -511,7 +511,8 @@ public class LoggingInterceptor extends Interceptor {
 
 		Class<?> objClass = obj.getClass();
 		if (objClass.getName().equals(IAgentConstants.MYSQL_PREPARED_STATEMENT_5)
-				|| objClass.getName().equals(IAgentConstants.MYSQL_PREPARED_STATEMENT_42)) {
+				|| objClass.getName().equals(IAgentConstants.MYSQL_PREPARED_STATEMENT_42)
+				|| objClass.getName().equals(IAgentConstants.MYSQL_PREPARED_STATEMENT_4)) {
 			try {
 				objClass = Class.forName(IAgentConstants.MYSQL_PREPARED_STATEMENT_5, true,
 						Thread.currentThread().getContextClassLoader());

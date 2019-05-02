@@ -431,28 +431,6 @@ public class ProcessorThread implements Runnable {
 
 	}
 
-	@SuppressWarnings("unchecked")
-	private void getMySQLParameterValue(Object[] args, JSONArray parameters) {
-		try {
-			Object obj = args[0];
-			Class<?> objClass = obj.getClass();
-			if (objClass.getName().equals(IAgentConstants.MYSQL_PREPARED_STATEMENT_5)
-					|| objClass.getName().equals(IAgentConstants.MYSQL_PREPARED_STATEMENT_42)
-					|| objClass.getName().equals(IAgentConstants.MYSQL_PREPARED_STATEMENT_6)
-					|| objClass.getName().equals(IAgentConstants.MYSQL_PREPARED_STATEMENT_8)) {
-				String id = threadId + ":" + obj.hashCode();
-				String originalSql = EventThreadPool.getInstance().getMySqlPreparedStatementsMap(id);
-				if (originalSql != null) {
-					EventThreadPool.getInstance().setMySqlPreparedStatementsMap(id, null);
-					parameters.add(originalSql);
-				}
-			} else {
-				parameters.add(arg[1]);
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
 	
 	/**
 	 * Gets the MySQL parameter values.
@@ -461,44 +439,33 @@ public class ProcessorThread implements Runnable {
 	 * @param parameters the parameters
 	 * @return the my SQL parameter value
 	 */
-//	@SuppressWarnings("unchecked")
-//	private void getMySQLParameterValue(Object[] args, JSONArray parameters) {
-//		for (Object obj : args) {
-//			Class<?> objClass = obj.getClass(); 
-//			if (objClass.getName().equals(IAgentConstants.MYSQL_PREPARED_STATEMENT_5)
-//					|| objClass.getName().equals(IAgentConstants.MYSQL_PREPARED_STATEMENT_42) 
-//					|| objClass.getName().equals(IAgentConstants.MYSQL_PREPARED_STATEMENT_6) 
-//					|| objClass.getName().equals(IAgentConstants.MYSQL_PREPARED_STATEMENT_8)) {
-//				// compute id and pull from map
-//				String id = threadId + ":" + obj.hashCode();
-//				String originalSql = EventThreadPool.getInstance().getMySqlPreparedStatementsMap(id);
-//				if(originalSql!=null) {
-//					EventThreadPool.getInstance().setMySqlPreparedStatementsMap(id,null);
-//					parameters.add(originalSql);
-//				}
-//			}
-//			if (obj instanceof byte[]) {
-//				try {
-//					String byteParam = new String((byte[]) obj, "UTF-8");
-//					parameters.add(byteParam.trim());
-//				} catch (UnsupportedEncodingException e) {
-//				}
-//			} else if (obj instanceof Object[]) {
-//				JSONArray params = new JSONArray();
-//				getMySQLParameterValue((Object[]) obj, params);
-//				parameters.addAll(params);
-//			} else {
-//				try {
-//					// parameters.add(JsonCodec.getInstance().transform(obj));
-//					parameters.add(parser.parse(mapper.writeValueAsString(obj)));
-//				} catch (Throwable e) {
-//					parameters.add(obj.toString());
-//				}
-//			}
-//		}
-//
-//	}
-
+	@SuppressWarnings("unchecked")
+	private void getMySQLParameterValue(Object[] args, JSONArray parameters) {
+		try {
+			if (arg[1] != null && !arg[1].toString().isEmpty()) {
+				parameters.add(arg[1].toString());
+			} else {
+				Object obj = args[0];
+				Class<?> objClass = obj.getClass();
+				if (objClass.getName().equals(IAgentConstants.MYSQL_PREPARED_STATEMENT_5)
+						|| objClass.getName().equals(IAgentConstants.MYSQL_PREPARED_STATEMENT_42)
+						|| objClass.getName().equals(IAgentConstants.MYSQL_PREPARED_STATEMENT_4)
+						|| objClass.getName().equals(IAgentConstants.MYSQL_PREPARED_STATEMENT_6)
+						|| objClass.getName().equals(IAgentConstants.MYSQL_PREPARED_STATEMENT_8)) {
+					String id = threadId + ":" + obj.hashCode();
+					String originalSql = EventThreadPool.getInstance().getMySqlPreparedStatementsMap(id);
+					if (originalSql != null) {
+						EventThreadPool.getInstance().setMySqlPreparedStatementsMap(id, null);
+						parameters.add(originalSql);
+					}
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	
 	/**
 	 * Gets the mongo parameters.
 	 *
@@ -781,7 +748,7 @@ public class ProcessorThread implements Runnable {
 		try {
 			if (obj[0] != null && sourceString.contains(MSSQL_IDENTIFIER)) {
 				getMSSQLParameterValue(obj[0], parameters);
-			} else if (obj[0] != null && sourceString.contains(MYSQL_IDENTIFIER)) {
+			} else if (sourceString.contains(MYSQL_IDENTIFIER)) {
 				getMySQLParameterValue(obj, parameters);
 			} else if (obj[0] != null && sourceString.contains(MONGO_IDENTIFIER)) {
 				getMongoParameterValue(obj, parameters);

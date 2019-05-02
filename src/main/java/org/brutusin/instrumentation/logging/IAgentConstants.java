@@ -179,6 +179,7 @@ public interface IAgentConstants {
 
 	
 	/** MySQL CLASS CONSTANTS */
+	String MYSQL_PREPARED_STATEMENT_4 = "com.mysql.jdbc.JDBC4PreparedStatement";
 	String MYSQL_PREPARED_STATEMENT_42 = "com.mysql.jdbc.JDBC42PreparedStatement";
 	String MYSQL_PREPARED_STATEMENT_5 = "com.mysql.jdbc.PreparedStatement";
 	String MYSQL_PREPARED_STATEMENT_6 = "com.mysql.cj.jdbc.PreparedStatement";
