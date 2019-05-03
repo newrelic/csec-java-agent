@@ -468,7 +468,7 @@ public class LoggingInterceptor extends Interceptor {
 		} else {
 
 			if (IAgentConstants.MYSQL_SOURCE_METHOD_LIST.contains(sourceString) && arg[0] != null) {
-				processMysqlStatement(arg[0], threadId, sourceString);
+				processMysqlStatement(arg, threadId, sourceString);
 			}
 
 			// System.out.println("RequestMap : " +
@@ -507,10 +507,15 @@ public class LoggingInterceptor extends Interceptor {
 		onTerminationOfHookedMethods(source);
 	}
 
-	private void processMysqlStatement(Object obj, long threadId, String sourceString) {
-
+	private void processMysqlStatement(Object[] args, long threadId, String sourceString) {
+		Object obj = args[0];
+		if (sourceString.equals(IAgentConstants.MYSQL_CONNECTOR_5_0_4_PREPARED_SOURCE)) {
+			obj = args[args.length -1 ];
+		}
 		Class<?> objClass = obj.getClass();
+		
 		if (objClass.getName().equals(IAgentConstants.MYSQL_PREPARED_STATEMENT_5)
+				|| objClass.getName().equals(IAgentConstants.MYSQL_PREPARED_STATEMENT_5_0_4)
 				|| objClass.getName().equals(IAgentConstants.MYSQL_PREPARED_STATEMENT_42)
 				|| objClass.getName().equals(IAgentConstants.MYSQL_PREPARED_STATEMENT_4)) {
 			try {
@@ -528,7 +533,9 @@ public class LoggingInterceptor extends Interceptor {
 				e.printStackTrace();
 			}
 		} else if (objClass.getName().equals(IAgentConstants.MYSQL_PREPARED_STATEMENT_6)
-				&& sourceString.equals(IAgentConstants.MYSQL_CONNECTOR_6_SOURCE)) {
+				&& (sourceString.equals(IAgentConstants.MYSQL_CONNECTOR_6_SOURCE)
+						|| sourceString.equals(IAgentConstants.MYSQL_CONNECTOR_6_0_2_SOURCE)
+						|| sourceString.equals(IAgentConstants.MYSQL_CONNECTOR_6_0_3_SOURCE))) {
 			try {
 				Field originalSqlField = objClass.getDeclaredField("originalSql");
 				originalSqlField.setAccessible(true);

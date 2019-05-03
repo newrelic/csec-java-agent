@@ -59,7 +59,11 @@ public interface IAgentConstants {
 			// Mysql Connector/J 5.1.x
 			"final com.mysql.jdbc.ResultSetInternalMethods com.mysql.jdbc.MysqlIO.sqlQueryDirect(com.mysql.jdbc.StatementImpl,java.lang.String,java.lang.String,com.mysql.jdbc.Buffer,int,int,int,boolean,java.lang.String,com.mysql.jdbc.Field[]) throws java.lang.Exception",
 			// Mysql Connector/J 6.x
+			"public final com.mysql.cj.api.jdbc.ResultSetInternalMethods com.mysql.cj.mysqla.io.MysqlaProtocol.sqlQueryDirect(com.mysql.cj.jdbc.StatementImpl,java.lang.String,java.lang.String,com.mysql.cj.mysqla.io.Buffer,int,int,int,boolean,java.lang.String,com.mysql.cj.core.result.Field[])",
+			"public final <T> T com.mysql.cj.mysqla.io.MysqlaProtocol.sqlQueryDirect(com.mysql.cj.jdbc.StatementImpl,java.lang.String,java.lang.String,com.mysql.cj.api.mysqla.io.PacketPayload,int,int,int,boolean,java.lang.String,com.mysql.cj.core.result.Field[],com.mysql.cj.api.io.Protocol$GetProfilerEventHandlerInstanceFunction)",
 			"public final <T> T com.mysql.cj.mysqla.io.MysqlaProtocol.sqlQueryDirect(com.mysql.cj.jdbc.StatementImpl,java.lang.String,java.lang.String,com.mysql.cj.api.mysqla.io.PacketPayload,int,boolean,java.lang.String,com.mysql.cj.api.mysqla.result.ColumnDefinition,com.mysql.cj.api.io.Protocol$GetProfilerEventHandlerInstanceFunction,com.mysql.cj.api.mysqla.io.ProtocolEntityFactory<T>) throws java.io.IOException",
+			"private com.mysql.jdbc.ResultSet com.mysql.jdbc.ServerPreparedStatement.serverExecute(int,boolean) throws java.sql.SQLException",
+			
 			// Mysql Connector/J 8.x
 			"public <T> T com.mysql.cj.NativeSession.execSQL(com.mysql.cj.Query,java.lang.String,int,com.mysql.cj.protocol.a.NativePacketPayload,boolean,com.mysql.cj.protocol.ProtocolEntityFactory<T, com.mysql.cj.protocol.a.NativePacketPayload>,java.lang.String,com.mysql.cj.protocol.ColumnDefinition,boolean)",
 
@@ -106,7 +110,7 @@ public interface IAgentConstants {
 
 			// SQL
 			"com/microsoft/sqlserver/jdbc/SQLServerStatement", "com/mysql/cj/mysqla/io/MysqlaProtocol",
-			"com/mysql/cj/NativeSession",
+			"com/mysql/cj/NativeSession","com/mysql/jdbc/ServerPreparedStatement",
 
 			// Mongo
 			"com/mongodb/connection/DefaultServerConnection", "com/mongodb/internal/connection/DefaultServerConnection",
@@ -127,8 +131,13 @@ public interface IAgentConstants {
 			"org/postgresql/core/v3/QueryExecutorImpl", "org/postgresql/core/v2/QueryExecutorImpl", };
 
 	String[][] ALL_METHODS = { { "sqlQueryDirect" }, { "start" },
+			
+			// SQL
 //			{ "newOutputStream" }, CONSTRUCTOR,
-			{ "executeStatement" }, { "sqlQueryDirect" }, { "execSQL" }, { "executeProtocol" }, { "executeProtocol" },
+			{ "executeStatement" }, { "sqlQueryDirect" }, { "execSQL" },{ "serverExecute" },
+			
+			// mongodb
+			{ "executeProtocol" }, { "executeProtocol" },
 			{ "execute" }, { "execute" }, { "execute" }, { "<init>", "newInstance" },
 			
 			//Oracle methods
@@ -181,14 +190,18 @@ public interface IAgentConstants {
 	/** MySQL CLASS CONSTANTS */
 	String MYSQL_PREPARED_STATEMENT_4 = "com.mysql.jdbc.JDBC4PreparedStatement";
 	String MYSQL_PREPARED_STATEMENT_42 = "com.mysql.jdbc.JDBC42PreparedStatement";
+	String MYSQL_PREPARED_STATEMENT_5_0_4 = "com.mysql.jdbc.ServerPreparedStatement";
 	String MYSQL_PREPARED_STATEMENT_5 = "com.mysql.jdbc.PreparedStatement";
 	String MYSQL_PREPARED_STATEMENT_6 = "com.mysql.cj.jdbc.PreparedStatement";
 	String MYSQL_PREPARED_STATEMENT_8 = "com.mysql.cj.jdbc.ClientPreparedStatement";
 	String MYSQL_PREPARED_QUERY_8 = "com.mysql.cj.ClientPreparedQuery";
 	String MYSQL_PREPARED_STATEMENT_SOURCE_8 = "com.mysql.cj.AbstractPreparedQuery";
 	String MYSQL_CONNECTOR_5_0_SOURCE = "final com.mysql.jdbc.ResultSet com.mysql.jdbc.MysqlIO.sqlQueryDirect(com.mysql.jdbc.Statement,java.lang.String,java.lang.String,com.mysql.jdbc.Buffer,int,com.mysql.jdbc.Connection,int,int,boolean,java.lang.String,boolean) throws java.lang.Exception";
+	String MYSQL_CONNECTOR_5_0_4_PREPARED_SOURCE = "private com.mysql.jdbc.ResultSet com.mysql.jdbc.ServerPreparedStatement.serverExecute(int,boolean) throws java.sql.SQLException";
 	String MYSQL_CONNECTOR_5_1_SOURCE = "final com.mysql.jdbc.ResultSetInternalMethods com.mysql.jdbc.MysqlIO.sqlQueryDirect(com.mysql.jdbc.StatementImpl,java.lang.String,java.lang.String,com.mysql.jdbc.Buffer,int,int,int,boolean,java.lang.String,com.mysql.jdbc.Field[]) throws java.lang.Exception";
 	String MYSQL_CONNECTOR_6_SOURCE = "public final <T> T com.mysql.cj.mysqla.io.MysqlaProtocol.sqlQueryDirect(com.mysql.cj.jdbc.StatementImpl,java.lang.String,java.lang.String,com.mysql.cj.api.mysqla.io.PacketPayload,int,boolean,java.lang.String,com.mysql.cj.api.mysqla.result.ColumnDefinition,com.mysql.cj.api.io.Protocol$GetProfilerEventHandlerInstanceFunction,com.mysql.cj.api.mysqla.io.ProtocolEntityFactory<T>) throws java.io.IOException";
+	String MYSQL_CONNECTOR_6_0_3_SOURCE = "public final <T> T com.mysql.cj.mysqla.io.MysqlaProtocol.sqlQueryDirect(com.mysql.cj.jdbc.StatementImpl,java.lang.String,java.lang.String,com.mysql.cj.api.mysqla.io.PacketPayload,int,int,int,boolean,java.lang.String,com.mysql.cj.core.result.Field[],com.mysql.cj.api.io.Protocol$GetProfilerEventHandlerInstanceFunction)";
+	String MYSQL_CONNECTOR_6_0_2_SOURCE = "public final com.mysql.cj.api.jdbc.ResultSetInternalMethods com.mysql.cj.mysqla.io.MysqlaProtocol.sqlQueryDirect(com.mysql.cj.jdbc.StatementImpl,java.lang.String,java.lang.String,com.mysql.cj.mysqla.io.Buffer,int,int,int,boolean,java.lang.String,com.mysql.cj.core.result.Field[])";
 	String MYSQL_CONNECTOR_8_SOURCE = "public <T> T com.mysql.cj.NativeSession.execSQL(com.mysql.cj.Query,java.lang.String,int,com.mysql.cj.protocol.a.NativePacketPayload,boolean,com.mysql.cj.protocol.ProtocolEntityFactory<T, com.mysql.cj.protocol.a.NativePacketPayload>,java.lang.String,com.mysql.cj.protocol.ColumnDefinition,boolean)";
 	List<String> MYSQL_SOURCE_METHOD_LIST = new ArrayList<String>() {
 		/**
@@ -198,9 +211,12 @@ public interface IAgentConstants {
 		{
 			// Mysql Connector/J 5.0.5
 			add(MYSQL_CONNECTOR_5_0_SOURCE);
+			add(MYSQL_CONNECTOR_5_0_4_PREPARED_SOURCE);
 			// Mysql Connector/J 5.1.x
 			add(MYSQL_CONNECTOR_5_1_SOURCE);
 			// Mysql Connector/J 6.x
+			add(MYSQL_CONNECTOR_6_0_2_SOURCE);
+			add(MYSQL_CONNECTOR_6_0_3_SOURCE);
 			add(MYSQL_CONNECTOR_6_SOURCE);
 			// Mysql Connector/J 8.x
 			add(MYSQL_CONNECTOR_8_SOURCE);

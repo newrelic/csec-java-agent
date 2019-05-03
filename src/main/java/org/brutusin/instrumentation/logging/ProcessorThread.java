@@ -440,14 +440,18 @@ public class ProcessorThread implements Runnable {
 	 * @return the my SQL parameter value
 	 */
 	@SuppressWarnings("unchecked")
-	private void getMySQLParameterValue(Object[] args, JSONArray parameters) {
+	private void getMySQLParameterValue(Object[] args, JSONArray parameters,String sourceString) {
 		try {
-			if (arg[1] != null && !arg[1].toString().isEmpty()) {
+			if (arg[1] != null && !arg[1].toString().isEmpty() && !sourceString.equals(IAgentConstants.MYSQL_CONNECTOR_5_0_4_PREPARED_SOURCE)) {
 				parameters.add(arg[1].toString());
 			} else {
 				Object obj = args[0];
+				if(sourceString.equals(IAgentConstants.MYSQL_CONNECTOR_5_0_4_PREPARED_SOURCE)) {
+					obj = args[args.length - 1];
+				}
 				Class<?> objClass = obj.getClass();
 				if (objClass.getName().equals(IAgentConstants.MYSQL_PREPARED_STATEMENT_5)
+						|| objClass.getName().equals(IAgentConstants.MYSQL_PREPARED_STATEMENT_5_0_4)
 						|| objClass.getName().equals(IAgentConstants.MYSQL_PREPARED_STATEMENT_42)
 						|| objClass.getName().equals(IAgentConstants.MYSQL_PREPARED_STATEMENT_4)
 						|| objClass.getName().equals(IAgentConstants.MYSQL_PREPARED_STATEMENT_6)
@@ -749,7 +753,7 @@ public class ProcessorThread implements Runnable {
 			if (obj[0] != null && sourceString.contains(MSSQL_IDENTIFIER)) {
 				getMSSQLParameterValue(obj[0], parameters);
 			} else if (sourceString.contains(MYSQL_IDENTIFIER)) {
-				getMySQLParameterValue(obj, parameters);
+				getMySQLParameterValue(obj, parameters, sourceString);
 			} else if (obj[0] != null && sourceString.contains(MONGO_IDENTIFIER)) {
 				getMongoParameterValue(obj, parameters);
 			} else if (obj[0] != null && sourceString.contains(ORACLE_DB_IDENTIFIER)) {
