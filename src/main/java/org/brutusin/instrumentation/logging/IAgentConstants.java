@@ -47,6 +47,10 @@ public interface IAgentConstants {
 	
 	String PSQL42_EXECUTOR = "private void org.postgresql.core.v3.QueryExecutorImpl.sendQuery(org.postgresql.core.Query,org.postgresql.core.v3.V3ParameterList,int,int,int,org.postgresql.core.ResultHandler,org.postgresql.jdbc.BatchResultHandler) throws java.io.IOException,java.sql.SQLException";
 	
+	// Postgres V3 API : > Server 7.4 < Server 9.X
+	String PSQLV3_EXECUTOR7_4 = "private void org.postgresql.core.v3.QueryExecutorImpl.sendQuery(org.postgresql.core.v3.V3Query,org.postgresql.core.v3.V3ParameterList,int,int,int) throws java.io.IOException,java.sql.SQLException";
+		
+	
 	String[] EXECUTORS = { SYSYTEM_CALL_START,
 
 			// mssql calls
@@ -74,6 +78,7 @@ public interface IAgentConstants {
 			PSQLV3_EXECUTOR,
 			PSQLV2_EXECUTOR ,
 			PSQL42_EXECUTOR,
+			PSQLV3_EXECUTOR7_4,
 			
 			// // FileWriter
 //			"public java.io.OutputStream java.nio.file.spi.FileSystemProvider.newOutputStream(java.nio.file.Path,java.nio.file.OpenOption...) throws java.io.IOException",
