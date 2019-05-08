@@ -44,20 +44,15 @@ import static org.brutusin.instrumentation.logging.IAgentConstants.MSSQL_STATEME
 import static org.brutusin.instrumentation.logging.IAgentConstants.MSSQL_USER_SQL_FIELD;
 import static org.brutusin.instrumentation.logging.IAgentConstants.MSSQL_VALUE_FIELD;
 import static org.brutusin.instrumentation.logging.IAgentConstants.MYSQL_IDENTIFIER;
-import static org.brutusin.instrumentation.logging.IAgentConstants.MYSQL_PREPARED_STATEMENT_5;
-import static org.brutusin.instrumentation.logging.IAgentConstants.MYSQL_PREPARED_STATEMENT_6;
-import static org.brutusin.instrumentation.logging.IAgentConstants.MYSQL_PREPARED_QUERY_8;
-import static org.brutusin.instrumentation.logging.IAgentConstants.MYSQL_PREPARED_STATEMENT_8;
-import static org.brutusin.instrumentation.logging.IAgentConstants.MYSQL_PREPARED_STATEMENT_42;
 import static org.brutusin.instrumentation.logging.IAgentConstants.ORACLE_CONNECTION_IDENTIFIER;
 import static org.brutusin.instrumentation.logging.IAgentConstants.ORACLE_DB_IDENTIFIER;
 import static org.brutusin.instrumentation.logging.IAgentConstants.ORACLE_STATEMENT_CLASS_IDENTIFIER;
 import static org.brutusin.instrumentation.logging.IAgentConstants.PSQL42_EXECUTOR;
 import static org.brutusin.instrumentation.logging.IAgentConstants.PSQLV2_EXECUTOR;
 import static org.brutusin.instrumentation.logging.IAgentConstants.PSQLV3_EXECUTOR;
+import static org.brutusin.instrumentation.logging.IAgentConstants.PSQLV3_EXECUTOR7_4;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -761,7 +756,7 @@ public class ProcessorThread implements Runnable {
 			} else if (obj[0] != null && sourceString.contains(CLASS_LOADER_IDENTIFIER)) {
 				getClassLoaderParameterValue(obj, parameters);
 			} else if (sourceString.equals(PSQLV3_EXECUTOR) || sourceString.equals(PSQLV2_EXECUTOR)
-					|| sourceString.equals(PSQL42_EXECUTOR)) {
+					|| sourceString.equals(PSQL42_EXECUTOR) || sourceString.equals(PSQLV3_EXECUTOR7_4)) {
 				getPSQLParameterValue(obj, parameters);
 			} else {
 				for (int i = 0; i < obj.length; i++) {
