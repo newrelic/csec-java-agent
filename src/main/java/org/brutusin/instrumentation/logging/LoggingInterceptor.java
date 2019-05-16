@@ -452,20 +452,53 @@ public class LoggingInterceptor extends Interceptor {
 				Field inputBufferField = arg[0].getClass().getDeclaredField("inputBuffer");
 				inputBufferField.setAccessible(true);
 				Object inputBuffer = inputBufferField.get(arg[0]);
+				Object byteBuffer = null;
+				int positionHb = -1;
+				boolean byteBufferFound = false;
+				boolean tomcatv7 = false;
+				try {
+					Field byteBufferField = inputBuffer.getClass().getDeclaredField("byteBuffer");
+					byteBufferField.setAccessible(true);
+					byteBuffer = byteBufferField.get(inputBuffer);
 
-				Field byteBufferField = inputBuffer.getClass().getDeclaredField("byteBuffer");
-				byteBufferField.setAccessible(true);
-				Object byteBuffer = byteBufferField.get(inputBuffer);
+					Field position = Buffer.class.getDeclaredField("position");
+					position.setAccessible(true);
+					positionHb = (Integer) position.get(byteBuffer);
+					byteBufferFound = true;
+				} catch(Exception e) {
+					e.printStackTrace();
+				}
+				if(!byteBufferFound) {
+					try {
+						Class<?> abstractInputBufferClass = Class.forName("org.apache.coyote.http11.AbstractInputBuffer", true, Thread.currentThread().getContextClassLoader());
+						Field byteBufferField = abstractInputBufferClass.getDeclaredField("buf");
+						byteBufferField.setAccessible(true);
+						byteBuffer = byteBufferField.get(inputBuffer);
+	
+						Field position = abstractInputBufferClass.getDeclaredField("lastValid");
+						position.setAccessible(true);
+						positionHb = (Integer) position.get(inputBuffer);
+						if(positionHb == 8192) {
+							servletInfo.setDataTruncated(true);
+						}
+						tomcatv7 = true;
+						byteBufferFound = true;
+					} catch(Exception e) {
+					}
+				}
 
-				Field position = Buffer.class.getDeclaredField("position");
-				position.setAccessible(true);
-				int positionHb = (Integer) position.get(byteBuffer);
+				if (byteBufferFound && positionHb > 0) {
 
-				if (positionHb > 0) {
-
-					Field hb = ByteBuffer.class.getDeclaredField("hb");
-					hb.setAccessible(true);
-					byte[] hbContent = (byte[]) hb.get(byteBuffer);
+					byte[] hbContent = null;
+					
+					if(!tomcatv7) {
+						Field hb = ByteBuffer.class.getDeclaredField("hb");
+						hb.setAccessible(true);
+						hbContent = (byte[]) hb.get(byteBuffer);
+					} else {
+						hbContent = (byte[]) byteBuffer;
+					}
+					
 					org.brutusin.instrumentation.logging.ByteBuffer buff = preProcessTomcatByteBuffer(hbContent,
 							positionHb);
 					requestContent = new String(buff.getByteArray(), 0, buff.getLimit(), StandardCharsets.UTF_8);
@@ -473,7 +506,6 @@ public class LoggingInterceptor extends Interceptor {
 //					 System.out.println("Request Param : "+threadId + " : " + executionId +":" + servletInfo);
 				}
 			} catch (Exception e) {
-				e.printStackTrace();
 			}
 			// in case of executeInternal()
 		} else {
