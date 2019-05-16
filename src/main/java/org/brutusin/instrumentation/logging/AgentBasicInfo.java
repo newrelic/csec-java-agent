@@ -1,7 +1,5 @@
 package org.brutusin.instrumentation.logging;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.Properties;
 
 // TODO: Auto-generated Javadoc
@@ -25,7 +23,7 @@ public class AgentBasicInfo {
 		props = new Properties();
 		try {
 			props.load(Thread.currentThread().getContextClassLoader().getResourceAsStream("k2-javaagent.properties"));
-		} catch (IOException e) {
+		} catch (Exception e) {
 			System.out.println("Could not load properties");
 		}
 	}

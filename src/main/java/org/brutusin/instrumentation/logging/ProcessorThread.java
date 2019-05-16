@@ -33,7 +33,7 @@ import static org.brutusin.instrumentation.logging.IAgentConstants.MSSQL_CONNECT
 import static org.brutusin.instrumentation.logging.IAgentConstants.MSSQL_CURRENT_OBJECT;
 import static org.brutusin.instrumentation.logging.IAgentConstants.MSSQL_IDENTIFIER;
 import static org.brutusin.instrumentation.logging.IAgentConstants.MSSQL_IMPL_FIELD;
-import static org.brutusin.instrumentation.logging.IAgentConstants.MSSQL_INPUT_DTV_FIELD;
+import static org.brutusin.instrumentation.logging.IAgentConstants.*;
 import static org.brutusin.instrumentation.logging.IAgentConstants.MSSQL_IN_OUT_PARAM_FIELD;
 import static org.brutusin.instrumentation.logging.IAgentConstants.MSSQL_PREPARED_BATCH_STATEMENT_CLASS;
 import static org.brutusin.instrumentation.logging.IAgentConstants.MSSQL_PREPARED_STATEMENT_CLASS;
@@ -195,6 +195,7 @@ public class ProcessorThread implements Runnable {
 	public void run() {
 
 		if (executorMethods.contains(sourceString)) {
+				
 			long start = System.currentTimeMillis();
 
 			IntCodeResultBean intCodeResultBean = new IntCodeResultBean(start, sourceString, LoggingInterceptor.VMPID,
@@ -426,7 +427,6 @@ public class ProcessorThread implements Runnable {
 
 	}
 
-	
 	/**
 	 * Gets the MySQL parameter values.
 	 *
@@ -435,13 +435,14 @@ public class ProcessorThread implements Runnable {
 	 * @return the my SQL parameter value
 	 */
 	@SuppressWarnings("unchecked")
-	private void getMySQLParameterValue(Object[] args, JSONArray parameters,String sourceString) {
+	private void getMySQLParameterValue(Object[] args, JSONArray parameters, String sourceString) {
 		try {
-			if (arg[1] != null && !arg[1].toString().isEmpty() && !sourceString.equals(IAgentConstants.MYSQL_CONNECTOR_5_0_4_PREPARED_SOURCE)) {
+			if (arg[1] != null && !arg[1].toString().isEmpty()
+					&& !sourceString.equals(IAgentConstants.MYSQL_CONNECTOR_5_0_4_PREPARED_SOURCE)) {
 				parameters.add(arg[1].toString());
 			} else {
 				Object obj = args[0];
-				if(sourceString.equals(IAgentConstants.MYSQL_CONNECTOR_5_0_4_PREPARED_SOURCE)) {
+				if (sourceString.equals(IAgentConstants.MYSQL_CONNECTOR_5_0_4_PREPARED_SOURCE)) {
 					obj = args[args.length - 1];
 				}
 				Class<?> objClass = obj.getClass();
@@ -463,8 +464,7 @@ public class ProcessorThread implements Runnable {
 			e.printStackTrace();
 		}
 	}
-	
-	
+
 	/**
 	 * Gets the mongo parameters.
 	 *
@@ -758,6 +758,8 @@ public class ProcessorThread implements Runnable {
 			} else if (sourceString.equals(PSQLV3_EXECUTOR) || sourceString.equals(PSQLV2_EXECUTOR)
 					|| sourceString.equals(PSQL42_EXECUTOR) || sourceString.equals(PSQLV3_EXECUTOR7_4)) {
 				getPSQLParameterValue(obj, parameters);
+			} else if (sourceString.equals(HSQL_V2_4)) {
+				getHSQLParameterValue(obj[0], parameters);
 			} else {
 				for (int i = 0; i < obj.length; i++) {
 					Object json = parser.parse(mapper.writeValueAsString(obj[i]));
@@ -773,6 +775,20 @@ public class ProcessorThread implements Runnable {
 //			th.printStackTrace();
 		}
 		return parameters;
+	}
+
+	private void getHSQLParameterValue(Object object, JSONArray parameters) {
+
+		try {
+			Class<?> statementClass = Thread.currentThread().getContextClassLoader().loadClass("org.hsqldb.Statement");
+			Field sqlField = statementClass.getDeclaredField("sql");
+			sqlField.setAccessible(true);
+			parameters.add((String)sqlField.get(object));
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
 	}
 
 	private void getPSQLParameterValue(Object[] obj, JSONArray parameters) {
@@ -886,7 +902,7 @@ public class ProcessorThread implements Runnable {
 				// count: "
 				// +
 				// ServletEventPool.getInstance().getServletInfoReferenceRecord().get(threadId));
-				System.out.println("publish event: "  + executionId + " : " + intCodeResultBean);
+				System.out.println("publish event: " + executionId + " : " + intCodeResultBean);
 				eventQueue.add(intCodeResultBean);
 
 			}

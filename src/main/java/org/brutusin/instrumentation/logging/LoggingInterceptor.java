@@ -272,6 +272,12 @@ public class LoggingInterceptor extends Interceptor {
 
 	@Override
 	public boolean interceptClass(String className, byte[] byteCode) {
+//		System.out.println("class came to instument : "+className);
+//		if (className.startsWith("org/hsqldb/")) {
+//			System.out.println("class to instument : "+className);
+//			return true;
+//		}
+
 		return allClasses.contains(className);
 	}
 
@@ -310,6 +316,10 @@ public class LoggingInterceptor extends Interceptor {
 		// else if (cn.name.equals("javax/faces/webapp/FacesServlet"))
 		// System.out.println("name: " + mn.name + " : " +
 		// interceptMethod.get(cn.name).contains(mn.name));
+//		if (cn.name.startsWith("org/hsqldb/")) {
+//			System.err.println("Agent instrumenting : " + cn.name + " : " + mn.name);
+//			return true;
+//		}
 		return interceptMethod.get(cn.name).contains(mn.name);
 	}
 
@@ -330,7 +340,7 @@ public class LoggingInterceptor extends Interceptor {
 					// System.out.println("Request map entry removed for threadID " + threadId);
 					// System.out.println("Current request map : " +
 					// ServletEventPool.getInstance().getRequestMap());
-					// System.out.println(threadId + ": remove from coyote");
+//					 System.out.println(threadId + ":: remove from coyote");
 					ServletEventPool.getInstance().getRequestMap().remove(threadId);
 				}
 			}
@@ -349,10 +359,11 @@ public class LoggingInterceptor extends Interceptor {
 
 		} else if (source instanceof Constructor) {
 			sourceString = ((Constructor) source).toGenericString();
+		} else {
+			return;
 		}
-		// System.out.println(sourceString);
-		// System.out.println("doOnStart : " + threadId+" : " + sourceString+" : " +
-		// servletInfo);
+//		System.out.println( ": " +sourceString);
+//		 System.out.println("doOnStart : " + threadId+" : " + sourceString);
 
 		if (sourceString == null)
 			return;
@@ -459,7 +470,7 @@ public class LoggingInterceptor extends Interceptor {
 							positionHb);
 					requestContent = new String(buff.getByteArray(), 0, buff.getLimit(), StandardCharsets.UTF_8);
 					servletInfo.setRawRequest(requestContent);
-					// System.out.println("Request Param : " + servletInfo);
+//					 System.out.println("Request Param : "+threadId + " : " + executionId +":" + servletInfo);
 				}
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -475,12 +486,11 @@ public class LoggingInterceptor extends Interceptor {
 			// ServletEventPool.getInstance().getRequestMap() );
 			// System.out.println("RequestMapRef : " +
 			// ServletEventPool.getInstance().getServletInfoReferenceRecord() );
-			// System.out.println("Other event : " + threadId + " : " + sourceString + " : "
-			// + requestMap.get(threadId) + " : " + arg[0] + " : " + arg[1]);
-			// System.out.println("Other event current request map : " + requestMap);
+//			System.out.println("Other event : " + threadId + " : " + executionId +":" + sourceString + " : " + arg[0] + " : " + arg[1] + " current request map : " + ServletEventPool.getInstance().getRequestMap());
 
 			try {
 				if (ServletEventPool.getInstance().getRequestMap().containsKey(threadId)) {
+//					System.out.println("Calling processor thread : "+ threadId + " : " + executionId);
 					ServletEventPool.getInstance().incrementServletInfoReference(threadId);
 					EventThreadPool.getInstance().processReceivedEvent(source, arg, executionId,
 							Thread.currentThread().getStackTrace(), threadId, sourceString);
@@ -510,10 +520,10 @@ public class LoggingInterceptor extends Interceptor {
 	private void processMysqlStatement(Object[] args, long threadId, String sourceString) {
 		Object obj = args[0];
 		if (sourceString.equals(IAgentConstants.MYSQL_CONNECTOR_5_0_4_PREPARED_SOURCE)) {
-			obj = args[args.length -1 ];
+			obj = args[args.length - 1];
 		}
 		Class<?> objClass = obj.getClass();
-		
+
 		if (objClass.getName().equals(IAgentConstants.MYSQL_PREPARED_STATEMENT_5)
 				|| objClass.getName().equals(IAgentConstants.MYSQL_PREPARED_STATEMENT_5_0_4)
 				|| objClass.getName().equals(IAgentConstants.MYSQL_PREPARED_STATEMENT_42)
@@ -554,7 +564,8 @@ public class LoggingInterceptor extends Interceptor {
 				queryField.setAccessible(true);
 				Object query = queryField.get(obj);
 				if (query != null && query.getClass().getName().equals(IAgentConstants.MYSQL_PREPARED_QUERY_8)) {
-					objClass = Class.forName(IAgentConstants.MYSQL_PREPARED_STATEMENT_SOURCE_8, true, Thread.currentThread().getContextClassLoader());
+					objClass = Class.forName(IAgentConstants.MYSQL_PREPARED_STATEMENT_SOURCE_8, true,
+							Thread.currentThread().getContextClassLoader());
 					Field originalSqlField = objClass.getDeclaredField("originalSql");
 					originalSqlField.setAccessible(true);
 					String originalSql = (String) originalSqlField.get(query);
