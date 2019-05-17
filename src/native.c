@@ -8,6 +8,8 @@
 #include "jni.h"
 // -------------------------------
 // module used for native hooking by javaagent.
+// to compile:
+// cc -shared -fPIC -I /usr/lib/jvm/java-openjdk/include/  -I /usr/lib/jvm/java-openjdk/include/linux source/native.c Wl,-soname,k2Native.so -o K2Native.so
 // -------------------------------
 
 // -------------------------------
@@ -113,4 +115,8 @@ JNIEXPORT jint JNICALL Java_K2Native_k2init(JNIEnv*,jobject j) {
       printf("forkAndExec [%d] : %2.2x\n", ((char*)sym)[i]);
    }
   return 0;
+}
+
+JNIEXPORT void JNICALL Java_K2Native_k2call(JNIEnv *vm, jobject j, jobject jStr) {
+  // to be filled in. 
 }
