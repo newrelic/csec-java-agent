@@ -60,7 +60,7 @@ public class LoggingInterceptor extends Interceptor {
 	static final int MAX_DEPTH_LOOKUP = 4; // Max number of superclasses to lookup for a field
 	// protected static Map<Long, ServletInfo> requestMap;
 	protected static ScheduledExecutorService eventPoolExecutor;
-
+	public static String hostip = "";
 	static {
 		applicationUUID = UUID.randomUUID().toString();
 		allClasses = new HashSet<>(Arrays.asList(IAgentConstants.ALL_CLASSES));
@@ -190,7 +190,7 @@ public class LoggingInterceptor extends Interceptor {
 
 	protected static void connectSocket() {
 		try (BufferedReader reader = new BufferedReader(new FileReader("/etc/k2-adp/hostip.properties"))) {
-			String hostip = reader.readLine();
+			hostip = reader.readLine();
 			if (hostip == null || hostip.equals(""))
 				throw new RuntimeException("Host ip not found");
 			System.out.println("hostip found: " + hostip);
@@ -221,6 +221,7 @@ public class LoggingInterceptor extends Interceptor {
 			getJarPath();
 			createApplicationInfoBean();
 			eventWritePool();
+			IPScheduledThread.getInstance();
 			System.out.println("K2-JavaAgent installed successfully.");
 
 		} catch (Exception e) {
