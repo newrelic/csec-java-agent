@@ -85,7 +85,7 @@ error:
 // -------------------------------
 // Function K2Native_init
 // -------------------------------
-JNIEXPORT jint JNICALL Java_K2Native_k2init(JNIEnv*,jobject j) {
+JNIEXPORT jint JNICALL Java_K2Native_k2init(JNIEnv*jenv,jobject j) {
 
    int pid= syscall(SYS_getpid);
    char buffer[128] ;
