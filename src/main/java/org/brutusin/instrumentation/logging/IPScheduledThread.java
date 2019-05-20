@@ -24,7 +24,6 @@ public class IPScheduledThread {
 					if (hostip == null || hostip.equals("")) {
 						System.out.println("Host ip not found");
 					} else {
-						System.out.println("hostip found: " + hostip);
 						if (!LoggingInterceptor.hostip.equals(hostip)) {
 							LoggingInterceptor.connectSocket();
 							LoggingInterceptor.createApplicationInfoBean();
