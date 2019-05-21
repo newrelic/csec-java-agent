@@ -296,6 +296,7 @@ public class LoggingInterceptor extends Interceptor {
 		for (int i = 1; i < limitHb - 2; i++) {
 			if (buffer[i + 1] == 13 && buffer[i + 2] == 10 && i + 4 <= limitHb && buffer[i + 3] == 13
 					&& buffer[i + 4] == 10) {
+				i++;
 				while (i < limitHb) {
 					modifiedBuffer[k] = buffer[i];
 					i++;
