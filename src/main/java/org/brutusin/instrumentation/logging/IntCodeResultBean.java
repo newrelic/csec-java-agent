@@ -20,21 +20,27 @@ public class IntCodeResultBean extends AgentBasicInfo {
 	private JSONArray parameters;
 	private Long eventGenerationTime;
 	private ServletInfo servletInfo;
+	private String id;
 
 	public IntCodeResultBean() {
 	    super();
 	}
 
-	public IntCodeResultBean(Long startTime, String source, Integer pid, String applicationUUID) {
+	public IntCodeResultBean(String id) {
 	    this();
+	    this.id = id;
+	}
+	
+	public IntCodeResultBean(Long startTime, String source, Integer pid, String applicationUUID, String id) {
+	    this(id);
 		this.setPid(pid);
 		this.applicationUUID = applicationUUID;
 		this.source = source;
 		this.startTime = startTime;
 	}
 	
-	public IntCodeResultBean(Long startTime, String source, JSONArray parameters, Integer pid, String applicationUUID) {
-	    this();
+	public IntCodeResultBean(Long startTime, String source, JSONArray parameters, Integer pid, String applicationUUID, String id) {
+	    this(id);
 		this.setPid(pid);
 		this.applicationUUID = applicationUUID;
 		this.source = source;
@@ -178,6 +184,20 @@ public class IntCodeResultBean extends AgentBasicInfo {
 	 */
 	public void setServletInfo(ServletInfo servletInfo) {
 		this.servletInfo = servletInfo;
+	}
+
+	/**
+	 * @return the id
+	 */
+	public String getId() {
+		return id;
+	}
+
+	/**
+	 * @param id the id to set
+	 */
+	public void setId(String id) {
+		this.id = id;
 	}
 
 	

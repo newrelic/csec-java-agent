@@ -83,9 +83,8 @@ public class ProcessorThread implements Runnable {
 	protected static LinkedBlockingQueue<IntCodeResultBean> eventQueue = new LinkedBlockingQueue<>();
 	private Object source;
 	private Object[] arg;
-	private String executionId;
+	private Integer executionId;
 	private StackTraceElement[] stackTrace;
-	private ServletInfo servletInfo;
 	private Long threadId;
 	private String sourceString;
 	private ObjectMapper mapper;
@@ -112,7 +111,7 @@ public class ProcessorThread implements Runnable {
 	 * @param servletInfo
 	 */
 
-	public ProcessorThread(Object source, Object[] arg, String executionId, StackTraceElement[] stackTrace, long tId,
+	public ProcessorThread(Object source, Object[] arg, Integer executionId, StackTraceElement[] stackTrace, long tId,
 			String sourceString) {
 		this.source = source;
 		this.arg = arg;
@@ -155,14 +154,14 @@ public class ProcessorThread implements Runnable {
 	/**
 	 * @return the executionId
 	 */
-	public String getExecutionId() {
+	public Integer getExecutionId() {
 		return executionId;
 	}
 
 	/**
 	 * @param executionId the executionId to set
 	 */
-	public void setExecutionId(String executionId) {
+	public void setExecutionId(Integer executionId) {
 		this.executionId = executionId;
 	}
 
@@ -193,15 +192,14 @@ public class ProcessorThread implements Runnable {
 
 	@Override
 	public void run() {
-
+		try {
 		if (executorMethods.contains(sourceString)) {
-				
+
 			long start = System.currentTimeMillis();
 
 			IntCodeResultBean intCodeResultBean = new IntCodeResultBean(start, sourceString, LoggingInterceptor.VMPID,
-					LoggingInterceptor.applicationUUID);
+					LoggingInterceptor.applicationUUID, this.threadId + ":" + this.executionId);
 
-			intCodeResultBean.setServletInfo(this.servletInfo);
 			// System.out.println("Inside processor servlet info found: threadId:
 			// "+this.threadId +". "+ intCodeResultBean.getServletInfo());
 			String klassName = null;
@@ -240,10 +238,8 @@ public class ProcessorThread implements Runnable {
 						javaIoFile = true;
 					}
 				}
-				if (ServletEventPool.getInstance().decrementServletInfoReference(threadId) <= 0) {
-					// System.out.println(threadId + " : remove from another method");
-					ServletEventPool.getInstance().getRequestMap().remove(threadId);
-				}
+				ServletEventPool.getInstance().decrementServletInfoReference(threadId, executionId, true);
+				// System.out.println(threadId + " : remove from another method");
 				return;
 			}
 
@@ -267,10 +263,8 @@ public class ProcessorThread implements Runnable {
 						if (i > 0)
 							intCodeResultBean.setCurrentMethod(trace[i - 1].getMethodName());
 					} else {
-						if (ServletEventPool.getInstance().decrementServletInfoReference(threadId) <= 0) {
-							// System.out.println(threadId + " : remove from another method");
-							ServletEventPool.getInstance().getRequestMap().remove(threadId);
-						}
+						ServletEventPool.getInstance().decrementServletInfoReference(threadId, executionId, true);
+						// System.out.println(threadId + " : remove from another method");
 						return;
 					}
 					break;
@@ -289,9 +283,10 @@ public class ProcessorThread implements Runnable {
 			}
 
 		}
-		if (ServletEventPool.getInstance().decrementServletInfoReference(threadId) <= 0) {
-			// System.out.println(threadId + " : remove from another method");
-			ServletEventPool.getInstance().getRequestMap().remove(threadId);
+		} catch (Exception e ) {
+//			e.printStackTrace();
+		} finally {
+			ServletEventPool.getInstance().decrementServletInfoReference(threadId, executionId, true);
 		}
 	}
 
@@ -783,12 +778,12 @@ public class ProcessorThread implements Runnable {
 			Class<?> statementClass = Thread.currentThread().getContextClassLoader().loadClass("org.hsqldb.Statement");
 			Field sqlField = statementClass.getDeclaredField("sql");
 			sqlField.setAccessible(true);
-			parameters.add((String)sqlField.get(object));
+			parameters.add((String) sqlField.get(object));
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
+
 	}
 
 	private void getPSQLParameterValue(Object[] obj, JSONArray parameters) {
@@ -895,32 +890,29 @@ public class ProcessorThread implements Runnable {
 				// count: "
 				// +
 				// ServletEventPool.getInstance().getServletInfoReferenceRecord().get(threadId));
-				intCodeResultBean.setServletInfo(
-						new ServletInfo(ServletEventPool.getInstance().getRequestMap().get(this.threadId)));
 				// System.out.println("Final request map 2: "
 				// + ServletEventPool.getInstance().getRequestMap().get(this.threadId) + "
 				// count: "
 				// +
 				// ServletEventPool.getInstance().getServletInfoReferenceRecord().get(threadId));
+
+//				intCodeResultBean.setServletInfo(
+//						new ServletInfo(ServletEventPool.getInstance().getRequestMap().get(this.threadId)));
+
+				try {
+					intCodeResultBean.setServletInfo(new ServletInfo(ExecutionMap.find(this.executionId,
+							ServletEventPool.getInstance().getRequestMap().get(this.threadId))));
+				} catch (Exception e) {
+//					e.printStackTrace();
+//					System.out.println("Thread id: " + this.threadId + ", eid: " + this.executionId + " map: "
+//							+ ServletEventPool.getInstance().getRequestMap().get(this.threadId));
+				}
+
 				System.out.println("publish event: " + executionId + " : " + intCodeResultBean);
 				eventQueue.add(intCodeResultBean);
 
 			}
 		}
-	}
-
-	/**
-	 * @return the servletInfo
-	 */
-	public ServletInfo getServletInfo() {
-		return servletInfo;
-	}
-
-	/**
-	 * @param servletInfo the servletInfo to set
-	 */
-	public void setServletInfo(ServletInfo servletInfo) {
-		this.servletInfo = servletInfo;
 	}
 
 }
