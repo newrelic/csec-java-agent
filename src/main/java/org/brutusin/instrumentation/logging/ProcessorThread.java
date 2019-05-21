@@ -875,7 +875,7 @@ public class ProcessorThread implements Runnable {
 				List<String> list = (List<String>) intCodeResultBean.getParameters();
 				DynamicJarPathBean dynamicJarPathBean = new DynamicJarPathBean(LoggingInterceptor.applicationUUID,
 						System.getProperty("user.dir"), new ArrayList<String>(Agent.jarPathSet), list);
-				System.out.println("dynamic jar path bean : " + dynamicJarPathBean);
+//				System.out.println("dynamic jar path bean : " + dynamicJarPathBean);
 				try {
 					LoggingInterceptor.oos.writeUTF(dynamicJarPathBean.toString() + "\n");
 					// LoggingInterceptor.oos.flush();
@@ -911,12 +911,12 @@ public class ProcessorThread implements Runnable {
 //							+ ServletEventPool.getInstance().getRequestMap().get(this.threadId));
 				}
 
-				System.out.println("publish event: " + executionId + " : " + intCodeResultBean);
+//				System.out.println("publish event: " + executionId + " : " + intCodeResultBean);
 				try {
 					eventQueue.add(intCodeResultBean);
 				} catch (IllegalStateException e) {
 					System.out
-							.println("Dropping event " + intCodeResultBean.getId() + " due to capacity 5000 reached.");
+							.println("Dropping event " + intCodeResultBean.getId() + " due to buffer capacity reached.");
 				}
 
 			}
