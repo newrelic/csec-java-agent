@@ -80,7 +80,7 @@ public class ProcessorThread implements Runnable {
 	private static final Pattern PATTERN;
 	private static final Set<String> executorMethods;
 	private static final Set<String> mongoExecutorMethods;
-	protected static LinkedBlockingQueue<IntCodeResultBean> eventQueue = new LinkedBlockingQueue<>();
+	protected static LinkedBlockingQueue<IntCodeResultBean> eventQueue = new LinkedBlockingQueue<>(5000);
 	private Object source;
 	private Object[] arg;
 	private Integer executionId;
@@ -168,7 +168,7 @@ public class ProcessorThread implements Runnable {
 	protected static void queuePooler() {
 		while (!eventQueue.isEmpty()) {
 			List<IntCodeResultBean> eventlist = new ArrayList<>();
-			eventQueue.drainTo(eventlist, 100);
+			eventQueue.drainTo(eventlist, 1000);
 			for (IntCodeResultBean ib : eventlist) {
 				try {
 					LoggingInterceptor.oos.writeUTF(ib.toString());
@@ -193,97 +193,100 @@ public class ProcessorThread implements Runnable {
 	@Override
 	public void run() {
 		try {
-		if (executorMethods.contains(sourceString)) {
+			if (executorMethods.contains(sourceString)) {
 
-			long start = System.currentTimeMillis();
+				long start = System.currentTimeMillis();
 
-			IntCodeResultBean intCodeResultBean = new IntCodeResultBean(start, sourceString, LoggingInterceptor.VMPID,
-					LoggingInterceptor.applicationUUID, this.threadId + ":" + this.executionId);
+				IntCodeResultBean intCodeResultBean = new IntCodeResultBean(start, sourceString,
+						LoggingInterceptor.VMPID, LoggingInterceptor.applicationUUID,
+						this.threadId + ":" + this.executionId);
 
-			// System.out.println("Inside processor servlet info found: threadId:
-			// "+this.threadId +". "+ intCodeResultBean.getServletInfo());
-			String klassName = null;
-			if (mongoExecutorMethods.contains(sourceString)) {
-				intCodeResultBean.setValidationBypass(true);
-			}
+				// System.out.println("Inside processor servlet info found: threadId:
+				// "+this.threadId +". "+ intCodeResultBean.getServletInfo());
+				String klassName = null;
+				if (mongoExecutorMethods.contains(sourceString)) {
+					intCodeResultBean.setValidationBypass(true);
+				}
 
-			// String methodName = null;
-			StackTraceElement[] trace = this.stackTrace;
-			if (IAgentConstants.FILE_OPEN_EXECUTORS.contains(sourceString)) {
+				// String methodName = null;
+				StackTraceElement[] trace = this.stackTrace;
+				if (IAgentConstants.FILE_OPEN_EXECUTORS.contains(sourceString)) {
 
-				// System.out.println("file operation found");
-				boolean javaIoFile = false;
+					// System.out.println("file operation found");
+					boolean javaIoFile = false;
+					for (int i = 0; i < trace.length; i++) {
+						klassName = trace[i].getClassName();
+						if (javaIoFile) {
+							if (!PATTERN.matcher(klassName).matches()) {
+								intCodeResultBean.setParameters(toString(arg, sourceString));
+								intCodeResultBean.setUserAPIInfo(trace[i].getLineNumber(), klassName,
+										trace[i].getMethodName());
+								if (i > 0)
+									intCodeResultBean.setCurrentMethod(trace[i - 1].getMethodName());
+							}
+							if (intCodeResultBean.getUserClassName() != null
+									&& !intCodeResultBean.getUserClassName().isEmpty()) {
+
+								// System.out.println("result bean : "+intCodeResultBean);
+								generateEvent(intCodeResultBean);
+							}
+							// System.out.println("breaking");
+							break;
+						}
+						if (klassName.equals("java.io.File")) {
+							// System.out.println("javaio found");
+							// System.out.println("next class : "+trace[i+1]);
+							javaIoFile = true;
+						}
+					}
+					ServletEventPool.getInstance().decrementServletInfoReference(threadId, executionId, true);
+					// System.out.println(threadId + " : remove from another method");
+					return;
+				}
+
 				for (int i = 0; i < trace.length; i++) {
 					klassName = trace[i].getClassName();
-					if (javaIoFile) {
-						if (!PATTERN.matcher(klassName).matches()) {
-							intCodeResultBean.setParameters(toString(arg, sourceString));
+
+					// if (klassName.equals(MSSQL_PREPARED_STATEMENT_CLASS)
+					// || klassName.equals(MSSQL_PREPARED_BATCH_STATEMENT_CLASS)
+					// || klassName.contains(MYSQL_PREPARED_STATEMENT)) {
+					// intCodeResultBean.setValidationBypass(true);
+					// } else
+					if (IAgentConstants.MYSQL_GET_CONNECTION_MAP.containsKey(klassName)
+							&& IAgentConstants.MYSQL_GET_CONNECTION_MAP.get(klassName)
+									.contains(trace[i].getMethodName())) {
+						intCodeResultBean.setValidationBypass(true);
+					}
+					if (!PATTERN.matcher(klassName).matches()) {
+						JSONArray params = toString(arg, sourceString);
+						if (params != null) {
+							intCodeResultBean.setParameters(params);
 							intCodeResultBean.setUserAPIInfo(trace[i].getLineNumber(), klassName,
 									trace[i].getMethodName());
 							if (i > 0)
 								intCodeResultBean.setCurrentMethod(trace[i - 1].getMethodName());
+						} else {
+							ServletEventPool.getInstance().decrementServletInfoReference(threadId, executionId, true);
+							// System.out.println(threadId + " : remove from another method");
+							return;
 						}
-						if (intCodeResultBean.getUserClassName() != null
-								&& !intCodeResultBean.getUserClassName().isEmpty()) {
-
-							// System.out.println("result bean : "+intCodeResultBean);
-							generateEvent(intCodeResultBean);
-						}
-						// System.out.println("breaking");
 						break;
 					}
-					if (klassName.equals("java.io.File")) {
-						// System.out.println("javaio found");
-						// System.out.println("next class : "+trace[i+1]);
-						javaIoFile = true;
-					}
 				}
-				ServletEventPool.getInstance().decrementServletInfoReference(threadId, executionId, true);
-				// System.out.println(threadId + " : remove from another method");
-				return;
-			}
-
-			for (int i = 0; i < trace.length; i++) {
-				klassName = trace[i].getClassName();
-
-				// if (klassName.equals(MSSQL_PREPARED_STATEMENT_CLASS)
-				// || klassName.equals(MSSQL_PREPARED_BATCH_STATEMENT_CLASS)
-				// || klassName.contains(MYSQL_PREPARED_STATEMENT)) {
-				// intCodeResultBean.setValidationBypass(true);
-				// } else
-				if (IAgentConstants.MYSQL_GET_CONNECTION_MAP.containsKey(klassName)
-						&& IAgentConstants.MYSQL_GET_CONNECTION_MAP.get(klassName).contains(trace[i].getMethodName())) {
-					intCodeResultBean.setValidationBypass(true);
+				if (intCodeResultBean.getUserClassName() != null && !intCodeResultBean.getUserClassName().isEmpty()) {
+					generateEvent(intCodeResultBean);
+				} else if (IAgentConstants.SYSYTEM_CALL_START.equals(sourceString)) {
+					int traceId = getClassNameForSysytemCallStart(trace, intCodeResultBean);
+					intCodeResultBean.setUserAPIInfo(trace[traceId].getLineNumber(), klassName,
+							trace[traceId].getMethodName());
+					intCodeResultBean.setParameters(toString(arg, sourceString));
+					if (traceId > 0)
+						intCodeResultBean.setCurrentMethod(trace[traceId - 1].getMethodName());
+					generateEvent(intCodeResultBean);
 				}
-				if (!PATTERN.matcher(klassName).matches()) {
-					JSONArray params = toString(arg, sourceString);
-					if (params != null) {
-						intCodeResultBean.setParameters(params);
-						intCodeResultBean.setUserAPIInfo(trace[i].getLineNumber(), klassName, trace[i].getMethodName());
-						if (i > 0)
-							intCodeResultBean.setCurrentMethod(trace[i - 1].getMethodName());
-					} else {
-						ServletEventPool.getInstance().decrementServletInfoReference(threadId, executionId, true);
-						// System.out.println(threadId + " : remove from another method");
-						return;
-					}
-					break;
-				}
-			}
-			if (intCodeResultBean.getUserClassName() != null && !intCodeResultBean.getUserClassName().isEmpty()) {
-				generateEvent(intCodeResultBean);
-			} else if (IAgentConstants.SYSYTEM_CALL_START.equals(sourceString)) {
-				int traceId = getClassNameForSysytemCallStart(trace, intCodeResultBean);
-				intCodeResultBean.setUserAPIInfo(trace[traceId].getLineNumber(), klassName,
-						trace[traceId].getMethodName());
-				intCodeResultBean.setParameters(toString(arg, sourceString));
-				if (traceId > 0)
-					intCodeResultBean.setCurrentMethod(trace[traceId - 1].getMethodName());
-				generateEvent(intCodeResultBean);
-			}
 
-		}
-		} catch (Exception e ) {
+			}
+		} catch (Exception e) {
 //			e.printStackTrace();
 		} finally {
 			ServletEventPool.getInstance().decrementServletInfoReference(threadId, executionId, true);
@@ -909,7 +912,12 @@ public class ProcessorThread implements Runnable {
 				}
 
 				System.out.println("publish event: " + executionId + " : " + intCodeResultBean);
-				eventQueue.add(intCodeResultBean);
+				try {
+					eventQueue.add(intCodeResultBean);
+				} catch (IllegalStateException e) {
+					System.out
+							.println("Dropping event " + intCodeResultBean.getId() + " due to capacity 5000 reached.");
+				}
 
 			}
 		}
