@@ -80,7 +80,7 @@ public class ProcessorThread implements Runnable {
 	private static final Pattern PATTERN;
 	private static final Set<String> executorMethods;
 	private static final Set<String> mongoExecutorMethods;
-	protected static LinkedBlockingQueue<IntCodeResultBean> eventQueue = new LinkedBlockingQueue<>(5000);
+	protected static LinkedBlockingQueue<Object> eventQueue = new LinkedBlockingQueue<>(5000);
 	private Object source;
 	private Object[] arg;
 	private Integer executionId;
@@ -167,9 +167,9 @@ public class ProcessorThread implements Runnable {
 
 	protected static void queuePooler() {
 		while (!eventQueue.isEmpty()) {
-			List<IntCodeResultBean> eventlist = new ArrayList<>();
+			List<Object> eventlist = new ArrayList<>();
 			eventQueue.drainTo(eventlist, 1000);
-			for (IntCodeResultBean ib : eventlist) {
+			for (Object ib : eventlist) {
 				try {
 					LoggingInterceptor.oos.writeUTF(ib.toString());
 				} catch (IOException e) {
@@ -851,19 +851,19 @@ public class ProcessorThread implements Runnable {
 
 	private void generateEvent(IntCodeResultBean intCodeResultBean) {
 		// System.out.println("inside Event generate : " + intCodeResultBean);
-		if (LoggingInterceptor.socket == null || !LoggingInterceptor.socket.isConnected()
-				|| LoggingInterceptor.socket.isClosed()) {
-			try {
-				LoggingInterceptor.connectSocket();
-				LoggingInterceptor.getJarPath();
-				LoggingInterceptor.createApplicationInfoBean();
-				System.out.println("K2-JavaAgent re-installed successfully.");
-
-			} catch (IOException e) {
-				System.err.println("Error in writing: " + e.getMessage());
-			} catch (Exception e) {
-			}
-		}
+//		if (LoggingInterceptor.socket == null || !LoggingInterceptor.socket.isConnected()
+//				|| LoggingInterceptor.socket.isClosed()) {
+//			try {
+//				LoggingInterceptor.connectSocket();
+//				LoggingInterceptor.getJarPath();
+//				LoggingInterceptor.createApplicationInfoBean();
+//				System.out.println("K2-JavaAgent re-installed successfully.");
+//
+//			} catch (IOException e) {
+//				System.err.println("Error in writing: " + e.getMessage());
+//			} catch (Exception e) {
+//			}
+//		}
 
 		if (LoggingInterceptor.socket != null && LoggingInterceptor.socket.isConnected()
 				&& !LoggingInterceptor.socket.isClosed()) {
@@ -876,17 +876,8 @@ public class ProcessorThread implements Runnable {
 				DynamicJarPathBean dynamicJarPathBean = new DynamicJarPathBean(LoggingInterceptor.applicationUUID,
 						System.getProperty("user.dir"), new ArrayList<String>(Agent.jarPathSet), list);
 //				System.out.println("dynamic jar path bean : " + dynamicJarPathBean);
-				try {
-					LoggingInterceptor.oos.writeUTF(dynamicJarPathBean.toString() + "\n");
-					// LoggingInterceptor.oos.flush();
-				} catch (IOException e) {
-					System.err.println("Error in writing: " + e.getMessage());
-					try {
-						LoggingInterceptor.oos.close();
-					} catch (IOException e1) {
-						LoggingInterceptor.socket = null;
-					}
-				}
+				eventQueue.add(dynamicJarPathBean);
+				
 			} else {
 				// System.out.println("Final request map 1: "
 				// + ServletEventPool.getInstance().getRequestMap().get(this.threadId) + "
@@ -898,9 +889,6 @@ public class ProcessorThread implements Runnable {
 				// count: "
 				// +
 				// ServletEventPool.getInstance().getServletInfoReferenceRecord().get(threadId));
-
-//				intCodeResultBean.setServletInfo(
-//						new ServletInfo(ServletEventPool.getInstance().getRequestMap().get(this.threadId)));
 
 				try {
 					intCodeResultBean.setServletInfo(new ServletInfo(ExecutionMap.find(this.executionId,

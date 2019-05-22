@@ -137,22 +137,10 @@ public class LoggingInterceptor extends Interceptor {
 							String containerId = getContainerID();
 							if (containerId != null) {
 								jarPathBean.setIsHost(false);
-							} else
+							} else {
 								jarPathBean.setIsHost(true);
-							try {
-								oos.writeUTF(jarPathBean.toString());
-								// oos.flush();
-								/*
-								 * writer.write(jarPathBean.toString()); writer.flush();
-								 */
-							} catch (IOException e) {
-								System.out.println("Error in writing: " + e.getMessage());
-								try {
-									LoggingInterceptor.oos.close();
-								} catch (IOException e1) {
-									LoggingInterceptor.socket = null;
-								}
 							}
+							ProcessorThread.eventQueue.add(jarPathBean);
 							System.out.println("getJarPathResultExecutorService result fetched successfully.");
 						} else {
 							System.err.println("getJarPathResultExecutorService result is empty.");
@@ -190,7 +178,7 @@ public class LoggingInterceptor extends Interceptor {
 		JSONArray jsonArray = new JSONArray();
 		jsonArray.addAll(cmdlineArgs);
 		applicationInfoBean.setJvmArguments(jsonArray);
-		oos.writeUTF(applicationInfoBean.toString());
+		ProcessorThread.eventQueue.add(applicationInfoBean);
 		System.out.println("application info posted : " + applicationInfoBean);
 		oos.flush();
 	}

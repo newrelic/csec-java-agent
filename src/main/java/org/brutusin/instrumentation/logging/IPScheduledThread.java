@@ -1,6 +1,5 @@
 package org.brutusin.instrumentation.logging;
 
-
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.util.concurrent.Executors;
@@ -18,17 +17,17 @@ public class IPScheduledThread {
 	private IPScheduledThread() {
 		Runnable runnable = new Runnable() {
 			public void run() {
-				
+
 				try (BufferedReader reader = new BufferedReader(new FileReader("/etc/k2-adp/hostip.properties"))) {
 					String hostip = reader.readLine();
 					if (hostip == null || hostip.equals("")) {
 						System.out.println("Host ip not found");
-					} else {
-						if (!LoggingInterceptor.hostip.equals(hostip)) {
-							LoggingInterceptor.connectSocket();
-							LoggingInterceptor.createApplicationInfoBean();
-							System.out.println("K2-JavaAgent re-installed successfully.");
-						}
+					} else if (!LoggingInterceptor.hostip.equals(hostip) || (LoggingInterceptor.socket == null
+							|| !LoggingInterceptor.socket.isConnected() || LoggingInterceptor.socket.isClosed())) {
+						LoggingInterceptor.connectSocket();
+						LoggingInterceptor.createApplicationInfoBean();
+						LoggingInterceptor.getJarPath();
+						System.out.println("K2-JavaAgent re-installed successfully.");
 					}
 				} catch (Exception e) {
 					System.err.println("Error in IPScheduledThread : " + e.getMessage());
