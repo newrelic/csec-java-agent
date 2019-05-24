@@ -17,7 +17,6 @@ public class IPScheduledThread {
 	private IPScheduledThread() {
 		Runnable runnable = new Runnable() {
 			public void run() {
-
 				try (BufferedReader reader = new BufferedReader(new FileReader("/etc/k2-adp/hostip.properties"))) {
 					String hostip = reader.readLine();
 					if (hostip == null || hostip.equals("")) {
@@ -37,7 +36,7 @@ public class IPScheduledThread {
 		};
 		ipScheduledService = Executors.newSingleThreadScheduledExecutor(new ThreadFactory() {
 			private final AtomicInteger threadNumber = new AtomicInteger(1);
-
+			
 			@Override
 			public Thread newThread(Runnable r) {
 				return new Thread(Thread.currentThread().getThreadGroup(), r,
