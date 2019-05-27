@@ -1,4 +1,4 @@
-package org.brutusin.instrumentation.logging;
+package com.k2cybersecurity.intcodeagent.models.javaagent;
 
 import java.io.Serializable;
 
@@ -6,9 +6,10 @@ import org.json.simple.JSONArray;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.k2cybersecurity.intcodeagent.logging.ServletInfo;
 
 
-public class IntCodeResultBean extends AgentBasicInfo implements Serializable{
+public class JavaAgentEventBean extends AgentBasicInfo implements Serializable{
 
 	/**
 	 * 
@@ -28,16 +29,16 @@ public class IntCodeResultBean extends AgentBasicInfo implements Serializable{
 	private ServletInfo servletInfo;
 	private String id;
 
-	public IntCodeResultBean() {
+	public JavaAgentEventBean() {
 	    super();
 	}
 
-	public IntCodeResultBean(String id) {
+	public JavaAgentEventBean(String id) {
 	    this();
 	    this.id = id;
 	}
 	
-	public IntCodeResultBean(Long startTime, String source, Integer pid, String applicationUUID, String id) {
+	public JavaAgentEventBean(Long startTime, String source, Integer pid, String applicationUUID, String id) {
 	    this(id);
 		this.setPid(pid);
 		this.applicationUUID = applicationUUID;
@@ -45,7 +46,7 @@ public class IntCodeResultBean extends AgentBasicInfo implements Serializable{
 		this.startTime = startTime;
 	}
 	
-	public IntCodeResultBean(Long startTime, String source, JSONArray parameters, Integer pid, String applicationUUID, String id) {
+	public JavaAgentEventBean(Long startTime, String source, JSONArray parameters, Integer pid, String applicationUUID, String id) {
 	    this(id);
 		this.setPid(pid);
 		this.applicationUUID = applicationUUID;

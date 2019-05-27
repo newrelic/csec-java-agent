@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.brutusin.instrumentation.logging;
+package com.k2cybersecurity.intcodeagent.logging;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -49,6 +49,9 @@ import org.brutusin.instrumentation.Interceptor;
 import org.json.simple.JSONArray;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.MethodNode;
+
+import com.k2cybersecurity.intcodeagent.models.javaagent.ApplicationInfoBean;
+import com.k2cybersecurity.intcodeagent.models.javaagent.JavaAgentJarPathBean;
 
 public class LoggingInterceptor extends Interceptor {
 
@@ -130,7 +133,7 @@ public class LoggingInterceptor extends Interceptor {
 				try {
 					if (Agent.getJarPathResultExecutorService.awaitTermination(5, TimeUnit.MINUTES)) {
 						if (!Agent.jarPathSet.isEmpty()) {
-							JarPathBean jarPathBean = new JarPathBean(applicationUUID,
+							JavaAgentJarPathBean jarPathBean = new JavaAgentJarPathBean(applicationUUID,
 									new ArrayList<String>(Agent.jarPathSet));
 							String containerId = getContainerID();
 							if (containerId != null) {
@@ -266,7 +269,7 @@ public class LoggingInterceptor extends Interceptor {
 		return allClasses.contains(className);
 	}
 
-	public org.brutusin.instrumentation.logging.ByteBuffer preProcessTomcatByteBuffer(byte[] buffer, int limitHb) {
+	public com.k2cybersecurity.intcodeagent.logging.ByteBuffer preProcessTomcatByteBuffer(byte[] buffer, int limitHb) {
 		byte[] modifiedBuffer = new byte[limitHb];
 		modifiedBuffer[0] = buffer[0];
 		int k = 1;
@@ -279,7 +282,7 @@ public class LoggingInterceptor extends Interceptor {
 					i++;
 					k++;
 				}
-				return new org.brutusin.instrumentation.logging.ByteBuffer(modifiedBuffer, k);
+				return new com.k2cybersecurity.intcodeagent.logging.ByteBuffer(modifiedBuffer, k);
 			}
 			if (buffer[i + 1] == 13 && buffer[i + 2] == 10 && buffer[i - 1] == buffer[i]) {
 
@@ -290,7 +293,7 @@ public class LoggingInterceptor extends Interceptor {
 		}
 		modifiedBuffer[k++] = 13;
 		modifiedBuffer[k++] = 10;
-		return new org.brutusin.instrumentation.logging.ByteBuffer(modifiedBuffer, k);
+		return new com.k2cybersecurity.intcodeagent.logging.ByteBuffer(modifiedBuffer, k);
 	}
 
 	@Override
@@ -525,7 +528,7 @@ public class LoggingInterceptor extends Interceptor {
 						hbContent = (byte[]) byteBuffer;
 					}
 
-					org.brutusin.instrumentation.logging.ByteBuffer buff = preProcessTomcatByteBuffer(hbContent,
+					com.k2cybersecurity.intcodeagent.logging.ByteBuffer buff = preProcessTomcatByteBuffer(hbContent,
 							positionHb);
 					requestContent = new String(buff.getByteArray(), 0, buff.getLimit(), StandardCharsets.UTF_8);
 					servletInfo.setRawRequest(requestContent);

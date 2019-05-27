@@ -1,4 +1,4 @@
-package org.brutusin.instrumentation.logging;
+package com.k2cybersecurity.intcodeagent.models.javaagent;
 
 import java.io.Serializable;
 
@@ -13,6 +13,7 @@ public class ApplicationInfoBean extends AgentBasicInfo implements Serializable{
 	 * 
 	 */
 	private static final long serialVersionUID = -4692519856531306026L;
+	
 	private Integer pid;
 	private String applicationName;
 	private Boolean isHost;
