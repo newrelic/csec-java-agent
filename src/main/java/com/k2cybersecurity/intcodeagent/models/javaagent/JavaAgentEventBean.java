@@ -6,7 +6,6 @@ import org.json.simple.JSONArray;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.k2cybersecurity.intcodeagent.logging.ServletInfo;
 
 
 public class JavaAgentEventBean extends AgentBasicInfo implements Serializable{

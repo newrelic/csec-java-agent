@@ -52,6 +52,7 @@ import org.objectweb.asm.tree.MethodNode;
 
 import com.k2cybersecurity.intcodeagent.models.javaagent.ApplicationInfoBean;
 import com.k2cybersecurity.intcodeagent.models.javaagent.JavaAgentJarPathBean;
+import com.k2cybersecurity.intcodeagent.models.javaagent.ServletInfo;
 
 public class LoggingInterceptor extends Interceptor {
 

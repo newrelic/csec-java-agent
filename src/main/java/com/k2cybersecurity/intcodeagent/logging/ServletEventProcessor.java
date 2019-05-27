@@ -8,6 +8,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.k2cybersecurity.intcodeagent.models.javaagent.ServletInfo;
 
 public class ServletEventProcessor implements Runnable {
 

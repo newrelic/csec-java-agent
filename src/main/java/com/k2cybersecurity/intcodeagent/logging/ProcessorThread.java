@@ -76,6 +76,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.k2cybersecurity.intcodeagent.models.javaagent.JavaAgentDynamicPathBean;
 import com.k2cybersecurity.intcodeagent.models.javaagent.JavaAgentEventBean;
+import com.k2cybersecurity.intcodeagent.models.javaagent.ServletInfo;
 
 public class ProcessorThread implements Runnable {
 

@@ -1,4 +1,4 @@
-package com.k2cybersecurity.intcodeagent.logging;
+package com.k2cybersecurity.intcodeagent.models.javaagent;
 
 import java.io.Serializable;
 
