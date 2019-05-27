@@ -117,8 +117,8 @@
 									<shadedPattern>k2.io.com.fasterxml</shadedPattern>
 								</relocation>
 								<relocation>
-									<pattern>com.k2</pattern>
-									<shadedPattern>k2.io.com.k2</shadedPattern>
+									<pattern>com.k2.</pattern>
+									<shadedPattern>k2.io.com.k2.</shadedPattern>
 								</relocation>
 							</relocations>
 						</configuration>
