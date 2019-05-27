@@ -1,13 +1,19 @@
 package org.brutusin.instrumentation.logging;
 
+import java.io.Serializable;
 import java.util.List;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-public class JarPathBean extends AgentBasicInfo {
+public class JarPathBean extends AgentBasicInfo implements Serializable{
 
-    private String applicationUUID;
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = -4616871472044555920L;
+
+	private String applicationUUID;
 
     private List<String> jarPaths;
     

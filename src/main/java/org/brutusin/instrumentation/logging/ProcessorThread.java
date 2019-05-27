@@ -89,7 +89,28 @@ public class ProcessorThread implements Runnable {
 	private String sourceString;
 	private ObjectMapper mapper;
 	private JSONParser parser;
-
+	protected static Runnable queuePooler =  new Runnable() {
+		@Override
+		public void run() {
+			if(!eventQueue.isEmpty()) {
+				try {				
+					List<Object> eventList = new ArrayList<>();
+					eventQueue.drainTo(eventList, eventQueue.size());
+					LoggingInterceptor.oos.writeObject(eventList);
+//					LoggingInterceptor.oos.writeObject(new String("sumit"));
+					LoggingInterceptor.oos.flush();
+//					eventQueue.clear();
+				} catch (IOException e) {
+					System.err.println("Error in writing: " + e.getMessage());
+					try {
+						LoggingInterceptor.oos.close();
+					} catch (IOException e1) {
+						LoggingInterceptor.socket = null;
+					}
+				}
+			}
+		}
+	};
 	static {
 		PATTERN = Pattern.compile(IAgentConstants.TRACE_REGEX);
 		executorMethods = new HashSet<>(Arrays.asList(IAgentConstants.EXECUTORS));
@@ -100,7 +121,7 @@ public class ProcessorThread implements Runnable {
 			interceptMethod.put(IAgentConstants.ALL_CLASSES[i],
 					new ArrayList<String>(Arrays.asList(IAgentConstants.ALL_METHODS[i])));
 		}
-	}
+		}
 
 	/**
 	 * @param source
@@ -165,30 +186,7 @@ public class ProcessorThread implements Runnable {
 		this.executionId = executionId;
 	}
 
-	protected static void queuePooler() {
-		while (!eventQueue.isEmpty()) {
-			List<Object> eventlist = new ArrayList<>();
-			eventQueue.drainTo(eventlist, 1000);
-			for (Object ib : eventlist) {
-				try {
-					LoggingInterceptor.oos.writeUTF(ib.toString());
-				} catch (IOException e) {
-					System.err.println("Error in writing: " + e.getMessage());
-					try {
-						LoggingInterceptor.oos.close();
-					} catch (IOException e1) {
-						LoggingInterceptor.socket = null;
-					}
-				}
-			}
-			eventlist.clear();
-			try {
-				LoggingInterceptor.oos.flush();
-			} catch (IOException e1) {
-			}
-		}
-		eventQueue.clear();
-	}
+	
 
 	@Override
 	public void run() {
@@ -877,7 +875,6 @@ public class ProcessorThread implements Runnable {
 						System.getProperty("user.dir"), new ArrayList<String>(Agent.jarPathSet), list);
 //				System.out.println("dynamic jar path bean : " + dynamicJarPathBean);
 				eventQueue.add(dynamicJarPathBean);
-				
 			} else {
 				// System.out.println("Final request map 1: "
 				// + ServletEventPool.getInstance().getRequestMap().get(this.threadId) + "
@@ -902,7 +899,7 @@ public class ProcessorThread implements Runnable {
 //				System.out.println("publish event: " + executionId + " : " + intCodeResultBean);
 				try {
 					eventQueue.add(intCodeResultBean);
-				} catch (IllegalStateException e) {
+				} catch (IllegalStateException e) {	
 					System.out
 							.println("Dropping event " + intCodeResultBean.getId() + " due to buffer capacity reached.");
 				}

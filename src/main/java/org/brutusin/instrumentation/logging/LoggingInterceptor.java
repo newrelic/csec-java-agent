@@ -16,12 +16,12 @@
 package org.brutusin.instrumentation.logging;
 
 import java.io.BufferedReader;
-import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
 import java.lang.reflect.Constructor;
@@ -33,21 +33,16 @@ import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedDeque;
-import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-
-import javax.security.auth.callback.ConfirmationCallback;
 
 import org.brutusin.instrumentation.Agent;
 import org.brutusin.instrumentation.Interceptor;
@@ -59,7 +54,7 @@ public class LoggingInterceptor extends Interceptor {
 
 	private static final Set<String> allClasses;
 	private static final Map<String, List<String>> interceptMethod;
-	protected static DataOutputStream oos;
+	protected static ObjectOutputStream oos;
 	protected static Integer VMPID;
 	protected static final String applicationUUID;
 	protected static Socket socket;
@@ -179,8 +174,6 @@ public class LoggingInterceptor extends Interceptor {
 		jsonArray.addAll(cmdlineArgs);
 		applicationInfoBean.setJvmArguments(jsonArray);
 		ProcessorThread.eventQueue.add(applicationInfoBean);
-		System.out.println("application info posted : " + applicationInfoBean);
-		oos.flush();
 	}
 
 	protected static void connectSocket() {
@@ -192,7 +185,7 @@ public class LoggingInterceptor extends Interceptor {
 			socket = new Socket(hostip, 54321);
 			if (!socket.isConnected() || socket.isClosed())
 				throw new RuntimeException("Can't connect to IC, agent installation failed.");
-			oos = new DataOutputStream(socket.getOutputStream());
+			oos = new ObjectOutputStream(socket.getOutputStream());
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
@@ -212,11 +205,11 @@ public class LoggingInterceptor extends Interceptor {
 		 * RuntimeException(ex); }
 		 */
 		try {
-			IPScheduledThread.getInstance();
 			connectSocket();
 			getJarPath();
 			createApplicationInfoBean();
 			eventWritePool();
+			IPScheduledThread.getInstance();
 			System.out.println("K2-JavaAgent installed successfully.");
 
 		} catch (Exception e) {
@@ -226,14 +219,7 @@ public class LoggingInterceptor extends Interceptor {
 
 	private static void eventWritePool() {
 		eventPoolExecutor = Executors.newScheduledThreadPool(1);
-		eventPoolExecutor.scheduleWithFixedDelay(new Runnable() {
-			@Override
-			public void run() {
-				if (!ProcessorThread.eventQueue.isEmpty()) {
-					ProcessorThread.queuePooler();
-				}
-			}
-		}, 2, 2, TimeUnit.SECONDS);
+		eventPoolExecutor.scheduleWithFixedDelay(ProcessorThread.queuePooler, 1, 1, TimeUnit.SECONDS);
 	}
 
 	private static String getCmdLineArgsByProc(Integer pid) {

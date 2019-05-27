@@ -1,13 +1,19 @@
 package org.brutusin.instrumentation.logging;
 
+import java.io.Serializable;
+
 import org.json.simple.JSONArray;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 
-public class IntCodeResultBean extends AgentBasicInfo {
+public class IntCodeResultBean extends AgentBasicInfo implements Serializable{
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -6572256624089364532L;
 	private Integer pid;
 	private String applicationUUID;
 	private Long startTime;
