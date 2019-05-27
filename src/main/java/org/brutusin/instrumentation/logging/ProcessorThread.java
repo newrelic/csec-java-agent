@@ -97,9 +97,7 @@ public class ProcessorThread implements Runnable {
 					List<Object> eventList = new ArrayList<>();
 					eventQueue.drainTo(eventList, eventQueue.size());
 					LoggingInterceptor.oos.writeObject(eventList);
-//					LoggingInterceptor.oos.writeObject(new String("sumit"));
 					LoggingInterceptor.oos.flush();
-//					eventQueue.clear();
 				} catch (IOException e) {
 					System.err.println("Error in writing: " + e.getMessage());
 					try {
