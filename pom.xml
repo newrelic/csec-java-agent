@@ -78,7 +78,7 @@
 				<configuration>
 					<archive>
 						<manifestEntries>
-							<Premain-Class>k2.org.brutusin.instrumentation.Agent</Premain-Class>
+							<Premain-Class>k2.io.org.brutusin.instrumentation.Agent</Premain-Class>
 							<Can-Retransform-Classes>true</Can-Retransform-Classes>
 							<Can-Redefine-Classes>true</Can-Redefine-Classes>
 							<Boot-Class-Path>${project.artifactId}-${project.version}-jar-with-dependencies.${project.packaging}</Boot-Class-Path>
