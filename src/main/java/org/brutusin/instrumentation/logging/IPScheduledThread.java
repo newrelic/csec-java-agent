@@ -19,6 +19,15 @@ public class IPScheduledThread {
 			public void run() {
 				try (BufferedReader reader = new BufferedReader(new FileReader("/etc/k2-adp/hostip.properties"))) {
 					String hostip = reader.readLine();
+					
+					try {
+					System.out.println("Host ip equals : " + LoggingInterceptor.hostip.equals(hostip));
+					System.out.println("LoggingInterceptor.socket : " + LoggingInterceptor.socket);
+					System.out.println("LoggingInterceptor.socket.isConnected() : " + LoggingInterceptor.socket.isConnected());
+					System.out.println("LoggingInterceptor.socket.isClosed() : " + LoggingInterceptor.socket.isClosed());
+					} catch (Exception ex) {
+						ex.printStackTrace();
+					}
 					if (hostip == null || hostip.equals("")) {
 						System.out.println("Host ip not found");
 					} else if (!LoggingInterceptor.hostip.equals(hostip) || (LoggingInterceptor.socket == null
