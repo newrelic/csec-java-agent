@@ -64,7 +64,7 @@ public class LoggingInterceptor extends Interceptor {
 	protected static Class<?> mysqlPreparedStatement8Class, mysqlPreparedStatement5Class, abstractInputBufferClass;
 	protected static String tomcatVersion;
 	protected static boolean tomcat7 = false, tomcat8 = false, tomcat9 = false;
-	
+
 	static final int MAX_DEPTH_LOOKUP = 4; // Max number of superclasses to lookup for a field
 	// protected static Map<Long, ServletInfo> requestMap;
 	protected static ScheduledExecutorService eventPoolExecutor;
@@ -179,6 +179,7 @@ public class LoggingInterceptor extends Interceptor {
 		JSONArray jsonArray = new JSONArray();
 		jsonArray.addAll(cmdlineArgs);
 		applicationInfoBean.setJvmArguments(jsonArray);
+		System.out.println("Posted application info : " + applicationInfoBean);
 		ProcessorThread.eventQueue.add(applicationInfoBean);
 	}
 
@@ -449,12 +450,12 @@ public class LoggingInterceptor extends Interceptor {
 			// System.out.println("RequestMapRef : " +
 			// ServletEventPool.getInstance().getServletInfoReferenceRecord());
 			// System.out.println("Coyote Service: " + threadId + " : " + sourceString);
-			
+
 			ServletEventPool.getInstance().incrementServletInfoReference(threadId, executionId, false);
-			if( tomcatVersion == null || tomcatVersion.isEmpty() ) {
+			if (tomcatVersion == null || tomcatVersion.isEmpty()) {
 				setTomcatVersion();
 			}
-			
+
 			ServletInfo servletInfo = new ServletInfo();
 			if (!ServletEventPool.getInstance().getRequestMap().containsKey(threadId)) {
 				ConcurrentLinkedDeque<ExecutionMap> executionMaps = new ConcurrentLinkedDeque<ExecutionMap>();
@@ -481,25 +482,24 @@ public class LoggingInterceptor extends Interceptor {
 				Object byteBuffer = null;
 				int positionHb = -1;
 				boolean byteBufferFound = false;
-				if(tomcat8 || tomcat9) {
+				if (tomcat8 || tomcat9) {
 					try {
 						Field byteBufferField = inputBuffer.getClass().getDeclaredField("byteBuffer");
 						byteBufferField.setAccessible(true);
 						byteBuffer = byteBufferField.get(inputBuffer);
-	
+
 						Field position = Buffer.class.getDeclaredField("position");
 						position.setAccessible(true);
 						positionHb = (Integer) position.get(byteBuffer);
 						byteBufferFound = true;
 					} catch (Exception e) {
-	//					e.printStackTrace();
+						// e.printStackTrace();
 					}
-				}else if (tomcat7) {
+				} else if (tomcat7) {
 					try {
 						if (abstractInputBufferClass == null) {
-						abstractInputBufferClass = Class.forName(
-								"org.apache.coyote.http11.AbstractInputBuffer", true,
-								Thread.currentThread().getContextClassLoader());
+							abstractInputBufferClass = Class.forName("org.apache.coyote.http11.AbstractInputBuffer",
+									true, Thread.currentThread().getContextClassLoader());
 						}
 						Field byteBufferField = abstractInputBufferClass.getDeclaredField("buf");
 						byteBufferField.setAccessible(true);
@@ -591,7 +591,7 @@ public class LoggingInterceptor extends Interceptor {
 				|| objClass.getName().equals(IAgentConstants.MYSQL_PREPARED_STATEMENT_42)
 				|| objClass.getName().equals(IAgentConstants.MYSQL_PREPARED_STATEMENT_4)) {
 			try {
-				if(mysqlPreparedStatement5Class == null) {
+				if (mysqlPreparedStatement5Class == null) {
 					mysqlPreparedStatement5Class = Class.forName(IAgentConstants.MYSQL_PREPARED_STATEMENT_5, true,
 							Thread.currentThread().getContextClassLoader());
 				}
@@ -629,11 +629,12 @@ public class LoggingInterceptor extends Interceptor {
 				queryField.setAccessible(true);
 				Object query = queryField.get(obj);
 				if (query != null && query.getClass().getName().equals(IAgentConstants.MYSQL_PREPARED_QUERY_8)) {
-					
-					if(mysqlPreparedStatement8Class == null ) {
-						mysqlPreparedStatement8Class = Class.forName(IAgentConstants.MYSQL_PREPARED_STATEMENT_SOURCE_8, true,Thread.currentThread().getContextClassLoader());
+
+					if (mysqlPreparedStatement8Class == null) {
+						mysqlPreparedStatement8Class = Class.forName(IAgentConstants.MYSQL_PREPARED_STATEMENT_SOURCE_8,
+								true, Thread.currentThread().getContextClassLoader());
 					}
-					
+
 					objClass = mysqlPreparedStatement8Class;
 					Field originalSqlField = objClass.getDeclaredField("originalSql");
 					originalSqlField.setAccessible(true);
@@ -668,11 +669,11 @@ public class LoggingInterceptor extends Interceptor {
 			throw new RuntimeException(ex);
 		}
 	}
-	
-	
+
 	private static void setTomcatVersion() {
 		try {
-			Class<?> serverInfo = Class.forName("org.apache.catalina.util.ServerInfo", true, Thread.currentThread().getContextClassLoader());
+			Class<?> serverInfo = Class.forName("org.apache.catalina.util.ServerInfo", true,
+					Thread.currentThread().getContextClassLoader());
 			Field serverNumberField = serverInfo.getDeclaredField("serverNumber");
 			serverNumberField.setAccessible(true);
 			tomcatVersion = (String) serverNumberField.get(null);
@@ -680,17 +681,18 @@ public class LoggingInterceptor extends Interceptor {
 			if (tomcatMajorVersion.equals("9")) {
 				System.out.println("Detected Tomcat Version 9 :" + tomcatVersion);
 				tomcat9 = true;
-			}else if (tomcatMajorVersion.equals("8")) {
+			} else if (tomcatMajorVersion.equals("8")) {
 				System.out.println("Detected Tomcat Version 8 :" + tomcatVersion);
 				tomcat8 = true;
-			}else if (tomcatMajorVersion.equals("7")) {
+			} else if (tomcatMajorVersion.equals("7")) {
 				System.out.println("Detected Tomcat Version 7 :" + tomcatVersion);
 				tomcat7 = true;
-			};
-			
+			}
+			;
+
 		} catch (ClassNotFoundException | NoSuchFieldException | IllegalArgumentException | IllegalAccessException e) {
 			System.out.println("Unable to find Tomcat Version:" + e.getMessage());
-		} 
+		}
 	}
 
 }
