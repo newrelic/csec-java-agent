@@ -1,5 +1,7 @@
 package com.k2cybersecurity.intcodeagent.logging;
 
+import java.io.ObjectOutputStream;
+import java.net.Socket;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Future;
@@ -21,6 +23,9 @@ public class EventThreadPool {
 	private StringBuffer eventBuffer;
 	
 	private Map<String,String> mySqlPreparedStatementsMap;
+	private LinkedBlockingQueue<Object> eventQueue = new LinkedBlockingQueue<>(5000);
+	private Socket socket;
+	private ObjectOutputStream oos;
 	
 	private EventThreadPool() {
 		LinkedBlockingQueue<Runnable> processQueue;
@@ -144,6 +149,26 @@ public class EventThreadPool {
 		} else {
 			this.mySqlPreparedStatementsMap.put(id, sql);
 		}
+	}
+	
+	public LinkedBlockingQueue<Object> getEventQueue() {
+		return eventQueue;
+	}
+
+	public Socket getSocket() {
+		return socket;
+	}
+
+	public void setSocket(Socket socket) {
+		this.socket = socket;
+	}
+
+	public ObjectOutputStream getObjectStream() {
+		return oos;
+	}
+
+	public void setObjectStream(ObjectOutputStream oos) {
+		this.oos = oos;
 	}
 
 }

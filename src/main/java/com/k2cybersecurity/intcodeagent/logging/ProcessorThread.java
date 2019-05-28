@@ -54,7 +54,9 @@ import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.PSQLV3_EX
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.PSQLV3_EXECUTOR7_4;
 
 import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.lang.reflect.Field;
+import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -84,7 +86,8 @@ public class ProcessorThread implements Runnable {
 	private static final Pattern PATTERN;
 	private static final Set<String> executorMethods;
 	private static final Set<String> mongoExecutorMethods;
-	protected static LinkedBlockingQueue<Object> eventQueue = new LinkedBlockingQueue<>(5000);
+
+	
 	private Object source;
 	private Object[] arg;
 	private Integer executionId;
@@ -93,26 +96,8 @@ public class ProcessorThread implements Runnable {
 	private String sourceString;
 	private ObjectMapper mapper;
 	private JSONParser parser;
-	protected static Runnable queuePooler =  new Runnable() {
-		@Override
-		public void run() {
-			if(!eventQueue.isEmpty()) {
-				try {				
-					List<Object> eventList = new ArrayList<>();
-					eventQueue.drainTo(eventList, eventQueue.size());
-					LoggingInterceptor.oos.writeObject(eventList);
-					LoggingInterceptor.oos.flush();
-				} catch (IOException e) {
-					System.err.println("Error in writing: " + e.getMessage());
-					try {
-						LoggingInterceptor.oos.close();
-					} catch (IOException e1) {
-						LoggingInterceptor.socket = null;
-					}
-				}
-			}
-		}
-	};
+	private LinkedBlockingQueue<Object> eventQueue;
+	private Socket currentSocket;
 	static {
 		PATTERN = Pattern.compile(IAgentConstants.TRACE_REGEX);
 		executorMethods = new HashSet<>(Arrays.asList(IAgentConstants.EXECUTORS));
@@ -144,6 +129,8 @@ public class ProcessorThread implements Runnable {
 		this.sourceString = sourceString;
 		this.mapper = new ObjectMapper();
 		this.parser = new JSONParser();
+		this.eventQueue = EventThreadPool.getInstance().getEventQueue();
+		this.currentSocket = EventThreadPool.getInstance().getSocket();
 	}
 
 	/**
@@ -865,8 +852,8 @@ public class ProcessorThread implements Runnable {
 //			}
 //		}
 
-		if (LoggingInterceptor.socket != null && LoggingInterceptor.socket.isConnected()
-				&& !LoggingInterceptor.socket.isClosed()) {
+		if (this.currentSocket != null && this.currentSocket.isConnected()
+				&& !this.currentSocket.isClosed()) {
 			intCodeResultBean.setEventGenerationTime(System.currentTimeMillis());
 			if (intCodeResultBean.getSource() != null && (intCodeResultBean.getSource()
 					.equals("public java.net.URLClassLoader(java.net.URL[])")

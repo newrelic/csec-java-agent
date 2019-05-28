@@ -41,6 +41,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
@@ -54,30 +55,56 @@ import com.k2cybersecurity.intcodeagent.models.javaagent.ApplicationInfoBean;
 import com.k2cybersecurity.intcodeagent.models.javaagent.JavaAgentJarPathBean;
 import com.k2cybersecurity.intcodeagent.models.javaagent.ServletInfo;
 
+
 public class LoggingInterceptor extends Interceptor {
 
 	private static final Set<String> allClasses;
 	private static final Map<String, List<String>> interceptMethod;
-	protected static ObjectOutputStream oos;
+
 	protected static Integer VMPID;
 	protected static final String applicationUUID;
-	protected static Socket socket;
+
 	protected static Class<?> mysqlPreparedStatement8Class, mysqlPreparedStatement5Class, abstractInputBufferClass;
 	protected static String tomcatVersion;
-	protected static boolean tomcat7 = false, tomcat8 = false, tomcat9 = false;
-
+	protected static int tomcatMajorVersion ;
+	private static final int FLUSH_MAX_COUNTER = 1800;
+	private static int counter = 0;
 	static final int MAX_DEPTH_LOOKUP = 4; // Max number of superclasses to lookup for a field
 	// protected static Map<Long, ServletInfo> requestMap;
 	protected static ScheduledExecutorService eventPoolExecutor;
 	public static String hostip = "";
+	protected static Runnable queuePooler;
 	static {
 		applicationUUID = UUID.randomUUID().toString();
 		allClasses = new HashSet<>(Arrays.asList(IAgentConstants.ALL_CLASSES));
 		interceptMethod = new HashMap<>();
 		for (int i = 0; i < IAgentConstants.ALL_METHODS.length; i++) {
 			interceptMethod.put(IAgentConstants.ALL_CLASSES[i],
-					new ArrayList<String>(Arrays.asList(IAgentConstants.ALL_METHODS[i])));
+					new ArrayList<String>(Arrays.asList(IAgentConstants.ALL_METHODS[i])));	
 		}
+		queuePooler =  new Runnable() {
+			@Override
+			public void run() {
+				LinkedBlockingQueue<Object> eventQueue = EventThreadPool.getInstance().getEventQueue();
+				if(!eventQueue.isEmpty()) {
+					try {
+						ObjectOutputStream oos = EventThreadPool.getInstance().getObjectStream();
+						List<Object> eventList = new ArrayList<>();
+						eventQueue.drainTo(eventList, eventQueue.size());
+						oos.writeUnshared(eventList);					
+						if(counter++ > FLUSH_MAX_COUNTER) {
+							oos.flush();
+							counter = 0;
+						}
+					} catch (IOException e) {
+						e.printStackTrace();
+						System.err.println("Error in writing: " + e.getMessage());
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+				}
+			}
+		};
 
 	}
 
@@ -142,7 +169,7 @@ public class LoggingInterceptor extends Interceptor {
 							} else {
 								jarPathBean.setIsHost(true);
 							}
-							ProcessorThread.eventQueue.add(jarPathBean);
+							EventThreadPool.getInstance().getEventQueue().add(jarPathBean);
 							System.out.println("getJarPathResultExecutorService result fetched successfully.");
 						} else {
 							System.err.println("getJarPathResultExecutorService result is empty.");
@@ -181,7 +208,7 @@ public class LoggingInterceptor extends Interceptor {
 		jsonArray.addAll(cmdlineArgs);
 		applicationInfoBean.setJvmArguments(jsonArray);
 		System.out.println("Posted application info : " + applicationInfoBean);
-		ProcessorThread.eventQueue.add(applicationInfoBean);
+		EventThreadPool.getInstance().getEventQueue().add(applicationInfoBean);
 	}
 
 	protected static void connectSocket() {
@@ -190,10 +217,13 @@ public class LoggingInterceptor extends Interceptor {
 			if (hostip == null || hostip.equals(""))
 				throw new RuntimeException("Host ip not found");
 			System.out.println("hostip found: " + hostip);
-			socket = new Socket(hostip, 54321);
+			Socket socket = new Socket(hostip, 54321);
+			EventThreadPool.getInstance().setSocket(socket);
+			
 			if (!socket.isConnected() || socket.isClosed())
 				throw new RuntimeException("Can't connect to IC, agent installation failed.");
-			oos = new ObjectOutputStream(socket.getOutputStream());
+			EventThreadPool.getInstance().setObjectStream(new ObjectOutputStream(socket.getOutputStream()));
+			
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
@@ -227,7 +257,7 @@ public class LoggingInterceptor extends Interceptor {
 
 	private static void eventWritePool() {
 		eventPoolExecutor = Executors.newScheduledThreadPool(1);
-		eventPoolExecutor.scheduleWithFixedDelay(ProcessorThread.queuePooler, 1, 1, TimeUnit.SECONDS);
+		eventPoolExecutor.scheduleWithFixedDelay(queuePooler, 1, 1, TimeUnit.SECONDS);
 	}
 
 	private static String getCmdLineArgsByProc(Integer pid) {
@@ -483,7 +513,7 @@ public class LoggingInterceptor extends Interceptor {
 				Object byteBuffer = null;
 				int positionHb = -1;
 				boolean byteBufferFound = false;
-				if (tomcat8 || tomcat9) {
+				if (tomcatMajorVersion == 8  ||  tomcatMajorVersion == 9) {
 					try {
 						Field byteBufferField = inputBuffer.getClass().getDeclaredField("byteBuffer");
 						byteBufferField.setAccessible(true);
@@ -496,7 +526,7 @@ public class LoggingInterceptor extends Interceptor {
 					} catch (Exception e) {
 						// e.printStackTrace();
 					}
-				} else if (tomcat7) {
+				} else if (tomcatMajorVersion == 7) {
 					try {
 						if (abstractInputBufferClass == null) {
 							abstractInputBufferClass = Class.forName("org.apache.coyote.http11.AbstractInputBuffer",
@@ -521,11 +551,11 @@ public class LoggingInterceptor extends Interceptor {
 
 					byte[] hbContent = null;
 
-					if (!tomcat7) {
+					if ( tomcatMajorVersion == 8 || tomcatMajorVersion == 9) {
 						Field hb = ByteBuffer.class.getDeclaredField("hb");
 						hb.setAccessible(true);
 						hbContent = (byte[]) hb.get(byteBuffer);
-					} else {
+					} else if ( tomcatMajorVersion == 7 ) {
 						hbContent = (byte[]) byteBuffer;
 					}
 
@@ -678,22 +708,14 @@ public class LoggingInterceptor extends Interceptor {
 			Field serverNumberField = serverInfo.getDeclaredField("serverNumber");
 			serverNumberField.setAccessible(true);
 			tomcatVersion = (String) serverNumberField.get(null);
-			String tomcatMajorVersion = tomcatVersion.split("\\.")[0];
-			if (tomcatMajorVersion.equals("9")) {
-				System.out.println("Detected Tomcat Version 9 :" + tomcatVersion);
-				tomcat9 = true;
-			} else if (tomcatMajorVersion.equals("8")) {
-				System.out.println("Detected Tomcat Version 8 :" + tomcatVersion);
-				tomcat8 = true;
-			} else if (tomcatMajorVersion.equals("7")) {
-				System.out.println("Detected Tomcat Version 7 :" + tomcatVersion);
-				tomcat7 = true;
-			}
-			;
+			tomcatMajorVersion = Integer.parseInt(tomcatVersion.split("\\.")[0]);
+			System.out.println("Detected Tomcat Version " + tomcatMajorVersion + " :" + tomcatVersion);
 
-		} catch (ClassNotFoundException | NoSuchFieldException | IllegalArgumentException | IllegalAccessException e) {
+		} catch (Exception e) {
 			System.out.println("Unable to find Tomcat Version:" + e.getMessage());
 		}
 	}
 
 }
+
+
