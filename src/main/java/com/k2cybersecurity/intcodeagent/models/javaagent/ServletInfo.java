@@ -1,4 +1,4 @@
-package org.brutusin.instrumentation.logging;
+package com.k2cybersecurity.intcodeagent.models.javaagent;
 
 import java.io.Serializable;
 

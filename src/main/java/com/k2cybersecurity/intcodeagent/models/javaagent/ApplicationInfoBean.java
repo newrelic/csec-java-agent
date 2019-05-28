@@ -1,12 +1,19 @@
-package org.brutusin.instrumentation.logging;
+package com.k2cybersecurity.intcodeagent.models.javaagent;
+
+import java.io.Serializable;
 
 import org.json.simple.JSONArray;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-public class ApplicationInfoBean extends AgentBasicInfo {
+public class ApplicationInfoBean extends AgentBasicInfo implements Serializable{
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -4692519856531306026L;
+	
 	private Integer pid;
 	private String applicationName;
 	private Boolean isHost;

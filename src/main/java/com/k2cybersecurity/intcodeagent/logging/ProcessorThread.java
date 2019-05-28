@@ -1,56 +1,57 @@
-package org.brutusin.instrumentation.logging;
+package com.k2cybersecurity.intcodeagent.logging;
 
-import static org.brutusin.instrumentation.logging.IAgentConstants.CLASS_LOADER_IDENTIFIER;
-import static org.brutusin.instrumentation.logging.IAgentConstants.MOGNO_ELEMENT_DATA_FIELD;
-import static org.brutusin.instrumentation.logging.IAgentConstants.MONGO_COLLECTION_FIELD;
-import static org.brutusin.instrumentation.logging.IAgentConstants.MONGO_COLLECTION_WILDCARD;
-import static org.brutusin.instrumentation.logging.IAgentConstants.MONGO_COMMAND_CLASS_FRAGMENT;
-import static org.brutusin.instrumentation.logging.IAgentConstants.MONGO_COMMAND_FIELD;
-import static org.brutusin.instrumentation.logging.IAgentConstants.MONGO_COMMAND_NAME_FIELD;
-import static org.brutusin.instrumentation.logging.IAgentConstants.MONGO_DELETE_CLASS_FRAGMENT;
-import static org.brutusin.instrumentation.logging.IAgentConstants.MONGO_DELETE_REQUEST_FIELD;
-import static org.brutusin.instrumentation.logging.IAgentConstants.MONGO_DISTINCT_CLASS_FRAGMENT;
-import static org.brutusin.instrumentation.logging.IAgentConstants.MONGO_DOCUMENT_FIELD;
-import static org.brutusin.instrumentation.logging.IAgentConstants.MONGO_FIELD_NAME_FIELD;
-import static org.brutusin.instrumentation.logging.IAgentConstants.MONGO_FILTER_FIELD;
-import static org.brutusin.instrumentation.logging.IAgentConstants.MONGO_FIND_AND_UPDATE_CLASS_FRAGMENT;
-import static org.brutusin.instrumentation.logging.IAgentConstants.MONGO_FIND_CLASS_FRAGMENT;
-import static org.brutusin.instrumentation.logging.IAgentConstants.MONGO_IDENTIFIER;
-import static org.brutusin.instrumentation.logging.IAgentConstants.MONGO_INSERT_CLASS_FRAGMENT;
-import static org.brutusin.instrumentation.logging.IAgentConstants.MONGO_INSERT_REQUESTS_FIELD;
-import static org.brutusin.instrumentation.logging.IAgentConstants.MONGO_MULTIPLE_UPDATES_FIELD;
-import static org.brutusin.instrumentation.logging.IAgentConstants.MONGO_NAMESPACE_FIELD;
-import static org.brutusin.instrumentation.logging.IAgentConstants.MONGO_PAYLOAD_FIELD;
-import static org.brutusin.instrumentation.logging.IAgentConstants.MONGO_SINGLE_UPDATE_FIELD;
-import static org.brutusin.instrumentation.logging.IAgentConstants.MONGO_UPDATE_CLASS_FRAGMENT;
-import static org.brutusin.instrumentation.logging.IAgentConstants.MONGO_WRITE_CLASS_FRAGMENT;
-import static org.brutusin.instrumentation.logging.IAgentConstants.MONGO_WRITE_REQUEST_FIELD;
-import static org.brutusin.instrumentation.logging.IAgentConstants.MSSQL_ACTIVE_CONNECTION_PROP_FIELD;
-import static org.brutusin.instrumentation.logging.IAgentConstants.MSSQL_BATCH_PARAM_VALUES_FIELD;
-import static org.brutusin.instrumentation.logging.IAgentConstants.MSSQL_BATCH_STATEMENT_BUFFER_FIELD;
-import static org.brutusin.instrumentation.logging.IAgentConstants.MSSQL_BATCH_STATEMENT_EXECUTE_CMD_CLASS;
-import static org.brutusin.instrumentation.logging.IAgentConstants.MSSQL_CONNECTION_FIELD;
-import static org.brutusin.instrumentation.logging.IAgentConstants.MSSQL_CURRENT_OBJECT;
-import static org.brutusin.instrumentation.logging.IAgentConstants.MSSQL_IDENTIFIER;
-import static org.brutusin.instrumentation.logging.IAgentConstants.MSSQL_IMPL_FIELD;
-import static org.brutusin.instrumentation.logging.IAgentConstants.*;
-import static org.brutusin.instrumentation.logging.IAgentConstants.MSSQL_IN_OUT_PARAM_FIELD;
-import static org.brutusin.instrumentation.logging.IAgentConstants.MSSQL_PREPARED_BATCH_STATEMENT_CLASS;
-import static org.brutusin.instrumentation.logging.IAgentConstants.MSSQL_PREPARED_STATEMENT_CLASS;
-import static org.brutusin.instrumentation.logging.IAgentConstants.MSSQL_SERVER_STATEMENT_CLASS;
-import static org.brutusin.instrumentation.logging.IAgentConstants.MSSQL_SQL_FIELD;
-import static org.brutusin.instrumentation.logging.IAgentConstants.MSSQL_STATEMENT_EXECUTE_CMD_CLASS;
-import static org.brutusin.instrumentation.logging.IAgentConstants.MSSQL_STATEMENT_FIELD;
-import static org.brutusin.instrumentation.logging.IAgentConstants.MSSQL_USER_SQL_FIELD;
-import static org.brutusin.instrumentation.logging.IAgentConstants.MSSQL_VALUE_FIELD;
-import static org.brutusin.instrumentation.logging.IAgentConstants.MYSQL_IDENTIFIER;
-import static org.brutusin.instrumentation.logging.IAgentConstants.ORACLE_CONNECTION_IDENTIFIER;
-import static org.brutusin.instrumentation.logging.IAgentConstants.ORACLE_DB_IDENTIFIER;
-import static org.brutusin.instrumentation.logging.IAgentConstants.ORACLE_STATEMENT_CLASS_IDENTIFIER;
-import static org.brutusin.instrumentation.logging.IAgentConstants.PSQL42_EXECUTOR;
-import static org.brutusin.instrumentation.logging.IAgentConstants.PSQLV2_EXECUTOR;
-import static org.brutusin.instrumentation.logging.IAgentConstants.PSQLV3_EXECUTOR;
-import static org.brutusin.instrumentation.logging.IAgentConstants.PSQLV3_EXECUTOR7_4;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.CLASS_LOADER_IDENTIFIER;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.HSQL_V2_4;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MOGNO_ELEMENT_DATA_FIELD;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MONGO_COLLECTION_FIELD;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MONGO_COLLECTION_WILDCARD;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MONGO_COMMAND_CLASS_FRAGMENT;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MONGO_COMMAND_FIELD;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MONGO_COMMAND_NAME_FIELD;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MONGO_DELETE_CLASS_FRAGMENT;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MONGO_DELETE_REQUEST_FIELD;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MONGO_DISTINCT_CLASS_FRAGMENT;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MONGO_DOCUMENT_FIELD;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MONGO_FIELD_NAME_FIELD;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MONGO_FILTER_FIELD;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MONGO_FIND_AND_UPDATE_CLASS_FRAGMENT;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MONGO_FIND_CLASS_FRAGMENT;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MONGO_IDENTIFIER;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MONGO_INSERT_CLASS_FRAGMENT;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MONGO_INSERT_REQUESTS_FIELD;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MONGO_MULTIPLE_UPDATES_FIELD;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MONGO_NAMESPACE_FIELD;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MONGO_PAYLOAD_FIELD;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MONGO_SINGLE_UPDATE_FIELD;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MONGO_UPDATE_CLASS_FRAGMENT;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MONGO_WRITE_CLASS_FRAGMENT;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MONGO_WRITE_REQUEST_FIELD;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MSSQL_ACTIVE_CONNECTION_PROP_FIELD;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MSSQL_BATCH_PARAM_VALUES_FIELD;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MSSQL_BATCH_STATEMENT_BUFFER_FIELD;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MSSQL_BATCH_STATEMENT_EXECUTE_CMD_CLASS;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MSSQL_CONNECTION_FIELD;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MSSQL_CURRENT_OBJECT;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MSSQL_IDENTIFIER;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MSSQL_IMPL_FIELD;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MSSQL_INPUT_DTV_FIELD;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MSSQL_IN_OUT_PARAM_FIELD;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MSSQL_PREPARED_BATCH_STATEMENT_CLASS;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MSSQL_PREPARED_STATEMENT_CLASS;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MSSQL_SERVER_STATEMENT_CLASS;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MSSQL_SQL_FIELD;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MSSQL_STATEMENT_EXECUTE_CMD_CLASS;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MSSQL_STATEMENT_FIELD;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MSSQL_USER_SQL_FIELD;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MSSQL_VALUE_FIELD;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MYSQL_IDENTIFIER;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.ORACLE_CONNECTION_IDENTIFIER;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.ORACLE_DB_IDENTIFIER;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.ORACLE_STATEMENT_CLASS_IDENTIFIER;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.PSQL42_EXECUTOR;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.PSQLV2_EXECUTOR;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.PSQLV3_EXECUTOR;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.PSQLV3_EXECUTOR7_4;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
@@ -73,6 +74,9 @@ import org.json.simple.parser.JSONParser;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.k2cybersecurity.intcodeagent.models.javaagent.JavaAgentDynamicPathBean;
+import com.k2cybersecurity.intcodeagent.models.javaagent.JavaAgentEventBean;
+import com.k2cybersecurity.intcodeagent.models.javaagent.ServletInfo;
 
 public class ProcessorThread implements Runnable {
 
@@ -89,7 +93,26 @@ public class ProcessorThread implements Runnable {
 	private String sourceString;
 	private ObjectMapper mapper;
 	private JSONParser parser;
-
+	protected static Runnable queuePooler =  new Runnable() {
+		@Override
+		public void run() {
+			if(!eventQueue.isEmpty()) {
+				try {				
+					List<Object> eventList = new ArrayList<>();
+					eventQueue.drainTo(eventList, eventQueue.size());
+					LoggingInterceptor.oos.writeObject(eventList);
+					LoggingInterceptor.oos.flush();
+				} catch (IOException e) {
+					System.err.println("Error in writing: " + e.getMessage());
+					try {
+						LoggingInterceptor.oos.close();
+					} catch (IOException e1) {
+						LoggingInterceptor.socket = null;
+					}
+				}
+			}
+		}
+	};
 	static {
 		PATTERN = Pattern.compile(IAgentConstants.TRACE_REGEX);
 		executorMethods = new HashSet<>(Arrays.asList(IAgentConstants.EXECUTORS));
@@ -100,7 +123,7 @@ public class ProcessorThread implements Runnable {
 			interceptMethod.put(IAgentConstants.ALL_CLASSES[i],
 					new ArrayList<String>(Arrays.asList(IAgentConstants.ALL_METHODS[i])));
 		}
-	}
+		}
 
 	/**
 	 * @param source
@@ -165,30 +188,7 @@ public class ProcessorThread implements Runnable {
 		this.executionId = executionId;
 	}
 
-	protected static void queuePooler() {
-		while (!eventQueue.isEmpty()) {
-			List<Object> eventlist = new ArrayList<>();
-			eventQueue.drainTo(eventlist, 1000);
-			for (Object ib : eventlist) {
-				try {
-					LoggingInterceptor.oos.writeUTF(ib.toString());
-				} catch (IOException e) {
-					System.err.println("Error in writing: " + e.getMessage());
-					try {
-						LoggingInterceptor.oos.close();
-					} catch (IOException e1) {
-						LoggingInterceptor.socket = null;
-					}
-				}
-			}
-			eventlist.clear();
-			try {
-				LoggingInterceptor.oos.flush();
-			} catch (IOException e1) {
-			}
-		}
-		eventQueue.clear();
-	}
+	
 
 	@Override
 	public void run() {
@@ -197,7 +197,7 @@ public class ProcessorThread implements Runnable {
 
 				long start = System.currentTimeMillis();
 
-				IntCodeResultBean intCodeResultBean = new IntCodeResultBean(start, sourceString,
+				JavaAgentEventBean intCodeResultBean = new JavaAgentEventBean(start, sourceString,
 						LoggingInterceptor.VMPID, LoggingInterceptor.applicationUUID,
 						this.threadId + ":" + this.executionId);
 
@@ -293,7 +293,7 @@ public class ProcessorThread implements Runnable {
 		}
 	}
 
-	private int getClassNameForSysytemCallStart(StackTraceElement[] trace, IntCodeResultBean intCodeResultBean) {
+	private int getClassNameForSysytemCallStart(StackTraceElement[] trace, JavaAgentEventBean intCodeResultBean) {
 		boolean classRuntimeFound = false;
 		for (int i = 0; i < trace.length; i++) {
 			if (trace[i].getClassName().equals("java.lang.Runtime"))
@@ -849,7 +849,7 @@ public class ProcessorThread implements Runnable {
 		}
 	}
 
-	private void generateEvent(IntCodeResultBean intCodeResultBean) {
+	private void generateEvent(JavaAgentEventBean intCodeResultBean) {
 		// System.out.println("inside Event generate : " + intCodeResultBean);
 //		if (LoggingInterceptor.socket == null || !LoggingInterceptor.socket.isConnected()
 //				|| LoggingInterceptor.socket.isClosed()) {
@@ -873,11 +873,10 @@ public class ProcessorThread implements Runnable {
 					|| intCodeResultBean.getSource().equals(
 							"public static java.net.URLClassLoader java.net.URLClassLoader.newInstance(java.net.URL[])"))) {
 				List<String> list = (List<String>) intCodeResultBean.getParameters();
-				DynamicJarPathBean dynamicJarPathBean = new DynamicJarPathBean(LoggingInterceptor.applicationUUID,
+				JavaAgentDynamicPathBean dynamicJarPathBean = new JavaAgentDynamicPathBean(LoggingInterceptor.applicationUUID,
 						System.getProperty("user.dir"), new ArrayList<String>(Agent.jarPathSet), list);
 //				System.out.println("dynamic jar path bean : " + dynamicJarPathBean);
 				eventQueue.add(dynamicJarPathBean);
-				
 			} else {
 				// System.out.println("Final request map 1: "
 				// + ServletEventPool.getInstance().getRequestMap().get(this.threadId) + "
@@ -902,7 +901,7 @@ public class ProcessorThread implements Runnable {
 //				System.out.println("publish event: " + executionId + " : " + intCodeResultBean);
 				try {
 					eventQueue.add(intCodeResultBean);
-				} catch (IllegalStateException e) {
+				} catch (IllegalStateException e) {	
 					System.out
 							.println("Dropping event " + intCodeResultBean.getId() + " due to buffer capacity reached.");
 				}

@@ -1,4 +1,4 @@
-package org.brutusin.instrumentation.logging;
+package com.k2cybersecurity.intcodeagent.logging;
 
 import java.util.Iterator;
 import java.util.List;

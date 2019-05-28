@@ -1,4 +1,4 @@
-package org.brutusin.instrumentation.logging;
+package com.k2cybersecurity.intcodeagent.logging;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -8,6 +8,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.k2cybersecurity.intcodeagent.models.javaagent.ServletInfo;
 
 public class ServletEventProcessor implements Runnable {
 

@@ -13,15 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.brutusin.instrumentation.logging;
+package com.k2cybersecurity.intcodeagent.logging;
 
 import java.io.BufferedReader;
-import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
 import java.lang.reflect.Constructor;
@@ -33,21 +33,16 @@ import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedDeque;
-import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-
-import javax.security.auth.callback.ConfirmationCallback;
 
 import org.brutusin.instrumentation.Agent;
 import org.brutusin.instrumentation.Interceptor;
@@ -55,14 +50,21 @@ import org.json.simple.JSONArray;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.MethodNode;
 
+import com.k2cybersecurity.intcodeagent.models.javaagent.ApplicationInfoBean;
+import com.k2cybersecurity.intcodeagent.models.javaagent.JavaAgentJarPathBean;
+import com.k2cybersecurity.intcodeagent.models.javaagent.ServletInfo;
+
 public class LoggingInterceptor extends Interceptor {
 
 	private static final Set<String> allClasses;
 	private static final Map<String, List<String>> interceptMethod;
-	protected static DataOutputStream oos;
+	protected static ObjectOutputStream oos;
 	protected static Integer VMPID;
 	protected static final String applicationUUID;
 	protected static Socket socket;
+	protected static Class<?> mysqlPreparedStatement8Class, mysqlPreparedStatement5Class, abstractInputBufferClass;
+	protected static String tomcatVersion;
+	protected static boolean tomcat7 = false, tomcat8 = false, tomcat9 = false;
 
 	static final int MAX_DEPTH_LOOKUP = 4; // Max number of superclasses to lookup for a field
 	// protected static Map<Long, ServletInfo> requestMap;
@@ -132,7 +134,7 @@ public class LoggingInterceptor extends Interceptor {
 				try {
 					if (Agent.getJarPathResultExecutorService.awaitTermination(5, TimeUnit.MINUTES)) {
 						if (!Agent.jarPathSet.isEmpty()) {
-							JarPathBean jarPathBean = new JarPathBean(applicationUUID,
+							JavaAgentJarPathBean jarPathBean = new JavaAgentJarPathBean(applicationUUID,
 									new ArrayList<String>(Agent.jarPathSet));
 							String containerId = getContainerID();
 							if (containerId != null) {
@@ -178,9 +180,8 @@ public class LoggingInterceptor extends Interceptor {
 		JSONArray jsonArray = new JSONArray();
 		jsonArray.addAll(cmdlineArgs);
 		applicationInfoBean.setJvmArguments(jsonArray);
+		System.out.println("Posted application info : " + applicationInfoBean);
 		ProcessorThread.eventQueue.add(applicationInfoBean);
-		System.out.println("application info posted : " + applicationInfoBean);
-		oos.flush();
 	}
 
 	protected static void connectSocket() {
@@ -192,7 +193,7 @@ public class LoggingInterceptor extends Interceptor {
 			socket = new Socket(hostip, 54321);
 			if (!socket.isConnected() || socket.isClosed())
 				throw new RuntimeException("Can't connect to IC, agent installation failed.");
-			oos = new DataOutputStream(socket.getOutputStream());
+			oos = new ObjectOutputStream(socket.getOutputStream());
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
@@ -212,11 +213,11 @@ public class LoggingInterceptor extends Interceptor {
 		 * RuntimeException(ex); }
 		 */
 		try {
-			IPScheduledThread.getInstance();
 			connectSocket();
 			getJarPath();
 			createApplicationInfoBean();
 			eventWritePool();
+			IPScheduledThread.getInstance();
 			System.out.println("K2-JavaAgent installed successfully.");
 
 		} catch (Exception e) {
@@ -226,14 +227,7 @@ public class LoggingInterceptor extends Interceptor {
 
 	private static void eventWritePool() {
 		eventPoolExecutor = Executors.newScheduledThreadPool(1);
-		eventPoolExecutor.scheduleWithFixedDelay(new Runnable() {
-			@Override
-			public void run() {
-				if (!ProcessorThread.eventQueue.isEmpty()) {
-					ProcessorThread.queuePooler();
-				}
-			}
-		}, 2, 2, TimeUnit.SECONDS);
+		eventPoolExecutor.scheduleWithFixedDelay(ProcessorThread.queuePooler, 1, 1, TimeUnit.SECONDS);
 	}
 
 	private static String getCmdLineArgsByProc(Integer pid) {
@@ -277,7 +271,7 @@ public class LoggingInterceptor extends Interceptor {
 		return allClasses.contains(className);
 	}
 
-	public org.brutusin.instrumentation.logging.ByteBuffer preProcessTomcatByteBuffer(byte[] buffer, int limitHb) {
+	public com.k2cybersecurity.intcodeagent.logging.ByteBuffer preProcessTomcatByteBuffer(byte[] buffer, int limitHb) {
 		byte[] modifiedBuffer = new byte[limitHb];
 		modifiedBuffer[0] = buffer[0];
 		int k = 1;
@@ -290,7 +284,7 @@ public class LoggingInterceptor extends Interceptor {
 					i++;
 					k++;
 				}
-				return new org.brutusin.instrumentation.logging.ByteBuffer(modifiedBuffer, k);
+				return new com.k2cybersecurity.intcodeagent.logging.ByteBuffer(modifiedBuffer, k);
 			}
 			if (buffer[i + 1] == 13 && buffer[i + 2] == 10 && buffer[i - 1] == buffer[i]) {
 
@@ -301,7 +295,7 @@ public class LoggingInterceptor extends Interceptor {
 		}
 		modifiedBuffer[k++] = 13;
 		modifiedBuffer[k++] = 10;
-		return new org.brutusin.instrumentation.logging.ByteBuffer(modifiedBuffer, k);
+		return new com.k2cybersecurity.intcodeagent.logging.ByteBuffer(modifiedBuffer, k);
 	}
 
 	@Override
@@ -457,7 +451,11 @@ public class LoggingInterceptor extends Interceptor {
 			// System.out.println("RequestMapRef : " +
 			// ServletEventPool.getInstance().getServletInfoReferenceRecord());
 			// System.out.println("Coyote Service: " + threadId + " : " + sourceString);
+
 			ServletEventPool.getInstance().incrementServletInfoReference(threadId, executionId, false);
+			if (tomcatVersion == null || tomcatVersion.isEmpty()) {
+				setTomcatVersion();
+			}
 
 			ServletInfo servletInfo = new ServletInfo();
 			if (!ServletEventPool.getInstance().getRequestMap().containsKey(threadId)) {
@@ -485,24 +483,25 @@ public class LoggingInterceptor extends Interceptor {
 				Object byteBuffer = null;
 				int positionHb = -1;
 				boolean byteBufferFound = false;
-				boolean tomcatv7 = false;
-				try {
-					Field byteBufferField = inputBuffer.getClass().getDeclaredField("byteBuffer");
-					byteBufferField.setAccessible(true);
-					byteBuffer = byteBufferField.get(inputBuffer);
-
-					Field position = Buffer.class.getDeclaredField("position");
-					position.setAccessible(true);
-					positionHb = (Integer) position.get(byteBuffer);
-					byteBufferFound = true;
-				} catch (Exception e) {
-//					e.printStackTrace();
-				}
-				if (!byteBufferFound) {
+				if (tomcat8 || tomcat9) {
 					try {
-						Class<?> abstractInputBufferClass = Class.forName(
-								"org.apache.coyote.http11.AbstractInputBuffer", true,
-								Thread.currentThread().getContextClassLoader());
+						Field byteBufferField = inputBuffer.getClass().getDeclaredField("byteBuffer");
+						byteBufferField.setAccessible(true);
+						byteBuffer = byteBufferField.get(inputBuffer);
+
+						Field position = Buffer.class.getDeclaredField("position");
+						position.setAccessible(true);
+						positionHb = (Integer) position.get(byteBuffer);
+						byteBufferFound = true;
+					} catch (Exception e) {
+						// e.printStackTrace();
+					}
+				} else if (tomcat7) {
+					try {
+						if (abstractInputBufferClass == null) {
+							abstractInputBufferClass = Class.forName("org.apache.coyote.http11.AbstractInputBuffer",
+									true, Thread.currentThread().getContextClassLoader());
+						}
 						Field byteBufferField = abstractInputBufferClass.getDeclaredField("buf");
 						byteBufferField.setAccessible(true);
 						byteBuffer = byteBufferField.get(inputBuffer);
@@ -513,7 +512,6 @@ public class LoggingInterceptor extends Interceptor {
 						if (positionHb == 8192) {
 							servletInfo.setDataTruncated(true);
 						}
-						tomcatv7 = true;
 						byteBufferFound = true;
 					} catch (Exception e) {
 					}
@@ -523,7 +521,7 @@ public class LoggingInterceptor extends Interceptor {
 
 					byte[] hbContent = null;
 
-					if (!tomcatv7) {
+					if (!tomcat7) {
 						Field hb = ByteBuffer.class.getDeclaredField("hb");
 						hb.setAccessible(true);
 						hbContent = (byte[]) hb.get(byteBuffer);
@@ -531,7 +529,7 @@ public class LoggingInterceptor extends Interceptor {
 						hbContent = (byte[]) byteBuffer;
 					}
 
-					org.brutusin.instrumentation.logging.ByteBuffer buff = preProcessTomcatByteBuffer(hbContent,
+					com.k2cybersecurity.intcodeagent.logging.ByteBuffer buff = preProcessTomcatByteBuffer(hbContent,
 							positionHb);
 					requestContent = new String(buff.getByteArray(), 0, buff.getLimit(), StandardCharsets.UTF_8);
 					servletInfo.setRawRequest(requestContent);
@@ -594,8 +592,11 @@ public class LoggingInterceptor extends Interceptor {
 				|| objClass.getName().equals(IAgentConstants.MYSQL_PREPARED_STATEMENT_42)
 				|| objClass.getName().equals(IAgentConstants.MYSQL_PREPARED_STATEMENT_4)) {
 			try {
-				objClass = Class.forName(IAgentConstants.MYSQL_PREPARED_STATEMENT_5, true,
-						Thread.currentThread().getContextClassLoader());
+				if (mysqlPreparedStatement5Class == null) {
+					mysqlPreparedStatement5Class = Class.forName(IAgentConstants.MYSQL_PREPARED_STATEMENT_5, true,
+							Thread.currentThread().getContextClassLoader());
+				}
+				objClass = mysqlPreparedStatement5Class;
 				Field originalSqlField = objClass.getDeclaredField("originalSql");
 				originalSqlField.setAccessible(true);
 				String originalSql = (String) originalSqlField.get(obj);
@@ -629,8 +630,13 @@ public class LoggingInterceptor extends Interceptor {
 				queryField.setAccessible(true);
 				Object query = queryField.get(obj);
 				if (query != null && query.getClass().getName().equals(IAgentConstants.MYSQL_PREPARED_QUERY_8)) {
-					objClass = Class.forName(IAgentConstants.MYSQL_PREPARED_STATEMENT_SOURCE_8, true,
-							Thread.currentThread().getContextClassLoader());
+
+					if (mysqlPreparedStatement8Class == null) {
+						mysqlPreparedStatement8Class = Class.forName(IAgentConstants.MYSQL_PREPARED_STATEMENT_SOURCE_8,
+								true, Thread.currentThread().getContextClassLoader());
+					}
+
+					objClass = mysqlPreparedStatement8Class;
 					Field originalSqlField = objClass.getDeclaredField("originalSql");
 					originalSqlField.setAccessible(true);
 					String originalSql = (String) originalSqlField.get(query);
@@ -662,6 +668,31 @@ public class LoggingInterceptor extends Interceptor {
 			}
 		} catch (IOException ex) {
 			throw new RuntimeException(ex);
+		}
+	}
+
+	private static void setTomcatVersion() {
+		try {
+			Class<?> serverInfo = Class.forName("org.apache.catalina.util.ServerInfo", true,
+					Thread.currentThread().getContextClassLoader());
+			Field serverNumberField = serverInfo.getDeclaredField("serverNumber");
+			serverNumberField.setAccessible(true);
+			tomcatVersion = (String) serverNumberField.get(null);
+			String tomcatMajorVersion = tomcatVersion.split("\\.")[0];
+			if (tomcatMajorVersion.equals("9")) {
+				System.out.println("Detected Tomcat Version 9 :" + tomcatVersion);
+				tomcat9 = true;
+			} else if (tomcatMajorVersion.equals("8")) {
+				System.out.println("Detected Tomcat Version 8 :" + tomcatVersion);
+				tomcat8 = true;
+			} else if (tomcatMajorVersion.equals("7")) {
+				System.out.println("Detected Tomcat Version 7 :" + tomcatVersion);
+				tomcat7 = true;
+			}
+			;
+
+		} catch (ClassNotFoundException | NoSuchFieldException | IllegalArgumentException | IllegalAccessException e) {
+			System.out.println("Unable to find Tomcat Version:" + e.getMessage());
 		}
 	}
 

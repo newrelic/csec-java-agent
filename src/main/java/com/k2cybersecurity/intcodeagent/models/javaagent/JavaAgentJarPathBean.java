@@ -1,19 +1,25 @@
-package org.brutusin.instrumentation.logging;
+package com.k2cybersecurity.intcodeagent.models.javaagent;
 
+import java.io.Serializable;
 import java.util.List;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-public class JarPathBean extends AgentBasicInfo {
+public class JavaAgentJarPathBean extends AgentBasicInfo implements Serializable{
 
-    private String applicationUUID;
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = -4616871472044555920L;
+
+	private String applicationUUID;
 
     private List<String> jarPaths;
     
     private Boolean isHost;
 
-    public JarPathBean(String applicationUUID, List<String> jarPaths) {
+    public JavaAgentJarPathBean(String applicationUUID, List<String> jarPaths) {
         super();
         this.applicationUUID = applicationUUID;
         this.jarPaths = jarPaths;

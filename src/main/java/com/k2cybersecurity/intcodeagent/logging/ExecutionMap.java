@@ -1,4 +1,4 @@
-package org.brutusin.instrumentation.logging;
+package com.k2cybersecurity.intcodeagent.logging;
 
 import java.util.Iterator;
 import java.util.List;
@@ -6,6 +6,7 @@ import java.util.concurrent.ConcurrentLinkedDeque;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.k2cybersecurity.intcodeagent.models.javaagent.ServletInfo;
 
 public class ExecutionMap {
 

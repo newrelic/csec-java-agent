@@ -1,4 +1,4 @@
-package org.brutusin.instrumentation.logging;
+package com.k2cybersecurity.intcodeagent.logging;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -26,9 +26,9 @@ public class EventThreadPool {
 		LinkedBlockingQueue<Runnable> processQueue;
 		// load the settings
 		int queueSize = 700;
-		int maxPoolSize = 15;
-		int corePoolSize = 2;
-		long keepAliveTime = 2;
+		int maxPoolSize = 10;
+		int corePoolSize = 1;
+		long keepAliveTime = 10;
 
 		TimeUnit timeUnit = TimeUnit.SECONDS;
 

@@ -1,4 +1,4 @@
-package org.brutusin.instrumentation.logging;
+package com.k2cybersecurity.intcodeagent.models.javaagent;
 
 import java.util.Properties;
 
@@ -37,11 +37,11 @@ public class AgentBasicInfo {
 		setK2JAToolId(props.getProperty("k2.javaagent.tool.id"));
 		if (this instanceof  ApplicationInfoBean) {
 			setJsonName(props.getProperty("k2.javaagent.jsonname.applicationinfobean"));
-		} else if (this instanceof IntCodeResultBean) {
+		} else if (this instanceof JavaAgentEventBean) {
 			setJsonName(props.getProperty("k2.javaagent.jsonname.intcoderesultbean"));
-		} else if(this instanceof JarPathBean){
+		} else if(this instanceof JavaAgentJarPathBean){
 			setJsonName(props.getProperty("k2.javaagent.jsonname.jarpathbean"));
-		} else if(this instanceof DynamicJarPathBean){
+		} else if(this instanceof JavaAgentDynamicPathBean){
 			setJsonName(props.getProperty("k2.javaagent.jsonname.dynamicjarpathbean"));
 		}
 	}

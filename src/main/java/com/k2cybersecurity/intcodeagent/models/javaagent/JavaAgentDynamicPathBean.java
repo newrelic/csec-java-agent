@@ -1,13 +1,19 @@
-package org.brutusin.instrumentation.logging;
+package com.k2cybersecurity.intcodeagent.models.javaagent;
 
+import java.io.Serializable;
 import java.util.List;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-public class DynamicJarPathBean extends AgentBasicInfo {
+public class JavaAgentDynamicPathBean extends AgentBasicInfo implements Serializable {
 
-    private String applicationUUID;
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = -2179815960689483454L;
+
+	private String applicationUUID;
 
     private String workingDirectory;
     
@@ -15,7 +21,7 @@ public class DynamicJarPathBean extends AgentBasicInfo {
     
     private List<String> dynamicPaths;
 
-    public DynamicJarPathBean(String applicationUUID,String workingDirectory, List<String> jarPaths,List<String> dynamicPaths) {
+    public JavaAgentDynamicPathBean(String applicationUUID,String workingDirectory, List<String> jarPaths,List<String> dynamicPaths) {
         super();
         this.applicationUUID = applicationUUID;
         this.workingDirectory = workingDirectory;

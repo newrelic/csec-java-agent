@@ -78,7 +78,7 @@
 				<configuration>
 					<archive>
 						<manifestEntries>
-							<Premain-Class>k2.org.brutusin.instrumentation.Agent</Premain-Class>
+							<Premain-Class>k2.io.org.brutusin.instrumentation.Agent</Premain-Class>
 							<Can-Retransform-Classes>true</Can-Retransform-Classes>
 							<Can-Redefine-Classes>true</Can-Redefine-Classes>
 							<Boot-Class-Path>${project.artifactId}-${project.version}-jar-with-dependencies.${project.packaging}</Boot-Class-Path>
@@ -102,23 +102,23 @@
 							<relocations>
 								<relocation>
 									<pattern>org.brutusin</pattern>
-									<shadedPattern>k2.org.brutusin</shadedPattern>
+									<shadedPattern>k2.io.org.brutusin</shadedPattern>
 								</relocation>
 								<relocation>
 									<pattern>org.objectweb</pattern>
-									<shadedPattern>k2.org.objectweb</shadedPattern>
+									<shadedPattern>k2.io.org.objectweb</shadedPattern>
 								</relocation>
 								<relocation>
 									<pattern>org.json</pattern>
-									<shadedPattern>k2.org.json</shadedPattern>
+									<shadedPattern>k2.io.org.json</shadedPattern>
 								</relocation>
 								<relocation>
 									<pattern>com.fasterxml</pattern>
-									<shadedPattern>k2.com.fasterxml</shadedPattern>
+									<shadedPattern>k2.io.com.fasterxml</shadedPattern>
 								</relocation>
 								<relocation>
-									<pattern>com.k2</pattern>
-									<shadedPattern>k2.com.k2</shadedPattern>
+									<pattern>com.k2.</pattern>
+									<shadedPattern>k2.io.com.k2.</shadedPattern>
 								</relocation>
 							</relocations>
 						</configuration>

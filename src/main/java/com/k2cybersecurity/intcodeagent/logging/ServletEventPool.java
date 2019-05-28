@@ -1,4 +1,4 @@
-package org.brutusin.instrumentation.logging;
+package com.k2cybersecurity.intcodeagent.logging;
 
 import java.util.Iterator;
 import java.util.Map;
@@ -12,6 +12,8 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import com.k2cybersecurity.intcodeagent.models.javaagent.ServletInfo;
 
 public class ServletEventPool {
 
