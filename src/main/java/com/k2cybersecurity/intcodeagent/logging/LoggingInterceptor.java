@@ -208,6 +208,7 @@ public class LoggingInterceptor extends Interceptor {
 		jsonArray.addAll(cmdlineArgs);
 		applicationInfoBean.setJvmArguments(jsonArray);
 		System.out.println("Posted application info : " + applicationInfoBean);
+
 		EventThreadPool.getInstance().getEventQueue().add(applicationInfoBean);
 	}
 
@@ -222,8 +223,8 @@ public class LoggingInterceptor extends Interceptor {
 			
 			if (!socket.isConnected() || socket.isClosed())
 				throw new RuntimeException("Can't connect to IC, agent installation failed.");
+
 			EventThreadPool.getInstance().setObjectStream(new ObjectOutputStream(socket.getOutputStream()));
-			
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
@@ -708,6 +709,7 @@ public class LoggingInterceptor extends Interceptor {
 			Field serverNumberField = serverInfo.getDeclaredField("serverNumber");
 			serverNumberField.setAccessible(true);
 			tomcatVersion = (String) serverNumberField.get(null);
+
 			tomcatMajorVersion = Integer.parseInt(tomcatVersion.split("\\.")[0]);
 			System.out.println("Detected Tomcat Version " + tomcatMajorVersion + " :" + tomcatVersion);
 

@@ -96,6 +96,7 @@ public class ProcessorThread implements Runnable {
 	private String sourceString;
 	private ObjectMapper mapper;
 	private JSONParser parser;
+
 	private LinkedBlockingQueue<Object> eventQueue;
 	private Socket currentSocket;
 	static {
@@ -174,8 +175,6 @@ public class ProcessorThread implements Runnable {
 	public void setExecutionId(Integer executionId) {
 		this.executionId = executionId;
 	}
-
-	
 
 	@Override
 	public void run() {
@@ -860,10 +859,16 @@ public class ProcessorThread implements Runnable {
 					|| intCodeResultBean.getSource().equals(
 							"public static java.net.URLClassLoader java.net.URLClassLoader.newInstance(java.net.URL[])"))) {
 				List<String> list = (List<String>) intCodeResultBean.getParameters();
+
 				JavaAgentDynamicPathBean dynamicJarPathBean = new JavaAgentDynamicPathBean(LoggingInterceptor.applicationUUID,
 						System.getProperty("user.dir"), new ArrayList<String>(Agent.jarPathSet), list);
 //				System.out.println("dynamic jar path bean : " + dynamicJarPathBean);
-				eventQueue.add(dynamicJarPathBean);
+				try {
+					eventQueue.add(dynamicJarPathBean);
+				} catch (IllegalStateException e) {
+					System.out.println(
+							"Dropping event " + intCodeResultBean.getId() + " due to buffer capacity reached.");
+				}
 			} else {
 				// System.out.println("Final request map 1: "
 				// + ServletEventPool.getInstance().getRequestMap().get(this.threadId) + "
@@ -888,9 +893,10 @@ public class ProcessorThread implements Runnable {
 //				System.out.println("publish event: " + executionId + " : " + intCodeResultBean);
 				try {
 					eventQueue.add(intCodeResultBean);
-				} catch (IllegalStateException e) {	
-					System.out
-							.println("Dropping event " + intCodeResultBean.getId() + " due to buffer capacity reached.");
+
+				} catch (IllegalStateException e) {
+					System.out.println(
+							"Dropping event " + intCodeResultBean.getId() + " due to buffer capacity reached.");
 				}
 
 			}
