@@ -93,13 +93,14 @@ public class ProcessorThread implements Runnable {
 	private String sourceString;
 	private ObjectMapper mapper;
 	private JSONParser parser;
-	protected static Runnable queuePooler =  new Runnable() {
+	protected static Runnable queuePooler = new Runnable() {
 		@Override
 		public void run() {
-			if(!eventQueue.isEmpty()) {
-				try {				
+			if (!eventQueue.isEmpty()) {
+				try {
 					List<Object> eventList = new ArrayList<>();
 					eventQueue.drainTo(eventList, eventQueue.size());
+					System.out.println("Publish : "+eventList.size());
 					LoggingInterceptor.oos.writeObject(eventList);
 					LoggingInterceptor.oos.flush();
 				} catch (IOException e) {
@@ -123,7 +124,7 @@ public class ProcessorThread implements Runnable {
 			interceptMethod.put(IAgentConstants.ALL_CLASSES[i],
 					new ArrayList<String>(Arrays.asList(IAgentConstants.ALL_METHODS[i])));
 		}
-		}
+	}
 
 	/**
 	 * @param source
@@ -187,8 +188,6 @@ public class ProcessorThread implements Runnable {
 	public void setExecutionId(Integer executionId) {
 		this.executionId = executionId;
 	}
-
-	
 
 	@Override
 	public void run() {
@@ -873,10 +872,16 @@ public class ProcessorThread implements Runnable {
 					|| intCodeResultBean.getSource().equals(
 							"public static java.net.URLClassLoader java.net.URLClassLoader.newInstance(java.net.URL[])"))) {
 				List<String> list = (List<String>) intCodeResultBean.getParameters();
-				JavaAgentDynamicPathBean dynamicJarPathBean = new JavaAgentDynamicPathBean(LoggingInterceptor.applicationUUID,
-						System.getProperty("user.dir"), new ArrayList<String>(Agent.jarPathSet), list);
+				JavaAgentDynamicPathBean dynamicJarPathBean = new JavaAgentDynamicPathBean(
+						LoggingInterceptor.applicationUUID, System.getProperty("user.dir"),
+						new ArrayList<String>(Agent.jarPathSet), list);
 //				System.out.println("dynamic jar path bean : " + dynamicJarPathBean);
-				eventQueue.add(dynamicJarPathBean);
+				try {
+					eventQueue.add(dynamicJarPathBean);
+				} catch (IllegalStateException e) {
+					System.out.println(
+							"Dropping event " + intCodeResultBean.getId() + " due to buffer capacity reached.");
+				}
 			} else {
 				// System.out.println("Final request map 1: "
 				// + ServletEventPool.getInstance().getRequestMap().get(this.threadId) + "
@@ -901,9 +906,9 @@ public class ProcessorThread implements Runnable {
 //				System.out.println("publish event: " + executionId + " : " + intCodeResultBean);
 				try {
 					eventQueue.add(intCodeResultBean);
-				} catch (IllegalStateException e) {	
-					System.out
-							.println("Dropping event " + intCodeResultBean.getId() + " due to buffer capacity reached.");
+				} catch (IllegalStateException e) {
+					System.out.println(
+							"Dropping event " + intCodeResultBean.getId() + " due to buffer capacity reached.");
 				}
 
 			}
