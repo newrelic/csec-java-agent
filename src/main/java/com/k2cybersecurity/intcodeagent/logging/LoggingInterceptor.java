@@ -122,7 +122,7 @@ public class LoggingInterceptor extends Interceptor {
 
 	public static String getContainerID() {
 
-		File cgroupFile = new File("/proc/self/cgroup");
+		File cgroupFile = new File(IAgentConstants.CGROUP_FILE_NAME);
 		if (!cgroupFile.isFile())
 			return null;
 		BufferedReader br = null;
@@ -136,16 +136,16 @@ public class LoggingInterceptor extends Interceptor {
 		int index = -1;
 		try {
 			while ((st = br.readLine()) != null) {
-				index = st.lastIndexOf("docker/");
+				index = st.lastIndexOf(IAgentConstants.DOCKER_DIR);
 				if (index > -1) {
 					return st.substring(index + 7);
 				}
-				index = st.indexOf("kubepods/");
+				index = st.indexOf(IAgentConstants.KUBEPODS_DIR);
 				if (index > -1) {
-					return st.substring(st.lastIndexOf('/') + 1);
+					return st.substring(st.lastIndexOf(IAgentConstants.DIR_SEPERATOR) + 1);
 				}
 				// To support docker older versions
-				index = st.lastIndexOf("lxc/");
+				index = st.lastIndexOf(IAgentConstants.LXC_DIR);
 				if (index > -1) {
 					return st.substring(index + 4);
 				}
@@ -169,7 +169,7 @@ public class LoggingInterceptor extends Interceptor {
 	public static void getJarPath() {
 		Runnable jarPathPool = new Runnable() {
 			public void run() {
-				System.out.println("Pooling getJarPathResultExecutorService to fetch results.");
+				System.out.println(IAgentConstants.JAR_PATH_INIT_MSG);
 				try {
 					if (Agent.getJarPathResultExecutorService.awaitTermination(5, TimeUnit.MINUTES)) {
 						if (!Agent.jarPathSet.isEmpty()) {
@@ -182,12 +182,12 @@ public class LoggingInterceptor extends Interceptor {
 								jarPathBean.setIsHost(true);
 							}
 							EventThreadPool.getInstance().getEventQueue().add(jarPathBean);
-							System.out.println("getJarPathResultExecutorService result fetched successfully.");
+							System.out.println(IAgentConstants.JAR_PATH_FETCH_SUCCESS_MSG);
 						} else {
-							System.err.println("getJarPathResultExecutorService result is empty.");
+							System.err.println(IAgentConstants.JAR_PATH_EMPTY_RESULT_ERR);
 						}
 					} else {
-						System.err.println("Timeout reached waiting for getJarPathResultExecutorService.");
+						System.err.println(IAgentConstants.JAR_PATH_TIMEOUT_ERR);
 					}
 				} catch (InterruptedException e) {
 					System.err.println("Error occured while waiting for getJarPathResultExecutorService.");
@@ -204,11 +204,11 @@ public class LoggingInterceptor extends Interceptor {
 	public static void createApplicationInfoBean() throws IOException {
 		RuntimeMXBean runtimeMXBean = ManagementFactory.getRuntimeMXBean();
 		String runningVM = runtimeMXBean.getName();
-		VMPID = Integer.parseInt(runningVM.substring(0, runningVM.indexOf('@')));
+		VMPID = Integer.parseInt(runningVM.substring(0, runningVM.indexOf(IAgentConstants.VMPID_SPLIT_CHAR)));
 		ApplicationInfoBean applicationInfoBean = new ApplicationInfoBean(VMPID, applicationUUID);
 		String containerId = getContainerID();
 		String cmdLine = getCmdLineArgsByProc(VMPID);
-		List<String> cmdlineArgs = Arrays.asList(cmdLine.split("\000"));
+		List<String> cmdlineArgs = Arrays.asList(cmdLine.split(IAgentConstants.NULL_CHAR_AS_STRING));
 		if (containerId != null) {
 			applicationInfoBean.setContainerID(containerId);
 			applicationInfoBean.setIsHost(false);
@@ -219,17 +219,17 @@ public class LoggingInterceptor extends Interceptor {
 		JSONArray jsonArray = new JSONArray();
 		jsonArray.addAll(cmdlineArgs);
 		applicationInfoBean.setJvmArguments(jsonArray);
-		System.out.println("Posted application info : " + applicationInfoBean);
+		System.out.println(IAgentConstants.APPLICATION_INFO_POSTED_MSG + applicationInfoBean);
 
 		EventThreadPool.getInstance().getEventQueue().add(applicationInfoBean);
 	}
 
 	protected static void connectSocket() {
-		try (BufferedReader reader = new BufferedReader(new FileReader("/etc/k2-adp/hostip.properties"))) {
+		try (BufferedReader reader = new BufferedReader(new FileReader(IAgentConstants.HOST_PROP_FILE_NAME))) {
 			hostip = reader.readLine();
-			if (hostip == null || hostip.equals(""))
+			if (hostip == null || hostip.isEmpty())
 				throw new RuntimeException("Host ip not found");
-			System.out.println("hostip found: " + hostip);
+			System.out.println(IAgentConstants.HOST_IP_FOUND_MSG + hostip);
 			Socket socket = new Socket(hostip, 54321);
 			EventThreadPool.getInstance().setSocket(socket);
 			
@@ -261,7 +261,7 @@ public class LoggingInterceptor extends Interceptor {
 			createApplicationInfoBean();
 			eventWritePool();
 			IPScheduledThread.getInstance();
-			System.out.println("K2-JavaAgent installed successfully.");
+			System.out.println(IAgentConstants.JA_CONNECT_SUCCESS_MSG);
 
 		} catch (Exception e) {
 			System.err.println("Can't connect to IC, agent installation failed.");
@@ -274,7 +274,7 @@ public class LoggingInterceptor extends Interceptor {
 	}
 
 	private static String getCmdLineArgsByProc(Integer pid) {
-		File cmdlineFile = new File("/proc/" + pid + "/cmdline");
+		File cmdlineFile = new File(IAgentConstants.PROC_DIR + pid + IAgentConstants.CMD_LINE_DIR);
 		if (!cmdlineFile.isFile())
 			return null;
 		BufferedReader br = null;
@@ -359,7 +359,7 @@ public class LoggingInterceptor extends Interceptor {
 
 	private void onTerminationOfHookedMethods(Object source, String eId) {
 		try {
-			Integer executionId = Integer.parseInt(eId.split(":")[1]);
+			Integer executionId = Integer.parseInt(eId.split(IAgentConstants.COLON_SEPERATOR)[1]);
 			String sourceString = null;
 			Method m = null;
 			long threadId = Thread.currentThread().getId();
@@ -388,7 +388,7 @@ public class LoggingInterceptor extends Interceptor {
 	@Override
 	protected void doOnStart(Object source, Object[] arg, String eId) {
 		String sourceString = null;
-		Integer executionId = Integer.parseInt(eId.split(":")[1]);
+		Integer executionId = Integer.parseInt(eId.split(IAgentConstants.COLON_SEPERATOR)[1]);
 //		System.out.println("eid: " + eId + " executionId:" + executionId);
 		long threadId = Thread.currentThread().getId();
 		// System.out.println("Thread Id: " + threadId);
@@ -433,15 +433,15 @@ public class LoggingInterceptor extends Interceptor {
 //			}
 			try {
 				String requestContent = null;
-				Field limit = Buffer.class.getDeclaredField("limit");
+				Field limit = Buffer.class.getDeclaredField(IAgentConstants.BYTE_BUFFER_FIELD_LIMIT);
 				limit.setAccessible(true);
-				Field positionField = Buffer.class.getDeclaredField("position");
+				Field positionField = Buffer.class.getDeclaredField(IAgentConstants.BYTE_BUFFER_FIELD_POSITION);
 				positionField.setAccessible(true);
 				int positionHb = (Integer) positionField.get(arg[0]);
 				int limitHb = (Integer) limit.get(arg[0]);
 				if (limitHb > 0 && positionHb == 0) {
 
-					Field hb = ByteBuffer.class.getDeclaredField("hb");
+					Field hb = ByteBuffer.class.getDeclaredField(IAgentConstants.BYTE_BUFFER_FIELD_HB);
 					hb.setAccessible(true);
 					byte[] hbContent = (byte[]) hb.get(arg[0]);
 
@@ -464,16 +464,16 @@ public class LoggingInterceptor extends Interceptor {
 			}
 			try {
 				String requestContent = null;
-				Field limit = Buffer.class.getDeclaredField("limit");
+				Field limit = Buffer.class.getDeclaredField(IAgentConstants.BYTE_BUFFER_FIELD_LIMIT);
 				limit.setAccessible(true);
-				Field positionField = Buffer.class.getDeclaredField("position");
+				Field positionField = Buffer.class.getDeclaredField(IAgentConstants.BYTE_BUFFER_FIELD_POSITION);
 				positionField.setAccessible(true);
 				int positionHb = (Integer) positionField.get(arg[0]);
 
 				int limitHb = (Integer) limit.get(arg[0]);
 				if (limitHb > 0) {
 
-					Field hb = ByteBuffer.class.getDeclaredField("hb");
+					Field hb = ByteBuffer.class.getDeclaredField(IAgentConstants.BYTE_BUFFER_FIELD_HB);
 					hb.setAccessible(true);
 					byte[] hbContent = (byte[]) hb.get(arg[0]);
 
@@ -520,7 +520,7 @@ public class LoggingInterceptor extends Interceptor {
 			try {
 				String requestContent = null;
 
-				Field inputBufferField = arg[0].getClass().getDeclaredField("inputBuffer");
+				Field inputBufferField = arg[0].getClass().getDeclaredField(IAgentConstants.TOMCAT_REQUEST_FIELD_INPUTBUFFER);
 				inputBufferField.setAccessible(true);
 				Object inputBuffer = inputBufferField.get(arg[0]);
 				Object byteBuffer = null;
@@ -528,11 +528,11 @@ public class LoggingInterceptor extends Interceptor {
 				boolean byteBufferFound = false;
 				if (tomcatMajorVersion == 8  ||  tomcatMajorVersion == 9) {
 					try {
-						Field byteBufferField = inputBuffer.getClass().getDeclaredField("byteBuffer");
+						Field byteBufferField = inputBuffer.getClass().getDeclaredField(IAgentConstants.TOMCAT_REQUEST_FIELD_BYTEBUFFER);
 						byteBufferField.setAccessible(true);
 						byteBuffer = byteBufferField.get(inputBuffer);
 
-						Field position = Buffer.class.getDeclaredField("position");
+						Field position = Buffer.class.getDeclaredField(IAgentConstants.BYTE_BUFFER_FIELD_POSITION);
 						position.setAccessible(true);
 						positionHb = (Integer) position.get(byteBuffer);
 						byteBufferFound = true;
@@ -542,14 +542,14 @@ public class LoggingInterceptor extends Interceptor {
 				} else if (tomcatMajorVersion == 7) {
 					try {
 						if (abstractInputBufferClass == null) {
-							abstractInputBufferClass = Class.forName("org.apache.coyote.http11.AbstractInputBuffer",
+							abstractInputBufferClass = Class.forName(IAgentConstants.COYOTE_ABSTRACT_INPUT_BUFFER_CLASS_NAME,
 									true, Thread.currentThread().getContextClassLoader());
 						}
-						Field byteBufferField = abstractInputBufferClass.getDeclaredField("buf");
+						Field byteBufferField = abstractInputBufferClass.getDeclaredField(IAgentConstants.BYTE_BUFFER_FIELD_BUF);
 						byteBufferField.setAccessible(true);
 						byteBuffer = byteBufferField.get(inputBuffer);
 
-						Field position = abstractInputBufferClass.getDeclaredField("lastValid");
+						Field position = abstractInputBufferClass.getDeclaredField(IAgentConstants.BYTE_BUFFER_FIELD_LASTVALID);
 						position.setAccessible(true);
 						positionHb = (Integer) position.get(inputBuffer);
 						if (positionHb == 8192) {
@@ -565,7 +565,7 @@ public class LoggingInterceptor extends Interceptor {
 					byte[] hbContent = null;
 
 					if ( tomcatMajorVersion == 8 || tomcatMajorVersion == 9) {
-						Field hb = ByteBuffer.class.getDeclaredField("hb");
+						Field hb = ByteBuffer.class.getDeclaredField(IAgentConstants.BYTE_BUFFER_FIELD_HB);
 						hb.setAccessible(true);
 						hbContent = (byte[]) hb.get(byteBuffer);
 					} else if ( tomcatMajorVersion == 7 ) {
@@ -640,12 +640,12 @@ public class LoggingInterceptor extends Interceptor {
 							Thread.currentThread().getContextClassLoader());
 				}
 				objClass = mysqlPreparedStatement5Class;
-				Field originalSqlField = objClass.getDeclaredField("originalSql");
+				Field originalSqlField = objClass.getDeclaredField(IAgentConstants.MYSQL_FIELD_ORIGINAL_SQL);
 				originalSqlField.setAccessible(true);
 				String originalSql = (String) originalSqlField.get(obj);
 
 				// compute id and push in map
-				String id = threadId + ":" + obj.hashCode();
+				String id = threadId + IAgentConstants.COLON_SEPERATOR + obj.hashCode();
 				EventThreadPool.getInstance().setMySqlPreparedStatementsMap(id, originalSql);
 
 			} catch (Exception e) {
@@ -656,12 +656,12 @@ public class LoggingInterceptor extends Interceptor {
 						|| sourceString.equals(IAgentConstants.MYSQL_CONNECTOR_6_0_2_SOURCE)
 						|| sourceString.equals(IAgentConstants.MYSQL_CONNECTOR_6_0_3_SOURCE))) {
 			try {
-				Field originalSqlField = objClass.getDeclaredField("originalSql");
+				Field originalSqlField = objClass.getDeclaredField(IAgentConstants.MYSQL_FIELD_ORIGINAL_SQL);
 				originalSqlField.setAccessible(true);
 				String originalSql = (String) originalSqlField.get(obj);
 
 				// compute id and push in map
-				String id = threadId + ":" + obj.hashCode();
+				String id = threadId + IAgentConstants.COLON_SEPERATOR + obj.hashCode();
 				EventThreadPool.getInstance().setMySqlPreparedStatementsMap(id, originalSql);
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -669,7 +669,7 @@ public class LoggingInterceptor extends Interceptor {
 		} else if (objClass.getName().equals(IAgentConstants.MYSQL_PREPARED_STATEMENT_8)
 				&& sourceString.equals(IAgentConstants.MYSQL_CONNECTOR_8_SOURCE)) {
 			try {
-				Field queryField = objClass.getSuperclass().getDeclaredField("query");
+				Field queryField = objClass.getSuperclass().getDeclaredField(IAgentConstants.MYSQL_FIELD_QUERY);
 				queryField.setAccessible(true);
 				Object query = queryField.get(obj);
 				if (query != null && query.getClass().getName().equals(IAgentConstants.MYSQL_PREPARED_QUERY_8)) {
@@ -680,12 +680,12 @@ public class LoggingInterceptor extends Interceptor {
 					}
 
 					objClass = mysqlPreparedStatement8Class;
-					Field originalSqlField = objClass.getDeclaredField("originalSql");
+					Field originalSqlField = objClass.getDeclaredField(IAgentConstants.MYSQL_FIELD_ORIGINAL_SQL);
 					originalSqlField.setAccessible(true);
 					String originalSql = (String) originalSqlField.get(query);
 
 					// compute id and push in map
-					String id = threadId + ":" + obj.hashCode();
+					String id = threadId + IAgentConstants.COLON_SEPERATOR + obj.hashCode();
 					EventThreadPool.getInstance().setMySqlPreparedStatementsMap(id, originalSql);
 				}
 			} catch (Exception e) {
@@ -705,7 +705,7 @@ public class LoggingInterceptor extends Interceptor {
 			FileOutputStream fos = new FileOutputStream(f, true);
 			try {
 				fos.write(s.getBytes());
-				fos.write("\n".getBytes());
+				fos.write(IAgentConstants.NEW_LINE_SEQUENCE.getBytes());
 			} finally {
 				fos.close();
 			}
@@ -716,14 +716,14 @@ public class LoggingInterceptor extends Interceptor {
 
 	private static void setTomcatVersion() {
 		try {
-			Class<?> serverInfo = Class.forName("org.apache.catalina.util.ServerInfo", true,
+			Class<?> serverInfo = Class.forName(IAgentConstants.TOMCAT_SERVER_INFO_CLASS_NAME, true,
 					Thread.currentThread().getContextClassLoader());
-			Field serverNumberField = serverInfo.getDeclaredField("serverNumber");
+			Field serverNumberField = serverInfo.getDeclaredField(IAgentConstants.TOMCAT_FIELD_SERVERNUMBER);
 			serverNumberField.setAccessible(true);
 			tomcatVersion = (String) serverNumberField.get(null);
 
-			tomcatMajorVersion = Integer.parseInt(tomcatVersion.split("\\.")[0]);
-			System.out.println("Detected Tomcat Version " + tomcatMajorVersion + " :" + tomcatVersion);
+			tomcatMajorVersion = Integer.parseInt(tomcatVersion.split(IAgentConstants.VERSION_SPLIT_EXPR)[0]);
+			System.out.println(IAgentConstants.TOMCAT_VERSION_DETECTED_MSG + tomcatMajorVersion + IAgentConstants.COLON_SEPERATOR + tomcatVersion);
 
 		} catch (Exception e) {
 			System.out.println("Unable to find Tomcat Version:" + e.getMessage());

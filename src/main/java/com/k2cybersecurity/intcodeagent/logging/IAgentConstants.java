@@ -7,6 +7,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.k2cybersecurity.intcodeagent.models.javaagent.ApplicationInfoBean;
+
 public interface IAgentConstants {
 
 	String TRACE_REGEX = "((?!(org\\.apache\\.jsp.*)|(javax\\.servlet\\.http.*)))((^javax.*)|(^java\\.lang.*)|(^java\\.io.*)|(^org\\.apache.*)|(^java\\.nio.*)|(^java\\.util.*)|(^java\\.net.*)|(^sun.*)|(^java\\.security.*)|(^k2\\.org\\.brutusin.*)|(^com\\.microsoft\\.sqlserver.*)|(^com\\.mysql.*)|(^sun\\.reflect.*)|(^org\\.hibernate.*)|(^java\\.sql.*)|(^com\\.mongodb.*)|(^org\\.apache\\.commons.*)|(^org\\.mongodb.*)|(^com\\.sun.*)|(^org\\.eclipse\\.jetty.*)|(^net\\.sourceforge\\.eclipsejetty.*)|(^java\\.awt.*)|(^org\\.springframework.*)|(^org\\.slf4j.*)|(^org\\.eclipse\\.jdt.*)|(^com\\.opensymphony\\.xwork2.*)|(^k2\\.org\\.objectweb\\.asm.*)|(^freemarker\\.cache.*)|(^com\\.mchange.*)|(^org\\.postgresql.*)|(^oracle\\.jdbc.*)|(^org\\.hsqldb.*)|(^ch\\.qos\\.logback.*)|(^io\\.micrometer.*)|(^k2\\.org\\.json.*)|(^k2\\.com\\.fasterxml.*))";
@@ -290,6 +292,7 @@ public interface IAgentConstants {
 	String BYTE_ARRAY_CLASS = "[B";
 	
 	
+
 	// ProcessorThread.java constants
 	String JAVA_NET_URLCLASSLOADER = "public java.net.URLClassLoader(java.net.URL[])";
 	String JAVA_NET_URLCLASSLOADER_NEWINSTANCE = "public static java.net.URLClassLoader java.net.URLClassLoader.newInstance(java.net.URL[])";
@@ -345,4 +348,40 @@ public interface IAgentConstants {
 	String K2_JAVAAGENT_JSONNAME_JARPATHBEAN = "k2.javaagent.jsonname.jarpathbean";
 
 	String K2_JAVAAGENT_JSONNAME_DYNAMICJARPATHBEAN = "k2.javaagent.jsonname.dynamicjarpathbean";
+
+	// LoggingInterceptor Constants
+	char DIR_SEPERATOR = '/';
+	String CGROUP_FILE_NAME = "/proc/self/cgroup" ; 
+	String DOCKER_DIR = "docker/";
+	String KUBEPODS_DIR = "kubepods/";
+	String LXC_DIR = "lxc/";
+	String JAR_PATH_INIT_MSG = "Pooling getJarPathResultExecutorService to fetch results.";
+	String JAR_PATH_FETCH_SUCCESS_MSG = "getJarPathResultExecutorService result fetched successfully.";
+	String JAR_PATH_EMPTY_RESULT_ERR = "getJarPathResultExecutorService result is empty.";
+	String JAR_PATH_TIMEOUT_ERR = "Timeout reached waiting for getJarPathResultExecutorService.";
+	String HOST_PROP_FILE_NAME = "/etc/k2-adp/hostip.properties";
+	String HOST_IP_FOUND_MSG = "hostip found: ";
+	String JA_CONNECT_SUCCESS_MSG = "K2-JavaAgent installed successfully.";
+	String PROC_DIR = "/proc/";
+	String CMD_LINE_DIR = "/cmdline";
+	String BYTE_BUFFER_FIELD_LIMIT = "limit";
+	String BYTE_BUFFER_FIELD_POSITION = "position";
+	String BYTE_BUFFER_FIELD_BUF = "buf";
+	String BYTE_BUFFER_FIELD_LASTVALID = "lastValid";
+	String BYTE_BUFFER_FIELD_HB = "hb";
+	String TOMCAT_REQUEST_FIELD_INPUTBUFFER = "inputBuffer";
+	String TOMCAT_REQUEST_FIELD_BYTEBUFFER = "byteBuffer";
+	String COYOTE_ABSTRACT_INPUT_BUFFER_CLASS_NAME = "org.apache.coyote.http11.AbstractInputBuffer";
+	String MYSQL_FIELD_ORIGINAL_SQL = "originalSql";
+	String MYSQL_FIELD_QUERY = "query";
+	String NEW_LINE_SEQUENCE = "\n";
+	String TOMCAT_SERVER_INFO_CLASS_NAME = "org.apache.catalina.util.ServerInfo";
+	String TOMCAT_FIELD_SERVERNUMBER = "serverNumber";
+	String TOMCAT_VERSION_DETECTED_MSG = "Detected Tomcat Version " ;
+	String VERSION_SPLIT_EXPR = "\\.";
+	String NULL_CHAR_AS_STRING = "\000";
+	char VMPID_SPLIT_CHAR = '@';
+	String APPLICATION_INFO_POSTED_MSG = "Posted application info : ";
+	String COLON_SEPERATOR = ":";
+
 }
