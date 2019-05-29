@@ -14,11 +14,16 @@
 #include <unistd.h>
 #include <sys/syscall.h> //gettid
 #include <dlfcn.h>
-#include "jni.h"
+#include <jni.h>
 #include <sys/mman.h>
 #include <malloc.h>
 
-static int k2one=0;
+#define PUSH_RDI 0x57
+#define PUSH_RSI 0x56
+#define PUSH_RDX 0x52
+#define POP_RDI  0x5f
+#define POP_RSI  0x5e
+#define POP_RDX  0x5a
 
 // -------------------------------
 // module used for native hooking by javaagent.
@@ -43,13 +48,14 @@ static inline char* find_lib(const char *path,const char* lib)  {
  // HERE
 
  int ret=syscall(SYS_read,fd,rbuffer,4096);
- if(ret <0) { return 0; }
+ if(ret <0) {  
+       syscall(SYS_close,fd); 
+       return 0; 
+ }
  rbuffer[ret]=0;
  char* ptr=rbuffer;
 
  for(;*ptr!=0;ptr++) {
- //    printf("ptr=%s\n",ptr);
- //   HERE
    // skip initial space
    while(*ptr==' ') { ptr++; }
    // find delimiter for begin-address
@@ -94,6 +100,7 @@ static inline char* find_lib(const char *path,const char* lib)  {
      int rlen=strlen(lib);
      if(!strcmp(lib,sx+strlen(sx)-rlen)) {
        //printf("%s matches %s\n",sx,lib);
+       syscall(SYS_close,fd); 
        return stringclone((char*)sx,strlen(sx));
      }
      *(char*)ptr=save;
@@ -104,6 +111,7 @@ static inline char* find_lib(const char *path,const char* lib)  {
  }while(1);
  
 error:
+ syscall(SYS_close,fd); 
  return 0;
 }
 
@@ -113,13 +121,14 @@ error:
 int emit_jmp_from_to(size_t addr, size_t tgt) {
 
   //printf("%lx: Jmp %lx \n",addr,tgt);
+  int mylen=5;
   char*ptr=(char*)addr;
-  int disp = tgt-(addr+6)+1;//6=size of current instr;
+  int disp = tgt-(addr+mylen);//5=size of current instr;
 //TODO handle exceed 32bit range
-  size_t x = ( tgt>(addr+6) )  ?  (tgt-addr-6): (addr+6-tgt);
+  size_t x = ( tgt>(addr+mylen) )  ?  (tgt-addr-mylen): (addr+mylen-tgt);
   if( x!= (x&0x7fffffff) ) {
     printf("Error: tgt=%p addr=%p diff=%p -- more than 31bit\n",
-             tgt,addr+6,x);
+             tgt,addr+mylen,x);
     return -1;
   }
   *ptr=0xE9; //E9  xx yy zz dd -- 
@@ -127,7 +136,7 @@ int emit_jmp_from_to(size_t addr, size_t tgt) {
   *(ptr+2)= (disp>>8)&0xff;
   *(ptr+3) = (disp>>16)&0xff;
   *(ptr+4) = (disp>>24)&0xff;
-  return 5;
+  return mylen;
 }
 // -------------------------------
 // call rel32
@@ -135,11 +144,12 @@ int emit_jmp_from_to(size_t addr, size_t tgt) {
 int emit_call_from_to(size_t addr, size_t tgt) {
   //printf("%lx: Call %lx \n",addr,tgt);
   char*ptr=(char*)addr;
-  int disp = tgt-(addr+6)+1;//6=size of current instr;
-  size_t x = ( tgt>(addr+6) )  ?  (tgt-addr-6): (addr+6-tgt);
+  int mylen = 5;
+  int disp = tgt-(addr+mylen);//6=size of current instr;
+  size_t x = ( tgt>(addr+mylen) )  ?  (tgt-addr-mylen): (addr+mylen-tgt);
   if( x!= (x&0x7fffffff) ) {
     printf("Error: tgt=%p addr=%p diff=%p -- more than 32bit\n",
-             tgt,addr+6,x);
+             tgt,addr+mylen,x);
     return -1;
   }
   *ptr=0xE8; //E8  xx yy zz dd -- 
@@ -147,7 +157,7 @@ int emit_call_from_to(size_t addr, size_t tgt) {
   *(ptr+2)= (disp>>8)&0xff;
   *(ptr+3) = (disp>>16)&0xff;
   *(ptr+4) = (disp>>24)&0xff;
-  return 5;
+  return mylen;
 }
 // -------------------------------
 // Function locate_hole_14b_long
@@ -160,13 +170,30 @@ int locate_reentry(size_t addr) {
   while(count<10) {
     //printf("locate[%d]: %x \n",count,*ptr);
     switch (0xff&*ptr) {
-     case 0x55 : count++;ptr++; break; //PUSH RBP
-     case 0x41 : count++;ptr++;
-                 if( (*ptr<=cmax) && (*ptr>=cmin)) {
+     case 0x50 : //push RAX
+     case 0x51 : //push RCX
+     case 0x52 : //push RDX
+     case 0x53 : //push RBX
+     case 0x54 : //push RSP
+     case 0x55 : //push RBP
+     case 0x56 : //push RSI
+     case 0x57 : //push RDI
+     case 0x58 : //pop RAX
+     case 0x59 : //pop RCX
+     case 0x5a : //pop RDX
+     case 0x5b : //pop RDX
+     case 0x5c : //pop RBX
+     case 0x5d : //pop RBP
+     case 0x5e : //pop RSI
+     case 0x5f : //pop RDI
+                count++;ptr++; 
+                break; 
+     case 0x41 :count++;ptr++;
+                if( (*ptr<=cmax) && (*ptr>=cmin)) {
                   ptr++; count++;
-                 }
-                 else { return -1; } //un-identified;
-                 break; // PUSH r8-r15
+                }
+                else { return -1; } //un-identified;
+                break; // PUSH r8-r15
      case 0x48: count++;ptr++;
                 char mov=0x89;
                 if( *ptr!=mov) { return -1; }
@@ -174,7 +201,7 @@ int locate_reentry(size_t addr) {
                 //0x48 0x89 0x.. = MOV REG,REG
                 ptr++;count++; //skip reg->reg info
                 break;
-     default: return -1;
+     default:   return -1;
     }
   }
   return count;
@@ -254,17 +281,25 @@ int  patch_entry(size_t entry, size_t calltgt){
       return -1;
    }
 
+   // 1. newcode: <endbr>
    emit_endbr((size_t)newcode);
    int sizeendbr=4;
+
+   // 2. newcode+endbr: <call tgt>
+   //  -- note here in caller, we push rdi rsi rdx and pop on exit 
+   //  -- since rest of code is in C, we want to save it in callee.
+   //  -- instead of adding more code 6B here...  
    int ins_sz=emit_call_from_to((size_t)newcode+sizeendbr,calltgt);
+
+   // 3. copy code from original loc
    int copy_sz=copy_code(entry+skip,(size_t)newcode+sizeendbr+ins_sz,reentry);
    if(ins_sz<0) { 
        DEBUG("failed to gencall from newcode to calltgt");
        return ins_sz; 
    }
-   //       call foo ;callback
-   //       jmp entry_page+reentry;
-   ret=emit_jmp_from_to( (size_t)newcode+copy_sz+sizeendbr+ins_sz,entry+reentry+skip-sizeendbr);
+   // 4. jmp entry_page+reentry+skip-sizeendbr;
+   ret=emit_jmp_from_to( (size_t)newcode+copy_sz+sizeendbr+ins_sz,
+                          entry+skip+reentry-sizeendbr);
    if(ret<0) { 
      DEBUG("failed to genJmp from newcode to reentry");
      return ret; 
@@ -278,6 +313,7 @@ int  patch_entry(size_t entry, size_t calltgt){
       return ret; 
    }
    // ready to patch;
+   // 5. jmp to new code; landing hammock for return from newcode.
    emit_endbr(entry+reentry+skip-sizeendbr);
    ret=emit_jmp_from_to(entry+skip,(size_t)(newcode));
    if(ret<0) {
@@ -305,28 +341,83 @@ int  patch_entry(size_t entry, size_t calltgt){
    return 0;
 }
 
-// -------------------------------
-// Function K2Native_init
-// -------------------------------
-JNIEXPORT jint JNICALL Java_K2Native_k2call(JNIEnv* jenv, jobject j,jobject jstr) {
-  jint jret=0;
-  return jret;
-}
 
-void callme(JNIEnv* jenv, jobject j,jstring js) {
-  printf("DEBUG: callback invoked ... connect me to JavaAgent logic\n");
+// ---------------------------------------------------------------------
+// Function: callme is invoked from stub we planted.
+//  since originating frame has these args -- we get same args in.
+// JDK8
+// JDK7 https://github.com/openjdk-mirror/jdk7u-jdk/blob/master/src/solaris/classes/java/lang/UNIXProcess.java.linux#L135
+// ---------------------------------------------------------------------
+#define COMMON_CODE \
+  jsize len1= (*env)->GetArrayLength(env,jpath); \
+  jsize len2= (*env)->GetArrayLength(env,prog); \
+  char *buffer=malloc(sizeof(char)*(len1+len2+2)); \
+  if(buffer) { \
+      jbyte* j1=(*env)->GetByteArrayElements(env,jpath,0); \
+      memcpy(buffer,j1,len1); \
+      buffer[len1]='\0'; \
+      printf(" got jpath = %s\n",buffer); \
+      buffer[len1]='/'; \
+      jbyte* j2=(*env)->GetByteArrayElements(env,prog,0); \
+      memcpy(buffer+len1+1,j2,len2); \
+      buffer[len1+len2+1]=0; \
+      printf("path found : %s\n", buffer); \
+  } \
+
+
+void callmeOld(JNIEnv* env, jobject j,jbyteArray jpath,jbyteArray prog) {
+
+  //__asm__ __volatile__ ("push %rdi;push %rsi;push %rdx;push %rcx;");
+  printf("DEBUG: oldJDK callback invoked ... connect me to JavaAgent logic\n");
+  printf("DEBUG: args: %p %p %p %p \n",env,j,jpath,prog);
+
+  COMMON_CODE
+
+  //__asm__ __volatile__ ("pop %rdx;pop %rsi;pop %rdi;");
   return ;
 }
 
-JNIEXPORT jint JNICALL Java_K2Native_k2init(JNIEnv* jenv, jclass j) {
-  jint jret=0,jerr=-1;
-  if(!k2one) { k2one=1; }
-  else {return jret;}
+void callme(JNIEnv* env, jobject j,jint mode,jbyteArray jpath,jbyteArray prog) {
+  //__asm__ __volatile__ ("push %rdi;push %rsi;push %rdx;push %rcx;");
+  printf("DEBUG: JDK9+ callback invoked ... connect me to JavaAgent logic\n");
+  printf("DEBUG: args: %p %p %d %p %p \n",env,j,mode,jpath,prog);
 
-   printf(" in k2init");
+  COMMON_CODE
+
+  //__asm__ __volatile__ ("pop %rdx;pop %rsi;pop %rdi;");
+  return ;
+}
+
+
+// ---------------------------------------------------------------------
+// Function: k2test
+// ---------------------------------------------------------------------
+JNIEXPORT jint JNICALL 
+Java_K2Native_k2test(JNIEnv* env, jclass j, jstring js) {
+  __asm__ __volatile__ ("push %rdi;push %rsi;push %rdx");
+  jboolean iscopy;
+
+  const char*s = (*env)->GetStringUTFChars(env,js,&iscopy);
+  printf("string argument : %s\n",s);
+  (*env)->ReleaseStringUTFChars(env,js,s);
+  printf(" in k2test()->callme\n");
+  __asm__ __volatile__ ("pop %rdx;pop %rsi;pop %rdi;");
+  printf(" exit from k2test()\n");
+  return 0;
+}
+// -------------------------------
+// Function: native K2Native_init
+// -------------------------------
+JNIEXPORT jint JNICALL 
+Java_K2Native_k2init(JNIEnv* env, jclass j) {
+  jint jret=0,jerr=-1;
+
+   printf(" in k2init()\n");
+
    int pid= syscall(SYS_getpid);
-   char buffer[128] ;
-   int ret=snprintf(buffer,128,"/proc/%d/maps",pid);
+   int buflen=256;
+   char buffer[buflen] ;
+   int ret=snprintf(buffer,buflen,"/proc/%d/maps",pid);
    if(ret<0) {
      return jerr;
    }
@@ -334,36 +425,48 @@ JNIEXPORT jint JNICALL Java_K2Native_k2init(JNIEnv* jenv, jclass j) {
    if(!libjava) {
      return jerr;
    }
+
+
    printf("[libjava] : %s \n",libjava);
    void* handle=dlopen(libjava,RTLD_LAZY|RTLD_NOLOAD);
+   if(!handle) {
+      printf("DEBUG:dlopen(NOLOAD) try2 '%s' \n",libjava);
+      handle=dlopen(libjava,RTLD_LAZY|RTLD_NOLOAD);
+   }
    if(!handle) { // open already loaded module.
-       printf("DEBUG:dlopen (NOLOAD) failed  for: '%s' \n",libjava);
+       printf("DEBUG:dlopen(NOLOAD) failed  for: '%s' \n",libjava);
        return jerr;
    }
-   //printf("able to get handle to existing libjava.so\n");
-   void *sym = dlsym(handle,"Java_java_lang_UNIXProcess_forkAndExec");
-   if(!sym) {
-       sym = dlsym(handle,"Java_java_lang_ProcessImpl_forkAndExec");
+   int old=0;
+   const char*symStr = "Java_java_lang_ProcessImpl_forkAndExec";
+   void *sym = dlsym(handle,symStr);
+   if(!sym) { //new JDK9/10
+       old=1;
+       symStr = "Java_java_lang_UNIXProcess_forkAndExec";
+       sym = dlsym(handle,symStr);
    }
+  
    if(!sym) {
        printf("DEBUG: cannot load sym in: %s \n",libjava);
        return jerr;
    }
+   printf("SYM: %s\n",symStr);
    //printf("hook forkAndExec[%p]\n",sym);
    print_sym((size_t)sym,16);
    //printf("patching entry from %p to %p\n", sym, &Java_K2Native_k2call);
 
-   if(0!=patch_entry((size_t)sym,(size_t)&callme)) {
+   if(0!=patch_entry((size_t)sym, old==0?(size_t)&callmeOld:(size_t)&callme)) {
       return jerr;
    }
-   
+   printf("exit from k2init()\n");
   return jret;
 }
-
+// ---------------------------------------------------------------------
 JNIEXPORT int JNI_OnLoad(JavaVM* v, void* j) {
    printf("DEBUG:Onload of k2native.so\n");
    return JNI_VERSION_1_2;
 }
+
 //int
 //main(){
 //   Java_K2Native_k2init(0,0) ; 
