@@ -318,8 +318,8 @@ int  patch_entry(size_t entry, size_t calltgt){
        DEBUG("failed to genJmp from entry to newcode");
        //printf("unpatch -- something went wrong. undo!\n");
    }
-   print_sym( (size_t)entry, 16);
-   print_sym( (size_t)newcode,32);
+   //print_sym( (size_t)entry, 16);
+   //print_sym( (size_t)newcode,32);
 
    // restore protections 
    ret=mprotect((void*)entry_page, 4096, PROT_EXEC|PROT_READ);
@@ -362,32 +362,24 @@ int  patch_entry(size_t entry, size_t calltgt){
 //                                       jboolean redirectErrorStream)
 // note: first 6 args are in registers -- we need arg 5 and 6
 // ---------------------------------------------------------------------
-#define COMMON_CODE \
+#define COMMON_CODE {\
   jsize len1= (*env)->GetArrayLength(env,jpath); \
   jsize len2= (*env)->GetArrayLength(env,prog); \
   jsize len3= (*env)->GetArrayLength(env,arg); \
-  printf("DEBUG: GetArrayLengths <%d,%d,%d>\n",len1,len2,len3); \
   jboolean iscopy; \
   jbyte* j1=(*env)->GetPrimitiveArrayCritical(env,jpath,&iscopy); \
   if((*env)->ExceptionOccurred(env)) {\
         goto exception;\
   } \
-  printf("DEBUG: jbyte* %p\n",j1);\
-  fflush(stdout);\
-  {\
-      printf(" got jpath = %s\n",(char*)j1); \
       jbyte* j2=(*env)->GetPrimitiveArrayCritical(env,prog,&iscopy); \
       if((*env)->ExceptionOccurred(env)) {\
         goto exception;\
       } \
-      printf("DEBUG: jbyte* %p\n",j2);\
-      printf("path found : %s\n", (char*)j2); \
       jbyte* j3=(*env)->GetPrimitiveArrayCritical(env,arg,&iscopy); \
       if((*env)->ExceptionOccurred(env)) {\
         goto exception;\
       } \
-      printf("DEBUG: jbyte* %p\n",j3);\
-      printf("arg found : %s\n", (char*)j3); \
+      printf("args found %s : %s : %s\n",(char*)j1,(char*)j2, (char*)j3); \
       if(j1) {\
           (*env)->ReleasePrimitiveArrayCritical(env,jpath,j1,0);\
       }\
@@ -398,17 +390,16 @@ int  patch_entry(size_t entry, size_t calltgt){
           (*env)->ReleasePrimitiveArrayCritical(env,arg,j3,0);\
       }\
     exception:;\
-  } 
-
+   }
 
 // ---------------------------------------------------------------------
 // Function: callme - invoked internally
 // ---------------------------------------------------------------------
-void 
+void __attribute__ ((optimize("O0")))
 k2io_target(JNIEnv* env, jobject j,jint mode,jbyteArray jpath,jbyteArray prog,jbyteArray arg) {
   __asm__ __volatile__ ("push %rdi;push %rsi;push %rdx;push %rcx;push %r8;push %r9");
-  printf("DEBUG: JDK9+ callback invoked ... connect me to JavaAgent logic\n");
-  printf("DEBUG: args: %p %p %d %p %p \n",env,j,mode,jpath,prog);
+  //printf("DEBUG: JDK9+ callback invoked ... connect me to JavaAgent logic\n");
+  //printf("DEBUG: args: %p %p %d %p %p %p \n",env,j,mode,jpath,prog,arg);
 
   COMMON_CODE
 
@@ -439,7 +430,7 @@ JNIEXPORT jint JNICALL
 Java_K2Native_k2init(JNIEnv* env, jclass j) {
   jint jret=0,jerr=-1;
 
-   printf(" in k2init()\n");
+   //printf(" in k2init()\n");
 
    int pid= syscall(SYS_getpid);
    int buflen=256;
@@ -454,15 +445,13 @@ Java_K2Native_k2init(JNIEnv* env, jclass j) {
    }
 
 
-   printf("[libjava] : %s \n",libjava);
+   //printf("[libjava] : %s \n",libjava);
    void* handle=dlopen(libjava,RTLD_LAZY|RTLD_NOLOAD);
    if(!handle) {
       dlerror();//clear old error
-      printf("DEBUG:dlopen(NOLOAD) try2 '%s' \n",libjava);
       handle=dlopen(libjava,RTLD_LAZY|RTLD_NOLOAD);
    }
    if(!handle) { // open already loaded module.
-       printf("DEBUG:dlopen(NOLOAD) failed  for: '%s' \n",libjava);
        dlerror(); //clear any error
        // try one more way using dladdr
        handle= dlopen("",RTLD_LAZY|RTLD_NOLOAD);
@@ -483,23 +472,16 @@ Java_K2Native_k2init(JNIEnv* env, jclass j) {
        printf("DEBUG: cannot load sym in: %s \n",libjava);
        return jerr;
    }
-   //printf("hook forkAndExec[%p]\n",sym);
-   print_sym((size_t)sym,16);
+   //print_sym((size_t)sym,16);
    //printf("patching entry from %p to %p\n", sym, &Java_K2Native_k2call);
 
    if(0!=patch_entry((size_t)sym, (size_t)&k2io_target)) {
       return jerr;
    }
-   printf("exit from k2init()\n");
   return jret;
 }
 // ---------------------------------------------------------------------
 JNIEXPORT int JNI_OnLoad(JavaVM* v, void* j) {
-   printf("DEBUG:Onload of k2native.so\n");
+  //printf("DEBUG:Onload of k2native.so\n");
    return JNI_VERSION_1_2;
 }
-
-//int
-//main(){
-//   Java_K2Native_k2init(0,0) ; 
-//}
