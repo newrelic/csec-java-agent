@@ -2,6 +2,7 @@ package com.k2cybersecurity.intcodeagent.logging;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
+import java.net.SocketException;
 import java.util.Collections;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -28,12 +29,17 @@ public class IPScheduledThread {
 					System.out.println("writing ack object");
 					LoggingInterceptor.oos.writeObject(Collections.singletonList("ACK"));
 					LoggingInterceptor.oos.flush();
-					System.out.println("Host ip equals : " + LoggingInterceptor.hostip.equals(hostip));
-					System.out.println("LoggingInterceptor.socket : " + LoggingInterceptor.socket);
-					System.out.println("LoggingInterceptor.socket.isConnected() : " + LoggingInterceptor.socket.isConnected());
-					System.out.println("LoggingInterceptor.socket.isClosed() : " + LoggingInterceptor.socket.isClosed());
-					} catch (Exception ex) {
-						ex.printStackTrace();
+					} catch (SocketException ex) {
+						System.out.println("Error in writing : " + ex.getMessage());
+						System.out.println("Host ip equals : " + LoggingInterceptor.hostip.equals(hostip));
+						System.out.println("LoggingInterceptor.socket : " + LoggingInterceptor.socket);
+						System.out.println("LoggingInterceptor.socket.isConnected() : " + LoggingInterceptor.socket.isConnected());
+						System.out.println("LoggingInterceptor.socket.isClosed() : " + LoggingInterceptor.socket.isClosed());
+						
+						// if ack fails, socket needs to be properly closed as it is not done implicitly
+						LoggingInterceptor.closeSocket();
+					}
+					catch (Exception ex) {
 						System.out.println(ex.getMessage());
 					}
 					if (hostip == null || hostip.equals("")) {
@@ -45,7 +51,7 @@ public class IPScheduledThread {
 						LoggingInterceptor.getJarPath();
 						System.out.println("K2-JavaAgent re-installed successfully.");
 					} else {
-						System.out.println("got into final else");
+						System.out.println("got into final else should be only in case of ack written successfully");
 					}
 				} catch (Exception e) {
 					System.err.println("Error in IPScheduledThread : " + e.getMessage());
