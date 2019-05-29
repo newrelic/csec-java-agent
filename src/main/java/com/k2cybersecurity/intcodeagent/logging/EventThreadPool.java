@@ -8,6 +8,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.RejectedExecutionHandler;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -26,6 +27,8 @@ public class EventThreadPool {
 	private LinkedBlockingQueue<Object> eventQueue = new LinkedBlockingQueue<>(5000);
 	private Socket socket;
 	private ObjectOutputStream oos;
+	private ScheduledExecutorService eventPoolExecutor;
+	private static Object mutex = new Object();
 	
 	private EventThreadPool() {
 		LinkedBlockingQueue<Runnable> processQueue;
@@ -34,7 +37,7 @@ public class EventThreadPool {
 		int maxPoolSize = 10;
 		int corePoolSize = 1;
 		long keepAliveTime = 10;
-
+		
 		TimeUnit timeUnit = TimeUnit.SECONDS;
 
 		boolean allowCoreThreadTimeOut = false;
@@ -78,8 +81,15 @@ public class EventThreadPool {
 	}
 
 	protected static EventThreadPool getInstance() {
-		if (instance == null)
-			instance = new EventThreadPool();
+
+		if (instance == null) {
+			synchronized (mutex) {
+				if (instance == null) {
+					instance = new EventThreadPool();
+				}
+				return instance;
+			}
+		}
 		return instance;
 	}
 
@@ -169,6 +179,14 @@ public class EventThreadPool {
 
 	public void setObjectStream(ObjectOutputStream oos) {
 		this.oos = oos;
+	}
+
+	public ScheduledExecutorService getEventPoolExecutor() {
+		return eventPoolExecutor;
+	}
+
+	public void setEventPoolExecutor(ScheduledExecutorService eventPoolExecutor) {
+		this.eventPoolExecutor = eventPoolExecutor;
 	}
 
 }

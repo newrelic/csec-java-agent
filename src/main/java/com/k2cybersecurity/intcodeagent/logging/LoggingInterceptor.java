@@ -28,6 +28,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.net.Socket;
+import java.net.SocketException;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
@@ -67,11 +68,10 @@ public class LoggingInterceptor extends Interceptor {
 	protected static Class<?> mysqlPreparedStatement8Class, mysqlPreparedStatement5Class, abstractInputBufferClass;
 	protected static String tomcatVersion;
 	protected static int tomcatMajorVersion ;
-	private static final int FLUSH_MAX_COUNTER = 1800;
+	private static final int FLUSH_MAX_COUNTER = 300;
 	private static int counter = 0;
 	static final int MAX_DEPTH_LOOKUP = 4; // Max number of superclasses to lookup for a field
 	// protected static Map<Long, ServletInfo> requestMap;
-	protected static ScheduledExecutorService eventPoolExecutor;
 	public static String hostip = "";
 	protected static Runnable queuePooler;
 	static {
@@ -91,14 +91,26 @@ public class LoggingInterceptor extends Interceptor {
 						ObjectOutputStream oos = EventThreadPool.getInstance().getObjectStream();
 						List<Object> eventList = new ArrayList<>();
 						eventQueue.drainTo(eventList, eventQueue.size());
-						oos.writeUnshared(eventList);					
+						oos.writeUnshared(eventList);	
 						if(counter++ > FLUSH_MAX_COUNTER) {
 							oos.flush();
+							oos.reset();
 							counter = 0;
 						}
 					} catch (IOException e) {
 						e.printStackTrace();
 						System.err.println("Error in writing: " + e.getMessage());
+						if(EventThreadPool.getInstance().getSocket()!=null) {
+						try {
+							EventThreadPool.getInstance().getSocket().close();
+							EventThreadPool.getInstance().setSocket(null);
+							LoggingInterceptor.connectSocket();
+							LoggingInterceptor.createApplicationInfoBean();
+						} catch (IOException e1) {
+							e1.printStackTrace();
+						}
+						}
+						
 					} catch (Exception e) {
 						e.printStackTrace();
 					}
@@ -257,8 +269,8 @@ public class LoggingInterceptor extends Interceptor {
 	}
 
 	private static void eventWritePool() {
-		eventPoolExecutor = Executors.newScheduledThreadPool(1);
-		eventPoolExecutor.scheduleWithFixedDelay(queuePooler, 1, 1, TimeUnit.SECONDS);
+		EventThreadPool.getInstance().setEventPoolExecutor(Executors.newScheduledThreadPool(1));
+		EventThreadPool.getInstance().getEventPoolExecutor().scheduleWithFixedDelay(queuePooler, 1, 1, TimeUnit.SECONDS);
 	}
 
 	private static String getCmdLineArgsByProc(Integer pid) {
