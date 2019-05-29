@@ -214,11 +214,11 @@ public class LoggingInterceptor extends Interceptor {
 		 * RuntimeException(ex); }
 		 */
 		try {
+			IPScheduledThread.getInstance();
 			connectSocket();
 			getJarPath();
 			createApplicationInfoBean();
 			eventWritePool();
-			IPScheduledThread.getInstance();
 			System.out.println("K2-JavaAgent installed successfully.");
 
 		} catch (Exception e) {
