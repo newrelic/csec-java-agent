@@ -2,6 +2,7 @@ package com.k2cybersecurity.intcodeagent.logging;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
+import java.util.Collections;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
@@ -25,7 +26,7 @@ public class IPScheduledThread {
 						// we send our custom object to check if connectino is still alive or not
 						// this will be ignored by ic agent on the other side.
 					System.out.println("writing ack object");
-					LoggingInterceptor.oos.writeObject("ACK");
+					LoggingInterceptor.oos.writeObject(Collections.singletonList("ACK"));
 					System.out.println("Host ip equals : " + LoggingInterceptor.hostip.equals(hostip));
 					System.out.println("LoggingInterceptor.socket : " + LoggingInterceptor.socket);
 					System.out.println("LoggingInterceptor.socket.isConnected() : " + LoggingInterceptor.socket.isConnected());
@@ -57,7 +58,7 @@ public class IPScheduledThread {
 						"ipScheduledThread-" + threadNumber.getAndIncrement());
 			}
 		});
-		ipScheduledService.scheduleAtFixedRate(runnable, 5, 5, TimeUnit.MINUTES);
+		ipScheduledService.scheduleAtFixedRate(runnable, 2, 2, TimeUnit.MINUTES);
 	}
 
 	public static IPScheduledThread getInstance() {
