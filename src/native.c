@@ -127,8 +127,7 @@ int emit_jmp_from_to(size_t addr, size_t tgt) {
 //TODO handle exceed 32bit range
   size_t x = ( tgt>(addr+mylen) )  ?  (tgt-addr-mylen): (addr+mylen-tgt);
   if( x!= (x&0x7fffffff) ) {
-    printf("Error: tgt=%p addr=%p diff=%p -- more than 31bit\n",
-             tgt,addr+mylen,x);
+    //printf("Error: tgt=%p addr=%p diff=%p -- more than 31bit\n", tgt,addr+mylen,x);
     return -1;
   }
   *ptr=0xE9; //E9  xx yy zz dd -- 
@@ -148,8 +147,7 @@ int emit_call_from_to(size_t addr, size_t tgt) {
   int disp = tgt-(addr+mylen);//6=size of current instr;
   size_t x = ( tgt>(addr+mylen) )  ?  (tgt-addr-mylen): (addr+mylen-tgt);
   if( x!= (x&0x7fffffff) ) {
-    printf("Error: tgt=%p addr=%p diff=%p -- more than 32bit\n",
-             tgt,addr+mylen,x);
+    //printf("Error: tgt=%p addr=%p diff=%p -- more than 32bit\n", tgt,addr+mylen,x);
     return -1;
   }
   *ptr=0xE8; //E8  xx yy zz dd -- 
@@ -244,7 +242,7 @@ int copy_code(size_t from, size_t to, int len) {
   return len;
 }
 void print_sym(size_t sym, int len) {
-   printf("%p : ",sym);
+   printf("DEBUG %p : ",sym);
    for(int i=0;i<len;i++) {
       printf("%2.2x ",0xff&((char*)sym)[i]);
       if((i!=(len-1)) &&(i%16==15)) printf("\n%p : ",sym+i+1);
@@ -306,7 +304,7 @@ int  patch_entry(size_t entry, size_t calltgt){
    }
 
    //printf("--- now in irreversible code \n");
-   printf("=>\n");
+   //printf("=>\n");
    ret=mprotect((void*)entry_page, 4096, PROT_WRITE|PROT_READ|PROT_EXEC);
    if(ret!=0) {
       DEBUG("failed to enable rwx for entry page");
@@ -318,7 +316,7 @@ int  patch_entry(size_t entry, size_t calltgt){
    ret=emit_jmp_from_to(entry+skip,(size_t)(newcode));
    if(ret<0) {
        DEBUG("failed to genJmp from entry to newcode");
-       printf("unpatch -- something went wrong. undo!\n");
+       //printf("unpatch -- something went wrong. undo!\n");
    }
    print_sym( (size_t)entry, 16);
    print_sym( (size_t)newcode,32);
@@ -355,22 +353,36 @@ int  patch_entry(size_t entry, size_t calltgt){
 // ---------------------------------------------------------------------
 #define COMMON_CODE \
   jsize len1= (*env)->GetArrayLength(env,jpath); \
-  printf("DEBUG: GetArrayLengths <%d>\n",len1); \
-  jbyte* j1=(*env)->GetByteArrayElements(env,jpath,0); \
-  printf("DEBUG: jbyte* %p\n",j1);\
   jsize len2= (*env)->GetArrayLength(env,prog); \
-  printf("DEBUG: GetArrayLengths2 <%d>\n",len2); \
+  printf("DEBUG: GetArrayLengths <%d,%d>\n",len1,len2); \
+  jboolean iscopy; \
+  jbyte* j1=(*env)->GetPrimitiveArrayCritical(env,jpath,&iscopy); \
+  if((*env)->ExceptionOccurred(env)) {\
+        goto exception;\
+  } \
+  printf("DEBUG: jbyte* %p\n",j1);\
+  fflush(stdout);\
   char *buffer=malloc(sizeof(char)*(len1+len2+2)); \
   if(buffer) { \
       memcpy(buffer,j1,len1); \
       buffer[len1]='\0'; \
       printf(" got jpath = %s\n",buffer); \
       buffer[len1]='/'; \
-      jbyte* j2=(*env)->GetByteArrayElements(env,prog,0); \
+      jbyte* j2=(*env)->GetPrimitiveArrayCritical(env,prog,&iscopy); \
+      if((*env)->ExceptionOccurred(env)) {\
+        goto exception;\
+      } \
       printf("DEBUG: jbyte* %p\n",j2);\
       memcpy(buffer+len1+1,j2,len2); \
       buffer[len1+len2+1]=0; \
       printf("path found : %s\n", buffer); \
+      if(j1) {\
+          (*env)->ReleasePrimitiveArrayCritical(env,jpath,j1,0);\
+      }\
+      if(j2) {\
+          (*env)->ReleasePrimitiveArrayCritical(env,prog,j2,0);\
+      }\
+    exception:;\
   } \
 
 
@@ -390,6 +402,21 @@ k2io_target(JNIEnv* env, jobject j,jint mode,jbyteArray jpath,jbyteArray prog) {
 }
 
 
+// ---------------------------------------------------------------------
+// Function: k2test
+// ---------------------------------------------------------------------
+JNIEXPORT jint JNICALL 
+Java_K2Native_k2test(JNIEnv* env, jclass j, jstring js) {
+  __asm__ __volatile__ ("push %rdi;push %rsi;push %rdx");
+  jboolean iscopy;
+
+  const char*s = (*env)->GetStringUTFChars(env,js,&iscopy);
+  printf("string argument : %s\n",s);
+  (*env)->ReleaseStringUTFChars(env,js,s);
+  __asm__ __volatile__ ("pop %rdx;pop %rsi;pop %rdi;");
+  printf(" exit from k2test()\n");
+  return 0;
+}
 // -------------------------------
 // Function: native K2Native_init
 // -------------------------------
@@ -415,12 +442,19 @@ Java_K2Native_k2init(JNIEnv* env, jclass j) {
    printf("[libjava] : %s \n",libjava);
    void* handle=dlopen(libjava,RTLD_LAZY|RTLD_NOLOAD);
    if(!handle) {
+      dlerror();//clear old error
       printf("DEBUG:dlopen(NOLOAD) try2 '%s' \n",libjava);
       handle=dlopen(libjava,RTLD_LAZY|RTLD_NOLOAD);
    }
    if(!handle) { // open already loaded module.
        printf("DEBUG:dlopen(NOLOAD) failed  for: '%s' \n",libjava);
-       return jerr;
+       dlerror(); //clear any error
+       // try one more way using dladdr
+       handle= dlopen("",RTLD_LAZY|RTLD_NOLOAD);
+       if(!handle) {
+          printf("DEBUG:dlopen(null,NOLOAD) failed  for: '%s' \n",libjava);
+          return jerr;
+       }
    }
    void* sym=0;
    const char*symStr = 0; 
