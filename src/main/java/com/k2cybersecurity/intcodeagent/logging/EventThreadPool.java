@@ -75,7 +75,7 @@ public class EventThreadPool {
 			@Override
 			public Thread newThread(Runnable r) {
 				return new Thread(Thread.currentThread().getThreadGroup(), r,
-						"K2-Java-Agent-" + threadNumber.getAndIncrement());
+						IAgentConstants.K2_JAVA_AGENT + threadNumber.getAndIncrement());
 			}
 		});
 	}

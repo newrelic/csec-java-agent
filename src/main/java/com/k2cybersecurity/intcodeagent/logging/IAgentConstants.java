@@ -327,4 +327,7 @@ public interface IAgentConstants {
 	String HOST_IP_PROPERTIES_FILE = "/etc/k2-adp/hostip.properties";
 
 	String IPSCHEDULEDTHREAD_ = "ipScheduledThread-";
+
+	// EventThreadPool.java file constants
+	String K2_JAVA_AGENT = "K2-Java-Agent-";
 }
