@@ -21,6 +21,10 @@ public class IPScheduledThread {
 					String hostip = reader.readLine();
 					
 					try {
+						// since tcp connection keep alive check is more than 2 hours
+						// we send our custom object to check if connectino is still alive or not
+						// this will be ignored by ic agent on the other side.
+					LoggingInterceptor.oos.writeObject("ACK");
 					System.out.println("Host ip equals : " + LoggingInterceptor.hostip.equals(hostip));
 					System.out.println("LoggingInterceptor.socket : " + LoggingInterceptor.socket);
 					System.out.println("LoggingInterceptor.socket.isConnected() : " + LoggingInterceptor.socket.isConnected());
