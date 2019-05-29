@@ -27,12 +27,14 @@ public class IPScheduledThread {
 						// this will be ignored by ic agent on the other side.
 					System.out.println("writing ack object");
 					LoggingInterceptor.oos.writeObject(Collections.singletonList("ACK"));
+					LoggingInterceptor.oos.flush();
 					System.out.println("Host ip equals : " + LoggingInterceptor.hostip.equals(hostip));
 					System.out.println("LoggingInterceptor.socket : " + LoggingInterceptor.socket);
 					System.out.println("LoggingInterceptor.socket.isConnected() : " + LoggingInterceptor.socket.isConnected());
 					System.out.println("LoggingInterceptor.socket.isClosed() : " + LoggingInterceptor.socket.isClosed());
 					} catch (Exception ex) {
 						ex.printStackTrace();
+						System.out.println(ex.getMessage());
 					}
 					if (hostip == null || hostip.equals("")) {
 						System.out.println("Host ip not found");
@@ -42,6 +44,8 @@ public class IPScheduledThread {
 						LoggingInterceptor.createApplicationInfoBean();
 						LoggingInterceptor.getJarPath();
 						System.out.println("K2-JavaAgent re-installed successfully.");
+					} else {
+						System.out.println("got into final else");
 					}
 				} catch (Exception e) {
 					System.err.println("Error in IPScheduledThread : " + e.getMessage());
