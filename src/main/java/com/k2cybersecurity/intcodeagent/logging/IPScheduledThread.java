@@ -33,9 +33,6 @@ public class IPScheduledThread {
 						System.out.println("Error in writing : " + ex.getMessage());
 						System.out.println("Host ip equals : " + LoggingInterceptor.hostip.equals(hostip));
 						System.out.println("LoggingInterceptor.socket : " + LoggingInterceptor.socket);
-						System.out.println("LoggingInterceptor.socket.isConnected() : " + LoggingInterceptor.socket.isConnected());
-						System.out.println("LoggingInterceptor.socket.isClosed() : " + LoggingInterceptor.socket.isClosed());
-						
 						// if ack fails, socket needs to be properly closed as it is not done implicitly
 						LoggingInterceptor.closeSocket();
 					}
