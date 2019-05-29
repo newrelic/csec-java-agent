@@ -322,4 +322,9 @@ public interface IAgentConstants {
 	String JAVA_IO_FILE = "java.io.File";
 
 	String COLON = ":";
+
+	// IPScheduledThread.java file constants
+	String HOST_IP_PROPERTIES_FILE = "/etc/k2-adp/hostip.properties";
+
+	String IPSCHEDULEDTHREAD_ = "ipScheduledThread-";
 }

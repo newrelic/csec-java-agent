@@ -19,7 +19,7 @@ public class IPScheduledThread {
 		Runnable runnable = new Runnable() {
 			public void run() {
 				Socket socket = EventThreadPool.getInstance().getSocket();
-				try (BufferedReader reader = new BufferedReader(new FileReader("/etc/k2-adp/hostip.properties"))) {
+				try (BufferedReader reader = new BufferedReader(new FileReader(IAgentConstants.HOST_IP_PROPERTIES_FILE))) {
 					String hostip = reader.readLine();
 					try {
 					System.out.println("Host ip equals : " + LoggingInterceptor.hostip.equals(hostip));
@@ -29,7 +29,7 @@ public class IPScheduledThread {
 					} catch (Exception ex) {
 						ex.printStackTrace();
 					}
-					if (hostip == null || hostip.equals("")) {
+					if (hostip == null || hostip.equals(IAgentConstants.EMPTY_STRING)) {
 						System.out.println("Host ip not found");
 					} else if (!LoggingInterceptor.hostip.equals(hostip) || (socket == null
 							|| !socket.isConnected() || socket.isClosed())) {
@@ -50,7 +50,7 @@ public class IPScheduledThread {
 			@Override
 			public Thread newThread(Runnable r) {
 				return new Thread(Thread.currentThread().getThreadGroup(), r,
-						"ipScheduledThread-" + threadNumber.getAndIncrement());
+						IAgentConstants.IPSCHEDULEDTHREAD_ + threadNumber.getAndIncrement());
 			}
 		});
 		ipScheduledService.scheduleAtFixedRate(runnable, 5, 5, TimeUnit.MINUTES);
