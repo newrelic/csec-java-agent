@@ -349,12 +349,24 @@ int  patch_entry(size_t entry, size_t calltgt){
 // JDK10 https://hg.openjdk.java.net/jdk-updates/jdk10u/file/2ba22d2e4ecf/src/java.base/unix/native/libjava/ProcessImpl_md.c#l502
 // JDK11 https://hg.openjdk.java.net/jdk-updates/jdk11u/file/11e4d9499986/src/java.base/unix/native/libjava/ProcessImpl_md.c#l496 
 // JDK12 https://hg.openjdk.java.net/jdk-updates/jdk12u/file/b58f3dee17d1/src/java.base/unix/native/libjava/ProcessImpl_md.c#l496
+//JNIEXPORT jint JNICALL
+//Java_java_lang_ProcessImpl_forkAndExec(JNIEnv *env,
+//                                       jobject process,
+//                                       jint mode,
+//                                       jbyteArray helperpath,
+//                                       jbyteArray prog,
+//                                       jbyteArray argBlock, jint argc,
+//                                       jbyteArray envBlock, jint envc,
+//                                       jbyteArray dir,
+//                                       jintArray std_fds,
+//                                       jboolean redirectErrorStream)
 // note: first 6 args are in registers -- we need arg 5 and 6
 // ---------------------------------------------------------------------
 #define COMMON_CODE \
   jsize len1= (*env)->GetArrayLength(env,jpath); \
   jsize len2= (*env)->GetArrayLength(env,prog); \
-  printf("DEBUG: GetArrayLengths <%d,%d>\n",len1,len2); \
+  jsize len3= (*env)->GetArrayLength(env,arg); \
+  printf("DEBUG: GetArrayLengths <%d,%d,%d>\n",len1,len2,len3); \
   jboolean iscopy; \
   jbyte* j1=(*env)->GetPrimitiveArrayCritical(env,jpath,&iscopy); \
   if((*env)->ExceptionOccurred(env)) {\
@@ -362,42 +374,45 @@ int  patch_entry(size_t entry, size_t calltgt){
   } \
   printf("DEBUG: jbyte* %p\n",j1);\
   fflush(stdout);\
-  char *buffer=malloc(sizeof(char)*(len1+len2+2)); \
-  if(buffer) { \
-      memcpy(buffer,j1,len1); \
-      buffer[len1]='\0'; \
-      printf(" got jpath = %s\n",buffer); \
-      buffer[len1]='/'; \
+  {\
+      printf(" got jpath = %s\n",(char*)j1); \
       jbyte* j2=(*env)->GetPrimitiveArrayCritical(env,prog,&iscopy); \
       if((*env)->ExceptionOccurred(env)) {\
         goto exception;\
       } \
       printf("DEBUG: jbyte* %p\n",j2);\
-      memcpy(buffer+len1+1,j2,len2); \
-      buffer[len1+len2+1]=0; \
-      printf("path found : %s\n", buffer); \
+      printf("path found : %s\n", (char*)j2); \
+      jbyte* j3=(*env)->GetPrimitiveArrayCritical(env,arg,&iscopy); \
+      if((*env)->ExceptionOccurred(env)) {\
+        goto exception;\
+      } \
+      printf("DEBUG: jbyte* %p\n",j3);\
+      printf("arg found : %s\n", (char*)j3); \
       if(j1) {\
           (*env)->ReleasePrimitiveArrayCritical(env,jpath,j1,0);\
       }\
       if(j2) {\
           (*env)->ReleasePrimitiveArrayCritical(env,prog,j2,0);\
       }\
+      if(j3) {\
+          (*env)->ReleasePrimitiveArrayCritical(env,arg,j3,0);\
+      }\
     exception:;\
-  } \
+  } 
 
 
 // ---------------------------------------------------------------------
 // Function: callme - invoked internally
 // ---------------------------------------------------------------------
 void 
-k2io_target(JNIEnv* env, jobject j,jint mode,jbyteArray jpath,jbyteArray prog) {
+k2io_target(JNIEnv* env, jobject j,jint mode,jbyteArray jpath,jbyteArray prog,jbyteArray arg) {
   __asm__ __volatile__ ("push %rdi;push %rsi;push %rdx;push %rcx;push %r8;push %r9");
   printf("DEBUG: JDK9+ callback invoked ... connect me to JavaAgent logic\n");
   printf("DEBUG: args: %p %p %d %p %p \n",env,j,mode,jpath,prog);
 
   COMMON_CODE
 
-  __asm__ __volatile__ ("pop %r9;pop %r8;pop %rdx;pop %rsi;pop %rdi;");
+  __asm__ __volatile__ ("pop %r9;pop %r8;pop %rdx;pop %rsi;pop %rdi");
   return ;
 }
 
