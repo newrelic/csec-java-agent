@@ -330,4 +330,19 @@ public interface IAgentConstants {
 
 	// EventThreadPool.java file constants
 	String K2_JAVA_AGENT = "K2-Java-Agent-";
+	
+	//AgentBasicInfo.java file constants
+	String K2_JAVAAGENT_PROPERTIES = "k2-javaagent.properties";
+
+	String K2_JAVAAGENT_VERSION = "k2.javaagent.version";
+
+	String K2_JAVAAGENT_TOOL_ID = "k2.javaagent.tool.id";
+
+	String K2_JAVAAGENT_JSONNAME_APPLICATIONINFOBEAN = "k2.javaagent.jsonname.applicationinfobean";
+
+	String K2_JAVAAGENT_JSONNAME_INTCODERESULTBEAN = "k2.javaagent.jsonname.intcoderesultbean";
+
+	String K2_JAVAAGENT_JSONNAME_JARPATHBEAN = "k2.javaagent.jsonname.jarpathbean";
+
+	String K2_JAVAAGENT_JSONNAME_DYNAMICJARPATHBEAN = "k2.javaagent.jsonname.dynamicjarpathbean";
 }

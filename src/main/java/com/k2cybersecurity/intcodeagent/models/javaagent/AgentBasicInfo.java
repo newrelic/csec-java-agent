@@ -2,6 +2,8 @@ package com.k2cybersecurity.intcodeagent.models.javaagent;
 
 import java.util.Properties;
 
+import com.k2cybersecurity.intcodeagent.logging.IAgentConstants;
+
 // TODO: Auto-generated Javadoc
 /**
  * The Class AgentBasicInfo.
@@ -22,7 +24,7 @@ public class AgentBasicInfo {
 	static {
 		props = new Properties();
 		try {
-			props.load(Thread.currentThread().getContextClassLoader().getResourceAsStream("k2-javaagent.properties"));
+			props.load(Thread.currentThread().getContextClassLoader().getResourceAsStream(IAgentConstants.K2_JAVAAGENT_PROPERTIES));
 		} catch (Exception e) {
 			System.out.println("Could not load properties");
 		}
@@ -33,16 +35,16 @@ public class AgentBasicInfo {
 	 * Instantiates a new agent basic info according to the source class object.
 	 */
 	public AgentBasicInfo() {
-		setVersion(props.getProperty("k2.javaagent.version"));
-		setK2JAToolId(props.getProperty("k2.javaagent.tool.id"));
+		setVersion(props.getProperty(IAgentConstants.K2_JAVAAGENT_VERSION));
+		setK2JAToolId(props.getProperty(IAgentConstants.K2_JAVAAGENT_TOOL_ID));
 		if (this instanceof  ApplicationInfoBean) {
-			setJsonName(props.getProperty("k2.javaagent.jsonname.applicationinfobean"));
+			setJsonName(props.getProperty(IAgentConstants.K2_JAVAAGENT_JSONNAME_APPLICATIONINFOBEAN));
 		} else if (this instanceof JavaAgentEventBean) {
-			setJsonName(props.getProperty("k2.javaagent.jsonname.intcoderesultbean"));
+			setJsonName(props.getProperty(IAgentConstants.K2_JAVAAGENT_JSONNAME_INTCODERESULTBEAN));
 		} else if(this instanceof JavaAgentJarPathBean){
-			setJsonName(props.getProperty("k2.javaagent.jsonname.jarpathbean"));
+			setJsonName(props.getProperty(IAgentConstants.K2_JAVAAGENT_JSONNAME_JARPATHBEAN));
 		} else if(this instanceof JavaAgentDynamicPathBean){
-			setJsonName(props.getProperty("k2.javaagent.jsonname.dynamicjarpathbean"));
+			setJsonName(props.getProperty(IAgentConstants.K2_JAVAAGENT_JSONNAME_DYNAMICJARPATHBEAN));
 		}
 	}
 
