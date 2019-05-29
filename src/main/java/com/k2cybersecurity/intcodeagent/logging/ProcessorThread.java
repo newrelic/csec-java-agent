@@ -53,8 +53,6 @@ import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.PSQLV2_EX
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.PSQLV3_EXECUTOR;
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.PSQLV3_EXECUTOR7_4;
 
-import java.io.IOException;
-import java.io.ObjectOutputStream;
 import java.lang.reflect.Field;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -185,7 +183,7 @@ public class ProcessorThread implements Runnable {
 
 				JavaAgentEventBean intCodeResultBean = new JavaAgentEventBean(start, sourceString,
 						LoggingInterceptor.VMPID, LoggingInterceptor.applicationUUID,
-						this.threadId + ":" + this.executionId);
+						this.threadId + IAgentConstants.COLON + this.executionId);
 
 				// System.out.println("Inside processor servlet info found: threadId:
 				// "+this.threadId +". "+ intCodeResultBean.getServletInfo());
@@ -219,7 +217,7 @@ public class ProcessorThread implements Runnable {
 							// System.out.println("breaking");
 							break;
 						}
-						if (klassName.equals("java.io.File")) {
+						if (klassName.equals(IAgentConstants.JAVA_IO_FILE)) {
 							// System.out.println("javaio found");
 							// System.out.println("next class : "+trace[i+1]);
 							javaIoFile = true;
@@ -282,7 +280,7 @@ public class ProcessorThread implements Runnable {
 	private int getClassNameForSysytemCallStart(StackTraceElement[] trace, JavaAgentEventBean intCodeResultBean) {
 		boolean classRuntimeFound = false;
 		for (int i = 0; i < trace.length; i++) {
-			if (trace[i].getClassName().equals("java.lang.Runtime"))
+			if (trace[i].getClassName().equals(IAgentConstants.JAVA_LANG_RUNTIME))
 				classRuntimeFound = true;
 			else if (classRuntimeFound)
 				return i;
@@ -385,7 +383,7 @@ public class ProcessorThread implements Runnable {
 			addParamValuesMSSQL(params, parameters);
 
 		} else if (className.equals(MSSQL_STATEMENT_EXECUTE_CMD_CLASS)) {
-			Field field = obj.getClass().getDeclaredField("sql");
+			Field field = obj.getClass().getDeclaredField(IAgentConstants.SQL);
 			field.setAccessible(true);
 			parameters.add(field.get(obj));
 
@@ -436,7 +434,7 @@ public class ProcessorThread implements Runnable {
 						|| objClass.getName().equals(IAgentConstants.MYSQL_PREPARED_STATEMENT_4)
 						|| objClass.getName().equals(IAgentConstants.MYSQL_PREPARED_STATEMENT_6)
 						|| objClass.getName().equals(IAgentConstants.MYSQL_PREPARED_STATEMENT_8)) {
-					String id = threadId + ":" + obj.hashCode();
+					String id = threadId + IAgentConstants.COLON + obj.hashCode();
 					String originalSql = EventThreadPool.getInstance().getMySqlPreparedStatementsMap(id);
 					if (originalSql != null) {
 						EventThreadPool.getInstance().setMySqlPreparedStatementsMap(id, null);
@@ -482,7 +480,7 @@ public class ProcessorThread implements Runnable {
 				namespace = ns.toString();
 
 				queryDetailObj.put(MONGO_NAMESPACE_FIELD, namespace);
-				keyspaceName = namespace.split("[.]")[1];
+				keyspaceName = namespace.split(IAgentConstants.DOTINSQUAREBRACKET)[1];
 				if (!keyspaceName.equals(MONGO_COLLECTION_WILDCARD)) {
 					queryDetailObj.put(MONGO_COLLECTION_FIELD, keyspaceName);
 				}
@@ -659,7 +657,7 @@ public class ProcessorThread implements Runnable {
 				JSONArray jsonArray = (JSONArray) parser.parse(mapper.writeValueAsString(obj));
 				for (int i = 0; i < jsonArray.size(); i++) {
 					String value = jsonArray.get(i).toString();
-					if (value.startsWith("file://")) {
+					if (value.startsWith(IAgentConstants.FILE_URL)) {
 						parameters.add(value.substring(7));
 					}
 				}
@@ -683,16 +681,16 @@ public class ProcessorThread implements Runnable {
 			// in case of doRPC()
 			if (thisPointerClass.getName().contains(ORACLE_CONNECTION_IDENTIFIER)) {
 
-				Field cursorField = thisPointerClass.getDeclaredField("cursor");
+				Field cursorField = thisPointerClass.getDeclaredField(IAgentConstants.CURSOR);
 				cursorField.setAccessible(true);
 				Object cursor = cursorField.get(thisPointer);
 
 				// ignore batch fetch events
-				if (!String.valueOf(cursor).equals("0") || String.valueOf(cursor).equals("null")) {
+				if (!String.valueOf(cursor).equals(IAgentConstants.ZERO) || String.valueOf(cursor).equals(IAgentConstants.NULL)) {
 					return null;
 				}
 
-				Field oracleStatementField = thisPointerClass.getDeclaredField("oracleStatement");
+				Field oracleStatementField = thisPointerClass.getDeclaredField(IAgentConstants.ORACLESTATEMENT);
 				oracleStatementField.setAccessible(true);
 				Object oracleStatement = oracleStatementField.get(thisPointer);
 
@@ -701,7 +699,7 @@ public class ProcessorThread implements Runnable {
 					statementKlass = statementKlass.getSuperclass();
 				}
 
-				Field sqlObjectField = statementKlass.getDeclaredField("sqlObject");
+				Field sqlObjectField = statementKlass.getDeclaredField(IAgentConstants.SQLOBJECT);
 				sqlObjectField.setAccessible(true);
 				Object sqlObject = sqlObjectField.get(oracleStatement);
 
@@ -764,8 +762,8 @@ public class ProcessorThread implements Runnable {
 	private void getHSQLParameterValue(Object object, JSONArray parameters) {
 
 		try {
-			Class<?> statementClass = Thread.currentThread().getContextClassLoader().loadClass("org.hsqldb.Statement");
-			Field sqlField = statementClass.getDeclaredField("sql");
+			Class<?> statementClass = Thread.currentThread().getContextClassLoader().loadClass(IAgentConstants.ORG_HSQLDB_STATEMENT);
+			Field sqlField = statementClass.getDeclaredField(IAgentConstants.SQL);
 			sqlField.setAccessible(true);
 			parameters.add((String) sqlField.get(object));
 		} catch (Exception e) {
@@ -776,7 +774,7 @@ public class ProcessorThread implements Runnable {
 	}
 
 	private void getPSQLParameterValue(Object[] obj, JSONArray parameters) {
-		String sql = "";
+		String sql = IAgentConstants.EMPTY_STRING;
 		if (obj.length >= 0) {
 			sql = obj[0].toString();
 		}
@@ -784,13 +782,13 @@ public class ProcessorThread implements Runnable {
 			Object simpleParameter = obj[1];
 			Field paramValuesField;
 			try {
-				paramValuesField = simpleParameter.getClass().getDeclaredField("paramValues");
+				paramValuesField = simpleParameter.getClass().getDeclaredField(IAgentConstants.PARAMVALUES);
 				paramValuesField.setAccessible(true);
 				Object[] paramValues = (Object[]) paramValuesField.get(simpleParameter);
 				List<Object> paramArray = new ArrayList<>();
 				for (int i = 0; i < paramValues.length; i++) {
 					String param = mapper.writeValueAsString(paramValues[i]);
-					sql = sql.replaceFirst("\\?", param);
+					sql = sql.replaceFirst(IAgentConstants.PSQL_PARAMETER_REPLACEMENT, param);
 					paramArray.add(param);
 				}
 				parameters.add(sql);
@@ -855,13 +853,12 @@ public class ProcessorThread implements Runnable {
 				&& !this.currentSocket.isClosed()) {
 			intCodeResultBean.setEventGenerationTime(System.currentTimeMillis());
 			if (intCodeResultBean.getSource() != null && (intCodeResultBean.getSource()
-					.equals("public java.net.URLClassLoader(java.net.URL[])")
-					|| intCodeResultBean.getSource().equals(
-							"public static java.net.URLClassLoader java.net.URLClassLoader.newInstance(java.net.URL[])"))) {
+					.equals(IAgentConstants.JAVA_NET_URLCLASSLOADER)
+					|| intCodeResultBean.getSource().equals(IAgentConstants.JAVA_NET_URLCLASSLOADER_NEWINSTANCE))) {
 				List<String> list = (List<String>) intCodeResultBean.getParameters();
 
 				JavaAgentDynamicPathBean dynamicJarPathBean = new JavaAgentDynamicPathBean(LoggingInterceptor.applicationUUID,
-						System.getProperty("user.dir"), new ArrayList<String>(Agent.jarPathSet), list);
+						System.getProperty(IAgentConstants.USER_DIR), new ArrayList<String>(Agent.jarPathSet), list);
 //				System.out.println("dynamic jar path bean : " + dynamicJarPathBean);
 				try {
 					eventQueue.add(dynamicJarPathBean);

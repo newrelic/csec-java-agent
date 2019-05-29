@@ -288,4 +288,38 @@ public interface IAgentConstants {
 	}};
 	
 	String BYTE_ARRAY_CLASS = "[B";
+	
+	
+	// ProcessorThread.java constants
+	String JAVA_NET_URLCLASSLOADER = "public java.net.URLClassLoader(java.net.URL[])";
+	String JAVA_NET_URLCLASSLOADER_NEWINSTANCE = "public static java.net.URLClassLoader java.net.URLClassLoader.newInstance(java.net.URL[])";
+	String USER_DIR = "user.dir";
+	String PARAMVALUES = "paramValues";
+	String PSQL_PARAMETER_REPLACEMENT = "\\?";
+
+	String EMPTY_STRING = "";
+
+	String SQL = "sql";
+
+	String ORG_HSQLDB_STATEMENT = "org.hsqldb.Statement";
+
+	String SQLOBJECT = "sqlObject";
+
+	String ORACLESTATEMENT = "oracleStatement";
+
+	String ZERO = "0";
+
+	String NULL = "null";
+
+	String CURSOR = "cursor";
+
+	String FILE_URL = "file://";
+
+	String DOTINSQUAREBRACKET = "[.]";
+
+	String JAVA_LANG_RUNTIME = "java.lang.Runtime";
+
+	String JAVA_IO_FILE = "java.io.File";
+
+	String COLON = ":";
 }
