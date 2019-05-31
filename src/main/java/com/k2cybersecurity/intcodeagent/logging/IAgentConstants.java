@@ -324,8 +324,6 @@ public interface IAgentConstants {
 
 	String JAVA_IO_FILE = "java.io.File";
 
-	String COLON = ":";
-
 	// IPScheduledThread.java file constants
 	String HOST_IP_PROPERTIES_FILE = "/etc/k2-adp/hostip.properties";
 
@@ -383,5 +381,8 @@ public interface IAgentConstants {
 	char VMPID_SPLIT_CHAR = '@';
 	String APPLICATION_INFO_POSTED_MSG = "Posted application info : ";
 	String COLON_SEPERATOR = ":";
+	int TOMCAT_7 = 7;
+	int TOMCAT_8 = 8;
+	int TOMCAT_9 = 9;
 
 }

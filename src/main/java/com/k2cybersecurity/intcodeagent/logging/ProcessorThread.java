@@ -130,6 +130,7 @@ public class ProcessorThread implements Runnable {
 		this.parser = new JSONParser();
 		this.eventQueue = EventThreadPool.getInstance().getEventQueue();
 		this.currentSocket = EventThreadPool.getInstance().getSocket();
+		
 	}
 
 	/**
@@ -183,7 +184,7 @@ public class ProcessorThread implements Runnable {
 
 				JavaAgentEventBean intCodeResultBean = new JavaAgentEventBean(start, sourceString,
 						LoggingInterceptor.VMPID, LoggingInterceptor.applicationUUID,
-						this.threadId + IAgentConstants.COLON + this.executionId);
+						this.threadId + IAgentConstants.COLON_SEPERATOR + this.executionId);
 
 				// System.out.println("Inside processor servlet info found: threadId:
 				// "+this.threadId +". "+ intCodeResultBean.getServletInfo());
@@ -434,7 +435,7 @@ public class ProcessorThread implements Runnable {
 						|| objClass.getName().equals(IAgentConstants.MYSQL_PREPARED_STATEMENT_4)
 						|| objClass.getName().equals(IAgentConstants.MYSQL_PREPARED_STATEMENT_6)
 						|| objClass.getName().equals(IAgentConstants.MYSQL_PREPARED_STATEMENT_8)) {
-					String id = threadId + IAgentConstants.COLON + obj.hashCode();
+					String id = threadId + IAgentConstants.COLON_SEPERATOR + obj.hashCode();
 					String originalSql = EventThreadPool.getInstance().getMySqlPreparedStatementsMap(id);
 					if (originalSql != null) {
 						EventThreadPool.getInstance().setMySqlPreparedStatementsMap(id, null);
@@ -892,7 +893,7 @@ public class ProcessorThread implements Runnable {
 					eventQueue.add(intCodeResultBean);
 
 				} catch (IllegalStateException e) {
-					System.out.println(
+					System.err.print(
 							"Dropping event " + intCodeResultBean.getId() + " due to buffer capacity reached.");
 				}
 
