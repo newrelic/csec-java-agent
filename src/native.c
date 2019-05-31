@@ -4,8 +4,8 @@
 // 2. dlopen and locate forkAndExec 
 // 3. patch it to make a call back to JavaAgent.
 // 4. Use k2Native.java test application to test.
-// TODO: Argument to pass to callBack to be fixed.
-// TODO: dlopen sometimes failes to reopen existing libjava -- 
+// TODO: pass information to javaAgent -- change k2io_protect callback.
+
 
 #include <string.h>
 #include <stdio.h>
@@ -35,6 +35,15 @@ char* stringclone(char*p,int len) {
      if(!ptr) { return ptr; }
      memcpy(ptr,p,len);
      return ptr;
+}
+void sanitize_string(char* s) {
+  int n=strlen(s);
+  for(int i=0;i<n;i++) {
+     if(!isprint(s[i])) {
+        s[i]='\0';
+        break;
+     }
+  }
 }
 // -------------------------------
 // Function find_lib
@@ -379,7 +388,7 @@ int  patch_entry(size_t entry, size_t calltgt){
       if((*env)->ExceptionOccurred(env)) {\
         goto exception;\
       } \
-      printf("args found %s : %s : %s\n",(char*)j1,(char*)j2, (char*)j3); \
+      printf("args found %s : %s : %s(len=%d)\n",(char*)j1,(char*)j2, (char*)j3,len3); \
       if(j1) {\
           (*env)->ReleasePrimitiveArrayCritical(env,jpath,j1,0);\
       }\
@@ -443,22 +452,13 @@ Java_K2Native_k2init(JNIEnv* env, jclass j) {
    if(!libjava) {
      return jerr;
    }
+   sanitize_string(libjava);
 
 
    //printf("[libjava] : %s \n",libjava);
    void* handle=dlopen(libjava,RTLD_LAZY|RTLD_NOLOAD);
    if(!handle) {
-      dlerror();//clear old error
-      handle=dlopen(libjava,RTLD_LAZY|RTLD_NOLOAD);
-   }
-   if(!handle) { // open already loaded module.
-       dlerror(); //clear any error
-       // try one more way using dladdr
-       handle= dlopen("",RTLD_LAZY|RTLD_NOLOAD);
-       if(!handle) {
-          printf("DEBUG:dlopen(null,NOLOAD) failed  for: '%s' \n",libjava);
-          return jerr;
-       }
+       return jerr;
    }
    void* sym=0;
    const char*symStr = 0; 
@@ -469,7 +469,6 @@ Java_K2Native_k2init(JNIEnv* env, jclass j) {
    }
   
    if(!sym) {
-       printf("DEBUG: cannot load sym in: %s \n",libjava);
        return jerr;
    }
    //print_sym((size_t)sym,16);
