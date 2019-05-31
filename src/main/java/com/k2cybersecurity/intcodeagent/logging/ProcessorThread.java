@@ -751,9 +751,7 @@ public class ProcessorThread implements Runnable {
 //				parameters.addAll((List<String>) parser.parse(mapper.writeValueAsString(obj)));
 			}
 
-		} catch (
-
-		Throwable th) {
+		} catch (Throwable th) {
 			parameters.add((obj != null) ? obj.toString() : null);
 //			th.printStackTrace();
 		}
@@ -768,7 +766,6 @@ public class ProcessorThread implements Runnable {
 			sqlField.setAccessible(true);
 			parameters.add((String) sqlField.get(object));
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
@@ -796,7 +793,7 @@ public class ProcessorThread implements Runnable {
 				parameters.add(paramArray);
 			} catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException
 					| JsonProcessingException e) {
-//				e.printStackTrace();
+				e.printStackTrace();
 			}
 
 		}
@@ -835,70 +832,42 @@ public class ProcessorThread implements Runnable {
 	}
 
 	private void generateEvent(JavaAgentEventBean intCodeResultBean) {
-		// System.out.println("inside Event generate : " + intCodeResultBean);
-//		if (LoggingInterceptor.socket == null || !LoggingInterceptor.socket.isConnected()
-//				|| LoggingInterceptor.socket.isClosed()) {
-//			try {
-//				LoggingInterceptor.connectSocket();
-//				LoggingInterceptor.getJarPath();
-//				LoggingInterceptor.createApplicationInfoBean();
-//				System.out.println("K2-JavaAgent re-installed successfully.");
-//
-//			} catch (IOException e) {
-//				System.err.println("Error in writing: " + e.getMessage());
-//			} catch (Exception e) {
-//			}
-//		}
-
-		if (this.currentSocket != null && this.currentSocket.isConnected()
-				&& !this.currentSocket.isClosed()) {
 			intCodeResultBean.setEventGenerationTime(System.currentTimeMillis());
 			if (intCodeResultBean.getSource() != null && (intCodeResultBean.getSource()
 					.equals(IAgentConstants.JAVA_NET_URLCLASSLOADER)
 					|| intCodeResultBean.getSource().equals(IAgentConstants.JAVA_NET_URLCLASSLOADER_NEWINSTANCE))) {
-				List<String> list = (List<String>) intCodeResultBean.getParameters();
-
-				JavaAgentDynamicPathBean dynamicJarPathBean = new JavaAgentDynamicPathBean(LoggingInterceptor.applicationUUID,
-						System.getProperty(IAgentConstants.USER_DIR), new ArrayList<String>(Agent.jarPathSet), list);
-//				System.out.println("dynamic jar path bean : " + dynamicJarPathBean);
 				try {
+					List<String> list = (List<String>) intCodeResultBean.getParameters();
+
+					JavaAgentDynamicPathBean dynamicJarPathBean = new JavaAgentDynamicPathBean(LoggingInterceptor.applicationUUID,
+							System.getProperty(IAgentConstants.USER_DIR), new ArrayList<String>(Agent.jarPathSet), list);
+//					System.out.println("dynamic jar path bean : " + dynamicJarPathBean);
 					eventQueue.add(dynamicJarPathBean);
 				} catch (IllegalStateException e) {
-					System.out.println(
-							"Dropping event " + intCodeResultBean.getId() + " due to buffer capacity reached.");
+					System.err.println(
+							"Dropping dynamicJarPathBean event " + intCodeResultBean.getId() + " due to buffer capacity reached.");
+				} catch (Exception e) {
+					e.printStackTrace();
 				}
 			} else {
-				// System.out.println("Final request map 1: "
-				// + ServletEventPool.getInstance().getRequestMap().get(this.threadId) + "
-				// count: "
-				// +
-				// ServletEventPool.getInstance().getServletInfoReferenceRecord().get(threadId));
-				// System.out.println("Final request map 2: "
-				// + ServletEventPool.getInstance().getRequestMap().get(this.threadId) + "
-				// count: "
-				// +
-				// ServletEventPool.getInstance().getServletInfoReferenceRecord().get(threadId));
-
+//				System.out.println("Final request map 1: " + ServletEventPool.getInstance().getRequestMap().get(this.threadId));
+//				System.out.println("count: " + ServletEventPool.getInstance().getServletInfoReferenceRecord().get(threadId));
+//				System.out.println("Final request map 2: " + ServletEventPool.getInstance().getRequestMap().get(this.threadId));
+//				System.out.println("count: " + ServletEventPool.getInstance().getServletInfoReferenceRecord().get(threadId));
 				try {
 					intCodeResultBean.setServletInfo(new ServletInfo(ExecutionMap.find(this.executionId,
 							ServletEventPool.getInstance().getRequestMap().get(this.threadId))));
-				} catch (Exception e) {
-//					e.printStackTrace();
-//					System.out.println("Thread id: " + this.threadId + ", eid: " + this.executionId + " map: "
-//							+ ServletEventPool.getInstance().getRequestMap().get(this.threadId));
-				}
-
-//				System.out.println("publish event: " + executionId + " : " + intCodeResultBean);
-				try {
 					eventQueue.add(intCodeResultBean);
 
 				} catch (IllegalStateException e) {
 					System.err.print(
 							"Dropping event " + intCodeResultBean.getId() + " due to buffer capacity reached.");
+				} catch (Exception e) {
+					e.printStackTrace();
+					System.err.println("Thread id: " + this.threadId + ", eid: " + this.executionId + " map: "
+							+ ServletEventPool.getInstance().getRequestMap().get(this.threadId));
 				}
 
 			}
 		}
-	}
-
 }
