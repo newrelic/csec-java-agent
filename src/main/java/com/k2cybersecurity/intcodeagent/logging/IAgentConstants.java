@@ -384,5 +384,6 @@ public interface IAgentConstants {
 	int TOMCAT_7 = 7;
 	int TOMCAT_8 = 8;
 	int TOMCAT_9 = 9;
+	int K2_IC_TCP_PORT = 54321;
 
 }

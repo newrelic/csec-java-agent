@@ -71,6 +71,7 @@ import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.TOMCAT_SE
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.TOMCAT_VERSION_DETECTED_MSG;
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.VERSION_SPLIT_EXPR;
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.VMPID_SPLIT_CHAR;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.K2_IC_TCP_PORT;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -239,22 +240,25 @@ public class LoggingInterceptor extends Interceptor {
 		EventThreadPool.getInstance().getEventQueue().add(applicationInfoBean);
 	}
 
-	protected static void connectSocket() {
-		try (BufferedReader reader = new BufferedReader(new FileReader(HOST_PROP_FILE_NAME))) {
-			hostip = reader.readLine();
-			if (hostip == null || hostip.isEmpty())
-				throw new RuntimeException("Host ip not found");
-			System.out.println(HOST_IP_FOUND_MSG + hostip);
-			Socket socket = new Socket(hostip, 54321);
-			EventThreadPool.getInstance().setSocket(socket);
-
-			if (!socket.isConnected() || socket.isClosed())
-				throw new RuntimeException("Can't connect to IC, agent installation failed.");
-
-			EventThreadPool.getInstance().setObjectStream(new ObjectOutputStream(socket.getOutputStream()));
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		}
+	synchronized protected static void connectSocket() {
+		Socket socket = EventThreadPool.getInstance().getSocket();
+			if(socket == null || !socket.isConnected() || socket.isClosed()) {
+				try (BufferedReader reader = new BufferedReader(new FileReader(HOST_PROP_FILE_NAME))) {
+					hostip = reader.readLine();
+					if (hostip == null || hostip.isEmpty())
+						throw new RuntimeException("Host ip not found");
+					System.out.println(HOST_IP_FOUND_MSG + hostip);
+					socket = new Socket(hostip, K2_IC_TCP_PORT);
+					EventThreadPool.getInstance().setSocket(socket);
+		
+					if (!socket.isConnected() || socket.isClosed())
+						throw new RuntimeException("Can't connect to IC, agent installation failed.");
+		
+					EventThreadPool.getInstance().setObjectStream(new ObjectOutputStream(socket.getOutputStream()));
+				} catch (Exception e) {
+					throw new RuntimeException(e);
+				}
+			}
 	}
 
 	@Override

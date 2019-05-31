@@ -101,7 +101,6 @@ public class EventThreadPool {
 						if(EventThreadPool.getInstance().getSocket()!=null) {
 							try {
 								EventThreadPool.getInstance().getSocket().close();
-								EventThreadPool.getInstance().setSocket(null);
 								LoggingInterceptor.connectSocket();
 								LoggingInterceptor.createApplicationInfoBean();
 							} catch (IOException e1) {
