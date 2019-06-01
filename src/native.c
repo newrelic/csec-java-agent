@@ -4,10 +4,10 @@
 // 2. dlopen and locate forkAndExec 
 // 3. patch it to make a call back to JavaAgent.
 // 4. Use k2Native.java test application to test.
-// TODO: pass information to javaAgent -- change k2io_protect callback.
-
+// TODO: change k2io_protect to callback into JavaAgent
 
 #include <string.h>
+#include <ctype.h>
 #include <stdio.h>
 #include <fcntl.h>
 #define _GNU_SOURCE
@@ -24,6 +24,7 @@
 #define POP_RDI  0x5f
 #define POP_RSI  0x5e
 #define POP_RDX  0x5a
+int debug=0;
 
 // -------------------------------
 // module used for native hooking by javaagent.
@@ -35,15 +36,6 @@ char* stringclone(char*p,int len) {
      if(!ptr) { return ptr; }
      memcpy(ptr,p,len);
      return ptr;
-}
-void sanitize_string(char* s) {
-  int n=strlen(s);
-  for(int i=0;i<n;i++) {
-     if(!isprint(s[i])) {
-        s[i]='\0';
-        break;
-     }
-  }
 }
 // -------------------------------
 // Function find_lib
@@ -175,7 +167,7 @@ int locate_reentry(size_t addr) {
   int count=0;
   char cmax=0x57,cmin=0x50,mov=0x89;
   while(count<10) {
-    //printf("locate[%d]: %x \n",count,*ptr);
+    if(debug) printf("locate[%d]: %x \n",count,*ptr);
     switch (0xff&*ptr) {
      case 0x50 : //push RAX
      case 0x51 : //push RCX
@@ -198,17 +190,31 @@ int locate_reentry(size_t addr) {
      case 0x41 :count++;ptr++;
                 if( (*ptr<=cmax) && (*ptr>=cmin)) {
                   ptr++; count++;
+                }else if( (*ptr&0xff)==0xbe ) {
+                  printf("mov r,const\n");
+                  ptr+=5; count+=5;
+                }else if( (*ptr&0xff) == 0x89) {
+                  printf("mov 32bit\n");
+                  ptr+=2; count+=2;
                 }
-                else { return -1; } //un-identified;
+                else {
+                 if(debug) printf("ERR:locate:%d:%x\n",count,0xff&*ptr);
+                 return -1; 
+                } //un-identified;
                 break; // PUSH r8-r15
      case 0x48: count++;ptr++;
                 char mov=0x89;
-                if( *ptr!=mov) { return -1; }
+                if( *ptr!=mov) {
+                 if(debug) printf("ERR:locate:%d:%x\n",count,*ptr);
+                      return -1; 
+                }
                 else { count++; ptr++; }
                 //0x48 0x89 0x.. = MOV REG,REG
                 ptr++;count++; //skip reg->reg info
                 break;
-     default:   return -1;
+     default:  
+         if(debug) printf("ERR:locate:%d:%x\n",count,*ptr);
+         return -1;
     }
   }
   return count;
@@ -262,10 +268,8 @@ void print_sym(size_t sym, int len) {
 // Function patch_entry()
 // -------------------------------
 #define DEBUG(s) if(debug) { printf(s);fflush(stdout); }
-
 int  patch_entry(size_t entry, size_t calltgt){
   int ret=0;
-  int debug=1;
 
  // printf("patch_entry:(%lx,%lx)\n",entry,calltgt);
   void * newcode=mmap(0,
@@ -284,6 +288,7 @@ int  patch_entry(size_t entry, size_t calltgt){
    size_t entry_page= ((size_t)(entry+skip)>>12)<<12; 
    int reentry = locate_reentry(entry+skip);
    if(reentry<0) {
+      print_sym( (size_t)entry, 16);
       DEBUG("unable to locate reentry");
       return -1;
    }
@@ -313,7 +318,7 @@ int  patch_entry(size_t entry, size_t calltgt){
    }
 
    //printf("--- now in irreversible code \n");
-   //printf("=>\n");
+   if(debug) printf("=>\n");
    ret=mprotect((void*)entry_page, 4096, PROT_WRITE|PROT_READ|PROT_EXEC);
    if(ret!=0) {
       DEBUG("failed to enable rwx for entry page");
@@ -327,8 +332,10 @@ int  patch_entry(size_t entry, size_t calltgt){
        DEBUG("failed to genJmp from entry to newcode");
        //printf("unpatch -- something went wrong. undo!\n");
    }
-   //print_sym( (size_t)entry, 16);
-   //print_sym( (size_t)newcode,32);
+   if(debug) {
+     print_sym( (size_t)entry, 16);
+     print_sym( (size_t)newcode,32);
+   }
 
    // restore protections 
    ret=mprotect((void*)entry_page, 4096, PROT_EXEC|PROT_READ);
@@ -388,7 +395,10 @@ int  patch_entry(size_t entry, size_t calltgt){
       if((*env)->ExceptionOccurred(env)) {\
         goto exception;\
       } \
-      printf("args found %s : %s : %s(len=%d)\n",(char*)j1,(char*)j2, (char*)j3,len3); \
+      printf("args found %s(len=%d) : %s(len=%d) : %s(len=%d)\n", \
+             (char*)j1,(int)len1,\
+             (char*)j2,(int)len2,\
+             (char*)j3,(int)len3);\
       if(j1) {\
           (*env)->ReleasePrimitiveArrayCritical(env,jpath,j1,0);\
       }\
@@ -432,6 +442,15 @@ Java_K2Native_k2test(JNIEnv* env, jclass j, jstring js) {
   printf(" exit from k2test()\n");
   return 0;
 }
+void sanitize_string(char* s) {
+  int n=strlen(s);
+  for(int i=0;i<n;i++) {
+     if(!isprint(s[i])) {
+        s[i]='\0';
+        break;
+     }
+  }
+}
 // -------------------------------
 // Function: native K2Native_init
 // -------------------------------
@@ -452,32 +471,39 @@ Java_K2Native_k2init(JNIEnv* env, jclass j) {
    if(!libjava) {
      return jerr;
    }
+   int i;
    sanitize_string(libjava);
 
-
-   //printf("[libjava] : %s \n",libjava);
+   if(debug) printf("[libjava] : '%s'(len=%d) \n",libjava,strlen(libjava));
    void* handle=dlopen(libjava,RTLD_LAZY|RTLD_NOLOAD);
    if(!handle) {
        return jerr;
    }
    void* sym=0;
    const char*symStr = 0; 
-   //symStr="Java_java_lang_ProcessImpl_forkAndExec";
    symStr = "Java_java_lang_UNIXProcess_forkAndExec";
    if(!sym) { //new JDK9/10
        sym = dlsym(handle,symStr);
    }
+   if(!sym) { //new JDK9/10
+       symStr="Java_java_lang_ProcessImpl_forkAndExec";
+       sym = dlsym(handle,symStr);
+   }
   
    if(!sym) {
+       DEBUG("symbol not found");
        return jerr;
    }
-   //print_sym((size_t)sym,16);
-   //printf("patching entry from %p to %p\n", sym, &Java_K2Native_k2call);
+   if(debug) {
+       printf("sym = %s\n",symStr);
+       print_sym((size_t)sym,16);
+       printf("patching entry from %p to %p\n", sym, &k2io_target);
+   }
 
    if(0!=patch_entry((size_t)sym, (size_t)&k2io_target)) {
       return jerr;
    }
-  return jret;
+   return jret;
 }
 // ---------------------------------------------------------------------
 JNIEXPORT int JNI_OnLoad(JavaVM* v, void* j) {
