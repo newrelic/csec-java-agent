@@ -93,7 +93,7 @@ public class EventThreadPool {
 						oos.reset();
 					} catch (IOException e) {
 						System.err.println("Error in writing: " + e.getMessage());
-						e.printStackTrace();
+//						e.printStackTrace();
 					} catch (Exception e) {
 						e.printStackTrace();
 					}

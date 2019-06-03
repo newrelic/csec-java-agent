@@ -85,7 +85,9 @@ import java.lang.management.RuntimeMXBean;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.net.SocketAddress;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
@@ -248,7 +250,9 @@ public class LoggingInterceptor extends Interceptor {
 					if (hostip == null || hostip.isEmpty())
 						throw new RuntimeException("Host ip not found");
 					System.out.println(HOST_IP_FOUND_MSG + hostip);
-					socket = new Socket(hostip, K2_IC_TCP_PORT);
+					socket = new Socket();
+					SocketAddress socketAddr = new InetSocketAddress(hostip, K2_IC_TCP_PORT);
+					socket.connect(socketAddr, 1000);
 					socket.setKeepAlive(true);
 					EventThreadPool.getInstance().setSocket(socket);
 					if (!socket.isConnected() || socket.isClosed())
