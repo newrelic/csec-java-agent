@@ -35,14 +35,14 @@ public class IPScheduledThread {
 						System.out.println("LoggingInterceptor.socket : " + LoggingInterceptor.socket);
 						// if ack fails, socket needs to be properly closed as it is not done implicitly
 						LoggingInterceptor.closeSocket();
-					}
-					catch (Exception ex) {
+					} catch (Exception ex) {
 						System.out.println(ex.getMessage());
 					}
 					if (hostip == null || hostip.equals("")) {
 						System.out.println("Host ip not found");
-					} else if (!LoggingInterceptor.hostip.equals(hostip) || (LoggingInterceptor.socket == null
-							|| !LoggingInterceptor.socket.isConnected() || LoggingInterceptor.socket.isClosed())) {
+					} else if (!LoggingInterceptor.hostip.equals(hostip) || (LoggingInterceptor.socket == null)
+							|| (!LoggingInterceptor.socket.isConnected()) || (LoggingInterceptor.socket.isClosed())) {
+						System.out.println("entered into else if");
 						LoggingInterceptor.connectSocket();
 						LoggingInterceptor.createApplicationInfoBean();
 						LoggingInterceptor.getJarPath();
