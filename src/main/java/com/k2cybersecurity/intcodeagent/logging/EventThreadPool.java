@@ -25,25 +25,23 @@ public class EventThreadPool {
 	private static EventThreadPool instance;
 	private static short MAX_BLOCKING_QUEUE_SIZE = 3000;
 	private static Object mutex = new Object();
-		
+
 	private StringBuffer eventBuffer;
 	private LinkedBlockingQueue<Object> eventQueue = new LinkedBlockingQueue<>(MAX_BLOCKING_QUEUE_SIZE);
 	private Socket socket;
 	private ObjectOutputStream oos;
 	private ScheduledExecutorService eventPoolExecutor;
 	private Runnable queuePooler;
-	
+
 	final int queueSize = 300;
 	final int maxPoolSize = 3;
 	final int corePoolSize = 1;
 	final long keepAliveTime = 10;
-	
-	
+
 	private EventThreadPool() {
 		LinkedBlockingQueue<Runnable> processQueue;
 		// load the settings
-		
-		
+
 		TimeUnit timeUnit = TimeUnit.SECONDS;
 
 		boolean allowCoreThreadTimeOut = false;
@@ -81,22 +79,22 @@ public class EventThreadPool {
 			@Override
 			public void run() {
 				LinkedBlockingQueue<Object> eventQueue = EventThreadPool.getInstance().getEventQueue();
-				if(!eventQueue.isEmpty()) {
+				if (!eventQueue.isEmpty()) {
 					try {
-						
+
 						ObjectOutputStream oos = EventThreadPool.getInstance().getObjectStream();
 						List<Object> eventList = new ArrayList<>();
 						eventQueue.drainTo(eventList, eventQueue.size());
 						oos.writeUnshared(eventList);
 //						System.out.println("EventThreadPool Pending Events: " + EventThreadPool.getInstance().getExecutor().getQueue().size());
-//						System.out.println("eventList size before send: " + eventList.size());
-//						System.out.println("EventQueue size after drain: " + eventQueue.size());
+						System.out.println("eventList size before send: " + eventList.size()
+								+ ", EventQueue size after drain: " + eventQueue.size());
 //							oos.flush();
-							oos.reset();
+						oos.reset();
 					} catch (IOException e) {
 						e.printStackTrace();
 						System.err.println("Error in writing: " + e.getMessage());
-						if(EventThreadPool.getInstance().getSocket()!=null) {
+						if (EventThreadPool.getInstance().getSocket() != null) {
 							try {
 								EventThreadPool.getInstance().getSocket().close();
 								LoggingInterceptor.connectSocket();
@@ -105,7 +103,7 @@ public class EventThreadPool {
 								e1.printStackTrace();
 							}
 						}
-						
+
 					} catch (Exception e) {
 						e.printStackTrace();
 					}
@@ -141,30 +139,27 @@ public class EventThreadPool {
 		/**
 		 * Always throws RejectedExecutionException.
 		 *
-		 * @param r
-		 *            the runnable task requested to be executed
-		 * @param e
-		 *            the executor attempting to execute this task
-		 * @throws RejectedExecutionException
-		 *             always
+		 * @param r the runnable task requested to be executed
+		 * @param e the executor attempting to execute this task
+		 * @throws RejectedExecutionException always
 		 */
 		public void rejectedExecution(Runnable r, ThreadPoolExecutor e) {
 			System.out.println("Event Task " + r.toString() + " rejected from {} " + e.toString());
 		}
 	}
 
-
-	public void processReceivedEvent(Object source, Object[] arg, Integer executionId, StackTraceElement[] stackTrace, long tId, String sourceString) {
+	public void processReceivedEvent(Object source, Object[] arg, Integer executionId, StackTraceElement[] stackTrace,
+			long tId, String sourceString) {
 		try {
 			this.executor.execute(new ProcessorThread(source, arg, executionId, stackTrace, tId, sourceString));
-		} catch(RejectedExecutionException rejected) {
+		} catch (RejectedExecutionException rejected) {
 			System.err.println("Rejected to process Event At: " + this.executor.getQueue().size());
 			rejected.printStackTrace();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
-	
+
 	protected boolean isQueueEmpty() {
 		return this.executor.getQueue().isEmpty();
 	}
@@ -175,7 +170,7 @@ public class EventThreadPool {
 	public StringBuffer getEventBuffer() {
 		return eventBuffer;
 	}
-	
+
 	/**
 	 * @return the eventBuffer
 	 */
@@ -210,7 +205,7 @@ public class EventThreadPool {
 	public void setEventPoolExecutor(ScheduledExecutorService eventPoolExecutor) {
 		this.eventPoolExecutor = eventPoolExecutor;
 	}
-	
+
 	// TODO: remove this getter
 	protected ThreadPoolExecutor getExecutor() {
 		return executor;

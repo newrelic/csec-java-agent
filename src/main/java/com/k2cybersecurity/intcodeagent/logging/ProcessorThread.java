@@ -867,7 +867,7 @@ public class ProcessorThread implements Runnable {
 					eventQueue.add(intCodeResultBean);
 //					System.out.println("publish event: " + intCodeResultBean);
 				} catch (IllegalStateException e) {
-					System.err.print(
+					System.err.println(
 							"Dropping event " + intCodeResultBean.getId() + " due to buffer capacity reached.");
 				} catch (Exception e) {
 					e.printStackTrace();
