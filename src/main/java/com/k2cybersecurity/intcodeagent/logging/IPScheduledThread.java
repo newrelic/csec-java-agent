@@ -32,8 +32,8 @@ public class IPScheduledThread {
 						// this will be ignored by ic agent on the other side.
 					System.out.println("writing ack object");
 					ObjectOutputStream oos = EventThreadPool.getInstance().getObjectStream();
-				    oos.writeObject(Collections.singletonList("ACK"));
-					oos.flush();
+				    oos.writeUnshared(Collections.singletonList("ACK"));
+					oos.reset();
 					} catch (SocketException ex) {
 						System.out.println("Error in writing : " + ex.getMessage());
 						System.out.println("Host ip equals : " + LoggingInterceptor.hostip.equals(hostip));

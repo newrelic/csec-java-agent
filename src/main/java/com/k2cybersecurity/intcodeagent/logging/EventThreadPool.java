@@ -87,9 +87,8 @@ public class EventThreadPool {
 						eventQueue.drainTo(eventList, eventQueue.size());
 						oos.writeUnshared(eventList);
 //						System.out.println("EventThreadPool Pending Events: " + EventThreadPool.getInstance().getExecutor().getQueue().size());
-						System.out.println("eventList size before send: " + eventList.size()
-								+ ", EventQueue size after drain: " + eventQueue.size());
-//							oos.flush();
+//						System.out.println("eventList size before send: " + eventList.size()
+//								+ ", EventQueue size after drain: " + eventQueue.size());
 						oos.reset();
 					} catch (IOException e) {
 						System.err.println("Error in writing: " + e.getMessage());
