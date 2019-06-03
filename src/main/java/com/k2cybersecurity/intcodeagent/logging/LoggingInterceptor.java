@@ -747,5 +747,17 @@ public class LoggingInterceptor extends Interceptor {
 			System.out.println("Unable to find Tomcat Version:" + e.getMessage());
 		}
 	}
+	
+	protected static void closeSocket() {
+		if (EventThreadPool.getInstance().getSocket() != null) {
+			try {
+				EventThreadPool.getInstance().getSocket().close();
+				EventThreadPool.getInstance().setSocket(null);
+			} catch (IOException e) {
+				System.out.println("Error in closing socket : " + e.getMessage());
+			}
+		}
+	}
+
 
 }
