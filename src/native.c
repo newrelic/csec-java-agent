@@ -35,6 +35,7 @@ char* stringclone(char*p,int len) {
      char* ptr = (char*)malloc(sizeof(char)*len+1); 
      if(!ptr) { return ptr; }
      memcpy(ptr,p,len);
+     ptr[len]=0;
      return ptr;
 }
 // -------------------------------
