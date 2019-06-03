@@ -92,18 +92,8 @@ public class EventThreadPool {
 //							oos.flush();
 						oos.reset();
 					} catch (IOException e) {
-						e.printStackTrace();
 						System.err.println("Error in writing: " + e.getMessage());
-						if (EventThreadPool.getInstance().getSocket() != null) {
-							try {
-								EventThreadPool.getInstance().getSocket().close();
-								LoggingInterceptor.connectSocket();
-								LoggingInterceptor.createApplicationInfoBean();
-							} catch (IOException e1) {
-								e1.printStackTrace();
-							}
-						}
-
+						e.printStackTrace();
 					} catch (Exception e) {
 						e.printStackTrace();
 					}
