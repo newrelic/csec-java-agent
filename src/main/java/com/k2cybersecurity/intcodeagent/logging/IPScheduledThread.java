@@ -33,7 +33,7 @@ public class IPScheduledThread {
 					System.out.println("writing ack object");
 					ObjectOutputStream oos = EventThreadPool.getInstance().getObjectStream();
 				    oos.writeUnshared(Collections.singletonList("ACK"));
-					oos.reset();
+//					oos.reset();                  
 					} catch (SocketException ex) {
 						System.out.println("Error in writing : " + ex.getMessage());
 						System.out.println("Host ip equals : " + LoggingInterceptor.hostip.equals(hostip));
