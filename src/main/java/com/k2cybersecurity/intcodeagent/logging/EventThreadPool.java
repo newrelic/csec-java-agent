@@ -27,7 +27,6 @@ public class EventThreadPool {
 	private static Object mutex = new Object();
 		
 	private StringBuffer eventBuffer;
-	private Map<String,String> mySqlPreparedStatementsMap;
 	private LinkedBlockingQueue<Object> eventQueue = new LinkedBlockingQueue<>(MAX_BLOCKING_QUEUE_SIZE);
 	private Socket socket;
 	private ObjectOutputStream oos;
@@ -68,7 +67,6 @@ public class EventThreadPool {
 
 		};
 		this.eventBuffer = new StringBuffer();
-		this.mySqlPreparedStatementsMap = new HashMap<String,String>();
 		executor.allowCoreThreadTimeOut(allowCoreThreadTimeOut);
 		executor.setThreadFactory(new ThreadFactory() {
 			private final AtomicInteger threadNumber = new AtomicInteger(1);
@@ -185,21 +183,6 @@ public class EventThreadPool {
 		return this.eventBuffer = new StringBuffer();
 	}
 
-	public String getMySqlPreparedStatementsMap(String id) {
-		if(this.mySqlPreparedStatementsMap.containsKey(id)) {
-			return this.mySqlPreparedStatementsMap.get(id);
-		}
-		return null;
-	}
-	
-	public void setMySqlPreparedStatementsMap(String id, String sql) {
-		if (sql==null && this.mySqlPreparedStatementsMap.containsKey(id)) {
-			this.mySqlPreparedStatementsMap.remove(id);
-		} else {
-			this.mySqlPreparedStatementsMap.put(id, sql);
-		}
-	}
-	
 	public LinkedBlockingQueue<Object> getEventQueue() {
 		return eventQueue;
 	}

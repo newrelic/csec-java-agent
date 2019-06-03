@@ -650,10 +650,12 @@ public class LoggingInterceptor extends Interceptor {
 	}
 
 	private void processMysqlStatement(Object[] args, long threadId, String sourceString) {
-		Object obj = args[0];
+		int targetObjLocation = 0;
 		if (sourceString.equals(MYSQL_CONNECTOR_5_0_4_PREPARED_SOURCE)) {
-			obj = args[args.length - 1];
+			targetObjLocation = args.length - 1;
 		}
+		int thisPointerLocation = args.length - 1;
+		Object obj = args[targetObjLocation];
 		Class<?> objClass = obj.getClass();
 
 		if (objClass.getName().equals(MYSQL_PREPARED_STATEMENT_5)
@@ -669,11 +671,7 @@ public class LoggingInterceptor extends Interceptor {
 				Field originalSqlField = objClass.getDeclaredField(MYSQL_FIELD_ORIGINAL_SQL);
 				originalSqlField.setAccessible(true);
 				String originalSql = (String) originalSqlField.get(obj);
-
-				// compute id and push in map
-				String id = threadId + COLON_SEPERATOR + obj.hashCode();
-				EventThreadPool.getInstance().setMySqlPreparedStatementsMap(id, originalSql);
-
+				args[thisPointerLocation] = originalSql;
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -684,10 +682,8 @@ public class LoggingInterceptor extends Interceptor {
 				Field originalSqlField = objClass.getDeclaredField(MYSQL_FIELD_ORIGINAL_SQL);
 				originalSqlField.setAccessible(true);
 				String originalSql = (String) originalSqlField.get(obj);
-
-				// compute id and push in map
-				String id = threadId + COLON_SEPERATOR + obj.hashCode();
-				EventThreadPool.getInstance().setMySqlPreparedStatementsMap(id, originalSql);
+				
+				args[thisPointerLocation] = originalSql;
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -708,10 +704,7 @@ public class LoggingInterceptor extends Interceptor {
 					Field originalSqlField = objClass.getDeclaredField(MYSQL_FIELD_ORIGINAL_SQL);
 					originalSqlField.setAccessible(true);
 					String originalSql = (String) originalSqlField.get(query);
-
-					// compute id and push in map
-					String id = threadId + COLON_SEPERATOR + obj.hashCode();
-					EventThreadPool.getInstance().setMySqlPreparedStatementsMap(id, originalSql);
+					args[thisPointerLocation] = originalSql;
 				}
 			} catch (Exception e) {
 				e.printStackTrace();

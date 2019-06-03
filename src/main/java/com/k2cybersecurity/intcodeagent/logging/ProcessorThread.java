@@ -420,29 +420,36 @@ public class ProcessorThread implements Runnable {
 	@SuppressWarnings("unchecked")
 	private void getMySQLParameterValue(Object[] args, JSONArray parameters, String sourceString) {
 		try {
-			if (arg[1] != null && !arg[1].toString().isEmpty()
-					&& !sourceString.equals(IAgentConstants.MYSQL_CONNECTOR_5_0_4_PREPARED_SOURCE)) {
-				parameters.add(arg[1].toString());
-			} else {
-				Object obj = args[0];
-				if (sourceString.equals(IAgentConstants.MYSQL_CONNECTOR_5_0_4_PREPARED_SOURCE)) {
-					obj = args[args.length - 1];
-				}
-				Class<?> objClass = obj.getClass();
-				if (objClass.getName().equals(IAgentConstants.MYSQL_PREPARED_STATEMENT_5)
-						|| objClass.getName().equals(IAgentConstants.MYSQL_PREPARED_STATEMENT_5_0_4)
-						|| objClass.getName().equals(IAgentConstants.MYSQL_PREPARED_STATEMENT_42)
-						|| objClass.getName().equals(IAgentConstants.MYSQL_PREPARED_STATEMENT_4)
-						|| objClass.getName().equals(IAgentConstants.MYSQL_PREPARED_STATEMENT_6)
-						|| objClass.getName().equals(IAgentConstants.MYSQL_PREPARED_STATEMENT_8)) {
-					String id = threadId + IAgentConstants.COLON_SEPERATOR + obj.hashCode();
-					String originalSql = EventThreadPool.getInstance().getMySqlPreparedStatementsMap(id);
-					if (originalSql != null) {
-						EventThreadPool.getInstance().setMySqlPreparedStatementsMap(id, null);
-						parameters.add(originalSql);
-					}
-				}
+			int sqlObjectLocation = 1;
+			int thisPointerLocation = args.length - 1;
+			if (args[thisPointerLocation].getClass().getName().equals(String.class.getName())) {
+				sqlObjectLocation = thisPointerLocation;
 			}
+			parameters.add(String.valueOf(arg[sqlObjectLocation]));
+//			if (arg[1] != null && !arg[1].toString().isEmpty()
+//					&& !sourceString.equals(IAgentConstants.MYSQL_CONNECTOR_5_0_4_PREPARED_SOURCE)) {
+//				
+//			} else {
+//				Object obj = args[0];
+//				if (sourceString.equals(IAgentConstants.MYSQL_CONNECTOR_5_0_4_PREPARED_SOURCE)) {
+//					obj = args[args.length - 1];
+//				}
+//				Class<?> objClass = obj.getClass();
+//				if (objClass.getName().equals(IAgentConstants.MYSQL_PREPARED_STATEMENT_5)
+//						|| objClass.getName().equals(IAgentConstants.MYSQL_PREPARED_STATEMENT_5_0_4)
+//						|| objClass.getName().equals(IAgentConstants.MYSQL_PREPARED_STATEMENT_42)
+//						|| objClass.getName().equals(IAgentConstants.MYSQL_PREPARED_STATEMENT_4)
+//						|| objClass.getName().equals(IAgentConstants.MYSQL_PREPARED_STATEMENT_6)
+//						|| objClass.getName().equals(IAgentConstants.MYSQL_PREPARED_STATEMENT_8)) {
+//					String id = threadId + IAgentConstants.COLON_SEPERATOR + obj.hashCode();
+//					String originalSql = EventThreadPool.getInstance().getMySqlPreparedStatementsMap(id);
+//					if (originalSql != null) {
+//						EventThreadPool.getInstance().setMySqlPreparedStatementsMap(id, null);
+//						parameters.add(originalSql);
+//					}
+//				}
+//			}
+			
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -858,7 +865,7 @@ public class ProcessorThread implements Runnable {
 					intCodeResultBean.setServletInfo(new ServletInfo(ExecutionMap.find(this.executionId,
 							ServletEventPool.getInstance().getRequestMap().get(this.threadId))));
 					eventQueue.add(intCodeResultBean);
-
+//					System.out.println("publish event: " + intCodeResultBean);
 				} catch (IllegalStateException e) {
 					System.err.print(
 							"Dropping event " + intCodeResultBean.getId() + " due to buffer capacity reached.");
