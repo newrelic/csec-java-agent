@@ -249,8 +249,8 @@ public class LoggingInterceptor extends Interceptor {
 						throw new RuntimeException("Host ip not found");
 					System.out.println(HOST_IP_FOUND_MSG + hostip);
 					socket = new Socket(hostip, K2_IC_TCP_PORT);
+					socket.setKeepAlive(true);
 					EventThreadPool.getInstance().setSocket(socket);
-		
 					if (!socket.isConnected() || socket.isClosed())
 						throw new RuntimeException("Can't connect to IC, agent installation failed.");
 		
