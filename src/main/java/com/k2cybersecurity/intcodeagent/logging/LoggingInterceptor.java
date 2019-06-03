@@ -38,6 +38,7 @@ import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.JAR_PATH_
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.JA_CONNECT_SUCCESS_MSG;
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.JETTY_PARSE_NEXT;
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.JETTY_REQUEST_HANDLE;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.K2_IC_TCP_PORT;
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.KUBEPODS_DIR;
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.LXC_DIR;
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MYSQL_CONNECTOR_5_0_4_PREPARED_SOURCE;
@@ -71,7 +72,6 @@ import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.TOMCAT_SE
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.TOMCAT_VERSION_DETECTED_MSG;
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.VERSION_SPLIT_EXPR;
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.VMPID_SPLIT_CHAR;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.K2_IC_TCP_PORT;
 
 import java.io.BufferedReader;
 import java.io.File;
