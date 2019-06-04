@@ -30,7 +30,6 @@ public class IPScheduledThread {
 						// since tcp connection keep alive check is more than 2 hours
 						// we send our custom object to check if connectino is still alive or not
 						// this will be ignored by ic agent on the other side.
-					System.out.println("writing ack object");
 					ObjectOutputStream oos = EventThreadPool.getInstance().getObjectStream();
 				    oos.writeUnshared(Collections.singletonList("ACK"));
 //					oos.reset();                  
@@ -53,7 +52,7 @@ public class IPScheduledThread {
 						LoggingInterceptor.getJarPath();
 						System.out.println("K2-JavaAgent re-installed successfully.");
 					} else {
-						System.out.println("got into final else should be only in case of ack written successfully");
+						
 					}
 				} catch (Exception e) {
 					System.err.println("Error in IPScheduledThread : " + e.getMessage());

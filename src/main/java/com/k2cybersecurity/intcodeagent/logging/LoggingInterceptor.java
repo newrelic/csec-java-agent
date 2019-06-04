@@ -219,7 +219,7 @@ public class LoggingInterceptor extends Interceptor {
 		jarPathPoolExecutorService.shutdown();
 	}
 
-	public static void createApplicationInfoBean() throws IOException {
+	public static void createApplicationInfoBean() {
 		RuntimeMXBean runtimeMXBean = ManagementFactory.getRuntimeMXBean();
 		String runningVM = runtimeMXBean.getName();
 		VMPID = Integer.parseInt(runningVM.substring(0, runningVM.indexOf(VMPID_SPLIT_CHAR)));
@@ -238,31 +238,30 @@ public class LoggingInterceptor extends Interceptor {
 		jsonArray.addAll(cmdlineArgs);
 		applicationInfoBean.setJvmArguments(jsonArray);
 		System.out.println(APPLICATION_INFO_POSTED_MSG + applicationInfoBean);
-
 		EventThreadPool.getInstance().getEventQueue().add(applicationInfoBean);
 	}
 
 	synchronized protected static void connectSocket() {
 		Socket socket = EventThreadPool.getInstance().getSocket();
-			if(socket == null || !socket.isConnected() || socket.isClosed()) {
-				try (BufferedReader reader = new BufferedReader(new FileReader(HOST_PROP_FILE_NAME))) {
-					hostip = reader.readLine();
-					if (hostip == null || hostip.isEmpty())
-						throw new RuntimeException("Host ip not found");
-					System.out.println(HOST_IP_FOUND_MSG + hostip);
-					socket = new Socket();
-					SocketAddress socketAddr = new InetSocketAddress(hostip, K2_IC_TCP_PORT);
-					socket.connect(socketAddr, 1000);
-					socket.setKeepAlive(true);
-					EventThreadPool.getInstance().setSocket(socket);
-					if (!socket.isConnected() || socket.isClosed())
-						throw new RuntimeException("Can't connect to IC, agent installation failed.");
-		
-					EventThreadPool.getInstance().setObjectStream(new ObjectOutputStream(socket.getOutputStream()));
-				} catch (Exception e) {
-					throw new RuntimeException(e);
-				}
+		if (socket == null || !socket.isConnected() || socket.isClosed()) {
+			try (BufferedReader reader = new BufferedReader(new FileReader(HOST_PROP_FILE_NAME))) {
+				hostip = reader.readLine();
+				if (hostip == null || hostip.isEmpty())
+					throw new RuntimeException("Host ip not found");
+				System.out.println(HOST_IP_FOUND_MSG + hostip);
+				socket = new Socket();
+				SocketAddress socketAddr = new InetSocketAddress(hostip, K2_IC_TCP_PORT);
+				socket.connect(socketAddr, 1000);
+				socket.setKeepAlive(true);
+				EventThreadPool.getInstance().setSocket(socket);
+				if (!socket.isConnected() || socket.isClosed())
+					throw new RuntimeException("Can't connect to IC, agent installation failed.");
+
+				EventThreadPool.getInstance().setObjectStream(new ObjectOutputStream(socket.getOutputStream()));
+			} catch (Exception e) {
+				throw new RuntimeException(e);
 			}
+		}
 	}
 
 	@Override
@@ -624,7 +623,8 @@ public class LoggingInterceptor extends Interceptor {
 			// ServletEventPool.getInstance().getRequestMap());
 
 			try {
-				if (ServletEventPool.getInstance().getRequestMap().containsKey(threadId)) {
+				if (ServletEventPool.getInstance().getRequestMap().containsKey(threadId) && ExecutionMap
+						.find(executionId, ServletEventPool.getInstance().getRequestMap().get(threadId)) != null) {
 					// System.out.println("Calling processor thread : "+ threadId + " : " +
 					// executionId);
 					ServletEventPool.getInstance().incrementServletInfoReference(threadId, executionId, true);
@@ -686,7 +686,7 @@ public class LoggingInterceptor extends Interceptor {
 				Field originalSqlField = objClass.getDeclaredField(MYSQL_FIELD_ORIGINAL_SQL);
 				originalSqlField.setAccessible(true);
 				String originalSql = (String) originalSqlField.get(obj);
-				
+
 				args[thisPointerLocation] = originalSql;
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -751,7 +751,7 @@ public class LoggingInterceptor extends Interceptor {
 			System.out.println("Unable to find Tomcat Version:" + e.getMessage());
 		}
 	}
-	
+
 	protected static void closeSocket() {
 		if (EventThreadPool.getInstance().getSocket() != null) {
 			try {
@@ -762,6 +762,5 @@ public class LoggingInterceptor extends Interceptor {
 			}
 		}
 	}
-
 
 }

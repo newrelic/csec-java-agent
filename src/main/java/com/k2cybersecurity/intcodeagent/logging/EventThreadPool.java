@@ -4,9 +4,8 @@ import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.concurrent.Executor;
 import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.RejectedExecutionException;
@@ -32,12 +31,13 @@ public class EventThreadPool {
 	private ObjectOutputStream oos;
 	private ScheduledExecutorService eventPoolExecutor;
 	private Runnable queuePooler;
-
+	private boolean triedReconnect = false;
+	
 	final int queueSize = 300;
 	final int maxPoolSize = 3;
 	final int corePoolSize = 1;
 	final long keepAliveTime = 10;
-
+	
 	private EventThreadPool() {
 		LinkedBlockingQueue<Runnable> processQueue;
 		// load the settings
@@ -78,11 +78,12 @@ public class EventThreadPool {
 		this.queuePooler = new Runnable() {
 			@Override
 			public void run() {
-				LinkedBlockingQueue<Object> eventQueue = EventThreadPool.getInstance().getEventQueue();
+				EventThreadPool currentExecutor =  EventThreadPool.getInstance();
+				LinkedBlockingQueue<Object> eventQueue = currentExecutor.getEventQueue();
 				if (!eventQueue.isEmpty()) {
 					try {
-
-						ObjectOutputStream oos = EventThreadPool.getInstance().getObjectStream();
+						
+						ObjectOutputStream oos = currentExecutor.getObjectStream();
 						List<Object> eventList = new ArrayList<>();
 						eventQueue.drainTo(eventList, eventQueue.size());
 						oos.writeUnshared(eventList);
@@ -90,8 +91,17 @@ public class EventThreadPool {
 //						System.out.println("eventList size before send: " + eventList.size()
 //								+ ", EventQueue size after drain: " + eventQueue.size());
 						oos.reset();
+						if(currentExecutor.triedReconnect()) {
+							currentExecutor.setTriedReconnect(false);
+						}
 					} catch (IOException e) {
 						System.err.println("Error in writing: " + e.getMessage());
+						if(!currentExecutor.triedReconnect()) {
+							LoggingInterceptor.closeSocket();
+							LoggingInterceptor.connectSocket();
+							LoggingInterceptor.createApplicationInfoBean();
+							currentExecutor.setTriedReconnect(true);
+						}
 //						e.printStackTrace();
 					} catch (Exception e) {
 						e.printStackTrace();
@@ -203,4 +213,14 @@ public class EventThreadPool {
 	protected Runnable getQueuePooler() {
 		return queuePooler;
 	}
+
+	public boolean triedReconnect() {
+		return triedReconnect;
+	}
+
+	public void setTriedReconnect(boolean triedReconnect) {
+		this.triedReconnect = triedReconnect;
+	}
+	
+	
 }
