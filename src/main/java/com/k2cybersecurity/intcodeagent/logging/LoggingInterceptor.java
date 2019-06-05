@@ -118,10 +118,10 @@ public class LoggingInterceptor extends Interceptor {
 
 	private static final Set<String> allClasses;
 	private static final Map<String, List<String>> interceptMethod;
-
+	private static final int SOCKET_CONNECT_TIMEOUT = 500;
 	protected static Integer VMPID;
 	protected static final String applicationUUID;
-
+	protected static ApplicationInfoBean APPLICATION_INFO_BEAN;
 	protected static Class<?> mysqlPreparedStatement8Class, mysqlPreparedStatement5Class, abstractInputBufferClass;
 	protected static String tomcatVersion;
 	protected static int tomcatMajorVersion;
@@ -219,7 +219,7 @@ public class LoggingInterceptor extends Interceptor {
 		jarPathPoolExecutorService.shutdown();
 	}
 
-	public static void createApplicationInfoBean() {
+	public static ApplicationInfoBean createApplicationInfoBean() {
 		RuntimeMXBean runtimeMXBean = ManagementFactory.getRuntimeMXBean();
 		String runningVM = runtimeMXBean.getName();
 		VMPID = Integer.parseInt(runningVM.substring(0, runningVM.indexOf(VMPID_SPLIT_CHAR)));
@@ -237,8 +237,7 @@ public class LoggingInterceptor extends Interceptor {
 		JSONArray jsonArray = new JSONArray();
 		jsonArray.addAll(cmdlineArgs);
 		applicationInfoBean.setJvmArguments(jsonArray);
-		System.out.println(APPLICATION_INFO_POSTED_MSG + applicationInfoBean);
-		EventThreadPool.getInstance().getEventQueue().add(applicationInfoBean);
+		return applicationInfoBean;
 	}
 
 	synchronized protected static void connectSocket() {
@@ -251,15 +250,19 @@ public class LoggingInterceptor extends Interceptor {
 				System.out.println(HOST_IP_FOUND_MSG + hostip);
 				socket = new Socket();
 				SocketAddress socketAddr = new InetSocketAddress(hostip, K2_IC_TCP_PORT);
-				socket.connect(socketAddr, 1000);
+				socket.connect(socketAddr, SOCKET_CONNECT_TIMEOUT);
 				socket.setKeepAlive(true);
 				EventThreadPool.getInstance().setSocket(socket);
-				if (!socket.isConnected() || socket.isClosed())
-					throw new RuntimeException("Can't connect to IC, agent installation failed.");
-
 				EventThreadPool.getInstance().setObjectStream(new ObjectOutputStream(socket.getOutputStream()));
 			} catch (Exception e) {
-				throw new RuntimeException(e);
+				throw new RuntimeException("Can't connect to IC, agent installation failed.",e);
+			}
+			if (socket == null || !socket.isConnected() || socket.isClosed()) {
+				throw new RuntimeException("Can't connect to IC, agent installation failed.");
+			} else {
+				System.out.println(JA_CONNECT_SUCCESS_MSG);
+				System.out.println(APPLICATION_INFO_POSTED_MSG + LoggingInterceptor.APPLICATION_INFO_BEAN );
+				EventThreadPool.getInstance().getEventQueue().add(LoggingInterceptor.APPLICATION_INFO_BEAN);
 			}
 		}
 	}
@@ -277,17 +280,15 @@ public class LoggingInterceptor extends Interceptor {
 		 * ", established successfully!!!"); } catch (IOException ex) { throw new
 		 * RuntimeException(ex); }
 		 */
+		APPLICATION_INFO_BEAN = createApplicationInfoBean();
 		try {
 			connectSocket();
-			getJarPath();
-			createApplicationInfoBean();
-			eventWritePool();
-			IPScheduledThread.getInstance();
-			System.out.println(JA_CONNECT_SUCCESS_MSG);
-
 		} catch (Exception e) {
-			System.err.println("Can't connect to IC, agent installation failed.");
+			System.err.println(e.getMessage());
 		}
+		IPScheduledThread.getInstance();
+		getJarPath();
+		eventWritePool();
 	}
 
 	private static void eventWritePool() {

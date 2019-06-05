@@ -37,14 +37,12 @@ public class EventThreadPool {
 	final int maxPoolSize = 3;
 	final int corePoolSize = 1;
 	final long keepAliveTime = 10;
+	final TimeUnit timeUnit = TimeUnit.SECONDS;
+	final boolean allowCoreThreadTimeOut = false;
 	
 	private EventThreadPool() {
 		LinkedBlockingQueue<Runnable> processQueue;
 		// load the settings
-
-		TimeUnit timeUnit = TimeUnit.SECONDS;
-
-		boolean allowCoreThreadTimeOut = false;
 		processQueue = new LinkedBlockingQueue<>(queueSize);
 		executor = new ThreadPoolExecutor(corePoolSize, maxPoolSize, keepAliveTime, timeUnit, processQueue,
 				new EventAbortPolicy()) {
@@ -80,10 +78,9 @@ public class EventThreadPool {
 			public void run() {
 				EventThreadPool currentExecutor =  EventThreadPool.getInstance();
 				LinkedBlockingQueue<Object> eventQueue = currentExecutor.getEventQueue();
-				if (!eventQueue.isEmpty()) {
+				ObjectOutputStream oos = currentExecutor.getObjectStream();
+				if (!eventQueue.isEmpty() && oos != null) {
 					try {
-						
-						ObjectOutputStream oos = currentExecutor.getObjectStream();
 						List<Object> eventList = new ArrayList<>();
 						eventQueue.drainTo(eventList, eventQueue.size());
 						oos.writeUnshared(eventList);
@@ -97,10 +94,9 @@ public class EventThreadPool {
 					} catch (IOException e) {
 						System.err.println("Error in writing: " + e.getMessage());
 						if(!currentExecutor.triedReconnect()) {
+							currentExecutor.setTriedReconnect(true);
 							LoggingInterceptor.closeSocket();
 							LoggingInterceptor.connectSocket();
-							LoggingInterceptor.createApplicationInfoBean();
-							currentExecutor.setTriedReconnect(true);
 						}
 //						e.printStackTrace();
 					} catch (Exception e) {

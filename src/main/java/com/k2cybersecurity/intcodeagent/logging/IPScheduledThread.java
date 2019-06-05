@@ -25,32 +25,28 @@ public class IPScheduledThread {
 					String hostip = reader.readLine();
 
 					Socket socket =  EventThreadPool.getInstance().getSocket();
-					
+					ObjectOutputStream oos = EventThreadPool.getInstance().getObjectStream();
 					try {
 						// since tcp connection keep alive check is more than 2 hours
 						// we send our custom object to check if connectino is still alive or not
 						// this will be ignored by ic agent on the other side.
-					ObjectOutputStream oos = EventThreadPool.getInstance().getObjectStream();
-				    oos.writeUnshared(Collections.singletonList("ACK"));
-//					oos.reset();                  
+					    oos.writeUnshared(Collections.singletonList("ACK"));
 					} catch (SocketException ex) {
-						System.out.println("Error in writing : " + ex.getMessage());
-						System.out.println("Host ip equals : " + LoggingInterceptor.hostip.equals(hostip));
-						System.out.println("LoggingInterceptor.socket : " + socket);
 						// if ack fails, socket needs to be properly closed as it is not done implicitly
+						System.err.println("Error in writing : " + ex.getMessage());
 						LoggingInterceptor.closeSocket();
-					} catch (Exception ex) {
-						System.out.println(ex.getMessage());
+					} catch (NullPointerException ex) {
+						System.err.println("No reference to Socket's OutputStream");
+					} catch (Exception e) {
+						e.printStackTrace();
 					}
 					if (hostip == null || hostip.equals("")) {
-						System.out.println("Host ip not found");
+						System.err.println("Host ip not found");
 					} else if (!LoggingInterceptor.hostip.equals(hostip) || (socket == null)
 							|| (!socket.isConnected()) || (socket.isClosed())) {
-						System.out.println("entered into else if");
 						LoggingInterceptor.connectSocket();
-						LoggingInterceptor.createApplicationInfoBean();
 						LoggingInterceptor.getJarPath();
-						System.out.println("K2-JavaAgent re-installed successfully.");
+//						System.out.println("K2-JavaAgent re-installed successfully.");
 					} else {
 						
 					}
@@ -69,7 +65,7 @@ public class IPScheduledThread {
 						"ipScheduledThread-" + threadNumber.getAndIncrement());
 			}
 		});
-		ipScheduledService.scheduleAtFixedRate(runnable, 2, 2, TimeUnit.MINUTES);
+		ipScheduledService.scheduleAtFixedRate(runnable, 5, 5, TimeUnit.MINUTES);
 	}
 
 	public static IPScheduledThread getInstance() {
