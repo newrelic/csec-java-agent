@@ -280,7 +280,7 @@ public class LoggingInterceptor extends Interceptor {
 		 * ", established successfully!!!"); } catch (IOException ex) { throw new
 		 * RuntimeException(ex); }
 		 */
-//		APPLICATION_INFO_BEAN = createApplicationInfoBean();
+		APPLICATION_INFO_BEAN = createApplicationInfoBean();
 		try {
 			connectSocket();
 		} catch (Exception e) {

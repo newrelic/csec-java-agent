@@ -880,7 +880,7 @@ public class ProcessorThread implements Runnable {
 				intCodeResultBean.setServletInfo(new ServletInfo(ExecutionMap.find(this.executionId,
 						ServletEventPool.getInstance().getRequestMap().get(this.threadId))));
 				eventQueue.add(intCodeResultBean);
-				System.out.println("publish event: " + intCodeResultBean);
+//				System.out.println("publish event: " + intCodeResultBean);
 			} catch (IllegalStateException e) {
 				System.err.println("Dropping event " + intCodeResultBean.getId() + " due to buffer capacity reached.");
 			} catch (Exception e) {

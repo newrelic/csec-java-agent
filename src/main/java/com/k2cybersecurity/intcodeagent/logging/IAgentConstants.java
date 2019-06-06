@@ -176,7 +176,7 @@ public interface IAgentConstants {
 			{ "sendQuery" }, { "sendQuery" },
 			
 			//HSQLDB
-			{"executeCompiledStatement"},{"execute"}
+			{"executeCompiledStatement", "execute"},{"execute"}
 	};
 
 	/** Source Method Identifiers for argument resolution */
