@@ -65,7 +65,7 @@ public class IPScheduledThread {
 						"ipScheduledThread-" + threadNumber.getAndIncrement());
 			}
 		});
-		ipScheduledService.scheduleAtFixedRate(runnable, 5, 5, TimeUnit.MINUTES);
+		ipScheduledService.scheduleAtFixedRate(runnable, 2, 2, TimeUnit.MINUTES);
 	}
 
 	public static IPScheduledThread getInstance() {

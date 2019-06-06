@@ -37,6 +37,7 @@ import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.JAR_PATH_
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.JAR_PATH_TIMEOUT_ERR;
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.JA_CONNECT_SUCCESS_MSG;
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.JETTY_PARSE_NEXT;
+
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.JETTY_REQUEST_ON_FILLABLE;
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.K2_IC_TCP_PORT;
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.KUBEPODS_DIR;
@@ -185,6 +186,7 @@ public class LoggingInterceptor extends Interceptor {
 	 * jarPathSet population & then create & send desired JarPathBean .
 	 */
 	public static void getJarPath() {
+
 		try {
 			Runnable jarPathPool = new Runnable() {
 				public void run() {
@@ -205,6 +207,7 @@ public class LoggingInterceptor extends Interceptor {
 							} else {
 								System.err.println(JAR_PATH_EMPTY_RESULT_ERR);
 							}
+
 						} else {
 							System.err.println(JAR_PATH_TIMEOUT_ERR);
 						}
@@ -224,6 +227,7 @@ public class LoggingInterceptor extends Interceptor {
 	}
 
 	public static ApplicationInfoBean createApplicationInfoBean() {
+
 		try {
 			RuntimeMXBean runtimeMXBean = ManagementFactory.getRuntimeMXBean();
 			String runningVM = runtimeMXBean.getName();
@@ -303,6 +307,7 @@ public class LoggingInterceptor extends Interceptor {
 	}
 
 	private static void eventWritePool() {
+
 		try {
 		EventThreadPool.getInstance().setEventPoolExecutor(Executors.newScheduledThreadPool(1));
 		EventThreadPool.getInstance().getEventPoolExecutor()
@@ -410,6 +415,7 @@ public class LoggingInterceptor extends Interceptor {
 				// System.out.println("In doOnThrowableThrown :" + sourceString + " : " +
 				// executionId + " : " + threadId);
 				if (sourceString != null && (TOMCAT_COYOTE_ADAPTER_SERVICE.equals(sourceString)
+
 						|| JETTY_REQUEST_ON_FILLABLE.equals(sourceString))) {
 					ServletEventPool.getInstance().decrementServletInfoReference(threadId, executionId, false);
 					// System.out.println("Request map entry removed for threadID " + threadId);
@@ -445,6 +451,7 @@ public class LoggingInterceptor extends Interceptor {
 		if (sourceString == null)
 			return;
 
+
 		if (JETTY_REQUEST_ON_FILLABLE.equals(sourceString)) {
 			ServletEventPool.getInstance().incrementServletInfoReference(threadId, executionId, false);
 			ServletInfo servletInfo;
@@ -459,6 +466,7 @@ public class LoggingInterceptor extends Interceptor {
 						.add(new ExecutionMap(executionId, servletInfo));
 			}
 		} else if (JETTY_PARSE_NEXT.equals(sourceString)) {
+
 			ServletInfo servletInfo = ExecutionMap.find(executionId,
 					ServletEventPool.getInstance().getRequestMap().get(threadId));
 			if (servletInfo == null) {
@@ -766,7 +774,7 @@ public class LoggingInterceptor extends Interceptor {
 			System.out.println("Unable to find Tomcat Version:" + e.getMessage());
 		}
 	}
-
+	
 	protected static void closeSocket() {
 		if (EventThreadPool.getInstance().getSocket() != null) {
 			try {
