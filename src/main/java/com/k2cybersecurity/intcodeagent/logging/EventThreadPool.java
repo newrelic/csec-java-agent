@@ -100,7 +100,7 @@ public class EventThreadPool {
 						}
 //						e.printStackTrace();
 					} catch (Exception e) {
-						e.printStackTrace();
+//						e.printStackTrace();
 					}
 				}
 			}
@@ -149,9 +149,9 @@ public class EventThreadPool {
 			this.executor.execute(new ProcessorThread(source, arg, executionId, stackTrace, tId, sourceString));
 		} catch (RejectedExecutionException rejected) {
 			System.err.println("Rejected to process Event At: " + this.executor.getQueue().size());
-			rejected.printStackTrace();
+//			rejected.printStackTrace();
 		} catch (Exception e) {
-			e.printStackTrace();
+//			e.printStackTrace();
 		}
 	}
 

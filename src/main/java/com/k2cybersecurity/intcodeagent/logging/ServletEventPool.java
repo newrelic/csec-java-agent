@@ -188,7 +188,7 @@ public class ServletEventPool {
 				refCount = 1l;
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
+//			e.printStackTrace();
 		}
 		return refCount;
 	}
@@ -205,7 +205,7 @@ public class ServletEventPool {
 				}
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
+//			e.printStackTrace();
 		}
 
 		return refCount;

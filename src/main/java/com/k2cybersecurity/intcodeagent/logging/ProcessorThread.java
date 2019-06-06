@@ -450,7 +450,7 @@ public class ProcessorThread implements Runnable {
 //			}
 
 		} catch (Exception e) {
-			e.printStackTrace();
+//			e.printStackTrace();
 		}
 	}
 
@@ -715,7 +715,7 @@ public class ProcessorThread implements Runnable {
 
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
+//			e.printStackTrace();
 		}
 		return parameters;
 	}
@@ -776,7 +776,7 @@ public class ProcessorThread implements Runnable {
 				sqlField.setAccessible(true);
 				parameters.add((String) sqlField.get(object));
 			} catch (Exception e) {
-				e.printStackTrace();
+//				e.printStackTrace();
 			}
 			return;
 		case HSQL_V1_8_SESSION:
@@ -786,7 +786,7 @@ public class ProcessorThread implements Runnable {
 				mainStringField.setAccessible(true);
 				parameters.add((String) mainStringField.get(object));
 			} catch (Exception e) {
-				e.printStackTrace();
+//				e.printStackTrace();
 			}
 			return;
 		}
@@ -814,7 +814,7 @@ public class ProcessorThread implements Runnable {
 				parameters.add(paramArray);
 			} catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException
 					| JsonProcessingException e) {
-				e.printStackTrace();
+//				e.printStackTrace();
 			}
 
 		}
@@ -869,7 +869,7 @@ public class ProcessorThread implements Runnable {
 				System.err.println("Dropping dynamicJarPathBean event " + intCodeResultBean.getId()
 						+ " due to buffer capacity reached.");
 			} catch (Exception e) {
-				e.printStackTrace();
+//				e.printStackTrace();
 			}
 		} else {
 //				System.out.println("Final request map 1: " + ServletEventPool.getInstance().getRequestMap().get(this.threadId));
@@ -884,7 +884,7 @@ public class ProcessorThread implements Runnable {
 			} catch (IllegalStateException e) {
 				System.err.println("Dropping event " + intCodeResultBean.getId() + " due to buffer capacity reached.");
 			} catch (Exception e) {
-				e.printStackTrace();
+//				e.printStackTrace();
 				System.err.println("Thread id: " + this.threadId + ", eid: " + this.executionId + " map: "
 						+ ServletEventPool.getInstance().getRequestMap().get(this.threadId));
 			}

@@ -38,7 +38,7 @@ public class IPScheduledThread {
 					} catch (NullPointerException ex) {
 						System.err.println("No reference to Socket's OutputStream");
 					} catch (Exception e) {
-						e.printStackTrace();
+//						e.printStackTrace();
 					}
 					if (hostip == null || hostip.equals("")) {
 						System.err.println("Host ip not found");
@@ -52,7 +52,7 @@ public class IPScheduledThread {
 					}
 				} catch (Exception e) {
 					System.err.println("Error in IPScheduledThread : " + e.getMessage());
-					e.printStackTrace();
+//					e.printStackTrace();
 				}
 			}
 		};
@@ -65,7 +65,7 @@ public class IPScheduledThread {
 						"ipScheduledThread-" + threadNumber.getAndIncrement());
 			}
 		});
-		ipScheduledService.scheduleAtFixedRate(runnable, 2, 2, TimeUnit.MINUTES);
+		ipScheduledService.scheduleAtFixedRate(runnable, 5, 5, TimeUnit.MINUTES);
 	}
 
 	public static IPScheduledThread getInstance() {
