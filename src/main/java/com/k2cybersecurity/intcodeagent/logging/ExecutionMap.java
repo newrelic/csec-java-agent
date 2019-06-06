@@ -1,7 +1,6 @@
 package com.k2cybersecurity.intcodeagent.logging;
 
 import java.util.Iterator;
-import java.util.List;
 import java.util.concurrent.ConcurrentLinkedDeque;
 
 import com.fasterxml.jackson.core.JsonProcessingException;

@@ -2,6 +2,8 @@ package com.k2cybersecurity.intcodeagent.logging;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
+import java.io.ObjectOutputStream;
+import java.net.Socket;
 import java.net.SocketException;
 import java.util.Collections;
 import java.util.concurrent.Executors;
@@ -21,34 +23,32 @@ public class IPScheduledThread {
 			public void run() {
 				try (BufferedReader reader = new BufferedReader(new FileReader("/etc/k2-adp/hostip.properties"))) {
 					String hostip = reader.readLine();
-					
+
+					Socket socket =  EventThreadPool.getInstance().getSocket();
+					ObjectOutputStream oos = EventThreadPool.getInstance().getObjectStream();
 					try {
 						// since tcp connection keep alive check is more than 2 hours
 						// we send our custom object to check if connectino is still alive or not
 						// this will be ignored by ic agent on the other side.
-					System.out.println("writing ack object");
-					LoggingInterceptor.oos.writeObject(Collections.singletonList("ACK"));
-					LoggingInterceptor.oos.flush();
+					    oos.writeUnshared(Collections.singletonList("ACK"));
 					} catch (SocketException ex) {
-						System.out.println("Error in writing : " + ex.getMessage());
-						System.out.println("Host ip equals : " + LoggingInterceptor.hostip.equals(hostip));
-						System.out.println("LoggingInterceptor.socket : " + LoggingInterceptor.socket);
 						// if ack fails, socket needs to be properly closed as it is not done implicitly
+						System.err.println("Error in writing : " + ex.getMessage());
 						LoggingInterceptor.closeSocket();
-					} catch (Exception ex) {
-						System.out.println(ex.getMessage());
+					} catch (NullPointerException ex) {
+						System.err.println("No reference to Socket's OutputStream");
+					} catch (Exception e) {
+						e.printStackTrace();
 					}
 					if (hostip == null || hostip.equals("")) {
-						System.out.println("Host ip not found");
-					} else if (!LoggingInterceptor.hostip.equals(hostip) || (LoggingInterceptor.socket == null)
-							|| (!LoggingInterceptor.socket.isConnected()) || (LoggingInterceptor.socket.isClosed())) {
-						System.out.println("entered into else if");
+						System.err.println("Host ip not found");
+					} else if (!LoggingInterceptor.hostip.equals(hostip) || (socket == null)
+							|| (!socket.isConnected()) || (socket.isClosed())) {
 						LoggingInterceptor.connectSocket();
-						LoggingInterceptor.createApplicationInfoBean();
 						LoggingInterceptor.getJarPath();
-						System.out.println("K2-JavaAgent re-installed successfully.");
+//						System.out.println("K2-JavaAgent re-installed successfully.");
 					} else {
-						System.out.println("got into final else should be only in case of ack written successfully");
+						
 					}
 				} catch (Exception e) {
 					System.err.println("Error in IPScheduledThread : " + e.getMessage());

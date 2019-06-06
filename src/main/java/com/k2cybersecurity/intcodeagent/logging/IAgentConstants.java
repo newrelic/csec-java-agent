@@ -7,9 +7,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.k2cybersecurity.intcodeagent.models.javaagent.ApplicationInfoBean;
+
 public interface IAgentConstants {
 
-	String TRACE_REGEX = "((?!(org\\.apache\\.jsp.*)|(javax\\.servlet\\.http.*)))((^javax.*)|(^java\\.lang.*)|(^java\\.io.*)|(^org\\.apache.*)|(^java\\.nio.*)|(^java\\.util.*)|(^java\\.net.*)|(^sun.*)|(^java\\.security.*)|(^k2\\.org\\.brutusin.*)|(^com\\.microsoft\\.sqlserver.*)|(^com\\.mysql.*)|(^sun\\.reflect.*)|(^org\\.hibernate.*)|(^java\\.sql.*)|(^com\\.mongodb.*)|(^org\\.apache\\.commons.*)|(^org\\.mongodb.*)|(^com\\.sun.*)|(^org\\.eclipse\\.jetty.*)|(^net\\.sourceforge\\.eclipsejetty.*)|(^java\\.awt.*)|(^org\\.springframework.*)|(^org\\.slf4j.*)|(^org\\.eclipse\\.jdt.*)|(^com\\.opensymphony\\.xwork2.*)|(^k2\\.org\\.objectweb\\.asm.*)|(^freemarker\\.cache.*)|(^com\\.mchange.*)|(^org\\.postgresql.*)|(^oracle\\.jdbc.*)|(^org\\.hsqldb.*)|(^ch\\.qos\\.logback.*)|(^io\\.micrometer.*)|(^k2\\.org\\.json.*)|(^k2\\.com\\.fasterxml.*))";
+	String TRACE_REGEX = "((?!(org\\.apache\\.jsp.*)|(javax\\.servlet\\.http.*)))((^javax.*)|(^java\\.lang.*)|(^java\\.io.*)|(^org\\.apache.*)|(^java\\.nio.*)|(^java\\.util.*)|(^java\\.net.*)|(^sun.*)|(^java\\.security.*)|(^k2\\.org\\.brutusin.*)|(^com\\.k2cybersecurity.*)|(^k2\\.io\\.org.*)|(^com\\.microsoft\\.sqlserver.*)|(^com\\.mysql.*)|(^sun\\.reflect.*)|(^org\\.hibernate.*)|(^java\\.sql.*)|(^com\\.mongodb.*)|(^org\\.apache\\.commons.*)|(^org\\.mongodb.*)|(^com\\.sun.*)|(^org\\.eclipse\\.jetty.*)|(^net\\.sourceforge\\.eclipsejetty.*)|(^java\\.awt.*)|(^org\\.springframework.*)|(^org\\.slf4j.*)|(^org\\.eclipse\\.jdt.*)|(^com\\.opensymphony\\.xwork2.*)|(^k2\\.org\\.objectweb\\.asm.*)|(^freemarker\\.cache.*)|(^com\\.mchange.*)|(^org\\.postgresql.*)|(^oracle\\.jdbc.*)|(^org\\.hsqldb.*)|(^ch\\.qos\\.logback.*)|(^io\\.micrometer.*)|(^k2\\.org\\.json.*)|(^k2\\.com\\.fasterxml.*))";
 
 	String SYSYTEM_CALL_START = "static java.lang.Process java.lang.ProcessImpl.start(java.lang.String[],java.util.Map<java.lang.String, java.lang.String>,java.lang.String,java.lang.ProcessBuilder$Redirect[],boolean) throws java.io.IOException";
 
@@ -52,6 +54,11 @@ public interface IAgentConstants {
 	
 	//HSQL_DB v2.4
 	String HSQL_V2_4 = "public org.hsqldb.result.Result org.hsqldb.Session.executeCompiledStatement(org.hsqldb.Statement,java.lang.Object[],int)";
+	
+	//HSQL_DB v1.8
+	String HSQL_V1_8_CONNECTION = "public synchronized org.hsqldb.Result org.hsqldb.HSQLClientConnection.execute(org.hsqldb.Result) throws org.hsqldb.HsqlException";
+	
+	String HSQL_V1_8_SESSION = "public org.hsqldb.Result org.hsqldb.Session.execute(org.hsqldb.Result)";
 		
 	
 	String[] EXECUTORS = { SYSYTEM_CALL_START,
@@ -85,7 +92,8 @@ public interface IAgentConstants {
 			
 			//HSQLDB
 			HSQL_V2_4,
-			
+			HSQL_V1_8_CONNECTION,
+			HSQL_V1_8_SESSION,
 			// // FileWriter
 //			"public java.io.OutputStream java.nio.file.spi.FileSystemProvider.newOutputStream(java.nio.file.Path,java.nio.file.OpenOption...) throws java.io.IOException",
 //			"public java.io.File(java.lang.String,java.lang.String)", "public java.io.File(java.lang.String)",
@@ -142,7 +150,8 @@ public interface IAgentConstants {
 			"org/postgresql/core/v3/QueryExecutorImpl", "org/postgresql/core/v2/QueryExecutorImpl", 
 			
 			//HSQLDB
-			"org/hsqldb/Session"
+			"org/hsqldb/Session",
+			"org/hsqldb/HSQLClientConnection",
 			
 			};
 
@@ -167,7 +176,7 @@ public interface IAgentConstants {
 			{ "sendQuery" }, { "sendQuery" },
 			
 			//HSQLDB
-			{"executeCompiledStatement"}
+			{"executeCompiledStatement", "execute"},{"execute"}
 	};
 
 	/** Source Method Identifiers for argument resolution */
@@ -288,4 +297,100 @@ public interface IAgentConstants {
 	}};
 	
 	String BYTE_ARRAY_CLASS = "[B";
+	
+	
+
+	// ProcessorThread.java constants
+	String JAVA_NET_URLCLASSLOADER = "public java.net.URLClassLoader(java.net.URL[])";
+	String JAVA_NET_URLCLASSLOADER_NEWINSTANCE = "public static java.net.URLClassLoader java.net.URLClassLoader.newInstance(java.net.URL[])";
+	String USER_DIR = "user.dir";
+	String PARAMVALUES = "paramValues";
+	String PSQL_PARAMETER_REPLACEMENT = "\\?";
+
+	String EMPTY_STRING = "";
+
+	String SQL = "sql";
+
+	String ORG_HSQLDB_STATEMENT = "org.hsqldb.Statement";
+
+	String SQLOBJECT = "sqlObject";
+
+	String ORACLESTATEMENT = "oracleStatement";
+
+	String ZERO = "0";
+
+	String NULL = "null";
+
+	String CURSOR = "cursor";
+
+	String FILE_URL = "file://";
+
+	String DOTINSQUAREBRACKET = "[.]";
+
+	String JAVA_LANG_RUNTIME = "java.lang.Runtime";
+
+	String JAVA_IO_FILE = "java.io.File";
+
+	// IPScheduledThread.java file constants
+	String HOST_IP_PROPERTIES_FILE = "/etc/k2-adp/hostip.properties";
+
+	String IPSCHEDULEDTHREAD_ = "ipScheduledThread-";
+
+	// EventThreadPool.java file constants
+	String K2_JAVA_AGENT = "K2-Java-Agent-";
+	
+	//AgentBasicInfo.java file constants
+	String K2_JAVAAGENT_PROPERTIES = "k2-javaagent.properties";
+
+	String K2_JAVAAGENT_VERSION = "k2.javaagent.version";
+
+	String K2_JAVAAGENT_TOOL_ID = "k2.javaagent.tool.id";
+
+	String K2_JAVAAGENT_JSONNAME_APPLICATIONINFOBEAN = "k2.javaagent.jsonname.applicationinfobean";
+
+	String K2_JAVAAGENT_JSONNAME_INTCODERESULTBEAN = "k2.javaagent.jsonname.intcoderesultbean";
+
+	String K2_JAVAAGENT_JSONNAME_JARPATHBEAN = "k2.javaagent.jsonname.jarpathbean";
+
+	String K2_JAVAAGENT_JSONNAME_DYNAMICJARPATHBEAN = "k2.javaagent.jsonname.dynamicjarpathbean";
+
+	// LoggingInterceptor Constants
+	char DIR_SEPERATOR = '/';
+	String CGROUP_FILE_NAME = "/proc/self/cgroup" ; 
+	String DOCKER_DIR = "docker/";
+	String KUBEPODS_DIR = "kubepods/";
+	String LXC_DIR = "lxc/";
+	String JAR_PATH_INIT_MSG = "Pooling getJarPathResultExecutorService to fetch results.";
+	String JAR_PATH_FETCH_SUCCESS_MSG = "getJarPathResultExecutorService result fetched successfully.";
+	String JAR_PATH_EMPTY_RESULT_ERR = "getJarPathResultExecutorService result is empty.";
+	String JAR_PATH_TIMEOUT_ERR = "Timeout reached waiting for getJarPathResultExecutorService.";
+	String HOST_PROP_FILE_NAME = "/etc/k2-adp/hostip.properties";
+	String HOST_IP_FOUND_MSG = "hostip found: ";
+	String JA_CONNECT_SUCCESS_MSG = "K2-JavaAgent installed successfully.";
+	String PROC_DIR = "/proc/";
+	String CMD_LINE_DIR = "/cmdline";
+	String BYTE_BUFFER_FIELD_LIMIT = "limit";
+	String BYTE_BUFFER_FIELD_POSITION = "position";
+	String BYTE_BUFFER_FIELD_BUF = "buf";
+	String BYTE_BUFFER_FIELD_LASTVALID = "lastValid";
+	String BYTE_BUFFER_FIELD_HB = "hb";
+	String TOMCAT_REQUEST_FIELD_INPUTBUFFER = "inputBuffer";
+	String TOMCAT_REQUEST_FIELD_BYTEBUFFER = "byteBuffer";
+	String COYOTE_ABSTRACT_INPUT_BUFFER_CLASS_NAME = "org.apache.coyote.http11.AbstractInputBuffer";
+	String MYSQL_FIELD_ORIGINAL_SQL = "originalSql";
+	String MYSQL_FIELD_QUERY = "query";
+	String NEW_LINE_SEQUENCE = "\n";
+	String TOMCAT_SERVER_INFO_CLASS_NAME = "org.apache.catalina.util.ServerInfo";
+	String TOMCAT_FIELD_SERVERNUMBER = "serverNumber";
+	String TOMCAT_VERSION_DETECTED_MSG = "Detected Tomcat Version " ;
+	String VERSION_SPLIT_EXPR = "\\.";
+	String NULL_CHAR_AS_STRING = "\000";
+	char VMPID_SPLIT_CHAR = '@';
+	String APPLICATION_INFO_POSTED_MSG = "Posted application info : ";
+	String COLON_SEPERATOR = ":";
+	int TOMCAT_7 = 7;
+	int TOMCAT_8 = 8;
+	int TOMCAT_9 = 9;
+	int K2_IC_TCP_PORT = 54321;
+
 }

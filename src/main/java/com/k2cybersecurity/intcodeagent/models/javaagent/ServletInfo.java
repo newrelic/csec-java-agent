@@ -4,6 +4,7 @@ import java.io.Serializable;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.k2cybersecurity.intcodeagent.logging.IAgentConstants;
 
 public class ServletInfo implements Serializable {
 
@@ -17,7 +18,7 @@ public class ServletInfo implements Serializable {
 	private boolean dataTruncated;
 
 	public ServletInfo() {
-		this.rawRequest = "";
+		this.rawRequest = IAgentConstants.EMPTY_STRING;
 		this.dataTruncated = false;
 	}
 
