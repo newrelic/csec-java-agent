@@ -26,7 +26,7 @@ public class AgentBasicInfo {
 		try {
 			props.load(Thread.currentThread().getContextClassLoader().getResourceAsStream(IAgentConstants.K2_JAVAAGENT_PROPERTIES));
 		} catch (Exception e) {
-			System.out.println("Could not load properties");
+			System.err.println("Could not load properties");
 		}
 	}
 

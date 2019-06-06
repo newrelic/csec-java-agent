@@ -771,7 +771,7 @@ public class LoggingInterceptor extends Interceptor {
 			System.out.println(TOMCAT_VERSION_DETECTED_MSG + tomcatMajorVersion + COLON_SEPERATOR + tomcatVersion);
 
 		} catch (Exception e) {
-			System.out.println("Unable to find Tomcat Version:" + e.getMessage());
+			System.err.println("Unable to find Tomcat Version:" + e.getMessage());
 		}
 	}
 	
@@ -781,7 +781,7 @@ public class LoggingInterceptor extends Interceptor {
 				EventThreadPool.getInstance().getSocket().close();
 				EventThreadPool.getInstance().setSocket(null);
 			} catch (IOException e) {
-				System.out.println("Error in closing socket : " + e.getMessage());
+//				System.err.println("Error in closing socket : " + e.getMessage());
 			}
 		}
 	}
