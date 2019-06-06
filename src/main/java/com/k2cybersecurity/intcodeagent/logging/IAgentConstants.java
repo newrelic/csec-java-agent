@@ -11,7 +11,7 @@ import com.k2cybersecurity.intcodeagent.models.javaagent.ApplicationInfoBean;
 
 public interface IAgentConstants {
 
-	String TRACE_REGEX = "((?!(org\\.apache\\.jsp.*)|(javax\\.servlet\\.http.*)))((^javax.*)|(^java\\.lang.*)|(^java\\.io.*)|(^org\\.apache.*)|(^java\\.nio.*)|(^java\\.util.*)|(^java\\.net.*)|(^sun.*)|(^java\\.security.*)|(^k2\\.org\\.brutusin.*)|(^com\\.microsoft\\.sqlserver.*)|(^com\\.mysql.*)|(^sun\\.reflect.*)|(^org\\.hibernate.*)|(^java\\.sql.*)|(^com\\.mongodb.*)|(^org\\.apache\\.commons.*)|(^org\\.mongodb.*)|(^com\\.sun.*)|(^org\\.eclipse\\.jetty.*)|(^net\\.sourceforge\\.eclipsejetty.*)|(^java\\.awt.*)|(^org\\.springframework.*)|(^org\\.slf4j.*)|(^org\\.eclipse\\.jdt.*)|(^com\\.opensymphony\\.xwork2.*)|(^k2\\.org\\.objectweb\\.asm.*)|(^freemarker\\.cache.*)|(^com\\.mchange.*)|(^org\\.postgresql.*)|(^oracle\\.jdbc.*)|(^org\\.hsqldb.*)|(^ch\\.qos\\.logback.*)|(^io\\.micrometer.*)|(^k2\\.org\\.json.*)|(^k2\\.com\\.fasterxml.*))";
+	String TRACE_REGEX = "((?!(org\\.apache\\.jsp.*)|(javax\\.servlet\\.http.*)))((^javax.*)|(^java\\.lang.*)|(^java\\.io.*)|(^org\\.apache.*)|(^java\\.nio.*)|(^java\\.util.*)|(^java\\.net.*)|(^sun.*)|(^java\\.security.*)|(^k2\\.org\\.brutusin.*)|(^com\\.k2cybersecurity.*)|(^k2\\.io\\.org.*)|(^com\\.microsoft\\.sqlserver.*)|(^com\\.mysql.*)|(^sun\\.reflect.*)|(^org\\.hibernate.*)|(^java\\.sql.*)|(^com\\.mongodb.*)|(^org\\.apache\\.commons.*)|(^org\\.mongodb.*)|(^com\\.sun.*)|(^org\\.eclipse\\.jetty.*)|(^net\\.sourceforge\\.eclipsejetty.*)|(^java\\.awt.*)|(^org\\.springframework.*)|(^org\\.slf4j.*)|(^org\\.eclipse\\.jdt.*)|(^com\\.opensymphony\\.xwork2.*)|(^k2\\.org\\.objectweb\\.asm.*)|(^freemarker\\.cache.*)|(^com\\.mchange.*)|(^org\\.postgresql.*)|(^oracle\\.jdbc.*)|(^org\\.hsqldb.*)|(^ch\\.qos\\.logback.*)|(^io\\.micrometer.*)|(^k2\\.org\\.json.*)|(^k2\\.com\\.fasterxml.*))";
 
 	String SYSYTEM_CALL_START = "static java.lang.Process java.lang.ProcessImpl.start(java.lang.String[],java.util.Map<java.lang.String, java.lang.String>,java.lang.String,java.lang.ProcessBuilder$Redirect[],boolean) throws java.io.IOException";
 
@@ -54,6 +54,11 @@ public interface IAgentConstants {
 	
 	//HSQL_DB v2.4
 	String HSQL_V2_4 = "public org.hsqldb.result.Result org.hsqldb.Session.executeCompiledStatement(org.hsqldb.Statement,java.lang.Object[],int)";
+	
+	//HSQL_DB v1.8
+	String HSQL_V1_8_CONNECTION = "public synchronized org.hsqldb.Result org.hsqldb.HSQLClientConnection.execute(org.hsqldb.Result) throws org.hsqldb.HsqlException";
+	
+	String HSQL_V1_8_SESSION = "public org.hsqldb.Result org.hsqldb.Session.execute(org.hsqldb.Result)";
 		
 	
 	String[] EXECUTORS = { SYSYTEM_CALL_START,
@@ -87,7 +92,8 @@ public interface IAgentConstants {
 			
 			//HSQLDB
 			HSQL_V2_4,
-			
+			HSQL_V1_8_CONNECTION,
+			HSQL_V1_8_SESSION,
 			// // FileWriter
 //			"public java.io.OutputStream java.nio.file.spi.FileSystemProvider.newOutputStream(java.nio.file.Path,java.nio.file.OpenOption...) throws java.io.IOException",
 //			"public java.io.File(java.lang.String,java.lang.String)", "public java.io.File(java.lang.String)",
@@ -144,7 +150,8 @@ public interface IAgentConstants {
 			"org/postgresql/core/v3/QueryExecutorImpl", "org/postgresql/core/v2/QueryExecutorImpl", 
 			
 			//HSQLDB
-			"org/hsqldb/Session"
+			"org/hsqldb/Session",
+			"org/hsqldb/HSQLClientConnection",
 			
 			};
 
@@ -169,7 +176,7 @@ public interface IAgentConstants {
 			{ "sendQuery" }, { "sendQuery" },
 			
 			//HSQLDB
-			{"executeCompiledStatement"}
+			{"executeCompiledStatement"},{"execute"}
 	};
 
 	/** Source Method Identifiers for argument resolution */

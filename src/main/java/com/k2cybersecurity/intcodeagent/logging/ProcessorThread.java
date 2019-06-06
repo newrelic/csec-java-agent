@@ -1,7 +1,7 @@
 package com.k2cybersecurity.intcodeagent.logging;
 
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.CLASS_LOADER_IDENTIFIER;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.HSQL_V2_4;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.*;
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MOGNO_ELEMENT_DATA_FIELD;
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MONGO_COLLECTION_FIELD;
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MONGO_COLLECTION_WILDCARD;
@@ -85,7 +85,6 @@ public class ProcessorThread implements Runnable {
 	private static final Set<String> executorMethods;
 	private static final Set<String> mongoExecutorMethods;
 
-	
 	private Object source;
 	private Object[] arg;
 	private Integer executionId;
@@ -107,7 +106,7 @@ public class ProcessorThread implements Runnable {
 			interceptMethod.put(IAgentConstants.ALL_CLASSES[i],
 					new ArrayList<String>(Arrays.asList(IAgentConstants.ALL_METHODS[i])));
 		}
-		}
+	}
 
 	/**
 	 * @param source
@@ -130,7 +129,7 @@ public class ProcessorThread implements Runnable {
 		this.parser = new JSONParser();
 		this.eventQueue = EventThreadPool.getInstance().getEventQueue();
 		this.currentSocket = EventThreadPool.getInstance().getSocket();
-		
+
 	}
 
 	/**
@@ -449,7 +448,7 @@ public class ProcessorThread implements Runnable {
 //					}
 //				}
 //			}
-			
+
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -694,7 +693,8 @@ public class ProcessorThread implements Runnable {
 				Object cursor = cursorField.get(thisPointer);
 
 				// ignore batch fetch events
-				if (!String.valueOf(cursor).equals(IAgentConstants.ZERO) || String.valueOf(cursor).equals(IAgentConstants.NULL)) {
+				if (!String.valueOf(cursor).equals(IAgentConstants.ZERO)
+						|| String.valueOf(cursor).equals(IAgentConstants.NULL)) {
 					return null;
 				}
 
@@ -748,7 +748,7 @@ public class ProcessorThread implements Runnable {
 			} else if (sourceString.equals(PSQLV3_EXECUTOR) || sourceString.equals(PSQLV2_EXECUTOR)
 					|| sourceString.equals(PSQL42_EXECUTOR) || sourceString.equals(PSQLV3_EXECUTOR7_4)) {
 				getPSQLParameterValue(obj, parameters);
-			} else if (sourceString.equals(HSQL_V2_4)) {
+			} else if (sourceString.equals(HSQL_V2_4) || sourceString.equals(HSQL_V1_8_CONNECTION) || sourceString.equals(HSQL_V1_8_SESSION)) {
 				getHSQLParameterValue(obj[0], parameters);
 			} else {
 				for (int i = 0; i < obj.length; i++) {
@@ -767,15 +767,29 @@ public class ProcessorThread implements Runnable {
 
 	private void getHSQLParameterValue(Object object, JSONArray parameters) {
 
-		try {
-			Class<?> statementClass = Thread.currentThread().getContextClassLoader().loadClass(IAgentConstants.ORG_HSQLDB_STATEMENT);
-			Field sqlField = statementClass.getDeclaredField(IAgentConstants.SQL);
-			sqlField.setAccessible(true);
-			parameters.add((String) sqlField.get(object));
-		} catch (Exception e) {
-			e.printStackTrace();
+		switch (this.sourceString) {
+		case HSQL_V2_4:
+			try {
+				Class<?> statementClass = Thread.currentThread().getContextClassLoader()
+						.loadClass(IAgentConstants.ORG_HSQLDB_STATEMENT);
+				Field sqlField = statementClass.getDeclaredField(IAgentConstants.SQL);
+				sqlField.setAccessible(true);
+				parameters.add((String) sqlField.get(object));
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			return;
+		case HSQL_V1_8_SESSION:
+		case HSQL_V1_8_CONNECTION:
+			try {
+				Field mainStringField = object.getClass().getDeclaredField("mainString");
+				mainStringField.setAccessible(true);
+				parameters.add((String) mainStringField.get(object));
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			return;
 		}
-
 	}
 
 	private void getPSQLParameterValue(Object[] obj, JSONArray parameters) {
@@ -839,42 +853,42 @@ public class ProcessorThread implements Runnable {
 	}
 
 	private void generateEvent(JavaAgentEventBean intCodeResultBean) {
-			intCodeResultBean.setEventGenerationTime(System.currentTimeMillis());
-			if (intCodeResultBean.getSource() != null && (intCodeResultBean.getSource()
-					.equals(IAgentConstants.JAVA_NET_URLCLASSLOADER)
-					|| intCodeResultBean.getSource().equals(IAgentConstants.JAVA_NET_URLCLASSLOADER_NEWINSTANCE))) {
-				try {
-					List<String> list = (List<String>) intCodeResultBean.getParameters();
+		intCodeResultBean.setEventGenerationTime(System.currentTimeMillis());
+		if (intCodeResultBean.getSource() != null
+				&& (intCodeResultBean.getSource().equals(IAgentConstants.JAVA_NET_URLCLASSLOADER)
+						|| intCodeResultBean.getSource().equals(IAgentConstants.JAVA_NET_URLCLASSLOADER_NEWINSTANCE))) {
+			try {
+				List<String> list = (List<String>) intCodeResultBean.getParameters();
 
-					JavaAgentDynamicPathBean dynamicJarPathBean = new JavaAgentDynamicPathBean(LoggingInterceptor.applicationUUID,
-							System.getProperty(IAgentConstants.USER_DIR), new ArrayList<String>(Agent.jarPathSet), list);
+				JavaAgentDynamicPathBean dynamicJarPathBean = new JavaAgentDynamicPathBean(
+						LoggingInterceptor.applicationUUID, System.getProperty(IAgentConstants.USER_DIR),
+						new ArrayList<String>(Agent.jarPathSet), list);
 //					System.out.println("dynamic jar path bean : " + dynamicJarPathBean);
-					eventQueue.add(dynamicJarPathBean);
-				} catch (IllegalStateException e) {
-					System.err.println(
-							"Dropping dynamicJarPathBean event " + intCodeResultBean.getId() + " due to buffer capacity reached.");
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			} else {
+				eventQueue.add(dynamicJarPathBean);
+			} catch (IllegalStateException e) {
+				System.err.println("Dropping dynamicJarPathBean event " + intCodeResultBean.getId()
+						+ " due to buffer capacity reached.");
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		} else {
 //				System.out.println("Final request map 1: " + ServletEventPool.getInstance().getRequestMap().get(this.threadId));
 //				System.out.println("count: " + ServletEventPool.getInstance().getServletInfoReferenceRecord().get(threadId));
 //				System.out.println("Final request map 2: " + ServletEventPool.getInstance().getRequestMap().get(this.threadId));
 //				System.out.println("count: " + ServletEventPool.getInstance().getServletInfoReferenceRecord().get(threadId));
-				try {
-					intCodeResultBean.setServletInfo(new ServletInfo(ExecutionMap.find(this.executionId,
-							ServletEventPool.getInstance().getRequestMap().get(this.threadId))));
-					eventQueue.add(intCodeResultBean);
-//					System.out.println("publish event: " + intCodeResultBean);
-				} catch (IllegalStateException e) {
-					System.err.println(
-							"Dropping event " + intCodeResultBean.getId() + " due to buffer capacity reached.");
-				} catch (Exception e) {
-					e.printStackTrace();
-					System.err.println("Thread id: " + this.threadId + ", eid: " + this.executionId + " map: "
-							+ ServletEventPool.getInstance().getRequestMap().get(this.threadId));
-				}
-
+			try {
+				intCodeResultBean.setServletInfo(new ServletInfo(ExecutionMap.find(this.executionId,
+						ServletEventPool.getInstance().getRequestMap().get(this.threadId))));
+				eventQueue.add(intCodeResultBean);
+				System.out.println("publish event: " + intCodeResultBean);
+			} catch (IllegalStateException e) {
+				System.err.println("Dropping event " + intCodeResultBean.getId() + " due to buffer capacity reached.");
+			} catch (Exception e) {
+				e.printStackTrace();
+				System.err.println("Thread id: " + this.threadId + ", eid: " + this.executionId + " map: "
+						+ ServletEventPool.getInstance().getRequestMap().get(this.threadId));
 			}
+
 		}
+	}
 }

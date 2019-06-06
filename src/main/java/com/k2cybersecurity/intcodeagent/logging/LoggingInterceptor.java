@@ -255,13 +255,13 @@ public class LoggingInterceptor extends Interceptor {
 				EventThreadPool.getInstance().setSocket(socket);
 				EventThreadPool.getInstance().setObjectStream(new ObjectOutputStream(socket.getOutputStream()));
 			} catch (Exception e) {
-				throw new RuntimeException("Can't connect to IC, agent installation failed.",e);
+				throw new RuntimeException("Can't connect to IC, agent installation failed.", e);
 			}
 			if (socket == null || !socket.isConnected() || socket.isClosed()) {
 				throw new RuntimeException("Can't connect to IC, agent installation failed.");
 			} else {
 				System.out.println(JA_CONNECT_SUCCESS_MSG);
-				System.out.println(APPLICATION_INFO_POSTED_MSG + LoggingInterceptor.APPLICATION_INFO_BEAN );
+				System.out.println(APPLICATION_INFO_POSTED_MSG + LoggingInterceptor.APPLICATION_INFO_BEAN);
 				EventThreadPool.getInstance().getEventQueue().add(LoggingInterceptor.APPLICATION_INFO_BEAN);
 			}
 		}
@@ -280,7 +280,7 @@ public class LoggingInterceptor extends Interceptor {
 		 * ", established successfully!!!"); } catch (IOException ex) { throw new
 		 * RuntimeException(ex); }
 		 */
-		APPLICATION_INFO_BEAN = createApplicationInfoBean();
+//		APPLICATION_INFO_BEAN = createApplicationInfoBean();
 		try {
 			connectSocket();
 		} catch (Exception e) {
@@ -374,10 +374,10 @@ public class LoggingInterceptor extends Interceptor {
 		// else if (cn.name.equals("javax/faces/webapp/FacesServlet"))
 		// System.out.println("name: " + mn.name + " : " +
 		// interceptMethod.get(cn.name).contains(mn.name));
-		// if (cn.name.startsWith("org/hsqldb/")) {
-		// System.err.println("Agent instrumenting : " + cn.name + " : " + mn.name);
-		// return true;
-		// }
+//		if (cn.name.startsWith("org/hsqldb/HSQLClientConnection") || cn.name.startsWith("org/hsqldb/Session")) {
+//			System.err.println("Agent instrumenting : " + cn.name + " : " + mn.name);
+//			return true;
+//		}
 		return interceptMethod.get(cn.name).contains(mn.name);
 	}
 
@@ -425,7 +425,7 @@ public class LoggingInterceptor extends Interceptor {
 			return;
 		}
 		// System.out.println( ": " +sourceString);
-		// System.out.println("doOnStart : " + threadId+" : " + sourceString);
+//		System.out.println("doOnStart : " + eId + " : " + sourceString);
 
 		if (sourceString == null)
 			return;
