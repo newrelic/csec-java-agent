@@ -887,6 +887,7 @@ public class ProcessorThread implements Runnable {
 				e.printStackTrace();
 				System.err.println("Thread id: " + this.threadId + ", eid: " + this.executionId + " map: "
 						+ ServletEventPool.getInstance().getRequestMap().get(this.threadId));
+
 			}
 
 		}

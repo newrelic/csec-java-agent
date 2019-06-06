@@ -69,8 +69,13 @@ public class IPScheduledThread {
 	}
 
 	public static IPScheduledThread getInstance() {
-		if (instance == null)
-			instance = new IPScheduledThread();
-		return instance;
+		try {
+			if (instance == null)
+				instance = new IPScheduledThread();
+			return instance;
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		throw null;
 	}
 }

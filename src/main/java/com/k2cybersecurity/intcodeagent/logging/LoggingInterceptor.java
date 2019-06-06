@@ -37,7 +37,7 @@ import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.JAR_PATH_
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.JAR_PATH_TIMEOUT_ERR;
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.JA_CONNECT_SUCCESS_MSG;
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.JETTY_PARSE_NEXT;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.JETTY_REQUEST_HANDLE;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.JETTY_REQUEST_ON_FILLABLE;
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.K2_IC_TCP_PORT;
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.KUBEPODS_DIR;
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.LXC_DIR;
@@ -185,59 +185,70 @@ public class LoggingInterceptor extends Interceptor {
 	 * jarPathSet population & then create & send desired JarPathBean .
 	 */
 	public static void getJarPath() {
-		Runnable jarPathPool = new Runnable() {
-			public void run() {
-				System.out.println(JAR_PATH_INIT_MSG);
-				try {
-					if (Agent.getJarPathResultExecutorService.awaitTermination(5, TimeUnit.MINUTES)) {
-						if (!Agent.jarPathSet.isEmpty()) {
-							JavaAgentJarPathBean jarPathBean = new JavaAgentJarPathBean(applicationUUID,
-									new ArrayList<String>(Agent.jarPathSet));
-							String containerId = getContainerID();
-							if (containerId != null) {
-								jarPathBean.setIsHost(false);
+		try {
+			Runnable jarPathPool = new Runnable() {
+				public void run() {
+					System.out.println(JAR_PATH_INIT_MSG);
+					try {
+						if (Agent.getJarPathResultExecutorService.awaitTermination(5, TimeUnit.MINUTES)) {
+							if (!Agent.jarPathSet.isEmpty()) {
+								JavaAgentJarPathBean jarPathBean = new JavaAgentJarPathBean(applicationUUID,
+										new ArrayList<String>(Agent.jarPathSet));
+								String containerId = getContainerID();
+								if (containerId != null) {
+									jarPathBean.setIsHost(false);
+								} else {
+									jarPathBean.setIsHost(true);
+								}
+								EventThreadPool.getInstance().getEventQueue().add(jarPathBean);
+								System.out.println(JAR_PATH_FETCH_SUCCESS_MSG);
 							} else {
-								jarPathBean.setIsHost(true);
+								System.err.println(JAR_PATH_EMPTY_RESULT_ERR);
 							}
-							EventThreadPool.getInstance().getEventQueue().add(jarPathBean);
-							System.out.println(JAR_PATH_FETCH_SUCCESS_MSG);
 						} else {
-							System.err.println(JAR_PATH_EMPTY_RESULT_ERR);
+							System.err.println(JAR_PATH_TIMEOUT_ERR);
 						}
-					} else {
-						System.err.println(JAR_PATH_TIMEOUT_ERR);
+					} catch (InterruptedException e) {
+						System.err.println("Error occured while waiting for getJarPathResultExecutorService.");
+						e.printStackTrace();
 					}
-				} catch (InterruptedException e) {
-					System.err.println("Error occured while waiting for getJarPathResultExecutorService.");
-					e.printStackTrace();
 				}
-			}
-		};
-
-		ScheduledExecutorService jarPathPoolExecutorService = Executors.newSingleThreadScheduledExecutor();
-		jarPathPoolExecutorService.schedule(jarPathPool, 240, TimeUnit.SECONDS);
-		jarPathPoolExecutorService.shutdown();
+			};
+	
+			ScheduledExecutorService jarPathPoolExecutorService = Executors.newSingleThreadScheduledExecutor();
+			jarPathPoolExecutorService.schedule(jarPathPool, 240, TimeUnit.SECONDS);
+			jarPathPoolExecutorService.shutdown();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 	public static ApplicationInfoBean createApplicationInfoBean() {
-		RuntimeMXBean runtimeMXBean = ManagementFactory.getRuntimeMXBean();
-		String runningVM = runtimeMXBean.getName();
-		VMPID = Integer.parseInt(runningVM.substring(0, runningVM.indexOf(VMPID_SPLIT_CHAR)));
-		ApplicationInfoBean applicationInfoBean = new ApplicationInfoBean(VMPID, applicationUUID);
-		String containerId = getContainerID();
-		String cmdLine = getCmdLineArgsByProc(VMPID);
-		List<String> cmdlineArgs = Arrays.asList(cmdLine.split(NULL_CHAR_AS_STRING));
-		if (containerId != null) {
-			applicationInfoBean.setContainerID(containerId);
-			applicationInfoBean.setIsHost(false);
-		} else
-			applicationInfoBean.setIsHost(true);
-		// applicationInfoBean.setJvmArguments(new
-		// JSONArray(runtimeMXBean.getInputArguments()));
-		JSONArray jsonArray = new JSONArray();
-		jsonArray.addAll(cmdlineArgs);
-		applicationInfoBean.setJvmArguments(jsonArray);
-		return applicationInfoBean;
+		try {
+			RuntimeMXBean runtimeMXBean = ManagementFactory.getRuntimeMXBean();
+			String runningVM = runtimeMXBean.getName();
+			VMPID = Integer.parseInt(runningVM.substring(0, runningVM.indexOf(VMPID_SPLIT_CHAR)));
+			ApplicationInfoBean applicationInfoBean = new ApplicationInfoBean(VMPID, applicationUUID);
+			String containerId = getContainerID();
+			String cmdLine = getCmdLineArgsByProc(VMPID);
+			if(cmdLine!=null) {
+				List<String> cmdlineArgs = Arrays.asList(cmdLine.split(NULL_CHAR_AS_STRING));
+				JSONArray jsonArray = new JSONArray();
+				jsonArray.addAll(cmdlineArgs);
+				applicationInfoBean.setJvmArguments(jsonArray);
+			}
+			if (containerId != null) {
+				applicationInfoBean.setContainerID(containerId);
+				applicationInfoBean.setIsHost(false);
+			} else
+				applicationInfoBean.setIsHost(true);
+			// applicationInfoBean.setJvmArguments(new
+			// JSONArray(runtimeMXBean.getInputArguments()));
+			return applicationInfoBean;
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return null;
 	}
 
 	synchronized protected static void connectSocket() {
@@ -292,9 +303,13 @@ public class LoggingInterceptor extends Interceptor {
 	}
 
 	private static void eventWritePool() {
+		try {
 		EventThreadPool.getInstance().setEventPoolExecutor(Executors.newScheduledThreadPool(1));
 		EventThreadPool.getInstance().getEventPoolExecutor()
 				.scheduleWithFixedDelay(EventThreadPool.getInstance().getQueuePooler(), 1, 1, TimeUnit.SECONDS);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 	private static String getCmdLineArgsByProc(Integer pid) {
@@ -395,7 +410,7 @@ public class LoggingInterceptor extends Interceptor {
 				// System.out.println("In doOnThrowableThrown :" + sourceString + " : " +
 				// executionId + " : " + threadId);
 				if (sourceString != null && (TOMCAT_COYOTE_ADAPTER_SERVICE.equals(sourceString)
-						|| JETTY_REQUEST_HANDLE.equals(sourceString))) {
+						|| JETTY_REQUEST_ON_FILLABLE.equals(sourceString))) {
 					ServletEventPool.getInstance().decrementServletInfoReference(threadId, executionId, false);
 					// System.out.println("Request map entry removed for threadID " + threadId);
 					// System.out.println("Current request map : " +
@@ -430,7 +445,7 @@ public class LoggingInterceptor extends Interceptor {
 		if (sourceString == null)
 			return;
 
-		if (JETTY_REQUEST_HANDLE.equals(sourceString)) {
+		if (JETTY_REQUEST_ON_FILLABLE.equals(sourceString)) {
 			ServletEventPool.getInstance().incrementServletInfoReference(threadId, executionId, false);
 			ServletInfo servletInfo;
 			if (!ServletEventPool.getInstance().getRequestMap().containsKey(threadId)) {
@@ -444,7 +459,6 @@ public class LoggingInterceptor extends Interceptor {
 						.add(new ExecutionMap(executionId, servletInfo));
 			}
 		} else if (JETTY_PARSE_NEXT.equals(sourceString)) {
-
 			ServletInfo servletInfo = ExecutionMap.find(executionId,
 					ServletEventPool.getInstance().getRequestMap().get(threadId));
 			if (servletInfo == null) {

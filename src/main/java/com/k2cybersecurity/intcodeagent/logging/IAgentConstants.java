@@ -7,8 +7,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.k2cybersecurity.intcodeagent.models.javaagent.ApplicationInfoBean;
-
 public interface IAgentConstants {
 
 	String TRACE_REGEX = "((?!(org\\.apache\\.jsp.*)|(javax\\.servlet\\.http.*)))((^javax.*)|(^java\\.lang.*)|(^java\\.io.*)|(^org\\.apache.*)|(^java\\.nio.*)|(^java\\.util.*)|(^java\\.net.*)|(^sun.*)|(^java\\.security.*)|(^k2\\.org\\.brutusin.*)|(^com\\.k2cybersecurity.*)|(^k2\\.io\\.org.*)|(^com\\.microsoft\\.sqlserver.*)|(^com\\.mysql.*)|(^sun\\.reflect.*)|(^org\\.hibernate.*)|(^java\\.sql.*)|(^com\\.mongodb.*)|(^org\\.apache\\.commons.*)|(^org\\.mongodb.*)|(^com\\.sun.*)|(^org\\.eclipse\\.jetty.*)|(^net\\.sourceforge\\.eclipsejetty.*)|(^java\\.awt.*)|(^org\\.springframework.*)|(^org\\.slf4j.*)|(^org\\.eclipse\\.jdt.*)|(^com\\.opensymphony\\.xwork2.*)|(^k2\\.org\\.objectweb\\.asm.*)|(^freemarker\\.cache.*)|(^com\\.mchange.*)|(^org\\.postgresql.*)|(^oracle\\.jdbc.*)|(^org\\.hsqldb.*)|(^ch\\.qos\\.logback.*)|(^io\\.micrometer.*)|(^k2\\.org\\.json.*)|(^k2\\.com\\.fasterxml.*))";
@@ -142,7 +140,7 @@ public interface IAgentConstants {
 			// http request
 //			"javax/servlet/http/HttpServlet",
 			"org/apache/catalina/connector/CoyoteAdapter", "org/apache/catalina/connector/InputBuffer",
-			"org/eclipse/jetty/server/handler/HandlerWrapper", "org/eclipse/jetty/http/HttpParser",
+			"org/eclipse/jetty/server/HttpConnection", "org/eclipse/jetty/http/HttpParser",
 //			"javax/faces/webapp/FacesServlet",
 //			"org/apache/struts2/dispatcher/ng/filter/StrutsPrepareAndExecuteFilter"		
 
@@ -169,7 +167,7 @@ public interface IAgentConstants {
 			{ "doRPC" },
 
 //			{ "service" },
-			{ "service" }, { "setByteBuffer" }, { "handle" }, { "parseNext" },
+			{ "service" }, { "setByteBuffer" }, { "onFillable" }, { "parseNext" },
 //			{ "service" },
 //			{ "doFilter" }
 			// postgresql
@@ -191,7 +189,7 @@ public interface IAgentConstants {
 
 	String FACES_SERVLET = "public void javax.faces.webapp.FacesServlet.service(javax.servlet.ServletRequest,javax.servlet.ServletResponse) throws java.io.IOException,javax.servlet.ServletException";
 	String JETTY_SERVLET_REQUEST_IDENTIFIER = "org.eclipse.jetty.server.Request";
-	String JETTY_REQUEST_HANDLE = "public void org.eclipse.jetty.server.handler.HandlerWrapper.handle(java.lang.String,org.eclipse.jetty.server.Request,javax.servlet.http.HttpServletRequest,javax.servlet.http.HttpServletResponse) throws java.io.IOException,javax.servlet.ServletException";
+	String JETTY_REQUEST_ON_FILLABLE = "public void org.eclipse.jetty.server.HttpConnection.onFillable()";
 	String JETTY_PARSE_NEXT = "public boolean org.eclipse.jetty.http.HttpParser.parseNext(java.nio.ByteBuffer)";
 
 	/** MSSQL FIELD CONSTANTS */
