@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<configuration debug="true">
+<configuration debug="false">
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <!-- encoders are assigned the type
              ch.qos.logback.classic.encoder.PatternLayoutEncoder by default -->
@@ -16,7 +16,7 @@
         </encoder>
     </appender>
      
-    <logger name="com.k2cybersecurity.intcodeagent" level="INFO" additivity="false"> 
+    <logger name="com.k2cybersecurity.intcodeagent" level="debug" additivity="false"> 
         <appender-ref ref="STDOUT" />
         <appender-ref ref="FILE" /> 
     </logger> 
