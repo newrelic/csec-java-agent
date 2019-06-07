@@ -110,6 +110,8 @@ import org.brutusin.instrumentation.Interceptor;
 import org.json.simple.JSONArray;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.MethodNode;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.k2cybersecurity.intcodeagent.models.javaagent.ApplicationInfoBean;
 import com.k2cybersecurity.intcodeagent.models.javaagent.JavaAgentJarPathBean;
@@ -129,6 +131,7 @@ public class LoggingInterceptor extends Interceptor {
 	static final int MAX_DEPTH_LOOKUP = 4; // Max number of superclasses to lookup for a field
 	// protected static Map<Long, ServletInfo> requestMap;
 	public static String hostip = "";
+	private static final Logger logger = LoggerFactory.getLogger(LoggingInterceptor.class);
 	static {
 		applicationUUID = UUID.randomUUID().toString();
 		allClasses = new HashSet<>(Arrays.asList(ALL_CLASSES));
