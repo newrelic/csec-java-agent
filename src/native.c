@@ -1,4 +1,4 @@
-// cc -shared -fPIC -I /usr/lib/jvm/java-openjdk/include/  -I /usr/lib/jvm/java-openjdk/include/linux source/native.c -o native.so
+// cc -shared -std=gnu99 -fPIC -I /usr/lib/jvm/java-openjdk/include/  -I /usr/lib/jvm/java-openjdk/include/linux source/native.c -o native.so
 // ---  skeleton for code to patch javaAgent ---
 // 1. locate libjava.so mapped in the java process.
 // 2. dlopen and locate forkAndExec 
