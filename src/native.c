@@ -443,6 +443,9 @@ Java_K2Native_k2test(JNIEnv* env, jclass j, jstring js) {
   printf(" exit from k2test()\n");
   return 0;
 }
+// ---------------------------------------------------------------------
+// Function: sanitize_string: removing control characters cr;lf 
+// ---------------------------------------------------------------------
 void sanitize_string(char* s) {
   int n=strlen(s);
   for(int i=0;i<n;i++) {
@@ -456,7 +459,7 @@ void sanitize_string(char* s) {
 // Function: native K2Native_init
 // -------------------------------
 JNIEXPORT jint JNICALL 
-Java_K2Native_k2init(JNIEnv* env, jclass j) {
+Java_K2Native_k2init(JNIEnv* env, jobject j) {
   jint jret=0,jerr=-1;
 
    //printf(" in k2init()\n");
