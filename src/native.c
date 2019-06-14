@@ -432,7 +432,7 @@ k2io_target(JNIEnv* env, jobject j,jint mode,jbyteArray jpath,jbyteArray prog,jb
 // Function: k2test
 // ---------------------------------------------------------------------
 JNIEXPORT jint JNICALL 
-Java_K2Native_k2test(JNIEnv* env, jclass j, jstring js) {
+Java_com_k2cybersecurity_intcodeagent_logging_K2Native_k2test(JNIEnv* env, jclass j, jstring js) {
   __asm__ __volatile__ ("push %rdi;push %rsi;push %rdx");
   jboolean iscopy;
 
@@ -459,7 +459,7 @@ void sanitize_string(char* s) {
 // Function: native K2Native_init
 // -------------------------------
 JNIEXPORT jint JNICALL 
-Java_K2Native_k2init(JNIEnv* env, jobject j) {
+Java_com_k2cybersecurity_intcodeagent_logging_K2Native_k2init(JNIEnv* env, jobject j) {
   jint jret=0,jerr=-1;
 
    //printf(" in k2init()\n");
