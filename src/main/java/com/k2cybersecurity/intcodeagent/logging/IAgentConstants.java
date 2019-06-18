@@ -7,9 +7,82 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.k2cybersecurity.intcodeagent.models.javaagent.ApplicationInfoBean;
-
 public interface IAgentConstants {
+
+	//HSQL
+	String CLASS_ORG_HSQLDB_HSQL_CLIENT_CONNECTION = "org/hsqldb/HSQLClientConnection";
+	String CLASS_ORG_HSQLDB_SESSION = "org/hsqldb/Session";
+	
+	//PSQL
+	String CLASS_ORG_POSTGRESQL_CORE_V2_QUERY_EXECUTOR_IMPL = "org/postgresql/core/v2/QueryExecutorImpl";
+	String CLASS_ORG_POSTGRESQL_CORE_V3_QUERY_EXECUTOR_IMPL = "org/postgresql/core/v3/QueryExecutorImpl";
+	
+	//JETTY
+	String CLASS_ORG_ECLIPSE_JETTY_HTTP_HTTP_PARSER = "org/eclipse/jetty/http/HttpParser";
+	String CLASS_ORG_ECLIPSE_JETTY_SERVER_HTTP_CONNECTION = "org/eclipse/jetty/server/HttpConnection";
+	
+	//APACHE TOMCAT
+	String CLASS_ORG_APACHE_CATALINA_CONNECTOR_INPUT_BUFFER = "org/apache/catalina/connector/InputBuffer";
+	String CLASS_ORG_APACHE_CATALINA_CONNECTOR_COYOTE_ADAPTER = "org/apache/catalina/connector/CoyoteAdapter";
+	
+	//ORACLE
+	String CLASS_ORACLE_JDBC_DRIVER_T4CTT_IFUN = "oracle/jdbc/driver/T4CTTIfun";
+	
+	//CLASSLOADER
+	String CLASS_JAVA_NET_URL_CLASS_LOADER = "java/net/URLClassLoader";
+	
+	//MONGO
+	String CLASS_COM_MONGODB_ASYNC_CLIENT_OPERATION_EXECUTOR_IMPL = "com/mongodb/async/client/OperationExecutorImpl";
+	String CLASS_COM_MONGODB_ASYNC_CLIENT_ASYNC_OPERATION_EXECUTOR_IMPL = "com/mongodb/async/client/AsyncOperationExecutorImpl";
+	String CLASS_COM_MONGODB_ASYNC_CLIENT_MONGO_CLIENT_IMPL$2 = "com/mongodb/async/client/MongoClientImpl$2";
+	String CLASS_COM_MONGODB_INTERNAL_CONNECTION_DEFAULT_SERVER_CONNECTION = "com/mongodb/internal/connection/DefaultServerConnection";
+	String CLASS_COM_MONGODB_CONNECTION_DEFAULT_SERVER_CONNECTION = "com/mongodb/connection/DefaultServerConnection";
+	
+	//MYSQL
+	String CLASS_COM_MYSQL_JDBC_SERVER_PREPARED_STATEMENT = "com/mysql/jdbc/ServerPreparedStatement";
+	String CLASS_COM_MYSQL_CJ_NATIVE_SESSION = "com/mysql/cj/NativeSession";
+	String CLASS_COM_MYSQL_CJ_MYSQLA_IO_MYSQLA_PROTOCOL = "com/mysql/cj/mysqla/io/MysqlaProtocol";
+	String CLASS_COM_MYSQL_JDBC_MYSQL_IO = "com/mysql/jdbc/MysqlIO";
+	
+	//MSSQL
+	String CLASS_COM_MICROSOFT_SQLSERVER_JDBC_SQL_SERVER_STATEMENT = "com/microsoft/sqlserver/jdbc/SQLServerStatement";
+	
+	//FORKEXEC
+	String CLASS_JAVA_LANG_PROCESS_IMPL = "java/lang/ProcessImpl";
+	
+
+	String EXEC_URL_CLASS_LOADER_NEW_INSTANCE = "public static java.net.URLClassLoader java.net.URLClassLoader.newInstance(java.net.URL[])";
+
+	String EXEC_DEFINE_CLASS = "private java.lang.Class<?> java.net.URLClassLoader.defineClass(java.lang.String,sun.misc.Resource) throws java.io.IOException";
+
+	String URL_CLASS_LOADER = "public java.net.URLClassLoader(java.net.URL[])";
+
+	String EXEC_ORACLE = // oracle db
+			"final void oracle.jdbc.driver.T4CTTIfun.doRPC() throws java.io.IOException,java.sql.SQLException";
+
+	String EXEC_MYSQL_8X = // Mysql Connector/J 8.x
+			"public <T> T com.mysql.cj.NativeSession.execSQL(com.mysql.cj.Query,java.lang.String,int,com.mysql.cj.protocol.a.NativePacketPayload,boolean,com.mysql.cj.protocol.ProtocolEntityFactory<T, com.mysql.cj.protocol.a.NativePacketPayload>,java.lang.String,com.mysql.cj.protocol.ColumnDefinition,boolean)";
+
+	String EXEC_MYSQL_6X4 = "private com.mysql.jdbc.ResultSet com.mysql.jdbc.ServerPreparedStatement.serverExecute(int,boolean) throws java.sql.SQLException";
+
+	String EXEC_MYSQL_6X3 = "public final <T> T com.mysql.cj.mysqla.io.MysqlaProtocol.sqlQueryDirect(com.mysql.cj.jdbc.StatementImpl,java.lang.String,java.lang.String,com.mysql.cj.api.mysqla.io.PacketPayload,int,boolean,java.lang.String,com.mysql.cj.api.mysqla.result.ColumnDefinition,com.mysql.cj.api.io.Protocol$GetProfilerEventHandlerInstanceFunction,com.mysql.cj.api.mysqla.io.ProtocolEntityFactory<T>) throws java.io.IOException";
+
+	String EXEC_MYSQL_6X2 = "public final <T> T com.mysql.cj.mysqla.io.MysqlaProtocol.sqlQueryDirect(com.mysql.cj.jdbc.StatementImpl,java.lang.String,java.lang.String,com.mysql.cj.api.mysqla.io.PacketPayload,int,int,int,boolean,java.lang.String,com.mysql.cj.core.result.Field[],com.mysql.cj.api.io.Protocol$GetProfilerEventHandlerInstanceFunction)";
+
+	String EXEC_MYSQL_6X = // Mysql Connector/J 6.x
+			"public final com.mysql.cj.api.jdbc.ResultSetInternalMethods com.mysql.cj.mysqla.io.MysqlaProtocol.sqlQueryDirect(com.mysql.cj.jdbc.StatementImpl,java.lang.String,java.lang.String,com.mysql.cj.mysqla.io.Buffer,int,int,int,boolean,java.lang.String,com.mysql.cj.core.result.Field[])";
+
+	String EXEC_MYSQL_51X = // Mysql Connector/J 5.1.x
+			"final com.mysql.jdbc.ResultSetInternalMethods com.mysql.jdbc.MysqlIO.sqlQueryDirect(com.mysql.jdbc.StatementImpl,java.lang.String,java.lang.String,com.mysql.jdbc.Buffer,int,int,int,boolean,java.lang.String,com.mysql.jdbc.Field[]) throws java.lang.Exception";
+
+	String EXEC_MYSQL_505 = // mysql calls
+			// Mysql Connector/J 5.0.5
+			"final com.mysql.jdbc.ResultSet com.mysql.jdbc.MysqlIO.sqlQueryDirect(com.mysql.jdbc.Statement,java.lang.String,java.lang.String,com.mysql.jdbc.Buffer,int,com.mysql.jdbc.Connection,int,int,boolean,java.lang.String,boolean) throws java.lang.Exception";
+
+	String EXEC_MSSQL = "final void com.microsoft.sqlserver.jdbc.SQLServerStatement.executeStatement(com.microsoft.sqlserver.jdbc.TDSCommand) throws com.microsoft.sqlserver.jdbc.SQLServerException";
+
+	String EXEC_MSSQL_SQLTIMEOUT = // mssql calls
+			"final void com.microsoft.sqlserver.jdbc.SQLServerStatement.executeStatement(com.microsoft.sqlserver.jdbc.TDSCommand) throws com.microsoft.sqlserver.jdbc.SQLServerException,java.sql.SQLTimeoutException";
 
 	String TRACE_REGEX = "((?!(org\\.apache\\.jsp.*)|(javax\\.servlet\\.http.*)))((^javax.*)|(^java\\.lang.*)|(^java\\.io.*)|(^org\\.apache.*)|(^java\\.nio.*)|(^java\\.util.*)|(^java\\.net.*)|(^sun.*)|(^java\\.security.*)|(^k2\\.org\\.brutusin.*)|(^com\\.k2cybersecurity.*)|(^k2\\.io\\.org.*)|(^com\\.microsoft\\.sqlserver.*)|(^com\\.mysql.*)|(^sun\\.reflect.*)|(^org\\.hibernate.*)|(^java\\.sql.*)|(^com\\.mongodb.*)|(^org\\.apache\\.commons.*)|(^org\\.mongodb.*)|(^com\\.sun.*)|(^org\\.eclipse\\.jetty.*)|(^net\\.sourceforge\\.eclipsejetty.*)|(^java\\.awt.*)|(^org\\.springframework.*)|(^org\\.slf4j.*)|(^org\\.eclipse\\.jdt.*)|(^com\\.opensymphony\\.xwork2.*)|(^k2\\.org\\.objectweb\\.asm.*)|(^freemarker\\.cache.*)|(^com\\.mchange.*)|(^org\\.postgresql.*)|(^oracle\\.jdbc.*)|(^org\\.hsqldb.*)|(^ch\\.qos\\.logback.*)|(^io\\.micrometer.*)|(^k2\\.org\\.json.*)|(^k2\\.com\\.fasterxml.*))";
 
@@ -18,7 +91,11 @@ public interface IAgentConstants {
 	List<String> FILE_OPEN_EXECUTORS = Arrays.asList(new String[] {
 			"public java.io.File(java.lang.String,java.lang.String)", "public java.io.File(java.lang.String)" });
 
-	Map<String, List<String>> MYSQL_GET_CONNECTION_MAP = new HashMap() {
+	Map<String, List<String>> MYSQL_GET_CONNECTION_MAP = new HashMap<String, List<String>>() {
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 3518358544335663220L;
 		{
 			put("java.sql.DriverManager", Collections.singletonList("getConnection"));
 			put("com.mysql.jdbc.ConnectionImpl", Arrays.asList("getInstance", "isReadOnly"));
@@ -40,68 +117,58 @@ public interface IAgentConstants {
 			"private <T> T com.mongodb.internal.connection.DefaultServerConnection.executeProtocol(com.mongodb.internal.connection.CommandProtocol<T>,com.mongodb.session.SessionContext)",
 			"private <T> T com.mongodb.internal.connection.DefaultServerConnection.executeProtocol(com.mongodb.internal.connection.LegacyProtocol<T>)",
 			"private <T> T com.mongodb.connection.DefaultServerConnection.executeProtocol(com.mongodb.connection.Protocol<T>)" };
-		
+
 	String SERVLET_REQUEST_FACADE = "public org.apache.catalina.connector.RequestFacade(org.apache.catalina.connector.Request)";
-	
+
 	String PSQLV3_EXECUTOR = "private void org.postgresql.core.v3.QueryExecutorImpl.sendQuery(org.postgresql.core.v3.V3Query,org.postgresql.core.v3.V3ParameterList,int,int,int,org.postgresql.core.v3.QueryExecutorImpl$ErrorTrackingResultHandler) throws java.io.IOException,java.sql.SQLException";
-	
+
 	String PSQLV2_EXECUTOR = "protected void org.postgresql.core.v2.QueryExecutorImpl.sendQuery(org.postgresql.core.v2.V2Query,org.postgresql.core.v2.SimpleParameterList,java.lang.String) throws java.io.IOException";
-	
+
 	String PSQL42_EXECUTOR = "private void org.postgresql.core.v3.QueryExecutorImpl.sendQuery(org.postgresql.core.Query,org.postgresql.core.v3.V3ParameterList,int,int,int,org.postgresql.core.ResultHandler,org.postgresql.jdbc.BatchResultHandler) throws java.io.IOException,java.sql.SQLException";
-	
+
 	// Postgres V3 API : > Server 7.4 < Server 9.X
 	String PSQLV3_EXECUTOR7_4 = "private void org.postgresql.core.v3.QueryExecutorImpl.sendQuery(org.postgresql.core.v3.V3Query,org.postgresql.core.v3.V3ParameterList,int,int,int) throws java.io.IOException,java.sql.SQLException";
-	
-	//HSQL_DB v2.4
+
+	// HSQL_DB v2.4
 	String HSQL_V2_4 = "public org.hsqldb.result.Result org.hsqldb.Session.executeCompiledStatement(org.hsqldb.Statement,java.lang.Object[],int)";
-	
-	//HSQL_DB v1.8
+
+	// HSQL_DB v1.8
 	String HSQL_V1_8_CONNECTION = "public synchronized org.hsqldb.Result org.hsqldb.HSQLClientConnection.execute(org.hsqldb.Result) throws org.hsqldb.HsqlException";
-	
+
 	String HSQL_V1_8_SESSION = "public org.hsqldb.Result org.hsqldb.Session.execute(org.hsqldb.Result)";
-		
-	
+
+	// MSSQL
+
 	String[] EXECUTORS = { SYSYTEM_CALL_START,
 
-			// mssql calls
-			"final void com.microsoft.sqlserver.jdbc.SQLServerStatement.executeStatement(com.microsoft.sqlserver.jdbc.TDSCommand) throws com.microsoft.sqlserver.jdbc.SQLServerException,java.sql.SQLTimeoutException",
-			"final void com.microsoft.sqlserver.jdbc.SQLServerStatement.executeStatement(com.microsoft.sqlserver.jdbc.TDSCommand) throws com.microsoft.sqlserver.jdbc.SQLServerException",
+			// MSSQL
+			EXEC_MSSQL_SQLTIMEOUT, EXEC_MSSQL,
 
-			// mysql calls
-			// Mysql Connector/J 5.0.5
-			"final com.mysql.jdbc.ResultSet com.mysql.jdbc.MysqlIO.sqlQueryDirect(com.mysql.jdbc.Statement,java.lang.String,java.lang.String,com.mysql.jdbc.Buffer,int,com.mysql.jdbc.Connection,int,int,boolean,java.lang.String,boolean) throws java.lang.Exception",
-			// Mysql Connector/J 5.1.x
-			"final com.mysql.jdbc.ResultSetInternalMethods com.mysql.jdbc.MysqlIO.sqlQueryDirect(com.mysql.jdbc.StatementImpl,java.lang.String,java.lang.String,com.mysql.jdbc.Buffer,int,int,int,boolean,java.lang.String,com.mysql.jdbc.Field[]) throws java.lang.Exception",
-			// Mysql Connector/J 6.x
-			"public final com.mysql.cj.api.jdbc.ResultSetInternalMethods com.mysql.cj.mysqla.io.MysqlaProtocol.sqlQueryDirect(com.mysql.cj.jdbc.StatementImpl,java.lang.String,java.lang.String,com.mysql.cj.mysqla.io.Buffer,int,int,int,boolean,java.lang.String,com.mysql.cj.core.result.Field[])",
-			"public final <T> T com.mysql.cj.mysqla.io.MysqlaProtocol.sqlQueryDirect(com.mysql.cj.jdbc.StatementImpl,java.lang.String,java.lang.String,com.mysql.cj.api.mysqla.io.PacketPayload,int,int,int,boolean,java.lang.String,com.mysql.cj.core.result.Field[],com.mysql.cj.api.io.Protocol$GetProfilerEventHandlerInstanceFunction)",
-			"public final <T> T com.mysql.cj.mysqla.io.MysqlaProtocol.sqlQueryDirect(com.mysql.cj.jdbc.StatementImpl,java.lang.String,java.lang.String,com.mysql.cj.api.mysqla.io.PacketPayload,int,boolean,java.lang.String,com.mysql.cj.api.mysqla.result.ColumnDefinition,com.mysql.cj.api.io.Protocol$GetProfilerEventHandlerInstanceFunction,com.mysql.cj.api.mysqla.io.ProtocolEntityFactory<T>) throws java.io.IOException",
-			"private com.mysql.jdbc.ResultSet com.mysql.jdbc.ServerPreparedStatement.serverExecute(int,boolean) throws java.sql.SQLException",
-			
-			// Mysql Connector/J 8.x
-			"public <T> T com.mysql.cj.NativeSession.execSQL(com.mysql.cj.Query,java.lang.String,int,com.mysql.cj.protocol.a.NativePacketPayload,boolean,com.mysql.cj.protocol.ProtocolEntityFactory<T, com.mysql.cj.protocol.a.NativePacketPayload>,java.lang.String,com.mysql.cj.protocol.ColumnDefinition,boolean)",
+			// MYSQL
+			EXEC_MYSQL_505,
 
-			// oracle db
-			"final void oracle.jdbc.driver.T4CTTIfun.doRPC() throws java.io.IOException,java.sql.SQLException",
+			EXEC_MYSQL_51X,
 
-			//postgresql
-			PSQLV3_EXECUTOR,
-			PSQLV2_EXECUTOR ,
-			PSQL42_EXECUTOR,
-			PSQLV3_EXECUTOR7_4,
-			
-			//HSQLDB
-			HSQL_V2_4,
-			HSQL_V1_8_CONNECTION,
-			HSQL_V1_8_SESSION,
+			EXEC_MYSQL_6X, EXEC_MYSQL_6X2, EXEC_MYSQL_6X3, EXEC_MYSQL_6X4,
+
+			EXEC_MYSQL_8X,
+
+			// ORACLE
+			EXEC_ORACLE,
+
+			// postgresql
+			PSQLV3_EXECUTOR, PSQLV2_EXECUTOR, PSQL42_EXECUTOR, PSQLV3_EXECUTOR7_4,
+
+			// HSQLDB
+			HSQL_V2_4, HSQL_V1_8_CONNECTION, HSQL_V1_8_SESSION,
+
 			// // FileWriter
 //			"public java.io.OutputStream java.nio.file.spi.FileSystemProvider.newOutputStream(java.nio.file.Path,java.nio.file.OpenOption...) throws java.io.IOException",
 //			"public java.io.File(java.lang.String,java.lang.String)", "public java.io.File(java.lang.String)",
 
 			// dynamic class loading
-			"public java.net.URLClassLoader(java.net.URL[])",
-			"private java.lang.Class<?> java.net.URLClassLoader.defineClass(java.lang.String,sun.misc.Resource) throws java.io.IOException",
-			"public static java.net.URLClassLoader java.net.URLClassLoader.newInstance(java.net.URL[])",
+
+			URL_CLASS_LOADER, EXEC_DEFINE_CLASS, EXEC_URL_CLASS_LOADER_NEW_INSTANCE,
 
 			// File Input
 			// "public java.io.FileInputStream(java.lang.String) throws
@@ -119,64 +186,35 @@ public interface IAgentConstants {
 	String STRUTS2_DO_FILTER = "public void org.apache.struts2.dispatcher.ng.filter.StrutsPrepareAndExecuteFilter.doFilter(javax.servlet.ServletRequest,javax.servlet.ServletResponse,javax.servlet.FilterChain) throws java.io.IOException,javax.servlet.ServletException";
 
 	String MSSQL_EXECUTOR = "boolean com.microsoft.sqlserver.jdbc.SQLServerConnection.executeCommand(com.microsoft.sqlserver.jdbc.TDSCommand) throws com.microsoft.sqlserver.jdbc.SQLServerException";
-	
 
 	String[] CONSTRUCTOR = { "<init>" };
 
-	String[] ALL_CLASSES = { "com/mysql/jdbc/MysqlIO", "java/lang/ProcessImpl",
-			// FileWriter
-//			"java/nio/file/spi/FileSystemProvider", "java/io/File", 
+	Map<String, List<String>> INSTRUMENTED_METHODS = new HashMap<String, List<String>>() {
+		private static final long serialVersionUID = -7680282029242613768L;
 
-			// SQL
-			"com/microsoft/sqlserver/jdbc/SQLServerStatement", "com/mysql/cj/mysqla/io/MysqlaProtocol",
-			"com/mysql/cj/NativeSession","com/mysql/jdbc/ServerPreparedStatement",
-
-			// Mongo
-			"com/mongodb/connection/DefaultServerConnection", "com/mongodb/internal/connection/DefaultServerConnection",
-			"com/mongodb/async/client/MongoClientImpl$2", "com/mongodb/async/client/AsyncOperationExecutorImpl",
-			"com/mongodb/async/client/OperationExecutorImpl", "java/net/URLClassLoader",
-			
-			// Oracle DB
-			"oracle/jdbc/driver/T4CTTIfun",
-			
-			// http request
-//			"javax/servlet/http/HttpServlet",
-			"org/apache/catalina/connector/CoyoteAdapter", "org/apache/catalina/connector/InputBuffer",
-			"org/eclipse/jetty/server/HttpConnection", "org/eclipse/jetty/http/HttpParser",
-//			"javax/faces/webapp/FacesServlet",
-//			"org/apache/struts2/dispatcher/ng/filter/StrutsPrepareAndExecuteFilter"		
-
-			// Postgresql
-			"org/postgresql/core/v3/QueryExecutorImpl", "org/postgresql/core/v2/QueryExecutorImpl", 
-			
-			//HSQLDB
-			"org/hsqldb/Session",
-			"org/hsqldb/HSQLClientConnection",
-			
-			};
-
-	String[][] ALL_METHODS = { { "sqlQueryDirect" }, { "start" },
-			
-			// SQL
-//			{ "newOutputStream" }, CONSTRUCTOR,
-			{ "executeStatement" }, { "sqlQueryDirect" }, { "execSQL" },{ "serverExecute" },
-			
-			// mongodb
-			{ "executeProtocol" }, { "executeProtocol" },
-			{ "execute" }, { "execute" }, { "execute" }, { "<init>", "newInstance" },
-			
-			//Oracle methods
-			{ "doRPC" },
-
-//			{ "service" },
-			{ "service" }, { "setByteBuffer" }, { "onFillable" }, { "parseNext" },
-//			{ "service" },
-//			{ "doFilter" }
-			// postgresql
-			{ "sendQuery" }, { "sendQuery" },
-			
-			//HSQLDB
-			{"executeCompiledStatement", "execute"},{"execute"}
+		{
+			put(CLASS_JAVA_LANG_PROCESS_IMPL, Collections.singletonList("start"));
+			put(CLASS_COM_MICROSOFT_SQLSERVER_JDBC_SQL_SERVER_STATEMENT, Collections.singletonList("executeStatement"));
+			put(CLASS_COM_MYSQL_CJ_MYSQLA_IO_MYSQLA_PROTOCOL, Collections.singletonList("sqlQueryDirect"));
+			put(CLASS_COM_MYSQL_JDBC_MYSQL_IO, Collections.singletonList("sqlQueryDirect"));
+			put(CLASS_COM_MYSQL_CJ_NATIVE_SESSION, Collections.singletonList("execSQL"));
+			put(CLASS_COM_MYSQL_JDBC_SERVER_PREPARED_STATEMENT, Collections.singletonList("serverExecute"));
+			put(CLASS_COM_MONGODB_CONNECTION_DEFAULT_SERVER_CONNECTION, Collections.singletonList("executeProtocol"));
+			put(CLASS_COM_MONGODB_INTERNAL_CONNECTION_DEFAULT_SERVER_CONNECTION, Collections.singletonList("executeProtocol"));
+			put(CLASS_COM_MONGODB_ASYNC_CLIENT_MONGO_CLIENT_IMPL$2, Collections.singletonList("execute"));
+			put(CLASS_COM_MONGODB_ASYNC_CLIENT_ASYNC_OPERATION_EXECUTOR_IMPL, Collections.singletonList("execute"));
+			put(CLASS_COM_MONGODB_ASYNC_CLIENT_OPERATION_EXECUTOR_IMPL, Collections.singletonList("execute"));
+			put(CLASS_JAVA_NET_URL_CLASS_LOADER, Arrays.asList(new String[] { "<init>","newInstance" }));
+			put(CLASS_ORACLE_JDBC_DRIVER_T4CTT_IFUN, Collections.singletonList("doRPC"));
+			put(CLASS_ORG_APACHE_CATALINA_CONNECTOR_COYOTE_ADAPTER, Collections.singletonList("service"));
+			put(CLASS_ORG_APACHE_CATALINA_CONNECTOR_INPUT_BUFFER, Collections.singletonList("setByteBuffer"));
+			put(CLASS_ORG_ECLIPSE_JETTY_SERVER_HTTP_CONNECTION, Collections.singletonList("onFillable"));
+			put(CLASS_ORG_ECLIPSE_JETTY_HTTP_HTTP_PARSER, Collections.singletonList("parseNext"));
+			put(CLASS_ORG_POSTGRESQL_CORE_V3_QUERY_EXECUTOR_IMPL, Collections.singletonList("sendQuery"));
+			put(CLASS_ORG_POSTGRESQL_CORE_V2_QUERY_EXECUTOR_IMPL, Collections.singletonList("sendQuery"));
+			put(CLASS_ORG_HSQLDB_SESSION, Arrays.asList(new String[] { "executeCompiledStatement","execute" }));
+			put(CLASS_ORG_HSQLDB_HSQL_CLIENT_CONNECTION, Collections.singletonList("execute"));
+		}
 	};
 
 	/** Source Method Identifiers for argument resolution */
@@ -215,7 +253,6 @@ public interface IAgentConstants {
 	String MSSQL_STATEMENT_EXECUTE_CMD_CLASS = "com.microsoft.sqlserver.jdbc.SQLServerStatement.StmtExecCmd";
 	String MSSQL_BATCH_STATEMENT_EXECUTE_CMD_CLASS = "com.microsoft.sqlserver.jdbc.SQLServerStatement.StmtBatchExecCmd";
 
-	
 	/** MySQL CLASS CONSTANTS */
 	String MYSQL_PREPARED_STATEMENT_4 = "com.mysql.jdbc.JDBC4PreparedStatement";
 	String MYSQL_PREPARED_STATEMENT_42 = "com.mysql.jdbc.JDBC42PreparedStatement";
@@ -225,13 +262,13 @@ public interface IAgentConstants {
 	String MYSQL_PREPARED_STATEMENT_8 = "com.mysql.cj.jdbc.ClientPreparedStatement";
 	String MYSQL_PREPARED_QUERY_8 = "com.mysql.cj.ClientPreparedQuery";
 	String MYSQL_PREPARED_STATEMENT_SOURCE_8 = "com.mysql.cj.AbstractPreparedQuery";
-	String MYSQL_CONNECTOR_5_0_SOURCE = "final com.mysql.jdbc.ResultSet com.mysql.jdbc.MysqlIO.sqlQueryDirect(com.mysql.jdbc.Statement,java.lang.String,java.lang.String,com.mysql.jdbc.Buffer,int,com.mysql.jdbc.Connection,int,int,boolean,java.lang.String,boolean) throws java.lang.Exception";
-	String MYSQL_CONNECTOR_5_0_4_PREPARED_SOURCE = "private com.mysql.jdbc.ResultSet com.mysql.jdbc.ServerPreparedStatement.serverExecute(int,boolean) throws java.sql.SQLException";
-	String MYSQL_CONNECTOR_5_1_SOURCE = "final com.mysql.jdbc.ResultSetInternalMethods com.mysql.jdbc.MysqlIO.sqlQueryDirect(com.mysql.jdbc.StatementImpl,java.lang.String,java.lang.String,com.mysql.jdbc.Buffer,int,int,int,boolean,java.lang.String,com.mysql.jdbc.Field[]) throws java.lang.Exception";
-	String MYSQL_CONNECTOR_6_SOURCE = "public final <T> T com.mysql.cj.mysqla.io.MysqlaProtocol.sqlQueryDirect(com.mysql.cj.jdbc.StatementImpl,java.lang.String,java.lang.String,com.mysql.cj.api.mysqla.io.PacketPayload,int,boolean,java.lang.String,com.mysql.cj.api.mysqla.result.ColumnDefinition,com.mysql.cj.api.io.Protocol$GetProfilerEventHandlerInstanceFunction,com.mysql.cj.api.mysqla.io.ProtocolEntityFactory<T>) throws java.io.IOException";
-	String MYSQL_CONNECTOR_6_0_3_SOURCE = "public final <T> T com.mysql.cj.mysqla.io.MysqlaProtocol.sqlQueryDirect(com.mysql.cj.jdbc.StatementImpl,java.lang.String,java.lang.String,com.mysql.cj.api.mysqla.io.PacketPayload,int,int,int,boolean,java.lang.String,com.mysql.cj.core.result.Field[],com.mysql.cj.api.io.Protocol$GetProfilerEventHandlerInstanceFunction)";
-	String MYSQL_CONNECTOR_6_0_2_SOURCE = "public final com.mysql.cj.api.jdbc.ResultSetInternalMethods com.mysql.cj.mysqla.io.MysqlaProtocol.sqlQueryDirect(com.mysql.cj.jdbc.StatementImpl,java.lang.String,java.lang.String,com.mysql.cj.mysqla.io.Buffer,int,int,int,boolean,java.lang.String,com.mysql.cj.core.result.Field[])";
-	String MYSQL_CONNECTOR_8_SOURCE = "public <T> T com.mysql.cj.NativeSession.execSQL(com.mysql.cj.Query,java.lang.String,int,com.mysql.cj.protocol.a.NativePacketPayload,boolean,com.mysql.cj.protocol.ProtocolEntityFactory<T, com.mysql.cj.protocol.a.NativePacketPayload>,java.lang.String,com.mysql.cj.protocol.ColumnDefinition,boolean)";
+	String MYSQL_CONNECTOR_5_0_SOURCE = EXEC_MYSQL_505;
+	String MYSQL_CONNECTOR_5_0_4_PREPARED_SOURCE = EXEC_MYSQL_6X4;
+	String MYSQL_CONNECTOR_5_1_SOURCE = EXEC_MYSQL_51X;
+	String MYSQL_CONNECTOR_6_SOURCE = EXEC_MYSQL_6X3;
+	String MYSQL_CONNECTOR_6_0_3_SOURCE = EXEC_MYSQL_6X2;
+	String MYSQL_CONNECTOR_6_0_2_SOURCE = EXEC_MYSQL_6X;
+	String MYSQL_CONNECTOR_8_SOURCE = EXEC_MYSQL_8X;
 	List<String> MYSQL_SOURCE_METHOD_LIST = new ArrayList<String>() {
 		/**
 		 * 
@@ -251,7 +288,7 @@ public interface IAgentConstants {
 			add(MYSQL_CONNECTOR_8_SOURCE);
 		}
 	};
-	
+
 	/** Mongo constants */
 
 	String MONGO_NAMESPACE_FIELD = "namespace";
@@ -279,30 +316,28 @@ public interface IAgentConstants {
 	String MONGO_COLLECTION_WILDCARD = "$cmd";
 	String MONGO_COLLECTION_FIELD = "collectionName";
 	String MONGO_COMMAND_NAME_FIELD = "commandName";
-	
+
 	/** Oracle DB constants */
 	String ORACLE_DB_IDENTIFIER = "oracle.jdbc.driver";
 	String ORACLE_CONNECTION_IDENTIFIER = "oracle.jdbc.driver.T4C8Oall";
 	String ORACLE_STATEMENT_CLASS_IDENTIFIER = "oracle.jdbc.driver.OracleStatement";
 
-	
-	ArrayList ORACLE_CLASS_SKIP_LIST = new ArrayList<String>(){
-		
+	ArrayList<String> ORACLE_CLASS_SKIP_LIST = new ArrayList<String>() {
+
 		private static final long serialVersionUID = -1406453087946498488L;
 
-	{
-		add("oracle.jdbc.driver.T4C7Ocommoncall");
-		add("oracle.jdbc.driver.T4CTTIoauthenticate");
-		add("oracle.jdbc.driver.T4C7Oversion");
-	}};
-	
+		{
+			add("oracle.jdbc.driver.T4C7Ocommoncall");
+			add("oracle.jdbc.driver.T4CTTIoauthenticate");
+			add("oracle.jdbc.driver.T4C7Oversion");
+		}
+	};
+
 	String BYTE_ARRAY_CLASS = "[B";
-	
-	
 
 	// ProcessorThread.java constants
-	String JAVA_NET_URLCLASSLOADER = "public java.net.URLClassLoader(java.net.URL[])";
-	String JAVA_NET_URLCLASSLOADER_NEWINSTANCE = "public static java.net.URLClassLoader java.net.URLClassLoader.newInstance(java.net.URL[])";
+	String JAVA_NET_URLCLASSLOADER = URL_CLASS_LOADER;
+	String JAVA_NET_URLCLASSLOADER_NEWINSTANCE = EXEC_URL_CLASS_LOADER_NEW_INSTANCE;
 	String USER_DIR = "user.dir";
 	String PARAMVALUES = "paramValues";
 	String PSQL_PARAMETER_REPLACEMENT = "\\?";
@@ -335,13 +370,15 @@ public interface IAgentConstants {
 	String HOST_IP_PROPERTIES_FILE = "/etc/k2-adp/hostip.properties";
 
 	String IPSCHEDULEDTHREAD_ = "ipScheduledThread-";
-
+	String ACK_MSG = "ACK";
+	
 	// EventThreadPool.java file constants
 	String K2_JAVA_AGENT = "K2-Java-Agent-";
-	
-	//AgentBasicInfo.java file constants
-	String K2_JAVAAGENT_PROPERTIES = "k2-javaagent.properties";
 
+	// AgentBasicInfo.java file constants
+	String K2_JAVAAGENT_PROPERTIES = "k2-javaagent.properties";
+	String K2_JAVAAGENT_LOG4J_PROPERTIES = "k2-javaagent-log4j.properties";
+	
 	String K2_JAVAAGENT_VERSION = "k2.javaagent.version";
 
 	String K2_JAVAAGENT_TOOL_ID = "k2.javaagent.tool.id";
@@ -354,9 +391,11 @@ public interface IAgentConstants {
 
 	String K2_JAVAAGENT_JSONNAME_DYNAMICJARPATHBEAN = "k2.javaagent.jsonname.dynamicjarpathbean";
 
+	String K2_JAVAAGENT_JSONNAME_JAHEALTHCHECK = "k2.javaagent.jsonname.healthcheck";
+
 	// LoggingInterceptor Constants
 	char DIR_SEPERATOR = '/';
-	String CGROUP_FILE_NAME = "/proc/self/cgroup" ; 
+	String CGROUP_FILE_NAME = "/proc/self/cgroup";
 	String DOCKER_DIR = "docker/";
 	String KUBEPODS_DIR = "kubepods/";
 	String LXC_DIR = "lxc/";
@@ -382,7 +421,7 @@ public interface IAgentConstants {
 	String NEW_LINE_SEQUENCE = "\n";
 	String TOMCAT_SERVER_INFO_CLASS_NAME = "org.apache.catalina.util.ServerInfo";
 	String TOMCAT_FIELD_SERVERNUMBER = "serverNumber";
-	String TOMCAT_VERSION_DETECTED_MSG = "Detected Tomcat Version " ;
+	String TOMCAT_VERSION_DETECTED_MSG = "Detected Tomcat Version ";
 	String VERSION_SPLIT_EXPR = "\\.";
 	String NULL_CHAR_AS_STRING = "\000";
 	char VMPID_SPLIT_CHAR = '@';

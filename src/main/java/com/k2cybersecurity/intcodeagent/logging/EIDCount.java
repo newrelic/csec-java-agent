@@ -3,6 +3,9 @@ package com.k2cybersecurity.intcodeagent.logging;
 import java.util.Iterator;
 import java.util.concurrent.ConcurrentLinkedDeque;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -11,6 +14,12 @@ public class EIDCount {
 	private Integer eid;
 
 	private Long count;
+	
+	private static Logger logger;
+	public static void setLogger() {
+		EIDCount.logger = LogManager.getLogger(EIDCount.class);
+	}
+	
 
 	public EIDCount() {
 	}

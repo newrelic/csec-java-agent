@@ -1,8 +1,19 @@
 package com.k2cybersecurity.intcodeagent.models.javaagent;
 
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.K2_JAVAAGENT_JSONNAME_APPLICATIONINFOBEAN;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.K2_JAVAAGENT_JSONNAME_DYNAMICJARPATHBEAN;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.K2_JAVAAGENT_JSONNAME_INTCODERESULTBEAN;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.K2_JAVAAGENT_JSONNAME_JAHEALTHCHECK;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.K2_JAVAAGENT_JSONNAME_JARPATHBEAN;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.K2_JAVAAGENT_PROPERTIES;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.K2_JAVAAGENT_TOOL_ID;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.K2_JAVAAGENT_VERSION;
+
 import java.util.Properties;
 
-import com.k2cybersecurity.intcodeagent.logging.IAgentConstants;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 
 // TODO: Auto-generated Javadoc
 /**
@@ -20,13 +31,14 @@ public class AgentBasicInfo {
 	private String version;
 
 	private static Properties props;
+	private static Logger logger;
 
 	static {
 		props = new Properties();
 		try {
-			props.load(Thread.currentThread().getContextClassLoader().getResourceAsStream(IAgentConstants.K2_JAVAAGENT_PROPERTIES));
+			props.load(Thread.currentThread().getContextClassLoader().getResourceAsStream(K2_JAVAAGENT_PROPERTIES));
 		} catch (Exception e) {
-			System.err.println("Could not load properties");
+			logger.error("Could not load properties: {}", e);
 		}
 	}
 
@@ -35,16 +47,18 @@ public class AgentBasicInfo {
 	 * Instantiates a new agent basic info according to the source class object.
 	 */
 	public AgentBasicInfo() {
-		setVersion(props.getProperty(IAgentConstants.K2_JAVAAGENT_VERSION));
-		setK2JAToolId(props.getProperty(IAgentConstants.K2_JAVAAGENT_TOOL_ID));
+		setVersion(props.getProperty(K2_JAVAAGENT_VERSION));
+		setK2JAToolId(props.getProperty(K2_JAVAAGENT_TOOL_ID));
 		if (this instanceof  ApplicationInfoBean) {
-			setJsonName(props.getProperty(IAgentConstants.K2_JAVAAGENT_JSONNAME_APPLICATIONINFOBEAN));
+			setJsonName(props.getProperty(K2_JAVAAGENT_JSONNAME_APPLICATIONINFOBEAN));
 		} else if (this instanceof JavaAgentEventBean) {
-			setJsonName(props.getProperty(IAgentConstants.K2_JAVAAGENT_JSONNAME_INTCODERESULTBEAN));
+			setJsonName(props.getProperty(K2_JAVAAGENT_JSONNAME_INTCODERESULTBEAN));
 		} else if(this instanceof JavaAgentJarPathBean){
-			setJsonName(props.getProperty(IAgentConstants.K2_JAVAAGENT_JSONNAME_JARPATHBEAN));
+			setJsonName(props.getProperty(K2_JAVAAGENT_JSONNAME_JARPATHBEAN));
 		} else if(this instanceof JavaAgentDynamicPathBean){
-			setJsonName(props.getProperty(IAgentConstants.K2_JAVAAGENT_JSONNAME_DYNAMICJARPATHBEAN));
+			setJsonName(props.getProperty(K2_JAVAAGENT_JSONNAME_DYNAMICJARPATHBEAN));
+		} else if(this instanceof JAHealthCheck) {
+			setJsonName(props.getProperty(K2_JAVAAGENT_JSONNAME_JAHEALTHCHECK));
 		}
 	}
 
@@ -101,5 +115,9 @@ public class AgentBasicInfo {
 	public void setVersion(String version) {
 		this.version = version;
 	}
-
+	
+	public static void setLogger() {
+		AgentBasicInfo.logger = LogManager.getLogger(AgentBasicInfo.class);
+	}
+	
 }

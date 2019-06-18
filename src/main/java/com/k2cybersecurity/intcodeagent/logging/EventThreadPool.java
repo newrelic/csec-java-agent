@@ -5,7 +5,6 @@ import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Executor;
 import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.RejectedExecutionException;
@@ -16,6 +15,11 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+
+
 public class EventThreadPool {
 
 	/** Thread pool executor. */
@@ -24,6 +28,8 @@ public class EventThreadPool {
 	private static EventThreadPool instance;
 	private static short MAX_BLOCKING_QUEUE_SIZE = 3000;
 	private static Object mutex = new Object();
+	private static Logger logger;
+	
 
 	private StringBuffer eventBuffer;
 	private LinkedBlockingQueue<Object> eventQueue = new LinkedBlockingQueue<>(MAX_BLOCKING_QUEUE_SIZE);
@@ -83,24 +89,22 @@ public class EventThreadPool {
 					try {
 						List<Object> eventList = new ArrayList<>();
 						eventQueue.drainTo(eventList, eventQueue.size());
-						oos.writeUnshared(eventList);
-//						System.out.println("EventThreadPool Pending Events: " + EventThreadPool.getInstance().getExecutor().getQueue().size());
-//						System.out.println("eventList size before send: " + eventList.size()
-//								+ ", EventQueue size after drain: " + eventQueue.size());
-						oos.reset();
+						synchronized (oos) {
+							oos.writeUnshared(eventList);
+							oos.reset();
+						}
 						if(currentExecutor.triedReconnect()) {
 							currentExecutor.setTriedReconnect(false);
 						}
 					} catch (IOException e) {
-						System.err.println("Error in writing: " + e.getMessage());
+						logger.error("Error in writing: {}" ,e);
 						if(!currentExecutor.triedReconnect()) {
 							currentExecutor.setTriedReconnect(true);
 							LoggingInterceptor.closeSocket();
 							LoggingInterceptor.connectSocket();
 						}
-//						e.printStackTrace();
 					} catch (Exception e) {
-//						e.printStackTrace();
+						logger.error("Error in queuePooler: {}" ,e);
 					}
 				}
 			}
@@ -139,7 +143,7 @@ public class EventThreadPool {
 		 * @throws RejectedExecutionException always
 		 */
 		public void rejectedExecution(Runnable r, ThreadPoolExecutor e) {
-			System.out.println("Event Task " + r.toString() + " rejected from {} " + e.toString());
+//			logger.debug("Event Task " + r.toString() + " rejected from {} " + e.toString());
 		}
 	}
 
@@ -148,10 +152,9 @@ public class EventThreadPool {
 		try {
 			this.executor.execute(new ProcessorThread(source, arg, executionId, stackTrace, tId, sourceString));
 		} catch (RejectedExecutionException rejected) {
-			System.err.println("Rejected to process Event At: " + this.executor.getQueue().size());
-//			rejected.printStackTrace();
+			logger.info("Rejected to process Event At: " + this.executor.getQueue().size() + ": {}", rejected);
 		} catch (Exception e) {
-//			e.printStackTrace();
+			logger.error("Error in processReceivedEvent: {}" ,e);
 		}
 	}
 
@@ -217,6 +220,8 @@ public class EventThreadPool {
 	public void setTriedReconnect(boolean triedReconnect) {
 		this.triedReconnect = triedReconnect;
 	}
-	
+	public static void setLogger() {
+		EventThreadPool.logger = LogManager.getLogger(EventThreadPool.class);
+	}
 	
 }

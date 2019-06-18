@@ -12,6 +12,9 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import com.k2cybersecurity.intcodeagent.models.javaagent.ServletInfo;
 
 public class ServletEventPool {
@@ -20,8 +23,9 @@ public class ServletEventPool {
 	private ThreadPoolExecutor executor;
 
 	private static ServletEventPool instance;
+	private static Logger logger;
 
-//	private Map<Long, ServletInfo> requestMap;
+	// private Map<Long, ServletInfo> requestMap;
 
 	private Map<Long, ConcurrentLinkedDeque<ExecutionMap>> requestMap;
 	private Map<Long, ConcurrentLinkedDeque<EIDCount>> servletInfoReferenceRecord;
@@ -34,7 +38,8 @@ public class ServletEventPool {
 	}
 
 	/**
-	 * @param servletInfoReferenceRecord the servletInfoReferenceRecord to set
+	 * @param servletInfoReferenceRecord
+	 *            the servletInfoReferenceRecord to set
 	 */
 	public void setServletInfoReferenceRecord(Map<Long, ConcurrentLinkedDeque<EIDCount>> servletInfoReferenceRecord) {
 		this.servletInfoReferenceRecord = servletInfoReferenceRecord;
@@ -106,12 +111,15 @@ public class ServletEventPool {
 		/**
 		 * Always throws RejectedExecutionException.
 		 *
-		 * @param r the runnable task requested to be executed
-		 * @param e the executor attempting to execute this task
-		 * @throws RejectedExecutionException always
+		 * @param r
+		 *            the runnable task requested to be executed
+		 * @param e
+		 *            the executor attempting to execute this task
+		 * @throws RejectedExecutionException
+		 *             always
 		 */
 		public void rejectedExecution(Runnable r, ThreadPoolExecutor e) {
-			System.out.println("Event Task " + r.toString() + " rejected from {} " + e.toString());
+			logger.debug("Event Task " + r.toString() + " rejected from {} " + e.toString());
 		}
 	}
 
@@ -126,37 +134,6 @@ public class ServletEventPool {
 	}
 
 	/**
-	 * 
-	 */
-//	public synchronized Long decrementServletInfoReference(String threadEId) {
-//		Long refCount = -1l;
-//		try {
-//			this.servletInfoReferenceRecord.put(threadEId, this.servletInfoReferenceRecord.get(threadEId) - 1);
-//			refCount = this.servletInfoReferenceRecord.get(threadEId);
-//		} catch (Exception e) {
-//		}
-//		return refCount;
-//	}
-
-	/**
-	 * 
-	 */
-//	public synchronized Long incrementServletInfoReference(String threadEId) {
-//		Long refCount = -1l;
-//		try {
-//			if (this.servletInfoReferenceRecord.containsKey(threadEId)) {
-//				this.servletInfoReferenceRecord.put(threadEId, this.servletInfoReferenceRecord.get(threadEId) + 1);
-//			} else {
-//				this.servletInfoReferenceRecord.put(threadEId, 1l);
-//			}
-//			refCount = this.servletInfoReferenceRecord.get(threadEId);
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//		}
-//		return refCount;
-//	}
-
-	/**
 	 * @return the requestMap
 	 */
 	public Map<Long, ConcurrentLinkedDeque<ExecutionMap>> getRequestMap() {
@@ -164,7 +141,8 @@ public class ServletEventPool {
 	}
 
 	/**
-	 * @param requestMap the requestMap to set
+	 * @param CacheAccess<String,>cacheAccess
+	 *            the requestMap to set
 	 */
 	public void setRequestMap(Map<Long, ConcurrentLinkedDeque<ExecutionMap>> requestMap) {
 		this.requestMap = requestMap;
@@ -188,7 +166,7 @@ public class ServletEventPool {
 				refCount = 1l;
 			}
 		} catch (Exception e) {
-//			e.printStackTrace();
+			// e.printStackTrace();
 		}
 		return refCount;
 	}
@@ -205,10 +183,13 @@ public class ServletEventPool {
 				}
 			}
 		} catch (Exception e) {
-//			e.printStackTrace();
+			// e.printStackTrace();
 		}
 
 		return refCount;
 	}
 
+	public static void setLogger() {
+		ServletEventPool.logger = LogManager.getLogger(ServletEventPool.class);
+	}
 }

@@ -1,5 +1,9 @@
 package com.k2cybersecurity.intcodeagent.logging;
 
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import com.k2cybersecurity.intcodeagent.models.javaagent.ServletInfo;
 
 public class ServletEventProcessor implements Runnable {
@@ -11,6 +15,8 @@ public class ServletEventProcessor implements Runnable {
 	private String sourceString;
 	private Long threadId;
 
+	private static Logger logger;
+	
 	/**
 	 * @return the firstElement
 	 */
@@ -92,6 +98,10 @@ public class ServletEventProcessor implements Runnable {
 	 */
 	public void setRequest(Object request) {
 		this.request = request;
+	}
+	
+	public static void setLogger() {
+		ServletEventProcessor.logger = LogManager.getLogger(ServletEventProcessor.class);
 	}
 
 }

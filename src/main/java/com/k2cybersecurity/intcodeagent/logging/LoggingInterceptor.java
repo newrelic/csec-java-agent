@@ -15,8 +15,6 @@
  */
 package com.k2cybersecurity.intcodeagent.logging;
 
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.ALL_CLASSES;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.ALL_METHODS;
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.APPLICATION_INFO_POSTED_MSG;
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.BYTE_BUFFER_FIELD_BUF;
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.BYTE_BUFFER_FIELD_HB;
@@ -24,6 +22,27 @@ import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.BYTE_BUFF
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.BYTE_BUFFER_FIELD_LIMIT;
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.BYTE_BUFFER_FIELD_POSITION;
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.CGROUP_FILE_NAME;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.CLASS_COM_MICROSOFT_SQLSERVER_JDBC_SQL_SERVER_STATEMENT;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.CLASS_COM_MONGODB_ASYNC_CLIENT_ASYNC_OPERATION_EXECUTOR_IMPL;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.CLASS_COM_MONGODB_ASYNC_CLIENT_MONGO_CLIENT_IMPL$2;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.CLASS_COM_MONGODB_ASYNC_CLIENT_OPERATION_EXECUTOR_IMPL;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.CLASS_COM_MONGODB_CONNECTION_DEFAULT_SERVER_CONNECTION;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.CLASS_COM_MONGODB_INTERNAL_CONNECTION_DEFAULT_SERVER_CONNECTION;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.CLASS_COM_MYSQL_CJ_MYSQLA_IO_MYSQLA_PROTOCOL;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.CLASS_COM_MYSQL_CJ_NATIVE_SESSION;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.CLASS_COM_MYSQL_JDBC_MYSQL_IO;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.CLASS_COM_MYSQL_JDBC_SERVER_PREPARED_STATEMENT;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.CLASS_JAVA_LANG_PROCESS_IMPL;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.CLASS_JAVA_NET_URL_CLASS_LOADER;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.CLASS_ORACLE_JDBC_DRIVER_T4CTT_IFUN;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.CLASS_ORG_APACHE_CATALINA_CONNECTOR_COYOTE_ADAPTER;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.CLASS_ORG_APACHE_CATALINA_CONNECTOR_INPUT_BUFFER;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.CLASS_ORG_ECLIPSE_JETTY_HTTP_HTTP_PARSER;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.CLASS_ORG_ECLIPSE_JETTY_SERVER_HTTP_CONNECTION;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.CLASS_ORG_HSQLDB_HSQL_CLIENT_CONNECTION;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.CLASS_ORG_HSQLDB_SESSION;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.CLASS_ORG_POSTGRESQL_CORE_V2_QUERY_EXECUTOR_IMPL;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.CLASS_ORG_POSTGRESQL_CORE_V3_QUERY_EXECUTOR_IMPL;
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.CMD_LINE_DIR;
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.COLON_SEPERATOR;
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.COYOTE_ABSTRACT_INPUT_BUFFER_CLASS_NAME;
@@ -31,13 +50,9 @@ import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.DIR_SEPER
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.DOCKER_DIR;
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.HOST_IP_FOUND_MSG;
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.HOST_PROP_FILE_NAME;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.JAR_PATH_EMPTY_RESULT_ERR;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.JAR_PATH_FETCH_SUCCESS_MSG;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.JAR_PATH_INIT_MSG;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.JAR_PATH_TIMEOUT_ERR;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.INSTRUMENTED_METHODS;
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.JA_CONNECT_SUCCESS_MSG;
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.JETTY_PARSE_NEXT;
-
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.JETTY_REQUEST_ON_FILLABLE;
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.K2_IC_TCP_PORT;
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.KUBEPODS_DIR;
@@ -94,52 +109,44 @@ import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.brutusin.instrumentation.Agent;
 import org.brutusin.instrumentation.Interceptor;
 import org.json.simple.JSONArray;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.MethodNode;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.k2cybersecurity.intcodeagent.models.javaagent.ApplicationInfoBean;
+import com.k2cybersecurity.intcodeagent.models.javaagent.JAHealthCheck;
 import com.k2cybersecurity.intcodeagent.models.javaagent.JavaAgentJarPathBean;
 import com.k2cybersecurity.intcodeagent.models.javaagent.ServletInfo;
 
 public class LoggingInterceptor extends Interceptor {
 
-	private static final Set<String> allClasses;
-	private static final Map<String, List<String>> interceptMethod;
 	private static final int SOCKET_CONNECT_TIMEOUT = 500;
 	protected static Integer VMPID;
 	protected static final String applicationUUID;
 	protected static ApplicationInfoBean APPLICATION_INFO_BEAN;
+	protected static JAHealthCheck JA_HEALTH_CHECK;
+
 	protected static Class<?> mysqlPreparedStatement8Class, mysqlPreparedStatement5Class, abstractInputBufferClass;
 	protected static String tomcatVersion;
 	protected static int tomcatMajorVersion;
 	static final int MAX_DEPTH_LOOKUP = 4; // Max number of superclasses to lookup for a field
 	// protected static Map<Long, ServletInfo> requestMap;
 	public static String hostip = "";
-	private static final Logger logger = LoggerFactory.getLogger(LoggingInterceptor.class);
-	static {
-		applicationUUID = UUID.randomUUID().toString();
-		allClasses = new HashSet<>(Arrays.asList(ALL_CLASSES));
-		interceptMethod = new HashMap<>();
-		for (int i = 0; i < ALL_METHODS.length; i++) {
-			interceptMethod.put(ALL_CLASSES[i], new ArrayList<String>(Arrays.asList(ALL_METHODS[i])));
-		}
+	private static Logger logger;
 
+	static {
+		applicationUUID = Agent.applicationUUID;
+		JA_HEALTH_CHECK = new JAHealthCheck(applicationUUID);
 	}
 
 	public static String getContainerID() {
@@ -193,7 +200,6 @@ public class LoggingInterceptor extends Interceptor {
 		try {
 			Runnable jarPathPool = new Runnable() {
 				public void run() {
-					System.out.println(JAR_PATH_INIT_MSG);
 					try {
 						if (Agent.getJarPathResultExecutorService.awaitTermination(5, TimeUnit.MINUTES)) {
 							if (!Agent.jarPathSet.isEmpty()) {
@@ -206,39 +212,35 @@ public class LoggingInterceptor extends Interceptor {
 									jarPathBean.setIsHost(true);
 								}
 								EventThreadPool.getInstance().getEventQueue().add(jarPathBean);
-								System.out.println(JAR_PATH_FETCH_SUCCESS_MSG);
 							} else {
-								System.err.println(JAR_PATH_EMPTY_RESULT_ERR);
 							}
 
 						} else {
-							System.err.println(JAR_PATH_TIMEOUT_ERR);
 						}
 					} catch (InterruptedException e) {
-						System.err.println("Error occured while waiting for getJarPathResultExecutorService.");
-//						e.printStackTrace();
+						logger.error("Error occured while waiting for getJarPathResultExecutorService: {}", e);
 					}
 				}
 			};
-	
+
 			ScheduledExecutorService jarPathPoolExecutorService = Executors.newSingleThreadScheduledExecutor();
 			jarPathPoolExecutorService.schedule(jarPathPool, 240, TimeUnit.SECONDS);
 			jarPathPoolExecutorService.shutdown();
 		} catch (Exception e) {
-//			e.printStackTrace();
+			logger.error("Exception occured in getJarPath Thread: {}", e);
 		}
 	}
 
 	public static ApplicationInfoBean createApplicationInfoBean() {
-
 		try {
 			RuntimeMXBean runtimeMXBean = ManagementFactory.getRuntimeMXBean();
 			String runningVM = runtimeMXBean.getName();
 			VMPID = Integer.parseInt(runningVM.substring(0, runningVM.indexOf(VMPID_SPLIT_CHAR)));
 			ApplicationInfoBean applicationInfoBean = new ApplicationInfoBean(VMPID, applicationUUID);
+			applicationInfoBean.setStartTime(runtimeMXBean.getStartTime());
 			String containerId = getContainerID();
 			String cmdLine = getCmdLineArgsByProc(VMPID);
-			if(cmdLine!=null) {
+			if (cmdLine != null) {
 				List<String> cmdlineArgs = Arrays.asList(cmdLine.split(NULL_CHAR_AS_STRING));
 				JSONArray jsonArray = new JSONArray();
 				jsonArray.addAll(cmdlineArgs);
@@ -253,7 +255,7 @@ public class LoggingInterceptor extends Interceptor {
 			// JSONArray(runtimeMXBean.getInputArguments()));
 			return applicationInfoBean;
 		} catch (Exception e) {
-//			e.printStackTrace();
+			logger.error("Exception occured in createApplicationInfoBean: {}", e);
 		}
 		return null;
 	}
@@ -265,7 +267,7 @@ public class LoggingInterceptor extends Interceptor {
 				hostip = reader.readLine();
 				if (hostip == null || hostip.isEmpty())
 					throw new RuntimeException("Host ip not found");
-				System.out.println(HOST_IP_FOUND_MSG + hostip);
+				logger.info(HOST_IP_FOUND_MSG + hostip);
 				socket = new Socket();
 				SocketAddress socketAddr = new InetSocketAddress(hostip, K2_IC_TCP_PORT);
 				socket.connect(socketAddr, SOCKET_CONNECT_TIMEOUT);
@@ -278,8 +280,8 @@ public class LoggingInterceptor extends Interceptor {
 			if (socket == null || !socket.isConnected() || socket.isClosed()) {
 				throw new RuntimeException("Can't connect to IC, agent installation failed.");
 			} else {
-				System.out.println(JA_CONNECT_SUCCESS_MSG);
-				System.out.println(APPLICATION_INFO_POSTED_MSG + LoggingInterceptor.APPLICATION_INFO_BEAN);
+				logger.info(JA_CONNECT_SUCCESS_MSG);
+				logger.info(APPLICATION_INFO_POSTED_MSG + LoggingInterceptor.APPLICATION_INFO_BEAN);
 				EventThreadPool.getInstance().getEventQueue().add(LoggingInterceptor.APPLICATION_INFO_BEAN);
 			}
 		}
@@ -298,11 +300,13 @@ public class LoggingInterceptor extends Interceptor {
 		 * ", established successfully!!!"); } catch (IOException ex) { throw new
 		 * RuntimeException(ex); }
 		 */
+
+		ConfigLog4J.getInstance().initializeLogs();
 		APPLICATION_INFO_BEAN = createApplicationInfoBean();
 		try {
 			connectSocket();
 		} catch (Exception e) {
-			System.err.println(e.getMessage());
+			logger.error("Error occured while trying to connect to socket: {}", e);
 		}
 		IPScheduledThread.getInstance();
 		getJarPath();
@@ -312,11 +316,11 @@ public class LoggingInterceptor extends Interceptor {
 	private static void eventWritePool() {
 
 		try {
-		EventThreadPool.getInstance().setEventPoolExecutor(Executors.newScheduledThreadPool(1));
-		EventThreadPool.getInstance().getEventPoolExecutor()
-				.scheduleWithFixedDelay(EventThreadPool.getInstance().getQueuePooler(), 1, 1, TimeUnit.SECONDS);
+			EventThreadPool.getInstance().setEventPoolExecutor(Executors.newScheduledThreadPool(1));
+			EventThreadPool.getInstance().getEventPoolExecutor()
+					.scheduleWithFixedDelay(EventThreadPool.getInstance().getQueuePooler(), 1, 1, TimeUnit.SECONDS);
 		} catch (Exception e) {
-//			e.printStackTrace();
+			logger.error("Exception occured in eventWritePool: {}", e);
 		}
 	}
 
@@ -358,7 +362,7 @@ public class LoggingInterceptor extends Interceptor {
 		// return true;
 		// }
 
-		return allClasses.contains(className);
+		return INSTRUMENTED_METHODS.containsKey(className);
 	}
 
 	public com.k2cybersecurity.intcodeagent.logging.ByteBuffer preProcessTomcatByteBuffer(byte[] buffer, int limitHb) {
@@ -390,20 +394,72 @@ public class LoggingInterceptor extends Interceptor {
 
 	@Override
 	public boolean interceptMethod(ClassNode cn, MethodNode mn) {
-		// if
-		// (cn.name.equals("org/apache/struts2/dispatcher/ng/filter/StrutsPrepareAndExecuteFilter"))
-		// System.out.println("name: " + mn.name + " : " +
-		// interceptMethod.get(cn.name).contains(mn.name));
-		// else if (cn.name.equals("javax/faces/webapp/FacesServlet"))
-		// System.out.println("name: " + mn.name + " : " +
-		// interceptMethod.get(cn.name).contains(mn.name));
-//		if (cn.name.startsWith("org/hsqldb/HSQLClientConnection") || cn.name.startsWith("org/hsqldb/Session")) {
-//			System.err.println("Agent instrumenting : " + cn.name + " : " + mn.name);
-//			return true;
-//		}
-		return interceptMethod.get(cn.name).contains(mn.name);
-	}
 
+		switch (cn.name) {
+		case CLASS_ORG_HSQLDB_HSQL_CLIENT_CONNECTION:
+		case CLASS_ORG_HSQLDB_SESSION:
+			if (INSTRUMENTED_METHODS.get(cn.name).contains(mn.name))
+				JA_HEALTH_CHECK.getProtectedDB().add("HSQL");
+			break;
+		case CLASS_ORG_POSTGRESQL_CORE_V2_QUERY_EXECUTOR_IMPL:
+		case CLASS_ORG_POSTGRESQL_CORE_V3_QUERY_EXECUTOR_IMPL:
+			if (INSTRUMENTED_METHODS.get(cn.name).contains(mn.name))
+				JA_HEALTH_CHECK.getProtectedDB().add("PSQL");
+			break;
+		case CLASS_ORG_ECLIPSE_JETTY_HTTP_HTTP_PARSER:
+		case CLASS_ORG_ECLIPSE_JETTY_SERVER_HTTP_CONNECTION:
+			if (INSTRUMENTED_METHODS.get(cn.name).contains(mn.name))
+				JA_HEALTH_CHECK.setProtectedServer("JETTY");
+			break;
+		case CLASS_ORG_APACHE_CATALINA_CONNECTOR_INPUT_BUFFER:
+		case CLASS_ORG_APACHE_CATALINA_CONNECTOR_COYOTE_ADAPTER:
+			if (INSTRUMENTED_METHODS.get(cn.name).contains(mn.name))
+				JA_HEALTH_CHECK.setProtectedServer("TOMCAT");
+			break;
+		case CLASS_ORACLE_JDBC_DRIVER_T4CTT_IFUN:
+			if (INSTRUMENTED_METHODS.get(cn.name).contains(mn.name))
+				JA_HEALTH_CHECK.getProtectedDB().add("ORACLE");
+			break;
+		case CLASS_JAVA_NET_URL_CLASS_LOADER:
+			// if(INSTRUMENTED_METHODS.get(cn.name).contains(mn.name))
+			// JA_HEALTH_CHECK.getProtectedDB().add("HSQL");
+			break;
+		case CLASS_COM_MONGODB_ASYNC_CLIENT_OPERATION_EXECUTOR_IMPL:
+		case CLASS_COM_MONGODB_ASYNC_CLIENT_ASYNC_OPERATION_EXECUTOR_IMPL:
+		case CLASS_COM_MONGODB_ASYNC_CLIENT_MONGO_CLIENT_IMPL$2:
+		case CLASS_COM_MONGODB_INTERNAL_CONNECTION_DEFAULT_SERVER_CONNECTION:
+		case CLASS_COM_MONGODB_CONNECTION_DEFAULT_SERVER_CONNECTION:
+			if (INSTRUMENTED_METHODS.get(cn.name).contains(mn.name))
+				JA_HEALTH_CHECK.getProtectedDB().add("MONGO");
+			break;
+		case CLASS_COM_MYSQL_JDBC_SERVER_PREPARED_STATEMENT:
+		case CLASS_COM_MYSQL_CJ_NATIVE_SESSION:
+		case CLASS_COM_MYSQL_CJ_MYSQLA_IO_MYSQLA_PROTOCOL:
+		case CLASS_COM_MYSQL_JDBC_MYSQL_IO:
+			if (INSTRUMENTED_METHODS.get(cn.name).contains(mn.name))
+				JA_HEALTH_CHECK.getProtectedDB().add("MYSQL");
+			break;
+		case CLASS_COM_MICROSOFT_SQLSERVER_JDBC_SQL_SERVER_STATEMENT:
+			if (INSTRUMENTED_METHODS.get(cn.name).contains(mn.name))
+				JA_HEALTH_CHECK.getProtectedDB().add("MSSQL");
+			break;
+		case CLASS_JAVA_LANG_PROCESS_IMPL:
+			if (INSTRUMENTED_METHODS.get(cn.name).contains(mn.name))
+				JA_HEALTH_CHECK.setRceProtection(true);
+			break;
+		default:
+			break;
+
+		}
+		boolean isInstrument = INSTRUMENTED_METHODS.get(cn.name).contains(mn.name);
+		if (isInstrument) {
+			String codeName = cn.name.substring(cn.name.lastIndexOf('/') + 1) + "."
+					+ INSTRUMENTED_METHODS.get(cn.name).indexOf(mn.name);
+			JA_HEALTH_CHECK.getInstrumentedMethods().add(codeName);
+		}
+		return isInstrument;
+	}
+	
 	private void onTerminationOfHookedMethods(Object source, String eId) {
 		try {
 			Integer executionId = Integer.parseInt(eId.split(COLON_SEPERATOR)[1]);
@@ -431,15 +487,13 @@ public class LoggingInterceptor extends Interceptor {
 //			e.printStackTrace();
 		}
 	}
-
+	
 	@SuppressWarnings({ "rawtypes" })
 	@Override
 	protected void doOnStart(Object source, Object[] arg, String eId) {
 		String sourceString = null;
 		Integer executionId = Integer.parseInt(eId.split(COLON_SEPERATOR)[1]);
-		// System.out.println("eid: " + eId + " executionId:" + executionId);
 		long threadId = Thread.currentThread().getId();
-		// System.out.println("Thread Id: " + threadId);
 		if (source instanceof Method) {
 			sourceString = ((Method) source).toGenericString();
 
@@ -448,12 +502,13 @@ public class LoggingInterceptor extends Interceptor {
 		} else {
 			return;
 		}
-		// System.out.println( ": " +sourceString);
-//		System.out.println("doOnStart : " + eId + " : " + sourceString);
+
+		// logger.debug("Executionid: " + eId);
+		// logger.debug("Thread Id: " + threadId);
+		// logger.debug( "SourceString: " +sourceString);
 
 		if (sourceString == null)
 			return;
-
 
 		if (JETTY_REQUEST_ON_FILLABLE.equals(sourceString)) {
 			ServletEventPool.getInstance().incrementServletInfoReference(threadId, executionId, false);
@@ -463,6 +518,7 @@ public class LoggingInterceptor extends Interceptor {
 				ConcurrentLinkedDeque<ExecutionMap> executionMaps = new ConcurrentLinkedDeque<ExecutionMap>();
 				executionMaps.add(new ExecutionMap(executionId, servletInfo));
 				ServletEventPool.getInstance().getRequestMap().put(threadId, executionMaps);
+
 			} else {
 				servletInfo = new ServletInfo();
 				ServletEventPool.getInstance().getRequestMap().get(threadId)
@@ -500,10 +556,10 @@ public class LoggingInterceptor extends Interceptor {
 					} else {
 						servletInfo.setRawRequest(servletInfo.getRawRequest() + requestContent);
 					}
-					// System.out.println("Request Param : " + servletInfo);
+					// logger.debug("Request Param : " + servletInfo);
 				}
 			} catch (Exception e) {
-				// e.printStackTrace();
+				logger.error("Exception occured in JETTY_PARSE_NEXT: {}", e);
 			}
 		} else if (TOMCAT_SETBYTEBUFFER.equals(sourceString)) {
 			ServletInfo servletInfo;
@@ -532,18 +588,13 @@ public class LoggingInterceptor extends Interceptor {
 					} else {
 						servletInfo.setRawRequest(servletInfo.getRawRequest() + requestContent);
 					}
-					// System.out.println("Request Param : " + servletInfo);
+					// logger.debug("Request Param : " + servletInfo);
 				}
 			} catch (Exception e) {
-				// e.printStackTrace();
+				logger.error("Exception occured in TOMCAT_SETBYTEBUFFER: {}", e);
 			}
 		} else if (TOMCAT_COYOTE_ADAPTER_SERVICE.equals(sourceString)) {
-			// System.out.println("RequestMap : " +
-			// ServletEventPool.getInstance().getRequestMap());
-			// System.out.println("RequestMapRef : " +
-			// ServletEventPool.getInstance().getServletInfoReferenceRecord());
-			// System.out.println("Coyote Service: " + threadId + " : " + sourceString);
-
+			
 			ServletEventPool.getInstance().incrementServletInfoReference(threadId, executionId, false);
 			if (tomcatVersion == null || tomcatVersion.isEmpty()) {
 				setTomcatVersion();
@@ -588,7 +639,7 @@ public class LoggingInterceptor extends Interceptor {
 						positionHb = (Integer) position.get(byteBuffer);
 						byteBufferFound = true;
 					} catch (Exception e) {
-						// e.printStackTrace();
+						logger.error("Exception occured in TOMCAT_COYOTE_ADAPTER_SERVICE: {}", e);
 					}
 				} else if (tomcatMajorVersion == TOMCAT_7) {
 					try {
@@ -608,6 +659,8 @@ public class LoggingInterceptor extends Interceptor {
 						}
 						byteBufferFound = true;
 					} catch (Exception e) {
+						logger.error("Exception occured in TOMCAT_COYOTE_ADAPTER_SERVICE: {}", e);
+
 					}
 				}
 
@@ -627,11 +680,11 @@ public class LoggingInterceptor extends Interceptor {
 							positionHb);
 					requestContent = new String(buff.getByteArray(), 0, buff.getLimit(), StandardCharsets.UTF_8);
 					servletInfo.setRawRequest(requestContent);
-					// System.out.println("Request Param : " + threadId + ":" + executionId + "| : "
-					// + servletInfo);
+					// logger.debug("Request Param : " + threadId + ":" + executionId + " : " +
+					// servletInfo);
 				}
 			} catch (Exception e) {
-				// e.printStackTrace();
+				logger.error("Exception occured in TOMCAT_COYOTE_ADAPTER_SERVICE buffer processing : {}", e);
 			}
 			// in case of executeInternal()
 		} else {
@@ -639,20 +692,9 @@ public class LoggingInterceptor extends Interceptor {
 			if (MYSQL_SOURCE_METHOD_LIST.contains(sourceString) && arg[0] != null) {
 				processMysqlStatement(arg, threadId, sourceString);
 			}
-
-			// System.out.println("RequestMap : " +
-			// ServletEventPool.getInstance().getRequestMap() );
-			// System.out.println("RequestMapRef : " +
-			// ServletEventPool.getInstance().getServletInfoReferenceRecord() );
-			// System.out.println("Other event : " + threadId + " : " + executionId +":" +
-			// sourceString + " : " + arg[0] + " : " + arg[1] + " current request map : " +
-			// ServletEventPool.getInstance().getRequestMap());
-
 			try {
 				if (ServletEventPool.getInstance().getRequestMap().containsKey(threadId) && ExecutionMap
 						.find(executionId, ServletEventPool.getInstance().getRequestMap().get(threadId)) != null) {
-					// System.out.println("Calling processor thread : "+ threadId + " : " +
-					// executionId);
 					ServletEventPool.getInstance().incrementServletInfoReference(threadId, executionId, true);
 					EventThreadPool.getInstance().processReceivedEvent(source, arg, executionId,
 							Thread.currentThread().getStackTrace(), threadId, sourceString);
@@ -661,7 +703,7 @@ public class LoggingInterceptor extends Interceptor {
 			}
 
 		}
-		// System.out.println("started sourceString : "+ sourceString);
+
 	}
 
 	@Override
@@ -703,7 +745,7 @@ public class LoggingInterceptor extends Interceptor {
 				String originalSql = (String) originalSqlField.get(obj);
 				args[thisPointerLocation] = originalSql;
 			} catch (Exception e) {
-//				e.printStackTrace();
+				logger.error("Exception occured in processMysqlStatement CONNECTOR_5: {}", e);
 			}
 		} else if (objClass.getName().equals(MYSQL_PREPARED_STATEMENT_6)
 				&& (sourceString.equals(MYSQL_CONNECTOR_6_SOURCE) || sourceString.equals(MYSQL_CONNECTOR_6_0_2_SOURCE)
@@ -715,7 +757,7 @@ public class LoggingInterceptor extends Interceptor {
 
 				args[thisPointerLocation] = originalSql;
 			} catch (Exception e) {
-//				e.printStackTrace();
+				logger.error("Exception occured in processMysqlStatement CONNECTOR_6 : {}", e);
 			}
 		} else if (objClass.getName().equals(MYSQL_PREPARED_STATEMENT_8)
 				&& sourceString.equals(MYSQL_CONNECTOR_8_SOURCE)) {
@@ -737,7 +779,7 @@ public class LoggingInterceptor extends Interceptor {
 					args[thisPointerLocation] = originalSql;
 				}
 			} catch (Exception e) {
-//				e.printStackTrace();
+				logger.error("Exception occured in processMysqlStatement CONNECTOR_8 : {}", e);
 			}
 
 		}
@@ -771,22 +813,26 @@ public class LoggingInterceptor extends Interceptor {
 			tomcatVersion = (String) serverNumberField.get(null);
 
 			tomcatMajorVersion = Integer.parseInt(tomcatVersion.split(VERSION_SPLIT_EXPR)[0]);
-			System.out.println(TOMCAT_VERSION_DETECTED_MSG + tomcatMajorVersion + COLON_SEPERATOR + tomcatVersion);
+			logger.info(TOMCAT_VERSION_DETECTED_MSG + tomcatMajorVersion + COLON_SEPERATOR + tomcatVersion);
 
 		} catch (Exception e) {
-			System.err.println("Unable to find Tomcat Version:" + e.getMessage());
+			logger.error("Unable to find Tomcat Version: {}", e);
 		}
 	}
-	
+
 	protected static void closeSocket() {
 		if (EventThreadPool.getInstance().getSocket() != null) {
 			try {
 				EventThreadPool.getInstance().getSocket().close();
 				EventThreadPool.getInstance().setSocket(null);
 			} catch (IOException e) {
-//				System.err.println("Error in closing socket : " + e.getMessage());
+				logger.error("Error in closeSocket: {}", e);
 			}
 		}
+	}
+
+	public static void setLogger() {
+		LoggingInterceptor.logger = LogManager.getLogger(LoggingInterceptor.class);
 	}
 
 }

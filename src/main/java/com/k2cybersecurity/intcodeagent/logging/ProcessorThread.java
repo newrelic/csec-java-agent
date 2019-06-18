@@ -1,7 +1,9 @@
 package com.k2cybersecurity.intcodeagent.logging;
 
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.CLASS_LOADER_IDENTIFIER;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.*;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.HSQL_V1_8_CONNECTION;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.HSQL_V1_8_SESSION;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.HSQL_V2_4;
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MOGNO_ELEMENT_DATA_FIELD;
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MONGO_COLLECTION_FIELD;
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MONGO_COLLECTION_WILDCARD;
@@ -66,6 +68,8 @@ import java.util.Set;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.regex.Pattern;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 //import org.brutusin.commons.json.spi.JsonCodec;
 import org.brutusin.instrumentation.Agent;
 import org.json.simple.JSONArray;
@@ -80,11 +84,10 @@ import com.k2cybersecurity.intcodeagent.models.javaagent.ServletInfo;
 
 public class ProcessorThread implements Runnable {
 
-	private static final Map<String, List<String>> interceptMethod;
 	private static final Pattern PATTERN;
 	private static final Set<String> executorMethods;
 	private static final Set<String> mongoExecutorMethods;
-
+	private static Logger logger;
 	private Object source;
 	private Object[] arg;
 	private Integer executionId;
@@ -101,11 +104,6 @@ public class ProcessorThread implements Runnable {
 		executorMethods = new HashSet<>(Arrays.asList(IAgentConstants.EXECUTORS));
 		executorMethods.addAll(Arrays.asList(IAgentConstants.MONGO_EXECUTORS));
 		mongoExecutorMethods = new HashSet<>(Arrays.asList(IAgentConstants.MONGO_EXECUTORS));
-		interceptMethod = new HashMap<>();
-		for (int i = 0; i < IAgentConstants.ALL_METHODS.length; i++) {
-			interceptMethod.put(IAgentConstants.ALL_CLASSES[i],
-					new ArrayList<String>(Arrays.asList(IAgentConstants.ALL_METHODS[i])));
-		}
 	}
 
 	/**
@@ -129,7 +127,6 @@ public class ProcessorThread implements Runnable {
 		this.parser = new JSONParser();
 		this.eventQueue = EventThreadPool.getInstance().getEventQueue();
 		this.currentSocket = EventThreadPool.getInstance().getSocket();
-
 	}
 
 	/**
@@ -185,8 +182,6 @@ public class ProcessorThread implements Runnable {
 						LoggingInterceptor.VMPID, LoggingInterceptor.applicationUUID,
 						this.threadId + IAgentConstants.COLON_SEPERATOR + this.executionId);
 
-				// System.out.println("Inside processor servlet info found: threadId:
-				// "+this.threadId +". "+ intCodeResultBean.getServletInfo());
 				String klassName = null;
 				if (mongoExecutorMethods.contains(sourceString)) {
 					intCodeResultBean.setValidationBypass(true);
@@ -196,7 +191,6 @@ public class ProcessorThread implements Runnable {
 				StackTraceElement[] trace = this.stackTrace;
 				if (IAgentConstants.FILE_OPEN_EXECUTORS.contains(sourceString)) {
 
-					// System.out.println("file operation found");
 					boolean javaIoFile = false;
 					for (int i = 0; i < trace.length; i++) {
 						klassName = trace[i].getClassName();
@@ -211,20 +205,19 @@ public class ProcessorThread implements Runnable {
 							if (intCodeResultBean.getUserClassName() != null
 									&& !intCodeResultBean.getUserClassName().isEmpty()) {
 
-								// System.out.println("result bean : "+intCodeResultBean);
+//								logger.debug("result bean : "+intCodeResultBean);
 								generateEvent(intCodeResultBean);
 							}
-							// System.out.println("breaking");
+							logger.debug("breaking");
 							break;
 						}
 						if (klassName.equals(IAgentConstants.JAVA_IO_FILE)) {
-							// System.out.println("javaio found");
-							// System.out.println("next class : "+trace[i+1]);
+//							logger.debug("javaio found");
+//							logger.debug("next class : "+trace[i+1]);
 							javaIoFile = true;
 						}
 					}
 					ServletEventPool.getInstance().decrementServletInfoReference(threadId, executionId, true);
-					// System.out.println(threadId + " : remove from another method");
 					return;
 				}
 
@@ -251,7 +244,6 @@ public class ProcessorThread implements Runnable {
 								intCodeResultBean.setCurrentMethod(trace[i - 1].getMethodName());
 						} else {
 							ServletEventPool.getInstance().decrementServletInfoReference(threadId, executionId, true);
-							// System.out.println(threadId + " : remove from another method");
 							return;
 						}
 						break;
@@ -271,7 +263,7 @@ public class ProcessorThread implements Runnable {
 
 			}
 		} catch (Exception e) {
-//			e.printStackTrace();
+			logger.error("Error in run: {}", e);
 		} finally {
 			ServletEventPool.getInstance().decrementServletInfoReference(threadId, executionId, true);
 		}
@@ -425,32 +417,9 @@ public class ProcessorThread implements Runnable {
 				sqlObjectLocation = thisPointerLocation;
 			}
 			parameters.add(String.valueOf(arg[sqlObjectLocation]));
-//			if (arg[1] != null && !arg[1].toString().isEmpty()
-//					&& !sourceString.equals(IAgentConstants.MYSQL_CONNECTOR_5_0_4_PREPARED_SOURCE)) {
-//				
-//			} else {
-//				Object obj = args[0];
-//				if (sourceString.equals(IAgentConstants.MYSQL_CONNECTOR_5_0_4_PREPARED_SOURCE)) {
-//					obj = args[args.length - 1];
-//				}
-//				Class<?> objClass = obj.getClass();
-//				if (objClass.getName().equals(IAgentConstants.MYSQL_PREPARED_STATEMENT_5)
-//						|| objClass.getName().equals(IAgentConstants.MYSQL_PREPARED_STATEMENT_5_0_4)
-//						|| objClass.getName().equals(IAgentConstants.MYSQL_PREPARED_STATEMENT_42)
-//						|| objClass.getName().equals(IAgentConstants.MYSQL_PREPARED_STATEMENT_4)
-//						|| objClass.getName().equals(IAgentConstants.MYSQL_PREPARED_STATEMENT_6)
-//						|| objClass.getName().equals(IAgentConstants.MYSQL_PREPARED_STATEMENT_8)) {
-//					String id = threadId + IAgentConstants.COLON_SEPERATOR + obj.hashCode();
-//					String originalSql = EventThreadPool.getInstance().getMySqlPreparedStatementsMap(id);
-//					if (originalSql != null) {
-//						EventThreadPool.getInstance().setMySqlPreparedStatementsMap(id, null);
-//						parameters.add(originalSql);
-//					}
-//				}
-//			}
 
 		} catch (Exception e) {
-//			e.printStackTrace();
+			logger.error("Error in getMySQLParameterValue: {}", e);
 		}
 	}
 
@@ -645,7 +614,7 @@ public class ProcessorThread implements Runnable {
 				parameters.add(insertRequests.toString());
 			} else {
 
-				// System.out.println(protocol.getClass().getName());
+//				logger.debug(protocol.getClass().getName());
 
 			}
 
@@ -715,7 +684,7 @@ public class ProcessorThread implements Runnable {
 
 			}
 		} catch (Exception e) {
-//			e.printStackTrace();
+			logger.error("Error in getOracleParameterValue: {}", e);
 		}
 		return parameters;
 	}
@@ -755,12 +724,11 @@ public class ProcessorThread implements Runnable {
 					Object json = parser.parse(mapper.writeValueAsString(obj[i]));
 					parameters.add(json);
 				}
-//				parameters.addAll((List<String>) parser.parse(mapper.writeValueAsString(obj)));
 			}
 
 		} catch (Throwable th) {
 			parameters.add((obj != null) ? obj.toString() : null);
-//			th.printStackTrace();
+			logger.error("Error in toString: {}", th);
 		}
 		return parameters;
 	}
@@ -776,7 +744,7 @@ public class ProcessorThread implements Runnable {
 				sqlField.setAccessible(true);
 				parameters.add((String) sqlField.get(object));
 			} catch (Exception e) {
-//				e.printStackTrace();
+				logger.error("Error in getHSQLParameterValue for HSQL_V2_4: {}", e);
 			}
 			return;
 		case HSQL_V1_8_SESSION:
@@ -786,7 +754,7 @@ public class ProcessorThread implements Runnable {
 				mainStringField.setAccessible(true);
 				parameters.add((String) mainStringField.get(object));
 			} catch (Exception e) {
-//				e.printStackTrace();
+				logger.error("Error in getHSQLParameterValue for HSQL_V1_8_CONNECTION: {}", e);
 			}
 			return;
 		}
@@ -814,7 +782,7 @@ public class ProcessorThread implements Runnable {
 				parameters.add(paramArray);
 			} catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException
 					| JsonProcessingException e) {
-//				e.printStackTrace();
+				logger.error("Error in getPSQLParameterValue: {}", e);
 			}
 
 		}
@@ -863,32 +831,31 @@ public class ProcessorThread implements Runnable {
 				JavaAgentDynamicPathBean dynamicJarPathBean = new JavaAgentDynamicPathBean(
 						LoggingInterceptor.applicationUUID, System.getProperty(IAgentConstants.USER_DIR),
 						new ArrayList<String>(Agent.jarPathSet), list);
-//					System.out.println("dynamic jar path bean : " + dynamicJarPathBean);
 				eventQueue.add(dynamicJarPathBean);
 			} catch (IllegalStateException e) {
-				System.err.println("Dropping dynamicJarPathBean event " + intCodeResultBean.getId()
-						+ " due to buffer capacity reached.");
+				logger.info("Dropping dynamicJarPathBean event " + intCodeResultBean.getId()
+						+ " due to buffer capacity reached");
+				LoggingInterceptor.JA_HEALTH_CHECK.incrementDropCount();
 			} catch (Exception e) {
-//				e.printStackTrace();
+				logger.error("Error in generateEvent while creating JavaAgentDynamicPathBean: {}", e);
 			}
 		} else {
-//				System.out.println("Final request map 1: " + ServletEventPool.getInstance().getRequestMap().get(this.threadId));
-//				System.out.println("count: " + ServletEventPool.getInstance().getServletInfoReferenceRecord().get(threadId));
-//				System.out.println("Final request map 2: " + ServletEventPool.getInstance().getRequestMap().get(this.threadId));
-//				System.out.println("count: " + ServletEventPool.getInstance().getServletInfoReferenceRecord().get(threadId));
 			try {
 				intCodeResultBean.setServletInfo(new ServletInfo(ExecutionMap.find(this.executionId,
 						ServletEventPool.getInstance().getRequestMap().get(this.threadId))));
 				eventQueue.add(intCodeResultBean);
-//				System.out.println("publish event: " + intCodeResultBean);
+//				logger.debug("publish event: " + intCodeResultBean);
 			} catch (IllegalStateException e) {
-				System.err.println("Dropping event " + intCodeResultBean.getId() + " due to buffer capacity reached.");
+				logger.info("Dropping event " + intCodeResultBean.getId() + " due to buffer capacity reached: {}", e);
+				LoggingInterceptor.JA_HEALTH_CHECK.incrementDropCount();
 			} catch (Exception e) {
-//				e.printStackTrace();
-				System.err.println("Thread id: " + this.threadId + ", eid: " + this.executionId + " map: "
-						+ ServletEventPool.getInstance().getRequestMap().get(this.threadId));
+				logger.error("Error in generateEvent while creating IntCodeResultBean: {}", e);
 			}
 
 		}
+	}
+	
+	public static void setLogger() {
+		ProcessorThread.logger = LogManager.getLogger(ProcessorThread.class);
 	}
 }

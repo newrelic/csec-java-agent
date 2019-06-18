@@ -21,6 +21,8 @@ public class ApplicationInfoBean extends AgentBasicInfo implements Serializable{
 	private JSONArray jvmArguments;
 	private Long startTime;
 	private String applicationUUID;
+	private String javaCommand;
+	private String classPath;
 	
 	public ApplicationInfoBean() {}
 	
@@ -28,7 +30,11 @@ public class ApplicationInfoBean extends AgentBasicInfo implements Serializable{
 	    super();
 		this.pid = pid;
 		this.applicationUUID = applicationUUID;
-		this.startTime = System.currentTimeMillis();
+		System.out.println("current thread : "+ Thread.currentThread().getName());
+		System.out.println("java command : "+ System.getProperty("sun.java.command"));
+		System.out.println("class path : "+ System.getProperty("java.class.path"));
+		this.javaCommand = System.getProperty("sun.java.command");
+		this.classPath = System.getProperty("java.class.path");
 	}
 	/**
 	 * @return the pid
@@ -130,6 +136,22 @@ public class ApplicationInfoBean extends AgentBasicInfo implements Serializable{
 	 */
 	public void setIsHost(Boolean isHost) {
 		this.isHost = isHost;
+	}
+
+	public String getClassPath() {
+		return classPath;
+	}
+
+	public void setClassPath(String classPath) {
+		this.classPath = classPath;
+	}
+
+	public String getJavaCommand() {
+		return javaCommand;
+	}
+
+	public void setJavaCommand(String javaCommand) {
+		this.javaCommand = javaCommand;
 	}
 	
 }

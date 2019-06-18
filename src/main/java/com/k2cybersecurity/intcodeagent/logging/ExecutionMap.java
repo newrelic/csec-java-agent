@@ -3,6 +3,9 @@ package com.k2cybersecurity.intcodeagent.logging;
 import java.util.Iterator;
 import java.util.concurrent.ConcurrentLinkedDeque;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.k2cybersecurity.intcodeagent.models.javaagent.ServletInfo;
@@ -12,7 +15,8 @@ public class ExecutionMap {
 	private Integer executionId;
 	
 	private ServletInfo servletInfo;
-
+	private static Logger logger;
+	
 	/**
 	 * @param executionId
 	 * @param servletInfo
@@ -108,5 +112,9 @@ public class ExecutionMap {
 		} catch (JsonProcessingException e) {
 			return null;
 		}
+	}
+	
+	public static void setLogger() {
+		ExecutionMap.logger = LogManager.getLogger(ExecutionMap.class);
 	}
 }
