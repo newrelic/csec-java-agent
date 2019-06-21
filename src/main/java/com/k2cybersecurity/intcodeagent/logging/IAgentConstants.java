@@ -88,6 +88,10 @@ public interface IAgentConstants {
 
 	String SYSYTEM_CALL_START = "static java.lang.Process java.lang.ProcessImpl.start(java.lang.String[],java.util.Map<java.lang.String, java.lang.String>,java.lang.String,java.lang.ProcessBuilder$Redirect[],boolean) throws java.io.IOException";
 
+	// http client
+	String CLASS_HTTP_REQUEST_EXECUTOR = "org/apache/http/protocol/HttpRequestExecutor";
+
+	
 	List<String> FILE_OPEN_EXECUTORS = Arrays.asList(new String[] {
 			"public java.io.File(java.lang.String,java.lang.String)", "public java.io.File(java.lang.String)" });
 
@@ -214,6 +218,7 @@ public interface IAgentConstants {
 			put(CLASS_ORG_POSTGRESQL_CORE_V2_QUERY_EXECUTOR_IMPL, Collections.singletonList("sendQuery"));
 			put(CLASS_ORG_HSQLDB_SESSION, Arrays.asList(new String[] { "executeCompiledStatement","execute" }));
 			put(CLASS_ORG_HSQLDB_HSQL_CLIENT_CONNECTION, Collections.singletonList("execute"));
+			put(CLASS_HTTP_REQUEST_EXECUTOR, Collections.singletonList("doSendRequest"));
 		}
 	};
 

@@ -504,7 +504,7 @@ public class LoggingInterceptor extends Interceptor {
 
 		// logger.debug("Executionid: " + eId);
 		// logger.debug("Thread Id: " + threadId);
-		// logger.debug( "SourceString: " +sourceString);
+		 logger.debug( "SourceString: " +sourceString);
 
 		if (sourceString == null)
 			return;
