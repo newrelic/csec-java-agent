@@ -474,7 +474,6 @@ public class LoggingInterceptor extends Interceptor {
 				// System.out.println("In doOnThrowableThrown :" + sourceString + " : " +
 				// executionId + " : " + threadId);
 				if (sourceString != null && (TOMCAT_COYOTE_ADAPTER_SERVICE.equals(sourceString)
-
 						|| JETTY_REQUEST_ON_FILLABLE.equals(sourceString))) {
 					ServletEventPool.getInstance().decrementServletInfoReference(threadId, executionId, false);
 					// System.out.println("Request map entry removed for threadID " + threadId);

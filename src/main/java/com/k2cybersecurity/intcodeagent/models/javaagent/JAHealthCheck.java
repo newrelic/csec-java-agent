@@ -30,6 +30,7 @@ public class JAHealthCheck  extends AgentBasicInfo implements Serializable{
 	
 	public JAHealthCheck(String applicationUUID) {
 		super();
+		this.rceProtection = false;
 		this.applicationUUID = applicationUUID;
 		this.setInstrumentedMethods(new HashSet<String>());
 		this.setProtectedDB(new HashSet<String>());
