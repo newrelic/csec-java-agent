@@ -130,6 +130,8 @@ import com.k2cybersecurity.intcodeagent.models.javaagent.ServletInfo;
 
 public class LoggingInterceptor extends Interceptor {
 
+	private static final String SCOPE = ".scope";
+	private static final String DOCKER_1_13 = "/docker-";
 	private static final int SOCKET_CONNECT_TIMEOUT = 500;
 	protected static Integer VMPID;
 	protected static final String applicationUUID;
@@ -177,6 +179,12 @@ public class LoggingInterceptor extends Interceptor {
 				index = st.lastIndexOf(LXC_DIR);
 				if (index > -1) {
 					return st.substring(index + 4);
+				}
+				//docker version 1.13.1
+				index = st.lastIndexOf(DOCKER_1_13);
+				int indexEnd = st.lastIndexOf(SCOPE);
+				if (index > -1 && indexEnd >-1) {
+					return st.substring(index + 8, indexEnd);
 				}
 			}
 
