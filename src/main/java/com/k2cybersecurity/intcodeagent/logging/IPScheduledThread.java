@@ -14,9 +14,8 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import com.k2cybersecurity.intcodeagent.models.javaagent.JAHealthCheck;
 
@@ -47,25 +46,24 @@ public class IPScheduledThread {
 
 					} catch (SocketException ex) {
 						// if ack fails, socket needs to be properly closed as it is not done implicitly
-						logger.error("Error in writing");
+						logger.log(Level.WARNING,"Error in writing");
 						LoggingInterceptor.closeSocket();
 					} catch (NullPointerException ex) {
-						logger.error("No reference to Socket's OutputStream");
+						logger.log(Level.WARNING,"No reference to Socket's OutputStream");
 					} catch (Exception e) {
-						logger.error("Error while trying to verify connection: {}" ,e);
+						logger.log(Level.WARNING,"Error while trying to verify connection: {0}" ,e);
 					}
 					if (hostip == null || hostip.equals("")) {
-						logger.debug("Host ip not found");
+						logger.log(Level.FINE,"Host ip not found");
 					} else if (!LoggingInterceptor.hostip.equals(hostip) || (socket == null)
 							|| (!socket.isConnected()) || (socket.isClosed())) {
 						LoggingInterceptor.connectSocket();
-						LoggingInterceptor.getJarPath();
-						logger.debug("K2-JavaAgent re-installed successfully.");
+						logger.log(Level.FINE,"K2-JavaAgent re-installed successfully.");
 					} else {
 						
 					}
 				} catch (Exception e) {
-					logger.error("Error in IPScheduledThread : {}", e);
+					logger.log(Level.WARNING,"Error in IPScheduledThread : {0}", e);
 				}
 			}
 		};
@@ -87,12 +85,12 @@ public class IPScheduledThread {
 				instance = new IPScheduledThread();
 			return instance;
 		} catch (Exception e) {
-			logger.error("Error while starting: {}" ,e);
+			logger.log(Level.WARNING,"Error while starting: {0}" ,e);
 		}
 		throw null;
 	}
 	
 	public static void setLogger() {
-		IPScheduledThread.logger = LogManager.getLogger(IPScheduledThread.class);
+		IPScheduledThread.logger = Logger.getLogger(IPScheduledThread.class.getName());
 	}
 }

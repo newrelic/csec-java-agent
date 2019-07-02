@@ -2,65 +2,41 @@ package com.k2cybersecurity.intcodeagent.logging;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
-import java.util.Map;
 import java.util.Properties;
+import java.util.logging.FileHandler;
+import java.util.logging.Formatter;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
 
-import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.core.Logger;
-import org.apache.logging.log4j.core.LoggerContext;
-import org.apache.logging.log4j.core.appender.RollingFileAppender;
-import org.apache.logging.log4j.core.appender.RollingFileAppender.Builder;
-import org.apache.logging.log4j.core.appender.rolling.DirectWriteRolloverStrategy;
-import org.apache.logging.log4j.core.appender.rolling.SizeBasedTriggeringPolicy;
-import org.apache.logging.log4j.core.appender.rolling.TriggeringPolicy;
-import org.apache.logging.log4j.core.appender.rolling.action.Action;
-import org.apache.logging.log4j.core.config.AppenderRef;
-import org.apache.logging.log4j.core.config.Configuration;
-import org.apache.logging.log4j.core.config.LoggerConfig;
-import org.apache.logging.log4j.core.config.Property;
-import org.apache.logging.log4j.core.impl.Log4jContextFactory;
-import org.apache.logging.log4j.core.layout.PatternLayout;
-import org.apache.logging.log4j.spi.LoggerContextFactory;
 import org.brutusin.instrumentation.Agent;
 
 import com.k2cybersecurity.intcodeagent.models.javaagent.AgentBasicInfo;
+import com.k2cybersecurity.intcodeagent.models.javaagent.JAHealthCheck;
 
 public class ConfigLog4J {
 
-	private static final String PROPERTIES_NAME = "properties.name";
-	private static final String PROPERTIES_VALUE = "properties.value";
-	private static final String APPENDERS_ROLLINGFILE_NAME = "appenders.rollingfile.name";
-	private static final String APPENDERS_ROLLINGFILE_PATTERNLAYOUT = "appenders.rollingfile.patternlayout";
-	private static final String APPENDER_POLICY_SIZE = "appenders.policies.sizebasedtriggeringpolicy.size";
-	private static final String APPENDER_STRATEGY_MAXFILES = "appenders.strategy.maxfiles";
-	private static final String APPENDER_STRATEGY_COMPRESSION_LVL = "appenders.strategy.compressionlevel";
-	private static final String LOGGER_NAME = "loggers.logger.name";
-	private static final String LOGGER_LVL = "loggers.logger.level";
-	private static final String LOGGER_APPENDER_REF = "loggers.logger.appenderRef";
-	private static final String JCS_LOGGER_NAME = "loggers.jcslogger.name";
-	private static final String LOGGER_ADDITIVITY = "loggers.logger.additivity";
-
-	private static ConfigLog4J loggerInstance;
-	private Level level;
-	private String propertyName;
-	private String propertyValue;
-	private String appenderName;
-	private String appenderPatternlayout;
-	private String appenderTriggerPolicySize;
-	private String loggerName;
-	private String loggerAppenderRef;
-	private String jcsLoggerName;
-	private String strategyMaxFiles;
-	private String stratefyCompressionLevel;
-	private String fileName = "/etc/k2-adp/logs/k2_java_agent-" + Agent.applicationUUID + ".log";
-	private boolean loggerAdditivity;
+//	private static final String APPENDERS_ROLLINGFILE_NAME = "k2.log.handler.name";
+//	private static final String APPENDERS_ROLLINGFILE_PATTERNLAYOUT = "k2.log.formatter.patternlayout";
+	private static final String HANDLER_MAX_FILE_SIZE_PROP = "k2.log.handler.maxfilesize";
+	private static final String HANDLER_MAX_FILE_SIZE_UNIT_PROP = "k2.log.handler.maxfilesize.unit";
+	private static final String HANDLER_MAX_FILES_PROP = "k2.log.handler.maxfiles";
+	private static final String LOGGER_NAME_PROP = "k2.log.logger.name";
+	private static final String LOGGER_LVL_PROP = "k2.log.logger.level";
+	private static final String LOGGER_ADDITIVITY_PROP = "k2.log.logger.additivity";
 
 	private Class<?>[] classes = { EIDCount.class, EventThreadPool.class, ExecutionMap.class, IPScheduledThread.class,
 			LoggingInterceptor.class, ProcessorThread.class, ServletEventPool.class, ServletEventProcessor.class,
-			AgentBasicInfo.class };
+			AgentBasicInfo.class, JAHealthCheck.class };
 
-	private Action[] emptyActions = new Action[0];
+	private static ConfigLog4J loggerInstance;
+	public static Level level;
+	private int handlerMaxFileSize;
+	private String loggerName;
+	private String handlerMaxFiles;
+	private boolean loggerAdditivity;
+	private String fileName = "/etc/k2-adp/logs/k2_java_agent-" + Agent.applicationUUID + ".log";
+
 	private Object[] emptyObjects = new Object[0];
 	private Class<?>[] emptyClasses = new Class<?>[0];
 
@@ -72,70 +48,55 @@ public class ConfigLog4J {
 		} catch (IOException e) {
 			System.err.println("Error loading Properties!");
 		}
-		this.propertyName = props.getProperty(PROPERTIES_NAME);
-		this.propertyValue = props.getProperty(PROPERTIES_VALUE);
-		this.appenderName = props.getProperty(APPENDERS_ROLLINGFILE_NAME);
-		this.appenderPatternlayout = props.getProperty(APPENDERS_ROLLINGFILE_PATTERNLAYOUT);
-		this.appenderTriggerPolicySize = props.getProperty(APPENDER_POLICY_SIZE);
-		this.strategyMaxFiles = props.getProperty(APPENDER_STRATEGY_MAXFILES);
-		this.stratefyCompressionLevel = props.getProperty(APPENDER_STRATEGY_COMPRESSION_LVL);
-		this.loggerName = props.getProperty(LOGGER_NAME);
-		this.loggerAdditivity = Boolean.parseBoolean(props.getProperty(LOGGER_ADDITIVITY));
+		this.handlerMaxFileSize = Integer.parseInt(props.getProperty(HANDLER_MAX_FILE_SIZE_PROP));
+		this.handlerMaxFiles = props.getProperty(HANDLER_MAX_FILES_PROP);
+		this.loggerName = props.getProperty(LOGGER_NAME_PROP);
+		this.loggerAdditivity = Boolean.parseBoolean(props.getProperty(LOGGER_ADDITIVITY_PROP));
 
-		String level = props.getProperty(LOGGER_LVL);
-		if (level.equals("OFF")) {
-			this.level = Level.OFF;
-		} else if (level.equals("FATAL")) {
-			this.level = Level.FATAL;
-		} else if (level.equals("ERROR")) {
-			this.level = Level.ERROR;
-		} else if (level.equals("WARN")) {
-			this.level = Level.WARN;
-		} else if (level.equals("INFO")) {
-			this.level = Level.INFO;
-		} else if (level.equals("DEBUG")) {
-			this.level = Level.DEBUG;
-		} else if (level.equals("TRACE")) {
-			this.level = Level.TRACE;
-		} else if (level.equals("ALL")) {
-			this.level = Level.ALL;
+		String loggerMaxSizeUnit = props.getProperty(HANDLER_MAX_FILE_SIZE_UNIT_PROP);
+		if (loggerMaxSizeUnit.equals("KB")) {
+			this.handlerMaxFileSize *= 1024;
+		} else if (loggerMaxSizeUnit.equals("MB")) {
+			this.handlerMaxFileSize *= 1048576; // 1024 * 1024
 		}
-
-		this.loggerAppenderRef = props.getProperty(LOGGER_APPENDER_REF);
-		this.jcsLoggerName = props.getProperty(JCS_LOGGER_NAME);
+		String level = props.getProperty(LOGGER_LVL_PROP);
+		if (level.equals("OFF")) {
+			ConfigLog4J.level = Level.OFF;
+		} else if (level.equals("SEVERE")) {
+			ConfigLog4J.level = Level.SEVERE;
+		} else if (level.equals("WARNING")) {
+			ConfigLog4J.level = Level.WARNING;
+		} else if (level.equals("INFO")) {
+			ConfigLog4J.level = Level.INFO;
+		} else if (level.equals("CONFIG")) {
+			ConfigLog4J.level = Level.CONFIG;
+		} else if (level.equals("FINE")) {
+			ConfigLog4J.level = Level.FINE;
+		} else if (level.equals("FINER")) {
+			ConfigLog4J.level = Level.FINER;
+		} else if (level.equals("FINEST")) {
+			ConfigLog4J.level = Level.FINEST;
+		} else if (level.equals("ALL")) {
+			ConfigLog4J.level = Level.ALL;
+		}
 	}
 
 	public void initializeLogs() {
 		try {
-			LoggerContextFactory loggerFactory = new Log4jContextFactory();
-			LogManager.setFactory(loggerFactory);
-			LoggerContext ctx = (LoggerContext) loggerFactory.getContext(ConfigLog4J.class.getName(), null, null, false);
-			
-			Configuration config = ctx.getConfiguration();
-			Builder builder = RollingFileAppender.newBuilder();
-			builder.withName(this.appenderName);
-			builder.withFileName(fileName);
-			builder.withFilePattern(fileName + ".%i");
-			org.apache.logging.log4j.core.layout.PatternLayout.Builder layout = PatternLayout.newBuilder();
-			layout.withPattern(this.appenderPatternlayout);
-			builder.withLayout(layout.build());
-			TriggeringPolicy policy = SizeBasedTriggeringPolicy.createPolicy(this.appenderTriggerPolicySize);
-			builder.withPolicy(policy);
-			builder.withStrategy(DirectWriteRolloverStrategy.createStrategy(this.strategyMaxFiles,
-					this.stratefyCompressionLevel, this.emptyActions, false, config));
-			AppenderRef ref = AppenderRef.createAppenderRef(this.loggerAppenderRef, this.level, null);
-			AppenderRef[] refs = new AppenderRef[] { ref };
-			Property prop = Property.createProperty(this.propertyName, this.propertyValue);
-			Property[] properties = new Property[] { prop };
-			LoggerConfig loggerConfig = LoggerConfig.createLogger(this.loggerAdditivity, this.level, this.loggerName, "", refs,
-					properties, config, null);
-			loggerConfig.addAppender(builder.build(), this.level, null);
-			config.addLogger(this.loggerName, loggerConfig);
-			ctx.updateLoggers(config);	
-			updateAllLocalLoggers();
+
+			FileHandler handler = new FileHandler(this.fileName, handlerMaxFileSize,
+					Integer.parseInt(handlerMaxFiles), true);
+			Formatter formatter = new SimpleFormatter();
+			handler.setFormatter(formatter);
+			Logger logger = Logger.getLogger(loggerName);
+			logger.addHandler(handler);
+			logger.setLevel(ConfigLog4J.level);
+			logger.setUseParentHandlers(this.loggerAdditivity);
+
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		updateAllLocalLoggers();
 	}
 
 	public void updateAllLocalLoggers() {
@@ -144,7 +105,6 @@ public class ConfigLog4J {
 				Method updateLoggerMethod = clazz.getDeclaredMethod("setLogger", this.emptyClasses);
 				updateLoggerMethod.invoke(null, this.emptyObjects);
 			} catch (Exception e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 
@@ -157,7 +117,7 @@ public class ConfigLog4J {
 		}
 		return loggerInstance;
 	}
-	
+
 	public Level getLevel() {
 		return this.level;
 	}

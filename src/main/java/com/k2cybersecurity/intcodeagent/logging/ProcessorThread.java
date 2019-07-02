@@ -59,17 +59,15 @@ import java.lang.reflect.Field;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 //import org.brutusin.commons.json.spi.JsonCodec;
 import org.brutusin.instrumentation.Agent;
 import org.json.simple.JSONArray;
@@ -81,6 +79,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.k2cybersecurity.intcodeagent.models.javaagent.JavaAgentDynamicPathBean;
 import com.k2cybersecurity.intcodeagent.models.javaagent.JavaAgentEventBean;
 import com.k2cybersecurity.intcodeagent.models.javaagent.ServletInfo;
+import com.k2cybersecurity.intcodeagent.models.javaagent.TraceElement;
 
 public class ProcessorThread implements Runnable {
 
@@ -175,7 +174,6 @@ public class ProcessorThread implements Runnable {
 	public void run() {
 		try {
 			if (executorMethods.contains(sourceString)) {
-
 				long start = System.currentTimeMillis();
 
 				JavaAgentEventBean intCodeResultBean = new JavaAgentEventBean(start, sourceString,
@@ -188,7 +186,24 @@ public class ProcessorThread implements Runnable {
 				}
 
 				// String methodName = null;
+				List<TraceElement> stackTrace = new ArrayList<>();
+				intCodeResultBean.setStacktrace(stackTrace);
 				StackTraceElement[] trace = this.stackTrace;
+
+				for (int i = 0; i < trace.length; i++) {
+					TraceElement traceEntry = new TraceElement();
+					stackTrace.add(traceEntry);
+					traceEntry.setClassName(trace[i].getClassName());
+					traceEntry.setMethodName(trace[i].getMethodName());
+					traceEntry.setLineNumber(trace[i].getLineNumber());
+					klassName = traceEntry.getClassName();
+					if (IAgentConstants.MYSQL_GET_CONNECTION_MAP.containsKey(klassName)
+							&& IAgentConstants.MYSQL_GET_CONNECTION_MAP.get(klassName)
+									.contains(trace[i].getMethodName())) {
+						intCodeResultBean.setValidationBypass(true);
+					}
+				}
+
 				if (IAgentConstants.FILE_OPEN_EXECUTORS.contains(sourceString)) {
 
 					boolean javaIoFile = false;
@@ -204,16 +219,15 @@ public class ProcessorThread implements Runnable {
 							}
 							if (intCodeResultBean.getUserClassName() != null
 									&& !intCodeResultBean.getUserClassName().isEmpty()) {
-
-//								logger.debug("result bean : "+intCodeResultBean);
+//								logger.log(Level.FINE,"result bean : "+intCodeResultBean);
 								generateEvent(intCodeResultBean);
 							}
-							logger.debug("breaking");
+							logger.log(Level.FINE,"breaking");
 							break;
 						}
 						if (klassName.equals(IAgentConstants.JAVA_IO_FILE)) {
-//							logger.debug("javaio found");
-//							logger.debug("next class : "+trace[i+1]);
+//							logger.log(Level.FINE,"javaio found");
+//							logger.log(Level.FINE,"next class : "+trace[i+1]);
 							javaIoFile = true;
 						}
 					}
@@ -260,10 +274,9 @@ public class ProcessorThread implements Runnable {
 						intCodeResultBean.setCurrentMethod(trace[traceId - 1].getMethodName());
 					generateEvent(intCodeResultBean);
 				}
-
 			}
 		} catch (Exception e) {
-			logger.error("Error in run: {}", e);
+			logger.log(Level.WARNING,"Error in run: {0}", e);
 		} finally {
 			ServletEventPool.getInstance().decrementServletInfoReference(threadId, executionId, true);
 		}
@@ -419,7 +432,7 @@ public class ProcessorThread implements Runnable {
 			parameters.add(String.valueOf(arg[sqlObjectLocation]));
 
 		} catch (Exception e) {
-			logger.error("Error in getMySQLParameterValue: {}", e);
+			logger.log(Level.WARNING,"Error in getMySQLParameterValue: {0}", e);
 		}
 	}
 
@@ -614,7 +627,7 @@ public class ProcessorThread implements Runnable {
 				parameters.add(insertRequests.toString());
 			} else {
 
-//				logger.debug(protocol.getClass().getName());
+//				logger.log(Level.FINE,protocol.getClass().getName());
 
 			}
 
@@ -644,7 +657,7 @@ public class ProcessorThread implements Runnable {
 	}
 
 	/**
-	 * @param            obj: this pointer object
+	 * @param obj:       this pointer object
 	 * @param parameters
 	 */
 	private JSONArray getOracleParameterValue(Object thisPointer, JSONArray parameters, String sourceString) {
@@ -684,7 +697,7 @@ public class ProcessorThread implements Runnable {
 
 			}
 		} catch (Exception e) {
-			logger.error("Error in getOracleParameterValue: {}", e);
+			logger.log(Level.WARNING,"Error in getOracleParameterValue: {0}", e);
 		}
 		return parameters;
 	}
@@ -717,7 +730,8 @@ public class ProcessorThread implements Runnable {
 			} else if (sourceString.equals(PSQLV3_EXECUTOR) || sourceString.equals(PSQLV2_EXECUTOR)
 					|| sourceString.equals(PSQL42_EXECUTOR) || sourceString.equals(PSQLV3_EXECUTOR7_4)) {
 				getPSQLParameterValue(obj, parameters);
-			} else if (sourceString.equals(HSQL_V2_4) || sourceString.equals(HSQL_V1_8_CONNECTION) || sourceString.equals(HSQL_V1_8_SESSION)) {
+			} else if (sourceString.equals(HSQL_V2_4) || sourceString.equals(HSQL_V1_8_CONNECTION)
+					|| sourceString.equals(HSQL_V1_8_SESSION)) {
 				getHSQLParameterValue(obj[0], parameters);
 			} else {
 				for (int i = 0; i < obj.length; i++) {
@@ -728,7 +742,7 @@ public class ProcessorThread implements Runnable {
 
 		} catch (Throwable th) {
 			parameters.add((obj != null) ? obj.toString() : null);
-			logger.error("Error in toString: {}", th);
+			logger.log(Level.WARNING,"Error in toString: {0}", th);
 		}
 		return parameters;
 	}
@@ -744,7 +758,7 @@ public class ProcessorThread implements Runnable {
 				sqlField.setAccessible(true);
 				parameters.add((String) sqlField.get(object));
 			} catch (Exception e) {
-				logger.error("Error in getHSQLParameterValue for HSQL_V2_4: {}", e);
+				logger.log(Level.WARNING,"Error in getHSQLParameterValue for HSQL_V2_4: {0}", e);
 			}
 			return;
 		case HSQL_V1_8_SESSION:
@@ -754,7 +768,7 @@ public class ProcessorThread implements Runnable {
 				mainStringField.setAccessible(true);
 				parameters.add((String) mainStringField.get(object));
 			} catch (Exception e) {
-				logger.error("Error in getHSQLParameterValue for HSQL_V1_8_CONNECTION: {}", e);
+				logger.log(Level.WARNING,"Error in getHSQLParameterValue for HSQL_V1_8_CONNECTION: {0}", e);
 			}
 			return;
 		}
@@ -782,7 +796,7 @@ public class ProcessorThread implements Runnable {
 				parameters.add(paramArray);
 			} catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException
 					| JsonProcessingException e) {
-				logger.error("Error in getPSQLParameterValue: {}", e);
+				logger.log(Level.WARNING,"Error in getPSQLParameterValue: {0}", e);
 			}
 
 		}
@@ -833,29 +847,29 @@ public class ProcessorThread implements Runnable {
 						new ArrayList<String>(Agent.jarPathSet), list);
 				eventQueue.add(dynamicJarPathBean);
 			} catch (IllegalStateException e) {
-				logger.info("Dropping dynamicJarPathBean event " + intCodeResultBean.getId()
+				logger.log(Level.INFO,"Dropping dynamicJarPathBean event " + intCodeResultBean.getId()
 						+ " due to buffer capacity reached");
 				LoggingInterceptor.JA_HEALTH_CHECK.incrementDropCount();
 			} catch (Exception e) {
-				logger.error("Error in generateEvent while creating JavaAgentDynamicPathBean: {}", e);
+				logger.log(Level.WARNING,"Error in generateEvent while creating JavaAgentDynamicPathBean: {0}", e);
 			}
 		} else {
 			try {
 				intCodeResultBean.setServletInfo(new ServletInfo(ExecutionMap.find(this.executionId,
 						ServletEventPool.getInstance().getRequestMap().get(this.threadId))));
 				eventQueue.add(intCodeResultBean);
-//				logger.debug("publish event: " + intCodeResultBean);
+//				logger.log(Level.FINE,"publish event: " + intCodeResultBean);
 			} catch (IllegalStateException e) {
-				logger.info("Dropping event " + intCodeResultBean.getId() + " due to buffer capacity reached: {}", e);
+				logger.log(Level.INFO,"Dropping event " + intCodeResultBean.getId() + " due to buffer capacity reached: {0}", e);
 				LoggingInterceptor.JA_HEALTH_CHECK.incrementDropCount();
 			} catch (Exception e) {
-				logger.error("Error in generateEvent while creating IntCodeResultBean: {}", e);
+				logger.log(Level.WARNING,"Error in generateEvent while creating IntCodeResultBean: {0}", e);
 			}
 
 		}
 	}
-	
+
 	public static void setLogger() {
-		ProcessorThread.logger = LogManager.getLogger(ProcessorThread.class);
+		ProcessorThread.logger = Logger.getLogger(ProcessorThread.class.getName());
 	}
 }

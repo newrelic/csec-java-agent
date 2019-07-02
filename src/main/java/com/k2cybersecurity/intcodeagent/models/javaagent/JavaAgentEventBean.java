@@ -1,6 +1,7 @@
 package com.k2cybersecurity.intcodeagent.models.javaagent;
 
 import java.io.Serializable;
+import java.util.List;
 
 import org.json.simple.JSONArray;
 
@@ -27,6 +28,7 @@ public class JavaAgentEventBean extends AgentBasicInfo implements Serializable{
 	private Long eventGenerationTime;
 	private ServletInfo servletInfo;
 	private String id;
+	private List<TraceElement> stacktrace;
 
 	public JavaAgentEventBean() {
 	    super();
@@ -204,6 +206,20 @@ public class JavaAgentEventBean extends AgentBasicInfo implements Serializable{
 	 */
 	public void setId(String id) {
 		this.id = id;
+	}
+
+	/**
+	 * @return the stacktrace
+	 */
+	public List<TraceElement> getStacktrace() {
+		return stacktrace;
+	}
+
+	/**
+	 * @param stacktrace the stacktrace to set
+	 */
+	public void setStacktrace(List<TraceElement> stacktrace) {
+		this.stacktrace = stacktrace;
 	}
 
 	

@@ -14,9 +14,8 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 
 
@@ -97,14 +96,14 @@ public class EventThreadPool {
 							currentExecutor.setTriedReconnect(false);
 						}
 					} catch (IOException e) {
-						logger.error("Error in writing: {}" ,e);
+						logger.log(Level.WARNING,"Error in writing: {0}" ,e);
 						if(!currentExecutor.triedReconnect()) {
 							currentExecutor.setTriedReconnect(true);
 							LoggingInterceptor.closeSocket();
 							LoggingInterceptor.connectSocket();
 						}
 					} catch (Exception e) {
-						logger.error("Error in queuePooler: {}" ,e);
+						logger.log(Level.WARNING,"Error in queuePooler: {0}" ,e);
 					}
 				}
 			}
@@ -143,7 +142,7 @@ public class EventThreadPool {
 		 * @throws RejectedExecutionException always
 		 */
 		public void rejectedExecution(Runnable r, ThreadPoolExecutor e) {
-//			logger.debug("Event Task " + r.toString() + " rejected from {} " + e.toString());
+//			logger.log(Level.FINE,"Event Task " + r.toString() + " rejected from {0} " + e.toString());
 		}
 	}
 
@@ -152,9 +151,9 @@ public class EventThreadPool {
 		try {
 			this.executor.execute(new ProcessorThread(source, arg, executionId, stackTrace, tId, sourceString));
 		} catch (RejectedExecutionException rejected) {
-			logger.info("Rejected to process Event At: " + this.executor.getQueue().size() + ": {}", rejected);
+			logger.log(Level.INFO,"Rejected to process Event At: " + this.executor.getQueue().size() + ": {0}", rejected);
 		} catch (Exception e) {
-			logger.error("Error in processReceivedEvent: {}" ,e);
+			logger.log(Level.WARNING,"Error in processReceivedEvent: {0}" ,e);
 		}
 	}
 
@@ -221,7 +220,7 @@ public class EventThreadPool {
 		this.triedReconnect = triedReconnect;
 	}
 	public static void setLogger() {
-		EventThreadPool.logger = LogManager.getLogger(EventThreadPool.class);
+		EventThreadPool.logger = Logger.getLogger(EventThreadPool.class.getName());
 	}
 	
 }
