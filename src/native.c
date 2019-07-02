@@ -439,7 +439,7 @@ void __attribute__ ((optimize("O0")))
 k2io_target(JNIEnv* env, jobject j,jint mode,jbyteArray jpath,jbyteArray prog,jbyteArray arg) {
   __asm__ __volatile__ ("push %rdi;push %rsi;push %rdx;push %rcx;push %r8;push %r9");
   //printf("DEBUG: JDK9+ callback invoked ... connect me to JavaAgent logic\n");
-  printf("DEBUG: args: %p %p %d %p %p %p \n",env,j,mode,jpath,prog,arg);
+  //printf("DEBUG: args: %p %p %d %p %p %p \n",env,j,mode,jpath,prog,arg);
 
   COMMON_CODE
 
