@@ -265,7 +265,12 @@ public class LoggingInterceptor extends Interceptor {
 		 * ", established successfully!!!"); } catch (IOException ex) { throw new
 		 * RuntimeException(ex); }
 		 */
-
+		try {
+			K2Native.k2init();
+		} catch (Exception e) {
+			logger.log(Level.WARNING,"Error loading k2JavaNative.so", e);
+		}
+		
 		ConfigLog4J.getInstance().initializeLogs();
 		APPLICATION_INFO_BEAN = createApplicationInfoBean();
 		JA_HEALTH_CHECK = new JAHealthCheck(applicationUUID);

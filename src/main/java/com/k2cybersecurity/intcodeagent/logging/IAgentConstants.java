@@ -194,7 +194,6 @@ public interface IAgentConstants {
 		private static final long serialVersionUID = -7680282029242613768L;
 
 		{
-			put(CLASS_JAVA_LANG_PROCESS_IMPL, Collections.singletonList("start"));
 			put(CLASS_COM_MICROSOFT_SQLSERVER_JDBC_SQL_SERVER_STATEMENT, Collections.singletonList("executeStatement"));
 			put(CLASS_COM_MYSQL_CJ_MYSQLA_IO_MYSQLA_PROTOCOL, Collections.singletonList("sqlQueryDirect"));
 			put(CLASS_COM_MYSQL_JDBC_MYSQL_IO, Collections.singletonList("sqlQueryDirect"));
