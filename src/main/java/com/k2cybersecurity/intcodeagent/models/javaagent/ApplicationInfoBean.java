@@ -18,7 +18,7 @@ public class ApplicationInfoBean extends AgentBasicInfo implements Serializable{
 	private String applicationName;
 	private Boolean isHost;
 	private String containerID;
-	private JSONArray jvmArguments;
+	private String jvmArguments;
 	private Long startTime;
 	private String applicationUUID;
 	private String javaCommand;
@@ -164,13 +164,13 @@ public class ApplicationInfoBean extends AgentBasicInfo implements Serializable{
 	/**
 	 * @return the jvmArguments
 	 */
-	public JSONArray getJvmArguments() {
+	public String getJvmArguments() {
 		return jvmArguments;
 	}
 	/**
 	 * @param jvmArguments the jvmArguments to set
 	 */
-	public void setJvmArguments(JSONArray jvmArguments) {
+	public void setJvmArguments(String jvmArguments) {
 		this.jvmArguments = jvmArguments;
 	}
 	
