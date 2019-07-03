@@ -408,6 +408,7 @@ public interface IAgentConstants {
 	String JA_CONNECT_SUCCESS_MSG = "K2-JavaAgent installed successfully.";
 	String PROC_DIR = "/proc/";
 	String CMD_LINE_DIR = "/cmdline";
+	String STAT = "/stat";
 	String BYTE_BUFFER_FIELD_LIMIT = "limit";
 	String BYTE_BUFFER_FIELD_POSITION = "position";
 	String BYTE_BUFFER_FIELD_BUF = "buf";

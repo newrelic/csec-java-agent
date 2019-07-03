@@ -76,6 +76,7 @@ import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MYSQL_SOU
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.NEW_LINE_SEQUENCE;
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.NULL_CHAR_AS_STRING;
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.PROC_DIR;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.STAT;
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.TOMCAT_7;
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.TOMCAT_8;
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.TOMCAT_9;
@@ -204,6 +205,7 @@ public class LoggingInterceptor extends Interceptor {
 			applicationInfoBean.setStartTime(runtimeMXBean.getStartTime());
 			String containerId = getContainerID();
 			String cmdLine = getCmdLineArgsByProc(VMPID);
+			applicationInfoBean.setProcStartTime(getStartTimeByProc(VMPID));
 			if (cmdLine != null) {
 				List<String> cmdlineArgs = Arrays.asList(cmdLine.split(NULL_CHAR_AS_STRING));
 				JSONArray jsonArray = new JSONArray();
@@ -313,6 +315,31 @@ public class LoggingInterceptor extends Interceptor {
 		}
 		return null;
 	}
+	
+	private static String getStartTimeByProc(Integer pid) {
+		File statFile = new File(PROC_DIR + pid + STAT);
+		if (!statFile.isFile())
+			return null;
+		BufferedReader br = null;
+		try {
+			br = new BufferedReader(new FileReader(statFile));
+			String statData = br.readLine();
+			if (!statData.isEmpty()) {
+				String[] statArray = statData.split("\\s+");
+				if (statArray.length >= 21) {
+					return statArray[21];
+				}
+			}
+		} catch (IOException e) {
+		} finally {
+			try {
+				br.close();
+			} catch (IOException e) {
+			}
+		}
+		return null;
+	}
+	
 
 	private static String readByteBuffer(ByteBuffer buffer) {
 		int currPos = buffer.position();

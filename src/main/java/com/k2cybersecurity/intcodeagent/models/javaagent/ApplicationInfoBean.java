@@ -31,6 +31,7 @@ public class ApplicationInfoBean extends AgentBasicInfo implements Serializable{
 	private String osArch;
 	private String osName;
 	private String osVersion;
+	private String procStartTime;
 
 	/**
 	 * @return the libraryPath
@@ -278,6 +279,20 @@ public class ApplicationInfoBean extends AgentBasicInfo implements Serializable{
 	 */
 	public void setUserDir(String userDir) {
 		this.userDir = userDir;
+	}
+
+	/**
+	 * @return the procStartTime
+	 */
+	public String getProcStartTime() {
+		return procStartTime;
+	}
+
+	/**
+	 * @param procStartTime the procStartTime to set
+	 */
+	public void setProcStartTime(String procStartTime) {
+		this.procStartTime = procStartTime;
 	}
 	
 }
