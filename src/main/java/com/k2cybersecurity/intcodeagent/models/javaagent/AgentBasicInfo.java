@@ -4,6 +4,7 @@ import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.K2_JAVAAG
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.K2_JAVAAGENT_JSONNAME_DYNAMICJARPATHBEAN;
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.K2_JAVAAGENT_JSONNAME_INTCODERESULTBEAN;
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.K2_JAVAAGENT_JSONNAME_JAHEALTHCHECK;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.K2_JAVAAGENT_JSONNAME_SHUTDOWN;
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.K2_JAVAAGENT_PROPERTIES;
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.K2_JAVAAGENT_TOOL_ID;
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.K2_JAVAAGENT_VERSION;
@@ -55,6 +56,8 @@ public class AgentBasicInfo {
 			setJsonName(props.getProperty(K2_JAVAAGENT_JSONNAME_DYNAMICJARPATHBEAN));
 		} else if(this instanceof JAHealthCheck) {
 			setJsonName(props.getProperty(K2_JAVAAGENT_JSONNAME_JAHEALTHCHECK));
+		} else if(this instanceof ShutDownEvent) {
+			setJsonName(props.getProperty(K2_JAVAAGENT_JSONNAME_SHUTDOWN));
 		}
 	}
 

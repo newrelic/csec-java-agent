@@ -17,8 +17,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-
-
 public class EventThreadPool {
 
 	/** Thread pool executor. */
@@ -28,7 +26,6 @@ public class EventThreadPool {
 	private static short MAX_BLOCKING_QUEUE_SIZE = 3000;
 	private static Object mutex = new Object();
 	private static Logger logger;
-	
 
 	private StringBuffer eventBuffer;
 	private LinkedBlockingQueue<Object> eventQueue = new LinkedBlockingQueue<>(MAX_BLOCKING_QUEUE_SIZE);
@@ -37,14 +34,14 @@ public class EventThreadPool {
 	private ScheduledExecutorService eventPoolExecutor;
 	private Runnable queuePooler;
 	private boolean triedReconnect = false;
-	
+
 	final int queueSize = 300;
 	final int maxPoolSize = 3;
 	final int corePoolSize = 1;
 	final long keepAliveTime = 10;
 	final TimeUnit timeUnit = TimeUnit.SECONDS;
 	final boolean allowCoreThreadTimeOut = false;
-	
+
 	private EventThreadPool() {
 		LinkedBlockingQueue<Runnable> processQueue;
 		// load the settings
@@ -81,7 +78,7 @@ public class EventThreadPool {
 		this.queuePooler = new Runnable() {
 			@Override
 			public void run() {
-				EventThreadPool currentExecutor =  EventThreadPool.getInstance();
+				EventThreadPool currentExecutor = EventThreadPool.getInstance();
 				LinkedBlockingQueue<Object> eventQueue = currentExecutor.getEventQueue();
 				ObjectOutputStream oos = currentExecutor.getObjectStream();
 				if (!eventQueue.isEmpty() && oos != null) {
@@ -92,22 +89,53 @@ public class EventThreadPool {
 							oos.writeUnshared(eventList);
 							oos.reset();
 						}
-						if(currentExecutor.triedReconnect()) {
+						if (currentExecutor.triedReconnect()) {
 							currentExecutor.setTriedReconnect(false);
 						}
 					} catch (IOException e) {
-						logger.log(Level.WARNING,"Error in writing: {0}" ,e);
-						if(!currentExecutor.triedReconnect()) {
+						logger.log(Level.WARNING, "Error in writing: {0}", e);
+						if (!currentExecutor.triedReconnect()) {
 							currentExecutor.setTriedReconnect(true);
 							LoggingInterceptor.closeSocket();
 							LoggingInterceptor.connectSocket();
 						}
 					} catch (Exception e) {
-						logger.log(Level.WARNING,"Error in queuePooler: {0}" ,e);
+						logger.log(Level.WARNING, "Error in queuePooler: {0}", e);
 					}
 				}
 			}
 		};
+	}
+
+	public void shutDownThreadPoolExecutor() {
+
+		if (executor != null) {
+			try {
+				executor.shutdown(); // disable new tasks from being submitted
+				if (!executor.awaitTermination(1, TimeUnit.SECONDS)) {
+					// wait for termination for a timeout
+					executor.shutdownNow(); // cancel currently executing tasks
+
+					if (!executor.awaitTermination(1, TimeUnit.SECONDS))
+						logger.severe("Thread pool executor did not terminate");
+				}
+			} catch (InterruptedException e) {
+			}
+		}
+
+		if (eventPoolExecutor != null) {
+			try {
+				eventPoolExecutor.shutdown(); // disable new tasks from being submitted
+				if (!eventPoolExecutor.awaitTermination(1, TimeUnit.SECONDS)) {
+					// wait for termination for a timeout
+					eventPoolExecutor.shutdownNow(); // cancel currently executing tasks
+
+					if (!eventPoolExecutor.awaitTermination(1, TimeUnit.SECONDS))
+						logger.severe("Thread pool executor did not terminate");
+				}
+			} catch (InterruptedException e) {
+			}
+		}
 	}
 
 	protected static EventThreadPool getInstance() {
@@ -151,9 +179,10 @@ public class EventThreadPool {
 		try {
 			this.executor.execute(new ProcessorThread(source, arg, executionId, stackTrace, tId, sourceString));
 		} catch (RejectedExecutionException rejected) {
-			logger.log(Level.INFO,"Rejected to process Event At: " + this.executor.getQueue().size() + ": {0}", rejected);
+			logger.log(Level.INFO, "Rejected to process Event At: " + this.executor.getQueue().size() + ": {0}",
+					rejected);
 		} catch (Exception e) {
-			logger.log(Level.WARNING,"Error in processReceivedEvent: {0}" ,e);
+			logger.log(Level.WARNING, "Error in processReceivedEvent: {0}", e);
 		}
 	}
 
@@ -219,8 +248,9 @@ public class EventThreadPool {
 	public void setTriedReconnect(boolean triedReconnect) {
 		this.triedReconnect = triedReconnect;
 	}
+
 	public static void setLogger() {
 		EventThreadPool.logger = Logger.getLogger(EventThreadPool.class.getName());
 	}
-	
+
 }

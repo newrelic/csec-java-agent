@@ -1,6 +1,7 @@
 package com.k2cybersecurity.intcodeagent.logging;
 
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.CLASS_LOADER_IDENTIFIER;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.EXECUTORS;
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.HSQL_V1_8_CONNECTION;
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.HSQL_V1_8_SESSION;
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.HSQL_V2_4;
@@ -14,6 +15,7 @@ import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MONGO_DEL
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MONGO_DELETE_REQUEST_FIELD;
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MONGO_DISTINCT_CLASS_FRAGMENT;
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MONGO_DOCUMENT_FIELD;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MONGO_EXECUTORS;
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MONGO_FIELD_NAME_FIELD;
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MONGO_FILTER_FIELD;
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MONGO_FIND_AND_UPDATE_CLASS_FRAGMENT;
@@ -58,11 +60,8 @@ import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.PSQLV3_EX
 import java.lang.reflect.Field;
 import java.net.Socket;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
-import java.util.Set;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -84,8 +83,6 @@ import com.k2cybersecurity.intcodeagent.models.javaagent.TraceElement;
 public class ProcessorThread implements Runnable {
 
 	private static final Pattern PATTERN;
-	private static final Set<String> executorMethods;
-	private static final Set<String> mongoExecutorMethods;
 	private static Logger logger;
 	private Object source;
 	private Object[] arg;
@@ -100,9 +97,6 @@ public class ProcessorThread implements Runnable {
 	private Socket currentSocket;
 	static {
 		PATTERN = Pattern.compile(IAgentConstants.TRACE_REGEX);
-		executorMethods = new HashSet<>(Arrays.asList(IAgentConstants.EXECUTORS));
-		executorMethods.addAll(Arrays.asList(IAgentConstants.MONGO_EXECUTORS));
-		mongoExecutorMethods = new HashSet<>(Arrays.asList(IAgentConstants.MONGO_EXECUTORS));
 	}
 
 	/**
@@ -173,15 +167,16 @@ public class ProcessorThread implements Runnable {
 	@Override
 	public void run() {
 		try {
-			if (executorMethods.contains(sourceString)) {
+			if (EXECUTORS.containsKey(sourceString)) {
 				long start = System.currentTimeMillis();
 
 				JavaAgentEventBean intCodeResultBean = new JavaAgentEventBean(start, sourceString,
 						LoggingInterceptor.VMPID, LoggingInterceptor.applicationUUID,
-						this.threadId + IAgentConstants.COLON_SEPERATOR + this.executionId);
+						this.threadId + IAgentConstants.COLON_SEPERATOR + this.executionId, EXECUTORS.get(sourceString));
+				
 
 				String klassName = null;
-				if (mongoExecutorMethods.contains(sourceString)) {
+				if (MONGO_EXECUTORS.containsKey(sourceString)) {
 					intCodeResultBean.setValidationBypass(true);
 				}
 
@@ -205,7 +200,6 @@ public class ProcessorThread implements Runnable {
 				}
 
 				if (IAgentConstants.FILE_OPEN_EXECUTORS.contains(sourceString)) {
-
 					boolean javaIoFile = false;
 					for (int i = 0; i < trace.length; i++) {
 						klassName = trace[i].getClassName();

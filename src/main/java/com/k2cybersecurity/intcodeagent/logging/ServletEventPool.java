@@ -90,7 +90,7 @@ public class ServletEventPool {
 		});
 	}
 
-	protected static ServletEventPool getInstance() {
+	public static ServletEventPool getInstance() {
 		if (instance == null)
 			instance = new ServletEventPool();
 		return instance;
@@ -188,6 +188,23 @@ public class ServletEventPool {
 		return refCount;
 	}
 
+	public void shutDownThreadPoolExecutor() {
+
+		if (executor != null) {
+			try {
+				executor.shutdown(); // disable new tasks from being submitted
+				if (!executor.awaitTermination(1, TimeUnit.SECONDS)) {
+					// wait for termination for a timeout
+					executor.shutdownNow(); // cancel currently executing tasks
+
+					if (!executor.awaitTermination(1, TimeUnit.SECONDS))
+						logger.severe("Thread pool executor did not terminate");
+				}
+			} catch (InterruptedException e) {
+			} 
+		}
+	}
+	
 	public static void setLogger() {
 		ServletEventPool.logger = Logger.getLogger(ServletEventPool.class.getName());
 	}

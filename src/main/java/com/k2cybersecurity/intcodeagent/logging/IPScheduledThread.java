@@ -23,6 +23,7 @@ import com.k2cybersecurity.intcodeagent.models.javaagent.JAHealthCheck;
 public class IPScheduledThread {
 
 	private static IPScheduledThread instance;
+	
 	private static Logger logger;
 	
 	private static ScheduledExecutorService ipScheduledService;
@@ -88,6 +89,28 @@ public class IPScheduledThread {
 			logger.log(Level.WARNING,"Error while starting: {0}" ,e);
 		}
 		throw null;
+	}
+	
+	/**
+	 * Shut down the thread pool executor. Calls normal shutdown of thread pool
+	 * executor and awaits for termination. If not terminated, forcefully shuts down
+	 * the executor after a timeout.
+	 */
+	public void shutDownThreadPoolExecutor() {
+
+		if (ipScheduledService != null) {
+			try {
+				ipScheduledService.shutdown(); // disable new tasks from being submitted
+				if (!ipScheduledService.awaitTermination(1, TimeUnit.SECONDS)) {
+					// wait for termination for a timeout
+					ipScheduledService.shutdownNow(); // cancel currently executing tasks
+
+					if (!ipScheduledService.awaitTermination(1, TimeUnit.SECONDS))
+						logger.severe("Thread pool executor did not terminate");
+				}
+			} catch (InterruptedException e) {
+			} 
+		}
 	}
 	
 	public static void setLogger() {

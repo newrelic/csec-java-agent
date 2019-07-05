@@ -29,31 +29,29 @@ public class JavaAgentEventBean extends AgentBasicInfo implements Serializable{
 	private ServletInfo servletInfo;
 	private String id;
 	private List<TraceElement> stacktrace;
+	private String vulnerabilityCaseType;
 
 	public JavaAgentEventBean() {
 	    super();
 	}
-
-	public JavaAgentEventBean(String id) {
-	    this();
-	    this.id = id;
-	}
 	
-	public JavaAgentEventBean(Long startTime, String source, Integer pid, String applicationUUID, String id) {
-	    this(id);
+	public JavaAgentEventBean(Long startTime, String source, Integer pid, String applicationUUID, String id, VulnerabilityCaseType vulnerabilityCaseType) {
+	    this.id = id;
 		this.setPid(pid);
 		this.applicationUUID = applicationUUID;
 		this.source = source;
 		this.startTime = startTime;
+		this.vulnerabilityCaseType = vulnerabilityCaseType.getCaseType();
 	}
 	
-	public JavaAgentEventBean(Long startTime, String source, JSONArray parameters, Integer pid, String applicationUUID, String id) {
-	    this(id);
+	public JavaAgentEventBean(Long startTime, String source, JSONArray parameters, Integer pid, String applicationUUID, String id, VulnerabilityCaseType vulnerabilityCaseType) {
+	    this.id = id;
 		this.setPid(pid);
 		this.applicationUUID = applicationUUID;
 		this.source = source;
 		this.parameters = parameters;
 		this.startTime = startTime;
+		this.vulnerabilityCaseType = vulnerabilityCaseType.getCaseType();
 	}
 
 	public void setUserAPIInfo(Integer lineNumber, String userClassName, String userMethodName) {
@@ -220,6 +218,20 @@ public class JavaAgentEventBean extends AgentBasicInfo implements Serializable{
 	 */
 	public void setStacktrace(List<TraceElement> stacktrace) {
 		this.stacktrace = stacktrace;
+	}
+
+	/**
+	 * @return the vulnerabilityCaseType
+	 */
+	public String getVulnerabilityCaseType() {
+		return vulnerabilityCaseType;
+	}
+
+	/**
+	 * @param vulnerabilityCaseType the vulnerabilityCaseType to set
+	 */
+	public void setVulnerabilityCaseType(String vulnerabilityCaseType) {
+		this.vulnerabilityCaseType = vulnerabilityCaseType;
 	}
 
 	

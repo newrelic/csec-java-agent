@@ -35,7 +35,7 @@ public class ConfigLog4J {
 	private String loggerName;
 	private String handlerMaxFiles;
 	private boolean loggerAdditivity;
-	private String fileName = "/etc/k2-adp/logs/k2_java_agent-" + Agent.applicationUUID + ".log";
+	private String fileName = "/etc/k2-adp/logs/k2_java_agent-" + Agent.APPLICATION_UUID + ".log";
 
 	private Object[] emptyObjects = new Object[0];
 	private Class<?>[] emptyClasses = new Class<?>[0];

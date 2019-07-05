@@ -2,8 +2,6 @@ package com.k2cybersecurity.intcodeagent.models.javaagent;
 
 import java.io.Serializable;
 
-import org.json.simple.JSONArray;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -132,7 +130,9 @@ public class ApplicationInfoBean extends AgentBasicInfo implements Serializable{
 	}
 
 	
-	public ApplicationInfoBean() {}
+	public ApplicationInfoBean() {
+		super();
+	}
 	
 	public ApplicationInfoBean(Integer pid, String applicationUUID) {
 	    super();
