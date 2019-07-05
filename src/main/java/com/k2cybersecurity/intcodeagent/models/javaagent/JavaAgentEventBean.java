@@ -29,7 +29,7 @@ public class JavaAgentEventBean extends AgentBasicInfo implements Serializable{
 	private ServletInfo servletInfo;
 	private String id;
 	private List<TraceElement> stacktrace;
-	private VulnerabilityCaseType vulnerabilityCaseType;
+	private String caseType;
 
 	public JavaAgentEventBean() {
 	    super();
@@ -41,7 +41,7 @@ public class JavaAgentEventBean extends AgentBasicInfo implements Serializable{
 		this.applicationUUID = applicationUUID;
 		this.source = source;
 		this.startTime = startTime;
-		this.vulnerabilityCaseType = vulnerabilityCaseType;
+		this.setCaseType(vulnerabilityCaseType.getCaseType());
 	}
 	
 	public JavaAgentEventBean(Long startTime, String source, JSONArray parameters, Integer pid, String applicationUUID, String id, VulnerabilityCaseType vulnerabilityCaseType) {
@@ -51,7 +51,7 @@ public class JavaAgentEventBean extends AgentBasicInfo implements Serializable{
 		this.source = source;
 		this.parameters = parameters;
 		this.startTime = startTime;
-		this.vulnerabilityCaseType = vulnerabilityCaseType;
+		this.setCaseType(vulnerabilityCaseType.getCaseType());
 	}
 
 	public void setUserAPIInfo(Integer lineNumber, String userClassName, String userMethodName) {
@@ -221,18 +221,17 @@ public class JavaAgentEventBean extends AgentBasicInfo implements Serializable{
 	}
 
 	/**
-	 * @return the vulnerabilityCaseType
+	 * @return the caseType
 	 */
-	public VulnerabilityCaseType getVulnerabilityCaseType() {
-		return vulnerabilityCaseType;
+	public String getCaseType() {
+		return caseType;
 	}
 
 	/**
-	 * @param vulnerabilityCaseType the vulnerabilityCaseType to set
+	 * @param caseType the caseType to set
 	 */
-	public void setVulnerabilityCaseType(VulnerabilityCaseType vulnerabilityCaseType) {
-		this.vulnerabilityCaseType = vulnerabilityCaseType;
+	public void setCaseType(String caseType) {
+		this.caseType = caseType;
 	}
 
-	
 }
