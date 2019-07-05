@@ -852,7 +852,7 @@ public class ProcessorThread implements Runnable {
 				intCodeResultBean.setServletInfo(new ServletInfo(ExecutionMap.find(this.executionId,
 						ServletEventPool.getInstance().getRequestMap().get(this.threadId))));
 				eventQueue.add(intCodeResultBean);
-				logger.log(Level.INFO,"publish event: " + intCodeResultBean);
+//				logger.log(Level.INFO,"publish event: " + intCodeResultBean);
 			} catch (IllegalStateException e) {
 				logger.log(Level.INFO,"Dropping event " + intCodeResultBean.getId() + " due to buffer capacity reached: {0}", e);
 				LoggingInterceptor.JA_HEALTH_CHECK.incrementDropCount();
