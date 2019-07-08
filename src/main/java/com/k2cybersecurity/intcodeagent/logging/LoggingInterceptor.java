@@ -853,7 +853,7 @@ public class LoggingInterceptor extends Interceptor {
 				shutDownEvent.setApplicationUUID(Agent.APPLICATION_UUID);
 				shutDownEvent.setStatus("Terminating");
 				EventThreadPool.getInstance().getEventQueue().add(shutDownEvent);
-				logger.fine("Shutting down with status: " + shutDownEvent);
+				logger.log(Level.INFO, "Shutting down with status: " + shutDownEvent);
 				try {
 					TimeUnit.SECONDS.sleep(1);
 				} catch (InterruptedException e) {

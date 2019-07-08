@@ -117,7 +117,7 @@ public class EventThreadPool {
 					executor.shutdownNow(); // cancel currently executing tasks
 
 					if (!executor.awaitTermination(1, TimeUnit.SECONDS))
-						logger.severe("Thread pool executor did not terminate");
+						logger.log(Level.SEVERE, "Thread pool executor did not terminate");
 				}
 			} catch (InterruptedException e) {
 			}
@@ -131,7 +131,7 @@ public class EventThreadPool {
 					eventPoolExecutor.shutdownNow(); // cancel currently executing tasks
 
 					if (!eventPoolExecutor.awaitTermination(1, TimeUnit.SECONDS))
-						logger.severe("Thread pool executor did not terminate");
+						logger.log(Level.SEVERE, "Thread pool executor did not terminate");
 				}
 			} catch (InterruptedException e) {
 			}
