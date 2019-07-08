@@ -14,7 +14,7 @@ import org.brutusin.instrumentation.Agent;
 import com.k2cybersecurity.intcodeagent.models.javaagent.AgentBasicInfo;
 import com.k2cybersecurity.intcodeagent.models.javaagent.JAHealthCheck;
 
-public class ConfigLog4J {
+public class ConfigK2Logs {
 
 //	private static final String APPENDERS_ROLLINGFILE_NAME = "k2.log.handler.name";
 //	private static final String APPENDERS_ROLLINGFILE_PATTERNLAYOUT = "k2.log.formatter.patternlayout";
@@ -29,7 +29,7 @@ public class ConfigLog4J {
 			LoggingInterceptor.class, ProcessorThread.class, ServletEventPool.class, ServletEventProcessor.class,
 			AgentBasicInfo.class, JAHealthCheck.class };
 
-	private static ConfigLog4J loggerInstance;
+	private static ConfigK2Logs loggerInstance;
 	public static Level level;
 	private int handlerMaxFileSize;
 	private String loggerName;
@@ -40,7 +40,7 @@ public class ConfigLog4J {
 	private Object[] emptyObjects = new Object[0];
 	private Class<?>[] emptyClasses = new Class<?>[0];
 
-	public ConfigLog4J() {
+	public ConfigK2Logs() {
 		Properties props = new Properties();
 		try {
 			props.load(Thread.currentThread().getContextClassLoader()
@@ -61,23 +61,23 @@ public class ConfigLog4J {
 		}
 		String level = props.getProperty(LOGGER_LVL_PROP);
 		if (level.equals("OFF")) {
-			ConfigLog4J.level = Level.OFF;
+			ConfigK2Logs.level = Level.OFF;
 		} else if (level.equals("SEVERE")) {
-			ConfigLog4J.level = Level.SEVERE;
+			ConfigK2Logs.level = Level.SEVERE;
 		} else if (level.equals("WARNING")) {
-			ConfigLog4J.level = Level.WARNING;
+			ConfigK2Logs.level = Level.WARNING;
 		} else if (level.equals("INFO")) {
-			ConfigLog4J.level = Level.INFO;
+			ConfigK2Logs.level = Level.INFO;
 		} else if (level.equals("CONFIG")) {
-			ConfigLog4J.level = Level.CONFIG;
+			ConfigK2Logs.level = Level.CONFIG;
 		} else if (level.equals("FINE")) {
-			ConfigLog4J.level = Level.FINE;
+			ConfigK2Logs.level = Level.FINE;
 		} else if (level.equals("FINER")) {
-			ConfigLog4J.level = Level.FINER;
+			ConfigK2Logs.level = Level.FINER;
 		} else if (level.equals("FINEST")) {
-			ConfigLog4J.level = Level.FINEST;
+			ConfigK2Logs.level = Level.FINEST;
 		} else if (level.equals("ALL")) {
-			ConfigLog4J.level = Level.ALL;
+			ConfigK2Logs.level = Level.ALL;
 		}
 	}
 
@@ -90,7 +90,7 @@ public class ConfigLog4J {
 			handler.setFormatter(formatter);
 			Logger logger = Logger.getLogger(loggerName);
 			logger.addHandler(handler);
-			logger.setLevel(ConfigLog4J.level);
+			logger.setLevel(ConfigK2Logs.level);
 			logger.setUseParentHandlers(this.loggerAdditivity);
 
 		} catch (Exception e) {
@@ -111,9 +111,9 @@ public class ConfigLog4J {
 		}
 	}
 
-	public static ConfigLog4J getInstance() {
+	public static ConfigK2Logs getInstance() {
 		if (loggerInstance == null) {
-			loggerInstance = new ConfigLog4J();
+			loggerInstance = new ConfigK2Logs();
 		}
 		return loggerInstance;
 	}

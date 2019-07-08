@@ -285,7 +285,7 @@ public class LoggingInterceptor extends Interceptor {
 //			logger.log(Level.WARNING,"Error loading k2JavaNative.so", e);
 //		}
 		
-		ConfigLog4J.getInstance().initializeLogs();
+		ConfigK2Logs.getInstance().initializeLogs();
 		APPLICATION_INFO_BEAN = createApplicationInfoBean();
 		JA_HEALTH_CHECK = new JAHealthCheck(applicationUUID);
 		try {

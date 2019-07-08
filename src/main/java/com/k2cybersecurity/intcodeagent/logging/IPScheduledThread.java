@@ -106,7 +106,7 @@ public class IPScheduledThread {
 					ipScheduledService.shutdownNow(); // cancel currently executing tasks
 
 					if (!ipScheduledService.awaitTermination(1, TimeUnit.SECONDS))
-						logger.severe("Thread pool executor did not terminate");
+						logger.log(Level.SEVERE, "Thread pool executor did not terminate");
 				}
 			} catch (InterruptedException e) {
 			} 

@@ -416,7 +416,7 @@ public interface IAgentConstants {
 
 	// AgentBasicInfo.java file constants
 	String K2_JAVAAGENT_PROPERTIES = "k2-javaagent.properties";
-	String K2_JAVAAGENT_LOG4J_PROPERTIES = "k2-javaagent-log4j.properties";
+	String K2_JAVAAGENT_LOG4J_PROPERTIES = "k2-javaagent-log.properties";
 
 	String K2_JAVAAGENT_VERSION = "k2.javaagent.version";
 

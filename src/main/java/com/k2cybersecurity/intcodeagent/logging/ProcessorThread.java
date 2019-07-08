@@ -185,19 +185,19 @@ public class ProcessorThread implements Runnable {
 				intCodeResultBean.setStacktrace(stackTrace);
 				StackTraceElement[] trace = this.stackTrace;
 
-				for (int i = 0; i < trace.length; i++) {
-					TraceElement traceEntry = new TraceElement();
-					stackTrace.add(traceEntry);
-					traceEntry.setClassName(trace[i].getClassName());
-					traceEntry.setMethodName(trace[i].getMethodName());
-					traceEntry.setLineNumber(trace[i].getLineNumber());
-					klassName = traceEntry.getClassName();
-					if (IAgentConstants.MYSQL_GET_CONNECTION_MAP.containsKey(klassName)
-							&& IAgentConstants.MYSQL_GET_CONNECTION_MAP.get(klassName)
-									.contains(trace[i].getMethodName())) {
-						intCodeResultBean.setValidationBypass(true);
-					}
-				}
+//				for (int i = 0; i < trace.length; i++) {
+//					TraceElement traceEntry = new TraceElement();
+//					stackTrace.add(traceEntry);
+//					traceEntry.setClassName(trace[i].getClassName());
+//					traceEntry.setMethodName(trace[i].getMethodName());
+//					traceEntry.setLineNumber(trace[i].getLineNumber());
+//					klassName = traceEntry.getClassName();
+//					if (IAgentConstants.MYSQL_GET_CONNECTION_MAP.containsKey(klassName)
+//							&& IAgentConstants.MYSQL_GET_CONNECTION_MAP.get(klassName)
+//									.contains(trace[i].getMethodName())) {
+//						intCodeResultBean.setValidationBypass(true);
+//					}
+//				}
 
 				if (IAgentConstants.FILE_OPEN_EXECUTORS.contains(sourceString)) {
 					boolean javaIoFile = false;
@@ -854,7 +854,7 @@ public class ProcessorThread implements Runnable {
 				eventQueue.add(intCodeResultBean);
 //				logger.log(Level.INFO,"publish event: " + intCodeResultBean);
 			} catch (IllegalStateException e) {
-				logger.log(Level.INFO,"Dropping event " + intCodeResultBean.getId() + " due to buffer capacity reached: {0}", e);
+				logger.log(Level.INFO,"Dropping event " + intCodeResultBean.getId() + " due to buffer capacity reached.");
 				LoggingInterceptor.JA_HEALTH_CHECK.incrementDropCount();
 			} catch (Exception e) {
 				logger.log(Level.WARNING,"Error in generateEvent while creating IntCodeResultBean: {0}", e);
