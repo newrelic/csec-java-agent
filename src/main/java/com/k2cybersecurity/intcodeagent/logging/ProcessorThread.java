@@ -58,7 +58,6 @@ import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.PSQLV3_EX
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.PSQLV3_EXECUTOR7_4;
 
 import java.lang.reflect.Field;
-import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -92,9 +91,9 @@ public class ProcessorThread implements Runnable {
 	private String sourceString;
 	private ObjectMapper mapper;
 	private JSONParser parser;
+	private Long preProcessingTime;
 
 	private LinkedBlockingQueue<Object> eventQueue;
-	private Socket currentSocket;
 	static {
 		PATTERN = Pattern.compile(IAgentConstants.TRACE_REGEX);
 	}
@@ -105,11 +104,12 @@ public class ProcessorThread implements Runnable {
 	 * @param executionId
 	 * @param stackTrace
 	 * @param tId
+	 * @param preProcessingTime 
 	 * @param servletInfo
 	 */
 
 	public ProcessorThread(Object source, Object[] arg, Integer executionId, StackTraceElement[] stackTrace, long tId,
-			String sourceString) {
+			String sourceString, long preProcessingTime) {
 		this.source = source;
 		this.arg = arg;
 		this.executionId = executionId;
@@ -119,7 +119,7 @@ public class ProcessorThread implements Runnable {
 		this.mapper = new ObjectMapper();
 		this.parser = new JSONParser();
 		this.eventQueue = EventThreadPool.getInstance().getEventQueue();
-		this.currentSocket = EventThreadPool.getInstance().getSocket();
+		this.preProcessingTime = preProcessingTime;
 	}
 
 	/**
@@ -170,7 +170,7 @@ public class ProcessorThread implements Runnable {
 			if (EXECUTORS.containsKey(sourceString)) {
 				long start = System.currentTimeMillis();
 
-				JavaAgentEventBean intCodeResultBean = new JavaAgentEventBean(start, sourceString,
+				JavaAgentEventBean intCodeResultBean = new JavaAgentEventBean(start, preProcessingTime, sourceString,
 						LoggingInterceptor.VMPID, LoggingInterceptor.applicationUUID,
 						this.threadId + IAgentConstants.COLON_SEPERATOR + this.executionId, EXECUTORS.get(sourceString));
 				

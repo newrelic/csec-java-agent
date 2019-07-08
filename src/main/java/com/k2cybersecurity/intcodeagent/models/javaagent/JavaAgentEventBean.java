@@ -30,18 +30,20 @@ public class JavaAgentEventBean extends AgentBasicInfo implements Serializable{
 	private String id;
 	private List<TraceElement> stacktrace;
 	private String caseType;
+	private Long preProcessingTime;
 
 	public JavaAgentEventBean() {
 	    super();
 	}
 	
-	public JavaAgentEventBean(Long startTime, String source, Integer pid, String applicationUUID, String id, VulnerabilityCaseType vulnerabilityCaseType) {
+	public JavaAgentEventBean(Long startTime, Long preProcessingTime, String source, Integer pid, String applicationUUID, String id, VulnerabilityCaseType vulnerabilityCaseType) {
 	    this.id = id;
 		this.setPid(pid);
 		this.applicationUUID = applicationUUID;
 		this.source = source;
 		this.startTime = startTime;
 		this.setCaseType(vulnerabilityCaseType.getCaseType());
+		this.setPreProcessingTime(preProcessingTime);
 	}
 	
 	public JavaAgentEventBean(Long startTime, String source, JSONArray parameters, Integer pid, String applicationUUID, String id, VulnerabilityCaseType vulnerabilityCaseType) {
@@ -232,6 +234,20 @@ public class JavaAgentEventBean extends AgentBasicInfo implements Serializable{
 	 */
 	public void setCaseType(String caseType) {
 		this.caseType = caseType;
+	}
+
+	/**
+	 * @return the preProcessingTime
+	 */
+	public Long getPreProcessingTime() {
+		return preProcessingTime;
+	}
+
+	/**
+	 * @param preProcessingTime the preProcessingTime to set
+	 */
+	public void setPreProcessingTime(Long preProcessingTime) {
+		this.preProcessingTime = preProcessingTime;
 	}
 
 }

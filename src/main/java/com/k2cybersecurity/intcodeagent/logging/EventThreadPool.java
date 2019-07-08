@@ -175,9 +175,9 @@ public class EventThreadPool {
 	}
 
 	public void processReceivedEvent(Object source, Object[] arg, Integer executionId, StackTraceElement[] stackTrace,
-			long tId, String sourceString) {
+			long tId, String sourceString, long preProcessingTime) {
 		try {
-			this.executor.execute(new ProcessorThread(source, arg, executionId, stackTrace, tId, sourceString));
+			this.executor.execute(new ProcessorThread(source, arg, executionId, stackTrace, tId, sourceString, preProcessingTime));
 		} catch (RejectedExecutionException rejected) {
 			logger.log(Level.INFO, "Rejected to process Event At: " + this.executor.getQueue().size() + ": {0}",
 					rejected);

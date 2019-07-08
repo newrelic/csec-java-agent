@@ -498,6 +498,7 @@ public class LoggingInterceptor extends Interceptor {
 	@SuppressWarnings({ "rawtypes" })
 	@Override
 	protected void doOnStart(Object source, Object[] arg, String eId) {
+		long start = System.currentTimeMillis();
 		String sourceString = null;
 		Integer executionId = Integer.parseInt(eId.split(COLON_SEPERATOR)[1]);
 		long threadId = Thread.currentThread().getId();
@@ -706,7 +707,7 @@ public class LoggingInterceptor extends Interceptor {
 						.find(executionId, ServletEventPool.getInstance().getRequestMap().get(threadId)) != null) {
 					ServletEventPool.getInstance().incrementServletInfoReference(threadId, executionId, true);
 					EventThreadPool.getInstance().processReceivedEvent(source, arg, executionId,
-							Thread.currentThread().getStackTrace(), threadId, sourceString);
+							Thread.currentThread().getStackTrace(), threadId, sourceString, System.currentTimeMillis()-start);
 				}
 			} catch (Exception e) {
 			}
