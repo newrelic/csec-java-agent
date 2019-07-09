@@ -529,6 +529,7 @@ public class LoggingInterceptor extends Interceptor {
 
 			} else {
 				servletInfo = new ServletInfo();
+				servletInfo.addGenerationTime((int) (System.currentTimeMillis()-start));
 				ServletEventPool.getInstance().getRequestMap().get(threadId)
 						.add(new ExecutionMap(executionId, servletInfo));
 			}
@@ -566,6 +567,7 @@ public class LoggingInterceptor extends Interceptor {
 					}
 					// logger.log(Level.FINE,"Request Param : " + servletInfo);
 				}
+				servletInfo.addGenerationTime((int) (System.currentTimeMillis()-start));
 			} catch (Exception e) {
 				logger.log(Level.WARNING, "Exception occured in JETTY_PARSE_NEXT: {0}", e);
 			}
@@ -598,6 +600,7 @@ public class LoggingInterceptor extends Interceptor {
 					}
 					// logger.log(Level.FINE,"Request Param : " + servletInfo);
 				}
+				servletInfo.addGenerationTime((int) (System.currentTimeMillis()-start));
 			} catch (Exception e) {
 				logger.log(Level.WARNING, "Exception occured in TOMCAT_SETBYTEBUFFER: {0}", e);
 			}
@@ -692,6 +695,7 @@ public class LoggingInterceptor extends Interceptor {
 					// " +
 					// servletInfo);
 				}
+				servletInfo.addGenerationTime((int) (System.currentTimeMillis()-start));
 			} catch (Exception e) {
 				logger.log(Level.WARNING, "Exception occured in TOMCAT_COYOTE_ADAPTER_SERVICE buffer processing : {0}",
 						e);

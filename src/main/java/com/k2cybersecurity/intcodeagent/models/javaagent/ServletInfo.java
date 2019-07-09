@@ -15,15 +15,19 @@ public class ServletInfo implements Serializable {
 
 	private String rawRequest;
 	
+	private Integer generationTime;
+	
 	private boolean dataTruncated;
 
 	public ServletInfo() {
+		this.generationTime = 0;
 		this.rawRequest = IAgentConstants.EMPTY_STRING;
 		this.dataTruncated = false;
 	}
 
 
 	public ServletInfo(ServletInfo servletInfo) {
+		this.generationTime = servletInfo.getGenerationTime();
 		this.rawRequest = servletInfo.getRawRequest();
 		this.dataTruncated = servletInfo.isDataTruncated();
 	}
@@ -64,5 +68,26 @@ public class ServletInfo implements Serializable {
 	 */
 	public void setDataTruncated(boolean dataTruncated) {
 		this.dataTruncated = dataTruncated;
+	}
+
+
+	/**
+	 * @return the generationTime
+	 */
+	public Integer getGenerationTime() {
+		return generationTime;
+	}
+
+
+	/**
+	 * @param generationTime the generationTime to set
+	 */
+	public void setGenerationTime(Integer generationTime) {
+		this.generationTime = generationTime;
+	}
+	
+	public Integer addGenerationTime(Integer time) {
+		this.generationTime += time;
+		return this.generationTime; 
 	}
 }
