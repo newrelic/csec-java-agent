@@ -225,7 +225,7 @@ public class ProcessorThread implements Runnable {
 							javaIoFile = true;
 						}
 					}
-					ServletEventPool.getInstance().decrementServletInfoReference(threadId, executionId, true);
+//					ServletEventPool.getInstance().decrementServletInfoReference(threadId, executionId, true);
 					return;
 				}
 
@@ -251,7 +251,7 @@ public class ProcessorThread implements Runnable {
 							if (i > 0)
 								intCodeResultBean.setCurrentMethod(trace[i - 1].getMethodName());
 						} else {
-							ServletEventPool.getInstance().decrementServletInfoReference(threadId, executionId, true);
+//							ServletEventPool.getInstance().decrementServletInfoReference(threadId, executionId, true);
 							return;
 						}
 						break;
