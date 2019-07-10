@@ -396,10 +396,30 @@ int  patch_entry(size_t entry, size_t calltgt){
       if((*env)->ExceptionOccurred(env)) {\
         goto exception;\
       } \
-      printf("args found %s(len=%d) : %s(len=%d) : %s(len=%d)\n", \
-             (char*)j1,(int)len1,\
-             (char*)j2,(int)len2,\
-             (char*)j3,(int)len3);\
+      jlong tid = syscall(__NR_gettid);\
+      jbyte* ptr; \
+      ptr=j3; \
+      for( int i=0;i< (int)len3;i++) { \
+          if (  j3[i] == 0  && i!= (int)len3-1 ) { \
+                j3[i] = 32;\
+          } \
+      } \
+      jstring instanceId = (*env)->NewStringUTF(env, "1");\
+      char* classname = (char* )"k2/io/org/brutusin/instrumentation/Callback";\
+      jclass cls = (*env)->FindClass(env,(char*)classname);\
+      jclass clsObject = (*env)->FindClass(env,"java/lang/Object");\
+      jobject initObject = (*env)->AllocObject(env, clsObject);\
+      jmethodID getInstance_method = (*env)->GetStaticMethodID(env, cls, "getInstance", "(Ljava/lang/String;)Lk2/io/org/brutusin/instrumentation/Callback;");\
+      jmethodID callback_method = (*env)->GetMethodID(env, cls, "onStart", "(Ljava/lang/String;[Ljava/lang/Object;)Ljava/lang/String;");\
+      jobject jobj = (*env)->CallStaticObjectMethod(env, cls, getInstance_method, instanceId);\
+      jstring FORKEXEC_SOURCE_IDENTIFIER = (*env)->NewStringUTF(env, "FORKEXEC_SOURCE_IDENTIFIER");\
+      jobjectArray forexec_args = (*env)->NewObjectArray(env, 2, clsObject, initObject);\
+      jobject forexec_args_fill[2];\
+      forexec_args_fill[0]=(jobject)(*env)->NewStringUTF(env, (char*)j2);\
+      forexec_args_fill[1]=(jobject)(*env)->NewStringUTF(env, (char*)j3);\
+      (*env)->SetObjectArrayElement(env, forexec_args, 0, forexec_args_fill[0]);\
+      (*env)->SetObjectArrayElement(env, forexec_args, 1, forexec_args_fill[1]);\
+      jobject ret_callback = (*env)->CallObjectMethod(env, jobj, callback_method, FORKEXEC_SOURCE_IDENTIFIER, forexec_args);\
       if(j1) {\
           (*env)->ReleasePrimitiveArrayCritical(env,jpath,j1,0);\
       }\
@@ -459,7 +479,7 @@ void sanitize_string(char* s) {
 // Function: native K2Native_init
 // -------------------------------
 JNIEXPORT jint JNICALL 
-Java_com_k2cybersecurity_intcodeagent_logging_K2Native_k2init(JNIEnv* env, jobject j) {
+Java_com_k2cybersecurity_intcodeagent_logging_K2Native_k2init(JNIEnv* env, jclass j) {
   jint jret=0,jerr=-1;
 
    //printf(" in k2init()\n");

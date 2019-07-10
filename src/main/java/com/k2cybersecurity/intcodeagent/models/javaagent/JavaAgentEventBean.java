@@ -1,12 +1,20 @@
-package org.brutusin.instrumentation.logging;
+package com.k2cybersecurity.intcodeagent.models.javaagent;
 
-import org.brutusin.com.fasterxml.jackson.core.JsonProcessingException;
-import org.brutusin.com.fasterxml.jackson.databind.ObjectMapper;
-import com.k2.org.json.simple.JSONArray;
+import java.io.Serializable;
+import java.util.List;
+
+import org.json.simple.JSONArray;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 
-public class IntCodeResultBean extends AgentBasicInfo {
+public class JavaAgentEventBean extends AgentBasicInfo implements Serializable{
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -6572256624089364532L;
 	private Integer pid;
 	private String applicationUUID;
 	private Long startTime;
@@ -14,26 +22,38 @@ public class IntCodeResultBean extends AgentBasicInfo {
 	private String userClassName;
 	private String userMethodName;
 	private String currentMethod;
+	private boolean validationBypass;
 	private Integer lineNumber;
 	private JSONArray parameters;
 	private Long eventGenerationTime;
+	private ServletInfo servletInfo;
+	private String id;
+	private List<TraceElement> stacktrace;
+	private String caseType;
+	private Long preProcessingTime;
 
-	public IntCodeResultBean() {
+	public JavaAgentEventBean() {
+	    super();
 	}
-
-	public IntCodeResultBean(Long startTime, String source, Integer pid, String applicationUUID) {
+	
+	public JavaAgentEventBean(Long startTime, Long preProcessingTime, String source, Integer pid, String applicationUUID, String id, VulnerabilityCaseType vulnerabilityCaseType) {
+	    this.id = id;
 		this.setPid(pid);
 		this.applicationUUID = applicationUUID;
 		this.source = source;
 		this.startTime = startTime;
+		this.setCaseType(vulnerabilityCaseType.getCaseType());
+		this.setPreProcessingTime(preProcessingTime);
 	}
 	
-	public IntCodeResultBean(Long startTime, String source, JSONArray parameters, Integer pid, String applicationUUID) {
+	public JavaAgentEventBean(Long startTime, String source, JSONArray parameters, Integer pid, String applicationUUID, String id, VulnerabilityCaseType vulnerabilityCaseType) {
+	    this.id = id;
 		this.setPid(pid);
 		this.applicationUUID = applicationUUID;
 		this.source = source;
 		this.parameters = parameters;
 		this.startTime = startTime;
+		this.setCaseType(vulnerabilityCaseType.getCaseType());
 	}
 
 	public void setUserAPIInfo(Integer lineNumber, String userClassName, String userMethodName) {
@@ -89,6 +109,11 @@ public class IntCodeResultBean extends AgentBasicInfo {
 	public void setParameters(JSONArray parameters) {
 		this.parameters = parameters;
 	}
+
+	public boolean getValidationBypass() { return validationBypass;	}
+
+	public void setValidationBypass(boolean validationBypass) { this.validationBypass = validationBypass; }
+
 
 	@Override
 	public String toString() {
@@ -155,5 +180,74 @@ public class IntCodeResultBean extends AgentBasicInfo {
 		this.applicationUUID = applicationUUID;
 	}
 
-	
+	/**
+	 * @return the servletInfo
+	 */
+	public ServletInfo getServletInfo() {
+		return servletInfo;
+	}
+
+	/**
+	 * @param servletInfo the servletInfo to set
+	 */
+	public void setServletInfo(ServletInfo servletInfo) {
+		this.servletInfo = servletInfo;
+	}
+
+	/**
+	 * @return the id
+	 */
+	public String getId() {
+		return id;
+	}
+
+	/**
+	 * @param id the id to set
+	 */
+	public void setId(String id) {
+		this.id = id;
+	}
+
+	/**
+	 * @return the stacktrace
+	 */
+	public List<TraceElement> getStacktrace() {
+		return stacktrace;
+	}
+
+	/**
+	 * @param stacktrace the stacktrace to set
+	 */
+	public void setStacktrace(List<TraceElement> stacktrace) {
+		this.stacktrace = stacktrace;
+	}
+
+	/**
+	 * @return the caseType
+	 */
+	public String getCaseType() {
+		return caseType;
+	}
+
+	/**
+	 * @param caseType the caseType to set
+	 */
+	public void setCaseType(String caseType) {
+		this.caseType = caseType;
+	}
+
+	/**
+	 * @return the preProcessingTime
+	 */
+	public Long getPreProcessingTime() {
+		return preProcessingTime;
+	}
+
+	/**
+	 * @param preProcessingTime the preProcessingTime to set
+	 */
+	public void setPreProcessingTime(Long preProcessingTime) {
+		this.preProcessingTime = preProcessingTime;
+	}
+
 }
