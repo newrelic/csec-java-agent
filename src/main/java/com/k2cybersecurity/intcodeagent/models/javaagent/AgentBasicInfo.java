@@ -4,15 +4,14 @@ import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.K2_JAVAAG
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.K2_JAVAAGENT_JSONNAME_DYNAMICJARPATHBEAN;
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.K2_JAVAAGENT_JSONNAME_INTCODERESULTBEAN;
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.K2_JAVAAGENT_JSONNAME_JAHEALTHCHECK;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.K2_JAVAAGENT_JSONNAME_JARPATHBEAN;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.K2_JAVAAGENT_JSONNAME_SHUTDOWN;
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.K2_JAVAAGENT_PROPERTIES;
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.K2_JAVAAGENT_TOOL_ID;
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.K2_JAVAAGENT_VERSION;
 
 import java.util.Properties;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 
 // TODO: Auto-generated Javadoc
@@ -38,7 +37,7 @@ public class AgentBasicInfo {
 		try {
 			props.load(Thread.currentThread().getContextClassLoader().getResourceAsStream(K2_JAVAAGENT_PROPERTIES));
 		} catch (Exception e) {
-			logger.error("Could not load properties: {}", e);
+			logger.log(Level.WARNING,"Could not load properties: {0}", e);
 		}
 	}
 
@@ -53,12 +52,12 @@ public class AgentBasicInfo {
 			setJsonName(props.getProperty(K2_JAVAAGENT_JSONNAME_APPLICATIONINFOBEAN));
 		} else if (this instanceof JavaAgentEventBean) {
 			setJsonName(props.getProperty(K2_JAVAAGENT_JSONNAME_INTCODERESULTBEAN));
-		} else if(this instanceof JavaAgentJarPathBean){
-			setJsonName(props.getProperty(K2_JAVAAGENT_JSONNAME_JARPATHBEAN));
 		} else if(this instanceof JavaAgentDynamicPathBean){
 			setJsonName(props.getProperty(K2_JAVAAGENT_JSONNAME_DYNAMICJARPATHBEAN));
 		} else if(this instanceof JAHealthCheck) {
 			setJsonName(props.getProperty(K2_JAVAAGENT_JSONNAME_JAHEALTHCHECK));
+		} else if(this instanceof ShutDownEvent) {
+			setJsonName(props.getProperty(K2_JAVAAGENT_JSONNAME_SHUTDOWN));
 		}
 	}
 
@@ -117,7 +116,7 @@ public class AgentBasicInfo {
 	}
 	
 	public static void setLogger() {
-		AgentBasicInfo.logger = LogManager.getLogger(AgentBasicInfo.class);
+		AgentBasicInfo.logger = Logger.getLogger(AgentBasicInfo.class.getName());
 	}
 	
 }

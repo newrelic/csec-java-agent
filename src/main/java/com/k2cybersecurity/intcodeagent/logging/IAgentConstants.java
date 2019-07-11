@@ -7,49 +7,52 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.k2cybersecurity.intcodeagent.models.javaagent.VulnerabilityCaseType;
+
 public interface IAgentConstants {
 
-	//HSQL
+	String TRACE_REGEX = "(?!(org\\.apache\\.jsp.*))((^javax.*)|(^java\\.lang.*)|(^java\\.io.*)|(^org\\.apache.*)|(^java\\.nio.*)|(^java\\.util.*)|(^java\\.net.*)|(^sun.*)|(^java\\.security.*)|(^k2\\.org\\.brutusin.*)|(^com\\.k2cybersecurity\\.intcodeagent.*)|(^k2\\.io\\.org.*)|(^com\\.microsoft\\.sqlserver.*)|(^com\\.mysql.*)|(^sun\\.reflect.*)|(^org\\.hibernate.*)|(^java\\.sql.*)|(^com\\.mongodb.*)|(^org\\.apache\\.commons.*)|(^org\\.mongodb.*)|(^com\\.sun.*)|(^org\\.eclipse\\.jetty.*)|(^net\\.sourceforge\\.eclipsejetty.*)|(^java\\.awt.*)|(^org\\.springframework.*)|(^org\\.slf4j.*)|(^org\\.eclipse\\.jdt.*)|(^com\\.opensymphony\\.xwork2.*)|(^k2\\.org\\.objectweb\\.asm.*)|(^freemarker\\.cache.*)|(^com\\.mchange.*)|(^org\\.postgresql.*)|(^oracle\\.jdbc.*)|(^org\\.hsqldb.*)|(^ch\\.qos\\.logback.*)|(^io\\.micrometer.*)|(^k2\\.org\\.json.*)|(^k2\\.com\\.fasterxml.*)|(^jdk\\..*))";
+
+	// HSQL
 	String CLASS_ORG_HSQLDB_HSQL_CLIENT_CONNECTION = "org/hsqldb/HSQLClientConnection";
 	String CLASS_ORG_HSQLDB_SESSION = "org/hsqldb/Session";
-	
-	//PSQL
+
+	// PSQL
 	String CLASS_ORG_POSTGRESQL_CORE_V2_QUERY_EXECUTOR_IMPL = "org/postgresql/core/v2/QueryExecutorImpl";
 	String CLASS_ORG_POSTGRESQL_CORE_V3_QUERY_EXECUTOR_IMPL = "org/postgresql/core/v3/QueryExecutorImpl";
-	
-	//JETTY
+
+	// JETTY
 	String CLASS_ORG_ECLIPSE_JETTY_HTTP_HTTP_PARSER = "org/eclipse/jetty/http/HttpParser";
 	String CLASS_ORG_ECLIPSE_JETTY_SERVER_HTTP_CONNECTION = "org/eclipse/jetty/server/HttpConnection";
-	
-	//APACHE TOMCAT
+
+	// APACHE TOMCAT
 	String CLASS_ORG_APACHE_CATALINA_CONNECTOR_INPUT_BUFFER = "org/apache/catalina/connector/InputBuffer";
 	String CLASS_ORG_APACHE_CATALINA_CONNECTOR_COYOTE_ADAPTER = "org/apache/catalina/connector/CoyoteAdapter";
-	
-	//ORACLE
+
+	// ORACLE
 	String CLASS_ORACLE_JDBC_DRIVER_T4CTT_IFUN = "oracle/jdbc/driver/T4CTTIfun";
-	
-	//CLASSLOADER
+
+	// CLASSLOADER
 	String CLASS_JAVA_NET_URL_CLASS_LOADER = "java/net/URLClassLoader";
-	
-	//MONGO
+
+	// MONGO
 	String CLASS_COM_MONGODB_ASYNC_CLIENT_OPERATION_EXECUTOR_IMPL = "com/mongodb/async/client/OperationExecutorImpl";
 	String CLASS_COM_MONGODB_ASYNC_CLIENT_ASYNC_OPERATION_EXECUTOR_IMPL = "com/mongodb/async/client/AsyncOperationExecutorImpl";
 	String CLASS_COM_MONGODB_ASYNC_CLIENT_MONGO_CLIENT_IMPL$2 = "com/mongodb/async/client/MongoClientImpl$2";
 	String CLASS_COM_MONGODB_INTERNAL_CONNECTION_DEFAULT_SERVER_CONNECTION = "com/mongodb/internal/connection/DefaultServerConnection";
 	String CLASS_COM_MONGODB_CONNECTION_DEFAULT_SERVER_CONNECTION = "com/mongodb/connection/DefaultServerConnection";
-	
-	//MYSQL
+
+	// MYSQL
 	String CLASS_COM_MYSQL_JDBC_SERVER_PREPARED_STATEMENT = "com/mysql/jdbc/ServerPreparedStatement";
 	String CLASS_COM_MYSQL_CJ_NATIVE_SESSION = "com/mysql/cj/NativeSession";
 	String CLASS_COM_MYSQL_CJ_MYSQLA_IO_MYSQLA_PROTOCOL = "com/mysql/cj/mysqla/io/MysqlaProtocol";
 	String CLASS_COM_MYSQL_JDBC_MYSQL_IO = "com/mysql/jdbc/MysqlIO";
-	
-	//MSSQL
+
+	// MSSQL
 	String CLASS_COM_MICROSOFT_SQLSERVER_JDBC_SQL_SERVER_STATEMENT = "com/microsoft/sqlserver/jdbc/SQLServerStatement";
-	
-	//FORKEXEC
+
+	// FORKEXEC
 	String CLASS_JAVA_LANG_PROCESS_IMPL = "java/lang/ProcessImpl";
-	
 
 	String EXEC_URL_CLASS_LOADER_NEW_INSTANCE = "public static java.net.URLClassLoader java.net.URLClassLoader.newInstance(java.net.URL[])";
 
@@ -84,8 +87,6 @@ public interface IAgentConstants {
 	String EXEC_MSSQL_SQLTIMEOUT = // mssql calls
 			"final void com.microsoft.sqlserver.jdbc.SQLServerStatement.executeStatement(com.microsoft.sqlserver.jdbc.TDSCommand) throws com.microsoft.sqlserver.jdbc.SQLServerException,java.sql.SQLTimeoutException";
 
-	String TRACE_REGEX = "((?!(org\\.apache\\.jsp.*)|(javax\\.servlet\\.http.*)))((^javax.*)|(^java\\.lang.*)|(^java\\.io.*)|(^org\\.apache.*)|(^java\\.nio.*)|(^java\\.util.*)|(^java\\.net.*)|(^sun.*)|(^java\\.security.*)|(^k2\\.org\\.brutusin.*)|(^com\\.k2cybersecurity.*)|(^k2\\.io\\.org.*)|(^com\\.microsoft\\.sqlserver.*)|(^com\\.mysql.*)|(^sun\\.reflect.*)|(^org\\.hibernate.*)|(^java\\.sql.*)|(^com\\.mongodb.*)|(^org\\.apache\\.commons.*)|(^org\\.mongodb.*)|(^com\\.sun.*)|(^org\\.eclipse\\.jetty.*)|(^net\\.sourceforge\\.eclipsejetty.*)|(^java\\.awt.*)|(^org\\.springframework.*)|(^org\\.slf4j.*)|(^org\\.eclipse\\.jdt.*)|(^com\\.opensymphony\\.xwork2.*)|(^k2\\.org\\.objectweb\\.asm.*)|(^freemarker\\.cache.*)|(^com\\.mchange.*)|(^org\\.postgresql.*)|(^oracle\\.jdbc.*)|(^org\\.hsqldb.*)|(^ch\\.qos\\.logback.*)|(^io\\.micrometer.*)|(^k2\\.org\\.json.*)|(^k2\\.com\\.fasterxml.*))";
-
 	String SYSYTEM_CALL_START = "static java.lang.Process java.lang.ProcessImpl.start(java.lang.String[],java.util.Map<java.lang.String, java.lang.String>,java.lang.String,java.lang.ProcessBuilder$Redirect[],boolean) throws java.io.IOException";
 
 	// http client
@@ -111,21 +112,39 @@ public interface IAgentConstants {
 		}
 	};
 
-	String[] MONGO_EXECUTORS = {
-			// asynchronous mongo calls
-			"public <T> void com.mongodb.async.client.MongoClientImpl$2.execute(com.mongodb.operation.AsyncReadOperation<T>,com.mongodb.ReadPreference,com.mongodb.async.SingleResultCallback<T>)",
-			"public <T> void com.mongodb.async.client.MongoClientImpl$2.execute(com.mongodb.operation.AsyncWriteOperation<T>,com.mongodb.async.SingleResultCallback<T>)",
-			"public <T> void com.mongodb.async.client.AsyncOperationExecutorImpl.execute(com.mongodb.operation.AsyncWriteOperation<T>,com.mongodb.session.ClientSession,com.mongodb.async.SingleResultCallback<T>)",
-			"public <T> void com.mongodb.async.client.AsyncOperationExecutorImpl.execute(com.mongodb.operation.AsyncReadOperation<T>,com.mongodb.ReadPreference,com.mongodb.session.ClientSession,com.mongodb.async.SingleResultCallback<T>)",
-			"public <T> void com.mongodb.async.client.OperationExecutorImpl.execute(com.mongodb.operation.AsyncReadOperation<T>,com.mongodb.ReadPreference,com.mongodb.ReadConcern,com.mongodb.async.client.ClientSession,com.mongodb.async.SingleResultCallback<T>)",
-			"public <T> void com.mongodb.async.client.OperationExecutorImpl.execute(com.mongodb.operation.AsyncWriteOperation<T>,com.mongodb.ReadConcern,com.mongodb.async.client.ClientSession,com.mongodb.async.SingleResultCallback<T>)",
+	Map<String, VulnerabilityCaseType> MONGO_EXECUTORS = new HashMap<String, VulnerabilityCaseType>() {
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = -7680282029242613768L;
 
+		{
+			// asynchronous mongo calls
+			put("public <T> void com.mongodb.async.client.MongoClientImpl$2.execute(com.mongodb.operation.AsyncReadOperation<T>,com.mongodb.ReadPreference,com.mongodb.async.SingleResultCallback<T>)",
+					VulnerabilityCaseType.DB_COMMAND);
+			put("public <T> void com.mongodb.async.client.MongoClientImpl$2.execute(com.mongodb.operation.AsyncWriteOperation<T>,com.mongodb.async.SingleResultCallback<T>)",
+					VulnerabilityCaseType.DB_COMMAND);
+			put("public <T> void com.mongodb.async.client.AsyncOperationExecutorImpl.execute(com.mongodb.operation.AsyncWriteOperation<T>,com.mongodb.session.ClientSession,com.mongodb.async.SingleResultCallback<T>)",
+					VulnerabilityCaseType.DB_COMMAND);
+			put("public <T> void com.mongodb.async.client.AsyncOperationExecutorImpl.execute(com.mongodb.operation.AsyncReadOperation<T>,com.mongodb.ReadPreference,com.mongodb.session.ClientSession,com.mongodb.async.SingleResultCallback<T>)",
+					VulnerabilityCaseType.DB_COMMAND);
+			put("public <T> void com.mongodb.async.client.OperationExecutorImpl.execute(com.mongodb.operation.AsyncReadOperation<T>,com.mongodb.ReadPreference,com.mongodb.ReadConcern,com.mongodb.async.client.ClientSession,com.mongodb.async.SingleResultCallback<T>)",
+					VulnerabilityCaseType.DB_COMMAND);
+			put("public <T> void com.mongodb.async.client.OperationExecutorImpl.execute(com.mongodb.operation.AsyncWriteOperation<T>,com.mongodb.ReadConcern,com.mongodb.async.client.ClientSession,com.mongodb.async.SingleResultCallback<T>)",
+					VulnerabilityCaseType.DB_COMMAND);
 			// synchronous mongo calls
-			"private <T> T com.mongodb.connection.DefaultServerConnection.executeProtocol(com.mongodb.connection.CommandProtocol<T>,com.mongodb.session.SessionContext)",
-			"private <T> T com.mongodb.connection.DefaultServerConnection.executeProtocol(com.mongodb.connection.LegacyProtocol<T>)",
-			"private <T> T com.mongodb.internal.connection.DefaultServerConnection.executeProtocol(com.mongodb.internal.connection.CommandProtocol<T>,com.mongodb.session.SessionContext)",
-			"private <T> T com.mongodb.internal.connection.DefaultServerConnection.executeProtocol(com.mongodb.internal.connection.LegacyProtocol<T>)",
-			"private <T> T com.mongodb.connection.DefaultServerConnection.executeProtocol(com.mongodb.connection.Protocol<T>)" };
+			put("private <T> T com.mongodb.connection.DefaultServerConnection.executeProtocol(com.mongodb.connection.CommandProtocol<T>,com.mongodb.session.SessionContext)",
+					VulnerabilityCaseType.DB_COMMAND);
+			put("private <T> T com.mongodb.connection.DefaultServerConnection.executeProtocol(com.mongodb.connection.LegacyProtocol<T>)",
+					VulnerabilityCaseType.DB_COMMAND);
+			put("private <T> T com.mongodb.internal.connection.DefaultServerConnection.executeProtocol(com.mongodb.internal.connection.CommandProtocol<T>,com.mongodb.session.SessionContext)",
+					VulnerabilityCaseType.DB_COMMAND);
+			put("private <T> T com.mongodb.internal.connection.DefaultServerConnection.executeProtocol(com.mongodb.internal.connection.LegacyProtocol<T>)",
+					VulnerabilityCaseType.DB_COMMAND);
+			put("private <T> T com.mongodb.connection.DefaultServerConnection.executeProtocol(com.mongodb.connection.Protocol<T>)",
+					VulnerabilityCaseType.DB_COMMAND);
+		}
+	};
 
 	String SERVLET_REQUEST_FACADE = "public org.apache.catalina.connector.RequestFacade(org.apache.catalina.connector.Request)";
 
@@ -148,36 +167,54 @@ public interface IAgentConstants {
 
 	// MSSQL
 
-	String[] EXECUTORS = { SYSYTEM_CALL_START,
+	Map<String, VulnerabilityCaseType> EXECUTORS = new HashMap<String, VulnerabilityCaseType>() {
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = -6864398309462801187L;
+
+		{
+			// System Command
+			put(SYSYTEM_CALL_START, VulnerabilityCaseType.SYSTEM_COMMAND);
 
 			// MSSQL
-			EXEC_MSSQL_SQLTIMEOUT, EXEC_MSSQL,
+			put(EXEC_MSSQL_SQLTIMEOUT, VulnerabilityCaseType.DB_COMMAND);
+			put(EXEC_MSSQL, VulnerabilityCaseType.DB_COMMAND);
 
 			// MYSQL
-			EXEC_MYSQL_505,
-
-			EXEC_MYSQL_51X,
-
-			EXEC_MYSQL_6X, EXEC_MYSQL_6X2, EXEC_MYSQL_6X3, EXEC_MYSQL_6X4,
-
-			EXEC_MYSQL_8X,
+			put(EXEC_MYSQL_505, VulnerabilityCaseType.DB_COMMAND);
+			put(EXEC_MYSQL_51X, VulnerabilityCaseType.DB_COMMAND);
+			put(EXEC_MYSQL_6X, VulnerabilityCaseType.DB_COMMAND);
+			put(EXEC_MYSQL_6X2, VulnerabilityCaseType.DB_COMMAND);
+			put(EXEC_MYSQL_6X3, VulnerabilityCaseType.DB_COMMAND);
+			put(EXEC_MYSQL_6X4, VulnerabilityCaseType.DB_COMMAND);
+			put(EXEC_MYSQL_8X, VulnerabilityCaseType.DB_COMMAND);
 
 			// ORACLE
-			EXEC_ORACLE,
+			put(EXEC_ORACLE, VulnerabilityCaseType.DB_COMMAND);
 
 			// postgresql
-			PSQLV3_EXECUTOR, PSQLV2_EXECUTOR, PSQL42_EXECUTOR, PSQLV3_EXECUTOR7_4,
+			put(PSQLV3_EXECUTOR, VulnerabilityCaseType.DB_COMMAND);
+			put(PSQLV2_EXECUTOR, VulnerabilityCaseType.DB_COMMAND);
+			put(PSQL42_EXECUTOR, VulnerabilityCaseType.DB_COMMAND);
+			put(PSQLV3_EXECUTOR7_4, VulnerabilityCaseType.DB_COMMAND);
 
 			// HSQLDB
-			HSQL_V2_4, HSQL_V1_8_CONNECTION, HSQL_V1_8_SESSION,
+			put(HSQL_V2_4, VulnerabilityCaseType.DB_COMMAND);
+			put(HSQL_V1_8_CONNECTION, VulnerabilityCaseType.DB_COMMAND);
+			put(HSQL_V1_8_SESSION, VulnerabilityCaseType.DB_COMMAND);
+
+			// MongoDB
+			putAll(MONGO_EXECUTORS);
+			
+			// dynamic class loading
+			put(URL_CLASS_LOADER, VulnerabilityCaseType.DYNAMIC_CLASS_LOADING);
+			put(EXEC_DEFINE_CLASS, VulnerabilityCaseType.DYNAMIC_CLASS_LOADING);
+			put(EXEC_URL_CLASS_LOADER_NEW_INSTANCE, VulnerabilityCaseType.DYNAMIC_CLASS_LOADING);
 
 			// // FileWriter
 //			"public java.io.OutputStream java.nio.file.spi.FileSystemProvider.newOutputStream(java.nio.file.Path,java.nio.file.OpenOption...) throws java.io.IOException",
 //			"public java.io.File(java.lang.String,java.lang.String)", "public java.io.File(java.lang.String)",
-
-			// dynamic class loading
-
-			URL_CLASS_LOADER, EXEC_DEFINE_CLASS, EXEC_URL_CLASS_LOADER_NEW_INSTANCE,
 
 			// File Input
 			// "public java.io.FileInputStream(java.lang.String) throws
@@ -186,14 +223,15 @@ public interface IAgentConstants {
 			// java.io.FileNotFoundException",
 
 			// http request
-			APACHE_HTTP_REQUEST_EXECUTOR_METHOD, 
+			put(APACHE_HTTP_REQUEST_EXECUTOR_METHOD, VulnerabilityCaseType.HTTP_REQUEST);
 			
 			//JAVA_OPEN_CONNECTION_METHOD,
-			JAVA_OPEN_CONNECTION_METHOD2, 
-			JAVA_OPEN_CONNECTION_METHOD2_HTTPS,
-			JAVA_OPEN_CONNECTION_METHOD2_HTTPS_2
+			put(JAVA_OPEN_CONNECTION_METHOD2, VulnerabilityCaseType.HTTP_REQUEST);
+			put(JAVA_OPEN_CONNECTION_METHOD2_HTTPS, VulnerabilityCaseType.HTTP_REQUEST);
+			put(JAVA_OPEN_CONNECTION_METHOD2_HTTPS_2, VulnerabilityCaseType.HTTP_REQUEST);
 			
 
+		}
 	};
 
 	String HTTP_SERVLET_SERVICE = "protected void javax.servlet.http.HttpServlet.service(javax.servlet.http.HttpServletRequest,javax.servlet.http.HttpServletResponse) throws javax.servlet.ServletException,java.io.IOException";
@@ -215,11 +253,12 @@ public interface IAgentConstants {
 			put(CLASS_COM_MYSQL_CJ_NATIVE_SESSION, Collections.singletonList("execSQL"));
 			put(CLASS_COM_MYSQL_JDBC_SERVER_PREPARED_STATEMENT, Collections.singletonList("serverExecute"));
 			put(CLASS_COM_MONGODB_CONNECTION_DEFAULT_SERVER_CONNECTION, Collections.singletonList("executeProtocol"));
-			put(CLASS_COM_MONGODB_INTERNAL_CONNECTION_DEFAULT_SERVER_CONNECTION, Collections.singletonList("executeProtocol"));
+			put(CLASS_COM_MONGODB_INTERNAL_CONNECTION_DEFAULT_SERVER_CONNECTION,
+					Collections.singletonList("executeProtocol"));
 			put(CLASS_COM_MONGODB_ASYNC_CLIENT_MONGO_CLIENT_IMPL$2, Collections.singletonList("execute"));
 			put(CLASS_COM_MONGODB_ASYNC_CLIENT_ASYNC_OPERATION_EXECUTOR_IMPL, Collections.singletonList("execute"));
 			put(CLASS_COM_MONGODB_ASYNC_CLIENT_OPERATION_EXECUTOR_IMPL, Collections.singletonList("execute"));
-			put(CLASS_JAVA_NET_URL_CLASS_LOADER, Arrays.asList(new String[] { "<init>","newInstance" }));
+			put(CLASS_JAVA_NET_URL_CLASS_LOADER, Arrays.asList(new String[] { "<init>", "newInstance" }));
 			put(CLASS_ORACLE_JDBC_DRIVER_T4CTT_IFUN, Collections.singletonList("doRPC"));
 			put(CLASS_ORG_APACHE_CATALINA_CONNECTOR_COYOTE_ADAPTER, Collections.singletonList("service"));
 			put(CLASS_ORG_APACHE_CATALINA_CONNECTOR_INPUT_BUFFER, Collections.singletonList("setByteBuffer"));
@@ -227,7 +266,7 @@ public interface IAgentConstants {
 			put(CLASS_ORG_ECLIPSE_JETTY_HTTP_HTTP_PARSER, Collections.singletonList("parseNext"));
 			put(CLASS_ORG_POSTGRESQL_CORE_V3_QUERY_EXECUTOR_IMPL, Collections.singletonList("sendQuery"));
 			put(CLASS_ORG_POSTGRESQL_CORE_V2_QUERY_EXECUTOR_IMPL, Collections.singletonList("sendQuery"));
-			put(CLASS_ORG_HSQLDB_SESSION, Arrays.asList(new String[] { "executeCompiledStatement","execute" }));
+			put(CLASS_ORG_HSQLDB_SESSION, Arrays.asList(new String[] { "executeCompiledStatement", "execute" }));
 			put(CLASS_ORG_HSQLDB_HSQL_CLIENT_CONNECTION, Collections.singletonList("execute"));
 			put(CLASS_HTTP_REQUEST_EXECUTOR, Collections.singletonList("doSendRequest"));
 			put("sun/net/www/protocol/http/Handler", Collections.singletonList("openConnection"));
@@ -390,14 +429,14 @@ public interface IAgentConstants {
 
 	String IPSCHEDULEDTHREAD_ = "ipScheduledThread-";
 	String ACK_MSG = "ACK";
-	
+
 	// EventThreadPool.java file constants
 	String K2_JAVA_AGENT = "K2-Java-Agent-";
 
 	// AgentBasicInfo.java file constants
 	String K2_JAVAAGENT_PROPERTIES = "k2-javaagent.properties";
-	String K2_JAVAAGENT_LOG4J_PROPERTIES = "k2-javaagent-log4j.properties";
-	
+	String K2_JAVAAGENT_LOG4J_PROPERTIES = "k2-javaagent-log.properties";
+
 	String K2_JAVAAGENT_VERSION = "k2.javaagent.version";
 
 	String K2_JAVAAGENT_TOOL_ID = "k2.javaagent.tool.id";
@@ -411,6 +450,8 @@ public interface IAgentConstants {
 	String K2_JAVAAGENT_JSONNAME_DYNAMICJARPATHBEAN = "k2.javaagent.jsonname.dynamicjarpathbean";
 
 	String K2_JAVAAGENT_JSONNAME_JAHEALTHCHECK = "k2.javaagent.jsonname.healthcheck";
+	
+	String K2_JAVAAGENT_JSONNAME_SHUTDOWN = "k2.javaagent.jsonname.shutdown";
 
 	// LoggingInterceptor Constants
 	char DIR_SEPERATOR = '/';
@@ -427,6 +468,7 @@ public interface IAgentConstants {
 	String JA_CONNECT_SUCCESS_MSG = "K2-JavaAgent installed successfully.";
 	String PROC_DIR = "/proc/";
 	String CMD_LINE_DIR = "/cmdline";
+	String STAT = "/stat";
 	String BYTE_BUFFER_FIELD_LIMIT = "limit";
 	String BYTE_BUFFER_FIELD_POSITION = "position";
 	String BYTE_BUFFER_FIELD_BUF = "buf";
@@ -450,5 +492,4 @@ public interface IAgentConstants {
 	int TOMCAT_8 = 8;
 	int TOMCAT_9 = 9;
 	int K2_IC_TCP_PORT = 54321;
-
 }

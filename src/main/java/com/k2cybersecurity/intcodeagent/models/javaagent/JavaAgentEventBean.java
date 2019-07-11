@@ -1,6 +1,7 @@
 package com.k2cybersecurity.intcodeagent.models.javaagent;
 
 import java.io.Serializable;
+import java.util.List;
 
 import org.json.simple.JSONArray;
 
@@ -27,31 +28,32 @@ public class JavaAgentEventBean extends AgentBasicInfo implements Serializable{
 	private Long eventGenerationTime;
 	private ServletInfo servletInfo;
 	private String id;
+	private List<TraceElement> stacktrace;
+	private String caseType;
+	private Long preProcessingTime;
 
 	public JavaAgentEventBean() {
 	    super();
 	}
-
-	public JavaAgentEventBean(String id) {
-	    this();
-	    this.id = id;
-	}
 	
-	public JavaAgentEventBean(Long startTime, String source, Integer pid, String applicationUUID, String id) {
-	    this(id);
+	public JavaAgentEventBean(Long startTime, Long preProcessingTime, String source, Integer pid, String applicationUUID, String id, VulnerabilityCaseType vulnerabilityCaseType) {
+	    this.id = id;
 		this.setPid(pid);
 		this.applicationUUID = applicationUUID;
 		this.source = source;
 		this.startTime = startTime;
+		this.setCaseType(vulnerabilityCaseType.getCaseType());
+		this.setPreProcessingTime(preProcessingTime);
 	}
 	
-	public JavaAgentEventBean(Long startTime, String source, JSONArray parameters, Integer pid, String applicationUUID, String id) {
-	    this(id);
+	public JavaAgentEventBean(Long startTime, String source, JSONArray parameters, Integer pid, String applicationUUID, String id, VulnerabilityCaseType vulnerabilityCaseType) {
+	    this.id = id;
 		this.setPid(pid);
 		this.applicationUUID = applicationUUID;
 		this.source = source;
 		this.parameters = parameters;
 		this.startTime = startTime;
+		this.setCaseType(vulnerabilityCaseType.getCaseType());
 	}
 
 	public void setUserAPIInfo(Integer lineNumber, String userClassName, String userMethodName) {
@@ -206,5 +208,46 @@ public class JavaAgentEventBean extends AgentBasicInfo implements Serializable{
 		this.id = id;
 	}
 
-	
+	/**
+	 * @return the stacktrace
+	 */
+	public List<TraceElement> getStacktrace() {
+		return stacktrace;
+	}
+
+	/**
+	 * @param stacktrace the stacktrace to set
+	 */
+	public void setStacktrace(List<TraceElement> stacktrace) {
+		this.stacktrace = stacktrace;
+	}
+
+	/**
+	 * @return the caseType
+	 */
+	public String getCaseType() {
+		return caseType;
+	}
+
+	/**
+	 * @param caseType the caseType to set
+	 */
+	public void setCaseType(String caseType) {
+		this.caseType = caseType;
+	}
+
+	/**
+	 * @return the preProcessingTime
+	 */
+	public Long getPreProcessingTime() {
+		return preProcessingTime;
+	}
+
+	/**
+	 * @param preProcessingTime the preProcessingTime to set
+	 */
+	public void setPreProcessingTime(Long preProcessingTime) {
+		this.preProcessingTime = preProcessingTime;
+	}
+
 }

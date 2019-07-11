@@ -11,9 +11,8 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import com.k2cybersecurity.intcodeagent.models.javaagent.ServletInfo;
 
@@ -91,7 +90,7 @@ public class ServletEventPool {
 		});
 	}
 
-	protected static ServletEventPool getInstance() {
+	public static ServletEventPool getInstance() {
 		if (instance == null)
 			instance = new ServletEventPool();
 		return instance;
@@ -119,7 +118,7 @@ public class ServletEventPool {
 		 *             always
 		 */
 		public void rejectedExecution(Runnable r, ThreadPoolExecutor e) {
-			logger.debug("Event Task " + r.toString() + " rejected from {} " + e.toString());
+			logger.log(Level.FINE,"Event Task " + r.toString() + " rejected from {0} " + e.toString());
 		}
 	}
 
@@ -189,7 +188,24 @@ public class ServletEventPool {
 		return refCount;
 	}
 
+	public void shutDownThreadPoolExecutor() {
+
+		if (executor != null) {
+			try {
+				executor.shutdown(); // disable new tasks from being submitted
+				if (!executor.awaitTermination(1, TimeUnit.SECONDS)) {
+					// wait for termination for a timeout
+					executor.shutdownNow(); // cancel currently executing tasks
+
+					if (!executor.awaitTermination(1, TimeUnit.SECONDS))
+						logger.log(Level.SEVERE,"Thread pool executor did not terminate");
+				}
+			} catch (InterruptedException e) {
+			} 
+		}
+	}
+	
 	public static void setLogger() {
-		ServletEventPool.logger = LogManager.getLogger(ServletEventPool.class);
+		ServletEventPool.logger = Logger.getLogger(ServletEventPool.class.getName());
 	}
 }

@@ -14,9 +14,8 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import com.k2cybersecurity.intcodeagent.models.javaagent.JAHealthCheck;
 
@@ -24,6 +23,7 @@ import com.k2cybersecurity.intcodeagent.models.javaagent.JAHealthCheck;
 public class IPScheduledThread {
 
 	private static IPScheduledThread instance;
+	
 	private static Logger logger;
 	
 	private static ScheduledExecutorService ipScheduledService;
@@ -47,25 +47,24 @@ public class IPScheduledThread {
 
 					} catch (SocketException ex) {
 						// if ack fails, socket needs to be properly closed as it is not done implicitly
-						logger.error("Error in writing");
+						logger.log(Level.WARNING,"Error in writing");
 						LoggingInterceptor.closeSocket();
 					} catch (NullPointerException ex) {
-						logger.error("No reference to Socket's OutputStream");
+						logger.log(Level.WARNING,"No reference to Socket's OutputStream");
 					} catch (Exception e) {
-						logger.error("Error while trying to verify connection: {}" ,e);
+						logger.log(Level.WARNING,"Error while trying to verify connection: {0}" ,e);
 					}
 					if (hostip == null || hostip.equals("")) {
-						logger.debug("Host ip not found");
+						logger.log(Level.FINE,"Host ip not found");
 					} else if (!LoggingInterceptor.hostip.equals(hostip) || (socket == null)
 							|| (!socket.isConnected()) || (socket.isClosed())) {
 						LoggingInterceptor.connectSocket();
-						LoggingInterceptor.getJarPath();
-						logger.debug("K2-JavaAgent re-installed successfully.");
+						logger.log(Level.FINE,"K2-JavaAgent re-installed successfully.");
 					} else {
 						
 					}
 				} catch (Exception e) {
-					logger.error("Error in IPScheduledThread : {}", e);
+					logger.log(Level.WARNING,"Error in IPScheduledThread : {0}", e);
 				}
 			}
 		};
@@ -78,7 +77,7 @@ public class IPScheduledThread {
 						IPSCHEDULEDTHREAD_ + threadNumber.getAndIncrement());
 			}
 		});
-		ipScheduledService.scheduleAtFixedRate(runnable, 2, 1, TimeUnit.MINUTES);
+		ipScheduledService.scheduleAtFixedRate(runnable, 5, 5, TimeUnit.MINUTES);
 	}
 
 	public static IPScheduledThread getInstance() {
@@ -87,12 +86,34 @@ public class IPScheduledThread {
 				instance = new IPScheduledThread();
 			return instance;
 		} catch (Exception e) {
-			logger.error("Error while starting: {}" ,e);
+			logger.log(Level.WARNING,"Error while starting: {0}" ,e);
 		}
 		throw null;
 	}
 	
+	/**
+	 * Shut down the thread pool executor. Calls normal shutdown of thread pool
+	 * executor and awaits for termination. If not terminated, forcefully shuts down
+	 * the executor after a timeout.
+	 */
+	public void shutDownThreadPoolExecutor() {
+
+		if (ipScheduledService != null) {
+			try {
+				ipScheduledService.shutdown(); // disable new tasks from being submitted
+				if (!ipScheduledService.awaitTermination(1, TimeUnit.SECONDS)) {
+					// wait for termination for a timeout
+					ipScheduledService.shutdownNow(); // cancel currently executing tasks
+
+					if (!ipScheduledService.awaitTermination(1, TimeUnit.SECONDS))
+						logger.log(Level.SEVERE, "Thread pool executor did not terminate");
+				}
+			} catch (InterruptedException e) {
+			} 
+		}
+	}
+	
 	public static void setLogger() {
-		IPScheduledThread.logger = LogManager.getLogger(IPScheduledThread.class);
+		IPScheduledThread.logger = Logger.getLogger(IPScheduledThread.class.getName());
 	}
 }
