@@ -93,6 +93,10 @@ public interface IAgentConstants {
 
 	String APACHE_HTTP_REQUEST_EXECUTOR_METHOD = "protected org.apache.http.HttpResponse org.apache.http.protocol.HttpRequestExecutor.doSendRequest(org.apache.http.HttpRequest,org.apache.http.HttpClientConnection,org.apache.http.protocol.HttpContext) throws java.io.IOException,org.apache.http.HttpException";
 	
+	String JAVA_OPEN_CONNECTION_METHOD2 = "protected java.net.URLConnection sun.net.www.protocol.http.Handler.openConnection(java.net.URL,java.net.Proxy) throws java.io.IOException";
+	String JAVA_OPEN_CONNECTION_METHOD2_HTTPS = "protected java.net.URLConnection sun.net.www.protocol.https.Handler.openConnection(java.net.URL,java.net.Proxy) throws java.io.IOException";
+	String JAVA_OPEN_CONNECTION_METHOD2_HTTPS_2 = "protected java.net.URLConnection com.sun.net.ssl.internal.www.protocol.https.Handler.openConnection(java.net.URL,java.net.Proxy) throws java.io.IOException";
+	
 	List<String> FILE_OPEN_EXECUTORS = Arrays.asList(new String[] {
 			"public java.io.File(java.lang.String,java.lang.String)", "public java.io.File(java.lang.String)" });
 
@@ -182,7 +186,13 @@ public interface IAgentConstants {
 			// java.io.FileNotFoundException",
 
 			// http request
-			APACHE_HTTP_REQUEST_EXECUTOR_METHOD
+			APACHE_HTTP_REQUEST_EXECUTOR_METHOD, 
+			
+			//JAVA_OPEN_CONNECTION_METHOD,
+			JAVA_OPEN_CONNECTION_METHOD2, 
+			JAVA_OPEN_CONNECTION_METHOD2_HTTPS,
+			JAVA_OPEN_CONNECTION_METHOD2_HTTPS_2
+			
 
 	};
 
@@ -220,6 +230,9 @@ public interface IAgentConstants {
 			put(CLASS_ORG_HSQLDB_SESSION, Arrays.asList(new String[] { "executeCompiledStatement","execute" }));
 			put(CLASS_ORG_HSQLDB_HSQL_CLIENT_CONNECTION, Collections.singletonList("execute"));
 			put(CLASS_HTTP_REQUEST_EXECUTOR, Collections.singletonList("doSendRequest"));
+			put("sun/net/www/protocol/http/Handler", Collections.singletonList("openConnection"));
+			put("sun/net/www/protocol/https/Handler", Collections.singletonList("openConnection"));
+			put("com/sun/net/ssl/internal/www/protocol/https/Handler", Collections.singletonList("openConnection"));
 		}
 	};
 

@@ -476,10 +476,10 @@ public class LoggingInterceptor extends Interceptor {
 				if (sourceString != null && (TOMCAT_COYOTE_ADAPTER_SERVICE.equals(sourceString)
 						|| JETTY_REQUEST_ON_FILLABLE.equals(sourceString))) {
 					ServletEventPool.getInstance().decrementServletInfoReference(threadId, executionId, false);
-					// System.out.println("Request map entry removed for threadID " + threadId);
-					// System.out.println("Current request map : " +
-					// ServletEventPool.getInstance().getRequestMap());
-					// System.out.println(threadId + ":: remove from coyote");
+					 System.out.println("Request map entry removed for threadID " + threadId);
+					 System.out.println("Current request map : " +
+					 ServletEventPool.getInstance().getRequestMap());
+					 System.out.println(threadId + ":: remove from coyote");
 				}
 			}
 		} catch (Exception e) {
