@@ -11,7 +11,7 @@ import com.k2cybersecurity.intcodeagent.models.javaagent.VulnerabilityCaseType;
 
 public interface IAgentConstants {
 
-	String TRACE_REGEX = "(?!(org\\.apache\\.jsp.*))((^javax.*)|(^java\\.lang.*)|(^java\\.io.*)|(^org\\.apache.*)|(^java\\.nio.*)|(^java\\.util.*)|(^java\\.net.*)|(^sun.*)|(^java\\.security.*)|(^k2\\.org\\.brutusin.*)|(^com\\.k2cybersecurity\\.intcodeagent.*)|(^k2\\.io\\.org.*)|(^com\\.microsoft\\.sqlserver.*)|(^com\\.mysql.*)|(^sun\\.reflect.*)|(^org\\.hibernate.*)|(^java\\.sql.*)|(^com\\.mongodb.*)|(^org\\.apache\\.commons.*)|(^org\\.mongodb.*)|(^com\\.sun.*)|(^org\\.eclipse\\.jetty.*)|(^net\\.sourceforge\\.eclipsejetty.*)|(^java\\.awt.*)|(^org\\.springframework.*)|(^org\\.slf4j.*)|(^org\\.eclipse\\.jdt.*)|(^com\\.opensymphony\\.xwork2.*)|(^k2\\.org\\.objectweb\\.asm.*)|(^freemarker\\.cache.*)|(^com\\.mchange.*)|(^org\\.postgresql.*)|(^oracle\\.jdbc.*)|(^org\\.hsqldb.*)|(^ch\\.qos\\.logback.*)|(^io\\.micrometer.*)|(^k2\\.org\\.json.*)|(^k2\\.com\\.fasterxml.*)|(^jdk\\..*))";
+	String TRACE_REGEX = "(?!(org\\.apache\\.jsp.*))((^javax.*)|(^org\\.apache.*)|(^sun.*)|(^java.*)|(^k2\\.org\\.brutusin.*)|(^com\\.k2cybersecurity\\.intcodeagent.*)|(^k2\\.io\\.org.*)|(^com\\.microsoft\\.sqlserver.*)|(^com\\.mysql.*)|(^sun\\.reflect.*)|(^org\\.hibernate.*)|(^com\\.mongodb.*)|(^org\\.apache\\.commons.*)|(^org\\.mongodb.*)|(^com\\.sun.*)|(^org\\.eclipse\\.jetty.*)|(^net\\.sourceforge\\.eclipsejetty.*)|(^org\\.springframework.*)|(^org\\.slf4j.*)|(^org\\.eclipse\\.jdt.*)|(^com\\.opensymphony\\.xwork2.*)|(^k2\\.org\\.objectweb\\.asm.*)|(^freemarker\\.cache.*)|(^com\\.mchange.*)|(^org\\.postgresql.*)|(^oracle\\.jdbc.*)|(^org\\.hsqldb.*)|(^ch\\.qos\\.logback.*)|(^io\\.micrometer.*)|(^k2\\.org\\.json.*)|(^k2\\.com\\.fasterxml.*)|(^jdk\\..*))|(^com\\.ibm\\.ws.*)";
 
 	// HSQL
 	String CLASS_ORG_HSQLDB_HSQL_CLIENT_CONNECTION = "org/hsqldb/HSQLClientConnection";
@@ -54,6 +54,15 @@ public interface IAgentConstants {
 	// FORKEXEC
 	String CLASS_JAVA_LANG_PROCESS_IMPL = "java/lang/ProcessImpl";
 
+	//WSLiberty
+	String COM_IBM_WS_GENERICBNF_INTERNAL_BNFHEADERSIMPL = "com/ibm/ws/genericbnf/internal/BNFHeadersImpl";
+	String COM_IBM_WS_HTTP_CHANNEL_INTERNAL_INBOUND_HTTPINBOUNDLINK = "com/ibm/ws/http/channel/internal/inbound/HttpInboundLink";
+
+	//WAS Traditional
+	String COM_IBM_WS_GENERICBNF_IMPL_BNFHEADERSIMPL = "com/ibm/ws/genericbnf/impl/BNFHeadersImpl";
+	String COM_IBM_WS_HTTP_CHANNEL_INBOUND_IMPL_HTTPINBOUNDLINK = "com/ibm/ws/http/channel/inbound/impl/HttpInboundLink";
+	
+	
 	String EXEC_URL_CLASS_LOADER_NEW_INSTANCE = "public static java.net.URLClassLoader java.net.URLClassLoader.newInstance(java.net.URL[])";
 
 	String EXEC_DEFINE_CLASS = "private java.lang.Class<?> java.net.URLClassLoader.defineClass(java.lang.String,sun.misc.Resource) throws java.io.IOException";
@@ -167,7 +176,7 @@ public interface IAgentConstants {
 		{
 			// System Command
 			put(SYSYTEM_CALL_START, VulnerabilityCaseType.SYSTEM_COMMAND);
-
+			
 			// MSSQL
 			put(EXEC_MSSQL_SQLTIMEOUT, VulnerabilityCaseType.DB_COMMAND);
 			put(EXEC_MSSQL, VulnerabilityCaseType.DB_COMMAND);
@@ -253,6 +262,10 @@ public interface IAgentConstants {
 			put(CLASS_ORG_POSTGRESQL_CORE_V2_QUERY_EXECUTOR_IMPL, Collections.singletonList("sendQuery"));
 			put(CLASS_ORG_HSQLDB_SESSION, Arrays.asList(new String[] { "executeCompiledStatement", "execute" }));
 			put(CLASS_ORG_HSQLDB_HSQL_CLIENT_CONNECTION, Collections.singletonList("execute"));
+			put(COM_IBM_WS_GENERICBNF_INTERNAL_BNFHEADERSIMPL, Collections.singletonList("fillByteCache"));
+			put(COM_IBM_WS_HTTP_CHANNEL_INTERNAL_INBOUND_HTTPINBOUNDLINK, Collections.singletonList("processRequest"));
+			put(COM_IBM_WS_GENERICBNF_IMPL_BNFHEADERSIMPL, Collections.singletonList("fillByteCache"));
+			put(COM_IBM_WS_HTTP_CHANNEL_INBOUND_IMPL_HTTPINBOUNDLINK, Collections.singletonList("processRequest"));
 		}
 	};
 
@@ -271,6 +284,11 @@ public interface IAgentConstants {
 	String JETTY_REQUEST_ON_FILLABLE = "public void org.eclipse.jetty.server.HttpConnection.onFillable()";
 	String JETTY_PARSE_NEXT = "public boolean org.eclipse.jetty.http.HttpParser.parseNext(java.nio.ByteBuffer)";
 
+	String WEBSPHERE_LIBERTY_FILLBYTECACHE = "protected boolean com.ibm.ws.genericbnf.internal.BNFHeadersImpl.fillByteCache(com.ibm.wsspi.bytebuffer.WsByteBuffer)";
+	String WEBSPHERE_LIBERTY_PROCESSREQUEST = "protected void com.ibm.ws.http.channel.internal.inbound.HttpInboundLink.processRequest()";
+	String WEBSPHERE_TRADITIONAL_FILLBYTECACHE = "protected boolean com.ibm.ws.genericbnf.impl.BNFHeadersImpl.fillByteCache(com.ibm.wsspi.buffermgmt.WsByteBuffer)";
+	String WEBSPHERE_TRADITIONAL_PROCESSREQUEST = "protected void com.ibm.ws.http.channel.inbound.impl.HttpInboundLink.processRequest()";
+	
 	/** MSSQL FIELD CONSTANTS */
 	String MSSQL_CURRENT_OBJECT = "this$0";
 	String MSSQL_BATCH_STATEMENT_BUFFER_FIELD = "batchStatementBuffer";

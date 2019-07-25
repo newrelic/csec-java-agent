@@ -78,6 +78,7 @@ import com.k2cybersecurity.intcodeagent.models.javaagent.JavaAgentDynamicPathBea
 import com.k2cybersecurity.intcodeagent.models.javaagent.JavaAgentEventBean;
 import com.k2cybersecurity.intcodeagent.models.javaagent.ServletInfo;
 import com.k2cybersecurity.intcodeagent.models.javaagent.TraceElement;
+import com.k2cybersecurity.intcodeagent.websocket.EventSendPool;
 
 public class ProcessorThread implements Runnable {
 
@@ -93,7 +94,6 @@ public class ProcessorThread implements Runnable {
 	private JSONParser parser;
 	private Long preProcessingTime;
 
-	private LinkedBlockingQueue<Object> eventQueue;
 	static {
 		PATTERN = Pattern.compile(IAgentConstants.TRACE_REGEX);
 	}
@@ -118,7 +118,6 @@ public class ProcessorThread implements Runnable {
 		this.sourceString = sourceString;
 		this.mapper = new ObjectMapper();
 		this.parser = new JSONParser();
-		this.eventQueue = EventThreadPool.getInstance().getEventQueue();
 		this.preProcessingTime = preProcessingTime;
 	}
 
@@ -181,8 +180,8 @@ public class ProcessorThread implements Runnable {
 				}
 
 				// String methodName = null;
-				List<TraceElement> stackTrace = new ArrayList<>();
-				intCodeResultBean.setStacktrace(stackTrace);
+//				List<TraceElement> stackTrace = new ArrayList<>();
+//				intCodeResultBean.setStacktrace(stackTrace);
 				StackTraceElement[] trace = this.stackTrace;
 
 //				for (int i = 0; i < trace.length; i++) {
@@ -241,6 +240,7 @@ public class ProcessorThread implements Runnable {
 							&& IAgentConstants.MYSQL_GET_CONNECTION_MAP.get(klassName)
 									.contains(trace[i].getMethodName())) {
 						intCodeResultBean.setValidationBypass(true);
+						return;
 					}
 					if (!PATTERN.matcher(klassName).matches()) {
 						JSONArray params = toString(arg, sourceString);
@@ -839,7 +839,7 @@ public class ProcessorThread implements Runnable {
 				JavaAgentDynamicPathBean dynamicJarPathBean = new JavaAgentDynamicPathBean(
 						LoggingInterceptor.applicationUUID, System.getProperty(IAgentConstants.USER_DIR),
 						new ArrayList<String>(Agent.jarPathSet), list);
-				eventQueue.add(dynamicJarPathBean);
+				EventSendPool.getInstance().sendEvent(dynamicJarPathBean.toString());
 			} catch (IllegalStateException e) {
 				logger.log(Level.INFO,"Dropping dynamicJarPathBean event " + intCodeResultBean.getId()
 						+ " due to buffer capacity reached");
@@ -851,7 +851,7 @@ public class ProcessorThread implements Runnable {
 			try {
 				intCodeResultBean.setServletInfo(new ServletInfo(ExecutionMap.find(this.executionId,
 						ServletEventPool.getInstance().getRequestMap().get(this.threadId))));
-				eventQueue.add(intCodeResultBean);
+				EventSendPool.getInstance().sendEvent(intCodeResultBean.toString());
 //				logger.log(Level.INFO,"publish event: " + intCodeResultBean);
 			} catch (IllegalStateException e) {
 				logger.log(Level.INFO,"Dropping event " + intCodeResultBean.getId() + " due to buffer capacity reached.");

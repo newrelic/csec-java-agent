@@ -1,10 +1,5 @@
 package com.k2cybersecurity.intcodeagent.logging;
 
-import java.io.IOException;
-import java.io.ObjectOutputStream;
-import java.net.Socket;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.RejectedExecutionException;
@@ -16,6 +11,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import com.k2cybersecurity.intcodeagent.websocket.WSClient;
 
 public class EventThreadPool {
 
@@ -29,10 +26,8 @@ public class EventThreadPool {
 
 	private StringBuffer eventBuffer;
 	private LinkedBlockingQueue<Object> eventQueue = new LinkedBlockingQueue<>(MAX_BLOCKING_QUEUE_SIZE);
-	private Socket socket;
-	private ObjectOutputStream oos;
-	private ScheduledExecutorService eventPoolExecutor;
-	private Runnable queuePooler;
+//	private AsynchronousSocketChannel channel;
+
 	private boolean triedReconnect = false;
 
 	final int queueSize = 300;
@@ -75,36 +70,6 @@ public class EventThreadPool {
 						IAgentConstants.K2_JAVA_AGENT + threadNumber.getAndIncrement());
 			}
 		});
-		this.queuePooler = new Runnable() {
-			@Override
-			public void run() {
-				EventThreadPool currentExecutor = EventThreadPool.getInstance();
-				LinkedBlockingQueue<Object> eventQueue = currentExecutor.getEventQueue();
-				ObjectOutputStream oos = currentExecutor.getObjectStream();
-				if (!eventQueue.isEmpty() && oos != null) {
-					try {
-						List<Object> eventList = new ArrayList<>();
-						eventQueue.drainTo(eventList, eventQueue.size());
-						synchronized (oos) {
-							oos.writeUnshared(eventList);
-							oos.reset();
-						}
-						if (currentExecutor.triedReconnect()) {
-							currentExecutor.setTriedReconnect(false);
-						}
-					} catch (IOException e) {
-						logger.log(Level.WARNING, "Error in writing: {0}", e);
-						if (!currentExecutor.triedReconnect()) {
-							currentExecutor.setTriedReconnect(true);
-							LoggingInterceptor.closeSocket();
-							LoggingInterceptor.connectSocket();
-						}
-					} catch (Exception e) {
-						logger.log(Level.WARNING, "Error in queuePooler: {0}", e);
-					}
-				}
-			}
-		};
 	}
 
 	public void shutDownThreadPoolExecutor() {
@@ -116,26 +81,14 @@ public class EventThreadPool {
 					// wait for termination for a timeout
 					executor.shutdownNow(); // cancel currently executing tasks
 
-					if (!executor.awaitTermination(1, TimeUnit.SECONDS))
+					if (!executor.awaitTermination(1, TimeUnit.SECONDS)) {
 						logger.log(Level.SEVERE, "Thread pool executor did not terminate");
+					}
 				}
 			} catch (InterruptedException e) {
 			}
 		}
 
-		if (eventPoolExecutor != null) {
-			try {
-				eventPoolExecutor.shutdown(); // disable new tasks from being submitted
-				if (!eventPoolExecutor.awaitTermination(1, TimeUnit.SECONDS)) {
-					// wait for termination for a timeout
-					eventPoolExecutor.shutdownNow(); // cancel currently executing tasks
-
-					if (!eventPoolExecutor.awaitTermination(1, TimeUnit.SECONDS))
-						logger.log(Level.SEVERE, "Thread pool executor did not terminate");
-				}
-			} catch (InterruptedException e) {
-			}
-		}
 	}
 
 	protected static EventThreadPool getInstance() {
@@ -177,7 +130,8 @@ public class EventThreadPool {
 	public void processReceivedEvent(Object source, Object[] arg, Integer executionId, StackTraceElement[] stackTrace,
 			long tId, String sourceString, long preProcessingTime) {
 		try {
-			this.executor.execute(new ProcessorThread(source, arg, executionId, stackTrace, tId, sourceString, preProcessingTime));
+			this.executor.execute(
+					new ProcessorThread(source, arg, executionId, stackTrace, tId, sourceString, preProcessingTime));
 		} catch (RejectedExecutionException rejected) {
 			logger.log(Level.INFO, "Rejected to process Event At: " + this.executor.getQueue().size() + ": {0}",
 					rejected);
@@ -208,37 +162,9 @@ public class EventThreadPool {
 		return eventQueue;
 	}
 
-	public Socket getSocket() {
-		return socket;
-	}
-
-	public void setSocket(Socket socket) {
-		this.socket = socket;
-	}
-
-	public ObjectOutputStream getObjectStream() {
-		return oos;
-	}
-
-	public void setObjectStream(ObjectOutputStream oos) {
-		this.oos = oos;
-	}
-
-	public ScheduledExecutorService getEventPoolExecutor() {
-		return eventPoolExecutor;
-	}
-
-	public void setEventPoolExecutor(ScheduledExecutorService eventPoolExecutor) {
-		this.eventPoolExecutor = eventPoolExecutor;
-	}
-
 	// TODO: remove this getter
 	protected ThreadPoolExecutor getExecutor() {
 		return executor;
-	}
-
-	protected Runnable getQueuePooler() {
-		return queuePooler;
 	}
 
 	public boolean triedReconnect() {

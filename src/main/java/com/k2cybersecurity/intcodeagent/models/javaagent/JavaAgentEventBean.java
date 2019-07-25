@@ -1,20 +1,10 @@
 package com.k2cybersecurity.intcodeagent.models.javaagent;
 
-import java.io.Serializable;
-import java.util.List;
-
 import org.json.simple.JSONArray;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.k2cybersecurity.intcodeagent.websocket.JsonConverter;
 
-
-public class JavaAgentEventBean extends AgentBasicInfo implements Serializable{
-
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = -6572256624089364532L;
+public class JavaAgentEventBean extends AgentBasicInfo {
 	private Integer pid;
 	private String applicationUUID;
 	private Long startTime;
@@ -22,22 +12,23 @@ public class JavaAgentEventBean extends AgentBasicInfo implements Serializable{
 	private String userClassName;
 	private String userMethodName;
 	private String currentMethod;
-	private boolean validationBypass;
+	private Boolean validationBypass;
 	private Integer lineNumber;
 	private JSONArray parameters;
 	private Long eventGenerationTime;
 	private ServletInfo servletInfo;
 	private String id;
-	private List<TraceElement> stacktrace;
+	private JSONArray stacktrace;
 	private String caseType;
 	private Long preProcessingTime;
 
 	public JavaAgentEventBean() {
-	    super();
+		super();
 	}
-	
-	public JavaAgentEventBean(Long startTime, Long preProcessingTime, String source, Integer pid, String applicationUUID, String id, VulnerabilityCaseType vulnerabilityCaseType) {
-	    this.id = id;
+
+	public JavaAgentEventBean(Long startTime, Long preProcessingTime, String source, Integer pid,
+			String applicationUUID, String id, VulnerabilityCaseType vulnerabilityCaseType) {
+		this.id = id;
 		this.setPid(pid);
 		this.applicationUUID = applicationUUID;
 		this.source = source;
@@ -45,9 +36,10 @@ public class JavaAgentEventBean extends AgentBasicInfo implements Serializable{
 		this.setCaseType(vulnerabilityCaseType.getCaseType());
 		this.setPreProcessingTime(preProcessingTime);
 	}
-	
-	public JavaAgentEventBean(Long startTime, String source, JSONArray parameters, Integer pid, String applicationUUID, String id, VulnerabilityCaseType vulnerabilityCaseType) {
-	    this.id = id;
+
+	public JavaAgentEventBean(Long startTime, String source, JSONArray parameters, Integer pid, String applicationUUID,
+			String id, VulnerabilityCaseType vulnerabilityCaseType) {
+		this.id = id;
 		this.setPid(pid);
 		this.applicationUUID = applicationUUID;
 		this.source = source;
@@ -110,18 +102,18 @@ public class JavaAgentEventBean extends AgentBasicInfo implements Serializable{
 		this.parameters = parameters;
 	}
 
-	public boolean getValidationBypass() { return validationBypass;	}
+	public Boolean getValidationBypass() {
+		return validationBypass;
+	}
 
-	public void setValidationBypass(boolean validationBypass) { this.validationBypass = validationBypass; }
-
+	public void setValidationBypass(Boolean validationBypass) {
+		this.validationBypass = validationBypass;
+	}
 
 	@Override
 	public String toString() {
-		try {
-			return new ObjectMapper().writeValueAsString(this);
-		} catch (JsonProcessingException e) {
-			return null;
-		}
+		return JsonConverter.toJSON(this);
+
 	}
 
 	/**
@@ -211,14 +203,14 @@ public class JavaAgentEventBean extends AgentBasicInfo implements Serializable{
 	/**
 	 * @return the stacktrace
 	 */
-	public List<TraceElement> getStacktrace() {
+	public JSONArray getStacktrace() {
 		return stacktrace;
 	}
 
 	/**
 	 * @param stacktrace the stacktrace to set
 	 */
-	public void setStacktrace(List<TraceElement> stacktrace) {
+	public void setStacktrace(JSONArray stacktrace) {
 		this.stacktrace = stacktrace;
 	}
 

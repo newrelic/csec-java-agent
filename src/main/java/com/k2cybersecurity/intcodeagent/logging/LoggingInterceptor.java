@@ -15,80 +15,7 @@
  */
 package com.k2cybersecurity.intcodeagent.logging;
 
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.APPLICATION_INFO_POSTED_MSG;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.BYTE_BUFFER_FIELD_BUF;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.BYTE_BUFFER_FIELD_HB;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.BYTE_BUFFER_FIELD_LASTVALID;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.BYTE_BUFFER_FIELD_LIMIT;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.BYTE_BUFFER_FIELD_POSITION;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.CGROUP_FILE_NAME;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.CLASS_COM_MICROSOFT_SQLSERVER_JDBC_SQL_SERVER_STATEMENT;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.CLASS_COM_MONGODB_ASYNC_CLIENT_ASYNC_OPERATION_EXECUTOR_IMPL;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.CLASS_COM_MONGODB_ASYNC_CLIENT_MONGO_CLIENT_IMPL$2;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.CLASS_COM_MONGODB_ASYNC_CLIENT_OPERATION_EXECUTOR_IMPL;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.CLASS_COM_MONGODB_CONNECTION_DEFAULT_SERVER_CONNECTION;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.CLASS_COM_MONGODB_INTERNAL_CONNECTION_DEFAULT_SERVER_CONNECTION;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.CLASS_COM_MYSQL_CJ_MYSQLA_IO_MYSQLA_PROTOCOL;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.CLASS_COM_MYSQL_CJ_NATIVE_SESSION;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.CLASS_COM_MYSQL_JDBC_MYSQL_IO;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.CLASS_COM_MYSQL_JDBC_SERVER_PREPARED_STATEMENT;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.CLASS_JAVA_LANG_PROCESS_IMPL;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.CLASS_JAVA_NET_URL_CLASS_LOADER;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.CLASS_ORACLE_JDBC_DRIVER_T4CTT_IFUN;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.CLASS_ORG_APACHE_CATALINA_CONNECTOR_COYOTE_ADAPTER;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.CLASS_ORG_APACHE_CATALINA_CONNECTOR_INPUT_BUFFER;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.CLASS_ORG_ECLIPSE_JETTY_HTTP_HTTP_PARSER;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.CLASS_ORG_ECLIPSE_JETTY_SERVER_HTTP_CONNECTION;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.CLASS_ORG_HSQLDB_HSQL_CLIENT_CONNECTION;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.CLASS_ORG_HSQLDB_SESSION;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.CLASS_ORG_POSTGRESQL_CORE_V2_QUERY_EXECUTOR_IMPL;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.CLASS_ORG_POSTGRESQL_CORE_V3_QUERY_EXECUTOR_IMPL;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.CMD_LINE_DIR;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.COLON_SEPERATOR;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.COYOTE_ABSTRACT_INPUT_BUFFER_CLASS_NAME;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.DIR_SEPERATOR;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.DOCKER_DIR;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.HOST_IP_FOUND_MSG;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.HOST_PROP_FILE_NAME;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.INSTRUMENTED_METHODS;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.JA_CONNECT_SUCCESS_MSG;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.JETTY_PARSE_NEXT;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.JETTY_REQUEST_ON_FILLABLE;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.K2_IC_TCP_PORT;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.KUBEPODS_DIR;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.LXC_DIR;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MYSQL_CONNECTOR_5_0_4_PREPARED_SOURCE;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MYSQL_CONNECTOR_6_0_2_SOURCE;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MYSQL_CONNECTOR_6_0_3_SOURCE;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MYSQL_CONNECTOR_6_SOURCE;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MYSQL_CONNECTOR_8_SOURCE;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MYSQL_FIELD_ORIGINAL_SQL;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MYSQL_FIELD_QUERY;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MYSQL_PREPARED_QUERY_8;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MYSQL_PREPARED_STATEMENT_4;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MYSQL_PREPARED_STATEMENT_42;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MYSQL_PREPARED_STATEMENT_5;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MYSQL_PREPARED_STATEMENT_5_0_4;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MYSQL_PREPARED_STATEMENT_6;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MYSQL_PREPARED_STATEMENT_8;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MYSQL_PREPARED_STATEMENT_SOURCE_8;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MYSQL_SOURCE_METHOD_LIST;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.NEW_LINE_SEQUENCE;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.NULL_CHAR_AS_STRING;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.PROC_DIR;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.STAT;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.TOMCAT_7;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.TOMCAT_8;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.TOMCAT_9;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.TOMCAT_COYOTE_ADAPTER_SERVICE;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.TOMCAT_FIELD_SERVERNUMBER;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.TOMCAT_REQUEST_FIELD_BYTEBUFFER;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.TOMCAT_REQUEST_FIELD_INPUTBUFFER;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.TOMCAT_SERVER_INFO_CLASS_NAME;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.TOMCAT_SETBYTEBUFFER;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.TOMCAT_VERSION_DETECTED_MSG;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.VERSION_SPLIT_EXPR;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.VMPID_SPLIT_CHAR;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.*;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -96,20 +23,23 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.ObjectOutputStream;
+import java.lang.instrument.ClassFileTransformer;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.net.InetSocketAddress;
-import java.net.Socket;
 import java.net.SocketAddress;
+import java.net.URISyntaxException;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
+import java.nio.channels.AsynchronousSocketChannel;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -118,7 +48,6 @@ import java.util.logging.Logger;
 
 import org.brutusin.instrumentation.Agent;
 import org.brutusin.instrumentation.Interceptor;
-import org.json.simple.JSONArray;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.MethodNode;
 
@@ -126,9 +55,15 @@ import com.k2cybersecurity.intcodeagent.models.javaagent.ApplicationInfoBean;
 import com.k2cybersecurity.intcodeagent.models.javaagent.JAHealthCheck;
 import com.k2cybersecurity.intcodeagent.models.javaagent.ServletInfo;
 import com.k2cybersecurity.intcodeagent.models.javaagent.ShutDownEvent;
+import com.k2cybersecurity.intcodeagent.websocket.EventSendPool;
+import com.k2cybersecurity.intcodeagent.websocket.WSClient;
 
 public class LoggingInterceptor extends Interceptor {
 
+	private static final String BYTE_LIMIT = "byteLimit";
+	private static final String BYTE_CACHE = "byteCache";
+	private static final String CLASS_COM_IBM_WS_GENERICBNF_IMPL_BNF_HEADERS_IMPL = "com.ibm.ws.genericbnf.impl.BNFHeadersImpl";
+	private static final String CLASS_COM_IBM_WS_GENERICBNF_INTERNAL_BNF_HEADERS_IMPL = "com.ibm.ws.genericbnf.internal.BNFHeadersImpl";
 	private static final String SCOPE = ".scope";
 	private static final String DOCKER_1_13 = "/docker-";
 	private static final int SOCKET_CONNECT_TIMEOUT = 500;
@@ -228,44 +163,6 @@ public class LoggingInterceptor extends Interceptor {
 		return null;
 	}
 
-	synchronized protected static void connectSocket() {
-		Socket socket = EventThreadPool.getInstance().getSocket();
-		if (socket == null || !socket.isConnected() || socket.isClosed()) {
-			try (BufferedReader reader = new BufferedReader(new FileReader(HOST_PROP_FILE_NAME))) {
-				hostip = reader.readLine();
-				if (hostip == null || hostip.isEmpty())
-					throw new RuntimeException("Host ip not found");
-				logger.log(Level.INFO, HOST_IP_FOUND_MSG + hostip);
-				socket = new Socket();
-				SocketAddress socketAddr = new InetSocketAddress(hostip, K2_IC_TCP_PORT);
-				socket.connect(socketAddr, SOCKET_CONNECT_TIMEOUT);
-				socket.setKeepAlive(true);
-				EventThreadPool.getInstance().setSocket(socket);
-				EventThreadPool.getInstance().setObjectStream(new ObjectOutputStream(socket.getOutputStream()));
-			} catch (Exception e) {
-				throw new RuntimeException("Can't connect to IC, agent installation failed.", e);
-			}
-			if (socket == null || !socket.isConnected() || socket.isClosed()) {
-				throw new RuntimeException("Can't connect to IC, agent installation failed.");
-			} else {
-				logger.log(Level.INFO, JA_CONNECT_SUCCESS_MSG);
-				logger.log(Level.INFO, APPLICATION_INFO_POSTED_MSG + LoggingInterceptor.APPLICATION_INFO_BEAN);
-				EventThreadPool.getInstance().getEventQueue().add(LoggingInterceptor.APPLICATION_INFO_BEAN);
-				Agent.allClassLoadersCount.set(0);
-			}
-		}
-	}
-
-	synchronized protected static void disconnectSocket() {
-		try {
-			EventThreadPool.getInstance().getObjectStream().flush();
-			EventThreadPool.getInstance().getObjectStream().close();
-			EventThreadPool.getInstance().getSocket().close();
-		} catch (IOException e) {
-			logger.severe(e.toString());
-		}
-	}
-
 	@Override
 	public void init(String arg) throws Exception {
 		/*
@@ -279,19 +176,19 @@ public class LoggingInterceptor extends Interceptor {
 		 * ", established successfully!!!"); } catch (IOException ex) { throw new
 		 * RuntimeException(ex); }
 		 */
-//		try {
-//			K2Native.k2init();
-//		} catch (Exception e) {
-//			logger.log(Level.WARNING,"Error loading k2JavaNative.so", e);
-//		}
-		
+//		System.out.println("Classloader of LoggingInterceptor class inside is : " + this.getClass().getClassLoader());
+		try (BufferedReader reader = new BufferedReader(new FileReader(HOST_IP_PROPERTIES_FILE))) {
+			hostip = reader.readLine();	
+			if(hostip != null)
+				hostip = hostip.trim();
+		}
 		ConfigK2Logs.getInstance().initializeLogs();
 		APPLICATION_INFO_BEAN = createApplicationInfoBean();
 		JA_HEALTH_CHECK = new JAHealthCheck(applicationUUID);
 		try {
-			connectSocket();
+			WSClient.getInstance();
 		} catch (Exception e) {
-			logger.log(Level.WARNING, "Error occured while trying to connect to socket: {0}", e);
+			logger.log(Level.WARNING, "Error occured while trying to connect to wsocket: {0}", e);
 		}
 		IPScheduledThread.getInstance();
 		eventWritePool();
@@ -300,11 +197,9 @@ public class LoggingInterceptor extends Interceptor {
 	private static void eventWritePool() {
 
 		try {
-			EventThreadPool.getInstance().setEventPoolExecutor(Executors.newScheduledThreadPool(1));
-			EventThreadPool.getInstance().getEventPoolExecutor()
-					.scheduleWithFixedDelay(EventThreadPool.getInstance().getQueuePooler(), 1, 1, TimeUnit.SECONDS);
+			EventSendPool.getInstance();
 		} catch (Exception e) {
-			logger.log(Level.WARNING, "Exception occured in eventWritePool: {0}", e);
+			logger.log(Level.WARNING, "Exception occured in EventSendPool: {0}", e);
 		}
 	}
 
@@ -402,7 +297,6 @@ public class LoggingInterceptor extends Interceptor {
 
 	@Override
 	public boolean interceptMethod(ClassNode cn, MethodNode mn) {
-
 		switch (cn.name) {
 		case CLASS_ORG_HSQLDB_HSQL_CLIENT_CONNECTION:
 		case CLASS_ORG_HSQLDB_SESSION:
@@ -481,13 +375,15 @@ public class LoggingInterceptor extends Interceptor {
 				sourceString = m.toGenericString();
 				// System.out.println("In doOnThrowableThrown :" + sourceString + " : " +
 				// executionId + " : " + threadId);
-				if (sourceString != null && (TOMCAT_COYOTE_ADAPTER_SERVICE.equals(sourceString)
-						|| JETTY_REQUEST_ON_FILLABLE.equals(sourceString))) {
+				if (sourceString != null
+						&& (TOMCAT_COYOTE_ADAPTER_SERVICE.equals(sourceString)
+								|| JETTY_REQUEST_ON_FILLABLE.equals(sourceString))
+						|| sourceString.equals(WEBSPHERE_LIBERTY_PROCESSREQUEST)
+						|| sourceString.equals(WEBSPHERE_TRADITIONAL_PROCESSREQUEST)) {
 					ServletEventPool.getInstance().decrementServletInfoReference(threadId, executionId, false);
-					// System.out.println("Request map entry removed for threadID " + threadId);
-					// System.out.println("Current request map : " +
-					// ServletEventPool.getInstance().getRequestMap());
-					// System.out.println(threadId + ":: remove from coyote");
+//					System.out.println("Request map entry removed for threadID " + threadId);
+//					System.out.println("Current request map : " + ServletEventPool.getInstance().getRequestMap());
+//					System.out.println(threadId + ":: remove from coyote");
 				}
 			}
 		} catch (Exception e) {
@@ -514,11 +410,48 @@ public class LoggingInterceptor extends Interceptor {
 //		 logger.log(Level.FINE,"Executionid: " + eId);
 //		 logger.log(Level.FINE,"Thread Id: " + threadId);
 //		 logger.log(Level.FINE, "SourceString: " +sourceString);
-
+		
+//		System.out.println("Executionid: " + eId);
+//		System.out.println("Thread Id: " + threadId);
+//		System.out.println("SourceString: " +sourceString);
+		
 		if (sourceString == null)
 			return;
-
-		if (JETTY_REQUEST_ON_FILLABLE.equals(sourceString)) {
+		if (sourceString.equals(WEBSPHERE_LIBERTY_FILLBYTECACHE)
+				|| sourceString.equals(WEBSPHERE_TRADITIONAL_FILLBYTECACHE))
+			return;
+		if (sourceString.equals(WEBSPHERE_LIBERTY_PROCESSREQUEST)
+				|| sourceString.equals(WEBSPHERE_TRADITIONAL_PROCESSREQUEST)) {
+//			Object thisPointer = arg[arg.length -1];
+//			ClassLoader currentClassLoader = arg[arg.length -1].getClass().getClassLoader();
+//			int bytePosition = -1;
+//			try {
+//				Class<?> BNFHeadersImpl = Class.forName("com.ibm.ws.genericbnf.internal.BNFHeadersImpl", true, currentClassLoader);
+//				
+//				Field bytePositionField = BNFHeadersImpl.getDeclaredField("bytePosition");
+//				bytePositionField.setAccessible(true);
+//				bytePosition = (int )bytePositionField.get(thisPointer);
+//				System.out.println("entry : " + bytePosition);
+//			} catch (Exception e) {
+//				e.printStackTrace();
+//			}
+//			if(bytePosition>0) {
+//				
+//			} else {
+			ServletEventPool.getInstance().incrementServletInfoReference(threadId, executionId, false);
+			ServletInfo servletInfo;
+			if (!ServletEventPool.getInstance().getRequestMap().containsKey(threadId)) {
+				servletInfo = new ServletInfo();
+				ConcurrentLinkedDeque<ExecutionMap> executionMaps = new ConcurrentLinkedDeque<ExecutionMap>();
+				executionMaps.add(new ExecutionMap(executionId, servletInfo));
+				ServletEventPool.getInstance().getRequestMap().put(threadId, executionMaps);
+			} else {
+				servletInfo = new ServletInfo();
+				ServletEventPool.getInstance().getRequestMap().get(threadId)
+						.add(new ExecutionMap(executionId, servletInfo));
+			}
+//			}
+		} else if (JETTY_REQUEST_ON_FILLABLE.equals(sourceString)) {
 			ServletEventPool.getInstance().incrementServletInfoReference(threadId, executionId, false);
 			ServletInfo servletInfo;
 			if (!ServletEventPool.getInstance().getRequestMap().containsKey(threadId)) {
@@ -691,9 +624,8 @@ public class LoggingInterceptor extends Interceptor {
 							positionHb);
 					requestContent = new String(buff.getByteArray(), 0, buff.getLimit(), StandardCharsets.UTF_8);
 					servletInfo.setRawRequest(requestContent);
-					// logger.log(Level.FINE,"Request Param : " + threadId + ":" + executionId + " :
-					// " +
-					// servletInfo);
+//					 logger.log(Level.INFO,"Request Param : " + threadId + ":" + executionId + " : " +
+//					 servletInfo);
 				}
 				servletInfo.addGenerationTime((int) (System.currentTimeMillis()-start));
 			} catch (Exception e) {
@@ -706,6 +638,7 @@ public class LoggingInterceptor extends Interceptor {
 			if (MYSQL_SOURCE_METHOD_LIST.contains(sourceString) && arg[0] != null) {
 				processMysqlStatement(arg, threadId, sourceString);
 			}
+//			logger.log(Level.INFO, "ServletEventPool.getInstance().getRequestMap() : {0}",ServletEventPool.getInstance().getRequestMap());
 			try {
 				if (ServletEventPool.getInstance().getRequestMap().containsKey(threadId) && ExecutionMap
 						.find(executionId, ServletEventPool.getInstance().getRequestMap().get(threadId)) != null) {
@@ -731,8 +664,59 @@ public class LoggingInterceptor extends Interceptor {
 	}
 
 	@Override
-	protected void doOnFinish(Object source, Object result, String executionId) {
-		onTerminationOfHookedMethods(source, executionId);
+	protected void doOnFinish(Object[] args, Object source, Object result, String eId) {
+		
+		String sourceString = null;
+		long threadId = Thread.currentThread().getId();
+		if (source instanceof Method) {
+			sourceString = ((Method) source).toGenericString();
+
+		} else if (source instanceof Constructor) {
+			sourceString = ((Constructor) source).toGenericString();
+		} else {
+			return;
+		}
+		Integer executionId = Integer.parseInt(eId.split(COLON_SEPERATOR)[1]);
+		Object arg = args[args.length-1];
+		if (sourceString.equals(WEBSPHERE_LIBERTY_FILLBYTECACHE) || sourceString.equals(WEBSPHERE_TRADITIONAL_FILLBYTECACHE)) {
+			Object thisPointer = arg;
+			ClassLoader currentClassLoader = arg.getClass().getClassLoader();
+			try {
+				Class<?> BNFHeadersImpl = null;
+				if(sourceString.equals(WEBSPHERE_LIBERTY_FILLBYTECACHE))
+				BNFHeadersImpl = Class.forName(CLASS_COM_IBM_WS_GENERICBNF_INTERNAL_BNF_HEADERS_IMPL, true,
+						currentClassLoader);
+				else if(sourceString.equals(WEBSPHERE_TRADITIONAL_FILLBYTECACHE))
+					BNFHeadersImpl = Class.forName(CLASS_COM_IBM_WS_GENERICBNF_IMPL_BNF_HEADERS_IMPL, true,
+							currentClassLoader);
+				else
+					return;
+				Field byteCacheField = BNFHeadersImpl.getDeclaredField(BYTE_CACHE);
+				byteCacheField.setAccessible(true);
+				byte[] bytes = (byte[]) byteCacheField.get(thisPointer);
+
+				Field byteLimitField = BNFHeadersImpl.getDeclaredField(BYTE_LIMIT);
+				byteLimitField.setAccessible(true);
+				int byteLimit = (int) byteLimitField.get(thisPointer);
+
+				String requestContent = new String(bytes, 0, byteLimit, StandardCharsets.UTF_8);
+				ServletInfo servletInfo = ExecutionMap.find(executionId,
+						ServletEventPool.getInstance().getRequestMap().get(threadId));
+				if (servletInfo.getRawRequest() == null) {
+					servletInfo.setRawRequest(requestContent);
+				} else if (servletInfo.getRawRequest().length() > 8192 || servletInfo.isDataTruncated()) {
+					servletInfo.setDataTruncated(true);
+				} else {
+					servletInfo.setRawRequest(servletInfo.getRawRequest() + requestContent);
+				}
+
+			} catch (Exception e) {
+				logger.log(Level.SEVERE, "Exception occured in fetching information for Websphere: {0}", e);
+			}
+
+		} else {
+			onTerminationOfHookedMethods(source, eId);
+		}
 	}
 
 	private void processMysqlStatement(Object[] args, long threadId, String sourceString) {
@@ -834,42 +818,80 @@ public class LoggingInterceptor extends Interceptor {
 		}
 	}
 
-	protected static void closeSocket() {
-		if (EventThreadPool.getInstance().getSocket() != null) {
+	public static void setLogger() {
+		LoggingInterceptor.logger = Logger.getLogger(LoggingInterceptor.class.getName());
+	}
+	
+	public static void shutdownLogic(Runtime runtime, final ClassFileTransformer classTransformer) {
+		ShutDownEvent shutDownEvent = new ShutDownEvent();
+		shutDownEvent.setApplicationUUID(Agent.APPLICATION_UUID);
+		shutDownEvent.setStatus("Terminating");
+		EventSendPool.getInstance().sendEvent(shutDownEvent.toString());
+		logger.log(Level.INFO, "Shutting down with status: " + shutDownEvent);
+		try {
+			TimeUnit.SECONDS.sleep(1);
+		} catch (InterruptedException e) {
+		}
+		try {
+			WSClient.getInstance().close();
+		} catch (URISyntaxException | InterruptedException e) {
+		}
+		ServletEventPool.getInstance().shutDownThreadPoolExecutor();
+		IPScheduledThread.getInstance().shutDownThreadPoolExecutor();
+		Agent.globalInstr.removeTransformer(classTransformer);
+		retransformHookedClassesWrapper();
+		logger.log(Level.SEVERE, "Java Agent shutdown complete.");
+	}
+
+	@Override
+	public boolean addShutDownHook(final Runtime runtime, final ClassFileTransformer classTransformer) {
+		FileWatcher.getInstance().setClassTransformer(classTransformer);
+		FileWatcher.getInstance().setRuntime(runtime);
+//		try {
+//			FileWatcher.getInstance().watchDirectory("/etc/k2-adp");
+//		} catch (IOException e) {
+//			logger.log(Level.SEVERE, e.toString());
+//		}
+		runtime.addShutdownHook(new Thread() {
+			@Override
+			public void run() {
+				shutdownLogic(runtime, classTransformer);
+			}
+		});
+		return false;
+	}
+
+	@Override
+	protected List<String> getClassesToLoad() {
+		return new ArrayList<String>(IAgentConstants.INSTRUMENTED_METHODS.keySet());
+	}
+	
+	private static void retransformHookedClassesWrapper() {
+		List<String> classesToRetransform = new ArrayList<String>(IAgentConstants.INSTRUMENTED_METHODS.keySet());
+
+		Map<String, Class<?>> allLoadedClasses = new HashMap<>();
+
+		for (Class<?> cls : Agent.globalInstr.getAllLoadedClasses()) {
+			allLoadedClasses.put(cls.getName(), cls);
+		}
+
+		for (String loadedClass : classesToRetransform) {
+			String loadedClassName = loadedClass.replaceAll("/", ".");
 			try {
-				EventThreadPool.getInstance().getSocket().close();
-				EventThreadPool.getInstance().setSocket(null);
-			} catch (IOException e) {
-				logger.log(Level.WARNING, "Error in closeSocket: {0}", e);
+				Class<?> cl = allLoadedClasses.get(loadedClassName);
+				if (cl == null) {
+					continue;
+				}
+				Agent.globalInstr.retransformClasses(cl);
+			} catch (Exception e) {
+				e.printStackTrace();
 			}
 		}
 	}
 
-	public static void setLogger() {
-		LoggingInterceptor.logger = Logger.getLogger(LoggingInterceptor.class.getName());
-	}
-
 	@Override
-	public boolean addShutDownHook(Runtime runtime) {
-		runtime.addShutdownHook(new Thread() {
-			@Override
-			public void run() {
-				ShutDownEvent shutDownEvent = new ShutDownEvent();
-				shutDownEvent.setApplicationUUID(Agent.APPLICATION_UUID);
-				shutDownEvent.setStatus("Terminating");
-				EventThreadPool.getInstance().getEventQueue().add(shutDownEvent);
-				logger.log(Level.INFO, "Shutting down with status: " + shutDownEvent);
-				try {
-					TimeUnit.SECONDS.sleep(1);
-				} catch (InterruptedException e) {
-				}
-				disconnectSocket();
-				ServletEventPool.getInstance().shutDownThreadPoolExecutor();
-				IPScheduledThread.getInstance().shutDownThreadPoolExecutor();
-				EventThreadPool.getInstance().shutDownThreadPoolExecutor();
-			}
-		});
-		return false;
+	public void retransformHookedClasses() {
+		retransformHookedClassesWrapper();
 	}
 
 }

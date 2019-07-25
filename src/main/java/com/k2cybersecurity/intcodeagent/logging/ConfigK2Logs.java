@@ -13,6 +13,7 @@ import org.brutusin.instrumentation.Agent;
 
 import com.k2cybersecurity.intcodeagent.models.javaagent.AgentBasicInfo;
 import com.k2cybersecurity.intcodeagent.models.javaagent.JAHealthCheck;
+import com.k2cybersecurity.intcodeagent.websocket.WSClient;
 
 public class ConfigK2Logs {
 
@@ -27,7 +28,7 @@ public class ConfigK2Logs {
 
 	private Class<?>[] classes = { EIDCount.class, EventThreadPool.class, ExecutionMap.class, IPScheduledThread.class,
 			LoggingInterceptor.class, ProcessorThread.class, ServletEventPool.class, ServletEventProcessor.class,
-			AgentBasicInfo.class, JAHealthCheck.class };
+			AgentBasicInfo.class, JAHealthCheck.class, FileWatcher.class, WSClient.class};
 
 	private static ConfigK2Logs loggerInstance;
 	public static Level level;
