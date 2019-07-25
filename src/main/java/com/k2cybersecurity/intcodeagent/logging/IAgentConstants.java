@@ -98,6 +98,9 @@ public interface IAgentConstants {
 	String JAVA_OPEN_CONNECTION_METHOD2_HTTPS = "protected java.net.URLConnection sun.net.www.protocol.https.Handler.openConnection(java.net.URL,java.net.Proxy) throws java.io.IOException";
 	String JAVA_OPEN_CONNECTION_METHOD2_HTTPS_2 = "protected java.net.URLConnection com.sun.net.ssl.internal.www.protocol.https.Handler.openConnection(java.net.URL,java.net.Proxy) throws java.io.IOException";
 	
+	String JDK_INCUBATOR_MULTIEXCHANGE_RESONSE_METHOD = "public jdk.incubator.http.HttpResponseImpl<T> jdk.incubator.http.MultiExchange.response() throws java.io.IOException,java.lang.InterruptedException";
+	String JDK_INCUBATOR_MULTIEXCHANGE_RESONSE_ASYNC_METHOD = "public java.util.concurrent.CompletableFuture<jdk.incubator.http.HttpResponseImpl<T>> jdk.incubator.http.MultiExchange.responseAsync()";
+	
 	List<String> FILE_OPEN_EXECUTORS = Arrays.asList(new String[] {
 			"public java.io.File(java.lang.String,java.lang.String)", "public java.io.File(java.lang.String)" });
 
@@ -229,6 +232,9 @@ public interface IAgentConstants {
 			put(JAVA_OPEN_CONNECTION_METHOD2, VulnerabilityCaseType.HTTP_REQUEST);
 			put(JAVA_OPEN_CONNECTION_METHOD2_HTTPS, VulnerabilityCaseType.HTTP_REQUEST);
 			put(JAVA_OPEN_CONNECTION_METHOD2_HTTPS_2, VulnerabilityCaseType.HTTP_REQUEST);
+			put(JDK_INCUBATOR_MULTIEXCHANGE_RESONSE_METHOD, VulnerabilityCaseType.HTTP_REQUEST);
+			put(JDK_INCUBATOR_MULTIEXCHANGE_RESONSE_ASYNC_METHOD, VulnerabilityCaseType.HTTP_REQUEST);
+			
 			
 
 		}
@@ -272,6 +278,7 @@ public interface IAgentConstants {
 			put("sun/net/www/protocol/http/Handler", Collections.singletonList("openConnection"));
 			put("sun/net/www/protocol/https/Handler", Collections.singletonList("openConnection"));
 			put("com/sun/net/ssl/internal/www/protocol/https/Handler", Collections.singletonList("openConnection"));
+			put("jdk/incubator/http/MultiExchange", Arrays.asList(new String[] { "response", "responseAsync", "multiResponseAsync" }));
 		}
 	};
 

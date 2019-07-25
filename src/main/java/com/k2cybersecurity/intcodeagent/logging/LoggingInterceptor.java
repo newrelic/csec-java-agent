@@ -369,7 +369,6 @@ public class LoggingInterceptor extends Interceptor {
 		// System.out.println("class to instument : "+className);
 		// return true;
 		// }
-
 		return INSTRUMENTED_METHODS.containsKey(className);
 	}
 
@@ -708,13 +707,14 @@ public class LoggingInterceptor extends Interceptor {
 				processMysqlStatement(arg, threadId, sourceString);
 			}
 			try {
-				if (ServletEventPool.getInstance().getRequestMap().containsKey(threadId) && ExecutionMap
-						.find(executionId, ServletEventPool.getInstance().getRequestMap().get(threadId)) != null) {
+//				if (ServletEventPool.getInstance().getRequestMap().containsKey(threadId) && ExecutionMap
+//						.find(executionId, ServletEventPool.getInstance().getRequestMap().get(threadId)) != null) {
 					ServletEventPool.getInstance().incrementServletInfoReference(threadId, executionId, true);
 					EventThreadPool.getInstance().processReceivedEvent(source, arg, executionId,
 							Thread.currentThread().getStackTrace(), threadId, sourceString, System.currentTimeMillis()-start);
-				}
+				//}
 			} catch (Exception e) {
+				e.printStackTrace();
 			}
 
 		}
