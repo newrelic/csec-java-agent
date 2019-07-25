@@ -1,0 +1,71 @@
+package com.k2cybersecurity.intcodeagent.websocket;
+
+import java.util.concurrent.Future;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Logger;
+
+import com.k2cybersecurity.intcodeagent.logging.ServletEventPool.EventAbortPolicy;
+
+public class EventSendPool {
+
+	/** Thread pool executor. */
+	private ThreadPoolExecutor executor;
+
+	private static EventSendPool instance;
+
+	private static Logger logger;
+
+	private EventSendPool() {
+		// load the settings
+		int queueSize = 1500;
+		int maxPoolSize = 1;
+		int corePoolSize = 1;
+		long keepAliveTime = 60;
+
+		TimeUnit timeUnit = TimeUnit.SECONDS;
+
+		boolean allowCoreThreadTimeOut = false;
+
+		executor = new ThreadPoolExecutor(corePoolSize, maxPoolSize, keepAliveTime, timeUnit,
+				new LinkedBlockingQueue<Runnable>(queueSize), new EventAbortPolicy()) {
+			@Override
+			protected void afterExecute(Runnable r, Throwable t) {
+				if (r instanceof Future<?>) {
+					try {
+						Future<?> future = (Future<?>) r;
+						if (future.isDone()) {
+							future.get();
+						}
+					} catch (Exception e) {
+					}
+				}
+				super.afterExecute(r, t);
+			}
+		};
+		executor.allowCoreThreadTimeOut(allowCoreThreadTimeOut);
+		executor.setThreadFactory(new ThreadFactory() {
+			@Override
+			public Thread newThread(Runnable r) {
+				return new Thread(Thread.currentThread().getThreadGroup(), r,
+						"EventSender");
+			}
+		});
+	}
+
+	/**
+	 * @return the instance
+	 */
+	public static EventSendPool getInstance() {
+		if (instance == null)
+			instance = new EventSendPool();
+		return instance;
+	}
+
+	public void sendEvent(String event) {
+		executor.submit(new EventSender(event));
+	}
+
+}

@@ -1,6 +1,5 @@
 package com.k2cybersecurity.intcodeagent.models.javaagent;
 
-import java.io.Serializable;
 import java.net.URL;
 import java.util.Enumeration;
 import java.util.HashSet;
@@ -10,17 +9,11 @@ import java.util.logging.Logger;
 
 import org.brutusin.instrumentation.Agent;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.Gson;
 import com.k2cybersecurity.intcodeagent.logging.LoggingInterceptor;
 
-public class JAHealthCheck extends AgentBasicInfo implements Serializable {
+public class JAHealthCheck extends AgentBasicInfo{
 
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 2569081419422389944L;
-	
 	private static Logger logger;
 	
 	private String applicationUUID;
@@ -135,13 +128,6 @@ public class JAHealthCheck extends AgentBasicInfo implements Serializable {
 	}
 
 	/**
-	 * @return the serialversionuid
-	 */
-	public static long getSerialversionuid() {
-		return serialVersionUID;
-	}
-
-	/**
 	 * @return the instrumentedMethods
 	 */
 	public Set<String> getInstrumentedMethods() {
@@ -213,11 +199,7 @@ public class JAHealthCheck extends AgentBasicInfo implements Serializable {
 
 	@Override
 	public String toString() {
-		try {
-			return new ObjectMapper().writeValueAsString(this);
-		} catch (JsonProcessingException e) {
-			return null;
-		}
+		return new Gson().toJson(this);
 	}
 	
 	

@@ -1,22 +1,16 @@
 package com.k2cybersecurity.intcodeagent.models.javaagent;
 
-import java.io.Serializable;
+import org.apache.commons.text.StringEscapeUtils;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.k2cybersecurity.intcodeagent.logging.IAgentConstants;
+import com.k2cybersecurity.intcodeagent.websocket.JsonConverter;
 
-public class ServletInfo implements Serializable {
-
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 5693096693182224287L;
+public class ServletInfo {
 
 	private String rawRequest;
-	
+
 	private Integer generationTime;
-	
+
 	private boolean dataTruncated;
 
 	public ServletInfo() {
@@ -24,7 +18,6 @@ public class ServletInfo implements Serializable {
 		this.rawRequest = IAgentConstants.EMPTY_STRING;
 		this.dataTruncated = false;
 	}
-
 
 	public ServletInfo(ServletInfo servletInfo) {
 		this.generationTime = servletInfo.getGenerationTime();
@@ -40,20 +33,15 @@ public class ServletInfo implements Serializable {
 	}
 
 	/**
-	 * @param rawRequest
-	 *            the rawRequest to set
+	 * @param rawRequest the rawRequest to set
 	 */
 	public void setRawRequest(String rawRequest) {
-		this.rawRequest = rawRequest;
+		this.rawRequest = StringEscapeUtils.escapeJava(rawRequest);
 	}
 
 	@Override
 	public String toString() {
-		try {
-			return new ObjectMapper().writeValueAsString(this);
-		} catch (JsonProcessingException e) {
-			return null;
-		}
+		return JsonConverter.toJSON(this);
 	}
 
 	/**
@@ -70,7 +58,6 @@ public class ServletInfo implements Serializable {
 		this.dataTruncated = dataTruncated;
 	}
 
-
 	/**
 	 * @return the generationTime
 	 */
@@ -78,16 +65,15 @@ public class ServletInfo implements Serializable {
 		return generationTime;
 	}
 
-
 	/**
 	 * @param generationTime the generationTime to set
 	 */
 	public void setGenerationTime(Integer generationTime) {
 		this.generationTime = generationTime;
 	}
-	
+
 	public Integer addGenerationTime(Integer time) {
 		this.generationTime += time;
-		return this.generationTime; 
+		return this.generationTime;
 	}
 }

@@ -1,16 +1,8 @@
 package com.k2cybersecurity.intcodeagent.models.javaagent;
 
-import java.io.Serializable;
+import com.google.gson.Gson;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-public class ApplicationInfoBean extends AgentBasicInfo implements Serializable{
-
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = -4692519856531306026L;
+public class ApplicationInfoBean extends AgentBasicInfo{
 	
 	private Integer pid;
 	private String applicationName;
@@ -176,11 +168,12 @@ public class ApplicationInfoBean extends AgentBasicInfo implements Serializable{
 	
 	@Override
 	public String toString() {
-		try {
-			return new ObjectMapper().writeValueAsString(this);
-		} catch (JsonProcessingException e) {
-			return null;
-		}
+		return new Gson().toJson(this);
+//		try {
+//			return new ObjectMapper().writeValueAsString(this);
+//		} catch (JsonProcessingException e) {
+//			return null;
+//		}
 	}
 	/**
 	 * @return the startTime

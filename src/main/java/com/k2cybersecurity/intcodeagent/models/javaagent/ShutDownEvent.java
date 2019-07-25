@@ -3,8 +3,7 @@ package com.k2cybersecurity.intcodeagent.models.javaagent;
 import java.io.Serializable;
 import java.util.List;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.Gson;
 
 public class ShutDownEvent extends AgentBasicInfo implements Serializable {
 
@@ -80,11 +79,7 @@ public class ShutDownEvent extends AgentBasicInfo implements Serializable {
 	
 	@Override
 	public String toString() {
-		try {
-			return new ObjectMapper().writeValueAsString(this);
-		} catch (JsonProcessingException e) {
-			return null;
-		}
+		return new Gson().toJson(this);
 	}
 
 }

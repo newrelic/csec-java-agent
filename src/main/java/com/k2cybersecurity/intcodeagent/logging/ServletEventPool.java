@@ -197,8 +197,9 @@ public class ServletEventPool {
 					// wait for termination for a timeout
 					executor.shutdownNow(); // cancel currently executing tasks
 
-					if (!executor.awaitTermination(1, TimeUnit.SECONDS))
+					if (!executor.awaitTermination(1, TimeUnit.SECONDS)) {
 						logger.log(Level.SEVERE,"Thread pool executor did not terminate");
+					}
 				}
 			} catch (InterruptedException e) {
 			} 

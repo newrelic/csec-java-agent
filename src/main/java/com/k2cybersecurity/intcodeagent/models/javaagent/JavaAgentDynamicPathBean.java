@@ -1,17 +1,10 @@
 package com.k2cybersecurity.intcodeagent.models.javaagent;
 
-import java.io.Serializable;
 import java.util.List;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.Gson;
 
-public class JavaAgentDynamicPathBean extends AgentBasicInfo implements Serializable {
-
-    /**
-	 * 
-	 */
-	private static final long serialVersionUID = -2179815960689483454L;
+public class JavaAgentDynamicPathBean extends AgentBasicInfo {
 
 	private String applicationUUID;
 
@@ -70,10 +63,11 @@ public class JavaAgentDynamicPathBean extends AgentBasicInfo implements Serializ
 
 	@Override
     public String toString() {
-        try {
-            return new ObjectMapper().writeValueAsString(this);
-        } catch (JsonProcessingException e) {
-            return null;
-        }
+		return new Gson().toJson(this);
+//        try {
+//            return new ObjectMapper().writeValueAsString(this);
+//        } catch (JsonProcessingException e) {
+//            return null;
+//        }
     }
 }
