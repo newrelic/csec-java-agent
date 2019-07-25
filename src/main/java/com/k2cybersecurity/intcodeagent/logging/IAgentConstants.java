@@ -98,6 +98,18 @@ public interface IAgentConstants {
 
 	String SYSYTEM_CALL_START = "static java.lang.Process java.lang.ProcessImpl.start(java.lang.String[],java.util.Map<java.lang.String, java.lang.String>,java.lang.String,java.lang.ProcessBuilder$Redirect[],boolean) throws java.io.IOException";
 
+	// http client
+	String CLASS_HTTP_REQUEST_EXECUTOR = "org/apache/http/protocol/HttpRequestExecutor";
+
+	String APACHE_HTTP_REQUEST_EXECUTOR_METHOD = "protected org.apache.http.HttpResponse org.apache.http.protocol.HttpRequestExecutor.doSendRequest(org.apache.http.HttpRequest,org.apache.http.HttpClientConnection,org.apache.http.protocol.HttpContext) throws java.io.IOException,org.apache.http.HttpException";
+	
+	String JAVA_OPEN_CONNECTION_METHOD2 = "protected java.net.URLConnection sun.net.www.protocol.http.Handler.openConnection(java.net.URL,java.net.Proxy) throws java.io.IOException";
+	String JAVA_OPEN_CONNECTION_METHOD2_HTTPS = "protected java.net.URLConnection sun.net.www.protocol.https.Handler.openConnection(java.net.URL,java.net.Proxy) throws java.io.IOException";
+	String JAVA_OPEN_CONNECTION_METHOD2_HTTPS_2 = "protected java.net.URLConnection com.sun.net.ssl.internal.www.protocol.https.Handler.openConnection(java.net.URL,java.net.Proxy) throws java.io.IOException";
+	
+	String JDK_INCUBATOR_MULTIEXCHANGE_RESONSE_METHOD = "public jdk.incubator.http.HttpResponseImpl<T> jdk.incubator.http.MultiExchange.response() throws java.io.IOException,java.lang.InterruptedException";
+	String JDK_INCUBATOR_MULTIEXCHANGE_RESONSE_ASYNC_METHOD = "public java.util.concurrent.CompletableFuture<jdk.incubator.http.HttpResponseImpl<T>> jdk.incubator.http.MultiExchange.responseAsync()";
+	
 	List<String> FILE_OPEN_EXECUTORS = Arrays.asList(new String[] {
 			"public java.io.File(java.lang.String,java.lang.String)", "public java.io.File(java.lang.String)" });
 
@@ -223,7 +235,16 @@ public interface IAgentConstants {
 			// java.io.FileNotFoundException",
 
 			// http request
-//			"protected void javax.servlet.http.HttpServlet.service(javax.servlet.http.HttpServletRequest,javax.servlet.http.HttpServletResponse) throws javax.servlet.ServletException,java.io.IOException",
+			put(APACHE_HTTP_REQUEST_EXECUTOR_METHOD, VulnerabilityCaseType.HTTP_REQUEST);
+			
+			//JAVA_OPEN_CONNECTION_METHOD,
+			put(JAVA_OPEN_CONNECTION_METHOD2, VulnerabilityCaseType.HTTP_REQUEST);
+			put(JAVA_OPEN_CONNECTION_METHOD2_HTTPS, VulnerabilityCaseType.HTTP_REQUEST);
+			put(JAVA_OPEN_CONNECTION_METHOD2_HTTPS_2, VulnerabilityCaseType.HTTP_REQUEST);
+			put(JDK_INCUBATOR_MULTIEXCHANGE_RESONSE_METHOD, VulnerabilityCaseType.HTTP_REQUEST);
+			put(JDK_INCUBATOR_MULTIEXCHANGE_RESONSE_ASYNC_METHOD, VulnerabilityCaseType.HTTP_REQUEST);
+			
+			
 
 		}
 	};
@@ -266,6 +287,12 @@ public interface IAgentConstants {
 			put(COM_IBM_WS_HTTP_CHANNEL_INTERNAL_INBOUND_HTTPINBOUNDLINK, Collections.singletonList("processRequest"));
 			put(COM_IBM_WS_GENERICBNF_IMPL_BNFHEADERSIMPL, Collections.singletonList("fillByteCache"));
 			put(COM_IBM_WS_HTTP_CHANNEL_INBOUND_IMPL_HTTPINBOUNDLINK, Collections.singletonList("processRequest"));
+			
+			put(CLASS_HTTP_REQUEST_EXECUTOR, Collections.singletonList("doSendRequest"));
+			put("sun/net/www/protocol/http/Handler", Collections.singletonList("openConnection"));
+			put("sun/net/www/protocol/https/Handler", Collections.singletonList("openConnection"));
+			put("com/sun/net/ssl/internal/www/protocol/https/Handler", Collections.singletonList("openConnection"));
+			put("jdk/incubator/http/MultiExchange", Arrays.asList(new String[] { "response", "responseAsync", "multiResponseAsync" }));
 		}
 	};
 
