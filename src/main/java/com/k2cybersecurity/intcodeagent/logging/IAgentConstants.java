@@ -103,10 +103,15 @@ public interface IAgentConstants {
 
 	String APACHE_HTTP_REQUEST_EXECUTOR_METHOD = "protected org.apache.http.HttpResponse org.apache.http.protocol.HttpRequestExecutor.doSendRequest(org.apache.http.HttpRequest,org.apache.http.HttpClientConnection,org.apache.http.protocol.HttpContext) throws java.io.IOException,org.apache.http.HttpException";
 	
+	String CLASS_JAVA_HTTP_HANDLER = "sun/net/www/protocol/http/Handler";
+	String CLASS_JAVA_HTTPS_HANDLER = "sun/net/www/protocol/https/Handler";
+	String CLASS_JAVA_SSL_HTTPS_HANDLER = "com/sun/net/ssl/internal/www/protocol/https/Handler";
+	
 	String JAVA_OPEN_CONNECTION_METHOD2 = "protected java.net.URLConnection sun.net.www.protocol.http.Handler.openConnection(java.net.URL,java.net.Proxy) throws java.io.IOException";
 	String JAVA_OPEN_CONNECTION_METHOD2_HTTPS = "protected java.net.URLConnection sun.net.www.protocol.https.Handler.openConnection(java.net.URL,java.net.Proxy) throws java.io.IOException";
 	String JAVA_OPEN_CONNECTION_METHOD2_HTTPS_2 = "protected java.net.URLConnection com.sun.net.ssl.internal.www.protocol.https.Handler.openConnection(java.net.URL,java.net.Proxy) throws java.io.IOException";
 	
+	String CLASS_JDK_INCUBATOR_HTTP_MULTIEXCHANGE = "jdk/incubator/http/MultiExchange";
 	String JDK_INCUBATOR_MULTIEXCHANGE_RESONSE_METHOD = "public jdk.incubator.http.HttpResponseImpl<T> jdk.incubator.http.MultiExchange.response() throws java.io.IOException,java.lang.InterruptedException";
 	String JDK_INCUBATOR_MULTIEXCHANGE_RESONSE_ASYNC_METHOD = "public java.util.concurrent.CompletableFuture<jdk.incubator.http.HttpResponseImpl<T>> jdk.incubator.http.MultiExchange.responseAsync()";
 	
@@ -289,10 +294,10 @@ public interface IAgentConstants {
 			put(COM_IBM_WS_HTTP_CHANNEL_INBOUND_IMPL_HTTPINBOUNDLINK, Collections.singletonList("processRequest"));
 			
 			put(CLASS_HTTP_REQUEST_EXECUTOR, Collections.singletonList("doSendRequest"));
-			put("sun/net/www/protocol/http/Handler", Collections.singletonList("openConnection"));
-			put("sun/net/www/protocol/https/Handler", Collections.singletonList("openConnection"));
-			put("com/sun/net/ssl/internal/www/protocol/https/Handler", Collections.singletonList("openConnection"));
-			put("jdk/incubator/http/MultiExchange", Arrays.asList(new String[] { "response", "responseAsync", "multiResponseAsync" }));
+			put(CLASS_JAVA_HTTP_HANDLER, Collections.singletonList("openConnection"));
+			put(CLASS_JAVA_HTTPS_HANDLER, Collections.singletonList("openConnection"));
+			put(CLASS_JAVA_SSL_HTTPS_HANDLER, Collections.singletonList("openConnection"));
+			put(CLASS_JDK_INCUBATOR_HTTP_MULTIEXCHANGE, Arrays.asList(new String[] { "response", "responseAsync", "multiResponseAsync" }));
 		}
 	};
 

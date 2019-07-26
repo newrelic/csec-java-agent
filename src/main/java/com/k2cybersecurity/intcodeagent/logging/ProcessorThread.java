@@ -765,240 +765,67 @@ public class ProcessorThread implements Runnable {
 		return parameters;
 	}
 
+	@SuppressWarnings("unchecked")
 	private void getJavaHttpRequestParameters(Object[] obj, JSONArray parameters) {
 
 		URL url = (URL) obj[0];
-		System.out.println("Protocol : " + url.getProtocol());
-		System.out.println("Host : " + url.getHost());
-		System.out.println("Path : " + url.getPath());
-		
 		parameters.add(url.getHost());
 		parameters.add(url.getPath());
 		
-		// System.out.println("Query : " + url.getQuery());
-//		Map<String, List<String>> params;
-//		try {
-//			if (url.getQuery() != null) {
-//				params = splitQuery(url.getQuery());
-//				System.out.println("Request params are : ");
-//				System.out.println(params);
-//			} else {
-//				System.out.println("No request params found");
-//			}
-//
-//		} catch (UnsupportedEncodingException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
-
 	}
 
+	@SuppressWarnings("unchecked")
 	private void getJava9HttpClientParameters(Object[] obj, JSONArray parameters) {
 		Object multiExchangeObj = obj[0];
-		System.out.println(multiExchangeObj);
 		try {
 
-			// Class<?> thisClass = request.getClass();
-			// while(!thisClass.getName().equals("org.apache.http.client.HttpClient")) {
-			// System.out.println(thisClass.getName());
-			// thisClass = thisClass.getSuperclass();
-			// }
 			Class<?> multiExchangeClass = Thread.currentThread().getContextClassLoader()
 					.loadClass("jdk.incubator.http.MultiExchange");
-			Field[] fields = multiExchangeClass.getDeclaredFields();
 			Field request = multiExchangeClass.getDeclaredField("request");
-			Field currentReq = multiExchangeClass.getDeclaredField("currentreq");
-			//System.out.println("can access : " + client.canAccess(multiExchangeObj));
 			request.setAccessible(true);
-			//currentReq.setAccessible(true);
 			Object httpReqObj = request.get(multiExchangeObj);
-			//Object httpReqObjAsync = currentReq.get(multiExchangeObj);
-			System.out.println("Http request object to string : " + httpReqObj);
-			//System.out.println("Http request object async to string : " + httpReqObjAsync);
 			
 			Field uri = httpReqObj.getClass().getDeclaredField("uri");
 			uri.setAccessible(true);
 			URI uriObj = (URI) uri.get(httpReqObj);
-			System.out.println("Host : " + uriObj.getHost());
-			System.out.println("Path : " + uriObj.getPath());
-			System.out.println("Query : " + uriObj.getQuery());
 			
 			parameters.add(uriObj.getHost());
 			parameters.add(uriObj.getPath());
 			
-//			Map<String, List<String>> params;
-//			try {
-//				if (uriObj.getQuery() != null) {
-//					params = splitQuery(uriObj.getQuery());
-//					System.out.println("Request params are : ");
-//					System.out.println(params);
-//				} else {
-//					System.out.println("No request params found");
-//				}
-//
-//			} catch (UnsupportedEncodingException e) {
-//				// TODO Auto-generated catch block
-//				e.printStackTrace();
-//			}
-			
-			
-//			System.out.println("requestLine  : " + httpClientImplObj);
-//
-//			String httpClientImplObjStr = httpClientImplObj.toString();
-//			System.out.println(httpClientImplObjStr);
-
-//		String[] requestLineTokens = requestLineStr.split("\\s+");
-//		String requestUri = requestLineTokens[1];
-//		System.out.println("Request uri : " + requestUri);
-//
-//		final String regex = "^((https|http):\\/\\/(.*?))?(\\/.*)$";
-//
-//		final Pattern pattern = Pattern.compile(regex, Pattern.MULTILINE);
-//		final Matcher matcher = pattern.matcher(requestUri);
-//
-//		while (matcher.find()) {
-//			System.out.println("Full match: " + matcher.group(0));
-//			for (int i = 1; i <= matcher.groupCount(); i++) {
-//				System.out.println("Group " + i + ": " + matcher.group(i));
-//			}
-//		}
-//
-//		Class<?> httpContextInterface = Thread.currentThread().getContextClassLoader()
-//				.loadClass("org.apache.http.protocol.HttpContext");
-//		Method getAttribute = httpContextInterface.getMethod("getAttribute", String.class);
-//		Object attributeHost = getAttribute.invoke(httpContext, "http.target_host");
-//		System.out.println("host : " + attributeHost.toString());
-//
-//		int indexOfQmark = requestUri.indexOf('?');
-//		String pathOnly = requestUri.substring(0, indexOfQmark);
-//		String queryParams = requestUri.substring(indexOfQmark + 1);
-//		Map<String, List<String>> params = splitQuery(queryParams);
-//		System.out.println("Request params are : ");
-//		System.out.println(params);
-
-		} catch (SecurityException | IllegalArgumentException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (ClassNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IllegalAccessException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (NoSuchFieldException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch (Exception e) {
+			logger.log(Level.WARNING, "Error in getJava9HttpClientParameters : {0}", e);
 		}
 	}
 
-	private static Map<String, List<String>> splitQuery(String queryParams) throws UnsupportedEncodingException {
-		final Map<String, List<String>> queryPairs = new LinkedHashMap<String, List<String>>();
-		final String[] pairs = queryParams.split("&");
-		for (String pair : pairs) {
-			final int idx = pair.indexOf("=");
-			final String key = idx > 0 ? URLDecoder.decode(pair.substring(0, idx), "UTF-8") : pair;
-			if (!queryPairs.containsKey(key)) {
-				queryPairs.put(key, new LinkedList<String>());
-			}
-			final String value = idx > 0 && pair.length() > idx + 1
-					? URLDecoder.decode(pair.substring(idx + 1), "UTF-8")
-					: null;
-			queryPairs.get(key).add(value);
-		}
-		return queryPairs;
-	}
-
+	@SuppressWarnings("unchecked")
 	private void getApacheHttpRequestParameters(Object[] object, JSONArray parameters) {
 
 		Object request = object[0];
 		Object httpContext = object[2];
-		System.out.println(object[0]);
-		System.out.println(object[1]);
-		System.out.println(object[2]);
-		
 		try {
 
-			// Class<?> thisClass = request.getClass();
-			// while(!thisClass.getName().equals("org.apache.http.client.HttpClient")) {
-			// System.out.println(thisClass.getName());
-			// thisClass = thisClass.getSuperclass();
-			// }
 			Class<?> httpClientInterface = Thread.currentThread().getContextClassLoader()
 					.loadClass("org.apache.http.HttpRequest");
 			Method getRequestLine = httpClientInterface.getMethod("getRequestLine");
 			Object requestLine = getRequestLine.invoke(request);
-			System.out.println("requestLine  : " + requestLine);
 
 			String requestLineStr = requestLine.toString();
 			String[] requestLineTokens = requestLineStr.split("\\s+");
 			String requestUri = requestLineTokens[1];
-			System.out.println("Request uri : " + requestUri);
-
-			final String regex = "^((https|http):\\/\\/(.*?))?(\\/.*)$";
-
-			final Pattern pattern = Pattern.compile(regex, Pattern.MULTILINE);
-			final Matcher matcher = pattern.matcher(requestUri);
-
-			while (matcher.find()) {
-				System.out.println("Full match: " + matcher.group(0));
-				for (int i = 1; i <= matcher.groupCount(); i++) {
-					System.out.println("Group " + i + ": " + matcher.group(i));
-				}
-			}
-
+			
 			Class<?> httpContextInterface = Thread.currentThread().getContextClassLoader()
 					.loadClass("org.apache.http.protocol.HttpContext");
 			Method getAttribute = httpContextInterface.getMethod("getAttribute", String.class);
 			Object attributeHost = getAttribute.invoke(httpContext, "http.target_host");
-			System.out.println("host : " + attributeHost.toString());
-
-			
 			
 			int indexOfQmark = requestUri.indexOf('?');
 			String pathOnly = requestUri.substring(0, indexOfQmark);
-			String queryParams = requestUri.substring(indexOfQmark + 1);
-			Map<String, List<String>> params = splitQuery(queryParams);
-			System.out.println("Request params are : ");
-			System.out.println(params);
 
 			parameters.add(attributeHost.toString());
 			parameters.add(pathOnly);
-			// if (requestLineTokens[0].trim().equalsIgnoreCase("POST")) {
-			// // the entity field exists if request is of type HttpEntity and should be
-			// decoded.
-			// Field entityField = request.getClass().getDeclaredField("entity");
-			// entityField.setAccessible(true);
-			// HttpEntity entityObject = (HttpEntity)entityField.get(request);
-			// List<NameValuePair> nameValuePairs = URLEncodedUtils.parse(entityObject);
-			// if (nameValuePairs == null || nameValuePairs.isEmpty()) {
-			// System.out.println("Entity in string : " +
-			// EntityUtils.toString(entityObject));
-			// } else {
-			// for (NameValuePair pair : nameValuePairs) {
-			// System.out.println("Name : " + pair.getName() + " Value : " +
-			// pair.getValue());
-			// }
-			// }
-			// }
 
-		} catch (NoSuchMethodException | SecurityException | InvocationTargetException | IllegalAccessException
-				| IllegalArgumentException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (ClassNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		// catch (NoSuchFieldException e) {
-		// // TODO Auto-generated catch block
-		// e.printStackTrace();
-		// } catch (IOException e) {
-		// // TODO Auto-generated catch block
-		// e.printStackTrace();
-		// }
-		catch (UnsupportedEncodingException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch (Exception e) {
+			logger.log(Level.WARNING, "Error in getApacheHttpRequestParameters : {0}", e);
 		}
 
 	}
