@@ -70,6 +70,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URL;
+import java.net.URLClassLoader;
 import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -667,7 +668,7 @@ public class ProcessorThread implements Runnable {
 
 	/**
 	 * 
-	 * @param obj       this pointer object
+	 * @param obj        this pointer object
 	 * @param parameters
 	 */
 	private JSONArray getOracleParameterValue(Object thisPointer, JSONArray parameters, String sourceString) {
@@ -749,7 +750,8 @@ public class ProcessorThread implements Runnable {
 					|| sourceString.equals(JAVA_OPEN_CONNECTION_METHOD2_HTTPS)
 					|| sourceString.equals(JAVA_OPEN_CONNECTION_METHOD2_HTTPS_2)) {
 				getJavaHttpRequestParameters(obj, parameters);
-			} else if (sourceString.equals(JDK_INCUBATOR_MULTIEXCHANGE_RESONSE_METHOD) || sourceString.equals(JDK_INCUBATOR_MULTIEXCHANGE_RESONSE_ASYNC_METHOD)) {
+			} else if (sourceString.equals(JDK_INCUBATOR_MULTIEXCHANGE_RESONSE_METHOD)
+					|| sourceString.equals(JDK_INCUBATOR_MULTIEXCHANGE_RESONSE_ASYNC_METHOD)) {
 				getJava9HttpClientParameters(obj, parameters);
 			} else {
 				for (int i = 0; i < obj.length; i++) {
@@ -771,7 +773,7 @@ public class ProcessorThread implements Runnable {
 		URL url = (URL) obj[0];
 		parameters.add(url.getHost());
 		parameters.add(url.getPath());
-		
+
 	}
 
 	@SuppressWarnings("unchecked")
@@ -784,14 +786,14 @@ public class ProcessorThread implements Runnable {
 			Field request = multiExchangeClass.getDeclaredField("request");
 			request.setAccessible(true);
 			Object httpReqObj = request.get(multiExchangeObj);
-			
+
 			Field uri = httpReqObj.getClass().getDeclaredField("uri");
 			uri.setAccessible(true);
 			URI uriObj = (URI) uri.get(httpReqObj);
-			
+
 			parameters.add(uriObj.getHost());
 			parameters.add(uriObj.getPath());
-			
+
 		} catch (Exception e) {
 			logger.log(Level.WARNING, "Error in getJava9HttpClientParameters : {0}", e);
 		}
@@ -803,9 +805,26 @@ public class ProcessorThread implements Runnable {
 		Object request = object[0];
 		Object httpContext = object[2];
 		try {
-
-			Class<?> httpClientInterface = Thread.currentThread().getContextClassLoader()
-					.loadClass("org.apache.http.HttpRequest");
+			Class<?> httpClientInterface;
+			Class<?> httpContextInterface;
+			ClassLoader requestLoader = request.getClass().getClassLoader();
+			ClassLoader httpContextLoader = httpContext.getClass().getClassLoader();
+			if (requestLoader != null) {
+				httpClientInterface = requestLoader
+						.loadClass("org.apache.http.HttpRequest");
+			} else {
+				httpClientInterface = Thread.currentThread().getContextClassLoader()
+						.loadClass("org.apache.http.HttpRequest");
+			}
+			
+			if (httpContextLoader != null) {
+				httpContextInterface = httpContextLoader
+						.loadClass("org.apache.http.protocol.HttpContext");
+			} else {
+				httpContextInterface = Thread.currentThread().getContextClassLoader()
+						.loadClass("org.apache.http.protocol.HttpContext");
+			}
+			
 			Method getRequestLine = httpClientInterface.getMethod("getRequestLine");
 			Object requestLine = getRequestLine.invoke(request);
 
@@ -813,13 +832,15 @@ public class ProcessorThread implements Runnable {
 			String[] requestLineTokens = requestLineStr.split("\\s+");
 			String requestUri = requestLineTokens[1];
 			
-			Class<?> httpContextInterface = Thread.currentThread().getContextClassLoader()
-					.loadClass("org.apache.http.protocol.HttpContext");
 			Method getAttribute = httpContextInterface.getMethod("getAttribute", String.class);
 			Object attributeHost = getAttribute.invoke(httpContext, "http.target_host");
-			
+
 			int indexOfQmark = requestUri.indexOf('?');
-			String pathOnly = requestUri.substring(0, indexOfQmark);
+			// means request param is present
+			String pathOnly = "";
+			if (indexOfQmark != -1) {
+				pathOnly = requestUri.substring(0, indexOfQmark);
+			}
 
 			parameters.add(attributeHost.toString());
 			parameters.add(pathOnly);
