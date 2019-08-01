@@ -1,10 +1,17 @@
 package com.k2cybersecurity.intcodeagent.logging;
 
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.APACHE_HTTP_REQUEST_EXECUTOR_METHOD;
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.CLASS_LOADER_IDENTIFIER;
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.EXECUTORS;
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.HSQL_V1_8_CONNECTION;
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.HSQL_V1_8_SESSION;
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.HSQL_V2_4;
+//import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.JAVA_OPEN_CONNECTION_METHOD;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.JAVA_OPEN_CONNECTION_METHOD2;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.JAVA_OPEN_CONNECTION_METHOD2_HTTPS;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.JAVA_OPEN_CONNECTION_METHOD2_HTTPS_2;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.JDK_INCUBATOR_MULTIEXCHANGE_RESONSE_ASYNC_METHOD;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.JDK_INCUBATOR_MULTIEXCHANGE_RESONSE_METHOD;
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MOGNO_ELEMENT_DATA_FIELD;
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MONGO_COLLECTION_FIELD;
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MONGO_COLLECTION_WILDCARD;
@@ -57,13 +64,23 @@ import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.PSQLV2_EX
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.PSQLV3_EXECUTOR;
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.PSQLV3_EXECUTOR7_4;
 
+import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.net.URI;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.net.URLDecoder;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
-import java.util.concurrent.LinkedBlockingQueue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 //import org.brutusin.commons.json.spi.JsonCodec;
@@ -77,7 +94,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.k2cybersecurity.intcodeagent.models.javaagent.JavaAgentDynamicPathBean;
 import com.k2cybersecurity.intcodeagent.models.javaagent.JavaAgentEventBean;
 import com.k2cybersecurity.intcodeagent.models.javaagent.ServletInfo;
-import com.k2cybersecurity.intcodeagent.models.javaagent.TraceElement;
 import com.k2cybersecurity.intcodeagent.websocket.EventSendPool;
 
 public class ProcessorThread implements Runnable {
@@ -104,7 +120,7 @@ public class ProcessorThread implements Runnable {
 	 * @param executionId
 	 * @param stackTrace
 	 * @param tId
-	 * @param preProcessingTime 
+	 * @param preProcessingTime
 	 * @param servletInfo
 	 */
 
@@ -171,8 +187,8 @@ public class ProcessorThread implements Runnable {
 
 				JavaAgentEventBean intCodeResultBean = new JavaAgentEventBean(start, preProcessingTime, sourceString,
 						LoggingInterceptor.VMPID, LoggingInterceptor.applicationUUID,
-						this.threadId + IAgentConstants.COLON_SEPERATOR + this.executionId, EXECUTORS.get(sourceString));
-				
+						this.threadId + IAgentConstants.COLON_SEPERATOR + this.executionId,
+						EXECUTORS.get(sourceString));
 
 				String klassName = null;
 				if (MONGO_EXECUTORS.containsKey(sourceString)) {
@@ -215,7 +231,7 @@ public class ProcessorThread implements Runnable {
 //								logger.log(Level.FINE,"result bean : "+intCodeResultBean);
 								generateEvent(intCodeResultBean);
 							}
-							logger.log(Level.FINE,"breaking");
+							logger.log(Level.FINE, "breaking");
 							break;
 						}
 						if (klassName.equals(IAgentConstants.JAVA_IO_FILE)) {
@@ -230,7 +246,7 @@ public class ProcessorThread implements Runnable {
 
 				for (int i = 0; i < trace.length; i++) {
 					klassName = trace[i].getClassName();
-
+					System.out.println(klassName);
 					// if (klassName.equals(MSSQL_PREPARED_STATEMENT_CLASS)
 					// || klassName.equals(MSSQL_PREPARED_BATCH_STATEMENT_CLASS)
 					// || klassName.contains(MYSQL_PREPARED_STATEMENT)) {
@@ -270,7 +286,7 @@ public class ProcessorThread implements Runnable {
 				}
 			}
 		} catch (Exception e) {
-			logger.log(Level.WARNING,"Error in run: {0}", e);
+			logger.log(Level.WARNING, "Error in run: {0}", e);
 		} finally {
 			ServletEventPool.getInstance().decrementServletInfoReference(threadId, executionId, true);
 		}
@@ -426,7 +442,7 @@ public class ProcessorThread implements Runnable {
 			parameters.add(String.valueOf(arg[sqlObjectLocation]));
 
 		} catch (Exception e) {
-			logger.log(Level.WARNING,"Error in getMySQLParameterValue: {0}", e);
+			logger.log(Level.WARNING, "Error in getMySQLParameterValue: {0}", e);
 		}
 	}
 
@@ -651,7 +667,8 @@ public class ProcessorThread implements Runnable {
 	}
 
 	/**
-	 * @param obj:       this pointer object
+	 * 
+	 * @param obj        this pointer object
 	 * @param parameters
 	 */
 	private JSONArray getOracleParameterValue(Object thisPointer, JSONArray parameters, String sourceString) {
@@ -691,7 +708,7 @@ public class ProcessorThread implements Runnable {
 
 			}
 		} catch (Exception e) {
-			logger.log(Level.WARNING,"Error in getOracleParameterValue: {0}", e);
+			logger.log(Level.WARNING, "Error in getOracleParameterValue: {0}", e);
 		}
 		return parameters;
 	}
@@ -727,6 +744,15 @@ public class ProcessorThread implements Runnable {
 			} else if (sourceString.equals(HSQL_V2_4) || sourceString.equals(HSQL_V1_8_CONNECTION)
 					|| sourceString.equals(HSQL_V1_8_SESSION)) {
 				getHSQLParameterValue(obj[0], parameters);
+			} else if (sourceString.equals(APACHE_HTTP_REQUEST_EXECUTOR_METHOD)) {
+				getApacheHttpRequestParameters(obj, parameters);
+			} else if (sourceString.equals(JAVA_OPEN_CONNECTION_METHOD2)
+					|| sourceString.equals(JAVA_OPEN_CONNECTION_METHOD2_HTTPS)
+					|| sourceString.equals(JAVA_OPEN_CONNECTION_METHOD2_HTTPS_2)) {
+				getJavaHttpRequestParameters(obj, parameters);
+			} else if (sourceString.equals(JDK_INCUBATOR_MULTIEXCHANGE_RESONSE_METHOD)
+					|| sourceString.equals(JDK_INCUBATOR_MULTIEXCHANGE_RESONSE_ASYNC_METHOD)) {
+				getJava9HttpClientParameters(obj, parameters);
 			} else {
 				for (int i = 0; i < obj.length; i++) {
 					Object json = parser.parse(mapper.writeValueAsString(obj[i]));
@@ -736,9 +762,93 @@ public class ProcessorThread implements Runnable {
 
 		} catch (Throwable th) {
 			parameters.add((obj != null) ? obj.toString() : null);
-			logger.log(Level.WARNING,"Error in toString: {0}", th);
+			logger.log(Level.WARNING, "Error in toString: {0}", th);
 		}
 		return parameters;
+	}
+
+	@SuppressWarnings("unchecked")
+	private void getJavaHttpRequestParameters(Object[] obj, JSONArray parameters) {
+
+		URL url = (URL) obj[0];
+		parameters.add(url.getHost());
+		parameters.add(url.getPath());
+
+	}
+
+	@SuppressWarnings("unchecked")
+	private void getJava9HttpClientParameters(Object[] obj, JSONArray parameters) {
+		Object multiExchangeObj = obj[0];
+		try {
+
+			Class<?> multiExchangeClass = Thread.currentThread().getContextClassLoader()
+					.loadClass("jdk.incubator.http.MultiExchange");
+			Field request = multiExchangeClass.getDeclaredField("request");
+			request.setAccessible(true);
+			Object httpReqObj = request.get(multiExchangeObj);
+
+			Field uri = httpReqObj.getClass().getDeclaredField("uri");
+			uri.setAccessible(true);
+			URI uriObj = (URI) uri.get(httpReqObj);
+
+			parameters.add(uriObj.getHost());
+			parameters.add(uriObj.getPath());
+
+		} catch (Exception e) {
+			logger.log(Level.WARNING, "Error in getJava9HttpClientParameters : {0}", e);
+		}
+	}
+
+	@SuppressWarnings("unchecked")
+	private void getApacheHttpRequestParameters(Object[] object, JSONArray parameters) {
+
+		Object request = object[0];
+		Object httpContext = object[2];
+		try {
+			Class<?> httpClientInterface;
+			Class<?> httpContextInterface;
+			ClassLoader requestLoader = request.getClass().getClassLoader();
+			ClassLoader httpContextLoader = httpContext.getClass().getClassLoader();
+			if (requestLoader != null) {
+				httpClientInterface = requestLoader
+						.loadClass("org.apache.http.HttpRequest");
+			} else {
+				httpClientInterface = Thread.currentThread().getContextClassLoader()
+						.loadClass("org.apache.http.HttpRequest");
+			}
+			
+			if (httpContextLoader != null) {
+				httpContextInterface = httpContextLoader
+						.loadClass("org.apache.http.protocol.HttpContext");
+			} else {
+				httpContextInterface = Thread.currentThread().getContextClassLoader()
+						.loadClass("org.apache.http.protocol.HttpContext");
+			}
+			
+			Method getRequestLine = httpClientInterface.getMethod("getRequestLine");
+			Object requestLine = getRequestLine.invoke(request);
+
+			String requestLineStr = requestLine.toString();
+			String[] requestLineTokens = requestLineStr.split("\\s+");
+			String requestUri = requestLineTokens[1];
+			
+			Method getAttribute = httpContextInterface.getMethod("getAttribute", String.class);
+			Object attributeHost = getAttribute.invoke(httpContext, "http.target_host");
+
+			int indexOfQmark = requestUri.indexOf('?');
+			// means request param is present
+			String pathOnly = "";
+			if (indexOfQmark != -1) {
+				pathOnly = requestUri.substring(0, indexOfQmark);
+			}
+
+			parameters.add(attributeHost.toString());
+			parameters.add(pathOnly);
+
+		} catch (Exception e) {
+			logger.log(Level.WARNING, "Error in getApacheHttpRequestParameters : {0}", e);
+		}
+
 	}
 
 	private void getHSQLParameterValue(Object object, JSONArray parameters) {
@@ -752,7 +862,7 @@ public class ProcessorThread implements Runnable {
 				sqlField.setAccessible(true);
 				parameters.add((String) sqlField.get(object));
 			} catch (Exception e) {
-				logger.log(Level.WARNING,"Error in getHSQLParameterValue for HSQL_V2_4: {0}", e);
+				logger.log(Level.WARNING, "Error in getHSQLParameterValue for HSQL_V2_4: {0}", e);
 			}
 			return;
 		case HSQL_V1_8_SESSION:
@@ -762,7 +872,7 @@ public class ProcessorThread implements Runnable {
 				mainStringField.setAccessible(true);
 				parameters.add((String) mainStringField.get(object));
 			} catch (Exception e) {
-				logger.log(Level.WARNING,"Error in getHSQLParameterValue for HSQL_V1_8_CONNECTION: {0}", e);
+				logger.log(Level.WARNING, "Error in getHSQLParameterValue for HSQL_V1_8_CONNECTION: {0}", e);
 			}
 			return;
 		}
@@ -790,7 +900,7 @@ public class ProcessorThread implements Runnable {
 				parameters.add(paramArray);
 			} catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException
 					| JsonProcessingException e) {
-				logger.log(Level.WARNING,"Error in getPSQLParameterValue: {0}", e);
+				logger.log(Level.WARNING, "Error in getPSQLParameterValue: {0}", e);
 			}
 
 		}
@@ -841,23 +951,25 @@ public class ProcessorThread implements Runnable {
 						new ArrayList<String>(Agent.jarPathSet), list);
 				EventSendPool.getInstance().sendEvent(dynamicJarPathBean.toString());
 			} catch (IllegalStateException e) {
-				logger.log(Level.INFO,"Dropping dynamicJarPathBean event " + intCodeResultBean.getId()
+				logger.log(Level.INFO, "Dropping dynamicJarPathBean event " + intCodeResultBean.getId()
 						+ " due to buffer capacity reached");
 				LoggingInterceptor.JA_HEALTH_CHECK.incrementDropCount();
 			} catch (Exception e) {
-				logger.log(Level.WARNING,"Error in generateEvent while creating JavaAgentDynamicPathBean: {0}", e);
+				logger.log(Level.WARNING, "Error in generateEvent while creating JavaAgentDynamicPathBean: {0}", e);
 			}
 		} else {
 			try {
 				intCodeResultBean.setServletInfo(new ServletInfo(ExecutionMap.find(this.executionId,
 						ServletEventPool.getInstance().getRequestMap().get(this.threadId))));
 				EventSendPool.getInstance().sendEvent(intCodeResultBean.toString());
+
 //				logger.log(Level.INFO,"publish event: " + intCodeResultBean);
 			} catch (IllegalStateException e) {
-				logger.log(Level.INFO,"Dropping event " + intCodeResultBean.getId() + " due to buffer capacity reached.");
+				logger.log(Level.INFO,
+						"Dropping event " + intCodeResultBean.getId() + " due to buffer capacity reached.");
 				LoggingInterceptor.JA_HEALTH_CHECK.incrementDropCount();
 			} catch (Exception e) {
-				logger.log(Level.WARNING,"Error in generateEvent while creating IntCodeResultBean: {0}", e);
+				logger.log(Level.WARNING, "Error in generateEvent while creating IntCodeResultBean: {0}", e);
 			}
 
 		}
