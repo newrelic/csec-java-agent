@@ -348,6 +348,14 @@ public class LoggingInterceptor extends Interceptor {
 			if (INSTRUMENTED_METHODS.get(cn.name).contains(mn.name))
 				JA_HEALTH_CHECK.setRceProtection(true);
 			break;
+		case CLASS_HTTP_REQUEST_EXECUTOR:
+		case CLASS_JAVA_HTTP_HANDLER:
+		case CLASS_JAVA_HTTPS_HANDLER:
+		case CLASS_JAVA_SSL_HTTPS_HANDLER:
+		case CLASS_JDK_INCUBATOR_HTTP_MULTIEXCHANGE:
+			if (INSTRUMENTED_METHODS.get(cn.name).contains(mn.name))
+				JA_HEALTH_CHECK.setSsrfProtection(true);
+			break;
 		default:
 			break;
 
