@@ -997,6 +997,8 @@ public class ProcessorThread implements Runnable {
 				return true;
 		} catch (UnsupportedEncodingException e) {
 		}
+		logger.log(Level.FINE, "Dropping SSRF event: {0}", intCodeResultBean);
+		
 		return false;
 	}
 
