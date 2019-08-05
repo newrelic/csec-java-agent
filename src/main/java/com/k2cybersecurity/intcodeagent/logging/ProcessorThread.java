@@ -72,6 +72,7 @@ import java.net.URI;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -83,6 +84,7 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang3.StringUtils;
 //import org.brutusin.commons.json.spi.JsonCodec;
 import org.brutusin.instrumentation.Agent;
 import org.json.simple.JSONArray;
@@ -94,6 +96,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.k2cybersecurity.intcodeagent.models.javaagent.JavaAgentDynamicPathBean;
 import com.k2cybersecurity.intcodeagent.models.javaagent.JavaAgentEventBean;
 import com.k2cybersecurity.intcodeagent.models.javaagent.ServletInfo;
+import com.k2cybersecurity.intcodeagent.models.javaagent.VulnerabilityCaseType;
 import com.k2cybersecurity.intcodeagent.websocket.EventSendPool;
 
 public class ProcessorThread implements Runnable {
@@ -810,28 +813,26 @@ public class ProcessorThread implements Runnable {
 			ClassLoader requestLoader = request.getClass().getClassLoader();
 			ClassLoader httpContextLoader = httpContext.getClass().getClassLoader();
 			if (requestLoader != null) {
-				httpClientInterface = requestLoader
-						.loadClass("org.apache.http.HttpRequest");
+				httpClientInterface = requestLoader.loadClass("org.apache.http.HttpRequest");
 			} else {
 				httpClientInterface = Thread.currentThread().getContextClassLoader()
 						.loadClass("org.apache.http.HttpRequest");
 			}
-			
+
 			if (httpContextLoader != null) {
-				httpContextInterface = httpContextLoader
-						.loadClass("org.apache.http.protocol.HttpContext");
+				httpContextInterface = httpContextLoader.loadClass("org.apache.http.protocol.HttpContext");
 			} else {
 				httpContextInterface = Thread.currentThread().getContextClassLoader()
 						.loadClass("org.apache.http.protocol.HttpContext");
 			}
-			
+
 			Method getRequestLine = httpClientInterface.getMethod("getRequestLine");
 			Object requestLine = getRequestLine.invoke(request);
 
 			String requestLineStr = requestLine.toString();
 			String[] requestLineTokens = requestLineStr.split("\\s+");
 			String requestUri = requestLineTokens[1];
-			
+
 			Method getAttribute = httpContextInterface.getMethod("getAttribute", String.class);
 			Object attributeHost = getAttribute.invoke(httpContext, "http.target_host");
 
@@ -961,6 +962,12 @@ public class ProcessorThread implements Runnable {
 			try {
 				intCodeResultBean.setServletInfo(new ServletInfo(ExecutionMap.find(this.executionId,
 						ServletEventPool.getInstance().getRequestMap().get(this.threadId))));
+				if (intCodeResultBean.getCaseType().equals(VulnerabilityCaseType.HTTP_REQUEST.getCaseType())) {
+					boolean validationResult = partialSSRFValidator(intCodeResultBean);
+					if (!validationResult)
+						return;
+				}
+
 				EventSendPool.getInstance().sendEvent(intCodeResultBean.toString());
 
 //				logger.log(Level.INFO,"publish event: " + intCodeResultBean);
@@ -973,6 +980,24 @@ public class ProcessorThread implements Runnable {
 			}
 
 		}
+	}
+
+	private boolean partialSSRFValidator(JavaAgentEventBean intCodeResultBean) {
+
+		String rawRequest = intCodeResultBean.getServletInfo().getRawRequest();
+		String host = intCodeResultBean.getParameters().get(0).toString();
+		String path = intCodeResultBean.getParameters().get(1).toString();
+
+		if (StringUtils.containsIgnoreCase(rawRequest, host) || StringUtils.containsIgnoreCase(rawRequest, path))
+			return true;
+		String urlDecoded;
+		try {
+			urlDecoded = URLDecoder.decode(rawRequest, StandardCharsets.UTF_8.toString());
+			if (StringUtils.containsIgnoreCase(urlDecoded, host) || StringUtils.containsIgnoreCase(urlDecoded, path))
+				return true;
+		} catch (UnsupportedEncodingException e) {
+		}
+		return false;
 	}
 
 	public static void setLogger() {
