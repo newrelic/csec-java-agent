@@ -48,6 +48,7 @@ public class ConfigK2Logs {
 			props.load(fis);
 		} catch (IOException e) {
 			System.err.println("Error loading Properties!");
+			e.printStackTrace();
 		}
 		this.handlerMaxFileSize = Integer.parseInt(props.getProperty(HANDLER_MAX_FILE_SIZE_PROP));
 		this.handlerMaxFiles = props.getProperty(HANDLER_MAX_FILES_PROP);
