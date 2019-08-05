@@ -249,7 +249,7 @@ public class ProcessorThread implements Runnable {
 
 				for (int i = 0; i < trace.length; i++) {
 					klassName = trace[i].getClassName();
-					System.out.println(klassName);
+//					System.out.println(klassName);
 					// if (klassName.equals(MSSQL_PREPARED_STATEMENT_CLASS)
 					// || klassName.equals(MSSQL_PREPARED_BATCH_STATEMENT_CLASS)
 					// || klassName.contains(MYSQL_PREPARED_STATEMENT)) {
@@ -997,7 +997,7 @@ public class ProcessorThread implements Runnable {
 				return true;
 		} catch (UnsupportedEncodingException e) {
 		}
-		logger.log(Level.FINE, "Dropping SSRF event: {0}", intCodeResultBean);
+//		logger.log(Level.FINE, "Dropping SSRF event: {0}", intCodeResultBean);
 		
 		return false;
 	}

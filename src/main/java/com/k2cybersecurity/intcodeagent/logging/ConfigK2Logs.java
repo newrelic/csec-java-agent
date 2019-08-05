@@ -1,5 +1,6 @@
 package com.k2cybersecurity.intcodeagent.logging;
 
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.Properties;
@@ -43,9 +44,8 @@ public class ConfigK2Logs {
 
 	public ConfigK2Logs() {
 		Properties props = new Properties();
-		try {
-			props.load(Thread.currentThread().getContextClassLoader()
-					.getResourceAsStream(IAgentConstants.K2_JAVAAGENT_LOG4J_PROPERTIES));
+		try(FileInputStream fis = new FileInputStream(IAgentConstants.K2_JAVAAGENT_LOG4J_PROPERTIES)) {
+			props.load(fis);
 		} catch (IOException e) {
 			System.err.println("Error loading Properties!");
 		}
