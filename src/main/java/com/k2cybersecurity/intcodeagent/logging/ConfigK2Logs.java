@@ -44,7 +44,7 @@ public class ConfigK2Logs {
 
 	public ConfigK2Logs() {
 		Properties props = new Properties();
-		try(InputStream is = ConfigK2Logs.class.getResourceAsStream(IAgentConstants.K2_JAVAAGENT_LOG4J_PROPERTIES)) {
+		try(InputStream is = ClassLoader.getSystemResourceAsStream(IAgentConstants.K2_JAVAAGENT_LOG4J_PROPERTIES)) {
 			props.load(is);
 		} catch (IOException e) {
 			System.err.println("Error loading Properties!");
