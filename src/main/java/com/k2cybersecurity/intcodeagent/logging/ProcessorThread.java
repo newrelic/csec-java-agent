@@ -825,14 +825,12 @@ public class ProcessorThread implements Runnable {
 				httpContextInterface = Thread.currentThread().getContextClassLoader()
 						.loadClass("org.apache.http.protocol.HttpContext");
 			}
-
 			Method getRequestLine = httpClientInterface.getMethod("getRequestLine");
 			Object requestLine = getRequestLine.invoke(request);
 
 			String requestLineStr = requestLine.toString();
 			String[] requestLineTokens = requestLineStr.split("\\s+");
 			String requestUri = requestLineTokens[1];
-
 			Method getAttribute = httpContextInterface.getMethod("getAttribute", String.class);
 			Object attributeHost = getAttribute.invoke(httpContext, "http.target_host");
 
@@ -917,7 +915,7 @@ public class ProcessorThread implements Runnable {
 	 * @throws IllegalArgumentException the illegal argument exception
 	 * @throws IllegalAccessException   the illegal access exception
 	 */
-	@SuppressWarnings({ "unused", "unchecked" })
+	@SuppressWarnings({ "unchecked" })
 	private static void addParamValuesMSSQL(ArrayList<Object[]> paramList, JSONArray parameters)
 			throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
 		for (Object[] outParams : paramList) {
