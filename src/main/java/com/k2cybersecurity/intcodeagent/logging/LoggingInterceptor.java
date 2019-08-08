@@ -264,7 +264,6 @@ public class LoggingInterceptor extends Interceptor {
 		// System.out.println("class to instument : "+className);
 		// return true;
 		// }
-
 		return INSTRUMENTED_METHODS.containsKey(className);
 	}
 
@@ -349,6 +348,14 @@ public class LoggingInterceptor extends Interceptor {
 			if (INSTRUMENTED_METHODS.get(cn.name).contains(mn.name))
 				JA_HEALTH_CHECK.setRceProtection(true);
 			break;
+		case CLASS_HTTP_REQUEST_EXECUTOR:
+		case CLASS_JAVA_HTTP_HANDLER:
+		case CLASS_JAVA_HTTPS_HANDLER:
+		case CLASS_JAVA_SSL_HTTPS_HANDLER:
+		case CLASS_JDK_INCUBATOR_HTTP_MULTIEXCHANGE:
+			if (INSTRUMENTED_METHODS.get(cn.name).contains(mn.name))
+				JA_HEALTH_CHECK.setSsrfProtection(true);
+			break;
 		default:
 			break;
 
@@ -381,9 +388,7 @@ public class LoggingInterceptor extends Interceptor {
 						|| sourceString.equals(WEBSPHERE_LIBERTY_PROCESSREQUEST)
 						|| sourceString.equals(WEBSPHERE_TRADITIONAL_PROCESSREQUEST)) {
 					ServletEventPool.getInstance().decrementServletInfoReference(threadId, executionId, false);
-//					System.out.println("Request map entry removed for threadID " + threadId);
-//					System.out.println("Current request map : " + ServletEventPool.getInstance().getRequestMap());
-//					System.out.println(threadId + ":: remove from coyote");
+
 				}
 			}
 		} catch (Exception e) {
@@ -410,11 +415,7 @@ public class LoggingInterceptor extends Interceptor {
 //		 logger.log(Level.FINE,"Executionid: " + eId);
 //		 logger.log(Level.FINE,"Thread Id: " + threadId);
 //		 logger.log(Level.FINE, "SourceString: " +sourceString);
-		
-//		System.out.println("Executionid: " + eId);
-//		System.out.println("Thread Id: " + threadId);
-//		System.out.println("SourceString: " +sourceString);
-		
+
 		if (sourceString == null)
 			return;
 		if (sourceString.equals(WEBSPHERE_LIBERTY_FILLBYTECACHE)
@@ -640,13 +641,14 @@ public class LoggingInterceptor extends Interceptor {
 			}
 //			logger.log(Level.INFO, "ServletEventPool.getInstance().getRequestMap() : {0}",ServletEventPool.getInstance().getRequestMap());
 			try {
-				if (ServletEventPool.getInstance().getRequestMap().containsKey(threadId) && ExecutionMap
-						.find(executionId, ServletEventPool.getInstance().getRequestMap().get(threadId)) != null) {
+//				if (ServletEventPool.getInstance().getRequestMap().containsKey(threadId) && ExecutionMap
+//						.find(executionId, ServletEventPool.getInstance().getRequestMap().get(threadId)) != null) {
 					ServletEventPool.getInstance().incrementServletInfoReference(threadId, executionId, true);
 					EventThreadPool.getInstance().processReceivedEvent(source, arg, executionId,
 							Thread.currentThread().getStackTrace(), threadId, sourceString, System.currentTimeMillis()-start);
-				}
+				//}
 			} catch (Exception e) {
+				e.printStackTrace();
 			}
 
 		}

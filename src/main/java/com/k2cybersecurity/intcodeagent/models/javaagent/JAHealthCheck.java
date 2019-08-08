@@ -23,6 +23,8 @@ public class JAHealthCheck extends AgentBasicInfo{
 	private Set<String> protectedDB;
 
 	private Boolean rceProtection;
+	
+	private Boolean ssrfProtection;
 
 	private Set<String> instrumentedMethods;
 
@@ -205,6 +207,20 @@ public class JAHealthCheck extends AgentBasicInfo{
 	
 	public static void setLogger() {
 		JAHealthCheck.logger = Logger.getLogger(JAHealthCheck.class.getName());
+	}
+
+	/**
+	 * @return the ssrfProtection
+	 */
+	public Boolean getSsrfProtection() {
+		return ssrfProtection;
+	}
+
+	/**
+	 * @param ssrfProtection the ssrfProtection to set
+	 */
+	public void setSsrfProtection(Boolean ssrfProtection) {
+		this.ssrfProtection = ssrfProtection;
 	}
 
 }
