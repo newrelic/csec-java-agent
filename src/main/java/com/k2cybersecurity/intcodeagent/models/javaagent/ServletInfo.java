@@ -21,7 +21,7 @@ public class ServletInfo {
 
 	public ServletInfo(ServletInfo servletInfo) {
 		this.generationTime = servletInfo.getGenerationTime();
-		this.rawRequest = servletInfo.getRawRequest();
+		this.rawRequest = StringEscapeUtils.escapeJava(servletInfo.getRawRequest());
 		this.dataTruncated = servletInfo.isDataTruncated();
 	}
 
@@ -36,7 +36,7 @@ public class ServletInfo {
 	 * @param rawRequest the rawRequest to set
 	 */
 	public void setRawRequest(String rawRequest) {
-		this.rawRequest = StringEscapeUtils.escapeJava(rawRequest);
+		this.rawRequest = rawRequest;
 	}
 
 	@Override

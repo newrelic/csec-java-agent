@@ -4,6 +4,7 @@ import java.net.URL;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -28,19 +29,26 @@ public class JAHealthCheck extends AgentBasicInfo{
 
 	private Set<String> instrumentedMethods;
 
-	private Integer eventDropCount;
+	private AtomicInteger eventDropCount;
 
 	private Set<String> jarPaths;
 	
     private Boolean isHost;
+    
+    private AtomicInteger eventProcessed;
+    
+    private AtomicInteger eventSentCount;
 
 	public JAHealthCheck(String applicationUUID) {
 		super();
 		this.rceProtection = false;
+		this.ssrfProtection = false;
 		this.applicationUUID = applicationUUID;
 		this.setInstrumentedMethods(new HashSet<String>());
 		this.setProtectedDB(new HashSet<String>());
-		this.eventDropCount = 0;
+		this.eventDropCount = new AtomicInteger(0);
+		this.eventProcessed = new AtomicInteger(0);
+		this.eventSentCount = new AtomicInteger(0);
 		this.setIsHost(LoggingInterceptor.APPLICATION_INFO_BEAN.getIsHost());
 		this.setJarPath();
 		logger.log(Level.INFO,"JA Healthcheck created : {0}", this.toString());
@@ -54,6 +62,9 @@ public class JAHealthCheck extends AgentBasicInfo{
 		this.rceProtection = jaHealthCheck.rceProtection;
 		this.instrumentedMethods = jaHealthCheck.instrumentedMethods;
 		this.eventDropCount = jaHealthCheck.eventDropCount;
+		this.eventProcessed = jaHealthCheck.eventProcessed;
+		this.eventSentCount = jaHealthCheck.eventSentCount;
+		this.ssrfProtection = jaHealthCheck.ssrfProtection;
 		this.isHost = jaHealthCheck.isHost;
 		this.setJarPath();
 		logger.log(Level.INFO,"JA Healthcheck created : {0}", this.toString());
@@ -147,18 +158,30 @@ public class JAHealthCheck extends AgentBasicInfo{
 	 * @return the eventDropCount
 	 */
 	public Integer getEventDropCount() {
-		return eventDropCount;
+		return eventDropCount.get();
 	}
 
 	/**
 	 * @param eventDropCount the eventDropCount to set
 	 */
 	public void setEventDropCount(Integer eventDropCount) {
-		this.eventDropCount = eventDropCount;
+		this.eventDropCount.set(eventDropCount);
 	}
 
 	public void incrementDropCount() {
-		this.eventDropCount += 1;
+		this.eventDropCount.getAndIncrement();
+	}
+	
+	public void incrementProcessedCount() {
+		this.eventProcessed.getAndIncrement();
+	}
+	
+	public void incrementEventSentCount() {
+		this.eventSentCount.getAndIncrement();
+	}
+	
+	public void decrementEventSentCount() {
+		this.eventSentCount.getAndDecrement();
 	}
 
 	/**
@@ -221,6 +244,34 @@ public class JAHealthCheck extends AgentBasicInfo{
 	 */
 	public void setSsrfProtection(Boolean ssrfProtection) {
 		this.ssrfProtection = ssrfProtection;
+	}
+
+	/**
+	 * @return the eventProcessed
+	 */
+	public Integer getEventProcessed() {
+		return eventProcessed.get();
+	}
+
+	/**
+	 * @param eventProcessed the eventProcessed to set
+	 */
+	public void setEventProcessed(Integer eventProcessed) {
+		this.eventProcessed.set(eventProcessed);
+	}
+
+	/**
+	 * @return the eventSentCount
+	 */
+	public AtomicInteger getEventSentCount() {
+		return eventSentCount;
+	}
+
+	/**
+	 * @param eventSentCount the eventSentCount to set
+	 */
+	public void setEventSentCount(Integer eventSentCount) {
+		this.eventSentCount.set(eventSentCount);
 	}
 
 }

@@ -259,6 +259,7 @@ public class ProcessorThread implements Runnable {
 							&& IAgentConstants.MYSQL_GET_CONNECTION_MAP.get(klassName)
 									.contains(trace[i].getMethodName())) {
 						intCodeResultBean.setValidationBypass(true);
+						LoggingInterceptor.JA_HEALTH_CHECK.incrementDropCount();
 						return;
 					}
 					if (!PATTERN.matcher(klassName).matches()) {
@@ -950,6 +951,7 @@ public class ProcessorThread implements Runnable {
 						LoggingInterceptor.applicationUUID, System.getProperty(IAgentConstants.USER_DIR),
 						new ArrayList<String>(Agent.jarPathSet), list);
 				EventSendPool.getInstance().sendEvent(dynamicJarPathBean.toString());
+				LoggingInterceptor.JA_HEALTH_CHECK.incrementEventSentCount();
 			} catch (IllegalStateException e) {
 				logger.log(Level.INFO, "Dropping dynamicJarPathBean event " + intCodeResultBean.getId()
 						+ " due to buffer capacity reached");
@@ -963,19 +965,21 @@ public class ProcessorThread implements Runnable {
 						ServletEventPool.getInstance().getRequestMap().get(this.threadId))));
 				if (intCodeResultBean.getCaseType().equals(VulnerabilityCaseType.HTTP_REQUEST.getCaseType())) {
 					boolean validationResult = partialSSRFValidator(intCodeResultBean);
-					if (!validationResult)
+					if (!validationResult) {
+						LoggingInterceptor.JA_HEALTH_CHECK.incrementDropCount();
 						return;
+					}
 				}
 
 				EventSendPool.getInstance().sendEvent(intCodeResultBean.toString());
-
+				LoggingInterceptor.JA_HEALTH_CHECK.incrementEventSentCount();
 //				logger.log(Level.INFO,"publish event: " + intCodeResultBean);
 			} catch (IllegalStateException e) {
 				logger.log(Level.INFO,
 						"Dropping event " + intCodeResultBean.getId() + " due to buffer capacity reached.");
 				LoggingInterceptor.JA_HEALTH_CHECK.incrementDropCount();
 			} catch (Exception e) {
-				logger.log(Level.WARNING, "Error in generateEvent while creating IntCodeResultBean: {0}", e);
+				logger.log(Level.WARNING, "Error in generateEvent while creating IntCodeResultBean: {0}", e.toString());
 			}
 
 		}
