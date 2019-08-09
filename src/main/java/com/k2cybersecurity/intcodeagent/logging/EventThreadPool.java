@@ -58,6 +58,12 @@ public class EventThreadPool {
 				super.afterExecute(r, t);
 			}
 
+			@Override
+			protected void beforeExecute(Thread t, Runnable r) {
+				LoggingInterceptor.JA_HEALTH_CHECK.incrementProcessedCount();
+				super.beforeExecute(t, r);
+			}
+
 		};
 		this.eventBuffer = new StringBuffer();
 		executor.allowCoreThreadTimeOut(allowCoreThreadTimeOut);
@@ -123,6 +129,8 @@ public class EventThreadPool {
 		 * @throws RejectedExecutionException always
 		 */
 		public void rejectedExecution(Runnable r, ThreadPoolExecutor e) {
+			LoggingInterceptor.JA_HEALTH_CHECK.incrementDropCount();
+			LoggingInterceptor.JA_HEALTH_CHECK.incrementProcessedCount();
 //			logger.log(Level.FINE,"Event Task " + r.toString() + " rejected from {0} " + e.toString());
 		}
 	}

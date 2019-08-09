@@ -41,6 +41,8 @@ public class IPScheduledThread {
 							WSClient.getInstance()
 									.send(new JAHealthCheck(LoggingInterceptor.JA_HEALTH_CHECK).toString());
 							LoggingInterceptor.JA_HEALTH_CHECK.setEventDropCount(0);
+							LoggingInterceptor.JA_HEALTH_CHECK.setEventProcessed(0);
+							LoggingInterceptor.JA_HEALTH_CHECK.setEventSentCount(0);
 						} else {
 							try {
 								WSClient.reconnectWSClient();
