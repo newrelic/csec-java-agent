@@ -93,6 +93,7 @@ import org.json.simple.parser.JSONParser;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.JsonArray;
 import com.k2cybersecurity.intcodeagent.models.javaagent.JavaAgentDynamicPathBean;
 import com.k2cybersecurity.intcodeagent.models.javaagent.JavaAgentEventBean;
 import com.k2cybersecurity.intcodeagent.models.javaagent.ServletInfo;
@@ -185,6 +186,7 @@ public class ProcessorThread implements Runnable {
 	@Override
 	public void run() {
 		try {
+//			System.out.println("calling processor thread.");
 			if (EXECUTORS.containsKey(sourceString)) {
 				long start = System.currentTimeMillis();
 
@@ -945,11 +947,11 @@ public class ProcessorThread implements Runnable {
 				&& (intCodeResultBean.getSource().equals(IAgentConstants.JAVA_NET_URLCLASSLOADER)
 						|| intCodeResultBean.getSource().equals(IAgentConstants.JAVA_NET_URLCLASSLOADER_NEWINSTANCE))) {
 			try {
-				List<String> list = (List<String>) intCodeResultBean.getParameters();
-
+				JSONArray agentJarPaths = new JSONArray(); 
+				agentJarPaths.addAll(Agent.jarPathSet);
 				JavaAgentDynamicPathBean dynamicJarPathBean = new JavaAgentDynamicPathBean(
 						LoggingInterceptor.applicationUUID, System.getProperty(IAgentConstants.USER_DIR),
-						new ArrayList<String>(Agent.jarPathSet), list);
+						agentJarPaths, intCodeResultBean.getParameters());
 				EventSendPool.getInstance().sendEvent(dynamicJarPathBean.toString());
 				LoggingInterceptor.JA_HEALTH_CHECK.incrementEventSentCount();
 			} catch (IllegalStateException e) {

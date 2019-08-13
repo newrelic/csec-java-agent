@@ -1,9 +1,11 @@
 package com.k2cybersecurity.intcodeagent.models.javaagent;
 
 import java.io.Serializable;
-import java.util.List;
 
-import com.google.gson.Gson;
+import org.json.simple.JSONArray;
+
+import com.google.gson.JsonArray;
+import com.k2cybersecurity.intcodeagent.websocket.JsonConverter;
 
 public class ShutDownEvent extends AgentBasicInfo implements Serializable {
 
@@ -13,7 +15,7 @@ public class ShutDownEvent extends AgentBasicInfo implements Serializable {
 	
 	private String status;
 	
-	private List<String> resonForTermination;
+	private JSONArray resonForTermination;
 	
 	private Integer exitCode;
 
@@ -52,14 +54,14 @@ public class ShutDownEvent extends AgentBasicInfo implements Serializable {
 	/**
 	 * @return the resonForTermination
 	 */
-	public List<String> getResonForTermination() {
+	public JSONArray getResonForTermination() {
 		return resonForTermination;
 	}
 
 	/**
 	 * @param resonForTermination the resonForTermination to set
 	 */
-	public void setResonForTermination(List<String> resonForTermination) {
+	public void setResonForTermination(JSONArray resonForTermination) {
 		this.resonForTermination = resonForTermination;
 	}
 
@@ -79,7 +81,7 @@ public class ShutDownEvent extends AgentBasicInfo implements Serializable {
 	
 	@Override
 	public String toString() {
-		return new Gson().toJson(this);
+		return JsonConverter.toJSON(this);
 	}
 
 }

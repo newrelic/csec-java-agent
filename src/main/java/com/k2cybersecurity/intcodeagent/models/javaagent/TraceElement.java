@@ -2,6 +2,8 @@ package com.k2cybersecurity.intcodeagent.models.javaagent;
 
 import java.io.Serializable;
 
+import com.k2cybersecurity.intcodeagent.websocket.JsonConverter;
+
 public class TraceElement implements Serializable{
 	/**
 	 * 
@@ -62,5 +64,9 @@ public class TraceElement implements Serializable{
 		this.lineNumber = lineNumber;
 	}
 	
+	@Override
+	public String toString() {
+		return JsonConverter.toJSON(this);
+	}
 	
 }

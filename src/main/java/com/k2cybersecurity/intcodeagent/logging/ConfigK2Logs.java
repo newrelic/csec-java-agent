@@ -1,9 +1,6 @@
 package com.k2cybersecurity.intcodeagent.logging;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.lang.reflect.Method;
-import java.util.Properties;
 import java.util.logging.FileHandler;
 import java.util.logging.Formatter;
 import java.util.logging.Level;
@@ -14,18 +11,10 @@ import org.brutusin.instrumentation.Agent;
 
 import com.k2cybersecurity.intcodeagent.models.javaagent.AgentBasicInfo;
 import com.k2cybersecurity.intcodeagent.models.javaagent.JAHealthCheck;
+import com.k2cybersecurity.intcodeagent.properties.K2JALogProperties;
 import com.k2cybersecurity.intcodeagent.websocket.WSClient;
 
 public class ConfigK2Logs {
-
-//	private static final String APPENDERS_ROLLINGFILE_NAME = "k2.log.handler.name";
-//	private static final String APPENDERS_ROLLINGFILE_PATTERNLAYOUT = "k2.log.formatter.patternlayout";
-	private static final String HANDLER_MAX_FILE_SIZE_PROP = "k2.log.handler.maxfilesize";
-	private static final String HANDLER_MAX_FILE_SIZE_UNIT_PROP = "k2.log.handler.maxfilesize.unit";
-	private static final String HANDLER_MAX_FILES_PROP = "k2.log.handler.maxfiles";
-	private static final String LOGGER_NAME_PROP = "k2.log.logger.name";
-	private static final String LOGGER_LVL_PROP = "k2.log.logger.level";
-	private static final String LOGGER_ADDITIVITY_PROP = "k2.log.logger.additivity";
 
 	private Class<?>[] classes = { EIDCount.class, EventThreadPool.class, ExecutionMap.class, IPScheduledThread.class,
 			LoggingInterceptor.class, ProcessorThread.class, ServletEventPool.class, ServletEventProcessor.class,
@@ -35,7 +24,7 @@ public class ConfigK2Logs {
 	public static Level level;
 	private int handlerMaxFileSize;
 	private String loggerName;
-	private String handlerMaxFiles;
+	private int handlerMaxFiles;
 	private boolean loggerAdditivity;
 	private String fileName = "/etc/k2-adp/logs/k2_java_agent-" + Agent.APPLICATION_UUID + ".log";
 
@@ -43,25 +32,18 @@ public class ConfigK2Logs {
 	private Class<?>[] emptyClasses = new Class<?>[0];
 
 	public ConfigK2Logs() {
-		Properties props = new Properties();
-		try(InputStream is = ClassLoader.getSystemResourceAsStream(IAgentConstants.K2_JAVAAGENT_LOG4J_PROPERTIES)) {
-			props.load(is);
-		} catch (IOException e) {
-			System.err.println("Error loading Properties!");
-			e.printStackTrace();
-		}
-		this.handlerMaxFileSize = Integer.parseInt(props.getProperty(HANDLER_MAX_FILE_SIZE_PROP));
-		this.handlerMaxFiles = props.getProperty(HANDLER_MAX_FILES_PROP);
-		this.loggerName = props.getProperty(LOGGER_NAME_PROP);
-		this.loggerAdditivity = Boolean.parseBoolean(props.getProperty(LOGGER_ADDITIVITY_PROP));
+		this.handlerMaxFileSize = K2JALogProperties.maxfilesize;
+		this.handlerMaxFiles = K2JALogProperties.maxfiles;
+		this.loggerName =K2JALogProperties.loggerName;
+		this.loggerAdditivity = K2JALogProperties.additivity;
 
-		String loggerMaxSizeUnit = props.getProperty(HANDLER_MAX_FILE_SIZE_UNIT_PROP);
+		String loggerMaxSizeUnit = K2JALogProperties.unitMaxfilesize;
 		if (loggerMaxSizeUnit.equals("KB")) {
 			this.handlerMaxFileSize *= 1024;
 		} else if (loggerMaxSizeUnit.equals("MB")) {
 			this.handlerMaxFileSize *= 1048576; // 1024 * 1024
 		}
-		String level = props.getProperty(LOGGER_LVL_PROP);
+		String level = K2JALogProperties.level;
 		if (level.equals("OFF")) {
 			ConfigK2Logs.level = Level.OFF;
 		} else if (level.equals("SEVERE")) {
@@ -87,7 +69,7 @@ public class ConfigK2Logs {
 		try {
 
 			FileHandler handler = new FileHandler(this.fileName, handlerMaxFileSize,
-					Integer.parseInt(handlerMaxFiles), true);
+					handlerMaxFiles, true);
 			Formatter formatter = new SimpleFormatter();
 			handler.setFormatter(formatter);
 			Logger logger = Logger.getLogger(loggerName);
