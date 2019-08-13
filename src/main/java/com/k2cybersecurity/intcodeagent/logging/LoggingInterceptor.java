@@ -22,7 +22,9 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
+import java.io.FilterInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
@@ -37,6 +39,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousSocketChannel;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -60,19 +63,23 @@ import com.k2cybersecurity.intcodeagent.websocket.WSClient;
 
 public class LoggingInterceptor extends Interceptor {
 
+	private static final String FIELD_NAME_CONTENT_LEN = "contentLen";
+	private static final String FIELD_NAME_BUF2 = "buf";
+	private static final String FIELD_NAME_IN3 = "in";
+	private static final String FIELD_NAME_INPUT_STREAM = "inputStream";
 	private static final String BYTE_LIMIT = "byteLimit";
 	private static final String BYTE_CACHE = "byteCache";
 	private static final String CLASS_COM_IBM_WS_GENERICBNF_IMPL_BNF_HEADERS_IMPL = "com.ibm.ws.genericbnf.impl.BNFHeadersImpl";
 	private static final String CLASS_COM_IBM_WS_GENERICBNF_INTERNAL_BNF_HEADERS_IMPL = "com.ibm.ws.genericbnf.internal.BNFHeadersImpl";
 	private static final String SCOPE = ".scope";
 	private static final String DOCKER_1_13 = "/docker-";
-	private static final int SOCKET_CONNECT_TIMEOUT = 500;
 	protected static Integer VMPID;
 	protected static final String applicationUUID;
 	public static ApplicationInfoBean APPLICATION_INFO_BEAN;
 	protected static JAHealthCheck JA_HEALTH_CHECK;
 
-	protected static Class<?> mysqlPreparedStatement8Class, mysqlPreparedStatement5Class, abstractInputBufferClass;
+	protected static Class<?> mysqlPreparedStatement8Class, mysqlPreparedStatement5Class, abstractInputBufferClass,
+			postInputStreamClass;
 	protected static String tomcatVersion;
 	protected static int tomcatMajorVersion;
 	static final int MAX_DEPTH_LOOKUP = 4; // Max number of superclasses to lookup for a field
@@ -178,8 +185,8 @@ public class LoggingInterceptor extends Interceptor {
 		 */
 //		System.out.println("Classloader of LoggingInterceptor class inside is : " + this.getClass().getClassLoader());
 		try (BufferedReader reader = new BufferedReader(new FileReader(HOST_IP_PROPERTIES_FILE))) {
-			hostip = reader.readLine();	
-			if(hostip != null)
+			hostip = reader.readLine();
+			if (hostip != null)
 				hostip = hostip.trim();
 		}
 		ConfigK2Logs.getInstance().initializeLogs();
@@ -321,6 +328,10 @@ public class LoggingInterceptor extends Interceptor {
 			if (INSTRUMENTED_METHODS.get(cn.name).contains(mn.name))
 				JA_HEALTH_CHECK.getProtectedDB().add("ORACLE");
 			break;
+		case CLASS_WEBLOGIC_SERVLET_INTERNAL_STUBSECURITYHELPER:
+			if (INSTRUMENTED_METHODS.get(cn.name).contains(mn.name))
+				JA_HEALTH_CHECK.setProtectedServer("WEBLOGIC");
+			break;
 		case CLASS_JAVA_NET_URL_CLASS_LOADER:
 			// if(INSTRUMENTED_METHODS.get(cn.name).contains(mn.name))
 			// JA_HEALTH_CHECK.getProtectedDB().add("HSQL");
@@ -386,7 +397,8 @@ public class LoggingInterceptor extends Interceptor {
 						&& (TOMCAT_COYOTE_ADAPTER_SERVICE.equals(sourceString)
 								|| JETTY_REQUEST_ON_FILLABLE.equals(sourceString))
 						|| sourceString.equals(WEBSPHERE_LIBERTY_PROCESSREQUEST)
-						|| sourceString.equals(WEBSPHERE_TRADITIONAL_PROCESSREQUEST)) {
+						|| sourceString.equals(WEBSPHERE_TRADITIONAL_PROCESSREQUEST)
+						|| sourceString.equals(WEBLOGIC_INVOKE_SERVLET)) {
 					ServletEventPool.getInstance().decrementServletInfoReference(threadId, executionId, false);
 
 				}
@@ -414,7 +426,11 @@ public class LoggingInterceptor extends Interceptor {
 
 //		 logger.log(Level.FINE,"Executionid: " + eId);
 //		 logger.log(Level.FINE,"Thread Id: " + threadId);
-//		 logger.log(Level.FINE, "SourceString: " +sourceString);
+//		logger.log(Level.FINE, "SourceString: " + sourceString);
+
+//		System.out.println("Executionid: " + eId);
+//		System.out.println("Thread Id: " + threadId);
+//		System.out.println("SourceString: " + sourceString);
 
 		if (sourceString == null)
 			return;
@@ -463,7 +479,7 @@ public class LoggingInterceptor extends Interceptor {
 
 			} else {
 				servletInfo = new ServletInfo();
-				servletInfo.addGenerationTime((int) (System.currentTimeMillis()-start));
+				servletInfo.addGenerationTime((int) (System.currentTimeMillis() - start));
 				ServletEventPool.getInstance().getRequestMap().get(threadId)
 						.add(new ExecutionMap(executionId, servletInfo));
 			}
@@ -501,7 +517,7 @@ public class LoggingInterceptor extends Interceptor {
 					}
 					// logger.log(Level.FINE,"Request Param : " + servletInfo);
 				}
-				servletInfo.addGenerationTime((int) (System.currentTimeMillis()-start));
+				servletInfo.addGenerationTime((int) (System.currentTimeMillis() - start));
 			} catch (Exception e) {
 				logger.log(Level.WARNING, "Exception occured in JETTY_PARSE_NEXT: {0}", e);
 			}
@@ -534,7 +550,7 @@ public class LoggingInterceptor extends Interceptor {
 					}
 					// logger.log(Level.FINE,"Request Param : " + servletInfo);
 				}
-				servletInfo.addGenerationTime((int) (System.currentTimeMillis()-start));
+				servletInfo.addGenerationTime((int) (System.currentTimeMillis() - start));
 			} catch (Exception e) {
 				logger.log(Level.WARNING, "Exception occured in TOMCAT_SETBYTEBUFFER: {0}", e);
 			}
@@ -628,12 +644,69 @@ public class LoggingInterceptor extends Interceptor {
 //					 logger.log(Level.INFO,"Request Param : " + threadId + ":" + executionId + " : " +
 //					 servletInfo);
 				}
-				servletInfo.addGenerationTime((int) (System.currentTimeMillis()-start));
+				servletInfo.addGenerationTime((int) (System.currentTimeMillis() - start));
 			} catch (Exception e) {
 				logger.log(Level.WARNING, "Exception occured in TOMCAT_COYOTE_ADAPTER_SERVICE buffer processing : {0}",
 						e);
 			}
 			// in case of executeInternal()
+		} else if (sourceString.equals(WEBLOGIC_INVOKE_SERVLET)) {
+			try {
+				ServletEventPool.getInstance().incrementServletInfoReference(threadId, executionId, false);
+				Object servletObject = arg[0];
+				Field inputStreamField = servletObject.getClass().getDeclaredField(FIELD_NAME_INPUT_STREAM);
+				inputStreamField.setAccessible(true);
+				Object inputStream = inputStreamField.get(servletObject);
+
+				Field inField = inputStream.getClass().getDeclaredField(FIELD_NAME_IN3);
+				inField.setAccessible(true);
+				Object in = inField.get(inputStream);
+
+				Field in2Field = FilterInputStream.class.getDeclaredField(FIELD_NAME_IN3);
+				in2Field.setAccessible(true);
+				Object in2 = in2Field.get(in);
+
+				Field bufField = in2.getClass().getDeclaredField(BYTE_BUFFER_FIELD_BUF);
+				bufField.setAccessible(true);
+				Object buf = bufField.get(in2);
+
+				Field contentLenField = in2.getClass().getDeclaredField(FIELD_NAME_CONTENT_LEN);
+				contentLenField.setAccessible(true);
+				Long contentLen = (Long) contentLenField.get(in2);
+
+				Field limit = Buffer.class.getDeclaredField(BYTE_BUFFER_FIELD_LIMIT);
+				limit.setAccessible(true);
+				int limitHb = (Integer) limit.get(buf);
+				if (limitHb > 0) {
+
+					Field hb = ByteBuffer.class.getDeclaredField(BYTE_BUFFER_FIELD_HB);
+					hb.setAccessible(true);
+					byte[] hbContent = (byte[]) hb.get(buf);
+
+					ServletInfo servletInfo = new ServletInfo();
+					servletInfo.setRawRequest(new String(hbContent, 0, limitHb, StandardCharsets.UTF_8));
+					if (contentLen > limitHb) {
+						servletInfo.setDataTruncated(true);
+					}
+
+					servletInfo.addGenerationTime((int) (System.currentTimeMillis() - start));
+					if (!ServletEventPool.getInstance().getRequestMap().containsKey(threadId)) {
+						ConcurrentLinkedDeque<ExecutionMap> executionMaps = new ConcurrentLinkedDeque<ExecutionMap>();
+						executionMaps.add(new ExecutionMap(executionId, servletInfo));
+						ServletEventPool.getInstance().getRequestMap().put(threadId, executionMaps);
+
+					} else {
+						servletInfo.addGenerationTime((int) (System.currentTimeMillis() - start));
+						ServletEventPool.getInstance().getRequestMap().get(threadId)
+								.add(new ExecutionMap(executionId, servletInfo));
+					}
+//					System.out.println("request map: "+ServletEventPool.getInstance().getRequestMap().get(threadId));
+				}
+
+			} catch (Exception e) {
+				logger.log(Level.WARNING, "Exception occured in WEBLOGIC_INVOKE_SERVLET buffer processing : {0}", e);
+//				e.printStackTrace();
+			}
 		} else {
 
 			if (MYSQL_SOURCE_METHOD_LIST.contains(sourceString) && arg[0] != null) {
@@ -643,10 +716,11 @@ public class LoggingInterceptor extends Interceptor {
 			try {
 //				if (ServletEventPool.getInstance().getRequestMap().containsKey(threadId) && ExecutionMap
 //						.find(executionId, ServletEventPool.getInstance().getRequestMap().get(threadId)) != null) {
-					ServletEventPool.getInstance().incrementServletInfoReference(threadId, executionId, true);
-					EventThreadPool.getInstance().processReceivedEvent(source, arg, executionId,
-							Thread.currentThread().getStackTrace(), threadId, sourceString, System.currentTimeMillis()-start);
-				//}
+				ServletEventPool.getInstance().incrementServletInfoReference(threadId, executionId, true);
+				EventThreadPool.getInstance().processReceivedEvent(source, arg, executionId,
+						Thread.currentThread().getStackTrace(), threadId, sourceString,
+						System.currentTimeMillis() - start);
+				// }
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -667,7 +741,7 @@ public class LoggingInterceptor extends Interceptor {
 
 	@Override
 	protected void doOnFinish(Object[] args, Object source, Object result, String eId) {
-		
+
 		String sourceString = null;
 		long threadId = Thread.currentThread().getId();
 		if (source instanceof Method) {
@@ -679,16 +753,17 @@ public class LoggingInterceptor extends Interceptor {
 			return;
 		}
 		Integer executionId = Integer.parseInt(eId.split(COLON_SEPERATOR)[1]);
-		Object arg = args[args.length-1];
-		if (sourceString.equals(WEBSPHERE_LIBERTY_FILLBYTECACHE) || sourceString.equals(WEBSPHERE_TRADITIONAL_FILLBYTECACHE)) {
+		Object arg = args[args.length - 1];
+		if (sourceString.equals(WEBSPHERE_LIBERTY_FILLBYTECACHE)
+				|| sourceString.equals(WEBSPHERE_TRADITIONAL_FILLBYTECACHE)) {
 			Object thisPointer = arg;
 			ClassLoader currentClassLoader = arg.getClass().getClassLoader();
 			try {
 				Class<?> BNFHeadersImpl = null;
-				if(sourceString.equals(WEBSPHERE_LIBERTY_FILLBYTECACHE))
-				BNFHeadersImpl = Class.forName(CLASS_COM_IBM_WS_GENERICBNF_INTERNAL_BNF_HEADERS_IMPL, true,
-						currentClassLoader);
-				else if(sourceString.equals(WEBSPHERE_TRADITIONAL_FILLBYTECACHE))
+				if (sourceString.equals(WEBSPHERE_LIBERTY_FILLBYTECACHE))
+					BNFHeadersImpl = Class.forName(CLASS_COM_IBM_WS_GENERICBNF_INTERNAL_BNF_HEADERS_IMPL, true,
+							currentClassLoader);
+				else if (sourceString.equals(WEBSPHERE_TRADITIONAL_FILLBYTECACHE))
 					BNFHeadersImpl = Class.forName(CLASS_COM_IBM_WS_GENERICBNF_IMPL_BNF_HEADERS_IMPL, true,
 							currentClassLoader);
 				else
@@ -823,7 +898,7 @@ public class LoggingInterceptor extends Interceptor {
 	public static void setLogger() {
 		LoggingInterceptor.logger = Logger.getLogger(LoggingInterceptor.class.getName());
 	}
-	
+
 	public static void shutdownLogic(Runtime runtime, final ClassFileTransformer classTransformer) {
 		ShutDownEvent shutDownEvent = new ShutDownEvent();
 		shutDownEvent.setApplicationUUID(Agent.APPLICATION_UUID);
@@ -867,7 +942,7 @@ public class LoggingInterceptor extends Interceptor {
 	protected List<String> getClassesToLoad() {
 		return new ArrayList<String>(IAgentConstants.INSTRUMENTED_METHODS.keySet());
 	}
-	
+
 	private static void retransformHookedClassesWrapper() {
 		List<String> classesToRetransform = new ArrayList<String>(IAgentConstants.INSTRUMENTED_METHODS.keySet());
 

@@ -1,8 +1,8 @@
 package com.k2cybersecurity.intcodeagent.models.javaagent;
 
-import java.util.List;
+import org.json.simple.JSONArray;
 
-import com.google.gson.Gson;
+import com.k2cybersecurity.intcodeagent.websocket.JsonConverter;
 
 public class JavaAgentDynamicPathBean extends AgentBasicInfo {
 
@@ -10,11 +10,11 @@ public class JavaAgentDynamicPathBean extends AgentBasicInfo {
 
     private String workingDirectory;
     
-    private List<String> jarPaths;
+    private JSONArray jarPaths;
     
-    private List<String> dynamicPaths;
+    private JSONArray dynamicPaths;
 
-    public JavaAgentDynamicPathBean(String applicationUUID,String workingDirectory, List<String> jarPaths,List<String> dynamicPaths) {
+    public JavaAgentDynamicPathBean(String applicationUUID,String workingDirectory, JSONArray jarPaths,JSONArray dynamicPaths) {
         super();
         this.applicationUUID = applicationUUID;
         this.workingDirectory = workingDirectory;
@@ -38,11 +38,11 @@ public class JavaAgentDynamicPathBean extends AgentBasicInfo {
 		this.workingDirectory = workingDirectory;
 	}
 
-	public List<String> getJarPaths() {
+	public JSONArray getJarPaths() {
         return jarPaths;
     }
 
-    public void setJarPaths(List<String> jarPaths) {
+    public void setJarPaths(JSONArray jarPaths) {
         this.jarPaths = jarPaths;
     }
 
@@ -50,20 +50,20 @@ public class JavaAgentDynamicPathBean extends AgentBasicInfo {
     /**
 	 * @return the dynamicPaths
 	 */
-	public List<String> getDynamicPaths() {
+	public JSONArray getDynamicPaths() {
 		return dynamicPaths;
 	}
 
 	/**
 	 * @param dynamicPaths the dynamicPaths to set
 	 */
-	public void setDynamicPaths(List<String> dynamicPaths) {
+	public void setDynamicPaths(JSONArray dynamicPaths) {
 		this.dynamicPaths = dynamicPaths;
 	}
 
 	@Override
     public String toString() {
-		return new Gson().toJson(this);
+		return JsonConverter.toJSON(this);
 //        try {
 //            return new ObjectMapper().writeValueAsString(this);
 //        } catch (JsonProcessingException e) {

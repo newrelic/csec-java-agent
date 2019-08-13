@@ -1,6 +1,6 @@
 package com.k2cybersecurity.intcodeagent.models.javaagent;
 
-import com.google.gson.Gson;
+import com.k2cybersecurity.intcodeagent.websocket.JsonConverter;
 
 public class ApplicationInfoBean extends AgentBasicInfo{
 	
@@ -168,7 +168,7 @@ public class ApplicationInfoBean extends AgentBasicInfo{
 	
 	@Override
 	public String toString() {
-		return new Gson().toJson(this);
+		return JsonConverter.toJSON(this);
 //		try {
 //			return new ObjectMapper().writeValueAsString(this);
 //		} catch (JsonProcessingException e) {

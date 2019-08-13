@@ -31,6 +31,9 @@ public interface IAgentConstants {
 
 	// ORACLE
 	String CLASS_ORACLE_JDBC_DRIVER_T4CTT_IFUN = "oracle/jdbc/driver/T4CTTIfun";
+	
+	// Oracle Weblogic
+	String CLASS_WEBLOGIC_SERVLET_INTERNAL_STUBSECURITYHELPER = "weblogic/servlet/internal/StubSecurityHelper";
 
 	// CLASSLOADER
 	String CLASS_JAVA_NET_URL_CLASS_LOADER = "java/net/URLClassLoader";
@@ -298,6 +301,7 @@ public interface IAgentConstants {
 			put(CLASS_JAVA_HTTPS_HANDLER, Collections.singletonList("openConnection"));
 			put(CLASS_JAVA_SSL_HTTPS_HANDLER, Collections.singletonList("openConnection"));
 			put(CLASS_JDK_INCUBATOR_HTTP_MULTIEXCHANGE, Arrays.asList(new String[] { "response", "responseAsync", "multiResponseAsync" }));
+			put(CLASS_WEBLOGIC_SERVLET_INTERNAL_STUBSECURITYHELPER, Collections.singletonList("invokeServlet"));
 		}
 	};
 
@@ -320,6 +324,8 @@ public interface IAgentConstants {
 	String WEBSPHERE_LIBERTY_PROCESSREQUEST = "protected void com.ibm.ws.http.channel.internal.inbound.HttpInboundLink.processRequest()";
 	String WEBSPHERE_TRADITIONAL_FILLBYTECACHE = "protected boolean com.ibm.ws.genericbnf.impl.BNFHeadersImpl.fillByteCache(com.ibm.wsspi.buffermgmt.WsByteBuffer)";
 	String WEBSPHERE_TRADITIONAL_PROCESSREQUEST = "protected void com.ibm.ws.http.channel.inbound.impl.HttpInboundLink.processRequest()";
+	
+	String WEBLOGIC_INVOKE_SERVLET = "public java.lang.Throwable weblogic.servlet.internal.StubSecurityHelper.invokeServlet(javax.servlet.ServletRequest,javax.servlet.http.HttpServletRequest,weblogic.servlet.internal.ServletRequestImpl,javax.servlet.ServletResponse,javax.servlet.http.HttpServletResponse,javax.servlet.Servlet) throws javax.servlet.ServletException";
 	
 	/** MSSQL FIELD CONSTANTS */
 	String MSSQL_CURRENT_OBJECT = "this$0";
@@ -464,26 +470,6 @@ public interface IAgentConstants {
 	// EventThreadPool.java file constants
 	String K2_JAVA_AGENT = "K2-Java-Agent-";
 
-	// AgentBasicInfo.java file constants
-	String K2_JAVAAGENT_PROPERTIES = "k2-javaagent.properties";
-	String K2_JAVAAGENT_LOG4J_PROPERTIES = "k2-javaagent-log.properties";
-
-	String K2_JAVAAGENT_VERSION = "k2.javaagent.version";
-
-	String K2_JAVAAGENT_TOOL_ID = "k2.javaagent.tool.id";
-
-	String K2_JAVAAGENT_JSONNAME_APPLICATIONINFOBEAN = "k2.javaagent.jsonname.applicationinfobean";
-
-	String K2_JAVAAGENT_JSONNAME_INTCODERESULTBEAN = "k2.javaagent.jsonname.intcoderesultbean";
-
-	String K2_JAVAAGENT_JSONNAME_JARPATHBEAN = "k2.javaagent.jsonname.jarpathbean";
-
-	String K2_JAVAAGENT_JSONNAME_DYNAMICJARPATHBEAN = "k2.javaagent.jsonname.dynamicjarpathbean";
-
-	String K2_JAVAAGENT_JSONNAME_JAHEALTHCHECK = "k2.javaagent.jsonname.healthcheck";
-	
-	String K2_JAVAAGENT_JSONNAME_SHUTDOWN = "k2.javaagent.jsonname.shutdown";
-
 	// LoggingInterceptor Constants
 	char DIR_SEPERATOR = '/';
 	String CGROUP_FILE_NAME = "/proc/self/cgroup";
@@ -523,4 +509,11 @@ public interface IAgentConstants {
 	int TOMCAT_8 = 8;
 	int TOMCAT_9 = 9;
 	int K2_IC_TCP_PORT = 54321;
+	
+	String JSON_NAME_APPLICATION_INFO_BEAN = "applicationinfobean";
+	String JSON_NAME_INTCODE_RESULT_BEAN = "intcoderesultbean";
+	String JSON_NAME_HEALTHCHECK = "JAhealthcheck";
+	String JSON_NAME_DYNAMICJARPATH_BEAN = "dynamicjarpathbean";
+	String JSON_NAME_SHUTDOWN = "shutdown";
+	
 }
