@@ -176,12 +176,13 @@ public class LoggingInterceptor extends Interceptor {
 		 * ", established successfully!!!"); } catch (IOException ex) { throw new
 		 * RuntimeException(ex); }
 		 */
-//		System.out.println("Classloader of LoggingInterceptor class inside is : " + this.getClass().getClassLoader());
+		System.out.println("Classloader of LoggingInterceptor class inside is : " + this.getClass().getClassLoader());
 		try (BufferedReader reader = new BufferedReader(new FileReader(HOST_IP_PROPERTIES_FILE))) {
 			hostip = reader.readLine();	
 			if(hostip != null)
 				hostip = hostip.trim();
 		}
+		//hostip = "127.0.0.1";
 		ConfigK2Logs.getInstance().initializeLogs();
 		APPLICATION_INFO_BEAN = createApplicationInfoBean();
 		JA_HEALTH_CHECK = new JAHealthCheck(applicationUUID);
@@ -353,6 +354,8 @@ public class LoggingInterceptor extends Interceptor {
 		case CLASS_JAVA_HTTPS_HANDLER:
 		case CLASS_JAVA_SSL_HTTPS_HANDLER:
 		case CLASS_JDK_INCUBATOR_HTTP_MULTIEXCHANGE:
+		case CLASS_APACHE_COMMONS_HTTP_METHOD_DIRECTOR:
+		case CLASS_OKHTTP_HTTP_ENGINE:
 			if (INSTRUMENTED_METHODS.get(cn.name).contains(mn.name))
 				JA_HEALTH_CHECK.setSsrfProtection(true);
 			break;
@@ -415,7 +418,8 @@ public class LoggingInterceptor extends Interceptor {
 //		 logger.log(Level.FINE,"Executionid: " + eId);
 //		 logger.log(Level.FINE,"Thread Id: " + threadId);
 //		 logger.log(Level.FINE, "SourceString: " +sourceString);
-
+//
+//		System.out.println("sourceString : " + sourceString);
 		if (sourceString == null)
 			return;
 		if (sourceString.equals(WEBSPHERE_LIBERTY_FILLBYTECACHE)
