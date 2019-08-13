@@ -1,5 +1,6 @@
 package com.k2cybersecurity.intcodeagent.websocket;
 
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.logging.Level;
@@ -7,8 +8,17 @@ import java.util.logging.Logger;
 
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.JsonElement;
+import com.k2cybersecurity.intcodeagent.logging.AgentUtils;
 import com.k2cybersecurity.intcodeagent.logging.LoggingInterceptor;
+import com.k2cybersecurity.intcodeagent.models.javaagent.IntCodeControlCommand;
 
 public class WSClient extends WebSocketClient {
 
@@ -36,6 +46,13 @@ public class WSClient extends WebSocketClient {
 	@Override
 	public void onMessage(String message) {
 		// TODO : Receive communication from IC side.
+		//		logger.log(Level.FINE, "Message from IC : {0}", message);
+		try {
+			IntCodeControlCommand controlCommand = new ObjectMapper().readValue(message, IntCodeControlCommand.class);
+			AgentUtils.controlCommandProcessor(controlCommand);
+		} catch (Exception e) {
+			logger.log(Level.SEVERE, "Unable to process incoming message : {0} : due to error : {1}", new Object[] {message, e});
+		}
 	}
 
 	@Override
