@@ -66,6 +66,7 @@ public class LoggingInterceptor extends Interceptor {
 	private static final String FIELD_NAME_CONTENT_LEN = "contentLen";
 	private static final String FIELD_NAME_BUF2 = "buf";
 	private static final String FIELD_NAME_IN3 = "in";
+	private static final String FIELD_CONN_HANDLER = "connHandler";
 	private static final String FIELD_NAME_INPUT_STREAM = "inputStream";
 	private static final String BYTE_LIMIT = "byteLimit";
 	private static final String BYTE_CACHE = "byteCache";
@@ -662,32 +663,62 @@ public class LoggingInterceptor extends Interceptor {
 				inField.setAccessible(true);
 				Object in = inField.get(inputStream);
 
-				Field in2Field = FilterInputStream.class.getDeclaredField(FIELD_NAME_IN3);
-				in2Field.setAccessible(true);
-				Object in2 = in2Field.get(in);
+				if (in != null) {
+					Field in2Field = FilterInputStream.class.getDeclaredField(FIELD_NAME_IN3);
+					in2Field.setAccessible(true);
+					Object in2 = in2Field.get(in);
 
-				Field bufField = in2.getClass().getDeclaredField(BYTE_BUFFER_FIELD_BUF);
-				bufField.setAccessible(true);
-				Object buf = bufField.get(in2);
+					Field bufField = in2.getClass().getDeclaredField(BYTE_BUFFER_FIELD_BUF);
+					bufField.setAccessible(true);
+					Object buf = bufField.get(in2);
 
-				Field contentLenField = in2.getClass().getDeclaredField(FIELD_NAME_CONTENT_LEN);
-				contentLenField.setAccessible(true);
-				Long contentLen = (Long) contentLenField.get(in2);
+					Field contentLenField = in2.getClass().getDeclaredField(FIELD_NAME_CONTENT_LEN);
+					contentLenField.setAccessible(true);
+					Long contentLen = (Long) contentLenField.get(in2);
 
-				Field limit = Buffer.class.getDeclaredField(BYTE_BUFFER_FIELD_LIMIT);
-				limit.setAccessible(true);
-				int limitHb = (Integer) limit.get(buf);
-				if (limitHb > 0) {
+					Field limit = Buffer.class.getDeclaredField(BYTE_BUFFER_FIELD_LIMIT);
+					limit.setAccessible(true);
+					int limitHb = (Integer) limit.get(buf);
+					if (limitHb > 0) {
 
-					Field hb = ByteBuffer.class.getDeclaredField(BYTE_BUFFER_FIELD_HB);
-					hb.setAccessible(true);
-					byte[] hbContent = (byte[]) hb.get(buf);
+						Field hb = ByteBuffer.class.getDeclaredField(BYTE_BUFFER_FIELD_HB);
+						hb.setAccessible(true);
+						byte[] hbContent = (byte[]) hb.get(buf);
+
+						ServletInfo servletInfo = new ServletInfo();
+						servletInfo.setRawRequest(new String(hbContent, 0, limitHb, StandardCharsets.UTF_8));
+						if (contentLen > limitHb) {
+							servletInfo.setDataTruncated(true);
+						}
+
+						servletInfo.addGenerationTime((int) (System.currentTimeMillis() - start));
+						if (!ServletEventPool.getInstance().getRequestMap().containsKey(threadId)) {
+							ConcurrentLinkedDeque<ExecutionMap> executionMaps = new ConcurrentLinkedDeque<ExecutionMap>();
+							executionMaps.add(new ExecutionMap(executionId, servletInfo));
+							ServletEventPool.getInstance().getRequestMap().put(threadId, executionMaps);
+
+						} else {
+							servletInfo.addGenerationTime((int) (System.currentTimeMillis() - start));
+							ServletEventPool.getInstance().getRequestMap().get(threadId)
+									.add(new ExecutionMap(executionId, servletInfo));
+						}
+//					System.out.println("request map: "+ServletEventPool.getInstance().getRequestMap().get(threadId));
+					}
+				} else {
+					Field connHandlerField = inputStream.getClass().getDeclaredField(FIELD_CONN_HANDLER);
+					inField.setAccessible(true);
+					Object connHandler = connHandlerField.get(inputStream);
+
+					Field bufField = connHandler.getClass().getDeclaredField(BYTE_BUFFER_FIELD_BUF);
+					bufField.setAccessible(true);
+					byte[] buf = (byte[]) bufField.get(connHandler);
+
+					Field posField = connHandler.getClass().getDeclaredField("pos");
+					posField.setAccessible(true);
+					Integer pos = (Integer) posField.get(connHandler);
 
 					ServletInfo servletInfo = new ServletInfo();
-					servletInfo.setRawRequest(new String(hbContent, 0, limitHb, StandardCharsets.UTF_8));
-					if (contentLen > limitHb) {
-						servletInfo.setDataTruncated(true);
-					}
+					servletInfo.setRawRequest(new String(buf, 0, pos, StandardCharsets.UTF_8));
 
 					servletInfo.addGenerationTime((int) (System.currentTimeMillis() - start));
 					if (!ServletEventPool.getInstance().getRequestMap().containsKey(threadId)) {
@@ -700,7 +731,6 @@ public class LoggingInterceptor extends Interceptor {
 						ServletEventPool.getInstance().getRequestMap().get(threadId)
 								.add(new ExecutionMap(executionId, servletInfo));
 					}
-//					System.out.println("request map: "+ServletEventPool.getInstance().getRequestMap().get(threadId));
 				}
 
 			} catch (Exception e) {
