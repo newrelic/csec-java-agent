@@ -662,19 +662,15 @@ public class LoggingInterceptor extends Interceptor {
 				Field inField = inputStream.getClass().getDeclaredField(FIELD_NAME_IN3);
 				inField.setAccessible(true);
 				Object in = inField.get(inputStream);
-
-				if (in != null) {
-					Field in2Field = FilterInputStream.class.getDeclaredField(FIELD_NAME_IN3);
-					in2Field.setAccessible(true);
-					Object in2 = in2Field.get(in);
-
-					Field bufField = in2.getClass().getDeclaredField(BYTE_BUFFER_FIELD_BUF);
+				if (!in.getClass().getName().equals("weblogic.utils.io.NullInputStream")) {
+//					System.out.println("Searching buf in : "+ in.getClass().getName() + "  ::  " + in.getClass().getSuperclass().getName() + " :: " + Arrays.asList(in.getClass().getDeclaredFields()));
+					Field bufField = in.getClass().getDeclaredField(BYTE_BUFFER_FIELD_BUF);
 					bufField.setAccessible(true);
-					Object buf = bufField.get(in2);
+					Object buf = bufField.get(in);
 
-					Field contentLenField = in2.getClass().getDeclaredField(FIELD_NAME_CONTENT_LEN);
+					Field contentLenField = in.getClass().getDeclaredField(FIELD_NAME_CONTENT_LEN);
 					contentLenField.setAccessible(true);
-					Long contentLen = (Long) contentLenField.get(in2);
+					Long contentLen = (Long) contentLenField.get(in);
 
 					Field limit = Buffer.class.getDeclaredField(BYTE_BUFFER_FIELD_LIMIT);
 					limit.setAccessible(true);
@@ -706,7 +702,7 @@ public class LoggingInterceptor extends Interceptor {
 					}
 				} else {
 					Field connHandlerField = inputStream.getClass().getDeclaredField(FIELD_CONN_HANDLER);
-					inField.setAccessible(true);
+					connHandlerField.setAccessible(true);
 					Object connHandler = connHandlerField.get(inputStream);
 
 					Field bufField = connHandler.getClass().getDeclaredField(BYTE_BUFFER_FIELD_BUF);
