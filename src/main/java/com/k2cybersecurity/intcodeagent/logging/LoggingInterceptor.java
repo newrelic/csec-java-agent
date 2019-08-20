@@ -655,7 +655,7 @@ public class LoggingInterceptor extends Interceptor {
 			try {
 				ServletEventPool.getInstance().incrementServletInfoReference(threadId, executionId, false);
 				Object servletObject = arg[0];
-				System.out.println("Searching arg0 in : "+ servletObject.getClass().getName() + "  ::  " + servletObject.getClass().getSuperclass().getName() + " :: " + Arrays.asList(servletObject.getClass().getDeclaredFields()));
+//				System.out.println("Searching arg0 in : "+ servletObject.getClass().getName() + "  ::  " + servletObject.getClass().getSuperclass().getName() + " :: " + Arrays.asList(servletObject.getClass().getDeclaredFields()));
 				Field inputStreamField = servletObject.getClass().getDeclaredField(FIELD_NAME_INPUT_STREAM);
 				inputStreamField.setAccessible(true);
 				Object inputStream = inputStreamField.get(servletObject);
