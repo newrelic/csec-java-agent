@@ -302,7 +302,7 @@ public interface IAgentConstants {
 			put(CLASS_JAVA_SSL_HTTPS_HANDLER, Collections.singletonList("openConnection"));
 			put(CLASS_JDK_INCUBATOR_HTTP_MULTIEXCHANGE, Arrays.asList(new String[] { "response", "responseAsync", "multiResponseAsync" }));
 //			put(CLASS_WEBLOGIC_SERVLET_INTERNAL_STUBSECURITYHELPER, Collections.singletonList("invokeServlet"));
-			put("weblogic.servlet.internal.WebAppServletContext", Collections.singletonList("execute"));
+			put("weblogic/servlet/internal/WebAppServletContext", Collections.singletonList("execute"));
 		}
 	};
 
