@@ -431,7 +431,7 @@ public class LoggingInterceptor extends Interceptor {
 
 //		System.out.println("Executionid: " + eId);
 //		System.out.println("Thread Id: " + threadId);
-//		System.out.println("SourceString: " + sourceString);
+		System.out.println("SourceString: " + sourceString);
 
 		if (sourceString == null)
 			return;
