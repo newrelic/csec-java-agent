@@ -63,6 +63,8 @@ import com.k2cybersecurity.intcodeagent.websocket.WSClient;
 
 public class LoggingInterceptor extends Interceptor {
 
+	private static final String FIELD_POS = "pos";
+	private static final String WEBLOGIC_UTILS_IO_NULL_INPUT_STREAM = "weblogic.utils.io.NullInputStream";
 	private static final String FIELD_NAME_CONTENT_LEN = "contentLen";
 	private static final String FIELD_NAME_BUF2 = "buf";
 	private static final String FIELD_NAME_IN3 = "in";
@@ -663,7 +665,7 @@ public class LoggingInterceptor extends Interceptor {
 				Field inField = inputStream.getClass().getDeclaredField(FIELD_NAME_IN3);
 				inField.setAccessible(true);
 				Object in = inField.get(inputStream);
-				if (!in.getClass().getName().equals("weblogic.utils.io.NullInputStream")) {
+				if (!in.getClass().getName().equals(WEBLOGIC_UTILS_IO_NULL_INPUT_STREAM)) {
 //					System.out.println("Searching buf in : "+ in.getClass().getName() + "  ::  " + in.getClass().getSuperclass().getName() + " :: " + Arrays.asList(in.getClass().getDeclaredFields()));
 					Field bufField = in.getClass().getDeclaredField(BYTE_BUFFER_FIELD_BUF);
 					bufField.setAccessible(true);
@@ -710,7 +712,7 @@ public class LoggingInterceptor extends Interceptor {
 					bufField.setAccessible(true);
 					byte[] buf = (byte[]) bufField.get(connHandler);
 
-					Field posField = connHandler.getClass().getDeclaredField("pos");
+					Field posField = connHandler.getClass().getDeclaredField(FIELD_POS);
 					posField.setAccessible(true);
 					Integer pos = (Integer) posField.get(connHandler);
 
