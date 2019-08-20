@@ -328,6 +328,8 @@ public interface IAgentConstants {
 	
 	String WEBLOGIC_INVOKE_SERVLET = "public java.lang.Throwable weblogic.servlet.internal.StubSecurityHelper.invokeServlet(javax.servlet.ServletRequest,javax.servlet.http.HttpServletRequest,weblogic.servlet.internal.ServletRequestImpl,javax.servlet.ServletResponse,javax.servlet.http.HttpServletResponse,javax.servlet.Servlet) throws javax.servlet.ServletException";
 	
+	String WEBLOGIC_SERVLET_EXECUTE = "void weblogic.servlet.internal.WebAppServletContext.execute(weblogic.servlet.internal.ServletRequestImpl,weblogic.servlet.internal.ServletResponseImpl) throws java.io.IOException";
+	
 	/** MSSQL FIELD CONSTANTS */
 	String MSSQL_CURRENT_OBJECT = "this$0";
 	String MSSQL_BATCH_STATEMENT_BUFFER_FIELD = "batchStatementBuffer";

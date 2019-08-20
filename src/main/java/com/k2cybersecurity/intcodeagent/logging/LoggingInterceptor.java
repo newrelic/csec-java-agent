@@ -399,7 +399,7 @@ public class LoggingInterceptor extends Interceptor {
 								|| JETTY_REQUEST_ON_FILLABLE.equals(sourceString))
 						|| sourceString.equals(WEBSPHERE_LIBERTY_PROCESSREQUEST)
 						|| sourceString.equals(WEBSPHERE_TRADITIONAL_PROCESSREQUEST)
-						|| sourceString.equals(WEBLOGIC_INVOKE_SERVLET)) {
+						|| sourceString.equals(WEBLOGIC_SERVLET_EXECUTE )) {
 					ServletEventPool.getInstance().decrementServletInfoReference(threadId, executionId, false);
 
 				}
@@ -651,7 +651,7 @@ public class LoggingInterceptor extends Interceptor {
 						e);
 			}
 			// in case of executeInternal()
-		} else if (sourceString.equals(WEBLOGIC_INVOKE_SERVLET)) {
+		} else if (sourceString.equals(WEBLOGIC_SERVLET_EXECUTE)) {
 			try {
 				ServletEventPool.getInstance().incrementServletInfoReference(threadId, executionId, false);
 				Object servletObject = arg[0];
