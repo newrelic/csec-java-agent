@@ -172,6 +172,9 @@
 								</relocation>
 								<relocation>
 									<pattern>org.apache.commons.</pattern>
+									<excludes>
+										<exclude>org/apache/commons/httpclient/**/*</exclude>
+									</excludes>
 									<shadedPattern>java.k2.io.org.apache.commons.</shadedPattern>
 								</relocation>
 							</relocations>

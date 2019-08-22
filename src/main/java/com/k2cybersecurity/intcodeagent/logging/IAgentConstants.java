@@ -118,6 +118,12 @@ public interface IAgentConstants {
 	String JDK_INCUBATOR_MULTIEXCHANGE_RESONSE_METHOD = "public jdk.incubator.http.HttpResponseImpl<T> jdk.incubator.http.MultiExchange.response() throws java.io.IOException,java.lang.InterruptedException";
 	String JDK_INCUBATOR_MULTIEXCHANGE_RESONSE_ASYNC_METHOD = "public java.util.concurrent.CompletableFuture<jdk.incubator.http.HttpResponseImpl<T>> jdk.incubator.http.MultiExchange.responseAsync()";
 	
+	String CLASS_APACHE_COMMONS_HTTP_METHOD_DIRECTOR = "org/apache/commons/httpclient/HttpMethodDirector";
+	String APACHE_COMMONS_HTTP_METHOD_DIRECTOR_METHOD = "private void org.apache.commons.httpclient.HttpMethodDirector.executeWithRetry(org.apache.commons.httpclient.HttpMethod) throws java.io.IOException,org.apache.commons.httpclient.HttpException";
+	
+	String CLASS_OKHTTP_HTTP_ENGINE = "com/squareup/okhttp/internal/http/HttpEngine";
+	String OKHTTP_HTTP_ENGINE_METHOD = "public void com.squareup.okhttp.internal.http.HttpEngine.sendRequest() throws com.squareup.okhttp.internal.http.RequestException,com.squareup.okhttp.internal.http.RouteException,java.io.IOException";
+
 	List<String> FILE_OPEN_EXECUTORS = Arrays.asList(new String[] {
 			"public java.io.File(java.lang.String,java.lang.String)", "public java.io.File(java.lang.String)" });
 
@@ -251,8 +257,8 @@ public interface IAgentConstants {
 			put(JAVA_OPEN_CONNECTION_METHOD2_HTTPS_2, VulnerabilityCaseType.HTTP_REQUEST);
 			put(JDK_INCUBATOR_MULTIEXCHANGE_RESONSE_METHOD, VulnerabilityCaseType.HTTP_REQUEST);
 			put(JDK_INCUBATOR_MULTIEXCHANGE_RESONSE_ASYNC_METHOD, VulnerabilityCaseType.HTTP_REQUEST);
-			
-			
+			put(APACHE_COMMONS_HTTP_METHOD_DIRECTOR_METHOD, VulnerabilityCaseType.HTTP_REQUEST);
+			put(OKHTTP_HTTP_ENGINE_METHOD, VulnerabilityCaseType.HTTP_REQUEST);
 
 		}
 	};
@@ -303,6 +309,8 @@ public interface IAgentConstants {
 			put(CLASS_JDK_INCUBATOR_HTTP_MULTIEXCHANGE, Arrays.asList(new String[] { "response", "responseAsync", "multiResponseAsync" }));
 //			put(CLASS_WEBLOGIC_SERVLET_INTERNAL_STUBSECURITYHELPER, Collections.singletonList("invokeServlet"));
 			put("weblogic/servlet/internal/WebAppServletContext", Collections.singletonList("execute"));
+			put(CLASS_APACHE_COMMONS_HTTP_METHOD_DIRECTOR, Collections.singletonList("executeWithRetry"));
+			put(CLASS_OKHTTP_HTTP_ENGINE, Collections.singletonList("sendRequest"));
 		}
 	};
 
@@ -419,6 +427,21 @@ public interface IAgentConstants {
 	String ORACLE_DB_IDENTIFIER = "oracle.jdbc.driver";
 	String ORACLE_CONNECTION_IDENTIFIER = "oracle.jdbc.driver.T4C8Oall";
 	String ORACLE_STATEMENT_CLASS_IDENTIFIER = "oracle.jdbc.driver.OracleStatement";
+	
+	/** Http constants **/
+	
+	String GET_PATH = "getPath";
+	String GET_HOST = "getHost";
+	String GET_URI = "getURI";
+	String EMPTY = "";
+	String HTTP_TARGET_HOST = "http.target_host";
+	String GET_ATTRIBUTE = "getAttribute";
+	String REGEX_SPACE = "\\s+";
+	String GET_REQUEST_LINE = "getRequestLine";
+	String ORG_APACHE_HTTP_PROTOCOL_HTTP_CONTEXT = "org.apache.http.protocol.HttpContext";
+	String ORG_APACHE_HTTP_HTTP_REQUEST = "org.apache.http.HttpRequest";
+	String ORG_APACHE_COMMONS_HTTPCLIENT_URI = "org.apache.commons.httpclient.URI";
+	String ORG_APACHE_COMMONS_HTTPCLIENT_HTTP_METHOD = "org.apache.commons.httpclient.HttpMethod";
 
 	ArrayList<String> ORACLE_CLASS_SKIP_LIST = new ArrayList<String>() {
 

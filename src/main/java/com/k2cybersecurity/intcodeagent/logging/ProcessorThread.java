@@ -1,12 +1,19 @@
 package com.k2cybersecurity.intcodeagent.logging;
 
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.APACHE_COMMONS_HTTP_METHOD_DIRECTOR_METHOD;
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.APACHE_HTTP_REQUEST_EXECUTOR_METHOD;
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.CLASS_LOADER_IDENTIFIER;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.EMPTY;
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.EXECUTORS;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.GET_ATTRIBUTE;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.GET_HOST;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.GET_PATH;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.GET_REQUEST_LINE;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.GET_URI;
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.HSQL_V1_8_CONNECTION;
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.HSQL_V1_8_SESSION;
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.HSQL_V2_4;
-//import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.JAVA_OPEN_CONNECTION_METHOD;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.HTTP_TARGET_HOST;
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.JAVA_OPEN_CONNECTION_METHOD2;
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.JAVA_OPEN_CONNECTION_METHOD2_HTTPS;
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.JAVA_OPEN_CONNECTION_METHOD2_HTTPS_2;
@@ -56,13 +63,19 @@ import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MSSQL_STA
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MSSQL_USER_SQL_FIELD;
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MSSQL_VALUE_FIELD;
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MYSQL_IDENTIFIER;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.OKHTTP_HTTP_ENGINE_METHOD;
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.ORACLE_CONNECTION_IDENTIFIER;
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.ORACLE_DB_IDENTIFIER;
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.ORACLE_STATEMENT_CLASS_IDENTIFIER;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.ORG_APACHE_COMMONS_HTTPCLIENT_HTTP_METHOD;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.ORG_APACHE_COMMONS_HTTPCLIENT_URI;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.ORG_APACHE_HTTP_HTTP_REQUEST;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.ORG_APACHE_HTTP_PROTOCOL_HTTP_CONTEXT;
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.PSQL42_EXECUTOR;
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.PSQLV2_EXECUTOR;
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.PSQLV3_EXECUTOR;
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.PSQLV3_EXECUTOR7_4;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.REGEX_SPACE;
 
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Field;
@@ -71,6 +84,9 @@ import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.lang.reflect.Method;
+import java.net.URI;
+import java.net.URL;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -759,6 +775,10 @@ public class ProcessorThread implements Runnable {
 			} else if (sourceString.equals(JDK_INCUBATOR_MULTIEXCHANGE_RESONSE_METHOD)
 					|| sourceString.equals(JDK_INCUBATOR_MULTIEXCHANGE_RESONSE_ASYNC_METHOD)) {
 				getJava9HttpClientParameters(obj, parameters);
+			} else if (sourceString.equals(APACHE_COMMONS_HTTP_METHOD_DIRECTOR_METHOD)) {
+				getApacheCommonsHttpRequestParameters(obj, parameters);
+			} else if (sourceString.equals(OKHTTP_HTTP_ENGINE_METHOD)) {
+				getOkHttpRequestParameters(obj, parameters);
 			} else {
 				for (int i = 0; i < obj.length; i++) {
 					Object json = parser.parse(mapper.writeValueAsString(obj[i]));
@@ -816,31 +836,30 @@ public class ProcessorThread implements Runnable {
 			ClassLoader requestLoader = request.getClass().getClassLoader();
 			ClassLoader httpContextLoader = httpContext.getClass().getClassLoader();
 			if (requestLoader != null) {
-
-				httpClientInterface = requestLoader.loadClass("org.apache.http.HttpRequest");
+				httpClientInterface = Class.forName(ORG_APACHE_HTTP_HTTP_REQUEST, true, requestLoader);
 			} else {
-				httpClientInterface = Thread.currentThread().getContextClassLoader()
-						.loadClass("org.apache.http.HttpRequest");
+				httpClientInterface = Class.forName(ORG_APACHE_HTTP_HTTP_REQUEST, true,
+						Thread.currentThread().getContextClassLoader());
 			}
 
 			if (httpContextLoader != null) {
-				httpContextInterface = httpContextLoader.loadClass("org.apache.http.protocol.HttpContext");
+				httpContextInterface = Class.forName(ORG_APACHE_HTTP_PROTOCOL_HTTP_CONTEXT, true, httpContextLoader);
 			} else {
-				httpContextInterface = Thread.currentThread().getContextClassLoader()
-						.loadClass("org.apache.http.protocol.HttpContext");
+				httpContextInterface = Class.forName(ORG_APACHE_HTTP_PROTOCOL_HTTP_CONTEXT, true,
+						Thread.currentThread().getContextClassLoader());
 			}
-			Method getRequestLine = httpClientInterface.getMethod("getRequestLine");
+			Method getRequestLine = httpClientInterface.getMethod(GET_REQUEST_LINE);
 			Object requestLine = getRequestLine.invoke(request);
 
 			String requestLineStr = requestLine.toString();
-			String[] requestLineTokens = requestLineStr.split("\\s+");
+			String[] requestLineTokens = requestLineStr.split(REGEX_SPACE);
 			String requestUri = requestLineTokens[1];
-			Method getAttribute = httpContextInterface.getMethod("getAttribute", String.class);
-			Object attributeHost = getAttribute.invoke(httpContext, "http.target_host");
+			Method getAttribute = httpContextInterface.getMethod(GET_ATTRIBUTE, String.class);
+			Object attributeHost = getAttribute.invoke(httpContext, HTTP_TARGET_HOST);
 
 			int indexOfQmark = requestUri.indexOf('?');
 			// means request param is present
-			String pathOnly = "";
+			String pathOnly = EMPTY;
 			if (indexOfQmark != -1) {
 				pathOnly = requestUri.substring(0, indexOfQmark);
 			}
@@ -850,6 +869,65 @@ public class ProcessorThread implements Runnable {
 
 		} catch (Exception e) {
 			logger.log(Level.WARNING, "Error in getApacheHttpRequestParameters : {0}", e);
+		}
+
+	}
+
+	private void getApacheCommonsHttpRequestParameters(Object[] object, JSONArray parameters) {
+
+		Object httpMethod = object[0];
+		try {
+			Class<?> httpMethodInterface;
+			Class<?> httpURI;
+			ClassLoader httpMethodLoader = httpMethod.getClass().getClassLoader();
+			if (httpMethodLoader != null) {
+				httpMethodInterface = Class.forName(ORG_APACHE_COMMONS_HTTPCLIENT_HTTP_METHOD, true, httpMethodLoader);
+				httpURI = Class.forName(ORG_APACHE_COMMONS_HTTPCLIENT_URI, true, httpMethodLoader);
+			} else {
+				httpMethodInterface = Class.forName(ORG_APACHE_COMMONS_HTTPCLIENT_HTTP_METHOD, true,
+						Thread.currentThread().getContextClassLoader());
+				httpURI = Class.forName(ORG_APACHE_COMMONS_HTTPCLIENT_URI, true,
+						Thread.currentThread().getContextClassLoader());
+			}
+			Method getURI = httpMethodInterface.getMethod(GET_URI);
+			Object uri = getURI.invoke(httpMethod);
+
+			Method getHost = httpURI.getMethod(GET_HOST);
+			String host = (String) getHost.invoke(uri);
+
+			Method getPath = httpURI.getMethod(GET_PATH);
+			String path = (String) getPath.invoke(uri);
+
+			parameters.add(host);
+			parameters.add(path);
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			logger.log(Level.WARNING, "Error in getApacheCommonsHttpRequestParameters : {0}", e);
+		}
+
+	}
+
+	private void getOkHttpRequestParameters(Object[] object, JSONArray parameters) {
+
+		Object httpEngine = object[0];
+		try {
+			Method getRequest = httpEngine.getClass().getMethod("getRequest");
+			Object request = getRequest.invoke(httpEngine);
+
+			Field httpUrl = request.getClass().getDeclaredField("url");
+			httpUrl.setAccessible(true);
+			Object httpUrlObj = httpUrl.get(request);
+			
+			Method getUrl = httpUrlObj.getClass().getMethod("url");
+			URL url = (URL) getUrl.invoke(httpUrlObj);
+			
+			parameters.add(url.getHost());
+			parameters.add(url.getPath());
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+			logger.log(Level.WARNING, "Error in getOkHttpRequestParameters : {0}", e);
 		}
 
 	}
@@ -1003,7 +1081,6 @@ public class ProcessorThread implements Runnable {
 		} catch (UnsupportedEncodingException e) {
 		}
 //		logger.log(Level.FINE, "Dropping SSRF event: {0}", intCodeResultBean);
-		
 		return false;
 	}
 
