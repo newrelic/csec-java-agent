@@ -886,9 +886,6 @@ public class ProcessorThread implements Runnable {
 			Method getPath = httpURI.getMethod(GET_PATH);
 			String path = (String) getPath.invoke(uri);
 
-			System.out.println("host : " + host);
-			System.out.println("path : " + path);
-
 			parameters.add(host);
 			parameters.add(path);
 
@@ -912,9 +909,6 @@ public class ProcessorThread implements Runnable {
 			
 			Method getUrl = httpUrlObj.getClass().getMethod("url");
 			URL url = (URL) getUrl.invoke(httpUrlObj);
-			
-			System.out.println("host : " + url.getHost());
-			System.out.println("path : " + url.getPath());
 			
 			parameters.add(url.getHost());
 			parameters.add(url.getPath());
