@@ -6,6 +6,7 @@ import java.net.URISyntaxException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.brutusin.instrumentation.Agent;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
 import org.json.simple.JSONObject;
@@ -40,6 +41,7 @@ public class WSClient extends WebSocketClient {
 //		logger.log(Level.INFO, "Current WSock ready status : {0},{1},{2}",
 //				new Object[] { this.isOpen(), this.isClosing(), this.isClosed() });
 		super.send(LoggingInterceptor.APPLICATION_INFO_BEAN.toString());
+		Agent.allClassLoadersCount.set(0);
 		logger.log(Level.INFO, "Application info posted : {0}", LoggingInterceptor.APPLICATION_INFO_BEAN);
 	}
 
