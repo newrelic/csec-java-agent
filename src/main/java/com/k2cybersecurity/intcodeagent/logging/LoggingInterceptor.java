@@ -192,7 +192,7 @@ public class LoggingInterceptor extends Interceptor {
 			if (hostip != null)
 				hostip = hostip.trim();
 		}
-		//hostip = "127.0.0.1";
+		// hostip = "127.0.0.1";
 		ConfigK2Logs.getInstance().initializeLogs();
 		APPLICATION_INFO_BEAN = createApplicationInfoBean();
 		JA_HEALTH_CHECK = new JAHealthCheck(applicationUUID);
@@ -275,6 +275,9 @@ public class LoggingInterceptor extends Interceptor {
 		// System.out.println("class to instument : "+className);
 		// return true;
 		// }
+		System.out.println("Class loaded name: " + className);
+		if (className.toLowerCase().contains("handler") || className.toLowerCase().contains("http"))
+			return true;
 		return INSTRUMENTED_METHODS.containsKey(className);
 	}
 
@@ -307,6 +310,8 @@ public class LoggingInterceptor extends Interceptor {
 
 	@Override
 	public boolean interceptMethod(ClassNode cn, MethodNode mn) {
+		if ("openConnectoin".equalsIgnoreCase(mn.name))
+			return true;
 		switch (cn.name) {
 		case CLASS_ORG_HSQLDB_HSQL_CLIENT_CONNECTION:
 		case CLASS_ORG_HSQLDB_SESSION:
@@ -332,7 +337,7 @@ public class LoggingInterceptor extends Interceptor {
 			if (INSTRUMENTED_METHODS.get(cn.name).contains(mn.name))
 				JA_HEALTH_CHECK.getProtectedDB().add("ORACLE");
 			break;
-		case CLASS_WEBLOGIC_SERVLET_INTERNAL_STUBSECURITYHELPER:
+		case CLASS_WEBLOGIC_SERVLET_INTERNAL_WEB_APP_SERVLET_CONTEXT:
 			if (INSTRUMENTED_METHODS.get(cn.name).contains(mn.name))
 				JA_HEALTH_CHECK.setProtectedServer("WEBLOGIC");
 			break;
@@ -382,6 +387,7 @@ public class LoggingInterceptor extends Interceptor {
 			String codeName = cn.name.substring(cn.name.lastIndexOf('/') + 1) + "."
 					+ INSTRUMENTED_METHODS.get(cn.name).indexOf(mn.name);
 			JA_HEALTH_CHECK.getInstrumentedMethods().add(codeName);
+			System.out.println("Class name: " + cn.name + ", method name : " + mn.name);
 		}
 		return isInstrument;
 	}
@@ -404,7 +410,7 @@ public class LoggingInterceptor extends Interceptor {
 								|| JETTY_REQUEST_ON_FILLABLE.equals(sourceString))
 						|| sourceString.equals(WEBSPHERE_LIBERTY_PROCESSREQUEST)
 						|| sourceString.equals(WEBSPHERE_TRADITIONAL_PROCESSREQUEST)
-						|| sourceString.equals(WEBLOGIC_SERVLET_EXECUTE )) {
+						|| sourceString.equals(WEBLOGIC_SERVLET_EXECUTE)) {
 					ServletEventPool.getInstance().decrementServletInfoReference(threadId, executionId, false);
 
 				}
@@ -748,11 +754,11 @@ public class LoggingInterceptor extends Interceptor {
 			try {
 				if (ServletEventPool.getInstance().getRequestMap().containsKey(threadId) && ExecutionMap
 						.find(executionId, ServletEventPool.getInstance().getRequestMap().get(threadId)) != null) {
-				ServletEventPool.getInstance().incrementServletInfoReference(threadId, executionId, true);
-				EventThreadPool.getInstance().processReceivedEvent(source, arg, executionId,
-						Thread.currentThread().getStackTrace(), threadId, sourceString,
-						System.currentTimeMillis() - start);
-				 }
+					ServletEventPool.getInstance().incrementServletInfoReference(threadId, executionId, true);
+					EventThreadPool.getInstance().processReceivedEvent(source, arg, executionId,
+							Thread.currentThread().getStackTrace(), threadId, sourceString,
+							System.currentTimeMillis() - start);
+				}
 			} catch (Exception e) {
 				e.printStackTrace();
 			}

@@ -11,6 +11,8 @@ import com.k2cybersecurity.intcodeagent.models.javaagent.VulnerabilityCaseType;
 
 public interface IAgentConstants {
 
+	public static final String CLASS_WEBLOGIC_SERVLET_INTERNAL_WEB_APP_SERVLET_CONTEXT = "weblogic/servlet/internal/WebAppServletContext";
+
 	String TRACE_REGEX = "(?!(org\\.apache\\.jsp.*))((^javax.*)|(^org\\.apache.*)|(^sun.*)|(^java.*)|(^k2\\.org\\.brutusin.*)|(^com\\.k2cybersecurity\\.intcodeagent.*)|(^k2\\.io\\.org.*)|(^com\\.microsoft\\.sqlserver.*)|(^com\\.mysql.*)|(^sun\\.reflect.*)|(^org\\.hibernate.*)|(^com\\.mongodb.*)|(^org\\.apache\\.commons.*)|(^org\\.mongodb.*)|(^com\\.sun.*)|(^org\\.eclipse\\.jetty.*)|(^net\\.sourceforge\\.eclipsejetty.*)|(^org\\.springframework.*)|(^org\\.slf4j.*)|(^org\\.eclipse\\.jdt.*)|(^com\\.opensymphony\\.xwork2.*)|(^k2\\.org\\.objectweb\\.asm.*)|(^freemarker\\.cache.*)|(^com\\.mchange.*)|(^org\\.postgresql.*)|(^oracle\\.jdbc.*)|(^org\\.hsqldb.*)|(^ch\\.qos\\.logback.*)|(^io\\.micrometer.*)|(^k2\\.org\\.json.*)|(^k2\\.com\\.fasterxml.*)|(^jdk\\..*))|(^com\\.ibm\\.ws.*)";
 
 	// HSQL
@@ -308,7 +310,7 @@ public interface IAgentConstants {
 			put(CLASS_JAVA_SSL_HTTPS_HANDLER, Collections.singletonList("openConnection"));
 			put(CLASS_JDK_INCUBATOR_HTTP_MULTIEXCHANGE, Arrays.asList(new String[] { "response", "responseAsync", "multiResponseAsync" }));
 //			put(CLASS_WEBLOGIC_SERVLET_INTERNAL_STUBSECURITYHELPER, Collections.singletonList("invokeServlet"));
-			put("weblogic/servlet/internal/WebAppServletContext", Collections.singletonList("execute"));
+			put(CLASS_WEBLOGIC_SERVLET_INTERNAL_WEB_APP_SERVLET_CONTEXT, Collections.singletonList("execute"));
 			put(CLASS_APACHE_COMMONS_HTTP_METHOD_DIRECTOR, Collections.singletonList("executeWithRetry"));
 			put(CLASS_OKHTTP_HTTP_ENGINE, Collections.singletonList("sendRequest"));
 		}
