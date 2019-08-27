@@ -126,6 +126,9 @@ public interface IAgentConstants {
 	String CLASS_OKHTTP_HTTP_ENGINE = "com/squareup/okhttp/internal/http/HttpEngine";
 	String OKHTTP_HTTP_ENGINE_METHOD = "public void com.squareup.okhttp.internal.http.HttpEngine.sendRequest() throws com.squareup.okhttp.internal.http.RequestException,com.squareup.okhttp.internal.http.RouteException,java.io.IOException";
 
+	String CLASS_WEBLOGIC_HTTP_HANDLER = "weblogic/net/http/Handler";
+	String WEBLOGIC_OPEN_CONNECTION_METHOD = "protected java.net.URLConnection weblogic.net.http.Handler.openConnection(java.net.URL,java.net.Proxy) throws java.io.IOException";
+
 	List<String> FILE_OPEN_EXECUTORS = Arrays.asList(new String[] {
 			"public java.io.File(java.lang.String,java.lang.String)", "public java.io.File(java.lang.String)" });
 
@@ -261,7 +264,7 @@ public interface IAgentConstants {
 			put(JDK_INCUBATOR_MULTIEXCHANGE_RESONSE_ASYNC_METHOD, VulnerabilityCaseType.HTTP_REQUEST);
 			put(APACHE_COMMONS_HTTP_METHOD_DIRECTOR_METHOD, VulnerabilityCaseType.HTTP_REQUEST);
 			put(OKHTTP_HTTP_ENGINE_METHOD, VulnerabilityCaseType.HTTP_REQUEST);
-
+			put(WEBLOGIC_OPEN_CONNECTION_METHOD, VulnerabilityCaseType.HTTP_REQUEST);
 		}
 	};
 
@@ -313,6 +316,7 @@ public interface IAgentConstants {
 			put(CLASS_WEBLOGIC_SERVLET_INTERNAL_WEB_APP_SERVLET_CONTEXT, Collections.singletonList("execute"));
 			put(CLASS_APACHE_COMMONS_HTTP_METHOD_DIRECTOR, Collections.singletonList("executeWithRetry"));
 			put(CLASS_OKHTTP_HTTP_ENGINE, Collections.singletonList("sendRequest"));
+			put(CLASS_WEBLOGIC_HTTP_HANDLER, Collections.singletonList("openConnection"));
 		}
 	};
 

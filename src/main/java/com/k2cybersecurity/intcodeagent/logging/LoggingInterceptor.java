@@ -372,6 +372,7 @@ public class LoggingInterceptor extends Interceptor {
 		case CLASS_JDK_INCUBATOR_HTTP_MULTIEXCHANGE:
 		case CLASS_APACHE_COMMONS_HTTP_METHOD_DIRECTOR:
 		case CLASS_OKHTTP_HTTP_ENGINE:
+		case CLASS_WEBLOGIC_HTTP_HANDLER:
 			if (INSTRUMENTED_METHODS.get(cn.name).contains(mn.name))
 				JA_HEALTH_CHECK.setSsrfProtection(true);
 			break;

@@ -1,6 +1,7 @@
 package com.k2cybersecurity.intcodeagent.logging;
 
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.APACHE_COMMONS_HTTP_METHOD_DIRECTOR_METHOD;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.WEBLOGIC_OPEN_CONNECTION_METHOD;
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.APACHE_HTTP_REQUEST_EXECUTOR_METHOD;
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.CLASS_LOADER_IDENTIFIER;
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.EMPTY;
@@ -770,7 +771,8 @@ public class ProcessorThread implements Runnable {
 				getApacheHttpRequestParameters(obj, parameters);
 			} else if (sourceString.equals(JAVA_OPEN_CONNECTION_METHOD2)
 					|| sourceString.equals(JAVA_OPEN_CONNECTION_METHOD2_HTTPS)
-					|| sourceString.equals(JAVA_OPEN_CONNECTION_METHOD2_HTTPS_2)) {
+					|| sourceString.equals(JAVA_OPEN_CONNECTION_METHOD2_HTTPS_2)
+					|| sourceString.equals(WEBLOGIC_OPEN_CONNECTION_METHOD)) {
 				getJavaHttpRequestParameters(obj, parameters);
 			} else if (sourceString.equals(JDK_INCUBATOR_MULTIEXCHANGE_RESONSE_METHOD)
 					|| sourceString.equals(JDK_INCUBATOR_MULTIEXCHANGE_RESONSE_ASYNC_METHOD)) {
