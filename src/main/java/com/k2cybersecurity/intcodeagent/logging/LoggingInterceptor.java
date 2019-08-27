@@ -275,7 +275,6 @@ public class LoggingInterceptor extends Interceptor {
 		// System.out.println("class to instument : "+className);
 		// return true;
 		// }
-		System.out.println("Class loaded name: " + className);
 		if (className.toLowerCase().contains("handler") || className.toLowerCase().contains("http"))
 			return true;
 		return INSTRUMENTED_METHODS.containsKey(className);
