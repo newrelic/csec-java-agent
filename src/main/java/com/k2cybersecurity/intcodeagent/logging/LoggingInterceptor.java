@@ -275,8 +275,6 @@ public class LoggingInterceptor extends Interceptor {
 		// System.out.println("class to instument : "+className);
 		// return true;
 		// }
-		if (className.toLowerCase().contains("handler") || className.toLowerCase().contains("http"))
-			return true;
 		return INSTRUMENTED_METHODS.containsKey(className);
 	}
 
@@ -386,7 +384,6 @@ public class LoggingInterceptor extends Interceptor {
 			String codeName = cn.name.substring(cn.name.lastIndexOf('/') + 1) + "."
 					+ INSTRUMENTED_METHODS.get(cn.name).indexOf(mn.name);
 			JA_HEALTH_CHECK.getInstrumentedMethods().add(codeName);
-			System.out.println("Class name: " + cn.name + ", method name : " + mn.name);
 		}
 		return isInstrument;
 	}
