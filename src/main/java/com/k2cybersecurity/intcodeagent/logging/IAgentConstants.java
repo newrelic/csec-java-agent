@@ -67,6 +67,8 @@ public interface IAgentConstants {
 	String COM_IBM_WS_GENERICBNF_IMPL_BNFHEADERSIMPL = "com/ibm/ws/genericbnf/impl/BNFHeadersImpl";
 	String COM_IBM_WS_HTTP_CHANNEL_INBOUND_IMPL_HTTPINBOUNDLINK = "com/ibm/ws/http/channel/inbound/impl/HttpInboundLink";
 	
+	//JBoss Wildfly
+	String IO_UNDERTOW_SERVER_PROTOCOL_HTTP_HTTP_REQUEST_PARSER = "io/undertow/server/protocol/http/HttpRequestParser";
 	
 	String EXEC_URL_CLASS_LOADER_NEW_INSTANCE = "public static java.net.URLClassLoader java.net.URLClassLoader.newInstance(java.net.URL[])";
 
@@ -306,6 +308,10 @@ public interface IAgentConstants {
 			put(COM_IBM_WS_HTTP_CHANNEL_INTERNAL_INBOUND_HTTPINBOUNDLINK, Collections.singletonList("processRequest"));
 			put(COM_IBM_WS_GENERICBNF_IMPL_BNFHEADERSIMPL, Collections.singletonList("fillByteCache"));
 			put(COM_IBM_WS_HTTP_CHANNEL_INBOUND_IMPL_HTTPINBOUNDLINK, Collections.singletonList("processRequest"));
+			put(IO_UNDERTOW_SERVER_PROTOCOL_HTTP_HTTP_REQUEST_PARSER, Collections.singletonList("handle"));
+			put("org/jboss/threads/EnhancedQueueExecutor", Collections.singletonList("tryExecute"));
+			put("org/xnio/XnioWorker$WorkerThreadFactory", Collections.singletonList("newThread"));
+			put("io/undertow/servlet/handlers/ServletHandler", Collections.singletonList("handleRequest"));
 			
 			put(CLASS_HTTP_REQUEST_EXECUTOR, Collections.singletonList("doSendRequest"));
 			put(CLASS_JAVA_HTTP_HANDLER, Collections.singletonList("openConnection"));
@@ -340,6 +346,22 @@ public interface IAgentConstants {
 	String WEBSPHERE_TRADITIONAL_FILLBYTECACHE = "protected boolean com.ibm.ws.genericbnf.impl.BNFHeadersImpl.fillByteCache(com.ibm.wsspi.buffermgmt.WsByteBuffer)";
 	String WEBSPHERE_TRADITIONAL_PROCESSREQUEST = "protected void com.ibm.ws.http.channel.inbound.impl.HttpInboundLink.processRequest()";
 	
+	/** JBoss constants*/
+	String JBOSS_WILDFLY_HTTP_REQUEST_PARSER_HANDLE = "public void io.undertow.server.protocol.http.HttpRequestParser.handle(java.nio.ByteBuffer,io.undertow.server.protocol.http.ParseState,io.undertow.server.HttpServerExchange) throws io.undertow.util.BadRequestException";
+//	String PUBLIC_VOID_ORG_JBOSS_THREADS_CONTEXT_CLASS_LOADER_SAVING_RUNNABLE_RUN = "public void org.jboss.threads.ContextClassLoaderSavingRunnable.run()";
+	String PUBLIC_VOID_ORG_JBOSS_THREADS_CONTEXT_CLASS_LOADER_SAVING_RUNNABLE_RUN = "public void io.undertow.servlet.handlers.ServletHandler.handleRequest(io.undertow.server.HttpServerExchange) throws java.io.IOException,javax.servlet.ServletException";
+	String PRIVATE_INT_ORG_JBOSS_THREADS_ENHANCED_QUEUE_EXECUTOR_TRY_EXECUTE_JAVA_LANG_RUNNABLE = "private int org.jboss.threads.EnhancedQueueExecutor.tryExecute(java.lang.Runnable)";
+	String FIELD_NEXT = "next";
+	String ORG_JBOSS_THREADS_ENHANCED_QUEUE_EXECUTOR$Q_NODE = "org.jboss.threads.EnhancedQueueExecutor$QNode";
+	String PUBLIC_JAVA_LANG_THREAD_ORG_XNIO_XNIO_WORKER$_WORKER_THREAD_FACTORY_NEW_THREAD_JAVA_LANG_RUNNABLE = "public java.lang.Thread org.xnio.XnioWorker$WorkerThreadFactory.newThread(java.lang.Runnable)";
+	String FIELD_GET = "_get";
+	String JAVA_NIO_DIRECT_BYTE_BUFFER = "java.nio.DirectByteBuffer";
+	String FIELD_LIMIT = "limit";
+	String JAVA_NIO_BUFFER = "java.nio.Buffer";
+	String FIELD_THREAD = "thread";
+	String ORG_JBOSS_THREADS_ENHANCED_QUEUE_EXECUTOR$_POOL_THREAD_NODE = "org.jboss.threads.EnhancedQueueExecutor$PoolThreadNode";
+	String ORG_JBOSS_THREADS_ENHANCED_QUEUE_EXECUTOR$_TASK_NODE = "org.jboss.threads.EnhancedQueueExecutor$TaskNode";
+	String ORG_JBOSS_THREADS_ENHANCED_QUEUE_EXECUTOR = "org.jboss.threads.EnhancedQueueExecutor";
 	String WEBLOGIC_INVOKE_SERVLET = "public java.lang.Throwable weblogic.servlet.internal.StubSecurityHelper.invokeServlet(javax.servlet.ServletRequest,javax.servlet.http.HttpServletRequest,weblogic.servlet.internal.ServletRequestImpl,javax.servlet.ServletResponse,javax.servlet.http.HttpServletResponse,javax.servlet.Servlet) throws javax.servlet.ServletException";
 	
 	String WEBLOGIC_SERVLET_EXECUTE = "void weblogic.servlet.internal.WebAppServletContext.execute(weblogic.servlet.internal.ServletRequestImpl,weblogic.servlet.internal.ServletResponseImpl) throws java.io.IOException";

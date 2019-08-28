@@ -10,9 +10,10 @@ import java.nio.file.StandardWatchEventKinds;
 import java.nio.file.WatchEvent;
 import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.regex.Pattern;
+
+import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
+import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 
 public class FileWatcher {
 
@@ -21,7 +22,7 @@ public class FileWatcher {
 
 	private Thread fileWatcherThread;
 
-	private static Logger logger;
+	private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
 
 	private static FileWatcher instance;
 
@@ -44,25 +45,25 @@ public class FileWatcher {
 						while ((key = watchService.take()) != null) {
 							Path watchDirs = (Path) key.watchable();
 							for (WatchEvent<?> event : key.pollEvents()) {
-								logger.log(Level.WARNING,
-										"Event kind: " + event.kind() + ". File affected: " + event.context());
+								logger.log(LogLevel.WARNING,
+										"Event kind: " + event.kind() + ". File affected: " + event.context(), FileWatcher.class.getName());
 								if (event.context() != null) {
 									performAction(event, watchDirs);
 								} else {
-									logger.log(Level.SEVERE,
-											"Couldn't find the modified file name, event context found null: " + event);
+									logger.log(LogLevel.SEVERE,
+											"Couldn't find the modified file name, event context found null: " + event, FileWatcher.class.getName());
 								}
 							}
 							key.reset();
 						}
 					} catch (InterruptedException e) {
-						logger.log(Level.SEVERE, e.toString());
+						logger.log(LogLevel.SEVERE, e.toString(), FileWatcher.class.getName());
 					}
 				}
 			};
 			fileWatcherThread.start();
 		} catch (IOException e) {
-			logger.log(Level.SEVERE, e.toString());
+			logger.log(LogLevel.SEVERE, e.toString(), FileWatcher.class.getName());
 		}
 	}
 
@@ -124,7 +125,4 @@ public class FileWatcher {
 		this.runtime = runtime;
 	}
 	
-	public static void setLogger() {
-		FileWatcher.logger = Logger.getLogger(FileWatcher.class.getName());
-	}
 }

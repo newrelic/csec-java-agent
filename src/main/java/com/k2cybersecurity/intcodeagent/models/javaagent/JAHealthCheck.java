@@ -2,21 +2,19 @@ package com.k2cybersecurity.intcodeagent.models.javaagent;
 
 import java.net.URL;
 import java.util.Enumeration;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import org.brutusin.instrumentation.Agent;
 import org.json.simple.JSONArray;
 
+import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
+import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.logging.LoggingInterceptor;
 import com.k2cybersecurity.intcodeagent.websocket.JsonConverter;
 
 public class JAHealthCheck extends AgentBasicInfo{
 
-	private static Logger logger;
+	private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
 	
 	private String applicationUUID;
 
@@ -52,7 +50,7 @@ public class JAHealthCheck extends AgentBasicInfo{
 		this.setProtectedDB(new JSONArray());
 		this.setIsHost(LoggingInterceptor.APPLICATION_INFO_BEAN.getIsHost());
 		this.setJarPath();
-		logger.log(Level.INFO,"JA Healthcheck created : {0}", this.toString());
+		logger.log(LogLevel.INFO,"JA Healthcheck created : "+ this.toString(), JAHealthCheck.class.getName());
 	}
 
 	public JAHealthCheck(JAHealthCheck jaHealthCheck) {
@@ -68,7 +66,7 @@ public class JAHealthCheck extends AgentBasicInfo{
 		this.ssrfProtection = jaHealthCheck.ssrfProtection;
 		this.isHost = jaHealthCheck.isHost;
 		this.setJarPath();
-		logger.log(Level.INFO,"JA Healthcheck created : {0}", this.toString());
+		logger.log(LogLevel.INFO,"JA Healthcheck created : "+ this.toString(), JAHealthCheck.class.getName());
 	}
 
 	/**
@@ -211,9 +209,9 @@ public class JAHealthCheck extends AgentBasicInfo{
 						}
 					} 
 				} catch (Exception e1) {
-					logger.log(Level.WARNING,"Exception in setJarPath : {0}", e1);
+					logger.log(LogLevel.WARNING,"Exception in setJarPath : "+ e1, JAHealthCheck.class.getName());
 				} catch (Throwable e) {
-					logger.log(Level.WARNING,"Throwable in setJarPath : {0}", e);
+					logger.log(LogLevel.WARNING,"Throwable in setJarPath : "+ e, JAHealthCheck.class.getName());
 				}
 			}
 			if (Agent.jarPathSet.size() != lastJarSetSize) {
@@ -228,11 +226,6 @@ public class JAHealthCheck extends AgentBasicInfo{
 	@Override
 	public String toString() {
 		return JsonConverter.toJSON(this);
-	}
-	
-	
-	public static void setLogger() {
-		JAHealthCheck.logger = Logger.getLogger(JAHealthCheck.class.getName());
 	}
 
 	/**

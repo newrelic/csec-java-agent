@@ -103,8 +103,8 @@
 				<configuration>
 					<archive>
 						<manifestEntries>
-							<Premain-Class>java.k2.io.org.brutusin.instrumentation.Agent</Premain-Class>
-							<Agent-Class>java.k2.io.org.brutusin.instrumentation.Agent</Agent-Class>
+							<Premain-Class>sun.reflect.io.org.brutusin.instrumentation.Agent</Premain-Class>
+							<Agent-Class>sun.reflect.io.org.brutusin.instrumentation.Agent</Agent-Class>
 							<Can-Retransform-Classes>true</Can-Retransform-Classes>
 							<Can-Redefine-Classes>true</Can-Redefine-Classes>
 							<Boot-Class-Path>${project.artifactId}-${project.version}-jar-with-dependencies.${project.packaging}</Boot-Class-Path>
@@ -140,23 +140,23 @@
 							<relocations>
 								<relocation>
 									<pattern>org.brutusin</pattern>
-									<shadedPattern>java.k2.io.org.brutusin</shadedPattern>
+									<shadedPattern>sun.reflect.io.org.brutusin</shadedPattern>
 								</relocation>
 								<relocation>
 									<pattern>org.objectweb</pattern>
-									<shadedPattern>java.k2.io.org.objectweb</shadedPattern>
+									<shadedPattern>sun.reflect.io.org.objectweb</shadedPattern>
 								</relocation>
 								<relocation>
 									<pattern>org.json</pattern>
-									<shadedPattern>java.k2.io.org.json</shadedPattern>
+									<shadedPattern>sun.reflect.io.org.json</shadedPattern>
 								</relocation>
 								<relocation>
 									<pattern>com.fasterxml</pattern>
-									<shadedPattern>java.k2.io.com.fasterxml</shadedPattern>
+									<shadedPattern>sun.reflect.io.com.fasterxml</shadedPattern>
 								</relocation>
 								<relocation>
 									<pattern>com.k2.</pattern>
-									<shadedPattern>java.k2.io.com.k2.</shadedPattern>
+									<shadedPattern>sun.reflect.io.com.k2.</shadedPattern>
 								</relocation>
 								<relocation>
 									<pattern>com.k2cybersecurity.</pattern>
@@ -168,14 +168,14 @@
 								</relocation>
 								<relocation>
 									<pattern>com.google.gson.</pattern>
-									<shadedPattern>java.k2.io.com.google.gson.</shadedPattern>
+									<shadedPattern>sun.reflect.io.com.google.gson.</shadedPattern>
 								</relocation>
 								<relocation>
 									<pattern>org.apache.commons.</pattern>
+									<shadedPattern>sun.reflect.io.org.apache.commons.</shadedPattern>
 									<excludes>
 										<exclude>org/apache/commons/httpclient/**/*</exclude>
 									</excludes>
-									<shadedPattern>java.k2.io.org.apache.commons.</shadedPattern>
 								</relocation>
 							</relocations>
 						</configuration>

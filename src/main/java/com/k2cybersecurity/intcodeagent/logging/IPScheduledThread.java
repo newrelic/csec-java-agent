@@ -11,9 +11,9 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
+import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
+import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.models.javaagent.JAHealthCheck;
 import com.k2cybersecurity.intcodeagent.websocket.WSClient;
 
@@ -21,7 +21,7 @@ public class IPScheduledThread {
 
 	private static IPScheduledThread instance;
 
-	private static Logger logger;
+	private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
 
 	private static ScheduledExecutorService ipScheduledService;
 
@@ -51,31 +51,31 @@ public class IPScheduledThread {
 											.send(new JAHealthCheck(LoggingInterceptor.JA_HEALTH_CHECK).toString());
 									LoggingInterceptor.JA_HEALTH_CHECK.setEventDropCount(0);
 								} else {
-									logger.log(Level.SEVERE, "Failed in WSock reconnection.");
+									logger.log(LogLevel.SEVERE, "Failed in WSock reconnection.", IPScheduledThread.class.getName());
 								}
 							} catch (URISyntaxException | InterruptedException e) {
-								logger.log(Level.SEVERE,
-										"Error in WSock reconnection : " + e.getMessage() + " : " + e.getCause());
+								logger.log(LogLevel.SEVERE,
+										"Error in WSock reconnection : " + e.getMessage() + " : " + e.getCause(), IPScheduledThread.class.getName());
 							}
 						}
 
 					} catch (NullPointerException ex) {
-						logger.log(Level.WARNING, "No reference to Socket's OutputStream");
+						logger.log(LogLevel.WARNING, "No reference to Socket's OutputStream", IPScheduledThread.class.getName());
 					} catch (Exception e) {
-						logger.log(Level.WARNING, "Error while trying to verify connection: {0}", e);
+						logger.log(LogLevel.WARNING, "Error while trying to verify connection: "+ e, IPScheduledThread.class.getName());
 					}
 					if (hostip == null || hostip.equals("")) {
-						logger.log(Level.FINE, "Host ip not found");
+						logger.log(LogLevel.DEBUG, "Host ip not found", IPScheduledThread.class.getName());
 					} else if (!LoggingInterceptor.hostip.equals(hostip)) {
 						LoggingInterceptor.hostip = hostip.trim();
 						WSClient.reconnectWSClient();
-						logger.log(Level.FINE, "K2-JavaAgent re-installed successfully coz of IP change.");
+						logger.log(LogLevel.DEBUG, "K2-JavaAgent re-installed successfully coz of IP change.", IPScheduledThread.class.getName());
 					} else if (!WSClient.getInstance().isOpen()) {
 						WSClient.reconnectWSClient();
-						logger.log(Level.FINE, "K2-JavaAgent re-installed successfully.");
+						logger.log(LogLevel.DEBUG, "K2-JavaAgent re-installed successfully.", IPScheduledThread.class.getName());
 					}
 				} catch (Exception e) {
-					logger.log(Level.WARNING, "Error in IPScheduledThread : {0}", e);
+					logger.log(LogLevel.WARNING, "Error in IPScheduledThread : "+ e, IPScheduledThread.class.getName());
 				}
 			}
 		};
@@ -97,7 +97,7 @@ public class IPScheduledThread {
 				instance = new IPScheduledThread();
 			return instance;
 		} catch (Exception e) {
-			logger.log(Level.WARNING, "Error while starting: {0}", e);
+			logger.log(LogLevel.WARNING, "Error while starting: "+ e, IPScheduledThread.class.getName());
 		}
 		throw null;
 	}
@@ -117,15 +117,11 @@ public class IPScheduledThread {
 					ipScheduledService.shutdownNow(); // cancel currently executing tasks
 
 					if (!ipScheduledService.awaitTermination(1, TimeUnit.SECONDS)) {
-						logger.log(Level.SEVERE, "Thread pool executor did not terminate");
+						logger.log(LogLevel.SEVERE, "Thread pool executor did not terminate", IPScheduledThread.class.getName());
 					}
 				}
 			} catch (InterruptedException e) {
 			}
 		}
-	}
-
-	public static void setLogger() {
-		IPScheduledThread.logger = Logger.getLogger(IPScheduledThread.class.getName());
 	}
 }

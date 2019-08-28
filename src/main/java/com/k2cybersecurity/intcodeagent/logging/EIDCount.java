@@ -3,11 +3,7 @@ package com.k2cybersecurity.intcodeagent.logging;
 import java.util.Iterator;
 import java.util.concurrent.ConcurrentLinkedDeque;
 
-import java.util.logging.LogManager;
-import java.util.logging.Logger;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.k2cybersecurity.intcodeagent.websocket.JsonConverter;
 
 public class EIDCount {
 
@@ -15,12 +11,6 @@ public class EIDCount {
 
 	private Long count;
 	
-	private static Logger logger;
-	public static void setLogger() {
-		EIDCount.logger = Logger.getLogger(EIDCount.class.getName());
-	}
-	
-
 	public EIDCount() {
 	}
 
@@ -123,11 +113,7 @@ public class EIDCount {
 	
 	@Override
 	public String toString() {
-		try {
-			return new ObjectMapper().writeValueAsString(this);
-		} catch (JsonProcessingException e) {
-			return null;
-		}
+			return JsonConverter.toJSON(this);
 	}
 
 }

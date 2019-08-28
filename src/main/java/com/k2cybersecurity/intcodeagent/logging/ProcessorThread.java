@@ -1,7 +1,6 @@
 package com.k2cybersecurity.intcodeagent.logging;
 
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.APACHE_COMMONS_HTTP_METHOD_DIRECTOR_METHOD;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.WEBLOGIC_OPEN_CONNECTION_METHOD;
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.APACHE_HTTP_REQUEST_EXECUTOR_METHOD;
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.CLASS_LOADER_IDENTIFIER;
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.EMPTY;
@@ -77,28 +76,18 @@ import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.PSQLV2_EX
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.PSQLV3_EXECUTOR;
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.PSQLV3_EXECUTOR7_4;
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.REGEX_SPACE;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.WEBLOGIC_OPEN_CONNECTION_METHOD;
 
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.net.URI;
-import java.net.URL;
-import java.net.URLClassLoader;
 import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
@@ -110,7 +99,8 @@ import org.json.simple.parser.JSONParser;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.gson.JsonArray;
+import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
+import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.models.javaagent.JavaAgentDynamicPathBean;
 import com.k2cybersecurity.intcodeagent.models.javaagent.JavaAgentEventBean;
 import com.k2cybersecurity.intcodeagent.models.javaagent.ServletInfo;
@@ -120,7 +110,7 @@ import com.k2cybersecurity.intcodeagent.websocket.EventSendPool;
 public class ProcessorThread implements Runnable {
 
 	private static final Pattern PATTERN;
-	private static Logger logger;
+	private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
 	private Object source;
 	private Object[] arg;
 	private Integer executionId;
@@ -250,15 +240,15 @@ public class ProcessorThread implements Runnable {
 							}
 							if (intCodeResultBean.getUserClassName() != null
 									&& !intCodeResultBean.getUserClassName().isEmpty()) {
-//								logger.log(Level.FINE,"result bean : "+intCodeResultBean);
+//								logger.log(LogLevel.DEBUG,"result bean : "+intCodeResultBean);
 								generateEvent(intCodeResultBean);
 							}
-							logger.log(Level.FINE, "breaking");
+							logger.log(LogLevel.DEBUG, "breaking", ProcessorThread.class.getName());
 							break;
 						}
 						if (klassName.equals(IAgentConstants.JAVA_IO_FILE)) {
-//							logger.log(Level.FINE,"javaio found");
-//							logger.log(Level.FINE,"next class : "+trace[i+1]);
+//							logger.log(LogLevel.DEBUG,"javaio found");
+//							logger.log(LogLevel.DEBUG,"next class : "+trace[i+1]);
 							javaIoFile = true;
 						}
 					}
@@ -309,7 +299,7 @@ public class ProcessorThread implements Runnable {
 				}
 			}
 		} catch (Exception e) {
-			logger.log(Level.WARNING, "Error in run: {0}", e);
+			logger.log(LogLevel.WARNING, "Error in run: " + e, ProcessorThread.class.getName());
 		} finally {
 			ServletEventPool.getInstance().decrementServletInfoReference(threadId, executionId, true);
 		}
@@ -465,7 +455,7 @@ public class ProcessorThread implements Runnable {
 			parameters.add(String.valueOf(arg[sqlObjectLocation]));
 
 		} catch (Exception e) {
-			logger.log(Level.WARNING, "Error in getMySQLParameterValue: {0}", e);
+			logger.log(LogLevel.WARNING, "Error in getMySQLParameterValue: " + e, ProcessorThread.class.getName());
 		}
 	}
 
@@ -660,7 +650,7 @@ public class ProcessorThread implements Runnable {
 				parameters.add(insertRequests.toString());
 			} else {
 
-//				logger.log(Level.FINE,protocol.getClass().getName());
+//				logger.log(LogLevel.DEBUG,protocol.getClass().getName());
 
 			}
 
@@ -731,7 +721,7 @@ public class ProcessorThread implements Runnable {
 
 			}
 		} catch (Exception e) {
-			logger.log(Level.WARNING, "Error in getOracleParameterValue: {0}", e);
+			logger.log(LogLevel.WARNING, "Error in getOracleParameterValue: " + e, ProcessorThread.class.getName());
 		}
 		return parameters;
 	}
@@ -790,7 +780,7 @@ public class ProcessorThread implements Runnable {
 
 		} catch (Throwable th) {
 			parameters.add((obj != null) ? obj.toString() : null);
-			logger.log(Level.WARNING, "Error in toString: {0}", th);
+			logger.log(LogLevel.WARNING, "Error in toString: " + th, ProcessorThread.class.getName());
 		}
 		return parameters;
 	}
@@ -823,7 +813,8 @@ public class ProcessorThread implements Runnable {
 			parameters.add(uriObj.getPath());
 
 		} catch (Exception e) {
-			logger.log(Level.WARNING, "Error in getJava9HttpClientParameters : {0}", e);
+			logger.log(LogLevel.WARNING, "Error in getJava9HttpClientParameters : " + e,
+					ProcessorThread.class.getName());
 		}
 	}
 
@@ -870,7 +861,8 @@ public class ProcessorThread implements Runnable {
 			parameters.add(pathOnly);
 
 		} catch (Exception e) {
-			logger.log(Level.WARNING, "Error in getApacheHttpRequestParameters : {0}", e);
+			logger.log(LogLevel.WARNING, "Error in getApacheHttpRequestParameters : " + e,
+					ProcessorThread.class.getName());
 		}
 
 	}
@@ -905,7 +897,8 @@ public class ProcessorThread implements Runnable {
 
 		} catch (Exception e) {
 			e.printStackTrace();
-			logger.log(Level.WARNING, "Error in getApacheCommonsHttpRequestParameters : {0}", e);
+			logger.log(LogLevel.WARNING, "Error in getApacheCommonsHttpRequestParameters : " + e,
+					ProcessorThread.class.getName());
 		}
 
 	}
@@ -920,16 +913,16 @@ public class ProcessorThread implements Runnable {
 			Field httpUrl = request.getClass().getDeclaredField("url");
 			httpUrl.setAccessible(true);
 			Object httpUrlObj = httpUrl.get(request);
-			
+
 			Method getUrl = httpUrlObj.getClass().getMethod("url");
 			URL url = (URL) getUrl.invoke(httpUrlObj);
-			
+
 			parameters.add(url.getHost());
 			parameters.add(url.getPath());
-			
+
 		} catch (Exception e) {
 			e.printStackTrace();
-			logger.log(Level.WARNING, "Error in getOkHttpRequestParameters : {0}", e);
+			logger.log(LogLevel.WARNING, "Error in getOkHttpRequestParameters : " + e, ProcessorThread.class.getName());
 		}
 
 	}
@@ -945,7 +938,8 @@ public class ProcessorThread implements Runnable {
 				sqlField.setAccessible(true);
 				parameters.add((String) sqlField.get(object));
 			} catch (Exception e) {
-				logger.log(Level.WARNING, "Error in getHSQLParameterValue for HSQL_V2_4: {0}", e);
+				logger.log(LogLevel.WARNING, "Error in getHSQLParameterValue for HSQL_V2_4: " + e,
+						ProcessorThread.class.getName());
 			}
 			return;
 		case HSQL_V1_8_SESSION:
@@ -955,7 +949,8 @@ public class ProcessorThread implements Runnable {
 				mainStringField.setAccessible(true);
 				parameters.add((String) mainStringField.get(object));
 			} catch (Exception e) {
-				logger.log(Level.WARNING, "Error in getHSQLParameterValue for HSQL_V1_8_CONNECTION: {0}", e);
+				logger.log(LogLevel.WARNING, "Error in getHSQLParameterValue for HSQL_V1_8_CONNECTION: " + e,
+						ProcessorThread.class.getName());
 			}
 			return;
 		}
@@ -983,7 +978,7 @@ public class ProcessorThread implements Runnable {
 				parameters.add(paramArray);
 			} catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException
 					| JsonProcessingException e) {
-				logger.log(Level.WARNING, "Error in getPSQLParameterValue: {0}", e);
+				logger.log(LogLevel.WARNING, "Error in getPSQLParameterValue: " + e, ProcessorThread.class.getName());
 			}
 
 		}
@@ -1027,19 +1022,20 @@ public class ProcessorThread implements Runnable {
 				&& (intCodeResultBean.getSource().equals(IAgentConstants.JAVA_NET_URLCLASSLOADER)
 						|| intCodeResultBean.getSource().equals(IAgentConstants.JAVA_NET_URLCLASSLOADER_NEWINSTANCE))) {
 			try {
-				JSONArray agentJarPaths = new JSONArray(); 
+				JSONArray agentJarPaths = new JSONArray();
 				agentJarPaths.addAll(Agent.jarPathSet);
 				JavaAgentDynamicPathBean dynamicJarPathBean = new JavaAgentDynamicPathBean(
-						LoggingInterceptor.applicationUUID, System.getProperty(IAgentConstants.USER_DIR),
-						agentJarPaths, intCodeResultBean.getParameters());
+						LoggingInterceptor.applicationUUID, System.getProperty(IAgentConstants.USER_DIR), agentJarPaths,
+						intCodeResultBean.getParameters());
 				EventSendPool.getInstance().sendEvent(dynamicJarPathBean.toString());
 				LoggingInterceptor.JA_HEALTH_CHECK.incrementEventSentCount();
 			} catch (IllegalStateException e) {
-				logger.log(Level.INFO, "Dropping dynamicJarPathBean event " + intCodeResultBean.getId()
-						+ " due to buffer capacity reached");
+				logger.log(LogLevel.INFO, "Dropping dynamicJarPathBean event " + intCodeResultBean.getId()
+						+ " due to buffer capacity reached", ProcessorThread.class.getName());
 				LoggingInterceptor.JA_HEALTH_CHECK.incrementDropCount();
 			} catch (Exception e) {
-				logger.log(Level.WARNING, "Error in generateEvent while creating JavaAgentDynamicPathBean: {0}", e);
+				logger.log(LogLevel.WARNING, "Error in generateEvent while creating JavaAgentDynamicPathBean: " + e,
+						ProcessorThread.class.getName());
 			}
 		} else {
 			try {
@@ -1055,13 +1051,15 @@ public class ProcessorThread implements Runnable {
 
 				EventSendPool.getInstance().sendEvent(intCodeResultBean.toString());
 				LoggingInterceptor.JA_HEALTH_CHECK.incrementEventSentCount();
-//				logger.log(Level.INFO,"publish event: " + intCodeResultBean);
+//				logger.log(LogLevel.INFO,"publish event: " + intCodeResultBean, ProcessorThread.class.getName());
 			} catch (IllegalStateException e) {
-				logger.log(Level.INFO,
-						"Dropping event " + intCodeResultBean.getId() + " due to buffer capacity reached.");
+				logger.log(LogLevel.INFO,
+						"Dropping event " + intCodeResultBean.getId() + " due to buffer capacity reached.",
+						ProcessorThread.class.getName());
 				LoggingInterceptor.JA_HEALTH_CHECK.incrementDropCount();
 			} catch (Exception e) {
-				logger.log(Level.WARNING, "Error in generateEvent while creating IntCodeResultBean: {0}", e.toString());
+				logger.log(LogLevel.WARNING, "Error in generateEvent while creating IntCodeResultBean: " + e,
+						ProcessorThread.class.getName());
 			}
 
 		}
@@ -1086,7 +1084,4 @@ public class ProcessorThread implements Runnable {
 		return false;
 	}
 
-	public static void setLogger() {
-		ProcessorThread.logger = Logger.getLogger(ProcessorThread.class.getName());
-	}
 }

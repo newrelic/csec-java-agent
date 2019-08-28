@@ -6,8 +6,7 @@ import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.JSON_NAME
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.JSON_NAME_INTCODE_RESULT_BEAN;
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.JSON_NAME_SHUTDOWN;
 
-import java.util.logging.Logger;
-
+import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.properties.K2JAVersionInfo;
 
 
@@ -27,7 +26,7 @@ public class AgentBasicInfo {
 	
 	private final String agentType = "JAVA_EVENT"; 
 
-	private static Logger logger;
+	private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
 
 	/**
 	 * Instantiates a new agent basic info according to the source class object.
@@ -102,9 +101,6 @@ public class AgentBasicInfo {
 		this.version = version;
 	}
 	
-	public static void setLogger() {
-		AgentBasicInfo.logger = Logger.getLogger(AgentBasicInfo.class.getName());
-	}
 
 	/**
 	 * @return the agentType

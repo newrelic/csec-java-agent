@@ -2,18 +2,15 @@ package com.k2cybersecurity.intcodeagent.logging;
 
 import java.util.Iterator;
 import java.util.concurrent.ConcurrentLinkedDeque;
-import java.util.logging.Logger;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.k2cybersecurity.intcodeagent.models.javaagent.ServletInfo;
+import com.k2cybersecurity.intcodeagent.websocket.JsonConverter;
 
 public class ExecutionMap {
 
 	private Integer executionId;
 	
 	private ServletInfo servletInfo;
-	private static Logger logger;
 	
 	/**
 	 * @param executionId
@@ -105,14 +102,7 @@ public class ExecutionMap {
 	
 	@Override
 	public String toString() {
-		try {
-			return new ObjectMapper().writeValueAsString(this);
-		} catch (JsonProcessingException e) {
-			return null;
-		}
+			return JsonConverter.toJSON(this);
 	}
 	
-	public static void setLogger() {
-		ExecutionMap.logger = Logger.getLogger(ExecutionMap.class.getName());
-	}
 }
