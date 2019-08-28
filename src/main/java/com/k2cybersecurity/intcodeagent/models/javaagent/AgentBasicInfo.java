@@ -1,11 +1,13 @@
 package com.k2cybersecurity.intcodeagent.models.javaagent;
 
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.*;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.JSON_NAME_APPLICATION_INFO_BEAN;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.JSON_NAME_DYNAMICJARPATH_BEAN;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.JSON_NAME_HEALTHCHECK;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.JSON_NAME_INTCODE_RESULT_BEAN;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.JSON_NAME_SHUTDOWN;
 
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.k2cybersecurity.intcodeagent.logging.IAgentConstants;
 import com.k2cybersecurity.intcodeagent.properties.K2JAVersionInfo;
 
 
@@ -22,6 +24,8 @@ public class AgentBasicInfo {
 
 	/** Json version number. */
 	private String version;
+	
+	private final String agentType = "JAVA_EVENT"; 
 
 	private static Logger logger;
 
@@ -100,6 +104,13 @@ public class AgentBasicInfo {
 	
 	public static void setLogger() {
 		AgentBasicInfo.logger = Logger.getLogger(AgentBasicInfo.class.getName());
+	}
+
+	/**
+	 * @return the agentType
+	 */
+	public String getAgentType() {
+		return agentType;
 	}
 	
 }

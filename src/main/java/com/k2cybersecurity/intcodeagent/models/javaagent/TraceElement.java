@@ -1,14 +1,8 @@
 package com.k2cybersecurity.intcodeagent.models.javaagent;
 
-import java.io.Serializable;
-
 import com.k2cybersecurity.intcodeagent.websocket.JsonConverter;
 
-public class TraceElement implements Serializable{
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = -495570272645645109L;
+public class TraceElement {
 	
 	private String className;
 	private String methodName;

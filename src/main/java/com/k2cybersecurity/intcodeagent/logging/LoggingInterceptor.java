@@ -15,36 +15,108 @@
  */
 package com.k2cybersecurity.intcodeagent.logging;
 
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.*;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.BYTE_BUFFER_FIELD_BUF;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.BYTE_BUFFER_FIELD_HB;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.BYTE_BUFFER_FIELD_LASTVALID;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.BYTE_BUFFER_FIELD_LIMIT;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.BYTE_BUFFER_FIELD_POSITION;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.CGROUP_FILE_NAME;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.CLASS_COM_MICROSOFT_SQLSERVER_JDBC_SQL_SERVER_STATEMENT;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.CLASS_COM_MONGODB_ASYNC_CLIENT_ASYNC_OPERATION_EXECUTOR_IMPL;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.CLASS_COM_MONGODB_ASYNC_CLIENT_MONGO_CLIENT_IMPL$2;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.CLASS_COM_MONGODB_ASYNC_CLIENT_OPERATION_EXECUTOR_IMPL;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.CLASS_COM_MONGODB_CONNECTION_DEFAULT_SERVER_CONNECTION;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.CLASS_COM_MONGODB_INTERNAL_CONNECTION_DEFAULT_SERVER_CONNECTION;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.CLASS_COM_MYSQL_CJ_MYSQLA_IO_MYSQLA_PROTOCOL;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.CLASS_COM_MYSQL_CJ_NATIVE_SESSION;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.CLASS_COM_MYSQL_JDBC_MYSQL_IO;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.CLASS_COM_MYSQL_JDBC_SERVER_PREPARED_STATEMENT;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.CLASS_HTTP_REQUEST_EXECUTOR;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.CLASS_JAVA_HTTPS_HANDLER;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.CLASS_JAVA_HTTP_HANDLER;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.CLASS_JAVA_LANG_PROCESS_IMPL;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.CLASS_JAVA_NET_URL_CLASS_LOADER;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.CLASS_JAVA_SSL_HTTPS_HANDLER;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.CLASS_JDK_INCUBATOR_HTTP_MULTIEXCHANGE;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.CLASS_ORACLE_JDBC_DRIVER_T4CTT_IFUN;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.CLASS_ORG_APACHE_CATALINA_CONNECTOR_COYOTE_ADAPTER;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.CLASS_ORG_APACHE_CATALINA_CONNECTOR_INPUT_BUFFER;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.CLASS_ORG_ECLIPSE_JETTY_HTTP_HTTP_PARSER;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.CLASS_ORG_ECLIPSE_JETTY_SERVER_HTTP_CONNECTION;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.CLASS_ORG_HSQLDB_HSQL_CLIENT_CONNECTION;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.CLASS_ORG_HSQLDB_SESSION;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.CLASS_ORG_POSTGRESQL_CORE_V2_QUERY_EXECUTOR_IMPL;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.CLASS_ORG_POSTGRESQL_CORE_V3_QUERY_EXECUTOR_IMPL;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.CLASS_WEBLOGIC_SERVLET_INTERNAL_STUBSECURITYHELPER;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.CMD_LINE_DIR;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.COLON_SEPERATOR;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.COYOTE_ABSTRACT_INPUT_BUFFER_CLASS_NAME;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.DIR_SEPERATOR;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.DOCKER_DIR;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.HOST_IP_PROPERTIES_FILE;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.INSTRUMENTED_METHODS;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.JETTY_PARSE_NEXT;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.JETTY_REQUEST_ON_FILLABLE;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.KUBEPODS_DIR;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.LXC_DIR;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MYSQL_CONNECTOR_5_0_4_PREPARED_SOURCE;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MYSQL_CONNECTOR_6_0_2_SOURCE;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MYSQL_CONNECTOR_6_0_3_SOURCE;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MYSQL_CONNECTOR_6_SOURCE;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MYSQL_CONNECTOR_8_SOURCE;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MYSQL_FIELD_ORIGINAL_SQL;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MYSQL_FIELD_QUERY;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MYSQL_PREPARED_QUERY_8;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MYSQL_PREPARED_STATEMENT_4;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MYSQL_PREPARED_STATEMENT_42;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MYSQL_PREPARED_STATEMENT_5;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MYSQL_PREPARED_STATEMENT_5_0_4;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MYSQL_PREPARED_STATEMENT_6;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MYSQL_PREPARED_STATEMENT_8;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MYSQL_PREPARED_STATEMENT_SOURCE_8;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MYSQL_SOURCE_METHOD_LIST;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.NEW_LINE_SEQUENCE;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.PROC_DIR;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.STAT;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.TOMCAT_7;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.TOMCAT_8;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.TOMCAT_9;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.TOMCAT_COYOTE_ADAPTER_SERVICE;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.TOMCAT_FIELD_SERVERNUMBER;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.TOMCAT_REQUEST_FIELD_BYTEBUFFER;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.TOMCAT_REQUEST_FIELD_INPUTBUFFER;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.TOMCAT_SERVER_INFO_CLASS_NAME;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.TOMCAT_SETBYTEBUFFER;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.TOMCAT_VERSION_DETECTED_MSG;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.VERSION_SPLIT_EXPR;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.VMPID_SPLIT_CHAR;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.WEBLOGIC_SERVLET_EXECUTE;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.WEBSPHERE_LIBERTY_FILLBYTECACHE;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.WEBSPHERE_LIBERTY_PROCESSREQUEST;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.WEBSPHERE_TRADITIONAL_FILLBYTECACHE;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.WEBSPHERE_TRADITIONAL_PROCESSREQUEST;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
-import java.io.FilterInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.net.InetSocketAddress;
-import java.net.SocketAddress;
 import java.net.URISyntaxException;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
-import java.nio.channels.AsynchronousSocketChannel;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedDeque;
-import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -63,10 +135,11 @@ import com.k2cybersecurity.intcodeagent.websocket.WSClient;
 
 public class LoggingInterceptor extends Interceptor {
 
+	private static final String STRING_DOT = ".";
+	private static final char CH_SLASH = '/';
 	private static final String FIELD_POS = "pos";
 	private static final String WEBLOGIC_UTILS_IO_NULL_INPUT_STREAM = "weblogic.utils.io.NullInputStream";
 	private static final String FIELD_NAME_CONTENT_LEN = "contentLen";
-	private static final String FIELD_NAME_BUF2 = "buf";
 	private static final String FIELD_NAME_IN3 = "in";
 	private static final String FIELD_CONN_HANDLER = "connHandler";
 	private static final String FIELD_NAME_INPUT_STREAM = "inputStream";
@@ -382,9 +455,10 @@ public class LoggingInterceptor extends Interceptor {
 		}
 		boolean isInstrument = INSTRUMENTED_METHODS.get(cn.name).contains(mn.name);
 		if (isInstrument) {
-			String codeName = cn.name.substring(cn.name.lastIndexOf('/') + 1) + "."
+			String codeName = cn.name.substring(cn.name.lastIndexOf(CH_SLASH) + 1) + STRING_DOT
 					+ INSTRUMENTED_METHODS.get(cn.name).indexOf(mn.name);
 			JA_HEALTH_CHECK.getInstrumentedMethods().add(codeName);
+//			System.out.println("Class name: " + cn.name + " , method: " + mn.name);
 		}
 		return isInstrument;
 	}
@@ -988,7 +1062,7 @@ public class LoggingInterceptor extends Interceptor {
 		}
 
 		for (String loadedClass : classesToRetransform) {
-			String loadedClassName = loadedClass.replaceAll("/", ".");
+			String loadedClassName = loadedClass.replaceAll("/", STRING_DOT);
 			try {
 				Class<?> cl = allLoadedClasses.get(loadedClassName);
 				if (cl == null) {

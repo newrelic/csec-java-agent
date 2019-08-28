@@ -543,8 +543,8 @@ public interface IAgentConstants {
 	int K2_IC_TCP_PORT = 54321;
 	
 	String JSON_NAME_APPLICATION_INFO_BEAN = "applicationinfobean";
-	String JSON_NAME_INTCODE_RESULT_BEAN = "intcoderesultbean";
-	String JSON_NAME_HEALTHCHECK = "JAhealthcheck";
+	String JSON_NAME_INTCODE_RESULT_BEAN = "EventBean";
+	String JSON_NAME_HEALTHCHECK = "LAhealthcheck";
 	String JSON_NAME_DYNAMICJARPATH_BEAN = "dynamicjarpathbean";
 	String JSON_NAME_SHUTDOWN = "shutdown";
 	
