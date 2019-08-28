@@ -105,11 +105,14 @@ public class LogWriter implements Runnable {
 		sb.append(this.loggingClassName);
 		sb.append(STR_HYPHEN);
 		sb.append(this.logEntry);
+		sb.append(StringUtils.LF);
 		try {
 			writer.write(sb.toString());
-			writer.newLine();
+			writer.flush();
+//			writer.newLine();
 			rollover(currentLogFile);
 		} catch (IOException e) {
+//			e.printStackTrace();
 		}
 
 	}
