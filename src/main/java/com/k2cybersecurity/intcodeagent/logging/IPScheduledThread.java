@@ -46,6 +46,7 @@ public class IPScheduledThread {
 						} else {
 							try {
 								WSClient.reconnectWSClient();
+								TimeUnit.SECONDS.sleep(5);
 								if (WSClient.getInstance().isOpen()) {
 									WSClient.getInstance()
 											.send(new JAHealthCheck(LoggingInterceptor.JA_HEALTH_CHECK).toString());
