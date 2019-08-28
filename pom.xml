@@ -103,8 +103,8 @@
 				<configuration>
 					<archive>
 						<manifestEntries>
-							<Premain-Class>sun.reflect.io.org.brutusin.instrumentation.Agent</Premain-Class>
-							<Agent-Class>sun.reflect.io.org.brutusin.instrumentation.Agent</Agent-Class>
+							<Premain-Class>sun.reflect.org.brutusin.instrumentation.Agent</Premain-Class>
+							<Agent-Class>sun.reflect.org.brutusin.instrumentation.Agent</Agent-Class>
 							<Can-Retransform-Classes>true</Can-Retransform-Classes>
 							<Can-Redefine-Classes>true</Can-Redefine-Classes>
 							<Boot-Class-Path>${project.artifactId}-${project.version}-jar-with-dependencies.${project.packaging}</Boot-Class-Path>
@@ -168,7 +168,7 @@
 								</relocation>
 								<relocation>
 									<pattern>com.google.gson.</pattern>
-									<shadedPattern>sun.reflect.io.com.google.gson.</shadedPattern>
+									<shadedPattern>sun.reflect.com.google.gson.</shadedPattern>
 								</relocation>
 								<relocation>
 									<pattern>org.apache.commons.</pattern>
