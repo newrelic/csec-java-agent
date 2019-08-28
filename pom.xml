@@ -140,31 +140,31 @@
 							<relocations>
 								<relocation>
 									<pattern>org.brutusin</pattern>
-									<shadedPattern>sun.reflect.io.org.brutusin</shadedPattern>
+									<shadedPattern>sun.reflect.org.brutusin</shadedPattern>
 								</relocation>
 								<relocation>
 									<pattern>org.objectweb</pattern>
-									<shadedPattern>sun.reflect.io.org.objectweb</shadedPattern>
+									<shadedPattern>sun.reflect.org.objectweb</shadedPattern>
 								</relocation>
 								<relocation>
 									<pattern>org.json</pattern>
-									<shadedPattern>sun.reflect.io.org.json</shadedPattern>
+									<shadedPattern>sun.reflect.org.json</shadedPattern>
 								</relocation>
 								<relocation>
 									<pattern>com.fasterxml</pattern>
-									<shadedPattern>sun.reflect.io.com.fasterxml</shadedPattern>
+									<shadedPattern>sun.reflect.com.fasterxml</shadedPattern>
 								</relocation>
 								<relocation>
 									<pattern>com.k2.</pattern>
-									<shadedPattern>sun.reflect.io.com.k2.</shadedPattern>
+									<shadedPattern>sun.reflect.com.k2.</shadedPattern>
 								</relocation>
 								<relocation>
 									<pattern>com.k2cybersecurity.</pattern>
-									<shadedPattern>java.com.k2cybersecurity.</shadedPattern>
+									<shadedPattern>sun.reflect.com.k2cybersecurity.</shadedPattern>
 								</relocation>
 								<relocation>
 									<pattern>org.java_websocket.</pattern>
-									<shadedPattern>java.org.java_websocket.</shadedPattern>
+									<shadedPattern>sun.reflect.org.java_websocket.</shadedPattern>
 								</relocation>
 								<relocation>
 									<pattern>com.google.gson.</pattern>
@@ -172,7 +172,7 @@
 								</relocation>
 								<relocation>
 									<pattern>org.apache.commons.</pattern>
-									<shadedPattern>sun.reflect.io.org.apache.commons.</shadedPattern>
+									<shadedPattern>sun.reflect.org.apache.commons.</shadedPattern>
 									<excludes>
 										<exclude>org/apache/commons/httpclient/**/*</exclude>
 									</excludes>

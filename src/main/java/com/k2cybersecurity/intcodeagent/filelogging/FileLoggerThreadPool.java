@@ -1,5 +1,6 @@
 package com.k2cybersecurity.intcodeagent.filelogging;
 
+import java.io.IOException;
 import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadFactory;
@@ -13,7 +14,13 @@ public class FileLoggerThreadPool {
 
 	private static FileLoggerThreadPool instance;
 
-	private FileLoggerThreadPool() {
+	private String updatedFileName;
+	
+	private int logFileCounter = 0;
+
+	
+	
+	private FileLoggerThreadPool() throws IOException {
 		// load the settings
 		int queueSize = 1500;
 		int maxPoolSize = 1;
@@ -23,7 +30,6 @@ public class FileLoggerThreadPool {
 		TimeUnit timeUnit = TimeUnit.SECONDS;
 
 		boolean allowCoreThreadTimeOut = false;
-
 		executor = new ThreadPoolExecutor(corePoolSize, maxPoolSize, keepAliveTime, timeUnit,
 				new LinkedBlockingQueue<Runnable>(queueSize), new EventAbortPolicy()) {
 			@Override
@@ -55,7 +61,10 @@ public class FileLoggerThreadPool {
 	 */
 	public static FileLoggerThreadPool getInstance() {
 		if (instance == null)
-			instance = new FileLoggerThreadPool();
+			try {
+				instance = new FileLoggerThreadPool();
+			} catch (IOException e) {
+			}
 		return instance;
 	}
 
