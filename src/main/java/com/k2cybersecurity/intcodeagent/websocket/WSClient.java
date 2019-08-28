@@ -35,6 +35,7 @@ public class WSClient extends WebSocketClient {
 //				new Object[] { this.isOpen(), this.isClosing(), this.isClosed() });
         super.send(LoggingInterceptor.APPLICATION_INFO_BEAN.toString());
         Agent.allClassLoadersCount.set(0);
+        Agent.jarPathSet.clear();
         logger.log(LogLevel.INFO, "Resetting allClassLoadersCount to " + Agent.allClassLoadersCount.get(), WSClient.class.getName());
         logger.log(LogLevel.INFO, "Application info posted : " + LoggingInterceptor.APPLICATION_INFO_BEAN, WSClient.class.getName());
     }
