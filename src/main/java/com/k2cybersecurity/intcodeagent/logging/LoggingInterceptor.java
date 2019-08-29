@@ -243,7 +243,7 @@ public class LoggingInterceptor extends Interceptor {
 			RuntimeMXBean runtimeMXBean = ManagementFactory.getRuntimeMXBean();
 			String runningVM = runtimeMXBean.getName();
 			VMPID = Integer.parseInt(runningVM.substring(0, runningVM.indexOf(VMPID_SPLIT_CHAR)));
-			ApplicationInfoBean applicationInfoBean = new ApplicationInfoBean(VMPID, applicationUUID);
+			ApplicationInfoBean applicationInfoBean = new ApplicationInfoBean(VMPID, applicationUUID, Agent.isDynamicAttach? "DYNAMIC":"STATIC");
 			applicationInfoBean.setStartTime(runtimeMXBean.getStartTime());
 			String containerId = getContainerID();
 			String cmdLine = getCmdLineArgsByProc(VMPID);
