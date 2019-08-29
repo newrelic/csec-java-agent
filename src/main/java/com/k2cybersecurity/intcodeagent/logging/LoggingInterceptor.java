@@ -1019,12 +1019,40 @@ public class LoggingInterceptor extends Interceptor {
 
 	@Override
 	protected void doOnThrowableThrown(Object source, Throwable throwable, String executionId) {
+		String sourceString = null;
+		long threadId = Thread.currentThread().getId();
+		if (source instanceof Method) {
+			sourceString = ((Method) source).toGenericString();
+
+		} else if (source instanceof Constructor) {
+			sourceString = ((Constructor) source).toGenericString();
+		} else {
+			return;
+		}
+		System.out.println("start Executionid: " + executionId);
+		System.out.println("start Thread Id: " + threadId);
+		System.out.println("start SourceString: " + sourceString);
+
 		onTerminationOfHookedMethods(source, executionId);
 	}
 
 	@Override
 	protected void doOnThrowableUncatched(Object source, Throwable throwable, String executionId) {
-		onTerminationOfHookedMethods(source, executionId);
+		String sourceString = null;
+		long threadId = Thread.currentThread().getId();
+		if (source instanceof Method) {
+			sourceString = ((Method) source).toGenericString();
+	
+		} else if (source instanceof Constructor) {
+			sourceString = ((Constructor) source).toGenericString();
+		} else {
+			return;
+		}
+		System.out.println("start Executionid: " + executionId);
+		System.out.println("start Thread Id: " + threadId);
+		System.out.println("start SourceString: " + sourceString);
+
+	onTerminationOfHookedMethods(source, executionId);
 	}
 
 	@Override
