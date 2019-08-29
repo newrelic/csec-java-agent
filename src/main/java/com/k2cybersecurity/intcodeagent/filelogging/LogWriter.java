@@ -7,6 +7,9 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang3.StringUtils;
 import org.brutusin.instrumentation.Agent;
@@ -139,4 +142,16 @@ public class LogWriter implements Runnable {
 		}
 	}
 
+	public static void updateLogLevel(LogLevel logLevel, TimeUnit timeUnit, Integer duration ) {
+		final int currentLogLevel = defaultLogLevel;
+		defaultLogLevel = logLevel.getLevel();
+		new Timer().schedule(new TimerTask() {
+			@Override
+			public void run() {
+				defaultLogLevel = currentLogLevel;
+			}
+		}, timeUnit.toMillis(duration));
+		
+	}
+	
 }
