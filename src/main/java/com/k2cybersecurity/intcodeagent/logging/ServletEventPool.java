@@ -147,7 +147,7 @@ public class ServletEventPool {
 		this.requestMap = requestMap;
 	}
 
-	public synchronized Long incrementServletInfoReference(long threadId, Integer executionId, boolean find) {
+	public synchronized Long incrementServletInfoReference(long threadId, Long executionId, boolean find) {
 		Long refCount = -1l;
 		try {
 			if (find && this.servletInfoReferenceRecord.containsKey(threadId)) {
@@ -170,7 +170,7 @@ public class ServletEventPool {
 		return refCount;
 	}
 
-	public Long decrementServletInfoReference(long threadId, Integer executionId, boolean find) {
+	public Long decrementServletInfoReference(long threadId, Long executionId, boolean find) {
 		Long refCount = -1l;
 		try {
 			EIDCount eidCount = EIDCount.find(executionId, this.servletInfoReferenceRecord.get(threadId));

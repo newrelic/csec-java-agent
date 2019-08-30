@@ -133,7 +133,7 @@ public class EventThreadPool {
 		}
 	}
 
-	public void processReceivedEvent(Object source, Object[] arg, Integer executionId, StackTraceElement[] stackTrace,
+	public void processReceivedEvent(Object source, Object[] arg, Long executionId, StackTraceElement[] stackTrace,
 			long tId, String sourceString, long preProcessingTime) {
 		try {
 			this.executor.execute(

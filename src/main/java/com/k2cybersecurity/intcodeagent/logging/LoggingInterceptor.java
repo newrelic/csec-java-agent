@@ -16,101 +16,6 @@
 package com.k2cybersecurity.intcodeagent.logging;
 
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.*;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.BYTE_BUFFER_FIELD_HB;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.BYTE_BUFFER_FIELD_LASTVALID;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.BYTE_BUFFER_FIELD_LIMIT;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.BYTE_BUFFER_FIELD_POSITION;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.CGROUP_FILE_NAME;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.CLASS_APACHE_COMMONS_HTTP_METHOD_DIRECTOR;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.CLASS_COM_MICROSOFT_SQLSERVER_JDBC_SQL_SERVER_STATEMENT;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.CLASS_COM_MONGODB_ASYNC_CLIENT_ASYNC_OPERATION_EXECUTOR_IMPL;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.CLASS_COM_MONGODB_ASYNC_CLIENT_MONGO_CLIENT_IMPL$2;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.CLASS_COM_MONGODB_ASYNC_CLIENT_OPERATION_EXECUTOR_IMPL;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.CLASS_COM_MONGODB_CONNECTION_DEFAULT_SERVER_CONNECTION;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.CLASS_COM_MONGODB_INTERNAL_CONNECTION_DEFAULT_SERVER_CONNECTION;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.CLASS_COM_MYSQL_CJ_MYSQLA_IO_MYSQLA_PROTOCOL;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.CLASS_COM_MYSQL_CJ_NATIVE_SESSION;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.CLASS_COM_MYSQL_JDBC_MYSQL_IO;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.CLASS_COM_MYSQL_JDBC_SERVER_PREPARED_STATEMENT;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.CLASS_HTTP_REQUEST_EXECUTOR;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.CLASS_JAVA_HTTPS_HANDLER;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.CLASS_JAVA_HTTP_HANDLER;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.CLASS_JAVA_LANG_PROCESS_IMPL;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.CLASS_JAVA_NET_URL_CLASS_LOADER;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.CLASS_JAVA_SSL_HTTPS_HANDLER;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.CLASS_JDK_INCUBATOR_HTTP_MULTIEXCHANGE;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.CLASS_OKHTTP_HTTP_ENGINE;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.CLASS_ORACLE_JDBC_DRIVER_T4CTT_IFUN;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.CLASS_ORG_APACHE_CATALINA_CONNECTOR_COYOTE_ADAPTER;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.CLASS_ORG_APACHE_CATALINA_CONNECTOR_INPUT_BUFFER;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.CLASS_ORG_ECLIPSE_JETTY_HTTP_HTTP_PARSER;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.CLASS_ORG_ECLIPSE_JETTY_SERVER_HTTP_CONNECTION;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.CLASS_ORG_HSQLDB_HSQL_CLIENT_CONNECTION;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.CLASS_ORG_HSQLDB_SESSION;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.CLASS_ORG_POSTGRESQL_CORE_V2_QUERY_EXECUTOR_IMPL;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.CLASS_ORG_POSTGRESQL_CORE_V3_QUERY_EXECUTOR_IMPL;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.CLASS_WEBLOGIC_HTTP_HANDLER;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.CLASS_WEBLOGIC_SERVLET_INTERNAL_WEB_APP_SERVLET_CONTEXT;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.CMD_LINE_DIR;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.COLON_SEPERATOR;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.COYOTE_ABSTRACT_INPUT_BUFFER_CLASS_NAME;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.DIR_SEPERATOR;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.DOCKER_DIR;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.FIELD_GET;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.FIELD_LIMIT;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.FIELD_NEXT;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.FIELD_THREAD;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.HOST_IP_PROPERTIES_FILE;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.INSTRUMENTED_METHODS;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.JAVA_NIO_BUFFER;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.JAVA_NIO_DIRECT_BYTE_BUFFER;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.JBOSS_WILDFLY_HTTP_REQUEST_PARSER_HANDLE;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.JETTY_PARSE_NEXT;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.JETTY_REQUEST_ON_FILLABLE;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.KUBEPODS_DIR;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.LXC_DIR;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MYSQL_CONNECTOR_5_0_4_PREPARED_SOURCE;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MYSQL_CONNECTOR_6_0_2_SOURCE;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MYSQL_CONNECTOR_6_0_3_SOURCE;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MYSQL_CONNECTOR_6_SOURCE;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MYSQL_CONNECTOR_8_SOURCE;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MYSQL_FIELD_ORIGINAL_SQL;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MYSQL_FIELD_QUERY;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MYSQL_PREPARED_QUERY_8;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MYSQL_PREPARED_STATEMENT_4;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MYSQL_PREPARED_STATEMENT_42;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MYSQL_PREPARED_STATEMENT_5;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MYSQL_PREPARED_STATEMENT_5_0_4;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MYSQL_PREPARED_STATEMENT_6;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MYSQL_PREPARED_STATEMENT_8;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MYSQL_PREPARED_STATEMENT_SOURCE_8;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MYSQL_SOURCE_METHOD_LIST;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.NEW_LINE_SEQUENCE;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.ORG_JBOSS_THREADS_ENHANCED_QUEUE_EXECUTOR;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.ORG_JBOSS_THREADS_ENHANCED_QUEUE_EXECUTOR$Q_NODE;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.ORG_JBOSS_THREADS_ENHANCED_QUEUE_EXECUTOR$_POOL_THREAD_NODE;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.ORG_JBOSS_THREADS_ENHANCED_QUEUE_EXECUTOR$_TASK_NODE;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.PRIVATE_INT_ORG_JBOSS_THREADS_ENHANCED_QUEUE_EXECUTOR_TRY_EXECUTE_JAVA_LANG_RUNNABLE;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.PROC_DIR;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.PUBLIC_JAVA_LANG_THREAD_ORG_XNIO_XNIO_WORKER$_WORKER_THREAD_FACTORY_NEW_THREAD_JAVA_LANG_RUNNABLE;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.STAT;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.TOMCAT_7;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.TOMCAT_8;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.TOMCAT_9;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.TOMCAT_COYOTE_ADAPTER_SERVICE;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.TOMCAT_FIELD_SERVERNUMBER;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.TOMCAT_REQUEST_FIELD_BYTEBUFFER;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.TOMCAT_REQUEST_FIELD_INPUTBUFFER;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.TOMCAT_SERVER_INFO_CLASS_NAME;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.TOMCAT_SETBYTEBUFFER;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.TOMCAT_VERSION_DETECTED_MSG;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.VERSION_SPLIT_EXPR;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.VMPID_SPLIT_CHAR;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.WEBLOGIC_SERVLET_EXECUTE;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.WEBSPHERE_LIBERTY_FILLBYTECACHE;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.WEBSPHERE_LIBERTY_PROCESSREQUEST;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.WEBSPHERE_TRADITIONAL_FILLBYTECACHE;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.WEBSPHERE_TRADITIONAL_PROCESSREQUEST;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -129,7 +34,6 @@ import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -243,7 +147,8 @@ public class LoggingInterceptor extends Interceptor {
 			RuntimeMXBean runtimeMXBean = ManagementFactory.getRuntimeMXBean();
 			String runningVM = runtimeMXBean.getName();
 			VMPID = Integer.parseInt(runningVM.substring(0, runningVM.indexOf(VMPID_SPLIT_CHAR)));
-			ApplicationInfoBean applicationInfoBean = new ApplicationInfoBean(VMPID, applicationUUID, Agent.isDynamicAttach? "DYNAMIC":"STATIC");
+			ApplicationInfoBean applicationInfoBean = new ApplicationInfoBean(VMPID, applicationUUID,
+					Agent.isDynamicAttach ? "DYNAMIC" : "STATIC");
 			applicationInfoBean.setStartTime(runtimeMXBean.getStartTime());
 			String containerId = getContainerID();
 			String cmdLine = getCmdLineArgsByProc(VMPID);
@@ -283,7 +188,7 @@ public class LoggingInterceptor extends Interceptor {
 		 * ", established successfully!!!"); } catch (IOException ex) { throw new
 		 * RuntimeException(ex); }
 		 */
-		System.out.println("Classloader of LoggingInterceptor class inside is : " + this.getClass().getClassLoader());
+//		System.out.println("Classloader of LoggingInterceptor class inside is : " + this.getClass().getClassLoader());
 		try (BufferedReader reader = new BufferedReader(new FileReader(HOST_IP_PROPERTIES_FILE))) {
 			hostip = reader.readLine();
 			if (hostip != null)
@@ -353,16 +258,6 @@ public class LoggingInterceptor extends Interceptor {
 			}
 		}
 		return null;
-	}
-
-	private static String readByteBuffer(ByteBuffer buffer) {
-		int currPos = buffer.position();
-		StringBuffer stringBuffer = new StringBuffer();
-		while (buffer.remaining() > 0) {
-			stringBuffer.append((char) buffer.get());
-		}
-		buffer.position(currPos);
-		return stringBuffer.toString();
 	}
 
 	@Override
@@ -501,7 +396,7 @@ public class LoggingInterceptor extends Interceptor {
 
 	private void onTerminationOfHookedMethods(Object source, String eId) {
 		try {
-			Integer executionId = Integer.parseInt(eId.split(COLON_SEPERATOR)[1]);
+			Long executionId = Long.parseLong(eId.split(COLON_SEPERATOR)[1]);
 			String sourceString = null;
 			Method m = null;
 			long threadId = Thread.currentThread().getId();
@@ -517,10 +412,11 @@ public class LoggingInterceptor extends Interceptor {
 								|| JETTY_REQUEST_ON_FILLABLE.equals(sourceString))
 						|| sourceString.equals(WEBSPHERE_LIBERTY_PROCESSREQUEST)
 						|| sourceString.equals(WEBSPHERE_TRADITIONAL_PROCESSREQUEST)
-						|| sourceString.equals(PUBLIC_VOID_IO_UNDERTOW_SERVLET_HANDLERS_SERVLET_HANDLER_HANDLE_REQUEST_IO_UNDERTOW_SERVER_HTTP_SERVER_EXCHANGE_THROWS_JAVA_IO_IO_EXCEPTION_JAVAX_SERVLET_SERVLET_EXCEPTION)
+						|| sourceString.equals(
+								PUBLIC_VOID_IO_UNDERTOW_SERVLET_HANDLERS_SERVLET_HANDLER_HANDLE_REQUEST_IO_UNDERTOW_SERVER_HTTP_SERVER_EXCHANGE_THROWS_JAVA_IO_IO_EXCEPTION_JAVAX_SERVLET_SERVLET_EXCEPTION)
 						|| sourceString.equals(WEBLOGIC_SERVLET_EXECUTE)) {
 					ServletEventPool.getInstance().decrementServletInfoReference(threadId, executionId, false);
-					System.out.println("Current request map : " + ServletEventPool.getInstance().getRequestMap());
+//					System.out.println("Current request map : " + ServletEventPool.getInstance().getRequestMap());
 				}
 			}
 		} catch (Exception e) {
@@ -533,7 +429,7 @@ public class LoggingInterceptor extends Interceptor {
 	protected void doOnStart(Object source, Object[] arg, String eId) {
 		long start = System.currentTimeMillis();
 		String sourceString = null;
-		Integer executionId = Integer.parseInt(eId.split(COLON_SEPERATOR)[1]);
+		Long executionId = Long.parseLong(eId.split(COLON_SEPERATOR)[1]);
 		long threadId = Thread.currentThread().getId();
 		if (source instanceof Method) {
 			sourceString = ((Method) source).toGenericString();
@@ -548,14 +444,15 @@ public class LoggingInterceptor extends Interceptor {
 //		 // logger.log(LogLevel.FINE,"Thread Id: " + threadId);
 		// logger.log(LogLevel.FINE, "SourceString: " +sourceString);
 
-		System.out.println("start Executionid: " + eId);
-		System.out.println("start Thread Id: " + threadId);
-		System.out.println("start SourceString: " + sourceString);
+//		System.out.println("start Executionid: " + eId);
+//		System.out.println("start Thread Id: " + threadId);
+//		System.out.println("start SourceString: " + sourceString);
 
 		if (sourceString == null)
 			return;
-		if (sourceString.equals(PUBLIC_VOID_IO_UNDERTOW_SERVLET_HANDLERS_SERVLET_HANDLER_HANDLE_REQUEST_IO_UNDERTOW_SERVER_HTTP_SERVER_EXCHANGE_THROWS_JAVA_IO_IO_EXCEPTION_JAVAX_SERVLET_SERVLET_EXCEPTION)) {
-			System.out.println("In runnable.run : " + ThreadMapping.getInstance().getMappedThreadRequestMap());
+		if (sourceString.equals(
+				PUBLIC_VOID_IO_UNDERTOW_SERVLET_HANDLERS_SERVLET_HANDLER_HANDLE_REQUEST_IO_UNDERTOW_SERVER_HTTP_SERVER_EXCHANGE_THROWS_JAVA_IO_IO_EXCEPTION_JAVAX_SERVLET_SERVLET_EXCEPTION)) {
+//			System.out.println("In runnable.run : " + ThreadMapping.getInstance().getMappedThreadRequestMap());
 			ServletEventPool.getInstance().incrementServletInfoReference(threadId, executionId, false);
 			if (ThreadMapping.getInstance().getMappedThreadRequestMap().containsKey(threadId)
 					&& !ThreadMapping.getInstance().getMappedThreadRequestMap().get(threadId).isEmpty()) {
@@ -569,13 +466,13 @@ public class LoggingInterceptor extends Interceptor {
 					ThreadRequestData threadRequestData = iterator.next();
 					if (threadRequestData.getExecutionId() < executionId) {
 						servletInfo = threadRequestData.getServletInfo();
-						System.err.println("SI found : "+ servletInfo);
+//						System.err.println("SI found : "+ servletInfo);
 						break;
 					}
 
 				}
-				if(servletInfo==null) {
-					System.err.println("No SI Mapped");
+				if (servletInfo == null) {
+//					System.err.println("No SI Mapped");
 					return;
 				}
 				ThreadMapping.getInstance().getMappedThreadRequestMap().get(threadId).removeFirst();
@@ -587,7 +484,6 @@ public class LoggingInterceptor extends Interceptor {
 					ServletEventPool.getInstance().getRequestMap().get(threadId)
 							.add(new ExecutionMap(executionId, servletInfo));
 				}
-				System.out.println("Updated request map : " + ServletEventPool.getInstance().getRequestMap());
 			}
 		} else if (sourceString
 				.equals(PRIVATE_INT_ORG_JBOSS_THREADS_ENHANCED_QUEUE_EXECUTOR_TRY_EXECUTE_JAVA_LANG_RUNNABLE)) {
@@ -598,9 +494,6 @@ public class LoggingInterceptor extends Interceptor {
 						.getDeclaredField("tail");
 				tailField.setAccessible(true);
 				Object tailObject = tailField.get(thisPointer);
-
-				// ==================
-
 				Object tailNext = this.getNextQnode(tailObject, currentClassLoader);
 				Class taskNodeClass = Class.forName(ORG_JBOSS_THREADS_ENHANCED_QUEUE_EXECUTOR$_TASK_NODE, true,
 						currentClassLoader);
@@ -613,11 +506,7 @@ public class LoggingInterceptor extends Interceptor {
 				}
 				Class poolThreadNodeClass = Class.forName(ORG_JBOSS_THREADS_ENHANCED_QUEUE_EXECUTOR$_POOL_THREAD_NODE,
 						true, currentClassLoader);
-				// ==================
 
-//				Field nextUpdaterField = Class.forName("org.jboss.threads.EnhancedQueueExecutor.QNode", true, currentClassLoader).getDeclaredField("nextUpdater");
-//				nextUpdaterField.setAccessible(true);
-//				Object nextUpdaterObject = nextUpdaterField.get(nextObject);
 				Field threadField = Class
 						.forName(ORG_JBOSS_THREADS_ENHANCED_QUEUE_EXECUTOR$_POOL_THREAD_NODE, true, currentClassLoader)
 						.getDeclaredField(FIELD_THREAD);
@@ -626,25 +515,9 @@ public class LoggingInterceptor extends Interceptor {
 				if (tailNext != null && poolThreadNodeClass.isInstance(tailNext)) {
 					Thread threadObj = (Thread) threadField.get(tailNext);
 					Long newThreadId = threadObj.getId();
-					System.out.println("Thread ID Found : " + newThreadId);
-					Pair<Long, Integer> pairedKey = new ImmutablePair<>(threadId, executionId - 1);
-					ConcurrentLinkedDeque<ThreadRequestData> threadRequestData = ThreadMapping.getInstance()
-							.getTempThreadRequestMap().get(pairedKey);
-					ThreadMapping.getInstance().getTempThreadRequestMap().remove(pairedKey);
-					if (threadRequestData != null) {
-						if (!ThreadMapping.getInstance().getMappedThreadRequestMap().containsKey(newThreadId))
-							ThreadMapping.getInstance().getMappedThreadRequestMap().put(newThreadId,
-									new ConcurrentLinkedDeque<ThreadRequestData>());
-						ThreadMapping.getInstance().getMappedThreadRequestMap().get(newThreadId)
-								.addAll(threadRequestData);
-					}
-					//
-				} else {
-//					System.out.println("Pool Thread object not found");
+//					System.out.println("Thread ID Found : " + newThreadId);
+					updateThreadMaps(threadId, executionId, newThreadId);
 				}
-//				Method getMethod = AtomicReferenceFieldUpdater.class.getClass().getDeclaredMethod("get", tail.getClass());
-//				getMethod.setAccessible(true);
-//				getMethod.invoke(nextUpdaterObject, nextObject);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -657,7 +530,7 @@ public class LoggingInterceptor extends Interceptor {
 				ServletInfo servletInfo = new ServletInfo();
 				servletInfo.setRawRequest(fetchedDataString);
 				ThreadRequestData threadRequestData = new ThreadRequestData(executionId, servletInfo, threadId);
-				Pair<Long, Integer> pairedKey = new ImmutablePair<>(threadId, executionId);
+				Pair<Long, Long> pairedKey = new ImmutablePair<>(threadId, executionId);
 				if (!ThreadMapping.getInstance().getTempThreadRequestMap().containsKey(pairedKey)) {
 					ThreadMapping.getInstance().getTempThreadRequestMap().put(pairedKey,
 							new ConcurrentLinkedDeque<ThreadRequestData>());
@@ -992,6 +865,20 @@ public class LoggingInterceptor extends Interceptor {
 
 	}
 
+	private void updateThreadMaps(long threadId, Long executionId, Long newThreadId) {
+		Pair<Long, Long> pairedKey = new ImmutablePair<>(threadId, executionId - 1);
+		ConcurrentLinkedDeque<ThreadRequestData> threadRequestData = ThreadMapping.getInstance()
+				.getTempThreadRequestMap().get(pairedKey);
+		ThreadMapping.getInstance().getTempThreadRequestMap().remove(pairedKey);
+		if (threadRequestData != null) {
+			if (!ThreadMapping.getInstance().getMappedThreadRequestMap().containsKey(newThreadId))
+				ThreadMapping.getInstance().getMappedThreadRequestMap().put(newThreadId,
+						new ConcurrentLinkedDeque<ThreadRequestData>());
+			ThreadMapping.getInstance().getMappedThreadRequestMap().get(newThreadId)
+					.addAll(threadRequestData);
+		}
+	}
+
 	private String fetchRequestStringForWildfly(Object buffer, ClassLoader currentClassLoader) {
 		String requestData = "";
 		try {
@@ -1009,7 +896,7 @@ public class LoggingInterceptor extends Interceptor {
 				bytesObtained[i] = bb;
 			}
 			requestData = new String(bytesObtained);
-			System.out.println("Data finally obtained : " + requestData);
+//			System.out.println("Data finally obtained : " + requestData);
 			logger.log(LogLevel.DEBUG, requestData, LoggingInterceptor.class.getName());
 		} catch (Exception e) {
 			e.printStackTrace(System.err);
@@ -1019,40 +906,40 @@ public class LoggingInterceptor extends Interceptor {
 
 	@Override
 	protected void doOnThrowableThrown(Object source, Throwable throwable, String executionId) {
-		String sourceString = null;
-		long threadId = Thread.currentThread().getId();
-		if (source instanceof Method) {
-			sourceString = ((Method) source).toGenericString();
-
-		} else if (source instanceof Constructor) {
-			sourceString = ((Constructor) source).toGenericString();
-		} else {
-			return;
-		}
-		System.out.println("start Executionid: " + executionId);
-		System.out.println("start Thread Id: " + threadId);
-		System.out.println("start SourceString: " + sourceString);
+//		String sourceString = null;
+//		long threadId = Thread.currentThread().getId();
+//		if (source instanceof Method) {
+//			sourceString = ((Method) source).toGenericString();
+//
+//		} else if (source instanceof Constructor) {
+//			sourceString = ((Constructor) source).toGenericString();
+//		} else {
+//			return;
+//		}
+//		System.out.println("doOnThrowableThrown Executionid: " + executionId);
+//		System.out.println("doOnThrowableThrown Thread Id: " + threadId);
+//		System.out.println("doOnThrowableThrown SourceString: " + sourceString);
 
 		onTerminationOfHookedMethods(source, executionId);
 	}
 
 	@Override
 	protected void doOnThrowableUncatched(Object source, Throwable throwable, String executionId) {
-		String sourceString = null;
-		long threadId = Thread.currentThread().getId();
-		if (source instanceof Method) {
-			sourceString = ((Method) source).toGenericString();
-	
-		} else if (source instanceof Constructor) {
-			sourceString = ((Constructor) source).toGenericString();
-		} else {
-			return;
-		}
-		System.out.println("start Executionid: " + executionId);
-		System.out.println("start Thread Id: " + threadId);
-		System.out.println("start SourceString: " + sourceString);
+//		String sourceString = null;
+//		long threadId = Thread.currentThread().getId();
+//		if (source instanceof Method) {
+//			sourceString = ((Method) source).toGenericString();
+//
+//		} else if (source instanceof Constructor) {
+//			sourceString = ((Constructor) source).toGenericString();
+//		} else {
+//			return;
+//		}
+//		System.out.println("doOnThrowableUncatched Executionid: " + executionId);
+//		System.out.println("doOnThrowableUncatched Thread Id: " + threadId);
+//		System.out.println("doOnThrowableUncatched SourceString: " + sourceString);
 
-	onTerminationOfHookedMethods(source, executionId);
+		onTerminationOfHookedMethods(source, executionId);
 	}
 
 	@Override
@@ -1068,10 +955,10 @@ public class LoggingInterceptor extends Interceptor {
 		} else {
 			return;
 		}
-		System.out.println("end Executionid: " + eId);
-		System.out.println("end Thread Id: " + threadId);
-		System.out.println("end SourceString: " + sourceString);
-		Integer executionId = Integer.parseInt(eId.split(COLON_SEPERATOR)[1]);
+//		System.out.println("end Executionid: " + eId);
+//		System.out.println("end Thread Id: " + threadId);
+//		System.out.println("end SourceString: " + sourceString);
+		Long executionId = Long.parseLong(eId.split(COLON_SEPERATOR)[1]);
 
 //		if(sourceString.equals("private static synchronized long java.lang.Thread.nextThreadID()")) {
 //			long threadIdCreated = (long) result;
@@ -1087,21 +974,10 @@ public class LoggingInterceptor extends Interceptor {
 				PUBLIC_JAVA_LANG_THREAD_ORG_XNIO_XNIO_WORKER$_WORKER_THREAD_FACTORY_NEW_THREAD_JAVA_LANG_RUNNABLE)) {
 			Thread returnedThread = (Thread) result;
 			Long newThreadId = returnedThread.getId();
-			System.out.println("Created Thread's id ::: " + newThreadId);
+//			System.out.println("Created Thread's id ::: " + newThreadId);
 //			System.out.println("We should map : "+threadId+" to : "+ newThreadId);
-			Pair<Long, Integer> pairedKey = new ImmutablePair<>(threadId, executionId - 2);
-			ConcurrentLinkedDeque<ThreadRequestData> threadRequestData = ThreadMapping.getInstance()
-					.getTempThreadRequestMap().get(pairedKey);
-			ThreadMapping.getInstance().getTempThreadRequestMap().remove(pairedKey);
-			if (threadRequestData != null) {
-				if (!ThreadMapping.getInstance().getMappedThreadRequestMap().containsKey(newThreadId))
-					ThreadMapping.getInstance().getMappedThreadRequestMap().put(newThreadId,
-							new ConcurrentLinkedDeque<ThreadRequestData>());
-				ThreadMapping.getInstance().getMappedThreadRequestMap().get(newThreadId).addAll(threadRequestData);
-			}
-		}
-
-		if (sourceString.equals(WEBSPHERE_LIBERTY_FILLBYTECACHE)
+			updateThreadMaps(threadId, executionId, newThreadId);
+		} else if (sourceString.equals(WEBSPHERE_LIBERTY_FILLBYTECACHE)
 				|| sourceString.equals(WEBSPHERE_TRADITIONAL_FILLBYTECACHE)) {
 			if (args.length == 0)
 				return;

@@ -8,7 +8,7 @@ import com.k2cybersecurity.intcodeagent.websocket.JsonConverter;
 
 public class ExecutionMap {
 
-	private Integer executionId;
+	private Long executionId;
 	
 	private ServletInfo servletInfo;
 	
@@ -16,7 +16,7 @@ public class ExecutionMap {
 	 * @param executionId
 	 * @param servletInfo
 	 */
-	public ExecutionMap(Integer executionId, ServletInfo servletInfo) {
+	public ExecutionMap(Long executionId, ServletInfo servletInfo) {
 		super();
 		this.executionId = executionId;
 		this.servletInfo = servletInfo;
@@ -25,7 +25,7 @@ public class ExecutionMap {
 	public ExecutionMap() {
 	}
 	
-	public ExecutionMap(Integer executionId) {
+	public ExecutionMap(Long executionId) {
 		super();
 		this.executionId = executionId;
 	}
@@ -33,14 +33,14 @@ public class ExecutionMap {
 	/**
 	 * @return the executionId
 	 */
-	public Integer getExecutionId() {
+	public Long getExecutionId() {
 		return executionId;
 	}
 
 	/**
 	 * @param executionId the executionId to set
 	 */
-	public void setExecutionId(Integer executionId) {
+	public void setExecutionId(Long executionId) {
 		this.executionId = executionId;
 	}
 
@@ -90,7 +90,7 @@ public class ExecutionMap {
 	}
 	
 	
-	public static ServletInfo find(Integer executionId, ConcurrentLinkedDeque<ExecutionMap> executionMaps) {
+	public static ServletInfo find(Long executionId, ConcurrentLinkedDeque<ExecutionMap> executionMaps) {
 		Iterator<ExecutionMap> iterator = executionMaps.descendingIterator();
 		while(iterator.hasNext()) {
 			ExecutionMap executionMap = iterator.next();

@@ -113,7 +113,7 @@ public class ProcessorThread implements Runnable {
 	private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
 	private Object source;
 	private Object[] arg;
-	private Integer executionId;
+	private Long executionId;
 	private StackTraceElement[] stackTrace;
 	private Long threadId;
 	private String sourceString;
@@ -135,7 +135,7 @@ public class ProcessorThread implements Runnable {
 	 * @param servletInfo
 	 */
 
-	public ProcessorThread(Object source, Object[] arg, Integer executionId, StackTraceElement[] stackTrace, long tId,
+	public ProcessorThread(Object source, Object[] arg, Long executionId, StackTraceElement[] stackTrace, long tId,
 			String sourceString, long preProcessingTime) {
 		this.source = source;
 		this.arg = arg;
@@ -179,14 +179,14 @@ public class ProcessorThread implements Runnable {
 	/**
 	 * @return the executionId
 	 */
-	public Integer getExecutionId() {
+	public Long getExecutionId() {
 		return executionId;
 	}
 
 	/**
 	 * @param executionId the executionId to set
 	 */
-	public void setExecutionId(Integer executionId) {
+	public void setExecutionId(Long executionId) {
 		this.executionId = executionId;
 	}
 
@@ -1041,7 +1041,6 @@ public class ProcessorThread implements Runnable {
 			try {
 				intCodeResultBean.setServletInfo(new ServletInfo(ExecutionMap.find(this.executionId,
 						ServletEventPool.getInstance().getRequestMap().get(this.threadId))));
-				System.out.println("Agent Info : "+ intCodeResultBean);
 				if (intCodeResultBean.getCaseType().equals(VulnerabilityCaseType.HTTP_REQUEST.getCaseType())) {
 					boolean validationResult = partialSSRFValidator(intCodeResultBean);
 					if (!validationResult) {

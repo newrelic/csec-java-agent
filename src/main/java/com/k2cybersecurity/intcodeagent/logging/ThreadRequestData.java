@@ -11,7 +11,7 @@ public class ThreadRequestData extends ExecutionMap {
 	 * @param threadId
 	 * @param servletInfo
 	 */
-	public ThreadRequestData(Integer executionId, ServletInfo servletInfo, long threadId) {
+	public ThreadRequestData(Long executionId, ServletInfo servletInfo, long threadId) {
 		super(executionId, servletInfo);
 		this.launcherThreadId = threadId;
 	}

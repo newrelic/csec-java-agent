@@ -7,7 +7,7 @@ import com.k2cybersecurity.intcodeagent.websocket.JsonConverter;
 
 public class EIDCount {
 
-	private Integer eid;
+	private Long eid;
 
 	private Long count;
 	
@@ -17,14 +17,14 @@ public class EIDCount {
 	/**
 	 * @return the eid
 	 */
-	public Integer getEid() {
+	public Long getEid() {
 		return eid;
 	}
 
 	/**
 	 * @param eid the eid to set
 	 */
-	public void setEid(Integer eid) {
+	public void setEid(Long eid) {
 		this.eid = eid;
 	}
 
@@ -81,13 +81,13 @@ public class EIDCount {
 	 * @param eid
 	 * @param count
 	 */
-	public EIDCount(Integer eid, Long count) {
+	public EIDCount(Long eid, Long count) {
 		super();
 		this.eid = eid;
 		this.count = count;
 	}
 
-	public static EIDCount find(Integer eid, ConcurrentLinkedDeque<EIDCount> eidCounts) {
+	public static EIDCount find(Long eid, ConcurrentLinkedDeque<EIDCount> eidCounts) {
 		Iterator<EIDCount> eiDIterator = eidCounts.descendingIterator();
 		while (eiDIterator.hasNext()) {
 			EIDCount eidCount = eiDIterator.next();
