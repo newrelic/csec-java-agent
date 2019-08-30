@@ -1041,6 +1041,7 @@ public class ProcessorThread implements Runnable {
 			try {
 				intCodeResultBean.setServletInfo(new ServletInfo(ExecutionMap.find(this.executionId,
 						ServletEventPool.getInstance().getRequestMap().get(this.threadId))));
+//				System.out.println("Agent Info : "+ intCodeResultBean);
 				if (intCodeResultBean.getCaseType().equals(VulnerabilityCaseType.HTTP_REQUEST.getCaseType())) {
 					boolean validationResult = partialSSRFValidator(intCodeResultBean);
 					if (!validationResult) {

@@ -516,7 +516,7 @@ public class LoggingInterceptor extends Interceptor {
 					Thread threadObj = (Thread) threadField.get(tailNext);
 					Long newThreadId = threadObj.getId();
 //					System.out.println("Thread ID Found : " + newThreadId);
-					updateThreadMaps(threadId, executionId, newThreadId);
+					updateThreadMaps(threadId, executionId, newThreadId, 1);
 				}
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -865,8 +865,8 @@ public class LoggingInterceptor extends Interceptor {
 
 	}
 
-	private void updateThreadMaps(long threadId, Long executionId, Long newThreadId) {
-		Pair<Long, Long> pairedKey = new ImmutablePair<>(threadId, executionId - 1);
+	private void updateThreadMaps(long threadId, Long executionId, Long newThreadId, int i) {
+		Pair<Long, Long> pairedKey = new ImmutablePair<>(threadId, executionId - i);
 		ConcurrentLinkedDeque<ThreadRequestData> threadRequestData = ThreadMapping.getInstance()
 				.getTempThreadRequestMap().get(pairedKey);
 		ThreadMapping.getInstance().getTempThreadRequestMap().remove(pairedKey);
@@ -899,7 +899,7 @@ public class LoggingInterceptor extends Interceptor {
 //			System.out.println("Data finally obtained : " + requestData);
 			logger.log(LogLevel.DEBUG, requestData, LoggingInterceptor.class.getName());
 		} catch (Exception e) {
-			e.printStackTrace(System.err);
+//			e.printStackTrace(System.err);
 		}
 		return requestData;
 	}
@@ -976,7 +976,7 @@ public class LoggingInterceptor extends Interceptor {
 			Long newThreadId = returnedThread.getId();
 //			System.out.println("Created Thread's id ::: " + newThreadId);
 //			System.out.println("We should map : "+threadId+" to : "+ newThreadId);
-			updateThreadMaps(threadId, executionId, newThreadId);
+			updateThreadMaps(threadId, executionId, newThreadId, 2);
 		} else if (sourceString.equals(WEBSPHERE_LIBERTY_FILLBYTECACHE)
 				|| sourceString.equals(WEBSPHERE_TRADITIONAL_FILLBYTECACHE)) {
 			if (args.length == 0)
