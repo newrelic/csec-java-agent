@@ -29,28 +29,27 @@ import java.lang.management.RuntimeMXBean;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.net.InetSocketAddress;
-import java.net.SocketAddress;
 import java.net.URISyntaxException;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
-import java.nio.channels.AsynchronousSocketChannel;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedDeque;
-import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.brutusin.instrumentation.Agent;
 import org.brutusin.instrumentation.Interceptor;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.MethodNode;
 
+import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
+import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.models.javaagent.ApplicationInfoBean;
 import com.k2cybersecurity.intcodeagent.models.javaagent.JAHealthCheck;
 import com.k2cybersecurity.intcodeagent.models.javaagent.ServletInfo;
@@ -60,28 +59,39 @@ import com.k2cybersecurity.intcodeagent.websocket.WSClient;
 
 public class LoggingInterceptor extends Interceptor {
 
+	private static final String STRING_DOT = ".";
+	private static final char CH_SLASH = '/';
+	private static final String FIELD_POS = "pos";
+	private static final String WEBLOGIC_UTILS_IO_NULL_INPUT_STREAM = "weblogic.utils.io.NullInputStream";
+	private static final String FIELD_NAME_CONTENT_LEN = "contentLen";
+	private static final String FIELD_NAME_IN3 = "in";
+	private static final String FIELD_CONN_HANDLER = "connHandler";
+	private static final String FIELD_NAME_INPUT_STREAM = "inputStream";
 	private static final String BYTE_LIMIT = "byteLimit";
 	private static final String BYTE_CACHE = "byteCache";
 	private static final String CLASS_COM_IBM_WS_GENERICBNF_IMPL_BNF_HEADERS_IMPL = "com.ibm.ws.genericbnf.impl.BNFHeadersImpl";
 	private static final String CLASS_COM_IBM_WS_GENERICBNF_INTERNAL_BNF_HEADERS_IMPL = "com.ibm.ws.genericbnf.internal.BNFHeadersImpl";
 	private static final String SCOPE = ".scope";
 	private static final String DOCKER_1_13 = "/docker-";
-	private static final int SOCKET_CONNECT_TIMEOUT = 500;
 	protected static Integer VMPID;
 	protected static final String applicationUUID;
 	public static ApplicationInfoBean APPLICATION_INFO_BEAN;
 	protected static JAHealthCheck JA_HEALTH_CHECK;
 
-	protected static Class<?> mysqlPreparedStatement8Class, mysqlPreparedStatement5Class, abstractInputBufferClass;
+	protected static Class<?> mysqlPreparedStatement8Class, mysqlPreparedStatement5Class, abstractInputBufferClass,
+			postInputStreamClass;
 	protected static String tomcatVersion;
 	protected static int tomcatMajorVersion;
 	static final int MAX_DEPTH_LOOKUP = 4; // Max number of superclasses to lookup for a field
 	// protected static Map<Long, ServletInfo> requestMap;
 	public static String hostip = "";
-	private static Logger logger;
+//	private static Logger logger;
+
+	private static final FileLoggerThreadPool logger;
 
 	static {
 		applicationUUID = Agent.APPLICATION_UUID;
+		logger = FileLoggerThreadPool.getInstance();
 	}
 
 	public static String getContainerID() {
@@ -137,7 +147,8 @@ public class LoggingInterceptor extends Interceptor {
 			RuntimeMXBean runtimeMXBean = ManagementFactory.getRuntimeMXBean();
 			String runningVM = runtimeMXBean.getName();
 			VMPID = Integer.parseInt(runningVM.substring(0, runningVM.indexOf(VMPID_SPLIT_CHAR)));
-			ApplicationInfoBean applicationInfoBean = new ApplicationInfoBean(VMPID, applicationUUID);
+			ApplicationInfoBean applicationInfoBean = new ApplicationInfoBean(VMPID, applicationUUID,
+					Agent.isDynamicAttach ? "DYNAMIC" : "STATIC");
 			applicationInfoBean.setStartTime(runtimeMXBean.getStartTime());
 			String containerId = getContainerID();
 			String cmdLine = getCmdLineArgsByProc(VMPID);
@@ -158,7 +169,8 @@ public class LoggingInterceptor extends Interceptor {
 			// JSONArray(runtimeMXBean.getInputArguments()));
 			return applicationInfoBean;
 		} catch (Exception e) {
-			logger.log(Level.WARNING, "Exception occured in createApplicationInfoBean: {0}", e);
+			logger.log(LogLevel.WARNING, "Exception occured in createApplicationInfoBean: " + e,
+					LoggingInterceptor.class.getName());
 		}
 		return null;
 	}
@@ -178,17 +190,17 @@ public class LoggingInterceptor extends Interceptor {
 		 */
 //		System.out.println("Classloader of LoggingInterceptor class inside is : " + this.getClass().getClassLoader());
 		try (BufferedReader reader = new BufferedReader(new FileReader(HOST_IP_PROPERTIES_FILE))) {
-			hostip = reader.readLine();	
-			if(hostip != null)
+			hostip = reader.readLine();
+			if (hostip != null)
 				hostip = hostip.trim();
 		}
-		ConfigK2Logs.getInstance().initializeLogs();
+//		ConfigK2Logs.getInstance().initializeLogs();
 		APPLICATION_INFO_BEAN = createApplicationInfoBean();
 		JA_HEALTH_CHECK = new JAHealthCheck(applicationUUID);
 		try {
 			WSClient.getInstance();
 		} catch (Exception e) {
-			logger.log(Level.WARNING, "Error occured while trying to connect to wsocket: {0}", e);
+//			logger.log(LogLevel.WARNING, "Error occured while trying to connect to wsocket: {0}", e);
 		}
 		IPScheduledThread.getInstance();
 		eventWritePool();
@@ -199,7 +211,8 @@ public class LoggingInterceptor extends Interceptor {
 		try {
 			EventSendPool.getInstance();
 		} catch (Exception e) {
-			logger.log(Level.WARNING, "Exception occured in EventSendPool: {0}", e);
+			logger.log(LogLevel.WARNING, "Exception occured in EventSendPool: " + e,
+					LoggingInterceptor.class.getName());
 		}
 	}
 
@@ -247,16 +260,6 @@ public class LoggingInterceptor extends Interceptor {
 		return null;
 	}
 
-	private static String readByteBuffer(ByteBuffer buffer) {
-		int currPos = buffer.position();
-		StringBuffer stringBuffer = new StringBuffer();
-		while (buffer.remaining() > 0) {
-			stringBuffer.append((char) buffer.get());
-		}
-		buffer.position(currPos);
-		return stringBuffer.toString();
-	}
-
 	@Override
 	public boolean interceptClass(String className, byte[] byteCode) {
 		// System.out.println("class came to instument : "+className);
@@ -296,6 +299,8 @@ public class LoggingInterceptor extends Interceptor {
 
 	@Override
 	public boolean interceptMethod(ClassNode cn, MethodNode mn) {
+		if ("openConnectoin".equalsIgnoreCase(mn.name))
+			return true;
 		switch (cn.name) {
 		case CLASS_ORG_HSQLDB_HSQL_CLIENT_CONNECTION:
 		case CLASS_ORG_HSQLDB_SESSION:
@@ -320,6 +325,22 @@ public class LoggingInterceptor extends Interceptor {
 		case CLASS_ORACLE_JDBC_DRIVER_T4CTT_IFUN:
 			if (INSTRUMENTED_METHODS.get(cn.name).contains(mn.name))
 				JA_HEALTH_CHECK.getProtectedDB().add("ORACLE");
+			break;
+		case CLASS_WEBLOGIC_SERVLET_INTERNAL_WEB_APP_SERVLET_CONTEXT:
+			if (INSTRUMENTED_METHODS.get(cn.name).contains(mn.name))
+				JA_HEALTH_CHECK.setProtectedServer("WEBLOGIC");
+			break;
+		case COM_IBM_WS_HTTP_CHANNEL_INTERNAL_INBOUND_HTTPINBOUNDLINK:
+			if (INSTRUMENTED_METHODS.get(cn.name).contains(mn.name))
+				JA_HEALTH_CHECK.setProtectedServer("WEBSPHERE_LIBERTY");
+			break;
+		case COM_IBM_WS_HTTP_CHANNEL_INBOUND_IMPL_HTTPINBOUNDLINK:
+			if (INSTRUMENTED_METHODS.get(cn.name).contains(mn.name))
+				JA_HEALTH_CHECK.setProtectedServer("WEBSPHERE_TRADITIONAL");
+			break;
+		case IO_UNDERTOW_SERVLET_HANDLERS_SERVLET_HANDLER:
+			if (INSTRUMENTED_METHODS.get(cn.name).contains(mn.name))
+				JA_HEALTH_CHECK.setProtectedServer("JBOSS");
 			break;
 		case CLASS_JAVA_NET_URL_CLASS_LOADER:
 			// if(INSTRUMENTED_METHODS.get(cn.name).contains(mn.name))
@@ -353,6 +374,9 @@ public class LoggingInterceptor extends Interceptor {
 		case CLASS_JAVA_HTTPS_HANDLER:
 		case CLASS_JAVA_SSL_HTTPS_HANDLER:
 		case CLASS_JDK_INCUBATOR_HTTP_MULTIEXCHANGE:
+		case CLASS_APACHE_COMMONS_HTTP_METHOD_DIRECTOR:
+		case CLASS_OKHTTP_HTTP_ENGINE:
+		case CLASS_WEBLOGIC_HTTP_HANDLER:
 			if (INSTRUMENTED_METHODS.get(cn.name).contains(mn.name))
 				JA_HEALTH_CHECK.setSsrfProtection(true);
 			break;
@@ -362,16 +386,17 @@ public class LoggingInterceptor extends Interceptor {
 		}
 		boolean isInstrument = INSTRUMENTED_METHODS.get(cn.name).contains(mn.name);
 		if (isInstrument) {
-			String codeName = cn.name.substring(cn.name.lastIndexOf('/') + 1) + "."
+			String codeName = cn.name.substring(cn.name.lastIndexOf(CH_SLASH) + 1) + STRING_DOT
 					+ INSTRUMENTED_METHODS.get(cn.name).indexOf(mn.name);
 			JA_HEALTH_CHECK.getInstrumentedMethods().add(codeName);
+//			System.out.println("Class name: " + cn.name + " , method: " + mn.name);
 		}
 		return isInstrument;
 	}
 
 	private void onTerminationOfHookedMethods(Object source, String eId) {
 		try {
-			Integer executionId = Integer.parseInt(eId.split(COLON_SEPERATOR)[1]);
+			Long executionId = Long.parseLong(eId.split(COLON_SEPERATOR)[1]);
 			String sourceString = null;
 			Method m = null;
 			long threadId = Thread.currentThread().getId();
@@ -386,9 +411,12 @@ public class LoggingInterceptor extends Interceptor {
 						&& (TOMCAT_COYOTE_ADAPTER_SERVICE.equals(sourceString)
 								|| JETTY_REQUEST_ON_FILLABLE.equals(sourceString))
 						|| sourceString.equals(WEBSPHERE_LIBERTY_PROCESSREQUEST)
-						|| sourceString.equals(WEBSPHERE_TRADITIONAL_PROCESSREQUEST)) {
+						|| sourceString.equals(WEBSPHERE_TRADITIONAL_PROCESSREQUEST)
+						|| sourceString.equals(
+								PUBLIC_VOID_IO_UNDERTOW_SERVLET_HANDLERS_SERVLET_HANDLER_HANDLE_REQUEST_IO_UNDERTOW_SERVER_HTTP_SERVER_EXCHANGE_THROWS_JAVA_IO_IO_EXCEPTION_JAVAX_SERVLET_SERVLET_EXCEPTION)
+						|| sourceString.equals(WEBLOGIC_SERVLET_EXECUTE)) {
 					ServletEventPool.getInstance().decrementServletInfoReference(threadId, executionId, false);
-
+//					System.out.println("Current request map : " + ServletEventPool.getInstance().getRequestMap());
 				}
 			}
 		} catch (Exception e) {
@@ -401,7 +429,7 @@ public class LoggingInterceptor extends Interceptor {
 	protected void doOnStart(Object source, Object[] arg, String eId) {
 		long start = System.currentTimeMillis();
 		String sourceString = null;
-		Integer executionId = Integer.parseInt(eId.split(COLON_SEPERATOR)[1]);
+		Long executionId = Long.parseLong(eId.split(COLON_SEPERATOR)[1]);
 		long threadId = Thread.currentThread().getId();
 		if (source instanceof Method) {
 			sourceString = ((Method) source).toGenericString();
@@ -412,16 +440,108 @@ public class LoggingInterceptor extends Interceptor {
 			return;
 		}
 
-//		 logger.log(Level.FINE,"Executionid: " + eId);
-//		 logger.log(Level.FINE,"Thread Id: " + threadId);
-//		 logger.log(Level.FINE, "SourceString: " +sourceString);
+//		 // logger.log(LogLevel.FINE,"Executionid: " + eId);
+//		 // logger.log(LogLevel.FINE,"Thread Id: " + threadId);
+		// logger.log(LogLevel.FINE, "SourceString: " +sourceString);
+
+//		System.out.println("start Executionid: " + eId);
+//		System.out.println("start Thread Id: " + threadId);
+//		System.out.println("start SourceString: " + sourceString);
 
 		if (sourceString == null)
 			return;
-		if (sourceString.equals(WEBSPHERE_LIBERTY_FILLBYTECACHE)
+		if (sourceString.equals(
+				PUBLIC_VOID_IO_UNDERTOW_SERVLET_HANDLERS_SERVLET_HANDLER_HANDLE_REQUEST_IO_UNDERTOW_SERVER_HTTP_SERVER_EXCHANGE_THROWS_JAVA_IO_IO_EXCEPTION_JAVAX_SERVLET_SERVLET_EXCEPTION)) {
+//			System.out.println("In runnable.run : " + ThreadMapping.getInstance().getMappedThreadRequestMap());
+			ServletEventPool.getInstance().incrementServletInfoReference(threadId, executionId, false);
+			if (ThreadMapping.getInstance().getMappedThreadRequestMap().containsKey(threadId)
+					&& !ThreadMapping.getInstance().getMappedThreadRequestMap().get(threadId).isEmpty()) {
+				// TODO change logic here... use nearest eid instead of latest
+
+				ConcurrentLinkedDeque<ThreadRequestData> threadRequestDatas = ThreadMapping.getInstance()
+						.getMappedThreadRequestMap().get(threadId);
+				Iterator<ThreadRequestData> iterator = threadRequestDatas.descendingIterator();
+				ServletInfo servletInfo = null;
+				while (iterator.hasNext()) {
+					ThreadRequestData threadRequestData = iterator.next();
+					if (threadRequestData.getExecutionId() < executionId) {
+						servletInfo = threadRequestData.getServletInfo();
+//						System.err.println("SI found : "+ servletInfo);
+						break;
+					}
+
+				}
+				if (servletInfo == null) {
+//					System.err.println("No SI Mapped");
+					return;
+				}
+				ThreadMapping.getInstance().getMappedThreadRequestMap().get(threadId).removeFirst();
+				if (!ServletEventPool.getInstance().getRequestMap().containsKey(threadId)) {
+					ConcurrentLinkedDeque<ExecutionMap> executionMaps = new ConcurrentLinkedDeque<ExecutionMap>();
+					executionMaps.add(new ExecutionMap(executionId, servletInfo));
+					ServletEventPool.getInstance().getRequestMap().put(threadId, executionMaps);
+				} else {
+					ServletEventPool.getInstance().getRequestMap().get(threadId)
+							.add(new ExecutionMap(executionId, servletInfo));
+				}
+			}
+		} else if (sourceString
+				.equals(PRIVATE_INT_ORG_JBOSS_THREADS_ENHANCED_QUEUE_EXECUTOR_TRY_EXECUTE_JAVA_LANG_RUNNABLE)) {
+			Object thisPointer = arg[arg.length - 1];
+			ClassLoader currentClassLoader = thisPointer.getClass().getClassLoader();
+			try {
+				Field tailField = Class.forName(ORG_JBOSS_THREADS_ENHANCED_QUEUE_EXECUTOR, true, currentClassLoader)
+						.getDeclaredField("tail");
+				tailField.setAccessible(true);
+				Object tailObject = tailField.get(thisPointer);
+				Object tailNext = this.getNextQnode(tailObject, currentClassLoader);
+				Class taskNodeClass = Class.forName(ORG_JBOSS_THREADS_ENHANCED_QUEUE_EXECUTOR$_TASK_NODE, true,
+						currentClassLoader);
+				if (taskNodeClass.isInstance(tailNext)) {
+					do {
+						tailObject = tailNext;
+						tailNext = this.getNextQnode(tailObject, currentClassLoader);
+					} while (taskNodeClass.isInstance(tailNext));
+
+				}
+				Class poolThreadNodeClass = Class.forName(ORG_JBOSS_THREADS_ENHANCED_QUEUE_EXECUTOR$_POOL_THREAD_NODE,
+						true, currentClassLoader);
+
+				Field threadField = Class
+						.forName(ORG_JBOSS_THREADS_ENHANCED_QUEUE_EXECUTOR$_POOL_THREAD_NODE, true, currentClassLoader)
+						.getDeclaredField(FIELD_THREAD);
+				threadField.setAccessible(true);
+
+				if (tailNext != null && poolThreadNodeClass.isInstance(tailNext)) {
+					Thread threadObj = (Thread) threadField.get(tailNext);
+					Long newThreadId = threadObj.getId();
+//					System.out.println("Thread ID Found : " + newThreadId);
+					updateThreadMaps(threadId, executionId, newThreadId, 1);
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		} else if (sourceString.equals(JBOSS_WILDFLY_HTTP_REQUEST_PARSER_HANDLE)) {
+			Object arg0 = arg[0];
+			ClassLoader currentClassLoader = arg0.getClass().getClassLoader();
+			String fetchedDataString = fetchRequestStringForWildfly(arg0, currentClassLoader);
+
+			if (fetchedDataString != null && !fetchedDataString.isEmpty()) {
+				ServletInfo servletInfo = new ServletInfo();
+				servletInfo.setRawRequest(fetchedDataString);
+				ThreadRequestData threadRequestData = new ThreadRequestData(executionId, servletInfo, threadId);
+				Pair<Long, Long> pairedKey = new ImmutablePair<>(threadId, executionId);
+				if (!ThreadMapping.getInstance().getTempThreadRequestMap().containsKey(pairedKey)) {
+					ThreadMapping.getInstance().getTempThreadRequestMap().put(pairedKey,
+							new ConcurrentLinkedDeque<ThreadRequestData>());
+				}
+				ThreadMapping.getInstance().getTempThreadRequestMap().get(pairedKey).add(threadRequestData);
+//				System.out.println("Post handle method hook: "+ ThreadMapping.getInstance().getTempThreadRequestMap());
+			}
+		} else if (sourceString.equals(WEBSPHERE_LIBERTY_FILLBYTECACHE)
 				|| sourceString.equals(WEBSPHERE_TRADITIONAL_FILLBYTECACHE))
 			return;
-		if (sourceString.equals(WEBSPHERE_LIBERTY_PROCESSREQUEST)
+		else if (sourceString.equals(WEBSPHERE_LIBERTY_PROCESSREQUEST)
 				|| sourceString.equals(WEBSPHERE_TRADITIONAL_PROCESSREQUEST)) {
 //			Object thisPointer = arg[arg.length -1];
 //			ClassLoader currentClassLoader = arg[arg.length -1].getClass().getClassLoader();
@@ -463,7 +583,7 @@ public class LoggingInterceptor extends Interceptor {
 
 			} else {
 				servletInfo = new ServletInfo();
-				servletInfo.addGenerationTime((int) (System.currentTimeMillis()-start));
+				servletInfo.addGenerationTime((int) (System.currentTimeMillis() - start));
 				ServletEventPool.getInstance().getRequestMap().get(threadId)
 						.add(new ExecutionMap(executionId, servletInfo));
 			}
@@ -499,11 +619,12 @@ public class LoggingInterceptor extends Interceptor {
 					} else {
 						servletInfo.setRawRequest(servletInfo.getRawRequest() + requestContent);
 					}
-					// logger.log(Level.FINE,"Request Param : " + servletInfo);
+//					 logger.log(LogLevel.FINE,"Request Param : " + servletInfo);
 				}
-				servletInfo.addGenerationTime((int) (System.currentTimeMillis()-start));
+				servletInfo.addGenerationTime((int) (System.currentTimeMillis() - start));
 			} catch (Exception e) {
-				logger.log(Level.WARNING, "Exception occured in JETTY_PARSE_NEXT: {0}", e);
+				logger.log(LogLevel.WARNING, "Exception occured in JETTY_PARSE_NEXT: " + e,
+						LoggingInterceptor.class.getName());
 			}
 		} else if (TOMCAT_SETBYTEBUFFER.equals(sourceString)) {
 			ServletInfo servletInfo;
@@ -532,11 +653,12 @@ public class LoggingInterceptor extends Interceptor {
 					} else {
 						servletInfo.setRawRequest(servletInfo.getRawRequest() + requestContent);
 					}
-					// logger.log(Level.FINE,"Request Param : " + servletInfo);
+//					  logger.log(LogLevel.FINE,"Request Param : " + servletInfo);
 				}
-				servletInfo.addGenerationTime((int) (System.currentTimeMillis()-start));
+				servletInfo.addGenerationTime((int) (System.currentTimeMillis() - start));
 			} catch (Exception e) {
-				logger.log(Level.WARNING, "Exception occured in TOMCAT_SETBYTEBUFFER: {0}", e);
+				logger.log(LogLevel.WARNING, "Exception occured in TOMCAT_SETBYTEBUFFER: " + e,
+						LoggingInterceptor.class.getName());
 			}
 		} else if (TOMCAT_COYOTE_ADAPTER_SERVICE.equals(sourceString)) {
 
@@ -584,7 +706,8 @@ public class LoggingInterceptor extends Interceptor {
 						positionHb = (Integer) position.get(byteBuffer);
 						byteBufferFound = true;
 					} catch (Exception e) {
-						logger.log(Level.WARNING, "Exception occured in TOMCAT_COYOTE_ADAPTER_SERVICE: {0}", e);
+						logger.log(LogLevel.WARNING, "Exception occured in TOMCAT_COYOTE_ADAPTER_SERVICE: " + e,
+								LoggingInterceptor.class.getName());
 					}
 				} else if (tomcatMajorVersion == TOMCAT_7) {
 					try {
@@ -604,7 +727,8 @@ public class LoggingInterceptor extends Interceptor {
 						}
 						byteBufferFound = true;
 					} catch (Exception e) {
-						logger.log(Level.WARNING, "Exception occured in TOMCAT_COYOTE_ADAPTER_SERVICE: {0}", e);
+						logger.log(LogLevel.WARNING, "Exception occured in TOMCAT_COYOTE_ADAPTER_SERVICE: " + e,
+								LoggingInterceptor.class.getName());
 
 					}
 				}
@@ -625,28 +749,114 @@ public class LoggingInterceptor extends Interceptor {
 							positionHb);
 					requestContent = new String(buff.getByteArray(), 0, buff.getLimit(), StandardCharsets.UTF_8);
 					servletInfo.setRawRequest(requestContent);
-//					 logger.log(Level.INFO,"Request Param : " + threadId + ":" + executionId + " : " +
-//					 servletInfo);
+					logger.log(LogLevel.INFO, "Request Param : " + threadId + ":" + executionId + " : " + servletInfo,
+							LoggingInterceptor.class.getName());
 				}
-				servletInfo.addGenerationTime((int) (System.currentTimeMillis()-start));
+				servletInfo.addGenerationTime((int) (System.currentTimeMillis() - start));
 			} catch (Exception e) {
-				logger.log(Level.WARNING, "Exception occured in TOMCAT_COYOTE_ADAPTER_SERVICE buffer processing : {0}",
-						e);
+				logger.log(LogLevel.WARNING,
+						"Exception occured in TOMCAT_COYOTE_ADAPTER_SERVICE buffer processing : " + e,
+						LoggingInterceptor.class.getName());
 			}
 			// in case of executeInternal()
+		} else if (sourceString.equals(WEBLOGIC_SERVLET_EXECUTE)) {
+			try {
+				ServletEventPool.getInstance().incrementServletInfoReference(threadId, executionId, false);
+				Object servletObject = arg[0];
+//				System.out.println("Searching arg0 in : "+ servletObject.getClass().getName() + "  ::  " + servletObject.getClass().getSuperclass().getName() + " :: " + Arrays.asList(servletObject.getClass().getDeclaredFields()));
+				Field inputStreamField = servletObject.getClass().getDeclaredField(FIELD_NAME_INPUT_STREAM);
+				inputStreamField.setAccessible(true);
+				Object inputStream = inputStreamField.get(servletObject);
+
+				Field inField = inputStream.getClass().getDeclaredField(FIELD_NAME_IN3);
+				inField.setAccessible(true);
+				Object in = inField.get(inputStream);
+				if (!in.getClass().getName().equals(WEBLOGIC_UTILS_IO_NULL_INPUT_STREAM)) {
+//					System.out.println("Searching buf in : "+ in.getClass().getName() + "  ::  " + in.getClass().getSuperclass().getName() + " :: " + Arrays.asList(in.getClass().getDeclaredFields()));
+					Field bufField = in.getClass().getDeclaredField(BYTE_BUFFER_FIELD_BUF);
+					bufField.setAccessible(true);
+					Object buf = bufField.get(in);
+
+					Field contentLenField = in.getClass().getDeclaredField(FIELD_NAME_CONTENT_LEN);
+					contentLenField.setAccessible(true);
+					Long contentLen = (Long) contentLenField.get(in);
+
+					Field limit = Buffer.class.getDeclaredField(BYTE_BUFFER_FIELD_LIMIT);
+					limit.setAccessible(true);
+					int limitHb = (Integer) limit.get(buf);
+					if (limitHb > 0) {
+
+						Field hb = ByteBuffer.class.getDeclaredField(BYTE_BUFFER_FIELD_HB);
+						hb.setAccessible(true);
+						byte[] hbContent = (byte[]) hb.get(buf);
+
+						ServletInfo servletInfo = new ServletInfo();
+						servletInfo.setRawRequest(new String(hbContent, 0, limitHb, StandardCharsets.UTF_8));
+						if (contentLen > limitHb) {
+							servletInfo.setDataTruncated(true);
+						}
+
+						servletInfo.addGenerationTime((int) (System.currentTimeMillis() - start));
+						if (!ServletEventPool.getInstance().getRequestMap().containsKey(threadId)) {
+							ConcurrentLinkedDeque<ExecutionMap> executionMaps = new ConcurrentLinkedDeque<ExecutionMap>();
+							executionMaps.add(new ExecutionMap(executionId, servletInfo));
+							ServletEventPool.getInstance().getRequestMap().put(threadId, executionMaps);
+
+						} else {
+							servletInfo.addGenerationTime((int) (System.currentTimeMillis() - start));
+							ServletEventPool.getInstance().getRequestMap().get(threadId)
+									.add(new ExecutionMap(executionId, servletInfo));
+						}
+//					System.out.println("request map: "+ServletEventPool.getInstance().getRequestMap().get(threadId));
+					}
+				} else {
+					Field connHandlerField = inputStream.getClass().getDeclaredField(FIELD_CONN_HANDLER);
+					connHandlerField.setAccessible(true);
+					Object connHandler = connHandlerField.get(inputStream);
+
+					Field bufField = connHandler.getClass().getDeclaredField(BYTE_BUFFER_FIELD_BUF);
+					bufField.setAccessible(true);
+					byte[] buf = (byte[]) bufField.get(connHandler);
+
+					Field posField = connHandler.getClass().getDeclaredField(FIELD_POS);
+					posField.setAccessible(true);
+					Integer pos = (Integer) posField.get(connHandler);
+
+					ServletInfo servletInfo = new ServletInfo();
+					servletInfo.setRawRequest(new String(buf, 0, pos, StandardCharsets.UTF_8));
+
+					servletInfo.addGenerationTime((int) (System.currentTimeMillis() - start));
+					if (!ServletEventPool.getInstance().getRequestMap().containsKey(threadId)) {
+						ConcurrentLinkedDeque<ExecutionMap> executionMaps = new ConcurrentLinkedDeque<ExecutionMap>();
+						executionMaps.add(new ExecutionMap(executionId, servletInfo));
+						ServletEventPool.getInstance().getRequestMap().put(threadId, executionMaps);
+
+					} else {
+						servletInfo.addGenerationTime((int) (System.currentTimeMillis() - start));
+						ServletEventPool.getInstance().getRequestMap().get(threadId)
+								.add(new ExecutionMap(executionId, servletInfo));
+					}
+				}
+
+			} catch (Exception e) {
+				logger.log(LogLevel.WARNING, "Exception occured in WEBLOGIC_INVOKE_SERVLET buffer processing : " + e,
+						LoggingInterceptor.class.getName());
+//				e.printStackTrace();
+			}
 		} else {
 
 			if (MYSQL_SOURCE_METHOD_LIST.contains(sourceString) && arg[0] != null) {
 				processMysqlStatement(arg, threadId, sourceString);
 			}
-//			logger.log(Level.INFO, "ServletEventPool.getInstance().getRequestMap() : {0}",ServletEventPool.getInstance().getRequestMap());
+//			 logger.log(LogLevel.INFO, "ServletEventPool.getInstance().getRequestMap() : "+ ServletEventPool.getInstance().getRequestMap(), LoggingInterceptor.class.getName());
 			try {
-//				if (ServletEventPool.getInstance().getRequestMap().containsKey(threadId) && ExecutionMap
-//						.find(executionId, ServletEventPool.getInstance().getRequestMap().get(threadId)) != null) {
+				if (ServletEventPool.getInstance().getRequestMap().containsKey(threadId) && ExecutionMap
+						.find(executionId, ServletEventPool.getInstance().getRequestMap().get(threadId)) != null) {
 					ServletEventPool.getInstance().incrementServletInfoReference(threadId, executionId, true);
 					EventThreadPool.getInstance().processReceivedEvent(source, arg, executionId,
-							Thread.currentThread().getStackTrace(), threadId, sourceString, System.currentTimeMillis()-start);
-				//}
+							Thread.currentThread().getStackTrace(), threadId, sourceString,
+							System.currentTimeMillis() - start);
+				}
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -655,19 +865,86 @@ public class LoggingInterceptor extends Interceptor {
 
 	}
 
+	private void updateThreadMaps(long threadId, Long executionId, Long newThreadId, int i) {
+		Pair<Long, Long> pairedKey = new ImmutablePair<>(threadId, executionId - i);
+		ConcurrentLinkedDeque<ThreadRequestData> threadRequestData = ThreadMapping.getInstance()
+				.getTempThreadRequestMap().get(pairedKey);
+		ThreadMapping.getInstance().getTempThreadRequestMap().remove(pairedKey);
+		if (threadRequestData != null) {
+			if (!ThreadMapping.getInstance().getMappedThreadRequestMap().containsKey(newThreadId))
+				ThreadMapping.getInstance().getMappedThreadRequestMap().put(newThreadId,
+						new ConcurrentLinkedDeque<ThreadRequestData>());
+			ThreadMapping.getInstance().getMappedThreadRequestMap().get(newThreadId)
+					.addAll(threadRequestData);
+		}
+	}
+
+	private String fetchRequestStringForWildfly(Object buffer, ClassLoader currentClassLoader) {
+		String requestData = "";
+		try {
+			Field limitField = Class.forName(JAVA_NIO_BUFFER, true, currentClassLoader).getDeclaredField(FIELD_LIMIT);
+			limitField.setAccessible(true);
+			int limit = (int) limitField.get(buffer);
+			byte[] bytesObtained = new byte[limit];
+			Class[] paramInt = new Class[1];
+			paramInt[0] = Integer.TYPE;
+			Method getByIndexMethod = Class.forName(JAVA_NIO_DIRECT_BYTE_BUFFER, true, currentClassLoader)
+					.getDeclaredMethod(FIELD_GET, paramInt);
+			for (int i = 0; i < limit; i++) {
+				getByIndexMethod.setAccessible(true);
+				byte bb = (byte) getByIndexMethod.invoke(buffer, i);
+				bytesObtained[i] = bb;
+			}
+			requestData = new String(bytesObtained);
+//			System.out.println("Data finally obtained : " + requestData);
+			logger.log(LogLevel.DEBUG, requestData, LoggingInterceptor.class.getName());
+		} catch (Exception e) {
+//			e.printStackTrace(System.err);
+		}
+		return requestData;
+	}
+
 	@Override
 	protected void doOnThrowableThrown(Object source, Throwable throwable, String executionId) {
+//		String sourceString = null;
+//		long threadId = Thread.currentThread().getId();
+//		if (source instanceof Method) {
+//			sourceString = ((Method) source).toGenericString();
+//
+//		} else if (source instanceof Constructor) {
+//			sourceString = ((Constructor) source).toGenericString();
+//		} else {
+//			return;
+//		}
+//		System.out.println("doOnThrowableThrown Executionid: " + executionId);
+//		System.out.println("doOnThrowableThrown Thread Id: " + threadId);
+//		System.out.println("doOnThrowableThrown SourceString: " + sourceString);
+
 		onTerminationOfHookedMethods(source, executionId);
 	}
 
 	@Override
 	protected void doOnThrowableUncatched(Object source, Throwable throwable, String executionId) {
+//		String sourceString = null;
+//		long threadId = Thread.currentThread().getId();
+//		if (source instanceof Method) {
+//			sourceString = ((Method) source).toGenericString();
+//
+//		} else if (source instanceof Constructor) {
+//			sourceString = ((Constructor) source).toGenericString();
+//		} else {
+//			return;
+//		}
+//		System.out.println("doOnThrowableUncatched Executionid: " + executionId);
+//		System.out.println("doOnThrowableUncatched Thread Id: " + threadId);
+//		System.out.println("doOnThrowableUncatched SourceString: " + sourceString);
+
 		onTerminationOfHookedMethods(source, executionId);
 	}
 
 	@Override
 	protected void doOnFinish(Object[] args, Object source, Object result, String eId) {
-		
+
 		String sourceString = null;
 		long threadId = Thread.currentThread().getId();
 		if (source instanceof Method) {
@@ -678,17 +955,41 @@ public class LoggingInterceptor extends Interceptor {
 		} else {
 			return;
 		}
-		Integer executionId = Integer.parseInt(eId.split(COLON_SEPERATOR)[1]);
-		Object arg = args[args.length-1];
-		if (sourceString.equals(WEBSPHERE_LIBERTY_FILLBYTECACHE) || sourceString.equals(WEBSPHERE_TRADITIONAL_FILLBYTECACHE)) {
+//		System.out.println("end Executionid: " + eId);
+//		System.out.println("end Thread Id: " + threadId);
+//		System.out.println("end SourceString: " + sourceString);
+		Long executionId = Long.parseLong(eId.split(COLON_SEPERATOR)[1]);
+
+//		if(sourceString.equals("private static synchronized long java.lang.Thread.nextThreadID()")) {
+//			long threadIdCreated = (long) result;
+//			System.out.println("Created Thread's id ::: "+ threadIdCreated);
+//			System.out.println("We should map : "+threadId+" to : "+ threadIdCreated);
+//			for(StackTraceElement tr : Thread.currentThread().getStackTrace()) {
+//				System.out.println("CN : "+ tr.getClassName() + "." + tr.getMethodName()+" :: LN : "+ tr.getLineNumber());
+//			}
+//			System.out.println("");
+//		}
+
+		if (sourceString.equals(
+				PUBLIC_JAVA_LANG_THREAD_ORG_XNIO_XNIO_WORKER$_WORKER_THREAD_FACTORY_NEW_THREAD_JAVA_LANG_RUNNABLE)) {
+			Thread returnedThread = (Thread) result;
+			Long newThreadId = returnedThread.getId();
+//			System.out.println("Created Thread's id ::: " + newThreadId);
+//			System.out.println("We should map : "+threadId+" to : "+ newThreadId);
+			updateThreadMaps(threadId, executionId, newThreadId, 2);
+		} else if (sourceString.equals(WEBSPHERE_LIBERTY_FILLBYTECACHE)
+				|| sourceString.equals(WEBSPHERE_TRADITIONAL_FILLBYTECACHE)) {
+			if (args.length == 0)
+				return;
+			Object arg = args[args.length - 1];
 			Object thisPointer = arg;
 			ClassLoader currentClassLoader = arg.getClass().getClassLoader();
 			try {
 				Class<?> BNFHeadersImpl = null;
-				if(sourceString.equals(WEBSPHERE_LIBERTY_FILLBYTECACHE))
-				BNFHeadersImpl = Class.forName(CLASS_COM_IBM_WS_GENERICBNF_INTERNAL_BNF_HEADERS_IMPL, true,
-						currentClassLoader);
-				else if(sourceString.equals(WEBSPHERE_TRADITIONAL_FILLBYTECACHE))
+				if (sourceString.equals(WEBSPHERE_LIBERTY_FILLBYTECACHE))
+					BNFHeadersImpl = Class.forName(CLASS_COM_IBM_WS_GENERICBNF_INTERNAL_BNF_HEADERS_IMPL, true,
+							currentClassLoader);
+				else if (sourceString.equals(WEBSPHERE_TRADITIONAL_FILLBYTECACHE))
 					BNFHeadersImpl = Class.forName(CLASS_COM_IBM_WS_GENERICBNF_IMPL_BNF_HEADERS_IMPL, true,
 							currentClassLoader);
 				else
@@ -713,7 +1014,8 @@ public class LoggingInterceptor extends Interceptor {
 				}
 
 			} catch (Exception e) {
-				logger.log(Level.SEVERE, "Exception occured in fetching information for Websphere: {0}", e);
+				logger.log(LogLevel.SEVERE, "Exception occured in fetching information for Websphere: " + e,
+						LoggingInterceptor.class.getName());
 			}
 
 		} else {
@@ -745,7 +1047,8 @@ public class LoggingInterceptor extends Interceptor {
 				String originalSql = (String) originalSqlField.get(obj);
 				args[thisPointerLocation] = originalSql;
 			} catch (Exception e) {
-				logger.log(Level.WARNING, "Exception occured in processMysqlStatement CONNECTOR_5: {0}", e);
+				logger.log(LogLevel.WARNING, "Exception occured in processMysqlStatement CONNECTOR_5: " + e,
+						LoggingInterceptor.class.getName());
 			}
 		} else if (objClass.getName().equals(MYSQL_PREPARED_STATEMENT_6)
 				&& (sourceString.equals(MYSQL_CONNECTOR_6_SOURCE) || sourceString.equals(MYSQL_CONNECTOR_6_0_2_SOURCE)
@@ -757,7 +1060,8 @@ public class LoggingInterceptor extends Interceptor {
 
 				args[thisPointerLocation] = originalSql;
 			} catch (Exception e) {
-				logger.log(Level.WARNING, "Exception occured in processMysqlStatement CONNECTOR_6 : {0}", e);
+				logger.log(LogLevel.WARNING, "Exception occured in processMysqlStatement CONNECTOR_6 : " + e,
+						LoggingInterceptor.class.getName());
 			}
 		} else if (objClass.getName().equals(MYSQL_PREPARED_STATEMENT_8)
 				&& sourceString.equals(MYSQL_CONNECTOR_8_SOURCE)) {
@@ -779,7 +1083,8 @@ public class LoggingInterceptor extends Interceptor {
 					args[thisPointerLocation] = originalSql;
 				}
 			} catch (Exception e) {
-				logger.log(Level.WARNING, "Exception occured in processMysqlStatement CONNECTOR_8 : {0}", e);
+				logger.log(LogLevel.WARNING, "Exception occured in processMysqlStatement CONNECTOR_8 : " + e,
+						LoggingInterceptor.class.getName());
 			}
 
 		}
@@ -813,23 +1118,21 @@ public class LoggingInterceptor extends Interceptor {
 			tomcatVersion = (String) serverNumberField.get(null);
 
 			tomcatMajorVersion = Integer.parseInt(tomcatVersion.split(VERSION_SPLIT_EXPR)[0]);
-			logger.log(Level.INFO, TOMCAT_VERSION_DETECTED_MSG + tomcatMajorVersion + COLON_SEPERATOR + tomcatVersion);
+			logger.log(LogLevel.INFO,
+					TOMCAT_VERSION_DETECTED_MSG + tomcatMajorVersion + COLON_SEPERATOR + tomcatVersion,
+					LoggingInterceptor.class.getName());
 
 		} catch (Exception e) {
-			logger.log(Level.WARNING, "Unable to find Tomcat Version: {0}", e);
+			logger.log(LogLevel.WARNING, "Unable to find Tomcat Version: " + e, LoggingInterceptor.class.getName());
 		}
 	}
 
-	public static void setLogger() {
-		LoggingInterceptor.logger = Logger.getLogger(LoggingInterceptor.class.getName());
-	}
-	
 	public static void shutdownLogic(Runtime runtime, final ClassFileTransformer classTransformer) {
 		ShutDownEvent shutDownEvent = new ShutDownEvent();
 		shutDownEvent.setApplicationUUID(Agent.APPLICATION_UUID);
 		shutDownEvent.setStatus("Terminating");
 		EventSendPool.getInstance().sendEvent(shutDownEvent.toString());
-		logger.log(Level.INFO, "Shutting down with status: " + shutDownEvent);
+		logger.log(LogLevel.INFO, "Shutting down with status: " + shutDownEvent, LoggingInterceptor.class.getName());
 		try {
 			TimeUnit.SECONDS.sleep(1);
 		} catch (InterruptedException e) {
@@ -842,7 +1145,7 @@ public class LoggingInterceptor extends Interceptor {
 		IPScheduledThread.getInstance().shutDownThreadPoolExecutor();
 		Agent.globalInstr.removeTransformer(classTransformer);
 		retransformHookedClassesWrapper();
-		logger.log(Level.SEVERE, "Java Agent shutdown complete.");
+		logger.log(LogLevel.SEVERE, "Java Agent shutdown complete.", LoggingInterceptor.class.getName());
 	}
 
 	@Override
@@ -852,7 +1155,7 @@ public class LoggingInterceptor extends Interceptor {
 //		try {
 //			FileWatcher.getInstance().watchDirectory("/etc/k2-adp");
 //		} catch (IOException e) {
-//			logger.log(Level.SEVERE, e.toString());
+//			logger.log(LogLevel.SEVERE, e.toString());
 //		}
 		runtime.addShutdownHook(new Thread() {
 			@Override
@@ -867,7 +1170,7 @@ public class LoggingInterceptor extends Interceptor {
 	protected List<String> getClassesToLoad() {
 		return new ArrayList<String>(IAgentConstants.INSTRUMENTED_METHODS.keySet());
 	}
-	
+
 	private static void retransformHookedClassesWrapper() {
 		List<String> classesToRetransform = new ArrayList<String>(IAgentConstants.INSTRUMENTED_METHODS.keySet());
 
@@ -878,7 +1181,7 @@ public class LoggingInterceptor extends Interceptor {
 		}
 
 		for (String loadedClass : classesToRetransform) {
-			String loadedClassName = loadedClass.replaceAll("/", ".");
+			String loadedClassName = loadedClass.replaceAll("/", STRING_DOT);
 			try {
 				Class<?> cl = allLoadedClasses.get(loadedClassName);
 				if (cl == null) {
@@ -895,5 +1198,27 @@ public class LoggingInterceptor extends Interceptor {
 	public void retransformHookedClasses() {
 		retransformHookedClassesWrapper();
 	}
+
+	private Object getNextQnode(Object tailObject, ClassLoader currentClassLoader) {
+		Field nextField;
+		Object nextObject = null;
+		try {
+			nextField = Class.forName(ORG_JBOSS_THREADS_ENHANCED_QUEUE_EXECUTOR$Q_NODE, true, currentClassLoader)
+					.getDeclaredField(FIELD_NEXT);
+			nextField.setAccessible(true);
+			nextObject = nextField.get(tailObject);
+		} catch (NoSuchFieldException | SecurityException | ClassNotFoundException | IllegalArgumentException
+				| IllegalAccessException e) {
+			e.printStackTrace();
+		}
+		return nextObject;
+
+	}
+
+//	private Object getNextTail(Object tailObject, ClassLoader currentClassLoader) {
+//		Field tailField = Class.forName("org.jboss.threads.EnhancedQueueExecutor", true, currentClassLoader).getDeclaredField("tail");
+//		tailField.setAccessible(true);
+//		Object tailObject = tailField.get(tailObject);
+//	}
 
 }

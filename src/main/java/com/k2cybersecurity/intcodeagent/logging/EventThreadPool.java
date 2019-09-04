@@ -4,15 +4,13 @@ import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.RejectedExecutionHandler;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
-import com.k2cybersecurity.intcodeagent.websocket.WSClient;
+import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
+import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 
 public class EventThreadPool {
 
@@ -22,7 +20,7 @@ public class EventThreadPool {
 	private static EventThreadPool instance;
 	private static short MAX_BLOCKING_QUEUE_SIZE = 3000;
 	private static Object mutex = new Object();
-	private static Logger logger;
+	private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
 
 	private StringBuffer eventBuffer;
 	private LinkedBlockingQueue<Object> eventQueue = new LinkedBlockingQueue<>(MAX_BLOCKING_QUEUE_SIZE);
@@ -88,7 +86,7 @@ public class EventThreadPool {
 					executor.shutdownNow(); // cancel currently executing tasks
 
 					if (!executor.awaitTermination(1, TimeUnit.SECONDS)) {
-						logger.log(Level.SEVERE, "Thread pool executor did not terminate");
+						logger.log(LogLevel.SEVERE, "Thread pool executor did not terminate", EventThreadPool.class.getName());
 					}
 				}
 			} catch (InterruptedException e) {
@@ -131,20 +129,19 @@ public class EventThreadPool {
 		public void rejectedExecution(Runnable r, ThreadPoolExecutor e) {
 			LoggingInterceptor.JA_HEALTH_CHECK.incrementDropCount();
 			LoggingInterceptor.JA_HEALTH_CHECK.incrementProcessedCount();
-//			logger.log(Level.FINE,"Event Task " + r.toString() + " rejected from {0} " + e.toString());
+//			logger.log(LogLevel.FINE,"Event Task " + r.toString() + " rejected from  " + e.toString(), EventThreadPool.class.getName());
 		}
 	}
 
-	public void processReceivedEvent(Object source, Object[] arg, Integer executionId, StackTraceElement[] stackTrace,
+	public void processReceivedEvent(Object source, Object[] arg, Long executionId, StackTraceElement[] stackTrace,
 			long tId, String sourceString, long preProcessingTime) {
 		try {
 			this.executor.execute(
 					new ProcessorThread(source, arg, executionId, stackTrace, tId, sourceString, preProcessingTime));
 		} catch (RejectedExecutionException rejected) {
-			logger.log(Level.INFO, "Rejected to process Event At: " + this.executor.getQueue().size() + ": {0}",
-					rejected);
+			logger.log(LogLevel.INFO, "Rejected to process Event At: " + this.executor.getQueue().size() + ": " +rejected, EventThreadPool.class.getName());
 		} catch (Exception e) {
-			logger.log(Level.WARNING, "Error in processReceivedEvent: {0}", e);
+			logger.log(LogLevel.WARNING, "Error in processReceivedEvent: "+ e, EventThreadPool.class.getName());
 		}
 	}
 
@@ -181,10 +178,6 @@ public class EventThreadPool {
 
 	public void setTriedReconnect(boolean triedReconnect) {
 		this.triedReconnect = triedReconnect;
-	}
-
-	public static void setLogger() {
-		EventThreadPool.logger = Logger.getLogger(EventThreadPool.class.getName());
 	}
 
 }

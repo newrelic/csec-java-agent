@@ -11,9 +11,9 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
+import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
+import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.models.javaagent.ServletInfo;
 
 public class ServletEventPool {
@@ -22,7 +22,7 @@ public class ServletEventPool {
 	private ThreadPoolExecutor executor;
 
 	private static ServletEventPool instance;
-	private static Logger logger;
+	private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
 
 	// private Map<Long, ServletInfo> requestMap;
 
@@ -118,7 +118,7 @@ public class ServletEventPool {
 		 *             always
 		 */
 		public void rejectedExecution(Runnable r, ThreadPoolExecutor e) {
-			logger.log(Level.FINE,"Event Task " + r.toString() + " rejected from {0} " + e.toString());
+			logger.log(LogLevel.DEBUG,"Event Task " + r.toString() + " rejected from  " + e.toString(), ServletEventPool.class.getName());
 		}
 	}
 
@@ -147,7 +147,7 @@ public class ServletEventPool {
 		this.requestMap = requestMap;
 	}
 
-	public synchronized Long incrementServletInfoReference(long threadId, Integer executionId, boolean find) {
+	public synchronized Long incrementServletInfoReference(long threadId, Long executionId, boolean find) {
 		Long refCount = -1l;
 		try {
 			if (find && this.servletInfoReferenceRecord.containsKey(threadId)) {
@@ -170,7 +170,7 @@ public class ServletEventPool {
 		return refCount;
 	}
 
-	public Long decrementServletInfoReference(long threadId, Integer executionId, boolean find) {
+	public Long decrementServletInfoReference(long threadId, Long executionId, boolean find) {
 		Long refCount = -1l;
 		try {
 			EIDCount eidCount = EIDCount.find(executionId, this.servletInfoReferenceRecord.get(threadId));
@@ -198,7 +198,7 @@ public class ServletEventPool {
 					executor.shutdownNow(); // cancel currently executing tasks
 
 					if (!executor.awaitTermination(1, TimeUnit.SECONDS)) {
-						logger.log(Level.SEVERE,"Thread pool executor did not terminate");
+						logger.log(LogLevel.SEVERE,"Thread pool executor did not terminate", ServletEventPool.class.getName());
 					}
 				}
 			} catch (InterruptedException e) {
@@ -206,7 +206,4 @@ public class ServletEventPool {
 		}
 	}
 	
-	public static void setLogger() {
-		ServletEventPool.logger = Logger.getLogger(ServletEventPool.class.getName());
-	}
 }

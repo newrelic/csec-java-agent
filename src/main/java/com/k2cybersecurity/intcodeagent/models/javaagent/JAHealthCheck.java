@@ -2,36 +2,35 @@ package com.k2cybersecurity.intcodeagent.models.javaagent;
 
 import java.net.URL;
 import java.util.Enumeration;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import org.brutusin.instrumentation.Agent;
+import org.json.simple.JSONArray;
 
-import com.google.gson.Gson;
+import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
+import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.logging.LoggingInterceptor;
+import com.k2cybersecurity.intcodeagent.websocket.JsonConverter;
 
 public class JAHealthCheck extends AgentBasicInfo{
 
-	private static Logger logger;
+	private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
 	
 	private String applicationUUID;
 
 	private String protectedServer;
 
-	private Set<String> protectedDB;
+	private JSONArray protectedDB;
 
 	private Boolean rceProtection;
 	
 	private Boolean ssrfProtection;
 
-	private Set<String> instrumentedMethods;
+	private JSONArray instrumentedMethods;
 
 	private AtomicInteger eventDropCount;
 
-	private Set<String> jarPaths;
+	private JSONArray jarPaths;
 	
     private Boolean isHost;
     
@@ -44,14 +43,14 @@ public class JAHealthCheck extends AgentBasicInfo{
 		this.rceProtection = false;
 		this.ssrfProtection = false;
 		this.applicationUUID = applicationUUID;
-		this.setInstrumentedMethods(new HashSet<String>());
-		this.setProtectedDB(new HashSet<String>());
 		this.eventDropCount = new AtomicInteger(0);
 		this.eventProcessed = new AtomicInteger(0);
 		this.eventSentCount = new AtomicInteger(0);
+		this.setInstrumentedMethods(new JSONArray());
+		this.setProtectedDB(new JSONArray());
 		this.setIsHost(LoggingInterceptor.APPLICATION_INFO_BEAN.getIsHost());
 		this.setJarPath();
-		logger.log(Level.INFO,"JA Healthcheck created : {0}", this.toString());
+		logger.log(LogLevel.INFO,"JA Healthcheck created : "+ this.toString(), JAHealthCheck.class.getName());
 	}
 
 	public JAHealthCheck(JAHealthCheck jaHealthCheck) {
@@ -67,7 +66,7 @@ public class JAHealthCheck extends AgentBasicInfo{
 		this.ssrfProtection = jaHealthCheck.ssrfProtection;
 		this.isHost = jaHealthCheck.isHost;
 		this.setJarPath();
-		logger.log(Level.INFO,"JA Healthcheck created : {0}", this.toString());
+		logger.log(LogLevel.INFO,"JA Healthcheck created : "+ this.toString(), JAHealthCheck.class.getName());
 	}
 
 	/**
@@ -115,14 +114,14 @@ public class JAHealthCheck extends AgentBasicInfo{
 	/**
 	 * @return the protectedDB
 	 */
-	public Set<String> getProtectedDB() {
+	public JSONArray getProtectedDB() {
 		return protectedDB;
 	}
 
 	/**
 	 * @param protectedDB the protectedDB to set
 	 */
-	public void setProtectedDB(Set<String> protectedDB) {
+	public void setProtectedDB(JSONArray protectedDB) {
 		this.protectedDB = protectedDB;
 	}
 
@@ -143,14 +142,14 @@ public class JAHealthCheck extends AgentBasicInfo{
 	/**
 	 * @return the instrumentedMethods
 	 */
-	public Set<String> getInstrumentedMethods() {
+	public JSONArray getInstrumentedMethods() {
 		return instrumentedMethods;
 	}
 
 	/**
 	 * @param instrumentedMethods the instrumentedMethods to set
 	 */
-	public void setInstrumentedMethods(Set<String> instrumentedMethods) {
+	public void setInstrumentedMethods(JSONArray instrumentedMethods) {
 		this.instrumentedMethods = instrumentedMethods;
 	}
 
@@ -187,14 +186,14 @@ public class JAHealthCheck extends AgentBasicInfo{
 	/**
 	 * @return the jarPaths
 	 */
-	public Set<String> getJarPaths() {
+	public JSONArray getJarPaths() {
 		return jarPaths;
 	}
 
 	/**
 	 * @param jarPaths the jarPaths to set
 	 */
-	public void setJarPaths(Set<String> jarPaths) {
+	public void setJarPaths(JSONArray jarPaths) {
 		this.jarPaths = jarPaths;
 	}
 
@@ -210,13 +209,15 @@ public class JAHealthCheck extends AgentBasicInfo{
 						}
 					} 
 				} catch (Exception e1) {
-					logger.log(Level.WARNING,"Exception in setJarPath : {0}", e1);
+					logger.log(LogLevel.WARNING,"Exception in setJarPath : "+ e1, JAHealthCheck.class.getName());
 				} catch (Throwable e) {
-					logger.log(Level.WARNING,"Throwable in setJarPath : {0}", e);
+					logger.log(LogLevel.WARNING,"Throwable in setJarPath : "+ e, JAHealthCheck.class.getName());
 				}
 			}
 			if (Agent.jarPathSet.size() != lastJarSetSize) {
-				this.setJarPaths(Agent.jarPathSet);
+				JSONArray jarSet = new JSONArray();
+				jarSet.addAll(Agent.jarPathSet);
+				this.setJarPaths(jarSet);
 				Agent.allClassLoadersCount.set(Agent.allClassLoaders.size());
 			}
 		}
@@ -224,12 +225,7 @@ public class JAHealthCheck extends AgentBasicInfo{
 
 	@Override
 	public String toString() {
-		return new Gson().toJson(this);
-	}
-	
-	
-	public static void setLogger() {
-		JAHealthCheck.logger = Logger.getLogger(JAHealthCheck.class.getName());
+		return JsonConverter.toJSON(this);
 	}
 
 	/**

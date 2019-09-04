@@ -3,38 +3,28 @@ package com.k2cybersecurity.intcodeagent.logging;
 import java.util.Iterator;
 import java.util.concurrent.ConcurrentLinkedDeque;
 
-import java.util.logging.LogManager;
-import java.util.logging.Logger;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.k2cybersecurity.intcodeagent.websocket.JsonConverter;
 
 public class EIDCount {
 
-	private Integer eid;
+	private Long eid;
 
 	private Long count;
 	
-	private static Logger logger;
-	public static void setLogger() {
-		EIDCount.logger = Logger.getLogger(EIDCount.class.getName());
-	}
-	
-
 	public EIDCount() {
 	}
 
 	/**
 	 * @return the eid
 	 */
-	public Integer getEid() {
+	public Long getEid() {
 		return eid;
 	}
 
 	/**
 	 * @param eid the eid to set
 	 */
-	public void setEid(Integer eid) {
+	public void setEid(Long eid) {
 		this.eid = eid;
 	}
 
@@ -91,13 +81,13 @@ public class EIDCount {
 	 * @param eid
 	 * @param count
 	 */
-	public EIDCount(Integer eid, Long count) {
+	public EIDCount(Long eid, Long count) {
 		super();
 		this.eid = eid;
 		this.count = count;
 	}
 
-	public static EIDCount find(Integer eid, ConcurrentLinkedDeque<EIDCount> eidCounts) {
+	public static EIDCount find(Long eid, ConcurrentLinkedDeque<EIDCount> eidCounts) {
 		Iterator<EIDCount> eiDIterator = eidCounts.descendingIterator();
 		while (eiDIterator.hasNext()) {
 			EIDCount eidCount = eiDIterator.next();
@@ -123,11 +113,7 @@ public class EIDCount {
 	
 	@Override
 	public String toString() {
-		try {
-			return new ObjectMapper().writeValueAsString(this);
-		} catch (JsonProcessingException e) {
-			return null;
-		}
+			return JsonConverter.toJSON(this);
 	}
 
 }

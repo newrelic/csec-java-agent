@@ -1,5 +1,6 @@
-package com.k2cybersecurity.intcodeagent.websocket;
+package com.k2cybersecurity.intcodeagent.filelogging;
 
+import java.io.IOException;
 import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadFactory;
@@ -8,14 +9,18 @@ import java.util.concurrent.TimeUnit;
 
 import com.k2cybersecurity.intcodeagent.logging.ServletEventPool.EventAbortPolicy;
 
-public class EventSendPool {
-
-	/** Thread pool executor. */
+public class FileLoggerThreadPool {
 	private ThreadPoolExecutor executor;
 
-	private static EventSendPool instance;
+	private static FileLoggerThreadPool instance;
 
-	private EventSendPool() {
+	private String updatedFileName;
+	
+	private int logFileCounter = 0;
+
+	
+	
+	private FileLoggerThreadPool() throws IOException {
 		// load the settings
 		int queueSize = 1500;
 		int maxPoolSize = 1;
@@ -25,7 +30,6 @@ public class EventSendPool {
 		TimeUnit timeUnit = TimeUnit.SECONDS;
 
 		boolean allowCoreThreadTimeOut = false;
-
 		executor = new ThreadPoolExecutor(corePoolSize, maxPoolSize, keepAliveTime, timeUnit,
 				new LinkedBlockingQueue<Runnable>(queueSize), new EventAbortPolicy()) {
 			@Override
@@ -47,7 +51,7 @@ public class EventSendPool {
 			@Override
 			public Thread newThread(Runnable r) {
 				return new Thread(Thread.currentThread().getThreadGroup(), r,
-						"EventSender");
+						"Logger");
 			}
 		});
 	}
@@ -55,14 +59,16 @@ public class EventSendPool {
 	/**
 	 * @return the instance
 	 */
-	public static EventSendPool getInstance() {
+	public static FileLoggerThreadPool getInstance() {
 		if (instance == null)
-			instance = new EventSendPool();
+			try {
+				instance = new FileLoggerThreadPool();
+			} catch (IOException e) {
+			}
 		return instance;
 	}
 
-	public void sendEvent(String event) {
-		executor.submit(new EventSender(event));
+	public void log(LogLevel logLevel, String event, String logSourceClassName) {
+		executor.submit(new LogWriter(logLevel, event, logSourceClassName));
 	}
-
 }

@@ -1,9 +1,9 @@
 package com.k2cybersecurity.intcodeagent.models.javaagent;
 
-import com.google.gson.Gson;
+import com.k2cybersecurity.intcodeagent.websocket.JsonConverter;
 
 public class ApplicationInfoBean extends AgentBasicInfo{
-	
+
 	private Integer pid;
 	private String applicationName;
 	private Boolean isHost;
@@ -22,6 +22,8 @@ public class ApplicationInfoBean extends AgentBasicInfo{
 	private String osName;
 	private String osVersion;
 	private String procStartTime;
+
+	private String agentAttachmentType;
 
 	/**
 	 * @return the libraryPath
@@ -121,12 +123,12 @@ public class ApplicationInfoBean extends AgentBasicInfo{
 		this.osVersion = osVersion;
 	}
 
-	
+
 	public ApplicationInfoBean() {
 		super();
 	}
-	
-	public ApplicationInfoBean(Integer pid, String applicationUUID) {
+
+	public ApplicationInfoBean(Integer pid, String applicationUUID, String agentAttachmentType) {
 	    super();
 		this.pid = pid;
 		this.applicationUUID = applicationUUID;
@@ -140,6 +142,7 @@ public class ApplicationInfoBean extends AgentBasicInfo{
 		this.osArch=System.getProperty("os.arch");
 		this.osName=System.getProperty("os.name");
 		this.osVersion=System.getProperty("os.version");
+		this.agentAttachmentType = agentAttachmentType;
 	}
 	/**
 	 * @return the pid
@@ -165,10 +168,10 @@ public class ApplicationInfoBean extends AgentBasicInfo{
 	public void setJvmArguments(String jvmArguments) {
 		this.jvmArguments = jvmArguments;
 	}
-	
+
 	@Override
 	public String toString() {
-		return new Gson().toJson(this);
+		return JsonConverter.toJSON(this);
 //		try {
 //			return new ObjectMapper().writeValueAsString(this);
 //		} catch (JsonProcessingException e) {
@@ -215,7 +218,7 @@ public class ApplicationInfoBean extends AgentBasicInfo{
 	public void setApplicationUUID(String applicationUUID) {
 		this.applicationUUID = applicationUUID;
 	}
-	
+
 	/**
 	 * @return the containerID
 	 */
@@ -287,5 +290,12 @@ public class ApplicationInfoBean extends AgentBasicInfo{
 	public void setProcStartTime(String procStartTime) {
 		this.procStartTime = procStartTime;
 	}
-	
+
+	public String getAgentAttachmentType() {
+		return agentAttachmentType;
+	}
+
+	public void setAgentAttachmentType(String agentAttachmentType) {
+		this.agentAttachmentType = agentAttachmentType;
+	}
 }

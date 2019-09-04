@@ -1,17 +1,13 @@
 package com.k2cybersecurity.intcodeagent.models.javaagent;
 
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.K2_JAVAAGENT_JSONNAME_APPLICATIONINFOBEAN;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.K2_JAVAAGENT_JSONNAME_DYNAMICJARPATHBEAN;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.K2_JAVAAGENT_JSONNAME_INTCODERESULTBEAN;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.K2_JAVAAGENT_JSONNAME_JAHEALTHCHECK;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.K2_JAVAAGENT_JSONNAME_SHUTDOWN;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.K2_JAVAAGENT_PROPERTIES;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.K2_JAVAAGENT_TOOL_ID;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.K2_JAVAAGENT_VERSION;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.JSON_NAME_APPLICATION_INFO_BEAN;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.JSON_NAME_DYNAMICJARPATH_BEAN;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.JSON_NAME_HEALTHCHECK;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.JSON_NAME_INTCODE_RESULT_BEAN;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.JSON_NAME_SHUTDOWN;
 
-import java.util.Properties;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
+import com.k2cybersecurity.intcodeagent.properties.K2JAVersionInfo;
 
 
 /**
@@ -27,36 +23,27 @@ public class AgentBasicInfo {
 
 	/** Json version number. */
 	private String version;
+	
+	private final String agentType = "JAVA_EVENT"; 
 
-	private static Properties props;
-	private static Logger logger;
-
-	static {
-		props = new Properties();
-		try {
-			props.load(Thread.currentThread().getContextClassLoader().getResourceAsStream(K2_JAVAAGENT_PROPERTIES));
-		} catch (Exception e) {
-			logger.log(Level.WARNING,"Could not load properties: {0}", e);
-		}
-	}
-
+	private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
 
 	/**
 	 * Instantiates a new agent basic info according to the source class object.
 	 */
 	public AgentBasicInfo() {
-		setVersion(props.getProperty(K2_JAVAAGENT_VERSION));
-		setK2JAToolId(props.getProperty(K2_JAVAAGENT_TOOL_ID));
+		setVersion(K2JAVersionInfo.javaAgentVersion);
+		setK2JAToolId(K2JAVersionInfo.buildId);
 		if (this instanceof  ApplicationInfoBean) {
-			setJsonName(props.getProperty(K2_JAVAAGENT_JSONNAME_APPLICATIONINFOBEAN));
+			setJsonName(JSON_NAME_APPLICATION_INFO_BEAN);
 		} else if (this instanceof JavaAgentEventBean) {
-			setJsonName(props.getProperty(K2_JAVAAGENT_JSONNAME_INTCODERESULTBEAN));
-		} else if(this instanceof JavaAgentDynamicPathBean){
-			setJsonName(props.getProperty(K2_JAVAAGENT_JSONNAME_DYNAMICJARPATHBEAN));
+			setJsonName(JSON_NAME_INTCODE_RESULT_BEAN);
 		} else if(this instanceof JAHealthCheck) {
-			setJsonName(props.getProperty(K2_JAVAAGENT_JSONNAME_JAHEALTHCHECK));
+			setJsonName(JSON_NAME_HEALTHCHECK);
 		} else if(this instanceof ShutDownEvent) {
-			setJsonName(props.getProperty(K2_JAVAAGENT_JSONNAME_SHUTDOWN));
+			setJsonName(JSON_NAME_SHUTDOWN);
+		} else if (this instanceof JavaAgentDynamicPathBean) {
+			setJsonName(JSON_NAME_DYNAMICJARPATH_BEAN);
 		}
 	}
 
@@ -114,8 +101,12 @@ public class AgentBasicInfo {
 		this.version = version;
 	}
 	
-	public static void setLogger() {
-		AgentBasicInfo.logger = Logger.getLogger(AgentBasicInfo.class.getName());
+
+	/**
+	 * @return the agentType
+	 */
+	public String getAgentType() {
+		return agentType;
 	}
 	
 }

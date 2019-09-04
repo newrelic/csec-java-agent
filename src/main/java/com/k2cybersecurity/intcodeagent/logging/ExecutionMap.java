@@ -2,24 +2,21 @@ package com.k2cybersecurity.intcodeagent.logging;
 
 import java.util.Iterator;
 import java.util.concurrent.ConcurrentLinkedDeque;
-import java.util.logging.Logger;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.k2cybersecurity.intcodeagent.models.javaagent.ServletInfo;
+import com.k2cybersecurity.intcodeagent.websocket.JsonConverter;
 
 public class ExecutionMap {
 
-	private Integer executionId;
+	private Long executionId;
 	
 	private ServletInfo servletInfo;
-	private static Logger logger;
 	
 	/**
 	 * @param executionId
 	 * @param servletInfo
 	 */
-	public ExecutionMap(Integer executionId, ServletInfo servletInfo) {
+	public ExecutionMap(Long executionId, ServletInfo servletInfo) {
 		super();
 		this.executionId = executionId;
 		this.servletInfo = servletInfo;
@@ -28,7 +25,7 @@ public class ExecutionMap {
 	public ExecutionMap() {
 	}
 	
-	public ExecutionMap(Integer executionId) {
+	public ExecutionMap(Long executionId) {
 		super();
 		this.executionId = executionId;
 	}
@@ -36,14 +33,14 @@ public class ExecutionMap {
 	/**
 	 * @return the executionId
 	 */
-	public Integer getExecutionId() {
+	public Long getExecutionId() {
 		return executionId;
 	}
 
 	/**
 	 * @param executionId the executionId to set
 	 */
-	public void setExecutionId(Integer executionId) {
+	public void setExecutionId(Long executionId) {
 		this.executionId = executionId;
 	}
 
@@ -93,7 +90,7 @@ public class ExecutionMap {
 	}
 	
 	
-	public static ServletInfo find(Integer executionId, ConcurrentLinkedDeque<ExecutionMap> executionMaps) {
+	public static ServletInfo find(Long executionId, ConcurrentLinkedDeque<ExecutionMap> executionMaps) {
 		Iterator<ExecutionMap> iterator = executionMaps.descendingIterator();
 		while(iterator.hasNext()) {
 			ExecutionMap executionMap = iterator.next();
@@ -105,14 +102,7 @@ public class ExecutionMap {
 	
 	@Override
 	public String toString() {
-		try {
-			return new ObjectMapper().writeValueAsString(this);
-		} catch (JsonProcessingException e) {
-			return null;
-		}
+			return JsonConverter.toJSON(this);
 	}
 	
-	public static void setLogger() {
-		ExecutionMap.logger = Logger.getLogger(ExecutionMap.class.getName());
-	}
 }

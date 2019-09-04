@@ -11,7 +11,9 @@ import com.k2cybersecurity.intcodeagent.models.javaagent.VulnerabilityCaseType;
 
 public interface IAgentConstants {
 
-	String TRACE_REGEX = "(?!(org\\.apache\\.jsp.*))((^javax.*)|(^org\\.apache.*)|(^sun.*)|(^java.*)|(^k2\\.org\\.brutusin.*)|(^com\\.k2cybersecurity\\.intcodeagent.*)|(^k2\\.io\\.org.*)|(^com\\.microsoft\\.sqlserver.*)|(^com\\.mysql.*)|(^sun\\.reflect.*)|(^org\\.hibernate.*)|(^com\\.mongodb.*)|(^org\\.apache\\.commons.*)|(^org\\.mongodb.*)|(^com\\.sun.*)|(^org\\.eclipse\\.jetty.*)|(^net\\.sourceforge\\.eclipsejetty.*)|(^org\\.springframework.*)|(^org\\.slf4j.*)|(^org\\.eclipse\\.jdt.*)|(^com\\.opensymphony\\.xwork2.*)|(^k2\\.org\\.objectweb\\.asm.*)|(^freemarker\\.cache.*)|(^com\\.mchange.*)|(^org\\.postgresql.*)|(^oracle\\.jdbc.*)|(^org\\.hsqldb.*)|(^ch\\.qos\\.logback.*)|(^io\\.micrometer.*)|(^k2\\.org\\.json.*)|(^k2\\.com\\.fasterxml.*)|(^jdk\\..*))|(^com\\.ibm\\.ws.*)";
+	public static final String CLASS_WEBLOGIC_SERVLET_INTERNAL_WEB_APP_SERVLET_CONTEXT = "weblogic/servlet/internal/WebAppServletContext";
+
+	String TRACE_REGEX = "(?!(org\\.apache\\.jsp.*))((^javax.*)|(^org\\.apache.*)|(^sun.*)|(^java.*)|(^k2\\.org\\.brutusin.*)|(^com\\.k2cybersecurity\\.intcodeagent.*)|(^k2\\.io\\.org.*)|(^com\\.microsoft\\.sqlserver.*)|(^com\\.mysql.*)|(^sun\\.reflect.*)|(^org\\.hibernate.*)|(^com\\.mongodb.*)|(^org\\.apache\\.commons.*)|(^org\\.mongodb.*)|(^com\\.sun.*)|(^org\\.eclipse\\.jetty.*)|(^net\\.sourceforge\\.eclipsejetty.*)|(^org\\.springframework.*)|(^org\\.slf4j.*)|(^org\\.eclipse\\.jdt.*)|(^com\\.opensymphony\\.xwork2.*)|(^k2\\.org\\.objectweb\\.asm.*)|(^weblogic\\..*)|(^freemarker\\.cache.*)|(^com\\.mchange.*)|(^org\\.postgresql.*)|(^oracle\\.jdbc.*)|(^org\\.hsqldb.*)|(^ch\\.qos\\.logback.*)|(^io\\.micrometer.*)|(^k2\\.org\\.json.*)|(^k2\\.com\\.fasterxml.*)|(^jdk\\..*))|(^com\\.ibm\\.ws.*)|(^io\\.undertow\\.*)|(^org\\.jboss\\.*)|(^org\\.wildfly\\.*)";
 
 	// HSQL
 	String CLASS_ORG_HSQLDB_HSQL_CLIENT_CONNECTION = "org/hsqldb/HSQLClientConnection";
@@ -31,6 +33,9 @@ public interface IAgentConstants {
 
 	// ORACLE
 	String CLASS_ORACLE_JDBC_DRIVER_T4CTT_IFUN = "oracle/jdbc/driver/T4CTTIfun";
+	
+	// Oracle Weblogic
+	String CLASS_WEBLOGIC_SERVLET_INTERNAL_STUBSECURITYHELPER = "weblogic/servlet/internal/StubSecurityHelper";
 
 	// CLASSLOADER
 	String CLASS_JAVA_NET_URL_CLASS_LOADER = "java/net/URLClassLoader";
@@ -61,7 +66,12 @@ public interface IAgentConstants {
 	//WAS Traditional
 	String COM_IBM_WS_GENERICBNF_IMPL_BNFHEADERSIMPL = "com/ibm/ws/genericbnf/impl/BNFHeadersImpl";
 	String COM_IBM_WS_HTTP_CHANNEL_INBOUND_IMPL_HTTPINBOUNDLINK = "com/ibm/ws/http/channel/inbound/impl/HttpInboundLink";
-	
+
+	//JBoss
+	String IO_UNDERTOW_SERVLET_HANDLERS_SERVLET_HANDLER = "io/undertow/servlet/handlers/ServletHandler";
+	String ORG_XNIO_XNIO_WORKER$_WORKER_THREAD_FACTORY = "org/xnio/XnioWorker$WorkerThreadFactory";
+	String ORG_JBOSS_THREADS_ENHANCED_QUEUE_EXECUTOR2 = "org/jboss/threads/EnhancedQueueExecutor";
+	String IO_UNDERTOW_SERVER_PROTOCOL_HTTP_HTTP_REQUEST_PARSER = "io/undertow/server/protocol/http/HttpRequestParser";
 	
 	String EXEC_URL_CLASS_LOADER_NEW_INSTANCE = "public static java.net.URLClassLoader java.net.URLClassLoader.newInstance(java.net.URL[])";
 
@@ -115,6 +125,15 @@ public interface IAgentConstants {
 	String JDK_INCUBATOR_MULTIEXCHANGE_RESONSE_METHOD = "public jdk.incubator.http.HttpResponseImpl<T> jdk.incubator.http.MultiExchange.response() throws java.io.IOException,java.lang.InterruptedException";
 	String JDK_INCUBATOR_MULTIEXCHANGE_RESONSE_ASYNC_METHOD = "public java.util.concurrent.CompletableFuture<jdk.incubator.http.HttpResponseImpl<T>> jdk.incubator.http.MultiExchange.responseAsync()";
 	
+	String CLASS_APACHE_COMMONS_HTTP_METHOD_DIRECTOR = "org/apache/commons/httpclient/HttpMethodDirector";
+	String APACHE_COMMONS_HTTP_METHOD_DIRECTOR_METHOD = "private void org.apache.commons.httpclient.HttpMethodDirector.executeWithRetry(org.apache.commons.httpclient.HttpMethod) throws java.io.IOException,org.apache.commons.httpclient.HttpException";
+	
+	String CLASS_OKHTTP_HTTP_ENGINE = "com/squareup/okhttp/internal/http/HttpEngine";
+	String OKHTTP_HTTP_ENGINE_METHOD = "public void com.squareup.okhttp.internal.http.HttpEngine.sendRequest() throws com.squareup.okhttp.internal.http.RequestException,com.squareup.okhttp.internal.http.RouteException,java.io.IOException";
+
+	String CLASS_WEBLOGIC_HTTP_HANDLER = "weblogic/net/http/Handler";
+	String WEBLOGIC_OPEN_CONNECTION_METHOD = "protected java.net.URLConnection weblogic.net.http.Handler.openConnection(java.net.URL,java.net.Proxy) throws java.io.IOException";
+
 	List<String> FILE_OPEN_EXECUTORS = Arrays.asList(new String[] {
 			"public java.io.File(java.lang.String,java.lang.String)", "public java.io.File(java.lang.String)" });
 
@@ -248,9 +267,9 @@ public interface IAgentConstants {
 			put(JAVA_OPEN_CONNECTION_METHOD2_HTTPS_2, VulnerabilityCaseType.HTTP_REQUEST);
 			put(JDK_INCUBATOR_MULTIEXCHANGE_RESONSE_METHOD, VulnerabilityCaseType.HTTP_REQUEST);
 			put(JDK_INCUBATOR_MULTIEXCHANGE_RESONSE_ASYNC_METHOD, VulnerabilityCaseType.HTTP_REQUEST);
-			
-			
-
+			put(APACHE_COMMONS_HTTP_METHOD_DIRECTOR_METHOD, VulnerabilityCaseType.HTTP_REQUEST);
+			put(OKHTTP_HTTP_ENGINE_METHOD, VulnerabilityCaseType.HTTP_REQUEST);
+			put(WEBLOGIC_OPEN_CONNECTION_METHOD, VulnerabilityCaseType.HTTP_REQUEST);
 		}
 	};
 
@@ -292,12 +311,21 @@ public interface IAgentConstants {
 			put(COM_IBM_WS_HTTP_CHANNEL_INTERNAL_INBOUND_HTTPINBOUNDLINK, Collections.singletonList("processRequest"));
 			put(COM_IBM_WS_GENERICBNF_IMPL_BNFHEADERSIMPL, Collections.singletonList("fillByteCache"));
 			put(COM_IBM_WS_HTTP_CHANNEL_INBOUND_IMPL_HTTPINBOUNDLINK, Collections.singletonList("processRequest"));
+			put(IO_UNDERTOW_SERVER_PROTOCOL_HTTP_HTTP_REQUEST_PARSER, Collections.singletonList("handle"));
+			put(ORG_JBOSS_THREADS_ENHANCED_QUEUE_EXECUTOR2, Collections.singletonList("tryExecute"));
+			put(ORG_XNIO_XNIO_WORKER$_WORKER_THREAD_FACTORY, Collections.singletonList("newThread"));
+			put(IO_UNDERTOW_SERVLET_HANDLERS_SERVLET_HANDLER, Collections.singletonList("handleRequest"));
 			
 			put(CLASS_HTTP_REQUEST_EXECUTOR, Collections.singletonList("doSendRequest"));
 			put(CLASS_JAVA_HTTP_HANDLER, Collections.singletonList("openConnection"));
 			put(CLASS_JAVA_HTTPS_HANDLER, Collections.singletonList("openConnection"));
 			put(CLASS_JAVA_SSL_HTTPS_HANDLER, Collections.singletonList("openConnection"));
 			put(CLASS_JDK_INCUBATOR_HTTP_MULTIEXCHANGE, Arrays.asList(new String[] { "response", "responseAsync", "multiResponseAsync" }));
+//			put(CLASS_WEBLOGIC_SERVLET_INTERNAL_STUBSECURITYHELPER, Collections.singletonList("invokeServlet"));
+			put(CLASS_WEBLOGIC_SERVLET_INTERNAL_WEB_APP_SERVLET_CONTEXT, Collections.singletonList("execute"));
+			put(CLASS_APACHE_COMMONS_HTTP_METHOD_DIRECTOR, Collections.singletonList("executeWithRetry"));
+			put(CLASS_OKHTTP_HTTP_ENGINE, Collections.singletonList("sendRequest"));
+			put(CLASS_WEBLOGIC_HTTP_HANDLER, Collections.singletonList("openConnection"));
 		}
 	};
 
@@ -320,6 +348,27 @@ public interface IAgentConstants {
 	String WEBSPHERE_LIBERTY_PROCESSREQUEST = "protected void com.ibm.ws.http.channel.internal.inbound.HttpInboundLink.processRequest()";
 	String WEBSPHERE_TRADITIONAL_FILLBYTECACHE = "protected boolean com.ibm.ws.genericbnf.impl.BNFHeadersImpl.fillByteCache(com.ibm.wsspi.buffermgmt.WsByteBuffer)";
 	String WEBSPHERE_TRADITIONAL_PROCESSREQUEST = "protected void com.ibm.ws.http.channel.inbound.impl.HttpInboundLink.processRequest()";
+	
+	/** JBoss constants*/
+	String JBOSS_WILDFLY_HTTP_REQUEST_PARSER_HANDLE = "public void io.undertow.server.protocol.http.HttpRequestParser.handle(java.nio.ByteBuffer,io.undertow.server.protocol.http.ParseState,io.undertow.server.HttpServerExchange) throws io.undertow.util.BadRequestException";
+//	String PUBLIC_VOID_ORG_JBOSS_THREADS_CONTEXT_CLASS_LOADER_SAVING_RUNNABLE_RUN = "public void org.jboss.threads.ContextClassLoaderSavingRunnable.run()";
+	String PUBLIC_VOID_IO_UNDERTOW_SERVLET_HANDLERS_SERVLET_HANDLER_HANDLE_REQUEST_IO_UNDERTOW_SERVER_HTTP_SERVER_EXCHANGE_THROWS_JAVA_IO_IO_EXCEPTION_JAVAX_SERVLET_SERVLET_EXCEPTION = "public void io.undertow.servlet.handlers.ServletHandler.handleRequest(io.undertow.server.HttpServerExchange) throws java.io.IOException,javax.servlet.ServletException";
+
+	String PRIVATE_INT_ORG_JBOSS_THREADS_ENHANCED_QUEUE_EXECUTOR_TRY_EXECUTE_JAVA_LANG_RUNNABLE = "private int org.jboss.threads.EnhancedQueueExecutor.tryExecute(java.lang.Runnable)";
+	String FIELD_NEXT = "next";
+	String ORG_JBOSS_THREADS_ENHANCED_QUEUE_EXECUTOR$Q_NODE = "org.jboss.threads.EnhancedQueueExecutor$QNode";
+	String PUBLIC_JAVA_LANG_THREAD_ORG_XNIO_XNIO_WORKER$_WORKER_THREAD_FACTORY_NEW_THREAD_JAVA_LANG_RUNNABLE = "public java.lang.Thread org.xnio.XnioWorker$WorkerThreadFactory.newThread(java.lang.Runnable)";
+	String FIELD_GET = "_get";
+	String JAVA_NIO_DIRECT_BYTE_BUFFER = "java.nio.DirectByteBuffer";
+	String FIELD_LIMIT = "limit";
+	String JAVA_NIO_BUFFER = "java.nio.Buffer";
+	String FIELD_THREAD = "thread";
+	String ORG_JBOSS_THREADS_ENHANCED_QUEUE_EXECUTOR$_POOL_THREAD_NODE = "org.jboss.threads.EnhancedQueueExecutor$PoolThreadNode";
+	String ORG_JBOSS_THREADS_ENHANCED_QUEUE_EXECUTOR$_TASK_NODE = "org.jboss.threads.EnhancedQueueExecutor$TaskNode";
+	String ORG_JBOSS_THREADS_ENHANCED_QUEUE_EXECUTOR = "org.jboss.threads.EnhancedQueueExecutor";
+	String WEBLOGIC_INVOKE_SERVLET = "public java.lang.Throwable weblogic.servlet.internal.StubSecurityHelper.invokeServlet(javax.servlet.ServletRequest,javax.servlet.http.HttpServletRequest,weblogic.servlet.internal.ServletRequestImpl,javax.servlet.ServletResponse,javax.servlet.http.HttpServletResponse,javax.servlet.Servlet) throws javax.servlet.ServletException";
+	
+	String WEBLOGIC_SERVLET_EXECUTE = "void weblogic.servlet.internal.WebAppServletContext.execute(weblogic.servlet.internal.ServletRequestImpl,weblogic.servlet.internal.ServletResponseImpl) throws java.io.IOException";
 	
 	/** MSSQL FIELD CONSTANTS */
 	String MSSQL_CURRENT_OBJECT = "this$0";
@@ -410,6 +459,21 @@ public interface IAgentConstants {
 	String ORACLE_DB_IDENTIFIER = "oracle.jdbc.driver";
 	String ORACLE_CONNECTION_IDENTIFIER = "oracle.jdbc.driver.T4C8Oall";
 	String ORACLE_STATEMENT_CLASS_IDENTIFIER = "oracle.jdbc.driver.OracleStatement";
+	
+	/** Http constants **/
+	
+	String GET_PATH = "getPath";
+	String GET_HOST = "getHost";
+	String GET_URI = "getURI";
+	String EMPTY = "";
+	String HTTP_TARGET_HOST = "http.target_host";
+	String GET_ATTRIBUTE = "getAttribute";
+	String REGEX_SPACE = "\\s+";
+	String GET_REQUEST_LINE = "getRequestLine";
+	String ORG_APACHE_HTTP_PROTOCOL_HTTP_CONTEXT = "org.apache.http.protocol.HttpContext";
+	String ORG_APACHE_HTTP_HTTP_REQUEST = "org.apache.http.HttpRequest";
+	String ORG_APACHE_COMMONS_HTTPCLIENT_URI = "org.apache.commons.httpclient.URI";
+	String ORG_APACHE_COMMONS_HTTPCLIENT_HTTP_METHOD = "org.apache.commons.httpclient.HttpMethod";
 
 	ArrayList<String> ORACLE_CLASS_SKIP_LIST = new ArrayList<String>() {
 
@@ -464,26 +528,6 @@ public interface IAgentConstants {
 	// EventThreadPool.java file constants
 	String K2_JAVA_AGENT = "K2-Java-Agent-";
 
-	// AgentBasicInfo.java file constants
-	String K2_JAVAAGENT_PROPERTIES = "k2-javaagent.properties";
-	String K2_JAVAAGENT_LOG4J_PROPERTIES = "k2-javaagent-log.properties";
-
-	String K2_JAVAAGENT_VERSION = "k2.javaagent.version";
-
-	String K2_JAVAAGENT_TOOL_ID = "k2.javaagent.tool.id";
-
-	String K2_JAVAAGENT_JSONNAME_APPLICATIONINFOBEAN = "k2.javaagent.jsonname.applicationinfobean";
-
-	String K2_JAVAAGENT_JSONNAME_INTCODERESULTBEAN = "k2.javaagent.jsonname.intcoderesultbean";
-
-	String K2_JAVAAGENT_JSONNAME_JARPATHBEAN = "k2.javaagent.jsonname.jarpathbean";
-
-	String K2_JAVAAGENT_JSONNAME_DYNAMICJARPATHBEAN = "k2.javaagent.jsonname.dynamicjarpathbean";
-
-	String K2_JAVAAGENT_JSONNAME_JAHEALTHCHECK = "k2.javaagent.jsonname.healthcheck";
-	
-	String K2_JAVAAGENT_JSONNAME_SHUTDOWN = "k2.javaagent.jsonname.shutdown";
-
 	// LoggingInterceptor Constants
 	char DIR_SEPERATOR = '/';
 	String CGROUP_FILE_NAME = "/proc/self/cgroup";
@@ -523,4 +567,11 @@ public interface IAgentConstants {
 	int TOMCAT_8 = 8;
 	int TOMCAT_9 = 9;
 	int K2_IC_TCP_PORT = 54321;
+	
+	String JSON_NAME_APPLICATION_INFO_BEAN = "applicationinfobean";
+	String JSON_NAME_INTCODE_RESULT_BEAN = "EventBean";
+	String JSON_NAME_HEALTHCHECK = "LAhealthcheck";
+	String JSON_NAME_DYNAMICJARPATH_BEAN = "dynamicjarpathbean";
+	String JSON_NAME_SHUTDOWN = "shutdown";
+	
 }
