@@ -68,17 +68,7 @@ public class WSClient extends WebSocketClient {
         if (this.isOpen()) {
             super.send(text);
         } else {
-//			try {
-//				if (this.reconnectBlocking()) {
-//					super.send(text);
-//				} else {
-//					logger.log(LogLevel.SEVERE, "Failed in WSock reconnection.");
-//					reconnectWSClient();
-//				}
-//			} catch (URISyntaxException | InterruptedException e) {
-//				logger.log(LogLevel.SEVERE, "Error in WSock reconnection : " + e.getMessage() + " : " + e.getCause());
-//			}
-            logger.log(LogLevel.WARNING, "Unable to send event : " + text, WSClient.class.getName());
+            logger.log(LogLevel.DEBUG, "Unable to send event : " + text, WSClient.class.getName());
         }
     }
 
