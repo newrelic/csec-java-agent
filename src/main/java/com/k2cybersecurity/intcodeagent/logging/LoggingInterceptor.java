@@ -749,8 +749,8 @@ public class LoggingInterceptor extends Interceptor {
 							positionHb);
 					requestContent = new String(buff.getByteArray(), 0, buff.getLimit(), StandardCharsets.UTF_8);
 					servletInfo.setRawRequest(requestContent);
-					logger.log(LogLevel.INFO, "Request Param : " + threadId + ":" + executionId + " : " + servletInfo,
-							LoggingInterceptor.class.getName());
+//					logger.log(LogLevel.INFO, "Request Param : " + threadId + ":" + executionId + " : " + servletInfo,
+//							LoggingInterceptor.class.getName());
 				}
 				servletInfo.addGenerationTime((int) (System.currentTimeMillis() - start));
 			} catch (Exception e) {
