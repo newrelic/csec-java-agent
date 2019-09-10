@@ -153,7 +153,7 @@ public class LoggingInterceptor extends Interceptor {
 			String containerId = getContainerID();
 			String cmdLine = getCmdLineArgsByProc(VMPID);
 			applicationInfoBean.setProcStartTime(getStartTimeByProc(VMPID));
-			applicationInfoBean.setProgramArguments(cmdLine);
+			applicationInfoBean.setCmdline(cmdLine);
 //			if (cmdLine != null) {
 //				List<String> cmdlineArgs = Arrays.asList(cmdLine.split(NULL_CHAR_AS_STRING));
 //				JSONArray jsonArray = new JSONArray();

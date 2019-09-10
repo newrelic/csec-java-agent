@@ -24,8 +24,8 @@ public class ApplicationInfoBean extends AgentBasicInfo{
 	/** name of running application. */
 	private String applicationName;
 
-	/** startup jvm arguments. */
-	private String programArguments;
+	/** cmdline. */
+	private String cmdline;
 
 	/** application start time. */
 	private Long startTime;
@@ -122,12 +122,12 @@ public class ApplicationInfoBean extends AgentBasicInfo{
 		this.applicationName = applicationName;
 	}
 
-	public String getProgramArguments() {
-		return programArguments;
+	public String getCmdline() {
+		return cmdline;
 	}
 
-	public void setProgramArguments(String programArguments) {
-		this.programArguments = programArguments;
+	public void setCmdline(String cmdline) {
+		this.cmdline = cmdline;
 	}
 
 	public Long getStartTime() {
