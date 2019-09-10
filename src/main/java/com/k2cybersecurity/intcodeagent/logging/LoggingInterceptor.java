@@ -153,7 +153,7 @@ public class LoggingInterceptor extends Interceptor {
 			String containerId = getContainerID();
 			String cmdLine = getCmdLineArgsByProc(VMPID);
 			applicationInfoBean.setProcStartTime(getStartTimeByProc(VMPID));
-			applicationInfoBean.setJvmArguments(cmdLine);
+			applicationInfoBean.setProgramArguments(cmdLine);
 //			if (cmdLine != null) {
 //				List<String> cmdlineArgs = Arrays.asList(cmdLine.split(NULL_CHAR_AS_STRING));
 //				JSONArray jsonArray = new JSONArray();
@@ -162,9 +162,9 @@ public class LoggingInterceptor extends Interceptor {
 //			}
 			if (containerId != null) {
 				applicationInfoBean.setContainerID(containerId);
-				applicationInfoBean.setIsHost(false);
+				applicationInfoBean.setHost(false);
 			} else
-				applicationInfoBean.setIsHost(true);
+				applicationInfoBean.setHost(true);
 			// applicationInfoBean.setJvmArguments(new
 			// JSONArray(runtimeMXBean.getInputArguments()));
 			return applicationInfoBean;
