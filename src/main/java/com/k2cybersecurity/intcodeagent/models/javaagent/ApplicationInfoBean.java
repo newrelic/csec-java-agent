@@ -98,11 +98,11 @@ public class ApplicationInfoBean extends AgentBasicInfo{
 		this.applicationUUID = applicationUUID;
 	}
 
-	public Boolean getHost() {
+	public Boolean getIsHost() {
 		return isHost;
 	}
 
-	public void setHost(Boolean host) {
+	public void setIsHost(Boolean host) {
 		isHost = host;
 	}
 

@@ -162,9 +162,9 @@ public class LoggingInterceptor extends Interceptor {
 //			}
 			if (containerId != null) {
 				applicationInfoBean.setContainerID(containerId);
-				applicationInfoBean.setHost(false);
+				applicationInfoBean.setIsHost(false);
 			} else
-				applicationInfoBean.setHost(true);
+				applicationInfoBean.setIsHost(true);
 			// applicationInfoBean.setJvmArguments(new
 			// JSONArray(runtimeMXBean.getInputArguments()));
 			return applicationInfoBean;

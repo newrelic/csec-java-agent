@@ -463,7 +463,7 @@ public interface IAgentConstants {
 	/** Http constants **/
 	
 	String GET_PATH = "getPath";
-	String GET_HOST = "getHost";
+	String GET_HOST = "getIsHost";
 	String GET_URI = "getURI";
 	String EMPTY = "";
 	String HTTP_TARGET_HOST = "http.target_host";
