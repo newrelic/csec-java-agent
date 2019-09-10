@@ -1,172 +1,66 @@
 package com.k2cybersecurity.intcodeagent.models.javaagent;
 
 import com.k2cybersecurity.intcodeagent.websocket.JsonConverter;
+import org.json.simple.JSONArray;
+
+import java.util.Arrays;
 
 public class ApplicationInfoBean extends AgentBasicInfo{
 
+	private String agentType;
+
+	/** pid of process. */
 	private Integer pid;
-	private String applicationName;
-	private Boolean isHost;
-	private String containerID;
-	private String jvmArguments;
-	private Long startTime;
+
+	/** UUID per running application. */
 	private String applicationUUID;
-	private String javaCommand;
-	private String classPath;
+
+	/** Is application running on host. */
+	private Boolean isHost;
+
+	/** The container ID of running application. */
+	private String containerID;
+
+	/** name of running application. */
+	private String applicationName;
+
+	/** startup jvm arguments. */
+	private String programArguments;
+
+	/** application start time. */
+	private Long startTime;
+
+	private String runCommand;
+
+	private String procStartTime;
+
 	private String userDir;
-	private String libraryPath;
+	private JSONArray libraryPath;
 	private String bootLibraryPath;
-	private String javaRuntimeName;
-	private String javaRuntimeVersion;
+	private String binaryName;
+	private String binaryVersion;
 	private String osArch;
 	private String osName;
 	private String osVersion;
-	private String procStartTime;
 
 	private String agentAttachmentType;
-
-	/**
-	 * @return the libraryPath
-	 */
-	public String getLibraryPath() {
-		return libraryPath;
-	}
-
-	/**
-	 * @param libraryPath the libraryPath to set
-	 */
-	public void setLibraryPath(String libraryPath) {
-		this.libraryPath = libraryPath;
-	}
-
-	/**
-	 * @return the bootLibraryPath
-	 */
-	public String getBootLibraryPath() {
-		return bootLibraryPath;
-	}
-
-	/**
-	 * @param bootLibraryPath the bootLibraryPath to set
-	 */
-	public void setBootLibraryPath(String bootLibraryPath) {
-		this.bootLibraryPath = bootLibraryPath;
-	}
-
-	/**
-	 * @return the javaRuntimeName
-	 */
-	public String getJavaRuntimeName() {
-		return javaRuntimeName;
-	}
-
-	/**
-	 * @param javaRuntimeName the javaRuntimeName to set
-	 */
-	public void setJavaRuntimeName(String javaRuntimeName) {
-		this.javaRuntimeName = javaRuntimeName;
-	}
-
-	/**
-	 * @return the javaRuntimeVersion
-	 */
-	public String getJavaRuntimeVersion() {
-		return javaRuntimeVersion;
-	}
-
-	/**
-	 * @param javaRuntimeVersion the javaRuntimeVersion to set
-	 */
-	public void setJavaRuntimeVersion(String javaRuntimeVersion) {
-		this.javaRuntimeVersion = javaRuntimeVersion;
-	}
-
-	/**
-	 * @return the osArch
-	 */
-	public String getOsArch() {
-		return osArch;
-	}
-
-	/**
-	 * @param osArch the osArch to set
-	 */
-	public void setOsArch(String osArch) {
-		this.osArch = osArch;
-	}
-
-	/**
-	 * @return the osName
-	 */
-	public String getOsName() {
-		return osName;
-	}
-
-	/**
-	 * @param osName the osName to set
-	 */
-	public void setOsName(String osName) {
-		this.osName = osName;
-	}
-
-	/**
-	 * @return the osVersion
-	 */
-	public String getOsVersion() {
-		return osVersion;
-	}
-
-	/**
-	 * @param osVersion the osVersion to set
-	 */
-	public void setOsVersion(String osVersion) {
-		this.osVersion = osVersion;
-	}
-
-
-	public ApplicationInfoBean() {
-		super();
-	}
 
 	public ApplicationInfoBean(Integer pid, String applicationUUID, String agentAttachmentType) {
 	    super();
 		this.pid = pid;
 		this.applicationUUID = applicationUUID;
-		this.javaCommand = System.getProperty("sun.java.command");
-		this.classPath = System.getProperty("java.class.path");
+		this.runCommand = System.getProperty("sun.java.command");
 		this.userDir = System.getProperty("user.dir");
-		this.libraryPath=System.getProperty("java.library.path");
+		this.libraryPath= new JSONArray();
+		this.libraryPath.addAll(Arrays.asList(System.getProperty("java.library.path").split(":")));
+		this.libraryPath.addAll(Arrays.asList(System.getProperty("java.class.path").split(":")));
 		this.bootLibraryPath=System.getProperty("sun.boot.library.path");
-		this.javaRuntimeName=System.getProperty("java.runtime.name");
-		this.javaRuntimeVersion=System.getProperty("java.runtime.version");
+		this.binaryName=System.getProperty("java.runtime.name");
+		this.binaryVersion=System.getProperty("java.runtime.version");
 		this.osArch=System.getProperty("os.arch");
 		this.osName=System.getProperty("os.name");
 		this.osVersion=System.getProperty("os.version");
 		this.agentAttachmentType = agentAttachmentType;
-	}
-	/**
-	 * @return the pid
-	 */
-	public Integer getPid() {
-		return pid;
-	}
-	/**
-	 * @param pid the pid to set
-	 */
-	public void setPid(Integer pid) {
-		this.pid = pid;
-	}
-	/**
-	 * @return the jvmArguments
-	 */
-	public String getJvmArguments() {
-		return jvmArguments;
-	}
-	/**
-	 * @param jvmArguments the jvmArguments to set
-	 */
-	public void setJvmArguments(String jvmArguments) {
-		this.jvmArguments = jvmArguments;
 	}
 
 	@Override
@@ -178,117 +72,150 @@ public class ApplicationInfoBean extends AgentBasicInfo{
 //			return null;
 //		}
 	}
-	/**
-	 * @return the startTime
-	 */
-	public Long getStartTime() {
-		return startTime;
-	}
-	/**
-	 * @param startTime the startTime to set
-	 */
-	public void setStartTime(Long startTime) {
-		this.startTime = startTime;
+
+	@Override
+	public String getAgentType() {
+		return agentType;
 	}
 
-	/**
-	 * @return the applicationName
-	 */
-	public String getApplicationName() {
-		return applicationName;
+	public void setAgentType(String agentType) {
+		this.agentType = agentType;
 	}
 
-	/**
-	 * @param applicationName the applicationName to set
-	 */
-	public void setApplicationName(String applicationName) {
-		this.applicationName = applicationName;
+	public Integer getPid() {
+		return pid;
 	}
 
-	/**
-	 * @return the applicationUUID
-	 */
+	public void setPid(Integer pid) {
+		this.pid = pid;
+	}
+
 	public String getApplicationUUID() {
 		return applicationUUID;
 	}
 
-	/**
-	 * @param applicationUUID the applicationUUID to set
-	 */
 	public void setApplicationUUID(String applicationUUID) {
 		this.applicationUUID = applicationUUID;
 	}
 
-	/**
-	 * @return the containerID
-	 */
+	public Boolean getHost() {
+		return isHost;
+	}
+
+	public void setHost(Boolean host) {
+		isHost = host;
+	}
+
 	public String getContainerID() {
 		return containerID;
 	}
 
-	/**
-	 * @param containerID the containerID to set
-	 */
 	public void setContainerID(String containerID) {
 		this.containerID = containerID;
 	}
 
-	/**
-	 * @return the isHost
-	 */
-	public Boolean getIsHost() {
-		return isHost;
+	public String getApplicationName() {
+		return applicationName;
 	}
 
-	/**
-	 * @param isHost the isHost to set
-	 */
-	public void setIsHost(Boolean isHost) {
-		this.isHost = isHost;
+	public void setApplicationName(String applicationName) {
+		this.applicationName = applicationName;
 	}
 
-	public String getClassPath() {
-		return classPath;
+	public String getProgramArguments() {
+		return programArguments;
 	}
 
-	public void setClassPath(String classPath) {
-		this.classPath = classPath;
+	public void setProgramArguments(String programArguments) {
+		this.programArguments = programArguments;
 	}
 
-	public String getJavaCommand() {
-		return javaCommand;
+	public Long getStartTime() {
+		return startTime;
 	}
 
-	public void setJavaCommand(String javaCommand) {
-		this.javaCommand = javaCommand;
+	public void setStartTime(Long startTime) {
+		this.startTime = startTime;
 	}
 
-	/**
-	 * @return the userDir
-	 */
-	public String getUserDir() {
-		return userDir;
+	public String getRunCommand() {
+		return runCommand;
 	}
 
-	/**
-	 * @param userDir the userDir to set
-	 */
-	public void setUserDir(String userDir) {
-		this.userDir = userDir;
+	public void setRunCommand(String runCommand) {
+		this.runCommand = runCommand;
 	}
 
-	/**
-	 * @return the procStartTime
-	 */
 	public String getProcStartTime() {
 		return procStartTime;
 	}
 
-	/**
-	 * @param procStartTime the procStartTime to set
-	 */
 	public void setProcStartTime(String procStartTime) {
 		this.procStartTime = procStartTime;
+	}
+
+	public String getUserDir() {
+		return userDir;
+	}
+
+	public void setUserDir(String userDir) {
+		this.userDir = userDir;
+	}
+
+	public JSONArray getLibraryPath() {
+		return libraryPath;
+	}
+
+	public void setLibraryPath(JSONArray libraryPath) {
+		this.libraryPath = libraryPath;
+	}
+
+	public String getBootLibraryPath() {
+		return bootLibraryPath;
+	}
+
+	public void setBootLibraryPath(String bootLibraryPath) {
+		this.bootLibraryPath = bootLibraryPath;
+	}
+
+	public String getBinaryName() {
+		return binaryName;
+	}
+
+	public void setBinaryName(String binaryName) {
+		this.binaryName = binaryName;
+	}
+
+	public String getBinaryVersion() {
+		return binaryVersion;
+	}
+
+	public void setBinaryVersion(String binaryVersion) {
+		this.binaryVersion = binaryVersion;
+	}
+
+	public String getOsArch() {
+		return osArch;
+	}
+
+	public void setOsArch(String osArch) {
+		this.osArch = osArch;
+	}
+
+	public String getOsName() {
+		return osName;
+	}
+
+	public void setOsName(String osName) {
+		this.osName = osName;
+	}
+
+	public String getOsVersion() {
+		return osVersion;
+	}
+
+	public void setOsVersion(String osVersion) {
+		this.osVersion = osVersion;
 	}
 
 	public String getAgentAttachmentType() {
