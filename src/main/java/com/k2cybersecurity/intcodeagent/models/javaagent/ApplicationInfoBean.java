@@ -1,11 +1,12 @@
 package com.k2cybersecurity.intcodeagent.models.javaagent;
 
+import com.k2cybersecurity.intcodeagent.logging.ServerInfo;
 import com.k2cybersecurity.intcodeagent.websocket.JsonConverter;
 import org.json.simple.JSONArray;
 
 import java.util.Arrays;
 
-public class ApplicationInfoBean extends AgentBasicInfo{
+public class ApplicationInfoBean extends AgentBasicInfo {
 
 	private String agentType;
 
@@ -45,22 +46,25 @@ public class ApplicationInfoBean extends AgentBasicInfo{
 
 	private String agentAttachmentType;
 
+	private ServerInfo serverInfo;
+
 	public ApplicationInfoBean(Integer pid, String applicationUUID, String agentAttachmentType) {
-	    super();
+		super();
 		this.pid = pid;
 		this.applicationUUID = applicationUUID;
 		this.runCommand = System.getProperty("sun.java.command");
 		this.userDir = System.getProperty("user.dir");
-		this.libraryPath= new JSONArray();
+		this.libraryPath = new JSONArray();
 		this.libraryPath.addAll(Arrays.asList(System.getProperty("java.library.path").split(":")));
 		this.libraryPath.addAll(Arrays.asList(System.getProperty("java.class.path").split(":")));
-		this.bootLibraryPath=System.getProperty("sun.boot.library.path");
-		this.binaryName=System.getProperty("java.runtime.name");
-		this.binaryVersion=System.getProperty("java.runtime.version");
-		this.osArch=System.getProperty("os.arch");
-		this.osName=System.getProperty("os.name");
-		this.osVersion=System.getProperty("os.version");
+		this.bootLibraryPath = System.getProperty("sun.boot.library.path");
+		this.binaryName = System.getProperty("java.runtime.name");
+		this.binaryVersion = System.getProperty("java.runtime.version");
+		this.osArch = System.getProperty("os.arch");
+		this.osName = System.getProperty("os.name");
+		this.osVersion = System.getProperty("os.version");
 		this.agentAttachmentType = agentAttachmentType;
+		this.serverInfo = new ServerInfo();
 	}
 
 	@Override
@@ -224,5 +228,13 @@ public class ApplicationInfoBean extends AgentBasicInfo{
 
 	public void setAgentAttachmentType(String agentAttachmentType) {
 		this.agentAttachmentType = agentAttachmentType;
+	}
+
+	public ServerInfo getServerInfo() {
+		return serverInfo;
+	}
+
+	public void setServerInfo(ServerInfo serverInfo) {
+		this.serverInfo = serverInfo;
 	}
 }

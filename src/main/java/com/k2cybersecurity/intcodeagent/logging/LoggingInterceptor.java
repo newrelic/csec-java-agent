@@ -33,18 +33,18 @@ import java.net.URISyntaxException;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.brutusin.instrumentation.Agent;
 import org.brutusin.instrumentation.Interceptor;
+import org.json.simple.JSONArray;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.MethodNode;
 
@@ -88,6 +88,8 @@ public class LoggingInterceptor extends Interceptor {
 //	private static Logger logger;
 
 	private static final FileLoggerThreadPool logger;
+
+	private static Pattern applicationInformationDetectRegex = Pattern.compile("\\S*(\\/classes)\\S*");
 
 	static {
 		applicationUUID = Agent.APPLICATION_UUID;
@@ -173,6 +175,55 @@ public class LoggingInterceptor extends Interceptor {
 					LoggingInterceptor.class.getName());
 		}
 		return null;
+	}
+
+	public static void updateServerInfo() {
+		Set<DeployedApplication> deployedApplications = getAllDeployedApplications();
+		JSONArray jsonArray = new JSONArray();
+		jsonArray.addAll(deployedApplications);
+		APPLICATION_INFO_BEAN.getServerInfo().setDeployedApplications(jsonArray);
+		EventSendPool.getInstance().sendEvent(APPLICATION_INFO_BEAN.toString());
+	}
+
+	private static Set<DeployedApplication> getAllDeployedApplications() {
+		Set<DeployedApplication> deployedApplications = new HashSet<>();
+//		logger.debug(OBTAINED_INFORMATION);
+//		logger.debug(CLASS_PATHS, classPaths);
+		Matcher pathMatcher;
+		String[] pathList;
+		String filePath;
+		File pathFile;
+
+		for (String path : Agent.jarPathSet) {
+			filePath = path;
+			filePath = StringUtils.removeAll(filePath, "!");
+			pathMatcher = applicationInformationDetectRegex.matcher(filePath);
+			if (pathMatcher.find()) {
+				pathFile = new File(filePath);
+				while (StringUtils.isNotBlank(pathFile.getName())) {
+					if (StringUtils.equals(pathFile.getName(), "classes")) {
+						break;
+					}
+					pathFile = pathFile.getParentFile();
+				}
+				if (StringUtils.equals(pathFile.getName(), "classes")) {
+					pathFile = pathFile.getParentFile();
+					if (StringUtils.endsWith(pathFile.getName(), "INF")) {
+						pathFile = pathFile.getParentFile();
+						if (StringUtils.endsWith(pathFile.getName(), "webapp")) {
+							deployedApplications.add(new DeployedApplication(pathFile.getParentFile().getAbsolutePath(),
+									pathFile.getParentFile().getName()));
+						}
+						deployedApplications
+								.add(new DeployedApplication(pathFile.getAbsolutePath(), pathFile.getName()));
+					} else {
+						deployedApplications
+								.add(new DeployedApplication(pathFile.getAbsolutePath(), pathFile.getName()));
+					}
+				}
+			}
+		}
+		return deployedApplications;
 	}
 
 	@Override
@@ -874,8 +925,7 @@ public class LoggingInterceptor extends Interceptor {
 			if (!ThreadMapping.getInstance().getMappedThreadRequestMap().containsKey(newThreadId))
 				ThreadMapping.getInstance().getMappedThreadRequestMap().put(newThreadId,
 						new ConcurrentLinkedDeque<ThreadRequestData>());
-			ThreadMapping.getInstance().getMappedThreadRequestMap().get(newThreadId)
-					.addAll(threadRequestData);
+			ThreadMapping.getInstance().getMappedThreadRequestMap().get(newThreadId).addAll(threadRequestData);
 		}
 	}
 
