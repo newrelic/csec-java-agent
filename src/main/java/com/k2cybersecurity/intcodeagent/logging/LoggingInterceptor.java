@@ -181,8 +181,11 @@ public class LoggingInterceptor extends Interceptor {
 		Set<DeployedApplication> deployedApplications = getAllDeployedApplications();
 		JSONArray jsonArray = new JSONArray();
 		jsonArray.addAll(deployedApplications);
-		APPLICATION_INFO_BEAN.getServerInfo().setDeployedApplications(jsonArray);
-		EventSendPool.getInstance().sendEvent(APPLICATION_INFO_BEAN.toString());
+
+		if (!APPLICATION_INFO_BEAN.getServerInfo().getDeployedApplications().containsAll(jsonArray)) {
+			APPLICATION_INFO_BEAN.getServerInfo().setDeployedApplications(jsonArray);
+			EventSendPool.getInstance().sendEvent(APPLICATION_INFO_BEAN.toString());
+		}
 	}
 
 	private static Set<DeployedApplication> getAllDeployedApplications() {
