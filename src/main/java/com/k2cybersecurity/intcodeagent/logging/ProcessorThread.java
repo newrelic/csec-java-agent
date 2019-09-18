@@ -1061,6 +1061,7 @@ public class ProcessorThread implements Runnable {
 			} catch (Exception e) {
 				logger.log(LogLevel.WARNING, "Error in generateEvent while creating IntCodeResultBean: " + e,
 						ProcessorThread.class.getName());
+				e.printStackTrace();
 			}
 
 		}

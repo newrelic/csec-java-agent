@@ -679,6 +679,7 @@ public class LoggingInterceptor extends Interceptor {
 			} catch (Exception e) {
 				logger.log(LogLevel.WARNING, "Exception occured in JETTY_PARSE_NEXT: " + e,
 						LoggingInterceptor.class.getName());
+				e.printStackTrace();
 			}
 		} else if (TOMCAT_SETBYTEBUFFER.equals(sourceString)) {
 			HttpRequestBean servletInfo;

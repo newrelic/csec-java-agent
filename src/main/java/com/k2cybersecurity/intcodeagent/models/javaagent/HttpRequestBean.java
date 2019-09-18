@@ -32,6 +32,7 @@ public class HttpRequestBean {
 
 	public HttpRequestBean() {
 		this.generationTime = 0;
+		this.rawRequest = StringUtils.EMPTY;
 		this.body = IAgentConstants.EMPTY_STRING;
 		this.dataTruncated = false;
 		this.method = IAgentConstants.EMPTY_STRING;
