@@ -1039,7 +1039,7 @@ public class ProcessorThread implements Runnable {
 			}
 		} else {
 			try {
-				intCodeResultBean.setServletInfo(new HttpRequestBean(ExecutionMap.find(this.executionId,
+				intCodeResultBean.setHttpRequestBean(new HttpRequestBean(ExecutionMap.find(this.executionId,
 						ServletEventPool.getInstance().getRequestMap().get(this.threadId))));
 //				System.out.println("Agent Info : "+ intCodeResultBean);
 				if (intCodeResultBean.getCaseType().equals(VulnerabilityCaseType.HTTP_REQUEST.getCaseType())) {
@@ -1069,7 +1069,7 @@ public class ProcessorThread implements Runnable {
 
 	private boolean partialSSRFValidator(JavaAgentEventBean intCodeResultBean) {
 
-		String rawRequest = intCodeResultBean.getServletInfo().getRawRequest();
+		String rawRequest = intCodeResultBean.getHttpRequestBean().getRawRequest();
 		String host = intCodeResultBean.getParameters().get(0).toString();
 		String path = intCodeResultBean.getParameters().get(1).toString();
 

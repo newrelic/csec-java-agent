@@ -16,7 +16,7 @@ public class JavaAgentEventBean extends AgentBasicInfo {
 	private Integer lineNumber;
 	private JSONArray parameters;
 	private Long eventGenerationTime;
-	private HttpRequestBean servletInfo;
+	private HttpRequestBean httpRequestBean;
 	private String id;
 	private JSONArray stacktrace;
 	private String caseType;
@@ -175,15 +175,15 @@ public class JavaAgentEventBean extends AgentBasicInfo {
 	/**
 	 * @return the servletInfo
 	 */
-	public HttpRequestBean getServletInfo() {
-		return servletInfo;
+	public HttpRequestBean getHttpRequestBean() {
+		return httpRequestBean;
 	}
 
 	/**
 	 * @param servletInfo the servletInfo to set
 	 */
-	public void setServletInfo(HttpRequestBean servletInfo) {
-		this.servletInfo = servletInfo;
+	public void setHttpRequestBean(HttpRequestBean servletInfo) {
+		this.httpRequestBean = servletInfo;
 	}
 
 	/**
