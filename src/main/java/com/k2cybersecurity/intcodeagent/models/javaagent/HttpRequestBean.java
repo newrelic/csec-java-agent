@@ -135,14 +135,18 @@ public class HttpRequestBean {
 		return this.generationTime;
 	}
 
-	public void populateHttpRequest(){
+	public void populateHttpRequest() {
 		this.setRawRequest(StringEscapeUtils.unescapeJava(this.getRawRequest()));
 		RawHttpRequest request = new RawHttp().parseRequest(this.rawRequest);
 
-		this.setUrl(request.getUri().getRawPath() + "?" +request.getUri().getRawQuery());
+		if (!StringUtils.isEmpty(request.getUri().getRawQuery())) {
+			this.setUrl(request.getUri().getRawPath() + "?" + request.getUri().getRawQuery());
+		}else {
+			this.setUrl(request.getUri().getRawPath());
+		}
 		this.setMethod(request.getMethod());
 		Map<String, String> headers = new HashMap<>();
-		for(Entry<String, List<String>> header : request.getHeaders().asMap().entrySet()) {
+		for (Entry<String, List<String>> header : request.getHeaders().asMap().entrySet()) {
 			headers.put(header.getKey(), StringUtils.join(header.getValue(), ';'));
 		}
 		this.setHeaders(new JSONObject(headers));
@@ -151,7 +155,7 @@ public class HttpRequestBean {
 			try {
 				this.setBody(StringUtils.substringAfter(rawRequest, "\r\n\r\n"));
 			} catch (Exception e) {
-				 e.printStackTrace();
+				e.printStackTrace();
 			}
 		}
 		this.rawRequest = StringUtils.EMPTY;
