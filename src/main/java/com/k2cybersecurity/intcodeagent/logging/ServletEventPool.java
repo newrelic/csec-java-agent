@@ -14,7 +14,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
-import com.k2cybersecurity.intcodeagent.models.javaagent.ServletInfo;
+import com.k2cybersecurity.intcodeagent.models.javaagent.HttpRequestBean;
 
 public class ServletEventPool {
 
@@ -122,7 +122,7 @@ public class ServletEventPool {
 		}
 	}
 
-	public void processReceivedEvent(Object firstElement, Object request, ServletInfo servletInfo, String sourceString,
+	public void processReceivedEvent(Object firstElement, Object request, HttpRequestBean servletInfo, String sourceString,
 			long threadId) {
 		try {
 			this.executor

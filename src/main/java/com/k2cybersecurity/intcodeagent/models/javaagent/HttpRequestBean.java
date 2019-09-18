@@ -14,7 +14,7 @@ import org.json.simple.JSONObject;
 import rawhttp.core.RawHttp;
 import rawhttp.core.RawHttpRequest;
 
-public class ServletInfo {
+public class HttpRequestBean {
 
 	private String body;
 
@@ -30,7 +30,7 @@ public class ServletInfo {
 
 	private JSONObject headers;
 
-	public ServletInfo() {
+	public HttpRequestBean() {
 		this.generationTime = 0;
 		this.body = IAgentConstants.EMPTY_STRING;
 		this.dataTruncated = false;
@@ -39,7 +39,7 @@ public class ServletInfo {
 		this.headers = new JSONObject();
 	}
 
-	public ServletInfo(ServletInfo servletInfo) {
+	public HttpRequestBean(HttpRequestBean servletInfo) {
 		this.rawRequest = servletInfo.getRawRequest();
 		this.generationTime = servletInfo.getGenerationTime();
 		this.body = servletInfo.getBody();

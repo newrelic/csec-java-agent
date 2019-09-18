@@ -52,7 +52,7 @@ import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.models.javaagent.ApplicationInfoBean;
 import com.k2cybersecurity.intcodeagent.models.javaagent.JAHealthCheck;
-import com.k2cybersecurity.intcodeagent.models.javaagent.ServletInfo;
+import com.k2cybersecurity.intcodeagent.models.javaagent.HttpRequestBean;
 import com.k2cybersecurity.intcodeagent.models.javaagent.ShutDownEvent;
 import com.k2cybersecurity.intcodeagent.websocket.EventSendPool;
 import com.k2cybersecurity.intcodeagent.websocket.WSClient;
@@ -515,7 +515,7 @@ public class LoggingInterceptor extends Interceptor {
 				ConcurrentLinkedDeque<ThreadRequestData> threadRequestDatas = ThreadMapping.getInstance()
 						.getMappedThreadRequestMap().get(threadId);
 				Iterator<ThreadRequestData> iterator = threadRequestDatas.descendingIterator();
-				ServletInfo servletInfo = null;
+				HttpRequestBean servletInfo = null;
 				while (iterator.hasNext()) {
 					ThreadRequestData threadRequestData = iterator.next();
 					if (threadRequestData.getExecutionId() < executionId) {
@@ -581,7 +581,7 @@ public class LoggingInterceptor extends Interceptor {
 			String fetchedDataString = fetchRequestStringForWildfly(arg0, currentClassLoader);
 
 			if (fetchedDataString != null && !fetchedDataString.isEmpty()) {
-				ServletInfo servletInfo = new ServletInfo();
+				HttpRequestBean servletInfo = new HttpRequestBean();
 				servletInfo.setRawRequest(fetchedDataString);
 				ThreadRequestData threadRequestData = new ThreadRequestData(executionId, servletInfo, threadId);
 				Pair<Long, Long> pairedKey = new ImmutablePair<>(threadId, executionId);
@@ -614,36 +614,36 @@ public class LoggingInterceptor extends Interceptor {
 //				
 //			} else {
 			ServletEventPool.getInstance().incrementServletInfoReference(threadId, executionId, false);
-			ServletInfo servletInfo;
+			HttpRequestBean servletInfo;
 			if (!ServletEventPool.getInstance().getRequestMap().containsKey(threadId)) {
-				servletInfo = new ServletInfo();
+				servletInfo = new HttpRequestBean();
 				ConcurrentLinkedDeque<ExecutionMap> executionMaps = new ConcurrentLinkedDeque<ExecutionMap>();
 				executionMaps.add(new ExecutionMap(executionId, servletInfo));
 				ServletEventPool.getInstance().getRequestMap().put(threadId, executionMaps);
 			} else {
-				servletInfo = new ServletInfo();
+				servletInfo = new HttpRequestBean();
 				ServletEventPool.getInstance().getRequestMap().get(threadId)
 						.add(new ExecutionMap(executionId, servletInfo));
 			}
 //			}
 		} else if (JETTY_REQUEST_ON_FILLABLE.equals(sourceString)) {
 			ServletEventPool.getInstance().incrementServletInfoReference(threadId, executionId, false);
-			ServletInfo servletInfo;
+			HttpRequestBean servletInfo;
 			if (!ServletEventPool.getInstance().getRequestMap().containsKey(threadId)) {
-				servletInfo = new ServletInfo();
+				servletInfo = new HttpRequestBean();
 				ConcurrentLinkedDeque<ExecutionMap> executionMaps = new ConcurrentLinkedDeque<ExecutionMap>();
 				executionMaps.add(new ExecutionMap(executionId, servletInfo));
 				ServletEventPool.getInstance().getRequestMap().put(threadId, executionMaps);
 
 			} else {
-				servletInfo = new ServletInfo();
+				servletInfo = new HttpRequestBean();
 				servletInfo.addGenerationTime((int) (System.currentTimeMillis() - start));
 				ServletEventPool.getInstance().getRequestMap().get(threadId)
 						.add(new ExecutionMap(executionId, servletInfo));
 			}
 		} else if (JETTY_PARSE_NEXT.equals(sourceString)) {
 
-			ServletInfo servletInfo = ExecutionMap.find(executionId,
+			HttpRequestBean servletInfo = ExecutionMap.find(executionId,
 					ServletEventPool.getInstance().getRequestMap().get(threadId));
 			if (servletInfo == null) {
 				return;
@@ -681,7 +681,7 @@ public class LoggingInterceptor extends Interceptor {
 						LoggingInterceptor.class.getName());
 			}
 		} else if (TOMCAT_SETBYTEBUFFER.equals(sourceString)) {
-			ServletInfo servletInfo;
+			HttpRequestBean servletInfo;
 			servletInfo = ExecutionMap.find(executionId, ServletEventPool.getInstance().getRequestMap().get(threadId));
 			if (servletInfo == null) {
 				return;
@@ -721,13 +721,13 @@ public class LoggingInterceptor extends Interceptor {
 				setTomcatVersion();
 			}
 
-			ServletInfo servletInfo = new ServletInfo();
+			HttpRequestBean servletInfo = new HttpRequestBean();
 			if (!ServletEventPool.getInstance().getRequestMap().containsKey(threadId)) {
 				ConcurrentLinkedDeque<ExecutionMap> executionMaps = new ConcurrentLinkedDeque<ExecutionMap>();
 				executionMaps.add(new ExecutionMap(executionId, servletInfo));
 				ServletEventPool.getInstance().getRequestMap().put(threadId, executionMaps);
 			} else {
-				servletInfo = new ServletInfo();
+				servletInfo = new HttpRequestBean();
 				ServletEventPool.getInstance().getRequestMap().get(threadId)
 						.add(new ExecutionMap(executionId, servletInfo));
 			}
@@ -844,7 +844,7 @@ public class LoggingInterceptor extends Interceptor {
 						hb.setAccessible(true);
 						byte[] hbContent = (byte[]) hb.get(buf);
 
-						ServletInfo servletInfo = new ServletInfo();
+						HttpRequestBean servletInfo = new HttpRequestBean();
 						servletInfo.setRawRequest(new String(hbContent, 0, limitHb, StandardCharsets.UTF_8));
 						if (contentLen > limitHb) {
 							servletInfo.setDataTruncated(true);
@@ -876,7 +876,7 @@ public class LoggingInterceptor extends Interceptor {
 					posField.setAccessible(true);
 					Integer pos = (Integer) posField.get(connHandler);
 
-					ServletInfo servletInfo = new ServletInfo();
+					HttpRequestBean servletInfo = new HttpRequestBean();
 					servletInfo.setRawRequest(new String(buf, 0, pos, StandardCharsets.UTF_8));
 
 					servletInfo.addGenerationTime((int) (System.currentTimeMillis() - start));
@@ -1056,7 +1056,7 @@ public class LoggingInterceptor extends Interceptor {
 				int byteLimit = (int) byteLimitField.get(thisPointer);
 
 				String requestContent = new String(bytes, 0, byteLimit, StandardCharsets.UTF_8);
-				ServletInfo servletInfo = ExecutionMap.find(executionId,
+				HttpRequestBean servletInfo = ExecutionMap.find(executionId,
 						ServletEventPool.getInstance().getRequestMap().get(threadId));
 				if (servletInfo.getRawRequest() == null) {
 					servletInfo.setRawRequest(requestContent);

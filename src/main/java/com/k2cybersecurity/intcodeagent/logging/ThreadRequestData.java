@@ -1,6 +1,6 @@
 package com.k2cybersecurity.intcodeagent.logging;
 
-import com.k2cybersecurity.intcodeagent.models.javaagent.ServletInfo;
+import com.k2cybersecurity.intcodeagent.models.javaagent.HttpRequestBean;
 
 public class ThreadRequestData extends ExecutionMap {
 
@@ -11,7 +11,7 @@ public class ThreadRequestData extends ExecutionMap {
 	 * @param threadId
 	 * @param servletInfo
 	 */
-	public ThreadRequestData(Long executionId, ServletInfo servletInfo, long threadId) {
+	public ThreadRequestData(Long executionId, HttpRequestBean servletInfo, long threadId) {
 		super(executionId, servletInfo);
 		this.launcherThreadId = threadId;
 	}
