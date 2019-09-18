@@ -40,6 +40,7 @@ public class ServletInfo {
 	}
 
 	public ServletInfo(ServletInfo servletInfo) {
+		this.rawRequest = servletInfo.getRawRequest();
 		this.generationTime = servletInfo.getGenerationTime();
 		this.body = servletInfo.getBody();
 		this.dataTruncated = servletInfo.isDataTruncated();
