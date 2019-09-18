@@ -2,6 +2,12 @@ package com.k2cybersecurity.intcodeagent.models.javaagent;
 
 import com.k2cybersecurity.intcodeagent.logging.IAgentConstants;
 import com.k2cybersecurity.intcodeagent.websocket.JsonConverter;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.json.simple.JSONObject;
@@ -133,7 +139,11 @@ public class ServletInfo {
 
 		this.setUrl(request.getUri().getRawPath() + "?" +request.getUri().getRawQuery());
 		this.setMethod(request.getMethod());
-		this.setHeaders(new JSONObject(request.getHeaders().asMap()));
+		Map<String, String> headers = new HashMap<>();
+		for(Entry<String, List<String>> header : request.getHeaders().asMap().entrySet()) {
+			headers.put(header.getKey(), StringUtils.join(header.getValue(), ';'));
+		}
+		this.setHeaders(new JSONObject(headers));
 
 		if (!this.isDataTruncated()) {
 			try {
