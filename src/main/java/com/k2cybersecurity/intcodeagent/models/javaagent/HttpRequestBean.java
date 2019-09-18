@@ -139,6 +139,7 @@ public class HttpRequestBean {
 		this.setRawRequest(StringEscapeUtils.unescapeJava(this.getRawRequest()));
 		RawHttpRequest request = new RawHttp().parseRequest(this.rawRequest);
 
+		System.out.println("Raw request: "+this.rawRequest+" ***** raw query string: "+ request.getUri().getRawQuery()+ " ***** query string: "+request.getUri().getQuery());
 		if (!StringUtils.isEmpty(request.getUri().getRawQuery())) {
 			this.setUrl(request.getUri().getRawPath() + "?" + request.getUri().getRawQuery());
 		}else {
