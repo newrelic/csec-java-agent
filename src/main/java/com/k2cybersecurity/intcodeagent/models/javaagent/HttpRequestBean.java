@@ -1,20 +1,27 @@
 package com.k2cybersecurity.intcodeagent.models.javaagent;
 
-import com.k2cybersecurity.intcodeagent.logging.IAgentConstants;
-import com.k2cybersecurity.intcodeagent.websocket.JsonConverter;
+import java.util.Arrays;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-
+import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
+import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.json.simple.JSONObject;
-import rawhttp.core.RawHttp;
-import rawhttp.core.RawHttpRequest;
 
 public class HttpRequestBean {
+
+	private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
+	public static final String GOT_EMPTY_COMPONENT_LIST_FROM_RAW_REQUEST = "Got empty component list from raw request.";
+	public static final String UNABLE_TO_EXTRACT_THE_REQUEST_LINE = "Unable to extract the request line.";
+	public static final String GOT_EMPTY_MAP_AFTER_EXTRACTING_THE_HEADERS = "Got empty map after extracting the headers.";
+	public static final String GOT_EMPTY_BODY_AFTER_PROCESSING = "Got empty body after processing";
+	public static final String DOUBLE_NL_SEPARATOR = "\n\n";
+	public static final String DOUBLE_CR_SEPARATOR = "\r\n\r\n";
+	public static final String ERROR_WHILE_PROCESSING_HEADERS = "Error while processing headers : ";
+	public static final String COLON_SEPARATOR_CHAR = ":";
+	public static final String ERROR_WHILE_PROCESSING_REQUEST_LINE = "Error while processing request line : ";
+	public static final String INVALID_REQUEST_LINE_MISSING_MANDATORY_COMPONENTS = "Invalid request line. Missing mandatory components : ";
+	public static final String CR_OR_NL_SEPARATOR = "(\r\n|\n)";
 
 	private String body;
 
@@ -30,25 +37,25 @@ public class HttpRequestBean {
 
 	private JSONObject headers;
 
+	private String[] components;
+
 	public HttpRequestBean() {
 		this.generationTime = 0;
-		this.rawRequest = StringUtils.EMPTY;
-		this.body = IAgentConstants.EMPTY_STRING;
+		this.body = StringUtils.EMPTY;
 		this.dataTruncated = false;
-		this.method = IAgentConstants.EMPTY_STRING;
-		this.url = IAgentConstants.EMPTY_STRING;
+		this.method = StringUtils.EMPTY;
+		this.url = StringUtils.EMPTY;
 		this.headers = new JSONObject();
 	}
 
 	public HttpRequestBean(HttpRequestBean servletInfo) {
-		this.rawRequest = servletInfo.getRawRequest();
 		this.generationTime = servletInfo.getGenerationTime();
 		this.body = servletInfo.getBody();
 		this.dataTruncated = servletInfo.isDataTruncated();
 		this.method = servletInfo.getMethod();
 		this.url = servletInfo.getUrl();
 		this.headers = new JSONObject(servletInfo.getHeaders());
-		this.populateHttpRequest();
+		populateHttpRequest();
 	}
 
 	public String getRawRequest() {
@@ -97,11 +104,6 @@ public class HttpRequestBean {
 		this.body = body;
 	}
 
-	@Override
-	public String toString() {
-		return JsonConverter.toJSON(this);
-	}
-
 	/**
 	 * @return the dataTruncated
 	 */
@@ -135,30 +137,81 @@ public class HttpRequestBean {
 		return this.generationTime;
 	}
 
+	public boolean splitRequestComponents() {
+		this.components = StringUtils.split(this.rawRequest, CR_OR_NL_SEPARATOR);
+		return (this.components.length > 0);
+	}
+
+	public boolean parseRequestLineFromRawRequest() {
+		try {
+			String requestLine = this.components[0];
+			String[] requestLineComponents = StringUtils.split(requestLine);
+			if (requestLineComponents.length >= 1) {
+				this.method = requestLineComponents[0];
+				this.url = requestLineComponents[1];
+			} else {
+				logger.log(LogLevel.ERROR,
+						INVALID_REQUEST_LINE_MISSING_MANDATORY_COMPONENTS + Arrays.asList(requestLineComponents), this.getClass().getName());
+				return false;
+			}
+		} catch (Exception e) {
+			logger.log(LogLevel.ERROR, ERROR_WHILE_PROCESSING_REQUEST_LINE + this.rawRequest, this.getClass().getName());
+			return false;
+		}
+		return true;
+	}
+
+	public boolean parseHeadersFromRawRequest() {
+		this.headers = new JSONObject();
+		try {
+			for (int i = 1; i < this.components.length; i++) {
+				if (StringUtils.isEmpty(this.components[i])) {
+					break;
+				}
+				String currentLine = this.components[i];
+				String[] currentComponents = StringUtils.split(currentLine, COLON_SEPARATOR_CHAR);
+				if (currentComponents.length > 1) {
+					this.headers.put(currentComponents[0].trim(),
+							StringUtils.join(currentComponents, StringUtils.EMPTY, 1, currentComponents.length));
+				}
+			}
+			return this.headers.size() > 0;
+		} catch (Exception e) {
+			logger.log(LogLevel.ERROR, ERROR_WHILE_PROCESSING_HEADERS + this.rawRequest, this.getClass().getName());
+			return false;
+		}
+	}
+
+	public boolean parseBodyFromRawRequest() {
+		this.body = StringUtils.substringAfter(this.rawRequest, DOUBLE_CR_SEPARATOR);
+		if (StringUtils.isEmpty(this.body)){
+			this.body = StringUtils.substringAfter(this.rawRequest, DOUBLE_NL_SEPARATOR);
+		}
+		return this.body.length() > 0;
+	}
+
 	public void populateHttpRequest() {
 		this.setRawRequest(StringEscapeUtils.unescapeJava(this.getRawRequest()));
-		RawHttpRequest request = new RawHttp().parseRequest(this.rawRequest);
 
-//		System.out.println("Raw request: "+this.rawRequest+" ***** raw query string: "+ request.getUri().getRawQuery()+ " ***** query string: "+request.getUri());
-		if (!StringUtils.isEmpty(request.getUri().getRawQuery())) {
-			this.setUrl(request.getUri().getRawPath() + "?" + request.getUri().getRawQuery());
-		}else {
-			this.setUrl(request.getUri().getRawPath());
+		if (!splitRequestComponents()) {
+			logger.log(LogLevel.ERROR, GOT_EMPTY_COMPONENT_LIST_FROM_RAW_REQUEST, this.getClass().getName());
+			return;
 		}
-		this.setMethod(request.getMethod());
-		Map<String, String> headers = new HashMap<>();
-		for (Entry<String, List<String>> header : request.getHeaders().asMap().entrySet()) {
-			headers.put(header.getKey(), StringUtils.join(header.getValue(), ';'));
-		}
-		this.setHeaders(new JSONObject(headers));
 
-		if (!this.isDataTruncated()) {
-			try {
-				this.setBody(StringUtils.substringAfter(rawRequest, "\r\n\r\n"));
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
+		if (!parseRequestLineFromRawRequest()) {
+			logger.log(LogLevel.ERROR, UNABLE_TO_EXTRACT_THE_REQUEST_LINE, this.getClass().getName());
+			return;
 		}
+
+		if (!parseHeadersFromRawRequest()) {
+			logger.log(LogLevel.ERROR, GOT_EMPTY_MAP_AFTER_EXTRACTING_THE_HEADERS, this.getClass().getName());
+			return;
+		}
+
+		if (!parseBodyFromRawRequest()) {
+			logger.log(LogLevel.WARNING, GOT_EMPTY_BODY_AFTER_PROCESSING, this.getClass().getName());
+		}
+
 		this.rawRequest = StringUtils.EMPTY;
 	}
 }
