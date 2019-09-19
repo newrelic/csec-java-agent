@@ -4,6 +4,7 @@ import java.util.Arrays;
 
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
+import com.k2cybersecurity.intcodeagent.websocket.JsonConverter;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.json.simple.JSONObject;
@@ -188,6 +189,11 @@ public class HttpRequestBean {
 			this.body = StringUtils.substringAfter(this.rawRequest, DOUBLE_NL_SEPARATOR);
 		}
 		return this.body.length() > 0;
+	}
+
+	@Override
+	public String toString() {
+		return JsonConverter.toJSON(this);
 	}
 
 	public void populateHttpRequest() {
