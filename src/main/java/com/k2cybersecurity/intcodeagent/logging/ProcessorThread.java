@@ -238,8 +238,8 @@ public class ProcessorThread implements Runnable {
 								if (i > 0)
 									intCodeResultBean.setCurrentMethod(trace[i - 1].getMethodName());
 							}
-							if (intCodeResultBean.getUserClassName() != null
-									&& !intCodeResultBean.getUserClassName().isEmpty()) {
+							if (intCodeResultBean.getUserFileName() != null
+									&& !intCodeResultBean.getUserFileName().isEmpty()) {
 //								logger.log(LogLevel.DEBUG,"result bean : "+intCodeResultBean);
 								generateEvent(intCodeResultBean);
 							}
@@ -286,7 +286,7 @@ public class ProcessorThread implements Runnable {
 						break;
 					}
 				}
-				if (intCodeResultBean.getUserClassName() != null && !intCodeResultBean.getUserClassName().isEmpty()) {
+				if (intCodeResultBean.getUserFileName() != null && !intCodeResultBean.getUserFileName().isEmpty()) {
 					generateEvent(intCodeResultBean);
 				} else if (IAgentConstants.SYSYTEM_CALL_START.equals(sourceString)) {
 					int traceId = getClassNameForSysytemCallStart(trace, intCodeResultBean);
