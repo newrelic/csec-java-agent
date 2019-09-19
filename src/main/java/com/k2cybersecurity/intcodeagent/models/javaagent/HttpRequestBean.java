@@ -2,12 +2,13 @@ package com.k2cybersecurity.intcodeagent.models.javaagent;
 
 import java.util.Arrays;
 
-import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
-import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
-import com.k2cybersecurity.intcodeagent.websocket.JsonConverter;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.json.simple.JSONObject;
+
+import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
+import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
+import com.k2cybersecurity.intcodeagent.websocket.JsonConverter;
 
 public class HttpRequestBean {
 
@@ -22,7 +23,7 @@ public class HttpRequestBean {
 	public static final String COLON_SEPARATOR_CHAR = ":";
 	public static final String ERROR_WHILE_PROCESSING_REQUEST_LINE = "Error while processing request line : ";
 	public static final String INVALID_REQUEST_LINE_MISSING_MANDATORY_COMPONENTS = "Invalid request line. Missing mandatory components : ";
-	public static final String CR_OR_NL_SEPARATOR = "(\r\n|\n)";
+	public static final String CR_OR_NL_SEPARATOR = "\n";
 
 	private String body;
 
@@ -38,9 +39,8 @@ public class HttpRequestBean {
 
 	private JSONObject headers;
 
-	private String[] components;
-
 	public HttpRequestBean() {
+		this.rawRequest = StringUtils.EMPTY;
 		this.generationTime = 0;
 		this.body = StringUtils.EMPTY;
 		this.dataTruncated = false;
@@ -50,6 +50,7 @@ public class HttpRequestBean {
 	}
 
 	public HttpRequestBean(HttpRequestBean servletInfo) {
+		this.rawRequest = servletInfo.getRawRequest();
 		this.generationTime = servletInfo.getGenerationTime();
 		this.body = servletInfo.getBody();
 		this.dataTruncated = servletInfo.isDataTruncated();
@@ -138,14 +139,13 @@ public class HttpRequestBean {
 		return this.generationTime;
 	}
 
-	public boolean splitRequestComponents() {
-		this.components = StringUtils.split(this.rawRequest, CR_OR_NL_SEPARATOR);
-		return (this.components.length > 0);
+	public String[] splitRequestComponents() {
+		return StringUtils.splitPreserveAllTokens(this.rawRequest, CR_OR_NL_SEPARATOR);
 	}
 
-	public boolean parseRequestLineFromRawRequest() {
+	public boolean parseRequestLineFromRawRequest(String[] components) {
 		try {
-			String requestLine = this.components[0];
+			String requestLine = components[0];
 			String[] requestLineComponents = StringUtils.split(requestLine);
 			if (requestLineComponents.length >= 1) {
 				this.method = requestLineComponents[0];
@@ -162,18 +162,24 @@ public class HttpRequestBean {
 		return true;
 	}
 
-	public boolean parseHeadersFromRawRequest() {
+	public boolean parseHeadersFromRawRequest(String[] components) {
 		this.headers = new JSONObject();
+		int resetCounter = 0;
 		try {
-			for (int i = 1; i < this.components.length; i++) {
-				if (StringUtils.isEmpty(this.components[i])) {
-					break;
+			for (int i = 1; i < components.length; i++) {
+				String currentLine = components[i];
+//				System.out.println("Current line : " + currentLine);
+				if (StringUtils.isEmpty(currentLine)){
+					resetCounter ++;
+					if (resetCounter == 4) {
+						break;
+					}
+				} else {
+					resetCounter = 0;
 				}
-				String currentLine = this.components[i];
-				String[] currentComponents = StringUtils.split(currentLine, COLON_SEPARATOR_CHAR);
-				if (currentComponents.length > 1) {
-					this.headers.put(currentComponents[0].trim(),
-							StringUtils.join(currentComponents, StringUtils.EMPTY, 1, currentComponents.length));
+				String[] currentComponents = new String[] {StringUtils.substringBefore(currentLine, COLON_SEPARATOR_CHAR),StringUtils.substringAfter(currentLine, COLON_SEPARATOR_CHAR)};
+				if (currentComponents.length > 1 && StringUtils.isNoneBlank(currentComponents)) {
+					this.headers.put(currentComponents[0].trim(), currentComponents[1].trim());
 				}
 			}
 			return this.headers.size() > 0;
@@ -198,18 +204,18 @@ public class HttpRequestBean {
 
 	public void populateHttpRequest() {
 		this.setRawRequest(StringEscapeUtils.unescapeJava(this.getRawRequest()));
-
-		if (!splitRequestComponents()) {
+		String[] components = splitRequestComponents();
+		if (components == null || components.length == 0) {
 			logger.log(LogLevel.ERROR, GOT_EMPTY_COMPONENT_LIST_FROM_RAW_REQUEST, this.getClass().getName());
 			return;
 		}
-
-		if (!parseRequestLineFromRawRequest()) {
+		System.out.println(Arrays.asList(components));
+		if (!parseRequestLineFromRawRequest(components)) {
 			logger.log(LogLevel.ERROR, UNABLE_TO_EXTRACT_THE_REQUEST_LINE, this.getClass().getName());
 			return;
 		}
 
-		if (!parseHeadersFromRawRequest()) {
+		if (!parseHeadersFromRawRequest(components)) {
 			logger.log(LogLevel.ERROR, GOT_EMPTY_MAP_AFTER_EXTRACTING_THE_HEADERS, this.getClass().getName());
 			return;
 		}
