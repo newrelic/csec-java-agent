@@ -164,18 +164,13 @@ public class HttpRequestBean {
 
 	public boolean parseHeadersFromRawRequest(String[] components) {
 		this.headers = new JSONObject();
-		int resetCounter = 0;
 		try {
 			for (int i = 1; i < components.length; i++) {
 				String currentLine = components[i];
 //				System.out.println("Current line : " + currentLine);
-				if (StringUtils.isEmpty(currentLine)){
-					resetCounter ++;
-					if (resetCounter == 4) {
-						break;
-					}
-				} else {
-					resetCounter = 0;
+				if (StringUtils.isBlank(currentLine)){
+//					System.out.println("Breaking out");
+					break;
 				}
 				String[] currentComponents = new String[] {StringUtils.substringBefore(currentLine, COLON_SEPARATOR_CHAR),StringUtils.substringAfter(currentLine, COLON_SEPARATOR_CHAR)};
 				if (currentComponents.length > 1 && StringUtils.isNoneBlank(currentComponents)) {
@@ -209,7 +204,7 @@ public class HttpRequestBean {
 			logger.log(LogLevel.ERROR, GOT_EMPTY_COMPONENT_LIST_FROM_RAW_REQUEST, this.getClass().getName());
 			return;
 		}
-		System.out.println(Arrays.asList(components));
+//		System.err.println("\n\nComponents : " + Arrays.asList(components));
 		if (!parseRequestLineFromRawRequest(components)) {
 			logger.log(LogLevel.ERROR, UNABLE_TO_EXTRACT_THE_REQUEST_LINE, this.getClass().getName());
 			return;
@@ -226,4 +221,14 @@ public class HttpRequestBean {
 
 		this.rawRequest = StringUtils.EMPTY;
 	}
+
+//	public static void main(String[] args) {
+//		HttpRequestBean servletInfo = new HttpRequestBean();
+//		String raw = "GET /DemoApplication-0.0.1-SNAPSHOT/UserCheck?user=test&password=1%27+OR+2*3%3D5%2B1+%23 HTTP/1.1\r\nhost:localhost:8080\r\nconnection:keep-alive\r\nupgrade-insecure-requests:1\r\nuser-agent:Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36\r\naccept:text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3\r\nreferer:http://localhost:8080/DemoApplication-0.0.1-SNAPSHOT/sample1.jsp\r\naccept-encoding:gzip, deflate\r\naccept-language:en-US,en;q=0.9\r\ncookie:JSESSIONID=887548369E69A897729666A6F33728FE; SESSION=vgbbsmq400gl1qpnjnsqo0qdjm; JSESSIONID=908DCB5F35DEE838AE85E3DD8E6B5176\r\n";
+//
+////		String raw = "POST /codeijc HTTP/1.1\r\nhost:localhost:8080\r\nconnection:keep-alive\r\ncache-control:max-age=0\r\norigin:http://localhost:8080\r\nupgrade-insecure-requests:1\r\ncontent-type:application/x-www-form-urlencoded\r\nuser-agent:Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.108 Safari/537.36\r\naccept:text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3\r\nreferer:http://localhost:8080/codeijc\r\naccept-encoding:gzip, deflate\r\naccept-language:en-GB,en-US;q=0.9,en;q=0.8\r\ncookie:JSESSIONID=AA03FD28F4C5B568C2C22589E1F747C3\r\ncontent-length:88\r\n\r\njsonString=%7B%7D%27%29%3Bjava.lang.Runtime.getRuntime%28%29.exec%28%22ls%22%29%3B%2F%2F";
+//		servletInfo.setRawRequest(raw);
+//		servletInfo.populateHttpRequest();
+//		System.out.println(servletInfo);
+//	}
 }
