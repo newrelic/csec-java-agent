@@ -804,8 +804,8 @@ public class LoggingInterceptor extends Interceptor {
 							positionHb);
 					requestContent = new String(buff.getByteArray(), 0, buff.getLimit(), StandardCharsets.UTF_8);
 					servletInfo.setRawRequest(requestContent);
-					logger.log(LogLevel.INFO, "Request Param : " + threadId + ":" + executionId + " : " + servletInfo,
-							LoggingInterceptor.class.getName());
+//					logger.log(LogLevel.INFO, "Request Param : " + threadId + ":" + executionId + " : " + servletInfo,
+//							LoggingInterceptor.class.getName());
 				}
 				servletInfo.addGenerationTime((int) (System.currentTimeMillis() - start));
 			} catch (Exception e) {
@@ -905,8 +905,10 @@ public class LoggingInterceptor extends Interceptor {
 			}
 //			 logger.log(LogLevel.INFO, "ServletEventPool.getInstance().getRequestMap() : "+ ServletEventPool.getInstance().getRequestMap(), LoggingInterceptor.class.getName());
 			try {
+
 				if (ServletEventPool.getInstance().getRequestMap().containsKey(threadId) && ExecutionMap
 						.find(executionId, ServletEventPool.getInstance().getRequestMap().get(threadId)) != null) {
+//					logger.log(LogLevel.INFO, "Other event : source : "+ sourceString, LoggingInterceptor.class.getName());
 					ServletEventPool.getInstance().incrementServletInfoReference(threadId, executionId, true);
 					EventThreadPool.getInstance().processReceivedEvent(source, arg, executionId,
 							Thread.currentThread().getStackTrace(), threadId, sourceString,

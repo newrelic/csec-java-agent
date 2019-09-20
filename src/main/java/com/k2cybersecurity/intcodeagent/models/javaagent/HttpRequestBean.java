@@ -197,6 +197,10 @@ public class HttpRequestBean {
 		return JsonConverter.toJSON(this);
 	}
 
+	public void clearRawRequest() {
+		this.rawRequest = StringUtils.EMPTY;
+	}
+
 	public void populateHttpRequest() {
 		this.setRawRequest(StringEscapeUtils.unescapeJava(this.getRawRequest()));
 		String[] components = splitRequestComponents();
@@ -218,9 +222,9 @@ public class HttpRequestBean {
 		if (!parseBodyFromRawRequest()) {
 			logger.log(LogLevel.WARNING, GOT_EMPTY_BODY_AFTER_PROCESSING, this.getClass().getName());
 		}
-
-		this.rawRequest = StringUtils.EMPTY;
 	}
+
+
 
 //	public static void main(String[] args) {
 //		HttpRequestBean servletInfo = new HttpRequestBean();
