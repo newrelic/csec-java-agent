@@ -189,6 +189,7 @@ public class HttpRequestBean {
 		if (StringUtils.isEmpty(this.body)){
 			this.body = StringUtils.substringAfter(this.rawRequest, DOUBLE_NL_SEPARATOR);
 		}
+		this.body = StringEscapeUtils.escapeJava(this.body);
 		return this.body.length() > 0;
 	}
 
