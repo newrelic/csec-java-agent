@@ -24,7 +24,7 @@ public class AgentUtils {
 				TimeUnit timeUnit = TimeUnit.valueOf(controlCommand.getArguements().get(2));
 				LogWriter.updateLogLevel(logLevel, timeUnit, duration);
 			} catch (Exception e) {
-				logger.log(LogLevel.SEVERE, e.toString(), AgentUtils.class.getSimpleName());
+				logger.log(LogLevel.SEVERE, "Error in controlCommandProcessor : ", e, AgentUtils.class.getSimpleName());
 			}
 			break;
 

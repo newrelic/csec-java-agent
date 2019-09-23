@@ -139,9 +139,9 @@ public class EventThreadPool {
 			this.executor.execute(
 					new ProcessorThread(source, arg, executionId, stackTrace, tId, sourceString, preProcessingTime));
 		} catch (RejectedExecutionException rejected) {
-			logger.log(LogLevel.INFO, "Rejected to process Event At: " + this.executor.getQueue().size() + ": " +rejected, EventThreadPool.class.getName());
+			logger.log(LogLevel.INFO, "Rejected to process Event At: " + this.executor.getQueue().size() + ": " ,rejected, EventThreadPool.class.getName());
 		} catch (Exception e) {
-			logger.log(LogLevel.WARNING, "Error in processReceivedEvent: "+ e, EventThreadPool.class.getName());
+			logger.log(LogLevel.WARNING, "Error in processReceivedEvent: ", e, EventThreadPool.class.getName());
 		}
 	}
 

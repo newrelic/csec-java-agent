@@ -165,7 +165,7 @@ public class ServletEventPool {
 				refCount = 1l;
 			}
 		} catch (Exception e) {
-			// e.printStackTrace();
+			logger.log(LogLevel.WARNING, "Unable to increment servletInfo ref count for eId " + threadId + ":" +executionId, e, this.getClass().getName());
 		}
 		return refCount;
 	}
@@ -182,7 +182,7 @@ public class ServletEventPool {
 				}
 			}
 		} catch (Exception e) {
-			// e.printStackTrace();
+			logger.log(LogLevel.WARNING, "Unable to decrement servletInfo ref count for eId " + threadId + ":" +executionId, e, this.getClass().getName());
 		}
 
 		return refCount;

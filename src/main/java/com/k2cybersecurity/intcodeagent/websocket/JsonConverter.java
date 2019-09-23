@@ -61,7 +61,7 @@ public class JsonConverter {
 					}
 				}
 			} catch (IllegalArgumentException | IllegalAccessException e) {
-				e.printStackTrace();
+
 			}
 		}
 

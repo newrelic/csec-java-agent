@@ -63,7 +63,7 @@ public class IPScheduledThread {
 					} catch (NullPointerException ex) {
 						logger.log(LogLevel.WARNING, "No reference to Socket's OutputStream", IPScheduledThread.class.getName());
 					} catch (Exception e) {
-						logger.log(LogLevel.WARNING, "Error while trying to verify connection: "+ e, IPScheduledThread.class.getName());
+						logger.log(LogLevel.WARNING, "Error while trying to verify connection: ", e, IPScheduledThread.class.getName());
 					}
 					if (hostip == null || hostip.equals("")) {
 						logger.log(LogLevel.DEBUG, "Host ip not found", IPScheduledThread.class.getName());
@@ -76,7 +76,7 @@ public class IPScheduledThread {
 						logger.log(LogLevel.DEBUG, "K2-JavaAgent re-installed successfully.", IPScheduledThread.class.getName());
 					}
 				} catch (Exception e) {
-					logger.log(LogLevel.WARNING, "Error in IPScheduledThread : "+ e, IPScheduledThread.class.getName());
+					logger.log(LogLevel.WARNING, "Error in IPScheduledThread : ", e, IPScheduledThread.class.getName());
 				}
 			}
 		};
@@ -98,7 +98,7 @@ public class IPScheduledThread {
 				instance = new IPScheduledThread();
 			return instance;
 		} catch (Exception e) {
-			logger.log(LogLevel.WARNING, "Error while starting: "+ e, IPScheduledThread.class.getName());
+			logger.log(LogLevel.WARNING, "Error while starting: ", e, IPScheduledThread.class.getName());
 		}
 		throw null;
 	}

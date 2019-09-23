@@ -224,7 +224,7 @@ public class ProcessorThread implements Runnable {
 				}
 			}
 		} catch (Exception e) {
-			logger.log(LogLevel.WARNING, "Error in run: " + e, ProcessorThread.class.getName());
+			logger.log(LogLevel.WARNING, "Error in run: " , e, ProcessorThread.class.getName());
 		} finally {
 			ServletEventPool.getInstance().decrementServletInfoReference(threadId, executionId, true);
 		}
@@ -380,7 +380,7 @@ public class ProcessorThread implements Runnable {
 			parameters.add(String.valueOf(arg[sqlObjectLocation]));
 
 		} catch (Exception e) {
-			logger.log(LogLevel.WARNING, "Error in getMySQLParameterValue: " + e, ProcessorThread.class.getName());
+			logger.log(LogLevel.WARNING, "Error in getMySQLParameterValue: " , e, ProcessorThread.class.getName());
 		}
 	}
 
@@ -646,7 +646,7 @@ public class ProcessorThread implements Runnable {
 
 			}
 		} catch (Exception e) {
-			logger.log(LogLevel.WARNING, "Error in getOracleParameterValue: " + e, ProcessorThread.class.getName());
+			logger.log(LogLevel.WARNING, "Error in getOracleParameterValue: " , e, ProcessorThread.class.getName());
 		}
 		return parameters;
 	}
@@ -707,7 +707,7 @@ public class ProcessorThread implements Runnable {
 
 		} catch (Throwable th) {
 			parameters.add((obj != null) ? obj.toString() : null);
-			logger.log(LogLevel.WARNING, "Error in toString: " + th, ProcessorThread.class.getName());
+			logger.log(LogLevel.WARNING, "Error in toString: ", th, ProcessorThread.class.getName());
 		}
 		return parameters;
 	}
@@ -740,7 +740,7 @@ public class ProcessorThread implements Runnable {
 			parameters.add(uriObj.getPath());
 
 		} catch (Exception e) {
-			logger.log(LogLevel.WARNING, "Error in getJava9HttpClientParameters : " + e,
+			logger.log(LogLevel.WARNING, "Error in getJava9HttpClientParameters : ", e,
 					ProcessorThread.class.getName());
 		}
 	}
@@ -788,7 +788,7 @@ public class ProcessorThread implements Runnable {
 			parameters.add(pathOnly);
 
 		} catch (Exception e) {
-			logger.log(LogLevel.WARNING, "Error in getApacheHttpRequestParameters : " + e,
+			logger.log(LogLevel.WARNING, "Error in getApacheHttpRequestParameters : ", e,
 					ProcessorThread.class.getName());
 		}
 
@@ -823,8 +823,7 @@ public class ProcessorThread implements Runnable {
 			parameters.add(path);
 
 		} catch (Exception e) {
-			e.printStackTrace();
-			logger.log(LogLevel.WARNING, "Error in getApacheCommonsHttpRequestParameters : " + e,
+			logger.log(LogLevel.WARNING, "Error in getApacheCommonsHttpRequestParameters : ", e,
 					ProcessorThread.class.getName());
 		}
 
@@ -848,8 +847,7 @@ public class ProcessorThread implements Runnable {
 			parameters.add(url.getPath());
 
 		} catch (Exception e) {
-			e.printStackTrace();
-			logger.log(LogLevel.WARNING, "Error in getOkHttpRequestParameters : " + e, ProcessorThread.class.getName());
+			logger.log(LogLevel.WARNING, "Error in getOkHttpRequestParameters : ", e, ProcessorThread.class.getName());
 		}
 
 	}
@@ -865,7 +863,7 @@ public class ProcessorThread implements Runnable {
 				sqlField.setAccessible(true);
 				parameters.add((String) sqlField.get(object));
 			} catch (Exception e) {
-				logger.log(LogLevel.WARNING, "Error in getHSQLParameterValue for HSQL_V2_4: " + e,
+				logger.log(LogLevel.WARNING, "Error in getHSQLParameterValue for HSQL_V2_4: ", e,
 						ProcessorThread.class.getName());
 			}
 			return;
@@ -876,7 +874,7 @@ public class ProcessorThread implements Runnable {
 				mainStringField.setAccessible(true);
 				parameters.add((String) mainStringField.get(object));
 			} catch (Exception e) {
-				logger.log(LogLevel.WARNING, "Error in getHSQLParameterValue for HSQL_V1_8_CONNECTION: " + e,
+				logger.log(LogLevel.WARNING, "Error in getHSQLParameterValue for HSQL_V1_8_CONNECTION: ", e,
 						ProcessorThread.class.getName());
 			}
 			return;
@@ -905,7 +903,7 @@ public class ProcessorThread implements Runnable {
 				parameters.add(paramArray);
 			} catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException
 					| JsonProcessingException e) {
-				logger.log(LogLevel.WARNING, "Error in getPSQLParameterValue: " + e, ProcessorThread.class.getName());
+				logger.log(LogLevel.WARNING, "Error in getPSQLParameterValue: ", e, ProcessorThread.class.getName());
 			}
 
 		}
@@ -961,7 +959,7 @@ public class ProcessorThread implements Runnable {
 						+ " due to buffer capacity reached", ProcessorThread.class.getName());
 				LoggingInterceptor.JA_HEALTH_CHECK.incrementDropCount();
 			} catch (Exception e) {
-				logger.log(LogLevel.WARNING, "Error in generateEvent while creating JavaAgentDynamicPathBean: " + e,
+				logger.log(LogLevel.WARNING, "Error in generateEvent while creating JavaAgentDynamicPathBean: ", e,
 						ProcessorThread.class.getName());
 			}
 		} else {
@@ -988,9 +986,8 @@ public class ProcessorThread implements Runnable {
 						ProcessorThread.class.getName());
 				LoggingInterceptor.JA_HEALTH_CHECK.incrementDropCount();
 			} catch (Exception e) {
-				logger.log(LogLevel.WARNING, "Error in generateEvent while creating IntCodeResultBean: " + e,
+				logger.log(LogLevel.WARNING, "Error in generateEvent while creating IntCodeResultBean: ", e,
 						ProcessorThread.class.getName());
-				e.printStackTrace();
 			}
 
 		}
@@ -1010,8 +1007,7 @@ public class ProcessorThread implements Runnable {
 			if (StringUtils.containsIgnoreCase(urlDecoded, host) || StringUtils.containsIgnoreCase(urlDecoded, path))
 				return true;
 		} catch (UnsupportedEncodingException e) {
-			logger.log(LogLevel.WARNING, "Error in partialSSRFValidator : "+ e, ProcessorThread.class.getName());
-			e.printStackTrace();
+			logger.log(LogLevel.WARNING, "Error in partialSSRFValidator : ", e, ProcessorThread.class.getName());
 		}
 //		logger.log(Level.FINE, "Dropping SSRF event: {0}", intCodeResultBean);
 		return false;

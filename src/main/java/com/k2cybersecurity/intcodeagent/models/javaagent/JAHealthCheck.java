@@ -194,9 +194,9 @@ public class JAHealthCheck extends AgentBasicInfo{
 						}
 					} 
 				} catch (Exception e1) {
-					logger.log(LogLevel.WARNING,"Exception in setLibPath : "+ e1, JAHealthCheck.class.getName());
+					logger.log(LogLevel.WARNING,"Exception in setLibPath : ", e1, JAHealthCheck.class.getName());
 				} catch (Throwable e) {
-					logger.log(LogLevel.WARNING,"Throwable in setLibPath : "+ e, JAHealthCheck.class.getName());
+					logger.log(LogLevel.WARNING,"Throwable in setLibPath : ", e, JAHealthCheck.class.getName());
 				}
 			}
 			if (Agent.jarPathSet.size() != lastJarSetSize) {

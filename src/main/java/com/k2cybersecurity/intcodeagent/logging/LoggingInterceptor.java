@@ -39,6 +39,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.sun.javafx.util.Logging;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
@@ -73,7 +74,7 @@ public class LoggingInterceptor extends Interceptor {
 	private static final String CLASS_COM_IBM_WS_GENERICBNF_INTERNAL_BNF_HEADERS_IMPL = "com.ibm.ws.genericbnf.internal.BNFHeadersImpl";
 	private static final String SCOPE = ".scope";
 	private static final String DOCKER_1_13 = "/docker-";
-	protected static Integer VMPID;
+	public static Integer VMPID;
 	protected static final String applicationUUID;
 	public static ApplicationInfoBean APPLICATION_INFO_BEAN;
 	protected static JAHealthCheck JA_HEALTH_CHECK;
@@ -92,6 +93,13 @@ public class LoggingInterceptor extends Interceptor {
 	private static Pattern applicationInformationDetectRegex = Pattern.compile("\\S*(\\/classes)\\S*");
 
 	static {
+		try {
+			RuntimeMXBean runtimeMXBean = ManagementFactory.getRuntimeMXBean();
+			String runningVM = runtimeMXBean.getName();
+			VMPID = Integer.parseInt(runningVM.substring(0, runningVM.indexOf(VMPID_SPLIT_CHAR)));
+		} catch (Throwable th) {
+			System.err.println("Error while initialising the K2 Agent :" + th.getCause() + " : " + th.getMessage());
+		}
 		applicationUUID = Agent.APPLICATION_UUID;
 		logger = FileLoggerThreadPool.getInstance();
 	}
@@ -147,8 +155,6 @@ public class LoggingInterceptor extends Interceptor {
 	public static ApplicationInfoBean createApplicationInfoBean() {
 		try {
 			RuntimeMXBean runtimeMXBean = ManagementFactory.getRuntimeMXBean();
-			String runningVM = runtimeMXBean.getName();
-			VMPID = Integer.parseInt(runningVM.substring(0, runningVM.indexOf(VMPID_SPLIT_CHAR)));
 			ApplicationInfoBean applicationInfoBean = new ApplicationInfoBean(VMPID, applicationUUID,
 					Agent.isDynamicAttach ? "DYNAMIC" : "STATIC");
 			applicationInfoBean.setStartTime(runtimeMXBean.getStartTime());
@@ -171,7 +177,7 @@ public class LoggingInterceptor extends Interceptor {
 			// JSONArray(runtimeMXBean.getInputArguments()));
 			return applicationInfoBean;
 		} catch (Exception e) {
-			logger.log(LogLevel.WARNING, "Exception occured in createApplicationInfoBean: " + e,
+			logger.log(LogLevel.WARNING, "Exception occured in createApplicationInfoBean: ", e,
 					LoggingInterceptor.class.getName());
 		}
 		return null;
@@ -254,7 +260,8 @@ public class LoggingInterceptor extends Interceptor {
 		try {
 			WSClient.getInstance();
 		} catch (Exception e) {
-//			logger.log(LogLevel.WARNING, "Error occured while trying to connect to wsocket: {0}", e);
+			logger.log(LogLevel.ERROR, "Error occured while trying to connect to wsocket: ", e,
+					LoggingInterceptor.class.getName());
 		}
 		IPScheduledThread.getInstance();
 		eventWritePool();
@@ -265,8 +272,7 @@ public class LoggingInterceptor extends Interceptor {
 		try {
 			EventSendPool.getInstance();
 		} catch (Exception e) {
-			logger.log(LogLevel.WARNING, "Exception occured in EventSendPool: " + e,
-					LoggingInterceptor.class.getName());
+			logger.log(LogLevel.WARNING, "Exception occured in EventSendPool: ", e, LoggingInterceptor.class.getName());
 		}
 	}
 
@@ -573,7 +579,8 @@ public class LoggingInterceptor extends Interceptor {
 					updateThreadMaps(threadId, executionId, newThreadId, 1);
 				}
 			} catch (Exception e) {
-				e.printStackTrace();
+				logger.log(LogLevel.WARNING, "Error while processing JBoss inital hook  : ", e,
+						this.getClass().getName());
 			}
 		} else if (sourceString.equals(JBOSS_WILDFLY_HTTP_REQUEST_PARSER_HANDLE)) {
 			Object arg0 = arg[0];
@@ -677,7 +684,7 @@ public class LoggingInterceptor extends Interceptor {
 				}
 				servletInfo.addGenerationTime((int) (System.currentTimeMillis() - start));
 			} catch (Exception e) {
-				logger.log(LogLevel.WARNING, "Exception occured in JETTY_PARSE_NEXT: " + e,
+				logger.log(LogLevel.WARNING, "Exception occured in JETTY_PARSE_NEXT: ", e,
 						LoggingInterceptor.class.getName());
 				e.printStackTrace();
 			}
@@ -712,7 +719,7 @@ public class LoggingInterceptor extends Interceptor {
 				}
 				servletInfo.addGenerationTime((int) (System.currentTimeMillis() - start));
 			} catch (Exception e) {
-				logger.log(LogLevel.WARNING, "Exception occured in TOMCAT_SETBYTEBUFFER: " + e,
+				logger.log(LogLevel.WARNING, "Exception occured in TOMCAT_SETBYTEBUFFER: ", e,
 						LoggingInterceptor.class.getName());
 			}
 		} else if (TOMCAT_COYOTE_ADAPTER_SERVICE.equals(sourceString)) {
@@ -761,7 +768,7 @@ public class LoggingInterceptor extends Interceptor {
 						positionHb = (Integer) position.get(byteBuffer);
 						byteBufferFound = true;
 					} catch (Exception e) {
-						logger.log(LogLevel.WARNING, "Exception occured in TOMCAT_COYOTE_ADAPTER_SERVICE: " + e,
+						logger.log(LogLevel.WARNING, "Exception occured in TOMCAT_COYOTE_ADAPTER_SERVICE: ", e,
 								LoggingInterceptor.class.getName());
 					}
 				} else if (tomcatMajorVersion == TOMCAT_7) {
@@ -782,7 +789,7 @@ public class LoggingInterceptor extends Interceptor {
 						}
 						byteBufferFound = true;
 					} catch (Exception e) {
-						logger.log(LogLevel.WARNING, "Exception occured in TOMCAT_COYOTE_ADAPTER_SERVICE: " + e,
+						logger.log(LogLevel.WARNING, "Exception occured in TOMCAT_COYOTE_ADAPTER_SERVICE: ", e,
 								LoggingInterceptor.class.getName());
 
 					}
@@ -809,9 +816,8 @@ public class LoggingInterceptor extends Interceptor {
 				}
 				servletInfo.addGenerationTime((int) (System.currentTimeMillis() - start));
 			} catch (Exception e) {
-				logger.log(LogLevel.WARNING,
-						"Exception occured in TOMCAT_COYOTE_ADAPTER_SERVICE buffer processing : " + e,
-						LoggingInterceptor.class.getName());
+				logger.log(LogLevel.WARNING, "Exception occured in TOMCAT_COYOTE_ADAPTER_SERVICE buffer processing : ",
+						e, LoggingInterceptor.class.getName());
 			}
 			// in case of executeInternal()
 		} else if (sourceString.equals(WEBLOGIC_SERVLET_EXECUTE)) {
@@ -894,7 +900,7 @@ public class LoggingInterceptor extends Interceptor {
 				}
 
 			} catch (Exception e) {
-				logger.log(LogLevel.WARNING, "Exception occured in WEBLOGIC_INVOKE_SERVLET buffer processing : " + e,
+				logger.log(LogLevel.WARNING, "Exception occured in WEBLOGIC_INVOKE_SERVLET buffer processing : ", e,
 						LoggingInterceptor.class.getName());
 //				e.printStackTrace();
 			}
@@ -915,7 +921,8 @@ public class LoggingInterceptor extends Interceptor {
 							System.currentTimeMillis() - start);
 				}
 			} catch (Exception e) {
-				e.printStackTrace();
+				logger.log(LogLevel.WARNING, "Exception occured in Other event processing : ", e,
+						LoggingInterceptor.class.getName());
 			}
 
 		}
@@ -955,8 +962,8 @@ public class LoggingInterceptor extends Interceptor {
 //			System.out.println("Data finally obtained : " + requestData);
 			logger.log(LogLevel.DEBUG, requestData, LoggingInterceptor.class.getName());
 		} catch (Exception e) {
-//			e.printStackTrace(System.err);
-		}
+			logger.log(LogLevel.WARNING, "Exception occured in fetchRequestStringForWildfly : " , e,
+					LoggingInterceptor.class.getName());		}
 		return requestData;
 	}
 
@@ -1070,7 +1077,7 @@ public class LoggingInterceptor extends Interceptor {
 				}
 
 			} catch (Exception e) {
-				logger.log(LogLevel.SEVERE, "Exception occured in fetching information for Websphere: " + e,
+				logger.log(LogLevel.SEVERE, "Exception occured in fetching information for Websphere: " , e,
 						LoggingInterceptor.class.getName());
 			}
 
@@ -1103,7 +1110,7 @@ public class LoggingInterceptor extends Interceptor {
 				String originalSql = (String) originalSqlField.get(obj);
 				args[thisPointerLocation] = originalSql;
 			} catch (Exception e) {
-				logger.log(LogLevel.WARNING, "Exception occured in processMysqlStatement CONNECTOR_5: " + e,
+				logger.log(LogLevel.WARNING, "Exception occured in processMysqlStatement CONNECTOR_5: " , e,
 						LoggingInterceptor.class.getName());
 			}
 		} else if (objClass.getName().equals(MYSQL_PREPARED_STATEMENT_6)
@@ -1116,7 +1123,7 @@ public class LoggingInterceptor extends Interceptor {
 
 				args[thisPointerLocation] = originalSql;
 			} catch (Exception e) {
-				logger.log(LogLevel.WARNING, "Exception occured in processMysqlStatement CONNECTOR_6 : " + e,
+				logger.log(LogLevel.WARNING, "Exception occured in processMysqlStatement CONNECTOR_6 : " , e,
 						LoggingInterceptor.class.getName());
 			}
 		} else if (objClass.getName().equals(MYSQL_PREPARED_STATEMENT_8)
@@ -1139,7 +1146,7 @@ public class LoggingInterceptor extends Interceptor {
 					args[thisPointerLocation] = originalSql;
 				}
 			} catch (Exception e) {
-				logger.log(LogLevel.WARNING, "Exception occured in processMysqlStatement CONNECTOR_8 : " + e,
+				logger.log(LogLevel.WARNING, "Exception occured in processMysqlStatement CONNECTOR_8 : " , e,
 						LoggingInterceptor.class.getName());
 			}
 
@@ -1179,7 +1186,7 @@ public class LoggingInterceptor extends Interceptor {
 					LoggingInterceptor.class.getName());
 
 		} catch (Exception e) {
-			logger.log(LogLevel.WARNING, "Unable to find Tomcat Version: " + e, LoggingInterceptor.class.getName());
+			logger.log(LogLevel.WARNING, "Unable to find Tomcat Version: " , e, LoggingInterceptor.class.getName());
 		}
 	}
 
@@ -1245,7 +1252,7 @@ public class LoggingInterceptor extends Interceptor {
 				}
 				Agent.globalInstr.retransformClasses(cl);
 			} catch (Exception e) {
-				e.printStackTrace();
+				logger.log(LogLevel.ERROR, "Error while retransforming class : " + loadedClassName , e, LoggingInterceptor.class.getName());
 			}
 		}
 	}
@@ -1265,7 +1272,7 @@ public class LoggingInterceptor extends Interceptor {
 			nextObject = nextField.get(tailObject);
 		} catch (NoSuchFieldException | SecurityException | ClassNotFoundException | IllegalArgumentException
 				| IllegalAccessException e) {
-			e.printStackTrace();
+			logger.log(LogLevel.ERROR, "Error in getNextQnode : ", e, LoggingInterceptor.class.getName());
 		}
 		return nextObject;
 

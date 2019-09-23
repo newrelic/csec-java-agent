@@ -48,7 +48,7 @@ public class WSClient extends WebSocketClient {
             IntCodeControlCommand controlCommand = new ObjectMapper().readValue(message, IntCodeControlCommand.class);
             AgentUtils.controlCommandProcessor(controlCommand);
         } catch (Exception e) {
-            logger.log(LogLevel.SEVERE, "Unable to process incoming message : " + message + " : due to error : " + e, WSClient.class.getName());
+            logger.log(LogLevel.SEVERE, "Unable to process incoming message : " + message + " : due to error : " , e, WSClient.class.getName());
         }
     }
 
