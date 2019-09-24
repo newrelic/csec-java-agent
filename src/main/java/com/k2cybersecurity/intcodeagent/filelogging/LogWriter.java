@@ -1,21 +1,12 @@
 package com.k2cybersecurity.intcodeagent.filelogging;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.lang.management.ManagementFactory;
-import java.lang.management.RuntimeMXBean;
-import java.nio.file.Files;
+import java.io.*;
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
 
-import com.k2cybersecurity.intcodeagent.logging.LoggingInterceptor;
 import org.apache.commons.lang3.StringUtils;
 import org.brutusin.instrumentation.Agent;
 
@@ -61,11 +52,10 @@ public class LogWriter implements Runnable {
 	private static final File currentLogFile;
 
 	static {
-		fileName = "/etc/k2-adp/logs/"+ LoggingInterceptor.VMPID +"/k2_java_agent-" + Agent.APPLICATION_UUID + ".log";
+		fileName = "/etc/k2-adp/logs/k2_java_agent-" + Agent.APPLICATION_UUID + ".log";
 		currentLogFileName = fileName + STRING_DOT + logFileCounter;
 		currentLogFile = new File(currentLogFileName);
 		try {
-			currentLogFile.mkdirs();
 			writer = new BufferedWriter(new FileWriter(currentLogFileName, true));
 			maxFileSize = K2JALogProperties.maxfilesize * 1048576;
 
