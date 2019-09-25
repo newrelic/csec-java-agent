@@ -24,7 +24,7 @@ public class AgentBasicInfo {
 	/** Json version number. */
 	private String version;
 	
-	private final String agentType = "JAVA";
+	private final String collectorType = "JAVA";
 
 	private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
 
@@ -103,10 +103,10 @@ public class AgentBasicInfo {
 	
 
 	/**
-	 * @return the agentType
+	 * @return the collectorType
 	 */
-	public String getAgentType() {
-		return agentType;
+	public String getCollectorType() {
+		return collectorType;
 	}
 	
 }

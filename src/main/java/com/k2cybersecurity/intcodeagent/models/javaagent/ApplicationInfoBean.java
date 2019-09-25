@@ -8,8 +8,6 @@ import java.util.Arrays;
 
 public class ApplicationInfoBean extends AgentBasicInfo {
 
-	private String agentType;
-
 	/** pid of process. */
 	private Integer pid;
 
@@ -75,15 +73,6 @@ public class ApplicationInfoBean extends AgentBasicInfo {
 //		} catch (JsonProcessingException e) {
 //			return null;
 //		}
-	}
-
-	@Override
-	public String getAgentType() {
-		return agentType;
-	}
-
-	public void setAgentType(String agentType) {
-		this.agentType = agentType;
 	}
 
 	public Integer getPid() {
