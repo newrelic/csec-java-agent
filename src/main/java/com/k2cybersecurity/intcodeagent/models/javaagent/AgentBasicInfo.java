@@ -15,8 +15,8 @@ import com.k2cybersecurity.intcodeagent.properties.K2JAVersionInfo;
  */
 public class AgentBasicInfo {
 
-	/**  Tool id for JavaAgent. */
-	private String k2JAToolId;
+	/**  Tool id for Language Agent. */
+	private String k2LAToolId;
 
 	/** The Json name. */
 	private String jsonName;
@@ -24,7 +24,7 @@ public class AgentBasicInfo {
 	/** Json version number. */
 	private String version;
 	
-	private final String agentType = "JAVA_EVENT"; 
+	private final String agentType = "JAVA";
 
 	private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
 
@@ -33,7 +33,7 @@ public class AgentBasicInfo {
 	 */
 	public AgentBasicInfo() {
 		setVersion(K2JAVersionInfo.javaAgentVersion);
-		setK2JAToolId(K2JAVersionInfo.buildId);
+		setK2LAToolId(K2JAVersionInfo.buildId);
 		if (this instanceof  ApplicationInfoBean) {
 			setJsonName(JSON_NAME_APPLICATION_INFO_BEAN);
 		} else if (this instanceof JavaAgentEventBean) {
@@ -48,21 +48,21 @@ public class AgentBasicInfo {
 	}
 
 	/**
-	 * Gets the k2 JavaAagent tool id.
+	 * Gets the Language Agent tool id.
 	 *
-	 * @return the k2 JavaAagent tool id.
+	 * @return the Language Agent tool id.
 	 */
-	public String getK2JAToolId() {
-		return k2JAToolId;
+	public String getK2LAToolId() {
+		return k2LAToolId;
 	}
 
 	/**
-	 * Sets the k2 JavaAagent tool id.
+	 * Sets the Language Agent tool id.
 	 *
-	 * @param k2jaToolId the new k2 JavaAagent tool id.
+	 * @param k2jaToolId Language Agent tool id.
 	 */
-	public void setK2JAToolId(String k2jaToolId) {
-		k2JAToolId = k2jaToolId;
+	public void setK2LAToolId(String k2jaToolId) {
+		k2LAToolId = k2jaToolId;
 	}
 
 	/**

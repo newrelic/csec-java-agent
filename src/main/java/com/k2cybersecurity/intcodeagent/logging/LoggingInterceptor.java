@@ -33,18 +33,19 @@ import java.net.URISyntaxException;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
+import com.sun.javafx.util.Logging;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.brutusin.instrumentation.Agent;
 import org.brutusin.instrumentation.Interceptor;
+import org.json.simple.JSONArray;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.MethodNode;
 
@@ -52,7 +53,7 @@ import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.models.javaagent.ApplicationInfoBean;
 import com.k2cybersecurity.intcodeagent.models.javaagent.JAHealthCheck;
-import com.k2cybersecurity.intcodeagent.models.javaagent.ServletInfo;
+import com.k2cybersecurity.intcodeagent.models.javaagent.HttpRequestBean;
 import com.k2cybersecurity.intcodeagent.models.javaagent.ShutDownEvent;
 import com.k2cybersecurity.intcodeagent.websocket.EventSendPool;
 import com.k2cybersecurity.intcodeagent.websocket.WSClient;
@@ -73,7 +74,7 @@ public class LoggingInterceptor extends Interceptor {
 	private static final String CLASS_COM_IBM_WS_GENERICBNF_INTERNAL_BNF_HEADERS_IMPL = "com.ibm.ws.genericbnf.internal.BNFHeadersImpl";
 	private static final String SCOPE = ".scope";
 	private static final String DOCKER_1_13 = "/docker-";
-	protected static Integer VMPID;
+	public static Integer VMPID;
 	protected static final String applicationUUID;
 	public static ApplicationInfoBean APPLICATION_INFO_BEAN;
 	protected static JAHealthCheck JA_HEALTH_CHECK;
@@ -89,7 +90,16 @@ public class LoggingInterceptor extends Interceptor {
 
 	private static final FileLoggerThreadPool logger;
 
+	private static Pattern applicationInformationDetectRegex = Pattern.compile("\\S*(\\/classes)\\S*");
+
 	static {
+		try {
+			RuntimeMXBean runtimeMXBean = ManagementFactory.getRuntimeMXBean();
+			String runningVM = runtimeMXBean.getName();
+			VMPID = Integer.parseInt(runningVM.substring(0, runningVM.indexOf(VMPID_SPLIT_CHAR)));
+		} catch (Throwable th) {
+			System.err.println("Error while initialising the K2 Agent :" + th.getCause() + " : " + th.getMessage());
+		}
 		applicationUUID = Agent.APPLICATION_UUID;
 		logger = FileLoggerThreadPool.getInstance();
 	}
@@ -145,15 +155,13 @@ public class LoggingInterceptor extends Interceptor {
 	public static ApplicationInfoBean createApplicationInfoBean() {
 		try {
 			RuntimeMXBean runtimeMXBean = ManagementFactory.getRuntimeMXBean();
-			String runningVM = runtimeMXBean.getName();
-			VMPID = Integer.parseInt(runningVM.substring(0, runningVM.indexOf(VMPID_SPLIT_CHAR)));
 			ApplicationInfoBean applicationInfoBean = new ApplicationInfoBean(VMPID, applicationUUID,
 					Agent.isDynamicAttach ? "DYNAMIC" : "STATIC");
 			applicationInfoBean.setStartTime(runtimeMXBean.getStartTime());
 			String containerId = getContainerID();
 			String cmdLine = getCmdLineArgsByProc(VMPID);
 			applicationInfoBean.setProcStartTime(getStartTimeByProc(VMPID));
-			applicationInfoBean.setJvmArguments(cmdLine);
+			applicationInfoBean.setCmdline(cmdLine);
 //			if (cmdLine != null) {
 //				List<String> cmdlineArgs = Arrays.asList(cmdLine.split(NULL_CHAR_AS_STRING));
 //				JSONArray jsonArray = new JSONArray();
@@ -169,10 +177,62 @@ public class LoggingInterceptor extends Interceptor {
 			// JSONArray(runtimeMXBean.getInputArguments()));
 			return applicationInfoBean;
 		} catch (Exception e) {
-			logger.log(LogLevel.WARNING, "Exception occured in createApplicationInfoBean: " + e,
+			logger.log(LogLevel.WARNING, "Exception occured in createApplicationInfoBean: ", e,
 					LoggingInterceptor.class.getName());
 		}
 		return null;
+	}
+
+	public static void updateServerInfo() {
+		Set<DeployedApplication> deployedApplications = getAllDeployedApplications();
+		JSONArray jsonArray = new JSONArray();
+		jsonArray.addAll(deployedApplications);
+
+		if (!APPLICATION_INFO_BEAN.getServerInfo().getDeployedApplications().containsAll(jsonArray)) {
+			APPLICATION_INFO_BEAN.getServerInfo().setDeployedApplications(jsonArray);
+			EventSendPool.getInstance().sendEvent(APPLICATION_INFO_BEAN.toString());
+		}
+	}
+
+	private static Set<DeployedApplication> getAllDeployedApplications() {
+		Set<DeployedApplication> deployedApplications = new HashSet<>();
+//		logger.debug(OBTAINED_INFORMATION);
+//		logger.debug(CLASS_PATHS, classPaths);
+		Matcher pathMatcher;
+		String[] pathList;
+		String filePath;
+		File pathFile;
+
+		for (String path : Agent.jarPathSet) {
+			filePath = path;
+			filePath = StringUtils.removeAll(filePath, "!");
+			pathMatcher = applicationInformationDetectRegex.matcher(filePath);
+			if (pathMatcher.find()) {
+				pathFile = new File(filePath);
+				while (StringUtils.isNotBlank(pathFile.getName())) {
+					if (StringUtils.equals(pathFile.getName(), "classes")) {
+						break;
+					}
+					pathFile = pathFile.getParentFile();
+				}
+				if (StringUtils.equals(pathFile.getName(), "classes")) {
+					pathFile = pathFile.getParentFile();
+					if (StringUtils.endsWith(pathFile.getName(), "INF")) {
+						pathFile = pathFile.getParentFile();
+						if (StringUtils.endsWith(pathFile.getName(), "webapp")) {
+							deployedApplications.add(new DeployedApplication(pathFile.getParentFile().getAbsolutePath(),
+									pathFile.getParentFile().getName()));
+						}
+						deployedApplications
+								.add(new DeployedApplication(pathFile.getAbsolutePath(), pathFile.getName()));
+					} else {
+						deployedApplications
+								.add(new DeployedApplication(pathFile.getAbsolutePath(), pathFile.getName()));
+					}
+				}
+			}
+		}
+		return deployedApplications;
 	}
 
 	@Override
@@ -200,7 +260,8 @@ public class LoggingInterceptor extends Interceptor {
 		try {
 			WSClient.getInstance();
 		} catch (Exception e) {
-//			logger.log(LogLevel.WARNING, "Error occured while trying to connect to wsocket: {0}", e);
+			logger.log(LogLevel.ERROR, "Error occured while trying to connect to wsocket: ", e,
+					LoggingInterceptor.class.getName());
 		}
 		IPScheduledThread.getInstance();
 		eventWritePool();
@@ -211,8 +272,7 @@ public class LoggingInterceptor extends Interceptor {
 		try {
 			EventSendPool.getInstance();
 		} catch (Exception e) {
-			logger.log(LogLevel.WARNING, "Exception occured in EventSendPool: " + e,
-					LoggingInterceptor.class.getName());
+			logger.log(LogLevel.WARNING, "Exception occured in EventSendPool: ", e, LoggingInterceptor.class.getName());
 		}
 	}
 
@@ -461,7 +521,7 @@ public class LoggingInterceptor extends Interceptor {
 				ConcurrentLinkedDeque<ThreadRequestData> threadRequestDatas = ThreadMapping.getInstance()
 						.getMappedThreadRequestMap().get(threadId);
 				Iterator<ThreadRequestData> iterator = threadRequestDatas.descendingIterator();
-				ServletInfo servletInfo = null;
+				HttpRequestBean servletInfo = null;
 				while (iterator.hasNext()) {
 					ThreadRequestData threadRequestData = iterator.next();
 					if (threadRequestData.getExecutionId() < executionId) {
@@ -519,7 +579,8 @@ public class LoggingInterceptor extends Interceptor {
 					updateThreadMaps(threadId, executionId, newThreadId, 1);
 				}
 			} catch (Exception e) {
-				e.printStackTrace();
+				logger.log(LogLevel.WARNING, "Error while processing JBoss inital hook  : ", e,
+						this.getClass().getName());
 			}
 		} else if (sourceString.equals(JBOSS_WILDFLY_HTTP_REQUEST_PARSER_HANDLE)) {
 			Object arg0 = arg[0];
@@ -527,7 +588,7 @@ public class LoggingInterceptor extends Interceptor {
 			String fetchedDataString = fetchRequestStringForWildfly(arg0, currentClassLoader);
 
 			if (fetchedDataString != null && !fetchedDataString.isEmpty()) {
-				ServletInfo servletInfo = new ServletInfo();
+				HttpRequestBean servletInfo = new HttpRequestBean();
 				servletInfo.setRawRequest(fetchedDataString);
 				ThreadRequestData threadRequestData = new ThreadRequestData(executionId, servletInfo, threadId);
 				Pair<Long, Long> pairedKey = new ImmutablePair<>(threadId, executionId);
@@ -560,36 +621,36 @@ public class LoggingInterceptor extends Interceptor {
 //				
 //			} else {
 			ServletEventPool.getInstance().incrementServletInfoReference(threadId, executionId, false);
-			ServletInfo servletInfo;
+			HttpRequestBean servletInfo;
 			if (!ServletEventPool.getInstance().getRequestMap().containsKey(threadId)) {
-				servletInfo = new ServletInfo();
+				servletInfo = new HttpRequestBean();
 				ConcurrentLinkedDeque<ExecutionMap> executionMaps = new ConcurrentLinkedDeque<ExecutionMap>();
 				executionMaps.add(new ExecutionMap(executionId, servletInfo));
 				ServletEventPool.getInstance().getRequestMap().put(threadId, executionMaps);
 			} else {
-				servletInfo = new ServletInfo();
+				servletInfo = new HttpRequestBean();
 				ServletEventPool.getInstance().getRequestMap().get(threadId)
 						.add(new ExecutionMap(executionId, servletInfo));
 			}
 //			}
 		} else if (JETTY_REQUEST_ON_FILLABLE.equals(sourceString)) {
 			ServletEventPool.getInstance().incrementServletInfoReference(threadId, executionId, false);
-			ServletInfo servletInfo;
+			HttpRequestBean servletInfo;
 			if (!ServletEventPool.getInstance().getRequestMap().containsKey(threadId)) {
-				servletInfo = new ServletInfo();
+				servletInfo = new HttpRequestBean();
 				ConcurrentLinkedDeque<ExecutionMap> executionMaps = new ConcurrentLinkedDeque<ExecutionMap>();
 				executionMaps.add(new ExecutionMap(executionId, servletInfo));
 				ServletEventPool.getInstance().getRequestMap().put(threadId, executionMaps);
 
 			} else {
-				servletInfo = new ServletInfo();
+				servletInfo = new HttpRequestBean();
 				servletInfo.addGenerationTime((int) (System.currentTimeMillis() - start));
 				ServletEventPool.getInstance().getRequestMap().get(threadId)
 						.add(new ExecutionMap(executionId, servletInfo));
 			}
 		} else if (JETTY_PARSE_NEXT.equals(sourceString)) {
 
-			ServletInfo servletInfo = ExecutionMap.find(executionId,
+			HttpRequestBean servletInfo = ExecutionMap.find(executionId,
 					ServletEventPool.getInstance().getRequestMap().get(threadId));
 			if (servletInfo == null) {
 				return;
@@ -623,11 +684,12 @@ public class LoggingInterceptor extends Interceptor {
 				}
 				servletInfo.addGenerationTime((int) (System.currentTimeMillis() - start));
 			} catch (Exception e) {
-				logger.log(LogLevel.WARNING, "Exception occured in JETTY_PARSE_NEXT: " + e,
+				logger.log(LogLevel.WARNING, "Exception occured in JETTY_PARSE_NEXT: ", e,
 						LoggingInterceptor.class.getName());
+				e.printStackTrace();
 			}
 		} else if (TOMCAT_SETBYTEBUFFER.equals(sourceString)) {
-			ServletInfo servletInfo;
+			HttpRequestBean servletInfo;
 			servletInfo = ExecutionMap.find(executionId, ServletEventPool.getInstance().getRequestMap().get(threadId));
 			if (servletInfo == null) {
 				return;
@@ -657,7 +719,7 @@ public class LoggingInterceptor extends Interceptor {
 				}
 				servletInfo.addGenerationTime((int) (System.currentTimeMillis() - start));
 			} catch (Exception e) {
-				logger.log(LogLevel.WARNING, "Exception occured in TOMCAT_SETBYTEBUFFER: " + e,
+				logger.log(LogLevel.WARNING, "Exception occured in TOMCAT_SETBYTEBUFFER: ", e,
 						LoggingInterceptor.class.getName());
 			}
 		} else if (TOMCAT_COYOTE_ADAPTER_SERVICE.equals(sourceString)) {
@@ -667,13 +729,13 @@ public class LoggingInterceptor extends Interceptor {
 				setTomcatVersion();
 			}
 
-			ServletInfo servletInfo = new ServletInfo();
+			HttpRequestBean servletInfo = new HttpRequestBean();
 			if (!ServletEventPool.getInstance().getRequestMap().containsKey(threadId)) {
 				ConcurrentLinkedDeque<ExecutionMap> executionMaps = new ConcurrentLinkedDeque<ExecutionMap>();
 				executionMaps.add(new ExecutionMap(executionId, servletInfo));
 				ServletEventPool.getInstance().getRequestMap().put(threadId, executionMaps);
 			} else {
-				servletInfo = new ServletInfo();
+				servletInfo = new HttpRequestBean();
 				ServletEventPool.getInstance().getRequestMap().get(threadId)
 						.add(new ExecutionMap(executionId, servletInfo));
 			}
@@ -706,7 +768,7 @@ public class LoggingInterceptor extends Interceptor {
 						positionHb = (Integer) position.get(byteBuffer);
 						byteBufferFound = true;
 					} catch (Exception e) {
-						logger.log(LogLevel.WARNING, "Exception occured in TOMCAT_COYOTE_ADAPTER_SERVICE: " + e,
+						logger.log(LogLevel.WARNING, "Exception occured in TOMCAT_COYOTE_ADAPTER_SERVICE: ", e,
 								LoggingInterceptor.class.getName());
 					}
 				} else if (tomcatMajorVersion == TOMCAT_7) {
@@ -727,7 +789,7 @@ public class LoggingInterceptor extends Interceptor {
 						}
 						byteBufferFound = true;
 					} catch (Exception e) {
-						logger.log(LogLevel.WARNING, "Exception occured in TOMCAT_COYOTE_ADAPTER_SERVICE: " + e,
+						logger.log(LogLevel.WARNING, "Exception occured in TOMCAT_COYOTE_ADAPTER_SERVICE: ", e,
 								LoggingInterceptor.class.getName());
 
 					}
@@ -754,9 +816,8 @@ public class LoggingInterceptor extends Interceptor {
 				}
 				servletInfo.addGenerationTime((int) (System.currentTimeMillis() - start));
 			} catch (Exception e) {
-				logger.log(LogLevel.WARNING,
-						"Exception occured in TOMCAT_COYOTE_ADAPTER_SERVICE buffer processing : " + e,
-						LoggingInterceptor.class.getName());
+				logger.log(LogLevel.WARNING, "Exception occured in TOMCAT_COYOTE_ADAPTER_SERVICE buffer processing : ",
+						e, LoggingInterceptor.class.getName());
 			}
 			// in case of executeInternal()
 		} else if (sourceString.equals(WEBLOGIC_SERVLET_EXECUTE)) {
@@ -790,7 +851,7 @@ public class LoggingInterceptor extends Interceptor {
 						hb.setAccessible(true);
 						byte[] hbContent = (byte[]) hb.get(buf);
 
-						ServletInfo servletInfo = new ServletInfo();
+						HttpRequestBean servletInfo = new HttpRequestBean();
 						servletInfo.setRawRequest(new String(hbContent, 0, limitHb, StandardCharsets.UTF_8));
 						if (contentLen > limitHb) {
 							servletInfo.setDataTruncated(true);
@@ -822,7 +883,7 @@ public class LoggingInterceptor extends Interceptor {
 					posField.setAccessible(true);
 					Integer pos = (Integer) posField.get(connHandler);
 
-					ServletInfo servletInfo = new ServletInfo();
+					HttpRequestBean servletInfo = new HttpRequestBean();
 					servletInfo.setRawRequest(new String(buf, 0, pos, StandardCharsets.UTF_8));
 
 					servletInfo.addGenerationTime((int) (System.currentTimeMillis() - start));
@@ -839,7 +900,7 @@ public class LoggingInterceptor extends Interceptor {
 				}
 
 			} catch (Exception e) {
-				logger.log(LogLevel.WARNING, "Exception occured in WEBLOGIC_INVOKE_SERVLET buffer processing : " + e,
+				logger.log(LogLevel.WARNING, "Exception occured in WEBLOGIC_INVOKE_SERVLET buffer processing : ", e,
 						LoggingInterceptor.class.getName());
 //				e.printStackTrace();
 			}
@@ -850,15 +911,18 @@ public class LoggingInterceptor extends Interceptor {
 			}
 //			 logger.log(LogLevel.INFO, "ServletEventPool.getInstance().getRequestMap() : "+ ServletEventPool.getInstance().getRequestMap(), LoggingInterceptor.class.getName());
 			try {
+
 				if (ServletEventPool.getInstance().getRequestMap().containsKey(threadId) && ExecutionMap
 						.find(executionId, ServletEventPool.getInstance().getRequestMap().get(threadId)) != null) {
+//					logger.log(LogLevel.INFO, "Other event : source : "+ sourceString, LoggingInterceptor.class.getName());
 					ServletEventPool.getInstance().incrementServletInfoReference(threadId, executionId, true);
 					EventThreadPool.getInstance().processReceivedEvent(source, arg, executionId,
 							Thread.currentThread().getStackTrace(), threadId, sourceString,
 							System.currentTimeMillis() - start);
 				}
 			} catch (Exception e) {
-				e.printStackTrace();
+				logger.log(LogLevel.WARNING, "Exception occured in Other event processing : ", e,
+						LoggingInterceptor.class.getName());
 			}
 
 		}
@@ -874,8 +938,7 @@ public class LoggingInterceptor extends Interceptor {
 			if (!ThreadMapping.getInstance().getMappedThreadRequestMap().containsKey(newThreadId))
 				ThreadMapping.getInstance().getMappedThreadRequestMap().put(newThreadId,
 						new ConcurrentLinkedDeque<ThreadRequestData>());
-			ThreadMapping.getInstance().getMappedThreadRequestMap().get(newThreadId)
-					.addAll(threadRequestData);
+			ThreadMapping.getInstance().getMappedThreadRequestMap().get(newThreadId).addAll(threadRequestData);
 		}
 	}
 
@@ -899,8 +962,8 @@ public class LoggingInterceptor extends Interceptor {
 //			System.out.println("Data finally obtained : " + requestData);
 			logger.log(LogLevel.DEBUG, requestData, LoggingInterceptor.class.getName());
 		} catch (Exception e) {
-//			e.printStackTrace(System.err);
-		}
+			logger.log(LogLevel.WARNING, "Exception occured in fetchRequestStringForWildfly : " , e,
+					LoggingInterceptor.class.getName());		}
 		return requestData;
 	}
 
@@ -1003,7 +1066,7 @@ public class LoggingInterceptor extends Interceptor {
 				int byteLimit = (int) byteLimitField.get(thisPointer);
 
 				String requestContent = new String(bytes, 0, byteLimit, StandardCharsets.UTF_8);
-				ServletInfo servletInfo = ExecutionMap.find(executionId,
+				HttpRequestBean servletInfo = ExecutionMap.find(executionId,
 						ServletEventPool.getInstance().getRequestMap().get(threadId));
 				if (servletInfo.getRawRequest() == null) {
 					servletInfo.setRawRequest(requestContent);
@@ -1014,7 +1077,7 @@ public class LoggingInterceptor extends Interceptor {
 				}
 
 			} catch (Exception e) {
-				logger.log(LogLevel.SEVERE, "Exception occured in fetching information for Websphere: " + e,
+				logger.log(LogLevel.SEVERE, "Exception occured in fetching information for Websphere: " , e,
 						LoggingInterceptor.class.getName());
 			}
 
@@ -1047,7 +1110,7 @@ public class LoggingInterceptor extends Interceptor {
 				String originalSql = (String) originalSqlField.get(obj);
 				args[thisPointerLocation] = originalSql;
 			} catch (Exception e) {
-				logger.log(LogLevel.WARNING, "Exception occured in processMysqlStatement CONNECTOR_5: " + e,
+				logger.log(LogLevel.WARNING, "Exception occured in processMysqlStatement CONNECTOR_5: " , e,
 						LoggingInterceptor.class.getName());
 			}
 		} else if (objClass.getName().equals(MYSQL_PREPARED_STATEMENT_6)
@@ -1060,7 +1123,7 @@ public class LoggingInterceptor extends Interceptor {
 
 				args[thisPointerLocation] = originalSql;
 			} catch (Exception e) {
-				logger.log(LogLevel.WARNING, "Exception occured in processMysqlStatement CONNECTOR_6 : " + e,
+				logger.log(LogLevel.WARNING, "Exception occured in processMysqlStatement CONNECTOR_6 : " , e,
 						LoggingInterceptor.class.getName());
 			}
 		} else if (objClass.getName().equals(MYSQL_PREPARED_STATEMENT_8)
@@ -1083,7 +1146,7 @@ public class LoggingInterceptor extends Interceptor {
 					args[thisPointerLocation] = originalSql;
 				}
 			} catch (Exception e) {
-				logger.log(LogLevel.WARNING, "Exception occured in processMysqlStatement CONNECTOR_8 : " + e,
+				logger.log(LogLevel.WARNING, "Exception occured in processMysqlStatement CONNECTOR_8 : " , e,
 						LoggingInterceptor.class.getName());
 			}
 
@@ -1123,7 +1186,7 @@ public class LoggingInterceptor extends Interceptor {
 					LoggingInterceptor.class.getName());
 
 		} catch (Exception e) {
-			logger.log(LogLevel.WARNING, "Unable to find Tomcat Version: " + e, LoggingInterceptor.class.getName());
+			logger.log(LogLevel.WARNING, "Unable to find Tomcat Version: " , e, LoggingInterceptor.class.getName());
 		}
 	}
 
@@ -1189,7 +1252,7 @@ public class LoggingInterceptor extends Interceptor {
 				}
 				Agent.globalInstr.retransformClasses(cl);
 			} catch (Exception e) {
-				e.printStackTrace();
+				logger.log(LogLevel.ERROR, "Error while retransforming class : " + loadedClassName , e, LoggingInterceptor.class.getName());
 			}
 		}
 	}
@@ -1209,7 +1272,7 @@ public class LoggingInterceptor extends Interceptor {
 			nextObject = nextField.get(tailObject);
 		} catch (NoSuchFieldException | SecurityException | ClassNotFoundException | IllegalArgumentException
 				| IllegalAccessException e) {
-			e.printStackTrace();
+			logger.log(LogLevel.ERROR, "Error in getNextQnode : ", e, LoggingInterceptor.class.getName());
 		}
 		return nextObject;
 

@@ -3,20 +3,20 @@ package com.k2cybersecurity.intcodeagent.logging;
 import java.util.Iterator;
 import java.util.concurrent.ConcurrentLinkedDeque;
 
-import com.k2cybersecurity.intcodeagent.models.javaagent.ServletInfo;
+import com.k2cybersecurity.intcodeagent.models.javaagent.HttpRequestBean;
 import com.k2cybersecurity.intcodeagent.websocket.JsonConverter;
 
 public class ExecutionMap {
 
 	private Long executionId;
 	
-	private ServletInfo servletInfo;
+	private HttpRequestBean servletInfo;
 	
 	/**
 	 * @param executionId
 	 * @param servletInfo
 	 */
-	public ExecutionMap(Long executionId, ServletInfo servletInfo) {
+	public ExecutionMap(Long executionId, HttpRequestBean servletInfo) {
 		super();
 		this.executionId = executionId;
 		this.servletInfo = servletInfo;
@@ -47,14 +47,14 @@ public class ExecutionMap {
 	/**
 	 * @return the servletInfo
 	 */
-	public ServletInfo getServletInfo() {
+	public HttpRequestBean getServletInfo() {
 		return servletInfo;
 	}
 
 	/**
 	 * @param servletInfo the servletInfo to set
 	 */
-	public void setServletInfo(ServletInfo servletInfo) {
+	public void setServletInfo(HttpRequestBean servletInfo) {
 		this.servletInfo = servletInfo;
 	}
 
@@ -90,7 +90,7 @@ public class ExecutionMap {
 	}
 	
 	
-	public static ServletInfo find(Long executionId, ConcurrentLinkedDeque<ExecutionMap> executionMaps) {
+	public static HttpRequestBean find(Long executionId, ConcurrentLinkedDeque<ExecutionMap> executionMaps) {
 		Iterator<ExecutionMap> iterator = executionMaps.descendingIterator();
 		while(iterator.hasNext()) {
 			ExecutionMap executionMap = iterator.next();

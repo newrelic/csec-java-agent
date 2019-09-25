@@ -57,13 +57,13 @@ public class FileWatcher {
 							key.reset();
 						}
 					} catch (InterruptedException e) {
-						logger.log(LogLevel.SEVERE, e.toString(), FileWatcher.class.getName());
+						logger.log(LogLevel.SEVERE, "File watcher InterruptedException : ", e, FileWatcher.class.getName());
 					}
 				}
 			};
 			fileWatcherThread.start();
 		} catch (IOException e) {
-			logger.log(LogLevel.SEVERE, e.toString(), FileWatcher.class.getName());
+			logger.log(LogLevel.SEVERE, "File watcher IOException : ", e, FileWatcher.class.getName());
 		}
 	}
 

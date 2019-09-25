@@ -15,11 +15,9 @@ public class FileLoggerThreadPool {
 	private static FileLoggerThreadPool instance;
 
 	private String updatedFileName;
-	
+
 	private int logFileCounter = 0;
 
-	
-	
 	private FileLoggerThreadPool() throws IOException {
 		// load the settings
 		int queueSize = 1500;
@@ -50,8 +48,7 @@ public class FileLoggerThreadPool {
 		executor.setThreadFactory(new ThreadFactory() {
 			@Override
 			public Thread newThread(Runnable r) {
-				return new Thread(Thread.currentThread().getThreadGroup(), r,
-						"Logger");
+				return new Thread(Thread.currentThread().getThreadGroup(), r, "Logger");
 			}
 		});
 	}
@@ -70,5 +67,9 @@ public class FileLoggerThreadPool {
 
 	public void log(LogLevel logLevel, String event, String logSourceClassName) {
 		executor.submit(new LogWriter(logLevel, event, logSourceClassName));
+	}
+
+	public void log(LogLevel logLevel, String event, Throwable throwableEvent, String logSourceClassName) {
+		executor.submit(new LogWriter(logLevel, event, throwableEvent, logSourceClassName));
 	}
 }

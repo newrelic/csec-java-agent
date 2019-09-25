@@ -9,14 +9,14 @@ public class JavaAgentEventBean extends AgentBasicInfo {
 	private String applicationUUID;
 	private Long startTime;
 	private String source;
-	private String userClassName;
+	private String userFileName;
 	private String userMethodName;
 	private String currentMethod;
 	private Boolean validationBypass;
 	private Integer lineNumber;
 	private JSONArray parameters;
 	private Long eventGenerationTime;
-	private ServletInfo servletInfo;
+	private HttpRequestBean httpRequestBean;
 	private String id;
 	private JSONArray stacktrace;
 	private String caseType;
@@ -50,7 +50,7 @@ public class JavaAgentEventBean extends AgentBasicInfo {
 
 	public void setUserAPIInfo(Integer lineNumber, String userClassName, String userMethodName) {
 		this.userMethodName = userMethodName;
-		this.userClassName = userClassName;
+		this.userFileName = userClassName;
 		this.lineNumber = lineNumber;
 	}
 
@@ -70,12 +70,12 @@ public class JavaAgentEventBean extends AgentBasicInfo {
 		this.source = source;
 	}
 
-	public String getUserClassName() {
-		return userClassName;
+	public String getUserFileName() {
+		return userFileName;
 	}
 
-	public void setUserClassName(String userClassName) {
-		this.userClassName = userClassName;
+	public void setUserFileName(String userClassName) {
+		this.userFileName = userClassName;
 	}
 
 	public String getUserMethodName() {
@@ -175,15 +175,15 @@ public class JavaAgentEventBean extends AgentBasicInfo {
 	/**
 	 * @return the servletInfo
 	 */
-	public ServletInfo getServletInfo() {
-		return servletInfo;
+	public HttpRequestBean getHttpRequestBean() {
+		return httpRequestBean;
 	}
 
 	/**
 	 * @param servletInfo the servletInfo to set
 	 */
-	public void setServletInfo(ServletInfo servletInfo) {
-		this.servletInfo = servletInfo;
+	public void setHttpRequestBean(HttpRequestBean servletInfo) {
+		this.httpRequestBean = servletInfo;
 	}
 
 	/**

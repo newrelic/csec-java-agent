@@ -1,14 +1,14 @@
 package com.k2cybersecurity.intcodeagent.logging;
 
 
-import com.k2cybersecurity.intcodeagent.models.javaagent.ServletInfo;
+import com.k2cybersecurity.intcodeagent.models.javaagent.HttpRequestBean;
 
 public class ServletEventProcessor implements Runnable {
 
 	private Object firstElement;
 
 	private Object request;
-	private ServletInfo servletInfo;
+	private HttpRequestBean servletInfo;
 	private String sourceString;
 	private Long threadId;
 
@@ -29,14 +29,14 @@ public class ServletEventProcessor implements Runnable {
 	/**
 	 * @return the servletInfo
 	 */
-	public ServletInfo getServletInfo() {
+	public HttpRequestBean getServletInfo() {
 		return servletInfo;
 	}
 
 	/**
 	 * @param servletInfo the servletInfo to set
 	 */
-	public void setServletInfo(ServletInfo servletInfo) {
+	public void setServletInfo(HttpRequestBean servletInfo) {
 		this.servletInfo = servletInfo;
 	}
 
@@ -68,7 +68,7 @@ public class ServletEventProcessor implements Runnable {
 		this.threadId = threadId;
 	}
 
-	public ServletEventProcessor(Object firstElement, Object request, ServletInfo servletInfo, String sourceString,
+	public ServletEventProcessor(Object firstElement, Object request, HttpRequestBean servletInfo, String sourceString,
 			long threadId) {
 		this.firstElement = firstElement;
 		this.request = request;
