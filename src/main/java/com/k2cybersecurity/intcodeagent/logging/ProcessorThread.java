@@ -943,9 +943,9 @@ public class ProcessorThread implements Runnable {
 
 	private void generateEvent(JavaAgentEventBean intCodeResultBean) {
 		intCodeResultBean.setEventGenerationTime(System.currentTimeMillis());
-		if (intCodeResultBean.getSource() != null
-				&& (intCodeResultBean.getSource().equals(IAgentConstants.JAVA_NET_URLCLASSLOADER)
-						|| intCodeResultBean.getSource().equals(IAgentConstants.JAVA_NET_URLCLASSLOADER_NEWINSTANCE))) {
+		if (intCodeResultBean.getSourceMethod() != null
+				&& (intCodeResultBean.getSourceMethod().equals(IAgentConstants.JAVA_NET_URLCLASSLOADER)
+						|| intCodeResultBean.getSourceMethod().equals(IAgentConstants.JAVA_NET_URLCLASSLOADER_NEWINSTANCE))) {
 			try {
 				JSONArray agentJarPaths = new JSONArray();
 				agentJarPaths.addAll(Agent.jarPathSet);
