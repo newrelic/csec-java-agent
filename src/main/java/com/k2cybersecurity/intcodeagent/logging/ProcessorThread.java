@@ -966,7 +966,7 @@ public class ProcessorThread implements Runnable {
 			try {
 //				logger.log(LogLevel.INFO, "Generating event : " + intCodeResultBean,
 //						ProcessorThread.class.getName());
-				intCodeResultBean.setHttpRequestBean(new HttpRequestBean(ExecutionMap.find(this.executionId,
+				intCodeResultBean.setHttpRequest(new HttpRequestBean(ExecutionMap.find(this.executionId,
 						ServletEventPool.getInstance().getRequestMap().get(this.threadId))));
 //				logger.log(LogLevel.INFO,"Generating event1 : "+ intCodeResultBean, ProcessorThread.class.getName());
 				if (intCodeResultBean.getCaseType().equals(VulnerabilityCaseType.HTTP_REQUEST.getCaseType())) {
@@ -976,7 +976,7 @@ public class ProcessorThread implements Runnable {
 						return;
 					}
 				}
-				intCodeResultBean.getHttpRequestBean().clearRawRequest();
+				intCodeResultBean.getHttpRequest().clearRawRequest();
 				EventSendPool.getInstance().sendEvent(intCodeResultBean.toString());
 				LoggingInterceptor.JA_HEALTH_CHECK.incrementEventSentCount();
 //				logger.log(LogLevel.INFO,"publish event: " + intCodeResultBean, ProcessorThread.class.getName());
@@ -995,7 +995,7 @@ public class ProcessorThread implements Runnable {
 
 	private boolean partialSSRFValidator(JavaAgentEventBean intCodeResultBean) {
 
-		String rawRequest = intCodeResultBean.getHttpRequestBean().getRawRequest();
+		String rawRequest = intCodeResultBean.getHttpRequest().getRawRequest();
 		String host = intCodeResultBean.getParameters().get(0).toString();
 		String path = intCodeResultBean.getParameters().get(1).toString();
 
