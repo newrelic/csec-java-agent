@@ -36,10 +36,15 @@ public class JAHealthCheck extends AgentBasicInfo{
     
     private AtomicInteger eventSentCount;
 
+
+
+	private Boolean fileAccessProtection;
+
 	public JAHealthCheck(String applicationUUID) {
 		super();
 		this.rceProtection = false;
 		this.ssrfProtection = false;
+		this.fileAccessProtection = false;
 		this.applicationUUID = applicationUUID;
 		this.eventDropCount = new AtomicInteger(0);
 		this.eventProcessed = new AtomicInteger(0);
@@ -62,6 +67,7 @@ public class JAHealthCheck extends AgentBasicInfo{
 		this.eventProcessed = jaHealthCheck.eventProcessed;
 		this.eventSentCount = jaHealthCheck.eventSentCount;
 		this.ssrfProtection = jaHealthCheck.ssrfProtection;
+		this.fileAccessProtection = jaHealthCheck.fileAccessProtection;
 		this.isHost = jaHealthCheck.isHost;
 		this.setLibPath();
 		logger.log(LogLevel.INFO,"JA Healthcheck created : "+ this.toString(), JAHealthCheck.class.getName());
@@ -255,4 +261,11 @@ public class JAHealthCheck extends AgentBasicInfo{
 		this.eventSentCount.set(eventSentCount);
 	}
 
+	public Boolean getFileAccessProtection() {
+		return fileAccessProtection;
+	}
+
+	public void setFileAccessProtection(Boolean fileAccessProtection) {
+		this.fileAccessProtection = fileAccessProtection;
+	}
 }

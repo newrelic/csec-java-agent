@@ -12,6 +12,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
@@ -118,7 +119,6 @@ public class ProcessorThread implements Runnable {
 	@Override
 	public void run() {
 		try {
-//			System.out.println("calling processor thread.");
 			if (EXECUTORS.containsKey(sourceString)) {
 				long start = System.currentTimeMillis();
 
@@ -151,44 +151,22 @@ public class ProcessorThread implements Runnable {
 //					}
 //				}
 
-				if (IAgentConstants.FILE_OPEN_EXECUTORS.contains(sourceString)) {
-					boolean javaIoFile = false;
-					for (int i = 0; i < trace.length; i++) {
-						klassName = trace[i].getClassName();
-						if (javaIoFile) {
-							if (!PATTERN.matcher(klassName).matches()) {
-								intCodeResultBean.setParameters(toString(arg, sourceString));
-								intCodeResultBean.setUserAPIInfo(trace[i].getLineNumber(), klassName,
-										trace[i].getMethodName());
-								if (i > 0)
-									intCodeResultBean.setCurrentMethod(trace[i - 1].getMethodName());
-							}
-							if (intCodeResultBean.getUserFileName() != null
-									&& !intCodeResultBean.getUserFileName().isEmpty()) {
-//								logger.log(LogLevel.DEBUG,"result bean : "+intCodeResultBean);
-								generateEvent(intCodeResultBean);
-							}
-//							logger.log(LogLevel.DEBUG, "breaking", ProcessorThread.class.getName());
-							break;
-						}
-						if (klassName.equals(IAgentConstants.JAVA_IO_FILE)) {
-//							logger.log(LogLevel.DEBUG,"javaio found");
-//							logger.log(LogLevel.DEBUG,"next class : "+trace[i+1]);
-							javaIoFile = true;
-						}
-					}
-//					ServletEventPool.getInstance().decrementServletInfoReference(threadId, executionId, true);
+				String lastNonJavaClass = StringUtils.EMPTY;
+				String lastNonJavaMethod = StringUtils.EMPTY;
+				int lastNonJavaLineNumber = 0;
+
+				JSONArray params = toString(arg, sourceString, EXECUTORS.get(sourceString));
+
+				if (VulnerabilityCaseType.FILE_OPERATION
+						.equals(VulnerabilityCaseType.valueOf(intCodeResultBean.getCaseType()))
+						&& allowedExtensionFileIO(params)) {
+					intCodeResultBean.setValidationBypass(true);
+					LoggingInterceptor.JA_HEALTH_CHECK.incrementDropCount();
 					return;
 				}
 
 				for (int i = 0; i < trace.length; i++) {
 					klassName = trace[i].getClassName();
-//					System.out.println(klassName);
-					// if (klassName.equals(MSSQL_PREPARED_STATEMENT_CLASS)
-					// || klassName.equals(MSSQL_PREPARED_BATCH_STATEMENT_CLASS)
-					// || klassName.contains(MYSQL_PREPARED_STATEMENT)) {
-					// intCodeResultBean.setValidationBypass(true);
-					// } else
 					if (IAgentConstants.MYSQL_GET_CONNECTION_MAP.containsKey(klassName)
 							&& IAgentConstants.MYSQL_GET_CONNECTION_MAP.get(klassName)
 									.contains(trace[i].getMethodName())) {
@@ -196,8 +174,8 @@ public class ProcessorThread implements Runnable {
 						LoggingInterceptor.JA_HEALTH_CHECK.incrementDropCount();
 						return;
 					}
-					if (!PATTERN.matcher(klassName).matches()) {
-						JSONArray params = toString(arg, sourceString);
+					Matcher matcher = PATTERN.matcher(klassName);
+					if (!matcher.matches()) {
 						if (params != null) {
 							intCodeResultBean.setParameters(params);
 							intCodeResultBean.setUserAPIInfo(trace[i].getLineNumber(), klassName,
@@ -209,6 +187,10 @@ public class ProcessorThread implements Runnable {
 							return;
 						}
 						break;
+					} else if (StringUtils.isNotBlank(matcher.group(5))) {
+							lastNonJavaClass = trace[i].getClassName();
+							lastNonJavaMethod = trace[i].getMethodName();
+							lastNonJavaLineNumber = trace[i].getLineNumber();
 					}
 				}
 				if (intCodeResultBean.getUserFileName() != null && !intCodeResultBean.getUserFileName().isEmpty()) {
@@ -217,9 +199,15 @@ public class ProcessorThread implements Runnable {
 					int traceId = getClassNameForSysytemCallStart(trace, intCodeResultBean);
 					intCodeResultBean.setUserAPIInfo(trace[traceId].getLineNumber(), klassName,
 							trace[traceId].getMethodName());
-					intCodeResultBean.setParameters(toString(arg, sourceString));
+					intCodeResultBean.setParameters(toString(arg, sourceString, EXECUTORS.get(sourceString)));
 					if (traceId > 0)
 						intCodeResultBean.setCurrentMethod(trace[traceId - 1].getMethodName());
+					generateEvent(intCodeResultBean);
+				} else {
+					if (params != null) {
+						intCodeResultBean.setParameters(params);
+						intCodeResultBean.setUserAPIInfo(lastNonJavaLineNumber, lastNonJavaClass, lastNonJavaMethod);
+					}
 					generateEvent(intCodeResultBean);
 				}
 			}
@@ -228,6 +216,24 @@ public class ProcessorThread implements Runnable {
 		} finally {
 			ServletEventPool.getInstance().decrementServletInfoReference(threadId, executionId, true);
 		}
+	}
+
+	private boolean allowedExtensionFileIO(JSONArray params) {
+		if (JAVA_IO_FILE_INPUTSTREAM_OPEN.equals(this.sourceString)) {
+			for (int i = 0; i < params.size(); i++) {
+				String filePath = params.get(i).toString();
+				String extension = StringUtils.EMPTY;
+
+				int k = filePath.lastIndexOf('.');
+				if (k > 0) {
+					extension = filePath.substring(k + 1).toLowerCase();
+
+				}
+				if (ALLOWED_EXTENSIONS.contains(extension))
+					return true;
+			}
+		}
+		return false;
 	}
 
 	private int getClassNameForSysytemCallStart(StackTraceElement[] trace, JavaAgentEventBean intCodeResultBean) {
@@ -659,7 +665,7 @@ public class ProcessorThread implements Runnable {
 	 * @return the JSON array
 	 */
 	@SuppressWarnings({ "unchecked", "unused" })
-	private JSONArray toString(Object[] obj, String sourceString) {
+	private JSONArray toString(Object[] obj, String sourceString, VulnerabilityCaseType vulnerabilityCaseType) {
 
 		if (obj == null) {
 			return null;
@@ -688,12 +694,12 @@ public class ProcessorThread implements Runnable {
 					|| sourceString.equals(JAVA_OPEN_CONNECTION_METHOD2_HTTPS)
 					|| sourceString.equals(JAVA_OPEN_CONNECTION_METHOD2_HTTPS_2)
 					|| sourceString.equals(WEBLOGIC_OPEN_CONNECTION_METHOD)) {
-//				logger.log(LogLevel.INFO, "SSRF tostring : " + obj,
-//						ProcessorThread.class.getName());
 				getJavaHttpRequestParameters(obj, parameters);
 			} else if (sourceString.equals(JDK_INCUBATOR_MULTIEXCHANGE_RESONSE_METHOD)
 					|| sourceString.equals(JDK_INCUBATOR_MULTIEXCHANGE_RESONSE_ASYNC_METHOD)) {
 				getJava9HttpClientParameters(obj, parameters);
+			} else if (vulnerabilityCaseType.equals(VulnerabilityCaseType.FILE_OPERATION)) {
+				getFileParameters(obj, parameters);
 			} else if (sourceString.equals(APACHE_COMMONS_HTTP_METHOD_DIRECTOR_METHOD)) {
 				getApacheCommonsHttpRequestParameters(obj, parameters);
 			} else if (sourceString.equals(OKHTTP_HTTP_ENGINE_METHOD)) {
@@ -710,6 +716,14 @@ public class ProcessorThread implements Runnable {
 			logger.log(LogLevel.WARNING, "Error in toString: ", th, ProcessorThread.class.getName());
 		}
 		return parameters;
+	}
+
+	private void getFileParameters(Object[] obj, JSONArray parameters) {
+		if (obj[0].getClass().getName().equals("sun.nio.fs.UnixPath")) {
+			parameters.add(obj[0].toString());
+		} else {
+			parameters.add(obj[0]);
+		}
 	}
 
 	@SuppressWarnings("unchecked")

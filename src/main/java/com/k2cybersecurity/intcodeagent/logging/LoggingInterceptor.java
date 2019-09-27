@@ -440,6 +440,12 @@ public class LoggingInterceptor extends Interceptor {
 			if (INSTRUMENTED_METHODS.get(cn.name).contains(mn.name))
 				JA_HEALTH_CHECK.setSsrfProtection(true);
 			break;
+		case CLASS_JAVA_IO_FILE_OUTPUT_STREAM:
+		case CLASS_JAVA_IO_FILE_INPUT_STREAM:
+		case CLASS_SUN_NIO_FS_UNIX_NATIVE_DISPATCHER:
+			if (INSTRUMENTED_METHODS.get(cn.name).contains(mn.name))
+				JA_HEALTH_CHECK.setFileAccessProtection(true);
+			break;
 		default:
 			break;
 
@@ -507,6 +513,7 @@ public class LoggingInterceptor extends Interceptor {
 //		System.out.println("start Executionid: " + eId);
 //		System.out.println("start Thread Id: " + threadId);
 //		System.out.println("start SourceString: " + sourceString);
+//		logger.log(LogLevel.INFO, "OnStart source: " + sourceString + " :: args: " + Arrays.asList(arg[0]) + " :: eid: " + eId,LoggingInterceptor.class.getName());
 
 		if (sourceString == null)
 			return;
@@ -609,7 +616,7 @@ public class LoggingInterceptor extends Interceptor {
 //			int bytePosition = -1;
 //			try {
 //				Class<?> BNFHeadersImpl = Class.forName("com.ibm.ws.genericbnf.internal.BNFHeadersImpl", true, currentClassLoader);
-//				
+//
 //				Field bytePositionField = BNFHeadersImpl.getDeclaredField("bytePosition");
 //				bytePositionField.setAccessible(true);
 //				bytePosition = (int )bytePositionField.get(thisPointer);
@@ -618,7 +625,7 @@ public class LoggingInterceptor extends Interceptor {
 //				e.printStackTrace();
 //			}
 //			if(bytePosition>0) {
-//				
+//
 //			} else {
 			ServletEventPool.getInstance().incrementServletInfoReference(threadId, executionId, false);
 			HttpRequestBean servletInfo;
@@ -1022,6 +1029,8 @@ public class LoggingInterceptor extends Interceptor {
 //		System.out.println("end Thread Id: " + threadId);
 //		System.out.println("end SourceString: " + sourceString);
 		Long executionId = Long.parseLong(eId.split(COLON_SEPERATOR)[1]);
+//		logger.log(LogLevel.INFO, "OnFinish source: " + sourceString +  " :: eid: " + eId,LoggingInterceptor.class.getName());
+
 
 //		if(sourceString.equals("private static synchronized long java.lang.Thread.nextThreadID()")) {
 //			long threadIdCreated = (long) result;
