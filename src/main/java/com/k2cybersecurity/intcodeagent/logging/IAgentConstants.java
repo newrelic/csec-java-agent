@@ -366,6 +366,8 @@ public interface IAgentConstants {
 			put(CLASS_JAVA_IO_FILE_INPUT_STREAM, Collections.singletonList("open"));
 
 			put(CLASS_SUN_NIO_FS_UNIX_NATIVE_DISPATCHER, Arrays.asList(new String[] {"open", "fopen", "link", "unlink", "mknod", "rename", "mkdir", "rmdir", "symlink", "chown", "chmod"}));
+
+			put("org/xnio/XnioWorker", Collections.singletonList("execute"));
 		}
 	};
 
@@ -391,7 +393,8 @@ public interface IAgentConstants {
 	
 	/** JBoss constants*/
 	String JBOSS_WILDFLY_HTTP_REQUEST_PARSER_HANDLE = "public void io.undertow.server.protocol.http.HttpRequestParser.handle(java.nio.ByteBuffer,io.undertow.server.protocol.http.ParseState,io.undertow.server.HttpServerExchange) throws io.undertow.util.BadRequestException";
-//	String PUBLIC_VOID_ORG_JBOSS_THREADS_CONTEXT_CLASS_LOADER_SAVING_RUNNABLE_RUN = "public void org.jboss.threads.ContextClassLoaderSavingRunnable.run()";
+	String JBOSS_WILDFLY_HTTP_REQUEST_PARSER_HANDLE_2 = "public void io.undertow.server.protocol.http.HttpRequestParser.handle(java.nio.ByteBuffer,io.undertow.server.protocol.http.ParseState,io.undertow.server.HttpServerExchange)";
+	//	String PUBLIC_VOID_ORG_JBOSS_THREADS_CONTEXT_CLASS_LOADER_SAVING_RUNNABLE_RUN = "public void org.jboss.threads.ContextClassLoaderSavingRunnable.run()";
 	String PUBLIC_VOID_IO_UNDERTOW_SERVLET_HANDLERS_SERVLET_HANDLER_HANDLE_REQUEST_IO_UNDERTOW_SERVER_HTTP_SERVER_EXCHANGE_THROWS_JAVA_IO_IO_EXCEPTION_JAVAX_SERVLET_SERVLET_EXCEPTION = "public void io.undertow.servlet.handlers.ServletHandler.handleRequest(io.undertow.server.HttpServerExchange) throws java.io.IOException,javax.servlet.ServletException";
 
 	String PRIVATE_INT_ORG_JBOSS_THREADS_ENHANCED_QUEUE_EXECUTOR_TRY_EXECUTE_JAVA_LANG_RUNNABLE = "private int org.jboss.threads.EnhancedQueueExecutor.tryExecute(java.lang.Runnable)";
@@ -406,10 +409,20 @@ public interface IAgentConstants {
 	String ORG_JBOSS_THREADS_ENHANCED_QUEUE_EXECUTOR$_POOL_THREAD_NODE = "org.jboss.threads.EnhancedQueueExecutor$PoolThreadNode";
 	String ORG_JBOSS_THREADS_ENHANCED_QUEUE_EXECUTOR$_TASK_NODE = "org.jboss.threads.EnhancedQueueExecutor$TaskNode";
 	String ORG_JBOSS_THREADS_ENHANCED_QUEUE_EXECUTOR = "org.jboss.threads.EnhancedQueueExecutor";
+	String TAIL = "tail";
+	String FIRST_WAITER = "firstWaiter";
+	String NOT_EMPTY = "notEmpty";
+	String TASK_QUEUE = "taskQueue";
+	String ORG_XNIO_XNIO_WORKER = "org.xnio.XnioWorker";
+	String PUBLIC_VOID_ORG_XNIO_XNIO_WORKER_EXECUTE_JAVA_LANG_RUNNABLE = "public void org.xnio.XnioWorker.execute(java.lang.Runnable)";
+
+
+
 	String WEBLOGIC_INVOKE_SERVLET = "public java.lang.Throwable weblogic.servlet.internal.StubSecurityHelper.invokeServlet(javax.servlet.ServletRequest,javax.servlet.http.HttpServletRequest,weblogic.servlet.internal.ServletRequestImpl,javax.servlet.ServletResponse,javax.servlet.http.HttpServletResponse,javax.servlet.Servlet) throws javax.servlet.ServletException";
 	
 	String WEBLOGIC_SERVLET_EXECUTE = "void weblogic.servlet.internal.WebAppServletContext.execute(weblogic.servlet.internal.ServletRequestImpl,weblogic.servlet.internal.ServletResponseImpl) throws java.io.IOException";
 	
+
 	/** MSSQL FIELD CONSTANTS */
 	String MSSQL_CURRENT_OBJECT = "this$0";
 	String MSSQL_BATCH_STATEMENT_BUFFER_FIELD = "batchStatementBuffer";

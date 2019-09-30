@@ -36,10 +36,10 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Condition;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.sun.javafx.util.Logging;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
@@ -88,6 +88,8 @@ public class LoggingInterceptor extends Interceptor {
 	public static String hostip = "";
 //	private static Logger logger;
 
+	private boolean isOldWildfly = false;
+	
 	private static final FileLoggerThreadPool logger;
 
 	private static Pattern applicationInformationDetectRegex = Pattern.compile("\\S*(\\/classes)\\S*");
@@ -483,6 +485,9 @@ public class LoggingInterceptor extends Interceptor {
 						|| sourceString.equals(WEBLOGIC_SERVLET_EXECUTE)) {
 					ServletEventPool.getInstance().decrementServletInfoReference(threadId, executionId, false);
 //					System.out.println("Current request map : " + ServletEventPool.getInstance().getRequestMap());
+//					System.out.println("Current MappedThreadIDToRemove" + ThreadMapping.getInstance().getMappedThreadIDToRemove());
+//					System.out.println("Current TempThreadRequestMap" + ThreadMapping.getInstance().getTempThreadRequestMap());
+//					System.out.println("Current MappedThreadRequestMap" + ThreadMapping.getInstance().getMappedThreadRequestMap());
 				}
 			}
 		} catch (Exception e) {
@@ -517,8 +522,49 @@ public class LoggingInterceptor extends Interceptor {
 
 		if (sourceString == null)
 			return;
-		if (sourceString.equals(
+		if(sourceString.equals(PUBLIC_VOID_ORG_XNIO_XNIO_WORKER_EXECUTE_JAVA_LANG_RUNNABLE)) {
+			Object thisPointer = arg[arg.length - 1];
+			ClassLoader currentClassLoader = thisPointer.getClass().getClassLoader();
+			try {
+			Field taskQueue = Class.forName(ORG_XNIO_XNIO_WORKER, true, currentClassLoader).getDeclaredField(TASK_QUEUE);
+			taskQueue.setAccessible(true);
+			Object taskQueueObj = taskQueue.get(thisPointer);
+			
+			Field notEmpty = taskQueueObj.getClass().getDeclaredField(NOT_EMPTY);
+			notEmpty.setAccessible(true);
+			Condition notEmptyObj = (Condition) notEmpty.get(taskQueueObj);
+
+			// here it is assumed that notEmpty will not be of type SimpleLock which belongs to jboss, as there are
+			// three implementations of Condition interface which stores notEmpty object
+			
+			Field firstWaiter = notEmptyObj.getClass().getDeclaredField(FIRST_WAITER);
+			firstWaiter.setAccessible(true);
+			Object firstWaiterObj = firstWaiter.get(notEmptyObj);
+			if(firstWaiterObj!=null) {
+			Field thread = firstWaiterObj.getClass().getDeclaredField(FIELD_THREAD);
+			thread.setAccessible(true);
+			Thread threadObj = (Thread) thread.get(firstWaiterObj);
+			long newThreadId = threadObj.getId();
+//			System.out.println("Now created thread id : "+ threadObj.getId());
+			Pair<Long, Long> oldPairedKey = new ImmutablePair<Long, Long>(threadId, executionId-1);
+			ThreadMapping.getInstance().getMappedThreadIDToRemove().put(oldPairedKey, newThreadId);
+			updateThreadMaps(threadId, executionId, newThreadId, 1);
+//			System.out.println("ExecuteUpdated : "+ ThreadMapping.getInstance().getMappedThreadRequestMap());
+			}
+			} catch (Throwable e) {
+//				e.printStackTrace();
+			}
+			
+		}
+		else if (sourceString.equals(
 				PUBLIC_VOID_IO_UNDERTOW_SERVLET_HANDLERS_SERVLET_HANDLER_HANDLE_REQUEST_IO_UNDERTOW_SERVER_HTTP_SERVER_EXCHANGE_THROWS_JAVA_IO_IO_EXCEPTION_JAVAX_SERVLET_SERVLET_EXCEPTION)) {
+//			Map<Thread, StackTraceElement[]> map = Thread.currentThread().getAllStackTraces();
+//			for(Entry<Thread, StackTraceElement[]> entry : map.entrySet()) {
+//				System.out.println("Thread : "+ entry.getKey().getName());
+//				for(StackTraceElement st : entry.getValue()) {
+//					System.out.println("CN : "+st.getClassName()+ "  ::: MN : "+st.getMethodName()+" :: LN :"+ st.getLineNumber());
+//				}
+//			}
 //			System.out.println("In runnable.run : " + ThreadMapping.getInstance().getMappedThreadRequestMap());
 			ServletEventPool.getInstance().incrementServletInfoReference(threadId, executionId, false);
 			if (ThreadMapping.getInstance().getMappedThreadRequestMap().containsKey(threadId)
@@ -543,6 +589,9 @@ public class LoggingInterceptor extends Interceptor {
 					return;
 				}
 				ThreadMapping.getInstance().getMappedThreadRequestMap().get(threadId).removeFirst();
+				if(ThreadMapping.getInstance().getMappedThreadRequestMap().get(threadId).size()==0) {
+					ThreadMapping.getInstance().getMappedThreadRequestMap().remove(threadId);
+				}
 				if (!ServletEventPool.getInstance().getRequestMap().containsKey(threadId)) {
 					ConcurrentLinkedDeque<ExecutionMap> executionMaps = new ConcurrentLinkedDeque<ExecutionMap>();
 					executionMaps.add(new ExecutionMap(executionId, servletInfo));
@@ -558,7 +607,7 @@ public class LoggingInterceptor extends Interceptor {
 			ClassLoader currentClassLoader = thisPointer.getClass().getClassLoader();
 			try {
 				Field tailField = Class.forName(ORG_JBOSS_THREADS_ENHANCED_QUEUE_EXECUTOR, true, currentClassLoader)
-						.getDeclaredField("tail");
+						.getDeclaredField(TAIL);
 				tailField.setAccessible(true);
 				Object tailObject = tailField.get(thisPointer);
 				Object tailNext = this.getNextQnode(tailObject, currentClassLoader);
@@ -583,17 +632,22 @@ public class LoggingInterceptor extends Interceptor {
 					Thread threadObj = (Thread) threadField.get(tailNext);
 					Long newThreadId = threadObj.getId();
 //					System.out.println("Thread ID Found : " + newThreadId);
-					updateThreadMaps(threadId, executionId, newThreadId, 1);
+					Pair<Long, Long> oldPairedKey = new ImmutablePair<Long, Long>(threadId, executionId-2);
+					ThreadMapping.getInstance().getMappedThreadIDToRemove().put(oldPairedKey, newThreadId);
+					updateThreadMaps(threadId, executionId, newThreadId, 2);
 				}
 			} catch (Exception e) {
 				logger.log(LogLevel.WARNING, "Error while processing JBoss inital hook  : ", e,
 						this.getClass().getName());
 			}
-		} else if (sourceString.equals(JBOSS_WILDFLY_HTTP_REQUEST_PARSER_HANDLE)) {
+		} else if (sourceString.equals(JBOSS_WILDFLY_HTTP_REQUEST_PARSER_HANDLE) 
+				|| sourceString.equals(JBOSS_WILDFLY_HTTP_REQUEST_PARSER_HANDLE_2)) {
 			Object arg0 = arg[0];
 			ClassLoader currentClassLoader = arg0.getClass().getClassLoader();
 			String fetchedDataString = fetchRequestStringForWildfly(arg0, currentClassLoader);
-
+			if(sourceString.equals(JBOSS_WILDFLY_HTTP_REQUEST_PARSER_HANDLE_2)){
+				isOldWildfly = true;
+			}
 			if (fetchedDataString != null && !fetchedDataString.isEmpty()) {
 				HttpRequestBean servletInfo = new HttpRequestBean();
 				servletInfo.setRawRequest(fetchedDataString);
@@ -938,9 +992,11 @@ public class LoggingInterceptor extends Interceptor {
 
 	private void updateThreadMaps(long threadId, Long executionId, Long newThreadId, int i) {
 		Pair<Long, Long> pairedKey = new ImmutablePair<>(threadId, executionId - i);
+//		System.out.println("Fetching for pair : "+ threadId+" AND "+ (executionId - i));
+//		System.out.println("Present is : "+ ThreadMapping.getInstance().getTempThreadRequestMap());
 		ConcurrentLinkedDeque<ThreadRequestData> threadRequestData = ThreadMapping.getInstance()
 				.getTempThreadRequestMap().get(pairedKey);
-		ThreadMapping.getInstance().getTempThreadRequestMap().remove(pairedKey);
+//		ThreadMapping.getInstance().getTempThreadRequestMap().remove(pairedKey);
 		if (threadRequestData != null) {
 			if (!ThreadMapping.getInstance().getMappedThreadRequestMap().containsKey(newThreadId))
 				ThreadMapping.getInstance().getMappedThreadRequestMap().put(newThreadId,
@@ -967,7 +1023,7 @@ public class LoggingInterceptor extends Interceptor {
 			}
 			requestData = new String(bytesObtained);
 //			System.out.println("Data finally obtained : " + requestData);
-			logger.log(LogLevel.DEBUG, requestData, LoggingInterceptor.class.getName());
+//			logger.log(LogLevel.DEBUG, requestData, LoggingInterceptor.class.getName());
 		} catch (Exception e) {
 			logger.log(LogLevel.WARNING, "Exception occured in fetchRequestStringForWildfly : " , e,
 					LoggingInterceptor.class.getName());		}
@@ -1041,14 +1097,47 @@ public class LoggingInterceptor extends Interceptor {
 //			}
 //			System.out.println("");
 //		}
-
+		if(sourceString.equals(PUBLIC_VOID_ORG_XNIO_XNIO_WORKER_EXECUTE_JAVA_LANG_RUNNABLE)
+				|| sourceString.equals(PRIVATE_INT_ORG_JBOSS_THREADS_ENHANCED_QUEUE_EXECUTOR_TRY_EXECUTE_JAVA_LANG_RUNNABLE)) {
+			int decreament;
+			if(sourceString.equals(PRIVATE_INT_ORG_JBOSS_THREADS_ENHANCED_QUEUE_EXECUTOR_TRY_EXECUTE_JAVA_LANG_RUNNABLE))
+				decreament = 2;
+			else
+				decreament = 1;
+			Pair<Long, Long> oldPairedKey = new ImmutablePair<Long, Long>(threadId, executionId-decreament);
+			if(ThreadMapping.getInstance().getMappedThreadIDToRemove().containsKey(oldPairedKey)) {
+				ThreadMapping.getInstance().getMappedThreadIDToRemove().remove(oldPairedKey);
+				ThreadMapping.getInstance().getTempThreadRequestMap().remove(oldPairedKey);
+			}
+		}
 		if (sourceString.equals(
 				PUBLIC_JAVA_LANG_THREAD_ORG_XNIO_XNIO_WORKER$_WORKER_THREAD_FACTORY_NEW_THREAD_JAVA_LANG_RUNNABLE)) {
 			Thread returnedThread = (Thread) result;
 			Long newThreadId = returnedThread.getId();
 //			System.out.println("Created Thread's id ::: " + newThreadId);
 //			System.out.println("We should map : "+threadId+" to : "+ newThreadId);
-			updateThreadMaps(threadId, executionId, newThreadId, 2);
+//			if(oldWildfly)
+//				updateThreadMaps(threadId, executionId, newThreadId, 1);
+//			else
+			Pair<Long, Long> oldPairedKey ;
+			if(isOldWildfly) {
+				oldPairedKey = new ImmutablePair<Long, Long>(threadId, executionId-2);
+			
+//			System.out.println("HereMappedThreadIDToRemove" + ThreadMapping.getInstance().getMappedThreadIDToRemove());
+			if(ThreadMapping.getInstance().getMappedThreadIDToRemove().containsKey(oldPairedKey)) {
+				ThreadMapping.getInstance().getMappedThreadRequestMap().remove(ThreadMapping.getInstance().getMappedThreadIDToRemove().get(oldPairedKey));
+				ThreadMapping.getInstance().getMappedThreadIDToRemove().remove(oldPairedKey);
+			}
+			} else {
+				oldPairedKey = new ImmutablePair<Long, Long>(threadId, executionId-3);
+			}
+			if(isOldWildfly) 
+				updateThreadMaps(threadId, executionId, newThreadId, 2);
+			else
+				updateThreadMaps(threadId, executionId, newThreadId, 3);
+			ThreadMapping.getInstance().getTempThreadRequestMap().remove(oldPairedKey);
+//			System.out.println("Updated : "+ ThreadMapping.getInstance().getMappedThreadRequestMap());
+			
 		} else if (sourceString.equals(WEBSPHERE_LIBERTY_FILLBYTECACHE)
 				|| sourceString.equals(WEBSPHERE_TRADITIONAL_FILLBYTECACHE)) {
 			if (args.length == 0)

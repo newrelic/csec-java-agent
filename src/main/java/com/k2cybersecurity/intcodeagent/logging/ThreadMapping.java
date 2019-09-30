@@ -14,6 +14,8 @@ public class ThreadMapping {
 
 	private Map<Long, ConcurrentLinkedDeque<ThreadRequestData>> mappedThreadRequestMap = new ConcurrentHashMap<>();
 
+	private Map<Pair<Long, Long>, Long> mappedThreadIDToRemove = new ConcurrentHashMap<>();
+	
 	/**
 	 * @return the tempThreadRequestMap
 	 */
@@ -28,6 +30,13 @@ public class ThreadMapping {
 		return mappedThreadRequestMap;
 	}
 	
+	/**
+	 * @return the mappedThreadIDToRemove
+	 */
+	public Map<Pair<Long, Long>, Long> getMappedThreadIDToRemove() {
+		return mappedThreadIDToRemove;
+	}
+
 	public static ThreadMapping getInstance() {
 		if(threadMapping == null)
 			threadMapping = new ThreadMapping();
