@@ -221,7 +221,7 @@ public class HttpRequestBean {
 		}
 
 		if (!parseBodyFromRawRequest()) {
-			logger.log(LogLevel.WARNING, GOT_EMPTY_BODY_AFTER_PROCESSING, this.getClass().getName());
+			logger.log(LogLevel.DEBUG, GOT_EMPTY_BODY_AFTER_PROCESSING, this.getClass().getName());
 		}
 	}
 
