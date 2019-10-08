@@ -29,11 +29,21 @@ import java.lang.management.RuntimeMXBean;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.net.SocketAddress;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.URISyntaxException;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
+import java.nio.channels.SocketChannel;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
@@ -52,8 +62,8 @@ import org.objectweb.asm.tree.MethodNode;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.models.javaagent.ApplicationInfoBean;
-import com.k2cybersecurity.intcodeagent.models.javaagent.JAHealthCheck;
 import com.k2cybersecurity.intcodeagent.models.javaagent.HttpRequestBean;
+import com.k2cybersecurity.intcodeagent.models.javaagent.JAHealthCheck;
 import com.k2cybersecurity.intcodeagent.models.javaagent.ShutDownEvent;
 import com.k2cybersecurity.intcodeagent.websocket.EventSendPool;
 import com.k2cybersecurity.intcodeagent.websocket.WSClient;
@@ -80,7 +90,7 @@ public class LoggingInterceptor extends Interceptor {
 	protected static JAHealthCheck JA_HEALTH_CHECK;
 
 	protected static Class<?> mysqlPreparedStatement8Class, mysqlPreparedStatement5Class, abstractInputBufferClass,
-			postInputStreamClass;
+			postInputStreamClass, jettyAbstractConnection;
 	protected static String tomcatVersion;
 	protected static int tomcatMajorVersion;
 	static final int MAX_DEPTH_LOOKUP = 4; // Max number of superclasses to lookup for a field
@@ -588,6 +598,9 @@ public class LoggingInterceptor extends Interceptor {
 //					System.err.println("No SI Mapped");
 					return;
 				}
+				String remoteAddress = getRemoteAddressForWildfly(arg[0]);
+				if(remoteAddress!=null)
+					servletInfo.setClientIP(remoteAddress);
 				ThreadMapping.getInstance().getMappedThreadRequestMap().get(threadId).removeFirst();
 				if(ThreadMapping.getInstance().getMappedThreadRequestMap().get(threadId).size()==0) {
 					ThreadMapping.getInstance().getMappedThreadRequestMap().remove(threadId);
@@ -681,15 +694,20 @@ public class LoggingInterceptor extends Interceptor {
 //			if(bytePosition>0) {
 //
 //			} else {
+			String remoteAddress = getRemoteAddressForWebsphere(arg[arg.length-1], sourceString);
 			ServletEventPool.getInstance().incrementServletInfoReference(threadId, executionId, false);
 			HttpRequestBean servletInfo;
 			if (!ServletEventPool.getInstance().getRequestMap().containsKey(threadId)) {
 				servletInfo = new HttpRequestBean();
+				if(remoteAddress!=null)
+					servletInfo.setClientIP(remoteAddress);
 				ConcurrentLinkedDeque<ExecutionMap> executionMaps = new ConcurrentLinkedDeque<ExecutionMap>();
 				executionMaps.add(new ExecutionMap(executionId, servletInfo));
 				ServletEventPool.getInstance().getRequestMap().put(threadId, executionMaps);
 			} else {
 				servletInfo = new HttpRequestBean();
+				if(remoteAddress!=null)
+					servletInfo.setClientIP(remoteAddress);
 				ServletEventPool.getInstance().getRequestMap().get(threadId)
 						.add(new ExecutionMap(executionId, servletInfo));
 			}
@@ -709,6 +727,25 @@ public class LoggingInterceptor extends Interceptor {
 				ServletEventPool.getInstance().getRequestMap().get(threadId)
 						.add(new ExecutionMap(executionId, servletInfo));
 			}
+			Object thisVar = arg[arg.length - 1];
+			try {
+				if(jettyAbstractConnection == null)
+					jettyAbstractConnection = Class.forName("org.eclipse.jetty.io.AbstractConnection", true,
+							Thread.currentThread().getContextClassLoader());
+				
+				Field _endPoint = jettyAbstractConnection.getDeclaredField("_endPoint");
+				_endPoint.setAccessible(true);
+				Object _endPointObject = _endPoint.get(thisVar);
+				Method getRemoteAddress = _endPointObject.getClass().getMethod("getRemoteAddress", null);
+				getRemoteAddress.setAccessible(true);
+				InetSocketAddress inetSocketAddress = (InetSocketAddress) getRemoteAddress.invoke(_endPointObject,
+						null);
+				servletInfo.setClientIP(inetSocketAddress.getHostString());
+				System.out.println("Client address jetty: " + inetSocketAddress.getHostString());
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+
 		} else if (JETTY_PARSE_NEXT.equals(sourceString)) {
 
 			HttpRequestBean servletInfo = ExecutionMap.find(executionId,
@@ -817,6 +854,17 @@ public class LoggingInterceptor extends Interceptor {
 				Object byteBuffer = null;
 				int positionHb = -1;
 				boolean byteBufferFound = false;
+
+				Field notesField = arg[0].getClass().getDeclaredField("notes");
+				notesField.setAccessible(true);
+				Object[] notes = (Object[]) notesField.get(arg[0]);
+				Object request = notes[1];
+				if (request != null) {
+					Method getRemoteAddrMethod = request.getClass().getDeclaredMethod("getRemoteAddr", null);
+					getRemoteAddrMethod.setAccessible(true);
+					String remoteAddr = (String) getRemoteAddrMethod.invoke(request, null);
+					servletInfo.setClientIP(remoteAddr);
+				}
 				if (tomcatMajorVersion == TOMCAT_8 || tomcatMajorVersion == TOMCAT_9) {
 					try {
 						Field byteBufferField = inputBuffer.getClass()
@@ -883,10 +931,26 @@ public class LoggingInterceptor extends Interceptor {
 			// in case of executeInternal()
 		} else if (sourceString.equals(WEBLOGIC_SERVLET_EXECUTE)) {
 			try {
+				HttpRequestBean servletInfo = new HttpRequestBean();
+
 				ServletEventPool.getInstance().incrementServletInfoReference(threadId, executionId, false);
 				Object servletObject = arg[0];
 //				System.out.println("Searching arg0 in : "+ servletObject.getClass().getName() + "  ::  " + servletObject.getClass().getSuperclass().getName() + " :: " + Arrays.asList(servletObject.getClass().getDeclaredFields()));
-				Field inputStreamField = servletObject.getClass().getDeclaredField(FIELD_NAME_INPUT_STREAM);
+
+                Field connectionField = servletObject.getClass().getDeclaredField(FIELD_CONNECTION);
+                connectionField.setAccessible(true);
+                Object connection = connectionField.get(servletObject);
+
+                Field socketField = connection.getClass().getDeclaredField("socket");
+                socketField.setAccessible(true);
+                Object socket = socketField.get(connection);
+
+                Method getRemoteSocketAddressMethod = socket.getClass().getMethod("getRemoteSocketAddress", null);
+                InetSocketAddress remoteAddr = (InetSocketAddress) getRemoteSocketAddressMethod.invoke(socket, null);
+
+				servletInfo.setClientIP(remoteAddr.getHostString());
+
+                Field inputStreamField = servletObject.getClass().getDeclaredField(FIELD_NAME_INPUT_STREAM);
 				inputStreamField.setAccessible(true);
 				Object inputStream = inputStreamField.get(servletObject);
 
@@ -912,7 +976,6 @@ public class LoggingInterceptor extends Interceptor {
 						hb.setAccessible(true);
 						byte[] hbContent = (byte[]) hb.get(buf);
 
-						HttpRequestBean servletInfo = new HttpRequestBean();
 						servletInfo.setRawRequest(new String(hbContent, 0, limitHb, StandardCharsets.UTF_8));
 						if (contentLen > limitHb) {
 							servletInfo.setDataTruncated(true);
@@ -944,7 +1007,6 @@ public class LoggingInterceptor extends Interceptor {
 					posField.setAccessible(true);
 					Integer pos = (Integer) posField.get(connHandler);
 
-					HttpRequestBean servletInfo = new HttpRequestBean();
 					servletInfo.setRawRequest(new String(buf, 0, pos, StandardCharsets.UTF_8));
 
 					servletInfo.addGenerationTime((int) (System.currentTimeMillis() - start));
@@ -989,6 +1051,68 @@ public class LoggingInterceptor extends Interceptor {
 		}
 
 	}
+	
+	private String getRemoteAddressForWebsphere(Object arg, String sourceString) {
+		String remoteAddress = null;
+		try {
+			Object thisPointer = arg;
+			ClassLoader currentClassLoader = thisPointer.getClass().getClassLoader();
+			Method getVirtualConnectionMethod;
+			if(sourceString.equals(WEBSPHERE_LIBERTY_PROCESSREQUEST))
+				getVirtualConnectionMethod = Class.forName(COM_IBM_WS_HTTP_CHANNEL_INTERNAL_INBOUND_HTTP_INBOUND_LINK, true, currentClassLoader).getDeclaredMethod(METHOD_GET_VIRTUAL_CONNECTION);
+			else
+				getVirtualConnectionMethod = Class.forName(COM_IBM_WS_HTTP_CHANNEL_INBOUND_HTTP_INBOUND_LINK, true, currentClassLoader).getDeclaredMethod(METHOD_GET_VIRTUAL_CONNECTION);
+			Object virtualConnectionObj = getVirtualConnectionMethod.invoke(thisPointer);
+			
+			Method getConnectionDescriptorMethod = Class.forName(COM_IBM_WSSPI_CHANNELFW_VIRTUAL_CONNECTION, true, currentClassLoader).getDeclaredMethod(METHOD_GET_CONNECTION_DESCRIPTOR);
+			Object connectionDescObj = getConnectionDescriptorMethod.invoke(virtualConnectionObj);
+			
+			Method getRemoteHostAddressMethod = Class.forName(COM_IBM_WSSPI_CHANNELFW_CONNECTION_DESCRIPTOR, true, currentClassLoader).getDeclaredMethod(METHOD_GET_REMOTE_HOST_ADDRESS);
+			remoteAddress = (String) getRemoteHostAddressMethod.invoke(connectionDescObj);
+			
+			} catch (Exception ex) {
+				logger.log(LogLevel.ERROR, "Error getting remote address : "+ex.getMessage(), LoggingInterceptor.class.getName());
+			}
+		return remoteAddress;
+	}
+
+	private String getRemoteAddressForWildfly(Object arg) {
+		String remoteAdderss = null;
+		try {
+			Object exchangeObj = arg;
+			ClassLoader currentClassLoader = exchangeObj.getClass().getClassLoader();
+			
+			Field connectionField = exchangeObj.getClass().getDeclaredField(FIELD_CONNECTION);
+			connectionField.setAccessible(true);
+			Object connectionObj = connectionField.get(exchangeObj);
+			
+			Field oscField = connectionObj.getClass().getSuperclass().getDeclaredField(FIELD_ORIGINAL_SOURCE_CONDUIT);
+			oscField.setAccessible(true);
+			Object oscObj = oscField.get(connectionObj);
+			
+			if (Class.forName(ORG_XNIO_NIO_NIO_SOCKET_CONDUIT, true, currentClassLoader).isInstance(oscObj)) {
+				Field socketChannelField = oscObj.getClass().getDeclaredField(FIELD_SOCKET_CHANNEL);
+				socketChannelField.setAccessible(true);
+				SocketChannel socketChannelObj = (SocketChannel) socketChannelField.get(oscObj);
+				
+				SocketAddress socketAddressObj = socketChannelObj.getRemoteAddress();
+				if (socketAddressObj instanceof InetSocketAddress) {
+					InetSocketAddress isa = (InetSocketAddress)socketAddressObj;
+					InetAddress address = isa.getAddress();
+					remoteAdderss = address.getHostAddress();
+				} else {
+					logger.log(LogLevel.INFO, "socketAddressObj not instance of InetSocketAddress, need to handle other cases", LoggingInterceptor.class.getName());
+				}
+			} else {
+				logger.log(LogLevel.INFO, "originalSourceConduit not instance of NioSocketConduit, need to handle other cases", LoggingInterceptor.class.getName());
+			}
+			
+			} catch (Throwable ex) {
+				System.out.println(ex.getMessage());
+				ex.printStackTrace(System.err);
+			}
+		return remoteAdderss;
+	}
 
 	private void updateThreadMaps(long threadId, Long executionId, Long newThreadId, int i) {
 		Pair<Long, Long> pairedKey = new ImmutablePair<>(threadId, executionId - i);
@@ -1006,7 +1130,7 @@ public class LoggingInterceptor extends Interceptor {
 	}
 
 	private String fetchRequestStringForWildfly(Object buffer, ClassLoader currentClassLoader) {
-		String requestData = "";
+		String requestData = EMPTY;
 		try {
 			Field limitField = Class.forName(JAVA_NIO_BUFFER, true, currentClassLoader).getDeclaredField(FIELD_LIMIT);
 			limitField.setAccessible(true);

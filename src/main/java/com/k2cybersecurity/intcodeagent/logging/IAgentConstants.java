@@ -627,4 +627,17 @@ public interface IAgentConstants {
 	String JSON_NAME_DYNAMICJARPATH_BEAN = "dynamicjarpath";
 	String JSON_NAME_SHUTDOWN = "shutdown";
 
+	String FIELD_SOCKET_CHANNEL = "socketChannel";
+	String ORG_XNIO_NIO_NIO_SOCKET_CONDUIT = "org.xnio.nio.NioSocketConduit";
+	String FIELD_ORIGINAL_SOURCE_CONDUIT = "originalSourceConduit";
+	String FIELD_CONNECTION = "connection";
+	String METHOD_GET_REMOTE_HOST_ADDRESS = "getRemoteHostAddress";
+	String METHOD_GET_CONNECTION_DESCRIPTOR = "getConnectionDescriptor";
+	String METHOD_GET_VIRTUAL_CONNECTION = "getVirtualConnection";
+	String COM_IBM_WSSPI_CHANNELFW_CONNECTION_DESCRIPTOR = "com.ibm.wsspi.channelfw.ConnectionDescriptor";
+	String COM_IBM_WSSPI_CHANNELFW_VIRTUAL_CONNECTION = "com.ibm.wsspi.channelfw.VirtualConnection";
+	String COM_IBM_WS_HTTP_CHANNEL_INTERNAL_INBOUND_HTTP_INBOUND_LINK = "com.ibm.ws.http.channel.internal.inbound.HttpInboundLink";
+	String COM_IBM_WS_HTTP_CHANNEL_INBOUND_HTTP_INBOUND_LINK = "com.ibm.ws.http.channel.inbound.impl.HttpInboundLink";
+
+
 }

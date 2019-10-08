@@ -36,6 +36,8 @@ public class HttpRequestBean {
 	private String method;
 
 	private String url;
+	
+	private String clientIP;
 
 	private JSONObject headers;
 
@@ -51,6 +53,7 @@ public class HttpRequestBean {
 
 	public HttpRequestBean(HttpRequestBean servletInfo) {
 		this.rawRequest = servletInfo.getRawRequest();
+		this.clientIP = servletInfo.clientIP;
 		this.generationTime = servletInfo.getGenerationTime();
 		this.body = servletInfo.getBody();
 		this.dataTruncated = servletInfo.isDataTruncated();
@@ -223,6 +226,20 @@ public class HttpRequestBean {
 		if (!parseBodyFromRawRequest()) {
 			logger.log(LogLevel.DEBUG, GOT_EMPTY_BODY_AFTER_PROCESSING, this.getClass().getName());
 		}
+	}
+
+	/**
+	 * @return the clientIP
+	 */
+	public String getClientIP() {
+		return clientIP;
+	}
+
+	/**
+	 * @param clientIP the clientIP to set
+	 */
+	public void setClientIP(String clientIP) {
+		this.clientIP = clientIP;
 	}
 
 
