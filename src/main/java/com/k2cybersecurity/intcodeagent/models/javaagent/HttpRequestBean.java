@@ -1,6 +1,8 @@
 package com.k2cybersecurity.intcodeagent.models.javaagent;
 
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -36,10 +38,12 @@ public class HttpRequestBean {
 	private String method;
 
 	private String url;
-	
+
 	private String clientIP;
 
 	private JSONObject headers;
+
+	private Map<String, FileIntegrityBean> fileExist;
 
 	public HttpRequestBean() {
 		this.rawRequest = StringUtils.EMPTY;
@@ -49,6 +53,7 @@ public class HttpRequestBean {
 		this.method = StringUtils.EMPTY;
 		this.url = StringUtils.EMPTY;
 		this.headers = new JSONObject();
+		this.fileExist = new HashMap<String, FileIntegrityBean>();
 	}
 
 	public HttpRequestBean(HttpRequestBean servletInfo) {
@@ -240,6 +245,20 @@ public class HttpRequestBean {
 	 */
 	public void setClientIP(String clientIP) {
 		this.clientIP = clientIP;
+	}
+
+	/**
+	 * @return the fileAccessed
+	 */
+	public Map<String, FileIntegrityBean> getFileExist() {
+		return fileExist;
+	}
+
+	/**
+	 * @param fileAccessed the fileAccessed to set
+	 */
+	public void setFileExist(Map<String, FileIntegrityBean> fileAccessed) {
+		this.fileExist = fileAccessed;
 	}
 
 

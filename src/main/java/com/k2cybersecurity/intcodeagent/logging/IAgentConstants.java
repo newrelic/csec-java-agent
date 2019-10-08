@@ -17,6 +17,8 @@ public interface IAgentConstants {
 
 	List<String> ALLOWED_EXTENSIONS = Arrays.asList(new String[] {"css", "html", "htm", "jsp", "js", "classtmp"});
 
+	List<String> SOURCE_EXENSIONS = Arrays.asList(new String[] {"class", "jsp", "jar", "java"});
+	
 	// HSQL
 	String CLASS_ORG_HSQLDB_HSQL_CLIENT_CONNECTION = "org/hsqldb/HSQLClientConnection";
 	String CLASS_ORG_HSQLDB_SESSION = "org/hsqldb/Session";
@@ -219,6 +221,30 @@ public interface IAgentConstants {
 	String HSQL_V1_8_SESSION = "public org.hsqldb.Result org.hsqldb.Session.execute(org.hsqldb.Result)";
 
 	// MSSQL
+	
+	Map<String, VulnerabilityCaseType> FILE_EXECUTORS = new HashMap<String, VulnerabilityCaseType>() {
+
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 7816336042321299035L;
+		{
+			put(JAVA_IO_FILE_INPUTSTREAM_OPEN, VulnerabilityCaseType.FILE_OPERATION);
+			put(JAVA_IO_FILE_OUTPUTSTREAM_OPEN, VulnerabilityCaseType.FILE_OPERATION);
+
+			put(JAVA_NIO_UNIX_OPEN, VulnerabilityCaseType.FILE_OPERATION);
+			put(JAVA_NIO_UNIX_FOPEN, VulnerabilityCaseType.FILE_OPERATION);
+			put(JAVA_NIO_UNIX_LINK, VulnerabilityCaseType.FILE_OPERATION);
+			put(JAVA_NIO_UNIX_UNLINK, VulnerabilityCaseType.FILE_OPERATION);
+			put(JAVA_NIO_UNIX_MKNOD, VulnerabilityCaseType.FILE_OPERATION);
+			put(JAVA_NIO_UNIX_RENAME, VulnerabilityCaseType.FILE_OPERATION);
+			put(JAVA_NIO_UNIX_MKDIR, VulnerabilityCaseType.FILE_OPERATION);
+			put(JAVA_NIO_UNIX_RMDIR, VulnerabilityCaseType.FILE_OPERATION);
+			put(JAVA_NIO_UNIX_SYMLINK, VulnerabilityCaseType.FILE_OPERATION);
+			put(JAVA_NIO_UNIX_CHOWN, VulnerabilityCaseType.FILE_OPERATION);
+			put(JAVA_NIO_UNIX_CHMOD, VulnerabilityCaseType.FILE_OPERATION);
+		}
+	};
 
 	Map<String, VulnerabilityCaseType> EXECUTORS = new HashMap<String, VulnerabilityCaseType>() {
 		/**
@@ -285,20 +311,7 @@ public interface IAgentConstants {
 			put(JDK_INCUBATOR_MULTIEXCHANGE_RESONSE_METHOD, VulnerabilityCaseType.HTTP_REQUEST);
 			put(JDK_INCUBATOR_MULTIEXCHANGE_RESONSE_ASYNC_METHOD, VulnerabilityCaseType.HTTP_REQUEST);
 
-			put(JAVA_IO_FILE_INPUTSTREAM_OPEN, VulnerabilityCaseType.FILE_OPERATION);
-			put(JAVA_IO_FILE_OUTPUTSTREAM_OPEN, VulnerabilityCaseType.FILE_OPERATION);
-
-			put(JAVA_NIO_UNIX_OPEN, VulnerabilityCaseType.FILE_OPERATION);
-			put(JAVA_NIO_UNIX_FOPEN, VulnerabilityCaseType.FILE_OPERATION);
-			put(JAVA_NIO_UNIX_LINK, VulnerabilityCaseType.FILE_OPERATION);
-			put(JAVA_NIO_UNIX_UNLINK, VulnerabilityCaseType.FILE_OPERATION);
-			put(JAVA_NIO_UNIX_MKNOD, VulnerabilityCaseType.FILE_OPERATION);
-			put(JAVA_NIO_UNIX_RENAME, VulnerabilityCaseType.FILE_OPERATION);
-			put(JAVA_NIO_UNIX_MKDIR, VulnerabilityCaseType.FILE_OPERATION);
-			put(JAVA_NIO_UNIX_RMDIR, VulnerabilityCaseType.FILE_OPERATION);
-			put(JAVA_NIO_UNIX_SYMLINK, VulnerabilityCaseType.FILE_OPERATION);
-			put(JAVA_NIO_UNIX_CHOWN, VulnerabilityCaseType.FILE_OPERATION);
-			put(JAVA_NIO_UNIX_CHMOD, VulnerabilityCaseType.FILE_OPERATION);
+			putAll(FILE_EXECUTORS);
 
 			put(APACHE_COMMONS_HTTP_METHOD_DIRECTOR_METHOD, VulnerabilityCaseType.HTTP_REQUEST);
 			put(OKHTTP_HTTP_ENGINE_METHOD, VulnerabilityCaseType.HTTP_REQUEST);

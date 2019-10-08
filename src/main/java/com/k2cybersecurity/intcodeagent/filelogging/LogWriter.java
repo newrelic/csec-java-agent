@@ -115,7 +115,19 @@ public class LogWriter implements Runnable {
 		if (this.logEntry != null)
 			sb.append(this.logEntry);
 		if (this.throwableLogEntry != null) {
+			sb.append(this.throwableLogEntry.getMessage());
+			sb.append(StringUtils.LF);
 			sb.append(StringUtils.join(this.throwableLogEntry.getStackTrace(), StringUtils.LF));
+			sb.append(StringUtils.LF);
+			Throwable cause = this.throwableLogEntry.getCause();
+			while (cause != null) {
+				sb.append("Caused by: ");
+				sb.append(this.throwableLogEntry.getCause().getMessage());
+				sb.append(StringUtils.LF);
+				sb.append(StringUtils.join(this.throwableLogEntry.getCause().getStackTrace(), StringUtils.LF));
+				sb.append(StringUtils.LF);
+				cause = cause.getCause();
+			}
 		}
 		sb.append(StringUtils.LF);
 		try {
@@ -142,7 +154,7 @@ public class LogWriter implements Runnable {
 			pw.close();
 
 			writer = new BufferedWriter(new FileWriter(currentLogFileName, true));
-			
+
 			int removeFile = logFileCounter - K2JALogProperties.maxfiles;
 			if (removeFile > 0) {
 				File remove = new File(fileName + STRING_DOT + removeFile);
@@ -161,7 +173,7 @@ public class LogWriter implements Runnable {
 				defaultLogLevel = currentLogLevel;
 			}
 		}, timeUnit.toMillis(duration));
-		
+
 	}
-	
+
 }

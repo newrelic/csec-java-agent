@@ -2,6 +2,7 @@ package com.k2cybersecurity.intcodeagent.logging;
 
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.*;
 
+import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -9,6 +10,7 @@ import java.net.URI;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -25,6 +27,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
+import com.k2cybersecurity.intcodeagent.models.javaagent.FileIntegrityBean;
 import com.k2cybersecurity.intcodeagent.models.javaagent.HttpRequestBean;
 import com.k2cybersecurity.intcodeagent.models.javaagent.JavaAgentDynamicPathBean;
 import com.k2cybersecurity.intcodeagent.models.javaagent.JavaAgentEventBean;
@@ -46,6 +49,9 @@ public class ProcessorThread implements Runnable {
 	private ObjectMapper mapper;
 	private JSONParser parser;
 	private Long preProcessingTime;
+	private HttpRequestBean httpRequest;
+	private FileIntegrityBean fileIntegrityBean;
+	private VulnerabilityCaseType vulnerabilityCaseType;
 
 	static {
 		PATTERN = Pattern.compile(IAgentConstants.TRACE_REGEX);
@@ -62,7 +68,7 @@ public class ProcessorThread implements Runnable {
 	 */
 
 	public ProcessorThread(Object source, Object[] arg, Long executionId, StackTraceElement[] stackTrace, long tId,
-			String sourceString, long preProcessingTime) {
+			String sourceString, long preProcessingTime, HttpRequestBean httpRequest) {
 		this.source = source;
 		this.arg = arg;
 		this.executionId = executionId;
@@ -72,6 +78,21 @@ public class ProcessorThread implements Runnable {
 		this.mapper = new ObjectMapper();
 		this.parser = new JSONParser();
 		this.preProcessingTime = preProcessingTime;
+		this.httpRequest = httpRequest;
+	}
+
+	public ProcessorThread(Object source, String[] arg, Long executionId, Long tId,
+			FileIntegrityBean fileIntegrityBean, HttpRequestBean httpRequest, VulnerabilityCaseType fileIntegrity) {
+		this.sourceString = JAVA_IO_FILE;
+		this.source = source;
+		this.arg = arg;
+		this.executionId = executionId;
+		this.threadId = tId;
+		this.mapper = new ObjectMapper();
+		this.parser = new JSONParser();
+		this.httpRequest = httpRequest;
+		this.fileIntegrityBean = fileIntegrityBean;
+		this.vulnerabilityCaseType = fileIntegrity;
 	}
 
 	/**
@@ -119,6 +140,10 @@ public class ProcessorThread implements Runnable {
 	@Override
 	public void run() {
 		try {
+			if (JAVA_IO_FILE.equals(sourceString)) {
+				generateFileIntegrityEvent();
+				return;
+			}
 			if (EXECUTORS.containsKey(sourceString)) {
 				long start = System.currentTimeMillis();
 
@@ -132,24 +157,7 @@ public class ProcessorThread implements Runnable {
 					intCodeResultBean.setValidationBypass(true);
 				}
 
-				// String methodName = null;
-//				List<TraceElement> stackTrace = new ArrayList<>();
-//				intCodeResultBean.setStacktrace(stackTrace);
 				StackTraceElement[] trace = this.stackTrace;
-
-//				for (int i = 0; i < trace.length; i++) {
-//					TraceElement traceEntry = new TraceElement();
-//					stackTrace.add(traceEntry);
-//					traceEntry.setClassName(trace[i].getClassName());
-//					traceEntry.setMethodName(trace[i].getMethodName());
-//					traceEntry.setLineNumber(trace[i].getLineNumber());
-//					klassName = traceEntry.getClassName();
-//					if (IAgentConstants.MYSQL_GET_CONNECTION_MAP.containsKey(klassName)
-//							&& IAgentConstants.MYSQL_GET_CONNECTION_MAP.get(klassName)
-//									.contains(trace[i].getMethodName())) {
-//						intCodeResultBean.setValidationBypass(true);
-//					}
-//				}
 
 				String lastNonJavaClass = StringUtils.EMPTY;
 				String lastNonJavaMethod = StringUtils.EMPTY;
@@ -166,6 +174,7 @@ public class ProcessorThread implements Runnable {
 				}
 
 				for (int i = 0; i < trace.length; i++) {
+					int lineNumber = trace[i].getLineNumber();
 					klassName = trace[i].getClassName();
 					if (IAgentConstants.MYSQL_GET_CONNECTION_MAP.containsKey(klassName)
 							&& IAgentConstants.MYSQL_GET_CONNECTION_MAP.get(klassName)
@@ -174,12 +183,13 @@ public class ProcessorThread implements Runnable {
 						LoggingInterceptor.JA_HEALTH_CHECK.incrementDropCount();
 						return;
 					}
+					if (lineNumber <= 0)
+						continue;
 					Matcher matcher = PATTERN.matcher(klassName);
 					if (!matcher.matches()) {
 						if (params != null) {
 							intCodeResultBean.setParameters(params);
-							intCodeResultBean.setUserAPIInfo(trace[i].getLineNumber(), klassName,
-									trace[i].getMethodName());
+							intCodeResultBean.setUserAPIInfo(lineNumber, klassName, trace[i].getMethodName());
 							if (i > 0)
 								intCodeResultBean.setCurrentMethod(trace[i - 1].getMethodName());
 						} else {
@@ -188,9 +198,9 @@ public class ProcessorThread implements Runnable {
 						}
 						break;
 					} else if (StringUtils.isNotBlank(matcher.group(5))) {
-							lastNonJavaClass = trace[i].getClassName();
-							lastNonJavaMethod = trace[i].getMethodName();
-							lastNonJavaLineNumber = trace[i].getLineNumber();
+						lastNonJavaClass = trace[i].getClassName();
+						lastNonJavaMethod = trace[i].getMethodName();
+						lastNonJavaLineNumber = trace[i].getLineNumber();
 					}
 				}
 				if (intCodeResultBean.getUserFileName() != null && !intCodeResultBean.getUserFileName().isEmpty()) {
@@ -212,10 +222,29 @@ public class ProcessorThread implements Runnable {
 				}
 			}
 		} catch (Exception e) {
-			logger.log(LogLevel.WARNING, "Error in run: " , e, ProcessorThread.class.getName());
+			logger.log(LogLevel.WARNING, "Error in run: ", e, ProcessorThread.class.getName());
 		} finally {
 			ServletEventPool.getInstance().decrementServletInfoReference(threadId, executionId, true);
 		}
+	}
+
+	private void generateFileIntegrityEvent() {
+		long start = System.currentTimeMillis();
+		JavaAgentEventBean intCodeResultBean = new JavaAgentEventBean(start, preProcessingTime, sourceString,
+				LoggingInterceptor.VMPID, LoggingInterceptor.applicationUUID,
+				this.threadId + IAgentConstants.COLON_SEPERATOR + this.executionId,
+				VulnerabilityCaseType.FILE_OPERATION);
+		JSONArray param = new JSONArray();
+		param.add(arg[0]);
+		intCodeResultBean.setParameters(param);
+		intCodeResultBean.setUserAPIInfo(fileIntegrityBean.getLineNumber(), fileIntegrityBean.getUserFileName(), fileIntegrityBean.getUserMethodName());
+		intCodeResultBean.setCurrentMethod(fileIntegrityBean.getCurrentMethod());
+		intCodeResultBean.setCaseType(this.vulnerabilityCaseType.getCaseType());
+		intCodeResultBean.setHttpRequest(new HttpRequestBean(this.httpRequest));
+		intCodeResultBean.setEventGenerationTime(System.currentTimeMillis());
+		intCodeResultBean.getHttpRequest().clearRawRequest();
+		EventSendPool.getInstance().sendEvent(intCodeResultBean.toString());
+		LoggingInterceptor.JA_HEALTH_CHECK.incrementEventSentCount();
 	}
 
 	private boolean allowedExtensionFileIO(JSONArray params) {
@@ -386,7 +415,7 @@ public class ProcessorThread implements Runnable {
 			parameters.add(String.valueOf(arg[sqlObjectLocation]));
 
 		} catch (Exception e) {
-			logger.log(LogLevel.WARNING, "Error in getMySQLParameterValue: " , e, ProcessorThread.class.getName());
+			logger.log(LogLevel.WARNING, "Error in getMySQLParameterValue: ", e, ProcessorThread.class.getName());
 		}
 	}
 
@@ -652,7 +681,7 @@ public class ProcessorThread implements Runnable {
 
 			}
 		} catch (Exception e) {
-			logger.log(LogLevel.WARNING, "Error in getOracleParameterValue: " , e, ProcessorThread.class.getName());
+			logger.log(LogLevel.WARNING, "Error in getOracleParameterValue: ", e, ProcessorThread.class.getName());
 		}
 		return parameters;
 	}
@@ -956,10 +985,15 @@ public class ProcessorThread implements Runnable {
 	}
 
 	private void generateEvent(JavaAgentEventBean intCodeResultBean) {
+
+		if (VulnerabilityCaseType.FILE_OPERATION.getCaseType().equals(intCodeResultBean.getCaseType())) {
+			assignUserModuleInfo(intCodeResultBean);
+		}
+
 		intCodeResultBean.setEventGenerationTime(System.currentTimeMillis());
-		if (intCodeResultBean.getSourceMethod() != null
-				&& (intCodeResultBean.getSourceMethod().equals(IAgentConstants.JAVA_NET_URLCLASSLOADER)
-						|| intCodeResultBean.getSourceMethod().equals(IAgentConstants.JAVA_NET_URLCLASSLOADER_NEWINSTANCE))) {
+		if (intCodeResultBean.getSourceMethod() != null && (intCodeResultBean.getSourceMethod()
+				.equals(IAgentConstants.JAVA_NET_URLCLASSLOADER)
+				|| intCodeResultBean.getSourceMethod().equals(IAgentConstants.JAVA_NET_URLCLASSLOADER_NEWINSTANCE))) {
 			try {
 				JSONArray agentJarPaths = new JSONArray();
 				agentJarPaths.addAll(Agent.jarPathSet);
@@ -980,8 +1014,7 @@ public class ProcessorThread implements Runnable {
 			try {
 //				logger.log(LogLevel.INFO, "Generating event : " + intCodeResultBean,
 //						ProcessorThread.class.getName());
-				intCodeResultBean.setHttpRequest(new HttpRequestBean(ExecutionMap.find(this.executionId,
-						ServletEventPool.getInstance().getRequestMap().get(this.threadId))));
+				intCodeResultBean.setHttpRequest(new HttpRequestBean(this.httpRequest));
 //				logger.log(LogLevel.INFO,"Generating event1 : "+ intCodeResultBean, ProcessorThread.class.getName());
 				if (intCodeResultBean.getCaseType().equals(VulnerabilityCaseType.HTTP_REQUEST.getCaseType())) {
 					boolean validationResult = partialSSRFValidator(intCodeResultBean);
@@ -1005,6 +1038,17 @@ public class ProcessorThread implements Runnable {
 			}
 
 		}
+	}
+
+	private void assignUserModuleInfo(JavaAgentEventBean intCodeResultBean) {
+		HttpRequestBean httpRequestBean = this.httpRequest;
+		String filePath = intCodeResultBean.getParameters().get(0).toString();
+		if (httpRequestBean.getFileExist().containsKey(filePath)) {
+			httpRequestBean.getFileExist().get(filePath).setBeanValues(intCodeResultBean.getSourceMethod(),
+					intCodeResultBean.getUserFileName(), intCodeResultBean.getUserMethodName(),
+					intCodeResultBean.getCurrentMethod(), intCodeResultBean.getLineNumber());
+		}
+
 	}
 
 	private boolean partialSSRFValidator(JavaAgentEventBean intCodeResultBean) {
