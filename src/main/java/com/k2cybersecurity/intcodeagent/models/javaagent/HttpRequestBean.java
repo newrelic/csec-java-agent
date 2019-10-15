@@ -211,7 +211,7 @@ public class HttpRequestBean {
 	}
 
 	public void populateHttpRequest() {
-		this.setRawRequest(StringEscapeUtils.unescapeJava(this.getRawRequest()));
+//		this.setRawRequest(StringEscapeUtils.unescapeJava(this.getRawRequest()));
 		String[] components = splitRequestComponents();
 		if (components == null || components.length == 0) {
 			logger.log(LogLevel.ERROR, GOT_EMPTY_COMPONENT_LIST_FROM_RAW_REQUEST, this.getClass().getName());
