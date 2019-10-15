@@ -53,8 +53,8 @@ public class LogWriter implements Runnable {
 
 	static {
 		fileName = "/etc/k2-adp/logs/k2_java_agent-" + Agent.APPLICATION_UUID + ".log";
-		currentLogFileName = fileName + STRING_DOT + logFileCounter;
-		currentLogFile = new File(currentLogFileName);
+		currentLogFile = new File(fileName);
+		currentLogFileName = fileName;
 		try {
 			writer = new BufferedWriter(new FileWriter(currentLogFileName, true));
 			maxFileSize = K2JALogProperties.maxfilesize * 1048576;
