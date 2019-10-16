@@ -31,7 +31,9 @@ public class AgentUtils {
 		case IntCodeControlCommand.SHUTDOWN_LANGUAGE_AGENT:
 			LoggingInterceptor.shutdownLogic(Runtime.getRuntime(), Agent.classTransformer);
 			break;
-
+		case IntCodeControlCommand.SET_DEFAULT_LOG_LEVEL:
+			LogLevel logLevel = LogLevel.valueOf(controlCommand.getArguements().get(0));
+			LogWriter.setLogLevel(logLevel);
 		default:
 			break;
 		}

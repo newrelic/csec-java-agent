@@ -175,5 +175,8 @@ public class LogWriter implements Runnable {
 		}, timeUnit.toMillis(duration));
 
 	}
+	public static void setLogLevel(LogLevel logLevel) {
+		defaultLogLevel = logLevel.getLevel();
+	}
 
 }

@@ -10,6 +10,7 @@ public class IntCodeControlCommand {
 	
 	public static final int CHANGE_LOG_LEVEL = 0;
 	public static final int SHUTDOWN_LANGUAGE_AGENT = 1;
+	public static final int SET_DEFAULT_LOG_LEVEL = 2;
 	
 	private String jsonName;
 	private int controlCommand;
