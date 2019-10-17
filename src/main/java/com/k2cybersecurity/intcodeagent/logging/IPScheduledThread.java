@@ -12,6 +12,8 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.models.javaagent.JAHealthCheck;
@@ -65,7 +67,7 @@ public class IPScheduledThread {
 					} catch (Exception e) {
 						logger.log(LogLevel.WARNING, "Error while trying to verify connection: ", e, IPScheduledThread.class.getName());
 					}
-					if (hostip == null || hostip.equals("")) {
+					if (hostip == null || hostip.equals(StringUtils.EMPTY)) {
 						logger.log(LogLevel.DEBUG, "Host ip not found", IPScheduledThread.class.getName());
 					} else if (!LoggingInterceptor.hostip.equals(hostip)) {
 						LoggingInterceptor.hostip = hostip.trim();
