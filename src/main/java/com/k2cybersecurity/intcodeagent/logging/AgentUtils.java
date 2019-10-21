@@ -24,14 +24,16 @@ public class AgentUtils {
 				TimeUnit timeUnit = TimeUnit.valueOf(controlCommand.getArguements().get(2));
 				LogWriter.updateLogLevel(logLevel, timeUnit, duration);
 			} catch (Exception e) {
-				logger.log(LogLevel.SEVERE, e.toString(), AgentUtils.class.getSimpleName());
+				logger.log(LogLevel.SEVERE, "Error in controlCommandProcessor : ", e, AgentUtils.class.getSimpleName());
 			}
 			break;
 
 		case IntCodeControlCommand.SHUTDOWN_LANGUAGE_AGENT:
 			LoggingInterceptor.shutdownLogic(Runtime.getRuntime(), Agent.classTransformer);
 			break;
-
+		case IntCodeControlCommand.SET_DEFAULT_LOG_LEVEL:
+			LogLevel logLevel = LogLevel.valueOf(controlCommand.getArguements().get(0));
+			LogWriter.setLogLevel(logLevel);
 		default:
 			break;
 		}

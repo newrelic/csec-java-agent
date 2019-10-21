@@ -11,6 +11,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
+import com.k2cybersecurity.intcodeagent.models.javaagent.FileIntegrityBean;
+import com.k2cybersecurity.intcodeagent.models.javaagent.HttpRequestBean;
+import com.k2cybersecurity.intcodeagent.models.javaagent.VulnerabilityCaseType;
 
 public class EventThreadPool {
 
@@ -86,7 +89,8 @@ public class EventThreadPool {
 					executor.shutdownNow(); // cancel currently executing tasks
 
 					if (!executor.awaitTermination(1, TimeUnit.SECONDS)) {
-						logger.log(LogLevel.SEVERE, "Thread pool executor did not terminate", EventThreadPool.class.getName());
+						logger.log(LogLevel.SEVERE, "Thread pool executor did not terminate",
+								EventThreadPool.class.getName());
 					}
 				}
 			} catch (InterruptedException e) {
@@ -134,15 +138,31 @@ public class EventThreadPool {
 	}
 
 	public void processReceivedEvent(Object source, Object[] arg, Long executionId, StackTraceElement[] stackTrace,
-			long tId, String sourceString, long preProcessingTime) {
+			long tId, String sourceString, long preProcessingTime, HttpRequestBean httpRequest) {
 		try {
-			this.executor.execute(
-					new ProcessorThread(source, arg, executionId, stackTrace, tId, sourceString, preProcessingTime));
+			this.executor.execute(new ProcessorThread(source, arg, executionId, stackTrace, tId, sourceString,
+					preProcessingTime, httpRequest));
 		} catch (RejectedExecutionException rejected) {
-			logger.log(LogLevel.INFO, "Rejected to process Event At: " + this.executor.getQueue().size() + ": " +rejected, EventThreadPool.class.getName());
+			logger.log(LogLevel.INFO, "Rejected to process Event At: " + this.executor.getQueue().size() + ": ",
+					rejected, EventThreadPool.class.getName());
 		} catch (Exception e) {
-			logger.log(LogLevel.WARNING, "Error in processReceivedEvent: "+ e, EventThreadPool.class.getName());
+			logger.log(LogLevel.WARNING, "Error in processReceivedEvent: ", e, EventThreadPool.class.getName());
 		}
+	}
+
+	public void processReceivedEvent(Object source, String[] arg, Long executionId, Long threadId,
+			FileIntegrityBean fileIntegrityBean, long preProcessingTime, HttpRequestBean httpRequest,
+			VulnerabilityCaseType vulnerabilityCaseType) {
+		try {
+			this.executor.execute(new ProcessorThread(source, arg, executionId, threadId, fileIntegrityBean,
+					httpRequest, vulnerabilityCaseType));
+		} catch (RejectedExecutionException rejected) {
+			logger.log(LogLevel.INFO, "Rejected to process Event At: " + this.executor.getQueue().size() + ": ",
+					rejected, EventThreadPool.class.getName());
+		} catch (Exception e) {
+			logger.log(LogLevel.WARNING, "Error in processReceivedEvent: ", e, EventThreadPool.class.getName());
+		}
+
 	}
 
 	protected boolean isQueueEmpty() {

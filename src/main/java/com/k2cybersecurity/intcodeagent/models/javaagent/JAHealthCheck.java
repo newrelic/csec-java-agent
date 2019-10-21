@@ -30,18 +30,21 @@ public class JAHealthCheck extends AgentBasicInfo{
 
 	private AtomicInteger eventDropCount;
 
-	private JSONArray jarPaths;
-	
     private Boolean isHost;
     
     private AtomicInteger eventProcessed;
     
     private AtomicInteger eventSentCount;
 
+
+
+	private Boolean fileAccessProtection;
+
 	public JAHealthCheck(String applicationUUID) {
 		super();
 		this.rceProtection = false;
 		this.ssrfProtection = false;
+		this.fileAccessProtection = false;
 		this.applicationUUID = applicationUUID;
 		this.eventDropCount = new AtomicInteger(0);
 		this.eventProcessed = new AtomicInteger(0);
@@ -49,7 +52,7 @@ public class JAHealthCheck extends AgentBasicInfo{
 		this.setInstrumentedMethods(new JSONArray());
 		this.setProtectedDB(new JSONArray());
 		this.setIsHost(LoggingInterceptor.APPLICATION_INFO_BEAN.getIsHost());
-		this.setJarPath();
+		this.setLibPath();
 		logger.log(LogLevel.INFO,"JA Healthcheck created : "+ this.toString(), JAHealthCheck.class.getName());
 	}
 
@@ -64,8 +67,9 @@ public class JAHealthCheck extends AgentBasicInfo{
 		this.eventProcessed = jaHealthCheck.eventProcessed;
 		this.eventSentCount = jaHealthCheck.eventSentCount;
 		this.ssrfProtection = jaHealthCheck.ssrfProtection;
+		this.fileAccessProtection = jaHealthCheck.fileAccessProtection;
 		this.isHost = jaHealthCheck.isHost;
-		this.setJarPath();
+		this.setLibPath();
 		logger.log(LogLevel.INFO,"JA Healthcheck created : "+ this.toString(), JAHealthCheck.class.getName());
 	}
 
@@ -109,6 +113,7 @@ public class JAHealthCheck extends AgentBasicInfo{
 	 */
 	public void setProtectedServer(String protectedServer) {
 		this.protectedServer = protectedServer;
+		LoggingInterceptor.APPLICATION_INFO_BEAN.getServerInfo().setName(protectedServer);
 	}
 
 	/**
@@ -183,21 +188,7 @@ public class JAHealthCheck extends AgentBasicInfo{
 		this.eventSentCount.getAndDecrement();
 	}
 
-	/**
-	 * @return the jarPaths
-	 */
-	public JSONArray getJarPaths() {
-		return jarPaths;
-	}
-
-	/**
-	 * @param jarPaths the jarPaths to set
-	 */
-	public void setJarPaths(JSONArray jarPaths) {
-		this.jarPaths = jarPaths;
-	}
-
-	public void setJarPath() {
+	public void setLibPath() {
 		if (Agent.allClassLoaders.size() != Agent.allClassLoadersCount.get()) {
 			int lastJarSetSize = Agent.jarPathSet.size();
 			for (ClassLoader loader : Agent.allClassLoaders) {
@@ -209,16 +200,16 @@ public class JAHealthCheck extends AgentBasicInfo{
 						}
 					} 
 				} catch (Exception e1) {
-					logger.log(LogLevel.WARNING,"Exception in setJarPath : "+ e1, JAHealthCheck.class.getName());
+					logger.log(LogLevel.WARNING,"Exception in setLibPath : ", e1, JAHealthCheck.class.getName());
 				} catch (Throwable e) {
-					logger.log(LogLevel.WARNING,"Throwable in setJarPath : "+ e, JAHealthCheck.class.getName());
+					logger.log(LogLevel.WARNING,"Throwable in setLibPath : ", e, JAHealthCheck.class.getName());
 				}
 			}
 			if (Agent.jarPathSet.size() != lastJarSetSize) {
 				JSONArray jarSet = new JSONArray();
 				jarSet.addAll(Agent.jarPathSet);
-				this.setJarPaths(jarSet);
 				Agent.allClassLoadersCount.set(Agent.allClassLoaders.size());
+				LoggingInterceptor.updateServerInfo();
 			}
 		}
 	}
@@ -270,4 +261,11 @@ public class JAHealthCheck extends AgentBasicInfo{
 		this.eventSentCount.set(eventSentCount);
 	}
 
+	public Boolean getFileAccessProtection() {
+		return fileAccessProtection;
+	}
+
+	public void setFileAccessProtection(Boolean fileAccessProtection) {
+		this.fileAccessProtection = fileAccessProtection;
+	}
 }

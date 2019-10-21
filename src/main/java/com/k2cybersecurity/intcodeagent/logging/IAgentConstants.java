@@ -11,10 +11,14 @@ import com.k2cybersecurity.intcodeagent.models.javaagent.VulnerabilityCaseType;
 
 public interface IAgentConstants {
 
-	public static final String CLASS_WEBLOGIC_SERVLET_INTERNAL_WEB_APP_SERVLET_CONTEXT = "weblogic/servlet/internal/WebAppServletContext";
+	String CLASS_WEBLOGIC_SERVLET_INTERNAL_WEB_APP_SERVLET_CONTEXT = "weblogic/servlet/internal/WebAppServletContext";
 
-	String TRACE_REGEX = "(?!(org\\.apache\\.jsp.*))((^javax.*)|(^org\\.apache.*)|(^sun.*)|(^java.*)|(^k2\\.org\\.brutusin.*)|(^com\\.k2cybersecurity\\.intcodeagent.*)|(^k2\\.io\\.org.*)|(^com\\.microsoft\\.sqlserver.*)|(^com\\.mysql.*)|(^sun\\.reflect.*)|(^org\\.hibernate.*)|(^com\\.mongodb.*)|(^org\\.apache\\.commons.*)|(^org\\.mongodb.*)|(^com\\.sun.*)|(^org\\.eclipse\\.jetty.*)|(^net\\.sourceforge\\.eclipsejetty.*)|(^org\\.springframework.*)|(^org\\.slf4j.*)|(^org\\.eclipse\\.jdt.*)|(^com\\.opensymphony\\.xwork2.*)|(^k2\\.org\\.objectweb\\.asm.*)|(^weblogic\\..*)|(^freemarker\\.cache.*)|(^com\\.mchange.*)|(^org\\.postgresql.*)|(^oracle\\.jdbc.*)|(^org\\.hsqldb.*)|(^ch\\.qos\\.logback.*)|(^io\\.micrometer.*)|(^k2\\.org\\.json.*)|(^k2\\.com\\.fasterxml.*)|(^jdk\\..*))|(^com\\.ibm\\.ws.*)|(^io\\.undertow\\.*)|(^org\\.jboss\\.*)|(^org\\.wildfly\\.*)";
+	String TRACE_REGEX = "^((?!(org\\.apache\\.jsp))((sun|java|javax|com\\.sun|jdk)|(org\\.apache|k2\\.org\\.brutusin|com\\.k2cybersecurity\\.intcodeagent|k2\\.io\\.org|com\\.microsoft\\.sqlserver|com\\.mysql|sun\\.reflect|org\\.hibernate|com\\.mongodb|org\\.apache\\.commons|org\\.mongodb|org\\.eclipse\\.jetty|net\\.sourceforge\\.eclipsejetty|org\\.springframework|org\\.slf4j|org\\.eclipse\\.jdt|com\\.opensymphony\\.xwork2|k2\\.org\\.objectweb\\.asm|weblogic\\.|freemarker\\.cache|com\\.mchange|org\\.postgresql|oracle\\.jdbc|org\\.hsqldb|ch\\.qos\\.logback|io\\.micrometer|k2\\.org\\.json|k2\\.com\\.fasterxml|com\\.ibm\\.ws|io\\.undertow|org\\.jboss|org\\.wildfly)))\\..*";
 
+	List<String> ALLOWED_EXTENSIONS = Arrays.asList(new String[] {"css", "html", "htm", "jsp", "js", "classtmp"});
+
+	List<String> SOURCE_EXENSIONS = Arrays.asList(new String[] {"class", "jsp", "jar", "java"});
+	
 	// HSQL
 	String CLASS_ORG_HSQLDB_HSQL_CLIENT_CONNECTION = "org/hsqldb/HSQLClientConnection";
 	String CLASS_ORG_HSQLDB_SESSION = "org/hsqldb/Session";
@@ -33,7 +37,7 @@ public interface IAgentConstants {
 
 	// ORACLE
 	String CLASS_ORACLE_JDBC_DRIVER_T4CTT_IFUN = "oracle/jdbc/driver/T4CTTIfun";
-	
+
 	// Oracle Weblogic
 	String CLASS_WEBLOGIC_SERVLET_INTERNAL_STUBSECURITYHELPER = "weblogic/servlet/internal/StubSecurityHelper";
 
@@ -124,10 +128,25 @@ public interface IAgentConstants {
 	String CLASS_JDK_INCUBATOR_HTTP_MULTIEXCHANGE = "jdk/incubator/http/MultiExchange";
 	String JDK_INCUBATOR_MULTIEXCHANGE_RESONSE_METHOD = "public jdk.incubator.http.HttpResponseImpl<T> jdk.incubator.http.MultiExchange.response() throws java.io.IOException,java.lang.InterruptedException";
 	String JDK_INCUBATOR_MULTIEXCHANGE_RESONSE_ASYNC_METHOD = "public java.util.concurrent.CompletableFuture<jdk.incubator.http.HttpResponseImpl<T>> jdk.incubator.http.MultiExchange.responseAsync()";
-	
+
+	String JAVA_IO_FILE_INPUTSTREAM_OPEN = "private void java.io.FileInputStream.open(java.lang.String) throws java.io.FileNotFoundException";
+	String JAVA_IO_FILE_OUTPUTSTREAM_OPEN = "private void java.io.FileOutputStream.open(java.lang.String,boolean) throws java.io.FileNotFoundException";
+
+	String JAVA_NIO_UNIX_OPEN = "static int sun.nio.fs.UnixNativeDispatcher.open(sun.nio.fs.UnixPath,int,int) throws sun.nio.fs.UnixException";
+	String JAVA_NIO_UNIX_FOPEN = "static long sun.nio.fs.UnixNativeDispatcher.fopen(sun.nio.fs.UnixPath,java.lang.String) throws sun.nio.fs.UnixException";
+	String JAVA_NIO_UNIX_LINK = "static void sun.nio.fs.UnixNativeDispatcher.link(sun.nio.fs.UnixPath,sun.nio.fs.UnixPath) throws sun.nio.fs.UnixException";
+	String JAVA_NIO_UNIX_UNLINK = "static void sun.nio.fs.UnixNativeDispatcher.unlink(sun.nio.fs.UnixPath) throws sun.nio.fs.UnixException";
+	String JAVA_NIO_UNIX_MKNOD = "static void sun.nio.fs.UnixNativeDispatcher.mknod(sun.nio.fs.UnixPath,int,long) throws sun.nio.fs.UnixException";
+	String JAVA_NIO_UNIX_RENAME = "static void sun.nio.fs.UnixNativeDispatcher.rename(sun.nio.fs.UnixPath,sun.nio.fs.UnixPath) throws sun.nio.fs.UnixException";
+	String JAVA_NIO_UNIX_MKDIR = "static void sun.nio.fs.UnixNativeDispatcher.mkdir(sun.nio.fs.UnixPath,int) throws sun.nio.fs.UnixException";
+	String JAVA_NIO_UNIX_RMDIR = "static void sun.nio.fs.UnixNativeDispatcher.rmdir(sun.nio.fs.UnixPath) throws sun.nio.fs.UnixException";
+	String JAVA_NIO_UNIX_SYMLINK = "static void sun.nio.fs.UnixNativeDispatcher.symlink(byte[],sun.nio.fs.UnixPath) throws sun.nio.fs.UnixException";
+	String JAVA_NIO_UNIX_CHOWN = "static void sun.nio.fs.UnixNativeDispatcher.chown(sun.nio.fs.UnixPath,int,int) throws sun.nio.fs.UnixException";
+	String JAVA_NIO_UNIX_CHMOD = "static void sun.nio.fs.UnixNativeDispatcher.chmod(sun.nio.fs.UnixPath,int) throws sun.nio.fs.UnixException";
+
 	String CLASS_APACHE_COMMONS_HTTP_METHOD_DIRECTOR = "org/apache/commons/httpclient/HttpMethodDirector";
 	String APACHE_COMMONS_HTTP_METHOD_DIRECTOR_METHOD = "private void org.apache.commons.httpclient.HttpMethodDirector.executeWithRetry(org.apache.commons.httpclient.HttpMethod) throws java.io.IOException,org.apache.commons.httpclient.HttpException";
-	
+
 	String CLASS_OKHTTP_HTTP_ENGINE = "com/squareup/okhttp/internal/http/HttpEngine";
 	String OKHTTP_HTTP_ENGINE_METHOD = "public void com.squareup.okhttp.internal.http.HttpEngine.sendRequest() throws com.squareup.okhttp.internal.http.RequestException,com.squareup.okhttp.internal.http.RouteException,java.io.IOException";
 
@@ -135,7 +154,7 @@ public interface IAgentConstants {
 	String WEBLOGIC_OPEN_CONNECTION_METHOD = "protected java.net.URLConnection weblogic.net.http.Handler.openConnection(java.net.URL,java.net.Proxy) throws java.io.IOException";
 
 	List<String> FILE_OPEN_EXECUTORS = Arrays.asList(new String[] {
-			"public java.io.File(java.lang.String,java.lang.String)", "public java.io.File(java.lang.String)" });
+			JAVA_IO_FILE_INPUTSTREAM_OPEN, JAVA_IO_FILE_OUTPUTSTREAM_OPEN });
 
 	Map<String, List<String>> MYSQL_GET_CONNECTION_MAP = new HashMap<String, List<String>>() {
 		/**
@@ -202,6 +221,30 @@ public interface IAgentConstants {
 	String HSQL_V1_8_SESSION = "public org.hsqldb.Result org.hsqldb.Session.execute(org.hsqldb.Result)";
 
 	// MSSQL
+	
+	Map<String, VulnerabilityCaseType> FILE_EXECUTORS = new HashMap<String, VulnerabilityCaseType>() {
+
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 7816336042321299035L;
+		{
+			put(JAVA_IO_FILE_INPUTSTREAM_OPEN, VulnerabilityCaseType.FILE_OPERATION);
+			put(JAVA_IO_FILE_OUTPUTSTREAM_OPEN, VulnerabilityCaseType.FILE_OPERATION);
+
+			put(JAVA_NIO_UNIX_OPEN, VulnerabilityCaseType.FILE_OPERATION);
+			put(JAVA_NIO_UNIX_FOPEN, VulnerabilityCaseType.FILE_OPERATION);
+			put(JAVA_NIO_UNIX_LINK, VulnerabilityCaseType.FILE_OPERATION);
+			put(JAVA_NIO_UNIX_UNLINK, VulnerabilityCaseType.FILE_OPERATION);
+			put(JAVA_NIO_UNIX_MKNOD, VulnerabilityCaseType.FILE_OPERATION);
+			put(JAVA_NIO_UNIX_RENAME, VulnerabilityCaseType.FILE_OPERATION);
+			put(JAVA_NIO_UNIX_MKDIR, VulnerabilityCaseType.FILE_OPERATION);
+			put(JAVA_NIO_UNIX_RMDIR, VulnerabilityCaseType.FILE_OPERATION);
+			put(JAVA_NIO_UNIX_SYMLINK, VulnerabilityCaseType.FILE_OPERATION);
+			put(JAVA_NIO_UNIX_CHOWN, VulnerabilityCaseType.FILE_OPERATION);
+			put(JAVA_NIO_UNIX_CHMOD, VulnerabilityCaseType.FILE_OPERATION);
+		}
+	};
 
 	Map<String, VulnerabilityCaseType> EXECUTORS = new HashMap<String, VulnerabilityCaseType>() {
 		/**
@@ -267,6 +310,9 @@ public interface IAgentConstants {
 			put(JAVA_OPEN_CONNECTION_METHOD2_HTTPS_2, VulnerabilityCaseType.HTTP_REQUEST);
 			put(JDK_INCUBATOR_MULTIEXCHANGE_RESONSE_METHOD, VulnerabilityCaseType.HTTP_REQUEST);
 			put(JDK_INCUBATOR_MULTIEXCHANGE_RESONSE_ASYNC_METHOD, VulnerabilityCaseType.HTTP_REQUEST);
+
+			putAll(FILE_EXECUTORS);
+
 			put(APACHE_COMMONS_HTTP_METHOD_DIRECTOR_METHOD, VulnerabilityCaseType.HTTP_REQUEST);
 			put(OKHTTP_HTTP_ENGINE_METHOD, VulnerabilityCaseType.HTTP_REQUEST);
 			put(WEBLOGIC_OPEN_CONNECTION_METHOD, VulnerabilityCaseType.HTTP_REQUEST);
@@ -281,6 +327,9 @@ public interface IAgentConstants {
 
 	String[] CONSTRUCTOR = { "<init>" };
 
+	String CLASS_JAVA_IO_FILE_OUTPUT_STREAM = "java/io/FileOutputStream";
+	String CLASS_JAVA_IO_FILE_INPUT_STREAM = "java/io/FileInputStream";
+	String CLASS_SUN_NIO_FS_UNIX_NATIVE_DISPATCHER = "sun/nio/fs/UnixNativeDispatcher";
 	Map<String, List<String>> INSTRUMENTED_METHODS = new HashMap<String, List<String>>() {
 		private static final long serialVersionUID = -7680282029242613768L;
 
@@ -326,6 +375,12 @@ public interface IAgentConstants {
 			put(CLASS_APACHE_COMMONS_HTTP_METHOD_DIRECTOR, Collections.singletonList("executeWithRetry"));
 			put(CLASS_OKHTTP_HTTP_ENGINE, Collections.singletonList("sendRequest"));
 			put(CLASS_WEBLOGIC_HTTP_HANDLER, Collections.singletonList("openConnection"));
+			put(CLASS_JAVA_IO_FILE_OUTPUT_STREAM, Collections.singletonList("open"));
+			put(CLASS_JAVA_IO_FILE_INPUT_STREAM, Collections.singletonList("open"));
+
+			put(CLASS_SUN_NIO_FS_UNIX_NATIVE_DISPATCHER, Arrays.asList(new String[] {"open", "fopen", "link", "unlink", "mknod", "rename", "mkdir", "rmdir", "symlink", "chown", "chmod"}));
+
+			put("org/xnio/XnioWorker", Collections.singletonList("execute"));
 		}
 	};
 
@@ -351,7 +406,8 @@ public interface IAgentConstants {
 	
 	/** JBoss constants*/
 	String JBOSS_WILDFLY_HTTP_REQUEST_PARSER_HANDLE = "public void io.undertow.server.protocol.http.HttpRequestParser.handle(java.nio.ByteBuffer,io.undertow.server.protocol.http.ParseState,io.undertow.server.HttpServerExchange) throws io.undertow.util.BadRequestException";
-//	String PUBLIC_VOID_ORG_JBOSS_THREADS_CONTEXT_CLASS_LOADER_SAVING_RUNNABLE_RUN = "public void org.jboss.threads.ContextClassLoaderSavingRunnable.run()";
+	String JBOSS_WILDFLY_HTTP_REQUEST_PARSER_HANDLE_2 = "public void io.undertow.server.protocol.http.HttpRequestParser.handle(java.nio.ByteBuffer,io.undertow.server.protocol.http.ParseState,io.undertow.server.HttpServerExchange)";
+	//	String PUBLIC_VOID_ORG_JBOSS_THREADS_CONTEXT_CLASS_LOADER_SAVING_RUNNABLE_RUN = "public void org.jboss.threads.ContextClassLoaderSavingRunnable.run()";
 	String PUBLIC_VOID_IO_UNDERTOW_SERVLET_HANDLERS_SERVLET_HANDLER_HANDLE_REQUEST_IO_UNDERTOW_SERVER_HTTP_SERVER_EXCHANGE_THROWS_JAVA_IO_IO_EXCEPTION_JAVAX_SERVLET_SERVLET_EXCEPTION = "public void io.undertow.servlet.handlers.ServletHandler.handleRequest(io.undertow.server.HttpServerExchange) throws java.io.IOException,javax.servlet.ServletException";
 
 	String PRIVATE_INT_ORG_JBOSS_THREADS_ENHANCED_QUEUE_EXECUTOR_TRY_EXECUTE_JAVA_LANG_RUNNABLE = "private int org.jboss.threads.EnhancedQueueExecutor.tryExecute(java.lang.Runnable)";
@@ -366,10 +422,20 @@ public interface IAgentConstants {
 	String ORG_JBOSS_THREADS_ENHANCED_QUEUE_EXECUTOR$_POOL_THREAD_NODE = "org.jboss.threads.EnhancedQueueExecutor$PoolThreadNode";
 	String ORG_JBOSS_THREADS_ENHANCED_QUEUE_EXECUTOR$_TASK_NODE = "org.jboss.threads.EnhancedQueueExecutor$TaskNode";
 	String ORG_JBOSS_THREADS_ENHANCED_QUEUE_EXECUTOR = "org.jboss.threads.EnhancedQueueExecutor";
+	String TAIL = "tail";
+	String FIRST_WAITER = "firstWaiter";
+	String NOT_EMPTY = "notEmpty";
+	String TASK_QUEUE = "taskQueue";
+	String ORG_XNIO_XNIO_WORKER = "org.xnio.XnioWorker";
+	String PUBLIC_VOID_ORG_XNIO_XNIO_WORKER_EXECUTE_JAVA_LANG_RUNNABLE = "public void org.xnio.XnioWorker.execute(java.lang.Runnable)";
+
+
+
 	String WEBLOGIC_INVOKE_SERVLET = "public java.lang.Throwable weblogic.servlet.internal.StubSecurityHelper.invokeServlet(javax.servlet.ServletRequest,javax.servlet.http.HttpServletRequest,weblogic.servlet.internal.ServletRequestImpl,javax.servlet.ServletResponse,javax.servlet.http.HttpServletResponse,javax.servlet.Servlet) throws javax.servlet.ServletException";
 	
 	String WEBLOGIC_SERVLET_EXECUTE = "void weblogic.servlet.internal.WebAppServletContext.execute(weblogic.servlet.internal.ServletRequestImpl,weblogic.servlet.internal.ServletResponseImpl) throws java.io.IOException";
 	
+
 	/** MSSQL FIELD CONSTANTS */
 	String MSSQL_CURRENT_OBJECT = "this$0";
 	String MSSQL_BATCH_STATEMENT_BUFFER_FIELD = "batchStatementBuffer";
@@ -568,10 +634,23 @@ public interface IAgentConstants {
 	int TOMCAT_9 = 9;
 	int K2_IC_TCP_PORT = 54321;
 	
-	String JSON_NAME_APPLICATION_INFO_BEAN = "applicationinfobean";
-	String JSON_NAME_INTCODE_RESULT_BEAN = "EventBean";
+	String JSON_NAME_APPLICATION_INFO_BEAN = "applicationinfo";
+	String JSON_NAME_INTCODE_RESULT_BEAN = "Event";
 	String JSON_NAME_HEALTHCHECK = "LAhealthcheck";
-	String JSON_NAME_DYNAMICJARPATH_BEAN = "dynamicjarpathbean";
+	String JSON_NAME_DYNAMICJARPATH_BEAN = "dynamicjarpath";
 	String JSON_NAME_SHUTDOWN = "shutdown";
-	
+
+	String FIELD_SOCKET_CHANNEL = "socketChannel";
+	String ORG_XNIO_NIO_NIO_SOCKET_CONDUIT = "org.xnio.nio.NioSocketConduit";
+	String FIELD_ORIGINAL_SOURCE_CONDUIT = "originalSourceConduit";
+	String FIELD_CONNECTION = "connection";
+	String METHOD_GET_REMOTE_HOST_ADDRESS = "getRemoteHostAddress";
+	String METHOD_GET_CONNECTION_DESCRIPTOR = "getConnectionDescriptor";
+	String METHOD_GET_VIRTUAL_CONNECTION = "getVirtualConnection";
+	String COM_IBM_WSSPI_CHANNELFW_CONNECTION_DESCRIPTOR = "com.ibm.wsspi.channelfw.ConnectionDescriptor";
+	String COM_IBM_WSSPI_CHANNELFW_VIRTUAL_CONNECTION = "com.ibm.wsspi.channelfw.VirtualConnection";
+	String COM_IBM_WS_HTTP_CHANNEL_INTERNAL_INBOUND_HTTP_INBOUND_LINK = "com.ibm.ws.http.channel.internal.inbound.HttpInboundLink";
+	String COM_IBM_WS_HTTP_CHANNEL_INBOUND_HTTP_INBOUND_LINK = "com.ibm.ws.http.channel.inbound.impl.HttpInboundLink";
+
+
 }

@@ -8,7 +8,7 @@ import java.util.Collections;
 import org.json.simple.JSONArray;
 
 import com.k2cybersecurity.intcodeagent.models.javaagent.JavaAgentEventBean;
-import com.k2cybersecurity.intcodeagent.models.javaagent.ServletInfo;
+import com.k2cybersecurity.intcodeagent.models.javaagent.HttpRequestBean;
 import com.k2cybersecurity.intcodeagent.models.javaagent.VulnerabilityCaseType;
 
 public class JsonConverter {
@@ -61,7 +61,7 @@ public class JsonConverter {
 					}
 				}
 			} catch (IllegalArgumentException | IllegalAccessException e) {
-				e.printStackTrace();
+
 			}
 		}
 
@@ -69,24 +69,24 @@ public class JsonConverter {
 		return jsonString.toString();
 	}
 
-	public static void main(String[] args) {
-		
-		String[] arr = new String[] {"as", "vd"};
-		
-		
-		JavaAgentEventBean javaAgentEventBean = new JavaAgentEventBean(System.currentTimeMillis(), 15L, "source", 12121,
-				"asdasd-1212-sdf", "12-12", VulnerabilityCaseType.DB_COMMAND);
-		JSONArray jsonArray = new JSONArray();
-		jsonArray.add("sadasda");
-		jsonArray.add("sadasdaasdfasd");
-		jsonArray.addAll(Arrays.asList(arr));
-		javaAgentEventBean.setParameters(jsonArray);
-
-		ServletInfo servletInfo = new ServletInfo();
-		servletInfo.setDataTruncated(false);
-		servletInfo.setRawRequest("sdasdfasfasf \n\r asd \r\n asd asd asd ");
-		javaAgentEventBean.setServletInfo(servletInfo);
-
-		System.out.println(javaAgentEventBean.toString());
-	}
+//	public static void main(String[] args) {
+//
+//		String[] arr = new String[] {"as", "vd"};
+//
+//
+//		JavaAgentEventBean javaAgentEventBean = new JavaAgentEventBean(System.currentTimeMillis(), 15L, "source", 12121,
+//				"asdasd-1212-sdf", "12-12", VulnerabilityCaseType.DB_COMMAND);
+//		JSONArray jsonArray = new JSONArray();
+//		jsonArray.add("sadasda");
+//		jsonArray.add("sadasdaasdfasd");
+//		jsonArray.addAll(Arrays.asList(arr));
+//		javaAgentEventBean.setParameters(jsonArray);
+//
+//		ServletInfo servletInfo = new ServletInfo();
+//		servletInfo.setDataTruncated(false);
+//		servletInfo.setRawRequest("sdasdfasfasf \n\r asd \r\n asd asd asd ");
+//		javaAgentEventBean.setServletInfo(servletInfo);
+//
+//		System.out.println(javaAgentEventBean.toString());
+//	}
 }

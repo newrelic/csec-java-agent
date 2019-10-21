@@ -8,15 +8,15 @@ public class JavaAgentEventBean extends AgentBasicInfo {
 	private Integer pid;
 	private String applicationUUID;
 	private Long startTime;
-	private String source;
-	private String userClassName;
+	private String sourceMethod;
+	private String userFileName;
 	private String userMethodName;
 	private String currentMethod;
 	private Boolean validationBypass;
 	private Integer lineNumber;
 	private JSONArray parameters;
 	private Long eventGenerationTime;
-	private ServletInfo servletInfo;
+	private HttpRequestBean httpRequest;
 	private String id;
 	private JSONArray stacktrace;
 	private String caseType;
@@ -26,23 +26,23 @@ public class JavaAgentEventBean extends AgentBasicInfo {
 		super();
 	}
 
-	public JavaAgentEventBean(Long startTime, Long preProcessingTime, String source, Integer pid,
-			String applicationUUID, String id, VulnerabilityCaseType vulnerabilityCaseType) {
+	public JavaAgentEventBean(Long startTime, Long preProcessingTime, String sourceMethod, Integer pid,
+							  String applicationUUID, String id, VulnerabilityCaseType vulnerabilityCaseType) {
 		this.id = id;
 		this.setPid(pid);
 		this.applicationUUID = applicationUUID;
-		this.source = source;
+		this.sourceMethod = sourceMethod;
 		this.startTime = startTime;
 		this.setCaseType(vulnerabilityCaseType.getCaseType());
 		this.setPreProcessingTime(preProcessingTime);
 	}
 
-	public JavaAgentEventBean(Long startTime, String source, JSONArray parameters, Integer pid, String applicationUUID,
-			String id, VulnerabilityCaseType vulnerabilityCaseType) {
+	public JavaAgentEventBean(Long startTime, String sourceMethod, JSONArray parameters, Integer pid, String applicationUUID,
+							  String id, VulnerabilityCaseType vulnerabilityCaseType) {
 		this.id = id;
 		this.setPid(pid);
 		this.applicationUUID = applicationUUID;
-		this.source = source;
+		this.sourceMethod = sourceMethod;
 		this.parameters = parameters;
 		this.startTime = startTime;
 		this.setCaseType(vulnerabilityCaseType.getCaseType());
@@ -50,7 +50,7 @@ public class JavaAgentEventBean extends AgentBasicInfo {
 
 	public void setUserAPIInfo(Integer lineNumber, String userClassName, String userMethodName) {
 		this.userMethodName = userMethodName;
-		this.userClassName = userClassName;
+		this.userFileName = userClassName;
 		this.lineNumber = lineNumber;
 	}
 
@@ -62,20 +62,20 @@ public class JavaAgentEventBean extends AgentBasicInfo {
 		this.startTime = startTime;
 	}
 
-	public String getSource() {
-		return source;
+	public String getSourceMethod() {
+		return sourceMethod;
 	}
 
-	public void setSource(String source) {
-		this.source = source;
+	public void setSourceMethod(String sourceMethod) {
+		this.sourceMethod = sourceMethod;
 	}
 
-	public String getUserClassName() {
-		return userClassName;
+	public String getUserFileName() {
+		return userFileName;
 	}
 
-	public void setUserClassName(String userClassName) {
-		this.userClassName = userClassName;
+	public void setUserFileName(String userClassName) {
+		this.userFileName = userClassName;
 	}
 
 	public String getUserMethodName() {
@@ -175,15 +175,15 @@ public class JavaAgentEventBean extends AgentBasicInfo {
 	/**
 	 * @return the servletInfo
 	 */
-	public ServletInfo getServletInfo() {
-		return servletInfo;
+	public HttpRequestBean getHttpRequest() {
+		return httpRequest;
 	}
 
 	/**
 	 * @param servletInfo the servletInfo to set
 	 */
-	public void setServletInfo(ServletInfo servletInfo) {
-		this.servletInfo = servletInfo;
+	public void setHttpRequest(HttpRequestBean servletInfo) {
+		this.httpRequest = servletInfo;
 	}
 
 	/**

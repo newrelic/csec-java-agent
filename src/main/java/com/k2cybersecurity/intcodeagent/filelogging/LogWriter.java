@@ -1,10 +1,6 @@
 package com.k2cybersecurity.intcodeagent.filelogging;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.*;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Timer;
@@ -34,6 +30,8 @@ public class LogWriter implements Runnable {
 
 	private String logEntry;
 
+	private Throwable throwableLogEntry;
+
 	private String loggingClassName;
 
 	private static long maxFileSize;
@@ -55,9 +53,8 @@ public class LogWriter implements Runnable {
 
 	static {
 		fileName = "/etc/k2-adp/logs/k2_java_agent-" + Agent.APPLICATION_UUID + ".log";
-		currentLogFileName = fileName + STRING_DOT + logFileCounter;
-
-		currentLogFile = new File(currentLogFileName);
+		currentLogFile = new File(fileName);
+		currentLogFileName = fileName;
 		try {
 			writer = new BufferedWriter(new FileWriter(currentLogFileName, true));
 			maxFileSize = K2JALogProperties.maxfilesize * 1048576;
@@ -93,6 +90,14 @@ public class LogWriter implements Runnable {
 		this.loggingClassName = loggingClassName;
 	}
 
+	public LogWriter(LogLevel logLevel, String logEntry, Throwable throwableLogEntry, String loggingClassName) {
+		this.throwableLogEntry = throwableLogEntry;
+		this.logEntry = logEntry;
+		this.logLevel = logLevel.getLevel();
+		this.logLevelName = logLevel.name();
+		this.loggingClassName = loggingClassName;
+	}
+
 	@Override
 	public void run() {
 		if (this.logLevel == 0 || this.logLevel > defaultLogLevel) {
@@ -107,11 +112,28 @@ public class LogWriter implements Runnable {
 			sb.append(STR_COLON);
 		sb.append(this.loggingClassName);
 		sb.append(STR_HYPHEN);
-		sb.append(this.logEntry);
+		if (this.logEntry != null)
+			sb.append(this.logEntry);
+		if (this.throwableLogEntry != null) {
+			sb.append(this.throwableLogEntry.getMessage());
+			sb.append(StringUtils.LF);
+			sb.append(StringUtils.join(this.throwableLogEntry.getStackTrace(), StringUtils.LF));
+			sb.append(StringUtils.LF);
+			Throwable cause = this.throwableLogEntry.getCause();
+			while (cause != null) {
+				sb.append("Caused by: ");
+				sb.append(this.throwableLogEntry.getCause().getMessage());
+				sb.append(StringUtils.LF);
+				sb.append(StringUtils.join(this.throwableLogEntry.getCause().getStackTrace(), StringUtils.LF));
+				sb.append(StringUtils.LF);
+				cause = cause.getCause();
+			}
+		}
 		sb.append(StringUtils.LF);
 		try {
 			writer.write(sb.toString());
 			writer.flush();
+
 //			writer.newLine();
 			rollover(currentLogFile);
 		} catch (IOException e) {
@@ -132,7 +154,7 @@ public class LogWriter implements Runnable {
 			pw.close();
 
 			writer = new BufferedWriter(new FileWriter(currentLogFileName, true));
-			
+
 			int removeFile = logFileCounter - K2JALogProperties.maxfiles;
 			if (removeFile > 0) {
 				File remove = new File(fileName + STRING_DOT + removeFile);
@@ -151,7 +173,10 @@ public class LogWriter implements Runnable {
 				defaultLogLevel = currentLogLevel;
 			}
 		}, timeUnit.toMillis(duration));
-		
+
 	}
-	
+	public static void setLogLevel(LogLevel logLevel) {
+		defaultLogLevel = logLevel.getLevel();
+	}
+
 }
