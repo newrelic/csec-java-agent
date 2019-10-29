@@ -31,6 +31,7 @@ import com.k2cybersecurity.intcodeagent.models.javaagent.FileIntegrityBean;
 import com.k2cybersecurity.intcodeagent.models.javaagent.HttpRequestBean;
 import com.k2cybersecurity.intcodeagent.models.javaagent.JavaAgentDynamicPathBean;
 import com.k2cybersecurity.intcodeagent.models.javaagent.JavaAgentEventBean;
+import com.k2cybersecurity.intcodeagent.models.javaagent.RCIElement;
 import com.k2cybersecurity.intcodeagent.models.javaagent.VulnerabilityCaseType;
 import com.k2cybersecurity.intcodeagent.websocket.EventSendPool;
 
@@ -81,8 +82,8 @@ public class ProcessorThread implements Runnable {
 		this.httpRequest = httpRequest;
 	}
 
-	public ProcessorThread(Object source, String[] arg, Long executionId, Long tId,
-			FileIntegrityBean fileIntegrityBean, HttpRequestBean httpRequest, VulnerabilityCaseType fileIntegrity) {
+	public ProcessorThread(Object source, String[] arg, Long executionId, Long tId, FileIntegrityBean fileIntegrityBean,
+			HttpRequestBean httpRequest, VulnerabilityCaseType fileIntegrity) {
 		this.sourceString = JAVA_IO_FILE;
 		this.source = source;
 		this.arg = arg;
@@ -165,6 +166,12 @@ public class ProcessorThread implements Runnable {
 
 				JSONArray params = toString(arg, sourceString, EXECUTORS.get(sourceString));
 
+				if (params != null) {
+					intCodeResultBean.setParameters(params);
+				} else {
+//					ServletEventPool.getInstance().decrementServletInfoReference(threadId, executionId, true);
+					return;
+				}
 				if (VulnerabilityCaseType.FILE_OPERATION
 						.equals(VulnerabilityCaseType.valueOf(intCodeResultBean.getCaseType()))
 						&& allowedExtensionFileIO(params)) {
@@ -173,7 +180,9 @@ public class ProcessorThread implements Runnable {
 					return;
 				}
 
+				boolean userclassFound = false;
 				for (int i = 0; i < trace.length; i++) {
+//					logger.log(LogLevel.SEVERE, "\t\t : "+ trace[i].toString(), ProcessorThread.class.getName());
 					int lineNumber = trace[i].getLineNumber();
 					klassName = trace[i].getClassName();
 					if (IAgentConstants.MYSQL_GET_CONNECTION_MAP.containsKey(klassName)
@@ -186,18 +195,18 @@ public class ProcessorThread implements Runnable {
 					if (lineNumber <= 0)
 						continue;
 					Matcher matcher = PATTERN.matcher(klassName);
-					if (!matcher.matches()) {
-						if (params != null) {
-							intCodeResultBean.setParameters(params);
-							intCodeResultBean.setUserAPIInfo(lineNumber, klassName, trace[i].getMethodName());
-							if (i > 0)
-								intCodeResultBean.setCurrentMethod(trace[i - 1].getMethodName());
-						} else {
-//							ServletEventPool.getInstance().decrementServletInfoReference(threadId, executionId, true);
-							return;
+					if (Method.class.getName().equals(klassName)
+							&& StringUtils.equals(trace[i].getMethodName(), "invoke")) {
+						intCodeResultBean.setRciElement(true);
+					}
+
+					if (!matcher.matches() && !userclassFound) {
+						intCodeResultBean.setUserAPIInfo(lineNumber, klassName, trace[i].getMethodName());
+						if (i > 0) {
+							intCodeResultBean.setCurrentMethod(trace[i - 1].getMethodName());
 						}
-						break;
-					} else if (StringUtils.isNotBlank(matcher.group(5))) {
+						userclassFound = true;
+					} else if (!userclassFound && StringUtils.isNotBlank(matcher.group(5))) {
 						lastNonJavaClass = trace[i].getClassName();
 						lastNonJavaMethod = trace[i].getMethodName();
 						lastNonJavaLineNumber = trace[i].getLineNumber();
@@ -237,7 +246,8 @@ public class ProcessorThread implements Runnable {
 		JSONArray param = new JSONArray();
 		param.add(arg[0]);
 		intCodeResultBean.setParameters(param);
-		intCodeResultBean.setUserAPIInfo(fileIntegrityBean.getLineNumber(), fileIntegrityBean.getUserFileName(), fileIntegrityBean.getUserMethodName());
+		intCodeResultBean.setUserAPIInfo(fileIntegrityBean.getLineNumber(), fileIntegrityBean.getUserFileName(),
+				fileIntegrityBean.getUserMethodName());
 		intCodeResultBean.setCurrentMethod(fileIntegrityBean.getCurrentMethod());
 		intCodeResultBean.setCaseType(this.vulnerabilityCaseType.getCaseType());
 		intCodeResultBean.setHttpRequest(new HttpRequestBean(this.httpRequest));

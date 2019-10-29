@@ -21,6 +21,7 @@ public class JavaAgentEventBean extends AgentBasicInfo {
 	private JSONArray stacktrace;
 	private String caseType;
 	private Long preProcessingTime;
+	private boolean rciElement;
 
 	public JavaAgentEventBean() {
 		super();
@@ -240,6 +241,20 @@ public class JavaAgentEventBean extends AgentBasicInfo {
 	 */
 	public void setPreProcessingTime(Long preProcessingTime) {
 		this.preProcessingTime = preProcessingTime;
+	}
+
+	/**
+	 * @return the rciElement
+	 */
+	public boolean getRciElement() {
+		return rciElement;
+	}
+
+	/**
+	 * @param rciElement the rciElement to set
+	 */
+	public void setRciElement(boolean rciElement) {
+		this.rciElement = rciElement;
 	}
 
 }

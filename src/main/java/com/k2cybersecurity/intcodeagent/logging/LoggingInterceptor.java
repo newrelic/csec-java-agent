@@ -53,6 +53,7 @@ import java.util.concurrent.locks.Condition;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
@@ -177,7 +178,7 @@ public class LoggingInterceptor extends Interceptor {
 					Agent.isDynamicAttach ? "DYNAMIC" : "STATIC");
 			applicationInfoBean.setStartTime(runtimeMXBean.getStartTime());
 			String containerId = getContainerID();
-			String cmdLine = getCmdLineArgsByProc(VMPID);
+			String cmdLine = StringEscapeUtils.escapeJava(getCmdLineArgsByProc(VMPID));
 			applicationInfoBean.setProcStartTime(getStartTimeByProc(VMPID));
 			applicationInfoBean.setCmdline(cmdLine);
 //			if (cmdLine != null) {
