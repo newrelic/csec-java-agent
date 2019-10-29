@@ -196,7 +196,7 @@ public class ProcessorThread implements Runnable {
 						continue;
 					Matcher matcher = PATTERN.matcher(klassName);
 					if (Method.class.getName().equals(klassName)
-							&& StringUtils.equals(trace[i].getMethodName(), "invoke")) {
+							&& StringUtils.equals(trace[i].getMethodName(), INVOKE)) {
 						intCodeResultBean.setRciElement(true);
 					}
 
