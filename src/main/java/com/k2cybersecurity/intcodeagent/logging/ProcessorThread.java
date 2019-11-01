@@ -3,6 +3,7 @@ package com.k2cybersecurity.intcodeagent.logging;
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.*;
 
 import java.io.File;
+import java.io.ObjectInputStream;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -198,6 +199,11 @@ public class ProcessorThread implements Runnable {
 					if (Method.class.getName().equals(klassName)
 							&& StringUtils.equals(trace[i].getMethodName(), INVOKE)) {
 						intCodeResultBean.setRciElement(true);
+					}
+
+					if (ObjectInputStream.class.getName().equals(klassName)
+							&& StringUtils.equals(trace[i].getMethodName(), READ_OBJECT)) {
+						intCodeResultBean.setDeserialisationElement(true);
 					}
 
 					if (!matcher.matches() && !userclassFound) {

@@ -653,4 +653,5 @@ public interface IAgentConstants {
 	String COM_IBM_WS_HTTP_CHANNEL_INBOUND_HTTP_INBOUND_LINK = "com.ibm.ws.http.channel.inbound.impl.HttpInboundLink";
 
 	String INVOKE = "invoke";
+	String READ_OBJECT = "readObject";
 }

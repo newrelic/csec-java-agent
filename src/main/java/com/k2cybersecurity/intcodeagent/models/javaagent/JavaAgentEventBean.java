@@ -22,6 +22,7 @@ public class JavaAgentEventBean extends AgentBasicInfo {
 	private String caseType;
 	private Long preProcessingTime;
 	private boolean rciElement;
+	private boolean deserialisationElement;
 
 	public JavaAgentEventBean() {
 		super();
@@ -257,4 +258,11 @@ public class JavaAgentEventBean extends AgentBasicInfo {
 		this.rciElement = rciElement;
 	}
 
+	public boolean getDeserialisationElement() {
+		return deserialisationElement;
+	}
+
+	public void setDeserialisationElement(boolean deserialisationElement) {
+		this.deserialisationElement = deserialisationElement;
+	}
 }
