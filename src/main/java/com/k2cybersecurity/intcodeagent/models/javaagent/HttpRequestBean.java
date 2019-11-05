@@ -1,16 +1,16 @@
 package com.k2cybersecurity.intcodeagent.models.javaagent;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-
+import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
+import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
+import com.k2cybersecurity.intcodeagent.logging.LoggingInterceptor;
+import com.k2cybersecurity.intcodeagent.websocket.JsonConverter;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.json.simple.JSONObject;
 
-import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
-import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
-import com.k2cybersecurity.intcodeagent.websocket.JsonConverter;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 public class HttpRequestBean {
 
@@ -54,6 +54,7 @@ public class HttpRequestBean {
 		this.url = StringUtils.EMPTY;
 		this.headers = new JSONObject();
 		this.fileExist = new HashMap<String, FileIntegrityBean>();
+		LoggingInterceptor.checkDeployedApplicationAndSendHealthCheck();
 	}
 
 	public HttpRequestBean(HttpRequestBean servletInfo) {
@@ -260,8 +261,6 @@ public class HttpRequestBean {
 	public void setFileExist(Map<String, FileIntegrityBean> fileAccessed) {
 		this.fileExist = fileAccessed;
 	}
-
-
 
 //	public static void main(String[] args) {
 //		HttpRequestBean servletInfo = new HttpRequestBean();
