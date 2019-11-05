@@ -205,10 +205,10 @@ public class JAHealthCheck extends AgentBasicInfo{
 					logger.log(LogLevel.WARNING,"Throwable in setLibPath : ", e, JAHealthCheck.class.getName());
 				}
 			}
+			Agent.allClassLoadersCount.set(Agent.allClassLoaders.size());
 			if (Agent.jarPathSet.size() != lastJarSetSize) {
 				JSONArray jarSet = new JSONArray();
 				jarSet.addAll(Agent.jarPathSet);
-				Agent.allClassLoadersCount.set(Agent.allClassLoaders.size());
 				LoggingInterceptor.updateServerInfo();
 			}
 		}
