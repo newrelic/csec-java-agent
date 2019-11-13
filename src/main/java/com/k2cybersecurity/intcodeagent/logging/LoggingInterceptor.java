@@ -226,6 +226,15 @@ public class LoggingInterceptor extends Interceptor {
 						}
 						deployedApplications
 								.add(new DeployedApplication(pathFile.getAbsolutePath(), pathFile.getName()));
+					} else if(StringUtils.equals(APPLICATION_INFO_BEAN.getServerInfo().getName(), "WEBLOGIC")) {
+						while (StringUtils.isNotBlank(pathFile.getName())) {
+							if (StringUtils.equalsIgnoreCase(pathFile.getParentFile().getName(), "_WL_user")) {
+								break;
+							}
+							pathFile = pathFile.getParentFile();
+						}
+						deployedApplications
+								.add(new DeployedApplication(pathFile.getAbsolutePath(), pathFile.getName()));
 					} else {
 						deployedApplications
 								.add(new DeployedApplication(pathFile.getAbsolutePath(), pathFile.getName()));
