@@ -15,35 +15,36 @@
  */
 package com.k2cybersecurity.intcodeagent.logging;
 
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.*;
+import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
+import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
+import com.k2cybersecurity.intcodeagent.models.javaagent.*;
+import com.k2cybersecurity.intcodeagent.websocket.EventSendPool;
+import com.k2cybersecurity.intcodeagent.websocket.WSClient;
+import org.apache.commons.lang3.StringEscapeUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
+import com.k2cybersecurity.instrumentation.Agent;
+import com.k2cybersecurity.instrumentation.Interceptor;
+import org.json.simple.JSONArray;
+import org.objectweb.asm.tree.ClassNode;
+import org.objectweb.asm.tree.MethodNode;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.net.SocketAddress;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.SocketAddress;
 import java.net.URISyntaxException;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.Map.Entry;
@@ -53,27 +54,9 @@ import java.util.concurrent.locks.Condition;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.lang3.StringEscapeUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
-import org.brutusin.instrumentation.Agent;
-import org.brutusin.instrumentation.Interceptor;
-import org.json.simple.JSONArray;
-import org.objectweb.asm.tree.ClassNode;
-import org.objectweb.asm.tree.MethodNode;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.*;
+import static com.k2cybersecurity.intcodeagent.constants.MapConstants.*;
 
-import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
-import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
-import com.k2cybersecurity.intcodeagent.models.javaagent.ApplicationInfoBean;
-import com.k2cybersecurity.intcodeagent.models.javaagent.FileIntegrityBean;
-import com.k2cybersecurity.intcodeagent.models.javaagent.JAHealthCheck;
-import com.k2cybersecurity.intcodeagent.models.javaagent.HttpRequestBean;
-import com.k2cybersecurity.intcodeagent.models.javaagent.JAHealthCheck;
-import com.k2cybersecurity.intcodeagent.models.javaagent.ShutDownEvent;
-import com.k2cybersecurity.intcodeagent.models.javaagent.VulnerabilityCaseType;
-import com.k2cybersecurity.intcodeagent.websocket.EventSendPool;
-import com.k2cybersecurity.intcodeagent.websocket.WSClient;
 
 public class LoggingInterceptor extends Interceptor {
 
@@ -1494,6 +1477,7 @@ public class LoggingInterceptor extends Interceptor {
 		}
 		ServletEventPool.getInstance().shutDownThreadPoolExecutor();
 		IPScheduledThread.getInstance().shutDownThreadPoolExecutor();
+
 		Agent.globalInstr.removeTransformer(classTransformer);
 		retransformHookedClassesWrapper();
 		logger.log(LogLevel.SEVERE, "Java Agent shutdown complete.", LoggingInterceptor.class.getName());
@@ -1516,11 +1500,11 @@ public class LoggingInterceptor extends Interceptor {
 	}
 
 	@Override protected List<String> getClassesToLoad() {
-		return new ArrayList<String>(IAgentConstants.INSTRUMENTED_METHODS.keySet());
+		return new ArrayList<String>(INSTRUMENTED_METHODS.keySet());
 	}
 
 	private static void retransformHookedClassesWrapper() {
-		List<String> classesToRetransform = new ArrayList<String>(IAgentConstants.INSTRUMENTED_METHODS.keySet());
+		List<String> classesToRetransform = new ArrayList<String>(INSTRUMENTED_METHODS.keySet());
 
 		Map<String, Class<?>> allLoadedClasses = new HashMap<>();
 

@@ -8,7 +8,7 @@ import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang3.StringUtils;
-import org.brutusin.instrumentation.Agent;
+import com.k2cybersecurity.instrumentation.Agent;
 
 import com.k2cybersecurity.intcodeagent.properties.K2JALogProperties;
 

@@ -13,7 +13,7 @@ public interface IAgentConstants {
 
 	String CLASS_WEBLOGIC_SERVLET_INTERNAL_WEB_APP_SERVLET_CONTEXT = "weblogic/servlet/internal/WebAppServletContext";
 
-	String TRACE_REGEX = "^((?!(org\\.apache\\.jsp))((sun|java|javax|com\\.sun|jdk)|(org\\.apache|k2\\.org\\.brutusin|com\\.k2cybersecurity\\.intcodeagent|k2\\.io\\.org|com\\.microsoft\\.sqlserver|com\\.mysql|sun\\.reflect|org\\.hibernate|com\\.mongodb|org\\.apache\\.commons|org\\.mongodb|org\\.eclipse\\.jetty|net\\.sourceforge\\.eclipsejetty|org\\.springframework|org\\.slf4j|org\\.eclipse\\.jdt|com\\.opensymphony\\.xwork2|k2\\.org\\.objectweb\\.asm|weblogic\\.|freemarker\\.cache|com\\.mchange|org\\.postgresql|oracle\\.jdbc|org\\.hsqldb|ch\\.qos\\.logback|io\\.micrometer|k2\\.org\\.json|k2\\.com\\.fasterxml|com\\.ibm\\.ws|io\\.undertow|org\\.jboss|org\\.wildfly)))\\..*";
+	String TRACE_REGEX = "^((?!(org\\.apache\\.jsp))((sun|java|javax|com\\.sun|jdk)|(org\\.apache|com\\.k2cybersecurity\\.intcodeagent|k2\\.io\\.org|com\\.microsoft\\.sqlserver|com\\.mysql|sun\\.reflect|org\\.hibernate|com\\.mongodb|org\\.apache\\.commons|org\\.mongodb|org\\.eclipse\\.jetty|net\\.sourceforge\\.eclipsejetty|org\\.springframework|org\\.slf4j|org\\.eclipse\\.jdt|com\\.opensymphony\\.xwork2|k2\\.org\\.objectweb\\.asm|weblogic\\.|freemarker\\.cache|com\\.mchange|org\\.postgresql|oracle\\.jdbc|org\\.hsqldb|ch\\.qos\\.logback|io\\.micrometer|k2\\.org\\.json|k2\\.com\\.fasterxml|com\\.ibm\\.ws|io\\.undertow|org\\.jboss|org\\.wildfly)))\\..*";
 
 	List<String> ALLOWED_EXTENSIONS = Arrays.asList(new String[] {"css", "html", "htm", "jsp", "js", "classtmp"});
 
@@ -156,51 +156,6 @@ public interface IAgentConstants {
 	List<String> FILE_OPEN_EXECUTORS = Arrays.asList(new String[] {
 			JAVA_IO_FILE_INPUTSTREAM_OPEN, JAVA_IO_FILE_OUTPUTSTREAM_OPEN });
 
-	Map<String, List<String>> MYSQL_GET_CONNECTION_MAP = new HashMap<String, List<String>>() {
-		/**
-		 * 
-		 */
-		private static final long serialVersionUID = 3518358544335663220L;
-		{
-			put("java.sql.DriverManager", Collections.singletonList("getConnection"));
-			put("com.mysql.jdbc.ConnectionImpl", Arrays.asList("getInstance", "isReadOnly"));
-		}
-	};
-
-	Map<String, VulnerabilityCaseType> MONGO_EXECUTORS = new HashMap<String, VulnerabilityCaseType>() {
-		/**
-		 * 
-		 */
-		private static final long serialVersionUID = -7680282029242613768L;
-
-		{
-			// asynchronous mongo calls
-			put("public <T> void com.mongodb.async.client.MongoClientImpl$2.execute(com.mongodb.operation.AsyncReadOperation<T>,com.mongodb.ReadPreference,com.mongodb.async.SingleResultCallback<T>)",
-					VulnerabilityCaseType.DB_COMMAND);
-			put("public <T> void com.mongodb.async.client.MongoClientImpl$2.execute(com.mongodb.operation.AsyncWriteOperation<T>,com.mongodb.async.SingleResultCallback<T>)",
-					VulnerabilityCaseType.DB_COMMAND);
-			put("public <T> void com.mongodb.async.client.AsyncOperationExecutorImpl.execute(com.mongodb.operation.AsyncWriteOperation<T>,com.mongodb.session.ClientSession,com.mongodb.async.SingleResultCallback<T>)",
-					VulnerabilityCaseType.DB_COMMAND);
-			put("public <T> void com.mongodb.async.client.AsyncOperationExecutorImpl.execute(com.mongodb.operation.AsyncReadOperation<T>,com.mongodb.ReadPreference,com.mongodb.session.ClientSession,com.mongodb.async.SingleResultCallback<T>)",
-					VulnerabilityCaseType.DB_COMMAND);
-			put("public <T> void com.mongodb.async.client.OperationExecutorImpl.execute(com.mongodb.operation.AsyncReadOperation<T>,com.mongodb.ReadPreference,com.mongodb.ReadConcern,com.mongodb.async.client.ClientSession,com.mongodb.async.SingleResultCallback<T>)",
-					VulnerabilityCaseType.DB_COMMAND);
-			put("public <T> void com.mongodb.async.client.OperationExecutorImpl.execute(com.mongodb.operation.AsyncWriteOperation<T>,com.mongodb.ReadConcern,com.mongodb.async.client.ClientSession,com.mongodb.async.SingleResultCallback<T>)",
-					VulnerabilityCaseType.DB_COMMAND);
-			// synchronous mongo calls
-			put("private <T> T com.mongodb.connection.DefaultServerConnection.executeProtocol(com.mongodb.connection.CommandProtocol<T>,com.mongodb.session.SessionContext)",
-					VulnerabilityCaseType.DB_COMMAND);
-			put("private <T> T com.mongodb.connection.DefaultServerConnection.executeProtocol(com.mongodb.connection.LegacyProtocol<T>)",
-					VulnerabilityCaseType.DB_COMMAND);
-			put("private <T> T com.mongodb.internal.connection.DefaultServerConnection.executeProtocol(com.mongodb.internal.connection.CommandProtocol<T>,com.mongodb.session.SessionContext)",
-					VulnerabilityCaseType.DB_COMMAND);
-			put("private <T> T com.mongodb.internal.connection.DefaultServerConnection.executeProtocol(com.mongodb.internal.connection.LegacyProtocol<T>)",
-					VulnerabilityCaseType.DB_COMMAND);
-			put("private <T> T com.mongodb.connection.DefaultServerConnection.executeProtocol(com.mongodb.connection.Protocol<T>)",
-					VulnerabilityCaseType.DB_COMMAND);
-		}
-	};
-
 	String SERVLET_REQUEST_FACADE = "public org.apache.catalina.connector.RequestFacade(org.apache.catalina.connector.Request)";
 
 	String PSQLV3_EXECUTOR = "private void org.postgresql.core.v3.QueryExecutorImpl.sendQuery(org.postgresql.core.v3.V3Query,org.postgresql.core.v3.V3ParameterList,int,int,int,org.postgresql.core.v3.QueryExecutorImpl$ErrorTrackingResultHandler) throws java.io.IOException,java.sql.SQLException";
@@ -220,105 +175,6 @@ public interface IAgentConstants {
 
 	String HSQL_V1_8_SESSION = "public org.hsqldb.Result org.hsqldb.Session.execute(org.hsqldb.Result)";
 
-	// MSSQL
-	
-	Map<String, VulnerabilityCaseType> FILE_EXECUTORS = new HashMap<String, VulnerabilityCaseType>() {
-
-		/**
-		 * 
-		 */
-		private static final long serialVersionUID = 7816336042321299035L;
-		{
-			put(JAVA_IO_FILE_INPUTSTREAM_OPEN, VulnerabilityCaseType.FILE_OPERATION);
-			put(JAVA_IO_FILE_OUTPUTSTREAM_OPEN, VulnerabilityCaseType.FILE_OPERATION);
-
-			put(JAVA_NIO_UNIX_OPEN, VulnerabilityCaseType.FILE_OPERATION);
-			put(JAVA_NIO_UNIX_FOPEN, VulnerabilityCaseType.FILE_OPERATION);
-			put(JAVA_NIO_UNIX_LINK, VulnerabilityCaseType.FILE_OPERATION);
-			put(JAVA_NIO_UNIX_UNLINK, VulnerabilityCaseType.FILE_OPERATION);
-			put(JAVA_NIO_UNIX_MKNOD, VulnerabilityCaseType.FILE_OPERATION);
-			put(JAVA_NIO_UNIX_RENAME, VulnerabilityCaseType.FILE_OPERATION);
-			put(JAVA_NIO_UNIX_MKDIR, VulnerabilityCaseType.FILE_OPERATION);
-			put(JAVA_NIO_UNIX_RMDIR, VulnerabilityCaseType.FILE_OPERATION);
-			put(JAVA_NIO_UNIX_SYMLINK, VulnerabilityCaseType.FILE_OPERATION);
-			put(JAVA_NIO_UNIX_CHOWN, VulnerabilityCaseType.FILE_OPERATION);
-			put(JAVA_NIO_UNIX_CHMOD, VulnerabilityCaseType.FILE_OPERATION);
-		}
-	};
-
-	Map<String, VulnerabilityCaseType> EXECUTORS = new HashMap<String, VulnerabilityCaseType>() {
-		/**
-		 * 
-		 */
-		private static final long serialVersionUID = -6864398309462801187L;
-
-		{
-			// System Command
-			put(SYSYTEM_CALL_START, VulnerabilityCaseType.SYSTEM_COMMAND);
-			
-			// MSSQL
-			put(EXEC_MSSQL_SQLTIMEOUT, VulnerabilityCaseType.DB_COMMAND);
-			put(EXEC_MSSQL, VulnerabilityCaseType.DB_COMMAND);
-
-			// MYSQL
-			put(EXEC_MYSQL_505, VulnerabilityCaseType.DB_COMMAND);
-			put(EXEC_MYSQL_51X, VulnerabilityCaseType.DB_COMMAND);
-			put(EXEC_MYSQL_6X, VulnerabilityCaseType.DB_COMMAND);
-			put(EXEC_MYSQL_6X2, VulnerabilityCaseType.DB_COMMAND);
-			put(EXEC_MYSQL_6X3, VulnerabilityCaseType.DB_COMMAND);
-			put(EXEC_MYSQL_6X4, VulnerabilityCaseType.DB_COMMAND);
-			put(EXEC_MYSQL_8X, VulnerabilityCaseType.DB_COMMAND);
-
-			// ORACLE
-			put(EXEC_ORACLE, VulnerabilityCaseType.DB_COMMAND);
-
-			// postgresql
-			put(PSQLV3_EXECUTOR, VulnerabilityCaseType.DB_COMMAND);
-			put(PSQLV2_EXECUTOR, VulnerabilityCaseType.DB_COMMAND);
-			put(PSQL42_EXECUTOR, VulnerabilityCaseType.DB_COMMAND);
-			put(PSQLV3_EXECUTOR7_4, VulnerabilityCaseType.DB_COMMAND);
-
-			// HSQLDB
-			put(HSQL_V2_4, VulnerabilityCaseType.DB_COMMAND);
-			put(HSQL_V1_8_CONNECTION, VulnerabilityCaseType.DB_COMMAND);
-			put(HSQL_V1_8_SESSION, VulnerabilityCaseType.DB_COMMAND);
-
-			// MongoDB
-			putAll(MONGO_EXECUTORS);
-			
-			// dynamic class loading
-			put(URL_CLASS_LOADER, VulnerabilityCaseType.DYNAMIC_CLASS_LOADING);
-			put(EXEC_DEFINE_CLASS, VulnerabilityCaseType.DYNAMIC_CLASS_LOADING);
-			put(EXEC_URL_CLASS_LOADER_NEW_INSTANCE, VulnerabilityCaseType.DYNAMIC_CLASS_LOADING);
-
-			// // FileWriter
-//			"public java.io.OutputStream java.nio.file.spi.FileSystemProvider.newOutputStream(java.nio.file.Path,java.nio.file.OpenOption...) throws java.io.IOException",
-//			"public java.io.File(java.lang.String,java.lang.String)", "public java.io.File(java.lang.String)",
-
-			// File Input
-			// "public java.io.FileInputStream(java.lang.String) throws
-			// java.io.FileNotFoundException",
-			// "public java.io.FileInputStream(java.io.File) throws
-			// java.io.FileNotFoundException",
-
-			// http request
-			put(APACHE_HTTP_REQUEST_EXECUTOR_METHOD, VulnerabilityCaseType.HTTP_REQUEST);
-			
-			//JAVA_OPEN_CONNECTION_METHOD,
-			put(JAVA_OPEN_CONNECTION_METHOD2, VulnerabilityCaseType.HTTP_REQUEST);
-			put(JAVA_OPEN_CONNECTION_METHOD2_HTTPS, VulnerabilityCaseType.HTTP_REQUEST);
-			put(JAVA_OPEN_CONNECTION_METHOD2_HTTPS_2, VulnerabilityCaseType.HTTP_REQUEST);
-			put(JDK_INCUBATOR_MULTIEXCHANGE_RESONSE_METHOD, VulnerabilityCaseType.HTTP_REQUEST);
-			put(JDK_INCUBATOR_MULTIEXCHANGE_RESONSE_ASYNC_METHOD, VulnerabilityCaseType.HTTP_REQUEST);
-
-			putAll(FILE_EXECUTORS);
-
-			put(APACHE_COMMONS_HTTP_METHOD_DIRECTOR_METHOD, VulnerabilityCaseType.HTTP_REQUEST);
-			put(OKHTTP_HTTP_ENGINE_METHOD, VulnerabilityCaseType.HTTP_REQUEST);
-			put(WEBLOGIC_OPEN_CONNECTION_METHOD, VulnerabilityCaseType.HTTP_REQUEST);
-		}
-	};
-
 	String HTTP_SERVLET_SERVICE = "protected void javax.servlet.http.HttpServlet.service(javax.servlet.http.HttpServletRequest,javax.servlet.http.HttpServletResponse) throws javax.servlet.ServletException,java.io.IOException";
 
 	String STRUTS2_DO_FILTER = "public void org.apache.struts2.dispatcher.ng.filter.StrutsPrepareAndExecuteFilter.doFilter(javax.servlet.ServletRequest,javax.servlet.ServletResponse,javax.servlet.FilterChain) throws java.io.IOException,javax.servlet.ServletException";
@@ -330,59 +186,6 @@ public interface IAgentConstants {
 	String CLASS_JAVA_IO_FILE_OUTPUT_STREAM = "java/io/FileOutputStream";
 	String CLASS_JAVA_IO_FILE_INPUT_STREAM = "java/io/FileInputStream";
 	String CLASS_SUN_NIO_FS_UNIX_NATIVE_DISPATCHER = "sun/nio/fs/UnixNativeDispatcher";
-	Map<String, List<String>> INSTRUMENTED_METHODS = new HashMap<String, List<String>>() {
-		private static final long serialVersionUID = -7680282029242613768L;
-
-		{
-			put(CLASS_JAVA_LANG_PROCESS_IMPL, Collections.singletonList("start"));
-			put(CLASS_COM_MICROSOFT_SQLSERVER_JDBC_SQL_SERVER_STATEMENT, Collections.singletonList("executeStatement"));
-			put(CLASS_COM_MYSQL_CJ_MYSQLA_IO_MYSQLA_PROTOCOL, Collections.singletonList("sqlQueryDirect"));
-			put(CLASS_COM_MYSQL_JDBC_MYSQL_IO, Collections.singletonList("sqlQueryDirect"));
-			put(CLASS_COM_MYSQL_CJ_NATIVE_SESSION, Collections.singletonList("execSQL"));
-			put(CLASS_COM_MYSQL_JDBC_SERVER_PREPARED_STATEMENT, Collections.singletonList("serverExecute"));
-			put(CLASS_COM_MONGODB_CONNECTION_DEFAULT_SERVER_CONNECTION, Collections.singletonList("executeProtocol"));
-			put(CLASS_COM_MONGODB_INTERNAL_CONNECTION_DEFAULT_SERVER_CONNECTION,
-					Collections.singletonList("executeProtocol"));
-			put(CLASS_COM_MONGODB_ASYNC_CLIENT_MONGO_CLIENT_IMPL$2, Collections.singletonList("execute"));
-			put(CLASS_COM_MONGODB_ASYNC_CLIENT_ASYNC_OPERATION_EXECUTOR_IMPL, Collections.singletonList("execute"));
-			put(CLASS_COM_MONGODB_ASYNC_CLIENT_OPERATION_EXECUTOR_IMPL, Collections.singletonList("execute"));
-			put(CLASS_JAVA_NET_URL_CLASS_LOADER, Arrays.asList(new String[] { "<init>", "newInstance" }));
-			put(CLASS_ORACLE_JDBC_DRIVER_T4CTT_IFUN, Collections.singletonList("doRPC"));
-			put(CLASS_ORG_APACHE_CATALINA_CONNECTOR_COYOTE_ADAPTER, Collections.singletonList("service"));
-			put(CLASS_ORG_APACHE_CATALINA_CONNECTOR_INPUT_BUFFER, Collections.singletonList("setByteBuffer"));
-			put(CLASS_ORG_ECLIPSE_JETTY_SERVER_HTTP_CONNECTION, Collections.singletonList("onFillable"));
-			put(CLASS_ORG_ECLIPSE_JETTY_HTTP_HTTP_PARSER, Collections.singletonList("parseNext"));
-			put(CLASS_ORG_POSTGRESQL_CORE_V3_QUERY_EXECUTOR_IMPL, Collections.singletonList("sendQuery"));
-			put(CLASS_ORG_POSTGRESQL_CORE_V2_QUERY_EXECUTOR_IMPL, Collections.singletonList("sendQuery"));
-			put(CLASS_ORG_HSQLDB_SESSION, Arrays.asList(new String[] { "executeCompiledStatement", "execute" }));
-			put(CLASS_ORG_HSQLDB_HSQL_CLIENT_CONNECTION, Collections.singletonList("execute"));
-			put(COM_IBM_WS_GENERICBNF_INTERNAL_BNFHEADERSIMPL, Collections.singletonList("fillByteCache"));
-			put(COM_IBM_WS_HTTP_CHANNEL_INTERNAL_INBOUND_HTTPINBOUNDLINK, Collections.singletonList("processRequest"));
-			put(COM_IBM_WS_GENERICBNF_IMPL_BNFHEADERSIMPL, Collections.singletonList("fillByteCache"));
-			put(COM_IBM_WS_HTTP_CHANNEL_INBOUND_IMPL_HTTPINBOUNDLINK, Collections.singletonList("processRequest"));
-			put(IO_UNDERTOW_SERVER_PROTOCOL_HTTP_HTTP_REQUEST_PARSER, Collections.singletonList("handle"));
-			put(ORG_JBOSS_THREADS_ENHANCED_QUEUE_EXECUTOR2, Collections.singletonList("tryExecute"));
-			put(ORG_XNIO_XNIO_WORKER$_WORKER_THREAD_FACTORY, Collections.singletonList("newThread"));
-			put(IO_UNDERTOW_SERVLET_HANDLERS_SERVLET_HANDLER, Collections.singletonList("handleRequest"));
-			
-			put(CLASS_HTTP_REQUEST_EXECUTOR, Collections.singletonList("doSendRequest"));
-			put(CLASS_JAVA_HTTP_HANDLER, Collections.singletonList("openConnection"));
-			put(CLASS_JAVA_HTTPS_HANDLER, Collections.singletonList("openConnection"));
-			put(CLASS_JAVA_SSL_HTTPS_HANDLER, Collections.singletonList("openConnection"));
-			put(CLASS_JDK_INCUBATOR_HTTP_MULTIEXCHANGE, Arrays.asList(new String[] { "response", "responseAsync", "multiResponseAsync" }));
-//			put(CLASS_WEBLOGIC_SERVLET_INTERNAL_STUBSECURITYHELPER, Collections.singletonList("invokeServlet"));
-			put(CLASS_WEBLOGIC_SERVLET_INTERNAL_WEB_APP_SERVLET_CONTEXT, Collections.singletonList("execute"));
-			put(CLASS_APACHE_COMMONS_HTTP_METHOD_DIRECTOR, Collections.singletonList("executeWithRetry"));
-			put(CLASS_OKHTTP_HTTP_ENGINE, Collections.singletonList("sendRequest"));
-			put(CLASS_WEBLOGIC_HTTP_HANDLER, Collections.singletonList("openConnection"));
-			put(CLASS_JAVA_IO_FILE_OUTPUT_STREAM, Collections.singletonList("open"));
-			put(CLASS_JAVA_IO_FILE_INPUT_STREAM, Collections.singletonList("open"));
-
-			put(CLASS_SUN_NIO_FS_UNIX_NATIVE_DISPATCHER, Arrays.asList(new String[] {"open", "fopen", "link", "unlink", "mknod", "rename", "mkdir", "rmdir", "symlink", "chown", "chmod"}));
-
-			put("org/xnio/XnioWorker", Collections.singletonList("execute"));
-		}
-	};
 
 	/** Source Method Identifiers for argument resolution */
 	String MSSQL_IDENTIFIER = "com.microsoft.sqlserver";
@@ -473,25 +276,7 @@ public interface IAgentConstants {
 	String MYSQL_CONNECTOR_6_0_3_SOURCE = EXEC_MYSQL_6X2;
 	String MYSQL_CONNECTOR_6_0_2_SOURCE = EXEC_MYSQL_6X;
 	String MYSQL_CONNECTOR_8_SOURCE = EXEC_MYSQL_8X;
-	List<String> MYSQL_SOURCE_METHOD_LIST = new ArrayList<String>() {
-		/**
-		 * 
-		 */
-		private static final long serialVersionUID = 1L;
-		{
-			// Mysql Connector/J 5.0.5
-			add(MYSQL_CONNECTOR_5_0_SOURCE);
-			add(MYSQL_CONNECTOR_5_0_4_PREPARED_SOURCE);
-			// Mysql Connector/J 5.1.x
-			add(MYSQL_CONNECTOR_5_1_SOURCE);
-			// Mysql Connector/J 6.x
-			add(MYSQL_CONNECTOR_6_0_2_SOURCE);
-			add(MYSQL_CONNECTOR_6_0_3_SOURCE);
-			add(MYSQL_CONNECTOR_6_SOURCE);
-			// Mysql Connector/J 8.x
-			add(MYSQL_CONNECTOR_8_SOURCE);
-		}
-	};
+
 
 	/** Mongo constants */
 
@@ -541,16 +326,7 @@ public interface IAgentConstants {
 	String ORG_APACHE_COMMONS_HTTPCLIENT_URI = "org.apache.commons.httpclient.URI";
 	String ORG_APACHE_COMMONS_HTTPCLIENT_HTTP_METHOD = "org.apache.commons.httpclient.HttpMethod";
 
-	ArrayList<String> ORACLE_CLASS_SKIP_LIST = new ArrayList<String>() {
 
-		private static final long serialVersionUID = -1406453087946498488L;
-
-		{
-			add("oracle.jdbc.driver.T4C7Ocommoncall");
-			add("oracle.jdbc.driver.T4CTTIoauthenticate");
-			add("oracle.jdbc.driver.T4C7Oversion");
-		}
-	};
 
 	String BYTE_ARRAY_CLASS = "[B";
 
