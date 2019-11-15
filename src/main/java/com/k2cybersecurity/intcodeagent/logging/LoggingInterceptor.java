@@ -53,6 +53,10 @@ import java.util.concurrent.locks.Condition;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.k2cybersecurity.intcodeagent.models.javaagent.*;
+import com.k2cybersecurity.intcodeagent.websocket.JsonConverter;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -60,18 +64,14 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.brutusin.instrumentation.Agent;
 import org.brutusin.instrumentation.Interceptor;
 import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.MethodNode;
 
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
-import com.k2cybersecurity.intcodeagent.models.javaagent.ApplicationInfoBean;
-import com.k2cybersecurity.intcodeagent.models.javaagent.FileIntegrityBean;
 import com.k2cybersecurity.intcodeagent.models.javaagent.JAHealthCheck;
-import com.k2cybersecurity.intcodeagent.models.javaagent.HttpRequestBean;
-import com.k2cybersecurity.intcodeagent.models.javaagent.JAHealthCheck;
-import com.k2cybersecurity.intcodeagent.models.javaagent.ShutDownEvent;
-import com.k2cybersecurity.intcodeagent.models.javaagent.VulnerabilityCaseType;
 import com.k2cybersecurity.intcodeagent.websocket.EventSendPool;
 import com.k2cybersecurity.intcodeagent.websocket.WSClient;
 
@@ -501,8 +501,9 @@ public class LoggingInterceptor extends Interceptor {
 								PUBLIC_VOID_IO_UNDERTOW_SERVLET_HANDLERS_SERVLET_HANDLER_HANDLE_REQUEST_IO_UNDERTOW_SERVER_HTTP_SERVER_EXCHANGE_THROWS_JAVA_IO_IO_EXCEPTION_JAVAX_SERVLET_SERVLET_EXCEPTION)
 						|| sourceString.equals(WEBLOGIC_SERVLET_EXECUTE)) {
 					long start = System.currentTimeMillis();
-					HttpRequestBean httpRequest = ExecutionMap.find(executionId,
+					Pair<HttpRequestBean, AgentMetaData> data = ExecutionMap.find(executionId,
 							ServletEventPool.getInstance().getRequestMap().get(threadId));
+					HttpRequestBean httpRequest = data.getLeft();
 					Map<String, FileIntegrityBean> fileMap = httpRequest.getFileExist();
 					for (Entry<String, FileIntegrityBean> entry : fileMap.entrySet()) {
 						if (!entry.getValue().getExists().equals(new File(entry.getKey()).exists())) {
@@ -605,6 +606,7 @@ public class LoggingInterceptor extends Interceptor {
 						.getMappedThreadRequestMap().get(threadId);
 				Iterator<ThreadRequestData> iterator = threadRequestDatas.descendingIterator();
 				HttpRequestBean servletInfo = null;
+
 				while (iterator.hasNext()) {
 					ThreadRequestData threadRequestData = iterator.next();
 					if (threadRequestData.getExecutionId() < executionId) {
@@ -768,8 +770,10 @@ public class LoggingInterceptor extends Interceptor {
 
 		} else if (JETTY_PARSE_NEXT.equals(sourceString)) {
 
-			HttpRequestBean servletInfo = ExecutionMap.find(executionId,
+			Pair<HttpRequestBean, AgentMetaData> data = ExecutionMap.find(executionId,
 					ServletEventPool.getInstance().getRequestMap().get(threadId));
+			HttpRequestBean servletInfo = data.getLeft();
+
 			if (servletInfo == null) {
 				return;
 			}
@@ -807,8 +811,9 @@ public class LoggingInterceptor extends Interceptor {
 				e.printStackTrace();
 			}
 		} else if (TOMCAT_SETBYTEBUFFER.equals(sourceString)) {
-			HttpRequestBean servletInfo;
-			servletInfo = ExecutionMap.find(executionId, ServletEventPool.getInstance().getRequestMap().get(threadId));
+			Pair<HttpRequestBean, AgentMetaData> data = ExecutionMap.find(executionId, ServletEventPool.getInstance().getRequestMap().get(threadId));
+			HttpRequestBean servletInfo = data.getLeft();
+
 			if (servletInfo == null) {
 				return;
 			}
@@ -1059,14 +1064,14 @@ public class LoggingInterceptor extends Interceptor {
 
 					if (FILE_EXECUTORS.containsKey(sourceString)) {
 						checkForFileIntegrityVoilations(arg, ExecutionMap.find(executionId,
-								ServletEventPool.getInstance().getRequestMap().get(threadId)));
+								ServletEventPool.getInstance().getRequestMap().get(threadId)).getLeft());
 					}
 
 					ServletEventPool.getInstance().incrementServletInfoReference(threadId, executionId, true);
 					EventThreadPool.getInstance().processReceivedEvent(source, arg, executionId,
 							Thread.currentThread().getStackTrace(), threadId, sourceString,
 							System.currentTimeMillis() - start, ExecutionMap.find(executionId,
-									ServletEventPool.getInstance().getRequestMap().get(threadId)));
+									ServletEventPool.getInstance().getRequestMap().get(threadId)).getLeft());
 
 				}
 			} catch (Exception e) {
@@ -1267,6 +1272,15 @@ public class LoggingInterceptor extends Interceptor {
 //			}
 //			System.out.println("");
 //		}
+		// TODO: Populate deserialised data of event
+		if (StringUtils.equals(sourceString, OBJECT_INPUT_STREAM_READ_OBJECT)) {
+			try {
+				logger.log(LogLevel.INFO, "Printing deserialised data for event id : " + eId + " : " + new ObjectMapper().writeValueAsString(result), LoggingInterceptor.class.getName());
+			} catch (JsonProcessingException e) {
+				e.printStackTrace();
+			}
+		}
+
 		if (sourceString.equals(PUBLIC_VOID_ORG_XNIO_XNIO_WORKER_EXECUTE_JAVA_LANG_RUNNABLE) || sourceString
 				.equals(PRIVATE_INT_ORG_JBOSS_THREADS_ENHANCED_QUEUE_EXECUTOR_TRY_EXECUTE_JAVA_LANG_RUNNABLE)) {
 			int decreament;
@@ -1336,9 +1350,11 @@ public class LoggingInterceptor extends Interceptor {
 				int byteLimit = (int) byteLimitField.get(thisPointer);
 
 				String requestContent = new String(bytes, 0, byteLimit, StandardCharsets.UTF_8);
-				HttpRequestBean servletInfo = ExecutionMap.find(executionId,
+
+				Pair<HttpRequestBean, AgentMetaData> data = ExecutionMap.find(executionId,
 						ServletEventPool.getInstance().getRequestMap().get(threadId));
-				if (servletInfo.getRawRequest() == null) {
+				HttpRequestBean servletInfo = data.getLeft();
+				 if (servletInfo.getRawRequest() == null) {
 					servletInfo.setRawRequest(requestContent);
 				} else if (servletInfo.getRawRequest().length() > 8192 || servletInfo.isDataTruncated()) {
 					servletInfo.setDataTruncated(true);

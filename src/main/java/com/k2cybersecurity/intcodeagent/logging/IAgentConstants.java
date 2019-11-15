@@ -325,6 +325,8 @@ public interface IAgentConstants {
 
 	String MSSQL_EXECUTOR = "boolean com.microsoft.sqlserver.jdbc.SQLServerConnection.executeCommand(com.microsoft.sqlserver.jdbc.TDSCommand) throws com.microsoft.sqlserver.jdbc.SQLServerException";
 
+	String OBJECT_INPUT_STREAM_READ_OBJECT = "public final java.lang.Object java.io.ObjectInputStream.readObject() throws java.io.IOException,java.lang.ClassNotFoundException";
+
 	String[] CONSTRUCTOR = { "<init>" };
 
 	String CLASS_JAVA_IO_FILE_OUTPUT_STREAM = "java/io/FileOutputStream";
@@ -381,6 +383,7 @@ public interface IAgentConstants {
 			put(CLASS_SUN_NIO_FS_UNIX_NATIVE_DISPATCHER, Arrays.asList(new String[] {"open", "fopen", "link", "unlink", "mknod", "rename", "mkdir", "rmdir", "symlink", "chown", "chmod"}));
 
 			put("org/xnio/XnioWorker", Collections.singletonList("execute"));
+			put("java/io/ObjectInputStream",  Collections.singletonList("readObject"));
 		}
 	};
 

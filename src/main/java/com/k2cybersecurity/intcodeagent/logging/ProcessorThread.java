@@ -13,6 +13,7 @@ import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 import java.util.regex.Matcher;
@@ -66,7 +67,6 @@ public class ProcessorThread implements Runnable {
 	 * @param stackTrace
 	 * @param tId
 	 * @param preProcessingTime
-	 * @param servletInfo
 	 */
 
 	public ProcessorThread(Object source, Object[] arg, Long executionId, StackTraceElement[] stackTrace, long tId,
@@ -198,12 +198,15 @@ public class ProcessorThread implements Runnable {
 					Matcher matcher = PATTERN.matcher(klassName);
 					if (Method.class.getName().equals(klassName)
 							&& StringUtils.equals(trace[i].getMethodName(), INVOKE)) {
-						intCodeResultBean.setRciElement(true);
+						intCodeResultBean.getMetaData().setTriggerViaRCI(true);
 					}
 
 					if (ObjectInputStream.class.getName().equals(klassName)
 							&& StringUtils.equals(trace[i].getMethodName(), READ_OBJECT)) {
-						intCodeResultBean.setDeserialisationElement(true);
+						intCodeResultBean.getMetaData().setTriggerViaDeserialisation(true);
+						logger.log(LogLevel.DEBUG, String.format("Printing stack trace for deserialise event : %s : %s", intCodeResultBean.getId(), Arrays
+								.asList(trace)), ProcessorThread.class.getName());
+
 					}
 
 					if (!matcher.matches() && !userclassFound) {
@@ -636,7 +639,6 @@ public class ProcessorThread implements Runnable {
 	}
 
 	/**
-	 * @param obj
 	 * @param parameters
 	 */
 	private void getClassLoaderParameterValue(Object[] args, JSONArray parameters) {
@@ -657,7 +659,6 @@ public class ProcessorThread implements Runnable {
 
 	/**
 	 * 
-	 * @param obj        this pointer object
 	 * @param parameters
 	 */
 	private JSONArray getOracleParameterValue(Object thisPointer, JSONArray parameters, String sourceString) {

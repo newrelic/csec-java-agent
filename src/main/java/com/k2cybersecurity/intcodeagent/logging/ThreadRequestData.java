@@ -1,5 +1,6 @@
 package com.k2cybersecurity.intcodeagent.logging;
 
+import com.k2cybersecurity.intcodeagent.models.javaagent.AgentMetaData;
 import com.k2cybersecurity.intcodeagent.models.javaagent.HttpRequestBean;
 
 public class ThreadRequestData extends ExecutionMap {
