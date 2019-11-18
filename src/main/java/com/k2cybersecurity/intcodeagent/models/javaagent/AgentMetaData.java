@@ -1,6 +1,9 @@
 package com.k2cybersecurity.intcodeagent.models.javaagent;
 
 import com.k2cybersecurity.intcodeagent.websocket.JsonConverter;
+import org.json.simple.JSONArray;
+
+import java.util.List;
 
 public class AgentMetaData{
 
@@ -8,7 +11,11 @@ public class AgentMetaData{
 
 	private boolean triggerViaDeserialisation;
 
-	public AgentMetaData() {}
+	private JSONArray rciMethodsCalls;
+
+	public AgentMetaData() {
+		this.rciMethodsCalls = new JSONArray();
+	}
 
 	@Override
 	public String toString() {
@@ -29,5 +36,13 @@ public class AgentMetaData{
 
 	public void setTriggerViaDeserialisation(boolean triggerViaDeserialisation) {
 		this.triggerViaDeserialisation = triggerViaDeserialisation;
+	}
+
+	public JSONArray getRciMethodsCalls() {
+		return rciMethodsCalls;
+	}
+
+	public void setRciMethodsCalls(JSONArray rciMethodsCalls) {
+		this.rciMethodsCalls = rciMethodsCalls;
 	}
 }
