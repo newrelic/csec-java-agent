@@ -28,28 +28,28 @@ public abstract class MapConstants {
 
 		// asynchronous mongo calls
 		MONGO_EXECUTORS.put("public <T> void com.mongodb.async.client.MongoClientImpl$2.execute(com.mongodb.operation.AsyncReadOperation<T>,com.mongodb.ReadPreference,com.mongodb.async.SingleResultCallback<T>)",
-				VulnerabilityCaseType.DB_COMMAND);
+				VulnerabilityCaseType.SQL_DB_COMMAND);
 		MONGO_EXECUTORS.put("public <T> void com.mongodb.async.client.MongoClientImpl$2.execute(com.mongodb.operation.AsyncWriteOperation<T>,com.mongodb.async.SingleResultCallback<T>)",
-				VulnerabilityCaseType.DB_COMMAND);
+				VulnerabilityCaseType.SQL_DB_COMMAND);
 		MONGO_EXECUTORS.put("public <T> void com.mongodb.async.client.AsyncOperationExecutorImpl.execute(com.mongodb.operation.AsyncWriteOperation<T>,com.mongodb.session.ClientSession,com.mongodb.async.SingleResultCallback<T>)",
-				VulnerabilityCaseType.DB_COMMAND);
+				VulnerabilityCaseType.SQL_DB_COMMAND);
 		MONGO_EXECUTORS.put("public <T> void com.mongodb.async.client.AsyncOperationExecutorImpl.execute(com.mongodb.operation.AsyncReadOperation<T>,com.mongodb.ReadPreference,com.mongodb.session.ClientSession,com.mongodb.async.SingleResultCallback<T>)",
-				VulnerabilityCaseType.DB_COMMAND);
+				VulnerabilityCaseType.SQL_DB_COMMAND);
 		MONGO_EXECUTORS.put("public <T> void com.mongodb.async.client.OperationExecutorImpl.execute(com.mongodb.operation.AsyncReadOperation<T>,com.mongodb.ReadPreference,com.mongodb.ReadConcern,com.mongodb.async.client.ClientSession,com.mongodb.async.SingleResultCallback<T>)",
-				VulnerabilityCaseType.DB_COMMAND);
+				VulnerabilityCaseType.SQL_DB_COMMAND);
 		MONGO_EXECUTORS.put("public <T> void com.mongodb.async.client.OperationExecutorImpl.execute(com.mongodb.operation.AsyncWriteOperation<T>,com.mongodb.ReadConcern,com.mongodb.async.client.ClientSession,com.mongodb.async.SingleResultCallback<T>)",
-				VulnerabilityCaseType.DB_COMMAND);
+				VulnerabilityCaseType.SQL_DB_COMMAND);
 		// synchronous mongo calls
 		MONGO_EXECUTORS.put("private <T> T com.mongodb.connection.DefaultServerConnection.executeProtocol(com.mongodb.connection.CommandProtocol<T>,com.mongodb.session.SessionContext)",
-				VulnerabilityCaseType.DB_COMMAND);
+				VulnerabilityCaseType.SQL_DB_COMMAND);
 		MONGO_EXECUTORS.put("private <T> T com.mongodb.connection.DefaultServerConnection.executeProtocol(com.mongodb.connection.LegacyProtocol<T>)",
-				VulnerabilityCaseType.DB_COMMAND);
+				VulnerabilityCaseType.SQL_DB_COMMAND);
 		MONGO_EXECUTORS.put("private <T> T com.mongodb.internal.connection.DefaultServerConnection.executeProtocol(com.mongodb.internal.connection.CommandProtocol<T>,com.mongodb.session.SessionContext)",
-				VulnerabilityCaseType.DB_COMMAND);
+				VulnerabilityCaseType.SQL_DB_COMMAND);
 		MONGO_EXECUTORS.put("private <T> T com.mongodb.internal.connection.DefaultServerConnection.executeProtocol(com.mongodb.internal.connection.LegacyProtocol<T>)",
-				VulnerabilityCaseType.DB_COMMAND);
+				VulnerabilityCaseType.SQL_DB_COMMAND);
 		MONGO_EXECUTORS.put("private <T> T com.mongodb.connection.DefaultServerConnection.executeProtocol(com.mongodb.connection.Protocol<T>)",
-				VulnerabilityCaseType.DB_COMMAND);
+				VulnerabilityCaseType.SQL_DB_COMMAND);
 
 		FILE_EXECUTORS.put(JAVA_IO_FILE_INPUTSTREAM_OPEN, VulnerabilityCaseType.FILE_OPERATION);
 		FILE_EXECUTORS.put(JAVA_IO_FILE_OUTPUTSTREAM_OPEN, VulnerabilityCaseType.FILE_OPERATION);
@@ -114,31 +114,31 @@ public abstract class MapConstants {
 		EXECUTORS.put(SYSYTEM_CALL_START, VulnerabilityCaseType.SYSTEM_COMMAND);
 
 		// MSSQL
-		EXECUTORS.put(EXEC_MSSQL_SQLTIMEOUT, VulnerabilityCaseType.DB_COMMAND);
-		EXECUTORS.put(EXEC_MSSQL, VulnerabilityCaseType.DB_COMMAND);
+		EXECUTORS.put(EXEC_MSSQL_SQLTIMEOUT, VulnerabilityCaseType.SQL_DB_COMMAND);
+		EXECUTORS.put(EXEC_MSSQL, VulnerabilityCaseType.SQL_DB_COMMAND);
 
 		// MYSQL
-		EXECUTORS.put(EXEC_MYSQL_505, VulnerabilityCaseType.DB_COMMAND);
-		EXECUTORS.put(EXEC_MYSQL_51X, VulnerabilityCaseType.DB_COMMAND);
-		EXECUTORS.put(EXEC_MYSQL_6X, VulnerabilityCaseType.DB_COMMAND);
-		EXECUTORS.put(EXEC_MYSQL_6X2, VulnerabilityCaseType.DB_COMMAND);
-		EXECUTORS.put(EXEC_MYSQL_6X3, VulnerabilityCaseType.DB_COMMAND);
-		EXECUTORS.put(EXEC_MYSQL_6X4, VulnerabilityCaseType.DB_COMMAND);
-		EXECUTORS.put(EXEC_MYSQL_8X, VulnerabilityCaseType.DB_COMMAND);
+		EXECUTORS.put(EXEC_MYSQL_505, VulnerabilityCaseType.SQL_DB_COMMAND);
+		EXECUTORS.put(EXEC_MYSQL_51X, VulnerabilityCaseType.SQL_DB_COMMAND);
+		EXECUTORS.put(EXEC_MYSQL_6X, VulnerabilityCaseType.SQL_DB_COMMAND);
+		EXECUTORS.put(EXEC_MYSQL_6X2, VulnerabilityCaseType.SQL_DB_COMMAND);
+		EXECUTORS.put(EXEC_MYSQL_6X3, VulnerabilityCaseType.SQL_DB_COMMAND);
+		EXECUTORS.put(EXEC_MYSQL_6X4, VulnerabilityCaseType.SQL_DB_COMMAND);
+		EXECUTORS.put(EXEC_MYSQL_8X, VulnerabilityCaseType.SQL_DB_COMMAND);
 
 		// ORACLE
-		EXECUTORS.put(EXEC_ORACLE, VulnerabilityCaseType.DB_COMMAND);
+		EXECUTORS.put(EXEC_ORACLE, VulnerabilityCaseType.SQL_DB_COMMAND);
 
 		// postgresql
-		EXECUTORS.put(PSQLV3_EXECUTOR, VulnerabilityCaseType.DB_COMMAND);
-		EXECUTORS.put(PSQLV2_EXECUTOR, VulnerabilityCaseType.DB_COMMAND);
-		EXECUTORS.put(PSQL42_EXECUTOR, VulnerabilityCaseType.DB_COMMAND);
-		EXECUTORS.put(PSQLV3_EXECUTOR7_4, VulnerabilityCaseType.DB_COMMAND);
+		EXECUTORS.put(PSQLV3_EXECUTOR, VulnerabilityCaseType.SQL_DB_COMMAND);
+		EXECUTORS.put(PSQLV2_EXECUTOR, VulnerabilityCaseType.SQL_DB_COMMAND);
+		EXECUTORS.put(PSQL42_EXECUTOR, VulnerabilityCaseType.SQL_DB_COMMAND);
+		EXECUTORS.put(PSQLV3_EXECUTOR7_4, VulnerabilityCaseType.SQL_DB_COMMAND);
 
 		// HSQLDB
-		EXECUTORS.put(HSQL_V2_4, VulnerabilityCaseType.DB_COMMAND);
-		EXECUTORS.put(HSQL_V1_8_CONNECTION, VulnerabilityCaseType.DB_COMMAND);
-		EXECUTORS.put(HSQL_V1_8_SESSION, VulnerabilityCaseType.DB_COMMAND);
+		EXECUTORS.put(HSQL_V2_4, VulnerabilityCaseType.SQL_DB_COMMAND);
+		EXECUTORS.put(HSQL_V1_8_CONNECTION, VulnerabilityCaseType.SQL_DB_COMMAND);
+		EXECUTORS.put(HSQL_V1_8_SESSION, VulnerabilityCaseType.SQL_DB_COMMAND);
 
 		// MongoDB
 		EXECUTORS.putAll(MONGO_EXECUTORS);
