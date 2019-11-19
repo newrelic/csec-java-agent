@@ -3,6 +3,7 @@ package com.k2cybersecurity.intcodeagent.logging;
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.*;
 import static com.k2cybersecurity.intcodeagent.constants.MapConstants.*;
 
+import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -642,7 +643,6 @@ public class ProcessorThread implements Runnable {
 	}
 
 	/**
-	 * @param obj
 	 * @param parameters
 	 */
 	private void getClassLoaderParameterValue(Object[] args, JSONArray parameters) {
@@ -663,7 +663,6 @@ public class ProcessorThread implements Runnable {
 
 	/**
 	 * 
-	 * @param obj        this pointer object
 	 * @param parameters
 	 */
 	private JSONArray getOracleParameterValue(Object thisPointer, JSONArray parameters, String sourceString) {
@@ -772,6 +771,8 @@ public class ProcessorThread implements Runnable {
 	private void getFileParameters(Object[] obj, JSONArray parameters) {
 		if (obj[0].getClass().getName().equals("sun.nio.fs.UnixPath")) {
 			parameters.add(obj[0].toString());
+		} else if(obj[0].getClass().getName().equals("java.io.File")) {
+			parameters.add(((File)obj[0]).toString());
 		} else {
 			parameters.add(obj[0]);
 		}
