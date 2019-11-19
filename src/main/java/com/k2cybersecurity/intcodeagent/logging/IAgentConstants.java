@@ -144,6 +144,8 @@ public interface IAgentConstants {
 	String JAVA_NIO_UNIX_CHOWN = "static void sun.nio.fs.UnixNativeDispatcher.chown(sun.nio.fs.UnixPath,int,int) throws sun.nio.fs.UnixException";
 	String JAVA_NIO_UNIX_CHMOD = "static void sun.nio.fs.UnixNativeDispatcher.chmod(sun.nio.fs.UnixPath,int) throws sun.nio.fs.UnixException";
 
+	String JAVA_IO_UNIX_FS_DELETE = "public boolean java.io.UnixFileSystem.delete(java.io.File)";
+
 	String CLASS_APACHE_COMMONS_HTTP_METHOD_DIRECTOR = "org/apache/commons/httpclient/HttpMethodDirector";
 	String APACHE_COMMONS_HTTP_METHOD_DIRECTOR_METHOD = "private void org.apache.commons.httpclient.HttpMethodDirector.executeWithRetry(org.apache.commons.httpclient.HttpMethod) throws java.io.IOException,org.apache.commons.httpclient.HttpException";
 
@@ -429,4 +431,5 @@ public interface IAgentConstants {
 	String COM_IBM_WS_HTTP_CHANNEL_INBOUND_HTTP_INBOUND_LINK = "com.ibm.ws.http.channel.inbound.impl.HttpInboundLink";
 
 	String INVOKE = "invoke";
+	String JAVA_IO_UNIX_FILE_SYSTEM = "java/io/UnixFileSystem";
 }
