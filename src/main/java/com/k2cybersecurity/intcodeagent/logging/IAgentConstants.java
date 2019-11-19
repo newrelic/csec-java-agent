@@ -145,6 +145,7 @@ public interface IAgentConstants {
 	String JAVA_NIO_UNIX_CHMOD = "static void sun.nio.fs.UnixNativeDispatcher.chmod(sun.nio.fs.UnixPath,int) throws sun.nio.fs.UnixException";
 
 	String JAVA_IO_UNIX_FS_DELETE = "public boolean java.io.UnixFileSystem.delete(java.io.File)";
+	String JAVA_IO_RANDOM_ACCESS_FILE_OPEN = "private void java.io.RandomAccessFile.open(java.lang.String,int) throws java.io.FileNotFoundException";
 
 	String CLASS_APACHE_COMMONS_HTTP_METHOD_DIRECTOR = "org/apache/commons/httpclient/HttpMethodDirector";
 	String APACHE_COMMONS_HTTP_METHOD_DIRECTOR_METHOD = "private void org.apache.commons.httpclient.HttpMethodDirector.executeWithRetry(org.apache.commons.httpclient.HttpMethod) throws java.io.IOException,org.apache.commons.httpclient.HttpException";
@@ -432,4 +433,5 @@ public interface IAgentConstants {
 
 	String INVOKE = "invoke";
 	String JAVA_IO_UNIX_FILE_SYSTEM = "java/io/UnixFileSystem";
+	String JAVA_IO_RANDOM_ACCESS_FILE = "java/io/RandomAccessFile";
 }

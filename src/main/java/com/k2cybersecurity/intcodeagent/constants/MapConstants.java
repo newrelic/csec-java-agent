@@ -64,6 +64,7 @@ public abstract class MapConstants {
 		FILE_EXECUTORS.put(JAVA_NIO_UNIX_CHOWN, VulnerabilityCaseType.FILE_OPERATION);
 		FILE_EXECUTORS.put(JAVA_NIO_UNIX_CHMOD, VulnerabilityCaseType.FILE_OPERATION);
 		FILE_EXECUTORS.put(JAVA_IO_UNIX_FS_DELETE, VulnerabilityCaseType.FILE_OPERATION);
+		FILE_EXECUTORS.put(JAVA_IO_RANDOM_ACCESS_FILE_OPEN, VulnerabilityCaseType.FILE_OPERATION);
 
 		INSTRUMENTED_METHODS.put(CLASS_JAVA_LANG_PROCESS_IMPL, Collections.singletonList("start"));
 		INSTRUMENTED_METHODS.put(CLASS_COM_MICROSOFT_SQLSERVER_JDBC_SQL_SERVER_STATEMENT, Collections.singletonList("executeStatement"));
@@ -108,6 +109,9 @@ public abstract class MapConstants {
 		INSTRUMENTED_METHODS.put(CLASS_SUN_NIO_FS_UNIX_NATIVE_DISPATCHER, Arrays.asList(new String[] {"open", "fopen", "link", "unlink", "mknod", "rename", "mkdir", "rmdir", "symlink", "chown", "chmod"}));
 		INSTRUMENTED_METHODS.put("org/xnio/XnioWorker", Collections.singletonList("execute"));
 		INSTRUMENTED_METHODS.put(JAVA_IO_UNIX_FILE_SYSTEM, Collections.singletonList("delete"));
+		INSTRUMENTED_METHODS.put(JAVA_IO_RANDOM_ACCESS_FILE, Collections.singletonList("open"));
+
+
 
 
 
