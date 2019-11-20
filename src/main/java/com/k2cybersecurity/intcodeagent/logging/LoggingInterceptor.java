@@ -59,7 +59,7 @@ import static com.k2cybersecurity.intcodeagent.constants.MapConstants.*;
 
 public class LoggingInterceptor extends Interceptor {
 
-	private static final String FILE_PROTOCOL = "file://";
+	private static final String FILE_PROTOCOL = "file:/";
 	private static final String STRING_DOT = ".";
 	private static final char CH_SLASH = '/';
 	private static final String FIELD_POS = "pos";
@@ -208,7 +208,7 @@ public class LoggingInterceptor extends Interceptor {
 		for (String path : Agent.jarPathSet) {
 			filePath = path;
 			if (filePath.startsWith(FILE_PROTOCOL)) {
-				filePath = filePath.substring(FILE_PROTOCOL.length() - 1);
+				filePath = StringUtils.substringAfter(filePath, FILE_PROTOCOL);
 			}
 			filePath = StringUtils.removeAll(filePath, "!");
 			pathMatcher = applicationInformationDetectRegex.matcher(filePath);
