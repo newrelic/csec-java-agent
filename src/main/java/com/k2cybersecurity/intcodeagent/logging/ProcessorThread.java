@@ -3,6 +3,7 @@ package com.k2cybersecurity.intcodeagent.logging;
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.*;
 import static com.k2cybersecurity.intcodeagent.constants.MapConstants.*;
 
+import java.io.File;
 import java.io.ObjectInputStream;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Field;
@@ -18,6 +19,7 @@ import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.k2cybersecurity.intcodeagent.constants.MapConstants;
 import org.apache.commons.lang3.StringUtils;
 import com.k2cybersecurity.instrumentation.Agent;
 import org.json.simple.JSONArray;
@@ -184,8 +186,8 @@ public class ProcessorThread implements Runnable {
 //					logger.log(LogLevel.SEVERE, "\t\t : "+ trace[i].toString(), ProcessorThread.class.getName());
 					int lineNumber = trace[i].getLineNumber();
 					klassName = trace[i].getClassName();
-					if (IAgentConstants.MYSQL_GET_CONNECTION_MAP.containsKey(klassName)
-							&& IAgentConstants.MYSQL_GET_CONNECTION_MAP.get(klassName)
+					if (MapConstants.MYSQL_GET_CONNECTION_MAP.containsKey(klassName)
+							&& MapConstants.MYSQL_GET_CONNECTION_MAP.get(klassName)
 									.contains(trace[i].getMethodName())) {
 						intCodeResultBean.setValidationBypass(true);
 						LoggingInterceptor.JA_HEALTH_CHECK.incrementDropCount();
@@ -770,7 +772,7 @@ public class ProcessorThread implements Runnable {
 		if (obj[0].getClass().getName().equals("sun.nio.fs.UnixPath")) {
 			parameters.add(obj[0].toString());
 		} else if(obj[0].getClass().getName().equals("java.io.File")) {
-			parameters.add(((File)obj[0]).toString());
+			parameters.add((obj[0]).toString());
 		} else {
 			parameters.add(obj[0]);
 		}
