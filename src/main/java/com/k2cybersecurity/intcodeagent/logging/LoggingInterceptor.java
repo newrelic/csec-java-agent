@@ -15,6 +15,8 @@
  */
 package com.k2cybersecurity.intcodeagent.logging;
 
+import com.k2cybersecurity.instrumentation.Agent;
+import com.k2cybersecurity.instrumentation.Interceptor;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.models.javaagent.*;
@@ -24,8 +26,6 @@ import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
-import com.k2cybersecurity.instrumentation.Agent;
-import com.k2cybersecurity.instrumentation.Interceptor;
 import org.json.simple.JSONArray;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.MethodNode;
@@ -54,29 +54,8 @@ import java.util.concurrent.locks.Condition;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.*;
 import static com.k2cybersecurity.intcodeagent.constants.MapConstants.*;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.k2cybersecurity.intcodeagent.models.javaagent.*;
-import com.k2cybersecurity.intcodeagent.websocket.JsonConverter;
-import org.apache.commons.lang3.StringEscapeUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
-import org.brutusin.instrumentation.Agent;
-import org.brutusin.instrumentation.Interceptor;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.objectweb.asm.tree.ClassNode;
-import org.objectweb.asm.tree.MethodNode;
-
-import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
-import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
-import com.k2cybersecurity.intcodeagent.models.javaagent.JAHealthCheck;
-import com.k2cybersecurity.intcodeagent.websocket.EventSendPool;
-import com.k2cybersecurity.intcodeagent.websocket.WSClient;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.*;
 
 public class LoggingInterceptor extends Interceptor {
 
