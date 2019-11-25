@@ -15,35 +15,36 @@
  */
 package com.k2cybersecurity.intcodeagent.logging;
 
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.*;
+import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
+import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
+import com.k2cybersecurity.intcodeagent.models.javaagent.*;
+import com.k2cybersecurity.intcodeagent.websocket.EventSendPool;
+import com.k2cybersecurity.intcodeagent.websocket.WSClient;
+import org.apache.commons.lang3.StringEscapeUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
+import com.k2cybersecurity.instrumentation.Agent;
+import com.k2cybersecurity.instrumentation.Interceptor;
+import org.json.simple.JSONArray;
+import org.objectweb.asm.tree.ClassNode;
+import org.objectweb.asm.tree.MethodNode;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.net.SocketAddress;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.SocketAddress;
 import java.net.URISyntaxException;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.Map.Entry;
@@ -53,6 +54,8 @@ import java.util.concurrent.locks.Condition;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.*;
+import static com.k2cybersecurity.intcodeagent.constants.MapConstants.*;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.k2cybersecurity.intcodeagent.models.javaagent.*;
@@ -77,6 +80,7 @@ import com.k2cybersecurity.intcodeagent.websocket.WSClient;
 
 public class LoggingInterceptor extends Interceptor {
 
+	private static final String FILE_PROTOCOL = "file:/";
 	private static final String STRING_DOT = ".";
 	private static final char CH_SLASH = '/';
 	private static final String FIELD_POS = "pos";
@@ -103,10 +107,10 @@ public class LoggingInterceptor extends Interceptor {
 	static final int MAX_DEPTH_LOOKUP = 4; // Max number of superclasses to lookup for a field
 	// protected static Map<Long, ServletInfo> requestMap;
 	public static String hostip = "";
-//	private static Logger logger;
+	// private static Logger logger;
 
 	private boolean isOldWildfly = false;
-	
+
 	private static final FileLoggerThreadPool logger;
 
 	private static Pattern applicationInformationDetectRegex = Pattern.compile("\\S*(\\/classes)\\S*");
@@ -181,12 +185,12 @@ public class LoggingInterceptor extends Interceptor {
 			String cmdLine = StringEscapeUtils.escapeJava(getCmdLineArgsByProc(VMPID));
 			applicationInfoBean.setProcStartTime(getStartTimeByProc(VMPID));
 			applicationInfoBean.setCmdline(cmdLine);
-//			if (cmdLine != null) {
-//				List<String> cmdlineArgs = Arrays.asList(cmdLine.split(NULL_CHAR_AS_STRING));
-//				JSONArray jsonArray = new JSONArray();
-//				jsonArray.addAll(cmdlineArgs);
-//				applicationInfoBean.setJvmArguments(jsonArray);
-//			}
+			// if (cmdLine != null) {
+			// List<String> cmdlineArgs = Arrays.asList(cmdLine.split(NULL_CHAR_AS_STRING));
+			// JSONArray jsonArray = new JSONArray();
+			// jsonArray.addAll(cmdlineArgs);
+			// applicationInfoBean.setJvmArguments(jsonArray);
+			// }
 			if (containerId != null) {
 				applicationInfoBean.setContainerID(containerId);
 				applicationInfoBean.setIsHost(false);
@@ -215,8 +219,8 @@ public class LoggingInterceptor extends Interceptor {
 
 	private static Set<DeployedApplication> getAllDeployedApplications() {
 		Set<DeployedApplication> deployedApplications = new HashSet<>();
-//		logger.debug(OBTAINED_INFORMATION);
-//		logger.debug(CLASS_PATHS, classPaths);
+		// logger.debug(OBTAINED_INFORMATION);
+		// logger.debug(CLASS_PATHS, classPaths);
 		Matcher pathMatcher;
 		String[] pathList;
 		String filePath;
@@ -224,6 +228,9 @@ public class LoggingInterceptor extends Interceptor {
 
 		for (String path : Agent.jarPathSet) {
 			filePath = path;
+			if (filePath.startsWith(FILE_PROTOCOL)) {
+				filePath = StringUtils.substringAfter(filePath, FILE_PROTOCOL);
+			}
 			filePath = StringUtils.removeAll(filePath, "!");
 			pathMatcher = applicationInformationDetectRegex.matcher(filePath);
 			if (pathMatcher.find()) {
@@ -241,6 +248,15 @@ public class LoggingInterceptor extends Interceptor {
 						if (StringUtils.endsWith(pathFile.getName(), "webapp")) {
 							deployedApplications.add(new DeployedApplication(pathFile.getParentFile().getAbsolutePath(),
 									pathFile.getParentFile().getName()));
+						}
+						deployedApplications
+								.add(new DeployedApplication(pathFile.getAbsolutePath(), pathFile.getName()));
+					} else if (StringUtils.equals(APPLICATION_INFO_BEAN.getServerInfo().getName(), "WEBLOGIC")) {
+						while (StringUtils.isNotBlank(pathFile.getName())) {
+							if (StringUtils.equalsIgnoreCase(pathFile.getParentFile().getName(), "_WL_user")) {
+								break;
+							}
+							pathFile = pathFile.getParentFile();
 						}
 						deployedApplications
 								.add(new DeployedApplication(pathFile.getAbsolutePath(), pathFile.getName()));
@@ -267,13 +283,14 @@ public class LoggingInterceptor extends Interceptor {
 		 * ", established successfully!!!"); } catch (IOException ex) { throw new
 		 * RuntimeException(ex); }
 		 */
-//		System.out.println("Classloader of LoggingInterceptor class inside is : " + this.getClass().getClassLoader());
+		// System.out.println("Classloader of LoggingInterceptor class inside is : " +
+		// this.getClass().getClassLoader());
 		try (BufferedReader reader = new BufferedReader(new FileReader(HOST_IP_PROPERTIES_FILE))) {
 			hostip = reader.readLine();
 			if (hostip != null)
 				hostip = hostip.trim();
 		}
-//		ConfigK2Logs.getInstance().initializeLogs();
+		// ConfigK2Logs.getInstance().initializeLogs();
 		APPLICATION_INFO_BEAN = createApplicationInfoBean();
 		JA_HEALTH_CHECK = new JAHealthCheck(applicationUUID);
 		try {
@@ -474,7 +491,7 @@ public class LoggingInterceptor extends Interceptor {
 			String codeName = cn.name.substring(cn.name.lastIndexOf(CH_SLASH) + 1) + STRING_DOT
 					+ INSTRUMENTED_METHODS.get(cn.name).indexOf(mn.name);
 			JA_HEALTH_CHECK.getInstrumentedMethods().add(codeName);
-//			System.out.println("Class name: " + cn.name + " , method: " + mn.name);
+			// System.out.println("Class name: " + cn.name + " , method: " + mn.name);
 		}
 		return isInstrument;
 	}
@@ -514,14 +531,28 @@ public class LoggingInterceptor extends Interceptor {
 						}
 					}
 					ServletEventPool.getInstance().decrementServletInfoReference(threadId, executionId, false);
-//					System.out.println("Current request map : " + ServletEventPool.getInstance().getRequestMap());
-//					System.out.println("Current MappedThreadIDToRemove" + ThreadMapping.getInstance().getMappedThreadIDToRemove());
-//					System.out.println("Current TempThreadRequestMap" + ThreadMapping.getInstance().getTempThreadRequestMap());
-//					System.out.println("Current MappedThreadRequestMap" + ThreadMapping.getInstance().getMappedThreadRequestMap());
 				}
 			}
 		} catch (Exception e) {
-//			e.printStackTrace();
+			// e.printStackTrace();
+		}
+	}
+
+	public static void checkDeployedApplicationAndSendHealthCheck() {
+		try {
+			logger.log(LogLevel.DEBUG,
+					"Change in classloader size : "
+							+ (Agent.allClassLoaders.size() != Agent.allClassLoadersCount.get()),
+					LoggingInterceptor.class.getName());
+			if (Agent.allClassLoaders.size() != Agent.allClassLoadersCount.get()) {
+
+				WSClient.getInstance().send(new JAHealthCheck(LoggingInterceptor.JA_HEALTH_CHECK).toString());
+
+			}
+		} catch (Exception e) {
+			logger.log(LogLevel.SEVERE,
+					"Unable to report possible change in state of deployed applications in the webserver.",
+					LoggingInterceptor.class.getName());
 		}
 	}
 
@@ -541,14 +572,16 @@ public class LoggingInterceptor extends Interceptor {
 			return;
 		}
 
-//		 // logger.log(LogLevel.FINE,"Executionid: " + eId);
-//		 // logger.log(LogLevel.FINE,"Thread Id: " + threadId);
+		// // logger.log(LogLevel.FINE,"Executionid: " + eId);
+		// // logger.log(LogLevel.FINE,"Thread Id: " + threadId);
 		// logger.log(LogLevel.FINE, "SourceString: " +sourceString);
 
-//		System.out.println("start Executionid: " + eId);
-//		System.out.println("start Thread Id: " + threadId);
-//		System.out.println("start SourceString: " + sourceString);
-//		logger.log(LogLevel.INFO, "OnStart source: " + sourceString + " :: args: " + Arrays.asList(arg[0]) + " :: eid: " + eId,LoggingInterceptor.class.getName());
+		// System.out.println("start Executionid: " + eId);
+		// System.out.println("start Thread Id: " + threadId);
+		// System.out.println("start SourceString: " + sourceString);
+		// logger.log(LogLevel.INFO, "OnStart source: " + sourceString + " :: args: " +
+		// Arrays.asList(arg[0]) + " :: eid: " +
+		// eId,LoggingInterceptor.class.getName());
 
 		if (sourceString == null)
 			return;
@@ -577,26 +610,30 @@ public class LoggingInterceptor extends Interceptor {
 					thread.setAccessible(true);
 					Thread threadObj = (Thread) thread.get(firstWaiterObj);
 					long newThreadId = threadObj.getId();
-//			System.out.println("Now created thread id : "+ threadObj.getId());
+					// System.out.println("Now created thread id : "+ threadObj.getId());
 					Pair<Long, Long> oldPairedKey = new ImmutablePair<Long, Long>(threadId, executionId - 1);
 					ThreadMapping.getInstance().getMappedThreadIDToRemove().put(oldPairedKey, newThreadId);
 					updateThreadMaps(threadId, executionId, newThreadId, 1);
-//			System.out.println("ExecuteUpdated : "+ ThreadMapping.getInstance().getMappedThreadRequestMap());
+					// System.out.println("ExecuteUpdated : "+
+					// ThreadMapping.getInstance().getMappedThreadRequestMap());
 				}
 			} catch (Throwable e) {
-//				e.printStackTrace();
+				// e.printStackTrace();
 			}
 
 		} else if (sourceString.equals(
 				PUBLIC_VOID_IO_UNDERTOW_SERVLET_HANDLERS_SERVLET_HANDLER_HANDLE_REQUEST_IO_UNDERTOW_SERVER_HTTP_SERVER_EXCHANGE_THROWS_JAVA_IO_IO_EXCEPTION_JAVAX_SERVLET_SERVLET_EXCEPTION)) {
-//			Map<Thread, StackTraceElement[]> map = Thread.currentThread().getAllStackTraces();
-//			for(Entry<Thread, StackTraceElement[]> entry : map.entrySet()) {
-//				System.out.println("Thread : "+ entry.getKey().getName());
-//				for(StackTraceElement st : entry.getValue()) {
-//					System.out.println("CN : "+st.getClassName()+ "  ::: MN : "+st.getMethodName()+" :: LN :"+ st.getLineNumber());
-//				}
-//			}
-//			System.out.println("In runnable.run : " + ThreadMapping.getInstance().getMappedThreadRequestMap());
+			// Map<Thread, StackTraceElement[]> map =
+			// Thread.currentThread().getAllStackTraces();
+			// for(Entry<Thread, StackTraceElement[]> entry : map.entrySet()) {
+			// System.out.println("Thread : "+ entry.getKey().getName());
+			// for(StackTraceElement st : entry.getValue()) {
+			// System.out.println("CN : "+st.getClassName()+ " ::: MN :
+			// "+st.getMethodName()+" :: LN :"+ st.getLineNumber());
+			// }
+			// }
+			// System.out.println("In runnable.run : " +
+			// ThreadMapping.getInstance().getMappedThreadRequestMap());
 			ServletEventPool.getInstance().incrementServletInfoReference(threadId, executionId, false);
 			if (ThreadMapping.getInstance().getMappedThreadRequestMap().containsKey(threadId)
 					&& !ThreadMapping.getInstance().getMappedThreadRequestMap().get(threadId).isEmpty()) {
@@ -611,17 +648,17 @@ public class LoggingInterceptor extends Interceptor {
 					ThreadRequestData threadRequestData = iterator.next();
 					if (threadRequestData.getExecutionId() < executionId) {
 						servletInfo = threadRequestData.getServletInfo();
-//						System.err.println("SI found : "+ servletInfo);
+						// System.err.println("SI found : "+ servletInfo);
 						break;
 					}
 
 				}
 				if (servletInfo == null) {
-//					System.err.println("No SI Mapped");
+					// System.err.println("No SI Mapped");
 					return;
 				}
 				String remoteAddress = getRemoteAddressForWildfly(arg[0]);
-				if(remoteAddress!=null)
+				if (remoteAddress != null)
 					servletInfo.setClientIP(remoteAddress);
 				ThreadMapping.getInstance().getMappedThreadRequestMap().get(threadId).removeFirst();
 				if (ThreadMapping.getInstance().getMappedThreadRequestMap().get(threadId).size() == 0) {
@@ -666,7 +703,7 @@ public class LoggingInterceptor extends Interceptor {
 				if (tailNext != null && poolThreadNodeClass.isInstance(tailNext)) {
 					Thread threadObj = (Thread) threadField.get(tailNext);
 					Long newThreadId = threadObj.getId();
-//					System.out.println("Thread ID Found : " + newThreadId);
+					// System.out.println("Thread ID Found : " + newThreadId);
 					Pair<Long, Long> oldPairedKey = new ImmutablePair<Long, Long>(threadId, executionId - 2);
 					ThreadMapping.getInstance().getMappedThreadIDToRemove().put(oldPairedKey, newThreadId);
 					updateThreadMaps(threadId, executionId, newThreadId, 2);
@@ -693,47 +730,51 @@ public class LoggingInterceptor extends Interceptor {
 							new ConcurrentLinkedDeque<ThreadRequestData>());
 				}
 				ThreadMapping.getInstance().getTempThreadRequestMap().get(pairedKey).add(threadRequestData);
-//				System.out.println("Post handle method hook: "+ ThreadMapping.getInstance().getTempThreadRequestMap());
+				// System.out.println("Post handle method hook: "+
+				// ThreadMapping.getInstance().getTempThreadRequestMap());
 			}
 		} else if (sourceString.equals(WEBSPHERE_LIBERTY_FILLBYTECACHE)
 				|| sourceString.equals(WEBSPHERE_TRADITIONAL_FILLBYTECACHE))
 			return;
 		else if (sourceString.equals(WEBSPHERE_LIBERTY_PROCESSREQUEST)
 				|| sourceString.equals(WEBSPHERE_TRADITIONAL_PROCESSREQUEST)) {
-//			Object thisPointer = arg[arg.length -1];
-//			ClassLoader currentClassLoader = arg[arg.length -1].getClass().getClassLoader();
-//			int bytePosition = -1;
-//			try {
-//				Class<?> BNFHeadersImpl = Class.forName("com.ibm.ws.genericbnf.internal.BNFHeadersImpl", true, currentClassLoader);
-//
-//				Field bytePositionField = BNFHeadersImpl.getDeclaredField("bytePosition");
-//				bytePositionField.setAccessible(true);
-//				bytePosition = (int )bytePositionField.get(thisPointer);
-//				System.out.println("entry : " + bytePosition);
-//			} catch (Exception e) {
-//				e.printStackTrace();
-//			}
-//			if(bytePosition>0) {
-//
-//			} else {
-			String remoteAddress = getRemoteAddressForWebsphere(arg[arg.length-1], sourceString);
+			// Object thisPointer = arg[arg.length -1];
+			// ClassLoader currentClassLoader = arg[arg.length
+			// -1].getClass().getClassLoader();
+			// int bytePosition = -1;
+			// try {
+			// Class<?> BNFHeadersImpl =
+			// Class.forName("com.ibm.ws.genericbnf.internal.BNFHeadersImpl", true,
+			// currentClassLoader);
+			//
+			// Field bytePositionField = BNFHeadersImpl.getDeclaredField("bytePosition");
+			// bytePositionField.setAccessible(true);
+			// bytePosition = (int )bytePositionField.get(thisPointer);
+			// System.out.println("entry : " + bytePosition);
+			// } catch (Exception e) {
+			// e.printStackTrace();
+			// }
+			// if(bytePosition>0) {
+			//
+			// } else {
+			String remoteAddress = getRemoteAddressForWebsphere(arg[arg.length - 1], sourceString);
 			ServletEventPool.getInstance().incrementServletInfoReference(threadId, executionId, false);
 			HttpRequestBean servletInfo;
 			if (!ServletEventPool.getInstance().getRequestMap().containsKey(threadId)) {
 				servletInfo = new HttpRequestBean();
-				if(remoteAddress!=null)
+				if (remoteAddress != null)
 					servletInfo.setClientIP(remoteAddress);
 				ConcurrentLinkedDeque<ExecutionMap> executionMaps = new ConcurrentLinkedDeque<ExecutionMap>();
 				executionMaps.add(new ExecutionMap(executionId, servletInfo));
 				ServletEventPool.getInstance().getRequestMap().put(threadId, executionMaps);
 			} else {
 				servletInfo = new HttpRequestBean();
-				if(remoteAddress!=null)
+				if (remoteAddress != null)
 					servletInfo.setClientIP(remoteAddress);
 				ServletEventPool.getInstance().getRequestMap().get(threadId)
 						.add(new ExecutionMap(executionId, servletInfo));
 			}
-//			}
+			// }
 		} else if (JETTY_REQUEST_ON_FILLABLE.equals(sourceString)) {
 			ServletEventPool.getInstance().incrementServletInfoReference(threadId, executionId, false);
 			HttpRequestBean servletInfo;
@@ -751,7 +792,7 @@ public class LoggingInterceptor extends Interceptor {
 			}
 			Object thisVar = arg[arg.length - 1];
 			try {
-				if(jettyAbstractConnection == null)
+				if (jettyAbstractConnection == null)
 					jettyAbstractConnection = Class.forName("org.eclipse.jetty.io.AbstractConnection", true,
 							Thread.currentThread().getContextClassLoader());
 
@@ -802,7 +843,7 @@ public class LoggingInterceptor extends Interceptor {
 					} else {
 						servletInfo.setRawRequest(servletInfo.getRawRequest() + requestContent);
 					}
-//					 logger.log(LogLevel.FINE,"Request Param : " + servletInfo);
+					// logger.log(LogLevel.FINE,"Request Param : " + servletInfo);
 				}
 				servletInfo.addGenerationTime((int) (System.currentTimeMillis() - start));
 			} catch (Exception e) {
@@ -838,7 +879,7 @@ public class LoggingInterceptor extends Interceptor {
 					} else {
 						servletInfo.setRawRequest(servletInfo.getRawRequest() + requestContent);
 					}
-//					  logger.log(LogLevel.FINE,"Request Param : " + servletInfo);
+					// logger.log(LogLevel.FINE,"Request Param : " + servletInfo);
 				}
 				servletInfo.addGenerationTime((int) (System.currentTimeMillis() - start));
 			} catch (Exception e) {
@@ -945,8 +986,9 @@ public class LoggingInterceptor extends Interceptor {
 							positionHb);
 					requestContent = new String(buff.getByteArray(), 0, buff.getLimit(), StandardCharsets.UTF_8);
 					servletInfo.setRawRequest(requestContent);
-//					logger.log(LogLevel.INFO, "Request Param : " + threadId + ":" + executionId + " : " + servletInfo,
-//							LoggingInterceptor.class.getName());
+					// logger.log(LogLevel.INFO, "Request Param : " + threadId + ":" + executionId +
+					// " : " + servletInfo,
+					// LoggingInterceptor.class.getName());
 				}
 				servletInfo.addGenerationTime((int) (System.currentTimeMillis() - start));
 			} catch (Exception e) {
@@ -960,22 +1002,24 @@ public class LoggingInterceptor extends Interceptor {
 
 				ServletEventPool.getInstance().incrementServletInfoReference(threadId, executionId, false);
 				Object servletObject = arg[0];
-//				System.out.println("Searching arg0 in : "+ servletObject.getClass().getName() + "  ::  " + servletObject.getClass().getSuperclass().getName() + " :: " + Arrays.asList(servletObject.getClass().getDeclaredFields()));
+				// System.out.println("Searching arg0 in : "+ servletObject.getClass().getName()
+				// + " :: " + servletObject.getClass().getSuperclass().getName() + " :: " +
+				// Arrays.asList(servletObject.getClass().getDeclaredFields()));
 
-                Field connectionField = servletObject.getClass().getDeclaredField(FIELD_CONNECTION);
-                connectionField.setAccessible(true);
-                Object connection = connectionField.get(servletObject);
+				Field connectionField = servletObject.getClass().getDeclaredField(FIELD_CONNECTION);
+				connectionField.setAccessible(true);
+				Object connection = connectionField.get(servletObject);
 
-                Field socketField = connection.getClass().getDeclaredField("socket");
-                socketField.setAccessible(true);
-                Object socket = socketField.get(connection);
+				Field socketField = connection.getClass().getDeclaredField("socket");
+				socketField.setAccessible(true);
+				Object socket = socketField.get(connection);
 
-                Method getRemoteSocketAddressMethod = socket.getClass().getMethod("getRemoteSocketAddress", null);
-                InetSocketAddress remoteAddr = (InetSocketAddress) getRemoteSocketAddressMethod.invoke(socket, null);
+				Method getRemoteSocketAddressMethod = socket.getClass().getMethod("getRemoteSocketAddress", null);
+				InetSocketAddress remoteAddr = (InetSocketAddress) getRemoteSocketAddressMethod.invoke(socket, null);
 
 				servletInfo.setClientIP(remoteAddr.getHostString());
 
-                Field inputStreamField = servletObject.getClass().getDeclaredField(FIELD_NAME_INPUT_STREAM);
+				Field inputStreamField = servletObject.getClass().getDeclaredField(FIELD_NAME_INPUT_STREAM);
 				inputStreamField.setAccessible(true);
 				Object inputStream = inputStreamField.get(servletObject);
 
@@ -983,7 +1027,9 @@ public class LoggingInterceptor extends Interceptor {
 				inField.setAccessible(true);
 				Object in = inField.get(inputStream);
 				if (!in.getClass().getName().equals(WEBLOGIC_UTILS_IO_NULL_INPUT_STREAM)) {
-//					System.out.println("Searching buf in : "+ in.getClass().getName() + "  ::  " + in.getClass().getSuperclass().getName() + " :: " + Arrays.asList(in.getClass().getDeclaredFields()));
+					// System.out.println("Searching buf in : "+ in.getClass().getName() + " :: " +
+					// in.getClass().getSuperclass().getName() + " :: " +
+					// Arrays.asList(in.getClass().getDeclaredFields()));
 					Field bufField = in.getClass().getDeclaredField(BYTE_BUFFER_FIELD_BUF);
 					bufField.setAccessible(true);
 					Object buf = bufField.get(in);
@@ -1017,7 +1063,8 @@ public class LoggingInterceptor extends Interceptor {
 							ServletEventPool.getInstance().getRequestMap().get(threadId)
 									.add(new ExecutionMap(executionId, servletInfo));
 						}
-//					System.out.println("request map: "+ServletEventPool.getInstance().getRequestMap().get(threadId));
+						// System.out.println("request map:
+						// "+ServletEventPool.getInstance().getRequestMap().get(threadId));
 					}
 				} else {
 					Field connHandlerField = inputStream.getClass().getDeclaredField(FIELD_CONN_HANDLER);
@@ -1050,17 +1097,20 @@ public class LoggingInterceptor extends Interceptor {
 			} catch (Exception e) {
 				logger.log(LogLevel.WARNING, "Exception occured in WEBLOGIC_INVOKE_SERVLET buffer processing : ", e,
 						LoggingInterceptor.class.getName());
-//				e.printStackTrace();
+				// e.printStackTrace();
 			}
 		} else {
-//			 logger.log(LogLevel.INFO, "ServletEventPool.getInstance().getRequestMap() : "+ ServletEventPool.getInstance().getRequestMap(), LoggingInterceptor.class.getName());
+			// logger.log(LogLevel.INFO, "ServletEventPool.getInstance().getRequestMap() :
+			// "+ ServletEventPool.getInstance().getRequestMap(),
+			// LoggingInterceptor.class.getName());
 			try {
 				if (MYSQL_SOURCE_METHOD_LIST.contains(sourceString) && arg[0] != null) {
 					processMysqlStatement(arg, threadId, sourceString);
 				}
 				if (ServletEventPool.getInstance().getRequestMap().containsKey(threadId) && ExecutionMap
 						.find(executionId, ServletEventPool.getInstance().getRequestMap().get(threadId)) != null) {
-//					logger.log(LogLevel.INFO, "Other event : source : "+ sourceString, LoggingInterceptor.class.getName());
+					// logger.log(LogLevel.INFO, "Other event : source : "+ sourceString,
+					// LoggingInterceptor.class.getName());
 
 					if (FILE_EXECUTORS.containsKey(sourceString)) {
 						checkForFileIntegrityVoilations(arg, ExecutionMap.find(executionId,
@@ -1089,21 +1139,30 @@ public class LoggingInterceptor extends Interceptor {
 			Object thisPointer = arg;
 			ClassLoader currentClassLoader = thisPointer.getClass().getClassLoader();
 			Method getVirtualConnectionMethod;
-			if(sourceString.equals(WEBSPHERE_LIBERTY_PROCESSREQUEST))
-				getVirtualConnectionMethod = Class.forName(COM_IBM_WS_HTTP_CHANNEL_INTERNAL_INBOUND_HTTP_INBOUND_LINK, true, currentClassLoader).getDeclaredMethod(METHOD_GET_VIRTUAL_CONNECTION);
+			if (sourceString.equals(WEBSPHERE_LIBERTY_PROCESSREQUEST))
+				getVirtualConnectionMethod = Class
+						.forName(COM_IBM_WS_HTTP_CHANNEL_INTERNAL_INBOUND_HTTP_INBOUND_LINK, true, currentClassLoader)
+						.getDeclaredMethod(METHOD_GET_VIRTUAL_CONNECTION);
 			else
-				getVirtualConnectionMethod = Class.forName(COM_IBM_WS_HTTP_CHANNEL_INBOUND_HTTP_INBOUND_LINK, true, currentClassLoader).getDeclaredMethod(METHOD_GET_VIRTUAL_CONNECTION);
+				getVirtualConnectionMethod = Class
+						.forName(COM_IBM_WS_HTTP_CHANNEL_INBOUND_HTTP_INBOUND_LINK, true, currentClassLoader)
+						.getDeclaredMethod(METHOD_GET_VIRTUAL_CONNECTION);
 			Object virtualConnectionObj = getVirtualConnectionMethod.invoke(thisPointer);
 
-			Method getConnectionDescriptorMethod = Class.forName(COM_IBM_WSSPI_CHANNELFW_VIRTUAL_CONNECTION, true, currentClassLoader).getDeclaredMethod(METHOD_GET_CONNECTION_DESCRIPTOR);
+			Method getConnectionDescriptorMethod = Class
+					.forName(COM_IBM_WSSPI_CHANNELFW_VIRTUAL_CONNECTION, true, currentClassLoader)
+					.getDeclaredMethod(METHOD_GET_CONNECTION_DESCRIPTOR);
 			Object connectionDescObj = getConnectionDescriptorMethod.invoke(virtualConnectionObj);
 
-			Method getRemoteHostAddressMethod = Class.forName(COM_IBM_WSSPI_CHANNELFW_CONNECTION_DESCRIPTOR, true, currentClassLoader).getDeclaredMethod(METHOD_GET_REMOTE_HOST_ADDRESS);
+			Method getRemoteHostAddressMethod = Class
+					.forName(COM_IBM_WSSPI_CHANNELFW_CONNECTION_DESCRIPTOR, true, currentClassLoader)
+					.getDeclaredMethod(METHOD_GET_REMOTE_HOST_ADDRESS);
 			remoteAddress = (String) getRemoteHostAddressMethod.invoke(connectionDescObj);
 
-			} catch (Exception ex) {
-				logger.log(LogLevel.ERROR, "Error getting remote address : "+ex.getMessage(), LoggingInterceptor.class.getName());
-			}
+		} catch (Exception ex) {
+			logger.log(LogLevel.ERROR, "Error getting remote address : " + ex.getMessage(),
+					LoggingInterceptor.class.getName());
+		}
 		return remoteAddress;
 	}
 
@@ -1128,20 +1187,24 @@ public class LoggingInterceptor extends Interceptor {
 
 				SocketAddress socketAddressObj = socketChannelObj.getRemoteAddress();
 				if (socketAddressObj instanceof InetSocketAddress) {
-					InetSocketAddress isa = (InetSocketAddress)socketAddressObj;
+					InetSocketAddress isa = (InetSocketAddress) socketAddressObj;
 					InetAddress address = isa.getAddress();
 					remoteAdderss = address.getHostAddress();
 				} else {
-					logger.log(LogLevel.INFO, "socketAddressObj not instance of InetSocketAddress, need to handle other cases", LoggingInterceptor.class.getName());
+					logger.log(LogLevel.INFO,
+							"socketAddressObj not instance of InetSocketAddress, need to handle other cases",
+							LoggingInterceptor.class.getName());
 				}
 			} else {
-				logger.log(LogLevel.INFO, "originalSourceConduit not instance of NioSocketConduit, need to handle other cases", LoggingInterceptor.class.getName());
+				logger.log(LogLevel.INFO,
+						"originalSourceConduit not instance of NioSocketConduit, need to handle other cases",
+						LoggingInterceptor.class.getName());
 			}
 
-			} catch (Throwable ex) {
-				System.out.println(ex.getMessage());
-				ex.printStackTrace(System.err);
-			}
+		} catch (Throwable ex) {
+			System.out.println(ex.getMessage());
+			ex.printStackTrace(System.err);
+		}
 		return remoteAdderss;
 	}
 
@@ -1167,11 +1230,13 @@ public class LoggingInterceptor extends Interceptor {
 
 	private void updateThreadMaps(long threadId, Long executionId, Long newThreadId, int i) {
 		Pair<Long, Long> pairedKey = new ImmutablePair<>(threadId, executionId - i);
-//		System.out.println("Fetching for pair : "+ threadId+" AND "+ (executionId - i));
-//		System.out.println("Present is : "+ ThreadMapping.getInstance().getTempThreadRequestMap());
+		// System.out.println("Fetching for pair : "+ threadId+" AND "+ (executionId -
+		// i));
+		// System.out.println("Present is : "+
+		// ThreadMapping.getInstance().getTempThreadRequestMap());
 		ConcurrentLinkedDeque<ThreadRequestData> threadRequestData = ThreadMapping.getInstance()
 				.getTempThreadRequestMap().get(pairedKey);
-//		ThreadMapping.getInstance().getTempThreadRequestMap().remove(pairedKey);
+		// ThreadMapping.getInstance().getTempThreadRequestMap().remove(pairedKey);
 		if (threadRequestData != null) {
 			if (!ThreadMapping.getInstance().getMappedThreadRequestMap().containsKey(newThreadId))
 				ThreadMapping.getInstance().getMappedThreadRequestMap().put(newThreadId,
@@ -1197,8 +1262,8 @@ public class LoggingInterceptor extends Interceptor {
 				bytesObtained[i] = bb;
 			}
 			requestData = new String(bytesObtained);
-//			System.out.println("Data finally obtained : " + requestData);
-//			logger.log(LogLevel.DEBUG, requestData, LoggingInterceptor.class.getName());
+			// System.out.println("Data finally obtained : " + requestData);
+			// logger.log(LogLevel.DEBUG, requestData, LoggingInterceptor.class.getName());
 		} catch (Exception e) {
 			logger.log(LogLevel.WARNING, "Exception occured in fetchRequestStringForWildfly : ", e,
 					LoggingInterceptor.class.getName());
@@ -1208,38 +1273,38 @@ public class LoggingInterceptor extends Interceptor {
 
 	@Override
 	protected void doOnThrowableThrown(Object source, Throwable throwable, String executionId) {
-//		String sourceString = null;
-//		long threadId = Thread.currentThread().getId();
-//		if (source instanceof Method) {
-//			sourceString = ((Method) source).toGenericString();
-//
-//		} else if (source instanceof Constructor) {
-//			sourceString = ((Constructor) source).toGenericString();
-//		} else {
-//			return;
-//		}
-//		System.out.println("doOnThrowableThrown Executionid: " + executionId);
-//		System.out.println("doOnThrowableThrown Thread Id: " + threadId);
-//		System.out.println("doOnThrowableThrown SourceString: " + sourceString);
+		// String sourceString = null;
+		// long threadId = Thread.currentThread().getId();
+		// if (source instanceof Method) {
+		// sourceString = ((Method) source).toGenericString();
+		//
+		// } else if (source instanceof Constructor) {
+		// sourceString = ((Constructor) source).toGenericString();
+		// } else {
+		// return;
+		// }
+		// System.out.println("doOnThrowableThrown Executionid: " + executionId);
+		// System.out.println("doOnThrowableThrown Thread Id: " + threadId);
+		// System.out.println("doOnThrowableThrown SourceString: " + sourceString);
 
 		onTerminationOfHookedMethods(source, executionId);
 	}
 
 	@Override
 	protected void doOnThrowableUncatched(Object source, Throwable throwable, String executionId) {
-//		String sourceString = null;
-//		long threadId = Thread.currentThread().getId();
-//		if (source instanceof Method) {
-//			sourceString = ((Method) source).toGenericString();
-//
-//		} else if (source instanceof Constructor) {
-//			sourceString = ((Constructor) source).toGenericString();
-//		} else {
-//			return;
-//		}
-//		System.out.println("doOnThrowableUncatched Executionid: " + executionId);
-//		System.out.println("doOnThrowableUncatched Thread Id: " + threadId);
-//		System.out.println("doOnThrowableUncatched SourceString: " + sourceString);
+		// String sourceString = null;
+		// long threadId = Thread.currentThread().getId();
+		// if (source instanceof Method) {
+		// sourceString = ((Method) source).toGenericString();
+		//
+		// } else if (source instanceof Constructor) {
+		// sourceString = ((Constructor) source).toGenericString();
+		// } else {
+		// return;
+		// }
+		// System.out.println("doOnThrowableUncatched Executionid: " + executionId);
+		// System.out.println("doOnThrowableUncatched Thread Id: " + threadId);
+		// System.out.println("doOnThrowableUncatched SourceString: " + sourceString);
 
 		onTerminationOfHookedMethods(source, executionId);
 	}
@@ -1257,30 +1322,24 @@ public class LoggingInterceptor extends Interceptor {
 		} else {
 			return;
 		}
-//		System.out.println("end Executionid: " + eId);
-//		System.out.println("end Thread Id: " + threadId);
-//		System.out.println("end SourceString: " + sourceString);
+		// System.out.println("end Executionid: " + eId);
+		// System.out.println("end Thread Id: " + threadId);
+		// System.out.println("end SourceString: " + sourceString);
 		Long executionId = Long.parseLong(eId.split(COLON_SEPERATOR)[1]);
-//		logger.log(LogLevel.INFO, "OnFinish source: " + sourceString +  " :: eid: " + eId,LoggingInterceptor.class.getName());
+		// logger.log(LogLevel.INFO, "OnFinish source: " + sourceString + " :: eid: " +
+		// eId,LoggingInterceptor.class.getName());
 
-//		if(sourceString.equals("private static synchronized long java.lang.Thread.nextThreadID()")) {
-//			long threadIdCreated = (long) result;
-//			System.out.println("Created Thread's id ::: "+ threadIdCreated);
-//			System.out.println("We should map : "+threadId+" to : "+ threadIdCreated);
-//			for(StackTraceElement tr : Thread.currentThread().getStackTrace()) {
-//				System.out.println("CN : "+ tr.getClassName() + "." + tr.getMethodName()+" :: LN : "+ tr.getLineNumber());
-//			}
-//			System.out.println("");
-//		}
-		// TODO: Populate deserialised data of event
-		if (StringUtils.equals(sourceString, OBJECT_INPUT_STREAM_READ_OBJECT)) {
-			try {
-				logger.log(LogLevel.INFO, "Printing deserialised data for event id : " + eId + " : " + new ObjectMapper().writeValueAsString(result), LoggingInterceptor.class.getName());
-			} catch (JsonProcessingException e) {
-				e.printStackTrace();
-			}
-		}
-
+		// if(sourceString.equals("private static synchronized long
+		// java.lang.Thread.nextThreadID()")) {
+		// long threadIdCreated = (long) result;
+		// System.out.println("Created Thread's id ::: "+ threadIdCreated);
+		// System.out.println("We should map : "+threadId+" to : "+ threadIdCreated);
+		// for(StackTraceElement tr : Thread.currentThread().getStackTrace()) {
+		// System.out.println("CN : "+ tr.getClassName() + "." + tr.getMethodName()+" ::
+		// LN : "+ tr.getLineNumber());
+		// }
+		// System.out.println("");
+		// }
 		if (sourceString.equals(PUBLIC_VOID_ORG_XNIO_XNIO_WORKER_EXECUTE_JAVA_LANG_RUNNABLE) || sourceString
 				.equals(PRIVATE_INT_ORG_JBOSS_THREADS_ENHANCED_QUEUE_EXECUTOR_TRY_EXECUTE_JAVA_LANG_RUNNABLE)) {
 			int decreament;
@@ -1299,16 +1358,17 @@ public class LoggingInterceptor extends Interceptor {
 				PUBLIC_JAVA_LANG_THREAD_ORG_XNIO_XNIO_WORKER$_WORKER_THREAD_FACTORY_NEW_THREAD_JAVA_LANG_RUNNABLE)) {
 			Thread returnedThread = (Thread) result;
 			Long newThreadId = returnedThread.getId();
-//			System.out.println("Created Thread's id ::: " + newThreadId);
-//			System.out.println("We should map : "+threadId+" to : "+ newThreadId);
-//			if(oldWildfly)
-//				updateThreadMaps(threadId, executionId, newThreadId, 1);
-//			else
+			// System.out.println("Created Thread's id ::: " + newThreadId);
+			// System.out.println("We should map : "+threadId+" to : "+ newThreadId);
+			// if(oldWildfly)
+			// updateThreadMaps(threadId, executionId, newThreadId, 1);
+			// else
 			Pair<Long, Long> oldPairedKey;
 			if (isOldWildfly) {
 				oldPairedKey = new ImmutablePair<Long, Long>(threadId, executionId - 2);
 
-//			System.out.println("HereMappedThreadIDToRemove" + ThreadMapping.getInstance().getMappedThreadIDToRemove());
+				// System.out.println("HereMappedThreadIDToRemove" +
+				// ThreadMapping.getInstance().getMappedThreadIDToRemove());
 				if (ThreadMapping.getInstance().getMappedThreadIDToRemove().containsKey(oldPairedKey)) {
 					ThreadMapping.getInstance().getMappedThreadRequestMap()
 							.remove(ThreadMapping.getInstance().getMappedThreadIDToRemove().get(oldPairedKey));
@@ -1322,7 +1382,8 @@ public class LoggingInterceptor extends Interceptor {
 			else
 				updateThreadMaps(threadId, executionId, newThreadId, 3);
 			ThreadMapping.getInstance().getTempThreadRequestMap().remove(oldPairedKey);
-//			System.out.println("Updated : "+ ThreadMapping.getInstance().getMappedThreadRequestMap());
+			// System.out.println("Updated : "+
+			// ThreadMapping.getInstance().getMappedThreadRequestMap());
 
 		} else if (sourceString.equals(WEBSPHERE_LIBERTY_FILLBYTECACHE)
 				|| sourceString.equals(WEBSPHERE_TRADITIONAL_FILLBYTECACHE)) {
@@ -1492,6 +1553,7 @@ public class LoggingInterceptor extends Interceptor {
 		}
 		ServletEventPool.getInstance().shutDownThreadPoolExecutor();
 		IPScheduledThread.getInstance().shutDownThreadPoolExecutor();
+
 		Agent.globalInstr.removeTransformer(classTransformer);
 		retransformHookedClassesWrapper();
 		logger.log(LogLevel.SEVERE, "Java Agent shutdown complete.", LoggingInterceptor.class.getName());
@@ -1501,11 +1563,11 @@ public class LoggingInterceptor extends Interceptor {
 	public boolean addShutDownHook(final Runtime runtime, final ClassFileTransformer classTransformer) {
 		FileWatcher.getInstance().setClassTransformer(classTransformer);
 		FileWatcher.getInstance().setRuntime(runtime);
-//		try {
-//			FileWatcher.getInstance().watchDirectory("/etc/k2-adp");
-//		} catch (IOException e) {
-//			logger.log(LogLevel.SEVERE, e.toString());
-//		}
+		// try {
+		// FileWatcher.getInstance().watchDirectory("/etc/k2-adp");
+		// } catch (IOException e) {
+		// logger.log(LogLevel.SEVERE, e.toString());
+		// }
 		runtime.addShutdownHook(new Thread() {
 			@Override
 			public void run() {
@@ -1517,11 +1579,11 @@ public class LoggingInterceptor extends Interceptor {
 
 	@Override
 	protected List<String> getClassesToLoad() {
-		return new ArrayList<String>(IAgentConstants.INSTRUMENTED_METHODS.keySet());
+		return new ArrayList<String>(INSTRUMENTED_METHODS.keySet());
 	}
 
 	private static void retransformHookedClassesWrapper() {
-		List<String> classesToRetransform = new ArrayList<String>(IAgentConstants.INSTRUMENTED_METHODS.keySet());
+		List<String> classesToRetransform = new ArrayList<String>(INSTRUMENTED_METHODS.keySet());
 
 		Map<String, Class<?>> allLoadedClasses = new HashMap<>();
 
@@ -1565,10 +1627,12 @@ public class LoggingInterceptor extends Interceptor {
 
 	}
 
-//	private Object getNextTail(Object tailObject, ClassLoader currentClassLoader) {
-//		Field tailField = Class.forName("org.jboss.threads.EnhancedQueueExecutor", true, currentClassLoader).getDeclaredField("tail");
-//		tailField.setAccessible(true);
-//		Object tailObject = tailField.get(tailObject);
-//	}
+	// private Object getNextTail(Object tailObject, ClassLoader currentClassLoader)
+	// {
+	// Field tailField = Class.forName("org.jboss.threads.EnhancedQueueExecutor",
+	// true, currentClassLoader).getDeclaredField("tail");
+	// tailField.setAccessible(true);
+	// Object tailObject = tailField.get(tailObject);
+	// }
 
 }

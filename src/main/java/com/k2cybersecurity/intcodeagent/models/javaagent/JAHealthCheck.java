@@ -4,7 +4,7 @@ import java.net.URL;
 import java.util.Enumeration;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.brutusin.instrumentation.Agent;
+import com.k2cybersecurity.instrumentation.Agent;
 import org.json.simple.JSONArray;
 
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
@@ -205,12 +205,13 @@ public class JAHealthCheck extends AgentBasicInfo{
 					logger.log(LogLevel.WARNING,"Throwable in setLibPath : ", e, JAHealthCheck.class.getName());
 				}
 			}
-			if (Agent.jarPathSet.size() != lastJarSetSize) {
+			Agent.allClassLoadersCount.set(Agent.allClassLoaders.size());
+			logger.log(LogLevel.DEBUG, "Current JarSet : " + Agent.jarPathSet,JAHealthCheck.class.getName());
+//			if (Agent.jarPathSet.size() != lastJarSetSize) {
 				JSONArray jarSet = new JSONArray();
 				jarSet.addAll(Agent.jarPathSet);
-				Agent.allClassLoadersCount.set(Agent.allClassLoaders.size());
 				LoggingInterceptor.updateServerInfo();
-			}
+//			}
 		}
 	}
 

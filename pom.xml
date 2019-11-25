@@ -3,17 +3,11 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<parent>
-		<groupId>org.brutusin</groupId>
-		<artifactId>brutusin</artifactId>
-		<version>1.0.1</version>
-	</parent>
-	<groupId>org.brutusin</groupId>
+	<groupId>com.k2cybersecurity</groupId>
 	<artifactId>K2-JavaAgent</artifactId>
 	<version>1.0.0</version>
 	<name>K2-JavaAgent</name>
 	<description>A configurable java agent to log programs running on the JVM</description>
-	<url>https://github.com/brutusin/logging-instrumentation</url>
 
 	<properties>
 		<maven.compiler.source>1.7</maven.compiler.source>
@@ -23,23 +17,6 @@
 		<commitId>0c876e5</commitId>
 		<k2JavaAgentVersion>1</k2JavaAgentVersion>
 	</properties>
-
-	<issueManagement>
-		<system>GitHub Issues</system>
-		<url>https://github.com/brutusin/logging-instrumentation/issues</url>
-	</issueManagement>
-
-	<ciManagement>
-		<system>travis-ci</system>
-		<url>https://travis-ci.org/brutusin/logging-instrumentation</url>
-	</ciManagement>
-
-	<scm>
-		<url>https://github.com/brutusin/logging-instrumentation</url>
-		<connection>scm:git:https://github.com/brutusin/logging-instrumentation.git</connection>
-		<developerConnection>scm:git:https://github.com/brutusin/logging-instrumentation.git</developerConnection>
-		<tag>HEAD</tag>
-	</scm>
 
 	<dependencies>
 		<!-- https://mvnrepository.com/artifact/com.googlecode.json-simple/json-simple -->
@@ -57,9 +34,9 @@
 			<version>2.9.8</version>
 		</dependency>
 		<dependency>
-			<groupId>org.brutusin</groupId>
+			<groupId>com.k2cybersecurity</groupId>
 			<artifactId>instrumentation</artifactId>
-			<version>1.0.1.0</version>
+			<version>1.0.0</version>
 		</dependency>
 		<dependency>
 			<groupId>k2.org.java-websocket</groupId>
@@ -107,8 +84,8 @@
 				<configuration>
 					<archive>
 						<manifestEntries>
-							<Premain-Class>sun.reflect.org.brutusin.instrumentation.Agent</Premain-Class>
-							<Agent-Class>sun.reflect.org.brutusin.instrumentation.Agent</Agent-Class>
+							<Premain-Class>sun.reflect.com.k2cybersecurity.instrumentation.Agent</Premain-Class>
+							<Agent-Class>sun.reflect.com.k2cybersecurity.instrumentation.Agent</Agent-Class>
 							<Can-Retransform-Classes>true</Can-Retransform-Classes>
 							<Can-Redefine-Classes>true</Can-Redefine-Classes>
 							<Boot-Class-Path>${project.artifactId}-${project.version}-jar-with-dependencies.${project.packaging}</Boot-Class-Path>
@@ -142,10 +119,6 @@
 							</transformers>
 							<finalName>${project.artifactId}-${project.version}-jar-with-dependencies</finalName>
 							<relocations>
-								<relocation>
-									<pattern>org.brutusin</pattern>
-									<shadedPattern>sun.reflect.org.brutusin</shadedPattern>
-								</relocation>
 								<relocation>
 									<pattern>org.objectweb</pattern>
 									<shadedPattern>sun.reflect.org.objectweb</shadedPattern>

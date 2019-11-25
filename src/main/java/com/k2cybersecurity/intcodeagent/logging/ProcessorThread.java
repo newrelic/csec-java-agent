@@ -1,6 +1,7 @@
 package com.k2cybersecurity.intcodeagent.logging;
 
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.*;
+import static com.k2cybersecurity.intcodeagent.constants.MapConstants.*;
 
 import java.io.ObjectInputStream;
 import java.io.UnsupportedEncodingException;
@@ -18,7 +19,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
-import org.brutusin.instrumentation.Agent;
+import com.k2cybersecurity.instrumentation.Agent;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -659,14 +660,14 @@ public class ProcessorThread implements Runnable {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param parameters
 	 */
 	private JSONArray getOracleParameterValue(Object thisPointer, JSONArray parameters, String sourceString) {
 
 		Class<?> thisPointerClass = thisPointer.getClass();
 		try {
-			if (IAgentConstants.ORACLE_CLASS_SKIP_LIST.contains(thisPointerClass.getName())) {
+			if (ORACLE_CLASS_SKIP_LIST.contains(thisPointerClass.getName())) {
 				return null;
 			}
 			// in case of doRPC()
@@ -768,6 +769,8 @@ public class ProcessorThread implements Runnable {
 	private void getFileParameters(Object[] obj, JSONArray parameters) {
 		if (obj[0].getClass().getName().equals("sun.nio.fs.UnixPath")) {
 			parameters.add(obj[0].toString());
+		} else if(obj[0].getClass().getName().equals("java.io.File")) {
+			parameters.add(((File)obj[0]).toString());
 		} else {
 			parameters.add(obj[0]);
 		}
