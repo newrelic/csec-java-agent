@@ -15,22 +15,18 @@
  */
 package com.k2cybersecurity.intcodeagent.logging;
 
-import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
-import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
-import com.k2cybersecurity.intcodeagent.models.javaagent.*;
-import com.k2cybersecurity.intcodeagent.websocket.EventSendPool;
-import com.k2cybersecurity.intcodeagent.websocket.WSClient;
-import org.apache.commons.lang3.StringEscapeUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
-import com.k2cybersecurity.instrumentation.Agent;
-import com.k2cybersecurity.instrumentation.Interceptor;
-import org.json.simple.JSONArray;
-import org.objectweb.asm.tree.ClassNode;
-import org.objectweb.asm.tree.MethodNode;
+import static com.k2cybersecurity.intcodeagent.constants.MapConstants.FILE_EXECUTORS;
+import static com.k2cybersecurity.intcodeagent.constants.MapConstants.INSTRUMENTED_METHODS;
+import static com.k2cybersecurity.intcodeagent.constants.MapConstants.MYSQL_SOURCE_METHOD_LIST;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.*;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.IOException;
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
@@ -46,19 +42,49 @@ import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
-import java.util.*;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.*;
-import static com.k2cybersecurity.intcodeagent.constants.MapConstants.*;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.StringEscapeUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
+import org.objectweb.asm.tree.ClassNode;
+import org.objectweb.asm.tree.MethodNode;
+
+import com.k2cybersecurity.instrumentation.Agent;
+import com.k2cybersecurity.instrumentation.Interceptor;
+import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
+import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
+import com.k2cybersecurity.intcodeagent.models.javaagent.ApplicationInfoBean;
+import com.k2cybersecurity.intcodeagent.models.javaagent.FileIntegrityBean;
+import com.k2cybersecurity.intcodeagent.models.javaagent.HttpRequestBean;
+import com.k2cybersecurity.intcodeagent.models.javaagent.JAHealthCheck;
+import com.k2cybersecurity.intcodeagent.models.javaagent.ShutDownEvent;
+import com.k2cybersecurity.intcodeagent.models.javaagent.VulnerabilityCaseType;
+import com.k2cybersecurity.intcodeagent.websocket.EventSendPool;
+import com.k2cybersecurity.intcodeagent.websocket.WSClient;
 
 public class LoggingInterceptor extends Interceptor {
 
+	private static final String TWO_PIPES = "||";
 	private static final String FILE_PROTOCOL = "file:/";
 	private static final String STRING_DOT = ".";
 	private static final char CH_SLASH = '/';
@@ -74,6 +100,11 @@ public class LoggingInterceptor extends Interceptor {
 	private static final String CLASS_COM_IBM_WS_GENERICBNF_INTERNAL_BNF_HEADERS_IMPL = "com.ibm.ws.genericbnf.internal.BNFHeadersImpl";
 	private static final String SCOPE = ".scope";
 	private static final String DOCKER_1_13 = "/docker-";
+	private static final Set<String> JAVA_APPLICATION_ALLOWED_FILE_EXT = new HashSet<>(
+			Arrays.asList(new String[] { "java", "jsp", "class", "jar", "war", "ear" }));
+	private static final Set<String> OTHER_CRITICAL_FILE_EXT = new HashSet<>(
+			Arrays.asList(new String[] { "json", "xml", "properties", "config", "conf" }));
+
 	public static Integer VMPID;
 	protected static final String applicationUUID;
 	public static ApplicationInfoBean APPLICATION_INFO_BEAN;
@@ -187,13 +218,128 @@ public class LoggingInterceptor extends Interceptor {
 
 	public static void updateServerInfo() {
 		Set<DeployedApplication> deployedApplications = getAllDeployedApplications();
-		JSONArray jsonArray = new JSONArray();
-		jsonArray.addAll(deployedApplications);
-
-		if (!APPLICATION_INFO_BEAN.getServerInfo().getDeployedApplications().containsAll(jsonArray)) {
-			APPLICATION_INFO_BEAN.getServerInfo().setDeployedApplications(jsonArray);
+		Boolean resend = false;
+		for (DeployedApplication deployedApplication : deployedApplications) {
+			if (!APPLICATION_INFO_BEAN.getServerInfo().getDeployedApplications().contains(deployedApplication)) {
+				updateShaAndSize(deployedApplication);
+				APPLICATION_INFO_BEAN.getServerInfo().getDeployedApplications().add(deployedApplication);
+				resend = true;
+			}
+		}
+		if (resend) {
 			EventSendPool.getInstance().sendEvent(APPLICATION_INFO_BEAN.toString());
 		}
+	}
+
+	private static void updateShaAndSize(DeployedApplication deployedApplication) {
+		File deplyementDirFile = new File(deployedApplication.getDeployedPath());
+		if (!deplyementDirFile.isDirectory()) {
+			deployedApplication.setSha256(getChecksum(deplyementDirFile));
+			deployedApplication.setSize(FileUtils.byteCountToDisplaySize(FileUtils.sizeOf(deplyementDirFile)));
+		} else {
+			deployedApplication.setSha256(getSHA256ForDirectory(deployedApplication.getDeployedPath()));
+			deployedApplication.setSize(FileUtils.byteCountToDisplaySize(
+					FileUtils.sizeOfDirectory(new File(deployedApplication.getDeployedPath()))));
+		}
+	}
+
+	public static String getSHA256ForDirectory(String file) {
+		List<String> sha256 = new ArrayList<>();
+		File dir = new File(file);
+		if (dir.isDirectory()) {
+			sha256.addAll(getSHA256ForDirectory(dir.listFiles()));
+		} else if (dir.isFile()) {
+			String extension = FilenameUtils.getExtension(dir.getName());
+			if (OTHER_CRITICAL_FILE_EXT.contains(extension)) {
+				sha256.add(getChecksum(dir));
+			} else if (JAVA_APPLICATION_ALLOWED_FILE_EXT.contains(extension)) {
+				sha256.add(getChecksum(dir));
+			}
+		}
+		Collections.sort(sha256);
+		return getSHA256HexDigest(sha256);
+	}
+
+	public static String getSHA256HexDigest(List<String> data) {
+		data.removeAll(Collections.singletonList(null));
+		String input = StringUtils.join(data, TWO_PIPES);
+		return getChecksum(input);
+	}
+
+	private static List<String> getSHA256ForDirectory(File[] list) {
+		List<String> sha256 = new ArrayList<>();
+		for (File dir : list) {
+			if (dir.isDirectory()) {
+				sha256.addAll(getSHA256ForDirectory(dir.listFiles()));
+			} else if (dir.isFile()) {
+				sha256.add(getChecksum(dir));
+			}
+		}
+		return sha256;
+	}
+
+	/**
+	 * generates hash of a file content according to the algorithm provided.
+	 *
+	 * @param file      file object whose hash is to be calculated
+	 * @param algorithm name of algorithm using which hash is to be calculated
+	 * @return It returns the hash in string format
+	 */
+	private static String getChecksum(String data) {
+		MessageDigest digest;
+		try {
+			digest = MessageDigest.getInstance("SHA-256");
+			digest.update(data.getBytes());
+			byte[] hashedBytes = digest.digest();
+			return convertByteArrayToHexString(hashedBytes);
+		} catch (NoSuchAlgorithmException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+
+	/**
+	 * generates hash of a file content according to the algorithm provided.
+	 *
+	 * @param file      file object whose hash is to be calculated
+	 * @param algorithm name of algorithm using which hash is to be calculated
+	 * @return It returns the hash in string format
+	 */
+	private static String getChecksum(File file) {
+		try (FileInputStream inputStream = new FileInputStream(file)) {
+			MessageDigest digest = MessageDigest.getInstance("SHA-256");
+
+			byte[] bytesBuffer = new byte[1024];
+			int bytesRead = -1;
+
+			while ((bytesRead = inputStream.read(bytesBuffer)) != -1) {
+				digest.update(bytesBuffer, 0, bytesRead);
+			}
+
+			byte[] hashedBytes = digest.digest();
+			return convertByteArrayToHexString(hashedBytes);
+		} catch (FileNotFoundException e) {
+		} catch (NoSuchAlgorithmException | IOException e) {
+		}
+		return null;
+	}
+
+	/**
+	 * convertByteArrayToHexString converts byte array to hex string.
+	 *
+	 * @param arrayBytes byte array of hash digest.
+	 * @return returns the string format of digest byte array
+	 */
+	private static String convertByteArrayToHexString(byte[] arrayBytes) {
+		StringBuffer stringBuffer = new StringBuffer();
+		for (int i = 0; i < arrayBytes.length; i++) {
+			String hex = Integer.toHexString(0xFF & arrayBytes[i]);
+			if (hex.length() == 1) {
+				stringBuffer.append('0');
+			}
+			stringBuffer.append(hex);
+		}
+		return stringBuffer.toString();
 	}
 
 	private static Set<DeployedApplication> getAllDeployedApplications() {

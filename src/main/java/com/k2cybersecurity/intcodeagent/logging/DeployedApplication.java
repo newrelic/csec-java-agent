@@ -35,6 +35,12 @@ public class DeployedApplication {
 
 	/** Application name. */
 	private String appName;
+	
+	/** sha 256 of application. */
+	private String sha256;
+
+	/** Size of application. */
+	private String size;
 
 	/** Check if it is war. */
 	private boolean isWar;
@@ -132,6 +138,34 @@ public class DeployedApplication {
 	 */
 	public void setAppName(String appName) {
 		this.appName = appName;
+	}
+	
+	/**
+	 * @return the sha256
+	 */
+	public String getSha256() {
+		return sha256;
+	}
+
+	/**
+	 * @param sha256 the sha256 to set
+	 */
+	public void setSha256(String sha256) {
+		this.sha256 = sha256;
+	}
+
+	/**
+	 * @return the size
+	 */
+	public String getSize() {
+		return size;
+	}
+
+	/**
+	 * @param size the size to set
+	 */
+	public void setSize(String size) {
+		this.size = size;
 	}
 
 
