@@ -186,6 +186,16 @@ public class ProcessorThread implements Runnable {
 //					logger.log(LogLevel.SEVERE, "\t\t : "+ trace[i].toString(), ProcessorThread.class.getName());
 					int lineNumber = trace[i].getLineNumber();
 					klassName = trace[i].getClassName();
+
+					if (!StringUtils.contains(trace[i].toString(), ".java:") && i > 0 &&
+							StringUtils.contains(trace[i-1].toString(), ".java:")) {
+						intCodeResultBean.getMetaData().setTriggerViaRCI(true);
+						intCodeResultBean.getMetaData().getRciMethodsCalls().add(trace[i].toString());
+						intCodeResultBean.getMetaData().getRciMethodsCalls().add(trace[i-1].toString());
+						logger.log(LogLevel.DEBUG, String.format("Printing stack trace for probable rci event : %s : %s", intCodeResultBean.getId(), Arrays
+								.asList(trace)), ProcessorThread.class.getName());
+					}
+
 					if (MapConstants.MYSQL_GET_CONNECTION_MAP.containsKey(klassName)
 							&& MapConstants.MYSQL_GET_CONNECTION_MAP.get(klassName)
 									.contains(trace[i].getMethodName())) {
