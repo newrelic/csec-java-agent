@@ -41,6 +41,7 @@ import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -201,6 +202,14 @@ public class LoggingInterceptor extends Interceptor {
 			// jsonArray.addAll(cmdlineArgs);
 			// applicationInfoBean.setJvmArguments(jsonArray);
 			// }
+			try {
+				applicationInfoBean.setBinaryPath(Files
+						.readSymbolicLink(new File(String.format("/proc/%s/exe", applicationInfoBean.getPid())).toPath()).toString());
+			} catch (IOException e) {
+			}
+			applicationInfoBean
+					.setBinaryName(StringUtils.substringAfterLast(applicationInfoBean.getBinaryPath(), File.separator));
+			applicationInfoBean.setSha256(getChecksum(new File(applicationInfoBean.getBinaryPath())));
 			if (containerId != null) {
 				applicationInfoBean.setContainerID(containerId);
 				applicationInfoBean.setIsHost(false);
