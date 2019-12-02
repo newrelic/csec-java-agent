@@ -8,6 +8,9 @@ import java.util.Arrays;
 
 public class ApplicationInfoBean extends AgentBasicInfo {
 
+	/** The sha 256. */
+	private String sha256;
+	
 	/** pid of process. */
 	private Integer pid;
 
@@ -41,6 +44,8 @@ public class ApplicationInfoBean extends AgentBasicInfo {
 	private String osArch;
 	private String osName;
 	private String osVersion;
+	
+	private String binaryPath;
 
 	private String agentAttachmentType;
 
@@ -56,7 +61,6 @@ public class ApplicationInfoBean extends AgentBasicInfo {
 		this.libraryPath.addAll(Arrays.asList(System.getProperty("java.library.path").split(":")));
 		this.libraryPath.addAll(Arrays.asList(System.getProperty("java.class.path").split(":")));
 		this.bootLibraryPath = System.getProperty("sun.boot.library.path");
-		this.binaryName = System.getProperty("java.runtime.name");
 		this.binaryVersion = System.getProperty("java.runtime.version");
 		this.osArch = System.getProperty("os.arch");
 		this.osName = System.getProperty("os.name");
@@ -225,5 +229,33 @@ public class ApplicationInfoBean extends AgentBasicInfo {
 
 	public void setServerInfo(ServerInfo serverInfo) {
 		this.serverInfo = serverInfo;
+	}
+
+	/**
+	 * @return the binaryPath
+	 */
+	public String getBinaryPath() {
+		return binaryPath;
+	}
+
+	/**
+	 * @param binaryPath the binaryPath to set
+	 */
+	public void setBinaryPath(String binaryPath) {
+		this.binaryPath = binaryPath;
+	}
+
+	/**
+	 * @return the sha256
+	 */
+	public String getSha256() {
+		return sha256;
+	}
+
+	/**
+	 * @param sha256 the sha256 to set
+	 */
+	public void setSha256(String sha256) {
+		this.sha256 = sha256;
 	}
 }

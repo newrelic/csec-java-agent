@@ -206,11 +206,12 @@ public class JAHealthCheck extends AgentBasicInfo{
 				}
 			}
 			Agent.allClassLoadersCount.set(Agent.allClassLoaders.size());
-			if (Agent.jarPathSet.size() != lastJarSetSize) {
+			logger.log(LogLevel.DEBUG, "Current JarSet : " + Agent.jarPathSet,JAHealthCheck.class.getName());
+//			if (Agent.jarPathSet.size() != lastJarSetSize) {
 				JSONArray jarSet = new JSONArray();
 				jarSet.addAll(Agent.jarPathSet);
 				LoggingInterceptor.updateServerInfo();
-			}
+//			}
 		}
 	}
 
