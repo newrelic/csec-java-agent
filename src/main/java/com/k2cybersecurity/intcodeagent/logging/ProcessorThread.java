@@ -928,6 +928,7 @@ public class ProcessorThread implements Runnable {
 				Field sqlField = statementClass.getDeclaredField(IAgentConstants.SQL);
 				sqlField.setAccessible(true);
 				parameters.add((String) sqlField.get(object));
+				System.out.println("Parameters : "+ parameters.toString());
 			} catch (Exception e) {
 				logger.log(LogLevel.WARNING, "Error in getHSQLParameterValue for HSQL_V2_4: ", e,
 						ProcessorThread.class.getName());
@@ -939,6 +940,7 @@ public class ProcessorThread implements Runnable {
 				Field mainStringField = object.getClass().getDeclaredField("mainString");
 				mainStringField.setAccessible(true);
 				parameters.add((String) mainStringField.get(object));
+				System.out.println("Parameters : "+ parameters.toString());
 			} catch (Exception e) {
 				logger.log(LogLevel.WARNING, "Error in getHSQLParameterValue for HSQL_V1_8_CONNECTION: ", e,
 						ProcessorThread.class.getName());

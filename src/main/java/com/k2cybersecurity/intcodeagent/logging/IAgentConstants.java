@@ -211,16 +211,16 @@ public interface IAgentConstants {
 	String WEBSPHERE_TRADITIONAL_PROCESSREQUEST = "protected void com.ibm.ws.http.channel.inbound.impl.HttpInboundLink.processRequest()";
 	
 	/** JBoss constants*/
-	String JBOSS_WILDFLY_HTTP_REQUEST_PARSER_HANDLE = "public void io.undertow.server.protocol.http.HttpRequestParser.handle(java.nio.ByteBuffer,io.undertow.server.protocol.http.ParseState,io.undertow.server.HttpServerExchange) throws io.undertow.util.BadRequestException";
-	String JBOSS_WILDFLY_HTTP_REQUEST_PARSER_HANDLE_2 = "public void io.undertow.server.protocol.http.HttpRequestParser.handle(java.nio.ByteBuffer,io.undertow.server.protocol.http.ParseState,io.undertow.server.HttpServerExchange)";
+//	String JBOSS_WILDFLY_HTTP_REQUEST_PARSER_HANDLE = "public void io.undertow.server.protocol.http.HttpRequestParser.handle(java.nio.ByteBuffer,io.undertow.server.protocol.http.ParseState,io.undertow.server.HttpServerExchange) throws io.undertow.util.BadRequestException";
+//	String JBOSS_WILDFLY_HTTP_REQUEST_PARSER_HANDLE_2 = "public void io.undertow.server.protocol.http.HttpRequestParser.handle(java.nio.ByteBuffer,io.undertow.server.protocol.http.ParseState,io.undertow.server.HttpServerExchange)";
 	//	String PUBLIC_VOID_ORG_JBOSS_THREADS_CONTEXT_CLASS_LOADER_SAVING_RUNNABLE_RUN = "public void org.jboss.threads.ContextClassLoaderSavingRunnable.run()";
 	String PUBLIC_VOID_IO_UNDERTOW_SERVLET_HANDLERS_SERVLET_HANDLER_HANDLE_REQUEST_IO_UNDERTOW_SERVER_HTTP_SERVER_EXCHANGE_THROWS_JAVA_IO_IO_EXCEPTION_JAVAX_SERVLET_SERVLET_EXCEPTION = "public void io.undertow.servlet.handlers.ServletHandler.handleRequest(io.undertow.server.HttpServerExchange) throws java.io.IOException,javax.servlet.ServletException";
 
-	String PRIVATE_INT_ORG_JBOSS_THREADS_ENHANCED_QUEUE_EXECUTOR_TRY_EXECUTE_JAVA_LANG_RUNNABLE = "private int org.jboss.threads.EnhancedQueueExecutor.tryExecute(java.lang.Runnable)";
+//	String PRIVATE_INT_ORG_JBOSS_THREADS_ENHANCED_QUEUE_EXECUTOR_TRY_EXECUTE_JAVA_LANG_RUNNABLE = "private int org.jboss.threads.EnhancedQueueExecutor.tryExecute(java.lang.Runnable)";
 	String FIELD_NEXT = "next";
 	String ORG_JBOSS_THREADS_ENHANCED_QUEUE_EXECUTOR$Q_NODE = "org.jboss.threads.EnhancedQueueExecutor$QNode";
-	String PUBLIC_JAVA_LANG_THREAD_ORG_XNIO_XNIO_WORKER$_WORKER_THREAD_FACTORY_NEW_THREAD_JAVA_LANG_RUNNABLE = "public java.lang.Thread org.xnio.XnioWorker$WorkerThreadFactory.newThread(java.lang.Runnable)";
-	String FIELD_GET = "_get";
+//	String PUBLIC_JAVA_LANG_THREAD_ORG_XNIO_XNIO_WORKER$_WORKER_THREAD_FACTORY_NEW_THREAD_JAVA_LANG_RUNNABLE = "public java.lang.Thread org.xnio.XnioWorker$WorkerThreadFactory.newThread(java.lang.Runnable)";
+	String FIELD_GET = "get";
 	String JAVA_NIO_DIRECT_BYTE_BUFFER = "java.nio.DirectByteBuffer";
 	String FIELD_LIMIT = "limit";
 	String JAVA_NIO_BUFFER = "java.nio.Buffer";
@@ -232,8 +232,8 @@ public interface IAgentConstants {
 	String FIRST_WAITER = "firstWaiter";
 	String NOT_EMPTY = "notEmpty";
 	String TASK_QUEUE = "taskQueue";
-	String ORG_XNIO_XNIO_WORKER = "org.xnio.XnioWorker";
-	String PUBLIC_VOID_ORG_XNIO_XNIO_WORKER_EXECUTE_JAVA_LANG_RUNNABLE = "public void org.xnio.XnioWorker.execute(java.lang.Runnable)";
+//	String ORG_XNIO_XNIO_WORKER = "org.xnio.XnioWorker";
+//	String PUBLIC_VOID_ORG_XNIO_XNIO_WORKER_EXECUTE_JAVA_LANG_RUNNABLE = "public void org.xnio.XnioWorker.execute(java.lang.Runnable)";
 
 
 
