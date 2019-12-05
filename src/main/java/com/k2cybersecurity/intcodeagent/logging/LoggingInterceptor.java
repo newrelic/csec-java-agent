@@ -15,10 +15,6 @@
  */
 package com.k2cybersecurity.intcodeagent.logging;
 
-import static com.k2cybersecurity.intcodeagent.constants.MapConstants.FILE_EXECUTORS;
-import static com.k2cybersecurity.intcodeagent.constants.MapConstants.INSTRUMENTED_METHODS;
-import static com.k2cybersecurity.intcodeagent.constants.MapConstants.MYSQL_SOURCE_METHOD_LIST;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.*;
 import com.k2cybersecurity.instrumentation.Agent;
 import com.k2cybersecurity.instrumentation.Interceptor;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
@@ -26,21 +22,15 @@ import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.models.javaagent.*;
 import com.k2cybersecurity.intcodeagent.websocket.EventSendPool;
 import com.k2cybersecurity.intcodeagent.websocket.WSClient;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
-import org.json.simple.JSONArray;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.MethodNode;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.IOException;
 import java.io.*;
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.management.ManagementFactory;
@@ -60,52 +50,20 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.nio.file.Paths;
 import java.util.*;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.lang3.StringEscapeUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
-import org.objectweb.asm.tree.ClassNode;
-import org.objectweb.asm.tree.MethodNode;
-
-import com.k2cybersecurity.instrumentation.Agent;
-import com.k2cybersecurity.instrumentation.Interceptor;
-import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
-import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
-import com.k2cybersecurity.intcodeagent.models.javaagent.ApplicationInfoBean;
-import com.k2cybersecurity.intcodeagent.models.javaagent.FileIntegrityBean;
-import com.k2cybersecurity.intcodeagent.models.javaagent.HttpRequestBean;
-import com.k2cybersecurity.intcodeagent.models.javaagent.JAHealthCheck;
-import com.k2cybersecurity.intcodeagent.models.javaagent.ShutDownEvent;
-import com.k2cybersecurity.intcodeagent.models.javaagent.VulnerabilityCaseType;
-import com.k2cybersecurity.intcodeagent.websocket.EventSendPool;
-import com.k2cybersecurity.intcodeagent.websocket.WSClient;
 import static com.k2cybersecurity.intcodeagent.constants.MapConstants.*;
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.*;
 
 public class LoggingInterceptor extends Interceptor {
 
 	private static final String TWO_PIPES = "||";
-	private static final String FILE_PROTOCOL = "file:/";
 	private static final String FILE_PROTOCOL = "file:/";
 	private static final String STRING_DOT = ".";
 	private static final char CH_SLASH = '/';
@@ -310,8 +268,6 @@ public class LoggingInterceptor extends Interceptor {
 	/**
 	 * generates hash of a file content according to the algorithm provided.
 	 *
-	 * @param file      file object whose hash is to be calculated
-	 * @param algorithm name of algorithm using which hash is to be calculated
 	 * @return It returns the hash in string format
 	 */
 	private static String getChecksum(String data) {
@@ -331,7 +287,6 @@ public class LoggingInterceptor extends Interceptor {
 	 * generates hash of a file content according to the algorithm provided.
 	 *
 	 * @param file      file object whose hash is to be calculated
-	 * @param algorithm name of algorithm using which hash is to be calculated
 	 * @return It returns the hash in string format
 	 */
 	private static String getChecksum(File file) {
