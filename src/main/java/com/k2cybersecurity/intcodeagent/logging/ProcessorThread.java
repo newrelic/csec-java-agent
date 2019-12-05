@@ -1,9 +1,9 @@
 package com.k2cybersecurity.intcodeagent.logging;
 
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.*;
-import static com.k2cybersecurity.intcodeagent.constants.MapConstants.*;
 
 import java.io.File;
+import java.io.ObjectInputStream;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -12,12 +12,12 @@ import java.net.URL;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.k2cybersecurity.intcodeagent.constants.MapConstants;
 import org.apache.commons.lang3.StringUtils;
 import com.k2cybersecurity.instrumentation.Agent;
 import org.json.simple.JSONArray;
@@ -32,6 +32,7 @@ import com.k2cybersecurity.intcodeagent.models.javaagent.FileIntegrityBean;
 import com.k2cybersecurity.intcodeagent.models.javaagent.HttpRequestBean;
 import com.k2cybersecurity.intcodeagent.models.javaagent.JavaAgentDynamicPathBean;
 import com.k2cybersecurity.intcodeagent.models.javaagent.JavaAgentEventBean;
+import com.k2cybersecurity.intcodeagent.models.javaagent.RCIElement;
 import com.k2cybersecurity.intcodeagent.models.javaagent.VulnerabilityCaseType;
 import com.k2cybersecurity.intcodeagent.websocket.EventSendPool;
 
@@ -180,51 +181,59 @@ public class ProcessorThread implements Runnable {
 				}
 
 				boolean userclassFound = false;
-				boolean rciCoveringUserClassFound = false;
-
 				for (int i = 0; i < trace.length; i++) {
 //					logger.log(LogLevel.SEVERE, "\t\t : "+ trace[i].toString(), ProcessorThread.class.getName());
 					int lineNumber = trace[i].getLineNumber();
 					klassName = trace[i].getClassName();
-					if (MYSQL_GET_CONNECTION_MAP.containsKey(klassName)
-							&& MYSQL_GET_CONNECTION_MAP.get(klassName)
+
+					if (!StringUtils.contains(trace[i].toString(), ".java:") && i > 0 &&
+							StringUtils.contains(trace[i-1].toString(), ".java:")) {
+						intCodeResultBean.getMetaData().setTriggerViaRCI(true);
+						intCodeResultBean.getMetaData().getRciMethodsCalls().add(trace[i].toString());
+						intCodeResultBean.getMetaData().getRciMethodsCalls().add(trace[i-1].toString());
+						logger.log(LogLevel.DEBUG, String.format("Printing stack trace for probable rci event : %s : %s", intCodeResultBean.getId(), Arrays
+								.asList(trace)), ProcessorThread.class.getName());
+					}
+
+					if (MapConstants.MYSQL_GET_CONNECTION_MAP.containsKey(klassName)
+							&& MapConstants.MYSQL_GET_CONNECTION_MAP.get(klassName)
 									.contains(trace[i].getMethodName())) {
 						intCodeResultBean.setValidationBypass(true);
 						LoggingInterceptor.JA_HEALTH_CHECK.incrementDropCount();
 						return;
 					}
-					if (lineNumber <= 0)
-						continue;
-					Matcher matcher = PATTERN.matcher(klassName);
 
-					if (Method.class.getName().equals(klassName)
-							&& StringUtils.equals(trace[i].getMethodName(), INVOKE)) {
-						intCodeResultBean.setRciElement(true);
-						rciCoveringUserClassFound = false;
-						logger.log(LogLevel.DEBUG, String.format("Printing stack trace for RCI event : %s : %s", intCodeResultBean.getId(), Arrays.asList(trace)), ProcessorThread.class.getName());
+					Matcher matcher = PATTERN.matcher(klassName);
+					if (StringUtils.contains(klassName, REFLECT_NATIVE_METHOD_ACCESSOR_IMPL)
+							&& StringUtils.equals(trace[i].getMethodName(), INVOKE_0) && i > 0) {
+						intCodeResultBean.getMetaData().setTriggerViaRCI(true);
+						intCodeResultBean.getMetaData().getRciMethodsCalls().add(trace[i-1].toString());
+						logger.log(LogLevel.DEBUG, String.format("Printing stack trace for rci event : %s : %s", intCodeResultBean.getId(), Arrays
+								.asList(trace)), ProcessorThread.class.getName());
 					}
 
-					if (!matcher.matches()) {
-						if (intCodeResultBean.getRciElement()){
-							rciCoveringUserClassFound = true;
+					if (ObjectInputStream.class.getName().equals(klassName)
+							&& StringUtils.equals(trace[i].getMethodName(), READ_OBJECT)) {
+						intCodeResultBean.getMetaData().setTriggerViaDeserialisation(true);
+						logger.log(LogLevel.DEBUG, String.format("Printing stack trace for deserialise event : %s : %s", intCodeResultBean.getId(), Arrays
+								.asList(trace)), ProcessorThread.class.getName());
+
+					}
+					if (lineNumber <= 0)
+						continue;
+
+					if (!matcher.matches() && !userclassFound) {
+						intCodeResultBean.setUserAPIInfo(lineNumber, klassName, trace[i].getMethodName());
+						if (i > 0) {
+							intCodeResultBean.setCurrentMethod(trace[i - 1].getMethodName());
 						}
-						if (!userclassFound){
-							intCodeResultBean.setUserAPIInfo(lineNumber, klassName, trace[i].getMethodName());
-							if (i > 0) {
-								intCodeResultBean.setCurrentMethod(trace[i - 1].getMethodName());
-							}
-							userclassFound = true;
-						}
+						userclassFound = true;
 					} else if (!userclassFound && StringUtils.isNotBlank(matcher.group(5))) {
 						lastNonJavaClass = trace[i].getClassName();
 						lastNonJavaMethod = trace[i].getMethodName();
 						lastNonJavaLineNumber = trace[i].getLineNumber();
 					}
 				}
-				if (intCodeResultBean.getRciElement() && !rciCoveringUserClassFound){
-					intCodeResultBean.setRciElement(false);
-				}
-
 				if (intCodeResultBean.getUserFileName() != null && !intCodeResultBean.getUserFileName().isEmpty()) {
 					generateEvent(intCodeResultBean);
 				} else if (IAgentConstants.SYSYTEM_CALL_START.equals(sourceString)) {
@@ -662,7 +671,8 @@ public class ProcessorThread implements Runnable {
 	}
 
 	/**
-	 * 
+	 *
+	 *
 	 * @param parameters
 	 */
 	private JSONArray getOracleParameterValue(Object thisPointer, JSONArray parameters, String sourceString) {

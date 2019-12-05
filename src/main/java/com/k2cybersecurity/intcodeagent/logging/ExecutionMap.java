@@ -3,14 +3,19 @@ package com.k2cybersecurity.intcodeagent.logging;
 import java.util.Iterator;
 import java.util.concurrent.ConcurrentLinkedDeque;
 
+import com.k2cybersecurity.intcodeagent.models.javaagent.AgentMetaData;
 import com.k2cybersecurity.intcodeagent.models.javaagent.HttpRequestBean;
 import com.k2cybersecurity.intcodeagent.websocket.JsonConverter;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 
 public class ExecutionMap {
 
 	private Long executionId;
 	
 	private HttpRequestBean servletInfo;
+
+	private AgentMetaData metaData;
 	
 	/**
 	 * @param executionId
@@ -20,9 +25,7 @@ public class ExecutionMap {
 		super();
 		this.executionId = executionId;
 		this.servletInfo = servletInfo;
-	}
-	
-	public ExecutionMap() {
+		this.metaData = new AgentMetaData();
 	}
 	
 	public ExecutionMap(Long executionId) {
@@ -90,19 +93,26 @@ public class ExecutionMap {
 	}
 	
 	
-	public static HttpRequestBean find(Long executionId, ConcurrentLinkedDeque<ExecutionMap> executionMaps) {
+	public static Pair<HttpRequestBean, AgentMetaData> find(Long executionId, ConcurrentLinkedDeque<ExecutionMap> executionMaps) {
 		Iterator<ExecutionMap> iterator = executionMaps.descendingIterator();
 		while(iterator.hasNext()) {
 			ExecutionMap executionMap = iterator.next();
 			if(executionMap.getExecutionId() <= executionId)
-				return executionMap.getServletInfo();
+				return new ImmutablePair<>(executionMap.getServletInfo(), executionMap.getMetaData());
 		}
 		return null;
 	}
-	
+
 	@Override
 	public String toString() {
 			return JsonConverter.toJSON(this);
 	}
-	
+
+	public AgentMetaData getMetaData() {
+		return metaData;
+	}
+
+	public void setMetaData(AgentMetaData metaData) {
+		this.metaData = metaData;
+	}
 }
