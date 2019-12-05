@@ -164,8 +164,7 @@ public class ProcessorThread implements Runnable {
 				int lastNonJavaLineNumber = 0;
 
 				JSONArray params = toString(arg, sourceString, EXECUTORS.get(sourceString));
-
-				if (params != null) {
+				if (params != null && params.size()>0) {
 					intCodeResultBean.setParameters(params);
 				} else {
 //					ServletEventPool.getInstance().decrementServletInfoReference(threadId, executionId, true);
@@ -181,7 +180,6 @@ public class ProcessorThread implements Runnable {
 
 				boolean userclassFound = false;
 				boolean rciCoveringUserClassFound = false;
-
 				for (int i = 0; i < trace.length; i++) {
 //					logger.log(LogLevel.SEVERE, "\t\t : "+ trace[i].toString(), ProcessorThread.class.getName());
 					int lineNumber = trace[i].getLineNumber();
@@ -193,6 +191,14 @@ public class ProcessorThread implements Runnable {
 						LoggingInterceptor.JA_HEALTH_CHECK.incrementDropCount();
 						return;
 					}
+					if (HSQL_GET_CONNECTION_MAP.containsKey(klassName)
+							&& HSQL_GET_CONNECTION_MAP.get(klassName)
+									.contains(trace[i].getMethodName())) {
+						intCodeResultBean.setValidationBypass(true);
+						LoggingInterceptor.JA_HEALTH_CHECK.incrementDropCount();
+						return;
+					}
+					
 					if (lineNumber <= 0)
 						continue;
 					Matcher matcher = PATTERN.matcher(klassName);
@@ -736,7 +742,8 @@ public class ProcessorThread implements Runnable {
 					|| sourceString.equals(PSQL42_EXECUTOR) || sourceString.equals(PSQLV3_EXECUTOR7_4)) {
 				getPSQLParameterValue(obj, parameters);
 			} else if (sourceString.equals(HSQL_V2_4) || sourceString.equals(HSQL_V1_8_CONNECTION)
-					|| sourceString.equals(HSQL_V1_8_SESSION)) {
+					|| sourceString.equals(HSQL_V1_8_SESSION) ||
+					sourceString.equals(HSQL_V2_3_4_CLIENT_CONNECTION)) {
 				getHSQLParameterValue(obj[0], parameters);
 			} else if (sourceString.equals(APACHE_HTTP_REQUEST_EXECUTOR_METHOD)) {
 				getApacheHttpRequestParameters(obj, parameters);
@@ -928,7 +935,6 @@ public class ProcessorThread implements Runnable {
 				Field sqlField = statementClass.getDeclaredField(IAgentConstants.SQL);
 				sqlField.setAccessible(true);
 				parameters.add((String) sqlField.get(object));
-				System.out.println("Parameters : "+ parameters.toString());
 			} catch (Exception e) {
 				logger.log(LogLevel.WARNING, "Error in getHSQLParameterValue for HSQL_V2_4: ", e,
 						ProcessorThread.class.getName());
@@ -936,13 +942,16 @@ public class ProcessorThread implements Runnable {
 			return;
 		case HSQL_V1_8_SESSION:
 		case HSQL_V1_8_CONNECTION:
+		case HSQL_V2_3_4_CLIENT_CONNECTION:
 			try {
 				Field mainStringField = object.getClass().getDeclaredField("mainString");
 				mainStringField.setAccessible(true);
-				parameters.add((String) mainStringField.get(object));
-				System.out.println("Parameters : "+ parameters.toString());
+				String parameter = (String) mainStringField.get(object);
+				if(!StringUtils.isEmpty(parameter)) {
+					parameters.add(parameter);
+				}
 			} catch (Exception e) {
-				logger.log(LogLevel.WARNING, "Error in getHSQLParameterValue for HSQL_V1_8_CONNECTION: ", e,
+				logger.log(LogLevel.WARNING, "Error in getHSQLParameterValue for HSQL_V1_8/V2_3_4: ", e,
 						ProcessorThread.class.getName());
 			}
 			return;
