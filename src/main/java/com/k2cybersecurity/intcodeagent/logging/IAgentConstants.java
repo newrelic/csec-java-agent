@@ -179,6 +179,7 @@ public interface IAgentConstants {
 
 	String HSQL_V1_8_SESSION = "public org.hsqldb.Result org.hsqldb.Session.execute(org.hsqldb.Result)";
 	
+	// HSQL_DB v2.3.4
 	String HSQL_V2_3_4_CLIENT_CONNECTION = "public synchronized org.hsqldb.result.Result org.hsqldb.ClientConnection.execute(org.hsqldb.result.Result)";
 
 	String HTTP_SERVLET_SERVICE = "protected void javax.servlet.http.HttpServlet.service(javax.servlet.http.HttpServletRequest,javax.servlet.http.HttpServletResponse) throws javax.servlet.ServletException,java.io.IOException";
