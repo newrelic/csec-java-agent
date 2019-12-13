@@ -103,8 +103,8 @@ public class LoggingInterceptor extends Interceptor {
 	private static final String DOCKER_1_13 = "/docker-";
 	private static final Set<String> JAVA_APPLICATION_ALLOWED_FILE_EXT = new HashSet<>(
 			Arrays.asList(new String[] { "java", "jsp", "class", "jar", "war", "ear" }));
-	private static final Set<String> OTHER_CRITICAL_FILE_EXT = new HashSet<>(
-			Arrays.asList(new String[] { "json", "xml", "properties", "config", "conf", "htm", "html", "yaml", "yml" }));
+	private static final Set<String> OTHER_CRITICAL_FILE_EXT = new HashSet<>(Arrays
+			.asList(new String[] { "json", "xml", "properties", "config", "conf", "htm", "html", "yaml", "yml" }));
 
 	public static Integer VMPID;
 	protected static final String applicationUUID;
@@ -204,7 +204,9 @@ public class LoggingInterceptor extends Interceptor {
 			// }
 			try {
 				applicationInfoBean.setBinaryPath(Files
-						.readSymbolicLink(new File(String.format("/proc/%s/exe", applicationInfoBean.getPid())).toPath()).toString());
+						.readSymbolicLink(
+								new File(String.format("/proc/%s/exe", applicationInfoBean.getPid())).toPath())
+						.toString());
 			} catch (IOException e) {
 			}
 			applicationInfoBean
@@ -625,7 +627,7 @@ public class LoggingInterceptor extends Interceptor {
 			String codeName = cn.name.substring(cn.name.lastIndexOf(CH_SLASH) + 1) + STRING_DOT
 					+ INSTRUMENTED_METHODS.get(cn.name).indexOf(mn.name);
 			JA_HEALTH_CHECK.getInstrumentedMethods().add(codeName);
-			// System.out.println("Class name: " + cn.name + " , method: " + mn.name);
+			System.out.println("Class name: " + cn.name + " , method: " + mn.name);
 		}
 		return isInstrument;
 	}
@@ -711,7 +713,7 @@ public class LoggingInterceptor extends Interceptor {
 
 		// System.out.println("start Executionid: " + eId);
 		// System.out.println("start Thread Id: " + threadId);
-		// System.out.println("start SourceString: " + sourceString);
+		 System.out.println("start SourceString: " + sourceString);
 		// logger.log(LogLevel.INFO, "OnStart source: " + sourceString + " :: args: " +
 		// Arrays.asList(arg[0]) + " :: eid: " +
 		// eId,LoggingInterceptor.class.getName());

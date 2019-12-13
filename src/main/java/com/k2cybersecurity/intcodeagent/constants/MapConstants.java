@@ -27,28 +27,28 @@ public abstract class MapConstants {
 
 		// asynchronous mongo calls
 		MONGO_EXECUTORS.put("public <T> void com.mongodb.async.client.MongoClientImpl$2.execute(com.mongodb.operation.AsyncReadOperation<T>,com.mongodb.ReadPreference,com.mongodb.async.SingleResultCallback<T>)",
-				VulnerabilityCaseType.SQL_DB_COMMAND);
+				VulnerabilityCaseType.NOSQL_DB_COMMAND);
 		MONGO_EXECUTORS.put("public <T> void com.mongodb.async.client.MongoClientImpl$2.execute(com.mongodb.operation.AsyncWriteOperation<T>,com.mongodb.async.SingleResultCallback<T>)",
-				VulnerabilityCaseType.SQL_DB_COMMAND);
+				VulnerabilityCaseType.NOSQL_DB_COMMAND);
 		MONGO_EXECUTORS.put("public <T> void com.mongodb.async.client.AsyncOperationExecutorImpl.execute(com.mongodb.operation.AsyncWriteOperation<T>,com.mongodb.session.ClientSession,com.mongodb.async.SingleResultCallback<T>)",
-				VulnerabilityCaseType.SQL_DB_COMMAND);
+				VulnerabilityCaseType.NOSQL_DB_COMMAND);
 		MONGO_EXECUTORS.put("public <T> void com.mongodb.async.client.AsyncOperationExecutorImpl.execute(com.mongodb.operation.AsyncReadOperation<T>,com.mongodb.ReadPreference,com.mongodb.session.ClientSession,com.mongodb.async.SingleResultCallback<T>)",
-				VulnerabilityCaseType.SQL_DB_COMMAND);
+				VulnerabilityCaseType.NOSQL_DB_COMMAND);
 		MONGO_EXECUTORS.put("public <T> void com.mongodb.async.client.OperationExecutorImpl.execute(com.mongodb.operation.AsyncReadOperation<T>,com.mongodb.ReadPreference,com.mongodb.ReadConcern,com.mongodb.async.client.ClientSession,com.mongodb.async.SingleResultCallback<T>)",
-				VulnerabilityCaseType.SQL_DB_COMMAND);
+				VulnerabilityCaseType.NOSQL_DB_COMMAND);
 		MONGO_EXECUTORS.put("public <T> void com.mongodb.async.client.OperationExecutorImpl.execute(com.mongodb.operation.AsyncWriteOperation<T>,com.mongodb.ReadConcern,com.mongodb.async.client.ClientSession,com.mongodb.async.SingleResultCallback<T>)",
-				VulnerabilityCaseType.SQL_DB_COMMAND);
+				VulnerabilityCaseType.NOSQL_DB_COMMAND);
 		// synchronous mongo calls
 		MONGO_EXECUTORS.put("private <T> T com.mongodb.connection.DefaultServerConnection.executeProtocol(com.mongodb.connection.CommandProtocol<T>,com.mongodb.session.SessionContext)",
-				VulnerabilityCaseType.SQL_DB_COMMAND);
+				VulnerabilityCaseType.NOSQL_DB_COMMAND);
 		MONGO_EXECUTORS.put("private <T> T com.mongodb.connection.DefaultServerConnection.executeProtocol(com.mongodb.connection.LegacyProtocol<T>)",
-				VulnerabilityCaseType.SQL_DB_COMMAND);
+				VulnerabilityCaseType.NOSQL_DB_COMMAND);
 		MONGO_EXECUTORS.put("private <T> T com.mongodb.internal.connection.DefaultServerConnection.executeProtocol(com.mongodb.internal.connection.CommandProtocol<T>,com.mongodb.session.SessionContext)",
-				VulnerabilityCaseType.SQL_DB_COMMAND);
+				VulnerabilityCaseType.NOSQL_DB_COMMAND);
 		MONGO_EXECUTORS.put("private <T> T com.mongodb.internal.connection.DefaultServerConnection.executeProtocol(com.mongodb.internal.connection.LegacyProtocol<T>)",
-				VulnerabilityCaseType.SQL_DB_COMMAND);
+				VulnerabilityCaseType.NOSQL_DB_COMMAND);
 		MONGO_EXECUTORS.put("private <T> T com.mongodb.connection.DefaultServerConnection.executeProtocol(com.mongodb.connection.Protocol<T>)",
-				VulnerabilityCaseType.SQL_DB_COMMAND);
+				VulnerabilityCaseType.NOSQL_DB_COMMAND);
 
 		FILE_EXECUTORS.put(JAVA_IO_FILE_INPUTSTREAM_OPEN, VulnerabilityCaseType.FILE_OPERATION);
 		FILE_EXECUTORS.put(JAVA_IO_FILE_OUTPUTSTREAM_OPEN, VulnerabilityCaseType.FILE_OPERATION);
