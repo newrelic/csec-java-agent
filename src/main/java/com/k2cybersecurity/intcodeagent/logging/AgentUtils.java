@@ -34,6 +34,8 @@ public class AgentUtils {
 		case IntCodeControlCommand.SET_DEFAULT_LOG_LEVEL:
 			LogLevel logLevel = LogLevel.valueOf(controlCommand.getArguements().get(0));
 			LogWriter.setLogLevel(logLevel);
+		case IntCodeControlCommand.ENABLE_HTTP_REQUEST_PRINTING:
+			LoggingInterceptor.enableHTTPRequestPrinting = true;
 		default:
 			break;
 		}

@@ -104,6 +104,8 @@ public class LoggingInterceptor extends Interceptor {
 
 	private static Pattern applicationInformationDetectRegex = Pattern.compile("\\S*(\\/classes)\\S*");
 
+	protected static boolean enableHTTPRequestPrinting = false;
+
 	static {
 		try {
 			RuntimeMXBean runtimeMXBean = ManagementFactory.getRuntimeMXBean();
@@ -637,6 +639,13 @@ public class LoggingInterceptor extends Interceptor {
 							EventThreadPool.getInstance().processReceivedEvent(source, new String[] { entry.getKey() },
 									executionId, threadId, entry.getValue(), System.currentTimeMillis() - start,
 									new HttpRequestBean(httpRequest), VulnerabilityCaseType.FILE_INTEGRITY);
+						}
+					}
+					if (LoggingInterceptor.enableHTTPRequestPrinting) {
+						Pair<HttpRequestBean, AgentMetaData> pair = ExecutionMap
+								.find(executionId, ServletEventPool.getInstance().getRequestMap().get(threadId));
+						if (pair != null) {
+							logger.log(LogLevel.INFO, INTERCEPTED_HTTP_REQUEST + pair.getKey(), LoggingInterceptor.class.getName());
 						}
 					}
 					ServletEventPool.getInstance().decrementServletInfoReference(threadId, executionId, false);

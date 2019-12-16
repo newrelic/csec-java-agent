@@ -437,4 +437,5 @@ public interface IAgentConstants {
 	String INVOKE = "invoke";
 	String JAVA_IO_UNIX_FILE_SYSTEM = "java/io/UnixFileSystem";
 	String JAVA_IO_RANDOM_ACCESS_FILE = "java/io/RandomAccessFile";
+	String INTERCEPTED_HTTP_REQUEST = "Intercepted HTTP request : ";
 }
