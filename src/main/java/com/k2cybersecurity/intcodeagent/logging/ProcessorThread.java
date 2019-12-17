@@ -153,9 +153,6 @@ public class ProcessorThread implements Runnable {
 						EXECUTORS.get(sourceString));
 
 				String klassName = null;
-				if (MONGO_EXECUTORS.containsKey(sourceString)) {
-					intCodeResultBean.setValidationBypass(true);
-				}
 
 				StackTraceElement[] trace = this.stackTrace;
 
@@ -168,7 +165,6 @@ public class ProcessorThread implements Runnable {
 				if (params != null) {
 					intCodeResultBean.setParameters(params);
 				} else {
-//					ServletEventPool.getInstance().decrementServletInfoReference(threadId, executionId, true);
 					return;
 				}
 				if (VulnerabilityCaseType.FILE_OPERATION
