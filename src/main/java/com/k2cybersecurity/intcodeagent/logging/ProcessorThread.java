@@ -187,8 +187,7 @@ public class ProcessorThread implements Runnable {
 					int lineNumber = trace[i].getLineNumber();
 					klassName = trace[i].getClassName();
 					if (MYSQL_GET_CONNECTION_MAP.containsKey(klassName)
-							&& MYSQL_GET_CONNECTION_MAP.get(klassName)
-									.contains(trace[i].getMethodName())) {
+							&& MYSQL_GET_CONNECTION_MAP.get(klassName).contains(trace[i].getMethodName())) {
 						intCodeResultBean.setValidationBypass(true);
 						LoggingInterceptor.JA_HEALTH_CHECK.incrementDropCount();
 						return;
@@ -201,14 +200,17 @@ public class ProcessorThread implements Runnable {
 							&& StringUtils.equals(trace[i].getMethodName(), INVOKE)) {
 						intCodeResultBean.setRciElement(true);
 						rciCoveringUserClassFound = false;
-						logger.log(LogLevel.DEBUG, String.format("Printing stack trace for RCI event : %s : %s", intCodeResultBean.getId(), Arrays.asList(trace)), ProcessorThread.class.getName());
+						logger.log(
+								LogLevel.DEBUG, String.format("Printing stack trace for RCI event : %s : %s",
+										intCodeResultBean.getId(), Arrays.asList(trace)),
+								ProcessorThread.class.getName());
 					}
 
 					if (!matcher.matches()) {
-						if (intCodeResultBean.getRciElement()){
+						if (intCodeResultBean.getRciElement()) {
 							rciCoveringUserClassFound = true;
 						}
-						if (!userclassFound){
+						if (!userclassFound) {
 							intCodeResultBean.setUserAPIInfo(lineNumber, klassName, trace[i].getMethodName());
 							if (i > 0) {
 								intCodeResultBean.setCurrentMethod(trace[i - 1].getMethodName());
@@ -221,7 +223,7 @@ public class ProcessorThread implements Runnable {
 						lastNonJavaLineNumber = trace[i].getLineNumber();
 					}
 				}
-				if (intCodeResultBean.getRciElement() && !rciCoveringUserClassFound){
+				if (intCodeResultBean.getRciElement() && !rciCoveringUserClassFound) {
 					intCodeResultBean.setRciElement(false);
 				}
 
@@ -442,204 +444,131 @@ public class ProcessorThread implements Runnable {
 		}
 	}
 
-	/**
-	 * Gets the mongo parameters.
-	 *
-	 * @param args       the arguments of Instrumented Method
-	 * @param parameters the parameters
-	 * @return the my SQL parameter value
-	 * @throws NoSuchFieldException     the no such field exception
-	 * @throws SecurityException        the security exception
-	 * @throws IllegalArgumentException the illegal argument exception
-	 * @throws IllegalAccessException   the illegal access exception
-	 */
-	@SuppressWarnings("unchecked")
-	public static void getMongoParameterValue(Object[] args, JSONArray parameters)
-			throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
-		Object protocol = args[0];
-
-		String namespace = null;
-		Field f = null;
-
-		Class<? extends Object> nsClass = protocol.getClass();
-		int depth = 0;
-		String keyspaceName = null;
-
+	public static void getMongoDbParameterValue(Object[] args, JSONArray parameters) {
 		JSONObject queryDetailObj = new JSONObject();
-		// for getting the namespace
-		while (namespace == null && nsClass != null && depth < 4) {
-			try {
+		Object protocol = args[0];
+		Field f = null;
+		System.out.println("protocol class : " + protocol.getClass());
+		try {
+			Class<? extends Object> nsClass = protocol.getClass();
+			String namespace = null;
+			// Namespace detection
+			if (nsClass != null) {
 				f = nsClass.getDeclaredField(MONGO_NAMESPACE_FIELD);
 				f.setAccessible(true);
 				Object ns = f.get(protocol);
 				namespace = ns.toString();
-
 				queryDetailObj.put(MONGO_NAMESPACE_FIELD, namespace);
-				keyspaceName = namespace.split(IAgentConstants.DOTINSQUAREBRACKET)[1];
-				if (!keyspaceName.equals(MONGO_COLLECTION_WILDCARD)) {
-					queryDetailObj.put(MONGO_COLLECTION_FIELD, keyspaceName);
-				}
-
-			} catch (Exception ex) {
-				nsClass = nsClass.getSuperclass();
-				depth++;
 			}
+		} catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
-
-		// for Connecter v 6.0 and above
+		// query extreation
 		try {
-
+			// Class used CommandProtocol<T>
+			System.out.println("inside CommandProtocol");
 			f = protocol.getClass().getDeclaredField(MONGO_COMMAND_FIELD);
 			f.setAccessible(true);
 			Object command = f.get(protocol);
-			parameters.add(command.toString());
-			f = protocol.getClass().getDeclaredField(MONGO_PAYLOAD_FIELD);
-			f.setAccessible(true);
-			Object payload = f.get(protocol);
-			if (payload != null) {
-				f = payload.getClass().getDeclaredField(MONGO_PAYLOAD_FIELD);
-				f.setAccessible(true);
-				payload = f.get(payload);
-				parameters.add(payload.toString());
-			}
-		} catch (Exception e) {
-			// for Connecter v 5.0 and below
-			// fetch query parameters
-			if (protocol.getClass().getName().contains(MONGO_DELETE_CLASS_FRAGMENT)) {
-				queryDetailObj.put(MONGO_COMMAND_NAME_FIELD, MONGO_DELETE_CLASS_FRAGMENT.toLowerCase());
-				f = protocol.getClass().getDeclaredField(MONGO_DELETE_REQUEST_FIELD);
-				f.setAccessible(true);
-				List<Object> deleteRequests = (List<Object>) f.get(protocol);
-
-				for (Object obj : deleteRequests) {
-					try {
-						f = obj.getClass().getDeclaredField(MOGNO_ELEMENT_DATA_FIELD);
-						f.setAccessible(true);
-						Object[] elementData = (Object[]) f.get(obj);
-
-						for (Object request : elementData) {
-							if (request != null) {
-								f = request.getClass().getDeclaredField(MONGO_FILTER_FIELD);
-								f.setAccessible(true);
-								Object filter = f.get(request);
-								parameters.add(filter.toString());
-							}
-						}
-
-					} catch (NoSuchFieldException synchedDelete) {
-						f = obj.getClass().getDeclaredField(MONGO_FILTER_FIELD);
-						f.setAccessible(true);
-						Object filter = f.get(obj);
-						parameters.add(filter.toString());
-					}
-
-				}
-			} else if (protocol.getClass().getName().contains(MONGO_UPDATE_CLASS_FRAGMENT)) {
-				queryDetailObj.put(MONGO_COMMAND_NAME_FIELD, MONGO_UPDATE_CLASS_FRAGMENT.toLowerCase());
-				List<Object> updates = null;
-				if (protocol.getClass().getName().contains(MONGO_FIND_AND_UPDATE_CLASS_FRAGMENT)) {
-					updates = new ArrayList<Object>();
-					updates.add(protocol);
-				} else {
-					f = protocol.getClass().getDeclaredField(MONGO_MULTIPLE_UPDATES_FIELD);
-					f.setAccessible(true);
-					updates = (List<Object>) f.get(protocol);
-				}
-				for (Object obj : updates) {
-					f = obj.getClass().getDeclaredField(MONGO_FILTER_FIELD);
-					f.setAccessible(true);
-					Object filter = f.get(obj);
-					parameters.add(filter.toString());
-					f = obj.getClass().getDeclaredField(MONGO_SINGLE_UPDATE_FIELD);
-					f.setAccessible(true);
-					Object update = f.get(obj);
-					parameters.add(update.toString());
-				}
-			} else if (protocol.getClass().getName().contains(MONGO_INSERT_CLASS_FRAGMENT)) {
-				queryDetailObj.put(MONGO_COMMAND_NAME_FIELD, MONGO_INSERT_CLASS_FRAGMENT.toLowerCase());
-
-				f = protocol.getClass().getDeclaredField(MONGO_INSERT_REQUESTS_FIELD);
-				f.setAccessible(true);
-				List<Object> insertRequests = (List<Object>) f.get(protocol);
-				for (Object request : insertRequests) {
-					f = request.getClass().getDeclaredField(MONGO_DOCUMENT_FIELD);
-					f.setAccessible(true);
-					Object document = f.get(request);
-					parameters.add(document.toString());
-				}
-
-			} else if (protocol.getClass().getName().contains(MONGO_FIND_CLASS_FRAGMENT)) {
-				queryDetailObj.put(MONGO_COMMAND_NAME_FIELD, MONGO_FIND_CLASS_FRAGMENT.toLowerCase());
-
-				f = protocol.getClass().getDeclaredField(MONGO_FILTER_FIELD);
-				f.setAccessible(true);
-				Object filter = f.get(protocol);
-				parameters.add(filter.toString());
-
-			} else if (protocol.getClass().getName().contains(MONGO_WRITE_CLASS_FRAGMENT)) {
-				queryDetailObj.put(MONGO_COMMAND_NAME_FIELD, MONGO_WRITE_CLASS_FRAGMENT.toLowerCase());
-
-				f = protocol.getClass().getDeclaredField(MONGO_WRITE_REQUEST_FIELD);
-				f.setAccessible(true);
-				List<Object> writeRequests = (List<Object>) f.get(protocol);
-
-				for (Object request : writeRequests) {
-
-					if (request.getClass().getName().contains(MONGO_UPDATE_CLASS_FRAGMENT)) {
-						f = request.getClass().getDeclaredField(MONGO_SINGLE_UPDATE_FIELD);
-						f.setAccessible(true);
-						Object update = f.get(request);
-						parameters.add(update.toString());
-						f = request.getClass().getDeclaredField(MONGO_FILTER_FIELD);
-						f.setAccessible(true);
-						Object filter = f.get(request);
-						parameters.add(filter.toString());
-
-						parameters.add(update.toString());
-					} else if (request.getClass().getName().contains(MONGO_DELETE_CLASS_FRAGMENT)) {
-						f = request.getClass().getDeclaredField(MONGO_FILTER_FIELD);
-						f.setAccessible(true);
-						Object filter = f.get(request);
-						parameters.add(filter.toString());
-
-					} else {
-						f = request.getClass().getDeclaredField(MONGO_DOCUMENT_FIELD);
-						f.setAccessible(true);
-						Object document = f.get(request);
-						parameters.add(document.toString());
-
-					}
-
-				}
-
-			} else if (protocol.getClass().getName().contains(MONGO_DISTINCT_CLASS_FRAGMENT)) {
-				queryDetailObj.put(MONGO_COMMAND_NAME_FIELD, MONGO_DISTINCT_CLASS_FRAGMENT.toLowerCase());
-
-				f = protocol.getClass().getDeclaredField(MONGO_FIELD_NAME_FIELD);
-				f.setAccessible(true);
-				Object fieldName = f.get(protocol);
-				parameters.add(fieldName.toString());
-				f = protocol.getClass().getDeclaredField(MONGO_FILTER_FIELD);
-				f.setAccessible(true);
-				Object filter = f.get(protocol);
-				parameters.add(filter.toString());
-
-			} else if (protocol.getClass().getName().contains(MONGO_COMMAND_CLASS_FRAGMENT)) {
-				queryDetailObj.put(MONGO_COMMAND_NAME_FIELD, MONGO_COMMAND_CLASS_FRAGMENT.toLowerCase());
-
-				f = protocol.getClass().getDeclaredField(MONGO_COMMAND_FIELD);
-				f.setAccessible(true);
-				Object insertRequests = f.get(protocol);
-				parameters.add(insertRequests.toString());
-			} else {
-
-//				logger.log(LogLevel.DEBUG,protocol.getClass().getName());
-
-			}
-
+			queryDetailObj.put("command", command.toString());
+			parameters.add(queryDetailObj);
+			return;
+		} catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
-		// add Query Details
-		parameters.add(queryDetailObj.toString());
+		try {
+			// Class used QueryProtocol<T>
+			f = protocol.getClass().getDeclaredField("queryDocument");
+			f.setAccessible(true);
+			Object command = f.get(protocol);
+			queryDetailObj.put("command", command.toString());
+			f = protocol.getClass().getDeclaredField("fields");
+			f.setAccessible(true);
+			Object fields = f.get(protocol);
+			queryDetailObj.put("fields", fields.toString());
+			parameters.add(queryDetailObj);
+			return;
+		} catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		try {
+			// Class used InsertCommandProtocol<T>
+			queryDetailObj.put("command", mongoProtocolRequest(protocol, MONGO_INSERT_REQUESTS_FIELD));
+			parameters.add(queryDetailObj);
+			return;
+		} catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		try {
+			// Class used DeleteCommandProtocol<T>
+			queryDetailObj.put("command", mongoProtocolRequest(protocol, MONGO_DELETE_REQUEST_FIELD));
+			parameters.add(queryDetailObj);
+			return;
+		} catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		try {
+			// Class used UpdateCommandProtocol<T>
+			queryDetailObj.put("command", mongoProtocolRequest(protocol, MONGO_MULTIPLE_UPDATES_FIELD));
+			parameters.add(queryDetailObj);
+			return;
+		} catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		try {
+			// Class used InsertProtocol<T>
+			queryDetailObj.put("command", mongoProtocolRequest(protocol, "insertRequestList"));
+			parameters.add(queryDetailObj);
+			return;
+		} catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		try {
+			// Class used DeleteProtocol<T>
+			queryDetailObj.put("command", mongoProtocolRequest(protocol, "deletes"));
+			parameters.add(queryDetailObj);
+			System.out.println("parameters : " + parameters);
+			return;
+		} catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		try {
+			// Class used UpdateProtocol<T>
+			queryDetailObj.put("command", mongoProtocolRequest(protocol, "updates"));
+			parameters.add(queryDetailObj);
+			return;
+		} catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
+	private static JSONArray mongoProtocolRequest(Object protocol, String requestField)
+			throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
+		JSONArray array = new JSONArray();
+		Field f;
+		f = protocol.getClass().getDeclaredField(requestField);
+		f.setAccessible(true);
+		List<Object> insertRequests = (List<Object>) f.get(protocol);
+		for (Object request : insertRequests) {
+			Field[] fields = request.getClass().getDeclaredFields();
+			for (Field field : fields) {
+				field.setAccessible(true);
+				Object bsonDoc = field.get(request);
+				if (bsonDoc != null && bsonDoc.getClass().getSimpleName().contains("BsonDocument")) {
+					array.add(bsonDoc.toString());
+				}
+			}
+		}
+		return array;
 	}
 
 	/**
@@ -727,7 +656,7 @@ public class ProcessorThread implements Runnable {
 			} else if (sourceString.contains(MYSQL_IDENTIFIER)) {
 				getMySQLParameterValue(obj, parameters, sourceString);
 			} else if (obj[0] != null && sourceString.contains(MONGO_IDENTIFIER)) {
-				getMongoParameterValue(obj, parameters);
+				getMongoDbParameterValue(obj, parameters);
 			} else if (obj[0] != null && sourceString.contains(ORACLE_DB_IDENTIFIER)) {
 				parameters = getOracleParameterValue(arg[arg.length - 1], parameters, sourceString);
 			} else if (obj[0] != null && sourceString.contains(CLASS_LOADER_IDENTIFIER)) {
@@ -771,8 +700,8 @@ public class ProcessorThread implements Runnable {
 	private void getFileParameters(Object[] obj, JSONArray parameters) {
 		if (obj[0].getClass().getName().equals("sun.nio.fs.UnixPath")) {
 			parameters.add(obj[0].toString());
-		} else if(obj[0].getClass().getName().equals("java.io.File")) {
-			parameters.add(((File)obj[0]).toString());
+		} else if (obj[0].getClass().getName().equals("java.io.File")) {
+			parameters.add(((File) obj[0]).toString());
 		} else {
 			parameters.add(obj[0]);
 		}

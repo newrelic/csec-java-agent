@@ -292,6 +292,7 @@ public interface IAgentConstants {
 	String MONGO_MULTIPLE_UPDATES_FIELD = "updates";
 	String MONGO_SINGLE_UPDATE_FIELD = "update";
 	String MONGO_INSERT_REQUESTS_FIELD = "insertRequests";
+	String MONGO_INSERT_REQUEST_LIST_FIELD = "insertRequestList";
 	String MONGO_DOCUMENT_FIELD = "document";
 	String MONGO_WRITE_REQUEST_FIELD = "writeRequests";
 	String MONGO_FIELD_NAME_FIELD = "fieldName";
