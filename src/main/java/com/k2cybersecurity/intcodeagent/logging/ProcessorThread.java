@@ -154,6 +154,10 @@ public class ProcessorThread implements Runnable {
 
 				String klassName = null;
 
+				if (MONGO_EXECUTORS.containsKey(sourceString)) {
+					intCodeResultBean.setEventCategory("MONGO");
+				}
+
 				StackTraceElement[] trace = this.stackTrace;
 
 				String lastNonJavaClass = StringUtils.EMPTY;

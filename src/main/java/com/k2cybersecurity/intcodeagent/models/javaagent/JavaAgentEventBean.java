@@ -20,6 +20,7 @@ public class JavaAgentEventBean extends AgentBasicInfo {
 	private String id;
 	private JSONArray stacktrace;
 	private String caseType;
+	private String eventCategory;
 	private Long preProcessingTime;
 	private boolean rciElement;
 
@@ -257,4 +258,11 @@ public class JavaAgentEventBean extends AgentBasicInfo {
 		this.rciElement = rciElement;
 	}
 
+	public String getEventCategory() {
+		return eventCategory;
+	}
+
+	public void setEventCategory(String eventCategory) {
+		this.eventCategory = eventCategory;
+	}
 }
