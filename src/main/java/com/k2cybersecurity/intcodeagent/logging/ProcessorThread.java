@@ -34,6 +34,7 @@ import com.k2cybersecurity.intcodeagent.models.javaagent.JavaAgentDynamicPathBea
 import com.k2cybersecurity.intcodeagent.models.javaagent.JavaAgentEventBean;
 import com.k2cybersecurity.intcodeagent.models.javaagent.VulnerabilityCaseType;
 import com.k2cybersecurity.intcodeagent.websocket.EventSendPool;
+import org.json.simple.parser.ParseException;
 
 //import org.brutusin.commons.json.spi.JsonCodec;
 
@@ -471,10 +472,10 @@ public class ProcessorThread implements Runnable {
 			f = protocol.getClass().getDeclaredField(MONGO_COMMAND_FIELD);
 			f.setAccessible(true);
 			Object command = f.get(protocol);
-			queryDetailObj.put("command", command.toString());
+			queryDetailObj.put("command", new JSONParser().parse(command.toString()));
 			parameters.add(queryDetailObj);
 			return;
-		} catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
+		} catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException | ParseException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -483,14 +484,14 @@ public class ProcessorThread implements Runnable {
 			f = protocol.getClass().getDeclaredField("queryDocument");
 			f.setAccessible(true);
 			Object command = f.get(protocol);
-			queryDetailObj.put("command", command.toString());
+			queryDetailObj.put("command", new JSONParser().parse(command.toString()));
 			f = protocol.getClass().getDeclaredField("fields");
 			f.setAccessible(true);
 			Object fields = f.get(protocol);
-			queryDetailObj.put("fields", fields.toString());
+			queryDetailObj.put("fields", new JSONParser().parse(fields.toString()));
 			parameters.add(queryDetailObj);
 			return;
-		} catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
+		} catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException | ParseException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -551,9 +552,9 @@ public class ProcessorThread implements Runnable {
 		}
 	}
 
-	private static JSONArray mongoProtocolRequest(Object protocol, String requestField)
+	private static JSONObject mongoProtocolRequest(Object protocol, String requestField)
 			throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
-		JSONArray array = new JSONArray();
+		JSONObject object = new JSONObject();
 		Field f;
 		f = protocol.getClass().getDeclaredField(requestField);
 		f.setAccessible(true);
@@ -564,11 +565,15 @@ public class ProcessorThread implements Runnable {
 				field.setAccessible(true);
 				Object bsonDoc = field.get(request);
 				if (bsonDoc != null && bsonDoc.getClass().getSimpleName().contains("BsonDocument")) {
-					array.add(bsonDoc.toString());
+					try {
+						object.put(field.getName(), new JSONParser().parse(bsonDoc.toString()));
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
 				}
 			}
 		}
-		return array;
+		return object;
 	}
 
 	/**
