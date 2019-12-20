@@ -83,7 +83,7 @@ public class LoggingInterceptor extends Interceptor {
 	private static final Set<String> JAVA_APPLICATION_ALLOWED_FILE_EXT = new HashSet<>(
 			Arrays.asList(new String[] { "java", "jsp", "class", "jar", "war", "ear" }));
 	private static final Set<String> OTHER_CRITICAL_FILE_EXT = new HashSet<>(Arrays
-			.asList(new String[] { "json", "xml", "properties", "config", "conf", "htm", "html", "yaml", "yml" }));
+			.asList(new String[] {"htm", "html", "js"}));
 
 	public static Integer VMPID;
 	protected static final String applicationUUID;
