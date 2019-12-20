@@ -209,12 +209,6 @@ public class JAHealthCheck extends AgentBasicInfo{
 //			if (Agent.jarPathSet.size() != lastJarSetSize) {
 				JSONArray jarSet = new JSONArray();
 				jarSet.addAll(Agent.jarPathSet);
-			try {
-				logger.log(LogLevel.INFO,"Waiting for 10 second to let application load all the files.", JAHealthCheck.class.getName());
-				Thread.sleep(10*1000);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
 			LoggingInterceptor.updateServerInfo();
 //			}
 		}
