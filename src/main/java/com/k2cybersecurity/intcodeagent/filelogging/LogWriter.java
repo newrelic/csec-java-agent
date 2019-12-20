@@ -1,16 +1,15 @@
 package com.k2cybersecurity.intcodeagent.filelogging;
 
+import com.k2cybersecurity.instrumentation.Agent;
+import com.k2cybersecurity.intcodeagent.properties.K2JALogProperties;
+import org.apache.commons.lang3.StringUtils;
+
 import java.io.*;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
-
-import org.apache.commons.lang3.StringUtils;
-import com.k2cybersecurity.instrumentation.Agent;
-
-import com.k2cybersecurity.intcodeagent.properties.K2JALogProperties;
 
 public class LogWriter implements Runnable {
 

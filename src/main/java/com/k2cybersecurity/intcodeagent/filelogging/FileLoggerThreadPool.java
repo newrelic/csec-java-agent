@@ -1,13 +1,9 @@
 package com.k2cybersecurity.intcodeagent.filelogging;
 
-import java.io.IOException;
-import java.util.concurrent.Future;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-
 import com.k2cybersecurity.intcodeagent.logging.ServletEventPool.EventAbortPolicy;
+
+import java.io.IOException;
+import java.util.concurrent.*;
 
 public class FileLoggerThreadPool {
 	private ThreadPoolExecutor executor;

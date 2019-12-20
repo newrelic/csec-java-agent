@@ -1,11 +1,9 @@
 package com.k2cybersecurity.intcodeagent.models.javaagent;
 
-import java.io.Serializable;
-
+import com.k2cybersecurity.intcodeagent.websocket.JsonConverter;
 import org.json.simple.JSONArray;
 
-import com.google.gson.JsonArray;
-import com.k2cybersecurity.intcodeagent.websocket.JsonConverter;
+import java.io.Serializable;
 
 public class ShutDownEvent extends AgentBasicInfo implements Serializable {
 

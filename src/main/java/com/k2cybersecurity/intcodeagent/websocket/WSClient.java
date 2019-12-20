@@ -1,18 +1,17 @@
 package com.k2cybersecurity.intcodeagent.websocket;
 
-import java.net.URI;
-import java.net.URISyntaxException;
-
-import com.k2cybersecurity.instrumentation.Agent;
-import org.java_websocket.client.WebSocketClient;
-import org.java_websocket.handshake.ServerHandshake;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.k2cybersecurity.instrumentation.Agent;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.logging.AgentUtils;
 import com.k2cybersecurity.intcodeagent.logging.LoggingInterceptor;
 import com.k2cybersecurity.intcodeagent.models.javaagent.IntCodeControlCommand;
+import org.java_websocket.client.WebSocketClient;
+import org.java_websocket.handshake.ServerHandshake;
+
+import java.net.URI;
+import java.net.URISyntaxException;
 
 public class WSClient extends WebSocketClient {
 

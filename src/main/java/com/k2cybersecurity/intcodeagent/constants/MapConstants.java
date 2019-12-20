@@ -1,8 +1,10 @@
 package com.k2cybersecurity.intcodeagent.constants;
 
 import com.k2cybersecurity.intcodeagent.models.javaagent.VulnerabilityCaseType;
-import static  com.k2cybersecurity.intcodeagent.logging.IAgentConstants.*;
+
 import java.util.*;
+
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.*;
 
 public abstract class MapConstants {
 	public static Map<String, List<String>> MYSQL_GET_CONNECTION_MAP = new HashMap<>();

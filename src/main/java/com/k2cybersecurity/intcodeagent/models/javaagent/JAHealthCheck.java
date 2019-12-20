@@ -1,16 +1,15 @@
 package com.k2cybersecurity.intcodeagent.models.javaagent;
 
-import java.net.URL;
-import java.util.Enumeration;
-import java.util.concurrent.atomic.AtomicInteger;
-
 import com.k2cybersecurity.instrumentation.Agent;
-import org.json.simple.JSONArray;
-
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.logging.LoggingInterceptor;
 import com.k2cybersecurity.intcodeagent.websocket.JsonConverter;
+import org.json.simple.JSONArray;
+
+import java.net.URL;
+import java.util.Enumeration;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class JAHealthCheck extends AgentBasicInfo{
 

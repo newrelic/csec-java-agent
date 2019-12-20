@@ -1,13 +1,9 @@
 package com.k2cybersecurity.intcodeagent.models.javaagent;
 
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.JSON_NAME_APPLICATION_INFO_BEAN;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.JSON_NAME_DYNAMICJARPATH_BEAN;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.JSON_NAME_HEALTHCHECK;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.JSON_NAME_INTCODE_RESULT_BEAN;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.JSON_NAME_SHUTDOWN;
-
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.properties.K2JAVersionInfo;
+
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.*;
 
 
 /**

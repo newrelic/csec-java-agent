@@ -1,8 +1,7 @@
 package com.k2cybersecurity.intcodeagent.models.javaagent;
 
-import org.json.simple.JSONArray;
-
 import com.k2cybersecurity.intcodeagent.websocket.JsonConverter;
+import org.json.simple.JSONArray;
 
 public class JavaAgentEventBean extends AgentBasicInfo {
 	private Integer pid;

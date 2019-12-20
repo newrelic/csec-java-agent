@@ -1,10 +1,10 @@
 package com.k2cybersecurity.intcodeagent.logging;
 
+import org.apache.commons.lang3.tuple.Pair;
+
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedDeque;
-
-import org.apache.commons.lang3.tuple.Pair;
 
 public class ThreadMapping {
 

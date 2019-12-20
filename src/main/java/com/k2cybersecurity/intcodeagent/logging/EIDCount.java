@@ -1,9 +1,9 @@
 package com.k2cybersecurity.intcodeagent.logging;
 
+import com.k2cybersecurity.intcodeagent.websocket.JsonConverter;
+
 import java.util.Iterator;
 import java.util.concurrent.ConcurrentLinkedDeque;
-
-import com.k2cybersecurity.intcodeagent.websocket.JsonConverter;
 
 public class EIDCount {
 

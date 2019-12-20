@@ -2,14 +2,6 @@ package com.k2cybersecurity.intcodeagent.websocket;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
-import java.util.Arrays;
-import java.util.Collections;
-
-import org.json.simple.JSONArray;
-
-import com.k2cybersecurity.intcodeagent.models.javaagent.JavaAgentEventBean;
-import com.k2cybersecurity.intcodeagent.models.javaagent.HttpRequestBean;
-import com.k2cybersecurity.intcodeagent.models.javaagent.VulnerabilityCaseType;
 
 public class JsonConverter {
 
