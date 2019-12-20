@@ -1,9 +1,20 @@
 package com.k2cybersecurity.intcodeagent.logging;
 
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.*;
-import static com.k2cybersecurity.intcodeagent.constants.MapConstants.*;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.k2cybersecurity.instrumentation.Agent;
+import com.k2cybersecurity.intcodeagent.constants.MapConstants;
+import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
+import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
+import com.k2cybersecurity.intcodeagent.models.javaagent.*;
+import com.k2cybersecurity.intcodeagent.websocket.EventSendPool;
+import org.apache.commons.lang3.StringUtils;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
 
 import java.io.File;
+import java.io.ObjectInputStream;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -18,11 +29,8 @@ import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.lang3.StringUtils;
-import com.k2cybersecurity.instrumentation.Agent;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
+import static com.k2cybersecurity.intcodeagent.constants.MapConstants.*;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.*;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -181,53 +189,59 @@ public class ProcessorThread implements Runnable {
 				}
 
 				boolean userclassFound = false;
-				boolean rciCoveringUserClassFound = false;
-
 				for (int i = 0; i < trace.length; i++) {
 //					logger.log(LogLevel.SEVERE, "\t\t : "+ trace[i].toString(), ProcessorThread.class.getName());
 					int lineNumber = trace[i].getLineNumber();
 					klassName = trace[i].getClassName();
-					if (MYSQL_GET_CONNECTION_MAP.containsKey(klassName)
-							&& MYSQL_GET_CONNECTION_MAP.get(klassName).contains(trace[i].getMethodName())) {
+
+					if (!StringUtils.contains(trace[i].toString(), ".java:") && i > 0 &&
+							StringUtils.contains(trace[i-1].toString(), ".java:")) {
+						intCodeResultBean.getMetaData().setTriggerViaRCI(true);
+						intCodeResultBean.getMetaData().getRciMethodsCalls().add(trace[i].toString());
+						intCodeResultBean.getMetaData().getRciMethodsCalls().add(trace[i-1].toString());
+						logger.log(LogLevel.DEBUG, String.format("Printing stack trace for probable rci event : %s : %s", intCodeResultBean.getId(), Arrays
+								.asList(trace)), ProcessorThread.class.getName());
+					}
+
+					if (MapConstants.MYSQL_GET_CONNECTION_MAP.containsKey(klassName)
+							&& MapConstants.MYSQL_GET_CONNECTION_MAP.get(klassName)
+									.contains(trace[i].getMethodName())) {
 						intCodeResultBean.setValidationBypass(true);
 						LoggingInterceptor.JA_HEALTH_CHECK.incrementDropCount();
 						return;
 					}
-					if (lineNumber <= 0)
-						continue;
-					Matcher matcher = PATTERN.matcher(klassName);
 
-					if (Method.class.getName().equals(klassName)
-							&& StringUtils.equals(trace[i].getMethodName(), INVOKE)) {
-						intCodeResultBean.setRciElement(true);
-						rciCoveringUserClassFound = false;
-						logger.log(
-								LogLevel.DEBUG, String.format("Printing stack trace for RCI event : %s : %s",
-										intCodeResultBean.getId(), Arrays.asList(trace)),
-								ProcessorThread.class.getName());
+					Matcher matcher = PATTERN.matcher(klassName);
+					if (StringUtils.contains(klassName, REFLECT_NATIVE_METHOD_ACCESSOR_IMPL)
+							&& StringUtils.equals(trace[i].getMethodName(), INVOKE_0) && i > 0) {
+						intCodeResultBean.getMetaData().setTriggerViaRCI(true);
+						intCodeResultBean.getMetaData().getRciMethodsCalls().add(trace[i-1].toString());
+						logger.log(LogLevel.DEBUG, String.format("Printing stack trace for rci event : %s : %s", intCodeResultBean.getId(), Arrays
+								.asList(trace)), ProcessorThread.class.getName());
 					}
 
-					if (!matcher.matches()) {
-						if (intCodeResultBean.getRciElement()) {
-							rciCoveringUserClassFound = true;
+					if (ObjectInputStream.class.getName().equals(klassName)
+							&& StringUtils.equals(trace[i].getMethodName(), READ_OBJECT)) {
+						intCodeResultBean.getMetaData().setTriggerViaDeserialisation(true);
+						logger.log(LogLevel.DEBUG, String.format("Printing stack trace for deserialise event : %s : %s", intCodeResultBean.getId(), Arrays
+								.asList(trace)), ProcessorThread.class.getName());
+
+					}
+					if (lineNumber <= 0)
+						continue;
+
+					if (!matcher.matches() && !userclassFound) {
+						intCodeResultBean.setUserAPIInfo(lineNumber, klassName, trace[i].getMethodName());
+						if (i > 0) {
+							intCodeResultBean.setCurrentMethod(trace[i - 1].getMethodName());
 						}
-						if (!userclassFound) {
-							intCodeResultBean.setUserAPIInfo(lineNumber, klassName, trace[i].getMethodName());
-							if (i > 0) {
-								intCodeResultBean.setCurrentMethod(trace[i - 1].getMethodName());
-							}
-							userclassFound = true;
-						}
+						userclassFound = true;
 					} else if (!userclassFound && StringUtils.isNotBlank(matcher.group(5))) {
 						lastNonJavaClass = trace[i].getClassName();
 						lastNonJavaMethod = trace[i].getMethodName();
 						lastNonJavaLineNumber = trace[i].getLineNumber();
 					}
 				}
-				if (intCodeResultBean.getRciElement() && !rciCoveringUserClassFound) {
-					intCodeResultBean.setRciElement(false);
-				}
-
 				if (intCodeResultBean.getUserFileName() != null && !intCodeResultBean.getUserFileName().isEmpty()) {
 					generateEvent(intCodeResultBean);
 				} else if (IAgentConstants.SYSYTEM_CALL_START.equals(sourceString)) {
@@ -596,7 +610,8 @@ public class ProcessorThread implements Runnable {
 	}
 
 	/**
-	 * 
+	 *
+	 *
 	 * @param parameters
 	 */
 	private JSONArray getOracleParameterValue(Object thisPointer, JSONArray parameters, String sourceString) {

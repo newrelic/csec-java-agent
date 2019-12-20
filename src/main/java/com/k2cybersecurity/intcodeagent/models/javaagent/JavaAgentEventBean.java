@@ -22,7 +22,7 @@ public class JavaAgentEventBean extends AgentBasicInfo {
 	private String caseType;
 	private String eventCategory;
 	private Long preProcessingTime;
-	private boolean rciElement;
+	private AgentMetaData metaData;
 
 	public JavaAgentEventBean() {
 		super();
@@ -37,6 +37,7 @@ public class JavaAgentEventBean extends AgentBasicInfo {
 		this.startTime = startTime;
 		this.setCaseType(vulnerabilityCaseType.getCaseType());
 		this.setPreProcessingTime(preProcessingTime);
+		this.metaData = new AgentMetaData();
 	}
 
 	public JavaAgentEventBean(Long startTime, String sourceMethod, JSONArray parameters, Integer pid, String applicationUUID,
@@ -48,6 +49,7 @@ public class JavaAgentEventBean extends AgentBasicInfo {
 		this.parameters = parameters;
 		this.startTime = startTime;
 		this.setCaseType(vulnerabilityCaseType.getCaseType());
+		this.metaData = new AgentMetaData();
 	}
 
 	public void setUserAPIInfo(Integer lineNumber, String userClassName, String userMethodName) {
@@ -244,18 +246,12 @@ public class JavaAgentEventBean extends AgentBasicInfo {
 		this.preProcessingTime = preProcessingTime;
 	}
 
-	/**
-	 * @return the rciElement
-	 */
-	public boolean getRciElement() {
-		return rciElement;
+	public AgentMetaData getMetaData() {
+		return metaData;
 	}
 
-	/**
-	 * @param rciElement the rciElement to set
-	 */
-	public void setRciElement(boolean rciElement) {
-		this.rciElement = rciElement;
+	public void setMetaData(AgentMetaData metaData) {
+		this.metaData = metaData;
 	}
 
 	public String getEventCategory() {

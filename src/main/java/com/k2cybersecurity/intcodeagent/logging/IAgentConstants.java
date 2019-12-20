@@ -432,7 +432,11 @@ public interface IAgentConstants {
 	String COM_IBM_WS_HTTP_CHANNEL_INTERNAL_INBOUND_HTTP_INBOUND_LINK = "com.ibm.ws.http.channel.internal.inbound.HttpInboundLink";
 	String COM_IBM_WS_HTTP_CHANNEL_INBOUND_HTTP_INBOUND_LINK = "com.ibm.ws.http.channel.inbound.impl.HttpInboundLink";
 
+	String INVOKE_0 = "invoke0";
+	String READ_OBJECT = "readObject";
+	String REFLECT_NATIVE_METHOD_ACCESSOR_IMPL = "reflect.NativeMethodAccessorImpl";
 	String INVOKE = "invoke";
 	String JAVA_IO_UNIX_FILE_SYSTEM = "java/io/UnixFileSystem";
 	String JAVA_IO_RANDOM_ACCESS_FILE = "java/io/RandomAccessFile";
+	String INTERCEPTED_HTTP_REQUEST = "Intercepted HTTP request : ";
 }
