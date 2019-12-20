@@ -243,12 +243,15 @@ public class LoggingInterceptor extends Interceptor {
 			Iterator<File> fileIterator = FileUtils.iterateFilesAndDirs(dir, TrueFileFilter.INSTANCE, TrueFileFilter.INSTANCE);
 			while(fileIterator.hasNext()){
 				File tempFile = fileIterator.next();
+
 				if(tempFile.isFile()){
 					String extension = FilenameUtils.getExtension(tempFile.getName());
 					if (OTHER_CRITICAL_FILE_EXT.contains(extension)) {
+						logger.log(LogLevel.DEBUG,"File for SHA calc : " + tempFile.getAbsolutePath(), LoggingInterceptor.class.getName());
 						sha256.add(getChecksum(tempFile));
 					} else if (JAVA_APPLICATION_ALLOWED_FILE_EXT.contains(extension)) {
 						sha256.add(getChecksum(tempFile));
+						logger.log(LogLevel.DEBUG,"File for SHA calc : " + tempFile.getAbsolutePath(), LoggingInterceptor.class.getName());
 					}
 				}
 			}
@@ -260,7 +263,9 @@ public class LoggingInterceptor extends Interceptor {
 				sha256.add(getChecksum(dir));
 			}
 		}
+		logger.log(LogLevel.DEBUG,"Unsorted SHA list : " + sha256, LoggingInterceptor.class.getName());
 		Collections.sort(sha256);
+		logger.log(LogLevel.DEBUG,"Sorted SHA list : " + sha256, LoggingInterceptor.class.getName());
 		return getSHA256HexDigest(sha256);
 	}
 
