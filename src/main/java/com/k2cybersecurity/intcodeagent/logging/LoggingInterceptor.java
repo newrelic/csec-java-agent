@@ -24,6 +24,7 @@ import com.k2cybersecurity.intcodeagent.websocket.EventSendPool;
 import com.k2cybersecurity.intcodeagent.websocket.WSClient;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.io.filefilter.TrueFileFilter;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -237,8 +238,20 @@ public class LoggingInterceptor extends Interceptor {
 	public static String getSHA256ForDirectory(String file) {
 		List<String> sha256 = new ArrayList<>();
 		File dir = new File(file);
+
 		if (dir.isDirectory()) {
-			sha256.addAll(getSHA256ForDirectory(dir.listFiles()));
+			Iterator<File> fileIterator = FileUtils.iterateFilesAndDirs(dir, TrueFileFilter.INSTANCE, TrueFileFilter.INSTANCE);
+			while(fileIterator.hasNext()){
+				File tempFile = fileIterator.next();
+				if(tempFile.isFile()){
+					String extension = FilenameUtils.getExtension(tempFile.getName());
+					if (OTHER_CRITICAL_FILE_EXT.contains(extension)) {
+						sha256.add(getChecksum(tempFile));
+					} else if (JAVA_APPLICATION_ALLOWED_FILE_EXT.contains(extension)) {
+						sha256.add(getChecksum(tempFile));
+					}
+				}
+			}
 		} else if (dir.isFile()) {
 			String extension = FilenameUtils.getExtension(dir.getName());
 			if (OTHER_CRITICAL_FILE_EXT.contains(extension)) {
@@ -255,18 +268,6 @@ public class LoggingInterceptor extends Interceptor {
 		data.removeAll(Collections.singletonList(null));
 		String input = StringUtils.join(data, TWO_PIPES);
 		return getChecksum(input);
-	}
-
-	private static List<String> getSHA256ForDirectory(File[] list) {
-		List<String> sha256 = new ArrayList<>();
-		for (File dir : list) {
-			if (dir.isDirectory()) {
-				sha256.addAll(getSHA256ForDirectory(dir.listFiles()));
-			} else if (dir.isFile()) {
-				sha256.add(getChecksum(dir));
-			}
-		}
-		return sha256;
 	}
 
 	/**
