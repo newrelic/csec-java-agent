@@ -9,6 +9,8 @@ import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.*;
 public abstract class MapConstants {
 	public static Map<String, List<String>> MYSQL_GET_CONNECTION_MAP = new HashMap<>();
 
+	public static Map<String, List<String>> HSQL_GET_CONNECTION_MAP = new HashMap<>();
+
 	public static Map<String, VulnerabilityCaseType> MONGO_EXECUTORS = new HashMap<>();
 
 	// MSSQL
@@ -26,6 +28,8 @@ public abstract class MapConstants {
 	static {
 		MYSQL_GET_CONNECTION_MAP.put("java.sql.DriverManager", Collections.singletonList("getConnection"));
 		MYSQL_GET_CONNECTION_MAP.put("com.mysql.jdbc.ConnectionImpl", Arrays.asList("getInstance", "isReadOnly"));
+
+		HSQL_GET_CONNECTION_MAP.put("org.hsqldb.jdbc.JDBCDriver", Collections.singletonList("getConnection"));
 
 		// asynchronous mongo calls
 		MONGO_EXECUTORS.put("public <T> void com.mongodb.async.client.MongoClientImpl$2.execute(com.mongodb.operation.AsyncReadOperation<T>,com.mongodb.ReadPreference,com.mongodb.async.SingleResultCallback<T>)",
@@ -89,13 +93,14 @@ public abstract class MapConstants {
 		INSTRUMENTED_METHODS.put(CLASS_ORG_POSTGRESQL_CORE_V2_QUERY_EXECUTOR_IMPL, Collections.singletonList("sendQuery"));
 		INSTRUMENTED_METHODS.put(CLASS_ORG_HSQLDB_SESSION, Arrays.asList(new String[] { "executeCompiledStatement", "execute" }));
 		INSTRUMENTED_METHODS.put(CLASS_ORG_HSQLDB_HSQL_CLIENT_CONNECTION, Collections.singletonList("execute"));
+		INSTRUMENTED_METHODS.put(CLASS_ORG_HSQLDB_CLIENT_CONNECTION,Arrays.asList(new String[] { "execute" }));
 		INSTRUMENTED_METHODS.put(COM_IBM_WS_GENERICBNF_INTERNAL_BNFHEADERSIMPL, Collections.singletonList("fillByteCache"));
 		INSTRUMENTED_METHODS.put(COM_IBM_WS_HTTP_CHANNEL_INTERNAL_INBOUND_HTTPINBOUNDLINK, Collections.singletonList("processRequest"));
 		INSTRUMENTED_METHODS.put(COM_IBM_WS_GENERICBNF_IMPL_BNFHEADERSIMPL, Collections.singletonList("fillByteCache"));
 		INSTRUMENTED_METHODS.put(COM_IBM_WS_HTTP_CHANNEL_INBOUND_IMPL_HTTPINBOUNDLINK, Collections.singletonList("processRequest"));
-		INSTRUMENTED_METHODS.put(IO_UNDERTOW_SERVER_PROTOCOL_HTTP_HTTP_REQUEST_PARSER, Collections.singletonList("handle"));
-		INSTRUMENTED_METHODS.put(ORG_JBOSS_THREADS_ENHANCED_QUEUE_EXECUTOR2, Collections.singletonList("tryExecute"));
-		INSTRUMENTED_METHODS.put(ORG_XNIO_XNIO_WORKER$_WORKER_THREAD_FACTORY, Collections.singletonList("newThread"));
+//		INSTRUMENTED_METHODS.put(IO_UNDERTOW_SERVER_PROTOCOL_HTTP_HTTP_REQUEST_PARSER, Collections.singletonList("handle"));
+//		INSTRUMENTED_METHODS.put(ORG_JBOSS_THREADS_ENHANCED_QUEUE_EXECUTOR2, Collections.singletonList("tryExecute"));
+//		INSTRUMENTED_METHODS.put(ORG_XNIO_XNIO_WORKER$_WORKER_THREAD_FACTORY, Collections.singletonList("newThread"));
 		INSTRUMENTED_METHODS.put(IO_UNDERTOW_SERVLET_HANDLERS_SERVLET_HANDLER, Collections.singletonList("handleRequest"));
 		INSTRUMENTED_METHODS.put(CLASS_HTTP_REQUEST_EXECUTOR, Collections.singletonList("doSendRequest"));
 		INSTRUMENTED_METHODS.put(CLASS_JAVA_HTTP_HANDLER, Collections.singletonList("openConnection"));
@@ -106,13 +111,12 @@ public abstract class MapConstants {
 		INSTRUMENTED_METHODS.put(CLASS_APACHE_COMMONS_HTTP_METHOD_DIRECTOR, Collections.singletonList("executeWithRetry"));
 		INSTRUMENTED_METHODS.put(CLASS_OKHTTP_HTTP_ENGINE, Collections.singletonList("sendRequest"));
 		INSTRUMENTED_METHODS.put(CLASS_WEBLOGIC_HTTP_HANDLER, Collections.singletonList("openConnection"));
-		INSTRUMENTED_METHODS.put(CLASS_JAVA_IO_FILE_OUTPUT_STREAM, Collections.singletonList("open"));
-		INSTRUMENTED_METHODS.put(CLASS_JAVA_IO_FILE_INPUT_STREAM, Collections.singletonList("open"));
-		INSTRUMENTED_METHODS.put(CLASS_SUN_NIO_FS_UNIX_NATIVE_DISPATCHER, Arrays.asList(new String[] {"open", "fopen", "link", "unlink", "mknod", "rename", "mkdir", "rmdir", "symlink", "chown", "chmod"}));
-		INSTRUMENTED_METHODS.put("org/xnio/XnioWorker", Collections.singletonList("execute"));
-		INSTRUMENTED_METHODS.put(JAVA_IO_UNIX_FILE_SYSTEM, Collections.singletonList("delete"));
-		INSTRUMENTED_METHODS.put(JAVA_IO_RANDOM_ACCESS_FILE, Collections.singletonList("open"));
-
+//		INSTRUMENTED_METHODS.put(CLASS_JAVA_IO_FILE_OUTPUT_STREAM, Collections.singletonList("open"));
+//		INSTRUMENTED_METHODS.put(CLASS_JAVA_IO_FILE_INPUT_STREAM, Collections.singletonList("open"));
+//		INSTRUMENTED_METHODS.put(CLASS_SUN_NIO_FS_UNIX_NATIVE_DISPATCHER, Arrays.asList(new String[] {"open", "fopen", "link", "unlink", "mknod", "rename", "mkdir", "rmdir", "symlink", "chown", "chmod"}));
+//		INSTRUMENTED_METHODS.put("org/xnio/XnioWorker", Collections.singletonList("execute"));
+//		INSTRUMENTED_METHODS.put(JAVA_IO_UNIX_FILE_SYSTEM, Collections.singletonList("delete"));
+//		INSTRUMENTED_METHODS.put(JAVA_IO_RANDOM_ACCESS_FILE, Collections.singletonList("open"));
 
 
 
@@ -146,6 +150,7 @@ public abstract class MapConstants {
 		EXECUTORS.put(HSQL_V2_4, VulnerabilityCaseType.SQL_DB_COMMAND);
 		EXECUTORS.put(HSQL_V1_8_CONNECTION, VulnerabilityCaseType.SQL_DB_COMMAND);
 		EXECUTORS.put(HSQL_V1_8_SESSION, VulnerabilityCaseType.SQL_DB_COMMAND);
+		EXECUTORS.put(HSQL_V2_3_4_CLIENT_CONNECTION, VulnerabilityCaseType.SQL_DB_COMMAND);
 
 		// MongoDB
 		EXECUTORS.putAll(MONGO_EXECUTORS);
