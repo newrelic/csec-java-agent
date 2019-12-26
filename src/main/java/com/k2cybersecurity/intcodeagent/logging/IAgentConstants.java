@@ -68,10 +68,7 @@ public interface IAgentConstants {
 
 	//JBoss
 	String IO_UNDERTOW_SERVLET_HANDLERS_SERVLET_HANDLER = "io/undertow/servlet/handlers/ServletHandler";
-	String ORG_XNIO_XNIO_WORKER$_WORKER_THREAD_FACTORY = "org/xnio/XnioWorker$WorkerThreadFactory";
-	String ORG_JBOSS_THREADS_ENHANCED_QUEUE_EXECUTOR2 = "org/jboss/threads/EnhancedQueueExecutor";
-	String IO_UNDERTOW_SERVER_PROTOCOL_HTTP_HTTP_REQUEST_PARSER = "io/undertow/server/protocol/http/HttpRequestParser";
-	
+
 	String EXEC_URL_CLASS_LOADER_NEW_INSTANCE = "public static java.net.URLClassLoader java.net.URLClassLoader.newInstance(java.net.URL[])";
 
 	String EXEC_DEFINE_CLASS = "private java.lang.Class<?> java.net.URLClassLoader.defineClass(java.lang.String,sun.misc.Resource) throws java.io.IOException";
@@ -151,11 +148,6 @@ public interface IAgentConstants {
 	String CLASS_WEBLOGIC_HTTP_HANDLER = "weblogic/net/http/Handler";
 	String WEBLOGIC_OPEN_CONNECTION_METHOD = "protected java.net.URLConnection weblogic.net.http.Handler.openConnection(java.net.URL,java.net.Proxy) throws java.io.IOException";
 
-	List<String> FILE_OPEN_EXECUTORS = Arrays.asList(new String[] {
-			JAVA_IO_FILE_INPUTSTREAM_OPEN, JAVA_IO_FILE_OUTPUTSTREAM_OPEN });
-
-	String SERVLET_REQUEST_FACADE = "public org.apache.catalina.connector.RequestFacade(org.apache.catalina.connector.Request)";
-
 	String PSQLV3_EXECUTOR = "private void org.postgresql.core.v3.QueryExecutorImpl.sendQuery(org.postgresql.core.v3.V3Query,org.postgresql.core.v3.V3ParameterList,int,int,int,org.postgresql.core.v3.QueryExecutorImpl$ErrorTrackingResultHandler) throws java.io.IOException,java.sql.SQLException";
 
 	String PSQLV2_EXECUTOR = "protected void org.postgresql.core.v2.QueryExecutorImpl.sendQuery(org.postgresql.core.v2.V2Query,org.postgresql.core.v2.SimpleParameterList,java.lang.String) throws java.io.IOException";
@@ -175,14 +167,6 @@ public interface IAgentConstants {
 	
 	// HSQL_DB v2.3.4
 	String HSQL_V2_3_4_CLIENT_CONNECTION = "public synchronized org.hsqldb.result.Result org.hsqldb.ClientConnection.execute(org.hsqldb.result.Result)";
-
-	String HTTP_SERVLET_SERVICE = "protected void javax.servlet.http.HttpServlet.service(javax.servlet.http.HttpServletRequest,javax.servlet.http.HttpServletResponse) throws javax.servlet.ServletException,java.io.IOException";
-
-	String STRUTS2_DO_FILTER = "public void org.apache.struts2.dispatcher.ng.filter.StrutsPrepareAndExecuteFilter.doFilter(javax.servlet.ServletRequest,javax.servlet.ServletResponse,javax.servlet.FilterChain) throws java.io.IOException,javax.servlet.ServletException";
-
-	String MSSQL_EXECUTOR = "boolean com.microsoft.sqlserver.jdbc.SQLServerConnection.executeCommand(com.microsoft.sqlserver.jdbc.TDSCommand) throws com.microsoft.sqlserver.jdbc.SQLServerException";
-
-	String[] CONSTRUCTOR = { "<init>" };
 
 	String CLASS_JAVA_IO_FILE_OUTPUT_STREAM = "java/io/FileOutputStream";
 	String CLASS_JAVA_IO_FILE_INPUT_STREAM = "java/io/FileInputStream";

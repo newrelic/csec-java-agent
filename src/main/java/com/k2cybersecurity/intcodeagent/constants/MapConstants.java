@@ -98,9 +98,6 @@ public abstract class MapConstants {
 		INSTRUMENTED_METHODS.put(COM_IBM_WS_HTTP_CHANNEL_INTERNAL_INBOUND_HTTPINBOUNDLINK, Collections.singletonList("processRequest"));
 		INSTRUMENTED_METHODS.put(COM_IBM_WS_GENERICBNF_IMPL_BNFHEADERSIMPL, Collections.singletonList("fillByteCache"));
 		INSTRUMENTED_METHODS.put(COM_IBM_WS_HTTP_CHANNEL_INBOUND_IMPL_HTTPINBOUNDLINK, Collections.singletonList("processRequest"));
-//		INSTRUMENTED_METHODS.put(IO_UNDERTOW_SERVER_PROTOCOL_HTTP_HTTP_REQUEST_PARSER, Collections.singletonList("handle"));
-//		INSTRUMENTED_METHODS.put(ORG_JBOSS_THREADS_ENHANCED_QUEUE_EXECUTOR2, Collections.singletonList("tryExecute"));
-//		INSTRUMENTED_METHODS.put(ORG_XNIO_XNIO_WORKER$_WORKER_THREAD_FACTORY, Collections.singletonList("newThread"));
 		INSTRUMENTED_METHODS.put(IO_UNDERTOW_SERVLET_HANDLERS_SERVLET_HANDLER, Collections.singletonList("handleRequest"));
 		INSTRUMENTED_METHODS.put(CLASS_HTTP_REQUEST_EXECUTOR, Collections.singletonList("doSendRequest"));
 		INSTRUMENTED_METHODS.put(CLASS_JAVA_HTTP_HANDLER, Collections.singletonList("openConnection"));
@@ -111,12 +108,12 @@ public abstract class MapConstants {
 		INSTRUMENTED_METHODS.put(CLASS_APACHE_COMMONS_HTTP_METHOD_DIRECTOR, Collections.singletonList("executeWithRetry"));
 		INSTRUMENTED_METHODS.put(CLASS_OKHTTP_HTTP_ENGINE, Collections.singletonList("sendRequest"));
 		INSTRUMENTED_METHODS.put(CLASS_WEBLOGIC_HTTP_HANDLER, Collections.singletonList("openConnection"));
-//		INSTRUMENTED_METHODS.put(CLASS_JAVA_IO_FILE_OUTPUT_STREAM, Collections.singletonList("open"));
-//		INSTRUMENTED_METHODS.put(CLASS_JAVA_IO_FILE_INPUT_STREAM, Collections.singletonList("open"));
-//		INSTRUMENTED_METHODS.put(CLASS_SUN_NIO_FS_UNIX_NATIVE_DISPATCHER, Arrays.asList(new String[] {"open", "fopen", "link", "unlink", "mknod", "rename", "mkdir", "rmdir", "symlink", "chown", "chmod"}));
-//		INSTRUMENTED_METHODS.put("org/xnio/XnioWorker", Collections.singletonList("execute"));
-//		INSTRUMENTED_METHODS.put(JAVA_IO_UNIX_FILE_SYSTEM, Collections.singletonList("delete"));
-//		INSTRUMENTED_METHODS.put(JAVA_IO_RANDOM_ACCESS_FILE, Collections.singletonList("open"));
+		INSTRUMENTED_METHODS.put(CLASS_JAVA_IO_FILE_OUTPUT_STREAM, Collections.singletonList("open"));
+		INSTRUMENTED_METHODS.put(CLASS_JAVA_IO_FILE_INPUT_STREAM, Collections.singletonList("open"));
+		INSTRUMENTED_METHODS.put(CLASS_SUN_NIO_FS_UNIX_NATIVE_DISPATCHER, Arrays.asList(new String[] {"open", "fopen", "link", "unlink", "mknod", "rename", "mkdir", "rmdir", "symlink", "chown", "chmod"}));
+		INSTRUMENTED_METHODS.put("org/xnio/XnioWorker", Collections.singletonList("execute"));
+		INSTRUMENTED_METHODS.put(JAVA_IO_UNIX_FILE_SYSTEM, Collections.singletonList("delete"));
+		INSTRUMENTED_METHODS.put(JAVA_IO_RANDOM_ACCESS_FILE, Collections.singletonList("open"));
 
 
 
@@ -159,16 +156,6 @@ public abstract class MapConstants {
 		EXECUTORS.put(URL_CLASS_LOADER, VulnerabilityCaseType.DYNAMIC_CLASS_LOADING);
 		EXECUTORS.put(EXEC_DEFINE_CLASS, VulnerabilityCaseType.DYNAMIC_CLASS_LOADING);
 		EXECUTORS.put(EXEC_URL_CLASS_LOADER_NEW_INSTANCE, VulnerabilityCaseType.DYNAMIC_CLASS_LOADING);
-
-		// // FileWriter
-		//			"public java.io.OutputStream java.nio.file.spi.FileSystemProvider.newOutputStream(java.nio.file.Path,java.nio.file.OpenOption...) throws java.io.IOException",
-		//			"public java.io.File(java.lang.String,java.lang.String)", "public java.io.File(java.lang.String)",
-
-		// File Input
-		// "public java.io.FileInputStream(java.lang.String) throws
-		// java.io.FileNotFoundException",
-		// "public java.io.FileInputStream(java.io.File) throws
-		// java.io.FileNotFoundException",
 
 		// http request
 		EXECUTORS.put(APACHE_HTTP_REQUEST_EXECUTOR_METHOD, VulnerabilityCaseType.HTTP_REQUEST);
