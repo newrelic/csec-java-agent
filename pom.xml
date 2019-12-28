@@ -10,8 +10,8 @@
 	<description>A configurable java agent to log programs running on the JVM</description>
 
 	<properties>
-		<maven.compiler.source>1.7</maven.compiler.source>
-		<maven.compiler.target>1.7</maven.compiler.target>
+		<maven.compiler.source>1.8</maven.compiler.source>
+		<maven.compiler.target>1.8</maven.compiler.target>
 		<buildId>201902050702_UTC_0c876e5</buildId>
 		<buildTime>2019-02-05_07:08:07UTC</buildTime>
 		<commitId>0c876e5</commitId>
@@ -68,9 +68,13 @@
     		<artifactId>commons-io</artifactId>
     		<version>2.4</version>
 		</dependency>
-		
-		
-		
+		<!-- https://mvnrepository.com/artifact/net.bytebuddy/byte-buddy -->
+		<dependency>
+			<groupId>net.bytebuddy</groupId>
+			<artifactId>byte-buddy</artifactId>
+			<version>1.10.4</version>
+		</dependency>
+
 	</dependencies>
 	<build>
 		<resources>
@@ -95,8 +99,8 @@
 				<configuration>
 					<archive>
 						<manifestEntries>
-							<Premain-Class>sun.reflect.com.k2cybersecurity.instrumentation.Agent</Premain-Class>
-							<Agent-Class>sun.reflect.com.k2cybersecurity.instrumentation.Agent</Agent-Class>
+							<Premain-Class>sun.reflect.com.k2cybersecurity.intcodeagent.Agent</Premain-Class>
+							<Agent-Class>sun.reflect.com.k2cybersecurity.intcodeagent.Agent</Agent-Class>
 							<Can-Retransform-Classes>true</Can-Retransform-Classes>
 							<Can-Redefine-Classes>true</Can-Redefine-Classes>
 							<Boot-Class-Path>${project.artifactId}-${project.version}-jar-with-dependencies.${project.packaging}</Boot-Class-Path>
