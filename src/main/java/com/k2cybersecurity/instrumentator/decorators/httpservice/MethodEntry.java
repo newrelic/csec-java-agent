@@ -1,6 +1,6 @@
-package com.k2cybersecurity.intcodeagent.decorators.sample;
+package com.k2cybersecurity.instrumentator.decorators.httpservice;
 
-import com.k2cybersecurity.intcodeagent.utils.instrumentation.ExecutionIDGenerator;
+import com.k2cybersecurity.instrumentator.utils.ExecutionIDGenerator;
 import net.bytebuddy.asm.Advice;
 
 public class MethodEntry {

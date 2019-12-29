@@ -1,4 +1,4 @@
-package com.k2cybersecurity.intcodeagent.utils.instrumentation;
+package com.k2cybersecurity.instrumentator.utils;
 
 import java.util.concurrent.atomic.AtomicLong;
 

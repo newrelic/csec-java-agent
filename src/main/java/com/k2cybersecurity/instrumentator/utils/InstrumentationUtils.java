@@ -1,7 +1,7 @@
-package com.k2cybersecurity.intcodeagent.utils.instrumentation;
+package com.k2cybersecurity.instrumentator.utils;
 
-import com.k2cybersecurity.intcodeagent.Agent;
-import com.k2cybersecurity.intcodeagent.Hooks;
+import com.k2cybersecurity.instrumentator.AgentNew;
+import com.k2cybersecurity.instrumentator.Hooks;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.type.TypeDescription;
@@ -38,7 +38,7 @@ public class InstrumentationUtils {
                             public DynamicType.Builder<?> transform(DynamicType.Builder<?> builder, TypeDescription typeDescription, ClassLoader classLoader, JavaModule javaModule) {
 
                                 try {
-                                    if (Agent.hookedAPIs.contains(typeDescription.getName() + "." + method)){
+                                    if (AgentNew.hookedAPIs.contains(typeDescription.getName() + "." + method)){
                                         return builder;
                                     }
                                     System.out.println(String.format("Instrumenting : %s::%s for key : %s : %s", sourceClass, method, (sourceClass + "." + method),  typeDescription.getName()));
@@ -51,7 +51,7 @@ public class InstrumentationUtils {
                                     Class staticMethodVoidExitDecorator = Class.forName(Hooks.DECORATOR_ENTRY.get(sourceClass + "." + method) + "." + "StaticMethodVoidExit");
 
                                     Class constructorExitDecorator = Class.forName(Hooks.DECORATOR_ENTRY.get(sourceClass + "." + method) + "." + "ConstructorExit");
-                                    Agent.hookedAPIs.add(typeDescription.getName() + "." + method);
+                                    AgentNew.hookedAPIs.add(typeDescription.getName() + "." + method);
                                     if (method == null) {
                                         return builder.visit(Advice.to(staticMethodEntryDecorator, constructorExitDecorator)
                                                 .on(isConstructor()));

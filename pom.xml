@@ -99,8 +99,8 @@
 				<configuration>
 					<archive>
 						<manifestEntries>
-							<Premain-Class>sun.reflect.com.k2cybersecurity.intcodeagent.Agent</Premain-Class>
-							<Agent-Class>sun.reflect.com.k2cybersecurity.intcodeagent.Agent</Agent-Class>
+							<Premain-Class>sun.reflect.com.k2cybersecurity.instrumentator.AgentNew</Premain-Class>
+							<Agent-Class>sun.reflect.com.k2cybersecurity.instrumentator.AgentNew</Agent-Class>
 							<Can-Retransform-Classes>true</Can-Retransform-Classes>
 							<Can-Redefine-Classes>true</Can-Redefine-Classes>
 							<Boot-Class-Path>${project.artifactId}-${project.version}-jar-with-dependencies.${project.packaging}</Boot-Class-Path>

@@ -1,5 +1,6 @@
 package com.k2cybersecurity.intcodeagent.models.javaagent;
 
+import com.k2cybersecurity.instrumentator.decorators.httpservice.utils.CacheInputStream;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.logging.LoggingInterceptor;
@@ -44,6 +45,8 @@ public class HttpRequestBean {
 	private JSONObject headers;
 
 	private Map<String, FileIntegrityBean> fileExist;
+
+	private CacheInputStream cacheInputStream;
 
 	public HttpRequestBean() {
 		this.rawRequest = StringUtils.EMPTY;
@@ -271,4 +274,13 @@ public class HttpRequestBean {
 //		servletInfo.populateHttpRequest();
 //		System.out.println(servletInfo);
 //	}
+
+
+	public CacheInputStream getCacheInputStream() {
+		return cacheInputStream;
+	}
+
+	public void setCacheInputStream(CacheInputStream cacheInputStream) {
+		this.cacheInputStream = cacheInputStream;
+	}
 }

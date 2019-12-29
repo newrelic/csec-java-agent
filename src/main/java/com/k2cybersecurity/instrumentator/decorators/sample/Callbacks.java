@@ -1,4 +1,4 @@
-package com.k2cybersecurity.intcodeagent.decorators.sample;
+package com.k2cybersecurity.instrumentator.decorators.sample;
 
 import java.util.Arrays;
 
