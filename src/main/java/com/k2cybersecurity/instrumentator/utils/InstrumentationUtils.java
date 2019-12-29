@@ -36,8 +36,8 @@ public class InstrumentationUtils {
                         .transform(new AgentBuilder.Transformer() {
                             @Override
                             public DynamicType.Builder<?> transform(DynamicType.Builder<?> builder, TypeDescription typeDescription, ClassLoader classLoader, JavaModule javaModule) {
-
                                 try {
+
                                     if (AgentNew.hookedAPIs.contains(typeDescription.getName() + "." + method)){
                                         return builder;
                                     }

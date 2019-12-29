@@ -1,4 +1,6 @@
-package com.k2cybersecurity.instrumentator.decorators.sample;
+package com.k2cybersecurity.instrumentator.decorators.servletinputstream;
+
+import com.k2cybersecurity.instrumentator.custom.ThreadLocalHttpMap;
 
 import java.util.Arrays;
 
@@ -9,6 +11,13 @@ public class Callbacks {
     }
 
     public static void doOnExit(String sourceString, Object obj, Object[] args, Object returnVal, String exectionId) {
+        if (args != null && args.length == 1) {
+            ThreadLocalHttpMap.getInstance().insertToRequestByteBuffer(Arrays.copyOfRange((byte[]) args[0], 0, (Integer) returnVal));
+        } else if (args != null && args.length == 3) {
+            ThreadLocalHttpMap.getInstance().insertToRequestByteBuffer(Arrays.copyOfRange((byte[]) args[0], (Integer) args[1], (Integer) args[2]));
+        } else if (args == null || args.length == 0) {
+            ThreadLocalHttpMap.getInstance().insertToRequestByteBuffer(((Integer) returnVal).byteValue());
+        }
         System.out.println("OnExit :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj + " - return : " + returnVal + " - eid : " + exectionId);
     }
 

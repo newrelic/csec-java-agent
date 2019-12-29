@@ -1,16 +1,20 @@
-package com.k2cybersecurity.instrumentator.decorators.sample;
+package com.k2cybersecurity.instrumentator.decorators.servletinputstream;
 
 import com.k2cybersecurity.instrumentator.utils.ExecutionIDGenerator;
 import net.bytebuddy.asm.Advice;
 
-public class MethodEntry {
+public class StaticMethodEntry {
+
     @Advice.OnMethodEnter
-    public static void enter(@Advice.Origin String signature, @Advice.AllArguments Object[] args, @Advice.This Object thisArg) {
+    public static void enter(@Advice.Origin String signature, @Advice.AllArguments Object[] args) {
         try {
             String executionId = ExecutionIDGenerator.getExecutionId();
-            Callbacks.doOnEnter(signature, thisArg, args, executionId);
+            Callbacks.doOnEnter(signature, null, args, executionId);
         } catch (Throwable e) {
             e.printStackTrace();
         }
     }
+
 }
+
+

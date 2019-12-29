@@ -27,31 +27,10 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.filefilter.TrueFileFilter;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
-import org.objectweb.asm.tree.ClassNode;
-import org.objectweb.asm.tree.MethodNode;
-import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
-import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
-import com.k2cybersecurity.intcodeagent.models.javaagent.*;
-import com.k2cybersecurity.intcodeagent.websocket.EventSendPool;
-import com.k2cybersecurity.intcodeagent.websocket.WSClient;
-
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringEscapeUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
-import com.k2cybersecurity.instrumentation.Agent;
-import com.k2cybersecurity.instrumentation.Interceptor;
-import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.MethodNode;
-import static com.k2cybersecurity.intcodeagent.constants.MapConstants.FILE_EXECUTORS;
-import static com.k2cybersecurity.intcodeagent.constants.MapConstants.INSTRUMENTED_METHODS;
-import static com.k2cybersecurity.intcodeagent.constants.MapConstants.MYSQL_SOURCE_METHOD_LIST;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.*;
 
 import java.io.*;
 import java.lang.instrument.ClassFileTransformer;
@@ -59,34 +38,20 @@ import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.net.SocketAddress;
 import java.net.URISyntaxException;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
-import java.nio.channels.SocketChannel;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.Condition;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -903,7 +868,7 @@ public class LoggingInterceptor extends Interceptor {
 				httpRequestBean.setClientIP(remoteAddr);
 				httpRequestBean.addGenerationTime((int) (System.currentTimeMillis() - start));
 				httpRequestBean.setHeaders(new JSONObject(headerMap));
-				httpRequestBean.setBody(sb.toString());
+//				httpRequestBean.setBody(sb.toString());
 				httpRequestBean.setMethod(method);
 				httpRequestBean.setUrl(requestUrl.toString());
 
@@ -934,7 +899,7 @@ public class LoggingInterceptor extends Interceptor {
 //				while (iterator.hasNext()) {
 //					ThreadRequestData threadRequestData = iterator.next();
 //					if (threadRequestData.getExecutionId() < executionId) {
-//						servletInfo = threadRequestData.getServletInfo();
+//						servletInfo = threadRequestData.getHttpRequestBean();
 ////						 System.err.println("SI found : "+ servletInfo);
 //						break;
 //					}

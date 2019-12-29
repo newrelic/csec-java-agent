@@ -6,9 +6,13 @@ import net.bytebuddy.asm.Advice;
 public class ConstructorExit {
 
     @Advice.OnMethodExit
-    public static void exit(@Advice.Origin String signature, @Advice.AllArguments Object[] args){
-        String executionId = ExecutionIDGenerator.getExecutionId();
-        Callbacks.doOnExit(signature, null, args, null, executionId);
+    public static void exit(@Advice.Origin String signature, @Advice.AllArguments Object[] args) {
+        try {
+            String executionId = ExecutionIDGenerator.getExecutionId();
+            Callbacks.doOnExit(signature, null, args, null, executionId);
+        } catch (Throwable e) {
+            e.printStackTrace();
+        }
     }
 
 }

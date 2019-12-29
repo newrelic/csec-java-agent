@@ -1,5 +1,7 @@
 package com.k2cybersecurity.intcodeagent.websocket;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 
@@ -35,6 +37,9 @@ public class JsonConverter {
 				if (!Modifier.isStatic(fields[i].getModifiers())) {
 					Field field = fields[i];
 					field.setAccessible(true);
+					if (field.getAnnotation(JsonIgnore.class) != null) {
+						continue;
+					}
 					Object value = field.get(obj);
 					if (value != null) {
 						jsonString.append(STR_FORWARD_SLASH);
@@ -77,7 +82,7 @@ public class JsonConverter {
 //		ServletInfo servletInfo = new ServletInfo();
 //		servletInfo.setDataTruncated(false);
 //		servletInfo.setRawRequest("sdasdfasfasf \n\r asd \r\n asd asd asd ");
-//		javaAgentEventBean.setServletInfo(servletInfo);
+//		javaAgentEventBean.setHttpRequestBean(servletInfo);
 //
 //		System.out.println(javaAgentEventBean.toString());
 //	}

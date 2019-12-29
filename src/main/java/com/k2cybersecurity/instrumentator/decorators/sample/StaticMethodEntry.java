@@ -7,8 +7,12 @@ public class StaticMethodEntry {
 
     @Advice.OnMethodEnter
     public static void enter(@Advice.Origin String signature, @Advice.AllArguments Object[] args) {
-        String executionId = ExecutionIDGenerator.getExecutionId();
-        Callbacks.doOnEnter(signature, null, args, executionId);
+        try {
+            String executionId = ExecutionIDGenerator.getExecutionId();
+            Callbacks.doOnEnter(signature, null, args, executionId);
+        } catch (Throwable e) {
+            e.printStackTrace();
+        }
     }
 
 }

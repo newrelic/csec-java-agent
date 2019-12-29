@@ -15,6 +15,13 @@ public class AgentMetaData{
 		this.rciMethodsCalls = new JSONArray();
 	}
 
+	public AgentMetaData(AgentMetaData agentMetaData) {
+		this.rciMethodsCalls = new JSONArray();
+		this.rciMethodsCalls.addAll(agentMetaData.rciMethodsCalls);
+		this.triggerViaDeserialisation = agentMetaData.triggerViaDeserialisation;
+		this.triggerViaRCI = agentMetaData.triggerViaRCI;
+	}
+
 	@Override
 	public String toString() {
 		return JsonConverter.toJSON(this);

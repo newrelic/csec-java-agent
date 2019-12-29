@@ -17,7 +17,7 @@ public class AgentNew {
 
     public static void premain(String arguments, Instrumentation instrumentation) {
         AgentBuilder agentBuilder = new AgentBuilder.Default()
-//                .with(AgentBuilder.Listener.StreamWriting.toSystemError())
+                .with(AgentBuilder.Listener.StreamWriting.toSystemError())
                 .with(AgentBuilder.TypeStrategy.Default.REBASE)
                 .with(AgentBuilder.RedefinitionStrategy.RETRANSFORMATION);
 
