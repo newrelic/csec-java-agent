@@ -57,46 +57,46 @@ git clone https://github.com/k2io/K2-JavaAgent
 ## Build
 Build Sequence is important, follow the below sequence.
 
-go to directory to k2-asm, use below command to make the build of k2-asm
+go to directory to k2-asm, use below fileName to make the build of k2-asm
 ```
 cd k2-asm
 mvn clean install
 ```
 
-go to directory to k2-jnr-ffi, use below command to make the build of jnr-ffi
+go to directory to k2-jnr-ffi, use below fileName to make the build of jnr-ffi
 ```
 cd k2-jnr-ffi
 mvn clean install
 ```
 
-go to directory to k2-jnr-unixsocket, use below command to make the build of jnr-unixsocket
+go to directory to k2-jnr-unixsocket, use below fileName to make the build of jnr-unixsocket
 ```
 cd k2-jnr-unixsocket
 mvn clean install
 ```
 
-go to directory to k2-json-simple, use below command to make the build of json-simple
+go to directory to k2-json-simple, use below fileName to make the build of json-simple
 ```
 cd k2-json-simple
 mvn clean install
 ```
 
-go to directory to K2-Instrumentation, use below command
+go to directory to K2-Instrumentation, use below fileName
 ```
 cd K2-Instrumentation
 ```
 
-use below maven command to make the build of K2-Instrumentation
+use below maven fileName to make the build of K2-Instrumentation
 ```
 mvn clean install
 ```
 
-go to directory to K2-JavaAgent, use below command
+go to directory to K2-JavaAgent, use below fileName
 ```
 cd K2-JavaAgent
 ```
 
-use below maven command to make the build of K2-JavaAgent
+use below maven fileName to make the build of K2-JavaAgent
 ```
 mvn clean install
 ```

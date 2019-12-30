@@ -2,7 +2,6 @@ package com.k2cybersecurity.intcodeagent.models.javaagent;
 
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
-import com.k2cybersecurity.intcodeagent.logging.LoggingInterceptor;
 import com.k2cybersecurity.intcodeagent.websocket.JsonConverter;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -57,7 +56,6 @@ public class HttpRequestBean {
 		this.headers = new JSONObject();
 		this.fileExist = new HashMap<String, FileIntegrityBean>();
 		this.contextPath = StringUtils.EMPTY;
-		LoggingInterceptor.checkDeployedApplicationAndSendHealthCheck();
 	}
 
 	public HttpRequestBean(HttpRequestBean servletInfo) {

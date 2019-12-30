@@ -1,6 +1,7 @@
 package com.k2cybersecurity.instrumentator.decorators.sqlcreate;
 
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalDBMap;
+import com.k2cybersecurity.instrumentator.custom.ThreadLocalHttpMap;
 
 import java.util.Arrays;
 
@@ -16,8 +17,11 @@ public class Callbacks {
 //		System.out.println(
 //				"OnExit :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj + " - return : "
 //						+ returnVal + " - eid : " + exectionId);
-		if (args != null && args.length > 0 && args[0] instanceof String) {
-			ThreadLocalDBMap.getInstance().create(returnVal, (String) args[0]);
+		if(ThreadLocalHttpMap.getInstance().getHttpRequest() != null) {
+
+			if (args != null && args.length > 0 && args[0] instanceof String) {
+				ThreadLocalDBMap.getInstance().create(returnVal, (String) args[0]);
+			}
 		}
 	}
 

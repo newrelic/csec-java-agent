@@ -1,9 +1,6 @@
 package com.k2cybersecurity.instrumentator;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class Hooks {
 
@@ -14,6 +11,9 @@ public class Hooks {
 	public static Map<String, String> DECORATOR_ENTRY = new HashMap<>();
 
 	static {
+
+		/** ------------------------------------  Hooks ------------------------------------------------**/
+
 		// HTTP request hooks
 		TYPE_BASED_HOOKS.put("javax.servlet.GenericServlet", Arrays.asList("service"));
 		TYPE_BASED_HOOKS.put("javax.servlet.ServletInputStream", Arrays.asList("read"));
@@ -46,10 +46,16 @@ public class Hooks {
 		// Forkexec hooks
 		NAME_BASED_HOOKS.put("java.lang.ProcessImpl", Arrays.asList("start"));
 
+		// File Hooks
+		NAME_BASED_HOOKS.put("java.io.FileOutputStream", Arrays.asList("open"));
+		NAME_BASED_HOOKS.put("java.io.FileInputStream", Arrays.asList("open"));
+		NAME_BASED_HOOKS.put("sun.nio.fs.UnixNativeDispatcher", Arrays.asList(new String[] {"open", "fopen", "link", "unlink", "mknod", "rename", "mkdir", "rmdir", "symlink", "chown", "chmod"}));
+		NAME_BASED_HOOKS.put("java.io.UnixFileSystem", Collections.singletonList("delete"));
+		NAME_BASED_HOOKS.put("java.io.RandomAccessFile", Collections.singletonList("open"));
 
-		//
-		// Decorators
-		//
+
+
+		/** ------------------------------------  Decorators ------------------------------------------------**/
 
 		// HTTP request
 		DECORATOR_ENTRY.put("javax.servlet.GenericServlet.service",
@@ -118,6 +124,25 @@ public class Hooks {
 		// Forkexec
 		DECORATOR_ENTRY.put("java.lang.ProcessImpl.start", "com.k2cybersecurity.instrumentator.decorators.forkexec");
 
+		// File
+		DECORATOR_ENTRY.put("java.io.FileOutputStream.open", "com.k2cybersecurity.instrumentator.decorators.fileaccess");
+		DECORATOR_ENTRY.put("java.io.FileInputStream.open", "com.k2cybersecurity.instrumentator.decorators.fileaccess");
+		DECORATOR_ENTRY.put("sun.nio.fs.UnixNativeDispatcher", "com.k2cybersecurity.instrumentator.decorators.fileaccess");
+
+		DECORATOR_ENTRY.put("sun.nio.fs.UnixNativeDispatcher.open", "com.k2cybersecurity.instrumentator.decorators.fileaccess");
+		DECORATOR_ENTRY.put("sun.nio.fs.UnixNativeDispatcher.fopen", "com.k2cybersecurity.instrumentator.decorators.fileaccess");
+		DECORATOR_ENTRY.put("sun.nio.fs.UnixNativeDispatcher.link", "com.k2cybersecurity.instrumentator.decorators.fileaccess");
+		DECORATOR_ENTRY.put("sun.nio.fs.UnixNativeDispatcher.unlink", "com.k2cybersecurity.instrumentator.decorators.fileaccess");
+		DECORATOR_ENTRY.put("sun.nio.fs.UnixNativeDispatcher.mknod", "com.k2cybersecurity.instrumentator.decorators.fileaccess");
+		DECORATOR_ENTRY.put("sun.nio.fs.UnixNativeDispatcher.rename", "com.k2cybersecurity.instrumentator.decorators.fileaccess");
+		DECORATOR_ENTRY.put("sun.nio.fs.UnixNativeDispatcher.mkdir", "com.k2cybersecurity.instrumentator.decorators.fileaccess");
+		DECORATOR_ENTRY.put("sun.nio.fs.UnixNativeDispatcher.rmdir", "com.k2cybersecurity.instrumentator.decorators.fileaccess");
+		DECORATOR_ENTRY.put("sun.nio.fs.UnixNativeDispatcher.symlink", "com.k2cybersecurity.instrumentator.decorators.fileaccess");
+		DECORATOR_ENTRY.put("sun.nio.fs.UnixNativeDispatcher.chown", "com.k2cybersecurity.instrumentator.decorators.fileaccess");
+		DECORATOR_ENTRY.put("sun.nio.fs.UnixNativeDispatcher.chmod", "com.k2cybersecurity.instrumentator.decorators.fileaccess");
+
+		DECORATOR_ENTRY.put("java.io.UnixFileSystem.delete", "com.k2cybersecurity.instrumentator.decorators.fileaccess");
+		DECORATOR_ENTRY.put("java.io.RandomAccessFile.open", "com.k2cybersecurity.instrumentator.decorators.fileaccess");
 
 	}
 }
