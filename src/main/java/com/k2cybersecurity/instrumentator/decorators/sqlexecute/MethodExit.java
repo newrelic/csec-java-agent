@@ -1,4 +1,4 @@
-package com.k2cybersecurity.instrumentator.decorators.httpservice;
+package com.k2cybersecurity.instrumentator.decorators.sqlexecute;
 
 import com.k2cybersecurity.instrumentator.utils.ExecutionIDGenerator;
 import net.bytebuddy.asm.Advice;

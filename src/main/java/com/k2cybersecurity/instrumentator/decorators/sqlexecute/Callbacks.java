@@ -1,4 +1,4 @@
-package com.k2cybersecurity.instrumentator.decorators.sample;
+package com.k2cybersecurity.instrumentator.decorators.sqlexecute;
 
 import java.util.Arrays;
 

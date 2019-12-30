@@ -1,4 +1,4 @@
-package com.k2cybersecurity.instrumentator.decorators.servletinputstream;
+package com.k2cybersecurity.instrumentator.decorators.sqlargsetter;
 
 import com.k2cybersecurity.instrumentator.utils.ExecutionIDGenerator;
 import net.bytebuddy.asm.Advice;

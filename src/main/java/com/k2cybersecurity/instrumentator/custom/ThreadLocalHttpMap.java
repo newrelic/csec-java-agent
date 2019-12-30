@@ -6,6 +6,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.json.simple.JSONObject;
 
 import java.lang.reflect.Method;
+import java.nio.ByteBuffer;
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
@@ -18,8 +20,11 @@ public class ThreadLocalHttpMap {
 
     private Object httpResponse;
 
-    private boolean isHttpResposeParsed = true;
+    private boolean isHttpResposeParsed = false;
 
+    private ByteBuffer byteBuffer;
+
+    private int bufferOffset = 0;
 
     private static ThreadLocal<ThreadLocalHttpMap> instance =
             new ThreadLocal<ThreadLocalHttpMap>() {
@@ -30,6 +35,7 @@ public class ThreadLocalHttpMap {
             };
 
     private ThreadLocalHttpMap() {
+        this.byteBuffer = ByteBuffer.allocate(1024 * 8);
     }
 
     public static ThreadLocalHttpMap getInstance() {
@@ -90,13 +96,11 @@ public class ThreadLocalHttpMap {
             String contextPath = (String) getContextPath.invoke(servletContext, null);
             httpRequestBean.setContextPath(contextPath);
             ServletContextInfo.getInstance().processServletContext(servletContext, contextPath);
-            httpRequestBean.updateBody();
+            updateBody();
             isHttpRequestParsed = true;
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
-//            ThreadLocalExecutionMap.getInstance().setHttpRequestBean(new HttpRequestBean(httpRequestBean));
-//            ThreadLocalExecutionMap.getInstance().setMetaData(new AgentMetaData(metaData));
             System.out.println("Intercepted Request : " + ThreadLocalExecutionMap.getInstance().getHttpRequestBean());
         }
     }
@@ -133,12 +137,37 @@ public class ThreadLocalHttpMap {
         }
     }
 
-
     public void insertToRequestByteBuffer(byte b) {
-        ThreadLocalExecutionMap.getInstance().getHttpRequestBean().insertToByteBuffer(b);
+        try {
+            byteBuffer.put(b);
+            System.out.println("inserting : " + b);
+        } catch (Exception e) {
+            e.printStackTrace();
+            // Buffer full. discard data.
+        }
     }
 
     public void insertToRequestByteBuffer(byte[] b) {
-        ThreadLocalExecutionMap.getInstance().getHttpRequestBean().insertToByteBuffer(b);
+        try {
+            byteBuffer.put(b);
+            System.out.println("inserting : " + Arrays.asList(b));
+        } catch (Exception e) {
+            e.printStackTrace();
+            // Buffer full. discard data.
+        }
     }
+
+
+    public void updateBody() {
+        try {
+            if (byteBuffer.position() > bufferOffset) {
+                String oldBody = ThreadLocalExecutionMap.getInstance().getHttpRequestBean().getBody();
+                ThreadLocalExecutionMap.getInstance().getHttpRequestBean().setBody(oldBody + new String(byteBuffer.array(), bufferOffset, byteBuffer.position()));
+                bufferOffset = byteBuffer.position();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
 }

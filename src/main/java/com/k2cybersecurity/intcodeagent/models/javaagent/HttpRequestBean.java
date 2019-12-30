@@ -1,6 +1,5 @@
 package com.k2cybersecurity.intcodeagent.models.javaagent;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.logging.LoggingInterceptor;
@@ -9,7 +8,6 @@ import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.json.simple.JSONObject;
 
-import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -47,9 +45,6 @@ public class HttpRequestBean {
 
 	private Map<String, FileIntegrityBean> fileExist;
 
-	@JsonIgnore
-	private ByteBuffer byteBuffer;
-
 	private String contextPath;
 
 	public HttpRequestBean() {
@@ -61,7 +56,6 @@ public class HttpRequestBean {
 		this.url = StringUtils.EMPTY;
 		this.headers = new JSONObject();
 		this.fileExist = new HashMap<String, FileIntegrityBean>();
-		this.byteBuffer = ByteBuffer.allocate(1024 * 8);
 		this.contextPath = StringUtils.EMPTY;
 		LoggingInterceptor.checkDeployedApplicationAndSendHealthCheck();
 	}
@@ -75,7 +69,6 @@ public class HttpRequestBean {
 		this.method = servletInfo.getMethod();
 		this.url = servletInfo.getUrl();
 		this.headers = new JSONObject(servletInfo.getHeaders());
-		this.byteBuffer = ByteBuffer.wrap(servletInfo.byteBuffer.array());
 		this.contextPath = servletInfo.contextPath;
 		populateHttpRequest();
 	}
@@ -116,7 +109,6 @@ public class HttpRequestBean {
 	 * @return the body
 	 */
 	public String getBody() {
-		updateBody();
 		return this.body;
 	}
 
@@ -284,42 +276,15 @@ public class HttpRequestBean {
 //		System.out.println(servletInfo);
 //	}
 
-	public void insertToByteBuffer(byte b) {
-		try {
-			byteBuffer.put(b);
-			System.out.println("inserting : " + b);
-		} catch (Exception e) {
-			e.printStackTrace();
-			// Buffer full. discard data.
-		}
-	}
-
-	public void insertToByteBuffer(byte[] b) {
-		try {
-			byteBuffer.put(b);
-			System.out.println("inserting : " + Arrays.asList(b));
-		} catch (Exception e) {
-			e.printStackTrace();
-			// Buffer full. discard data.
-		}
-	}
-
-
-	public void updateBody() {
-		try {
-			if (byteBuffer.position() > 0) {
-				body = new String(byteBuffer.array(), byteBuffer.arrayOffset(), byteBuffer.position());
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-
 	public String getContextPath() {
 		return contextPath;
 	}
 
 	public void setContextPath(String contextPath) {
 		this.contextPath = contextPath;
+	}
+
+	public void setBody(String body) {
+		this.body = body;
 	}
 }
