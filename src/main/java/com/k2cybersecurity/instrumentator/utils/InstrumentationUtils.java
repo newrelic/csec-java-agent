@@ -19,7 +19,6 @@ public class InstrumentationUtils {
             String sourceClass = entry.getKey();
             List<String> methods = entry.getValue();
             for (String method : methods) {
-                System.out.println(String.format("Came to instrument : %s::%s", sourceClass, method));
                 AgentBuilder.Identified.Narrowable junction = builder.type(not(isInterface()));
                 switch (typeOfHook) {
                     case "NAME_BASED":
@@ -31,7 +30,7 @@ public class InstrumentationUtils {
                     default:
                         break;
                 }
-
+                System.out.println(String.format("Came to instrument : %s::%s :: %s", sourceClass, method, typeOfHook));
                 builder = junction
                         .transform(new AgentBuilder.Transformer() {
                             @Override

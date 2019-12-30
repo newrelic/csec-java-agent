@@ -1,23 +1,20 @@
-package com.k2cybersecurity.instrumentator.decorators.servletinputstream;
+package com.k2cybersecurity.instrumentator.decorators.forkexec;
 
-import com.k2cybersecurity.instrumentator.custom.ThreadLocalHttpMap;
+import com.k2cybersecurity.instrumentator.dispatcher.EventDispatcher;
+import com.k2cybersecurity.intcodeagent.models.javaagent.ForkExecOperationalBean;
 
 import java.util.Arrays;
+import java.util.Map;
 
 public class Callbacks {
 
     public static void doOnEnter(String sourceString, String className, String methodName, Object obj, Object[] args, String exectionId) {
 //        System.out.println("OnEnter :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj + " - eid : " + exectionId);
+        ForkExecOperationalBean forkExecOperationalBean = new ForkExecOperationalBean((String[])args[0], (Map<String, String>) args[1]);
+        EventDispatcher.dispatch(forkExecOperationalBean);
     }
 
     public static void doOnExit(String sourceString, String className, String methodName, Object obj, Object[] args, Object returnVal, String exectionId) {
-        if (args != null && args.length == 1) {
-            ThreadLocalHttpMap.getInstance().insertToRequestByteBuffer(Arrays.copyOfRange((byte[]) args[0], 0, (Integer) returnVal));
-        } else if (args != null && args.length == 3) {
-            ThreadLocalHttpMap.getInstance().insertToRequestByteBuffer(Arrays.copyOfRange((byte[]) args[0], (Integer) args[1], (Integer) args[2]));
-        } else if (args == null || args.length == 0) {
-            ThreadLocalHttpMap.getInstance().insertToRequestByteBuffer(((Integer) returnVal).byteValue());
-        }
 //        System.out.println("OnExit :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj + " - return : " + returnVal + " - eid : " + exectionId);
     }
 

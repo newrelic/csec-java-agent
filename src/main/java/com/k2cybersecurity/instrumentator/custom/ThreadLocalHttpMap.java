@@ -7,7 +7,6 @@ import org.json.simple.JSONObject;
 
 import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
-import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
@@ -66,10 +65,16 @@ public class ThreadLocalHttpMap {
         return isHttpResposeParsed;
     }
 
-    public void parseHttpRequest() {
+    public boolean parseHttpRequest() {
         if (httpRequest == null) {
             System.out.println("No HTTP request found for current context");
-            return;
+            return false;
+        }
+
+        if (isHttpRequestParsed) {
+            System.out.println("HTTP request already parsed for current context");
+            updateBody();
+            return true;
         }
         HttpRequestBean httpRequestBean = ThreadLocalExecutionMap.getInstance().getHttpRequestBean();
         AgentMetaData metaData = ThreadLocalExecutionMap.getInstance().getMetaData();
@@ -98,16 +103,30 @@ public class ThreadLocalHttpMap {
             ServletContextInfo.getInstance().processServletContext(servletContext, contextPath);
             updateBody();
             isHttpRequestParsed = true;
+            return true;
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
-            System.out.println("Intercepted Request : " + ThreadLocalExecutionMap.getInstance().getHttpRequestBean());
+            System.out.println("RAW Intercepted Request : " + ThreadLocalExecutionMap.getInstance().getHttpRequestBean());
         }
+        return false;
     }
 
 
-    public void parseHttpResponse() {
+    public boolean parseHttpResponse() {
         // TODO : To be implemented
+        if (httpRequest == null) {
+            System.out.println("No HTTP request found for current context");
+            return false;
+        }
+
+        if (!isHttpRequestParsed) {
+            System.out.println("HTTP request already parsed for current context");
+            updateBody();
+            return true;
+        }
+
+        return false;
     }
 
     public void processHeaders(Map<String, String> headers, Object httpRequest) {
@@ -140,7 +159,7 @@ public class ThreadLocalHttpMap {
     public void insertToRequestByteBuffer(byte b) {
         try {
             byteBuffer.put(b);
-            System.out.println("inserting : " + b);
+//            System.out.println("inserting : " + b);
         } catch (Exception e) {
             e.printStackTrace();
             // Buffer full. discard data.
@@ -150,7 +169,7 @@ public class ThreadLocalHttpMap {
     public void insertToRequestByteBuffer(byte[] b) {
         try {
             byteBuffer.put(b);
-            System.out.println("inserting : " + Arrays.asList(b));
+//            System.out.println("inserting : " + Arrays.asList(b));
         } catch (Exception e) {
             e.printStackTrace();
             // Buffer full. discard data.

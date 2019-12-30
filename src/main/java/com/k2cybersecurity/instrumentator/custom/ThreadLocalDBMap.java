@@ -70,4 +70,11 @@ public class ThreadLocalDBMap {
 			beanList.remove(beanList.size() - 1);
 		}
 	}
+
+	public List<SQLOperationalBean> get(Object ref) {
+		if (sqlCalls.containsKey(ref)) {
+			return sqlCalls.get(ref);
+		}
+		return null;
+	}
 }

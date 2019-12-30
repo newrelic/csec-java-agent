@@ -18,6 +18,7 @@ public class Hooks {
 		TYPE_BASED_HOOKS.put("javax.servlet.GenericServlet", Arrays.asList("service"));
 		TYPE_BASED_HOOKS.put("javax.servlet.ServletInputStream", Arrays.asList("read"));
 
+		// SQL hooks
 		TYPE_BASED_HOOKS.put("java.sql.Statement",
 				Arrays.asList("execute", "executeBatch", "executeLargeBatch", "executeLargeUpdate", "executeQuery",
 						"executeUpdate"));
@@ -37,8 +38,14 @@ public class Hooks {
 //						"setTimestamp", "setAsciiStream", "setUnicodeStream", "setBinaryStream", "setObject",
 //						"setCharacterStream", "setRef", "setBlob", "setClob", "setArray", "setURL", "setRowId",
 //						"setNString", "setNCharacterStream", "setNClob", "setSQLXML"));
+
 		TYPE_BASED_HOOKS.put("java.sql.Connection",
 				Arrays.asList("nativeSQL", "prepareCall", "prepareStatement"));
+
+
+		// Forkexec hooks
+		NAME_BASED_HOOKS.put("java.lang.ProcessImpl", Arrays.asList("start"));
+
 
 		//
 		// Decorators
@@ -77,7 +84,6 @@ public class Hooks {
 
 
 		// SQL set args
-
 		DECORATOR_ENTRY.put("java.sql.PreparedStatement.setNull" , "com.k2cybersecurity.instrumentator.decorators.sqlargsetter");
 		DECORATOR_ENTRY.put("java.sql.PreparedStatement.setBoolean" , "com.k2cybersecurity.instrumentator.decorators.sqlargsetter");
 		DECORATOR_ENTRY.put("java.sql.PreparedStatement.setByte" , "com.k2cybersecurity.instrumentator.decorators.sqlargsetter");
@@ -109,7 +115,8 @@ public class Hooks {
 		DECORATOR_ENTRY.put("java.sql.PreparedStatement.setSQLXML" , "com.k2cybersecurity.instrumentator.decorators.sqlargsetter");
 
 
-
+		// Forkexec
+		DECORATOR_ENTRY.put("java.lang.ProcessImpl.start", "com.k2cybersecurity.instrumentator.decorators.forkexec");
 
 
 	}

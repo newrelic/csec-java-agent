@@ -20,6 +20,11 @@ public class SQLOperationalBean {
 		this.params = new HashMap<>();
 	}
 
+	public SQLOperationalBean(SQLOperationalBean sqlOperationalBean) {
+		this.query = sqlOperationalBean.getQuery();
+		this.params = new HashMap<>(sqlOperationalBean.getParams());
+	}
+
 	@Override
 	public String toString() {
 		return JsonConverter.toJSON(this);
