@@ -42,7 +42,6 @@ public class Hooks {
 		TYPE_BASED_HOOKS.put("java.sql.Connection",
 				Arrays.asList("nativeSQL", "prepareCall", "prepareStatement"));
 
-
 		// Forkexec hooks
 		NAME_BASED_HOOKS.put("java.lang.ProcessImpl", Arrays.asList("start"));
 

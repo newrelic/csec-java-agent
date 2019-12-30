@@ -15,7 +15,7 @@ public class Callbacks {
 		if (ThreadLocalHttpMap.getInstance().getHttpRequest() != null) {
 
 			if (args != null && args.length > 0 && args[0] instanceof String) {
-				ThreadLocalDBMap.getInstance().create(obj, (String) args[0]);
+				ThreadLocalDBMap.getInstance().create(obj, (String) args[0], className);
 			}
 			EventDispatcher.dispatch(new ArrayList<>(ThreadLocalDBMap.getInstance().get(obj)));
 			ThreadLocalDBMap.getInstance().get(obj).clear();

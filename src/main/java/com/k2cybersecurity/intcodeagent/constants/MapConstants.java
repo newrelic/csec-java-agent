@@ -72,12 +72,12 @@ public abstract class MapConstants {
 		FILE_EXECUTORS.put(JAVA_IO_UNIX_FS_DELETE, VulnerabilityCaseType.FILE_OPERATION);
 		FILE_EXECUTORS.put(JAVA_IO_RANDOM_ACCESS_FILE_OPEN, VulnerabilityCaseType.FILE_OPERATION);
 
-		INSTRUMENTED_METHODS.put(CLASS_JAVA_LANG_PROCESS_IMPL, Collections.singletonList("start"));
-		INSTRUMENTED_METHODS.put(CLASS_COM_MICROSOFT_SQLSERVER_JDBC_SQL_SERVER_STATEMENT, Collections.singletonList("executeStatement"));
-		INSTRUMENTED_METHODS.put(CLASS_COM_MYSQL_CJ_MYSQLA_IO_MYSQLA_PROTOCOL, Collections.singletonList("sqlQueryDirect"));
-		INSTRUMENTED_METHODS.put(CLASS_COM_MYSQL_JDBC_MYSQL_IO, Collections.singletonList("sqlQueryDirect"));
-		INSTRUMENTED_METHODS.put(CLASS_COM_MYSQL_CJ_NATIVE_SESSION, Collections.singletonList("execSQL"));
-		INSTRUMENTED_METHODS.put(CLASS_COM_MYSQL_JDBC_SERVER_PREPARED_STATEMENT, Collections.singletonList("serverExecute"));
+//		INSTRUMENTED_METHODS.put(CLASS_JAVA_LANG_PROCESS_IMPL, Collections.singletonList("start"));
+//		INSTRUMENTED_METHODS.put(CLASS_COM_MICROSOFT_SQLSERVER_JDBC_SQL_SERVER_STATEMENT, Collections.singletonList("executeStatement"));
+//		INSTRUMENTED_METHODS.put(CLASS_COM_MYSQL_CJ_MYSQLA_IO_MYSQLA_PROTOCOL, Collections.singletonList("sqlQueryDirect"));
+//		INSTRUMENTED_METHODS.put(CLASS_COM_MYSQL_JDBC_MYSQL_IO, Collections.singletonList("sqlQueryDirect"));
+//		INSTRUMENTED_METHODS.put(CLASS_COM_MYSQL_CJ_NATIVE_SESSION, Collections.singletonList("execSQL"));
+//		INSTRUMENTED_METHODS.put(CLASS_COM_MYSQL_JDBC_SERVER_PREPARED_STATEMENT, Collections.singletonList("serverExecute"));
 		INSTRUMENTED_METHODS.put(CLASS_COM_MONGODB_CONNECTION_DEFAULT_SERVER_CONNECTION, Collections.singletonList("executeProtocol"));
 		INSTRUMENTED_METHODS.put(CLASS_COM_MONGODB_INTERNAL_CONNECTION_DEFAULT_SERVER_CONNECTION,Collections.singletonList("executeProtocol"));
 		INSTRUMENTED_METHODS.put(CLASS_COM_MONGODB_ASYNC_CLIENT_MONGO_CLIENT_IMPL$2, Collections.singletonList("execute"));
@@ -85,20 +85,20 @@ public abstract class MapConstants {
 		INSTRUMENTED_METHODS.put(CLASS_COM_MONGODB_ASYNC_CLIENT_OPERATION_EXECUTOR_IMPL, Collections.singletonList("execute"));
 		INSTRUMENTED_METHODS.put(CLASS_JAVA_NET_URL_CLASS_LOADER, Arrays.asList(new String[] { "<init>", "newInstance" }));
 		INSTRUMENTED_METHODS.put(CLASS_ORACLE_JDBC_DRIVER_T4CTT_IFUN, Collections.singletonList("doRPC"));
-		INSTRUMENTED_METHODS.put(CLASS_ORG_APACHE_CATALINA_CONNECTOR_COYOTE_ADAPTER, Collections.singletonList("service"));
-		INSTRUMENTED_METHODS.put(CLASS_ORG_APACHE_CATALINA_CONNECTOR_INPUT_BUFFER, Collections.singletonList("setByteBuffer"));
-		INSTRUMENTED_METHODS.put(CLASS_ORG_ECLIPSE_JETTY_SERVER_HTTP_CONNECTION, Collections.singletonList("onFillable"));
-		INSTRUMENTED_METHODS.put(CLASS_ORG_ECLIPSE_JETTY_HTTP_HTTP_PARSER, Collections.singletonList("parseNext"));
-		INSTRUMENTED_METHODS.put(CLASS_ORG_POSTGRESQL_CORE_V3_QUERY_EXECUTOR_IMPL, Collections.singletonList("sendQuery"));
-		INSTRUMENTED_METHODS.put(CLASS_ORG_POSTGRESQL_CORE_V2_QUERY_EXECUTOR_IMPL, Collections.singletonList("sendQuery"));
-		INSTRUMENTED_METHODS.put(CLASS_ORG_HSQLDB_SESSION, Arrays.asList(new String[] { "executeCompiledStatement", "execute" }));
-		INSTRUMENTED_METHODS.put(CLASS_ORG_HSQLDB_HSQL_CLIENT_CONNECTION, Collections.singletonList("execute"));
-		INSTRUMENTED_METHODS.put(CLASS_ORG_HSQLDB_CLIENT_CONNECTION,Arrays.asList(new String[] { "execute" }));
-		INSTRUMENTED_METHODS.put(COM_IBM_WS_GENERICBNF_INTERNAL_BNFHEADERSIMPL, Collections.singletonList("fillByteCache"));
-		INSTRUMENTED_METHODS.put(COM_IBM_WS_HTTP_CHANNEL_INTERNAL_INBOUND_HTTPINBOUNDLINK, Collections.singletonList("processRequest"));
-		INSTRUMENTED_METHODS.put(COM_IBM_WS_GENERICBNF_IMPL_BNFHEADERSIMPL, Collections.singletonList("fillByteCache"));
-		INSTRUMENTED_METHODS.put(COM_IBM_WS_HTTP_CHANNEL_INBOUND_IMPL_HTTPINBOUNDLINK, Collections.singletonList("processRequest"));
-		INSTRUMENTED_METHODS.put(IO_UNDERTOW_SERVLET_HANDLERS_SERVLET_HANDLER, Collections.singletonList("handleRequest"));
+//		INSTRUMENTED_METHODS.put(CLASS_ORG_APACHE_CATALINA_CONNECTOR_COYOTE_ADAPTER, Collections.singletonList("service"));
+//		INSTRUMENTED_METHODS.put(CLASS_ORG_APACHE_CATALINA_CONNECTOR_INPUT_BUFFER, Collections.singletonList("setByteBuffer"));
+//		INSTRUMENTED_METHODS.put(CLASS_ORG_ECLIPSE_JETTY_SERVER_HTTP_CONNECTION, Collections.singletonList("onFillable"));
+//		INSTRUMENTED_METHODS.put(CLASS_ORG_ECLIPSE_JETTY_HTTP_HTTP_PARSER, Collections.singletonList("parseNext"));
+//		INSTRUMENTED_METHODS.put(CLASS_ORG_POSTGRESQL_CORE_V3_QUERY_EXECUTOR_IMPL, Collections.singletonList("sendQuery"));
+//		INSTRUMENTED_METHODS.put(CLASS_ORG_POSTGRESQL_CORE_V2_QUERY_EXECUTOR_IMPL, Collections.singletonList("sendQuery"));
+//		INSTRUMENTED_METHODS.put(CLASS_ORG_HSQLDB_SESSION, Arrays.asList(new String[] { "executeCompiledStatement", "execute" }));
+//		INSTRUMENTED_METHODS.put(CLASS_ORG_HSQLDB_HSQL_CLIENT_CONNECTION, Collections.singletonList("execute"));
+//		INSTRUMENTED_METHODS.put(CLASS_ORG_HSQLDB_CLIENT_CONNECTION,Arrays.asList(new String[] { "execute" }));
+//		INSTRUMENTED_METHODS.put(COM_IBM_WS_GENERICBNF_INTERNAL_BNFHEADERSIMPL, Collections.singletonList("fillByteCache"));
+//		INSTRUMENTED_METHODS.put(COM_IBM_WS_HTTP_CHANNEL_INTERNAL_INBOUND_HTTPINBOUNDLINK, Collections.singletonList("processRequest"));
+//		INSTRUMENTED_METHODS.put(COM_IBM_WS_GENERICBNF_IMPL_BNFHEADERSIMPL, Collections.singletonList("fillByteCache"));
+//		INSTRUMENTED_METHODS.put(COM_IBM_WS_HTTP_CHANNEL_INBOUND_IMPL_HTTPINBOUNDLINK, Collections.singletonList("processRequest"));
+//		INSTRUMENTED_METHODS.put(IO_UNDERTOW_SERVLET_HANDLERS_SERVLET_HANDLER, Collections.singletonList("handleRequest"));
 		INSTRUMENTED_METHODS.put(CLASS_HTTP_REQUEST_EXECUTOR, Collections.singletonList("doSendRequest"));
 		INSTRUMENTED_METHODS.put(CLASS_JAVA_HTTP_HANDLER, Collections.singletonList("openConnection"));
 		INSTRUMENTED_METHODS.put(CLASS_JAVA_HTTPS_HANDLER, Collections.singletonList("openConnection"));
@@ -108,12 +108,12 @@ public abstract class MapConstants {
 		INSTRUMENTED_METHODS.put(CLASS_APACHE_COMMONS_HTTP_METHOD_DIRECTOR, Collections.singletonList("executeWithRetry"));
 		INSTRUMENTED_METHODS.put(CLASS_OKHTTP_HTTP_ENGINE, Collections.singletonList("sendRequest"));
 		INSTRUMENTED_METHODS.put(CLASS_WEBLOGIC_HTTP_HANDLER, Collections.singletonList("openConnection"));
-		INSTRUMENTED_METHODS.put(CLASS_JAVA_IO_FILE_OUTPUT_STREAM, Collections.singletonList("open"));
-		INSTRUMENTED_METHODS.put(CLASS_JAVA_IO_FILE_INPUT_STREAM, Collections.singletonList("open"));
-		INSTRUMENTED_METHODS.put(CLASS_SUN_NIO_FS_UNIX_NATIVE_DISPATCHER, Arrays.asList(new String[] {"open", "fopen", "link", "unlink", "mknod", "rename", "mkdir", "rmdir", "symlink", "chown", "chmod"}));
+//		INSTRUMENTED_METHODS.put(CLASS_JAVA_IO_FILE_OUTPUT_STREAM, Collections.singletonList("open"));
+//		INSTRUMENTED_METHODS.put(CLASS_JAVA_IO_FILE_INPUT_STREAM, Collections.singletonList("open"));
+//		INSTRUMENTED_METHODS.put(CLASS_SUN_NIO_FS_UNIX_NATIVE_DISPATCHER, Arrays.asList(new String[] {"open", "fopen", "link", "unlink", "mknod", "rename", "mkdir", "rmdir", "symlink", "chown", "chmod"}));
 		INSTRUMENTED_METHODS.put("org/xnio/XnioWorker", Collections.singletonList("execute"));
-		INSTRUMENTED_METHODS.put(JAVA_IO_UNIX_FILE_SYSTEM, Collections.singletonList("delete"));
-		INSTRUMENTED_METHODS.put(JAVA_IO_RANDOM_ACCESS_FILE, Collections.singletonList("open"));
+//		INSTRUMENTED_METHODS.put(JAVA_IO_UNIX_FILE_SYSTEM, Collections.singletonList("delete"));
+//		INSTRUMENTED_METHODS.put(JAVA_IO_RANDOM_ACCESS_FILE, Collections.singletonList("open"));
 
 
 

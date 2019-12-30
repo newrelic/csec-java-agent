@@ -15,14 +15,18 @@ public class SQLOperationalBean {
 
 	private Map<Integer, String> params;
 
+	private String className;
+
 	public SQLOperationalBean() {
 		this.query = StringUtils.EMPTY;
 		this.params = new HashMap<>();
+		this.className = StringUtils.EMPTY;
 	}
 
 	public SQLOperationalBean(SQLOperationalBean sqlOperationalBean) {
 		this.query = sqlOperationalBean.getQuery();
 		this.params = new HashMap<>(sqlOperationalBean.getParams());
+		this.className = sqlOperationalBean.className;
 	}
 
 	@Override
@@ -44,5 +48,13 @@ public class SQLOperationalBean {
 
 	public void setParams(Map<Integer, String> params) {
 		this.params = params;
+	}
+
+	public String getClassName() {
+		return className;
+	}
+
+	public void setClassName(String className) {
+		this.className = className;
 	}
 }
