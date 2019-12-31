@@ -1,6 +1,7 @@
 package com.k2cybersecurity.intcodeagent.models.javaagent;
 
 import com.k2cybersecurity.instrumentation.Agent;
+import com.k2cybersecurity.instrumentator.AgentNew;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.logging.LoggingInterceptor;
@@ -50,8 +51,8 @@ public class JAHealthCheck extends AgentBasicInfo{
 		this.eventSentCount = new AtomicInteger(0);
 		this.setInstrumentedMethods(new JSONArray());
 		this.setProtectedDB(new JSONArray());
-		this.setIsHost(LoggingInterceptor.APPLICATION_INFO_BEAN.getIsHost());
-		this.setLibPath();
+		this.setIsHost(AgentNew.APPLICATION_INFO_BEAN.getIsHost());
+//		this.setLibPath();
 		logger.log(LogLevel.INFO,"JA Healthcheck created : "+ this.toString(), JAHealthCheck.class.getName());
 	}
 
@@ -68,7 +69,7 @@ public class JAHealthCheck extends AgentBasicInfo{
 		this.ssrfProtection = jaHealthCheck.ssrfProtection;
 		this.fileAccessProtection = jaHealthCheck.fileAccessProtection;
 		this.isHost = jaHealthCheck.isHost;
-		this.setLibPath();
+//		this.setLibPath();
 		logger.log(LogLevel.INFO,"JA Healthcheck created : "+ this.toString(), JAHealthCheck.class.getName());
 	}
 

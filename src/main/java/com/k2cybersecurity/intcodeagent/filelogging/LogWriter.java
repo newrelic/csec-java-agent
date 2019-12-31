@@ -1,6 +1,7 @@
 package com.k2cybersecurity.intcodeagent.filelogging;
 
 import com.k2cybersecurity.instrumentation.Agent;
+import com.k2cybersecurity.instrumentator.AgentNew;
 import com.k2cybersecurity.intcodeagent.properties.K2JALogProperties;
 import org.apache.commons.lang3.StringUtils;
 
@@ -51,7 +52,7 @@ public class LogWriter implements Runnable {
 	private static final File currentLogFile;
 
 	static {
-		fileName = "/etc/k2-adp/logs/k2_java_agent-" + Agent.APPLICATION_UUID + ".log";
+		fileName = "/etc/k2-adp/logs/k2_java_agent-" + AgentNew.APPLICATION_UUID + ".log";
 		currentLogFile = new File(fileName);
 		currentLogFileName = fileName;
 		try {

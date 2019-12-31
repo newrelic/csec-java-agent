@@ -17,6 +17,7 @@ package com.k2cybersecurity.intcodeagent.logging;
 
 import com.k2cybersecurity.instrumentation.Agent;
 import com.k2cybersecurity.instrumentation.Interceptor;
+import com.k2cybersecurity.instrumentator.AgentNew;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.models.javaagent.*;
@@ -82,7 +83,7 @@ public class LoggingInterceptor extends Interceptor {
 			.asList(new String[] {"htm", "html", "js"}));
 
 	public static Integer VMPID;
-	protected static final String applicationUUID;
+	protected static final String applicationUUID ="" ;
 	public static ApplicationInfoBean APPLICATION_INFO_BEAN;
 	protected static JAHealthCheck JA_HEALTH_CHECK;
 
@@ -111,7 +112,7 @@ public class LoggingInterceptor extends Interceptor {
 		} catch (Throwable th) {
 			System.err.println("Error while initialising the K2 Agent :" + th.getCause() + " : " + th.getMessage());
 		}
-		applicationUUID = Agent.APPLICATION_UUID;
+//		applicationUUID = Agent.APPLICATION_UUID;
 		logger = FileLoggerThreadPool.getInstance();
 	}
 
@@ -1798,7 +1799,7 @@ public class LoggingInterceptor extends Interceptor {
 
 	public static void shutdownLogic(Runtime runtime, final ClassFileTransformer classTransformer) {
 		ShutDownEvent shutDownEvent = new ShutDownEvent();
-		shutDownEvent.setApplicationUUID(Agent.APPLICATION_UUID);
+		shutDownEvent.setApplicationUUID(AgentNew.APPLICATION_UUID);
 		shutDownEvent.setStatus("Terminating");
 		EventSendPool.getInstance().sendEvent(shutDownEvent.toString());
 		logger.log(LogLevel.INFO, "Shutting down with status: " + shutDownEvent, LoggingInterceptor.class.getName());
