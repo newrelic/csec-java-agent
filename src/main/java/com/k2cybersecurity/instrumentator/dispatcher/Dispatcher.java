@@ -1,10 +1,23 @@
 package com.k2cybersecurity.instrumentator.dispatcher;
 
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.ALLOWED_EXTENSIONS;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.INVOKE_0;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.JAVA_IO_FILE_INPUTSTREAM_OPEN;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.READ_OBJECT;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.REFLECT_NATIVE_METHOD_ACCESSOR_IMPL;
+import com.k2cybersecurity.instrumentation.Agent;
+import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
+import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
+import com.k2cybersecurity.intcodeagent.logging.IAgentConstants;
+import com.k2cybersecurity.intcodeagent.logging.LoggingInterceptor;
+import com.k2cybersecurity.intcodeagent.logging.ProcessorThread;
+import com.k2cybersecurity.intcodeagent.models.javaagent.AgentMetaData;
+import com.k2cybersecurity.intcodeagent.models.javaagent.HttpRequestBean;
+import com.k2cybersecurity.intcodeagent.models.javaagent.JavaAgentEventBean;
+import com.k2cybersecurity.intcodeagent.models.javaagent.VulnerabilityCaseType;
+import com.k2cybersecurity.intcodeagent.models.operationalbean.AbstractOperationalBean;
+import com.k2cybersecurity.intcodeagent.models.operationalbean.FileOperationalBean;
+import com.k2cybersecurity.intcodeagent.models.operationalbean.ForkExecOperationalBean;
+import com.k2cybersecurity.intcodeagent.models.operationalbean.SQLOperationalBean;
+import com.k2cybersecurity.intcodeagent.websocket.EventSendPool;
+import org.apache.commons.lang3.StringUtils;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
 
 import java.io.ObjectInputStream;
 import java.time.Instant;
@@ -13,25 +26,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.lang3.StringUtils;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-
-import com.k2cybersecurity.instrumentation.Agent;
-import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
-import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
-import com.k2cybersecurity.intcodeagent.logging.IAgentConstants;
-import com.k2cybersecurity.intcodeagent.logging.LoggingInterceptor;
-import com.k2cybersecurity.intcodeagent.logging.ProcessorThread;
-import com.k2cybersecurity.intcodeagent.models.javaagent.AbstractOperationalBean;
-import com.k2cybersecurity.intcodeagent.models.javaagent.AgentMetaData;
-import com.k2cybersecurity.intcodeagent.models.javaagent.HttpRequestBean;
-import com.k2cybersecurity.intcodeagent.models.javaagent.JavaAgentEventBean;
-import com.k2cybersecurity.intcodeagent.models.javaagent.VulnerabilityCaseType;
-import com.k2cybersecurity.intcodeagent.models.operationalbean.FileOperationalBean;
-import com.k2cybersecurity.intcodeagent.models.operationalbean.ForkExecOperationalBean;
-import com.k2cybersecurity.intcodeagent.models.operationalbean.SQLOperationalBean;
-import com.k2cybersecurity.intcodeagent.websocket.EventSendPool;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.*;
 
 public class Dispatcher implements Runnable {
 

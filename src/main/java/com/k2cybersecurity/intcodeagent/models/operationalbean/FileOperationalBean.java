@@ -1,7 +1,7 @@
 package com.k2cybersecurity.intcodeagent.models.operationalbean;
 
-import com.k2cybersecurity.intcodeagent.models.javaagent.AbstractOperationalBean;
 import com.k2cybersecurity.intcodeagent.websocket.JsonConverter;
+import org.apache.commons.lang3.StringUtils;
 
 public class FileOperationalBean extends AbstractOperationalBean {
 
@@ -20,6 +20,10 @@ public class FileOperationalBean extends AbstractOperationalBean {
 	@Override
 	public String toString() {
 		return JsonConverter.toJSON(this);
+	}
+
+	@Override public boolean isEmpty() {
+		return StringUtils.isBlank(fileName);
 	}
 
 	public String getFileName() {

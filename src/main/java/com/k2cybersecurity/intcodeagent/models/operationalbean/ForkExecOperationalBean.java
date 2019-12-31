@@ -1,7 +1,6 @@
 package com.k2cybersecurity.intcodeagent.models.operationalbean;
 
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
-import com.k2cybersecurity.intcodeagent.models.javaagent.AbstractOperationalBean;
 import com.k2cybersecurity.intcodeagent.websocket.JsonConverter;
 import org.apache.commons.lang3.StringUtils;
 
@@ -16,9 +15,9 @@ public class ForkExecOperationalBean extends AbstractOperationalBean{
 
 	private Map<String,String> environment;
 
-	public ForkExecOperationalBean(String[] cmd, Map<String,String> environment, String className, String sourceMethod, String executionId, long startTime) {
+	public ForkExecOperationalBean(String cmd, Map<String,String> environment, String className, String sourceMethod, String executionId, long startTime) {
 		super(className, sourceMethod, executionId, startTime);
-		this.command = StringUtils.join(cmd, StringUtils.SPACE);
+		this.command = cmd;
 		if(environment != null) {
 			this.environment = new HashMap<>(environment);
 		}
@@ -36,6 +35,10 @@ public class ForkExecOperationalBean extends AbstractOperationalBean{
 	@Override
 	public String toString() {
 		return JsonConverter.toJSON(this);
+	}
+
+	@Override public boolean isEmpty() {
+		return StringUtils.isBlank(command);
 	}
 
 	public String getCommand() {

@@ -123,6 +123,7 @@ public class ServletContextInfo {
             setMinorServletVersion((Integer) getMinorVersion.invoke(servletContext, null));
             applicationDir = (String) getRealPath.invoke(servletContext, contextPath);
             applicationName = (String) getServletContextName.invoke(servletContext, null);
+
         } catch (Exception e) {
             e.printStackTrace();
         }

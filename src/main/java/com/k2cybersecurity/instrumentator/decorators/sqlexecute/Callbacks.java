@@ -16,12 +16,16 @@ public class Callbacks {
 		//        System.out.println("OnEnter :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj + " - eid : " + exectionId);
 		if (ThreadLocalHttpMap.getInstance().getHttpRequest() != null) {
 
-			if (args != null && args.length > 0 && args[0] instanceof String) {
-				ThreadLocalDBMap.getInstance().create(obj, (String) args[0], className, sourceString, exectionId, Instant
-						.now().toEpochMilli());
+			if (args != null && args.length > 0 ) {
+				ThreadLocalDBMap.getInstance().create(obj, args[0].toString(), className, sourceString, exectionId, Instant
+						.now().toEpochMilli(), false);
 			}
-			EventDispatcher.dispatch(new ArrayList<>(ThreadLocalDBMap.getInstance().get(obj)), VulnerabilityCaseType.SQL_DB_COMMAND);
-			ThreadLocalDBMap.getInstance().get(obj).clear();
+			if(ThreadLocalDBMap.getInstance().get(obj) != null) {
+				EventDispatcher.dispatch(new ArrayList<>(ThreadLocalDBMap.getInstance().get(obj)), VulnerabilityCaseType.SQL_DB_COMMAND);
+				ThreadLocalDBMap.getInstance().clear(obj);
+			} else {
+				System.err.println(String.format("Null SQL query fired : %s : %s : %s : %s", sourceString, exectionId, Arrays.asList(args), args.length));
+			}
 		}
 	}
 

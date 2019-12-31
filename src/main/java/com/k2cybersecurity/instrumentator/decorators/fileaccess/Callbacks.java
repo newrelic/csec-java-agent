@@ -4,6 +4,7 @@ import com.k2cybersecurity.instrumentator.custom.ThreadLocalHttpMap;
 import com.k2cybersecurity.instrumentator.dispatcher.EventDispatcher;
 import com.k2cybersecurity.intcodeagent.models.javaagent.VulnerabilityCaseType;
 import com.k2cybersecurity.intcodeagent.models.operationalbean.FileOperationalBean;
+import org.apache.commons.lang3.StringUtils;
 
 import java.time.Instant;
 import java.util.Arrays;
@@ -12,7 +13,7 @@ public class Callbacks {
 
     public static void doOnEnter(String sourceString, String className, String methodName, Object obj, Object[] args, String exectionId) {
 //        System.out.println("OnEnter :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj + " - eid : " + exectionId);
-        if(ThreadLocalHttpMap.getInstance().getHttpRequest() != null) {
+        if(ThreadLocalHttpMap.getInstance().getHttpRequest() != null && StringUtils.isNotBlank(args[0].toString())) {
             FileOperationalBean fileOperationalBean = new FileOperationalBean(args[0].toString(), className, sourceString, exectionId,
                     Instant.now().toEpochMilli());
             EventDispatcher.dispatch(fileOperationalBean, VulnerabilityCaseType.FILE_OPERATION);

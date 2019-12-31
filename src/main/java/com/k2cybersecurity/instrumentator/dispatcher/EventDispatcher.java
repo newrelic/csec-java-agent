@@ -2,14 +2,16 @@ package com.k2cybersecurity.instrumentator.dispatcher;
 
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalExecutionMap;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalHttpMap;
-import com.k2cybersecurity.intcodeagent.models.javaagent.AbstractOperationalBean;
 import com.k2cybersecurity.intcodeagent.models.javaagent.AgentMetaData;
 import com.k2cybersecurity.intcodeagent.models.javaagent.HttpRequestBean;
 import com.k2cybersecurity.intcodeagent.models.javaagent.VulnerabilityCaseType;
+import com.k2cybersecurity.intcodeagent.models.operationalbean.AbstractOperationalBean;
+
+import java.util.List;
 
 public class EventDispatcher {
 
-	public static void dispatch(Object objectBean, VulnerabilityCaseType vulnerabilityCaseType){
+	public static void dispatch(AbstractOperationalBean objectBean, VulnerabilityCaseType vulnerabilityCaseType){
 		boolean ret = ThreadLocalHttpMap.getInstance().parseHttpRequest();
 		if(!ret) {
 			System.err.println("Dropping event due to corrupt/incomplete HTTP request : " + ThreadLocalExecutionMap.getInstance().getHttpRequestBean() + " ::: " + objectBean);
@@ -17,8 +19,27 @@ public class EventDispatcher {
 		}
 		// Place dispatch here
 //		printDispatch(objectBean);
-		DispatcherPool.getInstance().dispatchEvent(new HttpRequestBean(ThreadLocalExecutionMap.getInstance().getHttpRequestBean()) , new AgentMetaData(ThreadLocalExecutionMap.getInstance().getMetaData()), Thread.currentThread().getStackTrace(), objectBean, vulnerabilityCaseType);
+
+		// TODO: implement check if the object bean is logically enpty based on case type or implement a isEmpty method in each operation bean.
+		if(!objectBean.isEmpty()) {
+			DispatcherPool.getInstance().dispatchEvent(new HttpRequestBean(ThreadLocalExecutionMap.getInstance().getHttpRequestBean()),
+					new AgentMetaData(ThreadLocalExecutionMap.getInstance().getMetaData()), Thread.currentThread().getStackTrace(), objectBean, vulnerabilityCaseType);
+		}
 	}
+
+	public static void dispatch(List<AbstractOperationalBean> objectBeanList, VulnerabilityCaseType vulnerabilityCaseType){
+		boolean ret = ThreadLocalHttpMap.getInstance().parseHttpRequest();
+		if(!ret) {
+			System.err.println("Dropping event due to corrupt/incomplete HTTP request : " + ThreadLocalExecutionMap.getInstance().getHttpRequestBean() + " ::: " + objectBeanList);
+			return;
+		}
+		// Place dispatch here
+		//		printDispatch(objectBean);
+
+		// TODO: implement check if the object bean is logically enpty based on case type or implement a isEmpty method in each operation bean.
+		DispatcherPool.getInstance().dispatchEvent(new HttpRequestBean(ThreadLocalExecutionMap.getInstance().getHttpRequestBean()) , new AgentMetaData(ThreadLocalExecutionMap.getInstance().getMetaData()), Thread.currentThread().getStackTrace(), objectBeanList, vulnerabilityCaseType);
+	}
+
 
 	public static void printDispatch(AbstractOperationalBean objectBean){
 		System.out.println("==========================================================================================");

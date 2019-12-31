@@ -1,8 +1,7 @@
 package com.k2cybersecurity.instrumentator.custom;
 
-import org.apache.commons.lang3.StringUtils;
-
 import com.k2cybersecurity.intcodeagent.models.operationalbean.SQLOperationalBean;
+import org.apache.commons.lang3.StringUtils;
 
 import java.lang.reflect.Array;
 import java.util.*;
@@ -25,26 +24,6 @@ public class ThreadLocalDBMap {
 		return instance.get();
 	}
 
-	public void create(Object ref, String query, String className, String sourceMethod, String executionId, long startTime) {
-		SQLOperationalBean bean = new SQLOperationalBean();
-		bean.setQuery(query);
-		bean.setClassName(className);
-		bean.setSourceMethod(sourceMethod);
-		bean.setExecutionId(executionId);
-		bean.setStartTime(startTime);
-		List<SQLOperationalBean> list;
-		if (sqlCalls.containsKey(ref)) {
-			list = sqlCalls.get(ref);
-			list.add(bean);
-
-		} else {
-			list = new ArrayList<>();
-			list.add(bean);
-			sqlCalls.put(ref, list);
-
-		}
-	}
-
 	public void setParam(Object ref, int position, Object value) {
 		if (sqlCalls.containsKey(ref)) {
 			List<SQLOperationalBean> beanList = sqlCalls.get(ref);
@@ -60,12 +39,34 @@ public class ThreadLocalDBMap {
 
 	public void addBatch(Object ref, String query, String className, String sourceMethod, String executionId, long startTime) {
 		if (StringUtils.isNotBlank(query)) {
-			create(ref, query, className, sourceMethod, executionId, startTime);
+			create(ref, query, className, sourceMethod, executionId, startTime, true);
 		} else {
 			if (sqlCalls.containsKey(ref)) {
 				List<SQLOperationalBean> beanList = sqlCalls.get(ref);
-				create(ref, beanList.get(beanList.size() - 1).getQuery(), className, sourceMethod, executionId, startTime);
+				create(ref, beanList.get(beanList.size() - 1).getQuery(), className, sourceMethod, executionId, startTime, true);
 			}
+		}
+	}
+
+	public void create(Object ref, String query, String className, String sourceMethod, String executionId, long startTime, boolean isBatch) {
+		if (StringUtils.isBlank(query)){
+			return;
+		}
+		SQLOperationalBean bean = new SQLOperationalBean();
+		bean.setQuery(query);
+		bean.setClassName(className);
+		bean.setSourceMethod(sourceMethod);
+		bean.setExecutionId(executionId);
+		bean.setStartTime(startTime);
+		List<SQLOperationalBean> list;
+		if (sqlCalls.containsKey(ref) && isBatch) {
+			list = sqlCalls.get(ref);
+			list.add(bean);
+
+		} else if(!sqlCalls.containsKey(ref) && !isBatch) {
+			list = new ArrayList<>();
+			list.add(bean);
+			sqlCalls.put(ref, list);
 		}
 	}
 
@@ -81,5 +82,9 @@ public class ThreadLocalDBMap {
 			return sqlCalls.get(ref);
 		}
 		return null;
+	}
+
+	public boolean clear (Object ref) {
+		return sqlCalls.remove(ref) != null ;
 	}
 }

@@ -1,4 +1,4 @@
-package com.k2cybersecurity.intcodeagent.models.javaagent;
+package com.k2cybersecurity.intcodeagent.models.operationalbean;
 
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.websocket.JsonConverter;
@@ -72,4 +72,10 @@ public abstract class AbstractOperationalBean {
 	public void setStartTime(long startTime) {
 		this.startTime = startTime;
 	}
+
+	/**
+	 * Logically determines if the bean is empty.
+	 * @return boolean
+	 */
+	public abstract boolean isEmpty();
 }

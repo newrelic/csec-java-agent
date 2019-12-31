@@ -1,7 +1,6 @@
 package com.k2cybersecurity.intcodeagent.models.operationalbean;
 
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
-import com.k2cybersecurity.intcodeagent.models.javaagent.AbstractOperationalBean;
 import com.k2cybersecurity.intcodeagent.websocket.JsonConverter;
 import org.apache.commons.lang3.StringUtils;
 
@@ -49,5 +48,8 @@ public class SQLOperationalBean extends AbstractOperationalBean{
 		this.params = params;
 	}
 
+	@Override public boolean isEmpty() {
+		return StringUtils.isBlank(query);
+	}
 }
 
