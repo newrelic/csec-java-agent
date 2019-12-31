@@ -6,6 +6,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 public class SQLOperationalBean extends AbstractOperationalBean{
 
@@ -14,6 +15,8 @@ public class SQLOperationalBean extends AbstractOperationalBean{
 	private String query;
 
 	private Map<Integer, String> params;
+
+	private boolean isPreparedCall;
 
 	public SQLOperationalBean() {
 		super();
@@ -48,8 +51,36 @@ public class SQLOperationalBean extends AbstractOperationalBean{
 		this.params = params;
 	}
 
+	public boolean isPreparedCall() {
+		return isPreparedCall;
+	}
+
+	public void setPreparedCall(boolean preparedCall) {
+		isPreparedCall = preparedCall;
+	}
+
 	@Override public boolean isEmpty() {
-		return StringUtils.isBlank(query);
+		if(StringUtils.isBlank(query)){
+			return true;
+		} else if(isPreparedCall) {
+			if(StringUtils.contains(query, "?") && params.isEmpty()){
+				return true;
+			}
+		}
+		return false;
+	}
+
+	@Override public boolean equals(Object o) {
+		if (this == o)
+			return true;
+		if (o == null || getClass() != o.getClass())
+			return false;
+		SQLOperationalBean that = (SQLOperationalBean) o;
+		return query.equals(that.query) && params.equals(that.params);
+	}
+
+	@Override public int hashCode() {
+		return Objects.hash(query, params);
 	}
 }
 

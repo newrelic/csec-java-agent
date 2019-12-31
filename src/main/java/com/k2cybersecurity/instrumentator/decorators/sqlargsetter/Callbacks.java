@@ -14,6 +14,7 @@ public class Callbacks {
 		//		System.out.println(
 		//				"OnEnter :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj + " - eid : "
 		//						+ exectionId);
+
 		if (ThreadLocalHttpMap.getInstance().getHttpRequest() != null) {
 
 			if (StringUtils.startsWithIgnoreCase(methodName, "set") && args != null && args.length > 1
@@ -22,9 +23,10 @@ public class Callbacks {
 			} else if (StringUtils.startsWithIgnoreCase(methodName, "addBatch") && args != null && args.length > 0
 					&& args[0] instanceof String) {
 				ThreadLocalDBMap.getInstance().addBatch(obj, (String) args[0], className, sourceString, exectionId, Instant
-						.now().toEpochMilli());
+						.now().toEpochMilli(), false);
 			} else if (StringUtils.startsWithIgnoreCase(methodName, "addBatch")) {
-				ThreadLocalDBMap.getInstance().addBatch(obj, null, className, sourceString, exectionId, Instant.now().toEpochMilli());
+				ThreadLocalDBMap.getInstance().addBatch(obj, null, className, sourceString, exectionId, Instant.now().toEpochMilli(),
+						true);
 			}
 			if (StringUtils.startsWithIgnoreCase(methodName, "clearBatch")) {
 				ThreadLocalDBMap.getInstance().clearBatch(obj);

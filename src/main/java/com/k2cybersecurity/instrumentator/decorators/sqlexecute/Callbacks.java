@@ -18,7 +18,7 @@ public class Callbacks {
 
 			if (args != null && args.length > 0 ) {
 				ThreadLocalDBMap.getInstance().create(obj, args[0].toString(), className, sourceString, exectionId, Instant
-						.now().toEpochMilli(), false);
+						.now().toEpochMilli(), false, false);
 			}
 			if(ThreadLocalDBMap.getInstance().get(obj) != null) {
 				EventDispatcher.dispatch(new ArrayList<>(ThreadLocalDBMap.getInstance().get(obj)), VulnerabilityCaseType.SQL_DB_COMMAND);

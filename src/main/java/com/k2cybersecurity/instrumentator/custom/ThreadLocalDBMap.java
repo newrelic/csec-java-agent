@@ -10,6 +10,8 @@ public class ThreadLocalDBMap {
 
 	private Map<Object, List<SQLOperationalBean>> sqlCalls;
 
+	private Set<SQLOperationalBean> sentSqlCalls;
+
 	private static ThreadLocal<ThreadLocalDBMap> instance = new ThreadLocal<ThreadLocalDBMap>() {
 		@Override protected ThreadLocalDBMap initialValue() {
 			return new ThreadLocalDBMap();
@@ -18,6 +20,7 @@ public class ThreadLocalDBMap {
 
 	private ThreadLocalDBMap() {
 		sqlCalls = new HashMap<>();
+		sentSqlCalls = new HashSet<>();
 	}
 
 	public static ThreadLocalDBMap getInstance() {
@@ -37,18 +40,21 @@ public class ThreadLocalDBMap {
 		}
 	}
 
-	public void addBatch(Object ref, String query, String className, String sourceMethod, String executionId, long startTime) {
+	public void addBatch(Object ref, String query, String className, String sourceMethod, String executionId,
+			long startTime, boolean isPreparedCall) {
 		if (StringUtils.isNotBlank(query)) {
-			create(ref, query, className, sourceMethod, executionId, startTime, true);
+			create(ref, query, className, sourceMethod, executionId, startTime, true, isPreparedCall);
 		} else {
 			if (sqlCalls.containsKey(ref)) {
 				List<SQLOperationalBean> beanList = sqlCalls.get(ref);
-				create(ref, beanList.get(beanList.size() - 1).getQuery(), className, sourceMethod, executionId, startTime, true);
+				create(ref, beanList.get(beanList.size() - 1).getQuery(), className, sourceMethod, executionId, startTime, true,
+						isPreparedCall);
 			}
 		}
 	}
 
-	public void create(Object ref, String query, String className, String sourceMethod, String executionId, long startTime, boolean isBatch) {
+	public void create(Object ref, String query, String className, String sourceMethod, String executionId, long startTime, boolean isBatch,
+			boolean isPreparedCall) {
 		if (StringUtils.isBlank(query)){
 			return;
 		}
@@ -58,6 +64,7 @@ public class ThreadLocalDBMap {
 		bean.setSourceMethod(sourceMethod);
 		bean.setExecutionId(executionId);
 		bean.setStartTime(startTime);
+		bean.setPreparedCall(isPreparedCall);
 		List<SQLOperationalBean> list;
 		if (sqlCalls.containsKey(ref) && isBatch) {
 			list = sqlCalls.get(ref);
@@ -86,5 +93,19 @@ public class ThreadLocalDBMap {
 
 	public boolean clear (Object ref) {
 		return sqlCalls.remove(ref) != null ;
+	}
+
+	public void clearAll () {
+		sentSqlCalls.clear();
+		sqlCalls.clear();
+	}
+
+	public SQLOperationalBean checkAndUpdateSentSQLCalls(SQLOperationalBean bean) {
+		if(sentSqlCalls.contains(bean)){
+			return null;
+		} else {
+			sentSqlCalls.add(bean);
+			return bean;
+		}
 	}
 }

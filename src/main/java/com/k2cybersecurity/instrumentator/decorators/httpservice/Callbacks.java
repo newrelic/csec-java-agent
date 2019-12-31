@@ -1,5 +1,6 @@
 package com.k2cybersecurity.instrumentator.decorators.httpservice;
 
+import com.k2cybersecurity.instrumentator.custom.ThreadLocalDBMap;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalHttpMap;
 
 public class Callbacks {
@@ -19,10 +20,13 @@ public class Callbacks {
 //        System.out.println("OnExit :" + sourceString + " - this : " + obj + " - return : " + returnVal + " - eid : " + exectionId);
 
 //        ThreadLocalHttpMap.getInstance().parseHttpRequest();
+        ThreadLocalHttpMap.getInstance().cleanState();
+        ThreadLocalDBMap.getInstance().clearAll();
     }
 
     public static void doOnError(String sourceString, String className, String methodName, Object obj, Object[] args, Throwable error, String exectionId) throws Throwable {
         System.out.println("OnError :" + sourceString + " - this : " + obj + " - error : " + error + " - eid : " + exectionId);
         ThreadLocalHttpMap.getInstance().cleanState();
+        ThreadLocalDBMap.getInstance().clearAll();
     }
 }
