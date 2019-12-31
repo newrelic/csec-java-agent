@@ -295,7 +295,7 @@ public class LoggingInterceptor extends Interceptor {
 	 * @param file      file object whose hash is to be calculated
 	 * @return It returns the hash in string format
 	 */
-	private static String getChecksum(File file) {
+	public static String getChecksum(File file) {
 		try (FileInputStream inputStream = new FileInputStream(file)) {
 			MessageDigest digest = MessageDigest.getInstance("SHA-256");
 

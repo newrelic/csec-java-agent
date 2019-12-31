@@ -1,6 +1,24 @@
 package com.k2cybersecurity.instrumentator.dispatcher;
 
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.ALLOWED_EXTENSIONS;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.INVOKE_0;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.JAVA_IO_FILE_INPUTSTREAM_OPEN;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.READ_OBJECT;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.REFLECT_NATIVE_METHOD_ACCESSOR_IMPL;
+
+import java.io.ObjectInputStream;
+import java.time.Instant;
+import java.util.Arrays;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import org.apache.commons.lang3.StringUtils;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+
 import com.k2cybersecurity.instrumentation.Agent;
+import com.k2cybersecurity.instrumentator.AgentNew;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.logging.IAgentConstants;
@@ -15,18 +33,6 @@ import com.k2cybersecurity.intcodeagent.models.operationalbean.FileOperationalBe
 import com.k2cybersecurity.intcodeagent.models.operationalbean.ForkExecOperationalBean;
 import com.k2cybersecurity.intcodeagent.models.operationalbean.SQLOperationalBean;
 import com.k2cybersecurity.intcodeagent.websocket.EventSendPool;
-import org.apache.commons.lang3.StringUtils;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-
-import java.io.ObjectInputStream;
-import java.time.Instant;
-import java.util.Arrays;
-import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.*;
 
 public class Dispatcher implements Runnable {
 
@@ -208,8 +214,8 @@ public class Dispatcher implements Runnable {
 
 	private static JavaAgentEventBean setGenericProperties(AbstractOperationalBean objectBean,
 			JavaAgentEventBean eventBean) {
-		eventBean.setApplicationUUID(Agent.APPLICATION_UUID);
-		eventBean.setPid(LoggingInterceptor.VMPID);
+		eventBean.setApplicationUUID(AgentNew.APPLICATION_UUID);
+		eventBean.setPid(AgentNew.VMPID);
 		eventBean.setSourceMethod(objectBean.getSourceMethod());
 		eventBean.setId(objectBean.getExecutionId());
 		eventBean.setStartTime(objectBean.getStartTime());
