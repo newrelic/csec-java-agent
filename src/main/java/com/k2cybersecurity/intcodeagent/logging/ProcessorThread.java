@@ -473,7 +473,6 @@ public class ProcessorThread implements Runnable {
 			}
 		} catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
 		}
 		// query extreation
 		try {
@@ -487,7 +486,6 @@ public class ProcessorThread implements Runnable {
 			return;
 		} catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException | ParseException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
 		}
 		try {
 			// Class used QueryProtocol<T>
@@ -503,7 +501,6 @@ public class ProcessorThread implements Runnable {
 			return;
 		} catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException | ParseException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
 		}
 		try {
 			// Class used InsertCommandProtocol<T>
@@ -512,7 +509,6 @@ public class ProcessorThread implements Runnable {
 			return;
 		} catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
 		}
 		try {
 			// Class used DeleteCommandProtocol<T>
@@ -521,7 +517,6 @@ public class ProcessorThread implements Runnable {
 			return;
 		} catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
 		}
 		try {
 			// Class used UpdateCommandProtocol<T>
@@ -530,7 +525,6 @@ public class ProcessorThread implements Runnable {
 			return;
 		} catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
 		}
 		try {
 			// Class used InsertProtocol<T>
@@ -539,7 +533,6 @@ public class ProcessorThread implements Runnable {
 			return;
 		} catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
 		}
 		try {
 			// Class used DeleteProtocol<T>
@@ -549,7 +542,6 @@ public class ProcessorThread implements Runnable {
 			return;
 		} catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
 		}
 		try {
 			// Class used UpdateProtocol<T>
@@ -558,7 +550,6 @@ public class ProcessorThread implements Runnable {
 			return;
 		} catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
 		}
 	}
 
