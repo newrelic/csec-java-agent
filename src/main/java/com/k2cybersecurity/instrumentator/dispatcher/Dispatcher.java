@@ -31,6 +31,7 @@ import com.k2cybersecurity.intcodeagent.models.javaagent.VulnerabilityCaseType;
 import com.k2cybersecurity.intcodeagent.models.operationalbean.FileOperationalBean;
 import com.k2cybersecurity.intcodeagent.models.operationalbean.ForkExecOperationalBean;
 import com.k2cybersecurity.intcodeagent.models.operationalbean.SQLOperationalBean;
+import com.k2cybersecurity.intcodeagent.websocket.EventSendPool;
 
 public class Dispatcher implements Runnable {
 
@@ -88,10 +89,11 @@ public class Dispatcher implements Runnable {
 			eventBean = prepareSQLDbCommandEvent(operationalList, eventBean);
 			break;
 		default:
-
+			
 		}
 		eventBean = processStackTrace(eventBean);
 		eventBean.setEventGenerationTime(Instant.now().toEpochMilli());
+		EventSendPool.getInstance().sendEvent(eventBean.toString());
 		System.out.println("============= Event Start ============");
 		System.out.println(eventBean);
 		System.out.println("============= Event End ============");
