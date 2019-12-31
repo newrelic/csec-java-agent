@@ -194,4 +194,12 @@ public class ThreadLocalHttpMap {
         }
     }
 
+    public void cleanState(){
+        httpRequest = null;
+        isHttpRequestParsed = false;
+        httpResponse = null;
+        isHttpResposeParsed = false;
+        bufferOffset = 0;
+        byteBuffer = ByteBuffer.allocate(1024 * 8);
+    }
 }

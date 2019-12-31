@@ -23,5 +23,6 @@ public class Callbacks {
 
     public static void doOnError(String sourceString, String className, String methodName, Object obj, Object[] args, Throwable error, String exectionId) throws Throwable {
         System.out.println("OnError :" + sourceString + " - this : " + obj + " - error : " + error + " - eid : " + exectionId);
+        ThreadLocalHttpMap.getInstance().cleanState();
     }
 }
