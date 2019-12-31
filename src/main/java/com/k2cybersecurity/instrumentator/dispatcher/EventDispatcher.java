@@ -27,6 +27,9 @@ public class EventDispatcher {
 		if(!objectBean.isEmpty()) {
 			DispatcherPool.getInstance().dispatchEvent(new HttpRequestBean(ThreadLocalExecutionMap.getInstance().getHttpRequestBean()),
 					new AgentMetaData(ThreadLocalExecutionMap.getInstance().getMetaData()), Thread.currentThread().getStackTrace(), objectBean, vulnerabilityCaseType);
+		} else {
+			System.err.println("Dropping event due to empty object : " + ThreadLocalExecutionMap.getInstance().getHttpRequestBean() + " ::: " + objectBean);
+
 		}
 	}
 
