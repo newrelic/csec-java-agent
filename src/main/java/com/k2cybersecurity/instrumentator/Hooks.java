@@ -53,6 +53,13 @@ public class Hooks {
 		NAME_BASED_HOOKS.put("java.io.RandomAccessFile", Collections.singletonList("open"));
 		NAME_BASED_HOOKS.put("org.jboss.modules.Main", Arrays.asList("main"));
 
+		// Mongo Hooks
+
+		NAME_BASED_HOOKS.put("com.mongodb.connection.DefaultServerConnection", Collections.singletonList("executeProtocol"));
+		NAME_BASED_HOOKS.put("com.mongodb.internal.connection.DefaultServerConnection",Collections.singletonList("executeProtocol"));
+		NAME_BASED_HOOKS.put("com.mongodb.async.client.MongoClientImpl$2", Collections.singletonList("execute"));
+		NAME_BASED_HOOKS.put("com.mongodb.async.client.AsyncOperationExecutorImpl", Collections.singletonList("execute"));
+		NAME_BASED_HOOKS.put("com.mongodb.async.client.OperationExecutorImpl", Collections.singletonList("execute"));
 
 		/** ------------------------------------  Decorators ------------------------------------------------**/
 
@@ -146,6 +153,13 @@ public class Hooks {
 
 		// JBoss System Packages Adjuster
  		DECORATOR_ENTRY.put("org.jboss.modules.Main.main", "com.k2cybersecurity.instrumentator.decorators.jbossadjustment");
+
+ 		// Mongo Execute
+		DECORATOR_ENTRY.put("com.mongodb.connection.DefaultServerConnection.executeProtocol", "com.k2cybersecurity.instrumentator.decorators.mongoexecute");
+		DECORATOR_ENTRY.put("com.mongodb.internal.connection.DefaultServerConnection.executeProtocol", "com.k2cybersecurity.instrumentator.decorators.mongoexecute");
+		DECORATOR_ENTRY.put("com.mongodb.async.client.MongoClientImpl$2.execute", "com.k2cybersecurity.instrumentator.decorators.mongoexecute");
+		DECORATOR_ENTRY.put("com.mongodb.async.client.AsyncOperationExecutorImpl.execute", "com.k2cybersecurity.instrumentator.decorators.mongoexecute");
+		DECORATOR_ENTRY.put("com.mongodb.async.client.OperationExecutorImpl.execute", "com.k2cybersecurity.instrumentator.decorators.mongoexecute");
 
 	}
 }
