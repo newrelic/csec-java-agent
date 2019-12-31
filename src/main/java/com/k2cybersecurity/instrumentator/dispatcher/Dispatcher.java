@@ -1,24 +1,14 @@
 package com.k2cybersecurity.instrumentator.dispatcher;
 
 import com.k2cybersecurity.instrumentation.Agent;
-import com.k2cybersecurity.instrumentator.custom.ThreadLocalExecutionMap;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.logging.IAgentConstants;
 import com.k2cybersecurity.intcodeagent.logging.LoggingInterceptor;
 import com.k2cybersecurity.intcodeagent.logging.ProcessorThread;
-import com.k2cybersecurity.intcodeagent.models.javaagent.AbstractOperationalBean;
-import com.k2cybersecurity.intcodeagent.models.javaagent.AgentMetaData;
-import com.k2cybersecurity.intcodeagent.models.javaagent.FileOperationalBean;
-import com.k2cybersecurity.intcodeagent.models.javaagent.HttpRequestBean;
-import com.k2cybersecurity.intcodeagent.models.javaagent.JavaAgentEventBean;
-import com.k2cybersecurity.intcodeagent.models.javaagent.VulnerabilityCaseType;
-
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.ALLOWED_EXTENSIONS;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.INVOKE_0;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.JAVA_IO_FILE_INPUTSTREAM_OPEN;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.READ_OBJECT;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.REFLECT_NATIVE_METHOD_ACCESSOR_IMPL;
+import com.k2cybersecurity.intcodeagent.models.javaagent.*;
+import org.apache.commons.lang3.StringUtils;
+import org.json.simple.JSONArray;
 
 import java.io.ObjectInputStream;
 import java.time.Instant;
@@ -26,8 +16,7 @@ import java.util.Arrays;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.lang3.StringUtils;
-import org.json.simple.JSONArray;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.*;
 
 public class Dispatcher implements Runnable {
 
@@ -59,8 +48,8 @@ public class Dispatcher implements Runnable {
 			System.out.println("------- Invalid event -----------");
 			return;
 		}
-		JavaAgentEventBean eventBean = prepareEvent(ThreadLocalExecutionMap.getInstance().getHttpRequestBean(),
-				ThreadLocalExecutionMap.getInstance().getMetaData(), vulnerabilityCaseType);
+		JavaAgentEventBean eventBean = prepareEvent(httpRequestBean,
+				metaData, vulnerabilityCaseType);
 		switch (vulnerabilityCaseType) {
 		case FILE_OPERATION:
 			FileOperationalBean fileOperationalBean = (FileOperationalBean) event;

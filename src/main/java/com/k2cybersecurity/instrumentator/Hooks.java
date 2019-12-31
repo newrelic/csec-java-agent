@@ -51,7 +51,7 @@ public class Hooks {
 		NAME_BASED_HOOKS.put("sun.nio.fs.UnixNativeDispatcher", Arrays.asList(new String[] {"open", "fopen", "link", "unlink", "mknod", "rename", "mkdir", "rmdir", "symlink", "chown", "chmod"}));
 		NAME_BASED_HOOKS.put("java.io.UnixFileSystem", Collections.singletonList("delete"));
 		NAME_BASED_HOOKS.put("java.io.RandomAccessFile", Collections.singletonList("open"));
-
+		NAME_BASED_HOOKS.put("org.jboss.modules.Main", Arrays.asList("main"));
 
 
 		/** ------------------------------------  Decorators ------------------------------------------------**/
@@ -142,6 +142,11 @@ public class Hooks {
 
 		DECORATOR_ENTRY.put("java.io.UnixFileSystem.delete", "com.k2cybersecurity.instrumentator.decorators.fileaccess");
 		DECORATOR_ENTRY.put("java.io.RandomAccessFile.open", "com.k2cybersecurity.instrumentator.decorators.fileaccess");
+
+
+		// JBoss System Packages Adjuster
+		NAME_BASED_HOOKS.put("org.jboss.modules.Main", Arrays.asList("main"));
+		DECORATOR_ENTRY.put("org.jboss.modules.Main.main", "com.k2cybersecurity.instrumentator.decorators.jbossadjustment");
 
 	}
 }
