@@ -30,7 +30,7 @@ public class Hooks {
 						"setCharacterStream", "setRef", "setBlob", "setClob", "setArray", "setURL", "setRowId",
 						"setNString", "setNCharacterStream", "setNClob", "setSQLXML"));
 
-		// Probably these are not needed as CallableStatement
+		// Probably these are not needed as CallableStatement implements PreparedStatement
 //		TYPE_BASED_HOOKS.put("java.sql.CallableStatement",
 //				Arrays.asList("execute", "executeBatch", "executeLargeBatch", "executeLargeUpdate", "executeQuery",
 //						"executeUpdate", "setNull", "setBoolean", "setByte", "setShort", "setInt", "setLong",

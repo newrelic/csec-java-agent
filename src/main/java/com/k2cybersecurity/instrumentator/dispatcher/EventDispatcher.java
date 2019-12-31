@@ -2,6 +2,7 @@ package com.k2cybersecurity.instrumentator.dispatcher;
 
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalExecutionMap;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalHttpMap;
+import com.k2cybersecurity.intcodeagent.models.javaagent.AbstractOperationalBean;
 import com.k2cybersecurity.intcodeagent.models.javaagent.AgentMetaData;
 import com.k2cybersecurity.intcodeagent.models.javaagent.HttpRequestBean;
 import com.k2cybersecurity.intcodeagent.models.javaagent.VulnerabilityCaseType;
@@ -19,7 +20,7 @@ public class EventDispatcher {
 		DispatcherPool.getInstance().dispatchEvent(new HttpRequestBean(ThreadLocalExecutionMap.getInstance().getHttpRequestBean()) , new AgentMetaData(ThreadLocalExecutionMap.getInstance().getMetaData()), Thread.currentThread().getStackTrace(), objectBean, vulnerabilityCaseType);
 	}
 
-	public static void printDispatch(Object objectBean){
+	public static void printDispatch(AbstractOperationalBean objectBean){
 		System.out.println("==========================================================================================");
 
 		System.out.println("Intercepted Request : " + ThreadLocalExecutionMap.getInstance().getHttpRequestBean());
@@ -30,4 +31,5 @@ public class EventDispatcher {
 
 		System.out.println("==========================================================================================");
 	}
+	
 }
