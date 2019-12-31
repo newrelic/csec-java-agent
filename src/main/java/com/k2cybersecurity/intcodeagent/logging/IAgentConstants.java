@@ -421,4 +421,9 @@ public interface IAgentConstants {
 	String JAVA_IO_UNIX_FILE_SYSTEM = "java/io/UnixFileSystem";
 	String JAVA_IO_RANDOM_ACCESS_FILE = "java/io/RandomAccessFile";
 	String INTERCEPTED_HTTP_REQUEST = "Intercepted HTTP request : ";
+	
+	String GET_DATA = "getData";
+	String GET_SIZE = "getSize";
+	String GET_NAVIGATOR = "getNavigator";
+	String MAIN_STRING = "mainString";
 }

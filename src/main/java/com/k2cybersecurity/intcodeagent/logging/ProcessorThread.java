@@ -37,6 +37,7 @@ import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.*;
 
 public class ProcessorThread implements Runnable {
 
+
 	private static final Pattern PATTERN;
 	private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
 	private Object source;
@@ -883,11 +884,34 @@ public class ProcessorThread implements Runnable {
 		case HSQL_V1_8_CONNECTION:
 		case HSQL_V2_3_4_CLIENT_CONNECTION:
 			try {
-				Field mainStringField = object.getClass().getDeclaredField("mainString");
+				Field mainStringField = object.getClass().getDeclaredField(MAIN_STRING);
 				mainStringField.setAccessible(true);
 				String parameter = (String) mainStringField.get(object);
 				if(!StringUtils.isEmpty(parameter)) {
 					parameters.add(parameter);
+				}
+				else {
+					// for batch processing
+					Method getNavigatorMethod = object.getClass().getDeclaredMethod(GET_NAVIGATOR);
+					getNavigatorMethod.setAccessible(true);
+					Object navigatorObj = getNavigatorMethod.invoke(object);
+						
+					Method getSizeMethod = navigatorObj.getClass().getSuperclass().getDeclaredMethod(GET_SIZE);
+					getSizeMethod.setAccessible(true);
+					int size  = (int)getSizeMethod.invoke(navigatorObj);
+					
+					Method getDataMethod = navigatorObj.getClass().getDeclaredMethod(GET_DATA, int.class);
+					getDataMethod.setAccessible(true);
+					for (int i=0; i<size; i++) {
+						Object[] dataObj = (Object[])getDataMethod.invoke(navigatorObj, i);
+						for (int j=0; j<dataObj.length; j++) {
+							if(dataObj[j]!=null && dataObj[j] instanceof String) {
+								if(!((String)dataObj[j]).isEmpty()) {
+									parameters.add(dataObj[j]);
+								}
+							}
+						}
+					}
 				}
 			} catch (Exception e) {
 				logger.log(LogLevel.WARNING, "Error in getHSQLParameterValue for HSQL_V1_8/V2_3_4: ", e,
