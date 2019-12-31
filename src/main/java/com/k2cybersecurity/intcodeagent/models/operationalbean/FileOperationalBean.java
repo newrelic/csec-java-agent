@@ -1,5 +1,6 @@
-package com.k2cybersecurity.intcodeagent.models.javaagent;
+package com.k2cybersecurity.intcodeagent.models.operationalbean;
 
+import com.k2cybersecurity.intcodeagent.models.javaagent.AbstractOperationalBean;
 import com.k2cybersecurity.intcodeagent.websocket.JsonConverter;
 
 public class FileOperationalBean extends AbstractOperationalBean {

@@ -2,8 +2,8 @@ package com.k2cybersecurity.instrumentator.decorators.fileaccess;
 
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalHttpMap;
 import com.k2cybersecurity.instrumentator.dispatcher.EventDispatcher;
-import com.k2cybersecurity.intcodeagent.models.javaagent.FileOperationalBean;
 import com.k2cybersecurity.intcodeagent.models.javaagent.VulnerabilityCaseType;
+import com.k2cybersecurity.intcodeagent.models.operationalbean.FileOperationalBean;
 
 import java.time.Instant;
 import java.util.Arrays;

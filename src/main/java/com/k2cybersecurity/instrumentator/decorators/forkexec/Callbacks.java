@@ -2,8 +2,8 @@ package com.k2cybersecurity.instrumentator.decorators.forkexec;
 
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalHttpMap;
 import com.k2cybersecurity.instrumentator.dispatcher.EventDispatcher;
-import com.k2cybersecurity.intcodeagent.models.javaagent.ForkExecOperationalBean;
 import com.k2cybersecurity.intcodeagent.models.javaagent.VulnerabilityCaseType;
+import com.k2cybersecurity.intcodeagent.models.operationalbean.ForkExecOperationalBean;
 
 import java.time.Instant;
 import java.util.Arrays;

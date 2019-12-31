@@ -1,6 +1,7 @@
-package com.k2cybersecurity.intcodeagent.models.javaagent;
+package com.k2cybersecurity.intcodeagent.models.operationalbean;
 
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
+import com.k2cybersecurity.intcodeagent.models.javaagent.AbstractOperationalBean;
 import com.k2cybersecurity.intcodeagent.websocket.JsonConverter;
 import org.apache.commons.lang3.StringUtils;
 
@@ -14,7 +15,6 @@ public class ForkExecOperationalBean extends AbstractOperationalBean{
 	private String command;
 
 	private Map<String,String> environment;
-
 
 	public ForkExecOperationalBean(String[] cmd, Map<String,String> environment, String className, String sourceMethod, String executionId, long startTime) {
 		super(className, sourceMethod, executionId, startTime);
@@ -44,6 +44,20 @@ public class ForkExecOperationalBean extends AbstractOperationalBean{
 
 	public void setCommand(String command) {
 		this.command = command;
+	}
+
+	/**
+	 * @return the environment
+	 */
+	public Map<String, String> getEnvironment() {
+		return environment;
+	}
+
+	/**
+	 * @param environment the environment to set
+	 */
+	public void setEnvironment(Map<String, String> environment) {
+		this.environment = environment;
 	}
 
 }

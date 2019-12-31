@@ -1,7 +1,8 @@
 package com.k2cybersecurity.instrumentator.custom;
 
-import com.k2cybersecurity.intcodeagent.models.javaagent.SQLOperationalBean;
 import org.apache.commons.lang3.StringUtils;
+
+import com.k2cybersecurity.intcodeagent.models.operationalbean.SQLOperationalBean;
 
 import java.lang.reflect.Array;
 import java.util.*;

@@ -1,22 +1,36 @@
 package com.k2cybersecurity.instrumentator.dispatcher;
 
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.ALLOWED_EXTENSIONS;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.INVOKE_0;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.JAVA_IO_FILE_INPUTSTREAM_OPEN;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.READ_OBJECT;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.REFLECT_NATIVE_METHOD_ACCESSOR_IMPL;
+
+import java.io.ObjectInputStream;
+import java.time.Instant;
+import java.util.Arrays;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import org.apache.commons.lang3.StringUtils;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+
 import com.k2cybersecurity.instrumentation.Agent;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.logging.IAgentConstants;
 import com.k2cybersecurity.intcodeagent.logging.LoggingInterceptor;
 import com.k2cybersecurity.intcodeagent.logging.ProcessorThread;
-import com.k2cybersecurity.intcodeagent.models.javaagent.*;
-import org.apache.commons.lang3.StringUtils;
-import org.json.simple.JSONArray;
-
-import java.io.ObjectInputStream;
-import java.time.Instant;
-import java.util.Arrays;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.*;
+import com.k2cybersecurity.intcodeagent.models.javaagent.AbstractOperationalBean;
+import com.k2cybersecurity.intcodeagent.models.javaagent.AgentMetaData;
+import com.k2cybersecurity.intcodeagent.models.javaagent.HttpRequestBean;
+import com.k2cybersecurity.intcodeagent.models.javaagent.JavaAgentEventBean;
+import com.k2cybersecurity.intcodeagent.models.javaagent.VulnerabilityCaseType;
+import com.k2cybersecurity.intcodeagent.models.operationalbean.FileOperationalBean;
+import com.k2cybersecurity.intcodeagent.models.operationalbean.ForkExecOperationalBean;
+import com.k2cybersecurity.intcodeagent.models.operationalbean.SQLOperationalBean;
 
 public class Dispatcher implements Runnable {
 
@@ -48,8 +62,7 @@ public class Dispatcher implements Runnable {
 			System.out.println("------- Invalid event -----------");
 			return;
 		}
-		JavaAgentEventBean eventBean = prepareEvent(httpRequestBean,
-				metaData, vulnerabilityCaseType);
+		JavaAgentEventBean eventBean = prepareEvent(httpRequestBean, metaData, vulnerabilityCaseType);
 		switch (vulnerabilityCaseType) {
 		case FILE_OPERATION:
 			FileOperationalBean fileOperationalBean = (FileOperationalBean) event;
@@ -61,8 +74,18 @@ public class Dispatcher implements Runnable {
 			}
 			break;
 		case SYSTEM_COMMAND:
+			ForkExecOperationalBean operationalBean = (ForkExecOperationalBean) event;
+			eventBean = setGenericProperties(operationalBean, eventBean);
+			eventBean = prepareSystemCommandEvent(eventBean, operationalBean);
 			break;
 		case SQL_DB_COMMAND:
+			List<SQLOperationalBean> operationalList = (List<SQLOperationalBean>) event;
+			if (operationalList.isEmpty()) {
+				System.out.println("------- Invalid event -----------");
+				return;
+			}
+			eventBean = setGenericProperties(operationalList.get(0), eventBean);
+			eventBean = prepareSQLDbCommandEvent(operationalList, eventBean);
 			break;
 		default:
 
@@ -72,6 +95,38 @@ public class Dispatcher implements Runnable {
 		System.out.println("============= Event Start ============");
 		System.out.println(eventBean);
 		System.out.println("============= Event End ============");
+	}
+
+	private JavaAgentEventBean prepareSQLDbCommandEvent(List<SQLOperationalBean> operationalList,
+			JavaAgentEventBean eventBean) {
+		JSONArray params = new JSONArray();
+		for (SQLOperationalBean operationalBean : operationalList) {
+			JSONObject query = new JSONObject();
+			query.put("query", operationalBean.getQuery());
+			query.put("parameters", new JSONObject(operationalBean.getParams()));
+			params.add(query);
+		}
+		eventBean.setParameters(params);
+		return eventBean;
+	}
+
+	private JavaAgentEventBean prepareSystemCommandEvent(JavaAgentEventBean eventBean,
+			ForkExecOperationalBean operationalBean) {
+		JSONArray params = new JSONArray();
+		params.add(operationalBean.getCommand());
+		if (operationalBean.getEnvironment() != null) {
+			params.add(new JSONObject(operationalBean.getEnvironment()));
+		}
+		eventBean.setParameters(params);
+		return eventBean;
+	}
+
+	private static JavaAgentEventBean prepareFileEvent(JavaAgentEventBean eventBean,
+			FileOperationalBean fileOperationalBean) {
+		JSONArray params = new JSONArray();
+		params.add(fileOperationalBean.getFileName());
+		eventBean.setParameters(params);
+		return eventBean;
 	}
 
 	private boolean allowedExtensionFileIO(JSONArray params, String sourceString) {
@@ -98,7 +153,7 @@ public class Dispatcher implements Runnable {
 		int lastNonJavaLineNumber = 0;
 		String klassName = null;
 		boolean userclassFound = false;
-		
+
 		for (int i = 0; i < trace.length; i++) {
 			int lineNumber = trace[i].getLineNumber();
 			klassName = trace[i].getClassName();
@@ -152,14 +207,6 @@ public class Dispatcher implements Runnable {
 			logger.log(LogLevel.DEBUG, String.format("Printing stack trace for rci event : %s : %s", eventBean.getId(),
 					Arrays.asList(trace)), ProcessorThread.class.getName());
 		}
-	}
-
-	private static JavaAgentEventBean prepareFileEvent(JavaAgentEventBean eventBean,
-			FileOperationalBean fileOperationalBean) {
-		JSONArray params = new JSONArray();
-		params.add(fileOperationalBean.getFileName());
-		eventBean.setParameters(params);
-		return eventBean;
 	}
 
 	private static JavaAgentEventBean setGenericProperties(AbstractOperationalBean objectBean,
