@@ -7,7 +7,7 @@ import org.apache.commons.lang3.StringUtils;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ForkExecOperationalBean {
+public class ForkExecOperationalBean extends AbstractOperationalBean{
 
 	private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
 
@@ -15,14 +15,18 @@ public class ForkExecOperationalBean {
 
 	private Map<String,String> environment;
 
-	public ForkExecOperationalBean(String[] cmd, Map<String,String> environment) {
+
+	public ForkExecOperationalBean(String[] cmd, Map<String,String> environment, String className, String sourceMethod, String executionId) {
+		super(className, sourceMethod, executionId);
 		this.command = StringUtils.join(cmd, StringUtils.SPACE);
 		if(environment != null) {
 			this.environment = new HashMap<>(environment);
 		}
+
 	}
 
 	public ForkExecOperationalBean(ForkExecOperationalBean forkExecOperationalBean) {
+		super(forkExecOperationalBean);
 		this.command = forkExecOperationalBean.command;
 		if(forkExecOperationalBean.environment != null) {
 			this.environment = new HashMap<>(forkExecOperationalBean.environment);
@@ -41,6 +45,5 @@ public class ForkExecOperationalBean {
 	public void setCommand(String command) {
 		this.command = command;
 	}
-
 
 }

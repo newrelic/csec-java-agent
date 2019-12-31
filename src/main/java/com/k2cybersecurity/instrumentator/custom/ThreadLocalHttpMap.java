@@ -82,9 +82,11 @@ public class ThreadLocalHttpMap {
             Class requestClass = httpRequest.getClass();
 
             Method getMethod = requestClass.getMethod("getMethod");
+            getMethod.setAccessible(true);
             httpRequestBean.setMethod((String) getMethod.invoke(httpRequest, null));
 
             Method getRemoteAddr = requestClass.getMethod("getRemoteAddr");
+            getRemoteAddr.setAccessible(true);
             httpRequestBean.setClientIP((String) getRemoteAddr.invoke(httpRequest, null));
 
             Map<String, String> headers = new HashMap<>();
@@ -92,12 +94,15 @@ public class ThreadLocalHttpMap {
             httpRequestBean.setHeaders(new JSONObject(headers));
 
             Method getRequestURI = requestClass.getMethod("getRequestURI");
+            getRequestURI.setAccessible(true);
             httpRequestBean.setUrl((String) getRequestURI.invoke(httpRequest, null));
 
             Method getServletContext = requestClass.getMethod("getServletContext");
+            getServletContext.setAccessible(true);
             Object servletContext = getServletContext.invoke(httpRequest, null);
 
             Method getContextPath = servletContext.getClass().getMethod("getContextPath");
+            getContextPath.setAccessible(true);
             String contextPath = (String) getContextPath.invoke(servletContext, null);
             httpRequestBean.setContextPath(contextPath);
             ServletContextInfo.getInstance().processServletContext(servletContext, contextPath);

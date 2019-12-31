@@ -3,6 +3,7 @@ package com.k2cybersecurity.instrumentator.decorators.fileaccess;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalHttpMap;
 import com.k2cybersecurity.instrumentator.dispatcher.EventDispatcher;
 import com.k2cybersecurity.intcodeagent.models.javaagent.FileOperationalBean;
+import com.k2cybersecurity.intcodeagent.models.javaagent.VulnerabilityCaseType;
 
 import java.util.Arrays;
 
@@ -11,8 +12,8 @@ public class Callbacks {
     public static void doOnEnter(String sourceString, String className, String methodName, Object obj, Object[] args, String exectionId) {
 //        System.out.println("OnEnter :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj + " - eid : " + exectionId);
         if(ThreadLocalHttpMap.getInstance().getHttpRequest() != null) {
-            FileOperationalBean fileOperationalBean = new FileOperationalBean(args[0].toString());
-            EventDispatcher.dispatch(fileOperationalBean);
+            FileOperationalBean fileOperationalBean = new FileOperationalBean(args[0].toString(), className, sourceString, exectionId);
+            EventDispatcher.dispatch(fileOperationalBean, VulnerabilityCaseType.FILE_OPERATION);
         }
     }
 

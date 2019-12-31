@@ -4,6 +4,7 @@ import com.k2cybersecurity.intcodeagent.logging.EventThreadPool.EventAbortPolicy
 import com.k2cybersecurity.intcodeagent.logging.IAgentConstants;
 import com.k2cybersecurity.intcodeagent.models.javaagent.AgentMetaData;
 import com.k2cybersecurity.intcodeagent.models.javaagent.HttpRequestBean;
+import com.k2cybersecurity.intcodeagent.models.javaagent.VulnerabilityCaseType;
 
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -76,7 +77,7 @@ public class DispatcherPool {
 	}
 
 	public void dispatchEvent(HttpRequestBean httpRequestBean, AgentMetaData metaData, StackTraceElement[] trace,
-			Object event) {
-		this.executor.submit(new Dispatcher(httpRequestBean, metaData, trace, event));
+			Object event, VulnerabilityCaseType vulnerabilityCaseType) {
+		this.executor.submit(new Dispatcher(httpRequestBean, metaData, trace, event, vulnerabilityCaseType));
 	}
 }

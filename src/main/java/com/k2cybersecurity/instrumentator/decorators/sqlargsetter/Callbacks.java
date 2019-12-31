@@ -20,9 +20,9 @@ public class Callbacks {
 				ThreadLocalDBMap.getInstance().setParam(obj, (Integer) args[0], args[1]);
 			} else if (StringUtils.startsWithIgnoreCase(methodName, "addBatch") && args != null && args.length > 0
 					&& args[0] instanceof String) {
-				ThreadLocalDBMap.getInstance().addBatch(obj, (String) args[0], className);
+				ThreadLocalDBMap.getInstance().addBatch(obj, (String) args[0], className, sourceString, exectionId);
 			} else if (StringUtils.startsWithIgnoreCase(methodName, "addBatch")) {
-				ThreadLocalDBMap.getInstance().addBatch(obj, null, className);
+				ThreadLocalDBMap.getInstance().addBatch(obj, null, className, sourceString, exectionId);
 			}
 			if (StringUtils.startsWithIgnoreCase(methodName, "clearBatch")) {
 				ThreadLocalDBMap.getInstance().clearBatch(obj);

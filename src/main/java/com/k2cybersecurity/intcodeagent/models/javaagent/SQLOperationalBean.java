@@ -7,7 +7,7 @@ import org.apache.commons.lang3.StringUtils;
 import java.util.HashMap;
 import java.util.Map;
 
-public class SQLOperationalBean {
+public class SQLOperationalBean extends AbstractOperationalBean{
 
 	private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
 
@@ -15,18 +15,16 @@ public class SQLOperationalBean {
 
 	private Map<Integer, String> params;
 
-	private String className;
-
 	public SQLOperationalBean() {
+		super();
 		this.query = StringUtils.EMPTY;
 		this.params = new HashMap<>();
-		this.className = StringUtils.EMPTY;
 	}
 
 	public SQLOperationalBean(SQLOperationalBean sqlOperationalBean) {
+		super(sqlOperationalBean);
 		this.query = sqlOperationalBean.getQuery();
 		this.params = new HashMap<>(sqlOperationalBean.getParams());
-		this.className = sqlOperationalBean.className;
 	}
 
 	@Override
@@ -50,11 +48,5 @@ public class SQLOperationalBean {
 		this.params = params;
 	}
 
-	public String getClassName() {
-		return className;
-	}
-
-	public void setClassName(String className) {
-		this.className = className;
-	}
 }
+
