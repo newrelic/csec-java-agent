@@ -145,8 +145,7 @@ public class Hooks {
 
 
 		// JBoss System Packages Adjuster
-		NAME_BASED_HOOKS.put("org.jboss.modules.Main", Arrays.asList("main"));
-		DECORATOR_ENTRY.put("org.jboss.modules.Main.main", "com.k2cybersecurity.instrumentator.decorators.jbossadjustment");
+ 		DECORATOR_ENTRY.put("org.jboss.modules.Main.main", "com.k2cybersecurity.instrumentator.decorators.jbossadjustment");
 
 	}
 }
