@@ -3,6 +3,7 @@ package com.k2cybersecurity.instrumentator.decorators.sqlcreate;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalDBMap;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalHttpMap;
 
+import java.time.Instant;
 import java.util.Arrays;
 
 public class Callbacks {
@@ -20,7 +21,8 @@ public class Callbacks {
 		if(ThreadLocalHttpMap.getInstance().getHttpRequest() != null) {
 
 			if (args != null && args.length > 0 && args[0] instanceof String) {
-				ThreadLocalDBMap.getInstance().create(returnVal, (String) args[0], className, sourceString, exectionId);
+				ThreadLocalDBMap.getInstance().create(returnVal, (String) args[0], className, sourceString, exectionId, Instant
+						.now().toEpochMilli());
 			}
 		}
 	}

@@ -6,8 +6,8 @@ public class FileOperationalBean extends AbstractOperationalBean {
 
 	private String fileName;
 
-	public FileOperationalBean(String fileName, String className, String sourceMethod, String executionId) {
-		super(className, sourceMethod, executionId);
+	public FileOperationalBean(String fileName, String className, String sourceMethod, String executionId, long startTime) {
+		super(className, sourceMethod, executionId, startTime);
 		this.fileName = fileName;
 	}
 

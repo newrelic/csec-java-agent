@@ -4,6 +4,7 @@ import com.k2cybersecurity.instrumentator.custom.ThreadLocalDBMap;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalHttpMap;
 import org.apache.commons.lang3.StringUtils;
 
+import java.time.Instant;
 import java.util.Arrays;
 
 public class Callbacks {
@@ -20,9 +21,10 @@ public class Callbacks {
 				ThreadLocalDBMap.getInstance().setParam(obj, (Integer) args[0], args[1]);
 			} else if (StringUtils.startsWithIgnoreCase(methodName, "addBatch") && args != null && args.length > 0
 					&& args[0] instanceof String) {
-				ThreadLocalDBMap.getInstance().addBatch(obj, (String) args[0], className, sourceString, exectionId);
+				ThreadLocalDBMap.getInstance().addBatch(obj, (String) args[0], className, sourceString, exectionId, Instant
+						.now().toEpochMilli());
 			} else if (StringUtils.startsWithIgnoreCase(methodName, "addBatch")) {
-				ThreadLocalDBMap.getInstance().addBatch(obj, null, className, sourceString, exectionId);
+				ThreadLocalDBMap.getInstance().addBatch(obj, null, className, sourceString, exectionId, Instant.now().toEpochMilli());
 			}
 			if (StringUtils.startsWithIgnoreCase(methodName, "clearBatch")) {
 				ThreadLocalDBMap.getInstance().clearBatch(obj);

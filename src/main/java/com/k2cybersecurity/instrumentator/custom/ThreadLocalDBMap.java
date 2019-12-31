@@ -24,12 +24,13 @@ public class ThreadLocalDBMap {
 		return instance.get();
 	}
 
-	public void create(Object ref, String query, String className, String sourceMethod, String executionId) {
+	public void create(Object ref, String query, String className, String sourceMethod, String executionId, long startTime) {
 		SQLOperationalBean bean = new SQLOperationalBean();
 		bean.setQuery(query);
 		bean.setClassName(className);
 		bean.setSourceMethod(sourceMethod);
 		bean.setExecutionId(executionId);
+		bean.setStartTime(startTime);
 		List<SQLOperationalBean> list;
 		if (sqlCalls.containsKey(ref)) {
 			list = sqlCalls.get(ref);
@@ -56,13 +57,13 @@ public class ThreadLocalDBMap {
 		}
 	}
 
-	public void addBatch(Object ref, String query, String className, String sourceMethod, String executionId) {
+	public void addBatch(Object ref, String query, String className, String sourceMethod, String executionId, long startTime) {
 		if (StringUtils.isNotBlank(query)) {
-			create(ref, query, className, sourceMethod, executionId);
+			create(ref, query, className, sourceMethod, executionId, startTime);
 		} else {
 			if (sqlCalls.containsKey(ref)) {
 				List<SQLOperationalBean> beanList = sqlCalls.get(ref);
-				create(ref, beanList.get(beanList.size() - 1).getQuery(), className, sourceMethod, executionId);
+				create(ref, beanList.get(beanList.size() - 1).getQuery(), className, sourceMethod, executionId, startTime);
 			}
 		}
 	}

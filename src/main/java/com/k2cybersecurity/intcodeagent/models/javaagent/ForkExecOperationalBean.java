@@ -16,8 +16,8 @@ public class ForkExecOperationalBean extends AbstractOperationalBean{
 	private Map<String,String> environment;
 
 
-	public ForkExecOperationalBean(String[] cmd, Map<String,String> environment, String className, String sourceMethod, String executionId) {
-		super(className, sourceMethod, executionId);
+	public ForkExecOperationalBean(String[] cmd, Map<String,String> environment, String className, String sourceMethod, String executionId, long startTime) {
+		super(className, sourceMethod, executionId, startTime);
 		this.command = StringUtils.join(cmd, StringUtils.SPACE);
 		if(environment != null) {
 			this.environment = new HashMap<>(environment);

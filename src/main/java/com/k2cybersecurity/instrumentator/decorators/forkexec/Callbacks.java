@@ -5,6 +5,7 @@ import com.k2cybersecurity.instrumentator.dispatcher.EventDispatcher;
 import com.k2cybersecurity.intcodeagent.models.javaagent.ForkExecOperationalBean;
 import com.k2cybersecurity.intcodeagent.models.javaagent.VulnerabilityCaseType;
 
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.Map;
 
@@ -15,7 +16,7 @@ public class Callbacks {
 		//        System.out.println("OnEnter :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj + " - eid : " + exectionId);
 		if (ThreadLocalHttpMap.getInstance().getHttpRequest() != null) {
 			ForkExecOperationalBean forkExecOperationalBean = new ForkExecOperationalBean((String[]) args[0],
-					(Map<String, String>) args[1], className, sourceString, exectionId);
+					(Map<String, String>) args[1], className, sourceString, exectionId, Instant.now().toEpochMilli());
 			EventDispatcher.dispatch(forkExecOperationalBean, VulnerabilityCaseType.SYSTEM_COMMAND);
 		}
 	}

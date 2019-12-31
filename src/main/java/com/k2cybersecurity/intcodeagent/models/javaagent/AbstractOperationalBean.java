@@ -13,22 +13,28 @@ public abstract class AbstractOperationalBean {
 
 	private String executionId;
 
+	private long startTime;
+
+
 	public AbstractOperationalBean(){
 		this.className = StringUtils.EMPTY;
 		this.sourceMethod = StringUtils.EMPTY;
 		this.executionId = StringUtils.EMPTY;
+		this.startTime = 0L;
 	}
 
 	public AbstractOperationalBean(AbstractOperationalBean abstractOperationalBean){
 		this.className = abstractOperationalBean.className;
 		this.sourceMethod = abstractOperationalBean.sourceMethod;
 		this.executionId = abstractOperationalBean.executionId;
+		this.startTime = abstractOperationalBean.startTime;
 	}
 
-	public AbstractOperationalBean(String className, String sourceMethod, String executionId){
+	public AbstractOperationalBean(String className, String sourceMethod, String executionId, long startTime){
 		this.className = className;
 		this.sourceMethod = sourceMethod;
 		this.executionId = executionId;
+		this.startTime = startTime;
 	}
 
 	public String toString() {
@@ -57,5 +63,13 @@ public abstract class AbstractOperationalBean {
 
 	public void setExecutionId(String executionId) {
 		this.executionId = executionId;
+	}
+
+	public long getStartTime() {
+		return startTime;
+	}
+
+	public void setStartTime(long startTime) {
+		this.startTime = startTime;
 	}
 }
