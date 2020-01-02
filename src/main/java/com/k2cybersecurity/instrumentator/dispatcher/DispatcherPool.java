@@ -80,4 +80,8 @@ public class DispatcherPool {
 			Object event, VulnerabilityCaseType vulnerabilityCaseType) {
 		this.executor.submit(new Dispatcher(httpRequestBean, metaData, trace, event, vulnerabilityCaseType));
 	}
+
+	public void dispatchAppInfo(Object event, VulnerabilityCaseType vulnerabilityCaseType) {
+		this.executor.submit(new Dispatcher(event, vulnerabilityCaseType));
+	}
 }

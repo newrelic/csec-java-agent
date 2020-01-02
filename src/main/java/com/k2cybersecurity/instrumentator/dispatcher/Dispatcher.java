@@ -48,11 +48,24 @@ public class Dispatcher implements Runnable {
         this.vulnerabilityCaseType = vulnerabilityCaseType;
     }
 
+    public Dispatcher(Object event,
+                      VulnerabilityCaseType vulnerabilityCaseType) {
+        this.event = event;
+        this.vulnerabilityCaseType = vulnerabilityCaseType;
+    }
+
     @Override
     public void run() {
         printDispatch();
         if (event == null) {
             System.out.println("------- Invalid event -----------");
+            return;
+        }
+
+        if(vulnerabilityCaseType.equals(VulnerabilityCaseType.APP_INFO)) {
+            // TODO: Handle SHA & size calculation for deployed application bean here.
+            DeployedApplication deployedApplication = (DeployedApplication) event;
+
             return;
         }
         JavaAgentEventBean eventBean = prepareEvent(httpRequestBean, metaData, vulnerabilityCaseType);
@@ -86,10 +99,6 @@ public class Dispatcher implements Runnable {
                 eventBean = setGenericProperties(noSQLOperationalBean, eventBean);
                 eventBean = prepareNoSQLEvent(eventBean, noSQLOperationalBean);
                 break;
-
-            case APP_INFO:
-				// TODO: Handle SHA & size calculation for deployed application bean here.
-                DeployedApplication deployedApplication = (DeployedApplication) event;
 
             default:
 

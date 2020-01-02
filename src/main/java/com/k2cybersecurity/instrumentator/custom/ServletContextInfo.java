@@ -57,7 +57,9 @@ public class ServletContextInfo {
                 appName = applicationPath.getFileName().toString();
             }
         }
-        contextMap.put(contextPath, new DeployedApplication(contextPath, appName, appPath));
+        DeployedApplication app = new DeployedApplication(contextPath, appName, appPath);
+        contextMap.put(contextPath, app);
+        EventDispatcher.dispatch(app, VulnerabilityCaseType.APP_INFO);
     }
 
     public void putContextInfo(String contextPath, String applicationDir, String appName) {
@@ -78,7 +80,7 @@ public class ServletContextInfo {
         }
         DeployedApplication app = new DeployedApplication(contextPath, appName, appPath);
         contextMap.put(contextPath, app);
-        EventDispatcher.dispatch(new DeployedApplication(app), VulnerabilityCaseType.APP_INFO);
+        EventDispatcher.dispatch(app, VulnerabilityCaseType.APP_INFO);
     }
 
     public String getServerInfo() {

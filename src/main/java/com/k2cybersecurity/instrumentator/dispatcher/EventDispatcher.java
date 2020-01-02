@@ -58,7 +58,7 @@ public class EventDispatcher {
 
 	public static void dispatch(DeployedApplication deployedApplication,VulnerabilityCaseType vulnerabilityCaseType) {
 		if(!deployedApplication.isEmpty()){
-
+			DispatcherPool.getInstance().dispatchAppInfo(deployedApplication, vulnerabilityCaseType);
 		}
 	}
 
