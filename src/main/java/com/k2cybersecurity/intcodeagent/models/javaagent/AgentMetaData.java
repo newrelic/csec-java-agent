@@ -8,6 +8,8 @@ public class AgentMetaData{
 	private boolean triggerViaRCI;
 
 	private boolean triggerViaDeserialisation;
+	
+	private boolean triggerViaXXE;
 
 	private JSONArray rciMethodsCalls;
 
@@ -34,6 +36,14 @@ public class AgentMetaData{
 
 	public void setTriggerViaDeserialisation(boolean triggerViaDeserialisation) {
 		this.triggerViaDeserialisation = triggerViaDeserialisation;
+	}
+
+	public boolean isTriggerViaXXE() {
+		return triggerViaXXE;
+	}
+
+	public void setTriggerViaXXE(boolean triggerViaXXE) {
+		this.triggerViaXXE = triggerViaXXE;
 	}
 
 	public JSONArray getRciMethodsCalls() {

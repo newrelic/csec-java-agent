@@ -191,6 +191,8 @@ public class ProcessorThread implements Runnable {
 						logger.log(LogLevel.DEBUG, String.format("Printing stack trace for probable rci event : %s : %s", intCodeResultBean.getId(), Arrays
 								.asList(trace)), ProcessorThread.class.getName());
 					}
+					
+					
 
 					if (MapConstants.MYSQL_GET_CONNECTION_MAP.containsKey(klassName)
 							&& MapConstants.MYSQL_GET_CONNECTION_MAP.get(klassName)
@@ -208,7 +210,14 @@ public class ProcessorThread implements Runnable {
 						logger.log(LogLevel.DEBUG, String.format("Printing stack trace for rci event : %s : %s", intCodeResultBean.getId(), Arrays
 								.asList(trace)), ProcessorThread.class.getName());
 					}
-
+					
+					if(StringUtils.contains(klassName, "XMLDocumentFragmentScannerImpl") 
+							&& StringUtils.equals(trace[i].getMethodName(), "scanDocument")) {
+						intCodeResultBean.getMetaData().setTriggerViaXXE(true);
+						logger.log(LogLevel.DEBUG, String.format("Printing stack trace for xxe event : %s : %s", intCodeResultBean.getId(), Arrays
+								.asList(trace)), ProcessorThread.class.getName());
+					}
+					
 					if (ObjectInputStream.class.getName().equals(klassName)
 							&& StringUtils.equals(trace[i].getMethodName(), READ_OBJECT)) {
 						intCodeResultBean.getMetaData().setTriggerViaDeserialisation(true);
