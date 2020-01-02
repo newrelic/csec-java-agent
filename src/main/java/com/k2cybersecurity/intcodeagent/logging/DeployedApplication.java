@@ -20,6 +20,7 @@
 package com.k2cybersecurity.intcodeagent.logging;
 
 import com.k2cybersecurity.intcodeagent.websocket.JsonConverter;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * DeployedApplication model contains fields to identify all deployed
@@ -42,13 +43,7 @@ public class DeployedApplication {
 	/** Size of application. */
 	private String size;
 
-	/** Check if it is war. */
-	private boolean isWar;
-
-	/** Check if it is jar. */
-	private boolean isJar;
-	
-	private boolean isEar;
+	private String contextPath;
 
 	public DeployedApplication() {
 	}
@@ -58,48 +53,16 @@ public class DeployedApplication {
 		this.appName = appName;
 	}
 
-	/**
-	 * @return the isWar
-	 */
-	public boolean isWar() {
-		return isWar;
+	public DeployedApplication(String contextPath , String appName, String deployedPath) {
+		this.contextPath = contextPath;
+		this.deployedPath = deployedPath;
+		this.appName = appName;
 	}
 
-	/**
-	 * @param isWar
-	 *            the isWar to set
-	 */
-	public void setWar(boolean isWar) {
-		this.isWar = isWar;
-	}
-
-	/**
-	 * @return the isJar
-	 */
-	public boolean isJar() {
-		return isJar;
-	}
-
-	/**
-	 * @param isJar
-	 *            the isJar to set
-	 */
-	public void setJar(boolean isJar) {
-		this.isJar = isJar;
-	}
-
-	/**
-	 * @return the isEar
-	 */
-	public boolean isEar() {
-		return isEar;
-	}
-
-	/**
-	 * @param isEar the isEar to set
-	 */
-	public void setEar(boolean isEar) {
-		this.isEar = isEar;
+	public DeployedApplication(DeployedApplication deployedApplication) {
+		this.contextPath = deployedApplication.contextPath;
+		this.deployedPath = deployedApplication.deployedPath;
+		this.appName = deployedApplication.appName;
 	}
 
 	/**
@@ -174,6 +137,15 @@ public class DeployedApplication {
 		return JsonConverter.toJSON(this);
 	}
 
+
+	public String getContextPath() {
+		return contextPath;
+	}
+
+	public void setContextPath(String contextPath) {
+		this.contextPath = contextPath;
+	}
+
 	/* (non-Javadoc)
 	 * @see java.lang.Object#hashCode()
 	 */
@@ -211,4 +183,7 @@ public class DeployedApplication {
 		return true;
 	}
 
+	public boolean isEmpty() {
+		return !StringUtils.isAnyBlank(deployedPath, appName, contextPath);
+	}
 }

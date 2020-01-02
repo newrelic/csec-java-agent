@@ -3,6 +3,7 @@ package com.k2cybersecurity.instrumentator.dispatcher;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalDBMap;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalExecutionMap;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalHttpMap;
+import com.k2cybersecurity.intcodeagent.logging.DeployedApplication;
 import com.k2cybersecurity.intcodeagent.models.javaagent.AgentMetaData;
 import com.k2cybersecurity.intcodeagent.models.javaagent.HttpRequestBean;
 import com.k2cybersecurity.intcodeagent.models.javaagent.VulnerabilityCaseType;
@@ -52,6 +53,12 @@ public class EventDispatcher {
 		if(!toBeSentBeans.isEmpty()) {
 			DispatcherPool.getInstance().dispatchEvent(new HttpRequestBean(ThreadLocalExecutionMap.getInstance().getHttpRequestBean()),
 					new AgentMetaData(ThreadLocalExecutionMap.getInstance().getMetaData()), Thread.currentThread().getStackTrace(), toBeSentBeans, vulnerabilityCaseType);
+		}
+	}
+
+	public static void dispatch(DeployedApplication deployedApplication,VulnerabilityCaseType vulnerabilityCaseType) {
+		if(!deployedApplication.isEmpty()){
+
 		}
 	}
 

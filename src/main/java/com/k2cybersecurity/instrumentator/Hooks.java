@@ -61,6 +61,9 @@ public class Hooks {
 		NAME_BASED_HOOKS.put("com.mongodb.async.client.AsyncOperationExecutorImpl", Collections.singletonList("execute"));
 		NAME_BASED_HOOKS.put("com.mongodb.async.client.OperationExecutorImpl", Collections.singletonList("execute"));
 
+		// Jetty Servlet Hooks
+		NAME_BASED_HOOKS.put("org.eclipse.jetty.server.Handler", Collections.singletonList("handle"));
+
 		/** ------------------------------------  Decorators ------------------------------------------------**/
 
 		// HTTP request
@@ -161,5 +164,7 @@ public class Hooks {
 		DECORATOR_ENTRY.put("com.mongodb.async.client.AsyncOperationExecutorImpl.execute", "com.k2cybersecurity.instrumentator.decorators.mongoexecute");
 		DECORATOR_ENTRY.put("com.mongodb.async.client.OperationExecutorImpl.execute", "com.k2cybersecurity.instrumentator.decorators.mongoexecute");
 
+		// Jetty Servlet
+		DECORATOR_ENTRY.put("org.eclipse.jetty.server.Handler.handle", "com.k2cybersecurity.instrumentator.decorators.jettyhandle");
 	}
 }

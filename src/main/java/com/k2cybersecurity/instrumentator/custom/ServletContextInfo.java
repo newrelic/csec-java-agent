@@ -1,9 +1,11 @@
 package com.k2cybersecurity.instrumentator.custom;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.k2cybersecurity.instrumentator.dispatcher.EventDispatcher;
+import com.k2cybersecurity.intcodeagent.logging.DeployedApplication;
+import com.k2cybersecurity.intcodeagent.models.javaagent.VulnerabilityCaseType;
 import com.k2cybersecurity.intcodeagent.websocket.JsonConverter;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.Pair;
 
 import java.lang.reflect.Method;
 import java.nio.file.Path;
@@ -15,7 +17,7 @@ public class ServletContextInfo {
     @JsonIgnore
     private static ServletContextInfo instance;
 
-    private Map<String, Pair<String, String>> contextMap = new HashMap<>();
+    private Map<String, DeployedApplication> contextMap = new HashMap<>();
 
     private String serverInfo = StringUtils.EMPTY;
 
@@ -42,26 +44,41 @@ public class ServletContextInfo {
     public void putContextInfo(String contextPath, String applicationDir) {
         String appPath = StringUtils.EMPTY;
         String appName = StringUtils.EMPTY;
-        Path applicationPath = Paths.get(applicationDir);
-        if (StringUtils.equals(contextPath, "/")) {
-            appPath = applicationPath.toString();
-            appName = applicationPath.getFileName().toString();
+        if(StringUtils.isBlank(contextPath)){
+            appName = "ROOT";
+            appPath = applicationDir;
         } else {
-            appPath = applicationPath.getParent().toString();
-            appName = applicationPath.getFileName().toString();
+            Path applicationPath = Paths.get(applicationDir);
+            if (StringUtils.equals(contextPath, "/")) {
+                appPath = applicationPath.toString();
+                appName = applicationPath.getFileName().toString();
+            } else {
+                appPath = applicationPath.getParent().toString();
+                appName = applicationPath.getFileName().toString();
+            }
         }
-        contextMap.put(contextPath, Pair.of(appName, appPath));
+        contextMap.put(contextPath, new DeployedApplication(contextPath, appName, appPath));
     }
 
-    public void putContextInfo(String contextPath, String applicationDir, String applicationName) {
+    public void putContextInfo(String contextPath, String applicationDir, String appName) {
         String appPath = StringUtils.EMPTY;
-        Path applicationPath = Paths.get(applicationDir);
-        if (StringUtils.equals(contextPath, "/")) {
-            appPath = applicationPath.toString();
+
+        if(StringUtils.isBlank(contextPath)){
+            if(StringUtils.isBlank(appName)){
+                appName = "ROOT";
+            }
+            appPath = applicationDir;
         } else {
-            appPath = applicationPath.getParent().toString();
+            Path applicationPath = Paths.get(applicationDir);
+            if (StringUtils.equals(contextPath, "/")) {
+                appPath = applicationPath.toString();
+            } else {
+                appPath = applicationPath.getParent().toString();
+            }
         }
-        contextMap.put(contextPath, Pair.of(applicationName, appPath));
+        DeployedApplication app = new DeployedApplication(contextPath, appName, appPath);
+        contextMap.put(contextPath, app);
+        EventDispatcher.dispatch(new DeployedApplication(app), VulnerabilityCaseType.APP_INFO);
     }
 
     public String getServerInfo() {
@@ -127,6 +144,16 @@ public class ServletContextInfo {
         } catch (Exception e) {
             e.printStackTrace();
         }
+        System.out.println("==========================================================================================");
+        System.out.println("Context details found : ");
+        System.out.println("Path : " + contextPath);
+        System.out.println("Major Version : " + majorServletVersion);
+        System.out.println("Minor Version : " + minorServletVersion);
+        System.out.println("Server Info : "+ serverInfo);
+        System.out.println("Application Dir : " +applicationDir );
+        System.out.println("Application Name : " + applicationName);
+        System.out.println("==========================================================================================");
+
         if (StringUtils.isNotBlank(applicationName)) {
             putContextInfo(contextPath, applicationDir, applicationName);
         } else {
