@@ -28,11 +28,10 @@ import java.util.UUID;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
 
-import com.k2cybersecurity.instrumentation.Agent;
+import com.k2cybersecurity.instrumentator.utils.HashGenerator;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.logging.IPScheduledThread;
-import com.k2cybersecurity.intcodeagent.logging.LoggingInterceptor;
 import com.k2cybersecurity.intcodeagent.models.javaagent.ApplicationInfoBean;
 import com.k2cybersecurity.intcodeagent.models.javaagent.JAHealthCheck;
 import com.k2cybersecurity.intcodeagent.websocket.EventSendPool;
@@ -51,7 +50,7 @@ public class AgentNew {
 	public static Integer VMPID;
 	public static final String APPLICATION_UUID = UUID.randomUUID().toString();
 	public static ApplicationInfoBean APPLICATION_INFO_BEAN;
-	protected static JAHealthCheck JA_HEALTH_CHECK;
+	public static JAHealthCheck JA_HEALTH_CHECK;
 
 	private static final String SCOPE = ".scope";
 	private static final String DOCKER_1_13 = "/docker-";
@@ -60,6 +59,7 @@ public class AgentNew {
 
 	public static boolean isDynamicAttach = false;
 	public static boolean isAttached = false;
+	public static boolean enableHTTPRequestPrinting = false;
 	
 	static {
 		try {
@@ -88,7 +88,7 @@ public class AgentNew {
 			WSClient.getInstance();
 		} catch (Exception e) {
 			logger.log(LogLevel.ERROR, "Error occured while trying to connect to wsocket: ", e,
-					LoggingInterceptor.class.getName());
+					AgentNew.class.getName());
 		}
 		IPScheduledThread.getInstance();
 		eventWritePool();
@@ -99,7 +99,7 @@ public class AgentNew {
 		try {
 			EventSendPool.getInstance();
 		} catch (Exception e) {
-			logger.log(LogLevel.WARNING, "Exception occured in EventSendPool: ", e, LoggingInterceptor.class.getName());
+			logger.log(LogLevel.WARNING, "Exception occured in EventSendPool: ", e, AgentNew.class.getName());
 		}
 	}
 
@@ -155,7 +155,7 @@ public class AgentNew {
 		try {
 			RuntimeMXBean runtimeMXBean = ManagementFactory.getRuntimeMXBean();
 			ApplicationInfoBean applicationInfoBean = new ApplicationInfoBean(VMPID, APPLICATION_UUID,
-					Agent.isDynamicAttach ? "DYNAMIC" : "STATIC");
+					AgentNew.isDynamicAttach ? "DYNAMIC" : "STATIC");
 			applicationInfoBean.setStartTime(runtimeMXBean.getStartTime());
 			String containerId = getContainerID();
 			String cmdLine = StringEscapeUtils.escapeJava(getCmdLineArgsByProc(VMPID));
@@ -177,7 +177,7 @@ public class AgentNew {
 			applicationInfoBean
 					.setBinaryName(StringUtils.substringAfterLast(applicationInfoBean.getBinaryPath(), File.separator));
 			applicationInfoBean
-					.setSha256(LoggingInterceptor.getChecksum(new File(applicationInfoBean.getBinaryPath())));
+					.setSha256(HashGenerator.getChecksum(new File(applicationInfoBean.getBinaryPath())));
 			if (containerId != null) {
 				applicationInfoBean.setContainerID(containerId);
 				applicationInfoBean.setIsHost(false);
@@ -188,7 +188,7 @@ public class AgentNew {
 			return applicationInfoBean;
 		} catch (Exception e) {
 			logger.log(LogLevel.WARNING, "Exception occured in createApplicationInfoBean: ", e,
-					LoggingInterceptor.class.getName());
+					AgentNew.class.getName());
 		}
 		return null;
 	}

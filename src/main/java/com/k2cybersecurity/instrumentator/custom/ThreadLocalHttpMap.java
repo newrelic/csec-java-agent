@@ -1,5 +1,9 @@
 package com.k2cybersecurity.instrumentator.custom;
 
+import com.k2cybersecurity.instrumentator.AgentNew;
+import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
+import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
+import com.k2cybersecurity.intcodeagent.logging.IAgentConstants;
 import com.k2cybersecurity.intcodeagent.models.javaagent.AgentMetaData;
 import com.k2cybersecurity.intcodeagent.models.javaagent.HttpRequestBean;
 import org.apache.commons.lang3.StringUtils;
@@ -13,6 +17,8 @@ import java.util.Map;
 
 public class ThreadLocalHttpMap {
 
+	private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
+	
     private Object httpRequest;
 
     private boolean isHttpRequestParsed = false;
@@ -195,6 +201,10 @@ public class ThreadLocalHttpMap {
     }
 
     public void cleanState(){
+    	if(AgentNew.enableHTTPRequestPrinting) {
+    		//TODO add HTTP request printing
+    		logger.log(LogLevel.INFO, IAgentConstants.INTERCEPTED_HTTP_REQUEST, AgentNew.class.getName());
+    	}
         httpRequest = null;
         isHttpRequestParsed = false;
         httpResponse = null;

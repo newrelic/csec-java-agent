@@ -34,11 +34,6 @@
 			<version>2.9.8</version>
 		</dependency>
 		<dependency>
-			<groupId>com.k2cybersecurity</groupId>
-			<artifactId>instrumentation</artifactId>
-			<version>1.0.0</version>
-		</dependency>
-		<dependency>
 			<groupId>k2.org.java-websocket</groupId>
 			<artifactId>Java-WebSocket</artifactId>
 			<version>1.4.1-SNAPSHOT</version>

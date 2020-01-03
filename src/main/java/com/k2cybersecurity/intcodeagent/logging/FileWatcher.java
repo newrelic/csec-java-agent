@@ -1,5 +1,6 @@
 package com.k2cybersecurity.intcodeagent.logging;
 
+import com.k2cybersecurity.instrumentator.utils.InstrumentationUtils;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 
@@ -65,7 +66,7 @@ public class FileWatcher {
 		Path filePath = watchDirs.resolve((Path) event.context()).toAbsolutePath();
 		String fileName = filePath.getFileName().toString();
 		if (k2intcodeActiveFile.matcher(fileName).matches()) {
-			LoggingInterceptor.shutdownLogic(this.runtime, this.classTransformer);
+			InstrumentationUtils.shutdownLogic();
 		}
 	}
 

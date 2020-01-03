@@ -1,5 +1,6 @@
 package com.k2cybersecurity.intcodeagent.logging;
 
+import com.k2cybersecurity.instrumentator.AgentNew;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.models.javaagent.JAHealthCheck;
@@ -37,21 +38,21 @@ public class IPScheduledThread {
 						// we send our custom object to check if connectino is still alive or not
 						// this will be ignored by ic agent on the other side.
 
-//						channel.write(ByteBuffer.wrap(new JAHealthCheck(LoggingInterceptor.JA_HEALTH_CHECK).toString().getBytes()));
+//						channel.write(ByteBuffer.wrap(new JAHealthCheck(AgentNew.JA_HEALTH_CHECK).toString().getBytes()));
 						if (WSClient.getInstance().isOpen()) {
 							WSClient.getInstance()
-									.send(new JAHealthCheck(LoggingInterceptor.JA_HEALTH_CHECK).toString());
-							LoggingInterceptor.JA_HEALTH_CHECK.setEventDropCount(0);
-							LoggingInterceptor.JA_HEALTH_CHECK.setEventProcessed(0);
-							LoggingInterceptor.JA_HEALTH_CHECK.setEventSentCount(0);
+									.send(new JAHealthCheck(AgentNew.JA_HEALTH_CHECK).toString());
+							AgentNew.JA_HEALTH_CHECK.setEventDropCount(0);
+							AgentNew.JA_HEALTH_CHECK.setEventProcessed(0);
+							AgentNew.JA_HEALTH_CHECK.setEventSentCount(0);
 						} else {
 							try {
 								WSClient.reconnectWSClient();
 								TimeUnit.SECONDS.sleep(5);
 								if (WSClient.getInstance().isOpen()) {
 									WSClient.getInstance()
-											.send(new JAHealthCheck(LoggingInterceptor.JA_HEALTH_CHECK).toString());
-									LoggingInterceptor.JA_HEALTH_CHECK.setEventDropCount(0);
+											.send(new JAHealthCheck(AgentNew.JA_HEALTH_CHECK).toString());
+									AgentNew.JA_HEALTH_CHECK.setEventDropCount(0);
 								} else {
 									logger.log(LogLevel.SEVERE, "Failed in WSock reconnection.", IPScheduledThread.class.getName());
 								}
@@ -68,8 +69,8 @@ public class IPScheduledThread {
 					}
 					if (hostip == null || hostip.equals(StringUtils.EMPTY)) {
 						logger.log(LogLevel.DEBUG, "Host ip not found", IPScheduledThread.class.getName());
-					} else if (!LoggingInterceptor.hostip.equals(hostip)) {
-						LoggingInterceptor.hostip = hostip.trim();
+					} else if (!AgentNew.hostip.equals(hostip)) {
+						AgentNew.hostip = hostip.trim();
 						WSClient.reconnectWSClient();
 						logger.log(LogLevel.DEBUG, "K2-JavaAgent re-installed successfully coz of IP change.", IPScheduledThread.class.getName());
 					} else if (!WSClient.getInstance().isOpen()) {

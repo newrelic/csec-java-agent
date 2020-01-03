@@ -1,18 +1,73 @@
 package com.k2cybersecurity.intcodeagent.logging;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.k2cybersecurity.instrumentation.Agent;
-import com.k2cybersecurity.intcodeagent.constants.MapConstants;
-import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
-import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
-import com.k2cybersecurity.intcodeagent.models.javaagent.*;
-import com.k2cybersecurity.intcodeagent.websocket.EventSendPool;
-import org.apache.commons.lang3.StringUtils;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
+import static com.k2cybersecurity.intcodeagent.constants.MapConstants.EXECUTORS;
+import static com.k2cybersecurity.intcodeagent.constants.MapConstants.HSQL_GET_CONNECTION_MAP;
+import static com.k2cybersecurity.intcodeagent.constants.MapConstants.MONGO_EXECUTORS;
+import static com.k2cybersecurity.intcodeagent.constants.MapConstants.ORACLE_CLASS_SKIP_LIST;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.ALLOWED_EXTENSIONS;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.APACHE_COMMONS_HTTP_METHOD_DIRECTOR_METHOD;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.APACHE_HTTP_REQUEST_EXECUTOR_METHOD;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.CLASS_LOADER_IDENTIFIER;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.EMPTY;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.GET_ATTRIBUTE;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.GET_HOST;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.GET_PATH;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.GET_REQUEST_LINE;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.GET_URI;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.HSQL_V1_8_CONNECTION;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.HSQL_V1_8_SESSION;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.HSQL_V2_3_4_CLIENT_CONNECTION;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.HSQL_V2_4;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.HTTP_TARGET_HOST;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.INVOKE_0;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.JAVA_IO_FILE;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.JAVA_IO_FILE_INPUTSTREAM_OPEN;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.JAVA_OPEN_CONNECTION_METHOD2;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.JAVA_OPEN_CONNECTION_METHOD2_HTTPS;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.JAVA_OPEN_CONNECTION_METHOD2_HTTPS_2;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.JDK_INCUBATOR_MULTIEXCHANGE_RESONSE_ASYNC_METHOD;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.JDK_INCUBATOR_MULTIEXCHANGE_RESONSE_METHOD;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MONGO_COMMAND_FIELD;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MONGO_DELETE_REQUEST_FIELD;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MONGO_IDENTIFIER;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MONGO_INSERT_REQUESTS_FIELD;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MONGO_MULTIPLE_UPDATES_FIELD;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MONGO_NAMESPACE_FIELD;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MSSQL_ACTIVE_CONNECTION_PROP_FIELD;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MSSQL_BATCH_PARAM_VALUES_FIELD;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MSSQL_BATCH_STATEMENT_BUFFER_FIELD;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MSSQL_BATCH_STATEMENT_EXECUTE_CMD_CLASS;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MSSQL_CONNECTION_FIELD;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MSSQL_CURRENT_OBJECT;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MSSQL_IDENTIFIER;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MSSQL_IMPL_FIELD;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MSSQL_INPUT_DTV_FIELD;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MSSQL_IN_OUT_PARAM_FIELD;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MSSQL_PREPARED_BATCH_STATEMENT_CLASS;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MSSQL_PREPARED_STATEMENT_CLASS;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MSSQL_SERVER_STATEMENT_CLASS;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MSSQL_SQL_FIELD;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MSSQL_STATEMENT_EXECUTE_CMD_CLASS;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MSSQL_STATEMENT_FIELD;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MSSQL_USER_SQL_FIELD;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MSSQL_VALUE_FIELD;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.MYSQL_IDENTIFIER;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.OKHTTP_HTTP_ENGINE_METHOD;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.ORACLE_CONNECTION_IDENTIFIER;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.ORACLE_DB_IDENTIFIER;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.ORACLE_STATEMENT_CLASS_IDENTIFIER;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.ORG_APACHE_COMMONS_HTTPCLIENT_HTTP_METHOD;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.ORG_APACHE_COMMONS_HTTPCLIENT_URI;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.ORG_APACHE_HTTP_HTTP_REQUEST;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.ORG_APACHE_HTTP_PROTOCOL_HTTP_CONTEXT;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.PSQL42_EXECUTOR;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.PSQLV2_EXECUTOR;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.PSQLV3_EXECUTOR;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.PSQLV3_EXECUTOR7_4;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.READ_OBJECT;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.REFLECT_NATIVE_METHOD_ACCESSOR_IMPL;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.REGEX_SPACE;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.WEBLOGIC_OPEN_CONNECTION_METHOD;
 
 import java.io.File;
 import java.io.ObjectInputStream;
@@ -30,8 +85,24 @@ import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static com.k2cybersecurity.intcodeagent.constants.MapConstants.*;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.*;
+import org.apache.commons.lang3.StringUtils;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.k2cybersecurity.instrumentator.AgentNew;
+import com.k2cybersecurity.intcodeagent.constants.MapConstants;
+import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
+import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
+import com.k2cybersecurity.intcodeagent.models.javaagent.FileIntegrityBean;
+import com.k2cybersecurity.intcodeagent.models.javaagent.HttpRequestBean;
+import com.k2cybersecurity.intcodeagent.models.javaagent.JavaAgentDynamicPathBean;
+import com.k2cybersecurity.intcodeagent.models.javaagent.JavaAgentEventBean;
+import com.k2cybersecurity.intcodeagent.models.javaagent.VulnerabilityCaseType;
+import com.k2cybersecurity.intcodeagent.websocket.EventSendPool;
 
 //import org.brutusin.commons.json.spi.JsonCodec;
 
@@ -146,7 +217,7 @@ public class ProcessorThread implements Runnable {
 				long start = System.currentTimeMillis();
 
 				JavaAgentEventBean intCodeResultBean = new JavaAgentEventBean(start, preProcessingTime, sourceString,
-						LoggingInterceptor.VMPID, LoggingInterceptor.applicationUUID,
+						AgentNew.VMPID, AgentNew.APPLICATION_UUID,
 						this.threadId + IAgentConstants.COLON_SEPERATOR + this.executionId,
 						EXECUTORS.get(sourceString));
 
@@ -172,7 +243,7 @@ public class ProcessorThread implements Runnable {
 						.equals(VulnerabilityCaseType.valueOf(intCodeResultBean.getCaseType()))
 						&& allowedExtensionFileIO(params)) {
 					intCodeResultBean.setValidationBypass(true);
-					LoggingInterceptor.JA_HEALTH_CHECK.incrementDropCount();
+					AgentNew.JA_HEALTH_CHECK.incrementDropCount();
 					return;
 				}
 
@@ -182,20 +253,22 @@ public class ProcessorThread implements Runnable {
 					int lineNumber = trace[i].getLineNumber();
 					klassName = trace[i].getClassName();
 
-					if (!StringUtils.contains(trace[i].toString(), ".java:") && i > 0 &&
-							StringUtils.contains(trace[i-1].toString(), ".java:")) {
+					if (!StringUtils.contains(trace[i].toString(), ".java:") && i > 0
+							&& StringUtils.contains(trace[i - 1].toString(), ".java:")) {
 						intCodeResultBean.getMetaData().setTriggerViaRCI(true);
 						intCodeResultBean.getMetaData().getRciMethodsCalls().add(trace[i].toString());
-						intCodeResultBean.getMetaData().getRciMethodsCalls().add(trace[i-1].toString());
-						logger.log(LogLevel.DEBUG, String.format("Printing stack trace for probable rci event : %s : %s", intCodeResultBean.getId(), Arrays
-								.asList(trace)), ProcessorThread.class.getName());
+						intCodeResultBean.getMetaData().getRciMethodsCalls().add(trace[i - 1].toString());
+						logger.log(LogLevel.DEBUG,
+								String.format("Printing stack trace for probable rci event : %s : %s",
+										intCodeResultBean.getId(), Arrays.asList(trace)),
+								ProcessorThread.class.getName());
 					}
 
 					if (MapConstants.MYSQL_GET_CONNECTION_MAP.containsKey(klassName)
 							&& MapConstants.MYSQL_GET_CONNECTION_MAP.get(klassName)
 									.contains(trace[i].getMethodName())) {
 						intCodeResultBean.setValidationBypass(true);
-						LoggingInterceptor.JA_HEALTH_CHECK.incrementDropCount();
+						AgentNew.JA_HEALTH_CHECK.incrementDropCount();
 						return;
 					}
 
@@ -203,23 +276,26 @@ public class ProcessorThread implements Runnable {
 					if (StringUtils.contains(klassName, REFLECT_NATIVE_METHOD_ACCESSOR_IMPL)
 							&& StringUtils.equals(trace[i].getMethodName(), INVOKE_0) && i > 0) {
 						intCodeResultBean.getMetaData().setTriggerViaRCI(true);
-						intCodeResultBean.getMetaData().getRciMethodsCalls().add(trace[i-1].toString());
-						logger.log(LogLevel.DEBUG, String.format("Printing stack trace for rci event : %s : %s", intCodeResultBean.getId(), Arrays
-								.asList(trace)), ProcessorThread.class.getName());
+						intCodeResultBean.getMetaData().getRciMethodsCalls().add(trace[i - 1].toString());
+						logger.log(
+								LogLevel.DEBUG, String.format("Printing stack trace for rci event : %s : %s",
+										intCodeResultBean.getId(), Arrays.asList(trace)),
+								ProcessorThread.class.getName());
 					}
 
 					if (ObjectInputStream.class.getName().equals(klassName)
 							&& StringUtils.equals(trace[i].getMethodName(), READ_OBJECT)) {
 						intCodeResultBean.getMetaData().setTriggerViaDeserialisation(true);
-						logger.log(LogLevel.DEBUG, String.format("Printing stack trace for deserialise event : %s : %s", intCodeResultBean.getId(), Arrays
-								.asList(trace)), ProcessorThread.class.getName());
+						logger.log(LogLevel.DEBUG,
+								String.format("Printing stack trace for deserialise event : %s : %s",
+										intCodeResultBean.getId(), Arrays.asList(trace)),
+								ProcessorThread.class.getName());
 
 					}
 					if (HSQL_GET_CONNECTION_MAP.containsKey(klassName)
-							&& HSQL_GET_CONNECTION_MAP.get(klassName)
-									.contains(trace[i].getMethodName())) {
+							&& HSQL_GET_CONNECTION_MAP.get(klassName).contains(trace[i].getMethodName())) {
 						intCodeResultBean.setValidationBypass(true);
-						LoggingInterceptor.JA_HEALTH_CHECK.incrementDropCount();
+						AgentNew.JA_HEALTH_CHECK.incrementDropCount();
 						return;
 					}
 
@@ -266,7 +342,7 @@ public class ProcessorThread implements Runnable {
 	private void generateFileIntegrityEvent() {
 		long start = System.currentTimeMillis();
 		JavaAgentEventBean intCodeResultBean = new JavaAgentEventBean(start, preProcessingTime, sourceString,
-				LoggingInterceptor.VMPID, LoggingInterceptor.applicationUUID,
+				AgentNew.VMPID, AgentNew.APPLICATION_UUID,
 				this.threadId + IAgentConstants.COLON_SEPERATOR + this.executionId,
 				VulnerabilityCaseType.FILE_OPERATION);
 		JSONArray param = new JSONArray();
@@ -280,7 +356,7 @@ public class ProcessorThread implements Runnable {
 		intCodeResultBean.setEventGenerationTime(System.currentTimeMillis());
 		intCodeResultBean.getHttpRequest().clearRawRequest();
 		EventSendPool.getInstance().sendEvent(intCodeResultBean.toString());
-		LoggingInterceptor.JA_HEALTH_CHECK.incrementEventSentCount();
+		AgentNew.JA_HEALTH_CHECK.incrementEventSentCount();
 	}
 
 	private boolean allowedExtensionFileIO(JSONArray params) {
@@ -484,7 +560,8 @@ public class ProcessorThread implements Runnable {
 			queryDetailObj.put("command", new JSONParser().parse(command.toString()));
 			parameters.add(queryDetailObj);
 			return;
-		} catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException | ParseException e) {
+		} catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException
+				| ParseException e) {
 			// TODO Auto-generated catch block
 		}
 		try {
@@ -499,7 +576,8 @@ public class ProcessorThread implements Runnable {
 			queryDetailObj.put("fields", new JSONParser().parse(fields.toString()));
 			parameters.add(queryDetailObj);
 			return;
-		} catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException | ParseException e) {
+		} catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException
+				| ParseException e) {
 			// TODO Auto-generated catch block
 		}
 		try {
@@ -672,8 +750,7 @@ public class ProcessorThread implements Runnable {
 					|| sourceString.equals(PSQL42_EXECUTOR) || sourceString.equals(PSQLV3_EXECUTOR7_4)) {
 				getPSQLParameterValue(obj, parameters);
 			} else if (sourceString.equals(HSQL_V2_4) || sourceString.equals(HSQL_V1_8_CONNECTION)
-					|| sourceString.equals(HSQL_V1_8_SESSION) ||
-					sourceString.equals(HSQL_V2_3_4_CLIENT_CONNECTION)) {
+					|| sourceString.equals(HSQL_V1_8_SESSION) || sourceString.equals(HSQL_V2_3_4_CLIENT_CONNECTION)) {
 				getHSQLParameterValue(obj[0], parameters);
 			} else if (sourceString.equals(APACHE_HTTP_REQUEST_EXECUTOR_METHOD)) {
 				getApacheHttpRequestParameters(obj, parameters);
@@ -877,7 +954,7 @@ public class ProcessorThread implements Runnable {
 				Field mainStringField = object.getClass().getDeclaredField("mainString");
 				mainStringField.setAccessible(true);
 				String parameter = (String) mainStringField.get(object);
-				if(!StringUtils.isEmpty(parameter)) {
+				if (!StringUtils.isEmpty(parameter)) {
 					parameters.add(parameter);
 				}
 			} catch (Exception e) {
@@ -960,16 +1037,15 @@ public class ProcessorThread implements Runnable {
 				|| intCodeResultBean.getSourceMethod().equals(IAgentConstants.JAVA_NET_URLCLASSLOADER_NEWINSTANCE))) {
 			try {
 				JSONArray agentJarPaths = new JSONArray();
-				agentJarPaths.addAll(Agent.jarPathSet);
-				JavaAgentDynamicPathBean dynamicJarPathBean = new JavaAgentDynamicPathBean(
-						LoggingInterceptor.applicationUUID, System.getProperty(IAgentConstants.USER_DIR), agentJarPaths,
-						intCodeResultBean.getParameters());
+//				agentJarPaths.addAll(Agent.jarPathSet);
+				JavaAgentDynamicPathBean dynamicJarPathBean = new JavaAgentDynamicPathBean(AgentNew.APPLICATION_UUID,
+						System.getProperty(IAgentConstants.USER_DIR), agentJarPaths, intCodeResultBean.getParameters());
 				EventSendPool.getInstance().sendEvent(dynamicJarPathBean.toString());
-				LoggingInterceptor.JA_HEALTH_CHECK.incrementEventSentCount();
+				AgentNew.JA_HEALTH_CHECK.incrementEventSentCount();
 			} catch (IllegalStateException e) {
 				logger.log(LogLevel.INFO, "Dropping dynamicJarPathBean event " + intCodeResultBean.getId()
 						+ " due to buffer capacity reached", ProcessorThread.class.getName());
-				LoggingInterceptor.JA_HEALTH_CHECK.incrementDropCount();
+				AgentNew.JA_HEALTH_CHECK.incrementDropCount();
 			} catch (Exception e) {
 				logger.log(LogLevel.WARNING, "Error in generateEvent while creating JavaAgentDynamicPathBean: ", e,
 						ProcessorThread.class.getName());
@@ -983,19 +1059,19 @@ public class ProcessorThread implements Runnable {
 				if (intCodeResultBean.getCaseType().equals(VulnerabilityCaseType.HTTP_REQUEST.getCaseType())) {
 					boolean validationResult = partialSSRFValidator(intCodeResultBean);
 					if (!validationResult) {
-						LoggingInterceptor.JA_HEALTH_CHECK.incrementDropCount();
+						AgentNew.JA_HEALTH_CHECK.incrementDropCount();
 						return;
 					}
 				}
 				intCodeResultBean.getHttpRequest().clearRawRequest();
 				EventSendPool.getInstance().sendEvent(intCodeResultBean.toString());
-				LoggingInterceptor.JA_HEALTH_CHECK.incrementEventSentCount();
+				AgentNew.JA_HEALTH_CHECK.incrementEventSentCount();
 //				logger.log(LogLevel.INFO,"publish event: " + intCodeResultBean, ProcessorThread.class.getName());
 			} catch (IllegalStateException e) {
 				logger.log(LogLevel.INFO,
 						"Dropping event " + intCodeResultBean.getId() + " due to buffer capacity reached.",
 						ProcessorThread.class.getName());
-				LoggingInterceptor.JA_HEALTH_CHECK.incrementDropCount();
+				AgentNew.JA_HEALTH_CHECK.incrementDropCount();
 			} catch (Exception e) {
 				logger.log(LogLevel.WARNING, "Error in generateEvent while creating IntCodeResultBean: ", e,
 						ProcessorThread.class.getName());

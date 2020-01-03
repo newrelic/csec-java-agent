@@ -1,12 +1,13 @@
 package com.k2cybersecurity.intcodeagent.logging;
 
-import com.k2cybersecurity.instrumentation.Agent;
+import java.util.concurrent.TimeUnit;
+
+import com.k2cybersecurity.instrumentator.AgentNew;
+import com.k2cybersecurity.instrumentator.utils.InstrumentationUtils;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.filelogging.LogWriter;
 import com.k2cybersecurity.intcodeagent.models.javaagent.IntCodeControlCommand;
-
-import java.util.concurrent.TimeUnit;
 
 public class AgentUtils {
 
@@ -28,13 +29,13 @@ public class AgentUtils {
 			break;
 
 		case IntCodeControlCommand.SHUTDOWN_LANGUAGE_AGENT:
-			LoggingInterceptor.shutdownLogic(Runtime.getRuntime(), Agent.classTransformer);
+			InstrumentationUtils.shutdownLogic();
 			break;
 		case IntCodeControlCommand.SET_DEFAULT_LOG_LEVEL:
 			LogLevel logLevel = LogLevel.valueOf(controlCommand.getArguements().get(0));
 			LogWriter.setLogLevel(logLevel);
 		case IntCodeControlCommand.ENABLE_HTTP_REQUEST_PRINTING:
-			LoggingInterceptor.enableHTTPRequestPrinting = !LoggingInterceptor.enableHTTPRequestPrinting;
+			AgentNew.enableHTTPRequestPrinting = !AgentNew.enableHTTPRequestPrinting;
 		default:
 			break;
 		}

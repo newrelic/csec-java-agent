@@ -41,6 +41,8 @@ public class Hooks {
 
 		TYPE_BASED_HOOKS.put("java.sql.Connection",
 				Arrays.asList("nativeSQL", "prepareCall", "prepareStatement"));
+		
+		TYPE_BASED_HOOKS.put("javax.naming.directory.DirContext", Collections.singletonList("search"));
 
 		// Forkexec hooks
 		NAME_BASED_HOOKS.put("java.lang.ProcessImpl", Arrays.asList("start"));
@@ -163,6 +165,10 @@ public class Hooks {
 		DECORATOR_ENTRY.put("com.mongodb.async.client.MongoClientImpl$2.execute", "com.k2cybersecurity.instrumentator.decorators.mongoexecute");
 		DECORATOR_ENTRY.put("com.mongodb.async.client.AsyncOperationExecutorImpl.execute", "com.k2cybersecurity.instrumentator.decorators.mongoexecute");
 		DECORATOR_ENTRY.put("com.mongodb.async.client.OperationExecutorImpl.execute", "com.k2cybersecurity.instrumentator.decorators.mongoexecute");
+		
+		
+		//LDAP search
+		DECORATOR_ENTRY.put("javax.naming.directory.DirContext.search", "com.k2cybersecurity.instrumentator.decorators.ldap");
 
 		// Jetty Servlet
 		DECORATOR_ENTRY.put("org.eclipse.jetty.server.Handler.handle", "com.k2cybersecurity.instrumentator.decorators.jettyhandle");
