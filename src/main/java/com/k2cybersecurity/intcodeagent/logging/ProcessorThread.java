@@ -211,8 +211,10 @@ public class ProcessorThread implements Runnable {
 								.asList(trace)), ProcessorThread.class.getName());
 					}
 					
-					if(StringUtils.contains(klassName, "XMLDocumentFragmentScannerImpl") 
-							&& StringUtils.equals(trace[i].getMethodName(), "scanDocument")) {
+					if((StringUtils.contains(klassName, "XMLDocumentFragmentScannerImpl") 
+							&& StringUtils.equals(trace[i].getMethodName(), "scanDocument"))
+							|| (StringUtils.contains(klassName, "XMLEntityManager") 
+									&& StringUtils.equals(trace[i].getMethodName(), "setupCurrentEntity"))) {
 						intCodeResultBean.getMetaData().setTriggerViaXXE(true);
 						logger.log(LogLevel.DEBUG, String.format("Printing stack trace for xxe event : %s : %s", intCodeResultBean.getId(), Arrays
 								.asList(trace)), ProcessorThread.class.getName());
