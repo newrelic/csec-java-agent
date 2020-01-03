@@ -157,6 +157,15 @@
 									<pattern>com.google.gson.</pattern>
 									<shadedPattern>sun.reflect.com.google.gson.</shadedPattern>
 								</relocation>
+
+								<relocation>
+									<pattern>junit.</pattern>
+									<shadedPattern>sun.reflect.junit.</shadedPattern>
+								</relocation>
+								<relocation>
+									<pattern>net.bytebuddy.</pattern>
+									<shadedPattern>sun.reflect.net.bytebuddy.</shadedPattern>
+								</relocation>
 								<relocation>
 									<pattern>org.apache.commons.</pattern>
 									<shadedPattern>sun.reflect.org.apache.commons.</shadedPattern>
@@ -164,6 +173,11 @@
 										<exclude>org/apache/commons/httpclient/**/*</exclude>
 									</excludes>
 								</relocation>
+								<relocation>
+									<pattern>org.</pattern>
+									<shadedPattern>sun.reflect.org.</shadedPattern>
+								</relocation>
+
 							</relocations>
 						</configuration>
 
