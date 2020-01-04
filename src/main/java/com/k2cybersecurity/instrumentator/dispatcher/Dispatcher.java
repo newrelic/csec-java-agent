@@ -141,7 +141,9 @@ public class Dispatcher implements Runnable {
 		JSONObject object = new JSONObject();
 		object.put("name", ldapOperationalBean.getName());
 		object.put("filter", ldapOperationalBean.getFilter());
-		return null;
+		params.add(object);
+		eventBean.setParameters(params);
+		return eventBean;
 	}
 
 	private JavaAgentEventBean prepareFileIntegrityEvent(JavaAgentEventBean eventBean,

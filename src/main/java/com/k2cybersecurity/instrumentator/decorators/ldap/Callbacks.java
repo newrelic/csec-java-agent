@@ -18,19 +18,15 @@ public class Callbacks {
 
 	public static void doOnEnter(String sourceString, String className, String methodName, Object obj, Object[] args,
 			String executionId) {
-		System.out.println("OnEnter :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj
-				+ " - eid : " + executionId);
 		logger.log(LogLevel.INFO, "OnEnter :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj
 				+ " - eid : " + executionId, Callbacks.class.getName());
 		if (ThreadLocalHttpMap.getInstance().getHttpRequest() != null && args.length != 0) {
 			
 			String name = args[0].toString();
-			logger.log(LogLevel.INFO, "name field : "+name, Callbacks.class.getName());
 			if (StringUtils.isNotBlank(name)) {
 				LDAPOperationalBean ldapOperationalBean = new LDAPOperationalBean(name, className, sourceString,
 						executionId, Instant.now().toEpochMilli());
 				String filter = args[1].toString();
-				logger.log(LogLevel.INFO, "filter field : "+filter, Callbacks.class.getName());
 				if (StringUtils.isNotBlank(filter)) {
 					ldapOperationalBean.setFilter(filter);
 				}

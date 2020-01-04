@@ -9,7 +9,11 @@ import static net.bytebuddy.matcher.ElementMatchers.named;
 import static net.bytebuddy.matcher.ElementMatchers.not;
 import static net.bytebuddy.matcher.ElementMatchers.returns;
 
+import java.io.InputStream;
 import java.net.URISyntaxException;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.security.AccessController;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -27,13 +31,15 @@ import com.k2cybersecurity.intcodeagent.websocket.WSClient;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.type.TypeDescription;
+import net.bytebuddy.dynamic.ClassFileLocator;
 import net.bytebuddy.dynamic.DynamicType;
+import net.bytebuddy.dynamic.loading.ClassLoadingStrategy;
 import net.bytebuddy.utility.JavaModule;
 
 public class InstrumentationUtils {
-	
+
 	private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
-	
+
 	public static AgentBuilder doInstrument(AgentBuilder builder, Map<String, List<String>> hookMap,
 			String typeOfHook) {
 		for (Map.Entry<String, List<String>> entry : hookMap.entrySet()) {
@@ -64,38 +70,55 @@ public class InstrumentationUtils {
 							System.out.println(String.format("Instrumenting : %s::%s for key : %s : %s", sourceClass,
 									method, (sourceClass + "." + method), typeDescription.getName()));
 							Class methodEntryDecorator = Class.forName(
-									Hooks.DECORATOR_ENTRY.get(sourceClass + "." + method) + "." + "MethodEntry", true, classLoader);
-							System.out.println("methodEntryDecorator class loader : "+methodEntryDecorator.getClassLoader() + " : "  + classLoader);
+									Hooks.DECORATOR_ENTRY.get(sourceClass + "." + method) + "." + "MethodEntry", true,
+									classLoader);
+
 							Class methodExitDecorator = Class.forName(
-									Hooks.DECORATOR_ENTRY.get(sourceClass + "." + method) + "." + "MethodExit", true, classLoader);
+									Hooks.DECORATOR_ENTRY.get(sourceClass + "." + method) + "." + "MethodExit", true,
+									classLoader);
 							Class methodVoidExitDecorator = Class.forName(
-									Hooks.DECORATOR_ENTRY.get(sourceClass + "." + method) + "." + "MethodVoidExit", true, classLoader);
+									Hooks.DECORATOR_ENTRY.get(sourceClass + "." + method) + "." + "MethodVoidExit",
+									true, classLoader);
 
 							Class staticMethodEntryDecorator = Class.forName(
-									Hooks.DECORATOR_ENTRY.get(sourceClass + "." + method) + "." + "StaticMethodEntry", true, classLoader);
+									Hooks.DECORATOR_ENTRY.get(sourceClass + "." + method) + "." + "StaticMethodEntry",
+									true, classLoader);
 							Class staticMethodExitDecorator = Class.forName(
-									Hooks.DECORATOR_ENTRY.get(sourceClass + "." + method) + "." + "StaticMethodExit", true, classLoader);
+									Hooks.DECORATOR_ENTRY.get(sourceClass + "." + method) + "." + "StaticMethodExit",
+									true, classLoader);
 							Class staticMethodVoidExitDecorator = Class
 									.forName(Hooks.DECORATOR_ENTRY.get(sourceClass + "." + method) + "."
 											+ "StaticMethodVoidExit", true, classLoader);
 
 							Class constructorExitDecorator = Class.forName(
-									Hooks.DECORATOR_ENTRY.get(sourceClass + "." + method) + "." + "ConstructorExit", true, classLoader);
+									Hooks.DECORATOR_ENTRY.get(sourceClass + "." + method) + "." + "ConstructorExit",
+									true, classLoader);
 							K2Instrumentator.hookedAPIs.add(typeDescription.getName() + "." + method);
 							if (method == null) {
 								return builder.visit(Advice.to(staticMethodEntryDecorator, constructorExitDecorator)
 										.on(isConstructor()));
 							}
-							return builder.visit(Advice.to(methodEntryDecorator, methodExitDecorator)
-									.on(not(isStatic()).and(not(isConstructor()).and(not(returns(TypeDescription.VOID)))
-											.and(hasMethodName(method)))))
-									.visit(Advice.to(methodEntryDecorator, methodVoidExitDecorator)
+							return builder
+									.visit(Advice
+											.to(methodEntryDecorator, methodExitDecorator,
+													new K2ClassLocater(methodEntryDecorator.getClassLoader()))
+											.on(not(isStatic())
+													.and(not(isConstructor()).and(not(returns(TypeDescription.VOID)))
+															.and(hasMethodName(method)))))
+									.visit(Advice
+											.to(methodEntryDecorator, methodVoidExitDecorator,
+													new K2ClassLocater(methodEntryDecorator.getClassLoader()))
 											.on(not(isStatic()).and(not(isConstructor())
 													.and(returns(TypeDescription.VOID)).and(hasMethodName(method)))))
-									.visit(Advice.to(staticMethodEntryDecorator, staticMethodExitDecorator).on(
-											isStatic().and(not(isConstructor()).and(not(returns(TypeDescription.VOID)))
-													.and(hasMethodName(method)))))
-									.visit(Advice.to(staticMethodEntryDecorator, staticMethodVoidExitDecorator)
+									.visit(Advice
+											.to(staticMethodEntryDecorator, staticMethodExitDecorator,
+													new K2ClassLocater(methodEntryDecorator.getClassLoader()))
+											.on(isStatic()
+													.and(not(isConstructor()).and(not(returns(TypeDescription.VOID)))
+															.and(hasMethodName(method)))))
+									.visit(Advice
+											.to(staticMethodEntryDecorator, staticMethodVoidExitDecorator,
+													new K2ClassLocater(methodEntryDecorator.getClassLoader()))
 											.on(isStatic().and(not(isConstructor())).and(returns(TypeDescription.VOID))
 													.and(hasMethodName(method))));
 						} catch (ClassNotFoundException e) {

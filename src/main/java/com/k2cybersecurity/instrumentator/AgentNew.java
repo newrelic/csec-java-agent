@@ -23,12 +23,9 @@ public class AgentNew {
 //				.with(AgentBuilder.InitializationStrategy.NoOp.INSTANCE);
 
 		try {
-			System.out.println("class loader for AgentNew : " + AgentNew.class.getClassLoader());
 			Class<?> clazz = Class.forName("com.k2cybersecurity.instrumentator.K2Instrumentator");
 			Method init = clazz.getMethod("init", null);
 			init.invoke(null, null);
-			System.out.println("class loader for K2Instrumentator : " + clazz.getClassLoader());
-
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
 		} catch (NoSuchMethodException e) {
@@ -43,7 +40,7 @@ public class AgentNew {
 			e.printStackTrace();
 		}
 		
-		AgentBuilder agentBuilder = new AgentBuilder.Default()
+		AgentBuilder agentBuilder = new AgentBuilder.Default().ignore(ElementMatchers.none())
 				.ignore(ElementMatchers.nameStartsWith("sun.reflect.com.k2cybersecurity")).disableClassFormatChanges()
 				.with(AgentBuilder.Listener.StreamWriting.toSystemError())
 				.with(AgentBuilder.RedefinitionStrategy.RETRANSFORMATION)

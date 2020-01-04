@@ -24,6 +24,13 @@
 			<groupId>com.googlecode.json-simple</groupId>
 			<artifactId>json-simple</artifactId>
 			<version>1.1.1</version>
+			<exclusions>
+				<!--Exclude transitive dependency to JUnit -->
+				<exclusion>
+					<artifactId>junit</artifactId>
+					<groupId>junit</groupId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 
 
@@ -59,9 +66,9 @@
 		</dependency>
 		<!-- https://mvnrepository.com/artifact/commons-io/commons-io -->
 		<dependency>
-    		<groupId>commons-io</groupId>
-    		<artifactId>commons-io</artifactId>
-    		<version>2.4</version>
+			<groupId>commons-io</groupId>
+			<artifactId>commons-io</artifactId>
+			<version>2.4</version>
 		</dependency>
 		<!-- https://mvnrepository.com/artifact/net.bytebuddy/byte-buddy -->
 		<dependency>
@@ -172,10 +179,6 @@
 									<excludes>
 										<exclude>org/apache/commons/httpclient/**/*</exclude>
 									</excludes>
-								</relocation>
-								<relocation>
-									<pattern>org.</pattern>
-									<shadedPattern>sun.reflect.com.k2cybersecurity.org.</shadedPattern>
 								</relocation>
 
 							</relocations>
