@@ -64,23 +64,23 @@ public class InstrumentationUtils {
 							System.out.println(String.format("Instrumenting : %s::%s for key : %s : %s", sourceClass,
 									method, (sourceClass + "." + method), typeDescription.getName()));
 							Class methodEntryDecorator = Class.forName(
-									Hooks.DECORATOR_ENTRY.get(sourceClass + "." + method) + "." + "MethodEntry", false, classLoader);
-							System.out.println("methodEntryDecorator class loader : "+methodEntryDecorator.getClassLoader());
+									Hooks.DECORATOR_ENTRY.get(sourceClass + "." + method) + "." + "MethodEntry", true, classLoader);
+							System.out.println("methodEntryDecorator class loader : "+methodEntryDecorator.getClassLoader() + " : "  + classLoader);
 							Class methodExitDecorator = Class.forName(
-									Hooks.DECORATOR_ENTRY.get(sourceClass + "." + method) + "." + "MethodExit", false, classLoader);
+									Hooks.DECORATOR_ENTRY.get(sourceClass + "." + method) + "." + "MethodExit", true, classLoader);
 							Class methodVoidExitDecorator = Class.forName(
-									Hooks.DECORATOR_ENTRY.get(sourceClass + "." + method) + "." + "MethodVoidExit", false, classLoader);
+									Hooks.DECORATOR_ENTRY.get(sourceClass + "." + method) + "." + "MethodVoidExit", true, classLoader);
 
 							Class staticMethodEntryDecorator = Class.forName(
-									Hooks.DECORATOR_ENTRY.get(sourceClass + "." + method) + "." + "StaticMethodEntry", false, classLoader);
+									Hooks.DECORATOR_ENTRY.get(sourceClass + "." + method) + "." + "StaticMethodEntry", true, classLoader);
 							Class staticMethodExitDecorator = Class.forName(
-									Hooks.DECORATOR_ENTRY.get(sourceClass + "." + method) + "." + "StaticMethodExit", false, classLoader);
+									Hooks.DECORATOR_ENTRY.get(sourceClass + "." + method) + "." + "StaticMethodExit", true, classLoader);
 							Class staticMethodVoidExitDecorator = Class
 									.forName(Hooks.DECORATOR_ENTRY.get(sourceClass + "." + method) + "."
-											+ "StaticMethodVoidExit", false, classLoader);
+											+ "StaticMethodVoidExit", true, classLoader);
 
 							Class constructorExitDecorator = Class.forName(
-									Hooks.DECORATOR_ENTRY.get(sourceClass + "." + method) + "." + "ConstructorExit", false, classLoader);
+									Hooks.DECORATOR_ENTRY.get(sourceClass + "." + method) + "." + "ConstructorExit", true, classLoader);
 							K2Instrumentator.hookedAPIs.add(typeDescription.getName() + "." + method);
 							if (method == null) {
 								return builder.visit(Advice.to(staticMethodEntryDecorator, constructorExitDecorator)
