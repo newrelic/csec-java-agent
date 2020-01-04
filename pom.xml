@@ -131,19 +131,19 @@
 							<relocations>
 								<relocation>
 									<pattern>org.objectweb</pattern>
-									<shadedPattern>sun.reflect.org.objectweb</shadedPattern>
+									<shadedPattern>sun.reflect.com.k2cybersecurity.org.objectweb</shadedPattern>
 								</relocation>
 								<relocation>
 									<pattern>org.json</pattern>
-									<shadedPattern>sun.reflect.org.json</shadedPattern>
+									<shadedPattern>sun.reflect.com.k2cybersecurity.org.json</shadedPattern>
 								</relocation>
 								<relocation>
 									<pattern>com.fasterxml</pattern>
-									<shadedPattern>sun.reflect.com.fasterxml</shadedPattern>
+									<shadedPattern>sun.reflect.com.k2cybersecurity.com.fasterxml</shadedPattern>
 								</relocation>
 								<relocation>
 									<pattern>com.k2.</pattern>
-									<shadedPattern>sun.reflect.com.k2.</shadedPattern>
+									<shadedPattern>sun.reflect.com.k2cybersecurity.com.k2.</shadedPattern>
 								</relocation>
 								<relocation>
 									<pattern>com.k2cybersecurity.</pattern>
@@ -151,31 +151,31 @@
 								</relocation>
 								<relocation>
 									<pattern>org.java_websocket.</pattern>
-									<shadedPattern>sun.reflect.org.java_websocket.</shadedPattern>
+									<shadedPattern>sun.reflect.com.k2cybersecurity.org.java_websocket.</shadedPattern>
 								</relocation>
 								<relocation>
 									<pattern>com.google.gson.</pattern>
-									<shadedPattern>sun.reflect.com.google.gson.</shadedPattern>
+									<shadedPattern>sun.reflect.com.k2cybersecurity.com.google.gson.</shadedPattern>
 								</relocation>
 
 								<relocation>
 									<pattern>junit.</pattern>
-									<shadedPattern>sun.reflect.junit.</shadedPattern>
+									<shadedPattern>sun.reflect.com.k2cybersecurity.junit.</shadedPattern>
 								</relocation>
 								<relocation>
 									<pattern>net.bytebuddy.</pattern>
-									<shadedPattern>sun.reflect.net.bytebuddy.</shadedPattern>
+									<shadedPattern>sun.reflect.com.k2cybersecurity.net.bytebuddy.</shadedPattern>
 								</relocation>
 								<relocation>
 									<pattern>org.apache.commons.</pattern>
-									<shadedPattern>sun.reflect.org.apache.commons.</shadedPattern>
+									<shadedPattern>sun.reflect.com.k2cybersecurity.org.apache.commons.</shadedPattern>
 									<excludes>
 										<exclude>org/apache/commons/httpclient/**/*</exclude>
 									</excludes>
 								</relocation>
 								<relocation>
 									<pattern>org.</pattern>
-									<shadedPattern>sun.reflect.org.</shadedPattern>
+									<shadedPattern>sun.reflect.com.k2cybersecurity.org.</shadedPattern>
 								</relocation>
 
 							</relocations>

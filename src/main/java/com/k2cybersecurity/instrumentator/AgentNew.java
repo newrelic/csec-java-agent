@@ -16,11 +16,19 @@ import net.bytebuddy.matcher.ElementMatchers;
 public class AgentNew {
 
 	public static void premain(String arguments, Instrumentation instrumentation) {
-		AgentBuilder agentBuilder = new AgentBuilder.Default().ignore(ElementMatchers.none())
-				.with(AgentBuilder.Listener.StreamWriting.toSystemError())
+//		AgentBuilder agentBuilder = new AgentBuilder.Default().ignore(ElementMatchers.none())
+//				.with(AgentBuilder.Listener.StreamWriting.toSystemError())
+//				.with(AgentBuilder.RedefinitionStrategy.RETRANSFORMATION)
+////				.with(AgentBuilder.TypeStrategy.Default.REBASE)
+//				.with(AgentBuilder.InitializationStrategy.NoOp.INSTANCE);
+
+		AgentBuilder agentBuilder = new AgentBuilder.Default().ignore(ElementMatchers.nameStartsWith("com.k2cybersecurity"))
+				.disableClassFormatChanges()
+// 				.with(AgentBuilder.Listener.StreamWriting.toSystemError())
 				.with(AgentBuilder.RedefinitionStrategy.RETRANSFORMATION)
-//				.with(AgentBuilder.TypeStrategy.Default.REBASE)
-				.with(AgentBuilder.InitializationStrategy.NoOp.INSTANCE);
+//				.with(AgentBuilder.TypeStrategy.Default.REDEFINE)
+//				.with(AgentBuilder.InitializationStrategy.NoOp.INSTANCE)
+				;
 
 		agentBuilder = doInstrument(agentBuilder, Hooks.TYPE_BASED_HOOKS, "TYPE_BASED");
 		agentBuilder = doInstrument(agentBuilder, Hooks.NAME_BASED_HOOKS, "NAME_BASED");
