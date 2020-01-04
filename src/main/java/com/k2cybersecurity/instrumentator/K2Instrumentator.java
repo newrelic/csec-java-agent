@@ -63,7 +63,7 @@ public class K2Instrumentator {
 		}
 	}
 
-	private static void init() {
+	public static void init() {
 		try (BufferedReader reader = new BufferedReader(new FileReader(HOST_IP_PROPERTIES_FILE))) {
 			hostip = reader.readLine();
 			if (hostip != null)

@@ -22,21 +22,13 @@ public class AgentNew {
 ////				.with(AgentBuilder.TypeStrategy.Default.REBASE)
 //				.with(AgentBuilder.InitializationStrategy.NoOp.INSTANCE);
 
-		AgentBuilder agentBuilder = new AgentBuilder.Default().ignore(ElementMatchers.nameStartsWith("com.k2cybersecurity"))
-				.disableClassFormatChanges()
-// 				.with(AgentBuilder.Listener.StreamWriting.toSystemError())
-				.with(AgentBuilder.RedefinitionStrategy.RETRANSFORMATION)
-//				.with(AgentBuilder.TypeStrategy.Default.REDEFINE)
-//				.with(AgentBuilder.InitializationStrategy.NoOp.INSTANCE)
-				;
-
-		agentBuilder = doInstrument(agentBuilder, Hooks.TYPE_BASED_HOOKS, "TYPE_BASED");
-		agentBuilder = doInstrument(agentBuilder, Hooks.NAME_BASED_HOOKS, "NAME_BASED");
-		agentBuilder.installOn(instrumentation);
 		try {
+			System.out.println("class loader for AgentNew : " + AgentNew.class.getClassLoader());
 			Class<?> clazz = Class.forName("com.k2cybersecurity.instrumentator.K2Instrumentator");
 			Method init = clazz.getMethod("init", null);
 			init.invoke(null, null);
+			System.out.println("class loader for K2Instrumentator : " + clazz.getClassLoader());
+
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
 		} catch (NoSuchMethodException e) {
@@ -50,6 +42,19 @@ public class AgentNew {
 		} catch (InvocationTargetException e) {
 			e.printStackTrace();
 		}
+		
+		AgentBuilder agentBuilder = new AgentBuilder.Default()
+				.ignore(ElementMatchers.nameStartsWith("com.k2cybersecurity")).disableClassFormatChanges()
+				.with(AgentBuilder.Listener.StreamWriting.toSystemError())
+				.with(AgentBuilder.RedefinitionStrategy.RETRANSFORMATION)
+//				.with(AgentBuilder.TypeStrategy.Default.REDEFINE)
+//				.with(AgentBuilder.InitializationStrategy.NoOp.INSTANCE)
+		;
+
+		agentBuilder = doInstrument(agentBuilder, Hooks.TYPE_BASED_HOOKS, "TYPE_BASED");
+		agentBuilder = doInstrument(agentBuilder, Hooks.NAME_BASED_HOOKS, "NAME_BASED");
+		agentBuilder.installOn(instrumentation);
+		
 	}
 
 	public static void agentmain(String agentArgs, Instrumentation instrumentation)
