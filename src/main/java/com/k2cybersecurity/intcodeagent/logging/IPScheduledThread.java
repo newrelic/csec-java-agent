@@ -1,11 +1,7 @@
 package com.k2cybersecurity.intcodeagent.logging;
 
-import com.k2cybersecurity.instrumentator.AgentNew;
-import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
-import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
-import com.k2cybersecurity.intcodeagent.models.javaagent.JAHealthCheck;
-import com.k2cybersecurity.intcodeagent.websocket.WSClient;
-import org.apache.commons.lang3.StringUtils;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.HOST_IP_PROPERTIES_FILE;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.IPSCHEDULEDTHREAD_;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -16,8 +12,13 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.HOST_IP_PROPERTIES_FILE;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.IPSCHEDULEDTHREAD_;
+import org.apache.commons.lang3.StringUtils;
+
+import com.k2cybersecurity.instrumentator.K2Instrumentator;
+import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
+import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
+import com.k2cybersecurity.intcodeagent.models.javaagent.JAHealthCheck;
+import com.k2cybersecurity.intcodeagent.websocket.WSClient;
 
 public class IPScheduledThread {
 
@@ -41,18 +42,18 @@ public class IPScheduledThread {
 //						channel.write(ByteBuffer.wrap(new JAHealthCheck(AgentNew.JA_HEALTH_CHECK).toString().getBytes()));
 						if (WSClient.getInstance().isOpen()) {
 							WSClient.getInstance()
-									.send(new JAHealthCheck(AgentNew.JA_HEALTH_CHECK).toString());
-							AgentNew.JA_HEALTH_CHECK.setEventDropCount(0);
-							AgentNew.JA_HEALTH_CHECK.setEventProcessed(0);
-							AgentNew.JA_HEALTH_CHECK.setEventSentCount(0);
+									.send(new JAHealthCheck(K2Instrumentator.JA_HEALTH_CHECK).toString());
+							K2Instrumentator.JA_HEALTH_CHECK.setEventDropCount(0);
+							K2Instrumentator.JA_HEALTH_CHECK.setEventProcessed(0);
+							K2Instrumentator.JA_HEALTH_CHECK.setEventSentCount(0);
 						} else {
 							try {
 								WSClient.reconnectWSClient();
 								TimeUnit.SECONDS.sleep(5);
 								if (WSClient.getInstance().isOpen()) {
 									WSClient.getInstance()
-											.send(new JAHealthCheck(AgentNew.JA_HEALTH_CHECK).toString());
-									AgentNew.JA_HEALTH_CHECK.setEventDropCount(0);
+											.send(new JAHealthCheck(K2Instrumentator.JA_HEALTH_CHECK).toString());
+									K2Instrumentator.JA_HEALTH_CHECK.setEventDropCount(0);
 								} else {
 									logger.log(LogLevel.SEVERE, "Failed in WSock reconnection.", IPScheduledThread.class.getName());
 								}
@@ -69,8 +70,8 @@ public class IPScheduledThread {
 					}
 					if (hostip == null || hostip.equals(StringUtils.EMPTY)) {
 						logger.log(LogLevel.DEBUG, "Host ip not found", IPScheduledThread.class.getName());
-					} else if (!AgentNew.hostip.equals(hostip)) {
-						AgentNew.hostip = hostip.trim();
+					} else if (!K2Instrumentator.hostip.equals(hostip)) {
+						K2Instrumentator.hostip = hostip.trim();
 						WSClient.reconnectWSClient();
 						logger.log(LogLevel.DEBUG, "K2-JavaAgent re-installed successfully coz of IP change.", IPScheduledThread.class.getName());
 					} else if (!WSClient.getInstance().isOpen()) {

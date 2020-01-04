@@ -9,6 +9,7 @@ import com.k2cybersecurity.instrumentator.custom.ThreadLocalDBMap;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalExecutionMap;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalHttpMap;
 import com.k2cybersecurity.instrumentator.dispatcher.EventDispatcher;
+import com.k2cybersecurity.instrumentator.utils.CallbackUtils;
 import com.k2cybersecurity.intcodeagent.models.javaagent.FileIntegrityBean;
 import com.k2cybersecurity.intcodeagent.models.javaagent.VulnerabilityCaseType;
 import com.k2cybersecurity.intcodeagent.models.operationalbean.FileOperationalBean;
@@ -42,15 +43,9 @@ public class Callbacks {
     private static void onHttpTermination() {
     	ThreadLocalHttpMap.getInstance().cleanState();
         ThreadLocalDBMap.getInstance().clearAll();
-        checkForFileIntegrity(ThreadLocalExecutionMap.getInstance().getFileLocalMap());
+        CallbackUtils.checkForFileIntegrity(ThreadLocalExecutionMap.getInstance().getFileLocalMap());
+        ThreadLocalExecutionMap.getInstance().getFileLocalMap().clear();
 	}
 
-	private static void checkForFileIntegrity(Map<String, FileIntegrityBean> fileLocalMap) {
-		for(Entry<String, FileIntegrityBean> entry : fileLocalMap.entrySet()) {
-			boolean isExists = new File(entry.getKey()).exists();
-			if(!entry.getValue().getExists().equals(isExists)) {
-				EventDispatcher.dispatch(entry.getValue(), VulnerabilityCaseType.FILE_INTEGRITY);
-			}
-		}
-	}
+	
 }

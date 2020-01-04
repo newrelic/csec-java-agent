@@ -14,8 +14,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import com.k2cybersecurity.instrumentator.AgentNew;
 import com.k2cybersecurity.instrumentator.Hooks;
+import com.k2cybersecurity.instrumentator.K2Instrumentator;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.logging.IPScheduledThread;
@@ -58,7 +58,7 @@ public class InstrumentationUtils {
 							TypeDescription typeDescription, ClassLoader classLoader, JavaModule javaModule) {
 						try {
 
-							if (AgentNew.hookedAPIs.contains(typeDescription.getName() + "." + method)) {
+							if (K2Instrumentator.hookedAPIs.contains(typeDescription.getName() + "." + method)) {
 								return builder;
 							}
 							System.out.println(String.format("Instrumenting : %s::%s for key : %s : %s", sourceClass,
@@ -80,7 +80,7 @@ public class InstrumentationUtils {
 
 							Class constructorExitDecorator = Class.forName(
 									Hooks.DECORATOR_ENTRY.get(sourceClass + "." + method) + "." + "ConstructorExit");
-							AgentNew.hookedAPIs.add(typeDescription.getName() + "." + method);
+							K2Instrumentator.hookedAPIs.add(typeDescription.getName() + "." + method);
 							if (method == null) {
 								return builder.visit(Advice.to(staticMethodEntryDecorator, constructorExitDecorator)
 										.on(isConstructor()));
@@ -112,7 +112,7 @@ public class InstrumentationUtils {
 
 	public static void shutdownLogic() {
 		ShutDownEvent shutDownEvent = new ShutDownEvent();
-		shutDownEvent.setApplicationUUID(AgentNew.APPLICATION_UUID);
+		shutDownEvent.setApplicationUUID(K2Instrumentator.APPLICATION_UUID);
 		shutDownEvent.setStatus("Terminating");
 		EventSendPool.getInstance().sendEvent(shutDownEvent.toString());
 		logger.log(LogLevel.INFO, "Shutting down with status: " + shutDownEvent, InstrumentationUtils.class.getName());

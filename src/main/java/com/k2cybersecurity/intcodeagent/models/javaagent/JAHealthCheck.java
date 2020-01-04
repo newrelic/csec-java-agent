@@ -1,13 +1,10 @@
 package com.k2cybersecurity.intcodeagent.models.javaagent;
 
-import java.net.URL;
-import java.util.Enumeration;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.json.simple.JSONArray;
 
-import com.k2cybersecurity.instrumentator.AgentNew;
-import com.k2cybersecurity.instrumentator.utils.ApplicationInfoUtils;
+import com.k2cybersecurity.instrumentator.K2Instrumentator;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.websocket.JsonConverter;
@@ -51,7 +48,7 @@ public class JAHealthCheck extends AgentBasicInfo{
 		this.eventSentCount = new AtomicInteger(0);
 		this.setInstrumentedMethods(new JSONArray());
 		this.setProtectedDB(new JSONArray());
-		this.setIsHost(AgentNew.APPLICATION_INFO_BEAN.getIsHost());
+		this.setIsHost(K2Instrumentator.APPLICATION_INFO_BEAN.getIsHost());
 //		this.setLibPath();
 		logger.log(LogLevel.INFO,"JA Healthcheck created : "+ this.toString(), JAHealthCheck.class.getName());
 	}
@@ -113,7 +110,7 @@ public class JAHealthCheck extends AgentBasicInfo{
 	 */
 	public void setProtectedServer(String protectedServer) {
 		this.protectedServer = protectedServer;
-		AgentNew.APPLICATION_INFO_BEAN.getServerInfo().setName(protectedServer);
+		K2Instrumentator.APPLICATION_INFO_BEAN.getServerInfo().setName(protectedServer);
 	}
 
 	/**

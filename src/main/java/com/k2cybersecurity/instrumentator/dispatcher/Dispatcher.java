@@ -17,7 +17,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
-import com.k2cybersecurity.instrumentator.AgentNew;
+import com.k2cybersecurity.instrumentator.K2Instrumentator;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalExecutionMap;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
@@ -200,6 +200,7 @@ public class Dispatcher implements Runnable {
 			NoSQLOperationalBean noSQLOperationalBean) {
 		JSONArray params = new JSONArray();
 		ProcessorThread.getMongoDbParameterValue(noSQLOperationalBean.getApiCallArgs(), params);
+		eventBean.setEventCategory("MONGO");
 		eventBean.setParameters(params);
 		return eventBean;
 	}
@@ -286,8 +287,8 @@ public class Dispatcher implements Runnable {
 
 	private static JavaAgentEventBean setGenericProperties(AbstractOperationalBean objectBean,
 			JavaAgentEventBean eventBean) {
-		eventBean.setApplicationUUID(AgentNew.APPLICATION_UUID);
-		eventBean.setPid(AgentNew.VMPID);
+		eventBean.setApplicationUUID(K2Instrumentator.APPLICATION_UUID);
+		eventBean.setPid(K2Instrumentator.VMPID);
 		eventBean.setSourceMethod(objectBean.getSourceMethod());
 		eventBean.setId(objectBean.getExecutionId());
 		eventBean.setStartTime(objectBean.getStartTime());

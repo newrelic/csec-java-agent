@@ -94,6 +94,7 @@ import org.json.simple.parser.ParseException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.k2cybersecurity.instrumentator.AgentNew;
+import com.k2cybersecurity.instrumentator.K2Instrumentator;
 import com.k2cybersecurity.intcodeagent.constants.MapConstants;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
@@ -217,7 +218,7 @@ public class ProcessorThread implements Runnable {
 				long start = System.currentTimeMillis();
 
 				JavaAgentEventBean intCodeResultBean = new JavaAgentEventBean(start, preProcessingTime, sourceString,
-						AgentNew.VMPID, AgentNew.APPLICATION_UUID,
+						K2Instrumentator.VMPID, K2Instrumentator.APPLICATION_UUID,
 						this.threadId + IAgentConstants.COLON_SEPERATOR + this.executionId,
 						EXECUTORS.get(sourceString));
 
@@ -243,7 +244,7 @@ public class ProcessorThread implements Runnable {
 						.equals(VulnerabilityCaseType.valueOf(intCodeResultBean.getCaseType()))
 						&& allowedExtensionFileIO(params)) {
 					intCodeResultBean.setValidationBypass(true);
-					AgentNew.JA_HEALTH_CHECK.incrementDropCount();
+					K2Instrumentator.JA_HEALTH_CHECK.incrementDropCount();
 					return;
 				}
 
@@ -268,7 +269,7 @@ public class ProcessorThread implements Runnable {
 							&& MapConstants.MYSQL_GET_CONNECTION_MAP.get(klassName)
 									.contains(trace[i].getMethodName())) {
 						intCodeResultBean.setValidationBypass(true);
-						AgentNew.JA_HEALTH_CHECK.incrementDropCount();
+						K2Instrumentator.JA_HEALTH_CHECK.incrementDropCount();
 						return;
 					}
 
@@ -295,7 +296,7 @@ public class ProcessorThread implements Runnable {
 					if (HSQL_GET_CONNECTION_MAP.containsKey(klassName)
 							&& HSQL_GET_CONNECTION_MAP.get(klassName).contains(trace[i].getMethodName())) {
 						intCodeResultBean.setValidationBypass(true);
-						AgentNew.JA_HEALTH_CHECK.incrementDropCount();
+						K2Instrumentator.JA_HEALTH_CHECK.incrementDropCount();
 						return;
 					}
 
@@ -342,7 +343,7 @@ public class ProcessorThread implements Runnable {
 	private void generateFileIntegrityEvent() {
 		long start = System.currentTimeMillis();
 		JavaAgentEventBean intCodeResultBean = new JavaAgentEventBean(start, preProcessingTime, sourceString,
-				AgentNew.VMPID, AgentNew.APPLICATION_UUID,
+				K2Instrumentator.VMPID, K2Instrumentator.APPLICATION_UUID,
 				this.threadId + IAgentConstants.COLON_SEPERATOR + this.executionId,
 				VulnerabilityCaseType.FILE_OPERATION);
 		JSONArray param = new JSONArray();
@@ -356,7 +357,7 @@ public class ProcessorThread implements Runnable {
 		intCodeResultBean.setEventGenerationTime(System.currentTimeMillis());
 		intCodeResultBean.getHttpRequest().clearRawRequest();
 		EventSendPool.getInstance().sendEvent(intCodeResultBean.toString());
-		AgentNew.JA_HEALTH_CHECK.incrementEventSentCount();
+		K2Instrumentator.JA_HEALTH_CHECK.incrementEventSentCount();
 	}
 
 	private boolean allowedExtensionFileIO(JSONArray params) {
@@ -1038,14 +1039,14 @@ public class ProcessorThread implements Runnable {
 			try {
 				JSONArray agentJarPaths = new JSONArray();
 //				agentJarPaths.addAll(Agent.jarPathSet);
-				JavaAgentDynamicPathBean dynamicJarPathBean = new JavaAgentDynamicPathBean(AgentNew.APPLICATION_UUID,
+				JavaAgentDynamicPathBean dynamicJarPathBean = new JavaAgentDynamicPathBean(K2Instrumentator.APPLICATION_UUID,
 						System.getProperty(IAgentConstants.USER_DIR), agentJarPaths, intCodeResultBean.getParameters());
 				EventSendPool.getInstance().sendEvent(dynamicJarPathBean.toString());
-				AgentNew.JA_HEALTH_CHECK.incrementEventSentCount();
+				K2Instrumentator.JA_HEALTH_CHECK.incrementEventSentCount();
 			} catch (IllegalStateException e) {
 				logger.log(LogLevel.INFO, "Dropping dynamicJarPathBean event " + intCodeResultBean.getId()
 						+ " due to buffer capacity reached", ProcessorThread.class.getName());
-				AgentNew.JA_HEALTH_CHECK.incrementDropCount();
+				K2Instrumentator.JA_HEALTH_CHECK.incrementDropCount();
 			} catch (Exception e) {
 				logger.log(LogLevel.WARNING, "Error in generateEvent while creating JavaAgentDynamicPathBean: ", e,
 						ProcessorThread.class.getName());
@@ -1059,19 +1060,19 @@ public class ProcessorThread implements Runnable {
 				if (intCodeResultBean.getCaseType().equals(VulnerabilityCaseType.HTTP_REQUEST.getCaseType())) {
 					boolean validationResult = partialSSRFValidator(intCodeResultBean);
 					if (!validationResult) {
-						AgentNew.JA_HEALTH_CHECK.incrementDropCount();
+						K2Instrumentator.JA_HEALTH_CHECK.incrementDropCount();
 						return;
 					}
 				}
 				intCodeResultBean.getHttpRequest().clearRawRequest();
 				EventSendPool.getInstance().sendEvent(intCodeResultBean.toString());
-				AgentNew.JA_HEALTH_CHECK.incrementEventSentCount();
+				K2Instrumentator.JA_HEALTH_CHECK.incrementEventSentCount();
 //				logger.log(LogLevel.INFO,"publish event: " + intCodeResultBean, ProcessorThread.class.getName());
 			} catch (IllegalStateException e) {
 				logger.log(LogLevel.INFO,
 						"Dropping event " + intCodeResultBean.getId() + " due to buffer capacity reached.",
 						ProcessorThread.class.getName());
-				AgentNew.JA_HEALTH_CHECK.incrementDropCount();
+				K2Instrumentator.JA_HEALTH_CHECK.incrementDropCount();
 			} catch (Exception e) {
 				logger.log(LogLevel.WARNING, "Error in generateEvent while creating IntCodeResultBean: ", e,
 						ProcessorThread.class.getName());

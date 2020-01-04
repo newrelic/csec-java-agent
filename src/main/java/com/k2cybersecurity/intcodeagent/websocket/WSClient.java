@@ -7,7 +7,7 @@ import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.k2cybersecurity.instrumentator.AgentNew;
+import com.k2cybersecurity.instrumentator.K2Instrumentator;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.logging.AgentUtils;
@@ -20,11 +20,11 @@ public class WSClient extends WebSocketClient {
 	private static WSClient instance;
 
 	private WSClient() throws URISyntaxException, InterruptedException {
-		super(new URI(String.format("ws://%s:%s", AgentNew.hostip, 54321)));
-		logger.log(LogLevel.INFO, "Creating WSock connection to : " + AgentNew.hostip,
+		super(new URI(String.format("ws://%s:%s", K2Instrumentator.hostip, 54321)));
+		logger.log(LogLevel.INFO, "Creating WSock connection to : " + K2Instrumentator.hostip,
 				WSClient.class.getName());
 		if (!connectBlocking()) {
-			logger.log(LogLevel.SEVERE, "WSock connection to " + AgentNew.hostip + " failed",
+			logger.log(LogLevel.SEVERE, "WSock connection to " + K2Instrumentator.hostip + " failed",
 					WSClient.class.getName());
 		}
 	}
@@ -34,12 +34,12 @@ public class WSClient extends WebSocketClient {
 		logger.log(LogLevel.INFO, "Opened WSock to " + this.getRemoteSocketAddress(), WSClient.class.getName());
 //		logger.log(LogLevel.INFO, "Current WSock ready status : {0},{1},{2}",
 //				new Object[] { this.isOpen(), this.isClosing(), this.isClosed() });
-		super.send(AgentNew.APPLICATION_INFO_BEAN.toString());
+		super.send(K2Instrumentator.APPLICATION_INFO_BEAN.toString());
 //		Agent.allClassLoadersCount.set(0);
 //		Agent.jarPathSet.clear();
 //		logger.log(LogLevel.INFO, "Resetting allClassLoadersCount to " + Agent.allClassLoadersCount.get(),
 //				WSClient.class.getName());
-		logger.log(LogLevel.INFO, "Application info posted : " + AgentNew.APPLICATION_INFO_BEAN,
+		logger.log(LogLevel.INFO, "Application info posted : " + K2Instrumentator.APPLICATION_INFO_BEAN,
 				WSClient.class.getName());
 	}
 

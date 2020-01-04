@@ -1,7 +1,9 @@
 package com.k2cybersecurity.instrumentator.decorators.jettyhandle;
 
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalDBMap;
+import com.k2cybersecurity.instrumentator.custom.ThreadLocalExecutionMap;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalHttpMap;
+import com.k2cybersecurity.instrumentator.utils.CallbackUtils;
 
 public class Callbacks {
 
@@ -20,13 +22,18 @@ public class Callbacks {
 //        System.out.println("OnExit :" + sourceString + " - this : " + obj + " - return : " + returnVal + " - eid : " + exectionId);
 
 //        ThreadLocalHttpMap.getInstance().parseHttpRequest();
-        ThreadLocalHttpMap.getInstance().cleanState();
-        ThreadLocalDBMap.getInstance().clearAll();
+    	onHttpTermination();
     }
 
     public static void doOnError(String sourceString, String className, String methodName, Object obj, Object[] args, Throwable error, String exectionId) throws Throwable {
         System.out.println("OnError :" + sourceString + " - this : " + obj + " - error : " + error + " - eid : " + exectionId);
-        ThreadLocalHttpMap.getInstance().cleanState();
-        ThreadLocalDBMap.getInstance().clearAll();
+        onHttpTermination();
     }
+    
+    private static void onHttpTermination() {
+    	ThreadLocalHttpMap.getInstance().cleanState();
+        ThreadLocalDBMap.getInstance().clearAll();
+        CallbackUtils.checkForFileIntegrity(ThreadLocalExecutionMap.getInstance().getFileLocalMap());
+        ThreadLocalExecutionMap.getInstance().getFileLocalMap().clear();
+	}
 }

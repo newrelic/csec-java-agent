@@ -1,14 +1,21 @@
 package com.k2cybersecurity.intcodeagent.logging;
 
+import java.util.concurrent.Future;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.RejectedExecutionHandler;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import com.k2cybersecurity.instrumentator.AgentNew;
+import com.k2cybersecurity.instrumentator.K2Instrumentator;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.models.javaagent.FileIntegrityBean;
 import com.k2cybersecurity.intcodeagent.models.javaagent.HttpRequestBean;
 import com.k2cybersecurity.intcodeagent.models.javaagent.VulnerabilityCaseType;
-
-import java.util.concurrent.*;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class EventThreadPool {
 
@@ -56,7 +63,7 @@ public class EventThreadPool {
 
 			@Override
 			protected void beforeExecute(Thread t, Runnable r) {
-				AgentNew.JA_HEALTH_CHECK.incrementProcessedCount();
+				K2Instrumentator.JA_HEALTH_CHECK.incrementProcessedCount();
 				super.beforeExecute(t, r);
 			}
 
@@ -126,8 +133,8 @@ public class EventThreadPool {
 		 * @throws RejectedExecutionException always
 		 */
 		public void rejectedExecution(Runnable r, ThreadPoolExecutor e) {
-			AgentNew.JA_HEALTH_CHECK.incrementDropCount();
-			AgentNew.JA_HEALTH_CHECK.incrementProcessedCount();
+			K2Instrumentator.JA_HEALTH_CHECK.incrementDropCount();
+			K2Instrumentator.JA_HEALTH_CHECK.incrementProcessedCount();
 //			logger.log(LogLevel.FINE,"Event Task " + r.toString() + " rejected from  " + e.toString(), EventThreadPool.class.getName());
 		}
 	}

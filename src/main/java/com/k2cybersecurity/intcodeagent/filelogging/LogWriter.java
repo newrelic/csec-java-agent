@@ -13,7 +13,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang3.StringUtils;
 
-import com.k2cybersecurity.instrumentator.AgentNew;
+import com.k2cybersecurity.instrumentator.K2Instrumentator;
 import com.k2cybersecurity.intcodeagent.properties.K2JALogProperties;
 
 public class LogWriter implements Runnable {
@@ -56,7 +56,7 @@ public class LogWriter implements Runnable {
 	private static final File currentLogFile;
 
 	static {
-		fileName = "/etc/k2-adp/logs/k2_java_agent-" + AgentNew.APPLICATION_UUID + ".log";
+		fileName = "/etc/k2-adp/logs/k2_java_agent-" + K2Instrumentator.APPLICATION_UUID + ".log";
 		currentLogFile = new File(fileName);
 		currentLogFileName = fileName;
 		try {

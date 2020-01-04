@@ -3,6 +3,8 @@ package com.k2cybersecurity.instrumentator.dispatcher;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalDBMap;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalExecutionMap;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalHttpMap;
+import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
+import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.logging.DeployedApplication;
 import com.k2cybersecurity.intcodeagent.models.javaagent.AgentMetaData;
 import com.k2cybersecurity.intcodeagent.models.javaagent.FileIntegrityBean;
@@ -16,6 +18,8 @@ import java.util.List;
 
 public class EventDispatcher {
 
+	private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
+	
 	public static void dispatch(AbstractOperationalBean objectBean, VulnerabilityCaseType vulnerabilityCaseType){
 		boolean ret = ThreadLocalHttpMap.getInstance().parseHttpRequest();
 		if(!ret) {
@@ -24,7 +28,9 @@ public class EventDispatcher {
 		}
 		// Place dispatch here
 //		printDispatch(objectBean);
-
+		if(vulnerabilityCaseType.equals(VulnerabilityCaseType.LDAP)) {
+			logger.log(LogLevel.INFO, objectBean.toString(), EventDispatcher.class.getName());
+		}
 		// TODO: implement check if the object bean is logically enpty based on case type or implement a isEmpty method in each operation bean.
 		if(!objectBean.isEmpty()) {
 			DispatcherPool.getInstance().dispatchEvent(new HttpRequestBean(ThreadLocalExecutionMap.getInstance().getHttpRequestBean()),
