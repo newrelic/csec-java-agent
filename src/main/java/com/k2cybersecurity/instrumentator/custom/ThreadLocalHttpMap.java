@@ -117,7 +117,7 @@ public class ThreadLocalHttpMap {
             isHttpRequestParsed = true;
             return true;
         } catch (Exception e) {
-            e.printStackTrace();
+//            e.printStackTrace();
         } finally {
             System.out.println("RAW Intercepted Request : " + ThreadLocalExecutionMap.getInstance().getHttpRequestBean());
         }
@@ -146,7 +146,9 @@ public class ThreadLocalHttpMap {
             Class requestClass = httpRequest.getClass();
 
             Method getHeaderNames = requestClass.getMethod("getHeaderNames", null);
+            getHeaderNames.setAccessible(true);
             Method getHeaders = requestClass.getMethod("getHeaders", String.class);
+            getHeaders.setAccessible(true);
 
             Enumeration<String> attribs = ((Enumeration<String>) getHeaderNames.invoke(httpRequest, null));
             while (attribs.hasMoreElements()) {
