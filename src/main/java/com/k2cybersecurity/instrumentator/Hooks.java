@@ -17,6 +17,7 @@ public class Hooks {
 		// HTTP request hooks
 		TYPE_BASED_HOOKS.put("javax.servlet.GenericServlet", Arrays.asList("service"));
 		TYPE_BASED_HOOKS.put("javax.servlet.ServletInputStream", Arrays.asList("read"));
+		TYPE_BASED_HOOKS.put("javax.servlet.ServletOutputStream", Arrays.asList("print", "println", "write", null));
 
 		// SQL hooks
 		TYPE_BASED_HOOKS.put("java.sql.Statement",
@@ -78,6 +79,16 @@ public class Hooks {
 				"com.k2cybersecurity.instrumentator.decorators.httpservice");
 		DECORATOR_ENTRY.put("javax.servlet.ServletInputStream.read",
 				"com.k2cybersecurity.instrumentator.decorators.servletinputstream");
+
+		DECORATOR_ENTRY.put("javax.servlet.ServletOutputStream.print",
+				"com.k2cybersecurity.instrumentator.decorators.servletoutputstream");
+		DECORATOR_ENTRY.put("javax.servlet.ServletOutputStream.println",
+				"com.k2cybersecurity.instrumentator.decorators.servletoutputstream");
+		DECORATOR_ENTRY.put("javax.servlet.ServletOutputStream.write",
+				"com.k2cybersecurity.instrumentator.decorators.servletoutputstream");
+
+		DECORATOR_ENTRY.put("javax.servlet.ServletOutputStream.null",
+				"com.k2cybersecurity.instrumentator.decorators.servletoutputstream");
 
 		// SQL Create
 		DECORATOR_ENTRY.put("java.sql.Connection.nativeSQL" , "com.k2cybersecurity.instrumentator.decorators.sqlcreate");

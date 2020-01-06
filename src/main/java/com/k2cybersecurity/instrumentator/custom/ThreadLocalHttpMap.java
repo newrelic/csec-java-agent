@@ -26,9 +26,9 @@ public class ThreadLocalHttpMap {
 
     private Object httpResponse;
 
-    private boolean isHttpResposeParsed = false;
-
     private ByteBuffer byteBuffer;
+
+    private StringBuilder outputBodyBuilder;
 
     private int bufferOffset = 0;
 
@@ -42,6 +42,7 @@ public class ThreadLocalHttpMap {
 
     private ThreadLocalHttpMap() {
         this.byteBuffer = ByteBuffer.allocate(1024 * 8);
+        this.outputBodyBuilder = new StringBuilder();
     }
 
     public static ThreadLocalHttpMap getInstance() {
@@ -66,10 +67,6 @@ public class ThreadLocalHttpMap {
 
     public boolean isHttpRequestParsed() {
         return isHttpRequestParsed;
-    }
-
-    public boolean isHttpResposeParsed() {
-        return isHttpResposeParsed;
     }
 
     public boolean parseHttpRequest() {
@@ -136,18 +133,13 @@ public class ThreadLocalHttpMap {
 
     public boolean parseHttpResponse() {
         // TODO : To be implemented
-        if (httpRequest == null) {
-            System.out.println("No HTTP request found for current context");
-            return false;
-        }
+//        if (httpResponse == null) {
+//            System.out.println("No HTTP response found for current context");
+//            return false;
+//        }
 
-        if (!isHttpRequestParsed) {
-            System.out.println("HTTP request already parsed for current context");
-            updateBody();
-            return true;
-        }
-
-        return false;
+        updateResponseBody();
+        return true;
     }
 
     public void processHeaders(Map<String, String> headers, Object httpRequest) {
@@ -200,12 +192,74 @@ public class ThreadLocalHttpMap {
     }
 
 
+    public void insertToResponseBufferByte(byte b) {
+        try {
+            outputBodyBuilder.append(b);
+//            System.out.println("inserting : " + b);
+        } catch (Exception e) {
+            e.printStackTrace();
+            // Buffer full. discard data.
+        }
+    }
+
+    public void insertToResponseBufferByte(byte[] b) {
+        try {
+            outputBodyBuilder.append(new String(b));
+//            System.out.println("inserting : " + Arrays.asList(b));
+        } catch (Exception e) {
+            e.printStackTrace();
+            // Buffer full. discard data.
+        }
+    }
+
+    public void insertToResponseBufferByte(byte[] b, int offset, int limit) {
+        try {
+            outputBodyBuilder.append(new String(b, offset, limit));
+//            System.out.println("inserting : " + Arrays.asList(b));
+        } catch (Exception e) {
+            e.printStackTrace();
+            // Buffer full. discard data.
+        }
+    }
+
+    public void insertToResponseBuffer(Object b) {
+        try {
+            outputBodyBuilder.append(b);
+//            System.out.println("inserting : " + Arrays.asList(b));
+        } catch (Exception e) {
+            e.printStackTrace();
+            // Buffer full. discard data.
+        }
+    }
+
+    public void insertToResponseBufferWithLF(Object b) {
+        try {
+            outputBodyBuilder.append(b);
+            outputBodyBuilder.append(StringUtils.LF);
+//            System.out.println("inserting : " + Arrays.asList(b));
+        } catch (Exception e) {
+            e.printStackTrace();
+            // Buffer full. discard data.
+        }
+    }
+
+
     public void updateBody() {
         try {
             if (byteBuffer.position() > bufferOffset) {
                 String oldBody = ThreadLocalExecutionMap.getInstance().getHttpRequestBean().getBody();
                 ThreadLocalExecutionMap.getInstance().getHttpRequestBean().setBody(oldBody + new String(byteBuffer.array(), bufferOffset, byteBuffer.position()));
                 bufferOffset = byteBuffer.position();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void updateResponseBody() {
+        try {
+            if (outputBodyBuilder.length() > ThreadLocalExecutionMap.getInstance().getHttpRequestBean().getResponseBody().length()) {
+                ThreadLocalExecutionMap.getInstance().getHttpRequestBean().setResponseBody(outputBodyBuilder.toString());
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -220,8 +274,8 @@ public class ThreadLocalHttpMap {
         httpRequest = null;
         isHttpRequestParsed = false;
         httpResponse = null;
-        isHttpResposeParsed = false;
         bufferOffset = 0;
         byteBuffer = ByteBuffer.allocate(1024 * 8);
+        outputBodyBuilder = new StringBuilder();
     }
 }

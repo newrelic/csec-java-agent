@@ -37,14 +37,14 @@ public class Callbacks {
 		//        System.out.println("OnExit :" + sourceString + " - this : " + obj + " - return : " + returnVal + " - eid : " + exectionId);
 
 		//        ThreadLocalHttpMap.getInstance().parseHttpRequest();
-//		if (!ThreadLocalOperationLock.getInstance().isAcquired()) {
-//			try {
-//				ThreadLocalOperationLock.getInstance().acquire();
-//				onHttpTermination();
-//			} finally {
-//				ThreadLocalOperationLock.getInstance().release();
-//			}
-//		}
+		if (!ThreadLocalOperationLock.getInstance().isAcquired()) {
+			try {
+				ThreadLocalOperationLock.getInstance().acquire();
+				onHttpTermination();
+			} finally {
+				ThreadLocalOperationLock.getInstance().release();
+			}
+		}
 
 	}
 
@@ -63,10 +63,15 @@ public class Callbacks {
 	}
 
 	private static void onHttpTermination() {
+		printReponse();
 		ThreadLocalHttpMap.getInstance().cleanState();
 		ThreadLocalDBMap.getInstance().clearAll();
 		CallbackUtils.checkForFileIntegrity(ThreadLocalExecutionMap.getInstance().getFileLocalMap());
 		ThreadLocalExecutionMap.getInstance().getFileLocalMap().clear();
 	}
 
+	private static void printReponse() {
+		ThreadLocalHttpMap.getInstance().parseHttpResponse();
+		System.out.println("Response of intercept : " + ThreadLocalExecutionMap.getInstance().getHttpRequestBean().getResponseBody());
+	}
 }

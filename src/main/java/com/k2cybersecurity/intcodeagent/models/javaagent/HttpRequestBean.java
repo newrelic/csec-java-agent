@@ -46,6 +46,8 @@ public class HttpRequestBean {
 
 	private String contextPath;
 
+	private String responseBody;
+
 	public HttpRequestBean() {
 		this.rawRequest = StringUtils.EMPTY;
 		this.generationTime = 0;
@@ -56,6 +58,7 @@ public class HttpRequestBean {
 		this.headers = new JSONObject();
 		this.fileExist = new HashMap<String, FileIntegrityBean>();
 		this.contextPath = StringUtils.EMPTY;
+		this.responseBody = StringUtils.EMPTY;
 	}
 
 	public HttpRequestBean(HttpRequestBean servletInfo) {
@@ -68,6 +71,7 @@ public class HttpRequestBean {
 		this.url = servletInfo.getUrl();
 		this.headers = new JSONObject(servletInfo.getHeaders());
 		this.contextPath = servletInfo.contextPath;
+		this.responseBody = servletInfo.responseBody;
 		populateHttpRequest();
 	}
 
@@ -109,6 +113,11 @@ public class HttpRequestBean {
 	public String getBody() {
 		return this.body;
 	}
+
+	public String getResponseBody() {
+		return this.responseBody;
+	}
+
 
 //	/**
 //	 * @param body the body to set
@@ -284,5 +293,9 @@ public class HttpRequestBean {
 
 	public void setBody(String body) {
 		this.body = body;
+	}
+
+	public void setResponseBody(String responseBody) {
+		this.responseBody = responseBody;
 	}
 }
