@@ -19,7 +19,10 @@ public class Callbacks {
 		if (!ThreadLocalOperationLock.getInstance().isAcquired()) {
 			try {
 				ThreadLocalOperationLock.getInstance().acquire();
-				if (args != null && args.length == 2) {
+				if (args != null && args.length == 2
+						&& ThreadLocalHttpMap.getInstance().getHttpRequest() == null
+						&& ThreadLocalHttpMap.getInstance().getHttpResponse() == null) {
+
 					ThreadLocalHttpMap.getInstance().setHttpRequest(args[0]);
 					ThreadLocalHttpMap.getInstance().setHttpResponse(args[1]);
 				}

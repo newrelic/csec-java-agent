@@ -104,6 +104,14 @@ public class ThreadLocalHttpMap {
             getRequestURI.setAccessible(true);
             httpRequestBean.setUrl((String) getRequestURI.invoke(httpRequest, null));
 
+            Method getQueryString = requestClass.getMethod("getQueryString");
+            getQueryString.setAccessible(true);
+            String queryString = (String) getQueryString.invoke(httpRequest, null);
+
+            if(StringUtils.isNotBlank(queryString)) {
+                httpRequestBean.setUrl(httpRequestBean.getUrl() + "?" + queryString);
+            }
+
             Method getServletContext = requestClass.getMethod("getServletContext");
             getServletContext.setAccessible(true);
             Object servletContext = getServletContext.invoke(httpRequest, null);
