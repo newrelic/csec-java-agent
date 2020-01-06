@@ -52,13 +52,6 @@ public class InstrumentationUtils {
 							System.out.println(String.format("Came to instrument : %s::%s for key : %s : %s", sourceClass,
 									method, (sourceClass + "." + method), typeDescription.getName()));
 
-
-							// TODO: May need to pass the classloader to change the System Properties.
-							// Classloader Adjustments
-							if(classLoadingAdjustments(typeDescription.getName())){
-								return builder;
-							}
-
 							if (K2Instrumentator.hookedAPIs.contains(typeDescription.getName() + "." + method)) {
 								return builder;
 							}

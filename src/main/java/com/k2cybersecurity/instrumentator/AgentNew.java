@@ -53,6 +53,7 @@ public class AgentNew {
 
 		agentBuilder = doInstrument(agentBuilder, Hooks.TYPE_BASED_HOOKS, "TYPE_BASED");
 		agentBuilder = doInstrument(agentBuilder, Hooks.NAME_BASED_HOOKS, "NAME_BASED");
+
 		agentBuilder.installOn(instrumentation);
 		
 	}

@@ -65,6 +65,12 @@ public class Hooks {
 		// Jetty Servlet Hooks
 		NAME_BASED_HOOKS.put("org.eclipse.jetty.server.Handler", Collections.singletonList("handle"));
 
+		// JBoss Classloading Hook
+		NAME_BASED_HOOKS.put("org.jboss.modules.Main", Collections.singletonList("main"));
+
+		// OSGi Classloading Hook
+		NAME_BASED_HOOKS.put("org.osgi.framework.Bundle", Arrays.asList("start", "update"));
+
 		/** ------------------------------------  Decorators ------------------------------------------------**/
 
 		// HTTP request
@@ -167,5 +173,14 @@ public class Hooks {
 
 		// Jetty Servlet
 		DECORATOR_ENTRY.put("org.eclipse.jetty.server.Handler.handle", "com.k2cybersecurity.instrumentator.decorators.jettyhandle");
+
+		// JBoss Classloading
+		DECORATOR_ENTRY.put("org.jboss.modules.Main.main", "com.k2cybersecurity.instrumentator.decorators.jbossadjustments");
+
+		// OSGi Classloading
+		DECORATOR_ENTRY.put("org.osgi.framework.Bundle.start", "com.k2cybersecurity.instrumentator.decorators.osgiadjustments");
+		DECORATOR_ENTRY.put("org.osgi.framework.Bundle.update", "com.k2cybersecurity.instrumentator.decorators.osgiadjustments");
+
+
 	}
 }
