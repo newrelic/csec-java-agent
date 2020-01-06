@@ -119,13 +119,14 @@ public class ThreadLocalHttpMap {
             Method getContextPath = servletContext.getClass().getMethod("getContextPath");
             getContextPath.setAccessible(true);
             String contextPath = (String) getContextPath.invoke(servletContext, null);
+
             httpRequestBean.setContextPath(contextPath);
             ServletContextInfo.getInstance().processServletContext(servletContext, contextPath);
             updateBody();
             isHttpRequestParsed = true;
             return true;
         } catch (Exception e) {
-//            e.printStackTrace();
+            e.printStackTrace();
         } finally {
             System.out.println("RAW Intercepted Request : " + ThreadLocalExecutionMap.getInstance().getHttpRequestBean());
         }

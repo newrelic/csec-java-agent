@@ -168,6 +168,30 @@ public class ServletContextInfo {
             setServerInfo(serverInfo);
         }
 
+        if(StringUtils.isBlank(contextPath)){
+            try {
+                Method getClassLoader = servletContext.getClass().getMethod("getClassLoader");
+                getClassLoader.setAccessible(true);
+                ClassLoader classLoader = (ClassLoader) getClassLoader.invoke(servletContext, null);
+                if(classLoader != null) {
+                    applicationDir = classLoader.getResource("").toString();
+                    if(StringUtils.startsWithIgnoreCase(applicationDir, "file:" )) {
+                        applicationDir = StringUtils.removeStart(applicationDir, "file:");
+                    } else if(StringUtils.startsWithIgnoreCase(applicationDir, "jar:file:" )){
+                        applicationDir = StringUtils.substringBetween(applicationDir, "jar:file:", "!");
+                    }
+                } else {
+                    System.out.println("Unable to get the application directory. Suspicion is that this is an embedded application.");
+                    applicationDir = StringUtils.EMPTY;
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+
+        }
+
+
         if (StringUtils.isNotBlank(applicationName)) {
             putContextInfo(contextPath, applicationDir, applicationName);
         } else {
