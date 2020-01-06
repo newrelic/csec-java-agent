@@ -1,10 +1,19 @@
 package com.k2cybersecurity.instrumentator.dispatcher;
 
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.ALLOWED_EXTENSIONS;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.INVOKE_0;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.JAVA_IO_FILE_INPUTSTREAM_OPEN;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.READ_OBJECT;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.REFLECT_NATIVE_METHOD_ACCESSOR_IMPL;
+import com.k2cybersecurity.instrumentator.K2Instrumentator;
+import com.k2cybersecurity.instrumentator.custom.ThreadLocalExecutionMap;
+import com.k2cybersecurity.instrumentator.utils.HashGenerator;
+import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
+import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
+import com.k2cybersecurity.intcodeagent.logging.DeployedApplication;
+import com.k2cybersecurity.intcodeagent.logging.IAgentConstants;
+import com.k2cybersecurity.intcodeagent.logging.ProcessorThread;
+import com.k2cybersecurity.intcodeagent.models.javaagent.*;
+import com.k2cybersecurity.intcodeagent.models.operationalbean.*;
+import com.k2cybersecurity.intcodeagent.websocket.EventSendPool;
+import org.apache.commons.lang3.StringUtils;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
 
 import java.io.ObjectInputStream;
 import java.time.Instant;
@@ -13,29 +22,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.lang3.StringUtils;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-
-import com.k2cybersecurity.instrumentator.K2Instrumentator;
-import com.k2cybersecurity.instrumentator.custom.ThreadLocalExecutionMap;
-import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
-import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
-import com.k2cybersecurity.intcodeagent.logging.DeployedApplication;
-import com.k2cybersecurity.intcodeagent.logging.IAgentConstants;
-import com.k2cybersecurity.intcodeagent.logging.ProcessorThread;
-import com.k2cybersecurity.intcodeagent.models.javaagent.AgentMetaData;
-import com.k2cybersecurity.intcodeagent.models.javaagent.FileIntegrityBean;
-import com.k2cybersecurity.intcodeagent.models.javaagent.HttpRequestBean;
-import com.k2cybersecurity.intcodeagent.models.javaagent.JavaAgentEventBean;
-import com.k2cybersecurity.intcodeagent.models.javaagent.VulnerabilityCaseType;
-import com.k2cybersecurity.intcodeagent.models.operationalbean.AbstractOperationalBean;
-import com.k2cybersecurity.intcodeagent.models.operationalbean.FileOperationalBean;
-import com.k2cybersecurity.intcodeagent.models.operationalbean.ForkExecOperationalBean;
-import com.k2cybersecurity.intcodeagent.models.operationalbean.LDAPOperationalBean;
-import com.k2cybersecurity.intcodeagent.models.operationalbean.NoSQLOperationalBean;
-import com.k2cybersecurity.intcodeagent.models.operationalbean.SQLOperationalBean;
-import com.k2cybersecurity.intcodeagent.websocket.EventSendPool;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.*;
 
 public class Dispatcher implements Runnable {
 
@@ -74,10 +61,22 @@ public class Dispatcher implements Runnable {
 		}
 		
 		if(vulnerabilityCaseType.equals(VulnerabilityCaseType.APP_INFO)) {
-            // TODO: Handle SHA & size calculation for deployed application bean here.
             DeployedApplication deployedApplication = (DeployedApplication) event;
+			System.out.println("App Info received : " + deployedApplication);
+			HashGenerator.updateShaAndSize(deployedApplication);
+			System.out.println("Processed App Info : " + deployedApplication);
+			ApplicationInfoBean applicationInfoBean = K2Instrumentator.APPLICATION_INFO_BEAN;
 
-            return;
+			applicationInfoBean.getServerInfo().setName(deployedApplication.getServerInfo());
+
+			if(!applicationInfoBean.getServerInfo().getDeployedApplications().contains(deployedApplication)) {
+				applicationInfoBean.getServerInfo().getDeployedApplications().add(deployedApplication);
+				EventSendPool.getInstance().sendEvent(applicationInfoBean.toString());
+				System.out.println("============= AppInfo Start ============");
+				System.out.println(applicationInfoBean);
+				System.out.println("============= AppInfo End ============");
+			}
+			return;
         }
 		
 		JavaAgentEventBean eventBean = prepareEvent(httpRequestBean, metaData, vulnerabilityCaseType);
@@ -335,21 +334,23 @@ public class Dispatcher implements Runnable {
 	}
 
 	public void printDispatch() {
-		System.out
-				.println("==========================================================================================");
+		try {
+			System.out.println(
+					"==========================================================================================");
 
-		System.out.println("Intercepted Request : " + httpRequestBean);
+			System.out.println("Intercepted Request : " + httpRequestBean);
 
-		System.out.println("Agent Meta : " + metaData);
+			System.out.println("Agent Meta : " + metaData);
 
-		System.out.println("Intercepted transaction : " + event);
+			System.out.println("Intercepted transaction : " + event);
 
-		System.out.println("Trace : " + Arrays.asList(trace));
+			System.out.println("Trace : " + Arrays.asList(trace));
 
-		System.out.println("vulnerabilityCaseType : " + vulnerabilityCaseType);
+			System.out.println("vulnerabilityCaseType : " + vulnerabilityCaseType);
 
-		System.out
-				.println("==========================================================================================");
+			System.out.println(
+					"==========================================================================================");
+		}catch (Exception e){}
 	}
 
 }

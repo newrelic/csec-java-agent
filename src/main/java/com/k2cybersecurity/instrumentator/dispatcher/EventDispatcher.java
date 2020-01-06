@@ -7,7 +7,6 @@ import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.logging.DeployedApplication;
 import com.k2cybersecurity.intcodeagent.models.javaagent.AgentMetaData;
-import com.k2cybersecurity.intcodeagent.models.javaagent.FileIntegrityBean;
 import com.k2cybersecurity.intcodeagent.models.javaagent.HttpRequestBean;
 import com.k2cybersecurity.intcodeagent.models.javaagent.VulnerabilityCaseType;
 import com.k2cybersecurity.intcodeagent.models.operationalbean.AbstractOperationalBean;
@@ -66,6 +65,8 @@ public class EventDispatcher {
 	public static void dispatch(DeployedApplication deployedApplication,VulnerabilityCaseType vulnerabilityCaseType) {
 		if(!deployedApplication.isEmpty()){
 			DispatcherPool.getInstance().dispatchAppInfo(deployedApplication, vulnerabilityCaseType);
+		} else {
+			System.out.println("Application info found to be empty : " + deployedApplication);
 		}
 	}
 

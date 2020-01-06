@@ -1,14 +1,14 @@
 package com.k2cybersecurity.instrumentator;
 
-import static com.k2cybersecurity.instrumentator.utils.InstrumentationUtils.doInstrument;
+import net.bytebuddy.agent.builder.AgentBuilder;
+import net.bytebuddy.matcher.ElementMatchers;
 
 import java.io.IOException;
 import java.lang.instrument.Instrumentation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
-import net.bytebuddy.agent.builder.AgentBuilder;
-import net.bytebuddy.matcher.ElementMatchers;
+import static com.k2cybersecurity.instrumentator.utils.InstrumentationUtils.doInstrument;
 
 /**
  * Hello world!
@@ -40,9 +40,9 @@ public class AgentNew {
 			e.printStackTrace();
 		}
 		
-		AgentBuilder agentBuilder = new AgentBuilder.Default().ignore(ElementMatchers.none())
+		AgentBuilder agentBuilder = new AgentBuilder.Default()
 				.ignore(ElementMatchers.nameStartsWith("sun.reflect.com.k2cybersecurity")).disableClassFormatChanges()
-				.with(AgentBuilder.Listener.StreamWriting.toSystemError())
+//				.with(AgentBuilder.Listener.StreamWriting.toSystemError())
 				.with(AgentBuilder.RedefinitionStrategy.RETRANSFORMATION)
 //				.with(AgentBuilder.TypeStrategy.Default.REDEFINE)
 //				.with(AgentBuilder.InitializationStrategy.NoOp.INSTANCE)

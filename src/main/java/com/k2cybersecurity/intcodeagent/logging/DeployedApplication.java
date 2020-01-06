@@ -45,24 +45,9 @@ public class DeployedApplication {
 
 	private String contextPath;
 
+	private String serverInfo;
+
 	public DeployedApplication() {
-	}
-
-	public DeployedApplication(String deployedPath, String appName) {
-		this.deployedPath = deployedPath;
-		this.appName = appName;
-	}
-
-	public DeployedApplication(String contextPath , String appName, String deployedPath) {
-		this.contextPath = contextPath;
-		this.deployedPath = deployedPath;
-		this.appName = appName;
-	}
-
-	public DeployedApplication(DeployedApplication deployedApplication) {
-		this.contextPath = deployedApplication.contextPath;
-		this.deployedPath = deployedApplication.deployedPath;
-		this.appName = deployedApplication.appName;
 	}
 
 	/**
@@ -146,6 +131,14 @@ public class DeployedApplication {
 		this.contextPath = contextPath;
 	}
 
+	public String getServerInfo() {
+		return serverInfo;
+	}
+
+	public void setServerInfo(String serverInfo) {
+		this.serverInfo = serverInfo;
+	}
+
 	/* (non-Javadoc)
 	 * @see java.lang.Object#hashCode()
 	 */
@@ -153,8 +146,7 @@ public class DeployedApplication {
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((appName == null) ? 0 : appName.hashCode());
-		result = prime * result + ((deployedPath == null) ? 0 : deployedPath.hashCode());
+		result = prime * result + ((sha256 == null) ? 0 : sha256.hashCode());
 		return result;
 	}
 
@@ -170,20 +162,15 @@ public class DeployedApplication {
 		if (getClass() != obj.getClass())
 			return false;
 		DeployedApplication other = (DeployedApplication) obj;
-		if (appName == null) {
-			if (other.appName != null)
+		if (sha256 == null) {
+			if (other.sha256 != null)
 				return false;
-		} else if (!appName.equals(other.appName))
-			return false;
-		if (deployedPath == null) {
-			if (other.deployedPath != null)
-				return false;
-		} else if (!deployedPath.equals(other.deployedPath))
+		} else if (!sha256.equals(other.sha256))
 			return false;
 		return true;
 	}
 
 	public boolean isEmpty() {
-		return !StringUtils.isAnyBlank(deployedPath, appName, contextPath);
+		return StringUtils.isAnyBlank(deployedPath, appName, contextPath);
 	}
 }

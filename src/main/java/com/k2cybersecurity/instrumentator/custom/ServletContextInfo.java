@@ -42,43 +42,49 @@ public class ServletContextInfo {
     }
 
     public void putContextInfo(String contextPath, String applicationDir) {
-        String appPath = StringUtils.EMPTY;
-        String appName = StringUtils.EMPTY;
+        DeployedApplication app = new DeployedApplication();
+        app.setServerInfo(serverInfo);
         if(StringUtils.isBlank(contextPath)){
-            appName = "ROOT";
-            appPath = applicationDir;
+            app.setContextPath("/");
+            app.setAppName("ROOT");
+            app.setDeployedPath(applicationDir);
         } else {
             Path applicationPath = Paths.get(applicationDir);
             if (StringUtils.equals(contextPath, "/")) {
-                appPath = applicationPath.toString();
-                appName = applicationPath.getFileName().toString();
+                app.setContextPath(contextPath);
+                app.setAppName(applicationPath.getFileName().toString());
+                app.setDeployedPath(applicationPath.toString());
             } else {
-                appPath = applicationPath.getParent().toString();
-                appName = applicationPath.getFileName().toString();
+                app.setContextPath(contextPath);
+                app.setAppName(applicationPath.getFileName().toString());
+                app.setDeployedPath(applicationPath.getParent().toString());
             }
         }
-        DeployedApplication app = new DeployedApplication(contextPath, appName, appPath);
         contextMap.put(contextPath, app);
         EventDispatcher.dispatch(app, VulnerabilityCaseType.APP_INFO);
     }
 
     public void putContextInfo(String contextPath, String applicationDir, String appName) {
-        String appPath = StringUtils.EMPTY;
+        DeployedApplication app = new DeployedApplication();
+        app.setServerInfo(serverInfo);
+        if(StringUtils.isBlank(appName)){
+            app.setAppName("ROOT");
+        } else {
+            app.setAppName(appName);
+        }
 
         if(StringUtils.isBlank(contextPath)){
-            if(StringUtils.isBlank(appName)){
-                appName = "ROOT";
-            }
-            appPath = applicationDir;
+            app.setContextPath("/");
+            app.setDeployedPath(applicationDir);
         } else {
             Path applicationPath = Paths.get(applicationDir);
             if (StringUtils.equals(contextPath, "/")) {
-                appPath = applicationPath.toString();
+                app.setDeployedPath(applicationPath.toString());
             } else {
-                appPath = applicationPath.getParent().toString();
+                app.setDeployedPath(applicationPath.getParent().toString());
             }
+            app.setContextPath(contextPath);
         }
-        DeployedApplication app = new DeployedApplication(contextPath, appName, appPath);
         contextMap.put(contextPath, app);
         EventDispatcher.dispatch(app, VulnerabilityCaseType.APP_INFO);
     }
@@ -111,12 +117,14 @@ public class ServletContextInfo {
         String applicationName = StringUtils.EMPTY;
         String applicationDir = StringUtils.EMPTY;
         String serverInfo = StringUtils.EMPTY;
+
         Method getServletContextName = null;
         Method getContextPath = null;
         Method getRealPath = null;
         Method getServerInfo = null;
         Method getMajorVersion = null;
         Method getMinorVersion = null;
+
         try {
             if (contextMap.containsKey(contextPath)) {
                 return;
@@ -156,15 +164,17 @@ public class ServletContextInfo {
         System.out.println("Application Name : " + applicationName);
         System.out.println("==========================================================================================");
 
+        if (StringUtils.isNotBlank(serverInfo)) {
+            setServerInfo(serverInfo);
+        }
+
         if (StringUtils.isNotBlank(applicationName)) {
             putContextInfo(contextPath, applicationDir, applicationName);
         } else {
             putContextInfo(contextPath, applicationDir);
         }
 
-        if (StringUtils.isNotBlank(serverInfo)) {
-            setServerInfo(serverInfo);
-        }
+
         System.out.println("Current servlet context map : " + ServletContextInfo.getInstance());
     }
 }
