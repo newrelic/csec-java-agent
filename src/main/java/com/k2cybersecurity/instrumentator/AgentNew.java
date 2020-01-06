@@ -15,6 +15,8 @@ import static com.k2cybersecurity.instrumentator.utils.InstrumentationUtils.doIn
  */
 public class AgentNew {
 
+	private static boolean isDynamicAttachment = false;
+
 	public static void premain(String arguments, Instrumentation instrumentation) {
 //		AgentBuilder agentBuilder = new AgentBuilder.Default().ignore(ElementMatchers.none())
 //				.with(AgentBuilder.Listener.StreamWriting.toSystemError())
@@ -24,8 +26,8 @@ public class AgentNew {
 
 		try {
 			Class<?> clazz = Class.forName("com.k2cybersecurity.instrumentator.K2Instrumentator");
-			Method init = clazz.getMethod("init", null);
-			init.invoke(null, null);
+			Method init = clazz.getMethod("init", Boolean.class);
+			init.invoke(null, isDynamicAttachment);
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
 		} catch (NoSuchMethodException e) {
@@ -57,6 +59,7 @@ public class AgentNew {
 
 	public static void agentmain(String agentArgs, Instrumentation instrumentation)
 			throws InstantiationException, IOException {
+		isDynamicAttachment = true;
 		premain(agentArgs, instrumentation);
 	}
 }

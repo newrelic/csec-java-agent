@@ -1,31 +1,5 @@
 package com.k2cybersecurity.instrumentator;
 
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.CGROUP_FILE_NAME;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.CMD_LINE_DIR;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.DIR_SEPERATOR;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.DOCKER_DIR;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.HOST_IP_PROPERTIES_FILE;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.KUBEPODS_DIR;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.LXC_DIR;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.PROC_DIR;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.STAT;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.VMPID_SPLIT_CHAR;
-
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-import java.lang.management.ManagementFactory;
-import java.lang.management.RuntimeMXBean;
-import java.nio.file.Files;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.UUID;
-
-import org.apache.commons.lang3.StringEscapeUtils;
-import org.apache.commons.lang3.StringUtils;
-
 import com.k2cybersecurity.instrumentator.utils.HashGenerator;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
@@ -34,6 +8,18 @@ import com.k2cybersecurity.intcodeagent.models.javaagent.ApplicationInfoBean;
 import com.k2cybersecurity.intcodeagent.models.javaagent.JAHealthCheck;
 import com.k2cybersecurity.intcodeagent.websocket.EventSendPool;
 import com.k2cybersecurity.intcodeagent.websocket.WSClient;
+import org.apache.commons.lang3.StringEscapeUtils;
+import org.apache.commons.lang3.StringUtils;
+
+import java.io.*;
+import java.lang.management.ManagementFactory;
+import java.lang.management.RuntimeMXBean;
+import java.nio.file.Files;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
+
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.*;
 
 public class K2Instrumentator {
 
@@ -63,7 +49,8 @@ public class K2Instrumentator {
 		}
 	}
 
-	public static void init() {
+	public static void init(Boolean isDynamicAttach) {
+		K2Instrumentator.isDynamicAttach = isDynamicAttach;
 		try (BufferedReader reader = new BufferedReader(new FileReader(HOST_IP_PROPERTIES_FILE))) {
 			hostip = reader.readLine();
 			if (hostip != null)
