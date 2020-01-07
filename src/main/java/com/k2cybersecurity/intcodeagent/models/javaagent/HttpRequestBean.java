@@ -50,6 +50,12 @@ public class HttpRequestBean {
 	@JsonIgnore
 	private String responseBody;
 
+	@JsonIgnore
+	private String responseCharacterEncoding;
+
+	@JsonIgnore
+	private String responseCharacterType;
+
 	private int serverPort;
 
 	public HttpRequestBean() {
@@ -64,6 +70,8 @@ public class HttpRequestBean {
 		this.contextPath = StringUtils.EMPTY;
 		this.responseBody = StringUtils.EMPTY;
 		this.serverPort = -1;
+		this.responseCharacterEncoding = StringUtils.EMPTY;
+		this.responseCharacterType = StringUtils.EMPTY;
 	}
 
 	public HttpRequestBean(HttpRequestBean servletInfo) {
@@ -78,6 +86,8 @@ public class HttpRequestBean {
 		this.contextPath = servletInfo.contextPath;
 		this.responseBody = servletInfo.responseBody;
 		this.serverPort = servletInfo.serverPort;
+		this.responseCharacterEncoding = servletInfo.responseCharacterEncoding;
+		this.responseCharacterType = servletInfo.responseCharacterType;
 		populateHttpRequest();
 	}
 
@@ -311,5 +321,25 @@ public class HttpRequestBean {
 	@JsonIgnore
 	public void setResponseBody(String responseBody) {
 		this.responseBody = responseBody;
+	}
+
+	@JsonIgnore
+	public String getResponseCharacterEncoding() {
+		return responseCharacterEncoding;
+	}
+
+	@JsonIgnore
+	public void setResponseCharacterEncoding(String responseCharacterEncoding) {
+		this.responseCharacterEncoding = responseCharacterEncoding;
+	}
+
+	@JsonIgnore
+	public String getResponseCharacterType() {
+		return responseCharacterType;
+	}
+
+	@JsonIgnore
+	public void setResponseCharacterType(String responseCharacterType) {
+		this.responseCharacterType = responseCharacterType;
 	}
 }

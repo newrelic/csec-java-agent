@@ -410,6 +410,12 @@ public class Dispatcher implements Runnable {
 
 			System.out.println("Intercepted Request : " + httpRequestBean);
 
+			System.out.println("Intercepted Response Body : " + httpRequestBean.getResponseBody());
+
+			System.out.println("Intercepted Response Content Type : " + httpRequestBean.getResponseCharacterType());
+
+			System.out.println("Intercepted Response Content Encoding : " + httpRequestBean.getResponseCharacterEncoding());
+
 			System.out.println("Agent Meta : " + metaData);
 
 			System.out.println("Intercepted transaction : " + event);

@@ -34,6 +34,9 @@ public class ThreadLocalHttpMap {
 
     private int bufferOffset = 0;
 
+    private boolean isHttpResponseParsed = false;
+
+
     private static ThreadLocal<ThreadLocalHttpMap> instance =
             new ThreadLocal<ThreadLocalHttpMap>() {
                 @Override
@@ -148,13 +151,38 @@ public class ThreadLocalHttpMap {
 
     public boolean parseHttpResponse() {
         // TODO : To be implemented
-//        if (httpResponse == null) {
-//            System.out.println("No HTTP response found for current context");
-//            return false;
-//        }
+        if (httpResponse == null) {
+            System.out.println("No HTTP response found for current context");
+            return false;
+        }
 
         updateResponseBody();
-        return true;
+
+        try {
+
+            if (isHttpResponseParsed) {
+                System.out.println("HTTP response already parsed for current context");
+                return true;
+            }
+
+            HttpRequestBean httpRequestBean = ThreadLocalExecutionMap.getInstance().getHttpRequestBean();
+
+            Class responseClass = httpResponse.getClass();
+
+            Method getCharacterEncoding = responseClass.getMethod("getCharacterEncoding");
+            getCharacterEncoding.setAccessible(true);
+            httpRequestBean.setResponseCharacterEncoding((String) getCharacterEncoding.invoke(httpResponse, null));
+
+            Method getContentType = responseClass.getMethod("getContentType");
+            getContentType.setAccessible(true);
+            httpRequestBean.setResponseCharacterType((String) getContentType.invoke(httpResponse, null));
+            isHttpResponseParsed = true;
+            return true;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 
     public void processHeaders(Map<String, String> headers, Object httpRequest) {
@@ -318,6 +346,7 @@ public class ThreadLocalHttpMap {
         httpRequest = null;
         isHttpRequestParsed = false;
         httpResponse = null;
+        isHttpResponseParsed = false;
         printWriter = null;
         bufferOffset = 0;
         byteBuffer = ByteBuffer.allocate(1024 * 8);

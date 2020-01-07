@@ -67,8 +67,8 @@ public class Callbacks {
 
 	private static void onHttpTermination(String sourceString, String exectionId) {
 		if(!ThreadLocalHttpMap.getInstance().isEmpty()) {
-			printReponse();
 			ThreadLocalHttpMap.getInstance().parseHttpResponse();
+			printReponse();
 			CallbackUtils.checkForFileIntegrity(ThreadLocalExecutionMap.getInstance().getFileLocalMap());
 //			CallbackUtils.checkForReflectedXSS(ThreadLocalExecutionMap.getInstance().getHttpRequestBean());
 			
