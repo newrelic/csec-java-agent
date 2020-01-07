@@ -26,6 +26,8 @@ public class ThreadLocalHttpMap {
 
     private Object httpResponse;
 
+    private Object printWriter;
+
     private ByteBuffer byteBuffer;
 
     private StringBuilder outputBodyBuilder;
@@ -67,6 +69,14 @@ public class ThreadLocalHttpMap {
 
     public boolean isHttpRequestParsed() {
         return isHttpRequestParsed;
+    }
+
+    public Object getPrintWriter() {
+        return printWriter;
+    }
+
+    public void setPrintWriter(Object printWriter) {
+        this.printWriter = printWriter;
     }
 
     public boolean parseHttpRequest() {
@@ -194,7 +204,7 @@ public class ThreadLocalHttpMap {
 
     public void insertToResponseBufferByte(byte b) {
         try {
-            outputBodyBuilder.append(b);
+            outputBodyBuilder.append((char)b);
 //            System.out.println("inserting : " + b);
         } catch (Exception e) {
             e.printStackTrace();
@@ -221,6 +231,35 @@ public class ThreadLocalHttpMap {
             // Buffer full. discard data.
         }
     }
+
+    public void insertToResponseBufferString(int b) {
+        try {
+            outputBodyBuilder.append((char)b);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void insertToResponseBufferString(char[] b, int offset, int limit) {
+        try {
+            outputBodyBuilder.append(new String(b, offset, limit));
+            //            System.out.println("inserting : " + Arrays.asList(b));
+        } catch (Exception e) {
+            e.printStackTrace();
+            // Buffer full. discard data.
+        }
+    }
+
+    public void insertToResponseBufferString(String b, int offset, int limit) {
+        try {
+            outputBodyBuilder.append(StringUtils.substring(b, offset, limit));
+            //            System.out.println("inserting : " + Arrays.asList(b));
+        } catch (Exception e) {
+            e.printStackTrace();
+            // Buffer full. discard data.
+        }
+    }
+
 
     public void insertToResponseBuffer(Object b) {
         try {
@@ -274,6 +313,7 @@ public class ThreadLocalHttpMap {
         httpRequest = null;
         isHttpRequestParsed = false;
         httpResponse = null;
+        printWriter = null;
         bufferOffset = 0;
         byteBuffer = ByteBuffer.allocate(1024 * 8);
         outputBodyBuilder = new StringBuilder();

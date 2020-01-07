@@ -1,4 +1,4 @@
-package com.k2cybersecurity.instrumentator.decorators.servletoutputstream;
+package com.k2cybersecurity.instrumentator.decorators.printwriter;
 
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalHttpMap;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalOperationLock;
@@ -11,28 +11,22 @@ public class Callbacks {
     public static void doOnEnter(String sourceString, String className, String methodName, Object obj, Object[] args,
                                  String exectionId) {
 
-        if (!ThreadLocalOperationLock.getInstance().isAcquired()) {
+        if (obj == ThreadLocalHttpMap.getInstance().getPrintWriter() && !ThreadLocalOperationLock.getInstance().isAcquired()) {
             try {
                 ThreadLocalOperationLock.getInstance().acquire();
-                System.out.println("OnEnter :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj + " - eid : " + exectionId);
-                if (StringUtils.startsWith(methodName, "print")) {
-                    if (StringUtils.equals(methodName, "print") && args != null && args.length == 1) {
-                        ThreadLocalHttpMap.getInstance()
-                                .insertToResponseBuffer(args[0]);
-                    } else if (StringUtils.equals(methodName, "println") && args != null && args.length == 1) {
-                        ThreadLocalHttpMap.getInstance()
-                                .insertToResponseBufferWithLF(args[0]);
-                    } else if (StringUtils.equals(methodName, "println")) {
-                        ThreadLocalHttpMap.getInstance().insertToResponseBuffer(StringUtils.LF);
-                    }
+//                System.out.println("OnEnter :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj + " - eid : " + exectionId);
+                if (StringUtils.startsWith(methodName, "format")) {
+                    System.out.println("PrintWriter.format intercepted : CUrrently unsupported : ");
                 } else if (StringUtils.equals(methodName, "write")) {
                     if (args != null && args.length == 1 && args[0] instanceof Integer) {
-                        ThreadLocalHttpMap.getInstance().insertToResponseBufferByte((byte) args[0]);
-                    } else if (args != null && args.length == 3) {
-                        ThreadLocalHttpMap.getInstance().insertToResponseBufferByte((byte[]) args[0], (int) args[1], (int) args[2]);
-                    } else if (args != null && args.length == 1) {
-                        ThreadLocalHttpMap.getInstance().insertToResponseBufferByte((byte[]) args[0]);
+                        ThreadLocalHttpMap.getInstance().insertToResponseBufferString((int) args[0]);
+                    } else if (args != null && args.length == 3 && args[0] instanceof String) {
+                        ThreadLocalHttpMap.getInstance().insertToResponseBufferString((String) args[0], (int) args[1], (int) args[2]);
+                    } else if (args != null && args.length == 3 && args[0] instanceof char[]) {
+                        ThreadLocalHttpMap.getInstance().insertToResponseBufferString((char[]) args[0], (int) args[1], (int) args[2]);
                     }
+                } else if (StringUtils.equals(methodName, "newLine")){
+                    ThreadLocalHttpMap.getInstance().insertToResponseBuffer(StringUtils.LF);
                 }
             } finally {
                 ThreadLocalOperationLock.getInstance().release();
@@ -42,7 +36,7 @@ public class Callbacks {
 
     public static void doOnExit(String sourceString, String className, String methodName, Object obj, Object[] args,
                                 Object returnVal, String exectionId) {
-//
+
 //        if (!ThreadLocalOperationLock.getInstance().isAcquired()) {
 //            try {
 //                ThreadLocalOperationLock.getInstance().acquire();

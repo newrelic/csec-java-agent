@@ -6,6 +6,7 @@ import com.k2cybersecurity.instrumentator.custom.ThreadLocalHttpMap;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalOperationLock;
 import com.k2cybersecurity.instrumentator.utils.CallbackUtils;
 
+import java.lang.reflect.Method;
 import java.util.Arrays;
 
 public class Callbacks {
@@ -25,7 +26,12 @@ public class Callbacks {
 
 					ThreadLocalHttpMap.getInstance().setHttpRequest(args[0]);
 					ThreadLocalHttpMap.getInstance().setHttpResponse(args[1]);
+					Method getWriter = args[1].getClass().getMethod("getWriter",null);
+					getWriter.setAccessible(true);
+					ThreadLocalHttpMap.getInstance().setPrintWriter(getWriter.invoke(args[1], null));
 				}
+			} catch (Exception e) {
+				e.printStackTrace();
 			} finally {
 				ThreadLocalOperationLock.getInstance().release();
 			}
@@ -72,6 +78,6 @@ public class Callbacks {
 
 	private static void printReponse() {
 		ThreadLocalHttpMap.getInstance().parseHttpResponse();
-		System.out.println("Response of intercept : " + ThreadLocalExecutionMap.getInstance().getHttpRequestBean().getResponseBody());
+		System.out.println("Intercepted request at end : " + ThreadLocalExecutionMap.getInstance().getHttpRequestBean());
 	}
 }
