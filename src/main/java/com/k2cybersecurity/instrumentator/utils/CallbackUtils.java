@@ -1,29 +1,25 @@
 package com.k2cybersecurity.instrumentator.utils;
 
-import java.io.File;
-import java.lang.reflect.Method;
-import java.net.URI;
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
-import java.sql.Connection;
-import java.sql.DatabaseMetaData;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import org.apache.commons.lang3.StringUtils;
-import org.unbescape.html.HtmlEscape;
-
 import com.k2cybersecurity.instrumentator.dispatcher.EventDispatcher;
 import com.k2cybersecurity.intcodeagent.models.javaagent.FileIntegrityBean;
 import com.k2cybersecurity.intcodeagent.models.javaagent.HttpRequestBean;
 import com.k2cybersecurity.intcodeagent.models.javaagent.JADatabaseMetaData;
 import com.k2cybersecurity.intcodeagent.models.javaagent.VulnerabilityCaseType;
+import org.apache.commons.lang3.StringUtils;
+import org.unbescape.html.HtmlEscape;
+
+import java.io.File;
+import java.lang.reflect.Method;
+import java.net.URI;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class CallbackUtils {
 
@@ -183,19 +179,33 @@ public class CallbackUtils {
 		return sqlConnectionMap;
 	}
 
-	public static String getConnectionInformation(Object ref) {
+	public static String getConnectionInformation(Object ref, boolean needToGetConnection) {
 		try {
-			Method getConnection = ref.getClass().getMethod("getConnection", null);
-			getConnection.setAccessible(true);
-			Connection connection = (Connection) getConnection.invoke(ref, null);
+			Object connection;
+			if(needToGetConnection) {
+				Method getConnection = ref.getClass().getMethod("getConnection", null);
+				getConnection.setAccessible(true);
+				connection = getConnection.invoke(ref, null);
+			} else {
+				connection = ref;
+			}
 			if (sqlConnectionMap.containsKey(connection.hashCode())) {
 				JADatabaseMetaData metaData = sqlConnectionMap.get(connection.hashCode());
 				return metaData.getDbName();
 			} else {
-				DatabaseMetaData dbMetaData = connection.getMetaData();
-				sqlConnectionMap.put(connection.hashCode(),
-						new JADatabaseMetaData(dbMetaData.getDatabaseProductName()));
-				return dbMetaData.getDatabaseProductName();
+				Method getMetaData = connection.getClass().getMethod("getMetaData", null);
+				getMetaData.setAccessible(true);
+
+				Object dbMetaData = getMetaData.invoke(connection, null);
+
+
+				Method getDatabaseProductName = dbMetaData.getClass().getMethod("getDatabaseProductName", null);
+				getDatabaseProductName.setAccessible(true);
+				String productName = (String) getDatabaseProductName.invoke(dbMetaData, null);
+				if(StringUtils.isNotBlank(productName)) {
+					sqlConnectionMap.put(connection.hashCode(), new JADatabaseMetaData(productName));
+				}
+				return productName;
 			}
 
 		} catch (Exception e) {

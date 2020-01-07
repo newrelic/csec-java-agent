@@ -1,10 +1,20 @@
 package com.k2cybersecurity.instrumentator.dispatcher;
 
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.ALLOWED_EXTENSIONS;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.INVOKE_0;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.JAVA_IO_FILE_INPUTSTREAM_OPEN;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.READ_OBJECT;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.REFLECT_NATIVE_METHOD_ACCESSOR_IMPL;
+import com.k2cybersecurity.instrumentator.K2Instrumentator;
+import com.k2cybersecurity.instrumentator.custom.ThreadLocalExecutionMap;
+import com.k2cybersecurity.instrumentator.utils.CallbackUtils;
+import com.k2cybersecurity.instrumentator.utils.HashGenerator;
+import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
+import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
+import com.k2cybersecurity.intcodeagent.logging.DeployedApplication;
+import com.k2cybersecurity.intcodeagent.logging.IAgentConstants;
+import com.k2cybersecurity.intcodeagent.logging.ProcessorThread;
+import com.k2cybersecurity.intcodeagent.models.javaagent.*;
+import com.k2cybersecurity.intcodeagent.models.operationalbean.*;
+import com.k2cybersecurity.intcodeagent.websocket.EventSendPool;
+import org.apache.commons.lang3.StringUtils;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
 
 import java.io.ObjectInputStream;
 import java.time.Instant;
@@ -15,32 +25,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.lang3.StringUtils;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-
-import com.k2cybersecurity.instrumentator.K2Instrumentator;
-import com.k2cybersecurity.instrumentator.custom.ThreadLocalExecutionMap;
-import com.k2cybersecurity.instrumentator.utils.CallbackUtils;
-import com.k2cybersecurity.instrumentator.utils.HashGenerator;
-import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
-import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
-import com.k2cybersecurity.intcodeagent.logging.DeployedApplication;
-import com.k2cybersecurity.intcodeagent.logging.IAgentConstants;
-import com.k2cybersecurity.intcodeagent.logging.ProcessorThread;
-import com.k2cybersecurity.intcodeagent.models.javaagent.AgentMetaData;
-import com.k2cybersecurity.intcodeagent.models.javaagent.ApplicationInfoBean;
-import com.k2cybersecurity.intcodeagent.models.javaagent.FileIntegrityBean;
-import com.k2cybersecurity.intcodeagent.models.javaagent.HttpRequestBean;
-import com.k2cybersecurity.intcodeagent.models.javaagent.JavaAgentEventBean;
-import com.k2cybersecurity.intcodeagent.models.javaagent.VulnerabilityCaseType;
-import com.k2cybersecurity.intcodeagent.models.operationalbean.AbstractOperationalBean;
-import com.k2cybersecurity.intcodeagent.models.operationalbean.FileOperationalBean;
-import com.k2cybersecurity.intcodeagent.models.operationalbean.ForkExecOperationalBean;
-import com.k2cybersecurity.intcodeagent.models.operationalbean.LDAPOperationalBean;
-import com.k2cybersecurity.intcodeagent.models.operationalbean.NoSQLOperationalBean;
-import com.k2cybersecurity.intcodeagent.models.operationalbean.SQLOperationalBean;
-import com.k2cybersecurity.intcodeagent.websocket.EventSendPool;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.*;
 
 public class Dispatcher implements Runnable {
 
@@ -86,6 +71,30 @@ public class Dispatcher implements Runnable {
 	@Override
 	public void run() {
 		printDispatch();
+		if (vulnerabilityCaseType.equals(VulnerabilityCaseType.REFLECTED_XSS)) {
+			String xssConstruct = CallbackUtils.checkForReflectedXSS(httpRequestBean);
+			if (StringUtils.isNotBlank(xssConstruct)) {
+				JavaAgentEventBean eventBean = prepareEvent(httpRequestBean, metaData, vulnerabilityCaseType);
+				JSONArray params = new JSONArray();
+				params.add(xssConstruct);
+				params.add(httpRequestBean.getResponseBody());
+				eventBean.setParameters(params);
+				eventBean.setApplicationUUID(K2Instrumentator.APPLICATION_UUID);
+				eventBean.setPid(K2Instrumentator.VMPID);
+				// TODO set these
+				eventBean.setSourceMethod((String) extraInfo.get("sourceString"));
+				eventBean.setId((String) extraInfo.get("executionId"));
+				eventBean.setStartTime((Long) extraInfo.get("startTime"));
+				eventBean = getUserInfo(eventBean);
+				eventBean.setEventGenerationTime(Instant.now().toEpochMilli());
+				EventSendPool.getInstance().sendEvent(eventBean.toString());
+				System.out.println("============= Event Start ============");
+				System.out.println(eventBean);
+				System.out.println("============= Event End ============");
+			}
+			return;
+		}
+
 		if (event == null) {
 			System.out.println("------- Invalid event -----------");
 			return;
@@ -106,24 +115,6 @@ public class Dispatcher implements Runnable {
 				System.out.println("============= AppInfo Start ============");
 				System.out.println(applicationInfoBean);
 				System.out.println("============= AppInfo End ============");
-			}
-			return;
-		} else if (vulnerabilityCaseType.equals(VulnerabilityCaseType.REFLECTED_XSS)) {
-			String xssConstruct = CallbackUtils.checkForReflectedXSS(httpRequestBean);
-			if (StringUtils.isNotBlank(xssConstruct)) {
-				JavaAgentEventBean eventBean = prepareEvent(httpRequestBean, metaData, vulnerabilityCaseType);
-				JSONArray params = new JSONArray();
-				params.add(xssConstruct);
-				eventBean.setParameters(params);
-				eventBean.setApplicationUUID(K2Instrumentator.APPLICATION_UUID);
-				eventBean.setPid(K2Instrumentator.VMPID);
-				// TODO set these
-				eventBean.setSourceMethod((String) extraInfo.get("sourceString"));
-				eventBean.setId((String) extraInfo.get("executionId"));
-				eventBean.setStartTime((Long) extraInfo.get("startTime"));
-				eventBean = getUserInfo(eventBean);
-				eventBean.setEventGenerationTime(Instant.now().toEpochMilli());
-				EventSendPool.getInstance().sendEvent(eventBean.toString());
 			}
 			return;
 		}

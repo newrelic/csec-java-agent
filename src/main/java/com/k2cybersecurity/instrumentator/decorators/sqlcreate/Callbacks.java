@@ -38,11 +38,11 @@ public class Callbacks {
 						if (StringUtils.startsWithIgnoreCase(methodName, "prepare")) {
 							ThreadLocalDBMap.getInstance()
 									.create(returnVal, (String) args[0], className, sourceString, exectionId,
-											Instant.now().toEpochMilli(), false, true);
+											Instant.now().toEpochMilli(), false, true, returnVal,true);
 						} else {
 							ThreadLocalDBMap.getInstance()
 									.create(returnVal, (String) args[0], className, sourceString, exectionId,
-											Instant.now().toEpochMilli(), false, false);
+											Instant.now().toEpochMilli(), false, false, returnVal, true);
 						}
 					}
 				}

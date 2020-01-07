@@ -5,6 +5,7 @@ import com.k2cybersecurity.instrumentator.custom.ThreadLocalHttpMap;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalOperationLock;
 import com.k2cybersecurity.instrumentator.dispatcher.EventDispatcher;
 import com.k2cybersecurity.intcodeagent.models.javaagent.VulnerabilityCaseType;
+import org.apache.commons.lang3.StringUtils;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -21,9 +22,15 @@ public class Callbacks {
 				if (ThreadLocalHttpMap.getInstance().getHttpRequest() != null) {
 
 					if (args != null && args.length > 0) {
-						ThreadLocalDBMap.getInstance()
-								.create(thisObject, args[0].toString(), className, sourceString, exectionId,
-										Instant.now().toEpochMilli(), false, false);
+						if(StringUtils.equals(methodName, "nativeSQL")) {
+							ThreadLocalDBMap.getInstance()
+									.create(thisObject, args[0].toString(), className, sourceString, exectionId,
+											Instant.now().toEpochMilli(), false, false, thisObject, false);
+						} else {
+							ThreadLocalDBMap.getInstance()
+									.create(thisObject, args[0].toString(), className, sourceString, exectionId,
+											Instant.now().toEpochMilli(), false, false, thisObject, true);
+						}
 					}
 					if (ThreadLocalDBMap.getInstance().get(thisObject) != null) {
 						EventDispatcher.dispatch(new ArrayList<>(ThreadLocalDBMap.getInstance().get(thisObject)),

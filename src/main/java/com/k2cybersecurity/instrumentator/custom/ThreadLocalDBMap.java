@@ -42,28 +42,28 @@ public class ThreadLocalDBMap {
 	}
 
 	public void addBatch(Object ref, String query, String className, String sourceMethod, String executionId,
-			long startTime, boolean isPreparedCall) {
+			long startTime, boolean isPreparedCall, Object thisRef, boolean needToGetConnection) {
 		if (StringUtils.isNotBlank(query)) {
-			create(ref, query, className, sourceMethod, executionId, startTime, true, isPreparedCall);
+			create(ref, query, className, sourceMethod, executionId, startTime, true, isPreparedCall, thisRef, needToGetConnection);
 		} else {
 			if (sqlCalls.containsKey(ref)) {
 				List<SQLOperationalBean> beanList = sqlCalls.get(ref);
 				create(ref, beanList.get(beanList.size() - 1).getQuery(), className, sourceMethod, executionId, startTime, true,
-						isPreparedCall);
+						isPreparedCall,thisRef, needToGetConnection);
 			}
 		}
 	}
 
 	public void create(Object ref, String query, String className, String sourceMethod, String executionId, long startTime, boolean isBatch,
-			boolean isPreparedCall) {
+			boolean isPreparedCall, Object thisRef, boolean needToGetConnection) {
 		if (StringUtils.isBlank(query)){
 			return;
 		}
 		
 		String dbName = "UNKNOWN";
-		if(ref != null) {
+		if(thisRef != null) {
 			//Get connection information
-			dbName = CallbackUtils.getConnectionInformation(ref);
+			dbName = CallbackUtils.getConnectionInformation(ref, needToGetConnection);
 		}
 		
 		SQLOperationalBean bean = new SQLOperationalBean();

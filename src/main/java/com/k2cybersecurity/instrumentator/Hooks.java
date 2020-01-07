@@ -96,7 +96,7 @@ public class Hooks {
 				"com.k2cybersecurity.instrumentator.decorators.printwriter");
 
 		// SQL Create
-		DECORATOR_ENTRY.put("java.sql.Connection.nativeSQL" , "com.k2cybersecurity.instrumentator.decorators.sqlcreate");
+		DECORATOR_ENTRY.put("java.sql.Connection.nativeSQL" , "com.k2cybersecurity.instrumentator.decorators.sqlexecute");
 		DECORATOR_ENTRY.put("java.sql.Connection.prepareCall" , "com.k2cybersecurity.instrumentator.decorators.sqlcreate");
 		DECORATOR_ENTRY.put("java.sql.Connection.prepareStatement" , "com.k2cybersecurity.instrumentator.decorators.sqlcreate");
 
