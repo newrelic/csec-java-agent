@@ -177,6 +177,9 @@ public class ThreadLocalHttpMap {
             getContentType.setAccessible(true);
             httpRequestBean.setResponseCharacterType((String) getContentType.invoke(httpResponse, null));
             isHttpResponseParsed = true;
+
+            // TODO: based on content info, parse/decode the received reponse data here.
+
             return true;
 
         } catch (Exception e) {
