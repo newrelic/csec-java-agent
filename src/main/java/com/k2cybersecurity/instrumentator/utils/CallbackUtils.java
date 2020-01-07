@@ -57,10 +57,10 @@ public class CallbackUtils {
     }
 
     public static String checkForReflectedXSS(HttpRequestBean httpRequestBean) {
-        String responseBody = httpRequestBean.getResponseBody();
+        String responseBody = httpRequestBean.getHttpResponseBean().getResponseBody();
 
         HttpRequestBean requestBean = new HttpRequestBean(httpRequestBean);
-        requestBean.setResponseBody(StringUtils.EMPTY);
+        requestBean.getHttpResponseBean().setResponseBody(StringUtils.EMPTY);
 
         List<String> attackContructs = isXSS(requestBean.toString(), requestBean.getUrl());
 
@@ -279,6 +279,10 @@ public class CallbackUtils {
             return "soliddb";
         }
         return "UNKNOWN";
+    }
+
+    public static void decodeResponseData() {
+
     }
 
 }

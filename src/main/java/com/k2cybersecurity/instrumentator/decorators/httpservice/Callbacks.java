@@ -84,6 +84,6 @@ public class Callbacks {
 	}
 
 	private static void printReponse() {
-		System.out.println(String.format("Intercepted request at end : %s ::: %s", ThreadLocalExecutionMap.getInstance().getHttpRequestBean(), ThreadLocalExecutionMap.getInstance().getHttpRequestBean().getResponseBody()));
+		System.out.println(String.format("Intercepted request at end : %s ::: %s", ThreadLocalExecutionMap.getInstance().getHttpRequestBean(), ThreadLocalExecutionMap.getInstance().getHttpRequestBean().getHttpResponseBean()));
 	}
 }

@@ -48,13 +48,7 @@ public class HttpRequestBean {
 	private String contextPath;
 
 	@JsonIgnore
-	private String responseBody;
-
-	@JsonIgnore
-	private String responseCharacterEncoding;
-
-	@JsonIgnore
-	private String responseCharacterType;
+	private HttpResponseBean httpResponseBean;
 
 	private int serverPort;
 
@@ -68,10 +62,8 @@ public class HttpRequestBean {
 		this.headers = new JSONObject();
 		this.fileExist = new HashMap<String, FileIntegrityBean>();
 		this.contextPath = StringUtils.EMPTY;
-		this.responseBody = StringUtils.EMPTY;
 		this.serverPort = -1;
-		this.responseCharacterEncoding = StringUtils.EMPTY;
-		this.responseCharacterType = StringUtils.EMPTY;
+		this.httpResponseBean = new HttpResponseBean();
 	}
 
 	public HttpRequestBean(HttpRequestBean servletInfo) {
@@ -84,11 +76,8 @@ public class HttpRequestBean {
 		this.url = servletInfo.getUrl();
 		this.headers = new JSONObject(servletInfo.getHeaders());
 		this.contextPath = servletInfo.contextPath;
-		this.responseBody = servletInfo.responseBody;
 		this.serverPort = servletInfo.serverPort;
-		this.responseCharacterEncoding = servletInfo.responseCharacterEncoding;
-		this.responseCharacterType = servletInfo.responseCharacterType;
-		populateHttpRequest();
+		this.httpResponseBean = servletInfo.httpResponseBean;
 	}
 
 	public String getRawRequest() {
@@ -128,11 +117,6 @@ public class HttpRequestBean {
 	 */
 	public String getBody() {
 		return this.body;
-	}
-
-	@JsonIgnore
-	public String getResponseBody() {
-		return this.responseBody;
 	}
 
 	public int getServerPort() {
@@ -319,27 +303,12 @@ public class HttpRequestBean {
 	}
 
 	@JsonIgnore
-	public void setResponseBody(String responseBody) {
-		this.responseBody = responseBody;
+	public HttpResponseBean getHttpResponseBean() {
+		return httpResponseBean;
 	}
 
 	@JsonIgnore
-	public String getResponseCharacterEncoding() {
-		return responseCharacterEncoding;
-	}
-
-	@JsonIgnore
-	public void setResponseCharacterEncoding(String responseCharacterEncoding) {
-		this.responseCharacterEncoding = responseCharacterEncoding;
-	}
-
-	@JsonIgnore
-	public String getResponseCharacterType() {
-		return responseCharacterType;
-	}
-
-	@JsonIgnore
-	public void setResponseCharacterType(String responseCharacterType) {
-		this.responseCharacterType = responseCharacterType;
+	public void setHttpResponseBean(HttpResponseBean httpResponseBean) {
+		this.httpResponseBean = httpResponseBean;
 	}
 }

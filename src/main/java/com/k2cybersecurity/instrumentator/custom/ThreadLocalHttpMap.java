@@ -12,14 +12,15 @@ import org.json.simple.JSONObject;
 
 import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
+import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 
 public class ThreadLocalHttpMap {
 
-	private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
-	
+    private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
+
     private Object httpRequest;
 
     private boolean isHttpRequestParsed = false;
@@ -118,7 +119,7 @@ public class ThreadLocalHttpMap {
             getQueryString.setAccessible(true);
             String queryString = (String) getQueryString.invoke(httpRequest, null);
 
-            if(StringUtils.isNotBlank(queryString)) {
+            if (StringUtils.isNotBlank(queryString)) {
                 httpRequestBean.setUrl(httpRequestBean.getUrl() + "?" + queryString);
             }
 
@@ -171,15 +172,19 @@ public class ThreadLocalHttpMap {
 
             Method getCharacterEncoding = responseClass.getMethod("getCharacterEncoding");
             getCharacterEncoding.setAccessible(true);
-            httpRequestBean.setResponseCharacterEncoding((String) getCharacterEncoding.invoke(httpResponse, null));
+            httpRequestBean.getHttpResponseBean().setResponseCharacterEncoding((String) getCharacterEncoding.invoke(httpResponse, null));
 
             Method getContentType = responseClass.getMethod("getContentType");
             getContentType.setAccessible(true);
-            httpRequestBean.setResponseCharacterType((String) getContentType.invoke(httpResponse, null));
-            isHttpResponseParsed = true;
+            httpRequestBean.getHttpResponseBean().setResponseCharacterType((String) getContentType.invoke(httpResponse, null));
+
+            Map<String, String> headers = new HashMap<>();
+            processResponseHeaders(headers, httpResponse);
+            httpRequestBean.getHttpResponseBean().setHeaders(new JSONObject(headers));
 
             // TODO: based on content info, parse/decode the received reponse data here.
 
+            isHttpResponseParsed = true;
             return true;
 
         } catch (Exception e) {
@@ -217,6 +222,33 @@ public class ThreadLocalHttpMap {
         }
     }
 
+    public void processResponseHeaders(Map<String, String> headers, Object httpRequest) {
+        try {
+            Class requestClass = httpRequest.getClass();
+
+            Method getHeaderNames = requestClass.getMethod("getHeaderNames", null);
+            getHeaderNames.setAccessible(true);
+            Method getHeaders = requestClass.getMethod("getHeaders", String.class);
+            getHeaders.setAccessible(true);
+
+            Collection<String> attribs = ((Collection<String>) getHeaderNames.invoke(httpRequest, null));
+            for (String headerKey : attribs) {
+                String headerFullValue = StringUtils.EMPTY;
+                Collection<String> headerElements = (Collection<String>) getHeaders.invoke(httpRequest, headerKey);
+                for (String headerValue : headerElements) {
+                    if (headerFullValue.isEmpty()) {
+                        headerFullValue = headerValue;
+                    } else {
+                        headerFullValue += "; " + headerValue;
+                    }
+                }
+                headers.put(headerKey, headerFullValue);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     public void insertToRequestByteBuffer(byte b) {
         try {
             byteBuffer.put(b);
@@ -240,7 +272,7 @@ public class ThreadLocalHttpMap {
 
     public void insertToResponseBufferByte(byte b) {
         try {
-            outputBodyBuilder.append((char)b);
+            outputBodyBuilder.append((char) b);
 //            System.out.println("inserting : " + b);
         } catch (Exception e) {
             e.printStackTrace();
@@ -270,7 +302,7 @@ public class ThreadLocalHttpMap {
 
     public void insertToResponseBufferString(int b) {
         try {
-            outputBodyBuilder.append((char)b);
+            outputBodyBuilder.append((char) b);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -333,19 +365,19 @@ public class ThreadLocalHttpMap {
 
     public void updateResponseBody() {
         try {
-            if (outputBodyBuilder.length() > ThreadLocalExecutionMap.getInstance().getHttpRequestBean().getResponseBody().length()) {
-                ThreadLocalExecutionMap.getInstance().getHttpRequestBean().setResponseBody(outputBodyBuilder.toString());
+            if (outputBodyBuilder.length() > ThreadLocalExecutionMap.getInstance().getHttpRequestBean().getHttpResponseBean().getResponseBody().length()) {
+                ThreadLocalExecutionMap.getInstance().getHttpRequestBean().getHttpResponseBean().setResponseBody(outputBodyBuilder.toString());
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    public void cleanState(){
-    	if(K2Instrumentator.enableHTTPRequestPrinting) {
-    		//TODO add HTTP request printing
-    		logger.log(LogLevel.INFO, IAgentConstants.INTERCEPTED_HTTP_REQUEST, AgentNew.class.getName());
-    	}
+    public void cleanState() {
+        if (K2Instrumentator.enableHTTPRequestPrinting) {
+            //TODO add HTTP request printing
+            logger.log(LogLevel.INFO, IAgentConstants.INTERCEPTED_HTTP_REQUEST, AgentNew.class.getName());
+        }
         httpRequest = null;
         isHttpRequestParsed = false;
         httpResponse = null;
@@ -356,7 +388,7 @@ public class ThreadLocalHttpMap {
         outputBodyBuilder = new StringBuilder();
     }
 
-    public boolean isEmpty(){
+    public boolean isEmpty() {
         return httpRequest == null || httpResponse == null;
     }
 }

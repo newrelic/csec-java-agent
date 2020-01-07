@@ -77,7 +77,7 @@ public class Dispatcher implements Runnable {
 				JavaAgentEventBean eventBean = prepareEvent(httpRequestBean, metaData, vulnerabilityCaseType);
 				JSONArray params = new JSONArray();
 				params.add(xssConstruct);
-				params.add(httpRequestBean.getResponseBody());
+				params.add(httpRequestBean.getHttpResponseBean().getResponseBody());
 				eventBean.setParameters(params);
 				eventBean.setApplicationUUID(K2Instrumentator.APPLICATION_UUID);
 				eventBean.setPid(K2Instrumentator.VMPID);
@@ -410,11 +410,7 @@ public class Dispatcher implements Runnable {
 
 			System.out.println("Intercepted Request : " + httpRequestBean);
 
-			System.out.println("Intercepted Response Body : " + httpRequestBean.getResponseBody());
-
-			System.out.println("Intercepted Response Content Type : " + httpRequestBean.getResponseCharacterType());
-
-			System.out.println("Intercepted Response Content Encoding : " + httpRequestBean.getResponseCharacterEncoding());
+			System.out.println("Intercepted Response : " + httpRequestBean.getHttpResponseBean());
 
 			System.out.println("Agent Meta : " + metaData);
 
