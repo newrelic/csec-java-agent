@@ -84,4 +84,18 @@ public class DispatcherPool {
 	public void dispatchAppInfo(Object event, VulnerabilityCaseType vulnerabilityCaseType) {
 		this.executor.submit(new Dispatcher(event, vulnerabilityCaseType));
 	}
+
+	
+	/**
+	 * Specifically for reflected xss
+	 * @param httpRequestBean
+	 * @param trace 
+	 * @param startTime 
+	 * @param exectionId 
+	 * @param sourceString 
+	 * @param reflectedXss
+	 */
+	public void dispatchEvent(HttpRequestBean httpRequestBean, String sourceString, String exectionId, long startTime, StackTraceElement[] trace, VulnerabilityCaseType reflectedXss) {
+		this.executor.submit(new Dispatcher(httpRequestBean, trace, reflectedXss, sourceString, exectionId, startTime));
+	}
 }

@@ -83,4 +83,8 @@ public class EventDispatcher {
 		System.out.println("==========================================================================================");
 	}
 
+	public static void dispatch(HttpRequestBean httpRequestBean, String sourceString, String exectionId, long startTime, VulnerabilityCaseType reflectedXss) {
+		DispatcherPool.getInstance().dispatchEvent(httpRequestBean, sourceString, exectionId, startTime, Thread.currentThread().getStackTrace(), reflectedXss);
+	}
+
 }

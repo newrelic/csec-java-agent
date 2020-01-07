@@ -3,8 +3,12 @@ package com.k2cybersecurity.instrumentator.decorators.httpservice;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalDBMap;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalExecutionMap;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalHttpMap;
+import com.k2cybersecurity.instrumentator.dispatcher.EventDispatcher;
 import com.k2cybersecurity.instrumentator.utils.CallbackUtils;
+import com.k2cybersecurity.intcodeagent.models.javaagent.HttpRequestBean;
+import com.k2cybersecurity.intcodeagent.models.javaagent.VulnerabilityCaseType;
 
+import java.time.Instant;
 import java.util.Arrays;
 
 public class Callbacks {
@@ -39,7 +43,7 @@ public class Callbacks {
 
 		//        ThreadLocalHttpMap.getInstance().parseHttpRequest();
 //				ThreadLocalOperationLock.getInstance().acquire();
-				onHttpTermination();
+				onHttpTermination(sourceString, exectionId);
 //			} finally {
 //				ThreadLocalOperationLock.getInstance().release();
 //			}
@@ -54,19 +58,22 @@ public class Callbacks {
 //				ThreadLocalOperationLock.getInstance().acquire();
 				System.out.println("OnError :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj
 						+ " - error : " + error + " - eid : " + exectionId);
-				onHttpTermination();
+				onHttpTermination(sourceString, exectionId);
 //			} finally {
 //				ThreadLocalOperationLock.getInstance().release();
 //			}
 //		}
 	}
 
-	private static void onHttpTermination() {
+	private static void onHttpTermination(String sourceString, String exectionId) {
 		if(!ThreadLocalHttpMap.getInstance().isEmpty()) {
 			printReponse();
 			ThreadLocalHttpMap.getInstance().parseHttpResponse();
 			CallbackUtils.checkForFileIntegrity(ThreadLocalExecutionMap.getInstance().getFileLocalMap());
-			CallbackUtils.checkForReflectedXSS(ThreadLocalExecutionMap.getInstance().getHttpRequestBean());
+//			CallbackUtils.checkForReflectedXSS(ThreadLocalExecutionMap.getInstance().getHttpRequestBean());
+			
+			EventDispatcher.dispatch(new HttpRequestBean(ThreadLocalExecutionMap.getInstance().getHttpRequestBean()), sourceString, exectionId,
+					Instant.now().toEpochMilli(), VulnerabilityCaseType.REFLECTED_XSS);
 
 			// Clean up
 			ThreadLocalHttpMap.getInstance().cleanState();

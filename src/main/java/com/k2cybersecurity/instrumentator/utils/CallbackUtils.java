@@ -34,12 +34,15 @@ public class CallbackUtils {
 	private static final Pattern functionCallDetector;
 
 	private static Map<Integer, JADatabaseMetaData> sqlConnectionMap;
-	
+
 	static {
-		htmlStartTagExtractor = Pattern.compile("(?:<script.*?>(.*?)<(?:\\/|\\\\\\/)script.*?>|<([!?a-zA-Z]+[0-9]*)(.*?)(?<!(\\\\))\\s*?>)",Pattern.MULTILINE | Pattern.CASE_INSENSITIVE);
-		htmlArgExtractor = Pattern.compile("([\\s\\/]+[a-zA-z\\-\\_0-9]+[\\s\\/]*)=(('|\")(.*?)\\3|\\S+)", Pattern.MULTILINE | Pattern.CASE_INSENSITIVE);
-		functionCallDetector = Pattern
-				.compile("([a-zA-Z0-9_-]+(?=(\\(.*?\\))))", Pattern.MULTILINE | Pattern.CASE_INSENSITIVE);
+		htmlStartTagExtractor = Pattern.compile(
+				"(?:<script.*?>(.*?)<(?:\\/|\\\\\\/)script.*?>|<([!?a-zA-Z]+[0-9]*)(.*?)(?<!(\\\\))\\s*?>)",
+				Pattern.MULTILINE | Pattern.CASE_INSENSITIVE);
+		htmlArgExtractor = Pattern.compile("([\\s\\/]+[a-zA-z\\-\\_0-9]+[\\s\\/]*)=(('|\")(.*?)\\3|\\S+)",
+				Pattern.MULTILINE | Pattern.CASE_INSENSITIVE);
+		functionCallDetector = Pattern.compile("([a-zA-Z0-9_-]+(?=(\\(.*?\\))))",
+				Pattern.MULTILINE | Pattern.CASE_INSENSITIVE);
 		sqlConnectionMap = new LinkedHashMap<Integer, JADatabaseMetaData>(50) {
 			@Override
 			protected boolean removeEldestEntry(java.util.Map.Entry<Integer, JADatabaseMetaData> eldest) {
@@ -57,26 +60,26 @@ public class CallbackUtils {
 		}
 	}
 
-	public static boolean checkForReflectedXSS(HttpRequestBean httpRequestBean){
-		AtomicBoolean isAttack = new AtomicBoolean(false);
+	public static String checkForReflectedXSS(HttpRequestBean httpRequestBean) {
 		String responseBody = httpRequestBean.getResponseBody();
 
 		HttpRequestBean requestBean = new HttpRequestBean(httpRequestBean);
 		requestBean.setResponseBody(StringUtils.EMPTY);
 
-
 		List<String> attackContructs = isXSS(requestBean.toString(), requestBean.getUrl());
 
 		for (String construct : attackContructs) {
 			if (StringUtils.containsIgnoreCase(responseBody, construct)) {
-				System.err.println(String.format("Reflected XSS attack detected :: Construct : %s :: Request : %s :: Response : %s", construct, httpRequestBean, responseBody));
-				isAttack.set(true);
-				break;
+				System.err.println(String.format(
+						"Reflected XSS attack detected :: Construct : %s :: Request : %s :: Response : %s", construct,
+						httpRequestBean, responseBody));
+				return construct;
 			}
 		}
 
-		return isAttack.get();
+		return StringUtils.EMPTY;
 	}
+
 	/**
 	 * Method to url decode given encodedString under UTF-8 encoding. If the
 	 * conversion is not possible, <code>original string</code> is returned.
@@ -93,7 +96,6 @@ public class CallbackUtils {
 		}
 		return decodedString;
 	}
-
 
 	/**
 	 * Method to url decode given encodedString under UTF-8 encoding. If the
@@ -125,9 +127,9 @@ public class CallbackUtils {
 
 		Matcher htmlStartTagMatcher = htmlStartTagExtractor.matcher(combinedData);
 		while (htmlStartTagMatcher.find()) {
-			if(StringUtils.isNotBlank(htmlStartTagMatcher.group(1))){
+			if (StringUtils.isNotBlank(htmlStartTagMatcher.group(1))) {
 				attackConstructs.add(htmlStartTagMatcher.group(1));
-			} else if(StringUtils.isNotBlank(htmlStartTagMatcher.group(3))){
+			} else if (StringUtils.isNotBlank(htmlStartTagMatcher.group(3))) {
 				String attribData = htmlStartTagMatcher.group(3);
 				if (StringUtils.isNotBlank(attribData)) {
 					Matcher attribMatcher = htmlArgExtractor.matcher(attribData);
@@ -146,19 +148,22 @@ public class CallbackUtils {
 
 						// If js attrib used, mark PA if any function call is present inside.
 						if (StringUtils.isNotBlank(attribKey)) {
-							if (StringUtils.startsWithIgnoreCase(attribKey, "on") && StringUtils.isNotBlank(attribVal)) {
+							if (StringUtils.startsWithIgnoreCase(attribKey, "on")
+									&& StringUtils.isNotBlank(attribVal)) {
 								Matcher functionCallMatcher = functionCallDetector.matcher(attribVal);
-								if (functionCallMatcher.find()) {
+								if (functionCallMatcher.find() && StringUtils.isNotBlank(attribMatcher.group())) {
 									attackConstructs.add(attribMatcher.group());
 									break;
 								}
 								// If other attrib is used for javascript injection
 							} else if (StringUtils.isNotBlank(attribVal)) {
-								if (StringUtils.containsIgnoreCase(attribVal, "javascript:") || StringUtils
-										.endsWithIgnoreCase(attribVal, ".js") || StringUtils
-										.startsWithIgnoreCase(attribVal, "http://") || StringUtils
-										.startsWithIgnoreCase(attribVal, "https://")) {
-									attackConstructs.add(attribMatcher.group());
+								if (StringUtils.containsIgnoreCase(attribVal, "javascript:")
+										|| StringUtils.endsWithIgnoreCase(attribVal, ".js")
+										|| StringUtils.startsWithIgnoreCase(attribVal, "http://")
+										|| StringUtils.startsWithIgnoreCase(attribVal, "https://")) {
+									if (StringUtils.isNotBlank(attribMatcher.group())) {
+										attackConstructs.add(attribMatcher.group());
+									}
 								}
 							}
 						}
@@ -170,6 +175,7 @@ public class CallbackUtils {
 
 		return attackConstructs;
 	}
+
 	/**
 	 * @return the sqlConnectionMap
 	 */
@@ -187,10 +193,11 @@ public class CallbackUtils {
 				return metaData.getDbName();
 			} else {
 				DatabaseMetaData dbMetaData = connection.getMetaData();
-				sqlConnectionMap.put(connection.hashCode(), new JADatabaseMetaData(dbMetaData.getDatabaseProductName()));
+				sqlConnectionMap.put(connection.hashCode(),
+						new JADatabaseMetaData(dbMetaData.getDatabaseProductName()));
 				return dbMetaData.getDatabaseProductName();
 			}
-			
+
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
