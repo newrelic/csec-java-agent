@@ -11,10 +11,10 @@ public class Callbacks {
     public static void doOnEnter(String sourceString, String className, String methodName, Object obj, Object[] args,
                                  String exectionId) {
 
-        if (!ThreadLocalOperationLock.getInstance().isAcquired()) {
+        if (ThreadLocalHttpMap.getInstance().getHttpResponse() != null && !ThreadLocalOperationLock.getInstance().isAcquired()) {
             try {
                 ThreadLocalOperationLock.getInstance().acquire();
-                System.out.println("OnEnter :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj + " - eid : " + exectionId);
+//                System.out.println("OnEnter :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj + " - eid : " + exectionId);
                 if (StringUtils.startsWith(methodName, "print")) {
                     if (StringUtils.equals(methodName, "print") && args != null && args.length == 1) {
                         ThreadLocalHttpMap.getInstance()

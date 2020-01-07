@@ -1,5 +1,6 @@
 package com.k2cybersecurity.intcodeagent.models.javaagent;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.websocket.JsonConverter;
@@ -46,7 +47,10 @@ public class HttpRequestBean {
 
 	private String contextPath;
 
+	@JsonIgnore
 	private String responseBody;
+
+	private int serverPort;
 
 	public HttpRequestBean() {
 		this.rawRequest = StringUtils.EMPTY;
@@ -59,6 +63,7 @@ public class HttpRequestBean {
 		this.fileExist = new HashMap<String, FileIntegrityBean>();
 		this.contextPath = StringUtils.EMPTY;
 		this.responseBody = StringUtils.EMPTY;
+		this.serverPort = -1;
 	}
 
 	public HttpRequestBean(HttpRequestBean servletInfo) {
@@ -72,6 +77,7 @@ public class HttpRequestBean {
 		this.headers = new JSONObject(servletInfo.getHeaders());
 		this.contextPath = servletInfo.contextPath;
 		this.responseBody = servletInfo.responseBody;
+		this.serverPort = servletInfo.serverPort;
 		populateHttpRequest();
 	}
 
@@ -114,12 +120,19 @@ public class HttpRequestBean {
 		return this.body;
 	}
 
+	@JsonIgnore
 	public String getResponseBody() {
 		return this.responseBody;
 	}
 
+	public int getServerPort() {
+		return serverPort;
+	}
 
-//	/**
+	public void setServerPort(int serverPort) {
+		this.serverPort = serverPort;
+	}
+	//	/**
 //	 * @param body the body to set
 //	 */
 //	public void setBody(String body) {
@@ -295,6 +308,7 @@ public class HttpRequestBean {
 		this.body = body;
 	}
 
+	@JsonIgnore
 	public void setResponseBody(String responseBody) {
 		this.responseBody = responseBody;
 	}

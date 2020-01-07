@@ -1,12 +1,12 @@
 package com.k2cybersecurity.instrumentator.custom;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import com.k2cybersecurity.intcodeagent.models.javaagent.AgentMetaData;
 import com.k2cybersecurity.intcodeagent.models.javaagent.FileIntegrityBean;
 import com.k2cybersecurity.intcodeagent.models.javaagent.HttpRequestBean;
 import com.k2cybersecurity.intcodeagent.websocket.JsonConverter;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class ThreadLocalExecutionMap {
 
@@ -73,6 +73,12 @@ public class ThreadLocalExecutionMap {
 	 */
 	public void setFileLocalMap(Map<String, FileIntegrityBean> fileLocalMap) {
 		this.fileLocalMap = fileLocalMap;
+	}
+
+
+	public void cleanUp() {
+		httpRequestBean = new HttpRequestBean();
+		metaData = new AgentMetaData();
 	}
 
 }

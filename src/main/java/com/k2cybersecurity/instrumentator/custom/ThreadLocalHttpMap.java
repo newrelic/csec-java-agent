@@ -126,8 +126,13 @@ public class ThreadLocalHttpMap {
             Method getContextPath = servletContext.getClass().getMethod("getContextPath");
             getContextPath.setAccessible(true);
             String contextPath = (String) getContextPath.invoke(servletContext, null);
-
             httpRequestBean.setContextPath(contextPath);
+
+//            Method getServerPort = servletContext.getClass().getMethod("getServerPort");
+//            getServerPort.setAccessible(true);
+//            int serverPort = (Integer) getServerPort.invoke(servletContext, null);
+//            httpRequestBean.setServerPort(serverPort);
+
             ServletContextInfo.getInstance().processServletContext(servletContext, contextPath);
             updateBody();
             isHttpRequestParsed = true;
@@ -317,5 +322,9 @@ public class ThreadLocalHttpMap {
         bufferOffset = 0;
         byteBuffer = ByteBuffer.allocate(1024 * 8);
         outputBodyBuilder = new StringBuilder();
+    }
+
+    public boolean isEmpty(){
+        return httpRequest == null || httpResponse == null;
     }
 }
