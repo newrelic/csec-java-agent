@@ -12,7 +12,7 @@ import java.util.Arrays;
 
 public class Callbacks {
 
-	public static void doOnEnter(String sourceString, String className, String methodName, Object obj, Object[] args,
+	public static void doOnEnter(String sourceString, String className, String methodName, Object thisObject, Object[] args,
 			String exectionId) {
 		//        System.out.println("OnEnter :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj + " - eid : " + exectionId);
 		if (!ThreadLocalOperationLock.getInstance().isAcquired()) {
@@ -22,13 +22,13 @@ public class Callbacks {
 
 					if (args != null && args.length > 0) {
 						ThreadLocalDBMap.getInstance()
-								.create(obj, args[0].toString(), className, sourceString, exectionId,
+								.create(thisObject, args[0].toString(), className, sourceString, exectionId,
 										Instant.now().toEpochMilli(), false, false);
 					}
-					if (ThreadLocalDBMap.getInstance().get(obj) != null) {
-						EventDispatcher.dispatch(new ArrayList<>(ThreadLocalDBMap.getInstance().get(obj)),
+					if (ThreadLocalDBMap.getInstance().get(thisObject) != null) {
+						EventDispatcher.dispatch(new ArrayList<>(ThreadLocalDBMap.getInstance().get(thisObject)),
 								VulnerabilityCaseType.SQL_DB_COMMAND);
-						ThreadLocalDBMap.getInstance().clear(obj);
+						ThreadLocalDBMap.getInstance().clear(thisObject);
 					} else {
 						System.err.println(
 								String.format("Null SQL query fired : %s : %s : %s : %s", sourceString, exectionId,

@@ -1,5 +1,6 @@
 package com.k2cybersecurity.instrumentator.custom;
 
+import com.k2cybersecurity.instrumentator.utils.CallbackUtils;
 import com.k2cybersecurity.intcodeagent.models.operationalbean.SQLOperationalBean;
 import org.apache.commons.lang3.StringUtils;
 
@@ -9,7 +10,7 @@ import java.util.*;
 public class ThreadLocalDBMap {
 
 	private Map<Object, List<SQLOperationalBean>> sqlCalls;
-
+	
 	private Set<SQLOperationalBean> sentSqlCalls;
 
 	private static ThreadLocal<ThreadLocalDBMap> instance = new ThreadLocal<ThreadLocalDBMap>() {
@@ -58,6 +59,13 @@ public class ThreadLocalDBMap {
 		if (StringUtils.isBlank(query)){
 			return;
 		}
+		
+		String dbName = "UNKNOWN";
+		if(ref != null) {
+			//Get connection information
+			dbName = CallbackUtils.getConnectionInformation(ref);
+		}
+		
 		SQLOperationalBean bean = new SQLOperationalBean();
 		bean.setQuery(query);
 		bean.setClassName(className);
@@ -65,6 +73,7 @@ public class ThreadLocalDBMap {
 		bean.setExecutionId(executionId);
 		bean.setStartTime(startTime);
 		bean.setPreparedCall(isPreparedCall);
+		bean.setDbName(dbName);
 		List<SQLOperationalBean> list;
 		if (sqlCalls.containsKey(ref) && isBatch) {
 			list = sqlCalls.get(ref);

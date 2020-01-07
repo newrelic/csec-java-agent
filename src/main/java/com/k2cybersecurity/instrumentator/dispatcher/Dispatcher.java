@@ -102,7 +102,7 @@ public class Dispatcher implements Runnable {
 				System.out.println("------- Invalid event -----------");
 				return;
 			}
-			eventBean.setEventCategory(getDbName(operationalList.get(0).getClassName()));
+//			eventBean.setEventCategory(getDbName(operationalList.get(0).getClassName()));
 			eventBean = setGenericProperties(operationalList.get(0), eventBean);
 			eventBean = prepareSQLDbCommandEvent(operationalList, eventBean);
 			break;
@@ -175,6 +175,7 @@ public class Dispatcher implements Runnable {
 			params.add(query);
 		}
 		eventBean.setParameters(params);
+		eventBean.setEventCategory(operationalList.get(0).getDbName());
 		return eventBean;
 	}
 

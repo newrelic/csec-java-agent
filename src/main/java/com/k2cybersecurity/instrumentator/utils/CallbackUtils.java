@@ -1,23 +1,29 @@
 package com.k2cybersecurity.instrumentator.utils;
 
-import com.k2cybersecurity.instrumentator.dispatcher.EventDispatcher;
-import com.k2cybersecurity.intcodeagent.models.javaagent.FileIntegrityBean;
-import com.k2cybersecurity.intcodeagent.models.javaagent.HttpRequestBean;
-import com.k2cybersecurity.intcodeagent.models.javaagent.VulnerabilityCaseType;
-import org.apache.commons.lang3.StringUtils;
-import org.unbescape.html.HtmlEscape;
-
 import java.io.File;
+import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
+import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.apache.commons.lang3.StringUtils;
+import org.unbescape.html.HtmlEscape;
+
+import com.k2cybersecurity.instrumentator.dispatcher.EventDispatcher;
+import com.k2cybersecurity.intcodeagent.models.javaagent.FileIntegrityBean;
+import com.k2cybersecurity.intcodeagent.models.javaagent.HttpRequestBean;
+import com.k2cybersecurity.intcodeagent.models.javaagent.JADatabaseMetaData;
+import com.k2cybersecurity.intcodeagent.models.javaagent.VulnerabilityCaseType;
 
 public class CallbackUtils {
 
@@ -27,18 +33,25 @@ public class CallbackUtils {
 
 	private static final Pattern functionCallDetector;
 
+	private static Map<Integer, JADatabaseMetaData> sqlConnectionMap;
+	
 	static {
 		htmlStartTagExtractor = Pattern.compile("(?:<script.*?>(.*?)<(?:\\/|\\\\\\/)script.*?>|<([!?a-zA-Z]+[0-9]*)(.*?)(?<!(\\\\))\\s*?>)",Pattern.MULTILINE | Pattern.CASE_INSENSITIVE);
 		htmlArgExtractor = Pattern.compile("([\\s\\/]+[a-zA-z\\-\\_0-9]+[\\s\\/]*)=(('|\")(.*?)\\3|\\S+)", Pattern.MULTILINE | Pattern.CASE_INSENSITIVE);
 		functionCallDetector = Pattern
 				.compile("([a-zA-Z0-9_-]+(?=(\\(.*?\\))))", Pattern.MULTILINE | Pattern.CASE_INSENSITIVE);
+		sqlConnectionMap = new LinkedHashMap<Integer, JADatabaseMetaData>(50) {
+			@Override
+			protected boolean removeEldestEntry(java.util.Map.Entry<Integer, JADatabaseMetaData> eldest) {
+				return size() > 50;
+			}
+		};
 	}
 
-
 	public static void checkForFileIntegrity(Map<String, FileIntegrityBean> fileLocalMap) {
-		for(Entry<String, FileIntegrityBean> entry : fileLocalMap.entrySet()) {
+		for (Entry<String, FileIntegrityBean> entry : fileLocalMap.entrySet()) {
 			boolean isExists = new File(entry.getKey()).exists();
-			if(!entry.getValue().getExists().equals(isExists)) {
+			if (!entry.getValue().getExists().equals(isExists)) {
 				EventDispatcher.dispatch(entry.getValue(), VulnerabilityCaseType.FILE_INTEGRITY);
 			}
 		}
@@ -157,4 +170,31 @@ public class CallbackUtils {
 
 		return attackConstructs;
 	}
+	/**
+	 * @return the sqlConnectionMap
+	 */
+	public static Map<Integer, JADatabaseMetaData> getSqlConnectionMap() {
+		return sqlConnectionMap;
+	}
+
+	public static String getConnectionInformation(Object ref) {
+		try {
+			Method getConnection = ref.getClass().getMethod("getConnection", null);
+			getConnection.setAccessible(true);
+			Connection connection = (Connection) getConnection.invoke(ref, null);
+			if (sqlConnectionMap.containsKey(connection.hashCode())) {
+				JADatabaseMetaData metaData = sqlConnectionMap.get(connection.hashCode());
+				return metaData.getDbName();
+			} else {
+				DatabaseMetaData dbMetaData = connection.getMetaData();
+				sqlConnectionMap.put(connection.hashCode(), new JADatabaseMetaData(dbMetaData.getDatabaseProductName()));
+				return dbMetaData.getDatabaseProductName();
+			}
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return "UNKNOWN";
+	}
+
 }

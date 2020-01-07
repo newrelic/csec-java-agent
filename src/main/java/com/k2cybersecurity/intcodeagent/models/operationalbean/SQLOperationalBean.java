@@ -15,6 +15,8 @@ public class SQLOperationalBean extends AbstractOperationalBean{
 	private String query;
 
 	private Map<Integer, String> params;
+	
+	private String dbName;
 
 	private boolean isPreparedCall;
 
@@ -81,6 +83,20 @@ public class SQLOperationalBean extends AbstractOperationalBean{
 
 	@Override public int hashCode() {
 		return Objects.hash(query, params);
+	}
+
+	/**
+	 * @return the dbName
+	 */
+	public String getDbName() {
+		return dbName;
+	}
+
+	/**
+	 * @param dbName the dbName to set
+	 */
+	public void setDbName(String dbName) {
+		this.dbName = dbName;
 	}
 }
 
