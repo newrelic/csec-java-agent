@@ -78,13 +78,13 @@ public abstract class MapConstants {
 //		INSTRUMENTED_METHODS.put(CLASS_COM_MYSQL_JDBC_MYSQL_IO, Collections.singletonList("sqlQueryDirect"));
 //		INSTRUMENTED_METHODS.put(CLASS_COM_MYSQL_CJ_NATIVE_SESSION, Collections.singletonList("execSQL"));
 //		INSTRUMENTED_METHODS.put(CLASS_COM_MYSQL_JDBC_SERVER_PREPARED_STATEMENT, Collections.singletonList("serverExecute"));
-		INSTRUMENTED_METHODS.put(CLASS_COM_MONGODB_CONNECTION_DEFAULT_SERVER_CONNECTION, Collections.singletonList("executeProtocol"));
-		INSTRUMENTED_METHODS.put(CLASS_COM_MONGODB_INTERNAL_CONNECTION_DEFAULT_SERVER_CONNECTION,Collections.singletonList("executeProtocol"));
-		INSTRUMENTED_METHODS.put(CLASS_COM_MONGODB_ASYNC_CLIENT_MONGO_CLIENT_IMPL$2, Collections.singletonList("execute"));
-		INSTRUMENTED_METHODS.put(CLASS_COM_MONGODB_ASYNC_CLIENT_ASYNC_OPERATION_EXECUTOR_IMPL, Collections.singletonList("execute"));
-		INSTRUMENTED_METHODS.put(CLASS_COM_MONGODB_ASYNC_CLIENT_OPERATION_EXECUTOR_IMPL, Collections.singletonList("execute"));
-		INSTRUMENTED_METHODS.put(CLASS_JAVA_NET_URL_CLASS_LOADER, Arrays.asList(new String[] { "<init>", "newInstance" }));
-		INSTRUMENTED_METHODS.put(CLASS_ORACLE_JDBC_DRIVER_T4CTT_IFUN, Collections.singletonList("doRPC"));
+//		INSTRUMENTED_METHODS.put(CLASS_COM_MONGODB_CONNECTION_DEFAULT_SERVER_CONNECTION, Collections.singletonList("executeProtocol"));
+//		INSTRUMENTED_METHODS.put(CLASS_COM_MONGODB_INTERNAL_CONNECTION_DEFAULT_SERVER_CONNECTION,Collections.singletonList("executeProtocol"));
+//		INSTRUMENTED_METHODS.put(CLASS_COM_MONGODB_ASYNC_CLIENT_MONGO_CLIENT_IMPL$2, Collections.singletonList("execute"));
+//		INSTRUMENTED_METHODS.put(CLASS_COM_MONGODB_ASYNC_CLIENT_ASYNC_OPERATION_EXECUTOR_IMPL, Collections.singletonList("execute"));
+//		INSTRUMENTED_METHODS.put(CLASS_COM_MONGODB_ASYNC_CLIENT_OPERATION_EXECUTOR_IMPL, Collections.singletonList("execute"));
+//		INSTRUMENTED_METHODS.put(CLASS_JAVA_NET_URL_CLASS_LOADER, Arrays.asList(new String[] { "<init>", "newInstance" }));
+//		INSTRUMENTED_METHODS.put(CLASS_ORACLE_JDBC_DRIVER_T4CTT_IFUN, Collections.singletonList("doRPC"));
 //		INSTRUMENTED_METHODS.put(CLASS_ORG_APACHE_CATALINA_CONNECTOR_COYOTE_ADAPTER, Collections.singletonList("service"));
 //		INSTRUMENTED_METHODS.put(CLASS_ORG_APACHE_CATALINA_CONNECTOR_INPUT_BUFFER, Collections.singletonList("setByteBuffer"));
 //		INSTRUMENTED_METHODS.put(CLASS_ORG_ECLIPSE_JETTY_SERVER_HTTP_CONNECTION, Collections.singletonList("onFillable"));
@@ -104,14 +104,14 @@ public abstract class MapConstants {
 		INSTRUMENTED_METHODS.put(CLASS_JAVA_HTTPS_HANDLER, Collections.singletonList("openConnection"));
 		INSTRUMENTED_METHODS.put(CLASS_JAVA_SSL_HTTPS_HANDLER, Collections.singletonList("openConnection"));
 		INSTRUMENTED_METHODS.put(CLASS_JDK_INCUBATOR_HTTP_MULTIEXCHANGE, Arrays.asList(new String[] { "response", "responseAsync", "multiResponseAsync" }));
-		INSTRUMENTED_METHODS.put(CLASS_WEBLOGIC_SERVLET_INTERNAL_WEB_APP_SERVLET_CONTEXT, Collections.singletonList("execute"));
+		INSTRUMENTED_METHODS.put(CLASS_WEBLOGIC_SERVLET_INTERNAL_WEB_APP_SERVLET_CONTEXT, Collections.singletonList("execute"));  // Handle differently
 		INSTRUMENTED_METHODS.put(CLASS_APACHE_COMMONS_HTTP_METHOD_DIRECTOR, Collections.singletonList("executeWithRetry"));
 		INSTRUMENTED_METHODS.put(CLASS_OKHTTP_HTTP_ENGINE, Collections.singletonList("sendRequest"));
 		INSTRUMENTED_METHODS.put(CLASS_WEBLOGIC_HTTP_HANDLER, Collections.singletonList("openConnection"));
 //		INSTRUMENTED_METHODS.put(CLASS_JAVA_IO_FILE_OUTPUT_STREAM, Collections.singletonList("open"));
 //		INSTRUMENTED_METHODS.put(CLASS_JAVA_IO_FILE_INPUT_STREAM, Collections.singletonList("open"));
 //		INSTRUMENTED_METHODS.put(CLASS_SUN_NIO_FS_UNIX_NATIVE_DISPATCHER, Arrays.asList(new String[] {"open", "fopen", "link", "unlink", "mknod", "rename", "mkdir", "rmdir", "symlink", "chown", "chmod"}));
-		INSTRUMENTED_METHODS.put("org/xnio/XnioWorker", Collections.singletonList("execute"));
+//		INSTRUMENTED_METHODS.put("org/xnio/XnioWorker", Collections.singletonList("execute"));
 //		INSTRUMENTED_METHODS.put(JAVA_IO_UNIX_FILE_SYSTEM, Collections.singletonList("delete"));
 //		INSTRUMENTED_METHODS.put(JAVA_IO_RANDOM_ACCESS_FILE, Collections.singletonList("open"));
 

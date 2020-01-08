@@ -68,8 +68,7 @@ public class Dispatcher implements Runnable {
 
 	}
 
-	@Override
-	public void run() {
+	@Override public void run() {
 		printDispatch();
 		if (vulnerabilityCaseType.equals(VulnerabilityCaseType.REFLECTED_XSS)) {
 			String xssConstruct = CallbackUtils.checkForReflectedXSS(httpRequestBean);
@@ -142,7 +141,7 @@ public class Dispatcher implements Runnable {
 				System.out.println("------- Invalid event -----------");
 				return;
 			}
-//			eventBean.setEventCategory(getDbName(operationalList.get(0).getClassName()));
+			//			eventBean.setEventCategory(getDbName(operationalList.get(0).getClassName()));
 			eventBean = setGenericProperties(operationalList.get(0), eventBean);
 			eventBean = prepareSQLDbCommandEvent(operationalList, eventBean);
 			break;
@@ -162,6 +161,10 @@ public class Dispatcher implements Runnable {
 			LDAPOperationalBean ldapOperationalBean = (LDAPOperationalBean) event;
 			eventBean = setGenericProperties(ldapOperationalBean, eventBean);
 			eventBean = prepareLDAPEvent(eventBean, ldapOperationalBean);
+		case HTTP_REQUEST:
+			SSRFOperationalBean ssrfOperationalBean = (SSRFOperationalBean) event;
+			eventBean = setGenericProperties(ssrfOperationalBean, eventBean);
+			eventBean = prepareSSRFEvent(eventBean, ssrfOperationalBean);
 		default:
 
 		}
@@ -243,6 +246,33 @@ public class Dispatcher implements Runnable {
 		JSONArray params = new JSONArray();
 		ProcessorThread.getMongoDbParameterValue(noSQLOperationalBean.getApiCallArgs(), params);
 		eventBean.setEventCategory("MONGO");
+		eventBean.setParameters(params);
+		return eventBean;
+	}
+
+	private static JavaAgentEventBean prepareSSRFEvent(JavaAgentEventBean eventBean,
+			SSRFOperationalBean ssrfOperationalBean) {
+		JSONArray params = new JSONArray();
+		String sourceString = eventBean.getSourceMethod();
+		Object[] obj = ssrfOperationalBean.getApiCallArgs();
+
+		if (sourceString.equals(APACHE_HTTP_REQUEST_EXECUTOR_METHOD)) {
+			ProcessorThread.getApacheHttpRequestParameters(obj, params);
+		} else if (sourceString.equals(JAVA_OPEN_CONNECTION_METHOD2) || sourceString
+				.equals(JAVA_OPEN_CONNECTION_METHOD2_HTTPS) || sourceString.equals(JAVA_OPEN_CONNECTION_METHOD2_HTTPS_2)
+				|| sourceString.equals(WEBLOGIC_OPEN_CONNECTION_METHOD)) {
+			ProcessorThread.getJavaHttpRequestParameters(obj, params);
+		} else if (sourceString.equals(JDK_INCUBATOR_MULTIEXCHANGE_RESONSE_METHOD) || sourceString
+				.equals(JDK_INCUBATOR_MULTIEXCHANGE_RESONSE_ASYNC_METHOD)) {
+			ProcessorThread.getJava9HttpClientParameters(obj, params);
+			//			} else if (vulnerabilityCaseType.equals(VulnerabilityCaseType.FILE_OPERATION)) {
+			//				getFileParameters(obj, parameters);
+		} else if (sourceString.equals(APACHE_COMMONS_HTTP_METHOD_DIRECTOR_METHOD)) {
+			ProcessorThread.getApacheCommonsHttpRequestParameters(obj, params);
+		} else if (sourceString.equals(OKHTTP_HTTP_ENGINE_METHOD)) {
+			ProcessorThread.getOkHttpRequestParameters(obj, params);
+		}
+
 		eventBean.setParameters(params);
 		return eventBean;
 	}
@@ -329,26 +359,28 @@ public class Dispatcher implements Runnable {
 	}
 
 	private void deserializationTriggerCheck(int index, JavaAgentEventBean eventBean, String klassName) {
-		if (ObjectInputStream.class.getName().equals(klassName)
-				&& StringUtils.equals(trace[index].getMethodName(), READ_OBJECT)) {
+		if (ObjectInputStream.class.getName().equals(klassName) && StringUtils
+				.equals(trace[index].getMethodName(), READ_OBJECT)) {
 			eventBean.getMetaData().setTriggerViaDeserialisation(true);
-			logger.log(LogLevel.DEBUG, String.format("Printing stack trace for deserialise event : %s : %s",
-					eventBean.getId(), Arrays.asList(trace)), ProcessorThread.class.getName());
+			logger.log(LogLevel.DEBUG,
+					String.format("Printing stack trace for deserialise event : %s : %s", eventBean.getId(),
+							Arrays.asList(trace)), ProcessorThread.class.getName());
 
 		}
 	}
 
 	private void rciTriggerCheck(int index, JavaAgentEventBean eventBean, String klassName) {
-		if (!StringUtils.contains(trace[index].toString(), ".java:") && index > 0
-				&& StringUtils.contains(trace[index - 1].toString(), ".java:")) {
+		if (!StringUtils.contains(trace[index].toString(), ".java:") && index > 0 && StringUtils
+				.contains(trace[index - 1].toString(), ".java:")) {
 			eventBean.getMetaData().setTriggerViaRCI(true);
 			eventBean.getMetaData().getRciMethodsCalls().add(trace[index].toString());
 			eventBean.getMetaData().getRciMethodsCalls().add(trace[index - 1].toString());
-			logger.log(LogLevel.DEBUG, String.format("Printing stack trace for probable rci event : %s : %s",
-					eventBean.getId(), Arrays.asList(trace)), ProcessorThread.class.getName());
+			logger.log(LogLevel.DEBUG,
+					String.format("Printing stack trace for probable rci event : %s : %s", eventBean.getId(),
+							Arrays.asList(trace)), ProcessorThread.class.getName());
 		}
-		if (StringUtils.contains(klassName, REFLECT_NATIVE_METHOD_ACCESSOR_IMPL)
-				&& StringUtils.equals(trace[index].getMethodName(), INVOKE_0) && index > 0) {
+		if (StringUtils.contains(klassName, REFLECT_NATIVE_METHOD_ACCESSOR_IMPL) && StringUtils
+				.equals(trace[index].getMethodName(), INVOKE_0) && index > 0) {
 			eventBean.getMetaData().setTriggerViaRCI(true);
 			eventBean.getMetaData().getRciMethodsCalls().add(trace[index - 1].toString());
 			logger.log(LogLevel.DEBUG, String.format("Printing stack trace for rci event : %s : %s", eventBean.getId(),

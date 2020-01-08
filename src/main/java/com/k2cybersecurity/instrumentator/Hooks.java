@@ -73,6 +73,18 @@ public class Hooks {
 		// OSGi Classloading Hook
 		NAME_BASED_HOOKS.put("org.osgi.framework.Bundle", Arrays.asList("start", "update"));
 
+		// SSRF Hook
+		NAME_BASED_HOOKS.put("org.apache.http.protocol.HttpRequestExecutor", Collections.singletonList("doSendRequest"));
+		NAME_BASED_HOOKS.put("sun.net.www.protocol.http.Handler", Collections.singletonList("openConnection"));
+		NAME_BASED_HOOKS.put("sun.net.www.protocol.https.Handler", Collections.singletonList("openConnection"));
+		NAME_BASED_HOOKS.put("com.sun.net.ssl.internal.www.protocol.https.Handler", Collections.singletonList("openConnection"));
+		NAME_BASED_HOOKS.put("jdk.incubator.http.MultiExchange", Arrays.asList(new String[] { "response", "responseAsync", "multiResponseAsync" }));
+		NAME_BASED_HOOKS.put("org.apache.commons.httpclient.HttpMethodDirector", Collections.singletonList("executeWithRetry"));
+		NAME_BASED_HOOKS.put("com.squareup.okhttp.internal.http.HttpEngine", Collections.singletonList("sendRequest"));
+		NAME_BASED_HOOKS.put("weblogic.net.http.Handler", Collections.singletonList("openConnection"));
+
+		//		NAME_BASED_HOOKS.put(CLASS_WEBLOGIC_SERVLET_INTERNAL_WEB_APP_SERVLET_CONTEXT, Collections.singletonList("execute"));  // Handle differently
+
 		/** ------------------------------------  Decorators ------------------------------------------------**/
 
 		// HTTP request
@@ -197,6 +209,17 @@ public class Hooks {
 		DECORATOR_ENTRY.put("org.osgi.framework.Bundle.start", "com.k2cybersecurity.instrumentator.decorators.osgiadjustments");
 		DECORATOR_ENTRY.put("org.osgi.framework.Bundle.update", "com.k2cybersecurity.instrumentator.decorators.osgiadjustments");
 
+		// SSRF
+		DECORATOR_ENTRY.put("org.apache.http.protocol.HttpRequestExecutor.doSendRequest", "com.k2cybersecurity.instrumentator.decorators.ssrf");
+		DECORATOR_ENTRY.put("sun.net.www.protocol.http.Handler.openConnection", "com.k2cybersecurity.instrumentator.decorators.ssrf");
+		DECORATOR_ENTRY.put("sun.net.www.protocol.https.Handler.openConnection", "com.k2cybersecurity.instrumentator.decorators.ssrf");
+		DECORATOR_ENTRY.put("com.sun.net.ssl.internal.www.protocol.https.Handler.openConnection", "com.k2cybersecurity.instrumentator.decorators.ssrf");
+		DECORATOR_ENTRY.put("jdk.incubator.http.MultiExchange.response", "com.k2cybersecurity.instrumentator.decorators.ssrf");
+		DECORATOR_ENTRY.put("jdk.incubator.http.MultiExchange.responseAsync", "com.k2cybersecurity.instrumentator.decorators.ssrf");
+		DECORATOR_ENTRY.put("jdk.incubator.http.MultiExchange.multiResponseAsync", "com.k2cybersecurity.instrumentator.decorators.ssrf");
+		DECORATOR_ENTRY.put("org.apache.commons.httpclient.HttpMethodDirector.executeWithRetry", "com.k2cybersecurity.instrumentator.decorators.ssrf");
+		DECORATOR_ENTRY.put("com.squareup.okhttp.internal.http.HttpEngine.sendRequest", "com.k2cybersecurity.instrumentator.decorators.ssrf");
+		DECORATOR_ENTRY.put("weblogic.net.http.Handler,openConnection", "com.k2cybersecurity.instrumentator.decorators.ssrf");
 
 	}
 }
