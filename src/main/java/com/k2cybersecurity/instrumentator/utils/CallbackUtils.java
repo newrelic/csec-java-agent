@@ -65,6 +65,9 @@ public class CallbackUtils {
         List<String> attackContructs = isXSS(requestBean.toString(), requestBean.getUrl());
 
         for (String construct : attackContructs) {
+			System.err.println(String.format(
+					"Reflected XSS contruct detected ::  %s :: Request : %s", construct,
+					httpRequestBean));
             if (StringUtils.containsIgnoreCase(responseBody, construct)) {
                 System.err.println(String.format(
                         "Reflected XSS attack detected :: Construct : %s :: Request : %s :: Response : %s", construct,
