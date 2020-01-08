@@ -208,6 +208,7 @@ public class Dispatcher implements Runnable {
 			RandomOperationalBean randomOperationalBean) {
 		JSONArray params = new JSONArray();
 		params.add(randomOperationalBean.getClassName());
+		eventBean.setEventCategory(randomOperationalBean.getEventCatgory());
 		eventBean.setParameters(params);
 		return eventBean;
 	}
