@@ -230,53 +230,56 @@ public class CallbackUtils {
     private static String detectDatabaseProduct(String databaseProductName) {
 
         if (databaseProductName.contains("MySQL")) {
-            return "mysql";
+            return "MYSQL";
         }
         if (databaseProductName.startsWith("Oracle")) {
-            return "oracle";
+            return "ORACLE";
         }
         if (databaseProductName.startsWith("Apache Derby")) {
-            return "derby";
+            return "DERBY";
         }
         if (databaseProductName.contains("HSQL Database Engine")) {
-            return "hsqldb";
+            return "HSQL";
         }
         if (databaseProductName.startsWith("SQLite")) {
-            return "sqlite";
+            return "SQLITE";
         }
         if (databaseProductName.startsWith("H2")) {
-            return "h2";
+            return "H2";
         }
         if (databaseProductName.startsWith("Microsoft SQL Server")) {
-            return "sql_server";
+            return "MSSQL";
         }
         if (databaseProductName.startsWith("EnterpriseDB")) {
-            return "enterprisedb";
+            return "ENTERPRISEDB";
         }
         if (databaseProductName.startsWith("Phoenix")) {
-            return "phoenix";
+            return "PHOENIX";
         }
         if (databaseProductName.startsWith("PostgreSQL")) {
-            return "postgresql";
+            return "POSTGRESQL";
         }
         if (databaseProductName.startsWith("DB2")) {
-            return "db2";
+            return "DB2";
         }
         if (databaseProductName.startsWith("Vertica")) {
-            return "vertica";
+            return "VERTICA";
         }
         if (databaseProductName.startsWith("Adaptive") || databaseProductName.startsWith("ASE") || databaseProductName
                 .startsWith("sql server")) {
-            return "sybase";
+            return "SYBASE";
         }
         if (databaseProductName.startsWith("HDB")) {
-            return "sapana";
+            return "SAPANA";
         }
         if (databaseProductName.startsWith("Greenplum")) {
-            return "greenplum";
+            return "GREENPLUM";
         }
         if (databaseProductName.contains("solidDB")) {
-            return "soliddb";
+            return "SOLIDDB";
+        }
+        if (StringUtils.containsIgnoreCase(databaseProductName, "maria")) {
+        	return "MARIADB";
         }
         return "UNKNOWN";
     }
