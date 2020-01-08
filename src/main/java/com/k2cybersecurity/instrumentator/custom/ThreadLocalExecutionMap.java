@@ -79,6 +79,7 @@ public class ThreadLocalExecutionMap {
 	public void cleanUp() {
 		httpRequestBean = new HttpRequestBean();
 		metaData = new AgentMetaData();
+		fileLocalMap.clear();
 	}
 
 }

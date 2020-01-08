@@ -3,8 +3,10 @@ package com.k2cybersecurity.instrumentator.dispatcher;
 import com.k2cybersecurity.intcodeagent.logging.EventThreadPool.EventAbortPolicy;
 import com.k2cybersecurity.intcodeagent.logging.IAgentConstants;
 import com.k2cybersecurity.intcodeagent.models.javaagent.AgentMetaData;
+import com.k2cybersecurity.intcodeagent.models.javaagent.FileIntegrityBean;
 import com.k2cybersecurity.intcodeagent.models.javaagent.HttpRequestBean;
 import com.k2cybersecurity.intcodeagent.models.javaagent.VulnerabilityCaseType;
+import com.k2cybersecurity.intcodeagent.models.operationalbean.FileOperationalBean;
 
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -97,5 +99,11 @@ public class DispatcherPool {
 	 */
 	public void dispatchEvent(HttpRequestBean httpRequestBean, String sourceString, String exectionId, long startTime, StackTraceElement[] trace, VulnerabilityCaseType reflectedXss) {
 		this.executor.submit(new Dispatcher(httpRequestBean, trace, reflectedXss, sourceString, exectionId, startTime));
+	}
+
+	public void dispatchEvent(HttpRequestBean httpRequestBean, AgentMetaData metaData,
+			StackTraceElement[] trace, FileOperationalBean event, FileIntegrityBean fbean,
+			VulnerabilityCaseType vulnerabilityCaseType) {
+		this.executor.submit(new Dispatcher(httpRequestBean, metaData, trace, event, fbean, vulnerabilityCaseType));
 	}
 }

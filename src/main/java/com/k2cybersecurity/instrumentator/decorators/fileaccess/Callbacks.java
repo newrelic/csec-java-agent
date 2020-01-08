@@ -25,10 +25,11 @@ public class Callbacks {
 						.isNotBlank(args[0].toString())) {
 					FileOperationalBean fileOperationalBean = new FileOperationalBean(args[0].toString(), className,
 							sourceString, exectionId, Instant.now().toEpochMilli());
+					FileIntegrityBean fbean = new FileIntegrityBean(new File(args[0].toString()).exists(), args[0].toString(), className,
+							sourceString, exectionId, Instant.now().toEpochMilli());
 					ThreadLocalExecutionMap.getInstance().getFileLocalMap().put(args[0].toString(),
-							new FileIntegrityBean(new File(args[0].toString()).exists(), args[0].toString(), className,
-									sourceString, exectionId, Instant.now().toEpochMilli()));
-					EventDispatcher.dispatch(fileOperationalBean, VulnerabilityCaseType.FILE_OPERATION);
+							fbean);
+					EventDispatcher.dispatch(fileOperationalBean, fbean, VulnerabilityCaseType.FILE_OPERATION);
 				}
 			} finally {
 				ThreadLocalOperationLock.getInstance().release();

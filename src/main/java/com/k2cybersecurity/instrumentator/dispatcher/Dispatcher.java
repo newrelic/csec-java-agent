@@ -68,6 +68,17 @@ public class Dispatcher implements Runnable {
 
 	}
 
+	public Dispatcher(HttpRequestBean httpRequestBean, AgentMetaData metaData, StackTraceElement[] trace,
+			FileOperationalBean event, FileIntegrityBean fbean, VulnerabilityCaseType vulnerabilityCaseType) {
+		this.httpRequestBean = httpRequestBean;
+		this.metaData = metaData;
+		this.event = event;
+		this.trace = trace;
+		this.vulnerabilityCaseType = vulnerabilityCaseType;
+		this.extraInfo = new HashMap<String, Object>();
+		extraInfo.put("FileIntegrityBean", fbean);
+	}
+
 	@Override public void run() {
 		printDispatch();
 		if (vulnerabilityCaseType.equals(VulnerabilityCaseType.REFLECTED_XSS)) {
@@ -218,8 +229,7 @@ public class Dispatcher implements Runnable {
 	}
 
 	private void createEntryForFileIntegrity(FileOperationalBean fileOperationalBean, JavaAgentEventBean eventBean) {
-		FileIntegrityBean fBean = ThreadLocalExecutionMap.getInstance().getFileLocalMap()
-				.get(fileOperationalBean.getFileName());
+		FileIntegrityBean fBean = (FileIntegrityBean) extraInfo.get("FileIntegrityBean");
 		if (fBean != null) {
 			fBean.setBeanValues(eventBean.getSourceMethod(), eventBean.getUserFileName(), eventBean.getUserMethodName(),
 					eventBean.getCurrentMethod(), eventBean.getLineNumber());

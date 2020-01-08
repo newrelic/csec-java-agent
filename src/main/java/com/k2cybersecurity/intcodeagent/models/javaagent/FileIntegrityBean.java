@@ -13,17 +13,17 @@ public class FileIntegrityBean extends AbstractOperationalBean {
 	private Integer lineNumber;
 	private String fileName;
 
-	public FileIntegrityBean(String className, String sourceMethod, String executionId, Long startTime ) {
+	public FileIntegrityBean(String className, String sourceMethod, String executionId, Long startTime) {
 		super(className, sourceMethod, executionId, startTime);
 	}
-	
-	public FileIntegrityBean(Boolean exists, String fileName, String className, String sourceMethod, String exectionId, Long startTime ) {
+
+	public FileIntegrityBean(Boolean exists, String fileName, String className, String sourceMethod, String exectionId,
+			Long startTime) {
 		this(className, sourceMethod, exectionId, startTime);
 		this.exists = exists;
 		this.setFileName(fileName);
 	}
 
-	
 	/**
 	 * @return the exists
 	 */
@@ -120,5 +120,11 @@ public class FileIntegrityBean extends AbstractOperationalBean {
 	 */
 	public void setFileName(String fileName) {
 		this.fileName = fileName;
+	}
+
+	@Override
+	public String toString() {
+		return "FileName : " + fileName + "userFileName: " + userFileName + "userMethodName: " + userMethodName
+				+ "currentMethod: " + currentMethod + "lineNumber: " + lineNumber;
 	}
 }
