@@ -124,7 +124,6 @@ public class Dispatcher implements Runnable {
 			FileOperationalBean fileOperationalBean = (FileOperationalBean) event;
 			eventBean = setGenericProperties(fileOperationalBean, eventBean);
 			eventBean = prepareFileEvent(eventBean, fileOperationalBean);
-			createEntryForFileIntegrity(fileOperationalBean, eventBean);
 			if (allowedExtensionFileIO(eventBean.getParameters(), eventBean.getSourceMethod())) {
 				System.out.println("------- Event ByPass -----------");
 				return;
@@ -177,6 +176,10 @@ public class Dispatcher implements Runnable {
 		}
 		if (!VulnerabilityCaseType.FILE_INTEGRITY.equals(vulnerabilityCaseType)) {
 			eventBean = processStackTrace(eventBean);
+		}
+		
+		if(VulnerabilityCaseType.FILE_OPERATION.equals(vulnerabilityCaseType)) {
+			createEntryForFileIntegrity((FileOperationalBean) event, eventBean);
 		}
 		eventBean.setEventGenerationTime(Instant.now().toEpochMilli());
 		EventSendPool.getInstance().sendEvent(eventBean.toString());
