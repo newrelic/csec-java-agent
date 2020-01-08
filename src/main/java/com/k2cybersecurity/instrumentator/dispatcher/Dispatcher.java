@@ -162,6 +162,11 @@ public class Dispatcher implements Runnable {
 			LDAPOperationalBean ldapOperationalBean = (LDAPOperationalBean) event;
 			eventBean = setGenericProperties(ldapOperationalBean, eventBean);
 			eventBean = prepareLDAPEvent(eventBean, ldapOperationalBean);
+			break;
+		case RANDOM:
+			RandomOperationalBean randomOperationalBean = (RandomOperationalBean) event;
+			eventBean = setGenericProperties(randomOperationalBean, eventBean);
+			eventBean = prepareRandomEvent(eventBean, randomOperationalBean);
 		default:
 
 		}
@@ -173,6 +178,14 @@ public class Dispatcher implements Runnable {
 		System.out.println("============= Event Start ============");
 		System.out.println(eventBean);
 		System.out.println("============= Event End ============");
+	}
+
+	private JavaAgentEventBean prepareRandomEvent(JavaAgentEventBean eventBean,
+			RandomOperationalBean randomOperationalBean) {
+		JSONArray params = new JSONArray();
+		params.add(randomOperationalBean.getClassName());
+		eventBean.setParameters(params);
+		return eventBean;
 	}
 
 	private JavaAgentEventBean prepareLDAPEvent(JavaAgentEventBean eventBean, LDAPOperationalBean ldapOperationalBean) {

@@ -64,6 +64,13 @@ public class Hooks {
 		NAME_BASED_HOOKS.put("com.mongodb.async.client.AsyncOperationExecutorImpl", Collections.singletonList("execute"));
 		NAME_BASED_HOOKS.put("com.mongodb.async.client.OperationExecutorImpl", Collections.singletonList("execute"));
 
+		//Weak Random
+		NAME_BASED_HOOKS.put("java.util.Random", Arrays.asList(new String[] {"nextBytes", "nextInt", "nextLong", "nextBoolean", "nextFloat", "nextDouble", "nextGaussian"}));
+		NAME_BASED_HOOKS.put("java.lang.Math", Collections.singletonList("random"));
+		
+		//Strong random
+		NAME_BASED_HOOKS.put("java.security.SecureRandom", Arrays.asList(new String[] {"nextBytes", "nextInt", "nextLong", "nextBoolean", "nextFloat", "nextDouble", "nextGaussian"}));
+		
 		// Jetty Servlet Hooks
 		NAME_BASED_HOOKS.put("org.eclipse.jetty.server.Handler", Collections.singletonList("handle"));
 
@@ -196,7 +203,25 @@ public class Hooks {
 		// OSGi Classloading
 		DECORATOR_ENTRY.put("org.osgi.framework.Bundle.start", "com.k2cybersecurity.instrumentator.decorators.osgiadjustments");
 		DECORATOR_ENTRY.put("org.osgi.framework.Bundle.update", "com.k2cybersecurity.instrumentator.decorators.osgiadjustments");
+		
+		//Weak random
+		DECORATOR_ENTRY.put("java.util.Random.nextBytes", "com.k2cybersecurity.instrumentator.decorators.weakrandom");
+		DECORATOR_ENTRY.put("java.util.Random.nextInt", "com.k2cybersecurity.instrumentator.decorators.weakrandom");
+		DECORATOR_ENTRY.put("java.util.Random.nextLong", "com.k2cybersecurity.instrumentator.decorators.weakrandom");
+		DECORATOR_ENTRY.put("java.util.Random.nextBoolean", "com.k2cybersecurity.instrumentator.decorators.weakrandom");
+		DECORATOR_ENTRY.put("java.util.Random.nextFloat", "com.k2cybersecurity.instrumentator.decorators.weakrandom");
+		DECORATOR_ENTRY.put("java.util.Random.nextDouble", "com.k2cybersecurity.instrumentator.decorators.weakrandom");
+		DECORATOR_ENTRY.put("java.util.Random.nextGaussian", "com.k2cybersecurity.instrumentator.decorators.weakrandom");
+		DECORATOR_ENTRY.put("java.lang.Math.random", "com.k2cybersecurity.instrumentator.decorators.weakrandom");
 
-
+		//strong random
+		DECORATOR_ENTRY.put("java.security.SecureRandom.nextBytes", "com.k2cybersecurity.instrumentator.decorators.strongrandom");
+		DECORATOR_ENTRY.put("java.security.SecureRandom.nextInt", "com.k2cybersecurity.instrumentator.decorators.strongrandom");
+		DECORATOR_ENTRY.put("java.security.SecureRandom.nextLong", "com.k2cybersecurity.instrumentator.decorators.strongrandom");
+		DECORATOR_ENTRY.put("java.security.SecureRandom.nextBoolean", "com.k2cybersecurity.instrumentator.decorators.strongrandom");
+		DECORATOR_ENTRY.put("java.security.SecureRandom.nextFloat", "com.k2cybersecurity.instrumentator.decorators.strongrandom");
+		DECORATOR_ENTRY.put("java.security.SecureRandom.nextDouble", "com.k2cybersecurity.instrumentator.decorators.strongrandom");
+		DECORATOR_ENTRY.put("java.security.SecureRandom.nextGaussian", "com.k2cybersecurity.instrumentator.decorators.strongrandom");
+		
 	}
 }
