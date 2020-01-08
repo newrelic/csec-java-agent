@@ -55,6 +55,7 @@ public class Hooks {
 		NAME_BASED_HOOKS.put("sun.nio.fs.UnixNativeDispatcher", Arrays.asList(new String[] {"open", "fopen", "link", "unlink", "mknod", "rename", "mkdir", "rmdir", "symlink", "chown", "chmod"}));
 		NAME_BASED_HOOKS.put("java.io.UnixFileSystem", Collections.singletonList("delete"));
 		NAME_BASED_HOOKS.put("java.io.RandomAccessFile", Collections.singletonList("open"));
+		//Todo add hook for file.list()
 
 		// Mongo Hooks
 
@@ -246,7 +247,7 @@ public class Hooks {
 		DECORATOR_ENTRY.put("jdk.incubator.http.MultiExchange.multiResponseAsync", "com.k2cybersecurity.instrumentator.decorators.ssrf");
 		DECORATOR_ENTRY.put("org.apache.commons.httpclient.HttpMethodDirector.executeWithRetry", "com.k2cybersecurity.instrumentator.decorators.ssrf");
 		DECORATOR_ENTRY.put("com.squareup.okhttp.internal.http.HttpEngine.sendRequest", "com.k2cybersecurity.instrumentator.decorators.ssrf");
-		DECORATOR_ENTRY.put("weblogic.net.http.Handler,openConnection", "com.k2cybersecurity.instrumentator.decorators.ssrf");
+		DECORATOR_ENTRY.put("weblogic.net.http.Handler.openConnection", "com.k2cybersecurity.instrumentator.decorators.ssrf");
 
 	}
 }

@@ -10,22 +10,26 @@ public class HttpResponseBean {
 
     private String responseBody;
 
+    private String decodedResponseBody;
+
     private String responseCharacterEncoding;
 
-    private String responseCharacterType;
+    private String responseContentType;
 
     public HttpResponseBean() {
         this.headers = new JSONObject();
         this.responseBody = StringUtils.EMPTY;
+        this.decodedResponseBody = StringUtils.EMPTY;
         this.responseCharacterEncoding = StringUtils.EMPTY;
-        this.responseCharacterType = StringUtils.EMPTY;
+        this.responseContentType = StringUtils.EMPTY;
     }
 
     public HttpResponseBean(HttpResponseBean httpResponseBean) {
         this.headers = new JSONObject(httpResponseBean.getHeaders());
-        this.responseBody = httpResponseBean.responseBody;
-        this.responseCharacterEncoding = httpResponseBean.responseCharacterEncoding;
-        this.responseCharacterType = httpResponseBean.responseCharacterType;
+        this.responseBody = new String(httpResponseBean.responseBody);
+        this.decodedResponseBody = new String(httpResponseBean.decodedResponseBody);
+        this.responseCharacterEncoding = new String(httpResponseBean.responseCharacterEncoding);
+        this.responseContentType = new String(httpResponseBean.responseContentType);
     }
 
     public JSONObject getHeaders() {
@@ -57,15 +61,27 @@ public class HttpResponseBean {
         this.responseCharacterEncoding = responseCharacterEncoding;
     }
 
-    public String getResponseCharacterType() {
-        return responseCharacterType;
+    public String getResponseContentType() {
+        return responseContentType;
     }
 
-    public void setResponseCharacterType(String responseCharacterType) {
-        this.responseCharacterType = responseCharacterType;
+    public void setResponseContentType(String responseContentType) {
+        if(StringUtils.isNotBlank(responseContentType)) {
+            this.responseContentType = StringUtils.substringBefore(responseContentType, ";").trim().toLowerCase();
+        } else {
+            this.responseContentType = responseContentType;
+        }
     }
 
     public boolean isEmpty(){
         return StringUtils.isBlank(responseBody);
+    }
+
+    public String getDecodedResponseBody() {
+        return decodedResponseBody;
+    }
+
+    public void setDecodedResponseBody(String decodedResponseBody) {
+        this.decodedResponseBody = decodedResponseBody;
     }
 }

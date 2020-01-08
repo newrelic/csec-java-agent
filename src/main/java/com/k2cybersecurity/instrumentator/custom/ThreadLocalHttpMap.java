@@ -150,49 +150,6 @@ public class ThreadLocalHttpMap {
     }
 
 
-    public boolean parseHttpResponse() {
-        // TODO : To be implemented
-        if (httpResponse == null) {
-            System.out.println("No HTTP response found for current context");
-            return false;
-        }
-
-        updateResponseBody();
-
-        try {
-
-            if (isHttpResponseParsed) {
-                System.out.println("HTTP response already parsed for current context");
-                return true;
-            }
-
-            HttpRequestBean httpRequestBean = ThreadLocalExecutionMap.getInstance().getHttpRequestBean();
-
-            Class responseClass = httpResponse.getClass();
-
-            Method getCharacterEncoding = responseClass.getMethod("getCharacterEncoding");
-            getCharacterEncoding.setAccessible(true);
-            httpRequestBean.getHttpResponseBean().setResponseCharacterEncoding((String) getCharacterEncoding.invoke(httpResponse, null));
-
-            Method getContentType = responseClass.getMethod("getContentType");
-            getContentType.setAccessible(true);
-            httpRequestBean.getHttpResponseBean().setResponseCharacterType((String) getContentType.invoke(httpResponse, null));
-
-            Map<String, String> headers = new HashMap<>();
-            processResponseHeaders(headers, httpResponse);
-            httpRequestBean.getHttpResponseBean().setHeaders(new JSONObject(headers));
-
-            // TODO: based on content info, parse/decode the received reponse data here.
-
-            isHttpResponseParsed = true;
-            return true;
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return false;
-    }
-
     public void processHeaders(Map<String, String> headers, Object httpRequest) {
         try {
             Class requestClass = httpRequest.getClass();
@@ -220,6 +177,49 @@ public class ThreadLocalHttpMap {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public boolean parseHttpResponse() {
+        // TODO : To be implemented
+        if (httpResponse == null) {
+            System.out.println("No HTTP response found for current context");
+            return false;
+        }
+
+        updateResponseBody();
+
+        try {
+
+            if (isHttpResponseParsed) {
+                System.out.println("HTTP response already parsed for current context");
+                return true;
+            }
+
+            HttpRequestBean httpRequestBean = ThreadLocalExecutionMap.getInstance().getHttpRequestBean();
+
+            Class responseClass = httpResponse.getClass();
+
+            Method getCharacterEncoding = responseClass.getMethod("getCharacterEncoding");
+            getCharacterEncoding.setAccessible(true);
+            httpRequestBean.getHttpResponseBean().setResponseCharacterEncoding((String) getCharacterEncoding.invoke(httpResponse, null));
+
+            Method getContentType = responseClass.getMethod("getContentType");
+            getContentType.setAccessible(true);
+            httpRequestBean.getHttpResponseBean().setResponseContentType((String) getContentType.invoke(httpResponse, null));
+
+            Map<String, String> headers = new HashMap<>();
+            processResponseHeaders(headers, httpResponse);
+            httpRequestBean.getHttpResponseBean().setHeaders(new JSONObject(headers));
+
+            // TODO: based on content info, parse/decode the received reponse data here.
+
+            isHttpResponseParsed = true;
+            return true;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 
     public void processResponseHeaders(Map<String, String> headers, Object httpRequest) {

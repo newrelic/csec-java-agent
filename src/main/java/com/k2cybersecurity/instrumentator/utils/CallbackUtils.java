@@ -1,11 +1,9 @@
 package com.k2cybersecurity.instrumentator.utils;
 
 import com.k2cybersecurity.instrumentator.dispatcher.EventDispatcher;
-import com.k2cybersecurity.intcodeagent.models.javaagent.FileIntegrityBean;
-import com.k2cybersecurity.intcodeagent.models.javaagent.HttpRequestBean;
-import com.k2cybersecurity.intcodeagent.models.javaagent.JADatabaseMetaData;
-import com.k2cybersecurity.intcodeagent.models.javaagent.VulnerabilityCaseType;
+import com.k2cybersecurity.intcodeagent.models.javaagent.*;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.text.StringEscapeUtils;
 import org.unbescape.html.HtmlEscape;
 
 import java.io.File;
@@ -57,7 +55,9 @@ public class CallbackUtils {
     }
 
     public static String checkForReflectedXSS(HttpRequestBean httpRequestBean) {
-        String responseBody = httpRequestBean.getHttpResponseBean().getResponseBody();
+        decodeResponseData(httpRequestBean.getHttpResponseBean());
+        String responseBody = httpRequestBean.getHttpResponseBean().getDecodedResponseBody();
+        System.out.println("Processed response data is : " + responseBody);
 
         HttpRequestBean requestBean = new HttpRequestBean(httpRequestBean);
         requestBean.getHttpResponseBean().setResponseBody(StringUtils.EMPTY);
@@ -65,6 +65,9 @@ public class CallbackUtils {
         List<String> attackContructs = isXSS(requestBean.toString(), requestBean.getUrl());
 
         for (String construct : attackContructs) {
+			System.err.println(String.format(
+					"Reflected XSS contruct detected ::  %s :: Request : %s", construct,
+					httpRequestBean));
             if (StringUtils.containsIgnoreCase(responseBody, construct)) {
                 System.err.println(String.format(
                         "Reflected XSS attack detected :: Construct : %s :: Request : %s :: Response : %s", construct,
@@ -284,8 +287,51 @@ public class CallbackUtils {
         return "UNKNOWN";
     }
 
-    public static void decodeResponseData() {
+    public static void decodeResponseData(HttpResponseBean httpResponseBean) {
+        StringBuilder consolidatedBody = new StringBuilder();
+        String contentType = httpResponseBean.getResponseContentType();
+        String responseBody = httpResponseBean.getResponseBody();
+        String processedBody = responseBody;
+        try {
+            processedBody = HtmlEscape.unescapeHtml(responseBody);
+            consolidatedBody.append(processedBody);
+            if (StringUtils.isNoneEmpty(responseBody)) {
+                String oldProcessedBody;
+                switch (contentType) {
+                case "application/json":
+                    do {
+                        oldProcessedBody = processedBody;
+                        processedBody = StringEscapeUtils.unescapeJson(processedBody);
+                        consolidatedBody.append("::::");
+                        consolidatedBody.append(processedBody);
+                        System.out.println("Decoding JSON: " + processedBody);
+                    } while (!StringUtils.equals(oldProcessedBody, processedBody));
+                    break;
+                case "application/xml":
+                    do {
+                        oldProcessedBody = processedBody;
+                        processedBody = StringEscapeUtils.unescapeXml(processedBody);
+                        consolidatedBody.append("::::");
+                        consolidatedBody.append(processedBody);
+                        System.out.println("Decoding XML: " + processedBody);
+                    } while (!StringUtils.equals(oldProcessedBody, processedBody));
+                    break;
 
+                case "application/x-www-form-urlencoded":
+                    processedBody = urlDecode(processedBody);
+                    consolidatedBody.append("::::");
+                    consolidatedBody.append(processedBody);
+                    break;
+
+                default:
+                    processedBody = responseBody;
+                    break;
+                }
+            }
+            httpResponseBean.setDecodedResponseBody(consolidatedBody.toString());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
 }
