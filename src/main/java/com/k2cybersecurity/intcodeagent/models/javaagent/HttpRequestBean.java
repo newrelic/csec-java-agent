@@ -311,4 +311,8 @@ public class HttpRequestBean {
 	public void setHttpResponseBean(HttpResponseBean httpResponseBean) {
 		this.httpResponseBean = httpResponseBean;
 	}
+
+	public boolean isEmpty(){
+		return StringUtils.isAnyBlank(url, method);
+	}
 }

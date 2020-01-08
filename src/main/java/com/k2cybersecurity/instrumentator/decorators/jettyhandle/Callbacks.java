@@ -73,8 +73,11 @@ public class Callbacks {
 			CallbackUtils.checkForFileIntegrity(ThreadLocalExecutionMap.getInstance().getFileLocalMap());
 //			CallbackUtils.checkForReflectedXSS(ThreadLocalExecutionMap.getInstance().getHttpRequestBean());
 
-			EventDispatcher.dispatch(new HttpRequestBean(ThreadLocalExecutionMap.getInstance().getHttpRequestBean()), sourceString, exectionId,
-					Instant.now().toEpochMilli(), VulnerabilityCaseType.REFLECTED_XSS);
+			if(!ThreadLocalExecutionMap.getInstance().getHttpRequestBean().getHttpResponseBean().isEmpty()) {
+				printReponse();
+				EventDispatcher.dispatch(new HttpRequestBean(ThreadLocalExecutionMap.getInstance().getHttpRequestBean()),
+						sourceString, exectionId, Instant.now().toEpochMilli(), VulnerabilityCaseType.REFLECTED_XSS);
+			}
 
 			// Clean up
 			ThreadLocalHttpMap.getInstance().cleanState();

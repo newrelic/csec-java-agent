@@ -84,7 +84,10 @@ public class EventDispatcher {
 	}
 
 	public static void dispatch(HttpRequestBean httpRequestBean, String sourceString, String exectionId, long startTime, VulnerabilityCaseType reflectedXss) {
-		DispatcherPool.getInstance().dispatchEvent(httpRequestBean, sourceString, exectionId, startTime, Thread.currentThread().getStackTrace(), reflectedXss);
+		if(!httpRequestBean.isEmpty()) {
+			DispatcherPool.getInstance().dispatchEvent(httpRequestBean, sourceString, exectionId, startTime,
+					Thread.currentThread().getStackTrace(), reflectedXss);
+		}
 	}
 
 }

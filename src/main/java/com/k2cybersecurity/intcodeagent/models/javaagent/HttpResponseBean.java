@@ -64,4 +64,8 @@ public class HttpResponseBean {
     public void setResponseCharacterType(String responseCharacterType) {
         this.responseCharacterType = responseCharacterType;
     }
+
+    public boolean isEmpty(){
+        return StringUtils.isBlank(responseBody);
+    }
 }
