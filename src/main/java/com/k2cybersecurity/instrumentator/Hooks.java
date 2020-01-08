@@ -44,6 +44,7 @@ public class Hooks {
 		TYPE_BASED_HOOKS.put("java.sql.Connection",
 				Arrays.asList("nativeSQL", "prepareCall", "prepareStatement"));
 		
+		//LDAP
 		TYPE_BASED_HOOKS.put("javax.naming.directory.DirContext", Collections.singletonList("search"));
 
 		// Forkexec hooks
@@ -74,6 +75,11 @@ public class Hooks {
 		
 		// Jetty Servlet Hooks
 		NAME_BASED_HOOKS.put("org.eclipse.jetty.server.Handler", Collections.singletonList("handle"));
+		
+		//XPath
+		
+		NAME_BASED_HOOKS.put("org.apache.xpath.XPath", Collections.singletonList("execute"));
+		NAME_BASED_HOOKS.put("com.sun.org.apache.xpath.internal.XPath", Collections.singletonList("execute"));
 
 		// JBoss Classloading Hook
 		NAME_BASED_HOOKS.put("org.jboss.modules.Main", Collections.singletonList("main"));
@@ -206,6 +212,10 @@ public class Hooks {
 		
 		//LDAP search
 		DECORATOR_ENTRY.put("javax.naming.directory.DirContext.search", "com.k2cybersecurity.instrumentator.decorators.ldap");
+		
+		//XPath execute both packages for java standard
+		DECORATOR_ENTRY.put("org.apache.xpath.XPath.execute", "com.k2cybersecurity.instrumentator.decorators.xpath");
+		DECORATOR_ENTRY.put("com.sun.org.apache.xpath.internal.XPath.execute", "com.k2cybersecurity.instrumentator.decorators.xpath");
 
 		// Jetty Servlet
 		DECORATOR_ENTRY.put("org.eclipse.jetty.server.Handler.handle", "com.k2cybersecurity.instrumentator.decorators.jettyhandle");

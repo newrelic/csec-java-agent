@@ -187,6 +187,11 @@ public class Dispatcher implements Runnable {
 			eventBean = setGenericProperties(ssrfOperationalBean, eventBean);
 			eventBean = prepareSSRFEvent(eventBean, ssrfOperationalBean);
 			break;
+		case XPATH:
+			XPathOperationalBean xPathOperationalBean = (XPathOperationalBean) event;
+			eventBean = setGenericProperties(xPathOperationalBean, eventBean);
+			eventBean = prepareXPATHEvent(eventBean, xPathOperationalBean);
+			break;
 		default:
 
 		}
@@ -202,6 +207,14 @@ public class Dispatcher implements Runnable {
 		System.out.println("============= Event Start ============");
 		System.out.println(eventBean);
 		System.out.println("============= Event End ============");
+	}
+
+	private JavaAgentEventBean prepareXPATHEvent(JavaAgentEventBean eventBean,
+			XPathOperationalBean xPathOperationalBean) {
+		JSONArray params = new JSONArray();
+		params.add(xPathOperationalBean.getExpression());
+		eventBean.setParameters(params);
+		return eventBean;
 	}
 
 	private JavaAgentEventBean prepareRandomEvent(JavaAgentEventBean eventBean,
