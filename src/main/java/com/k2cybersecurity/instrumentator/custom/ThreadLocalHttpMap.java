@@ -132,10 +132,10 @@ public class ThreadLocalHttpMap {
             String contextPath = (String) getContextPath.invoke(servletContext, null);
             httpRequestBean.setContextPath(contextPath);
 
-//            Method getServerPort = servletContext.getClass().getMethod("getServerPort");
-//            getServerPort.setAccessible(true);
-//            int serverPort = (Integer) getServerPort.invoke(servletContext, null);
-//            httpRequestBean.setServerPort(serverPort);
+            Method getLocalPort = requestClass.getMethod("getServerPort");
+            getLocalPort.setAccessible(true);
+            int serverPort = (Integer) getLocalPort.invoke(httpRequest, null);
+            httpRequestBean.setServerPort(serverPort);
 
             ServletContextInfo.getInstance().processServletContext(servletContext, contextPath);
             updateBody();
