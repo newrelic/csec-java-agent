@@ -54,6 +54,7 @@ public class CallbackUtils {
         }
     }
 
+    // TODO: use complete response instead of just response body.
     public static String checkForReflectedXSS(HttpRequestBean httpRequestBean) {
         decodeResponseData(httpRequestBean.getHttpResponseBean());
         String responseBody = httpRequestBean.getHttpResponseBean().getDecodedResponseBody();
