@@ -70,28 +70,33 @@ public class Dispatcher implements Runnable {
 
 	@Override public void run() {
 		printDispatch();
-		if (vulnerabilityCaseType.equals(VulnerabilityCaseType.REFLECTED_XSS)) {
-			String xssConstruct = CallbackUtils.checkForReflectedXSS(httpRequestBean);
-			if (StringUtils.isNotBlank(xssConstruct)) {
-				JavaAgentEventBean eventBean = prepareEvent(httpRequestBean, metaData, vulnerabilityCaseType);
-				JSONArray params = new JSONArray();
-				params.add(xssConstruct);
-				params.add(httpRequestBean.getHttpResponseBean().getResponseBody());
-				eventBean.setParameters(params);
-				eventBean.setApplicationUUID(K2Instrumentator.APPLICATION_UUID);
-				eventBean.setPid(K2Instrumentator.VMPID);
-				// TODO set these
-				eventBean.setSourceMethod((String) extraInfo.get("sourceString"));
-				eventBean.setId((String) extraInfo.get("executionId"));
-				eventBean.setStartTime((Long) extraInfo.get("startTime"));
-				eventBean = getUserInfo(eventBean);
-				eventBean.setEventGenerationTime(Instant.now().toEpochMilli());
-				EventSendPool.getInstance().sendEvent(eventBean.toString());
-				System.out.println("============= Event Start ============");
-				System.out.println(eventBean);
-				System.out.println("============= Event End ============");
+		try {
+			if (vulnerabilityCaseType.equals(VulnerabilityCaseType.REFLECTED_XSS)) {
+				String xssConstruct = CallbackUtils.checkForReflectedXSS(httpRequestBean);
+				System.out.println("Changes reflected : " + httpRequestBean.getHttpResponseBean().getResponseBody());
+				if (StringUtils.isNotBlank(xssConstruct)) {
+					JavaAgentEventBean eventBean = prepareEvent(httpRequestBean, metaData, vulnerabilityCaseType);
+					JSONArray params = new JSONArray();
+					params.add(xssConstruct);
+					params.add(httpRequestBean.getHttpResponseBean().getResponseBody());
+					eventBean.setParameters(params);
+					eventBean.setApplicationUUID(K2Instrumentator.APPLICATION_UUID);
+					eventBean.setPid(K2Instrumentator.VMPID);
+					// TODO set these
+					eventBean.setSourceMethod((String) extraInfo.get("sourceString"));
+					eventBean.setId((String) extraInfo.get("executionId"));
+					eventBean.setStartTime((Long) extraInfo.get("startTime"));
+					eventBean = getUserInfo(eventBean);
+					eventBean.setEventGenerationTime(Instant.now().toEpochMilli());
+					EventSendPool.getInstance().sendEvent(eventBean.toString());
+					System.out.println("============= Event Start ============");
+					System.out.println(eventBean);
+					System.out.println("============= Event End ============");
+				}
+				return;
 			}
-			return;
+		} catch (Exception e){
+			e.printStackTrace();
 		}
 
 		if (event == null) {

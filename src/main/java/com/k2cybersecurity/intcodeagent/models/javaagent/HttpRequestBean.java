@@ -54,6 +54,7 @@ public class HttpRequestBean {
 
 	public HttpRequestBean() {
 		this.rawRequest = StringUtils.EMPTY;
+		this.clientIP = StringUtils.EMPTY;
 		this.generationTime = 0;
 		this.body = StringUtils.EMPTY;
 		this.dataTruncated = false;
@@ -67,17 +68,17 @@ public class HttpRequestBean {
 	}
 
 	public HttpRequestBean(HttpRequestBean servletInfo) {
-		this.rawRequest = servletInfo.getRawRequest();
-		this.clientIP = servletInfo.clientIP;
+		this.rawRequest = new String(servletInfo.getRawRequest());
+		this.clientIP = new String(servletInfo.clientIP);
 		this.generationTime = servletInfo.getGenerationTime();
-		this.body = servletInfo.getBody();
+		this.body = new String(servletInfo.getBody());
 		this.dataTruncated = servletInfo.isDataTruncated();
-		this.method = servletInfo.getMethod();
-		this.url = servletInfo.getUrl();
+		this.method = new String(servletInfo.getMethod());
+		this.url = new String(servletInfo.getUrl());
 		this.headers = new JSONObject(servletInfo.getHeaders());
-		this.contextPath = servletInfo.contextPath;
+		this.contextPath = new String(servletInfo.contextPath);
 		this.serverPort = servletInfo.serverPort;
-		this.httpResponseBean = servletInfo.httpResponseBean;
+		this.httpResponseBean = new HttpResponseBean(servletInfo.httpResponseBean);
 	}
 
 	public String getRawRequest() {
