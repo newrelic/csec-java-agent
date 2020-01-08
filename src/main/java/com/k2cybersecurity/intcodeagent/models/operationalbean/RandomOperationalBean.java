@@ -28,7 +28,7 @@ public class RandomOperationalBean extends AbstractOperationalBean {
 	@Override
 	public boolean isEmpty() {
 		// TODO Auto-generated method stub
-		return StringUtils.isNotBlank(eventCatgory);
+		return StringUtils.isBlank(eventCatgory);
 	}
 
 	
