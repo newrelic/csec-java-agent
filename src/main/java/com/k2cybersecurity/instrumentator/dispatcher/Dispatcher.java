@@ -176,6 +176,11 @@ public class Dispatcher implements Runnable {
 			eventBean = setGenericProperties(ssrfOperationalBean, eventBean);
 			eventBean = prepareSSRFEvent(eventBean, ssrfOperationalBean);
 			break;
+		case SECURE_COOKIE:
+			SecureCookieOperationalBean secureCookieOperationalBean = (SecureCookieOperationalBean) event;
+			eventBean = setGenericProperties(secureCookieOperationalBean, eventBean);
+			eventBean = prepareSecureCookieEvent(eventBean, secureCookieOperationalBean);
+			break;
 		default:
 
 		}
@@ -197,6 +202,15 @@ public class Dispatcher implements Runnable {
 			RandomOperationalBean randomOperationalBean) {
 		JSONArray params = new JSONArray();
 		params.add(randomOperationalBean.getClassName());
+		eventBean.setParameters(params);
+		return eventBean;
+	}
+	
+	private JavaAgentEventBean prepareSecureCookieEvent(JavaAgentEventBean eventBean,
+			SecureCookieOperationalBean secureCookieOperationalBean) {
+		System.out.println("PrateeK : " + secureCookieOperationalBean.getValue());
+		JSONArray params = new JSONArray();
+		params.add(secureCookieOperationalBean.getValue());
 		eventBean.setParameters(params);
 		return eventBean;
 	}

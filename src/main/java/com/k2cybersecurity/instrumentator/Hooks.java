@@ -90,6 +90,9 @@ public class Hooks {
 		NAME_BASED_HOOKS.put("org.apache.commons.httpclient.HttpMethodDirector", Collections.singletonList("executeWithRetry"));
 		NAME_BASED_HOOKS.put("com.squareup.okhttp.internal.http.HttpEngine", Collections.singletonList("sendRequest"));
 		NAME_BASED_HOOKS.put("weblogic.net.http.Handler", Collections.singletonList("openConnection"));
+		
+		// Secure Cookie
+		NAME_BASED_HOOKS.put("javax.servlet.http.Cookie", Collections.singletonList("setSecure"));
 
 		//		NAME_BASED_HOOKS.put(CLASS_WEBLOGIC_SERVLET_INTERNAL_WEB_APP_SERVLET_CONTEXT, Collections.singletonList("execute"));  // Handle differently
 
@@ -248,6 +251,8 @@ public class Hooks {
 		DECORATOR_ENTRY.put("org.apache.commons.httpclient.HttpMethodDirector.executeWithRetry", "com.k2cybersecurity.instrumentator.decorators.ssrf");
 		DECORATOR_ENTRY.put("com.squareup.okhttp.internal.http.HttpEngine.sendRequest", "com.k2cybersecurity.instrumentator.decorators.ssrf");
 		DECORATOR_ENTRY.put("weblogic.net.http.Handler,openConnection", "com.k2cybersecurity.instrumentator.decorators.ssrf");
-
+		
+		// Secure cookie
+		DECORATOR_ENTRY.put("javax.servlet.http.Cookie.setSecure", "com.k2cybersecurity.instrumentator.decorators.securecookie");
 	}
 }
