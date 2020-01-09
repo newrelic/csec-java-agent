@@ -10,8 +10,11 @@ import com.k2cybersecurity.intcodeagent.models.operationalbean.FileOperationalBe
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
+import java.nio.file.Paths;
 import java.time.Instant;
 import java.util.Arrays;
+
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.*;
 
 public class Callbacks {
 
@@ -25,10 +28,8 @@ public class Callbacks {
 						.isNotBlank(args[0].toString())) {
 					FileOperationalBean fileOperationalBean = new FileOperationalBean(args[0].toString(), className,
 							sourceString, exectionId, Instant.now().toEpochMilli());
-					FileIntegrityBean fbean = new FileIntegrityBean(new File(args[0].toString()).exists(), args[0].toString(), className,
-							sourceString, exectionId, Instant.now().toEpochMilli());
-					ThreadLocalExecutionMap.getInstance().getFileLocalMap().put(args[0].toString(),
-							fbean);
+					
+					FileIntegrityBean fbean = createEntryOfFileIntegrity(args[0].toString(), sourceString, className, methodName, exectionId);
 					EventDispatcher.dispatch(fileOperationalBean, fbean, VulnerabilityCaseType.FILE_OPERATION);
 				}
 			} finally {
@@ -37,6 +38,27 @@ public class Callbacks {
 		}
 		
 		
+	}
+
+	private static String getFileExtension(File file) {
+		String fileName = file.getName();
+		if (fileName.lastIndexOf(".") != -1 && fileName.lastIndexOf(".") != 0)
+			return fileName.substring(fileName.lastIndexOf(".") + 1);
+		else
+			return StringUtils.EMPTY;
+	}
+	
+	private static FileIntegrityBean createEntryOfFileIntegrity(String fileName, String sourceString, String className, String methodName, String exectionId) {
+		File file = Paths.get(fileName).toFile();
+		String extension = getFileExtension(file);
+		if (SOURCE_EXENSIONS.contains(extension)) {
+			FileIntegrityBean fbean = new FileIntegrityBean(file.exists(), fileName, className,
+					sourceString, exectionId, Instant.now().toEpochMilli());
+			ThreadLocalExecutionMap.getInstance().getFileLocalMap().put(fileName,
+					fbean);
+			return fbean;
+		}
+		return null;
 	}
 
 	public static void doOnExit(String sourceString, String className, String methodName, Object obj, Object[] args,
