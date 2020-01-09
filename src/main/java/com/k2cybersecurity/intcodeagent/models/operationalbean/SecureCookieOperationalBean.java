@@ -1,9 +1,11 @@
 package com.k2cybersecurity.intcodeagent.models.operationalbean;
 
-public class SecureCookieOperationalBean extends AbstractOperationalBean {
-	private boolean value;
+import org.apache.commons.lang3.StringUtils;
 
-	public SecureCookieOperationalBean(Boolean value, String className, String sourceMethod, String executionId,
+public class SecureCookieOperationalBean extends AbstractOperationalBean {
+	private String value;
+
+	public SecureCookieOperationalBean(String value, String className, String sourceMethod, String executionId,
 			long startTime) {
 		super(className, sourceMethod, executionId, startTime);
 		this.value = value;
@@ -13,17 +15,17 @@ public class SecureCookieOperationalBean extends AbstractOperationalBean {
 		super(abstractOperationalBean);
 	}
 
-	public boolean getValue() {
+	public String getValue() {
 		return value;
 	}
 
-	public void setValue(boolean value) {
+	public void setValue(String value) {
 		this.value = value;
 	}
 
 	@Override
 	public boolean isEmpty() {
-		return false;
+		return StringUtils.isBlank(value);
 	}
 
 }

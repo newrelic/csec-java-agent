@@ -19,7 +19,7 @@ public class Callbacks {
 				if (args.length > 0 && args[0] != null) {
 					boolean value = (boolean) args[0];
 
-					SecureCookieOperationalBean secureCookieOperationalBean = new SecureCookieOperationalBean(value,
+					SecureCookieOperationalBean secureCookieOperationalBean = new SecureCookieOperationalBean((value ? "true" : "false"),
 							className, sourceString, exectionId, Instant.now().toEpochMilli());
 					EventDispatcher.dispatch(secureCookieOperationalBean, VulnerabilityCaseType.SECURE_COOKIE);
 					System.out.println("OnEnter :" + sourceString + " - args : " + Arrays.asList(args) + " - this : "
