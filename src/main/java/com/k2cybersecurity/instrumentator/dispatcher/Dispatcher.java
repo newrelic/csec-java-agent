@@ -37,7 +37,7 @@ public class Dispatcher implements Runnable {
 	private StackTraceElement[] trace;
 	private VulnerabilityCaseType vulnerabilityCaseType;
 	private Map<String, Object> extraInfo;
-	private Boolean sentToBuffer;
+	private Boolean sentToBuffer = false;
 
 	/**
 	 * @return the sentToBuffer
@@ -160,6 +160,7 @@ public class Dispatcher implements Runnable {
 		}
 
 		JavaAgentEventBean eventBean = prepareEvent(httpRequestBean, metaData, vulnerabilityCaseType);
+		
 		switch (vulnerabilityCaseType) {
 		case FILE_OPERATION:
 			FileOperationalBean fileOperationalBean = (FileOperationalBean) event;
@@ -257,7 +258,6 @@ public class Dispatcher implements Runnable {
 			}
 			return;
 		}
-		
 		if (VulnerabilityCaseType.FILE_OPERATION.equals(vulnerabilityCaseType)) {
 			createEntryForFileIntegrity((FileOperationalBean) event, eventBean);
 		}
