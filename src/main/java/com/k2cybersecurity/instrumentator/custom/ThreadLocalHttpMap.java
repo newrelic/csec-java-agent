@@ -393,6 +393,6 @@ public class ThreadLocalHttpMap {
     }
 
     public boolean isEmpty() {
-        return httpRequest == null || httpResponse == null;
+        return httpRequest == null && httpResponse == null;
     }
 }

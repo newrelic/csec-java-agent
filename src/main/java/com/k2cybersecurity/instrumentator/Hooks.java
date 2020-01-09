@@ -71,13 +71,13 @@ public class Hooks {
 		NAME_BASED_HOOKS.put("com.mongodb.async.client.MongoClientImpl$2", Collections.singletonList("execute"));
 		NAME_BASED_HOOKS.put("com.mongodb.async.client.AsyncOperationExecutorImpl", Collections.singletonList("execute"));
 		NAME_BASED_HOOKS.put("com.mongodb.async.client.OperationExecutorImpl", Collections.singletonList("execute"));
-
-		//Weak Random
-		NAME_BASED_HOOKS.put("java.util.Random", Arrays.asList(new String[] {"nextBytes", "nextInt", "nextLong", "nextBoolean", "nextFloat", "nextDouble", "nextGaussian"}));
-		NAME_BASED_HOOKS.put("java.lang.Math", Collections.singletonList("random"));
-		
-		//Strong random
-		NAME_BASED_HOOKS.put("java.security.SecureRandom", Arrays.asList(new String[] {"nextBytes", "nextInt", "nextLong", "nextBoolean", "nextFloat", "nextDouble", "nextGaussian"}));
+//
+//		//Weak Random
+//		NAME_BASED_HOOKS.put("java.util.Random", Arrays.asList(new String[] {"nextBytes", "nextInt", "nextLong", "nextBoolean", "nextFloat", "nextDouble", "nextGaussian"}));
+//		NAME_BASED_HOOKS.put("java.lang.Math", Collections.singletonList("random"));
+//
+//		//Strong random
+//		NAME_BASED_HOOKS.put("java.security.SecureRandom", Arrays.asList(new String[] {"nextBytes", "nextInt", "nextLong", "nextBoolean", "nextFloat", "nextDouble", "nextGaussian"}));
 		
 		// Jetty Servlet Hooks
 		NAME_BASED_HOOKS.put("org.eclipse.jetty.server.Handler", Collections.singletonList("handle"));

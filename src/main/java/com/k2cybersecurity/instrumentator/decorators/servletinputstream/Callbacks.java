@@ -21,20 +21,22 @@ public class Callbacks {
 
 	public static void doOnExit(String sourceString, String className, String methodName, Object obj, Object[] args,
 			Object returnVal, String exectionId) {
-		if (!ThreadLocalOperationLock.getInstance().isAcquired()) {
-			try {
-				ThreadLocalOperationLock.getInstance().acquire();
-				if (args != null && args.length == 1) {
-					ThreadLocalHttpMap.getInstance()
-							.insertToRequestByteBuffer(Arrays.copyOfRange((byte[]) args[0], 0, (Integer) returnVal));
-				} else if (args != null && args.length == 3) {
-					ThreadLocalHttpMap.getInstance().insertToRequestByteBuffer(
-							Arrays.copyOfRange((byte[]) args[0], (Integer) args[1], (Integer) args[2]));
-				} else if (args == null || args.length == 0) {
-					ThreadLocalHttpMap.getInstance().insertToRequestByteBuffer(((Integer) returnVal).byteValue());
+		if (!ThreadLocalHttpMap.getInstance().isEmpty()) {
+			if (!ThreadLocalOperationLock.getInstance().isAcquired()) {
+				try {
+					ThreadLocalOperationLock.getInstance().acquire();
+					if (args != null && args.length == 1) {
+						ThreadLocalHttpMap.getInstance()
+								.insertToRequestByteBuffer(Arrays.copyOfRange((byte[]) args[0], 0, (Integer) returnVal));
+					} else if (args != null && args.length == 3) {
+						ThreadLocalHttpMap.getInstance().insertToRequestByteBuffer(
+								Arrays.copyOfRange((byte[]) args[0], (Integer) args[1], (Integer) args[2]));
+					} else if (args == null || args.length == 0) {
+						ThreadLocalHttpMap.getInstance().insertToRequestByteBuffer(((Integer) returnVal).byteValue());
+					}
+				} finally {
+					ThreadLocalOperationLock.getInstance().release();
 				}
-			} finally {
-				ThreadLocalOperationLock.getInstance().release();
 			}
 		}
 		//        System.out.println("OnExit :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj + " - return : " + returnVal + " - eid : " + exectionId);
