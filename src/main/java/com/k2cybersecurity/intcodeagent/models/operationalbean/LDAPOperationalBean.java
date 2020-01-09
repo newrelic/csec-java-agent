@@ -48,7 +48,7 @@ public class LDAPOperationalBean extends AbstractOperationalBean {
 
 	@Override
 	public boolean isEmpty() {
-		return StringUtils.isBlank(name);
+		return StringUtils.isAnyBlank(name, filter);
 	}
 
 	@Override

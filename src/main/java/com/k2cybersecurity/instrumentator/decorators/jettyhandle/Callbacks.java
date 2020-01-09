@@ -3,6 +3,7 @@ package com.k2cybersecurity.instrumentator.decorators.jettyhandle;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalDBMap;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalExecutionMap;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalHttpMap;
+import com.k2cybersecurity.instrumentator.custom.ThreadLocalLDAPMap;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalSessionMap;
 import com.k2cybersecurity.instrumentator.dispatcher.EventDispatcher;
 import com.k2cybersecurity.instrumentator.utils.CallbackUtils;
@@ -84,6 +85,7 @@ public class Callbacks {
 			ThreadLocalHttpMap.getInstance().cleanState();
 			ThreadLocalDBMap.getInstance().clearAll();
 			ThreadLocalSessionMap.getInstance().clearAll();
+			ThreadLocalLDAPMap.getInstance().clearAll();
 			ThreadLocalExecutionMap.getInstance().getFileLocalMap().clear();
 			ThreadLocalExecutionMap.getInstance().cleanUp();
 		}

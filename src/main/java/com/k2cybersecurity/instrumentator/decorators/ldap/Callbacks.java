@@ -1,6 +1,7 @@
 package com.k2cybersecurity.instrumentator.decorators.ldap;
 
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalHttpMap;
+import com.k2cybersecurity.instrumentator.custom.ThreadLocalLDAPMap;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalOperationLock;
 import com.k2cybersecurity.instrumentator.dispatcher.EventDispatcher;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
@@ -28,13 +29,13 @@ public class Callbacks {
 
 					String name = args[0].toString();
 					if (StringUtils.isNotBlank(name)) {
-						LDAPOperationalBean ldapOperationalBean = new LDAPOperationalBean(name, className, sourceString,
-								executionId, Instant.now().toEpochMilli());
+						
 						String filter = args[1].toString();
-						if (StringUtils.isNotBlank(filter)) {
-							ldapOperationalBean.setFilter(filter);
+						if (StringUtils.isNotBlank(filter) && ThreadLocalLDAPMap.getInstance().put(filter)) {
+							LDAPOperationalBean ldapOperationalBean = new LDAPOperationalBean(name, filter, className, sourceString,
+									executionId, Instant.now().toEpochMilli());
+							EventDispatcher.dispatch(ldapOperationalBean, VulnerabilityCaseType.LDAP);
 						}
-						EventDispatcher.dispatch(ldapOperationalBean, VulnerabilityCaseType.LDAP);
 					}
 				}
 			} finally {
