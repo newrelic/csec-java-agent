@@ -23,9 +23,9 @@ public class Callbacks {
 					HashCryptoOperationalBean hashCryptoOperationalBean = new HashCryptoOperationalBean(name, className,
 							sourceString, exectionId, Instant.now().toEpochMilli());
 					String provider = StringUtils.EMPTY;
-					if(args[1] != null && args[1] instanceof Provider) {
+					if(args.length >= 2 && args[1] != null && args[1] instanceof Provider) {
 						provider = args[1].getClass().getSimpleName();
-					} else if(args[1] != null && args[1] instanceof String) {
+					} else if(args.length >= 2 && args[1] != null && args[1] instanceof String) {
 						provider = args[1].toString();
 					}
 					hashCryptoOperationalBean.setProvider(provider);
