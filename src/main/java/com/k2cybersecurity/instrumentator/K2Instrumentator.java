@@ -8,12 +8,15 @@ import com.k2cybersecurity.intcodeagent.models.javaagent.ApplicationInfoBean;
 import com.k2cybersecurity.intcodeagent.models.javaagent.JAHealthCheck;
 import com.k2cybersecurity.intcodeagent.websocket.EventSendPool;
 import com.k2cybersecurity.intcodeagent.websocket.WSClient;
+
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.*;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.HashSet;
 import java.util.Set;
@@ -38,7 +41,7 @@ public class K2Instrumentator {
 	public static boolean isDynamicAttach = false;
 	public static boolean isAttached = false;
 	public static boolean enableHTTPRequestPrinting = false;
-	
+
 	static {
 		try {
 			RuntimeMXBean runtimeMXBean = ManagementFactory.getRuntimeMXBean();
@@ -155,8 +158,7 @@ public class K2Instrumentator {
 			}
 			applicationInfoBean
 					.setBinaryName(StringUtils.substringAfterLast(applicationInfoBean.getBinaryPath(), File.separator));
-			applicationInfoBean
-					.setSha256(HashGenerator.getChecksum(new File(applicationInfoBean.getBinaryPath())));
+			applicationInfoBean.setSha256(HashGenerator.getChecksum(new File(applicationInfoBean.getBinaryPath())));
 			if (containerId != null) {
 				applicationInfoBean.setContainerID(containerId);
 				applicationInfoBean.setIsHost(false);
@@ -176,18 +178,12 @@ public class K2Instrumentator {
 		File cmdlineFile = new File(PROC_DIR + pid + CMD_LINE_DIR);
 		if (!cmdlineFile.isFile())
 			return null;
-		BufferedReader br = null;
 		try {
-			br = new BufferedReader(new FileReader(cmdlineFile));
-			String cmdline = br.readLine();
+			String cmdline = StringEscapeUtils.unescapeJava(
+					FileUtils.readFileToString(new File(PROC_DIR + pid + CMD_LINE_DIR), StandardCharsets.UTF_8));
 			if (!cmdline.isEmpty())
 				return cmdline;
 		} catch (IOException e) {
-		} finally {
-			try {
-				br.close();
-			} catch (IOException e) {
-			}
 		}
 		return null;
 	}
@@ -215,6 +211,5 @@ public class K2Instrumentator {
 		}
 		return null;
 	}
-	
-	
+
 }
