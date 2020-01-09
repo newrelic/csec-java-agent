@@ -1,7 +1,6 @@
 package com.k2cybersecurity.instrumentator.dispatcher;
 
 import com.k2cybersecurity.instrumentator.K2Instrumentator;
-import com.k2cybersecurity.instrumentator.custom.ThreadLocalExecutionMap;
 import com.k2cybersecurity.instrumentator.utils.CallbackUtils;
 import com.k2cybersecurity.instrumentator.utils.HashGenerator;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
@@ -367,6 +366,7 @@ public class Dispatcher implements Runnable {
 			int lineNumber = trace[i].getLineNumber();
 			klassName = trace[i].getClassName();
 			rciTriggerCheck(i, eventBean, klassName);
+			xxeTriggerCheck(i, eventBean, klassName);
 			deserializationTriggerCheck(i, eventBean, klassName);
 			if (lineNumber <= 0) {
 				continue;
@@ -388,6 +388,18 @@ public class Dispatcher implements Runnable {
 			eventBean.setUserAPIInfo(lastNonJavaLineNumber, lastNonJavaClass, lastNonJavaMethod);
 		}
 		return eventBean;
+	}
+
+	private void xxeTriggerCheck(int i, JavaAgentEventBean eventBean, String klassName) {
+
+		if((StringUtils.contains(klassName, "XMLDocumentFragmentScannerImpl")
+				&& StringUtils.equals(trace[i].getMethodName(), "scanDocument"))
+				|| (StringUtils.contains(klassName, "XMLEntityManager")
+				&& StringUtils.equals(trace[i].getMethodName(), "setupCurrentEntity"))) {
+			eventBean.getMetaData().setTriggerViaXXE(true);
+			logger.log(LogLevel.DEBUG, String.format("Printing stack trace for xxe event : %s : %s", eventBean.getId(), Arrays
+					.asList(trace)), ProcessorThread.class.getName());
+		}
 	}
 
 	private JavaAgentEventBean getUserInfo(JavaAgentEventBean eventBean) {
