@@ -179,10 +179,8 @@ public class K2Instrumentator {
 		if (!cmdlineFile.isFile())
 			return null;
 		try {
-			String cmdline = StringEscapeUtils
-					.unescapeJava(
-							FileUtils.readFileToString(new File(PROC_DIR + pid + CMD_LINE_DIR), StandardCharsets.UTF_8))
-					.replace("\u0000", StringUtils.EMPTY);
+			String cmdline = FileUtils.readFileToString(new File(PROC_DIR + pid + CMD_LINE_DIR),
+					StandardCharsets.UTF_8);
 			if (!cmdline.isEmpty())
 				return cmdline;
 		} catch (IOException e) {
