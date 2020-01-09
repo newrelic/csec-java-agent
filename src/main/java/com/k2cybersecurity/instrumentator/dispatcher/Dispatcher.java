@@ -270,7 +270,6 @@ public class Dispatcher implements Runnable {
 		return eventBean;
 	}
 
->>>>>>> securecookie
 	private JavaAgentEventBean prepareTrustBoundaryEvent(JavaAgentEventBean eventBean,
 			TrustBoundaryOperationalBean trustBoundaryOperationalBean) {
 		JSONArray params = new JSONArray();
