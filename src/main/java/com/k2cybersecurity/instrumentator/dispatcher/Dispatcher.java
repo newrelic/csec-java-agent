@@ -78,7 +78,8 @@ public class Dispatcher implements Runnable {
 		extraInfo.put("FileIntegrityBean", fbean);
 	}
 
-	@Override public void run() {
+	@Override
+	public void run() {
 		printDispatch();
 		try {
 			if (vulnerabilityCaseType.equals(VulnerabilityCaseType.REFLECTED_XSS)) {
@@ -105,7 +106,7 @@ public class Dispatcher implements Runnable {
 				}
 				return;
 			}
-		} catch (Exception e){
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 
@@ -155,7 +156,7 @@ public class Dispatcher implements Runnable {
 				System.out.println("------- Invalid event -----------");
 				return;
 			}
-			//			eventBean.setEventCategory(getDbName(operationalList.get(0).getClassName()));
+			// eventBean.setEventCategory(getDbName(operationalList.get(0).getClassName()));
 			eventBean = setGenericProperties(operationalList.get(0), eventBean);
 			eventBean = prepareSQLDbCommandEvent(operationalList, eventBean);
 			break;
@@ -191,10 +192,25 @@ public class Dispatcher implements Runnable {
 			eventBean = setGenericProperties(xPathOperationalBean, eventBean);
 			eventBean = prepareXPATHEvent(eventBean, xPathOperationalBean);
 			break;
+		case SECURE_COOKIE:
+			SecureCookieOperationalBean secureCookieOperationalBean = (SecureCookieOperationalBean) event;
+			eventBean = setGenericProperties(secureCookieOperationalBean, eventBean);
+			eventBean = prepareSecureCookieEvent(eventBean, secureCookieOperationalBean);
+			break;
 		case TRUSTBOUNDARY:
 			TrustBoundaryOperationalBean trustBoundaryOperationalBean = (TrustBoundaryOperationalBean) event;
 			eventBean = setGenericProperties(trustBoundaryOperationalBean, eventBean);
 			eventBean = prepareTrustBoundaryEvent(eventBean, trustBoundaryOperationalBean);
+			break;
+		case CRYPTO:
+			HashCryptoOperationalBean hashCryptoOperationalBean = (HashCryptoOperationalBean) event;
+			eventBean = setGenericProperties(hashCryptoOperationalBean, eventBean);
+			eventBean = prepareCryptoEvent(eventBean, hashCryptoOperationalBean);
+			break;
+		case HASH:
+			HashCryptoOperationalBean hashOperationalBean = (HashCryptoOperationalBean) event;
+			eventBean = setGenericProperties(hashOperationalBean, eventBean);
+			eventBean = prepareHashEvent(eventBean, hashOperationalBean);
 			break;
 		default:
 
@@ -202,8 +218,8 @@ public class Dispatcher implements Runnable {
 		if (!VulnerabilityCaseType.FILE_INTEGRITY.equals(vulnerabilityCaseType)) {
 			eventBean = processStackTrace(eventBean);
 		}
-		
-		if(VulnerabilityCaseType.FILE_OPERATION.equals(vulnerabilityCaseType)) {
+
+		if (VulnerabilityCaseType.FILE_OPERATION.equals(vulnerabilityCaseType)) {
 			createEntryForFileIntegrity((FileOperationalBean) event, eventBean);
 		}
 		eventBean.setEventGenerationTime(Instant.now().toEpochMilli());
@@ -219,8 +235,42 @@ public class Dispatcher implements Runnable {
 		params.add(xPathOperationalBean.getExpression());
 		eventBean.setParameters(params);
 		return eventBean;
+}
+	private JavaAgentEventBean prepareHashEvent(JavaAgentEventBean eventBean,
+			HashCryptoOperationalBean hashOperationalBean) {
+		JSONArray params = new JSONArray();
+		params.add(hashOperationalBean.getName());
+		if (StringUtils.isNotBlank(hashOperationalBean.getProvider())) {
+			params.add(hashOperationalBean.getProvider());
+		}
+		eventBean.setParameters(params);
+		return eventBean;
 	}
 
+	private JavaAgentEventBean prepareCryptoEvent(JavaAgentEventBean eventBean,
+			HashCryptoOperationalBean hashCryptoOperationalBean) {
+		JSONArray params = new JSONArray();
+		params.add(hashCryptoOperationalBean.getName());
+		if (StringUtils.isNotBlank(hashCryptoOperationalBean.getProvider())) {
+			params.add(hashCryptoOperationalBean.getProvider());
+		}
+		eventBean.setParameters(params);
+		if (eventBean.getSourceMethod().equals(JAVAX_CRYPTO_CIPHER_GETINSTANCE_STRING)
+				|| eventBean.getSourceMethod().equals(JAVAX_CRYPTO_CIPHER_GETINSTANCE_STRING_PROVIDER)) {
+			eventBean.setEventCategory("CIPHER");
+		} else if (eventBean.getSourceMethod().equals(JAVAX_CRYPTO_KEYGENERATOR_GETINSTANCE_STRING)
+				|| eventBean.getSourceMethod().equals(JAVAX_CRYPTO_KEYGENERATOR_GETINSTANCE_STRING_STRING)
+				|| eventBean.getSourceMethod().equals(JAVAX_CRYPTO_KEYGENERATOR_GETINSTANCE_STRING_PROVIDER)) {
+			eventBean.setEventCategory("KEYGENERATOR");
+		} else if (eventBean.getSourceMethod().equals(JAVA_SECURITY_KEYPAIRGENERATOR_GETINSTANCE_STRING)
+				|| eventBean.getSourceMethod().equals(JAVA_SECURITY_KEYPAIRGENERATOR_GETINSTANCE_STRING_STRING)
+				|| eventBean.getSourceMethod().equals(JAVA_SECURITY_KEYPAIRGENERATOR_GETINSTANCE_STRING_PROVIDER)) {
+			eventBean.setEventCategory("KEYPAIRGENERATOR");
+		}
+		return eventBean;
+	}
+
+>>>>>>> securecookie
 	private JavaAgentEventBean prepareTrustBoundaryEvent(JavaAgentEventBean eventBean,
 			TrustBoundaryOperationalBean trustBoundaryOperationalBean) {
 		JSONArray params = new JSONArray();
@@ -235,6 +285,15 @@ public class Dispatcher implements Runnable {
 		JSONArray params = new JSONArray();
 		params.add(randomOperationalBean.getClassName());
 		eventBean.setEventCategory(randomOperationalBean.getEventCatgory());
+		eventBean.setParameters(params);
+		return eventBean;
+	}
+	
+	private JavaAgentEventBean prepareSecureCookieEvent(JavaAgentEventBean eventBean,
+			SecureCookieOperationalBean secureCookieOperationalBean) {
+		System.out.println("PrateeK : " + secureCookieOperationalBean.getValue());
+		JSONArray params = new JSONArray();
+		params.add(secureCookieOperationalBean.getValue());
 		eventBean.setParameters(params);
 		return eventBean;
 	}
@@ -318,15 +377,17 @@ public class Dispatcher implements Runnable {
 
 		if (sourceString.equals(APACHE_HTTP_REQUEST_EXECUTOR_METHOD)) {
 			ProcessorThread.getApacheHttpRequestParameters(obj, params);
-		} else if (sourceString.equals(JAVA_OPEN_CONNECTION_METHOD2) || sourceString
-				.equals(JAVA_OPEN_CONNECTION_METHOD2_HTTPS) || sourceString.equals(JAVA_OPEN_CONNECTION_METHOD2_HTTPS_2)
+		} else if (sourceString.equals(JAVA_OPEN_CONNECTION_METHOD2)
+				|| sourceString.equals(JAVA_OPEN_CONNECTION_METHOD2_HTTPS)
+				|| sourceString.equals(JAVA_OPEN_CONNECTION_METHOD2_HTTPS_2)
 				|| sourceString.equals(WEBLOGIC_OPEN_CONNECTION_METHOD)) {
 			ProcessorThread.getJavaHttpRequestParameters(obj, params);
-		} else if (sourceString.equals(JDK_INCUBATOR_MULTIEXCHANGE_RESONSE_METHOD) || sourceString
-				.equals(JDK_INCUBATOR_MULTIEXCHANGE_RESONSE_ASYNC_METHOD)) {
+		} else if (sourceString.equals(JDK_INCUBATOR_MULTIEXCHANGE_RESONSE_METHOD)
+				|| sourceString.equals(JDK_INCUBATOR_MULTIEXCHANGE_RESONSE_ASYNC_METHOD)) {
 			ProcessorThread.getJava9HttpClientParameters(obj, params);
-			//			} else if (vulnerabilityCaseType.equals(VulnerabilityCaseType.FILE_OPERATION)) {
-			//				getFileParameters(obj, parameters);
+			// } else if
+			// (vulnerabilityCaseType.equals(VulnerabilityCaseType.FILE_OPERATION)) {
+			// getFileParameters(obj, parameters);
 		} else if (sourceString.equals(APACHE_COMMONS_HTTP_METHOD_DIRECTOR_METHOD)) {
 			ProcessorThread.getApacheCommonsHttpRequestParameters(obj, params);
 		} else if (sourceString.equals(OKHTTP_HTTP_ENGINE_METHOD)) {
@@ -432,28 +493,26 @@ public class Dispatcher implements Runnable {
 	}
 
 	private void deserializationTriggerCheck(int index, JavaAgentEventBean eventBean, String klassName) {
-		if (ObjectInputStream.class.getName().equals(klassName) && StringUtils
-				.equals(trace[index].getMethodName(), READ_OBJECT)) {
+		if (ObjectInputStream.class.getName().equals(klassName)
+				&& StringUtils.equals(trace[index].getMethodName(), READ_OBJECT)) {
 			eventBean.getMetaData().setTriggerViaDeserialisation(true);
-			logger.log(LogLevel.DEBUG,
-					String.format("Printing stack trace for deserialise event : %s : %s", eventBean.getId(),
-							Arrays.asList(trace)), ProcessorThread.class.getName());
+			logger.log(LogLevel.DEBUG, String.format("Printing stack trace for deserialise event : %s : %s",
+					eventBean.getId(), Arrays.asList(trace)), ProcessorThread.class.getName());
 
 		}
 	}
 
 	private void rciTriggerCheck(int index, JavaAgentEventBean eventBean, String klassName) {
-		if (!StringUtils.contains(trace[index].toString(), ".java:") && index > 0 && StringUtils
-				.contains(trace[index - 1].toString(), ".java:")) {
+		if (!StringUtils.contains(trace[index].toString(), ".java:") && index > 0
+				&& StringUtils.contains(trace[index - 1].toString(), ".java:")) {
 			eventBean.getMetaData().setTriggerViaRCI(true);
 			eventBean.getMetaData().getRciMethodsCalls().add(trace[index].toString());
 			eventBean.getMetaData().getRciMethodsCalls().add(trace[index - 1].toString());
-			logger.log(LogLevel.DEBUG,
-					String.format("Printing stack trace for probable rci event : %s : %s", eventBean.getId(),
-							Arrays.asList(trace)), ProcessorThread.class.getName());
+			logger.log(LogLevel.DEBUG, String.format("Printing stack trace for probable rci event : %s : %s",
+					eventBean.getId(), Arrays.asList(trace)), ProcessorThread.class.getName());
 		}
-		if (StringUtils.contains(klassName, REFLECT_NATIVE_METHOD_ACCESSOR_IMPL) && StringUtils
-				.equals(trace[index].getMethodName(), INVOKE_0) && index > 0) {
+		if (StringUtils.contains(klassName, REFLECT_NATIVE_METHOD_ACCESSOR_IMPL)
+				&& StringUtils.equals(trace[index].getMethodName(), INVOKE_0) && index > 0) {
 			eventBean.getMetaData().setTriggerViaRCI(true);
 			eventBean.getMetaData().getRciMethodsCalls().add(trace[index - 1].toString());
 			logger.log(LogLevel.DEBUG, String.format("Printing stack trace for rci event : %s : %s", eventBean.getId(),

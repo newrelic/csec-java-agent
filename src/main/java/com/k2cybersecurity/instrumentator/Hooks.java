@@ -99,6 +99,16 @@ public class Hooks {
 		NAME_BASED_HOOKS.put("org.apache.commons.httpclient.HttpMethodDirector", Collections.singletonList("executeWithRetry"));
 		NAME_BASED_HOOKS.put("com.squareup.okhttp.internal.http.HttpEngine", Collections.singletonList("sendRequest"));
 		NAME_BASED_HOOKS.put("weblogic.net.http.Handler", Collections.singletonList("openConnection"));
+		
+		// Secure Cookie
+		NAME_BASED_HOOKS.put("javax.servlet.http.Cookie", Collections.singletonList("setSecure"));
+		//CRYPTO
+		NAME_BASED_HOOKS.put("javax.crypto.Cipher", Collections.singletonList("getInstance"));
+		NAME_BASED_HOOKS.put("javax.crypto.KeyGenerator", Collections.singletonList("getInstance"));
+		NAME_BASED_HOOKS.put("java.security.KeyPairGenerator", Collections.singletonList("getInstance"));
+		
+		//HASH
+		NAME_BASED_HOOKS.put("java.security.MessageDigest", Collections.singletonList("getInstance"));
 
 		//		NAME_BASED_HOOKS.put(CLASS_WEBLOGIC_SERVLET_INTERNAL_WEB_APP_SERVLET_CONTEXT, Collections.singletonList("execute"));  // Handle differently
 
@@ -261,10 +271,22 @@ public class Hooks {
 		DECORATOR_ENTRY.put("org.apache.commons.httpclient.HttpMethodDirector.executeWithRetry", "com.k2cybersecurity.instrumentator.decorators.ssrf");
 		DECORATOR_ENTRY.put("com.squareup.okhttp.internal.http.HttpEngine.sendRequest", "com.k2cybersecurity.instrumentator.decorators.ssrf");
 		DECORATOR_ENTRY.put("weblogic.net.http.Handler.openConnection", "com.k2cybersecurity.instrumentator.decorators.ssrf");
-
+		
+		// Secure cookie
+		DECORATOR_ENTRY.put("javax.servlet.http.Cookie.setSecure", "com.k2cybersecurity.instrumentator.decorators.securecookie");
 		//trust boundary
 		DECORATOR_ENTRY.put("javax.servlet.http.HttpSession.setAttribute", "com.k2cybersecurity.instrumentator.decorators.trustboundary");
 		DECORATOR_ENTRY.put("javax.servlet.http.HttpSession.putValue", "com.k2cybersecurity.instrumentator.decorators.trustboundary");
-
+		
+		
+		//CRYPTO
+		DECORATOR_ENTRY.put("javax.crypto.Cipher.getInstance", "com.k2cybersecurity.instrumentator.decorators.crypto");
+		DECORATOR_ENTRY.put("javax.crypto.KeyGenerator.getInstance", "com.k2cybersecurity.instrumentator.decorators.crypto");
+		DECORATOR_ENTRY.put("java.security.KeyPairGenerator.getInstance", "com.k2cybersecurity.instrumentator.decorators.crypto");
+		
+		//HASH
+		DECORATOR_ENTRY.put("java.security.MessageDigest.getInstance", "com.k2cybersecurity.instrumentator.decorators.hash");
+		
+		
 	}
 }

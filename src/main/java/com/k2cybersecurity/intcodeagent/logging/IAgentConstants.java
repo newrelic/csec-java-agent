@@ -9,10 +9,10 @@ public interface IAgentConstants {
 
 	String TRACE_REGEX = "^((?!(org\\.apache\\.jsp))((sun|java|javax|com\\.sun|jdk)|(org\\.apache|com\\.k2cybersecurity\\.intcodeagent|k2\\.io\\.org|com\\.microsoft\\.sqlserver|com\\.mysql|sun\\.reflect|org\\.hibernate|com\\.mongodb|org\\.apache\\.commons|org\\.mongodb|org\\.eclipse\\.jetty|net\\.sourceforge\\.eclipsejetty|org\\.springframework|org\\.slf4j|org\\.eclipse\\.jdt|com\\.opensymphony\\.xwork2|k2\\.org\\.objectweb\\.asm|weblogic\\.|freemarker\\.cache|com\\.mchange|org\\.postgresql|oracle\\.jdbc|org\\.hsqldb|ch\\.qos\\.logback|io\\.micrometer|k2\\.org\\.json|k2\\.com\\.fasterxml|com\\.ibm\\.ws|io\\.undertow|org\\.jboss|org\\.wildfly)))\\..*";
 
-	List<String> ALLOWED_EXTENSIONS = Arrays.asList(new String[] {"css", "html", "htm", "jsp", "js", "classtmp"});
+	List<String> ALLOWED_EXTENSIONS = Arrays.asList(new String[] { "css", "html", "htm", "jsp", "js", "classtmp" });
 
-	List<String> SOURCE_EXENSIONS = Arrays.asList(new String[] {"class", "jsp", "jar", "java"});
-	
+	List<String> SOURCE_EXENSIONS = Arrays.asList(new String[] { "class", "jsp", "jar", "java" });
+
 	// HSQL
 	String CLASS_ORG_HSQLDB_HSQL_CLIENT_CONNECTION = "org/hsqldb/HSQLClientConnection";
 	String CLASS_ORG_HSQLDB_SESSION = "org/hsqldb/Session";
@@ -58,15 +58,15 @@ public interface IAgentConstants {
 	// FORKEXEC
 	String CLASS_JAVA_LANG_PROCESS_IMPL = "java/lang/ProcessImpl";
 
-	//WSLiberty
+	// WSLiberty
 	String COM_IBM_WS_GENERICBNF_INTERNAL_BNFHEADERSIMPL = "com/ibm/ws/genericbnf/internal/BNFHeadersImpl";
 	String COM_IBM_WS_HTTP_CHANNEL_INTERNAL_INBOUND_HTTPINBOUNDLINK = "com/ibm/ws/http/channel/internal/inbound/HttpInboundLink";
 
-	//WAS Traditional
+	// WAS Traditional
 	String COM_IBM_WS_GENERICBNF_IMPL_BNFHEADERSIMPL = "com/ibm/ws/genericbnf/impl/BNFHeadersImpl";
 	String COM_IBM_WS_HTTP_CHANNEL_INBOUND_IMPL_HTTPINBOUNDLINK = "com/ibm/ws/http/channel/inbound/impl/HttpInboundLink";
 
-	//JBoss
+	// JBoss
 	String IO_UNDERTOW_SERVLET_HANDLERS_SERVLET_HANDLER = "io/undertow/servlet/handlers/ServletHandler";
 
 	String EXEC_URL_CLASS_LOADER_NEW_INSTANCE = "public static java.net.URLClassLoader java.net.URLClassLoader.newInstance(java.net.URL[])";
@@ -108,15 +108,15 @@ public interface IAgentConstants {
 	String CLASS_HTTP_REQUEST_EXECUTOR = "org/apache/http/protocol/HttpRequestExecutor";
 
 	String APACHE_HTTP_REQUEST_EXECUTOR_METHOD = "protected org.apache.http.HttpResponse org.apache.http.protocol.HttpRequestExecutor.doSendRequest(org.apache.http.HttpRequest,org.apache.http.HttpClientConnection,org.apache.http.protocol.HttpContext) throws java.io.IOException,org.apache.http.HttpException";
-	
+
 	String CLASS_JAVA_HTTP_HANDLER = "sun/net/www/protocol/http/Handler";
 	String CLASS_JAVA_HTTPS_HANDLER = "sun/net/www/protocol/https/Handler";
 	String CLASS_JAVA_SSL_HTTPS_HANDLER = "com/sun/net/ssl/internal/www/protocol/https/Handler";
-	
+
 	String JAVA_OPEN_CONNECTION_METHOD2 = "protected java.net.URLConnection sun.net.www.protocol.http.Handler.openConnection(java.net.URL,java.net.Proxy) throws java.io.IOException";
 	String JAVA_OPEN_CONNECTION_METHOD2_HTTPS = "protected java.net.URLConnection sun.net.www.protocol.https.Handler.openConnection(java.net.URL,java.net.Proxy) throws java.io.IOException";
 	String JAVA_OPEN_CONNECTION_METHOD2_HTTPS_2 = "protected java.net.URLConnection com.sun.net.ssl.internal.www.protocol.https.Handler.openConnection(java.net.URL,java.net.Proxy) throws java.io.IOException";
-	
+
 	String CLASS_JDK_INCUBATOR_HTTP_MULTIEXCHANGE = "jdk/incubator/http/MultiExchange";
 	String JDK_INCUBATOR_MULTIEXCHANGE_RESONSE_METHOD = "public jdk.incubator.http.HttpResponseImpl<T> jdk.incubator.http.MultiExchange.response() throws java.io.IOException,java.lang.InterruptedException";
 	String JDK_INCUBATOR_MULTIEXCHANGE_RESONSE_ASYNC_METHOD = "public java.util.concurrent.CompletableFuture<jdk.incubator.http.HttpResponseImpl<T>> jdk.incubator.http.MultiExchange.responseAsync()";
@@ -164,7 +164,7 @@ public interface IAgentConstants {
 	String HSQL_V1_8_CONNECTION = "public synchronized org.hsqldb.Result org.hsqldb.HSQLClientConnection.execute(org.hsqldb.Result) throws org.hsqldb.HsqlException";
 
 	String HSQL_V1_8_SESSION = "public org.hsqldb.Result org.hsqldb.Session.execute(org.hsqldb.Result)";
-	
+
 	// HSQL_DB v2.3.4
 	String HSQL_V2_3_4_CLIENT_CONNECTION = "public synchronized org.hsqldb.result.Result org.hsqldb.ClientConnection.execute(org.hsqldb.result.Result)";
 
@@ -191,11 +191,12 @@ public interface IAgentConstants {
 	String WEBSPHERE_LIBERTY_PROCESSREQUEST = "protected void com.ibm.ws.http.channel.internal.inbound.HttpInboundLink.processRequest()";
 	String WEBSPHERE_TRADITIONAL_FILLBYTECACHE = "protected boolean com.ibm.ws.genericbnf.impl.BNFHeadersImpl.fillByteCache(com.ibm.wsspi.buffermgmt.WsByteBuffer)";
 	String WEBSPHERE_TRADITIONAL_PROCESSREQUEST = "protected void com.ibm.ws.http.channel.inbound.impl.HttpInboundLink.processRequest()";
-	
-	/** JBoss constants*/
+
+	/** JBoss constants */
 //	String JBOSS_WILDFLY_HTTP_REQUEST_PARSER_HANDLE = "public void io.undertow.server.protocol.http.HttpRequestParser.handle(java.nio.ByteBuffer,io.undertow.server.protocol.http.ParseState,io.undertow.server.HttpServerExchange) throws io.undertow.util.BadRequestException";
 //	String JBOSS_WILDFLY_HTTP_REQUEST_PARSER_HANDLE_2 = "public void io.undertow.server.protocol.http.HttpRequestParser.handle(java.nio.ByteBuffer,io.undertow.server.protocol.http.ParseState,io.undertow.server.HttpServerExchange)";
-	//	String PUBLIC_VOID_ORG_JBOSS_THREADS_CONTEXT_CLASS_LOADER_SAVING_RUNNABLE_RUN = "public void org.jboss.threads.ContextClassLoaderSavingRunnable.run()";
+	// String PUBLIC_VOID_ORG_JBOSS_THREADS_CONTEXT_CLASS_LOADER_SAVING_RUNNABLE_RUN
+	// = "public void org.jboss.threads.ContextClassLoaderSavingRunnable.run()";
 	String PUBLIC_VOID_IO_UNDERTOW_SERVLET_HANDLERS_SERVLET_HANDLER_HANDLE_REQUEST_IO_UNDERTOW_SERVER_HTTP_SERVER_EXCHANGE_THROWS_JAVA_IO_IO_EXCEPTION_JAVAX_SERVLET_SERVLET_EXCEPTION = "public void io.undertow.servlet.handlers.ServletHandler.handleRequest(io.undertow.server.HttpServerExchange) throws java.io.IOException,javax.servlet.ServletException";
 
 //	String PRIVATE_INT_ORG_JBOSS_THREADS_ENHANCED_QUEUE_EXECUTOR_TRY_EXECUTE_JAVA_LANG_RUNNABLE = "private int org.jboss.threads.EnhancedQueueExecutor.tryExecute(java.lang.Runnable)";
@@ -217,12 +218,9 @@ public interface IAgentConstants {
 //	String ORG_XNIO_XNIO_WORKER = "org.xnio.XnioWorker";
 //	String PUBLIC_VOID_ORG_XNIO_XNIO_WORKER_EXECUTE_JAVA_LANG_RUNNABLE = "public void org.xnio.XnioWorker.execute(java.lang.Runnable)";
 
-
-
 	String WEBLOGIC_INVOKE_SERVLET = "public java.lang.Throwable weblogic.servlet.internal.StubSecurityHelper.invokeServlet(javax.servlet.ServletRequest,javax.servlet.http.HttpServletRequest,weblogic.servlet.internal.ServletRequestImpl,javax.servlet.ServletResponse,javax.servlet.http.HttpServletResponse,javax.servlet.Servlet) throws javax.servlet.ServletException";
-	
+
 	String WEBLOGIC_SERVLET_EXECUTE = "void weblogic.servlet.internal.WebAppServletContext.execute(weblogic.servlet.internal.ServletRequestImpl,weblogic.servlet.internal.ServletResponseImpl) throws java.io.IOException";
-	
 
 	/** MSSQL FIELD CONSTANTS */
 	String MSSQL_CURRENT_OBJECT = "this$0";
@@ -262,7 +260,6 @@ public interface IAgentConstants {
 	String MYSQL_CONNECTOR_6_0_2_SOURCE = EXEC_MYSQL_6X;
 	String MYSQL_CONNECTOR_8_SOURCE = EXEC_MYSQL_8X;
 
-
 	/** Mongo constants */
 
 	String MONGO_NAMESPACE_FIELD = "namespace";
@@ -296,9 +293,9 @@ public interface IAgentConstants {
 	String ORACLE_DB_IDENTIFIER = "oracle.jdbc.driver";
 	String ORACLE_CONNECTION_IDENTIFIER = "oracle.jdbc.driver.T4C8Oall";
 	String ORACLE_STATEMENT_CLASS_IDENTIFIER = "oracle.jdbc.driver.OracleStatement";
-	
+
 	/** Http constants **/
-	
+
 	String GET_PATH = "getPath";
 	String GET_HOST = "getHost";
 	String GET_URI = "getURI";
@@ -311,8 +308,6 @@ public interface IAgentConstants {
 	String ORG_APACHE_HTTP_HTTP_REQUEST = "org.apache.http.HttpRequest";
 	String ORG_APACHE_COMMONS_HTTPCLIENT_URI = "org.apache.commons.httpclient.URI";
 	String ORG_APACHE_COMMONS_HTTPCLIENT_HTTP_METHOD = "org.apache.commons.httpclient.HttpMethod";
-
-
 
 	String BYTE_ARRAY_CLASS = "[B";
 
@@ -395,7 +390,7 @@ public interface IAgentConstants {
 	int TOMCAT_8 = 8;
 	int TOMCAT_9 = 9;
 	int K2_IC_TCP_PORT = 54321;
-	
+
 	String JSON_NAME_APPLICATION_INFO_BEAN = "applicationinfo";
 	String JSON_NAME_INTCODE_RESULT_BEAN = "Event";
 	String JSON_NAME_HEALTHCHECK = "LAhealthcheck";
@@ -421,9 +416,25 @@ public interface IAgentConstants {
 	String JAVA_IO_UNIX_FILE_SYSTEM = "java/io/UnixFileSystem";
 	String JAVA_IO_RANDOM_ACCESS_FILE = "java/io/RandomAccessFile";
 	String INTERCEPTED_HTTP_REQUEST = "Intercepted HTTP request : ";
-	
+
 	String GET_DATA = "getData";
 	String GET_SIZE = "getSize";
 	String GET_NAVIGATOR = "getNavigator";
 	String MAIN_STRING = "mainString";
+	// CRYPTO Constants
+	String JAVAX_CRYPTO_CIPHER_GETINSTANCE_STRING = "public static final javax.crypto.Cipher javax.crypto.Cipher.getInstance(java.lang.String) throws java.security.NoSuchAlgorithmException,javax.crypto.NoSuchPaddingException";
+	String JAVAX_CRYPTO_CIPHER_GETINSTANCE_STRING_PROVIDER = "public static final javax.crypto.Cipher javax.crypto.Cipher.getInstance(java.lang.String,java.security.Provider) throws java.security.NoSuchAlgorithmException,javax.crypto.NoSuchPaddingException";
+
+	String JAVAX_CRYPTO_KEYGENERATOR_GETINSTANCE_STRING = "public static final javax.crypto.KeyGenerator javax.crypto.KeyGenerator.getInstance(java.lang.String) throws java.security.NoSuchAlgorithmException";
+	String JAVAX_CRYPTO_KEYGENERATOR_GETINSTANCE_STRING_STRING = "public static final javax.crypto.KeyGenerator javax.crypto.KeyGenerator.getInstance(java.lang.String,java.lang.String) throws java.security.NoSuchAlgorithmException,java.security.NoSuchProviderException";
+	String JAVAX_CRYPTO_KEYGENERATOR_GETINSTANCE_STRING_PROVIDER = "public static final javax.crypto.KeyGenerator javax.crypto.KeyGenerator.getInstance(java.lang.String,java.security.Provider) throws java.security.NoSuchAlgorithmException";
+
+	String JAVA_SECURITY_KEYPAIRGENERATOR_GETINSTANCE_STRING = "public static java.security.KeyPairGenerator java.security.KeyPairGenerator.getInstance(java.lang.String) throws java.security.NoSuchAlgorithmException";
+	String JAVA_SECURITY_KEYPAIRGENERATOR_GETINSTANCE_STRING_STRING = "public static java.security.KeyPairGenerator java.security.KeyPairGenerator.getInstance(java.lang.String,java.lang.String) throws java.security.NoSuchAlgorithmException,java.security.NoSuchProviderException";
+	String JAVA_SECURITY_KEYPAIRGENERATOR_GETINSTANCE_STRING_PROVIDER = "public static java.security.KeyPairGenerator java.security.KeyPairGenerator.getInstance(java.lang.String,java.security.Provider) throws java.security.NoSuchAlgorithmException";
+
+	// HASH Constants
+	String JAVA_SECURITY_MESSAGEDIGEST_GETINSTANCE_STRING = "public static java.security.MessageDigest java.security.MessageDigest.getInstance(java.lang.String) throws java.security.NoSuchAlgorithmException";
+	String JAVA_SECURITY_MESSAGEDIGEST_GETINSTANCE_STRING_STRING = "public static java.security.MessageDigest java.security.MessageDigest.getInstance(java.lang.String,java.lang.String) throws java.security.NoSuchAlgorithmException,java.security.NoSuchProviderException";
+	String JAVA_SECURITY_MESSAGEDIGEST_GETINSTANCE_STRING_PROVIDER = "public static java.security.MessageDigest java.security.MessageDigest.getInstance(java.lang.String,java.security.Provider) throws java.security.NoSuchAlgorithmException";
 }
