@@ -19,17 +19,24 @@ public class Callbacks {
 		if (!ThreadLocalOperationLock.getInstance().isAcquired()) {
 			try {
 				ThreadLocalOperationLock.getInstance().acquire();
-				        System.out.println("OnEnter :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj + " - eid : " + exectionId);
+				System.out.println("OnEnter :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj
+						+ " - eid : " + exectionId);
 
+				String command = StringUtils.join((String[]) args[0], StringUtils.SPACE);
 				if (ThreadLocalHttpMap.getInstance().getHttpRequest() != null && ((String[]) args[0]).length != 0) {
-					String command = StringUtils.join((String[]) args[0], StringUtils.SPACE);
 					if (StringUtils.isNotBlank(command)) {
 						ForkExecOperationalBean forkExecOperationalBean = new ForkExecOperationalBean(command,
 								(Map<String, String>) args[1], className, sourceString, exectionId,
 								Instant.now().toEpochMilli());
 						EventDispatcher.dispatch(forkExecOperationalBean, VulnerabilityCaseType.SYSTEM_COMMAND);
 					}
+				} else if (StringUtils.isNotBlank(command)) {
+					ForkExecOperationalBean forkExecOperationalBean = new ForkExecOperationalBean(command,
+							(Map<String, String>) args[1], className, sourceString, exectionId,
+							Instant.now().toEpochMilli());
+					EventDispatcher.dispatch(forkExecOperationalBean, VulnerabilityCaseType.SYSTEM_COMMAND, true);
 				}
+
 			} finally {
 				ThreadLocalOperationLock.getInstance().release();
 			}
@@ -41,7 +48,8 @@ public class Callbacks {
 		if (!ThreadLocalOperationLock.getInstance().isAcquired()) {
 			try {
 				ThreadLocalOperationLock.getInstance().acquire();
-				        System.out.println("OnExit :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj + " - return : " + returnVal + " - eid : " + exectionId);
+				System.out.println("OnExit :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj
+						+ " - return : " + returnVal + " - eid : " + exectionId);
 			} finally {
 				ThreadLocalOperationLock.getInstance().release();
 			}

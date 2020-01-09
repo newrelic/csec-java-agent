@@ -17,6 +17,7 @@ import org.json.simple.JSONObject;
 
 import java.io.ObjectInputStream;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -36,6 +37,21 @@ public class Dispatcher implements Runnable {
 	private StackTraceElement[] trace;
 	private VulnerabilityCaseType vulnerabilityCaseType;
 	private Map<String, Object> extraInfo;
+	private Boolean sentToBuffer;
+
+	/**
+	 * @return the sentToBuffer
+	 */
+	public Boolean getSentToBuffer() {
+		return sentToBuffer;
+	}
+
+	/**
+	 * @param sentToBuffer the sentToBuffer to set
+	 */
+	public void setSentToBuffer(Boolean sentToBuffer) {
+		this.sentToBuffer = sentToBuffer;
+	}
 
 	static {
 		PATTERN = Pattern.compile(IAgentConstants.TRACE_REGEX);
@@ -53,6 +69,15 @@ public class Dispatcher implements Runnable {
 		this.event = event;
 		this.trace = trace;
 		this.vulnerabilityCaseType = vulnerabilityCaseType;
+	}
+
+	public Dispatcher(StackTraceElement[] trace, Object event, VulnerabilityCaseType vulnerabilityCaseType,
+			Boolean sentToBuffer) {
+		this.metaData = new AgentMetaData();
+		this.event = event;
+		this.trace = trace;
+		this.vulnerabilityCaseType = vulnerabilityCaseType;
+		this.sentToBuffer = sentToBuffer;
 	}
 
 	public Dispatcher(HttpRequestBean httpRequestBean, StackTraceElement[] trace, VulnerabilityCaseType reflectedXss,
@@ -218,7 +243,26 @@ public class Dispatcher implements Runnable {
 		if (!VulnerabilityCaseType.FILE_INTEGRITY.equals(vulnerabilityCaseType)) {
 			eventBean = processStackTrace(eventBean);
 		}
-
+		if (sentToBuffer) {
+			if (eventBean.getMetaData().isTriggerViaDeserialisation() || eventBean.getMetaData().isTriggerViaRCI()
+					|| eventBean.getMetaData().isTriggerViaXXE()) {
+				String tid = StringUtils.substringBefore(eventBean.getId(), ":");
+				if (DispatcherPool.getInstance().getLazyEvents().containsKey(tid)) {
+					DispatcherPool.getInstance().getLazyEvents().get(tid).add(eventBean);
+				} else {
+					List<JavaAgentEventBean> eventBeans = new ArrayList<JavaAgentEventBean>();
+					eventBeans.add(eventBean);
+					DispatcherPool.getInstance().getLazyEvents().put(tid, eventBeans);
+				}
+			}
+			return;
+		}
+		
+		String tid = StringUtils.substringBefore(eventBean.getId(), ":");
+		if(DispatcherPool.getInstance().getLazyEvents().containsKey(tid)) {
+			dispatchAll(DispatcherPool.getInstance().getLazyEvents().get(tid), eventBean, tid);
+		}
+		
 		if (VulnerabilityCaseType.FILE_OPERATION.equals(vulnerabilityCaseType)) {
 			createEntryForFileIntegrity((FileOperationalBean) event, eventBean);
 		}
@@ -229,13 +273,23 @@ public class Dispatcher implements Runnable {
 		System.out.println("============= Event End ============");
 	}
 
+	private void dispatchAll(List<JavaAgentEventBean> list, JavaAgentEventBean eventBean, String tid) {
+		DispatcherPool.getInstance().getLazyEvents().remove(tid);
+		for(JavaAgentEventBean newEventBean : list) {
+			newEventBean.setHttpRequest(eventBean.getHttpRequest());
+			newEventBean.setEventGenerationTime(Instant.now().toEpochMilli());
+			EventSendPool.getInstance().sendEvent(newEventBean.toString());
+		}
+	}
+
 	private JavaAgentEventBean prepareXPATHEvent(JavaAgentEventBean eventBean,
 			XPathOperationalBean xPathOperationalBean) {
 		JSONArray params = new JSONArray();
 		params.add(xPathOperationalBean.getExpression());
 		eventBean.setParameters(params);
 		return eventBean;
-}
+	}
+
 	private JavaAgentEventBean prepareHashEvent(JavaAgentEventBean eventBean,
 			HashCryptoOperationalBean hashOperationalBean) {
 		JSONArray params = new JSONArray();
@@ -287,7 +341,7 @@ public class Dispatcher implements Runnable {
 		eventBean.setParameters(params);
 		return eventBean;
 	}
-	
+
 	private JavaAgentEventBean prepareSecureCookieEvent(JavaAgentEventBean eventBean,
 			SecureCookieOperationalBean secureCookieOperationalBean) {
 		System.out.println("PrateeK : " + secureCookieOperationalBean.getValue());
@@ -452,13 +506,13 @@ public class Dispatcher implements Runnable {
 
 	private void xxeTriggerCheck(int i, JavaAgentEventBean eventBean, String klassName) {
 
-		if((StringUtils.contains(klassName, "XMLDocumentFragmentScannerImpl")
+		if ((StringUtils.contains(klassName, "XMLDocumentFragmentScannerImpl")
 				&& StringUtils.equals(trace[i].getMethodName(), "scanDocument"))
 				|| (StringUtils.contains(klassName, "XMLEntityManager")
-				&& StringUtils.equals(trace[i].getMethodName(), "setupCurrentEntity"))) {
+						&& StringUtils.equals(trace[i].getMethodName(), "setupCurrentEntity"))) {
 			eventBean.getMetaData().setTriggerViaXXE(true);
-			logger.log(LogLevel.DEBUG, String.format("Printing stack trace for xxe event : %s : %s", eventBean.getId(), Arrays
-					.asList(trace)), ProcessorThread.class.getName());
+			logger.log(LogLevel.DEBUG, String.format("Printing stack trace for xxe event : %s : %s", eventBean.getId(),
+					Arrays.asList(trace)), ProcessorThread.class.getName());
 		}
 	}
 

@@ -20,61 +20,77 @@ import java.util.List;
 public class EventDispatcher {
 
 	private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
-	
-	public static void dispatch(AbstractOperationalBean objectBean, VulnerabilityCaseType vulnerabilityCaseType){
+
+	public static void dispatch(AbstractOperationalBean objectBean, VulnerabilityCaseType vulnerabilityCaseType) {
 		boolean ret = ThreadLocalHttpMap.getInstance().parseHttpRequest();
-		if(!ret) {
-			System.err.println("Dropping event due to corrupt/incomplete HTTP request : " + ThreadLocalExecutionMap.getInstance().getHttpRequestBean() + " ::: " + objectBean);
+		if (!ret) {
+			System.err.println("Dropping event due to corrupt/incomplete HTTP request : "
+					+ ThreadLocalExecutionMap.getInstance().getHttpRequestBean() + " ::: " + objectBean);
 			return;
 		}
 		// Place dispatch here
 //		printDispatch(objectBean);
-		if(vulnerabilityCaseType.equals(VulnerabilityCaseType.LDAP)) {
+		if (vulnerabilityCaseType.equals(VulnerabilityCaseType.LDAP)) {
 			logger.log(LogLevel.INFO, objectBean.toString(), EventDispatcher.class.getName());
 		}
-		// TODO: implement check if the object bean is logically enpty based on case type or implement a isEmpty method in each operation bean.
-		if(!objectBean.isEmpty()) {
-			DispatcherPool.getInstance().dispatchEvent(new HttpRequestBean(ThreadLocalExecutionMap.getInstance().getHttpRequestBean()),
-					new AgentMetaData(ThreadLocalExecutionMap.getInstance().getMetaData()), Thread.currentThread().getStackTrace(), objectBean, vulnerabilityCaseType);
+		// TODO: implement check if the object bean is logically enpty based on case
+		// type or implement a isEmpty method in each operation bean.
+		if (!objectBean.isEmpty()) {
+			DispatcherPool.getInstance().dispatchEvent(
+					new HttpRequestBean(ThreadLocalExecutionMap.getInstance().getHttpRequestBean()),
+					new AgentMetaData(ThreadLocalExecutionMap.getInstance().getMetaData()),
+					Thread.currentThread().getStackTrace(), objectBean, vulnerabilityCaseType);
 		} else {
-			System.err.println("Dropping event due to empty object : " + ThreadLocalExecutionMap.getInstance().getHttpRequestBean() + " ::: " + objectBean);
+			System.err.println("Dropping event due to empty object : "
+					+ ThreadLocalExecutionMap.getInstance().getHttpRequestBean() + " ::: " + objectBean);
 
 		}
 	}
 
-	public static void dispatch(List<SQLOperationalBean> objectBeanList, VulnerabilityCaseType vulnerabilityCaseType){
+	public static void dispatch(AbstractOperationalBean objectBean, VulnerabilityCaseType vulnerabilityCaseType,
+			Boolean sendToBuffer) {
+		if (!objectBean.isEmpty()) {
+			DispatcherPool.getInstance().dispatchEvent(Thread.currentThread().getStackTrace(), objectBean,
+					vulnerabilityCaseType, true);
+		}
+	}
+
+	public static void dispatch(List<SQLOperationalBean> objectBeanList, VulnerabilityCaseType vulnerabilityCaseType) {
 		boolean ret = ThreadLocalHttpMap.getInstance().parseHttpRequest();
-		if(!ret) {
-			System.err.println("Dropping event due to corrupt/incomplete HTTP request : " + ThreadLocalExecutionMap.getInstance().getHttpRequestBean() + " ::: " + objectBeanList);
+		if (!ret) {
+			System.err.println("Dropping event due to corrupt/incomplete HTTP request : "
+					+ ThreadLocalExecutionMap.getInstance().getHttpRequestBean() + " ::: " + objectBeanList);
 			return;
 		}
 		// Place dispatch here
-		//		printDispatch(objectBean);
+		// printDispatch(objectBean);
 
 		List<SQLOperationalBean> toBeSentBeans = new ArrayList<>();
 		objectBeanList.forEach((bean) -> {
 			SQLOperationalBean beanChecked = ThreadLocalDBMap.getInstance().checkAndUpdateSentSQLCalls(bean);
-			if (beanChecked != null && !beanChecked.isEmpty()){
+			if (beanChecked != null && !beanChecked.isEmpty()) {
 				toBeSentBeans.add(bean);
 			}
 		});
-		if(!toBeSentBeans.isEmpty()) {
-			DispatcherPool.getInstance().dispatchEvent(new HttpRequestBean(ThreadLocalExecutionMap.getInstance().getHttpRequestBean()),
-					new AgentMetaData(ThreadLocalExecutionMap.getInstance().getMetaData()), Thread.currentThread().getStackTrace(), toBeSentBeans, vulnerabilityCaseType);
+		if (!toBeSentBeans.isEmpty()) {
+			DispatcherPool.getInstance().dispatchEvent(
+					new HttpRequestBean(ThreadLocalExecutionMap.getInstance().getHttpRequestBean()),
+					new AgentMetaData(ThreadLocalExecutionMap.getInstance().getMetaData()),
+					Thread.currentThread().getStackTrace(), toBeSentBeans, vulnerabilityCaseType);
 		}
 	}
 
-	public static void dispatch(DeployedApplication deployedApplication,VulnerabilityCaseType vulnerabilityCaseType) {
-		if(!deployedApplication.isEmpty()){
+	public static void dispatch(DeployedApplication deployedApplication, VulnerabilityCaseType vulnerabilityCaseType) {
+		if (!deployedApplication.isEmpty()) {
 			DispatcherPool.getInstance().dispatchAppInfo(deployedApplication, vulnerabilityCaseType);
 		} else {
 			System.out.println("Application info found to be empty : " + deployedApplication);
 		}
 	}
 
-
-	public static void printDispatch(AbstractOperationalBean objectBean){
-		System.out.println("==========================================================================================");
+	public static void printDispatch(AbstractOperationalBean objectBean) {
+		System.out
+				.println("==========================================================================================");
 
 		System.out.println("Intercepted Request : " + ThreadLocalExecutionMap.getInstance().getHttpRequestBean());
 
@@ -82,11 +98,13 @@ public class EventDispatcher {
 
 		System.out.println("Intercepted transaction : " + objectBean);
 
-		System.out.println("==========================================================================================");
+		System.out
+				.println("==========================================================================================");
 	}
 
-	public static void dispatch(HttpRequestBean httpRequestBean, String sourceString, String exectionId, long startTime, VulnerabilityCaseType reflectedXss) {
-		if(!httpRequestBean.isEmpty()) {
+	public static void dispatch(HttpRequestBean httpRequestBean, String sourceString, String exectionId, long startTime,
+			VulnerabilityCaseType reflectedXss) {
+		if (!httpRequestBean.isEmpty()) {
 			DispatcherPool.getInstance().dispatchEvent(httpRequestBean, sourceString, exectionId, startTime,
 					Thread.currentThread().getStackTrace(), reflectedXss);
 		}
@@ -95,19 +113,24 @@ public class EventDispatcher {
 	public static void dispatch(FileOperationalBean fileOperationalBean, FileIntegrityBean fbean,
 			VulnerabilityCaseType fileOperation) {
 		boolean ret = ThreadLocalHttpMap.getInstance().parseHttpRequest();
-		if(!ret) {
-			System.err.println("Dropping event due to corrupt/incomplete HTTP request : " + ThreadLocalExecutionMap.getInstance().getHttpRequestBean() + " ::: " + fileOperationalBean);
+		if (!ret) {
+			System.err.println("Dropping event due to corrupt/incomplete HTTP request : "
+					+ ThreadLocalExecutionMap.getInstance().getHttpRequestBean() + " ::: " + fileOperationalBean);
 			return;
 		}
 		// Place dispatch here
 //		printDispatch(objectBean);
-		
-		// TODO: implement check if the object bean is logically enpty based on case type or implement a isEmpty method in each operation bean.
-		if(!fileOperationalBean.isEmpty()) {
-			DispatcherPool.getInstance().dispatchEvent(new HttpRequestBean(ThreadLocalExecutionMap.getInstance().getHttpRequestBean()),
-					new AgentMetaData(ThreadLocalExecutionMap.getInstance().getMetaData()), Thread.currentThread().getStackTrace(), fileOperationalBean, fbean, fileOperation);
+
+		// TODO: implement check if the object bean is logically enpty based on case
+		// type or implement a isEmpty method in each operation bean.
+		if (!fileOperationalBean.isEmpty()) {
+			DispatcherPool.getInstance().dispatchEvent(
+					new HttpRequestBean(ThreadLocalExecutionMap.getInstance().getHttpRequestBean()),
+					new AgentMetaData(ThreadLocalExecutionMap.getInstance().getMetaData()),
+					Thread.currentThread().getStackTrace(), fileOperationalBean, fbean, fileOperation);
 		} else {
-			System.err.println("Dropping event due to empty object : " + ThreadLocalExecutionMap.getInstance().getHttpRequestBean() + " ::: " + fileOperationalBean);
+			System.err.println("Dropping event due to empty object : "
+					+ ThreadLocalExecutionMap.getInstance().getHttpRequestBean() + " ::: " + fileOperationalBean);
 
 		}
 	}
