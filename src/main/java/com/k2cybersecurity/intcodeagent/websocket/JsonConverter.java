@@ -5,6 +5,9 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 
+import org.apache.commons.lang3.StringEscapeUtils;
+import org.apache.commons.lang3.StringUtils;
+
 public class JsonConverter {
 
 	private static final String JSON_SEPRATER = "\":";
@@ -47,7 +50,7 @@ public class JsonConverter {
 						jsonString.append(JSON_SEPRATER);
 						if (field.getType().equals(String.class)) {
 							jsonString.append(STR_FORWARD_SLASH);
-							jsonString.append(value);
+							jsonString.append(StringEscapeUtils.escapeJava(value.toString()));
 							jsonString.append(STR_FORWARD_SLASH);
 						} else if (field.getType().isPrimitive()) {
 							jsonString.append(value);
