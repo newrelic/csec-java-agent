@@ -75,7 +75,7 @@ public class DispatcherPool {
 		});
 	}
 
-	protected static DispatcherPool getInstance() {
+	public static DispatcherPool getInstance() {
 
 		if (instance == null) {
 			synchronized (mutex) {

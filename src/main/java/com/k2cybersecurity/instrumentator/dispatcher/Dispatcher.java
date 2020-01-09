@@ -258,11 +258,6 @@ public class Dispatcher implements Runnable {
 			return;
 		}
 		
-		String tid = StringUtils.substringBefore(eventBean.getId(), ":");
-		if(DispatcherPool.getInstance().getLazyEvents().containsKey(tid)) {
-			dispatchAll(DispatcherPool.getInstance().getLazyEvents().get(tid), eventBean, tid);
-		}
-		
 		if (VulnerabilityCaseType.FILE_OPERATION.equals(vulnerabilityCaseType)) {
 			createEntryForFileIntegrity((FileOperationalBean) event, eventBean);
 		}
@@ -271,15 +266,6 @@ public class Dispatcher implements Runnable {
 		System.out.println("============= Event Start ============");
 		System.out.println(eventBean);
 		System.out.println("============= Event End ============");
-	}
-
-	private void dispatchAll(List<JavaAgentEventBean> list, JavaAgentEventBean eventBean, String tid) {
-		DispatcherPool.getInstance().getLazyEvents().remove(tid);
-		for(JavaAgentEventBean newEventBean : list) {
-			newEventBean.setHttpRequest(eventBean.getHttpRequest());
-			newEventBean.setEventGenerationTime(Instant.now().toEpochMilli());
-			EventSendPool.getInstance().sendEvent(newEventBean.toString());
-		}
 	}
 
 	private JavaAgentEventBean prepareXPATHEvent(JavaAgentEventBean eventBean,
