@@ -192,6 +192,11 @@ public class Dispatcher implements Runnable {
 			eventBean = setGenericProperties(xPathOperationalBean, eventBean);
 			eventBean = prepareXPATHEvent(eventBean, xPathOperationalBean);
 			break;
+		case TRUSTBOUNDARY:
+			TrustBoundaryOperationalBean trustBoundaryOperationalBean = (TrustBoundaryOperationalBean) event;
+			eventBean = setGenericProperties(trustBoundaryOperationalBean, eventBean);
+			eventBean = prepareTrustBoundaryEvent(eventBean, trustBoundaryOperationalBean);
+			break;
 		default:
 
 		}
@@ -213,6 +218,15 @@ public class Dispatcher implements Runnable {
 			XPathOperationalBean xPathOperationalBean) {
 		JSONArray params = new JSONArray();
 		params.add(xPathOperationalBean.getExpression());
+		eventBean.setParameters(params);
+		return eventBean;
+	}
+
+	private JavaAgentEventBean prepareTrustBoundaryEvent(JavaAgentEventBean eventBean,
+			TrustBoundaryOperationalBean trustBoundaryOperationalBean) {
+		JSONArray params = new JSONArray();
+		params.add(trustBoundaryOperationalBean.getKey());
+		params.add(trustBoundaryOperationalBean.getValue());
 		eventBean.setParameters(params);
 		return eventBean;
 	}

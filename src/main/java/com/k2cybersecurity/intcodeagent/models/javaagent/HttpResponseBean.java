@@ -69,7 +69,7 @@ public class HttpResponseBean {
         if(StringUtils.isNotBlank(responseContentType)) {
             this.responseContentType = StringUtils.substringBefore(responseContentType, ";").trim().toLowerCase();
         } else {
-            this.responseContentType = responseContentType;
+            this.responseContentType = StringUtils.EMPTY;
         }
     }
 

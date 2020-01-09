@@ -47,6 +47,9 @@ public class Hooks {
 		//LDAP
 		TYPE_BASED_HOOKS.put("javax.naming.directory.DirContext", Collections.singletonList("search"));
 
+		//trust boundary hooks
+		TYPE_BASED_HOOKS.put("javax.servlet.http.HttpSession", Arrays.asList("setAttribute","putValue"));
+
 		// Forkexec hooks
 		NAME_BASED_HOOKS.put("java.lang.ProcessImpl", Arrays.asList("start"));
 
@@ -75,9 +78,9 @@ public class Hooks {
 		
 		// Jetty Servlet Hooks
 		NAME_BASED_HOOKS.put("org.eclipse.jetty.server.Handler", Collections.singletonList("handle"));
-		
+
 		//XPath
-		
+
 		NAME_BASED_HOOKS.put("org.apache.xpath.XPath", Collections.singletonList("execute"));
 		NAME_BASED_HOOKS.put("com.sun.org.apache.xpath.internal.XPath", Collections.singletonList("execute"));
 
@@ -212,7 +215,7 @@ public class Hooks {
 		
 		//LDAP search
 		DECORATOR_ENTRY.put("javax.naming.directory.DirContext.search", "com.k2cybersecurity.instrumentator.decorators.ldap");
-		
+
 		//XPath execute both packages for java standard
 		DECORATOR_ENTRY.put("org.apache.xpath.XPath.execute", "com.k2cybersecurity.instrumentator.decorators.xpath");
 		DECORATOR_ENTRY.put("com.sun.org.apache.xpath.internal.XPath.execute", "com.k2cybersecurity.instrumentator.decorators.xpath");
@@ -258,6 +261,10 @@ public class Hooks {
 		DECORATOR_ENTRY.put("org.apache.commons.httpclient.HttpMethodDirector.executeWithRetry", "com.k2cybersecurity.instrumentator.decorators.ssrf");
 		DECORATOR_ENTRY.put("com.squareup.okhttp.internal.http.HttpEngine.sendRequest", "com.k2cybersecurity.instrumentator.decorators.ssrf");
 		DECORATOR_ENTRY.put("weblogic.net.http.Handler.openConnection", "com.k2cybersecurity.instrumentator.decorators.ssrf");
+
+		//trust boundary
+		DECORATOR_ENTRY.put("javax.servlet.http.HttpSession.setAttribute", "com.k2cybersecurity.instrumentator.decorators.trustboundary");
+		DECORATOR_ENTRY.put("javax.servlet.http.HttpSession.putValue", "com.k2cybersecurity.instrumentator.decorators.trustboundary");
 
 	}
 }
