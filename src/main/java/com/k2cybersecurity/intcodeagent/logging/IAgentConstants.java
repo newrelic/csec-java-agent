@@ -421,4 +421,22 @@ public interface IAgentConstants {
 	String JAVA_IO_UNIX_FILE_SYSTEM = "java/io/UnixFileSystem";
 	String JAVA_IO_RANDOM_ACCESS_FILE = "java/io/RandomAccessFile";
 	String INTERCEPTED_HTTP_REQUEST = "Intercepted HTTP request : ";
+	
+	// CRYPTO Constants
+		String JAVAX_CRYPTO_CIPHER_GETINSTANCE_STRING = "public static final javax.crypto.Cipher javax.crypto.Cipher.getInstance(java.lang.String) throws java.security.NoSuchAlgorithmException,javax.crypto.NoSuchPaddingException";
+		String JAVAX_CRYPTO_CIPHER_GETINSTANCE_STRING_PROVIDER = "public static final javax.crypto.Cipher javax.crypto.Cipher.getInstance(java.lang.String,java.security.Provider) throws java.security.NoSuchAlgorithmException,javax.crypto.NoSuchPaddingException";
+		
+		String JAVAX_CRYPTO_KEYGENERATOR_GETINSTANCE_STRING = "public static final javax.crypto.KeyGenerator javax.crypto.KeyGenerator.getInstance(java.lang.String) throws java.security.NoSuchAlgorithmException";
+		String JAVAX_CRYPTO_KEYGENERATOR_GETINSTANCE_STRING_STRING = "public static final javax.crypto.KeyGenerator javax.crypto.KeyGenerator.getInstance(java.lang.String,java.lang.String) throws java.security.NoSuchAlgorithmException,java.security.NoSuchProviderException";
+		String JAVAX_CRYPTO_KEYGENERATOR_GETINSTANCE_STRING_PROVIDER = "public static final javax.crypto.KeyGenerator javax.crypto.KeyGenerator.getInstance(java.lang.String,java.security.Provider) throws java.security.NoSuchAlgorithmException";
+		
+		String JAVA_SECURITY_KEYPAIRGENERATOR_GETINSTANCE_STRING = "public static java.security.KeyPairGenerator java.security.KeyPairGenerator.getInstance(java.lang.String) throws java.security.NoSuchAlgorithmException";
+		String JAVA_SECURITY_KEYPAIRGENERATOR_GETINSTANCE_STRING_STRING = "public static java.security.KeyPairGenerator java.security.KeyPairGenerator.getInstance(java.lang.String,java.lang.String) throws java.security.NoSuchAlgorithmException,java.security.NoSuchProviderException"; 
+		String JAVA_SECURITY_KEYPAIRGENERATOR_GETINSTANCE_STRING_PROVIDER = "public static java.security.KeyPairGenerator java.security.KeyPairGenerator.getInstance(java.lang.String,java.security.Provider) throws java.security.NoSuchAlgorithmException";
+		
+		
+		//HASH Constants
+		String JAVA_SECURITY_MESSAGEDIGEST_GETINSTANCE_STRING = "public static java.security.MessageDigest java.security.MessageDigest.getInstance(java.lang.String) throws java.security.NoSuchAlgorithmException";
+		String JAVA_SECURITY_MESSAGEDIGEST_GETINSTANCE_STRING_STRING = "public static java.security.MessageDigest java.security.MessageDigest.getInstance(java.lang.String,java.lang.String) throws java.security.NoSuchAlgorithmException,java.security.NoSuchProviderException";
+		String JAVA_SECURITY_MESSAGEDIGEST_GETINSTANCE_STRING_PROVIDER = "public static java.security.MessageDigest java.security.MessageDigest.getInstance(java.lang.String,java.security.Provider) throws java.security.NoSuchAlgorithmException";
 }

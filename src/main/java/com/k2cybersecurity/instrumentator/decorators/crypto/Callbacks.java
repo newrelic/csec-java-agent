@@ -1,13 +1,15 @@
-package com.k2cybersecurity.instrumentator.decorators.weakrandom;
+package com.k2cybersecurity.instrumentator.decorators.crypto;
 
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalOperationLock;
 import com.k2cybersecurity.instrumentator.dispatcher.EventDispatcher;
 import com.k2cybersecurity.intcodeagent.models.javaagent.VulnerabilityCaseType;
-import com.k2cybersecurity.intcodeagent.models.operationalbean.RandomOperationalBean;
+import com.k2cybersecurity.intcodeagent.models.operationalbean.HashCryptoOperationalBean;
 
-import java.security.SecureRandom;
+import java.security.Provider;
 import java.time.Instant;
 import java.util.Arrays;
+
+import org.apache.commons.lang3.StringUtils;
 
 public class Callbacks {
 
@@ -16,17 +18,21 @@ public class Callbacks {
 		if (!ThreadLocalOperationLock.getInstance().isAcquired()) {
 			try {
 				ThreadLocalOperationLock.getInstance().acquire();
-				RandomOperationalBean randomOperationalBean;
-				if (obj instanceof SecureRandom) {
-					randomOperationalBean = new RandomOperationalBean("SecureRandom", className,
+				if (args[0] != null) {
+					String name = args[0].toString();
+					HashCryptoOperationalBean hashCryptoOperationalBean = new HashCryptoOperationalBean(name, className,
 							sourceString, exectionId, Instant.now().toEpochMilli());
-				} else {
-					randomOperationalBean = new RandomOperationalBean("WeakRandom", className,
-							sourceString, exectionId, Instant.now().toEpochMilli());
+					String provider = StringUtils.EMPTY;
+					if(args[1] != null && args[1] instanceof Provider) {
+						provider = args[1].getClass().getSimpleName();
+					} else if(args[1] != null && args[1] instanceof String) {
+						provider = args[1].toString();
+					}
+					hashCryptoOperationalBean.setProvider(provider);
+					EventDispatcher.dispatch(hashCryptoOperationalBean, VulnerabilityCaseType.CRYPTO);
+					System.out.println("OnEnter :" + sourceString + " - args : " + Arrays.asList(args) + " - this : "
+							+ obj + " - eid : " + exectionId);
 				}
-				EventDispatcher.dispatch(randomOperationalBean, VulnerabilityCaseType.RANDOM);
-				System.out.println("OnEnter :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj
-						+ " - eid : " + exectionId);
 			} finally {
 				ThreadLocalOperationLock.getInstance().release();
 			}
@@ -35,11 +41,12 @@ public class Callbacks {
 
 	public static void doOnExit(String sourceString, String className, String methodName, Object obj, Object[] args,
 			Object returnVal, String exectionId) {
-		if (!ThreadLocalOperationLock.getInstance().isAcquired()) {
+		if(!ThreadLocalOperationLock.getInstance().isAcquired()) {
 			try {
 				ThreadLocalOperationLock.getInstance().acquire();
-				System.out.println("OnExit :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj
-						+ " - return : " + returnVal + " - eid : " + exectionId);
+				System.out.println(
+						"OnExit :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj + " - return : "
+								+ returnVal + " - eid : " + exectionId);
 			} finally {
 				ThreadLocalOperationLock.getInstance().release();
 			}
@@ -48,7 +55,7 @@ public class Callbacks {
 
 	public static void doOnError(String sourceString, String className, String methodName, Object obj, Object[] args,
 			Throwable error, String exectionId) throws Throwable {
-		if (!ThreadLocalOperationLock.getInstance().isAcquired()) {
+		if(!ThreadLocalOperationLock.getInstance().isAcquired()) {
 			try {
 				ThreadLocalOperationLock.getInstance().acquire();
 				System.out.println("OnError :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj

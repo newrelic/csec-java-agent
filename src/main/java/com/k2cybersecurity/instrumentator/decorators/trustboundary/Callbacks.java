@@ -1,13 +1,13 @@
-package com.k2cybersecurity.instrumentator.decorators.weakrandom;
+package com.k2cybersecurity.instrumentator.decorators.trustboundary;
 
-import com.k2cybersecurity.instrumentator.custom.ThreadLocalOperationLock;
-import com.k2cybersecurity.instrumentator.dispatcher.EventDispatcher;
-import com.k2cybersecurity.intcodeagent.models.javaagent.VulnerabilityCaseType;
-import com.k2cybersecurity.intcodeagent.models.operationalbean.RandomOperationalBean;
-
-import java.security.SecureRandom;
 import java.time.Instant;
 import java.util.Arrays;
+
+import com.k2cybersecurity.instrumentator.custom.ThreadLocalOperationLock;
+import com.k2cybersecurity.instrumentator.custom.ThreadLocalSessionMap;
+import com.k2cybersecurity.instrumentator.dispatcher.EventDispatcher;
+import com.k2cybersecurity.intcodeagent.models.javaagent.VulnerabilityCaseType;
+import com.k2cybersecurity.intcodeagent.models.operationalbean.TrustBoundaryOperationalBean;
 
 public class Callbacks {
 
@@ -16,17 +16,16 @@ public class Callbacks {
 		if (!ThreadLocalOperationLock.getInstance().isAcquired()) {
 			try {
 				ThreadLocalOperationLock.getInstance().acquire();
-				RandomOperationalBean randomOperationalBean;
-				if (obj instanceof SecureRandom) {
-					randomOperationalBean = new RandomOperationalBean("SecureRandom", className,
-							sourceString, exectionId, Instant.now().toEpochMilli());
-				} else {
-					randomOperationalBean = new RandomOperationalBean("WeakRandom", className,
-							sourceString, exectionId, Instant.now().toEpochMilli());
-				}
-				EventDispatcher.dispatch(randomOperationalBean, VulnerabilityCaseType.RANDOM);
 				System.out.println("OnEnter :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj
 						+ " - eid : " + exectionId);
+				if (args.length >= 2 && args[0] != null && ThreadLocalSessionMap.getInstance().put((String) args[0], args[1])) {
+					TrustBoundaryOperationalBean operationalBean = new TrustBoundaryOperationalBean((String) args[0],
+							args[1], className, sourceString, exectionId, Instant.now().toEpochMilli());
+					EventDispatcher.dispatch(operationalBean, VulnerabilityCaseType.TRUSTBOUNDARY);
+				}
+//				EventDispatcher.dispatch(new SSRFOperationalBean(args, className, sourceString, exectionId,
+//						Instant.now().toEpochMilli()), VulnerabilityCaseType.HTTP_REQUEST);
+
 			} finally {
 				ThreadLocalOperationLock.getInstance().release();
 			}
@@ -35,15 +34,16 @@ public class Callbacks {
 
 	public static void doOnExit(String sourceString, String className, String methodName, Object obj, Object[] args,
 			Object returnVal, String exectionId) {
-		if (!ThreadLocalOperationLock.getInstance().isAcquired()) {
-			try {
-				ThreadLocalOperationLock.getInstance().acquire();
-				System.out.println("OnExit :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj
-						+ " - return : " + returnVal + " - eid : " + exectionId);
-			} finally {
-				ThreadLocalOperationLock.getInstance().release();
-			}
-		}
+//		if(!ThreadLocalOperationLock.getInstance().isAcquired()) {
+//			try {
+//				ThreadLocalOperationLock.getInstance().acquire();
+//				System.out.println(
+//						"OnExit :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj + " - return : "
+//								+ returnVal + " - eid : " + exectionId);
+//			} finally {
+//				ThreadLocalOperationLock.getInstance().release();
+//			}
+//		}
 	}
 
 	public static void doOnError(String sourceString, String className, String methodName, Object obj, Object[] args,

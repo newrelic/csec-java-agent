@@ -45,6 +45,9 @@ public class Hooks {
 				Arrays.asList("nativeSQL", "prepareCall", "prepareStatement"));
 		
 		TYPE_BASED_HOOKS.put("javax.naming.directory.DirContext", Collections.singletonList("search"));
+		
+		//trust boundary hooks
+		TYPE_BASED_HOOKS.put("javax.servlet.http.HttpSession", Arrays.asList("setAttribute","putValue"));
 
 		// Forkexec hooks
 		NAME_BASED_HOOKS.put("java.lang.ProcessImpl", Arrays.asList("start"));
@@ -93,6 +96,13 @@ public class Hooks {
 		
 		// Secure Cookie
 		NAME_BASED_HOOKS.put("javax.servlet.http.Cookie", Collections.singletonList("setSecure"));
+		//CRYPTO
+		NAME_BASED_HOOKS.put("javax.crypto.Cipher", Collections.singletonList("getInstance"));
+		NAME_BASED_HOOKS.put("javax.crypto.KeyGenerator", Collections.singletonList("getInstance"));
+		NAME_BASED_HOOKS.put("java.security.KeyPairGenerator", Collections.singletonList("getInstance"));
+		
+		//HASH
+		NAME_BASED_HOOKS.put("java.security.MessageDigest", Collections.singletonList("getInstance"));
 
 		//		NAME_BASED_HOOKS.put(CLASS_WEBLOGIC_SERVLET_INTERNAL_WEB_APP_SERVLET_CONTEXT, Collections.singletonList("execute"));  // Handle differently
 
@@ -254,5 +264,19 @@ public class Hooks {
 		
 		// Secure cookie
 		DECORATOR_ENTRY.put("javax.servlet.http.Cookie.setSecure", "com.k2cybersecurity.instrumentator.decorators.securecookie");
+		//trust boundary
+		DECORATOR_ENTRY.put("javax.servlet.http.HttpSession.setAttribute", "com.k2cybersecurity.instrumentator.decorators.trustboundary");
+		DECORATOR_ENTRY.put("javax.servlet.http.HttpSession.putValue", "com.k2cybersecurity.instrumentator.decorators.trustboundary");
+		
+		
+		//CRYPTO
+		DECORATOR_ENTRY.put("javax.crypto.Cipher.getInstance", "com.k2cybersecurity.instrumentator.decorators.crypto");
+		DECORATOR_ENTRY.put("javax.crypto.KeyGenerator.getInstance", "com.k2cybersecurity.instrumentator.decorators.crypto");
+		DECORATOR_ENTRY.put("java.security.KeyPairGenerator.getInstance", "com.k2cybersecurity.instrumentator.decorators.crypto");
+		
+		//HASH
+		DECORATOR_ENTRY.put("java.security.MessageDigest.getInstance", "com.k2cybersecurity.instrumentator.decorators.hash");
+		
+		
 	}
 }
