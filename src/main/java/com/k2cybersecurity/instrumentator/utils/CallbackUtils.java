@@ -289,17 +289,32 @@ public class CallbackUtils {
         String oldHeaders = processedHeaders;
 
         try {
-            processedBody = HtmlEscape.unescapeHtml(responseBody);
-
-            consolidatedBody.append(oldHeaders);
-            consolidatedBody.append("::::");
-            consolidatedBody.append(HtmlEscape.unescapeHtml(oldHeaders));
-            consolidatedBody.append("::::");
             consolidatedBody.append(processedBody);
             consolidatedBody.append("::::");
-            consolidatedBody.append(HtmlEscape.unescapeHtml(processedBody));
+
+            processedBody = HtmlEscape.unescapeHtml(responseBody);
+            consolidatedBody.append(processedBody);
+            consolidatedBody.append("::::");
+
+            consolidatedBody.append(processedHeaders);
+            consolidatedBody.append("::::");
+
+            processedHeaders = HtmlEscape.unescapeHtml(processedHeaders);
+            consolidatedBody.append(processedHeaders);
+            consolidatedBody.append("::::");
+
+
+            processedBody = urlDecode(processedBody);
+            consolidatedBody.append("::::");
+            consolidatedBody.append(processedBody);
+
+            processedHeaders = urlDecode(processedHeaders);
+            consolidatedBody.append(processedHeaders);
+            consolidatedBody.append("::::");
+
+            String oldProcessedBody;
+
             if (StringUtils.isNoneEmpty(responseBody)) {
-                String oldProcessedBody;
                 switch (contentType) {
                 case "application/json":
                     do {
@@ -324,31 +339,6 @@ public class CallbackUtils {
                     } while (!StringUtils.equals(oldProcessedBody, processedBody));
                     break;
 
-                case "application/x-www-form-urlencoded":
-                    processedBody = urlDecode(processedBody);
-                    consolidatedBody.append("::::");
-                    consolidatedBody.append(processedBody);
-
-                    do {
-                        oldProcessedBody = processedBody;
-                        processedBody = urlDecode(processedBody);
-                        if(!StringUtils.equals(oldProcessedBody, processedBody)) {
-                            consolidatedBody.append("::::");
-                            consolidatedBody.append(processedBody);
-                            System.out.println("Decoding URL: " + processedBody);
-                        }
-                    } while (!StringUtils.equals(oldProcessedBody, processedBody));
-
-                    do {
-                        oldHeaders = processedHeaders;
-                        processedHeaders = urlDecode(processedHeaders);
-                        if (!StringUtils.equals(oldHeaders, processedHeaders)){
-                            consolidatedBody.append("::::");
-                            consolidatedBody.append(processedHeaders);
-                            System.out.println("Decoding URL Headers: " + processedHeaders);
-                        }
-                    } while (!StringUtils.equals(oldHeaders, processedHeaders));
-                    break;
                 }
             }
             return consolidatedBody.toString();
