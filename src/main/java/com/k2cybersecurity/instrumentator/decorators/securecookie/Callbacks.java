@@ -1,5 +1,6 @@
 package com.k2cybersecurity.instrumentator.decorators.securecookie;
 
+import java.lang.reflect.Method;
 import java.time.Instant;
 import java.util.Arrays;
 
@@ -17,15 +18,24 @@ public class Callbacks {
 				ThreadLocalOperationLock.getInstance().acquire();
 
 				if (args.length > 0 && args[0] != null) {
-					boolean value = (boolean) args[0];
 
-					SecureCookieOperationalBean secureCookieOperationalBean = new SecureCookieOperationalBean((value ? "true" : "false"),
-							className, sourceString, exectionId, Instant.now().toEpochMilli());
+					Class cookieClass = args[0].getClass();
+					Method getSecure = cookieClass.getMethod("getSecure", null);
+					getSecure.setAccessible(true);
+
+					boolean value = (boolean) getSecure.invoke(args[0], null);
+
+					SecureCookieOperationalBean secureCookieOperationalBean = new SecureCookieOperationalBean(
+							(value ? "true" : "false"), className, sourceString, exectionId,
+							Instant.now().toEpochMilli());
 					EventDispatcher.dispatch(secureCookieOperationalBean, VulnerabilityCaseType.SECURE_COOKIE);
 					System.out.println("OnEnter :" + sourceString + " - args : " + Arrays.asList(args) + " - this : "
 							+ obj + " - eid : " + exectionId);
 				}
 
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			} finally {
 				ThreadLocalOperationLock.getInstance().release();
 			}

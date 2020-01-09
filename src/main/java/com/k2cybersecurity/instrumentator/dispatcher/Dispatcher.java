@@ -344,7 +344,6 @@ public class Dispatcher implements Runnable {
 
 	private JavaAgentEventBean prepareSecureCookieEvent(JavaAgentEventBean eventBean,
 			SecureCookieOperationalBean secureCookieOperationalBean) {
-		System.out.println("PrateeK : " + secureCookieOperationalBean.getValue());
 		JSONArray params = new JSONArray();
 		params.add(secureCookieOperationalBean.getValue());
 		eventBean.setParameters(params);
