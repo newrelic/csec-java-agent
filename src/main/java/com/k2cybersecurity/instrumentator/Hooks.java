@@ -49,7 +49,10 @@ public class Hooks {
 
 		//trust boundary hooks
 		TYPE_BASED_HOOKS.put("javax.servlet.http.HttpSession", Arrays.asList("setAttribute","putValue"));
-
+		
+		// Secure Cookie
+		TYPE_BASED_HOOKS.put("javax.servlet.http.HttpServletResponse", Collections.singletonList("addCookie"));
+		
 		// Forkexec hooks
 		NAME_BASED_HOOKS.put("java.lang.ProcessImpl", Arrays.asList("start"));
 
@@ -100,8 +103,6 @@ public class Hooks {
 		NAME_BASED_HOOKS.put("com.squareup.okhttp.internal.http.HttpEngine", Collections.singletonList("sendRequest"));
 		NAME_BASED_HOOKS.put("weblogic.net.http.Handler", Collections.singletonList("openConnection"));
 		
-		// Secure Cookie
-		NAME_BASED_HOOKS.put("javax.servlet.http.Cookie", Collections.singletonList("setSecure"));
 		//CRYPTO
 		NAME_BASED_HOOKS.put("javax.crypto.Cipher", Collections.singletonList("getInstance"));
 		NAME_BASED_HOOKS.put("javax.crypto.KeyGenerator", Collections.singletonList("getInstance"));
@@ -274,7 +275,8 @@ public class Hooks {
 		DECORATOR_ENTRY.put("weblogic.net.http.Handler.openConnection", "com.k2cybersecurity.instrumentator.decorators.ssrf");
 		
 		// Secure cookie
-		DECORATOR_ENTRY.put("javax.servlet.http.Cookie.setSecure", "com.k2cybersecurity.instrumentator.decorators.securecookie");
+		DECORATOR_ENTRY.put("javax.servlet.http.HttpServletResponse.addCookie", "com.k2cybersecurity.instrumentator.decorators.securecookie");
+	
 		//trust boundary
 		DECORATOR_ENTRY.put("javax.servlet.http.HttpSession.setAttribute", "com.k2cybersecurity.instrumentator.decorators.trustboundary");
 		DECORATOR_ENTRY.put("javax.servlet.http.HttpSession.putValue", "com.k2cybersecurity.instrumentator.decorators.trustboundary");
