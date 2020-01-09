@@ -68,15 +68,15 @@ public class HttpRequestBean {
 	}
 
 	public HttpRequestBean(HttpRequestBean servletInfo) {
-		this.rawRequest = new String(servletInfo.getRawRequest());
-		this.clientIP = new String(servletInfo.clientIP);
+		this.rawRequest = new String(servletInfo.getRawRequest().trim());
+		this.clientIP = new String(servletInfo.clientIP.trim());
 		this.generationTime = servletInfo.getGenerationTime();
-		this.body = new String(servletInfo.getBody());
+		this.body = new String(servletInfo.getBody().trim());
 		this.dataTruncated = servletInfo.isDataTruncated();
-		this.method = new String(servletInfo.getMethod());
-		this.url = new String(servletInfo.getUrl());
+		this.method = new String(servletInfo.getMethod().trim());
+		this.url = new String(servletInfo.getUrl().trim());
 		this.headers = new JSONObject(servletInfo.getHeaders());
-		this.contextPath = new String(servletInfo.contextPath);
+		this.contextPath = new String(servletInfo.contextPath.trim());
 		this.serverPort = servletInfo.serverPort;
 		this.httpResponseBean = new HttpResponseBean(servletInfo.httpResponseBean);
 	}

@@ -26,10 +26,10 @@ public class HttpResponseBean {
 
     public HttpResponseBean(HttpResponseBean httpResponseBean) {
         this.headers = new JSONObject(httpResponseBean.getHeaders());
-        this.responseBody = new String(httpResponseBean.responseBody);
-        this.decodedResponseBody = new String(httpResponseBean.decodedResponseBody);
-        this.responseCharacterEncoding = new String(httpResponseBean.responseCharacterEncoding);
-        this.responseContentType = new String(httpResponseBean.responseContentType);
+        this.responseBody = new String(httpResponseBean.responseBody.trim());
+        this.decodedResponseBody = new String(httpResponseBean.decodedResponseBody.trim());
+        this.responseCharacterEncoding = new String(httpResponseBean.responseCharacterEncoding.trim());
+        this.responseContentType = new String(httpResponseBean.responseContentType.trim());
     }
 
     public JSONObject getHeaders() {
