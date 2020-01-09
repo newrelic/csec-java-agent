@@ -47,6 +47,8 @@ public class HttpRequestBean {
 
 	private String contextPath;
 
+	private String contentType;
+
 	@JsonIgnore
 	private HttpResponseBean httpResponseBean;
 
@@ -65,6 +67,7 @@ public class HttpRequestBean {
 		this.contextPath = StringUtils.EMPTY;
 		this.serverPort = -1;
 		this.httpResponseBean = new HttpResponseBean();
+		this.contentType = StringUtils.EMPTY;
 	}
 
 	public HttpRequestBean(HttpRequestBean servletInfo) {
@@ -79,6 +82,7 @@ public class HttpRequestBean {
 		this.contextPath = new String(servletInfo.contextPath.trim());
 		this.serverPort = servletInfo.serverPort;
 		this.httpResponseBean = new HttpResponseBean(servletInfo.httpResponseBean);
+		this.contentType = new String(servletInfo.contentType.trim());
 	}
 
 	public String getRawRequest() {
@@ -311,6 +315,18 @@ public class HttpRequestBean {
 	@JsonIgnore
 	public void setHttpResponseBean(HttpResponseBean httpResponseBean) {
 		this.httpResponseBean = httpResponseBean;
+	}
+
+	public String getContentType() {
+		return contentType;
+	}
+
+	public void setContentType(String contentType) {
+		if(StringUtils.isNotBlank(contentType)) {
+			this.contentType = StringUtils.substringBefore(contentType, ";").trim().toLowerCase();
+		} else {
+			this.contentType = StringUtils.EMPTY;
+		}
 	}
 
 	public boolean isEmpty(){

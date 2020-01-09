@@ -19,7 +19,7 @@ public class Callbacks {
 		if (!ThreadLocalOperationLock.getInstance().isAcquired()) {
 			try {
 				ThreadLocalOperationLock.getInstance().acquire();
-				//        System.out.println("OnEnter :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj + " - eid : " + exectionId);
+				        System.out.println("OnEnter :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj + " - eid : " + exectionId);
 
 				if (ThreadLocalHttpMap.getInstance().getHttpRequest() != null && ((String[]) args[0]).length != 0) {
 					String command = StringUtils.join((String[]) args[0], StringUtils.SPACE);
@@ -38,14 +38,14 @@ public class Callbacks {
 
 	public static void doOnExit(String sourceString, String className, String methodName, Object obj, Object[] args,
 			Object returnVal, String exectionId) {
-//		if (!ThreadLocalOperationLock.getInstance().isAcquired()) {
-//			try {
-//				ThreadLocalOperationLock.getInstance().acquire();
-//				        System.out.println("OnExit :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj + " - return : " + returnVal + " - eid : " + exectionId);
-//			} finally {
-//				ThreadLocalOperationLock.getInstance().release();
-//			}
-//		}
+		if (!ThreadLocalOperationLock.getInstance().isAcquired()) {
+			try {
+				ThreadLocalOperationLock.getInstance().acquire();
+				        System.out.println("OnExit :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj + " - return : " + returnVal + " - eid : " + exectionId);
+			} finally {
+				ThreadLocalOperationLock.getInstance().release();
+			}
+		}
 	}
 
 	public static void doOnError(String sourceString, String className, String methodName, Object obj, Object[] args,
