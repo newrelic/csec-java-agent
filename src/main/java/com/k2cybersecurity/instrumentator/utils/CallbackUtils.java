@@ -56,23 +56,21 @@ public class CallbackUtils {
 
     // TODO: use complete response instead of just response body.
     public static String checkForReflectedXSS(HttpRequestBean httpRequestBean) {
-        decodeResponseData(httpRequestBean.getHttpResponseBean());
-        String responseBody = httpRequestBean.getHttpResponseBean().getDecodedResponseBody();
-        System.out.println("Processed response data is : " + responseBody);
+        String combinedRequestData = decodeRequestData(httpRequestBean);
+        String combinedResponseData = decodeResponseData(httpRequestBean.getHttpResponseBean());
+        System.out.println("Processed request data is : " + combinedRequestData);
+        System.out.println("Processed response data is : " + combinedResponseData);
 
-        HttpRequestBean requestBean = new HttpRequestBean(httpRequestBean);
-        requestBean.getHttpResponseBean().setResponseBody(StringUtils.EMPTY);
-
-        List<String> attackContructs = isXSS(requestBean.toString(), requestBean.getUrl());
+         List<String> attackContructs = isXSS(combinedRequestData);
 
         for (String construct : attackContructs) {
 			System.err.println(String.format(
 					"Reflected XSS contruct detected ::  %s :: Request : %s", construct,
 					httpRequestBean));
-            if (StringUtils.containsIgnoreCase(responseBody, construct)) {
+            if (StringUtils.containsIgnoreCase(combinedResponseData, construct)) {
                 System.err.println(String.format(
                         "Reflected XSS attack detected :: Construct : %s :: Request : %s :: Response : %s", construct,
-                        httpRequestBean, responseBody));
+                        httpRequestBean, httpRequestBean.getHttpResponseBean().getResponseBody()));
                 return construct;
             }
         }
@@ -114,16 +112,9 @@ public class CallbackUtils {
         return decodedString;
     }
 
-    private static List<String> isXSS(String rawRequest, String queryString) {
+    private static List<String> isXSS(String combinedData) {
         List<String> attackConstructs = new ArrayList<>();
-        String decodedRequest = urlDecode(urlDecode(rawRequest));
-        String unEscapedHTML = HtmlEscape.unescapeHtml(decodedRequest);
-
-        StringBuilder combinedData = new StringBuilder(decodedRequest);
-        queryString = urlDecode(queryString);
-        if (queryString != null)
-            combinedData.append(queryString);
-        combinedData.append(unEscapedHTML);
+        System.out.println("Consolidated XSS data : " + combinedData);
 
         Matcher htmlStartTagMatcher = htmlStartTagExtractor.matcher(combinedData);
         while (htmlStartTagMatcher.find()) {
@@ -288,14 +279,25 @@ public class CallbackUtils {
         return "UNKNOWN";
     }
 
-    public static void decodeResponseData(HttpResponseBean httpResponseBean) {
+    public static String decodeResponseData(HttpResponseBean httpResponseBean) {
         StringBuilder consolidatedBody = new StringBuilder();
         String contentType = httpResponseBean.getResponseContentType();
         String responseBody = httpResponseBean.getResponseBody();
         String processedBody = responseBody;
+
+        String processedHeaders = httpResponseBean.getHeaders().toString();
+        String oldHeaders = processedHeaders;
+
         try {
             processedBody = HtmlEscape.unescapeHtml(responseBody);
+
+            consolidatedBody.append(oldHeaders);
+            consolidatedBody.append("::::");
+            consolidatedBody.append(HtmlEscape.unescapeHtml(oldHeaders));
+            consolidatedBody.append("::::");
             consolidatedBody.append(processedBody);
+            consolidatedBody.append("::::");
+            consolidatedBody.append(HtmlEscape.unescapeHtml(processedBody));
             if (StringUtils.isNoneEmpty(responseBody)) {
                 String oldProcessedBody;
                 switch (contentType) {
@@ -303,18 +305,22 @@ public class CallbackUtils {
                     do {
                         oldProcessedBody = processedBody;
                         processedBody = StringEscapeUtils.unescapeJson(processedBody);
-                        consolidatedBody.append("::::");
-                        consolidatedBody.append(processedBody);
-                        System.out.println("Decoding JSON: " + processedBody);
+                        if(!StringUtils.equals(oldProcessedBody, processedBody)) {
+                            consolidatedBody.append("::::");
+                            consolidatedBody.append(processedBody);
+                            System.out.println("Decoding JSON: " + processedBody);
+                        }
                     } while (!StringUtils.equals(oldProcessedBody, processedBody));
                     break;
                 case "application/xml":
                     do {
                         oldProcessedBody = processedBody;
                         processedBody = StringEscapeUtils.unescapeXml(processedBody);
-                        consolidatedBody.append("::::");
-                        consolidatedBody.append(processedBody);
-                        System.out.println("Decoding XML: " + processedBody);
+                        if(!StringUtils.equals(oldProcessedBody, processedBody)) {
+                            consolidatedBody.append("::::");
+                            consolidatedBody.append(processedBody);
+                            System.out.println("Decoding XML: " + processedBody);
+                        }
                     } while (!StringUtils.equals(oldProcessedBody, processedBody));
                     break;
 
@@ -322,17 +328,129 @@ public class CallbackUtils {
                     processedBody = urlDecode(processedBody);
                     consolidatedBody.append("::::");
                     consolidatedBody.append(processedBody);
-                    break;
 
-                default:
-                    processedBody = responseBody;
+                    do {
+                        oldProcessedBody = processedBody;
+                        processedBody = urlDecode(processedBody);
+                        if(!StringUtils.equals(oldProcessedBody, processedBody)) {
+                            consolidatedBody.append("::::");
+                            consolidatedBody.append(processedBody);
+                            System.out.println("Decoding URL: " + processedBody);
+                        }
+                    } while (!StringUtils.equals(oldProcessedBody, processedBody));
+
+                    do {
+                        oldHeaders = processedHeaders;
+                        processedHeaders = urlDecode(processedHeaders);
+                        if (!StringUtils.equals(oldHeaders, processedHeaders)){
+                            consolidatedBody.append("::::");
+                            consolidatedBody.append(processedHeaders);
+                            System.out.println("Decoding URL Headers: " + processedHeaders);
+                        }
+                    } while (!StringUtils.equals(oldHeaders, processedHeaders));
                     break;
                 }
             }
-            httpResponseBean.setDecodedResponseBody(consolidatedBody.toString());
+            return consolidatedBody.toString();
         } catch (Exception e) {
             e.printStackTrace();
         }
+        return StringUtils.EMPTY;
+    }
+
+    public static String decodeRequestData(HttpRequestBean httpRequestBean) {
+        StringBuilder consolidatedBody = new StringBuilder();
+        String contentType = httpRequestBean.getContentType();
+        String body = httpRequestBean.getBody();
+        String processedUrl = httpRequestBean.getUrl();
+        String oldUrl = processedUrl;
+        String processedBody = body;
+
+        String processedHeaders = httpRequestBean.getHeaders().toString();
+        String oldHeaders = processedHeaders;
+
+        try {
+            consolidatedBody.append(oldHeaders);
+            consolidatedBody.append("::::");
+            consolidatedBody.append(HtmlEscape.unescapeHtml(oldHeaders));
+            consolidatedBody.append("::::");
+            consolidatedBody.append(processedBody);
+            consolidatedBody.append("::::");
+            consolidatedBody.append(HtmlEscape.unescapeHtml(processedBody));
+
+            // For URL
+            consolidatedBody.append("::::");
+            consolidatedBody.append(processedUrl);
+            do {
+                oldUrl = processedUrl;
+                processedUrl = urlDecode(processedUrl);
+                if(!StringUtils.equals(oldUrl, processedUrl)) {
+                    consolidatedBody.append("::::");
+                    consolidatedBody.append(processedUrl);
+                    System.out.println("Decoding URL Line: " + processedUrl);
+                }
+            } while (!StringUtils.equals(oldUrl, processedUrl));
+
+            do {
+                oldHeaders = processedHeaders;
+                processedHeaders = urlDecode(processedHeaders);
+                if (!StringUtils.equals(oldHeaders, processedHeaders)){
+                    consolidatedBody.append("::::");
+                    consolidatedBody.append(processedHeaders);
+                    System.out.println("Decoding URL Headers: " + processedHeaders);
+                }
+            } while (!StringUtils.equals(oldHeaders, processedHeaders));
+
+            if (StringUtils.isNotBlank(processedBody)) {
+                String oldProcessedBody;
+                switch (contentType) {
+                case "application/json":
+                    do {
+                        oldProcessedBody = processedBody;
+                        processedBody = StringEscapeUtils.unescapeJson(processedBody);
+                        if(!StringUtils.equals(oldProcessedBody, processedBody)) {
+                            consolidatedBody.append("::::");
+                            consolidatedBody.append(processedBody);
+                            System.out.println("Decoding JSON: " + processedBody);
+                        }
+                    } while (!StringUtils.equals(oldProcessedBody, processedBody));
+                    break;
+                case "application/xml":
+                    do {
+                        oldProcessedBody = processedBody;
+                        processedBody = StringEscapeUtils.unescapeXml(processedBody);
+                        if(!StringUtils.equals(oldProcessedBody, processedBody)) {
+                            consolidatedBody.append("::::");
+                            consolidatedBody.append(processedBody);
+                            System.out.println("Decoding XML: " + processedBody);
+                        }
+                    } while (!StringUtils.equals(oldProcessedBody, processedBody));
+                    break;
+
+                case "application/x-www-form-urlencoded":
+                    processedBody = urlDecode(processedBody);
+                    consolidatedBody.append("::::");
+                    consolidatedBody.append(processedBody);
+
+                    do {
+                        oldProcessedBody = processedBody;
+                        processedBody = urlDecode(processedBody);
+                        if(!StringUtils.equals(oldProcessedBody, processedBody)) {
+                            consolidatedBody.append("::::");
+                            consolidatedBody.append(processedBody);
+                            System.out.println("Decoding URL: " + processedBody);
+                        }
+                    } while (!StringUtils.equals(oldProcessedBody, processedBody));
+
+
+                    break;
+                }
+            }
+            return consolidatedBody.toString();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return StringUtils.EMPTY;
     }
 
 }
