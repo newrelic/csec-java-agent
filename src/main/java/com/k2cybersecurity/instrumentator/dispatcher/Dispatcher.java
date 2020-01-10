@@ -17,11 +17,7 @@ import org.json.simple.JSONObject;
 
 import java.io.ObjectInputStream;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -155,6 +151,8 @@ public class Dispatcher implements Runnable {
 				System.out.println("============= AppInfo Start ============");
 				System.out.println(applicationInfoBean);
 				System.out.println("============= AppInfo End ============");
+			} else {
+				//TODO: Handle cases where the port list of a deployed application is lost as the deployed application is already existing.
 			}
 			return;
 		}

@@ -41,29 +41,29 @@ public class ServletContextInfo {
         return JsonConverter.toJSON(this);
     }
 
-    public void putContextInfo(String contextPath, String applicationDir, int serverPort) {
-        DeployedApplication app = new DeployedApplication();
-        app.updatePorts(serverPort);
-        app.setServerInfo(serverInfo);
-        if(StringUtils.isBlank(contextPath)){
-            app.setContextPath("/");
-            app.setAppName("ROOT");
-            app.setDeployedPath(applicationDir);
-        } else {
-            Path applicationPath = Paths.get(applicationDir);
-            if (StringUtils.equals(contextPath, "/")) {
-                app.setContextPath(contextPath);
-                app.setAppName(applicationPath.getFileName().toString());
-                app.setDeployedPath(applicationPath.toString());
-            } else {
-                app.setContextPath(contextPath);
-                app.setAppName(applicationPath.getFileName().toString());
-                app.setDeployedPath(applicationPath.getParent().toString());
-            }
-        }
-        contextMap.put(contextPath, app);
-        EventDispatcher.dispatch(app, VulnerabilityCaseType.APP_INFO);
-    }
+//    public void putContextInfo(String contextPath, String applicationDir, int serverPort) {
+//        DeployedApplication app = new DeployedApplication();
+//        app.updatePorts(serverPort);
+//        app.setServerInfo(serverInfo);
+//        if(StringUtils.isBlank(contextPath)){
+//            app.setContextPath("/");
+//            app.setAppName("ROOT");
+//            app.setDeployedPath(applicationDir);
+//        } else {
+//            Path applicationPath = Paths.get(applicationDir);
+//            if (StringUtils.equals(contextPath, "/")) {
+//                app.setContextPath(contextPath);
+//                app.setAppName(applicationPath.getFileName().toString());
+//                app.setDeployedPath(applicationPath.toString());
+//            } else {
+//                app.setContextPath(contextPath);
+//                app.setAppName(applicationPath.getFileName().toString());
+//                app.setDeployedPath(applicationPath.getParent().toString());
+//            }
+//        }
+//        contextMap.put(contextPath, app);
+//        EventDispatcher.dispatch(app, VulnerabilityCaseType.APP_INFO);
+//    }
 
     public void putContextInfo(String contextPath, String applicationDir, String appName, int serverPort) {
         DeployedApplication app = new DeployedApplication();
@@ -127,7 +127,7 @@ public class ServletContextInfo {
         Method getMajorVersion = null;
         Method getMinorVersion = null;
 
-        try {
+		try {
             if (contextMap.containsKey(contextPath)) {
                 if(contextMap.get(contextPath).updatePorts(serverPort)){
                     EventDispatcher.dispatch(contextMap.get(contextPath), VulnerabilityCaseType.APP_INFO);
@@ -144,7 +144,8 @@ public class ServletContextInfo {
             getMinorVersion = servletContext.getClass().getMethod("getMinorVersion");
             getRealPath = servletContext.getClass().getMethod("getRealPath", String.class);
             getServletContextName = servletContext.getClass().getMethod("getServletContextName");
-        } catch (Exception e) {
+
+		} catch (Exception e) {
             System.out.println("Not found : " + e.getCause());
             e.printStackTrace();
         }
@@ -159,51 +160,68 @@ public class ServletContextInfo {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        System.out.println("==========================================================================================");
-        System.out.println("Context details found : ");
-        System.out.println("Path : " + contextPath);
-        System.out.println("Major Version : " + majorServletVersion);
-        System.out.println("Minor Version : " + minorServletVersion);
-        System.out.println("Server Info : "+ serverInfo);
-        System.out.println("Application Dir : " +applicationDir );
-        System.out.println("Application Name : " + applicationName);
-        System.out.println("==========================================================================================");
 
         if (StringUtils.isNotBlank(serverInfo)) {
             setServerInfo(serverInfo);
         }
 
+        // TODO: This application dir detection is still inaccurate as this brings the location of classloader & not application context root.
+		//        Hence this misses the HTML part of the application.
+		boolean isEmbedded = false;
+		if(StringUtils.isBlank(applicationDir)){
+			try {
+				Method getClassLoader = servletContext.getClass().getMethod("getClassLoader");
+				getClassLoader.setAccessible(true);
+				ClassLoader classLoader = (ClassLoader) getClassLoader.invoke(servletContext, null);
+				if(classLoader != null) {
+					applicationDir = classLoader.getResource("/").toString();
+					System.out.println("Application dir from resource : " + applicationDir);
+					if(StringUtils.startsWithIgnoreCase(applicationDir, "file:" )) {
+						applicationDir = StringUtils.removeStart(applicationDir, "file:");
+						applicationDir = StringUtils.substringBefore(applicationDir, "/WEB-INF");
+					} else if(StringUtils.startsWithIgnoreCase(applicationDir, "jar:file:" )){
+						isEmbedded = true;
+						applicationDir = StringUtils.substringBetween(applicationDir, "jar:file:", "!");
+					}
+				} else {
+					System.out.println("Unable to get the application directory. Suspicion is that this is an embedded application.");
+					applicationDir = StringUtils.EMPTY;
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+
+
+		}
+
         if(StringUtils.isBlank(contextPath)){
-            try {
-                Method getClassLoader = servletContext.getClass().getMethod("getClassLoader");
-                getClassLoader.setAccessible(true);
-                ClassLoader classLoader = (ClassLoader) getClassLoader.invoke(servletContext, null);
-                if(classLoader != null) {
-                    applicationDir = classLoader.getResource("").toString();
-                    if(StringUtils.startsWithIgnoreCase(applicationDir, "file:" )) {
-                        applicationDir = StringUtils.removeStart(applicationDir, "file:");
-                    } else if(StringUtils.startsWithIgnoreCase(applicationDir, "jar:file:" )){
-                        applicationDir = StringUtils.substringBetween(applicationDir, "jar:file:", "!");
-                    }
-                } else {
-                    System.out.println("Unable to get the application directory. Suspicion is that this is an embedded application.");
-                    applicationDir = StringUtils.EMPTY;
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-
-
+        	contextPath = "/";
         }
 
+		if(StringUtils.isBlank(applicationName)){
+			if(StringUtils.equals(contextPath, "/")){
+				if(isEmbedded){
+					applicationName = Paths.get(applicationDir).getFileName().toString();
+				} else {
+					applicationName = "ROOT";
+				}
+			} else {
+				applicationName = StringUtils.removeStart(StringUtils.replace(contextPath, "/", "_"),"_");
+				applicationName = StringUtils.removeEnd(applicationName, "_");
+			}
+		}
 
-        if (StringUtils.isNotBlank(applicationName)) {
-            putContextInfo(contextPath, applicationDir, applicationName, serverPort);
-        } else {
-            putContextInfo(contextPath, applicationDir, serverPort);
-        }
+		System.out.println("==========================================================================================");
+		System.out.println("Context details found : ");
+		System.out.println("Path : " + contextPath);
+		System.out.println("Major Version : " + majorServletVersion);
+		System.out.println("Minor Version : " + minorServletVersion);
+		System.out.println("Server Info : "+ serverInfo);
+		System.out.println("Application Dir : " +applicationDir );
+		System.out.println("Application Name : " + applicationName);
+		System.out.println("==========================================================================================");
 
-
+		putContextInfo(contextPath, applicationDir, applicationName, serverPort);
         System.out.println("Current servlet context map : " + ServletContextInfo.getInstance());
     }
 }
