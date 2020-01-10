@@ -41,8 +41,9 @@ public class ServletContextInfo {
         return JsonConverter.toJSON(this);
     }
 
-    public void putContextInfo(String contextPath, String applicationDir) {
+    public void putContextInfo(String contextPath, String applicationDir, int serverPort) {
         DeployedApplication app = new DeployedApplication();
+        app.updatePorts(serverPort);
         app.setServerInfo(serverInfo);
         if(StringUtils.isBlank(contextPath)){
             app.setContextPath("/");
@@ -64,8 +65,9 @@ public class ServletContextInfo {
         EventDispatcher.dispatch(app, VulnerabilityCaseType.APP_INFO);
     }
 
-    public void putContextInfo(String contextPath, String applicationDir, String appName) {
+    public void putContextInfo(String contextPath, String applicationDir, String appName, int serverPort) {
         DeployedApplication app = new DeployedApplication();
+        app.updatePorts(serverPort);
         app.setServerInfo(serverInfo);
         if(StringUtils.isBlank(appName)){
             app.setAppName("ROOT");
@@ -113,7 +115,7 @@ public class ServletContextInfo {
         this.minorServletVersion = minorServletVersion;
     }
 
-    public void processServletContext(Object servletContext, String contextPath) {
+    public void processServletContext(Object servletContext, String contextPath, int serverPort) {
         String applicationName = StringUtils.EMPTY;
         String applicationDir = StringUtils.EMPTY;
         String serverInfo = StringUtils.EMPTY;
@@ -127,6 +129,9 @@ public class ServletContextInfo {
 
         try {
             if (contextMap.containsKey(contextPath)) {
+                if(contextMap.get(contextPath).updatePorts(serverPort)){
+                    EventDispatcher.dispatch(contextMap.get(contextPath), VulnerabilityCaseType.APP_INFO);
+                }
                 return;
             }
         } catch (Exception e) {
@@ -193,9 +198,9 @@ public class ServletContextInfo {
 
 
         if (StringUtils.isNotBlank(applicationName)) {
-            putContextInfo(contextPath, applicationDir, applicationName);
+            putContextInfo(contextPath, applicationDir, applicationName, serverPort);
         } else {
-            putContextInfo(contextPath, applicationDir);
+            putContextInfo(contextPath, applicationDir, serverPort);
         }
 
 

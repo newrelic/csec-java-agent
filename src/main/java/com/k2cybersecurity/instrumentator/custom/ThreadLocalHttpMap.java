@@ -141,7 +141,7 @@ public class ThreadLocalHttpMap {
             int serverPort = (Integer) getLocalPort.invoke(httpRequest, null);
             httpRequestBean.setServerPort(serverPort);
 
-            ServletContextInfo.getInstance().processServletContext(servletContext, contextPath);
+            ServletContextInfo.getInstance().processServletContext(servletContext, contextPath, serverPort);
             updateBody();
             isHttpRequestParsed = true;
             return true;

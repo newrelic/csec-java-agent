@@ -1,12 +1,15 @@
 package com.k2cybersecurity.intcodeagent.websocket;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.apache.commons.lang3.StringEscapeUtils;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
-
-import org.apache.commons.lang3.StringEscapeUtils;
-import org.apache.commons.lang3.StringUtils;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public class JsonConverter {
 
@@ -54,7 +57,20 @@ public class JsonConverter {
 							jsonString.append(STR_FORWARD_SLASH);
 						} else if (field.getType().isPrimitive()) {
 							jsonString.append(value);
-						} else {
+						} else if(field.getType().isAssignableFrom(Set.class)) {
+							JSONArray setField  = new JSONArray();
+							setField.addAll((Set)value);
+							jsonString.append(setField);
+						}else if(field.getType().isAssignableFrom(List.class)) {
+							JSONArray setField  = new JSONArray();
+							setField.addAll((List)value);
+							jsonString.append(setField);
+						}
+						else if(field.getType().isAssignableFrom(Map.class)) {
+							JSONObject mapField  = new JSONObject();
+							mapField.putAll((Map)value);
+							jsonString.append(mapField);
+						} else{
 							jsonString.append(value.toString());
 						}
 						jsonString.append(STR_COMMA);

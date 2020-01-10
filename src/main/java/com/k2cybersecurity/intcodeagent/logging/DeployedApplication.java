@@ -22,6 +22,9 @@ package com.k2cybersecurity.intcodeagent.logging;
 import com.k2cybersecurity.intcodeagent.websocket.JsonConverter;
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  * DeployedApplication model contains fields to identify all deployed
  * application inside a server.
@@ -46,6 +49,8 @@ public class DeployedApplication {
 	private String contextPath;
 
 	private String serverInfo;
+
+	private Set<Integer> ports = new HashSet<>();
 
 	public DeployedApplication() {
 	}
@@ -139,6 +144,14 @@ public class DeployedApplication {
 		this.serverInfo = serverInfo;
 	}
 
+	public Set<Integer> getPorts() {
+		return ports;
+	}
+
+	public void setPorts(Set<Integer> ports) {
+		this.ports = ports;
+	}
+
 	/* (non-Javadoc)
 	 * @see java.lang.Object#hashCode()
 	 */
@@ -173,4 +186,12 @@ public class DeployedApplication {
 	public boolean isEmpty() {
 		return StringUtils.isAnyBlank(deployedPath, appName, contextPath);
 	}
+
+	public boolean updatePorts(Integer port){
+		if(port == null || port == -1){
+			return false;
+		}
+		return ports.add(port);
+	}
+
 }
