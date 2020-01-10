@@ -254,21 +254,27 @@ public class ThreadLocalHttpMap {
     }
 
     public void insertToRequestByteBuffer(byte b) {
+        if(ThreadLocalExecutionMap.getInstance().getHttpRequestBean().isDataTruncated())
+            return;
         try {
             byteBuffer.put(b);
 //            System.out.println("inserting : " + b);
         } catch (Exception e) {
-            e.printStackTrace();
+            ThreadLocalExecutionMap.getInstance().getHttpRequestBean().setDataTruncated(true);
+//            e.printStackTrace();
             // Buffer full. discard data.
         }
     }
 
     public void insertToRequestByteBuffer(byte[] b) {
+        if(ThreadLocalExecutionMap.getInstance().getHttpRequestBean().isDataTruncated())
+            return;
         try {
             byteBuffer.put(b);
 //            System.out.println("inserting : " + Arrays.asList(b));
         } catch (Exception e) {
-            e.printStackTrace();
+            ThreadLocalExecutionMap.getInstance().getHttpRequestBean().setDataTruncated(true);
+            //            e.printStackTrace();
             // Buffer full. discard data.
         }
     }
@@ -279,7 +285,7 @@ public class ThreadLocalHttpMap {
             outputBodyBuilder.append((char) b);
 //            System.out.println("inserting : " + b);
         } catch (Exception e) {
-            e.printStackTrace();
+            //            e.printStackTrace();
             // Buffer full. discard data.
         }
     }
@@ -289,7 +295,7 @@ public class ThreadLocalHttpMap {
             outputBodyBuilder.append(new String(b));
 //            System.out.println("inserting : " + Arrays.asList(b));
         } catch (Exception e) {
-            e.printStackTrace();
+            //            e.printStackTrace();
             // Buffer full. discard data.
         }
     }
@@ -299,7 +305,7 @@ public class ThreadLocalHttpMap {
             outputBodyBuilder.append(new String(b, offset, limit));
 //            System.out.println("inserting : " + Arrays.asList(b));
         } catch (Exception e) {
-            e.printStackTrace();
+            //            e.printStackTrace();
             // Buffer full. discard data.
         }
     }
@@ -308,7 +314,7 @@ public class ThreadLocalHttpMap {
         try {
             outputBodyBuilder.append((char) b);
         } catch (Exception e) {
-            e.printStackTrace();
+            //            e.printStackTrace();
         }
     }
 
@@ -317,7 +323,7 @@ public class ThreadLocalHttpMap {
             outputBodyBuilder.append(new String(b, offset, limit));
             //            System.out.println("inserting : " + Arrays.asList(b));
         } catch (Exception e) {
-            e.printStackTrace();
+//            e.printStackTrace();
             // Buffer full. discard data.
         }
     }
@@ -327,7 +333,7 @@ public class ThreadLocalHttpMap {
             outputBodyBuilder.append(StringUtils.substring(b, offset, limit));
             //            System.out.println("inserting : " + Arrays.asList(b));
         } catch (Exception e) {
-            e.printStackTrace();
+//            e.printStackTrace();
             // Buffer full. discard data.
         }
     }
@@ -338,7 +344,7 @@ public class ThreadLocalHttpMap {
             outputBodyBuilder.append(b);
 //            System.out.println("inserting : " + Arrays.asList(b));
         } catch (Exception e) {
-            e.printStackTrace();
+//            e.printStackTrace();
             // Buffer full. discard data.
         }
     }
@@ -349,7 +355,7 @@ public class ThreadLocalHttpMap {
             outputBodyBuilder.append(StringUtils.LF);
 //            System.out.println("inserting : " + Arrays.asList(b));
         } catch (Exception e) {
-            e.printStackTrace();
+//            e.printStackTrace();
             // Buffer full. discard data.
         }
     }
@@ -363,7 +369,7 @@ public class ThreadLocalHttpMap {
                 bufferOffset = byteBuffer.position();
             }
         } catch (Exception e) {
-            e.printStackTrace();
+//            e.printStackTrace();
         }
     }
 
@@ -373,7 +379,7 @@ public class ThreadLocalHttpMap {
                 ThreadLocalExecutionMap.getInstance().getHttpRequestBean().getHttpResponseBean().setResponseBody(outputBodyBuilder.toString());
             }
         } catch (Exception e) {
-            e.printStackTrace();
+//            e.printStackTrace();
         }
     }
 
