@@ -28,11 +28,12 @@ public class Callbacks {
                 } else if (StringUtils.equals(methodName, "write")) {
                     if (args != null && args.length == 1 && args[0] instanceof Integer) {
                         ThreadLocalHttpMap.getInstance().insertToResponseBufferByte((byte) args[0]);
-                    } else if (args != null && args.length == 3) {
-                        ThreadLocalHttpMap.getInstance().insertToResponseBufferByte((byte[]) args[0], (int) args[1], (int) args[2]);
-                    } else if (args != null && args.length == 1) {
-                        ThreadLocalHttpMap.getInstance().insertToResponseBufferByte((byte[]) args[0]);
                     }
+//                    else if (args != null && args.length == 3) {
+//                        ThreadLocalHttpMap.getInstance().insertToResponseBufferByte((byte[]) args[0], (int) args[1], (int) args[2]);
+//                    } else if (args != null && args.length == 1) {
+//                        ThreadLocalHttpMap.getInstance().insertToResponseBufferByte((byte[]) args[0]);
+//                    }
                 }
             } finally {
                 ThreadLocalOperationLock.getInstance().release();

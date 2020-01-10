@@ -290,7 +290,7 @@ public class ThreadLocalHttpMap {
     }
 
 
-    public void insertToResponseBufferByte(byte b) {
+    public void insertToResponseBufferByte(int b) {
         try {
             outputBodyBuilder.append((char) b);
 //            System.out.println("inserting : " + b);
