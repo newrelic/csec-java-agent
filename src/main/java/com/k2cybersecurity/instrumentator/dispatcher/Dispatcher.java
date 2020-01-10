@@ -17,7 +17,10 @@ import org.json.simple.JSONObject;
 
 import java.io.ObjectInputStream;
 import java.time.Instant;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -33,21 +36,6 @@ public class Dispatcher implements Runnable {
 	private StackTraceElement[] trace;
 	private VulnerabilityCaseType vulnerabilityCaseType;
 	private Map<String, Object> extraInfo;
-	private Boolean sentToBuffer = false;
-
-	/**
-	 * @return the sentToBuffer
-	 */
-	public Boolean getSentToBuffer() {
-		return sentToBuffer;
-	}
-
-	/**
-	 * @param sentToBuffer the sentToBuffer to set
-	 */
-	public void setSentToBuffer(Boolean sentToBuffer) {
-		this.sentToBuffer = sentToBuffer;
-	}
 
 	static {
 		PATTERN = Pattern.compile(IAgentConstants.TRACE_REGEX);
@@ -65,15 +53,6 @@ public class Dispatcher implements Runnable {
 		this.event = event;
 		this.trace = trace;
 		this.vulnerabilityCaseType = vulnerabilityCaseType;
-	}
-
-	public Dispatcher(StackTraceElement[] trace, Object event, VulnerabilityCaseType vulnerabilityCaseType,
-			Boolean sentToBuffer) {
-		this.metaData = new AgentMetaData();
-		this.event = event;
-		this.trace = trace;
-		this.vulnerabilityCaseType = vulnerabilityCaseType;
-		this.sentToBuffer = sentToBuffer;
 	}
 
 	public Dispatcher(HttpRequestBean httpRequestBean, StackTraceElement[] trace, VulnerabilityCaseType reflectedXss,
@@ -241,20 +220,6 @@ public class Dispatcher implements Runnable {
 		}
 		if (!VulnerabilityCaseType.FILE_INTEGRITY.equals(vulnerabilityCaseType)) {
 			eventBean = processStackTrace(eventBean);
-		}
-		if (sentToBuffer) {
-			if (eventBean.getMetaData().isTriggerViaDeserialisation() || eventBean.getMetaData().isTriggerViaRCI()
-					|| eventBean.getMetaData().isTriggerViaXXE()) {
-				String tid = StringUtils.substringBefore(eventBean.getId(), ":");
-				if (DispatcherPool.getInstance().getLazyEvents().containsKey(tid)) {
-					DispatcherPool.getInstance().getLazyEvents().get(tid).add(eventBean);
-				} else {
-					List<JavaAgentEventBean> eventBeans = new ArrayList<JavaAgentEventBean>();
-					eventBeans.add(eventBean);
-					DispatcherPool.getInstance().getLazyEvents().put(tid, eventBeans);
-				}
-			}
-			return;
 		}
 		if (VulnerabilityCaseType.FILE_OPERATION.equals(vulnerabilityCaseType)) {
 			createEntryForFileIntegrity((FileOperationalBean) event, eventBean);

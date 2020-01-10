@@ -37,6 +37,8 @@ public class ThreadLocalHttpMap {
 
     private boolean isHttpResponseParsed = false;
 
+    private boolean serviceMethodEncountered = false;
+
 
     private static ThreadLocal<ThreadLocalHttpMap> instance =
             new ThreadLocal<ThreadLocalHttpMap>() {
@@ -81,6 +83,14 @@ public class ThreadLocalHttpMap {
 
     public void setPrintWriter(Object printWriter) {
         this.printWriter = printWriter;
+    }
+
+    public boolean isServiceMethodEncountered() {
+        return serviceMethodEncountered;
+    }
+
+    public void setServiceMethodEncountered(boolean serviceMethodEncountered) {
+        this.serviceMethodEncountered = serviceMethodEncountered;
     }
 
     public boolean parseHttpRequest() {
@@ -396,6 +406,7 @@ public class ThreadLocalHttpMap {
         bufferOffset = 0;
         byteBuffer = ByteBuffer.allocate(1024 * 8);
         outputBodyBuilder = new StringBuilder();
+        serviceMethodEncountered = false;
     }
 
     public boolean isEmpty() {

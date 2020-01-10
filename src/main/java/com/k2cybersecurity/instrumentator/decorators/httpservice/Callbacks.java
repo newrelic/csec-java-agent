@@ -1,23 +1,17 @@
 package com.k2cybersecurity.instrumentator.decorators.httpservice;
 
-import com.k2cybersecurity.instrumentator.custom.ThreadLocalDBMap;
-import com.k2cybersecurity.instrumentator.custom.ThreadLocalExecutionMap;
-import com.k2cybersecurity.instrumentator.custom.ThreadLocalHttpMap;
-import com.k2cybersecurity.instrumentator.custom.ThreadLocalLDAPMap;
-import com.k2cybersecurity.instrumentator.custom.ThreadLocalSessionMap;
-import com.k2cybersecurity.instrumentator.dispatcher.DispatchUtils;
-import com.k2cybersecurity.instrumentator.dispatcher.DispatcherPool;
+import com.k2cybersecurity.instrumentator.custom.*;
 import com.k2cybersecurity.instrumentator.dispatcher.EventDispatcher;
 import com.k2cybersecurity.instrumentator.utils.CallbackUtils;
 import com.k2cybersecurity.intcodeagent.models.javaagent.HttpRequestBean;
 import com.k2cybersecurity.intcodeagent.models.javaagent.VulnerabilityCaseType;
+import org.apache.commons.lang3.StringUtils;
 
 import java.time.Instant;
 import java.util.Arrays;
 
-import org.apache.commons.lang3.StringUtils;
-
 public class Callbacks {
+
 
 	public static void doOnEnter(String sourceString, String className, String methodName, Object obj, Object[] args,
 			String exectionId) {
@@ -28,6 +22,7 @@ public class Callbacks {
 		// hook advice should be generated from Code with very specific checks.
 		// Doing checks here will degrade performance.
 //		if (!ThreadLocalOperationLock.getInstance().isAcquired()) {
+		ThreadLocalHttpMap.getInstance().setServiceMethodEncountered(true);
 		try {
 //				ThreadLocalOperationLock.getInstance().acquire();
 			if (args != null && args.length == 2 && ThreadLocalHttpMap.getInstance().getHttpRequest() == null
@@ -85,11 +80,6 @@ public class Callbacks {
 						new HttpRequestBean(ThreadLocalExecutionMap.getInstance().getHttpRequestBean()), sourceString,
 						exectionId, Instant.now().toEpochMilli(), VulnerabilityCaseType.REFLECTED_XSS);
 				String tid = StringUtils.substringBefore(exectionId, ":");
-				if (DispatcherPool.getInstance().getLazyEvents().containsKey(tid)) {
-
-					DispatchUtils.dispatchAll(DispatcherPool.getInstance().getLazyEvents().get(tid),
-							new HttpRequestBean(ThreadLocalExecutionMap.getInstance().getHttpRequestBean()), tid);
-				}
 			}
 			// Clean up
 			ThreadLocalHttpMap.getInstance().cleanState();

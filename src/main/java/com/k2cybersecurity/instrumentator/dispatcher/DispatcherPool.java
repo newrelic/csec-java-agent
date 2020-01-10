@@ -5,13 +5,9 @@ import com.k2cybersecurity.intcodeagent.logging.IAgentConstants;
 import com.k2cybersecurity.intcodeagent.models.javaagent.AgentMetaData;
 import com.k2cybersecurity.intcodeagent.models.javaagent.FileIntegrityBean;
 import com.k2cybersecurity.intcodeagent.models.javaagent.HttpRequestBean;
-import com.k2cybersecurity.intcodeagent.models.javaagent.JavaAgentEventBean;
 import com.k2cybersecurity.intcodeagent.models.javaagent.VulnerabilityCaseType;
-import com.k2cybersecurity.intcodeagent.models.operationalbean.AbstractOperationalBean;
 import com.k2cybersecurity.intcodeagent.models.operationalbean.FileOperationalBean;
 
-import java.util.List;
-import java.util.Map;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -24,8 +20,6 @@ public class DispatcherPool {
 
 	private static DispatcherPool instance;
 
-	private Map<String, List<JavaAgentEventBean>> lazyEvents;
-
 	final int queueSize = 300;
 	final int maxPoolSize = 3;
 	final int corePoolSize = 1;
@@ -35,7 +29,6 @@ public class DispatcherPool {
 	private static Object mutex = new Object();
 
 	private DispatcherPool() {
-		lazyEvents = new ConcurrentHashMap<>();
 		LinkedBlockingQueue<Runnable> processQueue;
 		// load the settings
 		processQueue = new LinkedBlockingQueue<>(queueSize);
@@ -93,11 +86,6 @@ public class DispatcherPool {
 		this.executor.submit(new Dispatcher(httpRequestBean, metaData, trace, event, vulnerabilityCaseType));
 	}
 
-	public void dispatchEvent(StackTraceElement[] trace, Object event, VulnerabilityCaseType vulnerabilityCaseType,
-			Boolean sendToBuffer) {
-		this.executor.submit(new Dispatcher(trace, event, vulnerabilityCaseType, sendToBuffer));
-	}
-
 	public void dispatchAppInfo(Object event, VulnerabilityCaseType vulnerabilityCaseType) {
 		this.executor.submit(new Dispatcher(event, vulnerabilityCaseType));
 	}
@@ -122,17 +110,4 @@ public class DispatcherPool {
 		this.executor.submit(new Dispatcher(httpRequestBean, metaData, trace, event, fbean, vulnerabilityCaseType));
 	}
 
-	/**
-	 * @return the lazyEvents
-	 */
-	public Map<String, List<JavaAgentEventBean>> getLazyEvents() {
-		return lazyEvents;
-	}
-
-	/**
-	 * @param lazyEvents the lazyEvents to set
-	 */
-	public void setLazyEvents(Map<String, List<JavaAgentEventBean>> lazyEvents) {
-		this.lazyEvents = lazyEvents;
-	}
 }

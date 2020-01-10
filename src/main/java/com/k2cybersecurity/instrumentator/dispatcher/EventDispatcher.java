@@ -47,14 +47,6 @@ public class EventDispatcher {
 		}
 	}
 
-	public static void dispatch(AbstractOperationalBean objectBean, VulnerabilityCaseType vulnerabilityCaseType,
-			Boolean sendToBuffer) {
-		if (!objectBean.isEmpty()) {
-			DispatcherPool.getInstance().dispatchEvent(Thread.currentThread().getStackTrace(), objectBean,
-					vulnerabilityCaseType, true);
-		}
-	}
-
 	public static void dispatch(List<SQLOperationalBean> objectBeanList, VulnerabilityCaseType vulnerabilityCaseType) {
 		boolean ret = ThreadLocalHttpMap.getInstance().parseHttpRequest();
 		if (!ret) {

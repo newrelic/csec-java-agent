@@ -30,13 +30,7 @@ public class Callbacks {
 								Instant.now().toEpochMilli());
 						EventDispatcher.dispatch(forkExecOperationalBean, VulnerabilityCaseType.SYSTEM_COMMAND);
 					}
-				} else if (StringUtils.isNotBlank(command)) {
-					ForkExecOperationalBean forkExecOperationalBean = new ForkExecOperationalBean(command,
-							(Map<String, String>) args[1], className, sourceString, exectionId,
-							Instant.now().toEpochMilli());
-					EventDispatcher.dispatch(forkExecOperationalBean, VulnerabilityCaseType.SYSTEM_COMMAND, true);
 				}
-
 			} finally {
 				ThreadLocalOperationLock.getInstance().release();
 			}

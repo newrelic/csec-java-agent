@@ -20,6 +20,10 @@ public class Hooks {
 		TYPE_BASED_HOOKS.put("javax.servlet.ServletOutputStream", Arrays.asList("print", "println", "write"));
 		TYPE_BASED_HOOKS.put("java.io.PrintWriter", Arrays.asList("write", "newLine", "format"));
 
+		TYPE_BASED_HOOKS.put("javax.servlet.ServletRequest", Collections.singletonList(null));
+		TYPE_BASED_HOOKS.put("javax.servlet.ServletResponse", Collections.singletonList(null));
+
+
 		// SQL hooks
 		TYPE_BASED_HOOKS.put("java.sql.Statement",
 				Arrays.asList("execute", "executeBatch", "executeLargeBatch", "executeLargeUpdate", "executeQuery",
@@ -134,6 +138,9 @@ public class Hooks {
 				"com.k2cybersecurity.instrumentator.decorators.printwriter");
 		DECORATOR_ENTRY.put("java.io.PrintWriter.format",
 				"com.k2cybersecurity.instrumentator.decorators.printwriter");
+
+		DECORATOR_ENTRY.put("javax.servlet.ServletRequest.null", "com.k2cybersecurity.instrumentator.decorators.servletrequest");
+		DECORATOR_ENTRY.put("javax.servlet.ServletResponse.null", "com.k2cybersecurity.instrumentator.decorators.servletresponse");
 
 		// SQL Create
 		DECORATOR_ENTRY.put("java.sql.Connection.nativeSQL" , "com.k2cybersecurity.instrumentator.decorators.sqlexecute");
