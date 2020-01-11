@@ -19,7 +19,7 @@ public class Hooks {
 		// HTTP request hooks
 		TYPE_BASED_HOOKS.put("javax.servlet.GenericServlet", Arrays.asList("service"));
 		TYPE_BASED_HOOKS.put("javax.servlet.ServletInputStream", Arrays.asList("read"));
-		TYPE_BASED_HOOKS.put("javax.servlet.ServletOutputStream", Arrays.asList("print"));
+		TYPE_BASED_HOOKS.put("javax.servlet.ServletOutputStream", Arrays.asList("print", "write"));
 
 		TYPE_BASED_HOOKS.put("java.io.PrintWriter", Arrays.asList("write", "newLine", "format"));
 		TYPE_BASED_HOOKS.put("java.io.Reader", Arrays.asList("read"));
@@ -131,6 +131,9 @@ public class Hooks {
 				"com.k2cybersecurity.instrumentator.decorators.servletinputstream");
 
 		DECORATOR_ENTRY.put("javax.servlet.ServletOutputStream.print",
+				"com.k2cybersecurity.instrumentator.decorators.servletoutputstream");
+
+		DECORATOR_ENTRY.put("javax.servlet.ServletOutputStream.write",
 				"com.k2cybersecurity.instrumentator.decorators.servletoutputstream");
 
 		DECORATOR_ENTRY.put("java.io.PrintWriter.write",

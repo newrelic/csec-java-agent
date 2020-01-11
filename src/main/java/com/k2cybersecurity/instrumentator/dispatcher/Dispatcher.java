@@ -100,9 +100,9 @@ public class Dispatcher implements Runnable {
 					eventBean = getUserInfo(eventBean);
 					eventBean.setEventGenerationTime(Instant.now().toEpochMilli());
 					EventSendPool.getInstance().sendEvent(eventBean.toString());
-//					System.out.println("============= Event Start ============");
-//					System.out.println(eventBean);
-//					System.out.println("============= Event End ============");
+					System.out.println("============= Event Start ============");
+					System.out.println(eventBean);
+					System.out.println("============= Event End ============");
 				}
 				return;
 			}

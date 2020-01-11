@@ -140,11 +140,11 @@ public class ThreadLocalHttpMap {
     }
 
     public boolean parseHttpRequest() {
-        System.out.println("Parsing HTTP request : " + httpRequest.hashCode());
         if (httpRequest == null) {
-        	logger.log(LogLevel.INFO, "No HTTP request found for current context", ThreadLocalHttpMap.class.getName());
+            logger.log(LogLevel.INFO, "No HTTP request found for current context", ThreadLocalHttpMap.class.getName());
             return false;
         }
+        System.out.println("Parsing HTTP request : " + httpRequest.hashCode());
 
         if (isHttpRequestParsed) {
         	logger.log(LogLevel.INFO, "HTTP request already parsed for current context", ThreadLocalHttpMap.class.getName());
@@ -252,13 +252,13 @@ public class ThreadLocalHttpMap {
     }
 
     public boolean parseHttpResponse() {
-        System.out.println("Parsing HTTP response : " + httpResponse.hashCode());
 
         // TODO : To be implemented
         if (httpResponse == null) {
-        	logger.log(LogLevel.INFO, "No HTTP response found for current context", ThreadLocalHttpMap.class.getName());
+            logger.log(LogLevel.INFO, "No HTTP response found for current context", ThreadLocalHttpMap.class.getName());
             return false;
         }
+        System.out.println("Parsing HTTP response : " + httpResponse.hashCode());
 
 
         try {
@@ -342,6 +342,19 @@ public class ThreadLocalHttpMap {
             return;
         try {
             byteBuffer.put(b);
+//            System.out.println("inserting : " + Arrays.asList(b));
+        } catch (Exception e) {
+            ThreadLocalExecutionMap.getInstance().getHttpRequestBean().setDataTruncated(true);
+            //            e.printStackTrace();
+            // Buffer full. discard data.
+        }
+    }
+
+    public void insertToRequestByteBuffer(byte[] b, int offset, int limit) {
+        if (ThreadLocalExecutionMap.getInstance().getHttpRequestBean().isDataTruncated())
+            return;
+        try {
+            byteBuffer.put(b, offset, limit);
 //            System.out.println("inserting : " + Arrays.asList(b));
         } catch (Exception e) {
             ThreadLocalExecutionMap.getInstance().getHttpRequestBean().setDataTruncated(true);
