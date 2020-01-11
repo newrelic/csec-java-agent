@@ -32,6 +32,8 @@ public class ThreadLocalHttpMap {
 
     private int bufferLimit = 0;
 
+    private int responseBufferLimit = 0;
+
     private boolean isHttpResponseParsed = false;
 
     private boolean serviceMethodEncountered = false;
@@ -127,6 +129,14 @@ public class ThreadLocalHttpMap {
 
     public void setBufferLimit(int bufferLimit) {
         this.bufferLimit = bufferLimit;
+    }
+
+    public int getResponseBufferLimit() {
+        return responseBufferLimit;
+    }
+
+    public void setResponseBufferLimit(int responseBufferLimit) {
+        this.responseBufferLimit = responseBufferLimit;
     }
 
     public boolean parseHttpRequest() {
@@ -381,7 +391,7 @@ public class ThreadLocalHttpMap {
 
     public void insertToResponseBufferString(char[] b, int offset, int limit) {
         try {
-            outputBodyBuilder.append(new String(b, offset, limit));
+            outputBodyBuilder.append(new String(b, offset, limit).trim());
             //            System.out.println("inserting : " + Arrays.asList(b));
         } catch (Exception e) {
 //            e.printStackTrace();
@@ -425,12 +435,9 @@ public class ThreadLocalHttpMap {
     public void updateBody() {
         try {
             if (byteBuffer.position() > bufferOffset) {
-                System.out.println("Update body current positition start " + byteBuffer.position());
                 String oldBody = ThreadLocalExecutionMap.getInstance().getHttpRequestBean().getBody();
                 ThreadLocalExecutionMap.getInstance().getHttpRequestBean().setBody(oldBody + new String(byteBuffer.array(), bufferOffset, byteBuffer.position()).trim());
                 bufferOffset = byteBuffer.position();
-                System.out.println("Update body current positition end " + byteBuffer.position());
-
             }
         } catch (Exception e) {
 //            e.printStackTrace();
@@ -440,7 +447,7 @@ public class ThreadLocalHttpMap {
     public void updateResponseBody() {
         try {
             if (outputBodyBuilder.length() > ThreadLocalExecutionMap.getInstance().getHttpRequestBean().getHttpResponseBean().getResponseBody().length()) {
-                ThreadLocalExecutionMap.getInstance().getHttpRequestBean().getHttpResponseBean().setResponseBody(outputBodyBuilder.toString());
+                ThreadLocalExecutionMap.getInstance().getHttpRequestBean().getHttpResponseBean().setResponseBody(outputBodyBuilder.toString().trim());
             }
         } catch (Exception e) {
 //            e.printStackTrace();
@@ -458,6 +465,7 @@ public class ThreadLocalHttpMap {
         isHttpResponseParsed = false;
         bufferOffset = 0;
         bufferLimit= 0;
+        responseBufferLimit= 0;
         byteBuffer = ByteBuffer.allocate(1024 * 8);
         outputBodyBuilder = new StringBuilder();
         serviceMethodEncountered = false;

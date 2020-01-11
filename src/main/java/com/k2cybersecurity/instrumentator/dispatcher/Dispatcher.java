@@ -226,9 +226,9 @@ public class Dispatcher implements Runnable {
 		}
 		eventBean.setEventGenerationTime(Instant.now().toEpochMilli());
 		EventSendPool.getInstance().sendEvent(eventBean.toString());
-//		System.out.println("============= Event Start ============");
-//		System.out.println(eventBean);
-//		System.out.println("============= Event End ============");
+		System.out.println("============= Event Start ============");
+		System.out.println(eventBean);
+		System.out.println("============= Event End ============");
 	}
 
 	private JavaAgentEventBean prepareXPATHEvent(JavaAgentEventBean eventBean,
@@ -576,23 +576,23 @@ public class Dispatcher implements Runnable {
 
 	public void printDispatch() {
 		try {
-//			System.out.println(
-//					"==========================================================================================");
-//
-//			System.out.println("Intercepted Request : " + httpRequestBean);
-//
-//			System.out.println("Intercepted Response : " + httpRequestBean.getHttpResponseBean());
-//
-//			System.out.println("Agent Meta : " + metaData);
-//
-//			System.out.println("Intercepted transaction : " + event);
-//
-//			System.out.println("Trace : " + Arrays.asList(trace));
-//
-//			System.out.println("vulnerabilityCaseType : " + vulnerabilityCaseType);
-//
-//			System.out.println(
-//					"==========================================================================================");
+			System.out.println(
+					"==========================================================================================");
+
+			System.out.println("Intercepted Request : " + httpRequestBean);
+
+			System.out.println("Intercepted Response : " + httpRequestBean.getHttpResponseBean());
+
+			System.out.println("Agent Meta : " + metaData);
+
+			System.out.println("Intercepted transaction : " + event);
+
+			System.out.println("Trace : " + Arrays.asList(trace));
+
+			System.out.println("vulnerabilityCaseType : " + vulnerabilityCaseType);
+
+			System.out.println(
+					"==========================================================================================");
 		} catch (Exception e) {
 		}
 	}

@@ -4,8 +4,8 @@ import com.k2cybersecurity.instrumentator.custom.ThreadLocalHttpMap;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalOperationLock;
 import org.apache.commons.lang3.StringUtils;
 
+import java.io.BufferedReader;
 import java.lang.reflect.Field;
-import java.util.Arrays;
 
 public class Callbacks {
 
@@ -35,12 +35,8 @@ public class Callbacks {
 				Field in = null;
 				if (StringUtils.equals(methodName, "getReader")) {
 					try {
-						in = returnVal.getClass().getDeclaredField("in");
-					} catch (NoSuchFieldException e) {
-						try {
-							in = returnVal.getClass().getField("in");
-						} catch (NoSuchFieldException ex) {
-						}
+						in = BufferedReader.class.getDeclaredField("in");
+					} catch (Exception e) {
 					}
 					try {
 						if(in == null) {
