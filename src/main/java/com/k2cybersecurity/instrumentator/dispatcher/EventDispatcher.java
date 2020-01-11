@@ -24,8 +24,10 @@ public class EventDispatcher {
 	public static void dispatch(AbstractOperationalBean objectBean, VulnerabilityCaseType vulnerabilityCaseType) {
 		boolean ret = ThreadLocalHttpMap.getInstance().parseHttpRequest();
 		if (!ret) {
-			System.err.println("Dropping event due to corrupt/incomplete HTTP request : "
-					+ ThreadLocalExecutionMap.getInstance().getHttpRequestBean() + " ::: " + objectBean);
+			logger.log(LogLevel.ERROR,
+					"Dropping event due to corrupt/incomplete HTTP request : "
+							+ ThreadLocalExecutionMap.getInstance().getHttpRequestBean() + " ::: " + objectBean,
+					EventDispatcher.class.getName());
 			return;
 		}
 		// Place dispatch here
@@ -41,17 +43,20 @@ public class EventDispatcher {
 					new AgentMetaData(ThreadLocalExecutionMap.getInstance().getMetaData()),
 					Thread.currentThread().getStackTrace(), objectBean, vulnerabilityCaseType);
 		} else {
-			System.err.println("Dropping event due to empty object : "
-					+ ThreadLocalExecutionMap.getInstance().getHttpRequestBean() + " ::: " + objectBean);
-
+			logger.log(
+					LogLevel.ERROR, "Dropping event due to empty object : "
+							+ ThreadLocalExecutionMap.getInstance().getHttpRequestBean() + " ::: " + objectBean,
+					EventDispatcher.class.getName());
 		}
 	}
 
 	public static void dispatch(List<SQLOperationalBean> objectBeanList, VulnerabilityCaseType vulnerabilityCaseType) {
 		boolean ret = ThreadLocalHttpMap.getInstance().parseHttpRequest();
 		if (!ret) {
-			System.err.println("Dropping event due to corrupt/incomplete HTTP request : "
-					+ ThreadLocalExecutionMap.getInstance().getHttpRequestBean() + " ::: " + objectBeanList);
+			logger.log(
+					LogLevel.ERROR, "Dropping event due to corrupt/incomplete HTTP request : "
+							+ ThreadLocalExecutionMap.getInstance().getHttpRequestBean() + " ::: " + objectBeanList,
+					EventDispatcher.class.getName());
 			return;
 		}
 		// Place dispatch here
@@ -76,22 +81,8 @@ public class EventDispatcher {
 		if (!deployedApplication.isEmpty()) {
 			DispatcherPool.getInstance().dispatchAppInfo(deployedApplication, vulnerabilityCaseType);
 		} else {
-			System.out.println("Application info found to be empty : " + deployedApplication);
+//			System.out.println("Application info found to be empty : " + deployedApplication);
 		}
-	}
-
-	public static void printDispatch(AbstractOperationalBean objectBean) {
-		System.out
-				.println("==========================================================================================");
-
-		System.out.println("Intercepted Request : " + ThreadLocalExecutionMap.getInstance().getHttpRequestBean());
-
-		System.out.println("Agent Meta : " + ThreadLocalExecutionMap.getInstance().getMetaData());
-
-		System.out.println("Intercepted transaction : " + objectBean);
-
-		System.out
-				.println("==========================================================================================");
 	}
 
 	public static void dispatch(HttpRequestBean httpRequestBean, String sourceString, String exectionId, long startTime,
@@ -106,8 +97,10 @@ public class EventDispatcher {
 			VulnerabilityCaseType fileOperation) {
 		boolean ret = ThreadLocalHttpMap.getInstance().parseHttpRequest();
 		if (!ret) {
-			System.err.println("Dropping event due to corrupt/incomplete HTTP request : "
-					+ ThreadLocalExecutionMap.getInstance().getHttpRequestBean() + " ::: " + fileOperationalBean);
+			logger.log(
+					LogLevel.ERROR, "Dropping event due to corrupt/incomplete HTTP request : "
+							+ ThreadLocalExecutionMap.getInstance().getHttpRequestBean() + " ::: " + fileOperationalBean,
+					EventDispatcher.class.getName());
 			return;
 		}
 		// Place dispatch here
@@ -121,8 +114,10 @@ public class EventDispatcher {
 					new AgentMetaData(ThreadLocalExecutionMap.getInstance().getMetaData()),
 					Thread.currentThread().getStackTrace(), fileOperationalBean, fbean, fileOperation);
 		} else {
-			System.err.println("Dropping event due to empty object : "
-					+ ThreadLocalExecutionMap.getInstance().getHttpRequestBean() + " ::: " + fileOperationalBean);
+			logger.log(
+					LogLevel.ERROR, "Dropping event due to empty object : "
+							+ ThreadLocalExecutionMap.getInstance().getHttpRequestBean() + " ::: " + fileOperationalBean,
+					EventDispatcher.class.getName());
 
 		}
 	}

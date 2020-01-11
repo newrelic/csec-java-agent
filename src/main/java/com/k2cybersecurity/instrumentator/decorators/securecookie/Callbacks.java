@@ -29,8 +29,8 @@ public class Callbacks {
 							(value ? "true" : "false"), className, sourceString, exectionId,
 							Instant.now().toEpochMilli());
 					EventDispatcher.dispatch(secureCookieOperationalBean, VulnerabilityCaseType.SECURE_COOKIE);
-					System.out.println("OnEnter :" + sourceString + " - args : " + Arrays.asList(args) + " - this : "
-							+ obj + " - eid : " + exectionId);
+//					System.out.println("OnEnter :" + sourceString + " - args : " + Arrays.asList(args) + " - this : "
+//							+ obj + " - eid : " + exectionId);
 				}
 
 			} catch (Exception e) {
@@ -61,8 +61,8 @@ public class Callbacks {
 		if (!ThreadLocalOperationLock.getInstance().isAcquired()) {
 			try {
 				ThreadLocalOperationLock.getInstance().acquire();
-				System.out.println("OnError :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj
-						+ " - error : " + error + " - eid : " + exectionId);
+//				System.out.println("OnError :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj
+//						+ " - error : " + error + " - eid : " + exectionId);
 			} finally {
 				ThreadLocalOperationLock.getInstance().release();
 			}

@@ -16,8 +16,8 @@ public class Callbacks {
 		if (!ThreadLocalOperationLock.getInstance().isAcquired()) {
 			try {
 				ThreadLocalOperationLock.getInstance().acquire();
-				System.out.println("OnEnter :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj
-						+ " - eid : " + exectionId);
+//				System.out.println("OnEnter :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj
+//						+ " - eid : " + exectionId);
 				if (args.length >= 2 && args[0] != null && ThreadLocalSessionMap.getInstance().put((String) args[0], args[1])) {
 					TrustBoundaryOperationalBean operationalBean = new TrustBoundaryOperationalBean((String) args[0],
 							args[1], className, sourceString, exectionId, Instant.now().toEpochMilli());
@@ -51,8 +51,8 @@ public class Callbacks {
 		if (!ThreadLocalOperationLock.getInstance().isAcquired()) {
 			try {
 				ThreadLocalOperationLock.getInstance().acquire();
-				System.out.println("OnError :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj
-						+ " - error : " + error + " - eid : " + exectionId);
+//				System.out.println("OnError :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj
+//						+ " - error : " + error + " - eid : " + exectionId);
 			} finally {
 				ThreadLocalOperationLock.getInstance().release();
 			}

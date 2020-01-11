@@ -54,15 +54,15 @@ public class InstrumentationUtils {
 					public DynamicType.Builder<?> transform(DynamicType.Builder<?> builder,
 							TypeDescription typeDescription, ClassLoader classLoader, JavaModule javaModule) {
 						try {
-							System.out.println(String.format("Came to instrument : %s::%s for key : %s : %s",
-									sourceClass, method, (sourceClass + "." + method), typeDescription.getName()));
+//							System.out.println(String.format("Came to instrument : %s::%s for key : %s : %s",
+//									sourceClass, method, (sourceClass + "." + method), typeDescription.getName()));
 
 							if (K2Instrumentator.hookedAPIs.contains(typeDescription.getName() + "." + method)) {
 								return builder;
 							}
 
-							System.out.println(String.format("Instrumenting : %s::%s for key : %s : %s", sourceClass,
-									method, (sourceClass + "." + method), typeDescription.getName()));
+//							System.out.println(String.format("Instrumenting : %s::%s for key : %s : %s", sourceClass,
+//									method, (sourceClass + "." + method), typeDescription.getName()));
 							Class methodEntryDecorator = Class.forName(
 									Hooks.DECORATOR_ENTRY.get(sourceClass + "." + method) + "." + "MethodEntry", true,
 									classLoader);
@@ -116,9 +116,8 @@ public class InstrumentationUtils {
 											.on(isStatic().and(not(isConstructor())).and(returns(TypeDescription.VOID))
 													.and(hasMethodName(method))));
 						} catch (ClassNotFoundException e) {
-							System.err.println(String.format("Failed to instrument : %s::%s due to error : %s",
-									sourceClass, method, e));
-							e.printStackTrace();
+							logger.log(LogLevel.ERROR, String.format("Failed to instrument : %s::%s due to error : %s",
+									sourceClass, method, e), InstrumentationUtils.class.getName());
 						}
 						return builder;
 					}

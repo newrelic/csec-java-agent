@@ -57,8 +57,8 @@ public class Callbacks {
 //		if (!ThreadLocalOperationLock.getInstance().isAcquired()) {
 //			try {
 //				ThreadLocalOperationLock.getInstance().acquire();
-		System.out.println("OnError :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj
-				+ " - error : " + error + " - eid : " + exectionId);
+//		System.out.println("OnError :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj
+//				+ " - error : " + error + " - eid : " + exectionId);
 		onHttpTermination(sourceString, exectionId);
 //			} finally {
 //				ThreadLocalOperationLock.getInstance().release();
@@ -91,6 +91,6 @@ public class Callbacks {
 	}
 
 	private static void printReponse() {
-		System.out.println(String.format("Intercepted request at end : %s ::: %s", ThreadLocalExecutionMap.getInstance().getHttpRequestBean(), ThreadLocalExecutionMap.getInstance().getHttpRequestBean().getHttpResponseBean()));
+//		System.out.println(String.format("Intercepted request at end : %s ::: %s", ThreadLocalExecutionMap.getInstance().getHttpRequestBean(), ThreadLocalExecutionMap.getInstance().getHttpRequestBean().getHttpResponseBean()));
 	}
 }

@@ -48,7 +48,7 @@ public class K2Instrumentator {
 			String runningVM = runtimeMXBean.getName();
 			VMPID = Integer.parseInt(runningVM.substring(0, runningVM.indexOf(VMPID_SPLIT_CHAR)));
 		} catch (Throwable th) {
-			System.err.println("Error while initialising the K2 Agent :" + th.getCause() + " : " + th.getMessage());
+			logger.log(LogLevel.ERROR, ERROR_WHILE_INITIALISING_THE_K2_AGENT + th.getCause() + " : " + th.getMessage(), K2Instrumentator.class.getName());
 		}
 	}
 
@@ -69,7 +69,7 @@ public class K2Instrumentator {
 		try {
 			WSClient.getInstance();
 		} catch (Exception e) {
-			logger.log(LogLevel.ERROR, "Error occured while trying to connect to wsocket: ", e,
+			logger.log(LogLevel.ERROR, ERROR_OCCURED_WHILE_TRYING_TO_CONNECT_TO_WSOCKET, e,
 					AgentNew.class.getName());
 		}
 		IPScheduledThread.getInstance();
@@ -81,7 +81,7 @@ public class K2Instrumentator {
 		try {
 			EventSendPool.getInstance();
 		} catch (Exception e) {
-			logger.log(LogLevel.WARNING, "Exception occured in EventSendPool: ", e, AgentNew.class.getName());
+			logger.log(LogLevel.WARNING, EXCEPTION_OCCURED_IN_EVENT_SEND_POOL, e, AgentNew.class.getName());
 		}
 	}
 
@@ -137,7 +137,7 @@ public class K2Instrumentator {
 		try {
 			RuntimeMXBean runtimeMXBean = ManagementFactory.getRuntimeMXBean();
 			ApplicationInfoBean applicationInfoBean = new ApplicationInfoBean(VMPID, APPLICATION_UUID,
-					isDynamicAttach ? "DYNAMIC" : "STATIC");
+					isDynamicAttach ? DYNAMIC : STATIC);
 			applicationInfoBean.setStartTime(runtimeMXBean.getStartTime());
 			String containerId = getContainerID();
 			String cmdLine = StringEscapeUtils.escapeJava(getCmdLineArgsByProc(VMPID));
@@ -152,7 +152,7 @@ public class K2Instrumentator {
 			try {
 				applicationInfoBean.setBinaryPath(Files
 						.readSymbolicLink(
-								new File(String.format("/proc/%s/exe", applicationInfoBean.getPid())).toPath())
+								new File(String.format(PROC_S_EXE, applicationInfoBean.getPid())).toPath())
 						.toString());
 			} catch (IOException e) {
 			}
@@ -168,7 +168,7 @@ public class K2Instrumentator {
 			// JSONArray(runtimeMXBean.getInputArguments()));
 			return applicationInfoBean;
 		} catch (Exception e) {
-			logger.log(LogLevel.WARNING, "Exception occured in createApplicationInfoBean: ", e,
+			logger.log(LogLevel.WARNING, EXCEPTION_OCCURED_IN_CREATE_APPLICATION_INFO_BEAN, e,
 					AgentNew.class.getName());
 		}
 		return null;

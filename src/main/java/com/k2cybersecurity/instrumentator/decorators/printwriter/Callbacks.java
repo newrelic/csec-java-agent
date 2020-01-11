@@ -24,10 +24,10 @@ public class Callbacks {
                         } else if (args != null && args.length == 3 && args[0] instanceof Locale) {
                             ThreadLocalHttpMap.getInstance().insertToResponseBuffer(String.format((Locale) args[0], (String) args[1], args[2]));
                         } else {
-                            System.out.println(
-                                    "PrintWriter.format variation intercepted : Currently unsupported : " + "OnEnter :"
-                                            + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj
-                                            + " - eid : " + exectionId);
+//                            System.out.println(
+//                                    "PrintWriter.format variation intercepted : Currently unsupported : " + "OnEnter :"
+//                                            + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj
+//                                            + " - eid : " + exectionId);
                         }
                     } else if (StringUtils.equals(methodName, "write")) {
                         if (args != null && args.length == 1 && args[0] instanceof Integer) {
@@ -69,8 +69,8 @@ public class Callbacks {
         if (!ThreadLocalOperationLock.getInstance().isAcquired()) {
             try {
                 ThreadLocalOperationLock.getInstance().acquire();
-                System.out.println("OnError :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj
-                        + " - error : " + error + " - eid : " + exectionId);
+//                System.out.println("OnError :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj
+//                        + " - error : " + error + " - eid : " + exectionId);
             } finally {
                 ThreadLocalOperationLock.getInstance().release();
             }

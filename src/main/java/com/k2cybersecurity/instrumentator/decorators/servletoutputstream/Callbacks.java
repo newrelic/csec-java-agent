@@ -43,8 +43,8 @@ public class Callbacks {
         if (!ThreadLocalOperationLock.getInstance().isAcquired()) {
             try {
                 ThreadLocalOperationLock.getInstance().acquire();
-                System.out.println("OnError :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj
-                        + " - error : " + error + " - eid : " + exectionId);
+//                System.out.println("OnError :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj
+//                        + " - error : " + error + " - eid : " + exectionId);
             } finally {
                 ThreadLocalOperationLock.getInstance().release();
             }

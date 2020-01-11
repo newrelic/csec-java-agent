@@ -37,9 +37,9 @@ public class Callbacks {
 								VulnerabilityCaseType.SQL_DB_COMMAND);
 						ThreadLocalDBMap.getInstance().clear(thisObject);
 					} else {
-						System.err.println(
-								String.format("Null SQL query fired : %s : %s : %s : %s", sourceString, exectionId,
-										Arrays.asList(args), args.length));
+//						System.err.println(
+//								String.format("Null SQL query fired : %s : %s : %s : %s", sourceString, exectionId,
+//										Arrays.asList(args), args.length));
 					}
 				}
 			} finally {
@@ -65,8 +65,8 @@ public class Callbacks {
 		if(!ThreadLocalOperationLock.getInstance().isAcquired()) {
 			try {
 				ThreadLocalOperationLock.getInstance().acquire();
-				System.out.println("OnError :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj
-						+ " - error : " + error + " - eid : " + exectionId);
+//				System.out.println("OnError :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj
+//						+ " - error : " + error + " - eid : " + exectionId);
 			} finally {
 				ThreadLocalOperationLock.getInstance().release();
 			}

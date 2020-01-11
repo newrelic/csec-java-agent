@@ -14,13 +14,43 @@ public interface IAgentConstants {
 	List<String> SOURCE_EXENSIONS = Arrays.asList(new String[] { "class", "jsp", "jar", "java" });
 
 	// HSQL
+	String HSQL = "HSQL";
+	String HSQL_DB_IDENTIFIER = "hsqldb.";
 	String CLASS_ORG_HSQLDB_HSQL_CLIENT_CONNECTION = "org/hsqldb/HSQLClientConnection";
 	String CLASS_ORG_HSQLDB_SESSION = "org/hsqldb/Session";
 	String CLASS_ORG_HSQLDB_CLIENT_CONNECTION = "org/hsqldb/ClientConnection";
 
 	// PSQL
+	String POSTGRESQL = "POSTGRESQL";
+	String POSTGRESQL_DB_IDENTIFIER = "postgresql.";
 	String CLASS_ORG_POSTGRESQL_CORE_V2_QUERY_EXECUTOR_IMPL = "org/postgresql/core/v2/QueryExecutorImpl";
 	String CLASS_ORG_POSTGRESQL_CORE_V3_QUERY_EXECUTOR_IMPL = "org/postgresql/core/v3/QueryExecutorImpl";
+	
+	//firebird
+	String FIREBIRD = "FIREBIRD";
+	String FIREBIRD_DB_IDENTIFIER = "firebirdsql.";
+	
+	//H2
+	String H2 = "H2";
+	String H2_DB_IDENTIFIER = "h2.";
+	
+	//Derby
+	String DERBY = "DERBY";
+	String DERBY_DB_IDENTIFIER = "derby.";
+	
+	//IBMDB2
+	String IBMDB2 = "IBMDB2";
+	String IBMDB2_DB_IDENTIFIER = "ibm.";
+	
+	//Teradata
+	String TERADATA = "TERADATA";
+	String TERADATA_DB_IDENTIFIER = "teradata.";
+	
+	//MariaDB
+	String MARIADB = "MARIADB";
+	String MARIADB_DB_IDENTIFIER = "mariadb.";
+	
+	String UNKNOWN = "UNKNOWN";
 
 	// JETTY
 	String CLASS_ORG_ECLIPSE_JETTY_HTTP_HTTP_PARSER = "org/eclipse/jetty/http/HttpParser";
@@ -40,6 +70,7 @@ public interface IAgentConstants {
 	String CLASS_JAVA_NET_URL_CLASS_LOADER = "java/net/URLClassLoader";
 
 	// MONGO
+	String MONGO = "MONGO";
 	String CLASS_COM_MONGODB_ASYNC_CLIENT_OPERATION_EXECUTOR_IMPL = "com/mongodb/async/client/OperationExecutorImpl";
 	String CLASS_COM_MONGODB_ASYNC_CLIENT_ASYNC_OPERATION_EXECUTOR_IMPL = "com/mongodb/async/client/AsyncOperationExecutorImpl";
 	String CLASS_COM_MONGODB_ASYNC_CLIENT_MONGO_CLIENT_IMPL$2 = "com/mongodb/async/client/MongoClientImpl$2";
@@ -124,6 +155,7 @@ public interface IAgentConstants {
 	String JAVA_IO_FILE_INPUTSTREAM_OPEN = "private void java.io.FileInputStream.open(java.lang.String) throws java.io.FileNotFoundException";
 	String JAVA_IO_FILE_OUTPUTSTREAM_OPEN = "private void java.io.FileOutputStream.open(java.lang.String,boolean) throws java.io.FileNotFoundException";
 
+	String SUN_NIO_FS_UNIX_PATH = "sun.nio.fs.UnixPath";
 	String JAVA_NIO_UNIX_OPEN = "static int sun.nio.fs.UnixNativeDispatcher.open(sun.nio.fs.UnixPath,int,int) throws sun.nio.fs.UnixException";
 	String JAVA_NIO_UNIX_FOPEN = "static long sun.nio.fs.UnixNativeDispatcher.fopen(sun.nio.fs.UnixPath,java.lang.String) throws sun.nio.fs.UnixException";
 	String JAVA_NIO_UNIX_LINK = "static void sun.nio.fs.UnixNativeDispatcher.link(sun.nio.fs.UnixPath,sun.nio.fs.UnixPath) throws sun.nio.fs.UnixException";
@@ -173,8 +205,14 @@ public interface IAgentConstants {
 	String CLASS_SUN_NIO_FS_UNIX_NATIVE_DISPATCHER = "sun/nio/fs/UnixNativeDispatcher";
 
 	/** Source Method Identifiers for argument resolution */
+	String MSSQL = "MSSQL";
+	String MSSQL_DB_IDENTIFIER = "sqlserver.";
 	String MSSQL_IDENTIFIER = "com.microsoft.sqlserver";
+	
+	String MYSQL = "MYSQL";
+	String MYSQL_DB_IDENTIFIER = "mysql.";
 	String MYSQL_IDENTIFIER = "com.mysql";
+	
 	String MONGO_IDENTIFIER = "com.mongo";
 	String CLASS_LOADER_IDENTIFIER = "java.net.URLClassLoader";
 	String SERVLET_REQUEST_IDENTIFIER = "javax.servlet.http.HttpServletRequest";
@@ -288,9 +326,15 @@ public interface IAgentConstants {
 	String MONGO_COLLECTION_WILDCARD = "$cmd";
 	String MONGO_COLLECTION_FIELD = "collectionName";
 	String MONGO_COMMAND_NAME_FIELD = "commandName";
-
+	
+	String BSONDOCUMENT = "BsonDocument";
+	String DELETES = "deletes";
+	String QUERY_DOCUMENT = "queryDocument";
+	
 	/** Oracle DB constants */
-	String ORACLE_DB_IDENTIFIER = "oracle.jdbc.driver";
+	String ORACLE = "ORACLE";
+	String ORACLE_DB_IDENTIFIER = "oracle.jdbc.";
+	String ORACLE_IDENTIFIER = "oracle.jdbc.driver";
 	String ORACLE_CONNECTION_IDENTIFIER = "oracle.jdbc.driver.T4C8Oall";
 	String ORACLE_STATEMENT_CLASS_IDENTIFIER = "oracle.jdbc.driver.OracleStatement";
 
@@ -341,7 +385,60 @@ public interface IAgentConstants {
 	String JAVA_LANG_RUNTIME = "java.lang.Runtime";
 
 	String JAVA_IO_FILE = "java.io.File";
-
+	
+	String SOURCESTRING = "sourceString";
+	String EXECUTIONID = "executionId";
+	String STARTTIME = "startTime";
+	String FILEINTEGRITYBEAN = "FileIntegrityBean";
+	String PARAMETERS = "parameters";
+	String QUERY = "query";
+	String FILTER = "filter";
+	String NAME = "name";
+	String COMMAND = "command";
+	String FIELDS = "fields";
+	String DOT_JAVA_COLON = ".java:";
+	String URL = "url";
+	String GET_REQUEST = "getRequest";
+	char QUESTION_MARK = '?';
+	String URI = "uri";
+	String REQUEST = "request";
+	String JDK_INCUBATOR_HTTP_MULTI_EXCHANGE = "jdk.incubator.http.MultiExchange";
+	String SETUP_CURRENT_ENTITY = "setupCurrentEntity";
+	String XML_ENTITY_MANAGER = "XMLEntityManager";
+	String SCAN_DOCUMENT = "scanDocument";
+	String XML_DOCUMENT_FRAGMENT_SCANNER_IMPL = "XMLDocumentFragmentScannerImpl";
+	String UNCHECKED = "unchecked";
+	String UNUSED = "unused";
+	String PROC_S_EXE = "/proc/%s/exe";
+	String STATIC = "STATIC";
+	String DYNAMIC = "DYNAMIC";
+	
+	//Loggers
+	String PRINTING_STACK_TRACE_FOR_RCI_EVENT_S_S = "Printing stack trace for rci event : %s : %s";
+	String PRINTING_STACK_TRACE_FOR_PROBABLE_RCI_EVENT_S_S = "Printing stack trace for probable rci event : %s : %s";
+	String PRINTING_STACK_TRACE_FOR_DESERIALISE_EVENT_S_S = "Printing stack trace for deserialise event : %s : %s";
+	String PRINTING_STACK_TRACE_FOR_XXE_EVENT_S_S = "Printing stack trace for xxe event : %s : %s";
+	String ERROR_IN_PARTIAL_SSRF_VALIDATOR = "Error in partialSSRFValidator : ";
+	String ERROR_IN_GENERATE_EVENT_WHILE_CREATING_INT_CODE_RESULT_BEAN = "Error in generateEvent while creating IntCodeResultBean: ";
+	String DROPPING_EVENT = "Dropping event ";
+	String ERROR_IN_GENERATE_EVENT_WHILE_CREATING_JAVA_AGENT_DYNAMIC_PATH_BEAN = "Error in generateEvent while creating JavaAgentDynamicPathBean: ";
+	String DUE_TO_BUFFER_CAPACITY_REACHED = " due to buffer capacity reached";
+	String DROPPING_DYNAMIC_JAR_PATH_BEAN_EVENT = "Dropping dynamicJarPathBean event ";
+	String ERROR_IN_GET_PSQL_PARAMETER_VALUE = "Error in getPSQLParameterValue: ";
+	String ERROR_IN_GET_HSQL_PARAMETER_VALUE_FOR_HSQL_V1_8_V2_3_4 = "Error in getHSQLParameterValue for HSQL_V1_8/V2_3_4: ";
+	String ERROR_IN_GET_HSQL_PARAMETER_VALUE_FOR_HSQL_V2_4 = "Error in getHSQLParameterValue for HSQL_V2_4: ";
+	String ERROR_IN_GET_OK_HTTP_REQUEST_PARAMETERS = "Error in getOkHttpRequestParameters : ";
+	String ERROR_IN_GET_APACHE_COMMONS_HTTP_REQUEST_PARAMETERS = "Error in getApacheCommonsHttpRequestParameters : ";
+	String ERROR_IN_GET_APACHE_HTTP_REQUEST_PARAMETERS = "Error in getApacheHttpRequestParameters : ";
+	String ERROR_IN_GET_JAVA9_HTTP_CLIENT_PARAMETERS = "Error in getJava9HttpClientParameters : ";
+	String ERROR_IN_TO_STRING = "Error in toString: ";
+	String ERROR_IN_GET_ORACLE_PARAMETER_VALUE = "Error in getOracleParameterValue: ";
+	String ERROR_IN_GET_MY_SQL_PARAMETER_VALUE = "Error in getMySQLParameterValue: ";
+	String EXCEPTION_OCCURED_IN_CREATE_APPLICATION_INFO_BEAN = "Exception occured in createApplicationInfoBean: ";
+	String EXCEPTION_OCCURED_IN_EVENT_SEND_POOL = "Exception occured in EventSendPool: ";
+	String ERROR_OCCURED_WHILE_TRYING_TO_CONNECT_TO_WSOCKET = "Error occured while trying to connect to wsocket: ";
+	String ERROR_WHILE_INITIALISING_THE_K2_AGENT = "Error while initialising the K2 Agent :";
+	
 	// IPScheduledThread.java file constants
 	String HOST_IP_PROPERTIES_FILE = "/etc/k2-adp/hostip.properties";
 
@@ -422,13 +519,16 @@ public interface IAgentConstants {
 	String GET_NAVIGATOR = "getNavigator";
 	String MAIN_STRING = "mainString";
 	// CRYPTO Constants
+	String CIPHER = "CIPHER";
 	String JAVAX_CRYPTO_CIPHER_GETINSTANCE_STRING = "public static final javax.crypto.Cipher javax.crypto.Cipher.getInstance(java.lang.String) throws java.security.NoSuchAlgorithmException,javax.crypto.NoSuchPaddingException";
 	String JAVAX_CRYPTO_CIPHER_GETINSTANCE_STRING_PROVIDER = "public static final javax.crypto.Cipher javax.crypto.Cipher.getInstance(java.lang.String,java.security.Provider) throws java.security.NoSuchAlgorithmException,javax.crypto.NoSuchPaddingException";
 
+	String KEYGENERATOR = "KEYGENERATOR";
 	String JAVAX_CRYPTO_KEYGENERATOR_GETINSTANCE_STRING = "public static final javax.crypto.KeyGenerator javax.crypto.KeyGenerator.getInstance(java.lang.String) throws java.security.NoSuchAlgorithmException";
 	String JAVAX_CRYPTO_KEYGENERATOR_GETINSTANCE_STRING_STRING = "public static final javax.crypto.KeyGenerator javax.crypto.KeyGenerator.getInstance(java.lang.String,java.lang.String) throws java.security.NoSuchAlgorithmException,java.security.NoSuchProviderException";
 	String JAVAX_CRYPTO_KEYGENERATOR_GETINSTANCE_STRING_PROVIDER = "public static final javax.crypto.KeyGenerator javax.crypto.KeyGenerator.getInstance(java.lang.String,java.security.Provider) throws java.security.NoSuchAlgorithmException";
 
+	String KEYPAIRGENERATOR = "KEYPAIRGENERATOR";
 	String JAVA_SECURITY_KEYPAIRGENERATOR_GETINSTANCE_STRING = "public static java.security.KeyPairGenerator java.security.KeyPairGenerator.getInstance(java.lang.String) throws java.security.NoSuchAlgorithmException";
 	String JAVA_SECURITY_KEYPAIRGENERATOR_GETINSTANCE_STRING_STRING = "public static java.security.KeyPairGenerator java.security.KeyPairGenerator.getInstance(java.lang.String,java.lang.String) throws java.security.NoSuchAlgorithmException,java.security.NoSuchProviderException";
 	String JAVA_SECURITY_KEYPAIRGENERATOR_GETINSTANCE_STRING_PROVIDER = "public static java.security.KeyPairGenerator java.security.KeyPairGenerator.getInstance(java.lang.String,java.security.Provider) throws java.security.NoSuchAlgorithmException";

@@ -15,16 +15,16 @@ import java.util.Arrays;
 
 public class Callbacks {
 
-	private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
+//	private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
 
 	public static void doOnEnter(String sourceString, String className, String methodName, Object obj, Object[] args,
 			String executionId) {
 		if (!ThreadLocalOperationLock.getInstance().isAcquired()) {
 			try {
 				ThreadLocalOperationLock.getInstance().acquire();
-				logger.log(LogLevel.INFO,
-						"OnEnter :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj
-								+ " - eid : " + executionId, Callbacks.class.getName());
+//				logger.log(LogLevel.INFO,
+//						"OnEnter :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj
+//								+ " - eid : " + executionId, Callbacks.class.getName());
 				if (ThreadLocalHttpMap.getInstance().getHttpRequest() != null && args.length != 0) {
 
 					String name = args[0].toString();
@@ -49,8 +49,8 @@ public class Callbacks {
 		if (!ThreadLocalOperationLock.getInstance().isAcquired()) {
 			try {
 				ThreadLocalOperationLock.getInstance().acquire();
-				System.out.println("OnExit :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj
-						+ " - return : " + returnVal + " - eid : " + exectionId);
+//				System.out.println("OnExit :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj
+//						+ " - return : " + returnVal + " - eid : " + exectionId);
 			} finally {
 				ThreadLocalOperationLock.getInstance().release();
 			}
@@ -62,8 +62,8 @@ public class Callbacks {
 		if(!ThreadLocalOperationLock.getInstance().isAcquired()) {
 			try {
 				ThreadLocalOperationLock.getInstance().acquire();
-				System.out.println("OnError :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj
-						+ " - error : " + error + " - eid : " + exectionId);
+//				System.out.println("OnError :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj
+//						+ " - error : " + error + " - eid : " + exectionId);
 			} finally {
 				ThreadLocalOperationLock.getInstance().release();
 			}
