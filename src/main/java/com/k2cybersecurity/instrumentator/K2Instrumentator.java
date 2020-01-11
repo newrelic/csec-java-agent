@@ -48,7 +48,7 @@ public class K2Instrumentator {
 			String runningVM = runtimeMXBean.getName();
 			VMPID = Integer.parseInt(runningVM.substring(0, runningVM.indexOf(VMPID_SPLIT_CHAR)));
 		} catch (Throwable th) {
-			System.err.println(ERROR_WHILE_INITIALISING_THE_K2_AGENT + th.getCause() + " : " + th.getMessage());
+			logger.log(LogLevel.ERROR, ERROR_WHILE_INITIALISING_THE_K2_AGENT + th.getCause() + " : " + th.getMessage(), K2Instrumentator.class.getName());
 		}
 	}
 
