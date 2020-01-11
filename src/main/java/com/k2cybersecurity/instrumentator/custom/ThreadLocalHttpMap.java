@@ -12,10 +12,7 @@ import org.json.simple.JSONObject;
 
 import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
-import java.util.Collection;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class ThreadLocalHttpMap {
 
@@ -27,18 +24,25 @@ public class ThreadLocalHttpMap {
 
     private Object httpResponse;
 
-    private Object printWriter;
-
     private ByteBuffer byteBuffer;
 
     private StringBuilder outputBodyBuilder;
 
     private int bufferOffset = 0;
 
+    private int bufferLimit = 0;
+
     private boolean isHttpResponseParsed = false;
 
     private boolean serviceMethodEncountered = false;
 
+    private Object requestInputStream;
+
+    private Object requestReader;
+
+    private Object responseOutputStream;
+
+    private Object responseWriter;
 
     private static ThreadLocal<ThreadLocalHttpMap> instance =
             new ThreadLocal<ThreadLocalHttpMap>() {
@@ -77,14 +81,6 @@ public class ThreadLocalHttpMap {
         return isHttpRequestParsed;
     }
 
-    public Object getPrintWriter() {
-        return printWriter;
-    }
-
-    public void setPrintWriter(Object printWriter) {
-        this.printWriter = printWriter;
-    }
-
     public boolean isServiceMethodEncountered() {
         return serviceMethodEncountered;
     }
@@ -93,14 +89,55 @@ public class ThreadLocalHttpMap {
         this.serviceMethodEncountered = serviceMethodEncountered;
     }
 
+    public Object getRequestInputStream() {
+        return requestInputStream;
+    }
+
+    public void setRequestInputStream(Object requestInputStream) {
+        this.requestInputStream = requestInputStream;
+    }
+
+    public Object getRequestReader() {
+        return requestReader;
+    }
+
+    public void setRequestReader(Object requestReader) {
+        this.requestReader = requestReader;
+    }
+
+    public Object getResponseOutputStream() {
+        return responseOutputStream;
+    }
+
+    public void setResponseOutputStream(Object responseOutputStream) {
+        this.responseOutputStream = responseOutputStream;
+    }
+
+    public Object getResponseWriter() {
+        return responseWriter;
+    }
+
+    public void setResponseWriter(Object responseWriter) {
+        this.responseWriter = responseWriter;
+    }
+
+    public int getBufferLimit() {
+        return bufferLimit;
+    }
+
+    public void setBufferLimit(int bufferLimit) {
+        this.bufferLimit = bufferLimit;
+    }
+
     public boolean parseHttpRequest() {
+        System.out.println("Parsing HTTP request : " + httpRequest.hashCode());
         if (httpRequest == null) {
             System.out.println("No HTTP request found for current context");
             return false;
         }
 
         if (isHttpRequestParsed) {
-            System.out.println("HTTP request already parsed for current context");
+            System.out.println("HTTP request already parsed for current context: " + httpRequest.hashCode());
             updateBody();
             return true;
         }
@@ -151,6 +188,17 @@ public class ThreadLocalHttpMap {
             int serverPort = (Integer) getLocalPort.invoke(httpRequest, null);
             httpRequestBean.setServerPort(serverPort);
 
+
+            Method getParameterMap = requestClass.getMethod("getParameterMap");
+            getParameterMap.setAccessible(true);
+            httpRequestBean.setParameterMap((Map<String, String[]>) getParameterMap.invoke(httpRequest, null));
+
+            if(StringUtils.containsIgnoreCase( httpRequestBean.getContentType(), "multipart/form-data")){
+                Method getParts = requestClass.getMethod("getParts");
+                getParts.setAccessible(true);
+                httpRequestBean.setParts(Collections.singleton(getParts.invoke(httpRequest, null)));
+            }
+
             ServletContextInfo.getInstance().processServletContext(servletContext, contextPath, serverPort);
             updateBody();
             isHttpRequestParsed = true;
@@ -194,18 +242,20 @@ public class ThreadLocalHttpMap {
     }
 
     public boolean parseHttpResponse() {
+        System.out.println("Parsing HTTP response : " + httpResponse.hashCode());
+
         // TODO : To be implemented
         if (httpResponse == null) {
             System.out.println("No HTTP response found for current context");
             return false;
         }
 
-        updateResponseBody();
 
         try {
+            updateResponseBody();
 
             if (isHttpResponseParsed) {
-                System.out.println("HTTP response already parsed for current context");
+                System.out.println("HTTP response already parsed for current context: " + httpResponse.hashCode());
                 return true;
             }
 
@@ -226,6 +276,7 @@ public class ThreadLocalHttpMap {
             httpRequestBean.getHttpResponseBean().setHeaders(new JSONObject(headers));
 
             // TODO: based on content info, parse/decode the received reponse data here.
+            System.out.println("Parsing HTTP response completed : " + httpResponse.hashCode() + " :: " +  httpRequestBean.getHttpResponseBean());
 
             isHttpResponseParsed = true;
             return true;
@@ -290,7 +341,7 @@ public class ThreadLocalHttpMap {
     }
 
 
-    public void insertToResponseBufferByte(int b) {
+    public void insertToResponseBufferInt(int b) {
         try {
             outputBodyBuilder.append((char) b);
 //            System.out.println("inserting : " + b);
@@ -374,9 +425,12 @@ public class ThreadLocalHttpMap {
     public void updateBody() {
         try {
             if (byteBuffer.position() > bufferOffset) {
+                System.out.println("Update body current positition start " + byteBuffer.position());
                 String oldBody = ThreadLocalExecutionMap.getInstance().getHttpRequestBean().getBody();
-                ThreadLocalExecutionMap.getInstance().getHttpRequestBean().setBody(oldBody + new String(byteBuffer.array(), bufferOffset, byteBuffer.position()));
+                ThreadLocalExecutionMap.getInstance().getHttpRequestBean().setBody(oldBody + new String(byteBuffer.array(), bufferOffset, byteBuffer.position()).trim());
                 bufferOffset = byteBuffer.position();
+                System.out.println("Update body current positition end " + byteBuffer.position());
+
             }
         } catch (Exception e) {
 //            e.printStackTrace();
@@ -402,11 +456,15 @@ public class ThreadLocalHttpMap {
         isHttpRequestParsed = false;
         httpResponse = null;
         isHttpResponseParsed = false;
-        printWriter = null;
         bufferOffset = 0;
+        bufferLimit= 0;
         byteBuffer = ByteBuffer.allocate(1024 * 8);
         outputBodyBuilder = new StringBuilder();
         serviceMethodEncountered = false;
+        requestInputStream = null;
+        requestReader = null;
+        responseOutputStream = null;
+        responseWriter = null;
     }
 
     public boolean isEmpty() {

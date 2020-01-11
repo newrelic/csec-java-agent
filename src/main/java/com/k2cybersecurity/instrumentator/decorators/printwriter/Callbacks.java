@@ -11,12 +11,10 @@ public class Callbacks {
 
     public static void doOnEnter(String sourceString, String className, String methodName, Object obj, Object[] args,
                                  String exectionId) {
+        System.out.println("Came to response printwriter :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj + " - eid : " + exectionId);
+
         if (!ThreadLocalHttpMap.getInstance().isEmpty()) {
-            if (ThreadLocalHttpMap.getInstance().getPrintWriter() == null) {
-                ThreadLocalHttpMap.getInstance().setPrintWriter(obj);
-            }
-            if (ThreadLocalHttpMap.getInstance().getPrintWriter() != null && obj == ThreadLocalHttpMap.getInstance()
-                    .getPrintWriter() && !ThreadLocalOperationLock.getInstance().isAcquired()) {
+            if (ThreadLocalHttpMap.getInstance().getResponseWriter() == obj && !ThreadLocalOperationLock.getInstance().isAcquired()) {
                 try {
                     ThreadLocalOperationLock.getInstance().acquire();
 //                System.out.println("OnEnter :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj + " - eid : " + exectionId);

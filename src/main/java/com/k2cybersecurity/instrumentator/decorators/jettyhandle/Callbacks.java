@@ -19,6 +19,7 @@ public class Callbacks {
 		// TODO: Need more checks here to assert the type of args. Maybe the TYPE_BASED hook advice should be generated from Code with very specific checks.
 		//  Doing checks here will degrade performance.
 //		if (!ThreadLocalOperationLock.getInstance().isAcquired()) {
+		ThreadLocalHttpMap.getInstance().setServiceMethodEncountered(true);
 		try {
 //				ThreadLocalOperationLock.getInstance().acquire();
 

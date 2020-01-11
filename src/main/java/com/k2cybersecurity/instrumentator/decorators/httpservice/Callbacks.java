@@ -22,6 +22,7 @@ public class Callbacks {
 		// hook advice should be generated from Code with very specific checks.
 		// Doing checks here will degrade performance.
 //		if (!ThreadLocalOperationLock.getInstance().isAcquired()) {
+		System.out.println("Came to service hook :" + exectionId + " :: " + sourceString);
 		ThreadLocalHttpMap.getInstance().setServiceMethodEncountered(true);
 		try {
 //				ThreadLocalOperationLock.getInstance().acquire();

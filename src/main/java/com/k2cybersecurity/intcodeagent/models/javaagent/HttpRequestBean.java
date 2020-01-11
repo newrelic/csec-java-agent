@@ -9,6 +9,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.json.simple.JSONObject;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -54,6 +55,10 @@ public class HttpRequestBean {
 
 	private int serverPort;
 
+	private Map<String, String[]> parameterMap;
+
+	private Collection parts;
+
 	public HttpRequestBean() {
 		this.rawRequest = StringUtils.EMPTY;
 		this.clientIP = StringUtils.EMPTY;
@@ -83,6 +88,8 @@ public class HttpRequestBean {
 		this.serverPort = servletInfo.serverPort;
 		this.httpResponseBean = new HttpResponseBean(servletInfo.httpResponseBean);
 		this.contentType = new String(servletInfo.contentType.trim());
+		this.parameterMap = new HashMap<>(servletInfo.parameterMap);
+		this.parts = servletInfo.parts;
 	}
 
 	public String getRawRequest() {
@@ -131,6 +138,23 @@ public class HttpRequestBean {
 	public void setServerPort(int serverPort) {
 		this.serverPort = serverPort;
 	}
+
+	public Map<String, String[]> getParameterMap() {
+		return parameterMap;
+	}
+
+	public void setParameterMap(Map<String, String[]> parameterMap) {
+		this.parameterMap = parameterMap;
+	}
+
+	public Collection getParts() {
+		return parts;
+	}
+
+	public void setParts(Collection parts) {
+		this.parts = parts;
+	}
+
 	//	/**
 //	 * @param body the body to set
 //	 */

@@ -2,6 +2,7 @@ package com.k2cybersecurity.instrumentator.decorators.servletresponse;
 
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalHttpMap;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalOperationLock;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.Arrays;
 
@@ -9,10 +10,13 @@ public class Callbacks {
 
 	public static void doOnEnter(String sourceString, String className, String methodName, Object obj, Object[] args,
 			String exectionId) {
-		if ( !ThreadLocalHttpMap.getInstance().isServiceMethodEncountered() && !ThreadLocalOperationLock.getInstance().isAcquired()) {
+		System.out.println("Came to servletresponse hook :" + exectionId + " :: " + sourceString);
+		if (!ThreadLocalHttpMap.getInstance().isServiceMethodEncountered() && !ThreadLocalOperationLock.getInstance()
+				.isAcquired() ) {
 			try {
 				ThreadLocalOperationLock.getInstance().acquire();
-				if (args != null && args.length == 1 && args[0] != null){
+				if (obj == null && args != null && args.length == 1 && args[0] != null) {
+					System.out.println("Setting response  : " + exectionId);
 					ThreadLocalHttpMap.getInstance().setHttpResponse(args[0]);
 				}
 			} finally {
@@ -23,21 +27,25 @@ public class Callbacks {
 
 	public static void doOnExit(String sourceString, String className, String methodName, Object obj, Object[] args,
 			Object returnVal, String exectionId) {
-//		if(!ThreadLocalOperationLock.getInstance().isAcquired()) {
-//			try {
-//				ThreadLocalOperationLock.getInstance().acquire();
-//				System.out.println(
-//						"OnExit :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj + " - return : "
-//								+ returnVal + " - eid : " + exectionId);
-//			} finally {
-//				ThreadLocalOperationLock.getInstance().release();
-//			}
-//		}
+		System.out.println("Came to servletresponse hook exit :" + exectionId + " :: " + sourceString + " :: " + obj + " :: " +returnVal);
+		if (!ThreadLocalHttpMap.getInstance().isEmpty() && !ThreadLocalOperationLock.getInstance().isAcquired()) {
+			try {
+				ThreadLocalOperationLock.getInstance().acquire();
+				if (StringUtils.equals(methodName, "getWriter")) {
+					ThreadLocalHttpMap.getInstance().setResponseWriter(returnVal);
+				} else if (StringUtils.equals(methodName, "getOutputStream")) {
+					ThreadLocalHttpMap.getInstance().setResponseOutputStream(returnVal);
+				}
+
+			} finally {
+				ThreadLocalOperationLock.getInstance().release();
+			}
+		}
 	}
 
 	public static void doOnError(String sourceString, String className, String methodName, Object obj, Object[] args,
 			Throwable error, String exectionId) throws Throwable {
-		if(!ThreadLocalOperationLock.getInstance().isAcquired()) {
+		if (!ThreadLocalOperationLock.getInstance().isAcquired()) {
 			try {
 				ThreadLocalOperationLock.getInstance().acquire();
 				System.out.println("OnError :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj
