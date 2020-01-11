@@ -34,7 +34,7 @@ public class InstrumentationUtils {
 		for (Map.Entry<String, List<String>> entry : hookMap.entrySet()) {
 			String sourceClass = entry.getKey();
 			List<String> methods = entry.getValue();
-			if (Hooks.IAST_BASED_HOOKS.contains(entry.getKey())) {
+			if (!IAST && Hooks.IAST_BASED_HOOKS.contains(entry.getKey())) {
 				continue;
 			}
 			for (String method : methods) {
