@@ -27,11 +27,16 @@ public class InstrumentationUtils {
 
 	private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
 
+	private static Boolean IAST = false;
+
 	public static AgentBuilder doInstrument(AgentBuilder builder, Map<String, List<String>> hookMap,
 			String typeOfHook) {
 		for (Map.Entry<String, List<String>> entry : hookMap.entrySet()) {
 			String sourceClass = entry.getKey();
 			List<String> methods = entry.getValue();
+			if (Hooks.IAST_BASED_HOOKS.contains(entry.getKey())) {
+				continue;
+			}
 			for (String method : methods) {
 				AgentBuilder.Identified.Narrowable junction = builder.type(not(isInterface()));
 				switch (typeOfHook) {
@@ -49,8 +54,8 @@ public class InstrumentationUtils {
 					public DynamicType.Builder<?> transform(DynamicType.Builder<?> builder,
 							TypeDescription typeDescription, ClassLoader classLoader, JavaModule javaModule) {
 						try {
-							System.out.println(String.format("Came to instrument : %s::%s for key : %s : %s", sourceClass,
-									method, (sourceClass + "." + method), typeDescription.getName()));
+							System.out.println(String.format("Came to instrument : %s::%s for key : %s : %s",
+									sourceClass, method, (sourceClass + "." + method), typeDescription.getName()));
 
 							if (K2Instrumentator.hookedAPIs.contains(typeDescription.getName() + "." + method)) {
 								return builder;
@@ -144,16 +149,24 @@ public class InstrumentationUtils {
 		logger.log(LogLevel.SEVERE, "Java Agent shutdown complete.", InstrumentationUtils.class.getName());
 	}
 
-	public static boolean classLoadingAdjustments(String className){
+	public static boolean classLoadingAdjustments(String className) {
 		switch (className) {
-		case "org.jboss.modules.Main" :
+		case "org.jboss.modules.Main":
 			ClassloaderAdjustments.jbossSpecificAdjustments();
 			return true;
-		case "org.osgi.framework.Bundle" :
+		case "org.osgi.framework.Bundle":
 			ClassloaderAdjustments.osgiSpecificAdjustments();
 			return true;
 		}
 		return false;
+	}
+
+	public static Boolean getIAST() {
+		return IAST;
+	}
+
+	public static void setIAST(Boolean iAST) {
+		IAST = iAST;
 	}
 
 }
