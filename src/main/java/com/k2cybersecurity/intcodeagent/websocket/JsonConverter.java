@@ -7,6 +7,8 @@ import org.json.simple.JSONObject;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -61,7 +63,11 @@ public class JsonConverter {
 							JSONArray setField  = new JSONArray();
 							setField.addAll((Set)value);
 							jsonString.append(setField);
-						}else if(field.getType().isAssignableFrom(List.class)) {
+						} else if(field.getType().isArray()) {
+							JSONArray setField  = new JSONArray();
+							setField.addAll(Arrays.asList(value));
+							jsonString.append(setField);
+						} else if(field.getType().isAssignableFrom(List.class)) {
 							JSONArray setField  = new JSONArray();
 							setField.addAll((List)value);
 							jsonString.append(setField);
