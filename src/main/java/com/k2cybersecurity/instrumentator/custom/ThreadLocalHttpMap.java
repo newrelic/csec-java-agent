@@ -95,12 +95,12 @@ public class ThreadLocalHttpMap {
 
     public boolean parseHttpRequest() {
         if (httpRequest == null) {
-            System.out.println("No HTTP request found for current context");
+        	logger.log(LogLevel.INFO, "No HTTP request found for current context", ThreadLocalHttpMap.class.getName());
             return false;
         }
 
         if (isHttpRequestParsed) {
-            System.out.println("HTTP request already parsed for current context");
+        	logger.log(LogLevel.INFO, "HTTP request already parsed for current context", ThreadLocalHttpMap.class.getName());
             updateBody();
             return true;
         }
@@ -158,7 +158,7 @@ public class ThreadLocalHttpMap {
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
-            System.out.println("RAW Intercepted Request : " + ThreadLocalExecutionMap.getInstance().getHttpRequestBean());
+        	logger.log(LogLevel.INFO, "RAW Intercepted Request : " + ThreadLocalExecutionMap.getInstance().getHttpRequestBean(), ThreadLocalHttpMap.class.getName());
         }
         return false;
     }
@@ -196,7 +196,7 @@ public class ThreadLocalHttpMap {
     public boolean parseHttpResponse() {
         // TODO : To be implemented
         if (httpResponse == null) {
-            System.out.println("No HTTP response found for current context");
+        	logger.log(LogLevel.INFO, "No HTTP response found for current context", ThreadLocalHttpMap.class.getName());
             return false;
         }
 
@@ -205,7 +205,7 @@ public class ThreadLocalHttpMap {
         try {
 
             if (isHttpResponseParsed) {
-                System.out.println("HTTP response already parsed for current context");
+            	logger.log(LogLevel.INFO, "HTTP response already parsed for current context", ThreadLocalHttpMap.class.getName());
                 return true;
             }
 

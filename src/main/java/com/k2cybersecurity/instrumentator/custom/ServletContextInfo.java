@@ -146,8 +146,8 @@ public class ServletContextInfo {
             getServletContextName = servletContext.getClass().getMethod("getServletContextName");
 
 		} catch (Exception e) {
-            System.out.println("Not found : " + e.getCause());
-            e.printStackTrace();
+//            System.out.println("Not found : " + e.getCause());
+//            e.printStackTrace();
         }
         try {
             contextPath = (String) getContextPath.invoke(servletContext, null);
@@ -175,7 +175,7 @@ public class ServletContextInfo {
 				ClassLoader classLoader = (ClassLoader) getClassLoader.invoke(servletContext, null);
 				if(classLoader != null) {
 					applicationDir = classLoader.getResource("/").toString();
-					System.out.println("Application dir from resource : " + applicationDir);
+//					System.out.println("Application dir from resource : " + applicationDir);
 					if(StringUtils.startsWithIgnoreCase(applicationDir, "file:" )) {
 						applicationDir = StringUtils.removeStart(applicationDir, "file:");
 						applicationDir = StringUtils.substringBefore(applicationDir, "/WEB-INF");
@@ -184,7 +184,7 @@ public class ServletContextInfo {
 						applicationDir = StringUtils.substringBetween(applicationDir, "jar:file:", "!");
 					}
 				} else {
-					System.out.println("Unable to get the application directory. Suspicion is that this is an embedded application.");
+//					System.out.println("Unable to get the application directory. Suspicion is that this is an embedded application.");
 					applicationDir = StringUtils.EMPTY;
 				}
 			} catch (Exception e) {
@@ -211,17 +211,17 @@ public class ServletContextInfo {
 			}
 		}
 
-		System.out.println("==========================================================================================");
-		System.out.println("Context details found : ");
-		System.out.println("Path : " + contextPath);
-		System.out.println("Major Version : " + majorServletVersion);
-		System.out.println("Minor Version : " + minorServletVersion);
-		System.out.println("Server Info : "+ serverInfo);
-		System.out.println("Application Dir : " +applicationDir );
-		System.out.println("Application Name : " + applicationName);
-		System.out.println("==========================================================================================");
+//		System.out.println("==========================================================================================");
+//		System.out.println("Context details found : ");
+//		System.out.println("Path : " + contextPath);
+//		System.out.println("Major Version : " + majorServletVersion);
+//		System.out.println("Minor Version : " + minorServletVersion);
+//		System.out.println("Server Info : "+ serverInfo);
+//		System.out.println("Application Dir : " +applicationDir );
+//		System.out.println("Application Name : " + applicationName);
+//		System.out.println("==========================================================================================");
 
 		putContextInfo(contextPath, applicationDir, applicationName, serverPort);
-        System.out.println("Current servlet context map : " + ServletContextInfo.getInstance());
+//        System.out.println("Current servlet context map : " + ServletContextInfo.getInstance());
     }
 }

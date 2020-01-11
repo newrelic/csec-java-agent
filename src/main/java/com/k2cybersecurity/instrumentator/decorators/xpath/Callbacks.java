@@ -16,6 +16,8 @@ import com.k2cybersecurity.intcodeagent.models.operationalbean.XPathOperationalB
 
 public class Callbacks {
 
+	private static final String M_PATTERN_STRING = "m_patternString";
+	private static final String PUBLIC_ORG_APACHE_XPATH_OBJECTS_X_OBJECT_ORG_APACHE_XPATH_X_PATH_EXECUTE_ORG_APACHE_XPATH_X_PATH_CONTEXT_INT_ORG_APACHE_XML_UTILS_PREFIX_RESOLVER_THROWS_JAVAX_XML_TRANSFORM_TRANSFORMER_EXCEPTION = "public org.apache.xpath.objects.XObject org.apache.xpath.XPath.execute(org.apache.xpath.XPathContext,int,org.apache.xml.utils.PrefixResolver) throws javax.xml.transform.TransformerException";
 	private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
 
 	public static void doOnEnter(String sourceString, String className, String methodName, Object obj, Object[] args,
@@ -25,13 +27,13 @@ public class Callbacks {
 		if (!ThreadLocalOperationLock.getInstance().isAcquired()) {
 			try {
 				ThreadLocalOperationLock.getInstance().acquire();
-				logger.log(LogLevel.INFO, "OnEnter :" + sourceString + " - args : " + Arrays.asList(args) + " - this : "
-						+ obj + " - eid : " + executionId, Callbacks.class.getName());
+//				logger.log(LogLevel.INFO, "OnEnter :" + sourceString + " - args : " + Arrays.asList(args) + " - this : "
+//						+ obj + " - eid : " + executionId, Callbacks.class.getName());
 				if (sourceString.equals(
-						"public org.apache.xpath.objects.XObject org.apache.xpath.XPath.execute(org.apache.xpath.XPathContext,int,org.apache.xml.utils.PrefixResolver) throws javax.xml.transform.TransformerException")
+						PUBLIC_ORG_APACHE_XPATH_OBJECTS_X_OBJECT_ORG_APACHE_XPATH_X_PATH_EXECUTE_ORG_APACHE_XPATH_X_PATH_CONTEXT_INT_ORG_APACHE_XML_UTILS_PREFIX_RESOLVER_THROWS_JAVAX_XML_TRANSFORM_TRANSFORMER_EXCEPTION)
 						&& ThreadLocalHttpMap.getInstance().getHttpRequest() != null && args.length != 0) {
 					try {
-						Field patternStringField = obj.getClass().getDeclaredField("m_patternString");
+						Field patternStringField = obj.getClass().getDeclaredField(M_PATTERN_STRING);
 						patternStringField.setAccessible(true);
 						Object patternStringObj = patternStringField.get(obj);
 						String patternString = null;
@@ -39,16 +41,16 @@ public class Callbacks {
 							patternString = patternStringObj.toString();
 						}
 						if (StringUtils.isNotBlank(patternString)) {
-							System.out.println("The pattern string for xpath is : " + patternString);
+//							System.out.println("The pattern string for xpath is : " + patternString);
 							XPathOperationalBean xpathOperationalBean = new XPathOperationalBean(patternString,
 									className, sourceString, executionId, Instant.now().toEpochMilli());
 							EventDispatcher.dispatch(xpathOperationalBean, VulnerabilityCaseType.XPATH);
-						} else {
-							System.out.println("pattern string object is null");
+//						} else {
+//							System.out.println("pattern string object is null");
 						}
 					} catch (Exception ex) {
-						System.out.println("Xpath exception");
-						ex.printStackTrace();
+//						System.out.println("Xpath exception");
+//						ex.printStackTrace();
 					}
 				}
 			} finally {

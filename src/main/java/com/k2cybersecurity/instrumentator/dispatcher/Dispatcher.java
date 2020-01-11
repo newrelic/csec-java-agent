@@ -84,7 +84,7 @@ public class Dispatcher implements Runnable {
 		try {
 			if (vulnerabilityCaseType.equals(VulnerabilityCaseType.REFLECTED_XSS)) {
 				String xssConstruct = CallbackUtils.checkForReflectedXSS(httpRequestBean);
-				System.out.println("Changes reflected : " + httpRequestBean.getHttpResponseBean().getResponseBody());
+//				System.out.println("Changes reflected : " + httpRequestBean.getHttpResponseBean().getResponseBody());
 				if (StringUtils.isNotBlank(xssConstruct)) {
 					JavaAgentEventBean eventBean = prepareEvent(httpRequestBean, metaData, vulnerabilityCaseType);
 					JSONArray params = new JSONArray();
@@ -100,9 +100,9 @@ public class Dispatcher implements Runnable {
 					eventBean = getUserInfo(eventBean);
 					eventBean.setEventGenerationTime(Instant.now().toEpochMilli());
 					EventSendPool.getInstance().sendEvent(eventBean.toString());
-					System.out.println("============= Event Start ============");
-					System.out.println(eventBean);
-					System.out.println("============= Event End ============");
+//					System.out.println("============= Event Start ============");
+//					System.out.println(eventBean);
+//					System.out.println("============= Event End ============");
 				}
 				return;
 			}
@@ -111,15 +111,15 @@ public class Dispatcher implements Runnable {
 		}
 
 		if (event == null) {
-			System.out.println("------- Invalid event -----------");
+//			System.out.println("------- Invalid event -----------");
 			return;
 		}
 
 		if (vulnerabilityCaseType.equals(VulnerabilityCaseType.APP_INFO)) {
 			DeployedApplication deployedApplication = (DeployedApplication) event;
-			System.out.println("App Info received : " + deployedApplication);
+//			System.out.println("App Info received : " + deployedApplication);
 			HashGenerator.updateShaAndSize(deployedApplication);
-			System.out.println("Processed App Info : " + deployedApplication);
+//			System.out.println("Processed App Info : " + deployedApplication);
 			ApplicationInfoBean applicationInfoBean = K2Instrumentator.APPLICATION_INFO_BEAN;
 
 			applicationInfoBean.getServerInfo().setName(deployedApplication.getServerInfo());
@@ -127,9 +127,9 @@ public class Dispatcher implements Runnable {
 			if (!applicationInfoBean.getServerInfo().getDeployedApplications().contains(deployedApplication)) {
 				applicationInfoBean.getServerInfo().getDeployedApplications().add(deployedApplication);
 				EventSendPool.getInstance().sendEvent(applicationInfoBean.toString());
-				System.out.println("============= AppInfo Start ============");
-				System.out.println(applicationInfoBean);
-				System.out.println("============= AppInfo End ============");
+//				System.out.println("============= AppInfo Start ============");
+//				System.out.println(applicationInfoBean);
+//				System.out.println("============= AppInfo End ============");
 			} else {
 				//TODO: Handle cases where the port list of a deployed application is lost as the deployed application is already existing.
 			}
@@ -144,7 +144,7 @@ public class Dispatcher implements Runnable {
 			eventBean = setGenericProperties(fileOperationalBean, eventBean);
 			eventBean = prepareFileEvent(eventBean, fileOperationalBean);
 			if (allowedExtensionFileIO(eventBean.getParameters(), eventBean.getSourceMethod())) {
-				System.out.println("------- Event ByPass -----------");
+//				System.out.println("------- Event ByPass -----------");
 				return;
 			}
 			break;
@@ -156,7 +156,7 @@ public class Dispatcher implements Runnable {
 		case SQL_DB_COMMAND:
 			List<SQLOperationalBean> operationalList = (List<SQLOperationalBean>) event;
 			if (operationalList.isEmpty()) {
-				System.out.println("------- Invalid event -----------");
+//				System.out.println("------- Invalid event -----------");
 				return;
 			}
 			// eventBean.setEventCategory(getDbName(operationalList.get(0).getClassName()));
@@ -226,9 +226,9 @@ public class Dispatcher implements Runnable {
 		}
 		eventBean.setEventGenerationTime(Instant.now().toEpochMilli());
 		EventSendPool.getInstance().sendEvent(eventBean.toString());
-		System.out.println("============= Event Start ============");
-		System.out.println(eventBean);
-		System.out.println("============= Event End ============");
+//		System.out.println("============= Event Start ============");
+//		System.out.println(eventBean);
+//		System.out.println("============= Event End ============");
 	}
 
 	private JavaAgentEventBean prepareXPATHEvent(JavaAgentEventBean eventBean,
@@ -576,23 +576,23 @@ public class Dispatcher implements Runnable {
 
 	public void printDispatch() {
 		try {
-			System.out.println(
-					"==========================================================================================");
-
-			System.out.println("Intercepted Request : " + httpRequestBean);
-
-			System.out.println("Intercepted Response : " + httpRequestBean.getHttpResponseBean());
-
-			System.out.println("Agent Meta : " + metaData);
-
-			System.out.println("Intercepted transaction : " + event);
-
-			System.out.println("Trace : " + Arrays.asList(trace));
-
-			System.out.println("vulnerabilityCaseType : " + vulnerabilityCaseType);
-
-			System.out.println(
-					"==========================================================================================");
+//			System.out.println(
+//					"==========================================================================================");
+//
+//			System.out.println("Intercepted Request : " + httpRequestBean);
+//
+//			System.out.println("Intercepted Response : " + httpRequestBean.getHttpResponseBean());
+//
+//			System.out.println("Agent Meta : " + metaData);
+//
+//			System.out.println("Intercepted transaction : " + event);
+//
+//			System.out.println("Trace : " + Arrays.asList(trace));
+//
+//			System.out.println("vulnerabilityCaseType : " + vulnerabilityCaseType);
+//
+//			System.out.println(
+//					"==========================================================================================");
 		} catch (Exception e) {
 		}
 	}

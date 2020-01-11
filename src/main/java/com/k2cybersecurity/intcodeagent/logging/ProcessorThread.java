@@ -476,7 +476,7 @@ public class ProcessorThread implements Runnable {
 		JSONObject queryDetailObj = new JSONObject();
 		Object protocol = args[0];
 		Field f = null;
-		System.out.println("protocol class : " + protocol.getClass());
+//		System.out.println("protocol class : " + protocol.getClass());
 		try {
 			Class<? extends Object> nsClass = protocol.getClass();
 			String namespace = null;
@@ -494,7 +494,7 @@ public class ProcessorThread implements Runnable {
 		// query extreation
 		try {
 			// Class used CommandProtocol<T>
-			System.out.println("inside CommandProtocol");
+//			System.out.println("inside CommandProtocol");
 			f = protocol.getClass().getDeclaredField(MONGO_COMMAND_FIELD);
 			f.setAccessible(true);
 			Object command = f.get(protocol);
@@ -557,7 +557,7 @@ public class ProcessorThread implements Runnable {
 			// Class used DeleteProtocol<T>
 			queryDetailObj.put(COMMAND, mongoProtocolRequest(protocol, DELETES));
 			parameters.add(queryDetailObj);
-			System.out.println("parameters : " + parameters);
+//			System.out.println("parameters : " + parameters);
 			return;
 		} catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
 			// TODO Auto-generated catch block

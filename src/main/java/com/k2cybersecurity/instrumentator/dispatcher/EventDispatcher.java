@@ -76,22 +76,8 @@ public class EventDispatcher {
 		if (!deployedApplication.isEmpty()) {
 			DispatcherPool.getInstance().dispatchAppInfo(deployedApplication, vulnerabilityCaseType);
 		} else {
-			System.out.println("Application info found to be empty : " + deployedApplication);
+//			System.out.println("Application info found to be empty : " + deployedApplication);
 		}
-	}
-
-	public static void printDispatch(AbstractOperationalBean objectBean) {
-		System.out
-				.println("==========================================================================================");
-
-		System.out.println("Intercepted Request : " + ThreadLocalExecutionMap.getInstance().getHttpRequestBean());
-
-		System.out.println("Agent Meta : " + ThreadLocalExecutionMap.getInstance().getMetaData());
-
-		System.out.println("Intercepted transaction : " + objectBean);
-
-		System.out
-				.println("==========================================================================================");
 	}
 
 	public static void dispatch(HttpRequestBean httpRequestBean, String sourceString, String exectionId, long startTime,

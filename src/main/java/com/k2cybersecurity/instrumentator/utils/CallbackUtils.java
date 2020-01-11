@@ -58,19 +58,19 @@ public class CallbackUtils {
     public static String checkForReflectedXSS(HttpRequestBean httpRequestBean) {
         String combinedRequestData = decodeRequestData(httpRequestBean);
         String combinedResponseData = decodeResponseData(httpRequestBean.getHttpResponseBean());
-        System.out.println("Processed request data is : " + combinedRequestData);
-        System.out.println("Processed response data is : " + combinedResponseData);
+//        System.out.println("Processed request data is : " + combinedRequestData);
+//        System.out.println("Processed response data is : " + combinedResponseData);
 
          List<String> attackContructs = isXSS(combinedRequestData);
 
         for (String construct : attackContructs) {
-			System.err.println(String.format(
-					"Reflected XSS contruct detected ::  %s :: Request : %s", construct,
-					httpRequestBean));
+//			System.err.println(String.format(
+//					"Reflected XSS contruct detected ::  %s :: Request : %s", construct,
+//					httpRequestBean));
             if (StringUtils.containsIgnoreCase(combinedResponseData, construct)) {
-                System.err.println(String.format(
-                        "Reflected XSS attack detected :: Construct : %s :: Request : %s :: Response : %s", construct,
-                        httpRequestBean, httpRequestBean.getHttpResponseBean().getResponseBody()));
+//                System.err.println(String.format(
+//                        "Reflected XSS attack detected :: Construct : %s :: Request : %s :: Response : %s", construct,
+//                        httpRequestBean, httpRequestBean.getHttpResponseBean().getResponseBody()));
                 return construct;
             }
         }
@@ -114,7 +114,7 @@ public class CallbackUtils {
 
     private static List<String> isXSS(String combinedData) {
         List<String> attackConstructs = new ArrayList<>();
-        System.out.println("Consolidated XSS data : " + combinedData);
+//        System.out.println("Consolidated XSS data : " + combinedData);
 
         Matcher htmlStartTagMatcher = htmlStartTagExtractor.matcher(combinedData);
         while (htmlStartTagMatcher.find()) {
@@ -210,7 +210,7 @@ public class CallbackUtils {
                     jaDatabaseMetaData.setDriverVersion(driverVersion);
                     jaDatabaseMetaData.setDriverClassName(connection.getClass().getName());
                     jaDatabaseMetaData.setDbIdentifier(detectDatabaseProduct(productName));
-                    System.out.println("DB details detected: " + jaDatabaseMetaData);
+//                    System.out.println("DB details detected: " + jaDatabaseMetaData);
                     sqlConnectionMap.put(connection.hashCode(), jaDatabaseMetaData);
                     return jaDatabaseMetaData.getDbIdentifier();
                 }
@@ -323,7 +323,7 @@ public class CallbackUtils {
                         if(!StringUtils.equals(oldProcessedBody, processedBody)) {
                             consolidatedBody.append("::::");
                             consolidatedBody.append(processedBody);
-                            System.out.println("Decoding JSON: " + processedBody);
+//                            System.out.println("Decoding JSON: " + processedBody);
                         }
                     } while (!StringUtils.equals(oldProcessedBody, processedBody));
                     break;
@@ -334,7 +334,7 @@ public class CallbackUtils {
                         if(!StringUtils.equals(oldProcessedBody, processedBody)) {
                             consolidatedBody.append("::::");
                             consolidatedBody.append(processedBody);
-                            System.out.println("Decoding XML: " + processedBody);
+//                            System.out.println("Decoding XML: " + processedBody);
                         }
                     } while (!StringUtils.equals(oldProcessedBody, processedBody));
                     break;
@@ -377,7 +377,7 @@ public class CallbackUtils {
                 if(!StringUtils.equals(oldUrl, processedUrl)) {
                     consolidatedBody.append("::::");
                     consolidatedBody.append(processedUrl);
-                    System.out.println("Decoding URL Line: " + processedUrl);
+//                    System.out.println("Decoding URL Line: " + processedUrl);
                 }
             } while (!StringUtils.equals(oldUrl, processedUrl));
 
@@ -387,7 +387,7 @@ public class CallbackUtils {
                 if (!StringUtils.equals(oldHeaders, processedHeaders)){
                     consolidatedBody.append("::::");
                     consolidatedBody.append(processedHeaders);
-                    System.out.println("Decoding URL Headers: " + processedHeaders);
+//                    System.out.println("Decoding URL Headers: " + processedHeaders);
                 }
             } while (!StringUtils.equals(oldHeaders, processedHeaders));
 
@@ -401,7 +401,7 @@ public class CallbackUtils {
                         if(!StringUtils.equals(oldProcessedBody, processedBody)) {
                             consolidatedBody.append("::::");
                             consolidatedBody.append(processedBody);
-                            System.out.println("Decoding JSON: " + processedBody);
+//                            System.out.println("Decoding JSON: " + processedBody);
                         }
                     } while (!StringUtils.equals(oldProcessedBody, processedBody));
                     break;
@@ -412,7 +412,7 @@ public class CallbackUtils {
                         if(!StringUtils.equals(oldProcessedBody, processedBody)) {
                             consolidatedBody.append("::::");
                             consolidatedBody.append(processedBody);
-                            System.out.println("Decoding XML: " + processedBody);
+//                            System.out.println("Decoding XML: " + processedBody);
                         }
                     } while (!StringUtils.equals(oldProcessedBody, processedBody));
                     break;
@@ -428,7 +428,7 @@ public class CallbackUtils {
                         if(!StringUtils.equals(oldProcessedBody, processedBody)) {
                             consolidatedBody.append("::::");
                             consolidatedBody.append(processedBody);
-                            System.out.println("Decoding URL: " + processedBody);
+//                            System.out.println("Decoding URL: " + processedBody);
                         }
                     } while (!StringUtils.equals(oldProcessedBody, processedBody));
 

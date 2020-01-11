@@ -1,11 +1,16 @@
 package com.k2cybersecurity.instrumentator.custom;
 
+import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
+import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
+
 public class ClassloaderAdjustments {
 
 	public static final String K2_BOOTSTAP_LOADED_PACKAGE_NAME = "sun.reflect.com.k2cybersecurity";
 
+	private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
+	
 	public static void jbossSpecificAdjustments(){
-		System.out.println("Implementing JBoss Classloader adjustments");
+		logger.log(LogLevel.INFO, "Implementing JBoss Classloader adjustments", ClassloaderAdjustments.class.getName());
 		String cur = System.getProperty("jboss.modules.system.pkgs");
 		if (cur == null) {
 			System.setProperty("jboss.modules.system.pkgs", K2_BOOTSTAP_LOADED_PACKAGE_NAME);
@@ -27,7 +32,7 @@ public class ClassloaderAdjustments {
 	}
 
 	public static void osgiSpecificAdjustments(){
-		System.out.println("Implementing OSGi Classloader adjustments");
+		logger.log(LogLevel.INFO, "Implementing OSGi Classloader adjustments", ClassloaderAdjustments.class.getName());
 		String cur = System.getProperty("org.osgi.framework.bootdelegation");
 		if (cur == null) {
 			System.setProperty("org.osgi.framework.bootdelegation", K2_BOOTSTAP_LOADED_PACKAGE_NAME);

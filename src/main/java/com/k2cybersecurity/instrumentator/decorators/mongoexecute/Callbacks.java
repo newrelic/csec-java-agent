@@ -15,9 +15,9 @@ public class Callbacks {
 		if (!ThreadLocalOperationLock.getInstance().isAcquired()) {
 			try {
 				ThreadLocalOperationLock.getInstance().acquire();
-				System.out.println(
-						"OnEnter :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj + " - eid : "
-								+ exectionId);
+//				System.out.println(
+//						"OnEnter :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj + " - eid : "
+//								+ exectionId);
 				EventDispatcher.dispatch(new NoSQLOperationalBean(args, className, sourceString, exectionId,
 						Instant.now().toEpochMilli()), VulnerabilityCaseType.NOSQL_DB_COMMAND);
 			} finally {
@@ -46,8 +46,8 @@ public class Callbacks {
 		if(!ThreadLocalOperationLock.getInstance().isAcquired()) {
 			try {
 				ThreadLocalOperationLock.getInstance().acquire();
-				System.out.println("OnError :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj
-						+ " - error : " + error + " - eid : " + exectionId);
+//				System.out.println("OnError :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj
+//						+ " - error : " + error + " - eid : " + exectionId);
 			} finally {
 				ThreadLocalOperationLock.getInstance().release();
 			}
