@@ -61,9 +61,9 @@ public class Dispatcher implements Runnable {
 		this.trace = trace;
 		this.vulnerabilityCaseType = reflectedXss;
 		this.extraInfo = new HashMap<String, Object>();
-		extraInfo.put("sourceString", sourceString);
-		extraInfo.put("exectionId", exectionId);
-		extraInfo.put("startTime", startTime);
+		extraInfo.put(SOURCESTRING, sourceString);
+		extraInfo.put(EXECUTIONID, exectionId);
+		extraInfo.put(STARTTIME, startTime);
 
 	}
 
@@ -75,7 +75,7 @@ public class Dispatcher implements Runnable {
 		this.trace = trace;
 		this.vulnerabilityCaseType = vulnerabilityCaseType;
 		this.extraInfo = new HashMap<String, Object>();
-		extraInfo.put("FileIntegrityBean", fbean);
+		extraInfo.put(FILEINTEGRITYBEAN, fbean);
 	}
 
 	@Override
@@ -94,9 +94,9 @@ public class Dispatcher implements Runnable {
 					eventBean.setApplicationUUID(K2Instrumentator.APPLICATION_UUID);
 					eventBean.setPid(K2Instrumentator.VMPID);
 					// TODO set these
-					eventBean.setSourceMethod((String) extraInfo.get("sourceString"));
-					eventBean.setId((String) extraInfo.get("executionId"));
-					eventBean.setStartTime((Long) extraInfo.get("startTime"));
+					eventBean.setSourceMethod((String) extraInfo.get(SOURCESTRING));
+					eventBean.setId((String) extraInfo.get(EXECUTIONID));
+					eventBean.setStartTime((Long) extraInfo.get(STARTTIME));
 					eventBean = getUserInfo(eventBean);
 					eventBean.setEventGenerationTime(Instant.now().toEpochMilli());
 					EventSendPool.getInstance().sendEvent(eventBean.toString());
@@ -260,15 +260,15 @@ public class Dispatcher implements Runnable {
 		eventBean.setParameters(params);
 		if (eventBean.getSourceMethod().equals(JAVAX_CRYPTO_CIPHER_GETINSTANCE_STRING)
 				|| eventBean.getSourceMethod().equals(JAVAX_CRYPTO_CIPHER_GETINSTANCE_STRING_PROVIDER)) {
-			eventBean.setEventCategory("CIPHER");
+			eventBean.setEventCategory(CIPHER);
 		} else if (eventBean.getSourceMethod().equals(JAVAX_CRYPTO_KEYGENERATOR_GETINSTANCE_STRING)
 				|| eventBean.getSourceMethod().equals(JAVAX_CRYPTO_KEYGENERATOR_GETINSTANCE_STRING_STRING)
 				|| eventBean.getSourceMethod().equals(JAVAX_CRYPTO_KEYGENERATOR_GETINSTANCE_STRING_PROVIDER)) {
-			eventBean.setEventCategory("KEYGENERATOR");
+			eventBean.setEventCategory(KEYGENERATOR);
 		} else if (eventBean.getSourceMethod().equals(JAVA_SECURITY_KEYPAIRGENERATOR_GETINSTANCE_STRING)
 				|| eventBean.getSourceMethod().equals(JAVA_SECURITY_KEYPAIRGENERATOR_GETINSTANCE_STRING_STRING)
 				|| eventBean.getSourceMethod().equals(JAVA_SECURITY_KEYPAIRGENERATOR_GETINSTANCE_STRING_PROVIDER)) {
-			eventBean.setEventCategory("KEYPAIRGENERATOR");
+			eventBean.setEventCategory(KEYPAIRGENERATOR);
 		}
 		return eventBean;
 	}
@@ -302,8 +302,8 @@ public class Dispatcher implements Runnable {
 	private JavaAgentEventBean prepareLDAPEvent(JavaAgentEventBean eventBean, LDAPOperationalBean ldapOperationalBean) {
 		JSONArray params = new JSONArray();
 		JSONObject object = new JSONObject();
-		object.put("name", ldapOperationalBean.getName());
-		object.put("filter", ldapOperationalBean.getFilter());
+		object.put(NAME, ldapOperationalBean.getName());
+		object.put(FILTER, ldapOperationalBean.getFilter());
 		params.add(object);
 		eventBean.setParameters(params);
 		return eventBean;
@@ -321,7 +321,7 @@ public class Dispatcher implements Runnable {
 	}
 
 	private void createEntryForFileIntegrity(FileOperationalBean fileOperationalBean, JavaAgentEventBean eventBean) {
-		FileIntegrityBean fBean = (FileIntegrityBean) extraInfo.get("FileIntegrityBean");
+		FileIntegrityBean fBean = (FileIntegrityBean) extraInfo.get(FILEINTEGRITYBEAN);
 		if (fBean != null) {
 			fBean.setBeanValues(eventBean.getSourceMethod(), eventBean.getUserFileName(), eventBean.getUserMethodName(),
 					eventBean.getCurrentMethod(), eventBean.getLineNumber());
@@ -333,8 +333,8 @@ public class Dispatcher implements Runnable {
 		JSONArray params = new JSONArray();
 		for (SQLOperationalBean operationalBean : operationalList) {
 			JSONObject query = new JSONObject();
-			query.put("query", operationalBean.getQuery());
-			query.put("parameters", new JSONObject(operationalBean.getParams()));
+			query.put(QUERY, operationalBean.getQuery());
+			query.put(PARAMETERS, new JSONObject(operationalBean.getParams()));
 			params.add(query);
 		}
 		eventBean.setParameters(params);
@@ -365,7 +365,7 @@ public class Dispatcher implements Runnable {
 			NoSQLOperationalBean noSQLOperationalBean) {
 		JSONArray params = new JSONArray();
 		ProcessorThread.getMongoDbParameterValue(noSQLOperationalBean.getApiCallArgs(), params);
-		eventBean.setEventCategory("MONGO");
+		eventBean.setEventCategory(MONGO);
 		eventBean.setParameters(params);
 		return eventBean;
 	}
@@ -460,12 +460,12 @@ public class Dispatcher implements Runnable {
 
 	private void xxeTriggerCheck(int i, JavaAgentEventBean eventBean, String klassName) {
 
-		if ((StringUtils.contains(klassName, "XMLDocumentFragmentScannerImpl")
-				&& StringUtils.equals(trace[i].getMethodName(), "scanDocument"))
-				|| (StringUtils.contains(klassName, "XMLEntityManager")
-						&& StringUtils.equals(trace[i].getMethodName(), "setupCurrentEntity"))) {
+		if ((StringUtils.contains(klassName, XML_DOCUMENT_FRAGMENT_SCANNER_IMPL)
+				&& StringUtils.equals(trace[i].getMethodName(), SCAN_DOCUMENT))
+				|| (StringUtils.contains(klassName, XML_ENTITY_MANAGER)
+						&& StringUtils.equals(trace[i].getMethodName(), SETUP_CURRENT_ENTITY))) {
 			eventBean.getMetaData().setTriggerViaXXE(true);
-			logger.log(LogLevel.DEBUG, String.format("Printing stack trace for xxe event : %s : %s", eventBean.getId(),
+			logger.log(LogLevel.DEBUG, String.format(PRINTING_STACK_TRACE_FOR_XXE_EVENT_S_S, eventBean.getId(),
 					Arrays.asList(trace)), ProcessorThread.class.getName());
 		}
 	}
@@ -503,26 +503,26 @@ public class Dispatcher implements Runnable {
 		if (ObjectInputStream.class.getName().equals(klassName)
 				&& StringUtils.equals(trace[index].getMethodName(), READ_OBJECT)) {
 			eventBean.getMetaData().setTriggerViaDeserialisation(true);
-			logger.log(LogLevel.DEBUG, String.format("Printing stack trace for deserialise event : %s : %s",
+			logger.log(LogLevel.DEBUG, String.format(PRINTING_STACK_TRACE_FOR_DESERIALISE_EVENT_S_S,
 					eventBean.getId(), Arrays.asList(trace)), ProcessorThread.class.getName());
 
 		}
 	}
 
 	private void rciTriggerCheck(int index, JavaAgentEventBean eventBean, String klassName) {
-		if (!StringUtils.contains(trace[index].toString(), ".java:") && index > 0
-				&& StringUtils.contains(trace[index - 1].toString(), ".java:")) {
+		if (!StringUtils.contains(trace[index].toString(), DOT_JAVA_COLON) && index > 0
+				&& StringUtils.contains(trace[index - 1].toString(), DOT_JAVA_COLON)) {
 			eventBean.getMetaData().setTriggerViaRCI(true);
 			eventBean.getMetaData().getRciMethodsCalls().add(trace[index].toString());
 			eventBean.getMetaData().getRciMethodsCalls().add(trace[index - 1].toString());
-			logger.log(LogLevel.DEBUG, String.format("Printing stack trace for probable rci event : %s : %s",
+			logger.log(LogLevel.DEBUG, String.format(PRINTING_STACK_TRACE_FOR_PROBABLE_RCI_EVENT_S_S,
 					eventBean.getId(), Arrays.asList(trace)), ProcessorThread.class.getName());
 		}
 		if (StringUtils.contains(klassName, REFLECT_NATIVE_METHOD_ACCESSOR_IMPL)
 				&& StringUtils.equals(trace[index].getMethodName(), INVOKE_0) && index > 0) {
 			eventBean.getMetaData().setTriggerViaRCI(true);
 			eventBean.getMetaData().getRciMethodsCalls().add(trace[index - 1].toString());
-			logger.log(LogLevel.DEBUG, String.format("Printing stack trace for rci event : %s : %s", eventBean.getId(),
+			logger.log(LogLevel.DEBUG, String.format(PRINTING_STACK_TRACE_FOR_RCI_EVENT_S_S, eventBean.getId(),
 					Arrays.asList(trace)), ProcessorThread.class.getName());
 		}
 	}
@@ -547,30 +547,30 @@ public class Dispatcher implements Runnable {
 	}
 
 	public static String getDbName(String className) {
-		if (StringUtils.contains(className, "sqlserver."))
-			return "MSSQL";
-		else if (StringUtils.contains(className, "mysql."))
-			return "MYSQL";
-		else if (StringUtils.contains(className, "hsqldb."))
-			return "HSQL";
-		else if (StringUtils.contains(className, "postgresql."))
-			return "POSTGRESQL";
-		else if (StringUtils.contains(className, "firebirdsql."))
-			return "FIREBIRD";
-		else if (StringUtils.contains(className, "h2."))
-			return "H2";
-		else if (StringUtils.contains(className, "derby."))
-			return "DERBY";
-		else if (StringUtils.contains(className, "ibm.db2."))
-			return "IBMDB2";
-		else if (StringUtils.contains(className, "teradata."))
-			return "TERADATA";
-		else if (StringUtils.contains(className, "oracle.jdbc."))
-			return "ORACLE";
-		else if (StringUtils.contains(className, "mariadb."))
-			return "MARIADB";
+		if (StringUtils.contains(className, MSSQL_DB_IDENTIFIER))
+			return MSSQL;
+		else if (StringUtils.contains(className, MYSQL_DB_IDENTIFIER))
+			return MYSQL;
+		else if (StringUtils.contains(className, HSQL_DB_IDENTIFIER))
+			return HSQL;
+		else if (StringUtils.contains(className, POSTGRESQL_DB_IDENTIFIER))
+			return POSTGRESQL;
+		else if (StringUtils.contains(className, FIREBIRD_DB_IDENTIFIER))
+			return FIREBIRD;
+		else if (StringUtils.contains(className, H2_DB_IDENTIFIER))
+			return H2;
+		else if (StringUtils.contains(className, DERBY_DB_IDENTIFIER))
+			return DERBY;
+		else if (StringUtils.contains(className, IBMDB2_DB_IDENTIFIER))
+			return IBMDB2;
+		else if (StringUtils.contains(className, TERADATA_DB_IDENTIFIER))
+			return TERADATA;
+		else if (StringUtils.contains(className, ORACLE_DB_IDENTIFIER))
+			return ORACLE;
+		else if (StringUtils.contains(className, MARIADB_DB_IDENTIFIER))
+			return MARIADB;
 		else
-			return "UNKNOWN";
+			return UNKNOWN;
 
 	}
 

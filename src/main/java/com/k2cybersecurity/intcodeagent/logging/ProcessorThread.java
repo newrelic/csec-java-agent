@@ -37,7 +37,7 @@ import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.*;
 
 public class ProcessorThread implements Runnable {
 
-
+	
 	private static final Pattern PATTERN;
 	private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
 	private Object source;
@@ -154,7 +154,7 @@ public class ProcessorThread implements Runnable {
 				String klassName = null;
 
 				if (MONGO_EXECUTORS.containsKey(sourceString)) {
-					intCodeResultBean.setEventCategory("MONGO");
+					intCodeResultBean.setEventCategory(MONGO);
 				}
 
 				StackTraceElement[] trace = this.stackTrace;
@@ -183,13 +183,13 @@ public class ProcessorThread implements Runnable {
 					int lineNumber = trace[i].getLineNumber();
 					klassName = trace[i].getClassName();
 
-					if (!StringUtils.contains(trace[i].toString(), ".java:") && i > 0
-							&& StringUtils.contains(trace[i - 1].toString(), ".java:")) {
+					if (!StringUtils.contains(trace[i].toString(), DOT_JAVA_COLON) && i > 0
+							&& StringUtils.contains(trace[i - 1].toString(), DOT_JAVA_COLON)) {
 						intCodeResultBean.getMetaData().setTriggerViaRCI(true);
 						intCodeResultBean.getMetaData().getRciMethodsCalls().add(trace[i].toString());
 						intCodeResultBean.getMetaData().getRciMethodsCalls().add(trace[i - 1].toString());
 						logger.log(LogLevel.DEBUG,
-								String.format("Printing stack trace for probable rci event : %s : %s",
+								String.format(PRINTING_STACK_TRACE_FOR_PROBABLE_RCI_EVENT_S_S,
 										intCodeResultBean.getId(), Arrays.asList(trace)),
 								ProcessorThread.class.getName());
 					}
@@ -210,17 +210,17 @@ public class ProcessorThread implements Runnable {
 						intCodeResultBean.getMetaData().setTriggerViaRCI(true);
 						intCodeResultBean.getMetaData().getRciMethodsCalls().add(trace[i - 1].toString());
 						logger.log(
-								LogLevel.DEBUG, String.format("Printing stack trace for rci event : %s : %s",
+								LogLevel.DEBUG, String.format(PRINTING_STACK_TRACE_FOR_RCI_EVENT_S_S,
 										intCodeResultBean.getId(), Arrays.asList(trace)),
 								ProcessorThread.class.getName());
 					}
 					
-					if((StringUtils.contains(klassName, "XMLDocumentFragmentScannerImpl") 
-							&& StringUtils.equals(trace[i].getMethodName(), "scanDocument"))
-							|| (StringUtils.contains(klassName, "XMLEntityManager") 
-									&& StringUtils.equals(trace[i].getMethodName(), "setupCurrentEntity"))) {
+					if((StringUtils.contains(klassName, XML_DOCUMENT_FRAGMENT_SCANNER_IMPL) 
+							&& StringUtils.equals(trace[i].getMethodName(), SCAN_DOCUMENT))
+							|| (StringUtils.contains(klassName, XML_ENTITY_MANAGER) 
+									&& StringUtils.equals(trace[i].getMethodName(), SETUP_CURRENT_ENTITY))) {
 						intCodeResultBean.getMetaData().setTriggerViaXXE(true);
-						logger.log(LogLevel.DEBUG, String.format("Printing stack trace for xxe event : %s : %s", intCodeResultBean.getId(), Arrays
+						logger.log(LogLevel.DEBUG, String.format(PRINTING_STACK_TRACE_FOR_XXE_EVENT_S_S, intCodeResultBean.getId(), Arrays
 								.asList(trace)), ProcessorThread.class.getName());
 					}
 					
@@ -228,7 +228,7 @@ public class ProcessorThread implements Runnable {
 							&& StringUtils.equals(trace[i].getMethodName(), READ_OBJECT)) {
 						intCodeResultBean.getMetaData().setTriggerViaDeserialisation(true);
 						logger.log(LogLevel.DEBUG,
-								String.format("Printing stack trace for deserialise event : %s : %s",
+								String.format(PRINTING_STACK_TRACE_FOR_DESERIALISE_EVENT_S_S,
 										intCodeResultBean.getId(), Arrays.asList(trace)),
 								ProcessorThread.class.getName());
 
@@ -340,7 +340,7 @@ public class ProcessorThread implements Runnable {
 	 * @throws IllegalArgumentException the illegal argument exception
 	 * @throws IllegalAccessException   the illegal access exception
 	 */
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings(UNCHECKED)
 	private static void getMSSQLParameterValue(Object obj, JSONArray parameters)
 			throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
 		String className = obj.getClass().getCanonicalName();
@@ -457,7 +457,7 @@ public class ProcessorThread implements Runnable {
 	 * @param parameters the parameters
 	 * @return the my SQL parameter value
 	 */
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings(UNCHECKED)
 	private void getMySQLParameterValue(Object[] args, JSONArray parameters, String sourceString) {
 		try {
 			int sqlObjectLocation = 1;
@@ -468,7 +468,7 @@ public class ProcessorThread implements Runnable {
 			parameters.add(String.valueOf(arg[sqlObjectLocation]));
 
 		} catch (Exception e) {
-			logger.log(LogLevel.WARNING, "Error in getMySQLParameterValue: ", e, ProcessorThread.class.getName());
+			logger.log(LogLevel.WARNING, ERROR_IN_GET_MY_SQL_PARAMETER_VALUE, e, ProcessorThread.class.getName());
 		}
 	}
 
@@ -498,7 +498,7 @@ public class ProcessorThread implements Runnable {
 			f = protocol.getClass().getDeclaredField(MONGO_COMMAND_FIELD);
 			f.setAccessible(true);
 			Object command = f.get(protocol);
-			queryDetailObj.put("command", new JSONParser().parse(command.toString()));
+			queryDetailObj.put(COMMAND, new JSONParser().parse(command.toString()));
 			parameters.add(queryDetailObj);
 			return;
 		} catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException
@@ -507,14 +507,14 @@ public class ProcessorThread implements Runnable {
 		}
 		try {
 			// Class used QueryProtocol<T>
-			f = protocol.getClass().getDeclaredField("queryDocument");
+			f = protocol.getClass().getDeclaredField(QUERY_DOCUMENT);
 			f.setAccessible(true);
 			Object command = f.get(protocol);
-			queryDetailObj.put("command", new JSONParser().parse(command.toString()));
-			f = protocol.getClass().getDeclaredField("fields");
+			queryDetailObj.put(COMMAND, new JSONParser().parse(command.toString()));
+			f = protocol.getClass().getDeclaredField(FIELDS);
 			f.setAccessible(true);
 			Object fields = f.get(protocol);
-			queryDetailObj.put("fields", new JSONParser().parse(fields.toString()));
+			queryDetailObj.put(FIELDS, new JSONParser().parse(fields.toString()));
 			parameters.add(queryDetailObj);
 			return;
 		} catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException
@@ -523,7 +523,7 @@ public class ProcessorThread implements Runnable {
 		}
 		try {
 			// Class used InsertCommandProtocol<T>
-			queryDetailObj.put("command", mongoProtocolRequest(protocol, MONGO_INSERT_REQUESTS_FIELD));
+			queryDetailObj.put(COMMAND, mongoProtocolRequest(protocol, MONGO_INSERT_REQUESTS_FIELD));
 			parameters.add(queryDetailObj);
 			return;
 		} catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
@@ -531,7 +531,7 @@ public class ProcessorThread implements Runnable {
 		}
 		try {
 			// Class used DeleteCommandProtocol<T>
-			queryDetailObj.put("command", mongoProtocolRequest(protocol, MONGO_DELETE_REQUEST_FIELD));
+			queryDetailObj.put(COMMAND, mongoProtocolRequest(protocol, MONGO_DELETE_REQUEST_FIELD));
 			parameters.add(queryDetailObj);
 			return;
 		} catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
@@ -539,7 +539,7 @@ public class ProcessorThread implements Runnable {
 		}
 		try {
 			// Class used UpdateCommandProtocol<T>
-			queryDetailObj.put("command", mongoProtocolRequest(protocol, MONGO_MULTIPLE_UPDATES_FIELD));
+			queryDetailObj.put(COMMAND, mongoProtocolRequest(protocol, MONGO_MULTIPLE_UPDATES_FIELD));
 			parameters.add(queryDetailObj);
 			return;
 		} catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
@@ -547,7 +547,7 @@ public class ProcessorThread implements Runnable {
 		}
 		try {
 			// Class used InsertProtocol<T>
-			queryDetailObj.put("command", mongoProtocolRequest(protocol, "insertRequestList"));
+			queryDetailObj.put(COMMAND, mongoProtocolRequest(protocol, MONGO_INSERT_REQUEST_LIST_FIELD));
 			parameters.add(queryDetailObj);
 			return;
 		} catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
@@ -555,7 +555,7 @@ public class ProcessorThread implements Runnable {
 		}
 		try {
 			// Class used DeleteProtocol<T>
-			queryDetailObj.put("command", mongoProtocolRequest(protocol, "deletes"));
+			queryDetailObj.put(COMMAND, mongoProtocolRequest(protocol, DELETES));
 			parameters.add(queryDetailObj);
 			System.out.println("parameters : " + parameters);
 			return;
@@ -564,7 +564,7 @@ public class ProcessorThread implements Runnable {
 		}
 		try {
 			// Class used UpdateProtocol<T>
-			queryDetailObj.put("command", mongoProtocolRequest(protocol, "updates"));
+			queryDetailObj.put(COMMAND, mongoProtocolRequest(protocol, MONGO_MULTIPLE_UPDATES_FIELD));
 			parameters.add(queryDetailObj);
 			return;
 		} catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
@@ -584,7 +584,7 @@ public class ProcessorThread implements Runnable {
 			for (Field field : fields) {
 				field.setAccessible(true);
 				Object bsonDoc = field.get(request);
-				if (bsonDoc != null && bsonDoc.getClass().getSimpleName().contains("BsonDocument")) {
+				if (bsonDoc != null && bsonDoc.getClass().getSimpleName().contains(BSONDOCUMENT)) {
 					try {
 						object.put(field.getName(), new JSONParser().parse(bsonDoc.toString()));
 					} catch (Exception e) {
@@ -657,7 +657,7 @@ public class ProcessorThread implements Runnable {
 
 			}
 		} catch (Exception e) {
-			logger.log(LogLevel.WARNING, "Error in getOracleParameterValue: ", e, ProcessorThread.class.getName());
+			logger.log(LogLevel.WARNING, ERROR_IN_GET_ORACLE_PARAMETER_VALUE, e, ProcessorThread.class.getName());
 		}
 		return parameters;
 	}
@@ -669,7 +669,7 @@ public class ProcessorThread implements Runnable {
 	 * @param obj the obj
 	 * @return the JSON array
 	 */
-	@SuppressWarnings({ "unchecked", "unused" })
+	@SuppressWarnings({ UNCHECKED, UNUSED })
 	private JSONArray toString(Object[] obj, String sourceString, VulnerabilityCaseType vulnerabilityCaseType) {
 
 		if (obj == null) {
@@ -683,7 +683,7 @@ public class ProcessorThread implements Runnable {
 				getMySQLParameterValue(obj, parameters, sourceString);
 			} else if (obj[0] != null && sourceString.contains(MONGO_IDENTIFIER)) {
 				getMongoDbParameterValue(obj, parameters);
-			} else if (obj[0] != null && sourceString.contains(ORACLE_DB_IDENTIFIER)) {
+			} else if (obj[0] != null && sourceString.contains(ORACLE_IDENTIFIER)) {
 				parameters = getOracleParameterValue(arg[arg.length - 1], parameters, sourceString);
 			} else if (obj[0] != null && sourceString.contains(CLASS_LOADER_IDENTIFIER)) {
 				getClassLoaderParameterValue(obj, parameters);
@@ -718,22 +718,22 @@ public class ProcessorThread implements Runnable {
 
 		} catch (Throwable th) {
 			parameters.add((obj != null) ? obj.toString() : null);
-			logger.log(LogLevel.WARNING, "Error in toString: ", th, ProcessorThread.class.getName());
+			logger.log(LogLevel.WARNING, ERROR_IN_TO_STRING, th, ProcessorThread.class.getName());
 		}
 		return parameters;
 	}
 
 	private void getFileParameters(Object[] obj, JSONArray parameters) {
-		if (obj[0].getClass().getName().equals("sun.nio.fs.UnixPath")) {
+		if (obj[0].getClass().getName().equals(SUN_NIO_FS_UNIX_PATH)) {
 			parameters.add(obj[0].toString());
-		} else if (obj[0].getClass().getName().equals("java.io.File")) {
+		} else if (obj[0].getClass().getName().equals(JAVA_IO_FILE)) {
 			parameters.add(((File) obj[0]).toString());
 		} else {
 			parameters.add(obj[0]);
 		}
 	}
 
-	@SuppressWarnings("unchecked") public static void getJavaHttpRequestParameters(Object[] obj, JSONArray parameters) {
+	@SuppressWarnings(UNCHECKED) public static void getJavaHttpRequestParameters(Object[] obj, JSONArray parameters) {
 
 		URL url = (URL) obj[0];
 		parameters.add(url.getHost());
@@ -741,17 +741,17 @@ public class ProcessorThread implements Runnable {
 
 	}
 
-	@SuppressWarnings("unchecked") public static void getJava9HttpClientParameters(Object[] obj, JSONArray parameters) {
+	@SuppressWarnings(UNCHECKED) public static void getJava9HttpClientParameters(Object[] obj, JSONArray parameters) {
 		Object multiExchangeObj = obj[0];
 		try {
 
 			Class<?> multiExchangeClass = Thread.currentThread().getContextClassLoader()
-					.loadClass("jdk.incubator.http.MultiExchange");
-			Field request = multiExchangeClass.getDeclaredField("request");
+					.loadClass(JDK_INCUBATOR_HTTP_MULTI_EXCHANGE);
+			Field request = multiExchangeClass.getDeclaredField(REQUEST);
 			request.setAccessible(true);
 			Object httpReqObj = request.get(multiExchangeObj);
 
-			Field uri = httpReqObj.getClass().getDeclaredField("uri");
+			Field uri = httpReqObj.getClass().getDeclaredField(URI);
 			uri.setAccessible(true);
 			URI uriObj = (URI) uri.get(httpReqObj);
 
@@ -759,12 +759,12 @@ public class ProcessorThread implements Runnable {
 			parameters.add(uriObj.getPath());
 
 		} catch (Exception e) {
-			logger.log(LogLevel.WARNING, "Error in getJava9HttpClientParameters : ", e,
+			logger.log(LogLevel.WARNING, ERROR_IN_GET_JAVA9_HTTP_CLIENT_PARAMETERS, e,
 					ProcessorThread.class.getName());
 		}
 	}
 
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings(UNCHECKED)
 	public static void getApacheHttpRequestParameters(Object[] object, JSONArray parameters) {
 
 		Object request = object[0];
@@ -796,7 +796,7 @@ public class ProcessorThread implements Runnable {
 			Method getAttribute = httpContextInterface.getMethod(GET_ATTRIBUTE, String.class);
 			Object attributeHost = getAttribute.invoke(httpContext, HTTP_TARGET_HOST);
 
-			int indexOfQmark = requestUri.indexOf('?');
+			int indexOfQmark = requestUri.indexOf(QUESTION_MARK);
 			// means request param is present
 			String pathOnly = EMPTY;
 			if (indexOfQmark != -1) {
@@ -807,7 +807,7 @@ public class ProcessorThread implements Runnable {
 			parameters.add(pathOnly);
 
 		} catch (Exception e) {
-			logger.log(LogLevel.WARNING, "Error in getApacheHttpRequestParameters : ", e,
+			logger.log(LogLevel.WARNING, ERROR_IN_GET_APACHE_HTTP_REQUEST_PARAMETERS, e,
 					ProcessorThread.class.getName());
 		}
 
@@ -842,7 +842,7 @@ public class ProcessorThread implements Runnable {
 			parameters.add(path);
 
 		} catch (Exception e) {
-			logger.log(LogLevel.WARNING, "Error in getApacheCommonsHttpRequestParameters : ", e,
+			logger.log(LogLevel.WARNING, ERROR_IN_GET_APACHE_COMMONS_HTTP_REQUEST_PARAMETERS, e,
 					ProcessorThread.class.getName());
 		}
 
@@ -852,21 +852,21 @@ public class ProcessorThread implements Runnable {
 
 		Object httpEngine = object[0];
 		try {
-			Method getRequest = httpEngine.getClass().getMethod("getRequest");
+			Method getRequest = httpEngine.getClass().getMethod(GET_REQUEST);
 			Object request = getRequest.invoke(httpEngine);
 
-			Field httpUrl = request.getClass().getDeclaredField("url");
+			Field httpUrl = request.getClass().getDeclaredField(URL);
 			httpUrl.setAccessible(true);
 			Object httpUrlObj = httpUrl.get(request);
 
-			Method getUrl = httpUrlObj.getClass().getMethod("url");
+			Method getUrl = httpUrlObj.getClass().getMethod(URL);
 			URL url = (URL) getUrl.invoke(httpUrlObj);
 
 			parameters.add(url.getHost());
 			parameters.add(url.getPath());
 
 		} catch (Exception e) {
-			logger.log(LogLevel.WARNING, "Error in getOkHttpRequestParameters : ", e, ProcessorThread.class.getName());
+			logger.log(LogLevel.WARNING, ERROR_IN_GET_OK_HTTP_REQUEST_PARAMETERS, e, ProcessorThread.class.getName());
 		}
 
 	}
@@ -882,7 +882,7 @@ public class ProcessorThread implements Runnable {
 				sqlField.setAccessible(true);
 				parameters.add((String) sqlField.get(object));
 			} catch (Exception e) {
-				logger.log(LogLevel.WARNING, "Error in getHSQLParameterValue for HSQL_V2_4: ", e,
+				logger.log(LogLevel.WARNING, ERROR_IN_GET_HSQL_PARAMETER_VALUE_FOR_HSQL_V2_4, e,
 						ProcessorThread.class.getName());
 			}
 			return;
@@ -920,7 +920,7 @@ public class ProcessorThread implements Runnable {
 					}
 				}
 			} catch (Exception e) {
-				logger.log(LogLevel.WARNING, "Error in getHSQLParameterValue for HSQL_V1_8/V2_3_4: ", e,
+				logger.log(LogLevel.WARNING, ERROR_IN_GET_HSQL_PARAMETER_VALUE_FOR_HSQL_V1_8_V2_3_4, e,
 						ProcessorThread.class.getName());
 			}
 			return;
@@ -949,7 +949,7 @@ public class ProcessorThread implements Runnable {
 				parameters.add(paramArray);
 			} catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException
 					| JsonProcessingException e) {
-				logger.log(LogLevel.WARNING, "Error in getPSQLParameterValue: ", e, ProcessorThread.class.getName());
+				logger.log(LogLevel.WARNING, ERROR_IN_GET_PSQL_PARAMETER_VALUE, e, ProcessorThread.class.getName());
 			}
 
 		}
@@ -965,7 +965,7 @@ public class ProcessorThread implements Runnable {
 	 * @throws IllegalArgumentException the illegal argument exception
 	 * @throws IllegalAccessException   the illegal access exception
 	 */
-	@SuppressWarnings({ "unchecked" })
+	@SuppressWarnings({ UNCHECKED })
 	private static void addParamValuesMSSQL(ArrayList<Object[]> paramList, JSONArray parameters)
 			throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
 		for (Object[] outParams : paramList) {
@@ -1005,11 +1005,11 @@ public class ProcessorThread implements Runnable {
 				EventSendPool.getInstance().sendEvent(dynamicJarPathBean.toString());
 				K2Instrumentator.JA_HEALTH_CHECK.incrementEventSentCount();
 			} catch (IllegalStateException e) {
-				logger.log(LogLevel.INFO, "Dropping dynamicJarPathBean event " + intCodeResultBean.getId()
-						+ " due to buffer capacity reached", ProcessorThread.class.getName());
+				logger.log(LogLevel.INFO, DROPPING_DYNAMIC_JAR_PATH_BEAN_EVENT + intCodeResultBean.getId()
+						+ DUE_TO_BUFFER_CAPACITY_REACHED, ProcessorThread.class.getName());
 				K2Instrumentator.JA_HEALTH_CHECK.incrementDropCount();
 			} catch (Exception e) {
-				logger.log(LogLevel.WARNING, "Error in generateEvent while creating JavaAgentDynamicPathBean: ", e,
+				logger.log(LogLevel.WARNING, ERROR_IN_GENERATE_EVENT_WHILE_CREATING_JAVA_AGENT_DYNAMIC_PATH_BEAN, e,
 						ProcessorThread.class.getName());
 			}
 		} else {
@@ -1031,11 +1031,11 @@ public class ProcessorThread implements Runnable {
 //				logger.log(LogLevel.INFO,"publish event: " + intCodeResultBean, ProcessorThread.class.getName());
 			} catch (IllegalStateException e) {
 				logger.log(LogLevel.INFO,
-						"Dropping event " + intCodeResultBean.getId() + " due to buffer capacity reached.",
+						DROPPING_EVENT + intCodeResultBean.getId() + DUE_TO_BUFFER_CAPACITY_REACHED,
 						ProcessorThread.class.getName());
 				K2Instrumentator.JA_HEALTH_CHECK.incrementDropCount();
 			} catch (Exception e) {
-				logger.log(LogLevel.WARNING, "Error in generateEvent while creating IntCodeResultBean: ", e,
+				logger.log(LogLevel.WARNING, ERROR_IN_GENERATE_EVENT_WHILE_CREATING_INT_CODE_RESULT_BEAN, e,
 						ProcessorThread.class.getName());
 			}
 
@@ -1067,7 +1067,7 @@ public class ProcessorThread implements Runnable {
 			if (StringUtils.containsIgnoreCase(urlDecoded, host) || StringUtils.containsIgnoreCase(urlDecoded, path))
 				return true;
 		} catch (UnsupportedEncodingException e) {
-			logger.log(LogLevel.WARNING, "Error in partialSSRFValidator : ", e, ProcessorThread.class.getName());
+			logger.log(LogLevel.WARNING, ERROR_IN_PARTIAL_SSRF_VALIDATOR, e, ProcessorThread.class.getName());
 		}
 //		logger.log(Level.FINE, "Dropping SSRF event: {0}", intCodeResultBean);
 		return false;
