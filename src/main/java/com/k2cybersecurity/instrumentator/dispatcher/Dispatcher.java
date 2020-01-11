@@ -137,7 +137,7 @@ public class Dispatcher implements Runnable {
 		}
 
 		JavaAgentEventBean eventBean = prepareEvent(httpRequestBean, metaData, vulnerabilityCaseType);
-		
+
 		switch (vulnerabilityCaseType) {
 		case FILE_OPERATION:
 			FileOperationalBean fileOperationalBean = (FileOperationalBean) event;
@@ -219,7 +219,7 @@ public class Dispatcher implements Runnable {
 
 		}
 		if (!VulnerabilityCaseType.FILE_INTEGRITY.equals(vulnerabilityCaseType)) {
-			eventBean = processStackTrace(eventBean);
+			eventBean = processStackTrace(eventBean, vulnerabilityCaseType);
 		}
 		if (VulnerabilityCaseType.FILE_OPERATION.equals(vulnerabilityCaseType)) {
 			createEntryForFileIntegrity((FileOperationalBean) event, eventBean);
@@ -417,7 +417,8 @@ public class Dispatcher implements Runnable {
 		return false;
 	}
 
-	private JavaAgentEventBean processStackTrace(JavaAgentEventBean eventBean) {
+	private JavaAgentEventBean processStackTrace(JavaAgentEventBean eventBean,
+			VulnerabilityCaseType vulnerabilityCaseType) {
 		String lastNonJavaClass = StringUtils.EMPTY;
 		String lastNonJavaMethod = StringUtils.EMPTY;
 		int lastNonJavaLineNumber = 0;
@@ -427,9 +428,14 @@ public class Dispatcher implements Runnable {
 		for (int i = 0; i < trace.length; i++) {
 			int lineNumber = trace[i].getLineNumber();
 			klassName = trace[i].getClassName();
-			rciTriggerCheck(i, eventBean, klassName);
-			xxeTriggerCheck(i, eventBean, klassName);
-			deserializationTriggerCheck(i, eventBean, klassName);
+			if (VulnerabilityCaseType.SYSTEM_COMMAND.equals(vulnerabilityCaseType)
+					|| VulnerabilityCaseType.SQL_DB_COMMAND.equals(vulnerabilityCaseType)
+					|| VulnerabilityCaseType.FILE_INTEGRITY.equals(vulnerabilityCaseType)
+					|| VulnerabilityCaseType.NOSQL_DB_COMMAND.equals(vulnerabilityCaseType)) {
+				rciTriggerCheck(i, eventBean, klassName);
+				xxeTriggerCheck(i, eventBean, klassName);
+				deserializationTriggerCheck(i, eventBean, klassName);
+			}
 			if (lineNumber <= 0) {
 				continue;
 			}
