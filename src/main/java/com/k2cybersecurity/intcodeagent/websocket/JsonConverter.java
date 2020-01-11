@@ -9,9 +9,12 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Map.Entry;
 
 public class JsonConverter {
 
@@ -59,24 +62,23 @@ public class JsonConverter {
 							jsonString.append(STR_FORWARD_SLASH);
 						} else if (field.getType().isPrimitive()) {
 							jsonString.append(value);
-						} else if(field.getType().isAssignableFrom(Set.class)) {
-							JSONArray setField  = new JSONArray();
-							setField.addAll((Set)value);
+						} else if (field.getType().isAssignableFrom(Set.class)) {
+							JSONArray setField = new JSONArray();
+							setField.addAll(processCollection((Set) value));
 							jsonString.append(setField);
-						} else if(field.getType().isArray()) {
-							JSONArray setField  = new JSONArray();
-							setField.addAll(Arrays.asList((Object[])value));
+						} else if (field.getType().isArray()) {
+							JSONArray setField = new JSONArray();
+							setField.addAll(processCollection(Arrays.asList((Object[]) value)));
 							jsonString.append(setField);
-						} else if(field.getType().isAssignableFrom(List.class)) {
-							JSONArray setField  = new JSONArray();
-							setField.addAll((List)value);
+						} else if (field.getType().isAssignableFrom(List.class)) {
+							JSONArray setField = new JSONArray();
+							setField.addAll(processCollection((List) value));
 							jsonString.append(setField);
-						}
-						else if(field.getType().isAssignableFrom(Map.class)) {
-							JSONObject mapField  = new JSONObject();
-							mapField.putAll((Map)value);
+						} else if (field.getType().isAssignableFrom(Map.class)) {
+							JSONObject mapField = new JSONObject();
+							mapField.putAll(processMap((Map) value));
 							jsonString.append(mapField);
-						} else{
+						} else {
 							jsonString.append(value.toString());
 						}
 						jsonString.append(STR_COMMA);
@@ -89,6 +91,39 @@ public class JsonConverter {
 
 		jsonString.deleteCharAt(jsonString.length() - 1);
 		return jsonString.toString();
+	}
+
+	private static Map processMap(Map<String, Object> value) {
+		Map<String, Object> mapObject = new HashMap<>();
+		for (Entry<String, Object> entry : value.entrySet()) {
+			mapObject.put(entry.getKey(), processValue(entry.getValue()));
+		}
+
+		return mapObject;
+	}
+
+	private static Object processValue(Object value) {
+		if (value instanceof Collection) {
+			return processCollection((Collection<Object>) value);
+		} else if (value instanceof Object[]) {
+			return processCollection(Arrays.asList((Object[]) value));
+		} else if (value instanceof Map) {
+			return processMap((Map) value);
+		} else {
+			return value;
+		}
+	}
+
+	private static Collection processCollection(Collection<Object> values) {
+		List<Object> list = new ArrayList<>();
+		for (Object value : values) {
+			if (value instanceof Collection || value instanceof Object[]) {
+				list.addAll((Collection<? extends Object>) processValue(value));
+			} else {
+				list.add(processValue(value));
+			}
+		}
+		return list;
 	}
 
 //	public static void main(String[] args) {
