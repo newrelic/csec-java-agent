@@ -116,9 +116,8 @@ public class InstrumentationUtils {
 											.on(isStatic().and(not(isConstructor())).and(returns(TypeDescription.VOID))
 													.and(hasMethodName(method))));
 						} catch (ClassNotFoundException e) {
-							System.err.println(String.format("Failed to instrument : %s::%s due to error : %s",
-									sourceClass, method, e));
-							e.printStackTrace();
+							logger.log(LogLevel.ERROR, String.format("Failed to instrument : %s::%s due to error : %s",
+									sourceClass, method, e), InstrumentationUtils.class.getName());
 						}
 						return builder;
 					}
