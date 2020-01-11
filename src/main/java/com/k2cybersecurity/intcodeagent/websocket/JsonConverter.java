@@ -65,7 +65,7 @@ public class JsonConverter {
 							jsonString.append(setField);
 						} else if(field.getType().isArray()) {
 							JSONArray setField  = new JSONArray();
-							setField.addAll(Arrays.asList(value));
+							setField.addAll(Arrays.asList((Object[])value));
 							jsonString.append(setField);
 						} else if(field.getType().isAssignableFrom(List.class)) {
 							JSONArray setField  = new JSONArray();
