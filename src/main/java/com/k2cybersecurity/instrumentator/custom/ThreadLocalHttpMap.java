@@ -486,6 +486,7 @@ public class ThreadLocalHttpMap {
         requestReader = null;
         responseOutputStream = null;
         responseWriter = null;
+        ThreadLocalHTTPIOLock.getInstance().resetLock();
     }
 
     public boolean isEmpty() {

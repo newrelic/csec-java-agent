@@ -18,11 +18,11 @@ public class Hooks {
 
 		// HTTP request hooks
 		TYPE_BASED_HOOKS.put("javax.servlet.GenericServlet", Arrays.asList("service"));
-		TYPE_BASED_HOOKS.put("javax.servlet.ServletInputStream", Arrays.asList("read"));
-		TYPE_BASED_HOOKS.put("javax.servlet.ServletOutputStream", Arrays.asList("print", "write"));
+		TYPE_BASED_HOOKS.put("javax.servlet.ServletInputStream", Arrays.asList("read", "readLine"));
+		TYPE_BASED_HOOKS.put("javax.servlet.ServletOutputStream", Arrays.asList("print", "write", "println"));
 
-		TYPE_BASED_HOOKS.put("java.io.PrintWriter", Arrays.asList("write", "newLine", "format"));
-		TYPE_BASED_HOOKS.put("java.io.Reader", Arrays.asList("read"));
+		TYPE_BASED_HOOKS.put("java.io.PrintWriter", Arrays.asList("write", "newLine", "format", "println", "print", "printf", "append"));
+		TYPE_BASED_HOOKS.put("java.io.BufferedReader", Arrays.asList("read", "readLine"));
 
 
 		TYPE_BASED_HOOKS.put("javax.servlet.ServletRequest", Arrays.asList("getInputStream", "getReader",null));
@@ -127,12 +127,16 @@ public class Hooks {
 		// HTTP request
 		DECORATOR_ENTRY.put("javax.servlet.GenericServlet.service",
 				"com.k2cybersecurity.instrumentator.decorators.httpservice");
+
 		DECORATOR_ENTRY.put("javax.servlet.ServletInputStream.read",
+				"com.k2cybersecurity.instrumentator.decorators.servletinputstream");
+		DECORATOR_ENTRY.put("javax.servlet.ServletInputStream.readLine",
 				"com.k2cybersecurity.instrumentator.decorators.servletinputstream");
 
 		DECORATOR_ENTRY.put("javax.servlet.ServletOutputStream.print",
 				"com.k2cybersecurity.instrumentator.decorators.servletoutputstream");
-
+		DECORATOR_ENTRY.put("javax.servlet.ServletOutputStream.println",
+				"com.k2cybersecurity.instrumentator.decorators.servletoutputstream");
 		DECORATOR_ENTRY.put("javax.servlet.ServletOutputStream.write",
 				"com.k2cybersecurity.instrumentator.decorators.servletoutputstream");
 
@@ -140,10 +144,21 @@ public class Hooks {
 				"com.k2cybersecurity.instrumentator.decorators.printwriter");
 		DECORATOR_ENTRY.put("java.io.PrintWriter.newLine",
 				"com.k2cybersecurity.instrumentator.decorators.printwriter");
+		DECORATOR_ENTRY.put("java.io.PrintWriter.println",
+				"com.k2cybersecurity.instrumentator.decorators.printwriter");
+		DECORATOR_ENTRY.put("java.io.PrintWriter.print",
+				"com.k2cybersecurity.instrumentator.decorators.printwriter");
+		DECORATOR_ENTRY.put("java.io.PrintWriter.printf",
+				"com.k2cybersecurity.instrumentator.decorators.printwriter");
 		DECORATOR_ENTRY.put("java.io.PrintWriter.format",
 				"com.k2cybersecurity.instrumentator.decorators.printwriter");
+		DECORATOR_ENTRY.put("java.io.PrintWriter.append",
+				"com.k2cybersecurity.instrumentator.decorators.printwriter");
 
-		DECORATOR_ENTRY.put("java.io.Reader.read",
+
+		DECORATOR_ENTRY.put("java.io.BufferedReader.read",
+				"com.k2cybersecurity.instrumentator.decorators.servletreader");
+		DECORATOR_ENTRY.put("java.io.BufferedReader.readLine",
 				"com.k2cybersecurity.instrumentator.decorators.servletreader");
 
 		DECORATOR_ENTRY.put("javax.servlet.ServletRequest.null", "com.k2cybersecurity.instrumentator.decorators.servletrequest");

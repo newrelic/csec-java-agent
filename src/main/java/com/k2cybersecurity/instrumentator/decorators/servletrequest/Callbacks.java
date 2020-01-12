@@ -1,11 +1,9 @@
 package com.k2cybersecurity.instrumentator.decorators.servletrequest;
 
+import com.k2cybersecurity.instrumentator.custom.ThreadLocalHTTPIOLock;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalHttpMap;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalOperationLock;
 import org.apache.commons.lang3.StringUtils;
-
-import java.io.BufferedReader;
-import java.lang.reflect.Field;
 
 public class Callbacks {
 
@@ -28,29 +26,18 @@ public class Callbacks {
 
 	public static void doOnExit(String sourceString, String className, String methodName, Object obj, Object[] args,
 			Object returnVal, String exectionId) {
-		System.out.println("Came to servletrequest hook exit :" + exectionId + " :: " + sourceString + " :: " + obj + " :: " +returnVal);
 		if (!ThreadLocalHttpMap.getInstance().isEmpty() && !ThreadLocalOperationLock.getInstance().isAcquired()) {
+			System.out.println("Came to servletrequest hook exit :" + exectionId + " :: " + sourceString + " :: " + obj + " :: " + returnVal);
 			try {
 				ThreadLocalOperationLock.getInstance().acquire();
-				Field in = null;
-				if (StringUtils.equals(methodName, "getReader")) {
-					try {
-						in = BufferedReader.class.getDeclaredField("in");
-					} catch (Exception e) {
+				if (ThreadLocalHttpMap.getInstance().getHttpRequest().hashCode() == obj.hashCode()) {
+					if (StringUtils.equals(methodName, "getReader")) {
+						ThreadLocalHttpMap.getInstance().setRequestReader(returnVal);
+						ThreadLocalHTTPIOLock.getInstance().resetLock();
+					} else if (StringUtils.equals(methodName, "getInputStream")) {
+						ThreadLocalHttpMap.getInstance().setRequestInputStream(returnVal);
+						ThreadLocalHTTPIOLock.getInstance().resetLock();
 					}
-					try {
-						if(in == null) {
-							System.out.println("Oh fuck ye kya aaya :" + exectionId);
-							return;
-						}
-						in.setAccessible(true);
-						ThreadLocalHttpMap.getInstance().setRequestReader(in.get(returnVal));
-					} catch (IllegalAccessException e) {
-						e.printStackTrace();
-					}
-
-				} else if (StringUtils.equals(methodName, "getInputStream")) {
-					ThreadLocalHttpMap.getInstance().setRequestInputStream(returnVal);
 				}
 
 			} finally {
