@@ -40,6 +40,14 @@ public class JsonConverter {
 		jsonString.append(STR_END_CUELY_BRACKET);
 		return jsonString.toString();
 	}
+	
+	public static String toJSON(Map<String, Object> obj) {
+		StringBuilder jsonString = new StringBuilder();
+		JSONObject mapObject = new JSONObject();
+		mapObject.putAll(processMap(obj));
+		jsonString.append(mapObject.toJSONString());
+		return jsonString.toString();
+	}
 
 	private static String getFieldsAsJsonString(Field[] fields, Object obj) {
 		StringBuilder jsonString = new StringBuilder();
