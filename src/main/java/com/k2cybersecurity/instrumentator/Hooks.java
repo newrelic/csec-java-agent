@@ -330,7 +330,7 @@ public class Hooks {
 		IAST_BASED_HOOKS
 				.addAll(Arrays.asList("javax.servlet.http.HttpSession", "javax.servlet.http.HttpServletResponse",
 						"java.util.Random", "java.lang.Math", "java.security.SecureRandom", "javax.crypto.Cipher",
-						"javax.crypto.KeyGenerator", "java.security.KeyPairGenerator", "java.security.MessageDigest"));
+						"javax.crypto.KeyGenerator", "java.security.KeyPairGenerator", "java.security.MessageDigest", "java.io.FileSystem"));
 
 
 	}
