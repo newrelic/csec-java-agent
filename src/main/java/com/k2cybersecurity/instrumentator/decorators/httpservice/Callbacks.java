@@ -20,10 +20,12 @@ public class Callbacks {
         // TODO: Need more checks here to assert the type of args. Maybe the TYPE_BASED
         // hook advice should be generated from Code with very specific checks.
         // Doing checks here will degrade performance.
-        if (!ThreadLocalOperationLock.getInstance().isAcquired()) {
+        if (!ThreadLocalOperationLock.getInstance().isAcquired() && !ThreadLocalHTTPServiceLock.getInstance().isAcquired()) {
             try {
                 ThreadLocalOperationLock.getInstance().acquire();
-                System.out.println("Came to service hook :" + exectionId + " :: " + sourceString);
+                ThreadLocalHTTPServiceLock.getInstance().acquire(obj);
+
+//                System.out.println("Came to service hook :" + exectionId + " :: " + sourceString);
                 if (args != null && args.length == 2 && ThreadLocalHttpMap.getInstance().getHttpRequest() == null
                         && ThreadLocalHttpMap.getInstance().getHttpResponse() == null
                         && args[0] != null && args[1] != null) {
@@ -50,6 +52,7 @@ public class Callbacks {
                 // return : " + returnVal + " - eid : " + exectionId);
                 onHttpTermination(sourceString, exectionId);
             } finally {
+                ThreadLocalHTTPServiceLock.getInstance().release(obj);
                 ThreadLocalOperationLock.getInstance().release();
             }
         }
@@ -66,6 +69,7 @@ public class Callbacks {
 //				+ " - error : " + error + " - eid : " + exectionId);
                 onHttpTermination(sourceString, exectionId);
             } finally {
+                ThreadLocalHTTPServiceLock.getInstance().release(obj);
                 ThreadLocalOperationLock.getInstance().release();
             }
         }
@@ -76,7 +80,8 @@ public class Callbacks {
             ThreadLocalHttpMap.getInstance().parseHttpRequest();
             ThreadLocalHttpMap.getInstance().parseHttpResponse();
             CallbackUtils.checkForFileIntegrity(ThreadLocalExecutionMap.getInstance().getFileLocalMap());
-            // CallbackUtils.checkForReflectedXSS(ThreadLocalExecutionMap.getInstance().getHttpRequestBean());
+//            CallbackUtils.checkForReflectedXSS(ThreadLocalExecutionMap.getInstance().getHttpRequestBean());
+//            System.out.println("Passing to XSS detection : " + exectionId + " :: " + ThreadLocalExecutionMap.getInstance().getHttpRequestBean().getHttpResponseBean().toString()+ " :: " + ThreadLocalExecutionMap.getInstance().getHttpRequestBean().getHttpResponseBean().toString());
             if (!ThreadLocalExecutionMap.getInstance().getHttpRequestBean().getHttpResponseBean().isEmpty()) {
                 printReponse();
                 EventDispatcher.dispatch(

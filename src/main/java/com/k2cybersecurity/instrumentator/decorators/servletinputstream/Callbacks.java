@@ -10,8 +10,8 @@ public class Callbacks {
 
     public static void doOnEnter(String sourceString, String className, String methodName, Object obj, Object[] args,
                                  String exectionId) {
-        System.out.println("OnEnter servletinputstream :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj + " - eid : " + exectionId);
-        if (!ThreadLocalHttpMap.getInstance().isEmpty() && ThreadLocalHttpMap.getInstance().getRequestInputStream().hashCode() == obj.hashCode()) {
+//        System.out.println("OnEnter servletinputstream :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj + " - eid : " + exectionId);
+        if (!ThreadLocalHttpMap.getInstance().isEmpty() && ThreadLocalHttpMap.getInstance().getRequestInputStream() !=null && obj != null && ThreadLocalHttpMap.getInstance().getRequestInputStream().hashCode() == obj.hashCode()) {
             if (!ThreadLocalOperationLock.getInstance().isAcquired() && !ThreadLocalHTTPIOLock.getInstance().isAcquired()) {
                 try {
                     ThreadLocalOperationLock.getInstance().acquire();
@@ -25,9 +25,9 @@ public class Callbacks {
 
     public static void doOnExit(String sourceString, String className, String methodName, Object obj, Object[] args,
                                 Object returnVal, String exectionId) {
-        System.out.println("OnExit servletinputstream :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj + " - return : " + returnVal + " - eid : " + exectionId);
+//        System.out.println("OnExit servletinputstream :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj + " - return : " + returnVal + " - eid : " + exectionId);
 
-        if (!ThreadLocalHttpMap.getInstance().isEmpty() && ThreadLocalHttpMap.getInstance().getRequestInputStream().hashCode() == obj.hashCode() && !ThreadLocalOperationLock.getInstance().isAcquired()) {
+        if (!ThreadLocalHttpMap.getInstance().isEmpty() && ThreadLocalHttpMap.getInstance().getRequestInputStream() !=null && obj != null && ThreadLocalHttpMap.getInstance().getRequestInputStream().hashCode() == obj.hashCode() && !ThreadLocalOperationLock.getInstance().isAcquired()) {
             if (ThreadLocalHTTPIOLock.getInstance().isAcquired(obj)) {
                 try {
                     ThreadLocalOperationLock.getInstance().acquire();

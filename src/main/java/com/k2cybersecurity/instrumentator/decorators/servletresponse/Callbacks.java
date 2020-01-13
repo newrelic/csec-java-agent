@@ -9,13 +9,13 @@ public class Callbacks {
 
     public static void doOnEnter(String sourceString, String className, String methodName, Object obj, Object[] args,
                                  String exectionId) {
-        System.out.println("Came to servletresponse hook :" + exectionId + " :: " + sourceString);
+//        System.out.println("Came to servletresponse hook :" + exectionId + " :: " + sourceString);
         if (!ThreadLocalHttpMap.getInstance().isServiceMethodEncountered() && !ThreadLocalOperationLock.getInstance()
                 .isAcquired()) {
             try {
                 ThreadLocalOperationLock.getInstance().acquire();
                 if (obj == null && args != null && args.length == 1 && args[0] != null) {
-                    System.out.println("Setting response  : " + exectionId);
+//                    System.out.println("Setting response  : " + exectionId);
                     ThreadLocalHttpMap.getInstance().setHttpResponse(args[0]);
                 }
             } finally {
@@ -29,11 +29,11 @@ public class Callbacks {
         if (!ThreadLocalHttpMap.getInstance().isEmpty() && !ThreadLocalOperationLock.getInstance().isAcquired()) {
             try {
                 ThreadLocalOperationLock.getInstance().acquire();
-                if (ThreadLocalHttpMap.getInstance().getHttpResponse().hashCode() == obj.hashCode()) {
-                    System.out.println("Came to servletresponse hook exit :" + exectionId + " :: " + sourceString + " :: " + obj + " :: " + returnVal);
+                if (obj !=null && ThreadLocalHttpMap.getInstance().getHttpResponse()!=null && ThreadLocalHttpMap.getInstance().getHttpResponse().hashCode() == obj.hashCode()) {
+//                    System.out.println("Came to servletresponse hook exit :" + exectionId + " :: " + sourceString + " :: " + obj + " :: " + returnVal);
                     if (StringUtils.equals(methodName, "getWriter")) {
                         ThreadLocalHttpMap.getInstance().setResponseWriter(returnVal);
-                        System.out.println("reponseWriter set kar diya. :" + exectionId + " :: " + ThreadLocalHttpMap.getInstance().getResponseWriter());
+//                        System.out.println("reponseWriter set kar diya. :" + exectionId + " :: " + ThreadLocalHttpMap.getInstance().getResponseWriter());
                         ThreadLocalHTTPIOLock.getInstance().resetLock();
 
                     } else if (StringUtils.equals(methodName, "getOutputStream")) {

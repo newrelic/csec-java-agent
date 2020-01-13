@@ -10,7 +10,7 @@ public class Callbacks {
 
     public static void doOnEnter(String sourceString, String className, String methodName, Object obj, Object[] args,
                                  String exectionId) {
-        if (!ThreadLocalHttpMap.getInstance().isEmpty() && !ThreadLocalOperationLock.getInstance().isAcquired() && ThreadLocalHttpMap.getInstance().getRequestReader() != null && ThreadLocalHttpMap.getInstance().getRequestReader().hashCode() == obj.hashCode()
+        if (!ThreadLocalHttpMap.getInstance().isEmpty() && !ThreadLocalOperationLock.getInstance().isAcquired() && obj != null && ThreadLocalHttpMap.getInstance().getRequestReader() != null && ThreadLocalHttpMap.getInstance().getRequestReader().hashCode() == obj.hashCode()
                 && !ThreadLocalHTTPIOLock.getInstance().isAcquired()) {
             try {
                 ThreadLocalOperationLock.getInstance().acquire();
@@ -26,7 +26,7 @@ public class Callbacks {
     public static void doOnExit(String sourceString, String className, String methodName, Object obj, Object[] args,
                                 Object returnVal, String exectionId) {
 
-        if (!ThreadLocalHttpMap.getInstance().isEmpty() && !ThreadLocalOperationLock.getInstance().isAcquired() && ThreadLocalHttpMap.getInstance().getRequestReader() != null && ThreadLocalHttpMap.getInstance().getRequestReader().hashCode() == obj.hashCode()
+        if (!ThreadLocalHttpMap.getInstance().isEmpty() && !ThreadLocalOperationLock.getInstance().isAcquired() && obj != null && ThreadLocalHttpMap.getInstance().getRequestReader() != null && ThreadLocalHttpMap.getInstance().getRequestReader().hashCode() == obj.hashCode()
                 && ThreadLocalHTTPIOLock.getInstance().isAcquired(obj)) {
             try {
                 ThreadLocalOperationLock.getInstance().acquire();

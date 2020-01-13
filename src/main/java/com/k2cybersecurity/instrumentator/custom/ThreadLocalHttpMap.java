@@ -144,7 +144,7 @@ public class ThreadLocalHttpMap {
             logger.log(LogLevel.INFO, "No HTTP request found for current context", ThreadLocalHttpMap.class.getName());
             return false;
         }
-        System.out.println("Parsing HTTP request : " + httpRequest.hashCode());
+//        System.out.println("Parsing HTTP request : " + httpRequest.hashCode());
 
         if (isHttpRequestParsed) {
         	logger.log(LogLevel.INFO, "HTTP request already parsed for current context", ThreadLocalHttpMap.class.getName());
@@ -258,7 +258,7 @@ public class ThreadLocalHttpMap {
             logger.log(LogLevel.INFO, "No HTTP response found for current context", ThreadLocalHttpMap.class.getName());
             return false;
         }
-        System.out.println("Parsing HTTP response : " + httpResponse.hashCode());
+//        System.out.println("Parsing HTTP response : " + httpResponse.hashCode());
 
 
         try {
@@ -286,7 +286,7 @@ public class ThreadLocalHttpMap {
             httpRequestBean.getHttpResponseBean().setHeaders(new JSONObject(headers));
 
             // TODO: based on content info, parse/decode the received reponse data here.
-            System.out.println("Parsing HTTP response completed : " + httpResponse.hashCode() + " :: " +  httpRequestBean.getHttpResponseBean());
+//            System.out.println("Parsing HTTP response completed : " + httpResponse.hashCode() + " :: " +  httpRequestBean.getHttpResponseBean());
 
             isHttpResponseParsed = true;
             return true;

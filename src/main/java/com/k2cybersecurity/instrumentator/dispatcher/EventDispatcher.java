@@ -87,6 +87,7 @@ public class EventDispatcher {
 
 	public static void dispatch(HttpRequestBean httpRequestBean, String sourceString, String exectionId, long startTime,
 			VulnerabilityCaseType reflectedXss) {
+//		System.out.println("Passed to XSS detection : " + exectionId + " :: " + httpRequestBean.toString()+ " :: " + httpRequestBean.getHttpResponseBean().toString());
 		if (!httpRequestBean.isEmpty()) {
 			DispatcherPool.getInstance().dispatchEvent(httpRequestBean, sourceString, exectionId, startTime,
 					Thread.currentThread().getStackTrace(), reflectedXss);

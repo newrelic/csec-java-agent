@@ -6,7 +6,6 @@ import com.k2cybersecurity.instrumentator.custom.ThreadLocalOperationLock;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import org.apache.commons.lang3.StringUtils;
 
-import java.util.Arrays;
 import java.util.Locale;
 
 public class Callbacks {
@@ -14,19 +13,19 @@ public class Callbacks {
 
     public static void doOnEnter(String sourceString, String className, String methodName, Object obj, Object[] args,
                                  String exectionId) {
-        System.out.println(
-                "OnEnter initial :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj
-                        + " - eid : " + exectionId);
+//        System.out.println(
+//                "OnEnter initial :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj
+//                        + " - eid : " + exectionId);
         if (!ThreadLocalHttpMap.getInstance().isEmpty()) {
-            if (ThreadLocalHttpMap.getInstance().getResponseWriter() != null && ThreadLocalHttpMap.getInstance().getResponseWriter().hashCode() == obj.hashCode()
+            if (ThreadLocalHttpMap.getInstance().getResponseWriter() != null && obj != null  && ThreadLocalHttpMap.getInstance().getResponseWriter().hashCode() == obj.hashCode()
                     && !ThreadLocalOperationLock
                     .getInstance().isAcquired() && !ThreadLocalHTTPIOLock.getInstance().isAcquired()) {
                 try {
                     ThreadLocalOperationLock.getInstance().acquire();
                     ThreadLocalHTTPIOLock.getInstance().acquire(obj);
-                    System.out.println(
-                            "OnEnter :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj
-                                    + " - eid : " + exectionId);
+//                    System.out.println(
+//                            "OnEnter :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj
+//                                    + " - eid : " + exectionId);
                     switch (methodName) {
                         case "write":
                             if (args != null && args.length == 1 && args[0] != null) {

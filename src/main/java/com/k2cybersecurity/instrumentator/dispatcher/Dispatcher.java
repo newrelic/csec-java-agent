@@ -100,9 +100,9 @@ public class Dispatcher implements Runnable {
 					eventBean = getUserInfo(eventBean);
 					eventBean.setEventGenerationTime(Instant.now().toEpochMilli());
 					EventSendPool.getInstance().sendEvent(eventBean.toString());
-					System.out.println("============= Event Start ============");
-					System.out.println(eventBean);
-					System.out.println("============= Event End ============");
+//					System.out.println("============= Event Start ============");
+//					System.out.println(eventBean);
+//					System.out.println("============= Event End ============");
 				}
 				return;
 			}
@@ -226,9 +226,9 @@ public class Dispatcher implements Runnable {
 		}
 		eventBean.setEventGenerationTime(Instant.now().toEpochMilli());
 		EventSendPool.getInstance().sendEvent(eventBean.toString());
-		System.out.println("============= Event Start ============");
-		System.out.println(eventBean);
-		System.out.println("============= Event End ============");
+//		System.out.println("============= Event Start ============");
+//		System.out.println(eventBean);
+//		System.out.println("============= Event End ============");
 	}
 
 	private JavaAgentEventBean prepareXPATHEvent(JavaAgentEventBean eventBean,
@@ -576,23 +576,23 @@ public class Dispatcher implements Runnable {
 
 	public void printDispatch() {
 		try {
-			System.out.println(
-					"==========================================================================================");
+			logger.log(LogLevel.DEBUG,
+					"==========================================================================================", Dispatcher.class.getName());
 
-			System.out.println("Intercepted Request : " + httpRequestBean);
+			logger.log(LogLevel.DEBUG,"Intercepted Request : " + httpRequestBean, Dispatcher.class.getName());
 
-			System.out.println("Intercepted Response : " + httpRequestBean.getHttpResponseBean());
+			logger.log(LogLevel.DEBUG,"Intercepted Response : " + httpRequestBean.getHttpResponseBean(), Dispatcher.class.getName());
 
-			System.out.println("Agent Meta : " + metaData);
+			logger.log(LogLevel.DEBUG,"Agent Meta : " + metaData, Dispatcher.class.getName());
 
-			System.out.println("Intercepted transaction : " + event);
+			logger.log(LogLevel.DEBUG,"Intercepted transaction : " + event, Dispatcher.class.getName());
 
-			System.out.println("Trace : " + Arrays.asList(trace));
+			logger.log(LogLevel.DEBUG,"Trace : " + Arrays.asList(trace), Dispatcher.class.getName());
 
-			System.out.println("vulnerabilityCaseType : " + vulnerabilityCaseType);
+			logger.log(LogLevel.DEBUG,"vulnerabilityCaseType : " + vulnerabilityCaseType, Dispatcher.class.getName());
 
-			System.out.println(
-					"==========================================================================================");
+			logger.log(LogLevel.DEBUG,
+					"==========================================================================================", Dispatcher.class.getName());
 		} catch (Exception e) {
 		}
 	}

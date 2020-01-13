@@ -2,24 +2,24 @@ package com.k2cybersecurity.instrumentator.custom;
 
 import java.util.concurrent.Semaphore;
 
-public class ThreadLocalHTTPIOLock {
+public class ThreadLocalHTTPServiceLock {
 
     private Semaphore lock;
 
     private Object takenBy;
 
-    private static ThreadLocal<ThreadLocalHTTPIOLock> instance = new ThreadLocal<ThreadLocalHTTPIOLock>() {
+    private static ThreadLocal<ThreadLocalHTTPServiceLock> instance = new ThreadLocal<ThreadLocalHTTPServiceLock>() {
         @Override
-        protected ThreadLocalHTTPIOLock initialValue() {
-            return new ThreadLocalHTTPIOLock();
+        protected ThreadLocalHTTPServiceLock initialValue() {
+            return new ThreadLocalHTTPServiceLock();
         }
     };
 
-    private ThreadLocalHTTPIOLock() {
+    private ThreadLocalHTTPServiceLock() {
         lock = new Semaphore(1);
     }
 
-    public static ThreadLocalHTTPIOLock getInstance() {
+    public static ThreadLocalHTTPServiceLock getInstance() {
         return instance.get();
     }
 

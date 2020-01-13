@@ -74,7 +74,7 @@ public class HttpResponseBean {
     }
 
     public boolean isEmpty(){
-        return StringUtils.isBlank(responseBody);
+        return StringUtils.isAllBlank(responseBody, headers.toString(),responseCharacterEncoding, responseContentType);
     }
 
     public String getDecodedResponseBody() {
