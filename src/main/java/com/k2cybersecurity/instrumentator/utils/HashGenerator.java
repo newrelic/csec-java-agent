@@ -46,7 +46,7 @@ public class HashGenerator {
 			byte[] hashedBytes = digest.digest();
 			return convertByteArrayToHexString(hashedBytes);
 		} catch (NoSuchAlgorithmException e) {
-			e.printStackTrace();
+			logger.log(LogLevel.ERROR, "Error :"+ e, HashGenerator.class.getName());
 		}
 		return null;
 	}

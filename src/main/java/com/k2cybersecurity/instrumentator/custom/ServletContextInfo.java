@@ -2,6 +2,8 @@ package com.k2cybersecurity.instrumentator.custom;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.k2cybersecurity.instrumentator.dispatcher.EventDispatcher;
+import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
+import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.logging.DeployedApplication;
 import com.k2cybersecurity.intcodeagent.models.javaagent.VulnerabilityCaseType;
 import com.k2cybersecurity.intcodeagent.websocket.JsonConverter;
@@ -25,6 +27,7 @@ public class ServletContextInfo {
 
     private Integer minorServletVersion;
 
+    private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
 
     private ServletContextInfo() {
     }
@@ -135,7 +138,7 @@ public class ServletContextInfo {
                 return;
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.log(LogLevel.ERROR, "Error : "+ e, ServletContextInfo.class.getName());
         }
         try {
             getContextPath = servletContext.getClass().getMethod("getContextPath");
@@ -158,7 +161,7 @@ public class ServletContextInfo {
             applicationName = (String) getServletContextName.invoke(servletContext, null);
 
         } catch (Exception e) {
-            e.printStackTrace();
+        	logger.log(LogLevel.ERROR, "Error : "+ e, ServletContextInfo.class.getName());
         }
 
         if (StringUtils.isNotBlank(serverInfo)) {
@@ -188,7 +191,7 @@ public class ServletContextInfo {
 					applicationDir = StringUtils.EMPTY;
 				}
 			} catch (Exception e) {
-				e.printStackTrace();
+				logger.log(LogLevel.ERROR, "Error : "+ e, ServletContextInfo.class.getName());
 			}
 
 

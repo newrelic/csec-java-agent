@@ -156,7 +156,7 @@ public class ThreadLocalHttpMap {
             isHttpRequestParsed = true;
             return true;
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.log(LogLevel.ERROR, "Error : "+ e, ThreadLocalHttpMap.class.getName());
         } finally {
         	logger.log(LogLevel.INFO, "RAW Intercepted Request : " + ThreadLocalExecutionMap.getInstance().getHttpRequestBean(), ThreadLocalHttpMap.class.getName());
         }
@@ -189,7 +189,7 @@ public class ThreadLocalHttpMap {
                 headers.put(headerKey, headerFullValue);
             }
         } catch (Exception e) {
-            e.printStackTrace();
+        	logger.log(LogLevel.ERROR, "Error : "+ e, ThreadLocalHttpMap.class.getName());
         }
     }
 
@@ -231,7 +231,7 @@ public class ThreadLocalHttpMap {
             return true;
 
         } catch (Exception e) {
-            e.printStackTrace();
+        	logger.log(LogLevel.ERROR, "Error : "+ e, ThreadLocalHttpMap.class.getName());
         }
         return false;
     }
@@ -259,7 +259,7 @@ public class ThreadLocalHttpMap {
                 headers.put(headerKey, headerFullValue);
             }
         } catch (Exception e) {
-            e.printStackTrace();
+        	logger.log(LogLevel.ERROR, "Error : "+ e, ThreadLocalHttpMap.class.getName());
         }
     }
 
