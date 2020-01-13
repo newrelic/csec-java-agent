@@ -2,18 +2,13 @@ package com.k2cybersecurity.intcodeagent.websocket;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.apache.commons.lang3.StringEscapeUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.Map.Entry;
 
 public class JsonConverter {
@@ -41,7 +36,7 @@ public class JsonConverter {
 		return jsonString.toString();
 	}
 	
-	public static String toJSON(Map<String, Object> obj) {
+	public static String toJSONMap(Map obj) {
 		StringBuilder jsonString = new StringBuilder();
 		JSONObject mapObject = new JSONObject();
 		mapObject.putAll(processMap(obj));
@@ -96,9 +91,7 @@ public class JsonConverter {
 
 			}
 		}
-
-		jsonString.deleteCharAt(jsonString.length() - 1);
-		return jsonString.toString();
+		return StringUtils.removeEnd(jsonString.toString(), STR_COMMA);
 	}
 
 	private static Map processMap(Map<String, Object> value) {
