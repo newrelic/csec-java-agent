@@ -10,18 +10,18 @@ public class Callbacks {
 	public static void doOnEnter(String sourceString, String className, String methodName, Object obj, Object[] args,
 			String exectionId) {
 //		System.out.println("Came to servletrequest hook :" + exectionId + " :: " + sourceString);
-		if (!ThreadLocalHttpMap.getInstance().isServiceMethodEncountered() && !ThreadLocalOperationLock.getInstance()
-				.isAcquired()) {
-			try {
-				ThreadLocalOperationLock.getInstance().acquire();
-				if (obj == null && args != null && args.length == 1 && args[0] != null) {
-//					System.out.println("Setting request  : " + exectionId);
-					ThreadLocalHttpMap.getInstance().setHttpRequest(args[0]);
-				}
-			} finally {
-				ThreadLocalOperationLock.getInstance().release();
-			}
-		}
+//		if (!ThreadLocalHttpMap.getInstance().isServiceMethodEncountered() && !ThreadLocalOperationLock.getInstance()
+//				.isAcquired()) {
+//			try {
+//				ThreadLocalOperationLock.getInstance().acquire();
+//				if (obj == null && args != null && args.length == 1 && args[0] != null) {
+////					System.out.println("Setting request  : " + exectionId);
+//					ThreadLocalHttpMap.getInstance().setHttpRequest(args[0]);
+//				}
+//			} finally {
+//				ThreadLocalOperationLock.getInstance().release();
+//			}
+//		}
 	}
 
 	public static void doOnExit(String sourceString, String className, String methodName, Object obj, Object[] args,
