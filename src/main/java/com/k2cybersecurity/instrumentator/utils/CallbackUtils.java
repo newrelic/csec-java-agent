@@ -1,6 +1,8 @@
 package com.k2cybersecurity.instrumentator.utils;
 
 import com.k2cybersecurity.instrumentator.dispatcher.EventDispatcher;
+import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
+import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.models.javaagent.*;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
@@ -26,6 +28,8 @@ public class CallbackUtils {
     private static final Pattern htmlArgExtractor;
 
     private static final Pattern functionCallDetector;
+    
+    private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
 
     private static Map<Integer, JADatabaseMetaData> sqlConnectionMap;
 
@@ -217,7 +221,7 @@ public class CallbackUtils {
             }
 
         } catch (Exception e) {
-            e.printStackTrace();
+        	logger.log(LogLevel.ERROR, "Error :"+ e, CallbackUtils.class.getName());
         }
         return "UNKNOWN";
     }
@@ -343,7 +347,7 @@ public class CallbackUtils {
             }
             return consolidatedBody.toString();
         } catch (Exception e) {
-            e.printStackTrace();
+        	logger.log(LogLevel.ERROR, "Error :"+ e, CallbackUtils.class.getName());
         }
         return StringUtils.EMPTY;
     }
@@ -445,7 +449,7 @@ public class CallbackUtils {
             }
             return consolidatedBody.toString();
         } catch (Exception e) {
-            e.printStackTrace();
+        	logger.log(LogLevel.ERROR, "Error :"+ e, CallbackUtils.class.getName());
         }
         return StringUtils.EMPTY;
     }
