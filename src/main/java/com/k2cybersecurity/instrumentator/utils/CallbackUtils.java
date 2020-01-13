@@ -367,7 +367,14 @@ public class CallbackUtils {
             consolidatedBody.append(processedBody);
             consolidatedBody.append("::::");
             consolidatedBody.append(HtmlEscape.unescapeHtml(processedBody));
-
+            if(httpRequestBean.getParameterMap() !=null ) {
+                consolidatedBody.append("::::");
+                consolidatedBody.append(HtmlEscape.unescapeHtml(httpRequestBean.getParameterMap().toString()));
+            }
+            if(httpRequestBean.getParts() !=null ) {
+                consolidatedBody.append("::::");
+                consolidatedBody.append(HtmlEscape.unescapeHtml(httpRequestBean.getParts().toString()));
+            }
             // For URL
             consolidatedBody.append("::::");
             consolidatedBody.append(processedUrl);

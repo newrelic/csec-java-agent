@@ -4,6 +4,7 @@ import com.k2cybersecurity.instrumentator.custom.ThreadLocalHTTPIOLock;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalHttpMap;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalOperationLock;
 
+import java.nio.CharBuffer;
 import java.util.Arrays;
 
 public class Callbacks {
@@ -32,8 +33,12 @@ public class Callbacks {
                 ThreadLocalOperationLock.getInstance().acquire();
                 switch (methodName) {
                     case "read":
-                        if (args != null && args.length == 3 && args[0] instanceof char[]) {
-                            ThreadLocalHttpMap.getInstance().insertToRequestByteBuffer(String.valueOf((char[]) args[0], (int) args[1], (int) args[2]).getBytes());
+                        if(args != null && args.length == 1 && args[0] instanceof char[] && (int)returnVal != -1){
+                            ThreadLocalHttpMap.getInstance().insertToRequestByteBuffer(String.valueOf((char[]) args[0], 0, (int)returnVal).getBytes());
+                        } else if(args != null && args.length == 1 && args[0] instanceof CharBuffer && (int)returnVal != -1){
+                            ThreadLocalHttpMap.getInstance().insertToRequestByteBuffer(String.valueOf(((CharBuffer) args[0]).array(), 0, (int)returnVal).getBytes());
+                        }else if (args != null && args.length == 3 && args[0] instanceof char[] && (int)returnVal != -1) {
+                            ThreadLocalHttpMap.getInstance().insertToRequestByteBuffer(String.valueOf((char[]) args[0], (int) args[1], (int)returnVal).getBytes());
                         } else if (returnVal instanceof Integer) {
                             int readByte = (int) returnVal;
                             if (readByte != -1)

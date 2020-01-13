@@ -40,18 +40,18 @@ public class Callbacks {
                                 System.out.println("Inserting to request : " + args[0] + " :: " + obj.hashCode());
                                 if ((int) returnVal != -1)
                                     ThreadLocalHttpMap.getInstance().insertToRequestByteBuffer((byte) returnVal);
-                            } else if (args != null && args.length == 1 && args[0] instanceof byte[]) {
+                            } else if (args != null && args.length == 1 && args[0] instanceof byte[] && (int) returnVal != -1) {
                                 System.out.println("Inserting to request : " + args[0] + " :: " + obj.hashCode());
-                                ThreadLocalHttpMap.getInstance().insertToRequestByteBuffer((byte[]) args[0]);
-                            } else if (args != null && args.length == 3 && args[0] instanceof byte[]) {
+                                ThreadLocalHttpMap.getInstance().insertToRequestByteBuffer((byte[]) args[0], 0 , (int) returnVal);
+                            } else if (args != null && args.length == 3 && args[0] instanceof byte[] && (int) returnVal != -1) {
                                 System.out.println("Inserting to request : " + args[0] + " :: " + obj.hashCode());
-                                ThreadLocalHttpMap.getInstance().insertToRequestByteBuffer((byte[]) args[0], (int) args[1], (int) args[2]);
+                                ThreadLocalHttpMap.getInstance().insertToRequestByteBuffer((byte[]) args[0], (int) args[1], (int) returnVal);
                             }
                             break;
                         case "readLine":
-                            if (args != null && args.length == 3 && args[0] instanceof byte[]) {
+                            if (args != null && args.length == 3 && args[0] instanceof byte[] && (int) returnVal != -1) {
                                 System.out.println("Inserting to request : " + args[0] + " :: " + obj.hashCode());
-                                ThreadLocalHttpMap.getInstance().insertToRequestByteBuffer((byte[]) args[0], (int) args[1], (int) args[2]);
+                                ThreadLocalHttpMap.getInstance().insertToRequestByteBuffer((byte[]) args[0], (int) args[1], (int) returnVal);
                             }
                             break;
                     }
