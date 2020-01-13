@@ -72,7 +72,7 @@ public class Hooks {
 				"unlink", "mknod", "rename", "mkdir", "rmdir", "symlink", "chown", "chmod" }));
 		NAME_BASED_HOOKS.put("java.io.UnixFileSystem", Collections.singletonList("delete"));
 		NAME_BASED_HOOKS.put("java.io.RandomAccessFile", Collections.singletonList("open"));
-		TYPE_BASED_HOOKS.put("java.io.FileSystem", Collections.singletonList("list"));
+		TYPE_BASED_HOOKS.put("java.io.FileSystem", Arrays.asList("list", "getBooleanAttributes"));
 
 		// Mongo Hooks
 
@@ -303,6 +303,7 @@ public class Hooks {
 		DECORATOR_ENTRY.put("java.io.RandomAccessFile.open",
 				"com.k2cybersecurity.instrumentator.decorators.fileaccess");
 		DECORATOR_ENTRY.put("java.io.FileSystem.list", "com.k2cybersecurity.instrumentator.decorators.fileaccess");
+		DECORATOR_ENTRY.put("java.io.FileSystem.getBooleanAttributes", "com.k2cybersecurity.instrumentator.decorators.fileaccess");
 
 		// Mongo Execute
 		DECORATOR_ENTRY.put("com.mongodb.connection.DefaultServerConnection.executeProtocol",
