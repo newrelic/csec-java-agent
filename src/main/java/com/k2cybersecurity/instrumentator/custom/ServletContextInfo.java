@@ -164,7 +164,8 @@ public class ServletContextInfo {
         	logger.log(LogLevel.ERROR, "Error : "+ e, ServletContextInfo.class.getName());
         }
 
-        if (StringUtils.isNotBlank(serverInfo)) {
+
+		if (StringUtils.isNotBlank(serverInfo)) {
             setServerInfo(serverInfo);
         }
 

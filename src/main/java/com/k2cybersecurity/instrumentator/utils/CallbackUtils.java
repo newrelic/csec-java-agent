@@ -4,6 +4,7 @@ import com.k2cybersecurity.instrumentator.dispatcher.EventDispatcher;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.models.javaagent.*;
+import com.k2cybersecurity.intcodeagent.websocket.JsonConverter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
 import org.unbescape.html.HtmlEscape;
@@ -372,8 +373,11 @@ public class CallbackUtils {
             consolidatedBody.append("::::");
             consolidatedBody.append(HtmlEscape.unescapeHtml(processedBody));
             if(httpRequestBean.getParameterMap() !=null ) {
+                String pmap = HtmlEscape.unescapeHtml(JsonConverter.toJSONMap(httpRequestBean.getParameterMap()));
                 consolidatedBody.append("::::");
-                consolidatedBody.append(HtmlEscape.unescapeHtml(httpRequestBean.getParameterMap().toString()));
+                consolidatedBody.append(pmap);
+                consolidatedBody.append("::::");
+                consolidatedBody.append(StringEscapeUtils.unescapeJson(pmap));
             }
             if(httpRequestBean.getParts() !=null ) {
                 consolidatedBody.append("::::");
