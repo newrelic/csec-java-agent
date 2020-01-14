@@ -1,18 +1,17 @@
 package com.k2cybersecurity.instrumentator.decorators.ssrf;
 
-import static com.k2cybersecurity.instrumentator.decorators.ssrf.ISSRFConstants.*;
+import com.k2cybersecurity.instrumentator.custom.ThreadLocalOperationLock;
+import com.k2cybersecurity.instrumentator.dispatcher.EventDispatcher;
+import com.k2cybersecurity.intcodeagent.models.javaagent.VulnerabilityCaseType;
+import com.k2cybersecurity.intcodeagent.models.operationalbean.SSRFOperationalBean;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URL;
 import java.time.Instant;
-import java.util.Arrays;
 
-import com.k2cybersecurity.instrumentator.custom.ThreadLocalOperationLock;
-import com.k2cybersecurity.instrumentator.dispatcher.EventDispatcher;
-import com.k2cybersecurity.intcodeagent.models.javaagent.VulnerabilityCaseType;
-import com.k2cybersecurity.intcodeagent.models.operationalbean.SSRFOperationalBean;
+import static com.k2cybersecurity.instrumentator.decorators.ssrf.ISSRFConstants.*;
 
 public class Callbacks {
 
@@ -23,30 +22,19 @@ public class Callbacks {
 				ThreadLocalOperationLock.getInstance().acquire();
 //				System.out.println("OnEnter :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj
 //						+ " - eid : " + exectionId);
-				if (sourceString.equals(JAVA_OPEN_CONNECTION_METHOD2)
-						|| sourceString.equals(JAVA_OPEN_CONNECTION_METHOD2_HTTPS)
-						|| sourceString.equals(JAVA_OPEN_CONNECTION_METHOD2_HTTPS_2)
-						|| sourceString.equals(WEBLOGIC_OPEN_CONNECTION_METHOD)) {
-					EventDispatcher.dispatch(new SSRFOperationalBean(args, className, sourceString, exectionId,
-							Instant.now().toEpochMilli()), VulnerabilityCaseType.HTTP_REQUEST);
-				} else if (sourceString.equals(JDK_INCUBATOR_MULTIEXCHANGE_RESONSE_METHOD)
-						|| sourceString.equals(JDK_INCUBATOR_MULTIEXCHANGE_RESONSE_ASYNC_METHOD)) {
-					Object[] argArray = getJava9HttpClientParameters(args);
-					EventDispatcher.dispatch(new SSRFOperationalBean(argArray, className, sourceString, exectionId,
-							Instant.now().toEpochMilli()), VulnerabilityCaseType.HTTP_REQUEST);
-				} else if (sourceString.equals(APACHE_HTTP_REQUEST_EXECUTOR_METHOD)) {
-					Object[] argArray = getApacheHttpRequestParameters(args);
-					EventDispatcher.dispatch(new SSRFOperationalBean(argArray, className, sourceString, exectionId,
-							Instant.now().toEpochMilli()), VulnerabilityCaseType.HTTP_REQUEST);
-				} else if (sourceString.equals(APACHE_COMMONS_HTTP_METHOD_DIRECTOR_METHOD)) {
-					Object[] argArray = getApacheCommonsHttpRequestParameters(args);
-					EventDispatcher.dispatch(new SSRFOperationalBean(argArray, className, sourceString, exectionId,
-							Instant.now().toEpochMilli()), VulnerabilityCaseType.HTTP_REQUEST);
-				} else if (sourceString.equals(OKHTTP_HTTP_ENGINE_METHOD)) {
-					Object[] argArray = getOkHttpRequestParameters(args);
-					EventDispatcher.dispatch(new SSRFOperationalBean(argArray, className, sourceString, exectionId,
-							Instant.now().toEpochMilli()), VulnerabilityCaseType.HTTP_REQUEST);
+				Object[] newArgs;
+				if(args != null) {
+					newArgs = new Object[args.length + 1];
+					for(int i =0 ; i< args.length; i++){
+						newArgs[i] = args[i];
+					}
+					newArgs[newArgs.length-1] = obj;
+				} else {
+					newArgs = new Object[] {obj};
 				}
+				EventDispatcher.dispatch(new SSRFOperationalBean(newArgs, className, sourceString, exectionId,
+						Instant.now().toEpochMilli()), VulnerabilityCaseType.HTTP_REQUEST);
+
 			} finally {
 				ThreadLocalOperationLock.getInstance().release();
 			}

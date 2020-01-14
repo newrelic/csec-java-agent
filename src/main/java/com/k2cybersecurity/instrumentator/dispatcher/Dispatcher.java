@@ -1,7 +1,6 @@
 package com.k2cybersecurity.instrumentator.dispatcher;
 
 import com.k2cybersecurity.instrumentator.K2Instrumentator;
-import com.k2cybersecurity.instrumentator.custom.ServletContextInfo;
 import com.k2cybersecurity.instrumentator.utils.CallbackUtils;
 import com.k2cybersecurity.instrumentator.utils.HashGenerator;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
@@ -377,19 +376,16 @@ public class Dispatcher implements Runnable {
 		String sourceString = eventBean.getSourceMethod();
 		Object[] obj = ssrfOperationalBean.getApiCallArgs();
 
-		if (sourceString.equals(APACHE_HTTP_REQUEST_EXECUTOR_METHOD)) {
-			ProcessorThread.getApacheHttpRequestParameters(obj, params);
-		} else if (sourceString.equals(JAVA_OPEN_CONNECTION_METHOD2)
-				|| sourceString.equals(JAVA_OPEN_CONNECTION_METHOD2_HTTPS)
-				|| sourceString.equals(JAVA_OPEN_CONNECTION_METHOD2_HTTPS_2)
-				|| sourceString.equals(WEBLOGIC_OPEN_CONNECTION_METHOD)) {
+		if (sourceString.equals(JAVA_OPEN_CONNECTION_METHOD2) || sourceString
+				.equals(JAVA_OPEN_CONNECTION_METHOD2_HTTPS) || sourceString
+				.equals(JAVA_OPEN_CONNECTION_METHOD2_HTTPS_2) || sourceString
+				.equals(WEBLOGIC_OPEN_CONNECTION_METHOD)) {
 			ProcessorThread.getJavaHttpRequestParameters(obj, params);
-		} else if (sourceString.equals(JDK_INCUBATOR_MULTIEXCHANGE_RESONSE_METHOD)
-				|| sourceString.equals(JDK_INCUBATOR_MULTIEXCHANGE_RESONSE_ASYNC_METHOD)) {
+		} else if (sourceString.equals(JDK_INCUBATOR_MULTIEXCHANGE_RESONSE_METHOD) || sourceString
+				.equals(JDK_INCUBATOR_MULTIEXCHANGE_RESONSE_ASYNC_METHOD)) {
 			ProcessorThread.getJava9HttpClientParameters(obj, params);
-			// } else if
-			// (vulnerabilityCaseType.equals(VulnerabilityCaseType.FILE_OPERATION)) {
-			// getFileParameters(obj, parameters);
+		} else if (sourceString.equals(APACHE_HTTP_REQUEST_EXECUTOR_METHOD)) {
+			ProcessorThread.getApacheHttpRequestParameters(obj, params);
 		} else if (sourceString.equals(APACHE_COMMONS_HTTP_METHOD_DIRECTOR_METHOD)) {
 			ProcessorThread.getApacheCommonsHttpRequestParameters(obj, params);
 		} else if (sourceString.equals(OKHTTP_HTTP_ENGINE_METHOD)) {
