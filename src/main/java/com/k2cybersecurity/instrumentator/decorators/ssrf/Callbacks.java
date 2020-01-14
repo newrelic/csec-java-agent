@@ -20,21 +20,20 @@ public class Callbacks {
 		if (!ThreadLocalOperationLock.getInstance().isAcquired()) {
 			try {
 				ThreadLocalOperationLock.getInstance().acquire();
-//				System.out.println("OnEnter :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj
-//						+ " - eid : " + exectionId);
-				Object[] newArgs;
-				if(args != null) {
-					newArgs = new Object[args.length + 1];
-					for(int i =0 ; i< args.length; i++){
-						newArgs[i] = args[i];
+				if (sourceStringSet.contains(sourceString)) {
+					Object[] newArgs;
+					if (args != null) {
+						newArgs = new Object[args.length + 1];
+						for (int i = 0; i < args.length; i++) {
+							newArgs[i] = args[i];
+						}
+						newArgs[newArgs.length - 1] = obj;
+					} else {
+						newArgs = new Object[] { obj };
 					}
-					newArgs[newArgs.length-1] = obj;
-				} else {
-					newArgs = new Object[] {obj};
+					EventDispatcher.dispatch(new SSRFOperationalBean(newArgs, className, sourceString, exectionId,
+							Instant.now().toEpochMilli()), VulnerabilityCaseType.HTTP_REQUEST);
 				}
-				EventDispatcher.dispatch(new SSRFOperationalBean(newArgs, className, sourceString, exectionId,
-						Instant.now().toEpochMilli()), VulnerabilityCaseType.HTTP_REQUEST);
-
 			} finally {
 				ThreadLocalOperationLock.getInstance().release();
 			}

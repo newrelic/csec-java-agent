@@ -1,5 +1,9 @@
 package com.k2cybersecurity.instrumentator.decorators.ssrf;
 
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+
 public interface ISSRFConstants {
 
 	String APACHE_HTTP_REQUEST_EXECUTOR_METHOD = "protected org.apache.http.HttpResponse org.apache.http.protocol.HttpRequestExecutor.doSendRequest(org.apache.http.HttpRequest,org.apache.http.HttpClientConnection,org.apache.http.protocol.HttpContext) throws java.io.IOException,org.apache.http.HttpException";
@@ -17,10 +21,14 @@ public interface ISSRFConstants {
 
 	String WEBLOGIC_OPEN_CONNECTION_METHOD = "protected java.net.URLConnection weblogic.net.http.Handler.openConnection(java.net.URL,java.net.Proxy) throws java.io.IOException";
 
+	Set<String> sourceStringSet = new HashSet<>(Arrays.asList(APACHE_HTTP_REQUEST_EXECUTOR_METHOD, JAVA_OPEN_CONNECTION_METHOD2, JAVA_OPEN_CONNECTION_METHOD2_HTTPS,
+			JAVA_OPEN_CONNECTION_METHOD2_HTTPS_2, JDK_INCUBATOR_MULTIEXCHANGE_RESONSE_METHOD, JDK_INCUBATOR_MULTIEXCHANGE_RESONSE_ASYNC_METHOD,
+			APACHE_COMMONS_HTTP_METHOD_DIRECTOR_METHOD, OKHTTP_HTTP_ENGINE_METHOD, WEBLOGIC_OPEN_CONNECTION_METHOD));
+	
 	String FIELD_URI = "uri";
 	String FIELD_REQUEST = "request";
 	String JDK_INCUBATOR_HTTP_MULTI_EXCHANGE = "jdk.incubator.http.MultiExchange";
-
+	
 	String GET_PATH = "getPath";
 	String GET_HOST = "getHost";
 	String GET_URI = "getURI";
