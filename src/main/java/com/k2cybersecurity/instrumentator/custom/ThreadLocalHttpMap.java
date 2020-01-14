@@ -191,14 +191,14 @@ public class ThreadLocalHttpMap {
 			getParameterMap.setAccessible(true);
 			httpRequestBean.setParameterMap((Map<String, String[]>) getParameterMap.invoke(httpRequest, null));
 
-			try {
-				if (StringUtils.containsIgnoreCase(httpRequestBean.getContentType(), "multipart/form-data")) {
-					Method getParts = requestClass.getMethod("getParts");
-					getParts.setAccessible(true);
-					httpRequestBean.setParts(Collections.singleton(getParts.invoke(httpRequest, null)));
-				}
-			} catch (Exception e) {
-			}
+//			try {
+//				if (StringUtils.containsIgnoreCase(httpRequestBean.getContentType(), "multipart/form-data")) {
+//					Method getParts = requestClass.getMethod("getParts");
+//					getParts.setAccessible(true);
+//					httpRequestBean.setParts(Collections.singleton(getParts.invoke(httpRequest, null)));
+//				}
+//			} catch (Exception e) {
+//			}
 			ServletContextInfo.getInstance().processServletContext(servletContext, contextPath, serverPort);
 			updateBody();
 			isHttpRequestParsed = true;
