@@ -432,7 +432,9 @@ public class Dispatcher implements Runnable {
 			if (VulnerabilityCaseType.SYSTEM_COMMAND.equals(vulnerabilityCaseType)
 					|| VulnerabilityCaseType.SQL_DB_COMMAND.equals(vulnerabilityCaseType)
 					|| VulnerabilityCaseType.FILE_INTEGRITY.equals(vulnerabilityCaseType)
-					|| VulnerabilityCaseType.NOSQL_DB_COMMAND.equals(vulnerabilityCaseType)) {
+					|| VulnerabilityCaseType.NOSQL_DB_COMMAND.equals(vulnerabilityCaseType)
+					|| VulnerabilityCaseType.FILE_OPERATION.equals(vulnerabilityCaseType)
+					|| VulnerabilityCaseType.HTTP_REQUEST.equals(vulnerabilityCaseType)) {
 				rciTriggerCheck(i, eventBean, klassName);
 				xxeTriggerCheck(i, eventBean, klassName);
 				deserializationTriggerCheck(i, eventBean, klassName);
