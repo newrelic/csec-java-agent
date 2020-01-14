@@ -26,12 +26,9 @@ public class Callbacks {
                 ThreadLocalHTTPServiceLock.getInstance().acquire(obj);
 
 //                System.out.println("Came to service hook :" + exectionId + " :: " + sourceString);
-                if (args != null && args.length == 2 && ThreadLocalHttpMap.getInstance().getHttpRequest() == null
-                        && ThreadLocalHttpMap.getInstance().getHttpResponse() == null
-                        && args[0] != null && args[1] != null) {
+                if (args != null && args.length == 2 && args[0] != null && args[1] != null) {
                     ThreadLocalHttpMap.getInstance().setHttpRequest(args[0]);
                     ThreadLocalHttpMap.getInstance().setHttpResponse(args[1]);
-                    ThreadLocalHttpMap.getInstance().setServiceMethodEncountered(true);
                 }
             } catch (Exception e) {
                 e.printStackTrace();

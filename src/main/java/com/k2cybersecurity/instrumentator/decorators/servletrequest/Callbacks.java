@@ -26,11 +26,11 @@ public class Callbacks {
 
 	public static void doOnExit(String sourceString, String className, String methodName, Object obj, Object[] args,
 			Object returnVal, String exectionId) {
-		if (!ThreadLocalHttpMap.getInstance().isEmpty() && !ThreadLocalOperationLock.getInstance().isAcquired()) {
+		if (!ThreadLocalOperationLock.getInstance().isAcquired()) {
 //			System.out.println("Came to servletrequest hook exit :" + exectionId + " :: " + sourceString + " :: " + obj + " :: " + returnVal);
 			try {
 				ThreadLocalOperationLock.getInstance().acquire();
-				if (obj !=null && ThreadLocalHttpMap.getInstance().getHttpRequest() !=null && ThreadLocalHttpMap.getInstance().getHttpRequest().hashCode() == obj.hashCode()) {
+				if (!ThreadLocalHttpMap.getInstance().isEmpty() && obj !=null && ThreadLocalHttpMap.getInstance().getHttpRequest() !=null && ThreadLocalHttpMap.getInstance().getHttpRequest().hashCode() == obj.hashCode()) {
 					if (StringUtils.equals(methodName, "getReader")) {
 						ThreadLocalHttpMap.getInstance().setRequestReader(returnVal);
 						ThreadLocalHTTPIOLock.getInstance().resetLock();
@@ -38,6 +38,9 @@ public class Callbacks {
 						ThreadLocalHttpMap.getInstance().setRequestInputStream(returnVal);
 						ThreadLocalHTTPIOLock.getInstance().resetLock();
 					}
+				} else if(StringUtils.equals(methodName, "<init>") && obj != null) {
+//					System.out.println("Servlet request constructor exit aaya : "+ exectionId + " :: " + sourceString + " :: " + obj + " :: " + returnVal + " :: " + methodName);
+					ThreadLocalHttpMap.getInstance().setHttpRequest(obj);
 				}
 
 			} finally {

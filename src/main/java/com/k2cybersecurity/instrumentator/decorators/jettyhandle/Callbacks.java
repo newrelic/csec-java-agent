@@ -25,8 +25,7 @@ public class Callbacks {
 				ThreadLocalOperationLock.getInstance().acquire();
 				ThreadLocalHTTPServiceLock.getInstance().acquire(obj);
 
-				if (args != null && args.length == 4 && ThreadLocalHttpMap.getInstance().getHttpRequest() == null
-						&& ThreadLocalHttpMap.getInstance().getHttpResponse() == null && args[2] != null
+				if (args != null && args.length == 4 && args[2] != null
 						&& args[3] != null) {
 
 					ThreadLocalHttpMap.getInstance().setHttpRequest(args[2]);
@@ -81,10 +80,9 @@ public class Callbacks {
 			//            System.out.println("Passing to XSS detection : " + exectionId + " :: " + ThreadLocalExecutionMap.getInstance().getHttpRequestBean().getHttpResponseBean().toString()+ " :: " + ThreadLocalExecutionMap.getInstance().getHttpRequestBean().getHttpResponseBean().toString());
 			if (!ThreadLocalExecutionMap.getInstance().getHttpRequestBean().getHttpResponseBean().isEmpty()) {
 				printReponse();
-				EventDispatcher
-						.dispatch(new HttpRequestBean(ThreadLocalExecutionMap.getInstance().getHttpRequestBean()),
-								sourceString, exectionId, Instant.now().toEpochMilli(),
-								VulnerabilityCaseType.REFLECTED_XSS);
+				EventDispatcher.dispatch(
+						new HttpRequestBean(ThreadLocalExecutionMap.getInstance().getHttpRequestBean()), sourceString,
+						exectionId, Instant.now().toEpochMilli(), VulnerabilityCaseType.REFLECTED_XSS);
 				String tid = StringUtils.substringBefore(exectionId, ":");
 			}
 			// Clean up
