@@ -220,8 +220,8 @@ public class ThreadLocalHttpMap {
 //				}
 //			} catch (Exception e) {
 //			}
-			ServletContextInfo.getInstance().processServletContext(servletContext, contextPath, serverPort);
-			updateBody();
+//			ServletContextInfo.getInstance().processServletContext(servletContext, contextPath, serverPort);
+//			updateBody();
 			isHttpRequestParsed = true;
 			return true;
 		} catch (Exception e) {

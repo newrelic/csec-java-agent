@@ -41,7 +41,7 @@ public class Callbacks {
                             if ((args == null || args.length == 0) && returnVal instanceof Integer) {
 //                                System.out.println(INSERTING_TO_REQUEST + args[0] + " :: " + obj.hashCode());
                                 if ((int) returnVal != -1)
-                                    ThreadLocalHttpMap.getInstance().insertToRequestByteBuffer((byte) returnVal);
+                                    ThreadLocalHttpMap.getInstance().insertToRequestByteBuffer(new Integer((int) returnVal).byteValue());
                             } else if (args != null && args.length == 1 && args[0] instanceof byte[] && (int) returnVal != -1) {
 //                                System.out.println("Inserting to request : " + args[0] + " :: " + obj.hashCode());
                                 ThreadLocalHttpMap.getInstance().insertToRequestByteBuffer((byte[]) args[0], 0 , (int) returnVal);

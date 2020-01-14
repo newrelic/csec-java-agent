@@ -44,7 +44,7 @@ public class Callbacks {
                         } else if (returnVal instanceof Integer) {
                             int readByte = (int) returnVal;
                             if (readByte != -1)
-                                ThreadLocalHttpMap.getInstance().insertToRequestByteBuffer((byte) readByte);
+                                ThreadLocalHttpMap.getInstance().insertToRequestByteBuffer(new Integer(readByte).byteValue());
                         }
 //                        System.out.println("Inserting to request via reader : " + args[0] + " :: " + obj.hashCode());
                         break;
