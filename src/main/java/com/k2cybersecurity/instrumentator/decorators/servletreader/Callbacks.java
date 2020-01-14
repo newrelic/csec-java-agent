@@ -5,9 +5,11 @@ import com.k2cybersecurity.instrumentator.custom.ThreadLocalHttpMap;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalOperationLock;
 
 import java.nio.CharBuffer;
-import java.util.Arrays;
 
 public class Callbacks {
+
+    public static final String READ = "read";
+    public static final String READ_LINE = "readLine";
 
     public static void doOnEnter(String sourceString, String className, String methodName, Object obj, Object[] args,
                                  String exectionId) {
@@ -32,7 +34,7 @@ public class Callbacks {
             try {
                 ThreadLocalOperationLock.getInstance().acquire();
                 switch (methodName) {
-                    case "read":
+                    case READ:
                         if(args != null && args.length == 1 && args[0] instanceof char[] && (int)returnVal != -1){
                             ThreadLocalHttpMap.getInstance().insertToRequestByteBuffer(String.valueOf((char[]) args[0], 0, (int)returnVal).getBytes());
                         } else if(args != null && args.length == 1 && args[0] instanceof CharBuffer && (int)returnVal != -1){
@@ -44,13 +46,13 @@ public class Callbacks {
                             if (readByte != -1)
                                 ThreadLocalHttpMap.getInstance().insertToRequestByteBuffer((byte) readByte);
                         }
-                        System.out.println("Inserting to request via reader : " + args[0] + " :: " + obj.hashCode());
+//                        System.out.println("Inserting to request via reader : " + args[0] + " :: " + obj.hashCode());
                         break;
-                    case "readLine":
+                    case READ_LINE:
                         if (returnVal != null) {
                             ThreadLocalHttpMap.getInstance().insertToRequestByteBuffer(((String) returnVal).getBytes());
                         }
-                        System.out.println("Inserting to request via reader : " + args[0] + " :: " + obj.hashCode());
+//                        System.out.println("Inserting to request via reader : " + args[0] + " :: " + obj.hashCode());
                         break;
                 }
 
@@ -67,8 +69,8 @@ public class Callbacks {
         if (!ThreadLocalOperationLock.getInstance().isAcquired()) {
             try {
                 ThreadLocalOperationLock.getInstance().acquire();
-                System.out.println("OnError :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj
-                        + " - error : " + error + " - eid : " + exectionId);
+//                System.out.println("OnError :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj
+//                        + " - error : " + error + " - eid : " + exectionId);
             } finally {
                 ThreadLocalHTTPIOLock.getInstance().release(obj);
                 ThreadLocalOperationLock.getInstance().release();

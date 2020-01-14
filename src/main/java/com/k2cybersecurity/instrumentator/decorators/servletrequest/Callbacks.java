@@ -7,6 +7,10 @@ import org.apache.commons.lang3.StringUtils;
 
 public class Callbacks {
 
+	public static final String GET_READER = "getReader";
+	public static final String GET_INPUT_STREAM = "getInputStream";
+	public static final String INIT = "<init>";
+
 	public static void doOnEnter(String sourceString, String className, String methodName, Object obj, Object[] args,
 			String exectionId) {
 //		System.out.println("Came to servletrequest hook :" + exectionId + " :: " + sourceString);
@@ -31,14 +35,14 @@ public class Callbacks {
 			try {
 				ThreadLocalOperationLock.getInstance().acquire();
 				if (!ThreadLocalHttpMap.getInstance().isEmpty() && obj !=null && ThreadLocalHttpMap.getInstance().getHttpRequest() !=null && ThreadLocalHttpMap.getInstance().getHttpRequest().hashCode() == obj.hashCode()) {
-					if (StringUtils.equals(methodName, "getReader")) {
+					if (StringUtils.equals(methodName, GET_READER)) {
 						ThreadLocalHttpMap.getInstance().setRequestReader(returnVal);
 						ThreadLocalHTTPIOLock.getInstance().resetLock();
-					} else if (StringUtils.equals(methodName, "getInputStream")) {
+					} else if (StringUtils.equals(methodName, GET_INPUT_STREAM)) {
 						ThreadLocalHttpMap.getInstance().setRequestInputStream(returnVal);
 						ThreadLocalHTTPIOLock.getInstance().resetLock();
 					}
-				} else if(StringUtils.equals(methodName, "<init>") && obj != null) {
+				} else if(StringUtils.equals(methodName, INIT) && obj != null) {
 //					System.out.println("Servlet request constructor exit aaya : "+ exectionId + " :: " + sourceString + " :: " + obj + " :: " + returnVal + " :: " + methodName);
 					ThreadLocalHttpMap.getInstance().setHttpRequest(obj);
 				}

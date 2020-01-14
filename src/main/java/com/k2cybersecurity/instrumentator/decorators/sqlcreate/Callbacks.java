@@ -6,9 +6,10 @@ import com.k2cybersecurity.instrumentator.custom.ThreadLocalOperationLock;
 import org.apache.commons.lang3.StringUtils;
 
 import java.time.Instant;
-import java.util.Arrays;
 
 public class Callbacks {
+
+	public static final String PREPARE = "prepare";
 
 	public static void doOnEnter(String sourceString, String className, String methodName, Object obj, Object[] args,
 			String exectionId) {
@@ -35,7 +36,7 @@ public class Callbacks {
 				if (ThreadLocalHttpMap.getInstance().getHttpRequest() != null) {
 
 					if (args != null && args.length > 0 && args[0] instanceof String) {
-						if (StringUtils.startsWithIgnoreCase(methodName, "prepare")) {
+						if (StringUtils.startsWithIgnoreCase(methodName, PREPARE)) {
 							ThreadLocalDBMap.getInstance()
 									.create(returnVal, (String) args[0], className, sourceString, exectionId,
 											Instant.now().toEpochMilli(), false, true, returnVal,true);

@@ -6,6 +6,10 @@ import com.k2cybersecurity.instrumentator.custom.ThreadLocalOperationLock;
 
 public class Callbacks {
 
+    public static final String PRINT = "print";
+    public static final String PRINTLN = "println";
+    public static final String WRITE = "write";
+
     public static void doOnEnter(String sourceString, String className, String methodName, Object obj, Object[] args,
                                  String exectionId) {
 
@@ -16,25 +20,25 @@ public class Callbacks {
                 ThreadLocalOperationLock.getInstance().acquire();
                 ThreadLocalHTTPIOLock.getInstance().acquire(obj);
                 switch (methodName) {
-                    case "print":
+                    case PRINT:
                         if (args != null && args.length == 1 && args[0] != null) {
                             ThreadLocalHttpMap.getInstance().insertToResponseBuffer(String.valueOf(args[0]));
                         }
                         break;
-                    case "println":
+                    case PRINTLN:
                         if (args != null && args.length == 1 && args[0] != null) {
                             ThreadLocalHttpMap.getInstance().insertToResponseBufferWithLF(String.valueOf(args[0]));
                         }
                         break;
-                    case "write":
+                    case WRITE:
                         if (args != null && args.length == 1 && args[0] instanceof Integer && (int) args[0] != -1) {
-                            System.out.println("Inserting to response write: " + args[0] + " :: " + obj.hashCode());
+//                            System.out.println("Inserting to response write: " + args[0] + " :: " + obj.hashCode());
                             ThreadLocalHttpMap.getInstance().insertToResponseBufferInt((int) args[0]);
                         } else if (args != null && args.length == 1 && args[0] instanceof byte[] && args[0] != null) {
-                            System.out.println("Inserting to response write: " + args[0] + " :: " + obj.hashCode());
+//                            System.out.println("Inserting to response write: " + args[0] + " :: " + obj.hashCode());
                             ThreadLocalHttpMap.getInstance().insertToResponseBufferByte((byte[]) args[0]);
                         } else if (args != null && args.length == 3 && args[0] instanceof byte[] && args[0] != null) {
-                            System.out.println("Inserting to response write: " + args[0] + " :: " + obj.hashCode());
+//                            System.out.println("Inserting to response write: " + args[0] + " :: " + obj.hashCode());
                             ThreadLocalHttpMap.getInstance().insertToResponseBufferByte((byte[]) args[0], (int) args[1], (int) args[2]);
                         }
                         break;

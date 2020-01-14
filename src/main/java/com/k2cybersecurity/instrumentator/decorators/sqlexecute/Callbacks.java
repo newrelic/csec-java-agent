@@ -9,9 +9,10 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Arrays;
 
 public class Callbacks {
+
+	public static final String NATIVE_SQL = "nativeSQL";
 
 	public static void doOnEnter(String sourceString, String className, String methodName, Object thisObject, Object[] args,
 			String exectionId) {
@@ -22,7 +23,7 @@ public class Callbacks {
 				if (ThreadLocalHttpMap.getInstance().getHttpRequest() != null) {
 
 					if (args != null && args.length > 0) {
-						if(StringUtils.equals(methodName, "nativeSQL")) {
+						if(StringUtils.equals(methodName, NATIVE_SQL)) {
 							ThreadLocalDBMap.getInstance()
 									.create(thisObject, args[0].toString(), className, sourceString, exectionId,
 											Instant.now().toEpochMilli(), false, false, thisObject, false);

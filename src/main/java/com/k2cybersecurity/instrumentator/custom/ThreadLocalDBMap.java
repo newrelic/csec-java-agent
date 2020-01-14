@@ -9,6 +9,7 @@ import java.util.*;
 
 public class ThreadLocalDBMap {
 
+	public static final String UNKNOWN = "UNKNOWN";
 	private Map<Object, List<SQLOperationalBean>> sqlCalls;
 	
 	private Set<SQLOperationalBean> sentSqlCalls;
@@ -60,7 +61,7 @@ public class ThreadLocalDBMap {
 			return;
 		}
 		
-		String dbName = "UNKNOWN";
+		String dbName = UNKNOWN;
 		if(thisRef != null) {
 			//Get connection information
 			dbName = CallbackUtils.getConnectionInformation(ref, needToGetConnection);

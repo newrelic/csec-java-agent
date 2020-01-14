@@ -7,6 +7,10 @@ import org.apache.commons.lang3.StringUtils;
 
 public class Callbacks {
 
+    public static final String GET_WRITER = "getWriter";
+    public static final String GET_OUTPUT_STREAM = "getOutputStream";
+    public static final String INIT = "<init>";
+
     public static void doOnEnter(String sourceString, String className, String methodName, Object obj, Object[] args,
                                  String exectionId) {
 //        System.out.println("Came to servletresponse hook :" + exectionId + " :: " + sourceString);
@@ -31,17 +35,17 @@ public class Callbacks {
                 ThreadLocalOperationLock.getInstance().acquire();
                 if (!ThreadLocalHttpMap.getInstance().isEmpty() && obj !=null && ThreadLocalHttpMap.getInstance().getHttpResponse()!=null && ThreadLocalHttpMap.getInstance().getHttpResponse().hashCode() == obj.hashCode()) {
 //                    System.out.println("Came to servletresponse hook exit :" + exectionId + " :: " + sourceString + " :: " + obj + " :: " + returnVal);
-                    if (StringUtils.equals(methodName, "getWriter")) {
+                    if (StringUtils.equals(methodName, GET_WRITER)) {
                         ThreadLocalHttpMap.getInstance().setResponseWriter(returnVal);
 //                        System.out.println("reponseWriter set kar diya. :" + exectionId + " :: " + ThreadLocalHttpMap.getInstance().getResponseWriter());
                         ThreadLocalHTTPIOLock.getInstance().resetLock();
 
-                    } else if (StringUtils.equals(methodName, "getOutputStream")) {
+                    } else if (StringUtils.equals(methodName, GET_OUTPUT_STREAM)) {
                         ThreadLocalHttpMap.getInstance().setResponseOutputStream(returnVal);
                         ThreadLocalHTTPIOLock.getInstance().resetLock();
 
                     }
-                } else if(StringUtils.equals(methodName, "<init>") && obj != null ) {
+                } else if(StringUtils.equals(methodName, INIT) && obj != null ) {
 //                    System.out.println("Servlet response constructor exit aaya : "+ exectionId + " :: " + sourceString + " :: " + obj + " :: " + returnVal + " :: " + methodName);
                     ThreadLocalHttpMap.getInstance().setHttpResponse(obj);
                 }

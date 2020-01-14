@@ -30,6 +30,8 @@ public class Dispatcher implements Runnable {
 
 	private static final Pattern PATTERN;
 	private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
+	public static final String ERROR = "Error : ";
+	public static final char CH_DOT = '.';
 	private HttpRequestBean httpRequestBean;
 	private AgentMetaData metaData;
 	private Object event;
@@ -107,7 +109,7 @@ public class Dispatcher implements Runnable {
 				return;
 			}
 		} catch (Exception e) {
-			logger.log(LogLevel.ERROR, "Error : "+ e, Dispatcher.class.getName());
+			logger.log(LogLevel.ERROR, ERROR + e, Dispatcher.class.getName());
 		}
 
 		if (event == null) {
@@ -402,7 +404,7 @@ public class Dispatcher implements Runnable {
 				String filePath = params.get(i).toString();
 				String extension = StringUtils.EMPTY;
 
-				int k = filePath.lastIndexOf('.');
+				int k = filePath.lastIndexOf(CH_DOT);
 				if (k > 0) {
 					extension = filePath.substring(k + 1).toLowerCase();
 

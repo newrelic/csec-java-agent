@@ -10,6 +10,18 @@ import java.util.Locale;
 
 public class Callbacks {
     private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
+    public static final String WRITE = "write";
+    public static final String JAVA_LANG_STRING = "java.lang.String";
+    public static final String LJAVA_LANG_CHARACTER = "[Ljava.lang.Character;";
+    public static final String CHAR_ARRAY = "[C";
+    public static final String INT = "int";
+    public static final String JAVA_LANG_INTEGER = "java.lang.Integer";
+    public static final String NEW_LINE = "newLine";
+    public static final String PRINTLN = "println";
+    public static final String PRINT = "print";
+    public static final String PRINTF = "printf";
+    public static final String FORMAT = "format";
+    public static final String APPEND = "append";
 
     public static void doOnEnter(String sourceString, String className, String methodName, Object obj, Object[] args,
                                  String exectionId) {
@@ -27,23 +39,23 @@ public class Callbacks {
 //                            "OnEnter :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj
 //                                    + " - eid : " + exectionId);
                     switch (methodName) {
-                        case "write":
+                        case WRITE:
                             if (args != null && args.length == 1 && args[0] != null) {
                                 String argClassName = args[0].getClass().getName();
                                 switch (argClassName) {
-                                    case "java.lang.String":
+                                    case JAVA_LANG_STRING:
                                         ThreadLocalHttpMap.getInstance()
                                                 .insertToResponseBuffer(args[0]);
                                         break;
 
-                                    case "[C":
-                                    case "[Ljava.lang.Character;":
+                                    case CHAR_ARRAY:
+                                    case LJAVA_LANG_CHARACTER:
                                         ThreadLocalHttpMap.getInstance()
                                                 .insertToResponseBufferString((char[]) args[0], 0, ((char[]) args[0]).length);
                                         break;
 
-                                    case "int":
-                                    case "java.lang.Integer":
+                                    case INT:
+                                    case JAVA_LANG_INTEGER:
                                         if ((int) args[0] != -1)
                                             ThreadLocalHttpMap.getInstance()
                                                     .insertToResponseBufferInt((Integer) args[0]);
@@ -52,37 +64,37 @@ public class Callbacks {
                             } else if (args != null && args.length == 3 && args[0] != null) {
                                 String argClassName = args[0].getClass().getName();
                                 switch (argClassName) {
-                                    case "java.lang.String":
+                                    case JAVA_LANG_STRING:
                                         ThreadLocalHttpMap.getInstance()
                                                 .insertToResponseBufferString((String) args[0], (int) args[1], (int) args[2]);
                                         break;
 
-                                    case "[C":
-                                    case "[Ljava.lang.Character;":
+                                    case CHAR_ARRAY :
+                                    case LJAVA_LANG_CHARACTER:
                                         ThreadLocalHttpMap.getInstance()
                                                 .insertToResponseBufferString((char[]) args[0], (int) args[1], (int) args[2]);
                                         break;
                                 }
                             }
                             break;
-                        case "newLine":
+                        case NEW_LINE:
                             ThreadLocalHttpMap.getInstance()
                                     .insertToResponseBuffer(StringUtils.LF);
                             break;
-                        case "println":
+                        case PRINTLN:
                             if (args != null && args.length == 1 && args[0] != null) {
                                 ThreadLocalHttpMap.getInstance()
                                         .insertToResponseBufferWithLF(String.valueOf(args[0]));
                             }
                             break;
-                        case "print":
+                        case PRINT:
                             if (args != null && args.length == 1 && args[0] != null) {
                                 ThreadLocalHttpMap.getInstance()
                                         .insertToResponseBuffer(String.valueOf(args[0]));
                             }
                             break;
-                        case "printf":
-                        case "format":
+                        case PRINTF:
+                        case FORMAT:
                             if (args != null && args.length == 2 && args[0] instanceof String) {
                                 ThreadLocalHttpMap.getInstance()
                                         .insertToResponseBuffer(String.format((String) args[0], args[1]));
@@ -91,7 +103,7 @@ public class Callbacks {
                                         .insertToResponseBuffer(String.format((Locale) args[0], (String) args[1], args[2]));
                             }
                             break;
-                        case "append":
+                        case APPEND:
                             if (args != null && args.length == 1 && args[0] != null) {
                                 ThreadLocalHttpMap.getInstance()
                                         .insertToResponseBuffer(String.valueOf(args[0]));

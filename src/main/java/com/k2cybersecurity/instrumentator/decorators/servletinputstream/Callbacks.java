@@ -4,9 +4,11 @@ import com.k2cybersecurity.instrumentator.custom.ThreadLocalHTTPIOLock;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalHttpMap;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalOperationLock;
 
-import java.util.Arrays;
-
 public class Callbacks {
+
+    public static final String READ = "read";
+    public static final String INSERTING_TO_REQUEST = "Inserting to request : ";
+    public static final String READ_LINE = "readLine";
 
     public static void doOnEnter(String sourceString, String className, String methodName, Object obj, Object[] args,
                                  String exectionId) {
@@ -31,26 +33,26 @@ public class Callbacks {
             if (ThreadLocalHTTPIOLock.getInstance().isAcquired(obj)) {
                 try {
                     ThreadLocalOperationLock.getInstance().acquire();
-                    System.out.println("servletinputstream ke read me aaya :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj + " - return : " + returnVal + " - eid : " + exectionId);
+//                    System.out.println("servletinputstream ke read me aaya :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj + " - return : " + returnVal + " - eid : " + exectionId);
 //                    ThreadLocalHTTPIOLock.getInstance().acquire(obj);
 
                     switch (methodName) {
-                        case "read":
+                        case READ:
                             if ((args == null || args.length == 0) && returnVal instanceof Integer) {
-                                System.out.println("Inserting to request : " + args[0] + " :: " + obj.hashCode());
+//                                System.out.println(INSERTING_TO_REQUEST + args[0] + " :: " + obj.hashCode());
                                 if ((int) returnVal != -1)
                                     ThreadLocalHttpMap.getInstance().insertToRequestByteBuffer((byte) returnVal);
                             } else if (args != null && args.length == 1 && args[0] instanceof byte[] && (int) returnVal != -1) {
-                                System.out.println("Inserting to request : " + args[0] + " :: " + obj.hashCode());
+//                                System.out.println("Inserting to request : " + args[0] + " :: " + obj.hashCode());
                                 ThreadLocalHttpMap.getInstance().insertToRequestByteBuffer((byte[]) args[0], 0 , (int) returnVal);
                             } else if (args != null && args.length == 3 && args[0] instanceof byte[] && (int) returnVal != -1) {
-                                System.out.println("Inserting to request : " + args[0] + " :: " + obj.hashCode());
+//                                System.out.println("Inserting to request : " + args[0] + " :: " + obj.hashCode());
                                 ThreadLocalHttpMap.getInstance().insertToRequestByteBuffer((byte[]) args[0], (int) args[1], (int) returnVal);
                             }
                             break;
-                        case "readLine":
+                        case READ_LINE:
                             if (args != null && args.length == 3 && args[0] instanceof byte[] && (int) returnVal != -1) {
-                                System.out.println("Inserting to request : " + args[0] + " :: " + obj.hashCode());
+//                                System.out.println("Inserting to request : " + args[0] + " :: " + obj.hashCode());
                                 ThreadLocalHttpMap.getInstance().insertToRequestByteBuffer((byte[]) args[0], (int) args[1], (int) returnVal);
                             }
                             break;

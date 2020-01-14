@@ -8,9 +8,10 @@ public class ClassloaderAdjustments {
 	public static final String K2_BOOTSTAP_LOADED_PACKAGE_NAME = "sun.reflect.com.k2cybersecurity";
 
 	private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
-	
+	public static final String IMPLEMENTING_J_BOSS_CLASSLOADER_ADJUSTMENTS = "Implementing JBoss Classloader adjustments";
+
 	public static void jbossSpecificAdjustments(){
-		logger.log(LogLevel.INFO, "Implementing JBoss Classloader adjustments", ClassloaderAdjustments.class.getName());
+		logger.log(LogLevel.INFO, IMPLEMENTING_J_BOSS_CLASSLOADER_ADJUSTMENTS, ClassloaderAdjustments.class.getName());
 		String cur = System.getProperty("jboss.modules.system.pkgs");
 		if (cur == null) {
 			System.setProperty("jboss.modules.system.pkgs", K2_BOOTSTAP_LOADED_PACKAGE_NAME);

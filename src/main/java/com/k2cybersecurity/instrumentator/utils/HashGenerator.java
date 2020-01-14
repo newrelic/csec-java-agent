@@ -1,27 +1,20 @@
 package com.k2cybersecurity.instrumentator.utils;
 
+import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
+import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
+import com.k2cybersecurity.intcodeagent.logging.DeployedApplication;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.io.filefilter.TrueFileFilter;
+import org.apache.commons.lang3.StringUtils;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.io.filefilter.TrueFileFilter;
-import org.apache.commons.lang3.StringUtils;
-
-import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
-import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
-import com.k2cybersecurity.intcodeagent.logging.DeployedApplication;
+import java.util.*;
 
 public class HashGenerator {
 
@@ -32,7 +25,11 @@ public class HashGenerator {
 	private static final String TWO_PIPES = "||";
 
 	private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
-	
+	public static final String SHA_256 = "SHA-256";
+	public static final String FILE_FOR_SHA_CALC = "File for SHA calc : ";
+	public static final String UNSORTED_SHA_LIST = "Unsorted SHA list : ";
+	public static final String SORTED_SHA_LIST = "Sorted SHA list : ";
+
 	/**
 	 * generates hash of a file content according to the algorithm provided.
 	 *
@@ -41,7 +38,7 @@ public class HashGenerator {
 	private static String getChecksum(String data) {
 		MessageDigest digest;
 		try {
-			digest = MessageDigest.getInstance("SHA-256");
+			digest = MessageDigest.getInstance(SHA_256);
 			digest.update(data.getBytes());
 			byte[] hashedBytes = digest.digest();
 			return convertByteArrayToHexString(hashedBytes);
@@ -59,7 +56,7 @@ public class HashGenerator {
 	 */
 	public static String getChecksum(File file) {
 		try (FileInputStream inputStream = new FileInputStream(file)) {
-			MessageDigest digest = MessageDigest.getInstance("SHA-256");
+			MessageDigest digest = MessageDigest.getInstance(SHA_256);
 
 			byte[] bytesBuffer = new byte[1024];
 			int bytesRead = -1;
@@ -118,11 +115,11 @@ public class HashGenerator {
 				if(tempFile.isFile()){
 					String extension = FilenameUtils.getExtension(tempFile.getName());
 					if (OTHER_CRITICAL_FILE_EXT.contains(extension)) {
-						logger.log(LogLevel.DEBUG,"File for SHA calc : " + tempFile.getAbsolutePath(), HashGenerator.class.getName());
+						logger.log(LogLevel.DEBUG, FILE_FOR_SHA_CALC + tempFile.getAbsolutePath(), HashGenerator.class.getName());
 						sha256.add(getChecksum(tempFile));
 					} else if (JAVA_APPLICATION_ALLOWED_FILE_EXT.contains(extension)) {
 						sha256.add(getChecksum(tempFile));
-						logger.log(LogLevel.DEBUG,"File for SHA calc : " + tempFile.getAbsolutePath(), HashGenerator.class.getName());
+						logger.log(LogLevel.DEBUG, FILE_FOR_SHA_CALC + tempFile.getAbsolutePath(), HashGenerator.class.getName());
 					}
 				}
 			}
@@ -134,9 +131,9 @@ public class HashGenerator {
 				sha256.add(getChecksum(dir));
 			}
 		}
-		logger.log(LogLevel.DEBUG,"Unsorted SHA list : " + sha256, HashGenerator.class.getName());
+		logger.log(LogLevel.DEBUG, UNSORTED_SHA_LIST + sha256, HashGenerator.class.getName());
 		Collections.sort(sha256);
-		logger.log(LogLevel.DEBUG,"Sorted SHA list : " + sha256, HashGenerator.class.getName());
+		logger.log(LogLevel.DEBUG, SORTED_SHA_LIST + sha256, HashGenerator.class.getName());
 		return getSHA256HexDigest(sha256);
 	}
 	

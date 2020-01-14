@@ -6,16 +6,17 @@ import com.k2cybersecurity.intcodeagent.models.javaagent.VulnerabilityCaseType;
 import com.k2cybersecurity.intcodeagent.models.operationalbean.RandomOperationalBean;
 
 import java.time.Instant;
-import java.util.Arrays;
 
 public class Callbacks {
+
+	public static final String SECURE_RANDOM = "SecureRandom";
 
 	public static void doOnEnter(String sourceString, String className, String methodName, Object obj, Object[] args,
 			String exectionId) {
 		if (!ThreadLocalOperationLock.getInstance().isAcquired()) {
 			try {
 				ThreadLocalOperationLock.getInstance().acquire();
-				RandomOperationalBean randomOperationalBean = new RandomOperationalBean("SecureRandom", className,
+				RandomOperationalBean randomOperationalBean = new RandomOperationalBean(SECURE_RANDOM, className,
 						sourceString, exectionId, Instant.now().toEpochMilli());
 				EventDispatcher.dispatch(randomOperationalBean, VulnerabilityCaseType.RANDOM);
 //				System.out.println("OnEnter :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj

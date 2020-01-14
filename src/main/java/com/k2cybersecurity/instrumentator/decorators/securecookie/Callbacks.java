@@ -1,15 +1,18 @@
 package com.k2cybersecurity.instrumentator.decorators.securecookie;
 
-import java.lang.reflect.Method;
-import java.time.Instant;
-import java.util.Arrays;
-
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalOperationLock;
 import com.k2cybersecurity.instrumentator.dispatcher.EventDispatcher;
 import com.k2cybersecurity.intcodeagent.models.javaagent.VulnerabilityCaseType;
 import com.k2cybersecurity.intcodeagent.models.operationalbean.SecureCookieOperationalBean;
 
+import java.lang.reflect.Method;
+import java.time.Instant;
+
 public class Callbacks {
+
+	public static final String GET_SECURE = "getSecure";
+	public static final String TRUE = "true";
+	public static final String FALSE = "false";
 
 	public static void doOnEnter(String sourceString, String className, String methodName, Object obj, Object[] args,
 			String exectionId) {
@@ -20,13 +23,13 @@ public class Callbacks {
 				if (args.length > 0 && args[0] != null) {
 
 					Class cookieClass = args[0].getClass();
-					Method getSecure = cookieClass.getMethod("getSecure", null);
+					Method getSecure = cookieClass.getMethod(GET_SECURE, null);
 					getSecure.setAccessible(true);
 
 					boolean value = (boolean) getSecure.invoke(args[0], null);
 
 					SecureCookieOperationalBean secureCookieOperationalBean = new SecureCookieOperationalBean(
-							(value ? "true" : "false"), className, sourceString, exectionId,
+							(value ? TRUE : FALSE), className, sourceString, exectionId,
 							Instant.now().toEpochMilli());
 					EventDispatcher.dispatch(secureCookieOperationalBean, VulnerabilityCaseType.SECURE_COOKIE);
 //					System.out.println("OnEnter :" + sourceString + " - args : " + Arrays.asList(args) + " - this : "

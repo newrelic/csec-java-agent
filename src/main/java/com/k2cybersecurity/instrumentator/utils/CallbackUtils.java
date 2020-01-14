@@ -31,6 +31,58 @@ public class CallbackUtils {
     private static final Pattern functionCallDetector;
     
     private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
+    public static final String BACKWARD_SLASH = "/";
+    public static final String ANGLE_END = ">";
+    public static final String ON = "on";
+    public static final String JAVASCRIPT = "javascript:";
+    public static final String JS = ".js";
+    public static final String HTTP = "http://";
+    public static final String HTTPS = "https://";
+    public static final String GET_CONNECTION = "getConnection";
+    public static final String GET_META_DATA = "getMetaData";
+    public static final String GET_DATABASE_PRODUCT_NAME = "getDatabaseProductName";
+    public static final String GET_DRIVER_NAME = "getDriverName";
+    public static final String GET_DRIVER_VERSION = "getDriverVersion";
+    public static final String ERROR = "Error :";
+    public static final String UNKNOWN = "UNKNOWN";
+    public static final String MY_SQL = "MySQL";
+    public static final String MYSQL = "MYSQL";
+    public static final String ORACLE = "ORACLE";
+    public static final String DERBY = "DERBY";
+    public static final String HSQL = "HSQL";
+    public static final String SQLITE = "SQLITE";
+    public static final String H_2 = "H2";
+    public static final String MSSQL = "MSSQL";
+    public static final String ENTERPRISEDB = "ENTERPRISEDB";
+    public static final String PHOENIX = "PHOENIX";
+    public static final String POSTGRESQL = "POSTGRESQL";
+    public static final String DB_2 = "DB2";
+    public static final String VERTICA = "VERTICA";
+    public static final String SYBASE = "SYBASE";
+    public static final String SAPANA = "SAPANA";
+    public static final String GREENPLUM = "GREENPLUM";
+    public static final String SOLIDDB = "SOLIDDB";
+    public static final String MARIADB = "MARIADB";
+    public static final String ORACLE1 = "Oracle";
+    public static final String APACHE_DERBY = "Apache Derby";
+    public static final String HSQL_DATABASE_ENGINE = "HSQL Database Engine";
+    public static final String SQ_LITE = "SQLite";
+    public static final String MICROSOFT_SQL_SERVER = "Microsoft SQL Server";
+    public static final String ENTERPRISE_DB = "EnterpriseDB";
+    public static final String PHOENIX1 = "Phoenix";
+    public static final String POSTGRE_SQL = "PostgreSQL";
+    public static final String VERTICA1 = "Vertica";
+    public static final String ADAPTIVE = "Adaptive";
+    public static final String ASE = "ASE";
+    public static final String SQL_SERVER = "sql server";
+    public static final String HDB = "HDB";
+    public static final String GREENPLUM1 = "Greenplum";
+    public static final String SOLID_DB = "solidDB";
+    public static final String MARIA = "maria";
+    public static final String FIVE_COLON = "::::";
+    public static final String APPLICATION_JSON = "application/json";
+    public static final String APPLICATION_XML = "application/xml";
+    public static final String APPLICATION_X_WWW_FORM_URLENCODED = "application/x-www-form-urlencoded";
 
     private static Map<Integer, JADatabaseMetaData> sqlConnectionMap;
 
@@ -132,7 +184,7 @@ public class CallbackUtils {
                     while (attribMatcher.find()) {
                         String attribKey = attribMatcher.group(1);
                         attribKey = StringUtils.trim(attribKey);
-                        attribKey = StringUtils.removeStart(attribKey, "/");
+                        attribKey = StringUtils.removeStart(attribKey, BACKWARD_SLASH);
                         attribKey = StringUtils.trim(attribKey);
                         String attribVal;
                         if (StringUtils.isNotBlank(attribMatcher.group(4))) {
@@ -140,11 +192,11 @@ public class CallbackUtils {
                         } else {
                             attribVal = attribMatcher.group(2);
                         }
-                        attribVal = StringUtils.removeEnd(attribVal, ">");
+                        attribVal = StringUtils.removeEnd(attribVal, ANGLE_END);
 
                         // If js attrib used, mark PA if any function call is present inside.
                         if (StringUtils.isNotBlank(attribKey)) {
-                            if (StringUtils.startsWithIgnoreCase(attribKey, "on")
+                            if (StringUtils.startsWithIgnoreCase(attribKey, ON)
                                     && StringUtils.isNotBlank(attribVal)) {
                                 Matcher functionCallMatcher = functionCallDetector.matcher(attribVal);
                                 if (functionCallMatcher.find() && StringUtils.isNotBlank(attribMatcher.group())) {
@@ -153,10 +205,10 @@ public class CallbackUtils {
                                 }
                                 // If other attrib is used for javascript injection
                             } else if (StringUtils.isNotBlank(attribVal)) {
-                                if (StringUtils.containsIgnoreCase(attribVal, "javascript:")
-                                        || StringUtils.endsWithIgnoreCase(attribVal, ".js")
-                                        || StringUtils.startsWithIgnoreCase(attribVal, "http://")
-                                        || StringUtils.startsWithIgnoreCase(attribVal, "https://")) {
+                                if (StringUtils.containsIgnoreCase(attribVal, JAVASCRIPT)
+                                        || StringUtils.endsWithIgnoreCase(attribVal, JS)
+                                        || StringUtils.startsWithIgnoreCase(attribVal, HTTP)
+                                        || StringUtils.startsWithIgnoreCase(attribVal, HTTPS)) {
                                     if (StringUtils.isNotBlank(attribMatcher.group())) {
                                         attackConstructs.add(attribMatcher.group());
                                     }
@@ -183,7 +235,7 @@ public class CallbackUtils {
         try {
             Object connection;
             if (needToGetConnection) {
-                Method getConnection = ref.getClass().getMethod("getConnection", null);
+                Method getConnection = ref.getClass().getMethod(GET_CONNECTION, null);
                 getConnection.setAccessible(true);
                 connection = getConnection.invoke(ref, null);
             } else {
@@ -193,19 +245,19 @@ public class CallbackUtils {
                 JADatabaseMetaData metaData = sqlConnectionMap.get(connection.hashCode());
                 return metaData.getDbIdentifier();
             } else {
-                Method getMetaData = connection.getClass().getMethod("getMetaData", null);
+                Method getMetaData = connection.getClass().getMethod(GET_META_DATA, null);
                 getMetaData.setAccessible(true);
                 Object dbMetaData = getMetaData.invoke(connection, null);
 
-                Method getDatabaseProductName = dbMetaData.getClass().getMethod("getDatabaseProductName", null);
+                Method getDatabaseProductName = dbMetaData.getClass().getMethod(GET_DATABASE_PRODUCT_NAME, null);
                 getDatabaseProductName.setAccessible(true);
                 String productName = (String) getDatabaseProductName.invoke(dbMetaData, null);
 
-                Method getDriverName = dbMetaData.getClass().getMethod("getDriverName", null);
+                Method getDriverName = dbMetaData.getClass().getMethod(GET_DRIVER_NAME, null);
                 getDriverName.setAccessible(true);
                 String driverName = (String) getDriverName.invoke(dbMetaData, null);
 
-                Method getDriverVersion = dbMetaData.getClass().getMethod("getDriverVersion", null);
+                Method getDriverVersion = dbMetaData.getClass().getMethod(GET_DRIVER_VERSION, null);
                 getDriverVersion.setAccessible(true);
                 String driverVersion = (String) getDriverVersion.invoke(dbMetaData, null);
 
@@ -222,66 +274,66 @@ public class CallbackUtils {
             }
 
         } catch (Exception e) {
-        	logger.log(LogLevel.ERROR, "Error :"+ e, CallbackUtils.class.getName());
+        	logger.log(LogLevel.ERROR, ERROR + e, CallbackUtils.class.getName());
         }
-        return "UNKNOWN";
+        return UNKNOWN;
     }
 
     private static String detectDatabaseProduct(String databaseProductName) {
 
-        if (databaseProductName.contains("MySQL")) {
-            return "MYSQL";
+        if (databaseProductName.contains(MY_SQL)) {
+            return MYSQL;
         }
-        if (databaseProductName.startsWith("Oracle")) {
-            return "ORACLE";
+        if (databaseProductName.startsWith(ORACLE1)) {
+            return ORACLE;
         }
-        if (databaseProductName.startsWith("Apache Derby")) {
-            return "DERBY";
+        if (databaseProductName.startsWith(APACHE_DERBY)) {
+            return DERBY;
         }
-        if (databaseProductName.contains("HSQL Database Engine")) {
-            return "HSQL";
+        if (databaseProductName.contains(HSQL_DATABASE_ENGINE)) {
+            return HSQL;
         }
-        if (databaseProductName.startsWith("SQLite")) {
-            return "SQLITE";
+        if (databaseProductName.startsWith(SQ_LITE)) {
+            return SQLITE;
         }
-        if (databaseProductName.startsWith("H2")) {
-            return "H2";
+        if (databaseProductName.startsWith(H_2)) {
+            return H_2;
         }
-        if (databaseProductName.startsWith("Microsoft SQL Server")) {
-            return "MSSQL";
+        if (databaseProductName.startsWith(MICROSOFT_SQL_SERVER)) {
+            return MSSQL;
         }
-        if (databaseProductName.startsWith("EnterpriseDB")) {
-            return "ENTERPRISEDB";
+        if (databaseProductName.startsWith(ENTERPRISE_DB)) {
+            return ENTERPRISEDB;
         }
-        if (databaseProductName.startsWith("Phoenix")) {
-            return "PHOENIX";
+        if (databaseProductName.startsWith(PHOENIX1)) {
+            return PHOENIX;
         }
-        if (databaseProductName.startsWith("PostgreSQL")) {
-            return "POSTGRESQL";
+        if (databaseProductName.startsWith(POSTGRE_SQL)) {
+            return POSTGRESQL;
         }
-        if (databaseProductName.startsWith("DB2")) {
-            return "DB2";
+        if (databaseProductName.startsWith(DB_2)) {
+            return DB_2;
         }
-        if (databaseProductName.startsWith("Vertica")) {
-            return "VERTICA";
+        if (databaseProductName.startsWith(VERTICA1)) {
+            return VERTICA;
         }
-        if (databaseProductName.startsWith("Adaptive") || databaseProductName.startsWith("ASE") || databaseProductName
-                .startsWith("sql server")) {
-            return "SYBASE";
+        if (databaseProductName.startsWith(ADAPTIVE) || databaseProductName.startsWith(ASE) || databaseProductName
+                .startsWith(SQL_SERVER)) {
+            return SYBASE;
         }
-        if (databaseProductName.startsWith("HDB")) {
-            return "SAPANA";
+        if (databaseProductName.startsWith(HDB)) {
+            return SAPANA;
         }
-        if (databaseProductName.startsWith("Greenplum")) {
-            return "GREENPLUM";
+        if (databaseProductName.startsWith(GREENPLUM1)) {
+            return GREENPLUM;
         }
-        if (databaseProductName.contains("solidDB")) {
-            return "SOLIDDB";
+        if (databaseProductName.contains(SOLID_DB)) {
+            return SOLIDDB;
         }
-        if (StringUtils.containsIgnoreCase(databaseProductName, "maria")) {
-        	return "MARIADB";
+        if (StringUtils.containsIgnoreCase(databaseProductName, MARIA)) {
+        	return MARIADB;
         }
-        return "UNKNOWN";
+        return UNKNOWN;
     }
 
     public static String decodeResponseData(HttpResponseBean httpResponseBean) {
@@ -295,49 +347,49 @@ public class CallbackUtils {
 
         try {
             consolidatedBody.append(processedBody);
-            consolidatedBody.append("::::");
+            consolidatedBody.append(FIVE_COLON);
 
             processedBody = HtmlEscape.unescapeHtml(responseBody);
             consolidatedBody.append(processedBody);
-            consolidatedBody.append("::::");
+            consolidatedBody.append(FIVE_COLON);
 
             consolidatedBody.append(processedHeaders);
-            consolidatedBody.append("::::");
+            consolidatedBody.append(FIVE_COLON);
 
             processedHeaders = HtmlEscape.unescapeHtml(processedHeaders);
             consolidatedBody.append(processedHeaders);
-            consolidatedBody.append("::::");
+            consolidatedBody.append(FIVE_COLON);
 
 
             processedBody = urlDecode(processedBody);
-            consolidatedBody.append("::::");
+            consolidatedBody.append(FIVE_COLON);
             consolidatedBody.append(processedBody);
 
             processedHeaders = urlDecode(processedHeaders);
             consolidatedBody.append(processedHeaders);
-            consolidatedBody.append("::::");
+            consolidatedBody.append(FIVE_COLON);
 
             String oldProcessedBody;
 
             if (StringUtils.isNoneEmpty(responseBody)) {
                 switch (contentType) {
-                case "application/json":
+                case APPLICATION_JSON:
                     do {
                         oldProcessedBody = processedBody;
                         processedBody = StringEscapeUtils.unescapeJson(processedBody);
                         if(!StringUtils.equals(oldProcessedBody, processedBody)) {
-                            consolidatedBody.append("::::");
+                            consolidatedBody.append(FIVE_COLON);
                             consolidatedBody.append(processedBody);
 //                            System.out.println("Decoding JSON: " + processedBody);
                         }
                     } while (!StringUtils.equals(oldProcessedBody, processedBody));
                     break;
-                case "application/xml":
+                case APPLICATION_XML:
                     do {
                         oldProcessedBody = processedBody;
                         processedBody = StringEscapeUtils.unescapeXml(processedBody);
                         if(!StringUtils.equals(oldProcessedBody, processedBody)) {
-                            consolidatedBody.append("::::");
+                            consolidatedBody.append(FIVE_COLON);
                             consolidatedBody.append(processedBody);
 //                            System.out.println("Decoding XML: " + processedBody);
                         }
@@ -348,7 +400,7 @@ public class CallbackUtils {
             }
             return consolidatedBody.toString();
         } catch (Exception e) {
-        	logger.log(LogLevel.ERROR, "Error :"+ e, CallbackUtils.class.getName());
+        	logger.log(LogLevel.ERROR, ERROR + e, CallbackUtils.class.getName());
         }
         return StringUtils.EMPTY;
     }
@@ -366,31 +418,31 @@ public class CallbackUtils {
 
         try {
             consolidatedBody.append(oldHeaders);
-            consolidatedBody.append("::::");
+            consolidatedBody.append(FIVE_COLON);
             consolidatedBody.append(HtmlEscape.unescapeHtml(oldHeaders));
-            consolidatedBody.append("::::");
+            consolidatedBody.append(FIVE_COLON);
             consolidatedBody.append(processedBody);
-            consolidatedBody.append("::::");
+            consolidatedBody.append(FIVE_COLON);
             consolidatedBody.append(HtmlEscape.unescapeHtml(processedBody));
             if(httpRequestBean.getParameterMap() !=null ) {
                 String pmap = HtmlEscape.unescapeHtml(JsonConverter.toJSONMap(httpRequestBean.getParameterMap()));
-                consolidatedBody.append("::::");
+                consolidatedBody.append(FIVE_COLON);
                 consolidatedBody.append(pmap);
-                consolidatedBody.append("::::");
+                consolidatedBody.append(FIVE_COLON);
                 consolidatedBody.append(StringEscapeUtils.unescapeJson(pmap));
             }
             if(httpRequestBean.getParts() !=null ) {
-                consolidatedBody.append("::::");
+                consolidatedBody.append(FIVE_COLON);
                 consolidatedBody.append(HtmlEscape.unescapeHtml(httpRequestBean.getParts().toString()));
             }
             // For URL
-            consolidatedBody.append("::::");
+            consolidatedBody.append(FIVE_COLON);
             consolidatedBody.append(processedUrl);
             do {
                 oldUrl = processedUrl;
                 processedUrl = urlDecode(processedUrl);
                 if(!StringUtils.equals(oldUrl, processedUrl)) {
-                    consolidatedBody.append("::::");
+                    consolidatedBody.append(FIVE_COLON);
                     consolidatedBody.append(processedUrl);
 //                    System.out.println("Decoding URL Line: " + processedUrl);
                 }
@@ -400,7 +452,7 @@ public class CallbackUtils {
                 oldHeaders = processedHeaders;
                 processedHeaders = urlDecode(processedHeaders);
                 if (!StringUtils.equals(oldHeaders, processedHeaders)){
-                    consolidatedBody.append("::::");
+                    consolidatedBody.append(FIVE_COLON);
                     consolidatedBody.append(processedHeaders);
 //                    System.out.println("Decoding URL Headers: " + processedHeaders);
                 }
@@ -409,39 +461,39 @@ public class CallbackUtils {
             if (StringUtils.isNotBlank(processedBody)) {
                 String oldProcessedBody;
                 switch (contentType) {
-                case "application/json":
+                case APPLICATION_JSON:
                     do {
                         oldProcessedBody = processedBody;
                         processedBody = StringEscapeUtils.unescapeJson(processedBody);
                         if(!StringUtils.equals(oldProcessedBody, processedBody)) {
-                            consolidatedBody.append("::::");
+                            consolidatedBody.append(FIVE_COLON);
                             consolidatedBody.append(processedBody);
 //                            System.out.println("Decoding JSON: " + processedBody);
                         }
                     } while (!StringUtils.equals(oldProcessedBody, processedBody));
                     break;
-                case "application/xml":
+                case APPLICATION_XML:
                     do {
                         oldProcessedBody = processedBody;
                         processedBody = StringEscapeUtils.unescapeXml(processedBody);
                         if(!StringUtils.equals(oldProcessedBody, processedBody)) {
-                            consolidatedBody.append("::::");
+                            consolidatedBody.append(FIVE_COLON);
                             consolidatedBody.append(processedBody);
 //                            System.out.println("Decoding XML: " + processedBody);
                         }
                     } while (!StringUtils.equals(oldProcessedBody, processedBody));
                     break;
 
-                case "application/x-www-form-urlencoded":
+                case APPLICATION_X_WWW_FORM_URLENCODED:
                     processedBody = urlDecode(processedBody);
-                    consolidatedBody.append("::::");
+                    consolidatedBody.append(FIVE_COLON);
                     consolidatedBody.append(processedBody);
 
                     do {
                         oldProcessedBody = processedBody;
                         processedBody = urlDecode(processedBody);
                         if(!StringUtils.equals(oldProcessedBody, processedBody)) {
-                            consolidatedBody.append("::::");
+                            consolidatedBody.append(FIVE_COLON);
                             consolidatedBody.append(processedBody);
 //                            System.out.println("Decoding URL: " + processedBody);
                         }
@@ -453,7 +505,7 @@ public class CallbackUtils {
             }
             return consolidatedBody.toString();
         } catch (Exception e) {
-        	logger.log(LogLevel.ERROR, "Error :"+ e, CallbackUtils.class.getName());
+        	logger.log(LogLevel.ERROR, ERROR + e, CallbackUtils.class.getName());
         }
         return StringUtils.EMPTY;
     }

@@ -20,13 +20,19 @@ import java.util.List;
 public class EventDispatcher {
 
 	private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
+	public static final String DROPPING_EVENT_DUE_TO_CORRUPT_INCOMPLETE_HTTP_REQUEST = "Dropping event due to corrupt/incomplete HTTP request : ";
+	public static final String DROPPING_EVENT_DUE_TO_EMPTY_OBJECT = "Dropping event due to empty object : ";
+	public static final String DROPPING_EVENT_DUE_TO_CORRUPT_INCOMPLETE_HTTP_REQUEST1 = "Dropping event due to corrupt/incomplete HTTP request : ";
+	public static final String DROPPING_EVENT_DUE_TO_CORRUPT_INCOMPLETE_HTTP_REQUEST2 = "Dropping event due to corrupt/incomplete HTTP request : ";
+	public static final String DROPPING_EVENT_DUE_TO_EMPTY_OBJECT1 = "Dropping event due to empty object : ";
+	public static final String STRING_3_COLON = " ::: ";
 
 	public static void dispatch(AbstractOperationalBean objectBean, VulnerabilityCaseType vulnerabilityCaseType) {
 		boolean ret = ThreadLocalHttpMap.getInstance().parseHttpRequest();
 		if (!ret) {
 			logger.log(LogLevel.ERROR,
-					"Dropping event due to corrupt/incomplete HTTP request : "
-							+ ThreadLocalExecutionMap.getInstance().getHttpRequestBean() + " ::: " + objectBean,
+					DROPPING_EVENT_DUE_TO_CORRUPT_INCOMPLETE_HTTP_REQUEST
+							+ ThreadLocalExecutionMap.getInstance().getHttpRequestBean() + STRING_3_COLON + objectBean,
 					EventDispatcher.class.getName());
 			return;
 		}
@@ -44,8 +50,8 @@ public class EventDispatcher {
 					Thread.currentThread().getStackTrace(), objectBean, vulnerabilityCaseType);
 		} else {
 			logger.log(
-					LogLevel.ERROR, "Dropping event due to empty object : "
-							+ ThreadLocalExecutionMap.getInstance().getHttpRequestBean() + " ::: " + objectBean,
+					LogLevel.ERROR, DROPPING_EVENT_DUE_TO_EMPTY_OBJECT
+							+ ThreadLocalExecutionMap.getInstance().getHttpRequestBean() + STRING_3_COLON + objectBean,
 					EventDispatcher.class.getName());
 		}
 	}
@@ -54,8 +60,8 @@ public class EventDispatcher {
 		boolean ret = ThreadLocalHttpMap.getInstance().parseHttpRequest();
 		if (!ret) {
 			logger.log(
-					LogLevel.ERROR, "Dropping event due to corrupt/incomplete HTTP request : "
-							+ ThreadLocalExecutionMap.getInstance().getHttpRequestBean() + " ::: " + objectBeanList,
+					LogLevel.ERROR, DROPPING_EVENT_DUE_TO_CORRUPT_INCOMPLETE_HTTP_REQUEST1
+							+ ThreadLocalExecutionMap.getInstance().getHttpRequestBean() + STRING_3_COLON + objectBeanList,
 					EventDispatcher.class.getName());
 			return;
 		}
@@ -99,8 +105,8 @@ public class EventDispatcher {
 		boolean ret = ThreadLocalHttpMap.getInstance().parseHttpRequest();
 		if (!ret) {
 			logger.log(
-					LogLevel.ERROR, "Dropping event due to corrupt/incomplete HTTP request : "
-							+ ThreadLocalExecutionMap.getInstance().getHttpRequestBean() + " ::: " + fileOperationalBean,
+					LogLevel.ERROR, DROPPING_EVENT_DUE_TO_CORRUPT_INCOMPLETE_HTTP_REQUEST2
+							+ ThreadLocalExecutionMap.getInstance().getHttpRequestBean() + STRING_3_COLON + fileOperationalBean,
 					EventDispatcher.class.getName());
 			return;
 		}
@@ -116,8 +122,8 @@ public class EventDispatcher {
 					Thread.currentThread().getStackTrace(), fileOperationalBean, fbean, fileOperation);
 		} else {
 			logger.log(
-					LogLevel.ERROR, "Dropping event due to empty object : "
-							+ ThreadLocalExecutionMap.getInstance().getHttpRequestBean() + " ::: " + fileOperationalBean,
+					LogLevel.ERROR, DROPPING_EVENT_DUE_TO_EMPTY_OBJECT1
+							+ ThreadLocalExecutionMap.getInstance().getHttpRequestBean() + STRING_3_COLON + fileOperationalBean,
 					EventDispatcher.class.getName());
 
 		}

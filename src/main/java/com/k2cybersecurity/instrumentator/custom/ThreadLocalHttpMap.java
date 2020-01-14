@@ -17,6 +17,28 @@ import java.util.*;
 public class ThreadLocalHttpMap {
 
 	private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
+	public static final String NO_HTTP_REQUEST_FOUND_FOR_CURRENT_CONTEXT = "No HTTP request found for current context";
+	public static final String HTTP_REQUEST_ALREADY_PARSED_FOR_CURRENT_CONTEXT = "HTTP request already parsed for current context";
+	public static final String GET_METHOD = "getMethod";
+	public static final String GET_REMOTE_ADDR = "getRemoteAddr";
+	public static final String GET_REQUEST_URI = "getRequestURI";
+	public static final String GET_QUERY_STRING = "getQueryString";
+	public static final String GET_CONTENT_TYPE1 = "getContentType";
+	public static final String GET_CONTENT_TYPE = GET_CONTENT_TYPE1;
+	public static final String QUESTION_MARK = "?";
+	public static final String GET_SERVLET_CONTEXT = "getServletContext";
+	public static final String GET_CONTEXT_PATH = "getContextPath";
+	public static final String GET_SERVER_PORT = "getServerPort";
+	public static final String GET_PARAMETER_MAP = "getParameterMap";
+	public static final String ERROR = "Error : ";
+	public static final String STRING_COLON = " : ";
+	public static final String RAW_INTERCEPTED_REQUEST = "RAW Intercepted Request : ";
+	public static final String GET_HEADER_NAMES = "getHeaderNames";
+	public static final String GET_HEADERS = "getHeaders";
+	public static final String STRING_SEMICOLON = "; ";
+	public static final String NO_HTTP_RESPONSE_FOUND_FOR_CURRENT_CONTEXT = "No HTTP response found for current context";
+	public static final String HTTP_RESPONSE_ALREADY_PARSED_FOR_CURRENT_CONTEXT = "HTTP response already parsed for current context";
+	public static final String GET_CHARACTER_ENCODING = "getCharacterEncoding";
 
 	private Object httpRequest;
 
@@ -129,13 +151,13 @@ public class ThreadLocalHttpMap {
 
 	public boolean parseHttpRequest() {
 		if (httpRequest == null) {
-			logger.log(LogLevel.INFO, "No HTTP request found for current context", ThreadLocalHttpMap.class.getName());
+			logger.log(LogLevel.INFO, NO_HTTP_REQUEST_FOUND_FOR_CURRENT_CONTEXT, ThreadLocalHttpMap.class.getName());
 			return false;
 		}
 		//        System.out.println("Parsing HTTP request : " + httpRequest.hashCode());
 
 		if (isHttpRequestParsed) {
-			logger.log(LogLevel.INFO, "HTTP request already parsed for current context",
+			logger.log(LogLevel.INFO, HTTP_REQUEST_ALREADY_PARSED_FOR_CURRENT_CONTEXT,
 					ThreadLocalHttpMap.class.getName());
 			updateBody();
 			return true;
@@ -145,11 +167,11 @@ public class ThreadLocalHttpMap {
 		try {
 			Class requestClass = httpRequest.getClass();
 
-			Method getMethod = requestClass.getMethod("getMethod");
+			Method getMethod = requestClass.getMethod(GET_METHOD);
 			getMethod.setAccessible(true);
 			httpRequestBean.setMethod((String) getMethod.invoke(httpRequest, null));
 
-			Method getRemoteAddr = requestClass.getMethod("getRemoteAddr");
+			Method getRemoteAddr = requestClass.getMethod(GET_REMOTE_ADDR);
 			getRemoteAddr.setAccessible(true);
 			httpRequestBean.setClientIP((String) getRemoteAddr.invoke(httpRequest, null));
 
@@ -157,37 +179,37 @@ public class ThreadLocalHttpMap {
 			processHeaders(headers, httpRequest);
 			httpRequestBean.setHeaders(new JSONObject(headers));
 
-			Method getRequestURI = requestClass.getMethod("getRequestURI");
+			Method getRequestURI = requestClass.getMethod(GET_REQUEST_URI);
 			getRequestURI.setAccessible(true);
 			httpRequestBean.setUrl((String) getRequestURI.invoke(httpRequest, null));
 
-			Method getQueryString = requestClass.getMethod("getQueryString");
+			Method getQueryString = requestClass.getMethod(GET_QUERY_STRING);
 			getQueryString.setAccessible(true);
 			String queryString = (String) getQueryString.invoke(httpRequest, null);
 
-			Method getContentType = requestClass.getMethod("getContentType");
+			Method getContentType = requestClass.getMethod(GET_CONTENT_TYPE);
 			getContentType.setAccessible(true);
 			httpRequestBean.setContentType((String) getContentType.invoke(httpRequest, null));
 
 			if (StringUtils.isNotBlank(queryString)) {
-				httpRequestBean.setUrl(httpRequestBean.getUrl() + "?" + queryString);
+				httpRequestBean.setUrl(httpRequestBean.getUrl() + QUESTION_MARK + queryString);
 			}
 
-			Method getServletContext = requestClass.getMethod("getServletContext");
+			Method getServletContext = requestClass.getMethod(GET_SERVLET_CONTEXT);
 			getServletContext.setAccessible(true);
 			Object servletContext = getServletContext.invoke(httpRequest, null);
 
-			Method getContextPath = servletContext.getClass().getMethod("getContextPath");
+			Method getContextPath = servletContext.getClass().getMethod(GET_CONTEXT_PATH);
 			getContextPath.setAccessible(true);
 			String contextPath = (String) getContextPath.invoke(servletContext, null);
 			httpRequestBean.setContextPath(contextPath);
 
-			Method getLocalPort = requestClass.getMethod("getServerPort");
+			Method getLocalPort = requestClass.getMethod(GET_SERVER_PORT);
 			getLocalPort.setAccessible(true);
 			int serverPort = (Integer) getLocalPort.invoke(httpRequest, null);
 			httpRequestBean.setServerPort(serverPort);
 
-			Method getParameterMap = requestClass.getMethod("getParameterMap");
+			Method getParameterMap = requestClass.getMethod(GET_PARAMETER_MAP);
 			getParameterMap.setAccessible(true);
 			httpRequestBean.setParameterMap((Map<String, String[]>) getParameterMap.invoke(httpRequest, null));
 
@@ -204,12 +226,12 @@ public class ThreadLocalHttpMap {
 			isHttpRequestParsed = true;
 			return true;
 		} catch (Exception e) {
-			logger.log(LogLevel.ERROR, "Error : " + e + " : " + Arrays.asList(e.getStackTrace()),
+			logger.log(LogLevel.ERROR, ERROR + e + STRING_COLON + Arrays.asList(e.getStackTrace()),
 					ThreadLocalHttpMap.class.getName());
 //			e.printStackTrace();
 		} finally {
 			logger.log(LogLevel.INFO,
-					"RAW Intercepted Request : " + ThreadLocalExecutionMap.getInstance().getHttpRequestBean(),
+					RAW_INTERCEPTED_REQUEST + ThreadLocalExecutionMap.getInstance().getHttpRequestBean(),
 					ThreadLocalHttpMap.class.getName());
 		}
 		return false;
@@ -219,9 +241,9 @@ public class ThreadLocalHttpMap {
 		try {
 			Class requestClass = httpRequest.getClass();
 
-			Method getHeaderNames = requestClass.getMethod("getHeaderNames", null);
+			Method getHeaderNames = requestClass.getMethod(GET_HEADER_NAMES, null);
 			getHeaderNames.setAccessible(true);
-			Method getHeaders = requestClass.getMethod("getHeaders", String.class);
+			Method getHeaders = requestClass.getMethod(GET_HEADERS, String.class);
 			getHeaders.setAccessible(true);
 
 			Enumeration<String> attribs = ((Enumeration<String>) getHeaderNames.invoke(httpRequest, null));
@@ -234,13 +256,13 @@ public class ThreadLocalHttpMap {
 					if (headerFullValue.isEmpty()) {
 						headerFullValue = headerValue;
 					} else {
-						headerFullValue += "; " + headerValue;
+						headerFullValue += STRING_SEMICOLON + headerValue;
 					}
 				}
 				headers.put(headerKey, headerFullValue);
 			}
 		} catch (Exception e) {
-			logger.log(LogLevel.ERROR, "Error : " + e, ThreadLocalHttpMap.class.getName());
+			logger.log(LogLevel.ERROR, ERROR + e, ThreadLocalHttpMap.class.getName());
 		}
 	}
 
@@ -248,7 +270,7 @@ public class ThreadLocalHttpMap {
 
 		// TODO : To be implemented
 		if (httpResponse == null) {
-			logger.log(LogLevel.INFO, "No HTTP response found for current context", ThreadLocalHttpMap.class.getName());
+			logger.log(LogLevel.INFO, NO_HTTP_RESPONSE_FOUND_FOR_CURRENT_CONTEXT, ThreadLocalHttpMap.class.getName());
 			return false;
 		}
 		//        System.out.println("Parsing HTTP response : " + httpResponse.hashCode());
@@ -257,7 +279,7 @@ public class ThreadLocalHttpMap {
 			updateResponseBody();
 
 			if (isHttpResponseParsed) {
-				logger.log(LogLevel.INFO, "HTTP response already parsed for current context",
+				logger.log(LogLevel.INFO, HTTP_RESPONSE_ALREADY_PARSED_FOR_CURRENT_CONTEXT,
 						ThreadLocalHttpMap.class.getName());
 				return true;
 			}
@@ -266,12 +288,12 @@ public class ThreadLocalHttpMap {
 
 			Class responseClass = httpResponse.getClass();
 
-			Method getCharacterEncoding = responseClass.getMethod("getCharacterEncoding");
+			Method getCharacterEncoding = responseClass.getMethod(GET_CHARACTER_ENCODING);
 			getCharacterEncoding.setAccessible(true);
 			httpRequestBean.getHttpResponseBean()
 					.setResponseCharacterEncoding((String) getCharacterEncoding.invoke(httpResponse, null));
 
-			Method getContentType = responseClass.getMethod("getContentType");
+			Method getContentType = responseClass.getMethod(GET_CONTENT_TYPE1);
 			getContentType.setAccessible(true);
 			httpRequestBean.getHttpResponseBean()
 					.setResponseContentType((String) getContentType.invoke(httpResponse, null));
@@ -287,7 +309,7 @@ public class ThreadLocalHttpMap {
 			return true;
 
 		} catch (Exception e) {
-			logger.log(LogLevel.ERROR, "Error : " + e, ThreadLocalHttpMap.class.getName());
+			logger.log(LogLevel.ERROR, ERROR + e, ThreadLocalHttpMap.class.getName());
 		}
 		return false;
 	}
@@ -296,9 +318,9 @@ public class ThreadLocalHttpMap {
 		try {
 			Class requestClass = httpRequest.getClass();
 
-			Method getHeaderNames = requestClass.getMethod("getHeaderNames", null);
+			Method getHeaderNames = requestClass.getMethod(GET_HEADER_NAMES, null);
 			getHeaderNames.setAccessible(true);
-			Method getHeaders = requestClass.getMethod("getHeaders", String.class);
+			Method getHeaders = requestClass.getMethod(GET_HEADERS, String.class);
 			getHeaders.setAccessible(true);
 
 			Collection<String> attribs = ((Collection<String>) getHeaderNames.invoke(httpRequest, null));
@@ -309,13 +331,13 @@ public class ThreadLocalHttpMap {
 					if (headerFullValue.isEmpty()) {
 						headerFullValue = headerValue;
 					} else {
-						headerFullValue += "; " + headerValue;
+						headerFullValue += STRING_SEMICOLON + headerValue;
 					}
 				}
 				headers.put(headerKey, headerFullValue);
 			}
 		} catch (Exception e) {
-			logger.log(LogLevel.ERROR, "Error : " + e, ThreadLocalHttpMap.class.getName());
+			logger.log(LogLevel.ERROR, ERROR + e, ThreadLocalHttpMap.class.getName());
 		}
 	}
 

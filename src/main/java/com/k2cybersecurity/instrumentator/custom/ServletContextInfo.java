@@ -16,7 +16,22 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class ServletContextInfo {
-    @JsonIgnore
+	public static final String GET_CONTEXT_PATH = "getContextPath";
+	public static final String GET_SERVER_INFO = "getServerInfo";
+	public static final String GET_MAJOR_VERSION = "getMajorVersion";
+	public static final String GET_MINOR_VERSION = "getMinorVersion";
+	public static final String GET_REAL_PATH = "getRealPath";
+	public static final String GET_SERVLET_CONTEXT_NAME = "getServletContextName";
+	public static final String ERROR = "Error : ";
+	public static final String GET_CLASS_LOADER = "getClassLoader";
+	public static final String FORWARD_SLASH = "/";
+	public static final String FILE = "file:";
+	public static final String WEB_INF = "/WEB-INF";
+	public static final String JAR_FILE = "jar:file:";
+	public static final String NOT = "!";
+	public static final String ROOT = "ROOT";
+	public static final String REPLACEMENT = "_";
+	@JsonIgnore
     private static ServletContextInfo instance;
 
     private Map<String, DeployedApplication> contextMap = new HashMap<>();
@@ -73,17 +88,17 @@ public class ServletContextInfo {
         app.updatePorts(serverPort);
         app.setServerInfo(serverInfo);
         if(StringUtils.isBlank(appName)){
-            app.setAppName("ROOT");
+            app.setAppName(ROOT);
         } else {
             app.setAppName(appName);
         }
 
         if(StringUtils.isBlank(contextPath)){
-            app.setContextPath("/");
+            app.setContextPath(FORWARD_SLASH);
             app.setDeployedPath(applicationDir);
         } else {
             Path applicationPath = Paths.get(applicationDir);
-            if (StringUtils.equals(contextPath, "/")) {
+            if (StringUtils.equals(contextPath, FORWARD_SLASH)) {
                 app.setDeployedPath(applicationPath.toString());
             } else {
                 app.setDeployedPath(applicationPath.getParent().toString());
@@ -138,15 +153,15 @@ public class ServletContextInfo {
                 return;
             }
         } catch (Exception e) {
-            logger.log(LogLevel.ERROR, "Error : "+ e, ServletContextInfo.class.getName());
+            logger.log(LogLevel.ERROR, ERROR + e, ServletContextInfo.class.getName());
         }
         try {
-            getContextPath = servletContext.getClass().getMethod("getContextPath");
-            getServerInfo = servletContext.getClass().getMethod("getServerInfo");
-            getMajorVersion = servletContext.getClass().getMethod("getMajorVersion");
-            getMinorVersion = servletContext.getClass().getMethod("getMinorVersion");
-            getRealPath = servletContext.getClass().getMethod("getRealPath", String.class);
-            getServletContextName = servletContext.getClass().getMethod("getServletContextName");
+            getContextPath = servletContext.getClass().getMethod(GET_CONTEXT_PATH);
+            getServerInfo = servletContext.getClass().getMethod(GET_SERVER_INFO);
+            getMajorVersion = servletContext.getClass().getMethod(GET_MAJOR_VERSION);
+            getMinorVersion = servletContext.getClass().getMethod(GET_MINOR_VERSION);
+            getRealPath = servletContext.getClass().getMethod(GET_REAL_PATH, String.class);
+            getServletContextName = servletContext.getClass().getMethod(GET_SERVLET_CONTEXT_NAME);
 
 		} catch (Exception e) {
 //            System.out.println("Not found : " + e.getCause());
@@ -161,7 +176,7 @@ public class ServletContextInfo {
             applicationName = (String) getServletContextName.invoke(servletContext, null);
 
         } catch (Exception e) {
-        	logger.log(LogLevel.ERROR, "Error : "+ e, ServletContextInfo.class.getName());
+        	logger.log(LogLevel.ERROR, ERROR + e, ServletContextInfo.class.getName());
         }
 
 
@@ -174,44 +189,45 @@ public class ServletContextInfo {
 		boolean isEmbedded = false;
 		if(StringUtils.isBlank(applicationDir)){
 			try {
-				Method getClassLoader = servletContext.getClass().getMethod("getClassLoader");
+				Method getClassLoader = servletContext.getClass().getMethod(GET_CLASS_LOADER);
 				getClassLoader.setAccessible(true);
 				ClassLoader classLoader = (ClassLoader) getClassLoader.invoke(servletContext, null);
 				if(classLoader != null) {
-					applicationDir = classLoader.getResource("/").toString();
+					applicationDir = classLoader.getResource(FORWARD_SLASH).toString();
 //					System.out.println("Application dir from resource : " + applicationDir);
-					if(StringUtils.startsWithIgnoreCase(applicationDir, "file:" )) {
-						applicationDir = StringUtils.removeStart(applicationDir, "file:");
-						applicationDir = StringUtils.substringBefore(applicationDir, "/WEB-INF");
-					} else if(StringUtils.startsWithIgnoreCase(applicationDir, "jar:file:" )){
+					if(StringUtils.startsWithIgnoreCase(applicationDir, FILE)) {
+						applicationDir = StringUtils.removeStart(applicationDir, FILE);
+						applicationDir = StringUtils.substringBefore(applicationDir, WEB_INF);
+					} else if(StringUtils.startsWithIgnoreCase(applicationDir, JAR_FILE)){
 						isEmbedded = true;
-						applicationDir = StringUtils.substringBetween(applicationDir, "jar:file:", "!");
+						applicationDir = StringUtils.substringBetween(applicationDir, JAR_FILE, NOT);
 					}
 				} else {
 //					System.out.println("Unable to get the application directory. Suspicion is that this is an embedded application.");
 					applicationDir = StringUtils.EMPTY;
 				}
 			} catch (Exception e) {
-				logger.log(LogLevel.ERROR, "Error : "+ e, ServletContextInfo.class.getName());
+				logger.log(LogLevel.ERROR, ERROR + e, ServletContextInfo.class.getName());
 			}
 
 
 		}
 
         if(StringUtils.isBlank(contextPath)){
-        	contextPath = "/";
+        	contextPath = FORWARD_SLASH;
         }
 
 		if(StringUtils.isBlank(applicationName)){
-			if(StringUtils.equals(contextPath, "/")){
+			if(StringUtils.equals(contextPath, FORWARD_SLASH)){
 				if(isEmbedded){
 					applicationName = Paths.get(applicationDir).getFileName().toString();
 				} else {
-					applicationName = "ROOT";
+					applicationName = ROOT;
 				}
 			} else {
-				applicationName = StringUtils.removeStart(StringUtils.replace(contextPath, "/", "_"),"_");
-				applicationName = StringUtils.removeEnd(applicationName, "_");
+				applicationName = StringUtils.removeStart(StringUtils.replace(contextPath, FORWARD_SLASH, REPLACEMENT),
+						REPLACEMENT);
+				applicationName = StringUtils.removeEnd(applicationName, REPLACEMENT);
 			}
 		}
 

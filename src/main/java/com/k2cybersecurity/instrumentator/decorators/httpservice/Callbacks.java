@@ -11,6 +11,7 @@ import java.time.Instant;
 
 public class Callbacks {
 
+    public static final String SEPARATOR_COLON = ":";
 
     public static void doOnEnter(String sourceString, String className, String methodName, Object obj, Object[] args,
                                  String exectionId) {
@@ -84,7 +85,7 @@ public class Callbacks {
                 EventDispatcher.dispatch(
                         new HttpRequestBean(ThreadLocalExecutionMap.getInstance().getHttpRequestBean()), sourceString,
                         exectionId, Instant.now().toEpochMilli(), VulnerabilityCaseType.REFLECTED_XSS);
-                String tid = StringUtils.substringBefore(exectionId, ":");
+                String tid = StringUtils.substringBefore(exectionId, SEPARATOR_COLON);
             }
             // Clean up
             ThreadLocalHttpMap.getInstance().cleanState();
