@@ -1,6 +1,5 @@
 package com.k2cybersecurity.instrumentator.custom;
 
-import com.k2cybersecurity.instrumentator.AgentNew;
 import com.k2cybersecurity.instrumentator.K2Instrumentator;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
@@ -151,15 +150,15 @@ public class ThreadLocalHttpMap {
 
 	public boolean parseHttpRequest() {
 		if (httpRequest == null) {
-			logger.log(LogLevel.INFO, NO_HTTP_REQUEST_FOUND_FOR_CURRENT_CONTEXT, ThreadLocalHttpMap.class.getName());
+//			logger.log(LogLevel.DEBUG, NO_HTTP_REQUEST_FOUND_FOR_CURRENT_CONTEXT, ThreadLocalHttpMap.class.getName());
 			return false;
 		}
 		//        System.out.println("Parsing HTTP request : " + httpRequest.hashCode());
 
+		updateBody();
 		if (isHttpRequestParsed) {
-			logger.log(LogLevel.INFO, HTTP_REQUEST_ALREADY_PARSED_FOR_CURRENT_CONTEXT,
-					ThreadLocalHttpMap.class.getName());
-			updateBody();
+			//			logger.log(LogLevel.DEBUG, HTTP_REQUEST_ALREADY_PARSED_FOR_CURRENT_CONTEXT,
+			//					ThreadLocalHttpMap.class.getName());
 			return true;
 		}
 		HttpRequestBean httpRequestBean = ThreadLocalExecutionMap.getInstance().getHttpRequestBean();
@@ -230,9 +229,9 @@ public class ThreadLocalHttpMap {
 					ThreadLocalHttpMap.class.getName());
 //			e.printStackTrace();
 		} finally {
-			logger.log(LogLevel.INFO,
-					RAW_INTERCEPTED_REQUEST + ThreadLocalExecutionMap.getInstance().getHttpRequestBean(),
-					ThreadLocalHttpMap.class.getName());
+//			logger.log(LogLevel.DEBUG,
+//					RAW_INTERCEPTED_REQUEST + ThreadLocalExecutionMap.getInstance().getHttpRequestBean(),
+//					ThreadLocalHttpMap.class.getName());
 		}
 		return false;
 	}
@@ -270,7 +269,7 @@ public class ThreadLocalHttpMap {
 
 		// TODO : To be implemented
 		if (httpResponse == null) {
-			logger.log(LogLevel.INFO, NO_HTTP_RESPONSE_FOUND_FOR_CURRENT_CONTEXT, ThreadLocalHttpMap.class.getName());
+//			logger.log(LogLevel.DEBUG, NO_HTTP_RESPONSE_FOUND_FOR_CURRENT_CONTEXT, ThreadLocalHttpMap.class.getName());
 			return false;
 		}
 		//        System.out.println("Parsing HTTP response : " + httpResponse.hashCode());
@@ -279,8 +278,8 @@ public class ThreadLocalHttpMap {
 			updateResponseBody();
 
 			if (isHttpResponseParsed) {
-				logger.log(LogLevel.INFO, HTTP_RESPONSE_ALREADY_PARSED_FOR_CURRENT_CONTEXT,
-						ThreadLocalHttpMap.class.getName());
+//				logger.log(LogLevel.DEBUG, HTTP_RESPONSE_ALREADY_PARSED_FOR_CURRENT_CONTEXT,
+//						ThreadLocalHttpMap.class.getName());
 				return true;
 			}
 
@@ -485,10 +484,7 @@ public class ThreadLocalHttpMap {
 	}
 
 	public void cleanState() {
-		if (K2Instrumentator.enableHTTPRequestPrinting) {
-			//TODO add HTTP request printing
-			logger.log(LogLevel.INFO, IAgentConstants.INTERCEPTED_HTTP_REQUEST, AgentNew.class.getName());
-		}
+
 		httpRequest = null;
 		isHttpRequestParsed = false;
 		httpResponse = null;
@@ -503,6 +499,12 @@ public class ThreadLocalHttpMap {
 		responseOutputStream = null;
 		responseWriter = null;
 		ThreadLocalHTTPIOLock.getInstance().resetLock();
+	}
+
+	public void printInterceptedRequestResponse(){
+		if (K2Instrumentator.enableHTTPRequestPrinting) {
+			logger.log(LogLevel.INFO, String.format(IAgentConstants.INTERCEPTED_HTTP_REQUEST, ThreadLocalExecutionMap.getInstance().getHttpRequestBean(), ThreadLocalExecutionMap.getInstance().getHttpRequestBean().getHttpResponseBean()) , ThreadLocalHttpMap.class.getName());
+		}
 	}
 
 	public boolean isEmpty() {

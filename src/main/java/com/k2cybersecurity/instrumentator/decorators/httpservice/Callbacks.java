@@ -81,7 +81,7 @@ public class Callbacks {
 //            CallbackUtils.checkForReflectedXSS(ThreadLocalExecutionMap.getInstance().getHttpRequestBean());
 //            System.out.println("Passing to XSS detection : " + exectionId + " :: " + ThreadLocalExecutionMap.getInstance().getHttpRequestBean().getHttpResponseBean().toString()+ " :: " + ThreadLocalExecutionMap.getInstance().getHttpRequestBean().getHttpResponseBean().toString());
             if (!ThreadLocalExecutionMap.getInstance().getHttpRequestBean().getHttpResponseBean().isEmpty()) {
-                printReponse();
+                ThreadLocalHttpMap.getInstance().printInterceptedRequestResponse();
                 EventDispatcher.dispatch(
                         new HttpRequestBean(ThreadLocalExecutionMap.getInstance().getHttpRequestBean()), sourceString,
                         exectionId, Instant.now().toEpochMilli(), VulnerabilityCaseType.REFLECTED_XSS);
@@ -97,9 +97,4 @@ public class Callbacks {
         }
     }
 
-    private static void printReponse() {
-//		System.out.println(String.format("Intercepted request at end : %s ::: %s",
-//				ThreadLocalExecutionMap.getInstance().getHttpRequestBean(),
-//				ThreadLocalExecutionMap.getInstance().getHttpRequestBean().getHttpResponseBean()));
-    }
 }
