@@ -36,7 +36,7 @@ public class ThreadLocalDBMap {
 			if (value instanceof Array) {
 				beanList.get(beanList.size() - 1).getParams().put(position, Arrays.asList(value).toString());
 			} else if (value != null) {
-				beanList.get(beanList.size() - 1).getParams().put(position, value.toString());
+				beanList.get(beanList.size() - 1).getParams().put(position, String.valueOf(value));
 			}
 
 		}
