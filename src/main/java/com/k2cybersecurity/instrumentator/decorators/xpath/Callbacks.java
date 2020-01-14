@@ -17,7 +17,9 @@ import com.k2cybersecurity.intcodeagent.models.operationalbean.XPathOperationalB
 public class Callbacks {
 
 	private static final String M_PATTERN_STRING = "m_patternString";
-	private static final String PUBLIC_ORG_APACHE_XPATH_OBJECTS_X_OBJECT_ORG_APACHE_XPATH_X_PATH_EXECUTE_ORG_APACHE_XPATH_X_PATH_CONTEXT_INT_ORG_APACHE_XML_UTILS_PREFIX_RESOLVER_THROWS_JAVAX_XML_TRANSFORM_TRANSFORMER_EXCEPTION = "public org.apache.xpath.objects.XObject org.apache.xpath.XPath.execute(org.apache.xpath.XPathContext,int,org.apache.xml.utils.PrefixResolver) throws javax.xml.transform.TransformerException";
+	private static final String XPATH_EXECUTE_METHOD1 = "public org.apache.xpath.objects.XObject org.apache.xpath.XPath.execute(org.apache.xpath.XPathContext,int,org.apache.xml.utils.PrefixResolver) throws javax.xml.transform.TransformerException";
+	private static final String XPATH_EXECUTE_METHOD2 = "public com.sun.org.apache.xpath.internal.objects.XObject com.sun.org.apache.xpath.internal.objects.XObject.execute(com.sun.org.apache.xpath.internal.XPathContext,int,com.sun.org.apache.xml.internal.utils.PrefixResolver) throws javax.xml.transform.TransformerException";
+
 	private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
 
 	public static void doOnEnter(String sourceString, String className, String methodName, Object obj, Object[] args,
@@ -29,8 +31,8 @@ public class Callbacks {
 				ThreadLocalOperationLock.getInstance().acquire();
 //				logger.log(LogLevel.INFO, "OnEnter :" + sourceString + " - args : " + Arrays.asList(args) + " - this : "
 //						+ obj + " - eid : " + executionId, Callbacks.class.getName());
-				if (sourceString.equals(
-						PUBLIC_ORG_APACHE_XPATH_OBJECTS_X_OBJECT_ORG_APACHE_XPATH_X_PATH_EXECUTE_ORG_APACHE_XPATH_X_PATH_CONTEXT_INT_ORG_APACHE_XML_UTILS_PREFIX_RESOLVER_THROWS_JAVAX_XML_TRANSFORM_TRANSFORMER_EXCEPTION)
+				if ((sourceString.equals(
+						XPATH_EXECUTE_METHOD1) || sourceString.equals(XPATH_EXECUTE_METHOD2))
 						&& ThreadLocalHttpMap.getInstance().getHttpRequest() != null && args.length != 0) {
 					try {
 						Field patternStringField = obj.getClass().getDeclaredField(M_PATTERN_STRING);
