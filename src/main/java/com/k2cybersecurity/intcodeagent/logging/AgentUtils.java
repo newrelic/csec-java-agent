@@ -1,13 +1,13 @@
 package com.k2cybersecurity.intcodeagent.logging;
 
-import java.util.concurrent.TimeUnit;
-
 import com.k2cybersecurity.instrumentator.K2Instrumentator;
 import com.k2cybersecurity.instrumentator.utils.InstrumentationUtils;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.filelogging.LogWriter;
 import com.k2cybersecurity.intcodeagent.models.javaagent.IntCodeControlCommand;
+
+import java.util.concurrent.TimeUnit;
 
 public class AgentUtils {
 
@@ -34,8 +34,10 @@ public class AgentUtils {
 		case IntCodeControlCommand.SET_DEFAULT_LOG_LEVEL:
 			LogLevel logLevel = LogLevel.valueOf(controlCommand.getArguements().get(0));
 			LogWriter.setLogLevel(logLevel);
+			break;
 		case IntCodeControlCommand.ENABLE_HTTP_REQUEST_PRINTING:
 			K2Instrumentator.enableHTTPRequestPrinting = !K2Instrumentator.enableHTTPRequestPrinting;
+			break;
 		default:
 			break;
 		}
