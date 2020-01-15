@@ -10,6 +10,7 @@ import com.k2cybersecurity.intcodeagent.websocket.JsonConverter;
 import org.apache.commons.lang3.StringUtils;
 
 import java.lang.reflect.Method;
+import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
@@ -101,19 +102,20 @@ public class ServletContextInfo {
         Method getServerInfo = null;
         Method getMajorVersion = null;
         Method getMinorVersion = null;
+		DeployedApplication deployedApplication = new DeployedApplication();
+		deployedApplication.setContextPath(contextPath);
 
 		try {
-            if (contextMap.containsKey(contextPath)) {
-                if(contextMap.get(contextPath).updatePorts(serverPort)){
-                    EventDispatcher.dispatch(contextMap.get(contextPath), VulnerabilityCaseType.APP_INFO);
-                }
-                return;
-            }
-        } catch (Exception e) {
-            logger.log(LogLevel.ERROR, ERROR , e, ServletContextInfo.class.getName());
-        }
+			if (contextMap.containsKey(deployedApplication.getContextPath())) {
+				if(contextMap.get(deployedApplication.getContextPath()).updatePorts(serverPort)){
+					EventDispatcher.dispatch(contextMap.get(deployedApplication.getContextPath()), VulnerabilityCaseType.APP_INFO);
+				}
+				return;
+			}
+		} catch (Exception e) {
+			logger.log(LogLevel.ERROR, ERROR , e, ServletContextInfo.class.getName());
+		}
 
-		DeployedApplication deployedApplication = new DeployedApplication();
 
         try {
             getServerInfo = servletContext.getClass().getMethod(GET_SERVER_INFO);
@@ -141,7 +143,6 @@ public class ServletContextInfo {
         setServerInfo(serverInfo);
 
         deployedApplication.setAppName(applicationName);
-        deployedApplication.setContextPath(contextPath);
         deployedApplication.setDeployedPath(applicationDir);
         deployedApplication.updatePorts(serverPort);
 
@@ -155,7 +156,10 @@ public class ServletContextInfo {
 				getClassLoader.setAccessible(true);
 				ClassLoader classLoader = (ClassLoader) getClassLoader.invoke(servletContext, null);
 				if(classLoader != null) {
-					deployedApplication.setDeployedPath(classLoader.getResource(FORWARD_SLASH).toString());
+					URL resPath = classLoader.getResource(FORWARD_SLASH);
+					if(resPath != null) {
+						deployedApplication.setDeployedPath(resPath.toString());
+					}
 					if(StringUtils.startsWithIgnoreCase(deployedApplication.getDeployedPath(), FILE)) {
 						deployedApplication.setDeployedPath(StringUtils.removeStart(deployedApplication.getDeployedPath(), FILE));
 						deployedApplication.setDeployedPath(StringUtils.substringBefore(deployedApplication.getDeployedPath(), WEB_INF));
@@ -190,7 +194,7 @@ public class ServletContextInfo {
 			}
 		}
 
-		this.contextMap.put(deployedApplication.getDeployedPath(), deployedApplication);
+		this.contextMap.put(deployedApplication.getContextPath(), deployedApplication);
 		if(!deployedApplication.isEmpty()) {
 			EventDispatcher.dispatch(deployedApplication, VulnerabilityCaseType.APP_INFO);
 			logger.log(LogLevel.INFO, "Servlet info populated & sent : " + deployedApplication, ServletContextInfo.class.getName());
