@@ -70,7 +70,7 @@ public class K2Instrumentator {
 			WSClient.getInstance();
 		} catch (Exception e) {
 			logger.log(LogLevel.ERROR, ERROR_OCCURED_WHILE_TRYING_TO_CONNECT_TO_WSOCKET, e,
-					AgentNew.class.getName());
+					K2Instrumentator.class.getName());
 		}
 		IPScheduledThread.getInstance();
 		eventWritePool();
@@ -81,7 +81,7 @@ public class K2Instrumentator {
 		try {
 			EventSendPool.getInstance();
 		} catch (Exception e) {
-			logger.log(LogLevel.WARNING, EXCEPTION_OCCURED_IN_EVENT_SEND_POOL, e, AgentNew.class.getName());
+			logger.log(LogLevel.WARNING, EXCEPTION_OCCURED_IN_EVENT_SEND_POOL, e, K2Instrumentator.class.getName());
 		}
 	}
 
@@ -169,7 +169,7 @@ public class K2Instrumentator {
 			return applicationInfoBean;
 		} catch (Exception e) {
 			logger.log(LogLevel.WARNING, EXCEPTION_OCCURED_IN_CREATE_APPLICATION_INFO_BEAN, e,
-					AgentNew.class.getName());
+					K2Instrumentator.class.getName());
 		}
 		return null;
 	}
