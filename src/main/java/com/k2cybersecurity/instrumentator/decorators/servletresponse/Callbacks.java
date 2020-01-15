@@ -3,6 +3,7 @@ package com.k2cybersecurity.instrumentator.decorators.servletresponse;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalHTTPIOLock;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalHttpMap;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalOperationLock;
+import com.k2cybersecurity.instrumentator.utils.CallbackUtils;
 import org.apache.commons.lang3.StringUtils;
 
 public class Callbacks {
@@ -45,7 +46,7 @@ public class Callbacks {
                         ThreadLocalHTTPIOLock.getInstance().resetLock();
 
                     }
-                } else if(StringUtils.equals(methodName, INIT) && obj != null ) {
+                } else if(StringUtils.equals(methodName, INIT) && obj != null && CallbackUtils.checkArgsTypeHeirarchyResponse(obj)) {
 //                    System.out.println("Servlet response constructor exit aaya : "+ exectionId + " :: " + sourceString + " :: " + obj + " :: " + returnVal + " :: " + methodName);
                     ThreadLocalHttpMap.getInstance().setHttpResponse(obj);
                 }

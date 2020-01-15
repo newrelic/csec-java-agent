@@ -1,20 +1,15 @@
 package com.k2cybersecurity.intcodeagent.filelogging;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
+import com.k2cybersecurity.instrumentator.K2Instrumentator;
+import com.k2cybersecurity.intcodeagent.properties.K2JALogProperties;
+import org.apache.commons.lang3.StringUtils;
+
+import java.io.*;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
-
-import org.apache.commons.lang3.StringUtils;
-
-import com.k2cybersecurity.instrumentator.K2Instrumentator;
-import com.k2cybersecurity.intcodeagent.properties.K2JALogProperties;
 
 public class LogWriter implements Runnable {
 
@@ -119,6 +114,7 @@ public class LogWriter implements Runnable {
 		if (this.logEntry != null)
 			sb.append(this.logEntry);
 		if (this.throwableLogEntry != null) {
+//			this.throwableLogEntry.printStackTrace();
 			sb.append(this.throwableLogEntry.getMessage());
 			sb.append(StringUtils.LF);
 			sb.append(StringUtils.join(this.throwableLogEntry.getStackTrace(), StringUtils.LF));

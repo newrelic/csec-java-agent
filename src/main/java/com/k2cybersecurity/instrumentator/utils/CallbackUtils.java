@@ -86,6 +86,9 @@ public class CallbackUtils {
 
     private static Map<Integer, JADatabaseMetaData> sqlConnectionMap;
 
+    public static Class requestInterface = null;
+    public static Class responseInterface = null;
+
     static {
         htmlStartTagExtractor = Pattern.compile(
                 "(?:<script.*?>(.*?)<(?:\\/|\\\\\\/)script.*?>|<([!?a-zA-Z]+[0-9]*)(.*?)(?<!(\\\\))\\s*?>)",
@@ -510,4 +513,51 @@ public class CallbackUtils {
         return StringUtils.EMPTY;
     }
 
+    public static boolean checkArgsTypeHeirarchy(Object requestArg, Object responseArg){
+        if(requestArg == null || responseArg == null){
+            return false;
+        }
+        try {
+            if(requestInterface == null) {
+                requestInterface = Class.forName("javax.servlet.http.HttpServletRequest", false, requestArg.getClass().getClassLoader());
+            }
+            if(responseInterface == null) {
+                responseInterface = Class.forName("javax.servlet.http.HttpServletResponse", false, responseArg.getClass().getClassLoader());
+            }
+            return requestArg.getClass().isAssignableFrom(requestInterface) && responseArg.getClass().isAssignableFrom(responseInterface);
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    public static boolean checkArgsTypeHeirarchyRequest(Object requestArg){
+        if(requestArg == null){
+            return false;
+        }
+        try {
+            if(requestInterface == null) {
+                requestInterface = Class.forName("javax.servlet.http.HttpServletRequest", false, requestArg.getClass().getClassLoader());
+            }
+            return requestArg.getClass().isAssignableFrom(requestInterface);
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    public static boolean checkArgsTypeHeirarchyResponse(Object responseArg){
+        if(responseArg == null){
+            return false;
+        }
+        try {
+            if(responseInterface == null) {
+                responseInterface = Class.forName("javax.servlet.http.HttpServletResponse", false, responseArg.getClass().getClassLoader());
+            }
+            return responseArg.getClass().isAssignableFrom(responseInterface);
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+        return false;
+    }
 }

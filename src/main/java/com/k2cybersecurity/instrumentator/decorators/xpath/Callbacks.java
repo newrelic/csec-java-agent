@@ -1,18 +1,15 @@
 package com.k2cybersecurity.instrumentator.decorators.xpath;
 
-import java.lang.reflect.Field;
-import java.time.Instant;
-import java.util.Arrays;
-
-import org.apache.commons.lang3.StringUtils;
-
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalHttpMap;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalOperationLock;
 import com.k2cybersecurity.instrumentator.dispatcher.EventDispatcher;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
-import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.models.javaagent.VulnerabilityCaseType;
 import com.k2cybersecurity.intcodeagent.models.operationalbean.XPathOperationalBean;
+import org.apache.commons.lang3.StringUtils;
+
+import java.lang.reflect.Field;
+import java.time.Instant;
 
 public class Callbacks {
 
@@ -26,7 +23,7 @@ public class Callbacks {
 			String executionId) {
 //		logger.log(LogLevel.INFO, "OnEnter :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj
 //				+ " - eid : " + executionId, Callbacks.class.getName());
-		if (!ThreadLocalOperationLock.getInstance().isAcquired()) {
+		if (!ThreadLocalHttpMap.getInstance().isEmpty() && !ThreadLocalOperationLock.getInstance().isAcquired()) {
 			try {
 				ThreadLocalOperationLock.getInstance().acquire();
 //				logger.log(LogLevel.INFO, "OnEnter :" + sourceString + " - args : " + Arrays.asList(args) + " - this : "
@@ -63,27 +60,27 @@ public class Callbacks {
 
 	public static void doOnExit(String sourceString, String className, String methodName, Object obj, Object[] args,
 			Object returnVal, String exectionId) {
-		if (!ThreadLocalOperationLock.getInstance().isAcquired()) {
-			try {
-				ThreadLocalOperationLock.getInstance().acquire();
-//				System.out.println("OnExit :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj
-//						+ " - return : " + returnVal + " - eid : " + exectionId);
-			} finally {
-				ThreadLocalOperationLock.getInstance().release();
-			}
-		}
+//		if (!ThreadLocalHttpMap.getInstance().isEmpty() && !ThreadLocalOperationLock.getInstance().isAcquired()) {
+//			try {
+//				ThreadLocalOperationLock.getInstance().acquire();
+////				System.out.println("OnExit :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj
+////						+ " - return : " + returnVal + " - eid : " + exectionId);
+//			} finally {
+//				ThreadLocalOperationLock.getInstance().release();
+//			}
+//		}
 	}
 
 	public static void doOnError(String sourceString, String className, String methodName, Object obj, Object[] args,
 			Throwable error, String exectionId) throws Throwable {
-		if (!ThreadLocalOperationLock.getInstance().isAcquired()) {
-			try {
-				ThreadLocalOperationLock.getInstance().acquire();
-//				System.out.println("OnError :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj
-//						+ " - error : " + error + " - eid : " + exectionId);
-			} finally {
-				ThreadLocalOperationLock.getInstance().release();
-			}
-		}
+//		if (!ThreadLocalHttpMap.getInstance().isEmpty() && !ThreadLocalOperationLock.getInstance().isAcquired()) {
+//			try {
+//				ThreadLocalOperationLock.getInstance().acquire();
+////				System.out.println("OnError :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj
+////						+ " - error : " + error + " - eid : " + exectionId);
+//			} finally {
+//				ThreadLocalOperationLock.getInstance().release();
+//			}
+//		}
 	}
 }

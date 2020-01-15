@@ -28,8 +28,10 @@ public class Callbacks {
 
 //                System.out.println("Came to service hook :" + exectionId + " :: " + sourceString);
                 if (args != null && args.length == 2 && args[0] != null && args[1] != null) {
-                    ThreadLocalHttpMap.getInstance().setHttpRequest(args[0]);
-                    ThreadLocalHttpMap.getInstance().setHttpResponse(args[1]);
+                    if(CallbackUtils.checkArgsTypeHeirarchy(args[0], args[1])) {
+                        ThreadLocalHttpMap.getInstance().setHttpRequest(args[0]);
+                        ThreadLocalHttpMap.getInstance().setHttpResponse(args[1]);
+                    }
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -87,14 +89,14 @@ public class Callbacks {
                         exectionId, Instant.now().toEpochMilli(), VulnerabilityCaseType.REFLECTED_XSS);
                 String tid = StringUtils.substringBefore(exectionId, SEPARATOR_COLON);
             }
-            // Clean up
-            ThreadLocalHttpMap.getInstance().cleanState();
-            ThreadLocalDBMap.getInstance().clearAll();
-            ThreadLocalSessionMap.getInstance().clearAll();
-            ThreadLocalLDAPMap.getInstance().clearAll();
-            ThreadLocalExecutionMap.getInstance().getFileLocalMap().clear();
-            ThreadLocalExecutionMap.getInstance().cleanUp();
         }
+        // Clean up
+        ThreadLocalHttpMap.getInstance().cleanState();
+        ThreadLocalDBMap.getInstance().clearAll();
+        ThreadLocalSessionMap.getInstance().clearAll();
+        ThreadLocalLDAPMap.getInstance().clearAll();
+        ThreadLocalExecutionMap.getInstance().getFileLocalMap().clear();
+        ThreadLocalExecutionMap.getInstance().cleanUp();
     }
 
 }

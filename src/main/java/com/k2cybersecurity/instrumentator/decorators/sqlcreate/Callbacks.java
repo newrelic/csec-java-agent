@@ -16,13 +16,13 @@ public class Callbacks {
 		//		System.out.println(
 		//				"OnEnter :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj + " - eid : "
 		//						+ exectionId);
-//		if (!ThreadLocalOperationLock.getInstance().isAcquired()) {
-//			try {
-//				ThreadLocalOperationLock.getInstance().acquire();
-//			} finally {
-//				ThreadLocalOperationLock.getInstance().release();
-//			}
-//		}
+		//		if (!ThreadLocalHttpMap.getInstance().isEmpty() && !ThreadLocalOperationLock.getInstance().isAcquired()) {
+		//			try {
+		//				ThreadLocalOperationLock.getInstance().acquire();
+		//			} finally {
+		//				ThreadLocalOperationLock.getInstance().release();
+		//			}
+		//		}
 	}
 
 	public static void doOnExit(String sourceString, String className, String methodName, Object obj, Object[] args,
@@ -30,21 +30,19 @@ public class Callbacks {
 		//		System.out.println(
 		//				"OnExit :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj + " - return : "
 		//						+ returnVal + " - eid : " + exectionId);
-		if (!ThreadLocalOperationLock.getInstance().isAcquired()) {
+		if (!ThreadLocalHttpMap.getInstance().isEmpty() && !ThreadLocalOperationLock.getInstance().isAcquired()) {
 			try {
 				ThreadLocalOperationLock.getInstance().acquire();
-				if (ThreadLocalHttpMap.getInstance().getHttpRequest() != null) {
 
-					if (args != null && args.length > 0 && args[0] instanceof String) {
-						if (StringUtils.startsWithIgnoreCase(methodName, PREPARE)) {
-							ThreadLocalDBMap.getInstance()
-									.create(returnVal, (String) args[0], className, sourceString, exectionId,
-											Instant.now().toEpochMilli(), false, true, returnVal,true);
-						} else {
-							ThreadLocalDBMap.getInstance()
-									.create(returnVal, (String) args[0], className, sourceString, exectionId,
-											Instant.now().toEpochMilli(), false, false, returnVal, true);
-						}
+				if (args != null && args.length > 0 && args[0] instanceof String) {
+					if (StringUtils.startsWithIgnoreCase(methodName, PREPARE)) {
+						ThreadLocalDBMap.getInstance()
+								.create(returnVal, (String) args[0], className, sourceString, exectionId,
+										Instant.now().toEpochMilli(), false, true, returnVal, true);
+					} else {
+						ThreadLocalDBMap.getInstance()
+								.create(returnVal, (String) args[0], className, sourceString, exectionId,
+										Instant.now().toEpochMilli(), false, false, returnVal, true);
 					}
 				}
 			} finally {
@@ -55,14 +53,14 @@ public class Callbacks {
 
 	public static void doOnError(String sourceString, String className, String methodName, Object obj, Object[] args,
 			Throwable error, String exectionId) throws Throwable {
-		if(!ThreadLocalOperationLock.getInstance().isAcquired()) {
-			try {
-				ThreadLocalOperationLock.getInstance().acquire();
-//				System.out.println("OnError :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj
-//						+ " - error : " + error + " - eid : " + exectionId);
-			} finally {
-				ThreadLocalOperationLock.getInstance().release();
-			}
-		}
+//		if (!ThreadLocalHttpMap.getInstance().isEmpty() && !ThreadLocalOperationLock.getInstance().isAcquired()) {
+//			try {
+//				ThreadLocalOperationLock.getInstance().acquire();
+//				//				System.out.println("OnError :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj
+//				//						+ " - error : " + error + " - eid : " + exectionId);
+//			} finally {
+//				ThreadLocalOperationLock.getInstance().release();
+//			}
+//		}
 	}
 }

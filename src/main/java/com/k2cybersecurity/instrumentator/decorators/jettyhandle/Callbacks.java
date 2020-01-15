@@ -29,9 +29,10 @@ public class Callbacks {
 
 				if (args != null && args.length == 4 && args[2] != null
 						&& args[3] != null) {
-
-					ThreadLocalHttpMap.getInstance().setHttpRequest(args[2]);
-					ThreadLocalHttpMap.getInstance().setHttpResponse(args[3]);
+					if(CallbackUtils.checkArgsTypeHeirarchy(args[2], args[3])) {
+						ThreadLocalHttpMap.getInstance().setHttpRequest(args[2]);
+						ThreadLocalHttpMap.getInstance().setHttpResponse(args[3]);
+					}
 				}
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -81,20 +82,20 @@ public class Callbacks {
 			//            CallbackUtils.checkForReflectedXSS(ThreadLocalExecutionMap.getInstance().getHttpRequestBean());
 			//            System.out.println("Passing to XSS detection : " + exectionId + " :: " + ThreadLocalExecutionMap.getInstance().getHttpRequestBean().getHttpResponseBean().toString()+ " :: " + ThreadLocalExecutionMap.getInstance().getHttpRequestBean().getHttpResponseBean().toString());
 			if (!ThreadLocalExecutionMap.getInstance().getHttpRequestBean().getHttpResponseBean().isEmpty()) {
-				printReponse();
+				ThreadLocalHttpMap.getInstance().printInterceptedRequestResponse();
 				EventDispatcher.dispatch(
 						new HttpRequestBean(ThreadLocalExecutionMap.getInstance().getHttpRequestBean()), sourceString,
 						exectionId, Instant.now().toEpochMilli(), VulnerabilityCaseType.REFLECTED_XSS);
 				String tid = StringUtils.substringBefore(exectionId, SEPARATOR_COLON);
 			}
-			// Clean up
-			ThreadLocalHttpMap.getInstance().cleanState();
-			ThreadLocalDBMap.getInstance().clearAll();
-			ThreadLocalSessionMap.getInstance().clearAll();
-			ThreadLocalLDAPMap.getInstance().clearAll();
-			ThreadLocalExecutionMap.getInstance().getFileLocalMap().clear();
-			ThreadLocalExecutionMap.getInstance().cleanUp();
 		}
+		// Clean up
+		ThreadLocalHttpMap.getInstance().cleanState();
+		ThreadLocalDBMap.getInstance().clearAll();
+		ThreadLocalSessionMap.getInstance().clearAll();
+		ThreadLocalLDAPMap.getInstance().clearAll();
+		ThreadLocalExecutionMap.getInstance().getFileLocalMap().clear();
+		ThreadLocalExecutionMap.getInstance().cleanUp();
 	}
 
 	private static void printReponse() {
