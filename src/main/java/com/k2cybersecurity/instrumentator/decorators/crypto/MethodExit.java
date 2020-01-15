@@ -27,7 +27,7 @@ public class MethodExit {
                 Callbacks.doOnError(signature, className, methodName, thisArg, args, error, executionId);
             }
         } catch (Throwable e) {
-        	logger.log(LogLevel.ERROR, "Error: ", e, ConstructorExit.class.getName());
+        	logger.log(LogLevel.ERROR, "Error: ", e, MethodExit.class.getName());
         }
     }
 

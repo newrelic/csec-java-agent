@@ -22,7 +22,7 @@ public class MethodEntry {
             String executionId = ExecutionIDGenerator.getExecutionId();
             Callbacks.doOnEnter(signature, className, methodName, thisArg, args, executionId);
         } catch (Throwable e) {
-        	logger.log(LogLevel.ERROR, "Error: ", e, ConstructorExit.class.getName());
+        	logger.log(LogLevel.ERROR, "Error: ", e, MethodEntry.class.getName());
         }
     }
 }

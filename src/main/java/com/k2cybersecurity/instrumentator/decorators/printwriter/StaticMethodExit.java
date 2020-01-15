@@ -27,7 +27,7 @@ public class StaticMethodExit {
                 Callbacks.doOnError(signature, className, methodName, null, args, error, executionId);
             }
         } catch (Throwable e) {
-        	logger.log(LogLevel.ERROR, "Error: ", e, ConstructorExit.class.getName());
+        	logger.log(LogLevel.ERROR, "Error: ", e, StaticMethodExit.class.getName());
         }
     }
 

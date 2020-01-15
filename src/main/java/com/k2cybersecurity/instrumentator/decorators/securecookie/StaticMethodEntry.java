@@ -22,7 +22,7 @@ public class StaticMethodEntry {
             String executionId = ExecutionIDGenerator.getExecutionId();
             Callbacks.doOnEnter(signature, className, methodName, null, args, executionId);
         } catch (Throwable e) {
-        	logger.log(LogLevel.ERROR, "Error: ", e, ConstructorExit.class.getName());
+        	logger.log(LogLevel.ERROR, "Error: ", e, StaticMethodEntry.class.getName());
         }
     }
 
