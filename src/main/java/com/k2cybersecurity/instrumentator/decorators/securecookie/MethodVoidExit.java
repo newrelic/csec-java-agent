@@ -1,16 +1,12 @@
 package com.k2cybersecurity.instrumentator.decorators.securecookie;
 
-import org.apache.commons.lang3.StringUtils;
-
 import com.k2cybersecurity.instrumentator.utils.ExecutionIDGenerator;
-import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
-import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
-
 import net.bytebuddy.asm.Advice;
+import org.apache.commons.lang3.StringUtils;
 
 public class MethodVoidExit {
 	
-	private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
+//	private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
 
     @Advice.OnMethodExit(onThrowable = Exception.class)
     public static void exit(@Advice.Origin String signature, @Advice.Origin("#t") String className, @Advice.Origin("#m") String methodName, @Advice.Thrown Throwable error, @Advice.This Object thisArg, @Advice.AllArguments Object[] args) {
@@ -26,7 +22,7 @@ public class MethodVoidExit {
                 Callbacks.doOnError(signature, className, methodName, thisArg, args, error, executionId);
             }
         } catch (Throwable e) {
-        	logger.log(LogLevel.ERROR, "Error: ", e, MethodVoidExit.class.getName());
+//        	logger.log(LogLevel.ERROR, "Error: ", e, MethodVoidExit.class.getName());
         }
     }
 }

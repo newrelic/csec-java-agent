@@ -1,16 +1,12 @@
 package com.k2cybersecurity.instrumentator.decorators.sample;
 
-import org.apache.commons.lang3.StringUtils;
-
 import com.k2cybersecurity.instrumentator.utils.ExecutionIDGenerator;
-import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
-import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
-
 import net.bytebuddy.asm.Advice;
+import org.apache.commons.lang3.StringUtils;
 
 public class MethodEntry {
 	
-	private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
+//	private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
 	
     @Advice.OnMethodEnter
     public static void enter(@Advice.Origin String signature, @Advice.Origin("#t") String className, @Advice.Origin("#m") String methodName, @Advice.AllArguments Object[] args, @Advice.This Object thisArg) {
@@ -22,7 +18,7 @@ public class MethodEntry {
             String executionId = ExecutionIDGenerator.getExecutionId();
             Callbacks.doOnEnter(signature, className, methodName, thisArg, args, executionId);
         } catch (Throwable e) {
-        	logger.log(LogLevel.ERROR, "Error: ", e, MethodEntry.class.getName());
+//        	logger.log(LogLevel.ERROR, "Error: ", e, MethodEntry.class.getName());
         }
     }
 }
