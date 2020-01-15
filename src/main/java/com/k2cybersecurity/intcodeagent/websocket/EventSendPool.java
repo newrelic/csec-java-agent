@@ -43,7 +43,7 @@ public class EventSendPool {
 			@Override
 			public Thread newThread(Runnable r) {
 				return new Thread(Thread.currentThread().getThreadGroup(), r,
-						"EventSender");
+						"K2-EventSender");
 			}
 		});
 	}

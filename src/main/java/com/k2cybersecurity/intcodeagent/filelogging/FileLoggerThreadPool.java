@@ -42,7 +42,7 @@ public class FileLoggerThreadPool {
 		executor.setThreadFactory(new ThreadFactory() {
 			@Override
 			public Thread newThread(Runnable r) {
-				return new Thread(Thread.currentThread().getThreadGroup(), r, "Logger");
+				return new Thread(Thread.currentThread().getThreadGroup(), r, "K2-Logger");
 			}
 		});
 	}
