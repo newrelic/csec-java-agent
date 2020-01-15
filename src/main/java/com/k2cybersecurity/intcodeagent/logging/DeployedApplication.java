@@ -1,20 +1,20 @@
-/** 
+/**
  * DeployedApplication.java
- *
+ * <p>
  * Copyright (C) 2017 - k2 Cyber Security, Inc. All rights reserved.
- *
+ * <p>
  * This software is proprietary information of k2 Cyber Security, Inc and
  * constitutes valuable trade secrets of k2 Cyber Security, Inc. You shall
  * not disclose this information and shall use it only in accordance with the
  * terms of License.
- *
+ * <p>
  * K2 CYBER SECURITY, INC MAKES NO REPRESENTATIONS OR WARRANTIES ABOUT THE
  * SUITABILITY OF THE SOFTWARE, EITHER EXPRESS OR IMPLIED, INCLUDING BUT
  * NOT LIMITED TO THE IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
  * PARTICULAR PURPOSE, OR NON-INFRINGEMENT. K2 CYBER SECURITY, INC SHALL
  * NOT BE LIABLE FOR ANY DAMAGES SUFFERED BY LICENSEE AS A RESULT OF USING,
  * MODIFYING OR DISTRIBUTING THIS SOFTWARE OR ITS DERIVATIVES.
- * 
+ * <p>
  * "K2 Cyber Security, Inc"
  */
 package com.k2cybersecurity.intcodeagent.logging;
@@ -34,12 +34,13 @@ import java.util.Set;
  */
 public class DeployedApplication {
 
+	public static final String FORWARD_SLASH = "/";
 	/** Application deployed path. */
 	private String deployedPath;
 
 	/** Application name. */
 	private String appName;
-	
+
 	/** sha 256 of application. */
 	private String sha256;
 
@@ -47,8 +48,6 @@ public class DeployedApplication {
 	private String size;
 
 	private String contextPath;
-
-	private String serverInfo;
 
 	private Set<Integer> ports = new HashSet<>();
 
@@ -71,7 +70,11 @@ public class DeployedApplication {
 	 *            the deployedPath to set
 	 */
 	public void setDeployedPath(String deployedPath) {
-		this.deployedPath = deployedPath;
+		if (StringUtils.isBlank(deployedPath)) {
+			this.deployedPath = StringUtils.EMPTY;
+		} else {
+			this.deployedPath = deployedPath;
+		}
 	}
 
 	/**
@@ -90,9 +93,13 @@ public class DeployedApplication {
 	 *            the appName to set
 	 */
 	public void setAppName(String appName) {
-		this.appName = appName;
+		if (StringUtils.isBlank(appName)) {
+			this.appName = "ROOT";
+		} else {
+			this.appName = appName;
+		}
 	}
-	
+
 	/**
 	 * @return the sha256
 	 */
@@ -121,27 +128,20 @@ public class DeployedApplication {
 		this.size = size;
 	}
 
-
-	@Override
-	public String toString() {
+	@Override public String toString() {
 		return JsonConverter.toJSON(this);
 	}
-
 
 	public String getContextPath() {
 		return contextPath;
 	}
 
 	public void setContextPath(String contextPath) {
-		this.contextPath = contextPath;
-	}
-
-	public String getServerInfo() {
-		return serverInfo;
-	}
-
-	public void setServerInfo(String serverInfo) {
-		this.serverInfo = serverInfo;
+		if (StringUtils.isBlank(contextPath)) {
+			this.contextPath = FORWARD_SLASH;
+		} else {
+			this.contextPath = contextPath;
+		}
 	}
 
 	public Set<Integer> getPorts() {
@@ -155,8 +155,7 @@ public class DeployedApplication {
 	/* (non-Javadoc)
 	 * @see java.lang.Object#hashCode()
 	 */
-	@Override
-	public int hashCode() {
+	@Override public int hashCode() {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + ((sha256 == null) ? 0 : sha256.hashCode());
@@ -166,8 +165,7 @@ public class DeployedApplication {
 	/* (non-Javadoc)
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
-	@Override
-	public boolean equals(Object obj) {
+	@Override public boolean equals(Object obj) {
 		if (this == obj)
 			return true;
 		if (obj == null)
@@ -187,8 +185,8 @@ public class DeployedApplication {
 		return StringUtils.isAnyBlank(deployedPath, appName, contextPath);
 	}
 
-	public boolean updatePorts(Integer port){
-		if(port == null || port == -1){
+	public boolean updatePorts(Integer port) {
+		if (port == null || port == -1) {
 			return false;
 		}
 		return ports.add(port);

@@ -11,7 +11,10 @@ import org.json.simple.JSONObject;
 
 import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
-import java.util.*;
+import java.util.Collection;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Map;
 
 public class ThreadLocalHttpMap {
 
@@ -38,6 +41,7 @@ public class ThreadLocalHttpMap {
 	public static final String NO_HTTP_RESPONSE_FOUND_FOR_CURRENT_CONTEXT = "No HTTP response found for current context";
 	public static final String HTTP_RESPONSE_ALREADY_PARSED_FOR_CURRENT_CONTEXT = "HTTP response already parsed for current context";
 	public static final String GET_CHARACTER_ENCODING = "getCharacterEncoding";
+	public static final String FORWARD_SLASH = "/";
 
 	private Object httpRequest;
 
@@ -201,6 +205,9 @@ public class ThreadLocalHttpMap {
 			Method getContextPath = servletContext.getClass().getMethod(GET_CONTEXT_PATH);
 			getContextPath.setAccessible(true);
 			String contextPath = (String) getContextPath.invoke(servletContext, null);
+			if(StringUtils.isBlank(contextPath)){
+				contextPath = FORWARD_SLASH;
+			}
 			httpRequestBean.setContextPath(contextPath);
 
 			Method getLocalPort = requestClass.getMethod(GET_SERVER_PORT);
@@ -220,12 +227,11 @@ public class ThreadLocalHttpMap {
 //				}
 //			} catch (Exception e) {
 //			}
-//			ServletContextInfo.getInstance().processServletContext(servletContext, contextPath, serverPort);
-//			updateBody();
+			ServletContextInfo.getInstance().processServletContext(servletContext, contextPath, serverPort);
 			isHttpRequestParsed = true;
 			return true;
 		} catch (Exception e) {
-			logger.log(LogLevel.ERROR, ERROR + e + STRING_COLON + Arrays.asList(e.getStackTrace()),
+			logger.log(LogLevel.ERROR, ERROR , e,
 					ThreadLocalHttpMap.class.getName());
 //			e.printStackTrace();
 		} finally {
@@ -261,7 +267,7 @@ public class ThreadLocalHttpMap {
 				headers.put(headerKey, headerFullValue);
 			}
 		} catch (Exception e) {
-			logger.log(LogLevel.ERROR, ERROR + e, ThreadLocalHttpMap.class.getName());
+			logger.log(LogLevel.ERROR, ERROR , e, ThreadLocalHttpMap.class.getName());
 		}
 	}
 
@@ -308,7 +314,7 @@ public class ThreadLocalHttpMap {
 			return true;
 
 		} catch (Exception e) {
-			logger.log(LogLevel.ERROR, ERROR + e, ThreadLocalHttpMap.class.getName());
+			logger.log(LogLevel.ERROR, ERROR , e, ThreadLocalHttpMap.class.getName());
 		}
 		return false;
 	}
@@ -336,7 +342,7 @@ public class ThreadLocalHttpMap {
 				headers.put(headerKey, headerFullValue);
 			}
 		} catch (Exception e) {
-			logger.log(LogLevel.ERROR, ERROR + e, ThreadLocalHttpMap.class.getName());
+			logger.log(LogLevel.ERROR, ERROR , e, ThreadLocalHttpMap.class.getName());
 		}
 	}
 

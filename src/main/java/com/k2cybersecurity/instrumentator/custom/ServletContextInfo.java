@@ -13,7 +13,9 @@ import java.lang.reflect.Method;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 public class ServletContextInfo {
 	public static final String GET_CONTEXT_PATH = "getContextPath";
@@ -36,7 +38,9 @@ public class ServletContextInfo {
 
     private Map<String, DeployedApplication> contextMap = new HashMap<>();
 
-    private String serverInfo = StringUtils.EMPTY;
+	private Set<String> processedContext = new HashSet<>();
+
+	private String serverInfo = StringUtils.EMPTY;
 
     private Integer majorServletVersion;
 
@@ -59,62 +63,16 @@ public class ServletContextInfo {
         return JsonConverter.toJSON(this);
     }
 
-//    public void putContextInfo(String contextPath, String applicationDir, int serverPort) {
-//        DeployedApplication app = new DeployedApplication();
-//        app.updatePorts(serverPort);
-//        app.setServerInfo(serverInfo);
-//        if(StringUtils.isBlank(contextPath)){
-//            app.setContextPath("/");
-//            app.setAppName("ROOT");
-//            app.setDeployedPath(applicationDir);
-//        } else {
-//            Path applicationPath = Paths.get(applicationDir);
-//            if (StringUtils.equals(contextPath, "/")) {
-//                app.setContextPath(contextPath);
-//                app.setAppName(applicationPath.getFileName().toString());
-//                app.setDeployedPath(applicationPath.toString());
-//            } else {
-//                app.setContextPath(contextPath);
-//                app.setAppName(applicationPath.getFileName().toString());
-//                app.setDeployedPath(applicationPath.getParent().toString());
-//            }
-//        }
-//        contextMap.put(contextPath, app);
-//        EventDispatcher.dispatch(app, VulnerabilityCaseType.APP_INFO);
-//    }
-
-    public void putContextInfo(String contextPath, String applicationDir, String appName, int serverPort) {
-        DeployedApplication app = new DeployedApplication();
-        app.updatePorts(serverPort);
-        app.setServerInfo(serverInfo);
-        if(StringUtils.isBlank(appName)){
-            app.setAppName(ROOT);
-        } else {
-            app.setAppName(appName);
-        }
-
-        if(StringUtils.isBlank(contextPath)){
-            app.setContextPath(FORWARD_SLASH);
-            app.setDeployedPath(applicationDir);
-        } else {
-            Path applicationPath = Paths.get(applicationDir);
-            if (StringUtils.equals(contextPath, FORWARD_SLASH)) {
-                app.setDeployedPath(applicationPath.toString());
-            } else {
-                app.setDeployedPath(applicationPath.getParent().toString());
-            }
-            app.setContextPath(contextPath);
-        }
-        contextMap.put(contextPath, app);
-        EventDispatcher.dispatch(app, VulnerabilityCaseType.APP_INFO);
-    }
-
     public String getServerInfo() {
         return serverInfo;
     }
 
     public void setServerInfo(String serverInfo) {
-        this.serverInfo = serverInfo;
+        if(StringUtils.isBlank(serverInfo)){
+			this.serverInfo = StringUtils.EMPTY;
+		}else {
+        	this.serverInfo = serverInfo;
+		}
     }
 
     public Integer getMajorServletVersion() {
@@ -139,7 +97,6 @@ public class ServletContextInfo {
         String serverInfo = StringUtils.EMPTY;
 
         Method getServletContextName = null;
-        Method getContextPath = null;
         Method getRealPath = null;
         Method getServerInfo = null;
         Method getMajorVersion = null;
@@ -153,10 +110,12 @@ public class ServletContextInfo {
                 return;
             }
         } catch (Exception e) {
-            logger.log(LogLevel.ERROR, ERROR + e, ServletContextInfo.class.getName());
+            logger.log(LogLevel.ERROR, ERROR , e, ServletContextInfo.class.getName());
         }
+
+		DeployedApplication deployedApplication = new DeployedApplication();
+
         try {
-            getContextPath = servletContext.getClass().getMethod(GET_CONTEXT_PATH);
             getServerInfo = servletContext.getClass().getMethod(GET_SERVER_INFO);
             getMajorVersion = servletContext.getClass().getMethod(GET_MAJOR_VERSION);
             getMinorVersion = servletContext.getClass().getMethod(GET_MINOR_VERSION);
@@ -164,11 +123,10 @@ public class ServletContextInfo {
             getServletContextName = servletContext.getClass().getMethod(GET_SERVLET_CONTEXT_NAME);
 
 		} catch (Exception e) {
-//            System.out.println("Not found : " + e.getCause());
-//            e.printStackTrace();
+           logger.log(LogLevel.ERROR, ERROR , e, ServletContextInfo.class.getName());
         }
+
         try {
-            contextPath = (String) getContextPath.invoke(servletContext, null);
             serverInfo = (String) getServerInfo.invoke(servletContext, null);
             setMajorServletVersion((Integer) getMajorVersion.invoke(servletContext, null));
             setMinorServletVersion((Integer) getMinorVersion.invoke(servletContext, null));
@@ -176,72 +134,72 @@ public class ServletContextInfo {
             applicationName = (String) getServletContextName.invoke(servletContext, null);
 
         } catch (Exception e) {
-        	logger.log(LogLevel.ERROR, ERROR + e, ServletContextInfo.class.getName());
+        	logger.log(LogLevel.ERROR, ERROR , e, ServletContextInfo.class.getName());
         }
 
 
-		if (StringUtils.isNotBlank(serverInfo)) {
-            setServerInfo(serverInfo);
-        }
+        setServerInfo(serverInfo);
+
+        deployedApplication.setAppName(applicationName);
+        deployedApplication.setContextPath(contextPath);
+        deployedApplication.setDeployedPath(applicationDir);
+        deployedApplication.updatePorts(serverPort);
+
 
         // TODO: This application dir detection is still inaccurate as this brings the location of classloader & not application context root.
 		//        Hence this misses the HTML part of the application.
 		boolean isEmbedded = false;
-		if(StringUtils.isBlank(applicationDir)){
+		if(StringUtils.isBlank(deployedApplication.getDeployedPath())){
 			try {
 				Method getClassLoader = servletContext.getClass().getMethod(GET_CLASS_LOADER);
 				getClassLoader.setAccessible(true);
 				ClassLoader classLoader = (ClassLoader) getClassLoader.invoke(servletContext, null);
 				if(classLoader != null) {
-					applicationDir = classLoader.getResource(FORWARD_SLASH).toString();
-//					System.out.println("Application dir from resource : " + applicationDir);
-					if(StringUtils.startsWithIgnoreCase(applicationDir, FILE)) {
-						applicationDir = StringUtils.removeStart(applicationDir, FILE);
-						applicationDir = StringUtils.substringBefore(applicationDir, WEB_INF);
-					} else if(StringUtils.startsWithIgnoreCase(applicationDir, JAR_FILE)){
+					deployedApplication.setDeployedPath(classLoader.getResource(FORWARD_SLASH).toString());
+					if(StringUtils.startsWithIgnoreCase(deployedApplication.getDeployedPath(), FILE)) {
+						deployedApplication.setDeployedPath(StringUtils.removeStart(deployedApplication.getDeployedPath(), FILE));
+						deployedApplication.setDeployedPath(StringUtils.substringBefore(deployedApplication.getDeployedPath(), WEB_INF));
+					} else if(StringUtils.startsWithIgnoreCase(deployedApplication.getDeployedPath(), JAR_FILE)){
 						isEmbedded = true;
-						applicationDir = StringUtils.substringBetween(applicationDir, JAR_FILE, NOT);
+						deployedApplication.setDeployedPath(StringUtils.substringBetween(deployedApplication.getDeployedPath(), JAR_FILE, NOT));
 					}
-				} else {
-//					System.out.println("Unable to get the application directory. Suspicion is that this is an embedded application.");
-					applicationDir = StringUtils.EMPTY;
 				}
 			} catch (Exception e) {
-				logger.log(LogLevel.ERROR, ERROR + e, ServletContextInfo.class.getName());
+				logger.log(LogLevel.ERROR, ERROR , e, ServletContextInfo.class.getName());
 			}
-
-
 		}
 
-        if(StringUtils.isBlank(contextPath)){
-        	contextPath = FORWARD_SLASH;
-        }
-
-		if(StringUtils.isBlank(applicationName)){
-			if(StringUtils.equals(contextPath, FORWARD_SLASH)){
+		if(StringUtils.isBlank(deployedApplication.getAppName()) || StringUtils.equals(deployedApplication.getAppName(), "ROOT")){
+			if(StringUtils.equals(deployedApplication.getContextPath(), FORWARD_SLASH)){
 				if(isEmbedded){
-					applicationName = Paths.get(applicationDir).getFileName().toString();
-				} else {
-					applicationName = ROOT;
+					deployedApplication.setAppName(Paths.get(deployedApplication.getDeployedPath()).getFileName().toString());
 				}
 			} else {
-				applicationName = StringUtils.removeStart(StringUtils.replace(contextPath, FORWARD_SLASH, REPLACEMENT),
-						REPLACEMENT);
-				applicationName = StringUtils.removeEnd(applicationName, REPLACEMENT);
+				deployedApplication.setAppName(StringUtils.removeStart(StringUtils.replace(deployedApplication.getContextPath(), FORWARD_SLASH, REPLACEMENT),
+						REPLACEMENT));
+				deployedApplication.setAppName(StringUtils.removeEnd(deployedApplication.getAppName(), REPLACEMENT));
 			}
 		}
 
-//		System.out.println("==========================================================================================");
-//		System.out.println("Context details found : ");
-//		System.out.println("Path : " + contextPath);
-//		System.out.println("Major Version : " + majorServletVersion);
-//		System.out.println("Minor Version : " + minorServletVersion);
-//		System.out.println("Server Info : "+ serverInfo);
-//		System.out.println("Application Dir : " +applicationDir );
-//		System.out.println("Application Name : " + applicationName);
-//		System.out.println("==========================================================================================");
+		if(StringUtils.isNotBlank(deployedApplication.getDeployedPath())) {
+			Path applicationPath = Paths.get(deployedApplication.getDeployedPath());
+			if (StringUtils.equals(deployedApplication.getContextPath(), FORWARD_SLASH)) {
+				deployedApplication.setDeployedPath(applicationPath.toString());
+			} else {
+				deployedApplication.setDeployedPath(applicationPath.getParent().toString());
+			}
+		}
 
-		putContextInfo(contextPath, applicationDir, applicationName, serverPort);
-//        System.out.println("Current servlet context map : " + ServletContextInfo.getInstance());
+		this.contextMap.put(deployedApplication.getDeployedPath(), deployedApplication);
+		if(!deployedApplication.isEmpty()) {
+			EventDispatcher.dispatch(deployedApplication, VulnerabilityCaseType.APP_INFO);
+			logger.log(LogLevel.INFO, "Servlet info populated & sent : " + deployedApplication, ServletContextInfo.class.getName());
+		}
+
+		System.out.println("==========================================================================================");
+		System.out.println("New Servlet Context found : ");
+		System.out.println("Details  : " + deployedApplication);
+		System.out.println("==========================================================================================");
+
     }
 }

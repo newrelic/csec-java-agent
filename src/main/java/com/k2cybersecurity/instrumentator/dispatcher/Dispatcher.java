@@ -1,6 +1,7 @@
 package com.k2cybersecurity.instrumentator.dispatcher;
 
 import com.k2cybersecurity.instrumentator.K2Instrumentator;
+import com.k2cybersecurity.instrumentator.custom.ServletContextInfo;
 import com.k2cybersecurity.instrumentator.utils.CallbackUtils;
 import com.k2cybersecurity.instrumentator.utils.HashGenerator;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
@@ -124,7 +125,7 @@ public class Dispatcher implements Runnable {
 //			System.out.println("Processed App Info : " + deployedApplication);
 			ApplicationInfoBean applicationInfoBean = K2Instrumentator.APPLICATION_INFO_BEAN;
 
-			applicationInfoBean.getServerInfo().setName(deployedApplication.getServerInfo());
+			applicationInfoBean.getServerInfo().setName(ServletContextInfo.getInstance().getServerInfo());
 
 			if (!applicationInfoBean.getServerInfo().getDeployedApplications().contains(deployedApplication)) {
 				applicationInfoBean.getServerInfo().getDeployedApplications().add(deployedApplication);
