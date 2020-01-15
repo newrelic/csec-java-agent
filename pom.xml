@@ -179,6 +179,10 @@
 									<shadedPattern>sun.reflect.com.k2cybersecurity.net.bytebuddy.</shadedPattern>
 								</relocation>
 								<relocation>
+									<pattern>org.unbescape.</pattern>
+									<shadedPattern>sun.reflect.com.k2cybersecurity.org.unbescape.</shadedPattern>
+								</relocation>
+								<relocation>
 									<pattern>org.apache.commons.</pattern>
 									<shadedPattern>sun.reflect.com.k2cybersecurity.org.apache.commons.</shadedPattern>
 									<excludes>
