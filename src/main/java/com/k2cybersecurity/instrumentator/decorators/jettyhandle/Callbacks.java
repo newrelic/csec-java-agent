@@ -15,20 +15,20 @@ public class Callbacks {
 
 	public static void doOnEnter(String sourceString, String className, String methodName, Object obj, Object[] args,
 			String exectionId) {
-		 System.out.println("OnEnter Jetty :" + sourceString + " - this : " + obj + " - eid : " + exectionId);
+		// System.out.println("OnEnter :" + sourceString + " - this : " + obj + " - eid
+		// : " + exectionId);
 
 		// TODO: Need more checks here to assert the type of args. Maybe the TYPE_BASED
 		// hook advice should be generated from Code with very specific checks.
 		// Doing checks here will degrade performance.
-		if (!ThreadLocalOperationLock.getInstance().isAcquired() && !ThreadLocalHTTPServiceLock.getInstance()
-				.isAcquired()) {
+		if (!ThreadLocalOperationLock.getInstance().isAcquired() && !ThreadLocalHTTPServiceLock.getInstance().isAcquired()) {
 			try {
 				ThreadLocalOperationLock.getInstance().acquire();
-				ThreadLocalHTTPServiceLock.getInstance().acquire(obj);
-
-				if (args != null && args.length == 4 && args[2] != null
-						&& args[3] != null) {
+				//                System.out.println("Came to service hook :" + exectionId + " :: " + sourceString + " :: " +args[0]+ " :: " +args[1]);
+				if (args != null && args.length == 4 && args[2] != null && args[3] != null) {
 					if(CallbackUtils.checkArgsTypeHeirarchy(args[2], args[3])) {
+						//                        System.out.println("Came to service hook 1:" + exectionId + " :: " + sourceString);
+						ThreadLocalHTTPServiceLock.getInstance().acquire(obj);
 						ThreadLocalHttpMap.getInstance().setHttpRequest(args[2]);
 						ThreadLocalHttpMap.getInstance().setHttpResponse(args[3]);
 					}
@@ -58,7 +58,8 @@ public class Callbacks {
 
 	}
 
-	public static void doOnError(String sourceString, String className, String methodName, Object obj, Object[] args,
+	public static void doOnError(String sourceString, String className, String methodName, Object obj, Object[]
+			args,
 			Throwable error, String exectionId) throws Throwable {
 		if (!ThreadLocalOperationLock.getInstance().isAcquired()) {
 			try {
@@ -87,17 +88,13 @@ public class Callbacks {
 						exectionId, Instant.now().toEpochMilli(), VulnerabilityCaseType.REFLECTED_XSS);
 				String tid = StringUtils.substringBefore(exectionId, SEPARATOR_COLON);
 			}
-			// Clean up
-			ThreadLocalHttpMap.getInstance().cleanState();
-			ThreadLocalDBMap.getInstance().clearAll();
-			ThreadLocalSessionMap.getInstance().clearAll();
-			ThreadLocalLDAPMap.getInstance().clearAll();
-			ThreadLocalExecutionMap.getInstance().getFileLocalMap().clear();
-			ThreadLocalExecutionMap.getInstance().cleanUp();
 		}
-	}
-
-	private static void printReponse() {
-		//		System.out.println(String.format("Intercepted request at end : %s ::: %s", ThreadLocalExecutionMap.getInstance().getHttpRequestBean(), ThreadLocalExecutionMap.getInstance().getHttpRequestBean().getHttpResponseBean()));
+		// Clean up
+		ThreadLocalHttpMap.getInstance().cleanState();
+		ThreadLocalDBMap.getInstance().clearAll();
+		ThreadLocalSessionMap.getInstance().clearAll();
+		ThreadLocalLDAPMap.getInstance().clearAll();
+		ThreadLocalExecutionMap.getInstance().getFileLocalMap().clear();
+		ThreadLocalExecutionMap.getInstance().cleanUp();
 	}
 }
