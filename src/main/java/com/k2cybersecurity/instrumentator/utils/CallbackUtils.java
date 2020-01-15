@@ -196,7 +196,7 @@ public class CallbackUtils {
                             attribVal = attribMatcher.group(2);
                         }
                         attribVal = StringUtils.removeEnd(attribVal, ANGLE_END);
-
+                        attribVal = HtmlEscape.unescapeHtml(attribVal);
                         // If js attrib used, mark PA if any function call is present inside.
                         if (StringUtils.isNotBlank(attribKey)) {
                             if (StringUtils.startsWithIgnoreCase(attribKey, ON)
@@ -352,16 +352,16 @@ public class CallbackUtils {
             consolidatedBody.append(processedBody);
             consolidatedBody.append(FIVE_COLON);
 
-            processedBody = HtmlEscape.unescapeHtml(responseBody);
-            consolidatedBody.append(processedBody);
-            consolidatedBody.append(FIVE_COLON);
+//            processedBody = HtmlEscape.unescapeHtml(responseBody);
+//            consolidatedBody.append(processedBody);
+//            consolidatedBody.append(FIVE_COLON);
 
             consolidatedBody.append(processedHeaders);
             consolidatedBody.append(FIVE_COLON);
 
-            processedHeaders = HtmlEscape.unescapeHtml(processedHeaders);
-            consolidatedBody.append(processedHeaders);
-            consolidatedBody.append(FIVE_COLON);
+//            processedHeaders = HtmlEscape.unescapeHtml(processedHeaders);
+//            consolidatedBody.append(processedHeaders);
+//            consolidatedBody.append(FIVE_COLON);
 
 
             processedBody = urlDecode(processedBody);
@@ -421,23 +421,27 @@ public class CallbackUtils {
 
         try {
             consolidatedBody.append(oldHeaders);
-            consolidatedBody.append(FIVE_COLON);
-            consolidatedBody.append(HtmlEscape.unescapeHtml(oldHeaders));
+//            consolidatedBody.append(FIVE_COLON);
+//            consolidatedBody.append(HtmlEscape.unescapeHtml(oldHeaders));
             consolidatedBody.append(FIVE_COLON);
             consolidatedBody.append(processedBody);
-            consolidatedBody.append(FIVE_COLON);
-            consolidatedBody.append(HtmlEscape.unescapeHtml(processedBody));
+//            consolidatedBody.append(FIVE_COLON);
+//            consolidatedBody.append(HtmlEscape.unescapeHtml(processedBody));
             if(httpRequestBean.getParameterMap() !=null ) {
-                String pmap = HtmlEscape.unescapeHtml(JsonConverter.toJSONMap(httpRequestBean.getParameterMap()));
+                String pmap = JsonConverter.toJSONMap(httpRequestBean.getParameterMap());
                 consolidatedBody.append(FIVE_COLON);
                 consolidatedBody.append(pmap);
+                pmap = StringEscapeUtils.unescapeJson(pmap);
                 consolidatedBody.append(FIVE_COLON);
-                consolidatedBody.append(StringEscapeUtils.unescapeJson(pmap));
-            }
-            if(httpRequestBean.getParts() !=null ) {
+                consolidatedBody.append(pmap);
+                pmap = StringEscapeUtils.unescapeJava(pmap);
                 consolidatedBody.append(FIVE_COLON);
-                consolidatedBody.append(HtmlEscape.unescapeHtml(httpRequestBean.getParts().toString()));
+                consolidatedBody.append(pmap);
             }
+//            if(httpRequestBean.getParts() !=null ) {
+//                consolidatedBody.append(FIVE_COLON);
+//                consolidatedBody.append(HtmlEscape.unescapeHtml(httpRequestBean.getParts().toString()));
+//            }
             // For URL
             consolidatedBody.append(FIVE_COLON);
             consolidatedBody.append(processedUrl);
@@ -524,7 +528,7 @@ public class CallbackUtils {
             if(responseInterface == null) {
                 responseInterface = Class.forName("javax.servlet.http.HttpServletResponse", false, responseArg.getClass().getClassLoader());
             }
-            return requestArg.getClass().isAssignableFrom(requestInterface) && responseArg.getClass().isAssignableFrom(responseInterface);
+            return requestInterface.isAssignableFrom(requestArg.getClass()) && responseInterface.isAssignableFrom(responseArg.getClass());
         } catch (Exception e){
             e.printStackTrace();
         }
@@ -539,7 +543,7 @@ public class CallbackUtils {
             if(requestInterface == null) {
                 requestInterface = Class.forName("javax.servlet.http.HttpServletRequest", false, requestArg.getClass().getClassLoader());
             }
-            return requestArg.getClass().isAssignableFrom(requestInterface);
+            return requestInterface.isAssignableFrom(requestArg.getClass());
         } catch (Exception e){
             e.printStackTrace();
         }
@@ -554,7 +558,7 @@ public class CallbackUtils {
             if(responseInterface == null) {
                 responseInterface = Class.forName("javax.servlet.http.HttpServletResponse", false, responseArg.getClass().getClassLoader());
             }
-            return responseArg.getClass().isAssignableFrom(responseInterface);
+            return responseInterface.isAssignableFrom(responseArg.getClass());
         } catch (Exception e){
             e.printStackTrace();
         }

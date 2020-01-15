@@ -15,8 +15,7 @@ public class Callbacks {
 
 	public static void doOnEnter(String sourceString, String className, String methodName, Object obj, Object[] args,
 			String exectionId) {
-		// System.out.println("OnEnter :" + sourceString + " - this : " + obj + " - eid
-		// : " + exectionId);
+		 System.out.println("OnEnter Jetty :" + sourceString + " - this : " + obj + " - eid : " + exectionId);
 
 		// TODO: Need more checks here to assert the type of args. Maybe the TYPE_BASED
 		// hook advice should be generated from Code with very specific checks.
@@ -88,14 +87,14 @@ public class Callbacks {
 						exectionId, Instant.now().toEpochMilli(), VulnerabilityCaseType.REFLECTED_XSS);
 				String tid = StringUtils.substringBefore(exectionId, SEPARATOR_COLON);
 			}
+			// Clean up
+			ThreadLocalHttpMap.getInstance().cleanState();
+			ThreadLocalDBMap.getInstance().clearAll();
+			ThreadLocalSessionMap.getInstance().clearAll();
+			ThreadLocalLDAPMap.getInstance().clearAll();
+			ThreadLocalExecutionMap.getInstance().getFileLocalMap().clear();
+			ThreadLocalExecutionMap.getInstance().cleanUp();
 		}
-		// Clean up
-		ThreadLocalHttpMap.getInstance().cleanState();
-		ThreadLocalDBMap.getInstance().clearAll();
-		ThreadLocalSessionMap.getInstance().clearAll();
-		ThreadLocalLDAPMap.getInstance().clearAll();
-		ThreadLocalExecutionMap.getInstance().getFileLocalMap().clear();
-		ThreadLocalExecutionMap.getInstance().cleanUp();
 	}
 
 	private static void printReponse() {

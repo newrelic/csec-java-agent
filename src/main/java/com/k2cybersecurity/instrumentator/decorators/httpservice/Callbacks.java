@@ -24,11 +24,11 @@ public class Callbacks {
         if (!ThreadLocalOperationLock.getInstance().isAcquired() && !ThreadLocalHTTPServiceLock.getInstance().isAcquired()) {
             try {
                 ThreadLocalOperationLock.getInstance().acquire();
-                ThreadLocalHTTPServiceLock.getInstance().acquire(obj);
-
-//                System.out.println("Came to service hook :" + exectionId + " :: " + sourceString);
+//                System.out.println("Came to service hook :" + exectionId + " :: " + sourceString + " :: " +args[0]+ " :: " +args[1]);
                 if (args != null && args.length == 2 && args[0] != null && args[1] != null) {
                     if(CallbackUtils.checkArgsTypeHeirarchy(args[0], args[1])) {
+//                        System.out.println("Came to service hook 1:" + exectionId + " :: " + sourceString);
+                        ThreadLocalHTTPServiceLock.getInstance().acquire(obj);
                         ThreadLocalHttpMap.getInstance().setHttpRequest(args[0]);
                         ThreadLocalHttpMap.getInstance().setHttpResponse(args[1]);
                     }
@@ -90,13 +90,13 @@ public class Callbacks {
                 String tid = StringUtils.substringBefore(exectionId, SEPARATOR_COLON);
             }
         }
-        // Clean up
-        ThreadLocalHttpMap.getInstance().cleanState();
-        ThreadLocalDBMap.getInstance().clearAll();
-        ThreadLocalSessionMap.getInstance().clearAll();
-        ThreadLocalLDAPMap.getInstance().clearAll();
-        ThreadLocalExecutionMap.getInstance().getFileLocalMap().clear();
-        ThreadLocalExecutionMap.getInstance().cleanUp();
+            // Clean up
+            ThreadLocalHttpMap.getInstance().cleanState();
+            ThreadLocalDBMap.getInstance().clearAll();
+            ThreadLocalSessionMap.getInstance().clearAll();
+            ThreadLocalLDAPMap.getInstance().clearAll();
+            ThreadLocalExecutionMap.getInstance().getFileLocalMap().clear();
+            ThreadLocalExecutionMap.getInstance().cleanUp();
     }
 
 }
