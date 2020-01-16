@@ -1,5 +1,6 @@
 package com.k2cybersecurity.intcodeagent.websocket;
 
+import com.k2cybersecurity.instrumentator.K2Instrumentator;
 import com.k2cybersecurity.intcodeagent.logging.ServletEventPool.EventAbortPolicy;
 
 import java.util.concurrent.*;
@@ -30,9 +31,11 @@ public class EventSendPool {
 					try {
 						Future<?> future = (Future<?>) r;
 						if (future.isDone()) {
+							K2Instrumentator.JA_HEALTH_CHECK.incrementEventSentCount();
 							future.get();
 						}
 					} catch (Exception e) {
+						K2Instrumentator.JA_HEALTH_CHECK.incrementDropCount();
 					}
 				}
 				super.afterExecute(r, t);

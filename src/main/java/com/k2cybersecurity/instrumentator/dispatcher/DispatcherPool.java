@@ -1,5 +1,6 @@
 package com.k2cybersecurity.instrumentator.dispatcher;
 
+import com.k2cybersecurity.instrumentator.K2Instrumentator;
 import com.k2cybersecurity.intcodeagent.logging.EventThreadPool.EventAbortPolicy;
 import com.k2cybersecurity.intcodeagent.logging.IAgentConstants;
 import com.k2cybersecurity.intcodeagent.models.javaagent.AgentMetaData;
@@ -41,9 +42,11 @@ public class DispatcherPool {
 					try {
 						Future<?> future = (Future<?>) r;
 						if (future.isDone()) {
+							K2Instrumentator.JA_HEALTH_CHECK.incrementProcessedCount();
 							future.get();
 						}
 					} catch (Exception e) {
+						K2Instrumentator.JA_HEALTH_CHECK.incrementDropCount();
 					}
 				}
 				super.afterExecute(r, t);
