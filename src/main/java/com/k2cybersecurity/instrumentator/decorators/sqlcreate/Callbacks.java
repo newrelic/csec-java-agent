@@ -3,13 +3,14 @@ package com.k2cybersecurity.instrumentator.decorators.sqlcreate;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalDBMap;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalHttpMap;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalOperationLock;
-import org.apache.commons.lang3.StringUtils;
 
 import java.time.Instant;
 
 public class Callbacks {
 
 	public static final String PREPARE = "prepare";
+	public static final String PREPARE_STATEMENT = "prepareStatement";
+	public static final String PREPARE_CALL = "prepareCall";
 
 	public static void doOnEnter(String sourceString, String className, String methodName, Object obj, Object[] args,
 			String exectionId) {
@@ -34,16 +35,15 @@ public class Callbacks {
 			try {
 				ThreadLocalOperationLock.getInstance().acquire();
 
-				if (args != null && args.length > 0 && args[0] instanceof String) {
-					if (StringUtils.startsWithIgnoreCase(methodName, PREPARE)) {
+				switch (methodName) {
+				case PREPARE_STATEMENT:
+				case PREPARE_CALL:
+					if ((args != null && args.length > 0) && args[0] instanceof String) {
 						ThreadLocalDBMap.getInstance()
 								.create(returnVal, (String) args[0], className, sourceString, exectionId,
 										Instant.now().toEpochMilli(), false, true, returnVal, true);
-					} else {
-						ThreadLocalDBMap.getInstance()
-								.create(returnVal, (String) args[0], className, sourceString, exectionId,
-										Instant.now().toEpochMilli(), false, false, returnVal, true);
 					}
+					break;
 				}
 			} finally {
 				ThreadLocalOperationLock.getInstance().release();
@@ -53,14 +53,14 @@ public class Callbacks {
 
 	public static void doOnError(String sourceString, String className, String methodName, Object obj, Object[] args,
 			Throwable error, String exectionId) throws Throwable {
-//		if (!ThreadLocalHttpMap.getInstance().isEmpty() && !ThreadLocalOperationLock.getInstance().isAcquired()) {
-//			try {
-//				ThreadLocalOperationLock.getInstance().acquire();
-//				//				System.out.println("OnError :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj
-//				//						+ " - error : " + error + " - eid : " + exectionId);
-//			} finally {
-//				ThreadLocalOperationLock.getInstance().release();
-//			}
-//		}
+		//		if (!ThreadLocalHttpMap.getInstance().isEmpty() && !ThreadLocalOperationLock.getInstance().isAcquired()) {
+		//			try {
+		//				ThreadLocalOperationLock.getInstance().acquire();
+		//				//				System.out.println("OnError :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj
+		//				//						+ " - error : " + error + " - eid : " + exectionId);
+		//			} finally {
+		//				ThreadLocalOperationLock.getInstance().release();
+		//			}
+		//		}
 	}
 }

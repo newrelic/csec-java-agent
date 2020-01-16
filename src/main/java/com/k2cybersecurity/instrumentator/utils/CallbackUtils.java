@@ -277,7 +277,7 @@ public class CallbackUtils {
             }
 
         } catch (Exception e) {
-        	logger.log(LogLevel.ERROR, ERROR + e, CallbackUtils.class.getName());
+        	logger.log(LogLevel.ERROR, ERROR , e, CallbackUtils.class.getName());
         }
         return UNKNOWN;
     }
@@ -403,7 +403,7 @@ public class CallbackUtils {
             }
             return consolidatedBody.toString();
         } catch (Exception e) {
-        	logger.log(LogLevel.ERROR, ERROR + e, CallbackUtils.class.getName());
+        	logger.log(LogLevel.ERROR, ERROR, e, CallbackUtils.class.getName());
         }
         return StringUtils.EMPTY;
     }
@@ -512,7 +512,7 @@ public class CallbackUtils {
             }
             return consolidatedBody.toString();
         } catch (Exception e) {
-        	logger.log(LogLevel.ERROR, ERROR + e, CallbackUtils.class.getName());
+        	logger.log(LogLevel.ERROR, ERROR,e, CallbackUtils.class.getName());
         }
         return StringUtils.EMPTY;
     }

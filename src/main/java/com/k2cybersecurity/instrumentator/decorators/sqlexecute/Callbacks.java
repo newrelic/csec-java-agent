@@ -20,26 +20,24 @@ public class Callbacks {
 		if (!ThreadLocalHttpMap.getInstance().isEmpty() && !ThreadLocalOperationLock.getInstance().isAcquired()) {
 			try {
 				ThreadLocalOperationLock.getInstance().acquire();
-
-				if (args != null && args.length > 0) {
-					if (StringUtils.equals(methodName, NATIVE_SQL)) {
-						ThreadLocalDBMap.getInstance()
-								.create(thisObject, args[0].toString(), className, sourceString, exectionId,
-										Instant.now().toEpochMilli(), false, false, thisObject, false);
-					} else {
-						ThreadLocalDBMap.getInstance()
-								.create(thisObject, args[0].toString(), className, sourceString, exectionId,
-										Instant.now().toEpochMilli(), false, false, thisObject, true);
+				if ((args == null || args.length == 0) || (args != null && args.length > 0
+						&& args[0] instanceof String)) {
+					if (args != null && args.length > 0) {
+						if (StringUtils.equals(methodName, NATIVE_SQL)) {
+							ThreadLocalDBMap.getInstance()
+									.create(thisObject, args[0].toString(), className, sourceString, exectionId,
+											Instant.now().toEpochMilli(), false, false, thisObject, false);
+						} else {
+							ThreadLocalDBMap.getInstance()
+									.create(thisObject, args[0].toString(), className, sourceString, exectionId,
+											Instant.now().toEpochMilli(), false, false, thisObject, true);
+						}
 					}
-				}
-				if (ThreadLocalDBMap.getInstance().get(thisObject) != null) {
-					EventDispatcher.dispatch(new ArrayList<>(ThreadLocalDBMap.getInstance().get(thisObject)),
-							VulnerabilityCaseType.SQL_DB_COMMAND);
-					ThreadLocalDBMap.getInstance().clear(thisObject);
-				} else {
-					//						System.err.println(
-					//								String.format("Null SQL query fired : %s : %s : %s : %s", sourceString, exectionId,
-					//										Arrays.asList(args), args.length));
+					if (ThreadLocalDBMap.getInstance().get(thisObject) != null) {
+						EventDispatcher.dispatch(new ArrayList<>(ThreadLocalDBMap.getInstance().get(thisObject)),
+								VulnerabilityCaseType.SQL_DB_COMMAND);
+						ThreadLocalDBMap.getInstance().clear(thisObject);
+					}
 				}
 			} finally {
 				ThreadLocalOperationLock.getInstance().release();
@@ -61,14 +59,14 @@ public class Callbacks {
 
 	public static void doOnError(String sourceString, String className, String methodName, Object obj, Object[] args,
 			Throwable error, String exectionId) throws Throwable {
-//		if (!ThreadLocalHttpMap.getInstance().isEmpty() && !ThreadLocalOperationLock.getInstance().isAcquired()) {
-//			try {
-//				ThreadLocalOperationLock.getInstance().acquire();
-//				//				System.out.println("OnError :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj
-//				//						+ " - error : " + error + " - eid : " + exectionId);
-//			} finally {
-//				ThreadLocalOperationLock.getInstance().release();
-//			}
-//		}
+		//		if (!ThreadLocalHttpMap.getInstance().isEmpty() && !ThreadLocalOperationLock.getInstance().isAcquired()) {
+		//			try {
+		//				ThreadLocalOperationLock.getInstance().acquire();
+		//				//				System.out.println("OnError :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj
+		//				//						+ " - error : " + error + " - eid : " + exectionId);
+		//			} finally {
+		//				ThreadLocalOperationLock.getInstance().release();
+		//			}
+		//		}
 	}
 }
