@@ -87,7 +87,7 @@ public class Dispatcher implements Runnable {
 
 	@Override
 	public void run() {
-		printDispatch();
+//		printDispatch();
 		try {
 			if (vulnerabilityCaseType.equals(VulnerabilityCaseType.REFLECTED_XSS)) {
 				String xssConstruct = CallbackUtils.checkForReflectedXSS(httpRequestBean);
