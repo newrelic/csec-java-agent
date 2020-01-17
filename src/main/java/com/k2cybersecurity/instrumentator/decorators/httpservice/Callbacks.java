@@ -15,8 +15,8 @@ public class Callbacks {
 
     public static void doOnEnter(String sourceString, String className, String methodName, Object obj, Object[] args,
                                  String exectionId) {
-        // System.out.println("OnEnter :" + sourceString + " - this : " + obj + " - eid
-        // : " + exectionId);
+//         System.out.println("OnEnter :" + sourceString + " - this : " + obj + " - eid
+//         : " + exectionId);
 
         // TODO: Need more checks here to assert the type of args. Maybe the TYPE_BASED
         // hook advice should be generated from Code with very specific checks.
@@ -27,10 +27,11 @@ public class Callbacks {
 //                System.out.println("Came to service hook :" + exectionId + " :: " + sourceString + " :: " +args[0]+ " :: " +args[1]);
                 if (args != null && args.length == 2 && args[0] != null && args[1] != null) {
                     if(CallbackUtils.checkArgsTypeHeirarchy(args[0], args[1])) {
-//                        System.out.println("Came to service hook 1:" + exectionId + " :: " + sourceString);
+//                        System.out.println("Came to service hook 1:" + exectionId + " :: " + sourceString + " :: " + args[0].hashCode());
                         ThreadLocalHTTPServiceLock.getInstance().acquire(obj);
                         ThreadLocalHttpMap.getInstance().setHttpRequest(args[0]);
                         ThreadLocalHttpMap.getInstance().setHttpResponse(args[1]);
+                        ThreadLocalHttpMap.getInstance().setServiceMethodEncountered(true);
                     }
                 }
             } catch (Exception e) {
@@ -48,8 +49,7 @@ public class Callbacks {
         if (!ThreadLocalOperationLock.getInstance().isAcquired()) {
             try {
                 ThreadLocalOperationLock.getInstance().acquire();
-                // System.out.println("OnExit :" + sourceString + " - this : " + obj + " -
-                // return : " + returnVal + " - eid : " + exectionId);
+//                 System.out.println("OnExit :" + sourceString + " - this : " + obj + " - return : " + returnVal + " - eid : " + exectionId);
                 onHttpTermination(sourceString, exectionId);
             } finally {
                 ThreadLocalHTTPServiceLock.getInstance().release(obj);

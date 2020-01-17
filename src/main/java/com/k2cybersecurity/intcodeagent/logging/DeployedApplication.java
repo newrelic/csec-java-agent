@@ -38,6 +38,10 @@ public class DeployedApplication {
 	/** Application deployed path. */
 	private String deployedPath;
 
+	/** Application resource path. */
+//	@JsonIgnore
+	private String resourcePath;
+
 	/** Application name. */
 	private String appName;
 
@@ -50,6 +54,8 @@ public class DeployedApplication {
 	private String contextPath;
 
 	private Set<Integer> ports = new HashSet<>();
+
+	private boolean isEmbedded = false;
 
 	public DeployedApplication() {
 	}
@@ -75,6 +81,26 @@ public class DeployedApplication {
 		} else {
 			this.deployedPath = deployedPath;
 		}
+	}
+
+	public String getResourcePath() {
+		return resourcePath;
+	}
+
+	public void setResourcePath(String resourcePath) {
+		if (StringUtils.isBlank(resourcePath)) {
+			this.resourcePath = StringUtils.EMPTY;
+		} else {
+			this.resourcePath = resourcePath;
+		}
+	}
+
+	public boolean isEmbedded() {
+		return isEmbedded;
+	}
+
+	public void setEmbedded(boolean embedded) {
+		isEmbedded = embedded;
 	}
 
 	/**

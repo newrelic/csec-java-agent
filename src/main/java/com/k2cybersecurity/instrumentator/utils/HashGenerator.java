@@ -29,6 +29,7 @@ public class HashGenerator {
 	public static final String FILE_FOR_SHA_CALC = "File for SHA calc : ";
 	public static final String UNSORTED_SHA_LIST = "Unsorted SHA list : ";
 	public static final String SORTED_SHA_LIST = "Sorted SHA list : ";
+	public static final String ERROR = "Error :";
 
 	/**
 	 * generates hash of a file content according to the algorithm provided.
@@ -43,7 +44,7 @@ public class HashGenerator {
 			byte[] hashedBytes = digest.digest();
 			return convertByteArrayToHexString(hashedBytes);
 		} catch (NoSuchAlgorithmException e) {
-			logger.log(LogLevel.ERROR, "Error :"+ e, HashGenerator.class.getName());
+			logger.log(LogLevel.ERROR, ERROR, e, HashGenerator.class.getName());
 		}
 		return null;
 	}

@@ -31,6 +31,7 @@ public class Callbacks {
 						ThreadLocalHTTPServiceLock.getInstance().acquire(obj);
 						ThreadLocalHttpMap.getInstance().setHttpRequest(args[2]);
 						ThreadLocalHttpMap.getInstance().setHttpResponse(args[3]);
+						ThreadLocalHttpMap.getInstance().setServiceMethodEncountered(true);
 					}
 				}
 			} catch (Exception e) {

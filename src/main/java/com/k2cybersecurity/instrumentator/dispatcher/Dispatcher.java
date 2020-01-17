@@ -16,7 +16,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
+import java.io.File;
 import java.io.ObjectInputStream;
+import java.nio.file.Paths;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -33,6 +35,8 @@ public class Dispatcher implements Runnable {
 	private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
 	public static final String ERROR = "Error : ";
 	public static final char CH_DOT = '.';
+	public static final String EMPTY_FILE_SHA = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855";
+	public static final String DROPPING_APPLICATION_INFO_POSTING_DUE_TO_SIZE_0 = "Dropping application info posting due to size 0 : ";
 	private HttpRequestBean httpRequestBean;
 	private AgentMetaData metaData;
 	private Object event;
@@ -110,7 +114,7 @@ public class Dispatcher implements Runnable {
 				return;
 			}
 		} catch (Exception e) {
-			logger.log(LogLevel.ERROR, ERROR + e, Dispatcher.class.getName());
+			logger.log(LogLevel.ERROR, ERROR , e, Dispatcher.class.getName());
 		}
 
 		if (event == null) {
@@ -121,7 +125,22 @@ public class Dispatcher implements Runnable {
 		if (vulnerabilityCaseType.equals(VulnerabilityCaseType.APP_INFO)) {
 			DeployedApplication deployedApplication = (DeployedApplication) event;
 //			System.out.println("App Info received : " + deployedApplication);
+			if(StringUtils.isNotBlank(deployedApplication.getDeployedPath())){
+				 File deploymentDir =  Paths.get(deployedApplication.getDeployedPath()).toFile();
+				 if(!deployedApplication.isEmbedded() && (!deploymentDir.exists() || deploymentDir.listFiles() == null || deploymentDir.listFiles().length == 0)){
+					 File resourceDir =  Paths.get(deployedApplication.getResourcePath()).toFile();
+					 if(resourceDir.exists() && resourceDir.listFiles() != null && resourceDir.listFiles().length > 0){
+					 	deployedApplication.setDeployedPath(deployedApplication.getResourcePath());
+					 }
+				 }
+			}
 			HashGenerator.updateShaAndSize(deployedApplication);
+
+			if(StringUtils.equals(deployedApplication.getSha256(), EMPTY_FILE_SHA)){
+				logger.log(LogLevel.ERROR, DROPPING_APPLICATION_INFO_POSTING_DUE_TO_SIZE_0 + deployedApplication , Dispatcher.class.getName());
+				return;
+			}
+
 //			System.out.println("Processed App Info : " + deployedApplication);
 			ApplicationInfoBean applicationInfoBean = K2Instrumentator.APPLICATION_INFO_BEAN;
 

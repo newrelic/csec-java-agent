@@ -32,9 +32,11 @@ public class Callbacks {
 	public static void doOnExit(String sourceString, String className, String methodName, Object obj, Object[] args,
 			Object returnVal, String exectionId) {
 		if (!ThreadLocalOperationLock.getInstance().isAcquired()) {
-//			System.out.println("Came to servletrequest hook exit :" + exectionId + " :: " + sourceString + " :: " + obj + " :: " + returnVal);
 			try {
 				ThreadLocalOperationLock.getInstance().acquire();
+
+
+
 				if (!ThreadLocalHttpMap.getInstance().isEmpty() && obj !=null && ThreadLocalHttpMap.getInstance().getHttpRequest() !=null && ThreadLocalHttpMap.getInstance().getHttpRequest().hashCode() == obj.hashCode()) {
 					if (StringUtils.equals(methodName, GET_READER)) {
 						ThreadLocalHttpMap.getInstance().setRequestReader(returnVal);
@@ -43,8 +45,8 @@ public class Callbacks {
 						ThreadLocalHttpMap.getInstance().setRequestInputStream(returnVal);
 						ThreadLocalHTTPIOLock.getInstance().resetLock();
 					}
-				} else if(StringUtils.equals(methodName, INIT) && obj != null && CallbackUtils.checkArgsTypeHeirarchyRequest(obj)) {
-//					System.out.println("Servlet request constructor exit aaya : "+ exectionId + " :: " + sourceString + " :: " + obj + " :: " + returnVal + " :: " + methodName);
+				} else if(StringUtils.equals(methodName, INIT) && !ThreadLocalHttpMap.getInstance().isServiceMethodEncountered() && obj != null && CallbackUtils.checkArgsTypeHeirarchyRequest(obj)) {
+//					System.out.println("Servlet request constructor exit aaya : "+ exectionId + " :: " + sourceString + " :: " + obj.hashCode() + " :: " + returnVal + " :: " + methodName);
 					ThreadLocalHttpMap.getInstance().setHttpRequest(obj);
 				}
 

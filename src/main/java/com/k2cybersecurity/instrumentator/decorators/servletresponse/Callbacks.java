@@ -46,7 +46,7 @@ public class Callbacks {
                         ThreadLocalHTTPIOLock.getInstance().resetLock();
 
                     }
-                } else if(StringUtils.equals(methodName, INIT) && obj != null && CallbackUtils.checkArgsTypeHeirarchyResponse(obj)) {
+                } else if(StringUtils.equals(methodName, INIT) && !ThreadLocalHttpMap.getInstance().isServiceMethodEncountered() && obj != null && CallbackUtils.checkArgsTypeHeirarchyResponse(obj)) {
 //                    System.out.println("Servlet response constructor exit aaya : "+ exectionId + " :: " + sourceString + " :: " + obj + " :: " + returnVal + " :: " + methodName);
                     ThreadLocalHttpMap.getInstance().setHttpResponse(obj);
                 }

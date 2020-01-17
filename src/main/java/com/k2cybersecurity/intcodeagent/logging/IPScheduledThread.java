@@ -1,7 +1,11 @@
 package com.k2cybersecurity.intcodeagent.logging;
 
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.HOST_IP_PROPERTIES_FILE;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.IPSCHEDULEDTHREAD_;
+import com.k2cybersecurity.instrumentator.K2Instrumentator;
+import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
+import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
+import com.k2cybersecurity.intcodeagent.models.javaagent.JAHealthCheck;
+import com.k2cybersecurity.intcodeagent.websocket.WSClient;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -12,13 +16,8 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.apache.commons.lang3.StringUtils;
-
-import com.k2cybersecurity.instrumentator.K2Instrumentator;
-import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
-import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
-import com.k2cybersecurity.intcodeagent.models.javaagent.JAHealthCheck;
-import com.k2cybersecurity.intcodeagent.websocket.WSClient;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.HOST_IP_PROPERTIES_FILE;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.IPSCHEDULEDTHREAD_;
 
 public class IPScheduledThread {
 
@@ -59,7 +58,7 @@ public class IPScheduledThread {
 								}
 							} catch (URISyntaxException | InterruptedException e) {
 								logger.log(LogLevel.SEVERE,
-										"Error in WSock reconnection : " + e.getMessage() + " : " + e.getCause(), IPScheduledThread.class.getName());
+										"Error in WSock reconnection : " + e.getMessage() + " : " + e.getCause(),e, IPScheduledThread.class.getName());
 							}
 						}
 

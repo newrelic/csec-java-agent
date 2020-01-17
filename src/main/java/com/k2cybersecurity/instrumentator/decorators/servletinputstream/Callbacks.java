@@ -27,14 +27,13 @@ public class Callbacks {
 
     public static void doOnExit(String sourceString, String className, String methodName, Object obj, Object[] args,
                                 Object returnVal, String exectionId) {
-//        System.out.println("OnExit servletinputstream :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj + " - return : " + returnVal + " - eid : " + exectionId);
+//        System.out.println("OnExit servletinputstream :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj.hashCode() + " - return : " + returnVal + " - eid : " + exectionId);
 
         if (!ThreadLocalHttpMap.getInstance().isEmpty() && ThreadLocalHttpMap.getInstance().getRequestInputStream() !=null && obj != null && ThreadLocalHttpMap.getInstance().getRequestInputStream().hashCode() == obj.hashCode() && !ThreadLocalOperationLock.getInstance().isAcquired()) {
             if (ThreadLocalHTTPIOLock.getInstance().isAcquired(obj)) {
                 try {
                     ThreadLocalOperationLock.getInstance().acquire();
 //                    System.out.println("servletinputstream ke read me aaya :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj + " - return : " + returnVal + " - eid : " + exectionId);
-//                    ThreadLocalHTTPIOLock.getInstance().acquire(obj);
 
                     switch (methodName) {
                         case READ:

@@ -3,7 +3,6 @@ package com.k2cybersecurity.intcodeagent.logging;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.k2cybersecurity.instrumentator.K2Instrumentator;
-import com.k2cybersecurity.instrumentator.utils.HashGenerator;
 import com.k2cybersecurity.intcodeagent.constants.MapConstants;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
@@ -589,7 +588,7 @@ public class ProcessorThread implements Runnable {
 					try {
 						object.put(field.getName(), new JSONParser().parse(bsonDoc.toString()));
 					} catch (Exception e) {
-						logger.log(LogLevel.ERROR, "Error :"+ e, ProcessorThread.class.getName());
+						logger.log(LogLevel.ERROR, "Error :", e, ProcessorThread.class.getName());
 					}
 				}
 			}

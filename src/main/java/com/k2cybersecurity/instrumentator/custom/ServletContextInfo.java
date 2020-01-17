@@ -146,36 +146,38 @@ public class ServletContextInfo {
         deployedApplication.setDeployedPath(applicationDir);
         deployedApplication.updatePorts(serverPort);
 
-
-        // TODO: This application dir detection is still inaccurate as this brings the location of classloader & not application context root.
+		// TODO: This application dir detection is still inaccurate as this brings the location of classloader & not application context root.
 		//        Hence this misses the HTML part of the application.
-		boolean isEmbedded = false;
-		if(StringUtils.isBlank(deployedApplication.getDeployedPath())){
-			try {
-				Method getClassLoader = servletContext.getClass().getMethod(GET_CLASS_LOADER);
-				getClassLoader.setAccessible(true);
-				ClassLoader classLoader = (ClassLoader) getClassLoader.invoke(servletContext, null);
-				if(classLoader != null) {
-					URL resPath = classLoader.getResource(FORWARD_SLASH);
-					if(resPath != null) {
-						deployedApplication.setDeployedPath(resPath.toString());
-					}
-					if(StringUtils.startsWithIgnoreCase(deployedApplication.getDeployedPath(), FILE)) {
-						deployedApplication.setDeployedPath(StringUtils.removeStart(deployedApplication.getDeployedPath(), FILE));
-						deployedApplication.setDeployedPath(StringUtils.substringBefore(deployedApplication.getDeployedPath(), WEB_INF));
-					} else if(StringUtils.startsWithIgnoreCase(deployedApplication.getDeployedPath(), JAR_FILE)){
-						isEmbedded = true;
-						deployedApplication.setDeployedPath(StringUtils.substringBetween(deployedApplication.getDeployedPath(), JAR_FILE, NOT));
-					}
+		try {
+			Method getClassLoader = servletContext.getClass().getMethod(GET_CLASS_LOADER);
+			getClassLoader.setAccessible(true);
+			ClassLoader classLoader = (ClassLoader) getClassLoader.invoke(servletContext, null);
+			if(classLoader != null) {
+				URL resPath = classLoader.getResource(FORWARD_SLASH);
+				if(resPath != null) {
+					deployedApplication.setResourcePath(resPath.toString());
 				}
-			} catch (Exception e) {
-				logger.log(LogLevel.ERROR, ERROR , e, ServletContextInfo.class.getName());
+				if(StringUtils.startsWithIgnoreCase(deployedApplication.getResourcePath(), JAR_FILE)){
+					deployedApplication.setEmbedded(true);
+					deployedApplication.setResourcePath(StringUtils.substringBetween(deployedApplication.getResourcePath(), JAR_FILE, NOT));
+				} else {
+					deployedApplication.setResourcePath(StringUtils.removeStart(deployedApplication.getResourcePath(), FILE));
+					deployedApplication.setResourcePath(StringUtils.substringBefore(deployedApplication.getResourcePath(), WEB_INF));
+				}
 			}
+		} catch (Exception e) {
+			logger.log(LogLevel.ERROR, ERROR , e, ServletContextInfo.class.getName());
+		}
+
+
+
+		if(StringUtils.isBlank(deployedApplication.getDeployedPath()) && StringUtils.isNotBlank(deployedApplication.getResourcePath())){
+			deployedApplication.setDeployedPath(deployedApplication.getResourcePath());
 		}
 
 		if(StringUtils.isBlank(deployedApplication.getAppName()) || StringUtils.equals(deployedApplication.getAppName(), "ROOT")){
 			if(StringUtils.equals(deployedApplication.getContextPath(), FORWARD_SLASH)){
-				if(isEmbedded){
+				if(deployedApplication.isEmbedded()){
 					deployedApplication.setAppName(Paths.get(deployedApplication.getDeployedPath()).getFileName().toString());
 				}
 			} else {

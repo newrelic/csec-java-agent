@@ -69,6 +69,8 @@ public class ThreadLocalHttpMap {
 
 	private Object responseWriter;
 
+	private boolean isServiceMethodEncountered = false;
+
 	private static ThreadLocal<ThreadLocalHttpMap> instance = new ThreadLocal<ThreadLocalHttpMap>() {
 		@Override protected ThreadLocalHttpMap initialValue() {
 			return new ThreadLocalHttpMap();
@@ -150,6 +152,14 @@ public class ThreadLocalHttpMap {
 
 	public void setResponseBufferLimit(int responseBufferLimit) {
 		this.responseBufferLimit = responseBufferLimit;
+	}
+
+	public boolean isServiceMethodEncountered() {
+		return isServiceMethodEncountered;
+	}
+
+	public void setServiceMethodEncountered(boolean serviceMethodEncountered) {
+		isServiceMethodEncountered = serviceMethodEncountered;
 	}
 
 	public boolean parseHttpRequest() {
@@ -505,6 +515,7 @@ public class ThreadLocalHttpMap {
 		requestReader = null;
 		responseOutputStream = null;
 		responseWriter = null;
+		isServiceMethodEncountered = false;
 		ThreadLocalHTTPIOLock.getInstance().resetLock();
 	}
 
