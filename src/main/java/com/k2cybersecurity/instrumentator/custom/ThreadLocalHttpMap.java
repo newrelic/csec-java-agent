@@ -198,6 +198,24 @@ public class ThreadLocalHttpMap {
 				httpRequestBean.setUrl(httpRequestBean.getUrl() + QUESTION_MARK + queryString);
 			}
 
+			Method getLocalPort = requestClass.getMethod(GET_SERVER_PORT);
+			getLocalPort.setAccessible(true);
+			int serverPort = (Integer) getLocalPort.invoke(httpRequest, null);
+			httpRequestBean.setServerPort(serverPort);
+
+			Method getParameterMap = requestClass.getMethod(GET_PARAMETER_MAP);
+			getParameterMap.setAccessible(true);
+			httpRequestBean.setParameterMap((Map<String, String[]>) getParameterMap.invoke(httpRequest, null));
+
+			//			try {
+			//				if (StringUtils.containsIgnoreCase(httpRequestBean.getContentType(), "multipart/form-data")) {
+			//					Method getParts = requestClass.getMethod("getParts");
+			//					getParts.setAccessible(true);
+			//					httpRequestBean.setParts(Collections.singleton(getParts.invoke(httpRequest, null)));
+			//				}
+			//			} catch (Exception e) {
+			//			}
+
 			Method getServletContext = requestClass.getMethod(GET_SERVLET_CONTEXT);
 			getServletContext.setAccessible(true);
 			Object servletContext = getServletContext.invoke(httpRequest, null);
@@ -210,24 +228,8 @@ public class ThreadLocalHttpMap {
 			}
 			httpRequestBean.setContextPath(contextPath);
 
-			Method getLocalPort = requestClass.getMethod(GET_SERVER_PORT);
-			getLocalPort.setAccessible(true);
-			int serverPort = (Integer) getLocalPort.invoke(httpRequest, null);
-			httpRequestBean.setServerPort(serverPort);
-
-			Method getParameterMap = requestClass.getMethod(GET_PARAMETER_MAP);
-			getParameterMap.setAccessible(true);
-			httpRequestBean.setParameterMap((Map<String, String[]>) getParameterMap.invoke(httpRequest, null));
-
-//			try {
-//				if (StringUtils.containsIgnoreCase(httpRequestBean.getContentType(), "multipart/form-data")) {
-//					Method getParts = requestClass.getMethod("getParts");
-//					getParts.setAccessible(true);
-//					httpRequestBean.setParts(Collections.singleton(getParts.invoke(httpRequest, null)));
-//				}
-//			} catch (Exception e) {
-//			}
 			ServletContextInfo.getInstance().processServletContext(servletContext, contextPath, serverPort);
+
 			isHttpRequestParsed = true;
 			return true;
 		} catch (Exception e) {
@@ -239,7 +241,7 @@ public class ThreadLocalHttpMap {
 //					RAW_INTERCEPTED_REQUEST + ThreadLocalExecutionMap.getInstance().getHttpRequestBean(),
 //					ThreadLocalHttpMap.class.getName());
 		}
-		return false;
+		return !httpRequestBean.isEmpty();
 	}
 
 	public void processHeaders(Map<String, String> headers, Object httpRequest) {
@@ -279,6 +281,7 @@ public class ThreadLocalHttpMap {
 			return false;
 		}
 		//        System.out.println("Parsing HTTP response : " + httpResponse.hashCode());
+		HttpRequestBean httpRequestBean = ThreadLocalExecutionMap.getInstance().getHttpRequestBean();
 
 		try {
 			updateResponseBody();
@@ -288,8 +291,6 @@ public class ThreadLocalHttpMap {
 //						ThreadLocalHttpMap.class.getName());
 				return true;
 			}
-
-			HttpRequestBean httpRequestBean = ThreadLocalExecutionMap.getInstance().getHttpRequestBean();
 
 			Class responseClass = httpResponse.getClass();
 
@@ -316,7 +317,7 @@ public class ThreadLocalHttpMap {
 		} catch (Exception e) {
 			logger.log(LogLevel.ERROR, ERROR , e, ThreadLocalHttpMap.class.getName());
 		}
-		return false;
+		return !httpRequestBean.getHttpResponseBean().isEmpty();
 	}
 
 	public void processResponseHeaders(Map<String, String> headers, Object httpRequest) {
