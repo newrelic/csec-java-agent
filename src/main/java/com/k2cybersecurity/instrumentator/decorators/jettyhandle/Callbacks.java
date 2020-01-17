@@ -15,19 +15,19 @@ public class Callbacks {
 
 	public static void doOnEnter(String sourceString, String className, String methodName, Object obj, Object[] args,
 			String exectionId) {
-		// System.out.println("OnEnter :" + sourceString + " - this : " + obj + " - eid
-		// : " + exectionId);
+//		System.out.println("OnEnter :" + sourceString + " - this : " + obj + " - eid : " + exectionId);
 
 		// TODO: Need more checks here to assert the type of args. Maybe the TYPE_BASED
 		// hook advice should be generated from Code with very specific checks.
 		// Doing checks here will degrade performance.
-		if (!ThreadLocalOperationLock.getInstance().isAcquired() && !ThreadLocalHTTPServiceLock.getInstance().isAcquired()) {
+		if (!ThreadLocalOperationLock.getInstance().isAcquired() && !ThreadLocalHTTPServiceLock.getInstance()
+				.isAcquired()) {
 			try {
 				ThreadLocalOperationLock.getInstance().acquire();
-				//                System.out.println("Came to service hook :" + exectionId + " :: " + sourceString + " :: " +args[0]+ " :: " +args[1]);
+				//				                System.out.println("Came to service hook :" + exectionId + " :: " + sourceString + " :: " +args[0]+ " :: " +args[1]);
 				if (args != null && args.length == 4 && args[2] != null && args[3] != null) {
-					if(CallbackUtils.checkArgsTypeHeirarchy(args[2], args[3])) {
-						//                        System.out.println("Came to service hook 1:" + exectionId + " :: " + sourceString);
+					if (CallbackUtils.checkArgsTypeHeirarchy(args[2], args[3])) {
+//						System.out.println("Came to service hook 1:" + exectionId + " :: " + sourceString);
 						ThreadLocalHTTPServiceLock.getInstance().acquire(obj);
 						ThreadLocalHttpMap.getInstance().setHttpRequest(args[2]);
 						ThreadLocalHttpMap.getInstance().setHttpResponse(args[3]);
@@ -59,8 +59,7 @@ public class Callbacks {
 
 	}
 
-	public static void doOnError(String sourceString, String className, String methodName, Object obj, Object[]
-			args,
+	public static void doOnError(String sourceString, String className, String methodName, Object obj, Object[] args,
 			Throwable error, String exectionId) throws Throwable {
 		if (!ThreadLocalOperationLock.getInstance().isAcquired()) {
 			try {
@@ -84,9 +83,10 @@ public class Callbacks {
 			//            System.out.println("Passing to XSS detection : " + exectionId + " :: " + ThreadLocalExecutionMap.getInstance().getHttpRequestBean().getHttpResponseBean().toString()+ " :: " + ThreadLocalExecutionMap.getInstance().getHttpRequestBean().getHttpResponseBean().toString());
 			if (!ThreadLocalExecutionMap.getInstance().getHttpRequestBean().getHttpResponseBean().isEmpty()) {
 				ThreadLocalHttpMap.getInstance().printInterceptedRequestResponse();
-				EventDispatcher.dispatch(
-						new HttpRequestBean(ThreadLocalExecutionMap.getInstance().getHttpRequestBean()), sourceString,
-						exectionId, Instant.now().toEpochMilli(), VulnerabilityCaseType.REFLECTED_XSS);
+				EventDispatcher
+						.dispatch(new HttpRequestBean(ThreadLocalExecutionMap.getInstance().getHttpRequestBean()),
+								sourceString, exectionId, Instant.now().toEpochMilli(),
+								VulnerabilityCaseType.REFLECTED_XSS);
 				String tid = StringUtils.substringBefore(exectionId, SEPARATOR_COLON);
 			}
 		}

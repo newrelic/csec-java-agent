@@ -89,7 +89,7 @@ public class Hooks {
 		NAME_BASED_HOOKS.put("java.security.SecureRandom", Arrays.asList(new String[]{"nextBytes", "nextInt", "nextLong", "nextBoolean", "nextFloat", "nextDouble", "nextGaussian"}));
 		
 		// Jetty Servlet Hooks
-		NAME_BASED_HOOKS.put("org.eclipse.jetty.server.Handler", Collections.singletonList("handle"));
+		TYPE_BASED_HOOKS.put("org.eclipse.jetty.server.Handler", Collections.singletonList("handle"));
 
 		//XPath
 
