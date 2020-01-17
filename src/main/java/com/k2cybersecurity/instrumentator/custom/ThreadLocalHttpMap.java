@@ -514,7 +514,10 @@ public class ThreadLocalHttpMap {
 		}
 	}
 
+	/**
+	 * As we have removed httpResponse from this check, this might fuck things up at places we yet not know. If any unwarrented error occurs
+	 */
 	public boolean isEmpty() {
-		return httpRequest == null || httpResponse == null;
+		return httpRequest == null;
 	}
 }

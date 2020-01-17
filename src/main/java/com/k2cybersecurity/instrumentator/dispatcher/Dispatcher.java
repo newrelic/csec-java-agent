@@ -505,8 +505,8 @@ public class Dispatcher implements Runnable {
 		if (ObjectInputStream.class.getName().equals(klassName)
 				&& StringUtils.equals(trace[index].getMethodName(), READ_OBJECT)) {
 			eventBean.getMetaData().setTriggerViaDeserialisation(true);
-			logger.log(LogLevel.DEBUG, String.format(PRINTING_STACK_TRACE_FOR_DESERIALISE_EVENT_S_S,
-					eventBean.getId(), Arrays.asList(trace)), Dispatcher.class.getName());
+//			logger.log(LogLevel.DEBUG, String.format(PRINTING_STACK_TRACE_FOR_DESERIALISE_EVENT_S_S,
+//					eventBean.getId(), Arrays.asList(trace)), Dispatcher.class.getName());
 
 		}
 	}
@@ -517,15 +517,15 @@ public class Dispatcher implements Runnable {
 			eventBean.getMetaData().setTriggerViaRCI(true);
 			eventBean.getMetaData().getRciMethodsCalls().add(trace[index].toString());
 			eventBean.getMetaData().getRciMethodsCalls().add(trace[index - 1].toString());
-			logger.log(LogLevel.DEBUG, String.format(PRINTING_STACK_TRACE_FOR_PROBABLE_RCI_EVENT_S_S,
-					eventBean.getId(), Arrays.asList(trace)), Dispatcher.class.getName());
+//			logger.log(LogLevel.DEBUG, String.format(PRINTING_STACK_TRACE_FOR_PROBABLE_RCI_EVENT_S_S,
+//					eventBean.getId(), Arrays.asList(trace)), Dispatcher.class.getName());
 		}
 		if (StringUtils.contains(klassName, REFLECT_NATIVE_METHOD_ACCESSOR_IMPL)
 				&& StringUtils.equals(trace[index].getMethodName(), INVOKE_0) && index > 0) {
 			eventBean.getMetaData().setTriggerViaRCI(true);
 			eventBean.getMetaData().getRciMethodsCalls().add(trace[index - 1].toString());
-			logger.log(LogLevel.DEBUG, String.format(PRINTING_STACK_TRACE_FOR_RCI_EVENT_S_S, eventBean.getId(),
-					Arrays.asList(trace)), Dispatcher.class.getName());
+//			logger.log(LogLevel.DEBUG, String.format(PRINTING_STACK_TRACE_FOR_RCI_EVENT_S_S, eventBean.getId(),
+//					Arrays.asList(trace)), Dispatcher.class.getName());
 		}
 	}
 
