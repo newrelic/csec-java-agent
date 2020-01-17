@@ -75,27 +75,32 @@ public class Callbacks {
 	}
 
 	private static void onHttpTermination(String sourceString, String exectionId) {
-		if (!ThreadLocalHttpMap.getInstance().isEmpty()) {
-			ThreadLocalHttpMap.getInstance().parseHttpRequest();
-			ThreadLocalHttpMap.getInstance().parseHttpResponse();
-			CallbackUtils.checkForFileIntegrity(ThreadLocalExecutionMap.getInstance().getFileLocalMap());
-			//            CallbackUtils.checkForReflectedXSS(ThreadLocalExecutionMap.getInstance().getHttpRequestBean());
-			//            System.out.println("Passing to XSS detection : " + exectionId + " :: " + ThreadLocalExecutionMap.getInstance().getHttpRequestBean().getHttpResponseBean().toString()+ " :: " + ThreadLocalExecutionMap.getInstance().getHttpRequestBean().getHttpResponseBean().toString());
-			if (!ThreadLocalExecutionMap.getInstance().getHttpRequestBean().getHttpResponseBean().isEmpty()) {
-				ThreadLocalHttpMap.getInstance().printInterceptedRequestResponse();
-				EventDispatcher
-						.dispatch(new HttpRequestBean(ThreadLocalExecutionMap.getInstance().getHttpRequestBean()),
-								sourceString, exectionId, Instant.now().toEpochMilli(),
-								VulnerabilityCaseType.REFLECTED_XSS);
-				String tid = StringUtils.substringBefore(exectionId, SEPARATOR_COLON);
+		try {
+			if (!ThreadLocalHttpMap.getInstance().isEmpty()) {
+				ThreadLocalHttpMap.getInstance().parseHttpRequest();
+				ThreadLocalHttpMap.getInstance().parseHttpResponse();
+				CallbackUtils.checkForFileIntegrity(ThreadLocalExecutionMap.getInstance().getFileLocalMap());
+				//            CallbackUtils.checkForReflectedXSS(ThreadLocalExecutionMap.getInstance().getHttpRequestBean());
+				//            System.out.println("Passing to XSS detection : " + exectionId + " :: " + ThreadLocalExecutionMap.getInstance().getHttpRequestBean().getHttpResponseBean().toString()+ " :: " + ThreadLocalExecutionMap.getInstance().getHttpRequestBean().getHttpResponseBean().toString());
+				if (!ThreadLocalExecutionMap.getInstance().getHttpRequestBean().getHttpResponseBean().isEmpty()) {
+					ThreadLocalHttpMap.getInstance().printInterceptedRequestResponse();
+					EventDispatcher.dispatch(new HttpRequestBean(ThreadLocalExecutionMap.getInstance().getHttpRequestBean()),
+							sourceString, exectionId, Instant.now().toEpochMilli(), VulnerabilityCaseType.REFLECTED_XSS);
+					String tid = StringUtils.substringBefore(exectionId, SEPARATOR_COLON);
+				}
 			}
+		} catch (Throwable e) {
+
+		} finally {
+
+			// Clean up
+			ThreadLocalHttpMap.getInstance().cleanState();
+			ThreadLocalDBMap.getInstance().clearAll();
+			ThreadLocalSessionMap.getInstance().clearAll();
+			ThreadLocalLDAPMap.getInstance().clearAll();
+			ThreadLocalExecutionMap.getInstance().getFileLocalMap().clear();
+			ThreadLocalExecutionMap.getInstance().cleanUp();
 		}
-		// Clean up
-		ThreadLocalHttpMap.getInstance().cleanState();
-		ThreadLocalDBMap.getInstance().clearAll();
-		ThreadLocalSessionMap.getInstance().clearAll();
-		ThreadLocalLDAPMap.getInstance().clearAll();
-		ThreadLocalExecutionMap.getInstance().getFileLocalMap().clear();
-		ThreadLocalExecutionMap.getInstance().cleanUp();
 	}
+
 }
