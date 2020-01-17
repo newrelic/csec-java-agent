@@ -114,7 +114,7 @@ public class Callbacks {
                             break;
                     }
                 } catch (Exception e) {
-                    e.printStackTrace();
+//                    e.printStackTrace();
                 } finally {
                     ThreadLocalOperationLock.getInstance().release();
                 }

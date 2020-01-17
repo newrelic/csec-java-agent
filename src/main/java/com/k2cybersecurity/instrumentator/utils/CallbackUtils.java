@@ -530,7 +530,7 @@ public class CallbackUtils {
             }
             return requestInterface.isAssignableFrom(requestArg.getClass()) && responseInterface.isAssignableFrom(responseArg.getClass());
         } catch (Exception e){
-            e.printStackTrace();
+//            e.printStackTrace();
         }
         return false;
     }
@@ -545,7 +545,7 @@ public class CallbackUtils {
             }
             return requestInterface.isAssignableFrom(requestArg.getClass());
         } catch (Exception e){
-            e.printStackTrace();
+//            e.printStackTrace();
         }
         return false;
     }
@@ -560,7 +560,7 @@ public class CallbackUtils {
             }
             return responseInterface.isAssignableFrom(responseArg.getClass());
         } catch (Exception e){
-            e.printStackTrace();
+//            e.printStackTrace();
         }
         return false;
     }

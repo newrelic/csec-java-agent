@@ -78,7 +78,7 @@ public class LogWriter implements Runnable {
 				defaultLogLevel = LogLevel.ALL.getLevel();
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
+//			e.printStackTrace();
 		}
 	}
 

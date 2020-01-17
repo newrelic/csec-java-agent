@@ -1,17 +1,15 @@
 package com.k2cybersecurity.instrumentator;
 
-import static com.k2cybersecurity.instrumentator.utils.InstrumentationUtils.doInstrument;
-import static com.k2cybersecurity.instrumentator.utils.InstrumentationUtils.setIAST;
+import net.bytebuddy.agent.builder.AgentBuilder;
+import net.bytebuddy.matcher.ElementMatchers;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
 import java.lang.instrument.Instrumentation;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
-import org.apache.commons.lang3.StringUtils;
-
-import net.bytebuddy.agent.builder.AgentBuilder;
-import net.bytebuddy.matcher.ElementMatchers;
+import static com.k2cybersecurity.instrumentator.utils.InstrumentationUtils.doInstrument;
+import static com.k2cybersecurity.instrumentator.utils.InstrumentationUtils.setIAST;
 
 /**
  * Hello world!
@@ -31,18 +29,8 @@ public class AgentNew {
 			Class<?> clazz = Class.forName("com.k2cybersecurity.instrumentator.K2Instrumentator");
 			Method init = clazz.getMethod("init", Boolean.class);
 			init.invoke(null, isDynamicAttachment);
-		} catch (ClassNotFoundException e) {
-			e.printStackTrace();
-		} catch (NoSuchMethodException e) {
-			e.printStackTrace();
-		} catch (SecurityException e) {
-			e.printStackTrace();
-		} catch (IllegalAccessException e) {
-			e.printStackTrace();
-		} catch (IllegalArgumentException e) {
-			e.printStackTrace();
-		} catch (InvocationTargetException e) {
-			e.printStackTrace();
+		} catch (Exception e) {
+//			e.printStackTrace();
 		}
 		
 		AgentBuilder agentBuilder = new AgentBuilder.Default()

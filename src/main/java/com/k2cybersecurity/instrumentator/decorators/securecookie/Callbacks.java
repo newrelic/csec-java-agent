@@ -39,7 +39,7 @@ public class Callbacks {
 
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
-				e.printStackTrace();
+//				e.printStackTrace();
 			} finally {
 				ThreadLocalOperationLock.getInstance().release();
 			}
