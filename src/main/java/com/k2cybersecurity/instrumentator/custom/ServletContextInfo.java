@@ -201,11 +201,11 @@ public class ServletContextInfo {
 			EventDispatcher.dispatch(deployedApplication, VulnerabilityCaseType.APP_INFO);
 			logger.log(LogLevel.INFO, "Servlet info populated & sent : " + deployedApplication, ServletContextInfo.class.getName());
 		}
-
-		System.out.println("==========================================================================================");
-		System.out.println("New Servlet Context found : ");
-		System.out.println("Details  : " + deployedApplication);
-		System.out.println("==========================================================================================");
+//
+//		System.out.println("==========================================================================================");
+//		System.out.println("New Servlet Context found : ");
+//		System.out.println("Details  : " + deployedApplication);
+//		System.out.println("==========================================================================================");
 
     }
 }
