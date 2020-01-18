@@ -353,7 +353,7 @@ public class CallbackUtils {
         String responseBody = httpResponseBean.getResponseBody();
         String processedBody = responseBody;
 
-        String processedHeaders = httpResponseBean.getHeaders().toString();
+        String processedHeaders = StringEscapeUtils.unescapeJson(httpResponseBean.getHeaders().toString());
         String oldHeaders = processedHeaders;
 
         try {
@@ -424,7 +424,7 @@ public class CallbackUtils {
         String oldUrl = processedUrl;
         String processedBody = body;
 
-        String processedHeaders = httpRequestBean.getHeaders().toString();
+        String processedHeaders = StringEscapeUtils.unescapeJson(httpRequestBean.getHeaders().toString());
         String oldHeaders = processedHeaders;
 
         try {
@@ -436,7 +436,7 @@ public class CallbackUtils {
 //            consolidatedBody.append(FIVE_COLON);
 //            consolidatedBody.append(HtmlEscape.unescapeHtml(processedBody));
             if (httpRequestBean.getParameterMap() != null) {
-                String pmap = JsonConverter.toJSONMap(httpRequestBean.getParameterMap());
+                String pmap = StringEscapeUtils.unescapeJson(JsonConverter.toJSONMap(httpRequestBean.getParameterMap()));
                 consolidatedBody.append(FIVE_COLON);
                 consolidatedBody.append(pmap);
                 pmap = StringEscapeUtils.unescapeJson(pmap);
