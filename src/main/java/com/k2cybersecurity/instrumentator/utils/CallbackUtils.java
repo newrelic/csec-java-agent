@@ -96,7 +96,7 @@ public class CallbackUtils {
         htmlStartTagExtractor = Pattern.compile(
                 "<([!?a-zA-Z]+[0-9]*)(?:\\s*|\\\\)?([\\s\\S]*?)?>([\\s\\S]*?)",
                 Pattern.MULTILINE | Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
-        htmlArgExtractor = Pattern.compile("([\\s\\/]*[a-zA-z\\-\\_0-9]+[\\s\\/]*)=((?:\\s*?)('|\")([\\s\\S]*?)\\3|\\S+)",
+        htmlArgExtractor = Pattern.compile("([\\s\\/]*[a-zA-z\\-\\_0-9]+[\\s\\/]*)=(?:\\s*?)(('|\")([\\s\\S]*?)\\3|\\S+)",
                 Pattern.MULTILINE | Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
         sqlConnectionMap = new LinkedHashMap<Integer, JADatabaseMetaData>(50) {
             @Override
@@ -194,7 +194,7 @@ public class CallbackUtils {
                     attribKey = StringUtils.trim(attribKey);
                     attribKey = StringUtils.removeStart(attribKey, BACKWARD_SLASH).trim();
 
-                    String attribVal = attribMatcher.group(4);
+                    String attribVal = attribMatcher.group(2);
                     if (StringUtils.isNotBlank(attribVal) && (StringUtils.startsWithIgnoreCase(attribKey, ON1)
                             || StringUtils.equalsIgnoreCase(attribKey, SRC)
                             || StringUtils.equalsIgnoreCase(attribKey, HREF)
@@ -231,8 +231,12 @@ public class CallbackUtils {
 //                ">alert(1); \n" +
 //                "</script\n" +
 //                ">"));
-
-
+//
+//        System.out.println("Detection : " + isXSS("<img src=x onerror= alert(1)>"));
+//        System.out.println("Detection : " + isXSS("<img src=x onerror=alert(1)>"));
+//        System.out.println("Detection : " + isXSS("<img onerror=alert(1) >"));
+//        System.out.println("Detection : " + isXSS("<img src=x onerror=\"alert(1)\" > "));
+//
 //    }
 
     /**
