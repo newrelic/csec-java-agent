@@ -28,8 +28,6 @@ public class CallbackUtils {
 
     private static final Pattern htmlArgExtractor;
 
-    private static final Pattern functionCallDetector;
-    
     private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
     public static final String BACKWARD_SLASH = "/";
     public static final String ANGLE_END = ">";
@@ -83,6 +81,11 @@ public class CallbackUtils {
     public static final String APPLICATION_JSON = "application/json";
     public static final String APPLICATION_XML = "application/xml";
     public static final String APPLICATION_X_WWW_FORM_URLENCODED = "application/x-www-form-urlencoded";
+    public static final String SCRIPT = "script";
+    public static final String SCRIPT_END = "</script";
+    public static final String ON1 = "on";
+    public static final String SRC = "src";
+    public static final String HREF = "href";
 
     private static Map<Integer, JADatabaseMetaData> sqlConnectionMap;
 
@@ -91,12 +94,10 @@ public class CallbackUtils {
 
     static {
         htmlStartTagExtractor = Pattern.compile(
-                "(?:<script.*?>(.*?)<(?:\\/|\\\\\\/)script.*?>|<([!?a-zA-Z]+[0-9]*)(.*?)(?<!(\\\\))\\s*?>)",
-                Pattern.MULTILINE | Pattern.CASE_INSENSITIVE);
-        htmlArgExtractor = Pattern.compile("([\\s\\/]+[a-zA-z\\-\\_0-9]+[\\s\\/]*)=(('|\")(.*?)\\3|\\S+)",
-                Pattern.MULTILINE | Pattern.CASE_INSENSITIVE);
-        functionCallDetector = Pattern.compile("([a-zA-Z0-9_-]+(?=(\\(.*?\\))))",
-                Pattern.MULTILINE | Pattern.CASE_INSENSITIVE);
+                "<([!?a-zA-Z]+[0-9]*)(?:\\s*|\\\\)?([\\s\\S]*?)?>([\\s\\S]*?)",
+                Pattern.MULTILINE | Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
+        htmlArgExtractor = Pattern.compile("([\\s\\/]+[a-zA-z\\-\\_0-9]+[\\s\\/]*)=(('|\")([\\s\\S]*?)\\3|\\S+)",
+                Pattern.MULTILINE | Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
         sqlConnectionMap = new LinkedHashMap<Integer, JADatabaseMetaData>(50) {
             @Override
             protected boolean removeEldestEntry(java.util.Map.Entry<Integer, JADatabaseMetaData> eldest) {
@@ -121,7 +122,7 @@ public class CallbackUtils {
 //        System.out.println("Processed request data is : " + combinedRequestData);
 //        System.out.println("Processed response data is : " + combinedResponseData);
 
-         List<String> attackContructs = isXSS(combinedRequestData);
+        List<String> attackContructs = isXSS(combinedRequestData);
 
         for (String construct : attackContructs) {
 //			System.err.println(String.format(
@@ -178,52 +179,32 @@ public class CallbackUtils {
 
         Matcher htmlStartTagMatcher = htmlStartTagExtractor.matcher(combinedData);
         while (htmlStartTagMatcher.find()) {
-            if (StringUtils.isNotBlank(htmlStartTagMatcher.group(1))) {
-                attackConstructs.add(htmlStartTagMatcher.group(1));
-            } else if (StringUtils.isNotBlank(htmlStartTagMatcher.group(3))) {
-                String attribData = htmlStartTagMatcher.group(3);
-                if (StringUtils.isNotBlank(attribData)) {
-                    Matcher attribMatcher = htmlArgExtractor.matcher(attribData);
-                    while (attribMatcher.find()) {
-                        String attribKey = attribMatcher.group(1);
-                        attribKey = StringUtils.trim(attribKey);
-                        attribKey = StringUtils.removeStart(attribKey, BACKWARD_SLASH);
-                        attribKey = StringUtils.trim(attribKey);
-                        String attribVal;
-                        if (StringUtils.isNotBlank(attribMatcher.group(4))) {
-                            attribVal = attribMatcher.group(4);
-                        } else {
-                            attribVal = attribMatcher.group(2);
-                        }
-                        attribVal = StringUtils.removeEnd(attribVal, ANGLE_END);
-                        attribVal = HtmlEscape.unescapeHtml(attribVal);
-                        // If js attrib used, mark PA if any function call is present inside.
-                        if (StringUtils.isNotBlank(attribKey)) {
-                            if (StringUtils.startsWithIgnoreCase(attribKey, ON)
-                                    && StringUtils.isNotBlank(attribVal)) {
-                                Matcher functionCallMatcher = functionCallDetector.matcher(attribVal);
-                                if (functionCallMatcher.find() && StringUtils.isNotBlank(attribMatcher.group())) {
-                                    attackConstructs.add(attribMatcher.group());
-                                    break;
-                                }
-                                // If other attrib is used for javascript injection
-                            } else if (StringUtils.isNotBlank(attribVal)) {
-                                if (StringUtils.containsIgnoreCase(attribVal, JAVASCRIPT)
-                                        || StringUtils.endsWithIgnoreCase(attribVal, JS)
-                                        || StringUtils.startsWithIgnoreCase(attribVal, HTTP)
-                                        || StringUtils.startsWithIgnoreCase(attribVal, HTTPS)) {
-                                    if (StringUtils.isNotBlank(attribMatcher.group())) {
-                                        attackConstructs.add(attribMatcher.group());
-                                    }
-                                }
-                            }
-                        }
+            if (StringUtils.isNotBlank(htmlStartTagMatcher.group(1)) && StringUtils.equalsIgnoreCase(htmlStartTagMatcher.group(1).trim(), SCRIPT)) {
+                int endTagStartIndex = StringUtils.indexOfIgnoreCase(combinedData, SCRIPT_END, htmlStartTagMatcher.end());
+                String body = StringUtils.substring(combinedData, htmlStartTagMatcher.end(), endTagStartIndex).trim();
+                if (StringUtils.isNotBlank(body)) {
+                    attackConstructs.add(body);
+                }
+            }
 
+            if (StringUtils.isNotBlank(htmlStartTagMatcher.group(2))) {
+                Matcher attribMatcher = htmlArgExtractor.matcher(htmlStartTagMatcher.group(2).trim());
+                while (attribMatcher.find()) {
+                    String attribKey = attribMatcher.group(1);
+                    attribKey = StringUtils.trim(attribKey);
+                    attribKey = StringUtils.removeStart(attribKey, BACKWARD_SLASH).trim();
+
+                    String attribVal = attribMatcher.group(4);
+
+                    if (StringUtils.isNotBlank(attribVal) && (StringUtils.startsWithIgnoreCase(attribKey, ON1)
+                            || StringUtils.equalsIgnoreCase(attribKey, SRC)
+                            || StringUtils.equalsIgnoreCase(attribKey, HREF)
+                            || StringUtils.containsIgnoreCase(HtmlEscape.unescapeHtml(attribVal), JAVASCRIPT))) {
+                        attackConstructs.add(attribMatcher.group());
                     }
                 }
             }
         }
-
         return attackConstructs;
     }
 
@@ -277,7 +258,7 @@ public class CallbackUtils {
             }
 
         } catch (Exception e) {
-        	logger.log(LogLevel.ERROR, ERROR , e, CallbackUtils.class.getName());
+            logger.log(LogLevel.ERROR, ERROR, e, CallbackUtils.class.getName());
         }
         return UNKNOWN;
     }
@@ -334,7 +315,7 @@ public class CallbackUtils {
             return SOLIDDB;
         }
         if (StringUtils.containsIgnoreCase(databaseProductName, MARIA)) {
-        	return MARIADB;
+            return MARIADB;
         }
         return UNKNOWN;
     }
@@ -376,34 +357,34 @@ public class CallbackUtils {
 
             if (StringUtils.isNoneEmpty(responseBody)) {
                 switch (contentType) {
-                case APPLICATION_JSON:
-                    do {
-                        oldProcessedBody = processedBody;
-                        processedBody = StringEscapeUtils.unescapeJson(processedBody);
-                        if(!StringUtils.equals(oldProcessedBody, processedBody)) {
-                            consolidatedBody.append(FIVE_COLON);
-                            consolidatedBody.append(processedBody);
+                    case APPLICATION_JSON:
+                        do {
+                            oldProcessedBody = processedBody;
+                            processedBody = StringEscapeUtils.unescapeJson(processedBody);
+                            if (!StringUtils.equals(oldProcessedBody, processedBody)) {
+                                consolidatedBody.append(FIVE_COLON);
+                                consolidatedBody.append(processedBody);
 //                            System.out.println("Decoding JSON: " + processedBody);
-                        }
-                    } while (!StringUtils.equals(oldProcessedBody, processedBody));
-                    break;
-                case APPLICATION_XML:
-                    do {
-                        oldProcessedBody = processedBody;
-                        processedBody = StringEscapeUtils.unescapeXml(processedBody);
-                        if(!StringUtils.equals(oldProcessedBody, processedBody)) {
-                            consolidatedBody.append(FIVE_COLON);
-                            consolidatedBody.append(processedBody);
+                            }
+                        } while (!StringUtils.equals(oldProcessedBody, processedBody));
+                        break;
+                    case APPLICATION_XML:
+                        do {
+                            oldProcessedBody = processedBody;
+                            processedBody = StringEscapeUtils.unescapeXml(processedBody);
+                            if (!StringUtils.equals(oldProcessedBody, processedBody)) {
+                                consolidatedBody.append(FIVE_COLON);
+                                consolidatedBody.append(processedBody);
 //                            System.out.println("Decoding XML: " + processedBody);
-                        }
-                    } while (!StringUtils.equals(oldProcessedBody, processedBody));
-                    break;
+                            }
+                        } while (!StringUtils.equals(oldProcessedBody, processedBody));
+                        break;
 
                 }
             }
             return consolidatedBody.toString();
         } catch (Exception e) {
-        	logger.log(LogLevel.ERROR, ERROR, e, CallbackUtils.class.getName());
+            logger.log(LogLevel.ERROR, ERROR, e, CallbackUtils.class.getName());
         }
         return StringUtils.EMPTY;
     }
@@ -427,7 +408,7 @@ public class CallbackUtils {
             consolidatedBody.append(processedBody);
 //            consolidatedBody.append(FIVE_COLON);
 //            consolidatedBody.append(HtmlEscape.unescapeHtml(processedBody));
-            if(httpRequestBean.getParameterMap() !=null ) {
+            if (httpRequestBean.getParameterMap() != null) {
                 String pmap = JsonConverter.toJSONMap(httpRequestBean.getParameterMap());
                 consolidatedBody.append(FIVE_COLON);
                 consolidatedBody.append(pmap);
@@ -448,7 +429,7 @@ public class CallbackUtils {
             do {
                 oldUrl = processedUrl;
                 processedUrl = urlDecode(processedUrl);
-                if(!StringUtils.equals(oldUrl, processedUrl)) {
+                if (!StringUtils.equals(oldUrl, processedUrl)) {
                     consolidatedBody.append(FIVE_COLON);
                     consolidatedBody.append(processedUrl);
 //                    System.out.println("Decoding URL Line: " + processedUrl);
@@ -458,7 +439,7 @@ public class CallbackUtils {
             do {
                 oldHeaders = processedHeaders;
                 processedHeaders = urlDecode(processedHeaders);
-                if (!StringUtils.equals(oldHeaders, processedHeaders)){
+                if (!StringUtils.equals(oldHeaders, processedHeaders)) {
                     consolidatedBody.append(FIVE_COLON);
                     consolidatedBody.append(processedHeaders);
 //                    System.out.println("Decoding URL Headers: " + processedHeaders);
@@ -468,98 +449,98 @@ public class CallbackUtils {
             if (StringUtils.isNotBlank(processedBody)) {
                 String oldProcessedBody;
                 switch (contentType) {
-                case APPLICATION_JSON:
-                    do {
-                        oldProcessedBody = processedBody;
-                        processedBody = StringEscapeUtils.unescapeJson(processedBody);
-                        if(!StringUtils.equals(oldProcessedBody, processedBody)) {
-                            consolidatedBody.append(FIVE_COLON);
-                            consolidatedBody.append(processedBody);
+                    case APPLICATION_JSON:
+                        do {
+                            oldProcessedBody = processedBody;
+                            processedBody = StringEscapeUtils.unescapeJson(processedBody);
+                            if (!StringUtils.equals(oldProcessedBody, processedBody)) {
+                                consolidatedBody.append(FIVE_COLON);
+                                consolidatedBody.append(processedBody);
 //                            System.out.println("Decoding JSON: " + processedBody);
-                        }
-                    } while (!StringUtils.equals(oldProcessedBody, processedBody));
-                    break;
-                case APPLICATION_XML:
-                    do {
-                        oldProcessedBody = processedBody;
-                        processedBody = StringEscapeUtils.unescapeXml(processedBody);
-                        if(!StringUtils.equals(oldProcessedBody, processedBody)) {
-                            consolidatedBody.append(FIVE_COLON);
-                            consolidatedBody.append(processedBody);
+                            }
+                        } while (!StringUtils.equals(oldProcessedBody, processedBody));
+                        break;
+                    case APPLICATION_XML:
+                        do {
+                            oldProcessedBody = processedBody;
+                            processedBody = StringEscapeUtils.unescapeXml(processedBody);
+                            if (!StringUtils.equals(oldProcessedBody, processedBody)) {
+                                consolidatedBody.append(FIVE_COLON);
+                                consolidatedBody.append(processedBody);
 //                            System.out.println("Decoding XML: " + processedBody);
-                        }
-                    } while (!StringUtils.equals(oldProcessedBody, processedBody));
-                    break;
+                            }
+                        } while (!StringUtils.equals(oldProcessedBody, processedBody));
+                        break;
 
-                case APPLICATION_X_WWW_FORM_URLENCODED:
-                    processedBody = urlDecode(processedBody);
-                    consolidatedBody.append(FIVE_COLON);
-                    consolidatedBody.append(processedBody);
-
-                    do {
-                        oldProcessedBody = processedBody;
+                    case APPLICATION_X_WWW_FORM_URLENCODED:
                         processedBody = urlDecode(processedBody);
-                        if(!StringUtils.equals(oldProcessedBody, processedBody)) {
-                            consolidatedBody.append(FIVE_COLON);
-                            consolidatedBody.append(processedBody);
+                        consolidatedBody.append(FIVE_COLON);
+                        consolidatedBody.append(processedBody);
+
+                        do {
+                            oldProcessedBody = processedBody;
+                            processedBody = urlDecode(processedBody);
+                            if (!StringUtils.equals(oldProcessedBody, processedBody)) {
+                                consolidatedBody.append(FIVE_COLON);
+                                consolidatedBody.append(processedBody);
 //                            System.out.println("Decoding URL: " + processedBody);
-                        }
-                    } while (!StringUtils.equals(oldProcessedBody, processedBody));
+                            }
+                        } while (!StringUtils.equals(oldProcessedBody, processedBody));
 
 
-                    break;
+                        break;
                 }
             }
             return consolidatedBody.toString();
         } catch (Exception e) {
-        	logger.log(LogLevel.ERROR, ERROR,e, CallbackUtils.class.getName());
+            logger.log(LogLevel.ERROR, ERROR, e, CallbackUtils.class.getName());
         }
         return StringUtils.EMPTY;
     }
 
-    public static boolean checkArgsTypeHeirarchy(Object requestArg, Object responseArg){
-        if(requestArg == null || responseArg == null){
+    public static boolean checkArgsTypeHeirarchy(Object requestArg, Object responseArg) {
+        if (requestArg == null || responseArg == null) {
             return false;
         }
         try {
-            if(requestInterface == null) {
+            if (requestInterface == null) {
                 requestInterface = Class.forName("javax.servlet.http.HttpServletRequest", false, requestArg.getClass().getClassLoader());
             }
-            if(responseInterface == null) {
+            if (responseInterface == null) {
                 responseInterface = Class.forName("javax.servlet.http.HttpServletResponse", false, responseArg.getClass().getClassLoader());
             }
             return requestInterface.isAssignableFrom(requestArg.getClass()) && responseInterface.isAssignableFrom(responseArg.getClass());
-        } catch (Exception e){
+        } catch (Exception e) {
 //            e.printStackTrace();
         }
         return false;
     }
 
-    public static boolean checkArgsTypeHeirarchyRequest(Object requestArg){
-        if(requestArg == null){
+    public static boolean checkArgsTypeHeirarchyRequest(Object requestArg) {
+        if (requestArg == null) {
             return false;
         }
         try {
-            if(requestInterface == null) {
+            if (requestInterface == null) {
                 requestInterface = Class.forName("javax.servlet.http.HttpServletRequest", false, requestArg.getClass().getClassLoader());
             }
             return requestInterface.isAssignableFrom(requestArg.getClass());
-        } catch (Exception e){
+        } catch (Exception e) {
 //            e.printStackTrace();
         }
         return false;
     }
 
-    public static boolean checkArgsTypeHeirarchyResponse(Object responseArg){
-        if(responseArg == null){
+    public static boolean checkArgsTypeHeirarchyResponse(Object responseArg) {
+        if (responseArg == null) {
             return false;
         }
         try {
-            if(responseInterface == null) {
+            if (responseInterface == null) {
                 responseInterface = Class.forName("javax.servlet.http.HttpServletResponse", false, responseArg.getClass().getClassLoader());
             }
             return responseInterface.isAssignableFrom(responseArg.getClass());
-        } catch (Exception e){
+        } catch (Exception e) {
 //            e.printStackTrace();
         }
         return false;
