@@ -1,22 +1,29 @@
 package com.k2cybersecurity.intcodeagent.models.javaagent;
 
-public class FileIntegrityBean {
+import org.apache.commons.lang3.StringUtils;
+
+import com.k2cybersecurity.intcodeagent.models.operationalbean.AbstractOperationalBean;
+
+public class FileIntegrityBean extends AbstractOperationalBean {
 
 	private Boolean exists;
-	private String sourceMethod;
 	private String userFileName;
 	private String userMethodName;
 	private String currentMethod;
 	private Integer lineNumber;
+	private String fileName;
 
-	public FileIntegrityBean() {
+	public FileIntegrityBean(String className, String sourceMethod, String executionId, Long startTime) {
+		super(className, sourceMethod, executionId, startTime);
 	}
-	
-	public FileIntegrityBean(Boolean exists) {
+
+	public FileIntegrityBean(Boolean exists, String fileName, String className, String sourceMethod, String exectionId,
+			Long startTime) {
+		this(className, sourceMethod, exectionId, startTime);
 		this.exists = exists;
+		this.setFileName(fileName);
 	}
 
-	
 	/**
 	 * @return the exists
 	 */
@@ -29,20 +36,6 @@ public class FileIntegrityBean {
 	 */
 	public void setExists(Boolean exists) {
 		this.exists = exists;
-	}
-
-	/**
-	 * @return the sourceMethod
-	 */
-	public String getSourceMethod() {
-		return sourceMethod;
-	}
-
-	/**
-	 * @param sourceMethod the sourceMethod to set
-	 */
-	public void setSourceMethod(String sourceMethod) {
-		this.sourceMethod = sourceMethod;
 	}
 
 	/**
@@ -103,10 +96,35 @@ public class FileIntegrityBean {
 
 	public void setBeanValues(String sourceMethod, String userFileName, String userMethodName, String currentMethod,
 			Integer lineNumber) {
-		this.sourceMethod = sourceMethod;
+		this.setSourceMethod(sourceMethod);
 		this.userFileName = userFileName;
 		this.userMethodName = userMethodName;
 		this.currentMethod = currentMethod;
 		this.lineNumber = lineNumber;
+	}
+
+	@Override
+	public boolean isEmpty() {
+		return StringUtils.isBlank(fileName);
+	}
+
+	/**
+	 * @return the fileName
+	 */
+	public String getFileName() {
+		return fileName;
+	}
+
+	/**
+	 * @param fileName the fileName to set
+	 */
+	public void setFileName(String fileName) {
+		this.fileName = fileName;
+	}
+
+	@Override
+	public String toString() {
+		return "FileName : " + fileName + "userFileName: " + userFileName + "userMethodName: " + userMethodName
+				+ "currentMethod: " + currentMethod + "lineNumber: " + lineNumber;
 	}
 }

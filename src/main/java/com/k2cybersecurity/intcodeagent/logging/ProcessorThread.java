@@ -1,9 +1,21 @@
 package com.k2cybersecurity.intcodeagent.logging;
 
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.*;
-import static com.k2cybersecurity.intcodeagent.constants.MapConstants.*;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.k2cybersecurity.instrumentator.K2Instrumentator;
+import com.k2cybersecurity.intcodeagent.constants.MapConstants;
+import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
+import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
+import com.k2cybersecurity.intcodeagent.models.javaagent.*;
+import com.k2cybersecurity.intcodeagent.websocket.EventSendPool;
+import org.apache.commons.lang3.StringUtils;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 
 import java.io.File;
+import java.io.ObjectInputStream;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -18,27 +30,14 @@ import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.lang3.StringUtils;
-import com.k2cybersecurity.instrumentation.Agent;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
-import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
-import com.k2cybersecurity.intcodeagent.models.javaagent.FileIntegrityBean;
-import com.k2cybersecurity.intcodeagent.models.javaagent.HttpRequestBean;
-import com.k2cybersecurity.intcodeagent.models.javaagent.JavaAgentDynamicPathBean;
-import com.k2cybersecurity.intcodeagent.models.javaagent.JavaAgentEventBean;
-import com.k2cybersecurity.intcodeagent.models.javaagent.VulnerabilityCaseType;
-import com.k2cybersecurity.intcodeagent.websocket.EventSendPool;
+import static com.k2cybersecurity.intcodeagent.constants.MapConstants.*;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.*;
 
 //import org.brutusin.commons.json.spi.JsonCodec;
 
 public class ProcessorThread implements Runnable {
 
+	
 	private static final Pattern PATTERN;
 	private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
 	private Object source;
@@ -148,13 +147,14 @@ public class ProcessorThread implements Runnable {
 				long start = System.currentTimeMillis();
 
 				JavaAgentEventBean intCodeResultBean = new JavaAgentEventBean(start, preProcessingTime, sourceString,
-						LoggingInterceptor.VMPID, LoggingInterceptor.applicationUUID,
+						K2Instrumentator.VMPID, K2Instrumentator.APPLICATION_UUID,
 						this.threadId + IAgentConstants.COLON_SEPERATOR + this.executionId,
 						EXECUTORS.get(sourceString));
 
 				String klassName = null;
+
 				if (MONGO_EXECUTORS.containsKey(sourceString)) {
-					intCodeResultBean.setValidationBypass(true);
+					intCodeResultBean.setEventCategory(MONGO);
 				}
 
 				StackTraceElement[] trace = this.stackTrace;
@@ -164,67 +164,97 @@ public class ProcessorThread implements Runnable {
 				int lastNonJavaLineNumber = 0;
 
 				JSONArray params = toString(arg, sourceString, EXECUTORS.get(sourceString));
-
-				if (params != null) {
+				if (params != null && !params.isEmpty()) {
 					intCodeResultBean.setParameters(params);
 				} else {
-//					ServletEventPool.getInstance().decrementServletInfoReference(threadId, executionId, true);
 					return;
 				}
 				if (VulnerabilityCaseType.FILE_OPERATION
 						.equals(VulnerabilityCaseType.valueOf(intCodeResultBean.getCaseType()))
 						&& allowedExtensionFileIO(params)) {
 					intCodeResultBean.setValidationBypass(true);
-					LoggingInterceptor.JA_HEALTH_CHECK.incrementDropCount();
+					K2Instrumentator.JA_HEALTH_CHECK.incrementDropCount();
 					return;
 				}
 
 				boolean userclassFound = false;
-				boolean rciCoveringUserClassFound = false;
-
 				for (int i = 0; i < trace.length; i++) {
 //					logger.log(LogLevel.SEVERE, "\t\t : "+ trace[i].toString(), ProcessorThread.class.getName());
 					int lineNumber = trace[i].getLineNumber();
 					klassName = trace[i].getClassName();
-					if (MYSQL_GET_CONNECTION_MAP.containsKey(klassName)
-							&& MYSQL_GET_CONNECTION_MAP.get(klassName)
+
+					if (!StringUtils.contains(trace[i].toString(), DOT_JAVA_COLON) && i > 0
+							&& StringUtils.contains(trace[i - 1].toString(), DOT_JAVA_COLON)) {
+						intCodeResultBean.getMetaData().setTriggerViaRCI(true);
+						intCodeResultBean.getMetaData().getRciMethodsCalls().add(trace[i].toString());
+						intCodeResultBean.getMetaData().getRciMethodsCalls().add(trace[i - 1].toString());
+						logger.log(LogLevel.DEBUG,
+								String.format(PRINTING_STACK_TRACE_FOR_PROBABLE_RCI_EVENT_S_S,
+										intCodeResultBean.getId(), Arrays.asList(trace)),
+								ProcessorThread.class.getName());
+					}
+					
+					
+
+					if (MapConstants.MYSQL_GET_CONNECTION_MAP.containsKey(klassName)
+							&& MapConstants.MYSQL_GET_CONNECTION_MAP.get(klassName)
 									.contains(trace[i].getMethodName())) {
 						intCodeResultBean.setValidationBypass(true);
-						LoggingInterceptor.JA_HEALTH_CHECK.incrementDropCount();
+						K2Instrumentator.JA_HEALTH_CHECK.incrementDropCount();
 						return;
 					}
-					if (lineNumber <= 0)
-						continue;
-					Matcher matcher = PATTERN.matcher(klassName);
 
-					if (Method.class.getName().equals(klassName)
-							&& StringUtils.equals(trace[i].getMethodName(), INVOKE)) {
-						intCodeResultBean.setRciElement(true);
-						rciCoveringUserClassFound = false;
-						logger.log(LogLevel.DEBUG, String.format("Printing stack trace for RCI event : %s : %s", intCodeResultBean.getId(), Arrays.asList(trace)), ProcessorThread.class.getName());
+					Matcher matcher = PATTERN.matcher(klassName);
+					if (StringUtils.contains(klassName, REFLECT_NATIVE_METHOD_ACCESSOR_IMPL)
+							&& StringUtils.equals(trace[i].getMethodName(), INVOKE_0) && i > 0) {
+						intCodeResultBean.getMetaData().setTriggerViaRCI(true);
+						intCodeResultBean.getMetaData().getRciMethodsCalls().add(trace[i - 1].toString());
+						logger.log(
+								LogLevel.DEBUG, String.format(PRINTING_STACK_TRACE_FOR_RCI_EVENT_S_S,
+										intCodeResultBean.getId(), Arrays.asList(trace)),
+								ProcessorThread.class.getName());
+					}
+					
+					if((StringUtils.contains(klassName, XML_DOCUMENT_FRAGMENT_SCANNER_IMPL) 
+							&& StringUtils.equals(trace[i].getMethodName(), SCAN_DOCUMENT))
+							|| (StringUtils.contains(klassName, XML_ENTITY_MANAGER) 
+									&& StringUtils.equals(trace[i].getMethodName(), SETUP_CURRENT_ENTITY))) {
+						intCodeResultBean.getMetaData().setTriggerViaXXE(true);
+						logger.log(LogLevel.DEBUG, String.format(PRINTING_STACK_TRACE_FOR_XXE_EVENT_S_S, intCodeResultBean.getId(), Arrays
+								.asList(trace)), ProcessorThread.class.getName());
+					}
+					
+					if (ObjectInputStream.class.getName().equals(klassName)
+							&& StringUtils.equals(trace[i].getMethodName(), READ_OBJECT)) {
+						intCodeResultBean.getMetaData().setTriggerViaDeserialisation(true);
+						logger.log(LogLevel.DEBUG,
+								String.format(PRINTING_STACK_TRACE_FOR_DESERIALISE_EVENT_S_S,
+										intCodeResultBean.getId(), Arrays.asList(trace)),
+								ProcessorThread.class.getName());
+
+					}
+					if (HSQL_GET_CONNECTION_MAP.containsKey(klassName)
+							&& HSQL_GET_CONNECTION_MAP.get(klassName).contains(trace[i].getMethodName())) {
+						intCodeResultBean.setValidationBypass(true);
+						K2Instrumentator.JA_HEALTH_CHECK.incrementDropCount();
+						return;
 					}
 
-					if (!matcher.matches()) {
-						if (intCodeResultBean.getRciElement()){
-							rciCoveringUserClassFound = true;
+					if (lineNumber <= 0)
+						continue;
+
+					if (!matcher.matches() && !userclassFound) {
+						intCodeResultBean.setUserAPIInfo(lineNumber, klassName, trace[i].getMethodName());
+						if (i > 0) {
+							intCodeResultBean.setCurrentMethod(trace[i - 1].getMethodName());
 						}
-						if (!userclassFound){
-							intCodeResultBean.setUserAPIInfo(lineNumber, klassName, trace[i].getMethodName());
-							if (i > 0) {
-								intCodeResultBean.setCurrentMethod(trace[i - 1].getMethodName());
-							}
-							userclassFound = true;
-						}
+						userclassFound = true;
 					} else if (!userclassFound && StringUtils.isNotBlank(matcher.group(5))) {
 						lastNonJavaClass = trace[i].getClassName();
 						lastNonJavaMethod = trace[i].getMethodName();
 						lastNonJavaLineNumber = trace[i].getLineNumber();
 					}
 				}
-				if (intCodeResultBean.getRciElement() && !rciCoveringUserClassFound){
-					intCodeResultBean.setRciElement(false);
-				}
-
 				if (intCodeResultBean.getUserFileName() != null && !intCodeResultBean.getUserFileName().isEmpty()) {
 					generateEvent(intCodeResultBean);
 				} else if (IAgentConstants.SYSYTEM_CALL_START.equals(sourceString)) {
@@ -253,7 +283,7 @@ public class ProcessorThread implements Runnable {
 	private void generateFileIntegrityEvent() {
 		long start = System.currentTimeMillis();
 		JavaAgentEventBean intCodeResultBean = new JavaAgentEventBean(start, preProcessingTime, sourceString,
-				LoggingInterceptor.VMPID, LoggingInterceptor.applicationUUID,
+				K2Instrumentator.VMPID, K2Instrumentator.APPLICATION_UUID,
 				this.threadId + IAgentConstants.COLON_SEPERATOR + this.executionId,
 				VulnerabilityCaseType.FILE_OPERATION);
 		JSONArray param = new JSONArray();
@@ -267,7 +297,7 @@ public class ProcessorThread implements Runnable {
 		intCodeResultBean.setEventGenerationTime(System.currentTimeMillis());
 		intCodeResultBean.getHttpRequest().clearRawRequest();
 		EventSendPool.getInstance().sendEvent(intCodeResultBean.toString());
-		LoggingInterceptor.JA_HEALTH_CHECK.incrementEventSentCount();
+		K2Instrumentator.JA_HEALTH_CHECK.incrementEventSentCount();
 	}
 
 	private boolean allowedExtensionFileIO(JSONArray params) {
@@ -310,7 +340,7 @@ public class ProcessorThread implements Runnable {
 	 * @throws IllegalArgumentException the illegal argument exception
 	 * @throws IllegalAccessException   the illegal access exception
 	 */
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings(UNCHECKED)
 	private static void getMSSQLParameterValue(Object obj, JSONArray parameters)
 			throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
 		String className = obj.getClass().getCanonicalName();
@@ -427,7 +457,7 @@ public class ProcessorThread implements Runnable {
 	 * @param parameters the parameters
 	 * @return the my SQL parameter value
 	 */
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings(UNCHECKED)
 	private void getMySQLParameterValue(Object[] args, JSONArray parameters, String sourceString) {
 		try {
 			int sqlObjectLocation = 1;
@@ -438,208 +468,132 @@ public class ProcessorThread implements Runnable {
 			parameters.add(String.valueOf(arg[sqlObjectLocation]));
 
 		} catch (Exception e) {
-			logger.log(LogLevel.WARNING, "Error in getMySQLParameterValue: ", e, ProcessorThread.class.getName());
+			logger.log(LogLevel.WARNING, ERROR_IN_GET_MY_SQL_PARAMETER_VALUE, e, ProcessorThread.class.getName());
 		}
 	}
 
-	/**
-	 * Gets the mongo parameters.
-	 *
-	 * @param args       the arguments of Instrumented Method
-	 * @param parameters the parameters
-	 * @return the my SQL parameter value
-	 * @throws NoSuchFieldException     the no such field exception
-	 * @throws SecurityException        the security exception
-	 * @throws IllegalArgumentException the illegal argument exception
-	 * @throws IllegalAccessException   the illegal access exception
-	 */
-	@SuppressWarnings("unchecked")
-	public static void getMongoParameterValue(Object[] args, JSONArray parameters)
-			throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
-		Object protocol = args[0];
-
-		String namespace = null;
-		Field f = null;
-
-		Class<? extends Object> nsClass = protocol.getClass();
-		int depth = 0;
-		String keyspaceName = null;
-
+	public static void getMongoDbParameterValue(Object[] args, JSONArray parameters) {
 		JSONObject queryDetailObj = new JSONObject();
-		// for getting the namespace
-		while (namespace == null && nsClass != null && depth < 4) {
-			try {
+		Object protocol = args[0];
+		Field f = null;
+//		System.out.println("protocol class : " + protocol.getClass());
+		try {
+			Class<? extends Object> nsClass = protocol.getClass();
+			String namespace = null;
+			// Namespace detection
+			if (nsClass != null) {
 				f = nsClass.getDeclaredField(MONGO_NAMESPACE_FIELD);
 				f.setAccessible(true);
 				Object ns = f.get(protocol);
 				namespace = ns.toString();
-
 				queryDetailObj.put(MONGO_NAMESPACE_FIELD, namespace);
-				keyspaceName = namespace.split(IAgentConstants.DOTINSQUAREBRACKET)[1];
-				if (!keyspaceName.equals(MONGO_COLLECTION_WILDCARD)) {
-					queryDetailObj.put(MONGO_COLLECTION_FIELD, keyspaceName);
-				}
-
-			} catch (Exception ex) {
-				nsClass = nsClass.getSuperclass();
-				depth++;
 			}
+		} catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
+			// TODO Auto-generated catch block
 		}
-
-		// for Connecter v 6.0 and above
+		// query extreation
 		try {
-
+			// Class used CommandProtocol<T>
+//			System.out.println("inside CommandProtocol");
 			f = protocol.getClass().getDeclaredField(MONGO_COMMAND_FIELD);
 			f.setAccessible(true);
 			Object command = f.get(protocol);
-			parameters.add(command.toString());
-			f = protocol.getClass().getDeclaredField(MONGO_PAYLOAD_FIELD);
-			f.setAccessible(true);
-			Object payload = f.get(protocol);
-			if (payload != null) {
-				f = payload.getClass().getDeclaredField(MONGO_PAYLOAD_FIELD);
-				f.setAccessible(true);
-				payload = f.get(payload);
-				parameters.add(payload.toString());
-			}
-		} catch (Exception e) {
-			// for Connecter v 5.0 and below
-			// fetch query parameters
-			if (protocol.getClass().getName().contains(MONGO_DELETE_CLASS_FRAGMENT)) {
-				queryDetailObj.put(MONGO_COMMAND_NAME_FIELD, MONGO_DELETE_CLASS_FRAGMENT.toLowerCase());
-				f = protocol.getClass().getDeclaredField(MONGO_DELETE_REQUEST_FIELD);
-				f.setAccessible(true);
-				List<Object> deleteRequests = (List<Object>) f.get(protocol);
-
-				for (Object obj : deleteRequests) {
-					try {
-						f = obj.getClass().getDeclaredField(MOGNO_ELEMENT_DATA_FIELD);
-						f.setAccessible(true);
-						Object[] elementData = (Object[]) f.get(obj);
-
-						for (Object request : elementData) {
-							if (request != null) {
-								f = request.getClass().getDeclaredField(MONGO_FILTER_FIELD);
-								f.setAccessible(true);
-								Object filter = f.get(request);
-								parameters.add(filter.toString());
-							}
-						}
-
-					} catch (NoSuchFieldException synchedDelete) {
-						f = obj.getClass().getDeclaredField(MONGO_FILTER_FIELD);
-						f.setAccessible(true);
-						Object filter = f.get(obj);
-						parameters.add(filter.toString());
-					}
-
-				}
-			} else if (protocol.getClass().getName().contains(MONGO_UPDATE_CLASS_FRAGMENT)) {
-				queryDetailObj.put(MONGO_COMMAND_NAME_FIELD, MONGO_UPDATE_CLASS_FRAGMENT.toLowerCase());
-				List<Object> updates = null;
-				if (protocol.getClass().getName().contains(MONGO_FIND_AND_UPDATE_CLASS_FRAGMENT)) {
-					updates = new ArrayList<Object>();
-					updates.add(protocol);
-				} else {
-					f = protocol.getClass().getDeclaredField(MONGO_MULTIPLE_UPDATES_FIELD);
-					f.setAccessible(true);
-					updates = (List<Object>) f.get(protocol);
-				}
-				for (Object obj : updates) {
-					f = obj.getClass().getDeclaredField(MONGO_FILTER_FIELD);
-					f.setAccessible(true);
-					Object filter = f.get(obj);
-					parameters.add(filter.toString());
-					f = obj.getClass().getDeclaredField(MONGO_SINGLE_UPDATE_FIELD);
-					f.setAccessible(true);
-					Object update = f.get(obj);
-					parameters.add(update.toString());
-				}
-			} else if (protocol.getClass().getName().contains(MONGO_INSERT_CLASS_FRAGMENT)) {
-				queryDetailObj.put(MONGO_COMMAND_NAME_FIELD, MONGO_INSERT_CLASS_FRAGMENT.toLowerCase());
-
-				f = protocol.getClass().getDeclaredField(MONGO_INSERT_REQUESTS_FIELD);
-				f.setAccessible(true);
-				List<Object> insertRequests = (List<Object>) f.get(protocol);
-				for (Object request : insertRequests) {
-					f = request.getClass().getDeclaredField(MONGO_DOCUMENT_FIELD);
-					f.setAccessible(true);
-					Object document = f.get(request);
-					parameters.add(document.toString());
-				}
-
-			} else if (protocol.getClass().getName().contains(MONGO_FIND_CLASS_FRAGMENT)) {
-				queryDetailObj.put(MONGO_COMMAND_NAME_FIELD, MONGO_FIND_CLASS_FRAGMENT.toLowerCase());
-
-				f = protocol.getClass().getDeclaredField(MONGO_FILTER_FIELD);
-				f.setAccessible(true);
-				Object filter = f.get(protocol);
-				parameters.add(filter.toString());
-
-			} else if (protocol.getClass().getName().contains(MONGO_WRITE_CLASS_FRAGMENT)) {
-				queryDetailObj.put(MONGO_COMMAND_NAME_FIELD, MONGO_WRITE_CLASS_FRAGMENT.toLowerCase());
-
-				f = protocol.getClass().getDeclaredField(MONGO_WRITE_REQUEST_FIELD);
-				f.setAccessible(true);
-				List<Object> writeRequests = (List<Object>) f.get(protocol);
-
-				for (Object request : writeRequests) {
-
-					if (request.getClass().getName().contains(MONGO_UPDATE_CLASS_FRAGMENT)) {
-						f = request.getClass().getDeclaredField(MONGO_SINGLE_UPDATE_FIELD);
-						f.setAccessible(true);
-						Object update = f.get(request);
-						parameters.add(update.toString());
-						f = request.getClass().getDeclaredField(MONGO_FILTER_FIELD);
-						f.setAccessible(true);
-						Object filter = f.get(request);
-						parameters.add(filter.toString());
-
-						parameters.add(update.toString());
-					} else if (request.getClass().getName().contains(MONGO_DELETE_CLASS_FRAGMENT)) {
-						f = request.getClass().getDeclaredField(MONGO_FILTER_FIELD);
-						f.setAccessible(true);
-						Object filter = f.get(request);
-						parameters.add(filter.toString());
-
-					} else {
-						f = request.getClass().getDeclaredField(MONGO_DOCUMENT_FIELD);
-						f.setAccessible(true);
-						Object document = f.get(request);
-						parameters.add(document.toString());
-
-					}
-
-				}
-
-			} else if (protocol.getClass().getName().contains(MONGO_DISTINCT_CLASS_FRAGMENT)) {
-				queryDetailObj.put(MONGO_COMMAND_NAME_FIELD, MONGO_DISTINCT_CLASS_FRAGMENT.toLowerCase());
-
-				f = protocol.getClass().getDeclaredField(MONGO_FIELD_NAME_FIELD);
-				f.setAccessible(true);
-				Object fieldName = f.get(protocol);
-				parameters.add(fieldName.toString());
-				f = protocol.getClass().getDeclaredField(MONGO_FILTER_FIELD);
-				f.setAccessible(true);
-				Object filter = f.get(protocol);
-				parameters.add(filter.toString());
-
-			} else if (protocol.getClass().getName().contains(MONGO_COMMAND_CLASS_FRAGMENT)) {
-				queryDetailObj.put(MONGO_COMMAND_NAME_FIELD, MONGO_COMMAND_CLASS_FRAGMENT.toLowerCase());
-
-				f = protocol.getClass().getDeclaredField(MONGO_COMMAND_FIELD);
-				f.setAccessible(true);
-				Object insertRequests = f.get(protocol);
-				parameters.add(insertRequests.toString());
-			} else {
-
-//				logger.log(LogLevel.DEBUG,protocol.getClass().getName());
-
-			}
-
+			queryDetailObj.put(COMMAND, new JSONParser().parse(command.toString()));
+			parameters.add(queryDetailObj);
+			return;
+		} catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException
+				| ParseException e) {
+			// TODO Auto-generated catch block
 		}
-		// add Query Details
-		parameters.add(queryDetailObj.toString());
+		try {
+			// Class used QueryProtocol<T>
+			f = protocol.getClass().getDeclaredField(QUERY_DOCUMENT);
+			f.setAccessible(true);
+			Object command = f.get(protocol);
+			queryDetailObj.put(COMMAND, new JSONParser().parse(command.toString()));
+			f = protocol.getClass().getDeclaredField(FIELDS);
+			f.setAccessible(true);
+			Object fields = f.get(protocol);
+			queryDetailObj.put(FIELDS, new JSONParser().parse(fields.toString()));
+			parameters.add(queryDetailObj);
+			return;
+		} catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException
+				| ParseException e) {
+			// TODO Auto-generated catch block
+		}
+		try {
+			// Class used InsertCommandProtocol<T>
+			queryDetailObj.put(COMMAND, mongoProtocolRequest(protocol, MONGO_INSERT_REQUESTS_FIELD));
+			parameters.add(queryDetailObj);
+			return;
+		} catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
+			// TODO Auto-generated catch block
+		}
+		try {
+			// Class used DeleteCommandProtocol<T>
+			queryDetailObj.put(COMMAND, mongoProtocolRequest(protocol, MONGO_DELETE_REQUEST_FIELD));
+			parameters.add(queryDetailObj);
+			return;
+		} catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
+			// TODO Auto-generated catch block
+		}
+		try {
+			// Class used UpdateCommandProtocol<T>
+			queryDetailObj.put(COMMAND, mongoProtocolRequest(protocol, MONGO_MULTIPLE_UPDATES_FIELD));
+			parameters.add(queryDetailObj);
+			return;
+		} catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
+			// TODO Auto-generated catch block
+		}
+		try {
+			// Class used InsertProtocol<T>
+			queryDetailObj.put(COMMAND, mongoProtocolRequest(protocol, MONGO_INSERT_REQUEST_LIST_FIELD));
+			parameters.add(queryDetailObj);
+			return;
+		} catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
+			// TODO Auto-generated catch block
+		}
+		try {
+			// Class used DeleteProtocol<T>
+			queryDetailObj.put(COMMAND, mongoProtocolRequest(protocol, DELETES));
+			parameters.add(queryDetailObj);
+//			System.out.println("parameters : " + parameters);
+			return;
+		} catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
+			// TODO Auto-generated catch block
+		}
+		try {
+			// Class used UpdateProtocol<T>
+			queryDetailObj.put(COMMAND, mongoProtocolRequest(protocol, MONGO_MULTIPLE_UPDATES_FIELD));
+			parameters.add(queryDetailObj);
+			return;
+		} catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
+			// TODO Auto-generated catch block
+		}
+	}
+
+	private static JSONObject mongoProtocolRequest(Object protocol, String requestField)
+			throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
+		JSONObject object = new JSONObject();
+		Field f;
+		f = protocol.getClass().getDeclaredField(requestField);
+		f.setAccessible(true);
+		List<Object> insertRequests = (List<Object>) f.get(protocol);
+		for (Object request : insertRequests) {
+			Field[] fields = request.getClass().getDeclaredFields();
+			for (Field field : fields) {
+				field.setAccessible(true);
+				Object bsonDoc = field.get(request);
+				if (bsonDoc != null && bsonDoc.getClass().getSimpleName().contains(BSONDOCUMENT)) {
+					try {
+						object.put(field.getName(), new JSONParser().parse(bsonDoc.toString()));
+					} catch (Exception e) {
+						logger.log(LogLevel.ERROR, "Error :", e, ProcessorThread.class.getName());
+					}
+				}
+			}
+		}
+		return object;
 	}
 
 	/**
@@ -662,7 +616,8 @@ public class ProcessorThread implements Runnable {
 	}
 
 	/**
-	 * 
+	 *
+	 *
 	 * @param parameters
 	 */
 	private JSONArray getOracleParameterValue(Object thisPointer, JSONArray parameters, String sourceString) {
@@ -702,7 +657,7 @@ public class ProcessorThread implements Runnable {
 
 			}
 		} catch (Exception e) {
-			logger.log(LogLevel.WARNING, "Error in getOracleParameterValue: ", e, ProcessorThread.class.getName());
+			logger.log(LogLevel.WARNING, ERROR_IN_GET_ORACLE_PARAMETER_VALUE, e, ProcessorThread.class.getName());
 		}
 		return parameters;
 	}
@@ -714,7 +669,7 @@ public class ProcessorThread implements Runnable {
 	 * @param obj the obj
 	 * @return the JSON array
 	 */
-	@SuppressWarnings({ "unchecked", "unused" })
+	@SuppressWarnings({ UNCHECKED, UNUSED })
 	private JSONArray toString(Object[] obj, String sourceString, VulnerabilityCaseType vulnerabilityCaseType) {
 
 		if (obj == null) {
@@ -727,8 +682,8 @@ public class ProcessorThread implements Runnable {
 			} else if (sourceString.contains(MYSQL_IDENTIFIER)) {
 				getMySQLParameterValue(obj, parameters, sourceString);
 			} else if (obj[0] != null && sourceString.contains(MONGO_IDENTIFIER)) {
-				getMongoParameterValue(obj, parameters);
-			} else if (obj[0] != null && sourceString.contains(ORACLE_DB_IDENTIFIER)) {
+				getMongoDbParameterValue(obj, parameters);
+			} else if (obj[0] != null && sourceString.contains(ORACLE_IDENTIFIER)) {
 				parameters = getOracleParameterValue(arg[arg.length - 1], parameters, sourceString);
 			} else if (obj[0] != null && sourceString.contains(CLASS_LOADER_IDENTIFIER)) {
 				getClassLoaderParameterValue(obj, parameters);
@@ -736,7 +691,7 @@ public class ProcessorThread implements Runnable {
 					|| sourceString.equals(PSQL42_EXECUTOR) || sourceString.equals(PSQLV3_EXECUTOR7_4)) {
 				getPSQLParameterValue(obj, parameters);
 			} else if (sourceString.equals(HSQL_V2_4) || sourceString.equals(HSQL_V1_8_CONNECTION)
-					|| sourceString.equals(HSQL_V1_8_SESSION)) {
+					|| sourceString.equals(HSQL_V1_8_SESSION) || sourceString.equals(HSQL_V2_3_4_CLIENT_CONNECTION)) {
 				getHSQLParameterValue(obj[0], parameters);
 			} else if (sourceString.equals(APACHE_HTTP_REQUEST_EXECUTOR_METHOD)) {
 				getApacheHttpRequestParameters(obj, parameters);
@@ -748,8 +703,8 @@ public class ProcessorThread implements Runnable {
 			} else if (sourceString.equals(JDK_INCUBATOR_MULTIEXCHANGE_RESONSE_METHOD)
 					|| sourceString.equals(JDK_INCUBATOR_MULTIEXCHANGE_RESONSE_ASYNC_METHOD)) {
 				getJava9HttpClientParameters(obj, parameters);
-			} else if (vulnerabilityCaseType.equals(VulnerabilityCaseType.FILE_OPERATION)) {
-				getFileParameters(obj, parameters);
+//			} else if (vulnerabilityCaseType.equals(VulnerabilityCaseType.FILE_OPERATION)) {
+//				getFileParameters(obj, parameters);
 			} else if (sourceString.equals(APACHE_COMMONS_HTTP_METHOD_DIRECTOR_METHOD)) {
 				getApacheCommonsHttpRequestParameters(obj, parameters);
 			} else if (sourceString.equals(OKHTTP_HTTP_ENGINE_METHOD)) {
@@ -763,23 +718,22 @@ public class ProcessorThread implements Runnable {
 
 		} catch (Throwable th) {
 			parameters.add((obj != null) ? obj.toString() : null);
-			logger.log(LogLevel.WARNING, "Error in toString: ", th, ProcessorThread.class.getName());
+			logger.log(LogLevel.WARNING, ERROR_IN_TO_STRING, th, ProcessorThread.class.getName());
 		}
 		return parameters;
 	}
 
 	private void getFileParameters(Object[] obj, JSONArray parameters) {
-		if (obj[0].getClass().getName().equals("sun.nio.fs.UnixPath")) {
+		if (obj[0].getClass().getName().equals(SUN_NIO_FS_UNIX_PATH)) {
 			parameters.add(obj[0].toString());
-		} else if(obj[0].getClass().getName().equals("java.io.File")) {
-			parameters.add(((File)obj[0]).toString());
+		} else if (obj[0].getClass().getName().equals(JAVA_IO_FILE)) {
+			parameters.add(((File) obj[0]).toString());
 		} else {
 			parameters.add(obj[0]);
 		}
 	}
 
-	@SuppressWarnings("unchecked")
-	private void getJavaHttpRequestParameters(Object[] obj, JSONArray parameters) {
+	@SuppressWarnings(UNCHECKED) public static void getJavaHttpRequestParameters(Object[] obj, JSONArray parameters) {
 
 		URL url = (URL) obj[0];
 		parameters.add(url.getHost());
@@ -787,18 +741,17 @@ public class ProcessorThread implements Runnable {
 
 	}
 
-	@SuppressWarnings("unchecked")
-	private void getJava9HttpClientParameters(Object[] obj, JSONArray parameters) {
+	@SuppressWarnings(UNCHECKED) public static void getJava9HttpClientParameters(Object[] obj, JSONArray parameters) {
 		Object multiExchangeObj = obj[0];
 		try {
 
 			Class<?> multiExchangeClass = Thread.currentThread().getContextClassLoader()
-					.loadClass("jdk.incubator.http.MultiExchange");
-			Field request = multiExchangeClass.getDeclaredField("request");
+					.loadClass(JDK_INCUBATOR_HTTP_MULTI_EXCHANGE);
+			Field request = multiExchangeClass.getDeclaredField(REQUEST);
 			request.setAccessible(true);
 			Object httpReqObj = request.get(multiExchangeObj);
 
-			Field uri = httpReqObj.getClass().getDeclaredField("uri");
+			Field uri = httpReqObj.getClass().getDeclaredField(URI);
 			uri.setAccessible(true);
 			URI uriObj = (URI) uri.get(httpReqObj);
 
@@ -806,13 +759,13 @@ public class ProcessorThread implements Runnable {
 			parameters.add(uriObj.getPath());
 
 		} catch (Exception e) {
-			logger.log(LogLevel.WARNING, "Error in getJava9HttpClientParameters : ", e,
+			logger.log(LogLevel.WARNING, ERROR_IN_GET_JAVA9_HTTP_CLIENT_PARAMETERS, e,
 					ProcessorThread.class.getName());
 		}
 	}
 
-	@SuppressWarnings("unchecked")
-	private void getApacheHttpRequestParameters(Object[] object, JSONArray parameters) {
+	@SuppressWarnings(UNCHECKED)
+	public static void getApacheHttpRequestParameters(Object[] object, JSONArray parameters) {
 
 		Object request = object[0];
 		Object httpContext = object[2];
@@ -843,7 +796,7 @@ public class ProcessorThread implements Runnable {
 			Method getAttribute = httpContextInterface.getMethod(GET_ATTRIBUTE, String.class);
 			Object attributeHost = getAttribute.invoke(httpContext, HTTP_TARGET_HOST);
 
-			int indexOfQmark = requestUri.indexOf('?');
+			int indexOfQmark = requestUri.indexOf(QUESTION_MARK);
 			// means request param is present
 			String pathOnly = EMPTY;
 			if (indexOfQmark != -1) {
@@ -854,13 +807,13 @@ public class ProcessorThread implements Runnable {
 			parameters.add(pathOnly);
 
 		} catch (Exception e) {
-			logger.log(LogLevel.WARNING, "Error in getApacheHttpRequestParameters : ", e,
+			logger.log(LogLevel.WARNING, ERROR_IN_GET_APACHE_HTTP_REQUEST_PARAMETERS, e,
 					ProcessorThread.class.getName());
 		}
 
 	}
 
-	private void getApacheCommonsHttpRequestParameters(Object[] object, JSONArray parameters) {
+	public static void getApacheCommonsHttpRequestParameters(Object[] object, JSONArray parameters) {
 
 		Object httpMethod = object[0];
 		try {
@@ -889,31 +842,31 @@ public class ProcessorThread implements Runnable {
 			parameters.add(path);
 
 		} catch (Exception e) {
-			logger.log(LogLevel.WARNING, "Error in getApacheCommonsHttpRequestParameters : ", e,
+			logger.log(LogLevel.WARNING, ERROR_IN_GET_APACHE_COMMONS_HTTP_REQUEST_PARAMETERS, e,
 					ProcessorThread.class.getName());
 		}
 
 	}
 
-	private void getOkHttpRequestParameters(Object[] object, JSONArray parameters) {
+	public static void getOkHttpRequestParameters(Object[] object, JSONArray parameters) {
 
 		Object httpEngine = object[0];
 		try {
-			Method getRequest = httpEngine.getClass().getMethod("getRequest");
+			Method getRequest = httpEngine.getClass().getMethod(GET_REQUEST);
 			Object request = getRequest.invoke(httpEngine);
 
-			Field httpUrl = request.getClass().getDeclaredField("url");
+			Field httpUrl = request.getClass().getDeclaredField(URL);
 			httpUrl.setAccessible(true);
 			Object httpUrlObj = httpUrl.get(request);
 
-			Method getUrl = httpUrlObj.getClass().getMethod("url");
+			Method getUrl = httpUrlObj.getClass().getMethod(URL);
 			URL url = (URL) getUrl.invoke(httpUrlObj);
 
 			parameters.add(url.getHost());
 			parameters.add(url.getPath());
 
 		} catch (Exception e) {
-			logger.log(LogLevel.WARNING, "Error in getOkHttpRequestParameters : ", e, ProcessorThread.class.getName());
+			logger.log(LogLevel.WARNING, ERROR_IN_GET_OK_HTTP_REQUEST_PARAMETERS, e, ProcessorThread.class.getName());
 		}
 
 	}
@@ -929,18 +882,45 @@ public class ProcessorThread implements Runnable {
 				sqlField.setAccessible(true);
 				parameters.add((String) sqlField.get(object));
 			} catch (Exception e) {
-				logger.log(LogLevel.WARNING, "Error in getHSQLParameterValue for HSQL_V2_4: ", e,
+				logger.log(LogLevel.WARNING, ERROR_IN_GET_HSQL_PARAMETER_VALUE_FOR_HSQL_V2_4, e,
 						ProcessorThread.class.getName());
 			}
 			return;
 		case HSQL_V1_8_SESSION:
 		case HSQL_V1_8_CONNECTION:
+		case HSQL_V2_3_4_CLIENT_CONNECTION:
 			try {
-				Field mainStringField = object.getClass().getDeclaredField("mainString");
+				Field mainStringField = object.getClass().getDeclaredField(MAIN_STRING);
 				mainStringField.setAccessible(true);
-				parameters.add((String) mainStringField.get(object));
+				String parameter = (String) mainStringField.get(object);
+				if (!StringUtils.isEmpty(parameter)) {
+					parameters.add(parameter);
+				}
+				else {
+					// for batch processing
+					Method getNavigatorMethod = object.getClass().getDeclaredMethod(GET_NAVIGATOR);
+					getNavigatorMethod.setAccessible(true);
+					Object navigatorObj = getNavigatorMethod.invoke(object);
+						
+					Method getSizeMethod = navigatorObj.getClass().getSuperclass().getDeclaredMethod(GET_SIZE);
+					getSizeMethod.setAccessible(true);
+					int size  = (int)getSizeMethod.invoke(navigatorObj);
+					
+					Method getDataMethod = navigatorObj.getClass().getDeclaredMethod(GET_DATA, int.class);
+					getDataMethod.setAccessible(true);
+					for (int i=0; i<size; i++) {
+						Object[] dataObj = (Object[])getDataMethod.invoke(navigatorObj, i);
+						for (int j=0; j<dataObj.length; j++) {
+							if(dataObj[j]!=null && dataObj[j] instanceof String) {
+								if(!((String)dataObj[j]).isEmpty()) {
+									parameters.add(dataObj[j]);
+								}
+							}
+						}
+					}
+				}
 			} catch (Exception e) {
-				logger.log(LogLevel.WARNING, "Error in getHSQLParameterValue for HSQL_V1_8_CONNECTION: ", e,
+				logger.log(LogLevel.WARNING, ERROR_IN_GET_HSQL_PARAMETER_VALUE_FOR_HSQL_V1_8_V2_3_4, e,
 						ProcessorThread.class.getName());
 			}
 			return;
@@ -969,7 +949,7 @@ public class ProcessorThread implements Runnable {
 				parameters.add(paramArray);
 			} catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException
 					| JsonProcessingException e) {
-				logger.log(LogLevel.WARNING, "Error in getPSQLParameterValue: ", e, ProcessorThread.class.getName());
+				logger.log(LogLevel.WARNING, ERROR_IN_GET_PSQL_PARAMETER_VALUE, e, ProcessorThread.class.getName());
 			}
 
 		}
@@ -985,7 +965,7 @@ public class ProcessorThread implements Runnable {
 	 * @throws IllegalArgumentException the illegal argument exception
 	 * @throws IllegalAccessException   the illegal access exception
 	 */
-	@SuppressWarnings({ "unchecked" })
+	@SuppressWarnings({ UNCHECKED })
 	private static void addParamValuesMSSQL(ArrayList<Object[]> paramList, JSONArray parameters)
 			throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
 		for (Object[] outParams : paramList) {
@@ -1019,18 +999,17 @@ public class ProcessorThread implements Runnable {
 				|| intCodeResultBean.getSourceMethod().equals(IAgentConstants.JAVA_NET_URLCLASSLOADER_NEWINSTANCE))) {
 			try {
 				JSONArray agentJarPaths = new JSONArray();
-				agentJarPaths.addAll(Agent.jarPathSet);
-				JavaAgentDynamicPathBean dynamicJarPathBean = new JavaAgentDynamicPathBean(
-						LoggingInterceptor.applicationUUID, System.getProperty(IAgentConstants.USER_DIR), agentJarPaths,
-						intCodeResultBean.getParameters());
+//				agentJarPaths.addAll(Agent.jarPathSet);
+				JavaAgentDynamicPathBean dynamicJarPathBean = new JavaAgentDynamicPathBean(K2Instrumentator.APPLICATION_UUID,
+						System.getProperty(IAgentConstants.USER_DIR), agentJarPaths, intCodeResultBean.getParameters());
 				EventSendPool.getInstance().sendEvent(dynamicJarPathBean.toString());
-				LoggingInterceptor.JA_HEALTH_CHECK.incrementEventSentCount();
+				K2Instrumentator.JA_HEALTH_CHECK.incrementEventSentCount();
 			} catch (IllegalStateException e) {
-				logger.log(LogLevel.INFO, "Dropping dynamicJarPathBean event " + intCodeResultBean.getId()
-						+ " due to buffer capacity reached", ProcessorThread.class.getName());
-				LoggingInterceptor.JA_HEALTH_CHECK.incrementDropCount();
+				logger.log(LogLevel.INFO, DROPPING_DYNAMIC_JAR_PATH_BEAN_EVENT + intCodeResultBean.getId()
+						+ DUE_TO_BUFFER_CAPACITY_REACHED, ProcessorThread.class.getName());
+				K2Instrumentator.JA_HEALTH_CHECK.incrementDropCount();
 			} catch (Exception e) {
-				logger.log(LogLevel.WARNING, "Error in generateEvent while creating JavaAgentDynamicPathBean: ", e,
+				logger.log(LogLevel.WARNING, ERROR_IN_GENERATE_EVENT_WHILE_CREATING_JAVA_AGENT_DYNAMIC_PATH_BEAN, e,
 						ProcessorThread.class.getName());
 			}
 		} else {
@@ -1042,21 +1021,21 @@ public class ProcessorThread implements Runnable {
 				if (intCodeResultBean.getCaseType().equals(VulnerabilityCaseType.HTTP_REQUEST.getCaseType())) {
 					boolean validationResult = partialSSRFValidator(intCodeResultBean);
 					if (!validationResult) {
-						LoggingInterceptor.JA_HEALTH_CHECK.incrementDropCount();
+						K2Instrumentator.JA_HEALTH_CHECK.incrementDropCount();
 						return;
 					}
 				}
 				intCodeResultBean.getHttpRequest().clearRawRequest();
 				EventSendPool.getInstance().sendEvent(intCodeResultBean.toString());
-				LoggingInterceptor.JA_HEALTH_CHECK.incrementEventSentCount();
+				K2Instrumentator.JA_HEALTH_CHECK.incrementEventSentCount();
 //				logger.log(LogLevel.INFO,"publish event: " + intCodeResultBean, ProcessorThread.class.getName());
 			} catch (IllegalStateException e) {
 				logger.log(LogLevel.INFO,
-						"Dropping event " + intCodeResultBean.getId() + " due to buffer capacity reached.",
+						DROPPING_EVENT + intCodeResultBean.getId() + DUE_TO_BUFFER_CAPACITY_REACHED,
 						ProcessorThread.class.getName());
-				LoggingInterceptor.JA_HEALTH_CHECK.incrementDropCount();
+				K2Instrumentator.JA_HEALTH_CHECK.incrementDropCount();
 			} catch (Exception e) {
-				logger.log(LogLevel.WARNING, "Error in generateEvent while creating IntCodeResultBean: ", e,
+				logger.log(LogLevel.WARNING, ERROR_IN_GENERATE_EVENT_WHILE_CREATING_INT_CODE_RESULT_BEAN, e,
 						ProcessorThread.class.getName());
 			}
 
@@ -1088,7 +1067,7 @@ public class ProcessorThread implements Runnable {
 			if (StringUtils.containsIgnoreCase(urlDecoded, host) || StringUtils.containsIgnoreCase(urlDecoded, path))
 				return true;
 		} catch (UnsupportedEncodingException e) {
-			logger.log(LogLevel.WARNING, "Error in partialSSRFValidator : ", e, ProcessorThread.class.getName());
+			logger.log(LogLevel.WARNING, ERROR_IN_PARTIAL_SSRF_VALIDATOR, e, ProcessorThread.class.getName());
 		}
 //		logger.log(Level.FINE, "Dropping SSRF event: {0}", intCodeResultBean);
 		return false;

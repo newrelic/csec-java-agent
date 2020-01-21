@@ -9,6 +9,8 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import com.k2cybersecurity.instrumentator.AgentNew;
+import com.k2cybersecurity.instrumentator.K2Instrumentator;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.models.javaagent.FileIntegrityBean;
@@ -61,7 +63,7 @@ public class EventThreadPool {
 
 			@Override
 			protected void beforeExecute(Thread t, Runnable r) {
-				LoggingInterceptor.JA_HEALTH_CHECK.incrementProcessedCount();
+				K2Instrumentator.JA_HEALTH_CHECK.incrementProcessedCount();
 				super.beforeExecute(t, r);
 			}
 
@@ -131,8 +133,8 @@ public class EventThreadPool {
 		 * @throws RejectedExecutionException always
 		 */
 		public void rejectedExecution(Runnable r, ThreadPoolExecutor e) {
-			LoggingInterceptor.JA_HEALTH_CHECK.incrementDropCount();
-			LoggingInterceptor.JA_HEALTH_CHECK.incrementProcessedCount();
+			K2Instrumentator.JA_HEALTH_CHECK.incrementDropCount();
+			K2Instrumentator.JA_HEALTH_CHECK.incrementProcessedCount();
 //			logger.log(LogLevel.FINE,"Event Task " + r.toString() + " rejected from  " + e.toString(), EventThreadPool.class.getName());
 		}
 	}

@@ -1,12 +1,9 @@
 package com.k2cybersecurity.intcodeagent.websocket;
 
-import java.util.concurrent.Future;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-
+import com.k2cybersecurity.instrumentator.K2Instrumentator;
 import com.k2cybersecurity.intcodeagent.logging.ServletEventPool.EventAbortPolicy;
+
+import java.util.concurrent.*;
 
 public class EventSendPool {
 
@@ -34,9 +31,11 @@ public class EventSendPool {
 					try {
 						Future<?> future = (Future<?>) r;
 						if (future.isDone()) {
+							K2Instrumentator.JA_HEALTH_CHECK.incrementEventSentCount();
 							future.get();
 						}
 					} catch (Exception e) {
+						K2Instrumentator.JA_HEALTH_CHECK.incrementDropCount();
 					}
 				}
 				super.afterExecute(r, t);
@@ -47,7 +46,7 @@ public class EventSendPool {
 			@Override
 			public Thread newThread(Runnable r) {
 				return new Thread(Thread.currentThread().getThreadGroup(), r,
-						"EventSender");
+						"K2-EventSender");
 			}
 		});
 	}

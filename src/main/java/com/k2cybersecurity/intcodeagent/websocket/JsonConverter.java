@@ -1,15 +1,15 @@
 package com.k2cybersecurity.intcodeagent.websocket;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.apache.commons.lang3.StringEscapeUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
-import java.util.Arrays;
-import java.util.Collections;
-
-import org.json.simple.JSONArray;
-
-import com.k2cybersecurity.intcodeagent.models.javaagent.JavaAgentEventBean;
-import com.k2cybersecurity.intcodeagent.models.javaagent.HttpRequestBean;
-import com.k2cybersecurity.intcodeagent.models.javaagent.VulnerabilityCaseType;
+import java.util.*;
+import java.util.Map.Entry;
 
 public class JsonConverter {
 
@@ -35,6 +35,14 @@ public class JsonConverter {
 		jsonString.append(STR_END_CUELY_BRACKET);
 		return jsonString.toString();
 	}
+	
+	public static String toJSONMap(Map obj) {
+		StringBuilder jsonString = new StringBuilder();
+		JSONObject mapObject = new JSONObject();
+		mapObject.putAll(processMap(obj));
+		jsonString.append(mapObject.toJSONString());
+		return jsonString.toString();
+	}
 
 	private static String getFieldsAsJsonString(Field[] fields, Object obj) {
 		StringBuilder jsonString = new StringBuilder();
@@ -43,6 +51,9 @@ public class JsonConverter {
 				if (!Modifier.isStatic(fields[i].getModifiers())) {
 					Field field = fields[i];
 					field.setAccessible(true);
+					if (field.getAnnotation(JsonIgnore.class) != null) {
+						continue;
+					}
 					Object value = field.get(obj);
 					if (value != null) {
 						jsonString.append(STR_FORWARD_SLASH);
@@ -50,10 +61,26 @@ public class JsonConverter {
 						jsonString.append(JSON_SEPRATER);
 						if (field.getType().equals(String.class)) {
 							jsonString.append(STR_FORWARD_SLASH);
-							jsonString.append(value);
+							jsonString.append(StringEscapeUtils.escapeJava(value.toString()));
 							jsonString.append(STR_FORWARD_SLASH);
 						} else if (field.getType().isPrimitive()) {
 							jsonString.append(value);
+						} else if (field.getType().isAssignableFrom(Set.class)) {
+							JSONArray setField = new JSONArray();
+							setField.addAll(processCollection((Set) value));
+							jsonString.append(setField);
+						} else if (field.getType().isArray()) {
+							JSONArray setField = new JSONArray();
+							setField.addAll(processCollection(Arrays.asList((Object[]) value)));
+							jsonString.append(setField);
+						} else if (field.getType().isAssignableFrom(List.class)) {
+							JSONArray setField = new JSONArray();
+							setField.addAll(processCollection((List) value));
+							jsonString.append(setField);
+						} else if (field.getType().isAssignableFrom(Map.class)) {
+							JSONObject mapField = new JSONObject();
+							mapField.putAll(processMap((Map) value));
+							jsonString.append(mapField);
 						} else {
 							jsonString.append(value.toString());
 						}
@@ -64,9 +91,40 @@ public class JsonConverter {
 
 			}
 		}
+		return StringUtils.removeEnd(jsonString.toString(), STR_COMMA);
+	}
 
-		jsonString.deleteCharAt(jsonString.length() - 1);
-		return jsonString.toString();
+	private static Map processMap(Map<String, Object> value) {
+		Map<String, Object> mapObject = new HashMap<>();
+		for (Entry<String, Object> entry : value.entrySet()) {
+			mapObject.put(entry.getKey(), processValue(entry.getValue()));
+		}
+
+		return mapObject;
+	}
+
+	private static Object processValue(Object value) {
+		if (value instanceof Collection) {
+			return processCollection((Collection<Object>) value);
+		} else if (value instanceof Object[]) {
+			return processCollection(Arrays.asList((Object[]) value));
+		} else if (value instanceof Map) {
+			return processMap((Map) value);
+		} else {
+			return value;
+		}
+	}
+
+	private static Collection processCollection(Collection<Object> values) {
+		List<Object> list = new ArrayList<>();
+		for (Object value : values) {
+			if (value instanceof Collection || value instanceof Object[]) {
+				list.addAll((Collection<? extends Object>) processValue(value));
+			} else {
+				list.add(processValue(value));
+			}
+		}
+		return list;
 	}
 
 //	public static void main(String[] args) {
@@ -85,7 +143,7 @@ public class JsonConverter {
 //		ServletInfo servletInfo = new ServletInfo();
 //		servletInfo.setDataTruncated(false);
 //		servletInfo.setRawRequest("sdasdfasfasf \n\r asd \r\n asd asd asd ");
-//		javaAgentEventBean.setServletInfo(servletInfo);
+//		javaAgentEventBean.setHttpRequestBean(servletInfo);
 //
 //		System.out.println(javaAgentEventBean.toString());
 //	}

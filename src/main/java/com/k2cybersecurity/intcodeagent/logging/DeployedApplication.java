@@ -1,25 +1,29 @@
-/** 
+/**
  * DeployedApplication.java
- *
+ * <p>
  * Copyright (C) 2017 - k2 Cyber Security, Inc. All rights reserved.
- *
+ * <p>
  * This software is proprietary information of k2 Cyber Security, Inc and
  * constitutes valuable trade secrets of k2 Cyber Security, Inc. You shall
  * not disclose this information and shall use it only in accordance with the
  * terms of License.
- *
+ * <p>
  * K2 CYBER SECURITY, INC MAKES NO REPRESENTATIONS OR WARRANTIES ABOUT THE
  * SUITABILITY OF THE SOFTWARE, EITHER EXPRESS OR IMPLIED, INCLUDING BUT
  * NOT LIMITED TO THE IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
  * PARTICULAR PURPOSE, OR NON-INFRINGEMENT. K2 CYBER SECURITY, INC SHALL
  * NOT BE LIABLE FOR ANY DAMAGES SUFFERED BY LICENSEE AS A RESULT OF USING,
  * MODIFYING OR DISTRIBUTING THIS SOFTWARE OR ITS DERIVATIVES.
- * 
+ * <p>
  * "K2 Cyber Security, Inc"
  */
 package com.k2cybersecurity.intcodeagent.logging;
 
 import com.k2cybersecurity.intcodeagent.websocket.JsonConverter;
+import org.apache.commons.lang3.StringUtils;
+
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * DeployedApplication model contains fields to identify all deployed
@@ -30,70 +34,30 @@ import com.k2cybersecurity.intcodeagent.websocket.JsonConverter;
  */
 public class DeployedApplication {
 
+	public static final String FORWARD_SLASH = "/";
 	/** Application deployed path. */
 	private String deployedPath;
+
+	/** Application resource path. */
+//	@JsonIgnore
+	private String resourcePath;
 
 	/** Application name. */
 	private String appName;
 
-	/** Check if it is war. */
-	private boolean isWar;
+	/** sha 256 of application. */
+	private String sha256;
 
-	/** Check if it is jar. */
-	private boolean isJar;
-	
-	private boolean isEar;
+	/** Size of application. */
+	private String size;
+
+	private String contextPath;
+
+	private Set<Integer> ports = new HashSet<>();
+
+	private boolean isEmbedded = false;
 
 	public DeployedApplication() {
-	}
-
-	public DeployedApplication(String deployedPath, String appName) {
-		this.deployedPath = deployedPath;
-		this.appName = appName;
-	}
-
-	/**
-	 * @return the isWar
-	 */
-	public boolean isWar() {
-		return isWar;
-	}
-
-	/**
-	 * @param isWar
-	 *            the isWar to set
-	 */
-	public void setWar(boolean isWar) {
-		this.isWar = isWar;
-	}
-
-	/**
-	 * @return the isJar
-	 */
-	public boolean isJar() {
-		return isJar;
-	}
-
-	/**
-	 * @param isJar
-	 *            the isJar to set
-	 */
-	public void setJar(boolean isJar) {
-		this.isJar = isJar;
-	}
-
-	/**
-	 * @return the isEar
-	 */
-	public boolean isEar() {
-		return isEar;
-	}
-
-	/**
-	 * @param isEar the isEar to set
-	 */
-	public void setEar(boolean isEar) {
-		this.isEar = isEar;
 	}
 
 	/**
@@ -112,7 +76,31 @@ public class DeployedApplication {
 	 *            the deployedPath to set
 	 */
 	public void setDeployedPath(String deployedPath) {
-		this.deployedPath = deployedPath;
+		if (StringUtils.isBlank(deployedPath)) {
+			this.deployedPath = StringUtils.EMPTY;
+		} else {
+			this.deployedPath = deployedPath;
+		}
+	}
+
+	public String getResourcePath() {
+		return resourcePath;
+	}
+
+	public void setResourcePath(String resourcePath) {
+		if (StringUtils.isBlank(resourcePath)) {
+			this.resourcePath = StringUtils.EMPTY;
+		} else {
+			this.resourcePath = resourcePath;
+		}
+	}
+
+	public boolean isEmbedded() {
+		return isEmbedded;
+	}
+
+	public void setEmbedded(boolean embedded) {
+		isEmbedded = embedded;
 	}
 
 	/**
@@ -131,32 +119,79 @@ public class DeployedApplication {
 	 *            the appName to set
 	 */
 	public void setAppName(String appName) {
-		this.appName = appName;
+		if (StringUtils.isBlank(appName)) {
+			this.appName = "ROOT";
+		} else {
+			this.appName = appName;
+		}
 	}
 
+	/**
+	 * @return the sha256
+	 */
+	public String getSha256() {
+		return sha256;
+	}
 
-	@Override
-	public String toString() {
+	/**
+	 * @param sha256 the sha256 to set
+	 */
+	public void setSha256(String sha256) {
+		this.sha256 = sha256;
+	}
+
+	/**
+	 * @return the size
+	 */
+	public String getSize() {
+		return size;
+	}
+
+	/**
+	 * @param size the size to set
+	 */
+	public void setSize(String size) {
+		this.size = size;
+	}
+
+	@Override public String toString() {
 		return JsonConverter.toJSON(this);
+	}
+
+	public String getContextPath() {
+		return contextPath;
+	}
+
+	public void setContextPath(String contextPath) {
+		if (StringUtils.isBlank(contextPath)) {
+			this.contextPath = FORWARD_SLASH;
+		} else {
+			this.contextPath = contextPath;
+		}
+	}
+
+	public Set<Integer> getPorts() {
+		return ports;
+	}
+
+	public void setPorts(Set<Integer> ports) {
+		this.ports = ports;
 	}
 
 	/* (non-Javadoc)
 	 * @see java.lang.Object#hashCode()
 	 */
-	@Override
-	public int hashCode() {
+	@Override public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((appName == null) ? 0 : appName.hashCode());
-		result = prime * result + ((deployedPath == null) ? 0 : deployedPath.hashCode());
+		result = prime * result + ((sha256 == null) ? 0 : sha256.hashCode());
 		return result;
 	}
 
 	/* (non-Javadoc)
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
-	@Override
-	public boolean equals(Object obj) {
+	@Override public boolean equals(Object obj) {
 		if (this == obj)
 			return true;
 		if (obj == null)
@@ -164,17 +199,23 @@ public class DeployedApplication {
 		if (getClass() != obj.getClass())
 			return false;
 		DeployedApplication other = (DeployedApplication) obj;
-		if (appName == null) {
-			if (other.appName != null)
+		if (sha256 == null) {
+			if (other.sha256 != null)
 				return false;
-		} else if (!appName.equals(other.appName))
-			return false;
-		if (deployedPath == null) {
-			if (other.deployedPath != null)
-				return false;
-		} else if (!deployedPath.equals(other.deployedPath))
+		} else if (!sha256.equals(other.sha256))
 			return false;
 		return true;
+	}
+
+	public boolean isEmpty() {
+		return StringUtils.isAnyBlank(deployedPath, appName, contextPath);
+	}
+
+	public boolean updatePorts(Integer port) {
+		if (port == null || port == -1) {
+			return false;
+		}
+		return ports.add(port);
 	}
 
 }

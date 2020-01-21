@@ -1,15 +1,12 @@
 package com.k2cybersecurity.intcodeagent.models.javaagent;
 
-import java.net.URL;
-import java.util.Enumeration;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import com.k2cybersecurity.instrumentation.Agent;
 import org.json.simple.JSONArray;
 
+import com.k2cybersecurity.instrumentator.K2Instrumentator;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
-import com.k2cybersecurity.intcodeagent.logging.LoggingInterceptor;
 import com.k2cybersecurity.intcodeagent.websocket.JsonConverter;
 
 public class JAHealthCheck extends AgentBasicInfo{
@@ -51,8 +48,8 @@ public class JAHealthCheck extends AgentBasicInfo{
 		this.eventSentCount = new AtomicInteger(0);
 		this.setInstrumentedMethods(new JSONArray());
 		this.setProtectedDB(new JSONArray());
-		this.setIsHost(LoggingInterceptor.APPLICATION_INFO_BEAN.getIsHost());
-		this.setLibPath();
+		this.setIsHost(K2Instrumentator.APPLICATION_INFO_BEAN.getIsHost());
+//		this.setLibPath();
 		logger.log(LogLevel.INFO,"JA Healthcheck created : "+ this.toString(), JAHealthCheck.class.getName());
 	}
 
@@ -69,7 +66,7 @@ public class JAHealthCheck extends AgentBasicInfo{
 		this.ssrfProtection = jaHealthCheck.ssrfProtection;
 		this.fileAccessProtection = jaHealthCheck.fileAccessProtection;
 		this.isHost = jaHealthCheck.isHost;
-		this.setLibPath();
+//		this.setLibPath();
 		logger.log(LogLevel.INFO,"JA Healthcheck created : "+ this.toString(), JAHealthCheck.class.getName());
 	}
 
@@ -113,7 +110,7 @@ public class JAHealthCheck extends AgentBasicInfo{
 	 */
 	public void setProtectedServer(String protectedServer) {
 		this.protectedServer = protectedServer;
-		LoggingInterceptor.APPLICATION_INFO_BEAN.getServerInfo().setName(protectedServer);
+		K2Instrumentator.APPLICATION_INFO_BEAN.getServerInfo().setName(protectedServer);
 	}
 
 	/**
@@ -186,33 +183,6 @@ public class JAHealthCheck extends AgentBasicInfo{
 	
 	public void decrementEventSentCount() {
 		this.eventSentCount.getAndDecrement();
-	}
-
-	public void setLibPath() {
-		if (Agent.allClassLoaders.size() != Agent.allClassLoadersCount.get()) {
-			int lastJarSetSize = Agent.jarPathSet.size();
-			for (ClassLoader loader : Agent.allClassLoaders) {
-				try {
-					if (loader != null && loader instanceof ClassLoader) {
-						Enumeration<URL> pathLisiting = loader.getResources("");
-						while(pathLisiting.hasMoreElements()) {
-							Agent.jarPathSet.add(pathLisiting.nextElement().getPath());
-						}
-					} 
-				} catch (Exception e1) {
-					logger.log(LogLevel.WARNING,"Exception in setLibPath : ", e1, JAHealthCheck.class.getName());
-				} catch (Throwable e) {
-					logger.log(LogLevel.WARNING,"Throwable in setLibPath : ", e, JAHealthCheck.class.getName());
-				}
-			}
-			Agent.allClassLoadersCount.set(Agent.allClassLoaders.size());
-			logger.log(LogLevel.DEBUG, "Current JarSet : " + Agent.jarPathSet,JAHealthCheck.class.getName());
-//			if (Agent.jarPathSet.size() != lastJarSetSize) {
-				JSONArray jarSet = new JSONArray();
-				jarSet.addAll(Agent.jarPathSet);
-				LoggingInterceptor.updateServerInfo();
-//			}
-		}
 	}
 
 	@Override

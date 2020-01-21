@@ -19,13 +19,11 @@
  */
 package com.k2cybersecurity.intcodeagent.logging;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
-
 import com.k2cybersecurity.intcodeagent.websocket.JsonConverter;
 import org.apache.commons.lang3.StringUtils;
 import org.json.simple.JSONArray;
+
+import java.io.Serializable;
 
 
 /**

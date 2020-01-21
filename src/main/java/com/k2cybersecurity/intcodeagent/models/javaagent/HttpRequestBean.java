@@ -1,14 +1,15 @@
 package com.k2cybersecurity.intcodeagent.models.javaagent;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
-import com.k2cybersecurity.intcodeagent.logging.LoggingInterceptor;
 import com.k2cybersecurity.intcodeagent.websocket.JsonConverter;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.json.simple.JSONObject;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -45,8 +46,22 @@ public class HttpRequestBean {
 
 	private Map<String, FileIntegrityBean> fileExist;
 
+	private String contextPath;
+
+	private String contentType;
+
+	@JsonIgnore
+	private HttpResponseBean httpResponseBean;
+
+	private int serverPort;
+
+	private Map<String, String[]> parameterMap;
+
+	private Collection parts;
+
 	public HttpRequestBean() {
 		this.rawRequest = StringUtils.EMPTY;
+		this.clientIP = StringUtils.EMPTY;
 		this.generationTime = 0;
 		this.body = StringUtils.EMPTY;
 		this.dataTruncated = false;
@@ -54,19 +69,27 @@ public class HttpRequestBean {
 		this.url = StringUtils.EMPTY;
 		this.headers = new JSONObject();
 		this.fileExist = new HashMap<String, FileIntegrityBean>();
-		LoggingInterceptor.checkDeployedApplicationAndSendHealthCheck();
+		this.contextPath = StringUtils.EMPTY;
+		this.serverPort = -1;
+		this.httpResponseBean = new HttpResponseBean();
+		this.contentType = StringUtils.EMPTY;
 	}
 
 	public HttpRequestBean(HttpRequestBean servletInfo) {
-		this.rawRequest = servletInfo.getRawRequest();
-		this.clientIP = servletInfo.clientIP;
+		this.rawRequest = new String(servletInfo.getRawRequest().trim());
+		this.clientIP = new String(servletInfo.clientIP.trim());
 		this.generationTime = servletInfo.getGenerationTime();
-		this.body = servletInfo.getBody();
+		this.body = new String(servletInfo.getBody().trim());
 		this.dataTruncated = servletInfo.isDataTruncated();
-		this.method = servletInfo.getMethod();
-		this.url = servletInfo.getUrl();
+		this.method = new String(servletInfo.getMethod().trim());
+		this.url = new String(servletInfo.getUrl().trim());
 		this.headers = new JSONObject(servletInfo.getHeaders());
-		populateHttpRequest();
+		this.contextPath = new String(servletInfo.contextPath.trim());
+		this.serverPort = servletInfo.serverPort;
+		this.httpResponseBean = new HttpResponseBean(servletInfo.httpResponseBean);
+		this.contentType = new String(servletInfo.contentType.trim());
+		this.parameterMap = new HashMap<>(servletInfo.parameterMap);
+		this.parts = servletInfo.parts;
 	}
 
 	public String getRawRequest() {
@@ -108,12 +131,36 @@ public class HttpRequestBean {
 		return this.body;
 	}
 
-	/**
-	 * @param body the body to set
-	 */
-	public void setBody(String body) {
-		this.body = body;
+	public int getServerPort() {
+		return serverPort;
 	}
+
+	public void setServerPort(int serverPort) {
+		this.serverPort = serverPort;
+	}
+
+	public Map<String, String[]> getParameterMap() {
+		return parameterMap;
+	}
+
+	public void setParameterMap(Map<String, String[]> parameterMap) {
+		this.parameterMap = parameterMap;
+	}
+
+	public Collection getParts() {
+		return parts;
+	}
+
+	public void setParts(Collection parts) {
+		this.parts = parts;
+	}
+
+	//	/**
+//	 * @param body the body to set
+//	 */
+//	public void setBody(String body) {
+//		this.body = body;
+//	}
 
 	/**
 	 * @return the dataTruncated
@@ -271,4 +318,42 @@ public class HttpRequestBean {
 //		servletInfo.populateHttpRequest();
 //		System.out.println(servletInfo);
 //	}
+
+	public String getContextPath() {
+		return contextPath;
+	}
+
+	public void setContextPath(String contextPath) {
+		this.contextPath = contextPath;
+	}
+
+	public void setBody(String body) {
+		this.body = body;
+	}
+
+	@JsonIgnore
+	public HttpResponseBean getHttpResponseBean() {
+		return httpResponseBean;
+	}
+
+	@JsonIgnore
+	public void setHttpResponseBean(HttpResponseBean httpResponseBean) {
+		this.httpResponseBean = httpResponseBean;
+	}
+
+	public String getContentType() {
+		return contentType;
+	}
+
+	public void setContentType(String contentType) {
+		if(StringUtils.isNotBlank(contentType)) {
+			this.contentType = StringUtils.substringBefore(contentType, ";").trim().toLowerCase();
+		} else {
+			this.contentType = StringUtils.EMPTY;
+		}
+	}
+
+	public boolean isEmpty(){
+		return StringUtils.isAnyBlank(url, method);
+	}
 }

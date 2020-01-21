@@ -1,13 +1,7 @@
 package com.k2cybersecurity.intcodeagent.filelogging;
 
 import java.io.IOException;
-import java.util.concurrent.Future;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-
-import com.k2cybersecurity.intcodeagent.logging.ServletEventPool.EventAbortPolicy;
+import java.util.concurrent.*;
 
 public class FileLoggerThreadPool {
 	private ThreadPoolExecutor executor;
@@ -48,9 +42,32 @@ public class FileLoggerThreadPool {
 		executor.setThreadFactory(new ThreadFactory() {
 			@Override
 			public Thread newThread(Runnable r) {
-				return new Thread(Thread.currentThread().getThreadGroup(), r, "Logger");
+				return new Thread(Thread.currentThread().getThreadGroup(), r, "K2-Logger");
 			}
 		});
+	}
+
+	/**
+	 * A handler for rejected tasks that throws a
+	 * {@code RejectedExecutionException}.
+	 */
+	public static class EventAbortPolicy implements RejectedExecutionHandler {
+		/**
+		 * Creates an {@code ValidationAbortPolicy}.
+		 */
+		public EventAbortPolicy() {
+		}
+
+		/**
+		 * Always throws RejectedExecutionException.
+		 *
+		 * @param r the runnable task requested to be executed
+		 * @param e the executor attempting to execute this task
+		 * @throws RejectedExecutionException always
+		 */
+		public void rejectedExecution(Runnable r, ThreadPoolExecutor e) {
+			// Just eat the rejection error.
+		}
 	}
 
 	/**
