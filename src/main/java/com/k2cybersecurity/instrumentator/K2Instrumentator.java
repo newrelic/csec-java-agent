@@ -8,7 +8,6 @@ import com.k2cybersecurity.intcodeagent.models.javaagent.ApplicationInfoBean;
 import com.k2cybersecurity.intcodeagent.models.javaagent.JAHealthCheck;
 import com.k2cybersecurity.intcodeagent.websocket.EventSendPool;
 import com.k2cybersecurity.intcodeagent.websocket.WSClient;
-
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -74,6 +73,7 @@ public class K2Instrumentator {
 		}
 		IPScheduledThread.getInstance();
 		eventWritePool();
+		System.out.println(String.format("This application instance is now being protected by K2 Agent under id %s", APPLICATION_UUID));
 	}
 
 	private static void eventWritePool() {
