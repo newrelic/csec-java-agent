@@ -39,13 +39,13 @@ public class ApplicationInfoUtils {
 		}
 	}
 
-	public static String getDefaultGetway() throws IOException {
+	public static String getDefaultGateway() throws IOException {
 		try {
 			List<String> routes = IOUtils.readLines(new FileInputStream(new File(PROC_DIR + SELF_NET_ROUTE)));
 			for(int i=1; i<routes.size(); i++) {
 				String[] route = routes.get(i).split("\\s+");
 				if(StringUtils.equals(CS_1,route[1])) {
-					return getDefaultGetway(route[2]);
+					return getDefaultGateway(route[2]);
 				}
 			}
 		} catch (UnknownHostException e) {
@@ -55,7 +55,7 @@ public class ApplicationInfoUtils {
 		return StringUtils.EMPTY;
 	}
 
-	private static String getDefaultGetway(String hexGateway) {
+	private static String getDefaultGateway(String hexGateway) {
 
 		StringBuilder gateway = new StringBuilder();
 		for(int i=hexGateway.length()-2; i>=0; i-=2) {
@@ -68,7 +68,7 @@ public class ApplicationInfoUtils {
 
 	public static void main(String[] args) throws IOException {
 		try {
-			System.out.println(getDefaultGetway());
+			System.out.println(getDefaultGateway());
 		} catch (SocketException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
