@@ -13,6 +13,8 @@ public class ApplicationInfoBean extends AgentBasicInfo {
 	
 	/** pid of process. */
 	private Integer pid;
+	
+	private String ipaddress;
 
 	/** UUID per running application. */
 	private String applicationUUID;
@@ -257,5 +259,19 @@ public class ApplicationInfoBean extends AgentBasicInfo {
 	 */
 	public void setSha256(String sha256) {
 		this.sha256 = sha256;
+	}
+
+	/**
+	 * @return the ipaddress
+	 */
+	public String getIpaddress() {
+		return ipaddress;
+	}
+
+	/**
+	 * @param ipaddress the ipaddress to set
+	 */
+	public void setIpaddress(String ipaddress) {
+		this.ipaddress = ipaddress;
 	}
 }

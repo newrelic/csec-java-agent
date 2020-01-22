@@ -9,12 +9,14 @@ import com.k2cybersecurity.intcodeagent.models.javaagent.JAHealthCheck;
 import com.k2cybersecurity.intcodeagent.websocket.EventSendPool;
 import com.k2cybersecurity.intcodeagent.websocket.WSClient;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.text.StringEscapeUtils;
 
 import java.io.*;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.HashSet;
@@ -139,6 +141,7 @@ public class K2Instrumentator {
 			ApplicationInfoBean applicationInfoBean = new ApplicationInfoBean(VMPID, APPLICATION_UUID,
 					isDynamicAttach ? DYNAMIC : STATIC);
 			applicationInfoBean.setStartTime(runtimeMXBean.getStartTime());
+			applicationInfoBean.setIpaddress(getIpAddress());
 			String containerId = getContainerID();
 			String cmdLine = StringEscapeUtils.escapeJava(getCmdLineArgsByProc(VMPID));
 			applicationInfoBean.setProcStartTime(getStartTimeByProc(VMPID));
@@ -172,6 +175,14 @@ public class K2Instrumentator {
 					K2Instrumentator.class.getName());
 		}
 		return null;
+	}
+	
+	private static String getIpAddress() {
+		try {
+			return InetAddress.getLocalHost().getHostAddress();
+		} catch (UnknownHostException e) {
+			return StringUtils.EMPTY;
+		}
 	}
 
 	private static String getCmdLineArgsByProc(Integer pid) {
