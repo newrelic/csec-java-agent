@@ -53,8 +53,13 @@ public class Hooks {
 		TYPE_BASED_HOOKS.put("java.sql.Connection",
 				Arrays.asList("nativeSQL", "prepareCall", "prepareStatement"));
 		
-		//LDAP
+		//LDAP Java Lib
 		TYPE_BASED_HOOKS.put("javax.naming.directory.DirContext", Collections.singletonList("search"));
+		//LDAP Unbounded Lib
+		TYPE_BASED_HOOKS.put("com.unboundid.ldap.sdk.LDAPInterface", Collections.singletonList("search"));
+		//LDAP Apache Lib
+		NAME_BASED_HOOKS.put("org.apache.directory.server.core.DefaultOperationManager", Collections.singletonList("search"));
+		
 
 		//trust boundary hooks
 		TYPE_BASED_HOOKS.put("javax.servlet.http.HttpSession", Arrays.asList("setAttribute","putValue"));
@@ -263,7 +268,12 @@ public class Hooks {
 		
 		//LDAP search
 		DECORATOR_ENTRY.put("javax.naming.directory.DirContext.search", "com.k2cybersecurity.instrumentator.decorators.ldap");
-
+		//LDAP Unbounded Lib
+		DECORATOR_ENTRY.put("com.unboundid.ldap.sdk.LDAPInterface.search", "com.k2cybersecurity.instrumentator.decorators.ldaplibs");
+		//LDAP Unbounded Lib
+		DECORATOR_ENTRY.put("org.apache.directory.server.core.DefaultOperationManager.search", "com.k2cybersecurity.instrumentator.decorators.ldaplibs");
+		
+		
 		//XPath execute both packages for java standard
 		DECORATOR_ENTRY.put("org.apache.xpath.XPath.execute", "com.k2cybersecurity.instrumentator.decorators.xpath");
 		DECORATOR_ENTRY.put("com.sun.org.apache.xpath.internal.XPath.execute", "com.k2cybersecurity.instrumentator.decorators.xpath");
