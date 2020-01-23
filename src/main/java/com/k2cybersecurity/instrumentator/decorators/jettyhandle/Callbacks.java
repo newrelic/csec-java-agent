@@ -100,6 +100,7 @@ public class Callbacks {
 			ThreadLocalLDAPMap.getInstance().clearAll();
 			ThreadLocalExecutionMap.getInstance().getFileLocalMap().clear();
 			ThreadLocalExecutionMap.getInstance().cleanUp();
+			ThreadLocalLdaptiveMap.getInstance().clearAll();
 		}
 	}
 
