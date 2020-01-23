@@ -70,7 +70,10 @@ public class K2Instrumentator {
 		
 		if(isk8sEnv) {
 			hostip = System.getenv("K2_SERVICE_SERVICE_HOST");
-		}else {
+		}else if(APPLICATION_INFO_BEAN.getIdentifier().getIsHost()){
+			hostip = InetAddress.getLoopbackAddress().getHostAddress();
+		}
+		else {
 			try {
 				hostip = ApplicationInfoUtils.getDefaultGateway();
 			} catch (IOException e) {
