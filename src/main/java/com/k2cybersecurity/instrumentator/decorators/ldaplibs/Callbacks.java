@@ -19,7 +19,7 @@ public class Callbacks {
 	
 	public static void doOnEnter(String sourceString, String className, String methodName, Object obj, Object[] args,
 			String executionId) {
-		//if (!ThreadLocalHttpMap.getInstance().isEmpty() && !ThreadLocalOperationLock.getInstance().isAcquired()) {
+		if (!ThreadLocalHttpMap.getInstance().isEmpty() && !ThreadLocalOperationLock.getInstance().isAcquired()) {
 			try {
 				ThreadLocalOperationLock.getInstance().acquire();
 				System.out.println("sourceString : " + sourceString + " args : " + Arrays.asList(args) + " this : " + obj);
@@ -44,7 +44,7 @@ public class Callbacks {
 			} finally {
 				ThreadLocalOperationLock.getInstance().release();
 			}
-		//}
+		}
 	}
 	
 	private static void searchMethodUnboundidLib(String sourceString, String className, String methodName, Object obj,

@@ -59,6 +59,7 @@ public class Hooks {
 		TYPE_BASED_HOOKS.put("com.unboundid.ldap.sdk.LDAPInterface", Collections.singletonList("search"));
 		//LDAP Apache Lib
 		NAME_BASED_HOOKS.put("org.apache.directory.server.core.DefaultOperationManager", Collections.singletonList("search"));
+		//LDAP Spring framework LdapTemplate uses LDAP Java Lib internally, therefore no extra hook required.
 		
 
 		//trust boundary hooks
@@ -272,7 +273,6 @@ public class Hooks {
 		DECORATOR_ENTRY.put("com.unboundid.ldap.sdk.LDAPInterface.search", "com.k2cybersecurity.instrumentator.decorators.ldaplibs");
 		//LDAP Unbounded Lib
 		DECORATOR_ENTRY.put("org.apache.directory.server.core.DefaultOperationManager.search", "com.k2cybersecurity.instrumentator.decorators.ldaplibs");
-		
 		
 		//XPath execute both packages for java standard
 		DECORATOR_ENTRY.put("org.apache.xpath.XPath.execute", "com.k2cybersecurity.instrumentator.decorators.xpath");
