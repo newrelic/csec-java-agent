@@ -165,8 +165,9 @@ public class K2Instrumentator {
 			if (containerId != null) {
 				applicationInfoBean.setContainerID(containerId);
 				applicationInfoBean.setIsHost(false);
-			} else
+			} else {
 				applicationInfoBean.setIsHost(true);
+			}
 			// applicationInfoBean.setJvmArguments(new
 			// JSONArray(runtimeMXBean.getInputArguments()));
 			return applicationInfoBean;
