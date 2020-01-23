@@ -16,15 +16,15 @@ public class Callbacks {
 
 //	private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
 
-	
 	public static void doOnEnter(String sourceString, String className, String methodName, Object obj, Object[] args,
 			String executionId) {
 		if (!ThreadLocalHttpMap.getInstance().isEmpty() && !ThreadLocalOperationLock.getInstance().isAcquired()) {
 			try {
 				ThreadLocalOperationLock.getInstance().acquire();
-				System.out.println("sourceString : " + sourceString + " args : " + Arrays.asList(args) + " this : " + obj);
-				
-				switch(sourceString) {
+				System.out.println(
+						"sourceString : " + sourceString + " args : " + Arrays.asList(args) + " this : " + obj);
+
+				switch (sourceString) {
 				case ILDAPConstants.APACHE_LDAP_1:
 				case ILDAPConstants.APACHE_LDAP_2:
 					searchMethodApacheLib(sourceString, className, methodName, obj, args, executionId);
@@ -33,11 +33,14 @@ public class Callbacks {
 				case ILDAPConstants.UNBOUNDID_LDAP_CONNECTION:
 					searchMethodUnboundidLib(sourceString, className, methodName, obj, args, executionId);
 					break;
+				case ILDAPConstants.LDAPTIVE_EXECUTE:
+					executeMethodLdaptive(sourceString, className, methodName, obj, args, executionId);
+					break;
 				default:
 					break;
-					
+
 				}
-				
+
 //				logger.log(LogLevel.INFO,
 //						"OnEnter :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj
 //								+ " - eid : " + executionId, Callbacks.class.getName());
@@ -46,32 +49,31 @@ public class Callbacks {
 			}
 		}
 	}
-	
-	private static void searchMethodUnboundidLib(String sourceString, String className, String methodName, Object obj,
+
+	private static void executeMethodLdaptive(String sourceString, String className, String methodName, Object obj,
 			Object[] args, String executionId) {
 		// TODO Auto-generated method stub
-		
-		
 		try {
 			Object searchRequestObj = args[0];
-			Method getBaseDNMethod = searchRequestObj.getClass().getDeclaredMethod("getBaseDN");
-			getBaseDNMethod.setAccessible(true);
-			Object baseDNObj = getBaseDNMethod.invoke(searchRequestObj);
+
+			Method getBaseDnMethod = searchRequestObj.getClass().getDeclaredMethod("getBaseDn");
+			getBaseDnMethod.setAccessible(true);
+			Object baseDNObj = getBaseDnMethod.invoke(searchRequestObj);
 			String dnValue = StringUtils.EMPTY;
 			if (baseDNObj != null) {
 				dnValue = (String) baseDNObj;
 			}
-			
-			Method getFilterMethod = searchRequestObj.getClass().getDeclaredMethod("getFilter");
+
+			Method getFilterMethod = searchRequestObj.getClass().getMethod("getFilter");
 			getFilterMethod.setAccessible(true);
 			Object filterObj = getFilterMethod.invoke(searchRequestObj);
 			String filterValue = StringUtils.EMPTY;
 			if (filterObj != null) {
 				filterValue = filterObj.toString();
 			}
-			
+
 			System.out.println("DN is : " + dnValue + " filter is : " + filterValue);
-			
+
 			if (StringUtils.isNotBlank(dnValue) && StringUtils.isNotBlank(filterValue)
 					&& ThreadLocalLDAPMap.getInstance().put(filterValue)) {
 				LDAPOperationalBean ldapOperationalBean = new LDAPOperationalBean(dnValue, filterValue, className,
@@ -82,8 +84,44 @@ public class Callbacks {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
-		
+
+	}
+
+	private static void searchMethodUnboundidLib(String sourceString, String className, String methodName, Object obj,
+			Object[] args, String executionId) {
+		// TODO Auto-generated method stub
+
+		try {
+			Object searchRequestObj = args[0];
+			Method getBaseDNMethod = searchRequestObj.getClass().getDeclaredMethod("getBaseDN");
+			getBaseDNMethod.setAccessible(true);
+			Object baseDNObj = getBaseDNMethod.invoke(searchRequestObj);
+			String dnValue = StringUtils.EMPTY;
+			if (baseDNObj != null) {
+				dnValue = (String) baseDNObj;
+			}
+
+			Method getFilterMethod = searchRequestObj.getClass().getDeclaredMethod("getFilter");
+			getFilterMethod.setAccessible(true);
+			Object filterObj = getFilterMethod.invoke(searchRequestObj);
+			String filterValue = StringUtils.EMPTY;
+			if (filterObj != null) {
+				filterValue = filterObj.toString();
+			}
+
+			System.out.println("DN is : " + dnValue + " filter is : " + filterValue);
+
+			if (StringUtils.isNotBlank(dnValue) && StringUtils.isNotBlank(filterValue)
+					&& ThreadLocalLDAPMap.getInstance().put(filterValue)) {
+				LDAPOperationalBean ldapOperationalBean = new LDAPOperationalBean(dnValue, filterValue, className,
+						sourceString, executionId, Instant.now().toEpochMilli());
+				EventDispatcher.dispatch(ldapOperationalBean, VulnerabilityCaseType.LDAP);
+			}
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
 	}
 
 	private static void searchMethodApacheLib(String sourceString, String className, String methodName, Object obj,
