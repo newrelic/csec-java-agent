@@ -1,10 +1,12 @@
 package com.k2cybersecurity.instrumentator;
 
+import com.k2cybersecurity.instrumentator.utils.ApplicationInfoUtils;
 import com.k2cybersecurity.instrumentator.utils.HashGenerator;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.logging.IPScheduledThread;
 import com.k2cybersecurity.intcodeagent.models.javaagent.ApplicationInfoBean;
+import com.k2cybersecurity.intcodeagent.models.javaagent.Identifier;
 import com.k2cybersecurity.intcodeagent.models.javaagent.JAHealthCheck;
 import com.k2cybersecurity.intcodeagent.websocket.EventSendPool;
 import com.k2cybersecurity.intcodeagent.websocket.WSClient;
@@ -28,7 +30,7 @@ import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.*;
 public class K2Instrumentator {
 
 	public static Set<String> hookedAPIs = new HashSet<>();
-	public static String hostip = "";
+	public static String hostip = StringUtils.EMPTY;
 	public static Integer VMPID;
 	public static final String APPLICATION_UUID = UUID.randomUUID().toString();
 	public static ApplicationInfoBean APPLICATION_INFO_BEAN;
@@ -42,6 +44,8 @@ public class K2Instrumentator {
 	public static boolean isDynamicAttach = false;
 	public static boolean isAttached = false;
 	public static boolean enableHTTPRequestPrinting = false;
+	
+	public static boolean isk8sEnv = false;
 
 	static {
 		try {
@@ -53,37 +57,49 @@ public class K2Instrumentator {
 		}
 	}
 
-	public static void init(Boolean isDynamicAttach) {
+	public static boolean init(Boolean isDynamicAttach) {
 		K2Instrumentator.isDynamicAttach = isDynamicAttach;
-		try (BufferedReader reader = new BufferedReader(new FileReader(HOST_IP_PROPERTIES_FILE))) {
-			hostip = reader.readLine();
-			if (hostip != null)
-				hostip = hostip.trim();
-		} catch (FileNotFoundException e1) {
-			e1.printStackTrace();
-		} catch (IOException e1) {
-			e1.printStackTrace();
-		}
+		
 //		 ConfigK2Logs.getInstance().initializeLogs();
 		APPLICATION_INFO_BEAN = createApplicationInfoBean();
+		if(APPLICATION_INFO_BEAN == null) {
+			return false;
+		}
 		JA_HEALTH_CHECK = new JAHealthCheck(APPLICATION_UUID);
+		isk8sEnv = ApplicationInfoUtils.isK8sEnv();
+		
+		if(isk8sEnv) {
+			hostip = System.getenv("K2_SERVICE_SERVICE_HOST");
+		}else {
+			try {
+				hostip = ApplicationInfoUtils.getDefaultGateway();
+			} catch (IOException e) {
+				e.printStackTrace();
+				return false;
+			}
+		}
 		try {
 			WSClient.getInstance();
 		} catch (Exception e) {
 			logger.log(LogLevel.ERROR, ERROR_OCCURED_WHILE_TRYING_TO_CONNECT_TO_WSOCKET, e,
 					K2Instrumentator.class.getName());
+			return false;
 		}
+		//TODO Create new schedule thread for JA health check
 		IPScheduledThread.getInstance();
-		eventWritePool();
+		boolean isWorking = eventWritePool();
 		System.out.println(String.format("This application instance is now being protected by K2 Agent under id %s", APPLICATION_UUID));
+		return isWorking;
 	}
 
-	private static void eventWritePool() {
+	private static boolean eventWritePool() {
 
 		try {
 			EventSendPool.getInstance();
+			return true;
 		} catch (Exception e) {
 			logger.log(LogLevel.WARNING, EXCEPTION_OCCURED_IN_EVENT_SEND_POOL, e, K2Instrumentator.class.getName());
+			return false;
 		}
 	}
 
@@ -141,7 +157,7 @@ public class K2Instrumentator {
 			ApplicationInfoBean applicationInfoBean = new ApplicationInfoBean(VMPID, APPLICATION_UUID,
 					isDynamicAttach ? DYNAMIC : STATIC);
 			applicationInfoBean.setStartTime(runtimeMXBean.getStartTime());
-			applicationInfoBean.setIpaddress(getIpAddress());
+			Identifier identifier = new Identifier(getIpAddress());
 			String containerId = getContainerID();
 			String cmdLine = StringEscapeUtils.escapeJava(getCmdLineArgsByProc(VMPID));
 			applicationInfoBean.setProcStartTime(getStartTimeByProc(VMPID));
@@ -151,7 +167,9 @@ public class K2Instrumentator {
 			// JSONArray jsonArray = new JSONArray();
 			// jsonArray.addAll(cmdlineArgs);
 			// applicationInfoBean.setJvmArguments(jsonArray);
+			
 			// }
+			
 			try {
 				applicationInfoBean.setBinaryPath(Files
 						.readSymbolicLink(
@@ -163,13 +181,20 @@ public class K2Instrumentator {
 					.setBinaryName(StringUtils.substringAfterLast(applicationInfoBean.getBinaryPath(), File.separator));
 			applicationInfoBean.setSha256(HashGenerator.getChecksum(new File(applicationInfoBean.getBinaryPath())));
 			if (containerId != null) {
-				applicationInfoBean.setContainerID(containerId);
-				applicationInfoBean.setIsHost(false);
+				identifier.setContainerId(containerId);
+				identifier.setIsHost(false);
+				identifier.setIsContainer(true);
+				String podId = ApplicationInfoUtils.getPodId(containerId);
+				if(StringUtils.isNotBlank(podId)) {
+					identifier.setPodId(podId);
+					identifier.setIsPod(true);
+				}
 			} else {
-				applicationInfoBean.setIsHost(true);
+				identifier.setIsHost(true);
 			}
 			// applicationInfoBean.setJvmArguments(new
 			// JSONArray(runtimeMXBean.getInputArguments()));
+			applicationInfoBean.setIdentifier(identifier);
 			return applicationInfoBean;
 		} catch (Exception e) {
 			logger.log(LogLevel.WARNING, EXCEPTION_OCCURED_IN_CREATE_APPLICATION_INFO_BEAN, e,

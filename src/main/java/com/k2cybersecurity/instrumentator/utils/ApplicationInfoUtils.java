@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.CGROUP_FILE_NAME;
@@ -108,6 +109,14 @@ public class ApplicationInfoUtils {
 	private static Set<DeployedApplication> getAllDeployedApplications() {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	public static boolean isK8sEnv() {
+		String k8sHost = System.getenv("KUBERNETES_SERVICE_HOST");
+		if (StringUtils.isNotBlank(k8sHost)) {
+			return true;
+		}
+		return false;
 	}
 
 }

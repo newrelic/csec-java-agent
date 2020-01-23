@@ -14,16 +14,8 @@ public class ApplicationInfoBean extends AgentBasicInfo {
 	/** pid of process. */
 	private Integer pid;
 	
-	private String ipaddress;
-
 	/** UUID per running application. */
 	private String applicationUUID;
-
-	/** Is application running on host. */
-	private Boolean isHost;
-
-	/** The container ID of running application. */
-	private String containerID;
 
 	/** name of running application. */
 	private String applicationName;
@@ -52,6 +44,8 @@ public class ApplicationInfoBean extends AgentBasicInfo {
 	private String agentAttachmentType;
 
 	private ServerInfo serverInfo;
+	
+	private Identifier identifier;
 
 	public ApplicationInfoBean(Integer pid, String applicationUUID, String agentAttachmentType) {
 		super();
@@ -95,22 +89,6 @@ public class ApplicationInfoBean extends AgentBasicInfo {
 
 	public void setApplicationUUID(String applicationUUID) {
 		this.applicationUUID = applicationUUID;
-	}
-
-	public Boolean getIsHost() {
-		return isHost;
-	}
-
-	public void setIsHost(Boolean host) {
-		isHost = host;
-	}
-
-	public String getContainerID() {
-		return containerID;
-	}
-
-	public void setContainerID(String containerID) {
-		this.containerID = containerID;
 	}
 
 	public String getApplicationName() {
@@ -262,16 +240,16 @@ public class ApplicationInfoBean extends AgentBasicInfo {
 	}
 
 	/**
-	 * @return the ipaddress
+	 * @return the identifier
 	 */
-	public String getIpaddress() {
-		return ipaddress;
+	public Identifier getIdentifier() {
+		return identifier;
 	}
 
 	/**
-	 * @param ipaddress the ipaddress to set
+	 * @param identifier the identifier to set
 	 */
-	public void setIpaddress(String ipaddress) {
-		this.ipaddress = ipaddress;
+	public void setIdentifier(Identifier identifier) {
+		this.identifier = identifier;
 	}
 }
