@@ -67,20 +67,23 @@ public class ApplicationInfoUtils {
 			for (String line : cgroupEntries) {
 				int index = line.indexOf(KUBEPODS_DIR);
 				if (index > -1) {
-					return StringUtils.substringBetween(line, File.separator, File.separator + containerId);
+					String[] fields = StringUtils.split(line, File.separator);
+					if (StringUtils.isNotBlank(fields[fields.length - 2])) {
+						return fields[fields.length - 2];
+					}
 				}
 			}
-		} catch(Exception e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		return StringUtils.EMPTY;
 	}
-	
+
 	public static String getHostName() throws IOException {
 		File hostName = new File("/etc/hostname");
 		try {
-			return FileUtils.readFileToString(hostName);
-		}catch(Exception e) {
+			return FileUtils.readFileToString(hostName).trim();
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		return StringUtils.EMPTY;
