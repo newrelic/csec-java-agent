@@ -1,27 +1,35 @@
 package com.k2cybersecurity.instrumentator.utils;
 
-import com.k2cybersecurity.instrumentator.Hooks;
-import com.k2cybersecurity.instrumentator.K2Instrumentator;
-import com.k2cybersecurity.instrumentator.custom.ClassloaderAdjustments;
-import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
-import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
-import com.k2cybersecurity.intcodeagent.logging.IPScheduledThread;
-import com.k2cybersecurity.intcodeagent.logging.ServletEventPool;
-import com.k2cybersecurity.intcodeagent.models.javaagent.ShutDownEvent;
-import com.k2cybersecurity.intcodeagent.websocket.EventSendPool;
-import com.k2cybersecurity.intcodeagent.websocket.WSClient;
-import net.bytebuddy.agent.builder.AgentBuilder;
-import net.bytebuddy.asm.Advice;
-import net.bytebuddy.description.type.TypeDescription;
-import net.bytebuddy.dynamic.DynamicType;
-import net.bytebuddy.utility.JavaModule;
+import static net.bytebuddy.matcher.ElementMatchers.hasMethodName;
+import static net.bytebuddy.matcher.ElementMatchers.hasSuperType;
+import static net.bytebuddy.matcher.ElementMatchers.isConstructor;
+import static net.bytebuddy.matcher.ElementMatchers.isInterface;
+import static net.bytebuddy.matcher.ElementMatchers.isStatic;
+import static net.bytebuddy.matcher.ElementMatchers.named;
+import static net.bytebuddy.matcher.ElementMatchers.not;
+import static net.bytebuddy.matcher.ElementMatchers.returns;
 
 import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import static net.bytebuddy.matcher.ElementMatchers.*;
+import com.k2cybersecurity.instrumentator.Hooks;
+import com.k2cybersecurity.instrumentator.K2Instrumentator;
+import com.k2cybersecurity.instrumentator.custom.ClassloaderAdjustments;
+import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
+import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
+import com.k2cybersecurity.intcodeagent.logging.HealthCheckScheduleThread;
+import com.k2cybersecurity.intcodeagent.logging.ServletEventPool;
+import com.k2cybersecurity.intcodeagent.models.javaagent.ShutDownEvent;
+import com.k2cybersecurity.intcodeagent.websocket.EventSendPool;
+import com.k2cybersecurity.intcodeagent.websocket.WSClient;
+
+import net.bytebuddy.agent.builder.AgentBuilder;
+import net.bytebuddy.asm.Advice;
+import net.bytebuddy.description.type.TypeDescription;
+import net.bytebuddy.dynamic.DynamicType;
+import net.bytebuddy.utility.JavaModule;
 
 public class InstrumentationUtils {
 
@@ -158,7 +166,7 @@ public class InstrumentationUtils {
 		} catch (URISyntaxException | InterruptedException e) {
 		}
 		ServletEventPool.getInstance().shutDownThreadPoolExecutor();
-		IPScheduledThread.getInstance().shutDownThreadPoolExecutor();
+		HealthCheckScheduleThread.getInstance().shutDownThreadPoolExecutor();
 
 //		Agent.globalInstr.removeTransformer(classTransformer);
 		logger.log(LogLevel.SEVERE, JAVA_AGENT_SHUTDOWN_COMPLETE, InstrumentationUtils.class.getName());

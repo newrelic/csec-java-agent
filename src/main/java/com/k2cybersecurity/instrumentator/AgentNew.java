@@ -28,7 +28,11 @@ public class AgentNew {
 		try {
 			Class<?> clazz = Class.forName("com.k2cybersecurity.instrumentator.K2Instrumentator");
 			Method init = clazz.getMethod("init", Boolean.class);
-			init.invoke(null, isDynamicAttachment);
+			Boolean isStarted = (Boolean) init.invoke(null, isDynamicAttachment);
+			if(!isStarted) {
+				System.err.println("[K2-JA] Process initialization failed!!! Environment incompatible.");
+				return;
+			}
 		} catch (Exception e) {
 //			e.printStackTrace();
 		}
