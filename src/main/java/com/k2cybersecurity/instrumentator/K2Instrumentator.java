@@ -183,6 +183,7 @@ public class K2Instrumentator {
 			applicationInfoBean
 					.setBinaryName(StringUtils.substringAfterLast(applicationInfoBean.getBinaryPath(), File.separator));
 			applicationInfoBean.setSha256(HashGenerator.getChecksum(new File(applicationInfoBean.getBinaryPath())));
+			identifier.setHostname(ApplicationInfoUtils.getHostName());
 			if (containerId != null) {
 				identifier.setContainerId(containerId);
 				identifier.setIsHost(false);
@@ -190,6 +191,7 @@ public class K2Instrumentator {
 				String podId = ApplicationInfoUtils.getPodId(containerId);
 				if(StringUtils.isNotBlank(podId)) {
 					identifier.setPodId(podId);
+					identifier.setNamespace(getPodNameSpace());
 					identifier.setIsPod(true);
 				}
 			} else {
@@ -215,11 +217,11 @@ public class K2Instrumentator {
 	}
 
 	private static String getCmdLineArgsByProc(Integer pid) {
-		File cmdlineFile = new File(PROC_DIR + pid + CMD_LINE_DIR);
+		File cmdlineFile = new File(PROC_DIR + "self" + CMD_LINE_DIR);
 		if (!cmdlineFile.isFile())
 			return null;
 		try {
-			String cmdline = FileUtils.readFileToString(new File(PROC_DIR + pid + CMD_LINE_DIR),
+			String cmdline = FileUtils.readFileToString(cmdlineFile,
 					StandardCharsets.UTF_8);
 			if (!cmdline.isEmpty())
 				return cmdline;
@@ -250,6 +252,20 @@ public class K2Instrumentator {
 			}
 		}
 		return null;
+	}
+	
+	public static String getPodNameSpace() {
+		File namespace = new File("/var/run/secrets/kubernetes.io/serviceaccount/namespace");
+		if(!namespace.isFile()) {
+			return StringUtils.EMPTY;
+		}
+		try {
+			return FileUtils.readFileToString(namespace, StandardCharsets.UTF_8);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return StringUtils.EMPTY;
+		}
 	}
 
 }

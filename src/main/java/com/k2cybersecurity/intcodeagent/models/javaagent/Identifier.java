@@ -23,6 +23,10 @@ public class Identifier {
 	
 	private String podId;
 	
+	private String namespace;
+	
+	private String hostname;
+	
 	/**
 	 * @param ipaddress
 	 */
@@ -82,6 +86,34 @@ public class Identifier {
 	@Override
 	public String toString() {
 		return JsonConverter.toJSON(this);
+	}
+
+	/**
+	 * @return the namespace
+	 */
+	public String getNamespace() {
+		return namespace;
+	}
+
+	/**
+	 * @param namespace the namespace to set
+	 */
+	public void setNamespace(String namespace) {
+		this.namespace = namespace;
+	}
+
+	/**
+	 * @return the hostname
+	 */
+	public String getHostname() {
+		return hostname;
+	}
+
+	/**
+	 * @param hostname the hostname to set
+	 */
+	public void setHostname(String hostname) {
+		this.hostname = hostname;
 	}
 	
 }
