@@ -440,7 +440,7 @@ public interface IAgentConstants {
 	String ERROR_WHILE_INITIALISING_THE_K2_AGENT = "Error while initialising the K2 Agent :";
 	
 	// IPScheduledThread.java file constants
-	String HOST_IP_PROPERTIES_FILE = "/etc/k2-adp/hostip.properties";
+	String HOST_IP_PROPERTIES_FILE = "/opt/k2-ic/hostip.properties";
 
 	String HCSCHEDULEDTHREAD_ = "K2-hcScheduledThread-";
 	String ACK_MSG = "ACK";
@@ -458,7 +458,7 @@ public interface IAgentConstants {
 	String JAR_PATH_FETCH_SUCCESS_MSG = "getJarPathResultExecutorService result fetched successfully.";
 	String JAR_PATH_EMPTY_RESULT_ERR = "getJarPathResultExecutorService result is empty.";
 	String JAR_PATH_TIMEOUT_ERR = "Timeout reached waiting for getJarPathResultExecutorService.";
-	String HOST_PROP_FILE_NAME = "/etc/k2-adp/hostip.properties";
+	String HOST_PROP_FILE_NAME = "/opt/k2-ic/hostip.properties";
 	String HOST_IP_FOUND_MSG = "hostip found: ";
 	String JA_CONNECT_SUCCESS_MSG = "K2-JavaAgent installed successfully.";
 	String PROC_DIR = "/proc/";

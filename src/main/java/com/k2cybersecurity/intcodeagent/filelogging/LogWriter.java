@@ -51,7 +51,7 @@ public class LogWriter implements Runnable {
 	private static final File currentLogFile;
 
 	static {
-		fileName = "/etc/k2-adp/logs/k2_java_agent-" + K2Instrumentator.APPLICATION_UUID + ".log";
+		fileName = "/var/log/k2-ic/k2_java_agent-" + K2Instrumentator.APPLICATION_UUID + ".log";
 		currentLogFile = new File(fileName);
 		currentLogFileName = fileName;
 		try {
