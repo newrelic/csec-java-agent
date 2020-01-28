@@ -116,6 +116,14 @@ public class Hooks {
 		NAME_BASED_HOOKS.put("com.sun.org.apache.xpath.internal.XPath", Collections.singletonList("execute"));
 		// XPath Dom4jParser
 		NAME_BASED_HOOKS.put("org.jaxen.saxpath.base.XPathReader", Collections.singletonList("parse"));
+		NAME_BASED_HOOKS.put("net.sf.saxon.sxpath.XPathExpression", Collections.singletonList("iterate"));
+		//NAME_BASED_HOOKS.put("net.sf.saxon.s9api.XPathCompiler", Collections.singletonList("compile"));
+		//NAME_BASED_HOOKS.put("net.sf.saxon.expr.parser.ExpressionTool", Collections.singletonList("make"));
+		NAME_BASED_HOOKS.put("net.sf.saxon.xpath.XPathEvaluator", Collections.singletonList("compile"));
+		NAME_BASED_HOOKS.put("net.sf.saxon.sxpath.XPathEvaluator", Collections.singletonList("createExpression"));
+//		NAME_BASED_HOOKS.put("net.sf.saxon.style.UseWhenFilter", Arrays.asList("evaluateStatic", "evaluateUseWhen"));
+//		NAME_BASED_HOOKS.put("net.sf.saxon.style.StyleElement", Collections.singletonList("makeExpression"));
+		
 
 		// JBoss Classloading Hook
 		NAME_BASED_HOOKS.put("org.jboss.modules.Main", Collections.singletonList("main"));
@@ -384,6 +392,14 @@ public class Hooks {
 				"com.k2cybersecurity.instrumentator.decorators.xpath");
 		// XPath Dom4jParser
 		DECORATOR_ENTRY.put("org.jaxen.saxpath.base.XPathReader.parse", "com.k2cybersecurity.instrumentator.decorators.xpath");
+		DECORATOR_ENTRY.put("net.sf.saxon.sxpath.XPathExpression.iterate", "com.k2cybersecurity.instrumentator.decorators.xpath.saxon");
+//		DECORATOR_ENTRY.put("net.sf.saxon.s9api.XPathCompiler.compile", "com.k2cybersecurity.instrumentator.decorators.xpath.saxon");
+//		DECORATOR_ENTRY.put("net.sf.saxon.expr.parser.ExpressionTool.make", "com.k2cybersecurity.instrumentator.decorators.xpath.saxon");
+		DECORATOR_ENTRY.put("net.sf.saxon.xpath.XPathEvaluator.compile", "com.k2cybersecurity.instrumentator.decorators.xpath.saxoncompile");
+		DECORATOR_ENTRY.put("net.sf.saxon.sxpath.XPathEvaluator.createExpression", "com.k2cybersecurity.instrumentator.decorators.xpath.saxoncompile");
+//		DECORATOR_ENTRY.put("net.sf.saxon.style.UseWhenFilter.evaluateStatic", "com.k2cybersecurity.instrumentator.decorators.xpath.saxoncompile");
+//		DECORATOR_ENTRY.put("net.sf.saxon.style.UseWhenFilter.evaluateUseWhen", "com.k2cybersecurity.instrumentator.decorators.xpath.saxoncompile");
+//		DECORATOR_ENTRY.put("net.sf.saxon.style.StyleElement.makeExpression", "com.k2cybersecurity.instrumentator.decorators.xpath.saxoncompile");
 
 		// Jetty Servlet
 		DECORATOR_ENTRY.put("org.eclipse.jetty.server.Handler.handle",

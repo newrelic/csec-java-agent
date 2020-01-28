@@ -101,6 +101,7 @@ public class Callbacks {
 			ThreadLocalExecutionMap.getInstance().getFileLocalMap().clear();
 			ThreadLocalExecutionMap.getInstance().cleanUp();
 			ThreadLocalLdaptiveMap.getInstance().clearAll();
+			ThreadLocalXpathSaxonMap.getInstance().clearAll();
 		}
 	}
 
