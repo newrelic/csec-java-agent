@@ -2,6 +2,8 @@ package com.k2cybersecurity.intcodeagent.filelogging;
 
 import com.k2cybersecurity.instrumentator.K2Instrumentator;
 import com.k2cybersecurity.intcodeagent.properties.K2JALogProperties;
+import com.k2cybersecurity.intcodeagent.websocket.FtpClient;
+
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.*;
@@ -51,7 +53,7 @@ public class LogWriter implements Runnable {
 	private static final File currentLogFile;
 
 	static {
-		fileName = "/var/log/k2-ic/k2_java_agent-" + K2Instrumentator.APPLICATION_UUID + ".log";
+		fileName = "/tmp/k2_java_agent-" + K2Instrumentator.APPLICATION_UUID + ".log";
 		currentLogFile = new File(fileName);
 		currentLogFileName = fileName;
 		try {
@@ -143,25 +145,27 @@ public class LogWriter implements Runnable {
 	}
 
 	private static void rollover(File currentFile) throws IOException {
-		if (currentFile.length() > maxFileSize) {
-			writer.close();
-			logFileCounter++;
-			File rolloverFile = new File(fileName + STRING_DOT + logFileCounter);
-			currentFile.renameTo(rolloverFile);
-
-			PrintWriter pw = new PrintWriter(new File(currentLogFileName));
-			pw.write(StringUtils.EMPTY);
-			pw.close();
-
-			writer = new BufferedWriter(new FileWriter(currentLogFileName, true));
-
-			int removeFile = logFileCounter - K2JALogProperties.maxfiles;
-			if (removeFile > 0) {
-				File remove = new File(fileName + STRING_DOT + removeFile);
-				if (remove.exists())
-					remove.delete();
-			}
-		}
+//		if (currentFile.length() > maxFileSize) {
+//			writer.close();
+//			logFileCounter++;
+//			File rolloverFile = new File(fileName + STRING_DOT + logFileCounter);
+//			currentFile.renameTo(rolloverFile);
+			
+			uploadLogsAndDeleteFile(currentFile);
+			
+//			PrintWriter pw = new PrintWriter(new File(currentLogFileName));
+//			pw.write(StringUtils.EMPTY);
+//			pw.close();
+//
+//			writer = new BufferedWriter(new FileWriter(currentLogFileName, true));
+//
+//			int removeFile = logFileCounter - K2JALogProperties.maxfiles;
+//			if (removeFile > 0) {
+//				File remove = new File(fileName + STRING_DOT + removeFile);
+//				if (remove.exists())
+//					remove.delete();
+//			}
+//		}
 	}
 
 	public static void updateLogLevel(LogLevel logLevel, TimeUnit timeUnit, Integer duration ) {
@@ -178,5 +182,13 @@ public class LogWriter implements Runnable {
 	public static void setLogLevel(LogLevel logLevel) {
 		defaultLogLevel = logLevel.getLevel();
 	}
-
+	
+	private static void uploadLogsAndDeleteFile(File file) {
+		boolean result = FtpClient.sendLogFile(file);
+		if (result) {
+			file.delete();
+		}
+		
+	}
+	
 }
