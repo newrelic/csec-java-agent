@@ -54,6 +54,7 @@ public class FtpClient {
 		FTPClient ftp = getClient();
 		try (InputStream input = new FileInputStream(file)) {
 			result = ftp.storeFile(file.getName(), input);
+			logger.log(LogLevel.DEBUG, "File Upload for file " + file.getName() + "response : " + result, WSClient.class.getName());
 		} catch (IOException e) {
 			logger.log(LogLevel.ERROR, "log file not found " + file, WSClient.class.getName());
 		}
