@@ -8,6 +8,7 @@ import java.io.InputStream;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPReply;
 
+import com.k2cybersecurity.instrumentator.K2Instrumentator;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 
@@ -23,7 +24,7 @@ public class FtpClient {
 		int retryFtp = 5;
 		while (retryFtp-- > 0) {
 			try {
-				ftp.connect("localhost", 54322);
+				ftp.connect(K2Instrumentator.hostip, 54322);
 				ftp.login("test", "test");
 				int reply = ftp.getReplyCode();
 				System.out.println("Reply :" + reply);
