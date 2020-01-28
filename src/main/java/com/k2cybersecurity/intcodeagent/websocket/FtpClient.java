@@ -11,6 +11,7 @@ import org.apache.commons.net.ftp.FTPReply;
 import com.k2cybersecurity.instrumentator.K2Instrumentator;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
+import com.k2cybersecurity.intcodeagent.filelogging.LogWriter;
 
 public class FtpClient {
 	private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
@@ -65,5 +66,10 @@ public class FtpClient {
 			e.printStackTrace();
 		}
 		return result;
+	}
+
+	public static boolean sendBootstrapLogFile() {
+		File blogFile = new File(LogWriter.getFileName());
+		return FtpClient.sendLogFile(blogFile);
 	}
 }

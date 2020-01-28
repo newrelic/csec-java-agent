@@ -6,13 +6,16 @@ import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.filelogging.LogWriter;
 import com.k2cybersecurity.intcodeagent.models.javaagent.IntCodeControlCommand;
+import com.k2cybersecurity.intcodeagent.websocket.FtpClient;
 
 import java.util.concurrent.TimeUnit;
+
+import org.apache.commons.net.ftp.FTPClient;
 
 public class AgentUtils {
 
 	private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
-	
+
 	public static void controlCommandProcessor(IntCodeControlCommand controlCommand) {
 		switch (controlCommand.getControlCommand()) {
 		case IntCodeControlCommand.CHANGE_LOG_LEVEL:
@@ -37,6 +40,10 @@ public class AgentUtils {
 			break;
 		case IntCodeControlCommand.ENABLE_HTTP_REQUEST_PRINTING:
 			K2Instrumentator.enableHTTPRequestPrinting = !K2Instrumentator.enableHTTPRequestPrinting;
+			break;
+		case IntCodeControlCommand.UPLOAD_LOGS:
+			logger.log(LogLevel.INFO, "Is log file sent to IC: " + FtpClient.sendBootstrapLogFile(),
+					AgentUtils.class.getSimpleName());
 			break;
 		default:
 			break;

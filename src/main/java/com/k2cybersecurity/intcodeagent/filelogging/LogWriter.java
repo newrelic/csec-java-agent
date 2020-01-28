@@ -191,4 +191,8 @@ public class LogWriter implements Runnable {
 		
 	}
 	
+	public static String getFileName() {
+		return fileName;
+	}
+	
 }
