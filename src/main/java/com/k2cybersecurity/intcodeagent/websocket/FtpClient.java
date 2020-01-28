@@ -35,12 +35,14 @@ public class FtpClient {
 					try {
 						ftp.disconnect();
 					} catch (IOException e) {
-						logger.log(LogLevel.ERROR, "FTP server refused connection : localhost:54322",
+						logger.log(LogLevel.ERROR,
+								"FTP server refused connection : " + K2Instrumentator.hostip + ":54322",
 								WSClient.class.getName());
 					}
 				}
 			} catch (IOException e) {
-				logger.log(LogLevel.ERROR, "Error in connecting to FTP at localhost:54322", WSClient.class.getName());
+				logger.log(LogLevel.ERROR, "Error in connecting to FTP at " + K2Instrumentator.hostip + ":54322",
+						WSClient.class.getName());
 				return null;
 			}
 		}

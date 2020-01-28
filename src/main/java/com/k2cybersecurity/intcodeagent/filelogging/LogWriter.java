@@ -145,27 +145,27 @@ public class LogWriter implements Runnable {
 	}
 
 	private static void rollover(File currentFile) throws IOException {
-//		if (currentFile.length() > maxFileSize) {
-//			writer.close();
-//			logFileCounter++;
-//			File rolloverFile = new File(fileName + STRING_DOT + logFileCounter);
-//			currentFile.renameTo(rolloverFile);
+		if (currentFile.length() > maxFileSize) {
+			writer.close();
+			logFileCounter++;
+			File rolloverFile = new File(fileName + STRING_DOT + logFileCounter);
+			currentFile.renameTo(rolloverFile);
 			
 			uploadLogsAndDeleteFile(currentFile);
 			
-//			PrintWriter pw = new PrintWriter(new File(currentLogFileName));
-//			pw.write(StringUtils.EMPTY);
-//			pw.close();
-//
-//			writer = new BufferedWriter(new FileWriter(currentLogFileName, true));
-//
-//			int removeFile = logFileCounter - K2JALogProperties.maxfiles;
-//			if (removeFile > 0) {
-//				File remove = new File(fileName + STRING_DOT + removeFile);
-//				if (remove.exists())
-//					remove.delete();
-//			}
-//		}
+			PrintWriter pw = new PrintWriter(new File(currentLogFileName));
+			pw.write(StringUtils.EMPTY);
+			pw.close();
+
+			writer = new BufferedWriter(new FileWriter(currentLogFileName, true));
+
+			int removeFile = logFileCounter - K2JALogProperties.maxfiles;
+			if (removeFile > 0) {
+				File remove = new File(fileName + STRING_DOT + removeFile);
+				if (remove.exists())
+					remove.delete();
+			}
+		}
 	}
 
 	public static void updateLogLevel(LogLevel logLevel, TimeUnit timeUnit, Integer duration ) {
