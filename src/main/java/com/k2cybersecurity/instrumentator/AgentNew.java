@@ -34,6 +34,7 @@ public class AgentNew {
 		}
 		
 		AgentBuilder agentBuilder = new AgentBuilder.Default()
+				.disableClassFormatChanges()
 				.ignore(ElementMatchers.nameStartsWith("sun.reflect.com.k2cybersecurity")).disableClassFormatChanges()
 //				.with(AgentBuilder.Listener.StreamWriting.toSystemError())
 				.with(AgentBuilder.RedefinitionStrategy.RETRANSFORMATION)
