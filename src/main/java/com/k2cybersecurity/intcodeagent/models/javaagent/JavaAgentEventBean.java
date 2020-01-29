@@ -23,11 +23,9 @@ public class JavaAgentEventBean extends AgentBasicInfo {
 	private String eventCategory;
 	private Long preProcessingTime;
 	private AgentMetaData metaData;
-	private Identifier identifier;
 
 	public JavaAgentEventBean() {
 		super();
-		identifier = K2Instrumentator.APPLICATION_INFO_BEAN.getIdentifier();
 	}
 
 	public JavaAgentEventBean(Long startTime, Long preProcessingTime, String sourceMethod, Integer pid,
@@ -40,7 +38,6 @@ public class JavaAgentEventBean extends AgentBasicInfo {
 		this.setCaseType(vulnerabilityCaseType.getCaseType());
 		this.setPreProcessingTime(preProcessingTime);
 		this.metaData = new AgentMetaData();
-		identifier = K2Instrumentator.APPLICATION_INFO_BEAN.getIdentifier();
 	}
 
 	public JavaAgentEventBean(Long startTime, String sourceMethod, JSONArray parameters, Integer pid, String applicationUUID,
@@ -53,7 +50,6 @@ public class JavaAgentEventBean extends AgentBasicInfo {
 		this.startTime = startTime;
 		this.setCaseType(vulnerabilityCaseType.getCaseType());
 		this.metaData = new AgentMetaData();
-		identifier = K2Instrumentator.APPLICATION_INFO_BEAN.getIdentifier();
 	}
 
 	public void setUserAPIInfo(Integer lineNumber, String userClassName, String userMethodName) {
@@ -264,19 +260,5 @@ public class JavaAgentEventBean extends AgentBasicInfo {
 
 	public void setEventCategory(String eventCategory) {
 		this.eventCategory = eventCategory;
-	}
-
-	/**
-	 * @return the identifier
-	 */
-	public Identifier getIdentifier() {
-		return identifier;
-	}
-
-	/**
-	 * @param identifier the identifier to set
-	 */
-	public void setIdentifier(Identifier identifier) {
-		this.identifier = identifier;
 	}
 }
