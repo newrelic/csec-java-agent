@@ -2,6 +2,7 @@ package com.k2cybersecurity.instrumentator.decorators.xpath.saxoncompile;
 
 import static com.k2cybersecurity.instrumentator.decorators.xpath.IXPathConstants.GET_INTERNAL_EXPRESSION;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.time.Instant;
 import java.util.Arrays;
@@ -62,6 +63,12 @@ public class Callbacks {
 							e.printStackTrace();
 						}
 					}
+				} else if (StringUtils.containsAny(sourceString, "declareVariableExpr", "selectXPath") && args != null) {
+					if (sourceString.contains("selectXPath") && StringUtils.isNotBlank(args[0].toString())) {
+						setProcessVTDArgsAndDispatch(obj, className, methodName, args[0].toString(), exectionId);
+					} else if (sourceString.contains("declareVariableExpr") && args.length == 2 && StringUtils.isNotBlank(args[1].toString())) {
+						setProcessVTDArgsAndDispatch(obj, className, methodName, args[1].toString(), exectionId);
+					}
 				}
 			} finally {
 				ThreadLocalOperationLock.getInstance().release();
@@ -80,5 +87,18 @@ public class Callbacks {
 //				ThreadLocalOperationLock.getInstance().release();
 //			}
 //		}
+	}
+	
+	private static void setProcessVTDArgsAndDispatch(Object obj, String className, String methodName, String arg,
+			String exectionId) {
+		try {
+			Field xpeField = obj.getClass().getDeclaredField("xpe");
+			xpeField.setAccessible(true);
+			Object xpeRef = xpeField.get(obj);
+			ThreadLocalXpathSaxonMap.getInstance().create(xpeRef, arg, className,
+					methodName, exectionId, Instant.now().toEpochMilli());
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
 	}
 }

@@ -31,38 +31,53 @@ public class Callbacks {
 //				LogLevel.INFO, "OnEnter initial :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj
 //				+ " - eid : " + executionId, Callbacks.class.getName());
 
-		 if (!ThreadLocalHttpMap.getInstance().isEmpty() &&
-		 !ThreadLocalOperationLock.getInstance().isAcquired()) {
-		try {
-			System.out.println("sourceString : " + sourceString + " args : " + Arrays.asList(args) + " this : " + obj);
-			ThreadLocalOperationLock.getInstance().acquire();
+		if (!ThreadLocalHttpMap.getInstance().isEmpty() && !ThreadLocalOperationLock.getInstance().isAcquired()) {
+			try {
+				System.out.println(
+						"sourceString : " + sourceString + " args : " + Arrays.asList(args) + " this : " + obj);
+				ThreadLocalOperationLock.getInstance().acquire();
 //				logger.log(LogLevel.INFO, "OnEnter :" + sourceString + " - args : " + Arrays.asList(args) + " - this : "
 //						+ obj + " - eid : " + executionId, Callbacks.class.getName());
 
-			if (obj != null && sourceString.equals(
-					"public net.sf.saxon.om.SequenceIterator net.sf.saxon.sxpath.XPathExpression.iterate(net.sf.saxon.sxpath.XPathDynamicContext) throws net.sf.saxon.trans.XPathException")) {
-				try {
-					Method getInternalExpressionMethod = obj.getClass().getDeclaredMethod("getInternalExpression");
-					getInternalExpressionMethod.setAccessible(true);
-					Object expressionObj = getInternalExpressionMethod.invoke(obj);
-					System.out.println("H2 : "+ expressionObj.hashCode());
-					System.out.println("expression obj : " + expressionObj);
-					System.out.println("Map : " + ThreadLocalXpathSaxonMap.getInstance());
-					XPathOperationalBean xPathOperationalBean = ThreadLocalXpathSaxonMap.getInstance()
-							.get(expressionObj);
-					if (xPathOperationalBean != null) {
-						System.out.println("dispatching xpath operational bean");
-						System.out.println("Exp : " + xPathOperationalBean.getExpression());
-						EventDispatcher.dispatch(xPathOperationalBean, VulnerabilityCaseType.XPATH);
+				if (obj != null && sourceString.equals(
+						"public net.sf.saxon.om.SequenceIterator net.sf.saxon.sxpath.XPathExpression.iterate(net.sf.saxon.sxpath.XPathDynamicContext) throws net.sf.saxon.trans.XPathException")) {
+					try {
+						Method getInternalExpressionMethod = obj.getClass().getDeclaredMethod("getInternalExpression");
+						getInternalExpressionMethod.setAccessible(true);
+						Object expressionObj = getInternalExpressionMethod.invoke(obj);
+						System.out.println("H2 : " + expressionObj.hashCode());
+						System.out.println("expression obj : " + expressionObj);
+						System.out.println("Map : " + ThreadLocalXpathSaxonMap.getInstance());
+						XPathOperationalBean xPathOperationalBean = ThreadLocalXpathSaxonMap.getInstance()
+								.get(expressionObj);
+						if (xPathOperationalBean != null) {
+							System.out.println("dispatching xpath operational bean");
+							System.out.println("Exp : " + xPathOperationalBean.getExpression());
+							EventDispatcher.dispatch(xPathOperationalBean, VulnerabilityCaseType.XPATH);
+						}
+					} catch (Exception ex) {
+						ex.printStackTrace();
 					}
-				} catch (Exception ex) {
-					ex.printStackTrace();
+				} else if (obj != null && StringUtils.containsAny(sourceString, "evalXPath", "evalXPathToBoolean",
+						"evalXPathToNumber", "evalXPathToString")) {
+					try {
+						Field xpeField = obj.getClass().getDeclaredField("xpe");
+						xpeField.setAccessible(true);
+						Object xpeRef = xpeField.get(obj);
+						XPathOperationalBean xPathOperationalBean = ThreadLocalXpathSaxonMap.getInstance().get(xpeRef);
+						if (xPathOperationalBean != null) {
+							System.out.println("dispatching xpath operational bean");
+							System.out.println("Exp : " + xPathOperationalBean.getExpression());
+							EventDispatcher.dispatch(xPathOperationalBean, VulnerabilityCaseType.XPATH);
+						}
+					} catch (Exception ex) {
+						ex.printStackTrace();
+					}
 				}
+			} finally {
+				ThreadLocalOperationLock.getInstance().release();
 			}
-		} finally {
-			ThreadLocalOperationLock.getInstance().release();
 		}
-		 }
 	}
 
 	public static void doOnExit(String sourceString, String className, String methodName, Object obj, Object[] args,

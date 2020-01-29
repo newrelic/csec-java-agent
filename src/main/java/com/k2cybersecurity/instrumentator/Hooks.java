@@ -117,13 +117,15 @@ public class Hooks {
 		// XPath Dom4jParser
 		NAME_BASED_HOOKS.put("org.jaxen.saxpath.base.XPathReader", Collections.singletonList("parse"));
 		NAME_BASED_HOOKS.put("net.sf.saxon.sxpath.XPathExpression", Collections.singletonList("iterate"));
+		// XPath Saxon
 		//NAME_BASED_HOOKS.put("net.sf.saxon.s9api.XPathCompiler", Collections.singletonList("compile"));
 		//NAME_BASED_HOOKS.put("net.sf.saxon.expr.parser.ExpressionTool", Collections.singletonList("make"));
 		NAME_BASED_HOOKS.put("net.sf.saxon.xpath.XPathEvaluator", Collections.singletonList("compile"));
 		NAME_BASED_HOOKS.put("net.sf.saxon.sxpath.XPathEvaluator", Collections.singletonList("createExpression"));
 //		NAME_BASED_HOOKS.put("net.sf.saxon.style.UseWhenFilter", Arrays.asList("evaluateStatic", "evaluateUseWhen"));
 //		NAME_BASED_HOOKS.put("net.sf.saxon.style.StyleElement", Collections.singletonList("makeExpression"));
-		
+		// XPath VTDXML
+		NAME_BASED_HOOKS.put("com.ximpleware.AutoPilot", Arrays.asList("declareVariableExpr", "evalXPath", "evalXPathToBoolean", "evalXPathToNumber", "evalXPathToString", "selectXPath"));
 
 		// JBoss Classloading Hook
 		NAME_BASED_HOOKS.put("org.jboss.modules.Main", Collections.singletonList("main"));
@@ -400,6 +402,14 @@ public class Hooks {
 //		DECORATOR_ENTRY.put("net.sf.saxon.style.UseWhenFilter.evaluateStatic", "com.k2cybersecurity.instrumentator.decorators.xpath.saxoncompile");
 //		DECORATOR_ENTRY.put("net.sf.saxon.style.UseWhenFilter.evaluateUseWhen", "com.k2cybersecurity.instrumentator.decorators.xpath.saxoncompile");
 //		DECORATOR_ENTRY.put("net.sf.saxon.style.StyleElement.makeExpression", "com.k2cybersecurity.instrumentator.decorators.xpath.saxoncompile");
+		// XPath VTD-XML
+		DECORATOR_ENTRY.put("com.ximpleware.AutoPilot.declareVariableExpr", "com.k2cybersecurity.instrumentator.decorators.xpath.saxoncompile");
+		DECORATOR_ENTRY.put("com.ximpleware.AutoPilot.selectXPath", "com.k2cybersecurity.instrumentator.decorators.xpath.saxoncompile");
+
+		DECORATOR_ENTRY.put("com.ximpleware.AutoPilot.evalXPath", "com.k2cybersecurity.instrumentator.decorators.xpath.saxon");
+		DECORATOR_ENTRY.put("com.ximpleware.AutoPilot.evalXPathToBoolean", "com.k2cybersecurity.instrumentator.decorators.xpath.saxon");
+		DECORATOR_ENTRY.put("com.ximpleware.AutoPilot.evalXPathToNumber", "com.k2cybersecurity.instrumentator.decorators.xpath.saxon");
+		DECORATOR_ENTRY.put("com.ximpleware.AutoPilot.evalXPathToString", "com.k2cybersecurity.instrumentator.decorators.xpath.saxon");
 
 		// Jetty Servlet
 		DECORATOR_ENTRY.put("org.eclipse.jetty.server.Handler.handle",
