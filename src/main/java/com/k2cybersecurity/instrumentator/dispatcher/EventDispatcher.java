@@ -66,7 +66,6 @@ public class EventDispatcher {
 			return;
 		}
 		// Place dispatch here
-		// printDispatch(objectBean);
 
 		List<SQLOperationalBean> toBeSentBeans = new ArrayList<>();
 		objectBeanList.forEach((bean) -> {
@@ -75,12 +74,19 @@ public class EventDispatcher {
 				toBeSentBeans.add(bean);
 			}
 		});
+		printDispatch(toBeSentBeans);
 		if (!toBeSentBeans.isEmpty()) {
 			DispatcherPool.getInstance().dispatchEvent(
 					new HttpRequestBean(ThreadLocalExecutionMap.getInstance().getHttpRequestBean()),
 					new AgentMetaData(ThreadLocalExecutionMap.getInstance().getMetaData()),
 					Thread.currentThread().getStackTrace(), toBeSentBeans, vulnerabilityCaseType);
 		}
+	}
+	
+	
+
+	private static void printDispatch(List<SQLOperationalBean> objectBeanList) {
+		System.out.println("Bean list : "+objectBeanList);
 	}
 
 	public static void dispatch(DeployedApplication deployedApplication, VulnerabilityCaseType vulnerabilityCaseType) {
