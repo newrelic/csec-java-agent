@@ -151,7 +151,7 @@ public class LogWriter implements Runnable {
 			File rolloverFile = new File(fileName + STRING_DOT + logFileCounter);
 			currentFile.renameTo(rolloverFile);
 			
-			uploadLogsAndDeleteFile(currentFile);
+			uploadLogsAndDeleteFile(rolloverFile);
 			
 			PrintWriter pw = new PrintWriter(new File(currentLogFileName));
 			pw.write(StringUtils.EMPTY);
