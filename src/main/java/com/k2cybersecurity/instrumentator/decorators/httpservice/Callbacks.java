@@ -27,6 +27,7 @@ public class Callbacks {
 //                System.out.println("Came to service hook :" + exectionId + " :: " + sourceString + " :: " +args[0]+ " :: " +args[1]);
                 if (args != null && args.length == 2 && args[0] != null && args[1] != null) {
                     if(CallbackUtils.checkArgsTypeHeirarchy(args[0], args[1])) {
+                        cleanUp();
 //                        System.out.println("Came to service hook 1:" + exectionId + " :: " + sourceString + " :: " + args[0].hashCode());
                         ThreadLocalHTTPServiceLock.getInstance().acquire(obj);
                         ThreadLocalHttpMap.getInstance().setHttpRequest(args[0]);
@@ -95,13 +96,17 @@ public class Callbacks {
         } finally {
 
             // Clean up
-            ThreadLocalHttpMap.getInstance().cleanState();
-            ThreadLocalDBMap.getInstance().clearAll();
-            ThreadLocalSessionMap.getInstance().clearAll();
-            ThreadLocalLDAPMap.getInstance().clearAll();
-            ThreadLocalExecutionMap.getInstance().getFileLocalMap().clear();
-            ThreadLocalExecutionMap.getInstance().cleanUp();
+            cleanUp();
         }
     }
 
+    private static void cleanUp(){
+        // Clean up
+        ThreadLocalHttpMap.getInstance().cleanState();
+        ThreadLocalDBMap.getInstance().clearAll();
+        ThreadLocalSessionMap.getInstance().clearAll();
+        ThreadLocalLDAPMap.getInstance().clearAll();
+        ThreadLocalExecutionMap.getInstance().getFileLocalMap().clear();
+        ThreadLocalExecutionMap.getInstance().cleanUp();
+    }
 }
