@@ -102,11 +102,11 @@ public class Callbacks {
 
     private static void cleanUp(){
         // Clean up
+        ThreadLocalHTTPServiceLock.getInstance().resetLock();
         ThreadLocalHttpMap.getInstance().cleanState();
         ThreadLocalDBMap.getInstance().clearAll();
         ThreadLocalSessionMap.getInstance().clearAll();
         ThreadLocalLDAPMap.getInstance().clearAll();
-        ThreadLocalExecutionMap.getInstance().getFileLocalMap().clear();
         ThreadLocalExecutionMap.getInstance().cleanUp();
     }
 }
