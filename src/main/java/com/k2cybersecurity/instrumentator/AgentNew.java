@@ -75,7 +75,7 @@ public class AgentNew {
         }
 
 		try {
-			instrumentation.retransformClasses(classesToBeReloaded.toArray(new Class[classesToBeReloaded.size()]));
+            instrumentation.retransformClasses(classesToBeReloaded.toArray(new Class[0]));
 		} catch (Exception e) {
 //			e.printStackTrace();
 		}
