@@ -50,7 +50,7 @@ public class Callbacks {
 			Object returnVal, String exectionId) {
 
 
-		if (!ThreadLocalOperationLock.getInstance().isAcquired()) {
+		if (!ThreadLocalOperationLock.getInstance().isAcquired() && ThreadLocalHTTPServiceLock.getInstance().isAcquired(obj)) {
 			try {
 				ThreadLocalOperationLock.getInstance().acquire();
 				//                 System.out.println("OnExit :" + sourceString + " - this : " + obj + " - return : " + returnVal + " - eid : " + exectionId);
@@ -66,7 +66,7 @@ public class Callbacks {
 	public static void doOnError(String sourceString, String className, String methodName, Object obj, Object[]
 			args,
 			Throwable error, String exectionId) throws Throwable {
-		if (!ThreadLocalOperationLock.getInstance().isAcquired()) {
+		if (!ThreadLocalOperationLock.getInstance().isAcquired() && ThreadLocalHTTPServiceLock.getInstance().isAcquired(obj)) {
 			try {
 				ThreadLocalOperationLock.getInstance().acquire();
 				//		System.out.println("OnError :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj

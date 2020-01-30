@@ -2,6 +2,7 @@ package com.k2cybersecurity.instrumentator.utils;
 
 import com.k2cybersecurity.instrumentator.Hooks;
 import com.k2cybersecurity.instrumentator.K2Instrumentator;
+import com.k2cybersecurity.instrumentator.custom.ByteBuddyElementMatchers;
 import com.k2cybersecurity.instrumentator.custom.ClassloaderAdjustments;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
@@ -60,7 +61,7 @@ public class InstrumentationUtils {
 					junction = junction.and(named(sourceClass));
 					break;
 				case TYPE_BASED:
-					junction = junction.and(hasSuperType(named(sourceClass)));
+					junction = junction.and(ByteBuddyElementMatchers.safeHasSuperType(named(sourceClass)));
 					break;
 				default:
 					break;
@@ -105,7 +106,8 @@ public class InstrumentationUtils {
 									true, classLoader);
 							K2Instrumentator.hookedAPIs.add(typeDescription.getName() + DOT + method);
 							if (method == null) {
-								return builder.visit(Advice.to(staticMethodEntryDecorator, constructorExitDecorator)
+								return builder.visit(Advice.to(staticMethodEntryDecorator, constructorExitDecorator,
+										new K2ClassLocater(staticMethodEntryDecorator.getClassLoader()))
 										.on(isConstructor()));
 							}
 							return builder

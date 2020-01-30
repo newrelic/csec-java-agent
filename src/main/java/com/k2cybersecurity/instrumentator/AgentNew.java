@@ -7,6 +7,8 @@ import org.apache.commons.lang3.StringUtils;
 import java.io.IOException;
 import java.lang.instrument.Instrumentation;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
 
 import static com.k2cybersecurity.instrumentator.utils.InstrumentationUtils.doInstrument;
 import static com.k2cybersecurity.instrumentator.utils.InstrumentationUtils.setIAST;
@@ -38,8 +40,10 @@ public class AgentNew {
 		 */
 		AgentBuilder agentBuilder = new AgentBuilder.Default()
 				.ignore(ElementMatchers.nameStartsWith("sun.reflect.com.k2cybersecurity")).disableClassFormatChanges()
+				.with(AgentBuilder.Listener.StreamWriting.toSystemError())
 				.with(AgentBuilder.RedefinitionStrategy.RETRANSFORMATION)
-				.with(AgentBuilder.TypeStrategy.Default.REDEFINE)
+//				.with(AgentBuilder.TypeStrategy.Default.REDEFINE)
+
 		;
 		
 		if(StringUtils.equals("IAST", arguments)) {
@@ -50,7 +54,18 @@ public class AgentNew {
 		agentBuilder = doInstrument(agentBuilder, Hooks.NAME_BASED_HOOKS, "NAME_BASED");
 
 		agentBuilder.installOn(instrumentation);
-		
+		List<Class> classesToBeReloaded = new ArrayList<>();
+		for (Class aClass : instrumentation.getAllLoadedClasses()) {
+			if (instrumentation.isModifiableClass(aClass)){
+				classesToBeReloaded.add(aClass);
+			}
+		}
+
+		try {
+			instrumentation.retransformClasses(classesToBeReloaded.toArray(new Class[classesToBeReloaded.size()]));
+		} catch (Exception e) {
+//			e.printStackTrace();
+		}
 	}
 
 	public static void agentmain(String agentArgs, Instrumentation instrumentation)
