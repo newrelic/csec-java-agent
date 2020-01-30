@@ -39,7 +39,7 @@ public class AgentNew {
 //				.with(AgentBuilder.Listener.StreamWriting.toSystemError())
 				.with(AgentBuilder.RedefinitionStrategy.RETRANSFORMATION)
 //				.with(new AgentBuilder.CircularityLock.Global())
-				.with(AgentBuilder.TypeStrategy.Default.REDEFINE)
+//				.with(AgentBuilder.TypeStrategy.Default.REDEFINE)
 //				.with(AgentBuilder.InitializationStrategy.NoOp.INSTANCE)
 		;
 		

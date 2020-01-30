@@ -74,7 +74,7 @@ public class EventDispatcher {
 				toBeSentBeans.add(bean);
 			}
 		});
-		printDispatch(toBeSentBeans);
+//		printDispatch(toBeSentBeans);
 		if (!toBeSentBeans.isEmpty()) {
 			DispatcherPool.getInstance().dispatchEvent(
 					new HttpRequestBean(ThreadLocalExecutionMap.getInstance().getHttpRequestBean()),
