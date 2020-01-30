@@ -1,6 +1,9 @@
 package com.k2cybersecurity.instrumentator.decorators.jettyhandle;
 
-import com.k2cybersecurity.instrumentator.custom.*;
+import com.k2cybersecurity.instrumentator.custom.ThreadLocalExecutionMap;
+import com.k2cybersecurity.instrumentator.custom.ThreadLocalHTTPServiceLock;
+import com.k2cybersecurity.instrumentator.custom.ThreadLocalHttpMap;
+import com.k2cybersecurity.instrumentator.custom.ThreadLocalOperationLock;
 import com.k2cybersecurity.instrumentator.dispatcher.EventDispatcher;
 import com.k2cybersecurity.instrumentator.utils.CallbackUtils;
 import com.k2cybersecurity.intcodeagent.models.javaagent.HttpRequestBean;
@@ -27,7 +30,7 @@ public class Callbacks {
 				//                System.out.println("Came to service hook :" + exectionId + " :: " + sourceString + " :: " +args[0]+ " :: " +args[1]);
 				if (args != null && args.length == 4 && args[2] != null && args[3] != null) {
 					if(CallbackUtils.checkArgsTypeHeirarchy(args[2], args[3])) {
-						cleanUp();
+						CallbackUtils.cleanUpAllStates();
 						//                        System.out.println("Came to service hook 3:" + exectionId + " :: " + sourceString + " :: " + args[2].hashCode());
 						ThreadLocalHTTPServiceLock.getInstance().acquire(obj);
 						ThreadLocalHttpMap.getInstance().setHttpRequest(args[2]);
@@ -96,17 +99,8 @@ public class Callbacks {
 		} finally {
 
 			// Clean up
-			cleanUp();
+			CallbackUtils.cleanUpAllStates();
 		}
 	}
 
-	private static void cleanUp(){
-		// Clean up
-		ThreadLocalHTTPServiceLock.getInstance().resetLock();
-		ThreadLocalHttpMap.getInstance().cleanState();
-		ThreadLocalDBMap.getInstance().clearAll();
-		ThreadLocalSessionMap.getInstance().clearAll();
-		ThreadLocalLDAPMap.getInstance().clearAll();
-		ThreadLocalExecutionMap.getInstance().cleanUp();
-	}
 }
