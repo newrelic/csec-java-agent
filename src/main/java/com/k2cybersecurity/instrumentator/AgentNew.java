@@ -7,11 +7,10 @@ import org.apache.commons.lang3.StringUtils;
 import java.io.IOException;
 import java.lang.instrument.Instrumentation;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
-import static com.k2cybersecurity.instrumentator.utils.InstrumentationUtils.doInstrument;
-import static com.k2cybersecurity.instrumentator.utils.InstrumentationUtils.setIAST;
+import static com.k2cybersecurity.instrumentator.utils.InstrumentationUtils.*;
 
 /**
  * Hello world!
@@ -53,12 +52,27 @@ public class AgentNew {
 		agentBuilder = doInstrument(agentBuilder, Hooks.NAME_BASED_HOOKS, "NAME_BASED");
 
 		agentBuilder.installOn(instrumentation);
-		List<Class> classesToBeReloaded = new ArrayList<>();
+        Set<Class> classesToBeReloaded = new HashSet<>();
 		for (Class aClass : instrumentation.getAllLoadedClasses()) {
 			if (instrumentation.isModifiableClass(aClass)){
-				classesToBeReloaded.add(aClass);
+                if (Hooks.NAME_BASED_HOOKS.containsKey(aClass.getName())) {
+                    classesToBeReloaded.add(aClass);
+                } else if (Hooks.TYPE_BASED_HOOKS.containsKey(aClass.getName())) {
+                    typeBasedClassSet.add(aClass);
+                }
 			}
 		}
+
+        // Checks for type based classes to hook
+        for (Class aClass : instrumentation.getAllLoadedClasses()) {
+            if (instrumentation.isModifiableClass(aClass)) {
+                typeBasedClassSet.forEach((typeClass -> {
+                    if (typeClass.isAssignableFrom(aClass)) {
+                        classesToBeReloaded.add(aClass);
+                    }
+                }));
+            }
+        }
 
 		try {
 			instrumentation.retransformClasses(classesToBeReloaded.toArray(new Class[classesToBeReloaded.size()]));

@@ -18,8 +18,10 @@ import net.bytebuddy.dynamic.DynamicType;
 import net.bytebuddy.utility.JavaModule;
 
 import java.net.URISyntaxException;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import static net.bytebuddy.matcher.ElementMatchers.*;
@@ -45,6 +47,8 @@ public class InstrumentationUtils {
 	public static final String DOT = ".";
 
 	private static Boolean IAST = false;
+
+    public static Set<Class> typeBasedClassSet = new HashSet<Class>();
 
 	public static AgentBuilder doInstrument(AgentBuilder builder, Map<String, List<String>> hookMap,
 			String typeOfHook) {
