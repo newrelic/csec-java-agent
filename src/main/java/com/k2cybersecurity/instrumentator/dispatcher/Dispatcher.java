@@ -237,6 +237,11 @@ public class Dispatcher implements Runnable {
 			eventBean = setGenericProperties(hashOperationalBean, eventBean);
 			eventBean = prepareHashEvent(eventBean, hashOperationalBean);
 			break;
+		case JAVASCRIPT_INJECTION:
+			JSInjectionOperationalBean jsInjectionOperationalBean = (JSInjectionOperationalBean) event;
+			eventBean = setGenericProperties(jsInjectionOperationalBean, eventBean);
+			eventBean = prepareJSInjectionEvent(eventBean, jsInjectionOperationalBean);
+			break;
 		default:
 
 		}
@@ -251,6 +256,14 @@ public class Dispatcher implements Runnable {
 //		System.out.println("============= Event Start ============");
 //		System.out.println(eventBean);
 //		System.out.println("============= Event End ============");
+	}
+
+	private JavaAgentEventBean prepareJSInjectionEvent(JavaAgentEventBean eventBean,
+			JSInjectionOperationalBean jsInjectionOperationalBean) {
+		JSONArray params = new JSONArray();
+		params.add(jsInjectionOperationalBean.getJavaScriptCode());
+		eventBean.setParameters(params);
+		return eventBean;
 	}
 
 	private JavaAgentEventBean prepareXPATHEvent(JavaAgentEventBean eventBean,

@@ -158,6 +158,10 @@ public class Hooks {
 		// NAME_BASED_HOOKS.put(CLASS_WEBLOGIC_SERVLET_INTERNAL_WEB_APP_SERVLET_CONTEXT,
 		// Collections.singletonList("execute")); // Handle differently
 
+		// JavaScript Injection
+		NAME_BASED_HOOKS.put("jdk.nashorn.api.scripting.NashornScriptEngine", Arrays.asList("evalImpl"));
+		
+		
 		/**
 		 * ------------------------------------ Decorators
 		 * ------------------------------------------------
@@ -494,6 +498,9 @@ public class Hooks {
 		// HASH
 		DECORATOR_ENTRY.put("java.security.MessageDigest.getInstance",
 				"com.k2cybersecurity.instrumentator.decorators.hash");
+		
+		// JavaScript Injection
+		DECORATOR_ENTRY.put("jdk.nashorn.api.scripting.NashornScriptEngine.evalImpl", "com.k2cybersecurity.instrumentator.decorators.jsinjection");
 
 		/** ---------------------IAST CASE TYPE ------------------ */
 
