@@ -18,7 +18,7 @@ public class Hooks {
 
 		// HTTP request hooks
 		TYPE_BASED_HOOKS.put("javax.servlet.GenericServlet", Arrays.asList("service"));
-		TYPE_BASED_HOOKS.put("javax.servlet.jsp.HttpJspPage", Arrays.asList("service"));
+		TYPE_BASED_HOOKS.put("javax.servlet.jsp.HttpJspPage", Arrays.asList("_jspService"));
 
 		TYPE_BASED_HOOKS.put("javax.servlet.ServletInputStream", Arrays.asList("read", "readLine"));
 		TYPE_BASED_HOOKS.put("javax.servlet.ServletOutputStream", Arrays.asList("print", "write", "println"));
@@ -130,7 +130,7 @@ public class Hooks {
 		DECORATOR_ENTRY.put("javax.servlet.GenericServlet.service",
 				"com.k2cybersecurity.instrumentator.decorators.httpservice");
 
-		DECORATOR_ENTRY.put("javax.servlet.jsp.HttpJspPage.service",
+		DECORATOR_ENTRY.put("javax.servlet.jsp.HttpJspPage._jspService",
 				"com.k2cybersecurity.instrumentator.decorators.httpservice");
 
 		DECORATOR_ENTRY.put("javax.servlet.ServletInputStream.read",
