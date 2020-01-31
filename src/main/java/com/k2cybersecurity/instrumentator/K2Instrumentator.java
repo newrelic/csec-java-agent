@@ -39,7 +39,7 @@ public class K2Instrumentator {
 
 	public static boolean isDynamicAttach = false;
 	public static boolean isAttached = false;
-	public static boolean enableHTTPRequestPrinting = false;
+	public static boolean enableHTTPRequestPrinting = true;
 
 	static {
 		try {

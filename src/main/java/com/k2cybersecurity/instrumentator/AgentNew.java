@@ -20,7 +20,12 @@ public class AgentNew {
 
     private static boolean isDynamicAttachment = false;
 
+    private static boolean initDone = false;
+
     public static void premain(String arguments, Instrumentation instrumentation) {
+        if (initDone) {
+            return;
+        }
 //		AgentBuilder agentBuilder = new AgentBuilder.Default().ignore(ElementMatchers.none())
 //				.with(AgentBuilder.Listener.StreamWriting.toSystemError())
 //				.with(AgentBuilder.RedefinitionStrategy.RETRANSFORMATION)
@@ -86,6 +91,7 @@ public class AgentNew {
                 e.printStackTrace();
             }
         }
+        initDone = true;
     }
 
     public static void agentmain(String agentArgs, Instrumentation instrumentation)
