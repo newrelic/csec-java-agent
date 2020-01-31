@@ -18,10 +18,8 @@ import net.bytebuddy.dynamic.DynamicType;
 import net.bytebuddy.utility.JavaModule;
 
 import java.net.URISyntaxException;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import static net.bytebuddy.matcher.ElementMatchers.*;
@@ -48,8 +46,6 @@ public class InstrumentationUtils {
 
 	private static Boolean IAST = false;
 
-    public static Set<Class> typeBasedClassSet = new HashSet<Class>();
-
 	public static AgentBuilder doInstrument(AgentBuilder builder, Map<String, List<String>> hookMap,
 			String typeOfHook) {
 		for (Map.Entry<String, List<String>> entry : hookMap.entrySet()) {
@@ -66,6 +62,8 @@ public class InstrumentationUtils {
 					break;
 				case TYPE_BASED:
 					junction = junction.and(ByteBuddyElementMatchers.safeHasSuperType(named(sourceClass)));
+//                    junction = junction.and(hasSuperType(named(sourceClass)));
+
 					break;
 				default:
 					break;

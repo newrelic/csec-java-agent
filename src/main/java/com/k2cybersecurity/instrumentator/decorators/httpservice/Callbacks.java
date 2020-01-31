@@ -30,7 +30,7 @@ public class Callbacks {
 //                System.out.println("Came to service hook :" + exectionId + " :: " + sourceString + " :: " +args[0]+ " :: " +args[1]);
                 if (args != null && args.length == 2 && args[0] != null && args[1] != null) {
                     if(CallbackUtils.checkArgsTypeHeirarchy(args[0], args[1])) {
-                        CallbackUtils.cleanUpAllStates();
+//                        CallbackUtils.cleanUpAllStates();
 //                        System.out.println("Came to service hook 1:" + exectionId + " :: " + sourceString + " :: " + args[0].hashCode());
                         ThreadLocalHTTPServiceLock.getInstance().acquire(obj);
                         ThreadLocalHttpMap.getInstance().setHttpRequest(args[0]);
@@ -50,7 +50,7 @@ public class Callbacks {
                                 Object returnVal, String exectionId) {
 
 
-        if (!ThreadLocalOperationLock.getInstance().isAcquired() && ThreadLocalHTTPServiceLock.getInstance().isAcquired(obj)) {
+        if (!ThreadLocalOperationLock.getInstance().isAcquired()) {
             try {
                 ThreadLocalOperationLock.getInstance().acquire();
 //                 System.out.println("OnExit :" + sourceString + " - this : " + obj + " - return : " + returnVal + " - eid : " + exectionId);
@@ -68,7 +68,7 @@ public class Callbacks {
                                  Throwable error, String exectionId) throws Throwable {
 //        System.out.println("OnError Initial:" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj.hashCode()	+ " - error : " + error + " - eid : " + exectionId);
 
-        if (!ThreadLocalOperationLock.getInstance().isAcquired() && ThreadLocalHTTPServiceLock.getInstance().isAcquired(obj)) {
+        if (!ThreadLocalOperationLock.getInstance().isAcquired()) {
             try {
                 ThreadLocalOperationLock.getInstance().acquire();
 //		System.out.println("OnError :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj

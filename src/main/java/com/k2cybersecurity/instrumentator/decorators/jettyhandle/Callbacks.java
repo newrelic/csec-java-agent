@@ -30,7 +30,7 @@ public class Callbacks {
 				//                System.out.println("Came to service hook :" + exectionId + " :: " + sourceString + " :: " +args[0]+ " :: " +args[1]);
 				if (args != null && args.length == 4 && args[2] != null && args[3] != null) {
 					if(CallbackUtils.checkArgsTypeHeirarchy(args[2], args[3])) {
-						CallbackUtils.cleanUpAllStates();
+//						CallbackUtils.cleanUpAllStates();
 						//                        System.out.println("Came to service hook 3:" + exectionId + " :: " + sourceString + " :: " + args[2].hashCode());
 						ThreadLocalHTTPServiceLock.getInstance().acquire(obj);
 						ThreadLocalHttpMap.getInstance().setHttpRequest(args[2]);
