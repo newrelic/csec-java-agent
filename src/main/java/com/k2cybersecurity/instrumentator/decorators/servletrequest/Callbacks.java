@@ -49,7 +49,7 @@ public class Callbacks {
 						.isServiceMethodEncountered() && obj != null && CallbackUtils
 						.checkArgsTypeHeirarchyRequest(obj)) {
 					//					System.out.println("Servlet request constructor exit aaya : "+ exectionId + " :: " + sourceString + " :: " + obj.hashCode() + " :: " + returnVal + " :: " + methodName);
-//					CallbackUtils.cleanUpAllStates();
+					CallbackUtils.cleanUpAllStates();
 					ThreadLocalHttpMap.getInstance().setHttpRequest(obj);
 				}
 
