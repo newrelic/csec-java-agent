@@ -1,6 +1,9 @@
 package com.k2cybersecurity.instrumentator.decorators.jettyhandle;
 
-import com.k2cybersecurity.instrumentator.custom.*;
+import com.k2cybersecurity.instrumentator.custom.ThreadLocalExecutionMap;
+import com.k2cybersecurity.instrumentator.custom.ThreadLocalHTTPServiceLock;
+import com.k2cybersecurity.instrumentator.custom.ThreadLocalHttpMap;
+import com.k2cybersecurity.instrumentator.custom.ThreadLocalOperationLock;
 import com.k2cybersecurity.instrumentator.dispatcher.EventDispatcher;
 import com.k2cybersecurity.instrumentator.utils.CallbackUtils;
 import com.k2cybersecurity.intcodeagent.models.javaagent.HttpRequestBean;
@@ -15,19 +18,20 @@ public class Callbacks {
 
 	public static void doOnEnter(String sourceString, String className, String methodName, Object obj, Object[] args,
 			String exectionId) {
-//		System.out.println("OnEnter :" + sourceString + " - this : " + obj + " - eid : " + exectionId);
+		//         System.out.println("OnEnter :" + sourceString + " - this : " + obj + " - eid
+		//         : " + exectionId);
 
 		// TODO: Need more checks here to assert the type of args. Maybe the TYPE_BASED
 		// hook advice should be generated from Code with very specific checks.
 		// Doing checks here will degrade performance.
-		if (!ThreadLocalOperationLock.getInstance().isAcquired() && !ThreadLocalHTTPServiceLock.getInstance()
-				.isAcquired()) {
+		if (!ThreadLocalOperationLock.getInstance().isAcquired() && !ThreadLocalHTTPServiceLock.getInstance().isAcquired()) {
 			try {
 				ThreadLocalOperationLock.getInstance().acquire();
-				//				                System.out.println("Came to service hook :" + exectionId + " :: " + sourceString + " :: " +args[0]+ " :: " +args[1]);
+				//                System.out.println("Came to service hook :" + exectionId + " :: " + sourceString + " :: " +args[0]+ " :: " +args[1]);
 				if (args != null && args.length == 4 && args[2] != null && args[3] != null) {
-					if (CallbackUtils.checkArgsTypeHeirarchy(args[2], args[3])) {
-//						System.out.println("Came to service hook 1:" + exectionId + " :: " + sourceString);
+					if(CallbackUtils.checkArgsTypeHeirarchy(args[2], args[3])) {
+						CallbackUtils.cleanUpAllStates();
+						//                        System.out.println("Came to service hook 3:" + exectionId + " :: " + sourceString + " :: " + args[2].hashCode());
 						ThreadLocalHTTPServiceLock.getInstance().acquire(obj);
 						ThreadLocalHttpMap.getInstance().setHttpRequest(args[2]);
 						ThreadLocalHttpMap.getInstance().setHttpResponse(args[3]);
@@ -35,7 +39,7 @@ public class Callbacks {
 					}
 				}
 			} catch (Exception e) {
-//				e.printStackTrace();
+				//                e.printStackTrace();
 			} finally {
 				ThreadLocalOperationLock.getInstance().release();
 			}
@@ -45,11 +49,11 @@ public class Callbacks {
 	public static void doOnExit(String sourceString, String className, String methodName, Object obj, Object[] args,
 			Object returnVal, String exectionId) {
 
-		if (!ThreadLocalOperationLock.getInstance().isAcquired()) {
+
+		if (!ThreadLocalOperationLock.getInstance().isAcquired() && ThreadLocalHTTPServiceLock.getInstance().isAcquired(obj)) {
 			try {
 				ThreadLocalOperationLock.getInstance().acquire();
-				// System.out.println("OnExit :" + sourceString + " - this : " + obj + " -
-				// return : " + returnVal + " - eid : " + exectionId);
+				//                 System.out.println("OnExit :" + sourceString + " - this : " + obj + " - return : " + returnVal + " - eid : " + exectionId);
 				onHttpTermination(sourceString, exectionId);
 			} finally {
 				ThreadLocalHTTPServiceLock.getInstance().release(obj);
@@ -59,9 +63,10 @@ public class Callbacks {
 
 	}
 
-	public static void doOnError(String sourceString, String className, String methodName, Object obj, Object[] args,
+	public static void doOnError(String sourceString, String className, String methodName, Object obj, Object[]
+			args,
 			Throwable error, String exectionId) throws Throwable {
-		if (!ThreadLocalOperationLock.getInstance().isAcquired()) {
+		if (!ThreadLocalOperationLock.getInstance().isAcquired() && ThreadLocalHTTPServiceLock.getInstance().isAcquired(obj)) {
 			try {
 				ThreadLocalOperationLock.getInstance().acquire();
 				//		System.out.println("OnError :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj
@@ -94,12 +99,7 @@ public class Callbacks {
 		} finally {
 
 			// Clean up
-			ThreadLocalHttpMap.getInstance().cleanState();
-			ThreadLocalDBMap.getInstance().clearAll();
-			ThreadLocalSessionMap.getInstance().clearAll();
-			ThreadLocalLDAPMap.getInstance().clearAll();
-			ThreadLocalExecutionMap.getInstance().getFileLocalMap().clear();
-			ThreadLocalExecutionMap.getInstance().cleanUp();
+			CallbackUtils.cleanUpAllStates();
 		}
 	}
 

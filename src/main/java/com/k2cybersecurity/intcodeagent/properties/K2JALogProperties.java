@@ -4,5 +4,5 @@ public interface K2JALogProperties {
 	int maxfilesize = 10;
 	int maxfiles = 2;
 	boolean additivity = false;
-	String level = "INFO";
+	String level = "DEBUG";
 }

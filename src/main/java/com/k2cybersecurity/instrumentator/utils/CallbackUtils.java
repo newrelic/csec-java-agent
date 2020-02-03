@@ -1,5 +1,6 @@
 package com.k2cybersecurity.instrumentator.utils;
 
+import com.k2cybersecurity.instrumentator.custom.*;
 import com.k2cybersecurity.instrumentator.dispatcher.EventDispatcher;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
@@ -575,5 +576,15 @@ public class CallbackUtils {
 //            e.printStackTrace();
         }
         return false;
+    }
+
+    public static void cleanUpAllStates(){
+        // Clean up
+        ThreadLocalHTTPServiceLock.getInstance().resetLock();
+        ThreadLocalHttpMap.getInstance().cleanState();
+        ThreadLocalDBMap.getInstance().clearAll();
+        ThreadLocalSessionMap.getInstance().clearAll();
+        ThreadLocalLDAPMap.getInstance().clearAll();
+        ThreadLocalExecutionMap.getInstance().cleanUp();
     }
 }

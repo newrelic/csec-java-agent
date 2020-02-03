@@ -1,6 +1,9 @@
 package com.k2cybersecurity.instrumentator.decorators.httpservice;
 
-import com.k2cybersecurity.instrumentator.custom.*;
+import com.k2cybersecurity.instrumentator.custom.ThreadLocalExecutionMap;
+import com.k2cybersecurity.instrumentator.custom.ThreadLocalHTTPServiceLock;
+import com.k2cybersecurity.instrumentator.custom.ThreadLocalHttpMap;
+import com.k2cybersecurity.instrumentator.custom.ThreadLocalOperationLock;
 import com.k2cybersecurity.instrumentator.dispatcher.EventDispatcher;
 import com.k2cybersecurity.instrumentator.utils.CallbackUtils;
 import com.k2cybersecurity.intcodeagent.models.javaagent.HttpRequestBean;
@@ -27,6 +30,7 @@ public class Callbacks {
 //                System.out.println("Came to service hook :" + exectionId + " :: " + sourceString + " :: " +args[0]+ " :: " +args[1]);
                 if (args != null && args.length == 2 && args[0] != null && args[1] != null) {
                     if(CallbackUtils.checkArgsTypeHeirarchy(args[0], args[1])) {
+                        CallbackUtils.cleanUpAllStates();
 //                        System.out.println("Came to service hook 1:" + exectionId + " :: " + sourceString + " :: " + args[0].hashCode());
                         ThreadLocalHTTPServiceLock.getInstance().acquire(obj);
                         ThreadLocalHttpMap.getInstance().setHttpRequest(args[0]);
@@ -46,7 +50,7 @@ public class Callbacks {
                                 Object returnVal, String exectionId) {
 
 
-        if (!ThreadLocalOperationLock.getInstance().isAcquired()) {
+        if (!ThreadLocalOperationLock.getInstance().isAcquired() && ThreadLocalHTTPServiceLock.getInstance().isAcquired(obj)) {
             try {
                 ThreadLocalOperationLock.getInstance().acquire();
 //                 System.out.println("OnExit :" + sourceString + " - this : " + obj + " - return : " + returnVal + " - eid : " + exectionId);
@@ -62,7 +66,9 @@ public class Callbacks {
     public static void doOnError(String sourceString, String className, String methodName, Object obj, Object[]
             args,
                                  Throwable error, String exectionId) throws Throwable {
-        if (!ThreadLocalOperationLock.getInstance().isAcquired()) {
+//        System.out.println("OnError Initial:" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj.hashCode()	+ " - error : " + error + " - eid : " + exectionId);
+
+        if (!ThreadLocalOperationLock.getInstance().isAcquired() && ThreadLocalHTTPServiceLock.getInstance().isAcquired(obj)) {
             try {
                 ThreadLocalOperationLock.getInstance().acquire();
 //		System.out.println("OnError :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj
@@ -95,13 +101,9 @@ public class Callbacks {
         } finally {
 
             // Clean up
-            ThreadLocalHttpMap.getInstance().cleanState();
-            ThreadLocalDBMap.getInstance().clearAll();
-            ThreadLocalSessionMap.getInstance().clearAll();
-            ThreadLocalLDAPMap.getInstance().clearAll();
-            ThreadLocalExecutionMap.getInstance().getFileLocalMap().clear();
-            ThreadLocalExecutionMap.getInstance().cleanUp();
+            CallbackUtils.cleanUpAllStates();
         }
     }
+
 
 }

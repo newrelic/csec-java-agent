@@ -42,6 +42,7 @@ public class ThreadLocalHttpMap {
 	public static final String HTTP_RESPONSE_ALREADY_PARSED_FOR_CURRENT_CONTEXT = "HTTP response already parsed for current context";
 	public static final String GET_CHARACTER_ENCODING = "getCharacterEncoding";
 	public static final String FORWARD_SLASH = "/";
+	public static final String GET_REMOTE_PORT = "getRemotePort";
 
 	private Object httpRequest;
 
@@ -187,7 +188,11 @@ public class ThreadLocalHttpMap {
 			Method getRemoteAddr = requestClass.getMethod(GET_REMOTE_ADDR);
 			getRemoteAddr.setAccessible(true);
 			httpRequestBean.setClientIP((String) getRemoteAddr.invoke(httpRequest, null));
-
+			if(StringUtils.isNotBlank(httpRequestBean.getClientIP())) {
+				Method getRemotePort = requestClass.getMethod(GET_REMOTE_PORT);
+				getRemotePort.setAccessible(true);
+				httpRequestBean.setClientIP(httpRequestBean.getClientIP() + ":" + getRemotePort.invoke(httpRequest, null));
+			}
 			Map<String, String> headers = new HashMap<>();
 			processHeaders(headers, httpRequest);
 			httpRequestBean.setHeaders(new JSONObject(headers));

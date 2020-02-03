@@ -63,8 +63,8 @@ public class K2Instrumentator {
 
 	public static boolean isDynamicAttach = false;
 	public static boolean isAttached = false;
-	public static boolean enableHTTPRequestPrinting = false;
-	
+	public static boolean enableHTTPRequestPrinting = true;
+
 	public static boolean isk8sEnv = false;
 
 	static {
@@ -79,7 +79,7 @@ public class K2Instrumentator {
 
 	public static boolean init(Boolean isDynamicAttach) {
 		K2Instrumentator.isDynamicAttach = isDynamicAttach;
-		
+
 //		 ConfigK2Logs.getInstance().initializeLogs();
 		APPLICATION_INFO_BEAN = createApplicationInfoBean();
 		if(APPLICATION_INFO_BEAN == null) {
@@ -87,7 +87,7 @@ public class K2Instrumentator {
 		}
 		JA_HEALTH_CHECK = new JAHealthCheck(APPLICATION_UUID);
 		isk8sEnv = ApplicationInfoUtils.isK8sEnv();
-		
+
 		if(isk8sEnv) {
 			hostip = System.getenv("K2_SERVICE_SERVICE_HOST");
 		}else if(APPLICATION_INFO_BEAN.getIdentifier().getIsHost()){
@@ -101,7 +101,7 @@ public class K2Instrumentator {
 				return false;
 			}
 		}
-		
+
 		try {
 			WSClient.getInstance();
 		} catch (Exception e) {
@@ -190,9 +190,9 @@ public class K2Instrumentator {
 			// JSONArray jsonArray = new JSONArray();
 			// jsonArray.addAll(cmdlineArgs);
 			// applicationInfoBean.setJvmArguments(jsonArray);
-			
+
 			// }
-			
+
 			try {
 				applicationInfoBean.setBinaryPath(Files
 						.readSymbolicLink(
@@ -227,7 +227,7 @@ public class K2Instrumentator {
 		}
 		return null;
 	}
-	
+
 	private static String getIpAddress() {
 		try {
 			return InetAddress.getLocalHost().getHostAddress();
@@ -273,7 +273,7 @@ public class K2Instrumentator {
 		}
 		return null;
 	}
-	
+
 	public static String getPodNameSpace() {
 		File namespace = new File("/var/run/secrets/kubernetes.io/serviceaccount/namespace");
 		if(!namespace.isFile()) {
