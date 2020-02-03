@@ -17,12 +17,12 @@ public class AgentUtils {
 	public static void controlCommandProcessor(IntCodeControlCommand controlCommand) {
 		switch (controlCommand.getControlCommand()) {
 		case IntCodeControlCommand.CHANGE_LOG_LEVEL:
-			if (controlCommand.getArguements().size() < 3)
+			if (controlCommand.getArguments().size() < 3)
 				break;
 			try {
-				LogLevel logLevel = LogLevel.valueOf(controlCommand.getArguements().get(0));
-				Integer duration = Integer.parseInt(controlCommand.getArguements().get(1));
-				TimeUnit timeUnit = TimeUnit.valueOf(controlCommand.getArguements().get(2));
+				LogLevel logLevel = LogLevel.valueOf(controlCommand.getArguments().get(0));
+				Integer duration = Integer.parseInt(controlCommand.getArguments().get(1));
+				TimeUnit timeUnit = TimeUnit.valueOf(controlCommand.getArguments().get(2));
 				LogWriter.updateLogLevel(logLevel, timeUnit, duration);
 			} catch (Exception e) {
 				logger.log(LogLevel.SEVERE, "Error in controlCommandProcessor : ", e, AgentUtils.class.getSimpleName());
@@ -33,7 +33,7 @@ public class AgentUtils {
 			InstrumentationUtils.shutdownLogic();
 			break;
 		case IntCodeControlCommand.SET_DEFAULT_LOG_LEVEL:
-			LogLevel logLevel = LogLevel.valueOf(controlCommand.getArguements().get(0));
+			LogLevel logLevel = LogLevel.valueOf(controlCommand.getArguments().get(0));
 			LogWriter.setLogLevel(logLevel);
 			break;
 		case IntCodeControlCommand.ENABLE_HTTP_REQUEST_PRINTING:
@@ -44,7 +44,7 @@ public class AgentUtils {
 					AgentUtils.class.getSimpleName());
 			break;
 		case IntCodeControlCommand.UNSUPPORTED_AGENT:
-			System.out.println(controlCommand.getArguements().get(0));
+			System.out.println(controlCommand.getArguments().get(0));
 			HealthCheckScheduleThread.getInstance().shutDownThreadPoolExecutor();
 			break;
 		default:

@@ -17,7 +17,7 @@ public class IntCodeControlCommand {
 
 	private String jsonName;
 	private int controlCommand;
-	private List<String> arguements;
+	private List<String> arguments;
 
 	public IntCodeControlCommand() {
 	}
@@ -51,16 +51,16 @@ public class IntCodeControlCommand {
 	}
 
 	/**
-	 * @return the arguements
+	 * @return the arguments
 	 */
-	public List<String> getArguements() {
-		return arguements;
+	public List<String> getArguments() {
+		return arguments;
 	}
 
 	/**
-	 * @param arguements the arguements to set
+	 * @param arguments the arguments to set
 	 */
-	public void setArguements(List<String> arguements) {
-		this.arguements = arguements;
+	public void setArguments(List<String> arguments) {
+		this.arguments = arguments;
 	}
 }
