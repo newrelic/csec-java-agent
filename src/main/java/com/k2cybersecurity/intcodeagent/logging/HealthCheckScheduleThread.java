@@ -5,10 +5,7 @@ import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.models.javaagent.JAHealthCheck;
 import com.k2cybersecurity.intcodeagent.websocket.WSClient;
-import org.apache.commons.lang3.StringUtils;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
 import java.net.URISyntaxException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -16,7 +13,6 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.HOST_IP_PROPERTIES_FILE;
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.HCSCHEDULEDTHREAD_;
 
 public class HealthCheckScheduleThread {
@@ -112,6 +108,9 @@ public class HealthCheckScheduleThread {
 
 					if (!hcScheduledService.awaitTermination(1, TimeUnit.SECONDS)) {
 						logger.log(LogLevel.SEVERE, "Thread pool executor did not terminate",
+								HealthCheckScheduleThread.class.getName());
+					}else {
+						logger.log(LogLevel.INFO, "Thread pool executor terminated",
 								HealthCheckScheduleThread.class.getName());
 					}
 				}

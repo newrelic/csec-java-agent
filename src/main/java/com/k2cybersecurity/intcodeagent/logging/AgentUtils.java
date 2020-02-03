@@ -45,6 +45,7 @@ public class AgentUtils {
 			break;
 		case IntCodeControlCommand.UNSUPPORTED_AGENT:
 			System.out.println(controlCommand.getArguements().get(0));
+			HealthCheckScheduleThread.getInstance().shutDownThreadPoolExecutor();
 			break;
 		default:
 			break;
