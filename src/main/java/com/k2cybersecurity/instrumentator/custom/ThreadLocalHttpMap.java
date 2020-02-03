@@ -191,7 +191,7 @@ public class ThreadLocalHttpMap {
 			if(StringUtils.isNotBlank(httpRequestBean.getClientIP())) {
 				Method getRemotePort = requestClass.getMethod(GET_REMOTE_PORT);
 				getRemotePort.setAccessible(true);
-				httpRequestBean.setClientIP(httpRequestBean.getClientIP() + ":" + (String) getRemotePort.invoke(httpRequest, null));
+				httpRequestBean.setClientIP(httpRequestBean.getClientIP() + ":" + getRemotePort.invoke(httpRequest, null));
 			}
 			Map<String, String> headers = new HashMap<>();
 			processHeaders(headers, httpRequest);
