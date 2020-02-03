@@ -1,41 +1,5 @@
 package com.k2cybersecurity.instrumentator;
 
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.CGROUP_FILE_NAME;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.CMD_LINE_DIR;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.DIR_SEPERATOR;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.DOCKER_DIR;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.DYNAMIC;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.ERROR_OCCURED_WHILE_TRYING_TO_CONNECT_TO_WSOCKET;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.ERROR_WHILE_INITIALISING_THE_K2_AGENT;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.EXCEPTION_OCCURED_IN_CREATE_APPLICATION_INFO_BEAN;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.EXCEPTION_OCCURED_IN_EVENT_SEND_POOL;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.KUBEPODS_DIR;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.LXC_DIR;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.PROC_DIR;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.PROC_S_EXE;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.STAT;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.STATIC;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.VMPID_SPLIT_CHAR;
-
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-import java.lang.management.ManagementFactory;
-import java.lang.management.RuntimeMXBean;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.UUID;
-
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.text.StringEscapeUtils;
-
 import com.k2cybersecurity.instrumentator.utils.ApplicationInfoUtils;
 import com.k2cybersecurity.instrumentator.utils.HashGenerator;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
@@ -46,6 +10,22 @@ import com.k2cybersecurity.intcodeagent.models.javaagent.Identifier;
 import com.k2cybersecurity.intcodeagent.models.javaagent.JAHealthCheck;
 import com.k2cybersecurity.intcodeagent.websocket.EventSendPool;
 import com.k2cybersecurity.intcodeagent.websocket.WSClient;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.text.StringEscapeUtils;
+
+import java.io.*;
+import java.lang.management.ManagementFactory;
+import java.lang.management.RuntimeMXBean;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
+
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.*;
 
 public class K2Instrumentator {
 
