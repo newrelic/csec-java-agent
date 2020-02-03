@@ -160,6 +160,7 @@ public class Hooks {
 
 		// JavaScript Injection
 		NAME_BASED_HOOKS.put("jdk.nashorn.api.scripting.NashornScriptEngine", Arrays.asList("evalImpl"));
+		NAME_BASED_HOOKS.put("com.oracle.truffle.polyglot.PolyglotContextImpl", Collections.singletonList("eval"));
 		
 		
 		/**
@@ -501,6 +502,7 @@ public class Hooks {
 		
 		// JavaScript Injection
 		DECORATOR_ENTRY.put("jdk.nashorn.api.scripting.NashornScriptEngine.evalImpl", "com.k2cybersecurity.instrumentator.decorators.jsinjection");
+		DECORATOR_ENTRY.put("com.oracle.truffle.polyglot.PolyglotContextImpl.eval", "com.k2cybersecurity.instrumentator.decorators.jsinjection");
 
 		/** ---------------------IAST CASE TYPE ------------------ */
 
