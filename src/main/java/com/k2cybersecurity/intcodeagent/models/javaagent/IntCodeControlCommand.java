@@ -13,6 +13,7 @@ public class IntCodeControlCommand {
 	public static final int SET_DEFAULT_LOG_LEVEL = 2;
 	public static final int ENABLE_HTTP_REQUEST_PRINTING = 3;
 	public static final int UPLOAD_LOGS = 4 ;
+	public static final int UNSUPPORTED_AGENT = 5 ;
 
 	private String jsonName;
 	private int controlCommand;

@@ -10,8 +10,6 @@ import com.k2cybersecurity.intcodeagent.websocket.FtpClient;
 
 import java.util.concurrent.TimeUnit;
 
-import org.apache.commons.net.ftp.FTPClient;
-
 public class AgentUtils {
 
 	private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
@@ -44,6 +42,9 @@ public class AgentUtils {
 		case IntCodeControlCommand.UPLOAD_LOGS:
 			logger.log(LogLevel.INFO, "Is log file sent to IC: " + FtpClient.sendBootstrapLogFile(),
 					AgentUtils.class.getSimpleName());
+			break;
+		case IntCodeControlCommand.UNSUPPORTED_AGENT:
+			System.out.println(controlCommand.getArguements().get(0));
 			break;
 		default:
 			break;
