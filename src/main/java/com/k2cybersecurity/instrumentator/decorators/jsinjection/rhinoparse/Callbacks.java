@@ -37,49 +37,28 @@ public class Callbacks {
 				ThreadLocalOperationLock.getInstance().acquire();
 				System.out.println("OnExit :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj
 						+ " - return : " + returnVal + " - eid : " + executionId);
-				if (sourceString.equals(
+				if (args != null && args.length > 2 && sourceString.equals(
 						"private java.lang.Object org.mozilla.javascript.Context.compileImpl(org.mozilla.javascript.Scriptable,java.io.Reader,java.lang.String,java.lang.String,int,java.lang.Object,boolean,org.mozilla.javascript.Evaluator,org.mozilla.javascript.ErrorReporter) throws java.io.IOException")) {
 					try {
-//						Object jsSourceString = args[2];
-//						if (jsSourceString == null) {
-//							// Here, as per the implementation in Rhino library where is assumes it as
-//							// BufferedReader Object, we are also assuming the Reader object to be an
-//							// instance of BufferedReader. If it is not the case, additional handling would
-//							// be required.
-//							BufferedReader br = (BufferedReader) args[1];
-//							Method fillMethod = br.getClass().getDeclaredMethod("fill");
-//							fillMethod.setAccessible(true);
-//							fillMethod.invoke(br);
-//							Field sourceBufferField = br.getClass().getDeclaredField("cb");
-//							sourceBufferField.setAccessible(true);
-//							Object jsSourceBufferObject = sourceBufferField.get(br);
-//							if (jsSourceBufferObject != null) {
-//								Field sourceEndField = br.getClass().getDeclaredField("nChars");
-//								sourceEndField.setAccessible(true);
-//								int sourceEnd = (int) sourceEndField.get(br);
-//								System.out.println("sourceEnd : " + sourceEnd);
-////					char[] sourceBufferArray = (char[]) jsSourceStringObject;
-////					System.out.println("aa : "+ sourceBufferArray[0]);
-//								jsSourceString = new String((char[]) jsSourceBufferObject).substring(0, sourceEnd - 1);
-//							}
-//
-//						}
-						String jsSourceString = StringUtils.EMPTY;
-						//if (returnVal.getClass().getName().contains("Script")) {
-							//System.out.println("class : " + returnVal.getClass().getName());
-							Class scriptClass = returnVal.getClass().getClassLoader().loadClass("org.mozilla.javascript.Script");
-							//System.out.println("Loaded class : " + scriptClass.getCanonicalName());
-							//System.out.println("inside returnval class");
-							Method decompileScriptMethod = obj.getClass().getDeclaredMethod("decompileScript", scriptClass, int.class);
+						String jsSourceString = null;
+						Object jsSourceStringObject = args[2];
+						if (jsSourceStringObject != null) {
+							jsSourceString = jsSourceStringObject.toString();
+						}
+						if (jsSourceString == null) {
+							Class scriptClass = returnVal.getClass().getClassLoader()
+									.loadClass("org.mozilla.javascript.Script");
+							Method decompileScriptMethod = obj.getClass().getDeclaredMethod("decompileScript",
+									scriptClass, int.class);
 							decompileScriptMethod.setAccessible(true);
 							jsSourceString = String.valueOf(decompileScriptMethod.invoke(obj, returnVal, 0));
-						//}
-						
+						}
 						if (jsSourceString != null) {
 							System.out.println("JS: " + jsSourceString);
 							ThreadLocalJSRhinoMap.getInstance().create(returnVal, jsSourceString.toString(), className,
 									methodName, executionId, Instant.now().toEpochMilli());
 						}
+
 					} catch (Exception e) {
 						e.printStackTrace();
 					}
