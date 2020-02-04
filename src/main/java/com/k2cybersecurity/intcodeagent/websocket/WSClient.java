@@ -20,6 +20,7 @@ public class WSClient extends WebSocketClient {
 
 	private WSClient() throws URISyntaxException, InterruptedException {
 		super(new URI(String.format("ws://%s:%s", K2Instrumentator.hostip, 54321)));
+        this.setTcpNoDelay(true);
 		logger.log(LogLevel.INFO, "Creating WSock connection to : " + K2Instrumentator.hostip,
 				WSClient.class.getName());
 		if (!connectBlocking()) {
