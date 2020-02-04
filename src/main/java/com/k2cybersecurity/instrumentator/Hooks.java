@@ -161,6 +161,11 @@ public class Hooks {
 		// JavaScript Injection
 		NAME_BASED_HOOKS.put("jdk.nashorn.api.scripting.NashornScriptEngine", Arrays.asList("evalImpl"));
 		NAME_BASED_HOOKS.put("com.oracle.truffle.polyglot.PolyglotContextImpl", Collections.singletonList("eval"));
+		NAME_BASED_HOOKS.put("org.mozilla.javascript.Context", Collections.singletonList("compileImpl"));
+		TYPE_BASED_HOOKS.put("org.mozilla.javascript.Script", Collections.singletonList("exec"));
+
+//		NAME_BASED_HOOKS.put("org.mozilla.javascript.Parser", Collections.singletonList("parse"));
+//		TYPE_BASED_HOOKS.put("org.mozilla.javascript.Script", Collections.singletonList("exec"));
 		
 		
 		/**
@@ -503,6 +508,13 @@ public class Hooks {
 		// JavaScript Injection
 		DECORATOR_ENTRY.put("jdk.nashorn.api.scripting.NashornScriptEngine.evalImpl", "com.k2cybersecurity.instrumentator.decorators.jsinjection");
 		DECORATOR_ENTRY.put("com.oracle.truffle.polyglot.PolyglotContextImpl.eval", "com.k2cybersecurity.instrumentator.decorators.jsinjection");
+		DECORATOR_ENTRY.put("org.mozilla.javascript.Context.compileImpl", "com.k2cybersecurity.instrumentator.decorators.jsinjection.rhinoparse");
+		DECORATOR_ENTRY.put("org.mozilla.javascript.Script.exec", "com.k2cybersecurity.instrumentator.decorators.jsinjection.rhino");
+
+//		DECORATOR_ENTRY.put("org.mozilla.javascript.Parser.parse", "com.k2cybersecurity.instrumentator.decorators.jsinjection.rhinoparse");
+//		DECORATOR_ENTRY.put("org.mozilla.javascript.Script.exec", "com.k2cybersecurity.instrumentator.decorators.jsinjection.rhino");
+//		NAME_BASED_HOOKS.put("org.mozilla.javascript.Parser", Collections.singletonList("parse"));
+//		TYPE_BASED_HOOKS.put("org.mozilla.javascript.Script", Collections.singletonList("exec"));
 
 		/** ---------------------IAST CASE TYPE ------------------ */
 
