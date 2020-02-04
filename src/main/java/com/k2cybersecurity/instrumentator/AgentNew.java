@@ -28,6 +28,7 @@ public class AgentNew {
 		if (initDone) {
 			return;
 		}
+		initDone = true;
 		//		AgentBuilder agentBuilder = new AgentBuilder.Default().ignore(ElementMatchers.none())
 		//				.with(AgentBuilder.Listener.StreamWriting.toSystemError())
 		//				.with(AgentBuilder.RedefinitionStrategy.RETRANSFORMATION)
@@ -109,7 +110,6 @@ public class AgentNew {
 				e.printStackTrace();
 			}
 		}
-		initDone = true;
 	}
 
 	public static void agentmain(String agentArgs, Instrumentation instrumentation)
