@@ -73,12 +73,6 @@ public class InstrumentationUtils {
 					public DynamicType.Builder<?> transform(DynamicType.Builder<?> builder,
 							TypeDescription typeDescription, ClassLoader classLoader, JavaModule javaModule) {
 						try {
-//							System.out.println(String.format("Came to instrument : %s::%s for key : %s : %s",
-//									sourceClass, method, (sourceClass + "." + method), typeDescription.getName()));
-
-							if (K2Instrumentator.hookedAPIs.contains(typeDescription.getName() + DOT + method)) {
-								return builder;
-							}
 
 //							System.out.println(String.format("Instrumenting : %s::%s for key : %s : %s", sourceClass,
 //									method, (sourceClass + "." + method), typeDescription.getName()));
