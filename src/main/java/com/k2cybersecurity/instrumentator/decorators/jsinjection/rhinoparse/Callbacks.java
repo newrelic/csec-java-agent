@@ -40,6 +40,10 @@ public class Callbacks {
 					try {
 						Object jsSourceString = args[2];
 						if (jsSourceString == null) {
+							// Here, as per the implementation in Rhino library where is assumes it as
+							// BufferedReader Object, we are also assuming the Reader object to be an
+							// instance of BufferedReader. If it is not the case, additional handling would
+							// be required.
 							BufferedReader br = (BufferedReader) args[1];
 							Method fillMethod = br.getClass().getDeclaredMethod("fill");
 							fillMethod.setAccessible(true);
