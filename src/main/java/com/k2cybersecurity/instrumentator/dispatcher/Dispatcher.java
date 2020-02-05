@@ -19,7 +19,6 @@ import org.json.simple.JSONObject;
 import java.io.File;
 import java.io.ObjectInputStream;
 import java.nio.file.Paths;
-import java.time.Instant;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -62,6 +61,9 @@ public class Dispatcher implements Runnable {
 		this.event = event;
 		this.trace = trace;
 		this.vulnerabilityCaseType = vulnerabilityCaseType;
+		if(this.event instanceof AbstractOperationalBean){
+			((AbstractOperationalBean)event).setBlockingEndTime(System.currentTimeMillis());
+		}
 	}
 
 	public Dispatcher(HttpRequestBean httpRequestBean, StackTraceElement[] trace, VulnerabilityCaseType reflectedXss,
@@ -73,6 +75,7 @@ public class Dispatcher implements Runnable {
 		extraInfo.put(SOURCESTRING, sourceString);
 		extraInfo.put(EXECUTIONID, exectionId);
 		extraInfo.put(STARTTIME, startTime);
+		extraInfo.put(BLOCKING_END_TIME, System.currentTimeMillis());
 
 	}
 
@@ -85,6 +88,7 @@ public class Dispatcher implements Runnable {
 		this.vulnerabilityCaseType = vulnerabilityCaseType;
 		this.extraInfo = new HashMap<String, Object>();
 		extraInfo.put(FILEINTEGRITYBEAN, fbean);
+		event.setBlockingEndTime(System.currentTimeMillis());
 	}
 
 	@Override
@@ -106,9 +110,10 @@ public class Dispatcher implements Runnable {
 					eventBean.setSourceMethod((String) extraInfo.get(SOURCESTRING));
 					eventBean.setId((String) extraInfo.get(EXECUTIONID));
 					eventBean.setStartTime((Long) extraInfo.get(STARTTIME));
+					eventBean.setBlockingProcessingTime((Long) extraInfo.get(BLOCKING_END_TIME) - eventBean.getStartTime());
+
 					eventBean = getUserInfo(eventBean);
-					eventBean.setEventGenerationTime(Instant.now().toEpochMilli());
-					EventSendPool.getInstance().sendEvent(eventBean.toString());
+					EventSendPool.getInstance().sendEvent(eventBean);
 //					System.out.println("============= Event Start ============");
 //					System.out.println(eventBean);
 //					System.out.println("============= Event End ============");
@@ -249,8 +254,7 @@ public class Dispatcher implements Runnable {
 		if (VulnerabilityCaseType.FILE_OPERATION.equals(vulnerabilityCaseType)) {
 			createEntryForFileIntegrity((FileOperationalBean) event, eventBean);
 		}
-		eventBean.setEventGenerationTime(Instant.now().toEpochMilli());
-		EventSendPool.getInstance().sendEvent(eventBean.toString());
+		EventSendPool.getInstance().sendEvent(eventBean);
 //		System.out.println("============= Event Start ============");
 //		System.out.println(eventBean);
 //		System.out.println("============= Event End ============");
@@ -560,6 +564,7 @@ public class Dispatcher implements Runnable {
 		eventBean.setSourceMethod(objectBean.getSourceMethod());
 		eventBean.setId(objectBean.getExecutionId());
 		eventBean.setStartTime(objectBean.getStartTime());
+		eventBean.setBlockingProcessingTime(objectBean.getBlockingEndTime() - eventBean.getStartTime());
 		return eventBean;
 	}
 

@@ -2,6 +2,7 @@ package com.k2cybersecurity.intcodeagent.websocket;
 
 import com.k2cybersecurity.instrumentator.K2Instrumentator;
 import com.k2cybersecurity.intcodeagent.logging.ServletEventPool.EventAbortPolicy;
+import com.k2cybersecurity.intcodeagent.models.javaagent.JavaAgentEventBean;
 
 import java.util.concurrent.*;
 
@@ -61,6 +62,10 @@ public class EventSendPool {
 	}
 
 	public void sendEvent(String event) {
+		executor.submit(new EventSender(event));
+	}
+
+	public void sendEvent(JavaAgentEventBean event) {
 		executor.submit(new EventSender(event));
 	}
 

@@ -15,12 +15,15 @@ public abstract class AbstractOperationalBean {
 
 	private long startTime;
 
+	private long blockingEndTime;
+
 
 	public AbstractOperationalBean(){
 		this.className = StringUtils.EMPTY;
 		this.sourceMethod = StringUtils.EMPTY;
 		this.executionId = StringUtils.EMPTY;
 		this.startTime = 0L;
+		this.blockingEndTime = 0L;
 	}
 
 	public AbstractOperationalBean(AbstractOperationalBean abstractOperationalBean){
@@ -28,6 +31,8 @@ public abstract class AbstractOperationalBean {
 		this.sourceMethod = abstractOperationalBean.sourceMethod;
 		this.executionId = abstractOperationalBean.executionId;
 		this.startTime = abstractOperationalBean.startTime;
+		this.blockingEndTime = abstractOperationalBean.blockingEndTime;
+
 	}
 
 	public AbstractOperationalBean(String className, String sourceMethod, String executionId, long startTime){
@@ -35,6 +40,7 @@ public abstract class AbstractOperationalBean {
 		this.sourceMethod = sourceMethod;
 		this.executionId = executionId;
 		this.startTime = startTime;
+		this.blockingEndTime = 0L;
 	}
 
 	public String toString() {
@@ -69,13 +75,21 @@ public abstract class AbstractOperationalBean {
 		return startTime;
 	}
 
-	public void setStartTime(long startTime) {
-		this.startTime = startTime;
-	}
-
 	/**
 	 * Logically determines if the bean is empty.
 	 * @return boolean
 	 */
 	public abstract boolean isEmpty();
+
+	public void setStartTime(long startTime) {
+		this.startTime = startTime;
+	}
+
+	public long getBlockingEndTime() {
+		return blockingEndTime;
+	}
+
+	public void setBlockingEndTime(long blockingEndTime) {
+		this.blockingEndTime = blockingEndTime;
+	}
 }

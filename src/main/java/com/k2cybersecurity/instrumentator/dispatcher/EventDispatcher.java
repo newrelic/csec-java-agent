@@ -38,9 +38,6 @@ public class EventDispatcher {
 		}
 		// Place dispatch here
 //		printDispatch(objectBean);
-		if (vulnerabilityCaseType.equals(VulnerabilityCaseType.LDAP)) {
-			logger.log(LogLevel.INFO, objectBean.toString(), EventDispatcher.class.getName());
-		}
 		// TODO: implement check if the object bean is logically enpty based on case
 		// type or implement a isEmpty method in each operation bean.
 		if (!objectBean.isEmpty()) {
