@@ -61,15 +61,7 @@ public class Dispatcher implements Runnable {
 		this.event = event;
 		this.trace = trace;
 		this.vulnerabilityCaseType = vulnerabilityCaseType;
-		if(this.event instanceof AbstractOperationalBean){
-			((AbstractOperationalBean)event).setBlockingEndTime(System.currentTimeMillis());
-		} else if(this.event instanceof List){
-			for(Object obj : (List)this.event){
-				if(obj instanceof AbstractOperationalBean) {
-					((AbstractOperationalBean) obj).setBlockingEndTime(System.currentTimeMillis());
-				}
-			}
-		}
+		extraInfo.put(BLOCKING_END_TIME, System.currentTimeMillis());
 	}
 
 	public Dispatcher(HttpRequestBean httpRequestBean, StackTraceElement[] trace, VulnerabilityCaseType reflectedXss,
@@ -93,7 +85,7 @@ public class Dispatcher implements Runnable {
 		this.vulnerabilityCaseType = vulnerabilityCaseType;
 		this.extraInfo = new HashMap<String, Object>();
 		extraInfo.put(FILEINTEGRITYBEAN, fbean);
-		event.setBlockingEndTime(System.currentTimeMillis());
+		extraInfo.put(BLOCKING_END_TIME, System.currentTimeMillis());
 	}
 
 	@Override
@@ -175,7 +167,7 @@ public class Dispatcher implements Runnable {
 		switch (vulnerabilityCaseType) {
 		case FILE_OPERATION:
 			FileOperationalBean fileOperationalBean = (FileOperationalBean) event;
-			eventBean = setGenericProperties(fileOperationalBean, eventBean);
+			eventBean = setGenericProperties(fileOperationalBean, eventBean, this.extraInfo);
 			eventBean = prepareFileEvent(eventBean, fileOperationalBean);
 			String URL = StringUtils.substringBefore(httpRequestBean.getUrl(), QUESTION_CHAR);
 			if (allowedExtensionFileIO(eventBean.getParameters(), eventBean.getSourceMethod(), URL)) {
@@ -185,7 +177,7 @@ public class Dispatcher implements Runnable {
 			break;
 		case SYSTEM_COMMAND:
 			ForkExecOperationalBean operationalBean = (ForkExecOperationalBean) event;
-			eventBean = setGenericProperties(operationalBean, eventBean);
+			eventBean = setGenericProperties(operationalBean, eventBean, this.extraInfo);
 			eventBean = prepareSystemCommandEvent(eventBean, operationalBean);
 			break;
 		case SQL_DB_COMMAND:
@@ -195,59 +187,59 @@ public class Dispatcher implements Runnable {
 				return;
 			}
 			// eventBean.setEventCategory(getDbName(operationalList.get(0).getClassName()));
-			eventBean = setGenericProperties(operationalList.get(0), eventBean);
+			eventBean = setGenericProperties(operationalList.get(0), eventBean, this.extraInfo);
 			eventBean = prepareSQLDbCommandEvent(operationalList, eventBean);
 			break;
 
 		case NOSQL_DB_COMMAND:
 			NoSQLOperationalBean noSQLOperationalBean = (NoSQLOperationalBean) event;
-			eventBean = setGenericProperties(noSQLOperationalBean, eventBean);
+			eventBean = setGenericProperties(noSQLOperationalBean, eventBean, this.extraInfo);
 			eventBean = prepareNoSQLEvent(eventBean, noSQLOperationalBean);
 			break;
 
 		case FILE_INTEGRITY:
 			FileIntegrityBean fileIntegrityBean = (FileIntegrityBean) event;
-			eventBean = setGenericProperties(fileIntegrityBean, eventBean);
+			eventBean = setGenericProperties(fileIntegrityBean, eventBean, this.extraInfo);
 			eventBean = prepareFileIntegrityEvent(eventBean, fileIntegrityBean);
 			break;
 		case LDAP:
 			LDAPOperationalBean ldapOperationalBean = (LDAPOperationalBean) event;
-			eventBean = setGenericProperties(ldapOperationalBean, eventBean);
+			eventBean = setGenericProperties(ldapOperationalBean, eventBean, this.extraInfo);
 			eventBean = prepareLDAPEvent(eventBean, ldapOperationalBean);
 			break;
 		case RANDOM:
 			RandomOperationalBean randomOperationalBean = (RandomOperationalBean) event;
-			eventBean = setGenericProperties(randomOperationalBean, eventBean);
+			eventBean = setGenericProperties(randomOperationalBean, eventBean, this.extraInfo);
 			eventBean = prepareRandomEvent(eventBean, randomOperationalBean);
 			break;
 		case HTTP_REQUEST:
 			SSRFOperationalBean ssrfOperationalBean = (SSRFOperationalBean) event;
-			eventBean = setGenericProperties(ssrfOperationalBean, eventBean);
+			eventBean = setGenericProperties(ssrfOperationalBean, eventBean, this.extraInfo);
 			eventBean = prepareSSRFEvent(eventBean, ssrfOperationalBean);
 			break;
 		case XPATH:
 			XPathOperationalBean xPathOperationalBean = (XPathOperationalBean) event;
-			eventBean = setGenericProperties(xPathOperationalBean, eventBean);
+			eventBean = setGenericProperties(xPathOperationalBean, eventBean, this.extraInfo);
 			eventBean = prepareXPATHEvent(eventBean, xPathOperationalBean);
 			break;
 		case SECURE_COOKIE:
 			SecureCookieOperationalBean secureCookieOperationalBean = (SecureCookieOperationalBean) event;
-			eventBean = setGenericProperties(secureCookieOperationalBean, eventBean);
+			eventBean = setGenericProperties(secureCookieOperationalBean, eventBean, this.extraInfo);
 			eventBean = prepareSecureCookieEvent(eventBean, secureCookieOperationalBean);
 			break;
 		case TRUSTBOUNDARY:
 			TrustBoundaryOperationalBean trustBoundaryOperationalBean = (TrustBoundaryOperationalBean) event;
-			eventBean = setGenericProperties(trustBoundaryOperationalBean, eventBean);
+			eventBean = setGenericProperties(trustBoundaryOperationalBean, eventBean, this.extraInfo);
 			eventBean = prepareTrustBoundaryEvent(eventBean, trustBoundaryOperationalBean);
 			break;
 		case CRYPTO:
 			HashCryptoOperationalBean hashCryptoOperationalBean = (HashCryptoOperationalBean) event;
-			eventBean = setGenericProperties(hashCryptoOperationalBean, eventBean);
+			eventBean = setGenericProperties(hashCryptoOperationalBean, eventBean, this.extraInfo);
 			eventBean = prepareCryptoEvent(eventBean, hashCryptoOperationalBean);
 			break;
 		case HASH:
 			HashCryptoOperationalBean hashOperationalBean = (HashCryptoOperationalBean) event;
-			eventBean = setGenericProperties(hashOperationalBean, eventBean);
+			eventBean = setGenericProperties(hashOperationalBean, eventBean, this.extraInfo);
 			eventBean = prepareHashEvent(eventBean, hashOperationalBean);
 			break;
 		default:
@@ -563,13 +555,13 @@ public class Dispatcher implements Runnable {
 	}
 
 	private static JavaAgentEventBean setGenericProperties(AbstractOperationalBean objectBean,
-			JavaAgentEventBean eventBean) {
+			JavaAgentEventBean eventBean, Map<String, Object> extraInfo) {
 		eventBean.setApplicationUUID(K2Instrumentator.APPLICATION_UUID);
 		eventBean.setPid(K2Instrumentator.VMPID);
 		eventBean.setSourceMethod(objectBean.getSourceMethod());
 		eventBean.setId(objectBean.getExecutionId());
 		eventBean.setStartTime(objectBean.getStartTime());
-		eventBean.setBlockingProcessingTime(objectBean.getBlockingEndTime() - eventBean.getStartTime());
+		eventBean.setBlockingProcessingTime((Long) extraInfo.get(BLOCKING_END_TIME) - eventBean.getStartTime());
 		return eventBean;
 	}
 
