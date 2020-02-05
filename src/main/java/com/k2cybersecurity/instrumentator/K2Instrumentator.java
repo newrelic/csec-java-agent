@@ -21,15 +21,12 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.UUID;
 
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.*;
 
 public class K2Instrumentator {
 
-	public static Set<String> hookedAPIs = new HashSet<>();
 	public static String hostip = StringUtils.EMPTY;
 	public static Integer VMPID;
 	public static final String APPLICATION_UUID = UUID.randomUUID().toString();
