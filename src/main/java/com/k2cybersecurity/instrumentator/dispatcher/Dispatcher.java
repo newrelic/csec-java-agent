@@ -167,7 +167,7 @@ public class Dispatcher implements Runnable {
 		switch (vulnerabilityCaseType) {
 		case FILE_OPERATION:
 			FileOperationalBean fileOperationalBean = (FileOperationalBean) event;
-			eventBean = setGenericProperties(fileOperationalBean, eventBean, this.extraInfo);
+			eventBean = setGenericProperties(fileOperationalBean, eventBean);
 			eventBean = prepareFileEvent(eventBean, fileOperationalBean);
 			String URL = StringUtils.substringBefore(httpRequestBean.getUrl(), QUESTION_CHAR);
 			if (allowedExtensionFileIO(eventBean.getParameters(), eventBean.getSourceMethod(), URL)) {
@@ -177,7 +177,7 @@ public class Dispatcher implements Runnable {
 			break;
 		case SYSTEM_COMMAND:
 			ForkExecOperationalBean operationalBean = (ForkExecOperationalBean) event;
-			eventBean = setGenericProperties(operationalBean, eventBean, this.extraInfo);
+			eventBean = setGenericProperties(operationalBean, eventBean);
 			eventBean = prepareSystemCommandEvent(eventBean, operationalBean);
 			break;
 		case SQL_DB_COMMAND:
@@ -187,59 +187,59 @@ public class Dispatcher implements Runnable {
 				return;
 			}
 			// eventBean.setEventCategory(getDbName(operationalList.get(0).getClassName()));
-			eventBean = setGenericProperties(operationalList.get(0), eventBean, this.extraInfo);
+			eventBean = setGenericProperties(operationalList.get(0), eventBean);
 			eventBean = prepareSQLDbCommandEvent(operationalList, eventBean);
 			break;
 
 		case NOSQL_DB_COMMAND:
 			NoSQLOperationalBean noSQLOperationalBean = (NoSQLOperationalBean) event;
-			eventBean = setGenericProperties(noSQLOperationalBean, eventBean, this.extraInfo);
+			eventBean = setGenericProperties(noSQLOperationalBean, eventBean);
 			eventBean = prepareNoSQLEvent(eventBean, noSQLOperationalBean);
 			break;
 
 		case FILE_INTEGRITY:
 			FileIntegrityBean fileIntegrityBean = (FileIntegrityBean) event;
-			eventBean = setGenericProperties(fileIntegrityBean, eventBean, this.extraInfo);
+			eventBean = setGenericProperties(fileIntegrityBean, eventBean);
 			eventBean = prepareFileIntegrityEvent(eventBean, fileIntegrityBean);
 			break;
 		case LDAP:
 			LDAPOperationalBean ldapOperationalBean = (LDAPOperationalBean) event;
-			eventBean = setGenericProperties(ldapOperationalBean, eventBean, this.extraInfo);
+			eventBean = setGenericProperties(ldapOperationalBean, eventBean);
 			eventBean = prepareLDAPEvent(eventBean, ldapOperationalBean);
 			break;
 		case RANDOM:
 			RandomOperationalBean randomOperationalBean = (RandomOperationalBean) event;
-			eventBean = setGenericProperties(randomOperationalBean, eventBean, this.extraInfo);
+			eventBean = setGenericProperties(randomOperationalBean, eventBean);
 			eventBean = prepareRandomEvent(eventBean, randomOperationalBean);
 			break;
 		case HTTP_REQUEST:
 			SSRFOperationalBean ssrfOperationalBean = (SSRFOperationalBean) event;
-			eventBean = setGenericProperties(ssrfOperationalBean, eventBean, this.extraInfo);
+			eventBean = setGenericProperties(ssrfOperationalBean, eventBean);
 			eventBean = prepareSSRFEvent(eventBean, ssrfOperationalBean);
 			break;
 		case XPATH:
 			XPathOperationalBean xPathOperationalBean = (XPathOperationalBean) event;
-			eventBean = setGenericProperties(xPathOperationalBean, eventBean, this.extraInfo);
+			eventBean = setGenericProperties(xPathOperationalBean, eventBean);
 			eventBean = prepareXPATHEvent(eventBean, xPathOperationalBean);
 			break;
 		case SECURE_COOKIE:
 			SecureCookieOperationalBean secureCookieOperationalBean = (SecureCookieOperationalBean) event;
-			eventBean = setGenericProperties(secureCookieOperationalBean, eventBean, this.extraInfo);
+			eventBean = setGenericProperties(secureCookieOperationalBean, eventBean);
 			eventBean = prepareSecureCookieEvent(eventBean, secureCookieOperationalBean);
 			break;
 		case TRUSTBOUNDARY:
 			TrustBoundaryOperationalBean trustBoundaryOperationalBean = (TrustBoundaryOperationalBean) event;
-			eventBean = setGenericProperties(trustBoundaryOperationalBean, eventBean, this.extraInfo);
+			eventBean = setGenericProperties(trustBoundaryOperationalBean, eventBean);
 			eventBean = prepareTrustBoundaryEvent(eventBean, trustBoundaryOperationalBean);
 			break;
 		case CRYPTO:
 			HashCryptoOperationalBean hashCryptoOperationalBean = (HashCryptoOperationalBean) event;
-			eventBean = setGenericProperties(hashCryptoOperationalBean, eventBean, this.extraInfo);
+			eventBean = setGenericProperties(hashCryptoOperationalBean, eventBean);
 			eventBean = prepareCryptoEvent(eventBean, hashCryptoOperationalBean);
 			break;
 		case HASH:
 			HashCryptoOperationalBean hashOperationalBean = (HashCryptoOperationalBean) event;
-			eventBean = setGenericProperties(hashOperationalBean, eventBean, this.extraInfo);
+			eventBean = setGenericProperties(hashOperationalBean, eventBean);
 			eventBean = prepareHashEvent(eventBean, hashOperationalBean);
 			break;
 		default:
@@ -554,8 +554,8 @@ public class Dispatcher implements Runnable {
 		}
 	}
 
-	private static JavaAgentEventBean setGenericProperties(AbstractOperationalBean objectBean,
-			JavaAgentEventBean eventBean, Map<String, Object> extraInfo) {
+	private JavaAgentEventBean setGenericProperties(AbstractOperationalBean objectBean,
+			JavaAgentEventBean eventBean) {
 		eventBean.setApplicationUUID(K2Instrumentator.APPLICATION_UUID);
 		eventBean.setPid(K2Instrumentator.VMPID);
 		eventBean.setSourceMethod(objectBean.getSourceMethod());
@@ -565,7 +565,7 @@ public class Dispatcher implements Runnable {
 		return eventBean;
 	}
 
-	private static JavaAgentEventBean prepareEvent(HttpRequestBean httpRequestBean, AgentMetaData metaData,
+	private JavaAgentEventBean prepareEvent(HttpRequestBean httpRequestBean, AgentMetaData metaData,
 			VulnerabilityCaseType vulnerabilityCaseType) {
 		JavaAgentEventBean eventBean = new JavaAgentEventBean();
 		eventBean.setHttpRequest(httpRequestBean);
