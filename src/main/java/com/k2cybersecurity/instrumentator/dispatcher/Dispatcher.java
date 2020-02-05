@@ -63,6 +63,12 @@ public class Dispatcher implements Runnable {
 		this.vulnerabilityCaseType = vulnerabilityCaseType;
 		if(this.event instanceof AbstractOperationalBean){
 			((AbstractOperationalBean)event).setBlockingEndTime(System.currentTimeMillis());
+		} else if(this.event instanceof List){
+			for(Object obj : (List)this.event){
+				if(obj instanceof AbstractOperationalBean) {
+					((AbstractOperationalBean) obj).setBlockingEndTime(System.currentTimeMillis());
+				}
+			}
 		}
 	}
 
@@ -76,7 +82,6 @@ public class Dispatcher implements Runnable {
 		extraInfo.put(EXECUTIONID, exectionId);
 		extraInfo.put(STARTTIME, startTime);
 		extraInfo.put(BLOCKING_END_TIME, System.currentTimeMillis());
-
 	}
 
 	public Dispatcher(HttpRequestBean httpRequestBean, AgentMetaData metaData, StackTraceElement[] trace,
