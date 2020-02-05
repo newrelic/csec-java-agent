@@ -1,32 +1,33 @@
 package com.k2cybersecurity.instrumentator;
 
+import com.k2cybersecurity.instrumentator.utils.ApplicationInfoUtils;
 import com.k2cybersecurity.instrumentator.utils.HashGenerator;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
-import com.k2cybersecurity.intcodeagent.logging.IPScheduledThread;
+import com.k2cybersecurity.intcodeagent.logging.HealthCheckScheduleThread;
 import com.k2cybersecurity.intcodeagent.models.javaagent.ApplicationInfoBean;
+import com.k2cybersecurity.intcodeagent.models.javaagent.Identifier;
 import com.k2cybersecurity.intcodeagent.models.javaagent.JAHealthCheck;
 import com.k2cybersecurity.intcodeagent.websocket.EventSendPool;
 import com.k2cybersecurity.intcodeagent.websocket.WSClient;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.text.StringEscapeUtils;
 
 import java.io.*;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.UUID;
 
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.*;
 
 public class K2Instrumentator {
 
-	public static Set<String> hookedAPIs = new HashSet<>();
-	public static String hostip = "";
+	public static String hostip = StringUtils.EMPTY;
 	public static Integer VMPID;
 	public static final String APPLICATION_UUID = UUID.randomUUID().toString();
 	public static ApplicationInfoBean APPLICATION_INFO_BEAN;
@@ -41,6 +42,8 @@ public class K2Instrumentator {
 	public static boolean isAttached = false;
 	public static boolean enableHTTPRequestPrinting = false;
 
+	public static boolean isk8sEnv = false;
+
 	static {
 		try {
 			RuntimeMXBean runtimeMXBean = ManagementFactory.getRuntimeMXBean();
@@ -51,37 +54,52 @@ public class K2Instrumentator {
 		}
 	}
 
-	public static void init(Boolean isDynamicAttach) {
+	public static boolean init(Boolean isDynamicAttach) {
 		K2Instrumentator.isDynamicAttach = isDynamicAttach;
-		try (BufferedReader reader = new BufferedReader(new FileReader(HOST_IP_PROPERTIES_FILE))) {
-			hostip = reader.readLine();
-			if (hostip != null)
-				hostip = hostip.trim();
-		} catch (FileNotFoundException e1) {
-			e1.printStackTrace();
-		} catch (IOException e1) {
-			e1.printStackTrace();
-		}
+
 //		 ConfigK2Logs.getInstance().initializeLogs();
 		APPLICATION_INFO_BEAN = createApplicationInfoBean();
+		if(APPLICATION_INFO_BEAN == null) {
+			return false;
+		}
 		JA_HEALTH_CHECK = new JAHealthCheck(APPLICATION_UUID);
+		isk8sEnv = ApplicationInfoUtils.isK8sEnv();
+
+		if(isk8sEnv) {
+			hostip = System.getenv("K2_SERVICE_SERVICE_HOST");
+		}else if(APPLICATION_INFO_BEAN.getIdentifier().getIsHost()){
+			hostip = InetAddress.getLoopbackAddress().getHostAddress();
+		}
+		else {
+			try {
+				hostip = ApplicationInfoUtils.getDefaultGateway();
+			} catch (IOException e) {
+				e.printStackTrace();
+				return false;
+			}
+		}
+
 		try {
 			WSClient.getInstance();
 		} catch (Exception e) {
 			logger.log(LogLevel.ERROR, ERROR_OCCURED_WHILE_TRYING_TO_CONNECT_TO_WSOCKET, e,
 					K2Instrumentator.class.getName());
+			return false;
 		}
-		IPScheduledThread.getInstance();
-		eventWritePool();
+		HealthCheckScheduleThread.getInstance();
+		boolean isWorking = eventWritePool();
 		System.out.println(String.format("This application instance is now being protected by K2 Agent under id %s", APPLICATION_UUID));
+		return isWorking;
 	}
 
-	private static void eventWritePool() {
+	private static boolean eventWritePool() {
 
 		try {
 			EventSendPool.getInstance();
+			return true;
 		} catch (Exception e) {
 			logger.log(LogLevel.WARNING, EXCEPTION_OCCURED_IN_EVENT_SEND_POOL, e, K2Instrumentator.class.getName());
+			return false;
 		}
 	}
 
@@ -139,6 +157,7 @@ public class K2Instrumentator {
 			ApplicationInfoBean applicationInfoBean = new ApplicationInfoBean(VMPID, APPLICATION_UUID,
 					isDynamicAttach ? DYNAMIC : STATIC);
 			applicationInfoBean.setStartTime(runtimeMXBean.getStartTime());
+			Identifier identifier = new Identifier(getIpAddress());
 			String containerId = getContainerID();
 			String cmdLine = StringEscapeUtils.escapeJava(getCmdLineArgsByProc(VMPID));
 			applicationInfoBean.setProcStartTime(getStartTimeByProc(VMPID));
@@ -148,7 +167,9 @@ public class K2Instrumentator {
 			// JSONArray jsonArray = new JSONArray();
 			// jsonArray.addAll(cmdlineArgs);
 			// applicationInfoBean.setJvmArguments(jsonArray);
+
 			// }
+
 			try {
 				applicationInfoBean.setBinaryPath(Files
 						.readSymbolicLink(
@@ -159,13 +180,23 @@ public class K2Instrumentator {
 			applicationInfoBean
 					.setBinaryName(StringUtils.substringAfterLast(applicationInfoBean.getBinaryPath(), File.separator));
 			applicationInfoBean.setSha256(HashGenerator.getChecksum(new File(applicationInfoBean.getBinaryPath())));
+			identifier.setHostname(ApplicationInfoUtils.getHostName());
 			if (containerId != null) {
-				applicationInfoBean.setContainerID(containerId);
-				applicationInfoBean.setIsHost(false);
-			} else
-				applicationInfoBean.setIsHost(true);
+				identifier.setContainerId(containerId);
+				identifier.setIsHost(false);
+				identifier.setIsContainer(true);
+				String podId = ApplicationInfoUtils.getPodId(containerId);
+				if(StringUtils.isNotBlank(podId)) {
+					identifier.setPodId(podId);
+					identifier.setNamespace(getPodNameSpace());
+					identifier.setIsPod(true);
+				}
+			} else {
+				identifier.setIsHost(true);
+			}
 			// applicationInfoBean.setJvmArguments(new
 			// JSONArray(runtimeMXBean.getInputArguments()));
+			applicationInfoBean.setIdentifier(identifier);
 			return applicationInfoBean;
 		} catch (Exception e) {
 			logger.log(LogLevel.WARNING, EXCEPTION_OCCURED_IN_CREATE_APPLICATION_INFO_BEAN, e,
@@ -174,12 +205,20 @@ public class K2Instrumentator {
 		return null;
 	}
 
+	private static String getIpAddress() {
+		try {
+			return InetAddress.getLocalHost().getHostAddress();
+		} catch (UnknownHostException e) {
+			return StringUtils.EMPTY;
+		}
+	}
+
 	private static String getCmdLineArgsByProc(Integer pid) {
-		File cmdlineFile = new File(PROC_DIR + pid + CMD_LINE_DIR);
+		File cmdlineFile = new File(PROC_DIR + "self" + CMD_LINE_DIR);
 		if (!cmdlineFile.isFile())
 			return null;
 		try {
-			String cmdline = FileUtils.readFileToString(new File(PROC_DIR + pid + CMD_LINE_DIR),
+			String cmdline = FileUtils.readFileToString(cmdlineFile,
 					StandardCharsets.UTF_8);
 			if (!cmdline.isEmpty())
 				return cmdline;
@@ -210,6 +249,20 @@ public class K2Instrumentator {
 			}
 		}
 		return null;
+	}
+
+	public static String getPodNameSpace() {
+		File namespace = new File("/var/run/secrets/kubernetes.io/serviceaccount/namespace");
+		if(!namespace.isFile()) {
+			return StringUtils.EMPTY;
+		}
+		try {
+			return FileUtils.readFileToString(namespace, StandardCharsets.UTF_8);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return StringUtils.EMPTY;
+		}
 	}
 
 }

@@ -5,6 +5,7 @@ import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.dynamic.DynamicType;
 import net.bytebuddy.utility.JavaModule;
+import org.apache.commons.lang3.tuple.Pair;
 
 public class ClassLoadListener implements AgentBuilder.Listener {
 	@Override
@@ -23,7 +24,7 @@ public class ClassLoadListener implements AgentBuilder.Listener {
 			final JavaModule module,
 			final boolean loaded,
 			final DynamicType dynamicType) {
-		AgentUtils.getInstance().getTransformedClasses().add(typeDescription.getName());
+		AgentUtils.getInstance().getTransformedClasses().add(Pair.of(typeDescription.getName(), classLoader));
 	}
 
 	@Override

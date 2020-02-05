@@ -18,8 +18,7 @@ public class Callbacks {
 
     public static void doOnEnter(String sourceString, String className, String methodName, Object obj, Object[] args,
                                  String exectionId) {
-//         System.out.println("OnEnter :" + sourceString + " - this : " + obj + " - eid
-//         : " + exectionId);
+//         System.out.println("OnEnter :" + sourceString + " - this : " + obj + " - eid : " + exectionId);
 
         // TODO: Need more checks here to assert the type of args. Maybe the TYPE_BASED
         // hook advice should be generated from Code with very specific checks.
@@ -89,8 +88,8 @@ public class Callbacks {
                 CallbackUtils.checkForFileIntegrity(ThreadLocalExecutionMap.getInstance().getFileLocalMap());
                 //            CallbackUtils.checkForReflectedXSS(ThreadLocalExecutionMap.getInstance().getHttpRequestBean());
                 //            System.out.println("Passing to XSS detection : " + exectionId + " :: " + ThreadLocalExecutionMap.getInstance().getHttpRequestBean().getHttpResponseBean().toString()+ " :: " + ThreadLocalExecutionMap.getInstance().getHttpRequestBean().getHttpResponseBean().toString());
+                ThreadLocalHttpMap.getInstance().printInterceptedRequestResponse();
                 if (!ThreadLocalExecutionMap.getInstance().getHttpRequestBean().getHttpResponseBean().isEmpty()) {
-                    ThreadLocalHttpMap.getInstance().printInterceptedRequestResponse();
                     EventDispatcher.dispatch(new HttpRequestBean(ThreadLocalExecutionMap.getInstance().getHttpRequestBean()),
                             sourceString, exectionId, Instant.now().toEpochMilli(), VulnerabilityCaseType.REFLECTED_XSS);
                     String tid = StringUtils.substringBefore(exectionId, SEPARATOR_COLON);

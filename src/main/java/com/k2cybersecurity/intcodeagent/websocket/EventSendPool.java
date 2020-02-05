@@ -1,6 +1,8 @@
 package com.k2cybersecurity.intcodeagent.websocket;
 
 import com.k2cybersecurity.instrumentator.K2Instrumentator;
+import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
+import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.logging.ServletEventPool.EventAbortPolicy;
 import com.k2cybersecurity.intcodeagent.models.javaagent.JavaAgentEventBean;
 
@@ -12,6 +14,9 @@ public class EventSendPool {
 	private ThreadPoolExecutor executor;
 
 	private static EventSendPool instance;
+
+	private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
+
 
 	private EventSendPool() {
 		// load the settings
@@ -69,4 +74,24 @@ public class EventSendPool {
 		executor.submit(new EventSender(event));
 	}
 
+
+	public void shutDownThreadPoolExecutor() {
+
+		if (executor != null) {
+			try {
+				executor.shutdown(); // disable new tasks from being submitted
+				if (!executor.awaitTermination(1, TimeUnit.SECONDS)) {
+					// wait for termination for a timeout
+					executor.shutdownNow(); // cancel currently executing tasks
+
+					if (!executor.awaitTermination(1, TimeUnit.SECONDS)) {
+						logger.log(LogLevel.SEVERE, "Thread pool executor did not terminate",
+								EventSendPool.class.getName());
+					}
+				}
+			} catch (InterruptedException e) {
+			}
+		}
+
+	}
 }
