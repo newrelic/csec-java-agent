@@ -56,13 +56,21 @@ public class K2Instrumentator {
 
 	public static boolean init(Boolean isDynamicAttach) {
 		K2Instrumentator.isDynamicAttach = isDynamicAttach;
+//		 ConfigK2Logs.getInstance().initializeLogs();
+		APPLICATION_INFO_BEAN = createApplicationInfoBean();
+		if(APPLICATION_INFO_BEAN == null) {
+			return false;
+		}
+
+		JA_HEALTH_CHECK = new JAHealthCheck(APPLICATION_UUID);
+
+		isk8sEnv = ApplicationInfoUtils.isK8sEnv();
 
 		if(isk8sEnv) {
 			hostip = System.getenv("K2_SERVICE_SERVICE_HOST");
-		}else if(APPLICATION_INFO_BEAN.getIdentifier().getIsHost()){
+		} else if(APPLICATION_INFO_BEAN.getIdentifier().getIsHost()){
 			hostip = InetAddress.getLoopbackAddress().getHostAddress();
-		}
-		else {
+		} else {
 			try {
 				hostip = ApplicationInfoUtils.getDefaultGateway();
 			} catch (IOException e) {
@@ -78,15 +86,6 @@ public class K2Instrumentator {
 					K2Instrumentator.class.getName());
 			return false;
 		}
-
-//		 ConfigK2Logs.getInstance().initializeLogs();
-		APPLICATION_INFO_BEAN = createApplicationInfoBean();
-		if(APPLICATION_INFO_BEAN == null) {
-			return false;
-		}
-		JA_HEALTH_CHECK = new JAHealthCheck(APPLICATION_UUID);
-		isk8sEnv = ApplicationInfoUtils.isK8sEnv();
-
 
 		HealthCheckScheduleThread.getInstance();
 		boolean isWorking = eventWritePool();
