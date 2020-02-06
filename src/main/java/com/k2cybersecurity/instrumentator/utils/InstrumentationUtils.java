@@ -184,19 +184,6 @@ public class InstrumentationUtils {
 		IAST = iAST;
 	}
 
-	public static void retransformAllLoadedClasses(Instrumentation instrumentation) {
-		for (Class klass : instrumentation.getAllLoadedClasses()) {
-			if (instrumentation.isModifiableClass(klass)) {
-				try {
-					instrumentation.retransformClasses(klass);
-				} catch (Exception e) {
-					logger.log(LogLevel.SEVERE, "Error while retransformAllLoadedClasses : ", e,
-							InstrumentationUtils.class.getName());
-				}
-			}
-		}
-	}
-
 	public static void retransformHookedClasses(Instrumentation instrumentation) {
 		for (Pair<String, ClassLoader> pair : new ArrayList<>(AgentUtils.getInstance().getTransformedClasses())) {
 			try {
