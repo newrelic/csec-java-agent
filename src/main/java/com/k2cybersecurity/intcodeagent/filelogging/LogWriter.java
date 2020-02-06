@@ -23,7 +23,7 @@ public class LogWriter implements Runnable {
 
 	private static final String K2_LOG = "K2-LOG : ";
 
-	private static int defaultLogLevel;
+	public static int defaultLogLevel;
 
 	private int logLevel;
 
