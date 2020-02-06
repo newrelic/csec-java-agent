@@ -57,14 +57,6 @@ public class K2Instrumentator {
 	public static boolean init(Boolean isDynamicAttach) {
 		K2Instrumentator.isDynamicAttach = isDynamicAttach;
 
-//		 ConfigK2Logs.getInstance().initializeLogs();
-		APPLICATION_INFO_BEAN = createApplicationInfoBean();
-		if(APPLICATION_INFO_BEAN == null) {
-			return false;
-		}
-		JA_HEALTH_CHECK = new JAHealthCheck(APPLICATION_UUID);
-		isk8sEnv = ApplicationInfoUtils.isK8sEnv();
-
 		if(isk8sEnv) {
 			hostip = System.getenv("K2_SERVICE_SERVICE_HOST");
 		}else if(APPLICATION_INFO_BEAN.getIdentifier().getIsHost()){
@@ -86,6 +78,16 @@ public class K2Instrumentator {
 					K2Instrumentator.class.getName());
 			return false;
 		}
+
+//		 ConfigK2Logs.getInstance().initializeLogs();
+		APPLICATION_INFO_BEAN = createApplicationInfoBean();
+		if(APPLICATION_INFO_BEAN == null) {
+			return false;
+		}
+		JA_HEALTH_CHECK = new JAHealthCheck(APPLICATION_UUID);
+		isk8sEnv = ApplicationInfoUtils.isK8sEnv();
+
+
 		HealthCheckScheduleThread.getInstance();
 		boolean isWorking = eventWritePool();
 		System.out.println(String.format("This application instance is now being protected by K2 Agent under id %s", APPLICATION_UUID));
