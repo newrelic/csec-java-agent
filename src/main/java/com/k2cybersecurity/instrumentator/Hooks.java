@@ -66,6 +66,7 @@ public class Hooks {
 		
 		// Forkexec hooks
 		NAME_BASED_HOOKS.put("java.lang.ProcessImpl", Arrays.asList("start"));
+		NAME_BASED_HOOKS.put("java.lang.Shutdown", Arrays.asList("exit"));
 
 		// File Hooks
 		NAME_BASED_HOOKS.put("java.io.FileOutputStream", Arrays.asList("open"));
@@ -235,6 +236,7 @@ public class Hooks {
 
 		// Forkexec
 		DECORATOR_ENTRY.put("java.lang.ProcessImpl.start", "com.k2cybersecurity.instrumentator.decorators.forkexec");
+		DECORATOR_ENTRY.put("java.lang.Shutdown.exit", "com.k2cybersecurity.instrumentator.decorators.forkexec");
 
 		// File
 		DECORATOR_ENTRY.put("java.io.FileOutputStream.open", "com.k2cybersecurity.instrumentator.decorators.fileaccess");
