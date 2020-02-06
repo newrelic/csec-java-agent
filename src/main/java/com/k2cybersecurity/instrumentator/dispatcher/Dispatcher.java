@@ -43,7 +43,7 @@ public class Dispatcher implements Runnable {
 	private Object event;
 	private StackTraceElement[] trace;
 	private VulnerabilityCaseType vulnerabilityCaseType;
-	private Map<String, Object> extraInfo;
+	private Map<String, Object> extraInfo = new HashMap<String, Object>();
 
 	static {
 		PATTERN = Pattern.compile(IAgentConstants.TRACE_REGEX);
@@ -69,7 +69,6 @@ public class Dispatcher implements Runnable {
 		this.httpRequestBean = httpRequestBean;
 		this.trace = trace;
 		this.vulnerabilityCaseType = reflectedXss;
-		this.extraInfo = new HashMap<String, Object>();
 		extraInfo.put(SOURCESTRING, sourceString);
 		extraInfo.put(EXECUTIONID, exectionId);
 		extraInfo.put(STARTTIME, startTime);
@@ -83,7 +82,6 @@ public class Dispatcher implements Runnable {
 		this.event = event;
 		this.trace = trace;
 		this.vulnerabilityCaseType = vulnerabilityCaseType;
-		this.extraInfo = new HashMap<String, Object>();
 		extraInfo.put(FILEINTEGRITYBEAN, fbean);
 		extraInfo.put(BLOCKING_END_TIME, System.currentTimeMillis());
 	}
