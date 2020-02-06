@@ -9,23 +9,23 @@ import com.k2cybersecurity.intcodeagent.models.javaagent.IntCodeControlCommand;
 import com.k2cybersecurity.intcodeagent.websocket.FtpClient;
 import org.apache.commons.lang3.tuple.Pair;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 public class AgentUtils {
 
-	public List<Pair<String, ClassLoader>> getTransformedClasses() {
+	public Set<Pair<String, ClassLoader>> getTransformedClasses() {
 		return transformedClasses;
 	}
 
-	private List<Pair<String, ClassLoader>> transformedClasses;
+	private Set<Pair<String, ClassLoader>> transformedClasses;
 
 	private static AgentUtils instance;
 
 
 	private AgentUtils(){
-		transformedClasses = new ArrayList<>();
+		transformedClasses = new HashSet<>();
 	}
 
 	public static AgentUtils getInstance() {

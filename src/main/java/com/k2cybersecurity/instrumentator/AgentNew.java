@@ -1,14 +1,18 @@
 package com.k2cybersecurity.instrumentator;
 
 import com.k2cybersecurity.instrumentator.custom.ClassLoadListener;
+import com.k2cybersecurity.instrumentator.utils.AgentUtils;
 import com.k2cybersecurity.instrumentator.utils.InstrumentationUtils;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.matcher.ElementMatchers;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.io.IOException;
 import java.lang.instrument.Instrumentation;
 import java.lang.reflect.Method;
+import java.util.HashSet;
+import java.util.Set;
 
 import static com.k2cybersecurity.instrumentator.utils.InstrumentationUtils.*;
 
@@ -23,7 +27,6 @@ public class AgentNew {
 
 	public static Instrumentation gobalInstrumentation;
 
-
 	public static void premain(String arguments, Instrumentation instrumentation) {
 		if (initDone) {
 			return;
@@ -36,7 +39,15 @@ public class AgentNew {
 		////				.with(AgentBuilder.TypeStrategy.Default.REDEFINE)
 		//				.with(AgentBuilder.InitializationStrategy.NoOp.INSTANCE);
 
-
+		Set<Class> typeBasedClassSet = new HashSet<>();
+		for (Class aClass : instrumentation.getAllLoadedClasses()) {
+			if (Hooks.NAME_BASED_HOOKS.containsKey(aClass.getName())) {
+				AgentUtils.getInstance().getTransformedClasses()
+						.add(Pair.of(aClass.getName(), aClass.getClassLoader()));
+			} else if (Hooks.TYPE_BASED_HOOKS.containsKey(aClass.getName())) {
+				typeBasedClassSet.add(aClass);
+			}
+		}
 
 		/**
 		 * IMPORTANT : Don't touch this shit until & unless very very necessary.
@@ -56,7 +67,21 @@ public class AgentNew {
 
 		resettableClassFileTransformer = agentBuilder.installOn(instrumentation);
 
-		retransformAllLoadedClasses(instrumentation);
+		// Checks for type based classes to hook
+		for (Class aClass : instrumentation.getAllLoadedClasses()) {
+			if (instrumentation.isModifiableClass(aClass)) {
+				for (Class typeClass : typeBasedClassSet) {
+					if (typeClass.isAssignableFrom(aClass) && !AgentUtils.getInstance().getTransformedClasses()
+							.contains(Pair.of(aClass.getName(), aClass.getClassLoader()))) {
+						AgentUtils.getInstance().getTransformedClasses()
+								.add(Pair.of(aClass.getName(), aClass.getClassLoader()));
+						break;
+					}
+				}
+			}
+		}
+
+		retransformHookedClasses(instrumentation);
 
 		try {
 			Class<?> clazz = Class.forName("com.k2cybersecurity.instrumentator.K2Instrumentator");
@@ -78,6 +103,5 @@ public class AgentNew {
 		isDynamicAttachment = true;
 		premain(agentArgs, instrumentation);
 	}
-
 
 }
