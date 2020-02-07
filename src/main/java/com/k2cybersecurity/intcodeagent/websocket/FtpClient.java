@@ -19,9 +19,6 @@ import com.k2cybersecurity.intcodeagent.filelogging.LogWriter;
 public class FtpClient {
 	private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
 
-//	String BOOTSTRAP_APPLICATION_LOGS_REGEX = "\\/tmp\\/([1-9][0-9]*\\/)?k2_(java|node)_agent.*\\.log$";
-//	String APPLICATION_LOGS_REGEX = "\\/tmp\\/([1-9][0-9]*\\/)?k2_(java|node)_agent.*\\.log\\.[1-9][0-9]*$";
-
 	private static FTPClient getClient() {
 		FTPClient ftp = new FTPClient();
 		/* connecting to FTP server */
@@ -32,7 +29,6 @@ public class FtpClient {
 				ftp.connect(K2Instrumentator.hostip, 54322);
 				ftp.login("test", "test");
 				int reply = ftp.getReplyCode();
-				System.out.println("Reply :" + reply);
 				logger.log(LogLevel.DEBUG, "FTP server connection reply code : " + reply, WSClient.class.getName());
 				if (FTPReply.isPositiveCompletion(reply)) {
 					return ftp;
