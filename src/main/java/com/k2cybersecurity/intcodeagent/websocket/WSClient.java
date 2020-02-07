@@ -26,6 +26,7 @@ public class WSClient extends WebSocketClient {
 		if (!connectBlocking()) {
 			logger.log(LogLevel.SEVERE, "WSock connection to " + K2Instrumentator.hostip + " failed",
 					WSClient.class.getName());
+			throw new InterruptedException("Unable to connect K2 Agent. Initial connect failed.");
 		}
 	}
 

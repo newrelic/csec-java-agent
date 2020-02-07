@@ -6,6 +6,8 @@ import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.logging.ServletEventPool.EventAbortPolicy;
 import com.k2cybersecurity.intcodeagent.models.javaagent.JavaAgentEventBean;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.*;
 
 public class EventSendPool {
@@ -17,6 +19,11 @@ public class EventSendPool {
 
 	private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
 
+	public Map<String, Long> getEventMap() {
+		return eventMap;
+	}
+
+	private Map<String, Long> eventMap = new HashMap<>();
 
 	private EventSendPool() {
 		// load the settings

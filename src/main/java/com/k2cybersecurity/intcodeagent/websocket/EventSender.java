@@ -21,6 +21,7 @@ public class EventSender implements Callable<Boolean> {
 	public Boolean call() throws Exception {
 		if(event instanceof JavaAgentEventBean){
 			((JavaAgentEventBean)event).setEventGenerationTime(System.currentTimeMillis());
+			EventSendPool.getInstance().getEventMap().put(((JavaAgentEventBean)event).getId(), ((JavaAgentEventBean)event).getEventGenerationTime());
 		}
 		WSClient.getInstance().send(this.event.toString());
 		return true;
