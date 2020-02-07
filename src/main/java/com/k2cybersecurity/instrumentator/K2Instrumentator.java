@@ -66,6 +66,14 @@ public class K2Instrumentator {
 
 		isk8sEnv = ApplicationInfoUtils.isK8sEnv();
 
+		//		 ConfigK2Logs.getInstance().initializeLogs();
+		APPLICATION_INFO_BEAN = createApplicationInfoBean();
+		if(APPLICATION_INFO_BEAN == null) {
+			return false;
+		}
+		JA_HEALTH_CHECK = new JAHealthCheck(APPLICATION_UUID);
+		isk8sEnv = ApplicationInfoUtils.isK8sEnv();
+
 		if(isk8sEnv) {
 			hostip = System.getenv("K2_SERVICE_SERVICE_HOST");
 		} else if(APPLICATION_INFO_BEAN.getIdentifier().getIsHost()){
