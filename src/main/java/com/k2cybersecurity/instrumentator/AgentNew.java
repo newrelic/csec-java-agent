@@ -8,7 +8,9 @@ import net.bytebuddy.matcher.ElementMatchers;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.lang.instrument.Instrumentation;
 import java.lang.reflect.Method;
 import java.util.HashSet;
@@ -43,56 +45,53 @@ public class AgentNew {
 				return;
 			}
 			Runtime.getRuntime().addShutdownHook(new Thread(() -> InstrumentationUtils.shutdownLogic(false)));
-		} catch (Exception e) {
-			//			e.printStackTrace();
-		}
 
-		Set<Class> typeBasedClassSet = new HashSet<>();
-		for (Class aClass : instrumentation.getAllLoadedClasses()) {
-			if (Hooks.NAME_BASED_HOOKS.containsKey(aClass.getName())) {
-				AgentUtils.getInstance().getTransformedClasses()
-						.add(Pair.of(aClass.getName(), aClass.getClassLoader()));
-			} else if (Hooks.TYPE_BASED_HOOKS.containsKey(aClass.getName())) {
-				typeBasedClassSet.add(aClass);
+			Set<Class> typeBasedClassSet = new HashSet<>();
+			for (Class aClass : instrumentation.getAllLoadedClasses()) {
+				if (Hooks.NAME_BASED_HOOKS.containsKey(aClass.getName())) {
+					AgentUtils.getInstance().getTransformedClasses().add(Pair.of(aClass.getName(), aClass.getClassLoader()));
+				} else if (Hooks.TYPE_BASED_HOOKS.containsKey(aClass.getName())) {
+					typeBasedClassSet.add(aClass);
+				}
 			}
-		}
 
-		/**
-		 * IMPORTANT : Don't touch this shit until & unless very very necessary.
-		 */
-		AgentBuilder agentBuilder = new AgentBuilder.Default()
-				.ignore(ElementMatchers.nameStartsWith("sun.reflect.com.k2cybersecurity")).disableClassFormatChanges()
-				//				.with(AgentBuilder.Listener.StreamWriting.toSystemOut())
-				.with(AgentBuilder.RedefinitionStrategy.RETRANSFORMATION).with(new ClassLoadListener())
-				.with(AgentBuilder.TypeStrategy.Default.REDEFINE);
+			/**
+			 * IMPORTANT : Don't touch this shit until & unless very very necessary.
+			 */
+			AgentBuilder agentBuilder = new AgentBuilder.Default().ignore(ElementMatchers.nameStartsWith("sun.reflect.com.k2cybersecurity"))
+					.disableClassFormatChanges()
+					//				.with(AgentBuilder.Listener.StreamWriting.toSystemOut())
+					.with(AgentBuilder.RedefinitionStrategy.RETRANSFORMATION).with(new ClassLoadListener()).with(AgentBuilder.TypeStrategy.Default.REDEFINE);
 
-		if (StringUtils.equals("IAST", arguments)) {
-			setIAST(true);
-		}
+			if (StringUtils.equals("IAST", arguments)) {
+				setIAST(true);
+			}
 
-		agentBuilder = doInstrument(agentBuilder, Hooks.TYPE_BASED_HOOKS, "TYPE_BASED");
-		agentBuilder = doInstrument(agentBuilder, Hooks.NAME_BASED_HOOKS, "NAME_BASED");
+			agentBuilder = doInstrument(agentBuilder, Hooks.TYPE_BASED_HOOKS, "TYPE_BASED");
+			agentBuilder = doInstrument(agentBuilder, Hooks.NAME_BASED_HOOKS, "NAME_BASED");
 
-		resettableClassFileTransformer = agentBuilder.installOn(instrumentation);
+			resettableClassFileTransformer = agentBuilder.installOn(instrumentation);
 
-		// Checks for type based classes to hook
-		for (Class aClass : instrumentation.getAllLoadedClasses()) {
-			if (instrumentation.isModifiableClass(aClass)) {
-				for (Class typeClass : typeBasedClassSet) {
-					if (typeClass.isAssignableFrom(aClass) && !AgentUtils.getInstance().getTransformedClasses()
-							.contains(Pair.of(aClass.getName(), aClass.getClassLoader()))) {
-						AgentUtils.getInstance().getTransformedClasses()
-								.add(Pair.of(aClass.getName(), aClass.getClassLoader()));
-						break;
+			// Checks for type based classes to hook
+			for (Class aClass : instrumentation.getAllLoadedClasses()) {
+				if (instrumentation.isModifiableClass(aClass)) {
+					for (Class typeClass : typeBasedClassSet) {
+						if (typeClass.isAssignableFrom(aClass) && !AgentUtils.getInstance().getTransformedClasses()
+								.contains(Pair.of(aClass.getName(), aClass.getClassLoader()))) {
+							AgentUtils.getInstance().getTransformedClasses().add(Pair.of(aClass.getName(), aClass.getClassLoader()));
+							break;
+						}
 					}
 				}
 			}
+			retransformHookedClasses(instrumentation);
+		} catch (Throwable e) {
+			System.err.println("[K2-JA] Process initialization failed!!! Please find the error in /tmp/K2-Instrumentation.err");
+			try {
+				e.printStackTrace(new PrintStream("/tmp/K2-Instrumentation.err"));
+			} catch (FileNotFoundException ex) {
+			}
 		}
-
-		retransformHookedClasses(instrumentation);
-
-
-
 	}
 
 	public static void agentmain(String agentArgs, Instrumentation instrumentation)

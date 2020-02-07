@@ -61,18 +61,9 @@ public class K2Instrumentator {
 		if(APPLICATION_INFO_BEAN == null) {
 			return false;
 		}
-
-		JA_HEALTH_CHECK = new JAHealthCheck(APPLICATION_UUID);
-
-		isk8sEnv = ApplicationInfoUtils.isK8sEnv();
-
-		//		 ConfigK2Logs.getInstance().initializeLogs();
-		APPLICATION_INFO_BEAN = createApplicationInfoBean();
-		if(APPLICATION_INFO_BEAN == null) {
-			return false;
-		}
 		JA_HEALTH_CHECK = new JAHealthCheck(APPLICATION_UUID);
 		isk8sEnv = ApplicationInfoUtils.isK8sEnv();
+
 
 		if(isk8sEnv) {
 			hostip = System.getenv("K2_SERVICE_SERVICE_HOST");
@@ -82,7 +73,8 @@ public class K2Instrumentator {
 			try {
 				hostip = ApplicationInfoUtils.getDefaultGateway();
 			} catch (IOException e) {
-				e.printStackTrace();
+				logger.log(LogLevel.ERROR, ERROR_WHILE_DETERMINING_HOSTIP_FROM_DEFAULT_GATEWAY, e,
+						K2Instrumentator.class.getName());
 				return false;
 			}
 		}

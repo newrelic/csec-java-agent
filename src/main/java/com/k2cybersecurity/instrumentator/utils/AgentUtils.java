@@ -71,7 +71,8 @@ public class AgentUtils {
 					AgentUtils.class.getSimpleName());
 			break;
 		case IntCodeControlCommand.UNSUPPORTED_AGENT:
-			System.out.println(controlCommand.getArguments().get(0));
+			logger.log(LogLevel.SEVERE, controlCommand.getArguments().get(0), AgentUtils.class.getSimpleName());
+			System.err.println(controlCommand.getArguments().get(0));
 			HealthCheckScheduleThread.getInstance().shutDownThreadPoolExecutor();
 			InstrumentationUtils.shutdownLogic(false);
 			break;
