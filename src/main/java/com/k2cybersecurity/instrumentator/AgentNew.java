@@ -33,11 +33,19 @@ public class AgentNew {
 		}
 		initDone = true;
 		gobalInstrumentation = instrumentation;
-		//		AgentBuilder agentBuilder = new AgentBuilder.Default().ignore(ElementMatchers.none())
-		//				.with(AgentBuilder.Listener.StreamWriting.toSystemError())
-		//				.with(AgentBuilder.RedefinitionStrategy.RETRANSFORMATION)
-		////				.with(AgentBuilder.TypeStrategy.Default.REDEFINE)
-		//				.with(AgentBuilder.InitializationStrategy.NoOp.INSTANCE);
+
+		try {
+			Class<?> clazz = Class.forName("com.k2cybersecurity.instrumentator.K2Instrumentator");
+			Method init = clazz.getMethod("init", Boolean.class);
+			Boolean isStarted = (Boolean) init.invoke(null, isDynamicAttachment);
+			if (!isStarted) {
+				System.err.println("[K2-JA] Process initialization failed!!! Environment incompatible.");
+				return;
+			}
+			Runtime.getRuntime().addShutdownHook(new Thread(() -> InstrumentationUtils.shutdownLogic(false)));
+		} catch (Exception e) {
+			//			e.printStackTrace();
+		}
 
 		Set<Class> typeBasedClassSet = new HashSet<>();
 		for (Class aClass : instrumentation.getAllLoadedClasses()) {
@@ -83,18 +91,7 @@ public class AgentNew {
 
 		retransformHookedClasses(instrumentation);
 
-		try {
-			Class<?> clazz = Class.forName("com.k2cybersecurity.instrumentator.K2Instrumentator");
-			Method init = clazz.getMethod("init", Boolean.class);
-			Boolean isStarted = (Boolean) init.invoke(null, isDynamicAttachment);
-			if (!isStarted) {
-				System.err.println("[K2-JA] Process initialization failed!!! Environment incompatible.");
-				return;
-			}
-			Runtime.getRuntime().addShutdownHook(new Thread(() -> InstrumentationUtils.shutdownLogic(false)));
-		} catch (Exception e) {
-			//			e.printStackTrace();
-		}
+
 
 	}
 
