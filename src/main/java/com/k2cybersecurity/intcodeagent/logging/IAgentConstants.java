@@ -444,8 +444,8 @@ public interface IAgentConstants {
 
 	String HCSCHEDULEDTHREAD_ = "K2-hcScheduledThread-";
 	String ACK_MSG = "ACK";
-
 	// EventThreadPool.java file constants
+
 	String K2_JAVA_AGENT = "K2-Java-Agent-";
 
 	// LoggingInterceptor Constants
@@ -537,4 +537,6 @@ public interface IAgentConstants {
 	String JAVA_SECURITY_MESSAGEDIGEST_GETINSTANCE_STRING = "public static java.security.MessageDigest java.security.MessageDigest.getInstance(java.lang.String) throws java.security.NoSuchAlgorithmException";
 	String JAVA_SECURITY_MESSAGEDIGEST_GETINSTANCE_STRING_STRING = "public static java.security.MessageDigest java.security.MessageDigest.getInstance(java.lang.String,java.lang.String) throws java.security.NoSuchAlgorithmException,java.security.NoSuchProviderException";
 	String JAVA_SECURITY_MESSAGEDIGEST_GETINSTANCE_STRING_PROVIDER = "public static java.security.MessageDigest java.security.MessageDigest.getInstance(java.lang.String,java.security.Provider) throws java.security.NoSuchAlgorithmException";
+	String BLOCKING_END_TIME = "blockingEndTime";
+	String ERROR_WHILE_DETERMINING_HOSTIP_FROM_DEFAULT_GATEWAY = "Error while determining hostip from default gateway";
 }
