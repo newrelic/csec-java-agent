@@ -2,6 +2,7 @@ package com.k2cybersecurity.intcodeagent.controlcommand;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.Gson;
 import com.k2cybersecurity.instrumentator.K2Instrumentator;
 import com.k2cybersecurity.instrumentator.utils.InstrumentationUtils;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
@@ -18,6 +19,7 @@ import java.util.concurrent.TimeUnit;
 public class ControlCommandProcessor implements Runnable {
     public static final String EVENT_RESPONSE_TIME_TAKEN = "Event response time taken : ";
     public static final String DOUBLE_COLON_SEPERATOR = " :: ";
+    public static final Gson GSON = new Gson();
 
     private String controlCommandMessage;
 
@@ -37,8 +39,8 @@ public class ControlCommandProcessor implements Runnable {
         }
         IntCodeControlCommand controlCommand = null;
         try {
-            controlCommand = new ObjectMapper().readValue(controlCommandMessage, IntCodeControlCommand.class);
-        } catch (JsonProcessingException e) {
+            controlCommand = GSON.fromJson(controlCommandMessage, IntCodeControlCommand.class);
+        } catch (Exception e) {
             logger.log(LogLevel.SEVERE, "Error in controlCommandProcessor : ", e, ControlCommandProcessor.class.getSimpleName());
             return;
         }
