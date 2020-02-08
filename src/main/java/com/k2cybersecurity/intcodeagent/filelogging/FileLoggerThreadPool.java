@@ -14,10 +14,10 @@ public class FileLoggerThreadPool {
 
 	private FileLoggerThreadPool() throws IOException {
 		// load the settings
-		int queueSize = 1500;
+		int queueSize = 15000;
 		int maxPoolSize = 1;
 		int corePoolSize = 1;
-		long keepAliveTime = 60;
+		long keepAliveTime = 600;
 
 		TimeUnit timeUnit = TimeUnit.SECONDS;
 

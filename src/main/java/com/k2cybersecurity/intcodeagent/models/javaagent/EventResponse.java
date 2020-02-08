@@ -4,6 +4,8 @@ public class EventResponse {
 
 	private String id;
 
+	private String eventId;
+
 	private String jsonName = "EventResponse";
 
 	private boolean attack;
@@ -39,5 +41,13 @@ public class EventResponse {
 
 	public void setResultMessage(String resultMessage) {
 		this.resultMessage = resultMessage;
+	}
+
+	public String getEventId() {
+		return eventId;
+	}
+
+	public void setEventId(String eventId) {
+		this.eventId = eventId;
 	}
 }

@@ -569,6 +569,7 @@ public class Dispatcher implements Runnable {
 		eventBean.setHttpRequest(httpRequestBean);
 		eventBean.setMetaData(metaData);
 		eventBean.setCaseType(vulnerabilityCaseType.getCaseType());
+		eventBean.setValidationResponseRequired(K2Instrumentator.waitForValidationResponse);
 		return eventBean;
 	}
 

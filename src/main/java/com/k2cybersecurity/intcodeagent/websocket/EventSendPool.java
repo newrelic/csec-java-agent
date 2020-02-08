@@ -23,7 +23,7 @@ public class EventSendPool {
 		return eventMap;
 	}
 
-	private Map<String, Long> eventMap = new HashMap<>();
+	private Map<String, Long> eventMap = new ConcurrentHashMap<>();
 
 	private EventSendPool() {
 		// load the settings

@@ -43,6 +43,7 @@ public class K2Instrumentator {
 	public static boolean enableHTTPRequestPrinting = false;
 
 	public static boolean isk8sEnv = false;
+	public static boolean waitForValidationResponse = false;
 
 	static {
 		try {

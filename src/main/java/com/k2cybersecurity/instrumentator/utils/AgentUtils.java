@@ -19,6 +19,9 @@ import java.util.concurrent.TimeUnit;
 
 public class AgentUtils {
 
+	public static final String EVENT_RESPONSE_TIME_TAKEN = "Event response time taken : ";
+	public static final String DOUBLE_COLON_SEPERATOR = " :: ";
+
 	public Set<Pair<String, ClassLoader>> getTransformedClasses() {
 		return transformedClasses;
 	}
@@ -91,8 +94,12 @@ public class AgentUtils {
 			long generationTime = EventSendPool.getInstance().getEventMap().get(eventResponse.getId());
 			EventSendPool.getInstance().getEventMap().remove(eventResponse.getId());
 			if(eventResponse != null) {
-				logger.log(LogLevel.INFO, "Event response time taken : " + (receivedTime - generationTime), AgentUtils.class.getSimpleName());
+				logger.log(LogLevel.INFO, EVENT_RESPONSE_TIME_TAKEN + eventResponse.getEventId() + DOUBLE_COLON_SEPERATOR + (receivedTime - generationTime), AgentUtils.class.getSimpleName());
 			}
+			break;
+		case IntCodeControlCommand.SET_WAIT_FOR_VALIDATION_RESPONSE:
+			K2Instrumentator.waitForValidationResponse = Boolean.parseBoolean(controlCommand.getArguments().get(0));
+			logger.log(LogLevel.INFO, "Setting wait for validation response to  : " + K2Instrumentator.waitForValidationResponse, AgentUtils.class.getSimpleName());
 			break;
 		default:
 			break;
