@@ -447,6 +447,7 @@ public interface IAgentConstants {
 	// EventThreadPool.java file constants
 
 	String K2_JAVA_AGENT = "K2-Java-Agent-";
+	String K2_LISTERNER = "K2-ControlCommand-Listener-";
 
 	// LoggingInterceptor Constants
 	char DIR_SEPERATOR = '/';

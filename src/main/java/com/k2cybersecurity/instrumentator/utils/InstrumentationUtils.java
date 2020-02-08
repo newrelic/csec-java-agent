@@ -5,6 +5,8 @@ import com.k2cybersecurity.instrumentator.Hooks;
 import com.k2cybersecurity.instrumentator.K2Instrumentator;
 import com.k2cybersecurity.instrumentator.custom.ByteBuddyElementMatchers;
 import com.k2cybersecurity.instrumentator.dispatcher.DispatcherPool;
+import com.k2cybersecurity.intcodeagent.controlcommand.ControlCommandProcessor;
+import com.k2cybersecurity.intcodeagent.controlcommand.ControlCommandProcessorThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.logging.EventThreadPool;
@@ -164,6 +166,7 @@ public class InstrumentationUtils {
             HealthCheckScheduleThread.getInstance().shutDownThreadPoolExecutor();
             EventThreadPool.getInstance().shutDownThreadPoolExecutor();
             DispatcherPool.getInstance().shutDownThreadPoolExecutor();
+            ControlCommandProcessorThreadPool.getInstance().shutDownThreadPoolExecutor();
             EventSendPool.getInstance().shutDownThreadPoolExecutor();
         } catch (Exception e) {
             logger.log(LogLevel.SEVERE, "Error while shutting down K2 Pools : ", e,

@@ -7,7 +7,6 @@ import com.k2cybersecurity.instrumentator.utils.InstrumentationUtils;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.filelogging.LogWriter;
-import com.k2cybersecurity.intcodeagent.logging.HealthCheckScheduleThread;
 import com.k2cybersecurity.intcodeagent.models.javaagent.EventResponse;
 import com.k2cybersecurity.intcodeagent.models.javaagent.IntCodeControlCommand;
 import com.k2cybersecurity.intcodeagent.websocket.EventSendPool;
@@ -33,7 +32,7 @@ public class ControlCommandProcessor implements Runnable {
 
     @Override
     public void run() {
-        if(StringUtils.isBlank(controlCommandMessage)){
+        if (StringUtils.isBlank(controlCommandMessage)) {
             return;
         }
         IntCodeControlCommand controlCommand = null;
@@ -78,15 +77,15 @@ public class ControlCommandProcessor implements Runnable {
                 InstrumentationUtils.shutdownLogic(true);
                 break;
             case IntCodeControlCommand.EVENT_RESPONSE:
-                EventResponse eventResponse = null;
-                try {
-                    eventResponse = new ObjectMapper().readValue(controlCommand.getArguments().get(0), EventResponse.class);
-                } catch (JsonProcessingException e) {
-                    e.printStackTrace();
-                }
+                EventResponse eventResponse = new EventResponse();
+                eventResponse.setId(controlCommand.getArguments().get(0));
+                eventResponse.setEventId(controlCommand.getArguments().get(1));
+                eventResponse.setAttack(Boolean.parseBoolean(controlCommand.getArguments().get(2)));
+                eventResponse.setResultMessage(controlCommand.getArguments().get(3));
+
                 long generationTime = EventSendPool.getInstance().getEventMap().get(eventResponse.getId());
                 EventSendPool.getInstance().getEventMap().remove(eventResponse.getId());
-                if(eventResponse != null) {
+                if (eventResponse != null) {
                     logger.log(LogLevel.INFO, EVENT_RESPONSE_TIME_TAKEN + eventResponse.getEventId() + DOUBLE_COLON_SEPERATOR + (receiveTimestamp - generationTime), ControlCommandProcessor.class.getSimpleName());
                 }
                 break;
@@ -100,7 +99,7 @@ public class ControlCommandProcessor implements Runnable {
     }
 
 
-    public static void processControlCommand(String controlCommandMessage, long receiveTimestamp){
+    public static void processControlCommand(String controlCommandMessage, long receiveTimestamp) {
         ControlCommandProcessorThreadPool.getInstance().executor.submit(new ControlCommandProcessor(controlCommandMessage, receiveTimestamp));
     }
 }
