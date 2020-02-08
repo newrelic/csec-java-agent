@@ -59,7 +59,7 @@ public class LogWriter implements Runnable {
 		currentLogFile = new File(fileName);
 		currentLogFileName = fileName;
 		try {
-			Files.setPosixFilePermissions(currentLogFile.toPath(), PosixFilePermissions.fromString("rw-rw-rw-"));
+			currentLogFile.setReadable(true,false);
 			writer = new BufferedWriter(new FileWriter(currentLogFileName, true));
 			maxFileSize = K2JALogProperties.maxfilesize * 1048576;
 
@@ -82,8 +82,9 @@ public class LogWriter implements Runnable {
 			} else if (level.equals("ALL")) {
 				defaultLogLevel = LogLevel.ALL.getLevel();
 			}
+			Files.setPosixFilePermissions(currentLogFile.toPath(), PosixFilePermissions.fromString("rw-rw-rw-"));
 		} catch (Exception e) {
-//			e.printStackTrace();
+			e.printStackTrace();
 		}
 	}
 
@@ -141,6 +142,7 @@ public class LogWriter implements Runnable {
 
 //			writer.newLine();
 			rollover(currentLogFile);
+			currentLogFile.setReadable(true,false);
 			Files.setPosixFilePermissions(currentLogFile.toPath(), PosixFilePermissions.fromString("rw-rw-rw-"));
 		} catch (IOException e) {
 //			e.printStackTrace();
