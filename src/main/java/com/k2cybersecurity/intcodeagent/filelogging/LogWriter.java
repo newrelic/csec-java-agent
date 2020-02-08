@@ -7,6 +7,8 @@ import com.k2cybersecurity.intcodeagent.websocket.FtpClient;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.attribute.PosixFilePermissions;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Timer;
@@ -55,9 +57,9 @@ public class LogWriter implements Runnable {
 	static {
 		fileName = "/tmp/k2logs/k2_java_agent-" + K2Instrumentator.APPLICATION_UUID + ".log";
 		currentLogFile = new File(fileName);
-		currentLogFile.setReadable(true, false);
 		currentLogFileName = fileName;
 		try {
+			Files.setPosixFilePermissions(currentLogFile.toPath(), PosixFilePermissions.fromString("rw-rw-rw-"));
 			writer = new BufferedWriter(new FileWriter(currentLogFileName, true));
 			maxFileSize = K2JALogProperties.maxfilesize * 1048576;
 
@@ -139,6 +141,7 @@ public class LogWriter implements Runnable {
 
 //			writer.newLine();
 			rollover(currentLogFile);
+			Files.setPosixFilePermissions(currentLogFile.toPath(), PosixFilePermissions.fromString("rw-rw-rw-"));
 		} catch (IOException e) {
 //			e.printStackTrace();
 		}
