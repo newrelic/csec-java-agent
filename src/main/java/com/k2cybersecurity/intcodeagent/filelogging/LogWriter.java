@@ -55,6 +55,7 @@ public class LogWriter implements Runnable {
 	static {
 		fileName = "/tmp/k2logs/k2_java_agent-" + K2Instrumentator.APPLICATION_UUID + ".log";
 		currentLogFile = new File(fileName);
+		currentLogFile.setReadable(true, false);
 		currentLogFileName = fileName;
 		try {
 			writer = new BufferedWriter(new FileWriter(currentLogFileName, true));
