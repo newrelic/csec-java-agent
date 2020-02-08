@@ -3,6 +3,8 @@ package com.k2cybersecurity.intcodeagent.websocket;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.k2cybersecurity.instrumentator.K2Instrumentator;
 import com.k2cybersecurity.instrumentator.utils.AgentUtils;
+import com.k2cybersecurity.intcodeagent.controlcommand.ControlCommandProcessor;
+import com.k2cybersecurity.intcodeagent.controlcommand.ControlCommandProcessorThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.models.javaagent.IntCodeControlCommand;
@@ -46,11 +48,9 @@ public class WSClient extends WebSocketClient {
 
 	@Override
 	public void onMessage(String message) {
-		// TODO : Receive communication from IC side.
-		// logger.log(Level.FINE, "Message from IC : {0}", message);
+		// Receive communication from IC side.
 		try {
-			IntCodeControlCommand controlCommand = new ObjectMapper().readValue(message, IntCodeControlCommand.class);
-			AgentUtils.controlCommandProcessor(controlCommand);
+			ControlCommandProcessor.processControlCommand(message, System.currentTimeMillis());
 		} catch (Exception e) {
 			logger.log(LogLevel.SEVERE, "Unable to process incoming message : " + message + " : due to error : ", e,
 					WSClient.class.getName());
