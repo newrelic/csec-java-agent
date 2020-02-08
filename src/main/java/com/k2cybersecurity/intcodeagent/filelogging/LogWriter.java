@@ -145,7 +145,7 @@ public class LogWriter implements Runnable {
 			currentLogFile.setReadable(true,false);
 			Files.setPosixFilePermissions(currentLogFile.toPath(), PosixFilePermissions.fromString("rw-rw-rw-"));
 		} catch (IOException e) {
-//			e.printStackTrace();
+			e.printStackTrace();
 		}
 
 	}
