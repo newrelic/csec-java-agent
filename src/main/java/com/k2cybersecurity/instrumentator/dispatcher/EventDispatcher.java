@@ -145,16 +145,16 @@ public class EventDispatcher {
 		if(!K2Instrumentator.waitForValidationResponse){
 			return false;
 		}
-		logger.log(LogLevel.INFO,
+		logger.log(LogLevel.DEBUG,
 				SCHEDULING_FOR_EVENT_RESPONSE_OF + executionId, EventDispatcher.class.getSimpleName());
 
 		EventResponse eventResponse = new EventResponse(executionId);
 		AgentUtils.getInstance().getEventResponseSet().put(executionId, eventResponse);
 		eventResponse.getResponseLock().lock();
 		try {
-			if(eventResponse.getResponseLock().tryLock(100, TimeUnit.MILLISECONDS)){
-				logger.log(LogLevel.INFO,
-							EVENT_RESPONSE_TIME_TAKEN + eventResponse.getEventId() + DOUBLE_COLON_SEPERATOR + (
+			if(eventResponse.getResponseLock().tryLock(10, TimeUnit.MILLISECONDS)){
+				logger.log(LogLevel.DEBUG,
+							EVENT_RESPONSE_TIME_TAKEN + eventResponse.getId() + DOUBLE_COLON_SEPERATOR + (
 									eventResponse.getReceivedTime() - eventResponse.getGenerationTime()), EventDispatcher.class.getSimpleName());
 				return true;
 			}
