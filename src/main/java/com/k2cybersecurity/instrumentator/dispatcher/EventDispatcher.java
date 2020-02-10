@@ -5,7 +5,6 @@ import com.k2cybersecurity.instrumentator.custom.ThreadLocalDBMap;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalExecutionMap;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalHttpMap;
 import com.k2cybersecurity.instrumentator.utils.AgentUtils;
-import com.k2cybersecurity.intcodeagent.controlcommand.ControlCommandProcessor;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.logging.DeployedApplication;
@@ -30,6 +29,7 @@ public class EventDispatcher {
 	public static final String EVENT_RESPONSE_TIME_TAKEN = "Event response time taken : ";
 	public static final String DOUBLE_COLON_SEPERATOR = " :: ";
 	public static final String EVENT_RESPONSE_TIMEOUT_FOR = "Event response timeout for : ";
+	public static final String SCHEDULING_FOR_EVENT_RESPONSE_OF = "Scheduling for event response of : ";
 
 	public static void dispatch(AbstractOperationalBean objectBean, VulnerabilityCaseType vulnerabilityCaseType) {
 		boolean ret = ThreadLocalHttpMap.getInstance().parseHttpRequest();
@@ -145,6 +145,9 @@ public class EventDispatcher {
 		if(!K2Instrumentator.waitForValidationResponse){
 			return false;
 		}
+		logger.log(LogLevel.INFO,
+				SCHEDULING_FOR_EVENT_RESPONSE_OF + executionId, EventDispatcher.class.getSimpleName());
+
 		EventResponse eventResponse = new EventResponse(executionId);
 		AgentUtils.getInstance().getEventResponseSet().put(executionId, eventResponse);
 		eventResponse.getResponseLock().lock();
@@ -152,7 +155,7 @@ public class EventDispatcher {
 			if(eventResponse.getResponseLock().tryLock(100, TimeUnit.MILLISECONDS)){
 				logger.log(LogLevel.INFO,
 							EVENT_RESPONSE_TIME_TAKEN + eventResponse.getEventId() + DOUBLE_COLON_SEPERATOR + (
-									eventResponse.getReceivedTime() - eventResponse.getGenerationTime()), ControlCommandProcessor.class.getSimpleName());
+									eventResponse.getReceivedTime() - eventResponse.getGenerationTime()), EventDispatcher.class.getSimpleName());
 				return true;
 			}
 		} catch (InterruptedException e) {
@@ -161,7 +164,7 @@ public class EventDispatcher {
 			AgentUtils.getInstance().getEventResponseSet().remove(executionId);
 		}
 
-		logger.log(LogLevel.WARNING, EVENT_RESPONSE_TIMEOUT_FOR + executionId, ControlCommandProcessor.class.getSimpleName());
+		logger.log(LogLevel.WARNING, EVENT_RESPONSE_TIMEOUT_FOR + executionId, EventDispatcher.class.getSimpleName());
 		return false;
 	}
 

@@ -3,7 +3,6 @@ package com.k2cybersecurity.intcodeagent.filelogging;
 import com.k2cybersecurity.instrumentator.K2Instrumentator;
 import com.k2cybersecurity.intcodeagent.properties.K2JALogProperties;
 import com.k2cybersecurity.intcodeagent.websocket.FtpClient;
-
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.*;
@@ -57,6 +56,7 @@ public class LogWriter implements Runnable {
 	static {
 		fileName = "/tmp/k2logs/k2_java_agent-" + K2Instrumentator.APPLICATION_UUID + ".log";
 		currentLogFile = new File(fileName);
+		currentLogFile.getParentFile().mkdirs();
 		currentLogFileName = fileName;
 		try {
 			currentLogFile.setReadable(true,false);

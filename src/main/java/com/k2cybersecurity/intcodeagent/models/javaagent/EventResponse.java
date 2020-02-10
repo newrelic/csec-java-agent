@@ -21,7 +21,7 @@ public class EventResponse {
 	private long receivedTime = 0L;
 
 	public EventResponse(String id) {
-		this.id = id;
+		this.id = new String(id);
 	}
 
 	public String getId() {
