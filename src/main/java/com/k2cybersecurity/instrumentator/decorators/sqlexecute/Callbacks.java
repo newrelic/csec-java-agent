@@ -35,7 +35,7 @@ public class Callbacks {
 					}
 					if (ThreadLocalDBMap.getInstance().get(thisObject) != null) {
 						EventDispatcher.dispatch(new ArrayList<>(ThreadLocalDBMap.getInstance().get(thisObject)),
-								VulnerabilityCaseType.SQL_DB_COMMAND);
+								VulnerabilityCaseType.SQL_DB_COMMAND, exectionId);
 						ThreadLocalDBMap.getInstance().clear(thisObject);
 					}
 				}
