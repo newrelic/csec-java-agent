@@ -154,7 +154,7 @@ public class EventDispatcher {
 			eventResponse.getResponseSemaphore().acquire();
 			if(eventResponse.getResponseSemaphore().tryAcquire(100, TimeUnit.MILLISECONDS)){
 				logger.log(LogLevel.DEBUG,
-							EVENT_RESPONSE_TIME_TAKEN + eventResponse.getId() + DOUBLE_COLON_SEPERATOR + (
+							EVENT_RESPONSE_TIME_TAKEN + eventResponse.getEventId() + DOUBLE_COLON_SEPERATOR + (
 									eventResponse.getReceivedTime() - eventResponse.getGenerationTime()), EventDispatcher.class.getSimpleName());
 				return true;
 			}
