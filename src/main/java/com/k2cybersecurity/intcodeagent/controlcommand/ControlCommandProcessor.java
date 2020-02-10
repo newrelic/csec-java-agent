@@ -96,7 +96,7 @@ public class ControlCommandProcessor implements Runnable {
 			eventResponse.setReceivedTime(receiveTimestamp);
 
 			EventSendPool.getInstance().getEventMap().remove(eventResponse.getId());
-			eventResponse.getResponseLock().unlock();
+			eventResponse.getResponseSemaphore().release();
 			break;
 		case IntCodeControlCommand.SET_WAIT_FOR_VALIDATION_RESPONSE:
 			K2Instrumentator.waitForValidationResponse = Boolean.parseBoolean(controlCommand.getArguments().get(0));

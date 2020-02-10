@@ -1,6 +1,6 @@
 package com.k2cybersecurity.intcodeagent.models.javaagent;
 
-import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.Semaphore;
 
 public class EventResponse {
 
@@ -14,7 +14,7 @@ public class EventResponse {
 
 	private String resultMessage;
 
-	private ReentrantLock responseLock = new ReentrantLock();
+	private Semaphore responseSemaphore = new Semaphore(1);
 
 	private long generationTime = 0L;
 
@@ -60,10 +60,6 @@ public class EventResponse {
 		this.eventId = eventId;
 	}
 
-	public ReentrantLock getResponseLock() {
-		return responseLock;
-	}
-
 	public long getGenerationTime() {
 		return generationTime;
 	}
@@ -78,5 +74,9 @@ public class EventResponse {
 
 	public void setReceivedTime(long receivedTime) {
 		this.receivedTime = receivedTime;
+	}
+
+	public Semaphore getResponseSemaphore() {
+		return responseSemaphore;
 	}
 }

@@ -150,15 +150,15 @@ public class EventDispatcher {
 
 		EventResponse eventResponse = new EventResponse(executionId);
 		AgentUtils.getInstance().getEventResponseSet().put(executionId, eventResponse);
-		eventResponse.getResponseLock().lock();
 		try {
-			if(eventResponse.getResponseLock().tryLock(10, TimeUnit.MILLISECONDS)){
+			eventResponse.getResponseSemaphore().acquire();
+			if(eventResponse.getResponseSemaphore().tryAcquire(100, TimeUnit.MILLISECONDS)){
 				logger.log(LogLevel.DEBUG,
 							EVENT_RESPONSE_TIME_TAKEN + eventResponse.getId() + DOUBLE_COLON_SEPERATOR + (
 									eventResponse.getReceivedTime() - eventResponse.getGenerationTime()), EventDispatcher.class.getSimpleName());
 				return true;
 			}
-		} catch (InterruptedException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
 			AgentUtils.getInstance().getEventResponseSet().remove(executionId);
