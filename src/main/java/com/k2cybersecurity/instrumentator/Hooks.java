@@ -126,6 +126,11 @@ public class Hooks {
 //		NAME_BASED_HOOKS.put("net.sf.saxon.style.StyleElement", Collections.singletonList("makeExpression"));
 		// XPath VTDXML
 		NAME_BASED_HOOKS.put("com.ximpleware.AutoPilot", Arrays.asList("declareVariableExpr", "evalXPath", "evalXPathToBoolean", "evalXPathToNumber", "evalXPathToString", "selectXPath"));
+		
+		// XQuery standard
+		NAME_BASED_HOOKS.put("net.sf.saxon.query.StaticQueryContext", Collections.singletonList("compileQuery"));
+		NAME_BASED_HOOKS.put("com.saxonica.xqj.SaxonXQPreparedExpression", Collections.singletonList("executeQuery"));
+		
 
 		// JBoss Classloading Hook
 		NAME_BASED_HOOKS.put("org.jboss.modules.Main", Collections.singletonList("main"));
@@ -421,6 +426,10 @@ public class Hooks {
 		DECORATOR_ENTRY.put("com.ximpleware.AutoPilot.evalXPathToNumber", "com.k2cybersecurity.instrumentator.decorators.xpath.saxon");
 		DECORATOR_ENTRY.put("com.ximpleware.AutoPilot.evalXPathToString", "com.k2cybersecurity.instrumentator.decorators.xpath.saxon");
 
+		// XQuery standard
+		DECORATOR_ENTRY.put("net.sf.saxon.query.StaticQueryContext.compileQuery", "com.k2cybersecurity.instrumentator.decorators.xquery.saxoncompile");
+		DECORATOR_ENTRY.put("com.saxonica.xqj.SaxonXQPreparedExpression.executeQuery", "com.k2cybersecurity.instrumentator.decorators.xquery.saxon");
+		
 		// Jetty Servlet
 		DECORATOR_ENTRY.put("org.eclipse.jetty.server.Handler.handle",
 				"com.k2cybersecurity.instrumentator.decorators.jettyhandle");
