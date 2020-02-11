@@ -32,6 +32,7 @@ public class ThreadLocalHttpMap {
 	public static final String GET_CONTEXT_PATH = "getContextPath";
 	public static final String GET_SERVER_PORT = "getServerPort";
 	public static final String GET_PARAMETER_MAP = "getParameterMap";
+	public static final String GET_SERVLET_PATH = "getServletPath";
 	public static final String ERROR = "Error : ";
 	public static final String STRING_COLON = " : ";
 	public static final String RAW_INTERCEPTED_REQUEST = "RAW Intercepted Request : ";
@@ -221,6 +222,10 @@ public class ThreadLocalHttpMap {
 			Method getParameterMap = requestClass.getMethod(GET_PARAMETER_MAP);
 			getParameterMap.setAccessible(true);
 			httpRequestBean.setParameterMap((Map<String, String[]>) getParameterMap.invoke(httpRequest, null));
+			
+			Method getServletPath = requestClass.getMethod(GET_SERVLET_PATH);
+			getServletPath.setAccessible(true);
+			httpRequestBean.setServletPath((String)getServletPath.invoke(httpRequest, null));
 
 			//			try {
 			//				if (StringUtils.containsIgnoreCase(httpRequestBean.getContentType(), "multipart/form-data")) {
