@@ -147,7 +147,9 @@ public class Dispatcher implements Runnable {
 			ApplicationInfoBean applicationInfoBean = K2Instrumentator.APPLICATION_INFO_BEAN;
 
 			applicationInfoBean.getServerInfo().setName(ServletContextInfo.getInstance().getServerInfo());
-
+			
+			K2Instrumentator.JA_HEALTH_CHECK.setProtectedServer(ServletContextInfo.getInstance().getServerInfo());
+			
 			if (!applicationInfoBean.getServerInfo().getDeployedApplications().contains(deployedApplication)) {
 				applicationInfoBean.getServerInfo().getDeployedApplications().add(deployedApplication);
 				EventSendPool.getInstance().sendEvent(applicationInfoBean.toString());

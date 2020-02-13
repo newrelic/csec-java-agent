@@ -1,8 +1,8 @@
 package com.k2cybersecurity.intcodeagent.models.javaagent;
 
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import org.json.simple.JSONArray;
 
 import com.k2cybersecurity.instrumentator.K2Instrumentator;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
@@ -17,13 +17,13 @@ public class JAHealthCheck extends AgentBasicInfo{
 
 	private String protectedServer;
 
-	private JSONArray protectedDB;
+	private Set protectedDB;
 
 	private Boolean rceProtection;
 	
 	private Boolean ssrfProtection;
 
-	private JSONArray instrumentedMethods;
+	private Set instrumentedMethods;
 
 	private AtomicInteger eventDropCount;
 
@@ -33,8 +33,6 @@ public class JAHealthCheck extends AgentBasicInfo{
     
     private AtomicInteger eventSentCount;
 
-
-
 	private Boolean fileAccessProtection;
 
 	public JAHealthCheck(String applicationUUID) {
@@ -43,11 +41,12 @@ public class JAHealthCheck extends AgentBasicInfo{
 		this.ssrfProtection = false;
 		this.fileAccessProtection = false;
 		this.applicationUUID = applicationUUID;
+		this.setProtectedServer(K2Instrumentator.APPLICATION_INFO_BEAN.getServerInfo().getName());
 		this.eventDropCount = new AtomicInteger(0);
 		this.eventProcessed = new AtomicInteger(0);
 		this.eventSentCount = new AtomicInteger(0);
-		this.setInstrumentedMethods(new JSONArray());
-		this.setProtectedDB(new JSONArray());
+		this.setInstrumentedMethods(new HashSet());
+		this.setProtectedDB(new HashSet());
 		this.setIsHost(K2Instrumentator.APPLICATION_INFO_BEAN.getIdentifier().getIsHost());
 //		this.setLibPath();
 		logger.log(LogLevel.INFO,"JA Healthcheck created : "+ this.toString(), JAHealthCheck.class.getName());
@@ -116,14 +115,14 @@ public class JAHealthCheck extends AgentBasicInfo{
 	/**
 	 * @return the protectedDB
 	 */
-	public JSONArray getProtectedDB() {
+	public Set getProtectedDB() {
 		return protectedDB;
 	}
 
 	/**
 	 * @param protectedDB the protectedDB to set
 	 */
-	public void setProtectedDB(JSONArray protectedDB) {
+	public void setProtectedDB(Set protectedDB) {
 		this.protectedDB = protectedDB;
 	}
 
@@ -144,14 +143,14 @@ public class JAHealthCheck extends AgentBasicInfo{
 	/**
 	 * @return the instrumentedMethods
 	 */
-	public JSONArray getInstrumentedMethods() {
+	public Set getInstrumentedMethods() {
 		return instrumentedMethods;
 	}
 
 	/**
 	 * @param instrumentedMethods the instrumentedMethods to set
 	 */
-	public void setInstrumentedMethods(JSONArray instrumentedMethods) {
+	public void setInstrumentedMethods(Set instrumentedMethods) {
 		this.instrumentedMethods = instrumentedMethods;
 	}
 
