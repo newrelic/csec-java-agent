@@ -11,8 +11,8 @@ import java.time.Instant;
 
 public class Callbacks {
 
-	public static final String SECURE_RANDOM = "SecureRandom";
-	public static final String WEAK_RANDOM = "WeakRandom";
+	public static final String SECURE_RANDOM = "SECURERANDOM";
+	public static final String WEAK_RANDOM = "WEAKRANDOM";
 
 	public static void doOnEnter(String sourceString, String className, String methodName, Object obj, Object[] args,
 			String exectionId) {

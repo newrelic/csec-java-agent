@@ -178,6 +178,12 @@ public class Dispatcher implements Runnable {
 			eventBean = setGenericProperties(operationalBean, eventBean);
 			eventBean = prepareSystemCommandEvent(eventBean, operationalBean);
 			break;
+		case SYSTEM_EXIT:
+			SystemExitOperationalBean systemExitOperationalBean = (SystemExitOperationalBean) event;
+			eventBean = setGenericProperties(systemExitOperationalBean, eventBean);
+			eventBean = prepareSystemExitEvent(eventBean, systemExitOperationalBean);
+			
+			break;
 		case SQL_DB_COMMAND:
 			List<SQLOperationalBean> operationalList = (List<SQLOperationalBean>) event;
 			if (operationalList.isEmpty()) {
@@ -253,6 +259,14 @@ public class Dispatcher implements Runnable {
 //		System.out.println("============= Event Start ============");
 //		System.out.println(eventBean);
 //		System.out.println("============= Event End ============");
+	}
+
+	private JavaAgentEventBean prepareSystemExitEvent(JavaAgentEventBean eventBean,
+			SystemExitOperationalBean systemExitOperationalBean) {
+		JSONArray params = new JSONArray();
+		params.add(systemExitOperationalBean.getExitCode());
+		eventBean.setParameters(params);
+		return eventBean;
 	}
 
 	private JavaAgentEventBean prepareXPATHEvent(JavaAgentEventBean eventBean,
@@ -456,7 +470,8 @@ public class Dispatcher implements Runnable {
 					|| VulnerabilityCaseType.FILE_INTEGRITY.equals(vulnerabilityCaseType)
 					|| VulnerabilityCaseType.NOSQL_DB_COMMAND.equals(vulnerabilityCaseType)
 					|| VulnerabilityCaseType.FILE_OPERATION.equals(vulnerabilityCaseType)
-					|| VulnerabilityCaseType.HTTP_REQUEST.equals(vulnerabilityCaseType)) {
+					|| VulnerabilityCaseType.HTTP_REQUEST.equals(vulnerabilityCaseType)
+					|| VulnerabilityCaseType.SYSTEM_EXIT.equals(vulnerabilityCaseType)) {
 				rciTriggerCheck(i, eventBean, klassName);
 				xxeTriggerCheck(i, eventBean, klassName);
 				deserializationTriggerCheck(i, eventBean, klassName);

@@ -49,6 +49,8 @@ public class HttpRequestBean {
 	private String contextPath;
 
 	private String contentType;
+	
+	private String servletPath;
 
 	@JsonIgnore
 	private HttpResponseBean httpResponseBean;
@@ -355,5 +357,19 @@ public class HttpRequestBean {
 
 	public boolean isEmpty(){
 		return StringUtils.isAnyBlank(url, method);
+	}
+
+	/**
+	 * @return the servletPath
+	 */
+	public String getServletPath() {
+		return servletPath;
+	}
+
+	/**
+	 * @param servletPath the servletPath to set
+	 */
+	public void setServletPath(String servletPath) {
+		this.servletPath = servletPath;
 	}
 }
