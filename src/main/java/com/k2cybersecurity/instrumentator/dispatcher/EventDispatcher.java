@@ -142,29 +142,33 @@ public class EventDispatcher {
 	}
 
 	private static boolean submitAndHoldForEventResponse(String executionId){
-		if(!K2Instrumentator.waitForValidationResponse){
-			return false;
-		}
-		logger.log(LogLevel.DEBUG,
-				SCHEDULING_FOR_EVENT_RESPONSE_OF + executionId, EventDispatcher.class.getSimpleName());
-
-		EventResponse eventResponse = new EventResponse(executionId);
-		AgentUtils.getInstance().getEventResponseSet().put(executionId, eventResponse);
-		try {
-			eventResponse.getResponseSemaphore().acquire();
-			if(eventResponse.getResponseSemaphore().tryAcquire(100, TimeUnit.MILLISECONDS)){
-				logger.log(LogLevel.INFO,
-							EVENT_RESPONSE_TIME_TAKEN + eventResponse.getEventId() + DOUBLE_COLON_SEPERATOR + (
-									eventResponse.getReceivedTime() - eventResponse.getGenerationTime()), EventDispatcher.class.getSimpleName());
-				return true;
+		if(K2Instrumentator.waitForValidationResponse) {
+			if(K2Instrumentator.protectKnownVulnerableAPIs) {
+				String apiID = VulnerableAPI.createVulnerableAPIID()
 			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		} finally {
-			AgentUtils.getInstance().getEventResponseSet().remove(executionId);
-		}
 
-		logger.log(LogLevel.WARNING, EVENT_RESPONSE_TIMEOUT_FOR + executionId, EventDispatcher.class.getSimpleName());
+
+			logger.log(LogLevel.DEBUG, SCHEDULING_FOR_EVENT_RESPONSE_OF + executionId, EventDispatcher.class.getSimpleName());
+
+			EventResponse eventResponse = new EventResponse(executionId);
+			AgentUtils.getInstance().getEventResponseSet().put(executionId, eventResponse);
+			try {
+				eventResponse.getResponseSemaphore().acquire();
+				if (eventResponse.getResponseSemaphore().tryAcquire(100, TimeUnit.MILLISECONDS)) {
+					logger.log(LogLevel.INFO,
+							EVENT_RESPONSE_TIME_TAKEN + eventResponse.getEventId() + DOUBLE_COLON_SEPERATOR + (
+									eventResponse.getReceivedTime() - eventResponse.getGenerationTime()),
+							EventDispatcher.class.getSimpleName());
+					return true;
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+			} finally {
+				AgentUtils.getInstance().getEventResponseSet().remove(executionId);
+			}
+
+			logger.log(LogLevel.WARNING, EVENT_RESPONSE_TIMEOUT_FOR + executionId, EventDispatcher.class.getSimpleName());
+		}
 		return false;
 	}
 

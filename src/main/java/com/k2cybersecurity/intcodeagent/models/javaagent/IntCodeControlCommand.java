@@ -16,6 +16,7 @@ public class IntCodeControlCommand {
 	public static final int UNSUPPORTED_AGENT = 5 ;
 	public static final int EVENT_RESPONSE = 6 ;
 	public static final int SET_WAIT_FOR_VALIDATION_RESPONSE = 7 ;
+	public static final int PROTECT_FROM_FUTURE_ATTACKS = 8 ;
 
 	private String jsonName;
 	private int controlCommand;

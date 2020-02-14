@@ -2,6 +2,7 @@ package com.k2cybersecurity.intcodeagent.controlcommand;
 
 import com.google.gson.Gson;
 import com.k2cybersecurity.instrumentator.K2Instrumentator;
+import com.k2cybersecurity.instrumentator.dispatcher.EventDispatcher;
 import com.k2cybersecurity.instrumentator.utils.AgentUtils;
 import com.k2cybersecurity.instrumentator.utils.InstrumentationUtils;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
@@ -9,6 +10,7 @@ import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.filelogging.LogWriter;
 import com.k2cybersecurity.intcodeagent.models.javaagent.EventResponse;
 import com.k2cybersecurity.intcodeagent.models.javaagent.IntCodeControlCommand;
+import com.k2cybersecurity.intcodeagent.models.javaagent.VulnerableAPI;
 import com.k2cybersecurity.intcodeagent.websocket.EventSendPool;
 import com.k2cybersecurity.intcodeagent.websocket.FtpClient;
 import org.apache.commons.lang3.StringUtils;
@@ -19,7 +21,10 @@ public class ControlCommandProcessor implements Runnable {
 
 	public static final Gson GSON = new Gson();
 	public static final String EVENT_RESPONSE_ENTRY_NOT_FOUND_FOR_THIS_S = "Event response entry not found for this : %s";
-
+	public static final String EVENT_RESPONSE_TIME_TAKEN = "Event response time taken : ";
+	public static final String DOUBLE_COLON_SEPERATOR = " :: ";
+	public static final String VULNERABLE_API_ENTRY_CREATED = "vulnerableAPI entry created : ";
+	public static final String FAILED_TO_CREATE_VULNERABLE_API_ENTRY = "Failed to create vulnerableAPI entry  : ";
 	private String controlCommandMessage;
 
 	private long receiveTimestamp;
@@ -83,8 +88,9 @@ public class ControlCommandProcessor implements Runnable {
 			EventResponse eventResponse = AgentUtils.getInstance().getEventResponseSet()
 					.get(controlCommand.getArguments().get(0));
 			if (eventResponse == null) {
-				logger.log(LogLevel.WARNING, String.format(EVENT_RESPONSE_ENTRY_NOT_FOUND_FOR_THIS_S,
-						controlCommand.getArguments().get(0)), ControlCommandProcessor.class.getSimpleName());
+				logger.log(LogLevel.WARNING,
+						String.format(EVENT_RESPONSE_ENTRY_NOT_FOUND_FOR_THIS_S, controlCommand.getArguments().get(0)),
+						ControlCommandProcessor.class.getSimpleName());
 				return;
 			}
 			eventResponse.setId(controlCommand.getArguments().get(0));
@@ -96,12 +102,38 @@ public class ControlCommandProcessor implements Runnable {
 			eventResponse.setReceivedTime(receiveTimestamp);
 
 			EventSendPool.getInstance().getEventMap().remove(eventResponse.getId());
+
+			if (eventResponse.isAttack()) {
+				try {
+					VulnerableAPI vulnerableAPI = new VulnerableAPI(eventResponse.getEventId(),
+							controlCommand.getArguments().get(4), controlCommand.getArguments().get(5),
+							controlCommand.getArguments().get(6), controlCommand.getArguments().get(7),
+							Integer.valueOf(controlCommand.getArguments().get(8)));
+					AgentUtils.getInstance().getVulnerableAPIMap().put(vulnerableAPI.getId(), vulnerableAPI);
+					logger.log(LogLevel.INFO, VULNERABLE_API_ENTRY_CREATED + vulnerableAPI, ControlCommandProcessor.class.getName());
+				} catch (Exception e){
+					logger.log(LogLevel.SEVERE,
+							FAILED_TO_CREATE_VULNERABLE_API_ENTRY + controlCommand,e,
+							ControlCommandProcessor.class.getSimpleName());
+				}
+			}
+
 			eventResponse.getResponseSemaphore().release();
+			logger.log(LogLevel.INFO,
+					EVENT_RESPONSE_TIME_TAKEN + eventResponse.getEventId() + DOUBLE_COLON_SEPERATOR + (
+							eventResponse.getReceivedTime() - eventResponse.getGenerationTime()),
+					EventDispatcher.class.getSimpleName());
 			break;
 		case IntCodeControlCommand.SET_WAIT_FOR_VALIDATION_RESPONSE:
 			K2Instrumentator.waitForValidationResponse = Boolean.parseBoolean(controlCommand.getArguments().get(0));
 			logger.log(LogLevel.INFO,
 					"Setting wait for validation response to  : " + K2Instrumentator.waitForValidationResponse,
+					ControlCommandProcessor.class.getSimpleName());
+			break;
+		case IntCodeControlCommand.PROTECT_FROM_FUTURE_ATTACKS:
+			K2Instrumentator.protectKnownVulnerableAPIs = Boolean.parseBoolean(controlCommand.getArguments().get(0));
+			logger.log(LogLevel.INFO,
+					"Setting protection for known vulnerable APIs  : " + K2Instrumentator.protectKnownVulnerableAPIs,
 					ControlCommandProcessor.class.getSimpleName());
 			break;
 		default:

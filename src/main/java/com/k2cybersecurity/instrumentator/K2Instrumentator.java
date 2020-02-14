@@ -45,6 +45,8 @@ public class K2Instrumentator {
 	public static boolean isk8sEnv = false;
 	public static boolean waitForValidationResponse = false;
 
+	public static boolean protectKnownVulnerableAPIs = false;
+
 	static {
 		try {
 			RuntimeMXBean runtimeMXBean = ManagementFactory.getRuntimeMXBean();

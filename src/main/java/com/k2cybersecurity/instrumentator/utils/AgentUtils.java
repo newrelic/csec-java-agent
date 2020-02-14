@@ -2,6 +2,7 @@ package com.k2cybersecurity.instrumentator.utils;
 
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.models.javaagent.EventResponse;
+import com.k2cybersecurity.intcodeagent.models.javaagent.VulnerableAPI;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.HashSet;
@@ -19,22 +20,24 @@ public class AgentUtils {
 
 	private Map<String, EventResponse> eventResponseSet;
 
+	private Map<String, VulnerableAPI> vulnerableAPIMap;
+
 	private static AgentUtils instance;
 
-
-	private AgentUtils(){
+	private AgentUtils() {
 		transformedClasses = new HashSet<>();
 		eventResponseSet = new ConcurrentHashMap<>();
+		vulnerableAPIMap = new ConcurrentHashMap<>();
 	}
 
 	public static AgentUtils getInstance() {
-		if(instance == null) {
+		if (instance == null) {
 			instance = new AgentUtils();
 		}
 		return instance;
 	}
 
-	public void clearTransformedClassSet(){
+	public void clearTransformedClassSet() {
 		transformedClasses.clear();
 	}
 
@@ -44,4 +47,7 @@ public class AgentUtils {
 
 	private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
 
+	public Map<String, VulnerableAPI> getVulnerableAPIMap() {
+		return vulnerableAPIMap;
+	}
 }
