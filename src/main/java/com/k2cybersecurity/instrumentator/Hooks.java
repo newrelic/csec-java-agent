@@ -130,6 +130,8 @@ public class Hooks {
 		// XQuery standard
 		NAME_BASED_HOOKS.put("net.sf.saxon.query.StaticQueryContext", Collections.singletonList("compileQuery"));
 		NAME_BASED_HOOKS.put("com.saxonica.xqj.SaxonXQPreparedExpression", Collections.singletonList("executeQuery"));
+		// XQuery eXist lib
+		TYPE_BASED_HOOKS.put("org.xmldb.api.modules.XQueryService", Arrays.asList("query", "queryResource", "compile", "execute"));
 		
 
 		// JBoss Classloading Hook
@@ -429,6 +431,11 @@ public class Hooks {
 		// XQuery standard
 		DECORATOR_ENTRY.put("net.sf.saxon.query.StaticQueryContext.compileQuery", "com.k2cybersecurity.instrumentator.decorators.xquery.saxoncompile");
 		DECORATOR_ENTRY.put("com.saxonica.xqj.SaxonXQPreparedExpression.executeQuery", "com.k2cybersecurity.instrumentator.decorators.xquery.saxon");
+		// XQuery eXist lib
+		DECORATOR_ENTRY.put("org.xmldb.api.modules.XQueryService.query", "com.k2cybersecurity.instrumentator.decorators.xquery");
+		DECORATOR_ENTRY.put("org.xmldb.api.modules.XQueryService.queryResource", "com.k2cybersecurity.instrumentator.decorators.xquery");
+		DECORATOR_ENTRY.put("org.xmldb.api.modules.XQueryService.compile", "com.k2cybersecurity.instrumentator.decorators.xquery.saxoncompile");
+		DECORATOR_ENTRY.put("org.xmldb.api.modules.XQueryService.execute", "com.k2cybersecurity.instrumentator.decorators.xquery.saxon");
 		
 		// Jetty Servlet
 		DECORATOR_ENTRY.put("org.eclipse.jetty.server.Handler.handle",

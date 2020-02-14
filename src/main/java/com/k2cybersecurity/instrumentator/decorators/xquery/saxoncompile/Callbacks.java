@@ -56,6 +56,10 @@ public class Callbacks {
 					} catch (Exception e) {
 						e.printStackTrace();
 					}
+				} else if(args.length==1 && args[0] !=null && returnVal!=null && sourceString.contains("QueryService.compile")) {
+					Object compiledExpressionObj = returnVal;
+					System.out.println("Inside Compile Expression for eXist-db, Query : "+ args[0].toString());
+					ThreadLocalXQuerySaxonMap.getInstance().create(compiledExpressionObj, args[0].toString(), className, methodName, exectionId, Instant.now().toEpochMilli());
 				}
 			} finally {
 				ThreadLocalOperationLock.getInstance().release();

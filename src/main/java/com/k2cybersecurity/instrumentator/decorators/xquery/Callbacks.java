@@ -1,13 +1,10 @@
-package com.k2cybersecurity.instrumentator.decorators.xquery.saxon;
+package com.k2cybersecurity.instrumentator.decorators.xquery;
 
-import java.lang.reflect.Method;
 import java.time.Instant;
 import java.util.Arrays;
 
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalHttpMap;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalOperationLock;
-import com.k2cybersecurity.instrumentator.custom.ThreadLocalXQuerySaxonMap;
-import com.k2cybersecurity.instrumentator.custom.ThreadLocalXpathSaxonMap;
 import com.k2cybersecurity.instrumentator.dispatcher.EventDispatcher;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.models.javaagent.VulnerabilityCaseType;
@@ -19,43 +16,22 @@ public class Callbacks {
 
 	public static void doOnEnter(String sourceString, String className, String methodName, Object obj, Object[] args,
 			String executionId) {
-//		System.out.println("OnEnter initial :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj
-//				+ " - eid : " + executionId);
-//		logger.log(
-//				LogLevel.INFO, "OnEnter initial :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj
-//				+ " - eid : " + executionId, Callbacks.class.getName());
 
 		if (!ThreadLocalHttpMap.getInstance().isEmpty() && !ThreadLocalOperationLock.getInstance().isAcquired()) {
 			try {
 				System.out.println(
 						"sourceString : " + sourceString + " args : " + Arrays.asList(args) + " this : " + obj);
 				ThreadLocalOperationLock.getInstance().acquire();
-//				logger.log(LogLevel.INFO, "OnEnter :" + sourceString + " - args : " + Arrays.asList(args) + " - this : "
-//						+ obj + " - eid : " + executionId, Callbacks.class.getName());
-
-				if (sourceString.equals(
-						"public javax.xml.xquery.XQResultSequence com.saxonica.xqj.SaxonXQPreparedExpression.executeQuery() throws javax.xml.xquery.XQException")) {
-					try {
-						Method getXQueryExpressionMethod = obj.getClass().getDeclaredMethod("getXQueryExpression");
-						getXQueryExpressionMethod.setAccessible(true);
-						Object expressionObj = getXQueryExpressionMethod.invoke(obj);
-						System.out.println("H2 : " + expressionObj.hashCode());
-						System.out.println("expression obj : " + expressionObj);
-						System.out.println("Map : " + ThreadLocalXpathSaxonMap.getInstance());
-						XQueryOperationalBean xQueryOperationalBean = ThreadLocalXQuerySaxonMap.getInstance()
-								.get(expressionObj);
-						if (xQueryOperationalBean != null) {
-							System.out.println("dispatching xquery operational bean");
-							System.out.println("Exp : " + xQueryOperationalBean.getExpression());
-							EventDispatcher.dispatch(xQueryOperationalBean, VulnerabilityCaseType.XPATH);
-						}
-					} catch (Exception ex) {
-						ex.printStackTrace();
-					}
-				} else if(args.length==1 && args[0] !=null && sourceString.contains("QueryService.execute")) {
-					XQueryOperationalBean xQueryOperationalBean = ThreadLocalXQuerySaxonMap.getInstance().get(args[0]);
-					if(xQueryOperationalBean!=null) {
-						System.out.println("Query eXist execute : "+ xQueryOperationalBean.getExpression());
+				if (args != null) {
+					if (args.length == 2 && args[1] != null) {
+						System.out.println("Query : " + args[1].toString());
+						XQueryOperationalBean xQueryOperationalBean = new XQueryOperationalBean(args[1].toString(),
+								className, methodName, executionId, Instant.now().toEpochMilli());
+						EventDispatcher.dispatch(xQueryOperationalBean, VulnerabilityCaseType.XQUERY_INJECTION);
+					} else if (args.length == 1 && args[0] != null) {
+						System.out.println("Query : " + args[0].toString());
+						XQueryOperationalBean xQueryOperationalBean = new XQueryOperationalBean(args[0].toString(),
+								className, methodName, executionId, Instant.now().toEpochMilli());
 						EventDispatcher.dispatch(xQueryOperationalBean, VulnerabilityCaseType.XQUERY_INJECTION);
 					}
 				}
