@@ -1,5 +1,7 @@
 package com.k2cybersecurity.intcodeagent.models.javaagent;
 
+import com.k2cybersecurity.intcodeagent.websocket.JsonConverter;
+
 import java.util.concurrent.Semaphore;
 
 public class EventResponse {
@@ -78,5 +80,11 @@ public class EventResponse {
 
 	public Semaphore getResponseSemaphore() {
 		return responseSemaphore;
+	}
+
+	@Override
+	public String toString() {
+		return JsonConverter.toJSON(this);
+
 	}
 }

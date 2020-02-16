@@ -23,6 +23,7 @@ public class ControlCommandProcessor implements Runnable {
 	public static final String DOUBLE_COLON_SEPERATOR = " :: ";
 	public static final String VULNERABLE_API_ENTRY_CREATED = "vulnerableAPI entry created : ";
 	public static final String FAILED_TO_CREATE_VULNERABLE_API_ENTRY = "Failed to create vulnerableAPI entry  : ";
+	public static final String EVENT_RESPONSE = "Event response : ";
 	private String controlCommandMessage;
 
 	private long receiveTimestamp;
@@ -100,6 +101,7 @@ public class ControlCommandProcessor implements Runnable {
 			eventResponse.setReceivedTime(receiveTimestamp);
 
 			EventSendPool.getInstance().getEventMap().remove(eventResponse.getId());
+			logger.log(LogLevel.INFO, EVENT_RESPONSE + eventResponse.toString(), ControlCommandProcessor.class.getName());
 			if (eventResponse.isAttack() && ProtectionConfig.getInstance().getAutoAddDetectedVulnerabilitiesToProtectionList()) {
 				try {
 					VulnerableAPI vulnerableAPI = new VulnerableAPI(GSON.fromJson(controlCommand.getArguments().get(4), JavaAgentEventBean.class));

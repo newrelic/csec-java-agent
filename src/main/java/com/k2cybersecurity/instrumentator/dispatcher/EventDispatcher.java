@@ -30,6 +30,7 @@ public class EventDispatcher {
     public static final String DOUBLE_COLON_SEPERATOR = " :: ";
     public static final String EVENT_RESPONSE_TIMEOUT_FOR = "Event response timeout for : ";
     public static final String SCHEDULING_FOR_EVENT_RESPONSE_OF = "Scheduling for event response of : ";
+    public static final String ERROR = "Error: ";
 
     public static void dispatch(AbstractOperationalBean objectBean, VulnerabilityCaseType vulnerabilityCaseType) {
         boolean ret = ThreadLocalHttpMap.getInstance().parseHttpRequest();
@@ -144,13 +145,13 @@ public class EventDispatcher {
         if (!ProtectionConfig.getInstance().getProtectKnownVulnerableAPIs()) {
             return false;
         }
-        logger.log(LogLevel.DEBUG, SCHEDULING_FOR_EVENT_RESPONSE_OF + executionId, EventDispatcher.class.getSimpleName());
+        logger.log(LogLevel.INFO, SCHEDULING_FOR_EVENT_RESPONSE_OF + executionId, EventDispatcher.class.getSimpleName());
 
         EventResponse eventResponse = new EventResponse(executionId);
         AgentUtils.getInstance().getEventResponseSet().put(executionId, eventResponse);
         try {
             eventResponse.getResponseSemaphore().acquire();
-            if (eventResponse.getResponseSemaphore().tryAcquire(100, TimeUnit.MILLISECONDS)) {
+            if (eventResponse.getResponseSemaphore().tryAcquire(1000, TimeUnit.MILLISECONDS)) {
                 logger.log(LogLevel.INFO,
                         EVENT_RESPONSE_TIME_TAKEN + eventResponse.getEventId() + DOUBLE_COLON_SEPERATOR + (
                                 eventResponse.getReceivedTime() - eventResponse.getGenerationTime()),
@@ -158,8 +159,7 @@ public class EventDispatcher {
                 return true;
             }
         } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
+            logger.log(LogLevel.ERROR, ERROR, e, EventDispatcher.class.getSimpleName());
             AgentUtils.getInstance().getEventResponseSet().remove(executionId);
         }
         logger.log(LogLevel.WARNING, EVENT_RESPONSE_TIMEOUT_FOR + executionId, EventDispatcher.class.getSimpleName());
