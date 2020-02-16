@@ -2,6 +2,7 @@ package com.k2cybersecurity.instrumentator.utils;
 
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.models.javaagent.EventResponse;
+import com.k2cybersecurity.intcodeagent.models.javaagent.JavaAgentEventBean;
 import com.k2cybersecurity.intcodeagent.models.javaagent.VulnerableAPI;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -49,5 +50,10 @@ public class AgentUtils {
 
 	public Map<String, VulnerableAPI> getVulnerableAPIMap() {
 		return vulnerableAPIMap;
+	}
+
+	public VulnerableAPI isVulnerableAPI(JavaAgentEventBean event){
+		VulnerableAPI vulnerableAPI = new VulnerableAPI(event);
+		return vulnerableAPIMap.get(vulnerableAPI.getId());
 	}
 }

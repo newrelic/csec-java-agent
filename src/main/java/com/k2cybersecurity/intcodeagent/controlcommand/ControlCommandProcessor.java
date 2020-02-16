@@ -8,9 +8,7 @@ import com.k2cybersecurity.instrumentator.utils.InstrumentationUtils;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.filelogging.LogWriter;
-import com.k2cybersecurity.intcodeagent.models.javaagent.EventResponse;
-import com.k2cybersecurity.intcodeagent.models.javaagent.IntCodeControlCommand;
-import com.k2cybersecurity.intcodeagent.models.javaagent.VulnerableAPI;
+import com.k2cybersecurity.intcodeagent.models.javaagent.*;
 import com.k2cybersecurity.intcodeagent.websocket.EventSendPool;
 import com.k2cybersecurity.intcodeagent.websocket.FtpClient;
 import org.apache.commons.lang3.StringUtils;
@@ -102,13 +100,9 @@ public class ControlCommandProcessor implements Runnable {
 			eventResponse.setReceivedTime(receiveTimestamp);
 
 			EventSendPool.getInstance().getEventMap().remove(eventResponse.getId());
-
-			if (eventResponse.isAttack()) {
+			if (eventResponse.isAttack() && ProtectionConfig.getInstance().getAutoAddDetectedVulnerabilitiesToProtectionList()) {
 				try {
-					VulnerableAPI vulnerableAPI = new VulnerableAPI(eventResponse.getEventId(),
-							controlCommand.getArguments().get(4), controlCommand.getArguments().get(5),
-							controlCommand.getArguments().get(6), controlCommand.getArguments().get(7),
-							Integer.valueOf(controlCommand.getArguments().get(8)));
+					VulnerableAPI vulnerableAPI = new VulnerableAPI(GSON.fromJson(controlCommand.getArguments().get(4), JavaAgentEventBean.class));
 					AgentUtils.getInstance().getVulnerableAPIMap().put(vulnerableAPI.getId(), vulnerableAPI);
 					logger.log(LogLevel.INFO, VULNERABLE_API_ENTRY_CREATED + vulnerableAPI, ControlCommandProcessor.class.getName());
 				} catch (Exception e){
@@ -117,23 +111,31 @@ public class ControlCommandProcessor implements Runnable {
 							ControlCommandProcessor.class.getSimpleName());
 				}
 			}
-
 			eventResponse.getResponseSemaphore().release();
+			AgentUtils.getInstance().getEventResponseSet().remove(eventResponse.getId());
+
 			logger.log(LogLevel.INFO,
 					EVENT_RESPONSE_TIME_TAKEN + eventResponse.getEventId() + DOUBLE_COLON_SEPERATOR + (
 							eventResponse.getReceivedTime() - eventResponse.getGenerationTime()),
 					EventDispatcher.class.getSimpleName());
 			break;
-		case IntCodeControlCommand.SET_WAIT_FOR_VALIDATION_RESPONSE:
-			K2Instrumentator.waitForValidationResponse = Boolean.parseBoolean(controlCommand.getArguments().get(0));
+		case IntCodeControlCommand.PROTECTION_CONFIG:
+			ProtectionConfig protectionConfig = GSON.fromJson(controlCommand.getArguments().get(0), ProtectionConfig.class);
+			ProtectionConfig.setInstance(protectionConfig);
+			if (!ProtectionConfig.getInstance().getGenerateEventResponse()) {
+				ProtectionConfig.getInstance().setProtectKnownVulnerableAPIs(false);
+			}
+			if(!ProtectionConfig.getInstance().getProtectKnownVulnerableAPIs()){
+				ProtectionConfig.getInstance().setAutoAddDetectedVulnerabilitiesToProtectionList(false);
+			}
 			logger.log(LogLevel.INFO,
-					"Setting wait for validation response to  : " + K2Instrumentator.waitForValidationResponse,
+					"Setting to  : " + ProtectionConfig.getInstance().getGenerateEventResponse(),
 					ControlCommandProcessor.class.getSimpleName());
-			break;
-		case IntCodeControlCommand.PROTECT_FROM_FUTURE_ATTACKS:
-			K2Instrumentator.protectKnownVulnerableAPIs = Boolean.parseBoolean(controlCommand.getArguments().get(0));
 			logger.log(LogLevel.INFO,
-					"Setting protection for known vulnerable APIs  : " + K2Instrumentator.protectKnownVulnerableAPIs,
+					"Setting protection for known vulnerable APIs : " + ProtectionConfig.getInstance().getProtectKnownVulnerableAPIs(),
+					ControlCommandProcessor.class.getSimpleName());
+			logger.log(LogLevel.INFO,
+					"Setting auto add detected vulnerable APIs to protection list : " + ProtectionConfig.getInstance().getAutoAddDetectedVulnerabilitiesToProtectionList(),
 					ControlCommandProcessor.class.getSimpleName());
 			break;
 		default:
