@@ -262,7 +262,6 @@ public class Dispatcher implements Runnable {
             if (vulnerableAPI == null) {
                 EventResponse eventResponse = AgentUtils.getInstance().getEventResponseSet().get(eventBean.getId());
                 eventResponse.getResponseSemaphore().release();
-                AgentUtils.getInstance().getEventResponseSet().remove(eventBean.getId());
                 logger.log(LogLevel.DEBUG, String.format(NON_VULNERABLE_API_ALLOWED_TO_EXECUTE_S, eventBean.toString()), Dispatcher.class.getName());
             }
         }
