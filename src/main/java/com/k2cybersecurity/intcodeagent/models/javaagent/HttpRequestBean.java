@@ -60,6 +60,8 @@ public class HttpRequestBean {
 	private int serverPort;
 
 	private Map<String, String[]> parameterMap;
+	
+	private Map<String, String> pathParameterMap;
 
 	private Collection parts;
 
@@ -387,5 +389,19 @@ public class HttpRequestBean {
 	 */
 	public void setPathParams(String pathParams) {
 		this.pathParams = pathParams;
+	}
+
+	/**
+	 * @return the pathParameterMap
+	 */
+	public Map<String, String> getPathParameterMap() {
+		return pathParameterMap;
+	}
+
+	/**
+	 * @param pathParameterMap the pathParameterMap to set
+	 */
+	public void setPathParameterMap(Map<String, String> pathParameterMap) {
+		this.pathParameterMap = pathParameterMap;
 	}
 }
