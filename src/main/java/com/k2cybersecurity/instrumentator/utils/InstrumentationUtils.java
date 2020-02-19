@@ -202,6 +202,7 @@ public class InstrumentationUtils {
 			try {
 				Class klass = Class.forName(pair.getLeft(), false, pair.getRight());
 				instrumentation.retransformClasses(klass);
+				AgentUtils.createProtectedVulnerabilties(klass.getName());
 			} catch (Exception e) {
 				logger.log(LogLevel.SEVERE, "Error while retransformHookedClasses : ", e,
 						InstrumentationUtils.class.getName());

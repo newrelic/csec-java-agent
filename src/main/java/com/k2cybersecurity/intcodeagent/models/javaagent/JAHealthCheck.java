@@ -5,6 +5,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.k2cybersecurity.instrumentator.K2Instrumentator;
+import com.k2cybersecurity.instrumentator.utils.AgentUtils;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.websocket.JsonConverter;
@@ -34,7 +35,9 @@ public class JAHealthCheck extends AgentBasicInfo{
     private AtomicInteger eventSentCount;
 
 	private Boolean fileAccessProtection;
-
+	
+	private Set protectedVulnerabilties;
+	
 	public JAHealthCheck(String applicationUUID) {
 		super();
 		this.rceProtection = false;
@@ -47,6 +50,7 @@ public class JAHealthCheck extends AgentBasicInfo{
 		this.eventSentCount = new AtomicInteger(0);
 		this.setInstrumentedMethods(new HashSet());
 		this.setProtectedDB(new HashSet());
+		this.setProtectedVulnerabilties(AgentUtils.getProtectedVulnerabilties());
 		this.setIsHost(K2Instrumentator.APPLICATION_INFO_BEAN.getIdentifier().getIsHost());
 //		this.setLibPath();
 		logger.log(LogLevel.INFO,"JA Healthcheck created : "+ this.toString(), JAHealthCheck.class.getName());
@@ -57,6 +61,7 @@ public class JAHealthCheck extends AgentBasicInfo{
 		this.applicationUUID = jaHealthCheck.applicationUUID;
 		this.protectedServer = jaHealthCheck.protectedServer;
 		this.protectedDB = jaHealthCheck.protectedDB;
+		this.protectedVulnerabilties = jaHealthCheck.protectedVulnerabilties;
 		this.rceProtection = jaHealthCheck.rceProtection;
 		this.instrumentedMethods = jaHealthCheck.instrumentedMethods;
 		this.eventDropCount = jaHealthCheck.eventDropCount;
@@ -237,5 +242,13 @@ public class JAHealthCheck extends AgentBasicInfo{
 
 	public void setFileAccessProtection(Boolean fileAccessProtection) {
 		this.fileAccessProtection = fileAccessProtection;
+	}
+
+	public Set getProtectedVulnerabilties() {
+		return protectedVulnerabilties;
+	}
+
+	public void setProtectedVulnerabilties(Set protectedVulnerabilties) {
+		this.protectedVulnerabilties = protectedVulnerabilties;
 	}
 }

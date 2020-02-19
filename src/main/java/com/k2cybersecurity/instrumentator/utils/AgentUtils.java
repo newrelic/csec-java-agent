@@ -1,5 +1,12 @@
 package com.k2cybersecurity.instrumentator.utils;
 
+import java.util.HashSet;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
+
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
+
 import com.k2cybersecurity.instrumentator.K2Instrumentator;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
@@ -7,11 +14,6 @@ import com.k2cybersecurity.intcodeagent.filelogging.LogWriter;
 import com.k2cybersecurity.intcodeagent.logging.HealthCheckScheduleThread;
 import com.k2cybersecurity.intcodeagent.models.javaagent.IntCodeControlCommand;
 import com.k2cybersecurity.intcodeagent.websocket.FtpClient;
-import org.apache.commons.lang3.tuple.Pair;
-
-import java.util.HashSet;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
 public class AgentUtils {
 
@@ -23,19 +25,24 @@ public class AgentUtils {
 
 	private static AgentUtils instance;
 
+	public static Set<String> getProtectedVulnerabilties() {
+		return protectedVulnerabilties;
+	}
 
-	private AgentUtils(){
+	private static Set<String> protectedVulnerabilties;
+
+	private AgentUtils() {
 		transformedClasses = new HashSet<>();
 	}
 
 	public static AgentUtils getInstance() {
-		if(instance == null) {
+		if (instance == null) {
 			instance = new AgentUtils();
 		}
 		return instance;
 	}
 
-	public void clearTransformedClassSet(){
+	public void clearTransformedClassSet() {
 		transformedClasses.clear();
 	}
 
@@ -79,5 +86,43 @@ public class AgentUtils {
 		default:
 			break;
 		}
+	}
+
+	public static void createProtectedVulnerabilties(String className) {
+		System.out.println("Class Name : " + className);
+		if (StringUtils.containsAny(className, "java.sql.Statement", "java.sql.PreparedStatement", "java.sql.Connection")) {
+			getProtectedVulnerabilties().add("SQLI");
+			getProtectedVulnerabilties().add("SXSS");
+		}else if (StringUtils.contains(className, "javax.servlet.ServletResponse")) {
+			getProtectedVulnerabilties().add("RXSS");
+		}else if (StringUtils.containsAny(className, "javax.naming.directory.DirContext")) {
+			getProtectedVulnerabilties().add("LDAP");
+		}else if (StringUtils.contains(className, "javax.servlet.http.HttpSession")) {
+			getProtectedVulnerabilties().add("TRUST_BOUNDARY");
+		}else if (StringUtils.contains(className, "javax.servlet.http.HttpServletResponse")) {
+			getProtectedVulnerabilties().add("SECURE_COOKIE");
+		}else if (StringUtils.contains(className, "java.lang.ProcessImpl")) {
+			getProtectedVulnerabilties().add("RCE");
+			getProtectedVulnerabilties().add("RCI");
+		}else if (StringUtils.contains(className, "java.lang.Shutdown")) {
+			getProtectedVulnerabilties().add("RCE");
+			getProtectedVulnerabilties().add("RCI");
+		}else if (StringUtils.containsAny(className,  "java.io.FileOutputStream", "java.io.FileInputStream", "sun.nio.fs.UnixNativeDispatcher", "java.io.UnixFileSystem", "java.io.RandomAccessFile", "java.io.FileSystem")) {
+			getProtectedVulnerabilties().add("FILE_ACCESS");
+			getProtectedVulnerabilties().add("RCI");
+		}else if (StringUtils.startsWith(className, "com.mongodb.")) {
+			getProtectedVulnerabilties().add("NOSQLI");
+		}else if (StringUtils.containsAny(className,  "java.util.Random", "java.lang.Math")) {
+			getProtectedVulnerabilties().add("WEAK_RANDOM");
+		}else if (StringUtils.containsAny(className, "org.apache.xpath.XPath", "com.sun.org.apache.xpath.internal.XPath")) {
+			getProtectedVulnerabilties().add("XPATH");
+		}else if (StringUtils.containsAny(className, "org.apache.http.protocol.HttpRequestExecutor", "sun.net.www.protocol.http.Handler", "sun.net.www.protocol.https.Handler", "com.sun.net.ssl.internal.www.protocol.https.Handler", "jdk.incubator.http.MultiExchange", "org.apache.commons.httpclient.HttpMethodDirector", "com.squareup.okhttp.internal.http.HttpEngine", "weblogic.net.http.Handler")) {
+			getProtectedVulnerabilties().add("SSRF");
+		}else if (StringUtils.containsAny(className, "javax.crypto.Cipher", "javax.crypto.KeyGenerator", "java.security.KeyPairGenerator")) {
+			getProtectedVulnerabilties().add("CRYPTO");
+		}else if (StringUtils.contains(className, "java.security.MessageDigest")) {
+			getProtectedVulnerabilties().add("HASH");
+		}
+
 	}
 }
