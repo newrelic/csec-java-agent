@@ -10,19 +10,15 @@ public class VulnerableAPI {
 	private String sourceMethod;
 	private String userFileName;
 	private String userMethodName;
-	private String currentMethod;
 	private Integer lineNumber;
-	private JavaAgentEventBean causedByEvent;
 	private boolean protectionEnabled = true;
 
-	public VulnerableAPI(JavaAgentEventBean eventBean) {
-		this.sourceMethod = eventBean.getSourceMethod();
-		this.userFileName = eventBean.getUserFileName();
-		this.userMethodName = eventBean.getUserMethodName();
-		this.currentMethod = eventBean.getCurrentMethod();
-		this.lineNumber = eventBean.getLineNumber();
-		this.causedByEvent = eventBean;
-		this.id = generateVulnerableAPIID(sourceMethod, userFileName, userMethodName, currentMethod, lineNumber);
+	public VulnerableAPI(String sourceMethod, String userFileName, String userMethodName, Integer lineNumber) {
+		this.sourceMethod = sourceMethod;
+		this.userFileName = userFileName;
+		this.userMethodName = userMethodName;
+		this.lineNumber = lineNumber;
+		this.id = generateVulnerableAPIID(sourceMethod, userFileName, userMethodName, lineNumber);
 	}
 
 	public String getId() {
@@ -41,16 +37,8 @@ public class VulnerableAPI {
 		return userMethodName;
 	}
 
-	public String getCurrentMethod() {
-		return currentMethod;
-	}
-
 	public Integer getLineNumber() {
 		return lineNumber;
-	}
-
-	public JavaAgentEventBean getCausedByEvent() {
-		return causedByEvent;
 	}
 
 	public boolean isProtectionEnabled() {
@@ -68,9 +56,9 @@ public class VulnerableAPI {
 	}
 
 	public static String generateVulnerableAPIID(String sourceMethod, String userFileName,
-												 String userMethodName, String currentMethod,
+												 String userMethodName,
 												 Integer lineNumber){
-		return StringUtils.joinWith(SEPARATOR_DOUBLE_COLON, sourceMethod, userFileName, userMethodName, currentMethod, lineNumber);
+		return StringUtils.joinWith(SEPARATOR_DOUBLE_COLON, sourceMethod, userFileName, userMethodName, lineNumber);
 	}
 
 }

@@ -53,7 +53,11 @@ public class AgentUtils {
 	}
 
 	public VulnerableAPI isVulnerableAPI(JavaAgentEventBean event){
-		VulnerableAPI vulnerableAPI = new VulnerableAPI(event);
+		VulnerableAPI vulnerableAPI = new VulnerableAPI(event.getSourceMethod(),
+				event.getUserFileName(),
+				event.getUserMethodName(),
+				event.getLineNumber()
+				);
 		return vulnerableAPIMap.get(vulnerableAPI.getId());
 	}
 }

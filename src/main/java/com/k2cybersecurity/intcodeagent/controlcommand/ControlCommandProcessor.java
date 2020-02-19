@@ -104,7 +104,10 @@ public class ControlCommandProcessor implements Runnable {
 			logger.log(LogLevel.INFO, EVENT_RESPONSE + eventResponse.toString(), ControlCommandProcessor.class.getName());
 			if (eventResponse.isAttack() && ProtectionConfig.getInstance().getAutoAddDetectedVulnerabilitiesToProtectionList()) {
 				try {
-					VulnerableAPI vulnerableAPI = new VulnerableAPI(GSON.fromJson(controlCommand.getArguments().get(4), JavaAgentEventBean.class));
+					VulnerableAPI vulnerableAPI = new VulnerableAPI(controlCommand.getArguments().get(4),
+							controlCommand.getArguments().get(5),
+							controlCommand.getArguments().get(6),
+							Integer.parseInt(controlCommand.getArguments().get(7)));
 					AgentUtils.getInstance().getVulnerableAPIMap().put(vulnerableAPI.getId(), vulnerableAPI);
 					logger.log(LogLevel.INFO, VULNERABLE_API_ENTRY_CREATED + vulnerableAPI, ControlCommandProcessor.class.getName());
 				} catch (Exception e){
