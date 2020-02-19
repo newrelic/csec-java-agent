@@ -29,7 +29,7 @@ public class AgentUtils {
 		return protectedVulnerabilties;
 	}
 
-	private static Set<String> protectedVulnerabilties;
+	private static Set<String> protectedVulnerabilties = new HashSet<String>();
 
 	private AgentUtils() {
 		transformedClasses = new HashSet<>();
