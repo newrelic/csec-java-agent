@@ -1,6 +1,5 @@
 package com.k2cybersecurity.instrumentator.dispatcher;
 
-import com.k2cybersecurity.instrumentator.K2Instrumentator;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalDBMap;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalExecutionMap;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalHttpMap;
@@ -154,15 +153,17 @@ public class EventDispatcher {
             if (eventResponse.getResponseSemaphore().tryAcquire(1000, TimeUnit.MILLISECONDS)) {
                 logger.log(LogLevel.INFO,
                         EVENT_RESPONSE_TIME_TAKEN + eventResponse.getEventId() + DOUBLE_COLON_SEPERATOR + (
-                                eventResponse.getReceivedTime() - eventResponse.getGenerationTime()),
+                                eventResponse.getReceivedTime() - eventResponse.getGenerationTime() )+ DOUBLE_COLON_SEPERATOR + executionId,
                         EventDispatcher.class.getSimpleName());
                 return true;
+            }else {
+                logger.log(LogLevel.WARNING, EVENT_RESPONSE_TIMEOUT_FOR + executionId, EventDispatcher.class.getSimpleName());
             }
         } catch (Exception e) {
             logger.log(LogLevel.ERROR, ERROR, e, EventDispatcher.class.getSimpleName());
+        } finally {
             AgentUtils.getInstance().getEventResponseSet().remove(executionId);
         }
-        logger.log(LogLevel.WARNING, EVENT_RESPONSE_TIMEOUT_FOR + executionId, EventDispatcher.class.getSimpleName());
         return false;
     }
 }

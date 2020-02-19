@@ -40,6 +40,7 @@ public class Dispatcher implements Runnable {
     public static final String QUESTION_CHAR = "?";
     public static final String SLASH = "/";
     public static final String NON_VULNERABLE_API_ALLOWED_TO_EXECUTE_S = "Non vulnerable API allowed to execute : %s";
+    public static final String VULNERABLE_API_BLOCKED = "Vulnerable API blocked : %s";
     private HttpRequestBean httpRequestBean;
     private AgentMetaData metaData;
     private Object event;
@@ -110,6 +111,8 @@ public class Dispatcher implements Runnable {
                     eventBean.setBlockingProcessingTime((Long) extraInfo.get(BLOCKING_END_TIME) - eventBean.getStartTime());
 
                     eventBean = getUserInfo(eventBean);
+
+                    checkVulnerableAPI(eventBean);
                     EventSendPool.getInstance().sendEvent(eventBean);
 //					System.out.println("============= Event Start ============");
 //					System.out.println(eventBean);
@@ -257,19 +260,26 @@ public class Dispatcher implements Runnable {
         if (VulnerabilityCaseType.FILE_OPERATION.equals(vulnerabilityCaseType)) {
             createEntryForFileIntegrity((FileOperationalBean) event, eventBean);
         }
+
+        checkVulnerableAPI(eventBean);
+        EventSendPool.getInstance().sendEvent(eventBean);
+//		System.out.println("============= Event Start ============");
+//		System.out.println(eventBean);
+//		System.out.println("============= Event End ============");
+    }
+
+    private void checkVulnerableAPI(JavaAgentEventBean eventBean){
         if (ProtectionConfig.getInstance().getProtectKnownVulnerableAPIs()) {
             VulnerableAPI vulnerableAPI = AgentUtils.getInstance().isVulnerableAPI(eventBean);
             if (vulnerableAPI == null) {
                 EventResponse eventResponse = AgentUtils.getInstance().getEventResponseSet().get(eventBean.getId());
                 eventResponse.getResponseSemaphore().release();
                 logger.log(LogLevel.INFO, String.format(NON_VULNERABLE_API_ALLOWED_TO_EXECUTE_S, eventBean.toString()), Dispatcher.class.getName());
+            } else {
+                logger.log(LogLevel.INFO, String.format(VULNERABLE_API_BLOCKED, eventBean.toString()), Dispatcher.class.getName());
+
             }
         }
-
-        EventSendPool.getInstance().sendEvent(eventBean);
-//		System.out.println("============= Event Start ============");
-//		System.out.println(eventBean);
-//		System.out.println("============= Event End ============");
     }
 
     private JavaAgentEventBean prepareSystemExitEvent(JavaAgentEventBean eventBean,

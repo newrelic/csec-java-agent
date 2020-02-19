@@ -8,7 +8,10 @@ import com.k2cybersecurity.instrumentator.utils.InstrumentationUtils;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.filelogging.LogWriter;
-import com.k2cybersecurity.intcodeagent.models.javaagent.*;
+import com.k2cybersecurity.intcodeagent.models.javaagent.EventResponse;
+import com.k2cybersecurity.intcodeagent.models.javaagent.IntCodeControlCommand;
+import com.k2cybersecurity.intcodeagent.models.javaagent.ProtectionConfig;
+import com.k2cybersecurity.intcodeagent.models.javaagent.VulnerableAPI;
 import com.k2cybersecurity.intcodeagent.websocket.EventSendPool;
 import com.k2cybersecurity.intcodeagent.websocket.FtpClient;
 import org.apache.commons.lang3.StringUtils;
@@ -87,10 +90,10 @@ public class ControlCommandProcessor implements Runnable {
 			EventResponse eventResponse = AgentUtils.getInstance().getEventResponseSet()
 					.get(controlCommand.getArguments().get(0));
 			if (eventResponse == null) {
-				logger.log(LogLevel.WARNING,
+				logger.log(LogLevel.DEBUG,
 						String.format(EVENT_RESPONSE_ENTRY_NOT_FOUND_FOR_THIS_S, controlCommand.getArguments().get(0)),
 						ControlCommandProcessor.class.getSimpleName());
-				return;
+				eventResponse = new EventResponse(controlCommand.getArguments().get(0));
 			}
 			eventResponse.setId(controlCommand.getArguments().get(0));
 			eventResponse.setEventId(controlCommand.getArguments().get(1));
