@@ -7,6 +7,7 @@ import java.util.Arrays;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalHttpMap;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalOperationLock;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalXQuerySaxonMap;
+import com.k2cybersecurity.instrumentator.custom.ThreadLocalXQueryXQJMap;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalXpathSaxonMap;
 import com.k2cybersecurity.instrumentator.dispatcher.EventDispatcher;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
@@ -56,6 +57,12 @@ public class Callbacks {
 					XQueryOperationalBean xQueryOperationalBean = ThreadLocalXQuerySaxonMap.getInstance().get(args[0]);
 					if(xQueryOperationalBean!=null) {
 						System.out.println("Query eXist execute : "+ xQueryOperationalBean.getExpression());
+						EventDispatcher.dispatch(xQueryOperationalBean, VulnerabilityCaseType.XQUERY_INJECTION);
+					}
+				} else if(sourceString.contains("OXQCPreparedExpression.executeQuery")) {
+					XQueryOperationalBean xQueryOperationalBean = ThreadLocalXQueryXQJMap.getInstance().get(obj);
+					if(xQueryOperationalBean!=null) {
+						System.out.println("In execute, got Query : "+ xQueryOperationalBean.getExpression());
 						EventDispatcher.dispatch(xQueryOperationalBean, VulnerabilityCaseType.XQUERY_INJECTION);
 					}
 				}

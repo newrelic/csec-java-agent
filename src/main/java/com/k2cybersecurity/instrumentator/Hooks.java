@@ -132,6 +132,11 @@ public class Hooks {
 		NAME_BASED_HOOKS.put("com.saxonica.xqj.SaxonXQPreparedExpression", Collections.singletonList("executeQuery"));
 		// XQuery eXist lib
 		TYPE_BASED_HOOKS.put("org.xmldb.api.modules.XQueryService", Arrays.asList("query", "queryResource", "compile", "execute"));
+		// XQuery Oracle XQJ
+		NAME_BASED_HOOKS.put("oracle.xml.xquery.xqjimpl.OXQCConnection", Collections.singletonList("prepareExpressionImpl"));
+		NAME_BASED_HOOKS.put("oracle.xml.xquery.xqjimpl.OXQCPreparedExpression", Collections.singletonList("executeQuery"));
+		NAME_BASED_HOOKS.put("oracle.xml.xquery.xqjimpl.OXQDPreparedExpression", Arrays.asList("executeQuery", null));
+		NAME_BASED_HOOKS.put("oracle.xml.xquery.compiler.parser.antlr.runtime.ANTLRReaderStream", Collections.singletonList("load"));
 		
 
 		// JBoss Classloading Hook
@@ -436,6 +441,17 @@ public class Hooks {
 		DECORATOR_ENTRY.put("org.xmldb.api.modules.XQueryService.queryResource", "com.k2cybersecurity.instrumentator.decorators.xquery");
 		DECORATOR_ENTRY.put("org.xmldb.api.modules.XQueryService.compile", "com.k2cybersecurity.instrumentator.decorators.xquery.saxoncompile");
 		DECORATOR_ENTRY.put("org.xmldb.api.modules.XQueryService.execute", "com.k2cybersecurity.instrumentator.decorators.xquery.saxon");
+		// XQuery Oracle XQJ
+//				NAME_BASED_HOOKS.put("oracle.xml.xquery.xqjimpl.OXQCConnection", Collections.singletonList("prepareExpressionImpl"));
+//				NAME_BASED_HOOKS.put("oracle.xml.xquery.xqjimpl.OXQDPreparedExpression", Collections.singletonList(null));
+//				NAME_BASED_HOOKS.put("oracle.xml.xquery.xqjimpl.OXQCPreparedExpression", Collections.singletonList("executeQuery"));
+//				NAME_BASED_HOOKS.put("oracle.xml.xquery.xqjimpl.OXQDPreparedExpression", Collections.singletonList("executeQuery"));
+		DECORATOR_ENTRY.put("oracle.xml.xquery.xqjimpl.OXQCConnection.prepareExpressionImpl", "com.k2cybersecurity.instrumentator.decorators.xquery.saxoncompile");
+		DECORATOR_ENTRY.put("oracle.xml.xquery.xqjimpl.OXQDPreparedExpression.null", "com.k2cybersecurity.instrumentator.decorators.xquery.saxoncompile");
+		DECORATOR_ENTRY.put("oracle.xml.xquery.xqjimpl.OXQCPreparedExpression.executeQuery", "com.k2cybersecurity.instrumentator.decorators.xquery.saxon");
+		DECORATOR_ENTRY.put("oracle.xml.xquery.xqjimpl.OXQDPreparedExpression.executeQuery", "com.k2cybersecurity.instrumentator.decorators.xquery.saxon");
+//		NAME_BASED_HOOKS.put("oracle.xml.xquery.compiler.parser.antlr.runtime.ANTLRReaderStream", Collections.singletonList("load"));
+		DECORATOR_ENTRY.put("oracle.xml.xquery.compiler.parser.antlr.runtime.ANTLRReaderStream.load", "com.k2cybersecurity.instrumentator.decorators.xquery.loadbuffer");
 		
 		// Jetty Servlet
 		DECORATOR_ENTRY.put("org.eclipse.jetty.server.Handler.handle",

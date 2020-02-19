@@ -8,6 +8,7 @@ import org.apache.commons.lang3.StringUtils;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalHttpMap;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalOperationLock;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalXQuerySaxonMap;
+import com.k2cybersecurity.instrumentator.custom.ThreadLocalXQueryXQJMap;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 
 public class Callbacks {
@@ -22,17 +23,24 @@ public class Callbacks {
 //				LogLevel.INFO, "OnEnter initial :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj
 //				+ " - eid : " + executionId, Callbacks.class.getName());
 
-		// if (!ThreadLocalHttpMap.getInstance().isEmpty() &&
-		// !ThreadLocalOperationLock.getInstance().isAcquired()) {
-//		try {
-////			System.out.println("sourceString : " + sourceString + " args : " + Arrays.asList(args) + " this : " + obj);
-//			ThreadLocalOperationLock.getInstance().acquire();
-////				logger.log(LogLevel.INFO, "OnEnter :" + sourceString + " - args : " + Arrays.asList(args) + " - this : "
-////						+ obj + " - eid : " + executionId, Callbacks.class.getName());
-//		} finally {
-//			ThreadLocalOperationLock.getInstance().release();
-//		}
-		// }
+		if (!ThreadLocalHttpMap.getInstance().isEmpty() && !ThreadLocalOperationLock.getInstance().isAcquired()) {
+			try {
+				ThreadLocalOperationLock.getInstance().acquire();
+				System.out.println(
+						"sourceString : " + sourceString + " args : " + Arrays.asList(args) + " this : " + obj);
+				if (args.length == 2 && args[0] != null
+						&& sourceString.contains("OXQCConnection.prepareExpressionImpl")) {
+					ThreadLocalXQueryXQJMap.getInstance().setCompileStartMarked(true);
+				} else if (args.length == 4 && args[0] != null
+						&& sourceString.contains("OXQDPreparedExpression.OXQDPreparedExpression")) {
+
+				}
+//				logger.log(LogLevel.INFO, "OnEnter :" + sourceString + " - args : " + Arrays.asList(args) + " - this : "
+//						+ obj + " - eid : " + executionId, Callbacks.class.getName());
+			} finally {
+				ThreadLocalOperationLock.getInstance().release();
+			}
+		}
 	}
 
 	public static void doOnExit(String sourceString, String className, String methodName, Object obj, Object[] args,
@@ -56,10 +64,25 @@ public class Callbacks {
 					} catch (Exception e) {
 						e.printStackTrace();
 					}
-				} else if(args.length==1 && args[0] !=null && returnVal!=null && sourceString.contains("QueryService.compile")) {
+				} else if (args.length == 1 && args[0] != null && returnVal != null
+						&& sourceString.contains("QueryService.compile")) {
 					Object compiledExpressionObj = returnVal;
-					System.out.println("Inside Compile Expression for eXist-db, Query : "+ args[0].toString());
-					ThreadLocalXQuerySaxonMap.getInstance().create(compiledExpressionObj, args[0].toString(), className, methodName, exectionId, Instant.now().toEpochMilli());
+					System.out.println("Inside Compile Expression for eXist-db, Query : " + args[0].toString());
+					ThreadLocalXQuerySaxonMap.getInstance().create(compiledExpressionObj, args[0].toString(), className,
+							methodName, exectionId, Instant.now().toEpochMilli());
+				} else if (args.length == 2 && args[0] != null && returnVal != null
+						&& sourceString.contains("OXQCConnection.prepareExpressionImpl")) {
+					ThreadLocalXQueryXQJMap.getInstance().setCompileStartMarked(false);
+					String bufferData = ThreadLocalXQueryXQJMap.getInstance().getTempBuffer();
+					if (bufferData != null) {
+						System.out.println("Got Buffer Data Here : " + bufferData);
+						ThreadLocalXQueryXQJMap.getInstance().create(returnVal, bufferData, className, methodName,
+								exectionId, Instant.now().toEpochMilli());
+					}
+
+				} else if (args.length == 4 && args[0] != null
+						&& sourceString.contains("OXQDPreparedExpression.OXQDPreparedExpression")) {
+
 				}
 			} finally {
 				ThreadLocalOperationLock.getInstance().release();
