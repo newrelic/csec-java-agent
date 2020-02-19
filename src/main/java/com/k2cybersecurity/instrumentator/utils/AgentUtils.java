@@ -123,6 +123,6 @@ public class AgentUtils {
 		}else if (StringUtils.contains(className, "java.security.MessageDigest")) {
 			getProtectedVulnerabilties().add("HASH");
 		}
-
+		System.out.println("getProtectedVulnerabilties : " + getProtectedVulnerabilties().toString());
 	}
 }
