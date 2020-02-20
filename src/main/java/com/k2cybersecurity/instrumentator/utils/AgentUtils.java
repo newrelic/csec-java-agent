@@ -92,12 +92,12 @@ public class AgentUtils {
 
 	public void createProtectedVulnerabilties(TypeDescription typeDescription, ClassLoader classLoader) {
 		String className = typeDescription.getName();
-		System.out.println("Class Name : " + className);
 
 		// NAME_BASED_HOOKS checks
 		if (StringUtils.equals(className, "java.lang.ProcessImpl")) {
 			getProtectedVulnerabilties().add("RCE");
 			getProtectedVulnerabilties().add("RCI");
+			getProtectedVulnerabilties().add("REVERSE_SHELL");
 		} else if (StringUtils.equals(className, "java.lang.Shutdown")) {
 			getProtectedVulnerabilties().add("RCI");
 		} else if (StringUtils.equalsAny(className, "java.io.FileOutputStream", "java.io.FileInputStream",
@@ -107,6 +107,8 @@ public class AgentUtils {
 			getProtectedVulnerabilties().add("RCI");
 		} else if (StringUtils.startsWith(className, "com.mongodb.")) {
 			getProtectedVulnerabilties().add("NOSQLI");
+			getProtectedVulnerabilties().add("RCI");
+			getProtectedVulnerabilties().add("SXSS");
 		} else if (StringUtils.equalsAny(className, "java.util.Random", "java.lang.Math")) {
 			getProtectedVulnerabilties().add("WEAK_RANDOM");
 		} else if (StringUtils.equalsAny(className, "org.apache.xpath.XPath",
@@ -118,6 +120,7 @@ public class AgentUtils {
 				"org.apache.commons.httpclient.HttpMethodDirector", "com.squareup.okhttp.internal.http.HttpEngine",
 				"weblogic.net.http.Handler")) {
 			getProtectedVulnerabilties().add("SSRF");
+			getProtectedVulnerabilties().add("RCI");
 		} else if (StringUtils.equalsAny(className, "javax.crypto.Cipher", "javax.crypto.KeyGenerator",
 				"java.security.KeyPairGenerator")) {
 			getProtectedVulnerabilties().add("CRYPTO");
@@ -131,21 +134,27 @@ public class AgentUtils {
 			getProtectedVulnerabilties().add("SECURE_COOKIE");
 		} else {
 			// TYPE_BASED_HOOKS checks
-				try {
-					if(StringUtils.equals("java.sql.Statement", className) || StringUtils.equals("java.sql.PreparedStatement", className) || StringUtils.equals("java.sql.Connection", className) || typeDescription.isInHierarchyWith(Class.forName("java.sql.Statement", false, classLoader)) || typeDescription.isInHierarchyWith(Class.forName("java.sql.PreparedStatement", false, classLoader)) || typeDescription.isInHierarchyWith(Class.forName("java.sql.Connection", false, classLoader))){
-						getProtectedVulnerabilties().add("SQLI");
-						getProtectedVulnerabilties().add("SXSS");
-					} else if(StringUtils.equals("javax.naming.directory.DirContext", className) || typeDescription.isInHierarchyWith(Class.forName("javax.naming.directory.DirContext", false, classLoader))) {
-						getProtectedVulnerabilties().add("LDAP");
-					}
-				} catch (ClassNotFoundException e) {
-					logger.log(LogLevel.ERROR,
-							"Error in class loading for createProtectedVulnerabilties : " + e.getMessage(),
-							AgentUtils.class.getSimpleName());
+			try {
+				if(StringUtils.equals("java.sql.Statement", className) || StringUtils.equals("java.sql.PreparedStatement", className) || StringUtils.equals("java.sql.Connection", className) || typeDescription.isInHierarchyWith(Class.forName("java.sql.Statement", false, classLoader)) || typeDescription.isInHierarchyWith(Class.forName("java.sql.PreparedStatement", false, classLoader)) || typeDescription.isInHierarchyWith(Class.forName("java.sql.Connection", false, classLoader))){
+					getProtectedVulnerabilties().add("SQLI");
+					getProtectedVulnerabilties().add("SXSS");
+					getProtectedVulnerabilties().add("RCI");
+				} else if(StringUtils.equals("javax.naming.directory.DirContext", className) || typeDescription.isInHierarchyWith(Class.forName("javax.naming.directory.DirContext", false, classLoader))) {
+					getProtectedVulnerabilties().add("LDAP");
 				}
-			
+			} catch (ClassNotFoundException e) {
+				logger.log(LogLevel.ERROR,
+						"Error in class loading for createProtectedVulnerabilties : " + e.getMessage(),
+						AgentUtils.class.getSimpleName());
+			}
 		}
-
-		System.out.println("getProtectedVulnerabilties : " + getProtectedVulnerabilties().toString());
+	}
+	
+	public void addProtectedVulnerabilties(String className) {
+		if (StringUtils.equalsAny(className,"com.sun.org.apache.xerces.internal.impl.XMLDocumentFragmentScannerImpl", "com.sun.org.apache.xerces.internal.impl.XMLEntityManager")) {
+			getProtectedVulnerabilties().add("XXE");
+		} else if (StringUtils.equals(className, "java.io.ObjectInputStream")) {
+			getProtectedVulnerabilties().add("INSECURE_DESERIALIZATION");
+		}
 	}
 }

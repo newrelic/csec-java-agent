@@ -44,6 +44,7 @@ public class ClassLoadListener implements AgentBuilder.Listener {
 			final JavaModule module,
 			final boolean loaded) {
 		//      log.debug("onComplete {}", typeName);
+		AgentUtils.getInstance().addProtectedVulnerabilties(typeName);
 	}
 
 	@Override
