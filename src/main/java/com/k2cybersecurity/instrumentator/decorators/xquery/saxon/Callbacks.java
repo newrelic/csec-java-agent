@@ -7,7 +7,6 @@ import java.util.Arrays;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalHttpMap;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalOperationLock;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalXQuerySaxonMap;
-import com.k2cybersecurity.instrumentator.custom.ThreadLocalXQueryXQJMap;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalXpathSaxonMap;
 import com.k2cybersecurity.instrumentator.dispatcher.EventDispatcher;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
@@ -60,16 +59,31 @@ public class Callbacks {
 						EventDispatcher.dispatch(xQueryOperationalBean, VulnerabilityCaseType.XQUERY_INJECTION);
 					}
 				} else if(sourceString.contains("OXQCPreparedExpression.executeQuery")) {
-					XQueryOperationalBean xQueryOperationalBean = ThreadLocalXQueryXQJMap.getInstance().get(obj);
+					XQueryOperationalBean xQueryOperationalBean = ThreadLocalXQuerySaxonMap.getInstance().get(obj);
 					if(xQueryOperationalBean!=null) {
 						System.out.println("In execute, got Query : "+ xQueryOperationalBean.getExpression());
 						EventDispatcher.dispatch(xQueryOperationalBean, VulnerabilityCaseType.XQUERY_INJECTION);
 					}
 				} else if(sourceString.contains("OXQDPreparedExpression.executeQuery")) {
-					XQueryOperationalBean xQueryOperationalBean = ThreadLocalXQueryXQJMap.getInstance().get(obj);
+					XQueryOperationalBean xQueryOperationalBean = ThreadLocalXQuerySaxonMap.getInstance().get(obj);
 					if(xQueryOperationalBean!=null) {
 						System.out.println("In execute, got Query : "+ xQueryOperationalBean.getExpression());
 						EventDispatcher.dispatch(xQueryOperationalBean, VulnerabilityCaseType.XQUERY_INJECTION);
+					}
+				} else if(sourceString.contains("org.brackit.xquery.XQuery.run")) {
+					try {
+					Method moduleMethod = obj.getClass().getDeclaredMethod("getModule");
+					moduleMethod.setAccessible(true);
+					Object moduleObject = moduleMethod.invoke(obj);
+					if(moduleObject!=null) {
+					XQueryOperationalBean xQueryOperationalBean = ThreadLocalXQuerySaxonMap.getInstance().get(moduleObject);
+					if(xQueryOperationalBean!=null) {
+						System.out.println("In run, got Query : "+ xQueryOperationalBean.getExpression());
+						EventDispatcher.dispatch(xQueryOperationalBean, VulnerabilityCaseType.XQUERY_INJECTION);
+					}
+					}
+					} catch (Exception e) {
+						e.printStackTrace();
 					}
 				}
 			} finally {

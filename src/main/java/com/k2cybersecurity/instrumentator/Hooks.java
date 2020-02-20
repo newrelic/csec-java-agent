@@ -137,7 +137,8 @@ public class Hooks {
 		NAME_BASED_HOOKS.put("oracle.xml.xquery.xqjimpl.OXQCPreparedExpression", Collections.singletonList("executeQuery"));
 		NAME_BASED_HOOKS.put("oracle.xml.xquery.xqjimpl.OXQDPreparedExpression", Arrays.asList("executeQuery", null));
 		NAME_BASED_HOOKS.put("oracle.xml.xquery.compiler.parser.antlr.runtime.ANTLRReaderStream", Collections.singletonList("load"));
-		
+		// XQuery brackit
+		NAME_BASED_HOOKS.put("org.brackit.xquery.XQuery", Arrays.asList(null, "run"));
 
 		// JBoss Classloading Hook
 		NAME_BASED_HOOKS.put("org.jboss.modules.Main", Collections.singletonList("main"));
@@ -452,6 +453,10 @@ public class Hooks {
 		DECORATOR_ENTRY.put("oracle.xml.xquery.xqjimpl.OXQDPreparedExpression.executeQuery", "com.k2cybersecurity.instrumentator.decorators.xquery.saxon");
 //		NAME_BASED_HOOKS.put("oracle.xml.xquery.compiler.parser.antlr.runtime.ANTLRReaderStream", Collections.singletonList("load"));
 		DECORATOR_ENTRY.put("oracle.xml.xquery.compiler.parser.antlr.runtime.ANTLRReaderStream.load", "com.k2cybersecurity.instrumentator.decorators.xquery.loadbuffer");
+		// XQuery brackit
+//		NAME_BASED_HOOKS.put("org.brackit.xquery.XQuery", Arrays.asList(null, "run"));
+		DECORATOR_ENTRY.put("org.brackit.xquery.XQuery.null", "com.k2cybersecurity.instrumentator.decorators.xquery.saxoncompile");
+		DECORATOR_ENTRY.put("org.brackit.xquery.XQuery.run", "com.k2cybersecurity.instrumentator.decorators.xquery.saxon");
 		
 		// Jetty Servlet
 		DECORATOR_ENTRY.put("org.eclipse.jetty.server.Handler.handle",

@@ -6,7 +6,7 @@ import java.util.Arrays;
 
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalHttpMap;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalOperationLock;
-import com.k2cybersecurity.instrumentator.custom.ThreadLocalXQueryXQJMap;
+import com.k2cybersecurity.instrumentator.custom.ThreadLocalXQuerySaxonMap;
 import com.k2cybersecurity.instrumentator.dispatcher.EventDispatcher;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.models.javaagent.VulnerabilityCaseType;
@@ -38,7 +38,7 @@ public class Callbacks {
 				ThreadLocalOperationLock.getInstance().acquire();
 				System.out.println("OnExit :" + sourceString + " - args : " + Arrays.asList(args) + " - this : "
 						+ thisObject + " - return : " + returnVal + " - eid : " + exectionId);
-				if (ThreadLocalXQueryXQJMap.getInstance().isCompileStartMarked()) {
+				if (ThreadLocalXQuerySaxonMap.getInstance().isCompileStartMarked()) {
 					try {
 						Field lengthField = thisObject.getClass().getSuperclass().getDeclaredField("n");
 						lengthField.setAccessible(true);
@@ -50,7 +50,7 @@ public class Callbacks {
 							Object dataObject = dataField.get(thisObject);
 							String data = new String((char[]) dataObject, 0, length - 1);
 							System.out.println("Data : " + data);
-							ThreadLocalXQueryXQJMap.getInstance().setTempBuffer(data);
+							ThreadLocalXQuerySaxonMap.getInstance().setTempBuffer(data);
 						}
 					} catch (Exception e) {
 						e.printStackTrace();

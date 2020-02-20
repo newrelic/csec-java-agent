@@ -12,6 +12,10 @@ public class ThreadLocalXQuerySaxonMap {
 
 	private Map<Object, XQueryOperationalBean> xqueryExpressionValues;
 	
+	private boolean compileStartMarked = false;
+	
+	private String tempBuffer = null;
+
 	private static ThreadLocal<ThreadLocalXQuerySaxonMap> instance = new ThreadLocal<ThreadLocalXQuerySaxonMap>() {
 		@Override protected ThreadLocalXQuerySaxonMap initialValue() {
 			return new ThreadLocalXQuerySaxonMap();
@@ -51,6 +55,22 @@ public class ThreadLocalXQuerySaxonMap {
 
 	public void clearAll () {
 		xqueryExpressionValues.clear();
+	}
+	
+	public boolean isCompileStartMarked() {
+		return compileStartMarked;
+	}
+
+	public void setCompileStartMarked(boolean compileStartMarked) {
+		this.compileStartMarked = compileStartMarked;
+	}
+
+	public String getTempBuffer() {
+		return tempBuffer;
+	}
+
+	public void setTempBuffer(String tempBuffer) {
+		this.tempBuffer = tempBuffer;
 	}
 	
 }
