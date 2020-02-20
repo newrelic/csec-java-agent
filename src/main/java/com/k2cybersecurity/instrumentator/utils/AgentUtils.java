@@ -15,6 +15,8 @@ import com.k2cybersecurity.intcodeagent.logging.HealthCheckScheduleThread;
 import com.k2cybersecurity.intcodeagent.models.javaagent.IntCodeControlCommand;
 import com.k2cybersecurity.intcodeagent.websocket.FtpClient;
 
+import net.bytebuddy.description.type.TypeDescription;
+
 public class AgentUtils {
 
 	public Set<Pair<String, ClassLoader>> getTransformedClasses() {
@@ -25,11 +27,11 @@ public class AgentUtils {
 
 	private static AgentUtils instance;
 
-	public static Set<String> getProtectedVulnerabilties() {
+	public Set<String> getProtectedVulnerabilties() {
 		return protectedVulnerabilties;
 	}
 
-	private static Set<String> protectedVulnerabilties = new HashSet<String>();
+	private Set<String> protectedVulnerabilties = new HashSet<String>();
 
 	private AgentUtils() {
 		transformedClasses = new HashSet<>();
@@ -88,41 +90,62 @@ public class AgentUtils {
 		}
 	}
 
-	public static void createProtectedVulnerabilties(String className) {
+	public void createProtectedVulnerabilties(TypeDescription typeDescription, ClassLoader classLoader) {
+		String className = typeDescription.getName();
 		System.out.println("Class Name : " + className);
-		if (StringUtils.containsAny(className, "java.sql.Statement", "java.sql.PreparedStatement", "java.sql.Connection")) {
-			getProtectedVulnerabilties().add("SQLI");
-			getProtectedVulnerabilties().add("SXSS");
-		}else if (StringUtils.contains(className, "javax.servlet.ServletResponse")) {
-			getProtectedVulnerabilties().add("RXSS");
-		}else if (StringUtils.containsAny(className, "javax.naming.directory.DirContext")) {
-			getProtectedVulnerabilties().add("LDAP");
-		}else if (StringUtils.contains(className, "javax.servlet.http.HttpSession")) {
-			getProtectedVulnerabilties().add("TRUST_BOUNDARY");
-		}else if (StringUtils.contains(className, "javax.servlet.http.HttpServletResponse")) {
-			getProtectedVulnerabilties().add("SECURE_COOKIE");
-		}else if (StringUtils.contains(className, "java.lang.ProcessImpl")) {
+
+		// NAME_BASED_HOOKS checks
+		if (StringUtils.equals(className, "java.lang.ProcessImpl")) {
 			getProtectedVulnerabilties().add("RCE");
 			getProtectedVulnerabilties().add("RCI");
-		}else if (StringUtils.contains(className, "java.lang.Shutdown")) {
-			getProtectedVulnerabilties().add("RCE");
+		} else if (StringUtils.equals(className, "java.lang.Shutdown")) {
 			getProtectedVulnerabilties().add("RCI");
-		}else if (StringUtils.containsAny(className,  "java.io.FileOutputStream", "java.io.FileInputStream", "sun.nio.fs.UnixNativeDispatcher", "java.io.UnixFileSystem", "java.io.RandomAccessFile", "java.io.FileSystem")) {
+		} else if (StringUtils.equalsAny(className, "java.io.FileOutputStream", "java.io.FileInputStream",
+				"sun.nio.fs.UnixNativeDispatcher", "java.io.UnixFileSystem", "java.io.RandomAccessFile",
+				"java.io.FileSystem")) {
 			getProtectedVulnerabilties().add("FILE_ACCESS");
 			getProtectedVulnerabilties().add("RCI");
-		}else if (StringUtils.startsWith(className, "com.mongodb.")) {
+		} else if (StringUtils.startsWith(className, "com.mongodb.")) {
 			getProtectedVulnerabilties().add("NOSQLI");
-		}else if (StringUtils.containsAny(className,  "java.util.Random", "java.lang.Math")) {
+		} else if (StringUtils.equalsAny(className, "java.util.Random", "java.lang.Math")) {
 			getProtectedVulnerabilties().add("WEAK_RANDOM");
-		}else if (StringUtils.containsAny(className, "org.apache.xpath.XPath", "com.sun.org.apache.xpath.internal.XPath")) {
+		} else if (StringUtils.equalsAny(className, "org.apache.xpath.XPath",
+				"com.sun.org.apache.xpath.internal.XPath")) {
 			getProtectedVulnerabilties().add("XPATH");
-		}else if (StringUtils.containsAny(className, "org.apache.http.protocol.HttpRequestExecutor", "sun.net.www.protocol.http.Handler", "sun.net.www.protocol.https.Handler", "com.sun.net.ssl.internal.www.protocol.https.Handler", "jdk.incubator.http.MultiExchange", "org.apache.commons.httpclient.HttpMethodDirector", "com.squareup.okhttp.internal.http.HttpEngine", "weblogic.net.http.Handler")) {
+		} else if (StringUtils.equalsAny(className, "org.apache.http.protocol.HttpRequestExecutor",
+				"sun.net.www.protocol.http.Handler", "sun.net.www.protocol.https.Handler",
+				"com.sun.net.ssl.internal.www.protocol.https.Handler", "jdk.incubator.http.MultiExchange",
+				"org.apache.commons.httpclient.HttpMethodDirector", "com.squareup.okhttp.internal.http.HttpEngine",
+				"weblogic.net.http.Handler")) {
 			getProtectedVulnerabilties().add("SSRF");
-		}else if (StringUtils.containsAny(className, "javax.crypto.Cipher", "javax.crypto.KeyGenerator", "java.security.KeyPairGenerator")) {
+		} else if (StringUtils.equalsAny(className, "javax.crypto.Cipher", "javax.crypto.KeyGenerator",
+				"java.security.KeyPairGenerator")) {
 			getProtectedVulnerabilties().add("CRYPTO");
-		}else if (StringUtils.contains(className, "java.security.MessageDigest")) {
+		} else if (StringUtils.equals(className, "java.security.MessageDigest")) {
 			getProtectedVulnerabilties().add("HASH");
+		} else if (StringUtils.contains(className, "javax.servlet.ServletResponse")) {
+			getProtectedVulnerabilties().add("RXSS");
+		} else if (StringUtils.contains(className, "javax.servlet.http.HttpSession")) {
+			getProtectedVulnerabilties().add("TRUST_BOUNDARY");
+		} else if (StringUtils.contains(className, "javax.servlet.http.HttpServletResponse")) {
+			getProtectedVulnerabilties().add("SECURE_COOKIE");
+		} else {
+			// TYPE_BASED_HOOKS checks
+				try {
+					if(StringUtils.equals("java.sql.Statement", className) || StringUtils.equals("java.sql.PreparedStatement", className) || StringUtils.equals("java.sql.Connection", className) || typeDescription.isInHierarchyWith(Class.forName("java.sql.Statement", false, classLoader)) || typeDescription.isInHierarchyWith(Class.forName("java.sql.PreparedStatement", false, classLoader)) || typeDescription.isInHierarchyWith(Class.forName("java.sql.Connection", false, classLoader))){
+						getProtectedVulnerabilties().add("SQLI");
+						getProtectedVulnerabilties().add("SXSS");
+					} else if(StringUtils.equals("javax.naming.directory.DirContext", className) || typeDescription.isInHierarchyWith(Class.forName("javax.naming.directory.DirContext", false, classLoader))) {
+						getProtectedVulnerabilties().add("LDAP");
+					}
+				} catch (ClassNotFoundException e) {
+					logger.log(LogLevel.ERROR,
+							"Error in class loading for createProtectedVulnerabilties : " + e.getMessage(),
+							AgentUtils.class.getSimpleName());
+				}
+			
 		}
+
 		System.out.println("getProtectedVulnerabilties : " + getProtectedVulnerabilties().toString());
 	}
 }
