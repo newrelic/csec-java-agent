@@ -6,6 +6,8 @@ import com.k2cybersecurity.instrumentator.custom.ThreadLocalOperationLock;
 import com.k2cybersecurity.instrumentator.utils.CallbackUtils;
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.Arrays;
+
 public class Callbacks {
 
     public static final String GET_WRITER = "getWriter";
@@ -14,7 +16,7 @@ public class Callbacks {
 
     public static void doOnEnter(String sourceString, String className, String methodName, Object obj, Object[] args,
                                  String exectionId) {
-//        System.out.println("Came to servletresponse hook :" + exectionId + " :: " + sourceString);
+        System.out.println("Came to servletresponse hook :" + exectionId + " :: " + sourceString);
 //        if (!ThreadLocalHttpMap.getInstance().isServiceMethodEncountered() && !ThreadLocalOperationLock.getInstance()
 //                .isAcquired()) {
 //            try {
@@ -35,19 +37,20 @@ public class Callbacks {
             try {
                 ThreadLocalOperationLock.getInstance().acquire();
                 if (!ThreadLocalHttpMap.getInstance().isEmpty() && obj !=null && ThreadLocalHttpMap.getInstance().getHttpResponse()!=null && ThreadLocalHttpMap.getInstance().getHttpResponse().hashCode() == obj.hashCode()) {
-//                    System.out.println("Came to servletresponse hook exit :" + exectionId + " :: " + sourceString + " :: " + obj + " :: " + returnVal);
+                    System.out.println("Came to servletresponse hook exit :" + exectionId + " :: " + sourceString + " :: " + obj + " :: " + returnVal);
                     if (StringUtils.equals(methodName, GET_WRITER)) {
                         ThreadLocalHttpMap.getInstance().setResponseWriter(returnVal);
-//                        System.out.println("reponseWriter set kar diya. :" + exectionId + " :: " + ThreadLocalHttpMap.getInstance().getResponseWriter());
+                        System.out.println("reponseWriter set kar diya. :" + exectionId + " :: " + ThreadLocalHttpMap.getInstance().getResponseWriter());
                         ThreadLocalHTTPIOLock.getInstance().resetLock();
 
                     } else if (StringUtils.equals(methodName, GET_OUTPUT_STREAM)) {
                         ThreadLocalHttpMap.getInstance().setResponseOutputStream(returnVal);
+                        System.out.println("GET_OUTPUT_STREAM set kar diya. :" + exectionId + " :: " + ThreadLocalHttpMap.getInstance().getResponseWriter());
                         ThreadLocalHTTPIOLock.getInstance().resetLock();
 
                     }
                 } else if(StringUtils.equals(methodName, INIT) && !ThreadLocalHttpMap.getInstance().isServiceMethodEncountered() && obj != null && CallbackUtils.checkArgsTypeHeirarchyResponse(obj)) {
-//                    System.out.println("Servlet response constructor exit aaya : "+ exectionId + " :: " + sourceString + " :: " + obj + " :: " + returnVal + " :: " + methodName);
+                    System.out.println("Servlet response constructor exit aaya : "+ exectionId + " :: " + sourceString + " :: " + obj + " :: " + returnVal + " :: " + methodName);
                     ThreadLocalHttpMap.getInstance().setHttpResponse(obj);
                 }
             } finally {
@@ -61,8 +64,8 @@ public class Callbacks {
         if (!ThreadLocalOperationLock.getInstance().isAcquired()) {
             try {
                 ThreadLocalOperationLock.getInstance().acquire();
-//				System.out.println("OnError :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj
-//						+ " - error : " + error + " - eid : " + exectionId);
+				System.out.println("OnError :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj
+						+ " - error : " + error + " - eid : " + exectionId);
             } finally {
                 ThreadLocalOperationLock.getInstance().release();
             }

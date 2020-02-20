@@ -22,7 +22,7 @@ public class Decorators {
             } catch (Throwable e) {
                 if(e instanceof K2CyberSecurityException){
                     e.printStackTrace();
-                    throw e;
+                    //throw e;
                 }
 //        	logger.log(LogLevel.ERROR, "Error: ", e, ConstructorExit.class.getName());
             }
@@ -75,7 +75,7 @@ public class Decorators {
                 if(e instanceof K2CyberSecurityException){
                     e.printStackTrace();
 
-                    throw e;
+                    //throw e;
                 }
 //        	logger.log(LogLevel.ERROR, "Error: ", e, MethodExit.class.getName());
             }
@@ -105,7 +105,7 @@ public class Decorators {
                 if(e instanceof K2CyberSecurityException){
                     e.printStackTrace();
 
-                    throw e;
+                    //throw e;
                 }
 //        	logger.log(LogLevel.ERROR, "Error: ", e, MethodVoidExit.class.getName());
             }
@@ -160,7 +160,7 @@ public class Decorators {
                 if(e instanceof K2CyberSecurityException){
                     e.printStackTrace();
 
-                    throw e;
+                    //throw e;
                 }
 //        	logger.log(LogLevel.ERROR, "Error: ", e, StaticMethodExit.class.getName());
             }
@@ -191,7 +191,7 @@ public class Decorators {
                 if(e instanceof K2CyberSecurityException){
                     e.printStackTrace();
 
-                    throw e;
+                    //throw e;
                 }
 //        	logger.log(LogLevel.ERROR, "Error: ", e, StaticMethodVoidExit.class.getName());
             }

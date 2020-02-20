@@ -12,7 +12,12 @@ import com.k2cybersecurity.intcodeagent.models.javaagent.*;
 import com.k2cybersecurity.intcodeagent.models.operationalbean.AbstractOperationalBean;
 import com.k2cybersecurity.intcodeagent.models.operationalbean.FileOperationalBean;
 import com.k2cybersecurity.intcodeagent.models.operationalbean.SQLOperationalBean;
+import org.apache.commons.io.IOUtils;
 
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -160,6 +165,7 @@ public class EventDispatcher {
                         EventDispatcher.class.getSimpleName());
                 if(eventResponse.isAttack()){
                     System.out.println("attack detected : throwing.");
+                    sendK2AttackPage();
                     throw new K2CyberSecurityException(eventResponse.getResultMessage());
                 }
                 return true;
@@ -172,5 +178,61 @@ public class EventDispatcher {
             AgentUtils.getInstance().getEventResponseSet().remove(executionId);
         }
         return false;
+    }
+
+    private static void sendK2AttackPage() {
+        try {
+            if(ThreadLocalHttpMap.getInstance().getHttpResponse() != null){
+                System.out.println("step 1");
+                InputStream attackPageStream = ClassLoader.getSystemResourceAsStream("attack.html");
+                if(attackPageStream == null){
+                    logger.log(LogLevel.ERROR, "Unable to locate attack.html.", EventDispatcher.class.getSimpleName());
+                    return;
+                }
+                byte[] response = IOUtils.readFully(attackPageStream, attackPageStream.available());
+                System.out.println("step 2");
+
+                if(ThreadLocalHttpMap.getInstance().getResponseOutputStream() != null){
+                    System.out.println("step 3");
+                    OutputStream outputStream = (OutputStream) ThreadLocalHttpMap.getInstance().getResponseOutputStream();
+                    outputStream.write(response);
+                    outputStream.flush();
+                    outputStream.close();
+                }else if(ThreadLocalHttpMap.getInstance().getResponseWriter() != null){
+                    System.out.println("step 4");
+                    PrintWriter printWriter = (PrintWriter) ThreadLocalHttpMap.getInstance().getResponseWriter();
+                    printWriter.println(new String(response));
+                    printWriter.flush();
+                    printWriter.close();
+                } else {
+                    System.out.println("step 5");
+                    Object resp = ThreadLocalHttpMap.getInstance().getHttpResponse();
+                    Method getOutputStream = resp.getClass().getMethod("getOutputStream");
+
+                    OutputStream outputStream = (OutputStream) getOutputStream.invoke(resp);
+                    outputStream.write(response);
+                    outputStream.flush();
+                    outputStream.close();
+                }
+            } else {
+                logger.log(LogLevel.ERROR, "Unable to locate response object for this attack.", EventDispatcher.class.getSimpleName());
+            }
+        } catch (Exception e) {
+            logger.log(LogLevel.ERROR, "Unable to process response for this attack.", e, EventDispatcher.class.getSimpleName());
+
+        }
+        finally {
+            try {
+                if (ThreadLocalHttpMap.getInstance().getResponseOutputStream() != null) {
+                    ((OutputStream) ThreadLocalHttpMap.getInstance().getResponseOutputStream()).close();
+                }
+                if (ThreadLocalHttpMap.getInstance().getResponseWriter() != null) {
+                    ((PrintWriter) ThreadLocalHttpMap.getInstance().getResponseWriter()).close();
+                }
+            } catch (Throwable e){
+                logger.log(LogLevel.ERROR, ERROR, e, EventDispatcher.class.getSimpleName());
+            }
+        }
+
     }
 }
