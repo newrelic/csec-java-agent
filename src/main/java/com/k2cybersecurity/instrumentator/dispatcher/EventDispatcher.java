@@ -164,7 +164,6 @@ public class EventDispatcher {
                                 eventResponse.getReceivedTime() - eventResponse.getGenerationTime() )+ DOUBLE_COLON_SEPERATOR + executionId,
                         EventDispatcher.class.getSimpleName());
                 if(eventResponse.isAttack()){
-                    System.out.println("attack detected : throwing.");
                     sendK2AttackPage();
                     throw new K2CyberSecurityException(eventResponse.getResultMessage());
                 }
@@ -183,29 +182,24 @@ public class EventDispatcher {
     private static void sendK2AttackPage() {
         try {
             if(ThreadLocalHttpMap.getInstance().getHttpResponse() != null){
-                System.out.println("step 1");
                 InputStream attackPageStream = ClassLoader.getSystemResourceAsStream("attack.html");
                 if(attackPageStream == null){
                     logger.log(LogLevel.ERROR, "Unable to locate attack.html.", EventDispatcher.class.getSimpleName());
                     return;
                 }
                 byte[] response = IOUtils.readFully(attackPageStream, attackPageStream.available());
-                System.out.println("step 2");
 
                 if(ThreadLocalHttpMap.getInstance().getResponseOutputStream() != null){
-                    System.out.println("step 3");
                     OutputStream outputStream = (OutputStream) ThreadLocalHttpMap.getInstance().getResponseOutputStream();
                     outputStream.write(response);
                     outputStream.flush();
                     outputStream.close();
                 }else if(ThreadLocalHttpMap.getInstance().getResponseWriter() != null){
-                    System.out.println("step 4");
                     PrintWriter printWriter = (PrintWriter) ThreadLocalHttpMap.getInstance().getResponseWriter();
                     printWriter.println(new String(response));
                     printWriter.flush();
                     printWriter.close();
                 } else {
-                    System.out.println("step 5");
                     Object resp = ThreadLocalHttpMap.getInstance().getHttpResponse();
                     Method getOutputStream = resp.getClass().getMethod("getOutputStream");
 
