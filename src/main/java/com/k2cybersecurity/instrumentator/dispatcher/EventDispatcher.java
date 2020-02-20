@@ -1,5 +1,6 @@
 package com.k2cybersecurity.instrumentator.dispatcher;
 
+import com.k2cybersecurity.instrumentator.custom.K2CyberSecurityException;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalDBMap;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalExecutionMap;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalHttpMap;
@@ -31,7 +32,8 @@ public class EventDispatcher {
     public static final String SCHEDULING_FOR_EVENT_RESPONSE_OF = "Scheduling for event response of : ";
     public static final String ERROR = "Error: ";
 
-    public static void dispatch(AbstractOperationalBean objectBean, VulnerabilityCaseType vulnerabilityCaseType) {
+    public static void dispatch(AbstractOperationalBean objectBean, VulnerabilityCaseType vulnerabilityCaseType)
+            throws K2CyberSecurityException {
         boolean ret = ThreadLocalHttpMap.getInstance().parseHttpRequest();
         if (!ret) {
             logger.log(LogLevel.ERROR,
@@ -58,7 +60,8 @@ public class EventDispatcher {
         }
     }
 
-    public static void dispatch(List<SQLOperationalBean> objectBeanList, VulnerabilityCaseType vulnerabilityCaseType, String exectionId) {
+    public static void dispatch(List<SQLOperationalBean> objectBeanList, VulnerabilityCaseType vulnerabilityCaseType, String exectionId)
+            throws K2CyberSecurityException {
         boolean ret = ThreadLocalHttpMap.getInstance().parseHttpRequest();
         if (!ret) {
             logger.log(
@@ -100,7 +103,7 @@ public class EventDispatcher {
     }
 
     public static void dispatch(HttpRequestBean httpRequestBean, String sourceString, String exectionId, long startTime,
-                                VulnerabilityCaseType reflectedXss) {
+                                VulnerabilityCaseType reflectedXss) throws K2CyberSecurityException {
 //		System.out.println("Passed to XSS detection : " + exectionId + " :: " + httpRequestBean.toString()+ " :: " + httpRequestBean.getHttpResponseBean().toString());
         if (!httpRequestBean.isEmpty()) {
             DispatcherPool.getInstance().dispatchEvent(httpRequestBean, sourceString, exectionId, startTime,
@@ -111,7 +114,7 @@ public class EventDispatcher {
     }
 
     public static void dispatch(FileOperationalBean fileOperationalBean, FileIntegrityBean fbean,
-                                VulnerabilityCaseType fileOperation) {
+                                VulnerabilityCaseType fileOperation) throws K2CyberSecurityException {
         boolean ret = ThreadLocalHttpMap.getInstance().parseHttpRequest();
         if (!ret) {
             logger.log(
@@ -140,7 +143,7 @@ public class EventDispatcher {
         }
     }
 
-    private static boolean submitAndHoldForEventResponse(String executionId) {
+    private static boolean submitAndHoldForEventResponse(String executionId) throws K2CyberSecurityException {
         if (!ProtectionConfig.getInstance().getProtectKnownVulnerableAPIs()) {
             return false;
         }
@@ -155,6 +158,10 @@ public class EventDispatcher {
                         EVENT_RESPONSE_TIME_TAKEN + eventResponse.getEventId() + DOUBLE_COLON_SEPERATOR + (
                                 eventResponse.getReceivedTime() - eventResponse.getGenerationTime() )+ DOUBLE_COLON_SEPERATOR + executionId,
                         EventDispatcher.class.getSimpleName());
+                if(eventResponse.isAttack()){
+                    System.out.println("attack detected : throwing.");
+                    throw new K2CyberSecurityException(eventResponse.getResultMessage());
+                }
                 return true;
             }else {
                 logger.log(LogLevel.WARNING, EVENT_RESPONSE_TIMEOUT_FOR + executionId, EventDispatcher.class.getSimpleName());

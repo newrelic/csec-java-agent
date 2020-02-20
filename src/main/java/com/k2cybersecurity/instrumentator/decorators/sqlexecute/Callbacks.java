@@ -1,5 +1,6 @@
 package com.k2cybersecurity.instrumentator.decorators.sqlexecute;
 
+import com.k2cybersecurity.instrumentator.custom.K2CyberSecurityException;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalDBMap;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalHttpMap;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalOperationLock;
@@ -15,7 +16,7 @@ public class Callbacks {
 	public static final String NATIVE_SQL = "nativeSQL";
 
 	public static void doOnEnter(String sourceString, String className, String methodName, Object thisObject,
-			Object[] args, String exectionId) {
+			Object[] args, String exectionId) throws K2CyberSecurityException {
 		//        System.out.println("OnEnter :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj + " - eid : " + exectionId);
 		if (!ThreadLocalHttpMap.getInstance().isEmpty() && !ThreadLocalOperationLock.getInstance().isAcquired()) {
 			try {

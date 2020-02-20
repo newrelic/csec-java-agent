@@ -1,5 +1,6 @@
 package com.k2cybersecurity.instrumentator.decorators.securecookie;
 
+import com.k2cybersecurity.instrumentator.custom.K2CyberSecurityException;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalHttpMap;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalOperationLock;
 import com.k2cybersecurity.instrumentator.dispatcher.EventDispatcher;
@@ -16,7 +17,7 @@ public class Callbacks {
 	public static final String FALSE = "false";
 
 	public static void doOnEnter(String sourceString, String className, String methodName, Object obj, Object[] args,
-			String exectionId) {
+			String exectionId) throws K2CyberSecurityException, Exception {
 		if (!ThreadLocalHttpMap.getInstance().isEmpty() && !ThreadLocalOperationLock.getInstance().isAcquired()) {
 			try {
 				ThreadLocalOperationLock.getInstance().acquire();
@@ -37,9 +38,6 @@ public class Callbacks {
 //							+ obj + " - eid : " + exectionId);
 				}
 
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-//				e.printStackTrace();
 			} finally {
 				ThreadLocalOperationLock.getInstance().release();
 			}

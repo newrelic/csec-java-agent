@@ -60,7 +60,7 @@ public class AgentNew {
 			 */
 			AgentBuilder agentBuilder = new AgentBuilder.Default().ignore(ElementMatchers.nameStartsWith("sun.reflect.com.k2cybersecurity"))
 					.disableClassFormatChanges()
-					//				.with(AgentBuilder.Listener.StreamWriting.toSystemOut())
+//									.with(AgentBuilder.Listener.StreamWriting.toSystemOut())
 					.with(AgentBuilder.RedefinitionStrategy.RETRANSFORMATION).with(new ClassLoadListener()).with(AgentBuilder.TypeStrategy.Default.REDEFINE);
 
 			if (StringUtils.equals("IAST", arguments)) {

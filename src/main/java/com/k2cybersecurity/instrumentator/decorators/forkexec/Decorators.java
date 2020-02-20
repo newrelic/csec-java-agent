@@ -1,4 +1,4 @@
-package com.k2cybersecurity.instrumentator.decorators.samplenew;
+package com.k2cybersecurity.instrumentator.decorators.forkexec;
 
 import com.k2cybersecurity.instrumentator.custom.K2CyberSecurityException;
 import com.k2cybersecurity.instrumentator.utils.ExecutionIDGenerator;
@@ -11,7 +11,7 @@ public class Decorators {
 
 //	private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
 
-        @Advice.OnMethodExit(suppress = K2CyberSecurityException.class)
+        @Advice.OnMethodExit()
         public static void exit(@Advice.Origin String signature, @Advice.Origin("#t") String className, @Advice.Origin("#m") String methodName, @Advice.AllArguments Object[] args, @Advice.This Object thisObject) throws Throwable{
             try {
                 String threadName = Thread.currentThread().getName();
@@ -22,6 +22,7 @@ public class Decorators {
                 Callbacks.doOnExit(signature, className, methodName, thisObject, args, null, executionId);
             } catch (Throwable e) {
                 if(e instanceof K2CyberSecurityException){
+                    e.printStackTrace();
                     throw e;
                 }
 //        	logger.log(LogLevel.ERROR, "Error: ", e, ConstructorExit.class.getName());
@@ -33,21 +34,23 @@ public class Decorators {
 
 //	private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
 
-        @Advice.OnMethodEnter(suppress = K2CyberSecurityException.class)
-        public static void enter(@Advice.Origin String signature, @Advice.Origin("#t") String className, @Advice.Origin("#m") String methodName, @Advice.AllArguments Object[] args, @Advice.This Object thisArg) throws Throwable{
+        @Advice.OnMethodEnter(skipOn = K2CyberSecurityException.class)
+        public static Object enter(@Advice.Origin String signature, @Advice.Origin("#t") String className, @Advice.Origin("#m") String methodName, @Advice.AllArguments Object[] args, @Advice.This Object thisArg) throws Throwable{
             try {
                 String threadName = Thread.currentThread().getName();
                 if (StringUtils.startsWith(threadName, "K2-")) {
-                    return;
+                    return null;
                 }
                 String executionId = ExecutionIDGenerator.getExecutionId();
                 Callbacks.doOnEnter(signature, className, methodName, thisArg, args, executionId);
             } catch (Throwable e) {
                 if(e instanceof K2CyberSecurityException){
-                    throw e;
+                    e.printStackTrace();
+                    return e;
                 }
 //        	logger.log(LogLevel.ERROR, "Error: ", e, MethodEntry.class.getName());
             }
+            return null;
         }
     }
 
@@ -55,7 +58,7 @@ public class Decorators {
 
 //	private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
 
-        @Advice.OnMethodExit(onThrowable = Exception.class, suppress = K2CyberSecurityException.class)
+        @Advice.OnMethodExit(onThrowable = Exception.class)
         public static void exit(@Advice.Origin String signature, @Advice.Origin("#t") String className, @Advice.Origin("#m") String methodName, @Advice.Return(readOnly = false, typing = Assigner.Typing.DYNAMIC) Object value, @Advice.Thrown Throwable error, @Advice.This Object thisArg, @Advice.AllArguments Object[] args)
                 throws Throwable {
             try {
@@ -71,6 +74,8 @@ public class Decorators {
                 }
             } catch (Throwable e) {
                 if(e instanceof K2CyberSecurityException){
+                    e.printStackTrace();
+
                     throw e;
                 }
 //        	logger.log(LogLevel.ERROR, "Error: ", e, MethodExit.class.getName());
@@ -83,7 +88,7 @@ public class Decorators {
 
 //	private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
 
-        @Advice.OnMethodExit(onThrowable = Exception.class, suppress = K2CyberSecurityException.class)
+        @Advice.OnMethodExit(onThrowable = Exception.class)
         public static void exit(@Advice.Origin String signature, @Advice.Origin("#t") String className, @Advice.Origin("#m") String methodName, @Advice.Thrown Throwable error, @Advice.This Object thisArg, @Advice.AllArguments Object[] args)
                 throws Throwable {
             try {
@@ -99,6 +104,8 @@ public class Decorators {
                 }
             } catch (Throwable e) {
                 if(e instanceof K2CyberSecurityException){
+                    e.printStackTrace();
+
                     throw e;
                 }
 //        	logger.log(LogLevel.ERROR, "Error: ", e, MethodVoidExit.class.getName());
@@ -110,21 +117,23 @@ public class Decorators {
 
 //	private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
 
-        @Advice.OnMethodEnter(suppress = K2CyberSecurityException.class)
-        public static void enter(@Advice.Origin String signature, @Advice.Origin("#t") String className, @Advice.Origin("#m") String methodName, @Advice.AllArguments Object[] args) throws Throwable{
+        @Advice.OnMethodEnter(skipOn = K2CyberSecurityException.class)
+        public static Object enter(@Advice.Origin String signature, @Advice.Origin("#t") String className, @Advice.Origin("#m") String methodName, @Advice.AllArguments Object[] args) throws Throwable{
             try {
                 String threadName = Thread.currentThread().getName();
                 if (StringUtils.startsWith(threadName, "K2-")) {
-                    return;
+                    return null;
                 }
                 String executionId = ExecutionIDGenerator.getExecutionId();
                 Callbacks.doOnEnter(signature, className, methodName, null, args, executionId);
             } catch (Throwable e) {
                 if(e instanceof K2CyberSecurityException){
-                    throw e;
+                    e.printStackTrace();
+                    return e;
                 }
 //        	logger.log(LogLevel.ERROR, "Error: ", e, StaticMethodEntry.class.getName());
             }
+            return null;
         }
 
     }
@@ -134,7 +143,7 @@ public class Decorators {
 
 //	private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
 
-        @Advice.OnMethodExit(onThrowable = Exception.class, suppress = K2CyberSecurityException.class)
+        @Advice.OnMethodExit(onThrowable = Exception.class)
         public static void exit(@Advice.Origin String signature, @Advice.Origin("#t") String className, @Advice.Origin("#m") String methodName, @Advice.Return(readOnly = false, typing = Assigner.Typing.DYNAMIC) Object value, @Advice.Thrown Throwable error, @Advice.AllArguments Object[] args)
                 throws Throwable {
             try {
@@ -150,6 +159,8 @@ public class Decorators {
                 }
             } catch (Throwable e) {
                 if(e instanceof K2CyberSecurityException){
+                    e.printStackTrace();
+
                     throw e;
                 }
 //        	logger.log(LogLevel.ERROR, "Error: ", e, StaticMethodExit.class.getName());
@@ -163,7 +174,7 @@ public class Decorators {
 
 //	private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
 
-        @Advice.OnMethodExit(onThrowable = Exception.class, suppress = K2CyberSecurityException.class)
+        @Advice.OnMethodExit(onThrowable = Exception.class)
         public static void exit(@Advice.Origin String signature, @Advice.Origin("#t") String className, @Advice.Origin("#m") String methodName, @Advice.Thrown Throwable error, @Advice.AllArguments Object[] args)
                 throws Throwable {
             String executionId = ExecutionIDGenerator.getExecutionId();
@@ -179,6 +190,8 @@ public class Decorators {
                 }
             } catch (Throwable e) {
                 if(e instanceof K2CyberSecurityException){
+                    e.printStackTrace();
+
                     throw e;
                 }
 //        	logger.log(LogLevel.ERROR, "Error: ", e, StaticMethodVoidExit.class.getName());

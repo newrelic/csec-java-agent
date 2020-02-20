@@ -107,7 +107,8 @@ public class CallbackUtils {
         };
     }
 
-    public static void checkForFileIntegrity(Map<String, FileIntegrityBean> fileLocalMap) {
+    public static void checkForFileIntegrity(Map<String, FileIntegrityBean> fileLocalMap)
+            throws K2CyberSecurityException {
         for (Entry<String, FileIntegrityBean> entry : fileLocalMap.entrySet()) {
             boolean isExists = new File(entry.getKey()).exists();
             if (!entry.getValue().getExists().equals(isExists)) {
