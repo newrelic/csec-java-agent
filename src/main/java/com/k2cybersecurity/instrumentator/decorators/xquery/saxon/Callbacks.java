@@ -65,6 +65,12 @@ public class Callbacks {
 						System.out.println("In execute, got Query : "+ xQueryOperationalBean.getExpression());
 						EventDispatcher.dispatch(xQueryOperationalBean, VulnerabilityCaseType.XQUERY_INJECTION);
 					}
+				} else if(sourceString.contains("OXQDPreparedExpression.executeQuery")) {
+					XQueryOperationalBean xQueryOperationalBean = ThreadLocalXQueryXQJMap.getInstance().get(obj);
+					if(xQueryOperationalBean!=null) {
+						System.out.println("In execute, got Query : "+ xQueryOperationalBean.getExpression());
+						EventDispatcher.dispatch(xQueryOperationalBean, VulnerabilityCaseType.XQUERY_INJECTION);
+					}
 				}
 			} finally {
 				ThreadLocalOperationLock.getInstance().release();

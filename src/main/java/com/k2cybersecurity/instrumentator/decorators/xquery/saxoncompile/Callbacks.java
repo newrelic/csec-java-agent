@@ -1,5 +1,6 @@
 package com.k2cybersecurity.instrumentator.decorators.xquery.saxoncompile;
 
+import java.lang.reflect.Field;
 import java.time.Instant;
 import java.util.Arrays;
 
@@ -31,9 +32,6 @@ public class Callbacks {
 				if (args.length == 2 && args[0] != null
 						&& sourceString.contains("OXQCConnection.prepareExpressionImpl")) {
 					ThreadLocalXQueryXQJMap.getInstance().setCompileStartMarked(true);
-				} else if (args.length == 4 && args[0] != null
-						&& sourceString.contains("OXQDPreparedExpression.OXQDPreparedExpression")) {
-
 				}
 //				logger.log(LogLevel.INFO, "OnEnter :" + sourceString + " - args : " + Arrays.asList(args) + " - this : "
 //						+ obj + " - eid : " + executionId, Callbacks.class.getName());
@@ -80,9 +78,21 @@ public class Callbacks {
 								exectionId, Instant.now().toEpochMilli());
 					}
 
-				} else if (args.length == 4 && args[0] != null
+				} else if (args.length == 4 && args[0] != null && obj != null
 						&& sourceString.contains("OXQDPreparedExpression.OXQDPreparedExpression")) {
-
+					try {
+						Field xqueryField = obj.getClass().getDeclaredField("xquery");
+						xqueryField.setAccessible(true);
+						Object xqueryObject = xqueryField.get(obj);
+						if (xqueryObject != null) {
+							String xquery = xqueryObject.toString();
+							System.out.println("Got Buffer Data Here : " + xquery);
+							ThreadLocalXQueryXQJMap.getInstance().create(returnVal, xquery, className, methodName,
+									exectionId, Instant.now().toEpochMilli());
+						}
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
 				}
 			} finally {
 				ThreadLocalOperationLock.getInstance().release();
