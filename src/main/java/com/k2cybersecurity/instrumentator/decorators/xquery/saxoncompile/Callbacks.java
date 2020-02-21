@@ -77,9 +77,10 @@ public class Callbacks {
 						ThreadLocalXQuerySaxonMap.getInstance().create(returnVal, bufferData, className, methodName,
 								exectionId, Instant.now().toEpochMilli());
 					}
+					
 
 				} else if (args.length == 4 && args[0] != null && obj != null
-						&& sourceString.contains("OXQDPreparedExpression.OXQDPreparedExpression")) {
+						&& sourceString.contains("oracle.xml.xquery.xqjimpl.OXQDPreparedExpression")) {
 					try {
 						Field xqueryField = obj.getClass().getDeclaredField("xquery");
 						xqueryField.setAccessible(true);

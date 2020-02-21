@@ -19,8 +19,6 @@ public class Callbacks {
 
 	public static void doOnEnter(String sourceString, String className, String methodName, Object obj, Object[] args,
 			String executionId) {
-//		System.out.println("OnEnter initial :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj
-//				+ " - eid : " + executionId);
 //		logger.log(
 //				LogLevel.INFO, "OnEnter initial :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj
 //				+ " - eid : " + executionId, Callbacks.class.getName());
