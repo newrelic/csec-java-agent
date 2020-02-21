@@ -274,6 +274,7 @@ public class Dispatcher implements Runnable {
 		eventBean.setParameters(params);
 		return eventBean;
 	}
+	
 	private JavaAgentEventBean prepareSystemExitEvent(JavaAgentEventBean eventBean,
 			SystemExitOperationalBean systemExitOperationalBean) {
 		JSONArray params = new JSONArray();
