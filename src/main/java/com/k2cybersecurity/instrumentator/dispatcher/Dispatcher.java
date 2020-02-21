@@ -408,6 +408,7 @@ public class Dispatcher implements Runnable {
 		ProcessorThread.getMongoDbParameterValue(noSQLOperationalBean.getApiCallArgs(), params);
 		eventBean.setEventCategory(MONGO);
 		eventBean.setParameters(params);
+		K2Instrumentator.JA_HEALTH_CHECK.getProtectedDB().add(MONGO);
 		return eventBean;
 	}
 
