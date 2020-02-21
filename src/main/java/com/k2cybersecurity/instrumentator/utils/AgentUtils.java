@@ -92,7 +92,6 @@ public class AgentUtils {
 
 	public void createProtectedVulnerabilties(TypeDescription typeDescription, ClassLoader classLoader) {
 		String className = typeDescription.getName();
-
 		// NAME_BASED_HOOKS checks
 		if (StringUtils.equals(className, "java.lang.ProcessImpl")) {
 			getProtectedVulnerabilties().add("RCE");
@@ -126,12 +125,6 @@ public class AgentUtils {
 			getProtectedVulnerabilties().add("CRYPTO");
 		} else if (StringUtils.equals(className, "java.security.MessageDigest")) {
 			getProtectedVulnerabilties().add("HASH");
-		} else if (StringUtils.contains(className, "javax.servlet.ServletResponse")) {
-			getProtectedVulnerabilties().add("RXSS");
-		} else if (StringUtils.contains(className, "javax.servlet.http.HttpSession")) {
-			getProtectedVulnerabilties().add("TRUST_BOUNDARY");
-		} else if (StringUtils.contains(className, "javax.servlet.http.HttpServletResponse")) {
-			getProtectedVulnerabilties().add("SECURE_COOKIE");
 		} else {
 			// TYPE_BASED_HOOKS checks
 			try {
@@ -141,6 +134,12 @@ public class AgentUtils {
 					getProtectedVulnerabilties().add("RCI");
 				} else if(StringUtils.equals("javax.naming.directory.DirContext", className) || typeDescription.isInHierarchyWith(Class.forName("javax.naming.directory.DirContext", false, classLoader))) {
 					getProtectedVulnerabilties().add("LDAP");
+				} else if (StringUtils.equals("javax.servlet.ServletResponse", className) || typeDescription.isInHierarchyWith(Class.forName("javax.servlet.ServletResponse", false, classLoader))) {
+					getProtectedVulnerabilties().add("RXSS");
+				} else if (StringUtils.equals("javax.servlet.http.HttpServletResponse", className) || typeDescription.isInHierarchyWith(Class.forName("javax.servlet.http.HttpServletResponse", false, classLoader))) {
+					getProtectedVulnerabilties().add("SECURE_COOKIE");
+				} else if (StringUtils.equals("javax.servlet.http.HttpSession", className) || typeDescription.isInHierarchyWith(Class.forName("javax.servlet.http.HttpSession", false, classLoader))) {
+					getProtectedVulnerabilties().add("TRUST_BOUNDARY");
 				}
 			} catch (ClassNotFoundException e) {
 				logger.log(LogLevel.ERROR,
