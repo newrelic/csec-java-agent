@@ -440,12 +440,12 @@ public interface IAgentConstants {
 	String ERROR_WHILE_INITIALISING_THE_K2_AGENT = "Error while initialising the K2 Agent :";
 	
 	// IPScheduledThread.java file constants
-	String HOST_IP_PROPERTIES_FILE = "/etc/k2-adp/hostip.properties";
+	String HOST_IP_PROPERTIES_FILE = "/opt/k2-ic/hostip.properties";
 
-	String IPSCHEDULEDTHREAD_ = "K2-ipScheduledThread-";
+	String HCSCHEDULEDTHREAD_ = "K2-hcScheduledThread-";
 	String ACK_MSG = "ACK";
-
 	// EventThreadPool.java file constants
+
 	String K2_JAVA_AGENT = "K2-Java-Agent-";
 
 	// LoggingInterceptor Constants
@@ -458,7 +458,7 @@ public interface IAgentConstants {
 	String JAR_PATH_FETCH_SUCCESS_MSG = "getJarPathResultExecutorService result fetched successfully.";
 	String JAR_PATH_EMPTY_RESULT_ERR = "getJarPathResultExecutorService result is empty.";
 	String JAR_PATH_TIMEOUT_ERR = "Timeout reached waiting for getJarPathResultExecutorService.";
-	String HOST_PROP_FILE_NAME = "/etc/k2-adp/hostip.properties";
+	String HOST_PROP_FILE_NAME = "/opt/k2-ic/hostip.properties";
 	String HOST_IP_FOUND_MSG = "hostip found: ";
 	String JA_CONNECT_SUCCESS_MSG = "K2-JavaAgent installed successfully.";
 	String PROC_DIR = "/proc/";
@@ -537,4 +537,6 @@ public interface IAgentConstants {
 	String JAVA_SECURITY_MESSAGEDIGEST_GETINSTANCE_STRING = "public static java.security.MessageDigest java.security.MessageDigest.getInstance(java.lang.String) throws java.security.NoSuchAlgorithmException";
 	String JAVA_SECURITY_MESSAGEDIGEST_GETINSTANCE_STRING_STRING = "public static java.security.MessageDigest java.security.MessageDigest.getInstance(java.lang.String,java.lang.String) throws java.security.NoSuchAlgorithmException,java.security.NoSuchProviderException";
 	String JAVA_SECURITY_MESSAGEDIGEST_GETINSTANCE_STRING_PROVIDER = "public static java.security.MessageDigest java.security.MessageDigest.getInstance(java.lang.String,java.security.Provider) throws java.security.NoSuchAlgorithmException";
+	String BLOCKING_END_TIME = "blockingEndTime";
+	String ERROR_WHILE_DETERMINING_HOSTIP_FROM_DEFAULT_GATEWAY = "Error while determining hostip from default gateway";
 }

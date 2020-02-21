@@ -37,6 +37,8 @@ public class Dispatcher implements Runnable {
 	public static final char CH_DOT = '.';
 	public static final String EMPTY_FILE_SHA = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855";
 	public static final String DROPPING_APPLICATION_INFO_POSTING_DUE_TO_SIZE_0 = "Dropping application info posting due to size 0 : ";
+	public static final String QUESTION_CHAR = "?";
+	public static final String SLASH = "/";
 	private HttpRequestBean httpRequestBean;
 	private AgentMetaData metaData;
 	private Object event;
@@ -87,7 +89,7 @@ public class Dispatcher implements Runnable {
 
 	@Override
 	public void run() {
-//		printDispatch();
+//        printDispatch();
 		try {
 			if (vulnerabilityCaseType.equals(VulnerabilityCaseType.REFLECTED_XSS)) {
 				String xssConstruct = CallbackUtils.checkForReflectedXSS(httpRequestBean);
@@ -165,7 +167,8 @@ public class Dispatcher implements Runnable {
 			FileOperationalBean fileOperationalBean = (FileOperationalBean) event;
 			eventBean = setGenericProperties(fileOperationalBean, eventBean);
 			eventBean = prepareFileEvent(eventBean, fileOperationalBean);
-			if (allowedExtensionFileIO(eventBean.getParameters(), eventBean.getSourceMethod())) {
+			String URL = StringUtils.substringBefore(httpRequestBean.getUrl(), QUESTION_CHAR);
+			if (allowedExtensionFileIO(eventBean.getParameters(), eventBean.getSourceMethod(), URL)) {
 //				System.out.println("------- Event ByPass -----------");
 				return;
 			}
@@ -174,6 +177,12 @@ public class Dispatcher implements Runnable {
 			ForkExecOperationalBean operationalBean = (ForkExecOperationalBean) event;
 			eventBean = setGenericProperties(operationalBean, eventBean);
 			eventBean = prepareSystemCommandEvent(eventBean, operationalBean);
+			break;
+		case SYSTEM_EXIT:
+			SystemExitOperationalBean systemExitOperationalBean = (SystemExitOperationalBean) event;
+			eventBean = setGenericProperties(systemExitOperationalBean, eventBean);
+			eventBean = prepareSystemExitEvent(eventBean, systemExitOperationalBean);
+			
 			break;
 		case SQL_DB_COMMAND:
 			List<SQLOperationalBean> operationalList = (List<SQLOperationalBean>) event;
@@ -262,6 +271,13 @@ public class Dispatcher implements Runnable {
 			JSInjectionOperationalBean jsInjectionOperationalBean) {
 		JSONArray params = new JSONArray();
 		params.add(jsInjectionOperationalBean.getJavaScriptCode());
+		eventBean.setParameters(params);
+		return eventBean;
+	}
+	private JavaAgentEventBean prepareSystemExitEvent(JavaAgentEventBean eventBean,
+			SystemExitOperationalBean systemExitOperationalBean) {
+		JSONArray params = new JSONArray();
+		params.add(systemExitOperationalBean.getExitCode());
 		eventBean.setParameters(params);
 		return eventBean;
 	}
@@ -431,18 +447,20 @@ public class Dispatcher implements Runnable {
 		return eventBean;
 	}
 
-	private boolean allowedExtensionFileIO(JSONArray params, String sourceString) {
+	private boolean allowedExtensionFileIO(JSONArray params, String sourceString, String url) {
 		if (JAVA_IO_FILE_INPUTSTREAM_OPEN.equals(sourceString)) {
 			for (int i = 0; i < params.size(); i++) {
 				String filePath = params.get(i).toString();
-				String extension = StringUtils.EMPTY;
 
-				int k = filePath.lastIndexOf(CH_DOT);
-				if (k > 0) {
-					extension = filePath.substring(k + 1).toLowerCase();
-
+				if(StringUtils.containsIgnoreCase(filePath, SLASH)){
+					filePath = StringUtils.substringAfterLast(filePath, SLASH);
 				}
-				if (ALLOWED_EXTENSIONS.contains(extension))
+
+				if(StringUtils.containsIgnoreCase(url, SLASH)){
+					url = StringUtils.substringAfterLast(url, SLASH);
+				}
+
+				if (StringUtils.equals(url, filePath))
 					return true;
 			}
 		}
@@ -465,7 +483,8 @@ public class Dispatcher implements Runnable {
 					|| VulnerabilityCaseType.FILE_INTEGRITY.equals(vulnerabilityCaseType)
 					|| VulnerabilityCaseType.NOSQL_DB_COMMAND.equals(vulnerabilityCaseType)
 					|| VulnerabilityCaseType.FILE_OPERATION.equals(vulnerabilityCaseType)
-					|| VulnerabilityCaseType.HTTP_REQUEST.equals(vulnerabilityCaseType)) {
+					|| VulnerabilityCaseType.HTTP_REQUEST.equals(vulnerabilityCaseType)
+					|| VulnerabilityCaseType.SYSTEM_EXIT.equals(vulnerabilityCaseType)) {
 				rciTriggerCheck(i, eventBean, klassName);
 				xxeTriggerCheck(i, eventBean, klassName);
 				deserializationTriggerCheck(i, eventBean, klassName);

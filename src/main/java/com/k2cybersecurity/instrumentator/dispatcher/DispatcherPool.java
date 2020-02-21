@@ -1,6 +1,8 @@
 package com.k2cybersecurity.instrumentator.dispatcher;
 
 import com.k2cybersecurity.instrumentator.K2Instrumentator;
+import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
+import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.logging.EventThreadPool.EventAbortPolicy;
 import com.k2cybersecurity.intcodeagent.logging.IAgentConstants;
 import com.k2cybersecurity.intcodeagent.models.javaagent.AgentMetaData;
@@ -18,6 +20,8 @@ public class DispatcherPool {
 	 * Thread pool executor.
 	 */
 	private ThreadPoolExecutor executor;
+	private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
+
 
 	private static DispatcherPool instance;
 
@@ -86,10 +90,16 @@ public class DispatcherPool {
 
 	public void dispatchEvent(HttpRequestBean httpRequestBean, AgentMetaData metaData, StackTraceElement[] trace,
 			Object event, VulnerabilityCaseType vulnerabilityCaseType) {
+		if(executor.isShutdown()){
+			return;
+		}
 		this.executor.submit(new Dispatcher(httpRequestBean, metaData, trace, event, vulnerabilityCaseType));
 	}
 
 	public void dispatchAppInfo(Object event, VulnerabilityCaseType vulnerabilityCaseType) {
+		if(executor.isShutdown()){
+			return;
+		}
 		this.executor.submit(new Dispatcher(event, vulnerabilityCaseType));
 	}
 
@@ -105,12 +115,38 @@ public class DispatcherPool {
 	 */
 	public void dispatchEvent(HttpRequestBean httpRequestBean, String sourceString, String exectionId, long startTime,
 			StackTraceElement[] trace, VulnerabilityCaseType reflectedXss) {
+		if(executor.isShutdown()){
+			return;
+		}
 		this.executor.submit(new Dispatcher(httpRequestBean, trace, reflectedXss, sourceString, exectionId, startTime));
 	}
 
 	public void dispatchEvent(HttpRequestBean httpRequestBean, AgentMetaData metaData, StackTraceElement[] trace,
 			FileOperationalBean event, FileIntegrityBean fbean, VulnerabilityCaseType vulnerabilityCaseType) {
+		if(executor.isShutdown()){
+			return;
+		}
 		this.executor.submit(new Dispatcher(httpRequestBean, metaData, trace, event, fbean, vulnerabilityCaseType));
+	}
+
+	public void shutDownThreadPoolExecutor() {
+
+		if (executor != null) {
+			try {
+				executor.shutdown(); // disable new tasks from being submitted
+				if (!executor.awaitTermination(1, TimeUnit.SECONDS)) {
+					// wait for termination for a timeout
+					executor.shutdownNow(); // cancel currently executing tasks
+
+					if (!executor.awaitTermination(1, TimeUnit.SECONDS)) {
+						logger.log(LogLevel.SEVERE, "Thread pool executor did not terminate",
+								DispatcherPool.class.getName());
+					}
+				}
+			} catch (InterruptedException e) {
+			}
+		}
+
 	}
 
 }

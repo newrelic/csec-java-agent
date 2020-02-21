@@ -21,6 +21,8 @@ public class Hooks {
 
 		// HTTP request hooks
 		TYPE_BASED_HOOKS.put("javax.servlet.GenericServlet", Arrays.asList("service"));
+		TYPE_BASED_HOOKS.put("javax.servlet.jsp.HttpJspPage", Arrays.asList("_jspService"));
+
 		TYPE_BASED_HOOKS.put("javax.servlet.ServletInputStream", Arrays.asList("read", "readLine"));
 		TYPE_BASED_HOOKS.put("javax.servlet.ServletOutputStream", Arrays.asList("print", "write", "println"));
 
@@ -78,6 +80,9 @@ public class Hooks {
 
 		// Forkexec hooks
 		NAME_BASED_HOOKS.put("java.lang.ProcessImpl", Arrays.asList("start"));
+		
+		//System Exit hooks
+		NAME_BASED_HOOKS.put("java.lang.Shutdown", Arrays.asList("exit"));
 
 		// File Hooks
 		NAME_BASED_HOOKS.put("java.io.FileOutputStream", Arrays.asList("open"));
@@ -188,6 +193,9 @@ public class Hooks {
 
 		// HTTP request
 		DECORATOR_ENTRY.put("javax.servlet.GenericServlet.service",
+				"com.k2cybersecurity.instrumentator.decorators.httpservice");
+
+		DECORATOR_ENTRY.put("javax.servlet.jsp.HttpJspPage._jspService",
 				"com.k2cybersecurity.instrumentator.decorators.httpservice");
 
 		DECORATOR_ENTRY.put("javax.servlet.ServletInputStream.read",
@@ -336,6 +344,9 @@ public class Hooks {
 
 		// Forkexec
 		DECORATOR_ENTRY.put("java.lang.ProcessImpl.start", "com.k2cybersecurity.instrumentator.decorators.forkexec");
+		
+		// System exit
+		DECORATOR_ENTRY.put("java.lang.Shutdown.exit", "com.k2cybersecurity.instrumentator.decorators.systemexit");
 
 		// File
 		DECORATOR_ENTRY.put("java.io.FileOutputStream.open",

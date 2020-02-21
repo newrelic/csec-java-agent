@@ -1,5 +1,6 @@
 package com.k2cybersecurity.instrumentator.utils;
 
+import com.k2cybersecurity.instrumentator.custom.*;
 import com.k2cybersecurity.instrumentator.dispatcher.EventDispatcher;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
@@ -181,9 +182,9 @@ public class CallbackUtils {
         while (htmlStartTagMatcher.find()) {
             if (StringUtils.isNotBlank(htmlStartTagMatcher.group(1)) && StringUtils.equalsIgnoreCase(htmlStartTagMatcher.group(1).trim(), SCRIPT)) {
                 int endTagStartIndex = StringUtils.indexOfIgnoreCase(combinedData, SCRIPT_END, htmlStartTagMatcher.end());
-                String body = StringUtils.substring(combinedData, htmlStartTagMatcher.end(), endTagStartIndex).trim();
+                String body = StringUtils.substring(combinedData, htmlStartTagMatcher.end(), endTagStartIndex);
                 if (StringUtils.isNotBlank(body)) {
-                    attackConstructs.add(body);
+                    attackConstructs.add(htmlStartTagMatcher.group() + body);
                 }
             }
 
@@ -199,7 +200,7 @@ public class CallbackUtils {
                             || StringUtils.equalsIgnoreCase(attribKey, SRC)
                             || StringUtils.equalsIgnoreCase(attribKey, HREF)
                             || StringUtils.containsIgnoreCase(HtmlEscape.unescapeHtml(attribVal), JAVASCRIPT))) {
-                        attackConstructs.add(attribMatcher.group());
+                        attackConstructs.add(htmlStartTagMatcher.group());
                     }
                 }
             }
@@ -575,5 +576,18 @@ public class CallbackUtils {
 //            e.printStackTrace();
         }
         return false;
+    }
+
+    public static void cleanUpAllStates(){
+        // Clean up
+        ThreadLocalHTTPServiceLock.getInstance().resetLock();
+        ThreadLocalHttpMap.getInstance().cleanState();
+        ThreadLocalDBMap.getInstance().clearAll();
+        ThreadLocalSessionMap.getInstance().clearAll();
+        ThreadLocalLDAPMap.getInstance().clearAll();
+        ThreadLocalExecutionMap.getInstance().cleanUp();
+        ThreadLocalLdaptiveMap.getInstance().clearAll();
+        ThreadLocalXpathSaxonMap.getInstance().clearAll();
+        ThreadLocalXQuerySaxonMap.getInstance().clearAll();
     }
 }

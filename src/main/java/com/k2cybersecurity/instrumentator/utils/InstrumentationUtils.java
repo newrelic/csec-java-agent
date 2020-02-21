@@ -1,22 +1,29 @@
 package com.k2cybersecurity.instrumentator.utils;
 
+import com.k2cybersecurity.instrumentator.AgentNew;
 import com.k2cybersecurity.instrumentator.Hooks;
 import com.k2cybersecurity.instrumentator.K2Instrumentator;
-import com.k2cybersecurity.instrumentator.custom.ClassloaderAdjustments;
+import com.k2cybersecurity.instrumentator.custom.ByteBuddyElementMatchers;
+import com.k2cybersecurity.instrumentator.dispatcher.DispatcherPool;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
-import com.k2cybersecurity.intcodeagent.logging.IPScheduledThread;
+import com.k2cybersecurity.intcodeagent.logging.EventThreadPool;
+import com.k2cybersecurity.intcodeagent.logging.HealthCheckScheduleThread;
 import com.k2cybersecurity.intcodeagent.logging.ServletEventPool;
 import com.k2cybersecurity.intcodeagent.models.javaagent.ShutDownEvent;
 import com.k2cybersecurity.intcodeagent.websocket.EventSendPool;
 import com.k2cybersecurity.intcodeagent.websocket.WSClient;
 import net.bytebuddy.agent.builder.AgentBuilder;
+import net.bytebuddy.agent.builder.ResettableClassFileTransformer;
 import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.dynamic.DynamicType;
 import net.bytebuddy.utility.JavaModule;
+import org.apache.commons.lang3.tuple.Pair;
 
+import java.lang.instrument.Instrumentation;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -45,6 +52,8 @@ public class InstrumentationUtils {
 
 	private static Boolean IAST = false;
 
+	public static ResettableClassFileTransformer resettableClassFileTransformer;
+
 	public static AgentBuilder doInstrument(AgentBuilder builder, Map<String, List<String>> hookMap,
 			String typeOfHook) {
 		for (Map.Entry<String, List<String>> entry : hookMap.entrySet()) {
@@ -60,32 +69,27 @@ public class InstrumentationUtils {
 					junction = junction.and(named(sourceClass));
 					break;
 				case TYPE_BASED:
-					junction = junction.and(hasSuperType(named(sourceClass)));
+					junction = junction.and(ByteBuddyElementMatchers.safeHasSuperType(named(sourceClass)));
+					//                    junction = junction.and(hasSuperType(named(sourceClass)));
+
 					break;
 				default:
 					break;
 				}
 				builder = junction.transform(new AgentBuilder.Transformer() {
-					@Override
-					public DynamicType.Builder<?> transform(DynamicType.Builder<?> builder,
+					@Override public DynamicType.Builder<?> transform(DynamicType.Builder<?> builder,
 							TypeDescription typeDescription, ClassLoader classLoader, JavaModule javaModule) {
 						try {
-//							System.out.println(String.format("Came to instrument : %s::%s for key : %s : %s",
-//									sourceClass, method, (sourceClass + "." + method), typeDescription.getName()));
 
-							if (K2Instrumentator.hookedAPIs.contains(typeDescription.getName() + DOT + method)) {
-								return builder;
-							}
+							//							System.out.println(String.format("Instrumenting : %s::%s for key : %s : %s", sourceClass,
+							//									method, (sourceClass + "." + method), typeDescription.getName()));
+							Class methodEntryDecorator = Class
+									.forName(Hooks.DECORATOR_ENTRY.get(sourceClass + DOT + method) + DOT + METHOD_ENTRY,
+											true, classLoader);
 
-//							System.out.println(String.format("Instrumenting : %s::%s for key : %s : %s", sourceClass,
-//									method, (sourceClass + "." + method), typeDescription.getName()));
-							Class methodEntryDecorator = Class.forName(
-									Hooks.DECORATOR_ENTRY.get(sourceClass + DOT + method) + DOT + METHOD_ENTRY, true,
-									classLoader);
-
-							Class methodExitDecorator = Class.forName(
-									Hooks.DECORATOR_ENTRY.get(sourceClass + DOT + method) + DOT + METHOD_EXIT, true,
-									classLoader);
+							Class methodExitDecorator = Class
+									.forName(Hooks.DECORATOR_ENTRY.get(sourceClass + DOT + method) + DOT + METHOD_EXIT,
+											true, classLoader);
 							Class methodVoidExitDecorator = Class.forName(
 									Hooks.DECORATOR_ENTRY.get(sourceClass + DOT + method) + DOT + METHOD_VOID_EXIT,
 									true, classLoader);
@@ -96,44 +100,38 @@ public class InstrumentationUtils {
 							Class staticMethodExitDecorator = Class.forName(
 									Hooks.DECORATOR_ENTRY.get(sourceClass + DOT + method) + DOT + STATIC_METHOD_EXIT,
 									true, classLoader);
-							Class staticMethodVoidExitDecorator = Class
-									.forName(Hooks.DECORATOR_ENTRY.get(sourceClass + DOT + method) + DOT
+							Class staticMethodVoidExitDecorator = Class.forName(
+									Hooks.DECORATOR_ENTRY.get(sourceClass + DOT + method) + DOT
 											+ STATIC_METHOD_VOID_EXIT, true, classLoader);
 
 							Class constructorExitDecorator = Class.forName(
 									Hooks.DECORATOR_ENTRY.get(sourceClass + DOT + method) + DOT + CONSTRUCTOR_EXIT,
 									true, classLoader);
-							K2Instrumentator.hookedAPIs.add(typeDescription.getName() + DOT + method);
 							if (method == null) {
-								return builder.visit(Advice.to(staticMethodEntryDecorator, constructorExitDecorator)
+								return builder.visit(Advice.to(staticMethodEntryDecorator, constructorExitDecorator,
+										new K2ClassLocater(staticMethodEntryDecorator.getClassLoader()))
 										.on(isConstructor()));
 							}
-							return builder
-									.visit(Advice
-											.to(methodEntryDecorator, methodExitDecorator,
-													new K2ClassLocater(methodEntryDecorator.getClassLoader()))
-											.on(not(isStatic())
-													.and(not(isConstructor()).and(not(returns(TypeDescription.VOID)))
-															.and(hasMethodName(method)))))
-									.visit(Advice
-											.to(methodEntryDecorator, methodVoidExitDecorator,
-													new K2ClassLocater(methodEntryDecorator.getClassLoader()))
-											.on(not(isStatic()).and(not(isConstructor())
-													.and(returns(TypeDescription.VOID)).and(hasMethodName(method)))))
-									.visit(Advice
-											.to(staticMethodEntryDecorator, staticMethodExitDecorator,
-													new K2ClassLocater(methodEntryDecorator.getClassLoader()))
-											.on(isStatic()
-													.and(not(isConstructor()).and(not(returns(TypeDescription.VOID)))
-															.and(hasMethodName(method)))))
-									.visit(Advice
-											.to(staticMethodEntryDecorator, staticMethodVoidExitDecorator,
-													new K2ClassLocater(methodEntryDecorator.getClassLoader()))
-											.on(isStatic().and(not(isConstructor())).and(returns(TypeDescription.VOID))
-													.and(hasMethodName(method))));
+							return builder.visit(Advice.to(methodEntryDecorator, methodExitDecorator,
+									new K2ClassLocater(methodEntryDecorator.getClassLoader())).on(not(isStatic())
+									.and(not(isConstructor()).and(not(returns(TypeDescription.VOID)))
+											.and(hasMethodName(method))))).visit(Advice
+									.to(methodEntryDecorator, methodVoidExitDecorator,
+											new K2ClassLocater(methodEntryDecorator.getClassLoader()))
+									.on(not(isStatic()).and(not(isConstructor()).and(returns(TypeDescription.VOID))
+											.and(hasMethodName(method))))).visit(Advice
+									.to(staticMethodEntryDecorator, staticMethodExitDecorator,
+											new K2ClassLocater(methodEntryDecorator.getClassLoader())).on(isStatic()
+											.and(not(isConstructor()).and(not(returns(TypeDescription.VOID)))
+													.and(hasMethodName(method))))).visit(Advice
+									.to(staticMethodEntryDecorator, staticMethodVoidExitDecorator,
+											new K2ClassLocater(methodEntryDecorator.getClassLoader()))
+									.on(isStatic().and(not(isConstructor())).and(returns(TypeDescription.VOID))
+											.and(hasMethodName(method))));
 						} catch (ClassNotFoundException e) {
-							logger.log(LogLevel.ERROR, String.format(FAILED_TO_INSTRUMENT_S_S_DUE_TO_ERROR_S,
-									sourceClass, method, e), InstrumentationUtils.class.getName());
+							logger.log(LogLevel.ERROR,
+									String.format(FAILED_TO_INSTRUMENT_S_S_DUE_TO_ERROR_S, sourceClass, method, e),
+									InstrumentationUtils.class.getName());
 						}
 						return builder;
 					}
@@ -143,7 +141,8 @@ public class InstrumentationUtils {
 		return builder;
 	}
 
-	public static void shutdownLogic() {
+	public static void shutdownLogic(boolean doResetInstrumentation) {
+		System.out.println("K2 Collector's shutdown hooked called.");
 		ShutDownEvent shutDownEvent = new ShutDownEvent();
 		shutDownEvent.setApplicationUUID(K2Instrumentator.APPLICATION_UUID);
 		shutDownEvent.setStatus(TERMINATING);
@@ -158,22 +157,23 @@ public class InstrumentationUtils {
 		} catch (URISyntaxException | InterruptedException e) {
 		}
 		ServletEventPool.getInstance().shutDownThreadPoolExecutor();
-		IPScheduledThread.getInstance().shutDownThreadPoolExecutor();
+		HealthCheckScheduleThread.getInstance().shutDownThreadPoolExecutor();
+		EventThreadPool.getInstance().shutDownThreadPoolExecutor();
+		DispatcherPool.getInstance().shutDownThreadPoolExecutor();
+		EventSendPool.getInstance().shutDownThreadPoolExecutor();
+		try {
+			if (doResetInstrumentation) {
+				logger.log(LogLevel.INFO, "K2 instrumentation reset result : " + resettableClassFileTransformer
+								.reset(AgentNew.gobalInstrumentation, AgentBuilder.RedefinitionStrategy.RETRANSFORMATION),
+						InstrumentationUtils.class.getName());
+			}
 
-//		Agent.globalInstr.removeTransformer(classTransformer);
-		logger.log(LogLevel.SEVERE, JAVA_AGENT_SHUTDOWN_COMPLETE, InstrumentationUtils.class.getName());
-	}
-
-	public static boolean classLoadingAdjustments(String className) {
-		switch (className) {
-		case ORG_JBOSS_MODULES_MAIN:
-			ClassloaderAdjustments.jbossSpecificAdjustments();
-			return true;
-		case ORG_OSGI_FRAMEWORK_BUNDLE:
-			ClassloaderAdjustments.osgiSpecificAdjustments();
-			return true;
+			retransformHookedClasses(AgentNew.gobalInstrumentation);
+		} catch (Exception e) {
+			logger.log(LogLevel.SEVERE, "Error while resetting K2 instrumentation : ", e,
+					InstrumentationUtils.class.getName());
 		}
-		return false;
+		logger.log(LogLevel.SEVERE, JAVA_AGENT_SHUTDOWN_COMPLETE, InstrumentationUtils.class.getName());
 	}
 
 	public static Boolean getIAST() {
@@ -182,6 +182,31 @@ public class InstrumentationUtils {
 
 	public static void setIAST(Boolean iAST) {
 		IAST = iAST;
+	}
+
+	public static void retransformAllLoadedClasses(Instrumentation instrumentation) {
+		for (Class klass : instrumentation.getAllLoadedClasses()) {
+			if (instrumentation.isModifiableClass(klass)) {
+				try {
+					instrumentation.retransformClasses(klass);
+				} catch (Exception e) {
+					logger.log(LogLevel.SEVERE, "Error while retransformAllLoadedClasses : ", e,
+							InstrumentationUtils.class.getName());
+				}
+			}
+		}
+	}
+
+	public static void retransformHookedClasses(Instrumentation instrumentation) {
+		for (Pair<String, ClassLoader> pair : new ArrayList<>(AgentUtils.getInstance().getTransformedClasses())) {
+			try {
+				Class klass = Class.forName(pair.getLeft(), false, pair.getRight());
+				instrumentation.retransformClasses(klass);
+			} catch (Exception e) {
+				logger.log(LogLevel.SEVERE, "Error while retransformHookedClasses : ", e,
+						InstrumentationUtils.class.getName());
+			}
+		}
 	}
 
 }

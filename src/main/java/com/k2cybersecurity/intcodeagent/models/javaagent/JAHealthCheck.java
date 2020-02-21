@@ -48,7 +48,7 @@ public class JAHealthCheck extends AgentBasicInfo{
 		this.eventSentCount = new AtomicInteger(0);
 		this.setInstrumentedMethods(new JSONArray());
 		this.setProtectedDB(new JSONArray());
-		this.setIsHost(K2Instrumentator.APPLICATION_INFO_BEAN.getIsHost());
+		this.setIsHost(K2Instrumentator.APPLICATION_INFO_BEAN.getIdentifier().getIsHost());
 //		this.setLibPath();
 		logger.log(LogLevel.INFO,"JA Healthcheck created : "+ this.toString(), JAHealthCheck.class.getName());
 	}

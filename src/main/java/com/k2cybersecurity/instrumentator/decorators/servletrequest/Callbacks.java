@@ -14,19 +14,19 @@ public class Callbacks {
 
 	public static void doOnEnter(String sourceString, String className, String methodName, Object obj, Object[] args,
 			String exectionId) {
-//		System.out.println("Came to servletrequest hook :" + exectionId + " :: " + sourceString);
-//		if (!ThreadLocalHttpMap.getInstance().isServiceMethodEncountered() && !ThreadLocalOperationLock.getInstance()
-//				.isAcquired()) {
-//			try {
-//				ThreadLocalOperationLock.getInstance().acquire();
-//				if (obj == null && args != null && args.length == 1 && args[0] != null) {
-////					System.out.println("Setting request  : " + exectionId);
-//					ThreadLocalHttpMap.getInstance().setHttpRequest(args[0]);
-//				}
-//			} finally {
-//				ThreadLocalOperationLock.getInstance().release();
-//			}
-//		}
+		//		System.out.println("Came to servletrequest hook :" + exectionId + " :: " + sourceString);
+		//		if (!ThreadLocalHttpMap.getInstance().isServiceMethodEncountered() && !ThreadLocalOperationLock.getInstance()
+		//				.isAcquired()) {
+		//			try {
+		//				ThreadLocalOperationLock.getInstance().acquire();
+		//				if (obj == null && args != null && args.length == 1 && args[0] != null) {
+		////					System.out.println("Setting request  : " + exectionId);
+		//					ThreadLocalHttpMap.getInstance().setHttpRequest(args[0]);
+		//				}
+		//			} finally {
+		//				ThreadLocalOperationLock.getInstance().release();
+		//			}
+		//		}
 	}
 
 	public static void doOnExit(String sourceString, String className, String methodName, Object obj, Object[] args,
@@ -35,9 +35,9 @@ public class Callbacks {
 			try {
 				ThreadLocalOperationLock.getInstance().acquire();
 
-
-
-				if (!ThreadLocalHttpMap.getInstance().isEmpty() && obj !=null && ThreadLocalHttpMap.getInstance().getHttpRequest() !=null && ThreadLocalHttpMap.getInstance().getHttpRequest().hashCode() == obj.hashCode()) {
+				if (!ThreadLocalHttpMap.getInstance().isEmpty() && obj != null
+						&& ThreadLocalHttpMap.getInstance().getHttpRequest() != null
+						&& ThreadLocalHttpMap.getInstance().getHttpRequest().hashCode() == obj.hashCode()) {
 					if (StringUtils.equals(methodName, GET_READER)) {
 						ThreadLocalHttpMap.getInstance().setRequestReader(returnVal);
 						ThreadLocalHTTPIOLock.getInstance().resetLock();
@@ -45,8 +45,11 @@ public class Callbacks {
 						ThreadLocalHttpMap.getInstance().setRequestInputStream(returnVal);
 						ThreadLocalHTTPIOLock.getInstance().resetLock();
 					}
-				} else if(StringUtils.equals(methodName, INIT) && !ThreadLocalHttpMap.getInstance().isServiceMethodEncountered() && obj != null && CallbackUtils.checkArgsTypeHeirarchyRequest(obj)) {
-//					System.out.println("Servlet request constructor exit aaya : "+ exectionId + " :: " + sourceString + " :: " + obj.hashCode() + " :: " + returnVal + " :: " + methodName);
+				} else if (StringUtils.equals(methodName, INIT) && !ThreadLocalHttpMap.getInstance()
+						.isServiceMethodEncountered() && obj != null && CallbackUtils
+						.checkArgsTypeHeirarchyRequest(obj)) {
+					//					System.out.println("Servlet request constructor exit aaya : "+ exectionId + " :: " + sourceString + " :: " + obj.hashCode() + " :: " + returnVal + " :: " + methodName);
+					CallbackUtils.cleanUpAllStates();
 					ThreadLocalHttpMap.getInstance().setHttpRequest(obj);
 				}
 
@@ -61,8 +64,8 @@ public class Callbacks {
 		if (!ThreadLocalOperationLock.getInstance().isAcquired()) {
 			try {
 				ThreadLocalOperationLock.getInstance().acquire();
-//				System.out.println("OnError :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj
-//						+ " - error : " + error + " - eid : " + exectionId);
+				//				System.out.println("OnError :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj
+				//						+ " - error : " + error + " - eid : " + exectionId);
 			} finally {
 				ThreadLocalOperationLock.getInstance().release();
 			}

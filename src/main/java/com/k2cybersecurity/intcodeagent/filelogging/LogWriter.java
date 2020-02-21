@@ -2,6 +2,8 @@ package com.k2cybersecurity.intcodeagent.filelogging;
 
 import com.k2cybersecurity.instrumentator.K2Instrumentator;
 import com.k2cybersecurity.intcodeagent.properties.K2JALogProperties;
+import com.k2cybersecurity.intcodeagent.websocket.FtpClient;
+
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.*;
@@ -51,7 +53,7 @@ public class LogWriter implements Runnable {
 	private static final File currentLogFile;
 
 	static {
-		fileName = "/etc/k2-adp/logs/k2_java_agent-" + K2Instrumentator.APPLICATION_UUID + ".log";
+		fileName = "/tmp/k2_java_agent-" + K2Instrumentator.APPLICATION_UUID + ".log";
 		currentLogFile = new File(fileName);
 		currentLogFileName = fileName;
 		try {
@@ -148,7 +150,9 @@ public class LogWriter implements Runnable {
 			logFileCounter++;
 			File rolloverFile = new File(fileName + STRING_DOT + logFileCounter);
 			currentFile.renameTo(rolloverFile);
-
+			
+			uploadLogsAndDeleteFile(rolloverFile);
+			
 			PrintWriter pw = new PrintWriter(new File(currentLogFileName));
 			pw.write(StringUtils.EMPTY);
 			pw.close();
@@ -178,5 +182,17 @@ public class LogWriter implements Runnable {
 	public static void setLogLevel(LogLevel logLevel) {
 		defaultLogLevel = logLevel.getLevel();
 	}
-
+	
+	private static void uploadLogsAndDeleteFile(File file) {
+		boolean result = FtpClient.sendLogFile(file);
+		if (result) {
+			file.delete();
+		}
+		
+	}
+	
+	public static String getFileName() {
+		return fileName;
+	}
+	
 }
