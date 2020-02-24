@@ -8,7 +8,6 @@ import com.k2cybersecurity.intcodeagent.models.operationalbean.ForkExecOperation
 import org.apache.commons.lang3.StringUtils;
 
 import java.time.Instant;
-import java.util.Arrays;
 import java.util.Map;
 
 public class Callbacks {
@@ -39,29 +38,29 @@ public class Callbacks {
 
 	public static void doOnExit(String sourceString, String className, String methodName, Object obj, Object[] args,
 			Object returnVal, String exectionId) {
-		if (!ThreadLocalHttpMap.getInstance().isEmpty() && !ThreadLocalOperationLock.getInstance().isAcquired()) {
-			try {
-				ThreadLocalOperationLock.getInstance().acquire();
-				System.out.println("OnExit :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj
-						+ " - return : " + returnVal + " - eid : " + exectionId);
-			} finally {
-				ThreadLocalOperationLock.getInstance().release();
-			}
-		}
+//		if (!ThreadLocalHttpMap.getInstance().isEmpty() && !ThreadLocalOperationLock.getInstance().isAcquired()) {
+//			try {
+//				ThreadLocalOperationLock.getInstance().acquire();
+//				System.out.println("OnExit :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj
+//						+ " - return : " + returnVal + " - eid : " + exectionId);
+//			} finally {
+//				ThreadLocalOperationLock.getInstance().release();
+//			}
+//		}
 	}
 
 	public static void doOnError(String sourceString, String className, String methodName, Object obj, Object[] args,
 			Throwable error, String exectionId) throws Throwable {
 
-		if (!ThreadLocalHttpMap.getInstance().isEmpty() && !ThreadLocalOperationLock.getInstance().isAcquired()) {
-			try {
-				ThreadLocalOperationLock.getInstance().acquire();
-				System.out.println("OnError :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj
-						+ " - error : " + error + " - eid : " + exectionId);
-			} finally {
-				ThreadLocalOperationLock.getInstance().release();
-			}
-		}
+//		if (!ThreadLocalHttpMap.getInstance().isEmpty() && !ThreadLocalOperationLock.getInstance().isAcquired()) {
+//			try {
+//				ThreadLocalOperationLock.getInstance().acquire();
+//				System.out.println("OnError :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj
+//						+ " - error : " + error + " - eid : " + exectionId);
+//			} finally {
+//				ThreadLocalOperationLock.getInstance().release();
+//			}
+//		}
 
 	}
 }
