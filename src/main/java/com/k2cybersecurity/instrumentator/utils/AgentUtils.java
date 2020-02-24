@@ -134,11 +134,11 @@ public class AgentUtils {
 					getProtectedVulnerabilties().add("RCI");
 				} else if(StringUtils.equals("javax.naming.directory.DirContext", className) || typeDescription.isInHierarchyWith(Class.forName("javax.naming.directory.DirContext", false, classLoader))) {
 					getProtectedVulnerabilties().add("LDAP");
-				} else if (StringUtils.equals("javax.servlet.ServletResponse", className) || typeDescription.isInHierarchyWith(Class.forName("javax.servlet.ServletResponse", false, classLoader))) {
+				} else if (StringUtils.contains("javax.servlet.ServletResponse", className) || typeDescription.isInHierarchyWith(Class.forName("javax.servlet.ServletResponse", false, classLoader))) {
 					getProtectedVulnerabilties().add("RXSS");
-				} else if (StringUtils.equals("javax.servlet.http.HttpServletResponse", className) || typeDescription.isInHierarchyWith(Class.forName("javax.servlet.http.HttpServletResponse", false, classLoader))) {
+				} else if (StringUtils.contains("javax.servlet.http.HttpServletResponse", className) || typeDescription.isInHierarchyWith(Class.forName("javax.servlet.http.HttpServletResponse", false, classLoader))) {
 					getProtectedVulnerabilties().add("SECURE_COOKIE");
-				} else if (StringUtils.equals("javax.servlet.http.HttpSession", className) || typeDescription.isInHierarchyWith(Class.forName("javax.servlet.http.HttpSession", false, classLoader))) {
+				} else if (StringUtils.contains("javax.servlet.http.HttpSession", className) || typeDescription.isInHierarchyWith(Class.forName("javax.servlet.http.HttpSession", false, classLoader))) {
 					getProtectedVulnerabilties().add("TRUST_BOUNDARY");
 				}
 			} catch (ClassNotFoundException e) {
