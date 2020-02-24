@@ -144,6 +144,13 @@ public class Hooks {
 		NAME_BASED_HOOKS.put("oracle.xml.xquery.compiler.parser.antlr.runtime.ANTLRReaderStream", Collections.singletonList("load"));
 		// XQuery brackit
 		NAME_BASED_HOOKS.put("org.brackit.xquery.XQuery", Arrays.asList(null, "run"));
+		
+//		//NAME_BASED_HOOKS.put("net.xqj.basex.bin.G", Collections.singletonList("executeQuery"));
+//		TYPE_BASED_HOOKS.put("javax.xml.xquery.XQExpression", Arrays.asList("executeQuery"));
+//		TYPE_BASED_HOOKS.put("javax.xml.xquery.XQConnection", Arrays.asList("prepareExpression", "createExpression"));
+//		//Zorba
+		NAME_BASED_HOOKS.put("io.zorba.api.Zorba", Collections.singletonList("compileQuery"));
+		NAME_BASED_HOOKS.put("io.zorba.api.XQuery", Arrays.asList("iterator", "compile", "execute"));
 
 		// JBoss Classloading Hook
 		NAME_BASED_HOOKS.put("org.jboss.modules.Main", Collections.singletonList("main"));
@@ -468,6 +475,16 @@ public class Hooks {
 //		NAME_BASED_HOOKS.put("org.brackit.xquery.XQuery", Arrays.asList(null, "run"));
 		DECORATOR_ENTRY.put("org.brackit.xquery.XQuery.null", "com.k2cybersecurity.instrumentator.decorators.xquery.saxoncompile");
 		DECORATOR_ENTRY.put("org.brackit.xquery.XQuery.run", "com.k2cybersecurity.instrumentator.decorators.xquery.saxon");
+//		//DECORATOR_ENTRY.put("net.xqj.basex.bin.G.executeQuery", "com.k2cybersecurity.instrumentator.decorators.xquery.saxon");
+//		DECORATOR_ENTRY.put("javax.xml.xquery.XQExpression.executeQuery", "com.k2cybersecurity.instrumentator.decorators.xquery.saxon");
+//		DECORATOR_ENTRY.put("javax.xml.xquery.XQExpression.null", "com.k2cybersecurity.instrumentator.decorators.xquery.saxon");
+//		DECORATOR_ENTRY.put("javax.xml.xquery.XQConnection.prepareExpression", "com.k2cybersecurity.instrumentator.decorators.xquery.saxon");
+//		DECORATOR_ENTRY.put("javax.xml.xquery.XQConnection.createExpression", "com.k2cybersecurity.instrumentator.decorators.xquery.saxon");
+		//Zorba
+		DECORATOR_ENTRY.put("io.zorba.api.Zorba.compileQuery", "com.k2cybersecurity.instrumentator.decorators.xquery.saxoncompile");
+		DECORATOR_ENTRY.put("io.zorba.api.XQuery.compile", "com.k2cybersecurity.instrumentator.decorators.xquery.saxoncompile");
+		DECORATOR_ENTRY.put("io.zorba.api.XQuery.iterator", "com.k2cybersecurity.instrumentator.decorators.xquery.saxon");
+		DECORATOR_ENTRY.put("io.zorba.api.XQuery.execute", "com.k2cybersecurity.instrumentator.decorators.xquery.saxon");
 		
 		// Jetty Servlet
 		DECORATOR_ENTRY.put("org.eclipse.jetty.server.Handler.handle",

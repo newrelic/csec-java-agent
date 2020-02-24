@@ -1,5 +1,6 @@
 package com.k2cybersecurity.instrumentator.decorators.xquery.saxon;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.time.Instant;
 import java.util.Arrays;
@@ -80,6 +81,24 @@ public class Callbacks {
 						EventDispatcher.dispatch(xQueryOperationalBean, VulnerabilityCaseType.XQUERY_INJECTION);
 					}
 					}
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+				} else if(sourceString.equals("public io.zorba.api.Iterator io.zorba.api.XQuery.iterator()") ||
+						sourceString.equals("public java.lang.String io.zorba.api.XQuery.execute()")) {
+					try {
+					Field ptrField = obj.getClass().getDeclaredField("swigCPtr");
+					ptrField.setAccessible(true);
+					Object ptrObject = ptrField.get(obj);
+					if(ptrObject!=null) {
+						System.out.println("PTR : "+ ptrObject.toString());
+						XQueryOperationalBean xQueryOperationalBean = ThreadLocalXQuerySaxonMap.getInstance().get(ptrObject);
+						if(xQueryOperationalBean!=null) {
+							System.out.println("In run, got Query : "+ xQueryOperationalBean.getExpression());
+							EventDispatcher.dispatch(xQueryOperationalBean, VulnerabilityCaseType.XQUERY_INJECTION);
+						}
+					}
+					
 					} catch (Exception e) {
 						e.printStackTrace();
 					}
