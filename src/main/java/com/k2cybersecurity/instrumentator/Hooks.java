@@ -262,7 +262,7 @@ public class Hooks {
 
 		DECORATOR_ENTRY.put("java.io.UnixFileSystem.delete", "com.k2cybersecurity.instrumentator.decorators.fileaccess");
 		DECORATOR_ENTRY.put("java.io.RandomAccessFile.open", "com.k2cybersecurity.instrumentator.decorators.fileaccess");
-		DECORATOR_ENTRY.put("java.io.File.list", "com.k2cybersecurity.instrumentator.decorators.fileaccess");
+		DECORATOR_ENTRY.put("java.io.File.list", "com.k2cybersecurity.instrumentator.decorators.directoryaccess");
 		DECORATOR_ENTRY.put("java.io.FileSystem.getBooleanAttributes", "com.k2cybersecurity.instrumentator.decorators.fileaccess");
 
  		// Mongo Execute
