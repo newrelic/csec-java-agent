@@ -254,7 +254,7 @@ public class Dispatcher implements Runnable {
 		if (!VulnerabilityCaseType.FILE_INTEGRITY.equals(vulnerabilityCaseType)) {
 			eventBean = processStackTrace(eventBean, vulnerabilityCaseType);
 		}
-		if (VulnerabilityCaseType.FILE_OPERATION.equals(vulnerabilityCaseType)) {
+		if (VulnerabilityCaseType.FILE_OPERATION.equals(vulnerabilityCaseType) && !StringUtils.equals(eventBean.getSourceMethod(), "public java.lang.String[] java.io.File.list()")) {
 			createEntryForFileIntegrity((FileOperationalBean) event, eventBean);
 		}
 		eventBean.setEventGenerationTime(Instant.now().toEpochMilli());
