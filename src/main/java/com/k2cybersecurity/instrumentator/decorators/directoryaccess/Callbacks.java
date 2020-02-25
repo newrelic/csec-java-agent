@@ -15,6 +15,7 @@ import com.k2cybersecurity.instrumentator.dispatcher.EventDispatcher;
 import com.k2cybersecurity.intcodeagent.models.javaagent.FileIntegrityBean;
 import com.k2cybersecurity.intcodeagent.models.javaagent.VulnerabilityCaseType;
 import com.k2cybersecurity.intcodeagent.models.operationalbean.DirectoryOperationalBean;
+import com.k2cybersecurity.intcodeagent.models.operationalbean.FileOperationalBean;
 
 public class Callbacks {
 
@@ -31,10 +32,10 @@ public class Callbacks {
 					fileName = ((File) obj).toString();
 					System.out.println("Prateek " + fileName);
 
-					DirectoryOperationalBean directoryOperationalBean = new DirectoryOperationalBean(fileName,
+					FileOperationalBean fileOperationalBean = new FileOperationalBean(fileName,
 							className, sourceString, exectionId, Instant.now().toEpochMilli());
-					System.out.println("fileOperationalBean1 : " + directoryOperationalBean);
-					EventDispatcher.dispatch(directoryOperationalBean, VulnerabilityCaseType.FILE_OPERATION);
+					System.out.println("fileOperationalBean1 : " + fileOperationalBean);
+					EventDispatcher.dispatch(fileOperationalBean, VulnerabilityCaseType.FILE_OPERATION);
 				}
 			} finally {
 				ThreadLocalOperationLock.getInstance().release();
