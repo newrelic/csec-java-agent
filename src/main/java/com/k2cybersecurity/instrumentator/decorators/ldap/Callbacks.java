@@ -25,14 +25,15 @@ public class Callbacks {
 				if (args.length != 0) {
 
 					String name = args[0].toString();
-					if (StringUtils.isNotBlank(name)) {
-						
-						String filter = args[1].toString();
-						if (StringUtils.isNotBlank(filter) && ThreadLocalLDAPMap.getInstance().put(filter)) {
-							LDAPOperationalBean ldapOperationalBean = new LDAPOperationalBean(name, filter, className, sourceString,
-									executionId, Instant.now().toEpochMilli());
-							EventDispatcher.dispatch(ldapOperationalBean, VulnerabilityCaseType.LDAP);
-						}
+					if (name == null) {
+						name = StringUtils.EMPTY;
+					}
+
+					String filter = args[1].toString();
+					if (StringUtils.isNotBlank(filter) && ThreadLocalLDAPMap.getInstance().put(filter)) {
+						LDAPOperationalBean ldapOperationalBean = new LDAPOperationalBean(name, filter, className,
+								sourceString, executionId, Instant.now().toEpochMilli());
+						EventDispatcher.dispatch(ldapOperationalBean, VulnerabilityCaseType.LDAP);
 					}
 				}
 			} finally {
