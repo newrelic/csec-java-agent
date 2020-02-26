@@ -173,7 +173,7 @@ public class CallbackUtils {
 	}
 
 	static Set<String> getXSSConstructs(String data) {
-		logger.log(LogLevel.INFO, "Came to XSS check : " + data, CallbackUtils.class.getName());
+		logger.log(LogLevel.DEBUG, "Came to XSS check : " + data, CallbackUtils.class.getName());
 		List<String> construct = new ArrayList<>();
 		boolean isAttackConstruct = false;
 		int currPos = 0;
