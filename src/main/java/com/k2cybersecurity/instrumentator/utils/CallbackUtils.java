@@ -195,6 +195,10 @@ public class CallbackUtils {
 			currPos = matcher.end() - 1;
 			tmpStartPos = tmpCurrPos = StringUtils.indexOf(data, ANGLE_END, startPos);
 
+			if(tmpCurrPos == -1 ) {
+				tmpStartPos = startPos;
+			}
+			
 			Matcher attribMatcher = attribRegex.matcher(data);
 			while (attribMatcher.find(currPos)) {
 				String attribData = attribMatcher.group().trim();
@@ -258,6 +262,10 @@ public class CallbackUtils {
 			attackConstructs.addAll(getXSSConstructs(data));
 		}
 		return attackConstructs;
+	}
+	
+	public static void main(String[] args) {
+		System.out.println(getXSSConstructs("<form><isindex formaction=\"javascript&colon;confirm(1)\""));
 	}
 
 	//    public static void main(String[] args) {
