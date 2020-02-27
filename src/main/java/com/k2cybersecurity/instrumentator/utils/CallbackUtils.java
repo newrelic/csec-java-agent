@@ -87,7 +87,7 @@ public class CallbackUtils {
 	public static final String ANGLE_START_URL_ENCODED_UPPERCASE = "%3C";
 
 	public static Pattern tagNameRegex = Pattern
-			.compile("<([!?a-zA-Z_-]+[0-9]*)", Pattern.MULTILINE | Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
+			.compile("<([a-zA-Z_-]+[0-9]*)", Pattern.MULTILINE | Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
 	public static Pattern attribRegex = Pattern.compile(
 			"([^(\\/\\s<'\")]+?)=((?:\\s*?)('|\")([\\s\\S]*?)(?:(?=(\\\\?))\\5.)*?\\3|\\S*[^>])",
 			Pattern.MULTILINE | Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
