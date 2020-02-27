@@ -264,9 +264,9 @@ public class CallbackUtils {
 		return attackConstructs;
 	}
 	
-	public static void main(String[] args) {
-		System.out.println(getXSSConstructs("<form><isindex formaction=\"javascript&colon;confirm(1)\""));
-	}
+//	public static void main(String[] args) {
+//		System.out.println(getXSSConstructs("<form><isindex formaction=\"javascript&colon;confirm(1)\""));
+//	}
 
 	//    public static void main(String[] args) {
 	//        System.out.println("Detection : " + isXSS("<script src=\"https://pastebin.com/raw/uGh7zGnN\"></script"));
