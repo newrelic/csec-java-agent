@@ -29,7 +29,7 @@ public class FtpClient {
 				ftp.connect(K2Instrumentator.hostip, 54322);
 				ftp.login("test", "test");
 				int reply = ftp.getReplyCode();
-				logger.log(LogLevel.DEBUG, "FTP server connection reply code : " + reply, WSClient.class.getName());
+				logger.log(LogLevel.DEBUG, "FTP server connection reply code : " + reply, FtpClient.class.getName());
 				if (FTPReply.isPositiveCompletion(reply)) {
 					return ftp;
 				} else {
