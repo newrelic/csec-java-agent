@@ -1,10 +1,11 @@
 package com.k2cybersecurity.intcodeagent.models.javaagent;
 
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.json.simple.JSONArray;
-
 import com.k2cybersecurity.instrumentator.K2Instrumentator;
+import com.k2cybersecurity.instrumentator.utils.AgentUtils;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.websocket.JsonConverter;
@@ -17,13 +18,7 @@ public class JAHealthCheck extends AgentBasicInfo{
 
 	private String protectedServer;
 
-	private JSONArray protectedDB;
-
-	private Boolean rceProtection;
-	
-	private Boolean ssrfProtection;
-
-	private JSONArray instrumentedMethods;
+	private Set protectedDB;
 
 	private AtomicInteger eventDropCount;
 
@@ -32,24 +27,19 @@ public class JAHealthCheck extends AgentBasicInfo{
     private AtomicInteger eventProcessed;
     
     private AtomicInteger eventSentCount;
-
-
-
-	private Boolean fileAccessProtection;
-
+	
+	private Set protectedVulnerabilties;
+	
 	public JAHealthCheck(String applicationUUID) {
 		super();
-		this.rceProtection = false;
-		this.ssrfProtection = false;
-		this.fileAccessProtection = false;
 		this.applicationUUID = applicationUUID;
+		this.setProtectedServer(K2Instrumentator.APPLICATION_INFO_BEAN.getServerInfo().getName());
 		this.eventDropCount = new AtomicInteger(0);
 		this.eventProcessed = new AtomicInteger(0);
 		this.eventSentCount = new AtomicInteger(0);
-		this.setInstrumentedMethods(new JSONArray());
-		this.setProtectedDB(new JSONArray());
+		this.setProtectedDB(new HashSet());
+		this.setProtectedVulnerabilties(AgentUtils.getInstance().getProtectedVulnerabilties());
 		this.setIsHost(K2Instrumentator.APPLICATION_INFO_BEAN.getIdentifier().getIsHost());
-//		this.setLibPath();
 		logger.log(LogLevel.INFO,"JA Healthcheck created : "+ this.toString(), JAHealthCheck.class.getName());
 	}
 
@@ -58,15 +48,11 @@ public class JAHealthCheck extends AgentBasicInfo{
 		this.applicationUUID = jaHealthCheck.applicationUUID;
 		this.protectedServer = jaHealthCheck.protectedServer;
 		this.protectedDB = jaHealthCheck.protectedDB;
-		this.rceProtection = jaHealthCheck.rceProtection;
-		this.instrumentedMethods = jaHealthCheck.instrumentedMethods;
+		this.protectedVulnerabilties = jaHealthCheck.protectedVulnerabilties;
 		this.eventDropCount = jaHealthCheck.eventDropCount;
 		this.eventProcessed = jaHealthCheck.eventProcessed;
 		this.eventSentCount = jaHealthCheck.eventSentCount;
-		this.ssrfProtection = jaHealthCheck.ssrfProtection;
-		this.fileAccessProtection = jaHealthCheck.fileAccessProtection;
 		this.isHost = jaHealthCheck.isHost;
-//		this.setLibPath();
 		logger.log(LogLevel.INFO,"JA Healthcheck created : "+ this.toString(), JAHealthCheck.class.getName());
 	}
 
@@ -116,43 +102,15 @@ public class JAHealthCheck extends AgentBasicInfo{
 	/**
 	 * @return the protectedDB
 	 */
-	public JSONArray getProtectedDB() {
+	public Set getProtectedDB() {
 		return protectedDB;
 	}
 
 	/**
 	 * @param protectedDB the protectedDB to set
 	 */
-	public void setProtectedDB(JSONArray protectedDB) {
+	public void setProtectedDB(Set protectedDB) {
 		this.protectedDB = protectedDB;
-	}
-
-	/**
-	 * @return the rceProtection
-	 */
-	public Boolean getRceProtection() {
-		return rceProtection;
-	}
-
-	/**
-	 * @param rceProtection the rceProtection to set
-	 */
-	public void setRceProtection(Boolean rceProtection) {
-		this.rceProtection = rceProtection;
-	}
-
-	/**
-	 * @return the instrumentedMethods
-	 */
-	public JSONArray getInstrumentedMethods() {
-		return instrumentedMethods;
-	}
-
-	/**
-	 * @param instrumentedMethods the instrumentedMethods to set
-	 */
-	public void setInstrumentedMethods(JSONArray instrumentedMethods) {
-		this.instrumentedMethods = instrumentedMethods;
 	}
 
 	/**
@@ -191,20 +149,6 @@ public class JAHealthCheck extends AgentBasicInfo{
 	}
 
 	/**
-	 * @return the ssrfProtection
-	 */
-	public Boolean getSsrfProtection() {
-		return ssrfProtection;
-	}
-
-	/**
-	 * @param ssrfProtection the ssrfProtection to set
-	 */
-	public void setSsrfProtection(Boolean ssrfProtection) {
-		this.ssrfProtection = ssrfProtection;
-	}
-
-	/**
 	 * @return the eventProcessed
 	 */
 	public Integer getEventProcessed() {
@@ -232,11 +176,11 @@ public class JAHealthCheck extends AgentBasicInfo{
 		this.eventSentCount.set(eventSentCount);
 	}
 
-	public Boolean getFileAccessProtection() {
-		return fileAccessProtection;
+	public Set getProtectedVulnerabilties() {
+		return protectedVulnerabilties;
 	}
 
-	public void setFileAccessProtection(Boolean fileAccessProtection) {
-		this.fileAccessProtection = fileAccessProtection;
+	public void setProtectedVulnerabilties(Set protectedVulnerabilties) {
+		this.protectedVulnerabilties = protectedVulnerabilties;
 	}
 }

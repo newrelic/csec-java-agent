@@ -25,6 +25,7 @@ public class ClassLoadListener implements AgentBuilder.Listener {
 			final boolean loaded,
 			final DynamicType dynamicType) {
 		AgentUtils.getInstance().getTransformedClasses().add(Pair.of(typeDescription.getName(), classLoader));
+		AgentUtils.getInstance().createProtectedVulnerabilties(typeDescription, classLoader);
 	}
 
 	@Override
@@ -43,6 +44,7 @@ public class ClassLoadListener implements AgentBuilder.Listener {
 			final JavaModule module,
 			final boolean loaded) {
 		//      log.debug("onComplete {}", typeName);
+		AgentUtils.getInstance().addProtectedVulnerabilties(typeName);
 	}
 
 	@Override
