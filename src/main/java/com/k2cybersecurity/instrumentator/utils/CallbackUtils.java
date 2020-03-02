@@ -255,7 +255,7 @@ public class CallbackUtils {
 				}
 			}
 			if (StringUtils.equalsIgnoreCase(tagName.trim(), SCRIPT)) {
-				int locationOfEndTag = StringUtils.indexOf(data, SCRIPT_END, currPos);
+				int locationOfEndTag = StringUtils.indexOfIgnoreCase(data, SCRIPT_END, currPos);
 				if (locationOfEndTag != -1) {
 					String body = StringUtils.substring(data, currPos + 1, locationOfEndTag);
 					if (StringUtils.isNotBlank(body)) {
@@ -285,7 +285,7 @@ public class CallbackUtils {
 //		System.out.println(getXSSConstructs("<script><?script>"));
 //	}
 
-//	    public static void main(String[] args) {
+	    public static void main(String[] args) {
 //	    	System.out.println(getXSSConstructs("<svg><script xlink:href=data&colon;,alert(\"sasas\") </script"));
 //			System.out.println(getXSSConstructs("<script><?script>"));
 //	        System.out.println("Detection : " + getXSSConstructs("<script src=\"https://pastebin.com/raw/uGh7zGnN\"></script"));
@@ -293,30 +293,41 @@ public class CallbackUtils {
 //	        System.out.println("Detection : " + getXSSConstructs("<input/onmouseover=\"javaSCRIPT&colon;confirm&lpar;1&rpar;\""));
 //	        System.out.println("Detection : " + getXSSConstructs("<script /**/>/**/alert(1)/**/</script /**/"));
 //	        System.out.println("Detection : " + getXSSConstructs("<script src=\"https://pastebin.com/raw/uGh7zGnN\"></script"));
-//	
+//
 //	        System.out.println("Detection : " + getXSSConstructs("<script src=\"http://demofilespa.s3.amazonaws.com/jfptest.js\" >"));
-//	
+//
 //	        System.out.println("Detection : " + getXSSConstructs("<<script  src=\"http://demofilespa.s3.amazonaws.com/jfptest.js\" > </script"));
-//	
+//
 //	        System.out.println("Detection : " + getXSSConstructs("<img src=\"/\" =_=\" title=\"\nonerror='prompt(1)'\">"));
-//	
+//
 //	        System.out.println("Detection : " + getXSSConstructs("<Img src = x onerror = \"javascript: window.onerror = alert; throw XSS\">"));
-//	
+//
 //	        System.out.println("Detection : " + getXSSConstructs("<IMG SRC=/ onerror=\"alert(String.fromCharCode(88,83,83))\"></img>"));
-//	
+//
 //	        System.out.println("Detection : " + getXSSConstructs("<<SCRIPT>ale\nrt(\"XSS\");//<</SCRIPT>>>>"));
-//	
+//
 //	        System.out.println("Detection : " + getXSSConstructs("<script\n" +
 //	                ">alert(1); \n" +
 //	                "</script\n" +
 //	                ">"));
-//	
+//
 //	        System.out.println("Detection : " + getXSSConstructs("<img src=x onerror= alert(1)>"));
 //	        System.out.println("Detection : " + getXSSConstructs("<img src=x onerror=alert(1)>"));
 //	        System.out.println("Detection : " + getXSSConstructs("<img onerror=alert(1) >"));
 //	        System.out.println("Detection : " + getXSSConstructs("<img src=x onerror=\"alert(1)\" > "));
-//	
-//	    }
+
+
+
+			System.out.println("Detection : " + getXSSConstructs("></SCRIPT>”>’><SCRIPT>alert(String.fromCharCode(88,83,83))</SCRIPT>"));
+			System.out.println("Detection : " + getXSSConstructs("</script>top[/al/.source+/ert/.source](1)<script>"));
+			System.out.println("Detection : " + getXSSConstructs("<IMG \"\"\"><SCRIPT>alert(\"XSS\")</SCRIPT>\"\\>"));
+			System.out.println("Detection : " + getXSSConstructs("<<SCRIPT>alert(\"XSS\");//\\<</SCRIPT>"));
+			System.out.println("Detection : " + getXSSConstructs("</TITLE><SCRIPT>alert(\"XSS\");</SCRIPT>"));
+			System.out.println("Detection : " + getXSSConstructs("<SCRIPT>alert('XSS');</SCRIPT>"));
+
+		}
+
+
 
 	/**
 	 * @return the sqlConnectionMap

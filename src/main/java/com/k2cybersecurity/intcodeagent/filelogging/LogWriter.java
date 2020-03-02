@@ -3,7 +3,6 @@ package com.k2cybersecurity.intcodeagent.filelogging;
 import com.k2cybersecurity.instrumentator.K2Instrumentator;
 import com.k2cybersecurity.intcodeagent.properties.K2JALogProperties;
 import com.k2cybersecurity.intcodeagent.websocket.FtpClient;
-
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.*;
@@ -117,7 +116,7 @@ public class LogWriter implements Runnable {
 			sb.append(this.logEntry);
 		if (this.throwableLogEntry != null) {
 //			this.throwableLogEntry.printStackTrace();
-			sb.append(this.throwableLogEntry.getMessage());
+			sb.append(this.throwableLogEntry.toString());
 			sb.append(StringUtils.LF);
 			sb.append(StringUtils.join(this.throwableLogEntry.getStackTrace(), StringUtils.LF));
 			sb.append(StringUtils.LF);
