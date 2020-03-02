@@ -87,6 +87,10 @@ public class CallbackUtils {
 	public static final String EQUALS = "=";
 	public static final String ANGLE_START = "<";
 	public static final String ANGLE_START_URL_ENCODED_UPPERCASE = "%3C";
+	public static final String FORMACTION = "formaction";
+	public static final String SRCDOC = "srcdoc";
+	public static final String DATA = "data";
+	public static final String CAME_TO_XSS_CHECK = "Came to XSS check : ";
 
 	public static Pattern tagNameRegex = Pattern
 			.compile("<([a-zA-Z_\\-]+[0-9]*|!--)", Pattern.MULTILINE | Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
@@ -175,7 +179,7 @@ public class CallbackUtils {
 	}
 
 	static Set<String> getXSSConstructs(String data) {
-		logger.log(LogLevel.DEBUG, "Came to XSS check : " + data, CallbackUtils.class.getName());
+		logger.log(LogLevel.DEBUG, CAME_TO_XSS_CHECK + data, CallbackUtils.class.getName());
 		List<String> construct = new ArrayList<>();
 		boolean isAttackConstruct = false;
 		int currPos = 0;
@@ -231,6 +235,9 @@ public class CallbackUtils {
 					if (StringUtils.isNotBlank(key) && (StringUtils.startsWithIgnoreCase(key, ON1) || StringUtils
 							.equalsIgnoreCase(key, SRC) || StringUtils.equalsIgnoreCase(key, HREF) || StringUtils
 							.equalsIgnoreCase(key, ACTION) || StringUtils
+							.equalsIgnoreCase(key, FORMACTION) || StringUtils
+							.equalsIgnoreCase(key, SRCDOC) ||  StringUtils
+							.equalsIgnoreCase(key, DATA) || StringUtils
 							.containsIgnoreCase(HtmlEscape.unescapeHtml(val), JAVASCRIPT))) {
 						isAttackConstruct = true;
 					}
