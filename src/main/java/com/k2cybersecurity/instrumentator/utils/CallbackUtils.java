@@ -207,7 +207,6 @@ public class CallbackUtils {
 					currPos = tmpCurrPos;
 					continue;
 				}
-				
 			}
 			tmpStartPos = tmpCurrPos = StringUtils.indexOf(data, ANGLE_END, startPos);
 
@@ -257,10 +256,7 @@ public class CallbackUtils {
 			}
 			if (StringUtils.equalsIgnoreCase(tagName.trim(), SCRIPT)) {
 				int locationOfEndTag = StringUtils.indexOf(data, SCRIPT_END, currPos);
-				if (locationOfEndTag == -1) {
-					construct.add(StringUtils.substring(data, startPos));
-					continue;
-				} else {
+				if (locationOfEndTag != -1) {
 					String body = StringUtils.substring(data, currPos + 1, locationOfEndTag);
 					if (StringUtils.isNotBlank(body)) {
 						construct.add(StringUtils.substring(data, startPos, currPos + 1) + body);
