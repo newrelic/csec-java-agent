@@ -95,7 +95,7 @@ public class CallbackUtils {
 	public static Pattern tagNameRegex = Pattern
 			.compile("<([a-zA-Z_\\-]+[0-9]*|!--)", Pattern.MULTILINE | Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
 	public static Pattern attribRegex = Pattern.compile(
-			"([^(\\/\\s<'\")]+?)(?:\\s*)=\\s*(('|\")([\\s\\S]*?)(?:(?=(\\\\?))\\5.)*?\\3|.+?(?=\\/>|>|\\?>|\\s|<\\/|$))",
+			"([^(\\/\\s<'\">)]+?)(?:\\s*)=\\s*(('|\")([\\s\\S]*?)(?:(?=(\\\\?))\\5.)*?\\3|.+?(?=\\/>|>|\\?>|\\s|<\\/|$))",
 			Pattern.MULTILINE | Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
 
 	private static Map<Integer, JADatabaseMetaData> sqlConnectionMap;
