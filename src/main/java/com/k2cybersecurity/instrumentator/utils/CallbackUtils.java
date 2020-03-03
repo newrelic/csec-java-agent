@@ -95,7 +95,7 @@ public class CallbackUtils {
 	public static Pattern tagNameRegex = Pattern
 			.compile("<([a-zA-Z_\\-]+[0-9]*|!--)", Pattern.MULTILINE | Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
 	public static Pattern attribRegex = Pattern.compile(
-			"([^(\\/\\s<'\")]+?)(?:\\s*)=\\s*(('|\")([\\s\\S]*?)(?:(?=(\\\\?))\\5.)*?\\3|.+?(?=\\/>|>|\\?>|\\s|<\\/))",
+			"([^(\\/\\s<'\")]+?)(?:\\s*)=\\s*(('|\")([\\s\\S]*?)(?:(?=(\\\\?))\\5.)*?\\3|.+?(?=\\/>|>|\\?>|\\s|<\\/|$))",
 			Pattern.MULTILINE | Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
 
 	private static Map<Integer, JADatabaseMetaData> sqlConnectionMap;
@@ -285,7 +285,7 @@ public class CallbackUtils {
 //		System.out.println(getXSSConstructs("<script><?script>"));
 //	}
 
-	    public static void main(String[] args) {
+//	    public static void main(String[] args) {
 //	    	System.out.println(getXSSConstructs("<svg><script xlink:href=data&colon;,alert(\"sasas\") </script"));
 //			System.out.println(getXSSConstructs("<script><?script>"));
 //	        System.out.println("Detection : " + getXSSConstructs("<script src=\"https://pastebin.com/raw/uGh7zGnN\"></script"));
@@ -318,14 +318,14 @@ public class CallbackUtils {
 
 
 
-			System.out.println("Detection : " + getXSSConstructs("></SCRIPT>”>’><SCRIPT>alert(String.fromCharCode(88,83,83))</SCRIPT>"));
-			System.out.println("Detection : " + getXSSConstructs("</script>top[/al/.source+/ert/.source](1)<script>"));
-			System.out.println("Detection : " + getXSSConstructs("<IMG \"\"\"><SCRIPT>alert(\"XSS\")</SCRIPT>\"\\>"));
-			System.out.println("Detection : " + getXSSConstructs("<<SCRIPT>alert(\"XSS\");//\\<</SCRIPT>"));
-			System.out.println("Detection : " + getXSSConstructs("</TITLE><SCRIPT>alert(\"XSS\");</SCRIPT>"));
-			System.out.println("Detection : " + getXSSConstructs("<SCRIPT>alert('XSS');</SCRIPT>"));
-
-		}
+//			System.out.println("Detection : " + getXSSConstructs("></SCRIPT>”>’><SCRIPT>alert(String.fromCharCode(88,83,83))</SCRIPT>"));
+//			System.out.println("Detection : " + getXSSConstructs("</script>top[/al/.source+/ert/.source](1)<script>"));
+//			System.out.println("Detection : " + getXSSConstructs("<IMG \"\"\"><SCRIPT>alert(\"XSS\")</SCRIPT>\"\\>"));
+//			System.out.println("Detection : " + getXSSConstructs("<<SCRIPT>alert(\"XSS\");//\\<</SCRIPT>"));
+//			System.out.println("Detection : " + getXSSConstructs("</TITLE><SCRIPT>alert(\"XSS\");</SCRIPT>"));
+//			System.out.println("Detection : " + getXSSConstructs("<SCRIPT>alert('XSS');</SCRIPT>"));
+//
+//		}
 
 
 
