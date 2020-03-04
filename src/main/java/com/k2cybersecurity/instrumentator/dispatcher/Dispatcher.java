@@ -147,7 +147,9 @@ public class Dispatcher implements Runnable {
 			ApplicationInfoBean applicationInfoBean = K2Instrumentator.APPLICATION_INFO_BEAN;
 
 			applicationInfoBean.getServerInfo().setName(ServletContextInfo.getInstance().getServerInfo());
-
+			
+			K2Instrumentator.JA_HEALTH_CHECK.setProtectedServer(ServletContextInfo.getInstance().getServerInfo());
+			
 			if (!applicationInfoBean.getServerInfo().getDeployedApplications().contains(deployedApplication)) {
 				applicationInfoBean.getServerInfo().getDeployedApplications().add(deployedApplication);
 				EventSendPool.getInstance().sendEvent(applicationInfoBean.toString());
@@ -252,7 +254,7 @@ public class Dispatcher implements Runnable {
 		if (!VulnerabilityCaseType.FILE_INTEGRITY.equals(vulnerabilityCaseType)) {
 			eventBean = processStackTrace(eventBean, vulnerabilityCaseType);
 		}
-		if (VulnerabilityCaseType.FILE_OPERATION.equals(vulnerabilityCaseType)) {
+		if (VulnerabilityCaseType.FILE_OPERATION.equals(vulnerabilityCaseType) && !StringUtils.equals(eventBean.getSourceMethod(), "public java.lang.String[] java.io.File.list()")) {
 			createEntryForFileIntegrity((FileOperationalBean) event, eventBean);
 		}
 		eventBean.setEventGenerationTime(Instant.now().toEpochMilli());
@@ -406,6 +408,7 @@ public class Dispatcher implements Runnable {
 		ProcessorThread.getMongoDbParameterValue(noSQLOperationalBean.getApiCallArgs(), params);
 		eventBean.setEventCategory(MONGO);
 		eventBean.setParameters(params);
+		K2Instrumentator.JA_HEALTH_CHECK.getProtectedDB().add(MONGO);
 		return eventBean;
 	}
 

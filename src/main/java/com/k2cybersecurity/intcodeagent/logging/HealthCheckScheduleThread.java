@@ -43,14 +43,15 @@ public class HealthCheckScheduleThread {
 							WSClient.reconnectWSClient();
 							TimeUnit.SECONDS.sleep(5);
 							if (WSClient.getInstance().isOpen()) {
+								logger.log(LogLevel.DEBUG, "K2-JavaAgent re-installed successfully.",
+										HealthCheckScheduleThread.class.getName());
 								WSClient.getInstance()
 										.send(new JAHealthCheck(K2Instrumentator.JA_HEALTH_CHECK).toString());
 								K2Instrumentator.JA_HEALTH_CHECK.setEventDropCount(0);
+								K2Instrumentator.JA_HEALTH_CHECK.setEventProcessed(0);
+								K2Instrumentator.JA_HEALTH_CHECK.setEventSentCount(0);
 							} else {
 								logger.log(LogLevel.SEVERE, "Failed in WSock reconnection.",
-										HealthCheckScheduleThread.class.getName());
-								WSClient.reconnectWSClient();
-								logger.log(LogLevel.DEBUG, "K2-JavaAgent re-installed successfully.",
 										HealthCheckScheduleThread.class.getName());
 							}
 						} catch (URISyntaxException | InterruptedException e) {
