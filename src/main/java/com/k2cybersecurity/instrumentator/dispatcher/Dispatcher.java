@@ -257,7 +257,11 @@ public class Dispatcher implements Runnable {
 
 		}
 		if (!VulnerabilityCaseType.FILE_INTEGRITY.equals(vulnerabilityCaseType)) {
-			eventBean = processStackTrace(eventBean, vulnerabilityCaseType);
+			if(VulnerabilityCaseType.FILE_OPERATION.equals(vulnerabilityCaseType) && ((FileOperationalBean)event).isGetBooleanAttributesCall()) {
+				eventBean = processStackTrace(eventBean, vulnerabilityCaseType, false);
+			} else {
+				eventBean = processStackTrace(eventBean, vulnerabilityCaseType, true);
+			}
 			if(eventBean == null){
 				return;
 			}
@@ -467,7 +471,7 @@ public class Dispatcher implements Runnable {
 	}
 
 	private JavaAgentEventBean processStackTrace(JavaAgentEventBean eventBean,
-			VulnerabilityCaseType vulnerabilityCaseType) {
+			VulnerabilityCaseType vulnerabilityCaseType, boolean deserialisationCheck) {
 		String lastNonJavaClass = StringUtils.EMPTY;
 		String lastNonJavaMethod = StringUtils.EMPTY;
 		int lastNonJavaLineNumber = 0;
@@ -490,7 +494,9 @@ public class Dispatcher implements Runnable {
 					|| VulnerabilityCaseType.SYSTEM_EXIT.equals(vulnerabilityCaseType)) {
 				rciTriggerCheck(i, eventBean, klassName);
 				xxeTriggerCheck(i, eventBean, klassName);
-				deserializationTriggerCheck(i, eventBean, klassName);
+				if(deserialisationCheck) {
+					deserializationTriggerCheck(i, eventBean, klassName);
+				}
 			}
 			if (lineNumber <= 0) {
 				continue;
