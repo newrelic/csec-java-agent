@@ -49,7 +49,6 @@ public class Dispatcher implements Runnable {
 	private StackTraceElement[] trace;
 	private VulnerabilityCaseType vulnerabilityCaseType;
 	private Map<String, Object> extraInfo;
-	private boolean isClassloading = false;
 	private boolean isGeneratedByBuddy = false;
 
 	static {
@@ -558,18 +557,13 @@ public class Dispatcher implements Runnable {
 
 	private void deserializationTriggerCheck(int index, JavaAgentEventBean eventBean, String klassName) {
 		if (ObjectInputStream.class.getName().equals(klassName)
-				&& StringUtils.equals(trace[index].getMethodName(), READ_OBJECT) && !isClassloading) {
+				&& StringUtils.equals(trace[index].getMethodName(), READ_OBJECT)) {
 			eventBean.getMetaData().setTriggerViaDeserialisation(true);
 //				JSONArray jsonArray = new JSONArray();
 //				jsonArray.addAll(Arrays.asList(trace));
 //				eventBean.setStacktrace(jsonArray);
 //				logger.log(LogLevel.DEBUG, String.format(PRINTING_STACK_TRACE_FOR_DESERIALISE_EVENT_S_S,
 //						eventBean.getId(), Arrays.asList(trace)), Dispatcher.class.getName());
-		}
-
-		if(! eventBean.getMetaData().isTriggerViaDeserialisation() && Class.class.getName().equals(klassName)
-				&& StringUtils.equals(trace[index].getMethodName(), FOR_NAME)) {
-			isClassloading = true;
 		}
 
 		if(StringUtils.startsWith(klassName, SUN_REFLECT_COM_K_2_CYBERSECURITY_NET_BYTEBUDDY)){
