@@ -51,6 +51,8 @@ public class HttpRequestBean {
 	private String contentType;
 	
 	private String servletPath;
+	
+	private String pathParams;
 
 	@JsonIgnore
 	private HttpResponseBean httpResponseBean;
@@ -58,6 +60,8 @@ public class HttpRequestBean {
 	private int serverPort;
 
 	private Map<String, String[]> parameterMap;
+	
+	private Map<String, String> pathParameterMap;
 
 	private Collection parts;
 
@@ -371,5 +375,33 @@ public class HttpRequestBean {
 	 */
 	public void setServletPath(String servletPath) {
 		this.servletPath = servletPath;
+	}
+
+	/**
+	 * @return the pathParams
+	 */
+	public String getPathParams() {
+		return pathParams;
+	}
+
+	/**
+	 * @param pathParams the pathParams to set
+	 */
+	public void setPathParams(String pathParams) {
+		this.pathParams = pathParams;
+	}
+
+	/**
+	 * @return the pathParameterMap
+	 */
+	public Map<String, String> getPathParameterMap() {
+		return pathParameterMap;
+	}
+
+	/**
+	 * @param pathParameterMap the pathParameterMap to set
+	 */
+	public void setPathParameterMap(Map<String, String> pathParameterMap) {
+		this.pathParameterMap = pathParameterMap;
 	}
 }

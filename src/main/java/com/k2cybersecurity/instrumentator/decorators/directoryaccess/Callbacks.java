@@ -1,6 +1,5 @@
-package com.k2cybersecurity.instrumentator.decorators.fileaccess;
+package com.k2cybersecurity.instrumentator.decorators.directoryaccess;
 
-import com.k2cybersecurity.instrumentator.custom.K2CyberSecurityException;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalExecutionMap;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalHttpMap;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalOperationLock;
@@ -18,28 +17,26 @@ import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.SOURCE_EX
 
 public class Callbacks {
 
-	public static final String GET_BOOLEAN_ATTRIBUTES = "getBooleanAttributes";
-
 	public static void doOnEnter(String sourceString, String className, String methodName, Object obj, Object[] args,
-			String exectionId) throws K2CyberSecurityException {
-		//        System.out.println("OnEnter :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj + " - eid : " + exectionId);
+			String exectionId) {
+//		System.out.println("OnEnter :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj
+//				+ " - eid : " + exectionId);
 		if (!ThreadLocalHttpMap.getInstance().isEmpty() && !ThreadLocalOperationLock.getInstance().isAcquired()) {
 			try {
 				ThreadLocalOperationLock.getInstance().acquire();
-				if (StringUtils
-						.isNotBlank(args[0].toString())) {
-					FileOperationalBean fileOperationalBean = new FileOperationalBean(args[0].toString(), className,
-							sourceString, exectionId, Instant.now().toEpochMilli(), StringUtils.equals(methodName, GET_BOOLEAN_ATTRIBUTES));
-					
-					FileIntegrityBean fbean = createEntryOfFileIntegrity(args[0].toString(), sourceString, className, methodName, exectionId);
-					EventDispatcher.dispatch(fileOperationalBean, fbean, VulnerabilityCaseType.FILE_OPERATION);
+				if (obj instanceof File) {
+					String fileName = StringUtils.EMPTY;
+					fileName = ((File) obj).toString();
+
+					FileOperationalBean fileOperationalBean = new FileOperationalBean(fileName,
+							className, sourceString, exectionId, Instant.now().toEpochMilli(), false);
+					EventDispatcher.dispatch(fileOperationalBean, VulnerabilityCaseType.FILE_OPERATION);
 				}
 			} finally {
 				ThreadLocalOperationLock.getInstance().release();
 			}
 		}
-		
-		
+
 	}
 
 	private static String getFileExtension(File file) {
@@ -49,15 +46,15 @@ public class Callbacks {
 		else
 			return StringUtils.EMPTY;
 	}
-	
-	private static FileIntegrityBean createEntryOfFileIntegrity(String fileName, String sourceString, String className, String methodName, String exectionId) {
+
+	private static FileIntegrityBean createEntryOfFileIntegrity(String fileName, String sourceString, String className,
+			String methodName, String exectionId) {
 		File file = Paths.get(fileName).toFile();
 		String extension = getFileExtension(file);
 		if (SOURCE_EXENSIONS.contains(extension)) {
-			FileIntegrityBean fbean = new FileIntegrityBean(file.exists(), fileName, className,
-					sourceString, exectionId, Instant.now().toEpochMilli());
-			ThreadLocalExecutionMap.getInstance().getFileLocalMap().put(fileName,
-					fbean);
+			FileIntegrityBean fbean = new FileIntegrityBean(file.exists(), fileName, className, sourceString,
+					exectionId, Instant.now().toEpochMilli());
+			ThreadLocalExecutionMap.getInstance().getFileLocalMap().put(fileName, fbean);
 			return fbean;
 		}
 		return null;

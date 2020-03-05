@@ -121,7 +121,7 @@ public class LogWriter implements Runnable {
 			sb.append(this.logEntry);
 		if (this.throwableLogEntry != null) {
 //			this.throwableLogEntry.printStackTrace();
-			sb.append(this.throwableLogEntry.getMessage());
+			sb.append(this.throwableLogEntry.toString());
 			sb.append(StringUtils.LF);
 			sb.append(StringUtils.join(this.throwableLogEntry.getStackTrace(), StringUtils.LF));
 			sb.append(StringUtils.LF);
