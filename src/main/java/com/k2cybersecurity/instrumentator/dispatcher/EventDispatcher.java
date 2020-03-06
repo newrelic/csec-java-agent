@@ -13,11 +13,13 @@ import com.k2cybersecurity.intcodeagent.models.operationalbean.AbstractOperation
 import com.k2cybersecurity.intcodeagent.models.operationalbean.FileOperationalBean;
 import com.k2cybersecurity.intcodeagent.models.operationalbean.SQLOperationalBean;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.lang.reflect.Method;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -36,6 +38,21 @@ public class EventDispatcher {
     public static final String EVENT_RESPONSE_TIMEOUT_FOR = "Event response timeout for : ";
     public static final String SCHEDULING_FOR_EVENT_RESPONSE_OF = "Scheduling for event response of : ";
     public static final String ERROR = "Error: ";
+    public static final String ID_PLACEHOLDER = "{{ID}}";
+    public static String ATTACK_PAGE_CONTENT = StringUtils.EMPTY;
+
+    static {
+        try {
+            InputStream attackPageStream = ClassLoader.getSystemResourceAsStream("attack.html");
+            if (attackPageStream == null) {
+                logger.log(LogLevel.ERROR, "Unable to locate attack.html.", EventDispatcher.class.getSimpleName());
+            } else {
+                ATTACK_PAGE_CONTENT = IOUtils.toString(attackPageStream, StandardCharsets.UTF_8);
+            }
+        } catch (Throwable e) {
+            logger.log(LogLevel.ERROR, "Error reading attack.html :" , e,  EventDispatcher.class.getSimpleName());
+        }
+    }
 
     public static void dispatch(AbstractOperationalBean objectBean, VulnerabilityCaseType vulnerabilityCaseType)
             throws K2CyberSecurityException {
@@ -161,14 +178,14 @@ public class EventDispatcher {
             if (eventResponse.getResponseSemaphore().tryAcquire(1000, TimeUnit.MILLISECONDS)) {
                 logger.log(LogLevel.INFO,
                         EVENT_RESPONSE_TIME_TAKEN + eventResponse.getEventId() + DOUBLE_COLON_SEPERATOR + (
-                                eventResponse.getReceivedTime() - eventResponse.getGenerationTime() )+ DOUBLE_COLON_SEPERATOR + executionId,
+                                eventResponse.getReceivedTime() - eventResponse.getGenerationTime()) + DOUBLE_COLON_SEPERATOR + executionId,
                         EventDispatcher.class.getSimpleName());
-                if(eventResponse.isAttack()){
-                    sendK2AttackPage();
+                if (eventResponse.isAttack()) {
+                    sendK2AttackPage(eventResponse.getEventId());
                     throw new K2CyberSecurityException(eventResponse.getResultMessage());
                 }
                 return true;
-            }else {
+            } else {
                 logger.log(LogLevel.WARNING, EVENT_RESPONSE_TIMEOUT_FOR + executionId, EventDispatcher.class.getSimpleName());
             }
         } catch (Exception e) {
@@ -179,24 +196,18 @@ public class EventDispatcher {
         return false;
     }
 
-    private static void sendK2AttackPage() {
+    private static void sendK2AttackPage(String eventId) {
         try {
-            if(ThreadLocalHttpMap.getInstance().getHttpResponse() != null){
-                InputStream attackPageStream = ClassLoader.getSystemResourceAsStream("attack.html");
-                if(attackPageStream == null){
-                    logger.log(LogLevel.ERROR, "Unable to locate attack.html.", EventDispatcher.class.getSimpleName());
-                    return;
-                }
-                byte[] response = IOUtils.readFully(attackPageStream, attackPageStream.available());
-
-                if(ThreadLocalHttpMap.getInstance().getResponseOutputStream() != null){
+            if (ThreadLocalHttpMap.getInstance().getHttpResponse() != null) {
+                String attackPage = StringUtils.replace(ATTACK_PAGE_CONTENT, ID_PLACEHOLDER, eventId);
+                if (ThreadLocalHttpMap.getInstance().getResponseOutputStream() != null) {
                     OutputStream outputStream = (OutputStream) ThreadLocalHttpMap.getInstance().getResponseOutputStream();
-                    outputStream.write(response);
+                    outputStream.write(attackPage.getBytes());
                     outputStream.flush();
                     outputStream.close();
-                }else if(ThreadLocalHttpMap.getInstance().getResponseWriter() != null){
+                } else if (ThreadLocalHttpMap.getInstance().getResponseWriter() != null) {
                     PrintWriter printWriter = (PrintWriter) ThreadLocalHttpMap.getInstance().getResponseWriter();
-                    printWriter.println(new String(response));
+                    printWriter.println(attackPage);
                     printWriter.flush();
                     printWriter.close();
                 } else {
@@ -204,7 +215,7 @@ public class EventDispatcher {
                     Method getOutputStream = resp.getClass().getMethod("getOutputStream");
 
                     OutputStream outputStream = (OutputStream) getOutputStream.invoke(resp);
-                    outputStream.write(response);
+                    outputStream.write(attackPage.getBytes());
                     outputStream.flush();
                     outputStream.close();
                 }
@@ -214,8 +225,7 @@ public class EventDispatcher {
         } catch (Exception e) {
             logger.log(LogLevel.ERROR, "Unable to process response for this attack.", e, EventDispatcher.class.getSimpleName());
 
-        }
-        finally {
+        } finally {
             try {
                 if (ThreadLocalHttpMap.getInstance().getResponseOutputStream() != null) {
                     ((OutputStream) ThreadLocalHttpMap.getInstance().getResponseOutputStream()).close();
@@ -223,7 +233,7 @@ public class EventDispatcher {
                 if (ThreadLocalHttpMap.getInstance().getResponseWriter() != null) {
                     ((PrintWriter) ThreadLocalHttpMap.getInstance().getResponseWriter()).close();
                 }
-            } catch (Throwable e){
+            } catch (Throwable e) {
                 logger.log(LogLevel.ERROR, ERROR, e, EventDispatcher.class.getSimpleName());
             }
         }
