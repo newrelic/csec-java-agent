@@ -111,14 +111,15 @@ public class CallbackUtils {
 		};
 	}
 
-	public static void checkForFileIntegrity(Map<String, FileIntegrityBean> fileLocalMap) {
-		for (Entry<String, FileIntegrityBean> entry : fileLocalMap.entrySet()) {
-			boolean isExists = new File(entry.getKey()).exists();
-			if (!entry.getValue().getExists().equals(isExists)) {
-				EventDispatcher.dispatch(entry.getValue(), VulnerabilityCaseType.FILE_INTEGRITY);
-			}
-		}
-	}
+    public static void checkForFileIntegrity(Map<String, FileIntegrityBean> fileLocalMap)
+            throws K2CyberSecurityException {
+        for (Entry<String, FileIntegrityBean> entry : fileLocalMap.entrySet()) {
+            boolean isExists = new File(entry.getKey()).exists();
+            if (!entry.getValue().getExists().equals(isExists)) {
+                EventDispatcher.dispatch(entry.getValue(), VulnerabilityCaseType.FILE_INTEGRITY);
+            }
+        }
+    }
 
 	// TODO: use complete response instead of just response body.
 	public static String checkForReflectedXSS(HttpRequestBean httpRequestBean) {
@@ -213,7 +214,7 @@ public class CallbackUtils {
 			if(tmpCurrPos == -1 ) {
 				tmpStartPos = startPos;
 			}
-			
+
 			Matcher attribMatcher = attribRegex.matcher(data);
 			while (attribMatcher.find(currPos)) {
 				String attribData = attribMatcher.group().trim();
@@ -249,7 +250,7 @@ public class CallbackUtils {
 			}
 			if (data.charAt(currPos) != ANGLE_END_CHAR) {
 				int tmp = StringUtils.indexOf(data, ANGLE_END, currPos);
-				
+
 				if (tmp != -1) {
 					currPos = tmp;
 				}
@@ -279,7 +280,7 @@ public class CallbackUtils {
 		}
 		return attackConstructs;
 	}
-	
+
 //	public static void main(String[] args) {
 //		System.out.println(getXSSConstructs("<svg><script xlink:href=data&colon;,alert(\"sasas\") </script"));
 //		System.out.println(getXSSConstructs("<script><?script>"));

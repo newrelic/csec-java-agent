@@ -1,5 +1,6 @@
 package com.k2cybersecurity.instrumentator.decorators.fileaccess;
 
+import com.k2cybersecurity.instrumentator.custom.K2CyberSecurityException;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalExecutionMap;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalHttpMap;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalOperationLock;
@@ -20,7 +21,7 @@ public class Callbacks {
 	public static final String GET_BOOLEAN_ATTRIBUTES = "getBooleanAttributes";
 
 	public static void doOnEnter(String sourceString, String className, String methodName, Object obj, Object[] args,
-								 String exectionId) {
+			String exectionId) throws K2CyberSecurityException {
 		//        System.out.println("OnEnter :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj + " - eid : " + exectionId);
 		if (!ThreadLocalHttpMap.getInstance().isEmpty() && !ThreadLocalOperationLock.getInstance().isAcquired()) {
 			try {

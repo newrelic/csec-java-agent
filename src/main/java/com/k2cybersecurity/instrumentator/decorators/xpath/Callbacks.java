@@ -1,5 +1,6 @@
 package com.k2cybersecurity.instrumentator.decorators.xpath;
 
+import com.k2cybersecurity.instrumentator.custom.K2CyberSecurityException;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalHttpMap;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalOperationLock;
 import com.k2cybersecurity.instrumentator.dispatcher.EventDispatcher;
@@ -51,7 +52,7 @@ public class Callbacks {
 //						} else {
 //							System.out.println("pattern string object is null");
 						}
-					} catch (Exception ex) {
+					} catch (Exception | K2CyberSecurityException ex) {
 //						System.out.println("Xpath exception");
 //						ex.printStackTrace();
 					}

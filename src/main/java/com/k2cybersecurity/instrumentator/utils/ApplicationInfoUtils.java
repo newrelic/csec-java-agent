@@ -3,7 +3,6 @@ package com.k2cybersecurity.instrumentator.utils;
 import com.k2cybersecurity.instrumentator.K2Instrumentator;
 import com.k2cybersecurity.intcodeagent.logging.DeployedApplication;
 import com.k2cybersecurity.intcodeagent.websocket.EventSendPool;
-
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -11,15 +10,11 @@ import org.apache.commons.lang3.StringUtils;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.CGROUP_FILE_NAME;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.KUBEPODS_DIR;
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.PROC_DIR;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.*;
 
 public class ApplicationInfoUtils {
 
@@ -98,15 +93,6 @@ public class ApplicationInfoUtils {
 			gateway.append(DOT);
 		}
 		return StringUtils.removeEnd(gateway.toString(), DOT);
-	}
-
-	public static void main(String[] args) throws IOException {
-		try {
-			System.out.println(getDefaultGateway());
-		} catch (SocketException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
 	}
 
 	private static Set<DeployedApplication> getAllDeployedApplications() {

@@ -14,10 +14,10 @@ public class FileLoggerThreadPool {
 
 	private FileLoggerThreadPool() throws IOException {
 		// load the settings
-		int queueSize = 1500;
+		int queueSize = 15000;
 		int maxPoolSize = 1;
 		int corePoolSize = 1;
-		long keepAliveTime = 60;
+		long keepAliveTime = 600;
 
 		TimeUnit timeUnit = TimeUnit.SECONDS;
 
@@ -83,10 +83,16 @@ public class FileLoggerThreadPool {
 	}
 
 	public void log(LogLevel logLevel, String event, String logSourceClassName) {
+		if (logLevel.getLevel() == 0 || logLevel.getLevel() > LogWriter.defaultLogLevel) {
+			return;
+		}
 		executor.submit(new LogWriter(logLevel, event, logSourceClassName));
 	}
 
 	public void log(LogLevel logLevel, String event, Throwable throwableEvent, String logSourceClassName) {
+		if (logLevel.getLevel() == 0 || logLevel.getLevel() > LogWriter.defaultLogLevel) {
+			return;
+		}
 		executor.submit(new LogWriter(logLevel, event, throwableEvent, logSourceClassName));
 	}
 }
