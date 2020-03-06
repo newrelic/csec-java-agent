@@ -1,25 +1,27 @@
 package com.k2cybersecurity.intcodeagent.models.operationalbean;
 
 import com.k2cybersecurity.intcodeagent.websocket.JsonConverter;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
-
-import org.apache.commons.lang3.StringUtils;
 
 public class FileOperationalBean extends AbstractOperationalBean {
 
 	private String fileName;
 	private boolean isExists;
+	private boolean getBooleanAttributesCall;
 
-	public FileOperationalBean(String fileName, String className, String sourceMethod, String executionId, long startTime) {
+	public FileOperationalBean(String fileName, String className, String sourceMethod, String executionId, long startTime, boolean getBooleanAttributesCall) {
 		super(className, sourceMethod, executionId, startTime);
 		this.fileName = fileName;
 		this.isExists = new File(this.fileName).exists();
+		this.getBooleanAttributesCall = getBooleanAttributesCall;
 	}
 
 	public FileOperationalBean(FileOperationalBean forkExecOperationalBean) {
 		super(forkExecOperationalBean);
 		this.fileName = forkExecOperationalBean.fileName;
+		this.getBooleanAttributesCall = forkExecOperationalBean.getBooleanAttributesCall;
 	}
 
 	@Override
@@ -54,4 +56,11 @@ public class FileOperationalBean extends AbstractOperationalBean {
 	}
 
 
+	public boolean isGetBooleanAttributesCall() {
+		return getBooleanAttributesCall;
+	}
+
+	public void setGetBooleanAttributesCall(boolean getBooleanAttributesCall) {
+		this.getBooleanAttributesCall = getBooleanAttributesCall;
+	}
 }
