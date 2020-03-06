@@ -19,6 +19,7 @@ import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.SOURCE_EX
 public class Callbacks {
 
 	public static final String GET_BOOLEAN_ATTRIBUTES = "getBooleanAttributes";
+	public static final String CLASS = ".class";
 
 	public static void doOnEnter(String sourceString, String className, String methodName, Object obj, Object[] args,
 			String exectionId) throws K2CyberSecurityException {
@@ -28,9 +29,17 @@ public class Callbacks {
 				ThreadLocalOperationLock.getInstance().acquire();
 				if (StringUtils
 						.isNotBlank(args[0].toString())) {
-					FileOperationalBean fileOperationalBean = new FileOperationalBean(args[0].toString(), className,
-							sourceString, exectionId, Instant.now().toEpochMilli(), StringUtils.equals(methodName, GET_BOOLEAN_ATTRIBUTES));
-					
+					FileOperationalBean fileOperationalBean = null;
+					if(StringUtils.equals(methodName, GET_BOOLEAN_ATTRIBUTES)) {
+						if(StringUtils.endsWith(args[0].toString(), CLASS)) {
+							return;
+						}
+						fileOperationalBean = new FileOperationalBean(args[0].toString(), className,
+								sourceString, exectionId, Instant.now().toEpochMilli(), true);
+					} else {
+						fileOperationalBean = new FileOperationalBean(args[0].toString(), className,
+								sourceString, exectionId, Instant.now().toEpochMilli(), false);
+					}
 					FileIntegrityBean fbean = createEntryOfFileIntegrity(args[0].toString(), sourceString, className, methodName, exectionId);
 					EventDispatcher.dispatch(fileOperationalBean, fbean, VulnerabilityCaseType.FILE_OPERATION);
 				}
