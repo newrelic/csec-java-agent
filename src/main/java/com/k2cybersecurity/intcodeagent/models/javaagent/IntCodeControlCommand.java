@@ -16,6 +16,7 @@ public class IntCodeControlCommand {
     public static final int UNSUPPORTED_AGENT = 5;
     public static final int EVENT_RESPONSE = 6;
     public static final int PROTECTION_CONFIG = 7;
+    public static final int START_VULNERABILITY_SCAN = 8;
 
     private String jsonName;
     private int controlCommand;

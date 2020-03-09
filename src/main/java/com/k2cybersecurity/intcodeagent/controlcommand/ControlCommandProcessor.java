@@ -146,6 +146,13 @@ public class ControlCommandProcessor implements Runnable {
 					"Setting auto add detected vulnerable APIs to protection list : " + ProtectionConfig.getInstance().getAutoAddDetectedVulnerabilitiesToProtectionList(),
 					ControlCommandProcessor.class.getSimpleName());
 			break;
+		case IntCodeControlCommand.START_VULNERABILITY_SCAN:
+			logger.log(LogLevel.INFO, String.format("Starting K2 Vulnerability scanner on this instance : %s : %s : %s : %s", controlCommand.getArguments().get(0)
+					, controlCommand.getArguments().get(1)
+					, controlCommand.getArguments().get(2)
+					, controlCommand.getArguments().get(3)), AgentUtils.class.getSimpleName());
+			// TODO:  Add Vulnerability scanner trigger.
+			break;
 		default:
 			break;
 		}
