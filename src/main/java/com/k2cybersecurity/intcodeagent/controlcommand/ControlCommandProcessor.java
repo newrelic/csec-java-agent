@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.k2cybersecurity.instrumentator.K2Instrumentator;
 import com.k2cybersecurity.instrumentator.dispatcher.EventDispatcher;
 import com.k2cybersecurity.instrumentator.utils.AgentUtils;
+import com.k2cybersecurity.instrumentator.utils.CVEService;
 import com.k2cybersecurity.instrumentator.utils.InstrumentationUtils;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
@@ -38,7 +39,8 @@ public class ControlCommandProcessor implements Runnable {
 		this.receiveTimestamp = receiveTimestamp;
 	}
 
-	@Override public void run() {
+	@Override
+	public void run() {
 		if (StringUtils.isBlank(controlCommandMessage)) {
 			return;
 		}
@@ -104,18 +106,19 @@ public class ControlCommandProcessor implements Runnable {
 			eventResponse.setReceivedTime(receiveTimestamp);
 
 			EventSendPool.getInstance().getEventMap().remove(eventResponse.getId());
-			logger.log(LogLevel.INFO, EVENT_RESPONSE + eventResponse.toString(), ControlCommandProcessor.class.getName());
-			if (eventResponse.isAttack() && ProtectionConfig.getInstance().getAutoAddDetectedVulnerabilitiesToProtectionList()) {
+			logger.log(LogLevel.INFO, EVENT_RESPONSE + eventResponse.toString(),
+					ControlCommandProcessor.class.getName());
+			if (eventResponse.isAttack()
+					&& ProtectionConfig.getInstance().getAutoAddDetectedVulnerabilitiesToProtectionList()) {
 				try {
 					VulnerableAPI vulnerableAPI = new VulnerableAPI(controlCommand.getArguments().get(4),
-							controlCommand.getArguments().get(5),
-							controlCommand.getArguments().get(6),
+							controlCommand.getArguments().get(5), controlCommand.getArguments().get(6),
 							Integer.parseInt(controlCommand.getArguments().get(7)));
 					AgentUtils.getInstance().getVulnerableAPIMap().put(vulnerableAPI.getId(), vulnerableAPI);
-					logger.log(LogLevel.INFO, VULNERABLE_API_ENTRY_CREATED + vulnerableAPI, ControlCommandProcessor.class.getName());
-				} catch (Exception e){
-					logger.log(LogLevel.SEVERE,
-							FAILED_TO_CREATE_VULNERABLE_API_ENTRY + controlCommand,e,
+					logger.log(LogLevel.INFO, VULNERABLE_API_ENTRY_CREATED + vulnerableAPI,
+							ControlCommandProcessor.class.getName());
+				} catch (Exception e) {
+					logger.log(LogLevel.SEVERE, FAILED_TO_CREATE_VULNERABLE_API_ENTRY + controlCommand, e,
 							ControlCommandProcessor.class.getSimpleName());
 				}
 			}
@@ -123,35 +126,41 @@ public class ControlCommandProcessor implements Runnable {
 			AgentUtils.getInstance().getEventResponseSet().remove(eventResponse.getId());
 
 			logger.log(LogLevel.INFO,
-					EVENT_RESPONSE_TIME_TAKEN + eventResponse.getEventId() + DOUBLE_COLON_SEPERATOR + (
-							eventResponse.getReceivedTime() - eventResponse.getGenerationTime()),
+					EVENT_RESPONSE_TIME_TAKEN + eventResponse.getEventId() + DOUBLE_COLON_SEPERATOR
+							+ (eventResponse.getReceivedTime() - eventResponse.getGenerationTime()),
 					EventDispatcher.class.getSimpleName());
 			break;
 		case IntCodeControlCommand.PROTECTION_CONFIG:
-			ProtectionConfig protectionConfig = GSON.fromJson(controlCommand.getArguments().get(0), ProtectionConfig.class);
+			ProtectionConfig protectionConfig = GSON.fromJson(controlCommand.getArguments().get(0),
+					ProtectionConfig.class);
 			ProtectionConfig.setInstance(protectionConfig);
 			if (!ProtectionConfig.getInstance().getGenerateEventResponse()) {
 				ProtectionConfig.getInstance().setProtectKnownVulnerableAPIs(false);
 			}
-			if(!ProtectionConfig.getInstance().getProtectKnownVulnerableAPIs()){
+			if (!ProtectionConfig.getInstance().getProtectKnownVulnerableAPIs()) {
 				ProtectionConfig.getInstance().setAutoAddDetectedVulnerabilitiesToProtectionList(false);
 			}
-			logger.log(LogLevel.INFO,
-					"Setting to  : " + ProtectionConfig.getInstance().getGenerateEventResponse(),
+			logger.log(LogLevel.INFO, "Setting to  : " + ProtectionConfig.getInstance().getGenerateEventResponse(),
 					ControlCommandProcessor.class.getSimpleName());
 			logger.log(LogLevel.INFO,
-					"Setting protection for known vulnerable APIs : " + ProtectionConfig.getInstance().getProtectKnownVulnerableAPIs(),
+					"Setting protection for known vulnerable APIs : "
+							+ ProtectionConfig.getInstance().getProtectKnownVulnerableAPIs(),
 					ControlCommandProcessor.class.getSimpleName());
 			logger.log(LogLevel.INFO,
-					"Setting auto add detected vulnerable APIs to protection list : " + ProtectionConfig.getInstance().getAutoAddDetectedVulnerabilitiesToProtectionList(),
+					"Setting auto add detected vulnerable APIs to protection list : "
+							+ ProtectionConfig.getInstance().getAutoAddDetectedVulnerabilitiesToProtectionList(),
 					ControlCommandProcessor.class.getSimpleName());
 			break;
 		case IntCodeControlCommand.START_VULNERABILITY_SCAN:
-			logger.log(LogLevel.INFO, String.format("Starting K2 Vulnerability scanner on this instance : %s : %s : %s : %s", controlCommand.getArguments().get(0)
-					, controlCommand.getArguments().get(1)
-					, controlCommand.getArguments().get(2)
-					, controlCommand.getArguments().get(3)), ControlCommandProcessor.class.getSimpleName());
-			// TODO:  Add Vulnerability scanner trigger.
+			logger.log(LogLevel.INFO,
+					String.format("Starting K2 Vulnerability scanner on this instance : %s : %s : %s : %s : %s",
+							controlCommand.getArguments().get(0), controlCommand.getArguments().get(1),
+							controlCommand.getArguments().get(2), controlCommand.getArguments().get(3),
+							controlCommand.getArguments().get(4)),
+					ControlCommandProcessor.class.getSimpleName());
+			CVEService.startCVEService(controlCommand.getArguments().get(0), controlCommand.getArguments().get(1),
+					controlCommand.getArguments().get(2), controlCommand.getArguments().get(3),
+					controlCommand.getArguments().get(4));
 			break;
 		default:
 			break;
