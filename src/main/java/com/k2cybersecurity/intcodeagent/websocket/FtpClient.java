@@ -84,6 +84,7 @@ public class FtpClient {
 		FTPClient ftp = getClient();
 		try (FileOutputStream fileOutputStream = new FileOutputStream(new File(outputFile))) {
 			ftp.retrieveFile(fileName, fileOutputStream);
+			return true;
 		} catch (IOException e) {
 			logger.log(LogLevel.WARNING, "Error : ", e, WSClient.class.getName());
 		}

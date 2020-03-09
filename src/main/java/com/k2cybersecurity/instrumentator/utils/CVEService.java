@@ -1,16 +1,12 @@
 package com.k2cybersecurity.instrumentator.utils;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Scanner;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import com.k2cybersecurity.instrumentator.K2Instrumentator;
@@ -18,6 +14,7 @@ import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.logging.DeployedApplication;
 import com.k2cybersecurity.intcodeagent.models.javaagent.CVEScanner;
+import com.k2cybersecurity.intcodeagent.websocket.FtpClient;
 
 public class CVEService {
 
@@ -30,6 +27,10 @@ public class CVEService {
 		File cveJar = new File("/tmp/localcveservice-1.0-SNAPSHOT.jar");
 		if (!cveJar.isFile()) {
 			logger.log(LogLevel.WARNING, "CVE-Service JAR doesn't exists.", CVEService.class.getName());
+		}
+		
+		boolean downlaoded = downloadCVEJar(cveJar);
+		if(!downlaoded) {
 			return;
 		}
 
@@ -56,6 +57,10 @@ public class CVEService {
 		};
 		Thread thread = new Thread(runnable, "K2-local-cve-service");
 		thread.start();
+	}
+
+	private static boolean downloadCVEJar(File cveJar) {
+		return FtpClient.downloadFile(cveJar.getName(), cveJar.getAbsolutePath());
 	}
 
 	protected static File createServiceYml(String customerId, String nodeId, String appName, String appSha256,
