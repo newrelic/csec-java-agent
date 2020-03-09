@@ -3,6 +3,7 @@ package com.k2cybersecurity.intcodeagent.websocket;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -64,21 +65,30 @@ public class FtpClient {
 		try {
 			result = ftp.storeFile(file.getName(), input);
 		} catch (FTPConnectionClosedException e) {
-			logger.log(LogLevel.ERROR, "Connection closed by FTP server : " + e.getMessage(), WSClient.class.getName());
+			logger.log(LogLevel.ERROR, "Connection closed by FTP server : ", e, WSClient.class.getName());
 		} catch (CopyStreamException e) {
-			logger.log(LogLevel.ERROR, "Exception in copying stream : " + e.getMessage(), WSClient.class.getName());
+			logger.log(LogLevel.ERROR, "Exception in copying stream : ", e, WSClient.class.getName());
 		} catch (IOException e) {
 			logger.log(LogLevel.ERROR, "Exception in storing file to server : " + e, WSClient.class.getName());
-			e.printStackTrace();
 		}
 
 		try {
 			input.close();
 			ftp.disconnect();
 		} catch (IOException e) {
-			logger.log(LogLevel.WARNING, "Exception in resource closing : " + e, WSClient.class.getName());
 		}
 		return result;
+	}
+
+	public static boolean downloadFile(String fileName, String outputFile) {
+		FTPClient ftp = getClient();
+		try (FileOutputStream fileOutputStream = new FileOutputStream(new File(outputFile))) {
+			ftp.retrieveFile(fileName, fileOutputStream);
+		} catch (IOException e) {
+			logger.log(LogLevel.WARNING, "Error : ", e, WSClient.class.getName());
+		}
+
+		return false;
 	}
 
 	public static boolean sendBootstrapLogFile() {

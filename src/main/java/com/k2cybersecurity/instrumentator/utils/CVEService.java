@@ -30,15 +30,7 @@ public class CVEService {
 		File cveJar = new File("/tmp/localcveservice-1.0-SNAPSHOT.jar");
 		if (!cveJar.isFile()) {
 			logger.log(LogLevel.WARNING, "CVE-Service JAR doesn't exists.", CVEService.class.getName());
-		} else {
-			try (FileOutputStream fOutputStream = new FileOutputStream(cveJar)) {
-				InputStream cveJarStream = CVEService.class.getClassLoader()
-						.getResourceAsStream("localcveservice-1.0-SNAPSHOT.jar");
-				FileUtils.writeByteArrayToFile(cveJar, IOUtils.readFully(cveJarStream, cveJarStream.available()));
-			} catch (IOException e) {
-				logger.log(LogLevel.ERROR, "Error: {}", e, CVEService.class.getName());
-				return;
-			}
+			return;
 		}
 
 		Runnable runnable = new Runnable() {
