@@ -83,6 +83,7 @@ public class CVEService {
 				TarArchiveEntry entry;
 				while ((entry = inputStream.getNextTarEntry()) != null) {
 					if (entry.isDirectory()) {
+						entry.getFile().mkdir();
 						continue;
 					}
 					File curfile = new File(cveTar.getParent(), entry.getName());
