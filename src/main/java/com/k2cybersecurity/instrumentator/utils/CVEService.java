@@ -1,12 +1,17 @@
 package com.k2cybersecurity.instrumentator.utils;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
+import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import com.k2cybersecurity.instrumentator.K2Instrumentator;
@@ -25,26 +30,26 @@ public class CVEService {
 			+ "k2agent.scanPath: %s\n k2agent.websocket: %s";
 
 	public static void startCVEService(String customerId, String nodeId) {
-		File cveJar = new File("/tmp/localcveservice-1.0-SNAPSHOT.jar");
-		if (!cveJar.isFile()) {
+		File cveTar = new File("/tmp/localcveservice.tar");
+		if (!cveTar.isFile()) {
 			logger.log(LogLevel.WARNING, "CVE-Service JAR doesn't exists.", CVEService.class.getName());
-		}
-
-		boolean downlaoded = downloadCVEJar(cveJar);
-		if (!downlaoded) {
-			return;
 		}
 
 		Runnable runnable = new Runnable() {
 			public void run() {
 				try {
+					boolean downlaoded = downloadCVEJar(cveTar, "/tmp/localcveservice");
+					if (!downlaoded) {
+						return;
+					}
 					for (CVEScanner scanner : getAllScanDirs()) {
 						File inputYaml = createServiceYml(customerId, nodeId, scanner.getAppName(),
 								scanner.getAppSha256(), scanner.getDir());
 						ProcessBuilder processBuilder = new ProcessBuilder(
 								K2Instrumentator.APPLICATION_INFO_BEAN.getBinaryPath()
 										+ " -Xms1G -Xmx1G -XX:+UseG1GC -XX:MaxGCPauseMillis=20 -jar "
-										+ cveJar.getAbsolutePath() + " " + inputYaml.getAbsolutePath() + "");
+										+ "/tmp/localcveservice" + "/localcveservice-1.0-SNAPSHOT.jar "
+										+ inputYaml.getAbsolutePath());
 						Process process = processBuilder.start();
 						process.waitFor();
 						inputYaml.delete();
@@ -61,8 +66,39 @@ public class CVEService {
 		thread.start();
 	}
 
-	private static boolean downloadCVEJar(File cveJar) {
-		return FtpClient.downloadFile(cveJar.getName(), cveJar.getAbsolutePath());
+	private static boolean downloadCVEJar(File cveTar, String outputDir) {
+		boolean download = FtpClient.downloadFile(cveTar.getName(), cveTar.getAbsolutePath());
+		if (download) {
+			File parentDirectory = new File(outputDir);
+			if (!parentDirectory.isDirectory()) {
+				try {
+					FileUtils.forceMkdir(parentDirectory);
+				} catch (IOException e) {
+					logger.log(LogLevel.ERROR, "Cannot create directory : " + parentDirectory, e,
+							CVEService.class.getName());
+					return false;
+				}
+			}
+			try (TarArchiveInputStream inputStream = new TarArchiveInputStream(new FileInputStream(cveTar))) {
+				TarArchiveEntry entry;
+				while ((entry = inputStream.getNextTarEntry()) != null) {
+					if (entry.isDirectory()) {
+						continue;
+					}
+					File curfile = new File(cveTar.getParent(), entry.getName());
+					File parent = curfile.getParentFile();
+					if (!parent.exists()) {
+						parent.mkdirs();
+					}
+					IOUtils.copy(inputStream, new FileOutputStream(curfile));
+				}
+				return true;
+			} catch (Exception e) {
+				logger.log(LogLevel.ERROR, "Error : ", e, CVEService.class.getName());
+			}
+		}
+		return false;
+
 	}
 
 	protected static File createServiceYml(String customerId, String nodeId, String appName, String appSha256,
