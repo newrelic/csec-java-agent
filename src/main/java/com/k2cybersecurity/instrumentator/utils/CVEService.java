@@ -21,16 +21,17 @@ public class CVEService {
 	private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
 
 	private static final String YML_TEMPLATE = "k2agent.customerId: %s\n" + "k2agent.nodeId: %s\n"
-			+ "k2agent.application: %s\n" + "k2agent.applicationSha256: %s\n" + "k2agent.scanPath: %s";
+			+ "k2agent.application: %s\n" + "k2agent.applicationSha256: %s\n"
+			+ "k2agent.scanPath: %s\n k2agent.websocket: %s";
 
 	public static void startCVEService(String customerId, String nodeId) {
 		File cveJar = new File("/tmp/localcveservice-1.0-SNAPSHOT.jar");
 		if (!cveJar.isFile()) {
 			logger.log(LogLevel.WARNING, "CVE-Service JAR doesn't exists.", CVEService.class.getName());
 		}
-		
+
 		boolean downlaoded = downloadCVEJar(cveJar);
-		if(!downlaoded) {
+		if (!downlaoded) {
 			return;
 		}
 
@@ -41,7 +42,8 @@ public class CVEService {
 						File inputYaml = createServiceYml(customerId, nodeId, scanner.getAppName(),
 								scanner.getAppSha256(), scanner.getDir());
 						ProcessBuilder processBuilder = new ProcessBuilder(
-								"java -Xms1G -Xmx1G -XX:+UseG1GC -XX:MaxGCPauseMillis=20 -jar "
+								K2Instrumentator.APPLICATION_INFO_BEAN.getBinaryPath()
+										+ " -Xms1G -Xmx1G -XX:+UseG1GC -XX:MaxGCPauseMillis=20 -jar "
 										+ cveJar.getAbsolutePath() + " " + inputYaml.getAbsolutePath() + "");
 						Process process = processBuilder.start();
 						process.waitFor();
@@ -65,7 +67,8 @@ public class CVEService {
 
 	protected static File createServiceYml(String customerId, String nodeId, String appName, String appSha256,
 			String scanPath) throws IOException {
-		String yaml = String.format(YML_TEMPLATE, customerId, nodeId, appName, appSha256, scanPath);
+		String yaml = String.format(YML_TEMPLATE, customerId, nodeId, appName, appSha256, scanPath,
+				String.format("ws://%s:54321", K2Instrumentator.hostip));
 		File yml = new File("/tmp", "service-input.yml");
 		FileUtils.write(yml, yaml, StandardCharsets.UTF_8);
 		return yml;
