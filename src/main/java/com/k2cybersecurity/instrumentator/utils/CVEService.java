@@ -2,14 +2,19 @@ package com.k2cybersecurity.instrumentator.utils;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
+import org.apache.commons.compress.compressors.CompressorInputStream;
+import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -31,6 +36,7 @@ public class CVEService {
 
 	public static void startCVEService(String customerId, String nodeId) {
 		File cveTar = new File("/tmp/localcveservice.tar");
+		File cveGzip = new File("/tmp/localcveservice.tar.gzip");
 		if (!cveTar.isFile()) {
 			logger.log(LogLevel.WARNING, "CVE-Service JAR doesn't exists.", CVEService.class.getName());
 		}
@@ -38,7 +44,7 @@ public class CVEService {
 		Runnable runnable = new Runnable() {
 			public void run() {
 				try {
-					boolean downlaoded = downloadCVEJar(cveTar, "/tmp/localcveservice");
+					boolean downlaoded = downloadCVEJar(cveGzip, cveTar, "/tmp/localcveservice");
 					if (!downlaoded) {
 						return;
 					}
@@ -66,8 +72,8 @@ public class CVEService {
 		thread.start();
 	}
 
-	private static boolean downloadCVEJar(File cveTar, String outputDir) {
-		boolean download = FtpClient.downloadFile(cveTar.getName(), cveTar.getAbsolutePath());
+	private static boolean downloadCVEJar(File cveGzip, File cveTar, String outputDir) {
+		boolean download = FtpClient.downloadFile(cveGzip.getName(), cveGzip.getAbsolutePath());
 		if (download) {
 			File parentDirectory = new File(outputDir);
 			if (!parentDirectory.isDirectory()) {
@@ -78,6 +84,17 @@ public class CVEService {
 							CVEService.class.getName());
 					return false;
 				}
+			}
+			try (InputStream is = new FileInputStream(cveGzip);
+					CompressorInputStream in = new GzipCompressorInputStream(is, true);
+					OutputStream out = new FileOutputStream(cveTar.getAbsolutePath())) {
+				IOUtils.copy(in, out);
+			} catch (FileNotFoundException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
 			}
 			try (TarArchiveInputStream inputStream = new TarArchiveInputStream(new FileInputStream(cveTar))) {
 				TarArchiveEntry entry;
