@@ -60,10 +60,12 @@ public class CVEService {
 						List<String> errResponse = IOUtils.readLines(process.getErrorStream(), StandardCharsets.UTF_8);
 						logger.log(LogLevel.ERROR, String.format("K2 Vulnerability scanner response error : %s",
 								StringUtils.join(errResponse, StringUtils.LF)), CVEService.class.getName());
-
-//                        inputYaml.delete();
-						deleteAllComponents(cveTar, inputYaml, "/tmp/localcveservice");
+						try {
+							FileUtils.forceDelete(inputYaml);
+						} catch (Exception e) {
+						}
 					}
+					deleteAllComponents(cveTar, "/tmp/localcveservice");
 				} catch (IOException e) {
 					logger.log(LogLevel.ERROR, "Error: {}", e, CVEService.class.getName());
 				} catch (InterruptedException e) {
@@ -76,13 +78,9 @@ public class CVEService {
 		thread.start();
 	}
 
-	protected static void deleteAllComponents(File cveTar, File inputYaml, String cveDir) {
+	protected static void deleteAllComponents(File cveTar, String cveDir) {
 		try {
 			FileUtils.forceDelete(cveTar);
-		} catch (IOException e) {
-		}
-		try {
-			FileUtils.forceDelete(inputYaml);
 		} catch (IOException e) {
 		}
 		try {
