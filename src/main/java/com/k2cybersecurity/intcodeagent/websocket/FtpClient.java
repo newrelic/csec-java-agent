@@ -1,21 +1,16 @@
 package com.k2cybersecurity.intcodeagent.websocket;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-
+import com.k2cybersecurity.instrumentator.K2Instrumentator;
+import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
+import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
+import com.k2cybersecurity.intcodeagent.filelogging.LogWriter;
+import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPConnectionClosedException;
 import org.apache.commons.net.ftp.FTPReply;
 import org.apache.commons.net.io.CopyStreamException;
 
-import com.k2cybersecurity.instrumentator.K2Instrumentator;
-import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
-import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
-import com.k2cybersecurity.intcodeagent.filelogging.LogWriter;
+import java.io.*;
 
 public class FtpClient {
 	private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
@@ -31,6 +26,8 @@ public class FtpClient {
 				ftp.login("test", "test");
 				int reply = ftp.getReplyCode();
 				logger.log(LogLevel.DEBUG, "FTP server connection reply code : " + reply, FtpClient.class.getName());
+				ftp.setFileType(FTP.BINARY_FILE_TYPE);
+
 				if (FTPReply.isPositiveCompletion(reply)) {
 					return ftp;
 				} else {
@@ -39,12 +36,12 @@ public class FtpClient {
 					} catch (IOException e) {
 						logger.log(LogLevel.ERROR,
 								"FTP server refused connection : " + K2Instrumentator.hostip + ":54322",
-								WSClient.class.getName());
+								FTPClient.class.getName());
 					}
 				}
 			} catch (IOException e) {
-				logger.log(LogLevel.ERROR, "Error in connecting to FTP at " + K2Instrumentator.hostip + ":54322",
-						WSClient.class.getName());
+				logger.log(LogLevel.ERROR, "Error in connecting to FTP at " + K2Instrumentator.hostip + ":54322",e,
+						FTPClient.class.getName());
 				return null;
 			}
 		}
@@ -59,17 +56,17 @@ public class FtpClient {
 		try {
 			input = new FileInputStream(file);
 		} catch (FileNotFoundException e) {
-			logger.log(LogLevel.ERROR, "log file not found " + file, WSClient.class.getName());
+			logger.log(LogLevel.ERROR, "log file not found " + file, FtpClient.class.getName());
 		}
 
 		try {
 			result = ftp.storeFile(file.getName(), input);
 		} catch (FTPConnectionClosedException e) {
-			logger.log(LogLevel.ERROR, "Connection closed by FTP server : ", e, WSClient.class.getName());
+			logger.log(LogLevel.ERROR, "Connection closed by FTP server : ", e, FtpClient.class.getName());
 		} catch (CopyStreamException e) {
-			logger.log(LogLevel.ERROR, "Exception in copying stream : ", e, WSClient.class.getName());
+			logger.log(LogLevel.ERROR, "Exception in copying stream : ", e, FtpClient.class.getName());
 		} catch (IOException e) {
-			logger.log(LogLevel.ERROR, "Exception in storing file to server : " + e, WSClient.class.getName());
+			logger.log(LogLevel.ERROR, "Exception in storing file to server : " + e, FtpClient.class.getName());
 		}
 
 		try {
@@ -83,12 +80,10 @@ public class FtpClient {
 	public static boolean downloadFile(String fileName, String outputFile) {
 		FTPClient ftp = getClient();
 		try (FileOutputStream fileOutputStream = new FileOutputStream(new File(outputFile))) {
-			ftp.retrieveFile(fileName, fileOutputStream);
-			return true;
+			return ftp.retrieveFile(fileName, fileOutputStream);
 		} catch (IOException e) {
-			logger.log(LogLevel.WARNING, "Error : ", e, WSClient.class.getName());
+			logger.log(LogLevel.WARNING, "Error : ", e, FtpClient.class.getName());
 		}
-
 		return false;
 	}
 

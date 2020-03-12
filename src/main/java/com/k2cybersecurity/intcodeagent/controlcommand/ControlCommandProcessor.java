@@ -28,6 +28,7 @@ public class ControlCommandProcessor implements Runnable {
 	public static final String VULNERABLE_API_ENTRY_CREATED = "vulnerableAPI entry created : ";
 	public static final String FAILED_TO_CREATE_VULNERABLE_API_ENTRY = "Failed to create vulnerableAPI entry  : ";
 	public static final String EVENT_RESPONSE = "Event response : ";
+	public static final String UNKNOWN_CONTROL_COMMAND_S = "Unknown control command : %s";
 	private String controlCommandMessage;
 
 	private long receiveTimestamp;
@@ -155,6 +156,9 @@ public class ControlCommandProcessor implements Runnable {
 			logger.log(LogLevel.INFO, String.format("Starting K2 Vulnerability scanner on this instance : %s : %s",
 					controlCommand.getArguments().get(0), controlCommand.getArguments().get(1)), ControlCommandProcessor.class.getSimpleName());
 			CVEService.startCVEService(controlCommand.getArguments().get(0), controlCommand.getArguments().get(1));
+			break;
+		default:
+			logger.log(LogLevel.WARNING, String.format(UNKNOWN_CONTROL_COMMAND_S, controlCommandMessage), ControlCommandProcessor.class.getName());
 			break;
 		}
 	}
