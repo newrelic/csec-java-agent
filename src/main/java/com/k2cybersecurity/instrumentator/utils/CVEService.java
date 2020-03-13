@@ -65,7 +65,7 @@ public class CVEService {
 						} catch (Exception e) {
 						}
 					}
-					deleteAllComponents(cveTar, "/tmp/localcveservice");
+//					deleteAllComponents(cveTar, "/tmp/localcveservice");
 				} catch (IOException e) {
 					logger.log(LogLevel.ERROR, "Error: {}", e, CVEService.class.getName());
 				} catch (InterruptedException e) {
@@ -132,6 +132,7 @@ public class CVEService {
 		String yaml = String.format(YML_TEMPLATE, K2Instrumentator.hostip, nodeId, appName, applicationUUID, appSha256,
 				scanPath);
 		File yml = new File("/tmp", "service-input.yml");
+		logger.log(LogLevel.INFO, "input yml : " + yaml, CVEService.class.getName());
 		FileUtils.write(yml, yaml, StandardCharsets.UTF_8);
 		return yml;
 	}
