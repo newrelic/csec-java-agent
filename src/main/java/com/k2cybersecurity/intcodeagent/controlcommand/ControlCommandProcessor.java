@@ -153,7 +153,7 @@ public class ControlCommandProcessor implements Runnable {
 					ControlCommandProcessor.class.getSimpleName());
 			break;
 		case IntCodeControlCommand.START_VULNERABILITY_SCAN:
-			logger.log(LogLevel.INFO, String.format("Starting K2 Vulnerability scanner on this instance : %s : %s",
+			logger.log(LogLevel.INFO, String.format("Starting K2 Vulnerability scanner on this instance : %s",
 					controlCommand.getArguments().get(0)), ControlCommandProcessor.class.getSimpleName());
 			CVEService.startCVEService(controlCommand.getArguments().get(0));
 			break;
