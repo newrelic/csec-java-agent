@@ -72,20 +72,20 @@ public class K2Instrumentator {
 		
 		if(isk8sEnv) {
 			hostip = System.getenv("K2_SERVICE_SERVICE_HOST");
+		} else if (StringUtils.equals(System.getenv("AWS_EXECUTION_ENV"), "AWS_ECS_FARGATE")) {
+			hostip = "k2-service.k2-ns";
 		} else if(APPLICATION_INFO_BEAN.getIdentifier().getIsHost()){
 			hostip = InetAddress.getLoopbackAddress().getHostAddress();
-		} else {
+		}else {
 			try {
 				hostip = ApplicationInfoUtils.getDefaultGateway();
-				System.out.println("Setting hostip to k2-service.k2-ns");
-				hostip = "k2-service.k2-ns";
 			} catch (IOException e) {
 				logger.log(LogLevel.ERROR, ERROR_WHILE_DETERMINING_HOSTIP_FROM_DEFAULT_GATEWAY, e,
 						K2Instrumentator.class.getName());
 				return false;
 			}
 		}
-
+		System.err.println("hostip : " + hostip);
 		try {
 			WSClient.getInstance();
 		} catch (Exception e) {
