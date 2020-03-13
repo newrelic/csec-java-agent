@@ -115,13 +115,13 @@ public class CVEService {
 						continue;
 					}
 					File curfile = new File(outputDir, entry.getName());
-					Files.setPosixFilePermissions(curfile.toPath(), permissions);
 					File parent = curfile.getParentFile();
 					if (!parent.exists()) {
 						parent.mkdirs();
 						Files.setPosixFilePermissions(parent.toPath(), permissions);
 					}
 					IOUtils.copy(inputStream, new FileOutputStream(curfile));
+					Files.setPosixFilePermissions(curfile.toPath(), permissions);
 				}
 				
 				return true;
