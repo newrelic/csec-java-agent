@@ -107,5 +107,10 @@ public class ApplicationInfoUtils {
 		}
 		return false;
 	}
-
+	public static boolean isECSEnv() {
+		if (StringUtils.equals(System.getenv("AWS_EXECUTION_ENV"), "AWS_ECS_FARGATE")) {
+			return true;
+		}
+		return false;
+	}
 }

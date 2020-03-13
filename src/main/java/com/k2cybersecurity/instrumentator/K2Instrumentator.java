@@ -1,5 +1,8 @@
 package com.k2cybersecurity.instrumentator;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.k2cybersecurity.instrumentator.utils.ApplicationInfoUtils;
 import com.k2cybersecurity.instrumentator.utils.HashGenerator;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
@@ -13,11 +16,17 @@ import com.k2cybersecurity.intcodeagent.websocket.WSClient;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 
 import java.io.*;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
+import java.net.HttpURLConnection;
 import java.net.InetAddress;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -44,7 +53,8 @@ public class K2Instrumentator {
 	public static boolean enableHTTPRequestPrinting = false;
 
 	public static boolean isk8sEnv = false;
-
+	public static boolean isECSEnv = false;
+	
 	static {
 		try {
 			RuntimeMXBean runtimeMXBean = ManagementFactory.getRuntimeMXBean();
@@ -58,12 +68,15 @@ public class K2Instrumentator {
 	public static boolean init(Boolean isDynamicAttach) {
 		K2Instrumentator.isDynamicAttach = isDynamicAttach;
 //		 ConfigK2Logs.getInstance().initializeLogs();
+		isk8sEnv = ApplicationInfoUtils.isK8sEnv();
+		isECSEnv = ApplicationInfoUtils.isECSEnv();
+		
 		APPLICATION_INFO_BEAN = createApplicationInfoBean();
 		if(APPLICATION_INFO_BEAN == null) {
 			return false;
 		}
 		JA_HEALTH_CHECK = new JAHealthCheck(APPLICATION_UUID);
-		isk8sEnv = ApplicationInfoUtils.isK8sEnv();
+
 		
 		System.out.println("Env variables in container : ");
 		
@@ -72,7 +85,7 @@ public class K2Instrumentator {
 		
 		if(isk8sEnv) {
 			hostip = System.getenv("K2_SERVICE_SERVICE_HOST");
-		} else if (StringUtils.equals(System.getenv("AWS_EXECUTION_ENV"), "AWS_ECS_FARGATE")) {
+		} else if (isECSEnv) {
 			hostip = "k2-service.k2-ns";
 		} else if(APPLICATION_INFO_BEAN.getIdentifier().getIsHost()){
 			hostip = InetAddress.getLoopbackAddress().getHostAddress();
@@ -131,6 +144,10 @@ public class K2Instrumentator {
 				if (index > -1) {
 					return st.substring(index + 7);
 				}
+				index = st.lastIndexOf(ECS_DIR);
+				if (index > -1) {
+					return st.substring(st.lastIndexOf(DIR_SEPERATOR) + 1);
+				}
 				index = st.indexOf(KUBEPODS_DIR);
 				if (index > -1) {
 					return st.substring(st.lastIndexOf(DIR_SEPERATOR) + 1);
@@ -158,7 +175,40 @@ public class K2Instrumentator {
 		}
 		return null;
 	}
+	
+	private static String getECSTaskId() {
 
+		File cgroupFile = new File(CGROUP_FILE_NAME);
+		if (!cgroupFile.isFile())
+			return null;
+		BufferedReader br = null;
+		try {
+			br = new BufferedReader(new FileReader(cgroupFile));
+		} catch (FileNotFoundException e) {
+			return null;
+		}
+
+		String st;
+		int index = -1;
+		try {
+			while ((st = br.readLine()) != null) {
+				index = st.lastIndexOf(ECS_DIR);
+				if (index > -1) {
+					return st.substring(index + 4, st.lastIndexOf(DIR_SEPERATOR));
+				}
+			}
+
+		} catch (IOException e) {
+			return null;
+		} finally {
+			try {
+				br.close();
+			} catch (IOException e) {
+			}
+		}
+		return null;
+	}
+	
 	public static ApplicationInfoBean createApplicationInfoBean() {
 		try {
 			RuntimeMXBean runtimeMXBean = ManagementFactory.getRuntimeMXBean();
@@ -193,6 +243,9 @@ public class K2Instrumentator {
 				identifier.setContainerId(containerId);
 				identifier.setIsHost(false);
 				identifier.setIsContainer(true);
+				if(isECSEnv) {
+					populateECSInfo(identifier);
+				}
 				String podId = ApplicationInfoUtils.getPodId(containerId);
 				if(StringUtils.isNotBlank(podId)) {
 					identifier.setPodId(podId);
@@ -204,6 +257,7 @@ public class K2Instrumentator {
 			}
 			// applicationInfoBean.setJvmArguments(new
 			// JSONArray(runtimeMXBean.getInputArguments()));
+			identifier.setStartedAt(getStartedAt());
 			applicationInfoBean.setIdentifier(identifier);
 			return applicationInfoBean;
 		} catch (Exception e) {
@@ -211,6 +265,79 @@ public class K2Instrumentator {
 					K2Instrumentator.class.getName());
 		}
 		return null;
+	}
+	
+	private static String getStartedAt() {
+		
+		try {
+			ProcessBuilder processbuilder = new ProcessBuilder("date -d \"$(uptime -s)\" +%s");
+			Process process = processbuilder.start();
+			StringBuilder response = new StringBuilder();
+			String line;
+			try(BufferedReader br = new BufferedReader(new InputStreamReader(process.getInputStream()))){
+				while ((line = br.readLine()) != null) {
+					response.append(line);
+	            }
+			}
+			return response.toString() + "000";
+		} catch (IOException e) {
+		}
+		return null;
+	}
+
+	private static void populateECSInfo(Identifier identifier) {
+		identifier.setEcsTaskId(getECSTaskId());
+		JSONObject ecsData = getECSInfo(identifier);
+		if (ecsData != null) {
+			String imageId = (String)ecsData.get("ImageID");
+			if(imageId != null) {
+				identifier.setImageId(imageId);
+			}
+			String imageName = (String)ecsData.get("Image");
+			if(imageName != null) {
+				identifier.setImageName(imageName);
+			}
+			JSONObject labels = (JSONObject)ecsData.get("Labels");
+			if(labels != null) {
+				String containerName = (String)labels.get("com.amazonaws.ecs.container-name");
+				if(containerName != null) {
+					identifier.setContainerName(containerName);
+				}
+				String ecsTaskDefinitionFamily = (String)labels.get("com.amazonaws.ecs.task-definition-family");
+				String ecsTaskDefinitionVersion = (String)labels.get("com.amazonaws.ecs.task-definition-version");
+				if(ecsTaskDefinitionFamily != null && ecsTaskDefinitionVersion != null) {
+					identifier.setEcsTaskDefinition(ecsTaskDefinitionFamily + ":" + ecsTaskDefinitionVersion);
+				}
+			}
+		}
+	}
+	
+	private static JSONObject getECSInfo(Identifier identifier) {
+		
+		String url = System.getenv("ECS_CONTAINER_METADATA_URI");
+
+        HttpURLConnection httpClient;
+		try {
+			httpClient = (HttpURLConnection) new URL(url).openConnection();
+			try (BufferedReader in = new BufferedReader(
+	                new InputStreamReader(httpClient.getInputStream()))) {
+
+	            StringBuilder response = new StringBuilder();
+	            String line;
+
+	            while ((line = in.readLine()) != null) {
+	                response.append(line);
+	            }
+	            JSONParser parser = new JSONParser();
+	            JSONObject json = (JSONObject)parser.parse(response.toString());
+	            
+	            return json;
+	        } catch (ParseException e) {
+	        	return null;
+			}
+		} catch (IOException e) {
+			return null;
+		}
 	}
 
 	private static String getIpAddress() {
