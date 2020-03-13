@@ -251,6 +251,11 @@ public class Dispatcher implements Runnable {
 			eventBean = setGenericProperties(jsInjectionOperationalBean, eventBean);
 			eventBean = prepareJSInjectionEvent(eventBean, jsInjectionOperationalBean);
 			break;
+		case XQUERY_INJECTION:
+			XQueryOperationalBean xQueryOperationalBean = (XQueryOperationalBean) event;
+			eventBean = setGenericProperties(xQueryOperationalBean, eventBean);
+			eventBean = prepareXQueryInjectionEvent(eventBean, xQueryOperationalBean);
+			break;
 		default:
 
 		}
@@ -265,6 +270,14 @@ public class Dispatcher implements Runnable {
 //		System.out.println("============= Event Start ============");
 //		System.out.println(eventBean);
 //		System.out.println("============= Event End ============");
+	}
+
+	private JavaAgentEventBean prepareXQueryInjectionEvent(JavaAgentEventBean eventBean,
+			XQueryOperationalBean xQueryOperationalBean) {
+		JSONArray params = new JSONArray();
+		params.add(xQueryOperationalBean.getExpression());
+		eventBean.setParameters(params);
+		return eventBean;
 	}
 
 	private JavaAgentEventBean prepareJSInjectionEvent(JavaAgentEventBean eventBean,

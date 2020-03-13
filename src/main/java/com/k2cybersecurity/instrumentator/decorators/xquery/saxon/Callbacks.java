@@ -46,7 +46,7 @@ public class Callbacks {
 						if (xQueryOperationalBean != null) {
 							System.out.println("dispatching xquery operational bean");
 							System.out.println("Exp : " + xQueryOperationalBean.getExpression());
-							EventDispatcher.dispatch(xQueryOperationalBean, VulnerabilityCaseType.XPATH);
+							EventDispatcher.dispatch(xQueryOperationalBean, VulnerabilityCaseType.XQUERY_INJECTION);
 						}
 					} catch (Exception ex) {
 						ex.printStackTrace();
