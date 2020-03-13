@@ -21,6 +21,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.util.Map;
 import java.util.UUID;
 
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.*;
@@ -63,8 +64,12 @@ public class K2Instrumentator {
 		}
 		JA_HEALTH_CHECK = new JAHealthCheck(APPLICATION_UUID);
 		isk8sEnv = ApplicationInfoUtils.isK8sEnv();
-
-
+		
+		System.out.println("Env variables in container : ");
+		
+		Map<String, String> allEnv = System.getenv();
+		allEnv.forEach((k, v) -> System.out.println(k + " : " + v));
+		
 		if(isk8sEnv) {
 			hostip = System.getenv("K2_SERVICE_SERVICE_HOST");
 		} else if(APPLICATION_INFO_BEAN.getIdentifier().getIsHost()){
@@ -72,6 +77,8 @@ public class K2Instrumentator {
 		} else {
 			try {
 				hostip = ApplicationInfoUtils.getDefaultGateway();
+				System.out.println("Setting hostip to k2-service.k2-ns");
+				hostip = "k2-service.k2-ns";
 			} catch (IOException e) {
 				logger.log(LogLevel.ERROR, ERROR_WHILE_DETERMINING_HOSTIP_FROM_DEFAULT_GATEWAY, e,
 						K2Instrumentator.class.getName());
