@@ -89,10 +89,11 @@ public class CVEService {
 		}
 	}
 
-	private static void setAllPermissions(File loc) {
-		loc.setReadable(true, false);
-		loc.setWritable(true, false);
-		loc.setExecutable(true, false);
+	private static void setAllPermissions(String loc) {
+		try {
+			Runtime.getRuntime().exec(String.format("chmod a+rwx -R %s", loc)).waitFor();
+		} catch (Exception e) {
+		}
 	}
 
 	private static boolean downloadCVEJar(File cveTar, String outputDir) {
@@ -101,14 +102,13 @@ public class CVEService {
 			File parentDirectory = new File(outputDir);
 			if (!parentDirectory.isDirectory()) {
 				try {
-					FileUtils.forceMkdir(parentDirectory);
-				} catch (IOException e) {
+					parentDirectory.mkdirs();
+				} catch (Exception e) {
 					logger.log(LogLevel.ERROR, "Cannot create directory : " + parentDirectory, e,
 							CVEService.class.getName());
 					return false;
 				}
 			}
-			setAllPermissions(parentDirectory);
 
 			try (TarArchiveInputStream inputStream = new TarArchiveInputStream(new FileInputStream(cveTar))) {
 				TarArchiveEntry entry;
@@ -121,11 +121,13 @@ public class CVEService {
 					if (!parent.exists()) {
 						parent.mkdirs();
 					}
-					IOUtils.copy(inputStream, new FileOutputStream(curfile));
-					setAllPermissions(parent);
-					setAllPermissions(curfile);
+					try (FileOutputStream outputStream = new FileOutputStream(curfile)) {
+						IOUtils.copy(inputStream, outputStream);
+					} catch (Exception e) {
+						logger.log(LogLevel.ERROR, "Error : ", e, CVEService.class.getName());
+					}
 				}
-				
+				setAllPermissions(parentDirectory.getAbsolutePath());
 				return true;
 			} catch (Exception e) {
 				logger.log(LogLevel.ERROR, "Error : ", e, CVEService.class.getName());
