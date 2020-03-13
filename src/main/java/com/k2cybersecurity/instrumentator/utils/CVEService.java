@@ -17,9 +17,13 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.attribute.PosixFilePermission;
+import java.nio.file.attribute.PosixFilePermissions;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
 public class CVEService {
 
@@ -90,6 +94,7 @@ public class CVEService {
 	}
 
 	private static boolean downloadCVEJar(File cveTar, String outputDir) {
+		Set<PosixFilePermission> permissions = PosixFilePermissions.fromString("rwxrwxrwx");
 		boolean download = FtpClient.downloadFile(cveTar.getName(), cveTar.getAbsolutePath());
 		if (download) {
 			File parentDirectory = new File(outputDir);
@@ -110,12 +115,15 @@ public class CVEService {
 						continue;
 					}
 					File curfile = new File(outputDir, entry.getName());
+					Files.setPosixFilePermissions(curfile.toPath(), permissions);
 					File parent = curfile.getParentFile();
 					if (!parent.exists()) {
 						parent.mkdirs();
+						Files.setPosixFilePermissions(parent.toPath(), permissions);
 					}
 					IOUtils.copy(inputStream, new FileOutputStream(curfile));
 				}
+				
 				return true;
 			} catch (Exception e) {
 				logger.log(LogLevel.ERROR, "Error : ", e, CVEService.class.getName());
