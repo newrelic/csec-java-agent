@@ -26,7 +26,8 @@ public class CVEService {
 	private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
 
 	private static final String YML_TEMPLATE = "# path to dependency check tool.\r\n"
-			+ "dependencycheck.command: JAVACMD=\"$(pwd)/usr/lib/jvm/java-8-openjdk-amd64/jre/bin/ld-linux-x86-64.so.2 --library-path $(pwd)/lib:$(pwd)/lib/x86_64-linux-gnu/:$(pwd)/usr/lib/x86_64-linux-gnu:$(pwd)/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/:$(pwd)/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/amd64:$(pwd)/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/amd64/jli:$(pwd)/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/amd64/server:$(pwd)/usr/lib/jvm/java-8-openjdk-amd64/usr/lib/jvm/java-1.8.0-openjdk-amd64/jre/lib/amd64/ $(pwd)/usr/lib/jvm/java-8-openjdk-amd64/bin/java \" sh /tmp/localcveservice/dist/dependency-check/bin/dependency-check.sh  -prettyPrint -f JSON\r\n"
+			+ "dependencycheck.command: sh /tmp/localcveservice/dist/dependency-check/bin/dependency-check.sh  -prettyPrint -f JSON\r\n"
+			+ "dependencycheck.command.javacmd: /tmp/localcveservice/dist/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2 --library-path /tmp/localcveservice/dist/lib:/tmp/localcveservice/dist/lib64:/tmp/localcveservice/dist/lib/x86_64-linux-gnu/:/tmp/localcveservice/dist/usr/lib/x86_64-linux-gnu/:/tmp/localcveservice/dist/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/:/tmp/localcveservice/dist/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/amd64:/tmp/localcveservice/dist/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/amd64/jli:/tmp/localcveservice/dist/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/amd64/server\r\n"
 			+ "# connecting back to k2agent.\r\n" + "k2agent.websocket: ws://%s:54321/\r\n" + "k2agent.nodeId: %s\r\n"
 			+ "#----- following are file scan specific options\\r\n" + "k2agent.scan.mode: file\r\n"
 			+ "k2agent.application: %s\r\n" + "k2agent.applicationUuid: %s\r\n" + "k2agent.applicationSha256: %s\r\n"
