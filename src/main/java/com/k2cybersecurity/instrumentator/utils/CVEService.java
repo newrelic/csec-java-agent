@@ -110,7 +110,7 @@ public class CVEService {
 				}
 			}
 
-			try (TarArchiveInputStream inputStream = new TarArchiveInputStream(new FileInputStream(cveTar))) {
+			try (TarArchiveInputStream inputStream = new TarArchiveInputStream(new FileInputStream(cveTar), StandardCharsets.UTF_8.name())) {
 				TarArchiveEntry entry;
 				while ((entry = inputStream.getNextTarEntry()) != null) {
 					if (entry.isDirectory()) {
