@@ -26,7 +26,7 @@ public class CVEService {
 	private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
 
 	private static final String YML_TEMPLATE = "# path to dependency check tool.\r\n"
-			+ "dependencycheck.command: /tmp/localcveservice/dist/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2 /tmp/localcveservice/dist/usr/lib/jvm/java-8-openjdk-amd64/bin/java -classpath /tmp/localcveservice/dist/dependency-check/plugins/*:/tmp/localcveservice/dist/dependency-check/lib/* -Dapp.name=dependency-check -Dapp.pid=1 -Dapp.repo=/tmp/localcveservice/dist/dependency-check/lib -Dapp.home=/tmp/localcveservice/dist/dependency-check -Dbasedir=/tmp/localcveservice/dist/dependency-check org.owasp.dependencycheck.App -prettyPrint -f JSON"
+			+ "dependencycheck.command: /tmp/localcveservice/dist/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2 /tmp/localcveservice/dist/usr/lib/jvm/java-8-openjdk-amd64/bin/java -Xms1G -Xmx1G -XX:+UseG1GC -XX:MaxGCPauseMillis=20 -classpath /tmp/localcveservice/dist/dependency-check/plugins/*:/tmp/localcveservice/dist/dependency-check/lib/* -Dapp.name=dependency-check -Dapp.pid=1 -Dapp.repo=/tmp/localcveservice/dist/dependency-check/lib -Dapp.home=/tmp/localcveservice/dist/dependency-check -Dbasedir=/tmp/localcveservice/dist/dependency-check org.owasp.dependencycheck.App -prettyPrint -f JSON"
 			+ "# connecting back to k2agent.\r\n" + "k2agent.websocket: ws://%s:54321/\r\n" + "k2agent.nodeId: %s\r\n"
 			+ "#----- following are file scan specific options\\r\n" + "k2agent.scan.mode: file\r\n"
 			+ "k2agent.application: %s\r\n" + "k2agent.applicationUuid: %s\r\n" + "k2agent.applicationSha256: %s\r\n"
