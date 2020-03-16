@@ -26,7 +26,7 @@ public class CVEService {
 	private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
 
 	private static final String YML_TEMPLATE = "# path to dependency check tool.\r\n"
-			+ "dependencycheck.command: sh /tmp/localcveservice/dist/dependency-check.sh"
+			+ "dependencycheck.command: sh /tmp/localcveservice/dist/dependency-check.sh\r\n"
 			+ "# connecting back to k2agent.\r\n" + "k2agent.websocket: ws://%s:54321/\r\n" + "k2agent.nodeId: %s\r\n"
 			+ "#----- following are file scan specific options\\r\n" + "k2agent.scan.mode: file\r\n"
 			+ "k2agent.application: %s\r\n" + "k2agent.applicationUuid: %s\r\n" + "k2agent.applicationSha256: %s\r\n"
