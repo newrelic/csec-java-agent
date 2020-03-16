@@ -246,6 +246,7 @@ public class K2Instrumentator {
 				identifier.setIsHost(false);
 				identifier.setIsContainer(true);
 				if(isECSEnv) {
+					identifier.setIsECSContainer(true);
 					populateECSInfo(identifier);
 				}
 				String podId = ApplicationInfoUtils.getPodId(containerId);
@@ -269,7 +270,7 @@ public class K2Instrumentator {
 		return null;
 	}
 	
-	private static String getStartedAt() {
+	private static Long getStartedAt() {
 		
 		try {
 			ProcessBuilder processbuilder = new ProcessBuilder("/bin/sh", "-c", "date -d \"$(uptime -s)\" +%s");
@@ -281,7 +282,7 @@ public class K2Instrumentator {
 					response.append(line);
 	            }
 			}
-			return response.toString() + "000";
+			return Long.parseLong(response.toString()) * 1000 ;
 		} catch (IOException e) {
 		}
 		return null;

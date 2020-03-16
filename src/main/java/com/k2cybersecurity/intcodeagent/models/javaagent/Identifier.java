@@ -18,6 +18,8 @@ public class Identifier {
 	private Boolean isContainer = false;
 
 	private Boolean isPod = false;
+	
+	private Boolean isECSContainer = false;
 
 	private String containerId;
 
@@ -35,7 +37,7 @@ public class Identifier {
 
 	private String imageName;
 
-	private String startedAt;
+	private Long startedAt;
 	
 	private String ecsTaskDefinition;
 
@@ -168,12 +170,20 @@ public class Identifier {
 		this.imageName = imageName;
 	}
 
-	public String getStartedAt() {
+	public Long getStartedAt() {
 		return startedAt;
 	}
 
-	public void setStartedAt(String startedAt) {
-		this.startedAt = startedAt;
+	public void setStartedAt(Long startLong) {
+		this.startedAt = startLong;
+	}
+
+	public Boolean getIsECSContainer() {
+		return isECSContainer;
+	}
+
+	public void setIsECSContainer(Boolean isECSContainer) {
+		this.isECSContainer = isECSContainer;
 	}
 
 }
