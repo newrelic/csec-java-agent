@@ -83,7 +83,9 @@ public class K2Instrumentator {
 		Map<String, String> allEnv = System.getenv();
 		allEnv.forEach((k, v) -> System.out.println(k + " : " + v));
 		
-		if(isk8sEnv) {
+		if (StringUtils.isNotBlank(System.getenv("K2_HOST_IP"))) {
+			hostip=System.getenv("K2_HOST_IP");
+		} else if(isk8sEnv) {
 			hostip = System.getenv("K2_SERVICE_SERVICE_HOST");
 		} else if (isECSEnv) {
 			hostip = "k2-service.k2-ns";
@@ -270,7 +272,7 @@ public class K2Instrumentator {
 	private static String getStartedAt() {
 		
 		try {
-			ProcessBuilder processbuilder = new ProcessBuilder("date -d \"$(uptime -s)\" +%s");
+			ProcessBuilder processbuilder = new ProcessBuilder("/bin/sh", "-c", "date -d \"$(uptime -s)\" +%s");
 			Process process = processbuilder.start();
 			StringBuilder response = new StringBuilder();
 			String line;
