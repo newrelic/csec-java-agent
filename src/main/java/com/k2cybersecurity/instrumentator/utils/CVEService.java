@@ -37,6 +37,7 @@ public class CVEService {
 		if (!cveTar.isFile()) {
 			logger.log(LogLevel.WARNING, "CVE-Service Tar doesn't exists.", CVEService.class.getName());
 		}
+		cveTar.delete();
 
 		Runnable runnable = new Runnable() {
 			public void run() {
@@ -65,7 +66,7 @@ public class CVEService {
 						} catch (Exception e) {
 						}
 					}
-//					deleteAllComponents(cveTar, "/tmp/localcveservice");
+					deleteAllComponents(cveTar, "/tmp/localcveservice");
 				} catch (IOException e) {
 					logger.log(LogLevel.ERROR, "Error: {}", e, CVEService.class.getName());
 				} catch (InterruptedException e) {
