@@ -185,26 +185,18 @@ public class DeployedApplication {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + ((sha256 == null) ? 0 : sha256.hashCode());
+		result = prime * result + ((contextPath == null) ? 0 : contextPath.hashCode());
+
 		return result;
 	}
 
-	/* (non-Javadoc)
-	 * @see java.lang.Object#equals(java.lang.Object)
-	 */
-	@Override public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		DeployedApplication other = (DeployedApplication) obj;
-		if (sha256 == null) {
-			if (other.sha256 != null)
-				return false;
-		} else if (!sha256.equals(other.sha256))
-			return false;
-		return true;
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+		DeployedApplication that = (DeployedApplication) o;
+		return sha256.equals(that.sha256) &&
+				contextPath.equals(that.contextPath);
 	}
 
 	public boolean isEmpty() {
