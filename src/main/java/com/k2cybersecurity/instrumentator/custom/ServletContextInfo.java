@@ -149,12 +149,10 @@ public class ServletContextInfo {
 		// TODO: This application dir detection is still inaccurate as this brings the location of classloader & not application context root.
 		//        Hence this misses the HTML part of the application.
 		try {
-			Method getClassLoader = servletContext.getClass().getMethod(GET_CLASS_LOADER);
-			getClassLoader.setAccessible(true);
-			ClassLoader classLoader = (ClassLoader) getClassLoader.invoke(servletContext, null);
-			if(classLoader != null) {
+			Object servletInstance = ThreadLocalHTTPServiceLock.getInstance().isTakenBy();
+			if(servletInstance != null) {
 //				URL resPath = classLoader.getResource(FORWARD_SLASH );
-				URL resPath = ThreadLocalHTTPServiceLock.getInstance().isTakenBy().getClass().getProtectionDomain().getCodeSource().getLocation();
+				URL resPath = servletInstance.getClass().getProtectionDomain().getCodeSource().getLocation();
 				if(resPath != null) {
 					deployedApplication.setResourcePath(resPath.toString());
 				}
