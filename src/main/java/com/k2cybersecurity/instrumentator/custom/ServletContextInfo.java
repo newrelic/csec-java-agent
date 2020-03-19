@@ -153,7 +153,8 @@ public class ServletContextInfo {
 			getClassLoader.setAccessible(true);
 			ClassLoader classLoader = (ClassLoader) getClassLoader.invoke(servletContext, null);
 			if(classLoader != null) {
-				URL resPath = classLoader.getResource(FORWARD_SLASH);
+//				URL resPath = classLoader.getResource(FORWARD_SLASH );
+				URL resPath = ThreadLocalHTTPServiceLock.getInstance().isTakenBy().getClass().getProtectionDomain().getCodeSource().getLocation();
 				if(resPath != null) {
 					deployedApplication.setResourcePath(resPath.toString());
 				}
@@ -205,6 +206,10 @@ public class ServletContextInfo {
 //		System.out.println("==========================================================================================");
 //		System.out.println("New Servlet Context found : ");
 //		System.out.println("Details  : " + deployedApplication);
+//		System.out.println("Server Info  : " + serverInfo);
+//		System.out.println("Major Servlet Version  : " + majorServletVersion);
+//		System.out.println("Minor Servlet Version  : " + minorServletVersion);
+//		System.out.println("XYZ Path :" + servletContext.getClass().getProtectionDomain().getCodeSource().getLocation());
 //		System.out.println("==========================================================================================");
 
     }
