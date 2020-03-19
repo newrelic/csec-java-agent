@@ -5,6 +5,8 @@ import com.k2cybersecurity.instrumentator.dispatcher.EventDispatcher;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.models.javaagent.*;
+
+import org.apache.commons.lang3.RegExUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
 import org.unbescape.html.HtmlEscape;
@@ -91,9 +93,10 @@ public class CallbackUtils {
 	public static final String SRCDOC = "srcdoc";
 	public static final String DATA = "data";
 	public static final String CAME_TO_XSS_CHECK = "Came to XSS check : ";
+	private static final Pattern REGEX_SPACE = Pattern.compile("\\s+");
 
-	public static Pattern tagNameRegex = Pattern
-			.compile("<([a-zA-Z_\\-]+[0-9]*|!--)", Pattern.MULTILINE | Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
+	public static Pattern tagNameRegex = Pattern.compile("<([a-zA-Z_\\-]+[0-9]*|!--)",
+			Pattern.MULTILINE | Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
 	public static Pattern attribRegex = Pattern.compile(
 			"([^(\\/\\s<'\">)]+?)(?:\\s*)=\\s*(('|\")([\\s\\S]*?)(?:(?=(\\\\?))\\5.)*?\\3|.+?(?=\\/>|>|\\?>|\\s|<\\/|$))",
 			Pattern.MULTILINE | Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
@@ -105,40 +108,42 @@ public class CallbackUtils {
 
 	static {
 		sqlConnectionMap = new LinkedHashMap<Integer, JADatabaseMetaData>(50) {
-			@Override protected boolean removeEldestEntry(java.util.Map.Entry<Integer, JADatabaseMetaData> eldest) {
+			@Override
+			protected boolean removeEldestEntry(java.util.Map.Entry<Integer, JADatabaseMetaData> eldest) {
 				return size() > 50;
 			}
 		};
 	}
 
-    public static void checkForFileIntegrity(Map<String, FileIntegrityBean> fileLocalMap)
-            throws K2CyberSecurityException {
-        for (Entry<String, FileIntegrityBean> entry : fileLocalMap.entrySet()) {
-            boolean isExists = new File(entry.getKey()).exists();
-            if (!entry.getValue().getExists().equals(isExists)) {
-                EventDispatcher.dispatch(entry.getValue(), VulnerabilityCaseType.FILE_INTEGRITY);
-            }
-        }
-    }
+	public static void checkForFileIntegrity(Map<String, FileIntegrityBean> fileLocalMap)
+			throws K2CyberSecurityException {
+		for (Entry<String, FileIntegrityBean> entry : fileLocalMap.entrySet()) {
+			boolean isExists = new File(entry.getKey()).exists();
+			if (!entry.getValue().getExists().equals(isExists)) {
+				EventDispatcher.dispatch(entry.getValue(), VulnerabilityCaseType.FILE_INTEGRITY);
+			}
+		}
+	}
 
 	// TODO: use complete response instead of just response body.
 	public static String checkForReflectedXSS(HttpRequestBean httpRequestBean) {
 		Set<String> combinedRequestData = decodeRequestData(httpRequestBean);
 		Set<String> combinedResponseData = decodeResponseData(httpRequestBean.getHttpResponseBean());
-		//        System.out.println("Processed request data is : " + combinedRequestData);
-		//        System.out.println("Processed response data is : " + combinedResponseData);
+		// System.out.println("Processed request data is : " + combinedRequestData);
+		// System.out.println("Processed response data is : " + combinedResponseData);
 		String combinedResponseDataString = StringUtils.joinWith(FIVE_COLON, combinedResponseData);
 
 		Set<String> attackContructs = isXSS(combinedRequestData);
 
 		for (String construct : attackContructs) {
-			//			System.err.println(String.format(
-			//					"Reflected XSS contruct detected ::  %s :: Request : %s", construct,
-			//					httpRequestBean));
+			// System.err.println(String.format(
+			// "Reflected XSS contruct detected :: %s :: Request : %s", construct,
+			// httpRequestBean));
 			if (StringUtils.containsIgnoreCase(combinedResponseDataString, construct)) {
-				//                System.err.println(String.format(
-				//                        "Reflected XSS attack detected :: Construct : %s :: Request : %s :: Response : %s", construct,
-				//                        httpRequestBean, httpRequestBean.getHttpResponseBean().getResponseBody()));
+				// System.err.println(String.format(
+				// "Reflected XSS attack detected :: Construct : %s :: Request : %s :: Response
+				// : %s", construct,
+				// httpRequestBean, httpRequestBean.getHttpResponseBean().getResponseBody()));
 				return construct;
 			}
 		}
@@ -200,9 +205,9 @@ public class CallbackUtils {
 			}
 			startPos = matcher.start();
 			currPos = matcher.end() - 1;
-			if(StringUtils.equals(HTML_COMMENT_START, tagName)) {
+			if (StringUtils.equals(HTML_COMMENT_START, tagName)) {
 				tmpCurrPos = StringUtils.indexOf(data, HTML_COMMENT_END, startPos);
-				if(tmpCurrPos == -1) {
+				if (tmpCurrPos == -1) {
 					break;
 				} else {
 					currPos = tmpCurrPos;
@@ -211,7 +216,7 @@ public class CallbackUtils {
 			}
 			tmpStartPos = tmpCurrPos = StringUtils.indexOf(data, ANGLE_END, startPos);
 
-			if(tmpCurrPos == -1 ) {
+			if (tmpCurrPos == -1) {
 				tmpStartPos = startPos;
 			}
 
@@ -222,7 +227,7 @@ public class CallbackUtils {
 				tmpCurrPos = StringUtils.indexOf(data, ANGLE_END, tmpStartPos);
 
 				if ((tmpCurrPos == -1 || attribMatcher.start() < tmpCurrPos)) {
-					tmpStartPos = tmpCurrPos = attribMatcher.end() -1;
+					tmpStartPos = tmpCurrPos = attribMatcher.end() - 1;
 					tmpStartPos++;
 					if (StringUtils.isBlank(attribMatcher.group(3)) && attribMatcher.end() >= tmpCurrPos) {
 						tmpStartPos = tmpCurrPos = StringUtils.indexOf(data, ANGLE_END, attribMatcher.start());
@@ -232,13 +237,13 @@ public class CallbackUtils {
 					String key = StringUtils.substringBefore(attribData, EQUALS);
 					String val = StringUtils.substringAfter(attribData, EQUALS);
 
-					if (StringUtils.isNotBlank(key) && (StringUtils.startsWithIgnoreCase(key, ON1) || StringUtils
-							.equalsIgnoreCase(key, SRC) || StringUtils.equalsIgnoreCase(key, HREF) || StringUtils
-							.equalsIgnoreCase(key, ACTION) || StringUtils
-							.equalsIgnoreCase(key, FORMACTION) || StringUtils
-							.equalsIgnoreCase(key, SRCDOC) ||  StringUtils
-							.equalsIgnoreCase(key, DATA) || StringUtils
-							.containsIgnoreCase(HtmlEscape.unescapeHtml(val), JAVASCRIPT))) {
+					if (StringUtils.isNotBlank(key) && (StringUtils.startsWithIgnoreCase(key, ON1)
+							|| StringUtils.equalsIgnoreCase(key, SRC) || StringUtils.equalsIgnoreCase(key, HREF)
+							|| StringUtils.equalsIgnoreCase(key, ACTION)
+							|| StringUtils.equalsIgnoreCase(key, FORMACTION)
+							|| StringUtils.equalsIgnoreCase(key, SRCDOC) || StringUtils.equalsIgnoreCase(key, DATA)
+							|| StringUtils.containsIgnoreCase(
+									RegExUtils.removeAll(HtmlEscape.unescapeHtml(val), REGEX_SPACE), JAVASCRIPT))) {
 						isAttackConstruct = true;
 					}
 				} else {
@@ -261,7 +266,14 @@ public class CallbackUtils {
 					String body = StringUtils.substring(data, currPos + 1, locationOfEndTag);
 					if (StringUtils.isNotBlank(body)) {
 						construct.add(StringUtils.substring(data, startPos, currPos + 1) + body);
+
 						continue;
+					}
+				} else {
+					String body = StringUtils.substring(data, currPos + 1);
+					if (StringUtils.isNotBlank(body)) {
+						construct.add(StringUtils.substring(data, startPos, currPos + 1) + body);
+						break;
 					}
 				}
 			}
@@ -317,8 +329,6 @@ public class CallbackUtils {
 //	        System.out.println("Detection : " + getXSSConstructs("<img onerror=alert(1) >"));
 //	        System.out.println("Detection : " + getXSSConstructs("<img src=x onerror=\"alert(1)\" > "));
 
-
-
 //			System.out.println("Detection : " + getXSSConstructs("></SCRIPT>”>’><SCRIPT>alert(String.fromCharCode(88,83,83))</SCRIPT>"));
 //			System.out.println("Detection : " + getXSSConstructs("</script>top[/al/.source+/ert/.source](1)<script>"));
 //			System.out.println("Detection : " + getXSSConstructs("<IMG \"\"\"><SCRIPT>alert(\"XSS\")</SCRIPT>\"\\>"));
@@ -327,8 +337,6 @@ public class CallbackUtils {
 //			System.out.println("Detection : " + getXSSConstructs("<SCRIPT>alert('XSS');</SCRIPT>"));
 //
 //		}
-
-
 
 	/**
 	 * @return the sqlConnectionMap
@@ -373,7 +381,7 @@ public class CallbackUtils {
 					jaDatabaseMetaData.setDriverVersion(driverVersion);
 					jaDatabaseMetaData.setDriverClassName(connection.getClass().getName());
 					jaDatabaseMetaData.setDbIdentifier(detectDatabaseProduct(productName));
-					//                    System.out.println("DB details detected: " + jaDatabaseMetaData);
+					// System.out.println("DB details detected: " + jaDatabaseMetaData);
 					sqlConnectionMap.put(connection.hashCode(), jaDatabaseMetaData);
 					return jaDatabaseMetaData.getDbIdentifier();
 				}
@@ -423,8 +431,8 @@ public class CallbackUtils {
 		if (databaseProductName.startsWith(VERTICA1)) {
 			return VERTICA;
 		}
-		if (databaseProductName.startsWith(ADAPTIVE) || databaseProductName.startsWith(ASE) || databaseProductName
-				.startsWith(SQL_SERVER)) {
+		if (databaseProductName.startsWith(ADAPTIVE) || databaseProductName.startsWith(ASE)
+				|| databaseProductName.startsWith(SQL_SERVER)) {
 			return SYBASE;
 		}
 		if (databaseProductName.startsWith(HDB)) {
@@ -454,15 +462,15 @@ public class CallbackUtils {
 		try {
 			processedData.add(processedBody);
 
-			//            processedBody = HtmlEscape.unescapeHtml(responseBody);
-			//            processedData.append(processedBody);
-			//            processedData.append(FIVE_COLON);
+			// processedBody = HtmlEscape.unescapeHtml(responseBody);
+			// processedData.append(processedBody);
+			// processedData.append(FIVE_COLON);
 
 			processedData.add(processedHeaders);
 
-			//            processedHeaders = HtmlEscape.unescapeHtml(processedHeaders);
-			//            processedData.append(processedHeaders);
-			//            processedData.append(FIVE_COLON);
+			// processedHeaders = HtmlEscape.unescapeHtml(processedHeaders);
+			// processedData.append(processedHeaders);
+			// processedData.append(FIVE_COLON);
 
 			processedBody = urlDecode(processedBody);
 			processedData.add(processedBody);
@@ -480,7 +488,7 @@ public class CallbackUtils {
 						processedBody = StringEscapeUtils.unescapeJson(processedBody);
 						if (!StringUtils.equals(oldProcessedBody, processedBody)) {
 							processedData.add(processedBody);
-							//                            System.out.println("Decoding JSON: " + processedBody);
+							// System.out.println("Decoding JSON: " + processedBody);
 						}
 					} while (!StringUtils.equals(oldProcessedBody, processedBody));
 					break;
@@ -490,7 +498,7 @@ public class CallbackUtils {
 						processedBody = StringEscapeUtils.unescapeXml(processedBody);
 						if (!StringUtils.equals(oldProcessedBody, processedBody)) {
 							processedData.add(processedBody);
-							//                            System.out.println("Decoding XML: " + processedBody);
+							// System.out.println("Decoding XML: " + processedBody);
 						}
 					} while (!StringUtils.equals(oldProcessedBody, processedBody));
 					break;
@@ -547,10 +555,10 @@ public class CallbackUtils {
 					do {
 						oldProcessedBody = processedBody;
 						processedBody = StringEscapeUtils.unescapeJson(processedBody);
-						if (!StringUtils.equals(oldProcessedBody, processedBody) && StringUtils
-								.contains(processedBody, ANGLE_START)) {
+						if (!StringUtils.equals(oldProcessedBody, processedBody)
+								&& StringUtils.contains(processedBody, ANGLE_START)) {
 							processedData.add(processedBody);
-							//                            System.out.println("Decoding JSON: " + processedBody);
+							// System.out.println("Decoding JSON: " + processedBody);
 						}
 					} while (!StringUtils.equals(oldProcessedBody, processedBody));
 					break;
@@ -558,10 +566,10 @@ public class CallbackUtils {
 					do {
 						oldProcessedBody = processedBody;
 						processedBody = StringEscapeUtils.unescapeXml(processedBody);
-						if (!StringUtils.equals(oldProcessedBody, processedBody) && StringUtils
-								.contains(processedBody, ANGLE_START)) {
+						if (!StringUtils.equals(oldProcessedBody, processedBody)
+								&& StringUtils.contains(processedBody, ANGLE_START)) {
 							processedData.add(processedBody);
-							//                            System.out.println("Decoding XML: " + processedBody);
+							// System.out.println("Decoding XML: " + processedBody);
 						}
 					} while (!StringUtils.equals(oldProcessedBody, processedBody));
 					break;
@@ -573,10 +581,10 @@ public class CallbackUtils {
 					do {
 						oldProcessedBody = processedBody;
 						processedBody = urlDecode(processedBody);
-						if (!StringUtils.equals(oldProcessedBody, processedBody) && StringUtils
-								.contains(processedBody, ANGLE_START)) {
+						if (!StringUtils.equals(oldProcessedBody, processedBody)
+								&& StringUtils.contains(processedBody, ANGLE_START)) {
 							processedData.add(processedBody);
-							//                            System.out.println("Decoding URL: " + processedBody);
+							// System.out.println("Decoding URL: " + processedBody);
 						}
 					} while (!StringUtils.equals(oldProcessedBody, processedBody));
 
@@ -615,10 +623,10 @@ public class CallbackUtils {
 				responseInterface = Class.forName("javax.servlet.http.HttpServletResponse", false,
 						responseArg.getClass().getClassLoader());
 			}
-			return requestInterface.isAssignableFrom(requestArg.getClass()) && responseInterface
-					.isAssignableFrom(responseArg.getClass());
+			return requestInterface.isAssignableFrom(requestArg.getClass())
+					&& responseInterface.isAssignableFrom(responseArg.getClass());
 		} catch (Exception e) {
-			//            e.printStackTrace();
+			// e.printStackTrace();
 		}
 		return false;
 	}
@@ -634,7 +642,7 @@ public class CallbackUtils {
 			}
 			return requestInterface.isAssignableFrom(requestArg.getClass());
 		} catch (Exception e) {
-			//            e.printStackTrace();
+			// e.printStackTrace();
 		}
 		return false;
 	}
@@ -650,7 +658,7 @@ public class CallbackUtils {
 			}
 			return responseInterface.isAssignableFrom(responseArg.getClass());
 		} catch (Exception e) {
-			//            e.printStackTrace();
+			// e.printStackTrace();
 		}
 		return false;
 	}

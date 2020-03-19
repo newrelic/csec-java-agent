@@ -4,7 +4,9 @@ import com.k2cybersecurity.intcodeagent.logging.ServerInfo;
 import com.k2cybersecurity.intcodeagent.websocket.JsonConverter;
 import org.json.simple.JSONArray;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 public class ApplicationInfoBean extends AgentBasicInfo {
 
@@ -31,7 +33,21 @@ public class ApplicationInfoBean extends AgentBasicInfo {
 	private String procStartTime;
 
 	private String userDir;
-	private JSONArray libraryPath;
+	private List<String> libraryPath;
+	/**
+	 * @return the libraryPath
+	 */
+	public List<String> getLibraryPath() {
+		return libraryPath;
+	}
+
+	/**
+	 * @param libraryPath the libraryPath to set
+	 */
+	public void setLibraryPath(List<String> libraryPath) {
+		this.libraryPath = libraryPath;
+	}
+
 	private String bootLibraryPath;
 	private String binaryName;
 	private String binaryVersion;
@@ -53,7 +69,7 @@ public class ApplicationInfoBean extends AgentBasicInfo {
 		this.applicationUUID = applicationUUID;
 		this.runCommand = System.getProperty("sun.java.command");
 		this.userDir = System.getProperty("user.dir");
-		this.libraryPath = new JSONArray();
+		this.libraryPath = new ArrayList<String>();
 		this.libraryPath.addAll(Arrays.asList(System.getProperty("java.library.path").split(":")));
 		this.libraryPath.addAll(Arrays.asList(System.getProperty("java.class.path").split(":")));
 		this.bootLibraryPath = System.getProperty("sun.boot.library.path");
@@ -137,14 +153,6 @@ public class ApplicationInfoBean extends AgentBasicInfo {
 
 	public void setUserDir(String userDir) {
 		this.userDir = userDir;
-	}
-
-	public JSONArray getLibraryPath() {
-		return libraryPath;
-	}
-
-	public void setLibraryPath(JSONArray libraryPath) {
-		this.libraryPath = libraryPath;
 	}
 
 	public String getBootLibraryPath() {
