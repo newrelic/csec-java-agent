@@ -220,7 +220,7 @@ public class CVEService implements Runnable {
 	}
 
 	private CVEScanner createLibTmpDir(List<String> libPaths, String binaryName, String applicationUUID) {
-		File directory = new File("/tmp/libs-", applicationUUID);
+		File directory = new File("/tmp/libs-"+ applicationUUID);
 		try {
 			FileUtils.forceMkdir(directory);
 			for (String path : libPaths) {
