@@ -17,6 +17,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import com.k2cybersecurity.instrumentator.K2Instrumentator;
+import com.k2cybersecurity.instrumentator.utils.HashGenerator;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.logging.DeployedApplication;
@@ -123,6 +124,11 @@ public class CVEService implements Runnable {
 			FileUtils.forceDelete(new File(cveDir));
 		} catch (IOException e) {
 		}
+		
+		try {
+			FileUtils.forceDelete(new File("/tmp/libs-", K2Instrumentator.APPLICATION_UUID));
+		} catch (IOException e) {
+		}
 	}
 
 	private void setAllPermissions(String loc) {
@@ -187,20 +193,24 @@ public class CVEService implements Runnable {
 	}
 
 	protected List<CVEScanner> getAllScanDirs() {
-		List<CVEScanner> scanners = new ArrayList<>();
+		List<String> libPaths = new ArrayList<>();
 		if (!K2Instrumentator.APPLICATION_INFO_BEAN.getLibraryPath().isEmpty()) {
 			for (String path : K2Instrumentator.APPLICATION_INFO_BEAN.getLibraryPath()) {
 				if (StringUtils.endsWith(path, JAR_EXT)) {
-					scanners.add(new CVEScanner(K2Instrumentator.APPLICATION_INFO_BEAN.getBinaryName(),
-							K2Instrumentator.APPLICATION_INFO_BEAN.getSha256(), path));
+					libPaths.add(path);
 				} else if (new File(path).isDirectory()) {
 					FileUtils.listFiles(new File(path), new String[] { JAR_EXT }, true)
-							.forEach(jarFile -> scanners.add(new CVEScanner(
-									K2Instrumentator.APPLICATION_INFO_BEAN.getBinaryName(),
-									K2Instrumentator.APPLICATION_INFO_BEAN.getSha256(), jarFile.getAbsolutePath())));
+							.forEach(jarFile -> libPaths.add(jarFile.getAbsolutePath()));
 				}
 			}
 		}
+		List<CVEScanner> scanners = new ArrayList<>();
+		if (!libPaths.isEmpty()) {
+			CVEScanner cveScanner = createLibTmpDir(libPaths, K2Instrumentator.APPLICATION_INFO_BEAN.getBinaryName(),
+					K2Instrumentator.APPLICATION_INFO_BEAN.getApplicationUUID());
+			scanners.add(cveScanner);
+		}
+
 		if (K2Instrumentator.APPLICATION_INFO_BEAN.getServerInfo().getDeployedApplications() != null) {
 			for (Object obj : K2Instrumentator.APPLICATION_INFO_BEAN.getServerInfo().getDeployedApplications()) {
 				DeployedApplication deployedApplication = (DeployedApplication) obj;
@@ -209,5 +219,19 @@ public class CVEService implements Runnable {
 			}
 		}
 		return scanners;
+	}
+
+	private CVEScanner createLibTmpDir(List<String> libPaths, String binaryName, String applicationUUID) {
+		File directory = new File("/tmp/libs-", applicationUUID);
+		try {
+			FileUtils.forceMkdir(directory);
+			for (String path : libPaths) {
+				FileUtils.copyFileToDirectory(new File(path), directory, true);
+			}
+			return new CVEScanner(binaryName + " Env Libs " + applicationUUID,
+					HashGenerator.getSHA256ForDirectory(directory.getAbsolutePath()), directory.getAbsolutePath());
+		} catch (IOException e) {
+		}
+		return null;
 	}
 }
