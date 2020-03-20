@@ -1,8 +1,5 @@
 package com.k2cybersecurity.instrumentator;
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import com.k2cybersecurity.instrumentator.utils.ApplicationInfoUtils;
 import com.k2cybersecurity.instrumentator.utils.HashGenerator;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
@@ -14,6 +11,7 @@ import com.k2cybersecurity.intcodeagent.models.javaagent.JAHealthCheck;
 import com.k2cybersecurity.intcodeagent.websocket.EventSendPool;
 import com.k2cybersecurity.intcodeagent.websocket.WSClient;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
 import org.json.simple.JSONObject;
@@ -25,11 +23,12 @@ import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
 import java.net.HttpURLConnection;
 import java.net.InetAddress;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -131,24 +130,19 @@ public class K2Instrumentator {
 		File cgroupFile = new File(CGROUP_FILE_NAME);
 		if (!cgroupFile.isFile())
 			return null;
-		BufferedReader br = null;
 		try {
-			br = new BufferedReader(new FileReader(cgroupFile));
-		} catch (FileNotFoundException e) {
-			return null;
-		}
-
-		String st;
-		int index = -1;
-		try {
-			while ((st = br.readLine()) != null) {
+			List<String> fileData = FileUtils.readLines(cgroupFile, StandardCharsets.UTF_8);
+			Iterator<String> itr = fileData.iterator();
+			int index = -1;
+			while (itr.hasNext()) {
+				String st = itr.next();
 				index = st.lastIndexOf(DOCKER_DIR);
 				if (index > -1) {
 					return st.substring(index + 7);
 				}
 				index = st.lastIndexOf(ECS_DIR);
 				if (index > -1) {
-					return st.substring(st.lastIndexOf(DIR_SEPERATOR) + 1);
+					return st.substring(index + 4, st.lastIndexOf(DIR_SEPERATOR));
 				}
 				index = st.indexOf(KUBEPODS_DIR);
 				if (index > -1) {
@@ -166,14 +160,8 @@ public class K2Instrumentator {
 					return st.substring(index + 8, indexEnd);
 				}
 			}
-
 		} catch (IOException e) {
 			return null;
-		} finally {
-			try {
-				br.close();
-			} catch (IOException e) {
-			}
 		}
 		return null;
 	}
@@ -183,30 +171,19 @@ public class K2Instrumentator {
 		File cgroupFile = new File(CGROUP_FILE_NAME);
 		if (!cgroupFile.isFile())
 			return null;
-		BufferedReader br = null;
 		try {
-			br = new BufferedReader(new FileReader(cgroupFile));
-		} catch (FileNotFoundException e) {
-			return null;
-		}
-
-		String st;
-		int index = -1;
-		try {
-			while ((st = br.readLine()) != null) {
+			List<String> fileData = FileUtils.readLines(cgroupFile, StandardCharsets.UTF_8);
+			Iterator<String> itr = fileData.iterator();
+			int index = -1;
+			while (itr.hasNext()) {
+				String st = itr.next();
 				index = st.lastIndexOf(ECS_DIR);
 				if (index > -1) {
 					return st.substring(index + 4, st.lastIndexOf(DIR_SEPERATOR));
 				}
 			}
-
 		} catch (IOException e) {
 			return null;
-		} finally {
-			try {
-				br.close();
-			} catch (IOException e) {
-			}
 		}
 		return null;
 	}
@@ -271,21 +248,15 @@ public class K2Instrumentator {
 	}
 	
 	private static Long getStartedAt() {
-		
 		try {
 			ProcessBuilder processbuilder = new ProcessBuilder("/bin/sh", "-c", "date -d \"$(uptime -s)\" +%s");
 			Process process = processbuilder.start();
-			StringBuilder response = new StringBuilder();
-			String line;
-			try(BufferedReader br = new BufferedReader(new InputStreamReader(process.getInputStream()))){
-				while ((line = br.readLine()) != null) {
-					response.append(line);
-	            }
-			}
-			return Long.parseLong(response.toString()) * 1000 ;
-		} catch (IOException e) {
+			process.waitFor();
+			List<String> response = IOUtils.readLines(process.getInputStream(), StandardCharsets.UTF_8);
+			return Long.parseLong(StringUtils.join(response)) * 1000 ;
+		} catch (IOException | InterruptedException e) {
+			return null;
 		}
-		return null;
 	}
 
 	private static void populateECSInfo(Identifier identifier) {
@@ -316,29 +287,14 @@ public class K2Instrumentator {
 	}
 	
 	private static JSONObject getECSInfo(Identifier identifier) {
-		
-		String url = System.getenv("ECS_CONTAINER_METADATA_URI");
-
-        HttpURLConnection httpClient;
 		try {
-			httpClient = (HttpURLConnection) new URL(url).openConnection();
-			try (BufferedReader in = new BufferedReader(
-	                new InputStreamReader(httpClient.getInputStream()))) {
-
-	            StringBuilder response = new StringBuilder();
-	            String line;
-
-	            while ((line = in.readLine()) != null) {
-	                response.append(line);
-	            }
-	            JSONParser parser = new JSONParser();
-	            JSONObject json = (JSONObject)parser.parse(response.toString());
-	            
-	            return json;
-	        } catch (ParseException e) {
-	        	return null;
-			}
-		} catch (IOException e) {
+			String url = System.getenv("ECS_CONTAINER_METADATA_URI");
+			HttpURLConnection httpClient = (HttpURLConnection) new URL(url).openConnection();
+			List<String> response = IOUtils.readLines(httpClient.getInputStream(), StandardCharsets.UTF_8);
+			JSONParser parser = new JSONParser();
+			JSONObject json = (JSONObject)parser.parse(StringUtils.join(response));
+			return json;
+		} catch (ParseException | IOException e) {
 			return null;
 		}
 	}
@@ -369,10 +325,9 @@ public class K2Instrumentator {
 		File statFile = new File(PROC_DIR + pid + STAT);
 		if (!statFile.isFile())
 			return null;
-		BufferedReader br = null;
 		try {
-			br = new BufferedReader(new FileReader(statFile));
-			String statData = br.readLine();
+			List<String> fileData = FileUtils.readLines(statFile, StandardCharsets.UTF_8);
+			String statData = fileData.get(0);
 			if (!statData.isEmpty()) {
 				String[] statArray = statData.split("\\s+");
 				if (statArray.length >= 21) {
@@ -380,12 +335,8 @@ public class K2Instrumentator {
 				}
 			}
 		} catch (IOException e) {
-		} finally {
-			try {
-				br.close();
-			} catch (IOException e) {
-			}
-		}
+			return null;
+		} 
 		return null;
 	}
 
