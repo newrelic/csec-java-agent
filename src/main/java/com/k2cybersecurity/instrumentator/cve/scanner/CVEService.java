@@ -24,7 +24,7 @@ import java.util.List;
 
 public class CVEService implements Runnable {
 
-	private static final String JAR_EXT = ".jar";
+	private static final String JAR_EXT = "jar";
 
 	private static final String INPUT_YML_LOG = "input yml : ";
 
