@@ -125,10 +125,10 @@ public class CVEService implements Runnable {
 		} catch (IOException e) {
 		}
 		
-		try {
-			FileUtils.forceDelete(new File("/tmp/libs-", K2Instrumentator.APPLICATION_UUID));
-		} catch (IOException e) {
-		}
+//		try {
+//			FileUtils.forceDelete(new File("/tmp/libs-", K2Instrumentator.APPLICATION_UUID));
+//		} catch (IOException e) {
+//		}
 	}
 
 	private void setAllPermissions(String loc) {
@@ -226,6 +226,7 @@ public class CVEService implements Runnable {
 		try {
 			FileUtils.forceMkdir(directory);
 			for (String path : libPaths) {
+				logger.log(LogLevel.DEBUG, "Add jar : "+path, CVEService.class.getName());
 				FileUtils.copyFileToDirectory(new File(path), directory, true);
 			}
 			return new CVEScanner(binaryName + " Env Libs " + applicationUUID,
