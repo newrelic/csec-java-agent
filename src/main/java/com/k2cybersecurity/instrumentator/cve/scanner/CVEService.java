@@ -94,8 +94,9 @@ public class CVEService implements Runnable {
 				Process process = processBuilder.start();
 				process.waitFor();
 				List<String> response = IOUtils.readLines(process.getInputStream(), StandardCharsets.UTF_8);
-				logger.log(LogLevel.INFO, String.format(K2_VULNERABILITY_SCANNER_RESPONSE,
-						StringUtils.join(response, StringUtils.LF)), CVEService.class.getName());
+				logger.log(LogLevel.INFO,
+						String.format(K2_VULNERABILITY_SCANNER_RESPONSE, StringUtils.join(response, StringUtils.LF)),
+						CVEService.class.getName());
 				List<String> errResponse = IOUtils.readLines(process.getErrorStream(), StandardCharsets.UTF_8);
 				logger.log(LogLevel.ERROR, String.format(K2_VULNERABILITY_SCANNER_RESPONSE_ERROR,
 						StringUtils.join(errResponse, StringUtils.LF)), CVEService.class.getName());
@@ -105,10 +106,10 @@ public class CVEService implements Runnable {
 				}
 			}
 			deleteAllComponents(cveTar, TMP_LOCALCVESERVICE_PATH);
-		} catch (IOException e) {
-			logger.log(LogLevel.ERROR, ERROR, e, CVEService.class.getName());
 		} catch (InterruptedException e) {
 			logger.log(LogLevel.ERROR, ERROR_PROCESS_TERMINATED, e, CVEService.class.getName());
+		} catch (Exception e) {
+			logger.log(LogLevel.ERROR, ERROR, e, CVEService.class.getName());
 		}
 
 	}
