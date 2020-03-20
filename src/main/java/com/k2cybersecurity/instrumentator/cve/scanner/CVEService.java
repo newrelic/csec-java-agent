@@ -24,6 +24,12 @@ import java.util.List;
 
 public class CVEService implements Runnable {
 
+	private static final String ENV_LIBS = " Env Libs ";
+
+	private static final String TMP_LIBS = "/tmp/libs-";
+
+	private static final String JAR_EXTENSION = ".jar";
+
 	private static final String JAR_EXT = "jar";
 
 	private static final String INPUT_YML_LOG = "input yml : ";
@@ -123,10 +129,10 @@ public class CVEService implements Runnable {
 		} catch (IOException e) {
 		}
 		
-//		try {
-//			FileUtils.forceDelete(new File("/tmp/libs-"+ K2Instrumentator.APPLICATION_UUID));
-//		} catch (IOException e) {
-//		}
+		try {
+			FileUtils.forceDelete(new File(TMP_LIBS+ K2Instrumentator.APPLICATION_UUID));
+		} catch (IOException e) {
+		}
 	}
 
 	private void setAllPermissions(String loc) {
@@ -194,7 +200,7 @@ public class CVEService implements Runnable {
 		List<String> libPaths = new ArrayList<>();
 		if (!K2Instrumentator.APPLICATION_INFO_BEAN.getLibraryPath().isEmpty()) {
 			for (String path : K2Instrumentator.APPLICATION_INFO_BEAN.getLibraryPath()) {
-				if (StringUtils.endsWith(path, JAR_EXT)) {
+				if (StringUtils.endsWith(path, JAR_EXTENSION)) {
 					libPaths.add(path);
 				} else if (new File(path).isDirectory()) {
 					FileUtils.listFiles(new File(path), new String[] { JAR_EXT }, true)
@@ -220,14 +226,14 @@ public class CVEService implements Runnable {
 	}
 
 	private CVEScanner createLibTmpDir(List<String> libPaths, String binaryName, String applicationUUID) {
-		File directory = new File("/tmp/libs-"+ applicationUUID);
+		File directory = new File(TMP_LIBS+ applicationUUID);
 		try {
 			FileUtils.forceMkdir(directory);
 			for (String path : libPaths) {
-				logger.log(LogLevel.DEBUG, "Add jar : "+path, CVEService.class.getName());
+//				logger.log(LogLevel.DEBUG, "Add jar : "+path, CVEService.class.getName());
 				FileUtils.copyFileToDirectory(new File(path), directory, true);
 			}
-			return new CVEScanner(binaryName + " Env Libs " + applicationUUID,
+			return new CVEScanner(binaryName + ENV_LIBS + applicationUUID,
 					HashGenerator.getSHA256ForDirectory(directory.getAbsolutePath()), directory.getAbsolutePath());
 		} catch (IOException e) {
 		}
