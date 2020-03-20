@@ -1,10 +1,14 @@
 package com.k2cybersecurity.intcodeagent.controlcommand;
 
+import java.util.concurrent.TimeUnit;
+
+import org.apache.commons.lang3.StringUtils;
+
 import com.google.gson.Gson;
 import com.k2cybersecurity.instrumentator.K2Instrumentator;
+import com.k2cybersecurity.instrumentator.cve.scanner.CVEScannerPool;
 import com.k2cybersecurity.instrumentator.dispatcher.EventDispatcher;
 import com.k2cybersecurity.instrumentator.utils.AgentUtils;
-import com.k2cybersecurity.instrumentator.utils.CVEService;
 import com.k2cybersecurity.instrumentator.utils.InstrumentationUtils;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
@@ -15,9 +19,6 @@ import com.k2cybersecurity.intcodeagent.models.javaagent.ProtectionConfig;
 import com.k2cybersecurity.intcodeagent.models.javaagent.VulnerableAPI;
 import com.k2cybersecurity.intcodeagent.websocket.EventSendPool;
 import com.k2cybersecurity.intcodeagent.websocket.FtpClient;
-import org.apache.commons.lang3.StringUtils;
-
-import java.util.concurrent.TimeUnit;
 
 public class ControlCommandProcessor implements Runnable {
 
@@ -155,7 +156,7 @@ public class ControlCommandProcessor implements Runnable {
 		case IntCodeControlCommand.START_VULNERABILITY_SCAN:
 			logger.log(LogLevel.INFO, String.format("Starting K2 Vulnerability scanner on this instance : %s",
 					controlCommand.getArguments().get(0)), ControlCommandProcessor.class.getSimpleName());
-			CVEService.startCVEService(controlCommand.getArguments().get(0));
+			CVEScannerPool.getInstance().dispatchScanner(controlCommand.getArguments().get(0));
 			break;
 		default:
 			logger.log(LogLevel.WARNING, String.format(UNKNOWN_CONTROL_COMMAND_S, controlCommandMessage), ControlCommandProcessor.class.getName());
