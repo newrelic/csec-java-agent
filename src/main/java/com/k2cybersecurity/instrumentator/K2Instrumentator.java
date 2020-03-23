@@ -253,8 +253,8 @@ public class K2Instrumentator {
 			Process process = processbuilder.start();
 			process.waitFor();
 			String response = new String(IOUtils.readFully(process.getInputStream(), process.getInputStream().available()));
-			return Long.parseLong(StringUtils.join(response)) * 1000 ;
-		} catch (IOException | InterruptedException e) {
+			return Long.parseLong(StringUtils.join(response.trim())) * 1000 ;
+		} catch (Exception e) {
 			return Instant.now().toEpochMilli();
 		}
 	}
