@@ -27,6 +27,7 @@ import java.net.URL;
 import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.time.Instant;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -251,10 +252,10 @@ public class K2Instrumentator {
 			ProcessBuilder processbuilder = new ProcessBuilder("/bin/sh", "-c", "date -d \"$(uptime -s)\" +%s");
 			Process process = processbuilder.start();
 			process.waitFor();
-			List<String> response = IOUtils.readLines(process.getInputStream(), StandardCharsets.UTF_8);
+			String response = new String(IOUtils.readFully(process.getInputStream(), process.getInputStream().available()));
 			return Long.parseLong(StringUtils.join(response)) * 1000 ;
 		} catch (IOException | InterruptedException e) {
-			return null;
+			return Instant.now().toEpochMilli();
 		}
 	}
 
