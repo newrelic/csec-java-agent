@@ -154,9 +154,20 @@ public class ControlCommandProcessor implements Runnable {
 					ControlCommandProcessor.class.getSimpleName());
 			break;
 		case IntCodeControlCommand.START_VULNERABILITY_SCAN:
-			logger.log(LogLevel.INFO, String.format("Starting K2 Vulnerability scanner on this instance : %s",
-					controlCommand.getArguments().get(0)), ControlCommandProcessor.class.getSimpleName());
-			CVEScannerPool.getInstance().dispatchScanner(controlCommand.getArguments().get(0));
+			boolean fullReScanning = false;
+			boolean downloadTarBundle = false;
+
+			if(controlCommand.getArguments().size() == 3){
+				fullReScanning = Boolean.parseBoolean(controlCommand.getArguments().get(1));
+				downloadTarBundle = Boolean.parseBoolean(controlCommand.getArguments().get(2));
+			}
+			logger.log(LogLevel.INFO, String.format("Starting K2 Vulnerability scanner on this instance : %s :: Full Rescan : %s :: Download tar bundle : %s",
+					controlCommand.getArguments().get(0), fullReScanning, downloadTarBundle), ControlCommandProcessor.class.getSimpleName());
+			// This essentially mean to clear the scanned application entries.
+			if(fullReScanning) {
+				AgentUtils.getInstance().getScannedDeployedApplications().clear();
+			}
+			CVEScannerPool.getInstance().dispatchScanner(controlCommand.getArguments().get(0), downloadTarBundle);
 			break;
 		default:
 			logger.log(LogLevel.WARNING, String.format(UNKNOWN_CONTROL_COMMAND_S, controlCommandMessage), ControlCommandProcessor.class.getName());

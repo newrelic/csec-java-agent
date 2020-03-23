@@ -2,6 +2,7 @@ package com.k2cybersecurity.instrumentator.utils;
 
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
+import com.k2cybersecurity.intcodeagent.logging.DeployedApplication;
 import com.k2cybersecurity.intcodeagent.models.javaagent.EventResponse;
 import com.k2cybersecurity.intcodeagent.models.javaagent.JavaAgentEventBean;
 import com.k2cybersecurity.intcodeagent.models.javaagent.VulnerableAPI;
@@ -33,6 +34,8 @@ public class AgentUtils {
 	}
 
 	private Set<String> protectedVulnerabilties = new HashSet<String>();
+
+	private Set<DeployedApplication> scannedDeployedApplications = new HashSet<DeployedApplication>();
 
 	private AgentUtils() {
 		transformedClasses = new HashSet<>();
@@ -134,6 +137,16 @@ public class AgentUtils {
 			getProtectedVulnerabilties().add("XXE");
 		} else if (StringUtils.equals(className, "java.io.ObjectInputStream")) {
 			getProtectedVulnerabilties().add("INSECURE_DESERIALIZATION");
+		}
+	}
+
+	public Set<DeployedApplication> getScannedDeployedApplications() {
+		return scannedDeployedApplications;
+	}
+
+	public void addScannedDeployedApplications(DeployedApplication scannedDeployedApplications) {
+		if(scannedDeployedApplications != null && !scannedDeployedApplications.isEmpty()) {
+			this.scannedDeployedApplications.add(scannedDeployedApplications);
 		}
 	}
 }
