@@ -240,7 +240,7 @@ public class ServletContextInfo {
         try {
             Method getResource = servletContext.getClass().getMethod(GET_RESOURCE, String.class);
             URL appPathURL = (URL) getResource.invoke(servletContext, "/META-INF/MANIFEST.MF");
-            appPath = Paths.get(appPathURL.getPath()).getParent().toString();
+            appPath = Paths.get(appPathURL.getPath()).getParent().getParent().toString();
         } catch (Exception e){
             logger.log(LogLevel.ERROR, ERROR, e, ServletContextInfo.class.getName());
         }
