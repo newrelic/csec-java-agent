@@ -19,6 +19,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -207,6 +208,23 @@ public class CVEService implements Runnable {
     }
 
     protected List<CVEScanner> getAllScanDirs() {
+    	List<CVEScanner> scanners = new ArrayList<>();
+    	List<String> appJarNames = new ArrayList<>();
+    	
+    	if (K2Instrumentator.APPLICATION_INFO_BEAN.getServerInfo().getDeployedApplications() != null) {
+            for (Object obj : K2Instrumentator.APPLICATION_INFO_BEAN.getServerInfo().getDeployedApplications()) {
+                DeployedApplication deployedApplication = (DeployedApplication) obj;
+                if (!AgentUtils.getInstance().getScannedDeployedApplications().contains(deployedApplication)) {
+                    scanners.add(new CVEScanner(deployedApplication.getAppName(), deployedApplication.getSha256(),
+                            deployedApplication.getDeployedPath()));
+                    if(StringUtils.endsWith(deployedApplication.getDeployedPath(), JAR_EXTENSION)) {
+                    	appJarNames.add(Paths.get(deployedApplication.getDeployedPath()).toString());
+                    }
+                    AgentUtils.getInstance().addScannedDeployedApplications(deployedApplication);
+                }
+            }
+        }
+    	
         List<String> libPaths = new ArrayList<>();
         if (!K2Instrumentator.APPLICATION_INFO_BEAN.getLibraryPath().isEmpty()) {
             for (String path : K2Instrumentator.APPLICATION_INFO_BEAN.getLibraryPath()) {
@@ -217,24 +235,16 @@ public class CVEService implements Runnable {
                             .forEach(jarFile -> libPaths.add(jarFile.getAbsolutePath()));
                 }
             }
+            libPaths.removeAll(appJarNames);
         }
-        List<CVEScanner> scanners = new ArrayList<>();
+        
         if (!libPaths.isEmpty()) {
             CVEScanner cveScanner = createLibTmpDir(libPaths, K2Instrumentator.APPLICATION_INFO_BEAN.getBinaryName(),
                     K2Instrumentator.APPLICATION_INFO_BEAN.getApplicationUUID());
             scanners.add(cveScanner);
         }
 
-        if (K2Instrumentator.APPLICATION_INFO_BEAN.getServerInfo().getDeployedApplications() != null) {
-            for (Object obj : K2Instrumentator.APPLICATION_INFO_BEAN.getServerInfo().getDeployedApplications()) {
-                DeployedApplication deployedApplication = (DeployedApplication) obj;
-                if (!AgentUtils.getInstance().getScannedDeployedApplications().contains(deployedApplication)) {
-                    scanners.add(new CVEScanner(deployedApplication.getAppName(), deployedApplication.getSha256(),
-                            deployedApplication.getDeployedPath()));
-                    AgentUtils.getInstance().addScannedDeployedApplications(deployedApplication);
-                }
-            }
-        }
+        
         return scanners;
     }
 
