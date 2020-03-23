@@ -35,12 +35,11 @@ import java.util.Set;
 public class DeployedApplication {
 
 	public static final String FORWARD_SLASH = "/";
+
+	public static final String UNDERSCORE = "_";
+
 	/** Application deployed path. */
 	private String deployedPath;
-
-	/** Application resource path. */
-//	@JsonIgnore
-	private String resourcePath;
 
 	/** Application name. */
 	private String appName;
@@ -83,18 +82,6 @@ public class DeployedApplication {
 		}
 	}
 
-	public String getResourcePath() {
-		return resourcePath;
-	}
-
-	public void setResourcePath(String resourcePath) {
-		if (StringUtils.isBlank(resourcePath)) {
-			this.resourcePath = StringUtils.EMPTY;
-		} else {
-			this.resourcePath = resourcePath;
-		}
-	}
-
 	public boolean isEmbedded() {
 		return isEmbedded;
 	}
@@ -119,7 +106,7 @@ public class DeployedApplication {
 	 *            the appName to set
 	 */
 	public void setAppName(String appName) {
-		if (StringUtils.isBlank(appName)) {
+		if (StringUtils.isBlank(appName) || StringUtils.equals(appName, FORWARD_SLASH) || StringUtils.equals(appName, UNDERSCORE)) {
 			this.appName = "ROOT";
 		} else {
 			this.appName = appName;

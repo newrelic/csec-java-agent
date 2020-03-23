@@ -138,15 +138,15 @@ public class Dispatcher implements Runnable {
         if (vulnerabilityCaseType.equals(VulnerabilityCaseType.APP_INFO)) {
             DeployedApplication deployedApplication = (DeployedApplication) event;
 //			System.out.println("App Info received : " + deployedApplication);
-            if (StringUtils.isNotBlank(deployedApplication.getDeployedPath())) {
-                File deploymentDir = Paths.get(deployedApplication.getDeployedPath()).toFile();
-                if (!deployedApplication.isEmbedded() && (!deploymentDir.exists() || deploymentDir.listFiles() == null || deploymentDir.listFiles().length == 0)) {
-                    File resourceDir = Paths.get(deployedApplication.getResourcePath()).toFile();
-                    if (resourceDir.exists() && resourceDir.listFiles() != null && resourceDir.listFiles().length > 0) {
-                        deployedApplication.setDeployedPath(deployedApplication.getResourcePath());
-                    }
-                }
-            }
+//            if (StringUtils.isNotBlank(deployedApplication.getDeployedPath())) {
+//                File deploymentDir = Paths.get(deployedApplication.getDeployedPath()).toFile();
+//                if (!deployedApplication.isEmbedded() && (!deploymentDir.exists() || deploymentDir.listFiles() == null || deploymentDir.listFiles().length == 0)) {
+//                    File resourceDir = Paths.get(deployedApplication.getResourcePath()).toFile();
+//                    if (resourceDir.exists() && resourceDir.listFiles() != null && resourceDir.listFiles().length > 0) {
+//                        deployedApplication.setDeployedPath(deployedApplication.getResourcePath());
+//                    }
+//                }
+//            }
             HashGenerator.updateShaAndSize(deployedApplication);
 
             if (StringUtils.equals(deployedApplication.getSha256(), EMPTY_FILE_SHA)) {

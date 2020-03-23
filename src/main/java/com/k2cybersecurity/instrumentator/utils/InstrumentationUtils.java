@@ -139,7 +139,7 @@ public class InstrumentationUtils {
                                             .and(hasMethodName(method))));
                         } catch (ClassNotFoundException e) {
                             logger.log(LogLevel.ERROR,
-                                    String.format(FAILED_TO_INSTRUMENT_S_S_DUE_TO_ERROR_S, sourceClass, method, e),
+                                    String.format(FAILED_TO_INSTRUMENT_S_S_DUE_TO_ERROR_S, sourceClass, method, e),e,
                                     InstrumentationUtils.class.getName());
                         }
                         return builder;
