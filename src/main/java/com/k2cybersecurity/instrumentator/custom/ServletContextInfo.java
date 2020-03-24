@@ -10,13 +10,12 @@ import com.k2cybersecurity.intcodeagent.websocket.JsonConverter;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class ServletContextInfo {
     public static final String GET_CONTEXT_PATH = "getContextPath";
@@ -27,6 +26,7 @@ public class ServletContextInfo {
     public static final String GET_SERVLET_CONTEXT_NAME = "getServletContextName";
     public static final String GET_RESOURCE_PATHS= "getResourcePaths";
     public static final String GET_RESOURCE= "getResource";
+    public static final String GET_RESOURCES= "getResources";
     public static final String ERROR = "Error : ";
     public static final String GET_CLASS_LOADER = "getClassLoader";
     public static final String FORWARD_SLASH = "/";
@@ -44,6 +44,9 @@ public class ServletContextInfo {
     public static final String WEBAPP_PATH_DETECTED_USING_METHOD_2 = "Webapp path detected using method 2 : ";
     public static final String WEBAPP_PATH_DETECTED_USING_METHOD_3 = "Webapp path detected using method 3 : ";
     public static final String SERVLET_INFO_POPULATED_SENT = "Servlet info populated & sent : ";
+    public static final String CLASSES_STR = "/classes/";
+    public static final String CLASSES_STR_1 = "/classes!";
+    public static final String L_1 = "L1 : ";
 
     @JsonIgnore
     private static ServletContextInfo instance;
@@ -218,40 +221,21 @@ public class ServletContextInfo {
             ClassLoader classLoader = (ClassLoader) getClassLoader.invoke(servletContext, null);
 
             if(classLoader != null) {
-                URL appPathURL = classLoader.getResource(META_INF_MANIFEST_MF);
-                appPath = Paths.get(appPathURL.getPath()).getParent().getParent().toString();
+                Enumeration<URL> appPathURLEnum = classLoader.getResources(StringUtils.EMPTY);
+                while(appPathURLEnum !=null && appPathURLEnum.hasMoreElements()){
+                    URL app = appPathURLEnum.nextElement();
+//                    System.out.println("L1 : " + app.getPath());
+                    logger.log(LogLevel.DEBUG, L_1 + app.getPath(), ServletContextInfo.class.getName());
+
+                    if(StringUtils.containsAny(app.getPath(), CLASSES_STR, CLASSES_STR_1)){
+                        appPath = app.getPath();
+                        break;
+                    }
+                }
                 if(StringUtils.isNotBlank((appPath))){
                     logger.log(LogLevel.DEBUG, WEBAPP_PATH_DETECTED_USING_METHOD_1 + appPath, ServletContextInfo.class.getName());
                     return appPath;
                 }
-            }
-        } catch (Exception e){
-            logger.log(LogLevel.ERROR, ERROR, e, ServletContextInfo.class.getName());
-        }
-
-        // Detection 2: Using servletContext.getResource
-        try {
-            Method getResource = servletContext.getClass().getMethod(GET_RESOURCE, String.class);
-            getResource.setAccessible(true);
-            URL appPathURL = (URL) getResource.invoke(servletContext, META_INF_MANIFEST_MF);
-            appPath = Paths.get(appPathURL.getPath()).getParent().getParent().toString();
-            if(StringUtils.isNotBlank((appPath))){
-                logger.log(LogLevel.DEBUG, WEBAPP_PATH_DETECTED_USING_METHOD_2 + appPath, ServletContextInfo.class.getName());
-                return appPath;
-            }
-        } catch (Exception e){
-            logger.log(LogLevel.ERROR, ERROR, e, ServletContextInfo.class.getName());
-        }
-
-        // Detection 3: Using ProtectionDomain on servletInstance
-        try {
-            Object servletInstance = ThreadLocalHTTPServiceLock.getInstance().isTakenBy();
-            if (servletInstance != null) {
-                appPath = servletInstance.getClass().getProtectionDomain().getCodeSource().getLocation().toString();
-            }
-            if(StringUtils.isNotBlank((appPath))){
-                logger.log(LogLevel.DEBUG, WEBAPP_PATH_DETECTED_USING_METHOD_3 + appPath, ServletContextInfo.class.getName());
-                return appPath;
             }
         } catch (Exception e){
             logger.log(LogLevel.ERROR, ERROR, e, ServletContextInfo.class.getName());
