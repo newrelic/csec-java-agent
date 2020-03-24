@@ -290,9 +290,9 @@ public class K2Instrumentator {
 		try {
 			String url = System.getenv("ECS_CONTAINER_METADATA_URI");
 			HttpURLConnection httpClient = (HttpURLConnection) new URL(url).openConnection();
-			List<String> response = IOUtils.readLines(httpClient.getInputStream(), StandardCharsets.UTF_8);
+			String response = new String(IOUtils.readFully(httpClient.getInputStream(), httpClient.getInputStream().available()));
 			JSONParser parser = new JSONParser();
-			JSONObject json = (JSONObject)parser.parse(StringUtils.join(response));
+			JSONObject json = (JSONObject)parser.parse(response);
 			return json;
 		} catch (ParseException | IOException e) {
 			return null;
