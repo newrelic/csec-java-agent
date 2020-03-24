@@ -137,7 +137,7 @@ public class LogWriter implements Runnable {
 		}
 		sb.append(StringUtils.LF);
 		try {
-//			System.out.println(sb.toString());
+			System.out.println(sb.toString());
 			writer.write(sb.toString());
 			writer.flush();
 
