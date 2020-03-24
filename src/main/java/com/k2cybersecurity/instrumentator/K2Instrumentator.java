@@ -142,7 +142,7 @@ public class K2Instrumentator {
 				}
 				index = st.lastIndexOf(ECS_DIR);
 				if (index > -1) {
-					return st.substring(index + 4, st.lastIndexOf(DIR_SEPERATOR));
+					return st.substring(st.lastIndexOf(DIR_SEPERATOR) + 1);
 				}
 				index = st.indexOf(KUBEPODS_DIR);
 				if (index > -1) {
