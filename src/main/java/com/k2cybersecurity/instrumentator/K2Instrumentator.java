@@ -78,9 +78,9 @@ public class K2Instrumentator {
 		JA_HEALTH_CHECK = new JAHealthCheck(APPLICATION_UUID);
 
 		
-		System.out.println("Env variables in container : ");
-		Map<String, String> allEnv = System.getenv();
-		allEnv.forEach((k, v) -> System.out.println(k + " : " + v));
+//		System.out.println("Env variables in container : ");
+//		Map<String, String> allEnv = System.getenv();
+//		allEnv.forEach((k, v) -> System.out.println(k + " : " + v));
 		
 		if (StringUtils.isNotBlank(System.getenv("K2_HOST_IP"))) {
 			hostip=System.getenv("K2_HOST_IP");
@@ -99,7 +99,6 @@ public class K2Instrumentator {
 				return false;
 			}
 		}
-		System.err.println("hostip : " + hostip);
 		try {
 			WSClient.getInstance();
 		} catch (Exception e) {
