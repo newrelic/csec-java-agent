@@ -9,6 +9,7 @@ import com.k2cybersecurity.intcodeagent.models.javaagent.VulnerabilityCaseType;
 import com.k2cybersecurity.intcodeagent.websocket.JsonConverter;
 import org.apache.commons.lang3.StringUtils;
 
+import java.io.File;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.nio.file.Path;
@@ -37,6 +38,12 @@ public class ServletContextInfo {
     public static final String ROOT = "ROOT";
     public static final String REPLACEMENT = "_";
     private static final String COLON = " - ";
+    public static final String META_INF_MANIFEST_MF = "/META-INF/MANIFEST.MF";
+    public static final String INF = "-INF";
+    public static final String WEBAPP_PATH_DETECTED_USING_METHOD_1 = "Webapp path detected using method 1 : ";
+    public static final String WEBAPP_PATH_DETECTED_USING_METHOD_2 = "Webapp path detected using method 2 : ";
+    public static final String WEBAPP_PATH_DETECTED_USING_METHOD_3 = "Webapp path detected using method 3 : ";
+    public static final String SERVLET_INFO_POPULATED_SENT = "Servlet info populated & sent : ";
 
     @JsonIgnore
     private static ServletContextInfo instance;
@@ -150,59 +157,29 @@ public class ServletContextInfo {
         deployedApplication.setDeployedPath(applicationDir);
         deployedApplication.updatePorts(serverPort);
 
-        // TODO: This application dir detection is still inaccurate as this brings the location of classloader & not application context root.
-        //        Hence this misses the HTML part of the application.
-        if (StringUtils.isBlank(deployedApplication.getDeployedPath())) {
-            try {
-                Method getClassLoader = servletContext.getClass().getMethod(GET_CLASS_LOADER);
-                getClassLoader.setAccessible(true);
-                ClassLoader classLoader = (ClassLoader) getClassLoader.invoke(servletContext, null);
-                URL resPath = null;
-                if (classLoader != null) {
-                    resPath = classLoader.getResource(FORWARD_SLASH);
-                    if (resPath == null) {
-                        Object servletInstance = ThreadLocalHTTPServiceLock.getInstance().isTakenBy();
-                        if (servletInstance != null) {
-                            resPath = servletInstance.getClass().getProtectionDomain().getCodeSource().getLocation();
-                        }
-                    }
-
-                    if (resPath != null) {
-                        deployedApplication.setDeployedPath(resPath.toString());
-                        if (StringUtils.startsWithIgnoreCase(deployedApplication.getDeployedPath(), JAR_FILE)) {
-                            deployedApplication.setEmbedded(true);
-                            deployedApplication.setDeployedPath(StringUtils.substringBetween(deployedApplication.getDeployedPath(), JAR_FILE, NOT));
-                        } else {
-                            deployedApplication.setDeployedPath(StringUtils.removeStart(deployedApplication.getDeployedPath(), FILE));
-                            deployedApplication.setDeployedPath(StringUtils.substringBefore(deployedApplication.getDeployedPath(), WEB_INF));
-                        }
-                    }
-                }
-            } catch (Exception e) {
-                logger.log(LogLevel.ERROR, ERROR, e, ServletContextInfo.class.getName());
-            }
-        }
 
         if (StringUtils.isNotBlank(deployedApplication.getDeployedPath())) {
-            if (!StringUtils.equals(deployedApplication.getContextPath(), FORWARD_SLASH)
-                    && !StringUtils.endsWithIgnoreCase(deployedApplication.getDeployedPath(), JAR_EXT)) {
-                Path applicationPath = Paths.get(deployedApplication.getDeployedPath());
-                deployedApplication.setDeployedPath(applicationPath.getParent().toString());
-            }
-        }
 
-//
-//        if (StringUtils.equals(deployedApplication.getAppName(), ROOT)){
-//            if (StringUtils.isBlank(contextPath) || StringUtils.equals(deployedApplication.getContextPath(), FORWARD_SLASH)) {
-//                deployedApplication.setAppName(ROOT);
-//            } else if (StringUtils.endsWithIgnoreCase(deployedApplication.getDeployedPath(), JAR_EXT)) {
-//                deployedApplication.setAppName(Paths.get(deployedApplication.getDeployedPath()).getFileName().toString());
-//            } else {
-//                deployedApplication.setAppName(StringUtils.removeStart(StringUtils.replace(deployedApplication.getContextPath(), FORWARD_SLASH, REPLACEMENT),
-//                        REPLACEMENT));
-//                deployedApplication.setAppName(StringUtils.removeEnd(deployedApplication.getAppName(), REPLACEMENT));
-//            }
-//        }
+            if (StringUtils.startsWithIgnoreCase(deployedApplication.getDeployedPath(), JAR_FILE)) {
+                deployedApplication.setEmbedded(true);
+                deployedApplication.setDeployedPath(StringUtils.substringBetween(deployedApplication.getDeployedPath(), JAR_FILE, NOT));
+            } else if(StringUtils.startsWithIgnoreCase(deployedApplication.getDeployedPath(), FILE)) {
+                deployedApplication.setDeployedPath(StringUtils.substringBetween(deployedApplication.getDeployedPath(), FILE, NOT));
+            }
+
+            String intermediatePath = deployedApplication.getDeployedPath();
+            if(StringUtils.contains(intermediatePath, INF + File.separator)){
+                intermediatePath = StringUtils.substringBefore(intermediatePath, INF + File.separator);
+                deployedApplication.setDeployedPath(new File(intermediatePath).getParent());
+            }
+
+            if (StringUtils.endsWithIgnoreCase(deployedApplication.getDeployedPath(), JAR_EXT)) {
+                deployedApplication.setEmbedded(true);
+            }
+
+        } else {
+            return;
+        }
 
         if (StringUtils.equals(deployedApplication.getAppName(), ROOT)){
             if (StringUtils.endsWithIgnoreCase(deployedApplication.getDeployedPath(), JAR_EXT)) {
@@ -218,32 +195,68 @@ public class ServletContextInfo {
         this.contextMap.put(deployedApplication.getContextPath(), deployedApplication);
         if (!deployedApplication.isEmpty()) {
             EventDispatcher.dispatch(deployedApplication, VulnerabilityCaseType.APP_INFO);
-            logger.log(LogLevel.INFO, "Servlet info populated & sent : " + deployedApplication, ServletContextInfo.class.getName());
+            logger.log(LogLevel.INFO, SERVLET_INFO_POPULATED_SENT + deployedApplication, ServletContextInfo.class.getName());
         }
-//
+
 //		System.out.println("==========================================================================================");
 //		System.out.println("New Servlet Context found : ");
 //		System.out.println("Details  : " + deployedApplication);
 //		System.out.println("Server Info  : " + serverInfo);
 //		System.out.println("Major Servlet Version  : " + majorServletVersion);
 //		System.out.println("Minor Servlet Version  : " + minorServletVersion);
-//        Object servletInstance = ThreadLocalHTTPServiceLock.getInstance().isTakenBy();
-//        if (servletInstance != null) {
-//            System.out.println("XYZ Path :" + servletInstance.getClass().getProtectionDomain().getCodeSource().getLocation());
-//        }
 //		System.out.println("==========================================================================================");
 
     }
 
     private String processWebappPath(Object servletContext) {
         String appPath = StringUtils.EMPTY;
+
+        // Detection 1: Using classloader.getResource
         try {
-            Method getResource = servletContext.getClass().getMethod(GET_RESOURCE, String.class);
-            URL appPathURL = (URL) getResource.invoke(servletContext, "/META-INF/MANIFEST.MF");
-            appPath = Paths.get(appPathURL.getPath()).getParent().getParent().toString();
+            Method getClassLoader = servletContext.getClass().getMethod(GET_CLASS_LOADER);
+            getClassLoader.setAccessible(true);
+            ClassLoader classLoader = (ClassLoader) getClassLoader.invoke(servletContext, null);
+
+            if(classLoader != null) {
+                URL appPathURL = classLoader.getResource(META_INF_MANIFEST_MF);
+                appPath = Paths.get(appPathURL.getPath()).getParent().getParent().toString();
+                if(StringUtils.isNotBlank((appPath))){
+                    logger.log(LogLevel.DEBUG, WEBAPP_PATH_DETECTED_USING_METHOD_1 + appPath, ServletContextInfo.class.getName());
+                    return appPath;
+                }
+            }
         } catch (Exception e){
             logger.log(LogLevel.ERROR, ERROR, e, ServletContextInfo.class.getName());
         }
+
+        // Detection 2: Using servletContext.getResource
+        try {
+            Method getResource = servletContext.getClass().getMethod(GET_RESOURCE, String.class);
+            getResource.setAccessible(true);
+            URL appPathURL = (URL) getResource.invoke(servletContext, META_INF_MANIFEST_MF);
+            appPath = Paths.get(appPathURL.getPath()).getParent().getParent().toString();
+            if(StringUtils.isNotBlank((appPath))){
+                logger.log(LogLevel.DEBUG, WEBAPP_PATH_DETECTED_USING_METHOD_2 + appPath, ServletContextInfo.class.getName());
+                return appPath;
+            }
+        } catch (Exception e){
+            logger.log(LogLevel.ERROR, ERROR, e, ServletContextInfo.class.getName());
+        }
+
+        // Detection 3: Using ProtectionDomain on servletInstance
+        try {
+            Object servletInstance = ThreadLocalHTTPServiceLock.getInstance().isTakenBy();
+            if (servletInstance != null) {
+                appPath = servletInstance.getClass().getProtectionDomain().getCodeSource().getLocation().toString();
+            }
+            if(StringUtils.isNotBlank((appPath))){
+                logger.log(LogLevel.DEBUG, WEBAPP_PATH_DETECTED_USING_METHOD_3 + appPath, ServletContextInfo.class.getName());
+                return appPath;
+            }
+        } catch (Exception e){
+            logger.log(LogLevel.ERROR, ERROR, e, ServletContextInfo.class.getName());
+        }
+
         return appPath;
     }
 
