@@ -104,7 +104,7 @@ public class HashGenerator {
 
 	public static void updateShaAndSize(DeployedApplication deployedApplication) {
 		File deplyementDirFile = new File(deployedApplication.getDeployedPath());
-		if (!deplyementDirFile.isDirectory()) {
+		if (deplyementDirFile.isFile()) {
 			deployedApplication.setSha256(getChecksum(deplyementDirFile));
 			deployedApplication.setSize(FileUtils.byteCountToDisplaySize(FileUtils.sizeOf(deplyementDirFile)));
 		} else {
@@ -177,7 +177,7 @@ public class HashGenerator {
 			deployedApplication.setSize(FileUtils.byteCountToDisplaySize(FileUtils.sizeOf(tmpTarFile)));
 			deployedApplication.setSha256(getChecksum(tmpTarFile));
 
-		} catch (IOException e) {
+		} catch (Exception e) {
 			logger.log(LogLevel.ERROR, "Error : {}", e, HashGenerator.class.getName());
 		} finally {
 			try {
