@@ -159,6 +159,7 @@ public class HashGenerator {
 //			GZIPOutputStream gzipOutputStream 
 		BufferedOutputStream bOutputStream = new BufferedOutputStream(new FileOutputStream(tmpTarFile));
 		TarArchiveOutputStream tarArchiveOutputStream = new TarArchiveOutputStream(bOutputStream);
+		tarArchiveOutputStream.setLongFileMode(TarArchiveOutputStream.LONGFILE_POSIX);
 		addFilesToTarGZ(tmpAppDir.toString(), StringUtils.EMPTY, tarArchiveOutputStream);
 		bOutputStream.close();
 		tarArchiveOutputStream.close();
@@ -178,7 +179,7 @@ public class HashGenerator {
 			deployedApplication.setSha256(getChecksum(tmpTarFile));
 
 		} catch (Exception e) {
-			logger.log(LogLevel.ERROR, "Error : {}", e, HashGenerator.class.getName());
+			logger.log(LogLevel.ERROR, "Error : ", e, HashGenerator.class.getName());
 		} finally {
 			try {
 				FileUtils.forceDeleteOnExit(tmpTarFile);
