@@ -2,6 +2,7 @@ package com.k2cybersecurity.instrumentator.dispatcher;
 
 import com.k2cybersecurity.instrumentator.K2Instrumentator;
 import com.k2cybersecurity.instrumentator.custom.ServletContextInfo;
+import com.k2cybersecurity.instrumentator.cve.scanner.CVEComponentsService;
 import com.k2cybersecurity.instrumentator.utils.AgentUtils;
 import com.k2cybersecurity.instrumentator.utils.AgentUtils;
 import com.k2cybersecurity.instrumentator.utils.CallbackUtils;
@@ -154,6 +155,7 @@ public class Dispatcher implements Runnable {
                 return;
             }
 
+            
 //			System.out.println("Processed App Info : " + deployedApplication);
             ApplicationInfoBean applicationInfoBean = K2Instrumentator.APPLICATION_INFO_BEAN;
 
@@ -163,7 +165,9 @@ public class Dispatcher implements Runnable {
 
             if (!applicationInfoBean.getServerInfo().getDeployedApplications().contains(deployedApplication)) {
                 applicationInfoBean.getServerInfo().getDeployedApplications().add(deployedApplication);
+                ScanComponentData scanComponentData = CVEComponentsService.getAllComponents(deployedApplication);
                 EventSendPool.getInstance().sendEvent(applicationInfoBean.toString());
+                EventSendPool.getInstance().sendEvent(scanComponentData.toString());
 //				System.out.println("============= AppInfo Start ============");
 //				System.out.println(applicationInfoBean);
 //				System.out.println("============= AppInfo End ============");
