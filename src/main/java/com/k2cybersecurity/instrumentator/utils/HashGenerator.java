@@ -156,15 +156,17 @@ public class HashGenerator {
 	}
 
 	public static void createTarGz(File tmpAppDir, File tmpTarFile) throws IOException {
-//			GZIPOutputStream gzipOutputStream 
-		BufferedOutputStream bOutputStream = new BufferedOutputStream(new FileOutputStream(tmpTarFile));
-		TarArchiveOutputStream tarArchiveOutputStream = new TarArchiveOutputStream(bOutputStream);
-		tarArchiveOutputStream.setLongFileMode(TarArchiveOutputStream.LONGFILE_POSIX);
-		addFilesToTarGZ(tmpAppDir.toString(), StringUtils.EMPTY, tarArchiveOutputStream);
-		bOutputStream.close();
-		tarArchiveOutputStream.close();
-//		String sha256 = getChecksum(tmpTarFile);
-//		FileUtils.forceDeleteOnExit(tmpShaDir.toFile());
+		BufferedOutputStream bOutputStream = null;
+		TarArchiveOutputStream tarArchiveOutputStream = null;
+		try {
+			bOutputStream = new BufferedOutputStream(new FileOutputStream(tmpTarFile));
+			tarArchiveOutputStream = new TarArchiveOutputStream(bOutputStream);
+			tarArchiveOutputStream.setLongFileMode(TarArchiveOutputStream.LONGFILE_POSIX);
+			addFilesToTarGZ(tmpAppDir.toString(), StringUtils.EMPTY, tarArchiveOutputStream);
+		} finally {
+			tarArchiveOutputStream.close();
+			bOutputStream.close();
+		}
 	}
 
 	public static void calculateDirShaAndSize(DeployedApplication deployedApplication) {
@@ -172,12 +174,12 @@ public class HashGenerator {
 		File tmpTarFile = null;
 		try {
 			tmpAppDir = createTmpDirWithResource(deployedApplication.getDeployedPath());
-//			List<String> dirs = listResourceFileInDeployedPath(deployedApplication.getDeployedPath());
+			
 			tmpTarFile = Files.createTempFile("K2-", "tar.gz").toFile();
 			createTarGz(tmpAppDir, tmpTarFile);
+			
 			deployedApplication.setSize(FileUtils.byteCountToDisplaySize(FileUtils.sizeOf(tmpTarFile)));
 			deployedApplication.setSha256(getChecksum(tmpTarFile));
-
 		} catch (Exception e) {
 			logger.log(LogLevel.ERROR, "Error : ", e, HashGenerator.class.getName());
 		} finally {
