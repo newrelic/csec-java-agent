@@ -174,18 +174,18 @@ public class HashGenerator {
 		File tmpTarFile = null;
 		try {
 			tmpAppDir = createTmpDirWithResource(deployedApplication.getDeployedPath());
-			
+
 			tmpTarFile = Files.createTempFile("K2-", "tar.gz").toFile();
 			createTarGz(tmpAppDir, tmpTarFile);
-			
+			logger.log(LogLevel.DEBUG, "tar size : " + FileUtils.sizeOf(tmpTarFile), HashGenerator.class.getName());
 			deployedApplication.setSize(FileUtils.byteCountToDisplaySize(FileUtils.sizeOf(tmpTarFile)));
 			deployedApplication.setSha256(getChecksum(tmpTarFile));
 		} catch (Exception e) {
 			logger.log(LogLevel.ERROR, "Error : ", e, HashGenerator.class.getName());
 		} finally {
 			try {
-				FileUtils.forceDeleteOnExit(tmpTarFile);
-				FileUtils.forceDeleteOnExit(tmpAppDir);
+				FileUtils.forceDelete(tmpTarFile);
+				FileUtils.forceDelete(tmpAppDir);
 			} catch (IOException e) {
 			}
 		}
