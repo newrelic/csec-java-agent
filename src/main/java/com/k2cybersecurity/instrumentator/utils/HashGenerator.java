@@ -28,6 +28,11 @@ import java.util.*;
 
 public class HashGenerator {
 
+	private static final String TMP_DIR = "/tmp/";
+	private static final String ERROR2 = "Error : ";
+	private static final String TAR_SIZE = "tar size : ";
+	private static final String TAR_GZ = "tar.gz";
+	private static final String K2_TEMP_DIR = "K2-";
 	private static final Set<String> JAVA_APPLICATION_ALLOWED_FILE_EXT = new HashSet<>(
 			Arrays.asList(new String[] { "java", "jsp", "class", "jar", "war", "ear" }));
 	private static final Set<String> OTHER_CRITICAL_FILE_EXT = new HashSet<>(
@@ -175,13 +180,13 @@ public class HashGenerator {
 		try {
 			tmpAppDir = createTmpDirWithResource(deployedApplication.getDeployedPath());
 
-			tmpTarFile = Files.createTempFile("K2-", "tar.gz").toFile();
+			tmpTarFile = Files.createTempFile(K2_TEMP_DIR, TAR_GZ).toFile();
 			createTarGz(tmpAppDir, tmpTarFile);
-			logger.log(LogLevel.DEBUG, "tar size : " + FileUtils.sizeOf(tmpTarFile), HashGenerator.class.getName());
+			logger.log(LogLevel.DEBUG, TAR_SIZE + FileUtils.sizeOf(tmpTarFile), HashGenerator.class.getName());
 			deployedApplication.setSize(FileUtils.byteCountToDisplaySize(FileUtils.sizeOf(tmpTarFile)));
 			deployedApplication.setSha256(getChecksum(tmpTarFile));
 		} catch (Exception e) {
-			logger.log(LogLevel.ERROR, "Error : ", e, HashGenerator.class.getName());
+			logger.log(LogLevel.ERROR, ERROR2, e, HashGenerator.class.getName());
 		} finally {
 			try {
 				FileUtils.forceDelete(tmpTarFile);
@@ -193,7 +198,7 @@ public class HashGenerator {
 
 	private static File createTmpDirWithResource(String deployedPath) throws IOException {
 		File tmpShaDir;
-		tmpShaDir = Files.createTempDirectory(Paths.get("/tmp/"), "K2-").toFile();
+		tmpShaDir = Files.createTempDirectory(Paths.get(TMP_DIR), K2_TEMP_DIR).toFile();
 
 		FileUtils.copyDirectory(new File(deployedPath), tmpShaDir);
 

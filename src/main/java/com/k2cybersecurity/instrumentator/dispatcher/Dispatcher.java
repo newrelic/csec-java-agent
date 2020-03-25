@@ -165,8 +165,8 @@ public class Dispatcher implements Runnable {
 
             if (!applicationInfoBean.getServerInfo().getDeployedApplications().contains(deployedApplication)) {
                 applicationInfoBean.getServerInfo().getDeployedApplications().add(deployedApplication);
-                ScanComponentData scanComponentData = CVEComponentsService.getAllComponents(deployedApplication);
                 EventSendPool.getInstance().sendEvent(applicationInfoBean.toString());
+                ScanComponentData scanComponentData = CVEComponentsService.getAllComponents(deployedApplication);
                 EventSendPool.getInstance().sendEvent(scanComponentData.toString());
 //				System.out.println("============= AppInfo Start ============");
 //				System.out.println(applicationInfoBean);
