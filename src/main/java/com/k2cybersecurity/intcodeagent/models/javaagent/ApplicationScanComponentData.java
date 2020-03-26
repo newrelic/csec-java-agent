@@ -1,6 +1,6 @@
 package com.k2cybersecurity.intcodeagent.models.javaagent;
 
-import java.util.List;
+import java.util.Set;
 
 import com.k2cybersecurity.intcodeagent.websocket.JsonConverter;
 
@@ -10,7 +10,7 @@ public class ApplicationScanComponentData {
 	
 	private String sha256;
 	
-	private List<CVEComponent> components;
+	private Set<CVEComponent> components;
 
 	public ApplicationScanComponentData(String appName, String sha256) {
 		this.name = appName;
@@ -45,20 +45,21 @@ public class ApplicationScanComponentData {
 		this.sha256 = sha256;
 	}
 
+	
 	/**
 	 * @return the components
 	 */
-	public List<CVEComponent> getComponents() {
+	public Set<CVEComponent> getComponents() {
 		return components;
 	}
 
 	/**
 	 * @param components the components to set
 	 */
-	public void setComponents(List<CVEComponent> components) {
+	public void setComponents(Set<CVEComponent> components) {
 		this.components = components;
 	}
-	
+
 	@Override
 	public String toString() {
 		return JsonConverter.toJSON(this);

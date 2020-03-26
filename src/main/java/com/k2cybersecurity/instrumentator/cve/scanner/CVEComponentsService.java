@@ -1,10 +1,8 @@
 package com.k2cybersecurity.instrumentator.cve.scanner;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.io.FileUtils;
@@ -22,21 +20,27 @@ public class CVEComponentsService {
 	private static final String JAR_EXTENSION = ".jar";
 
 	private static final String JAR_EXT = "jar";
+	
+	private static Set<CVEComponent> envCveComponents = new HashSet<>();
+	
+	static {
+		envCveComponents = getCVEComponents(getLibPaths());
+	}
 
 	public static ScanComponentData getAllComponents(DeployedApplication deployedApplication) {
-		Set<String> libPaths = getLibPaths();
 		Set<String> appJarPaths = getAllJarsFromApp(deployedApplication.getDeployedPath());
 		ScanComponentData scanComponentData = new ScanComponentData(K2Instrumentator.APPLICATION_UUID);
 		ApplicationScanComponentData applicationScanComponentData = new ApplicationScanComponentData(
 				deployedApplication.getAppName(), deployedApplication.getSha256());
-		scanComponentData.setEnvComponents(getCVEComponents(libPaths));
 		applicationScanComponentData.setComponents(getCVEComponents(appJarPaths));
-		scanComponentData.setDeployedApplications(Collections.singletonList(applicationScanComponentData));
+		envCveComponents.removeAll(applicationScanComponentData.getComponents());
+		scanComponentData.setEnvComponents(envCveComponents);
+		scanComponentData.setDeployedApplications(Collections.singleton(applicationScanComponentData));
 		return scanComponentData;
 	}
 
-	private static List<CVEComponent> getCVEComponents(Set<String> libPaths) {
-		List<CVEComponent> cveComponents = new ArrayList<>();
+	private static Set<CVEComponent> getCVEComponents(Set<String> libPaths) {
+		Set<CVEComponent> cveComponents = new HashSet();
 
 		for (String path : libPaths) {
 			File file = new File(path);

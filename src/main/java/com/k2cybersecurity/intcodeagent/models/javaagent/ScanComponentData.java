@@ -1,6 +1,7 @@
 package com.k2cybersecurity.intcodeagent.models.javaagent;
 
 import java.util.List;
+import java.util.Set;
 
 import com.k2cybersecurity.intcodeagent.websocket.JsonConverter;
 
@@ -8,9 +9,9 @@ public class ScanComponentData extends AgentBasicInfo {
 
 	private String applicationUUID;
 	
-	private List<CVEComponent> envComponents;
+	private Set<CVEComponent> envComponents;
 	
-	private List<ApplicationScanComponentData> deployedApplications;
+	private Set<ApplicationScanComponentData> deployedApplications;
 
 	public ScanComponentData() {
 		super();
@@ -35,34 +36,36 @@ public class ScanComponentData extends AgentBasicInfo {
 		this.applicationUUID = applicationUUID;
 	}
 
+	
+	
 	/**
 	 * @return the envComponents
 	 */
-	public List<CVEComponent> getEnvComponents() {
+	public Set<CVEComponent> getEnvComponents() {
 		return envComponents;
 	}
 
 	/**
 	 * @param envComponents the envComponents to set
 	 */
-	public void setEnvComponents(List<CVEComponent> envComponents) {
+	public void setEnvComponents(Set<CVEComponent> envComponents) {
 		this.envComponents = envComponents;
 	}
 
 	/**
 	 * @return the deployedApplications
 	 */
-	public List<ApplicationScanComponentData> getDeployedApplications() {
+	public Set<ApplicationScanComponentData> getDeployedApplications() {
 		return deployedApplications;
 	}
 
 	/**
 	 * @param deployedApplications the deployedApplications to set
 	 */
-	public void setDeployedApplications(List<ApplicationScanComponentData> deployedApplications) {
+	public void setDeployedApplications(Set<ApplicationScanComponentData> deployedApplications) {
 		this.deployedApplications = deployedApplications;
 	}
-	
+
 	@Override
 	public String toString() {
 		return JsonConverter.toJSON(this);
