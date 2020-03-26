@@ -303,7 +303,7 @@ public class EventDispatcher {
     }
 
     private static void checkIfClientIPBlocked() throws K2CyberSecurityException {
-        if (AgentUtils.getInstance().isBlockedIP(ThreadLocalExecutionMap.getInstance().getHttpRequestBean().getClientIP())) {
+        if (ProtectionConfig.getInstance().getAutoAttackIPBlockingXFF() && AgentUtils.getInstance().isBlockedIP(ThreadLocalExecutionMap.getInstance().getHttpRequestBean().getClientIP())) {
             sendK2BlockPage(ThreadLocalExecutionMap.getInstance().getHttpRequestBean().getClientIP());
             throw new K2CyberSecurityException(String.format(ACCESS_BY_BLOCKED_IP_ADDRESS_DETECTED_S, ThreadLocalExecutionMap.getInstance().getHttpRequestBean().getClientIP()));
         }

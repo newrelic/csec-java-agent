@@ -4,6 +4,7 @@ public class ProtectionConfig {
     private Boolean generateEventResponse;
     private Boolean protectKnownVulnerableAPIs;
     private Boolean autoAddDetectedVulnerabilitiesToProtectionList;
+    private Boolean autoAttackIPBlockingXFF;
 
     private static ProtectionConfig instance;
 
@@ -24,6 +25,7 @@ public class ProtectionConfig {
         ProtectionConfig.getInstance().setAutoAddDetectedVulnerabilitiesToProtectionList(protectionConfig.autoAddDetectedVulnerabilitiesToProtectionList);
         ProtectionConfig.getInstance().setGenerateEventResponse(protectionConfig.generateEventResponse);
         ProtectionConfig.getInstance().setProtectKnownVulnerableAPIs(protectionConfig.protectKnownVulnerableAPIs);
+        ProtectionConfig.getInstance().setAutoAttackIPBlockingXFF(protectionConfig.autoAttackIPBlockingXFF);
     }
 
     public Boolean getGenerateEventResponse() {
@@ -48,5 +50,13 @@ public class ProtectionConfig {
 
     public void setAutoAddDetectedVulnerabilitiesToProtectionList(Boolean autoAddDetectedVulnerabilitiesToProtectionList) {
         this.autoAddDetectedVulnerabilitiesToProtectionList = autoAddDetectedVulnerabilitiesToProtectionList;
+    }
+
+    public Boolean getAutoAttackIPBlockingXFF() {
+        return autoAttackIPBlockingXFF;
+    }
+
+    public void setAutoAttackIPBlockingXFF(Boolean autoAttackIPBlockingXFF) {
+        this.autoAttackIPBlockingXFF = autoAttackIPBlockingXFF;
     }
 }
