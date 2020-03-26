@@ -39,7 +39,10 @@ public class EventDispatcher {
     public static final String SCHEDULING_FOR_EVENT_RESPONSE_OF = "Scheduling for event response of : ";
     public static final String ERROR = "Error: ";
     public static final String ID_PLACEHOLDER = "{{ID}}";
+    public static final String ACCESS_BY_BLOCKED_IP_ADDRESS_DETECTED_S = "Access by blocked IP address detected : %s";
     public static String ATTACK_PAGE_CONTENT = StringUtils.EMPTY;
+    public static String BLOCK_PAGE_CONTENT = StringUtils.EMPTY;
+
 
     static {
         try {
@@ -50,7 +53,18 @@ public class EventDispatcher {
                 ATTACK_PAGE_CONTENT = IOUtils.toString(attackPageStream, StandardCharsets.UTF_8);
             }
         } catch (Throwable e) {
-            logger.log(LogLevel.ERROR, "Error reading attack.html :" , e,  EventDispatcher.class.getSimpleName());
+            logger.log(LogLevel.ERROR, "Error reading attack.html :", e, EventDispatcher.class.getSimpleName());
+        }
+
+        try {
+            InputStream attackPageStream = ClassLoader.getSystemResourceAsStream("block.html");
+            if (attackPageStream == null) {
+                logger.log(LogLevel.ERROR, "Unable to locate block.html.", EventDispatcher.class.getSimpleName());
+            } else {
+                BLOCK_PAGE_CONTENT = IOUtils.toString(attackPageStream, StandardCharsets.UTF_8);
+            }
+        } catch (Throwable e) {
+            logger.log(LogLevel.ERROR, "Error reading block.html :", e, EventDispatcher.class.getSimpleName());
         }
     }
 
@@ -74,6 +88,7 @@ public class EventDispatcher {
                     new AgentMetaData(ThreadLocalExecutionMap.getInstance().getMetaData()),
                     Thread.currentThread().getStackTrace(), objectBean, vulnerabilityCaseType);
             submitAndHoldForEventResponse(objectBean.getExecutionId());
+            checkIfClientIPBlocked();
         } else {
             logger.log(
                     LogLevel.ERROR, DROPPING_EVENT_DUE_TO_EMPTY_OBJECT
@@ -81,6 +96,7 @@ public class EventDispatcher {
                     EventDispatcher.class.getName());
         }
     }
+
 
     public static void dispatch(List<SQLOperationalBean> objectBeanList, VulnerabilityCaseType vulnerabilityCaseType, String exectionId)
             throws K2CyberSecurityException {
@@ -108,6 +124,7 @@ public class EventDispatcher {
                     new AgentMetaData(ThreadLocalExecutionMap.getInstance().getMetaData()),
                     Thread.currentThread().getStackTrace(), toBeSentBeans, vulnerabilityCaseType);
             submitAndHoldForEventResponse(exectionId);
+            checkIfClientIPBlocked();
         }
     }
 
@@ -131,7 +148,7 @@ public class EventDispatcher {
             DispatcherPool.getInstance().dispatchEvent(httpRequestBean, sourceString, exectionId, startTime,
                     Thread.currentThread().getStackTrace(), reflectedXss);
             submitAndHoldForEventResponse(exectionId);
-
+            checkIfClientIPBlocked();
         }
     }
 
@@ -156,6 +173,7 @@ public class EventDispatcher {
                     new AgentMetaData(ThreadLocalExecutionMap.getInstance().getMetaData()),
                     Thread.currentThread().getStackTrace(), fileOperationalBean, fbean, fileOperation);
             submitAndHoldForEventResponse(fileOperationalBean.getExecutionId());
+            checkIfClientIPBlocked();
         } else {
             logger.log(
                     LogLevel.ERROR, DROPPING_EVENT_DUE_TO_EMPTY_OBJECT1
@@ -238,5 +256,56 @@ public class EventDispatcher {
             }
         }
 
+    }
+
+    private static void sendK2BlockPage(String ip) {
+        try {
+            if (ThreadLocalHttpMap.getInstance().getHttpResponse() != null) {
+                String attackPage = StringUtils.replace(BLOCK_PAGE_CONTENT, ID_PLACEHOLDER, ip);
+                if (ThreadLocalHttpMap.getInstance().getResponseOutputStream() != null) {
+                    OutputStream outputStream = (OutputStream) ThreadLocalHttpMap.getInstance().getResponseOutputStream();
+                    outputStream.write(attackPage.getBytes());
+                    outputStream.flush();
+                    outputStream.close();
+                } else if (ThreadLocalHttpMap.getInstance().getResponseWriter() != null) {
+                    PrintWriter printWriter = (PrintWriter) ThreadLocalHttpMap.getInstance().getResponseWriter();
+                    printWriter.println(attackPage);
+                    printWriter.flush();
+                    printWriter.close();
+                } else {
+                    Object resp = ThreadLocalHttpMap.getInstance().getHttpResponse();
+                    Method getOutputStream = resp.getClass().getMethod("getOutputStream");
+
+                    OutputStream outputStream = (OutputStream) getOutputStream.invoke(resp);
+                    outputStream.write(attackPage.getBytes());
+                    outputStream.flush();
+                    outputStream.close();
+                }
+            } else {
+                logger.log(LogLevel.ERROR, "Unable to locate response object for this attack.", EventDispatcher.class.getSimpleName());
+            }
+        } catch (Exception e) {
+            logger.log(LogLevel.ERROR, "Unable to process response for this attack.", e, EventDispatcher.class.getSimpleName());
+
+        } finally {
+            try {
+                if (ThreadLocalHttpMap.getInstance().getResponseOutputStream() != null) {
+                    ((OutputStream) ThreadLocalHttpMap.getInstance().getResponseOutputStream()).close();
+                }
+                if (ThreadLocalHttpMap.getInstance().getResponseWriter() != null) {
+                    ((PrintWriter) ThreadLocalHttpMap.getInstance().getResponseWriter()).close();
+                }
+            } catch (Throwable e) {
+                logger.log(LogLevel.ERROR, ERROR, e, EventDispatcher.class.getSimpleName());
+            }
+        }
+
+    }
+
+    private static void checkIfClientIPBlocked() throws K2CyberSecurityException {
+        if (AgentUtils.getInstance().isBlockedIP(ThreadLocalExecutionMap.getInstance().getHttpRequestBean().getClientIP())) {
+            sendK2BlockPage(ThreadLocalExecutionMap.getInstance().getHttpRequestBean().getClientIP());
+            throw new K2CyberSecurityException(String.format(ACCESS_BY_BLOCKED_IP_ADDRESS_DETECTED_S, ThreadLocalExecutionMap.getInstance().getHttpRequestBean().getClientIP()));
+        }
     }
 }

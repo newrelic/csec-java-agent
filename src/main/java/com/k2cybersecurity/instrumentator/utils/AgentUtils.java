@@ -4,18 +4,23 @@ import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.logging.DeployedApplication;
 import com.k2cybersecurity.intcodeagent.models.javaagent.EventResponse;
+import com.k2cybersecurity.intcodeagent.models.javaagent.IPBlockingEntry;
 import com.k2cybersecurity.intcodeagent.models.javaagent.JavaAgentEventBean;
 import com.k2cybersecurity.intcodeagent.models.javaagent.VulnerableAPI;
 import net.bytebuddy.description.type.TypeDescription;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 
 public class AgentUtils {
+
+	public static final String IP_ADDRESS_UNBLOCKED_DUE_TO_TIMEOUT_S = "IP address unblocked due to timeout : %s";
 
 	public Set<Pair<String, ClassLoader>> getTransformedClasses() {
 		return transformedClasses;
@@ -36,6 +41,10 @@ public class AgentUtils {
 	private Set<String> protectedVulnerabilties = new HashSet<String>();
 
 	private Set<DeployedApplication> scannedDeployedApplications = new HashSet<DeployedApplication>();
+
+	public static long ipBlockingTimeout = TimeUnit.HOURS.toMillis(12);
+
+	private static Map<String, IPBlockingEntry> ipBlockingEntries = new HashMap<>();
 
 	private AgentUtils() {
 		transformedClasses = new HashSet<>();
@@ -149,4 +158,23 @@ public class AgentUtils {
 			this.scannedDeployedApplications.add(scannedDeployedApplications);
 		}
 	}
+
+	public void addIPBlockingEntry(String ip){
+		IPBlockingEntry entry = new IPBlockingEntry(ip);
+		ipBlockingEntries.put(entry.getTargetIP(), entry);
+	}
+
+	public boolean isBlockedIP(String ip){
+		if(ipBlockingEntries.containsKey(ip)){
+			if(!ipBlockingEntries.get(ip).isValid()){
+				ipBlockingEntries.remove(ip);
+				logger.log(LogLevel.INFO, String.format(IP_ADDRESS_UNBLOCKED_DUE_TO_TIMEOUT_S, ip), AgentUtils.class.getName());
+				return false;
+			} else {
+				return true;
+			}
+		}
+		return false;
+	}
+
 }

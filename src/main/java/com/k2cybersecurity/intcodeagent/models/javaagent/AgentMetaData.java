@@ -11,6 +11,8 @@ public class AgentMetaData{
 	
 	private boolean triggerViaXXE;
 
+	private boolean isClientDetectedFromXFF;
+
 	private JSONArray rciMethodsCalls;
 
 	public AgentMetaData() {
@@ -22,6 +24,7 @@ public class AgentMetaData{
 		this.rciMethodsCalls.addAll(agentMetaData.rciMethodsCalls);
 		this.triggerViaDeserialisation = agentMetaData.triggerViaDeserialisation;
 		this.triggerViaRCI = agentMetaData.triggerViaRCI;
+		this.isClientDetectedFromXFF = agentMetaData.isClientDetectedFromXFF;
 	}
 
 	@Override
@@ -59,5 +62,13 @@ public class AgentMetaData{
 
 	public void setRciMethodsCalls(JSONArray rciMethodsCalls) {
 		this.rciMethodsCalls = rciMethodsCalls;
+	}
+
+	public boolean isClientDetectedFromXFF() {
+		return isClientDetectedFromXFF;
+	}
+
+	public void setClientDetectedFromXFF(boolean clientDetectedFromXFF) {
+		isClientDetectedFromXFF = clientDetectedFromXFF;
 	}
 }

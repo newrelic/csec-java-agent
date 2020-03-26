@@ -30,6 +30,7 @@ public class ControlCommandProcessor implements Runnable {
 	public static final String FAILED_TO_CREATE_VULNERABLE_API_ENTRY = "Failed to create vulnerableAPI entry  : ";
 	public static final String EVENT_RESPONSE = "Event response : ";
 	public static final String UNKNOWN_CONTROL_COMMAND_S = "Unknown control command : %s";
+	public static final String SETTING_NEW_IP_BLOCKING_TIMEOUT_TO_S_MS = "Setting new IP Blocking timeout to %s ms";
 	private String controlCommandMessage;
 
 	private long receiveTimestamp;
@@ -168,6 +169,26 @@ public class ControlCommandProcessor implements Runnable {
 				AgentUtils.getInstance().getScannedDeployedApplications().clear();
 			}
 			CVEScannerPool.getInstance().dispatchScanner(controlCommand.getArguments().get(0), downloadTarBundle);
+			break;
+		case IntCodeControlCommand.SET_IPBLOCKING_TIMEOUT:
+			if(controlCommand.getArguments().size() != 1) {
+				return;
+			}
+			try{
+				long newTimeout = Long.parseLong(controlCommand.getArguments().get(0));
+				logger.log(LogLevel.INFO, String.format(SETTING_NEW_IP_BLOCKING_TIMEOUT_TO_S_MS, controlCommand.getArguments().get(0)), ControlCommandProcessor.class.getName());
+				AgentUtils.ipBlockingTimeout = newTimeout;
+			} catch (Exception e){
+				logger.log(LogLevel.ERROR, "Unable to set default IP Blocking timeout due to error:", e, ControlCommandProcessor.class.getName());
+			}
+			break;
+		case IntCodeControlCommand.CREATE_IPBLOCKING_ENTR¥:
+			if(controlCommand.getArguments().size() != 1) {
+				return;
+			}
+			String ip = controlCommand.getArguments().get(0);
+			logger.log(LogLevel.INFO, String.format("Adding IP address %s to blocking list", ip), ControlCommandProcessor.class.getName());
+			AgentUtils.getInstance().addIPBlockingEntry(ip);
 			break;
 		default:
 			logger.log(LogLevel.WARNING, String.format(UNKNOWN_CONTROL_COMMAND_S, controlCommandMessage), ControlCommandProcessor.class.getName());
