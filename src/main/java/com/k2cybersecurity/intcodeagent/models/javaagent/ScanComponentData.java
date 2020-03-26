@@ -1,6 +1,5 @@
 package com.k2cybersecurity.intcodeagent.models.javaagent;
 
-import java.util.List;
 import java.util.Set;
 
 import com.k2cybersecurity.intcodeagent.websocket.JsonConverter;
