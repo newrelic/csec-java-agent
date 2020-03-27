@@ -26,7 +26,7 @@ public class DispatcherPool {
 	private static DispatcherPool instance;
 
 	final int queueSize = 300;
-	final int maxPoolSize = 5;
+	final int maxPoolSize = 3;
 	final int corePoolSize = 2;
 	final long keepAliveTime = 10;
 	final TimeUnit timeUnit = TimeUnit.SECONDS;
