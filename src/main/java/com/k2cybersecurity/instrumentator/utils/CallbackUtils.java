@@ -9,6 +9,7 @@ import com.k2cybersecurity.intcodeagent.models.javaagent.*;
 import org.apache.commons.lang3.RegExUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
+import org.json.simple.JSONObject;
 import org.unbescape.html.HtmlEscape;
 
 import java.io.File;
@@ -294,8 +295,14 @@ public class CallbackUtils {
 	}
 
 //	public static void main(String[] args) {
-//		System.out.println(getXSSConstructs("<svg><script xlink:href=data&colon;,alert(\"sasas\") </script"));
-//		System.out.println(getXSSConstructs("<script><?script>"));
+////		System.out.println(getXSSConstructs("<svg><script xlink:href=data&colon;,alert(\"sasas\") </script"));
+////		System.out.println(getXSSConstructs("<IMG%20SRC%3D%26%23106%3B%26%2397%3B%26%23118%3B%26%2397%3B%26%23115%3B%26%2399%3B%26%23114%3B%26%23105%3B%26%23112%3B%26%23116%3B%26%2358%3B%26%2397%3B%26%23108%3B%26%23101%3B%26%23114%3B%26%23116%3B%26%2340%3B"));
+//		HttpRequestBean httpRequestBean = new HttpRequestBean();
+//		httpRequestBean.setBody("<IMG%20SRC%3D%26%23106%3B%26%2397%3B%26%23118%3B%26%2397%3B%26%23115%3B%26%2399%3B%26%23114%3B%26%23105%3B%26%23112%3B%26%23116%3B%26%2358%3B%26%2397%3B%26%23108%3B%26%23101%3B%26%23114%3B%26%23116%3B%26%2340%3B");
+//		 
+//		httpRequestBean.setContentType(APPLICATION_X_WWW_FORM_URLENCODED);
+//		System.out.println(decodeRequestData(httpRequestBean));
+//		System.out.println(getXSSConstructs("<IMG SRC=&#106;&#97;&#118;&#97;&#115;&#99;&#114;&#105;&#112;&#116;&#58;&#97;&#108;&#101;&#114;&#116;&#40;"));
 //	}
 
 //	    public static void main(String[] args) {
