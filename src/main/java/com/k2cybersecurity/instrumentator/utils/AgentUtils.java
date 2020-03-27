@@ -42,7 +42,7 @@ public class AgentUtils {
 
 	private Set<DeployedApplication> scannedDeployedApplications = new HashSet<DeployedApplication>();
 
-	public static long ipBlockingTimeout = TimeUnit.HOURS.toMillis(12);
+	public static long ipBlockingTimeout = TimeUnit.HOURS.toMillis(1);
 
 	private static Map<String, IPBlockingEntry> ipBlockingEntries = new HashMap<>();
 
