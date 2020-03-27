@@ -1,10 +1,10 @@
 package com.k2cybersecurity.intcodeagent.models.javaagent;
 
 public class ProtectionConfig {
-    private Boolean generateEventResponse;
-    private Boolean protectKnownVulnerableAPIs;
-    private Boolean autoAddDetectedVulnerabilitiesToProtectionList;
-    private Boolean autoAttackIPBlockingXFF;
+    private Boolean generateEventResponse = false;
+    private Boolean protectKnownVulnerableAPIs = false;
+    private Boolean autoAddDetectedVulnerabilitiesToProtectionList = false;
+    private Boolean autoAttackIPBlockingXFF = false;
 
     private static ProtectionConfig instance;
 
