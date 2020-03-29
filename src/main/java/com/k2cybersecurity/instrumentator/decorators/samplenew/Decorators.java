@@ -117,7 +117,7 @@ public class Decorators {
 
 //	private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
 
-        @Advice.OnMethodEnter
+        @Advice.OnMethodEnter(skipOn = K2CyberSecurityException.class)
         public static Object enter(@Advice.Origin String signature, @Advice.Origin("#t") String className, @Advice.Origin("#m") String methodName, @Advice.AllArguments Object[] args) throws Throwable {
             try {
                 String threadName = Thread.currentThread().getName();

@@ -218,6 +218,7 @@ public class EventDispatcher {
         try {
             if (ThreadLocalHttpMap.getInstance().getHttpResponse() != null) {
                 String attackPage = StringUtils.replace(ATTACK_PAGE_CONTENT, ID_PLACEHOLDER, eventId);
+                logger.log(LogLevel.WARNING,"Sending K2 Attack page for : " + eventId, EventDispatcher.class.getName());
                 if (ThreadLocalHttpMap.getInstance().getResponseOutputStream() != null) {
                     OutputStream outputStream = (OutputStream) ThreadLocalHttpMap.getInstance().getResponseOutputStream();
                     outputStream.write(attackPage.getBytes());
@@ -230,12 +231,21 @@ public class EventDispatcher {
                     printWriter.close();
                 } else {
                     Object resp = ThreadLocalHttpMap.getInstance().getHttpResponse();
-                    Method getOutputStream = resp.getClass().getMethod("getOutputStream");
-
-                    OutputStream outputStream = (OutputStream) getOutputStream.invoke(resp);
-                    outputStream.write(attackPage.getBytes());
-                    outputStream.flush();
-                    outputStream.close();
+                    try {
+                        Method getOutputStream = resp.getClass().getMethod("getOutputStream");
+                        getOutputStream.setAccessible(true);
+                        OutputStream outputStream = (OutputStream) getOutputStream.invoke(resp);
+                        outputStream.write(attackPage.getBytes());
+                        outputStream.flush();
+                        outputStream.close();
+                    } catch (Exception e) {
+                        Method getWriter = resp.getClass().getMethod("getWriter");
+                        getWriter.setAccessible(true);
+                        PrintWriter printWriter = (PrintWriter) getWriter.invoke(resp);
+                        printWriter.println(attackPage);
+                        printWriter.flush();
+                        printWriter.close();
+                    }
                 }
             } else {
                 logger.log(LogLevel.ERROR, "Unable to locate response object for this attack.", EventDispatcher.class.getSimpleName());
@@ -262,6 +272,7 @@ public class EventDispatcher {
         try {
             if (ThreadLocalHttpMap.getInstance().getHttpResponse() != null) {
                 String attackPage = StringUtils.replace(BLOCK_PAGE_CONTENT, ID_PLACEHOLDER, ip);
+                logger.log(LogLevel.WARNING,"Sending K2 Blocking page to : " + ip, EventDispatcher.class.getName());
                 if (ThreadLocalHttpMap.getInstance().getResponseOutputStream() != null) {
                     OutputStream outputStream = (OutputStream) ThreadLocalHttpMap.getInstance().getResponseOutputStream();
                     outputStream.write(attackPage.getBytes());
@@ -274,12 +285,21 @@ public class EventDispatcher {
                     printWriter.close();
                 } else {
                     Object resp = ThreadLocalHttpMap.getInstance().getHttpResponse();
-                    Method getOutputStream = resp.getClass().getMethod("getOutputStream");
-
-                    OutputStream outputStream = (OutputStream) getOutputStream.invoke(resp);
-                    outputStream.write(attackPage.getBytes());
-                    outputStream.flush();
-                    outputStream.close();
+                    try {
+                        Method getOutputStream = resp.getClass().getMethod("getOutputStream");
+                        getOutputStream.setAccessible(true);
+                        OutputStream outputStream = (OutputStream) getOutputStream.invoke(resp);
+                        outputStream.write(attackPage.getBytes());
+                        outputStream.flush();
+                        outputStream.close();
+                    } catch (Exception e) {
+                        Method getWriter = resp.getClass().getMethod("getWriter");
+                        getWriter.setAccessible(true);
+                        PrintWriter printWriter = (PrintWriter) getWriter.invoke(resp);
+                        printWriter.println(attackPage);
+                        printWriter.flush();
+                        printWriter.close();
+                    }
                 }
             } else {
                 logger.log(LogLevel.ERROR, "Unable to locate response object for this attack.", EventDispatcher.class.getSimpleName());
