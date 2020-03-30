@@ -1,62 +1,74 @@
 package com.k2cybersecurity.intcodeagent.models.javaagent;
 
 public class ProtectionConfig {
-    private Boolean generateEventResponse = false;
-    private Boolean protectKnownVulnerableAPIs = false;
-    private Boolean autoAddDetectedVulnerabilitiesToProtectionList = false;
-    private Boolean autoAttackIPBlockingXFF = false;
+	private Boolean generateEventResponse = false;
+	private Boolean protectKnownVulnerableAPIs = false;
+	private Boolean autoAddDetectedVulnerabilitiesToProtectionList = false;
+	private Boolean autoAttackIPBlockingXFF = false;
 
-    private static ProtectionConfig instance;
+	private static ProtectionConfig instance;
 
-    private static final Object mutex = new Object();
+	private static final Object mutex = new Object();
 
-    private ProtectionConfig(){}
+	private ProtectionConfig() {
+	}
 
-    public static ProtectionConfig getInstance() {
-        synchronized (mutex){
-            if(instance == null) {
-                instance = new ProtectionConfig();
-            }
-        }
-        return instance;
-    }
+	public static ProtectionConfig getInstance() {
+		synchronized (mutex) {
+			if (instance == null) {
+				instance = new ProtectionConfig();
+			}
+		}
+		return instance;
+	}
 
-    public static void setInstance(ProtectionConfig protectionConfig){
-        ProtectionConfig.getInstance().setAutoAddDetectedVulnerabilitiesToProtectionList(protectionConfig.autoAddDetectedVulnerabilitiesToProtectionList);
-        ProtectionConfig.getInstance().setGenerateEventResponse(protectionConfig.generateEventResponse);
-        ProtectionConfig.getInstance().setProtectKnownVulnerableAPIs(protectionConfig.protectKnownVulnerableAPIs);
-        ProtectionConfig.getInstance().setAutoAttackIPBlockingXFF(protectionConfig.autoAttackIPBlockingXFF);
-    }
+	public static void setInstance(ProtectionConfig protectionConfig) {
+		ProtectionConfig.getInstance().setAutoAddDetectedVulnerabilitiesToProtectionList(
+				protectionConfig.autoAddDetectedVulnerabilitiesToProtectionList);
+		ProtectionConfig.getInstance().setGenerateEventResponse(protectionConfig.generateEventResponse);
+		ProtectionConfig.getInstance().setProtectKnownVulnerableAPIs(protectionConfig.protectKnownVulnerableAPIs);
+		ProtectionConfig.getInstance().setAutoAttackIPBlockingXFF(protectionConfig.autoAttackIPBlockingXFF);
+	}
 
-    public Boolean getGenerateEventResponse() {
-        return generateEventResponse;
-    }
+	public static void setInstance(Boolean generateEventResponse, Boolean protectKnownVulnerableAPIs,
+			Boolean autoAddDetectedVulnerabilitiesToProtectionList, Boolean autoAttackIPBlockingXFF) {
+		ProtectionConfig.getInstance().setAutoAddDetectedVulnerabilitiesToProtectionList(
+				autoAddDetectedVulnerabilitiesToProtectionList);
+		ProtectionConfig.getInstance().setGenerateEventResponse(generateEventResponse);
+		ProtectionConfig.getInstance().setProtectKnownVulnerableAPIs(protectKnownVulnerableAPIs);
+		ProtectionConfig.getInstance().setAutoAttackIPBlockingXFF(autoAttackIPBlockingXFF);
+	}
 
-    public void setGenerateEventResponse(Boolean generateEventResponse) {
-        this.generateEventResponse = generateEventResponse;
-    }
+	public Boolean getGenerateEventResponse() {
+		return generateEventResponse;
+	}
 
-    public Boolean getProtectKnownVulnerableAPIs() {
-        return protectKnownVulnerableAPIs;
-    }
+	public void setGenerateEventResponse(Boolean generateEventResponse) {
+		this.generateEventResponse = generateEventResponse;
+	}
 
-    public void setProtectKnownVulnerableAPIs(Boolean protectKnownVulnerableAPIs) {
-        this.protectKnownVulnerableAPIs = protectKnownVulnerableAPIs;
-    }
+	public Boolean getProtectKnownVulnerableAPIs() {
+		return protectKnownVulnerableAPIs;
+	}
 
-    public Boolean getAutoAddDetectedVulnerabilitiesToProtectionList() {
-        return autoAddDetectedVulnerabilitiesToProtectionList;
-    }
+	public void setProtectKnownVulnerableAPIs(Boolean protectKnownVulnerableAPIs) {
+		this.protectKnownVulnerableAPIs = protectKnownVulnerableAPIs;
+	}
 
-    public void setAutoAddDetectedVulnerabilitiesToProtectionList(Boolean autoAddDetectedVulnerabilitiesToProtectionList) {
-        this.autoAddDetectedVulnerabilitiesToProtectionList = autoAddDetectedVulnerabilitiesToProtectionList;
-    }
+	public Boolean getAutoAddDetectedVulnerabilitiesToProtectionList() {
+		return autoAddDetectedVulnerabilitiesToProtectionList;
+	}
 
-    public Boolean getAutoAttackIPBlockingXFF() {
-        return autoAttackIPBlockingXFF;
-    }
+	public void setAutoAddDetectedVulnerabilitiesToProtectionList(
+			Boolean autoAddDetectedVulnerabilitiesToProtectionList) {
+		this.autoAddDetectedVulnerabilitiesToProtectionList = autoAddDetectedVulnerabilitiesToProtectionList;
+	}
 
-    public void setAutoAttackIPBlockingXFF(Boolean autoAttackIPBlockingXFF) {
-        this.autoAttackIPBlockingXFF = autoAttackIPBlockingXFF;
-    }
+	public Boolean getAutoAttackIPBlockingXFF() {
+		return autoAttackIPBlockingXFF;
+	}
+
+	public void setAutoAttackIPBlockingXFF(Boolean autoAttackIPBlockingXFF) {
+		this.autoAttackIPBlockingXFF = autoAttackIPBlockingXFF;
+	}
 }

@@ -1,10 +1,12 @@
 package com.k2cybersecurity.intcodeagent.controlcommand;
 
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang3.StringUtils;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
 
-import com.google.gson.Gson;
 import com.k2cybersecurity.instrumentator.K2Instrumentator;
 import com.k2cybersecurity.instrumentator.cve.scanner.CVEScannerPool;
 import com.k2cybersecurity.instrumentator.dispatcher.EventDispatcher;
@@ -22,7 +24,7 @@ import com.k2cybersecurity.intcodeagent.websocket.FtpClient;
 
 public class ControlCommandProcessor implements Runnable {
 
-	public static final Gson GSON = new Gson();
+	public static final JSONParser PARSER = new JSONParser();
 	public static final String EVENT_RESPONSE_ENTRY_NOT_FOUND_FOR_THIS_S = "Event response entry not found for this : %s";
 	public static final String EVENT_RESPONSE_TIME_TAKEN = "Event response time taken : ";
 	public static final String DOUBLE_COLON_SEPERATOR = " :: ";
@@ -49,7 +51,10 @@ public class ControlCommandProcessor implements Runnable {
 		}
 		IntCodeControlCommand controlCommand = null;
 		try {
-			controlCommand = GSON.fromJson(controlCommandMessage, IntCodeControlCommand.class);
+			JSONObject object = (JSONObject) PARSER.parse(controlCommandMessage);
+			controlCommand = new IntCodeControlCommand();
+			controlCommand.setArguments((List<String>) object.get("arguments"));
+			controlCommand.setControlCommand(Integer.valueOf(object.get("controlCommand").toString()));
 		} catch (Exception e) {
 			logger.log(LogLevel.SEVERE, "Error in controlCommandProcessor : ", e,
 					ControlCommandProcessor.class.getSimpleName());
@@ -134,64 +139,80 @@ public class ControlCommandProcessor implements Runnable {
 					EventDispatcher.class.getSimpleName());
 			break;
 		case IntCodeControlCommand.PROTECTION_CONFIG:
-			ProtectionConfig protectionConfig = GSON.fromJson(controlCommand.getArguments().get(0),
-					ProtectionConfig.class);
-			ProtectionConfig.setInstance(protectionConfig);
-			if (!ProtectionConfig.getInstance().getGenerateEventResponse()) {
-				ProtectionConfig.getInstance().setProtectKnownVulnerableAPIs(false);
+			try {
+				JSONObject jsonObject = (JSONObject) PARSER.parse(controlCommand.getArguments().get(0));
+				ProtectionConfig.setInstance((Boolean) jsonObject.get("generateEventResponse"),
+						(Boolean) jsonObject.get("protectKnownVulnerableAPIs"),
+						(Boolean) jsonObject.get("autoAddDetectedVulnerabilitiesToProtectionList"),
+						(Boolean) jsonObject.get("autoAttackIPBlockingXFF"));
+
+				if (!ProtectionConfig.getInstance().getGenerateEventResponse()) {
+					ProtectionConfig.getInstance().setProtectKnownVulnerableAPIs(false);
+				}
+				if (!ProtectionConfig.getInstance().getProtectKnownVulnerableAPIs()) {
+					ProtectionConfig.getInstance().setAutoAddDetectedVulnerabilitiesToProtectionList(false);
+				}
+				logger.log(LogLevel.INFO, "Setting to  : " + ProtectionConfig.getInstance().getGenerateEventResponse(),
+						ControlCommandProcessor.class.getSimpleName());
+				logger.log(LogLevel.INFO,
+						"Setting protection for known vulnerable APIs : "
+								+ ProtectionConfig.getInstance().getProtectKnownVulnerableAPIs(),
+						ControlCommandProcessor.class.getSimpleName());
+				logger.log(LogLevel.INFO,
+						"Setting auto add detected vulnerable APIs to protection list : "
+								+ ProtectionConfig.getInstance().getAutoAddDetectedVulnerabilitiesToProtectionList(),
+						ControlCommandProcessor.class.getSimpleName());
+			} catch (Exception e) {
+				logger.log(LogLevel.SEVERE, "Error in ProtectionConfig : ", e,
+						ControlCommandProcessor.class.getSimpleName());
+				return;
 			}
-			if (!ProtectionConfig.getInstance().getProtectKnownVulnerableAPIs()) {
-				ProtectionConfig.getInstance().setAutoAddDetectedVulnerabilitiesToProtectionList(false);
-			}
-			logger.log(LogLevel.INFO, "Setting to  : " + ProtectionConfig.getInstance().getGenerateEventResponse(),
-					ControlCommandProcessor.class.getSimpleName());
-			logger.log(LogLevel.INFO,
-					"Setting protection for known vulnerable APIs : "
-							+ ProtectionConfig.getInstance().getProtectKnownVulnerableAPIs(),
-					ControlCommandProcessor.class.getSimpleName());
-			logger.log(LogLevel.INFO,
-					"Setting auto add detected vulnerable APIs to protection list : "
-							+ ProtectionConfig.getInstance().getAutoAddDetectedVulnerabilitiesToProtectionList(),
-					ControlCommandProcessor.class.getSimpleName());
 			break;
 		case IntCodeControlCommand.START_VULNERABILITY_SCAN:
 			boolean fullReScanning = false;
 			boolean downloadTarBundle = false;
 
-			if(controlCommand.getArguments().size() == 3){
+			if (controlCommand.getArguments().size() == 3) {
 				fullReScanning = Boolean.parseBoolean(controlCommand.getArguments().get(1));
 				downloadTarBundle = Boolean.parseBoolean(controlCommand.getArguments().get(2));
 			}
-			logger.log(LogLevel.INFO, String.format("Starting K2 Vulnerability scanner on this instance : %s :: Full Rescan : %s :: Download tar bundle : %s",
-					controlCommand.getArguments().get(0), fullReScanning, downloadTarBundle), ControlCommandProcessor.class.getSimpleName());
+			logger.log(LogLevel.INFO, String.format(
+					"Starting K2 Vulnerability scanner on this instance : %s :: Full Rescan : %s :: Download tar bundle : %s",
+					controlCommand.getArguments().get(0), fullReScanning, downloadTarBundle),
+					ControlCommandProcessor.class.getSimpleName());
 			// This essentially mean to clear the scanned application entries.
-			if(fullReScanning) {
+			if (fullReScanning) {
 				AgentUtils.getInstance().getScannedDeployedApplications().clear();
 			}
 			CVEScannerPool.getInstance().dispatchScanner(controlCommand.getArguments().get(0), downloadTarBundle);
 			break;
 		case IntCodeControlCommand.SET_IPBLOCKING_TIMEOUT:
-			if(controlCommand.getArguments().size() != 1) {
+			if (controlCommand.getArguments().size() != 1) {
 				return;
 			}
-			try{
+			try {
 				long newTimeout = Long.parseLong(controlCommand.getArguments().get(0));
-				logger.log(LogLevel.INFO, String.format(SETTING_NEW_IP_BLOCKING_TIMEOUT_TO_S_MS, controlCommand.getArguments().get(0)), ControlCommandProcessor.class.getName());
+				logger.log(LogLevel.INFO,
+						String.format(SETTING_NEW_IP_BLOCKING_TIMEOUT_TO_S_MS, controlCommand.getArguments().get(0)),
+						ControlCommandProcessor.class.getName());
 				AgentUtils.ipBlockingTimeout = newTimeout;
-			} catch (Exception e){
-				logger.log(LogLevel.ERROR, "Unable to set default IP Blocking timeout due to error:", e, ControlCommandProcessor.class.getName());
+			} catch (Exception e) {
+				logger.log(LogLevel.ERROR, "Unable to set default IP Blocking timeout due to error:", e,
+						ControlCommandProcessor.class.getName());
 			}
 			break;
 		case IntCodeControlCommand.CREATE_IPBLOCKING_ENTR¥:
-			if(controlCommand.getArguments().size() != 1) {
+			if (controlCommand.getArguments().size() != 1) {
 				return;
 			}
 			String ip = controlCommand.getArguments().get(0);
-			logger.log(LogLevel.INFO, String.format("Adding IP address %s to blocking list", ip), ControlCommandProcessor.class.getName());
+			logger.log(LogLevel.INFO, String.format("Adding IP address %s to blocking list", ip),
+					ControlCommandProcessor.class.getName());
 			AgentUtils.getInstance().addIPBlockingEntry(ip);
 			break;
 		default:
-			logger.log(LogLevel.WARNING, String.format(UNKNOWN_CONTROL_COMMAND_S, controlCommandMessage), ControlCommandProcessor.class.getName());
+			logger.log(LogLevel.WARNING, String.format(UNKNOWN_CONTROL_COMMAND_S, controlCommandMessage),
+					ControlCommandProcessor.class.getName());
 			break;
 		}
 	}
