@@ -13,7 +13,7 @@ import java.util.Map;
 public class Callbacks {
 
 	public static void doOnEnter(String sourceString, String className, String methodName, Object obj, Object[] args,
-			String exectionId) {
+			String exectionId) throws Throwable {
 
 //		System.out.println("OnEnter :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj
 //				+ " - eid : " + exectionId);

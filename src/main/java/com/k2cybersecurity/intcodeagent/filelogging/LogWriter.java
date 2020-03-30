@@ -3,10 +3,11 @@ package com.k2cybersecurity.intcodeagent.filelogging;
 import com.k2cybersecurity.instrumentator.K2Instrumentator;
 import com.k2cybersecurity.intcodeagent.properties.K2JALogProperties;
 import com.k2cybersecurity.intcodeagent.websocket.FtpClient;
-
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.attribute.PosixFilePermissions;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Timer;
@@ -23,7 +24,7 @@ public class LogWriter implements Runnable {
 
 	private static final String K2_LOG = "K2-LOG : ";
 
-	private static int defaultLogLevel;
+	public static int defaultLogLevel;
 
 	private int logLevel;
 
@@ -53,10 +54,12 @@ public class LogWriter implements Runnable {
 	private static final File currentLogFile;
 
 	static {
-		fileName = "/tmp/k2_java_agent-" + K2Instrumentator.APPLICATION_UUID + ".log";
+		fileName = "/tmp/k2logs/k2_java_agent-" + K2Instrumentator.APPLICATION_UUID + ".log";
 		currentLogFile = new File(fileName);
+		currentLogFile.getParentFile().mkdirs();
 		currentLogFileName = fileName;
 		try {
+			currentLogFile.setReadable(true,false);
 			writer = new BufferedWriter(new FileWriter(currentLogFileName, true));
 			maxFileSize = K2JALogProperties.maxfilesize * 1048576;
 
@@ -79,8 +82,9 @@ public class LogWriter implements Runnable {
 			} else if (level.equals("ALL")) {
 				defaultLogLevel = LogLevel.ALL.getLevel();
 			}
+			Files.setPosixFilePermissions(currentLogFile.toPath(), PosixFilePermissions.fromString("rw-rw-rw-"));
 		} catch (Exception e) {
-//			e.printStackTrace();
+			e.printStackTrace();
 		}
 	}
 
@@ -117,7 +121,7 @@ public class LogWriter implements Runnable {
 			sb.append(this.logEntry);
 		if (this.throwableLogEntry != null) {
 //			this.throwableLogEntry.printStackTrace();
-			sb.append(this.throwableLogEntry.getMessage());
+			sb.append(this.throwableLogEntry.toString());
 			sb.append(StringUtils.LF);
 			sb.append(StringUtils.join(this.throwableLogEntry.getStackTrace(), StringUtils.LF));
 			sb.append(StringUtils.LF);
@@ -133,13 +137,16 @@ public class LogWriter implements Runnable {
 		}
 		sb.append(StringUtils.LF);
 		try {
+//			System.out.println(sb.toString());
 			writer.write(sb.toString());
 			writer.flush();
 
 //			writer.newLine();
 			rollover(currentLogFile);
+			currentLogFile.setReadable(true,false);
+			Files.setPosixFilePermissions(currentLogFile.toPath(), PosixFilePermissions.fromString("rw-rw-rw-"));
 		} catch (IOException e) {
-//			e.printStackTrace();
+			e.printStackTrace();
 		}
 
 	}

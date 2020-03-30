@@ -11,6 +11,8 @@ import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.*;
  */
 public class AgentBasicInfo {
 
+	private static final String SCAN_COMPONENT_DATA = "scanComponentData";
+
 	/**  Tool id for Language Agent. */
 	private String k2LAToolId;
 
@@ -40,6 +42,8 @@ public class AgentBasicInfo {
 			setJsonName(JSON_NAME_SHUTDOWN);
 		} else if (this instanceof JavaAgentDynamicPathBean) {
 			setJsonName(JSON_NAME_DYNAMICJARPATH_BEAN);
+		} else if( this instanceof ScanComponentData) {
+			setJsonName(SCAN_COMPONENT_DATA);
 		}
 	}
 

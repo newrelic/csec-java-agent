@@ -7,6 +7,7 @@ import java.util.Arrays;
 
 import org.apache.commons.lang3.StringUtils;
 
+import com.k2cybersecurity.instrumentator.custom.K2CyberSecurityException;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalHttpMap;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalOperationLock;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalXpathSaxonMap;
@@ -55,7 +56,7 @@ public class Callbacks {
 							System.out.println("Exp : " + xPathOperationalBean.getExpression());
 							EventDispatcher.dispatch(xPathOperationalBean, VulnerabilityCaseType.XPATH);
 						}
-					} catch (Exception ex) {
+					} catch (Exception | K2CyberSecurityException ex) {
 						ex.printStackTrace();
 					}
 				} else if (obj != null && StringUtils.containsAny(sourceString, "evalXPath", "evalXPathToBoolean",
@@ -70,7 +71,7 @@ public class Callbacks {
 							System.out.println("Exp : " + xPathOperationalBean.getExpression());
 							EventDispatcher.dispatch(xPathOperationalBean, VulnerabilityCaseType.XPATH);
 						}
-					} catch (Exception ex) {
+					} catch (Exception | K2CyberSecurityException ex) {
 						ex.printStackTrace();
 					}
 				}

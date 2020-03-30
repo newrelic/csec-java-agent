@@ -1,9 +1,6 @@
 package com.k2cybersecurity.instrumentator.decorators.httpservice;
 
-import com.k2cybersecurity.instrumentator.custom.ThreadLocalExecutionMap;
-import com.k2cybersecurity.instrumentator.custom.ThreadLocalHTTPServiceLock;
-import com.k2cybersecurity.instrumentator.custom.ThreadLocalHttpMap;
-import com.k2cybersecurity.instrumentator.custom.ThreadLocalOperationLock;
+import com.k2cybersecurity.instrumentator.custom.*;
 import com.k2cybersecurity.instrumentator.dispatcher.EventDispatcher;
 import com.k2cybersecurity.instrumentator.utils.CallbackUtils;
 import com.k2cybersecurity.intcodeagent.models.javaagent.HttpRequestBean;
@@ -37,8 +34,6 @@ public class Callbacks {
                         ThreadLocalHttpMap.getInstance().setServiceMethodEncountered(true);
                     }
                 }
-            } catch (Exception e) {
-//                e.printStackTrace();
             } finally {
                 ThreadLocalOperationLock.getInstance().release();
             }
@@ -46,7 +41,7 @@ public class Callbacks {
     }
 
     public static void doOnExit(String sourceString, String className, String methodName, Object obj, Object[] args,
-                                Object returnVal, String exectionId) {
+                                Object returnVal, String exectionId) throws K2CyberSecurityException {
 
 
         if (!ThreadLocalOperationLock.getInstance().isAcquired() && ThreadLocalHTTPServiceLock.getInstance().isAcquired(obj)) {
@@ -80,7 +75,7 @@ public class Callbacks {
         }
     }
 
-    private static void onHttpTermination(String sourceString, String exectionId) {
+    private static void onHttpTermination(String sourceString, String exectionId) throws K2CyberSecurityException {
         try {
             if (!ThreadLocalHttpMap.getInstance().isEmpty()) {
                 ThreadLocalHttpMap.getInstance().parseHttpRequest();
@@ -95,8 +90,6 @@ public class Callbacks {
                     String tid = StringUtils.substringBefore(exectionId, SEPARATOR_COLON);
                 }
             }
-        } catch (Throwable e) {
-
         } finally {
 
             // Clean up

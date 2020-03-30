@@ -2,6 +2,7 @@ package com.k2cybersecurity.instrumentator.decorators.jsinjection.rhino;
 
 import java.util.Arrays;
 
+import com.k2cybersecurity.instrumentator.custom.K2CyberSecurityException;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalHttpMap;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalJSRhinoMap;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalOperationLock;
@@ -24,6 +25,8 @@ public class Callbacks {
 					System.out.println("HERE :::::" + jsInjectionOperationalBean.getJavaScriptCode());
 					EventDispatcher.dispatch(jsInjectionOperationalBean, VulnerabilityCaseType.JAVASCRIPT_INJECTION);
 				}
+			} catch (Exception | K2CyberSecurityException e) {
+				e.printStackTrace();
 			} finally {
 				ThreadLocalOperationLock.getInstance().release();
 			}

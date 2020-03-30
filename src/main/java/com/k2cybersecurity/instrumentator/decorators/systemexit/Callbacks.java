@@ -1,21 +1,18 @@
 package com.k2cybersecurity.instrumentator.decorators.systemexit;
 
+import com.k2cybersecurity.instrumentator.custom.K2CyberSecurityException;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalHttpMap;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalOperationLock;
 import com.k2cybersecurity.instrumentator.dispatcher.EventDispatcher;
 import com.k2cybersecurity.intcodeagent.models.javaagent.VulnerabilityCaseType;
-import com.k2cybersecurity.intcodeagent.models.operationalbean.ForkExecOperationalBean;
 import com.k2cybersecurity.intcodeagent.models.operationalbean.SystemExitOperationalBean;
 
-import org.apache.commons.lang3.StringUtils;
-
 import java.time.Instant;
-import java.util.Map;
 
 public class Callbacks {
 
 	public static void doOnEnter(String sourceString, String className, String methodName, Object obj, Object[] args,
-			String exectionId) {
+			String exectionId) throws K2CyberSecurityException {
 
 //		System.out.println("OnEnter :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj
 //				+ " - eid : " + exectionId);

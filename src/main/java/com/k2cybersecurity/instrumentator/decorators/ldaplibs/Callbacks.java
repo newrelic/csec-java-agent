@@ -1,5 +1,6 @@
 package com.k2cybersecurity.instrumentator.decorators.ldaplibs;
 
+import com.k2cybersecurity.instrumentator.custom.K2CyberSecurityException;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalHttpMap;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalLDAPMap;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalLdaptiveMap;
@@ -73,7 +74,7 @@ public class Callbacks {
 				EventDispatcher.dispatch(ldapOperationalBean, VulnerabilityCaseType.LDAP);
 			}
 
-		} catch (Exception e) {
+		} catch (Exception | K2CyberSecurityException e) {
 			e.printStackTrace();
 		}
 
@@ -107,7 +108,7 @@ public class Callbacks {
 						sourceString, executionId, Instant.now().toEpochMilli());
 				EventDispatcher.dispatch(ldapOperationalBean, VulnerabilityCaseType.LDAP);
 			}
-		} catch (Exception e) {
+		} catch (Exception | K2CyberSecurityException e) {
 			e.printStackTrace();
 		}
 
@@ -151,7 +152,7 @@ public class Callbacks {
 						sourceString, executionId, Instant.now().toEpochMilli());
 				EventDispatcher.dispatch(ldapOperationalBean, VulnerabilityCaseType.LDAP);
 			}
-		} catch (Exception e) {
+		} catch (Exception | K2CyberSecurityException e) {
 			e.printStackTrace();
 		}
 

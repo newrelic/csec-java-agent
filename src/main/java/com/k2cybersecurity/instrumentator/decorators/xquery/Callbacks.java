@@ -3,6 +3,7 @@ package com.k2cybersecurity.instrumentator.decorators.xquery;
 import java.time.Instant;
 import java.util.Arrays;
 
+import com.k2cybersecurity.instrumentator.custom.K2CyberSecurityException;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalHttpMap;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalOperationLock;
 import com.k2cybersecurity.instrumentator.dispatcher.EventDispatcher;
@@ -35,6 +36,8 @@ public class Callbacks {
 						EventDispatcher.dispatch(xQueryOperationalBean, VulnerabilityCaseType.XQUERY_INJECTION);
 					}
 				}
+			} catch (Exception | K2CyberSecurityException e) {
+				e.printStackTrace();
 			} finally {
 				ThreadLocalOperationLock.getInstance().release();
 			}

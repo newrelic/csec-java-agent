@@ -5,6 +5,7 @@ import java.lang.reflect.Method;
 import java.time.Instant;
 import java.util.Arrays;
 
+import com.k2cybersecurity.instrumentator.custom.K2CyberSecurityException;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalHttpMap;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalOperationLock;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalXQuerySaxonMap;
@@ -48,26 +49,38 @@ public class Callbacks {
 							System.out.println("Exp : " + xQueryOperationalBean.getExpression());
 							EventDispatcher.dispatch(xQueryOperationalBean, VulnerabilityCaseType.XQUERY_INJECTION);
 						}
-					} catch (Exception ex) {
+					} catch (Exception | K2CyberSecurityException ex) {
 						ex.printStackTrace();
 					}
 				} else if(args.length==1 && args[0] !=null && sourceString.contains("QueryService.execute")) {
+					try {
 					XQueryOperationalBean xQueryOperationalBean = ThreadLocalXQuerySaxonMap.getInstance().get(args[0]);
 					if(xQueryOperationalBean!=null) {
 						System.out.println("Query eXist execute : "+ xQueryOperationalBean.getExpression());
 						EventDispatcher.dispatch(xQueryOperationalBean, VulnerabilityCaseType.XQUERY_INJECTION);
 					}
+					} catch (Exception | K2CyberSecurityException e) {
+						e.printStackTrace();
+					}
 				} else if(sourceString.contains("OXQCPreparedExpression.executeQuery")) {
+					try {
 					XQueryOperationalBean xQueryOperationalBean = ThreadLocalXQuerySaxonMap.getInstance().get(obj);
 					if(xQueryOperationalBean!=null) {
 						System.out.println("In execute, got Query : "+ xQueryOperationalBean.getExpression());
 						EventDispatcher.dispatch(xQueryOperationalBean, VulnerabilityCaseType.XQUERY_INJECTION);
 					}
+					} catch (Exception | K2CyberSecurityException e) {
+						e.printStackTrace();
+					}
 				} else if(sourceString.contains("OXQDPreparedExpression.executeQuery")) {
+					try {
 					XQueryOperationalBean xQueryOperationalBean = ThreadLocalXQuerySaxonMap.getInstance().get(obj);
 					if(xQueryOperationalBean!=null) {
 						System.out.println("In execute, got Query : "+ xQueryOperationalBean.getExpression());
 						EventDispatcher.dispatch(xQueryOperationalBean, VulnerabilityCaseType.XQUERY_INJECTION);
+					}
+					} catch (Exception | K2CyberSecurityException e) {
+						e.printStackTrace();
 					}
 				} else if(sourceString.contains("org.brackit.xquery.XQuery.run")) {
 					try {
@@ -81,7 +94,7 @@ public class Callbacks {
 						EventDispatcher.dispatch(xQueryOperationalBean, VulnerabilityCaseType.XQUERY_INJECTION);
 					}
 					}
-					} catch (Exception e) {
+					} catch (Exception | K2CyberSecurityException e) {
 						e.printStackTrace();
 					}
 				} else if(sourceString.equals("public io.zorba.api.Iterator io.zorba.api.XQuery.iterator()") ||
@@ -99,7 +112,7 @@ public class Callbacks {
 						}
 					}
 					
-					} catch (Exception e) {
+					} catch (Exception | K2CyberSecurityException e) {
 						e.printStackTrace();
 					}
 				}

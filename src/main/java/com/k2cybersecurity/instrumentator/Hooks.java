@@ -90,8 +90,9 @@ public class Hooks {
 		NAME_BASED_HOOKS.put("sun.nio.fs.UnixNativeDispatcher", Arrays.asList(new String[] { "open", "fopen", "link",
 				"unlink", "mknod", "rename", "mkdir", "rmdir", "symlink", "chown", "chmod" }));
 		NAME_BASED_HOOKS.put("java.io.UnixFileSystem", Collections.singletonList("delete"));
+		NAME_BASED_HOOKS.put("java.io.File", Collections.singletonList("list"));
 		NAME_BASED_HOOKS.put("java.io.RandomAccessFile", Collections.singletonList("open"));
-		TYPE_BASED_HOOKS.put("java.io.FileSystem", Arrays.asList("list", "getBooleanAttributes"));
+		TYPE_BASED_HOOKS.put("java.io.FileSystem", Collections.singletonList("getBooleanAttributes"));
 
 		// Mongo Hooks
 
@@ -359,6 +360,7 @@ public class Hooks {
 		DECORATOR_ENTRY.put("java.io.FileOutputStream.open",
 				"com.k2cybersecurity.instrumentator.decorators.fileaccess");
 		DECORATOR_ENTRY.put("java.io.FileInputStream.open", "com.k2cybersecurity.instrumentator.decorators.fileaccess");
+
 		DECORATOR_ENTRY.put("sun.nio.fs.UnixNativeDispatcher",
 				"com.k2cybersecurity.instrumentator.decorators.fileaccess");
 
@@ -430,6 +432,7 @@ public class Hooks {
 				"com.k2cybersecurity.instrumentator.decorators.opendjldap");
 
 		// XPath execute both packages for java standard
+
 		DECORATOR_ENTRY.put("org.apache.xpath.XPath.execute", "com.k2cybersecurity.instrumentator.decorators.xpath");
 		DECORATOR_ENTRY.put("com.sun.org.apache.xpath.internal.XPath.execute",
 				"com.k2cybersecurity.instrumentator.decorators.xpath");

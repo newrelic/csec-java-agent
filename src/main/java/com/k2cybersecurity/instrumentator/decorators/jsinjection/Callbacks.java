@@ -5,6 +5,7 @@ import java.lang.reflect.Method;
 import java.time.Instant;
 import java.util.Arrays;
 
+import com.k2cybersecurity.instrumentator.custom.K2CyberSecurityException;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalHttpMap;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalOperationLock;
 import com.k2cybersecurity.instrumentator.dispatcher.EventDispatcher;
@@ -35,7 +36,7 @@ public class Callbacks {
 							EventDispatcher.dispatch(jsInjectionOperationalBean,
 									VulnerabilityCaseType.JAVASCRIPT_INJECTION);
 						}
-					} catch (Exception e) {
+					} catch (Exception | K2CyberSecurityException e) {
 						e.printStackTrace();
 					}
 				} else if (args.length == 2 && args[1] != null && sourceString.equals(
@@ -67,7 +68,7 @@ public class Callbacks {
 										VulnerabilityCaseType.JAVASCRIPT_INJECTION);
 							}
 						}
-					} catch (Exception e) {
+					} catch (Exception | K2CyberSecurityException e) {
 						e.printStackTrace();
 					}
 				}

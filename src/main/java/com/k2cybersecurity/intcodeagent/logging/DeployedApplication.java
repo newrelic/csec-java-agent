@@ -35,12 +35,11 @@ import java.util.Set;
 public class DeployedApplication {
 
 	public static final String FORWARD_SLASH = "/";
+
+	public static final String UNDERSCORE = "_";
+
 	/** Application deployed path. */
 	private String deployedPath;
-
-	/** Application resource path. */
-//	@JsonIgnore
-	private String resourcePath;
 
 	/** Application name. */
 	private String appName;
@@ -83,18 +82,6 @@ public class DeployedApplication {
 		}
 	}
 
-	public String getResourcePath() {
-		return resourcePath;
-	}
-
-	public void setResourcePath(String resourcePath) {
-		if (StringUtils.isBlank(resourcePath)) {
-			this.resourcePath = StringUtils.EMPTY;
-		} else {
-			this.resourcePath = resourcePath;
-		}
-	}
-
 	public boolean isEmbedded() {
 		return isEmbedded;
 	}
@@ -119,7 +106,7 @@ public class DeployedApplication {
 	 *            the appName to set
 	 */
 	public void setAppName(String appName) {
-		if (StringUtils.isBlank(appName)) {
+		if (StringUtils.isBlank(appName) || StringUtils.equals(appName, FORWARD_SLASH) || StringUtils.equals(appName, UNDERSCORE)) {
 			this.appName = "ROOT";
 		} else {
 			this.appName = appName;
@@ -185,26 +172,18 @@ public class DeployedApplication {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + ((sha256 == null) ? 0 : sha256.hashCode());
+		result = prime * result + ((contextPath == null) ? 0 : contextPath.hashCode());
+
 		return result;
 	}
 
-	/* (non-Javadoc)
-	 * @see java.lang.Object#equals(java.lang.Object)
-	 */
-	@Override public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		DeployedApplication other = (DeployedApplication) obj;
-		if (sha256 == null) {
-			if (other.sha256 != null)
-				return false;
-		} else if (!sha256.equals(other.sha256))
-			return false;
-		return true;
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+		DeployedApplication that = (DeployedApplication) o;
+		return sha256.equals(that.sha256) &&
+				contextPath.equals(that.contextPath);
 	}
 
 	public boolean isEmpty() {

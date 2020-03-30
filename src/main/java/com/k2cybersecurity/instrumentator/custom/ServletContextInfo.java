@@ -9,39 +9,51 @@ import com.k2cybersecurity.intcodeagent.models.javaagent.VulnerabilityCaseType;
 import com.k2cybersecurity.intcodeagent.websocket.JsonConverter;
 import org.apache.commons.lang3.StringUtils;
 
+import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class ServletContextInfo {
-	public static final String GET_CONTEXT_PATH = "getContextPath";
-	public static final String GET_SERVER_INFO = "getServerInfo";
-	public static final String GET_MAJOR_VERSION = "getMajorVersion";
-	public static final String GET_MINOR_VERSION = "getMinorVersion";
-	public static final String GET_REAL_PATH = "getRealPath";
-	public static final String GET_SERVLET_CONTEXT_NAME = "getServletContextName";
-	public static final String ERROR = "Error : ";
-	public static final String GET_CLASS_LOADER = "getClassLoader";
-	public static final String FORWARD_SLASH = "/";
-	public static final String FILE = "file:";
-	public static final String WEB_INF = "/WEB-INF";
-	public static final String JAR_FILE = "jar:file:";
-	public static final String NOT = "!";
-	public static final String ROOT = "ROOT";
-	public static final String REPLACEMENT = "_";
-	@JsonIgnore
+    public static final String GET_CONTEXT_PATH = "getContextPath";
+    public static final String GET_SERVER_INFO = "getServerInfo";
+    public static final String GET_MAJOR_VERSION = "getMajorVersion";
+    public static final String GET_MINOR_VERSION = "getMinorVersion";
+    public static final String GET_REAL_PATH = "getRealPath";
+    public static final String GET_SERVLET_CONTEXT_NAME = "getServletContextName";
+    public static final String GET_RESOURCE_PATHS= "getResourcePaths";
+    public static final String GET_RESOURCE= "getResource";
+    public static final String GET_RESOURCES= "getResources";
+    public static final String ERROR = "Error : ";
+    public static final String GET_CLASS_LOADER = "getClassLoader";
+    public static final String FORWARD_SLASH = "/";
+    public static final String FILE = "file:";
+    public static final String WEB_INF = "/WEB-INF";
+    public static final String JAR_FILE = "jar:file:";
+    public static final String JAR_EXT = ".jar";
+    public static final String NOT = "!";
+    public static final String ROOT = "ROOT";
+    public static final String REPLACEMENT = "_";
+    private static final String COLON = " - ";
+    public static final String META_INF_MANIFEST_MF = "/META-INF/MANIFEST.MF";
+    public static final String INF = "-INF";
+    public static final String WEBAPP_PATH_DETECTED_USING_METHOD_1 = "Webapp path detected using method 1 : ";
+    public static final String WEBAPP_PATH_DETECTED_USING_METHOD_2 = "Webapp path detected using method 2 : ";
+    public static final String WEBAPP_PATH_DETECTED_USING_METHOD_3 = "Webapp path detected using method 3 : ";
+    public static final String SERVLET_INFO_POPULATED_SENT = "Servlet info populated & sent : ";
+    public static final String CLASSES_STR = "/classes/";
+    public static final String CLASSES_STR_1 = "/classes!";
+    public static final String L_1 = "L1 : ";
+
+    @JsonIgnore
     private static ServletContextInfo instance;
 
     private Map<String, DeployedApplication> contextMap = new HashMap<>();
 
-	private Set<String> processedContext = new HashSet<>();
-
-	private String serverInfo = StringUtils.EMPTY;
+    private String serverInfo = StringUtils.EMPTY;
 
     private Integer majorServletVersion;
 
@@ -69,11 +81,11 @@ public class ServletContextInfo {
     }
 
     public void setServerInfo(String serverInfo) {
-        if(StringUtils.isBlank(serverInfo)){
-			this.serverInfo = StringUtils.EMPTY;
-		}else {
-        	this.serverInfo = serverInfo;
-		}
+        if (StringUtils.isBlank(serverInfo)) {
+            this.serverInfo = StringUtils.EMPTY;
+        } else {
+            this.serverInfo = serverInfo;
+        }
     }
 
     public Integer getMajorServletVersion() {
@@ -102,19 +114,20 @@ public class ServletContextInfo {
         Method getServerInfo = null;
         Method getMajorVersion = null;
         Method getMinorVersion = null;
-		DeployedApplication deployedApplication = new DeployedApplication();
-		deployedApplication.setContextPath(contextPath);
 
-		try {
-			if (contextMap.containsKey(deployedApplication.getContextPath())) {
-				if(contextMap.get(deployedApplication.getContextPath()).updatePorts(serverPort)){
-					EventDispatcher.dispatch(contextMap.get(deployedApplication.getContextPath()), VulnerabilityCaseType.APP_INFO);
-				}
-				return;
-			}
-		} catch (Exception e) {
-			logger.log(LogLevel.ERROR, ERROR , e, ServletContextInfo.class.getName());
-		}
+        DeployedApplication deployedApplication = new DeployedApplication();
+        deployedApplication.setContextPath(contextPath);
+
+        try {
+            if (contextMap.containsKey(deployedApplication.getContextPath())) {
+                if (contextMap.get(deployedApplication.getContextPath()).updatePorts(serverPort)) {
+                    EventDispatcher.dispatch(contextMap.get(deployedApplication.getContextPath()), VulnerabilityCaseType.APP_INFO);
+                }
+                return;
+            }
+        } catch (Exception e) {
+            logger.log(LogLevel.ERROR, ERROR, e, ServletContextInfo.class.getName());
+        }
 
 
         try {
@@ -123,20 +136,21 @@ public class ServletContextInfo {
             getMinorVersion = servletContext.getClass().getMethod(GET_MINOR_VERSION);
             getRealPath = servletContext.getClass().getMethod(GET_REAL_PATH, String.class);
             getServletContextName = servletContext.getClass().getMethod(GET_SERVLET_CONTEXT_NAME);
-
-		} catch (Exception e) {
-           logger.log(LogLevel.ERROR, ERROR , e, ServletContextInfo.class.getName());
+        } catch (Exception e) {
+            logger.log(LogLevel.ERROR, ERROR, e, ServletContextInfo.class.getName());
         }
 
         try {
             serverInfo = (String) getServerInfo.invoke(servletContext, null);
             setMajorServletVersion((Integer) getMajorVersion.invoke(servletContext, null));
             setMinorServletVersion((Integer) getMinorVersion.invoke(servletContext, null));
-            applicationDir = (String) getRealPath.invoke(servletContext, contextPath);
+
+            applicationDir = processWebappPath(servletContext);
+//            System.out.println("App Dir detected : " + applicationDir);
             applicationName = (String) getServletContextName.invoke(servletContext, null);
 
         } catch (Exception e) {
-        	logger.log(LogLevel.ERROR, ERROR , e, ServletContextInfo.class.getName());
+            logger.log(LogLevel.ERROR, ERROR, e, ServletContextInfo.class.getName());
         }
 
 
@@ -146,66 +160,88 @@ public class ServletContextInfo {
         deployedApplication.setDeployedPath(applicationDir);
         deployedApplication.updatePorts(serverPort);
 
-		// TODO: This application dir detection is still inaccurate as this brings the location of classloader & not application context root.
-		//        Hence this misses the HTML part of the application.
-		try {
-			Method getClassLoader = servletContext.getClass().getMethod(GET_CLASS_LOADER);
-			getClassLoader.setAccessible(true);
-			ClassLoader classLoader = (ClassLoader) getClassLoader.invoke(servletContext, null);
-			if(classLoader != null) {
-				URL resPath = classLoader.getResource(FORWARD_SLASH);
-				if(resPath != null) {
-					deployedApplication.setResourcePath(resPath.toString());
-				}
-				if(StringUtils.startsWithIgnoreCase(deployedApplication.getResourcePath(), JAR_FILE)){
-					deployedApplication.setEmbedded(true);
-					deployedApplication.setResourcePath(StringUtils.substringBetween(deployedApplication.getResourcePath(), JAR_FILE, NOT));
-				} else {
-					deployedApplication.setResourcePath(StringUtils.removeStart(deployedApplication.getResourcePath(), FILE));
-					deployedApplication.setResourcePath(StringUtils.substringBefore(deployedApplication.getResourcePath(), WEB_INF));
-				}
-			}
-		} catch (Exception e) {
-			logger.log(LogLevel.ERROR, ERROR , e, ServletContextInfo.class.getName());
-		}
 
+        if (StringUtils.isNotBlank(deployedApplication.getDeployedPath())) {
 
+            if (StringUtils.startsWithIgnoreCase(deployedApplication.getDeployedPath(), JAR_FILE)) {
+                deployedApplication.setEmbedded(true);
+                deployedApplication.setDeployedPath(StringUtils.substringBetween(deployedApplication.getDeployedPath(), JAR_FILE, NOT));
+            } else if(StringUtils.startsWithIgnoreCase(deployedApplication.getDeployedPath(), FILE)) {
+                deployedApplication.setDeployedPath(StringUtils.substringBetween(deployedApplication.getDeployedPath(), FILE, NOT));
+            }
 
-		if(StringUtils.isBlank(deployedApplication.getDeployedPath()) && StringUtils.isNotBlank(deployedApplication.getResourcePath())){
-			deployedApplication.setDeployedPath(deployedApplication.getResourcePath());
-		}
+            String intermediatePath = deployedApplication.getDeployedPath();
+            if(StringUtils.contains(intermediatePath, INF + File.separator)){
+                intermediatePath = StringUtils.substringBefore(intermediatePath, INF + File.separator);
+                deployedApplication.setDeployedPath(new File(intermediatePath).getParent());
+            }
 
-		if(StringUtils.isBlank(deployedApplication.getAppName()) || StringUtils.equals(deployedApplication.getAppName(), "ROOT")){
-			if(StringUtils.equals(deployedApplication.getContextPath(), FORWARD_SLASH)){
-				if(deployedApplication.isEmbedded()){
-					deployedApplication.setAppName(Paths.get(deployedApplication.getDeployedPath()).getFileName().toString());
-				}
-			} else {
-				deployedApplication.setAppName(StringUtils.removeStart(StringUtils.replace(deployedApplication.getContextPath(), FORWARD_SLASH, REPLACEMENT),
-						REPLACEMENT));
-				deployedApplication.setAppName(StringUtils.removeEnd(deployedApplication.getAppName(), REPLACEMENT));
-			}
-		}
+            if (StringUtils.endsWithIgnoreCase(deployedApplication.getDeployedPath(), JAR_EXT)) {
+                deployedApplication.setEmbedded(true);
+            }
 
-		if(StringUtils.isNotBlank(deployedApplication.getDeployedPath())) {
-			Path applicationPath = Paths.get(deployedApplication.getDeployedPath());
-			if (StringUtils.equals(deployedApplication.getContextPath(), FORWARD_SLASH)) {
-				deployedApplication.setDeployedPath(applicationPath.toString());
-			} else {
-				deployedApplication.setDeployedPath(applicationPath.getParent().toString());
-			}
-		}
+        } else {
+            return;
+        }
 
-		this.contextMap.put(deployedApplication.getContextPath(), deployedApplication);
-		if(!deployedApplication.isEmpty()) {
-			EventDispatcher.dispatch(deployedApplication, VulnerabilityCaseType.APP_INFO);
-			logger.log(LogLevel.INFO, "Servlet info populated & sent : " + deployedApplication, ServletContextInfo.class.getName());
-		}
-//
+        if (StringUtils.equals(deployedApplication.getAppName(), ROOT)){
+            if (StringUtils.endsWithIgnoreCase(deployedApplication.getDeployedPath(), JAR_EXT)) {
+                deployedApplication.setAppName(Paths.get(deployedApplication.getDeployedPath()).getFileName().toString());
+            }
+            else if(!StringUtils.equals(deployedApplication.getContextPath(), FORWARD_SLASH)){
+                deployedApplication.setAppName(StringUtils.removeStart(StringUtils.replace(deployedApplication.getContextPath(), FORWARD_SLASH, REPLACEMENT),
+                        REPLACEMENT));
+                deployedApplication.setAppName(StringUtils.removeEnd(deployedApplication.getAppName(), REPLACEMENT));
+            }
+        }
+
+        this.contextMap.put(deployedApplication.getContextPath(), deployedApplication);
+        if (!deployedApplication.isEmpty()) {
+            EventDispatcher.dispatch(deployedApplication, VulnerabilityCaseType.APP_INFO);
+            logger.log(LogLevel.INFO, SERVLET_INFO_POPULATED_SENT + deployedApplication, ServletContextInfo.class.getName());
+        }
+
 //		System.out.println("==========================================================================================");
 //		System.out.println("New Servlet Context found : ");
 //		System.out.println("Details  : " + deployedApplication);
+//		System.out.println("Server Info  : " + serverInfo);
+//		System.out.println("Major Servlet Version  : " + majorServletVersion);
+//		System.out.println("Minor Servlet Version  : " + minorServletVersion);
 //		System.out.println("==========================================================================================");
 
     }
+
+    private String processWebappPath(Object servletContext) {
+        String appPath = StringUtils.EMPTY;
+
+        // Detection 1: Using classloader.getResource
+        try {
+            Method getClassLoader = servletContext.getClass().getMethod(GET_CLASS_LOADER);
+            getClassLoader.setAccessible(true);
+            ClassLoader classLoader = (ClassLoader) getClassLoader.invoke(servletContext, null);
+
+            if(classLoader != null) {
+                Enumeration<URL> appPathURLEnum = classLoader.getResources(StringUtils.EMPTY);
+                while(appPathURLEnum !=null && appPathURLEnum.hasMoreElements()){
+                    URL app = appPathURLEnum.nextElement();
+//                    System.out.println("L1 : " + app.getPath());
+                    logger.log(LogLevel.DEBUG, L_1 + app.getPath(), ServletContextInfo.class.getName());
+
+                    if(StringUtils.containsAny(app.getPath(), CLASSES_STR, CLASSES_STR_1)){
+                        appPath = app.getPath();
+                        break;
+                    }
+                }
+                if(StringUtils.isNotBlank((appPath))){
+                    logger.log(LogLevel.DEBUG, WEBAPP_PATH_DETECTED_USING_METHOD_1 + appPath, ServletContextInfo.class.getName());
+                    return appPath;
+                }
+            }
+        } catch (Exception e){
+            logger.log(LogLevel.ERROR, ERROR, e, ServletContextInfo.class.getName());
+        }
+
+        return appPath;
+    }
+
 }

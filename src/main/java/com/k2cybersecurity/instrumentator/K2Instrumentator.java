@@ -11,16 +11,26 @@ import com.k2cybersecurity.intcodeagent.models.javaagent.JAHealthCheck;
 import com.k2cybersecurity.intcodeagent.websocket.EventSendPool;
 import com.k2cybersecurity.intcodeagent.websocket.WSClient;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 
 import java.io.*;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
+import java.net.HttpURLConnection;
 import java.net.InetAddress;
+import java.net.URL;
 import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.time.Instant;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.*;
@@ -43,7 +53,8 @@ public class K2Instrumentator {
 	public static boolean enableHTTPRequestPrinting = false;
 
 	public static boolean isk8sEnv = false;
-
+	public static boolean isECSEnv = false;
+	
 	static {
 		try {
 			RuntimeMXBean runtimeMXBean = ManagementFactory.getRuntimeMXBean();
@@ -57,19 +68,29 @@ public class K2Instrumentator {
 	public static boolean init(Boolean isDynamicAttach) {
 		K2Instrumentator.isDynamicAttach = isDynamicAttach;
 //		 ConfigK2Logs.getInstance().initializeLogs();
+		isk8sEnv = ApplicationInfoUtils.isK8sEnv();
+		isECSEnv = ApplicationInfoUtils.isECSEnv();
+		
 		APPLICATION_INFO_BEAN = createApplicationInfoBean();
 		if(APPLICATION_INFO_BEAN == null) {
 			return false;
 		}
 		JA_HEALTH_CHECK = new JAHealthCheck(APPLICATION_UUID);
-		isk8sEnv = ApplicationInfoUtils.isK8sEnv();
 
-
-		if(isk8sEnv) {
+		
+//		System.out.println("Env variables in container : ");
+//		Map<String, String> allEnv = System.getenv();
+//		allEnv.forEach((k, v) -> System.out.println(k + " : " + v));
+		
+		if (StringUtils.isNotBlank(System.getenv("K2_HOST_IP"))) {
+			hostip=System.getenv("K2_HOST_IP");
+		} else if(isk8sEnv) {
 			hostip = System.getenv("K2_SERVICE_SERVICE_HOST");
+		} else if (isECSEnv) {
+			hostip = "k2-service.k2-ns";
 		} else if(APPLICATION_INFO_BEAN.getIdentifier().getIsHost()){
 			hostip = InetAddress.getLoopbackAddress().getHostAddress();
-		} else {
+		}else {
 			try {
 				hostip = ApplicationInfoUtils.getDefaultGateway();
 			} catch (IOException e) {
@@ -78,7 +99,6 @@ public class K2Instrumentator {
 				return false;
 			}
 		}
-
 		try {
 			WSClient.getInstance();
 		} catch (Exception e) {
@@ -109,20 +129,19 @@ public class K2Instrumentator {
 		File cgroupFile = new File(CGROUP_FILE_NAME);
 		if (!cgroupFile.isFile())
 			return null;
-		BufferedReader br = null;
 		try {
-			br = new BufferedReader(new FileReader(cgroupFile));
-		} catch (FileNotFoundException e) {
-			return null;
-		}
-
-		String st;
-		int index = -1;
-		try {
-			while ((st = br.readLine()) != null) {
+			List<String> fileData = FileUtils.readLines(cgroupFile, StandardCharsets.UTF_8);
+			Iterator<String> itr = fileData.iterator();
+			int index = -1;
+			while (itr.hasNext()) {
+				String st = itr.next();
 				index = st.lastIndexOf(DOCKER_DIR);
 				if (index > -1) {
 					return st.substring(index + 7);
+				}
+				index = st.lastIndexOf(ECS_DIR);
+				if (index > -1) {
+					return st.substring(st.lastIndexOf(DIR_SEPERATOR) + 1);
 				}
 				index = st.indexOf(KUBEPODS_DIR);
 				if (index > -1) {
@@ -140,18 +159,34 @@ public class K2Instrumentator {
 					return st.substring(index + 8, indexEnd);
 				}
 			}
-
 		} catch (IOException e) {
 			return null;
-		} finally {
-			try {
-				br.close();
-			} catch (IOException e) {
-			}
 		}
 		return null;
 	}
+	
+	private static String getECSTaskId() {
 
+		File cgroupFile = new File(CGROUP_FILE_NAME);
+		if (!cgroupFile.isFile())
+			return null;
+		try {
+			List<String> fileData = FileUtils.readLines(cgroupFile, StandardCharsets.UTF_8);
+			Iterator<String> itr = fileData.iterator();
+			int index = -1;
+			while (itr.hasNext()) {
+				String st = itr.next();
+				index = st.lastIndexOf(ECS_DIR);
+				if (index > -1) {
+					return st.substring(index + 4, st.lastIndexOf(DIR_SEPERATOR));
+				}
+			}
+		} catch (IOException e) {
+			return null;
+		}
+		return null;
+	}
+	
 	public static ApplicationInfoBean createApplicationInfoBean() {
 		try {
 			RuntimeMXBean runtimeMXBean = ManagementFactory.getRuntimeMXBean();
@@ -186,6 +221,10 @@ public class K2Instrumentator {
 				identifier.setContainerId(containerId);
 				identifier.setIsHost(false);
 				identifier.setIsContainer(true);
+				if(isECSEnv) {
+					identifier.setIsECSContainer(true);
+					populateECSInfo(identifier);
+				}
 				String podId = ApplicationInfoUtils.getPodId(containerId);
 				if(StringUtils.isNotBlank(podId)) {
 					identifier.setPodId(podId);
@@ -197,6 +236,7 @@ public class K2Instrumentator {
 			}
 			// applicationInfoBean.setJvmArguments(new
 			// JSONArray(runtimeMXBean.getInputArguments()));
+			identifier.setStartedAt(getStartedAt());
 			applicationInfoBean.setIdentifier(identifier);
 			return applicationInfoBean;
 		} catch (Exception e) {
@@ -204,6 +244,58 @@ public class K2Instrumentator {
 					K2Instrumentator.class.getName());
 		}
 		return null;
+	}
+	
+	private static Long getStartedAt() {
+		try {
+			ProcessBuilder processbuilder = new ProcessBuilder("/bin/sh", "-c", "date -d \"$(uptime -s)\" +%s");
+			Process process = processbuilder.start();
+			process.waitFor();
+			String response = new String(IOUtils.readFully(process.getInputStream(), process.getInputStream().available()));
+			return Long.parseLong(StringUtils.join(response.trim())) * 1000 ;
+		} catch (Exception e) {
+			return Instant.now().toEpochMilli();
+		}
+	}
+
+	private static void populateECSInfo(Identifier identifier) {
+		identifier.setEcsTaskId(getECSTaskId());
+		JSONObject ecsData = getECSInfo(identifier);
+		if (ecsData != null) {
+			String imageId = (String)ecsData.get("ImageID");
+			if(imageId != null) {
+				identifier.setImageId(imageId);
+			}
+			String imageName = (String)ecsData.get("Image");
+			if(imageName != null) {
+				identifier.setImageName(imageName);
+			}
+			JSONObject labels = (JSONObject)ecsData.get("Labels");
+			if(labels != null) {
+				String containerName = (String)labels.get("com.amazonaws.ecs.container-name");
+				if(containerName != null) {
+					identifier.setContainerName(containerName);
+				}
+				String ecsTaskDefinitionFamily = (String)labels.get("com.amazonaws.ecs.task-definition-family");
+				String ecsTaskDefinitionVersion = (String)labels.get("com.amazonaws.ecs.task-definition-version");
+				if(ecsTaskDefinitionFamily != null && ecsTaskDefinitionVersion != null) {
+					identifier.setEcsTaskDefinition(ecsTaskDefinitionFamily + ":" + ecsTaskDefinitionVersion);
+				}
+			}
+		}
+	}
+	
+	private static JSONObject getECSInfo(Identifier identifier) {
+		try {
+			String url = System.getenv("ECS_CONTAINER_METADATA_URI");
+			HttpURLConnection httpClient = (HttpURLConnection) new URL(url).openConnection();
+			String response = new String(IOUtils.readFully(httpClient.getInputStream(), httpClient.getInputStream().available()));
+			JSONParser parser = new JSONParser();
+			JSONObject json = (JSONObject)parser.parse(response);
+			return json;
+		} catch (ParseException | IOException e) {
+			return null;
+		}
 	}
 
 	private static String getIpAddress() {
@@ -232,10 +324,9 @@ public class K2Instrumentator {
 		File statFile = new File(PROC_DIR + pid + STAT);
 		if (!statFile.isFile())
 			return null;
-		BufferedReader br = null;
 		try {
-			br = new BufferedReader(new FileReader(statFile));
-			String statData = br.readLine();
+			List<String> fileData = FileUtils.readLines(statFile, StandardCharsets.UTF_8);
+			String statData = fileData.get(0);
 			if (!statData.isEmpty()) {
 				String[] statArray = statData.split("\\s+");
 				if (statArray.length >= 21) {
@@ -243,12 +334,8 @@ public class K2Instrumentator {
 				}
 			}
 		} catch (IOException e) {
-		} finally {
-			try {
-				br.close();
-			} catch (IOException e) {
-			}
-		}
+			return null;
+		} 
 		return null;
 	}
 

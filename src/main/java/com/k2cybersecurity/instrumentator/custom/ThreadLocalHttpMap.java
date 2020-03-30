@@ -47,6 +47,7 @@ public class ThreadLocalHttpMap {
 	public static final String GET_CHARACTER_ENCODING = "getCharacterEncoding";
 	public static final String FORWARD_SLASH = "/";
 	public static final String GET_REMOTE_PORT = "getRemotePort";
+	public static final String X_FORWARDED_FOR = "X-Forwarded-For";
 
 	private Object httpRequest;
 
@@ -298,15 +299,24 @@ public class ThreadLocalHttpMap {
 
 			Enumeration<String> attribs = ((Enumeration<String>) getHeaderNames.invoke(httpRequest, null));
 			while (attribs.hasMoreElements()) {
+				boolean takeNextValue = false;
 				String headerKey = attribs.nextElement();
+				if (StringUtils.equalsAnyIgnoreCase(headerKey, X_FORWARDED_FOR)) {
+					takeNextValue = true;
+				}
 				String headerFullValue = StringUtils.EMPTY;
 				Enumeration<String> headerElements = (Enumeration<String>) getHeaders.invoke(httpRequest, headerKey);
 				while (headerElements.hasMoreElements()) {
 					String headerValue = headerElements.nextElement();
-					if (headerFullValue.isEmpty()) {
-						headerFullValue = headerValue;
-					} else {
-						headerFullValue += STRING_SEMICOLON + headerValue;
+					if (!headerValue.isEmpty()) {
+//						headerFullValue = headerValue;
+//					} else {
+						if(takeNextValue){
+							ThreadLocalExecutionMap.getInstance().getMetaData().setClientDetectedFromXFF(true);
+							ThreadLocalExecutionMap.getInstance().getHttpRequestBean().setClientIP(headerValue);
+							takeNextValue = false;
+						}
+						headerFullValue += headerValue + STRING_SEMICOLON ;
 					}
 				}
 				headers.put(headerKey, headerFullValue);

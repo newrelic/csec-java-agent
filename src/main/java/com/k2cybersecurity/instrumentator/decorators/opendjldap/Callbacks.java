@@ -1,5 +1,6 @@
 package com.k2cybersecurity.instrumentator.decorators.opendjldap;
 
+import com.k2cybersecurity.instrumentator.custom.K2CyberSecurityException;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalHttpMap;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalLDAPMap;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalOperationLock;
@@ -54,7 +55,7 @@ public class Callbacks {
 					}
 
 				}
-			} catch (Exception ex) {
+			} catch (Exception | K2CyberSecurityException ex) {
 				ex.printStackTrace();
 			}
 			finally {
