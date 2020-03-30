@@ -463,8 +463,8 @@ public class CallbackUtils {
 		String responseBody = httpResponseBean.getResponseBody();
 		String processedBody = responseBody;
 
-		String processedHeaders = StringEscapeUtils.unescapeJson(httpResponseBean.getHeaders().toString());
-		String oldHeaders = processedHeaders;
+//		String processedHeaders = StringEscapeUtils.unescapeJson(httpResponseBean.getHeaders().toString());
+//		String oldHeaders = processedHeaders;
 
 		try {
 			processedData.add(processedBody);
@@ -473,7 +473,7 @@ public class CallbackUtils {
 			// processedData.append(processedBody);
 			// processedData.append(FIVE_COLON);
 
-			processedData.add(processedHeaders);
+//			processedData.add(processedHeaders);
 
 			// processedHeaders = HtmlEscape.unescapeHtml(processedHeaders);
 			// processedData.append(processedHeaders);
@@ -482,8 +482,8 @@ public class CallbackUtils {
 			processedBody = urlDecode(processedBody);
 			processedData.add(processedBody);
 
-			processedHeaders = urlDecode(processedHeaders);
-			processedData.add(processedHeaders);
+//			processedHeaders = urlDecode(processedHeaders);
+//			processedData.add(processedHeaders);
 
 			String oldProcessedBody;
 
