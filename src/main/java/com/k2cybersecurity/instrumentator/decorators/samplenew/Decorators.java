@@ -138,6 +138,30 @@ public class Decorators {
 
     }
 
+    public static class ConstructorEntry {
+
+//	private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
+
+        @Advice.OnMethodEnter
+        public static Object enter(@Advice.Origin String signature, @Advice.Origin("#t") String className, @Advice.Origin("#m") String methodName, @Advice.AllArguments Object[] args) throws Throwable {
+            try {
+                String threadName = Thread.currentThread().getName();
+                if (StringUtils.startsWith(threadName, "K2-")) {
+                    return null;
+                }
+                String executionId = ExecutionIDGenerator.getExecutionId();
+                Callbacks.doOnEnter(signature, className, methodName, null, args, executionId);
+            } catch (Throwable e) {
+                if (e instanceof K2CyberSecurityException) {
+                    e.printStackTrace();
+                    return e;
+                }
+//        	logger.log(LogLevel.ERROR, "Error: ", e, StaticMethodEntry.class.getName());
+            }
+            return null;
+        }
+
+    }
 
     public static class StaticMethodExit {
 

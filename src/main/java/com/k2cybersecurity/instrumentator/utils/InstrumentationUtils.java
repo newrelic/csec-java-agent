@@ -41,6 +41,7 @@ public class InstrumentationUtils {
     public static final String STATIC_METHOD_ENTRY = "StaticMethodEntry";
     public static final String STATIC_METHOD_EXIT = "StaticMethodExit";
     public static final String CONSTRUCTOR_EXIT = "ConstructorExit";
+    public static final String CONSTRUCTOR_ENTRY = "ConstructorEntry";
     public static final String STATIC_METHOD_VOID_EXIT = "StaticMethodVoidExit";
     public static final String FAILED_TO_INSTRUMENT_S_S_DUE_TO_ERROR_S = "Failed to instrument : %s::%s due to error : %s";
     public static final String TERMINATING = "Terminating";
@@ -109,12 +110,16 @@ public class InstrumentationUtils {
                                     Hooks.DECORATOR_ENTRY.get(sourceClass + DOT + method) + DOT + DECORATORS + $
                                             + STATIC_METHOD_VOID_EXIT, true, classLoader);
 
+                            Class constructorEntryDecorator = Class.forName(
+                                    Hooks.DECORATOR_ENTRY.get(sourceClass + DOT + method) + DOT + DECORATORS + $ + CONSTRUCTOR_ENTRY,
+                                    true, classLoader);
+
                             Class constructorExitDecorator = Class.forName(
                                     Hooks.DECORATOR_ENTRY.get(sourceClass + DOT + method) + DOT + DECORATORS + $ + CONSTRUCTOR_EXIT,
                                     true, classLoader);
                             if (method == null) {
-                                return builder.visit(Advice.to(staticMethodEntryDecorator, constructorExitDecorator,
-                                        new K2ClassLocater(staticMethodEntryDecorator.getClassLoader()))
+                                return builder.visit(Advice.to(constructorEntryDecorator, constructorExitDecorator,
+                                        new K2ClassLocater(constructorEntryDecorator.getClassLoader()))
                                        .on(isConstructor()));
                             }
 							return builder
