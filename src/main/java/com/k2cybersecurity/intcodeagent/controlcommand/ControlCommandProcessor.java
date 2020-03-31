@@ -55,7 +55,7 @@ public class ControlCommandProcessor implements Runnable {
 			controlCommand = new IntCodeControlCommand();
 			controlCommand.setArguments((List<String>) object.get("arguments"));
 			controlCommand.setControlCommand(Integer.valueOf(object.get("controlCommand").toString()));
-		} catch (Exception e) {
+		} catch (Throwable e) {
 			logger.log(LogLevel.SEVERE, "Error in controlCommandProcessor : ", e,
 					ControlCommandProcessor.class.getSimpleName());
 			return;
@@ -70,7 +70,7 @@ public class ControlCommandProcessor implements Runnable {
 				Integer duration = Integer.parseInt(controlCommand.getArguments().get(1));
 				TimeUnit timeUnit = TimeUnit.valueOf(controlCommand.getArguments().get(2));
 				LogWriter.updateLogLevel(logLevel, timeUnit, duration);
-			} catch (Exception e) {
+			} catch (Throwable e) {
 				logger.log(LogLevel.SEVERE, "Error in controlCommandProcessor : ", e,
 						ControlCommandProcessor.class.getSimpleName());
 			}
@@ -125,7 +125,7 @@ public class ControlCommandProcessor implements Runnable {
 					AgentUtils.getInstance().getVulnerableAPIMap().put(vulnerableAPI.getId(), vulnerableAPI);
 					logger.log(LogLevel.INFO, VULNERABLE_API_ENTRY_CREATED + vulnerableAPI,
 							ControlCommandProcessor.class.getName());
-				} catch (Exception e) {
+				} catch (Throwable e) {
 					logger.log(LogLevel.SEVERE, FAILED_TO_CREATE_VULNERABLE_API_ENTRY + controlCommand, e,
 							ControlCommandProcessor.class.getSimpleName());
 				}
@@ -162,7 +162,7 @@ public class ControlCommandProcessor implements Runnable {
 						"Setting auto add detected vulnerable APIs to protection list : "
 								+ ProtectionConfig.getInstance().getAutoAddDetectedVulnerabilitiesToProtectionList(),
 						ControlCommandProcessor.class.getSimpleName());
-			} catch (Exception e) {
+			} catch (Throwable e) {
 				logger.log(LogLevel.SEVERE, "Error in ProtectionConfig : ", e,
 						ControlCommandProcessor.class.getSimpleName());
 				return;
@@ -196,12 +196,12 @@ public class ControlCommandProcessor implements Runnable {
 						String.format(SETTING_NEW_IP_BLOCKING_TIMEOUT_TO_S_MS, controlCommand.getArguments().get(0)),
 						ControlCommandProcessor.class.getName());
 				AgentUtils.ipBlockingTimeout = newTimeout;
-			} catch (Exception e) {
+			} catch (Throwable e) {
 				logger.log(LogLevel.ERROR, "Unable to set default IP Blocking timeout due to error:", e,
 						ControlCommandProcessor.class.getName());
 			}
 			break;
-		case IntCodeControlCommand.CREATE_IPBLOCKING_ENTR¥:
+		case IntCodeControlCommand.CREATE_IPBLOCKING_ENTRY:
 			if (controlCommand.getArguments().size() != 1) {
 				return;
 			}

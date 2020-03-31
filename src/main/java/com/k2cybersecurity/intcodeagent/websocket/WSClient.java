@@ -51,7 +51,7 @@ public class WSClient extends WebSocketClient {
 		// Receive communication from IC side.
 		try {
 			ControlCommandProcessor.processControlCommand(message, System.currentTimeMillis());
-		} catch (Exception e) {
+		} catch (Throwable e) {
 			logger.log(LogLevel.SEVERE, "Unable to process incoming message : " + message + " : due to error : ", e,
 					WSClient.class.getName());
 		}
@@ -104,7 +104,7 @@ public class WSClient extends WebSocketClient {
 			instance.closeBlocking();
 			try {
 				reconnectStatus = instance.reconnectBlocking();
-			} catch (Exception e) {
+			} catch (Throwable e) {
 				reconnectStatus = false;
 			}
 		}

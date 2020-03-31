@@ -47,7 +47,7 @@ public class EventSendPool {
 							K2Instrumentator.JA_HEALTH_CHECK.incrementEventSentCount();
 							future.get();
 						}
-					} catch (Exception e) {
+					} catch (Throwable e) {
 						K2Instrumentator.JA_HEALTH_CHECK.incrementDropCount();
 					}
 				}

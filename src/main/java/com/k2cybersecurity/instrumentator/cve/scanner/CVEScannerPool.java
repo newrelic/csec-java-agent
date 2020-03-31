@@ -41,7 +41,7 @@ public class CVEScannerPool {
 					try {
 						Future<?> future = (Future<?>) r;
 						future.isDone();
-					} catch (Exception e) {
+					} catch (Throwable e) {
 					}
 				}
 				super.afterExecute(r, t);

@@ -68,7 +68,7 @@ public class ApplicationInfoUtils {
 					}
 				}
 			}
-		} catch (Exception e) {
+		} catch (Throwable e) {
 			e.printStackTrace();
 		}
 		return StringUtils.EMPTY;
@@ -78,7 +78,7 @@ public class ApplicationInfoUtils {
 		File hostName = new File("/etc/hostname");
 		try {
 			return FileUtils.readFileToString(hostName).trim();
-		} catch (Exception e) {
+		} catch (Throwable e) {
 			e.printStackTrace();
 		}
 		return StringUtils.EMPTY;

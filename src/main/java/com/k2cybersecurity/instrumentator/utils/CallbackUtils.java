@@ -162,7 +162,7 @@ public class CallbackUtils {
 		String decodedString = StringUtils.EMPTY;
 		try {
 			decodedString = URLDecoder.decode(encodedString, StandardCharsets.UTF_8.name());
-		} catch (Exception e) {
+		} catch (Throwable e) {
 			decodedString = encodedString;
 		}
 		return decodedString;
@@ -179,7 +179,7 @@ public class CallbackUtils {
 		String decodedString = StringUtils.EMPTY;
 		try {
 			decodedString = new URI(encodedString).getPath();
-		} catch (Exception e) {
+		} catch (Throwable e) {
 			decodedString = encodedString;
 		}
 		return decodedString;
@@ -394,7 +394,7 @@ public class CallbackUtils {
 				}
 			}
 
-		} catch (Exception e) {
+		} catch (Throwable e) {
 			logger.log(LogLevel.ERROR, ERROR, e, CallbackUtils.class.getName());
 		}
 		return UNKNOWN;
@@ -512,7 +512,7 @@ public class CallbackUtils {
 
 				}
 			}
-		} catch (Exception e) {
+		} catch (Throwable e) {
 			logger.log(LogLevel.ERROR, ERROR, e, CallbackUtils.class.getName());
 		}
 		return processedData;
@@ -598,7 +598,7 @@ public class CallbackUtils {
 					break;
 				}
 			}
-		} catch (Exception e) {
+		} catch (Throwable e) {
 			logger.log(LogLevel.ERROR, ERROR, e, CallbackUtils.class.getName());
 		}
 		return processedData;
@@ -632,7 +632,7 @@ public class CallbackUtils {
 			}
 			return requestInterface.isAssignableFrom(requestArg.getClass())
 					&& responseInterface.isAssignableFrom(responseArg.getClass());
-		} catch (Exception e) {
+		} catch (Throwable e) {
 			// e.printStackTrace();
 		}
 		return false;
@@ -648,7 +648,7 @@ public class CallbackUtils {
 						requestArg.getClass().getClassLoader());
 			}
 			return requestInterface.isAssignableFrom(requestArg.getClass());
-		} catch (Exception e) {
+		} catch (Throwable e) {
 			// e.printStackTrace();
 		}
 		return false;
@@ -664,7 +664,7 @@ public class CallbackUtils {
 						responseArg.getClass().getClassLoader());
 			}
 			return responseInterface.isAssignableFrom(responseArg.getClass());
-		} catch (Exception e) {
+		} catch (Throwable e) {
 			// e.printStackTrace();
 		}
 		return false;

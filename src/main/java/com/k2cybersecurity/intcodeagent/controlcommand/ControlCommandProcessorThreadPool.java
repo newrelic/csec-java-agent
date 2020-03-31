@@ -44,7 +44,7 @@ public class ControlCommandProcessorThreadPool {
                             K2Instrumentator.JA_HEALTH_CHECK.incrementProcessedCount();
                             future.get();
                         }
-                    } catch (Exception e) {
+                    } catch (Throwable e) {
                         K2Instrumentator.JA_HEALTH_CHECK.incrementDropCount();
                     }
                 }

@@ -109,13 +109,13 @@ public class CVEService implements Runnable {
                         StringUtils.join(errResponse, StringUtils.LF)), CVEService.class.getName());
                 try {
                     FileUtils.forceDelete(inputYaml);
-                } catch (Exception e) {
+                } catch (Throwable e) {
                 }
             }
             deleteAllComponents(cveTar, TMP_LOCALCVESERVICE_PATH);
         } catch (InterruptedException e) {
             logger.log(LogLevel.ERROR, ERROR_PROCESS_TERMINATED, e, CVEService.class.getName());
-        } catch (Exception e) {
+        } catch (Throwable e) {
             logger.log(LogLevel.ERROR, ERROR, e, CVEService.class.getName());
         }
 
@@ -141,7 +141,7 @@ public class CVEService implements Runnable {
     private void setAllPermissions(String loc) {
         try {
             Runtime.getRuntime().exec(String.format(CHMOD_A_RWX_R_S, loc)).waitFor();
-        } catch (Exception e) {
+        } catch (Throwable e) {
         }
     }
 
@@ -162,7 +162,7 @@ public class CVEService implements Runnable {
         if (!parentDirectory.exists()) {
             try {
                 parentDirectory.mkdirs();
-            } catch (Exception e) {
+            } catch (Throwable e) {
                 logger.log(LogLevel.ERROR, CANNOT_CREATE_DIRECTORY + parentDirectory, e,
                         CVEService.class.getName());
                 return false;
@@ -183,13 +183,13 @@ public class CVEService implements Runnable {
                 }
                 try (FileOutputStream outputStream = new FileOutputStream(curfile)) {
                     IOUtils.copy(inputStream, outputStream);
-                } catch (Exception e) {
+                } catch (Throwable e) {
                     logger.log(LogLevel.ERROR, ERROR_LOG, e, CVEService.class.getName());
                 }
             }
             setAllPermissions(parentDirectory.getAbsolutePath());
             return true;
-        } catch (Exception e) {
+        } catch (Throwable e) {
             logger.log(LogLevel.ERROR, ERROR_LOG, e, CVEService.class.getName());
         }
 

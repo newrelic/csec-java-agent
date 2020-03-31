@@ -185,7 +185,7 @@ public class HashGenerator {
 			logger.log(LogLevel.DEBUG, TAR_SIZE + FileUtils.sizeOf(tmpTarFile), HashGenerator.class.getName());
 			deployedApplication.setSize(FileUtils.byteCountToDisplaySize(FileUtils.sizeOf(tmpTarFile)));
 			deployedApplication.setSha256(getChecksum(tmpTarFile));
-		} catch (Exception e) {
+		} catch (Throwable e) {
 			logger.log(LogLevel.ERROR, ERROR2, e, HashGenerator.class.getName());
 		} finally {
 			try {

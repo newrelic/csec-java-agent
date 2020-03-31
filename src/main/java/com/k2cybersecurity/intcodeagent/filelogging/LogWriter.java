@@ -83,7 +83,7 @@ public class LogWriter implements Runnable {
 				defaultLogLevel = LogLevel.ALL.getLevel();
 			}
 			Files.setPosixFilePermissions(currentLogFile.toPath(), PosixFilePermissions.fromString("rw-rw-rw-"));
-		} catch (Exception e) {
+		} catch (Throwable e) {
 			e.printStackTrace();
 		}
 	}

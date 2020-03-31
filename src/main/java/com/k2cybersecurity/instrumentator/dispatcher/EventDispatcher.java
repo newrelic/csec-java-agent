@@ -206,7 +206,7 @@ public class EventDispatcher {
             } else {
                 logger.log(LogLevel.WARNING, EVENT_RESPONSE_TIMEOUT_FOR + executionId, EventDispatcher.class.getSimpleName());
             }
-        } catch (Exception e) {
+        } catch (Throwable e) {
             logger.log(LogLevel.ERROR, ERROR, e, EventDispatcher.class.getSimpleName());
         } finally {
             AgentUtils.getInstance().getEventResponseSet().remove(executionId);
@@ -238,7 +238,7 @@ public class EventDispatcher {
                         outputStream.write(attackPage.getBytes());
                         outputStream.flush();
                         outputStream.close();
-                    } catch (Exception e) {
+                    } catch (Throwable e) {
                         Method getWriter = resp.getClass().getMethod("getWriter");
                         getWriter.setAccessible(true);
                         PrintWriter printWriter = (PrintWriter) getWriter.invoke(resp);
@@ -250,7 +250,7 @@ public class EventDispatcher {
             } else {
                 logger.log(LogLevel.ERROR, "Unable to locate response object for this attack.", EventDispatcher.class.getSimpleName());
             }
-        } catch (Exception e) {
+        } catch (Throwable e) {
             logger.log(LogLevel.ERROR, "Unable to process response for this attack.", e, EventDispatcher.class.getSimpleName());
 
         } finally {
@@ -292,7 +292,7 @@ public class EventDispatcher {
                         outputStream.write(attackPage.getBytes());
                         outputStream.flush();
                         outputStream.close();
-                    } catch (Exception e) {
+                    } catch (Throwable e) {
                         Method getWriter = resp.getClass().getMethod("getWriter");
                         getWriter.setAccessible(true);
                         PrintWriter printWriter = (PrintWriter) getWriter.invoke(resp);
@@ -304,7 +304,7 @@ public class EventDispatcher {
             } else {
                 logger.log(LogLevel.ERROR, "Unable to locate response object for this attack.", EventDispatcher.class.getSimpleName());
             }
-        } catch (Exception e) {
+        } catch (Throwable e) {
             logger.log(LogLevel.ERROR, "Unable to process response for this attack.", e, EventDispatcher.class.getSimpleName());
 
         } finally {

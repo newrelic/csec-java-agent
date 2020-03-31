@@ -273,7 +273,7 @@ public class ProcessorThread implements Runnable {
 					generateEvent(intCodeResultBean);
 				}
 			}
-		} catch (Exception e) {
+		} catch (Throwable e) {
 			logger.log(LogLevel.WARNING, "Error in run: ", e, ProcessorThread.class.getName());
 		} finally {
 			ServletEventPool.getInstance().decrementServletInfoReference(threadId, executionId, true);
@@ -467,7 +467,7 @@ public class ProcessorThread implements Runnable {
 			}
 			parameters.add(String.valueOf(arg[sqlObjectLocation]));
 
-		} catch (Exception e) {
+		} catch (Throwable e) {
 			logger.log(LogLevel.WARNING, ERROR_IN_GET_MY_SQL_PARAMETER_VALUE, e, ProcessorThread.class.getName());
 		}
 	}
@@ -587,7 +587,7 @@ public class ProcessorThread implements Runnable {
 				if (bsonDoc != null && bsonDoc.getClass().getSimpleName().contains(BSONDOCUMENT)) {
 					try {
 						object.put(field.getName(), new JSONParser().parse(bsonDoc.toString()));
-					} catch (Exception e) {
+					} catch (Throwable e) {
 						logger.log(LogLevel.ERROR, "Error :", e, ProcessorThread.class.getName());
 					}
 				}
@@ -609,7 +609,7 @@ public class ProcessorThread implements Runnable {
 						parameters.add(value.substring(7));
 					}
 				}
-			} catch (Exception e) {
+			} catch (Throwable e) {
 			}
 		}
 
@@ -656,7 +656,7 @@ public class ProcessorThread implements Runnable {
 				parameters.add(String.valueOf(sqlObject));
 
 			}
-		} catch (Exception e) {
+		} catch (Throwable e) {
 			logger.log(LogLevel.WARNING, ERROR_IN_GET_ORACLE_PARAMETER_VALUE, e, ProcessorThread.class.getName());
 		}
 		return parameters;
@@ -758,7 +758,7 @@ public class ProcessorThread implements Runnable {
 			parameters.add(uriObj.getHost());
 			parameters.add(uriObj.getPath());
 
-		} catch (Exception e) {
+		} catch (Throwable e) {
 			logger.log(LogLevel.WARNING, ERROR_IN_GET_JAVA9_HTTP_CLIENT_PARAMETERS, e,
 					ProcessorThread.class.getName());
 		}
@@ -806,7 +806,7 @@ public class ProcessorThread implements Runnable {
 			parameters.add(attributeHost.toString());
 			parameters.add(pathOnly);
 
-		} catch (Exception e) {
+		} catch (Throwable e) {
 			logger.log(LogLevel.WARNING, ERROR_IN_GET_APACHE_HTTP_REQUEST_PARAMETERS, e,
 					ProcessorThread.class.getName());
 		}
@@ -841,7 +841,7 @@ public class ProcessorThread implements Runnable {
 			parameters.add(host);
 			parameters.add(path);
 
-		} catch (Exception e) {
+		} catch (Throwable e) {
 			logger.log(LogLevel.WARNING, ERROR_IN_GET_APACHE_COMMONS_HTTP_REQUEST_PARAMETERS, e,
 					ProcessorThread.class.getName());
 		}
@@ -865,7 +865,7 @@ public class ProcessorThread implements Runnable {
 			parameters.add(url.getHost());
 			parameters.add(url.getPath());
 
-		} catch (Exception e) {
+		} catch (Throwable e) {
 			logger.log(LogLevel.WARNING, ERROR_IN_GET_OK_HTTP_REQUEST_PARAMETERS, e, ProcessorThread.class.getName());
 		}
 
@@ -881,7 +881,7 @@ public class ProcessorThread implements Runnable {
 				Field sqlField = statementClass.getDeclaredField(IAgentConstants.SQL);
 				sqlField.setAccessible(true);
 				parameters.add((String) sqlField.get(object));
-			} catch (Exception e) {
+			} catch (Throwable e) {
 				logger.log(LogLevel.WARNING, ERROR_IN_GET_HSQL_PARAMETER_VALUE_FOR_HSQL_V2_4, e,
 						ProcessorThread.class.getName());
 			}
@@ -919,7 +919,7 @@ public class ProcessorThread implements Runnable {
 						}
 					}
 				}
-			} catch (Exception e) {
+			} catch (Throwable e) {
 				logger.log(LogLevel.WARNING, ERROR_IN_GET_HSQL_PARAMETER_VALUE_FOR_HSQL_V1_8_V2_3_4, e,
 						ProcessorThread.class.getName());
 			}
@@ -1008,7 +1008,7 @@ public class ProcessorThread implements Runnable {
 				logger.log(LogLevel.INFO, DROPPING_DYNAMIC_JAR_PATH_BEAN_EVENT + intCodeResultBean.getId()
 						+ DUE_TO_BUFFER_CAPACITY_REACHED, ProcessorThread.class.getName());
 				K2Instrumentator.JA_HEALTH_CHECK.incrementDropCount();
-			} catch (Exception e) {
+			} catch (Throwable e) {
 				logger.log(LogLevel.WARNING, ERROR_IN_GENERATE_EVENT_WHILE_CREATING_JAVA_AGENT_DYNAMIC_PATH_BEAN, e,
 						ProcessorThread.class.getName());
 			}
@@ -1034,7 +1034,7 @@ public class ProcessorThread implements Runnable {
 						DROPPING_EVENT + intCodeResultBean.getId() + DUE_TO_BUFFER_CAPACITY_REACHED,
 						ProcessorThread.class.getName());
 				K2Instrumentator.JA_HEALTH_CHECK.incrementDropCount();
-			} catch (Exception e) {
+			} catch (Throwable e) {
 				logger.log(LogLevel.WARNING, ERROR_IN_GENERATE_EVENT_WHILE_CREATING_INT_CODE_RESULT_BEAN, e,
 						ProcessorThread.class.getName());
 			}

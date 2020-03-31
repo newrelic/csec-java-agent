@@ -159,13 +159,13 @@ public class InstrumentationUtils {
             EventSendPool.getInstance().sendEvent(shutDownEvent.toString());
             logger.log(LogLevel.INFO, SHUTTING_DOWN_WITH_STATUS + shutDownEvent, InstrumentationUtils.class.getName());
             TimeUnit.SECONDS.sleep(1);
-        } catch (Exception e) {
+        } catch (Throwable e) {
 			logger.log(LogLevel.SEVERE, "Error while sending shut down event : ", e,
 					InstrumentationUtils.class.getName());
         }
         try {
             WSClient.getInstance().close();
-        } catch (Exception e) {
+        } catch (Throwable e) {
         }
         try {
             ServletEventPool.getInstance().shutDownThreadPoolExecutor();
@@ -174,7 +174,7 @@ public class InstrumentationUtils {
             DispatcherPool.getInstance().shutDownThreadPoolExecutor();
             ControlCommandProcessorThreadPool.getInstance().shutDownThreadPoolExecutor();
             EventSendPool.getInstance().shutDownThreadPoolExecutor();
-        } catch (Exception e) {
+        } catch (Throwable e) {
             logger.log(LogLevel.SEVERE, "Error while shutting down K2 Pools : ", e,
                     InstrumentationUtils.class.getName());
         }
@@ -187,7 +187,7 @@ public class InstrumentationUtils {
             }
 
             retransformHookedClasses(AgentNew.gobalInstrumentation);
-        } catch (Exception e) {
+        } catch (Throwable e) {
             logger.log(LogLevel.SEVERE, "Error while resetting K2 instrumentation : ", e,
                     InstrumentationUtils.class.getName());
         }
@@ -207,7 +207,7 @@ public class InstrumentationUtils {
             try {
                 Class klass = Class.forName(pair.getLeft(), false, pair.getRight());
                 instrumentation.retransformClasses(klass);
-            } catch (Exception e) {
+            } catch (Throwable e) {
                 logger.log(LogLevel.SEVERE, "Error while retransformHookedClasses : ", e,
                         InstrumentationUtils.class.getName());
             }

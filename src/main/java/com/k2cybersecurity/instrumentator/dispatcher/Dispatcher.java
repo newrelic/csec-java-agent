@@ -127,7 +127,7 @@ public class Dispatcher implements Runnable {
                 }
                 return;
             }
-        } catch (Exception e) {
+        } catch (Throwable e) {
             logger.log(LogLevel.ERROR, ERROR, e, Dispatcher.class.getName());
         }
 
@@ -688,7 +688,7 @@ public class Dispatcher implements Runnable {
 
             logger.log(LogLevel.DEBUG,
                     "==========================================================================================", Dispatcher.class.getName());
-        } catch (Exception e) {
+        } catch (Throwable e) {
         }
     }
 

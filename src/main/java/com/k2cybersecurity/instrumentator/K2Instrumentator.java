@@ -101,7 +101,7 @@ public class K2Instrumentator {
 		}
 		try {
 			WSClient.getInstance();
-		} catch (Exception e) {
+		} catch (Throwable e) {
 			logger.log(LogLevel.ERROR, ERROR_OCCURED_WHILE_TRYING_TO_CONNECT_TO_WSOCKET, e,
 					K2Instrumentator.class.getName());
 			return false;
@@ -118,7 +118,7 @@ public class K2Instrumentator {
 		try {
 			EventSendPool.getInstance();
 			return true;
-		} catch (Exception e) {
+		} catch (Throwable e) {
 			logger.log(LogLevel.WARNING, EXCEPTION_OCCURED_IN_EVENT_SEND_POOL, e, K2Instrumentator.class.getName());
 			return false;
 		}
@@ -239,7 +239,7 @@ public class K2Instrumentator {
 			identifier.setStartedAt(getStartedAt());
 			applicationInfoBean.setIdentifier(identifier);
 			return applicationInfoBean;
-		} catch (Exception e) {
+		} catch (Throwable e) {
 			logger.log(LogLevel.WARNING, EXCEPTION_OCCURED_IN_CREATE_APPLICATION_INFO_BEAN, e,
 					K2Instrumentator.class.getName());
 		}
@@ -253,7 +253,7 @@ public class K2Instrumentator {
 			process.waitFor();
 			String response = new String(IOUtils.readFully(process.getInputStream(), process.getInputStream().available()));
 			return Long.parseLong(StringUtils.join(response.trim())) * 1000 ;
-		} catch (Exception e) {
+		} catch (Throwable e) {
 			return Instant.now().toEpochMilli();
 		}
 	}

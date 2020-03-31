@@ -125,7 +125,7 @@ public class ServletContextInfo {
                 }
                 return;
             }
-        } catch (Exception e) {
+        } catch (Throwable e) {
             logger.log(LogLevel.ERROR, ERROR, e, ServletContextInfo.class.getName());
         }
 
@@ -136,7 +136,7 @@ public class ServletContextInfo {
             getMinorVersion = servletContext.getClass().getMethod(GET_MINOR_VERSION);
             getRealPath = servletContext.getClass().getMethod(GET_REAL_PATH, String.class);
             getServletContextName = servletContext.getClass().getMethod(GET_SERVLET_CONTEXT_NAME);
-        } catch (Exception e) {
+        } catch (Throwable e) {
             logger.log(LogLevel.ERROR, ERROR, e, ServletContextInfo.class.getName());
         }
 
@@ -149,7 +149,7 @@ public class ServletContextInfo {
 //            System.out.println("App Dir detected : " + applicationDir);
             applicationName = (String) getServletContextName.invoke(servletContext, null);
 
-        } catch (Exception e) {
+        } catch (Throwable e) {
             logger.log(LogLevel.ERROR, ERROR, e, ServletContextInfo.class.getName());
         }
 
@@ -237,7 +237,7 @@ public class ServletContextInfo {
                     return appPath;
                 }
             }
-        } catch (Exception e){
+        } catch (Throwable e){
             logger.log(LogLevel.ERROR, ERROR, e, ServletContextInfo.class.getName());
         }
 

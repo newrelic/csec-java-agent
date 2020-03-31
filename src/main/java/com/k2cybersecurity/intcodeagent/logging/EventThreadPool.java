@@ -48,7 +48,7 @@ public class EventThreadPool {
 						if (future.isDone()) {
 							future.get();
 						}
-					} catch (Exception e) {
+					} catch (Throwable e) {
 					}
 				}
 				super.afterExecute(r, t);
@@ -140,7 +140,7 @@ public class EventThreadPool {
 		} catch (RejectedExecutionException rejected) {
 			logger.log(LogLevel.INFO, "Rejected to process Event At: " + this.executor.getQueue().size() + ": ",
 					rejected, EventThreadPool.class.getName());
-		} catch (Exception e) {
+		} catch (Throwable e) {
 			logger.log(LogLevel.WARNING, "Error in processReceivedEvent: ", e, EventThreadPool.class.getName());
 		}
 	}
@@ -154,7 +154,7 @@ public class EventThreadPool {
 		} catch (RejectedExecutionException rejected) {
 			logger.log(LogLevel.INFO, "Rejected to process Event At: " + this.executor.getQueue().size() + ": ",
 					rejected, EventThreadPool.class.getName());
-		} catch (Exception e) {
+		} catch (Throwable e) {
 			logger.log(LogLevel.WARNING, "Error in processReceivedEvent: ", e, EventThreadPool.class.getName());
 		}
 

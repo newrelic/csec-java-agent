@@ -64,7 +64,7 @@ public class HealthCheckScheduleThread {
 				} catch (NullPointerException ex) {
 					logger.log(LogLevel.WARNING, "No reference to Socket's OutputStream",
 							HealthCheckScheduleThread.class.getName());
-				} catch (Exception e) {
+				} catch (Throwable e) {
 					logger.log(LogLevel.WARNING, "Error while trying to verify connection: ", e,
 							HealthCheckScheduleThread.class.getName());
 				}
@@ -87,7 +87,7 @@ public class HealthCheckScheduleThread {
 			if (instance == null)
 				instance = new HealthCheckScheduleThread();
 			return instance;
-		} catch (Exception e) {
+		} catch (Throwable e) {
 			logger.log(LogLevel.WARNING, "Error while starting: ", e, HealthCheckScheduleThread.class.getName());
 		}
 		throw null;

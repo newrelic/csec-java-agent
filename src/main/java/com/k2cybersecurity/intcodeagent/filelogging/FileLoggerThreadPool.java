@@ -32,7 +32,7 @@ public class FileLoggerThreadPool {
 						if (future.isDone()) {
 							future.get();
 						}
-					} catch (Exception e) {
+					} catch (Throwable e) {
 					}
 				}
 				super.afterExecute(r, t);

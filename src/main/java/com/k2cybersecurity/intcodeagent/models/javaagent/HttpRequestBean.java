@@ -217,7 +217,7 @@ public class HttpRequestBean {
 						INVALID_REQUEST_LINE_MISSING_MANDATORY_COMPONENTS + Arrays.asList(requestLineComponents), this.getClass().getName());
 				return false;
 			}
-		} catch (Exception e) {
+		} catch (Throwable e) {
 			logger.log(LogLevel.ERROR, ERROR_WHILE_PROCESSING_REQUEST_LINE + this.rawRequest, this.getClass().getName());
 			return false;
 		}
@@ -240,7 +240,7 @@ public class HttpRequestBean {
 				}
 			}
 			return this.headers.size() > 0;
-		} catch (Exception e) {
+		} catch (Throwable e) {
 			logger.log(LogLevel.ERROR, ERROR_WHILE_PROCESSING_HEADERS + this.rawRequest, this.getClass().getName());
 			return false;
 		}
