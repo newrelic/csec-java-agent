@@ -68,7 +68,7 @@ public class Hooks {
 		NAME_BASED_HOOKS.put("java.lang.ProcessImpl", Arrays.asList("start"));
 		
 		//System Exit hooks
-		NAME_BASED_HOOKS.put("java.lang.Shutdown", Arrays.asList(new String[] {"exit", "hault"}));
+		NAME_BASED_HOOKS.put("java.lang.Shutdown", Arrays.asList(new String[] {"exit", "halt"}));
 
 		// File Hooks
 		NAME_BASED_HOOKS.put("java.io.FileOutputStream", Arrays.asList("open"));
@@ -242,7 +242,7 @@ public class Hooks {
 		
 		// System exit
 		DECORATOR_ENTRY.put("java.lang.Shutdown.exit", "com.k2cybersecurity.instrumentator.decorators.systemexit");
-		DECORATOR_ENTRY.put("java.lang.Shutdown.hault", "com.k2cybersecurity.instrumentator.decorators.systemexit");
+		DECORATOR_ENTRY.put("java.lang.Shutdown.halt", "com.k2cybersecurity.instrumentator.decorators.systemexit");
 
 		// File
 		DECORATOR_ENTRY.put("java.io.FileOutputStream.open", "com.k2cybersecurity.instrumentator.decorators.fileaccess");
