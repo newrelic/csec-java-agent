@@ -296,6 +296,7 @@ public class EventDispatcher {
                         outputStream.write(attackPage.getBytes());
                         outputStream.flush();
                         outputStream.close();
+                        logger.log(LogLevel.WARNING,"Sending K2 Blocking page to : " + ip + " via last resort OutputStream", EventDispatcher.class.getName());
                     } catch (Throwable e) {
                         Method getWriter = resp.getClass().getMethod("getWriter");
                         getWriter.setAccessible(true);
@@ -304,6 +305,8 @@ public class EventDispatcher {
                         printWriter.println(attackPage);
                         printWriter.flush();
                         printWriter.close();
+                        logger.log(LogLevel.WARNING,"Sending K2 Blocking page to : " + ip + " via last resort PrintWriter", EventDispatcher.class.getName());
+
                     }
                 }
             } else {
