@@ -14,7 +14,7 @@ public class Callbacks {
 	public static final String SEPARATOR_COLON = ":";
 
 	public static void doOnEnter(String sourceString, String className, String methodName, Object obj, Object[] args,
-			String exectionId) {
+			String exectionId) throws K2CyberSecurityException {
 		//         System.out.println("OnEnter :" + sourceString + " - this : " + obj + " - eid
 		//         : " + exectionId);
 
@@ -33,6 +33,8 @@ public class Callbacks {
 						ThreadLocalHttpMap.getInstance().setHttpRequest(args[2]);
 						ThreadLocalHttpMap.getInstance().setHttpResponse(args[3]);
 						ThreadLocalHttpMap.getInstance().setServiceMethodEncountered(true);
+						ThreadLocalHttpMap.getInstance().parseHttpRequest();
+						EventDispatcher.checkIfClientIPBlocked();
 					}
 				}
 			} finally {

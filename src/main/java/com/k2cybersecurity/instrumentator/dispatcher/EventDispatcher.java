@@ -148,7 +148,7 @@ public class EventDispatcher {
             DispatcherPool.getInstance().dispatchEvent(httpRequestBean, sourceString, exectionId, startTime,
                     Thread.currentThread().getStackTrace(), reflectedXss);
             submitAndHoldForEventResponse(exectionId);
-            checkIfClientIPBlocked();
+//            checkIfClientIPBlocked();
         }
     }
 
@@ -235,6 +235,7 @@ public class EventDispatcher {
                         Method getOutputStream = resp.getClass().getMethod("getOutputStream");
                         getOutputStream.setAccessible(true);
                         OutputStream outputStream = (OutputStream) getOutputStream.invoke(resp);
+                        ThreadLocalHttpMap.getInstance().setResponseOutputStream(outputStream);
                         outputStream.write(attackPage.getBytes());
                         outputStream.flush();
                         outputStream.close();
@@ -242,6 +243,7 @@ public class EventDispatcher {
                         Method getWriter = resp.getClass().getMethod("getWriter");
                         getWriter.setAccessible(true);
                         PrintWriter printWriter = (PrintWriter) getWriter.invoke(resp);
+                        ThreadLocalHttpMap.getInstance().setResponseWriter(printWriter);
                         printWriter.println(attackPage);
                         printWriter.flush();
                         printWriter.close();
@@ -272,23 +274,25 @@ public class EventDispatcher {
         try {
             if (ThreadLocalHttpMap.getInstance().getHttpResponse() != null) {
                 String attackPage = StringUtils.replace(BLOCK_PAGE_CONTENT, ID_PLACEHOLDER, ip);
-                logger.log(LogLevel.WARNING,"Sending K2 Blocking page to : " + ip, EventDispatcher.class.getName());
                 if (ThreadLocalHttpMap.getInstance().getResponseOutputStream() != null) {
                     OutputStream outputStream = (OutputStream) ThreadLocalHttpMap.getInstance().getResponseOutputStream();
                     outputStream.write(attackPage.getBytes());
                     outputStream.flush();
                     outputStream.close();
+                    logger.log(LogLevel.WARNING,"Sending K2 Blocking page to : " + ip + " via OutputStream", EventDispatcher.class.getName());
                 } else if (ThreadLocalHttpMap.getInstance().getResponseWriter() != null) {
                     PrintWriter printWriter = (PrintWriter) ThreadLocalHttpMap.getInstance().getResponseWriter();
                     printWriter.println(attackPage);
                     printWriter.flush();
                     printWriter.close();
+                    logger.log(LogLevel.WARNING,"Sending K2 Blocking page to : " + ip + " via PrintWriter", EventDispatcher.class.getName());
                 } else {
                     Object resp = ThreadLocalHttpMap.getInstance().getHttpResponse();
                     try {
                         Method getOutputStream = resp.getClass().getMethod("getOutputStream");
                         getOutputStream.setAccessible(true);
                         OutputStream outputStream = (OutputStream) getOutputStream.invoke(resp);
+                        ThreadLocalHttpMap.getInstance().setResponseOutputStream(outputStream);
                         outputStream.write(attackPage.getBytes());
                         outputStream.flush();
                         outputStream.close();
@@ -296,6 +300,7 @@ public class EventDispatcher {
                         Method getWriter = resp.getClass().getMethod("getWriter");
                         getWriter.setAccessible(true);
                         PrintWriter printWriter = (PrintWriter) getWriter.invoke(resp);
+                        ThreadLocalHttpMap.getInstance().setResponseWriter(printWriter);
                         printWriter.println(attackPage);
                         printWriter.flush();
                         printWriter.close();
@@ -322,7 +327,7 @@ public class EventDispatcher {
 
     }
 
-    private static void checkIfClientIPBlocked() throws K2CyberSecurityException {
+    public static void checkIfClientIPBlocked() throws K2CyberSecurityException {
         if (ProtectionConfig.getInstance().getAutoAttackIPBlockingXFF() && AgentUtils.getInstance().isBlockedIP(ThreadLocalExecutionMap.getInstance().getHttpRequestBean().getClientIP())) {
             sendK2BlockPage(ThreadLocalExecutionMap.getInstance().getHttpRequestBean().getClientIP());
             throw new K2CyberSecurityException(String.format(ACCESS_BY_BLOCKED_IP_ADDRESS_DETECTED_S, ThreadLocalExecutionMap.getInstance().getHttpRequestBean().getClientIP()));

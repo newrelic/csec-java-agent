@@ -14,7 +14,7 @@ public class Callbacks {
     public static final String SEPARATOR_COLON = ":";
 
     public static void doOnEnter(String sourceString, String className, String methodName, Object obj, Object[] args,
-                                 String exectionId) {
+                                 String exectionId) throws K2CyberSecurityException {
 //         System.out.println("OnEnter :" + sourceString + " - this : " + obj + " - eid : " + exectionId);
 
         // TODO: Need more checks here to assert the type of args. Maybe the TYPE_BASED
@@ -32,6 +32,8 @@ public class Callbacks {
                         ThreadLocalHttpMap.getInstance().setHttpRequest(args[0]);
                         ThreadLocalHttpMap.getInstance().setHttpResponse(args[1]);
                         ThreadLocalHttpMap.getInstance().setServiceMethodEncountered(true);
+                        ThreadLocalHttpMap.getInstance().parseHttpRequest();
+                        EventDispatcher.checkIfClientIPBlocked();
                     }
                 }
             } finally {

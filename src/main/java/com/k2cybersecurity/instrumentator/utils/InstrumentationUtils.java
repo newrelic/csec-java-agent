@@ -103,9 +103,11 @@ public class InstrumentationUtils {
                             Class staticMethodEntryDecorator = Class.forName(
                                     Hooks.DECORATOR_ENTRY.get(sourceClass + DOT + method) + DOT + DECORATORS + $ + STATIC_METHOD_ENTRY,
                                     true, classLoader);
+
                             Class staticMethodExitDecorator = Class.forName(
                                     Hooks.DECORATOR_ENTRY.get(sourceClass + DOT + method) + DOT + DECORATORS + $ + STATIC_METHOD_EXIT,
                                     true, classLoader);
+
                             Class staticMethodVoidExitDecorator = Class.forName(
                                     Hooks.DECORATOR_ENTRY.get(sourceClass + DOT + method) + DOT + DECORATORS + $
                                             + STATIC_METHOD_VOID_EXIT, true, classLoader);
