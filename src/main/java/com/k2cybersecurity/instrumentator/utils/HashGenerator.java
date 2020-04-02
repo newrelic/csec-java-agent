@@ -1,8 +1,25 @@
 package com.k2cybersecurity.instrumentator.utils;
 
-import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
-import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
-import com.k2cybersecurity.intcodeagent.logging.DeployedApplication;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
 
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
@@ -12,19 +29,9 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.filefilter.TrueFileFilter;
 import org.apache.commons.lang3.StringUtils;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.*;
+import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
+import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
+import com.k2cybersecurity.intcodeagent.logging.DeployedApplication;
 
 public class HashGenerator {
 
@@ -113,46 +120,54 @@ public class HashGenerator {
 			deployedApplication.setSha256(getChecksum(deplyementDirFile));
 			deployedApplication.setSize(FileUtils.byteCountToDisplaySize(FileUtils.sizeOf(deplyementDirFile)));
 		} else {
-			calculateDirShaAndSize(deployedApplication);
+			deployedApplication.setSha256(getSHA256ForDirectory(deplyementDirFile.getAbsolutePath()));
+			deployedApplication.setSize(FileUtils.byteCountToDisplaySize(FileUtils.sizeOfDirectory(deplyementDirFile)));
 		}
 	}
 
 	public static String getSHA256ForDirectory(String file) {
-		List<String> sha256 = new ArrayList<>();
-		File dir = new File(file);
+		File tmpShaFile = null;
+		FileOutputStream fOutputStream = null;
+		try {
+			tmpShaFile = Files.createTempFile(Paths.get(TMP_DIR), K2_TEMP_DIR, "sha").toFile();
+			File dir = new File(file);
+			fOutputStream = new FileOutputStream(tmpShaFile);
+//			System.out.println("Dir : "+file);
+			if (dir.isDirectory()) {
 
-		if (dir.isDirectory()) {
-			Iterator<File> fileIterator = FileUtils.iterateFilesAndDirs(dir, TrueFileFilter.INSTANCE,
-					TrueFileFilter.INSTANCE);
-			while (fileIterator.hasNext()) {
-				File tempFile = fileIterator.next();
-
-				if (tempFile.isFile()) {
+				Collection<File> allFiles = FileUtils.listFiles(dir, TrueFileFilter.INSTANCE, TrueFileFilter.INSTANCE);
+				List<File> sortedFiles = new ArrayList<>(allFiles);
+				Collections.sort(sortedFiles);
+				logger.log(LogLevel.DEBUG, "Sort dir for sha : " + sortedFiles, HashGenerator.class.getName());
+//				System.out.println(sortedFiles);
+				for (File tempFile : sortedFiles) {
 					String extension = FilenameUtils.getExtension(tempFile.getName());
-					if (OTHER_CRITICAL_FILE_EXT.contains(extension)) {
-						logger.log(LogLevel.DEBUG, FILE_FOR_SHA_CALC + tempFile.getAbsolutePath(),
-								HashGenerator.class.getName());
-						sha256.add(getChecksum(tempFile));
-					} else if (JAVA_APPLICATION_ALLOWED_FILE_EXT.contains(extension)) {
-						sha256.add(getChecksum(tempFile));
-						logger.log(LogLevel.DEBUG, FILE_FOR_SHA_CALC + tempFile.getAbsolutePath(),
-								HashGenerator.class.getName());
+					if (OTHER_CRITICAL_FILE_EXT.contains(extension)
+							|| JAVA_APPLICATION_ALLOWED_FILE_EXT.contains(extension)) {
+//						System.out.println("file : "+tempFile);
+						IOUtils.write(tempFile.getAbsolutePath() + getChecksum(tempFile) + StringUtils.LF,
+								fOutputStream, StandardCharsets.UTF_8);
 					}
 				}
+				try {
+					fOutputStream.close();
+				} catch (IOException e1) {
+				}
+//				System.out.println(FileUtils.sizeOfAsBigInteger(tmpShaFile));
+				return getChecksum(tmpShaFile);
 			}
-		} else if (dir.isFile()) {
-			String extension = FilenameUtils.getExtension(dir.getName());
-			if (OTHER_CRITICAL_FILE_EXT.contains(extension)) {
-				sha256.add(getChecksum(dir));
-			} else if (JAVA_APPLICATION_ALLOWED_FILE_EXT.contains(extension)) {
-				sha256.add(getChecksum(dir));
+
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				FileUtils.forceDelete(tmpShaFile);
+			} catch (IOException e) {
 			}
 		}
-		logger.log(LogLevel.DEBUG, UNSORTED_SHA_LIST + sha256, HashGenerator.class.getName());
-		Collections.sort(sha256);
-		logger.log(LogLevel.DEBUG, SORTED_SHA_LIST + sha256, HashGenerator.class.getName());
-		return getSHA256HexDigest(sha256);
+		return null;
 	}
+
 
 	public static String getSHA256HexDigest(List<String> data) {
 		data.removeAll(Collections.singletonList(null));
@@ -165,7 +180,7 @@ public class HashGenerator {
 		TarArchiveOutputStream tarArchiveOutputStream = null;
 		try {
 			bOutputStream = new BufferedOutputStream(new FileOutputStream(tmpTarFile));
-			tarArchiveOutputStream = new TarArchiveOutputStream(bOutputStream);
+			tarArchiveOutputStream = new TarArchiveOutputStream(bOutputStream, StandardCharsets.UTF_8.displayName());
 			tarArchiveOutputStream.setLongFileMode(TarArchiveOutputStream.LONGFILE_POSIX);
 			addFilesToTarGZ(tmpAppDir.toString(), StringUtils.EMPTY, tarArchiveOutputStream);
 		} finally {
@@ -174,6 +189,7 @@ public class HashGenerator {
 		}
 	}
 
+	@Deprecated
 	public static void calculateDirShaAndSize(DeployedApplication deployedApplication) {
 		File tmpAppDir = null;
 		File tmpTarFile = null;
@@ -201,9 +217,9 @@ public class HashGenerator {
 		tmpShaDir = Files.createTempDirectory(Paths.get(TMP_DIR), K2_TEMP_DIR).toFile();
 
 		FileUtils.copyDirectory(new File(deployedPath), tmpShaDir);
-
+		System.out.println("Directory is copied.");
 		removeNonResource(tmpShaDir);
-
+		System.out.println("Removed unwanted files!");
 		return tmpShaDir;
 	}
 
@@ -216,14 +232,11 @@ public class HashGenerator {
 
 				if (tempFile.isFile()) {
 					String extension = FilenameUtils.getExtension(tempFile.getName());
-					if (!OTHER_CRITICAL_FILE_EXT.contains(extension)) {
+					if (!(OTHER_CRITICAL_FILE_EXT.contains(extension)
+							|| JAVA_APPLICATION_ALLOWED_FILE_EXT.contains(extension))) {
 						logger.log(LogLevel.DEBUG, FILE_FOR_SHA_CALC + tempFile.getAbsolutePath(),
 								HashGenerator.class.getName());
 						FileUtils.forceDeleteOnExit(tempFile);
-					} else if (!JAVA_APPLICATION_ALLOWED_FILE_EXT.contains(extension)) {
-						FileUtils.forceDeleteOnExit(tempFile);
-						logger.log(LogLevel.DEBUG, FILE_FOR_SHA_CALC + tempFile.getAbsolutePath(),
-								HashGenerator.class.getName());
 					}
 				}
 			}
@@ -245,6 +258,7 @@ public class HashGenerator {
 		// add tar ArchiveEntry
 		tarArchive.putArchiveEntry(new TarArchiveEntry(file, entryName));
 		if (file.isFile()) {
+			System.out.println("File to add: " + file);
 			FileInputStream fis = new FileInputStream(file);
 			BufferedInputStream bis = new BufferedInputStream(fis);
 			// Write file content to archive
@@ -256,7 +270,11 @@ public class HashGenerator {
 			// a directory, just close the outputstream
 			tarArchive.closeArchiveEntry();
 			// for files in the directories
-			for (File f : file.listFiles()) {
+
+			List<File> files = Arrays.asList(file.listFiles());
+			System.out.println("All files : " + files);
+			Collections.sort(files);
+			for (File f : files) {
 				// recursively call the method for all the subdirectories
 				addFilesToTarGZ(f.getAbsolutePath(), entryName + File.separator, tarArchive);
 			}
