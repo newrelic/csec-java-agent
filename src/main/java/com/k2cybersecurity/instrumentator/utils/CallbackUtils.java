@@ -559,7 +559,7 @@ public class CallbackUtils {
 				String oldProcessedBody;
 				switch (contentType) {
 				case APPLICATION_JSON:
-					do {
+//					do {
 						oldProcessedBody = processedBody;
 						processedBody = StringEscapeUtils.unescapeJson(processedBody);
 						if (!StringUtils.equals(oldProcessedBody, processedBody)
@@ -567,10 +567,10 @@ public class CallbackUtils {
 							processedData.add(processedBody);
 							// System.out.println("Decoding JSON: " + processedBody);
 						}
-					} while (!StringUtils.equals(oldProcessedBody, processedBody));
+//					} while (!StringUtils.equals(oldProcessedBody, processedBody));
 					break;
 				case APPLICATION_XML:
-					do {
+//					do {
 						oldProcessedBody = processedBody;
 						processedBody = StringEscapeUtils.unescapeXml(processedBody);
 						if (!StringUtils.equals(oldProcessedBody, processedBody)
@@ -578,14 +578,14 @@ public class CallbackUtils {
 							processedData.add(processedBody);
 							// System.out.println("Decoding XML: " + processedBody);
 						}
-					} while (!StringUtils.equals(oldProcessedBody, processedBody));
+//					} while (!StringUtils.equals(oldProcessedBody, processedBody));
 					break;
 
 				case APPLICATION_X_WWW_FORM_URLENCODED:
 					processedBody = urlDecode(processedBody);
 					processedData.add(processedBody);
 
-					do {
+//					do {
 						oldProcessedBody = processedBody;
 						processedBody = urlDecode(processedBody);
 						if (!StringUtils.equals(oldProcessedBody, processedBody)
@@ -593,7 +593,7 @@ public class CallbackUtils {
 							processedData.add(processedBody);
 							// System.out.println("Decoding URL: " + processedBody);
 						}
-					} while (!StringUtils.equals(oldProcessedBody, processedBody));
+//					} while (!StringUtils.equals(oldProcessedBody, processedBody));
 
 					break;
 				}
@@ -604,17 +604,28 @@ public class CallbackUtils {
 		return processedData;
 	}
 
+//	private static void processURLEncodedDataForXSS(Set<String> processedData, String data) {
+//		String key = data;
+//		String oldKey = new String(key);
+//
+//		do {
+//			if (StringUtils.contains(key, ANGLE_START)) {
+//				processedData.add(key);
+//			}
+//			oldKey = key;
+//			key = urlDecode(key);
+//		} while (!StringUtils.equals(oldKey, key));
+//	}
+
 	private static void processURLEncodedDataForXSS(Set<String> processedData, String data) {
 		String key = data;
-		String oldKey = new String(key);
-
-		do {
-			if (StringUtils.contains(key, ANGLE_START)) {
-				processedData.add(key);
-			}
-			oldKey = key;
-			key = urlDecode(key);
-		} while (!StringUtils.equals(oldKey, key));
+		if (StringUtils.contains(key, ANGLE_START)) {
+			processedData.add(key);
+		}
+		key = urlDecode(key);
+		if (StringUtils.contains(key, ANGLE_START)) {
+			processedData.add(key);
+		}
 	}
 
 	public static boolean checkArgsTypeHeirarchy(Object requestArg, Object responseArg) {
