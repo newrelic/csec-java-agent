@@ -272,7 +272,9 @@ public class CallbackUtils {
 					}
 				} else {
 					String body = StringUtils.substring(data, currPos + 1);
-					if (StringUtils.isNotBlank(body)) {
+					int tagEnd = StringUtils.indexOf(body, ANGLE_END);
+					if (StringUtils.isNotBlank(body) && tagEnd != -1 ) {
+						body = StringUtils.substring(body, tagEnd);
 						construct.add(StringUtils.substring(data, startPos, currPos + 1) + body);
 						break;
 					}
