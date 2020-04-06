@@ -259,6 +259,8 @@ public class CallbackUtils {
 
 				if (tmp != -1) {
 					currPos = tmp;
+				} else if( !isAttackConstruct) {
+					continue;
 				}
 			}
 			if (StringUtils.equalsIgnoreCase(tagName.trim(), SCRIPT)) {
@@ -304,7 +306,8 @@ public class CallbackUtils {
 //		 
 //		httpRequestBean.setContentType(APPLICATION_X_WWW_FORM_URLENCODED);
 //		System.out.println(decodeRequestData(httpRequestBean));
-//		System.out.println(getXSSConstructs("<IMG SRC=&#106;&#97;&#118;&#97;&#115;&#99;&#114;&#105;&#112;&#116;&#58;&#97;&#108;&#101;&#114;&#116;&#40;"));
+//		System.out.println(getXSSConstructs("<sVg><scRipt> alert&lpar;1&rpar; {Opera}</script"));
+//		System.out.println(getXSSConstructs("<script src=\"some.js\""));
 //	}
 
 //	    public static void main(String[] args) {
