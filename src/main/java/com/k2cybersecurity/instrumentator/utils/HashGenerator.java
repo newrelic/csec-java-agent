@@ -145,7 +145,7 @@ public class HashGenerator {
 					if (OTHER_CRITICAL_FILE_EXT.contains(extension)
 							|| JAVA_APPLICATION_ALLOWED_FILE_EXT.contains(extension)) {
 //						System.out.println("file : "+tempFile);
-						IOUtils.write(tempFile.getAbsolutePath() + getChecksum(tempFile) + StringUtils.LF,
+						IOUtils.write(tempFile.getName() + getChecksum(tempFile) + StringUtils.LF,
 								fOutputStream, StandardCharsets.UTF_8);
 					}
 				}
