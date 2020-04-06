@@ -44,7 +44,7 @@ public class ThreadLocalLdaptiveMap {
 		if (ldapFilterValues.containsKey(ref)) {
 			return ldapFilterValues.get(ref);
 		} else {
-			System.out.println("NOT FOUND");
+//			System.out.println("NOT FOUND");
 		}
 		return null;
 	}

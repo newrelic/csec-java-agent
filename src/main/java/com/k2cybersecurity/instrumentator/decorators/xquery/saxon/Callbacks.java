@@ -27,8 +27,8 @@ public class Callbacks {
 
 		if (!ThreadLocalHttpMap.getInstance().isEmpty() && !ThreadLocalOperationLock.getInstance().isAcquired()) {
 			try {
-				System.out.println(
-						"sourceString : " + sourceString + " args : " + Arrays.asList(args) + " this : " + obj);
+//				System.out.println(
+//						"sourceString : " + sourceString + " args : " + Arrays.asList(args) + " this : " + obj);
 				ThreadLocalOperationLock.getInstance().acquire();
 //				logger.log(LogLevel.INFO, "OnEnter :" + sourceString + " - args : " + Arrays.asList(args) + " - this : "
 //						+ obj + " - eid : " + executionId, Callbacks.class.getName());
@@ -39,14 +39,14 @@ public class Callbacks {
 						Method getXQueryExpressionMethod = obj.getClass().getDeclaredMethod("getXQueryExpression");
 						getXQueryExpressionMethod.setAccessible(true);
 						Object expressionObj = getXQueryExpressionMethod.invoke(obj);
-						System.out.println("H2 : " + expressionObj.hashCode());
-						System.out.println("expression obj : " + expressionObj);
-						System.out.println("Map : " + ThreadLocalXpathSaxonMap.getInstance());
+//						System.out.println("H2 : " + expressionObj.hashCode());
+//						System.out.println("expression obj : " + expressionObj);
+//						System.out.println("Map : " + ThreadLocalXpathSaxonMap.getInstance());
 						XQueryOperationalBean xQueryOperationalBean = ThreadLocalXQuerySaxonMap.getInstance()
 								.get(expressionObj);
 						if (xQueryOperationalBean != null) {
-							System.out.println("dispatching xquery operational bean");
-							System.out.println("Exp : " + xQueryOperationalBean.getExpression());
+//							System.out.println("dispatching xquery operational bean");
+//							System.out.println("Exp : " + xQueryOperationalBean.getExpression());
 							EventDispatcher.dispatch(xQueryOperationalBean, VulnerabilityCaseType.XQUERY_INJECTION);
 						}
 					} catch (Exception | K2CyberSecurityException ex) {
@@ -56,7 +56,7 @@ public class Callbacks {
 					try {
 					XQueryOperationalBean xQueryOperationalBean = ThreadLocalXQuerySaxonMap.getInstance().get(args[0]);
 					if(xQueryOperationalBean!=null) {
-						System.out.println("Query eXist execute : "+ xQueryOperationalBean.getExpression());
+//						System.out.println("Query eXist execute : "+ xQueryOperationalBean.getExpression());
 						EventDispatcher.dispatch(xQueryOperationalBean, VulnerabilityCaseType.XQUERY_INJECTION);
 					}
 					} catch (Exception | K2CyberSecurityException e) {
@@ -66,7 +66,7 @@ public class Callbacks {
 					try {
 					XQueryOperationalBean xQueryOperationalBean = ThreadLocalXQuerySaxonMap.getInstance().get(obj);
 					if(xQueryOperationalBean!=null) {
-						System.out.println("In execute, got Query : "+ xQueryOperationalBean.getExpression());
+//						System.out.println("In execute, got Query : "+ xQueryOperationalBean.getExpression());
 						EventDispatcher.dispatch(xQueryOperationalBean, VulnerabilityCaseType.XQUERY_INJECTION);
 					}
 					} catch (Exception | K2CyberSecurityException e) {
@@ -76,7 +76,7 @@ public class Callbacks {
 					try {
 					XQueryOperationalBean xQueryOperationalBean = ThreadLocalXQuerySaxonMap.getInstance().get(obj);
 					if(xQueryOperationalBean!=null) {
-						System.out.println("In execute, got Query : "+ xQueryOperationalBean.getExpression());
+//						System.out.println("In execute, got Query : "+ xQueryOperationalBean.getExpression());
 						EventDispatcher.dispatch(xQueryOperationalBean, VulnerabilityCaseType.XQUERY_INJECTION);
 					}
 					} catch (Exception | K2CyberSecurityException e) {
@@ -90,7 +90,7 @@ public class Callbacks {
 					if(moduleObject!=null) {
 					XQueryOperationalBean xQueryOperationalBean = ThreadLocalXQuerySaxonMap.getInstance().get(moduleObject);
 					if(xQueryOperationalBean!=null) {
-						System.out.println("In run, got Query : "+ xQueryOperationalBean.getExpression());
+//						System.out.println("In run, got Query : "+ xQueryOperationalBean.getExpression());
 						EventDispatcher.dispatch(xQueryOperationalBean, VulnerabilityCaseType.XQUERY_INJECTION);
 					}
 					}
@@ -104,10 +104,10 @@ public class Callbacks {
 					ptrField.setAccessible(true);
 					Object ptrObject = ptrField.get(obj);
 					if(ptrObject!=null) {
-						System.out.println("PTR : "+ ptrObject.toString());
+//						System.out.println("PTR : "+ ptrObject.toString());
 						XQueryOperationalBean xQueryOperationalBean = ThreadLocalXQuerySaxonMap.getInstance().get(ptrObject);
 						if(xQueryOperationalBean!=null) {
-							System.out.println("In run, got Query : "+ xQueryOperationalBean.getExpression());
+//							System.out.println("In run, got Query : "+ xQueryOperationalBean.getExpression());
 							EventDispatcher.dispatch(xQueryOperationalBean, VulnerabilityCaseType.XQUERY_INJECTION);
 						}
 					}

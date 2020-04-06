@@ -34,8 +34,8 @@ public class Callbacks {
 
 		if (!ThreadLocalHttpMap.getInstance().isEmpty() && !ThreadLocalOperationLock.getInstance().isAcquired()) {
 			try {
-				System.out.println(
-						"sourceString : " + sourceString + " args : " + Arrays.asList(args) + " this : " + obj);
+//				System.out.println(
+//						"sourceString : " + sourceString + " args : " + Arrays.asList(args) + " this : " + obj);
 				ThreadLocalOperationLock.getInstance().acquire();
 //				logger.log(LogLevel.INFO, "OnEnter :" + sourceString + " - args : " + Arrays.asList(args) + " - this : "
 //						+ obj + " - eid : " + executionId, Callbacks.class.getName());
@@ -46,14 +46,14 @@ public class Callbacks {
 						Method getInternalExpressionMethod = obj.getClass().getDeclaredMethod("getInternalExpression");
 						getInternalExpressionMethod.setAccessible(true);
 						Object expressionObj = getInternalExpressionMethod.invoke(obj);
-						System.out.println("H2 : " + expressionObj.hashCode());
-						System.out.println("expression obj : " + expressionObj);
-						System.out.println("Map : " + ThreadLocalXpathSaxonMap.getInstance());
+//						System.out.println("H2 : " + expressionObj.hashCode());
+//						System.out.println("expression obj : " + expressionObj);
+//						System.out.println("Map : " + ThreadLocalXpathSaxonMap.getInstance());
 						XPathOperationalBean xPathOperationalBean = ThreadLocalXpathSaxonMap.getInstance()
 								.get(expressionObj);
 						if (xPathOperationalBean != null) {
-							System.out.println("dispatching xpath operational bean");
-							System.out.println("Exp : " + xPathOperationalBean.getExpression());
+//							System.out.println("dispatching xpath operational bean");
+//							System.out.println("Exp : " + xPathOperationalBean.getExpression());
 							EventDispatcher.dispatch(xPathOperationalBean, VulnerabilityCaseType.XPATH);
 						}
 					} catch (Exception | K2CyberSecurityException ex) {
@@ -67,8 +67,8 @@ public class Callbacks {
 						Object xpeRef = xpeField.get(obj);
 						XPathOperationalBean xPathOperationalBean = ThreadLocalXpathSaxonMap.getInstance().get(xpeRef);
 						if (xPathOperationalBean != null) {
-							System.out.println("dispatching xpath operational bean");
-							System.out.println("Exp : " + xPathOperationalBean.getExpression());
+//							System.out.println("dispatching xpath operational bean");
+//							System.out.println("Exp : " + xPathOperationalBean.getExpression());
 							EventDispatcher.dispatch(xPathOperationalBean, VulnerabilityCaseType.XPATH);
 						}
 					} catch (Exception | K2CyberSecurityException ex) {

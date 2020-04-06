@@ -22,8 +22,8 @@ public class Callbacks {
 
 	public static void doOnEnter(String sourceString, String className, String methodName, Object obj, Object[] args,
 			String executionId) {
-		System.out.println("OnEnter initial :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj
-				+ " - eid : " + executionId);
+//		System.out.println("OnEnter initial :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj
+//				+ " - eid : " + executionId);
 //		logger.log(
 //				LogLevel.INFO, "OnEnter initial :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj
 //				+ " - eid : " + executionId, Callbacks.class.getName());
@@ -60,7 +60,7 @@ public class Callbacks {
 					if (xpathExpressionObject != null) {
 						String xpathExpression = xpathExpressionObject.toString();
 						if (StringUtils.isNotBlank(xpathExpression)) {
-							System.out.println("Obtained xpathExpression is : " + xpathExpression);
+//							System.out.println("Obtained xpathExpression is : " + xpathExpression);
 							XPathOperationalBean xPathOperationalBean = new XPathOperationalBean(xpathExpression,
 									className, methodName, executionId, Instant.now().toEpochMilli());
 							EventDispatcher.dispatch(xPathOperationalBean, VulnerabilityCaseType.XPATH);

@@ -50,11 +50,11 @@ public class Callbacks {
 		if (!ThreadLocalHttpMap.getInstance().isEmpty() && !ThreadLocalOperationLock.getInstance().isAcquired()) {
 			try {
 				ThreadLocalOperationLock.getInstance().acquire();
-				System.out.println("sourceString : " + sourceString + " args : " + Arrays.asList(args) + " this : " + thisObject);
+//				System.out.println("sourceString : " + sourceString + " args : " + Arrays.asList(args) + " this : " + thisObject);
 				if (sourceString.equals("public void org.ldaptive.SearchRequest.setFilter(java.lang.String)")
 						&& args != null && args.length > 0) {
 					String filterValue = args[0].toString();
-					System.out.println("Filter Value : " + filterValue);
+//					System.out.println("Filter Value : " + filterValue);
 					try {
 					Method getFilterMethod = thisObject.getClass().getMethod("getFilter");
 					getFilterMethod.setAccessible(true);

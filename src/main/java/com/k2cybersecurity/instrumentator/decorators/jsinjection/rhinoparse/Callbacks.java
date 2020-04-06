@@ -35,8 +35,8 @@ public class Callbacks {
 		if (!ThreadLocalHttpMap.getInstance().isEmpty() && !ThreadLocalOperationLock.getInstance().isAcquired()) {
 			try {
 				ThreadLocalOperationLock.getInstance().acquire();
-				System.out.println("OnExit :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj
-						+ " - return : " + returnVal + " - eid : " + executionId);
+//				System.out.println("OnExit :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj
+//						+ " - return : " + returnVal + " - eid : " + executionId);
 				if (args != null && args.length > 2 && sourceString.equals(
 						"private java.lang.Object org.mozilla.javascript.Context.compileImpl(org.mozilla.javascript.Scriptable,java.io.Reader,java.lang.String,java.lang.String,int,java.lang.Object,boolean,org.mozilla.javascript.Evaluator,org.mozilla.javascript.ErrorReporter) throws java.io.IOException")) {
 					try {
@@ -54,7 +54,7 @@ public class Callbacks {
 							jsSourceString = String.valueOf(decompileScriptMethod.invoke(obj, returnVal, 0));
 						}
 						if (jsSourceString != null) {
-							System.out.println("JS: " + jsSourceString);
+//							System.out.println("JS: " + jsSourceString);
 							ThreadLocalJSRhinoMap.getInstance().create(returnVal, jsSourceString.toString(), className,
 									methodName, executionId, Instant.now().toEpochMilli());
 						}

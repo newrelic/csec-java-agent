@@ -20,17 +20,17 @@ public class Callbacks {
 
 		if (!ThreadLocalHttpMap.getInstance().isEmpty() && !ThreadLocalOperationLock.getInstance().isAcquired()) {
 			try {
-				System.out.println(
-						"sourceString : " + sourceString + " args : " + Arrays.asList(args) + " this : " + obj);
+//				System.out.println(
+//						"sourceString : " + sourceString + " args : " + Arrays.asList(args) + " this : " + obj);
 				ThreadLocalOperationLock.getInstance().acquire();
 				if (args != null) {
 					if (args.length == 2 && args[1] != null) {
-						System.out.println("Query : " + args[1].toString());
+//						System.out.println("Query : " + args[1].toString());
 						XQueryOperationalBean xQueryOperationalBean = new XQueryOperationalBean(args[1].toString(),
 								className, methodName, executionId, Instant.now().toEpochMilli());
 						EventDispatcher.dispatch(xQueryOperationalBean, VulnerabilityCaseType.XQUERY_INJECTION);
 					} else if (args.length == 1 && args[0] != null) {
-						System.out.println("Query : " + args[0].toString());
+//						System.out.println("Query : " + args[0].toString());
 						XQueryOperationalBean xQueryOperationalBean = new XQueryOperationalBean(args[0].toString(),
 								className, methodName, executionId, Instant.now().toEpochMilli());
 						EventDispatcher.dispatch(xQueryOperationalBean, VulnerabilityCaseType.XQUERY_INJECTION);

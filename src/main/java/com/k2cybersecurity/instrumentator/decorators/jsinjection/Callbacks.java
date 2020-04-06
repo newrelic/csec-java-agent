@@ -19,8 +19,8 @@ public class Callbacks {
 		if (!ThreadLocalHttpMap.getInstance().isEmpty() && !ThreadLocalOperationLock.getInstance().isAcquired()) {
 			try {
 				ThreadLocalOperationLock.getInstance().acquire();
-				System.out.println("OnEnter :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj
-						+ " - eid : " + executionId);
+//				System.out.println("OnEnter :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj
+//						+ " - eid : " + executionId);
 				if (args.length == 2 && args[0] != null && sourceString.equals(
 						"private java.lang.Object jdk.nashorn.api.scripting.NashornScriptEngine.evalImpl(jdk.nashorn.internal.runtime.Source,javax.script.ScriptContext) throws javax.script.ScriptException")) {
 					try {
@@ -30,7 +30,7 @@ public class Callbacks {
 						Object dataObject = getStringMethod.invoke(sourceObject);
 						if (dataObject != null) {
 							String data = dataObject.toString();
-							System.out.println("Executed JS Code : " + data);
+//							System.out.println("Executed JS Code : " + data);
 							JSInjectionOperationalBean jsInjectionOperationalBean = new JSInjectionOperationalBean(data,
 									className, methodName, executionId, Instant.now().toEpochMilli());
 							EventDispatcher.dispatch(jsInjectionOperationalBean,
@@ -61,7 +61,7 @@ public class Callbacks {
 							Object contentObj = contentField.get(keyObj);
 							if (contentObj != null) {
 								String data = String.valueOf(contentObj);
-								System.out.println("Executed JS Code : " + data);
+//								System.out.println("Executed JS Code : " + data);
 								JSInjectionOperationalBean jsInjectionOperationalBean = new JSInjectionOperationalBean(
 										data, className, methodName, executionId, Instant.now().toEpochMilli());
 								EventDispatcher.dispatch(jsInjectionOperationalBean,

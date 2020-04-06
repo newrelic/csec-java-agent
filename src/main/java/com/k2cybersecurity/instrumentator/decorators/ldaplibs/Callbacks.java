@@ -23,8 +23,8 @@ public class Callbacks {
 		if (!ThreadLocalHttpMap.getInstance().isEmpty() && !ThreadLocalOperationLock.getInstance().isAcquired()) {
 			try {
 				ThreadLocalOperationLock.getInstance().acquire();
-				System.out.println(
-						"sourceString : " + sourceString + " args : " + Arrays.asList(args) + " this : " + obj);
+//				System.out.println(
+//						"sourceString : " + sourceString + " args : " + Arrays.asList(args) + " this : " + obj);
 
 				switch (sourceString) {
 				case ILDAPConstants.APACHE_LDAP_1:
@@ -70,7 +70,7 @@ public class Callbacks {
 			LDAPOperationalBean ldapOperationalBean = ThreadLocalLdaptiveMap.getInstance().get(filterObject);
 			if(ldapOperationalBean!=null) {
 				ldapOperationalBean.setName(dnValue);
-				System.out.println("DN is : " + dnValue + " filter is : " + ldapOperationalBean.getFilter());
+//				System.out.println("DN is : " + dnValue + " filter is : " + ldapOperationalBean.getFilter());
 				EventDispatcher.dispatch(ldapOperationalBean, VulnerabilityCaseType.LDAP);
 			}
 
@@ -100,7 +100,7 @@ public class Callbacks {
 				filterValue = filterObj.toString();
 			}
 
-			System.out.println("DN is : " + dnValue + " filter is : " + filterValue);
+//			System.out.println("DN is : " + dnValue + " filter is : " + filterValue);
 
 			if (StringUtils.isNotBlank(dnValue) && StringUtils.isNotBlank(filterValue)
 					&& ThreadLocalLDAPMap.getInstance().put(filterValue)) {
@@ -125,7 +125,7 @@ public class Callbacks {
 			String filterValue = StringUtils.EMPTY;
 			if (filterObject != null) {
 				filterValue = filterObject.toString();
-				System.out.println("Filter value obtained : " + filterValue);
+//				System.out.println("Filter value obtained : " + filterValue);
 			}
 
 			Method getDNMethod = searchOperationContextObject.getClass().getMethod("getDn");
@@ -135,16 +135,16 @@ public class Callbacks {
 			String dnValue = StringUtils.EMPTY;
 			if (dnObject != null) {
 				dnNormalizedValue = dnObject.toString();
-				System.out.println("dnNormalizedValue obtained : " + dnNormalizedValue);
+//				System.out.println("dnNormalizedValue obtained : " + dnNormalizedValue);
 				Method getUpNameMethod = dnObject.getClass().getMethod("getUpName");
 				getUpNameMethod.setAccessible(true);
 				Object dnObjectNotNormalized = getUpNameMethod.invoke(dnObject);
 				if (dnObjectNotNormalized != null) {
 					dnValue = dnObjectNotNormalized.toString();
-					System.out.println("dnValue obtained : " + dnValue);
+//					System.out.println("dnValue obtained : " + dnValue);
 				}
 			} else {
-				System.err.println("NULL DN OBJECT");
+//				System.err.println("NULL DN OBJECT");
 			}
 			if (StringUtils.isNotBlank(dnValue) && StringUtils.isNotBlank(filterValue)
 					&& ThreadLocalLDAPMap.getInstance().put(filterValue)) {

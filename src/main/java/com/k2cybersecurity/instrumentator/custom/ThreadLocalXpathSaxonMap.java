@@ -39,7 +39,7 @@ public class ThreadLocalXpathSaxonMap {
 		if (xpathExpressionValues.containsKey(ref)) {
 			return xpathExpressionValues.get(ref);
 		} else {
-			System.out.println("NOT FOUND");
+//			System.out.println("NOT FOUND");
 		}
 		return null;
 	}

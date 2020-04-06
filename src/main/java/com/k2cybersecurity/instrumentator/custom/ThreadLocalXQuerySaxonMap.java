@@ -44,7 +44,7 @@ public class ThreadLocalXQuerySaxonMap {
 		if (xqueryExpressionValues.containsKey(ref)) {
 			return xqueryExpressionValues.get(ref);
 		} else {
-			System.out.println("NOT FOUND");
+//			System.out.println("NOT FOUND");
 		}
 		return null;
 	}

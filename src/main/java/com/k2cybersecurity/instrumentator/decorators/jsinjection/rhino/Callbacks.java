@@ -17,12 +17,12 @@ public class Callbacks {
 		if (!ThreadLocalHttpMap.getInstance().isEmpty() && !ThreadLocalOperationLock.getInstance().isAcquired()) {
 			try {
 				ThreadLocalOperationLock.getInstance().acquire();
-				System.out.println("OnEnter :" + sourceString + " - args : " + Arrays.asList(args) + " - this : "
-						+ thisObject + " - eid : " + executionId);
+//				System.out.println("OnEnter :" + sourceString + " - args : " + Arrays.asList(args) + " - this : "
+//						+ thisObject + " - eid : " + executionId);
 				JSInjectionOperationalBean jsInjectionOperationalBean = ThreadLocalJSRhinoMap.getInstance()
 						.get(thisObject);
 				if (jsInjectionOperationalBean != null) {
-					System.out.println("HERE :::::" + jsInjectionOperationalBean.getJavaScriptCode());
+//					System.out.println("HERE :::::" + jsInjectionOperationalBean.getJavaScriptCode());
 					EventDispatcher.dispatch(jsInjectionOperationalBean, VulnerabilityCaseType.JAVASCRIPT_INJECTION);
 				}
 			} catch (Exception | K2CyberSecurityException e) {

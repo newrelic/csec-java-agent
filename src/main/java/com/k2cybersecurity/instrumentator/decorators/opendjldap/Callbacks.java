@@ -21,7 +21,7 @@ public class Callbacks {
 			String executionId) {
 		//if (!ThreadLocalHttpMap.getInstance().isEmpty() && !ThreadLocalOperationLock.getInstance().isAcquired()) {
 			try {
-				System.out.println("sourceString : " + sourceString + " args : " + Arrays.asList(args) + " this : " + obj);
+//				System.out.println("sourceString : " + sourceString + " args : " + Arrays.asList(args) + " this : " + obj);
 				ThreadLocalOperationLock.getInstance().acquire();
 //				logger.log(LogLevel.INFO,
 //						"OnEnter :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj
@@ -45,7 +45,7 @@ public class Callbacks {
 						filterValue = filterObj.toString();
 					}
 
-					System.out.println("DN is : " + dnValue + " filter is : " + filterValue);
+//					System.out.println("DN is : " + dnValue + " filter is : " + filterValue);
 
 					if (StringUtils.isNotBlank(dnValue) && StringUtils.isNotBlank(filterValue)
 							&& ThreadLocalLDAPMap.getInstance().put(filterValue)) {

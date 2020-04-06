@@ -44,8 +44,8 @@ public class Callbacks {
 		if (!ThreadLocalHttpMap.getInstance().isEmpty() && !ThreadLocalOperationLock.getInstance().isAcquired()) {
 			try {
 				ThreadLocalOperationLock.getInstance().acquire();
-				System.out.println("OnExit :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj
-						+ " - return : " + returnVal + " - eid : " + exectionId);
+//				System.out.println("OnExit :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj
+//						+ " - return : " + returnVal + " - eid : " + exectionId);
 
 				if (returnVal != null) {
 					if (returnVal != null && args != null && StringUtils.isNotBlank(args[0].toString())) {
@@ -54,9 +54,9 @@ public class Callbacks {
 									.getDeclaredMethod(GET_INTERNAL_EXPRESSION);
 							getInternalExpressionMethod.setAccessible(true);
 							Object expressionObj = getInternalExpressionMethod.invoke(returnVal);
-							System.out.println("inside not null on compile exit, all set : " + args[0].toString());
-							System.out.println("Expression obj : " + expressionObj);
-							System.out.println("H1 : " + expressionObj.hashCode());
+//							System.out.println("inside not null on compile exit, all set : " + args[0].toString());
+//							System.out.println("Expression obj : " + expressionObj);
+//							System.out.println("H1 : " + expressionObj.hashCode());
 							ThreadLocalXpathSaxonMap.getInstance().create(expressionObj, args[0].toString(), className,
 									methodName, exectionId, Instant.now().toEpochMilli());
 						} catch (Exception e) {

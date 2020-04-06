@@ -28,7 +28,7 @@ public class Callbacks {
 		if (!ThreadLocalHttpMap.getInstance().isEmpty() && !ThreadLocalOperationLock.getInstance().isAcquired()) {
 		try {
 			ThreadLocalOperationLock.getInstance().acquire();
-			System.out.println("sourceString : " + sourceString + " args : " + Arrays.asList(args) + " this : " + obj);
+//			System.out.println("sourceString : " + sourceString + " args : " + Arrays.asList(args) + " this : " + obj);
 			if (args.length == 2 && args[0] != null && sourceString.contains("OXQCConnection.prepareExpressionImpl")) {
 				ThreadLocalXQuerySaxonMap.getInstance().setCompileStartMarked(true);
 			}
@@ -45,16 +45,16 @@ public class Callbacks {
 		if (!ThreadLocalHttpMap.getInstance().isEmpty() && !ThreadLocalOperationLock.getInstance().isAcquired()) {
 		try {
 			ThreadLocalOperationLock.getInstance().acquire();
-			System.out.println("OnExit :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj
-					+ " - return : " + returnVal + " - eid : " + exectionId);
+//			System.out.println("OnExit :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj
+//					+ " - return : " + returnVal + " - eid : " + exectionId);
 
 			if (returnVal != null && args != null && StringUtils.isNotBlank(args[0].toString()) && sourceString.equals(
 					"public net.sf.saxon.query.XQueryExpression net.sf.saxon.query.StaticQueryContext.compileQuery(java.lang.String) throws net.sf.saxon.trans.XPathException")) {
 				try {
 					Object xqueryExpressionObj = returnVal;
-					System.out.println("inside not null on compile exit, all set query string : " + args[0].toString());
-					System.out.println("Expression obj : " + xqueryExpressionObj);
-					System.out.println("H1 : " + xqueryExpressionObj.hashCode());
+//					System.out.println("inside not null on compile exit, all set query string : " + args[0].toString());
+//					System.out.println("Expression obj : " + xqueryExpressionObj);
+//					System.out.println("H1 : " + xqueryExpressionObj.hashCode());
 					ThreadLocalXQuerySaxonMap.getInstance().create(xqueryExpressionObj, args[0].toString(), className,
 							methodName, exectionId, Instant.now().toEpochMilli());
 				} catch (Exception e) {
@@ -63,7 +63,7 @@ public class Callbacks {
 			} else if (args.length == 1 && args[0] != null && returnVal != null
 					&& sourceString.contains("QueryService.compile")) {
 				Object compiledExpressionObj = returnVal;
-				System.out.println("Inside Compile Expression for eXist-db, Query : " + args[0].toString());
+//				System.out.println("Inside Compile Expression for eXist-db, Query : " + args[0].toString());
 				ThreadLocalXQuerySaxonMap.getInstance().create(compiledExpressionObj, args[0].toString(), className,
 						methodName, exectionId, Instant.now().toEpochMilli());
 			} else if (args.length == 2 && args[0] != null && returnVal != null
@@ -71,7 +71,7 @@ public class Callbacks {
 				ThreadLocalXQuerySaxonMap.getInstance().setCompileStartMarked(false);
 				String bufferData = ThreadLocalXQuerySaxonMap.getInstance().getTempBuffer();
 				if (bufferData != null) {
-					System.out.println("Got Buffer Data Here : " + bufferData);
+//					System.out.println("Got Buffer Data Here : " + bufferData);
 					ThreadLocalXQuerySaxonMap.getInstance().create(returnVal, bufferData, className, methodName,
 							exectionId, Instant.now().toEpochMilli());
 				}
@@ -84,7 +84,7 @@ public class Callbacks {
 					Object xqueryObject = xqueryField.get(obj);
 					if (xqueryObject != null) {
 						String xquery = xqueryObject.toString();
-						System.out.println("Got Buffer Data Here : " + xquery);
+//						System.out.println("Got Buffer Data Here : " + xquery);
 						ThreadLocalXQuerySaxonMap.getInstance().create(returnVal, xquery, className, methodName,
 								exectionId, Instant.now().toEpochMilli());
 					}
@@ -104,7 +104,7 @@ public class Callbacks {
 						moduleMethod.setAccessible(true);
 						Object moduleObject = moduleMethod.invoke(obj);
 						if (moduleObject != null) {
-							System.out.println("Query in compile : " + queryString);
+//							System.out.println("Query in compile : " + queryString);
 							ThreadLocalXQuerySaxonMap.getInstance().create(moduleObject, queryString, className,
 									methodName, exectionId, Instant.now().toEpochMilli());
 						}
@@ -118,24 +118,24 @@ public class Callbacks {
 				try {
 					if (inputArg instanceof String) {
 						executedXQuery = inputArg.toString();
-						System.out.println("Query : " + executedXQuery);
+//						System.out.println("Query : " + executedXQuery);
 					} else {
 						Class ZorbaInputWrapperClass = inputArg.getClass().getClassLoader()
 								.loadClass("io.zorba.api.ZorbaInputWrapper");
 						Class ZorbaReaderWrapperClass = inputArg.getClass().getClassLoader()
 								.loadClass("io.zorba.api.ZorbaReaderWrapper");
 						if (ZorbaInputWrapperClass.isInstance(inputArg)) {
-							System.out.println("In Input Wrapper");
+//							System.out.println("In Input Wrapper");
 							Field byteArrayField = inputArg.getClass().getDeclaredField("b");
 							byteArrayField.setAccessible(true);
 							Object byteArrayObject = byteArrayField.get(inputArg);
 							if (byteArrayObject != null) {
 								byte[] byteArray = (byte[]) byteArrayObject;
 								executedXQuery = new String(byteArray);
-								System.out.println("BYTE ARRAY : " + executedXQuery);
+//								System.out.println("BYTE ARRAY : " + executedXQuery);
 							}
 						} else if (ZorbaReaderWrapperClass.isInstance(inputArg)) {
-							System.out.println("In Reader Wrapper");
+//							System.out.println("In Reader Wrapper");
 							Field charBufferField = inputArg.getClass().getDeclaredField("charBuffer");
 							charBufferField.setAccessible(true);
 							CharBuffer charBuffer = (CharBuffer) charBufferField.get(inputArg);
@@ -143,18 +143,18 @@ public class Callbacks {
 								char[] array = charBuffer.array();
 								int limit = charBuffer.limit();
 								executedXQuery = new String(array, 0, limit);
-								System.out.println("LIMIT : " + limit + " :: ARRAY : " + executedXQuery);
+//								System.out.println("LIMIT : " + limit + " :: ARRAY : " + executedXQuery);
 							}
 						}
 
 					}
 					if (executedXQuery != null) {
-						System.out.println("QUERY For Zorba : " + executedXQuery);
+//						System.out.println("QUERY For Zorba : " + executedXQuery);
 						Field ptrField = returnVal.getClass().getDeclaredField("swigCPtr");
 						ptrField.setAccessible(true);
 						Object ptrObject = ptrField.get(returnVal);
 						if (ptrObject != null) {
-							System.out.println("PTR : " + ptrObject.toString());
+//							System.out.println("PTR : " + ptrObject.toString());
 							ThreadLocalXQuerySaxonMap.getInstance().create(ptrObject, executedXQuery, className,
 									methodName, exectionId, Instant.now().toEpochMilli());
 						}
@@ -171,7 +171,7 @@ public class Callbacks {
 					ptrField.setAccessible(true);
 					Object ptrObject = ptrField.get(obj);
 					if (ptrObject != null) {
-						System.out.println("PTR : " + ptrObject.toString());
+//						System.out.println("PTR : " + ptrObject.toString());
 						ThreadLocalXQuerySaxonMap.getInstance().create(ptrObject, executedXQuery, className, methodName,
 								exectionId, Instant.now().toEpochMilli());
 					}

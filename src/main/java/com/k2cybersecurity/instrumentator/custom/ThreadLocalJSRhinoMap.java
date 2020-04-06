@@ -39,7 +39,7 @@ public class ThreadLocalJSRhinoMap {
 		if (jsInjectionCodeValues.containsKey(ref)) {
 			return jsInjectionCodeValues.get(ref);
 		} else {
-			System.out.println("NOT FOUND");
+//			System.out.println("NOT FOUND");
 		}
 		return null;
 	}

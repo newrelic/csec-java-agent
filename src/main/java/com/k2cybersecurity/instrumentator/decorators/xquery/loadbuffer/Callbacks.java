@@ -36,20 +36,20 @@ public class Callbacks {
 		if (!ThreadLocalHttpMap.getInstance().isEmpty() && !ThreadLocalOperationLock.getInstance().isAcquired()) {
 			try {
 				ThreadLocalOperationLock.getInstance().acquire();
-				System.out.println("OnExit :" + sourceString + " - args : " + Arrays.asList(args) + " - this : "
-						+ thisObject + " - return : " + returnVal + " - eid : " + exectionId);
+//				System.out.println("OnExit :" + sourceString + " - args : " + Arrays.asList(args) + " - this : "
+//						+ thisObject + " - return : " + returnVal + " - eid : " + exectionId);
 				if (ThreadLocalXQuerySaxonMap.getInstance().isCompileStartMarked()) {
 					try {
 						Field lengthField = thisObject.getClass().getSuperclass().getDeclaredField("n");
 						lengthField.setAccessible(true);
 						int length = (int) lengthField.get(thisObject);
-						System.out.println("Length : " + length);
+//						System.out.println("Length : " + length);
 						if (length != 0) {
 							Field dataField = thisObject.getClass().getSuperclass().getDeclaredField("data");
 							dataField.setAccessible(true);
 							Object dataObject = dataField.get(thisObject);
 							String data = new String((char[]) dataObject, 0, length - 1);
-							System.out.println("Data : " + data);
+//							System.out.println("Data : " + data);
 							ThreadLocalXQuerySaxonMap.getInstance().setTempBuffer(data);
 						}
 					} catch (Exception e) {
