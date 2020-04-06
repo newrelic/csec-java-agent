@@ -129,9 +129,9 @@ public class EventDispatcher {
     }
 
 
-    private static void printDispatch(List<SQLOperationalBean> objectBeanList) {
-        System.out.println("Bean list : " + objectBeanList);
-    }
+//    private static void printDispatch(List<SQLOperationalBean> objectBeanList) {
+//        System.out.println("Bean list : " + objectBeanList);
+//    }
 
     public static void dispatch(DeployedApplication deployedApplication, VulnerabilityCaseType vulnerabilityCaseType) {
         if (!deployedApplication.isEmpty()) {

@@ -694,5 +694,8 @@ public class CallbackUtils {
 		ThreadLocalSessionMap.getInstance().clearAll();
 		ThreadLocalLDAPMap.getInstance().clearAll();
 		ThreadLocalExecutionMap.getInstance().cleanUp();
+		ThreadLocalLdaptiveMap.getInstance().clearAll();
+        ThreadLocalXpathSaxonMap.getInstance().clearAll();
+        ThreadLocalXQuerySaxonMap.getInstance().clearAll();
 	}
 }

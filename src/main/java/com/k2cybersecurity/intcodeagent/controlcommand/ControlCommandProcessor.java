@@ -93,7 +93,7 @@ public class ControlCommandProcessor implements Runnable {
 		case IntCodeControlCommand.UNSUPPORTED_AGENT:
 			logger.log(LogLevel.SEVERE, controlCommand.getArguments().get(0),
 					ControlCommandProcessor.class.getSimpleName());
-			System.err.println(controlCommand.getArguments().get(0));
+//			System.err.println(controlCommand.getArguments().get(0));
 			InstrumentationUtils.shutdownLogic(true);
 			break;
 		case IntCodeControlCommand.EVENT_RESPONSE:

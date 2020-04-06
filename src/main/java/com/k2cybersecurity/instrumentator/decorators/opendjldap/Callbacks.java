@@ -1,4 +1,4 @@
-package com.k2cybersecurity.instrumentator.decorators.ldap;
+package com.k2cybersecurity.instrumentator.decorators.opendjldap;
 
 import com.k2cybersecurity.instrumentator.custom.K2CyberSecurityException;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalHttpMap;
@@ -9,40 +9,59 @@ import com.k2cybersecurity.intcodeagent.models.javaagent.VulnerabilityCaseType;
 import com.k2cybersecurity.intcodeagent.models.operationalbean.LDAPOperationalBean;
 import org.apache.commons.lang3.StringUtils;
 
+import java.lang.reflect.Method;
 import java.time.Instant;
+import java.util.Arrays;
 
 public class Callbacks {
 
 //	private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
 
 	public static void doOnEnter(String sourceString, String className, String methodName, Object obj, Object[] args,
-			String executionId) throws K2CyberSecurityException {
-		if (!ThreadLocalHttpMap.getInstance().isEmpty() && !ThreadLocalOperationLock.getInstance().isAcquired()) {
+			String executionId) {
+		//if (!ThreadLocalHttpMap.getInstance().isEmpty() && !ThreadLocalOperationLock.getInstance().isAcquired()) {
 			try {
+//				System.out.println("sourceString : " + sourceString + " args : " + Arrays.asList(args) + " this : " + obj);
 				ThreadLocalOperationLock.getInstance().acquire();
 //				logger.log(LogLevel.INFO,
 //						"OnEnter :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj
 //								+ " - eid : " + executionId, Callbacks.class.getName());
 				if (args.length != 0) {
+					
+					Object searchRequestObj = args[0];
+					Method getNameMethod = searchRequestObj.getClass().getDeclaredMethod("getName");
+					getNameMethod.setAccessible(true);
+					Object dnObj = getNameMethod.invoke(searchRequestObj);
+					String dnValue = StringUtils.EMPTY;
+					if (dnObj != null) {
+						dnValue = dnObj.toString();
+					}
 
-					String name = args[0].toString();
-					if (StringUtils.isBlank(name)) {
-						name = "EMPTY_VALUE";
+					Method getFilterMethod = searchRequestObj.getClass().getDeclaredMethod("getFilter");
+					getFilterMethod.setAccessible(true);
+					Object filterObj = getFilterMethod.invoke(searchRequestObj);
+					String filterValue = StringUtils.EMPTY;
+					if (filterObj != null) {
+						filterValue = filterObj.toString();
 					}
-					if (StringUtils.isNotBlank(name)) {
-						
-						String filter = args[1].toString();
-						if (StringUtils.isNotBlank(filter) && ThreadLocalLDAPMap.getInstance().put(filter)) {
-							LDAPOperationalBean ldapOperationalBean = new LDAPOperationalBean(name, filter, className, sourceString,
-									executionId, Instant.now().toEpochMilli());
-							EventDispatcher.dispatch(ldapOperationalBean, VulnerabilityCaseType.LDAP);
-						}
+
+//					System.out.println("DN is : " + dnValue + " filter is : " + filterValue);
+
+					if (StringUtils.isNotBlank(dnValue) && StringUtils.isNotBlank(filterValue)
+							&& ThreadLocalLDAPMap.getInstance().put(filterValue)) {
+						LDAPOperationalBean ldapOperationalBean = new LDAPOperationalBean(dnValue, filterValue, className,
+								sourceString, executionId, Instant.now().toEpochMilli());
+						EventDispatcher.dispatch(ldapOperationalBean, VulnerabilityCaseType.LDAP);
 					}
+
 				}
-			} finally {
+			} catch (Exception | K2CyberSecurityException ex) {
+				ex.printStackTrace();
+			}
+			finally {
 				ThreadLocalOperationLock.getInstance().release();
 			}
-		}
+		//}
 	}
 
 	public static void doOnExit(String sourceString, String className, String methodName, Object obj, Object[] args,

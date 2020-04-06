@@ -263,6 +263,16 @@ public class Dispatcher implements Runnable {
                 eventBean = setGenericProperties(hashOperationalBean, eventBean);
                 eventBean = prepareHashEvent(eventBean, hashOperationalBean);
                 break;
+            case JAVASCRIPT_INJECTION:
+    			JSInjectionOperationalBean jsInjectionOperationalBean = (JSInjectionOperationalBean) event;
+    			eventBean = setGenericProperties(jsInjectionOperationalBean, eventBean);
+    			eventBean = prepareJSInjectionEvent(eventBean, jsInjectionOperationalBean);
+    			break;
+    		case XQUERY_INJECTION:
+    			XQueryOperationalBean xQueryOperationalBean = (XQueryOperationalBean) event;
+    			eventBean = setGenericProperties(xQueryOperationalBean, eventBean);
+    			eventBean = prepareXQueryInjectionEvent(eventBean, xQueryOperationalBean);
+    			break;
             default:
 
         }
@@ -301,6 +311,22 @@ public class Dispatcher implements Runnable {
         }
     }
 
+    private JavaAgentEventBean prepareJSInjectionEvent(JavaAgentEventBean eventBean,
+			JSInjectionOperationalBean jsInjectionOperationalBean) {
+		JSONArray params = new JSONArray();
+		params.add(jsInjectionOperationalBean.getJavaScriptCode());
+		eventBean.setParameters(params);
+		return eventBean;
+	}
+    
+    private JavaAgentEventBean prepareXQueryInjectionEvent(JavaAgentEventBean eventBean,
+			XQueryOperationalBean xQueryOperationalBean) {
+		JSONArray params = new JSONArray();
+		params.add(xQueryOperationalBean.getExpression());
+		eventBean.setParameters(params);
+		return eventBean;
+	}
+    
     private JavaAgentEventBean prepareSystemExitEvent(JavaAgentEventBean eventBean,
                                                       SystemExitOperationalBean systemExitOperationalBean) {
         JSONArray params = new JSONArray();
