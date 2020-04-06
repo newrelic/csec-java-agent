@@ -108,6 +108,24 @@
 
 		<plugins>
 			<plugin>
+				<groupId>com.k2cybersecurity</groupId>
+				<artifactId>k2-decorator-copy-plugin</artifactId>
+				<version>1.0</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>decorator-copy</goal>
+						</goals>
+						<configuration>
+							<baseDecoratorSourcePackage>
+								com.k2cybersecurity.instrumentator.decorators
+							</baseDecoratorSourcePackage>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
 				<artifactId>maven-jar-plugin</artifactId>
 				<version>2.4</version>
 				<configuration>
