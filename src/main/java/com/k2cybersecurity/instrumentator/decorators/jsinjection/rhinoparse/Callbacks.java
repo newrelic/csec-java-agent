@@ -1,12 +1,7 @@
 package com.k2cybersecurity.instrumentator.decorators.jsinjection.rhinoparse;
 
-import java.io.BufferedReader;
-import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.time.Instant;
-import java.util.Arrays;
-
-import org.apache.commons.lang3.StringUtils;
 
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalHttpMap;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalJSRhinoMap;
@@ -56,7 +51,7 @@ public class Callbacks {
 						if (jsSourceString != null) {
 //							System.out.println("JS: " + jsSourceString);
 							ThreadLocalJSRhinoMap.getInstance().create(returnVal, jsSourceString.toString(), className,
-									methodName, executionId, Instant.now().toEpochMilli());
+									sourceString, executionId, Instant.now().toEpochMilli());
 						}
 
 					} catch (Exception e) {

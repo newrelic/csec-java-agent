@@ -1,7 +1,5 @@
 package com.k2cybersecurity.instrumentator.decorators.jsinjection.rhino;
 
-import java.util.Arrays;
-
 import com.k2cybersecurity.instrumentator.custom.K2CyberSecurityException;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalHttpMap;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalJSRhinoMap;

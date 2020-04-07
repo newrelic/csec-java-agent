@@ -32,7 +32,7 @@ public class Callbacks {
 							String data = dataObject.toString();
 //							System.out.println("Executed JS Code : " + data);
 							JSInjectionOperationalBean jsInjectionOperationalBean = new JSInjectionOperationalBean(data,
-									className, methodName, executionId, Instant.now().toEpochMilli());
+									className, sourceString, executionId, Instant.now().toEpochMilli());
 							EventDispatcher.dispatch(jsInjectionOperationalBean,
 									VulnerabilityCaseType.JAVASCRIPT_INJECTION);
 						}
