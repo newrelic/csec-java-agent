@@ -362,9 +362,6 @@ public class Hooks {
 				"com.k2cybersecurity.instrumentator.decorators.fileaccess");
 		DECORATOR_ENTRY.put("java.io.FileInputStream.open", "com.k2cybersecurity.instrumentator.decorators.fileaccess");
 
-		DECORATOR_ENTRY.put("sun.nio.fs.UnixNativeDispatcher",
-				"com.k2cybersecurity.instrumentator.decorators.fileaccess");
-
 		DECORATOR_ENTRY.put("sun.nio.fs.UnixNativeDispatcher.open",
 				"com.k2cybersecurity.instrumentator.decorators.fileaccess");
 		DECORATOR_ENTRY.put("sun.nio.fs.UnixNativeDispatcher.fopen",
@@ -392,7 +389,7 @@ public class Hooks {
 				"com.k2cybersecurity.instrumentator.decorators.fileaccess");
 		DECORATOR_ENTRY.put("java.io.RandomAccessFile.open",
 				"com.k2cybersecurity.instrumentator.decorators.fileaccess");
-		DECORATOR_ENTRY.put("java.io.FileSystem.list", "com.k2cybersecurity.instrumentator.decorators.fileaccess");
+		DECORATOR_ENTRY.put("java.io.File.list", "com.k2cybersecurity.instrumentator.decorators.fileaccess");
 		DECORATOR_ENTRY.put("java.io.FileSystem.getBooleanAttributes",
 				"com.k2cybersecurity.instrumentator.decorators.fileaccess");
 
