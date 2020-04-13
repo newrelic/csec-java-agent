@@ -1,6 +1,9 @@
 package com.k2cybersecurity.intcodeagent.models.javaagent;
 
+import com.sun.org.apache.xpath.internal.operations.Bool;
+
 public class ProtectionConfig {
+	private Boolean protectionMode = false;
 	private Boolean generateEventResponse = false;
 	private Boolean protectKnownVulnerableAPIs = false;
 	private Boolean autoAddDetectedVulnerabilitiesToProtectionList = false;
@@ -28,15 +31,20 @@ public class ProtectionConfig {
 		ProtectionConfig.getInstance().setGenerateEventResponse(protectionConfig.generateEventResponse);
 		ProtectionConfig.getInstance().setProtectKnownVulnerableAPIs(protectionConfig.protectKnownVulnerableAPIs);
 		ProtectionConfig.getInstance().setAutoAttackIPBlockingXFF(protectionConfig.autoAttackIPBlockingXFF);
+		ProtectionConfig.getInstance().setProtectionMode(protectionConfig.protectionMode);
+
 	}
 
 	public static void setInstance(Boolean generateEventResponse, Boolean protectKnownVulnerableAPIs,
-			Boolean autoAddDetectedVulnerabilitiesToProtectionList, Boolean autoAttackIPBlockingXFF) {
+								   Boolean autoAddDetectedVulnerabilitiesToProtectionList, Boolean autoAttackIPBlockingXFF
+			, Boolean protectionMode) {
 		ProtectionConfig.getInstance().setAutoAddDetectedVulnerabilitiesToProtectionList(
 				autoAddDetectedVulnerabilitiesToProtectionList);
 		ProtectionConfig.getInstance().setGenerateEventResponse(generateEventResponse);
 		ProtectionConfig.getInstance().setProtectKnownVulnerableAPIs(protectKnownVulnerableAPIs);
 		ProtectionConfig.getInstance().setAutoAttackIPBlockingXFF(autoAttackIPBlockingXFF);
+		ProtectionConfig.getInstance().setProtectionMode(protectionMode);
+
 	}
 
 	public Boolean getGenerateEventResponse() {
@@ -70,5 +78,13 @@ public class ProtectionConfig {
 
 	public void setAutoAttackIPBlockingXFF(Boolean autoAttackIPBlockingXFF) {
 		this.autoAttackIPBlockingXFF = autoAttackIPBlockingXFF;
+	}
+
+	public Boolean getProtectionMode() {
+		return protectionMode;
+	}
+
+	public void setProtectionMode(Boolean protectionMode) {
+		this.protectionMode = protectionMode;
 	}
 }

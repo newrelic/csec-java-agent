@@ -144,7 +144,15 @@ public class ControlCommandProcessor implements Runnable {
 				ProtectionConfig.setInstance((Boolean) jsonObject.get("generateEventResponse"),
 						(Boolean) jsonObject.get("protectKnownVulnerableAPIs"),
 						(Boolean) jsonObject.get("autoAddDetectedVulnerabilitiesToProtectionList"),
-						(Boolean) jsonObject.get("autoAttackIPBlockingXFF"));
+						(Boolean) jsonObject.get("autoAttackIPBlockingXFF"),
+						(Boolean) jsonObject.get("protectionMode"));
+
+				if (!ProtectionConfig.getInstance().getProtectionMode()) {
+					ProtectionConfig.getInstance().setAutoAddDetectedVulnerabilitiesToProtectionList(false);
+					ProtectionConfig.getInstance().setGenerateEventResponse(false);
+					ProtectionConfig.getInstance().setProtectKnownVulnerableAPIs(false);
+					ProtectionConfig.getInstance().setAutoAttackIPBlockingXFF(false);
+				}
 
 				if (!ProtectionConfig.getInstance().getGenerateEventResponse()) {
 					ProtectionConfig.getInstance().setProtectKnownVulnerableAPIs(false);
