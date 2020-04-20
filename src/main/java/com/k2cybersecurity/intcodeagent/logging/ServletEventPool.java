@@ -63,7 +63,7 @@ public class ServletEventPool {
 						if (future.isDone()) {
 							future.get();
 						}
-					} catch (Exception e) {
+					} catch (Throwable e) {
 					}
 				}
 				super.afterExecute(r, t);
@@ -119,7 +119,7 @@ public class ServletEventPool {
 		try {
 			this.executor
 					.execute(new ServletEventProcessor(firstElement, request, servletInfo, sourceString, threadId));
-		} catch (Exception e) {
+		} catch (Throwable e) {
 
 		}
 	}
@@ -156,7 +156,7 @@ public class ServletEventPool {
 				this.servletInfoReferenceRecord.put(threadId, eidCounts);
 				refCount = 1l;
 			}
-		} catch (Exception e) {
+		} catch (Throwable e) {
 			logger.log(LogLevel.WARNING, "Unable to increment servletInfo ref count for eId " + threadId + ":" +executionId, e, this.getClass().getName());
 		}
 		return refCount;
@@ -173,7 +173,7 @@ public class ServletEventPool {
 					this.servletInfoReferenceRecord.get(threadId).remove(eidCount);
 				}
 			}
-		} catch (Exception e) {
+		} catch (Throwable e) {
 			logger.log(LogLevel.WARNING, "Unable to decrement servletInfo ref count for eId " + threadId + ":" +executionId, e, this.getClass().getName());
 		}
 

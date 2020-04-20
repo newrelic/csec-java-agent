@@ -27,7 +27,7 @@ public class DispatcherPool {
 
 	final int queueSize = 300;
 	final int maxPoolSize = 3;
-	final int corePoolSize = 1;
+	final int corePoolSize = 2;
 	final long keepAliveTime = 10;
 	final TimeUnit timeUnit = TimeUnit.SECONDS;
 	final boolean allowCoreThreadTimeOut = false;
@@ -49,7 +49,7 @@ public class DispatcherPool {
 							K2Instrumentator.JA_HEALTH_CHECK.incrementProcessedCount();
 							future.get();
 						}
-					} catch (Exception e) {
+					} catch (Throwable e) {
 						K2Instrumentator.JA_HEALTH_CHECK.incrementDropCount();
 					}
 				}

@@ -3,6 +3,8 @@ package com.k2cybersecurity.intcodeagent.websocket;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.k2cybersecurity.instrumentator.K2Instrumentator;
 import com.k2cybersecurity.instrumentator.utils.AgentUtils;
+import com.k2cybersecurity.intcodeagent.controlcommand.ControlCommandProcessor;
+import com.k2cybersecurity.intcodeagent.controlcommand.ControlCommandProcessorThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.models.javaagent.IntCodeControlCommand;
@@ -20,11 +22,13 @@ public class WSClient extends WebSocketClient {
 
 	private WSClient() throws URISyntaxException, InterruptedException {
 		super(new URI(String.format("ws://%s:%s", K2Instrumentator.hostip, 54321)));
+        this.setTcpNoDelay(true);
 		logger.log(LogLevel.INFO, "Creating WSock connection to : " + K2Instrumentator.hostip,
 				WSClient.class.getName());
 		if (!connectBlocking()) {
 			logger.log(LogLevel.SEVERE, "WSock connection to " + K2Instrumentator.hostip + " failed",
 					WSClient.class.getName());
+			throw new InterruptedException("Unable to connect K2 Agent. Initial connect failed.");
 		}
 	}
 
@@ -44,12 +48,10 @@ public class WSClient extends WebSocketClient {
 
 	@Override
 	public void onMessage(String message) {
-		// TODO : Receive communication from IC side.
-		// logger.log(Level.FINE, "Message from IC : {0}", message);
+		// Receive communication from IC side.
 		try {
-			IntCodeControlCommand controlCommand = new ObjectMapper().readValue(message, IntCodeControlCommand.class);
-			AgentUtils.controlCommandProcessor(controlCommand);
-		} catch (Exception e) {
+			ControlCommandProcessor.processControlCommand(message, System.currentTimeMillis());
+		} catch (Throwable e) {
 			logger.log(LogLevel.SEVERE, "Unable to process incoming message : " + message + " : due to error : ", e,
 					WSClient.class.getName());
 		}
@@ -102,7 +104,7 @@ public class WSClient extends WebSocketClient {
 			instance.closeBlocking();
 			try {
 				reconnectStatus = instance.reconnectBlocking();
-			} catch (Exception e) {
+			} catch (Throwable e) {
 				reconnectStatus = false;
 			}
 		}

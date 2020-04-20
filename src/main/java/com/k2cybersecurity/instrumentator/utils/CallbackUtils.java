@@ -5,8 +5,11 @@ import com.k2cybersecurity.instrumentator.dispatcher.EventDispatcher;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.models.javaagent.*;
+
+import org.apache.commons.lang3.RegExUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
+import org.json.simple.JSONObject;
 import org.unbescape.html.HtmlEscape;
 
 import java.io.File;
@@ -91,9 +94,10 @@ public class CallbackUtils {
 	public static final String SRCDOC = "srcdoc";
 	public static final String DATA = "data";
 	public static final String CAME_TO_XSS_CHECK = "Came to XSS check : ";
+	private static final Pattern REGEX_SPACE = Pattern.compile("\\s+");
 
-	public static Pattern tagNameRegex = Pattern
-			.compile("<([a-zA-Z_\\-]+[0-9]*|!--)", Pattern.MULTILINE | Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
+	public static Pattern tagNameRegex = Pattern.compile("<([a-zA-Z_\\-]+[0-9]*|!--)",
+			Pattern.MULTILINE | Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
 	public static Pattern attribRegex = Pattern.compile(
 			"([^(\\/\\s<'\">)]+?)(?:\\s*)=\\s*(('|\")([\\s\\S]*?)(?:(?=(\\\\?))\\5.)*?\\3|.+?(?=\\/>|>|\\?>|\\s|<\\/|$))",
 			Pattern.MULTILINE | Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
@@ -105,13 +109,15 @@ public class CallbackUtils {
 
 	static {
 		sqlConnectionMap = new LinkedHashMap<Integer, JADatabaseMetaData>(50) {
-			@Override protected boolean removeEldestEntry(java.util.Map.Entry<Integer, JADatabaseMetaData> eldest) {
+			@Override
+			protected boolean removeEldestEntry(java.util.Map.Entry<Integer, JADatabaseMetaData> eldest) {
 				return size() > 50;
 			}
 		};
 	}
 
-	public static void checkForFileIntegrity(Map<String, FileIntegrityBean> fileLocalMap) {
+	public static void checkForFileIntegrity(Map<String, FileIntegrityBean> fileLocalMap)
+			throws K2CyberSecurityException {
 		for (Entry<String, FileIntegrityBean> entry : fileLocalMap.entrySet()) {
 			boolean isExists = new File(entry.getKey()).exists();
 			if (!entry.getValue().getExists().equals(isExists)) {
@@ -124,20 +130,21 @@ public class CallbackUtils {
 	public static String checkForReflectedXSS(HttpRequestBean httpRequestBean) {
 		Set<String> combinedRequestData = decodeRequestData(httpRequestBean);
 		Set<String> combinedResponseData = decodeResponseData(httpRequestBean.getHttpResponseBean());
-		//        System.out.println("Processed request data is : " + combinedRequestData);
-		//        System.out.println("Processed response data is : " + combinedResponseData);
+		// System.out.println("Processed request data is : " + combinedRequestData);
+		// System.out.println("Processed response data is : " + combinedResponseData);
 		String combinedResponseDataString = StringUtils.joinWith(FIVE_COLON, combinedResponseData);
 
 		Set<String> attackContructs = isXSS(combinedRequestData);
 
 		for (String construct : attackContructs) {
-			//			System.err.println(String.format(
-			//					"Reflected XSS contruct detected ::  %s :: Request : %s", construct,
-			//					httpRequestBean));
+			// System.err.println(String.format(
+			// "Reflected XSS contruct detected :: %s :: Request : %s", construct,
+			// httpRequestBean));
 			if (StringUtils.containsIgnoreCase(combinedResponseDataString, construct)) {
-				//                System.err.println(String.format(
-				//                        "Reflected XSS attack detected :: Construct : %s :: Request : %s :: Response : %s", construct,
-				//                        httpRequestBean, httpRequestBean.getHttpResponseBean().getResponseBody()));
+				// System.err.println(String.format(
+				// "Reflected XSS attack detected :: Construct : %s :: Request : %s :: Response
+				// : %s", construct,
+				// httpRequestBean, httpRequestBean.getHttpResponseBean().getResponseBody()));
 				return construct;
 			}
 		}
@@ -155,7 +162,7 @@ public class CallbackUtils {
 		String decodedString = StringUtils.EMPTY;
 		try {
 			decodedString = URLDecoder.decode(encodedString, StandardCharsets.UTF_8.name());
-		} catch (Exception e) {
+		} catch (Throwable e) {
 			decodedString = encodedString;
 		}
 		return decodedString;
@@ -172,7 +179,7 @@ public class CallbackUtils {
 		String decodedString = StringUtils.EMPTY;
 		try {
 			decodedString = new URI(encodedString).getPath();
-		} catch (Exception e) {
+		} catch (Throwable e) {
 			decodedString = encodedString;
 		}
 		return decodedString;
@@ -199,9 +206,9 @@ public class CallbackUtils {
 			}
 			startPos = matcher.start();
 			currPos = matcher.end() - 1;
-			if(StringUtils.equals(HTML_COMMENT_START, tagName)) {
+			if (StringUtils.equals(HTML_COMMENT_START, tagName)) {
 				tmpCurrPos = StringUtils.indexOf(data, HTML_COMMENT_END, startPos);
-				if(tmpCurrPos == -1) {
+				if (tmpCurrPos == -1) {
 					break;
 				} else {
 					currPos = tmpCurrPos;
@@ -210,10 +217,10 @@ public class CallbackUtils {
 			}
 			tmpStartPos = tmpCurrPos = StringUtils.indexOf(data, ANGLE_END, startPos);
 
-			if(tmpCurrPos == -1 ) {
+			if (tmpCurrPos == -1) {
 				tmpStartPos = startPos;
 			}
-			
+
 			Matcher attribMatcher = attribRegex.matcher(data);
 			while (attribMatcher.find(currPos)) {
 				String attribData = attribMatcher.group().trim();
@@ -221,7 +228,7 @@ public class CallbackUtils {
 				tmpCurrPos = StringUtils.indexOf(data, ANGLE_END, tmpStartPos);
 
 				if ((tmpCurrPos == -1 || attribMatcher.start() < tmpCurrPos)) {
-					tmpStartPos = tmpCurrPos = attribMatcher.end() -1;
+					tmpStartPos = tmpCurrPos = attribMatcher.end() - 1;
 					tmpStartPos++;
 					if (StringUtils.isBlank(attribMatcher.group(3)) && attribMatcher.end() >= tmpCurrPos) {
 						tmpStartPos = tmpCurrPos = StringUtils.indexOf(data, ANGLE_END, attribMatcher.start());
@@ -231,13 +238,13 @@ public class CallbackUtils {
 					String key = StringUtils.substringBefore(attribData, EQUALS);
 					String val = StringUtils.substringAfter(attribData, EQUALS);
 
-					if (StringUtils.isNotBlank(key) && (StringUtils.startsWithIgnoreCase(key, ON1) || StringUtils
-							.equalsIgnoreCase(key, SRC) || StringUtils.equalsIgnoreCase(key, HREF) || StringUtils
-							.equalsIgnoreCase(key, ACTION) || StringUtils
-							.equalsIgnoreCase(key, FORMACTION) || StringUtils
-							.equalsIgnoreCase(key, SRCDOC) ||  StringUtils
-							.equalsIgnoreCase(key, DATA) || StringUtils
-							.containsIgnoreCase(HtmlEscape.unescapeHtml(val), JAVASCRIPT))) {
+					if (StringUtils.isNotBlank(key) && (StringUtils.startsWithIgnoreCase(key, ON1)
+							|| StringUtils.equalsIgnoreCase(key, SRC) || StringUtils.equalsIgnoreCase(key, HREF)
+							|| StringUtils.equalsIgnoreCase(key, ACTION)
+							|| StringUtils.equalsIgnoreCase(key, FORMACTION)
+							|| StringUtils.equalsIgnoreCase(key, SRCDOC) || StringUtils.equalsIgnoreCase(key, DATA)
+							|| StringUtils.containsIgnoreCase(
+									RegExUtils.removeAll(HtmlEscape.unescapeHtml(val), REGEX_SPACE), JAVASCRIPT))) {
 						isAttackConstruct = true;
 					}
 				} else {
@@ -249,9 +256,11 @@ public class CallbackUtils {
 			}
 			if (data.charAt(currPos) != ANGLE_END_CHAR) {
 				int tmp = StringUtils.indexOf(data, ANGLE_END, currPos);
-				
+
 				if (tmp != -1) {
 					currPos = tmp;
+				} else if( !isAttackConstruct) {
+					continue;
 				}
 			}
 			if (StringUtils.equalsIgnoreCase(tagName.trim(), SCRIPT)) {
@@ -260,7 +269,16 @@ public class CallbackUtils {
 					String body = StringUtils.substring(data, currPos + 1, locationOfEndTag);
 					if (StringUtils.isNotBlank(body)) {
 						construct.add(StringUtils.substring(data, startPos, currPos + 1) + body);
+
 						continue;
+					}
+				} else {
+					String body = StringUtils.substring(data, currPos + 1);
+					int tagEnd = StringUtils.indexOf(body, ANGLE_END);
+					if (StringUtils.isNotBlank(body) && tagEnd != -1 ) {
+						body = StringUtils.substring(body, tagEnd);
+						construct.add(StringUtils.substring(data, startPos, currPos + 1) + body);
+						break;
 					}
 				}
 			}
@@ -279,10 +297,17 @@ public class CallbackUtils {
 		}
 		return attackConstructs;
 	}
-	
+
 //	public static void main(String[] args) {
-//		System.out.println(getXSSConstructs("<svg><script xlink:href=data&colon;,alert(\"sasas\") </script"));
-//		System.out.println(getXSSConstructs("<script><?script>"));
+////		System.out.println(getXSSConstructs("<svg><script xlink:href=data&colon;,alert(\"sasas\") </script"));
+////		System.out.println(getXSSConstructs("<IMG%20SRC%3D%26%23106%3B%26%2397%3B%26%23118%3B%26%2397%3B%26%23115%3B%26%2399%3B%26%23114%3B%26%23105%3B%26%23112%3B%26%23116%3B%26%2358%3B%26%2397%3B%26%23108%3B%26%23101%3B%26%23114%3B%26%23116%3B%26%2340%3B"));
+//		HttpRequestBean httpRequestBean = new HttpRequestBean();
+//		httpRequestBean.setBody("<IMG%20SRC%3D%26%23106%3B%26%2397%3B%26%23118%3B%26%2397%3B%26%23115%3B%26%2399%3B%26%23114%3B%26%23105%3B%26%23112%3B%26%23116%3B%26%2358%3B%26%2397%3B%26%23108%3B%26%23101%3B%26%23114%3B%26%23116%3B%26%2340%3B");
+//		 
+//		httpRequestBean.setContentType(APPLICATION_X_WWW_FORM_URLENCODED);
+//		System.out.println(decodeRequestData(httpRequestBean));
+//		System.out.println(getXSSConstructs("<sVg><scRipt> alert&lpar;1&rpar; {Opera}</script"));
+//		System.out.println(getXSSConstructs("<script src=\"some.js\""));
 //	}
 
 //	    public static void main(String[] args) {
@@ -316,8 +341,6 @@ public class CallbackUtils {
 //	        System.out.println("Detection : " + getXSSConstructs("<img onerror=alert(1) >"));
 //	        System.out.println("Detection : " + getXSSConstructs("<img src=x onerror=\"alert(1)\" > "));
 
-
-
 //			System.out.println("Detection : " + getXSSConstructs("></SCRIPT>”>’><SCRIPT>alert(String.fromCharCode(88,83,83))</SCRIPT>"));
 //			System.out.println("Detection : " + getXSSConstructs("</script>top[/al/.source+/ert/.source](1)<script>"));
 //			System.out.println("Detection : " + getXSSConstructs("<IMG \"\"\"><SCRIPT>alert(\"XSS\")</SCRIPT>\"\\>"));
@@ -326,8 +349,6 @@ public class CallbackUtils {
 //			System.out.println("Detection : " + getXSSConstructs("<SCRIPT>alert('XSS');</SCRIPT>"));
 //
 //		}
-
-
 
 	/**
 	 * @return the sqlConnectionMap
@@ -372,13 +393,13 @@ public class CallbackUtils {
 					jaDatabaseMetaData.setDriverVersion(driverVersion);
 					jaDatabaseMetaData.setDriverClassName(connection.getClass().getName());
 					jaDatabaseMetaData.setDbIdentifier(detectDatabaseProduct(productName));
-					//                    System.out.println("DB details detected: " + jaDatabaseMetaData);
+					// System.out.println("DB details detected: " + jaDatabaseMetaData);
 					sqlConnectionMap.put(connection.hashCode(), jaDatabaseMetaData);
 					return jaDatabaseMetaData.getDbIdentifier();
 				}
 			}
 
-		} catch (Exception e) {
+		} catch (Throwable e) {
 			logger.log(LogLevel.ERROR, ERROR, e, CallbackUtils.class.getName());
 		}
 		return UNKNOWN;
@@ -422,8 +443,8 @@ public class CallbackUtils {
 		if (databaseProductName.startsWith(VERTICA1)) {
 			return VERTICA;
 		}
-		if (databaseProductName.startsWith(ADAPTIVE) || databaseProductName.startsWith(ASE) || databaseProductName
-				.startsWith(SQL_SERVER)) {
+		if (databaseProductName.startsWith(ADAPTIVE) || databaseProductName.startsWith(ASE)
+				|| databaseProductName.startsWith(SQL_SERVER)) {
 			return SYBASE;
 		}
 		if (databaseProductName.startsWith(HDB)) {
@@ -447,27 +468,27 @@ public class CallbackUtils {
 		String responseBody = httpResponseBean.getResponseBody();
 		String processedBody = responseBody;
 
-		String processedHeaders = StringEscapeUtils.unescapeJson(httpResponseBean.getHeaders().toString());
-		String oldHeaders = processedHeaders;
+//		String processedHeaders = StringEscapeUtils.unescapeJson(httpResponseBean.getHeaders().toString());
+//		String oldHeaders = processedHeaders;
 
 		try {
 			processedData.add(processedBody);
 
-			//            processedBody = HtmlEscape.unescapeHtml(responseBody);
-			//            processedData.append(processedBody);
-			//            processedData.append(FIVE_COLON);
+			// processedBody = HtmlEscape.unescapeHtml(responseBody);
+			// processedData.append(processedBody);
+			// processedData.append(FIVE_COLON);
 
-			processedData.add(processedHeaders);
+//			processedData.add(processedHeaders);
 
-			//            processedHeaders = HtmlEscape.unescapeHtml(processedHeaders);
-			//            processedData.append(processedHeaders);
-			//            processedData.append(FIVE_COLON);
+			// processedHeaders = HtmlEscape.unescapeHtml(processedHeaders);
+			// processedData.append(processedHeaders);
+			// processedData.append(FIVE_COLON);
 
 			processedBody = urlDecode(processedBody);
 			processedData.add(processedBody);
 
-			processedHeaders = urlDecode(processedHeaders);
-			processedData.add(processedHeaders);
+//			processedHeaders = urlDecode(processedHeaders);
+//			processedData.add(processedHeaders);
 
 			String oldProcessedBody;
 
@@ -479,7 +500,7 @@ public class CallbackUtils {
 						processedBody = StringEscapeUtils.unescapeJson(processedBody);
 						if (!StringUtils.equals(oldProcessedBody, processedBody)) {
 							processedData.add(processedBody);
-							//                            System.out.println("Decoding JSON: " + processedBody);
+							// System.out.println("Decoding JSON: " + processedBody);
 						}
 					} while (!StringUtils.equals(oldProcessedBody, processedBody));
 					break;
@@ -489,14 +510,14 @@ public class CallbackUtils {
 						processedBody = StringEscapeUtils.unescapeXml(processedBody);
 						if (!StringUtils.equals(oldProcessedBody, processedBody)) {
 							processedData.add(processedBody);
-							//                            System.out.println("Decoding XML: " + processedBody);
+							// System.out.println("Decoding XML: " + processedBody);
 						}
 					} while (!StringUtils.equals(oldProcessedBody, processedBody));
 					break;
 
 				}
 			}
-		} catch (Exception e) {
+		} catch (Throwable e) {
 			logger.log(LogLevel.ERROR, ERROR, e, CallbackUtils.class.getName());
 		}
 		return processedData;
@@ -543,62 +564,73 @@ public class CallbackUtils {
 				String oldProcessedBody;
 				switch (contentType) {
 				case APPLICATION_JSON:
-					do {
+//					do {
 						oldProcessedBody = processedBody;
 						processedBody = StringEscapeUtils.unescapeJson(processedBody);
-						if (!StringUtils.equals(oldProcessedBody, processedBody) && StringUtils
-								.contains(processedBody, ANGLE_START)) {
+						if (!StringUtils.equals(oldProcessedBody, processedBody)
+								&& StringUtils.contains(processedBody, ANGLE_START)) {
 							processedData.add(processedBody);
-							//                            System.out.println("Decoding JSON: " + processedBody);
+							// System.out.println("Decoding JSON: " + processedBody);
 						}
-					} while (!StringUtils.equals(oldProcessedBody, processedBody));
+//					} while (!StringUtils.equals(oldProcessedBody, processedBody));
 					break;
 				case APPLICATION_XML:
-					do {
+//					do {
 						oldProcessedBody = processedBody;
 						processedBody = StringEscapeUtils.unescapeXml(processedBody);
-						if (!StringUtils.equals(oldProcessedBody, processedBody) && StringUtils
-								.contains(processedBody, ANGLE_START)) {
+						if (!StringUtils.equals(oldProcessedBody, processedBody)
+								&& StringUtils.contains(processedBody, ANGLE_START)) {
 							processedData.add(processedBody);
-							//                            System.out.println("Decoding XML: " + processedBody);
+							// System.out.println("Decoding XML: " + processedBody);
 						}
-					} while (!StringUtils.equals(oldProcessedBody, processedBody));
+//					} while (!StringUtils.equals(oldProcessedBody, processedBody));
 					break;
 
 				case APPLICATION_X_WWW_FORM_URLENCODED:
 					processedBody = urlDecode(processedBody);
 					processedData.add(processedBody);
 
-					do {
+//					do {
 						oldProcessedBody = processedBody;
 						processedBody = urlDecode(processedBody);
-						if (!StringUtils.equals(oldProcessedBody, processedBody) && StringUtils
-								.contains(processedBody, ANGLE_START)) {
+						if (!StringUtils.equals(oldProcessedBody, processedBody)
+								&& StringUtils.contains(processedBody, ANGLE_START)) {
 							processedData.add(processedBody);
-							//                            System.out.println("Decoding URL: " + processedBody);
+							// System.out.println("Decoding URL: " + processedBody);
 						}
-					} while (!StringUtils.equals(oldProcessedBody, processedBody));
+//					} while (!StringUtils.equals(oldProcessedBody, processedBody));
 
 					break;
 				}
 			}
-		} catch (Exception e) {
+		} catch (Throwable e) {
 			logger.log(LogLevel.ERROR, ERROR, e, CallbackUtils.class.getName());
 		}
 		return processedData;
 	}
 
+//	private static void processURLEncodedDataForXSS(Set<String> processedData, String data) {
+//		String key = data;
+//		String oldKey = new String(key);
+//
+//		do {
+//			if (StringUtils.contains(key, ANGLE_START)) {
+//				processedData.add(key);
+//			}
+//			oldKey = key;
+//			key = urlDecode(key);
+//		} while (!StringUtils.equals(oldKey, key));
+//	}
+
 	private static void processURLEncodedDataForXSS(Set<String> processedData, String data) {
 		String key = data;
-		String oldKey = new String(key);
-
-		do {
-			if (StringUtils.contains(key, ANGLE_START)) {
-				processedData.add(key);
-			}
-			oldKey = key;
-			key = urlDecode(key);
-		} while (!StringUtils.equals(oldKey, key));
+		if (StringUtils.contains(key, ANGLE_START)) {
+			processedData.add(key);
+		}
+		key = urlDecode(key);
+		if (StringUtils.contains(key, ANGLE_START)) {
+			processedData.add(key);
+		}
 	}
 
 	public static boolean checkArgsTypeHeirarchy(Object requestArg, Object responseArg) {
@@ -614,10 +646,10 @@ public class CallbackUtils {
 				responseInterface = Class.forName("javax.servlet.http.HttpServletResponse", false,
 						responseArg.getClass().getClassLoader());
 			}
-			return requestInterface.isAssignableFrom(requestArg.getClass()) && responseInterface
-					.isAssignableFrom(responseArg.getClass());
-		} catch (Exception e) {
-			//            e.printStackTrace();
+			return requestInterface.isAssignableFrom(requestArg.getClass())
+					&& responseInterface.isAssignableFrom(responseArg.getClass());
+		} catch (Throwable e) {
+			// e.printStackTrace();
 		}
 		return false;
 	}
@@ -632,8 +664,8 @@ public class CallbackUtils {
 						requestArg.getClass().getClassLoader());
 			}
 			return requestInterface.isAssignableFrom(requestArg.getClass());
-		} catch (Exception e) {
-			//            e.printStackTrace();
+		} catch (Throwable e) {
+			// e.printStackTrace();
 		}
 		return false;
 	}
@@ -648,8 +680,8 @@ public class CallbackUtils {
 						responseArg.getClass().getClassLoader());
 			}
 			return responseInterface.isAssignableFrom(responseArg.getClass());
-		} catch (Exception e) {
-			//            e.printStackTrace();
+		} catch (Throwable e) {
+			// e.printStackTrace();
 		}
 		return false;
 	}
@@ -662,5 +694,8 @@ public class CallbackUtils {
 		ThreadLocalSessionMap.getInstance().clearAll();
 		ThreadLocalLDAPMap.getInstance().clearAll();
 		ThreadLocalExecutionMap.getInstance().cleanUp();
+		ThreadLocalLdaptiveMap.getInstance().clearAll();
+        ThreadLocalXpathSaxonMap.getInstance().clearAll();
+        ThreadLocalXQuerySaxonMap.getInstance().clearAll();
 	}
 }

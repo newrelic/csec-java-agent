@@ -12,21 +12,43 @@ import com.k2cybersecurity.intcodeagent.websocket.JsonConverter;
 public class Identifier {
 
 	private String ipaddress;
-	
+
 	private Boolean isHost = false;
-	
+
 	private Boolean isContainer = false;
-	
+
 	private Boolean isPod = false;
 	
+	private Boolean isECSContainer = false;
+
 	private String containerId;
-	
+
 	private String podId;
-	
+
 	private String namespace;
-	
+
 	private String hostname;
+
+	private String ecsTaskId;
+
+	private String containerName;
+
+	private String imageId;
+
+	private String imageName;
+
+	private Long startedAt;
 	
+	private String ecsTaskDefinition;
+
+	public String getEcsTaskDefinition() {
+		return ecsTaskDefinition;
+	}
+
+	public void setEcsTaskDefinition(String ecsTaskDefinition) {
+		this.ecsTaskDefinition = ecsTaskDefinition;
+	}
+
 	/**
 	 * @param ipaddress
 	 */
@@ -82,7 +104,7 @@ public class Identifier {
 	public void setPodId(String podId) {
 		this.podId = podId;
 	}
-	
+
 	@Override
 	public String toString() {
 		return JsonConverter.toJSON(this);
@@ -115,5 +137,53 @@ public class Identifier {
 	public void setHostname(String hostname) {
 		this.hostname = hostname;
 	}
-	
+
+	public String getEcsTaskId() {
+		return ecsTaskId;
+	}
+
+	public void setEcsTaskId(String ecsTaskId) {
+		this.ecsTaskId = ecsTaskId;
+	}
+
+	public String getContainerName() {
+		return containerName;
+	}
+
+	public void setContainerName(String containerName) {
+		this.containerName = containerName;
+	}
+
+	public String getImageId() {
+		return imageId;
+	}
+
+	public void setImageId(String imageId) {
+		this.imageId = imageId;
+	}
+
+	public String getImageName() {
+		return imageName;
+	}
+
+	public void setImageName(String imageName) {
+		this.imageName = imageName;
+	}
+
+	public Long getStartedAt() {
+		return startedAt;
+	}
+
+	public void setStartedAt(Long startLong) {
+		this.startedAt = startLong;
+	}
+
+	public Boolean getIsECSContainer() {
+		return isECSContainer;
+	}
+
+	public void setIsECSContainer(Boolean isECSContainer) {
+		this.isECSContainer = isECSContainer;
+	}
+
 }

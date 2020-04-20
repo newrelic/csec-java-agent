@@ -447,11 +447,13 @@ public interface IAgentConstants {
 	// EventThreadPool.java file constants
 
 	String K2_JAVA_AGENT = "K2-Java-Agent-";
+	String K2_LISTERNER = "K2-ControlCommand-Listener-";
 
 	// LoggingInterceptor Constants
 	char DIR_SEPERATOR = '/';
 	String CGROUP_FILE_NAME = "/proc/self/cgroup";
 	String DOCKER_DIR = "docker/";
+	String ECS_DIR = "ecs/";
 	String KUBEPODS_DIR = "kubepods/";
 	String LXC_DIR = "lxc/";
 	String JAR_PATH_INIT_MSG = "Pooling getJarPathResultExecutorService to fetch results.";

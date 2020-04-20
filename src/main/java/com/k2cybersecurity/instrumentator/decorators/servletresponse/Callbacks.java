@@ -6,6 +6,8 @@ import com.k2cybersecurity.instrumentator.custom.ThreadLocalOperationLock;
 import com.k2cybersecurity.instrumentator.utils.CallbackUtils;
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.Arrays;
+
 public class Callbacks {
 
     public static final String GET_WRITER = "getWriter";
@@ -43,6 +45,7 @@ public class Callbacks {
 
                     } else if (StringUtils.equals(methodName, GET_OUTPUT_STREAM)) {
                         ThreadLocalHttpMap.getInstance().setResponseOutputStream(returnVal);
+//                        System.out.println("GET_OUTPUT_STREAM set kar diya. :" + exectionId + " :: " + ThreadLocalHttpMap.getInstance().getResponseOutputStream());
                         ThreadLocalHTTPIOLock.getInstance().resetLock();
 
                     }
@@ -58,14 +61,14 @@ public class Callbacks {
 
     public static void doOnError(String sourceString, String className, String methodName, Object obj, Object[] args,
                                  Throwable error, String exectionId) throws Throwable {
-        if (!ThreadLocalOperationLock.getInstance().isAcquired()) {
-            try {
-                ThreadLocalOperationLock.getInstance().acquire();
+//        if (!ThreadLocalOperationLock.getInstance().isAcquired()) {
+//            try {
+//                ThreadLocalOperationLock.getInstance().acquire();
 //				System.out.println("OnError :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj
 //						+ " - error : " + error + " - eid : " + exectionId);
-            } finally {
-                ThreadLocalOperationLock.getInstance().release();
-            }
-        }
+//            } finally {
+//                ThreadLocalOperationLock.getInstance().release();
+//            }
+//        }
     }
 }

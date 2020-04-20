@@ -53,11 +53,11 @@
 		</dependency>
 
 		<!-- https://mvnrepository.com/artifact/com.google.code.gson/gson -->
-		<dependency>
+		<!-- <dependency>
 			<groupId>com.google.code.gson</groupId>
 			<artifactId>gson</artifactId>
 			<version>2.8.5</version>
-		</dependency>
+		</dependency> -->
 		<!-- https://mvnrepository.com/artifact/org.apache.commons/commons-text -->
 		<dependency>
 			<groupId>org.apache.commons</groupId>
@@ -70,6 +70,13 @@
 			<artifactId>commons-net</artifactId>
 			<version>3.6</version>
 		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.apache.commons/commons-compress -->
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-compress</artifactId>
+			<version>1.20</version>
+		</dependency>
+
 		<!-- https://mvnrepository.com/artifact/net.bytebuddy/byte-buddy -->
 		<dependency>
 			<groupId>net.bytebuddy</groupId>
@@ -100,6 +107,24 @@
 		</resources>
 
 		<plugins>
+			<plugin>
+				<groupId>com.k2cybersecurity</groupId>
+				<artifactId>k2-decorator-copy-plugin</artifactId>
+				<version>1.0</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>decorator-copy</goal>
+						</goals>
+						<configuration>
+							<baseDecoratorSourcePackage>
+								com.k2cybersecurity.instrumentator.decorators
+							</baseDecoratorSourcePackage>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
 			<plugin>
 				<artifactId>maven-jar-plugin</artifactId>
 				<version>2.4</version>

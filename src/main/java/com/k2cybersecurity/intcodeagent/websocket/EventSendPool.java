@@ -4,7 +4,10 @@ import com.k2cybersecurity.instrumentator.K2Instrumentator;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.logging.ServletEventPool.EventAbortPolicy;
+import com.k2cybersecurity.intcodeagent.models.javaagent.JavaAgentEventBean;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.*;
 
 public class EventSendPool {
@@ -16,6 +19,11 @@ public class EventSendPool {
 
 	private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
 
+	public Map<String, Long> getEventMap() {
+		return eventMap;
+	}
+
+	private Map<String, Long> eventMap = new ConcurrentHashMap<>();
 
 	private EventSendPool() {
 		// load the settings
@@ -39,7 +47,7 @@ public class EventSendPool {
 							K2Instrumentator.JA_HEALTH_CHECK.incrementEventSentCount();
 							future.get();
 						}
-					} catch (Exception e) {
+					} catch (Throwable e) {
 						K2Instrumentator.JA_HEALTH_CHECK.incrementDropCount();
 					}
 				}
@@ -66,6 +74,10 @@ public class EventSendPool {
 	}
 
 	public void sendEvent(String event) {
+		executor.submit(new EventSender(event));
+	}
+
+	public void sendEvent(JavaAgentEventBean event) {
 		executor.submit(new EventSender(event));
 	}
 

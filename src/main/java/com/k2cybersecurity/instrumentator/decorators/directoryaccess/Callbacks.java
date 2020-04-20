@@ -1,13 +1,6 @@
 package com.k2cybersecurity.instrumentator.decorators.directoryaccess;
 
-import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.SOURCE_EXENSIONS;
-
-import java.io.File;
-import java.nio.file.Paths;
-import java.time.Instant;
-
-import org.apache.commons.lang3.StringUtils;
-
+import com.k2cybersecurity.instrumentator.custom.K2CyberSecurityException;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalExecutionMap;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalHttpMap;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalOperationLock;
@@ -15,11 +8,18 @@ import com.k2cybersecurity.instrumentator.dispatcher.EventDispatcher;
 import com.k2cybersecurity.intcodeagent.models.javaagent.FileIntegrityBean;
 import com.k2cybersecurity.intcodeagent.models.javaagent.VulnerabilityCaseType;
 import com.k2cybersecurity.intcodeagent.models.operationalbean.FileOperationalBean;
+import org.apache.commons.lang3.StringUtils;
+
+import java.io.File;
+import java.nio.file.Paths;
+import java.time.Instant;
+
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.SOURCE_EXENSIONS;
 
 public class Callbacks {
 
 	public static void doOnEnter(String sourceString, String className, String methodName, Object obj, Object[] args,
-			String exectionId) {
+			String exectionId) throws K2CyberSecurityException {
 //		System.out.println("OnEnter :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj
 //				+ " - eid : " + exectionId);
 		if (!ThreadLocalHttpMap.getInstance().isEmpty() && !ThreadLocalOperationLock.getInstance().isAcquired()) {
@@ -30,7 +30,7 @@ public class Callbacks {
 					fileName = ((File) obj).toString();
 
 					FileOperationalBean fileOperationalBean = new FileOperationalBean(fileName,
-							className, sourceString, exectionId, Instant.now().toEpochMilli());
+							className, sourceString, exectionId, Instant.now().toEpochMilli(), false);
 					EventDispatcher.dispatch(fileOperationalBean, VulnerabilityCaseType.FILE_OPERATION);
 				}
 			} finally {

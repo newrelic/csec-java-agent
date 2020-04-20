@@ -1,5 +1,6 @@
 package com.k2cybersecurity.instrumentator.decorators.weakrandom;
 
+import com.k2cybersecurity.instrumentator.custom.K2CyberSecurityException;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalHttpMap;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalOperationLock;
 import com.k2cybersecurity.instrumentator.dispatcher.EventDispatcher;
@@ -15,7 +16,7 @@ public class Callbacks {
 	public static final String WEAK_RANDOM = "WEAKRANDOM";
 
 	public static void doOnEnter(String sourceString, String className, String methodName, Object obj, Object[] args,
-			String exectionId) {
+			String exectionId) throws K2CyberSecurityException {
 		if (!ThreadLocalHttpMap.getInstance().isEmpty() && !ThreadLocalOperationLock.getInstance().isAcquired()) {
 			try {
 				ThreadLocalOperationLock.getInstance().acquire();

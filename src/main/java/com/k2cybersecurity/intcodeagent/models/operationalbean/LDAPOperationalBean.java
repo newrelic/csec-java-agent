@@ -7,6 +7,10 @@ public class LDAPOperationalBean extends AbstractOperationalBean {
 	private String name;
 	private String filter;
 
+	public LDAPOperationalBean(String className, String sourceMethod, String executionId, long startTime) {
+		super(className, sourceMethod, executionId, startTime);
+	}
+	
 	public LDAPOperationalBean(String name, String className, String sourceMethod, String executionId, long startTime) {
 		super(className, sourceMethod, executionId, startTime);
 		this.name = name;

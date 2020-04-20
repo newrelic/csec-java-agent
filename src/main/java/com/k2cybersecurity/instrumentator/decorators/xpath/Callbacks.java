@@ -1,23 +1,24 @@
 package com.k2cybersecurity.instrumentator.decorators.xpath;
 
-import com.k2cybersecurity.instrumentator.custom.ThreadLocalHttpMap;
-import com.k2cybersecurity.instrumentator.custom.ThreadLocalOperationLock;
-import com.k2cybersecurity.instrumentator.dispatcher.EventDispatcher;
-import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
-import com.k2cybersecurity.intcodeagent.models.javaagent.VulnerabilityCaseType;
-import com.k2cybersecurity.intcodeagent.models.operationalbean.XPathOperationalBean;
-import org.apache.commons.lang3.StringUtils;
+import static com.k2cybersecurity.instrumentator.decorators.xpath.IXPathConstants.M_PATTERN_STRING;
+import static com.k2cybersecurity.instrumentator.decorators.xpath.IXPathConstants.XPATH_DOM4J_READER;
+import static com.k2cybersecurity.instrumentator.decorators.xpath.IXPathConstants.XPATH_EXECUTE_METHOD1;
+import static com.k2cybersecurity.instrumentator.decorators.xpath.IXPathConstants.XPATH_EXECUTE_METHOD2;
 
 import java.lang.reflect.Field;
 import java.time.Instant;
+import java.util.Arrays;
+
+import org.apache.commons.lang3.StringUtils;
+
+import com.k2cybersecurity.instrumentator.custom.K2CyberSecurityException;
+import com.k2cybersecurity.instrumentator.custom.ThreadLocalHttpMap;
+import com.k2cybersecurity.instrumentator.custom.ThreadLocalOperationLock;
+import com.k2cybersecurity.instrumentator.dispatcher.EventDispatcher;
+import com.k2cybersecurity.intcodeagent.models.javaagent.VulnerabilityCaseType;
+import com.k2cybersecurity.intcodeagent.models.operationalbean.XPathOperationalBean;
 
 public class Callbacks {
-
-	private static final String M_PATTERN_STRING = "m_patternString";
-	private static final String XPATH_EXECUTE_METHOD1 = "public org.apache.xpath.objects.XObject org.apache.xpath.XPath.execute(org.apache.xpath.XPathContext,int,org.apache.xml.utils.PrefixResolver) throws javax.xml.transform.TransformerException";
-	private static final String XPATH_EXECUTE_METHOD2 = "public com.sun.org.apache.xpath.internal.objects.XObject com.sun.org.apache.xpath.internal.XPath.execute(com.sun.org.apache.xpath.internal.XPathContext,int,com.sun.org.apache.xml.internal.utils.PrefixResolver) throws javax.xml.transform.TransformerException";
-
-	private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
 
 	public static void doOnEnter(String sourceString, String className, String methodName, Object obj, Object[] args,
 			String executionId) {
@@ -32,8 +33,7 @@ public class Callbacks {
 				ThreadLocalOperationLock.getInstance().acquire();
 //				logger.log(LogLevel.INFO, "OnEnter :" + sourceString + " - args : " + Arrays.asList(args) + " - this : "
 //						+ obj + " - eid : " + executionId, Callbacks.class.getName());
-				if ((sourceString.equals(
-						XPATH_EXECUTE_METHOD1) || sourceString.equals(XPATH_EXECUTE_METHOD2))
+				if ((sourceString.equals(XPATH_EXECUTE_METHOD1) || sourceString.equals(XPATH_EXECUTE_METHOD2))
 						&& ThreadLocalHttpMap.getInstance().getHttpRequest() != null && args.length != 0) {
 					try {
 						Field patternStringField = obj.getClass().getDeclaredField(M_PATTERN_STRING);
@@ -51,11 +51,24 @@ public class Callbacks {
 //						} else {
 //							System.out.println("pattern string object is null");
 						}
-					} catch (Exception ex) {
+					} catch (Exception | K2CyberSecurityException ex) {
 //						System.out.println("Xpath exception");
 //						ex.printStackTrace();
 					}
+				} else if (sourceString.equals(XPATH_DOM4J_READER)) {
+					Object xpathExpressionObject = args[0];
+					if (xpathExpressionObject != null) {
+						String xpathExpression = xpathExpressionObject.toString();
+						if (StringUtils.isNotBlank(xpathExpression)) {
+//							System.out.println("Obtained xpathExpression is : " + xpathExpression);
+							XPathOperationalBean xPathOperationalBean = new XPathOperationalBean(xpathExpression,
+									className, methodName, executionId, Instant.now().toEpochMilli());
+							EventDispatcher.dispatch(xPathOperationalBean, VulnerabilityCaseType.XPATH);
+						}
+					}
 				}
+			} catch (Exception | K2CyberSecurityException e) {
+				e.printStackTrace();
 			} finally {
 				ThreadLocalOperationLock.getInstance().release();
 			}

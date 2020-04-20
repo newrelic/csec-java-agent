@@ -23,6 +23,8 @@ public class JavaAgentEventBean extends AgentBasicInfo {
 	private String eventCategory;
 	private Long preProcessingTime;
 	private AgentMetaData metaData;
+	private Long blockingProcessingTime = 0L;
+	private boolean validationResponseRequired = false;
 
 	public JavaAgentEventBean() {
 		super();
@@ -260,5 +262,21 @@ public class JavaAgentEventBean extends AgentBasicInfo {
 
 	public void setEventCategory(String eventCategory) {
 		this.eventCategory = eventCategory;
+	}
+
+	public Long getBlockingProcessingTime() {
+		return blockingProcessingTime;
+	}
+
+	public void setBlockingProcessingTime(Long blockingProcessingTime) {
+		this.blockingProcessingTime = blockingProcessingTime;
+	}
+
+	public boolean isValidationResponseRequired() {
+		return validationResponseRequired;
+	}
+
+	public void setValidationResponseRequired(boolean validationResponseRequired) {
+		this.validationResponseRequired = validationResponseRequired;
 	}
 }

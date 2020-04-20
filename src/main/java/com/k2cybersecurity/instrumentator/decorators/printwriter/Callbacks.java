@@ -34,7 +34,7 @@ public class Callbacks {
                     .getInstance().isAcquired() && !ThreadLocalHTTPIOLock.getInstance().isAcquired()) {
                 try {
                     ThreadLocalOperationLock.getInstance().acquire();
-                    ThreadLocalHTTPIOLock.getInstance().acquire(obj);
+                    ThreadLocalHTTPIOLock.getInstance().acquire(obj, sourceString, exectionId);
 //                    System.out.println(
 //                            "OnEnter :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj
 //                                    + " - eid : " + exectionId);
@@ -113,8 +113,6 @@ public class Callbacks {
                             }
                             break;
                     }
-                } catch (Exception e) {
-//                    e.printStackTrace();
                 } finally {
                     ThreadLocalOperationLock.getInstance().release();
                 }
@@ -129,7 +127,7 @@ public class Callbacks {
             try {
                 ThreadLocalOperationLock.getInstance().acquire();
             } finally {
-                ThreadLocalHTTPIOLock.getInstance().release(obj);
+                ThreadLocalHTTPIOLock.getInstance().release(obj, sourceString, exectionId);
                 ThreadLocalOperationLock.getInstance().release();
             }
         }
@@ -143,7 +141,7 @@ public class Callbacks {
                 //                System.out.println("OnError :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj
                 //                        + " - error : " + error + " - eid : " + exectionId);
             } finally {
-                ThreadLocalHTTPIOLock.getInstance().release(obj);
+                ThreadLocalHTTPIOLock.getInstance().release(obj, sourceString, exectionId);
                 ThreadLocalOperationLock.getInstance().release();
             }
         }

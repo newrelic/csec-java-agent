@@ -19,7 +19,7 @@ public class Callbacks {
                 ThreadLocalOperationLock.getInstance().acquire();
 //						System.out.println("OnStart :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj
 //								+ " - return : " + returnVal + " - eid : " + exectionId);
-                ThreadLocalHTTPIOLock.getInstance().acquire(obj);
+                ThreadLocalHTTPIOLock.getInstance().acquire(obj, sourceString, exectionId);
             } finally {
                 ThreadLocalOperationLock.getInstance().release();
             }
@@ -30,7 +30,7 @@ public class Callbacks {
                                 Object returnVal, String exectionId) {
 
         if (!ThreadLocalHttpMap.getInstance().isEmpty() && !ThreadLocalOperationLock.getInstance().isAcquired() && obj != null && ThreadLocalHttpMap.getInstance().getRequestReader() != null && ThreadLocalHttpMap.getInstance().getRequestReader().hashCode() == obj.hashCode()
-                && ThreadLocalHTTPIOLock.getInstance().isAcquired(obj)) {
+                && ThreadLocalHTTPIOLock.getInstance().isAcquired(obj, sourceString, exectionId)) {
             try {
                 ThreadLocalOperationLock.getInstance().acquire();
 
@@ -59,7 +59,7 @@ public class Callbacks {
                 }
 
             } finally {
-                ThreadLocalHTTPIOLock.getInstance().release(obj);
+                ThreadLocalHTTPIOLock.getInstance().release(obj, sourceString, exectionId);
                 ThreadLocalOperationLock.getInstance().release();
             }
         }
@@ -73,7 +73,7 @@ public class Callbacks {
 //                System.out.println("OnError :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj
 //                        + " - error : " + error + " - eid : " + exectionId);
             } finally {
-                ThreadLocalHTTPIOLock.getInstance().release(obj);
+                ThreadLocalHTTPIOLock.getInstance().release(obj, sourceString, exectionId);
                 ThreadLocalOperationLock.getInstance().release();
             }
         }
