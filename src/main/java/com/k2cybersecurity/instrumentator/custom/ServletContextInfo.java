@@ -5,6 +5,7 @@ import com.k2cybersecurity.instrumentator.dispatcher.EventDispatcher;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.logging.DeployedApplication;
+import com.k2cybersecurity.intcodeagent.models.javaagent.HttpRequestBean;
 import com.k2cybersecurity.intcodeagent.models.javaagent.VulnerabilityCaseType;
 import com.k2cybersecurity.intcodeagent.websocket.JsonConverter;
 import org.apache.commons.lang3.StringUtils;
@@ -16,6 +17,7 @@ import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class ServletContextInfo {
     public static final String GET_CONTEXT_PATH = "getContextPath";
@@ -51,7 +53,7 @@ public class ServletContextInfo {
     @JsonIgnore
     private static ServletContextInfo instance;
 
-    private Map<String, DeployedApplication> contextMap = new HashMap<>();
+    private Map<String, DeployedApplication> contextMap = new ConcurrentHashMap<>();
 
     private String serverInfo = StringUtils.EMPTY;
 
@@ -104,37 +106,29 @@ public class ServletContextInfo {
         this.minorServletVersion = minorServletVersion;
     }
 
-    public void processServletContext(Object servletContext, String contextPath, int serverPort) {
+    public Map<String, DeployedApplication> getContextMap() {
+        return contextMap;
+    }
+
+    public boolean processServletContext(HttpRequestBean httpRequestBean, DeployedApplication deployedApplication) {
+        String contextPath = httpRequestBean.getContextPath();
+        Object servletContext = httpRequestBean.getServletContextObject();
+        int serverPort = httpRequestBean.getServerPort();
         String applicationName = StringUtils.EMPTY;
-        String applicationDir = StringUtils.EMPTY;
         String serverInfo = StringUtils.EMPTY;
 
         Method getServletContextName = null;
-        Method getRealPath = null;
         Method getServerInfo = null;
         Method getMajorVersion = null;
         Method getMinorVersion = null;
 
-        DeployedApplication deployedApplication = new DeployedApplication();
         deployedApplication.setContextPath(contextPath);
-
-        try {
-            if (contextMap.containsKey(deployedApplication.getContextPath())) {
-                if (contextMap.get(deployedApplication.getContextPath()).updatePorts(serverPort)) {
-                    EventDispatcher.dispatch(contextMap.get(deployedApplication.getContextPath()), VulnerabilityCaseType.APP_INFO);
-                }
-                return;
-            }
-        } catch (Throwable e) {
-            logger.log(LogLevel.ERROR, ERROR, e, ServletContextInfo.class.getName());
-        }
 
 
         try {
             getServerInfo = servletContext.getClass().getMethod(GET_SERVER_INFO);
             getMajorVersion = servletContext.getClass().getMethod(GET_MAJOR_VERSION);
             getMinorVersion = servletContext.getClass().getMethod(GET_MINOR_VERSION);
-            getRealPath = servletContext.getClass().getMethod(GET_REAL_PATH, String.class);
             getServletContextName = servletContext.getClass().getMethod(GET_SERVLET_CONTEXT_NAME);
         } catch (Throwable e) {
             logger.log(LogLevel.ERROR, ERROR, e, ServletContextInfo.class.getName());
@@ -144,9 +138,6 @@ public class ServletContextInfo {
             serverInfo = (String) getServerInfo.invoke(servletContext, null);
             setMajorServletVersion((Integer) getMajorVersion.invoke(servletContext, null));
             setMinorServletVersion((Integer) getMinorVersion.invoke(servletContext, null));
-
-            applicationDir = processWebappPath(servletContext);
-//            System.out.println("App Dir detected : " + applicationDir);
             applicationName = (String) getServletContextName.invoke(servletContext, null);
 
         } catch (Throwable e) {
@@ -157,7 +148,6 @@ public class ServletContextInfo {
         setServerInfo(serverInfo);
 
         deployedApplication.setAppName(applicationName);
-        deployedApplication.setDeployedPath(applicationDir);
         deployedApplication.updatePorts(serverPort);
 
 
@@ -181,7 +171,7 @@ public class ServletContextInfo {
             }
 
         } else {
-            return;
+            return false;
         }
 
         if (StringUtils.equals(deployedApplication.getAppName(), ROOT)){
@@ -195,20 +185,12 @@ public class ServletContextInfo {
             }
         }
 
-        this.contextMap.put(deployedApplication.getContextPath(), deployedApplication);
+
         if (!deployedApplication.isEmpty()) {
-            EventDispatcher.dispatch(deployedApplication, VulnerabilityCaseType.APP_INFO);
             logger.log(LogLevel.INFO, SERVLET_INFO_POPULATED_SENT + deployedApplication, ServletContextInfo.class.getName());
         }
 
-//		System.out.println("==========================================================================================");
-//		System.out.println("New Servlet Context found : ");
-//		System.out.println("Details  : " + deployedApplication);
-//		System.out.println("Server Info  : " + serverInfo);
-//		System.out.println("Major Servlet Version  : " + majorServletVersion);
-//		System.out.println("Minor Servlet Version  : " + minorServletVersion);
-//		System.out.println("==========================================================================================");
-
+        return !deployedApplication.isEmpty();
     }
 
     private String processWebappPath(Object servletContext) {

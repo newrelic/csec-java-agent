@@ -30,11 +30,11 @@ public class ThreadLocalXQuerySaxonMap {
 		return instance.get();
 	}
 
-	public void create(Object ref, String expression, String className, String sourceMethod, String executionId, long startTime) {
+	public void create(Object ref, String expression, String className, String sourceMethod, String executionId, long startTime, String methodName) {
 		if (StringUtils.isBlank(expression)){
 			return;
 		}
-		XQueryOperationalBean bean = new XQueryOperationalBean(expression, className, sourceMethod, executionId, startTime);
+		XQueryOperationalBean bean = new XQueryOperationalBean(expression, className, sourceMethod, executionId, startTime, methodName);
 		if (!xqueryExpressionValues.containsKey(ref)) {
 			xqueryExpressionValues.put(ref, bean);
 		}

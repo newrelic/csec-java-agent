@@ -35,13 +35,13 @@ public class Callbacks {
 							return;
 						}
 						fileOperationalBean = new FileOperationalBean(args[0].toString(), className,
-								sourceString, exectionId, Instant.now().toEpochMilli(), true);
+								sourceString, exectionId, Instant.now().toEpochMilli(), true, methodName);
 					} else {
 						fileOperationalBean = new FileOperationalBean(args[0].toString(), className,
-								sourceString, exectionId, Instant.now().toEpochMilli(), false);
+								sourceString, exectionId, Instant.now().toEpochMilli(), false, methodName);
+						createEntryOfFileIntegrity(args[0].toString(), sourceString, className, methodName, exectionId);
 					}
-					FileIntegrityBean fbean = createEntryOfFileIntegrity(args[0].toString(), sourceString, className, methodName, exectionId);
-					EventDispatcher.dispatch(fileOperationalBean, fbean, VulnerabilityCaseType.FILE_OPERATION);
+					EventDispatcher.dispatch(fileOperationalBean, VulnerabilityCaseType.FILE_OPERATION);
 				}
 			} finally {
 				ThreadLocalOperationLock.getInstance().release();
@@ -64,7 +64,7 @@ public class Callbacks {
 		String extension = getFileExtension(file);
 		if (SOURCE_EXENSIONS.contains(extension)) {
 			FileIntegrityBean fbean = new FileIntegrityBean(file.exists(), fileName, className,
-					sourceString, exectionId, Instant.now().toEpochMilli());
+					sourceString, exectionId, Instant.now().toEpochMilli(), methodName);
 			ThreadLocalExecutionMap.getInstance().getFileLocalMap().put(fileName,
 					fbean);
 			return fbean;

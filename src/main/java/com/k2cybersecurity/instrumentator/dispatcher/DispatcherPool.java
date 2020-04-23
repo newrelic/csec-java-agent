@@ -1,6 +1,7 @@
 package com.k2cybersecurity.instrumentator.dispatcher;
 
 import com.k2cybersecurity.instrumentator.K2Instrumentator;
+import com.k2cybersecurity.instrumentator.custom.ThreadLocalHTTPDoFilterMap;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.logging.EventThreadPool.EventAbortPolicy;
@@ -88,45 +89,43 @@ public class DispatcherPool {
 		return instance;
 	}
 
-	public void dispatchEvent(HttpRequestBean httpRequestBean, AgentMetaData metaData, StackTraceElement[] trace,
+	public void dispatchEvent(HttpRequestBean httpRequestBean, AgentMetaData metaData,
 			Object event, VulnerabilityCaseType vulnerabilityCaseType) {
 		if(executor.isShutdown()){
 			return;
 		}
-		this.executor.submit(new Dispatcher(httpRequestBean, metaData, trace, event, vulnerabilityCaseType));
+		this.executor.submit(new Dispatcher(httpRequestBean, metaData, event, vulnerabilityCaseType));
 	}
 
-	public void dispatchAppInfo(Object event, VulnerabilityCaseType vulnerabilityCaseType) {
+	public void dispatchEvent(HttpRequestBean httpRequestBean, AgentMetaData metaData,
+							  Object event, VulnerabilityCaseType vulnerabilityCaseType, String currentGenericServletMethodName,
+							  Object currentGenericServletInstance,
+							  StackTraceElement[] stackTrace, StackTraceElement userClassElement, Boolean isCalledByUserCode) {
 		if(executor.isShutdown()){
 			return;
 		}
-		this.executor.submit(new Dispatcher(event, vulnerabilityCaseType));
+		this.executor.submit(new Dispatcher(httpRequestBean, metaData, event, vulnerabilityCaseType, currentGenericServletMethodName,
+				currentGenericServletInstance, stackTrace, userClassElement, isCalledByUserCode));
 	}
 
 	/**
 	 * Specifically for reflected xss
 	 * 
 	 * @param httpRequestBean
-	 * @param trace
 	 * @param startTime
 	 * @param exectionId
 	 * @param sourceString
 	 * @param reflectedXss
 	 */
-	public void dispatchEvent(HttpRequestBean httpRequestBean, String sourceString, String exectionId, long startTime,
-			StackTraceElement[] trace, VulnerabilityCaseType reflectedXss) {
+	public void dispatchEventRXSS(HttpRequestBean httpRequestBean, String sourceString, String exectionId,
+								  long startTime, VulnerabilityCaseType reflectedXss, String currentGenericServletMethodName,
+								  Object currentGenericServletInstance,
+								  StackTraceElement[] stackTrace, StackTraceElement userClassElement, Boolean isCalledByUserCode) {
 		if(executor.isShutdown()){
 			return;
 		}
-		this.executor.submit(new Dispatcher(httpRequestBean, trace, reflectedXss, sourceString, exectionId, startTime));
-	}
-
-	public void dispatchEvent(HttpRequestBean httpRequestBean, AgentMetaData metaData, StackTraceElement[] trace,
-			FileOperationalBean event, FileIntegrityBean fbean, VulnerabilityCaseType vulnerabilityCaseType) {
-		if(executor.isShutdown()){
-			return;
-		}
-		this.executor.submit(new Dispatcher(httpRequestBean, metaData, trace, event, fbean, vulnerabilityCaseType));
+		this.executor.submit(new Dispatcher(httpRequestBean, reflectedXss, sourceString, exectionId, startTime, currentGenericServletMethodName,
+				currentGenericServletInstance, stackTrace, userClassElement, isCalledByUserCode));
 	}
 
 	public void shutDownThreadPoolExecutor() {

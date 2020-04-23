@@ -1,10 +1,8 @@
 package com.k2cybersecurity.instrumentator.dispatcher;
 
-import com.k2cybersecurity.instrumentator.custom.K2CyberSecurityException;
-import com.k2cybersecurity.instrumentator.custom.ThreadLocalDBMap;
-import com.k2cybersecurity.instrumentator.custom.ThreadLocalExecutionMap;
-import com.k2cybersecurity.instrumentator.custom.ThreadLocalHttpMap;
+import com.k2cybersecurity.instrumentator.custom.*;
 import com.k2cybersecurity.instrumentator.utils.AgentUtils;
+import com.k2cybersecurity.instrumentator.utils.CallbackUtils;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.logging.DeployedApplication;
@@ -14,6 +12,7 @@ import com.k2cybersecurity.intcodeagent.models.operationalbean.FileOperationalBe
 import com.k2cybersecurity.intcodeagent.models.operationalbean.SQLOperationalBean;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -70,6 +69,11 @@ public class EventDispatcher {
 
     public static void dispatch(AbstractOperationalBean objectBean, VulnerabilityCaseType vulnerabilityCaseType)
             throws K2CyberSecurityException {
+        dispatch(objectBean, vulnerabilityCaseType, true);
+    }
+
+    public static void dispatch(AbstractOperationalBean objectBean, VulnerabilityCaseType vulnerabilityCaseType, boolean blockAndCheck)
+            throws K2CyberSecurityException {
         boolean ret = ThreadLocalHttpMap.getInstance().parseHttpRequest();
         if (!ret) {
             logger.log(LogLevel.ERROR,
@@ -78,17 +82,20 @@ public class EventDispatcher {
                     EventDispatcher.class.getName());
             return;
         }
-        // Place dispatch here
-//		printDispatch(objectBean);
-        // TODO: implement check if the object bean is logically enpty based on case
-        // type or implement a isEmpty method in each operation bean.
+
         if (!objectBean.isEmpty()) {
             DispatcherPool.getInstance().dispatchEvent(
                     new HttpRequestBean(ThreadLocalExecutionMap.getInstance().getHttpRequestBean()),
                     new AgentMetaData(ThreadLocalExecutionMap.getInstance().getMetaData()),
-                    Thread.currentThread().getStackTrace(), objectBean, vulnerabilityCaseType);
-            submitAndHoldForEventResponse(objectBean.getExecutionId());
-            checkIfClientIPBlocked();
+                    objectBean, vulnerabilityCaseType);
+            if(blockAndCheck) {
+                submitAndHoldForEventResponse(objectBean.getSourceMethod(),
+                        objectBean.getUserClassElement().getClassName(),
+                        objectBean.getUserClassElement().getMethodName(),
+                        objectBean.getUserClassElement().getLineNumber(),
+                        objectBean.getExecutionId());
+                checkIfClientIPBlocked();
+            }
         } else {
             logger.log(
                     LogLevel.ERROR, DROPPING_EVENT_DUE_TO_EMPTY_OBJECT
@@ -98,7 +105,8 @@ public class EventDispatcher {
     }
 
 
-    public static void dispatch(List<SQLOperationalBean> objectBeanList, VulnerabilityCaseType vulnerabilityCaseType, String exectionId)
+    public static void dispatch(List<SQLOperationalBean> objectBeanList, VulnerabilityCaseType vulnerabilityCaseType,
+                                String exectionId, String className, String methodName, String sourceMethod)
             throws K2CyberSecurityException {
         boolean ret = ThreadLocalHttpMap.getInstance().parseHttpRequest();
         if (!ret) {
@@ -109,7 +117,6 @@ public class EventDispatcher {
             return;
         }
         // Place dispatch here
-
         List<SQLOperationalBean> toBeSentBeans = new ArrayList<>();
         objectBeanList.forEach((bean) -> {
             SQLOperationalBean beanChecked = ThreadLocalDBMap.getInstance().checkAndUpdateSentSQLCalls(bean);
@@ -118,98 +125,80 @@ public class EventDispatcher {
             }
         });
 //		printDispatch(toBeSentBeans);
+
+        String currentGenericServletMethodName = ThreadLocalHTTPDoFilterMap.getInstance().getCurrentGenericServletMethodName();
+        Object currentGenericServletInstance = ThreadLocalHTTPDoFilterMap.getInstance().getCurrentGenericServletInstance();
+        StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
+        StackTraceElement userClassElement = null;
+        Boolean isCalledByUserCode = false;
+        Pair<Boolean, StackTraceElement> userClassDetectionResult = AgentUtils.getInstance().detectUserClass(stackTrace,
+                currentGenericServletInstance,
+                currentGenericServletMethodName, className, methodName);
+        userClassElement = userClassDetectionResult.getRight();
+        isCalledByUserCode = userClassDetectionResult.getLeft();
+
         if (!toBeSentBeans.isEmpty()) {
             DispatcherPool.getInstance().dispatchEvent(
                     new HttpRequestBean(ThreadLocalExecutionMap.getInstance().getHttpRequestBean()),
                     new AgentMetaData(ThreadLocalExecutionMap.getInstance().getMetaData()),
-                    Thread.currentThread().getStackTrace(), toBeSentBeans, vulnerabilityCaseType);
-            submitAndHoldForEventResponse(exectionId);
+                    toBeSentBeans, vulnerabilityCaseType, currentGenericServletMethodName,
+                    currentGenericServletInstance, stackTrace, userClassElement, isCalledByUserCode);
+            submitAndHoldForEventResponse(sourceMethod, userClassElement.getClassName(), userClassElement.getMethodName(), userClassElement.getLineNumber(), exectionId);
             checkIfClientIPBlocked();
-        }
-    }
-
-
-//    private static void printDispatch(List<SQLOperationalBean> objectBeanList) {
-//        System.out.println("Bean list : " + objectBeanList);
-//    }
-
-    public static void dispatch(DeployedApplication deployedApplication, VulnerabilityCaseType vulnerabilityCaseType) {
-        if (!deployedApplication.isEmpty()) {
-            DispatcherPool.getInstance().dispatchAppInfo(deployedApplication, vulnerabilityCaseType);
-        } else {
-//			System.out.println("Application info found to be empty : " + deployedApplication);
         }
     }
 
     public static void dispatch(HttpRequestBean httpRequestBean, String sourceString, String exectionId, long startTime,
-                                VulnerabilityCaseType reflectedXss) throws K2CyberSecurityException {
+                                VulnerabilityCaseType reflectedXss, String className, String methodName) throws K2CyberSecurityException {
 //		System.out.println("Passed to XSS detection : " + exectionId + " :: " + httpRequestBean.toString()+ " :: " + httpRequestBean.getHttpResponseBean().toString());
         if (!httpRequestBean.isEmpty()) {
-            DispatcherPool.getInstance().dispatchEvent(httpRequestBean, sourceString, exectionId, startTime,
-                    Thread.currentThread().getStackTrace(), reflectedXss);
-            submitAndHoldForEventResponse(exectionId);
-//            checkIfClientIPBlocked();
+
+            String currentGenericServletMethodName = ThreadLocalHTTPDoFilterMap.getInstance().getCurrentGenericServletMethodName();
+            Object currentGenericServletInstance = ThreadLocalHTTPDoFilterMap.getInstance().getCurrentGenericServletInstance();
+            StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
+            StackTraceElement userClassElement = null;
+            Boolean isCalledByUserCode = false;
+            Pair<Boolean, StackTraceElement> userClassDetectionResult = AgentUtils.getInstance().detectUserClass(stackTrace,
+                    currentGenericServletInstance,
+                    currentGenericServletMethodName, className, methodName);
+            userClassElement = userClassDetectionResult.getRight();
+            isCalledByUserCode = userClassDetectionResult.getLeft();
+
+            DispatcherPool.getInstance().dispatchEventRXSS(httpRequestBean, sourceString, exectionId, startTime,
+                    reflectedXss, currentGenericServletMethodName,
+                    currentGenericServletInstance, stackTrace, userClassElement, isCalledByUserCode);
         }
     }
 
-    public static void dispatch(FileOperationalBean fileOperationalBean, FileIntegrityBean fbean,
-                                VulnerabilityCaseType fileOperation) throws K2CyberSecurityException {
-        boolean ret = ThreadLocalHttpMap.getInstance().parseHttpRequest();
-        if (!ret) {
-            logger.log(
-                    LogLevel.ERROR, DROPPING_EVENT_DUE_TO_CORRUPT_INCOMPLETE_HTTP_REQUEST2
-                            + ThreadLocalExecutionMap.getInstance().getHttpRequestBean() + STRING_3_COLON + fileOperationalBean,
-                    EventDispatcher.class.getName());
-            return;
-        }
-        // Place dispatch here
-//		printDispatch(objectBean);
-
-        // TODO: implement check if the object bean is logically enpty based on case
-        // type or implement a isEmpty method in each operation bean.
-        if (!fileOperationalBean.isEmpty()) {
-            DispatcherPool.getInstance().dispatchEvent(
-                    new HttpRequestBean(ThreadLocalExecutionMap.getInstance().getHttpRequestBean()),
-                    new AgentMetaData(ThreadLocalExecutionMap.getInstance().getMetaData()),
-                    Thread.currentThread().getStackTrace(), fileOperationalBean, fbean, fileOperation);
-            submitAndHoldForEventResponse(fileOperationalBean.getExecutionId());
-            checkIfClientIPBlocked();
-        } else {
-            logger.log(
-                    LogLevel.ERROR, DROPPING_EVENT_DUE_TO_EMPTY_OBJECT1
-                            + ThreadLocalExecutionMap.getInstance().getHttpRequestBean() + STRING_3_COLON + fileOperationalBean,
-                    EventDispatcher.class.getName());
-
-        }
-    }
-
-    private static boolean submitAndHoldForEventResponse(String executionId) throws K2CyberSecurityException {
+    private static boolean submitAndHoldForEventResponse(String sourceMethod, String userClass, String userMethod, Integer lineNumber, String executionId) throws K2CyberSecurityException {
         if (!ProtectionConfig.getInstance().getProtectKnownVulnerableAPIs()) {
             return false;
         }
-        logger.log(LogLevel.INFO, SCHEDULING_FOR_EVENT_RESPONSE_OF + executionId, EventDispatcher.class.getSimpleName());
-
-        EventResponse eventResponse = new EventResponse(executionId);
-        AgentUtils.getInstance().getEventResponseSet().put(executionId, eventResponse);
-        try {
-            eventResponse.getResponseSemaphore().acquire();
-            if (eventResponse.getResponseSemaphore().tryAcquire(1000, TimeUnit.MILLISECONDS)) {
-                logger.log(LogLevel.INFO,
-                        EVENT_RESPONSE_TIME_TAKEN + eventResponse.getEventId() + DOUBLE_COLON_SEPERATOR + (
-                                eventResponse.getReceivedTime() - eventResponse.getGenerationTime()) + DOUBLE_COLON_SEPERATOR + executionId,
-                        EventDispatcher.class.getSimpleName());
-                if (eventResponse.isAttack()) {
-                    sendK2AttackPage(eventResponse.getEventId());
-                    throw new K2CyberSecurityException(eventResponse.getResultMessage());
+        VulnerableAPI vulnerableAPI = AgentUtils.getInstance().checkVulnerableAPI(sourceMethod, userClass, userMethod, lineNumber);
+        if(vulnerableAPI != null) {
+            logger.log(LogLevel.DEBUG, SCHEDULING_FOR_EVENT_RESPONSE_OF + executionId, EventDispatcher.class.getSimpleName());
+            EventResponse eventResponse = new EventResponse(executionId);
+            AgentUtils.getInstance().getEventResponseSet().put(executionId, eventResponse);
+            try {
+                eventResponse.getResponseSemaphore().acquire();
+                if (eventResponse.getResponseSemaphore().tryAcquire(1000, TimeUnit.MILLISECONDS)) {
+                    logger.log(LogLevel.DEBUG,
+                            EVENT_RESPONSE_TIME_TAKEN + eventResponse.getEventId() + DOUBLE_COLON_SEPERATOR + (
+                                    eventResponse.getReceivedTime() - eventResponse.getGenerationTime()) + DOUBLE_COLON_SEPERATOR + executionId,
+                            EventDispatcher.class.getSimpleName());
+                    if (eventResponse.isAttack()) {
+                        sendK2AttackPage(eventResponse.getEventId());
+                        throw new K2CyberSecurityException(eventResponse.getResultMessage());
+                    }
+                    return true;
+                } else {
+                    logger.log(LogLevel.DEBUG, EVENT_RESPONSE_TIMEOUT_FOR + executionId, EventDispatcher.class.getSimpleName());
                 }
-                return true;
-            } else {
-                logger.log(LogLevel.WARNING, EVENT_RESPONSE_TIMEOUT_FOR + executionId, EventDispatcher.class.getSimpleName());
+            } catch (Exception e) {
+                logger.log(LogLevel.ERROR, ERROR, e, EventDispatcher.class.getSimpleName());
+            } finally {
+                AgentUtils.getInstance().getEventResponseSet().remove(executionId);
             }
-        } catch (Throwable e) {
-            logger.log(LogLevel.ERROR, ERROR, e, EventDispatcher.class.getSimpleName());
-        } finally {
-            AgentUtils.getInstance().getEventResponseSet().remove(executionId);
         }
         return false;
     }

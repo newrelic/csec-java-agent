@@ -44,20 +44,20 @@ public class ThreadLocalDBMap {
 	}
 
 	public void addBatch(Object ref, String query, String className, String sourceMethod, String executionId,
-			long startTime, boolean isPreparedCall, Object thisRef, boolean needToGetConnection) {
+			long startTime, boolean isPreparedCall, Object thisRef, boolean needToGetConnection, String methodName) {
 		if (StringUtils.isNotBlank(query)) {
-			create(ref, query, className, sourceMethod, executionId, startTime, true, isPreparedCall, thisRef, needToGetConnection);
+			create(ref, query, className, sourceMethod, executionId, startTime, true, isPreparedCall, thisRef, needToGetConnection, methodName);
 		} else {
 			if (sqlCalls.containsKey(ref)) {
 				List<SQLOperationalBean> beanList = sqlCalls.get(ref);
 				create(ref, beanList.get(beanList.size() - 1).getQuery(), className, sourceMethod, executionId, startTime, true,
-						isPreparedCall,thisRef, needToGetConnection);
+						isPreparedCall,thisRef, needToGetConnection, methodName);
 			}
 		}
 	}
 
 	public void create(Object ref, String query, String className, String sourceMethod, String executionId, long startTime, boolean isBatch,
-			boolean isPreparedCall, Object thisRef, boolean needToGetConnection) {
+			boolean isPreparedCall, Object thisRef, boolean needToGetConnection, String methodName) {
 		if (StringUtils.isBlank(query)){
 			return;
 		}
@@ -77,6 +77,8 @@ public class ThreadLocalDBMap {
 		bean.setStartTime(startTime);
 		bean.setPreparedCall(isPreparedCall);
 		bean.setDbName(dbName);
+		bean.setClassName(className);
+		bean.setMethodName(methodName);
 		List<SQLOperationalBean> list;
 		if (sqlCalls.containsKey(ref) && isBatch) {
 			list = sqlCalls.get(ref);

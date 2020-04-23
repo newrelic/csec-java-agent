@@ -6,8 +6,8 @@ public class XQueryOperationalBean extends AbstractOperationalBean {
 
 	private String expression;
 
-	public XQueryOperationalBean(String expression, String className, String sourceMethod, String executionId, long startTime) {
-		super(className, sourceMethod, executionId, startTime);
+	public XQueryOperationalBean(String expression, String className, String sourceMethod, String executionId, long startTime, String methodName) {
+		super(className, sourceMethod, executionId, startTime, methodName);
 		this.expression = expression;
 	}
 

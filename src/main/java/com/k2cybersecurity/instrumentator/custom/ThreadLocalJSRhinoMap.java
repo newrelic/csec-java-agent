@@ -25,11 +25,11 @@ public class ThreadLocalJSRhinoMap {
 		return instance.get();
 	}
 
-	public void create(Object ref, String javaScriptCode, String className, String sourceMethod, String executionId, long startTime) {
+	public void create(Object ref, String javaScriptCode, String className, String sourceMethod, String executionId, long startTime, String methodName) {
 		if (StringUtils.isBlank(javaScriptCode)){
 			return;
 		}
-		JSInjectionOperationalBean bean = new JSInjectionOperationalBean(javaScriptCode, className, sourceMethod, executionId, startTime);
+		JSInjectionOperationalBean bean = new JSInjectionOperationalBean(javaScriptCode, className, sourceMethod, executionId, startTime, methodName);
 		if (!jsInjectionCodeValues.containsKey(ref)) {
 			jsInjectionCodeValues.put(ref, bean);
 		}

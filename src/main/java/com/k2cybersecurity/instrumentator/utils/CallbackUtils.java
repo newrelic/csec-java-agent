@@ -4,6 +4,7 @@ import com.k2cybersecurity.instrumentator.custom.*;
 import com.k2cybersecurity.instrumentator.dispatcher.EventDispatcher;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
+import com.k2cybersecurity.intcodeagent.logging.IAgentConstants;
 import com.k2cybersecurity.intcodeagent.models.javaagent.*;
 
 import org.apache.commons.lang3.RegExUtils;
@@ -121,7 +122,7 @@ public class CallbackUtils {
 		for (Entry<String, FileIntegrityBean> entry : fileLocalMap.entrySet()) {
 			boolean isExists = new File(entry.getKey()).exists();
 			if (!entry.getValue().getExists().equals(isExists)) {
-				EventDispatcher.dispatch(entry.getValue(), VulnerabilityCaseType.FILE_INTEGRITY);
+				EventDispatcher.dispatch(entry.getValue(), VulnerabilityCaseType.FILE_INTEGRITY, false);
 			}
 		}
 	}
@@ -259,7 +260,7 @@ public class CallbackUtils {
 
 				if (tmp != -1) {
 					currPos = tmp;
-				} else if( !isAttackConstruct) {
+				} else if (!isAttackConstruct) {
 					continue;
 				}
 			}
@@ -275,7 +276,7 @@ public class CallbackUtils {
 				} else {
 					String body = StringUtils.substring(data, currPos + 1);
 					int tagEnd = StringUtils.indexOf(body, ANGLE_END);
-					if (StringUtils.isNotBlank(body) && tagEnd != -1 ) {
+					if (StringUtils.isNotBlank(body) && tagEnd != -1) {
 						body = StringUtils.substring(body, tagEnd);
 						construct.add(StringUtils.substring(data, startPos, currPos + 1) + body);
 						break;
@@ -565,24 +566,24 @@ public class CallbackUtils {
 				switch (contentType) {
 				case APPLICATION_JSON:
 //					do {
-						oldProcessedBody = processedBody;
-						processedBody = StringEscapeUtils.unescapeJson(processedBody);
-						if (!StringUtils.equals(oldProcessedBody, processedBody)
-								&& StringUtils.contains(processedBody, ANGLE_START)) {
-							processedData.add(processedBody);
-							// System.out.println("Decoding JSON: " + processedBody);
-						}
+					oldProcessedBody = processedBody;
+					processedBody = StringEscapeUtils.unescapeJson(processedBody);
+					if (!StringUtils.equals(oldProcessedBody, processedBody)
+							&& StringUtils.contains(processedBody, ANGLE_START)) {
+						processedData.add(processedBody);
+						// System.out.println("Decoding JSON: " + processedBody);
+					}
 //					} while (!StringUtils.equals(oldProcessedBody, processedBody));
 					break;
 				case APPLICATION_XML:
 //					do {
-						oldProcessedBody = processedBody;
-						processedBody = StringEscapeUtils.unescapeXml(processedBody);
-						if (!StringUtils.equals(oldProcessedBody, processedBody)
-								&& StringUtils.contains(processedBody, ANGLE_START)) {
-							processedData.add(processedBody);
-							// System.out.println("Decoding XML: " + processedBody);
-						}
+					oldProcessedBody = processedBody;
+					processedBody = StringEscapeUtils.unescapeXml(processedBody);
+					if (!StringUtils.equals(oldProcessedBody, processedBody)
+							&& StringUtils.contains(processedBody, ANGLE_START)) {
+						processedData.add(processedBody);
+						// System.out.println("Decoding XML: " + processedBody);
+					}
 //					} while (!StringUtils.equals(oldProcessedBody, processedBody));
 					break;
 
@@ -591,13 +592,13 @@ public class CallbackUtils {
 					processedData.add(processedBody);
 
 //					do {
-						oldProcessedBody = processedBody;
-						processedBody = urlDecode(processedBody);
-						if (!StringUtils.equals(oldProcessedBody, processedBody)
-								&& StringUtils.contains(processedBody, ANGLE_START)) {
-							processedData.add(processedBody);
-							// System.out.println("Decoding URL: " + processedBody);
-						}
+					oldProcessedBody = processedBody;
+					processedBody = urlDecode(processedBody);
+					if (!StringUtils.equals(oldProcessedBody, processedBody)
+							&& StringUtils.contains(processedBody, ANGLE_START)) {
+						processedData.add(processedBody);
+						// System.out.println("Decoding URL: " + processedBody);
+					}
 //					} while (!StringUtils.equals(oldProcessedBody, processedBody));
 
 					break;
@@ -695,7 +696,8 @@ public class CallbackUtils {
 		ThreadLocalLDAPMap.getInstance().clearAll();
 		ThreadLocalExecutionMap.getInstance().cleanUp();
 		ThreadLocalLdaptiveMap.getInstance().clearAll();
-        ThreadLocalXpathSaxonMap.getInstance().clearAll();
-        ThreadLocalXQuerySaxonMap.getInstance().clearAll();
+		ThreadLocalXpathSaxonMap.getInstance().clearAll();
+		ThreadLocalXQuerySaxonMap.getInstance().clearAll();
 	}
+
 }

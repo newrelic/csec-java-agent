@@ -27,16 +27,16 @@ public class Callbacks {
 						if (StringUtils.equals(methodName, NATIVE_SQL)) {
 							ThreadLocalDBMap.getInstance()
 									.create(thisObject, args[0].toString(), className, sourceString, exectionId,
-											Instant.now().toEpochMilli(), false, false, thisObject, false);
+											Instant.now().toEpochMilli(), false, false, thisObject, false, methodName);
 						} else {
 							ThreadLocalDBMap.getInstance()
 									.create(thisObject, args[0].toString(), className, sourceString, exectionId,
-											Instant.now().toEpochMilli(), false, false, thisObject, true);
+											Instant.now().toEpochMilli(), false, false, thisObject, true, methodName);
 						}
 					}
 					if (ThreadLocalDBMap.getInstance().get(thisObject) != null) {
 						EventDispatcher.dispatch(new ArrayList<>(ThreadLocalDBMap.getInstance().get(thisObject)),
-								VulnerabilityCaseType.SQL_DB_COMMAND, exectionId);
+								VulnerabilityCaseType.SQL_DB_COMMAND, exectionId, className, methodName, sourceString);
 						ThreadLocalDBMap.getInstance().clear(thisObject);
 					}
 				}

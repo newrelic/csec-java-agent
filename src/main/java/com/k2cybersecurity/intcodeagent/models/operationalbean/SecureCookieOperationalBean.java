@@ -6,13 +6,9 @@ public class SecureCookieOperationalBean extends AbstractOperationalBean {
 	private String value;
 
 	public SecureCookieOperationalBean(String value, String className, String sourceMethod, String executionId,
-			long startTime) {
-		super(className, sourceMethod, executionId, startTime);
+			long startTime, String methodName) {
+		super(className, sourceMethod, executionId, startTime, methodName);
 		this.value = value;
-	}
-
-	public SecureCookieOperationalBean(AbstractOperationalBean abstractOperationalBean) {
-		super(abstractOperationalBean);
 	}
 
 	public String getValue() {

@@ -32,7 +32,7 @@ public class Callbacks {
 
 					SecureCookieOperationalBean secureCookieOperationalBean = new SecureCookieOperationalBean(
 							(value ? TRUE : FALSE), className, sourceString, exectionId,
-							Instant.now().toEpochMilli());
+							Instant.now().toEpochMilli(), methodName);
 					EventDispatcher.dispatch(secureCookieOperationalBean, VulnerabilityCaseType.SECURE_COOKIE);
 //					System.out.println("OnEnter :" + sourceString + " - args : " + Arrays.asList(args) + " - this : "
 //							+ obj + " - eid : " + exectionId);

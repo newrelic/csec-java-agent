@@ -25,11 +25,11 @@ public class ThreadLocalXpathSaxonMap {
 		return instance.get();
 	}
 
-	public void create(Object ref, String expression, String className, String sourceMethod, String executionId, long startTime) {
+	public void create(Object ref, String expression, String className, String sourceMethod, String executionId, long startTime, String methodName) {
 		if (StringUtils.isBlank(expression)){
 			return;
 		}
-		XPathOperationalBean bean = new XPathOperationalBean(expression, className, sourceMethod, executionId, startTime);
+		XPathOperationalBean bean = new XPathOperationalBean(expression, className, sourceMethod, executionId, startTime, methodName);
 		if (!xpathExpressionValues.containsKey(ref)) {
 			xpathExpressionValues.put(ref, bean);
 		}

@@ -28,11 +28,11 @@ public class Callbacks {
 				} else if (StringUtils.startsWithIgnoreCase(methodName, ADD_BATCH) && args != null && args.length > 0
 						&& args[0] instanceof String) {
 					ThreadLocalDBMap.getInstance().addBatch(obj, (String) args[0], className, sourceString, exectionId,
-							Instant.now().toEpochMilli(), false, obj, true);
+							Instant.now().toEpochMilli(), false, obj, true, methodName);
 				} else if (StringUtils.startsWithIgnoreCase(methodName, ADD_BATCH)) {
 					ThreadLocalDBMap.getInstance()
 							.addBatch(obj, null, className, sourceString, exectionId, Instant.now().toEpochMilli(),
-									true, obj, true);
+									true, obj, true, methodName);
 				}
 				if (StringUtils.startsWithIgnoreCase(methodName, CLEAR_BATCH)) {
 					ThreadLocalDBMap.getInstance().clearBatch(obj);

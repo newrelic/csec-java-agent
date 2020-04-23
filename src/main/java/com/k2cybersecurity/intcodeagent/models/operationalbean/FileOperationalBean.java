@@ -11,17 +11,11 @@ public class FileOperationalBean extends AbstractOperationalBean {
 	private boolean isExists;
 	private boolean getBooleanAttributesCall;
 
-	public FileOperationalBean(String fileName, String className, String sourceMethod, String executionId, long startTime, boolean getBooleanAttributesCall) {
-		super(className, sourceMethod, executionId, startTime);
+	public FileOperationalBean(String fileName, String className, String sourceMethod, String executionId, long startTime, boolean getBooleanAttributesCall, String methodName) {
+		super(className, sourceMethod, executionId, startTime, methodName);
 		this.fileName = fileName;
 		this.isExists = new File(this.fileName).exists();
 		this.getBooleanAttributesCall = getBooleanAttributesCall;
-	}
-
-	public FileOperationalBean(FileOperationalBean forkExecOperationalBean) {
-		super(forkExecOperationalBean);
-		this.fileName = forkExecOperationalBean.fileName;
-		this.getBooleanAttributesCall = forkExecOperationalBean.getBooleanAttributesCall;
 	}
 
 	@Override

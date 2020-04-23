@@ -50,7 +50,7 @@ public class Callbacks {
 					if (StringUtils.isNotBlank(dnValue) && StringUtils.isNotBlank(filterValue)
 							&& ThreadLocalLDAPMap.getInstance().put(filterValue)) {
 						LDAPOperationalBean ldapOperationalBean = new LDAPOperationalBean(dnValue, filterValue, className,
-								sourceString, executionId, Instant.now().toEpochMilli());
+								sourceString, executionId, Instant.now().toEpochMilli(), methodName);
 						EventDispatcher.dispatch(ldapOperationalBean, VulnerabilityCaseType.LDAP);
 					}
 

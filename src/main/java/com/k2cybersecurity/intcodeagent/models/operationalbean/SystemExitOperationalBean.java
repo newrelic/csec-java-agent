@@ -15,15 +15,10 @@ public class SystemExitOperationalBean extends AbstractOperationalBean {
 	private String exitCode;
 
 	public SystemExitOperationalBean(String cmd, String className, String sourceMethod, String executionId,
-			long startTime) {
-		super(className, sourceMethod, executionId, startTime);
+			long startTime, String methodName) {
+		super(className, sourceMethod, executionId, startTime, methodName);
 		this.exitCode = cmd;
 
-	}
-
-	public SystemExitOperationalBean(SystemExitOperationalBean systemExitOperationalBean) {
-		super(systemExitOperationalBean);
-		this.exitCode = systemExitOperationalBean.exitCode;
 	}
 
 	@Override

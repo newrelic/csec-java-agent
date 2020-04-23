@@ -56,7 +56,7 @@ public class Callbacks {
 //					System.out.println("Expression obj : " + xqueryExpressionObj);
 //					System.out.println("H1 : " + xqueryExpressionObj.hashCode());
 					ThreadLocalXQuerySaxonMap.getInstance().create(xqueryExpressionObj, args[0].toString(), className,
-							methodName, exectionId, Instant.now().toEpochMilli());
+							methodName, exectionId, Instant.now().toEpochMilli(), methodName);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -65,7 +65,7 @@ public class Callbacks {
 				Object compiledExpressionObj = returnVal;
 //				System.out.println("Inside Compile Expression for eXist-db, Query : " + args[0].toString());
 				ThreadLocalXQuerySaxonMap.getInstance().create(compiledExpressionObj, args[0].toString(), className,
-						methodName, exectionId, Instant.now().toEpochMilli());
+						methodName, exectionId, Instant.now().toEpochMilli(), methodName);
 			} else if (args.length == 2 && args[0] != null && returnVal != null
 					&& sourceString.contains("OXQCConnection.prepareExpressionImpl")) {
 				ThreadLocalXQuerySaxonMap.getInstance().setCompileStartMarked(false);
@@ -73,7 +73,7 @@ public class Callbacks {
 				if (bufferData != null) {
 //					System.out.println("Got Buffer Data Here : " + bufferData);
 					ThreadLocalXQuerySaxonMap.getInstance().create(returnVal, bufferData, className, methodName,
-							exectionId, Instant.now().toEpochMilli());
+							exectionId, Instant.now().toEpochMilli(), methodName);
 				}
 
 			} else if (args.length == 4 && args[0] != null && obj != null
@@ -86,7 +86,7 @@ public class Callbacks {
 						String xquery = xqueryObject.toString();
 //						System.out.println("Got Buffer Data Here : " + xquery);
 						ThreadLocalXQuerySaxonMap.getInstance().create(returnVal, xquery, className, methodName,
-								exectionId, Instant.now().toEpochMilli());
+								exectionId, Instant.now().toEpochMilli(), methodName);
 					}
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -106,7 +106,7 @@ public class Callbacks {
 						if (moduleObject != null) {
 //							System.out.println("Query in compile : " + queryString);
 							ThreadLocalXQuerySaxonMap.getInstance().create(moduleObject, queryString, className,
-									methodName, exectionId, Instant.now().toEpochMilli());
+									methodName, exectionId, Instant.now().toEpochMilli(), methodName);
 						}
 					}
 				} catch (Exception e) {
@@ -156,7 +156,7 @@ public class Callbacks {
 						if (ptrObject != null) {
 //							System.out.println("PTR : " + ptrObject.toString());
 							ThreadLocalXQuerySaxonMap.getInstance().create(ptrObject, executedXQuery, className,
-									methodName, exectionId, Instant.now().toEpochMilli());
+									methodName, exectionId, Instant.now().toEpochMilli(), methodName);
 						}
 					}
 				} catch (Exception e) {
@@ -173,7 +173,7 @@ public class Callbacks {
 					if (ptrObject != null) {
 //						System.out.println("PTR : " + ptrObject.toString());
 						ThreadLocalXQuerySaxonMap.getInstance().create(ptrObject, executedXQuery, className, methodName,
-								exectionId, Instant.now().toEpochMilli());
+								exectionId, Instant.now().toEpochMilli(), methodName);
 					}
 				} catch (Exception e) {
 					e.printStackTrace();
