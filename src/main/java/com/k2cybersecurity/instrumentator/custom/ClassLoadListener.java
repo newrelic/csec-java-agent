@@ -44,6 +44,11 @@ public class ClassLoadListener implements AgentBuilder.Listener {
 			final JavaModule module,
 			final boolean loaded) {
 		//      log.debug("onComplete {}", typeName);
+		try {
+			AgentUtils.getInstance().putClassloaderRecord(typeName, classLoader);
+		} catch (Throwable e){
+//			System.out.println("Error while registering classloader : " + typeName + " : " + classLoader + " : " + e.getMessage() + " : " + e.getCause());
+		}
 		AgentUtils.getInstance().addProtectedVulnerabilties(typeName);
 	}
 

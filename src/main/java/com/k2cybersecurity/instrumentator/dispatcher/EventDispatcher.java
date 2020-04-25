@@ -10,6 +10,7 @@ import com.k2cybersecurity.intcodeagent.models.javaagent.*;
 import com.k2cybersecurity.intcodeagent.models.operationalbean.AbstractOperationalBean;
 import com.k2cybersecurity.intcodeagent.models.operationalbean.FileOperationalBean;
 import com.k2cybersecurity.intcodeagent.models.operationalbean.SQLOperationalBean;
+import com.k2cybersecurity.intcodeagent.websocket.EventSendPool;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -88,7 +89,7 @@ public class EventDispatcher {
                     new HttpRequestBean(ThreadLocalExecutionMap.getInstance().getHttpRequestBean()),
                     new AgentMetaData(ThreadLocalExecutionMap.getInstance().getMetaData()),
                     objectBean, vulnerabilityCaseType);
-            if(blockAndCheck) {
+            if (blockAndCheck) {
                 submitAndHoldForEventResponse(objectBean.getSourceMethod(),
                         objectBean.getUserClassElement().getClassName(),
                         objectBean.getUserClassElement().getMethodName(),
@@ -175,17 +176,17 @@ public class EventDispatcher {
             return false;
         }
         VulnerableAPI vulnerableAPI = AgentUtils.getInstance().checkVulnerableAPI(sourceMethod, userClass, userMethod, lineNumber);
-        if(vulnerableAPI != null) {
+        if (vulnerableAPI != null) {
             logger.log(LogLevel.DEBUG, SCHEDULING_FOR_EVENT_RESPONSE_OF + executionId, EventDispatcher.class.getSimpleName());
             EventResponse eventResponse = new EventResponse(executionId);
             AgentUtils.getInstance().getEventResponseSet().put(executionId, eventResponse);
             try {
                 eventResponse.getResponseSemaphore().acquire();
                 if (eventResponse.getResponseSemaphore().tryAcquire(1000, TimeUnit.MILLISECONDS)) {
-                    logger.log(LogLevel.DEBUG,
-                            EVENT_RESPONSE_TIME_TAKEN + eventResponse.getEventId() + DOUBLE_COLON_SEPERATOR + (
-                                    eventResponse.getReceivedTime() - eventResponse.getGenerationTime()) + DOUBLE_COLON_SEPERATOR + executionId,
-                            EventDispatcher.class.getSimpleName());
+//                    logger.log(LogLevel.DEBUG,
+//                            EVENT_RESPONSE_TIME_TAKEN + eventResponse.getEventId() + DOUBLE_COLON_SEPERATOR + (
+//                                    eventResponse.getReceivedTime() - eventResponse.getGenerationTime()) + DOUBLE_COLON_SEPERATOR + executionId,
+//                            EventDispatcher.class.getSimpleName());
                     if (eventResponse.isAttack()) {
                         sendK2AttackPage(eventResponse.getEventId());
                         throw new K2CyberSecurityException(eventResponse.getResultMessage());
@@ -200,6 +201,7 @@ public class EventDispatcher {
                 AgentUtils.getInstance().getEventResponseSet().remove(executionId);
             }
         }
+
         return false;
     }
 
@@ -207,7 +209,7 @@ public class EventDispatcher {
         try {
             if (ThreadLocalHttpMap.getInstance().getHttpResponse() != null) {
                 String attackPage = StringUtils.replace(ATTACK_PAGE_CONTENT, ID_PLACEHOLDER, eventId);
-                logger.log(LogLevel.WARNING,"Sending K2 Attack page for : " + eventId, EventDispatcher.class.getName());
+                logger.log(LogLevel.WARNING, "Sending K2 Attack page for : " + eventId, EventDispatcher.class.getName());
                 if (ThreadLocalHttpMap.getInstance().getResponseOutputStream() != null) {
                     OutputStream outputStream = (OutputStream) ThreadLocalHttpMap.getInstance().getResponseOutputStream();
                     outputStream.write(attackPage.getBytes());
@@ -268,13 +270,13 @@ public class EventDispatcher {
                     outputStream.write(attackPage.getBytes());
                     outputStream.flush();
                     outputStream.close();
-                    logger.log(LogLevel.WARNING,"Sending K2 Blocking page to : " + ip + " via OutputStream", EventDispatcher.class.getName());
+                    logger.log(LogLevel.WARNING, "Sending K2 Blocking page to : " + ip + " via OutputStream", EventDispatcher.class.getName());
                 } else if (ThreadLocalHttpMap.getInstance().getResponseWriter() != null) {
                     PrintWriter printWriter = (PrintWriter) ThreadLocalHttpMap.getInstance().getResponseWriter();
                     printWriter.println(attackPage);
                     printWriter.flush();
                     printWriter.close();
-                    logger.log(LogLevel.WARNING,"Sending K2 Blocking page to : " + ip + " via PrintWriter", EventDispatcher.class.getName());
+                    logger.log(LogLevel.WARNING, "Sending K2 Blocking page to : " + ip + " via PrintWriter", EventDispatcher.class.getName());
                 } else {
                     Object resp = ThreadLocalHttpMap.getInstance().getHttpResponse();
                     try {
@@ -285,7 +287,7 @@ public class EventDispatcher {
                         outputStream.write(attackPage.getBytes());
                         outputStream.flush();
                         outputStream.close();
-                        logger.log(LogLevel.WARNING,"Sending K2 Blocking page to : " + ip + " via last resort OutputStream", EventDispatcher.class.getName());
+                        logger.log(LogLevel.WARNING, "Sending K2 Blocking page to : " + ip + " via last resort OutputStream", EventDispatcher.class.getName());
                     } catch (Throwable e) {
                         Method getWriter = resp.getClass().getMethod("getWriter");
                         getWriter.setAccessible(true);
@@ -294,7 +296,7 @@ public class EventDispatcher {
                         printWriter.println(attackPage);
                         printWriter.flush();
                         printWriter.close();
-                        logger.log(LogLevel.WARNING,"Sending K2 Blocking page to : " + ip + " via last resort PrintWriter", EventDispatcher.class.getName());
+                        logger.log(LogLevel.WARNING, "Sending K2 Blocking page to : " + ip + " via last resort PrintWriter", EventDispatcher.class.getName());
 
                     }
                 }

@@ -1,7 +1,6 @@
 package com.k2cybersecurity.instrumentator.utils;
 
 import com.k2cybersecurity.instrumentator.custom.ServletContextInfo;
-import com.k2cybersecurity.instrumentator.dispatcher.Dispatcher;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.logging.DeployedApplication;
@@ -40,12 +39,15 @@ public class AgentUtils {
 	public static final String L_1 = "L1 : ";
 	public static final String CLASSLOADER_IS_NULL_IN_DETECT_DEPLOYED_APPLICATION_PATH = "Classloader is null in detectDeployedApplicationPath";
 	public static final String ERROR = "Error :";
+	public static final String CLASSLOADER_RECORD_MISSING_FOR_CLASS = "Classloader record missing for class : ";
 
 	public Set<Pair<String, ClassLoader>> getTransformedClasses() {
 		return transformedClasses;
 	}
 
 	private Set<Pair<String, ClassLoader>> transformedClasses;
+
+	private Map<String, ClassLoader> classLoaderRecord;
 
 	private Map<String, EventResponse> eventResponseSet;
 
@@ -71,6 +73,7 @@ public class AgentUtils {
 		transformedClasses = new HashSet<>();
 		eventResponseSet = new ConcurrentHashMap<>();
 		vulnerableAPIMap = new ConcurrentHashMap<>();
+		classLoaderRecord = new ConcurrentHashMap<>();
 		TRACE_PATTERN = Pattern.compile(IAgentConstants.TRACE_REGEX);
 	}
 
@@ -79,6 +82,10 @@ public class AgentUtils {
 			instance = new AgentUtils();
 		}
 		return instance;
+	}
+
+	public Map<String, ClassLoader> getClassLoaderRecord() {
+		return classLoaderRecord;
 	}
 
 	public void clearTransformedClassSet() {
@@ -277,9 +284,33 @@ public class AgentUtils {
 		try {
 			Class cls = null;
 			if (currentGenericServletInstance!= null) {
-				cls = Class.forName(userClassName, false,
-						currentGenericServletInstance.getClass().getClassLoader());
 
+				boolean uncleanExit = false;
+				if(classLoaderRecord.containsKey(userClassName)){
+					ClassLoader loader = classLoaderRecord.get(userClassName);
+					try {
+						if (loader != null) {
+							cls = loader.loadClass(userClassName);
+						} else {
+							cls = Class.forName(userClassName, false, loader);
+						}
+					} catch (ClassNotFoundException e){
+						uncleanExit = true;
+					}
+				} else {
+					uncleanExit = true;
+				}
+
+				if(uncleanExit){
+					logger.log(LogLevel.WARNING,
+							CLASSLOADER_RECORD_MISSING_FOR_CLASS + userClassName,
+							AgentUtils.class.getName());
+					try {
+						cls = Class.forName(userClassName, false, currentGenericServletInstance.getClass().getClassLoader());
+					}catch (ClassNotFoundException e){
+						cls = Class.forName(userClassName, false, null);
+					}
+				}
 			} else {
 				logger.log(LogLevel.WARNING, CURRENT_GENERIC_SERVLET_INSTANCE_NULL_IN_DETECT_DEPLOYED_APPLICATION_PATH,
 						AgentUtils.class.getName());
@@ -361,6 +392,12 @@ public class AgentUtils {
 
 		}
 		return null;
+	}
+
+	public void putClassloaderRecord(String className , ClassLoader classLoader){
+		if(classLoader != null){
+			classLoaderRecord.put(className, classLoader);
+		}
 	}
 
 }

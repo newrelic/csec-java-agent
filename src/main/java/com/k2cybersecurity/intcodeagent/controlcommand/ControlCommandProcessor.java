@@ -111,10 +111,10 @@ public class ControlCommandProcessor implements Runnable {
 			eventResponse.setAttack(Boolean.parseBoolean(controlCommand.getArguments().get(2)));
 			eventResponse.setResultMessage(controlCommand.getArguments().get(3));
 
-			eventResponse.setGenerationTime(EventSendPool.getInstance().getEventMap().get(eventResponse.getId()));
-			eventResponse.setReceivedTime(receiveTimestamp);
+//			eventResponse.setGenerationTime(Long.parseLong(controlCommand.getArguments().get(4)));
+//			eventResponse.setReceivedTime(receiveTimestamp);
 
-			EventSendPool.getInstance().getEventMap().remove(eventResponse.getId());
+//			EventSendPool.getInstance().getEventMap().remove(eventResponse.getId());
 			logger.log(LogLevel.DEBUG, EVENT_RESPONSE + eventResponse,
 					ControlCommandProcessor.class.getName());
 			if (eventResponse.isAttack()
@@ -136,10 +136,10 @@ public class ControlCommandProcessor implements Runnable {
 			eventResponse.getResponseSemaphore().release();
 			AgentUtils.getInstance().getEventResponseSet().remove(eventResponse.getId());
 
-			logger.log(LogLevel.DEBUG,
-					EVENT_RESPONSE_TIME_TAKEN + eventResponse.getEventId() + DOUBLE_COLON_SEPERATOR
-							+ (eventResponse.getReceivedTime() - eventResponse.getGenerationTime()),
-					EventDispatcher.class.getSimpleName());
+//			logger.log(LogLevel.DEBUG,
+//					EVENT_RESPONSE_TIME_TAKEN + eventResponse.getEventId() + DOUBLE_COLON_SEPERATOR
+//							+ (eventResponse.getReceivedTime() - eventResponse.getGenerationTime()),
+//					EventDispatcher.class.getSimpleName());
 			break;
 		case IntCodeControlCommand.PROTECTION_CONFIG:
 			try {
