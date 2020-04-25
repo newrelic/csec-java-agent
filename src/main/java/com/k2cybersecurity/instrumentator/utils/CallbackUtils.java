@@ -103,19 +103,8 @@ public class CallbackUtils {
 			"([^(\\/\\s<'\">)]+?)(?:\\s*)=\\s*(('|\")([\\s\\S]*?)(?:(?=(\\\\?))\\5.)*?\\3|.+?(?=\\/>|>|\\?>|\\s|<\\/|$))",
 			Pattern.MULTILINE | Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
 
-	private static Map<Integer, JADatabaseMetaData> sqlConnectionMap;
-
 	public static Class requestInterface = null;
 	public static Class responseInterface = null;
-
-	static {
-		sqlConnectionMap = new LinkedHashMap<Integer, JADatabaseMetaData>(50) {
-			@Override
-			protected boolean removeEldestEntry(java.util.Map.Entry<Integer, JADatabaseMetaData> eldest) {
-				return size() > 50;
-			}
-		};
-	}
 
 	public static void checkForFileIntegrity(Map<String, FileIntegrityBean> fileLocalMap)
 			throws K2CyberSecurityException {
@@ -351,12 +340,6 @@ public class CallbackUtils {
 //
 //		}
 
-	/**
-	 * @return the sqlConnectionMap
-	 */
-	public static Map<Integer, JADatabaseMetaData> getSqlConnectionMap() {
-		return sqlConnectionMap;
-	}
 
 	public static String getConnectionInformation(Object ref, boolean needToGetConnection) {
 		try {
@@ -368,8 +351,8 @@ public class CallbackUtils {
 			} else {
 				connection = ref;
 			}
-			if (sqlConnectionMap.containsKey(connection.hashCode())) {
-				JADatabaseMetaData metaData = sqlConnectionMap.get(connection.hashCode());
+			if (AgentUtils.getInstance().getSqlConnectionMap().containsKey(connection.hashCode())) {
+				JADatabaseMetaData metaData = AgentUtils.getInstance().getSqlConnectionMap().get(connection.hashCode());
 				return metaData.getDbIdentifier();
 			} else {
 				Method getMetaData = connection.getClass().getMethod(GET_META_DATA, null);
@@ -395,7 +378,7 @@ public class CallbackUtils {
 					jaDatabaseMetaData.setDriverClassName(connection.getClass().getName());
 					jaDatabaseMetaData.setDbIdentifier(detectDatabaseProduct(productName));
 					// System.out.println("DB details detected: " + jaDatabaseMetaData);
-					sqlConnectionMap.put(connection.hashCode(), jaDatabaseMetaData);
+					AgentUtils.getInstance().getSqlConnectionMap().put(connection.hashCode(), jaDatabaseMetaData);
 					return jaDatabaseMetaData.getDbIdentifier();
 				}
 			}

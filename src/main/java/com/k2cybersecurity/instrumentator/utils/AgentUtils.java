@@ -69,12 +69,20 @@ public class AgentUtils {
 
 	private Pattern TRACE_PATTERN;
 
+	private Map<Integer, JADatabaseMetaData> sqlConnectionMap;
+
 	private AgentUtils() {
 		transformedClasses = new HashSet<>();
 		eventResponseSet = new ConcurrentHashMap<>();
 		vulnerableAPIMap = new ConcurrentHashMap<>();
 		classLoaderRecord = new ConcurrentHashMap<>();
 		TRACE_PATTERN = Pattern.compile(IAgentConstants.TRACE_REGEX);
+		this.sqlConnectionMap = new LinkedHashMap<Integer, JADatabaseMetaData>(50) {
+			@Override
+			protected boolean removeEldestEntry(java.util.Map.Entry<Integer, JADatabaseMetaData> eldest) {
+				return size() > 50;
+			}
+		};
 	}
 
 	public static AgentUtils getInstance() {
@@ -82,6 +90,10 @@ public class AgentUtils {
 			instance = new AgentUtils();
 		}
 		return instance;
+	}
+
+	public Map<Integer, JADatabaseMetaData> getSqlConnectionMap() {
+		return sqlConnectionMap;
 	}
 
 	public Map<String, ClassLoader> getClassLoaderRecord() {
