@@ -46,7 +46,7 @@ public class Callbacks {
 						if (StringUtils.isNotBlank(patternString)) {
 //							System.out.println("The pattern string for xpath is : " + patternString);
 							XPathOperationalBean xpathOperationalBean = new XPathOperationalBean(patternString,
-									className, sourceString, executionId, Instant.now().toEpochMilli());
+									className, sourceString, executionId, Instant.now().toEpochMilli(), methodName);
 							EventDispatcher.dispatch(xpathOperationalBean, VulnerabilityCaseType.XPATH);
 //						} else {
 //							System.out.println("pattern string object is null");
@@ -62,7 +62,7 @@ public class Callbacks {
 						if (StringUtils.isNotBlank(xpathExpression)) {
 //							System.out.println("Obtained xpathExpression is : " + xpathExpression);
 							XPathOperationalBean xPathOperationalBean = new XPathOperationalBean(xpathExpression,
-									className, methodName, executionId, Instant.now().toEpochMilli());
+									className, methodName, executionId, Instant.now().toEpochMilli(), methodName);
 							EventDispatcher.dispatch(xPathOperationalBean, VulnerabilityCaseType.XPATH);
 						}
 					}

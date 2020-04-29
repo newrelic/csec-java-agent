@@ -21,7 +21,7 @@ public class Callbacks {
 //						+ " - eid : " + exectionId);
 				if (args.length >= 2 && args[0] != null && ThreadLocalSessionMap.getInstance().put((String) args[0], args[1])) {
 					TrustBoundaryOperationalBean operationalBean = new TrustBoundaryOperationalBean((String) args[0],
-							args[1], className, sourceString, exectionId, Instant.now().toEpochMilli());
+							args[1], className, sourceString, exectionId, Instant.now().toEpochMilli(), methodName);
 					EventDispatcher.dispatch(operationalBean, VulnerabilityCaseType.TRUSTBOUNDARY);
 				}
 //				EventDispatcher.dispatch(new SSRFOperationalBean(args, className, sourceString, exectionId,

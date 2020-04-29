@@ -30,7 +30,7 @@ public class Callbacks {
 						newArgs = new Object[] { obj };
 					}
 					EventDispatcher.dispatch(new SSRFOperationalBean(newArgs, className, sourceString, exectionId,
-							Instant.now().toEpochMilli()), VulnerabilityCaseType.HTTP_REQUEST);
+							Instant.now().toEpochMilli(), methodName), VulnerabilityCaseType.HTTP_REQUEST);
 				}
 			} finally {
 				ThreadLocalOperationLock.getInstance().release();

@@ -7,8 +7,8 @@ public class JSInjectionOperationalBean extends AbstractOperationalBean {
 	private String javaScriptCode;
 
 	public JSInjectionOperationalBean(String javaScriptCode, String className, String sourceMethod, String executionId,
-			long startTime) {
-		super(className, sourceMethod, executionId, startTime);
+			long startTime, String methodName) {
+		super(className, sourceMethod, executionId, startTime, methodName);
 		this.javaScriptCode = javaScriptCode;
 	}
 

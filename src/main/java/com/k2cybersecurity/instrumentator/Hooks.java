@@ -20,7 +20,7 @@ public class Hooks {
 		 **/
 
 		// HTTP request hooks
-		TYPE_BASED_HOOKS.put("javax.servlet.GenericServlet", Arrays.asList("service"));
+		TYPE_BASED_HOOKS.put("javax.servlet.Servlet", Arrays.asList("service"));
 		TYPE_BASED_HOOKS.put("javax.servlet.jsp.HttpJspPage", Arrays.asList("_jspService"));
 
 		TYPE_BASED_HOOKS.put("javax.servlet.ServletInputStream", Arrays.asList("read", "readLine"));
@@ -32,6 +32,8 @@ public class Hooks {
 
 		TYPE_BASED_HOOKS.put("javax.servlet.ServletRequest", Arrays.asList("getInputStream", "getReader", null));
 		TYPE_BASED_HOOKS.put("javax.servlet.ServletResponse", Arrays.asList("getOutputStream", "getWriter", null));
+		TYPE_BASED_HOOKS.put("javax.servlet.Filter", Collections.singletonList("doFilter"));
+		TYPE_BASED_HOOKS.put("javax.servlet.FilterChain", Collections.singletonList("doFilter"));
 
 		// SQL hooks
 		TYPE_BASED_HOOKS.put("java.sql.Statement", Arrays.asList("execute", "executeBatch", "executeLargeBatch",
@@ -154,7 +156,7 @@ public class Hooks {
 		NAME_BASED_HOOKS.put("io.zorba.api.XQuery", Arrays.asList("iterator", "compile", "execute"));
 
 		// JBoss Classloading Hook
-		NAME_BASED_HOOKS.put("org.jboss.modules.Main", Collections.singletonList("main"));
+//		NAME_BASED_HOOKS.put("org.jboss.modules.Main", Collections.singletonList("main"));
 
 		// OSGi Classloading Hook
 		NAME_BASED_HOOKS.put("org.osgi.framework.Bundle", Arrays.asList("start", "update"));
@@ -200,7 +202,7 @@ public class Hooks {
 		 **/
 
 		// HTTP request
-		DECORATOR_ENTRY.put("javax.servlet.GenericServlet.service",
+		DECORATOR_ENTRY.put("javax.servlet.Servlet.service",
 				"com.k2cybersecurity.instrumentator.decorators.httpservice");
 
 		DECORATOR_ENTRY.put("javax.servlet.jsp.HttpJspPage._jspService",
@@ -217,7 +219,13 @@ public class Hooks {
 				"com.k2cybersecurity.instrumentator.decorators.servletoutputstream");
 		DECORATOR_ENTRY.put("javax.servlet.ServletOutputStream.write",
 				"com.k2cybersecurity.instrumentator.decorators.servletoutputstream");
-
+		
+		
+		DECORATOR_ENTRY.put("javax.servlet.Filter.doFilter",
+				"com.k2cybersecurity.instrumentator.decorators.servletdofilter");
+		DECORATOR_ENTRY.put("javax.servlet.FilterChain.doFilter",
+				"com.k2cybersecurity.instrumentator.decorators.servletdofilter");
+		
 		DECORATOR_ENTRY.put("java.io.PrintWriter.write", "com.k2cybersecurity.instrumentator.decorators.printwriter");
 		DECORATOR_ENTRY.put("java.io.PrintWriter.newLine", "com.k2cybersecurity.instrumentator.decorators.printwriter");
 		DECORATOR_ENTRY.put("java.io.PrintWriter.println", "com.k2cybersecurity.instrumentator.decorators.printwriter");

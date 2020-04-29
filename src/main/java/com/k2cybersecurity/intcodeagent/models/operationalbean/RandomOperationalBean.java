@@ -6,8 +6,8 @@ public class RandomOperationalBean extends AbstractOperationalBean {
 
 	private String eventCatgory;
 	
-	public RandomOperationalBean(String eventCatgory, String className, String sourceMethod, String executionId, long startTime) {
-		super(className, sourceMethod, executionId, startTime);
+	public RandomOperationalBean(String eventCatgory, String className, String sourceMethod, String executionId, long startTime, String methodName) {
+		super(className, sourceMethod, executionId, startTime, methodName);
 		this.eventCatgory = eventCatgory;
 	}
 

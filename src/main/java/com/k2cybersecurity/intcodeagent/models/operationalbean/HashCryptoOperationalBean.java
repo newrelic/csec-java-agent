@@ -37,13 +37,9 @@ public class HashCryptoOperationalBean extends AbstractOperationalBean {
 		this.provider = provider;
 	}
 
-	public HashCryptoOperationalBean(String name, String className, String sourceMethod, String executionId, long startTime) {
-		super(className, sourceMethod, executionId, startTime);
+	public HashCryptoOperationalBean(String name, String className, String sourceMethod, String executionId, long startTime, String methodName) {
+		super(className, sourceMethod, executionId, startTime, methodName);
 		this.name = name;
-	}
-
-	public HashCryptoOperationalBean(HashCryptoOperationalBean cryptoOperationalBean) {
-		super(cryptoOperationalBean);
 	}
 
 	@Override

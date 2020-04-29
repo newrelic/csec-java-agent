@@ -11,16 +11,10 @@ public class TrustBoundaryOperationalBean extends AbstractOperationalBean {
 	private String key;
 	private Object value;
 
-	public TrustBoundaryOperationalBean(String key, Object value, String className, String sourceMethod, String executionId, long startTime) {
-		super(className, sourceMethod, executionId, startTime);
+	public TrustBoundaryOperationalBean(String key, Object value, String className, String sourceMethod, String executionId, long startTime, String methodName) {
+		super(className, sourceMethod, executionId, startTime, methodName);
 		this.key = key;
 		this.value = value;
-	}
-
-	public TrustBoundaryOperationalBean(TrustBoundaryOperationalBean trustBoundaryOperationalBean) {
-		super(trustBoundaryOperationalBean);
-		this.key = trustBoundaryOperationalBean.key;
-		this.value = trustBoundaryOperationalBean.value;
 	}
 
 	@Override

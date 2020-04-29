@@ -27,12 +27,12 @@ public class Callbacks {
 					if (args.length == 2 && args[1] != null) {
 //						System.out.println("Query : " + args[1].toString());
 						XQueryOperationalBean xQueryOperationalBean = new XQueryOperationalBean(args[1].toString(),
-								className, methodName, executionId, Instant.now().toEpochMilli());
+								className, methodName, executionId, Instant.now().toEpochMilli(), methodName);
 						EventDispatcher.dispatch(xQueryOperationalBean, VulnerabilityCaseType.XQUERY_INJECTION);
 					} else if (args.length == 1 && args[0] != null) {
 //						System.out.println("Query : " + args[0].toString());
 						XQueryOperationalBean xQueryOperationalBean = new XQueryOperationalBean(args[0].toString(),
-								className, methodName, executionId, Instant.now().toEpochMilli());
+								className, methodName, executionId, Instant.now().toEpochMilli(), methodName);
 						EventDispatcher.dispatch(xQueryOperationalBean, VulnerabilityCaseType.XQUERY_INJECTION);
 					}
 				}

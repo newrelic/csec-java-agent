@@ -4,6 +4,7 @@ import com.k2cybersecurity.instrumentator.custom.*;
 import com.k2cybersecurity.instrumentator.dispatcher.EventDispatcher;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
+import com.k2cybersecurity.intcodeagent.logging.IAgentConstants;
 import com.k2cybersecurity.intcodeagent.models.javaagent.*;
 
 import org.apache.commons.lang3.RegExUtils;
@@ -102,26 +103,15 @@ public class CallbackUtils {
 			"([^(\\/\\s<'\">)]+?)(?:\\s*)=\\s*(('|\")([\\s\\S]*?)(?:(?=(\\\\?))\\5.)*?\\3|.+?(?=\\/>|>|\\?>|\\s|<\\/|$))",
 			Pattern.MULTILINE | Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
 
-	private static Map<Integer, JADatabaseMetaData> sqlConnectionMap;
-
 	public static Class requestInterface = null;
 	public static Class responseInterface = null;
-
-	static {
-		sqlConnectionMap = new LinkedHashMap<Integer, JADatabaseMetaData>(50) {
-			@Override
-			protected boolean removeEldestEntry(java.util.Map.Entry<Integer, JADatabaseMetaData> eldest) {
-				return size() > 50;
-			}
-		};
-	}
 
 	public static void checkForFileIntegrity(Map<String, FileIntegrityBean> fileLocalMap)
 			throws K2CyberSecurityException {
 		for (Entry<String, FileIntegrityBean> entry : fileLocalMap.entrySet()) {
 			boolean isExists = new File(entry.getKey()).exists();
 			if (!entry.getValue().getExists().equals(isExists)) {
-				EventDispatcher.dispatch(entry.getValue(), VulnerabilityCaseType.FILE_INTEGRITY);
+				EventDispatcher.dispatch(entry.getValue(), VulnerabilityCaseType.FILE_INTEGRITY, false);
 			}
 		}
 	}
@@ -259,7 +249,7 @@ public class CallbackUtils {
 
 				if (tmp != -1) {
 					currPos = tmp;
-				} else if( !isAttackConstruct) {
+				} else if (!isAttackConstruct) {
 					continue;
 				}
 			}
@@ -275,7 +265,7 @@ public class CallbackUtils {
 				} else {
 					String body = StringUtils.substring(data, currPos + 1);
 					int tagEnd = StringUtils.indexOf(body, ANGLE_END);
-					if (StringUtils.isNotBlank(body) && tagEnd != -1 ) {
+					if (StringUtils.isNotBlank(body) && tagEnd != -1) {
 						body = StringUtils.substring(body, tagEnd);
 						construct.add(StringUtils.substring(data, startPos, currPos + 1) + body);
 						break;
@@ -350,12 +340,6 @@ public class CallbackUtils {
 //
 //		}
 
-	/**
-	 * @return the sqlConnectionMap
-	 */
-	public static Map<Integer, JADatabaseMetaData> getSqlConnectionMap() {
-		return sqlConnectionMap;
-	}
 
 	public static String getConnectionInformation(Object ref, boolean needToGetConnection) {
 		try {
@@ -367,8 +351,8 @@ public class CallbackUtils {
 			} else {
 				connection = ref;
 			}
-			if (sqlConnectionMap.containsKey(connection.hashCode())) {
-				JADatabaseMetaData metaData = sqlConnectionMap.get(connection.hashCode());
+			if (AgentUtils.getInstance().getSqlConnectionMap().containsKey(connection.hashCode())) {
+				JADatabaseMetaData metaData = AgentUtils.getInstance().getSqlConnectionMap().get(connection.hashCode());
 				return metaData.getDbIdentifier();
 			} else {
 				Method getMetaData = connection.getClass().getMethod(GET_META_DATA, null);
@@ -394,7 +378,7 @@ public class CallbackUtils {
 					jaDatabaseMetaData.setDriverClassName(connection.getClass().getName());
 					jaDatabaseMetaData.setDbIdentifier(detectDatabaseProduct(productName));
 					// System.out.println("DB details detected: " + jaDatabaseMetaData);
-					sqlConnectionMap.put(connection.hashCode(), jaDatabaseMetaData);
+					AgentUtils.getInstance().getSqlConnectionMap().put(connection.hashCode(), jaDatabaseMetaData);
 					return jaDatabaseMetaData.getDbIdentifier();
 				}
 			}
@@ -565,24 +549,24 @@ public class CallbackUtils {
 				switch (contentType) {
 				case APPLICATION_JSON:
 //					do {
-						oldProcessedBody = processedBody;
-						processedBody = StringEscapeUtils.unescapeJson(processedBody);
-						if (!StringUtils.equals(oldProcessedBody, processedBody)
-								&& StringUtils.contains(processedBody, ANGLE_START)) {
-							processedData.add(processedBody);
-							// System.out.println("Decoding JSON: " + processedBody);
-						}
+					oldProcessedBody = processedBody;
+					processedBody = StringEscapeUtils.unescapeJson(processedBody);
+					if (!StringUtils.equals(oldProcessedBody, processedBody)
+							&& StringUtils.contains(processedBody, ANGLE_START)) {
+						processedData.add(processedBody);
+						// System.out.println("Decoding JSON: " + processedBody);
+					}
 //					} while (!StringUtils.equals(oldProcessedBody, processedBody));
 					break;
 				case APPLICATION_XML:
 //					do {
-						oldProcessedBody = processedBody;
-						processedBody = StringEscapeUtils.unescapeXml(processedBody);
-						if (!StringUtils.equals(oldProcessedBody, processedBody)
-								&& StringUtils.contains(processedBody, ANGLE_START)) {
-							processedData.add(processedBody);
-							// System.out.println("Decoding XML: " + processedBody);
-						}
+					oldProcessedBody = processedBody;
+					processedBody = StringEscapeUtils.unescapeXml(processedBody);
+					if (!StringUtils.equals(oldProcessedBody, processedBody)
+							&& StringUtils.contains(processedBody, ANGLE_START)) {
+						processedData.add(processedBody);
+						// System.out.println("Decoding XML: " + processedBody);
+					}
 //					} while (!StringUtils.equals(oldProcessedBody, processedBody));
 					break;
 
@@ -591,13 +575,13 @@ public class CallbackUtils {
 					processedData.add(processedBody);
 
 //					do {
-						oldProcessedBody = processedBody;
-						processedBody = urlDecode(processedBody);
-						if (!StringUtils.equals(oldProcessedBody, processedBody)
-								&& StringUtils.contains(processedBody, ANGLE_START)) {
-							processedData.add(processedBody);
-							// System.out.println("Decoding URL: " + processedBody);
-						}
+					oldProcessedBody = processedBody;
+					processedBody = urlDecode(processedBody);
+					if (!StringUtils.equals(oldProcessedBody, processedBody)
+							&& StringUtils.contains(processedBody, ANGLE_START)) {
+						processedData.add(processedBody);
+						// System.out.println("Decoding URL: " + processedBody);
+					}
 //					} while (!StringUtils.equals(oldProcessedBody, processedBody));
 
 					break;
@@ -695,7 +679,8 @@ public class CallbackUtils {
 		ThreadLocalLDAPMap.getInstance().clearAll();
 		ThreadLocalExecutionMap.getInstance().cleanUp();
 		ThreadLocalLdaptiveMap.getInstance().clearAll();
-        ThreadLocalXpathSaxonMap.getInstance().clearAll();
-        ThreadLocalXQuerySaxonMap.getInstance().clearAll();
+		ThreadLocalXpathSaxonMap.getInstance().clearAll();
+		ThreadLocalXQuerySaxonMap.getInstance().clearAll();
 	}
+
 }

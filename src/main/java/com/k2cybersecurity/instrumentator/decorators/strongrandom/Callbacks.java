@@ -19,7 +19,7 @@ public class Callbacks {
 			try {
 				ThreadLocalOperationLock.getInstance().acquire();
 				RandomOperationalBean randomOperationalBean = new RandomOperationalBean(SECURE_RANDOM, className,
-						sourceString, exectionId, Instant.now().toEpochMilli());
+						sourceString, exectionId, Instant.now().toEpochMilli(), methodName);
 				EventDispatcher.dispatch(randomOperationalBean, VulnerabilityCaseType.RANDOM);
 //				System.out.println("OnEnter :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj
 //						+ " - eid : " + exectionId);

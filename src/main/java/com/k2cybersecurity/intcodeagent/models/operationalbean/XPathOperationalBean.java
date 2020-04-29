@@ -6,8 +6,8 @@ public class XPathOperationalBean extends AbstractOperationalBean {
 
 	private String expression;
 
-	public XPathOperationalBean(String expression, String className, String sourceMethod, String executionId, long startTime) {
-		super(className, sourceMethod, executionId, startTime);
+	public XPathOperationalBean(String expression, String className, String sourceMethod, String executionId, long startTime, String methodName) {
+		super(className, sourceMethod, executionId, startTime, methodName);
 		this.expression = expression;
 	}
 

@@ -9,14 +9,9 @@ public class SSRFOperationalBean extends AbstractOperationalBean{
 
 	private Object[] apiCallArgs;
 
-	public SSRFOperationalBean(Object[] apiCallArgs, String className, String sourceMethod, String executionId, long startTime) {
-		super(className, sourceMethod, executionId, startTime);
+	public SSRFOperationalBean(Object[] apiCallArgs, String className, String sourceMethod, String executionId, long startTime, String methodName) {
+		super(className, sourceMethod, executionId, startTime, methodName);
 		this.apiCallArgs = apiCallArgs;
-	}
-
-	public SSRFOperationalBean(SSRFOperationalBean noSQLOperationalBean) {
-		super(noSQLOperationalBean);
-		apiCallArgs = noSQLOperationalBean.apiCallArgs;
 	}
 
 	@Override

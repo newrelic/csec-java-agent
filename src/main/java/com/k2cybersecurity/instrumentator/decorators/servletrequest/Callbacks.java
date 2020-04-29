@@ -1,5 +1,6 @@
 package com.k2cybersecurity.instrumentator.decorators.servletrequest;
 
+import com.k2cybersecurity.instrumentator.custom.ThreadLocalExecutionMap;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalHTTPIOLock;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalHttpMap;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalOperationLock;
@@ -14,19 +15,21 @@ public class Callbacks {
 
 	public static void doOnEnter(String sourceString, String className, String methodName, Object obj, Object[] args,
 			String exectionId) {
-		//		System.out.println("Came to servletrequest hook :" + exectionId + " :: " + sourceString);
-		//		if (!ThreadLocalHttpMap.getInstance().isServiceMethodEncountered() && !ThreadLocalOperationLock.getInstance()
-		//				.isAcquired()) {
-		//			try {
-		//				ThreadLocalOperationLock.getInstance().acquire();
-		//				if (obj == null && args != null && args.length == 1 && args[0] != null) {
-		////					System.out.println("Setting request  : " + exectionId);
-		//					ThreadLocalHttpMap.getInstance().setHttpRequest(args[0]);
-		//				}
-		//			} finally {
-		//				ThreadLocalOperationLock.getInstance().release();
-		//			}
-		//		}
+		// System.out.println("Came to servletrequest hook :" + exectionId + " :: " +
+		// sourceString);
+		// if (!ThreadLocalHttpMap.getInstance().isServiceMethodEncountered() &&
+		// !ThreadLocalOperationLock.getInstance()
+		// .isAcquired()) {
+		// try {
+		// ThreadLocalOperationLock.getInstance().acquire();
+		// if (obj == null && args != null && args.length == 1 && args[0] != null) {
+		//// System.out.println("Setting request : " + exectionId);
+		// ThreadLocalHttpMap.getInstance().setHttpRequest(args[0]);
+		// }
+		// } finally {
+		// ThreadLocalOperationLock.getInstance().release();
+		// }
+		// }
 	}
 
 	public static void doOnExit(String sourceString, String className, String methodName, Object obj, Object[] args,
@@ -45,9 +48,9 @@ public class Callbacks {
 						ThreadLocalHttpMap.getInstance().setRequestInputStream(returnVal);
 						ThreadLocalHTTPIOLock.getInstance().resetLock();
 					}
-				} else if (StringUtils.equals(methodName, INIT) && !ThreadLocalHttpMap.getInstance()
-						.isServiceMethodEncountered() && obj != null && CallbackUtils
-						.checkArgsTypeHeirarchyRequest(obj)) {
+				} else if (StringUtils.equals(methodName, INIT)
+						&& !ThreadLocalHttpMap.getInstance().isServiceMethodEncountered() && obj != null
+						&& CallbackUtils.checkArgsTypeHeirarchyRequest(obj)) {
 					//					System.out.println("Servlet request constructor exit aaya : "+ exectionId + " :: " + sourceString + " :: " + obj.hashCode() + " :: " + returnVal + " :: " + methodName);
 					CallbackUtils.cleanUpAllStates();
 					ThreadLocalHttpMap.getInstance().setHttpRequest(obj);
@@ -64,13 +67,12 @@ public class Callbacks {
 		if (!ThreadLocalOperationLock.getInstance().isAcquired()) {
 			try {
 				ThreadLocalOperationLock.getInstance().acquire();
-				//				System.out.println("OnError :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj
-				//						+ " - error : " + error + " - eid : " + exectionId);
+				// System.out.println("OnError :" + sourceString + " - args : " +
+				// Arrays.asList(args) + " - this : " + obj
+				// + " - error : " + error + " - eid : " + exectionId);
 			} finally {
 				ThreadLocalOperationLock.getInstance().release();
 			}
 		}
 	}
 }
-
-

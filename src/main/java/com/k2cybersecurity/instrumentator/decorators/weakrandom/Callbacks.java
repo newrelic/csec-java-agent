@@ -23,10 +23,10 @@ public class Callbacks {
 				RandomOperationalBean randomOperationalBean;
 				if (obj instanceof SecureRandom) {
 					randomOperationalBean = new RandomOperationalBean(SECURE_RANDOM, className,
-							sourceString, exectionId, Instant.now().toEpochMilli());
+							sourceString, exectionId, Instant.now().toEpochMilli(), methodName);
 				} else {
 					randomOperationalBean = new RandomOperationalBean(WEAK_RANDOM, className,
-							sourceString, exectionId, Instant.now().toEpochMilli());
+							sourceString, exectionId, Instant.now().toEpochMilli(), methodName);
 				}
 				EventDispatcher.dispatch(randomOperationalBean, VulnerabilityCaseType.RANDOM);
 //				System.out.println("OnEnter :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj

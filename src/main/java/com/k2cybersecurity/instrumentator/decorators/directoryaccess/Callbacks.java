@@ -30,7 +30,7 @@ public class Callbacks {
 					fileName = ((File) obj).toString();
 
 					FileOperationalBean fileOperationalBean = new FileOperationalBean(fileName,
-							className, sourceString, exectionId, Instant.now().toEpochMilli(), false);
+							className, sourceString, exectionId, Instant.now().toEpochMilli(), false, methodName);
 					EventDispatcher.dispatch(fileOperationalBean, VulnerabilityCaseType.FILE_OPERATION);
 				}
 			} finally {
@@ -54,7 +54,7 @@ public class Callbacks {
 		String extension = getFileExtension(file);
 		if (SOURCE_EXENSIONS.contains(extension)) {
 			FileIntegrityBean fbean = new FileIntegrityBean(file.exists(), fileName, className, sourceString,
-					exectionId, Instant.now().toEpochMilli());
+					exectionId, Instant.now().toEpochMilli(), methodName);
 			ThreadLocalExecutionMap.getInstance().getFileLocalMap().put(fileName, fbean);
 			return fbean;
 		}

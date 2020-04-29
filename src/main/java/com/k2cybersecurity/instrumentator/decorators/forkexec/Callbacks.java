@@ -26,7 +26,7 @@ public class Callbacks {
 					if (StringUtils.isNotBlank(command)) {
 						ForkExecOperationalBean forkExecOperationalBean = new ForkExecOperationalBean(command,
 								(Map<String, String>) args[1], className, sourceString, exectionId,
-								Instant.now().toEpochMilli());
+								Instant.now().toEpochMilli(), methodName);
 						EventDispatcher.dispatch(forkExecOperationalBean, VulnerabilityCaseType.SYSTEM_COMMAND);
 					}
 				}

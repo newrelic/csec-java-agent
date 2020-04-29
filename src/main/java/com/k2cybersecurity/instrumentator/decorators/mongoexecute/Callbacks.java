@@ -20,7 +20,7 @@ public class Callbacks {
 //						"OnEnter :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj + " - eid : "
 //								+ exectionId);
 				EventDispatcher.dispatch(new NoSQLOperationalBean(args, className, sourceString, exectionId,
-						Instant.now().toEpochMilli()), VulnerabilityCaseType.NOSQL_DB_COMMAND);
+						Instant.now().toEpochMilli(), methodName), VulnerabilityCaseType.NOSQL_DB_COMMAND);
 			} finally {
 				ThreadLocalOperationLock.getInstance().release();
 			}

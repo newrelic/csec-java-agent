@@ -51,7 +51,7 @@ public class Callbacks {
 						if (jsSourceString != null) {
 //							System.out.println("JS: " + jsSourceString);
 							ThreadLocalJSRhinoMap.getInstance().create(returnVal, jsSourceString.toString(), className,
-									sourceString, executionId, Instant.now().toEpochMilli());
+									sourceString, executionId, Instant.now().toEpochMilli(), methodName);
 						}
 
 					} catch (Exception e) {

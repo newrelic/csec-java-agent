@@ -21,7 +21,7 @@ public class Callbacks {
 				ThreadLocalOperationLock.getInstance().acquire();
 				String exitCode = ((Integer) args[0]).toString();
 				SystemExitOperationalBean systemExitOperationalBean = new SystemExitOperationalBean(exitCode, className,
-						sourceString, exectionId, Instant.now().toEpochMilli());
+						sourceString, exectionId, Instant.now().toEpochMilli(), methodName);
 				EventDispatcher.dispatch(systemExitOperationalBean, VulnerabilityCaseType.SYSTEM_EXIT);
 
 			} finally {

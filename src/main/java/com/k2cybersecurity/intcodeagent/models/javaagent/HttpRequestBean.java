@@ -65,6 +65,9 @@ public class HttpRequestBean {
 
 	private Collection parts;
 
+	@JsonIgnore
+	private Object servletContextObject;
+
 	public HttpRequestBean() {
 		this.rawRequest = StringUtils.EMPTY;
 		this.clientIP = StringUtils.EMPTY;
@@ -96,6 +99,7 @@ public class HttpRequestBean {
 		this.contentType = new String(servletInfo.contentType.trim());
 		this.parameterMap = new HashMap<>(servletInfo.parameterMap);
 		this.parts = servletInfo.parts;
+		this.servletContextObject = servletInfo.servletContextObject;
 	}
 
 	public String getRawRequest() {
@@ -201,60 +205,6 @@ public class HttpRequestBean {
 		return this.generationTime;
 	}
 
-	public String[] splitRequestComponents() {
-		return StringUtils.splitPreserveAllTokens(this.rawRequest, CR_OR_NL_SEPARATOR);
-	}
-
-	public boolean parseRequestLineFromRawRequest(String[] components) {
-		try {
-			String requestLine = components[0];
-			String[] requestLineComponents = StringUtils.split(requestLine);
-			if (requestLineComponents.length >= 1) {
-				this.method = requestLineComponents[0];
-				this.url = requestLineComponents[1];
-			} else {
-				logger.log(LogLevel.ERROR,
-						INVALID_REQUEST_LINE_MISSING_MANDATORY_COMPONENTS + Arrays.asList(requestLineComponents), this.getClass().getName());
-				return false;
-			}
-		} catch (Throwable e) {
-			logger.log(LogLevel.ERROR, ERROR_WHILE_PROCESSING_REQUEST_LINE + this.rawRequest, this.getClass().getName());
-			return false;
-		}
-		return true;
-	}
-
-	public boolean parseHeadersFromRawRequest(String[] components) {
-		this.headers = new JSONObject();
-		try {
-			for (int i = 1; i < components.length; i++) {
-				String currentLine = components[i];
-//				System.out.println("Current line : " + currentLine);
-				if (StringUtils.isBlank(currentLine)){
-//					System.out.println("Breaking out");
-					break;
-				}
-				String[] currentComponents = new String[] {StringUtils.substringBefore(currentLine, COLON_SEPARATOR_CHAR),StringUtils.substringAfter(currentLine, COLON_SEPARATOR_CHAR)};
-				if (currentComponents.length > 1 && StringUtils.isNoneBlank(currentComponents)) {
-					this.headers.put(currentComponents[0].trim(), currentComponents[1].trim());
-				}
-			}
-			return this.headers.size() > 0;
-		} catch (Throwable e) {
-			logger.log(LogLevel.ERROR, ERROR_WHILE_PROCESSING_HEADERS + this.rawRequest, this.getClass().getName());
-			return false;
-		}
-	}
-
-	public boolean parseBodyFromRawRequest() {
-		this.body = StringUtils.substringAfter(this.rawRequest, DOUBLE_CR_SEPARATOR);
-		if (StringUtils.isEmpty(this.body)){
-			this.body = StringUtils.substringAfter(this.rawRequest, DOUBLE_NL_SEPARATOR);
-		}
-		this.body = StringEscapeUtils.escapeJava(this.body);
-		return this.body.length() > 0;
-	}
-
 	@Override
 	public String toString() {
 		return JsonConverter.toJSON(this);
@@ -262,29 +212,6 @@ public class HttpRequestBean {
 
 	public void clearRawRequest() {
 		this.rawRequest = StringUtils.EMPTY;
-	}
-
-	public void populateHttpRequest() {
-//		this.setRawRequest(StringEscapeUtils.unescapeJava(this.getRawRequest()));
-		String[] components = splitRequestComponents();
-		if (components == null || components.length == 0) {
-			logger.log(LogLevel.ERROR, GOT_EMPTY_COMPONENT_LIST_FROM_RAW_REQUEST, this.getClass().getName());
-			return;
-		}
-//		System.err.println("\n\nComponents : " + Arrays.asList(components));
-		if (!parseRequestLineFromRawRequest(components)) {
-			logger.log(LogLevel.ERROR, UNABLE_TO_EXTRACT_THE_REQUEST_LINE, this.getClass().getName());
-			return;
-		}
-
-		if (!parseHeadersFromRawRequest(components)) {
-			logger.log(LogLevel.ERROR, GOT_EMPTY_MAP_AFTER_EXTRACTING_THE_HEADERS, this.getClass().getName());
-			return;
-		}
-
-		if (!parseBodyFromRawRequest()) {
-			logger.log(LogLevel.DEBUG, GOT_EMPTY_BODY_AFTER_PROCESSING, this.getClass().getName());
-		}
 	}
 
 	/**
@@ -404,4 +331,14 @@ public class HttpRequestBean {
 	public void setPathParameterMap(Map<String, String> pathParameterMap) {
 		this.pathParameterMap = pathParameterMap;
 	}
+
+	public Object getServletContextObject() {
+		return servletContextObject;
+	}
+
+	public void setServletContextObject(Object servletContextObject) {
+		this.servletContextObject = servletContextObject;
+	}
 }
+
+

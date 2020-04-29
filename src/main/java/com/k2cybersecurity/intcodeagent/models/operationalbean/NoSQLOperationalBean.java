@@ -9,14 +9,9 @@ public class NoSQLOperationalBean extends AbstractOperationalBean{
 
 	private Object[] apiCallArgs;
 
-	public NoSQLOperationalBean(Object[] apiCallArgs, String className, String sourceMethod, String executionId, long startTime) {
-		super(className, sourceMethod, executionId, startTime);
+	public NoSQLOperationalBean(Object[] apiCallArgs, String className, String sourceMethod, String executionId, long startTime, String methodName) {
+		super(className, sourceMethod, executionId, startTime, methodName);
 		this.apiCallArgs = apiCallArgs;
-	}
-
-	public NoSQLOperationalBean(NoSQLOperationalBean noSQLOperationalBean) {
-		super(noSQLOperationalBean);
-		apiCallArgs = noSQLOperationalBean.apiCallArgs;
 	}
 
 	@Override

@@ -55,6 +55,7 @@ public class ControlCommandProcessor implements Runnable {
 			controlCommand = new IntCodeControlCommand();
 			controlCommand.setArguments((List<String>) object.get("arguments"));
 			controlCommand.setControlCommand(Integer.valueOf(object.get("controlCommand").toString()));
+
 		} catch (Throwable e) {
 			logger.log(LogLevel.SEVERE, "Error in controlCommandProcessor : ", e,
 					ControlCommandProcessor.class.getSimpleName());
@@ -110,11 +111,11 @@ public class ControlCommandProcessor implements Runnable {
 			eventResponse.setAttack(Boolean.parseBoolean(controlCommand.getArguments().get(2)));
 			eventResponse.setResultMessage(controlCommand.getArguments().get(3));
 
-			eventResponse.setGenerationTime(EventSendPool.getInstance().getEventMap().get(eventResponse.getId()));
-			eventResponse.setReceivedTime(receiveTimestamp);
+//			eventResponse.setGenerationTime(Long.parseLong(controlCommand.getArguments().get(4)));
+//			eventResponse.setReceivedTime(receiveTimestamp);
 
-			EventSendPool.getInstance().getEventMap().remove(eventResponse.getId());
-			logger.log(LogLevel.INFO, EVENT_RESPONSE + eventResponse.toString(),
+//			EventSendPool.getInstance().getEventMap().remove(eventResponse.getId());
+			logger.log(LogLevel.DEBUG, EVENT_RESPONSE + eventResponse,
 					ControlCommandProcessor.class.getName());
 			if (eventResponse.isAttack()
 					&& ProtectionConfig.getInstance().getAutoAddDetectedVulnerabilitiesToProtectionList()) {
@@ -122,9 +123,11 @@ public class ControlCommandProcessor implements Runnable {
 					VulnerableAPI vulnerableAPI = new VulnerableAPI(controlCommand.getArguments().get(4),
 							controlCommand.getArguments().get(5), controlCommand.getArguments().get(6),
 							Integer.parseInt(controlCommand.getArguments().get(7)));
-					AgentUtils.getInstance().getVulnerableAPIMap().put(vulnerableAPI.getId(), vulnerableAPI);
-					logger.log(LogLevel.INFO, VULNERABLE_API_ENTRY_CREATED + vulnerableAPI,
-							ControlCommandProcessor.class.getName());
+					if (!AgentUtils.getInstance().getVulnerableAPIMap().containsKey(vulnerableAPI.getId())) {
+						AgentUtils.getInstance().getVulnerableAPIMap().put(vulnerableAPI.getId(), vulnerableAPI);
+						logger.log(LogLevel.INFO, VULNERABLE_API_ENTRY_CREATED + vulnerableAPI,
+								ControlCommandProcessor.class.getName());
+					}
 				} catch (Throwable e) {
 					logger.log(LogLevel.SEVERE, FAILED_TO_CREATE_VULNERABLE_API_ENTRY + controlCommand, e,
 							ControlCommandProcessor.class.getSimpleName());
@@ -133,10 +136,10 @@ public class ControlCommandProcessor implements Runnable {
 			eventResponse.getResponseSemaphore().release();
 			AgentUtils.getInstance().getEventResponseSet().remove(eventResponse.getId());
 
-			logger.log(LogLevel.INFO,
-					EVENT_RESPONSE_TIME_TAKEN + eventResponse.getEventId() + DOUBLE_COLON_SEPERATOR
-							+ (eventResponse.getReceivedTime() - eventResponse.getGenerationTime()),
-					EventDispatcher.class.getSimpleName());
+//			logger.log(LogLevel.DEBUG,
+//					EVENT_RESPONSE_TIME_TAKEN + eventResponse.getEventId() + DOUBLE_COLON_SEPERATOR
+//							+ (eventResponse.getReceivedTime() - eventResponse.getGenerationTime()),
+//					EventDispatcher.class.getSimpleName());
 			break;
 		case IntCodeControlCommand.PROTECTION_CONFIG:
 			try {

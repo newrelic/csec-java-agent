@@ -24,6 +24,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.json.simple.JSONArray;
 
 import java.io.Serializable;
+import java.util.HashSet;
+import java.util.Set;
 
 
 /**
@@ -41,11 +43,11 @@ public class ServerInfo implements Serializable {
 	private String name;
 	
 	/** list of all {@link DeployedApplication}. */
-	private JSONArray deployedApplications;
+	private Set<DeployedApplication> deployedApplications;
 	
 	public ServerInfo(){
 		this.name = StringUtils.EMPTY;
-		deployedApplications = new JSONArray();
+		deployedApplications = new HashSet<>();
 	}
 	
 	/**
@@ -72,7 +74,7 @@ public class ServerInfo implements Serializable {
 	 *
 	 * @return the deployedApplications
 	 */
-	public JSONArray getDeployedApplications() {
+	public  Set<DeployedApplication> getDeployedApplications() {
 		return deployedApplications;
 	}
 	
@@ -81,7 +83,7 @@ public class ServerInfo implements Serializable {
 	 *
 	 * @param deployedApplications the deployedApplications to set
 	 */
-	public void setDeployedApplications(JSONArray deployedApplications) {
+	public void setDeployedApplications( Set<DeployedApplication> deployedApplications) {
 		this.deployedApplications = deployedApplications;
 	}
 	
