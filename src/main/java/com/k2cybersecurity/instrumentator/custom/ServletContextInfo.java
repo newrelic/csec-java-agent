@@ -49,6 +49,7 @@ public class ServletContextInfo {
     public static final String CLASSES_STR = "/classes/";
     public static final String CLASSES_STR_1 = "/classes!";
     public static final String L_1 = "L1 : ";
+    public static final String APPLICATION = "application";
 
     @JsonIgnore
     private static ServletContextInfo instance;
@@ -174,7 +175,7 @@ public class ServletContextInfo {
             return false;
         }
 
-        if (StringUtils.equals(deployedApplication.getAppName(), ROOT)){
+        if (StringUtils.equalsAnyIgnoreCase(deployedApplication.getAppName(), ROOT, APPLICATION)){
             if (StringUtils.endsWithIgnoreCase(deployedApplication.getDeployedPath(), JAR_EXT)) {
                 deployedApplication.setAppName(Paths.get(deployedApplication.getDeployedPath()).getFileName().toString());
             }
