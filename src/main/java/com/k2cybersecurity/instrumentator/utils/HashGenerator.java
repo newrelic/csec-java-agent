@@ -53,6 +53,7 @@ public class HashGenerator {
     public static final String SORTED_SHA_LIST = "Sorted SHA list : ";
     public static final String ERROR = "Error :";
     public static final String WEBAPP_DETECTION_SHA_INFO_S = "Webapp detection SHA info :  %s";
+    public static final String STRING_SEP = "-";
 
     /**
      * generates hash of a file content according to the algorithm provided.
@@ -144,7 +145,7 @@ public class HashGenerator {
                         String extension = FilenameUtils.getExtension(tempFile.getName());
                         if (OTHER_CRITICAL_FILE_EXT.contains(extension)
                                 || JAVA_APPLICATION_ALLOWED_FILE_EXT.contains(extension)) {
-                            IOUtils.write(tempFile.getName() + getChecksum(tempFile) + StringUtils.LF,
+                            IOUtils.write(tempFile.getName() + STRING_SEP + getChecksum(tempFile) + StringUtils.LF,
                                     fOutputStream, StandardCharsets.UTF_8);
                         }
                     }
