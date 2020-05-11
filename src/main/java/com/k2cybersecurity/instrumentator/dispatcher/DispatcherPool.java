@@ -6,10 +6,7 @@ import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.logging.EventThreadPool.EventAbortPolicy;
 import com.k2cybersecurity.intcodeagent.logging.IAgentConstants;
-import com.k2cybersecurity.intcodeagent.models.javaagent.AgentMetaData;
-import com.k2cybersecurity.intcodeagent.models.javaagent.FileIntegrityBean;
-import com.k2cybersecurity.intcodeagent.models.javaagent.HttpRequestBean;
-import com.k2cybersecurity.intcodeagent.models.javaagent.VulnerabilityCaseType;
+import com.k2cybersecurity.intcodeagent.models.javaagent.*;
 import com.k2cybersecurity.intcodeagent.models.operationalbean.FileOperationalBean;
 
 import java.util.concurrent.*;
@@ -100,12 +97,12 @@ public class DispatcherPool {
 	public void dispatchEvent(HttpRequestBean httpRequestBean, AgentMetaData metaData,
 							  Object event, VulnerabilityCaseType vulnerabilityCaseType, String currentGenericServletMethodName,
 							  Object currentGenericServletInstance,
-							  StackTraceElement[] stackTrace, StackTraceElement userClassElement, Boolean isCalledByUserCode) {
+							  StackTraceElement[] stackTrace, UserClassEntity userClassEntity) {
 		if(executor.isShutdown()){
 			return;
 		}
 		this.executor.submit(new Dispatcher(httpRequestBean, metaData, event, vulnerabilityCaseType, currentGenericServletMethodName,
-				currentGenericServletInstance, stackTrace, userClassElement, isCalledByUserCode));
+				currentGenericServletInstance, stackTrace, userClassEntity));
 	}
 
 	/**
@@ -120,12 +117,12 @@ public class DispatcherPool {
 	public void dispatchEventRXSS(HttpRequestBean httpRequestBean, String sourceString, String exectionId,
 								  long startTime, VulnerabilityCaseType reflectedXss, String currentGenericServletMethodName,
 								  Object currentGenericServletInstance,
-								  StackTraceElement[] stackTrace, StackTraceElement userClassElement, Boolean isCalledByUserCode) {
+								  StackTraceElement[] stackTrace, UserClassEntity userClassEntity) {
 		if(executor.isShutdown()){
 			return;
 		}
 		this.executor.submit(new Dispatcher(httpRequestBean, reflectedXss, sourceString, exectionId, startTime, currentGenericServletMethodName,
-				currentGenericServletInstance, stackTrace, userClassElement, isCalledByUserCode));
+				currentGenericServletInstance, stackTrace, userClassEntity));
 	}
 
 	public void shutDownThreadPoolExecutor() {

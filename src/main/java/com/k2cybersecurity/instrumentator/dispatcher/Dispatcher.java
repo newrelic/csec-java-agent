@@ -1,9 +1,9 @@
 package com.k2cybersecurity.instrumentator.dispatcher;
 
 import com.k2cybersecurity.instrumentator.K2Instrumentator;
+import com.k2cybersecurity.instrumentator.custom.ClassloaderAdjustments;
 import com.k2cybersecurity.instrumentator.custom.ServletContextInfo;
 import com.k2cybersecurity.instrumentator.cve.scanner.CVEComponentsService;
-import com.k2cybersecurity.instrumentator.utils.AgentUtils;
 import com.k2cybersecurity.instrumentator.utils.AgentUtils;
 import com.k2cybersecurity.instrumentator.utils.CallbackUtils;
 import com.k2cybersecurity.instrumentator.utils.HashGenerator;
@@ -15,19 +15,13 @@ import com.k2cybersecurity.intcodeagent.logging.ProcessorThread;
 import com.k2cybersecurity.intcodeagent.models.javaagent.*;
 import com.k2cybersecurity.intcodeagent.models.operationalbean.*;
 import com.k2cybersecurity.intcodeagent.websocket.EventSendPool;
+import com.k2cybersecurity.intcodeagent.websocket.JsonConverter;
 import org.apache.commons.lang3.StringUtils;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
-import java.io.File;
 import java.io.ObjectInputStream;
-import java.lang.reflect.Method;
-import java.net.URL;
-import java.nio.file.Paths;
-import java.time.Instant;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.*;
@@ -37,7 +31,6 @@ public class Dispatcher implements Runnable {
 	private static final Pattern PATTERN;
 	private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
 	public static final String ERROR = "Error : ";
-	public static final char CH_DOT = '.';
 	public static final String EMPTY_FILE_SHA = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855";
 	public static final String DROPPING_APPLICATION_INFO_POSTING_DUE_TO_SIZE_0 = "Dropping application info posting due to size 0 : ";
 	public static final String QUESTION_CHAR = "?";
@@ -49,6 +42,9 @@ public class Dispatcher implements Runnable {
 	public static final String CURRENT_GENERIC_SERVLET_INSTANCE = "currentGenericServletInstance";
 	public static final String CURRENT_GENERIC_SERVLET_METHOD_NAME = "currentGenericServletMethodName";
 	public static final String UPDATED_APPLICATION_INFO_POSTED = "Updated application info posted : ";
+	public static final char SEPARATOR = '.';
+	public static final String INSIDE_SET_REQUIRED_STACK_TRACE = "Inside setRequiredStackTrace : ";
+	public static final String STRING_COLON = " : ";
 	private HttpRequestBean httpRequestBean;
 	private AgentMetaData metaData;
 	private Object event;
@@ -58,8 +54,7 @@ public class Dispatcher implements Runnable {
 	private boolean isGeneratedByBuddy = false;
 	private Object currentGenericServletInstance;
 	private String currentGenericServletMethodName = StringUtils.EMPTY;
-	private StackTraceElement userClassElement;
-	private Boolean isCalledByUserCode = false;
+	private UserClassEntity userClassEntity;
 
 	static {
 		PATTERN = Pattern.compile(IAgentConstants.TRACE_REGEX);
@@ -75,15 +70,13 @@ public class Dispatcher implements Runnable {
 		currentGenericServletInstance = ((AbstractOperationalBean)event).getCurrentGenericServletInstance();
 		currentGenericServletMethodName = ((AbstractOperationalBean)event).getCurrentGenericServletMethodName();
 		trace = ((AbstractOperationalBean)event).getStackTrace();
-		userClassElement = ((AbstractOperationalBean)event).getUserClassElement();
-		isCalledByUserCode = ((AbstractOperationalBean)event).getCalledByUserCode();
+		this.userClassEntity = ((AbstractOperationalBean)event).getUserClassEntity();
 	}
 
 	public Dispatcher(HttpRequestBean httpRequestBean, AgentMetaData metaData, Object event,
 					  VulnerabilityCaseType vulnerabilityCaseType, String currentGenericServletMethodName,
 					  Object currentGenericServletInstance,
-					  StackTraceElement[] stackTrace, StackTraceElement userClassElement,
-					  Boolean isCalledByUserCode) {
+					  StackTraceElement[] stackTrace, UserClassEntity userClassEntity) {
 		this.httpRequestBean = httpRequestBean;
 		this.metaData = metaData;
 		this.event = event;
@@ -92,15 +85,13 @@ public class Dispatcher implements Runnable {
 		this.currentGenericServletInstance = currentGenericServletInstance;
 		this.currentGenericServletMethodName = currentGenericServletMethodName;
 		this.trace = stackTrace;
-		this.userClassElement = userClassElement;
-		this.isCalledByUserCode = isCalledByUserCode;
+		this.userClassEntity = userClassEntity;
 	}
 
 	public Dispatcher(HttpRequestBean httpRequestBean, VulnerabilityCaseType reflectedXss,
 			String sourceString, String exectionId, long startTime, String currentGenericServletMethodName,
 					  Object currentGenericServletInstance,
-					  StackTraceElement[] stackTrace, StackTraceElement userClassElement,
-					  Boolean isCalledByUserCode) {
+					  StackTraceElement[] stackTrace, UserClassEntity userClassEntity) {
 		this.httpRequestBean = httpRequestBean;
 		this.vulnerabilityCaseType = reflectedXss;
 		extraInfo.put(SOURCESTRING, sourceString);
@@ -111,8 +102,7 @@ public class Dispatcher implements Runnable {
 		this.currentGenericServletInstance = currentGenericServletInstance;
 		this.currentGenericServletMethodName = currentGenericServletMethodName;
 		this.trace = stackTrace;
-		this.userClassElement = userClassElement;
-		this.isCalledByUserCode = isCalledByUserCode;
+		this.userClassEntity = userClassEntity;
 	}
 
 	@Override
@@ -138,8 +128,11 @@ public class Dispatcher implements Runnable {
 					eventBean.setBlockingProcessingTime(
 							(Long) extraInfo.get(BLOCKING_END_TIME) - eventBean.getStartTime());
 
-					eventBean.setUserAPIInfo(userClassElement.getLineNumber(), userClassElement.getClassName(), userClassElement.getMethodName());
+					eventBean.setUserAPIInfo(userClassEntity.getUserClassElement().getLineNumber(),
+							userClassEntity.getUserClassElement().getClassName(),
+							userClassEntity.getUserClassElement().getMethodName());
 
+					setRequiredStackTracePartToEvent(eventBean);
 					EventSendPool.getInstance().sendEvent(eventBean);
 //					System.out.println("============= Event Start ============");
 //					System.out.println(eventBean);
@@ -268,15 +261,79 @@ public class Dispatcher implements Runnable {
 			}
 		}
 
-
+		setRequiredStackTracePartToEvent(eventBean);
 		EventSendPool.getInstance().sendEvent(eventBean);
 
-		if(isCalledByUserCode) {
+		if(userClassEntity.isCalledByUserCode()) {
 			detectAndSendDeployedAppInfo();
 		}
 //		System.out.println("============= Event Start ============");
 //		System.out.println(eventBean);
 //		System.out.println("============= Event End ============");
+	}
+
+	private void setRequiredStackTracePartToEvent(JavaAgentEventBean eventBean) {
+		try {
+			stackPreProcess();
+			int fromLoc = 0;
+			int toLoc = this.trace.length;
+//		logger.log(LogLevel.DEBUG, INSIDE_SET_REQUIRED_STACK_TRACE + eventBean.getId() + STRING_COLON + JsonConverter.toJSON(userClassEntity) + STRING_COLON + JsonConverter.toJSON(Arrays.asList(trace)), Dispatcher.class.getName());
+			if (userClassEntity.isCalledByUserCode()) {
+				toLoc = userClassEntity.getTraceLocationEnd();
+				String packageName = getMatchPackagePrefix(userClassEntity.getUserClassElement().getClassName());
+				if (StringUtils.isBlank(packageName)) {
+					setFiniteSizeStackTrace(eventBean);
+				} else {
+					int i = toLoc;
+					for (i = toLoc; i >= 0; i--) {
+						if (!StringUtils.startsWith(trace[i].getClassName(), packageName)) {
+							break;
+						}
+					}
+					fromLoc = i;
+//				logger.log(LogLevel.DEBUG, "Setting setRequiredStackTracePart by auto detect : " + eventBean.getId(), Dispatcher.class.getName());
+					eventBean.setStacktrace(Arrays.asList(Arrays.copyOfRange(this.trace, Math.max(fromLoc, 0),
+							Math.min(toLoc + 1, trace.length - 1) + 1)));
+				}
+			} else {
+				setFiniteSizeStackTrace(eventBean);
+			}
+		}catch (Exception e) {
+			logger.log(LogLevel.ERROR, ERROR, e, Dispatcher.class.getName());
+		}
+	}
+
+	private void stackPreProcess() {
+		int i = 1;
+		for(i = 1; i<trace.length; i++){
+			if(!StringUtils.startsWith(trace[i].getClassName(), ClassloaderAdjustments.K2_BOOTSTAP_LOADED_PACKAGE_NAME)){
+				break;
+			}
+		}
+		trace = Arrays.copyOfRange(trace, i, trace.length);
+		userClassEntity.setTraceLocationEnd(userClassEntity.getTraceLocationEnd() - i);
+	}
+
+	private void setFiniteSizeStackTrace(JavaAgentEventBean eventBean) {
+//		logger.log(LogLevel.DEBUG, "Setting setFiniteSizeStackTrace : " + eventBean.getId(), Dispatcher.class.getName());
+		int fromLoc = 0;
+		int toLoc = this.trace.length;
+		fromLoc = Math.max(userClassEntity.getTraceLocationEnd() - 4, 0);
+		toLoc = Math.min(userClassEntity.getTraceLocationEnd() + 1, trace.length - 1);
+		eventBean.setStacktrace(Arrays.asList(Arrays.copyOfRange(this.trace, fromLoc, toLoc + 1)));
+	}
+
+	private String getMatchPackagePrefix(String className){
+		String[] parts = StringUtils.split(className, SEPARATOR);
+		if(parts.length == 1){
+			return StringUtils.EMPTY;
+		}
+		if (parts.length > 2) {
+			return StringUtils.join(parts, SEPARATOR, 0, 2);
+		} else {
+			return StringUtils.join(parts, SEPARATOR, 0, parts.length - 1);
+		}
+
 	}
 
 	private boolean detectAndSendDeployedAppInfo() {
@@ -285,7 +342,8 @@ public class Dispatcher implements Runnable {
 			ServletContextInfo.getInstance().getContextMap().put(httpRequestBean.getContextPath(), deployedApplication);
 			logger.log(LogLevel.INFO, "Creating new deployed application", Dispatcher.class.getName());
 			deployedApplication.setDeployedPath(AgentUtils.getInstance().detectDeployedApplicationPath(
-					userClassElement.getClassName(), currentGenericServletInstance, userClassElement.getMethodName()));
+					userClassEntity.getUserClassElement().getClassName(), currentGenericServletInstance,
+					userClassEntity.getUserClassElement().getMethodName()));
 			logger.log(LogLevel.INFO, "Deployed app after set path : " + deployedApplication, Dispatcher.class.getName());
 			boolean ret = false;
 			try {
@@ -447,7 +505,9 @@ public class Dispatcher implements Runnable {
 		eventBean.setParameters(params);
 //		eventBean.setUserAPIInfo(fileIntegrityBean.getLineNumber(), fileIntegrityBean.getClassName(),
 //				fileIntegrityBean.getUserMethodName());
-		eventBean.setUserAPIInfo(userClassElement.getLineNumber(), userClassElement.getClassName(), userClassElement.getMethodName());
+		eventBean.setUserAPIInfo(userClassEntity.getUserClassElement().getLineNumber(),
+				userClassEntity.getUserClassElement().getClassName(),
+				userClassEntity.getUserClassElement().getMethodName());
 		eventBean.setCurrentMethod(fileIntegrityBean.getCurrentMethod());
 		return eventBean;
 	}
@@ -574,7 +634,9 @@ public class Dispatcher implements Runnable {
 				}
 			}
 		}
-		eventBean.setUserAPIInfo(userClassElement.getLineNumber(), userClassElement.getClassName(), userClassElement.getMethodName());
+		eventBean.setUserAPIInfo(userClassEntity.getUserClassElement().getLineNumber(),
+				userClassEntity.getUserClassElement().getClassName(),
+				userClassEntity.getUserClassElement().getMethodName());
 		return eventBean;
 	}
 

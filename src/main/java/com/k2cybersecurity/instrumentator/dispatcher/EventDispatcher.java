@@ -91,9 +91,9 @@ public class EventDispatcher {
                     objectBean, vulnerabilityCaseType);
             if (blockAndCheck) {
                 submitAndHoldForEventResponse(objectBean.getSourceMethod(),
-                        objectBean.getUserClassElement().getClassName(),
-                        objectBean.getUserClassElement().getMethodName(),
-                        objectBean.getUserClassElement().getLineNumber(),
+                        objectBean.getUserClassEntity().getUserClassElement().getClassName(),
+                        objectBean.getUserClassEntity().getUserClassElement().getMethodName(),
+                        objectBean.getUserClassEntity().getUserClassElement().getLineNumber(),
                         objectBean.getExecutionId());
                 checkIfClientIPBlocked();
             }
@@ -130,21 +130,17 @@ public class EventDispatcher {
         String currentGenericServletMethodName = ThreadLocalHTTPDoFilterMap.getInstance().getCurrentGenericServletMethodName();
         Object currentGenericServletInstance = ThreadLocalHTTPDoFilterMap.getInstance().getCurrentGenericServletInstance();
         StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
-        StackTraceElement userClassElement = null;
-        Boolean isCalledByUserCode = false;
-        Pair<Boolean, StackTraceElement> userClassDetectionResult = AgentUtils.getInstance().detectUserClass(stackTrace,
+        UserClassEntity userClassEntity = AgentUtils.getInstance().detectUserClass(stackTrace,
                 currentGenericServletInstance,
                 currentGenericServletMethodName, className, methodName);
-        userClassElement = userClassDetectionResult.getRight();
-        isCalledByUserCode = userClassDetectionResult.getLeft();
 
         if (!toBeSentBeans.isEmpty()) {
             DispatcherPool.getInstance().dispatchEvent(
                     new HttpRequestBean(ThreadLocalExecutionMap.getInstance().getHttpRequestBean()),
                     new AgentMetaData(ThreadLocalExecutionMap.getInstance().getMetaData()),
                     toBeSentBeans, vulnerabilityCaseType, currentGenericServletMethodName,
-                    currentGenericServletInstance, stackTrace, userClassElement, isCalledByUserCode);
-            submitAndHoldForEventResponse(sourceMethod, userClassElement.getClassName(), userClassElement.getMethodName(), userClassElement.getLineNumber(), exectionId);
+                    currentGenericServletInstance, stackTrace, userClassEntity);
+            submitAndHoldForEventResponse(sourceMethod, userClassEntity.getUserClassElement().getClassName(), userClassEntity.getUserClassElement().getMethodName(), userClassEntity.getUserClassElement().getLineNumber(), exectionId);
             checkIfClientIPBlocked();
         }
     }
@@ -157,17 +153,14 @@ public class EventDispatcher {
             String currentGenericServletMethodName = ThreadLocalHTTPDoFilterMap.getInstance().getCurrentGenericServletMethodName();
             Object currentGenericServletInstance = ThreadLocalHTTPDoFilterMap.getInstance().getCurrentGenericServletInstance();
             StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
-            StackTraceElement userClassElement = null;
-            Boolean isCalledByUserCode = false;
-            Pair<Boolean, StackTraceElement> userClassDetectionResult = AgentUtils.getInstance().detectUserClass(stackTrace,
+            UserClassEntity userClassEntity = AgentUtils.getInstance().detectUserClass(stackTrace,
                     currentGenericServletInstance,
                     currentGenericServletMethodName, className, methodName);
-            userClassElement = userClassDetectionResult.getRight();
-            isCalledByUserCode = userClassDetectionResult.getLeft();
+
 
             DispatcherPool.getInstance().dispatchEventRXSS(httpRequestBean, sourceString, exectionId, startTime,
                     reflectedXss, currentGenericServletMethodName,
-                    currentGenericServletInstance, stackTrace, userClassElement, isCalledByUserCode);
+                    currentGenericServletInstance, stackTrace, userClassEntity);
         }
     }
 

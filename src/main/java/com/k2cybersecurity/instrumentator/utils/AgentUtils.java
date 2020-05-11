@@ -218,11 +218,13 @@ public class AgentUtils {
 		return false;
 	}
 
-	public Pair<Boolean, StackTraceElement> detectUserClass(StackTraceElement[] trace, Object currentGenericServletInstance
+	public UserClassEntity detectUserClass(StackTraceElement[] trace, Object currentGenericServletInstance
 			, String currentGenericServletMethodName, String fakeClassName, String fakeMethodName) {
+
 		StackTraceElement userClass = null;
-		Boolean isUserClass = false;
 		int currentClassLoc = -1;
+
+		UserClassEntity userClassEntity = new UserClassEntity();
 
 		Set<String> superClasses = new HashSet<>();
 //		logger.log(LogLevel.INFO, "Trace: " + Arrays.asList(trace),
@@ -249,16 +251,17 @@ public class AgentUtils {
 			}
 		}
 		if(userClass == null){
-			userClass = getFakeUserClass(trace, fakeClassName, fakeMethodName);
-//			logger.log(LogLevel.INFO, "Env event no user class : " + userClass, AgentUtils.class.getName());
-			return Pair.of(false, userClass);
+			return getFakeUserClass(trace, fakeClassName, fakeMethodName);
 		}
 
 		String packageName = StringUtils.EMPTY;
 		Matcher matcher = TRACE_PATTERN.matcher(userClass.getClassName());
 		if (!matcher.matches()) {
 //			logger.log(LogLevel.INFO, "Not matched : " + userClass, AgentUtils.class.getName());
-			return Pair.of(true, userClass);
+			userClassEntity.setCalledByUserCode(true);
+			userClassEntity.setTraceLocationEnd(currentClassLoc);
+			userClassEntity.setUserClassElement(userClass);
+			return userClassEntity;
 		} else {
 			packageName = matcher.group();
 			for (int i = currentClassLoc - 1; i >= 0; i--) {
@@ -266,17 +269,24 @@ public class AgentUtils {
 				if (!StringUtils.startsWith(trace[i].getClassName(), packageName) && !m1.matches()) {
 					userClass = trace[i];
 //					logger.log(LogLevel.INFO, "else finding : " + userClass, AgentUtils.class.getName());
-					return Pair.of(true, userClass);
+					userClassEntity.setCalledByUserCode(true);
+					userClassEntity.setTraceLocationEnd(i);
+					userClassEntity.setUserClassElement(userClass);
+					return userClassEntity;
 				} else if (m1.matches()) {
 					packageName = m1.group();
 				}
 			}
 		}
-		return Pair.of(false, userClass);
+		userClassEntity.setCalledByUserCode(false);
+		userClassEntity.setTraceLocationEnd(currentClassLoc);
+		userClassEntity.setUserClassElement(userClass);
+		return userClassEntity;
 	}
 
-	private StackTraceElement getFakeUserClass(StackTraceElement[] trace, String fakeClassName, String fakeMethodName) {
-		StackTraceElement fakeUserClass = null;
+	private UserClassEntity getFakeUserClass(StackTraceElement[] trace, String fakeClassName, String fakeMethodName) {
+		UserClassEntity userClassEntity = new UserClassEntity();
+		userClassEntity.setCalledByUserCode(false);
 		int loc = 0;
 		boolean detect = false;
 		for(loc = 0; loc< trace.length; loc++){
@@ -284,11 +294,12 @@ public class AgentUtils {
 					StringUtils.equals(fakeClassName, trace[loc].getClassName())){
 				detect = true;
 			} else if(detect && !IAgentConstants.TRACE_SKIP_REGEX.matcher(trace[loc].getClassName()).matches()){
-				fakeUserClass = trace[loc];
+				userClassEntity.setUserClassElement(trace[loc]);
+				userClassEntity.setTraceLocationEnd(loc);
 				break;
 			}
 		}
-		return fakeUserClass;
+		return userClassEntity;
 	}
 
 	public String detectDeployedApplicationPath(String userClassName, Object currentGenericServletInstance, String methodName){
