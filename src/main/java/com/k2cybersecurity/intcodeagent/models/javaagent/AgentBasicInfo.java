@@ -14,13 +14,13 @@ public class AgentBasicInfo {
 	private static final String SCAN_COMPONENT_DATA = "scanComponentData";
 
 	/**  Tool id for Language Agent. */
-	private String k2LAToolId;
+	private String collectorVersion;
 
 	/** The Json name. */
 	private String jsonName;
 
 	/** Json version number. */
-	private String version;
+	private String jsonVersion;
 	
 	private final String collectorType = "JAVA";
 
@@ -30,8 +30,8 @@ public class AgentBasicInfo {
 	 * Instantiates a new agent basic info according to the source class object.
 	 */
 	public AgentBasicInfo() {
-		setVersion(K2JAVersionInfo.javaAgentVersion);
-		setK2LAToolId(K2JAVersionInfo.buildId);
+		setJsonVersion(K2JAVersionInfo.jsonVersion);
+		setCollectorVersion(K2JAVersionInfo.collectorVersion);
 		if (this instanceof  ApplicationInfoBean) {
 			setJsonName(JSON_NAME_APPLICATION_INFO_BEAN);
 		} else if (this instanceof JavaAgentEventBean) {
@@ -52,8 +52,8 @@ public class AgentBasicInfo {
 	 *
 	 * @return the Language Agent tool id.
 	 */
-	public String getK2LAToolId() {
-		return k2LAToolId;
+	public String getCollectorVersion() {
+		return collectorVersion;
 	}
 
 	/**
@@ -61,8 +61,8 @@ public class AgentBasicInfo {
 	 *
 	 * @param k2jaToolId Language Agent tool id.
 	 */
-	public void setK2LAToolId(String k2jaToolId) {
-		k2LAToolId = k2jaToolId;
+	public void setCollectorVersion(String k2jaToolId) {
+		collectorVersion = k2jaToolId;
 	}
 
 	/**
@@ -88,17 +88,17 @@ public class AgentBasicInfo {
 	 *
 	 * @return the version
 	 */
-	public String getVersion() {
-		return version;
+	public String getJsonVersion() {
+		return jsonVersion;
 	}
 
 	/**
 	 * Sets the version.
 	 *
-	 * @param version the new version
+	 * @param jsonVersion the new version
 	 */
-	public void setVersion(String version) {
-		this.version = version;
+	public void setJsonVersion(String jsonVersion) {
+		this.jsonVersion = jsonVersion;
 	}
 	
 
