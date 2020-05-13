@@ -38,6 +38,7 @@ import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.*;
 
 public class K2Instrumentator {
 
+	public static final String LIBPOD = "/libpod-";
 	public static String hostip = StringUtils.EMPTY;
 	public static Integer VMPID;
 	public static final String APPLICATION_UUID = UUID.randomUUID().toString();
@@ -162,6 +163,12 @@ public class K2Instrumentator {
 				int indexEnd = st.lastIndexOf(SCOPE);
 				if (index > -1 && indexEnd > -1) {
 					return st.substring(index + 8, indexEnd);
+				}
+
+				// podman
+				String containerId = StringUtils.substringBetween(st, LIBPOD, SCOPE);
+				if(StringUtils.isNotBlank(containerId)){
+					return containerId;
 				}
 			}
 		} catch (IOException e) {
