@@ -14,6 +14,9 @@ public class HttpRequestMapping {
     private HttpRequestBean referentialRequest;
 
     private Map<String, UserValue> userValueMap;
+    
+    public HttpRequestMapping() {
+	}
 
     public HttpRequestMapping(String id, HttpRequestBean baseRequest, HttpRequestBean referentialRequest) {
         this.id = id;
