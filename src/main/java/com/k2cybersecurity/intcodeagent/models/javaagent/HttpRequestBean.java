@@ -1,18 +1,18 @@
 package com.k2cybersecurity.intcodeagent.models.javaagent;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
-import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
-import com.k2cybersecurity.intcodeagent.websocket.JsonConverter;
-import org.apache.commons.lang3.StringEscapeUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.json.simple.JSONObject;
-
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
+import org.json.simple.JSONObject;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
+import com.k2cybersecurity.intcodeagent.websocket.JsonConverter;
+
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class HttpRequestBean {
 
 	private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
