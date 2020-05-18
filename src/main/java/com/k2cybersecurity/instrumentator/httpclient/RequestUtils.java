@@ -21,7 +21,7 @@ public class RequestUtils {
 		StringBuilder url = new StringBuilder("localhost");
 		url.append(":");
 		url.append(httpRequestBean.getServerPort());
-		url.append(StringUtils.appendIfMissing("/", httpRequestBean.getUrl()));
+		url.append(httpRequestBean.getUrl());
 
 		RequestBody requestBody = null;
 		
