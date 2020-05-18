@@ -18,7 +18,7 @@ public class RequestUtils {
 
 	public static Request generateK2Request(HttpRequestBean httpRequestBean, String eventId) {
 
-		StringBuilder url = new StringBuilder("localhost");
+		StringBuilder url = new StringBuilder("http://localhost");
 		url.append(":");
 		url.append(httpRequestBean.getServerPort());
 		url.append(httpRequestBean.getUrl());
