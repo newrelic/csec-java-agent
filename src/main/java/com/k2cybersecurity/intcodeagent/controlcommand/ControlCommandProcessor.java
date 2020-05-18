@@ -6,16 +6,21 @@ import java.util.concurrent.TimeUnit;
 import org.apache.commons.lang3.StringUtils;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.k2cybersecurity.instrumentator.K2Instrumentator;
 import com.k2cybersecurity.instrumentator.cve.scanner.CVEScannerPool;
 import com.k2cybersecurity.instrumentator.dispatcher.EventDispatcher;
+import com.k2cybersecurity.instrumentator.httpclient.AsyncRestClient;
+import com.k2cybersecurity.instrumentator.httpclient.RequestUtils;
 import com.k2cybersecurity.instrumentator.utils.AgentUtils;
 import com.k2cybersecurity.instrumentator.utils.InstrumentationUtils;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.filelogging.LogWriter;
 import com.k2cybersecurity.intcodeagent.models.javaagent.EventResponse;
+import com.k2cybersecurity.intcodeagent.models.javaagent.HttpRequestMapping;
 import com.k2cybersecurity.intcodeagent.models.javaagent.IntCodeControlCommand;
 import com.k2cybersecurity.intcodeagent.models.javaagent.ProtectionConfig;
 import com.k2cybersecurity.intcodeagent.models.javaagent.VulnerableAPI;
@@ -115,8 +120,7 @@ public class ControlCommandProcessor implements Runnable {
 //			eventResponse.setReceivedTime(receiveTimestamp);
 
 //			EventSendPool.getInstance().getEventMap().remove(eventResponse.getId());
-			logger.log(LogLevel.DEBUG, EVENT_RESPONSE + eventResponse,
-					ControlCommandProcessor.class.getName());
+			logger.log(LogLevel.DEBUG, EVENT_RESPONSE + eventResponse, ControlCommandProcessor.class.getName());
 			if (eventResponse.isAttack()
 					&& ProtectionConfig.getInstance().getAutoAddDetectedVulnerabilitiesToProtectionList()) {
 				try {
@@ -220,6 +224,16 @@ public class ControlCommandProcessor implements Runnable {
 			logger.log(LogLevel.INFO, String.format("Adding IP address %s to blocking list", ip),
 					ControlCommandProcessor.class.getName());
 			AgentUtils.getInstance().addIPBlockingEntry(ip);
+			break;
+		case IntCodeControlCommand.FUZZ_REQUEST:
+			try {
+				HttpRequestMapping httpRequestMapping = new ObjectMapper()
+						.readValue(controlCommand.getArguments().get(0), HttpRequestMapping.class);
+				AsyncRestClient.getInstance().fireRequest(RequestUtils
+						.generateK2Request(httpRequestMapping.getBaseRequest(), httpRequestMapping.getId()));
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
 			break;
 		default:
 			logger.log(LogLevel.WARNING, String.format(UNKNOWN_CONTROL_COMMAND_S, controlCommandMessage),

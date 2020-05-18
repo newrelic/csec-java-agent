@@ -16,7 +16,7 @@ public class RequestUtils {
 
 	private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
 
-	public Request generateK2Request(HttpRequestBean httpRequestBean, String eventId) {
+	public static Request generateK2Request(HttpRequestBean httpRequestBean, String eventId) {
 
 		StringBuilder url = new StringBuilder("localhost");
 		url.append(":");

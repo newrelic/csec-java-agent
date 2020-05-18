@@ -19,6 +19,7 @@ public class IntCodeControlCommand {
     public static final int START_VULNERABILITY_SCAN = 8;
     public static final int SET_IPBLOCKING_TIMEOUT = 9;
     public static final int CREATE_IPBLOCKING_ENTRY = 10;
+    public static final int FUZZ_REQUEST = 11;
 
     private String jsonName;
     private int controlCommand;
