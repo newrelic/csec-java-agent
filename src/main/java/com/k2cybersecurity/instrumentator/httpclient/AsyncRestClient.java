@@ -3,6 +3,8 @@ package com.k2cybersecurity.instrumentator.httpclient;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.commons.compress.utils.IOUtils;
+
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.squareup.okhttp.Call;
@@ -50,6 +52,7 @@ public class AsyncRestClient {
 			public void onResponse(Response response) throws IOException {
 				// TODO Auto-generated method stub
 				logger.log(LogLevel.INFO, String.format("Request success : %s :: response : %s", request, response), AsyncRestClient.class.getName());
+				response.body().close();
 			}
 		});
 	}
