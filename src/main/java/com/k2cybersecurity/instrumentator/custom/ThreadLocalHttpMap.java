@@ -314,7 +314,7 @@ public class ThreadLocalHttpMap {
 							ThreadLocalExecutionMap.getInstance().getHttpRequestBean().setClientIP(headerValue);
 							takeNextValue = false;
 						}
-						headerFullValue += headerValue + STRING_SEMICOLON ;
+						headerFullValue = StringUtils.joinWith(STRING_SEMICOLON, headerFullValue, headerValue);
 					}
 				}
 				headers.put(headerKey, headerFullValue);
