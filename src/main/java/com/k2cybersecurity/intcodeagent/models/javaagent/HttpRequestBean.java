@@ -27,6 +27,7 @@ public class HttpRequestBean {
 	public static final String ERROR_WHILE_PROCESSING_REQUEST_LINE = "Error while processing request line : ";
 	public static final String INVALID_REQUEST_LINE_MISSING_MANDATORY_COMPONENTS = "Invalid request line. Missing mandatory components : ";
 	public static final String CR_OR_NL_SEPARATOR = "\n";
+	public static final String HTTP = "http";
 
 	private String body;
 
@@ -53,6 +54,8 @@ public class HttpRequestBean {
 	private String servletPath;
 	
 	private String pathParams;
+
+	private String protocol;
 
 	@JsonIgnore
 	private HttpResponseBean httpResponseBean;
@@ -82,6 +85,7 @@ public class HttpRequestBean {
 		this.serverPort = -1;
 		this.httpResponseBean = new HttpResponseBean();
 		this.contentType = StringUtils.EMPTY;
+		this.protocol = HTTP;
 	}
 
 	public HttpRequestBean(HttpRequestBean servletInfo) {
@@ -100,6 +104,7 @@ public class HttpRequestBean {
 		this.parameterMap = new HashMap<>(servletInfo.parameterMap);
 		this.parts = servletInfo.parts;
 		this.servletContextObject = servletInfo.servletContextObject;
+		this.protocol = new String(servletInfo.protocol);
 	}
 
 	public String getRawRequest() {
@@ -338,6 +343,14 @@ public class HttpRequestBean {
 
 	public void setServletContextObject(Object servletContextObject) {
 		this.servletContextObject = servletContextObject;
+	}
+
+	public String getProtocol() {
+		return protocol;
+	}
+
+	public void setProtocol(String protocol) {
+		this.protocol = protocol;
 	}
 }
 

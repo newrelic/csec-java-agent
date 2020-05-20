@@ -48,6 +48,7 @@ public class ThreadLocalHttpMap {
 	public static final String FORWARD_SLASH = "/";
 	public static final String GET_REMOTE_PORT = "getRemotePort";
 	public static final String X_FORWARDED_FOR = "X-Forwarded-For";
+	public static final String GET_PROTOCOL = "getProtocol";
 
 	private Object httpRequest;
 
@@ -229,6 +230,10 @@ public class ThreadLocalHttpMap {
 			Map<String, String> headers = new HashMap<>();
 			processHeaders(headers, httpRequest);
 			httpRequestBean.setHeaders(new JSONObject(headers));
+
+			Method getProtocol = requestClass.getMethod(GET_PROTOCOL);
+			getProtocol.setAccessible(true);
+			httpRequestBean.setProtocol((String) getProtocol.invoke(httpRequest, null));
 
 			Method getRequestURI = requestClass.getMethod(GET_REQUEST_URI);
 			getRequestURI.setAccessible(true);
