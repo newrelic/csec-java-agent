@@ -1,17 +1,8 @@
 package com.k2cybersecurity.intcodeagent.controlcommand;
 
-import java.util.List;
-import java.util.concurrent.TimeUnit;
-
-import org.apache.commons.lang3.StringUtils;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.k2cybersecurity.instrumentator.K2Instrumentator;
 import com.k2cybersecurity.instrumentator.cve.scanner.CVEScannerPool;
-import com.k2cybersecurity.instrumentator.dispatcher.EventDispatcher;
 import com.k2cybersecurity.instrumentator.httpclient.AsyncRestClient;
 import com.k2cybersecurity.instrumentator.httpclient.RequestUtils;
 import com.k2cybersecurity.instrumentator.utils.AgentUtils;
@@ -19,13 +10,14 @@ import com.k2cybersecurity.instrumentator.utils.InstrumentationUtils;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.filelogging.LogWriter;
-import com.k2cybersecurity.intcodeagent.models.javaagent.EventResponse;
-import com.k2cybersecurity.intcodeagent.models.javaagent.HttpRequestMapping;
-import com.k2cybersecurity.intcodeagent.models.javaagent.IntCodeControlCommand;
-import com.k2cybersecurity.intcodeagent.models.javaagent.ProtectionConfig;
-import com.k2cybersecurity.intcodeagent.models.javaagent.VulnerableAPI;
-import com.k2cybersecurity.intcodeagent.websocket.EventSendPool;
+import com.k2cybersecurity.intcodeagent.models.javaagent.*;
 import com.k2cybersecurity.intcodeagent.websocket.FtpClient;
+import org.apache.commons.lang3.StringUtils;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+
+import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 public class ControlCommandProcessor implements Runnable {
 
@@ -226,11 +218,14 @@ public class ControlCommandProcessor implements Runnable {
 			AgentUtils.getInstance().addIPBlockingEntry(ip);
 			break;
 		case IntCodeControlCommand.FUZZ_REQUEST:
+			if (controlCommand.getArguments().size() != 2) {
+				return;
+			}
 			try {
-				HttpRequestMapping httpRequestMapping = new ObjectMapper()
-						.readValue(controlCommand.getArguments().get(0), HttpRequestMapping.class);
+				HttpRequestBean httpRequest = new ObjectMapper()
+						.readValue(controlCommand.getArguments().get(0), HttpRequestBean.class);
 				AsyncRestClient.getInstance().fireRequest(RequestUtils
-						.generateK2Request(httpRequestMapping.getBaseRequest(), httpRequestMapping.getId()));
+						.generateK2Request(httpRequest, controlCommand.getArguments().get(1)));
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
