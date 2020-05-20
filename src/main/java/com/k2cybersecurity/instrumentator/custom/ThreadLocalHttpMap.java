@@ -319,7 +319,11 @@ public class ThreadLocalHttpMap {
 							ThreadLocalExecutionMap.getInstance().getHttpRequestBean().setClientIP(headerValue);
 							takeNextValue = false;
 						}
-						headerFullValue = StringUtils.joinWith(STRING_SEMICOLON, headerFullValue, headerValue);
+						if(StringUtils.isBlank(headerFullValue)){
+							headerFullValue = headerValue;
+						} else {
+							headerFullValue = StringUtils.joinWith(STRING_SEMICOLON, headerFullValue, headerValue);
+						}
 					}
 				}
 				headers.put(headerKey, headerFullValue);
