@@ -45,7 +45,7 @@ public class RequestUtils {
 		requestBuilder = requestBuilder.url(url.toString());
 		requestBuilder = requestBuilder.method(httpRequestBean.getMethod(), requestBody);
 		requestBuilder = requestBuilder.headers(Headers.of((Map<String, String>) httpRequestBean.getHeaders()));
-		requestBuilder = requestBuilder.addHeader("K2-Fuzz-Request-Id", eventId);
+		requestBuilder = requestBuilder.header("K2-Fuzz-Request-Id", eventId);
 
 		return requestBuilder.build();
 	}
