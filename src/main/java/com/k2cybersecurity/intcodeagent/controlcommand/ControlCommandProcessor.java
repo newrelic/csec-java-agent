@@ -218,14 +218,14 @@ public class ControlCommandProcessor implements Runnable {
 			AgentUtils.getInstance().addIPBlockingEntry(ip);
 			break;
 		case IntCodeControlCommand.FUZZ_REQUEST:
-			if (controlCommand.getArguments().size() != 2) {
+			if (controlCommand.getArguments().size() != 1) {
 				return;
 			}
 			try {
 				HttpRequestBean httpRequest = new ObjectMapper()
 						.readValue(controlCommand.getArguments().get(0), HttpRequestBean.class);
 				AsyncRestClient.getInstance().fireRequest(RequestUtils
-						.generateK2Request(httpRequest, controlCommand.getArguments().get(1)));
+						.generateK2Request(httpRequest));
 			} catch (Exception e) {
 				e.printStackTrace();
 			}

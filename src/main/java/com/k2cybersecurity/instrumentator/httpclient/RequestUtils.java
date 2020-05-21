@@ -18,7 +18,7 @@ public class RequestUtils {
 
 	private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
 
-	public static Request generateK2Request(HttpRequestBean httpRequestBean, String eventId) {
+	public static Request generateK2Request(HttpRequestBean httpRequestBean) {
 
 		StringBuilder url = new StringBuilder(String.format("%s://localhost", httpRequestBean.getProtocol()));
 		url.append(":");
@@ -27,7 +27,7 @@ public class RequestUtils {
 
 		RequestBody requestBody = null;
 
-		if (httpRequestBean.getParameterMap() != null) {
+		if (httpRequestBean.getParameterMap() != null && !httpRequestBean.getParameterMap().isEmpty()) {
 			FormEncodingBuilder builder = new FormEncodingBuilder();
 			for (Entry<String, String[]> param : httpRequestBean.getParameterMap().entrySet()) {
 				for (int i = 0; i < param.getValue().length; i++) {
@@ -35,8 +35,7 @@ public class RequestUtils {
 				}
 			}
 			requestBody = builder.build();
-		}
-		else if (StringUtils.isNotBlank(httpRequestBean.getContentType())) {
+		} else if (StringUtils.isNotBlank(httpRequestBean.getContentType())) {
 			requestBody = RequestBody.create(MediaType.parse(httpRequestBean.getContentType()),
 					httpRequestBean.getBody());
 		}
@@ -45,7 +44,6 @@ public class RequestUtils {
 		requestBuilder = requestBuilder.url(url.toString());
 		requestBuilder = requestBuilder.method(httpRequestBean.getMethod(), requestBody);
 		requestBuilder = requestBuilder.headers(Headers.of((Map<String, String>) httpRequestBean.getHeaders()));
-		requestBuilder = requestBuilder.header("K2-Fuzz-Request-Id", eventId);
 
 		return requestBuilder.build();
 	}
