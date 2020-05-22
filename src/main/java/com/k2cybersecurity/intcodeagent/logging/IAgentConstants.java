@@ -499,6 +499,8 @@ public interface IAgentConstants {
 	String JSON_NAME_HEALTHCHECK = "LAhealthcheck";
 	String JSON_NAME_DYNAMICJARPATH_BEAN = "dynamicjarpath";
 	String JSON_NAME_SHUTDOWN = "shutdown";
+	String JSON_NAME_FUZZ_FAIL = "fuzzfail";
+
 
 	String FIELD_SOCKET_CHANNEL = "socketChannel";
 	String ORG_XNIO_NIO_NIO_SOCKET_CONDUIT = "org.xnio.nio.NioSocketConduit";
