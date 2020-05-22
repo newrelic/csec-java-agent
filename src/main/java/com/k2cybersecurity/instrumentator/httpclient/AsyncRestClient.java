@@ -40,6 +40,10 @@ public class AsyncRestClient {
 	}
 
 	public void fireRequest(Request request) {
+		logger.log(LogLevel.INFO, String.format("Firing request :: Method : %s", request.method()), AsyncRestClient.class.getName());
+		logger.log(LogLevel.INFO, String.format("Firing request :: URL : %s", request.url()), AsyncRestClient.class.getName());
+		logger.log(LogLevel.INFO, String.format("Firing request :: Headers : %s", request.headers()), AsyncRestClient.class.getName());
+
 		Call call = client.newCall(request);
 		call.enqueue(new Callback() {
 			@Override

@@ -3,6 +3,7 @@ package com.k2cybersecurity.instrumentator.httpclient;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import org.apache.commons.lang3.StringUtils;
 
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
@@ -19,7 +20,7 @@ public class RequestUtils {
 	private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
 
 	public static Request generateK2Request(HttpRequestBean httpRequestBean) {
-
+		logger.log(LogLevel.INFO, String.format("Firing request : %s", httpRequestBean), AsyncRestClient.class.getName());
 		StringBuilder url = new StringBuilder(String.format("%s://localhost", httpRequestBean.getProtocol()));
 		url.append(":");
 		url.append(httpRequestBean.getServerPort());
