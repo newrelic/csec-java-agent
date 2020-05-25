@@ -28,17 +28,19 @@ public class RequestUtils {
 
 		RequestBody requestBody = null;
 
-		if (httpRequestBean.getParameterMap() != null && !httpRequestBean.getParameterMap().isEmpty()) {
-			FormEncodingBuilder builder = new FormEncodingBuilder();
-			for (Entry<String, String[]> param : httpRequestBean.getParameterMap().entrySet()) {
-				for (int i = 0; i < param.getValue().length; i++) {
-					builder.add(param.getKey(), param.getValue()[i]);
+		if(StringUtils.isNotBlank(httpRequestBean.getContentType())) {
+			if (httpRequestBean.getParameterMap() != null && !httpRequestBean.getParameterMap().isEmpty()) {
+				FormEncodingBuilder builder = new FormEncodingBuilder();
+				for (Entry<String, String[]> param : httpRequestBean.getParameterMap().entrySet()) {
+					for (int i = 0; i < param.getValue().length; i++) {
+						builder.add(param.getKey(), param.getValue()[i]);
+					}
 				}
+				requestBody = builder.build();
+			} else {
+				requestBody = RequestBody.create(MediaType.parse(httpRequestBean.getContentType()),
+						httpRequestBean.getBody());
 			}
-			requestBody = builder.build();
-		} else if (StringUtils.isNotBlank(httpRequestBean.getContentType())) {
-			requestBody = RequestBody.create(MediaType.parse(httpRequestBean.getContentType()),
-					httpRequestBean.getBody());
 		}
 
 		Builder requestBuilder = new Request.Builder();
