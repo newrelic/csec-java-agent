@@ -30,7 +30,7 @@ public class ThreadLocalHttpMap {
 	public static final String QUESTION_MARK = "?";
 	public static final String GET_SERVLET_CONTEXT = "getServletContext";
 	public static final String GET_CONTEXT_PATH = "getContextPath";
-	public static final String GET_SERVER_PORT = "getServerPort";
+	public static final String GET_SERVER_PORT = "getLocalPort";
 	public static final String GET_PARAMETER_MAP = "getParameterMap";
 	public static final String GET_SERVLET_PATH = "getServletPath";
 	public static final String GET_PATH_TRANSLATED = "getPathTranslated";
