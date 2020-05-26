@@ -10,12 +10,16 @@ import com.k2cybersecurity.instrumentator.utils.InstrumentationUtils;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.filelogging.LogWriter;
+import com.k2cybersecurity.intcodeagent.logging.IAgentConstants;
 import com.k2cybersecurity.intcodeagent.models.javaagent.*;
+import com.k2cybersecurity.intcodeagent.websocket.EventSendPool;
 import com.k2cybersecurity.intcodeagent.websocket.FtpClient;
 import org.apache.commons.lang3.StringUtils;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -218,16 +222,34 @@ public class ControlCommandProcessor implements Runnable {
 			AgentUtils.getInstance().addIPBlockingEntry(ip);
 			break;
 		case IntCodeControlCommand.FUZZ_REQUEST:
-			if (controlCommand.getArguments().size() != 1) {
+			if (controlCommand.getArguments().size() != 2) {
 				return;
 			}
+
+			VulnerabilityCaseType currentCaseType = VulnerabilityCaseType.valueOf(controlCommand.getArguments().get(1));
+			if(VulnerabilityCaseType.FILE_OPERATION.equals(currentCaseType) ||
+					VulnerabilityCaseType.HTTP_REQUEST.equals(currentCaseType)){
+				File tempFile = new File("/tmp/k2scanning");
+				File tempFileWithExt = new File("/tmp/k2scanning.txt");
+				try {
+					tempFile.createNewFile();
+					tempFileWithExt.createNewFile();
+				} catch (IOException e) {
+					logger.log(LogLevel.ERROR, String.format("Unable to create setup files for fuzzing request : %s", controlCommand.getArguments().get(0)) , e,
+							ControlCommandProcessor.class.getName());
+					return;
+				}
+			}
+
+			HttpRequestBean httpRequest = null;
 			try {
-				HttpRequestBean httpRequest = new ObjectMapper()
+				httpRequest = new ObjectMapper()
 						.readValue(controlCommand.getArguments().get(0), HttpRequestBean.class);
 				AsyncRestClient.getInstance().fireRequest(RequestUtils
 						.generateK2Request(httpRequest));
 			} catch (Exception e) {
-				e.printStackTrace();
+				logger.log(LogLevel.ERROR, String.format("Error while processing fuzzing request : %s", controlCommand.getArguments().get(0)) , e,
+						ControlCommandProcessor.class.getName());
 			}
 			break;
 		default:
