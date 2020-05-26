@@ -309,7 +309,6 @@ public class ThreadLocalHttpMap {
 					takeNextValue = true;
 				} else if (StringUtils.equalsAnyIgnoreCase(headerKey, IAgentConstants.K2_FUZZ_REQUEST_ID)) {
 					ThreadLocalExecutionMap.getInstance().getMetaData().setK2FuzzRequest(true);
-					System.out.println("K2 Fuzz request detected . Meta Set: " + Thread.currentThread().getId());
 				}
 				String headerFullValue = StringUtils.EMPTY;
 				Enumeration<String> headerElements = (Enumeration<String>) getHeaders.invoke(httpRequest, headerKey);
