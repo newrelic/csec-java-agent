@@ -16,7 +16,6 @@ public class AgentMetaData{
 
 	private JSONArray rciMethodsCalls;
 
-	@JsonIgnore
 	private boolean isK2FuzzRequest = false;
 
 	public AgentMetaData() {
@@ -77,12 +76,11 @@ public class AgentMetaData{
 		isClientDetectedFromXFF = clientDetectedFromXFF;
 	}
 
-	@JsonIgnore
+
 	public boolean isK2FuzzRequest() {
 		return isK2FuzzRequest;
 	}
 
-	@JsonIgnore
 	public void setK2FuzzRequest(boolean k2FuzzRequest) {
 		isK2FuzzRequest = k2FuzzRequest;
 	}
