@@ -78,6 +78,7 @@ public class ThreadLocalHttpMap {
 
 	private boolean isServiceMethodEncountered = false;
 
+
 	private static ThreadLocal<ThreadLocalHttpMap> instance = new ThreadLocal<ThreadLocalHttpMap>() {
 		@Override
 		protected ThreadLocalHttpMap initialValue() {
@@ -306,6 +307,8 @@ public class ThreadLocalHttpMap {
 				String headerKey = attribs.nextElement();
 				if (StringUtils.equalsAnyIgnoreCase(headerKey, X_FORWARDED_FOR)) {
 					takeNextValue = true;
+				} else if (StringUtils.equalsAnyIgnoreCase(headerKey, IAgentConstants.K2_FUZZ_REQUEST_ID)) {
+					ThreadLocalExecutionMap.getInstance().getMetaData().setK2FuzzRequest(true);
 				}
 				String headerFullValue = StringUtils.EMPTY;
 				Enumeration<String> headerElements = (Enumeration<String>) getHeaders.invoke(httpRequest, headerKey);

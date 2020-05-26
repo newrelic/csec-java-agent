@@ -1,5 +1,6 @@
 package com.k2cybersecurity.intcodeagent.models.javaagent;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.k2cybersecurity.intcodeagent.websocket.JsonConverter;
 import org.json.simple.JSONArray;
 
@@ -14,6 +15,9 @@ public class AgentMetaData{
 	private boolean isClientDetectedFromXFF;
 
 	private JSONArray rciMethodsCalls;
+
+	@JsonIgnore
+	private boolean isK2FuzzRequest = false;
 
 	public AgentMetaData() {
 		this.rciMethodsCalls = new JSONArray();
@@ -70,5 +74,15 @@ public class AgentMetaData{
 
 	public void setClientDetectedFromXFF(boolean clientDetectedFromXFF) {
 		isClientDetectedFromXFF = clientDetectedFromXFF;
+	}
+
+	@JsonIgnore
+	public boolean isK2FuzzRequest() {
+		return isK2FuzzRequest;
+	}
+
+	@JsonIgnore
+	public void setK2FuzzRequest(boolean k2FuzzRequest) {
+		isK2FuzzRequest = k2FuzzRequest;
 	}
 }

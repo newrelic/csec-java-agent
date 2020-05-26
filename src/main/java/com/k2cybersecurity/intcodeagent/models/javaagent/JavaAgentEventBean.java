@@ -26,6 +26,7 @@ public class JavaAgentEventBean extends AgentBasicInfo {
 	private Long preProcessingTime;
 	private AgentMetaData metaData;
 	private Long blockingProcessingTime = 0L;
+	private List<StackTraceElement> completeStacktrace;
 	private boolean validationResponseRequired = false;
 
 	public JavaAgentEventBean() {
@@ -280,5 +281,13 @@ public class JavaAgentEventBean extends AgentBasicInfo {
 
 	public void setValidationResponseRequired(boolean validationResponseRequired) {
 		this.validationResponseRequired = validationResponseRequired;
+	}
+
+	public List<StackTraceElement> getCompleteStacktrace() {
+		return completeStacktrace;
+	}
+
+	public void setCompleteStacktrace(List<StackTraceElement> completeStacktrace) {
+		this.completeStacktrace = completeStacktrace;
 	}
 }
