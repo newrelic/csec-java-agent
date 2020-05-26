@@ -29,6 +29,7 @@ public class AgentMetaData{
 		this.triggerViaDeserialisation = agentMetaData.triggerViaDeserialisation;
 		this.triggerViaRCI = agentMetaData.triggerViaRCI;
 		this.isClientDetectedFromXFF = agentMetaData.isClientDetectedFromXFF;
+		this.isK2FuzzRequest = agentMetaData.isK2FuzzRequest;
 	}
 
 	@Override
