@@ -549,5 +549,5 @@ public interface IAgentConstants {
 	String ERROR_WHILE_DETERMINING_HOSTIP_FROM_DEFAULT_GATEWAY = "Error while determining hostip from default gateway";
 
 	String K2_FUZZ_REQUEST_ID = "k2-fuzz-request-id";
-
+	String INIT = "<init>";
 }

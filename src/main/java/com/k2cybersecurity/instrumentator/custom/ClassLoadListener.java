@@ -7,6 +7,8 @@ import net.bytebuddy.dynamic.DynamicType;
 import net.bytebuddy.utility.JavaModule;
 import org.apache.commons.lang3.tuple.Pair;
 
+import java.util.Arrays;
+
 public class ClassLoadListener implements AgentBuilder.Listener {
 	@Override
 	public void onError(
@@ -15,6 +17,9 @@ public class ClassLoadListener implements AgentBuilder.Listener {
 			final JavaModule module,
 			final boolean loaded,
 			final Throwable throwable) {
+//		System.out.println(String.format("Transformation error : class : %s :: error %s", typeName,
+//				Arrays.asList(throwable.getStackTrace())));
+
 	}
 
 	@Override
@@ -26,6 +31,7 @@ public class ClassLoadListener implements AgentBuilder.Listener {
 			final DynamicType dynamicType) {
 		AgentUtils.getInstance().getTransformedClasses().add(Pair.of(typeDescription.getName(), classLoader));
 		AgentUtils.getInstance().createProtectedVulnerabilties(typeDescription, classLoader);
+//		System.out.println("Transformed class : " + typeDescription.getName());
 	}
 
 	@Override
@@ -59,5 +65,7 @@ public class ClassLoadListener implements AgentBuilder.Listener {
 			final JavaModule module,
 			final boolean loaded) {
 		//      log.debug("onDiscovery {}", typeName);
+//		System.out.println("Discovered class : " + typeName);
+
 	}
 }

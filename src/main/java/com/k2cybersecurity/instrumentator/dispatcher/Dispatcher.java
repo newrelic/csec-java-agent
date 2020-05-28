@@ -567,31 +567,39 @@ public class Dispatcher implements Runnable {
 		K2Instrumentator.JA_HEALTH_CHECK.getProtectedDB().add(MONGO);
 		return eventBean;
 	}
-
+	
 	private static JavaAgentEventBean prepareSSRFEvent(JavaAgentEventBean eventBean,
 			SSRFOperationalBean ssrfOperationalBean) {
 		JSONArray params = new JSONArray();
-		String sourceString = eventBean.getSourceMethod();
-		Object[] obj = ssrfOperationalBean.getApiCallArgs();
-
-		if (sourceString.equals(JAVA_OPEN_CONNECTION_METHOD2) || sourceString.equals(JAVA_OPEN_CONNECTION_METHOD2_HTTPS)
-				|| sourceString.equals(JAVA_OPEN_CONNECTION_METHOD2_HTTPS_2)
-				|| sourceString.equals(WEBLOGIC_OPEN_CONNECTION_METHOD)) {
-			ProcessorThread.getJavaHttpRequestParameters(obj, params);
-		} else if (sourceString.equals(JDK_INCUBATOR_MULTIEXCHANGE_RESONSE_METHOD)
-				|| sourceString.equals(JDK_INCUBATOR_MULTIEXCHANGE_RESONSE_ASYNC_METHOD)) {
-			ProcessorThread.getJava9HttpClientParameters(obj, params);
-		} else if (sourceString.equals(APACHE_HTTP_REQUEST_EXECUTOR_METHOD)) {
-			ProcessorThread.getApacheHttpRequestParameters(obj, params);
-		} else if (sourceString.equals(APACHE_COMMONS_HTTP_METHOD_DIRECTOR_METHOD)) {
-			ProcessorThread.getApacheCommonsHttpRequestParameters(obj, params);
-		} else if (sourceString.equals(OKHTTP_HTTP_ENGINE_METHOD)) {
-			ProcessorThread.getOkHttpRequestParameters(obj, params);
-		}
-
+		params.add(ssrfOperationalBean.getArg());
 		eventBean.setParameters(params);
 		return eventBean;
 	}
+
+//	private static JavaAgentEventBean prepareSSRFEvent(JavaAgentEventBean eventBean,
+//			SSRFOperationalBean ssrfOperationalBean) {
+//		JSONArray params = new JSONArray();
+//		String sourceString = eventBean.getSourceMethod();
+//		Object[] obj = ssrfOperationalBean.getApiCallArgs();
+//
+//		if (sourceString.equals(JAVA_OPEN_CONNECTION_METHOD2) || sourceString.equals(JAVA_OPEN_CONNECTION_METHOD2_HTTPS)
+//				|| sourceString.equals(JAVA_OPEN_CONNECTION_METHOD2_HTTPS_2)
+//				|| sourceString.equals(WEBLOGIC_OPEN_CONNECTION_METHOD)) {
+//			ProcessorThread.getJavaHttpRequestParameters(obj, params);
+//		} else if (sourceString.equals(JDK_INCUBATOR_MULTIEXCHANGE_RESONSE_METHOD)
+//				|| sourceString.equals(JDK_INCUBATOR_MULTIEXCHANGE_RESONSE_ASYNC_METHOD)) {
+//			ProcessorThread.getJava9HttpClientParameters(obj, params);
+//		} else if (sourceString.equals(APACHE_HTTP_REQUEST_EXECUTOR_METHOD)) {
+//			ProcessorThread.getApacheHttpRequestParameters(obj, params);
+//		} else if (sourceString.equals(APACHE_COMMONS_HTTP_METHOD_DIRECTOR_METHOD)) {
+//			ProcessorThread.getApacheCommonsHttpRequestParameters(obj, params);
+//		} else if (sourceString.equals(OKHTTP_HTTP_ENGINE_METHOD)) {
+//			ProcessorThread.getOkHttpRequestParameters(obj, params);
+//		}
+//
+//		eventBean.setParameters(params);
+//		return eventBean;
+//	}
 
 	private boolean allowedExtensionFileIO(JSONArray params, String sourceString, String url) {
 		if (JAVA_IO_FILE_INPUTSTREAM_OPEN.equals(sourceString)) {
