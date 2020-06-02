@@ -275,13 +275,13 @@ public class Dispatcher implements Runnable {
 
 	private void setRequiredStackTracePartToEvent(JavaAgentEventBean eventBean) {
 		try {
-			stackPreProcess();
-			int fromLoc = 0;
-			int toLoc = this.trace.length;
-//		logger.log(LogLevel.DEBUG, INSIDE_SET_REQUIRED_STACK_TRACE + eventBean.getId() + STRING_COLON + JsonConverter.toJSON(userClassEntity) + STRING_COLON + JsonConverter.toJSON(Arrays.asList(trace)), Dispatcher.class.getName());
 			if(metaData != null && metaData.isK2FuzzRequest()){
 				eventBean.setCompleteStacktrace(Arrays.asList(trace));
 			}
+
+			stackPreProcess();
+			int fromLoc = 0;
+			int toLoc = this.trace.length;
 
 			if (userClassEntity.isCalledByUserCode()) {
 				toLoc = userClassEntity.getTraceLocationEnd();
@@ -308,6 +308,7 @@ public class Dispatcher implements Runnable {
 		}
 	}
 
+	// TODO: Possible issue is here as we are not seeing all relevant calls in stack.
 	private void stackPreProcess() {
 		int i = 1;
 		for(i = 1; i<trace.length; i++){
