@@ -28,6 +28,7 @@ public class JavaAgentEventBean extends AgentBasicInfo {
 	private Long blockingProcessingTime = 0L;
 	private List<StackTraceElement> completeStacktrace;
 	private boolean validationResponseRequired = false;
+	private String apiId;
 
 	public JavaAgentEventBean() {
 		super();
@@ -289,5 +290,13 @@ public class JavaAgentEventBean extends AgentBasicInfo {
 
 	public void setCompleteStacktrace(List<StackTraceElement> completeStacktrace) {
 		this.completeStacktrace = completeStacktrace;
+	}
+
+	public String getApiId() {
+		return apiId;
+	}
+
+	public void setApiId(String apiId) {
+		this.apiId = apiId;
 	}
 }

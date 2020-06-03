@@ -7,6 +7,7 @@ import com.k2cybersecurity.intcodeagent.logging.DeployedApplication;
 import com.k2cybersecurity.intcodeagent.logging.IAgentConstants;
 import com.k2cybersecurity.intcodeagent.models.javaagent.*;
 import net.bytebuddy.description.type.TypeDescription;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -40,6 +41,7 @@ public class AgentUtils {
 	public static final String CLASSLOADER_IS_NULL_IN_DETECT_DEPLOYED_APPLICATION_PATH = "Classloader is null in detectDeployedApplicationPath";
 	public static final String ERROR = "Error :";
 	public static final String CLASSLOADER_RECORD_MISSING_FOR_CLASS = "Classloader record missing for class : ";
+	private static final String TWO_PIPES = "||";
 
 	public Set<Pair<String, ClassLoader>> getTransformedClasses() {
 		return transformedClasses;
@@ -431,5 +433,11 @@ public class AgentUtils {
 
 	public void setEnableDynamicScanning(boolean enableDynamicScanning) {
 		this.enableDynamicScanning = enableDynamicScanning;
+	}
+
+	public String getSHA256HexDigest(List<String> data) {
+		data.removeAll(Collections.singletonList(null));
+		String input = StringUtils.joinWith(TWO_PIPES, data);
+		return DigestUtils.sha256Hex(input);
 	}
 }

@@ -550,4 +550,6 @@ public interface IAgentConstants {
 
 	String K2_FUZZ_REQUEST_ID = "k2-fuzz-request-id";
 	String INIT = "<init>";
+    String SUN_REFLECT = "sun.reflect.";
+	String COM_SUN = "com.sun.";
 }
