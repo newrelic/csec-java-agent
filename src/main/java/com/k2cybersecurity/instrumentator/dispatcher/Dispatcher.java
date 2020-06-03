@@ -7,7 +7,6 @@ import com.k2cybersecurity.instrumentator.cve.scanner.CVEComponentsService;
 import com.k2cybersecurity.instrumentator.utils.AgentUtils;
 import com.k2cybersecurity.instrumentator.utils.CallbackUtils;
 import com.k2cybersecurity.instrumentator.utils.HashGenerator;
-import com.k2cybersecurity.instrumentator.utils.InstrumentationUtils;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.logging.DeployedApplication;
@@ -276,15 +275,13 @@ public class Dispatcher implements Runnable {
 
 	private void setRequiredStackRelatedInfoToEvent(JavaAgentEventBean eventBean) {
 		try {
-			stackPreProcess();
+			stackPreProcess(eventBean);
 			int fromLoc = 0;
 			int toLoc = this.trace.length;
 //		logger.log(LogLevel.DEBUG, INSIDE_SET_REQUIRED_STACK_TRACE + eventBean.getId() + STRING_COLON + JsonConverter.toJSON(userClassEntity) + STRING_COLON + JsonConverter.toJSON(Arrays.asList(trace)), Dispatcher.class.getName());
 			if((metaData != null && metaData.isK2FuzzRequest() )|| AgentUtils.getInstance().isEnableDynamicScanning()){
 				eventBean.setCompleteStacktrace(Arrays.asList(trace));
 			}
-
-			setAPIId(eventBean);
 
 			if (userClassEntity.isCalledByUserCode()) {
 				toLoc = userClassEntity.getTraceLocationEnd();
@@ -311,36 +308,45 @@ public class Dispatcher implements Runnable {
 		}
 	}
 
-	private void setAPIId(JavaAgentEventBean eventBean) {
+	private void setAPIId(JavaAgentEventBean eventBean, List<String> traceForIdCalc) {
 		List<String> idData = new ArrayList<>();
 
 		// TODO : Write Application detection mechanism for a given event.
 		idData.add(StringUtils.EMPTY);
-		Arrays.asList(trace).forEach((stackTraceElement -> {
-			idData.add(stackTraceElement.toString());
-		}));
+		idData.addAll(traceForIdCalc);
 		idData.add(eventBean.getCaseType());
 		eventBean.setApiId(AgentUtils.getInstance().getSHA256HexDigest(idData));
 	}
 
-	private void stackPreProcess() {
-		int resetFactor = 1;
+	private void stackPreProcess(JavaAgentEventBean eventBean) {
+		int resetFactor = 0;
 		List<StackTraceElement> recordsToDelete = new ArrayList<>();
-		List<StackTraceElement> newTrace = new ArrayList<>();
-		newTrace.addAll(Arrays.asList(trace));
+
+		List<StackTraceElement> newTraceForIdCalc = new ArrayList<>();
+		List<String> newTraceStringForIdCalc = new ArrayList<>();
+
+		newTraceForIdCalc.addAll(Arrays.asList(trace));
+
 		recordsToDelete.add(trace[0]);
 		for(int i = 1; i<trace.length; i++){
-			if(StringUtils.startsWithAny(trace[i].getClassName(), ClassloaderAdjustments.K2_BOOTSTAP_LOADED_PACKAGE_NAME,
-					SUN_REFLECT, COM_SUN) || trace[i].isNativeMethod() || trace[i].getLineNumber() < 0){
+			if(StringUtils.startsWith(trace[i].getClassName(), ClassloaderAdjustments.K2_BOOTSTAP_LOADED_PACKAGE_NAME)){
 				recordsToDelete.add(trace[i]);
-				if(i < userClassEntity.getTraceLocationEnd()){
+				if(i < userClassEntity.getTraceLocationEnd() && i-1 == resetFactor){
 					resetFactor++;
 				}
 			}
+
+			if(StringUtils.startsWithAny(trace[i].getClassName(), SUN_REFLECT, COM_SUN) || trace[i].isNativeMethod() || trace[i].getLineNumber() < 0) {
+				recordsToDelete.add(trace[i]);
+			}
 		}
-		newTrace.removeAll(recordsToDelete);
-		trace = newTrace.toArray(new StackTraceElement[0]);
-		userClassEntity.setTraceLocationEnd(userClassEntity.getTraceLocationEnd() - resetFactor);
+		newTraceForIdCalc.removeAll(recordsToDelete);
+		newTraceForIdCalc.forEach(stackTraceElement -> {
+			newTraceStringForIdCalc.add(stackTraceElement.toString());
+		});
+		trace = Arrays.copyOfRange(trace, resetFactor + 1, trace.length);
+		userClassEntity.setTraceLocationEnd(userClassEntity.getTraceLocationEnd() - resetFactor + 1);
+		setAPIId(eventBean, newTraceStringForIdCalc);
 	}
 
 	private void setFiniteSizeStackTrace(JavaAgentEventBean eventBean) {
