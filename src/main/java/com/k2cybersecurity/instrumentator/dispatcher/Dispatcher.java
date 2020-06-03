@@ -324,10 +324,11 @@ public class Dispatcher implements Runnable {
 	}
 
 	private void stackPreProcess() {
-		int resetFactor = 0;
+		int resetFactor = 1;
 		List<StackTraceElement> recordsToDelete = new ArrayList<>();
 		List<StackTraceElement> newTrace = new ArrayList<>();
 		newTrace.addAll(Arrays.asList(trace));
+		recordsToDelete.add(trace[0]);
 		for(int i = 1; i<trace.length; i++){
 			if(StringUtils.startsWithAny(trace[i].getClassName(), ClassloaderAdjustments.K2_BOOTSTAP_LOADED_PACKAGE_NAME,
 					SUN_REFLECT, COM_SUN) || trace[i].isNativeMethod() || trace[i].getLineNumber() < 0){
