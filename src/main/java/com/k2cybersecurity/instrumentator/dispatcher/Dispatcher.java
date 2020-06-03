@@ -281,7 +281,7 @@ public class Dispatcher implements Runnable {
 			int fromLoc = 0;
 			int toLoc = this.trace.length;
 //		logger.log(LogLevel.DEBUG, INSIDE_SET_REQUIRED_STACK_TRACE + eventBean.getId() + STRING_COLON + JsonConverter.toJSON(userClassEntity) + STRING_COLON + JsonConverter.toJSON(Arrays.asList(trace)), Dispatcher.class.getName());
-			if(metaData != null && metaData.isK2FuzzRequest()){
+			if((metaData != null && metaData.isK2FuzzRequest() )|| AgentUtils.getInstance().isEnableDynamicScanning()){
 				eventBean.setCompleteStacktrace(Arrays.asList(trace));
 			}
 
