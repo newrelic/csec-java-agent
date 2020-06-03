@@ -20,6 +20,7 @@ public class IntCodeControlCommand {
     public static final int SET_IPBLOCKING_TIMEOUT = 9;
     public static final int CREATE_IPBLOCKING_ENTRY = 10;
     public static final int FUZZ_REQUEST = 11;
+    public static final int ENABLE_IAST_DYNAMIC_VULNERABILITY_SCANNER = 12;
 
     private String jsonName;
     private int controlCommand;

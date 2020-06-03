@@ -252,6 +252,12 @@ public class ControlCommandProcessor implements Runnable {
 						ControlCommandProcessor.class.getName());
 			}
 			break;
+
+		case IntCodeControlCommand.ENABLE_IAST_DYNAMIC_VULNERABILITY_SCANNER:
+			logger.log(LogLevel.INFO, String.format("Enabled K2 dynamic scanning mode : %s", controlCommandMessage),
+					ControlCommandProcessor.class.getName());
+			AgentUtils.getInstance().setEnableDynamicScanning(true);
+			break;
 		default:
 			logger.log(LogLevel.WARNING, String.format(UNKNOWN_CONTROL_COMMAND_S, controlCommandMessage),
 					ControlCommandProcessor.class.getName());

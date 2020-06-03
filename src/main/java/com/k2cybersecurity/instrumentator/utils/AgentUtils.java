@@ -71,6 +71,8 @@ public class AgentUtils {
 
 	private Map<Integer, JADatabaseMetaData> sqlConnectionMap;
 
+	private boolean enableDynamicScanning = false;
+
 	private AgentUtils() {
 		transformedClasses = new HashSet<>();
 		eventResponseSet = new ConcurrentHashMap<>();
@@ -423,4 +425,11 @@ public class AgentUtils {
 		}
 	}
 
+	public boolean isEnableDynamicScanning() {
+		return enableDynamicScanning;
+	}
+
+	public void setEnableDynamicScanning(boolean enableDynamicScanning) {
+		this.enableDynamicScanning = enableDynamicScanning;
+	}
 }

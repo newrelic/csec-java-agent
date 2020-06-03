@@ -114,11 +114,12 @@ public class Dispatcher implements Runnable {
 			if (vulnerabilityCaseType.equals(VulnerabilityCaseType.REFLECTED_XSS)) {
 				String xssConstruct = CallbackUtils.checkForReflectedXSS(httpRequestBean);
 //				System.out.println("Changes reflected : " + httpRequestBean.getHttpResponseBean().getResponseBody());
-				if (StringUtils.isNotBlank(xssConstruct)) {
-					JavaAgentEventBean eventBean = prepareEvent(httpRequestBean, metaData, vulnerabilityCaseType);
+				JavaAgentEventBean eventBean = prepareEvent(httpRequestBean, metaData, vulnerabilityCaseType);
+				if (StringUtils.isNotBlank(xssConstruct) || AgentUtils.getInstance().isEnableDynamicScanning()) {
 					JSONArray params = new JSONArray();
 					params.add(xssConstruct);
 					params.add(httpRequestBean.getHttpResponseBean().getResponseBody());
+//					params.add(httpRequestBean.getHttpResponseBean());
 					eventBean.setParameters(params);
 					eventBean.setApplicationUUID(K2Instrumentator.APPLICATION_UUID);
 					eventBean.setPid(K2Instrumentator.VMPID);
