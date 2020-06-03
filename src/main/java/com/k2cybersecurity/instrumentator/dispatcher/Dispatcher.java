@@ -328,12 +328,12 @@ public class Dispatcher implements Runnable {
 		newTraceForIdCalc.addAll(Arrays.asList(trace));
 
 		recordsToDelete.add(trace[0]);
+		resetFactor++;
 		for(int i = 1; i<trace.length; i++){
-			if(StringUtils.startsWith(trace[i].getClassName(), ClassloaderAdjustments.K2_BOOTSTAP_LOADED_PACKAGE_NAME)){
+			if(i < userClassEntity.getTraceLocationEnd() && i == resetFactor &&
+					StringUtils.startsWith(trace[i].getClassName(), ClassloaderAdjustments.K2_BOOTSTAP_LOADED_PACKAGE_NAME)){
 				recordsToDelete.add(trace[i]);
-				if(i < userClassEntity.getTraceLocationEnd() && i-1 == resetFactor){
-					resetFactor++;
-				}
+				resetFactor++;
 			}
 
 			if(StringUtils.startsWithAny(trace[i].getClassName(), SUN_REFLECT, COM_SUN) || trace[i].isNativeMethod() || trace[i].getLineNumber() < 0) {
@@ -344,8 +344,8 @@ public class Dispatcher implements Runnable {
 		newTraceForIdCalc.forEach(stackTraceElement -> {
 			newTraceStringForIdCalc.add(stackTraceElement.toString());
 		});
-		trace = Arrays.copyOfRange(trace, resetFactor + 1, trace.length);
-		userClassEntity.setTraceLocationEnd(userClassEntity.getTraceLocationEnd() - resetFactor + 1);
+		trace = Arrays.copyOfRange(trace, resetFactor, trace.length);
+		userClassEntity.setTraceLocationEnd(userClassEntity.getTraceLocationEnd() - resetFactor);
 		setAPIId(eventBean, newTraceStringForIdCalc);
 	}
 
