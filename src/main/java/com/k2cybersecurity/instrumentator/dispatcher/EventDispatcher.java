@@ -145,7 +145,7 @@ public class EventDispatcher {
         }
     }
 
-    public static void dispatch(HttpRequestBean httpRequestBean, String sourceString, String exectionId, long startTime,
+    public static void dispatch(HttpRequestBean httpRequestBean, AgentMetaData agentMetaData,  String sourceString, String exectionId, long startTime,
                                 VulnerabilityCaseType reflectedXss, String className, String methodName) throws K2CyberSecurityException {
 //		System.out.println("Passed to XSS detection : " + exectionId + " :: " + httpRequestBean.toString()+ " :: " + httpRequestBean.getHttpResponseBean().toString());
         if (!httpRequestBean.isEmpty()) {
@@ -158,7 +158,7 @@ public class EventDispatcher {
                     currentGenericServletMethodName, className, methodName);
 
 
-            DispatcherPool.getInstance().dispatchEventRXSS(httpRequestBean, sourceString, exectionId, startTime,
+            DispatcherPool.getInstance().dispatchEventRXSS(httpRequestBean, agentMetaData, sourceString, exectionId, startTime,
                     reflectedXss, currentGenericServletMethodName,
                     currentGenericServletInstance, stackTrace, userClassEntity);
         }

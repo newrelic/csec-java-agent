@@ -89,12 +89,13 @@ public class Dispatcher implements Runnable {
 		this.userClassEntity = userClassEntity;
 	}
 
-	public Dispatcher(HttpRequestBean httpRequestBean, VulnerabilityCaseType reflectedXss,
-			String sourceString, String exectionId, long startTime, String currentGenericServletMethodName,
+	public Dispatcher(HttpRequestBean httpRequestBean, AgentMetaData agentMetaData, VulnerabilityCaseType reflectedXss,
+					  String sourceString, String exectionId, long startTime, String currentGenericServletMethodName,
 					  Object currentGenericServletInstance,
 					  StackTraceElement[] stackTrace, UserClassEntity userClassEntity) {
 		this.httpRequestBean = httpRequestBean;
 		this.vulnerabilityCaseType = reflectedXss;
+		this.metaData = agentMetaData;
 		extraInfo.put(SOURCESTRING, sourceString);
 		extraInfo.put(EXECUTIONID, exectionId);
 		extraInfo.put(STARTTIME, startTime);

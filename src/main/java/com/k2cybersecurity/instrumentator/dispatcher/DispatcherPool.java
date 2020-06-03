@@ -107,21 +107,21 @@ public class DispatcherPool {
 
 	/**
 	 * Specifically for reflected xss
-	 * 
-	 * @param httpRequestBean
-	 * @param startTime
-	 * @param exectionId
+	 *  @param httpRequestBean
+	 * @param agentMetaData
 	 * @param sourceString
+	 * @param exectionId
+	 * @param startTime
 	 * @param reflectedXss
 	 */
-	public void dispatchEventRXSS(HttpRequestBean httpRequestBean, String sourceString, String exectionId,
+	public void dispatchEventRXSS(HttpRequestBean httpRequestBean, AgentMetaData agentMetaData, String sourceString, String exectionId,
 								  long startTime, VulnerabilityCaseType reflectedXss, String currentGenericServletMethodName,
 								  Object currentGenericServletInstance,
 								  StackTraceElement[] stackTrace, UserClassEntity userClassEntity) {
 		if(executor.isShutdown()){
 			return;
 		}
-		this.executor.submit(new Dispatcher(httpRequestBean, reflectedXss, sourceString, exectionId, startTime, currentGenericServletMethodName,
+		this.executor.submit(new Dispatcher(httpRequestBean, agentMetaData, reflectedXss, sourceString, exectionId, startTime, currentGenericServletMethodName,
 				currentGenericServletInstance, stackTrace, userClassEntity));
 	}
 
