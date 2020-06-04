@@ -18,6 +18,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentSkipListSet;
 
 public class ServletContextInfo {
     public static final String GET_CONTEXT_PATH = "getContextPath";
@@ -53,8 +54,6 @@ public class ServletContextInfo {
 
     @JsonIgnore
     private static ServletContextInfo instance;
-
-    private Map<String, DeployedApplication> contextMap = new ConcurrentHashMap<>();
 
     private String serverInfo = StringUtils.EMPTY;
 
@@ -107,10 +106,6 @@ public class ServletContextInfo {
         this.minorServletVersion = minorServletVersion;
     }
 
-    public Map<String, DeployedApplication> getContextMap() {
-        return contextMap;
-    }
-
     public boolean processServletContext(HttpRequestBean httpRequestBean, DeployedApplication deployedApplication) {
         String contextPath = httpRequestBean.getContextPath();
         Object servletContext = httpRequestBean.getServletContextObject();
@@ -124,7 +119,6 @@ public class ServletContextInfo {
         Method getMinorVersion = null;
 
         deployedApplication.setContextPath(contextPath);
-
 
         try {
             getServerInfo = servletContext.getClass().getMethod(GET_SERVER_INFO);
@@ -149,7 +143,7 @@ public class ServletContextInfo {
         setServerInfo(serverInfo);
 
         deployedApplication.setAppName(applicationName);
-        deployedApplication.updatePorts(serverPort);
+        deployedApplication.setPort(serverPort);
 
 
         if (StringUtils.isNotBlank(deployedApplication.getDeployedPath())) {

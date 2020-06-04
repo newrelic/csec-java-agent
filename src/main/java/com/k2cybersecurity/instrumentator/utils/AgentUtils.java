@@ -1,6 +1,5 @@
 package com.k2cybersecurity.instrumentator.utils;
 
-import com.k2cybersecurity.instrumentator.custom.ServletContextInfo;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.logging.DeployedApplication;
@@ -377,7 +376,7 @@ public class AgentUtils {
 					Enumeration<java.net.URL> appPathURLEnum = classLoader.getResources(StringUtils.EMPTY);
 						while (appPathURLEnum != null && appPathURLEnum.hasMoreElements()) {
 							URL app = appPathURLEnum.nextElement();
-							logger.log(LogLevel.INFO, L_1 + app, ServletContextInfo.class.getName());
+							logger.log(LogLevel.INFO, L_1 + app, AgentUtils.class.getName());
 							if (StringUtils.equalsIgnoreCase(VFS, app.getProtocol())) {
 								Class virtualFile = Class.forName(ORG_JBOSS_VFS_VIRTUAL_FILE, false, cls.getClassLoader());
 								if (virtualFile.isInstance(app.getContent())) {

@@ -30,7 +30,7 @@ public class ThreadLocalHttpMap {
 	public static final String QUESTION_MARK = "?";
 	public static final String GET_SERVLET_CONTEXT = "getServletContext";
 	public static final String GET_CONTEXT_PATH = "getContextPath";
-	public static final String GET_SERVER_PORT = "getLocalPort";
+	public static final String GET_LOCAL_PORT = "getLocalPort";
 	public static final String GET_PARAMETER_MAP = "getParameterMap";
 	public static final String GET_SERVLET_PATH = "getServletPath";
 	public static final String GET_PATH_TRANSLATED = "getPathTranslated";
@@ -185,7 +185,7 @@ public class ThreadLocalHttpMap {
 
 		updateBody();
 		try {
-			Method getLocalPort = requestClass.getMethod(GET_SERVER_PORT);
+			Method getLocalPort = requestClass.getMethod(GET_LOCAL_PORT);
 			getLocalPort.setAccessible(true);
 			int serverPort = (Integer) getLocalPort.invoke(httpRequest, null);
 			httpRequestBean.setServerPort(serverPort);
@@ -255,10 +255,6 @@ public class ThreadLocalHttpMap {
 			Method getParameterMap = requestClass.getMethod(GET_PARAMETER_MAP);
 			getParameterMap.setAccessible(true);
 			httpRequestBean.setParameterMap((Map<String, String[]>) getParameterMap.invoke(httpRequest, null));
-
-			Method getServletPath = requestClass.getMethod(GET_SERVLET_PATH);
-			getServletPath.setAccessible(true);
-			httpRequestBean.setServletPath((String) getServletPath.invoke(httpRequest, null));
 
 			Method getPathTranslated = requestClass.getMethod(GET_PATH_TRANSLATED);
 			getPathTranslated.setAccessible(true);

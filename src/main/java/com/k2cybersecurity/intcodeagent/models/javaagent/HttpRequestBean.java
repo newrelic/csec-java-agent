@@ -1,33 +1,20 @@
 package com.k2cybersecurity.intcodeagent.models.javaagent;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.k2cybersecurity.intcodeagent.websocket.JsonConverter;
+import org.apache.commons.lang3.StringUtils;
+import org.json.simple.JSONObject;
+
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.commons.lang3.StringUtils;
-import org.json.simple.JSONObject;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
-import com.k2cybersecurity.intcodeagent.websocket.JsonConverter;
-
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class HttpRequestBean {
 
-	private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
-	public static final String GOT_EMPTY_COMPONENT_LIST_FROM_RAW_REQUEST = "Got empty component list from raw request.";
-	public static final String UNABLE_TO_EXTRACT_THE_REQUEST_LINE = "Unable to extract the request line.";
-	public static final String GOT_EMPTY_MAP_AFTER_EXTRACTING_THE_HEADERS = "Got empty map after extracting the headers.";
-	public static final String GOT_EMPTY_BODY_AFTER_PROCESSING = "Got empty body after processing";
-	public static final String DOUBLE_NL_SEPARATOR = "\n\n";
-	public static final String DOUBLE_CR_SEPARATOR = "\r\n\r\n";
-	public static final String ERROR_WHILE_PROCESSING_HEADERS = "Error while processing headers : ";
-	public static final String COLON_SEPARATOR_CHAR = ":";
-	public static final String ERROR_WHILE_PROCESSING_REQUEST_LINE = "Error while processing request line : ";
-	public static final String INVALID_REQUEST_LINE_MISSING_MANDATORY_COMPONENTS = "Invalid request line. Missing mandatory components : ";
-	public static final String CR_OR_NL_SEPARATOR = "\n";
 	public static final String HTTP = "http";
+	public static final String FORWARD_SLASH = "/";
 
 	private String body;
 
@@ -50,8 +37,6 @@ public class HttpRequestBean {
 	private String contextPath;
 
 	private String contentType;
-	
-	private String servletPath;
 	
 	private String pathParams;
 
@@ -170,13 +155,6 @@ public class HttpRequestBean {
 		this.parts = parts;
 	}
 
-	//	/**
-//	 * @param body the body to set
-//	 */
-//	public void setBody(String body) {
-//		this.body = body;
-//	}
-
 	/**
 	 * @return the dataTruncated
 	 */
@@ -247,22 +225,16 @@ public class HttpRequestBean {
 		this.fileExist = fileAccessed;
 	}
 
-//	public static void main(String[] args) {
-//		HttpRequestBean servletInfo = new HttpRequestBean();
-//		String raw = "GET /DemoApplication-0.0.1-SNAPSHOT/UserCheck?user=test&password=1%27+OR+2*3%3D5%2B1+%23 HTTP/1.1\r\nhost:localhost:8080\r\nconnection:keep-alive\r\nupgrade-insecure-requests:1\r\nuser-agent:Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36\r\naccept:text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3\r\nreferer:http://localhost:8080/DemoApplication-0.0.1-SNAPSHOT/sample1.jsp\r\naccept-encoding:gzip, deflate\r\naccept-language:en-US,en;q=0.9\r\ncookie:JSESSIONID=887548369E69A897729666A6F33728FE; SESSION=vgbbsmq400gl1qpnjnsqo0qdjm; JSESSIONID=908DCB5F35DEE838AE85E3DD8E6B5176\r\n";
-//
-////		String raw = "POST /codeijc HTTP/1.1\r\nhost:localhost:8080\r\nconnection:keep-alive\r\ncache-control:max-age=0\r\norigin:http://localhost:8080\r\nupgrade-insecure-requests:1\r\ncontent-type:application/x-www-form-urlencoded\r\nuser-agent:Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.108 Safari/537.36\r\naccept:text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3\r\nreferer:http://localhost:8080/codeijc\r\naccept-encoding:gzip, deflate\r\naccept-language:en-GB,en-US;q=0.9,en;q=0.8\r\ncookie:JSESSIONID=AA03FD28F4C5B568C2C22589E1F747C3\r\ncontent-length:88\r\n\r\njsonString=%7B%7D%27%29%3Bjava.lang.Runtime.getRuntime%28%29.exec%28%22ls%22%29%3B%2F%2F";
-//		servletInfo.setRawRequest(raw);
-//		servletInfo.populateHttpRequest();
-//		System.out.println(servletInfo);
-//	}
-
 	public String getContextPath() {
 		return contextPath;
 	}
 
 	public void setContextPath(String contextPath) {
-		this.contextPath = contextPath;
+		if(StringUtils.isBlank(contextPath)) {
+			this.contextPath = FORWARD_SLASH;
+		} else {
+			this.contextPath = contextPath;
+		}
 	}
 
 	public void setBody(String body) {
@@ -293,20 +265,6 @@ public class HttpRequestBean {
 
 	public boolean isEmpty(){
 		return StringUtils.isAnyBlank(url, method);
-	}
-
-	/**
-	 * @return the servletPath
-	 */
-	public String getServletPath() {
-		return servletPath;
-	}
-
-	/**
-	 * @param servletPath the servletPath to set
-	 */
-	public void setServletPath(String servletPath) {
-		this.servletPath = servletPath;
 	}
 
 	/**
@@ -352,6 +310,7 @@ public class HttpRequestBean {
 	public void setProtocol(String protocol) {
 		this.protocol = protocol;
 	}
+
 }
 
 

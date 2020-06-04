@@ -1,9 +1,9 @@
 package com.k2cybersecurity.intcodeagent.models.javaagent;
 
+import com.k2cybersecurity.intcodeagent.logging.DeployedApplication;
 import com.k2cybersecurity.intcodeagent.websocket.JsonConverter;
 import org.json.simple.JSONArray;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class JavaAgentEventBean extends AgentBasicInfo {
@@ -29,6 +29,7 @@ public class JavaAgentEventBean extends AgentBasicInfo {
 	private List<StackTraceElement> completeStacktrace;
 	private boolean validationResponseRequired = false;
 	private String apiId;
+	private DeployedApplication webappIdentifier;
 
 	public JavaAgentEventBean() {
 		super();
@@ -298,5 +299,13 @@ public class JavaAgentEventBean extends AgentBasicInfo {
 
 	public void setApiId(String apiId) {
 		this.apiId = apiId;
+	}
+
+	public DeployedApplication getWebappIdentifier() {
+		return webappIdentifier;
+	}
+
+	public void setWebappIdentifier(DeployedApplication webappIdentifier) {
+		this.webappIdentifier = webappIdentifier;
 	}
 }
