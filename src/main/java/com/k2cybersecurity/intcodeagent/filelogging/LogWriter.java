@@ -23,6 +23,7 @@ public class LogWriter implements Runnable {
 	private static final String STR_COLON = " : ";
 
 	private static final String K2_LOG = "K2-LOG : ";
+	public static final String THREAD_NAME_TEMPLATE = " [%s] ";
 
 	public static int defaultLogLevel;
 
@@ -52,6 +53,8 @@ public class LogWriter implements Runnable {
 	private static BufferedWriter writer;
 
 	private static final File currentLogFile;
+
+	private String threadName;
 
 	static {
 		fileName = "/tmp/k2logs/k2_java_agent-" + K2Instrumentator.APPLICATION_UUID + ".log";
@@ -88,19 +91,21 @@ public class LogWriter implements Runnable {
 		}
 	}
 
-	public LogWriter(LogLevel logLevel, String logEntry, String loggingClassName) {
+	public LogWriter(LogLevel logLevel, String logEntry, String loggingClassName, String threadName) {
 		this.logEntry = logEntry;
 		this.logLevel = logLevel.getLevel();
 		this.logLevelName = logLevel.name();
 		this.loggingClassName = loggingClassName;
+		this.threadName = threadName;
 	}
 
-	public LogWriter(LogLevel logLevel, String logEntry, Throwable throwableLogEntry, String loggingClassName) {
+	public LogWriter(LogLevel logLevel, String logEntry, Throwable throwableLogEntry, String loggingClassName, String threadName) {
 		this.throwableLogEntry = throwableLogEntry;
 		this.logEntry = logEntry;
 		this.logLevel = logLevel.getLevel();
 		this.logLevelName = logLevel.name();
 		this.loggingClassName = loggingClassName;
+		this.threadName = threadName;
 	}
 
 	@Override
@@ -109,9 +114,10 @@ public class LogWriter implements Runnable {
 			return;
 		}
 		StringBuilder sb = new StringBuilder();
-		sb.append(K2_LOG);
+//		sb.append(K2_LOG);
 		sb.append(sdf.format(cal.getTime()));
 		sb.append(STR_COLON);
+		sb.append(String.format(THREAD_NAME_TEMPLATE, threadName));
 		sb.append(this.logLevelName);
 		if (this.loggingClassName != null)
 			sb.append(STR_COLON);
