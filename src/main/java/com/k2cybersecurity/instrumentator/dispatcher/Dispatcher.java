@@ -44,6 +44,8 @@ public class Dispatcher implements Runnable {
     public static final char SEPARATOR = '.';
     public static final String INSIDE_SET_REQUIRED_STACK_TRACE = "Inside setRequiredStackTrace : ";
     public static final String STRING_COLON = " : ";
+
+    private static final Object deployedAppDetectionLock = new Object();
     private HttpRequestBean httpRequestBean;
     private AgentMetaData metaData;
     private Object event;
@@ -377,55 +379,55 @@ public class Dispatcher implements Runnable {
 
     }
 
-    private synchronized boolean detectAndSendDeployedAppInfo(DeployedApplication deployedApplication) {
-        if (K2Instrumentator.APPLICATION_INFO_BEAN.getServerInfo().getDeployedApplications()
-                .contains(deployedApplication)) {
-            return false;
-        }
-        logger.log(LogLevel.INFO, "Creating new deployed application", Dispatcher.class.getName());
-        deployedApplication.setDeployedPath(AgentUtils.getInstance().detectDeployedApplicationPath(
-                userClassEntity.getUserClassElement().getClassName(), currentGenericServletInstance,
-                userClassEntity.getUserClassElement().getMethodName()));
-        logger.log(LogLevel.INFO, "Deployed app after set path : " + deployedApplication, Dispatcher.class.getName());
-        boolean ret = false;
-        try {
-            ret = ServletContextInfo.getInstance().processServletContext(httpRequestBean, deployedApplication);
-            logger.log(LogLevel.INFO, "Deployed app after processing : " + deployedApplication + " :: " + ret, Dispatcher.class.getName());
-            HashGenerator.updateShaAndSize(deployedApplication);
-            logger.log(LogLevel.INFO, "Deployed app after processing 1 : " + deployedApplication + " :: " + ret, Dispatcher.class.getName());
-        } catch (Throwable e) {
-            logger.log(LogLevel.ERROR, "Error while deployed app processing : " + deployedApplication, e, Dispatcher.class.getName());
-            ret = false;
-        }
+    private boolean detectAndSendDeployedAppInfo(DeployedApplication deployedApplication) {
+        synchronized (deployedAppDetectionLock) {
+            if (K2Instrumentator.APPLICATION_INFO_BEAN.getServerInfo().getDeployedApplications()
+                    .contains(deployedApplication)) {
+                return false;
+            }
+            logger.log(LogLevel.INFO, "Creating new deployed application", Dispatcher.class.getName());
+            deployedApplication.setDeployedPath(AgentUtils.getInstance().detectDeployedApplicationPath(
+                    userClassEntity.getUserClassElement().getClassName(), currentGenericServletInstance,
+                    userClassEntity.getUserClassElement().getMethodName()));
+            logger.log(LogLevel.INFO, "Deployed app after set path : " + deployedApplication, Dispatcher.class.getName());
+            boolean ret = false;
+            try {
+                ret = ServletContextInfo.getInstance().processServletContext(httpRequestBean, deployedApplication);
+                logger.log(LogLevel.INFO, "Deployed app after processing : " + deployedApplication + " :: " + ret, Dispatcher.class.getName());
+                HashGenerator.updateShaAndSize(deployedApplication);
+                logger.log(LogLevel.INFO, "Deployed app after processing 1 : " + deployedApplication + " :: " + ret, Dispatcher.class.getName());
+            } catch (Throwable e) {
+                logger.log(LogLevel.ERROR, "Error while deployed app processing : " + deployedApplication, e, Dispatcher.class.getName());
+            }
 
-
-        if (deployedApplication.isEmpty() ||
-                StringUtils.isBlank(deployedApplication.getSha256()) ||
-                StringUtils.equals(deployedApplication.getSha256(), EMPTY_FILE_SHA)) {
-            logger.log(LogLevel.ERROR, DROPPING_APPLICATION_INFO_POSTING_DUE_TO_SIZE_0 + deployedApplication,
-                    Dispatcher.class.getName());
-            return false;
-        }
+            if (deployedApplication.isEmpty() ||
+                    StringUtils.isBlank(deployedApplication.getSha256()) ||
+                    StringUtils.equals(deployedApplication.getSha256(), EMPTY_FILE_SHA)) {
+                logger.log(LogLevel.ERROR, DROPPING_APPLICATION_INFO_POSTING_DUE_TO_SIZE_0 + deployedApplication,
+                        Dispatcher.class.getName());
+                return false;
+            }
 
 //			System.out.println("Processed App Info : " + deployedApplication);
-        ApplicationInfoBean applicationInfoBean = K2Instrumentator.APPLICATION_INFO_BEAN;
+            ApplicationInfoBean applicationInfoBean = K2Instrumentator.APPLICATION_INFO_BEAN;
 
-        applicationInfoBean.getServerInfo().setName(ServletContextInfo.getInstance().getServerInfo());
+            applicationInfoBean.getServerInfo().setName(ServletContextInfo.getInstance().getServerInfo());
 
-        K2Instrumentator.JA_HEALTH_CHECK.setProtectedServer(ServletContextInfo.getInstance().getServerInfo());
+            K2Instrumentator.JA_HEALTH_CHECK.setProtectedServer(ServletContextInfo.getInstance().getServerInfo());
 
-        if(applicationInfoBean.getServerInfo().getDeployedApplications().add(deployedApplication)) {
-			EventSendPool.getInstance().sendEvent(applicationInfoBean.toString());
-			logger.log(LogLevel.INFO, UPDATED_APPLICATION_INFO_POSTED + applicationInfoBean,
-					Dispatcher.class.getName());
-			ScanComponentData scanComponentData = CVEComponentsService.getAllComponents(deployedApplication);
-			EventSendPool.getInstance().sendEvent(scanComponentData.toString());
-		}
+            if (applicationInfoBean.getServerInfo().getDeployedApplications().add(deployedApplication)) {
+                EventSendPool.getInstance().sendEvent(applicationInfoBean.toString());
+                logger.log(LogLevel.INFO, UPDATED_APPLICATION_INFO_POSTED + applicationInfoBean,
+                        Dispatcher.class.getName());
+                ScanComponentData scanComponentData = CVEComponentsService.getAllComponents(deployedApplication);
+                EventSendPool.getInstance().sendEvent(scanComponentData.toString());
+            }
 //				System.out.println("============= AppInfo Start ============");
 //				System.out.println(applicationInfoBean);
 //				System.out.println("============= AppInfo End ============");
 
-        return true;
+            return true;
+        }
     }
 
 
