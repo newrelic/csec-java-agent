@@ -53,6 +53,8 @@ public class AgentUtils {
 	private Map<String, EventResponse> eventResponseSet;
 
 	private Map<String, VulnerableAPI> vulnerableAPIMap;
+	
+	private Set<String> rxssSentUrls;
 
 	private static AgentUtils instance;
 
@@ -79,6 +81,7 @@ public class AgentUtils {
 		eventResponseSet = new ConcurrentHashMap<>();
 		vulnerableAPIMap = new ConcurrentHashMap<>();
 		classLoaderRecord = new ConcurrentHashMap<>();
+		rxssSentUrls = new HashSet<>();
 		TRACE_PATTERN = Pattern.compile(IAgentConstants.TRACE_REGEX);
 		this.sqlConnectionMap = new LinkedHashMap<Integer, JADatabaseMetaData>(50) {
 			@Override
@@ -439,4 +442,12 @@ public class AgentUtils {
 		String input = StringUtils.joinWith(TWO_PIPES, data);
 		return DigestUtils.sha256Hex(input);
 	}
+
+	/**
+	 * @return the rxssSentUrls
+	 */
+	public Set<String> getRxssSentUrls() {
+		return rxssSentUrls;
+	}
+
 }

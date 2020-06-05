@@ -69,7 +69,7 @@ public class AgentNew {
 
 			agentBuilder = doInstrument(agentBuilder, Hooks.TYPE_BASED_HOOKS, "TYPE_BASED");
 			agentBuilder = doInstrument(agentBuilder, Hooks.NAME_BASED_HOOKS, "NAME_BASED");
-			agentBuilder = doInstrument(agentBuilder, Hooks.ANNOTATION_BASED_HOOKS, "ANNOTATION_BASED_HOOKS");
+			agentBuilder = doInstrument(agentBuilder, Hooks.ANNOTATION_BASED_HOOKS);
 
 			resettableClassFileTransformer = agentBuilder.installOn(instrumentation);
 

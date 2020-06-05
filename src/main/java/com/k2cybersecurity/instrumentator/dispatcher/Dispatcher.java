@@ -27,12 +27,13 @@ import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.*;
 
 public class Dispatcher implements Runnable {
 
-    private static final Pattern PATTERN;
+    private static final String SEPARATOR_QUESTIONMARK = "?";
+	private static final Pattern PATTERN;
     private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
     public static final String ERROR = "Error : ";
     public static final String EMPTY_FILE_SHA = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855";
     public static final String DROPPING_APPLICATION_INFO_POSTING_DUE_TO_SIZE_0 = "Dropping application info posting due to size 0 : ";
-    public static final String QUESTION_CHAR = "?";
+    public static final String QUESTION_CHAR = SEPARATOR_QUESTIONMARK;
     public static final String SLASH = "/";
     public static final String FOR_NAME = "forName";
     public static final String SUN_REFLECT_COM_K_2_CYBERSECURITY_NET_BYTEBUDDY = "sun.reflect.com.k2cybersecurity.net.bytebuddy";
@@ -116,7 +117,9 @@ public class Dispatcher implements Runnable {
                 String xssConstruct = CallbackUtils.checkForReflectedXSS(httpRequestBean);
 //				System.out.println("Changes reflected : " + httpRequestBean.getHttpResponseBean().getResponseBody());
                 JavaAgentEventBean eventBean = prepareEvent(httpRequestBean, metaData, vulnerabilityCaseType);
-                if (StringUtils.isNotBlank(xssConstruct) || AgentUtils.getInstance().isEnableDynamicScanning()) {
+                String url = StringUtils.substringBefore(httpRequestBean.getUrl(), SEPARATOR_QUESTIONMARK);
+                if (StringUtils.isNotBlank(xssConstruct) || (AgentUtils.getInstance().isEnableDynamicScanning() && !AgentUtils.getInstance().getRxssSentUrls().contains(url) )) {
+                	AgentUtils.getInstance().getRxssSentUrls().add(url);
                     JSONArray params = new JSONArray();
                     params.add(xssConstruct);
                     params.add(httpRequestBean.getHttpResponseBean().getResponseBody());
