@@ -118,8 +118,11 @@ public class Dispatcher implements Runnable {
 //				System.out.println("Changes reflected : " + httpRequestBean.getHttpResponseBean().getResponseBody());
                 JavaAgentEventBean eventBean = prepareEvent(httpRequestBean, metaData, vulnerabilityCaseType);
                 String url = StringUtils.substringBefore(httpRequestBean.getUrl(), SEPARATOR_QUESTIONMARK);
-                if (StringUtils.isNotBlank(xssConstruct) || (AgentUtils.getInstance().isEnableDynamicScanning() && !AgentUtils.getInstance().getRxssSentUrls().contains(url) )) {
-                	AgentUtils.getInstance().getRxssSentUrls().add(url);
+                if (StringUtils.isNotBlank(xssConstruct) ||
+                        (AgentUtils.getInstance().isEnableDynamicScanning()
+                                && (!AgentUtils.getInstance().getRxssSentUrls().contains(url) || metaData.isK2FuzzRequest()))) {
+
+                    AgentUtils.getInstance().getRxssSentUrls().add(url);
                     JSONArray params = new JSONArray();
                     params.add(xssConstruct);
                     params.add(httpRequestBean.getHttpResponseBean().getResponseBody());
