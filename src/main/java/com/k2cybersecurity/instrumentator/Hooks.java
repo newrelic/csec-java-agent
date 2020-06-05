@@ -8,6 +8,8 @@ public class Hooks {
 
 	public static Map<String, List<String>> TYPE_BASED_HOOKS = new HashMap<>();
 
+	public static Set<String> ANNOTATION_BASED_HOOKS = new HashSet<>();
+
 	public static Map<String, String> DECORATOR_ENTRY = new HashMap<>();
 
 	public static Set<String> IAST_BASED_HOOKS = new HashSet<String>();
@@ -34,6 +36,11 @@ public class Hooks {
 		TYPE_BASED_HOOKS.put("javax.servlet.ServletResponse", Arrays.asList("getOutputStream", "getWriter", null));
 		TYPE_BASED_HOOKS.put("javax.servlet.Filter", Collections.singletonList("doFilter"));
 		TYPE_BASED_HOOKS.put("javax.servlet.FilterChain", Collections.singletonList("doFilter"));
+
+		// Web Framework Based hooks
+
+//		ANNOTATION_BASED_HOOKS.add("org.springframework.web.bind.annotation.RequestMapping");
+
 
 		// SQL hooks
 		TYPE_BASED_HOOKS.put("java.sql.Statement", Arrays.asList("execute", "executeBatch", "executeLargeBatch",
@@ -253,6 +260,10 @@ public class Hooks {
 				"com.k2cybersecurity.instrumentator.decorators.servletresponse");
 		DECORATOR_ENTRY.put("javax.servlet.ServletResponse.getOutputStream",
 				"com.k2cybersecurity.instrumentator.decorators.servletresponse");
+
+
+		DECORATOR_ENTRY.put("org.springframework.web.bind.annotation.RequestMapping",
+				"com.k2cybersecurity.instrumentator.decorators.servicetrace");
 
 		// SQL Create
 		DECORATOR_ENTRY.put("java.sql.Connection.nativeSQL",

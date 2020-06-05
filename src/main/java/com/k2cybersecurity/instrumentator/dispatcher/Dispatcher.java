@@ -137,6 +137,8 @@ public class Dispatcher implements Runnable {
 
                     setRequiredStackRelatedInfoToEvent(eventBean);
                     EventSendPool.getInstance().sendEvent(eventBean);
+                    detectDeployedApplication();
+
 //					System.out.println("============= Event Start ============");
 //					System.out.println(eventBean);
 //					System.out.println("============= Event End ============");
@@ -267,6 +269,13 @@ public class Dispatcher implements Runnable {
         setRequiredStackRelatedInfoToEvent(eventBean);
         EventSendPool.getInstance().sendEvent(eventBean);
 
+        detectDeployedApplication();
+//		System.out.println("============= Event Start ============");
+//		System.out.println(eventBean);
+//		System.out.println("============= Event End ============");
+    }
+
+    private void detectDeployedApplication() {
         if (userClassEntity.isCalledByUserCode()) {
             DeployedApplication deployedApplication = new DeployedApplication();
             deployedApplication.setPort(httpRequestBean.getServerPort());
@@ -275,9 +284,6 @@ public class Dispatcher implements Runnable {
                 detectAndSendDeployedAppInfo(deployedApplication);
             }
         }
-//		System.out.println("============= Event Start ============");
-//		System.out.println(eventBean);
-//		System.out.println("============= Event End ============");
     }
 
     private void setRequiredStackRelatedInfoToEvent(JavaAgentEventBean eventBean) {

@@ -17,6 +17,9 @@ public class AgentMetaData{
 	private JSONArray rciMethodsCalls;
 
 	@JsonIgnore
+	private StackTraceElement[] serviceTrace;
+
+	@JsonIgnore
 	private boolean isK2FuzzRequest = false;
 
 	public AgentMetaData() {
@@ -30,6 +33,7 @@ public class AgentMetaData{
 		this.triggerViaRCI = agentMetaData.triggerViaRCI;
 		this.isClientDetectedFromXFF = agentMetaData.isClientDetectedFromXFF;
 		this.isK2FuzzRequest = agentMetaData.isK2FuzzRequest;
+		this.serviceTrace = agentMetaData.serviceTrace;
 	}
 
 	@Override
@@ -85,5 +89,13 @@ public class AgentMetaData{
 	@JsonIgnore
 	public void setK2FuzzRequest(boolean k2FuzzRequest) {
 		isK2FuzzRequest = k2FuzzRequest;
+	}
+
+	public StackTraceElement[] getServiceTrace() {
+		return serviceTrace;
+	}
+
+	public void setServiceTrace(StackTraceElement[] serviceTrace) {
+		this.serviceTrace = serviceTrace;
 	}
 }

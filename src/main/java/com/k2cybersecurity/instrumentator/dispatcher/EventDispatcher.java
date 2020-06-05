@@ -152,7 +152,12 @@ public class EventDispatcher {
 
             String currentGenericServletMethodName = ThreadLocalHTTPDoFilterMap.getInstance().getCurrentGenericServletMethodName();
             Object currentGenericServletInstance = ThreadLocalHTTPDoFilterMap.getInstance().getCurrentGenericServletInstance();
-            StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
+            StackTraceElement[] stackTrace ;
+            if(agentMetaData.getServiceTrace() == null) {
+                stackTrace = Thread.currentThread().getStackTrace();
+            } else {
+                stackTrace = agentMetaData.getServiceTrace();
+            }
             UserClassEntity userClassEntity = AgentUtils.getInstance().detectUserClass(stackTrace,
                     currentGenericServletInstance,
                     currentGenericServletMethodName, className, methodName);
