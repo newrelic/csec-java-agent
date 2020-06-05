@@ -160,8 +160,7 @@ public class InstrumentationUtils {
     }
 
 
-    public static AgentBuilder doInstrument(AgentBuilder builder, Set<String> hooks,
-                                            String typeOfHook) {
+    public static AgentBuilder doInstrument(AgentBuilder builder, Set<String> hooks) {
         for (String entry : hooks) {
             AgentBuilder.Identified.Narrowable junction = builder.type(not(isInterface()));
 
