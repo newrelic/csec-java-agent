@@ -28,7 +28,7 @@ import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.*;
 public class Dispatcher implements Runnable {
 
     private static final String SEPARATOR_QUESTIONMARK = "?";
-	private static final Pattern PATTERN;
+    private static final Pattern PATTERN;
     private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
     public static final String ERROR = "Error : ";
     public static final String EMPTY_FILE_SHA = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855";
@@ -286,7 +286,9 @@ public class Dispatcher implements Runnable {
             DeployedApplication deployedApplication = new DeployedApplication();
             deployedApplication.setPort(httpRequestBean.getServerPort());
             deployedApplication.setContextPath(httpRequestBean.getContextPath());
-            if (!K2Instrumentator.APPLICATION_INFO_BEAN.getServerInfo().getDeployedApplications().contains(deployedApplication)) {
+            if (!K2Instrumentator.APPLICATION_INFO_BEAN.getServerInfo().getDeployedApplications().contains(deployedApplication)
+                    && !AgentUtils.getInstance().getDeployedApplicationUnderProcessing().contains(deployedApplication)) {
+                AgentUtils.getInstance().getDeployedApplicationUnderProcessing().add(deployedApplication);
                 detectAndSendDeployedAppInfo(deployedApplication);
             }
         }
@@ -392,7 +394,7 @@ public class Dispatcher implements Runnable {
     }
 
     private boolean detectAndSendDeployedAppInfo(DeployedApplication deployedApplication) {
-        synchronized (deployedAppDetectionLock) {
+        try {
             if (K2Instrumentator.APPLICATION_INFO_BEAN.getServerInfo().getDeployedApplications()
                     .contains(deployedApplication)) {
                 return false;
@@ -439,6 +441,8 @@ public class Dispatcher implements Runnable {
 //				System.out.println("============= AppInfo End ============");
 
             return true;
+        } finally {
+            AgentUtils.getInstance().getDeployedApplicationUnderProcessing().remove(deployedApplication);
         }
     }
 

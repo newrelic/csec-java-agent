@@ -56,6 +56,8 @@ public class AgentUtils {
 	
 	private Set<String> rxssSentUrls;
 
+	private Set<DeployedApplication> deployedApplicationUnderProcessing;
+
 	private static AgentUtils instance;
 
 	public Set<String> getProtectedVulnerabilties() {
@@ -82,6 +84,7 @@ public class AgentUtils {
 		vulnerableAPIMap = new ConcurrentHashMap<>();
 		classLoaderRecord = new ConcurrentHashMap<>();
 		rxssSentUrls = new HashSet<>();
+		deployedApplicationUnderProcessing = new HashSet<>();
 		TRACE_PATTERN = Pattern.compile(IAgentConstants.TRACE_REGEX);
 		this.sqlConnectionMap = new LinkedHashMap<Integer, JADatabaseMetaData>(50) {
 			@Override
@@ -450,4 +453,8 @@ public class AgentUtils {
 		return rxssSentUrls;
 	}
 
+
+	public Set<DeployedApplication> getDeployedApplicationUnderProcessing() {
+		return deployedApplicationUnderProcessing;
+	}
 }
