@@ -545,4 +545,6 @@ public interface IAgentConstants {
 	String JAVA_SECURITY_MESSAGEDIGEST_GETINSTANCE_STRING_PROVIDER = "public static java.security.MessageDigest java.security.MessageDigest.getInstance(java.lang.String,java.security.Provider) throws java.security.NoSuchAlgorithmException";
 	String BLOCKING_END_TIME = "blockingEndTime";
 	String ERROR_WHILE_DETERMINING_HOSTIP_FROM_DEFAULT_GATEWAY = "Error while determining hostip from default gateway";
+	
+	String INIT = "<init>";
 }

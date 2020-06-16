@@ -5,13 +5,14 @@ import com.k2cybersecurity.instrumentator.custom.ThreadLocalHTTPIOLock;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalHttpMap;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalOperationLock;
 import com.k2cybersecurity.instrumentator.utils.CallbackUtils;
+import com.k2cybersecurity.intcodeagent.logging.IAgentConstants;
+
 import org.apache.commons.lang3.StringUtils;
 
 public class Callbacks {
 
 	public static final String GET_READER = "getReader";
 	public static final String GET_INPUT_STREAM = "getInputStream";
-	public static final String INIT = "<init>";
 
 	public static void doOnEnter(String sourceString, String className, String methodName, Object obj, Object[] args,
 			String exectionId) {
@@ -48,7 +49,7 @@ public class Callbacks {
 						ThreadLocalHttpMap.getInstance().setRequestInputStream(returnVal);
 						ThreadLocalHTTPIOLock.getInstance().resetLock();
 					}
-				} else if (StringUtils.equals(methodName, INIT)
+				} else if (StringUtils.equals(methodName, IAgentConstants.INIT)
 						&& !ThreadLocalHttpMap.getInstance().isServiceMethodEncountered() && obj != null
 						&& CallbackUtils.checkArgsTypeHeirarchyRequest(obj)) {
 					//					System.out.println("Servlet request constructor exit aaya : "+ exectionId + " :: " + sourceString + " :: " + obj.hashCode() + " :: " + returnVal + " :: " + methodName);

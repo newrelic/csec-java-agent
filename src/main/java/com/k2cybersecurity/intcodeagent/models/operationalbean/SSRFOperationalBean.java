@@ -1,17 +1,15 @@
 package com.k2cybersecurity.intcodeagent.models.operationalbean;
 
-import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.websocket.JsonConverter;
+import org.apache.commons.lang3.StringUtils;
 
 public class SSRFOperationalBean extends AbstractOperationalBean{
 
-	private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
+	private String arg = StringUtils.EMPTY;
 
-	private Object[] apiCallArgs;
-
-	public SSRFOperationalBean(Object[] apiCallArgs, String className, String sourceMethod, String executionId, long startTime, String methodName) {
+	public SSRFOperationalBean(String apiCallArg, String className, String sourceMethod, String executionId, long startTime, String methodName) {
 		super(className, sourceMethod, executionId, startTime, methodName);
-		this.apiCallArgs = apiCallArgs;
+		this.arg = apiCallArg;
 	}
 
 	@Override
@@ -20,15 +18,15 @@ public class SSRFOperationalBean extends AbstractOperationalBean{
 	}
 
 	@Override public boolean isEmpty() {
-		return apiCallArgs == null || apiCallArgs.length <= 0 ;
+		return StringUtils.isBlank(this.arg) ;
 	}
 
-	public Object[] getApiCallArgs() {
-		return apiCallArgs;
+	public String getArg() {
+		return arg;
 	}
 
-	public void setApiCallArgs(Object[] apiCallArgs) {
-		this.apiCallArgs = apiCallArgs;
+	public void setArg(String arg) {
+		this.arg = arg;
 	}
 }
 

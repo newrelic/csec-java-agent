@@ -1,5 +1,6 @@
 package com.k2cybersecurity.intcodeagent.models.operationalbean;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalExecutionMap;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalHTTPDoFilterMap;
 import com.k2cybersecurity.instrumentator.utils.AgentUtils;
@@ -22,6 +23,7 @@ public abstract class AbstractOperationalBean {
 
 	private long blockingEndTime;
 
+	@JsonIgnore
 	private Object currentGenericServletInstance;
 
 	private String currentGenericServletMethodName = StringUtils.EMPTY;
@@ -106,10 +108,12 @@ public abstract class AbstractOperationalBean {
 		this.blockingEndTime = blockingEndTime;
 	}
 
+	@JsonIgnore
 	public Object getCurrentGenericServletInstance() {
 		return currentGenericServletInstance;
 	}
 
+	@JsonIgnore
 	public void setCurrentGenericServletInstance(Object currentGenericServletInstance) {
 		this.currentGenericServletInstance = currentGenericServletInstance;
 	}

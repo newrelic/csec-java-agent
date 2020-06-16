@@ -681,6 +681,7 @@ public class CallbackUtils {
 		ThreadLocalLdaptiveMap.getInstance().clearAll();
 		ThreadLocalXpathSaxonMap.getInstance().clearAll();
 		ThreadLocalXQuerySaxonMap.getInstance().clearAll();
+		ThreadLocalOkHttpMap.getInstance().clearAll();
 	}
 
 }
