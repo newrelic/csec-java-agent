@@ -35,7 +35,7 @@ public class JsonConverter {
 		jsonString.append(STR_END_CUELY_BRACKET);
 		return jsonString.toString();
 	}
-	
+
 	public static String toJSONMap(Map obj) {
 		StringBuilder jsonString = new StringBuilder();
 		JSONObject mapObject = new JSONObject();
@@ -110,6 +110,8 @@ public class JsonConverter {
 			return processCollection(Arrays.asList((Object[]) value));
 		} else if (value instanceof Map) {
 			return processMap((Map) value);
+		} else if(value instanceof StackTraceElement) {
+			return value.toString();
 		} else {
 			return value;
 		}
@@ -133,17 +135,14 @@ public class JsonConverter {
 //
 //
 //		JavaAgentEventBean javaAgentEventBean = new JavaAgentEventBean(System.currentTimeMillis(), 15L, "source", 12121,
-//				"asdasd-1212-sdf", "12-12", VulnerabilityCaseType.DB_COMMAND);
+//				"asdasd-1212-sdf", "12-12", VulnerabilityCaseType.SQL_DB_COMMAND);
 //		JSONArray jsonArray = new JSONArray();
 //		jsonArray.add("sadasda");
 //		jsonArray.add("sadasdaasdfasd");
 //		jsonArray.addAll(Arrays.asList(arr));
 //		javaAgentEventBean.setParameters(jsonArray);
 //
-//		ServletInfo servletInfo = new ServletInfo();
-//		servletInfo.setDataTruncated(false);
-//		servletInfo.setRawRequest("sdasdfasfasf \n\r asd \r\n asd asd asd ");
-//		javaAgentEventBean.setHttpRequestBean(servletInfo);
+//		javaAgentEventBean.setStacktrace(Arrays.asList(Thread.currentThread().getStackTrace()));
 //
 //		System.out.println(javaAgentEventBean.toString());
 //	}

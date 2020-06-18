@@ -12,10 +12,10 @@
 	<properties>
 		<maven.compiler.source>1.8</maven.compiler.source>
 		<maven.compiler.target>1.8</maven.compiler.target>
-		<buildId>202002040902_UTC_4a9c76</buildId>
-		<buildTime>2019-02-05_07:08:07UTC</buildTime>
-		<commitId>0c876e5</commitId>
-		<k2JavaAgentVersion>1</k2JavaAgentVersion>
+		<collectorVersion>0</collectorVersion>
+		<buildTime>0</buildTime>
+		<commitId>0</commitId>
+		<jsonVersion>0</jsonVersion>
 	</properties>
 
 	<dependencies>
@@ -81,7 +81,7 @@
 		<dependency>
 			<groupId>net.bytebuddy</groupId>
 			<artifactId>byte-buddy</artifactId>
-			<version>1.10.4</version>
+			<version>1.10.10</version>
 		</dependency>
 
 		<dependency>

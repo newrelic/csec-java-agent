@@ -1,8 +1,10 @@
 package com.k2cybersecurity.intcodeagent.models.javaagent;
 
-import com.k2cybersecurity.instrumentator.K2Instrumentator;
 import com.k2cybersecurity.intcodeagent.websocket.JsonConverter;
 import org.json.simple.JSONArray;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class JavaAgentEventBean extends AgentBasicInfo {
 	private Integer pid;
@@ -18,7 +20,7 @@ public class JavaAgentEventBean extends AgentBasicInfo {
 	private Long eventGenerationTime;
 	private HttpRequestBean httpRequest;
 	private String id;
-	private JSONArray stacktrace;
+	private List<StackTraceElement> stacktrace;
 	private String caseType;
 	private String eventCategory;
 	private Long preProcessingTime;
@@ -209,14 +211,14 @@ public class JavaAgentEventBean extends AgentBasicInfo {
 	/**
 	 * @return the stacktrace
 	 */
-	public JSONArray getStacktrace() {
+	public List<StackTraceElement> getStacktrace() {
 		return stacktrace;
 	}
 
 	/**
 	 * @param stacktrace the stacktrace to set
 	 */
-	public void setStacktrace(JSONArray stacktrace) {
+	public void setStacktrace(List<StackTraceElement> stacktrace) {
 		this.stacktrace = stacktrace;
 	}
 

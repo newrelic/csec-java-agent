@@ -1,7 +1,10 @@
 package com.k2cybersecurity.intcodeagent.models.operationalbean;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.k2cybersecurity.instrumentator.custom.ThreadLocalExecutionMap;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalHTTPDoFilterMap;
 import com.k2cybersecurity.instrumentator.utils.AgentUtils;
+import com.k2cybersecurity.intcodeagent.models.javaagent.UserClassEntity;
 import com.k2cybersecurity.intcodeagent.websocket.JsonConverter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -20,15 +23,14 @@ public abstract class AbstractOperationalBean {
 
 	private long blockingEndTime;
 
+	@JsonIgnore
 	private Object currentGenericServletInstance;
 
 	private String currentGenericServletMethodName = StringUtils.EMPTY;
 
 	private StackTraceElement[] stackTrace;
 
-	private StackTraceElement userClassElement;
-
-	private Boolean isCalledByUserCode;
+	private UserClassEntity userClassEntity;
 
 	public AbstractOperationalBean(){
 		this.className = StringUtils.EMPTY;
@@ -37,7 +39,6 @@ public abstract class AbstractOperationalBean {
 		this.methodName = StringUtils.EMPTY;
 		this.startTime = 0L;
 		this.blockingEndTime = 0L;
-		this.isCalledByUserCode = false;
 	}
 
 	public AbstractOperationalBean(String className, String sourceMethod, String executionId
@@ -51,11 +52,10 @@ public abstract class AbstractOperationalBean {
 		this.currentGenericServletMethodName = ThreadLocalHTTPDoFilterMap.getInstance().getCurrentGenericServletMethodName();
 		this.currentGenericServletInstance = ThreadLocalHTTPDoFilterMap.getInstance().getCurrentGenericServletInstance();
 		this.stackTrace = Thread.currentThread().getStackTrace();
-		Pair<Boolean, StackTraceElement> userClassDetectionResult = AgentUtils.getInstance().detectUserClass(this.stackTrace,
+		this.userClassEntity = AgentUtils.getInstance().detectUserClass(this.stackTrace,
 				this.currentGenericServletInstance,
 				this.currentGenericServletMethodName, className, methodName);
-		this.userClassElement = userClassDetectionResult.getRight();
-		this.isCalledByUserCode = userClassDetectionResult.getLeft();
+
 	}
 
 	public String toString() {
@@ -108,10 +108,12 @@ public abstract class AbstractOperationalBean {
 		this.blockingEndTime = blockingEndTime;
 	}
 
+	@JsonIgnore
 	public Object getCurrentGenericServletInstance() {
 		return currentGenericServletInstance;
 	}
 
+	@JsonIgnore
 	public void setCurrentGenericServletInstance(Object currentGenericServletInstance) {
 		this.currentGenericServletInstance = currentGenericServletInstance;
 	}
@@ -132,14 +134,6 @@ public abstract class AbstractOperationalBean {
 		this.stackTrace = stackTrace;
 	}
 
-	public StackTraceElement getUserClassElement() {
-		return userClassElement;
-	}
-
-	public void setUserClassElement(StackTraceElement userClassElement) {
-		this.userClassElement = userClassElement;
-	}
-
 	public String getMethodName() {
 		return methodName;
 	}
@@ -148,11 +142,11 @@ public abstract class AbstractOperationalBean {
 		this.methodName = methodName;
 	}
 
-	public Boolean getCalledByUserCode() {
-		return isCalledByUserCode;
+	public UserClassEntity getUserClassEntity() {
+		return userClassEntity;
 	}
 
-	public void setCalledByUserCode(Boolean calledByUserCode) {
-		isCalledByUserCode = calledByUserCode;
+	public void setUserClassEntity(UserClassEntity userClassEntity) {
+		this.userClassEntity = userClassEntity;
 	}
 }

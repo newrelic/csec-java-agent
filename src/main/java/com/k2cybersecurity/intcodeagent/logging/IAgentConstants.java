@@ -9,7 +9,7 @@ public interface IAgentConstants {
 
 	String CLASS_WEBLOGIC_SERVLET_INTERNAL_WEB_APP_SERVLET_CONTEXT = "weblogic/servlet/internal/WebAppServletContext";
 
-	String TRACE_REGEX = "^((?!(org\\.apache\\.jsp))((sun|java|javax|com\\.sun|jdk)|(org\\.apache|com\\.k2cybersecurity\\.intcodeagent|k2\\.io\\.org|com\\.microsoft\\.sqlserver|com\\.mysql|sun\\.reflect|org\\.hibernate|com\\.mongodb|org\\.apache\\.commons|org\\.mongodb|org\\.eclipse\\.jetty|net\\.sourceforge\\.eclipsejetty|org\\.springframework|org\\.slf4j|org\\.eclipse\\.jdt|com\\.opensymphony\\.xwork2|k2\\.org\\.objectweb\\.asm|weblogic\\.|freemarker\\.cache|com\\.mchange|org\\.postgresql|oracle\\.jdbc|org\\.hsqldb|ch\\.qos\\.logback|io\\.micrometer|k2\\.org\\.json|k2\\.com\\.fasterxml|com\\.ibm|io\\.undertow|org\\.jboss|org\\.wildfly|org\\.glassfish|freemaker|org\\.thymeleaf|org\\.xnio|com\\.samskivert\\.mustache|org\\.codehaus|com\\.github\\.mustachejava|groovy|com\\.oracle|weblogic|org\\.primefaces)))\\..*";
+	String TRACE_REGEX = "^((?!(org\\.apache\\.jsp))((sun|java|javax|com\\.sun|jdk)|(org\\.apache|com\\.k2cybersecurity\\.intcodeagent|k2\\.io\\.org|com\\.microsoft\\.sqlserver|com\\.mysql|sun\\.reflect|org\\.hibernate|com\\.mongodb|org\\.apache\\.commons|org\\.mongodb|org\\.eclipse\\.jetty|net\\.sourceforge\\.eclipsejetty|org\\.springframework|org\\.slf4j|org\\.eclipse\\.jdt|com\\.opensymphony|k2\\.org\\.objectweb\\.asm|weblogic\\.|freemarker\\.cache|com\\.mchange|org\\.postgresql|oracle\\.jdbc|org\\.hsqldb|ch\\.qos\\.logback|io\\.micrometer|k2\\.org\\.json|k2\\.com\\.fasterxml|com\\.ibm|io\\.undertow|org\\.jboss|org\\.wildfly|org\\.glassfish|freemaker|org\\.thymeleaf|org\\.xnio|com\\.samskivert\\.mustache|org\\.codehaus|com\\.github\\.mustachejava|groovy|com\\.oracle|weblogic|org\\.primefaces)))\\..*";
 
 	Pattern TRACE_SKIP_REGEX = Pattern.compile("^(sun|java|javax|com\\.sun|jdk)\\..*");
 
@@ -545,4 +545,6 @@ public interface IAgentConstants {
 	String JAVA_SECURITY_MESSAGEDIGEST_GETINSTANCE_STRING_PROVIDER = "public static java.security.MessageDigest java.security.MessageDigest.getInstance(java.lang.String,java.security.Provider) throws java.security.NoSuchAlgorithmException";
 	String BLOCKING_END_TIME = "blockingEndTime";
 	String ERROR_WHILE_DETERMINING_HOSTIP_FROM_DEFAULT_GATEWAY = "Error while determining hostip from default gateway";
+	
+	String INIT = "<init>";
 }
