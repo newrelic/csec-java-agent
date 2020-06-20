@@ -114,76 +114,167 @@ public class AgentUtils {
 		return vulnerableAPIMap;
 	}
 
-	public VulnerableAPI isVulnerableAPI(String sourceMethod, String userClass, String userMethod, Integer lineNumber){
-		VulnerableAPI vulnerableAPI = new VulnerableAPI(sourceMethod,
-				userClass,
-				userMethod,
-				lineNumber
-		);
+	public VulnerableAPI isVulnerableAPI(String sourceMethod, String userClass, String userMethod, Integer lineNumber) {
+		VulnerableAPI vulnerableAPI = new VulnerableAPI(sourceMethod, userClass, userMethod, lineNumber);
 		return vulnerableAPIMap.get(vulnerableAPI.getId());
 	}
 
 	public void createProtectedVulnerabilties(TypeDescription typeDescription, ClassLoader classLoader) {
-		String className = typeDescription.getName();
-		// NAME_BASED_HOOKS checks
-		if (StringUtils.equals(className, "java.lang.ProcessImpl")) {
-			getProtectedVulnerabilties().add("RCE");
-			getProtectedVulnerabilties().add("RCI");
-			getProtectedVulnerabilties().add("REVERSE_SHELL");
-		} else if (StringUtils.equals(className, "java.lang.Shutdown")) {
-			getProtectedVulnerabilties().add("RCI");
-		} else if (StringUtils.equalsAny(className, "java.io.FileOutputStream", "java.io.FileInputStream",
-				"sun.nio.fs.UnixNativeAgentUtils", "java.io.UnixFileSystem", "java.io.RandomAccessFile",
-				"java.io.FileSystem")) {
-			getProtectedVulnerabilties().add("FILE_ACCESS");
-			getProtectedVulnerabilties().add("RCI");
-		} else if (StringUtils.startsWith(className, "com.mongodb.")) {
-			getProtectedVulnerabilties().add("NOSQLI");
-			getProtectedVulnerabilties().add("RCI");
-			getProtectedVulnerabilties().add("SXSS");
-		} else if (StringUtils.equalsAny(className, "java.util.Random", "java.lang.Math")) {
-			getProtectedVulnerabilties().add("WEAK_RANDOM");
-		} else if (StringUtils.equalsAny(className, "org.apache.xpath.XPath",
-				"com.sun.org.apache.xpath.internal.XPath")) {
-			getProtectedVulnerabilties().add("XPATH");
-		} else if (StringUtils.equalsAny(className, "org.apache.http.protocol.HttpRequestExecutor",
-				"sun.net.www.protocol.http.Handler", "sun.net.www.protocol.https.Handler",
-				"com.sun.net.ssl.internal.www.protocol.https.Handler", "jdk.incubator.http.MultiExchange",
-				"org.apache.commons.httpclient.HttpMethodDirector", "com.squareup.okhttp.internal.http.HttpEngine",
-				"weblogic.net.http.Handler")) {
-			getProtectedVulnerabilties().add("SSRF");
-			getProtectedVulnerabilties().add("RCI");
-		} else if (StringUtils.equalsAny(className, "javax.crypto.Cipher", "javax.crypto.KeyGenerator",
-				"java.security.KeyPairGenerator")) {
-			getProtectedVulnerabilties().add("CRYPTO");
-		} else if (StringUtils.equals(className, "java.security.MessageDigest")) {
-			getProtectedVulnerabilties().add("HASH");
-		} else {
-			// TYPE_BASED_HOOKS checks
-			try {
-				if(StringUtils.equals("java.sql.Statement", className) || StringUtils.equals("java.sql.PreparedStatement", className) || StringUtils.equals("java.sql.Connection", className) || typeDescription.isInHierarchyWith(Class.forName("java.sql.Statement", false, classLoader)) || typeDescription.isInHierarchyWith(Class.forName("java.sql.PreparedStatement", false, classLoader)) || typeDescription.isInHierarchyWith(Class.forName("java.sql.Connection", false, classLoader))){
-					getProtectedVulnerabilties().add("SQLI");
-					getProtectedVulnerabilties().add("SXSS");
-					getProtectedVulnerabilties().add("RCI");
-				} else if(StringUtils.equals("javax.naming.directory.DirContext", className) || typeDescription.isInHierarchyWith(Class.forName("javax.naming.directory.DirContext", false, classLoader))) {
-					getProtectedVulnerabilties().add("LDAP");
-				} else if (StringUtils.contains("javax.servlet.ServletResponse", className) || typeDescription.isInHierarchyWith(Class.forName("javax.servlet.ServletResponse", false, classLoader))) {
-					getProtectedVulnerabilties().add("RXSS");
-				} else if (StringUtils.contains("javax.servlet.http.HttpServletResponse", className) || typeDescription.isInHierarchyWith(Class.forName("javax.servlet.http.HttpServletResponse", false, classLoader))) {
-					getProtectedVulnerabilties().add("SECURE_COOKIE");
-				} else if (StringUtils.contains("javax.servlet.http.HttpSession", className) || typeDescription.isInHierarchyWith(Class.forName("javax.servlet.http.HttpSession", false, classLoader))) {
-					getProtectedVulnerabilties().add("TRUST_BOUNDARY");
+		try {
+			String className = typeDescription.getName();
+			// NAME_BASED_HOOKS checks
+			if (StringUtils.equals(className, "java.lang.ProcessImpl")) {
+				getProtectedVulnerabilties().add("RCE");
+				getProtectedVulnerabilties().add("RCI");
+				getProtectedVulnerabilties().add("REVERSE_SHELL");
+			} else if (StringUtils.equals(className, "java.lang.Shutdown")) {
+				getProtectedVulnerabilties().add("RCI");
+			} else if (StringUtils.equalsAny(className, "java.io.FileOutputStream", "java.io.FileInputStream",
+					"sun.nio.fs.UnixNativeAgentUtils", "java.io.UnixFileSystem", "java.io.RandomAccessFile",
+					"java.io.FileSystem")) {
+				getProtectedVulnerabilties().add("FILE_ACCESS");
+				getProtectedVulnerabilties().add("RCI");
+			} else if (StringUtils.startsWith(className, "com.mongodb.")) {
+				getProtectedVulnerabilties().add("NOSQLI");
+				getProtectedVulnerabilties().add("RCI");
+				getProtectedVulnerabilties().add("SXSS");
+			} else if (StringUtils.equalsAny(className, "java.util.Random", "java.lang.Math")) {
+				getProtectedVulnerabilties().add("WEAK_RANDOM");
+			} else if (StringUtils.equalsAny(className, "org.apache.xpath.XPath",
+					"com.sun.org.apache.xpath.internal.XPath")) {
+				getProtectedVulnerabilties().add("XPATH");
+			} else if (StringUtils.equalsAny(className, "org.apache.http.protocol.HttpRequestExecutor",
+					"sun.net.www.protocol.http.Handler", "sun.net.www.protocol.https.Handler",
+					"com.sun.net.ssl.internal.www.protocol.https.Handler", "jdk.incubator.http.MultiExchange",
+					"org.apache.commons.httpclient.HttpMethodDirector", "com.squareup.okhttp.internal.http.HttpEngine",
+					"weblogic.net.http.Handler")) {
+				getProtectedVulnerabilties().add("SSRF");
+				getProtectedVulnerabilties().add("RCI");
+			} else if (StringUtils.equalsAny(className, "javax.crypto.Cipher", "javax.crypto.KeyGenerator",
+					"java.security.KeyPairGenerator")) {
+				getProtectedVulnerabilties().add("CRYPTO");
+			} else if (StringUtils.equals(className, "java.security.MessageDigest")) {
+				getProtectedVulnerabilties().add("HASH");
+			} else {
+				// TYPE_BASED_HOOKS checks
+				boolean isFound = false;
+				try {
+					Class sqlStatement = null;
+					Class sqlPreStatement = null;
+					Class sqlConnection = null;
+
+					if(classLoaderRecord.containsKey("java.sql.Statement")){
+						sqlStatement = classLoaderRecord.get("java.sql.Statement").loadClass("java.sql.Statement");
+					}
+
+					if(classLoaderRecord.containsKey("java.sql.PreparedStatement")){
+						sqlPreStatement = classLoaderRecord.get("java.sql.PreparedStatement").loadClass("java.sql.PreparedStatement");
+					}
+
+					if(classLoaderRecord.containsKey("java.sql.Connection")){
+						sqlConnection = classLoaderRecord.get("java.sql.Connection").loadClass("java.sql.Connection");
+					}
+
+					if (!isFound && StringUtils.equals("java.sql.Statement", className)
+							|| StringUtils.equals("java.sql.PreparedStatement", className)
+							|| StringUtils.equals("java.sql.Connection", className)
+							|| (sqlStatement !=null && typeDescription.isInHierarchyWith(sqlStatement))
+							|| (sqlConnection !=null && typeDescription.isInHierarchyWith(sqlConnection))
+							|| (sqlPreStatement !=null && typeDescription.isInHierarchyWith(sqlPreStatement))) {
+						getProtectedVulnerabilties().add("SQLI");
+						getProtectedVulnerabilties().add("SXSS");
+						getProtectedVulnerabilties().add("RCI");
+						isFound = true;
+					}
+				} catch (Throwable e) {
+					logger.log(LogLevel.DEBUG,
+							"Error in class loading for createProtectedVulnerabilties : " + e.getMessage(), e,
+							AgentUtils.class.getSimpleName());
 				}
-			} catch (ClassNotFoundException e) {
-				logger.log(LogLevel.ERROR,
-						"Error in class loading for createProtectedVulnerabilties : " + e.getMessage(), e,
-						AgentUtils.class.getSimpleName());
+				try {
+
+					Class dirContext = null;
+					if(classLoaderRecord.containsKey("javax.naming.directory.DirContext")){
+						dirContext = classLoaderRecord.get("javax.naming.directory.DirContext").loadClass("javax.naming.directory.DirContext");
+					}
+
+
+					if (!isFound && StringUtils.equals("javax.naming.directory.DirContext", className) ||
+							(dirContext !=null && typeDescription.isInHierarchyWith(dirContext))) {
+						getProtectedVulnerabilties().add("LDAP");
+						isFound = true;
+					}
+				} catch (Throwable e) {
+					logger.log(LogLevel.DEBUG,
+							"Error in class loading for createProtectedVulnerabilties : " + e.getMessage(), e,
+							AgentUtils.class.getSimpleName());
+				}
+
+
+				try {
+					Class servletResponse = null;
+					if(classLoaderRecord.containsKey("javax.servlet.ServletResponse")){
+						servletResponse = classLoaderRecord.get("javax.servlet.ServletResponse").loadClass("javax.servlet.ServletResponse");
+					}
+
+					if (!isFound && StringUtils.contains("javax.servlet.ServletResponse", className) ||
+							(servletResponse !=null && typeDescription.isInHierarchyWith(servletResponse))) {
+						getProtectedVulnerabilties().add("RXSS");
+						isFound = true;
+					}
+				} catch (Throwable e) {
+					logger.log(LogLevel.DEBUG,
+							"Error in class loading for createProtectedVulnerabilties : " + e.getMessage(), e,
+							AgentUtils.class.getSimpleName());
+				}
+
+
+				try {
+					Class httpServletResponse = null;
+					if(classLoaderRecord.containsKey("javax.servlet.http.HttpServletResponse")){
+						httpServletResponse = classLoaderRecord.get("javax.servlet.http.HttpServletResponse")
+								.loadClass("javax.servlet.http.HttpServletResponse");
+					}
+
+					if (!isFound && StringUtils.contains("javax.servlet.http.HttpServletResponse", className)
+							|| (httpServletResponse !=null && typeDescription.isInHierarchyWith(httpServletResponse))) {
+						getProtectedVulnerabilties().add("SECURE_COOKIE");
+						isFound = true;
+					}
+				} catch (Throwable e) {
+					logger.log(LogLevel.DEBUG,
+							"Error in class loading for createProtectedVulnerabilties : " + e.getMessage(), e,
+							AgentUtils.class.getSimpleName());
+				}
+				try {
+					Class httpSession = null;
+					if(classLoaderRecord.containsKey("javax.servlet.http.HttpSession")){
+						httpSession = classLoaderRecord.get("javax.servlet.http.HttpSession")
+								.loadClass("javax.servlet.http.HttpSession");
+					}
+
+					if (!isFound && StringUtils.contains("javax.servlet.http.HttpSession", className) ||
+							(httpSession !=null && typeDescription.isInHierarchyWith(httpSession))) {
+						getProtectedVulnerabilties().add("TRUST_BOUNDARY");
+						isFound = true;
+					}
+				} catch (Throwable e) {
+					logger.log(LogLevel.DEBUG,
+							"Error in class loading for createProtectedVulnerabilties : " + e.getMessage(), e,
+							AgentUtils.class.getSimpleName());
+				}
+
 			}
+		} catch (Throwable e){
+			logger.log(LogLevel.DEBUG,
+					"Error in class loading for createProtectedVulnerabilties master: " + e.getMessage(), e,
+					AgentUtils.class.getSimpleName());
 		}
 	}
 
 	public void addProtectedVulnerabilties(String className) {
-		if (StringUtils.equalsAny(className,"com.sun.org.apache.xerces.internal.impl.XMLDocumentFragmentScannerImpl", "com.sun.org.apache.xerces.internal.impl.XMLEntityManager")) {
+		if (StringUtils.equalsAny(className, "com.sun.org.apache.xerces.internal.impl.XMLDocumentFragmentScannerImpl",
+				"com.sun.org.apache.xerces.internal.impl.XMLEntityManager")) {
 			getProtectedVulnerabilties().add("XXE");
 		} else if (StringUtils.equals(className, "java.io.ObjectInputStream")) {
 			getProtectedVulnerabilties().add("INSECURE_DESERIALIZATION");
@@ -195,21 +286,22 @@ public class AgentUtils {
 	}
 
 	public void addScannedDeployedApplications(DeployedApplication scannedDeployedApplications) {
-		if(scannedDeployedApplications != null && !scannedDeployedApplications.isEmpty()) {
+		if (scannedDeployedApplications != null && !scannedDeployedApplications.isEmpty()) {
 			this.scannedDeployedApplications.add(scannedDeployedApplications);
 		}
 	}
 
-	public void addIPBlockingEntry(String ip){
+	public void addIPBlockingEntry(String ip) {
 		IPBlockingEntry entry = new IPBlockingEntry(ip);
 		ipBlockingEntries.put(entry.getTargetIP(), entry);
 	}
 
-	public boolean isBlockedIP(String ip){
-		if(ipBlockingEntries.containsKey(ip)){
-			if(!ipBlockingEntries.get(ip).isValid()){
+	public boolean isBlockedIP(String ip) {
+		if (ipBlockingEntries.containsKey(ip)) {
+			if (!ipBlockingEntries.get(ip).isValid()) {
 				ipBlockingEntries.remove(ip);
-				logger.log(LogLevel.INFO, String.format(IP_ADDRESS_UNBLOCKED_DUE_TO_TIMEOUT_S, ip), AgentUtils.class.getName());
+				logger.log(LogLevel.INFO, String.format(IP_ADDRESS_UNBLOCKED_DUE_TO_TIMEOUT_S, ip),
+						AgentUtils.class.getName());
 				return false;
 			} else {
 				return true;
@@ -218,8 +310,8 @@ public class AgentUtils {
 		return false;
 	}
 
-	public UserClassEntity detectUserClass(StackTraceElement[] trace, Object currentGenericServletInstance
-			, String currentGenericServletMethodName, String fakeClassName, String fakeMethodName) {
+	public UserClassEntity detectUserClass(StackTraceElement[] trace, Object currentGenericServletInstance,
+			String currentGenericServletMethodName, String fakeClassName, String fakeMethodName) {
 
 		StackTraceElement userClass = null;
 		int currentClassLoc = -1;
@@ -240,8 +332,9 @@ public class AgentUtils {
 //				logger.log(LogLevel.INFO, "Detecting user class : " + superClasses + " : " + Arrays.asList(trace),
 //						AgentUtils.class.getName());
 				for (currentClassLoc = 0; currentClassLoc < trace.length; currentClassLoc++) {
-					if (StringUtils.equals(trace[currentClassLoc].getMethodName(), currentGenericServletMethodName) && StringUtils
-							.equalsAny(trace[currentClassLoc].getClassName(), superClasses.toArray(new String[0]))) {
+					if (StringUtils.equals(trace[currentClassLoc].getMethodName(), currentGenericServletMethodName)
+							&& StringUtils.equalsAny(trace[currentClassLoc].getClassName(),
+									superClasses.toArray(new String[0]))) {
 //						logger.log(LogLevel.INFO, "Process trace : " + trace[currentClassLoc],
 //								AgentUtils.class.getName());
 						userClass = trace[currentClassLoc];
@@ -250,7 +343,7 @@ public class AgentUtils {
 				}
 			}
 		}
-		if(userClass == null){
+		if (userClass == null) {
 			return getFakeUserClass(trace, fakeClassName, fakeMethodName);
 		}
 
@@ -289,11 +382,11 @@ public class AgentUtils {
 		userClassEntity.setCalledByUserCode(false);
 		int loc = 0;
 		boolean detect = false;
-		for(loc = 0; loc< trace.length; loc++){
-			if(!detect && StringUtils.equals(fakeMethodName, trace[loc].getMethodName()) &&
-					StringUtils.equals(fakeClassName, trace[loc].getClassName())){
+		for (loc = 0; loc < trace.length; loc++) {
+			if (!detect && StringUtils.equals(fakeMethodName, trace[loc].getMethodName())
+					&& StringUtils.equals(fakeClassName, trace[loc].getClassName())) {
 				detect = true;
-			} else if(detect && !IAgentConstants.TRACE_SKIP_REGEX.matcher(trace[loc].getClassName()).matches()){
+			} else if (detect && !IAgentConstants.TRACE_SKIP_REGEX.matcher(trace[loc].getClassName()).matches()) {
 				userClassEntity.setUserClassElement(trace[loc]);
 				userClassEntity.setTraceLocationEnd(loc);
 				break;
@@ -302,14 +395,15 @@ public class AgentUtils {
 		return userClassEntity;
 	}
 
-	public String detectDeployedApplicationPath(String userClassName, Object currentGenericServletInstance, String methodName){
+	public String detectDeployedApplicationPath(String userClassName, Object currentGenericServletInstance,
+			String methodName) {
 		String appPath = StringUtils.EMPTY;
 		try {
 			Class cls = null;
-			if (currentGenericServletInstance!= null) {
+			if (currentGenericServletInstance != null) {
 
 				boolean uncleanExit = false;
-				if(classLoaderRecord.containsKey(userClassName)){
+				if (classLoaderRecord.containsKey(userClassName)) {
 					ClassLoader loader = classLoaderRecord.get(userClassName);
 					try {
 						if (loader != null) {
@@ -317,20 +411,20 @@ public class AgentUtils {
 						} else {
 							cls = Class.forName(userClassName, false, loader);
 						}
-					} catch (ClassNotFoundException e){
+					} catch (ClassNotFoundException e) {
 						uncleanExit = true;
 					}
 				} else {
 					uncleanExit = true;
 				}
 
-				if(uncleanExit){
-					logger.log(LogLevel.WARNING,
-							CLASSLOADER_RECORD_MISSING_FOR_CLASS + userClassName,
+				if (uncleanExit) {
+					logger.log(LogLevel.WARNING, CLASSLOADER_RECORD_MISSING_FOR_CLASS + userClassName,
 							AgentUtils.class.getName());
 					try {
-						cls = Class.forName(userClassName, false, currentGenericServletInstance.getClass().getClassLoader());
-					}catch (ClassNotFoundException e){
+						cls = Class.forName(userClassName, false,
+								currentGenericServletInstance.getClass().getClassLoader());
+					} catch (ClassNotFoundException e) {
 						cls = Class.forName(userClassName, false, null);
 					}
 				}
@@ -342,9 +436,8 @@ public class AgentUtils {
 
 			URL protectionDomainLocation = cls.getProtectionDomain().getCodeSource().getLocation();
 
-			logger.log(LogLevel.INFO, PROTECTION_DOMAIN + protectionDomainLocation,
-					AgentUtils.class.getName());
-			if(protectionDomainLocation != null) {
+			logger.log(LogLevel.INFO, PROTECTION_DOMAIN + protectionDomainLocation, AgentUtils.class.getName());
+			if (protectionDomainLocation != null) {
 				if (StringUtils.equalsIgnoreCase(VFS, protectionDomainLocation.getProtocol())) {
 					Class virtualFile = Class.forName(ORG_JBOSS_VFS_VIRTUAL_FILE, false, cls.getClassLoader());
 					if (virtualFile.isInstance(protectionDomainLocation.getContent())) {
@@ -357,48 +450,54 @@ public class AgentUtils {
 									AgentUtils.class.getName());
 						}
 					} else {
-						logger.log(LogLevel.WARNING, CLASS_DIR_NOT_FOUND_IN_JBOSS_PROTECTION_DOMAIN + protectionDomainLocation.getContent(), AgentUtils.class.getName());
+						logger.log(LogLevel.WARNING,
+								CLASS_DIR_NOT_FOUND_IN_JBOSS_PROTECTION_DOMAIN + protectionDomainLocation.getContent(),
+								AgentUtils.class.getName());
 					}
 				} else {
 					appPath = protectionDomainLocation.getPath();
 				}
 			}
 
-			if(StringUtils.isBlank(appPath) || ( StringUtils.endsWith(userClassName, JSP) &&
-					StringUtils.startsWith(methodName, JSP) )) {
+			if (StringUtils.isBlank(appPath)
+					|| (StringUtils.endsWith(userClassName, JSP) && StringUtils.startsWith(methodName, JSP))) {
 				appPath = StringUtils.EMPTY;
 				ClassLoader classLoader = cls.getClassLoader();
 				if (classLoader != null) {
 					logger.log(LogLevel.INFO, START_URL_LISTING, AgentUtils.class.getName());
 					Enumeration<java.net.URL> appPathURLEnum = classLoader.getResources(StringUtils.EMPTY);
-						while (appPathURLEnum != null && appPathURLEnum.hasMoreElements()) {
-							URL app = appPathURLEnum.nextElement();
-							logger.log(LogLevel.INFO, L_1 + app, ServletContextInfo.class.getName());
-							if (StringUtils.equalsIgnoreCase(VFS, app.getProtocol())) {
-								Class virtualFile = Class.forName(ORG_JBOSS_VFS_VIRTUAL_FILE, false, cls.getClassLoader());
-								if (virtualFile.isInstance(app.getContent())) {
-									Method getPhysicalFile = virtualFile.getMethod(GET_PHYSICAL_FILE);
-									getPhysicalFile.setAccessible(true);
-									File fileSystemFile = (File) getPhysicalFile.invoke(app.getContent());
-									if (fileSystemFile != null && fileSystemFile.exists()) {
-										appPath = fileSystemFile.getAbsolutePath();
-										logger.log(LogLevel.INFO, JBOSS_PROTECTION_DOMAIN + fileSystemFile,
-												AgentUtils.class.getName());
-									}
-								} else {
-									logger.log(LogLevel.WARNING, CLASS_DIR_NOT_FOUND_IN_JBOSS_PROTECTION_DOMAIN + app.getContent(), AgentUtils.class.getName());
+					while (appPathURLEnum != null && appPathURLEnum.hasMoreElements()) {
+						URL app = appPathURLEnum.nextElement();
+						logger.log(LogLevel.INFO, L_1 + app, ServletContextInfo.class.getName());
+						if (StringUtils.equalsIgnoreCase(VFS, app.getProtocol())) {
+							Class virtualFile = Class.forName(ORG_JBOSS_VFS_VIRTUAL_FILE, false, cls.getClassLoader());
+							if (virtualFile.isInstance(app.getContent())) {
+								Method getPhysicalFile = virtualFile.getMethod(GET_PHYSICAL_FILE);
+								getPhysicalFile.setAccessible(true);
+								File fileSystemFile = (File) getPhysicalFile.invoke(app.getContent());
+								if (fileSystemFile != null && fileSystemFile.exists()) {
+									appPath = fileSystemFile.getAbsolutePath();
+									logger.log(LogLevel.INFO, JBOSS_PROTECTION_DOMAIN + fileSystemFile,
+											AgentUtils.class.getName());
 								}
 							} else {
-								appPath = app.getPath();
+								logger.log(LogLevel.WARNING,
+										CLASS_DIR_NOT_FOUND_IN_JBOSS_PROTECTION_DOMAIN + app.getContent(),
+										AgentUtils.class.getName());
 							}
-							if(StringUtils.containsAny(appPath, CLASSES_STR, CLASSES_STR_1) || StringUtils.endsWith(appPath, CLASSES_STR_2)){
-								break;
-							} else {
-								appPath = StringUtils.EMPTY;
-							}
+						} else {
+							appPath = app.getPath();
 						}
+						if (StringUtils.containsAny(appPath, CLASSES_STR, CLASSES_STR_1)
+								|| StringUtils.endsWith(appPath, CLASSES_STR_2)) {
+							break;
+						} else {
+							appPath = StringUtils.EMPTY;
+						}
+					}
 				} else {
-					logger.log(LogLevel.WARNING, CLASSLOADER_IS_NULL_IN_DETECT_DEPLOYED_APPLICATION_PATH, AgentUtils.class.getName());
+					logger.log(LogLevel.WARNING, CLASSLOADER_IS_NULL_IN_DETECT_DEPLOYED_APPLICATION_PATH,
+							AgentUtils.class.getName());
 				}
 			}
 		} catch (Throwable e) {
@@ -407,18 +506,17 @@ public class AgentUtils {
 		return appPath;
 	}
 
-
-	public VulnerableAPI checkVulnerableAPI(String sourceMethod, String userClass, String userMethod, Integer lineNumber) {
+	public VulnerableAPI checkVulnerableAPI(String sourceMethod, String userClass, String userMethod,
+			Integer lineNumber) {
 		if (ProtectionConfig.getInstance().getProtectKnownVulnerableAPIs()) {
-			return AgentUtils.getInstance().isVulnerableAPI(sourceMethod,
-					userClass, userMethod, lineNumber);
+			return AgentUtils.getInstance().isVulnerableAPI(sourceMethod, userClass, userMethod, lineNumber);
 
 		}
 		return null;
 	}
 
-	public void putClassloaderRecord(String className , ClassLoader classLoader){
-		if(classLoader != null){
+	public void putClassloaderRecord(String className, ClassLoader classLoader) {
+		if (classLoader != null) {
 			classLoaderRecord.put(className, classLoader);
 		}
 	}

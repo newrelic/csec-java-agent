@@ -1,6 +1,8 @@
 package com.k2cybersecurity.instrumentator.custom;
 
 import com.k2cybersecurity.instrumentator.utils.AgentUtils;
+import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
+import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.dynamic.DynamicType;
@@ -10,6 +12,14 @@ import org.apache.commons.lang3.tuple.Pair;
 import java.util.Arrays;
 
 public class ClassLoadListener implements AgentBuilder.Listener {
+
+	private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
+	public static final String TRANSFORMATION_ERROR_CLASS_S_ERROR = "Transformation error : class : %s :: error";
+	public static final String TRANSFORMED_CLASS_S = "Transformed : class : %s";
+	public static final String IGNORED_CLASS_S = "Ignored : class : %s";
+	public static final String COMPLETED_CLASS_S = "Completed : class : %s";
+	public static final String DISCOVERED_CLASS_S = "Discovered : class : %s";
+
 	@Override
 	public void onError(
 			final String typeName,
@@ -19,6 +29,7 @@ public class ClassLoadListener implements AgentBuilder.Listener {
 			final Throwable throwable) {
 //		System.out.println(String.format("Transformation error : class : %s :: error %s", typeName,
 //				Arrays.asList(throwable.getStackTrace())));
+		logger.log(LogLevel.ERROR, String.format(TRANSFORMATION_ERROR_CLASS_S_ERROR, typeName), throwable, ClassLoadListener.class.getName());
 
 	}
 
@@ -32,6 +43,7 @@ public class ClassLoadListener implements AgentBuilder.Listener {
 		AgentUtils.getInstance().getTransformedClasses().add(Pair.of(typeDescription.getName(), classLoader));
 		AgentUtils.getInstance().createProtectedVulnerabilties(typeDescription, classLoader);
 //		System.out.println("Transformed class : " + typeDescription.getName());
+		logger.log(LogLevel.INFO, String.format(TRANSFORMED_CLASS_S, typeDescription.getName()), ClassLoadListener.class.getName());
 	}
 
 	@Override
@@ -40,6 +52,8 @@ public class ClassLoadListener implements AgentBuilder.Listener {
 			final ClassLoader classLoader,
 			final JavaModule module,
 			final boolean loaded) {
+//		logger.log(LogLevel.DEBUG, String.format(IGNORED_CLASS_S, typeDescription.getName()), ClassLoadListener.class.getName());
+
 		//      log.debug("onIgnored {}", typeDescription.getName());
 	}
 
@@ -52,6 +66,7 @@ public class ClassLoadListener implements AgentBuilder.Listener {
 		//      log.debug("onComplete {}", typeName);
 		try {
 			AgentUtils.getInstance().putClassloaderRecord(typeName, classLoader);
+//			logger.log(LogLevel.DEBUG, String.format(COMPLETED_CLASS_S, typeName), ClassLoadListener.class.getName());
 		} catch (Throwable e){
 //			System.out.println("Error while registering classloader : " + typeName + " : " + classLoader + " : " + e.getMessage() + " : " + e.getCause());
 		}
@@ -64,6 +79,8 @@ public class ClassLoadListener implements AgentBuilder.Listener {
 			final ClassLoader classLoader,
 			final JavaModule module,
 			final boolean loaded) {
+//		logger.log(LogLevel.DEBUG, String.format(DISCOVERED_CLASS_S, typeName), ClassLoadListener.class.getName());
+
 		//      log.debug("onDiscovery {}", typeName);
 //		System.out.println("Discovered class : " + typeName);
 
