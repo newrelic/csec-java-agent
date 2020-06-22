@@ -39,7 +39,7 @@ public class Hooks {
 
 		// Web Framework Based hooks
 
-//		ANNOTATION_BASED_HOOKS.add("org.springframework.web.bind.annotation.RequestMapping");
+		ANNOTATION_BASED_HOOKS.add("org.springframework.web.bind.annotation.Mapping");
 
 
 		// SQL hooks
@@ -262,7 +262,7 @@ public class Hooks {
 				"com.k2cybersecurity.instrumentator.decorators.servletresponse");
 
 
-		DECORATOR_ENTRY.put("org.springframework.web.bind.annotation.RequestMapping",
+		DECORATOR_ENTRY.put("org.springframework.web.bind.annotation.Mapping",
 				"com.k2cybersecurity.instrumentator.decorators.servicetrace");
 
 		// SQL Create
