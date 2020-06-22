@@ -39,7 +39,13 @@ public class Hooks {
 
 		// Web Framework Based hooks
 
+		// Spring MVC
 		ANNOTATION_BASED_HOOKS.add("org.springframework.web.bind.annotation.Mapping");
+
+		// Jersey
+		ANNOTATION_BASED_HOOKS.add("javax.ws.rs.Path");
+		ANNOTATION_BASED_HOOKS.add("javax.ws.rs.HttpMethod");
+
 
 
 		// SQL hooks
@@ -261,8 +267,14 @@ public class Hooks {
 		DECORATOR_ENTRY.put("javax.servlet.ServletResponse.getOutputStream",
 				"com.k2cybersecurity.instrumentator.decorators.servletresponse");
 
-
+		// Spring MVC
 		DECORATOR_ENTRY.put("org.springframework.web.bind.annotation.Mapping",
+				"com.k2cybersecurity.instrumentator.decorators.servicetrace");
+
+		// Jersey
+		DECORATOR_ENTRY.put("javax.ws.rs.Path",
+				"com.k2cybersecurity.instrumentator.decorators.servicetrace");
+		DECORATOR_ENTRY.put("javax.ws.rs.HttpMethod",
 				"com.k2cybersecurity.instrumentator.decorators.servicetrace");
 
 		// SQL Create
