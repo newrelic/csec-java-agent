@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.k2cybersecurity.instrumentator.K2Instrumentator;
 import com.k2cybersecurity.instrumentator.cve.scanner.CVEScannerPool;
 import com.k2cybersecurity.instrumentator.httpclient.RestClient;
+import com.k2cybersecurity.instrumentator.httpclient.RestRequestProcessor;
+import com.k2cybersecurity.instrumentator.httpclient.RestRequestThreadPool;
 import com.k2cybersecurity.instrumentator.httpclient.RequestUtils;
 import com.k2cybersecurity.instrumentator.utils.AgentUtils;
 import com.k2cybersecurity.instrumentator.utils.InstrumentationUtils;
@@ -222,35 +224,8 @@ public class ControlCommandProcessor implements Runnable {
 			AgentUtils.getInstance().addIPBlockingEntry(ip);
 			break;
 		case IntCodeControlCommand.FUZZ_REQUEST:
-			if (controlCommand.getArguments().size() != 2) {
-				return;
-			}
-
-			VulnerabilityCaseType currentCaseType = VulnerabilityCaseType.valueOf(controlCommand.getArguments().get(1));
-			if(VulnerabilityCaseType.FILE_OPERATION.equals(currentCaseType) ||
-					VulnerabilityCaseType.HTTP_REQUEST.equals(currentCaseType)){
-				File tempFile = new File("/tmp/k2scanning");
-				File tempFileWithExt = new File("/tmp/k2scanning.txt");
-				try {
-					tempFile.createNewFile();
-					tempFileWithExt.createNewFile();
-				} catch (IOException e) {
-					logger.log(LogLevel.ERROR, String.format("Unable to create setup files for fuzzing request : %s", controlCommand.getArguments().get(0)) , e,
-							ControlCommandProcessor.class.getName());
-					return;
-				}
-			}
-
-			HttpRequestBean httpRequest = null;
-			try {
-				httpRequest = new ObjectMapper()
-						.readValue(controlCommand.getArguments().get(0), HttpRequestBean.class);
-				RestClient.getInstance().fireRequest(RequestUtils
-						.generateK2Request(httpRequest));
-			} catch (Exception e) {
-				logger.log(LogLevel.ERROR, String.format("Error while processing fuzzing request : %s", controlCommand.getArguments().get(0)) , e,
-						ControlCommandProcessor.class.getName());
-			}
+			RestRequestProcessor.processControlCommand(controlCommand);
+			
 			break;
 
 		case IntCodeControlCommand.ENABLE_IAST_DYNAMIC_VULNERABILITY_SCANNER:
