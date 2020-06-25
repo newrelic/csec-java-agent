@@ -20,7 +20,7 @@ public class RequestUtils {
 	private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
 
 	public static Request generateK2Request(HttpRequestBean httpRequestBean) {
-		logger.log(LogLevel.INFO, String.format("Firing request : %s", httpRequestBean), AsyncRestClient.class.getName());
+		logger.log(LogLevel.INFO, String.format("Firing request : %s", httpRequestBean), RestClient.class.getName());
 		StringBuilder url = new StringBuilder(String.format("%s://localhost", httpRequestBean.getProtocol()));
 		url.append(":");
 		url.append(httpRequestBean.getServerPort());

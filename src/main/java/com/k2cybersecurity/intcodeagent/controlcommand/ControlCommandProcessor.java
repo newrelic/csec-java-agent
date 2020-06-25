@@ -3,7 +3,7 @@ package com.k2cybersecurity.intcodeagent.controlcommand;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.k2cybersecurity.instrumentator.K2Instrumentator;
 import com.k2cybersecurity.instrumentator.cve.scanner.CVEScannerPool;
-import com.k2cybersecurity.instrumentator.httpclient.AsyncRestClient;
+import com.k2cybersecurity.instrumentator.httpclient.RestClient;
 import com.k2cybersecurity.instrumentator.httpclient.RequestUtils;
 import com.k2cybersecurity.instrumentator.utils.AgentUtils;
 import com.k2cybersecurity.instrumentator.utils.InstrumentationUtils;
@@ -245,7 +245,7 @@ public class ControlCommandProcessor implements Runnable {
 			try {
 				httpRequest = new ObjectMapper()
 						.readValue(controlCommand.getArguments().get(0), HttpRequestBean.class);
-				AsyncRestClient.getInstance().fireRequest(RequestUtils
+				RestClient.getInstance().fireRequest(RequestUtils
 						.generateK2Request(httpRequest));
 			} catch (Exception e) {
 				logger.log(LogLevel.ERROR, String.format("Error while processing fuzzing request : %s", controlCommand.getArguments().get(0)) , e,
