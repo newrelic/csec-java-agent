@@ -175,19 +175,19 @@ public class Hooks {
 		NAME_BASED_HOOKS.put("org.osgi.framework.Bundle", Arrays.asList("start", "update"));
 
 		// SSRF Hook
-		NAME_BASED_HOOKS.put("akka.http.scaladsl.HttpExt", Collections.singletonList("singleRequest"));
+		NAME_BASED_HOOKS.put("akka.http.scaladsl.HttpExt", Arrays.asList("singleRequest", "singleRequestImpl"));
+
 		TYPE_BASED_HOOKS.put("org.apache.http.client.HttpClient", Collections.singletonList("execute"));
 		TYPE_BASED_HOOKS.put("org.apache.http.nio.client.HttpAsyncClient", Collections.singletonList("execute"));
+		TYPE_BASED_HOOKS.put("org.apache.http.nio.protocol.HttpAsyncRequestProducer", Collections.singletonList("generateRequest"));
 		NAME_BASED_HOOKS.put("org.apache.commons.httpclient.HttpClient", Collections.singletonList("executeMethod"));
 		NAME_BASED_HOOKS.put("com.google.api.client.http.HttpRequest", Arrays.asList("execute", "executeAsync"));
 		TYPE_BASED_HOOKS.put("java.net.URLConnection", Collections.singletonList("connect"));
 		NAME_BASED_HOOKS.put("com.squareup.okhttp.Call", Arrays.asList("execute", null));
 		NAME_BASED_HOOKS.put("com.squareup.okhttp.Call$AsyncCall", Collections.singletonList("execute"));
-		
-		NAME_BASED_HOOKS.put("okhttp3.RealCall", Arrays.asList("execute", null));
-		NAME_BASED_HOOKS.put("okhttp3.RealCall$AsyncCall", Collections.singletonList("execute"));
-		NAME_BASED_HOOKS.put("okhttp3.internal.connection.RealCall", Arrays.asList("execute", null));
-		NAME_BASED_HOOKS.put("okhttp3.internal.connection.RealCall$AsyncCall", Collections.singletonList("execute"));
+
+		NAME_BASED_HOOKS.put("okhttp3.OkHttpClient", Collections.singletonList("newCall"));
+		TYPE_BASED_HOOKS.put("okhttp3.Call", Collections.singletonList("execute"));
 
 		// CRYPTO
 		NAME_BASED_HOOKS.put("javax.crypto.Cipher", Collections.singletonList("getInstance"));
@@ -563,25 +563,23 @@ public class Hooks {
 		// SSRF
 		DECORATOR_ENTRY.put("java.net.URLConnection.connect", "com.k2cybersecurity.instrumentator.decorators.ssrf");
 
-		DECORATOR_ENTRY.put("akka.http.scaladsl.HttpExt.singleRequest", "com.k2cybersecurity.instrumentator.decorators.ssrf.akkahttp");
+		DECORATOR_ENTRY.put("akka.http.scaladsl.HttpExt.singleRequest", "com.k2cybersecurity.instrumentator.decorators.ssrf.akkahttp10");
+		DECORATOR_ENTRY.put("akka.http.scaladsl.HttpExt.singleRequestImpl", "com.k2cybersecurity.instrumentator.decorators.ssrf.akkahttp10");
+
 		DECORATOR_ENTRY.put("org.apache.http.client.HttpClient.execute", "com.k2cybersecurity.instrumentator.decorators.ssrf.apachehttpclient4");
 		DECORATOR_ENTRY.put("org.apache.http.nio.client.HttpAsyncClient.execute", "com.k2cybersecurity.instrumentator.decorators.ssrf.apachehttpasyncclient4");
+		DECORATOR_ENTRY.put("org.apache.http.nio.protocol.HttpAsyncRequestProducer.generateRequest", "com.k2cybersecurity.instrumentator.decorators.ssrf.apachehttpasyncclient4");
+
 		DECORATOR_ENTRY.put("org.apache.commons.httpclient.HttpClient.executeMethod", "com.k2cybersecurity.instrumentator.decorators.ssrf.commonshttpclient2");
 		DECORATOR_ENTRY.put("com.google.api.client.http.HttpRequest.execute", "com.k2cybersecurity.instrumentator.decorators.ssrf.googlehttpclient");
 		DECORATOR_ENTRY.put("com.google.api.client.http.HttpRequest.executeAsync", "com.k2cybersecurity.instrumentator.decorators.ssrf.googlehttpclient");
-		
+
 		DECORATOR_ENTRY.put("com.squareup.okhttp.Call.null", "com.k2cybersecurity.instrumentator.decorators.ssrf.okhttp");
 		DECORATOR_ENTRY.put("com.squareup.okhttp.Call.execute", "com.k2cybersecurity.instrumentator.decorators.ssrf.okhttp");
 		DECORATOR_ENTRY.put("com.squareup.okhttp.Call$AsyncCall.execute", "com.k2cybersecurity.instrumentator.decorators.ssrf.okhttp");
 
-		DECORATOR_ENTRY.put("okhttp3.RealCall.null", "com.k2cybersecurity.instrumentator.decorators.ssrf.okhttp3");
-		DECORATOR_ENTRY.put("okhttp3.RealCall.execute", "com.k2cybersecurity.instrumentator.decorators.ssrf.okhttp3");
-		DECORATOR_ENTRY.put("okhttp3.RealCall$AsyncCall.execute", "com.k2cybersecurity.instrumentator.decorators.ssrf.okhttp3");
-
-		DECORATOR_ENTRY.put("okhttp3.internal.connection.RealCall.null", "com.k2cybersecurity.instrumentator.decorators.ssrf.okhttp3");
-		DECORATOR_ENTRY.put("okhttp3.internal.connection.RealCall.execute", "com.k2cybersecurity.instrumentator.decorators.ssrf.okhttp3");
-		DECORATOR_ENTRY.put("okhttp3.internal.connection.RealCall$AsyncCall.execute", "com.k2cybersecurity.instrumentator.decorators.ssrf.okhttp3");
-
+		DECORATOR_ENTRY.put("okhttp3.OkHttpClient.newCall", "com.k2cybersecurity.instrumentator.decorators.ssrf.okhttp3");
+		DECORATOR_ENTRY.put("okhttp3.Call.execute", "com.k2cybersecurity.instrumentator.decorators.ssrf.okhttp3");
 
 		// Secure cookie
 		DECORATOR_ENTRY.put("javax.servlet.http.HttpServletResponse.addCookie",

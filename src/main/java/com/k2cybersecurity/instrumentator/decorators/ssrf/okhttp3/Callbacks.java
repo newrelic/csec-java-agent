@@ -45,14 +45,14 @@ public class Callbacks {
 		if(!ThreadLocalHttpMap.getInstance().isEmpty() && !ThreadLocalOperationLock.getInstance().isAcquired()) {
 			try {
 				ThreadLocalOperationLock.getInstance().acquire();
-				if (ThreadLocalHttpMap.getInstance().getHttpRequest() != null && args != null && args.length == 3
-						&& args[1] != null && StringUtils.equals(methodName, IAgentConstants.INIT)) {
+				if (ThreadLocalHttpMap.getInstance().getHttpRequest() != null && args != null && args.length > 0
+						&& args[0] != null && StringUtils.equals(methodName, "newCall")) {
 					Method url;
-					url = args[1].getClass().getMethod("url");
+					url = args[0].getClass().getMethod("url");
 					url.setAccessible(true);
-					String urlString = url.invoke(args[1]).toString();
+					String urlString = url.invoke(args[0]).toString();
 //					System.out.println(String.format("Exit Value : Ok http3 SSRF : %s : %s : %s on onject : %s", className, methodName, urlString, obj));
-					ThreadLocalOkHttpMap.getInstance().create(obj, urlString, className, sourceString, exectionId,
+					ThreadLocalOkHttpMap.getInstance().create(returnVal, urlString, className, sourceString, exectionId,
 							Instant.now().toEpochMilli(), methodName);
 				}
 //				

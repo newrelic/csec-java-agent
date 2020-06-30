@@ -3,7 +3,9 @@ package com.k2cybersecurity.instrumentator;
 import com.k2cybersecurity.instrumentator.custom.ClassLoadListener;
 import com.k2cybersecurity.instrumentator.utils.AgentUtils;
 import com.k2cybersecurity.instrumentator.utils.InstrumentationUtils;
+import net.bytebuddy.ByteBuddy;
 import net.bytebuddy.agent.builder.AgentBuilder;
+import net.bytebuddy.dynamic.scaffold.TypeValidation;
 import net.bytebuddy.matcher.ElementMatchers;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -58,7 +60,8 @@ public class AgentNew {
 			/**
 			 * IMPORTANT : Don't touch this shit until & unless very very necessary.
 			 */
-			AgentBuilder agentBuilder = new AgentBuilder.Default().ignore(ElementMatchers.nameStartsWith("sun.reflect.com.k2cybersecurity"))
+			AgentBuilder agentBuilder = new AgentBuilder.Default(new ByteBuddy().with(TypeValidation.DISABLED))
+					.ignore(ElementMatchers.nameStartsWith("sun.reflect.com.k2cybersecurity"))
 					.disableClassFormatChanges()
 //									.with(AgentBuilder.Listener.StreamWriting.toSystemOut())
 					.with(AgentBuilder.RedefinitionStrategy.RETRANSFORMATION).with(new ClassLoadListener()).with(AgentBuilder.TypeStrategy.Default.REDEFINE);

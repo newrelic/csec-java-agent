@@ -3,11 +3,9 @@ package com.k2cybersecurity.instrumentator.decorators.ssrf.akkahttp10;
 import com.k2cybersecurity.instrumentator.custom.K2CyberSecurityException;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalHttpMap;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalOperationLock;
-import com.k2cybersecurity.instrumentator.custom.ThreadLocalSSRFLock;
 import com.k2cybersecurity.instrumentator.dispatcher.EventDispatcher;
 import com.k2cybersecurity.intcodeagent.models.javaagent.VulnerabilityCaseType;
 import com.k2cybersecurity.intcodeagent.models.operationalbean.SSRFOperationalBean;
-import org.apache.commons.lang3.StringUtils;
 
 import java.lang.reflect.Method;
 import java.net.URL;
@@ -17,14 +15,12 @@ public class Callbacks {
 
     public static void doOnEnter(String sourceString, String className, String methodName, Object obj, Object[] args,
                                  String exectionId) throws K2CyberSecurityException, Exception {
-        if (ThreadLocalHttpMap.getInstance().getHttpRequest() != null && !ThreadLocalOperationLock.getInstance().isAcquired() && !ThreadLocalSSRFLock.getInstance().isAcquired()) {
+        if (ThreadLocalHttpMap.getInstance().getHttpRequest() != null && !ThreadLocalOperationLock.getInstance().isAcquired()) {
             try {
                 ThreadLocalOperationLock.getInstance().acquire();
                 if (args != null &&
-                        args.length > 1 && args[0] != null &&
-                        StringUtils.equals("akka.http.scaladsl.model.HttpRequest", args[0].getClass().getName())
+                        args.length > 1 && args[0] != null
                 ) {
-                    ThreadLocalSSRFLock.getInstance().acquire(obj, sourceString, exectionId);
                     Method getUri = args[0].getClass().getMethod("getUri");
                     getUri.setAccessible(true);
                     Object uri = getUri.invoke(args[0]);
@@ -38,10 +34,10 @@ public class Callbacks {
                     Method getPathString = uri.getClass().getMethod("getPathString");
                     getPathString.setAccessible(true);
 
-                    URL url = new URL((String) getScheme.invoke(uri),
-                            (String) getHost.invoke(uri),
+                    URL url = new URL(getScheme.invoke(uri).toString(),
+                            getHost.invoke(uri).toString(),
                             (int) getPort.invoke(uri),
-                            (String) getPathString.invoke(uri));
+                            getPathString.invoke(uri).toString());
 
 //                    System.out.println(String.format("Entry : SSRF Value: %s : %s : %s", className, methodName, url.toString()));
                     EventDispatcher.dispatch(new SSRFOperationalBean(url.toString(), className, sourceString, exectionId,
@@ -56,8 +52,8 @@ public class Callbacks {
 
     public static void doOnExit(String sourceString, String className, String methodName, Object obj, Object[] args,
                                 Object returnVal, String exectionId) {
-        if(!ThreadLocalHttpMap.getInstance().isEmpty() && !ThreadLocalOperationLock.getInstance().isAcquired()
-                && ThreadLocalSSRFLock.getInstance().isAcquired(obj, sourceString, exectionId)) {
+//        		System.out.println(String.format("Exit : SSRF : %s : %s : %s : %s", className, methodName, sourceString, obj));
+        if(!ThreadLocalHttpMap.getInstance().isEmpty() && !ThreadLocalOperationLock.getInstance().isAcquired()) {
             try {
                 ThreadLocalOperationLock.getInstance().acquire();
 //				System.out.println(
@@ -65,22 +61,19 @@ public class Callbacks {
 //								+ returnVal + " - eid : " + exectionId);
             } finally {
                 ThreadLocalOperationLock.getInstance().release();
-                ThreadLocalSSRFLock.getInstance().release(obj, sourceString, exectionId);
             }
         }
     }
 
     public static void doOnError(String sourceString, String className, String methodName, Object obj, Object[] args,
                                  Throwable error, String exectionId) throws Throwable {
-        if(!ThreadLocalHttpMap.getInstance().isEmpty() && !ThreadLocalOperationLock.getInstance().isAcquired()
-                && ThreadLocalSSRFLock.getInstance().isAcquired(obj, sourceString, exectionId)) {
+        if(!ThreadLocalHttpMap.getInstance().isEmpty() && !ThreadLocalOperationLock.getInstance().isAcquired()) {
             try {
                 ThreadLocalOperationLock.getInstance().acquire();
 //				System.out.println("OnError :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj
 //						+ " - error : " + error + " - eid : " + exectionId);
             } finally {
                 ThreadLocalOperationLock.getInstance().release();
-                ThreadLocalSSRFLock.getInstance().release(obj, sourceString, exectionId);
             }
         }
     }
