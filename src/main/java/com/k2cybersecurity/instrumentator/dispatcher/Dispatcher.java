@@ -284,7 +284,7 @@ public class Dispatcher implements Runnable {
     private void detectDeployedApplication() {
         if (userClassEntity.isCalledByUserCode()) {
             DeployedApplication deployedApplication = new DeployedApplication();
-            deployedApplication.setPort(httpRequestBean.getServerPort());
+            deployedApplication.getPorts().add(httpRequestBean.getServerPort());
             deployedApplication.setContextPath(httpRequestBean.getContextPath());
             if (!K2Instrumentator.APPLICATION_INFO_BEAN.getServerInfo().getDeployedApplications().contains(deployedApplication)
                     && !AgentUtils.getInstance().getDeployedApplicationUnderProcessing().contains(deployedApplication)) {

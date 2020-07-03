@@ -22,6 +22,9 @@ package com.k2cybersecurity.intcodeagent.logging;
 import com.k2cybersecurity.intcodeagent.websocket.JsonConverter;
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  * DeployedApplication model contains fields to identify all deployed
  * application inside a server.
@@ -49,7 +52,7 @@ public class DeployedApplication {
 
 	private String contextPath;
 
-	private Integer port = -1;
+	private Set<Integer> ports = new HashSet<>();
 
 	private boolean isEmbedded = false;
 
@@ -154,15 +157,12 @@ public class DeployedApplication {
 		}
 	}
 
-	public Integer getPort() {
-		return port;
+	public Set<Integer> getPorts() {
+		return ports;
 	}
 
-	public void setPort(Integer port) {
-		if(port == null || port <= 0){
-			return;
-		}
-		this.port = port;
+	public void setPorts(Set<Integer> ports) {
+		this.ports = ports;
 	}
 
 	/* (non-Javadoc)
@@ -171,7 +171,7 @@ public class DeployedApplication {
 	@Override public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((port == null) ? 0 : port.hashCode());
+		result = prime * result + ((ports == null) ? 0 : ports.hashCode());
 		result = prime * result + ((contextPath == null) ? 0 : contextPath.hashCode());
 
 		return result;
@@ -182,11 +182,11 @@ public class DeployedApplication {
 		if (this == o) return true;
 		if (o == null || getClass() != o.getClass()) return false;
 		DeployedApplication that = (DeployedApplication) o;
-		return port.equals(that.port) &&
+		return ports.equals(that.ports) &&
 				contextPath.equals(that.contextPath);
 	}
 
 	public boolean isEmpty() {
-		return StringUtils.isAnyBlank(deployedPath, appName, contextPath) || port == -1;
+		return StringUtils.isAnyBlank(deployedPath, appName, contextPath) || ports.isEmpty();
 	}
 }

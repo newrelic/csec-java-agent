@@ -143,7 +143,7 @@ public class ServletContextInfo {
         setServerInfo(serverInfo);
 
         deployedApplication.setAppName(applicationName);
-        deployedApplication.setPort(serverPort);
+        deployedApplication.getPorts().add(serverPort);
 
 
         if (StringUtils.isNotBlank(deployedApplication.getDeployedPath())) {
