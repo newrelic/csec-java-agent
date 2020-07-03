@@ -77,7 +77,7 @@ public class AgentUtils {
 		vulnerableAPIMap = new ConcurrentHashMap<>();
 		classLoaderRecord = new ConcurrentHashMap<>();
 		TRACE_PATTERN = Pattern.compile(IAgentConstants.TRACE_REGEX);
-		this.sqlConnectionMap = new LinkedHashMap<Integer, JADatabaseMetaData>(50) {
+		this.sqlConnectionMap = new LinkedHashMap<Integer, JADatabaseMetaData>(50, 0.75f, true) {
 			@Override
 			protected boolean removeEldestEntry(java.util.Map.Entry<Integer, JADatabaseMetaData> eldest) {
 				return size() > 50;
