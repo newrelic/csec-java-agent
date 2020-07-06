@@ -4,7 +4,12 @@ import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.logging.DeployedApplication;
 import com.k2cybersecurity.intcodeagent.logging.IAgentConstants;
-import com.k2cybersecurity.intcodeagent.models.javaagent.*;
+import com.k2cybersecurity.intcodeagent.models.config.AgentPolicy;
+import com.k2cybersecurity.intcodeagent.models.config.AgentPolicyIPBlockingParameters;
+import com.k2cybersecurity.intcodeagent.models.javaagent.EventResponse;
+import com.k2cybersecurity.intcodeagent.models.javaagent.IPBlockingEntry;
+import com.k2cybersecurity.intcodeagent.models.javaagent.JADatabaseMetaData;
+import com.k2cybersecurity.intcodeagent.models.javaagent.UserClassEntity;
 import net.bytebuddy.description.type.TypeDescription;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -15,11 +20,13 @@ import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class AgentUtils {
+
+	private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
 
 	public static final String IP_ADDRESS_UNBLOCKED_DUE_TO_TIMEOUT_S = "IP address unblocked due to timeout : %s";
 	public static final String CLASSES_STR = "/classes/";
@@ -52,13 +59,16 @@ public class AgentUtils {
 
 	private Map<String, EventResponse> eventResponseSet;
 
-	private Map<String, VulnerableAPI> vulnerableAPIMap;
+	private Set<String> allowedAPIs;
+	private Set<String> blockedAPIs;
 
 	private Set<String> rxssSentUrls;
 
 	private Set<DeployedApplication> deployedApplicationUnderProcessing;
 
 	private static AgentUtils instance;
+
+	private static final Object lock = new Object();
 
 	public Set<String> getProtectedVulnerabilties() {
 		return protectedVulnerabilties;
@@ -68,20 +78,21 @@ public class AgentUtils {
 
 	private Set<DeployedApplication> scannedDeployedApplications = new HashSet<DeployedApplication>();
 
-	public static long ipBlockingTimeout = TimeUnit.HOURS.toMillis(1);
-
-	private Map<String, IPBlockingEntry> ipBlockingEntries = new HashMap<>();
+	private Map<String, IPBlockingEntry> blockedAttackerIPs = new HashMap<>();
 
 	private Pattern TRACE_PATTERN;
 
 	private Map<Integer, JADatabaseMetaData> sqlConnectionMap;
 
-	private boolean enableDynamicScanning = false;
+	private AgentPolicy agentPolicy;
+
+	private AgentPolicyIPBlockingParameters agentPolicyParameters;
 
 	private AgentUtils() {
 		transformedClasses = new HashSet<>();
 		eventResponseSet = new ConcurrentHashMap<>();
-		vulnerableAPIMap = new ConcurrentHashMap<>();
+		allowedAPIs = new ConcurrentSkipListSet<>();
+		blockedAPIs = new ConcurrentSkipListSet<>();
 		classLoaderRecord = new ConcurrentHashMap<>();
 		rxssSentUrls = new HashSet<>();
 		deployedApplicationUnderProcessing = new HashSet<>();
@@ -96,7 +107,11 @@ public class AgentUtils {
 
 	public static AgentUtils getInstance() {
 		if (instance == null) {
-			instance = new AgentUtils();
+			synchronized (lock) {
+				if (instance == null) {
+					instance = new AgentUtils();
+				}
+			}
 		}
 		return instance;
 	}
@@ -117,15 +132,29 @@ public class AgentUtils {
 		return eventResponseSet;
 	}
 
-	private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
 
-	public Map<String, VulnerableAPI> getVulnerableAPIMap() {
-		return vulnerableAPIMap;
+	public Set<String> getAllowedAPIs() {
+		return allowedAPIs;
 	}
 
-	public VulnerableAPI isVulnerableAPI(String sourceMethod, String userClass, String userMethod, Integer lineNumber) {
-		VulnerableAPI vulnerableAPI = new VulnerableAPI(sourceMethod, userClass, userMethod, lineNumber);
-		return vulnerableAPIMap.get(vulnerableAPI.getId());
+	public void setAllowedAPIs(Set<String> allowedAPIs) {
+		this.allowedAPIs = allowedAPIs;
+	}
+
+	public Set<String> getBlockedAPIs() {
+		return blockedAPIs;
+	}
+
+	public void setBlockedAPIs(Set<String> blockedAPIs) {
+		this.blockedAPIs = blockedAPIs;
+	}
+
+	public Map<String, IPBlockingEntry> getBlockedAttackerIPs() {
+		return blockedAttackerIPs;
+	}
+
+	public void setBlockedAttackerIPs(Map<String, IPBlockingEntry> blockedAttackerIPs) {
+		this.blockedAttackerIPs = blockedAttackerIPs;
 	}
 
 	public void createProtectedVulnerabilties(TypeDescription typeDescription, ClassLoader classLoader) {
@@ -302,21 +331,7 @@ public class AgentUtils {
 
 	public void addIPBlockingEntry(String ip) {
 		IPBlockingEntry entry = new IPBlockingEntry(ip);
-		ipBlockingEntries.put(entry.getTargetIP(), entry);
-	}
-
-	public boolean isBlockedIP(String ip) {
-		if (ipBlockingEntries.containsKey(ip)) {
-			if (!ipBlockingEntries.get(ip).isValid()) {
-				ipBlockingEntries.remove(ip);
-				logger.log(LogLevel.INFO, String.format(IP_ADDRESS_UNBLOCKED_DUE_TO_TIMEOUT_S, ip),
-						AgentUtils.class.getName());
-				return false;
-			} else {
-				return true;
-			}
-		}
-		return false;
+		blockedAttackerIPs.put(entry.getTargetIP(), entry);
 	}
 
 	public UserClassEntity detectUserClass(StackTraceElement[] trace, Object currentGenericServletInstance,
@@ -512,27 +527,10 @@ public class AgentUtils {
 		return appPath;
 	}
 
-	public VulnerableAPI checkVulnerableAPI(String sourceMethod, String userClass, String userMethod,
-			Integer lineNumber) {
-		if (ProtectionConfig.getInstance().getProtectKnownVulnerableAPIs()) {
-			return AgentUtils.getInstance().isVulnerableAPI(sourceMethod, userClass, userMethod, lineNumber);
-
-		}
-		return null;
-	}
-
 	public void putClassloaderRecord(String className, ClassLoader classLoader) {
 		if (classLoader != null) {
 			classLoaderRecord.put(className, classLoader);
 		}
-	}
-
-	public boolean isEnableDynamicScanning() {
-		return enableDynamicScanning;
-	}
-
-	public void setEnableDynamicScanning(boolean enableDynamicScanning) {
-		this.enableDynamicScanning = enableDynamicScanning;
 	}
 
 	public String getSHA256HexDigest(List<String> data) {
@@ -551,5 +549,27 @@ public class AgentUtils {
 
 	public Set<DeployedApplication> getDeployedApplicationUnderProcessing() {
 		return deployedApplicationUnderProcessing;
+	}
+
+	public AgentPolicy getAgentPolicy() {
+		return agentPolicy;
+	}
+
+	public void setAgentPolicy(AgentPolicy agentPolicy) {
+		this.agentPolicy = agentPolicy;
+	}
+
+	public AgentPolicyIPBlockingParameters getAgentPolicyParameters() {
+		return agentPolicyParameters;
+	}
+
+	public void setAgentPolicyParameters(AgentPolicyIPBlockingParameters agentPolicyParameters) {
+		this.agentPolicyParameters = agentPolicyParameters;
+	}
+
+	public void enforcePolicy() {
+	}
+
+	public void enforcePolicyParameters() {
 	}
 }

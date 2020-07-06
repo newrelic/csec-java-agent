@@ -2,7 +2,6 @@ package com.k2cybersecurity.intcodeagent.logging;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Set;
 import java.util.regex.Pattern;
 
 public interface IAgentConstants {
@@ -542,14 +541,19 @@ public interface IAgentConstants {
 	String JAVA_SECURITY_KEYPAIRGENERATOR_GETINSTANCE_STRING_PROVIDER = "public static java.security.KeyPairGenerator java.security.KeyPairGenerator.getInstance(java.lang.String,java.security.Provider) throws java.security.NoSuchAlgorithmException";
 
 	// HASH Constants
-	String JAVA_SECURITY_MESSAGEDIGEST_GETINSTANCE_STRING = "public static java.security.MessageDigest java.security.MessageDigest.getInstance(java.lang.String) throws java.security.NoSuchAlgorithmException";
-	String JAVA_SECURITY_MESSAGEDIGEST_GETINSTANCE_STRING_STRING = "public static java.security.MessageDigest java.security.MessageDigest.getInstance(java.lang.String,java.lang.String) throws java.security.NoSuchAlgorithmException,java.security.NoSuchProviderException";
-	String JAVA_SECURITY_MESSAGEDIGEST_GETINSTANCE_STRING_PROVIDER = "public static java.security.MessageDigest java.security.MessageDigest.getInstance(java.lang.String,java.security.Provider) throws java.security.NoSuchAlgorithmException";
-	String BLOCKING_END_TIME = "blockingEndTime";
-	String ERROR_WHILE_DETERMINING_HOSTIP_FROM_DEFAULT_GATEWAY = "Error while determining hostip from default gateway";
+    String JAVA_SECURITY_MESSAGEDIGEST_GETINSTANCE_STRING = "public static java.security.MessageDigest java.security.MessageDigest.getInstance(java.lang.String) throws java.security.NoSuchAlgorithmException";
+    String JAVA_SECURITY_MESSAGEDIGEST_GETINSTANCE_STRING_STRING = "public static java.security.MessageDigest java.security.MessageDigest.getInstance(java.lang.String,java.lang.String) throws java.security.NoSuchAlgorithmException,java.security.NoSuchProviderException";
+    String JAVA_SECURITY_MESSAGEDIGEST_GETINSTANCE_STRING_PROVIDER = "public static java.security.MessageDigest java.security.MessageDigest.getInstance(java.lang.String,java.security.Provider) throws java.security.NoSuchAlgorithmException";
+    String BLOCKING_END_TIME = "blockingEndTime";
+    String ERROR_WHILE_DETERMINING_HOSTIP_FROM_DEFAULT_GATEWAY = "Error while determining hostip from default gateway";
 
-	String K2_FUZZ_REQUEST_ID = "k2-fuzz-request-id";
-	String INIT = "<init>";
+    String K2_FUZZ_REQUEST_ID = "k2-fuzz-request-id";
+    String INIT = "<init>";
     String SUN_REFLECT = "sun.reflect.";
-	String COM_SUN = "com.sun.";
+    String COM_SUN = "com.sun.";
+    String UNABLE_TO_SET_AGENT_POLICY_DUE_TO_ERROR = "Unable to set Agent Policy due to error:";
+    String UNABLE_TO_SET_AGENT_POLICY_PARAM_DUE_TO_ERROR = "Unable to set Agent Policy Parameters due to error:";
+    String AGENT_POLICY_APPLIED_S = "Agent Policy applied : %s";
+    String AGENT_POLICY_PARAM_APPLIED_S = "Agent Policy parameters applied : %s";
+
 }

@@ -2,18 +2,13 @@ package com.k2cybersecurity.instrumentator.dispatcher;
 
 import com.k2cybersecurity.instrumentator.custom.*;
 import com.k2cybersecurity.instrumentator.utils.AgentUtils;
-import com.k2cybersecurity.instrumentator.utils.CallbackUtils;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
-import com.k2cybersecurity.intcodeagent.logging.DeployedApplication;
 import com.k2cybersecurity.intcodeagent.models.javaagent.*;
 import com.k2cybersecurity.intcodeagent.models.operationalbean.AbstractOperationalBean;
-import com.k2cybersecurity.intcodeagent.models.operationalbean.FileOperationalBean;
 import com.k2cybersecurity.intcodeagent.models.operationalbean.SQLOperationalBean;
-import com.k2cybersecurity.intcodeagent.websocket.EventSendPool;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.Pair;
 
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -320,9 +315,38 @@ public class EventDispatcher {
     }
 
     public static void checkIfClientIPBlocked() throws K2CyberSecurityException {
-        if (ProtectionConfig.getInstance().getAutoAttackIPBlockingXFF() && AgentUtils.getInstance().isBlockedIP(ThreadLocalExecutionMap.getInstance().getHttpRequestBean().getClientIP())) {
-            sendK2BlockPage(ThreadLocalExecutionMap.getInstance().getHttpRequestBean().getClientIP());
-            throw new K2CyberSecurityException(String.format(ACCESS_BY_BLOCKED_IP_ADDRESS_DETECTED_S, ThreadLocalExecutionMap.getInstance().getHttpRequestBean().getClientIP()));
+        if (AgentUtils.getInstance().getAgentPolicy() != null
+                && AgentUtils.getInstance().getAgentPolicy().getProtectionMode().getEnabled()
+                && AgentUtils.getInstance().getAgentPolicy().getProtectionMode().getIpBlocking().getEnabled()) {
+
+            String ip = ThreadLocalExecutionMap.getInstance().getHttpRequestBean().getClientIP();
+
+            if (AgentUtils.getInstance().getAgentPolicyParameters().getAllowedIps().contains(ip)) {
+                return;
+            }
+
+            // For enforcing IP block list
+            for (String ipEntry : ThreadLocalExecutionMap.getInstance().getMetaData().getIps()) {
+                if (AgentUtils.getInstance().getAgentPolicyParameters().getBlockedIps().contains(ipEntry)) {
+                    sendK2BlockPage(ThreadLocalExecutionMap.getInstance().getHttpRequestBean().getClientIP());
+                    throw new K2CyberSecurityException(String.format(ACCESS_BY_BLOCKED_IP_ADDRESS_DETECTED_S, ThreadLocalExecutionMap.getInstance().getHttpRequestBean().getClientIP()));
+                }
+
+            }
+
+            // For Attacker IP Blocking
+            IPBlockingEntry blockingEntry = AgentUtils.getInstance().getBlockedAttackerIPs().get(ip);
+            if (blockingEntry != null) {
+                if (blockingEntry.isValid()) {
+                    sendK2BlockPage(ThreadLocalExecutionMap.getInstance().getHttpRequestBean().getClientIP());
+                    throw new K2CyberSecurityException(String.format(ACCESS_BY_BLOCKED_IP_ADDRESS_DETECTED_S, ThreadLocalExecutionMap.getInstance().getHttpRequestBean().getClientIP()));
+                } else {
+                    AgentUtils.getInstance().getBlockedAttackerIPs().remove(ip);
+                }
+            }
+
+
         }
+
     }
 }

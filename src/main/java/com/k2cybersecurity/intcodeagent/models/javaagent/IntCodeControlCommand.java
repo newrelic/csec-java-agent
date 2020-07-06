@@ -15,12 +15,13 @@ public class IntCodeControlCommand {
     public static final int UPLOAD_LOGS = 4;
     public static final int UNSUPPORTED_AGENT = 5;
     public static final int EVENT_RESPONSE = 6;
-    public static final int PROTECTION_CONFIG = 7;
     public static final int START_VULNERABILITY_SCAN = 8;
-    public static final int SET_IPBLOCKING_TIMEOUT = 9;
     public static final int CREATE_IPBLOCKING_ENTRY = 10;
+
     public static final int FUZZ_REQUEST = 11;
-    public static final int ENABLE_IAST_DYNAMIC_VULNERABILITY_SCANNER = 12;
+
+    public static final int SEND_POLICY = 100;
+    public static final int SEND_POLICY_PARAM = 101;
 
     private String jsonName;
     private int controlCommand;

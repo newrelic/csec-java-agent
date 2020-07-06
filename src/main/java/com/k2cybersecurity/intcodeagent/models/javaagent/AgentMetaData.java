@@ -4,12 +4,15 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.k2cybersecurity.intcodeagent.websocket.JsonConverter;
 import org.json.simple.JSONArray;
 
-public class AgentMetaData{
+import java.util.HashSet;
+import java.util.Set;
+
+public class AgentMetaData {
 
 	private boolean triggerViaRCI;
 
 	private boolean triggerViaDeserialisation;
-	
+
 	private boolean triggerViaXXE;
 
 	private boolean isClientDetectedFromXFF;
@@ -19,11 +22,14 @@ public class AgentMetaData{
 	@JsonIgnore
 	private StackTraceElement[] serviceTrace;
 
+	private Set<String> ips;
+
 	@JsonIgnore
 	private boolean isK2FuzzRequest = false;
 
 	public AgentMetaData() {
 		this.rciMethodsCalls = new JSONArray();
+		this.ips = new HashSet<>();
 	}
 
 	public AgentMetaData(AgentMetaData agentMetaData) {
@@ -34,6 +40,7 @@ public class AgentMetaData{
 		this.isClientDetectedFromXFF = agentMetaData.isClientDetectedFromXFF;
 		this.isK2FuzzRequest = agentMetaData.isK2FuzzRequest;
 		this.serviceTrace = agentMetaData.serviceTrace;
+		this.ips = new HashSet<>(agentMetaData.ips);
 	}
 
 	@Override
@@ -97,5 +104,13 @@ public class AgentMetaData{
 
 	public void setServiceTrace(StackTraceElement[] serviceTrace) {
 		this.serviceTrace = serviceTrace;
+	}
+
+	public Set<String> getIps() {
+		return ips;
+	}
+
+	public void setIps(Set<String> ips) {
+		this.ips = ips;
 	}
 }

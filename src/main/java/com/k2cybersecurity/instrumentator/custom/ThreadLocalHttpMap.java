@@ -222,11 +222,11 @@ public class ThreadLocalHttpMap {
 			Method getRemoteAddr = requestClass.getMethod(GET_REMOTE_ADDR);
 			getRemoteAddr.setAccessible(true);
 			httpRequestBean.setClientIP((String) getRemoteAddr.invoke(httpRequest, null));
+			metaData.getIps().add(httpRequestBean.getClientIP());
 			if (StringUtils.isNotBlank(httpRequestBean.getClientIP())) {
 				Method getRemotePort = requestClass.getMethod(GET_REMOTE_PORT);
 				getRemotePort.setAccessible(true);
-				httpRequestBean
-						.setClientIP(httpRequestBean.getClientIP() + ":" + getRemotePort.invoke(httpRequest, null));
+				httpRequestBean.setClientPort((String) getRemotePort.invoke(httpRequest, null));
 			}
 			Map<String, String> headers = new HashMap<>();
 			processHeaders(headers, httpRequest);
@@ -313,9 +313,12 @@ public class ThreadLocalHttpMap {
 					if (!headerValue.isEmpty()) {
 //						headerFullValue = headerValue;
 //					} else {
-						if(takeNextValue){
+						if(takeNextValue) {
 							ThreadLocalExecutionMap.getInstance().getMetaData().setClientDetectedFromXFF(true);
 							ThreadLocalExecutionMap.getInstance().getHttpRequestBean().setClientIP(headerValue);
+							ThreadLocalExecutionMap.getInstance().getMetaData().getIps()
+									.add(ThreadLocalExecutionMap.getInstance().getHttpRequestBean().getClientIP());
+							ThreadLocalExecutionMap.getInstance().getHttpRequestBean().setClientPort(StringUtils.EMPTY);
 							takeNextValue = false;
 						}
 						if(StringUtils.isBlank(headerFullValue)){

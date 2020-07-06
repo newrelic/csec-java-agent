@@ -53,7 +53,10 @@ public class IPBlockingEntry {
     }
 
     public boolean isValid(){
-        return (System.currentTimeMillis() - creationTimestamp) < AgentUtils.ipBlockingTimeout;
+        if (AgentUtils.getInstance().getAgentPolicy() != null) {
+            return (System.currentTimeMillis() - creationTimestamp) < AgentUtils.getInstance().getAgentPolicy().getProtectionMode().getIpBlocking().getTimeout();
+        }
+        return false;
     }
 
 }

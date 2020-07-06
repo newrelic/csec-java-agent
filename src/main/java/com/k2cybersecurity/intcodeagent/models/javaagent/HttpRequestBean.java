@@ -30,6 +30,8 @@ public class HttpRequestBean {
 
 	private String clientIP;
 
+	private String clientPort;
+
 	private JSONObject headers;
 
 	private Map<String, FileIntegrityBean> fileExist;
@@ -37,7 +39,7 @@ public class HttpRequestBean {
 	private String contextPath;
 
 	private String contentType;
-	
+
 	private String pathParams;
 
 	private String protocol;
@@ -71,6 +73,7 @@ public class HttpRequestBean {
 		this.httpResponseBean = new HttpResponseBean();
 		this.contentType = StringUtils.EMPTY;
 		this.protocol = HTTP;
+		this.clientPort = StringUtils.EMPTY;
 	}
 
 	public HttpRequestBean(HttpRequestBean servletInfo) {
@@ -90,6 +93,7 @@ public class HttpRequestBean {
 		this.parts = servletInfo.parts;
 		this.servletContextObject = servletInfo.servletContextObject;
 		this.protocol = new String(servletInfo.protocol);
+		this.clientPort = new String(servletInfo.clientPort);
 	}
 
 	public String getRawRequest() {
@@ -311,6 +315,13 @@ public class HttpRequestBean {
 		this.protocol = protocol;
 	}
 
+	public String getClientPort() {
+		return clientPort;
+	}
+
+	public void setClientPort(String clientPort) {
+		this.clientPort = clientPort;
+	}
 }
 
 
