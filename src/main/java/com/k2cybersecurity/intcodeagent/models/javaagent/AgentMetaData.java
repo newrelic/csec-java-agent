@@ -19,6 +19,8 @@ public class AgentMetaData {
 
 	private JSONArray rciMethodsCalls;
 
+	private boolean apiBlocked = false;
+
 	@JsonIgnore
 	private StackTraceElement[] serviceTrace;
 
@@ -41,6 +43,7 @@ public class AgentMetaData {
 		this.isK2FuzzRequest = agentMetaData.isK2FuzzRequest;
 		this.serviceTrace = agentMetaData.serviceTrace;
 		this.ips = new HashSet<>(agentMetaData.ips);
+		this.apiBlocked = agentMetaData.apiBlocked;
 	}
 
 	@Override
@@ -112,5 +115,13 @@ public class AgentMetaData {
 
 	public void setIps(Set<String> ips) {
 		this.ips = ips;
+	}
+
+	public boolean isApiBlocked() {
+		return apiBlocked;
+	}
+
+	public void setApiBlocked(boolean apiBlocked) {
+		this.apiBlocked = apiBlocked;
 	}
 }

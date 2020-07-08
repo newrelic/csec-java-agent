@@ -1,13 +1,11 @@
 package com.k2cybersecurity.intcodeagent.models.operationalbean;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.k2cybersecurity.instrumentator.custom.ThreadLocalExecutionMap;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalHTTPDoFilterMap;
 import com.k2cybersecurity.instrumentator.utils.AgentUtils;
 import com.k2cybersecurity.intcodeagent.models.javaagent.UserClassEntity;
 import com.k2cybersecurity.intcodeagent.websocket.JsonConverter;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.Pair;
 
 public abstract class AbstractOperationalBean {
 
@@ -32,13 +30,16 @@ public abstract class AbstractOperationalBean {
 
 	private UserClassEntity userClassEntity;
 
-	public AbstractOperationalBean(){
+	private String apiID;
+
+	public AbstractOperationalBean() {
 		this.className = StringUtils.EMPTY;
 		this.sourceMethod = StringUtils.EMPTY;
 		this.executionId = StringUtils.EMPTY;
 		this.methodName = StringUtils.EMPTY;
 		this.startTime = 0L;
 		this.blockingEndTime = 0L;
+		this.apiID = StringUtils.EMPTY;
 	}
 
 	public AbstractOperationalBean(String className, String sourceMethod, String executionId
@@ -55,6 +56,7 @@ public abstract class AbstractOperationalBean {
 		this.userClassEntity = AgentUtils.getInstance().detectUserClass(this.stackTrace,
 				this.currentGenericServletInstance,
 				this.currentGenericServletMethodName, className, methodName);
+
 
 	}
 
@@ -148,5 +150,13 @@ public abstract class AbstractOperationalBean {
 
 	public void setUserClassEntity(UserClassEntity userClassEntity) {
 		this.userClassEntity = userClassEntity;
+	}
+
+	public String getApiID() {
+		return apiID;
+	}
+
+	public void setApiID(String apiID) {
+		this.apiID = apiID;
 	}
 }

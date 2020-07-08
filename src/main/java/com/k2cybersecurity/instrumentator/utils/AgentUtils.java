@@ -1,15 +1,14 @@
 package com.k2cybersecurity.instrumentator.utils;
 
+import com.k2cybersecurity.instrumentator.custom.ClassloaderAdjustments;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.logging.DeployedApplication;
 import com.k2cybersecurity.intcodeagent.logging.IAgentConstants;
 import com.k2cybersecurity.intcodeagent.models.config.AgentPolicy;
 import com.k2cybersecurity.intcodeagent.models.config.AgentPolicyIPBlockingParameters;
-import com.k2cybersecurity.intcodeagent.models.javaagent.EventResponse;
-import com.k2cybersecurity.intcodeagent.models.javaagent.IPBlockingEntry;
-import com.k2cybersecurity.intcodeagent.models.javaagent.JADatabaseMetaData;
-import com.k2cybersecurity.intcodeagent.models.javaagent.UserClassEntity;
+import com.k2cybersecurity.intcodeagent.models.javaagent.*;
+import com.k2cybersecurity.intcodeagent.models.operationalbean.AbstractOperationalBean;
 import net.bytebuddy.description.type.TypeDescription;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -20,9 +19,11 @@ import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.COM_SUN;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.SUN_REFLECT;
 
 public class AgentUtils {
 
@@ -59,7 +60,6 @@ public class AgentUtils {
 
 	private Map<String, EventResponse> eventResponseSet;
 
-	private Set<String> allowedAPIs;
 	private Set<String> blockedAPIs;
 
 	private Set<String> rxssSentUrls;
@@ -89,10 +89,10 @@ public class AgentUtils {
 	private AgentPolicyIPBlockingParameters agentPolicyParameters;
 
 	private AgentUtils() {
+
 		transformedClasses = new HashSet<>();
 		eventResponseSet = new ConcurrentHashMap<>();
-		allowedAPIs = new ConcurrentSkipListSet<>();
-		blockedAPIs = new ConcurrentSkipListSet<>();
+		blockedAPIs = new HashSet<>();
 		classLoaderRecord = new ConcurrentHashMap<>();
 		rxssSentUrls = new HashSet<>();
 		deployedApplicationUnderProcessing = new HashSet<>();
@@ -103,6 +103,7 @@ public class AgentUtils {
 				return size() > 50;
 			}
 		};
+
 	}
 
 	public static AgentUtils getInstance() {
@@ -130,15 +131,6 @@ public class AgentUtils {
 
 	public Map<String, EventResponse> getEventResponseSet() {
 		return eventResponseSet;
-	}
-
-
-	public Set<String> getAllowedAPIs() {
-		return allowedAPIs;
-	}
-
-	public void setAllowedAPIs(Set<String> allowedAPIs) {
-		this.allowedAPIs = allowedAPIs;
 	}
 
 	public Set<String> getBlockedAPIs() {
@@ -571,5 +563,50 @@ public class AgentUtils {
 	}
 
 	public void enforcePolicyParameters() {
+	}
+
+	public void
+	preProcessStackTrace(AbstractOperationalBean operationalBean, VulnerabilityCaseType vulnerabilityCaseType) {
+		StackTraceElement[] stackTrace = operationalBean.getStackTrace();
+		int resetFactor = 0;
+		List<StackTraceElement> recordsToDelete = new ArrayList<>();
+
+		List<StackTraceElement> newTraceForIdCalc = new ArrayList<>();
+		List<String> newTraceStringForIdCalc = new ArrayList<>();
+
+		newTraceForIdCalc.addAll(Arrays.asList(stackTrace));
+
+		recordsToDelete.add(stackTrace[0]);
+		resetFactor++;
+		for (int i = 1; i < stackTrace.length; i++) {
+			if (i < operationalBean.getUserClassEntity().getTraceLocationEnd() && i == resetFactor &&
+					StringUtils.startsWith(stackTrace[i].getClassName(), ClassloaderAdjustments.K2_BOOTSTAP_LOADED_PACKAGE_NAME)) {
+				recordsToDelete.add(stackTrace[i]);
+				resetFactor++;
+			}
+
+			if (StringUtils.startsWithAny(stackTrace[i].getClassName(), SUN_REFLECT, COM_SUN)
+					|| stackTrace[i].isNativeMethod() || stackTrace[i].getLineNumber() < 0) {
+				recordsToDelete.add(stackTrace[i]);
+			}
+		}
+		newTraceForIdCalc.removeAll(recordsToDelete);
+		newTraceForIdCalc.forEach(stackTraceElement -> {
+			newTraceStringForIdCalc.add(stackTraceElement.toString());
+		});
+		stackTrace = Arrays.copyOfRange(stackTrace, resetFactor, stackTrace.length);
+		operationalBean.setStackTrace(stackTrace);
+		operationalBean.getUserClassEntity().setTraceLocationEnd(operationalBean.getUserClassEntity().getTraceLocationEnd() - resetFactor);
+		setAPIId(operationalBean, newTraceStringForIdCalc, vulnerabilityCaseType);
+	}
+
+	private void setAPIId(AbstractOperationalBean operationalBean, List<String> traceForIdCalc, VulnerabilityCaseType vulnerabilityCaseType) {
+		List<String> idData = new ArrayList<>();
+
+		// TODO : Write Application detection mechanism for a given event.
+		idData.add(StringUtils.EMPTY);
+		idData.addAll(traceForIdCalc);
+		idData.add(vulnerabilityCaseType.getCaseType());
+		operationalBean.setApiID(AgentUtils.getInstance().getSHA256HexDigest(idData));
 	}
 }

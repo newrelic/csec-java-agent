@@ -11,7 +11,9 @@ import java.util.Map;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({
         "allowedIps",
-        "blockedIps"
+        "blockedIps",
+        "allowedApis",
+        "blockedApis"
 })
 public class AgentPolicyIPBlockingParameters {
 
@@ -19,6 +21,13 @@ public class AgentPolicyIPBlockingParameters {
     private List<String> allowedIps = new ArrayList<>();
     @JsonProperty("blockedIps")
     private List<String> blockedIps = new ArrayList<>();
+
+    @JsonProperty("allowedApis")
+    private List<String> allowedApis = new ArrayList<>();
+    @JsonProperty("blockedApis")
+    private List<String> blockedApis = new ArrayList<>();
+
+
     @JsonIgnore
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
@@ -66,6 +75,26 @@ public class AgentPolicyIPBlockingParameters {
     @JsonAnySetter
     public void setAdditionalProperty(String name, Object value) {
         this.additionalProperties.put(name, value);
+    }
+
+    @JsonProperty("allowedApis")
+    public List<String> getAllowedApis() {
+        return allowedApis;
+    }
+
+    @JsonProperty("allowedApis")
+    public void setAllowedApis(List<String> allowedApis) {
+        this.allowedApis = allowedApis;
+    }
+
+    @JsonProperty("blockedApis")
+    public List<String> getBlockedApis() {
+        return blockedApis;
+    }
+
+    @JsonProperty("blockedApis")
+    public void setBlockedApis(List<String> blockedApis) {
+        this.blockedApis = blockedApis;
     }
 
     @Override

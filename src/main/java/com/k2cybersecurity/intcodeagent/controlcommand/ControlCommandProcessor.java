@@ -29,11 +29,12 @@ public class ControlCommandProcessor implements Runnable {
 	public static final String EVENT_RESPONSE_ENTRY_NOT_FOUND_FOR_THIS_S = "Event response entry not found for this : %s";
 	public static final String EVENT_RESPONSE_TIME_TAKEN = "Event response time taken : ";
 	public static final String DOUBLE_COLON_SEPERATOR = " :: ";
-	public static final String VULNERABLE_API_ENTRY_CREATED = "vulnerableAPI entry created : ";
 	public static final String FAILED_TO_CREATE_VULNERABLE_API_ENTRY = "Failed to create vulnerableAPI entry  : ";
 	public static final String EVENT_RESPONSE = "Event response : ";
 	public static final String UNKNOWN_CONTROL_COMMAND_S = "Unknown control command : %s";
 	public static final String SETTING_NEW_IP_BLOCKING_TIMEOUT_TO_S_MS = "Setting new IP Blocking timeout to %s ms";
+	public static final String ATTACKED_API_BLOCKED_S = "Attacked API added to blocked list : %s";
+	public static final String ADDING_IP_ADDRESS_S_TO_BLOCKING_LIST_WITH_TIMEOUT_S = "Adding IP address %s to blocking list with timeout %s";
 
 
 	private String controlCommandMessage;
@@ -113,41 +114,39 @@ public class ControlCommandProcessor implements Runnable {
 			eventResponse.setEventId(controlCommand.getArguments().get(1));
 			eventResponse.setAttack(Boolean.parseBoolean(controlCommand.getArguments().get(2)));
 			eventResponse.setResultMessage(controlCommand.getArguments().get(3));
+			eventResponse.setApiId(controlCommand.getArguments().get(4));
+			eventResponse.setClientIP(controlCommand.getArguments().get(5));
+			eventResponse.setIpDetectedViaXFF(Boolean.parseBoolean(controlCommand.getArguments().get(6)));
 
-//			eventResponse.setGenerationTime(Long.parseLong(controlCommand.getArguments().get(4)));
-//			eventResponse.setReceivedTime(receiveTimestamp);
-
-//			EventSendPool.getInstance().getEventMap().remove(eventResponse.getId());
 			logger.log(LogLevel.DEBUG, EVENT_RESPONSE + eventResponse, ControlCommandProcessor.class.getName());
-			if (eventResponse.isAttack()
-					&& AgentUtils.getInstance().getAgentPolicy().getProtectionMode().getEnabled()
-					&& AgentUtils.getInstance().getAgentPolicy().getProtectionMode().getApiBlocking().getEnabled()
-					&& AgentUtils.getInstance().getAgentPolicy().getProtectionMode().getApiBlocking().getProtectAttackedApis()) {
-				try {
-					VulnerableAPI vulnerableAPI = new VulnerableAPI(controlCommand.getArguments().get(4),
-							controlCommand.getArguments().get(5), controlCommand.getArguments().get(6),
-							Integer.parseInt(controlCommand.getArguments().get(7)));
-					if (!AgentUtils.getInstance().getVulnerableAPIMap().containsKey(vulnerableAPI.getId())) {
-						AgentUtils.getInstance().getVulnerableAPIMap().put(vulnerableAPI.getId(), vulnerableAPI);
-						logger.log(LogLevel.INFO, VULNERABLE_API_ENTRY_CREATED + vulnerableAPI,
-								ControlCommandProcessor.class.getName());
-					}
-				} catch (Throwable e) {
-					logger.log(LogLevel.SEVERE, FAILED_TO_CREATE_VULNERABLE_API_ENTRY + controlCommand, e,
-							ControlCommandProcessor.class.getSimpleName());
+			if (eventResponse.isAttack() && AgentUtils.getInstance().getAgentPolicy().getProtectionMode().getEnabled()) {
+				if (AgentUtils.getInstance().getAgentPolicy().getProtectionMode().getApiBlocking().getEnabled()
+						&& AgentUtils.getInstance().getAgentPolicy().getProtectionMode().getApiBlocking().getProtectAttackedApis()) {
+//					if (!AgentUtils.getInstance().getBlockedAPIs().contains(eventResponse.getApiId())) {
+					AgentUtils.getInstance().getBlockedAPIs().add(eventResponse.getApiId());
+					logger.log(LogLevel.INFO, String.format(ATTACKED_API_BLOCKED_S, eventResponse.getApiId()),
+							ControlCommandProcessor.class.getName());
+//					}
+				}
+
+				if (AgentUtils.getInstance().getAgentPolicy().getProtectionMode().getIpBlocking().getEnabled()
+						&& AgentUtils.getInstance().getAgentPolicy().getProtectionMode().getIpBlocking().getAttackerIpBlocking()
+						&& eventResponse.isIpDetectedViaXFF() == AgentUtils.getInstance().getAgentPolicy().getProtectionMode().getIpBlocking().getIpDetectViaXFF()
+				) {
+					AgentUtils.getInstance().addIPBlockingEntry(eventResponse.getClientIP());
+					logger.log(LogLevel.INFO, String.format(ADDING_IP_ADDRESS_S_TO_BLOCKING_LIST_WITH_TIMEOUT_S,
+							eventResponse.getClientIP(),
+							AgentUtils.getInstance().getAgentPolicy().getProtectionMode().getIpBlocking().getTimeout()),
+							ControlCommandProcessor.class.getName());
 				}
 			}
 			eventResponse.getResponseSemaphore().release();
 			AgentUtils.getInstance().getEventResponseSet().remove(eventResponse.getId());
 
-//			logger.log(LogLevel.DEBUG,
-//					EVENT_RESPONSE_TIME_TAKEN + eventResponse.getEventId() + DOUBLE_COLON_SEPERATOR
-//							+ (eventResponse.getReceivedTime() - eventResponse.getGenerationTime()),
-//					EventDispatcher.class.getSimpleName());
 			break;
-		case IntCodeControlCommand.START_VULNERABILITY_SCAN:
-			boolean fullReScanning = false;
-			boolean downloadTarBundle = false;
+			case IntCodeControlCommand.START_VULNERABILITY_SCAN:
+				boolean fullReScanning = false;
+				boolean downloadTarBundle = false;
 
 			if (controlCommand.getArguments().size() == 3) {
 				fullReScanning = Boolean.parseBoolean(controlCommand.getArguments().get(1));
@@ -162,15 +161,6 @@ public class ControlCommandProcessor implements Runnable {
 				AgentUtils.getInstance().getScannedDeployedApplications().clear();
 			}
 			CVEScannerPool.getInstance().dispatchScanner(controlCommand.getArguments().get(0), downloadTarBundle);
-			break;
-		case IntCodeControlCommand.CREATE_IPBLOCKING_ENTRY:
-			if (controlCommand.getArguments().size() != 1) {
-				return;
-			}
-			String ip = controlCommand.getArguments().get(0);
-			logger.log(LogLevel.INFO, String.format("Adding IP address %s to blocking list", ip),
-					ControlCommandProcessor.class.getName());
-			AgentUtils.getInstance().addIPBlockingEntry(ip);
 			break;
 			case IntCodeControlCommand.FUZZ_REQUEST:
 				RestRequestProcessor.processControlCommand(controlCommand);

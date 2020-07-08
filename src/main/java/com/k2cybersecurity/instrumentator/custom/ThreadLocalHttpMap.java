@@ -1,6 +1,7 @@
 package com.k2cybersecurity.instrumentator.custom;
 
 import com.k2cybersecurity.instrumentator.K2Instrumentator;
+import com.k2cybersecurity.instrumentator.utils.AgentUtils;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.logging.IAgentConstants;
@@ -226,7 +227,7 @@ public class ThreadLocalHttpMap {
 			if (StringUtils.isNotBlank(httpRequestBean.getClientIP())) {
 				Method getRemotePort = requestClass.getMethod(GET_REMOTE_PORT);
 				getRemotePort.setAccessible(true);
-				httpRequestBean.setClientPort((String) getRemotePort.invoke(httpRequest, null));
+				httpRequestBean.setClientPort(String.valueOf(getRemotePort.invoke(httpRequest, null)));
 			}
 			Map<String, String> headers = new HashMap<>();
 			processHeaders(headers, httpRequest);
@@ -301,7 +302,11 @@ public class ThreadLocalHttpMap {
 			while (attribs.hasMoreElements()) {
 				boolean takeNextValue = false;
 				String headerKey = attribs.nextElement();
-				if (StringUtils.equalsAnyIgnoreCase(headerKey, X_FORWARDED_FOR)) {
+				if (AgentUtils.getInstance().getAgentPolicy() != null
+						&& AgentUtils.getInstance().getAgentPolicy().getProtectionMode().getEnabled()
+						&& AgentUtils.getInstance().getAgentPolicy().getProtectionMode().getIpBlocking().getEnabled()
+						&& AgentUtils.getInstance().getAgentPolicy().getProtectionMode().getIpBlocking().getIpDetectViaXFF()
+						&& StringUtils.equalsAnyIgnoreCase(headerKey, X_FORWARDED_FOR)) {
 					takeNextValue = true;
 				} else if (StringUtils.equalsAnyIgnoreCase(headerKey, IAgentConstants.K2_FUZZ_REQUEST_ID)) {
 					ThreadLocalExecutionMap.getInstance().getMetaData().setK2FuzzRequest(true);

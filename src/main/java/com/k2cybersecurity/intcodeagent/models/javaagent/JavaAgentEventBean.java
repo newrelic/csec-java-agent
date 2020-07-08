@@ -27,7 +27,7 @@ public class JavaAgentEventBean extends AgentBasicInfo {
 	private AgentMetaData metaData;
 	private Long blockingProcessingTime = 0L;
 	private List<StackTraceElement> completeStacktrace;
-	private boolean validationResponseRequired = false;
+	private boolean isAPIBlocked = false;
 	private String apiId;
 	private DeployedApplication webappIdentifier;
 
@@ -277,12 +277,12 @@ public class JavaAgentEventBean extends AgentBasicInfo {
 		this.blockingProcessingTime = blockingProcessingTime;
 	}
 
-	public boolean isValidationResponseRequired() {
-		return validationResponseRequired;
+	public boolean isAPIBlocked() {
+		return isAPIBlocked;
 	}
 
-	public void setValidationResponseRequired(boolean validationResponseRequired) {
-		this.validationResponseRequired = validationResponseRequired;
+	public void setAPIBlocked(boolean APIBlocked) {
+		this.isAPIBlocked = APIBlocked;
 	}
 
 	public List<StackTraceElement> getCompleteStacktrace() {

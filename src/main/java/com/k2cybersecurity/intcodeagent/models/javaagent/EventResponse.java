@@ -22,6 +22,12 @@ public class EventResponse {
 
 	private long receivedTime = 0L;
 
+	private String apiId;
+
+	private String clientIP;
+
+	private boolean ipDetectedViaXFF = false;
+
 	public EventResponse(String id) {
 		this.id = new String(id);
 	}
@@ -80,6 +86,30 @@ public class EventResponse {
 
 	public Semaphore getResponseSemaphore() {
 		return responseSemaphore;
+	}
+
+	public String getApiId() {
+		return apiId;
+	}
+
+	public void setApiId(String apiId) {
+		this.apiId = apiId;
+	}
+
+	public String getClientIP() {
+		return clientIP;
+	}
+
+	public void setClientIP(String clientIP) {
+		this.clientIP = clientIP;
+	}
+
+	public boolean isIpDetectedViaXFF() {
+		return ipDetectedViaXFF;
+	}
+
+	public void setIpDetectedViaXFF(boolean ipDetectedViaXFF) {
+		this.ipDetectedViaXFF = ipDetectedViaXFF;
 	}
 
 	@Override

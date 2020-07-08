@@ -4,6 +4,7 @@ import com.k2cybersecurity.instrumentator.utils.AgentUtils;
 import com.k2cybersecurity.intcodeagent.websocket.JsonConverter;
 
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
 public class IPBlockingEntry {
 
@@ -54,7 +55,7 @@ public class IPBlockingEntry {
 
     public boolean isValid(){
         if (AgentUtils.getInstance().getAgentPolicy() != null) {
-            return (System.currentTimeMillis() - creationTimestamp) < AgentUtils.getInstance().getAgentPolicy().getProtectionMode().getIpBlocking().getTimeout();
+            return (System.currentTimeMillis() - creationTimestamp) < TimeUnit.MINUTES.toMillis(AgentUtils.getInstance().getAgentPolicy().getProtectionMode().getIpBlocking().getTimeout());
         }
         return false;
     }

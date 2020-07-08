@@ -1,13 +1,14 @@
 package com.k2cybersecurity.instrumentator.dispatcher;
 
 import com.k2cybersecurity.instrumentator.K2Instrumentator;
-import com.k2cybersecurity.instrumentator.custom.ThreadLocalHTTPDoFilterMap;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.logging.EventThreadPool.EventAbortPolicy;
 import com.k2cybersecurity.intcodeagent.logging.IAgentConstants;
-import com.k2cybersecurity.intcodeagent.models.javaagent.*;
-import com.k2cybersecurity.intcodeagent.models.operationalbean.FileOperationalBean;
+import com.k2cybersecurity.intcodeagent.models.javaagent.AgentMetaData;
+import com.k2cybersecurity.intcodeagent.models.javaagent.HttpRequestBean;
+import com.k2cybersecurity.intcodeagent.models.javaagent.UserClassEntity;
+import com.k2cybersecurity.intcodeagent.models.javaagent.VulnerabilityCaseType;
 
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -107,22 +108,24 @@ public class DispatcherPool {
 
 	/**
 	 * Specifically for reflected xss
-	 *  @param httpRequestBean
+	 *
+	 * @param httpRequestBean
 	 * @param agentMetaData
 	 * @param sourceString
 	 * @param exectionId
 	 * @param startTime
 	 * @param reflectedXss
+	 * @param apiID
 	 */
 	public void dispatchEventRXSS(HttpRequestBean httpRequestBean, AgentMetaData agentMetaData, String sourceString, String exectionId,
 								  long startTime, VulnerabilityCaseType reflectedXss, String currentGenericServletMethodName,
 								  Object currentGenericServletInstance,
-								  StackTraceElement[] stackTrace, UserClassEntity userClassEntity) {
-		if(executor.isShutdown()){
+								  StackTraceElement[] stackTrace, UserClassEntity userClassEntity, String apiID) {
+		if (executor.isShutdown()) {
 			return;
 		}
 		this.executor.submit(new Dispatcher(httpRequestBean, agentMetaData, reflectedXss, sourceString, exectionId, startTime, currentGenericServletMethodName,
-				currentGenericServletInstance, stackTrace, userClassEntity));
+				currentGenericServletInstance, stackTrace, userClassEntity, apiID));
 	}
 
 	public void shutDownThreadPoolExecutor() {
