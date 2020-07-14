@@ -1,5 +1,6 @@
 package com.k2cybersecurity.intcodeagent.models.javaagent;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.k2cybersecurity.intcodeagent.websocket.JsonConverter;
 
 import java.util.concurrent.Semaphore;
@@ -16,6 +17,7 @@ public class EventResponse {
 
 	private String resultMessage;
 
+	@JsonIgnore
 	private Semaphore responseSemaphore = new Semaphore(1);
 
 	private long generationTime = 0L;
@@ -84,6 +86,7 @@ public class EventResponse {
 		this.receivedTime = receivedTime;
 	}
 
+	@JsonIgnore
 	public Semaphore getResponseSemaphore() {
 		return responseSemaphore;
 	}
