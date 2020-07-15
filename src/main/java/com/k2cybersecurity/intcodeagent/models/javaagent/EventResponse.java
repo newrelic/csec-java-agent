@@ -115,6 +115,10 @@ public class EventResponse {
 		this.ipDetectedViaXFF = ipDetectedViaXFF;
 	}
 
+	public void setResponseSemaphore(Semaphore responseSemaphore) {
+		this.responseSemaphore = responseSemaphore;
+	}
+
 	@Override
 	public String toString() {
 		return JsonConverter.toJSON(this);

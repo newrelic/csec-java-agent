@@ -35,6 +35,7 @@ public class ControlCommandProcessor implements Runnable {
 	public static final String SETTING_NEW_IP_BLOCKING_TIMEOUT_TO_S_MS = "Setting new IP Blocking timeout to %s ms";
 	public static final String ATTACKED_API_BLOCKED_S = "Attacked API added to blocked list : %s";
 	public static final String ADDING_IP_ADDRESS_S_TO_BLOCKING_LIST_WITH_TIMEOUT_S = "Adding IP address %s to blocking list with timeout %s";
+	public static final String ERROR_IN_EVENT_RESPONSE = "Error in EVENT_RESPONSE : ";
 
 
 	private String controlCommandMessage;
@@ -95,54 +96,52 @@ public class ControlCommandProcessor implements Runnable {
 			logger.log(LogLevel.INFO, "Is log file sent to IC: " + FtpClient.sendBootstrapLogFile(),
 					ControlCommandProcessor.class.getSimpleName());
 			break;
-		case IntCodeControlCommand.UNSUPPORTED_AGENT:
-			logger.log(LogLevel.SEVERE, controlCommand.getArguments().get(0),
-					ControlCommandProcessor.class.getSimpleName());
-			System.err.println(controlCommand.getArguments().get(0));
-			InstrumentationUtils.shutdownLogic(true);
-			break;
-		case IntCodeControlCommand.EVENT_RESPONSE:
-			EventResponse eventResponse = AgentUtils.getInstance().getEventResponseSet()
-					.get(controlCommand.getArguments().get(0));
-			if (eventResponse == null) {
-				logger.log(LogLevel.DEBUG,
-						String.format(EVENT_RESPONSE_ENTRY_NOT_FOUND_FOR_THIS_S, controlCommand.getArguments().get(0)),
+			case IntCodeControlCommand.UNSUPPORTED_AGENT:
+				logger.log(LogLevel.SEVERE, controlCommand.getArguments().get(0),
 						ControlCommandProcessor.class.getSimpleName());
-				eventResponse = new EventResponse(controlCommand.getArguments().get(0));
-			}
-			eventResponse.setId(controlCommand.getArguments().get(0));
-			eventResponse.setEventId(controlCommand.getArguments().get(1));
-			eventResponse.setAttack(Boolean.parseBoolean(controlCommand.getArguments().get(2)));
-			eventResponse.setResultMessage(controlCommand.getArguments().get(3));
-			eventResponse.setApiId(controlCommand.getArguments().get(4));
-			eventResponse.setClientIP(controlCommand.getArguments().get(5));
-			eventResponse.setIpDetectedViaXFF(Boolean.parseBoolean(controlCommand.getArguments().get(6)));
+				System.err.println(controlCommand.getArguments().get(0));
+				InstrumentationUtils.shutdownLogic(true);
+				break;
+			case IntCodeControlCommand.EVENT_RESPONSE:
+				try {
+					EventResponse receivedEventResponse = new ObjectMapper().readValue(controlCommand.getArguments().get(0), EventResponse.class);
 
-			logger.log(LogLevel.DEBUG, EVENT_RESPONSE + eventResponse, ControlCommandProcessor.class.getName());
-			if (eventResponse.isAttack() && AgentUtils.getInstance().getAgentPolicy().getProtectionMode().getEnabled()) {
-				if (AgentUtils.getInstance().getAgentPolicy().getProtectionMode().getApiBlocking().getEnabled()
-						&& AgentUtils.getInstance().getAgentPolicy().getProtectionMode().getApiBlocking().getProtectAttackedApis()) {
-//					if (!AgentUtils.getInstance().getBlockedAPIs().contains(eventResponse.getApiId())) {
-					AgentUtils.getInstance().getBlockedAPIs().add(eventResponse.getApiId());
-					logger.log(LogLevel.INFO, String.format(ATTACKED_API_BLOCKED_S, eventResponse.getApiId()),
-							ControlCommandProcessor.class.getName());
-//					}
+					EventResponse eventResponse = AgentUtils.getInstance().getEventResponseSet()
+							.get(receivedEventResponse.getId());
+					if (eventResponse == null) {
+						logger.log(LogLevel.DEBUG,
+								String.format(EVENT_RESPONSE_ENTRY_NOT_FOUND_FOR_THIS_S, receivedEventResponse),
+								ControlCommandProcessor.class.getSimpleName());
+					} else {
+						receivedEventResponse.setResponseSemaphore(eventResponse.getResponseSemaphore());
+					}
+
+					logger.log(LogLevel.DEBUG, EVENT_RESPONSE + receivedEventResponse, ControlCommandProcessor.class.getName());
+					if (receivedEventResponse.isAttack() && AgentUtils.getInstance().getAgentPolicy().getProtectionMode().getEnabled()) {
+						if (AgentUtils.getInstance().getAgentPolicy().getProtectionMode().getApiBlocking().getEnabled()
+								&& AgentUtils.getInstance().getAgentPolicy().getProtectionMode().getApiBlocking().getProtectAttackedApis()) {
+							AgentUtils.getInstance().getBlockedAPIs().add(receivedEventResponse.getApiId());
+							logger.log(LogLevel.INFO, String.format(ATTACKED_API_BLOCKED_S, receivedEventResponse.getApiId()),
+									ControlCommandProcessor.class.getName());
+						}
+
+						if (AgentUtils.getInstance().getAgentPolicy().getProtectionMode().getIpBlocking().getEnabled()
+								&& AgentUtils.getInstance().getAgentPolicy().getProtectionMode().getIpBlocking().getAttackerIpBlocking()
+								&& receivedEventResponse.isIpDetectedViaXFF() == AgentUtils.getInstance().getAgentPolicy().getProtectionMode().getIpBlocking().getIpDetectViaXFF()
+						) {
+							AgentUtils.getInstance().addIPBlockingEntry(receivedEventResponse.getClientIP());
+							logger.log(LogLevel.INFO, String.format(ADDING_IP_ADDRESS_S_TO_BLOCKING_LIST_WITH_TIMEOUT_S,
+									receivedEventResponse.getClientIP(),
+									AgentUtils.getInstance().getAgentPolicy().getProtectionMode().getIpBlocking().getTimeout()),
+									ControlCommandProcessor.class.getName());
+						}
+					}
+					receivedEventResponse.getResponseSemaphore().release();
+					AgentUtils.getInstance().getEventResponseSet().remove(receivedEventResponse.getId());
+				} catch (Exception e) {
+					logger.log(LogLevel.SEVERE, ERROR_IN_EVENT_RESPONSE, e,
+							ControlCommandProcessor.class.getSimpleName());
 				}
-
-				if (AgentUtils.getInstance().getAgentPolicy().getProtectionMode().getIpBlocking().getEnabled()
-						&& AgentUtils.getInstance().getAgentPolicy().getProtectionMode().getIpBlocking().getAttackerIpBlocking()
-						&& eventResponse.isIpDetectedViaXFF() == AgentUtils.getInstance().getAgentPolicy().getProtectionMode().getIpBlocking().getIpDetectViaXFF()
-				) {
-					AgentUtils.getInstance().addIPBlockingEntry(eventResponse.getClientIP());
-					logger.log(LogLevel.INFO, String.format(ADDING_IP_ADDRESS_S_TO_BLOCKING_LIST_WITH_TIMEOUT_S,
-							eventResponse.getClientIP(),
-							AgentUtils.getInstance().getAgentPolicy().getProtectionMode().getIpBlocking().getTimeout()),
-							ControlCommandProcessor.class.getName());
-				}
-			}
-			eventResponse.getResponseSemaphore().release();
-			AgentUtils.getInstance().getEventResponseSet().remove(eventResponse.getId());
-
 			break;
 			case IntCodeControlCommand.START_VULNERABILITY_SCAN:
 				boolean fullReScanning = false;
