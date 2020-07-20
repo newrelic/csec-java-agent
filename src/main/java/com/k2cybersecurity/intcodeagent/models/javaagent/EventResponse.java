@@ -34,6 +34,9 @@ public class EventResponse {
 		this.id = new String(id);
 	}
 
+	public EventResponse() {
+	}
+
 	public String getId() {
 		return id;
 	}

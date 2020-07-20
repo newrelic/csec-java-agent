@@ -237,7 +237,8 @@ public class EventDispatcher {
 //                            EVENT_RESPONSE_TIME_TAKEN + eventResponse.getEventId() + DOUBLE_COLON_SEPERATOR + (
 //                                    eventResponse.getReceivedTime() - eventResponse.getGenerationTime()) + DOUBLE_COLON_SEPERATOR + executionId,
 //                            EventDispatcher.class.getSimpleName());
-                if (eventResponse.isAttack()) {
+                eventResponse = AgentUtils.getInstance().getEventResponseSet().get(executionId);
+                if (eventResponse != null && eventResponse.isAttack()) {
                     sendK2AttackPage(eventResponse.getEventId());
                     throw new K2CyberSecurityException(eventResponse.getResultMessage());
                 }

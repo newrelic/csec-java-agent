@@ -103,6 +103,7 @@ public class ControlCommandProcessor implements Runnable {
 				InstrumentationUtils.shutdownLogic(true);
 				break;
 			case IntCodeControlCommand.EVENT_RESPONSE:
+				boolean cleanUp = false;
 				try {
 					EventResponse receivedEventResponse = new ObjectMapper().readValue(controlCommand.getArguments().get(0), EventResponse.class);
 
@@ -112,9 +113,12 @@ public class ControlCommandProcessor implements Runnable {
 						logger.log(LogLevel.DEBUG,
 								String.format(EVENT_RESPONSE_ENTRY_NOT_FOUND_FOR_THIS_S, receivedEventResponse),
 								ControlCommandProcessor.class.getSimpleName());
+						cleanUp = true;
 					} else {
 						receivedEventResponse.setResponseSemaphore(eventResponse.getResponseSemaphore());
 					}
+
+					AgentUtils.getInstance().getEventResponseSet().put(receivedEventResponse.getId(), receivedEventResponse);
 
 					logger.log(LogLevel.DEBUG, EVENT_RESPONSE + receivedEventResponse, ControlCommandProcessor.class.getName());
 					if (receivedEventResponse.isAttack() && AgentUtils.getInstance().getAgentPolicy().getProtectionMode().getEnabled()) {
@@ -137,7 +141,9 @@ public class ControlCommandProcessor implements Runnable {
 						}
 					}
 					receivedEventResponse.getResponseSemaphore().release();
-					AgentUtils.getInstance().getEventResponseSet().remove(receivedEventResponse.getId());
+					if (cleanUp) {
+						AgentUtils.getInstance().getEventResponseSet().remove(receivedEventResponse.getId());
+					}
 				} catch (Exception e) {
 					logger.log(LogLevel.SEVERE, ERROR_IN_EVENT_RESPONSE, e,
 							ControlCommandProcessor.class.getSimpleName());
