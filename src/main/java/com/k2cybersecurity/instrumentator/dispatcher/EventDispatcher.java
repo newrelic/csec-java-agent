@@ -87,10 +87,14 @@ public class EventDispatcher {
             boolean blockNeeded = checkIfBlockingNeeded(objectBean.getApiID());
             agentMetaData.setApiBlocked(blockNeeded);
 
-            DispatcherPool.getInstance().dispatchEvent(
-                    new HttpRequestBean(ThreadLocalExecutionMap.getInstance().getHttpRequestBean()),
-                    agentMetaData,
-                    objectBean, vulnerabilityCaseType);
+            if (needToGenerateEvent(objectBean.getApiID())) {
+                DispatcherPool.getInstance().dispatchEvent(
+                        new HttpRequestBean(ThreadLocalExecutionMap.getInstance().getHttpRequestBean()),
+                        agentMetaData,
+                        objectBean, vulnerabilityCaseType);
+            } else {
+                return;
+            }
             if (blockAndCheck) {
                 if (blockNeeded) {
                     blockForResponse(objectBean.getExecutionId());
@@ -104,7 +108,6 @@ public class EventDispatcher {
                     EventDispatcher.class.getName());
         }
     }
-
 
     public static void dispatch(List<SQLOperationalBean> objectBeanList, VulnerabilityCaseType vulnerabilityCaseType,
                                 String exectionId, String className, String methodName, String sourceMethod)
@@ -144,12 +147,15 @@ public class EventDispatcher {
 
             boolean blockNeeded = checkIfBlockingNeeded(objectBeanList.get(0).getApiID());
             agentMetaData.setApiBlocked(blockNeeded);
-
-            DispatcherPool.getInstance().dispatchEvent(
-                    new HttpRequestBean(ThreadLocalExecutionMap.getInstance().getHttpRequestBean()),
-                    agentMetaData,
-                    toBeSentBeans, vulnerabilityCaseType, currentGenericServletMethodName,
-                    currentGenericServletInstance, objectBeanList.get(0).getStackTrace(), objectBeanList.get(0).getUserClassEntity());
+            if (needToGenerateEvent(objectBeanList.get(0).getApiID())) {
+                DispatcherPool.getInstance().dispatchEvent(
+                        new HttpRequestBean(ThreadLocalExecutionMap.getInstance().getHttpRequestBean()),
+                        agentMetaData,
+                        toBeSentBeans, vulnerabilityCaseType, currentGenericServletMethodName,
+                        currentGenericServletInstance, objectBeanList.get(0).getStackTrace(), objectBeanList.get(0).getUserClassEntity());
+            } else {
+                return;
+            }
             if (blockNeeded) {
                 blockForResponse(exectionId);
             }
@@ -190,11 +196,13 @@ public class EventDispatcher {
 
             boolean blockNeeded = checkIfBlockingNeeded(operationalBean.getApiID());
             agentMetaData.setApiBlocked(blockNeeded);
-
-            DispatcherPool.getInstance().dispatchEventRXSS(httpRequestBean, agentMetaData, sourceString, exectionId, startTime,
-                    reflectedXss, currentGenericServletMethodName,
-                    currentGenericServletInstance, operationalBean.getStackTrace(), operationalBean.getUserClassEntity(), operationalBean.getApiID());
-
+            if (needToGenerateEvent(operationalBean.getApiID())) {
+                DispatcherPool.getInstance().dispatchEventRXSS(httpRequestBean, agentMetaData, sourceString, exectionId, startTime,
+                        reflectedXss, currentGenericServletMethodName,
+                        currentGenericServletInstance, operationalBean.getStackTrace(), operationalBean.getUserClassEntity(), operationalBean.getApiID());
+            } else {
+                return;
+            }
             if (blockNeeded) {
                 blockForResponse(exectionId);
             }
@@ -226,6 +234,14 @@ public class EventDispatcher {
         return false;
     }
 
+    private static boolean needToGenerateEvent(String apiID) {
+        return !(AgentUtils.getInstance().getAgentPolicy().getProtectionMode().getEnabled()
+                && AgentUtils.getInstance().getAgentPolicy().getProtectionMode().getApiBlocking().getEnabled()
+                && AgentUtils.getInstance().getAgentPolicyParameters().getAllowedApis().contains(apiID)
+        );
+    }
+
+
     private static void blockForResponse(String executionId) throws K2CyberSecurityException {
         logger.log(LogLevel.DEBUG, SCHEDULING_FOR_EVENT_RESPONSE_OF + executionId, EventDispatcher.class.getSimpleName());
         EventResponse eventResponse = new EventResponse(executionId);
@@ -251,6 +267,7 @@ public class EventDispatcher {
             AgentUtils.getInstance().getEventResponseSet().remove(executionId);
         }
     }
+
 
     private static void sendK2AttackPage(String eventId) {
         try {
@@ -307,6 +324,7 @@ public class EventDispatcher {
         }
 
     }
+
 
     private static void sendK2BlockPage(String ip) {
         try {
