@@ -121,25 +121,7 @@ public class ControlCommandProcessor implements Runnable {
 					AgentUtils.getInstance().getEventResponseSet().put(receivedEventResponse.getId(), receivedEventResponse);
 
 					logger.log(LogLevel.DEBUG, EVENT_RESPONSE + receivedEventResponse, ControlCommandProcessor.class.getName());
-					if (receivedEventResponse.isAttack() && AgentUtils.getInstance().getAgentPolicy().getProtectionMode().getEnabled()) {
-						if (AgentUtils.getInstance().getAgentPolicy().getProtectionMode().getApiBlocking().getEnabled()
-								&& AgentUtils.getInstance().getAgentPolicy().getProtectionMode().getApiBlocking().getProtectAttackedApis()) {
-							AgentUtils.getInstance().getBlockedAPIs().add(receivedEventResponse.getApiId());
-							logger.log(LogLevel.INFO, String.format(ATTACKED_API_BLOCKED_S, receivedEventResponse.getApiId()),
-									ControlCommandProcessor.class.getName());
-						}
 
-						if (AgentUtils.getInstance().getAgentPolicy().getProtectionMode().getIpBlocking().getEnabled()
-								&& AgentUtils.getInstance().getAgentPolicy().getProtectionMode().getIpBlocking().getAttackerIpBlocking()
-								&& receivedEventResponse.isIpDetectedViaXFF() == AgentUtils.getInstance().getAgentPolicy().getProtectionMode().getIpBlocking().getIpDetectViaXFF()
-						) {
-							AgentUtils.getInstance().addIPBlockingEntry(receivedEventResponse.getClientIP());
-							logger.log(LogLevel.INFO, String.format(ADDING_IP_ADDRESS_S_TO_BLOCKING_LIST_WITH_TIMEOUT_S,
-									receivedEventResponse.getClientIP(),
-									AgentUtils.getInstance().getAgentPolicy().getProtectionMode().getIpBlocking().getTimeout()),
-									ControlCommandProcessor.class.getName());
-						}
-					}
 					receivedEventResponse.getResponseSemaphore().release();
 					if (cleanUp) {
 						AgentUtils.getInstance().getEventResponseSet().remove(receivedEventResponse.getId());

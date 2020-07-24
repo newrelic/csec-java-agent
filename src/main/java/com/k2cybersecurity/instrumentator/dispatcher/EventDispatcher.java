@@ -209,7 +209,7 @@ public class EventDispatcher {
         }
     }
 
-    private static boolean checkIfBlockingNeeded(String apiId) throws K2CyberSecurityException {
+    private static boolean checkIfBlockingNeeded(String apiId) {
         if (!(AgentUtils.getInstance().getAgentPolicy().getProtectionMode().getEnabled()
                 && AgentUtils.getInstance().getAgentPolicy().getProtectionMode().getApiBlocking().getEnabled()
         )) {
@@ -224,14 +224,7 @@ public class EventDispatcher {
             return true;
         }
 
-        if (AgentUtils.getInstance().getAgentPolicy().getProtectionMode().getApiBlocking().getProtectAllApis()) {
-            return true;
-        } else if (AgentUtils.getInstance().getAgentPolicy().getProtectionMode().getApiBlocking().getProtectAttackedApis()) {
-            if (AgentUtils.getInstance().getBlockedAPIs().contains(apiId)) {
-                return true;
-            }
-        }
-        return false;
+        return AgentUtils.getInstance().getAgentPolicy().getProtectionMode().getApiBlocking().getProtectAllApis();
     }
 
     private static boolean needToGenerateEvent(String apiID) {
@@ -405,18 +398,6 @@ public class EventDispatcher {
                 }
 
             }
-
-            // For Attacker IP Blocking
-            IPBlockingEntry blockingEntry = AgentUtils.getInstance().getBlockedAttackerIPs().get(ip);
-            if (blockingEntry != null) {
-                if (blockingEntry.isValid()) {
-                    sendK2BlockPage(ThreadLocalExecutionMap.getInstance().getHttpRequestBean().getClientIP());
-                    throw new K2CyberSecurityException(String.format(ACCESS_BY_BLOCKED_IP_ADDRESS_DETECTED_S, ThreadLocalExecutionMap.getInstance().getHttpRequestBean().getClientIP()));
-                } else {
-                    AgentUtils.getInstance().getBlockedAttackerIPs().remove(ip);
-                }
-            }
-
 
         }
 

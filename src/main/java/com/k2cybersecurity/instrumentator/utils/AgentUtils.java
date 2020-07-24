@@ -7,7 +7,10 @@ import com.k2cybersecurity.intcodeagent.logging.DeployedApplication;
 import com.k2cybersecurity.intcodeagent.logging.IAgentConstants;
 import com.k2cybersecurity.intcodeagent.models.config.AgentPolicy;
 import com.k2cybersecurity.intcodeagent.models.config.AgentPolicyIPBlockingParameters;
-import com.k2cybersecurity.intcodeagent.models.javaagent.*;
+import com.k2cybersecurity.intcodeagent.models.javaagent.EventResponse;
+import com.k2cybersecurity.intcodeagent.models.javaagent.JADatabaseMetaData;
+import com.k2cybersecurity.intcodeagent.models.javaagent.UserClassEntity;
+import com.k2cybersecurity.intcodeagent.models.javaagent.VulnerabilityCaseType;
 import com.k2cybersecurity.intcodeagent.models.operationalbean.AbstractOperationalBean;
 import net.bytebuddy.description.type.TypeDescription;
 import org.apache.commons.codec.digest.DigestUtils;
@@ -60,8 +63,6 @@ public class AgentUtils {
 
 	private Map<String, EventResponse> eventResponseSet;
 
-	private Set<String> blockedAPIs;
-
 	private Set<String> rxssSentUrls;
 
 	private Set<DeployedApplication> deployedApplicationUnderProcessing;
@@ -78,8 +79,6 @@ public class AgentUtils {
 
 	private Set<DeployedApplication> scannedDeployedApplications = new HashSet<DeployedApplication>();
 
-	private Map<String, IPBlockingEntry> blockedAttackerIPs = new HashMap<>();
-
 	private Pattern TRACE_PATTERN;
 
 	private Map<Integer, JADatabaseMetaData> sqlConnectionMap;
@@ -92,7 +91,6 @@ public class AgentUtils {
 
 		transformedClasses = new HashSet<>();
 		eventResponseSet = new ConcurrentHashMap<>();
-		blockedAPIs = new HashSet<>();
 		classLoaderRecord = new ConcurrentHashMap<>();
 		rxssSentUrls = new HashSet<>();
 		deployedApplicationUnderProcessing = new HashSet<>();
@@ -131,22 +129,6 @@ public class AgentUtils {
 
 	public Map<String, EventResponse> getEventResponseSet() {
 		return eventResponseSet;
-	}
-
-	public Set<String> getBlockedAPIs() {
-		return blockedAPIs;
-	}
-
-	public void setBlockedAPIs(Set<String> blockedAPIs) {
-		this.blockedAPIs = blockedAPIs;
-	}
-
-	public Map<String, IPBlockingEntry> getBlockedAttackerIPs() {
-		return blockedAttackerIPs;
-	}
-
-	public void setBlockedAttackerIPs(Map<String, IPBlockingEntry> blockedAttackerIPs) {
-		this.blockedAttackerIPs = blockedAttackerIPs;
 	}
 
 	public void createProtectedVulnerabilties(TypeDescription typeDescription, ClassLoader classLoader) {
@@ -319,11 +301,6 @@ public class AgentUtils {
 		if (scannedDeployedApplications != null && !scannedDeployedApplications.isEmpty()) {
 			this.scannedDeployedApplications.add(scannedDeployedApplications);
 		}
-	}
-
-	public void addIPBlockingEntry(String ip) {
-		IPBlockingEntry entry = new IPBlockingEntry(ip);
-		blockedAttackerIPs.put(entry.getTargetIP(), entry);
 	}
 
 	public UserClassEntity detectUserClass(StackTraceElement[] trace, Object currentGenericServletInstance,
