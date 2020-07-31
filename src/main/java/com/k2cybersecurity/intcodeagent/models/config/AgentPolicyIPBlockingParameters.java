@@ -3,10 +3,10 @@ package com.k2cybersecurity.intcodeagent.models.config;
 import com.fasterxml.jackson.annotation.*;
 import com.k2cybersecurity.intcodeagent.websocket.JsonConverter;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({
@@ -18,14 +18,14 @@ import java.util.Map;
 public class AgentPolicyIPBlockingParameters {
 
     @JsonProperty("allowedIps")
-    private List<String> allowedIps = new ArrayList<>();
+    private Set<String> allowedIps = new HashSet<>();
     @JsonProperty("blockedIps")
-    private List<String> blockedIps = new ArrayList<>();
+    private Set<String> blockedIps = new HashSet<>();
 
     @JsonProperty("allowedApis")
-    private List<String> allowedApis = new ArrayList<>();
+    private Set<String> allowedApis = new HashSet<>();
     @JsonProperty("blockedApis")
-    private List<String> blockedApis = new ArrayList<>();
+    private Set<String> blockedApis = new HashSet<>();
 
 
     @JsonIgnore
@@ -41,29 +41,29 @@ public class AgentPolicyIPBlockingParameters {
      * @param allowedIps
      * @param blockedIps
      */
-    public AgentPolicyIPBlockingParameters(List<String> allowedIps, List<String> blockedIps) {
+    public AgentPolicyIPBlockingParameters(Set<String> allowedIps, Set<String> blockedIps) {
         super();
         this.allowedIps = allowedIps;
         this.blockedIps = blockedIps;
     }
 
     @JsonProperty("allowedIps")
-    public List<String> getAllowedIps() {
+    public Set<String> getAllowedIps() {
         return allowedIps;
     }
 
     @JsonProperty("allowedIps")
-    public void setAllowedIps(List<String> allowedIps) {
+    public void setAllowedIps(Set<String> allowedIps) {
         this.allowedIps = allowedIps;
     }
 
     @JsonProperty("blockedIps")
-    public List<String> getBlockedIps() {
+    public Set<String> getBlockedIps() {
         return blockedIps;
     }
 
     @JsonProperty("blockedIps")
-    public void setBlockedIps(List<String> blockedIps) {
+    public void setBlockedIps(Set<String> blockedIps) {
         this.blockedIps = blockedIps;
     }
 
@@ -78,22 +78,22 @@ public class AgentPolicyIPBlockingParameters {
     }
 
     @JsonProperty("allowedApis")
-    public List<String> getAllowedApis() {
+    public Set<String> getAllowedApis() {
         return allowedApis;
     }
 
     @JsonProperty("allowedApis")
-    public void setAllowedApis(List<String> allowedApis) {
+    public void setAllowedApis(Set<String> allowedApis) {
         this.allowedApis = allowedApis;
     }
 
     @JsonProperty("blockedApis")
-    public List<String> getBlockedApis() {
+    public Set<String> getBlockedApis() {
         return blockedApis;
     }
 
     @JsonProperty("blockedApis")
-    public void setBlockedApis(List<String> blockedApis) {
+    public void setBlockedApis(Set<String> blockedApis) {
         this.blockedApis = blockedApis;
     }
 
