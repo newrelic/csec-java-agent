@@ -36,7 +36,7 @@ public class HttpRequestBean {
 
 	private Map<String, FileIntegrityBean> fileExist;
 
-	private String contextPath;
+	private String contextPath = FORWARD_SLASH;
 
 	private String contentType;
 
@@ -68,7 +68,7 @@ public class HttpRequestBean {
 		this.url = StringUtils.EMPTY;
 		this.headers = new JSONObject();
 		this.fileExist = new HashMap<String, FileIntegrityBean>();
-		this.contextPath = StringUtils.EMPTY;
+		this.contextPath = FORWARD_SLASH;
 		this.serverPort = -1;
 		this.httpResponseBean = new HttpResponseBean();
 		this.contentType = StringUtils.EMPTY;

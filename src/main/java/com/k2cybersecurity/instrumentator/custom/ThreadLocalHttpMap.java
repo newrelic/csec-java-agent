@@ -205,7 +205,7 @@ public class ThreadLocalHttpMap {
 			}
 			httpRequestBean.setContextPath(contextPath);
 		} catch (Throwable e) {
-			logger.log(LogLevel.ERROR, ERROR, e, ThreadLocalHttpMap.class.getName());
+			logger.log(LogLevel.DEBUG, ERROR, e, ThreadLocalHttpMap.class.getName());
 		}
 
 		if (isHttpRequestParsed) {
@@ -279,7 +279,7 @@ public class ThreadLocalHttpMap {
 			isHttpRequestParsed = true;
 			return true;
 		} catch (Throwable e) {
-			logger.log(LogLevel.ERROR, ERROR, e, ThreadLocalHttpMap.class.getName());
+			logger.log(LogLevel.DEBUG, ERROR, e, ThreadLocalHttpMap.class.getName());
 //			e.printStackTrace();
 		} finally {
 //			logger.log(LogLevel.DEBUG,
@@ -336,7 +336,7 @@ public class ThreadLocalHttpMap {
 				headers.put(headerKey, headerFullValue);
 			}
 		} catch (Throwable e) {
-			logger.log(LogLevel.ERROR, ERROR, e, ThreadLocalHttpMap.class.getName());
+			logger.log(LogLevel.DEBUG, ERROR, e, ThreadLocalHttpMap.class.getName());
 		}
 	}
 
@@ -383,7 +383,7 @@ public class ThreadLocalHttpMap {
 			return true;
 
 		} catch (Throwable e) {
-			logger.log(LogLevel.ERROR, ERROR, e, ThreadLocalHttpMap.class.getName());
+			logger.log(LogLevel.DEBUG, ERROR, e, ThreadLocalHttpMap.class.getName());
 		}
 		return !httpRequestBean.getHttpResponseBean().isEmpty();
 	}
@@ -411,7 +411,7 @@ public class ThreadLocalHttpMap {
 				headers.put(headerKey, headerFullValue);
 			}
 		} catch (Throwable e) {
-			logger.log(LogLevel.ERROR, ERROR, e, ThreadLocalHttpMap.class.getName());
+			logger.log(LogLevel.DEBUG, ERROR, e, ThreadLocalHttpMap.class.getName());
 		}
 	}
 
