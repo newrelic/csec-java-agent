@@ -63,7 +63,7 @@ public class Callbacks {
 	private static FileIntegrityBean createEntryOfFileIntegrity(String fileName, String sourceString, String className, String methodName, String exectionId) {
 		File file = Paths.get(fileName).toFile();
 		String extension = FilenameUtils.getExtension(fileName);
-		if (SOURCE_EXENSIONS.contains(extension)) {
+		if (SOURCE_EXENSIONS.contains(extension) && !ThreadLocalExecutionMap.getInstance().getFileLocalMap().containsKey(fileName)) {
 			FileIntegrityBean fbean = new FileIntegrityBean(file.exists(), fileName, className,
 					sourceString, exectionId, Instant.now().toEpochMilli(), methodName);
 			ThreadLocalExecutionMap.getInstance().getFileLocalMap().put(fileName,
