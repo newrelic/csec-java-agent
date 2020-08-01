@@ -8,6 +8,7 @@ import com.k2cybersecurity.instrumentator.dispatcher.EventDispatcher;
 import com.k2cybersecurity.intcodeagent.models.javaagent.FileIntegrityBean;
 import com.k2cybersecurity.intcodeagent.models.javaagent.VulnerabilityCaseType;
 import com.k2cybersecurity.intcodeagent.models.operationalbean.FileOperationalBean;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
@@ -61,7 +62,7 @@ public class Callbacks {
 	
 	private static FileIntegrityBean createEntryOfFileIntegrity(String fileName, String sourceString, String className, String methodName, String exectionId) {
 		File file = Paths.get(fileName).toFile();
-		String extension = getFileExtension(file);
+		String extension = FilenameUtils.getExtension(fileName);
 		if (SOURCE_EXENSIONS.contains(extension)) {
 			FileIntegrityBean fbean = new FileIntegrityBean(file.exists(), fileName, className,
 					sourceString, exectionId, Instant.now().toEpochMilli(), methodName);
