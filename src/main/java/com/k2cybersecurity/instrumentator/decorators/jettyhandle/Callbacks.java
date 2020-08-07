@@ -3,6 +3,7 @@ package com.k2cybersecurity.instrumentator.decorators.jettyhandle;
 import com.k2cybersecurity.instrumentator.custom.*;
 import com.k2cybersecurity.instrumentator.dispatcher.EventDispatcher;
 import com.k2cybersecurity.instrumentator.utils.CallbackUtils;
+import com.k2cybersecurity.intcodeagent.models.javaagent.AgentMetaData;
 import com.k2cybersecurity.intcodeagent.models.javaagent.HttpRequestBean;
 import com.k2cybersecurity.intcodeagent.models.javaagent.VulnerabilityCaseType;
 import org.apache.commons.lang3.StringUtils;
@@ -140,9 +141,10 @@ public class Callbacks {
 				ThreadLocalHttpMap.getInstance().printInterceptedRequestResponse();
 				if (!ThreadLocalExecutionMap.getInstance().getHttpRequestBean().getHttpResponseBean().isEmpty()) {
 					EventDispatcher.dispatch(
-							new HttpRequestBean(ThreadLocalExecutionMap.getInstance().getHttpRequestBean()),
-							sourceString, exectionId, Instant.now().toEpochMilli(),
-							VulnerabilityCaseType.REFLECTED_XSS, className, methodName);
+                            new HttpRequestBean(ThreadLocalExecutionMap.getInstance().getHttpRequestBean()),
+                            new AgentMetaData(ThreadLocalExecutionMap.getInstance().getMetaData()),
+                            sourceString, exectionId, Instant.now().toEpochMilli(),
+                            VulnerabilityCaseType.REFLECTED_XSS, className, methodName);
 					String tid = StringUtils.substringBefore(exectionId, SEPARATOR_COLON);
 				}
 			}

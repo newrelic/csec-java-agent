@@ -1,23 +1,18 @@
 package com.k2cybersecurity.instrumentator.custom;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.k2cybersecurity.instrumentator.dispatcher.EventDispatcher;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.logging.DeployedApplication;
 import com.k2cybersecurity.intcodeagent.models.javaagent.HttpRequestBean;
-import com.k2cybersecurity.intcodeagent.models.javaagent.VulnerabilityCaseType;
 import com.k2cybersecurity.intcodeagent.websocket.JsonConverter;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
-import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.URL;
-import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.Enumeration;
 
 public class ServletContextInfo {
     public static final String GET_CONTEXT_PATH = "getContextPath";
@@ -53,8 +48,6 @@ public class ServletContextInfo {
 
     @JsonIgnore
     private static ServletContextInfo instance;
-
-    private Map<String, DeployedApplication> contextMap = new ConcurrentHashMap<>();
 
     private String serverInfo = StringUtils.EMPTY;
 
@@ -107,10 +100,6 @@ public class ServletContextInfo {
         this.minorServletVersion = minorServletVersion;
     }
 
-    public Map<String, DeployedApplication> getContextMap() {
-        return contextMap;
-    }
-
     public boolean processServletContext(HttpRequestBean httpRequestBean, DeployedApplication deployedApplication) {
         String contextPath = httpRequestBean.getContextPath();
         Object servletContext = httpRequestBean.getServletContextObject();
@@ -124,7 +113,6 @@ public class ServletContextInfo {
         Method getMinorVersion = null;
 
         deployedApplication.setContextPath(contextPath);
-
 
         try {
             getServerInfo = servletContext.getClass().getMethod(GET_SERVER_INFO);
@@ -149,7 +137,7 @@ public class ServletContextInfo {
         setServerInfo(serverInfo);
 
         deployedApplication.setAppName(applicationName);
-        deployedApplication.updatePorts(serverPort);
+        deployedApplication.getPorts().add(serverPort);
 
 
         if (StringUtils.isNotBlank(deployedApplication.getDeployedPath())) {

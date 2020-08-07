@@ -1,9 +1,9 @@
 package com.k2cybersecurity.intcodeagent.models.javaagent;
 
+import com.k2cybersecurity.intcodeagent.logging.DeployedApplication;
 import com.k2cybersecurity.intcodeagent.websocket.JsonConverter;
 import org.json.simple.JSONArray;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class JavaAgentEventBean extends AgentBasicInfo {
@@ -16,27 +16,30 @@ public class JavaAgentEventBean extends AgentBasicInfo {
 	private String currentMethod;
 	private Boolean validationBypass;
 	private Integer lineNumber;
-	private JSONArray parameters;
-	private Long eventGenerationTime;
-	private HttpRequestBean httpRequest;
-	private String id;
-	private List<StackTraceElement> stacktrace;
-	private String caseType;
-	private String eventCategory;
-	private Long preProcessingTime;
-	private AgentMetaData metaData;
-	private Long blockingProcessingTime = 0L;
-	private boolean validationResponseRequired = false;
+    private JSONArray parameters;
+    private Long eventGenerationTime;
+    private HttpRequestBean httpRequest;
+    private String id;
+    private List<StackTraceElement> stacktrace;
+    private String caseType;
+    private String eventCategory;
+    private Long preProcessingTime;
+    private AgentMetaData metaData;
+    private Long blockingProcessingTime = 0L;
+    private List<StackTraceElement> completeStacktrace;
+    private boolean isAPIBlocked = false;
+    private String apiId;
+    private DeployedApplication webappIdentifier;
 
-	public JavaAgentEventBean() {
-		super();
-	}
+    public JavaAgentEventBean() {
+        super();
+    }
 
-	public JavaAgentEventBean(Long startTime, Long preProcessingTime, String sourceMethod, Integer pid,
-							  String applicationUUID, String id, VulnerabilityCaseType vulnerabilityCaseType) {
-		this.id = id;
-		this.setPid(pid);
-		this.applicationUUID = applicationUUID;
+    public JavaAgentEventBean(Long startTime, Long preProcessingTime, String sourceMethod, Integer pid,
+                              String applicationUUID, String id, VulnerabilityCaseType vulnerabilityCaseType) {
+        this.id = id;
+        this.setPid(pid);
+        this.applicationUUID = applicationUUID;
 		this.sourceMethod = sourceMethod;
 		this.startTime = startTime;
 		this.setCaseType(vulnerabilityCaseType.getCaseType());
@@ -264,21 +267,45 @@ public class JavaAgentEventBean extends AgentBasicInfo {
 
 	public void setEventCategory(String eventCategory) {
 		this.eventCategory = eventCategory;
-	}
+    }
 
-	public Long getBlockingProcessingTime() {
-		return blockingProcessingTime;
-	}
+    public Long getBlockingProcessingTime() {
+        return blockingProcessingTime;
+    }
 
-	public void setBlockingProcessingTime(Long blockingProcessingTime) {
-		this.blockingProcessingTime = blockingProcessingTime;
-	}
+    public void setBlockingProcessingTime(Long blockingProcessingTime) {
+        this.blockingProcessingTime = blockingProcessingTime;
+    }
 
-	public boolean isValidationResponseRequired() {
-		return validationResponseRequired;
-	}
+    public boolean isAPIBlocked() {
+        return isAPIBlocked;
+    }
 
-	public void setValidationResponseRequired(boolean validationResponseRequired) {
-		this.validationResponseRequired = validationResponseRequired;
-	}
+    public void setAPIBlocked(boolean APIBlocked) {
+        this.isAPIBlocked = APIBlocked;
+    }
+
+    public List<StackTraceElement> getCompleteStacktrace() {
+        return completeStacktrace;
+    }
+
+    public void setCompleteStacktrace(List<StackTraceElement> completeStacktrace) {
+        this.completeStacktrace = completeStacktrace;
+    }
+
+    public String getApiId() {
+        return apiId;
+    }
+
+    public void setApiId(String apiId) {
+        this.apiId = apiId;
+    }
+
+    public DeployedApplication getWebappIdentifier() {
+        return webappIdentifier;
+    }
+
+    public void setWebappIdentifier(DeployedApplication webappIdentifier) {
+        this.webappIdentifier = webappIdentifier;
+    }
 }

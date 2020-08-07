@@ -2,7 +2,6 @@ package com.k2cybersecurity.intcodeagent.logging;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Set;
 import java.util.regex.Pattern;
 
 public interface IAgentConstants {
@@ -489,25 +488,27 @@ public interface IAgentConstants {
 	char VMPID_SPLIT_CHAR = '@';
 	String APPLICATION_INFO_POSTED_MSG = "Posted application info : ";
 	String COLON_SEPERATOR = ":";
-	int TOMCAT_7 = 7;
-	int TOMCAT_8 = 8;
-	int TOMCAT_9 = 9;
-	int K2_IC_TCP_PORT = 54321;
+    int TOMCAT_7 = 7;
+    int TOMCAT_8 = 8;
+    int TOMCAT_9 = 9;
+    int K2_IC_TCP_PORT = 54321;
 
-	String JSON_NAME_APPLICATION_INFO_BEAN = "applicationinfo";
-	String JSON_NAME_INTCODE_RESULT_BEAN = "Event";
-	String JSON_NAME_HEALTHCHECK = "LAhealthcheck";
-	String JSON_NAME_DYNAMICJARPATH_BEAN = "dynamicjarpath";
-	String JSON_NAME_SHUTDOWN = "shutdown";
+    String JSON_NAME_APPLICATION_INFO_BEAN = "applicationinfo";
+    String JSON_NAME_INTCODE_RESULT_BEAN = "Event";
+    String JSON_NAME_HEALTHCHECK = "LAhealthcheck";
+    String JSON_NAME_DYNAMICJARPATH_BEAN = "dynamicjarpath";
+    String JSON_NAME_SHUTDOWN = "shutdown";
+    String JSON_NAME_FUZZ_FAIL = "fuzzfail";
 
-	String FIELD_SOCKET_CHANNEL = "socketChannel";
-	String ORG_XNIO_NIO_NIO_SOCKET_CONDUIT = "org.xnio.nio.NioSocketConduit";
-	String FIELD_ORIGINAL_SOURCE_CONDUIT = "originalSourceConduit";
-	String FIELD_CONNECTION = "connection";
-	String METHOD_GET_REMOTE_HOST_ADDRESS = "getRemoteHostAddress";
-	String METHOD_GET_CONNECTION_DESCRIPTOR = "getConnectionDescriptor";
-	String METHOD_GET_VIRTUAL_CONNECTION = "getVirtualConnection";
-	String COM_IBM_WSSPI_CHANNELFW_CONNECTION_DESCRIPTOR = "com.ibm.wsspi.channelfw.ConnectionDescriptor";
+
+    String FIELD_SOCKET_CHANNEL = "socketChannel";
+    String ORG_XNIO_NIO_NIO_SOCKET_CONDUIT = "org.xnio.nio.NioSocketConduit";
+    String FIELD_ORIGINAL_SOURCE_CONDUIT = "originalSourceConduit";
+    String FIELD_CONNECTION = "connection";
+    String METHOD_GET_REMOTE_HOST_ADDRESS = "getRemoteHostAddress";
+    String METHOD_GET_CONNECTION_DESCRIPTOR = "getConnectionDescriptor";
+    String METHOD_GET_VIRTUAL_CONNECTION = "getVirtualConnection";
+    String COM_IBM_WSSPI_CHANNELFW_CONNECTION_DESCRIPTOR = "com.ibm.wsspi.channelfw.ConnectionDescriptor";
 	String COM_IBM_WSSPI_CHANNELFW_VIRTUAL_CONNECTION = "com.ibm.wsspi.channelfw.VirtualConnection";
 	String COM_IBM_WS_HTTP_CHANNEL_INTERNAL_INBOUND_HTTP_INBOUND_LINK = "com.ibm.ws.http.channel.internal.inbound.HttpInboundLink";
 	String COM_IBM_WS_HTTP_CHANNEL_INBOUND_HTTP_INBOUND_LINK = "com.ibm.ws.http.channel.inbound.impl.HttpInboundLink";
@@ -530,21 +531,29 @@ public interface IAgentConstants {
 	String JAVAX_CRYPTO_CIPHER_GETINSTANCE_STRING_PROVIDER = "public static final javax.crypto.Cipher javax.crypto.Cipher.getInstance(java.lang.String,java.security.Provider) throws java.security.NoSuchAlgorithmException,javax.crypto.NoSuchPaddingException";
 
 	String KEYGENERATOR = "KEYGENERATOR";
-	String JAVAX_CRYPTO_KEYGENERATOR_GETINSTANCE_STRING = "public static final javax.crypto.KeyGenerator javax.crypto.KeyGenerator.getInstance(java.lang.String) throws java.security.NoSuchAlgorithmException";
-	String JAVAX_CRYPTO_KEYGENERATOR_GETINSTANCE_STRING_STRING = "public static final javax.crypto.KeyGenerator javax.crypto.KeyGenerator.getInstance(java.lang.String,java.lang.String) throws java.security.NoSuchAlgorithmException,java.security.NoSuchProviderException";
-	String JAVAX_CRYPTO_KEYGENERATOR_GETINSTANCE_STRING_PROVIDER = "public static final javax.crypto.KeyGenerator javax.crypto.KeyGenerator.getInstance(java.lang.String,java.security.Provider) throws java.security.NoSuchAlgorithmException";
+    String JAVAX_CRYPTO_KEYGENERATOR_GETINSTANCE_STRING = "public static final javax.crypto.KeyGenerator javax.crypto.KeyGenerator.getInstance(java.lang.String) throws java.security.NoSuchAlgorithmException";
+    String JAVAX_CRYPTO_KEYGENERATOR_GETINSTANCE_STRING_STRING = "public static final javax.crypto.KeyGenerator javax.crypto.KeyGenerator.getInstance(java.lang.String,java.lang.String) throws java.security.NoSuchAlgorithmException,java.security.NoSuchProviderException";
+    String JAVAX_CRYPTO_KEYGENERATOR_GETINSTANCE_STRING_PROVIDER = "public static final javax.crypto.KeyGenerator javax.crypto.KeyGenerator.getInstance(java.lang.String,java.security.Provider) throws java.security.NoSuchAlgorithmException";
 
-	String KEYPAIRGENERATOR = "KEYPAIRGENERATOR";
-	String JAVA_SECURITY_KEYPAIRGENERATOR_GETINSTANCE_STRING = "public static java.security.KeyPairGenerator java.security.KeyPairGenerator.getInstance(java.lang.String) throws java.security.NoSuchAlgorithmException";
-	String JAVA_SECURITY_KEYPAIRGENERATOR_GETINSTANCE_STRING_STRING = "public static java.security.KeyPairGenerator java.security.KeyPairGenerator.getInstance(java.lang.String,java.lang.String) throws java.security.NoSuchAlgorithmException,java.security.NoSuchProviderException";
-	String JAVA_SECURITY_KEYPAIRGENERATOR_GETINSTANCE_STRING_PROVIDER = "public static java.security.KeyPairGenerator java.security.KeyPairGenerator.getInstance(java.lang.String,java.security.Provider) throws java.security.NoSuchAlgorithmException";
+    String KEYPAIRGENERATOR = "KEYPAIRGENERATOR";
+    String JAVA_SECURITY_KEYPAIRGENERATOR_GETINSTANCE_STRING = "public static java.security.KeyPairGenerator java.security.KeyPairGenerator.getInstance(java.lang.String) throws java.security.NoSuchAlgorithmException";
+    String JAVA_SECURITY_KEYPAIRGENERATOR_GETINSTANCE_STRING_STRING = "public static java.security.KeyPairGenerator java.security.KeyPairGenerator.getInstance(java.lang.String,java.lang.String) throws java.security.NoSuchAlgorithmException,java.security.NoSuchProviderException";
+    String JAVA_SECURITY_KEYPAIRGENERATOR_GETINSTANCE_STRING_PROVIDER = "public static java.security.KeyPairGenerator java.security.KeyPairGenerator.getInstance(java.lang.String,java.security.Provider) throws java.security.NoSuchAlgorithmException";
 
-	// HASH Constants
-	String JAVA_SECURITY_MESSAGEDIGEST_GETINSTANCE_STRING = "public static java.security.MessageDigest java.security.MessageDigest.getInstance(java.lang.String) throws java.security.NoSuchAlgorithmException";
-	String JAVA_SECURITY_MESSAGEDIGEST_GETINSTANCE_STRING_STRING = "public static java.security.MessageDigest java.security.MessageDigest.getInstance(java.lang.String,java.lang.String) throws java.security.NoSuchAlgorithmException,java.security.NoSuchProviderException";
-	String JAVA_SECURITY_MESSAGEDIGEST_GETINSTANCE_STRING_PROVIDER = "public static java.security.MessageDigest java.security.MessageDigest.getInstance(java.lang.String,java.security.Provider) throws java.security.NoSuchAlgorithmException";
-	String BLOCKING_END_TIME = "blockingEndTime";
-	String ERROR_WHILE_DETERMINING_HOSTIP_FROM_DEFAULT_GATEWAY = "Error while determining hostip from default gateway";
-	
-	String INIT = "<init>";
+    // HASH Constants
+    String JAVA_SECURITY_MESSAGEDIGEST_GETINSTANCE_STRING = "public static java.security.MessageDigest java.security.MessageDigest.getInstance(java.lang.String) throws java.security.NoSuchAlgorithmException";
+    String JAVA_SECURITY_MESSAGEDIGEST_GETINSTANCE_STRING_STRING = "public static java.security.MessageDigest java.security.MessageDigest.getInstance(java.lang.String,java.lang.String) throws java.security.NoSuchAlgorithmException,java.security.NoSuchProviderException";
+    String JAVA_SECURITY_MESSAGEDIGEST_GETINSTANCE_STRING_PROVIDER = "public static java.security.MessageDigest java.security.MessageDigest.getInstance(java.lang.String,java.security.Provider) throws java.security.NoSuchAlgorithmException";
+    String BLOCKING_END_TIME = "blockingEndTime";
+    String ERROR_WHILE_DETERMINING_HOSTIP_FROM_DEFAULT_GATEWAY = "Error while determining hostip from default gateway";
+
+    String K2_FUZZ_REQUEST_ID = "k2-fuzz-request-id";
+    String INIT = "<init>";
+    String SUN_REFLECT = "sun.reflect.";
+    String COM_SUN = "com.sun.";
+    String UNABLE_TO_SET_AGENT_POLICY_DUE_TO_ERROR = "Unable to set Agent Policy due to error:";
+    String UNABLE_TO_SET_AGENT_POLICY_PARAM_DUE_TO_ERROR = "Unable to set Agent Policy Parameters due to error:";
+    String AGENT_POLICY_APPLIED_S = "Agent Policy applied : %s";
+    String AGENT_POLICY_PARAM_APPLIED_S = "Agent Policy parameters applied : %s";
+
 }
