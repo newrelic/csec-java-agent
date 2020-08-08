@@ -553,6 +553,7 @@ public interface IAgentConstants {
     String COM_SUN = "com.sun.";
     String UNABLE_TO_SET_AGENT_POLICY_DUE_TO_ERROR = "Unable to set Agent Policy due to error:";
     String UNABLE_TO_SET_AGENT_POLICY_PARAM_DUE_TO_ERROR = "Unable to set Agent Policy Parameters due to error:";
+    String UNABLE_TO_GET_AGENT_STARTUP_INFOARMATION = "Unable to get Agent startup information due to error:";
     String AGENT_POLICY_APPLIED_S = "Agent Policy applied : %s";
     String AGENT_POLICY_PARAM_APPLIED_S = "Agent Policy parameters applied : %s";
 
