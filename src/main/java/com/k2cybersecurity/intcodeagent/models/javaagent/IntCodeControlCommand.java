@@ -11,7 +11,6 @@ public class IntCodeControlCommand {
     public static final int CHANGE_LOG_LEVEL = 0;
     public static final int SHUTDOWN_LANGUAGE_AGENT = 1;
     public static final int SET_DEFAULT_LOG_LEVEL = 2;
-    public static final int ENABLE_HTTP_REQUEST_PRINTING = 3;
     public static final int UPLOAD_LOGS = 4;
     public static final int UNSUPPORTED_AGENT = 5;
     public static final int EVENT_RESPONSE = 6;

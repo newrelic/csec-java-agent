@@ -90,9 +90,6 @@ public class ControlCommandProcessor implements Runnable {
 			LogLevel logLevel = LogLevel.valueOf(controlCommand.getArguments().get(0));
 			LogWriter.setLogLevel(logLevel);
 			break;
-		case IntCodeControlCommand.ENABLE_HTTP_REQUEST_PRINTING:
-			K2Instrumentator.enableHTTPRequestPrinting = !K2Instrumentator.enableHTTPRequestPrinting;
-			break;
 		case IntCodeControlCommand.UPLOAD_LOGS:
 			logger.log(LogLevel.INFO, "Is log file sent to IC: " + FtpClient.sendBootstrapLogFile(),
 					ControlCommandProcessor.class.getSimpleName());
