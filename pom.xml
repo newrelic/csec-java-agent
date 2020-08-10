@@ -179,6 +179,7 @@
 							</transformers>
 							<finalName>${project.artifactId}-${project.version}-jar-with-dependencies</finalName>
 							<relocations>
+
 								<relocation>
 									<pattern>org.objectweb</pattern>
 									<shadedPattern>sun.reflect.com.k2cybersecurity.org.objectweb</shadedPattern>
@@ -227,7 +228,14 @@
 										<exclude>org/apache/commons/httpclient/**/*</exclude>
 									</excludes>
 								</relocation>
-
+								<relocation>
+									<pattern>okio</pattern>
+									<shadedPattern>sun.reflect.com.k2cybersecurity.okio</shadedPattern>
+								</relocation>
+								<relocation>
+									<pattern>com.squareup.okhttp</pattern>
+									<shadedPattern>sun.reflect.com.k2cybersecurity.com.squareup.okhttp</shadedPattern>
+								</relocation>
 							</relocations>
 						</configuration>
 
