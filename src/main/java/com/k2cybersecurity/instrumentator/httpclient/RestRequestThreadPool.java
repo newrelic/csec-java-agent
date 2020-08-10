@@ -11,6 +11,9 @@ import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.logging.EventThreadPool;
 
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
+
 public class RestRequestThreadPool {
 
     /**
@@ -55,7 +58,7 @@ public class RestRequestThreadPool {
             protected void beforeExecute(Thread t, Runnable r) {
                 super.beforeExecute(t, r);
             }
-            
+
         };
         executor.allowCoreThreadTimeOut(allowCoreThreadTimeOut);
         executor.setThreadFactory(new ThreadFactory() {

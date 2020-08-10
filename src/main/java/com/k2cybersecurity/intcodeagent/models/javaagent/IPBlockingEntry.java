@@ -53,7 +53,7 @@ public class IPBlockingEntry {
         return Objects.hash(creationTimestamp, targetIP);
     }
 
-    public boolean isValid(){
+    public boolean isValid() {
         if (AgentUtils.getInstance().getAgentPolicy() != null) {
             return (System.currentTimeMillis() - creationTimestamp) < TimeUnit.MINUTES.toMillis(AgentUtils.getInstance().getAgentPolicy().getProtectionMode().getIpBlocking().getTimeout());
         }

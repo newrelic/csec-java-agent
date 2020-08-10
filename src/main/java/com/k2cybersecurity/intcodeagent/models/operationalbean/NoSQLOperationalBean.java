@@ -1,34 +1,41 @@
 package com.k2cybersecurity.intcodeagent.models.operationalbean;
 
-import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.websocket.JsonConverter;
 
-public class NoSQLOperationalBean extends AbstractOperationalBean{
+import java.util.ArrayList;
+import java.util.List;
 
-	private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
+public class NoSQLOperationalBean extends AbstractOperationalBean {
 
-	private Object[] apiCallArgs;
 
-	public NoSQLOperationalBean(Object[] apiCallArgs, String className, String sourceMethod, String executionId, long startTime, String methodName) {
-		super(className, sourceMethod, executionId, startTime, methodName);
-		this.apiCallArgs = apiCallArgs;
-	}
+    private List<Object> data = new ArrayList<>();
 
-	@Override
-	public String toString() {
-		return JsonConverter.toJSON(this);
-	}
+    public NoSQLOperationalBean(List<Object> data, String className, String sourceMethod, String executionId, long startTime, String methodName) {
+        super(className, sourceMethod, executionId, startTime, methodName);
+        this.data.addAll(data);
+    }
 
-	@Override public boolean isEmpty() {
-		return apiCallArgs == null || apiCallArgs.length <= 0 ;
-	}
+    public NoSQLOperationalBean(Object data, String className, String sourceMethod, String executionId, long startTime, String methodName) {
+        super(className, sourceMethod, executionId, startTime, methodName);
+        this.data.add(data);
+    }
 
-	public Object[] getApiCallArgs() {
-		return apiCallArgs;
-	}
+    @Override
+    public String toString() {
+        return JsonConverter.toJSON(this);
+    }
 
-	public void setApiCallArgs(Object[] apiCallArgs) {
-		this.apiCallArgs = apiCallArgs;
-	}
+    @Override
+    public boolean isEmpty() {
+        return data.isEmpty();
+    }
+
+    public List<Object> getData() {
+        return data;
+    }
+
+    public void setData(List<Object> data) {
+        this.data = data;
+    }
 }
 

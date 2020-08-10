@@ -169,24 +169,24 @@ public class DeployedApplication {
 	 * @see java.lang.Object#hashCode()
 	 */
 	@Override public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((ports == null) ? 0 : ports.hashCode());
-		result = prime * result + ((contextPath == null) ? 0 : contextPath.hashCode());
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((ports == null) ? 0 : ports.hashCode());
+        result = prime * result + ((contextPath == null) ? 0 : contextPath.hashCode());
 
-		return result;
-	}
+        return result;
+    }
 
 	@Override
 	public boolean equals(Object o) {
-		if (this == o) return true;
-		if (o == null || getClass() != o.getClass()) return false;
-		DeployedApplication that = (DeployedApplication) o;
-		return ports.equals(that.ports) &&
-				contextPath.equals(that.contextPath);
-	}
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        DeployedApplication that = (DeployedApplication) o;
+        return ports.equals(that.ports) &&
+                contextPath.equals(that.contextPath);
+    }
 
 	public boolean isEmpty() {
-		return StringUtils.isAnyBlank(deployedPath, appName, contextPath) || ports.isEmpty();
-	}
+        return StringUtils.isAnyBlank(deployedPath, appName, contextPath) || ports.isEmpty();
+    }
 }

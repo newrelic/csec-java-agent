@@ -7,45 +7,45 @@ import java.util.concurrent.Semaphore;
 
 public class EventResponse {
 
-	private String id;
+    private String id;
 
-	private String eventId;
+    private String eventId;
 
-	private String jsonName = "EventResponse";
+    private String jsonName = "EventResponse";
 
-	private boolean attack;
+    private boolean attack;
 
-	private String resultMessage;
+    private String resultMessage;
 
-	@JsonIgnore
-	private Semaphore responseSemaphore = new Semaphore(1);
+    @JsonIgnore
+    private Semaphore responseSemaphore = new Semaphore(1);
 
-	private long generationTime = 0L;
+    private long generationTime = 0L;
 
-	private long receivedTime = 0L;
+    private long receivedTime = 0L;
 
-	private String apiId;
+    private String apiId;
 
-	private String clientIP;
+    private String clientIP;
 
-	private boolean ipDetectedViaXFF = false;
+    private boolean ipDetectedViaXFF = false;
 
-	public EventResponse(String id) {
-		this.id = new String(id);
-	}
+    public EventResponse(String id) {
+        this.id = new String(id);
+    }
 
-	public EventResponse() {
-	}
+    public EventResponse() {
+    }
 
-	public String getId() {
-		return id;
-	}
+    public String getId() {
+        return id;
+    }
 
-	public void setId(String id) {
-		this.id = id;
-	}
+    public void setId(String id) {
+        this.id = id;
+    }
 
-	public String getJsonName() {
+    public String getJsonName() {
 		return jsonName;
 	}
 
@@ -79,52 +79,52 @@ public class EventResponse {
 
 	public void setGenerationTime(long generationTime) {
 		this.generationTime = generationTime;
-	}
+    }
 
-	public long getReceivedTime() {
-		return receivedTime;
-	}
+    public long getReceivedTime() {
+        return receivedTime;
+    }
 
-	public void setReceivedTime(long receivedTime) {
-		this.receivedTime = receivedTime;
-	}
+    public void setReceivedTime(long receivedTime) {
+        this.receivedTime = receivedTime;
+    }
 
-	@JsonIgnore
-	public Semaphore getResponseSemaphore() {
-		return responseSemaphore;
-	}
+    @JsonIgnore
+    public Semaphore getResponseSemaphore() {
+        return responseSemaphore;
+    }
 
-	public String getApiId() {
-		return apiId;
-	}
+    public String getApiId() {
+        return apiId;
+    }
 
-	public void setApiId(String apiId) {
-		this.apiId = apiId;
-	}
+    public void setApiId(String apiId) {
+        this.apiId = apiId;
+    }
 
-	public String getClientIP() {
-		return clientIP;
-	}
+    public String getClientIP() {
+        return clientIP;
+    }
 
-	public void setClientIP(String clientIP) {
-		this.clientIP = clientIP;
-	}
+    public void setClientIP(String clientIP) {
+        this.clientIP = clientIP;
+    }
 
-	public boolean isIpDetectedViaXFF() {
-		return ipDetectedViaXFF;
-	}
+    public boolean isIpDetectedViaXFF() {
+        return ipDetectedViaXFF;
+    }
 
-	public void setIpDetectedViaXFF(boolean ipDetectedViaXFF) {
-		this.ipDetectedViaXFF = ipDetectedViaXFF;
-	}
+    public void setIpDetectedViaXFF(boolean ipDetectedViaXFF) {
+        this.ipDetectedViaXFF = ipDetectedViaXFF;
+    }
 
-	public void setResponseSemaphore(Semaphore responseSemaphore) {
-		this.responseSemaphore = responseSemaphore;
-	}
+    public void setResponseSemaphore(Semaphore responseSemaphore) {
+        this.responseSemaphore = responseSemaphore;
+    }
 
-	@Override
-	public String toString() {
-		return JsonConverter.toJSON(this);
+    @Override
+    public String toString() {
+        return JsonConverter.toJSON(this);
 
-	}
+    }
 }

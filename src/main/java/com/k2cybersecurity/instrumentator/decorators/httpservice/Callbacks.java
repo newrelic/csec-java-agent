@@ -142,10 +142,10 @@ public class Callbacks {
 				ThreadLocalHttpMap.getInstance().printInterceptedRequestResponse();
 				if (!ThreadLocalExecutionMap.getInstance().getHttpRequestBean().getHttpResponseBean().isEmpty()) {
 					EventDispatcher.dispatch(
-							new HttpRequestBean(ThreadLocalExecutionMap.getInstance().getHttpRequestBean()),
-							new AgentMetaData(ThreadLocalExecutionMap.getInstance().getMetaData()),
-							sourceString, exectionId, Instant.now().toEpochMilli(),
-							VulnerabilityCaseType.REFLECTED_XSS, className, methodName);
+                            new HttpRequestBean(ThreadLocalExecutionMap.getInstance().getHttpRequestBean()),
+                            new AgentMetaData(ThreadLocalExecutionMap.getInstance().getMetaData()),
+                            sourceString, exectionId, Instant.now().toEpochMilli(),
+                            VulnerabilityCaseType.REFLECTED_XSS, className, methodName);
 					String tid = StringUtils.substringBefore(exectionId, SEPARATOR_COLON);
 				}
 			}

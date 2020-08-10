@@ -47,7 +47,6 @@ public class Hooks {
 		ANNOTATION_BASED_HOOKS.add("javax.ws.rs.HttpMethod");
 
 
-
 		// SQL hooks
 		TYPE_BASED_HOOKS.put("java.sql.Statement", Arrays.asList("execute", "executeBatch", "executeLargeBatch",
 				"executeLargeUpdate", "executeQuery", "executeUpdate"));
@@ -95,39 +94,34 @@ public class Hooks {
 
 		// Forkexec hooks
 		NAME_BASED_HOOKS.put("java.lang.ProcessImpl", Arrays.asList("start"));
-		
+
 		//System Exit hooks
-		NAME_BASED_HOOKS.put("java.lang.Shutdown", Arrays.asList(new String[] {"exit", "halt"}));
+		NAME_BASED_HOOKS.put("java.lang.Shutdown", Arrays.asList(new String[]{"exit", "halt"}));
 
 		// File Hooks
 		NAME_BASED_HOOKS.put("java.io.FileOutputStream", Arrays.asList("open"));
 		NAME_BASED_HOOKS.put("java.io.FileInputStream", Arrays.asList("open"));
-		NAME_BASED_HOOKS.put("sun.nio.fs.UnixNativeDispatcher", Arrays.asList(new String[] { "open", "fopen", "link",
-				"unlink", "mknod", "rename", "mkdir", "rmdir", "symlink", "chown", "chmod" }));
+		NAME_BASED_HOOKS.put("sun.nio.fs.UnixNativeDispatcher", Arrays.asList(new String[]{"open", "fopen", "link",
+				"unlink", "mknod", "rename", "mkdir", "rmdir", "symlink", "chown", "chmod"}));
 		NAME_BASED_HOOKS.put("java.io.UnixFileSystem", Collections.singletonList("delete"));
 		NAME_BASED_HOOKS.put("java.io.File", Collections.singletonList("list"));
 		NAME_BASED_HOOKS.put("java.io.RandomAccessFile", Collections.singletonList("open"));
 		TYPE_BASED_HOOKS.put("java.io.FileSystem", Collections.singletonList("getBooleanAttributes"));
 
 		// Mongo Hooks
+		NAME_BASED_HOOKS.put("com.mongodb.connection.CommandMessage", Collections.singletonList(null));
 
-		NAME_BASED_HOOKS.put("com.mongodb.connection.DefaultServerConnection",
-				Collections.singletonList("executeProtocol"));
-		NAME_BASED_HOOKS.put("com.mongodb.internal.connection.DefaultServerConnection",
-				Collections.singletonList("executeProtocol"));
-		NAME_BASED_HOOKS.put("com.mongodb.async.client.MongoClientImpl$2", Collections.singletonList("execute"));
-		NAME_BASED_HOOKS.put("com.mongodb.async.client.AsyncOperationExecutorImpl",
-				Collections.singletonList("execute"));
-		NAME_BASED_HOOKS.put("com.mongodb.async.client.OperationExecutorImpl", Collections.singletonList("execute"));
+		NAME_BASED_HOOKS.put("com.mongodb.internal.connection.CommandMessage", Collections.singletonList(null));
+
 
 		// Weak Random
-		NAME_BASED_HOOKS.put("java.util.Random", Arrays.asList(new String[] { "nextBytes", "nextInt", "nextLong",
-				"nextBoolean", "nextFloat", "nextDouble", "nextGaussian" }));
+		NAME_BASED_HOOKS.put("java.util.Random", Arrays.asList(new String[]{"nextBytes", "nextInt", "nextLong",
+				"nextBoolean", "nextFloat", "nextDouble", "nextGaussian"}));
 		NAME_BASED_HOOKS.put("java.lang.Math", Collections.singletonList("random"));
 
 		// Strong random
-		NAME_BASED_HOOKS.put("java.security.SecureRandom", Arrays.asList(new String[] { "nextBytes", "nextInt",
-				"nextLong", "nextBoolean", "nextFloat", "nextDouble", "nextGaussian" }));
+		NAME_BASED_HOOKS.put("java.security.SecureRandom", Arrays.asList(new String[]{"nextBytes", "nextInt",
+				"nextLong", "nextBoolean", "nextFloat", "nextDouble", "nextGaussian"}));
 
 		// Jetty Servlet Hooks
 		TYPE_BASED_HOOKS.put("org.eclipse.jetty.server.Handler", Collections.singletonList("handle"));
@@ -426,16 +420,9 @@ public class Hooks {
 				"com.k2cybersecurity.instrumentator.decorators.fileaccess");
 
 		// Mongo Execute
-		DECORATOR_ENTRY.put("com.mongodb.connection.DefaultServerConnection.executeProtocol",
-				"com.k2cybersecurity.instrumentator.decorators.mongoexecute");
-		DECORATOR_ENTRY.put("com.mongodb.internal.connection.DefaultServerConnection.executeProtocol",
-				"com.k2cybersecurity.instrumentator.decorators.mongoexecute");
-		DECORATOR_ENTRY.put("com.mongodb.async.client.MongoClientImpl$2.execute",
-				"com.k2cybersecurity.instrumentator.decorators.mongoexecute");
-		DECORATOR_ENTRY.put("com.mongodb.async.client.AsyncOperationExecutorImpl.execute",
-				"com.k2cybersecurity.instrumentator.decorators.mongoexecute");
-		DECORATOR_ENTRY.put("com.mongodb.async.client.OperationExecutorImpl.execute",
-				"com.k2cybersecurity.instrumentator.decorators.mongoexecute");
+		DECORATOR_ENTRY.put("com.mongodb.connection.CommandMessage.null", "com.k2cybersecurity.instrumentator.decorators.mongo");
+
+		DECORATOR_ENTRY.put("com.mongodb.internal.connection.CommandMessage.null", "com.k2cybersecurity.instrumentator.decorators.mongo");
 
 		// LDAP search
 		DECORATOR_ENTRY.put("javax.naming.directory.DirContext.search",

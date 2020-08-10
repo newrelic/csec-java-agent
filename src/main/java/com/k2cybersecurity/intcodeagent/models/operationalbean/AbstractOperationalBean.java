@@ -21,28 +21,28 @@ public abstract class AbstractOperationalBean {
 
 	private long blockingEndTime;
 
-	@JsonIgnore
-	private Object currentGenericServletInstance;
+    @JsonIgnore
+    private Object currentGenericServletInstance;
 
-	private String currentGenericServletMethodName = StringUtils.EMPTY;
+    private String currentGenericServletMethodName = StringUtils.EMPTY;
 
-	private StackTraceElement[] stackTrace;
+    private StackTraceElement[] stackTrace;
 
-	private UserClassEntity userClassEntity;
+    private UserClassEntity userClassEntity;
 
-	private String apiID;
+    private String apiID;
 
-	public AbstractOperationalBean() {
-		this.className = StringUtils.EMPTY;
-		this.sourceMethod = StringUtils.EMPTY;
-		this.executionId = StringUtils.EMPTY;
-		this.methodName = StringUtils.EMPTY;
-		this.startTime = 0L;
-		this.blockingEndTime = 0L;
-		this.apiID = StringUtils.EMPTY;
-	}
+    public AbstractOperationalBean() {
+        this.className = StringUtils.EMPTY;
+        this.sourceMethod = StringUtils.EMPTY;
+        this.executionId = StringUtils.EMPTY;
+        this.methodName = StringUtils.EMPTY;
+        this.startTime = 0L;
+        this.blockingEndTime = 0L;
+        this.apiID = StringUtils.EMPTY;
+    }
 
-	public AbstractOperationalBean(String className, String sourceMethod, String executionId
+    public AbstractOperationalBean(String className, String sourceMethod, String executionId
 			, long startTime, String methodName){
 		this.className = className;
 		this.sourceMethod = sourceMethod;
@@ -141,22 +141,22 @@ public abstract class AbstractOperationalBean {
 	}
 
 	public void setMethodName(String methodName) {
-		this.methodName = methodName;
-	}
+        this.methodName = methodName;
+    }
 
-	public UserClassEntity getUserClassEntity() {
-		return userClassEntity;
-	}
+    public UserClassEntity getUserClassEntity() {
+        return userClassEntity;
+    }
 
-	public void setUserClassEntity(UserClassEntity userClassEntity) {
-		this.userClassEntity = userClassEntity;
-	}
+    public void setUserClassEntity(UserClassEntity userClassEntity) {
+        this.userClassEntity = userClassEntity;
+    }
 
-	public String getApiID() {
-		return apiID;
-	}
+    public String getApiID() {
+        return apiID;
+    }
 
-	public void setApiID(String apiID) {
-		this.apiID = apiID;
-	}
+    public void setApiID(String apiID) {
+        this.apiID = apiID;
+    }
 }
