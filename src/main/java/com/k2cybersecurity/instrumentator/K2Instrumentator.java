@@ -159,7 +159,7 @@ public class K2Instrumentator {
 				if (index > -1) {
 					return st.substring(index + 4);
 				}
-				// docker version 1.13.1
+				// cgroup driver systemd
 				index = st.lastIndexOf(DOCKER_1_13);
 				int indexEnd = st.lastIndexOf(SCOPE);
 				if (index > -1 && indexEnd > -1) {
@@ -168,12 +168,6 @@ public class K2Instrumentator {
 
 				// podman
 				String containerId = StringUtils.substringBetween(st, LIBPOD, SCOPE);
-				if(StringUtils.isNotBlank(containerId)){
-					return containerId;
-				}
-				
-				//cgroup driver systemd
-				containerId = StringUtils.substringBetween(st, DOCKER_HYPHEN, SCOPE);
 				if(StringUtils.isNotBlank(containerId)){
 					return containerId;
 				}
