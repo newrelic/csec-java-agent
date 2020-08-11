@@ -38,6 +38,7 @@ import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.*;
 
 public class K2Instrumentator {
 
+	private static final String DOCKER_HYPHEN = "docker-";
 	public static final String LIBPOD = "/libpod-";
 	public static String hostip = StringUtils.EMPTY;
 	public static Integer VMPID;
@@ -167,6 +168,12 @@ public class K2Instrumentator {
 
 				// podman
 				String containerId = StringUtils.substringBetween(st, LIBPOD, SCOPE);
+				if(StringUtils.isNotBlank(containerId)){
+					return containerId;
+				}
+				
+				//cgroup driver systemd
+				containerId = StringUtils.substringBetween(st, DOCKER_HYPHEN, SCOPE);
 				if(StringUtils.isNotBlank(containerId)){
 					return containerId;
 				}
