@@ -1,8 +1,5 @@
 package com.k2cybersecurity.instrumentator.httpclient;
 
-import java.io.File;
-import java.io.IOException;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
@@ -29,7 +26,6 @@ public class RestRequestProcessor implements Runnable {
 
     @Override
     public void run() {
-
         if (controlCommand.getArguments().size() != 2) {
             return;
         }
@@ -58,7 +54,6 @@ public class RestRequestProcessor implements Runnable {
                     String.format("Error while processing fuzzing request : %s", controlCommand.getArguments().get(0)),
                     e, RestRequestProcessor.class.getName());
         }
-
     }
 
     public static void processControlCommand(IntCodeControlCommand command) {

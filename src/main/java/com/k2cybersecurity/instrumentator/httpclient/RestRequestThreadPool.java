@@ -1,12 +1,5 @@
 package com.k2cybersecurity.instrumentator.httpclient;
 
-import java.util.concurrent.Future;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.logging.EventThreadPool;
@@ -31,7 +24,7 @@ public class RestRequestThreadPool {
     private final long keepAliveTime = 10;
     private final TimeUnit timeUnit = TimeUnit.SECONDS;
     private final boolean allowCoreThreadTimeOut = false;
-    private static Object mutex = new Object();
+    private static final Object mutex = new Object();
 
     private RestRequestThreadPool() {
         LinkedBlockingQueue<Runnable> processQueue;
