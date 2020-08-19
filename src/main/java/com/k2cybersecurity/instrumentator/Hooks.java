@@ -1,5 +1,7 @@
 package com.k2cybersecurity.instrumentator;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.util.*;
 
 public class Hooks {
@@ -177,8 +179,8 @@ public class Hooks {
 		NAME_BASED_HOOKS.put("org.apache.commons.httpclient.HttpClient", Collections.singletonList("executeMethod"));
 		NAME_BASED_HOOKS.put("com.google.api.client.http.HttpRequest", Arrays.asList("execute", "executeAsync"));
 		TYPE_BASED_HOOKS.put("java.net.URLConnection", Collections.singletonList("connect"));
-		NAME_BASED_HOOKS.put("com.squareup.okhttp.Call", Arrays.asList("execute", null));
-		NAME_BASED_HOOKS.put("com.squareup.okhttp.Call$AsyncCall", Collections.singletonList("execute"));
+		NAME_BASED_HOOKS.put(StringUtils.replace("com@squareup@okhttp@Call", "@", "."), Arrays.asList("execute", null));
+		NAME_BASED_HOOKS.put(StringUtils.replace("com@squareup@okhttp@Call", "@", ".") + "$AsyncCall", Collections.singletonList("execute"));
 
 		NAME_BASED_HOOKS.put("okhttp3.OkHttpClient", Collections.singletonList("newCall"));
 		TYPE_BASED_HOOKS.put("okhttp3.Call", Collections.singletonList("execute"));
@@ -561,9 +563,9 @@ public class Hooks {
 		DECORATOR_ENTRY.put("com.google.api.client.http.HttpRequest.execute", "com.k2cybersecurity.instrumentator.decorators.ssrf.googlehttpclient");
 		DECORATOR_ENTRY.put("com.google.api.client.http.HttpRequest.executeAsync", "com.k2cybersecurity.instrumentator.decorators.ssrf.googlehttpclient");
 
-		DECORATOR_ENTRY.put("com.squareup.okhttp.Call.null", "com.k2cybersecurity.instrumentator.decorators.ssrf.okhttp");
-		DECORATOR_ENTRY.put("com.squareup.okhttp.Call.execute", "com.k2cybersecurity.instrumentator.decorators.ssrf.okhttp");
-		DECORATOR_ENTRY.put("com.squareup.okhttp.Call$AsyncCall.execute", "com.k2cybersecurity.instrumentator.decorators.ssrf.okhttp");
+		DECORATOR_ENTRY.put(StringUtils.replace("com@squareup@okhttp@Call", "@", ".") + ".null", "com.k2cybersecurity.instrumentator.decorators.ssrf.okhttp");
+		DECORATOR_ENTRY.put(StringUtils.replace("com@squareup@okhttp@Call", "@", ".") + ".execute", "com.k2cybersecurity.instrumentator.decorators.ssrf.okhttp");
+		DECORATOR_ENTRY.put(StringUtils.replace("com@squareup@okhttp@Call", "@", ".") + "$AsyncCall.execute", "com.k2cybersecurity.instrumentator.decorators.ssrf.okhttp");
 
 		DECORATOR_ENTRY.put("okhttp3.OkHttpClient.newCall", "com.k2cybersecurity.instrumentator.decorators.ssrf.okhttp3");
 		DECORATOR_ENTRY.put("okhttp3.Call.execute", "com.k2cybersecurity.instrumentator.decorators.ssrf.okhttp3");

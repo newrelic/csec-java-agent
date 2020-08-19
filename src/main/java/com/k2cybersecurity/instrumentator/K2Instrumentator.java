@@ -38,6 +38,7 @@ import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.*;
 
 public class K2Instrumentator {
 
+	private static final String DOCKER_HYPHEN = "docker-";
 	public static final String LIBPOD = "/libpod-";
 	public static String hostip = StringUtils.EMPTY;
 	public static Integer VMPID;
@@ -158,7 +159,7 @@ public class K2Instrumentator {
 				if (index > -1) {
 					return st.substring(index + 4);
 				}
-				// docker version 1.13.1
+				// cgroup driver systemd
 				index = st.lastIndexOf(DOCKER_1_13);
 				int indexEnd = st.lastIndexOf(SCOPE);
 				if (index > -1 && indexEnd > -1) {
