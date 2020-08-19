@@ -1,13 +1,11 @@
 package com.k2cybersecurity.intcodeagent.models.operationalbean;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.k2cybersecurity.instrumentator.custom.ThreadLocalExecutionMap;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalHTTPDoFilterMap;
 import com.k2cybersecurity.instrumentator.utils.AgentUtils;
 import com.k2cybersecurity.intcodeagent.models.javaagent.UserClassEntity;
 import com.k2cybersecurity.intcodeagent.websocket.JsonConverter;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.Pair;
 
 public abstract class AbstractOperationalBean {
 
@@ -23,25 +21,28 @@ public abstract class AbstractOperationalBean {
 
 	private long blockingEndTime;
 
-	@JsonIgnore
-	private Object currentGenericServletInstance;
+    @JsonIgnore
+    private Object currentGenericServletInstance;
 
-	private String currentGenericServletMethodName = StringUtils.EMPTY;
+    private String currentGenericServletMethodName = StringUtils.EMPTY;
 
-	private StackTraceElement[] stackTrace;
+    private StackTraceElement[] stackTrace;
 
-	private UserClassEntity userClassEntity;
+    private UserClassEntity userClassEntity;
 
-	public AbstractOperationalBean(){
-		this.className = StringUtils.EMPTY;
-		this.sourceMethod = StringUtils.EMPTY;
-		this.executionId = StringUtils.EMPTY;
-		this.methodName = StringUtils.EMPTY;
-		this.startTime = 0L;
-		this.blockingEndTime = 0L;
-	}
+    private String apiID;
 
-	public AbstractOperationalBean(String className, String sourceMethod, String executionId
+    public AbstractOperationalBean() {
+        this.className = StringUtils.EMPTY;
+        this.sourceMethod = StringUtils.EMPTY;
+        this.executionId = StringUtils.EMPTY;
+        this.methodName = StringUtils.EMPTY;
+        this.startTime = 0L;
+        this.blockingEndTime = 0L;
+        this.apiID = StringUtils.EMPTY;
+    }
+
+    public AbstractOperationalBean(String className, String sourceMethod, String executionId
 			, long startTime, String methodName){
 		this.className = className;
 		this.sourceMethod = sourceMethod;
@@ -55,6 +56,7 @@ public abstract class AbstractOperationalBean {
 		this.userClassEntity = AgentUtils.getInstance().detectUserClass(this.stackTrace,
 				this.currentGenericServletInstance,
 				this.currentGenericServletMethodName, className, methodName);
+
 
 	}
 
@@ -139,14 +141,22 @@ public abstract class AbstractOperationalBean {
 	}
 
 	public void setMethodName(String methodName) {
-		this.methodName = methodName;
-	}
+        this.methodName = methodName;
+    }
 
-	public UserClassEntity getUserClassEntity() {
-		return userClassEntity;
-	}
+    public UserClassEntity getUserClassEntity() {
+        return userClassEntity;
+    }
 
-	public void setUserClassEntity(UserClassEntity userClassEntity) {
-		this.userClassEntity = userClassEntity;
-	}
+    public void setUserClassEntity(UserClassEntity userClassEntity) {
+        this.userClassEntity = userClassEntity;
+    }
+
+    public String getApiID() {
+        return apiID;
+    }
+
+    public void setApiID(String apiID) {
+        this.apiID = apiID;
+    }
 }

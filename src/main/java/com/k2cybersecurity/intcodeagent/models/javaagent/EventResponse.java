@@ -1,40 +1,51 @@
 package com.k2cybersecurity.intcodeagent.models.javaagent;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.k2cybersecurity.intcodeagent.websocket.JsonConverter;
 
 import java.util.concurrent.Semaphore;
 
 public class EventResponse {
 
-	private String id;
+    private String id;
 
-	private String eventId;
+    private String eventId;
 
-	private String jsonName = "EventResponse";
+    private String jsonName = "EventResponse";
 
-	private boolean attack;
+    private boolean attack;
 
-	private String resultMessage;
+    private String resultMessage;
 
-	private Semaphore responseSemaphore = new Semaphore(1);
+    @JsonIgnore
+    private Semaphore responseSemaphore = new Semaphore(1);
 
-	private long generationTime = 0L;
+    private long generationTime = 0L;
 
-	private long receivedTime = 0L;
+    private long receivedTime = 0L;
 
-	public EventResponse(String id) {
-		this.id = new String(id);
-	}
+    private String apiId;
 
-	public String getId() {
-		return id;
-	}
+    private String clientIP;
 
-	public void setId(String id) {
-		this.id = id;
-	}
+    private boolean ipDetectedViaXFF = false;
 
-	public String getJsonName() {
+    public EventResponse(String id) {
+        this.id = new String(id);
+    }
+
+    public EventResponse() {
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public String getJsonName() {
 		return jsonName;
 	}
 
@@ -68,23 +79,52 @@ public class EventResponse {
 
 	public void setGenerationTime(long generationTime) {
 		this.generationTime = generationTime;
-	}
+    }
 
-	public long getReceivedTime() {
-		return receivedTime;
-	}
+    public long getReceivedTime() {
+        return receivedTime;
+    }
 
-	public void setReceivedTime(long receivedTime) {
-		this.receivedTime = receivedTime;
-	}
+    public void setReceivedTime(long receivedTime) {
+        this.receivedTime = receivedTime;
+    }
 
-	public Semaphore getResponseSemaphore() {
-		return responseSemaphore;
-	}
+    @JsonIgnore
+    public Semaphore getResponseSemaphore() {
+        return responseSemaphore;
+    }
 
-	@Override
-	public String toString() {
-		return JsonConverter.toJSON(this);
+    public String getApiId() {
+        return apiId;
+    }
 
-	}
+    public void setApiId(String apiId) {
+        this.apiId = apiId;
+    }
+
+    public String getClientIP() {
+        return clientIP;
+    }
+
+    public void setClientIP(String clientIP) {
+        this.clientIP = clientIP;
+    }
+
+    public boolean isIpDetectedViaXFF() {
+        return ipDetectedViaXFF;
+    }
+
+    public void setIpDetectedViaXFF(boolean ipDetectedViaXFF) {
+        this.ipDetectedViaXFF = ipDetectedViaXFF;
+    }
+
+    public void setResponseSemaphore(Semaphore responseSemaphore) {
+        this.responseSemaphore = responseSemaphore;
+    }
+
+    @Override
+    public String toString() {
+        return JsonConverter.toJSON(this);
+
+    }
 }

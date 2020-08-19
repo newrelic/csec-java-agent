@@ -1,12 +1,19 @@
 package com.k2cybersecurity.instrumentator.utils;
 
-import com.k2cybersecurity.instrumentator.custom.ServletContextInfo;
+import com.k2cybersecurity.instrumentator.custom.ClassloaderAdjustments;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.logging.DeployedApplication;
 import com.k2cybersecurity.intcodeagent.logging.IAgentConstants;
-import com.k2cybersecurity.intcodeagent.models.javaagent.*;
+import com.k2cybersecurity.intcodeagent.models.config.AgentPolicy;
+import com.k2cybersecurity.intcodeagent.models.config.AgentPolicyIPBlockingParameters;
+import com.k2cybersecurity.intcodeagent.models.javaagent.EventResponse;
+import com.k2cybersecurity.intcodeagent.models.javaagent.JADatabaseMetaData;
+import com.k2cybersecurity.intcodeagent.models.javaagent.UserClassEntity;
+import com.k2cybersecurity.intcodeagent.models.javaagent.VulnerabilityCaseType;
+import com.k2cybersecurity.intcodeagent.models.operationalbean.AbstractOperationalBean;
 import net.bytebuddy.description.type.TypeDescription;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -15,80 +22,96 @@ import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.COM_SUN;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.SUN_REFLECT;
+
 public class AgentUtils {
 
-	public static final String IP_ADDRESS_UNBLOCKED_DUE_TO_TIMEOUT_S = "IP address unblocked due to timeout : %s";
-	public static final String CLASSES_STR = "/classes/";
-	public static final String CLASSES_STR_1 = "/classes!";
-	public static final String CLASSES_STR_2 = "/classes";
-	public static final String NON_VULNERABLE_API_ALLOWED_TO_EXECUTE_S = "Non vulnerable API allowed to execute : %s";
-	public static final String VULNERABLE_API_BLOCKED = "Vulnerable API blocked from execution : %s";
-	public static final String CURRENT_GENERIC_SERVLET_INSTANCE_NULL_IN_DETECT_DEPLOYED_APPLICATION_PATH = "currentGenericServletInstance null in detectDeployedApplicationPath";
-	public static final String PROTECTION_DOMAIN = "Protection domain : ";
-	public static final String VFS = "vfs";
-	public static final String ORG_JBOSS_VFS_VIRTUAL_FILE = "org.jboss.vfs.VirtualFile";
-	public static final String GET_PHYSICAL_FILE = "getPhysicalFile";
-	public static final String JBOSS_PROTECTION_DOMAIN = "Jboss Protection domain : ";
-	public static final String CLASS_DIR_NOT_FOUND_IN_JBOSS_PROTECTION_DOMAIN = "Class dir not found in Jboss protection domain : ";
-	public static final String JSP = "_jsp";
-	public static final String START_URL_LISTING = "Start URL listing";
-	public static final String L_1 = "L1 : ";
-	public static final String CLASSLOADER_IS_NULL_IN_DETECT_DEPLOYED_APPLICATION_PATH = "Classloader is null in detectDeployedApplicationPath";
-	public static final String ERROR = "Error :";
-	public static final String CLASSLOADER_RECORD_MISSING_FOR_CLASS = "Classloader record missing for class : ";
+    private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
 
-	public Set<Pair<String, ClassLoader>> getTransformedClasses() {
-		return transformedClasses;
-	}
+    public static final String IP_ADDRESS_UNBLOCKED_DUE_TO_TIMEOUT_S = "IP address unblocked due to timeout : %s";
+    public static final String CLASSES_STR = "/classes/";
+    public static final String CLASSES_STR_1 = "/classes!";
+    public static final String CLASSES_STR_2 = "/classes";
+    public static final String NON_VULNERABLE_API_ALLOWED_TO_EXECUTE_S = "Non vulnerable API allowed to execute : %s";
+    public static final String VULNERABLE_API_BLOCKED = "Vulnerable API blocked from execution : %s";
+    public static final String CURRENT_GENERIC_SERVLET_INSTANCE_NULL_IN_DETECT_DEPLOYED_APPLICATION_PATH = "currentGenericServletInstance null in detectDeployedApplicationPath";
+    public static final String PROTECTION_DOMAIN = "Protection domain : ";
+    public static final String VFS = "vfs";
+    public static final String ORG_JBOSS_VFS_VIRTUAL_FILE = "org.jboss.vfs.VirtualFile";
+    public static final String GET_PHYSICAL_FILE = "getPhysicalFile";
+    public static final String JBOSS_PROTECTION_DOMAIN = "Jboss Protection domain : ";
+    public static final String CLASS_DIR_NOT_FOUND_IN_JBOSS_PROTECTION_DOMAIN = "Class dir not found in Jboss protection domain : ";
+    public static final String JSP = "_jsp";
+    public static final String START_URL_LISTING = "Start URL listing";
+    public static final String L_1 = "L1 : ";
+    public static final String CLASSLOADER_IS_NULL_IN_DETECT_DEPLOYED_APPLICATION_PATH = "Classloader is null in detectDeployedApplicationPath";
+    public static final String ERROR = "Error :";
+    public static final String CLASSLOADER_RECORD_MISSING_FOR_CLASS = "Classloader record missing for class : ";
+    private static final String TWO_PIPES = "||";
 
-	private Set<Pair<String, ClassLoader>> transformedClasses;
+    public Set<Pair<String, ClassLoader>> getTransformedClasses() {
+        return transformedClasses;
+    }
 
-	private Map<String, ClassLoader> classLoaderRecord;
+    private Set<Pair<String, ClassLoader>> transformedClasses;
 
-	private Map<String, EventResponse> eventResponseSet;
+    private Map<String, ClassLoader> classLoaderRecord;
 
-	private Map<String, VulnerableAPI> vulnerableAPIMap;
+    private Map<String, EventResponse> eventResponseSet;
 
-	private static AgentUtils instance;
+    private Set<String> rxssSentUrls;
 
-	public Set<String> getProtectedVulnerabilties() {
-		return protectedVulnerabilties;
-	}
+    private Set<DeployedApplication> deployedApplicationUnderProcessing;
 
-	private Set<String> protectedVulnerabilties = new HashSet<String>();
+    private static AgentUtils instance;
 
-	private Set<DeployedApplication> scannedDeployedApplications = new HashSet<DeployedApplication>();
+    private static final Object lock = new Object();
 
-	public static long ipBlockingTimeout = TimeUnit.HOURS.toMillis(1);
+    public Set<String> getProtectedVulnerabilties() {
+        return protectedVulnerabilties;
+    }
 
-	private Map<String, IPBlockingEntry> ipBlockingEntries = new HashMap<>();
+    private Set<String> protectedVulnerabilties = new HashSet<String>();
 
-	private Pattern TRACE_PATTERN;
+    private Set<DeployedApplication> scannedDeployedApplications = new HashSet<DeployedApplication>();
 
-	private Map<Integer, JADatabaseMetaData> sqlConnectionMap;
+    private Pattern TRACE_PATTERN;
 
-	private AgentUtils() {
-		transformedClasses = new HashSet<>();
-		eventResponseSet = new ConcurrentHashMap<>();
-		vulnerableAPIMap = new ConcurrentHashMap<>();
-		classLoaderRecord = new ConcurrentHashMap<>();
-		TRACE_PATTERN = Pattern.compile(IAgentConstants.TRACE_REGEX);
-		this.sqlConnectionMap = new LinkedHashMap<Integer, JADatabaseMetaData>(50) {
-			@Override
-			protected boolean removeEldestEntry(java.util.Map.Entry<Integer, JADatabaseMetaData> eldest) {
-				return size() > 50;
-			}
-		};
-	}
+    private Map<Integer, JADatabaseMetaData> sqlConnectionMap;
+
+    private AgentPolicy agentPolicy;
+
+    private AgentPolicyIPBlockingParameters agentPolicyParameters;
+
+    private AgentUtils() {
+
+        transformedClasses = new HashSet<>();
+        eventResponseSet = new ConcurrentHashMap<>();
+        classLoaderRecord = new ConcurrentHashMap<>();
+        rxssSentUrls = new HashSet<>();
+        deployedApplicationUnderProcessing = new HashSet<>();
+        TRACE_PATTERN = Pattern.compile(IAgentConstants.TRACE_REGEX);
+        this.sqlConnectionMap = new LinkedHashMap<Integer, JADatabaseMetaData>(50, 0.75f, true) {
+            @Override
+            protected boolean removeEldestEntry(java.util.Map.Entry<Integer, JADatabaseMetaData> eldest) {
+                return size() > 50;
+            }
+        };
+
+    }
 
 	public static AgentUtils getInstance() {
 		if (instance == null) {
-			instance = new AgentUtils();
-		}
+            synchronized (lock) {
+                if (instance == null) {
+                    instance = new AgentUtils();
+                }
+            }
+        }
 		return instance;
 	}
 
@@ -106,17 +129,6 @@ public class AgentUtils {
 
 	public Map<String, EventResponse> getEventResponseSet() {
 		return eventResponseSet;
-	}
-
-	private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
-
-	public Map<String, VulnerableAPI> getVulnerableAPIMap() {
-		return vulnerableAPIMap;
-	}
-
-	public VulnerableAPI isVulnerableAPI(String sourceMethod, String userClass, String userMethod, Integer lineNumber) {
-		VulnerableAPI vulnerableAPI = new VulnerableAPI(sourceMethod, userClass, userMethod, lineNumber);
-		return vulnerableAPIMap.get(vulnerableAPI.getId());
 	}
 
 	public void createProtectedVulnerabilties(TypeDescription typeDescription, ClassLoader classLoader) {
@@ -291,25 +303,6 @@ public class AgentUtils {
 		}
 	}
 
-	public void addIPBlockingEntry(String ip) {
-		IPBlockingEntry entry = new IPBlockingEntry(ip);
-		ipBlockingEntries.put(entry.getTargetIP(), entry);
-	}
-
-	public boolean isBlockedIP(String ip) {
-		if (ipBlockingEntries.containsKey(ip)) {
-			if (!ipBlockingEntries.get(ip).isValid()) {
-				ipBlockingEntries.remove(ip);
-				logger.log(LogLevel.INFO, String.format(IP_ADDRESS_UNBLOCKED_DUE_TO_TIMEOUT_S, ip),
-						AgentUtils.class.getName());
-				return false;
-			} else {
-				return true;
-			}
-		}
-		return false;
-	}
-
 	public UserClassEntity detectUserClass(StackTraceElement[] trace, Object currentGenericServletInstance,
 			String currentGenericServletMethodName, String fakeClassName, String fakeMethodName) {
 
@@ -464,61 +457,133 @@ public class AgentUtils {
 				appPath = StringUtils.EMPTY;
 				ClassLoader classLoader = cls.getClassLoader();
 				if (classLoader != null) {
-					logger.log(LogLevel.INFO, START_URL_LISTING, AgentUtils.class.getName());
-					Enumeration<java.net.URL> appPathURLEnum = classLoader.getResources(StringUtils.EMPTY);
-					while (appPathURLEnum != null && appPathURLEnum.hasMoreElements()) {
-						URL app = appPathURLEnum.nextElement();
-						logger.log(LogLevel.INFO, L_1 + app, ServletContextInfo.class.getName());
-						if (StringUtils.equalsIgnoreCase(VFS, app.getProtocol())) {
-							Class virtualFile = Class.forName(ORG_JBOSS_VFS_VIRTUAL_FILE, false, cls.getClassLoader());
-							if (virtualFile.isInstance(app.getContent())) {
-								Method getPhysicalFile = virtualFile.getMethod(GET_PHYSICAL_FILE);
-								getPhysicalFile.setAccessible(true);
-								File fileSystemFile = (File) getPhysicalFile.invoke(app.getContent());
-								if (fileSystemFile != null && fileSystemFile.exists()) {
-									appPath = fileSystemFile.getAbsolutePath();
-									logger.log(LogLevel.INFO, JBOSS_PROTECTION_DOMAIN + fileSystemFile,
-											AgentUtils.class.getName());
-								}
-							} else {
-								logger.log(LogLevel.WARNING,
-										CLASS_DIR_NOT_FOUND_IN_JBOSS_PROTECTION_DOMAIN + app.getContent(),
-										AgentUtils.class.getName());
-							}
-						} else {
-							appPath = app.getPath();
-						}
-						if (StringUtils.containsAny(appPath, CLASSES_STR, CLASSES_STR_1)
-								|| StringUtils.endsWith(appPath, CLASSES_STR_2)) {
-							break;
-						} else {
-							appPath = StringUtils.EMPTY;
-						}
-					}
-				} else {
+                    logger.log(LogLevel.INFO, START_URL_LISTING, AgentUtils.class.getName());
+                    Enumeration<java.net.URL> appPathURLEnum = classLoader.getResources(StringUtils.EMPTY);
+                    while (appPathURLEnum != null && appPathURLEnum.hasMoreElements()) {
+                        URL app = appPathURLEnum.nextElement();
+                        logger.log(LogLevel.INFO, L_1 + app, AgentUtils.class.getName());
+                        if (StringUtils.equalsIgnoreCase(VFS, app.getProtocol())) {
+                            Class virtualFile = Class.forName(ORG_JBOSS_VFS_VIRTUAL_FILE, false, cls.getClassLoader());
+                            if (virtualFile.isInstance(app.getContent())) {
+                                Method getPhysicalFile = virtualFile.getMethod(GET_PHYSICAL_FILE);
+                                getPhysicalFile.setAccessible(true);
+                                File fileSystemFile = (File) getPhysicalFile.invoke(app.getContent());
+                                if (fileSystemFile != null && fileSystemFile.exists()) {
+                                    appPath = fileSystemFile.getAbsolutePath();
+                                    logger.log(LogLevel.INFO, JBOSS_PROTECTION_DOMAIN + fileSystemFile,
+                                            AgentUtils.class.getName());
+                                }
+                            } else {
+                                logger.log(LogLevel.WARNING, CLASS_DIR_NOT_FOUND_IN_JBOSS_PROTECTION_DOMAIN + app.getContent(), AgentUtils.class.getName());
+                            }
+                        } else {
+                            appPath = app.getPath();
+                        }
+                        if (StringUtils.containsAny(appPath, CLASSES_STR, CLASSES_STR_1) || StringUtils.endsWith(appPath, CLASSES_STR_2)) {
+                            break;
+                        } else {
+                            appPath = StringUtils.EMPTY;
+                        }
+                    }
+                } else {
 					logger.log(LogLevel.WARNING, CLASSLOADER_IS_NULL_IN_DETECT_DEPLOYED_APPLICATION_PATH,
 							AgentUtils.class.getName());
 				}
 			}
 		} catch (Throwable e) {
 			logger.log(LogLevel.ERROR, ERROR, e, AgentUtils.class.getName());
-		}
-		return appPath;
-	}
+        }
+        return appPath;
+    }
 
-	public VulnerableAPI checkVulnerableAPI(String sourceMethod, String userClass, String userMethod,
-			Integer lineNumber) {
-		if (ProtectionConfig.getInstance().getProtectKnownVulnerableAPIs()) {
-			return AgentUtils.getInstance().isVulnerableAPI(sourceMethod, userClass, userMethod, lineNumber);
+    public void putClassloaderRecord(String className, ClassLoader classLoader) {
+        if (classLoader != null) {
+            classLoaderRecord.put(className, classLoader);
+        }
+    }
 
-		}
-		return null;
-	}
+    public String getSHA256HexDigest(List<String> data) {
+        data.removeAll(Collections.singletonList(null));
+        String input = StringUtils.joinWith(TWO_PIPES, data);
+        return DigestUtils.sha256Hex(input);
+    }
 
-	public void putClassloaderRecord(String className, ClassLoader classLoader) {
-		if (classLoader != null) {
-			classLoaderRecord.put(className, classLoader);
-		}
-	}
+    /**
+     * @return the rxssSentUrls
+     */
+    public Set<String> getRxssSentUrls() {
+        return rxssSentUrls;
+    }
 
+
+    public Set<DeployedApplication> getDeployedApplicationUnderProcessing() {
+        return deployedApplicationUnderProcessing;
+    }
+
+    public AgentPolicy getAgentPolicy() {
+        return agentPolicy;
+    }
+
+    public void setAgentPolicy(AgentPolicy agentPolicy) {
+        this.agentPolicy = agentPolicy;
+    }
+
+    public AgentPolicyIPBlockingParameters getAgentPolicyParameters() {
+        return agentPolicyParameters;
+    }
+
+    public void setAgentPolicyParameters(AgentPolicyIPBlockingParameters agentPolicyParameters) {
+        this.agentPolicyParameters = agentPolicyParameters;
+    }
+
+    public void enforcePolicy() {
+    }
+
+    public void enforcePolicyParameters() {
+    }
+
+    public void
+    preProcessStackTrace(AbstractOperationalBean operationalBean, VulnerabilityCaseType vulnerabilityCaseType) {
+        StackTraceElement[] stackTrace = operationalBean.getStackTrace();
+        int resetFactor = 0;
+        List<StackTraceElement> recordsToDelete = new ArrayList<>();
+
+        List<StackTraceElement> newTraceForIdCalc = new ArrayList<>();
+        List<String> newTraceStringForIdCalc = new ArrayList<>();
+
+        newTraceForIdCalc.addAll(Arrays.asList(stackTrace));
+
+        recordsToDelete.add(stackTrace[0]);
+        resetFactor++;
+        for (int i = 1; i < stackTrace.length; i++) {
+            if (i < operationalBean.getUserClassEntity().getTraceLocationEnd() && i == resetFactor &&
+                    StringUtils.startsWith(stackTrace[i].getClassName(), ClassloaderAdjustments.K2_BOOTSTAP_LOADED_PACKAGE_NAME)) {
+                recordsToDelete.add(stackTrace[i]);
+                resetFactor++;
+            }
+
+            if (StringUtils.startsWithAny(stackTrace[i].getClassName(), SUN_REFLECT, COM_SUN)
+                    || stackTrace[i].isNativeMethod() || stackTrace[i].getLineNumber() < 0) {
+                recordsToDelete.add(stackTrace[i]);
+            }
+        }
+        newTraceForIdCalc.removeAll(recordsToDelete);
+        newTraceForIdCalc.forEach(stackTraceElement -> {
+            newTraceStringForIdCalc.add(stackTraceElement.toString());
+        });
+        stackTrace = Arrays.copyOfRange(stackTrace, resetFactor, stackTrace.length);
+        operationalBean.setStackTrace(stackTrace);
+        operationalBean.getUserClassEntity().setTraceLocationEnd(operationalBean.getUserClassEntity().getTraceLocationEnd() - resetFactor);
+        setAPIId(operationalBean, newTraceStringForIdCalc, vulnerabilityCaseType);
+    }
+
+    private void setAPIId(AbstractOperationalBean operationalBean, List<String> traceForIdCalc, VulnerabilityCaseType vulnerabilityCaseType) {
+        List<String> idData = new ArrayList<>();
+
+        // TODO : Write Application detection mechanism for a given event.
+        idData.add(StringUtils.EMPTY);
+        idData.addAll(traceForIdCalc);
+        idData.add(vulnerabilityCaseType.getCaseType());
+        operationalBean.setApiID(AgentUtils.getInstance().getSHA256HexDigest(idData));
+    }
 }

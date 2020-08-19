@@ -1,7 +1,6 @@
 package com.k2cybersecurity.instrumentator.dispatcher;
 
 import com.k2cybersecurity.instrumentator.K2Instrumentator;
-import com.k2cybersecurity.instrumentator.custom.ClassloaderAdjustments;
 import com.k2cybersecurity.instrumentator.custom.ServletContextInfo;
 import com.k2cybersecurity.instrumentator.cve.scanner.CVEComponentsService;
 import com.k2cybersecurity.instrumentator.utils.AgentUtils;
@@ -11,29 +10,33 @@ import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.logging.DeployedApplication;
 import com.k2cybersecurity.intcodeagent.logging.IAgentConstants;
-import com.k2cybersecurity.intcodeagent.logging.ProcessorThread;
 import com.k2cybersecurity.intcodeagent.models.javaagent.*;
 import com.k2cybersecurity.intcodeagent.models.operationalbean.*;
 import com.k2cybersecurity.intcodeagent.websocket.EventSendPool;
-import com.k2cybersecurity.intcodeagent.websocket.JsonConverter;
 import org.apache.commons.lang3.StringUtils;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 
 import java.io.ObjectInputStream;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.*;
 
 public class Dispatcher implements Runnable {
 
+	private static final String SEPARATOR_QUESTIONMARK = "?";
 	private static final Pattern PATTERN;
 	private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
 	public static final String ERROR = "Error : ";
 	public static final String EMPTY_FILE_SHA = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855";
 	public static final String DROPPING_APPLICATION_INFO_POSTING_DUE_TO_SIZE_0 = "Dropping application info posting due to size 0 : ";
-	public static final String QUESTION_CHAR = "?";
+	public static final String QUESTION_CHAR = SEPARATOR_QUESTIONMARK;
 	public static final String SLASH = "/";
 	public static final String FOR_NAME = "forName";
 	public static final String SUN_REFLECT_COM_K_2_CYBERSECURITY_NET_BYTEBUDDY = "sun.reflect.com.k2cybersecurity.net.bytebuddy";
@@ -45,6 +48,8 @@ public class Dispatcher implements Runnable {
 	public static final char SEPARATOR = '.';
 	public static final String INSIDE_SET_REQUIRED_STACK_TRACE = "Inside setRequiredStackTrace : ";
 	public static final String STRING_COLON = " : ";
+
+	private static final Object deployedAppDetectionLock = new Object();
 	private HttpRequestBean httpRequestBean;
 	private AgentMetaData metaData;
 	private Object event;
@@ -55,22 +60,23 @@ public class Dispatcher implements Runnable {
 	private Object currentGenericServletInstance;
 	private String currentGenericServletMethodName = StringUtils.EMPTY;
 	private UserClassEntity userClassEntity;
+	private String apiID = StringUtils.EMPTY;
 
 	static {
 		PATTERN = Pattern.compile(IAgentConstants.TRACE_REGEX);
 	}
 
 	public Dispatcher(HttpRequestBean httpRequestBean, AgentMetaData metaData, Object event,
-			VulnerabilityCaseType vulnerabilityCaseType) {
+					  VulnerabilityCaseType vulnerabilityCaseType) {
 		this.httpRequestBean = httpRequestBean;
 		this.metaData = metaData;
 		this.event = event;
 		this.vulnerabilityCaseType = vulnerabilityCaseType;
 		extraInfo.put(BLOCKING_END_TIME, System.currentTimeMillis());
-		currentGenericServletInstance = ((AbstractOperationalBean)event).getCurrentGenericServletInstance();
-		currentGenericServletMethodName = ((AbstractOperationalBean)event).getCurrentGenericServletMethodName();
-		trace = ((AbstractOperationalBean)event).getStackTrace();
-		this.userClassEntity = ((AbstractOperationalBean)event).getUserClassEntity();
+		currentGenericServletInstance = ((AbstractOperationalBean) event).getCurrentGenericServletInstance();
+		currentGenericServletMethodName = ((AbstractOperationalBean) event).getCurrentGenericServletMethodName();
+		trace = ((AbstractOperationalBean) event).getStackTrace();
+		this.userClassEntity = ((AbstractOperationalBean) event).getUserClassEntity();
 	}
 
 	public Dispatcher(HttpRequestBean httpRequestBean, AgentMetaData metaData, Object event,
@@ -88,12 +94,13 @@ public class Dispatcher implements Runnable {
 		this.userClassEntity = userClassEntity;
 	}
 
-	public Dispatcher(HttpRequestBean httpRequestBean, VulnerabilityCaseType reflectedXss,
-			String sourceString, String exectionId, long startTime, String currentGenericServletMethodName,
+	public Dispatcher(HttpRequestBean httpRequestBean, AgentMetaData agentMetaData, VulnerabilityCaseType reflectedXss,
+					  String sourceString, String exectionId, long startTime, String currentGenericServletMethodName,
 					  Object currentGenericServletInstance,
-					  StackTraceElement[] stackTrace, UserClassEntity userClassEntity) {
+					  StackTraceElement[] stackTrace, UserClassEntity userClassEntity, String apiID) {
 		this.httpRequestBean = httpRequestBean;
 		this.vulnerabilityCaseType = reflectedXss;
+		this.metaData = agentMetaData;
 		extraInfo.put(SOURCESTRING, sourceString);
 		extraInfo.put(EXECUTIONID, exectionId);
 		extraInfo.put(STARTTIME, startTime);
@@ -103,6 +110,7 @@ public class Dispatcher implements Runnable {
 		this.currentGenericServletMethodName = currentGenericServletMethodName;
 		this.trace = stackTrace;
 		this.userClassEntity = userClassEntity;
+		this.apiID = apiID;
 	}
 
 	@Override
@@ -113,11 +121,18 @@ public class Dispatcher implements Runnable {
 			if (vulnerabilityCaseType.equals(VulnerabilityCaseType.REFLECTED_XSS)) {
 				String xssConstruct = CallbackUtils.checkForReflectedXSS(httpRequestBean);
 //				System.out.println("Changes reflected : " + httpRequestBean.getHttpResponseBean().getResponseBody());
-				if (StringUtils.isNotBlank(xssConstruct)) {
-					JavaAgentEventBean eventBean = prepareEvent(httpRequestBean, metaData, vulnerabilityCaseType);
+				JavaAgentEventBean eventBean = prepareEvent(httpRequestBean, metaData, vulnerabilityCaseType);
+				String url = StringUtils.substringBefore(httpRequestBean.getUrl(), SEPARATOR_QUESTIONMARK);
+				if (StringUtils.isNoneBlank(xssConstruct, httpRequestBean.getHttpResponseBean().getResponseBody()) ||
+						(AgentUtils.getInstance().getAgentPolicy().getIastMode().getEnabled()
+								&& AgentUtils.getInstance().getAgentPolicy().getIastMode().getDynamicScanning().getEnabled()
+								&& (!AgentUtils.getInstance().getRxssSentUrls().contains(url) || metaData.isK2FuzzRequest()))) {
+
+					AgentUtils.getInstance().getRxssSentUrls().add(url);
 					JSONArray params = new JSONArray();
 					params.add(xssConstruct);
 					params.add(httpRequestBean.getHttpResponseBean().getResponseBody());
+//					params.add(httpRequestBean.getHttpResponseBean());
 					eventBean.setParameters(params);
 					eventBean.setApplicationUUID(K2Instrumentator.APPLICATION_UUID);
 					eventBean.setPid(K2Instrumentator.VMPID);
@@ -132,8 +147,12 @@ public class Dispatcher implements Runnable {
 							userClassEntity.getUserClassElement().getClassName(),
 							userClassEntity.getUserClassElement().getMethodName());
 
-					setRequiredStackTracePartToEvent(eventBean);
+					eventBean.setApiId(apiID);
+
+					setRequiredStackRelatedInfoToEvent(eventBean);
 					EventSendPool.getInstance().sendEvent(eventBean);
+					detectDeployedApplication();
+
 //					System.out.println("============= Event Start ============");
 //					System.out.println(eventBean);
 //					System.out.println("============= Event End ============");
@@ -152,100 +171,105 @@ public class Dispatcher implements Runnable {
 		JavaAgentEventBean eventBean = prepareEvent(httpRequestBean, metaData, vulnerabilityCaseType);
 
 		switch (vulnerabilityCaseType) {
-		case FILE_OPERATION:
-			FileOperationalBean fileOperationalBean = (FileOperationalBean) event;
-			eventBean = setGenericProperties(fileOperationalBean, eventBean);
-			eventBean = prepareFileEvent(eventBean, fileOperationalBean);
-			String URL = StringUtils.substringBefore(httpRequestBean.getUrl(), QUESTION_CHAR);
-			if (allowedExtensionFileIO(eventBean.getParameters(), eventBean.getSourceMethod(), URL)) {
+			case FILE_OPERATION:
+				FileOperationalBean fileOperationalBean = (FileOperationalBean) event;
+				eventBean = setGenericProperties(fileOperationalBean, eventBean);
+				eventBean = prepareFileEvent(eventBean, fileOperationalBean);
+				String URL = StringUtils.substringBefore(httpRequestBean.getUrl(), QUESTION_CHAR);
+				if (allowedExtensionFileIO(eventBean.getParameters(), eventBean.getSourceMethod(), URL)) {
 //				System.out.println("------- Event ByPass -----------");
-				return;
-			}
-			break;
-		case SYSTEM_COMMAND:
-			ForkExecOperationalBean operationalBean = (ForkExecOperationalBean) event;
-			eventBean = setGenericProperties(operationalBean, eventBean);
-			eventBean = prepareSystemCommandEvent(eventBean, operationalBean);
-			break;
-		case SYSTEM_EXIT:
-			SystemExitOperationalBean systemExitOperationalBean = (SystemExitOperationalBean) event;
-			eventBean = setGenericProperties(systemExitOperationalBean, eventBean);
-			eventBean = prepareSystemExitEvent(eventBean, systemExitOperationalBean);
+					return;
+				}
+				break;
+			case SYSTEM_COMMAND:
+				ForkExecOperationalBean operationalBean = (ForkExecOperationalBean) event;
+				eventBean = setGenericProperties(operationalBean, eventBean);
+				eventBean = prepareSystemCommandEvent(eventBean, operationalBean);
+				break;
+			case SYSTEM_EXIT:
+				SystemExitOperationalBean systemExitOperationalBean = (SystemExitOperationalBean) event;
+				eventBean = setGenericProperties(systemExitOperationalBean, eventBean);
+				eventBean = prepareSystemExitEvent(eventBean, systemExitOperationalBean);
 
-			break;
-		case SQL_DB_COMMAND:
-			List<SQLOperationalBean> operationalList = (List<SQLOperationalBean>) event;
-			if (operationalList.isEmpty()) {
+				break;
+			case SQL_DB_COMMAND:
+				List<SQLOperationalBean> operationalList = (List<SQLOperationalBean>) event;
+				if (operationalList.isEmpty()) {
 //				System.out.println("------- Invalid event -----------");
-				return;
-			}
-			// eventBean.setEventCategory(getDbName(operationalList.get(0).getClassName()));
-			eventBean = setGenericProperties(operationalList.get(0), eventBean);
-			eventBean = prepareSQLDbCommandEvent(operationalList, eventBean);
-			break;
+					return;
+				}
+				// eventBean.setEventCategory(getDbName(operationalList.get(0).getClassName()));
+				eventBean = setGenericProperties(operationalList.get(0), eventBean);
+				eventBean = prepareSQLDbCommandEvent(operationalList, eventBean);
+				break;
 
-		case NOSQL_DB_COMMAND:
-			NoSQLOperationalBean noSQLOperationalBean = (NoSQLOperationalBean) event;
-			eventBean = setGenericProperties(noSQLOperationalBean, eventBean);
-			eventBean = prepareNoSQLEvent(eventBean, noSQLOperationalBean);
-			break;
+			case NOSQL_DB_COMMAND:
+				NoSQLOperationalBean noSQLOperationalBean = (NoSQLOperationalBean) event;
+				eventBean = setGenericProperties(noSQLOperationalBean, eventBean);
+				try {
+					eventBean = prepareNoSQLEvent(eventBean, noSQLOperationalBean);
+				} catch (ParseException e) {
+					e.printStackTrace();
+					return;
+				}
+				break;
 
-		case FILE_INTEGRITY:
-			FileIntegrityBean fileIntegrityBean = (FileIntegrityBean) event;
-			eventBean = setGenericProperties(fileIntegrityBean, eventBean);
-			eventBean = prepareFileIntegrityEvent(eventBean, fileIntegrityBean);
-			break;
-		case LDAP:
-			LDAPOperationalBean ldapOperationalBean = (LDAPOperationalBean) event;
-			eventBean = setGenericProperties(ldapOperationalBean, eventBean);
-			eventBean = prepareLDAPEvent(eventBean, ldapOperationalBean);
-			break;
-		case RANDOM:
-			RandomOperationalBean randomOperationalBean = (RandomOperationalBean) event;
-			eventBean = setGenericProperties(randomOperationalBean, eventBean);
-			eventBean = prepareRandomEvent(eventBean, randomOperationalBean);
-			break;
-		case HTTP_REQUEST:
-			SSRFOperationalBean ssrfOperationalBean = (SSRFOperationalBean) event;
-			eventBean = setGenericProperties(ssrfOperationalBean, eventBean);
-			eventBean = prepareSSRFEvent(eventBean, ssrfOperationalBean);
-			break;
-		case XPATH:
-			XPathOperationalBean xPathOperationalBean = (XPathOperationalBean) event;
-			eventBean = setGenericProperties(xPathOperationalBean, eventBean);
-			eventBean = prepareXPATHEvent(eventBean, xPathOperationalBean);
-			break;
-		case SECURE_COOKIE:
-			SecureCookieOperationalBean secureCookieOperationalBean = (SecureCookieOperationalBean) event;
-			eventBean = setGenericProperties(secureCookieOperationalBean, eventBean);
-			eventBean = prepareSecureCookieEvent(eventBean, secureCookieOperationalBean);
-			break;
-		case TRUSTBOUNDARY:
-			TrustBoundaryOperationalBean trustBoundaryOperationalBean = (TrustBoundaryOperationalBean) event;
-			eventBean = setGenericProperties(trustBoundaryOperationalBean, eventBean);
-			eventBean = prepareTrustBoundaryEvent(eventBean, trustBoundaryOperationalBean);
-			break;
-		case CRYPTO:
-			HashCryptoOperationalBean hashCryptoOperationalBean = (HashCryptoOperationalBean) event;
-			eventBean = setGenericProperties(hashCryptoOperationalBean, eventBean);
-			eventBean = prepareCryptoEvent(eventBean, hashCryptoOperationalBean);
-			break;
-		case HASH:
-			HashCryptoOperationalBean hashOperationalBean = (HashCryptoOperationalBean) event;
-			eventBean = setGenericProperties(hashOperationalBean, eventBean);
-			eventBean = prepareHashEvent(eventBean, hashOperationalBean);
-			break;
-		case JAVASCRIPT_INJECTION:
-			JSInjectionOperationalBean jsInjectionOperationalBean = (JSInjectionOperationalBean) event;
-			eventBean = setGenericProperties(jsInjectionOperationalBean, eventBean);
-			eventBean = prepareJSInjectionEvent(eventBean, jsInjectionOperationalBean);
-			break;
-		case XQUERY_INJECTION:
-			XQueryOperationalBean xQueryOperationalBean = (XQueryOperationalBean) event;
-			eventBean = setGenericProperties(xQueryOperationalBean, eventBean);
-			eventBean = prepareXQueryInjectionEvent(eventBean, xQueryOperationalBean);
-			break;
-		default:
+			case FILE_INTEGRITY:
+				FileIntegrityBean fileIntegrityBean = (FileIntegrityBean) event;
+				eventBean = setGenericProperties(fileIntegrityBean, eventBean);
+				eventBean = prepareFileIntegrityEvent(eventBean, fileIntegrityBean);
+				break;
+			case LDAP:
+				LDAPOperationalBean ldapOperationalBean = (LDAPOperationalBean) event;
+				eventBean = setGenericProperties(ldapOperationalBean, eventBean);
+				eventBean = prepareLDAPEvent(eventBean, ldapOperationalBean);
+				break;
+			case RANDOM:
+				RandomOperationalBean randomOperationalBean = (RandomOperationalBean) event;
+				eventBean = setGenericProperties(randomOperationalBean, eventBean);
+				eventBean = prepareRandomEvent(eventBean, randomOperationalBean);
+				break;
+			case HTTP_REQUEST:
+				SSRFOperationalBean ssrfOperationalBean = (SSRFOperationalBean) event;
+				eventBean = setGenericProperties(ssrfOperationalBean, eventBean);
+				eventBean = prepareSSRFEvent(eventBean, ssrfOperationalBean);
+				break;
+			case XPATH:
+				XPathOperationalBean xPathOperationalBean = (XPathOperationalBean) event;
+				eventBean = setGenericProperties(xPathOperationalBean, eventBean);
+				eventBean = prepareXPATHEvent(eventBean, xPathOperationalBean);
+				break;
+			case SECURE_COOKIE:
+				SecureCookieOperationalBean secureCookieOperationalBean = (SecureCookieOperationalBean) event;
+				eventBean = setGenericProperties(secureCookieOperationalBean, eventBean);
+				eventBean = prepareSecureCookieEvent(eventBean, secureCookieOperationalBean);
+				break;
+			case TRUSTBOUNDARY:
+				TrustBoundaryOperationalBean trustBoundaryOperationalBean = (TrustBoundaryOperationalBean) event;
+				eventBean = setGenericProperties(trustBoundaryOperationalBean, eventBean);
+				eventBean = prepareTrustBoundaryEvent(eventBean, trustBoundaryOperationalBean);
+				break;
+			case CRYPTO:
+				HashCryptoOperationalBean hashCryptoOperationalBean = (HashCryptoOperationalBean) event;
+				eventBean = setGenericProperties(hashCryptoOperationalBean, eventBean);
+				eventBean = prepareCryptoEvent(eventBean, hashCryptoOperationalBean);
+				break;
+			case HASH:
+				HashCryptoOperationalBean hashOperationalBean = (HashCryptoOperationalBean) event;
+				eventBean = setGenericProperties(hashOperationalBean, eventBean);
+				eventBean = prepareHashEvent(eventBean, hashOperationalBean);
+				break;
+			case JAVASCRIPT_INJECTION:
+				JSInjectionOperationalBean jsInjectionOperationalBean = (JSInjectionOperationalBean) event;
+				eventBean = setGenericProperties(jsInjectionOperationalBean, eventBean);
+				eventBean = prepareJSInjectionEvent(eventBean, jsInjectionOperationalBean);
+				break;
+			case XQUERY_INJECTION:
+				XQueryOperationalBean xQueryOperationalBean = (XQueryOperationalBean) event;
+				eventBean = setGenericProperties(xQueryOperationalBean, eventBean);
+				eventBean = prepareXQueryInjectionEvent(eventBean, xQueryOperationalBean);
+				break;
+			default:
 
 		}
 
@@ -261,23 +285,39 @@ public class Dispatcher implements Runnable {
 			}
 		}
 
-		setRequiredStackTracePartToEvent(eventBean);
+		setRequiredStackRelatedInfoToEvent(eventBean);
 		EventSendPool.getInstance().sendEvent(eventBean);
 
-		if(userClassEntity.isCalledByUserCode()) {
-			detectAndSendDeployedAppInfo();
-		}
+		detectDeployedApplication();
 //		System.out.println("============= Event Start ============");
 //		System.out.println(eventBean);
 //		System.out.println("============= Event End ============");
 	}
 
-	private void setRequiredStackTracePartToEvent(JavaAgentEventBean eventBean) {
+	private void detectDeployedApplication() {
+		if (userClassEntity.isCalledByUserCode()) {
+			DeployedApplication deployedApplication = new DeployedApplication();
+			deployedApplication.getPorts().add(httpRequestBean.getServerPort());
+			deployedApplication.setContextPath(httpRequestBean.getContextPath());
+			if (!K2Instrumentator.APPLICATION_INFO_BEAN.getServerInfo().getDeployedApplications().contains(deployedApplication)
+					&& !AgentUtils.getInstance().getDeployedApplicationUnderProcessing().contains(deployedApplication)) {
+				AgentUtils.getInstance().getDeployedApplicationUnderProcessing().add(deployedApplication);
+				detectAndSendDeployedAppInfo(deployedApplication);
+			}
+		}
+	}
+
+	private void setRequiredStackRelatedInfoToEvent(JavaAgentEventBean eventBean) {
 		try {
-			stackPreProcess();
+//            stackPreProcess(eventBean);
 			int fromLoc = 0;
 			int toLoc = this.trace.length;
 //		logger.log(LogLevel.DEBUG, INSIDE_SET_REQUIRED_STACK_TRACE + eventBean.getId() + STRING_COLON + JsonConverter.toJSON(userClassEntity) + STRING_COLON + JsonConverter.toJSON(Arrays.asList(trace)), Dispatcher.class.getName());
+			if ((metaData != null && metaData.isK2FuzzRequest()) || (AgentUtils.getInstance().getAgentPolicy().getIastMode().getEnabled()
+					&& AgentUtils.getInstance().getAgentPolicy().getIastMode().getDynamicScanning().getEnabled())) {
+				eventBean.setCompleteStacktrace(Arrays.asList(trace));
+			}
+
 			if (userClassEntity.isCalledByUserCode()) {
 				toLoc = userClassEntity.getTraceLocationEnd();
 				String packageName = getMatchPackagePrefix(userClassEntity.getUserClassElement().getClassName());
@@ -298,20 +338,9 @@ public class Dispatcher implements Runnable {
 			} else {
 				setFiniteSizeStackTrace(eventBean);
 			}
-		}catch (Exception e) {
+		} catch (Exception e) {
 			logger.log(LogLevel.ERROR, ERROR, e, Dispatcher.class.getName());
 		}
-	}
-
-	private void stackPreProcess() {
-		int i = 1;
-		for(i = 1; i<trace.length; i++){
-			if(!StringUtils.startsWith(trace[i].getClassName(), ClassloaderAdjustments.K2_BOOTSTAP_LOADED_PACKAGE_NAME)){
-				break;
-			}
-		}
-		trace = Arrays.copyOfRange(trace, i, trace.length);
-		userClassEntity.setTraceLocationEnd(userClassEntity.getTraceLocationEnd() - i);
 	}
 
 	private void setFiniteSizeStackTrace(JavaAgentEventBean eventBean) {
@@ -323,9 +352,9 @@ public class Dispatcher implements Runnable {
 		eventBean.setStacktrace(Arrays.asList(Arrays.copyOfRange(this.trace, fromLoc, toLoc + 1)));
 	}
 
-	private String getMatchPackagePrefix(String className){
+	private String getMatchPackagePrefix(String className) {
 		String[] parts = StringUtils.split(className, SEPARATOR);
-		if(parts.length == 1){
+		if (parts.length == 1) {
 			return StringUtils.EMPTY;
 		}
 		if (parts.length > 2) {
@@ -336,10 +365,12 @@ public class Dispatcher implements Runnable {
 
 	}
 
-	private boolean detectAndSendDeployedAppInfo() {
-		if (!ServletContextInfo.getInstance().getContextMap().containsKey(httpRequestBean.getContextPath())) {
-			DeployedApplication deployedApplication = new DeployedApplication();
-			ServletContextInfo.getInstance().getContextMap().put(httpRequestBean.getContextPath(), deployedApplication);
+	private boolean detectAndSendDeployedAppInfo(DeployedApplication deployedApplication) {
+		try {
+			if (K2Instrumentator.APPLICATION_INFO_BEAN.getServerInfo().getDeployedApplications()
+					.contains(deployedApplication)) {
+				return false;
+			}
 			logger.log(LogLevel.INFO, "Creating new deployed application", Dispatcher.class.getName());
 			deployedApplication.setDeployedPath(AgentUtils.getInstance().detectDeployedApplicationPath(
 					userClassEntity.getUserClassElement().getClassName(), currentGenericServletInstance,
@@ -351,17 +382,17 @@ public class Dispatcher implements Runnable {
 				logger.log(LogLevel.INFO, "Deployed app after processing : " + deployedApplication + " :: " + ret, Dispatcher.class.getName());
 				HashGenerator.updateShaAndSize(deployedApplication);
 				logger.log(LogLevel.INFO, "Deployed app after processing 1 : " + deployedApplication + " :: " + ret, Dispatcher.class.getName());
-			} catch (Throwable e){
+			} catch (Throwable e) {
 				logger.log(LogLevel.ERROR, "Error while deployed app processing : " + deployedApplication, e, Dispatcher.class.getName());
-				ret = false;
-			}
-			if (deployedApplication.isEmpty() || StringUtils.isBlank(deployedApplication.getSha256()) || StringUtils.equals(deployedApplication.getSha256(), EMPTY_FILE_SHA)) {
-				logger.log(LogLevel.ERROR, DROPPING_APPLICATION_INFO_POSTING_DUE_TO_SIZE_0 + deployedApplication,
-						Dispatcher.class.getName());
-				ServletContextInfo.getInstance().getContextMap().remove(httpRequestBean.getContextPath());
-				return false;
 			}
 
+			if (deployedApplication.isEmpty() ||
+					StringUtils.isBlank(deployedApplication.getSha256()) ||
+					StringUtils.equals(deployedApplication.getSha256(), EMPTY_FILE_SHA)) {
+				logger.log(LogLevel.ERROR, DROPPING_APPLICATION_INFO_POSTING_DUE_TO_SIZE_0 + deployedApplication,
+						Dispatcher.class.getName());
+				return false;
+			}
 
 //			System.out.println("Processed App Info : " + deployedApplication);
 			ApplicationInfoBean applicationInfoBean = K2Instrumentator.APPLICATION_INFO_BEAN;
@@ -370,34 +401,26 @@ public class Dispatcher implements Runnable {
 
 			K2Instrumentator.JA_HEALTH_CHECK.setProtectedServer(ServletContextInfo.getInstance().getServerInfo());
 
-			if (!applicationInfoBean.getServerInfo().getDeployedApplications().contains(deployedApplication)) {
-				applicationInfoBean.getServerInfo().getDeployedApplications().add(deployedApplication);
+			if (applicationInfoBean.getServerInfo().getDeployedApplications().add(deployedApplication)) {
 				EventSendPool.getInstance().sendEvent(applicationInfoBean.toString());
 				logger.log(LogLevel.INFO, UPDATED_APPLICATION_INFO_POSTED + applicationInfoBean,
 						Dispatcher.class.getName());
 				ScanComponentData scanComponentData = CVEComponentsService.getAllComponents(deployedApplication);
 				EventSendPool.getInstance().sendEvent(scanComponentData.toString());
+			}
 //				System.out.println("============= AppInfo Start ============");
 //				System.out.println(applicationInfoBean);
 //				System.out.println("============= AppInfo End ============");
-			} else {
-                //TODO: Handle cases where the port list of a deployed application is lost as the deployed application is already existing.
-			}
+
 			return true;
-		} else {
-			if(!ServletContextInfo.getInstance().getContextMap().get(httpRequestBean.getContextPath()).getPorts().contains(httpRequestBean.getServerPort())){
-				DeployedApplication deployedApplication = ServletContextInfo.getInstance().getContextMap().get(httpRequestBean.getContextPath());
-				deployedApplication.getPorts().add(httpRequestBean.getServerPort());
-				EventSendPool.getInstance().sendEvent(K2Instrumentator.APPLICATION_INFO_BEAN.toString());
-			}
-			return true;
+		} finally {
+			AgentUtils.getInstance().getDeployedApplicationUnderProcessing().remove(deployedApplication);
 		}
 	}
 
 
-
 	private JavaAgentEventBean prepareJSInjectionEvent(JavaAgentEventBean eventBean,
-			JSInjectionOperationalBean jsInjectionOperationalBean) {
+													   JSInjectionOperationalBean jsInjectionOperationalBean) {
 		JSONArray params = new JSONArray();
 		params.add(jsInjectionOperationalBean.getJavaScriptCode());
 		eventBean.setParameters(params);
@@ -405,7 +428,7 @@ public class Dispatcher implements Runnable {
 	}
 
 	private JavaAgentEventBean prepareXQueryInjectionEvent(JavaAgentEventBean eventBean,
-			XQueryOperationalBean xQueryOperationalBean) {
+														   XQueryOperationalBean xQueryOperationalBean) {
 		JSONArray params = new JSONArray();
 		params.add(xQueryOperationalBean.getExpression());
 		eventBean.setParameters(params);
@@ -413,7 +436,7 @@ public class Dispatcher implements Runnable {
 	}
 
 	private JavaAgentEventBean prepareSystemExitEvent(JavaAgentEventBean eventBean,
-			SystemExitOperationalBean systemExitOperationalBean) {
+													  SystemExitOperationalBean systemExitOperationalBean) {
 		JSONArray params = new JSONArray();
 		params.add(systemExitOperationalBean.getExitCode());
 		eventBean.setParameters(params);
@@ -421,7 +444,7 @@ public class Dispatcher implements Runnable {
 	}
 
 	private JavaAgentEventBean prepareXPATHEvent(JavaAgentEventBean eventBean,
-			XPathOperationalBean xPathOperationalBean) {
+												 XPathOperationalBean xPathOperationalBean) {
 		JSONArray params = new JSONArray();
 		params.add(xPathOperationalBean.getExpression());
 		eventBean.setParameters(params);
@@ -429,7 +452,7 @@ public class Dispatcher implements Runnable {
 	}
 
 	private JavaAgentEventBean prepareHashEvent(JavaAgentEventBean eventBean,
-			HashCryptoOperationalBean hashOperationalBean) {
+												HashCryptoOperationalBean hashOperationalBean) {
 		JSONArray params = new JSONArray();
 		params.add(hashOperationalBean.getName());
 		if (StringUtils.isNotBlank(hashOperationalBean.getProvider())) {
@@ -440,7 +463,7 @@ public class Dispatcher implements Runnable {
 	}
 
 	private JavaAgentEventBean prepareCryptoEvent(JavaAgentEventBean eventBean,
-			HashCryptoOperationalBean hashCryptoOperationalBean) {
+												  HashCryptoOperationalBean hashCryptoOperationalBean) {
 		JSONArray params = new JSONArray();
 		params.add(hashCryptoOperationalBean.getName());
 		if (StringUtils.isNotBlank(hashCryptoOperationalBean.getProvider())) {
@@ -463,7 +486,7 @@ public class Dispatcher implements Runnable {
 	}
 
 	private JavaAgentEventBean prepareTrustBoundaryEvent(JavaAgentEventBean eventBean,
-			TrustBoundaryOperationalBean trustBoundaryOperationalBean) {
+														 TrustBoundaryOperationalBean trustBoundaryOperationalBean) {
 		JSONArray params = new JSONArray();
 		params.add(trustBoundaryOperationalBean.getKey());
 		params.add(trustBoundaryOperationalBean.getValue());
@@ -472,7 +495,7 @@ public class Dispatcher implements Runnable {
 	}
 
 	private JavaAgentEventBean prepareRandomEvent(JavaAgentEventBean eventBean,
-			RandomOperationalBean randomOperationalBean) {
+												  RandomOperationalBean randomOperationalBean) {
 		JSONArray params = new JSONArray();
 		params.add(randomOperationalBean.getClassName());
 		eventBean.setEventCategory(randomOperationalBean.getEventCatgory());
@@ -481,7 +504,7 @@ public class Dispatcher implements Runnable {
 	}
 
 	private JavaAgentEventBean prepareSecureCookieEvent(JavaAgentEventBean eventBean,
-			SecureCookieOperationalBean secureCookieOperationalBean) {
+														SecureCookieOperationalBean secureCookieOperationalBean) {
 		JSONArray params = new JSONArray();
 		params.add(secureCookieOperationalBean.getValue());
 		eventBean.setParameters(params);
@@ -499,7 +522,7 @@ public class Dispatcher implements Runnable {
 	}
 
 	private JavaAgentEventBean prepareFileIntegrityEvent(JavaAgentEventBean eventBean,
-			FileIntegrityBean fileIntegrityBean) {
+														 FileIntegrityBean fileIntegrityBean) {
 		JSONArray params = new JSONArray();
 		params.add(fileIntegrityBean.getFileName());
 		eventBean.setParameters(params);
@@ -521,7 +544,7 @@ public class Dispatcher implements Runnable {
 	}
 
 	private JavaAgentEventBean prepareSQLDbCommandEvent(List<SQLOperationalBean> operationalList,
-			JavaAgentEventBean eventBean) {
+														JavaAgentEventBean eventBean) {
 		JSONArray params = new JSONArray();
 		for (SQLOperationalBean operationalBean : operationalList) {
 			JSONObject query = new JSONObject();
@@ -535,7 +558,7 @@ public class Dispatcher implements Runnable {
 	}
 
 	private JavaAgentEventBean prepareSystemCommandEvent(JavaAgentEventBean eventBean,
-			ForkExecOperationalBean operationalBean) {
+														 ForkExecOperationalBean operationalBean) {
 		JSONArray params = new JSONArray();
 		params.add(operationalBean.getCommand());
 		if (operationalBean.getEnvironment() != null) {
@@ -546,7 +569,7 @@ public class Dispatcher implements Runnable {
 	}
 
 	private static JavaAgentEventBean prepareFileEvent(JavaAgentEventBean eventBean,
-			FileOperationalBean fileOperationalBean) {
+													   FileOperationalBean fileOperationalBean) {
 		JSONArray params = new JSONArray();
 		params.add(fileOperationalBean.getFileName());
 		eventBean.setParameters(params);
@@ -554,17 +577,22 @@ public class Dispatcher implements Runnable {
 	}
 
 	private static JavaAgentEventBean prepareNoSQLEvent(JavaAgentEventBean eventBean,
-			NoSQLOperationalBean noSQLOperationalBean) {
+														NoSQLOperationalBean noSQLOperationalBean) throws ParseException {
 		JSONArray params = new JSONArray();
-		ProcessorThread.getMongoDbParameterValue(noSQLOperationalBean.getApiCallArgs(), params);
 		eventBean.setEventCategory(MONGO);
+		JSONParser jsonParser = new JSONParser();
+//        for(Object doc : noSQLOperationalBean.getData()){
+//            params.add(jsonParser.parse(doc));
+//
+//        }
+		params.addAll((JSONArray) jsonParser.parse(noSQLOperationalBean.getData().toString()));
 		eventBean.setParameters(params);
 		K2Instrumentator.JA_HEALTH_CHECK.getProtectedDB().add(MONGO);
 		return eventBean;
 	}
-	
+
 	private static JavaAgentEventBean prepareSSRFEvent(JavaAgentEventBean eventBean,
-			SSRFOperationalBean ssrfOperationalBean) {
+													   SSRFOperationalBean ssrfOperationalBean) {
 		JSONArray params = new JSONArray();
 		params.add(ssrfOperationalBean.getArg());
 		eventBean.setParameters(params);
@@ -617,7 +645,7 @@ public class Dispatcher implements Runnable {
 	}
 
 	private JavaAgentEventBean processStackTrace(JavaAgentEventBean eventBean,
-			VulnerabilityCaseType vulnerabilityCaseType, boolean deserialisationCheck) {
+												 VulnerabilityCaseType vulnerabilityCaseType, boolean deserialisationCheck) {
 
 		String klassName = null;
 
@@ -653,7 +681,7 @@ public class Dispatcher implements Runnable {
 		if ((StringUtils.contains(klassName, XML_DOCUMENT_FRAGMENT_SCANNER_IMPL)
 				&& StringUtils.equals(trace[i].getMethodName(), SCAN_DOCUMENT))
 				|| (StringUtils.contains(klassName, XML_ENTITY_MANAGER)
-						&& StringUtils.equals(trace[i].getMethodName(), SETUP_CURRENT_ENTITY))) {
+				&& StringUtils.equals(trace[i].getMethodName(), SETUP_CURRENT_ENTITY))) {
 			eventBean.getMetaData().setTriggerViaXXE(true);
 			logger.log(LogLevel.DEBUG,
 					String.format(PRINTING_STACK_TRACE_FOR_XXE_EVENT_S_S, eventBean.getId(), Arrays.asList(trace)),
@@ -702,16 +730,17 @@ public class Dispatcher implements Runnable {
 		eventBean.setId(objectBean.getExecutionId());
 		eventBean.setStartTime(objectBean.getStartTime());
 		eventBean.setBlockingProcessingTime((Long) extraInfo.get(BLOCKING_END_TIME) - eventBean.getStartTime());
+		eventBean.setApiId(objectBean.getApiID());
 		return eventBean;
 	}
 
 	private JavaAgentEventBean prepareEvent(HttpRequestBean httpRequestBean, AgentMetaData metaData,
-			VulnerabilityCaseType vulnerabilityCaseType) {
+											VulnerabilityCaseType vulnerabilityCaseType) {
 		JavaAgentEventBean eventBean = new JavaAgentEventBean();
 		eventBean.setHttpRequest(httpRequestBean);
 		eventBean.setMetaData(metaData);
 		eventBean.setCaseType(vulnerabilityCaseType.getCaseType());
-		eventBean.setValidationResponseRequired(ProtectionConfig.getInstance().getGenerateEventResponse());
+		eventBean.setAPIBlocked(metaData.isApiBlocked());
 		return eventBean;
 	}
 

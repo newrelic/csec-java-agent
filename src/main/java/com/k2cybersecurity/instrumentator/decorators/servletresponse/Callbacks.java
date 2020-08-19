@@ -6,8 +6,6 @@ import com.k2cybersecurity.instrumentator.custom.ThreadLocalOperationLock;
 import com.k2cybersecurity.instrumentator.utils.CallbackUtils;
 import org.apache.commons.lang3.StringUtils;
 
-import java.util.Arrays;
-
 public class Callbacks {
 
     public static final String GET_WRITER = "getWriter";

@@ -1,5 +1,7 @@
 package com.k2cybersecurity.instrumentator;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.util.*;
 
 public class Hooks {
@@ -7,6 +9,8 @@ public class Hooks {
 	public static Map<String, List<String>> NAME_BASED_HOOKS = new HashMap<>();
 
 	public static Map<String, List<String>> TYPE_BASED_HOOKS = new HashMap<>();
+
+	public static Set<String> ANNOTATION_BASED_HOOKS = new HashSet<>();
 
 	public static Map<String, String> DECORATOR_ENTRY = new HashMap<>();
 
@@ -34,6 +38,16 @@ public class Hooks {
 		TYPE_BASED_HOOKS.put("javax.servlet.ServletResponse", Arrays.asList("getOutputStream", "getWriter", null));
 		TYPE_BASED_HOOKS.put("javax.servlet.Filter", Collections.singletonList("doFilter"));
 		TYPE_BASED_HOOKS.put("javax.servlet.FilterChain", Collections.singletonList("doFilter"));
+
+		// Web Framework Based hooks
+
+		// Spring MVC
+		ANNOTATION_BASED_HOOKS.add("org.springframework.web.bind.annotation.Mapping");
+
+		// Jersey
+		ANNOTATION_BASED_HOOKS.add("javax.ws.rs.Path");
+		ANNOTATION_BASED_HOOKS.add("javax.ws.rs.HttpMethod");
+
 
 		// SQL hooks
 		TYPE_BASED_HOOKS.put("java.sql.Statement", Arrays.asList("execute", "executeBatch", "executeLargeBatch",
@@ -82,39 +96,34 @@ public class Hooks {
 
 		// Forkexec hooks
 		NAME_BASED_HOOKS.put("java.lang.ProcessImpl", Arrays.asList("start"));
-		
+
 		//System Exit hooks
-		NAME_BASED_HOOKS.put("java.lang.Shutdown", Arrays.asList(new String[] {"exit", "halt"}));
+		NAME_BASED_HOOKS.put("java.lang.Shutdown", Arrays.asList(new String[]{"exit", "halt"}));
 
 		// File Hooks
 		NAME_BASED_HOOKS.put("java.io.FileOutputStream", Arrays.asList("open"));
 		NAME_BASED_HOOKS.put("java.io.FileInputStream", Arrays.asList("open"));
-		NAME_BASED_HOOKS.put("sun.nio.fs.UnixNativeDispatcher", Arrays.asList(new String[] { "open", "fopen", "link",
-				"unlink", "mknod", "rename", "mkdir", "rmdir", "symlink", "chown", "chmod" }));
+		NAME_BASED_HOOKS.put("sun.nio.fs.UnixNativeDispatcher", Arrays.asList(new String[]{"open", "fopen", "link",
+				"unlink", "mknod", "rename", "mkdir", "rmdir", "symlink", "chown", "chmod"}));
 		NAME_BASED_HOOKS.put("java.io.UnixFileSystem", Collections.singletonList("delete"));
 		NAME_BASED_HOOKS.put("java.io.File", Collections.singletonList("list"));
 		NAME_BASED_HOOKS.put("java.io.RandomAccessFile", Collections.singletonList("open"));
 		TYPE_BASED_HOOKS.put("java.io.FileSystem", Collections.singletonList("getBooleanAttributes"));
 
 		// Mongo Hooks
+		NAME_BASED_HOOKS.put("com.mongodb.connection.CommandMessage", Collections.singletonList(null));
 
-		NAME_BASED_HOOKS.put("com.mongodb.connection.DefaultServerConnection",
-				Collections.singletonList("executeProtocol"));
-		NAME_BASED_HOOKS.put("com.mongodb.internal.connection.DefaultServerConnection",
-				Collections.singletonList("executeProtocol"));
-		NAME_BASED_HOOKS.put("com.mongodb.async.client.MongoClientImpl$2", Collections.singletonList("execute"));
-		NAME_BASED_HOOKS.put("com.mongodb.async.client.AsyncOperationExecutorImpl",
-				Collections.singletonList("execute"));
-		NAME_BASED_HOOKS.put("com.mongodb.async.client.OperationExecutorImpl", Collections.singletonList("execute"));
+		NAME_BASED_HOOKS.put("com.mongodb.internal.connection.CommandMessage", Collections.singletonList(null));
+
 
 		// Weak Random
-		NAME_BASED_HOOKS.put("java.util.Random", Arrays.asList(new String[] { "nextBytes", "nextInt", "nextLong",
-				"nextBoolean", "nextFloat", "nextDouble", "nextGaussian" }));
+		NAME_BASED_HOOKS.put("java.util.Random", Arrays.asList(new String[]{"nextBytes", "nextInt", "nextLong",
+				"nextBoolean", "nextFloat", "nextDouble", "nextGaussian"}));
 		NAME_BASED_HOOKS.put("java.lang.Math", Collections.singletonList("random"));
 
 		// Strong random
-		NAME_BASED_HOOKS.put("java.security.SecureRandom", Arrays.asList(new String[] { "nextBytes", "nextInt",
-				"nextLong", "nextBoolean", "nextFloat", "nextDouble", "nextGaussian" }));
+		NAME_BASED_HOOKS.put("java.security.SecureRandom", Arrays.asList(new String[]{"nextBytes", "nextInt",
+				"nextLong", "nextBoolean", "nextFloat", "nextDouble", "nextGaussian"}));
 
 		// Jetty Servlet Hooks
 		TYPE_BASED_HOOKS.put("org.eclipse.jetty.server.Handler", Collections.singletonList("handle"));
@@ -170,8 +179,8 @@ public class Hooks {
 		NAME_BASED_HOOKS.put("org.apache.commons.httpclient.HttpClient", Collections.singletonList("executeMethod"));
 		NAME_BASED_HOOKS.put("com.google.api.client.http.HttpRequest", Arrays.asList("execute", "executeAsync"));
 		TYPE_BASED_HOOKS.put("java.net.URLConnection", Collections.singletonList("connect"));
-		NAME_BASED_HOOKS.put("com.squareup.okhttp.Call", Arrays.asList("execute", null));
-		NAME_BASED_HOOKS.put("com.squareup.okhttp.Call$AsyncCall", Collections.singletonList("execute"));
+		NAME_BASED_HOOKS.put(StringUtils.replace("com@squareup@okhttp@Call", "@", "."), Arrays.asList("execute", null));
+		NAME_BASED_HOOKS.put(StringUtils.replace("com@squareup@okhttp@Call", "@", ".") + "$AsyncCall", Collections.singletonList("execute"));
 
 		NAME_BASED_HOOKS.put("okhttp3.OkHttpClient", Collections.singletonList("newCall"));
 		TYPE_BASED_HOOKS.put("okhttp3.Call", Collections.singletonList("execute"));
@@ -253,6 +262,16 @@ public class Hooks {
 				"com.k2cybersecurity.instrumentator.decorators.servletresponse");
 		DECORATOR_ENTRY.put("javax.servlet.ServletResponse.getOutputStream",
 				"com.k2cybersecurity.instrumentator.decorators.servletresponse");
+
+		// Spring MVC
+		DECORATOR_ENTRY.put("org.springframework.web.bind.annotation.Mapping",
+				"com.k2cybersecurity.instrumentator.decorators.servicetrace");
+
+		// Jersey
+		DECORATOR_ENTRY.put("javax.ws.rs.Path",
+				"com.k2cybersecurity.instrumentator.decorators.servicetrace");
+		DECORATOR_ENTRY.put("javax.ws.rs.HttpMethod",
+				"com.k2cybersecurity.instrumentator.decorators.servicetrace");
 
 		// SQL Create
 		DECORATOR_ENTRY.put("java.sql.Connection.nativeSQL",
@@ -403,16 +422,9 @@ public class Hooks {
 				"com.k2cybersecurity.instrumentator.decorators.fileaccess");
 
 		// Mongo Execute
-		DECORATOR_ENTRY.put("com.mongodb.connection.DefaultServerConnection.executeProtocol",
-				"com.k2cybersecurity.instrumentator.decorators.mongoexecute");
-		DECORATOR_ENTRY.put("com.mongodb.internal.connection.DefaultServerConnection.executeProtocol",
-				"com.k2cybersecurity.instrumentator.decorators.mongoexecute");
-		DECORATOR_ENTRY.put("com.mongodb.async.client.MongoClientImpl$2.execute",
-				"com.k2cybersecurity.instrumentator.decorators.mongoexecute");
-		DECORATOR_ENTRY.put("com.mongodb.async.client.AsyncOperationExecutorImpl.execute",
-				"com.k2cybersecurity.instrumentator.decorators.mongoexecute");
-		DECORATOR_ENTRY.put("com.mongodb.async.client.OperationExecutorImpl.execute",
-				"com.k2cybersecurity.instrumentator.decorators.mongoexecute");
+		DECORATOR_ENTRY.put("com.mongodb.connection.CommandMessage.null", "com.k2cybersecurity.instrumentator.decorators.mongo");
+
+		DECORATOR_ENTRY.put("com.mongodb.internal.connection.CommandMessage.null", "com.k2cybersecurity.instrumentator.decorators.mongo");
 
 		// LDAP search
 		DECORATOR_ENTRY.put("javax.naming.directory.DirContext.search",
@@ -550,10 +562,10 @@ public class Hooks {
 		DECORATOR_ENTRY.put("org.apache.commons.httpclient.HttpClient.executeMethod", "com.k2cybersecurity.instrumentator.decorators.ssrf.commonshttpclient2");
 		DECORATOR_ENTRY.put("com.google.api.client.http.HttpRequest.execute", "com.k2cybersecurity.instrumentator.decorators.ssrf.googlehttpclient");
 		DECORATOR_ENTRY.put("com.google.api.client.http.HttpRequest.executeAsync", "com.k2cybersecurity.instrumentator.decorators.ssrf.googlehttpclient");
-		
-		DECORATOR_ENTRY.put("com.squareup.okhttp.Call.null", "com.k2cybersecurity.instrumentator.decorators.ssrf.okhttp");
-		DECORATOR_ENTRY.put("com.squareup.okhttp.Call.execute", "com.k2cybersecurity.instrumentator.decorators.ssrf.okhttp");
-		DECORATOR_ENTRY.put("com.squareup.okhttp.Call$AsyncCall.execute", "com.k2cybersecurity.instrumentator.decorators.ssrf.okhttp");
+
+		DECORATOR_ENTRY.put(StringUtils.replace("com@squareup@okhttp@Call", "@", ".") + ".null", "com.k2cybersecurity.instrumentator.decorators.ssrf.okhttp");
+		DECORATOR_ENTRY.put(StringUtils.replace("com@squareup@okhttp@Call", "@", ".") + ".execute", "com.k2cybersecurity.instrumentator.decorators.ssrf.okhttp");
+		DECORATOR_ENTRY.put(StringUtils.replace("com@squareup@okhttp@Call", "@", ".") + "$AsyncCall.execute", "com.k2cybersecurity.instrumentator.decorators.ssrf.okhttp");
 
 		DECORATOR_ENTRY.put("okhttp3.OkHttpClient.newCall", "com.k2cybersecurity.instrumentator.decorators.ssrf.okhttp3");
 		DECORATOR_ENTRY.put("okhttp3.Call.execute", "com.k2cybersecurity.instrumentator.decorators.ssrf.okhttp3");
