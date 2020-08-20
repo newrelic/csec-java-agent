@@ -5,6 +5,7 @@ import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.models.javaagent.HttpRequestBean;
 import com.squareup.okhttp.*;
 import com.squareup.okhttp.Request.Builder;
+import com.squareup.okhttp.internal.http.HttpMethod;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.Map;
@@ -40,7 +41,12 @@ public class RequestUtils {
 
         Builder requestBuilder = new Request.Builder();
         requestBuilder = requestBuilder.url(url.toString());
-        requestBuilder = requestBuilder.method(httpRequestBean.getMethod(), requestBody);
+
+        if (HttpMethod.permitsRequestBody(httpRequestBean.getMethod())) {
+            requestBuilder = requestBuilder.method(httpRequestBean.getMethod(), requestBody);
+        } else {
+            requestBuilder = requestBuilder.method(httpRequestBean.getMethod(), null);
+        }
         requestBuilder = requestBuilder.headers(Headers.of((Map<String, String>) httpRequestBean.getHeaders()));
 
         return requestBuilder.build();

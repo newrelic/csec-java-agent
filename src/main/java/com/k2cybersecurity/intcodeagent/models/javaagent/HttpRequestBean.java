@@ -312,7 +312,9 @@ public class HttpRequestBean {
     }
 
     public void setProtocol(String protocol) {
-        this.protocol = protocol;
+        if (StringUtils.isNotBlank(protocol)) {
+            this.protocol = protocol;
+        }
     }
 
     public String getClientPort() {
