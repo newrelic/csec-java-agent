@@ -105,10 +105,10 @@ public class Hooks {
 		NAME_BASED_HOOKS.put("java.io.FileInputStream", Arrays.asList("open"));
 		NAME_BASED_HOOKS.put("sun.nio.fs.UnixNativeDispatcher", Arrays.asList(new String[]{"open", "fopen", "link",
 				"unlink", "mknod", "rename", "mkdir", "rmdir", "symlink", "chown", "chmod"}));
-		NAME_BASED_HOOKS.put("java.io.UnixFileSystem", Collections.singletonList("delete"));
-		NAME_BASED_HOOKS.put("java.io.File", Collections.singletonList("list"));
 		NAME_BASED_HOOKS.put("java.io.RandomAccessFile", Collections.singletonList("open"));
-		TYPE_BASED_HOOKS.put("java.io.FileSystem", Collections.singletonList("getBooleanAttributes"));
+		TYPE_BASED_HOOKS.put("java.io.FileSystem", Arrays.asList("delete", "getBooleanAttributes"));
+		NAME_BASED_HOOKS.put("java.io.File", Collections.singletonList("list"));
+
 
 		// Mongo Hooks
 		NAME_BASED_HOOKS.put("com.mongodb.connection.CommandMessage", Collections.singletonList(null));
@@ -413,11 +413,11 @@ public class Hooks {
 		DECORATOR_ENTRY.put("sun.nio.fs.UnixNativeDispatcher.chmod",
 				"com.k2cybersecurity.instrumentator.decorators.fileaccess");
 
-		DECORATOR_ENTRY.put("java.io.UnixFileSystem.delete",
+		DECORATOR_ENTRY.put("java.io.FileSystem.delete",
 				"com.k2cybersecurity.instrumentator.decorators.fileaccess");
 		DECORATOR_ENTRY.put("java.io.RandomAccessFile.open",
 				"com.k2cybersecurity.instrumentator.decorators.fileaccess");
-		DECORATOR_ENTRY.put("java.io.File.list", "com.k2cybersecurity.instrumentator.decorators.fileaccess");
+		DECORATOR_ENTRY.put("java.io.File.list", "com.k2cybersecurity.instrumentator.decorators.filelist");
 		DECORATOR_ENTRY.put("java.io.FileSystem.getBooleanAttributes",
 				"com.k2cybersecurity.instrumentator.decorators.fileaccess");
 
@@ -607,7 +607,7 @@ public class Hooks {
 		IAST_BASED_HOOKS.addAll(Arrays.asList("javax.servlet.http.HttpSession",
 				"javax.servlet.http.HttpServletResponse", "java.util.Random", "java.lang.Math",
 				"java.security.SecureRandom", "javax.crypto.Cipher", "javax.crypto.KeyGenerator",
-				"java.security.KeyPairGenerator", "java.security.MessageDigest", "java.io.FileSystem"));
+				"java.security.KeyPairGenerator", "java.security.MessageDigest"));
 
 	}
 }
