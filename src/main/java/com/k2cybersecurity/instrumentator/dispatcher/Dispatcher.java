@@ -50,6 +50,7 @@ public class Dispatcher implements Runnable {
 	public static final String STRING_COLON = " : ";
 
 	private static final Object deployedAppDetectionLock = new Object();
+	public static final String S_S = "%s-%s";
 	private HttpRequestBean httpRequestBean;
 	private AgentMetaData metaData;
 	private Object event;
@@ -123,6 +124,7 @@ public class Dispatcher implements Runnable {
 //				System.out.println("Changes reflected : " + httpRequestBean.getHttpResponseBean().getResponseBody());
 				JavaAgentEventBean eventBean = prepareEvent(httpRequestBean, metaData, vulnerabilityCaseType);
 				String url = StringUtils.substringBefore(httpRequestBean.getUrl(), SEPARATOR_QUESTIONMARK);
+				url = String.format(S_S, eventBean.getHttpRequest().getMethod(), url);
 				if (StringUtils.isNoneBlank(xssConstruct, httpRequestBean.getHttpResponseBean().getResponseBody()) ||
 						(AgentUtils.getInstance().getAgentPolicy().getIastMode().getEnabled()
 								&& AgentUtils.getInstance().getAgentPolicy().getIastMode().getDynamicScanning().getEnabled()
