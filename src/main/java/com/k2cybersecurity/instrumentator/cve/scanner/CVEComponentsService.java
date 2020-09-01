@@ -1,19 +1,18 @@
 package com.k2cybersecurity.instrumentator.cve.scanner;
 
-import java.io.File;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
-
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.StringUtils;
-
 import com.k2cybersecurity.instrumentator.K2Instrumentator;
 import com.k2cybersecurity.instrumentator.utils.HashGenerator;
 import com.k2cybersecurity.intcodeagent.logging.DeployedApplication;
 import com.k2cybersecurity.intcodeagent.models.javaagent.ApplicationScanComponentData;
 import com.k2cybersecurity.intcodeagent.models.javaagent.CVEComponent;
 import com.k2cybersecurity.intcodeagent.models.javaagent.ScanComponentData;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
+
+import java.io.File;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 public class CVEComponentsService {
 
@@ -68,10 +67,10 @@ public class CVEComponentsService {
 		Set<String> libPaths = new HashSet<>();
 		if (!K2Instrumentator.APPLICATION_INFO_BEAN.getLibraryPath().isEmpty()) {
 			for (String path : K2Instrumentator.APPLICATION_INFO_BEAN.getLibraryPath()) {
-				if (StringUtils.endsWith(path, JAR_EXTENSION)) {
+				if (StringUtils.endsWith(path, JAR_EXTENSION) && !StringUtils.endsWithIgnoreCase(path, "K2-JavaAgent-1.0.0-jar-with-dependencies.jar")) {
 					libPaths.add(path);
 				} else if (new File(path).isDirectory()) {
-					FileUtils.listFiles(new File(path), new String[] { JAR_EXT }, true)
+					FileUtils.listFiles(new File(path), new String[]{JAR_EXT}, true)
 							.forEach(jarFile -> libPaths.add(jarFile.getAbsolutePath()));
 				}
 			}

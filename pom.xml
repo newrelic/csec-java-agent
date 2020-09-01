@@ -41,10 +41,10 @@
 			<version>2.10.1</version>
 		</dependency>
 		<dependency>
-			<groupId>k2.org.java-websocket</groupId>
+			<groupId>org.java-websocket</groupId>
 			<artifactId>Java-WebSocket</artifactId>
-            <version>1.4.1-SNAPSHOT</version>
-        </dependency>
+			<version>1.5.1</version>
+		</dependency>
         <!-- https://mvnrepository.com/artifact/commons-io/commons-io -->
         <dependency>
             <groupId>commons-io</groupId>
@@ -91,18 +91,22 @@
 
         <dependency>
             <groupId>org.unbescape</groupId>
-            <artifactId>unbescape</artifactId>
-            <version>1.1.6.RELEASE</version>
-        </dependency>
+			<artifactId>unbescape</artifactId>
+			<version>1.1.6.RELEASE</version>
+		</dependency>
 
-        <!-- https://mvnrepository.com/artifact/commons-codec/commons-codec -->
-        <dependency>
-            <groupId>commons-codec</groupId>
-            <artifactId>commons-codec</artifactId>
-            <version>1.11</version>
-        </dependency>
-
-    </dependencies>
+		<!-- https://mvnrepository.com/artifact/commons-codec/commons-codec -->
+		<dependency>
+			<groupId>commons-codec</groupId>
+			<artifactId>commons-codec</artifactId>
+			<version>1.11</version>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-simple</artifactId>
+			<version>1.7.30</version>
+		</dependency>
+	</dependencies>
 	<build>
 		<resources>
 			<resource>
@@ -235,6 +239,10 @@
 								<relocation>
 									<pattern>com.squareup.okhttp</pattern>
 									<shadedPattern>sun.reflect.com.k2cybersecurity.com.squareup.okhttp</shadedPattern>
+								</relocation>
+								<relocation>
+									<pattern>org.slf4j</pattern>
+									<shadedPattern>sun.reflect.com.k2cybersecurity.org.slf4j</shadedPattern>
 								</relocation>
 							</relocations>
 						</configuration>
