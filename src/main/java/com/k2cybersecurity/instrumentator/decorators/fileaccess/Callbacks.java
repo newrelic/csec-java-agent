@@ -5,6 +5,7 @@ import com.k2cybersecurity.instrumentator.custom.ThreadLocalExecutionMap;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalHttpMap;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalOperationLock;
 import com.k2cybersecurity.instrumentator.dispatcher.EventDispatcher;
+import com.k2cybersecurity.instrumentator.utils.AgentUtils;
 import com.k2cybersecurity.intcodeagent.models.javaagent.FileIntegrityBean;
 import com.k2cybersecurity.intcodeagent.models.javaagent.VulnerabilityCaseType;
 import com.k2cybersecurity.intcodeagent.models.operationalbean.FileOperationalBean;
@@ -58,10 +59,13 @@ public class Callbacks {
 
     private static boolean skipExistsEvent(String filename) {
         String extension = getFileExtension(filename);
-        if (StringUtils.isNotBlank(extension) &&
+        if (!(AgentUtils.getInstance().getAgentPolicy().getIastMode().getEnabled() &&
+                AgentUtils.getInstance().getAgentPolicy().getIastMode().getDynamicScanning().getEnabled()) &&
+                StringUtils.isNotBlank(extension) &&
                 (SOURCE_EXENSIONS.contains(extension) || ALLOWED_EXTENSIONS.contains(extension))) {
             return true;
         }
+
         return false;
     }
 
