@@ -83,22 +83,24 @@ public class ControlCommandProcessor implements Runnable {
 			}
 			break;
 
-		case IntCodeControlCommand.SHUTDOWN_LANGUAGE_AGENT:
-			InstrumentationUtils.shutdownLogic(true);
-			break;
-		case IntCodeControlCommand.SET_DEFAULT_LOG_LEVEL:
-			LogLevel logLevel = LogLevel.valueOf(controlCommand.getArguments().get(0));
-			LogWriter.setLogLevel(logLevel);
-			break;
-		case IntCodeControlCommand.UPLOAD_LOGS:
-			logger.log(LogLevel.INFO, "Is log file sent to IC: " + FtpClient.sendBootstrapLogFile(),
-					ControlCommandProcessor.class.getSimpleName());
-			break;
-		case IntCodeControlCommand.UNSUPPORTED_AGENT:
-			logger.log(LogLevel.SEVERE, controlCommand.getArguments().get(0),
-					ControlCommandProcessor.class.getSimpleName());
-			System.err.println(controlCommand.getArguments().get(0));
-			InstrumentationUtils.shutdownLogic(true);
+			case IntCodeControlCommand.SHUTDOWN_LANGUAGE_AGENT:
+				InstrumentationUtils.shutdownLogic(true);
+				break;
+			case IntCodeControlCommand.SET_DEFAULT_LOG_LEVEL:
+				LogLevel logLevel = LogLevel.valueOf(controlCommand.getArguments().get(0));
+				LogWriter.setLogLevel(logLevel);
+				logger.log(LogLevel.INFO, "Changed default log level to " + controlCommand.getArguments().get(0),
+						ControlCommandProcessor.class.getSimpleName());
+				break;
+			case IntCodeControlCommand.UPLOAD_LOGS:
+				logger.log(LogLevel.INFO, "Is log file sent to IC: " + FtpClient.sendBootstrapLogFile(),
+						ControlCommandProcessor.class.getSimpleName());
+				break;
+			case IntCodeControlCommand.UNSUPPORTED_AGENT:
+				logger.log(LogLevel.SEVERE, controlCommand.getArguments().get(0),
+						ControlCommandProcessor.class.getSimpleName());
+				System.err.println(controlCommand.getArguments().get(0));
+				InstrumentationUtils.shutdownLogic(true);
 			break;
 		case IntCodeControlCommand.EVENT_RESPONSE:
 			boolean cleanUp = false;
