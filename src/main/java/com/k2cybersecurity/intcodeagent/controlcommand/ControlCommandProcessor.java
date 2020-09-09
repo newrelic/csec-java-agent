@@ -101,16 +101,16 @@ public class ControlCommandProcessor implements Runnable {
 						ControlCommandProcessor.class.getSimpleName());
 				System.err.println(controlCommand.getArguments().get(0));
 				InstrumentationUtils.shutdownLogic(true);
-			break;
-		case IntCodeControlCommand.EVENT_RESPONSE:
-			boolean cleanUp = false;
-			try {
-				EventResponse receivedEventResponse = new ObjectMapper().readValue(controlCommand.getArguments().get(0),
-						EventResponse.class);
+				break;
+			case IntCodeControlCommand.EVENT_RESPONSE:
+				boolean cleanUp = false;
+				try {
+					EventResponse receivedEventResponse = new ObjectMapper().readValue(controlCommand.getArguments().get(0),
+							EventResponse.class);
 
-				EventResponse eventResponse = AgentUtils.getInstance().getEventResponseSet()
-						.get(receivedEventResponse.getId());
-				if (eventResponse == null) {
+					EventResponse eventResponse = AgentUtils.getInstance().getEventResponseSet()
+							.get(receivedEventResponse.getId());
+					if (eventResponse == null) {
 					logger.log(LogLevel.DEBUG,
 							String.format(EVENT_RESPONSE_ENTRY_NOT_FOUND_FOR_THIS_S, receivedEventResponse),
 							ControlCommandProcessor.class.getSimpleName());
