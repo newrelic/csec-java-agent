@@ -2,6 +2,7 @@ package com.k2cybersecurity.intcodeagent.models.javaagent;
 
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.properties.K2JAVersionInfo;
+import org.apache.commons.lang3.StringUtils;
 
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.*;
 
@@ -16,13 +17,21 @@ public class AgentBasicInfo {
 	/**  Tool id for Language Agent. */
 	private String collectorVersion;
 
-	/** The Json name. */
+	/**
+	 * The Json name.
+	 */
 	private String jsonName;
 
-	/** Json version number. */
+	/**
+	 * Json version number.
+	 */
 	private String jsonVersion;
-	
+
 	private final String collectorType = "JAVA";
+
+	private final String language = "Java";
+
+	private final String framework = StringUtils.EMPTY;
 
 	private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
 
@@ -32,7 +41,7 @@ public class AgentBasicInfo {
 	public AgentBasicInfo() {
 		setJsonVersion(K2JAVersionInfo.jsonVersion);
 		setCollectorVersion(K2JAVersionInfo.collectorVersion);
-		if (this instanceof  ApplicationInfoBean) {
+		if (this instanceof ApplicationInfoBean) {
 			setJsonName(JSON_NAME_APPLICATION_INFO_BEAN);
 		} else if (this instanceof JavaAgentEventBean) {
 			setJsonName(JSON_NAME_INTCODE_RESULT_BEAN);
@@ -102,7 +111,14 @@ public class AgentBasicInfo {
 	public void setJsonVersion(String jsonVersion) {
 		this.jsonVersion = jsonVersion;
 	}
-	
+
+	public String getLanguage() {
+		return language;
+	}
+
+	public String getFramework() {
+		return framework;
+	}
 
 	/**
 	 * @return the collectorType
@@ -110,5 +126,5 @@ public class AgentBasicInfo {
 	public String getCollectorType() {
 		return collectorType;
 	}
-	
+
 }
