@@ -541,8 +541,8 @@ public class CallbackUtils {
 			// For URL
 			processURLEncodedDataForXSS(processedData, httpRequestBean.getUrl());
 
-			// Process body
-			processedData.add(processedBody);
+//			// Process body
+//			processedData.add(processedBody);
 
 			if (StringUtils.isNotBlank(processedBody)) {
 				String oldProcessedBody;
