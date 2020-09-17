@@ -14,7 +14,6 @@ import org.apache.commons.lang3.StringUtils;
 import java.io.File;
 import java.nio.file.Paths;
 import java.time.Instant;
-import java.util.Arrays;
 
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.SOURCE_EXENSIONS;
 
@@ -25,15 +24,15 @@ public class Callbacks {
 
 	public static void doOnEnter(String sourceString, String className, String methodName, Object obj, Object[] args,
 			String exectionId) throws K2CyberSecurityException {
-		System.out.println("OnEnter :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj + " - eid : " + exectionId);
+		//        System.out.println("OnEnter :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj + " - eid : " + exectionId);
 		if (!ThreadLocalHttpMap.getInstance().isEmpty() && !ThreadLocalOperationLock.getInstance().isAcquired()) {
 			try {
 				ThreadLocalOperationLock.getInstance().acquire();
 				if (StringUtils
 						.isNotBlank(args[0].toString())) {
 					FileOperationalBean fileOperationalBean = null;
-					if(StringUtils.equals(methodName, GET_BOOLEAN_ATTRIBUTES)) {
-						if(StringUtils.endsWith(args[0].toString(), CLASS)) {
+					if (StringUtils.equals(methodName, GET_BOOLEAN_ATTRIBUTES)) {
+						if (StringUtils.endsWith(args[0].toString(), CLASS)) {
 							return;
 						}
 						fileOperationalBean = new FileOperationalBean(args[0].toString(), className,
