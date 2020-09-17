@@ -1,6 +1,7 @@
 package com.k2cybersecurity.instrumentator.decorators.mongo;
 
 import com.k2cybersecurity.instrumentator.custom.K2CyberSecurityException;
+import com.k2cybersecurity.instrumentator.utils.AgentUtils;
 import com.k2cybersecurity.instrumentator.utils.ExecutionIDGenerator;
 import net.bytebuddy.asm.Advice;
 import net.bytebuddy.implementation.bytecode.assign.Assigner;
@@ -14,6 +15,9 @@ public class Decorators {
         @Advice.OnMethodExit()
         public static void exit(@Advice.Origin String signature, @Advice.Origin("#t") String className, @Advice.Origin("#m") String methodName, @Advice.AllArguments Object[] args, @Advice.This Object thisObject) throws Throwable {
             try {
+                if (!AgentUtils.getInstance().isAgentActive()) {
+                    return;
+                }
                 String threadName = Thread.currentThread().getName();
                 if (StringUtils.startsWith(threadName, "K2-")) {
                     return;
@@ -37,6 +41,9 @@ public class Decorators {
         @Advice.OnMethodEnter(skipOn = K2CyberSecurityException.class)
         public static Object enter(@Advice.Origin String signature, @Advice.Origin("#t") String className, @Advice.Origin("#m") String methodName, @Advice.AllArguments Object[] args, @Advice.This Object thisArg, @Advice.Local("k2execId") String eId) throws Throwable {
             try {
+                if (!AgentUtils.getInstance().isAgentActive()) {
+                    return null;
+                }
                 String threadName = Thread.currentThread().getName();
                 if (StringUtils.startsWith(threadName, "K2-")) {
                     return null;
@@ -63,6 +70,9 @@ public class Decorators {
         public static void exit(@Advice.Origin String signature, @Advice.Origin("#t") String className, @Advice.Origin("#m") String methodName, @Advice.Return(readOnly = false, typing = Assigner.Typing.DYNAMIC) Object value, @Advice.Thrown Throwable error, @Advice.This Object thisArg, @Advice.AllArguments Object[] args, @Advice.Local("k2execId") String eId)
                 throws Throwable {
             try {
+                if (!AgentUtils.getInstance().isAgentActive()) {
+                    return;
+                }
                 String threadName = Thread.currentThread().getName();
                 if (StringUtils.startsWith(threadName, "K2-")) {
                     return;
@@ -93,6 +103,9 @@ public class Decorators {
         public static void exit(@Advice.Origin String signature, @Advice.Origin("#t") String className, @Advice.Origin("#m") String methodName, @Advice.Thrown Throwable error, @Advice.This Object thisArg, @Advice.AllArguments Object[] args, @Advice.Local("k2execId") String eId)
                 throws Throwable {
             try {
+                if (!AgentUtils.getInstance().isAgentActive()) {
+                    return;
+                }
                 String threadName = Thread.currentThread().getName();
                 if (StringUtils.startsWith(threadName, "K2-")) {
                     return;
@@ -121,6 +134,9 @@ public class Decorators {
         @Advice.OnMethodEnter(skipOn = K2CyberSecurityException.class)
         public static Object enter(@Advice.Origin String signature, @Advice.Origin("#t") String className, @Advice.Origin("#m") String methodName, @Advice.AllArguments Object[] args, @Advice.Local("k2execId") String eId) throws Throwable {
             try {
+                if (!AgentUtils.getInstance().isAgentActive()) {
+                    return null;
+                }
                 String threadName = Thread.currentThread().getName();
                 if (StringUtils.startsWith(threadName, "K2-")) {
                     return null;
@@ -148,6 +164,9 @@ public class Decorators {
         @Advice.OnMethodEnter
         public static Object enter(@Advice.Origin String signature, @Advice.Origin("#t") String className, @Advice.Origin("#m") String methodName, @Advice.AllArguments Object[] args) throws Throwable {
             try {
+                if (!AgentUtils.getInstance().isAgentActive()) {
+                    return null;
+                }
                 String threadName = Thread.currentThread().getName();
                 if (StringUtils.startsWith(threadName, "K2-")) {
                     return null;
@@ -175,6 +194,9 @@ public class Decorators {
         public static void exit(@Advice.Origin String signature, @Advice.Origin("#t") String className, @Advice.Origin("#m") String methodName, @Advice.Return(readOnly = false, typing = Assigner.Typing.DYNAMIC) Object value, @Advice.Thrown Throwable error, @Advice.AllArguments Object[] args, @Advice.Local("k2execId") String eId)
                 throws Throwable {
             try {
+                if (!AgentUtils.getInstance().isAgentActive()) {
+                    return;
+                }
                 String threadName = Thread.currentThread().getName();
                 if (StringUtils.startsWith(threadName, "K2-")) {
                     return;
@@ -207,6 +229,9 @@ public class Decorators {
                 throws Throwable {
 //            String executionId = ExecutionIDGenerator.getExecutionId();
             try {
+                if (!AgentUtils.getInstance().isAgentActive()) {
+                    return;
+                }
                 String threadName = Thread.currentThread().getName();
                 if (StringUtils.startsWith(threadName, "K2-")) {
                     return;

@@ -77,25 +77,27 @@ public class AgentUtils {
 
     private Set<String> protectedVulnerabilties = new HashSet<String>();
 
-    private Set<DeployedApplication> scannedDeployedApplications = new HashSet<DeployedApplication>();
+	private Set<DeployedApplication> scannedDeployedApplications = new HashSet<DeployedApplication>();
 
-    private Pattern TRACE_PATTERN;
+	private Pattern TRACE_PATTERN;
 
-    private Map<Integer, JADatabaseMetaData> sqlConnectionMap;
+	private Map<Integer, JADatabaseMetaData> sqlConnectionMap;
 
-    private AgentPolicy agentPolicy;
+	private AgentPolicy agentPolicy;
 
-    private AgentPolicyIPBlockingParameters agentPolicyParameters;
+	private AgentPolicyIPBlockingParameters agentPolicyParameters;
 
-    private AgentUtils() {
+	private boolean isAgentActive = true;
 
-        transformedClasses = new HashSet<>();
-        eventResponseSet = new ConcurrentHashMap<>();
-        classLoaderRecord = new ConcurrentHashMap<>();
-        rxssSentUrls = new HashSet<>();
-        deployedApplicationUnderProcessing = new HashSet<>();
-        TRACE_PATTERN = Pattern.compile(IAgentConstants.TRACE_REGEX);
-        this.sqlConnectionMap = new LinkedHashMap<Integer, JADatabaseMetaData>(50, 0.75f, true) {
+	private AgentUtils() {
+
+		transformedClasses = new HashSet<>();
+		eventResponseSet = new ConcurrentHashMap<>();
+		classLoaderRecord = new ConcurrentHashMap<>();
+		rxssSentUrls = new HashSet<>();
+		deployedApplicationUnderProcessing = new HashSet<>();
+		TRACE_PATTERN = Pattern.compile(IAgentConstants.TRACE_REGEX);
+		this.sqlConnectionMap = new LinkedHashMap<Integer, JADatabaseMetaData>(50, 0.75f, true) {
             @Override
             protected boolean removeEldestEntry(java.util.Map.Entry<Integer, JADatabaseMetaData> eldest) {
                 return size() > 50;
@@ -106,13 +108,21 @@ public class AgentUtils {
 
 	public static AgentUtils getInstance() {
 		if (instance == null) {
-            synchronized (lock) {
-                if (instance == null) {
-                    instance = new AgentUtils();
-                }
-            }
-        }
+			synchronized (lock) {
+				if (instance == null) {
+					instance = new AgentUtils();
+				}
+			}
+		}
 		return instance;
+	}
+
+	public boolean isAgentActive() {
+		return isAgentActive;
+	}
+
+	public void setAgentActive(boolean agentActive) {
+		isAgentActive = agentActive;
 	}
 
 	public Map<Integer, JADatabaseMetaData> getSqlConnectionMap() {
