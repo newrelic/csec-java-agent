@@ -16,8 +16,7 @@ public class Callbacks {
 
 	public static void doOnEnter(String sourceString, String className, String methodName, Object obj, Object[] args,
 			String exectionId) {
-		// System.out.println("Came to servletrequest hook :" + exectionId + " :: " +
-		// sourceString);
+		 System.out.println("Came to servletrequest hook :" + exectionId + " :: " + sourceString);
 		// if (!ThreadLocalHttpMap.getInstance().isServiceMethodEncountered() &&
 		// !ThreadLocalOperationLock.getInstance()
 		// .isAcquired()) {
