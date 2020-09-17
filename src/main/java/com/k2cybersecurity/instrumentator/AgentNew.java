@@ -32,6 +32,10 @@ public class AgentNew {
 	public static Instrumentation gobalInstrumentation;
 
 	public static void premain(String arguments, Instrumentation instrumentation) {
+		if (StringUtils.equals(System.getenv().get("K2_ATTACH"), "false")) {
+			return;
+		}
+
 		if (initDone) {
 			return;
 		}
