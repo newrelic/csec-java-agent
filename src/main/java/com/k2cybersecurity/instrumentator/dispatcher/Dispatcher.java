@@ -318,6 +318,11 @@ public class Dispatcher implements Runnable {
 				eventBean.setCompleteStacktrace(Arrays.asList(trace));
 			}
 
+			if (AgentUtils.getInstance().getAgentPolicy().getSendCompleteStackTrace()) {
+				eventBean.setStacktrace(Arrays.asList(trace));
+				return;
+			}
+
 			if (userClassEntity.isCalledByUserCode()) {
 				toLoc = userClassEntity.getTraceLocationEnd();
 				String packageName = getMatchPackagePrefix(userClassEntity.getUserClassElement().getClassName());
