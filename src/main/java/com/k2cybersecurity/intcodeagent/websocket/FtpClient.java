@@ -84,6 +84,9 @@ public class FtpClient {
 		} catch (IOException e) {
 			logger.log(LogLevel.WARNING, "Error : ", e, FtpClient.class.getName());
 		}
+		try {
+			ftp.disconnect();
+		} catch (IOException e) {}
 		return false;
 	}
 
