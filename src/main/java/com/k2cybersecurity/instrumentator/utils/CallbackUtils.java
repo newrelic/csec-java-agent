@@ -117,7 +117,7 @@ public class CallbackUtils {
 	public static String checkForReflectedXSS(HttpRequestBean httpRequestBean) {
 		Set<String> combinedRequestData = decodeRequestData(httpRequestBean);
 		Set<String> combinedResponseData = decodeResponseData(httpRequestBean.getHttpResponseBean());
-		System.out.println("Processed request data is : " + combinedRequestData);
+//		System.out.println("Processed request data is : " + combinedRequestData);
 //		 System.out.println("Processed response data is : " + combinedResponseData);
 		String combinedResponseDataString = StringUtils.joinWith(FIVE_COLON, combinedResponseData);
 
