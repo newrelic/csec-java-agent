@@ -120,14 +120,14 @@ public class Dispatcher implements Runnable {
 		try {
 			if (vulnerabilityCaseType.equals(VulnerabilityCaseType.REFLECTED_XSS)) {
 				String xssConstruct = CallbackUtils.checkForReflectedXSS(httpRequestBean);
-//				System.out.println("Changes reflected : " + httpRequestBean.getHttpResponseBean().getResponseBody());
+				System.out.println("Changes reflected : " + httpRequestBean.getHttpResponseBean().getResponseBody() + " :: " + xssConstruct);
 				JavaAgentEventBean eventBean = prepareEvent(httpRequestBean, metaData, vulnerabilityCaseType);
 				String url = StringUtils.substringBefore(httpRequestBean.getUrl(), SEPARATOR_QUESTIONMARK);
 				if (StringUtils.isNoneBlank(xssConstruct, httpRequestBean.getHttpResponseBean().getResponseBody()) ||
 						(AgentUtils.getInstance().getAgentPolicy().getIastMode().getEnabled()
 								&& AgentUtils.getInstance().getAgentPolicy().getIastMode().getDynamicScanning().getEnabled()
 								&& (!AgentUtils.getInstance().getRxssSentUrls().contains(url) || metaData.isK2FuzzRequest()))) {
-
+					System.out.println("Sending out RXSS");
 					AgentUtils.getInstance().getRxssSentUrls().add(url);
 					JSONArray params = new JSONArray();
 					params.add(xssConstruct);
@@ -161,6 +161,7 @@ public class Dispatcher implements Runnable {
 			}
 		} catch (Throwable e) {
 			logger.log(LogLevel.ERROR, ERROR, e, Dispatcher.class.getName());
+			e.printStackTrace();
 		}
 
 		if (event == null) {

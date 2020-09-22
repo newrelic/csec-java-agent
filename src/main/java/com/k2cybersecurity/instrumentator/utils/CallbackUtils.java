@@ -4,13 +4,10 @@ import com.k2cybersecurity.instrumentator.custom.*;
 import com.k2cybersecurity.instrumentator.dispatcher.EventDispatcher;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
-import com.k2cybersecurity.intcodeagent.logging.IAgentConstants;
 import com.k2cybersecurity.intcodeagent.models.javaagent.*;
-
 import org.apache.commons.lang3.RegExUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
-import org.json.simple.JSONObject;
 import org.unbescape.html.HtmlEscape;
 
 import java.io.File;
@@ -120,8 +117,8 @@ public class CallbackUtils {
 	public static String checkForReflectedXSS(HttpRequestBean httpRequestBean) {
 		Set<String> combinedRequestData = decodeRequestData(httpRequestBean);
 		Set<String> combinedResponseData = decodeResponseData(httpRequestBean.getHttpResponseBean());
-		// System.out.println("Processed request data is : " + combinedRequestData);
-		// System.out.println("Processed response data is : " + combinedResponseData);
+		System.out.println("Processed request data is : " + combinedRequestData);
+//		 System.out.println("Processed response data is : " + combinedResponseData);
 		String combinedResponseDataString = StringUtils.joinWith(FIVE_COLON, combinedResponseData);
 
 		Set<String> attackContructs = isXSS(combinedRequestData);
