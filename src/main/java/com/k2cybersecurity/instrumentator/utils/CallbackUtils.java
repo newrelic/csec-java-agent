@@ -4,13 +4,10 @@ import com.k2cybersecurity.instrumentator.custom.*;
 import com.k2cybersecurity.instrumentator.dispatcher.EventDispatcher;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
-import com.k2cybersecurity.intcodeagent.logging.IAgentConstants;
 import com.k2cybersecurity.intcodeagent.models.javaagent.*;
-
 import org.apache.commons.lang3.RegExUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
-import org.json.simple.JSONObject;
 import org.unbescape.html.HtmlEscape;
 
 import java.io.File;
@@ -468,8 +465,8 @@ public class CallbackUtils {
 			// processedData.append(processedHeaders);
 			// processedData.append(FIVE_COLON);
 
-			processedBody = urlDecode(processedBody);
-			processedData.add(processedBody);
+//			processedBody = urlDecode(processedBody);
+//			processedData.add(processedBody);
 
 //			processedHeaders = urlDecode(processedHeaders);
 //			processedData.add(processedHeaders);
@@ -478,8 +475,8 @@ public class CallbackUtils {
 
 			if (StringUtils.isNoneEmpty(responseBody)) {
 				switch (contentType) {
-				case APPLICATION_JSON:
-					do {
+					case APPLICATION_JSON:
+						do {
 						oldProcessedBody = processedBody;
 						processedBody = StringEscapeUtils.unescapeJson(processedBody);
 						if (!StringUtils.equals(oldProcessedBody, processedBody)) {
