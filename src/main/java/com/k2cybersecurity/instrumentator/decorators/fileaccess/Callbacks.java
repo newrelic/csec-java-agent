@@ -31,8 +31,8 @@ public class Callbacks {
 				if (StringUtils
 						.isNotBlank(args[0].toString())) {
 					FileOperationalBean fileOperationalBean = null;
-					if(StringUtils.equals(methodName, GET_BOOLEAN_ATTRIBUTES)) {
-						if(StringUtils.endsWith(args[0].toString(), CLASS)) {
+					if (StringUtils.equals(methodName, GET_BOOLEAN_ATTRIBUTES)) {
+						if (StringUtils.endsWith(args[0].toString(), CLASS)) {
 							return;
 						}
 						fileOperationalBean = new FileOperationalBean(args[0].toString(), className,
