@@ -7,10 +7,7 @@ import com.k2cybersecurity.intcodeagent.logging.DeployedApplication;
 import com.k2cybersecurity.intcodeagent.logging.IAgentConstants;
 import com.k2cybersecurity.intcodeagent.models.config.AgentPolicy;
 import com.k2cybersecurity.intcodeagent.models.config.AgentPolicyIPBlockingParameters;
-import com.k2cybersecurity.intcodeagent.models.javaagent.EventResponse;
-import com.k2cybersecurity.intcodeagent.models.javaagent.JADatabaseMetaData;
-import com.k2cybersecurity.intcodeagent.models.javaagent.UserClassEntity;
-import com.k2cybersecurity.intcodeagent.models.javaagent.VulnerabilityCaseType;
+import com.k2cybersecurity.intcodeagent.models.javaagent.*;
 import com.k2cybersecurity.intcodeagent.models.operationalbean.AbstractOperationalBean;
 import net.bytebuddy.description.type.TypeDescription;
 import org.apache.commons.codec.digest.DigestUtils;
@@ -67,15 +64,15 @@ public class AgentUtils {
 
     private Set<DeployedApplication> deployedApplicationUnderProcessing;
 
-    private static AgentUtils instance;
+	private static AgentUtils instance;
 
-    private static final Object lock = new Object();
+	private static final Object lock = new Object();
 
-    public Set<String> getProtectedVulnerabilties() {
-        return protectedVulnerabilties;
-    }
+	public Set<String> getProtectedVulnerabilties() {
+		return protectedVulnerabilties;
+	}
 
-    private Set<String> protectedVulnerabilties = new HashSet<String>();
+	private Set<String> protectedVulnerabilties = new HashSet<String>();
 
 	private Set<DeployedApplication> scannedDeployedApplications = new HashSet<DeployedApplication>();
 
@@ -88,6 +85,8 @@ public class AgentUtils {
 	private AgentPolicyIPBlockingParameters agentPolicyParameters;
 
 	private boolean isAgentActive = true;
+
+	private CollectorInitMsg initMsg = null;
 
 	private AgentUtils() {
 
@@ -104,7 +103,7 @@ public class AgentUtils {
             }
         };
 
-    }
+	}
 
 	public static AgentUtils getInstance() {
 		if (instance == null) {
@@ -139,6 +138,14 @@ public class AgentUtils {
 
 	public Map<String, EventResponse> getEventResponseSet() {
 		return eventResponseSet;
+	}
+
+	public CollectorInitMsg getInitMsg() {
+		return initMsg;
+	}
+
+	public void setInitMsg(CollectorInitMsg initMsg) {
+		this.initMsg = initMsg;
 	}
 
 	public void createProtectedVulnerabilties(TypeDescription typeDescription, ClassLoader classLoader) {

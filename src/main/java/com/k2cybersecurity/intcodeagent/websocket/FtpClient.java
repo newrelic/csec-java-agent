@@ -1,6 +1,7 @@
 package com.k2cybersecurity.intcodeagent.websocket;
 
 import com.k2cybersecurity.instrumentator.K2Instrumentator;
+import com.k2cybersecurity.instrumentator.utils.AgentUtils;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.filelogging.LogWriter;
@@ -22,8 +23,18 @@ public class FtpClient {
 		while (retryFtp-- > 0) {
 			try {
 				ftp.setRemoteVerificationEnabled(false);
-				ftp.connect(K2Instrumentator.hostip, 54322);
-				ftp.login("test", "test");
+
+
+				if (AgentUtils.getInstance().getInitMsg() != null) {
+					ftp.connect(K2Instrumentator.hostip, AgentUtils.getInstance().getInitMsg().getStartupProperties().getFtpProperties().getPort());
+					ftp.login(AgentUtils.getInstance().getInitMsg().getStartupProperties().getFtpProperties().getUsername(),
+							AgentUtils.getInstance().getInitMsg().getStartupProperties().getFtpProperties().getPassword());
+				} else {
+					logger.log(LogLevel.WARNING, "Collector has not been initialised yet. Cannot perform operation", FtpClient.class.getName());
+					return null;
+				}
+
+
 				int reply = ftp.getReplyCode();
 				logger.log(LogLevel.DEBUG, "FTP server connection reply code : " + reply, FtpClient.class.getName());
 				ftp.setFileType(FTP.BINARY_FILE_TYPE);
@@ -51,7 +62,9 @@ public class FtpClient {
 	public static boolean sendLogFile(File file) {
 		boolean result = false;
 		FTPClient ftp = getClient();
-
+		if (ftp == null) {
+			return false;
+		}
 		InputStream input = null;
 		try {
 			input = new FileInputStream(file);
@@ -79,6 +92,9 @@ public class FtpClient {
 
 	public static boolean downloadFile(String fileName, String outputFile) {
 		FTPClient ftp = getClient();
+		if (ftp == null) {
+			return false;
+		}
 		try (FileOutputStream fileOutputStream = new FileOutputStream(new File(outputFile))) {
 			return ftp.retrieveFile(fileName, fileOutputStream);
 		} catch (IOException e) {

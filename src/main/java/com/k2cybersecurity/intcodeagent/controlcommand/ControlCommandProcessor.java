@@ -200,6 +200,7 @@ public class ControlCommandProcessor implements Runnable {
                 try {
                     CollectorInitMsg initMsg = new ObjectMapper().readValue(controlCommand.getArguments().get(0),
                             CollectorInitMsg.class);
+                    AgentUtils.getInstance().setInitMsg(initMsg);
                     logger.log(LogLevel.INFO,
                             String.format(COLLECTOR_IS_INITIALIZED_WITH_PROPERTIES, initMsg.toString()),
                             ControlCommandProcessor.class.getName());
