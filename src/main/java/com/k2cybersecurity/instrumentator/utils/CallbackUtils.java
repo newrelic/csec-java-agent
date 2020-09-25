@@ -538,20 +538,21 @@ public class CallbackUtils {
 			// For URL
 			processURLEncodedDataForXSS(processedData, httpRequestBean.getUrl());
 
-//			// Process body
-//			processedData.add(processedBody);
+
 
 			if (StringUtils.isNotBlank(processedBody)) {
+				// Process body
+				processedData.add(processedBody);
 				String oldProcessedBody;
 				switch (contentType) {
-				case APPLICATION_JSON:
+					case APPLICATION_JSON:
 //					do {
-					oldProcessedBody = processedBody;
-					processedBody = StringEscapeUtils.unescapeJson(processedBody);
-					if (!StringUtils.equals(oldProcessedBody, processedBody)
-							&& StringUtils.contains(processedBody, ANGLE_START)) {
-						processedData.add(processedBody);
-						// System.out.println("Decoding JSON: " + processedBody);
+						oldProcessedBody = processedBody;
+						processedBody = StringEscapeUtils.unescapeJson(processedBody);
+						if (!StringUtils.equals(oldProcessedBody, processedBody)
+								&& StringUtils.contains(processedBody, ANGLE_START)) {
+							processedData.add(processedBody);
+							// System.out.println("Decoding JSON: " + processedBody);
 					}
 //					} while (!StringUtils.equals(oldProcessedBody, processedBody));
 					break;
@@ -583,6 +584,7 @@ public class CallbackUtils {
 
 					break;
 				}
+
 			}
 		} catch (Throwable e) {
 			logger.log(LogLevel.ERROR, ERROR, e, CallbackUtils.class.getName());
@@ -679,6 +681,7 @@ public class CallbackUtils {
 		ThreadLocalXpathSaxonMap.getInstance().clearAll();
 		ThreadLocalXQuerySaxonMap.getInstance().clearAll();
 		ThreadLocalOkHttpMap.getInstance().clearAll();
+		ThreadLocalJSPServiceLock.getInstance().resetLock();
 	}
 
 }
