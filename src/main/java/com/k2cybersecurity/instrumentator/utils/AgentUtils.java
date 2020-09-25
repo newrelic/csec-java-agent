@@ -580,8 +580,6 @@ public class AgentUtils {
     private void setAPIId(AbstractOperationalBean operationalBean, List<String> traceForIdCalc, VulnerabilityCaseType vulnerabilityCaseType) {
         List<String> idData = new ArrayList<>();
 
-        // TODO : Write Application detection mechanism for a given event.
-        idData.add(StringUtils.EMPTY);
         idData.addAll(traceForIdCalc);
         idData.add(vulnerabilityCaseType.getCaseType());
         operationalBean.setApiID(AgentUtils.getInstance().getSHA256HexDigest(idData));
