@@ -7,9 +7,8 @@ import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.dynamic.DynamicType;
 import net.bytebuddy.utility.JavaModule;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
-
-import java.util.Arrays;
 
 public class ClassLoadListener implements AgentBuilder.Listener {
 
@@ -19,6 +18,7 @@ public class ClassLoadListener implements AgentBuilder.Listener {
 	public static final String IGNORED_CLASS_S = "Ignored : class : %s";
 	public static final String COMPLETED_CLASS_S = "Completed : class : %s";
 	public static final String DISCOVERED_CLASS_S = "Discovered : class : %s";
+	public static final String JAVA_LANG_ARRAY_STORE_EXCEPTION = "java.lang.ArrayStoreException:";
 
 	@Override
 	public void onError(
@@ -29,7 +29,9 @@ public class ClassLoadListener implements AgentBuilder.Listener {
 			final Throwable throwable) {
 //		System.out.println(String.format("Transformation error : class : %s :: error %s", typeName,
 //				Arrays.asList(throwable.getStackTrace())));
-		logger.log(LogLevel.ERROR, String.format(TRANSFORMATION_ERROR_CLASS_S_ERROR, typeName), throwable, ClassLoadListener.class.getName());
+		if (!StringUtils.contains(throwable.toString(), JAVA_LANG_ARRAY_STORE_EXCEPTION)) {
+			logger.log(LogLevel.ERROR, String.format(TRANSFORMATION_ERROR_CLASS_S_ERROR, typeName), throwable, ClassLoadListener.class.getName());
+		}
 
 	}
 
