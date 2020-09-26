@@ -116,7 +116,13 @@ public class CallbackUtils {
 	// TODO: use complete response instead of just response body.
 	public static String checkForReflectedXSS(HttpRequestBean httpRequestBean) {
 		Set<String> combinedRequestData = decodeRequestData(httpRequestBean);
+		if (combinedRequestData.isEmpty()) {
+			return StringUtils.EMPTY;
+		}
 		Set<String> combinedResponseData = decodeResponseData(httpRequestBean.getHttpResponseBean());
+		if (combinedResponseData.isEmpty()) {
+			return StringUtils.EMPTY;
+		}
 //		System.out.println("Processed request data is : " + combinedRequestData);
 //		 System.out.println("Processed response data is : " + combinedResponseData);
 		String combinedResponseDataString = StringUtils.joinWith(FIVE_COLON, combinedResponseData);
@@ -277,7 +283,7 @@ public class CallbackUtils {
 		return new HashSet<>(construct);
 	}
 
-	private static Set<String> isXSS(Set<String> combinedData) {
+	public static Set<String> isXSS(Set<String> combinedData) {
 		Set<String> attackConstructs = new HashSet<>();
 		for (String data : combinedData) {
 			attackConstructs.addAll(getXSSConstructs(data));
