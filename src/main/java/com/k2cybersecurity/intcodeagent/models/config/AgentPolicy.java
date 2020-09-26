@@ -10,7 +10,8 @@ import java.util.Map;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({
         "iastMode",
-        "protectionMode"
+        "protectionMode",
+        "sendCompleteStackTrace"
 })
 public class AgentPolicy {
 
@@ -18,6 +19,8 @@ public class AgentPolicy {
     private IastMode iastMode = new IastMode();
     @JsonProperty("protectionMode")
     private ProtectionMode protectionMode = new ProtectionMode();
+    @JsonProperty("sendCompleteStackTrace")
+    private Boolean sendCompleteStackTrace = false;
     @JsonIgnore
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
@@ -35,6 +38,7 @@ public class AgentPolicy {
         super();
         this.iastMode = iastMode;
         this.protectionMode = protectionMode;
+        this.sendCompleteStackTrace = false;
     }
 
     @JsonProperty("iastMode")
@@ -55,6 +59,16 @@ public class AgentPolicy {
     @JsonProperty("protectionMode")
     public void setProtectionMode(ProtectionMode protectionMode) {
         this.protectionMode = protectionMode;
+    }
+
+    @JsonProperty("sendCompleteStackTrace")
+    public Boolean getSendCompleteStackTrace() {
+        return sendCompleteStackTrace;
+    }
+
+    @JsonProperty("sendCompleteStackTrace")
+    public void setSendCompleteStackTrace(Boolean sendCompleteStackTrace) {
+        this.sendCompleteStackTrace = sendCompleteStackTrace;
     }
 
     @JsonAnyGetter

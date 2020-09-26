@@ -234,6 +234,7 @@ public class InstrumentationUtils {
 
     public static void shutdownLogic(boolean doResetInstrumentation) {
 //        System.out.println("K2 Collector's shutdown hooked called.");
+        AgentUtils.getInstance().setAgentActive(false);
         try {
             ShutDownEvent shutDownEvent = new ShutDownEvent();
             shutDownEvent.setApplicationUUID(K2Instrumentator.APPLICATION_UUID);
@@ -256,6 +257,7 @@ public class InstrumentationUtils {
             DispatcherPool.getInstance().shutDownThreadPoolExecutor();
             ControlCommandProcessorThreadPool.getInstance().shutDownThreadPoolExecutor();
             EventSendPool.getInstance().shutDownThreadPoolExecutor();
+
         } catch (Throwable e) {
             logger.log(LogLevel.SEVERE, "Error while shutting down K2 Pools : ", e,
                     InstrumentationUtils.class.getName());
@@ -268,12 +270,15 @@ public class InstrumentationUtils {
                         InstrumentationUtils.class.getName());
             }
 
-            retransformHookedClasses(AgentNew.gobalInstrumentation);
+//            retransformHookedClasses(AgentNew.gobalInstrumentation);
         } catch (Throwable e) {
             logger.log(LogLevel.SEVERE, "Error while resetting K2 instrumentation : ", e,
                     InstrumentationUtils.class.getName());
         }
         logger.log(LogLevel.SEVERE, JAVA_AGENT_SHUTDOWN_COMPLETE, InstrumentationUtils.class.getName());
+        try{
+            FileLoggerThreadPool.getInstance().shutDownThreadPoolExecutor();
+        } catch (Exception e){}
     }
 
     public static Boolean getIAST() {

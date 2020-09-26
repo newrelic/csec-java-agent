@@ -121,7 +121,7 @@ public class Dispatcher implements Runnable {
 		try {
 			if (vulnerabilityCaseType.equals(VulnerabilityCaseType.REFLECTED_XSS)) {
 				String xssConstruct = CallbackUtils.checkForReflectedXSS(httpRequestBean);
-//				System.out.println("Changes reflected : " + httpRequestBean.getHttpResponseBean().getResponseBody());
+//				System.out.println("Changes reflected : " + httpRequestBean.getHttpResponseBean().getResponseBody() + " :: " + xssConstruct);
 				JavaAgentEventBean eventBean = prepareEvent(httpRequestBean, metaData, vulnerabilityCaseType);
 				String url = StringUtils.substringBefore(httpRequestBean.getUrl(), SEPARATOR_QUESTIONMARK);
 				url = String.format(S_S, eventBean.getHttpRequest().getMethod(), url);
@@ -129,7 +129,7 @@ public class Dispatcher implements Runnable {
 						(AgentUtils.getInstance().getAgentPolicy().getIastMode().getEnabled()
 								&& AgentUtils.getInstance().getAgentPolicy().getIastMode().getDynamicScanning().getEnabled()
 								&& (!AgentUtils.getInstance().getRxssSentUrls().contains(url) || metaData.isK2FuzzRequest()))) {
-
+//					System.out.println("Sending out RXSS");
 					AgentUtils.getInstance().getRxssSentUrls().add(url);
 					JSONArray params = new JSONArray();
 					params.add(xssConstruct);
@@ -318,6 +318,11 @@ public class Dispatcher implements Runnable {
 			if ((metaData != null && metaData.isK2FuzzRequest()) || (AgentUtils.getInstance().getAgentPolicy().getIastMode().getEnabled()
 					&& AgentUtils.getInstance().getAgentPolicy().getIastMode().getDynamicScanning().getEnabled())) {
 				eventBean.setCompleteStacktrace(Arrays.asList(trace));
+			}
+
+			if (AgentUtils.getInstance().getAgentPolicy().getSendCompleteStackTrace()) {
+				eventBean.setStacktrace(Arrays.asList(trace));
+				return;
 			}
 
 			if (userClassEntity.isCalledByUserCode()) {

@@ -28,7 +28,6 @@ public class Callbacks {
 //		}
 		ThreadLocalHTTPDoFilterMap.getInstance().setCurrentGenericServletInstance(obj);
 		ThreadLocalHTTPDoFilterMap.getInstance().setCurrentGenericServletMethodName(methodName);
-
         if (!ThreadLocalOperationLock.getInstance().isAcquired()
                 && !ThreadLocalHTTPDoFilterLock.getInstance().isAcquired()) {
             try {
