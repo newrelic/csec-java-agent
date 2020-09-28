@@ -6,6 +6,7 @@ import com.k2cybersecurity.intcodeagent.logging.IAgentConstants;
 import com.k2cybersecurity.intcodeagent.models.javaagent.FuzzFailEvent;
 import com.k2cybersecurity.intcodeagent.websocket.EventSendPool;
 import com.squareup.okhttp.*;
+import org.apache.commons.io.IOUtils;
 
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
@@ -55,7 +56,7 @@ public class RestClient {
             @Override
             public void onResponse(Response response) throws IOException {
                 // TODO Auto-generated method stub
-                logger.log(LogLevel.INFO, String.format("Request success : %s :: response : %s", request, response), RestClient.class.getName());
+                logger.log(LogLevel.INFO, String.format("Request success : %s :: response : %s : %s", request, response, IOUtils.toString(response.body().charStream())), RestClient.class.getName());
                 response.body().close();
 //				if(response.code() % 100 == 4 || response.code() % 100 == 5){
 //					FuzzFailEvent fuzzFailEvent = new FuzzFailEvent();

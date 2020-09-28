@@ -519,7 +519,9 @@ public class CallbackUtils {
 		try {
 
 			// Process & add header keys & values separately.
-			for (Entry<String, String> entry : ((Map<String, String>) httpRequestBean.getHeaders()).entrySet()) {
+			Map<String, String> headerCopy = new HashMap<>((Map<String, String>) httpRequestBean.getHeaders());
+			headerCopy.remove("k2-fuzz-request-id");
+			for (Entry<String, String> entry : headerCopy.entrySet()) {
 				// For key
 				processURLEncodedDataForXSS(processedData, entry.getKey());
 
