@@ -127,6 +127,8 @@ public class CallbackUtils {
 //		 System.out.println("Processed response data is : " + combinedResponseData);
 		String combinedResponseDataString = StringUtils.joinWith(FIVE_COLON, combinedResponseData);
 
+		logger.log(LogLevel.INFO, String.format("Checking reflected XSS : %s :: %s", combinedRequestData, combinedResponseDataString), CallbackUtils.class.getName());
+
 		Set<String> attackContructs = isXSS(combinedRequestData);
 
 		for (String construct : attackContructs) {
@@ -182,11 +184,20 @@ public class CallbackUtils {
 		logger.log(LogLevel.DEBUG, CAME_TO_XSS_CHECK + data, CallbackUtils.class.getName());
 		List<String> construct = new ArrayList<>();
 		boolean isAttackConstruct = false;
+
+		// indicates the actual current position in the data where the processing ptr is.
 		int currPos = 0;
+
+		//
 		int startPos = 0;
+
+		//
 		int tmpCurrPos = 0;
+
+		//
 		int tmpStartPos = 0;
 
+		// iterate over the complete data string.
 		while (currPos < data.length()) {
 			Matcher matcher = tagNameRegex.matcher(data);
 			if (!matcher.find(currPos)) {
@@ -225,6 +236,9 @@ public class CallbackUtils {
 					tmpStartPos++;
 					if (StringUtils.isBlank(attribMatcher.group(3)) && attribMatcher.end() >= tmpCurrPos) {
 						tmpStartPos = tmpCurrPos = StringUtils.indexOf(data, ANGLE_END, attribMatcher.start());
+						if (tmpStartPos == -1) {
+							tmpStartPos = data.length() - 1;
+						}
 						attribData = StringUtils.substring(attribData, 0, tmpStartPos);
 					}
 
