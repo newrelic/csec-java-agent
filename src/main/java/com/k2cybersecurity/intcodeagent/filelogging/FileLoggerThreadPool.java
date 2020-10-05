@@ -47,6 +47,21 @@ public class FileLoggerThreadPool {
 		});
 	}
 
+	public void shutDownThreadPoolExecutor() {
+
+		if (executor != null) {
+			try {
+				executor.shutdown(); // disable new tasks from being submitted
+				if (!executor.awaitTermination(1, TimeUnit.SECONDS)) {
+					// wait for termination for a timeout
+					executor.shutdownNow(); // cancel currently executing tasks
+				}
+			} catch (InterruptedException e) {
+			}
+		}
+
+	}
+
 	/**
 	 * A handler for rejected tasks that throws a
 	 * {@code RejectedExecutionException}.

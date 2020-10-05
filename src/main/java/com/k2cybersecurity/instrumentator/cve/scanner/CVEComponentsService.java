@@ -68,7 +68,7 @@ public class CVEComponentsService {
 		Set<String> libPaths = new HashSet<>();
 		if (!K2Instrumentator.APPLICATION_INFO_BEAN.getLibraryPath().isEmpty()) {
 			for (String path : K2Instrumentator.APPLICATION_INFO_BEAN.getLibraryPath()) {
-				if (StringUtils.endsWith(path, JAR_EXTENSION)) {
+				if (StringUtils.endsWith(path, JAR_EXTENSION) && !StringUtils.endsWithIgnoreCase(path, "K2-JavaAgent-1.0.0-jar-with-dependencies.jar")) {
 					libPaths.add(path);
 				} else if (new File(path).isDirectory()) {
 					FileUtils.listFiles(new File(path), new String[] { JAR_EXT }, true)

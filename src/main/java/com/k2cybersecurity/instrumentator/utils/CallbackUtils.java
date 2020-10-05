@@ -4,13 +4,10 @@ import com.k2cybersecurity.instrumentator.custom.*;
 import com.k2cybersecurity.instrumentator.dispatcher.EventDispatcher;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
-import com.k2cybersecurity.intcodeagent.logging.IAgentConstants;
 import com.k2cybersecurity.intcodeagent.models.javaagent.*;
-
 import org.apache.commons.lang3.RegExUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
-import org.json.simple.JSONObject;
 import org.unbescape.html.HtmlEscape;
 
 import java.io.File;
@@ -120,8 +117,8 @@ public class CallbackUtils {
 	public static String checkForReflectedXSS(HttpRequestBean httpRequestBean) {
 		Set<String> combinedRequestData = decodeRequestData(httpRequestBean);
 		Set<String> combinedResponseData = decodeResponseData(httpRequestBean.getHttpResponseBean());
-		// System.out.println("Processed request data is : " + combinedRequestData);
-		// System.out.println("Processed response data is : " + combinedResponseData);
+//		System.out.println("Processed request data is : " + combinedRequestData);
+//		 System.out.println("Processed response data is : " + combinedResponseData);
 		String combinedResponseDataString = StringUtils.joinWith(FIVE_COLON, combinedResponseData);
 
 		Set<String> attackContructs = isXSS(combinedRequestData);
@@ -468,8 +465,8 @@ public class CallbackUtils {
 			// processedData.append(processedHeaders);
 			// processedData.append(FIVE_COLON);
 
-			processedBody = urlDecode(processedBody);
-			processedData.add(processedBody);
+//			processedBody = urlDecode(processedBody);
+//			processedData.add(processedBody);
 
 //			processedHeaders = urlDecode(processedHeaders);
 //			processedData.add(processedHeaders);
@@ -478,8 +475,8 @@ public class CallbackUtils {
 
 			if (StringUtils.isNoneEmpty(responseBody)) {
 				switch (contentType) {
-				case APPLICATION_JSON:
-					do {
+					case APPLICATION_JSON:
+						do {
 						oldProcessedBody = processedBody;
 						processedBody = StringEscapeUtils.unescapeJson(processedBody);
 						if (!StringUtils.equals(oldProcessedBody, processedBody)) {
@@ -541,20 +538,21 @@ public class CallbackUtils {
 			// For URL
 			processURLEncodedDataForXSS(processedData, httpRequestBean.getUrl());
 
-			// Process body
-			processedData.add(processedBody);
+
 
 			if (StringUtils.isNotBlank(processedBody)) {
+				// Process body
+				processedData.add(processedBody);
 				String oldProcessedBody;
 				switch (contentType) {
-				case APPLICATION_JSON:
+					case APPLICATION_JSON:
 //					do {
-					oldProcessedBody = processedBody;
-					processedBody = StringEscapeUtils.unescapeJson(processedBody);
-					if (!StringUtils.equals(oldProcessedBody, processedBody)
-							&& StringUtils.contains(processedBody, ANGLE_START)) {
-						processedData.add(processedBody);
-						// System.out.println("Decoding JSON: " + processedBody);
+						oldProcessedBody = processedBody;
+						processedBody = StringEscapeUtils.unescapeJson(processedBody);
+						if (!StringUtils.equals(oldProcessedBody, processedBody)
+								&& StringUtils.contains(processedBody, ANGLE_START)) {
+							processedData.add(processedBody);
+							// System.out.println("Decoding JSON: " + processedBody);
 					}
 //					} while (!StringUtils.equals(oldProcessedBody, processedBody));
 					break;
@@ -586,6 +584,7 @@ public class CallbackUtils {
 
 					break;
 				}
+
 			}
 		} catch (Throwable e) {
 			logger.log(LogLevel.ERROR, ERROR, e, CallbackUtils.class.getName());
@@ -682,6 +681,7 @@ public class CallbackUtils {
 		ThreadLocalXpathSaxonMap.getInstance().clearAll();
 		ThreadLocalXQuerySaxonMap.getInstance().clearAll();
 		ThreadLocalOkHttpMap.getInstance().clearAll();
+		ThreadLocalJSPServiceLock.getInstance().resetLock();
 	}
 
 }

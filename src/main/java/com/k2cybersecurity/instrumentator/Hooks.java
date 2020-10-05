@@ -216,7 +216,7 @@ public class Hooks {
 				"com.k2cybersecurity.instrumentator.decorators.httpservice");
 
 		DECORATOR_ENTRY.put("javax.servlet.jsp.HttpJspPage._jspService",
-				"com.k2cybersecurity.instrumentator.decorators.httpservice");
+				"com.k2cybersecurity.instrumentator.decorators.jspservice");
 
 		DECORATOR_ENTRY.put("javax.servlet.ServletInputStream.read",
 				"com.k2cybersecurity.instrumentator.decorators.servletinputstream");
