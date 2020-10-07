@@ -6,7 +6,6 @@ import com.k2cybersecurity.intcodeagent.logging.IAgentConstants;
 import com.k2cybersecurity.intcodeagent.models.javaagent.FuzzFailEvent;
 import com.k2cybersecurity.intcodeagent.websocket.EventSendPool;
 import com.squareup.okhttp.*;
-import org.apache.commons.io.IOUtils;
 
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
@@ -19,15 +18,14 @@ public class RestClient {
     public static final String FIRING_REQUEST_METHOD_S = "Firing request :: Method : %s";
     public static final String FIRING_REQUEST_URL_S = "Firing request :: URL : %s";
     public static final String FIRING_REQUEST_HEADERS_S = "Firing request :: Headers : %s";
-    private static OkHttpClient client;
+    private final OkHttpClient client = new OkHttpClient();
 
     private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
 
     public static RestClient instance;
 
     private RestClient() {
-        ConnectionPool connectionPool = new ConnectionPool(5, 5, TimeUnit.MINUTES);
-        client = new OkHttpClient();
+        ConnectionPool connectionPool = new ConnectionPool(1, 5, TimeUnit.MINUTES);
         client.setConnectionPool(connectionPool);
     }
 
@@ -38,7 +36,7 @@ public class RestClient {
         return instance;
     }
 
-    public static OkHttpClient getClient() {
+    public OkHttpClient getClient() {
         return client;
     }
 
@@ -61,8 +59,10 @@ public class RestClient {
             @Override
             public void onResponse(Response response) throws IOException {
                 // TODO Auto-generated method stub
-                logger.log(LogLevel.INFO, String.format(REQUEST_SUCCESS_S_RESPONSE_S_S, request, response, IOUtils.toString(response.body().charStream())), RestClient.class.getName());
+                logger.log(LogLevel.INFO, String.format(REQUEST_SUCCESS_S_RESPONSE_S_S, request, response, response.body().string()), RestClient.class.getName());
                 response.body().close();
+                client.getConnectionPool().evictAll();
+
 //				if(response.code() % 100 == 4 || response.code() % 100 == 5){
 //					FuzzFailEvent fuzzFailEvent = new FuzzFailEvent();
 //					fuzzFailEvent.setFuzzHeader(request.header(K2_FUZZ_REQUEST_ID));
@@ -80,8 +80,9 @@ public class RestClient {
         Call call = client.newCall(request);
         try {
             Response response = call.execute();
-            logger.log(LogLevel.INFO, String.format(REQUEST_SUCCESS_S_RESPONSE_S_S, request, response, IOUtils.toString(response.body().charStream())), RestClient.class.getName());
+            logger.log(LogLevel.INFO, String.format(REQUEST_SUCCESS_S_RESPONSE_S_S, request, response, response.body().string()), RestClient.class.getName());
             response.body().close();
+            client.getConnectionPool().evictAll();
         } catch (IOException e) {
             logger.log(LogLevel.INFO, String.format(CALL_FAILED_REQUEST_S_REASON, request), e, RestClient.class.getName());
             FuzzFailEvent fuzzFailEvent = new FuzzFailEvent();
