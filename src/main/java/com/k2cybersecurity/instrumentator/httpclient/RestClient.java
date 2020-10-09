@@ -7,7 +7,9 @@ import com.k2cybersecurity.intcodeagent.models.javaagent.FuzzFailEvent;
 import com.k2cybersecurity.intcodeagent.websocket.EventSendPool;
 import com.squareup.okhttp.*;
 
+import javax.net.ssl.*;
 import java.io.IOException;
+import java.security.cert.CertificateException;
 import java.util.concurrent.TimeUnit;
 
 public class RestClient {
@@ -24,9 +26,45 @@ public class RestClient {
 
     public static RestClient instance;
 
+    // Create a trust manager that does not validate certificate chains
+    private final TrustManager[] trustAllCerts = new TrustManager[]{
+            new X509TrustManager() {
+                @Override
+                public void checkClientTrusted(java.security.cert.X509Certificate[] chain, String authType) throws CertificateException {
+                }
+
+                @Override
+                public void checkServerTrusted(java.security.cert.X509Certificate[] chain, String authType) throws CertificateException {
+                }
+
+                @Override
+                public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+                    return new java.security.cert.X509Certificate[]{};
+                }
+            }
+    };
+
     private RestClient() {
         ConnectionPool connectionPool = new ConnectionPool(1, 5, TimeUnit.MINUTES);
         client.setConnectionPool(connectionPool);
+
+        try {
+            // Install the all-trusting trust manager
+            final SSLContext sslContext = SSLContext.getInstance("SSL");
+            sslContext.init(null, trustAllCerts, new java.security.SecureRandom());
+            // Create an ssl socket factory with our all-trusting manager
+            final SSLSocketFactory sslSocketFactory = sslContext.getSocketFactory();
+
+            client.setSslSocketFactory(sslSocketFactory);
+            client.setHostnameVerifier(new HostnameVerifier() {
+                @Override
+                public boolean verify(String hostname, SSLSession session) {
+                    return true;
+                }
+            });
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public static RestClient getInstance() {
