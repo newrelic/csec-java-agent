@@ -48,6 +48,8 @@ public class Hooks {
 		ANNOTATION_BASED_HOOKS.add("javax.ws.rs.Path");
 		ANNOTATION_BASED_HOOKS.add("javax.ws.rs.HttpMethod");
 
+		// Servlet
+		ANNOTATION_BASED_HOOKS.add("javax.servlet.annotation.WebServlet");
 
 		// SQL hooks
 		TYPE_BASED_HOOKS.put("java.sql.Statement", Arrays.asList("execute", "executeBatch", "executeLargeBatch",
@@ -272,6 +274,11 @@ public class Hooks {
 				"com.k2cybersecurity.instrumentator.decorators.servicetrace");
 		DECORATOR_ENTRY.put("javax.ws.rs.HttpMethod",
 				"com.k2cybersecurity.instrumentator.decorators.servicetrace");
+
+		// Servlet Annotation
+		DECORATOR_ENTRY.put("javax.servlet.annotation.WebServlet",
+				"com.k2cybersecurity.instrumentator.decorators.servicetrace");
+
 
 		// SQL Create
 		DECORATOR_ENTRY.put("java.sql.Connection.nativeSQL",
