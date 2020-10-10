@@ -1,6 +1,7 @@
 package com.k2cybersecurity.instrumentator.decorators.servicetrace;
 
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalExecutionMap;
+import com.k2cybersecurity.instrumentator.custom.ThreadLocalHTTPDoFilterMap;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalOperationLock;
 
 public class Callbacks {
@@ -13,6 +14,8 @@ public class Callbacks {
 //				System.out.println("OnEnter :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj
 //						+ " - eid : " + exectionId);
                 if (ThreadLocalExecutionMap.getInstance().getMetaData().getServiceTrace() == null) {
+                    ThreadLocalHTTPDoFilterMap.getInstance().setCurrentGenericServletInstance(obj);
+                    ThreadLocalHTTPDoFilterMap.getInstance().setCurrentGenericServletMethodName(methodName);
                     ThreadLocalExecutionMap.getInstance().getMetaData().setServiceTrace(Thread.currentThread().getStackTrace());
                 }
             } finally {
