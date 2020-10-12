@@ -20,7 +20,13 @@ public class RestClient {
     public static final String FIRING_REQUEST_METHOD_S = "Firing request :: Method : %s";
     public static final String FIRING_REQUEST_URL_S = "Firing request :: URL : %s";
     public static final String FIRING_REQUEST_HEADERS_S = "Firing request :: Headers : %s";
-    private final OkHttpClient client = new OkHttpClient();
+    private final ThreadLocal<OkHttpClient> clientThreadLocal = new ThreadLocal<OkHttpClient>() {
+        @Override
+        protected OkHttpClient initialValue() {
+            return new OkHttpClient();
+        }
+    };
+//    private final OkHttpClient client = new OkHttpClient();
 
     private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
 
@@ -46,6 +52,7 @@ public class RestClient {
 
     private RestClient() {
         ConnectionPool connectionPool = new ConnectionPool(1, 5, TimeUnit.MINUTES);
+        OkHttpClient client = clientThreadLocal.get();
         client.setConnectionPool(connectionPool);
 
         try {
@@ -75,10 +82,11 @@ public class RestClient {
     }
 
     public OkHttpClient getClient() {
-        return client;
+        return clientThreadLocal.get();
     }
 
     public void fireRequestAsync(Request request) {
+        OkHttpClient client = clientThreadLocal.get();
         logger.log(LogLevel.INFO, String.format(FIRING_REQUEST_METHOD_S, request.method()), RestClient.class.getName());
         logger.log(LogLevel.INFO, String.format(FIRING_REQUEST_URL_S, request.url()), RestClient.class.getName());
         logger.log(LogLevel.INFO, String.format(FIRING_REQUEST_HEADERS_S, request.headers()), RestClient.class.getName());
@@ -111,6 +119,8 @@ public class RestClient {
     }
 
     public void fireRequest(Request request) {
+        OkHttpClient client = clientThreadLocal.get();
+
         logger.log(LogLevel.INFO, String.format(FIRING_REQUEST_METHOD_S, request.method()), RestClient.class.getName());
         logger.log(LogLevel.INFO, String.format(FIRING_REQUEST_URL_S, request.url()), RestClient.class.getName());
         logger.log(LogLevel.INFO, String.format(FIRING_REQUEST_HEADERS_S, request.headers()), RestClient.class.getName());
