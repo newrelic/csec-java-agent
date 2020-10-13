@@ -164,7 +164,7 @@ public class InstrumentationUtils {
         for (String entry : hooks) {
             AgentBuilder.Identified.Narrowable junction = builder.type(not(isInterface()));
 
-            junction = junction.and(isAnnotatedWith(named(entry).or(inheritsAnnotation(named(entry)))));
+            junction = junction.and(not(isAnnotation())).and(isAnnotatedWith(named(entry).or(inheritsAnnotation(named(entry)))));
 
             builder = junction.transform(new AgentBuilder.Transformer() {
                 @Override

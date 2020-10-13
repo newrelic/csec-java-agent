@@ -39,7 +39,12 @@ public class Hooks {
 		TYPE_BASED_HOOKS.put("javax.servlet.Filter", Collections.singletonList("doFilter"));
 		TYPE_BASED_HOOKS.put("javax.servlet.FilterChain", Collections.singletonList("doFilter"));
 
-		// Web Framework Based hooks
+		/*
+
+			Web Framework Based hooks
+
+		 */
+
 
 		// Spring MVC
 		ANNOTATION_BASED_HOOKS.add("org.springframework.web.bind.annotation.Mapping");
@@ -48,6 +53,14 @@ public class Hooks {
 		ANNOTATION_BASED_HOOKS.add("javax.ws.rs.Path");
 		ANNOTATION_BASED_HOOKS.add("javax.ws.rs.HttpMethod");
 
+		// Servlet
+		ANNOTATION_BASED_HOOKS.add("javax.servlet.annotation.WebServlet");
+
+		// Spark Java
+		NAME_BASED_HOOKS.put("spark.Spark", Arrays.asList("connect", "delete", "get", "head", "options", "patch", "post", "put", "trace"));
+
+		// Apache Wicket
+		TYPE_BASED_HOOKS.put("org.apache.wicket.markup.html.WebPage", Collections.singletonList(null));
 
 		// SQL hooks
 		TYPE_BASED_HOOKS.put("java.sql.Statement", Arrays.asList("execute", "executeBatch", "executeLargeBatch",
@@ -216,7 +229,7 @@ public class Hooks {
 				"com.k2cybersecurity.instrumentator.decorators.httpservice");
 
 		DECORATOR_ENTRY.put("javax.servlet.jsp.HttpJspPage._jspService",
-				"com.k2cybersecurity.instrumentator.decorators.jspservice");
+				"com.k2cybersecurity.instrumentator.decorators.servicetrace");
 
 		DECORATOR_ENTRY.put("javax.servlet.ServletInputStream.read",
 				"com.k2cybersecurity.instrumentator.decorators.servletinputstream");
@@ -271,6 +284,25 @@ public class Hooks {
 		DECORATOR_ENTRY.put("javax.ws.rs.Path",
 				"com.k2cybersecurity.instrumentator.decorators.servicetrace");
 		DECORATOR_ENTRY.put("javax.ws.rs.HttpMethod",
+				"com.k2cybersecurity.instrumentator.decorators.servicetrace");
+
+		// Servlet Annotation
+		DECORATOR_ENTRY.put("javax.servlet.annotation.WebServlet",
+				"com.k2cybersecurity.instrumentator.decorators.servicetrace");
+
+		// Spark Java
+		DECORATOR_ENTRY.put("spark.Spark.connect", "com.k2cybersecurity.instrumentator.decorators.servicetrace");
+		DECORATOR_ENTRY.put("spark.Spark.delete", "com.k2cybersecurity.instrumentator.decorators.servicetrace");
+		DECORATOR_ENTRY.put("spark.Spark.get", "com.k2cybersecurity.instrumentator.decorators.servicetrace");
+		DECORATOR_ENTRY.put("spark.Spark.head", "com.k2cybersecurity.instrumentator.decorators.servicetrace");
+		DECORATOR_ENTRY.put("spark.Spark.options", "com.k2cybersecurity.instrumentator.decorators.servicetrace");
+		DECORATOR_ENTRY.put("spark.Spark.patch", "com.k2cybersecurity.instrumentator.decorators.servicetrace");
+		DECORATOR_ENTRY.put("spark.Spark.post", "com.k2cybersecurity.instrumentator.decorators.servicetrace");
+		DECORATOR_ENTRY.put("spark.Spark.put", "com.k2cybersecurity.instrumentator.decorators.servicetrace");
+		DECORATOR_ENTRY.put("spark.Spark.trace", "com.k2cybersecurity.instrumentator.decorators.servicetrace");
+
+		// Apache Wicket
+		DECORATOR_ENTRY.put("org.apache.wicket.markup.html.WebPage.null",
 				"com.k2cybersecurity.instrumentator.decorators.servicetrace");
 
 		// SQL Create

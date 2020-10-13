@@ -1,5 +1,6 @@
 package com.k2cybersecurity.instrumentator.decorators.httpservice;
 
+import com.k2cybersecurity.instrumentator.K2Instrumentator;
 import com.k2cybersecurity.instrumentator.custom.*;
 import com.k2cybersecurity.instrumentator.dispatcher.EventDispatcher;
 import com.k2cybersecurity.instrumentator.utils.CallbackUtils;
@@ -53,6 +54,7 @@ public class Callbacks {
 						CallbackUtils.cleanUpAllStates();
 //                        System.out.println("Came to service hook 1:" + exectionId + " :: " + sourceString + " :: " + args[0] + " :: " + args[1]);
 						ThreadLocalHTTPServiceLock.getInstance().acquire(obj, sourceString, exectionId);
+						K2Instrumentator.JA_HEALTH_CHECK.incrementHttpRequestCount();
 						ThreadLocalHttpMap.getInstance().setHttpRequest(args[0]);
 						ThreadLocalHttpMap.getInstance().setHttpResponse(args[1]);
 						ThreadLocalHttpMap.getInstance().setServiceMethodEncountered(true);

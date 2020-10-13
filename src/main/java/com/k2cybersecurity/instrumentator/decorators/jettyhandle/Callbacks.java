@@ -1,5 +1,6 @@
 package com.k2cybersecurity.instrumentator.decorators.jettyhandle;
 
+import com.k2cybersecurity.instrumentator.K2Instrumentator;
 import com.k2cybersecurity.instrumentator.custom.*;
 import com.k2cybersecurity.instrumentator.dispatcher.EventDispatcher;
 import com.k2cybersecurity.instrumentator.utils.CallbackUtils;
@@ -49,15 +50,16 @@ public class Callbacks {
 //                System.out.println("Came to service hook :" + exectionId + " :: " + sourceString + " :: " + args[2] + " :: " + args[3]);
 				if (args != null && args.length == 4 && args[2] != null && args[3] != null) {
 					if (CallbackUtils.checkArgsTypeHeirarchy(args[2], args[3])) {
-						CallbackUtils.cleanUpAllStates();
+                        CallbackUtils.cleanUpAllStates();
 //                        System.out.println("Came to service hook 1:" + exectionId + " :: " + sourceString + " :: " + args[2] + " :: " + args[3]);
-						ThreadLocalHTTPServiceLock.getInstance().acquire(obj, sourceString, exectionId);
-						ThreadLocalHttpMap.getInstance().setHttpRequest(args[2]);
-						ThreadLocalHttpMap.getInstance().setHttpResponse(args[3]);
-						ThreadLocalHttpMap.getInstance().setServiceMethodEncountered(true);
-						ThreadLocalHttpMap.getInstance().parseHttpRequest();
-						EventDispatcher.checkIfClientIPBlocked();
-					}
+                        ThreadLocalHTTPServiceLock.getInstance().acquire(obj, sourceString, exectionId);
+                        K2Instrumentator.JA_HEALTH_CHECK.incrementHttpRequestCount();
+                        ThreadLocalHttpMap.getInstance().setHttpRequest(args[2]);
+                        ThreadLocalHttpMap.getInstance().setHttpResponse(args[3]);
+                        ThreadLocalHttpMap.getInstance().setServiceMethodEncountered(true);
+                        ThreadLocalHttpMap.getInstance().parseHttpRequest();
+                        EventDispatcher.checkIfClientIPBlocked();
+                    }
 				}
 			} finally {
 				ThreadLocalOperationLock.getInstance().release();
