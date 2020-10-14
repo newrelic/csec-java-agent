@@ -6,6 +6,7 @@ import com.k2cybersecurity.instrumentator.K2Instrumentator;
 import com.k2cybersecurity.instrumentator.cve.scanner.CVEScannerPool;
 import com.k2cybersecurity.instrumentator.httpclient.RestRequestProcessor;
 import com.k2cybersecurity.instrumentator.utils.AgentUtils;
+import com.k2cybersecurity.instrumentator.utils.CommonUtils;
 import com.k2cybersecurity.instrumentator.utils.InstrumentationUtils;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
@@ -15,9 +16,12 @@ import com.k2cybersecurity.intcodeagent.models.config.AgentPolicy;
 import com.k2cybersecurity.intcodeagent.models.config.AgentPolicyIPBlockingParameters;
 import com.k2cybersecurity.intcodeagent.models.javaagent.CollectorInitMsg;
 import com.k2cybersecurity.intcodeagent.models.javaagent.EventResponse;
+import com.k2cybersecurity.intcodeagent.models.javaagent.Identifier;
 import com.k2cybersecurity.intcodeagent.models.javaagent.IntCodeControlCommand;
 import com.k2cybersecurity.intcodeagent.websocket.FtpClient;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 
@@ -149,7 +153,8 @@ public class ControlCommandProcessor implements Runnable {
                 if (fullReScanning) {
                     AgentUtils.getInstance().getScannedDeployedApplications().clear();
                 }
-                CVEScannerPool.getInstance().dispatchScanner(controlCommand.getArguments().get(0), downloadTarBundle);
+                Pair<String, String> kindId = CommonUtils.getKindIdPair(K2Instrumentator.APPLICATION_INFO_BEAN.getIdentifier(), controlCommand.getArguments().get(0));
+                CVEScannerPool.getInstance().dispatchScanner(controlCommand.getArguments().get(0), kindId.getKey(), kindId.getValue(), downloadTarBundle, false);
                 break;
             case IntCodeControlCommand.FUZZ_REQUEST:
                 RestRequestProcessor.processControlCommand(controlCommand);

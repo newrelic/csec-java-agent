@@ -1,6 +1,8 @@
 package com.k2cybersecurity.instrumentator.utils;
 
+import com.k2cybersecurity.instrumentator.K2Instrumentator;
 import com.k2cybersecurity.instrumentator.custom.ClassloaderAdjustments;
+import com.k2cybersecurity.instrumentator.cve.scanner.CVEScannerPool;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.logging.DeployedApplication;
@@ -89,6 +91,8 @@ public class AgentUtils {
 
 	private CollectorInitMsg initMsg = null;
 
+	private boolean cveEnvScanCompleted = false;
+
 	private AgentUtils() {
 
 		transformedClasses = new HashSet<>();
@@ -115,6 +119,14 @@ public class AgentUtils {
 			}
 		}
 		return instance;
+	}
+
+	public boolean isCveEnvScanCompleted() {
+		return cveEnvScanCompleted;
+	}
+
+	public void setCveEnvScanCompleted(boolean cveEnvScanCompleted) {
+		this.cveEnvScanCompleted = cveEnvScanCompleted;
 	}
 
 	public boolean isAgentActive() {
@@ -555,6 +567,12 @@ public class AgentUtils {
     }
 
     public void enforcePolicy() {
+		if(AgentUtils.getInstance().getAgentPolicy().getIastMode().getEnabled() && AgentUtils.getInstance().getAgentPolicy().getIastMode().getStaticScanning().getEnabled() && !AgentUtils.getInstance().isCveEnvScanCompleted()){
+			//Run CVE scan on ENV
+			Pair<String, String> kindId = CommonUtils.getKindIdPair(K2Instrumentator.APPLICATION_INFO_BEAN.getIdentifier(), AgentUtils.getInstance().getInitMsg().getAgentInfo().getNodeId());
+			CVEScannerPool.getInstance().dispatchScanner(AgentUtils.getInstance().getInitMsg().getAgentInfo().getNodeId(), kindId.getKey(), kindId.getValue(), false, true);
+			AgentUtils.getInstance().setCveEnvScanCompleted(true);
+		}
     }
 
     public void enforcePolicyParameters() {

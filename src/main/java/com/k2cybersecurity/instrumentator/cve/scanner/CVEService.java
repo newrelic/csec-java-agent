@@ -71,9 +71,18 @@ public class CVEService implements Runnable {
 
     private boolean downloadTarBundle = false;
 
-    public CVEService(String nodeId, boolean downloadTarBundle) {
+    private String kind;
+
+    private String id;
+
+    private boolean isEnvScan;
+
+    public CVEService(String nodeId, String kind, String id, boolean downloadTarBundle, boolean isEnvScan) {
         this.nodeId = nodeId;
+        this.kind = kind;
+        this.id = id;
         this.downloadTarBundle = downloadTarBundle;
+        this.isEnvScan = isEnvScan;
     }
 
     private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
@@ -81,6 +90,7 @@ public class CVEService implements Runnable {
     private static final String YML_TEMPLATE = "# path to dependency check tool.\r\n"
             + "dependencycheck.command: sh /tmp/localcveservice/dist/dependency-check.sh\r\n"
             + "# connecting back to k2agent.\r\n" + "k2agent.websocket: ws://%s:54321/\r\n" + "k2agent.nodeId: %s\r\n"
+            + "k2agent.identifier.kind: %s\r\n"+ "k2agent.identifier.id: %s\r\n"
             + "#----- following are file scan specific options\\r\n" + "k2agent.scan.mode: file\r\n"
             + "k2agent.application: %s\r\n" + "k2agent.applicationUuid: %s\r\n" + "k2agent.applicationSha256: %s\r\n"
             + "k2agent.scanPath: %s\r\n";
@@ -236,7 +246,7 @@ public class CVEService implements Runnable {
 
     protected File createServiceYml(String cveServicePath, String nodeId, String appName, String appSha256,
                                     String scanPath, String applicationUUID) throws IOException {
-        String yaml = String.format(YML_TEMPLATE, K2Instrumentator.hostip, nodeId, appName, applicationUUID, appSha256,
+        String yaml = String.format(YML_TEMPLATE, K2Instrumentator.hostip, nodeId, kind, id, appName, applicationUUID, appSha256,
                 scanPath);
         File yml = new File(TMP_DIR, SERVICE_INPUT_YML);
         logger.log(LogLevel.INFO, INPUT_YML_LOG + yaml, CVEService.class.getName());
