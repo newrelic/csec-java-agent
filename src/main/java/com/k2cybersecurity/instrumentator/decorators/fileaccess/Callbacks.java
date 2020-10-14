@@ -47,8 +47,6 @@ public class Callbacks {
                     }
                     EventDispatcher.dispatch(fileOperationalBean, VulnerabilityCaseType.FILE_OPERATION);
                 }
-            } catch (Throwable e) {
-                e.printStackTrace();
             } finally {
                 ThreadLocalOperationLock.getInstance().release();
             }
