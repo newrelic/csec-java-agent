@@ -23,6 +23,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 public class CVEService implements Runnable {
 
@@ -63,6 +64,8 @@ public class CVEService implements Runnable {
     private static final String CVE_SERVICE_TAR_DOESN_T_EXISTS = "CVE-Service Tar doesn't exists.";
 
     private static final String TMP_LOCALCVESERVICE_TAR = "/tmp/localcveservice.tar";
+    public static final String KILL_PROCESS_TREE_COMMAND = "kill -9 -%s";
+    public static final String KILLING_PROCESS_TREE_ROOTED_AT_S = "Killing process tree rooted at : %s";
 
     private String nodeId;
 
@@ -99,7 +102,13 @@ public class CVEService implements Runnable {
                         inputYaml.getAbsolutePath());
                 ProcessBuilder processBuilder = new ProcessBuilder(paramList);
                 Process process = processBuilder.start();
-                process.waitFor();
+                if (!process.waitFor(10, TimeUnit.MINUTES)) {
+                    long pid = AgentUtils.getInstance().getProcessID(process);
+                    if (pid > 1) {
+                        logger.log(LogLevel.WARNING, String.format(KILLING_PROCESS_TREE_ROOTED_AT_S, pid), CVEService.class.getName());
+                        Runtime.getRuntime().exec(String.format(KILL_PROCESS_TREE_COMMAND, pid));
+                    }
+                }
                 List<String> response = IOUtils.readLines(process.getInputStream(), StandardCharsets.UTF_8);
                 logger.log(LogLevel.INFO,
                         String.format(K2_VULNERABILITY_SCANNER_RESPONSE, StringUtils.join(response, StringUtils.LF)),

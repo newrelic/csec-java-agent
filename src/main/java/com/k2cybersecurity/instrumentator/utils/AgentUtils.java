@@ -15,6 +15,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.io.File;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.*;
@@ -584,23 +585,58 @@ public class AgentUtils {
                 recordsToDelete.add(stackTrace[i]);
             }
         }
-        newTraceForIdCalc.removeAll(recordsToDelete);
-        newTraceForIdCalc.forEach(stackTraceElement -> {
-            newTraceStringForIdCalc.add(stackTraceElement.toString());
-        });
-        stackTrace = Arrays.copyOfRange(stackTrace, resetFactor, stackTrace.length);
-        operationalBean.setStackTrace(stackTrace);
-        operationalBean.getUserClassEntity().setTraceLocationEnd(operationalBean.getUserClassEntity().getTraceLocationEnd() - resetFactor);
-        setAPIId(operationalBean, newTraceStringForIdCalc, vulnerabilityCaseType);
-    }
+		newTraceForIdCalc.removeAll(recordsToDelete);
+		newTraceForIdCalc.forEach(stackTraceElement -> {
+			newTraceStringForIdCalc.add(stackTraceElement.toString());
+		});
+		stackTrace = Arrays.copyOfRange(stackTrace, resetFactor, stackTrace.length);
+		operationalBean.setStackTrace(stackTrace);
+		operationalBean.getUserClassEntity().setTraceLocationEnd(operationalBean.getUserClassEntity().getTraceLocationEnd() - resetFactor);
+		setAPIId(operationalBean, newTraceStringForIdCalc, vulnerabilityCaseType);
+	}
 
-    private void setAPIId(AbstractOperationalBean operationalBean, List<String> traceForIdCalc, VulnerabilityCaseType vulnerabilityCaseType) {
-        List<String> idData = new ArrayList<>();
+	private void setAPIId(AbstractOperationalBean operationalBean, List<String> traceForIdCalc, VulnerabilityCaseType vulnerabilityCaseType) {
+		List<String> idData = new ArrayList<>();
 
-        // TODO : Write Application detection mechanism for a given event.
-        idData.add(StringUtils.EMPTY);
-        idData.addAll(traceForIdCalc);
-        idData.add(vulnerabilityCaseType.getCaseType());
-        operationalBean.setApiID(AgentUtils.getInstance().getSHA256HexDigest(idData));
-    }
+		// TODO : Write Application detection mechanism for a given event.
+		idData.add(StringUtils.EMPTY);
+		idData.addAll(traceForIdCalc);
+		idData.add(vulnerabilityCaseType.getCaseType());
+		operationalBean.setApiID(AgentUtils.getInstance().getSHA256HexDigest(idData));
+	}
+
+	public long getProcessID(Process p) {
+		long result = -1;
+		try {
+			//for windows
+//			if (p.getClass().getName().equals("java.lang.Win32Process") ||
+//					p.getClass().getName().equals("java.lang.ProcessImpl"))
+//			{
+//				Field f = p.getClass().getDeclaredField("handle");
+//				f.setAccessible(true);
+//				long handl = f.getLong(p);
+//				Kernel32 kernel = Kernel32.INSTANCE;
+//				WinNT.HANDLE hand = new WinNT.HANDLE();
+//				hand.setPointer(Pointer.createConstant(handl));
+//				result = kernel.GetProcessId(hand);
+//				f.setAccessible(false);
+//			}
+//			else
+			//for unix based operating systems
+
+			if (p.getClass().getName().equals("java.lang.UNIXProcess")) {
+				Field f = p.getClass().getDeclaredField("pid");
+				f.setAccessible(true);
+				result = f.getLong(p);
+				f.setAccessible(false);
+			}
+		} catch (Exception ex) {
+			result = -1;
+		}
+		return result;
+	}
+
+	public void killProcessTree(long pid) {
+//    	Runtime.getRuntime().exec()
+	}
 }
