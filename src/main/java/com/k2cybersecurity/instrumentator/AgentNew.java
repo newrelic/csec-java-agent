@@ -20,9 +20,7 @@ import java.util.Set;
 
 import static com.k2cybersecurity.instrumentator.utils.InstrumentationUtils.*;
 
-/**
- * Hello world!
- */
+
 public class AgentNew {
 
 	private static boolean isDynamicAttachment = false;
@@ -66,27 +64,33 @@ public class AgentNew {
 			 */
 			AgentBuilder agentBuilder = new AgentBuilder.Default(new ByteBuddy().with(TypeValidation.DISABLED))
 					.ignore(ElementMatchers.nameStartsWith("sun.reflect.com.k2cybersecurity"))
-                    .disableClassFormatChanges()
+					.disableClassFormatChanges()
 //									.with(AgentBuilder.Listener.StreamWriting.toSystemOut())
-                    .with(AgentBuilder.RedefinitionStrategy.RETRANSFORMATION).with(new ClassLoadListener()).with(AgentBuilder.TypeStrategy.Default.REDEFINE);
+					.with(AgentBuilder.RedefinitionStrategy.RETRANSFORMATION).with(new ClassLoadListener()).with(AgentBuilder.TypeStrategy.Default.REDEFINE);
 
-            if (StringUtils.equals("IAST", arguments)) {
-                setIAST(true);
-            }
+			if (StringUtils.equals("IAST", arguments)) {
+				setIAST(true);
+			}
 
-            agentBuilder = doInstrument(agentBuilder, Hooks.TYPE_BASED_HOOKS, "TYPE_BASED");
-            agentBuilder = doInstrument(agentBuilder, Hooks.NAME_BASED_HOOKS, "NAME_BASED");
-            agentBuilder = doInstrument(agentBuilder, Hooks.ANNOTATION_BASED_HOOKS);
+			agentBuilder = doInstrument(agentBuilder, Hooks.TYPE_BASED_HOOKS, "TYPE_BASED", Hooks.DECORATOR_ENTRY);
+			agentBuilder = doInstrument(agentBuilder, Hooks.NAME_BASED_HOOKS, "NAME_BASED", Hooks.DECORATOR_ENTRY);
+			agentBuilder = doInstrument(agentBuilder, Hooks.ANNOTATION_BASED_HOOKS, Hooks.DECORATOR_ENTRY);
 
-            resettableClassFileTransformer = agentBuilder.installOn(instrumentation);
+			if (getIAST()) {
+				agentBuilder = doInstrument(agentBuilder, IASTHooks.TYPE_BASED_HOOKS, "TYPE_BASED", IASTHooks.DECORATOR_ENTRY);
+				agentBuilder = doInstrument(agentBuilder, IASTHooks.NAME_BASED_HOOKS, "NAME_BASED", IASTHooks.DECORATOR_ENTRY);
+			}
 
-            // Checks for type based classes to hook
-            for (Class aClass : instrumentation.getAllLoadedClasses()) {
-                if (instrumentation.isModifiableClass(aClass)) {
-                    for (Class typeClass : typeBasedClassSet) {
-                        if (typeClass.isAssignableFrom(aClass) && !AgentUtils.getInstance().getTransformedClasses()
-                                .contains(Pair.of(aClass.getName(), aClass.getClassLoader()))) {
-                            AgentUtils.getInstance().getTransformedClasses().add(Pair.of(aClass.getName(), aClass.getClassLoader()));
+
+			resettableClassFileTransformer = agentBuilder.installOn(instrumentation);
+
+			// Checks for type based classes to hook
+			for (Class aClass : instrumentation.getAllLoadedClasses()) {
+				if (instrumentation.isModifiableClass(aClass)) {
+					for (Class typeClass : typeBasedClassSet) {
+						if (typeClass.isAssignableFrom(aClass) && !AgentUtils.getInstance().getTransformedClasses()
+								.contains(Pair.of(aClass.getName(), aClass.getClassLoader()))) {
+							AgentUtils.getInstance().getTransformedClasses().add(Pair.of(aClass.getName(), aClass.getClassLoader()));
 							break;
 						}
 					}

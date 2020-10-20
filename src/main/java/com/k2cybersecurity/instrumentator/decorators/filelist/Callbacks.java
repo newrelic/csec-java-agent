@@ -6,7 +6,6 @@ import com.k2cybersecurity.instrumentator.custom.ThreadLocalOperationLock;
 import com.k2cybersecurity.instrumentator.dispatcher.EventDispatcher;
 import com.k2cybersecurity.intcodeagent.models.javaagent.VulnerabilityCaseType;
 import com.k2cybersecurity.intcodeagent.models.operationalbean.FileOperationalBean;
-import org.apache.commons.lang3.StringUtils;
 
 import java.time.Instant;
 
@@ -22,9 +21,6 @@ public class Callbacks {
 			try {
 				ThreadLocalOperationLock.getInstance().acquire();
 				if (args == null || args.length == 0) {
-					if (StringUtils.endsWith(obj.toString(), CLASS)) {
-						return;
-					}
 					FileOperationalBean fileOperationalBean = new FileOperationalBean(obj.toString(), className,
 							sourceString, exectionId, Instant.now().toEpochMilli(), true, methodName);
 					EventDispatcher.dispatch(fileOperationalBean, VulnerabilityCaseType.FILE_OPERATION);
