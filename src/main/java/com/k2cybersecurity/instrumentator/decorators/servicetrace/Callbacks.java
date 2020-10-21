@@ -16,11 +16,11 @@ public class Callbacks {
             try {
                 ThreadLocalOperationLock.getInstance().acquire();
 //				System.out.println("JSP trace : " +exectionId + " : " + Arrays.asList(Thread.currentThread().getStackTrace()));
-                if(ThreadLocalHTTPDoFilterMap.getInstance().getCurrentGenericServletInstance() == null) {
-                    ThreadLocalHTTPDoFilterMap.getInstance().setCurrentGenericServletInstance(obj);
-                    ThreadLocalHTTPDoFilterMap.getInstance().setCurrentGenericServletMethodName(methodName);
-                    ThreadLocalExecutionMap.getInstance().getMetaData().setServiceTrace(Thread.currentThread().getStackTrace());
-                }
+
+                ThreadLocalHTTPDoFilterMap.getInstance().setCurrentGenericServletInstance(obj);
+                ThreadLocalHTTPDoFilterMap.getInstance().setCurrentGenericServletMethodName(methodName);
+                ThreadLocalExecutionMap.getInstance().getMetaData().setServiceTrace(Thread.currentThread().getStackTrace());
+
 //                System.out.println("Came to service hook :" + exectionId + " :: " + sourceString + " :: " +args[0]+ " :: " +args[1]);
 
             } finally {
