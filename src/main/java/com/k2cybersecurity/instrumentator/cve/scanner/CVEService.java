@@ -66,6 +66,7 @@ public class CVEService implements Runnable {
     private static final String TMP_LOCALCVESERVICE_TAR = "/tmp/localcveservice.tar";
     public static final String KILL_PROCESS_TREE_COMMAND = "kill -9 -%s";
     public static final String KILLING_PROCESS_TREE_ROOTED_AT_S = "Killing process tree rooted at : %s";
+    public static final String SETSID = "setsid";
 
     private String nodeId;
 
@@ -114,10 +115,11 @@ public class CVEService implements Runnable {
                 File inputYaml = createServiceYml(TMP_LOCALCVESERVICE_PATH, nodeId, scanner.getAppName(),
                         scanner.getAppSha256(), scanner.getDir(),
                         K2Instrumentator.APPLICATION_INFO_BEAN.getApplicationUUID());
-                List<String> paramList = Arrays.asList(BASH_COMMAND, TMP_LOCALCVESERVICE_DIST_STARTUP_SH,
+                List<String> paramList = Arrays.asList(SETSID, BASH_COMMAND, TMP_LOCALCVESERVICE_DIST_STARTUP_SH,
                         inputYaml.getAbsolutePath());
                 ProcessBuilder processBuilder = new ProcessBuilder(paramList);
                 Process process = processBuilder.start();
+
                 if (!process.waitFor(10, TimeUnit.MINUTES)) {
                     long pid = AgentUtils.getInstance().getProcessID(process);
                     if (pid > 1) {
