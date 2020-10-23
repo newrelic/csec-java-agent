@@ -66,6 +66,7 @@ public class CVEService implements Runnable {
     private static final String TMP_LOCALCVESERVICE_TAR = "/tmp/localcveservice.tar";
     public static final String KILL_PROCESS_TREE_COMMAND = "kill -9 -%s";
     public static final String KILLING_PROCESS_TREE_ROOTED_AT_S = "Killing process tree rooted at : %s";
+    public static final String K_2_JAVA_AGENT_1_0_0_JAR_WITH_DEPENDENCIES_JAR = "K2-JavaAgent-1.0.0-jar-with-dependencies.jar";
     public static final String SETSID = "setsid";
 
     private String nodeId;
@@ -119,7 +120,6 @@ public class CVEService implements Runnable {
                         inputYaml.getAbsolutePath());
                 ProcessBuilder processBuilder = new ProcessBuilder(paramList);
                 Process process = processBuilder.start();
-
                 if (!process.waitFor(10, TimeUnit.MINUTES)) {
                     long pid = AgentUtils.getInstance().getProcessID(process);
                     if (pid > 1) {
@@ -153,7 +153,7 @@ public class CVEService implements Runnable {
         List<String> libPaths = new ArrayList<>();
         if (!K2Instrumentator.APPLICATION_INFO_BEAN.getLibraryPath().isEmpty()) {
             for (String path : K2Instrumentator.APPLICATION_INFO_BEAN.getLibraryPath()) {
-                if (StringUtils.endsWith(path, JAR_EXTENSION)) {
+                if (StringUtils.endsWith(path, JAR_EXTENSION) && !StringUtils.endsWithIgnoreCase(path, K_2_JAVA_AGENT_1_0_0_JAR_WITH_DEPENDENCIES_JAR)) {
                     libPaths.add(path);
                 } else if (new File(path).isDirectory()) {
                     FileUtils.listFiles(new File(path), new String[]{JAR_EXT}, true)
@@ -266,7 +266,7 @@ public class CVEService implements Runnable {
                 if (!AgentUtils.getInstance().getScannedDeployedApplications().contains(deployedApplication)) {
                     scanners.add(new CVEScanner(deployedApplication.getAppName(), deployedApplication.getSha256(),
                             deployedApplication.getDeployedPath()));
-                    if(StringUtils.endsWith(deployedApplication.getDeployedPath(), JAR_EXTENSION)) {
+                    if(StringUtils.endsWith(deployedApplication.getDeployedPath(), JAR_EXTENSION) && !StringUtils.endsWithIgnoreCase(deployedApplication.getDeployedPath(), K_2_JAVA_AGENT_1_0_0_JAR_WITH_DEPENDENCIES_JAR)) {
                     	appJarNames.add(Paths.get(deployedApplication.getDeployedPath()).toString());
                     }
                     AgentUtils.getInstance().addScannedDeployedApplications(deployedApplication);
@@ -277,7 +277,7 @@ public class CVEService implements Runnable {
         List<String> libPaths = new ArrayList<>();
         if (!K2Instrumentator.APPLICATION_INFO_BEAN.getLibraryPath().isEmpty()) {
             for (String path : K2Instrumentator.APPLICATION_INFO_BEAN.getLibraryPath()) {
-                if (StringUtils.endsWith(path, JAR_EXTENSION)) {
+                if (StringUtils.endsWith(path, JAR_EXTENSION) && !StringUtils.endsWithIgnoreCase(path, K_2_JAVA_AGENT_1_0_0_JAR_WITH_DEPENDENCIES_JAR)) {
                     libPaths.add(path);
                 } else if (new File(path).isDirectory()) {
                     FileUtils.listFiles(new File(path), new String[]{JAR_EXT}, true)
