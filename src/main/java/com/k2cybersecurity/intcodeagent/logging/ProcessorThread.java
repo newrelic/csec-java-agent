@@ -188,10 +188,10 @@ public class ProcessorThread implements Runnable {
 						intCodeResultBean.getMetaData().setTriggerViaRCI(true);
 						intCodeResultBean.getMetaData().getRciMethodsCalls().add(trace[i].toString());
 						intCodeResultBean.getMetaData().getRciMethodsCalls().add(trace[i - 1].toString());
-						logger.log(LogLevel.DEBUG,
-								String.format(PRINTING_STACK_TRACE_FOR_PROBABLE_RCI_EVENT_S_S,
-										intCodeResultBean.getId(), Arrays.asList(trace)),
-								ProcessorThread.class.getName());
+//						logger.log(LogLevel.DEBUG,
+//								String.format(PRINTING_STACK_TRACE_FOR_PROBABLE_RCI_EVENT_S_S,
+//										intCodeResultBean.getId(), Arrays.asList(trace)),
+//								ProcessorThread.class.getName());
 					}
 					
 					
@@ -209,10 +209,10 @@ public class ProcessorThread implements Runnable {
 							&& StringUtils.equals(trace[i].getMethodName(), INVOKE_0) && i > 0) {
 						intCodeResultBean.getMetaData().setTriggerViaRCI(true);
 						intCodeResultBean.getMetaData().getRciMethodsCalls().add(trace[i - 1].toString());
-						logger.log(
-								LogLevel.DEBUG, String.format(PRINTING_STACK_TRACE_FOR_RCI_EVENT_S_S,
-										intCodeResultBean.getId(), Arrays.asList(trace)),
-								ProcessorThread.class.getName());
+//						logger.log(
+//								LogLevel.DEBUG, String.format(PRINTING_STACK_TRACE_FOR_RCI_EVENT_S_S,
+//										intCodeResultBean.getId(), Arrays.asList(trace)),
+//								ProcessorThread.class.getName());
 					}
 					
 					if((StringUtils.contains(klassName, XML_DOCUMENT_FRAGMENT_SCANNER_IMPL) 
@@ -220,17 +220,17 @@ public class ProcessorThread implements Runnable {
 							|| (StringUtils.contains(klassName, XML_ENTITY_MANAGER) 
 									&& StringUtils.equals(trace[i].getMethodName(), SETUP_CURRENT_ENTITY))) {
 						intCodeResultBean.getMetaData().setTriggerViaXXE(true);
-						logger.log(LogLevel.DEBUG, String.format(PRINTING_STACK_TRACE_FOR_XXE_EVENT_S_S, intCodeResultBean.getId(), Arrays
-								.asList(trace)), ProcessorThread.class.getName());
+//						logger.log(LogLevel.DEBUG, String.format(PRINTING_STACK_TRACE_FOR_XXE_EVENT_S_S, intCodeResultBean.getId(), Arrays
+//								.asList(trace)), ProcessorThread.class.getName());
 					}
 					
 					if (ObjectInputStream.class.getName().equals(klassName)
 							&& StringUtils.equals(trace[i].getMethodName(), READ_OBJECT)) {
 						intCodeResultBean.getMetaData().setTriggerViaDeserialisation(true);
-						logger.log(LogLevel.DEBUG,
-								String.format(PRINTING_STACK_TRACE_FOR_DESERIALISE_EVENT_S_S,
-										intCodeResultBean.getId(), Arrays.asList(trace)),
-								ProcessorThread.class.getName());
+//						logger.log(LogLevel.DEBUG,
+//								String.format(PRINTING_STACK_TRACE_FOR_DESERIALISE_EVENT_S_S,
+//										intCodeResultBean.getId(), Arrays.asList(trace)),
+//								ProcessorThread.class.getName());
 
 					}
 					if (HSQL_GET_CONNECTION_MAP.containsKey(klassName)

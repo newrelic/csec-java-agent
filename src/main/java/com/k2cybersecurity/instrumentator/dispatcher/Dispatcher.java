@@ -412,8 +412,8 @@ public class Dispatcher implements Runnable {
 				EventSendPool.getInstance().sendEvent(applicationInfoBean.toString());
 				logger.log(LogLevel.INFO, UPDATED_APPLICATION_INFO_POSTED + applicationInfoBean,
 						Dispatcher.class.getName());
-				ScanComponentData scanComponentData = CVEComponentsService.getAllComponents(deployedApplication);
-				EventSendPool.getInstance().sendEvent(scanComponentData.toString());
+//				ScanComponentData scanComponentData = CVEComponentsService.getAllComponents(deployedApplication);
+//				EventSendPool.getInstance().sendEvent(scanComponentData.toString());
 			}
 //				System.out.println("============= AppInfo Start ============");
 //				System.out.println(applicationInfoBean);

@@ -703,7 +703,6 @@ public class CallbackUtils {
 		ThreadLocalXpathSaxonMap.getInstance().clearAll();
 		ThreadLocalXQuerySaxonMap.getInstance().clearAll();
 		ThreadLocalOkHttpMap.getInstance().clearAll();
-		ThreadLocalJSPServiceLock.getInstance().resetLock();
 	}
 
 }

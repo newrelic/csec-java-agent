@@ -20,9 +20,7 @@ import java.util.Set;
 
 import static com.k2cybersecurity.instrumentator.utils.InstrumentationUtils.*;
 
-/**
- * Hello world!
- */
+
 public class AgentNew {
 
 	private static boolean isDynamicAttachment = false;
@@ -77,9 +75,17 @@ public class AgentNew {
 				setIAST(true);
 			}
 
-			agentBuilder = doInstrument(agentBuilder, Hooks.TYPE_BASED_HOOKS, "TYPE_BASED");
-			agentBuilder = doInstrument(agentBuilder, Hooks.NAME_BASED_HOOKS, "NAME_BASED");
-			agentBuilder = doInstrument(agentBuilder, Hooks.ANNOTATION_BASED_HOOKS);
+			agentBuilder = doInstrument(agentBuilder, Hooks.TYPE_BASED_HOOKS, "TYPE_BASED", Hooks.DECORATOR_ENTRY);
+			agentBuilder = doInstrument(agentBuilder, Hooks.NAME_BASED_HOOKS, "NAME_BASED", Hooks.DECORATOR_ENTRY);
+			agentBuilder = doInstrument(agentBuilder, Hooks.ANNOTATION_BASED_HOOKS, Hooks.DECORATOR_ENTRY);
+
+			if (getIAST()) {
+				agentBuilder = doInstrument(agentBuilder, IASTHooks.TYPE_BASED_HOOKS, "TYPE_BASED", IASTHooks.DECORATOR_ENTRY);
+				agentBuilder = doInstrument(agentBuilder, IASTHooks.NAME_BASED_HOOKS, "NAME_BASED", IASTHooks.DECORATOR_ENTRY);
+				agentBuilder = doInstrument(agentBuilder, IASTHooks.ANNOTATION_BASED_HOOKS, IASTHooks.DECORATOR_ENTRY);
+
+			}
+
 
 			resettableClassFileTransformer = agentBuilder.installOn(instrumentation);
 
