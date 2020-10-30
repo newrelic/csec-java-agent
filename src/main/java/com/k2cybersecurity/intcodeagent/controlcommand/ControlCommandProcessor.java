@@ -157,7 +157,7 @@ public class ControlCommandProcessor implements Runnable {
                 CVEScannerPool.getInstance().dispatchScanner(controlCommand.getArguments().get(0), kindId.getKey(), kindId.getValue(), downloadTarBundle, false);
                 break;
             case IntCodeControlCommand.FUZZ_REQUEST:
-                logger.log(LogLevel.DEBUG, FUZZ_REQUEST + controlCommand,
+                logger.log(LogLevel.DEBUG, FUZZ_REQUEST + controlCommandMessage,
                         ControlCommandProcessor.class.getName());
                 RestRequestProcessor.processControlCommand(controlCommand);
                 break;

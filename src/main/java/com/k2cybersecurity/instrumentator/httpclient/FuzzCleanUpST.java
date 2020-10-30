@@ -65,6 +65,9 @@ public class FuzzCleanUpST {
 
 class FuzzCleanUpTask implements Callable<Boolean> {
 
+    private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
+    public static final String UNABLE_TO_DO_FUZZ_CLEANUP = "Unable to do fuzz cleanup :";
+
     private String path;
 
     public FuzzCleanUpTask(String path) {
@@ -72,7 +75,13 @@ class FuzzCleanUpTask implements Callable<Boolean> {
     }
 
     @Override
-    public Boolean call() throws Exception {
-        return FileUtils.deleteQuietly(new File(this.path));
+    public Boolean call() {
+        try {
+            return FileUtils.deleteQuietly(new File(this.path));
+        } catch (Throwable e) {
+            logger.log(LogLevel.ERROR, UNABLE_TO_DO_FUZZ_CLEANUP + this.path, e,
+                    RestRequestThreadPool.class.getName());
+        }
+        return false;
     }
 }
