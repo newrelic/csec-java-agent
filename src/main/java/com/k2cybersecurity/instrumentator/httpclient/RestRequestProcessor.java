@@ -48,7 +48,7 @@ public class RestRequestProcessor implements Runnable {
                 return;
             }
 
-            if (controlCommand.getArguments().size() > 2) {
+            if (controlCommand.getArguments().size() >= 2) {
                 for (int i = 2; i < controlCommand.getArguments().size(); i++) {
                     String file = controlCommand.getArguments().get(i);
                     File fileToCreate = new File(file);
