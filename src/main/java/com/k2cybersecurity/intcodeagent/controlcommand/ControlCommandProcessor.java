@@ -16,11 +16,9 @@ import com.k2cybersecurity.intcodeagent.models.config.AgentPolicy;
 import com.k2cybersecurity.intcodeagent.models.config.AgentPolicyIPBlockingParameters;
 import com.k2cybersecurity.intcodeagent.models.javaagent.CollectorInitMsg;
 import com.k2cybersecurity.intcodeagent.models.javaagent.EventResponse;
-import com.k2cybersecurity.intcodeagent.models.javaagent.Identifier;
 import com.k2cybersecurity.intcodeagent.models.javaagent.IntCodeControlCommand;
 import com.k2cybersecurity.intcodeagent.websocket.FtpClient;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -42,6 +40,7 @@ public class ControlCommandProcessor implements Runnable {
     public static final String ATTACKED_API_BLOCKED_S = "Attacked API added to blocked list : %s";
     public static final String ADDING_IP_ADDRESS_S_TO_BLOCKING_LIST_WITH_TIMEOUT_S = "Adding IP address %s to blocking list with timeout %s";
     public static final String ERROR_IN_EVENT_RESPONSE = "Error in EVENT_RESPONSE : ";
+    public static final String FUZZ_REQUEST = "Fuzz request : ";
 
 
     private String controlCommandMessage;
@@ -158,6 +157,8 @@ public class ControlCommandProcessor implements Runnable {
                 CVEScannerPool.getInstance().dispatchScanner(controlCommand.getArguments().get(0), kindId.getKey(), kindId.getValue(), downloadTarBundle, false);
                 break;
             case IntCodeControlCommand.FUZZ_REQUEST:
+                logger.log(LogLevel.DEBUG, FUZZ_REQUEST + controlCommand,
+                        ControlCommandProcessor.class.getName());
                 RestRequestProcessor.processControlCommand(controlCommand);
                 break;
 
