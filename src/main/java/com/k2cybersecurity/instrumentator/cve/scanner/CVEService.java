@@ -111,6 +111,7 @@ public class CVEService implements Runnable {
                 if (retry == 0) {
                     return;
                 }
+                TimeUnit.SECONDS.sleep(10);
             }
             List<CVEScanner> scanDirs;
             if (isEnvScan) {
