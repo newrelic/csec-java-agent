@@ -14,8 +14,6 @@ public class Hooks {
 
 	public static Map<String, String> DECORATOR_ENTRY = new HashMap<>();
 
-	public static Set<String> IAST_BASED_HOOKS = new HashSet<String>();
-
 	static {
 
 		/**
@@ -39,7 +37,12 @@ public class Hooks {
 		TYPE_BASED_HOOKS.put("javax.servlet.Filter", Collections.singletonList("doFilter"));
 		TYPE_BASED_HOOKS.put("javax.servlet.FilterChain", Collections.singletonList("doFilter"));
 
-		// Web Framework Based hooks
+		/*
+
+			Web Framework Based hooks
+
+		 */
+
 
 		// Spring MVC
 		ANNOTATION_BASED_HOOKS.add("org.springframework.web.bind.annotation.Mapping");
@@ -48,6 +51,14 @@ public class Hooks {
 		ANNOTATION_BASED_HOOKS.add("javax.ws.rs.Path");
 		ANNOTATION_BASED_HOOKS.add("javax.ws.rs.HttpMethod");
 
+		// Servlet
+		ANNOTATION_BASED_HOOKS.add("javax.servlet.annotation.WebServlet");
+
+		// Spark Java
+		NAME_BASED_HOOKS.put("spark.Spark", Arrays.asList("connect", "delete", "get", "head", "options", "patch", "post", "put", "trace"));
+
+		// Apache Wicket
+		TYPE_BASED_HOOKS.put("org.apache.wicket.markup.html.WebPage", Collections.singletonList(null));
 
 		// SQL hooks
 		TYPE_BASED_HOOKS.put("java.sql.Statement", Arrays.asList("execute", "executeBatch", "executeLargeBatch",
@@ -88,12 +99,6 @@ public class Hooks {
 		// LDAP OpenDJ lib
 		TYPE_BASED_HOOKS.put("org.forgerock.opendj.ldap.Connection", Collections.singletonList("searchAsync"));
 
-		// trust boundary hooks
-		TYPE_BASED_HOOKS.put("javax.servlet.http.HttpSession", Arrays.asList("setAttribute", "putValue"));
-
-		// Secure Cookie
-		TYPE_BASED_HOOKS.put("javax.servlet.http.HttpServletResponse", Collections.singletonList("addCookie"));
-
 		// Forkexec hooks
 		NAME_BASED_HOOKS.put("java.lang.ProcessImpl", Arrays.asList("start"));
 
@@ -108,7 +113,6 @@ public class Hooks {
 		NAME_BASED_HOOKS.put("java.io.UnixFileSystem", Collections.singletonList("delete"));
 		NAME_BASED_HOOKS.put("java.io.File", Collections.singletonList("list"));
 		NAME_BASED_HOOKS.put("java.io.RandomAccessFile", Collections.singletonList("open"));
-		TYPE_BASED_HOOKS.put("java.io.FileSystem", Collections.singletonList("getBooleanAttributes"));
 
 		// Mongo Hooks
 		NAME_BASED_HOOKS.put("com.mongodb.connection.CommandMessage", Collections.singletonList(null));
@@ -116,14 +120,6 @@ public class Hooks {
 		NAME_BASED_HOOKS.put("com.mongodb.internal.connection.CommandMessage", Collections.singletonList(null));
 
 
-		// Weak Random
-		NAME_BASED_HOOKS.put("java.util.Random", Arrays.asList(new String[]{"nextBytes", "nextInt", "nextLong",
-				"nextBoolean", "nextFloat", "nextDouble", "nextGaussian"}));
-		NAME_BASED_HOOKS.put("java.lang.Math", Collections.singletonList("random"));
-
-		// Strong random
-		NAME_BASED_HOOKS.put("java.security.SecureRandom", Arrays.asList(new String[]{"nextBytes", "nextInt",
-				"nextLong", "nextBoolean", "nextFloat", "nextDouble", "nextGaussian"}));
 
 		// Jetty Servlet Hooks
 		TYPE_BASED_HOOKS.put("org.eclipse.jetty.server.Handler", Collections.singletonList("handle"));
@@ -185,13 +181,7 @@ public class Hooks {
 		NAME_BASED_HOOKS.put("okhttp3.OkHttpClient", Collections.singletonList("newCall"));
 		TYPE_BASED_HOOKS.put("okhttp3.Call", Collections.singletonList("execute"));
 
-		// CRYPTO
-		NAME_BASED_HOOKS.put("javax.crypto.Cipher", Collections.singletonList("getInstance"));
-		NAME_BASED_HOOKS.put("javax.crypto.KeyGenerator", Collections.singletonList("getInstance"));
-		NAME_BASED_HOOKS.put("java.security.KeyPairGenerator", Collections.singletonList("getInstance"));
 
-		// HASH
-		NAME_BASED_HOOKS.put("java.security.MessageDigest", Collections.singletonList("getInstance"));
 
 		// NAME_BASED_HOOKS.put(CLASS_WEBLOGIC_SERVLET_INTERNAL_WEB_APP_SERVLET_CONTEXT,
 		// Collections.singletonList("execute")); // Handle differently
@@ -216,7 +206,7 @@ public class Hooks {
 				"com.k2cybersecurity.instrumentator.decorators.httpservice");
 
 		DECORATOR_ENTRY.put("javax.servlet.jsp.HttpJspPage._jspService",
-				"com.k2cybersecurity.instrumentator.decorators.jspservice");
+				"com.k2cybersecurity.instrumentator.decorators.servicetrace");
 
 		DECORATOR_ENTRY.put("javax.servlet.ServletInputStream.read",
 				"com.k2cybersecurity.instrumentator.decorators.servletinputstream");
@@ -271,6 +261,25 @@ public class Hooks {
 		DECORATOR_ENTRY.put("javax.ws.rs.Path",
 				"com.k2cybersecurity.instrumentator.decorators.servicetrace");
 		DECORATOR_ENTRY.put("javax.ws.rs.HttpMethod",
+				"com.k2cybersecurity.instrumentator.decorators.servicetrace");
+
+		// Servlet Annotation
+		DECORATOR_ENTRY.put("javax.servlet.annotation.WebServlet",
+				"com.k2cybersecurity.instrumentator.decorators.servicetrace");
+
+		// Spark Java
+		DECORATOR_ENTRY.put("spark.Spark.connect", "com.k2cybersecurity.instrumentator.decorators.servicetrace");
+		DECORATOR_ENTRY.put("spark.Spark.delete", "com.k2cybersecurity.instrumentator.decorators.servicetrace");
+		DECORATOR_ENTRY.put("spark.Spark.get", "com.k2cybersecurity.instrumentator.decorators.servicetrace");
+		DECORATOR_ENTRY.put("spark.Spark.head", "com.k2cybersecurity.instrumentator.decorators.servicetrace");
+		DECORATOR_ENTRY.put("spark.Spark.options", "com.k2cybersecurity.instrumentator.decorators.servicetrace");
+		DECORATOR_ENTRY.put("spark.Spark.patch", "com.k2cybersecurity.instrumentator.decorators.servicetrace");
+		DECORATOR_ENTRY.put("spark.Spark.post", "com.k2cybersecurity.instrumentator.decorators.servicetrace");
+		DECORATOR_ENTRY.put("spark.Spark.put", "com.k2cybersecurity.instrumentator.decorators.servicetrace");
+		DECORATOR_ENTRY.put("spark.Spark.trace", "com.k2cybersecurity.instrumentator.decorators.servicetrace");
+
+		// Apache Wicket
+		DECORATOR_ENTRY.put("org.apache.wicket.markup.html.WebPage.null",
 				"com.k2cybersecurity.instrumentator.decorators.servicetrace");
 
 		// SQL Create
@@ -417,9 +426,7 @@ public class Hooks {
 				"com.k2cybersecurity.instrumentator.decorators.fileaccess");
 		DECORATOR_ENTRY.put("java.io.RandomAccessFile.open",
 				"com.k2cybersecurity.instrumentator.decorators.fileaccess");
-		DECORATOR_ENTRY.put("java.io.File.list", "com.k2cybersecurity.instrumentator.decorators.fileaccess");
-		DECORATOR_ENTRY.put("java.io.FileSystem.getBooleanAttributes",
-				"com.k2cybersecurity.instrumentator.decorators.fileaccess");
+		DECORATOR_ENTRY.put("java.io.File.list", "com.k2cybersecurity.instrumentator.decorators.filelist");
 
 		// Mongo Execute
 		DECORATOR_ENTRY.put("com.mongodb.connection.CommandMessage.null", "com.k2cybersecurity.instrumentator.decorators.mongo");
@@ -522,33 +529,6 @@ public class Hooks {
 		DECORATOR_ENTRY.put("org.osgi.framework.Bundle.update",
 				"com.k2cybersecurity.instrumentator.decorators.osgiadjustments");
 
-		// Weak random
-		DECORATOR_ENTRY.put("java.util.Random.nextBytes", "com.k2cybersecurity.instrumentator.decorators.weakrandom");
-		DECORATOR_ENTRY.put("java.util.Random.nextInt", "com.k2cybersecurity.instrumentator.decorators.weakrandom");
-		DECORATOR_ENTRY.put("java.util.Random.nextLong", "com.k2cybersecurity.instrumentator.decorators.weakrandom");
-		DECORATOR_ENTRY.put("java.util.Random.nextBoolean", "com.k2cybersecurity.instrumentator.decorators.weakrandom");
-		DECORATOR_ENTRY.put("java.util.Random.nextFloat", "com.k2cybersecurity.instrumentator.decorators.weakrandom");
-		DECORATOR_ENTRY.put("java.util.Random.nextDouble", "com.k2cybersecurity.instrumentator.decorators.weakrandom");
-		DECORATOR_ENTRY.put("java.util.Random.nextGaussian",
-				"com.k2cybersecurity.instrumentator.decorators.weakrandom");
-		DECORATOR_ENTRY.put("java.lang.Math.random", "com.k2cybersecurity.instrumentator.decorators.weakrandom");
-
-		// strong random
-		DECORATOR_ENTRY.put("java.security.SecureRandom.nextBytes",
-				"com.k2cybersecurity.instrumentator.decorators.strongrandom");
-		DECORATOR_ENTRY.put("java.security.SecureRandom.nextInt",
-				"com.k2cybersecurity.instrumentator.decorators.strongrandom");
-		DECORATOR_ENTRY.put("java.security.SecureRandom.nextLong",
-				"com.k2cybersecurity.instrumentator.decorators.strongrandom");
-		DECORATOR_ENTRY.put("java.security.SecureRandom.nextBoolean",
-				"com.k2cybersecurity.instrumentator.decorators.strongrandom");
-		DECORATOR_ENTRY.put("java.security.SecureRandom.nextFloat",
-				"com.k2cybersecurity.instrumentator.decorators.strongrandom");
-		DECORATOR_ENTRY.put("java.security.SecureRandom.nextDouble",
-				"com.k2cybersecurity.instrumentator.decorators.strongrandom");
-		DECORATOR_ENTRY.put("java.security.SecureRandom.nextGaussian",
-				"com.k2cybersecurity.instrumentator.decorators.strongrandom");
-
 		// SSRF
 		DECORATOR_ENTRY.put("java.net.URLConnection.connect", "com.k2cybersecurity.instrumentator.decorators.ssrf");
 
@@ -570,27 +550,7 @@ public class Hooks {
 		DECORATOR_ENTRY.put("okhttp3.OkHttpClient.newCall", "com.k2cybersecurity.instrumentator.decorators.ssrf.okhttp3");
 		DECORATOR_ENTRY.put("okhttp3.Call.execute", "com.k2cybersecurity.instrumentator.decorators.ssrf.okhttp3");
 
-		// Secure cookie
-		DECORATOR_ENTRY.put("javax.servlet.http.HttpServletResponse.addCookie",
-				"com.k2cybersecurity.instrumentator.decorators.securecookie");
 
-		// trust boundary
-		DECORATOR_ENTRY.put("javax.servlet.http.HttpSession.setAttribute",
-				"com.k2cybersecurity.instrumentator.decorators.trustboundary");
-		DECORATOR_ENTRY.put("javax.servlet.http.HttpSession.putValue",
-				"com.k2cybersecurity.instrumentator.decorators.trustboundary");
-
-		// CRYPTO
-		DECORATOR_ENTRY.put("javax.crypto.Cipher.getInstance", "com.k2cybersecurity.instrumentator.decorators.crypto");
-		DECORATOR_ENTRY.put("javax.crypto.KeyGenerator.getInstance",
-				"com.k2cybersecurity.instrumentator.decorators.crypto");
-		DECORATOR_ENTRY.put("java.security.KeyPairGenerator.getInstance",
-				"com.k2cybersecurity.instrumentator.decorators.crypto");
-
-		// HASH
-		DECORATOR_ENTRY.put("java.security.MessageDigest.getInstance",
-				"com.k2cybersecurity.instrumentator.decorators.hash");
-		
 		// JavaScript Injection
 		DECORATOR_ENTRY.put("jdk.nashorn.api.scripting.NashornScriptEngine.evalImpl", "com.k2cybersecurity.instrumentator.decorators.jsinjection");
 		DECORATOR_ENTRY.put("com.oracle.truffle.polyglot.PolyglotContextImpl.eval", "com.k2cybersecurity.instrumentator.decorators.jsinjection");
@@ -601,13 +561,5 @@ public class Hooks {
 //		DECORATOR_ENTRY.put("org.mozilla.javascript.Script.exec", "com.k2cybersecurity.instrumentator.decorators.jsinjection.rhino");
 //		NAME_BASED_HOOKS.put("org.mozilla.javascript.Parser", Collections.singletonList("parse"));
 //		TYPE_BASED_HOOKS.put("org.mozilla.javascript.Script", Collections.singletonList("exec"));
-
-		/** ---------------------IAST CASE TYPE ------------------ */
-
-		IAST_BASED_HOOKS.addAll(Arrays.asList("javax.servlet.http.HttpSession",
-				"javax.servlet.http.HttpServletResponse", "java.util.Random", "java.lang.Math",
-				"java.security.SecureRandom", "javax.crypto.Cipher", "javax.crypto.KeyGenerator",
-				"java.security.KeyPairGenerator", "java.security.MessageDigest", "java.io.FileSystem"));
-
 	}
 }

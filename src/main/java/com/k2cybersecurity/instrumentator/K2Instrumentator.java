@@ -75,6 +75,7 @@ public class K2Instrumentator {
 		isECSEnv = ApplicationInfoUtils.isECSEnv();
 		
 		APPLICATION_INFO_BEAN = createApplicationInfoBean();
+
 		if(APPLICATION_INFO_BEAN == null) {
 			return false;
 		}

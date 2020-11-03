@@ -1,7 +1,6 @@
 package com.k2cybersecurity.instrumentator.utils;
 
 import com.k2cybersecurity.instrumentator.AgentNew;
-import com.k2cybersecurity.instrumentator.Hooks;
 import com.k2cybersecurity.instrumentator.K2Instrumentator;
 import com.k2cybersecurity.instrumentator.custom.ByteBuddyElementMatchers;
 import com.k2cybersecurity.instrumentator.dispatcher.DispatcherPool;
@@ -61,13 +60,11 @@ public class InstrumentationUtils {
     public static ResettableClassFileTransformer resettableClassFileTransformer;
 
     public static AgentBuilder doInstrument(AgentBuilder builder, Map<String, List<String>> hookMap,
-                                            String typeOfHook) {
+                                            String typeOfHook, Map<String, String> decorators) {
         for (Map.Entry<String, List<String>> entry : hookMap.entrySet()) {
             String sourceClass = entry.getKey();
             List<String> methods = entry.getValue();
-            if (!IAST && Hooks.IAST_BASED_HOOKS.contains(entry.getKey())) {
-                continue;
-            }
+
             for (String method : methods) {
                 AgentBuilder.Identified.Narrowable junction = builder.type(not(isInterface()));
                 switch (typeOfHook) {
@@ -90,36 +87,36 @@ public class InstrumentationUtils {
                             //							System.out.println(String.format("Instrumenting : %s::%s for key : %s : %s", sourceClass,
                             //									method, (sourceClass + "." + method), typeDescription.getName()));
                             Class methodEntryDecorator = Class
-                                    .forName(Hooks.DECORATOR_ENTRY.get(sourceClass + DOT + method) + DOT + DECORATORS
+                                    .forName(decorators.get(sourceClass + DOT + method) + DOT + DECORATORS
                                                     + $ + METHOD_ENTRY,
                                             true, classLoader);
 
                             Class methodExitDecorator = Class
-                                    .forName(Hooks.DECORATOR_ENTRY.get(sourceClass + DOT + method) + DOT + DECORATORS
+                                    .forName(decorators.get(sourceClass + DOT + method) + DOT + DECORATORS
                                                     + $ + METHOD_EXIT,
                                             true, classLoader);
                             Class methodVoidExitDecorator = Class.forName(
-                                    Hooks.DECORATOR_ENTRY.get(sourceClass + DOT + method) + DOT + DECORATORS + $ + METHOD_VOID_EXIT,
+                                    decorators.get(sourceClass + DOT + method) + DOT + DECORATORS + $ + METHOD_VOID_EXIT,
                                     true, classLoader);
 
                             Class staticMethodEntryDecorator = Class.forName(
-                                    Hooks.DECORATOR_ENTRY.get(sourceClass + DOT + method) + DOT + DECORATORS + $ + STATIC_METHOD_ENTRY,
+                                    decorators.get(sourceClass + DOT + method) + DOT + DECORATORS + $ + STATIC_METHOD_ENTRY,
                                     true, classLoader);
 
                             Class staticMethodExitDecorator = Class.forName(
-                                    Hooks.DECORATOR_ENTRY.get(sourceClass + DOT + method) + DOT + DECORATORS + $ + STATIC_METHOD_EXIT,
+                                    decorators.get(sourceClass + DOT + method) + DOT + DECORATORS + $ + STATIC_METHOD_EXIT,
                                     true, classLoader);
 
                             Class staticMethodVoidExitDecorator = Class.forName(
-                                    Hooks.DECORATOR_ENTRY.get(sourceClass + DOT + method) + DOT + DECORATORS + $
+                                    decorators.get(sourceClass + DOT + method) + DOT + DECORATORS + $
                                             + STATIC_METHOD_VOID_EXIT, true, classLoader);
 
                             Class constructorEntryDecorator = Class.forName(
-                                    Hooks.DECORATOR_ENTRY.get(sourceClass + DOT + method) + DOT + DECORATORS + $ + CONSTRUCTOR_ENTRY,
+                                    decorators.get(sourceClass + DOT + method) + DOT + DECORATORS + $ + CONSTRUCTOR_ENTRY,
                                     true, classLoader);
 
                             Class constructorExitDecorator = Class.forName(
-                                    Hooks.DECORATOR_ENTRY.get(sourceClass + DOT + method) + DOT + DECORATORS + $ + CONSTRUCTOR_EXIT,
+                                    decorators.get(sourceClass + DOT + method) + DOT + DECORATORS + $ + CONSTRUCTOR_EXIT,
                                     true, classLoader);
                             if (method == null) {
                                 return builder.visit(Advice.to(constructorEntryDecorator, constructorExitDecorator,
@@ -160,11 +157,11 @@ public class InstrumentationUtils {
     }
 
 
-    public static AgentBuilder doInstrument(AgentBuilder builder, Set<String> hooks) {
+    public static AgentBuilder doInstrument(AgentBuilder builder, Set<String> hooks, Map<String, String> decorators) {
         for (String entry : hooks) {
             AgentBuilder.Identified.Narrowable junction = builder.type(not(isInterface()));
 
-            junction = junction.and(isAnnotatedWith(named(entry).or(inheritsAnnotation(named(entry)))));
+            junction = junction.and(not(isAnnotation())).and(isAnnotatedWith(named(entry).or(inheritsAnnotation(named(entry)))));
 
             builder = junction.transform(new AgentBuilder.Transformer() {
                 @Override
@@ -175,28 +172,28 @@ public class InstrumentationUtils {
                         //							System.out.println(String.format("Instrumenting : %s::%s for key : %s : %s", sourceClass,
                         //									method, (sourceClass + "." + method), typeDescription.getName()));
                         Class methodEntryDecorator = Class
-                                .forName(Hooks.DECORATOR_ENTRY.get(entry) + DOT + DECORATORS
+                                .forName(decorators.get(entry) + DOT + DECORATORS
                                                 + $ + METHOD_ENTRY,
                                         true, classLoader);
 
                         Class methodExitDecorator = Class
-                                .forName(Hooks.DECORATOR_ENTRY.get(entry) + DOT + DECORATORS
+                                .forName(decorators.get(entry) + DOT + DECORATORS
                                                 + $ + METHOD_EXIT,
                                         true, classLoader);
                         Class methodVoidExitDecorator = Class.forName(
-                                Hooks.DECORATOR_ENTRY.get(entry) + DOT + DECORATORS + $ + METHOD_VOID_EXIT,
+                                decorators.get(entry) + DOT + DECORATORS + $ + METHOD_VOID_EXIT,
                                 true, classLoader);
 
                         Class staticMethodEntryDecorator = Class.forName(
-                                Hooks.DECORATOR_ENTRY.get(entry) + DOT + DECORATORS + $ + STATIC_METHOD_ENTRY,
+                                decorators.get(entry) + DOT + DECORATORS + $ + STATIC_METHOD_ENTRY,
                                 true, classLoader);
 
                         Class staticMethodExitDecorator = Class.forName(
-                                Hooks.DECORATOR_ENTRY.get(entry) + DOT + DECORATORS + $ + STATIC_METHOD_EXIT,
+                                decorators.get(entry) + DOT + DECORATORS + $ + STATIC_METHOD_EXIT,
                                 true, classLoader);
 
                         Class staticMethodVoidExitDecorator = Class.forName(
-                                Hooks.DECORATOR_ENTRY.get(entry) + DOT + DECORATORS + $
+                                decorators.get(entry) + DOT + DECORATORS + $
                                         + STATIC_METHOD_VOID_EXIT, true, classLoader);
 
                         return builder
