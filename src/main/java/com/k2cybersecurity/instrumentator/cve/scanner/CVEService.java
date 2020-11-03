@@ -103,12 +103,17 @@ public class CVEService implements Runnable {
         try {
             File cveTar = new File(TMP_LOCALCVESERVICE_TAR);
 
-            boolean downlaoded = downloadCVEJar(cveTar, TMP_LOCALCVESERVICE_PATH);
-            if (!downlaoded) {
-                return;
+            int retry = 3;
+            boolean downlaoded = false;
+            while (!downlaoded) {
+                downlaoded = downloadCVEJar(cveTar, TMP_LOCALCVESERVICE_PATH);
+                retry--;
+                if (retry == 0) {
+                    return;
+                }
             }
             List<CVEScanner> scanDirs;
-            if(isEnvScan){
+            if (isEnvScan) {
                 scanDirs = getLibScanDirs();
             } else {
                 scanDirs = getAllScanDirs();
