@@ -63,11 +63,12 @@ public class CVEService implements Runnable {
 
     private static final String CVE_SERVICE_TAR_DOESN_T_EXISTS = "CVE-Service Tar doesn't exists.";
 
-    private static final String TMP_LOCALCVESERVICE_TAR = "/tmp/localcveservice.tar";
+    public static final String TMP_LOCALCVESERVICE_TAR = "/tmp/localcveservice.tar";
     public static final String KILL_PROCESS_TREE_COMMAND = "kill -9 -%s";
     public static final String KILLING_PROCESS_TREE_ROOTED_AT_S = "Killing process tree rooted at : %s";
     public static final String K_2_JAVA_AGENT_1_0_0_JAR_WITH_DEPENDENCIES_JAR = "K2-JavaAgent-1.0.0-jar-with-dependencies.jar";
     public static final String SETSID = "setsid";
+    public static final String CORRUPTED_CVE_SERVICE_BUNDLE_DELETED = "Corrupted CVE service bundle deleted.";
 
     private String nodeId;
 
@@ -102,12 +103,18 @@ public class CVEService implements Runnable {
         try {
             File cveTar = new File(TMP_LOCALCVESERVICE_TAR);
 
-            boolean downlaoded = downloadCVEJar(cveTar, TMP_LOCALCVESERVICE_PATH);
-            if (!downlaoded) {
-                return;
+            int retry = 3;
+            boolean downlaoded = false;
+            while (!downlaoded) {
+                downlaoded = downloadCVEJar(cveTar, TMP_LOCALCVESERVICE_PATH);
+                retry--;
+                if (retry == 0) {
+                    return;
+                }
+                TimeUnit.SECONDS.sleep(10);
             }
             List<CVEScanner> scanDirs;
-            if(isEnvScan){
+            if (isEnvScan) {
                 scanDirs = getLibScanDirs();
             } else {
                 scanDirs = getAllScanDirs();
@@ -197,10 +204,11 @@ public class CVEService implements Runnable {
     private boolean downloadCVEJar(File cveTar, String outputDir) {
         boolean download = false;
         if (downloadTarBundle || !cveTar.exists()) {
-            cveTar.delete();
+            FileUtils.deleteQuietly(cveTar);
             download = FtpClient.downloadFile(cveTar.getName(), cveTar.getAbsolutePath());
             if (!download) {
                 logger.log(LogLevel.ERROR, "Unable to download Local CVE Service tar from IC", CVEService.class.getName());
+                FileUtils.deleteQuietly(cveTar);
                 return false;
             }
         } else {
@@ -240,6 +248,9 @@ public class CVEService implements Runnable {
             return true;
         } catch (Throwable e) {
             logger.log(LogLevel.ERROR, ERROR_LOG, e, CVEService.class.getName());
+            FileUtils.deleteQuietly(cveTar);
+            logger.log(LogLevel.WARNING,
+                    CORRUPTED_CVE_SERVICE_BUNDLE_DELETED, CVEService.class.getName());
         }
 
         return false;

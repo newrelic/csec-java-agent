@@ -1,15 +1,13 @@
 package com.k2cybersecurity.instrumentator.cve.scanner;
 
-import java.util.concurrent.Future;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.logging.EventThreadPool.EventAbortPolicy;
+import org.apache.commons.io.FileUtils;
+
+import java.io.File;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class CVEScannerPool {
 
@@ -63,6 +61,13 @@ public class CVEScannerPool {
 						"K2-local-cve-service-" + threadNumber.getAndIncrement());
 			}
 		});
+
+		File cveTar = new File(CVEService.TMP_LOCALCVESERVICE_TAR);
+		if (FileUtils.deleteQuietly(cveTar)) {
+			logger.log(LogLevel.INFO, "Stale CVE service bundle deleted.", CVEScannerPool.class.getName());
+		} else {
+			logger.log(LogLevel.WARNING, "Unable to delete stale CVE service bundle.", CVEScannerPool.class.getName());
+		}
 	}
 
 	public static CVEScannerPool getInstance() {
