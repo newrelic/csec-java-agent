@@ -1,11 +1,13 @@
 package com.k2cybersecurity.intcodeagent.models.javaagent;
 
+import com.k2cybersecurity.intcodeagent.websocket.JsonConverter;
+
 public class CVEScanner {
 
 	private String appName;
-	
+
 	private String appSha256;
-	
+
 	private String dir;
 
 	/**
@@ -61,5 +63,10 @@ public class CVEScanner {
 	public void setDir(String dir) {
 		this.dir = dir;
 	}
-	
+
+	@Override
+	public String toString() {
+		return JsonConverter.toJSON(this);
+
+	}
 }

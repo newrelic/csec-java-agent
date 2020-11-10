@@ -69,6 +69,10 @@ public class CVEService implements Runnable {
     public static final String K_2_JAVA_AGENT_1_0_0_JAR_WITH_DEPENDENCIES_JAR = "K2-JavaAgent-1.0.0-jar-with-dependencies.jar";
     public static final String SETSID = "setsid";
     public static final String CORRUPTED_CVE_SERVICE_BUNDLE_DELETED = "Corrupted CVE service bundle deleted.";
+    public static final String ADD_JAR = "Add jar : ";
+    public static final String FAILED_TO_PROCESS_LIB_PATH = "Failed to process lib path  : ";
+    public static final String FAILED_TO_PROCESS_DIRECTORY = "Failed to process directory : ";
+    public static final String COLON_SEPERATOR = " : ";
 
     private String nodeId;
 
@@ -155,6 +159,7 @@ public class CVEService implements Runnable {
 
     }
 
+
     private List<CVEScanner> getLibScanDirs() {
         List<CVEScanner> scanners = new ArrayList<>();
         List<String> libPaths = new ArrayList<>();
@@ -172,7 +177,9 @@ public class CVEService implements Runnable {
         if (!libPaths.isEmpty()) {
             CVEScanner cveScanner = createLibTmpDir(libPaths, K2Instrumentator.APPLICATION_INFO_BEAN.getBinaryName(),
                     K2Instrumentator.APPLICATION_INFO_BEAN.getApplicationUUID());
-            scanners.add(cveScanner);
+            if (cveScanner != null) {
+                scanners.add(cveScanner);
+            }
         }
         return scanners;
     }
@@ -301,7 +308,9 @@ public class CVEService implements Runnable {
         if (!libPaths.isEmpty()) {
             CVEScanner cveScanner = createLibTmpDir(libPaths, K2Instrumentator.APPLICATION_INFO_BEAN.getBinaryName(),
                     K2Instrumentator.APPLICATION_INFO_BEAN.getApplicationUUID());
-            scanners.add(cveScanner);
+            if (cveScanner != null) {
+                scanners.add(cveScanner);
+            }
         }
 
         return scanners;
@@ -312,12 +321,17 @@ public class CVEService implements Runnable {
         try {
             FileUtils.forceMkdir(directory);
             for (String path : libPaths) {
-//				logger.log(LogLevel.DEBUG, "Add jar : "+path, CVEService.class.getName());
-                FileUtils.copyFileToDirectory(new File(path), directory, true);
+                try {
+                    logger.log(LogLevel.DEBUG, ADD_JAR + path, CVEService.class.getName());
+                    FileUtils.copyFileToDirectory(new File(path), directory, true);
+                } catch (Exception e) {
+                    logger.log(LogLevel.DEBUG, FAILED_TO_PROCESS_LIB_PATH + directory + COLON_SEPERATOR + path, e, CVEService.class.getName());
+                }
             }
             return new CVEScanner(binaryName + ENV_LIBS + applicationUUID,
                     HashGenerator.getSHA256ForDirectory(directory.getAbsolutePath()), directory.getAbsolutePath());
-        } catch (IOException e) {
+        } catch (Exception e) {
+            logger.log(LogLevel.DEBUG, FAILED_TO_PROCESS_DIRECTORY + directory, e, CVEService.class.getName());
         }
         return null;
     }
