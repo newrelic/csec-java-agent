@@ -10,16 +10,27 @@ public class CVEScanner {
 
 	private String dir;
 
+	private Boolean isEnv;
+
 	/**
 	 * @param appName
 	 * @param appSha256
 	 * @param dir
 	 */
-	public CVEScanner(String appName, String appSha256, String dir) {
+	public CVEScanner(String appName, String appSha256, String dir, Boolean isEnv) {
 		super();
 		this.appName = appName;
 		this.appSha256 = appSha256;
 		this.dir = dir;
+		this.isEnv = isEnv;
+	}
+
+	public Boolean getEnv() {
+		return isEnv;
+	}
+
+	public void setEnv(Boolean env) {
+		isEnv = env;
 	}
 
 	/**

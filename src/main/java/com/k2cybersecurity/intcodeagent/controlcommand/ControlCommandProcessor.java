@@ -154,7 +154,7 @@ public class ControlCommandProcessor implements Runnable {
                     AgentUtils.getInstance().getScannedDeployedApplications().clear();
                 }
                 Pair<String, String> kindId = CommonUtils.getKindIdPair(K2Instrumentator.APPLICATION_INFO_BEAN.getIdentifier(), controlCommand.getArguments().get(0));
-                CVEScannerPool.getInstance().dispatchScanner(controlCommand.getArguments().get(0), kindId.getKey(), kindId.getValue(), downloadTarBundle, false);
+                CVEScannerPool.getInstance().dispatchScanner(controlCommand.getArguments().get(0), kindId.getKey(), kindId.getValue(), downloadTarBundle, false, fullReScanning);
                 break;
             case IntCodeControlCommand.FUZZ_REQUEST:
                 RestRequestProcessor.processControlCommand(controlCommand);
