@@ -55,7 +55,7 @@ public class Hooks {
 		ANNOTATION_BASED_HOOKS.add("javax.servlet.annotation.WebServlet");
 
 		// Spark Java
-		NAME_BASED_HOOKS.put("spark.Spark", Arrays.asList("connect", "delete", "get", "head", "options", "patch", "post", "put", "trace"));
+//		TYPE_BASED_HOOKS.put("spark.Route", Collections.singletonList("handle"));
 
 		// Apache Wicket
 		TYPE_BASED_HOOKS.put("org.apache.wicket.markup.html.WebPage", Collections.singletonList(null));
@@ -268,15 +268,7 @@ public class Hooks {
 				"com.k2cybersecurity.instrumentator.decorators.servicetrace");
 
 		// Spark Java
-		DECORATOR_ENTRY.put("spark.Spark.connect", "com.k2cybersecurity.instrumentator.decorators.servicetrace");
-		DECORATOR_ENTRY.put("spark.Spark.delete", "com.k2cybersecurity.instrumentator.decorators.servicetrace");
-		DECORATOR_ENTRY.put("spark.Spark.get", "com.k2cybersecurity.instrumentator.decorators.servicetrace");
-		DECORATOR_ENTRY.put("spark.Spark.head", "com.k2cybersecurity.instrumentator.decorators.servicetrace");
-		DECORATOR_ENTRY.put("spark.Spark.options", "com.k2cybersecurity.instrumentator.decorators.servicetrace");
-		DECORATOR_ENTRY.put("spark.Spark.patch", "com.k2cybersecurity.instrumentator.decorators.servicetrace");
-		DECORATOR_ENTRY.put("spark.Spark.post", "com.k2cybersecurity.instrumentator.decorators.servicetrace");
-		DECORATOR_ENTRY.put("spark.Spark.put", "com.k2cybersecurity.instrumentator.decorators.servicetrace");
-		DECORATOR_ENTRY.put("spark.Spark.trace", "com.k2cybersecurity.instrumentator.decorators.servicetrace");
+		DECORATOR_ENTRY.put("spark.Route.handle", "com.k2cybersecurity.instrumentator.decorators.servicetrace.spark");
 
 		// Apache Wicket
 		DECORATOR_ENTRY.put("org.apache.wicket.markup.html.WebPage.null",
