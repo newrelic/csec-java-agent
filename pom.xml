@@ -1,13 +1,19 @@
 <?xml version="1.0"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+		 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.k2cybersecurity</groupId>
 	<artifactId>K2-JavaAgent</artifactId>
 	<version>1.0.0</version>
 	<name>K2-JavaAgent</name>
 	<description>A configurable java agent to log programs running on the JVM</description>
+
+	<licenses>
+		<license>
+			<url>https://www.k2io.com/term-and-condition</url>
+		</license>
+	</licenses>
 
 	<properties>
 		<maven.compiler.source>1.8</maven.compiler.source>
@@ -16,6 +22,8 @@
 		<buildTime>0</buildTime>
 		<commitId>0</commitId>
 		<jsonVersion>0</jsonVersion>
+		<maven.build.timestamp.format>yyyy</maven.build.timestamp.format>
+		<license.build.timestamp>${maven.build.timestamp}</license.build.timestamp>
 	</properties>
 
 	<dependencies>
@@ -170,12 +178,20 @@
 									<artifact>*:*</artifact>
 									<excludes>
 										<exclude>**/Log4j2Plugins.dat</exclude>
+										<exclude>META-INF/maven/**</exclude>
+										<exclude>META-INF/licenses/**</exclude>
 									</excludes>
 								</filter>
 							</filters>
 							<transformers>
 								<transformer
-									implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
+										implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
+								<transformer
+										implementation="org.apache.maven.plugins.shade.resource.ApacheLicenseResourceTransformer"/>
+								<transformer
+										implementation="org.apache.maven.plugins.shade.resource.ApacheNoticeResourceTransformer">
+									<addHeader>false</addHeader>
+								</transformer>
 							</transformers>
 							<finalName>${project.artifactId}-${project.version}-jar-with-dependencies</finalName>
 							<relocations>
