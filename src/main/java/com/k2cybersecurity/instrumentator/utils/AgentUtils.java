@@ -81,7 +81,7 @@ public class AgentUtils {
 
 	private Pattern TRACE_PATTERN;
 
-	private Map<Integer, JADatabaseMetaData> sqlConnectionMap;
+//	private Map<Integer, JADatabaseMetaData> sqlConnectionMap;
 
 	private AgentPolicy agentPolicy;
 
@@ -101,12 +101,12 @@ public class AgentUtils {
 		rxssSentUrls = new HashSet<>();
 		deployedApplicationUnderProcessing = new HashSet<>();
 		TRACE_PATTERN = Pattern.compile(IAgentConstants.TRACE_REGEX);
-		this.sqlConnectionMap = new LinkedHashMap<Integer, JADatabaseMetaData>(50, 0.75f, true) {
-            @Override
-            protected boolean removeEldestEntry(java.util.Map.Entry<Integer, JADatabaseMetaData> eldest) {
-                return size() > 50;
-            }
-        };
+//		this.sqlConnectionMap = new LinkedHashMap<Integer, JADatabaseMetaData>(50, 0.75f, true) {
+//            @Override
+//            protected boolean removeEldestEntry(java.util.Map.Entry<Integer, JADatabaseMetaData> eldest) {
+//                return size() > 50;
+//            }
+//        };
 
 	}
 
@@ -137,9 +137,9 @@ public class AgentUtils {
 		isAgentActive = agentActive;
 	}
 
-	public Map<Integer, JADatabaseMetaData> getSqlConnectionMap() {
-		return sqlConnectionMap;
-	}
+//	public Map<Integer, JADatabaseMetaData> getSqlConnectionMap() {
+//		return sqlConnectionMap;
+//	}
 
 	public Map<String, ClassLoader> getClassLoaderRecord() {
 		return classLoaderRecord;
