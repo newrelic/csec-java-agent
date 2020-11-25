@@ -79,11 +79,11 @@ public class CVEScannerPool {
 		return instance;
 	}
 
-	public void dispatchScanner( String nodeId, String kind, String id, boolean downloadTarBundle, boolean isEnvScan) {
+	public void dispatchScanner( String nodeId, String kind, String id, boolean downloadTarBundle, boolean isEnvScan, boolean fullReScan) {
 		if (executor.isShutdown()) {
 			return;
 		}
-		this.executor.submit(new CVEService(nodeId, kind, id, downloadTarBundle, isEnvScan));
+		this.executor.submit(new CVEService(nodeId, kind, id, downloadTarBundle, isEnvScan, fullReScan));
 	}
 
 	public void shutDownThreadPoolExecutor() {
