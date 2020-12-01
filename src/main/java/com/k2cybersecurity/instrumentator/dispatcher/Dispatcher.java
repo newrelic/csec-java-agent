@@ -2,7 +2,6 @@ package com.k2cybersecurity.instrumentator.dispatcher;
 
 import com.k2cybersecurity.instrumentator.K2Instrumentator;
 import com.k2cybersecurity.instrumentator.custom.ServletContextInfo;
-import com.k2cybersecurity.instrumentator.cve.scanner.CVEComponentsService;
 import com.k2cybersecurity.instrumentator.utils.AgentUtils;
 import com.k2cybersecurity.instrumentator.utils.CallbackUtils;
 import com.k2cybersecurity.instrumentator.utils.HashGenerator;
@@ -130,7 +129,7 @@ public class Dispatcher implements Runnable {
 								&& AgentUtils.getInstance().getAgentPolicy().getIastMode().getDynamicScanning().getEnabled()
 								&& (!AgentUtils.getInstance().getRxssSentUrls().contains(url) || metaData.isK2FuzzRequest()))) {
 //					System.out.println("Sending out RXSS");
-					AgentUtils.getInstance().getRxssSentUrls().add(url);
+//					AgentUtils.getInstance().getRxssSentUrls().add(url);
 					JSONArray params = new JSONArray();
 					params.add(xssConstruct);
 					params.add(httpRequestBean.getHttpResponseBean().getResponseBody());
