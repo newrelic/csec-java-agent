@@ -54,8 +54,6 @@ public class Hooks {
 		// Servlet
 		ANNOTATION_BASED_HOOKS.add("javax.servlet.annotation.WebServlet");
 
-		// Spark Java
-//		TYPE_BASED_HOOKS.put("spark.Route", Collections.singletonList("handle"));
 
 		// Apache Wicket
 		TYPE_BASED_HOOKS.put("org.apache.wicket.markup.html.WebPage", Collections.singletonList(null));
@@ -267,9 +265,6 @@ public class Hooks {
 		// Servlet Annotation
 		DECORATOR_ENTRY.put("javax.servlet.annotation.WebServlet",
 				"com.k2cybersecurity.instrumentator.decorators.servicetrace");
-
-		// Spark Java
-		DECORATOR_ENTRY.put("spark.Route.handle", "com.k2cybersecurity.instrumentator.decorators.servicetrace.spark");
 
 		// Apache Wicket
 		DECORATOR_ENTRY.put("org.apache.wicket.markup.html.WebPage.null",
