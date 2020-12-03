@@ -63,11 +63,16 @@ public class CVEService implements Runnable {
 
     private static final String CVE_SERVICE_TAR_DOESN_T_EXISTS = "CVE-Service Tar doesn't exists.";
 
-    private static final String TMP_LOCALCVESERVICE_TAR = "/tmp/localcveservice.tar";
+    public static final String TMP_LOCALCVESERVICE_TAR = "/tmp/localcveservice.tar";
     public static final String KILL_PROCESS_TREE_COMMAND = "kill -9 -%s";
     public static final String KILLING_PROCESS_TREE_ROOTED_AT_S = "Killing process tree rooted at : %s";
     public static final String K_2_JAVA_AGENT_1_0_0_JAR_WITH_DEPENDENCIES_JAR = "K2-JavaAgent-1.0.0-jar-with-dependencies.jar";
     public static final String SETSID = "setsid";
+    public static final String CORRUPTED_CVE_SERVICE_BUNDLE_DELETED = "Corrupted CVE service bundle deleted.";
+    public static final String ADD_JAR = "Add jar : ";
+    public static final String FAILED_TO_PROCESS_LIB_PATH = "Failed to process lib path  : ";
+    public static final String FAILED_TO_PROCESS_DIRECTORY = "Failed to process directory : ";
+    public static final String COLON_SEPERATOR = " : ";
 
     private String nodeId;
 
@@ -79,12 +84,15 @@ public class CVEService implements Runnable {
 
     private boolean isEnvScan;
 
-    public CVEService(String nodeId, String kind, String id, boolean downloadTarBundle, boolean isEnvScan) {
+    private boolean fullReScan;
+
+    public CVEService(String nodeId, String kind, String id, boolean downloadTarBundle, boolean isEnvScan, boolean fullReScan) {
         this.nodeId = nodeId;
         this.kind = kind;
         this.id = id;
         this.downloadTarBundle = downloadTarBundle;
         this.isEnvScan = isEnvScan;
+        this.fullReScan = fullReScan;
     }
 
     private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
@@ -102,12 +110,18 @@ public class CVEService implements Runnable {
         try {
             File cveTar = new File(TMP_LOCALCVESERVICE_TAR);
 
-            boolean downlaoded = downloadCVEJar(cveTar, TMP_LOCALCVESERVICE_PATH);
-            if (!downlaoded) {
-                return;
+            int retry = 3;
+            boolean downlaoded = false;
+            while (!downlaoded) {
+                downlaoded = downloadCVEJar(cveTar, TMP_LOCALCVESERVICE_PATH);
+                retry--;
+                if (retry == 0) {
+                    return;
+                }
+                TimeUnit.SECONDS.sleep(10);
             }
             List<CVEScanner> scanDirs;
-            if(isEnvScan){
+            if (isEnvScan) {
                 scanDirs = getLibScanDirs();
             } else {
                 scanDirs = getAllScanDirs();
@@ -115,7 +129,7 @@ public class CVEService implements Runnable {
             for (CVEScanner scanner : scanDirs) {
                 File inputYaml = createServiceYml(TMP_LOCALCVESERVICE_PATH, nodeId, scanner.getAppName(),
                         scanner.getAppSha256(), scanner.getDir(),
-                        K2Instrumentator.APPLICATION_INFO_BEAN.getApplicationUUID());
+                        K2Instrumentator.APPLICATION_INFO_BEAN.getApplicationUUID(), scanner.getEnv());
                 List<String> paramList = Arrays.asList(SETSID, BASH_COMMAND, TMP_LOCALCVESERVICE_DIST_STARTUP_SH,
                         inputYaml.getAbsolutePath());
                 ProcessBuilder processBuilder = new ProcessBuilder(paramList);
@@ -148,6 +162,7 @@ public class CVEService implements Runnable {
 
     }
 
+
     private List<CVEScanner> getLibScanDirs() {
         List<CVEScanner> scanners = new ArrayList<>();
         List<String> libPaths = new ArrayList<>();
@@ -165,7 +180,9 @@ public class CVEService implements Runnable {
         if (!libPaths.isEmpty()) {
             CVEScanner cveScanner = createLibTmpDir(libPaths, K2Instrumentator.APPLICATION_INFO_BEAN.getBinaryName(),
                     K2Instrumentator.APPLICATION_INFO_BEAN.getApplicationUUID());
-            scanners.add(cveScanner);
+            if (cveScanner != null) {
+                scanners.add(cveScanner);
+            }
         }
         return scanners;
     }
@@ -197,10 +214,11 @@ public class CVEService implements Runnable {
     private boolean downloadCVEJar(File cveTar, String outputDir) {
         boolean download = false;
         if (downloadTarBundle || !cveTar.exists()) {
-            cveTar.delete();
+            FileUtils.deleteQuietly(cveTar);
             download = FtpClient.downloadFile(cveTar.getName(), cveTar.getAbsolutePath());
             if (!download) {
                 logger.log(LogLevel.ERROR, "Unable to download Local CVE Service tar from IC", CVEService.class.getName());
+                FileUtils.deleteQuietly(cveTar);
                 return false;
             }
         } else {
@@ -240,6 +258,9 @@ public class CVEService implements Runnable {
             return true;
         } catch (Throwable e) {
             logger.log(LogLevel.ERROR, ERROR_LOG, e, CVEService.class.getName());
+            FileUtils.deleteQuietly(cveTar);
+            logger.log(LogLevel.WARNING,
+                    CORRUPTED_CVE_SERVICE_BUNDLE_DELETED, CVEService.class.getName());
         }
 
         return false;
@@ -247,9 +268,9 @@ public class CVEService implements Runnable {
     }
 
     protected File createServiceYml(String cveServicePath, String nodeId, String appName, String appSha256,
-                                    String scanPath, String applicationUUID) throws IOException {
+                                    String scanPath, String applicationUUID, Boolean env) throws IOException {
         String yaml = String.format(YML_TEMPLATE, K2Instrumentator.hostip, nodeId, kind, id, appName, applicationUUID, appSha256,
-                scanPath, isEnvScan);
+                scanPath, env);
         File yml = new File(TMP_DIR, SERVICE_INPUT_YML);
         logger.log(LogLevel.INFO, INPUT_YML_LOG + yaml, CVEService.class.getName());
         FileUtils.write(yml, yaml, StandardCharsets.UTF_8);
@@ -265,7 +286,7 @@ public class CVEService implements Runnable {
                 DeployedApplication deployedApplication = (DeployedApplication) obj;
                 if (!AgentUtils.getInstance().getScannedDeployedApplications().contains(deployedApplication)) {
                     scanners.add(new CVEScanner(deployedApplication.getAppName(), deployedApplication.getSha256(),
-                            deployedApplication.getDeployedPath()));
+                            deployedApplication.getDeployedPath(), false));
                     if(StringUtils.endsWith(deployedApplication.getDeployedPath(), JAR_EXTENSION) && !StringUtils.endsWithIgnoreCase(deployedApplication.getDeployedPath(), K_2_JAVA_AGENT_1_0_0_JAR_WITH_DEPENDENCIES_JAR)) {
                     	appJarNames.add(Paths.get(deployedApplication.getDeployedPath()).toString());
                     }
@@ -287,10 +308,12 @@ public class CVEService implements Runnable {
             libPaths.removeAll(appJarNames);
         }
 
-        if (!libPaths.isEmpty()) {
+        if (!libPaths.isEmpty() && fullReScan) {
             CVEScanner cveScanner = createLibTmpDir(libPaths, K2Instrumentator.APPLICATION_INFO_BEAN.getBinaryName(),
                     K2Instrumentator.APPLICATION_INFO_BEAN.getApplicationUUID());
-            scanners.add(cveScanner);
+            if (cveScanner != null) {
+                scanners.add(cveScanner);
+            }
         }
 
         return scanners;
@@ -301,12 +324,17 @@ public class CVEService implements Runnable {
         try {
             FileUtils.forceMkdir(directory);
             for (String path : libPaths) {
-//				logger.log(LogLevel.DEBUG, "Add jar : "+path, CVEService.class.getName());
-                FileUtils.copyFileToDirectory(new File(path), directory, true);
+                try {
+                    logger.log(LogLevel.DEBUG, ADD_JAR + path, CVEService.class.getName());
+                    FileUtils.copyFileToDirectory(new File(path), directory, true);
+                } catch (Exception e) {
+                    logger.log(LogLevel.DEBUG, FAILED_TO_PROCESS_LIB_PATH + directory + COLON_SEPERATOR + path, e, CVEService.class.getName());
+                }
             }
             return new CVEScanner(binaryName + ENV_LIBS + applicationUUID,
-                    HashGenerator.getSHA256ForDirectory(directory.getAbsolutePath()), directory.getAbsolutePath());
-        } catch (IOException e) {
+                    HashGenerator.getSHA256ForDirectory(directory.getAbsolutePath()), directory.getAbsolutePath(), true);
+        } catch (Exception e) {
+            logger.log(LogLevel.DEBUG, FAILED_TO_PROCESS_DIRECTORY + directory, e, CVEService.class.getName());
         }
         return null;
     }

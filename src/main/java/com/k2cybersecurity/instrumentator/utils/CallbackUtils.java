@@ -348,10 +348,10 @@ public class CallbackUtils {
 			} else {
 				connection = ref;
 			}
-			if (AgentUtils.getInstance().getSqlConnectionMap().containsKey(connection.hashCode())) {
-				JADatabaseMetaData metaData = AgentUtils.getInstance().getSqlConnectionMap().get(connection.hashCode());
-				return metaData.getDbIdentifier();
-			} else {
+//			if (AgentUtils.getInstance().getSqlConnectionMap().containsKey(connection.hashCode())) {
+//				JADatabaseMetaData metaData = AgentUtils.getInstance().getSqlConnectionMap().get(connection.hashCode());
+//				return metaData.getDbIdentifier();
+//			} else {
 				Method getMetaData = connection.getClass().getMethod(GET_META_DATA, null);
 				getMetaData.setAccessible(true);
 				Object dbMetaData = getMetaData.invoke(connection, null);
@@ -360,25 +360,25 @@ public class CallbackUtils {
 				getDatabaseProductName.setAccessible(true);
 				String productName = (String) getDatabaseProductName.invoke(dbMetaData, null);
 
-				Method getDriverName = dbMetaData.getClass().getMethod(GET_DRIVER_NAME, null);
-				getDriverName.setAccessible(true);
-				String driverName = (String) getDriverName.invoke(dbMetaData, null);
-
-				Method getDriverVersion = dbMetaData.getClass().getMethod(GET_DRIVER_VERSION, null);
-				getDriverVersion.setAccessible(true);
-				String driverVersion = (String) getDriverVersion.invoke(dbMetaData, null);
+//				Method getDriverName = dbMetaData.getClass().getMethod(GET_DRIVER_NAME, null);
+//				getDriverName.setAccessible(true);
+//				String driverName = (String) getDriverName.invoke(dbMetaData, null);
+//
+//				Method getDriverVersion = dbMetaData.getClass().getMethod(GET_DRIVER_VERSION, null);
+//				getDriverVersion.setAccessible(true);
+//				String driverVersion = (String) getDriverVersion.invoke(dbMetaData, null);
 
 				if (StringUtils.isNotBlank(productName)) {
 					JADatabaseMetaData jaDatabaseMetaData = new JADatabaseMetaData(productName);
-					jaDatabaseMetaData.setDriverName(driverName);
-					jaDatabaseMetaData.setDriverVersion(driverVersion);
+//					jaDatabaseMetaData.setDriverName(driverName);
+//					jaDatabaseMetaData.setDriverVersion(driverVersion);
 					jaDatabaseMetaData.setDriverClassName(connection.getClass().getName());
 					jaDatabaseMetaData.setDbIdentifier(detectDatabaseProduct(productName));
 					// System.out.println("DB details detected: " + jaDatabaseMetaData);
-					AgentUtils.getInstance().getSqlConnectionMap().put(connection.hashCode(), jaDatabaseMetaData);
+//					AgentUtils.getInstance().getSqlConnectionMap().put(connection.hashCode(), jaDatabaseMetaData);
 					return jaDatabaseMetaData.getDbIdentifier();
 				}
-			}
+//			}
 
 		} catch (Throwable e) {
 			logger.log(LogLevel.ERROR, ERROR, e, CallbackUtils.class.getName());

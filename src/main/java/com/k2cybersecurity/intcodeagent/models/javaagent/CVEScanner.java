@@ -1,23 +1,36 @@
 package com.k2cybersecurity.intcodeagent.models.javaagent;
 
+import com.k2cybersecurity.intcodeagent.websocket.JsonConverter;
+
 public class CVEScanner {
 
 	private String appName;
-	
+
 	private String appSha256;
-	
+
 	private String dir;
+
+	private Boolean isEnv;
 
 	/**
 	 * @param appName
 	 * @param appSha256
 	 * @param dir
 	 */
-	public CVEScanner(String appName, String appSha256, String dir) {
+	public CVEScanner(String appName, String appSha256, String dir, Boolean isEnv) {
 		super();
 		this.appName = appName;
 		this.appSha256 = appSha256;
 		this.dir = dir;
+		this.isEnv = isEnv;
+	}
+
+	public Boolean getEnv() {
+		return isEnv;
+	}
+
+	public void setEnv(Boolean env) {
+		isEnv = env;
 	}
 
 	/**
@@ -61,5 +74,10 @@ public class CVEScanner {
 	public void setDir(String dir) {
 		this.dir = dir;
 	}
-	
+
+	@Override
+	public String toString() {
+		return JsonConverter.toJSON(this);
+
+	}
 }
