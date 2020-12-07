@@ -337,9 +337,27 @@ public class Dispatcher implements Runnable {
 						}
 					}
 					fromLoc = i;
+					int delta = toLoc - fromLoc;
+					if (delta < 5) {
+						if (fromLoc >= delta) {
+							// decrease from fromLoc
+							fromLoc -= delta;
+						}
+						{
+							// decrease from fromLoc & increase in toLoc
+							delta = delta - fromLoc;
+							fromLoc = 0;
+
+							if (trace.length - 1 >= toLoc + delta) {
+								toLoc += delta;
+							} else {
+								toLoc = trace.length - 1;
+							}
+						}
+					}
 //				logger.log(LogLevel.DEBUG, "Setting setRequiredStackTracePart by auto detect : " + eventBean.getId(), Dispatcher.class.getName());
 					eventBean.setStacktrace(Arrays.asList(Arrays.copyOfRange(this.trace, Math.max(fromLoc, 0),
-							Math.min(toLoc + 1, trace.length - 1) + 1)));
+							Math.min(toLoc + 2, trace.length))));
 				}
 			} else {
 				setFiniteSizeStackTrace(eventBean);
@@ -354,8 +372,8 @@ public class Dispatcher implements Runnable {
 		int fromLoc = 0;
 		int toLoc = this.trace.length;
 		fromLoc = Math.max(userClassEntity.getTraceLocationEnd() - 4, 0);
-		toLoc = Math.min(userClassEntity.getTraceLocationEnd() + 1, trace.length - 1);
-		eventBean.setStacktrace(Arrays.asList(Arrays.copyOfRange(this.trace, fromLoc, toLoc + 1)));
+		toLoc = Math.min(userClassEntity.getTraceLocationEnd() + 2, trace.length);
+		eventBean.setStacktrace(Arrays.asList(Arrays.copyOfRange(this.trace, fromLoc, toLoc)));
 	}
 
 	private String getMatchPackagePrefix(String className) {
