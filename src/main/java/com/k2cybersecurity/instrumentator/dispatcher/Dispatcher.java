@@ -370,8 +370,8 @@ public class Dispatcher implements Runnable {
 		int fromLoc = 0;
 		int toLoc = this.trace.length;
 		fromLoc = Math.max(userClassEntity.getTraceLocationEnd() - 4, 0);
-		toLoc = Math.min(userClassEntity.getTraceLocationEnd() + 1, trace.length - 1);
-		eventBean.setStacktrace(Arrays.asList(Arrays.copyOfRange(this.trace, fromLoc, toLoc + 1)));
+		toLoc = Math.min(userClassEntity.getTraceLocationEnd() + 2, trace.length);
+		eventBean.setStacktrace(Arrays.asList(Arrays.copyOfRange(this.trace, fromLoc, toLoc)));
 	}
 
 	private String getMatchPackagePrefix(String className) {
