@@ -2,7 +2,6 @@ package com.k2cybersecurity.instrumentator.dispatcher;
 
 import com.k2cybersecurity.instrumentator.K2Instrumentator;
 import com.k2cybersecurity.instrumentator.custom.ServletContextInfo;
-import com.k2cybersecurity.instrumentator.cve.scanner.CVEComponentsService;
 import com.k2cybersecurity.instrumentator.utils.AgentUtils;
 import com.k2cybersecurity.instrumentator.utils.CallbackUtils;
 import com.k2cybersecurity.instrumentator.utils.HashGenerator;
@@ -336,9 +335,27 @@ public class Dispatcher implements Runnable {
 						}
 					}
 					fromLoc = i;
+					int delta = toLoc - fromLoc;
+					if (delta < 5) {
+						if (fromLoc >= delta) {
+							// decrease from fromLoc
+							fromLoc -= delta;
+						}
+						{
+							// decrease from fromLoc & increase in toLoc
+							delta = delta - fromLoc;
+							fromLoc = 0;
+
+							if (trace.length - 1 >= toLoc + delta) {
+								toLoc += delta;
+							} else {
+								toLoc = trace.length - 1;
+							}
+						}
+					}
 //				logger.log(LogLevel.DEBUG, "Setting setRequiredStackTracePart by auto detect : " + eventBean.getId(), Dispatcher.class.getName());
 					eventBean.setStacktrace(Arrays.asList(Arrays.copyOfRange(this.trace, Math.max(fromLoc, 0),
-							Math.min(toLoc + 1, trace.length - 1) + 1)));
+							Math.min(toLoc + 2, trace.length))));
 				}
 			} else {
 				setFiniteSizeStackTrace(eventBean);
