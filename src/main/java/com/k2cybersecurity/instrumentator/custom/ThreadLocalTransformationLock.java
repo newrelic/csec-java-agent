@@ -22,10 +22,7 @@ public class ThreadLocalTransformationLock {
 	}
 
 	public void acquire() {
-		try {
-			lock.acquire();
-		} catch (InterruptedException e) {
-		}
+		lock.tryAcquire();
 	}
 
 	public void release() {
