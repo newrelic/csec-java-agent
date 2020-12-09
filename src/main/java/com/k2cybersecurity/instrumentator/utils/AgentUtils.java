@@ -9,10 +9,12 @@ import com.k2cybersecurity.intcodeagent.logging.DeployedApplication;
 import com.k2cybersecurity.intcodeagent.logging.IAgentConstants;
 import com.k2cybersecurity.intcodeagent.models.config.AgentPolicy;
 import com.k2cybersecurity.intcodeagent.models.config.AgentPolicyIPBlockingParameters;
-import com.k2cybersecurity.intcodeagent.models.javaagent.*;
+import com.k2cybersecurity.intcodeagent.models.javaagent.CollectorInitMsg;
+import com.k2cybersecurity.intcodeagent.models.javaagent.EventResponse;
+import com.k2cybersecurity.intcodeagent.models.javaagent.UserClassEntity;
+import com.k2cybersecurity.intcodeagent.models.javaagent.VulnerabilityCaseType;
 import com.k2cybersecurity.intcodeagent.models.operationalbean.AbstractOperationalBean;
 import net.bytebuddy.description.type.TypeDescription;
-import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -532,12 +534,6 @@ public class AgentUtils {
         }
     }
 
-    public String getSHA256HexDigest(List<String> data) {
-        data.removeAll(Collections.singletonList(null));
-        String input = StringUtils.joinWith(TWO_PIPES, data);
-        return DigestUtils.sha256Hex(input);
-    }
-
     /**
      * @return the rxssSentUrls
      */
@@ -619,7 +615,7 @@ public class AgentUtils {
 		// TODO : Write Application detection mechanism for a given event.
 		idData.addAll(traceForIdCalc);
 		idData.add(vulnerabilityCaseType.getCaseType());
-		operationalBean.setApiID(AgentUtils.getInstance().getSHA256HexDigest(idData));
+		operationalBean.setApiID(HashGenerator.getXxHash64Digest(idData));
 	}
 
 	public long getProcessID(Process p) {

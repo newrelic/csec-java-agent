@@ -1,26 +1,9 @@
 package com.k2cybersecurity.instrumentator.utils;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-
+import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
+import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
+import com.k2cybersecurity.intcodeagent.logging.DeployedApplication;
+import net.openhft.hashing.LongHashFunction;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.apache.commons.io.FileUtils;
@@ -29,9 +12,13 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.filefilter.TrueFileFilter;
 import org.apache.commons.lang3.StringUtils;
 
-import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
-import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
-import com.k2cybersecurity.intcodeagent.logging.DeployedApplication;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.*;
 
 public class HashGenerator {
 
@@ -49,11 +36,12 @@ public class HashGenerator {
     private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
     public static final String SHA_256 = "SHA-256";
     public static final String FILE_FOR_SHA_CALC = "File for SHA calc : ";
-    public static final String UNSORTED_SHA_LIST = "Unsorted SHA list : ";
-    public static final String SORTED_SHA_LIST = "Sorted SHA list : ";
     public static final String ERROR = "Error :";
     public static final String WEBAPP_DETECTION_SHA_INFO_S = "Webapp detection SHA info :  %s";
     public static final String STRING_SEP = "-";
+
+    private static final LongHashFunction xxHashFunction = LongHashFunction.xx(3214658854114272368L);
+
 
     /**
      * generates hash of a file content according to the algorithm provided.
@@ -165,10 +153,20 @@ public class HashGenerator {
         return null;
     }
 
+    private static String joinListByDelimiter(List<String> data) {
+        return String.join(TWO_PIPES, data);
+    }
+
     public static String getSHA256HexDigest(List<String> data) {
         data.removeAll(Collections.singletonList(null));
-        String input = StringUtils.join(data, TWO_PIPES);
+        String input = joinListByDelimiter(data);
         return getChecksum(input);
+    }
+
+    public static String getXxHash64Digest(List<String> data) {
+        data.removeAll(Collections.singletonList(null));
+        String input = joinListByDelimiter(data);
+        return String.valueOf(xxHashFunction.hashChars(input));
     }
 
     public static void createTarGz(File tmpAppDir, File tmpTarFile) throws IOException {
