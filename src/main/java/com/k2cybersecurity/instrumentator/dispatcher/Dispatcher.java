@@ -296,7 +296,7 @@ public class Dispatcher implements Runnable {
 	}
 
 	private void detectDeployedApplication() {
-		if (userClassEntity.isCalledByUserCode()) {
+        if (userClassEntity.isCalledByUserCode() && httpRequestBean.getServerPort() > 0) {
 			DeployedApplication deployedApplication = new DeployedApplication();
 			deployedApplication.getPorts().add(httpRequestBean.getServerPort());
 			deployedApplication.setContextPath(httpRequestBean.getContextPath());
