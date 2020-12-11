@@ -122,12 +122,12 @@ public class Dispatcher implements Runnable {
 				String xssConstruct = CallbackUtils.checkForReflectedXSS(httpRequestBean);
 //				System.out.println("Changes reflected : " + httpRequestBean.getHttpResponseBean().getResponseBody() + " :: " + xssConstruct);
 				JavaAgentEventBean eventBean = prepareEvent(httpRequestBean, metaData, vulnerabilityCaseType);
-				String url = StringUtils.substringBefore(httpRequestBean.getUrl(), SEPARATOR_QUESTIONMARK);
-				url = String.format(S_S, eventBean.getHttpRequest().getMethod(), url);
+//				String url = StringUtils.substringBefore(httpRequestBean.getUrl(), SEPARATOR_QUESTIONMARK);
+//				url = String.format(S_S, eventBean.getHttpRequest().getMethod(), url);
 				if (StringUtils.isNoneBlank(xssConstruct, httpRequestBean.getHttpResponseBean().getResponseBody()) ||
 						(AgentUtils.getInstance().getAgentPolicy().getIastMode().getEnabled()
 								&& AgentUtils.getInstance().getAgentPolicy().getIastMode().getDynamicScanning().getEnabled()
-								&& (!AgentUtils.getInstance().getRxssSentUrls().contains(url) || metaData.isK2FuzzRequest()))) {
+                                && metaData.isK2FuzzRequest())) {
 //					System.out.println("Sending out RXSS");
 //					AgentUtils.getInstance().getRxssSentUrls().add(url);
 					JSONArray params = new JSONArray();
