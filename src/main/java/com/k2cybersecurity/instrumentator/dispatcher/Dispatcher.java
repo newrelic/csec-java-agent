@@ -126,8 +126,7 @@ public class Dispatcher implements Runnable {
 //				url = String.format(S_S, eventBean.getHttpRequest().getMethod(), url);
 				if (StringUtils.isNoneBlank(xssConstruct, httpRequestBean.getHttpResponseBean().getResponseBody()) ||
 						(AgentUtils.getInstance().getAgentPolicy().getIastMode().getEnabled()
-								&& AgentUtils.getInstance().getAgentPolicy().getIastMode().getDynamicScanning().getEnabled()
-                                && metaData.isK2FuzzRequest())) {
+                                && AgentUtils.getInstance().getAgentPolicy().getIastMode().getDynamicScanning().getEnabled())) {
 //					System.out.println("Sending out RXSS");
 //					AgentUtils.getInstance().getRxssSentUrls().add(url);
 					JSONArray params = new JSONArray();
