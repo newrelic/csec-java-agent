@@ -19,10 +19,7 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
 import java.io.ObjectInputStream;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Pattern;
 
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.*;
@@ -119,18 +116,19 @@ public class Dispatcher implements Runnable {
 //        printDispatch();
 		try {
 			if (vulnerabilityCaseType.equals(VulnerabilityCaseType.REFLECTED_XSS)) {
-				String xssConstruct = CallbackUtils.checkForReflectedXSS(httpRequestBean);
+				Set<String> xssConstructs = CallbackUtils.checkForReflectedXSS(httpRequestBean);
 //				System.out.println("Changes reflected : " + httpRequestBean.getHttpResponseBean().getResponseBody() + " :: " + xssConstruct);
 				JavaAgentEventBean eventBean = prepareEvent(httpRequestBean, metaData, vulnerabilityCaseType);
 //				String url = StringUtils.substringBefore(httpRequestBean.getUrl(), SEPARATOR_QUESTIONMARK);
 //				url = String.format(S_S, eventBean.getHttpRequest().getMethod(), url);
-				if (StringUtils.isNoneBlank(xssConstruct, httpRequestBean.getHttpResponseBean().getResponseBody()) ||
+				if ((!xssConstructs.isEmpty() && StringUtils.isNotBlank(httpRequestBean.getHttpResponseBean().getResponseBody())) ||
 						(AgentUtils.getInstance().getAgentPolicy().getIastMode().getEnabled()
-                                && AgentUtils.getInstance().getAgentPolicy().getIastMode().getDynamicScanning().getEnabled())) {
+								&& AgentUtils.getInstance().getAgentPolicy().getIastMode().getDynamicScanning().getEnabled())) {
 //					System.out.println("Sending out RXSS");
 //					AgentUtils.getInstance().getRxssSentUrls().add(url);
+					logger.log(LogLevel.INFO, String.format("Sending RXSS case with : %s", xssConstructs), Dispatcher.class.getName());
 					JSONArray params = new JSONArray();
-					params.add(xssConstruct);
+					params.addAll(xssConstructs);
 					params.add(httpRequestBean.getHttpResponseBean().getResponseBody());
 //					params.add(httpRequestBean.getHttpResponseBean());
 					eventBean.setParameters(params);

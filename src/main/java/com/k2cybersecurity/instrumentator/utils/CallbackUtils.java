@@ -114,14 +114,18 @@ public class CallbackUtils {
 	}
 
 	// TODO: use complete response instead of just response body.
-	public static String checkForReflectedXSS(HttpRequestBean httpRequestBean) {
+	public static Set<String> checkForReflectedXSS(HttpRequestBean httpRequestBean) {
+		Set<String> toReturn = new HashSet<>();
+
 		Set<String> combinedRequestData = decodeRequestData(httpRequestBean);
 		if (combinedRequestData.isEmpty()) {
-			return StringUtils.EMPTY;
+			toReturn.add(StringUtils.EMPTY);
+			return toReturn;
 		}
 		Set<String> combinedResponseData = decodeResponseData(httpRequestBean.getHttpResponseBean());
 		if (combinedResponseData.isEmpty()) {
-			return StringUtils.EMPTY;
+			toReturn.add(StringUtils.EMPTY);
+			return toReturn;
 		}
 //		System.out.println("Processed request data is : " + combinedRequestData);
 //		 System.out.println("Processed response data is : " + combinedResponseData);
@@ -140,10 +144,18 @@ public class CallbackUtils {
 				// "Reflected XSS attack detected :: Construct : %s :: Request : %s :: Response
 				// : %s", construct,
 				// httpRequestBean, httpRequestBean.getHttpResponseBean().getResponseBody()));
-				return construct;
+				toReturn.add(construct);
+
+				if (!(AgentUtils.getInstance().getAgentPolicy().getIastMode().getEnabled()
+						&& AgentUtils.getInstance().getAgentPolicy().getIastMode().getDynamicScanning().getEnabled())) {
+					break;
+				}
 			}
 		}
-		return StringUtils.EMPTY;
+		if (toReturn.isEmpty()) {
+			toReturn.add(StringUtils.EMPTY);
+		}
+		return toReturn;
 	}
 
 	/**
