@@ -339,8 +339,7 @@ public class Dispatcher implements Runnable {
 						if (fromLoc >= delta) {
 							// decrease from fromLoc
 							fromLoc -= delta;
-						}
-						{
+						} else {
 							// decrease from fromLoc & increase in toLoc
 							delta = delta - fromLoc;
 							fromLoc = 0;
