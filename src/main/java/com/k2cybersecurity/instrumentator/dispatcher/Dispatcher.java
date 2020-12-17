@@ -121,7 +121,7 @@ public class Dispatcher implements Runnable {
 				JavaAgentEventBean eventBean = prepareEvent(httpRequestBean, metaData, vulnerabilityCaseType);
 //				String url = StringUtils.substringBefore(httpRequestBean.getUrl(), SEPARATOR_QUESTIONMARK);
 //				url = String.format(S_S, eventBean.getHttpRequest().getMethod(), url);
-				if ((!xssConstructs.isEmpty() && StringUtils.isNotBlank(httpRequestBean.getHttpResponseBean().getResponseBody())) ||
+				if ((!xssConstructs.isEmpty() && !actuallyEmpty(xssConstructs) && StringUtils.isNotBlank(httpRequestBean.getHttpResponseBean().getResponseBody())) ||
 						(AgentUtils.getInstance().getAgentPolicy().getIastMode().getEnabled()
 								&& AgentUtils.getInstance().getAgentPolicy().getIastMode().getDynamicScanning().getEnabled())) {
 //					System.out.println("Sending out RXSS");
@@ -292,8 +292,17 @@ public class Dispatcher implements Runnable {
 //		System.out.println("============= Event End ============");
 	}
 
+	private boolean actuallyEmpty(Set<String> xssConstructs) {
+		for (String xssConstruct : xssConstructs) {
+			if (StringUtils.isNotBlank(xssConstruct)) {
+				return false;
+			}
+		}
+		return true;
+	}
+
 	private void detectDeployedApplication() {
-        if (userClassEntity.isCalledByUserCode() && httpRequestBean.getServerPort() > 0) {
+		if (userClassEntity.isCalledByUserCode() && httpRequestBean.getServerPort() > 0) {
 			DeployedApplication deployedApplication = new DeployedApplication();
 			deployedApplication.getPorts().add(httpRequestBean.getServerPort());
 			deployedApplication.setContextPath(httpRequestBean.getContextPath());
