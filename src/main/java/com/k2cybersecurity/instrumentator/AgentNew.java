@@ -71,7 +71,7 @@ public class AgentNew {
 //									.with(AgentBuilder.Listener.StreamWriting.toSystemOut())
 					.with(AgentBuilder.RedefinitionStrategy.RETRANSFORMATION).with(new ClassLoadListener()).with(AgentBuilder.TypeStrategy.Default.REDEFINE)
 //					.with(AgentBuilder.CircularityLock.Inactive.INSTANCE)
-					.with(new AgentBuilder.CircularityLock.Global())
+//					.with(new AgentBuilder.CircularityLock.Global())
 //					.with(AgentBuilder.LambdaInstrumentationStrategy.ENABLED)
 					;
 
