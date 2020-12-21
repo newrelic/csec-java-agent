@@ -152,6 +152,12 @@ public class ControlCommandProcessor implements Runnable {
                 // This essentially mean to clear the scanned application entries.
                 if (fullReScanning) {
                     AgentUtils.getInstance().getScannedDeployedApplications().clear();
+                    AgentUtils.getInstance().resetCVEServiceFailCount();
+                }
+
+                if (AgentUtils.getInstance().getCVEServiceFailCount() >= 2) {
+                    logger.log(LogLevel.WARNING, "CVE service failed for 2 times already. Discarding the scan request.", ControlCommandProcessor.class.getName());
+                    return;
                 }
                 Pair<String, String> kindId = CommonUtils.getKindIdPair(K2Instrumentator.APPLICATION_INFO_BEAN.getIdentifier(), controlCommand.getArguments().get(0));
                 CVEScannerPool.getInstance().dispatchScanner(controlCommand.getArguments().get(0), kindId.getKey(), kindId.getValue(), downloadTarBundle, false, fullReScanning);

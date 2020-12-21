@@ -138,8 +138,11 @@ public class CVEService implements Runnable {
                     long pid = AgentUtils.getInstance().getProcessID(process);
                     if (pid > 1) {
                         logger.log(LogLevel.WARNING, String.format(KILLING_PROCESS_TREE_ROOTED_AT_S, pid), CVEService.class.getName());
+                        AgentUtils.getInstance().incrementCVEServiceFailCount();
                         Runtime.getRuntime().exec(String.format(KILL_PROCESS_TREE_COMMAND, pid));
                     }
+                } else if (process.exitValue() != 0) {
+                    AgentUtils.getInstance().incrementCVEServiceFailCount();
                 }
                 List<String> response = IOUtils.readLines(process.getInputStream(), StandardCharsets.UTF_8);
                 logger.log(LogLevel.INFO,

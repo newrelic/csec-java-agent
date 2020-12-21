@@ -9,7 +9,10 @@ import com.k2cybersecurity.intcodeagent.logging.DeployedApplication;
 import com.k2cybersecurity.intcodeagent.logging.IAgentConstants;
 import com.k2cybersecurity.intcodeagent.models.config.AgentPolicy;
 import com.k2cybersecurity.intcodeagent.models.config.AgentPolicyIPBlockingParameters;
-import com.k2cybersecurity.intcodeagent.models.javaagent.*;
+import com.k2cybersecurity.intcodeagent.models.javaagent.CollectorInitMsg;
+import com.k2cybersecurity.intcodeagent.models.javaagent.EventResponse;
+import com.k2cybersecurity.intcodeagent.models.javaagent.UserClassEntity;
+import com.k2cybersecurity.intcodeagent.models.javaagent.VulnerabilityCaseType;
 import com.k2cybersecurity.intcodeagent.models.operationalbean.AbstractOperationalBean;
 import net.bytebuddy.description.type.TypeDescription;
 import org.apache.commons.codec.digest.DigestUtils;
@@ -22,6 +25,7 @@ import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -93,6 +97,8 @@ public class AgentUtils {
 
 	private boolean cveEnvScanCompleted = false;
 
+	private AtomicInteger cveServiceFailCount = new AtomicInteger(0);
+
 	private AgentUtils() {
 
 		transformedClasses = new HashSet<>();
@@ -159,6 +165,18 @@ public class AgentUtils {
 
 	public void setInitMsg(CollectorInitMsg initMsg) {
 		this.initMsg = initMsg;
+	}
+
+	public int incrementCVEServiceFailCount() {
+		return this.cveServiceFailCount.incrementAndGet();
+	}
+
+	public void resetCVEServiceFailCount() {
+		this.cveServiceFailCount.set(0);
+	}
+
+	public int getCVEServiceFailCount() {
+		return this.cveServiceFailCount.get();
 	}
 
 	public void createProtectedVulnerabilties(TypeDescription typeDescription, ClassLoader classLoader) {
