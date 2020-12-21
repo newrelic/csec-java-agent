@@ -86,38 +86,95 @@ public class InstrumentationUtils {
 
                             //							System.out.println(String.format("Instrumenting : %s::%s for key : %s : %s", sourceClass,
                             //									method, (sourceClass + "." + method), typeDescription.getName()));
-                            Class methodEntryDecorator = Class
-                                    .forName(decorators.get(sourceClass + DOT + method) + DOT + DECORATORS
-                                                    + $ + METHOD_ENTRY,
-                                            true, classLoader);
+                            Class staticMethodVoidExitDecorator = null;
+                            Class methodEntryDecorator = null;
+                            Class methodExitDecorator = null;
+                            Class methodVoidExitDecorator = null;
+                            Class staticMethodEntryDecorator = null;
+                            Class staticMethodExitDecorator = null;
+                            Class constructorEntryDecorator = null;
+                            Class constructorExitDecorator = null;
 
-                            Class methodExitDecorator = Class
-                                    .forName(decorators.get(sourceClass + DOT + method) + DOT + DECORATORS
-                                                    + $ + METHOD_EXIT,
-                                            true, classLoader);
-                            Class methodVoidExitDecorator = Class.forName(
-                                    decorators.get(sourceClass + DOT + method) + DOT + DECORATORS + $ + METHOD_VOID_EXIT,
-                                    true, classLoader);
+                            try {
+                                methodEntryDecorator = Class
+                                        .forName(decorators.get(sourceClass + DOT + method) + DOT + DECORATORS
+                                                        + $ + METHOD_ENTRY,
+                                                true, classLoader);
+                            } catch (ClassNotFoundException e) {
+                                methodEntryDecorator = Class
+                                        .forName(decorators.get(sourceClass + DOT + method) + DOT + DECORATORS
+                                                        + $ + METHOD_ENTRY,
+                                                true, null);
+                            }
 
-                            Class staticMethodEntryDecorator = Class.forName(
-                                    decorators.get(sourceClass + DOT + method) + DOT + DECORATORS + $ + STATIC_METHOD_ENTRY,
-                                    true, classLoader);
+                            try {
+                                methodExitDecorator = Class
+                                        .forName(decorators.get(sourceClass + DOT + method) + DOT + DECORATORS
+                                                        + $ + METHOD_EXIT,
+                                                true, classLoader);
+                            } catch (ClassNotFoundException e) {
+                                methodExitDecorator = Class
+                                        .forName(decorators.get(sourceClass + DOT + method) + DOT + DECORATORS
+                                                        + $ + METHOD_EXIT,
+                                                true, null);
+                            }
+                            try {
+                                methodVoidExitDecorator = Class.forName(
+                                        decorators.get(sourceClass + DOT + method) + DOT + DECORATORS + $ + METHOD_VOID_EXIT,
+                                        true, classLoader);
+                            } catch (ClassNotFoundException e) {
+                                methodVoidExitDecorator = Class.forName(
+                                        decorators.get(sourceClass + DOT + method) + DOT + DECORATORS + $ + METHOD_VOID_EXIT,
+                                        true, null);
+                            }
+                            try {
+                                staticMethodEntryDecorator = Class.forName(
+                                        decorators.get(sourceClass + DOT + method) + DOT + DECORATORS + $ + STATIC_METHOD_ENTRY,
+                                        true, classLoader);
+                            } catch (ClassNotFoundException e) {
+                                staticMethodEntryDecorator = Class.forName(
+                                        decorators.get(sourceClass + DOT + method) + DOT + DECORATORS + $ + STATIC_METHOD_ENTRY,
+                                        true, null);
+                            }
+                            try {
+                                staticMethodExitDecorator = Class.forName(
+                                        decorators.get(sourceClass + DOT + method) + DOT + DECORATORS + $ + STATIC_METHOD_EXIT,
+                                        true, classLoader);
+                            } catch (ClassNotFoundException e) {
+                                staticMethodExitDecorator = Class.forName(
+                                        decorators.get(sourceClass + DOT + method) + DOT + DECORATORS + $ + STATIC_METHOD_EXIT,
+                                        true, null);
+                            }
 
-                            Class staticMethodExitDecorator = Class.forName(
-                                    decorators.get(sourceClass + DOT + method) + DOT + DECORATORS + $ + STATIC_METHOD_EXIT,
-                                    true, classLoader);
+                            try {
+                                staticMethodVoidExitDecorator = Class.forName(
+                                        decorators.get(sourceClass + DOT + method) + DOT + DECORATORS + $
+                                                + STATIC_METHOD_VOID_EXIT, true, classLoader);
+                            } catch (ClassNotFoundException e) {
+                                staticMethodVoidExitDecorator = Class.forName(
+                                        decorators.get(sourceClass + DOT + method) + DOT + DECORATORS + $
+                                                + STATIC_METHOD_VOID_EXIT, true, null);
+                            }
 
-                            Class staticMethodVoidExitDecorator = Class.forName(
-                                    decorators.get(sourceClass + DOT + method) + DOT + DECORATORS + $
-                                            + STATIC_METHOD_VOID_EXIT, true, classLoader);
+                            try {
+                                constructorEntryDecorator = Class.forName(
+                                        decorators.get(sourceClass + DOT + method) + DOT + DECORATORS + $ + CONSTRUCTOR_ENTRY,
+                                        true, classLoader);
+                            } catch (ClassNotFoundException e) {
+                                constructorEntryDecorator = Class.forName(
+                                        decorators.get(sourceClass + DOT + method) + DOT + DECORATORS + $ + CONSTRUCTOR_ENTRY,
+                                        true, null);
+                            }
 
-                            Class constructorEntryDecorator = Class.forName(
-                                    decorators.get(sourceClass + DOT + method) + DOT + DECORATORS + $ + CONSTRUCTOR_ENTRY,
-                                    true, classLoader);
-
-                            Class constructorExitDecorator = Class.forName(
-                                    decorators.get(sourceClass + DOT + method) + DOT + DECORATORS + $ + CONSTRUCTOR_EXIT,
-                                    true, classLoader);
+                            try {
+                                constructorExitDecorator = Class.forName(
+                                        decorators.get(sourceClass + DOT + method) + DOT + DECORATORS + $ + CONSTRUCTOR_EXIT,
+                                        true, null);
+                            } catch (ClassNotFoundException e) {
+                                constructorExitDecorator = Class.forName(
+                                        decorators.get(sourceClass + DOT + method) + DOT + DECORATORS + $ + CONSTRUCTOR_EXIT,
+                                        true, null);
+                            }
                             if (method == null) {
                                 return builder.visit(Advice.to(constructorEntryDecorator, constructorExitDecorator,
                                         new K2ClassLocater(constructorEntryDecorator.getClassLoader()))
@@ -171,30 +228,75 @@ public class InstrumentationUtils {
 
                         //							System.out.println(String.format("Instrumenting : %s::%s for key : %s : %s", sourceClass,
                         //									method, (sourceClass + "." + method), typeDescription.getName()));
-                        Class methodEntryDecorator = Class
-                                .forName(decorators.get(entry) + DOT + DECORATORS
-                                                + $ + METHOD_ENTRY,
-                                        true, classLoader);
+                        Class methodEntryDecorator = null;
+                        Class methodExitDecorator = null;
+                        Class methodVoidExitDecorator = null;
+                        Class staticMethodEntryDecorator = null;
+                        Class staticMethodExitDecorator = null;
+                        Class staticMethodVoidExitDecorator = null;
+                        try {
+                            methodEntryDecorator = Class
+                                    .forName(decorators.get(entry) + DOT + DECORATORS
+                                                    + $ + METHOD_ENTRY,
+                                            true, classLoader);
+                        } catch (ClassNotFoundException e) {
+                            methodEntryDecorator = Class
+                                    .forName(decorators.get(entry) + DOT + DECORATORS
+                                                    + $ + METHOD_ENTRY,
+                                            true, null);
+                        }
 
-                        Class methodExitDecorator = Class
-                                .forName(decorators.get(entry) + DOT + DECORATORS
-                                                + $ + METHOD_EXIT,
-                                        true, classLoader);
-                        Class methodVoidExitDecorator = Class.forName(
-                                decorators.get(entry) + DOT + DECORATORS + $ + METHOD_VOID_EXIT,
-                                true, classLoader);
+                        try {
+                            methodExitDecorator = Class
+                                    .forName(decorators.get(entry) + DOT + DECORATORS
+                                                    + $ + METHOD_EXIT,
+                                            true, classLoader);
+                        } catch (ClassNotFoundException e) {
+                            methodExitDecorator = Class
+                                    .forName(decorators.get(entry) + DOT + DECORATORS
+                                                    + $ + METHOD_EXIT,
+                                            true, null);
+                        }
 
-                        Class staticMethodEntryDecorator = Class.forName(
-                                decorators.get(entry) + DOT + DECORATORS + $ + STATIC_METHOD_ENTRY,
-                                true, classLoader);
+                        try {
+                            methodVoidExitDecorator = Class.forName(
+                                    decorators.get(entry) + DOT + DECORATORS + $ + METHOD_VOID_EXIT,
+                                    true, classLoader);
+                        } catch (ClassNotFoundException e) {
+                            methodVoidExitDecorator = Class.forName(
+                                    decorators.get(entry) + DOT + DECORATORS + $ + METHOD_VOID_EXIT,
+                                    true, null);
+                        }
 
-                        Class staticMethodExitDecorator = Class.forName(
-                                decorators.get(entry) + DOT + DECORATORS + $ + STATIC_METHOD_EXIT,
-                                true, classLoader);
+                        try {
+                            staticMethodEntryDecorator = Class.forName(
+                                    decorators.get(entry) + DOT + DECORATORS + $ + STATIC_METHOD_ENTRY,
+                                    true, classLoader);
+                        } catch (ClassNotFoundException e) {
+                            staticMethodEntryDecorator = Class.forName(
+                                    decorators.get(entry) + DOT + DECORATORS + $ + STATIC_METHOD_ENTRY,
+                                    true, null);
+                        }
 
-                        Class staticMethodVoidExitDecorator = Class.forName(
-                                decorators.get(entry) + DOT + DECORATORS + $
-                                        + STATIC_METHOD_VOID_EXIT, true, classLoader);
+                        try {
+                            staticMethodExitDecorator = Class.forName(
+                                    decorators.get(entry) + DOT + DECORATORS + $ + STATIC_METHOD_EXIT,
+                                    true, classLoader);
+                        } catch (ClassNotFoundException e) {
+                            staticMethodExitDecorator = Class.forName(
+                                    decorators.get(entry) + DOT + DECORATORS + $ + STATIC_METHOD_EXIT,
+                                    true, null);
+                        }
+
+                        try {
+                            staticMethodVoidExitDecorator = Class.forName(
+                                    decorators.get(entry) + DOT + DECORATORS + $
+                                            + STATIC_METHOD_VOID_EXIT, true, classLoader);
+                        } catch (ClassNotFoundException e) {
+                            staticMethodVoidExitDecorator = Class.forName(
+                                    decorators.get(entry) + DOT + DECORATORS + $
+                                            + STATIC_METHOD_VOID_EXIT, true, null);
+                        }
 
                         return builder
                                 .visit(Advice.to(methodEntryDecorator, methodExitDecorator,
@@ -273,9 +375,10 @@ public class InstrumentationUtils {
                     InstrumentationUtils.class.getName());
         }
         logger.log(LogLevel.SEVERE, JAVA_AGENT_SHUTDOWN_COMPLETE, InstrumentationUtils.class.getName());
-        try{
+        try {
             FileLoggerThreadPool.getInstance().shutDownThreadPoolExecutor();
-        } catch (Exception e){}
+        } catch (Exception e) {
+        }
     }
 
     public static Boolean getIAST() {
