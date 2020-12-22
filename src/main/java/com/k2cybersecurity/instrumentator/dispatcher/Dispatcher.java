@@ -126,7 +126,6 @@ public class Dispatcher implements Runnable {
 								&& AgentUtils.getInstance().getAgentPolicy().getIastMode().getDynamicScanning().getEnabled())) {
 //					System.out.println("Sending out RXSS");
 //					AgentUtils.getInstance().getRxssSentUrls().add(url);
-					logger.log(LogLevel.INFO, String.format("Sending RXSS case with : %s", xssConstructs), Dispatcher.class.getName());
 					JSONArray params = new JSONArray();
 					params.addAll(xssConstructs);
 					params.add(httpRequestBean.getHttpResponseBean().getResponseBody());
