@@ -243,9 +243,9 @@ public class ThreadLocalHttpMap {
 
             Method getQueryString = requestClass.getMethod(GET_QUERY_STRING);
             getQueryString.setAccessible(true);
-            String queryString = (String) getQueryString.invoke(httpRequest, null);
+			String queryString = (String) getQueryString.invoke(httpRequest, null);
 
-            Method getContentType = requestClass.getMethod(GET_CONTENT_TYPE);
+			Method getContentType = requestClass.getMethod(GET_CONTENT_TYPE);
 			getContentType.setAccessible(true);
 			httpRequestBean.setContentType((String) getContentType.invoke(httpRequest, null));
 
@@ -253,9 +253,9 @@ public class ThreadLocalHttpMap {
 				httpRequestBean.setUrl(httpRequestBean.getUrl() + QUESTION_MARK + queryString);
 			}
 
-			Method getParameterMap = requestClass.getMethod(GET_PARAMETER_MAP);
-			getParameterMap.setAccessible(true);
-			httpRequestBean.setParameterMap((Map<String, String[]>) getParameterMap.invoke(httpRequest, null));
+//			Method getParameterMap = requestClass.getMethod(GET_PARAMETER_MAP);
+//			getParameterMap.setAccessible(true);
+//			httpRequestBean.setParameterMap((Map<String, String[]>) getParameterMap.invoke(httpRequest, null));
 
 			Method getPathTranslated = requestClass.getMethod(GET_PATH_TRANSLATED);
 			getPathTranslated.setAccessible(true);
@@ -269,7 +269,7 @@ public class ThreadLocalHttpMap {
 					Method getPathParameters = uriInfo.getClass().getMethod(GET_PATH_PARAMETERS);
 					getPathParameters.setAccessible(true);
 					httpRequestBean
-							.setPathParameterMap(new HashMap<>((Map<String, String>) getParameterMap.invoke(uriInfo)));
+							.setPathParameterMap(new HashMap<>((Map<String, String>) getPathParameters.invoke(uriInfo)));
 				}
 			} catch (NoSuchMethodException ex) {
 			}
