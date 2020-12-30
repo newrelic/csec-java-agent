@@ -32,7 +32,7 @@ public class Hooks {
 				Arrays.asList("write", "newLine", "format", "println", "print", "printf", "append"));
 		TYPE_BASED_HOOKS.put("java.io.BufferedReader", Arrays.asList("read", "readLine"));
 
-		TYPE_BASED_HOOKS.put("javax.servlet.ServletRequest", Arrays.asList("getInputStream", "getReader", null));
+		TYPE_BASED_HOOKS.put("javax.servlet.ServletRequest", Arrays.asList("getParameter", "getParameterValues", "getParameterMap", "getInputStream", "getReader", null));
 		TYPE_BASED_HOOKS.put("javax.servlet.ServletResponse", Arrays.asList("getOutputStream", "getWriter", null));
 		TYPE_BASED_HOOKS.put("javax.servlet.Filter", Collections.singletonList("doFilter"));
 		TYPE_BASED_HOOKS.put("javax.servlet.FilterChain", Collections.singletonList("doFilter"));
@@ -244,6 +244,14 @@ public class Hooks {
 				"com.k2cybersecurity.instrumentator.decorators.servletrequest");
 		DECORATOR_ENTRY.put("javax.servlet.ServletRequest.getInputStream",
 				"com.k2cybersecurity.instrumentator.decorators.servletrequest");
+
+		DECORATOR_ENTRY.put("javax.servlet.ServletRequest.getParameter",
+				"com.k2cybersecurity.instrumentator.decorators.servletparameter");
+		DECORATOR_ENTRY.put("javax.servlet.ServletRequest.getParameterMap",
+				"com.k2cybersecurity.instrumentator.decorators.servletparametermap");
+		DECORATOR_ENTRY.put("javax.servlet.ServletRequest.getParameterValues",
+				"com.k2cybersecurity.instrumentator.decorators.servletparametervalues");
+
 
 		DECORATOR_ENTRY.put("javax.servlet.ServletResponse.null",
 				"com.k2cybersecurity.instrumentator.decorators.servletresponse");
