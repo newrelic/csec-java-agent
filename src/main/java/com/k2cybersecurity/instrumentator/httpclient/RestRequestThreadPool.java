@@ -18,13 +18,13 @@ public class RestRequestThreadPool {
 
     private static RestRequestThreadPool instance;
 
-    private final int queueSize = 2000;
-    private final int maxPoolSize = 2;
+    private final int queueSize = 50000;
+    private final int maxPoolSize = 3;
     private final int corePoolSize = 1;
     private final long keepAliveTime = 10;
     private final TimeUnit timeUnit = TimeUnit.SECONDS;
     private final boolean allowCoreThreadTimeOut = false;
-    private static Object mutex = new Object();
+    private static final Object mutex = new Object();
 
     private RestRequestThreadPool() {
         LinkedBlockingQueue<Runnable> processQueue;

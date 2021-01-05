@@ -114,12 +114,24 @@ public class CallbackUtils {
 	}
 
 	// TODO: use complete response instead of just response body.
-	public static String checkForReflectedXSS(HttpRequestBean httpRequestBean) {
+	public static Set<String> checkForReflectedXSS(HttpRequestBean httpRequestBean) {
+		Set<String> toReturn = new HashSet<>();
+
 		Set<String> combinedRequestData = decodeRequestData(httpRequestBean);
+		if (combinedRequestData.isEmpty()) {
+			toReturn.add(StringUtils.EMPTY);
+			return toReturn;
+		}
 		Set<String> combinedResponseData = decodeResponseData(httpRequestBean.getHttpResponseBean());
+		if (combinedResponseData.isEmpty()) {
+			toReturn.add(StringUtils.EMPTY);
+			return toReturn;
+		}
 //		System.out.println("Processed request data is : " + combinedRequestData);
 //		 System.out.println("Processed response data is : " + combinedResponseData);
 		String combinedResponseDataString = StringUtils.joinWith(FIVE_COLON, combinedResponseData);
+
+		logger.log(LogLevel.INFO, String.format("Checking reflected XSS : %s :: %s", combinedRequestData, combinedResponseDataString), CallbackUtils.class.getName());
 
 		Set<String> attackContructs = isXSS(combinedRequestData);
 
@@ -132,10 +144,18 @@ public class CallbackUtils {
 				// "Reflected XSS attack detected :: Construct : %s :: Request : %s :: Response
 				// : %s", construct,
 				// httpRequestBean, httpRequestBean.getHttpResponseBean().getResponseBody()));
-				return construct;
+				toReturn.add(construct);
+
+				if (!(AgentUtils.getInstance().getAgentPolicy().getIastMode().getEnabled()
+						&& AgentUtils.getInstance().getAgentPolicy().getIastMode().getDynamicScanning().getEnabled())) {
+					break;
+				}
 			}
 		}
-		return StringUtils.EMPTY;
+		if (toReturn.isEmpty()) {
+			toReturn.add(StringUtils.EMPTY);
+		}
+		return toReturn;
 	}
 
 	/**
@@ -176,11 +196,20 @@ public class CallbackUtils {
 		logger.log(LogLevel.DEBUG, CAME_TO_XSS_CHECK + data, CallbackUtils.class.getName());
 		List<String> construct = new ArrayList<>();
 		boolean isAttackConstruct = false;
+
+		// indicates the actual current position in the data where the processing ptr is.
 		int currPos = 0;
+
+		//
 		int startPos = 0;
+
+		//
 		int tmpCurrPos = 0;
+
+		//
 		int tmpStartPos = 0;
 
+		// iterate over the complete data string.
 		while (currPos < data.length()) {
 			Matcher matcher = tagNameRegex.matcher(data);
 			if (!matcher.find(currPos)) {
@@ -219,6 +248,9 @@ public class CallbackUtils {
 					tmpStartPos++;
 					if (StringUtils.isBlank(attribMatcher.group(3)) && attribMatcher.end() >= tmpCurrPos) {
 						tmpStartPos = tmpCurrPos = StringUtils.indexOf(data, ANGLE_END, attribMatcher.start());
+						if (tmpStartPos == -1) {
+							tmpStartPos = data.length() - 1;
+						}
 						attribData = StringUtils.substring(attribData, 0, tmpStartPos);
 					}
 
@@ -277,7 +309,7 @@ public class CallbackUtils {
 		return new HashSet<>(construct);
 	}
 
-	private static Set<String> isXSS(Set<String> combinedData) {
+	public static Set<String> isXSS(Set<String> combinedData) {
 		Set<String> attackConstructs = new HashSet<>();
 		for (String data : combinedData) {
 			attackConstructs.addAll(getXSSConstructs(data));
@@ -513,7 +545,9 @@ public class CallbackUtils {
 		try {
 
 			// Process & add header keys & values separately.
-			for (Entry<String, String> entry : ((Map<String, String>) httpRequestBean.getHeaders()).entrySet()) {
+			Map<String, String> headerCopy = new HashMap<>((Map<String, String>) httpRequestBean.getHeaders());
+			headerCopy.remove("k2-fuzz-request-id");
+			for (Entry<String, String> entry : headerCopy.entrySet()) {
 				// For key
 				processURLEncodedDataForXSS(processedData, entry.getKey());
 

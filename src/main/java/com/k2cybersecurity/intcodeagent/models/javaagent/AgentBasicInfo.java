@@ -17,12 +17,16 @@ public class AgentBasicInfo {
 	/**  Tool id for Language Agent. */
 	private String collectorVersion;
 
-	/** The Json name. */
+	/**
+	 * The Json name.
+	 */
 	private String jsonName;
 
-	/** Json version number. */
+	/**
+	 * Json version number.
+	 */
 	private String jsonVersion;
-	
+
 	private final String collectorType = "JAVA";
 
 	private final String language = "Java";
@@ -37,7 +41,7 @@ public class AgentBasicInfo {
 	public AgentBasicInfo() {
 		setJsonVersion(K2JAVersionInfo.jsonVersion);
 		setCollectorVersion(K2JAVersionInfo.collectorVersion);
-		if (this instanceof  ApplicationInfoBean) {
+		if (this instanceof ApplicationInfoBean) {
 			setJsonName(JSON_NAME_APPLICATION_INFO_BEAN);
 		} else if (this instanceof JavaAgentEventBean) {
 			setJsonName(JSON_NAME_INTCODE_RESULT_BEAN);

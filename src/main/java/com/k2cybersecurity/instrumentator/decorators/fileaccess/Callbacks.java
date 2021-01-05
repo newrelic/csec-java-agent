@@ -66,8 +66,8 @@ public class Callbacks {
 		return false;
 	}
 
-	private static String getFileExtension(File file) {
-		String fileName = file.getName();
+    private static String getFileExtension(File file) {
+        String fileName = file.getName();
 		return getFileExtension(fileName);
 	}
 
@@ -103,7 +103,7 @@ public class Callbacks {
 //				ThreadLocalOperationLock.getInstance().release();
 //			}
 //		}
-	}
+    }
 
 	public static void doOnError(String sourceString, String className, String methodName, Object obj, Object[] args,
 								 Throwable error, String exectionId) throws Throwable {
@@ -118,5 +118,5 @@ public class Callbacks {
 //			}
 //		}
 
-	}
+    }
 }

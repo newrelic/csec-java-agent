@@ -74,6 +74,7 @@ public class HttpRequestBean {
         this.contentType = StringUtils.EMPTY;
         this.protocol = HTTP;
         this.clientPort = StringUtils.EMPTY;
+        this.parameterMap = new HashMap<>();
     }
 
     public HttpRequestBean(HttpRequestBean servletInfo) {
@@ -312,7 +313,9 @@ public class HttpRequestBean {
     }
 
     public void setProtocol(String protocol) {
-        this.protocol = protocol;
+        if (StringUtils.isNotBlank(protocol)) {
+            this.protocol = protocol;
+        }
     }
 
     public String getClientPort() {

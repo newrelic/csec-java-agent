@@ -67,7 +67,7 @@ public class ClassLoadListener implements AgentBuilder.Listener {
 			final boolean loaded) {
 		//      log.debug("onComplete {}", typeName);
 		try {
-			ThreadLocalTransformationLock.getInstance().release();
+			ThreadLocalTransformationLock.getInstance().release(typeName);
 
 			AgentUtils.getInstance().putClassloaderRecord(typeName, classLoader);
 //			logger.log(LogLevel.DEBUG, String.format(COMPLETED_CLASS_S, typeName), ClassLoadListener.class.getName());
@@ -83,7 +83,7 @@ public class ClassLoadListener implements AgentBuilder.Listener {
 			final ClassLoader classLoader,
 			final JavaModule module,
 			final boolean loaded) {
-		ThreadLocalTransformationLock.getInstance().acquire();
+		ThreadLocalTransformationLock.getInstance().acquire(typeName);
 //		logger.log(LogLevel.DEBUG, String.format(DISCOVERED_CLASS_S, typeName), ClassLoadListener.class.getName());
 
 		//      log.debug("onDiscovery {}", typeName);

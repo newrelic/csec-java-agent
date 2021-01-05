@@ -2,7 +2,6 @@ package com.k2cybersecurity.instrumentator.dispatcher;
 
 import com.k2cybersecurity.instrumentator.K2Instrumentator;
 import com.k2cybersecurity.instrumentator.custom.ServletContextInfo;
-import com.k2cybersecurity.instrumentator.cve.scanner.CVEComponentsService;
 import com.k2cybersecurity.instrumentator.utils.AgentUtils;
 import com.k2cybersecurity.instrumentator.utils.CallbackUtils;
 import com.k2cybersecurity.instrumentator.utils.HashGenerator;
@@ -20,10 +19,7 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
 import java.io.ObjectInputStream;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Pattern;
 
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.*;
@@ -50,6 +46,7 @@ public class Dispatcher implements Runnable {
 	public static final String STRING_COLON = " : ";
 
 	private static final Object deployedAppDetectionLock = new Object();
+	public static final String S_S = "%s-%s";
 	private HttpRequestBean httpRequestBean;
 	private AgentMetaData metaData;
 	private Object event;
@@ -119,18 +116,18 @@ public class Dispatcher implements Runnable {
 //        printDispatch();
 		try {
 			if (vulnerabilityCaseType.equals(VulnerabilityCaseType.REFLECTED_XSS)) {
-				String xssConstruct = CallbackUtils.checkForReflectedXSS(httpRequestBean);
+				Set<String> xssConstructs = CallbackUtils.checkForReflectedXSS(httpRequestBean);
 //				System.out.println("Changes reflected : " + httpRequestBean.getHttpResponseBean().getResponseBody() + " :: " + xssConstruct);
 				JavaAgentEventBean eventBean = prepareEvent(httpRequestBean, metaData, vulnerabilityCaseType);
-				String url = StringUtils.substringBefore(httpRequestBean.getUrl(), SEPARATOR_QUESTIONMARK);
-				if (StringUtils.isNoneBlank(xssConstruct, httpRequestBean.getHttpResponseBean().getResponseBody()) ||
+//				String url = StringUtils.substringBefore(httpRequestBean.getUrl(), SEPARATOR_QUESTIONMARK);
+//				url = String.format(S_S, eventBean.getHttpRequest().getMethod(), url);
+				if ((!xssConstructs.isEmpty() && !actuallyEmpty(xssConstructs) && StringUtils.isNotBlank(httpRequestBean.getHttpResponseBean().getResponseBody())) ||
 						(AgentUtils.getInstance().getAgentPolicy().getIastMode().getEnabled()
-								&& AgentUtils.getInstance().getAgentPolicy().getIastMode().getDynamicScanning().getEnabled()
-								&& (!AgentUtils.getInstance().getRxssSentUrls().contains(url) || metaData.isK2FuzzRequest()))) {
+								&& AgentUtils.getInstance().getAgentPolicy().getIastMode().getDynamicScanning().getEnabled())) {
 //					System.out.println("Sending out RXSS");
-					AgentUtils.getInstance().getRxssSentUrls().add(url);
+//					AgentUtils.getInstance().getRxssSentUrls().add(url);
 					JSONArray params = new JSONArray();
-					params.add(xssConstruct);
+					params.addAll(xssConstructs);
 					params.add(httpRequestBean.getHttpResponseBean().getResponseBody());
 //					params.add(httpRequestBean.getHttpResponseBean());
 					eventBean.setParameters(params);
@@ -294,8 +291,17 @@ public class Dispatcher implements Runnable {
 //		System.out.println("============= Event End ============");
 	}
 
+	private boolean actuallyEmpty(Set<String> xssConstructs) {
+		for (String xssConstruct : xssConstructs) {
+			if (StringUtils.isNotBlank(xssConstruct)) {
+				return false;
+			}
+		}
+		return true;
+	}
+
 	private void detectDeployedApplication() {
-		if (userClassEntity.isCalledByUserCode()) {
+		if (userClassEntity.isCalledByUserCode() && httpRequestBean.getServerPort() > 0) {
 			DeployedApplication deployedApplication = new DeployedApplication();
 			deployedApplication.getPorts().add(httpRequestBean.getServerPort());
 			deployedApplication.setContextPath(httpRequestBean.getContextPath());
@@ -336,9 +342,26 @@ public class Dispatcher implements Runnable {
 						}
 					}
 					fromLoc = i;
+					int delta = toLoc - fromLoc;
+					if (delta < 5) {
+						if (fromLoc >= delta) {
+							// decrease from fromLoc
+							fromLoc -= delta;
+						} else {
+							// decrease from fromLoc & increase in toLoc
+							delta = delta - fromLoc;
+							fromLoc = 0;
+
+							if (trace.length - 1 >= toLoc + delta) {
+								toLoc += delta;
+							} else {
+								toLoc = trace.length - 1;
+							}
+						}
+					}
 //				logger.log(LogLevel.DEBUG, "Setting setRequiredStackTracePart by auto detect : " + eventBean.getId(), Dispatcher.class.getName());
 					eventBean.setStacktrace(Arrays.asList(Arrays.copyOfRange(this.trace, Math.max(fromLoc, 0),
-							Math.min(toLoc + 1, trace.length - 1) + 1)));
+							Math.min(toLoc + 2, trace.length))));
 				}
 			} else {
 				setFiniteSizeStackTrace(eventBean);
@@ -353,8 +376,8 @@ public class Dispatcher implements Runnable {
 		int fromLoc = 0;
 		int toLoc = this.trace.length;
 		fromLoc = Math.max(userClassEntity.getTraceLocationEnd() - 4, 0);
-		toLoc = Math.min(userClassEntity.getTraceLocationEnd() + 1, trace.length - 1);
-		eventBean.setStacktrace(Arrays.asList(Arrays.copyOfRange(this.trace, fromLoc, toLoc + 1)));
+		toLoc = Math.min(userClassEntity.getTraceLocationEnd() + 2, trace.length);
+		eventBean.setStacktrace(Arrays.asList(Arrays.copyOfRange(this.trace, fromLoc, toLoc)));
 	}
 
 	private String getMatchPackagePrefix(String className) {

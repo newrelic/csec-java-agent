@@ -1,13 +1,10 @@
 package com.k2cybersecurity.intcodeagent.websocket;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.k2cybersecurity.instrumentator.K2Instrumentator;
 import com.k2cybersecurity.instrumentator.utils.AgentUtils;
 import com.k2cybersecurity.intcodeagent.controlcommand.ControlCommandProcessor;
-import com.k2cybersecurity.intcodeagent.controlcommand.ControlCommandProcessorThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
-import com.k2cybersecurity.intcodeagent.models.javaagent.IntCodeControlCommand;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
 
@@ -44,6 +41,7 @@ public class WSClient extends WebSocketClient {
 //				WSClient.class.getName());
 		logger.log(LogLevel.INFO, "Application info posted : " + K2Instrumentator.APPLICATION_INFO_BEAN,
 				WSClient.class.getName());
+		AgentUtils.getInstance().resetCVEServiceFailCount();
 	}
 
 	@Override

@@ -3,7 +3,6 @@ package com.k2cybersecurity.intcodeagent.controlcommand;
 import com.k2cybersecurity.instrumentator.K2Instrumentator;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
-import com.k2cybersecurity.intcodeagent.logging.EventThreadPool;
 import com.k2cybersecurity.intcodeagent.logging.IAgentConstants;
 
 import java.util.concurrent.*;
@@ -28,12 +27,40 @@ public class ControlCommandProcessorThreadPool {
     private final boolean allowCoreThreadTimeOut = false;
     private static Object mutex = new Object();
 
+    /**
+     * A handler for rejected tasks that throws a
+     * {@code RejectedExecutionException}.
+     */
+    public static class EventAbortPolicy implements RejectedExecutionHandler {
+
+        public static final String CUSTOM_CODE_VULNERABILITY_TASK_REJECTED_FROM_S_S = "Custom Code Vulnerability Task rejected from %s, %s ";
+
+        /**
+         * Creates an {@code EventAbortPolicy}.
+         */
+        public EventAbortPolicy() {
+        }
+
+        /**
+         * Always throws RejectedExecutionException.
+         *
+         * @param r the runnable task requested to be executed
+         * @param e the executor attempting to execute this task
+         * @throws RejectedExecutionException always
+         */
+        public void rejectedExecution(Runnable r, ThreadPoolExecutor e) {
+            logger.log(LogLevel.SEVERE, String.format(CUSTOM_CODE_VULNERABILITY_TASK_REJECTED_FROM_S_S, r.toString(), e.toString()),
+                    ControlCommandProcessorThreadPool.class.getName());
+        }
+    }
+
+
     private ControlCommandProcessorThreadPool() {
         LinkedBlockingQueue<Runnable> processQueue;
         // load the settings
         processQueue = new LinkedBlockingQueue<>(queueSize);
         executor = new ThreadPoolExecutor(corePoolSize, maxPoolSize, keepAliveTime, timeUnit, processQueue,
-                new EventThreadPool.EventAbortPolicy()) {
+                new EventAbortPolicy()) {
 
             @Override
             protected void afterExecute(Runnable r, Throwable t) {

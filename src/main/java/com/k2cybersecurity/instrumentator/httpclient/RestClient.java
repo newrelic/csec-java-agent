@@ -7,22 +7,71 @@ import com.k2cybersecurity.intcodeagent.models.javaagent.FuzzFailEvent;
 import com.k2cybersecurity.intcodeagent.websocket.EventSendPool;
 import com.squareup.okhttp.*;
 
+import javax.net.ssl.*;
 import java.io.IOException;
+import java.security.cert.CertificateException;
 import java.util.concurrent.TimeUnit;
 
 public class RestClient {
 
 
-    private static OkHttpClient client;
+    public static final String REQUEST_SUCCESS_S_RESPONSE_S_S = "Request success : %s :: response : %s : %s";
+    public static final String CALL_FAILED_REQUEST_S_REASON = "Call failed : request %s reason : ";
+    public static final String FIRING_REQUEST_METHOD_S = "Firing request :: Method : %s";
+    public static final String FIRING_REQUEST_URL_S = "Firing request :: URL : %s";
+    public static final String FIRING_REQUEST_HEADERS_S = "Firing request :: Headers : %s";
+    private final ThreadLocal<OkHttpClient> clientThreadLocal = new ThreadLocal<OkHttpClient>() {
+        @Override
+        protected OkHttpClient initialValue() {
+            return new OkHttpClient();
+        }
+    };
+//    private final OkHttpClient client = new OkHttpClient();
 
     private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
 
     public static RestClient instance;
 
+    // Create a trust manager that does not validate certificate chains
+    private final TrustManager[] trustAllCerts = new TrustManager[]{
+            new X509TrustManager() {
+                @Override
+                public void checkClientTrusted(java.security.cert.X509Certificate[] chain, String authType) throws CertificateException {
+                }
+
+                @Override
+                public void checkServerTrusted(java.security.cert.X509Certificate[] chain, String authType) throws CertificateException {
+                }
+
+                @Override
+                public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+                    return new java.security.cert.X509Certificate[]{};
+                }
+            }
+    };
+
     private RestClient() {
-        ConnectionPool connectionPool = new ConnectionPool(5, 5, TimeUnit.MINUTES);
-        client = new OkHttpClient();
+        ConnectionPool connectionPool = new ConnectionPool(1, 5, TimeUnit.MINUTES);
+        OkHttpClient client = clientThreadLocal.get();
         client.setConnectionPool(connectionPool);
+
+        try {
+            // Install the all-trusting trust manager
+            final SSLContext sslContext = SSLContext.getInstance("SSL");
+            sslContext.init(null, trustAllCerts, new java.security.SecureRandom());
+            // Create an ssl socket factory with our all-trusting manager
+            final SSLSocketFactory sslSocketFactory = sslContext.getSocketFactory();
+
+            client.setSslSocketFactory(sslSocketFactory);
+            client.setHostnameVerifier(new HostnameVerifier() {
+                @Override
+                public boolean verify(String hostname, SSLSession session) {
+                    return true;
+                }
+            });
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public static RestClient getInstance() {
@@ -32,21 +81,22 @@ public class RestClient {
         return instance;
     }
 
-    public static OkHttpClient getClient() {
-        return client;
+    public OkHttpClient getClient() {
+        return clientThreadLocal.get();
     }
 
     public void fireRequestAsync(Request request) {
-        logger.log(LogLevel.INFO, String.format("Firing request :: Method : %s", request.method()), RestClient.class.getName());
-        logger.log(LogLevel.INFO, String.format("Firing request :: URL : %s", request.url()), RestClient.class.getName());
-        logger.log(LogLevel.INFO, String.format("Firing request :: Headers : %s", request.headers()), RestClient.class.getName());
+        OkHttpClient client = clientThreadLocal.get();
+        logger.log(LogLevel.INFO, String.format(FIRING_REQUEST_METHOD_S, request.method()), RestClient.class.getName());
+        logger.log(LogLevel.INFO, String.format(FIRING_REQUEST_URL_S, request.url()), RestClient.class.getName());
+        logger.log(LogLevel.INFO, String.format(FIRING_REQUEST_HEADERS_S, request.headers()), RestClient.class.getName());
 
         Call call = client.newCall(request);
         call.enqueue(new Callback() {
             @Override
             public void onFailure(Request request, IOException e) {
                 // TODO Auto-generated method stub
-                logger.log(LogLevel.INFO, String.format("Call failed : request %s reason : ", request), e, RestClient.class.getName());
+                logger.log(LogLevel.INFO, String.format(CALL_FAILED_REQUEST_S_REASON, request), e, RestClient.class.getName());
                 FuzzFailEvent fuzzFailEvent = new FuzzFailEvent();
                 fuzzFailEvent.setFuzzHeader(request.header(IAgentConstants.K2_FUZZ_REQUEST_ID));
                 EventSendPool.getInstance().sendEvent(fuzzFailEvent.toString());
@@ -55,8 +105,10 @@ public class RestClient {
             @Override
             public void onResponse(Response response) throws IOException {
                 // TODO Auto-generated method stub
-                logger.log(LogLevel.INFO, String.format("Request success : %s :: response : %s", request, response), RestClient.class.getName());
+                logger.log(LogLevel.INFO, String.format(REQUEST_SUCCESS_S_RESPONSE_S_S, request, response, response.body().string()), RestClient.class.getName());
                 response.body().close();
+                client.getConnectionPool().evictAll();
+
 //				if(response.code() % 100 == 4 || response.code() % 100 == 5){
 //					FuzzFailEvent fuzzFailEvent = new FuzzFailEvent();
 //					fuzzFailEvent.setFuzzHeader(request.header(K2_FUZZ_REQUEST_ID));
@@ -67,17 +119,20 @@ public class RestClient {
     }
 
     public void fireRequest(Request request) {
-        logger.log(LogLevel.INFO, String.format("Firing request :: Method : %s", request.method()), RestClient.class.getName());
-        logger.log(LogLevel.INFO, String.format("Firing request :: URL : %s", request.url()), RestClient.class.getName());
-        logger.log(LogLevel.INFO, String.format("Firing request :: Headers : %s", request.headers()), RestClient.class.getName());
+        OkHttpClient client = clientThreadLocal.get();
+
+        logger.log(LogLevel.INFO, String.format(FIRING_REQUEST_METHOD_S, request.method()), RestClient.class.getName());
+        logger.log(LogLevel.INFO, String.format(FIRING_REQUEST_URL_S, request.url()), RestClient.class.getName());
+        logger.log(LogLevel.INFO, String.format(FIRING_REQUEST_HEADERS_S, request.headers()), RestClient.class.getName());
 
         Call call = client.newCall(request);
         try {
             Response response = call.execute();
-            logger.log(LogLevel.INFO, String.format("Request success : %s :: response : %s", request, response), RestClient.class.getName());
+            logger.log(LogLevel.INFO, String.format(REQUEST_SUCCESS_S_RESPONSE_S_S, request, response, response.body().string()), RestClient.class.getName());
             response.body().close();
+            client.getConnectionPool().evictAll();
         } catch (IOException e) {
-            logger.log(LogLevel.INFO, String.format("Call failed : request %s reason : ", request), e, RestClient.class.getName());
+            logger.log(LogLevel.INFO, String.format(CALL_FAILED_REQUEST_S_REASON, request), e, RestClient.class.getName());
             FuzzFailEvent fuzzFailEvent = new FuzzFailEvent();
             fuzzFailEvent.setFuzzHeader(request.header(IAgentConstants.K2_FUZZ_REQUEST_ID));
             EventSendPool.getInstance().sendEvent(fuzzFailEvent.toString());

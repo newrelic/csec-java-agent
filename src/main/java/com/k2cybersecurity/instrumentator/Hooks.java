@@ -32,7 +32,7 @@ public class Hooks {
 				Arrays.asList("write", "newLine", "format", "println", "print", "printf", "append"));
 		TYPE_BASED_HOOKS.put("java.io.BufferedReader", Arrays.asList("read", "readLine"));
 
-		TYPE_BASED_HOOKS.put("javax.servlet.ServletRequest", Arrays.asList("getInputStream", "getReader", null));
+		TYPE_BASED_HOOKS.put("javax.servlet.ServletRequest", Arrays.asList("getParameter", "getParameterValues", "getParameterMap", "getInputStream", "getReader", null));
 		TYPE_BASED_HOOKS.put("javax.servlet.ServletResponse", Arrays.asList("getOutputStream", "getWriter", null));
 		TYPE_BASED_HOOKS.put("javax.servlet.Filter", Collections.singletonList("doFilter"));
 		TYPE_BASED_HOOKS.put("javax.servlet.FilterChain", Collections.singletonList("doFilter"));
@@ -54,8 +54,6 @@ public class Hooks {
 		// Servlet
 		ANNOTATION_BASED_HOOKS.add("javax.servlet.annotation.WebServlet");
 
-		// Spark Java
-//		TYPE_BASED_HOOKS.put("spark.Route", Collections.singletonList("handle"));
 
 		// Apache Wicket
 		TYPE_BASED_HOOKS.put("org.apache.wicket.markup.html.WebPage", Collections.singletonList(null));
@@ -110,9 +108,10 @@ public class Hooks {
 		NAME_BASED_HOOKS.put("java.io.FileInputStream", Arrays.asList("open"));
 		NAME_BASED_HOOKS.put("sun.nio.fs.UnixNativeDispatcher", Arrays.asList(new String[]{"open", "fopen", "link",
 				"unlink", "mknod", "rename", "mkdir", "rmdir", "symlink", "chown", "chmod"}));
-		NAME_BASED_HOOKS.put("java.io.UnixFileSystem", Collections.singletonList("delete"));
-		NAME_BASED_HOOKS.put("java.io.File", Collections.singletonList("list"));
 		NAME_BASED_HOOKS.put("java.io.RandomAccessFile", Collections.singletonList("open"));
+		TYPE_BASED_HOOKS.put("java.io.FileSystem", Arrays.asList("delete"));
+		NAME_BASED_HOOKS.put("java.io.File", Collections.singletonList("list"));
+
 
 		// Mongo Hooks
 		NAME_BASED_HOOKS.put("com.mongodb.connection.CommandMessage", Collections.singletonList(null));
@@ -246,6 +245,14 @@ public class Hooks {
 		DECORATOR_ENTRY.put("javax.servlet.ServletRequest.getInputStream",
 				"com.k2cybersecurity.instrumentator.decorators.servletrequest");
 
+		DECORATOR_ENTRY.put("javax.servlet.ServletRequest.getParameter",
+				"com.k2cybersecurity.instrumentator.decorators.servletparameter");
+		DECORATOR_ENTRY.put("javax.servlet.ServletRequest.getParameterMap",
+				"com.k2cybersecurity.instrumentator.decorators.servletparametermap");
+		DECORATOR_ENTRY.put("javax.servlet.ServletRequest.getParameterValues",
+				"com.k2cybersecurity.instrumentator.decorators.servletparametervalues");
+
+
 		DECORATOR_ENTRY.put("javax.servlet.ServletResponse.null",
 				"com.k2cybersecurity.instrumentator.decorators.servletresponse");
 		DECORATOR_ENTRY.put("javax.servlet.ServletResponse.getWriter",
@@ -266,9 +273,6 @@ public class Hooks {
 		// Servlet Annotation
 		DECORATOR_ENTRY.put("javax.servlet.annotation.WebServlet",
 				"com.k2cybersecurity.instrumentator.decorators.servicetrace");
-
-		// Spark Java
-		DECORATOR_ENTRY.put("spark.Route.handle", "com.k2cybersecurity.instrumentator.decorators.servicetrace.spark");
 
 		// Apache Wicket
 		DECORATOR_ENTRY.put("org.apache.wicket.markup.html.WebPage.null",
@@ -414,7 +418,7 @@ public class Hooks {
 		DECORATOR_ENTRY.put("sun.nio.fs.UnixNativeDispatcher.chmod",
 				"com.k2cybersecurity.instrumentator.decorators.fileaccess");
 
-		DECORATOR_ENTRY.put("java.io.UnixFileSystem.delete",
+		DECORATOR_ENTRY.put("java.io.FileSystem.delete",
 				"com.k2cybersecurity.instrumentator.decorators.fileaccess");
 		DECORATOR_ENTRY.put("java.io.RandomAccessFile.open",
 				"com.k2cybersecurity.instrumentator.decorators.fileaccess");

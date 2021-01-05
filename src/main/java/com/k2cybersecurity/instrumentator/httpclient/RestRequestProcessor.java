@@ -9,6 +9,8 @@ import com.k2cybersecurity.intcodeagent.models.javaagent.VulnerabilityCaseType;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class RestRequestProcessor implements Runnable {
 
@@ -26,10 +28,11 @@ public class RestRequestProcessor implements Runnable {
 
     @Override
     public void run() {
-
-        if (controlCommand.getArguments().size() != 2) {
+        if (controlCommand.getArguments().size() < 2) {
             return;
         }
+
+        List<String> filesCreated = new ArrayList<>();
 
         VulnerabilityCaseType currentCaseType = VulnerabilityCaseType.valueOf(controlCommand.getArguments().get(1));
         if (VulnerabilityCaseType.FILE_OPERATION.equals(currentCaseType)
@@ -44,18 +47,36 @@ public class RestRequestProcessor implements Runnable {
                         controlCommand.getArguments().get(0)), e, RestRequestProcessor.class.getName());
                 return;
             }
+
+            if (controlCommand.getArguments().size() >= 2) {
+                for (int i = 2; i < controlCommand.getArguments().size(); i++) {
+                    String file = controlCommand.getArguments().get(i);
+                    File fileToCreate = new File(file);
+                    try {
+                        fileToCreate.createNewFile();
+                        filesCreated.add(file);
+                    } catch (IOException e) {
+                        logger.log(LogLevel.ERROR, String.format("Unable to create setup files for fuzzing request : %s",
+                                fileToCreate), e, RestRequestProcessor.class.getName());
+                    }
+                }
+            }
+
         }
 
         HttpRequestBean httpRequest = null;
         try {
             httpRequest = new ObjectMapper().readValue(controlCommand.getArguments().get(0), HttpRequestBean.class);
             RestClient.getInstance().fireRequest(RequestUtils.generateK2Request(httpRequest));
+            filesCreated.forEach((path) -> {
+                FuzzCleanUpST.getInstance().scheduleCleanUp(path);
+            });
+
         } catch (Exception e) {
             logger.log(LogLevel.ERROR,
                     String.format("Error while processing fuzzing request : %s", controlCommand.getArguments().get(0)),
                     e, RestRequestProcessor.class.getName());
         }
-
     }
 
     public static void processControlCommand(IntCodeControlCommand command) {

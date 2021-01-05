@@ -34,6 +34,9 @@ public class AgentNew {
 			return;
 		}
 
+		System.setProperty("org.slf4j.simpleLogger.defaultLogLevel", "off");
+		System.setProperty("org.slf4j.simpleLogger.logFile", "System.out");
+
 		if (initDone) {
 			return;
 		}
@@ -67,6 +70,8 @@ public class AgentNew {
 					.disableClassFormatChanges()
 //									.with(AgentBuilder.Listener.StreamWriting.toSystemOut())
 					.with(AgentBuilder.RedefinitionStrategy.RETRANSFORMATION).with(new ClassLoadListener()).with(AgentBuilder.TypeStrategy.Default.REDEFINE)
+//					.with(AgentBuilder.CircularityLock.Inactive.INSTANCE)
+//					.with(new AgentBuilder.CircularityLock.Global())
 //					.with(AgentBuilder.LambdaInstrumentationStrategy.ENABLED)
 					;
 
