@@ -87,16 +87,16 @@ public class RestClient {
 
     public void fireRequestAsync(Request request) {
         OkHttpClient client = clientThreadLocal.get();
-        logger.log(LogLevel.INFO, String.format(FIRING_REQUEST_METHOD_S, request.method()), RestClient.class.getName());
-        logger.log(LogLevel.INFO, String.format(FIRING_REQUEST_URL_S, request.url()), RestClient.class.getName());
-        logger.log(LogLevel.INFO, String.format(FIRING_REQUEST_HEADERS_S, request.headers()), RestClient.class.getName());
+        logger.log(LogLevel.DEBUG, String.format(FIRING_REQUEST_METHOD_S, request.method()), RestClient.class.getName());
+        logger.log(LogLevel.DEBUG, String.format(FIRING_REQUEST_URL_S, request.url()), RestClient.class.getName());
+        logger.log(LogLevel.DEBUG, String.format(FIRING_REQUEST_HEADERS_S, request.headers()), RestClient.class.getName());
 
         Call call = client.newCall(request);
         call.enqueue(new Callback() {
             @Override
             public void onFailure(Request request, IOException e) {
                 // TODO Auto-generated method stub
-                logger.log(LogLevel.INFO, String.format(CALL_FAILED_REQUEST_S_REASON, request), e, RestClient.class.getName());
+                logger.log(LogLevel.DEBUG, String.format(CALL_FAILED_REQUEST_S_REASON, request), e, RestClient.class.getName());
                 FuzzFailEvent fuzzFailEvent = new FuzzFailEvent();
                 fuzzFailEvent.setFuzzHeader(request.header(IAgentConstants.K2_FUZZ_REQUEST_ID));
                 EventSendPool.getInstance().sendEvent(fuzzFailEvent.toString());
@@ -105,7 +105,7 @@ public class RestClient {
             @Override
             public void onResponse(Response response) throws IOException {
                 // TODO Auto-generated method stub
-                logger.log(LogLevel.INFO, String.format(REQUEST_SUCCESS_S_RESPONSE_S_S, request, response, response.body().string()), RestClient.class.getName());
+                logger.log(LogLevel.DEBUG, String.format(REQUEST_SUCCESS_S_RESPONSE_S_S, request, response, response.body().string()), RestClient.class.getName());
                 response.body().close();
                 client.getConnectionPool().evictAll();
 
@@ -121,18 +121,18 @@ public class RestClient {
     public void fireRequest(Request request) {
         OkHttpClient client = clientThreadLocal.get();
 
-        logger.log(LogLevel.INFO, String.format(FIRING_REQUEST_METHOD_S, request.method()), RestClient.class.getName());
-        logger.log(LogLevel.INFO, String.format(FIRING_REQUEST_URL_S, request.url()), RestClient.class.getName());
-        logger.log(LogLevel.INFO, String.format(FIRING_REQUEST_HEADERS_S, request.headers()), RestClient.class.getName());
+        logger.log(LogLevel.DEBUG, String.format(FIRING_REQUEST_METHOD_S, request.method()), RestClient.class.getName());
+        logger.log(LogLevel.DEBUG, String.format(FIRING_REQUEST_URL_S, request.url()), RestClient.class.getName());
+        logger.log(LogLevel.DEBUG, String.format(FIRING_REQUEST_HEADERS_S, request.headers()), RestClient.class.getName());
 
         Call call = client.newCall(request);
         try {
             Response response = call.execute();
-            logger.log(LogLevel.INFO, String.format(REQUEST_SUCCESS_S_RESPONSE_S_S, request, response, response.body().string()), RestClient.class.getName());
+            logger.log(LogLevel.DEBUG, String.format(REQUEST_SUCCESS_S_RESPONSE_S_S, request, response, response.body().string()), RestClient.class.getName());
             response.body().close();
             client.getConnectionPool().evictAll();
         } catch (IOException e) {
-            logger.log(LogLevel.INFO, String.format(CALL_FAILED_REQUEST_S_REASON, request), e, RestClient.class.getName());
+            logger.log(LogLevel.DEBUG, String.format(CALL_FAILED_REQUEST_S_REASON, request), e, RestClient.class.getName());
             FuzzFailEvent fuzzFailEvent = new FuzzFailEvent();
             fuzzFailEvent.setFuzzHeader(request.header(IAgentConstants.K2_FUZZ_REQUEST_ID));
             EventSendPool.getInstance().sendEvent(fuzzFailEvent.toString());
