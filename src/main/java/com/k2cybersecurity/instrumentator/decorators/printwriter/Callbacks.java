@@ -83,14 +83,26 @@ public class Callbacks {
                             break;
                         case PRINTLN:
                             if (args != null && args.length == 1 && args[0] != null) {
-                                ThreadLocalHttpMap.getInstance()
-                                        .insertToResponseBufferWithLF(String.valueOf(args[0]));
+                                Class currentClass = args[0].getClass();
+                                if (args[0] instanceof char[]) {
+                                    ThreadLocalHttpMap.getInstance()
+                                            .insertToResponseBufferWithLF(String.valueOf((char[]) args[0]));
+                                } else {
+                                    ThreadLocalHttpMap.getInstance()
+                                            .insertToResponseBufferWithLF(String.valueOf(currentClass.cast(args[0])));
+                                }
                             }
                             break;
                         case PRINT:
                             if (args != null && args.length == 1 && args[0] != null) {
-                                ThreadLocalHttpMap.getInstance()
-                                        .insertToResponseBuffer(String.valueOf(args[0]));
+                                Class currentClass = args[0].getClass();
+                                if (args[0] instanceof char[]) {
+                                    ThreadLocalHttpMap.getInstance()
+                                            .insertToResponseBuffer(String.valueOf((char[]) args[0]));
+                                } else {
+                                    ThreadLocalHttpMap.getInstance()
+                                            .insertToResponseBuffer(String.valueOf(currentClass.cast(args[0])));
+                                }
                             }
                             break;
                         case PRINTF:
