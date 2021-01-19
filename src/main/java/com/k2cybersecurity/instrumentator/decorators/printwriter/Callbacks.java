@@ -109,10 +109,10 @@ public class Callbacks {
                         case FORMAT:
                             if (args != null && args.length == 2 && args[0] instanceof String) {
                                 ThreadLocalHttpMap.getInstance()
-                                        .insertToResponseBuffer(String.format((String) args[0], args[1]));
+                                        .insertToResponseBuffer(String.format((String) args[0], (Object[]) args[1]));
                             } else if (args != null && args.length == 3 && args[0] instanceof Locale) {
                                 ThreadLocalHttpMap.getInstance()
-                                        .insertToResponseBuffer(String.format((Locale) args[0], (String) args[1], args[2]));
+                                        .insertToResponseBuffer(String.format((Locale) args[0], (String) args[1], (Object[]) args[2]));
                             }
                             break;
                         case APPEND:
