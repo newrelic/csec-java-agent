@@ -131,7 +131,7 @@ public class CallbackUtils {
 //		 System.out.println("Processed response data is : " + combinedResponseData);
 		String combinedResponseDataString = StringUtils.joinWith(FIVE_COLON, combinedResponseData);
 
-		logger.log(LogLevel.INFO, String.format("Checking reflected XSS : %s :: %s", combinedRequestData, combinedResponseDataString), CallbackUtils.class.getName());
+		logger.log(LogLevel.DEBUG, String.format("Checking reflected XSS : %s :: %s", combinedRequestData, combinedResponseDataString), CallbackUtils.class.getName());
 
 		Set<String> attackContructs = isXSS(combinedRequestData);
 
