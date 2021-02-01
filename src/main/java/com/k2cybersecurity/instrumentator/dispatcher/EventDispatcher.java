@@ -24,7 +24,10 @@ public class EventDispatcher {
     private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
     public static final String DROPPING_EVENT_DUE_TO_CORRUPT_INCOMPLETE_HTTP_REQUEST = "Dropping event due to corrupt/incomplete HTTP request : ";
     public static final String DROPPING_EVENT_DUE_TO_EMPTY_OBJECT = "Dropping event due to empty object : ";
+    public static final String DROPPING_EVENT_DUE_TO_EMPTY_OBJECT1 = "Dropping event due to empty object : ";
     public static final String STRING_3_COLON = " ::: ";
+    public static final String EVENT_RESPONSE_TIME_TAKEN = "Event response time taken : ";
+    public static final String DOUBLE_COLON_SEPERATOR = " :: ";
     public static final String EVENT_RESPONSE_TIMEOUT_FOR = "Event response timeout for : ";
     public static final String SCHEDULING_FOR_EVENT_RESPONSE_OF = "Scheduling for event response of : ";
     public static final String ERROR = "Error: ";

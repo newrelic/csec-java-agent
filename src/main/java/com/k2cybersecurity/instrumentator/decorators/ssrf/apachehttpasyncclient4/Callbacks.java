@@ -3,6 +3,7 @@ package com.k2cybersecurity.instrumentator.decorators.ssrf.apachehttpasyncclient
 import com.k2cybersecurity.instrumentator.custom.K2CyberSecurityException;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalHttpMap;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalOperationLock;
+import com.k2cybersecurity.instrumentator.custom.ThreadLocalSSRFLock;
 import com.k2cybersecurity.instrumentator.dispatcher.EventDispatcher;
 import com.k2cybersecurity.instrumentator.utils.AgentUtils;
 import com.k2cybersecurity.intcodeagent.models.javaagent.VulnerabilityCaseType;
@@ -25,16 +26,16 @@ public class Callbacks {
 		if (!ThreadLocalOperationLock.getInstance().isAcquired()) {
 			try {
 				ThreadLocalOperationLock.getInstance().acquire();
-				if (ThreadLocalHttpMap.getInstance().getHttpRequest() != null && args != null &&
-						args.length > 0) {
+                if (ThreadLocalHttpMap.getInstance().getHttpRequest() != null && args != null &&
+                        args.length > 0) {
 //					System.out.println(String.format("Entry inside lock : SSRF : %s : %s : %s", className, methodName, obj));
 
-					if (httpHost == null) {
-						ClassLoader classLoader = AgentUtils.getInstance().getClassLoaderRecord().get("org.apache.http.HttpHost");
-						if (classLoader != null) {
-							httpHost = classLoader.loadClass("org.apache.http.HttpHost");
-						}
-					}
+                    if (httpHost == null) {
+                        ClassLoader classLoader = AgentUtils.getInstance().getClassLoaderRecord().get("org.apache.http.HttpHost");
+                        if (classLoader != null) {
+                            httpHost = classLoader.loadClass("org.apache.http.HttpHost");
+                        }
+                    }
 
 					if (httpUriRequest == null) {
 						ClassLoader classLoader = AgentUtils.getInstance().getClassLoaderRecord().get("org.apache.http.client.methods.HttpUriRequest");
@@ -44,29 +45,33 @@ public class Callbacks {
 					}
 
 					if (httpHost != null && httpHost.isInstance(args[0])) {
-						Method getRequestLine = args[1].getClass().getMethod("getRequestLine");
-						getRequestLine.setAccessible(true);
-						Object requestLine = getRequestLine.invoke(args[1]);
+                        Method getRequestLine = args[1].getClass().getMethod("getRequestLine");
+                        getRequestLine.setAccessible(true);
+                        Object requestLine = getRequestLine.invoke(args[1]);
 
-						Method getUri = requestLine.getClass().getMethod("getUri");
-						getUri.setAccessible(true);
-						String uriFromRequest = (String) getUri.invoke(requestLine);
+                        Method getUri = requestLine.getClass().getMethod("getUri");
+                        getUri.setAccessible(true);
+                        String uriFromRequest = (String) getUri.invoke(requestLine);
 
 //						System.out.println(String.format("Entry Value : SSRF : %s : %s : %s : %s", className, methodName, uri, uriFromRequest));
-						EventDispatcher.dispatch(new SSRFOperationalBean(uriFromRequest, className, sourceString, exectionId,
-								Instant.now().toEpochMilli(), methodName), VulnerabilityCaseType.HTTP_REQUEST);
+                        ThreadLocalSSRFLock.getInstance().setUrl(uriFromRequest);
 
-					} else if (httpUriRequest != null && httpUriRequest.isInstance(args[0])) {
-						Method getURI = args[0].getClass().getMethod("getURI");
-						getURI.setAccessible(true);
+                        EventDispatcher.dispatch(new SSRFOperationalBean(uriFromRequest, className, sourceString, exectionId,
+                                Instant.now().toEpochMilli(), methodName), VulnerabilityCaseType.HTTP_REQUEST);
 
-						URI uri = (URI) getURI.invoke(args[0]);
+                    } else if (httpUriRequest != null && httpUriRequest.isInstance(args[0])) {
+                        Method getURI = args[0].getClass().getMethod("getURI");
+                        getURI.setAccessible(true);
+
+                        URI uri = (URI) getURI.invoke(args[0]);
 
 //						System.out.println(String.format("Entry Value : SSRF : %s : %s : %s", className, methodName, uri.toString()));
-						EventDispatcher.dispatch(new SSRFOperationalBean(uri.toString(), className, sourceString, exectionId,
-								Instant.now().toEpochMilli(), methodName), VulnerabilityCaseType.HTTP_REQUEST);
+                        ThreadLocalSSRFLock.getInstance().setUrl(uri.toString());
 
-					}
+                        EventDispatcher.dispatch(new SSRFOperationalBean(uri.toString(), className, sourceString, exectionId,
+                                Instant.now().toEpochMilli(), methodName), VulnerabilityCaseType.HTTP_REQUEST);
+
+                    }
 				}
 
 			} finally {

@@ -705,16 +705,18 @@ public class CallbackUtils {
 
 	public static void cleanUpAllStates() {
 		// Clean up
-		ThreadLocalHTTPServiceLock.getInstance().resetLock();
-		ThreadLocalHttpMap.getInstance().cleanState();
-		ThreadLocalDBMap.getInstance().clearAll();
-		ThreadLocalSessionMap.getInstance().clearAll();
-		ThreadLocalLDAPMap.getInstance().clearAll();
-		ThreadLocalExecutionMap.getInstance().cleanUp();
-		ThreadLocalLdaptiveMap.getInstance().clearAll();
-		ThreadLocalXpathSaxonMap.getInstance().clearAll();
-		ThreadLocalXQuerySaxonMap.getInstance().clearAll();
-		ThreadLocalOkHttpMap.getInstance().clearAll();
-	}
+        ThreadLocalHTTPServiceLock.getInstance().resetLock();
+        ThreadLocalHttpMap.getInstance().cleanState();
+        ThreadLocalDBMap.getInstance().clearAll();
+        ThreadLocalSessionMap.getInstance().clearAll();
+        ThreadLocalLDAPMap.getInstance().clearAll();
+        ThreadLocalExecutionMap.getInstance().cleanUp();
+        ThreadLocalLdaptiveMap.getInstance().clearAll();
+        ThreadLocalXpathSaxonMap.getInstance().clearAll();
+        ThreadLocalXQuerySaxonMap.getInstance().clearAll();
+        ThreadLocalOkHttpMap.getInstance().clearAll();
+        ThreadLocalSSRFLock.getInstance().resetLock();
+        ThreadLocalJSRhinoMap.getInstance().clearAll();
+    }
 
 }

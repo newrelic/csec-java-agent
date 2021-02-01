@@ -499,6 +499,7 @@ public interface IAgentConstants {
     String JSON_NAME_DYNAMICJARPATH_BEAN = "dynamicjarpath";
     String JSON_NAME_SHUTDOWN = "shutdown";
     String JSON_NAME_FUZZ_FAIL = "fuzzfail";
+    String JSON_NAME_HTTP_CONNECTION_STAT = "http-connection-stat";
 
 
     String FIELD_SOCKET_CHANNEL = "socketChannel";

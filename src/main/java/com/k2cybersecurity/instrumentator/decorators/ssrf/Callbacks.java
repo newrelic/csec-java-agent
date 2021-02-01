@@ -9,7 +9,6 @@ import com.k2cybersecurity.intcodeagent.models.javaagent.VulnerabilityCaseType;
 import com.k2cybersecurity.intcodeagent.models.operationalbean.SSRFOperationalBean;
 import org.apache.commons.lang3.StringUtils;
 
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.time.Instant;
@@ -26,6 +25,7 @@ public class Callbacks {
                     Method getURL = obj.getClass().getMethod("getURL");
                     getURL.setAccessible(true);
                     URL url = (URL) getURL.invoke(obj);
+                    ThreadLocalSSRFLock.getInstance().setUrl(url.toString());
                     if (StringUtils.equalsAny(url.getProtocol(), "http", "https")) {
 //                        System.out.println(String.format("Entry : SSRF Value: %s : %s : %s : %s", className, methodName, obj, url.toString()));
                         EventDispatcher.dispatch(new SSRFOperationalBean(url.toString(), className, sourceString, exectionId,
@@ -39,16 +39,42 @@ public class Callbacks {
     }
 
     public static void doOnExit(String sourceString, String className, String methodName, Object obj, Object[] args,
-                                Object returnVal, String exectionId) {
+                                Object returnVal, String exectionId) throws Exception {
         if (!ThreadLocalHttpMap.getInstance().isEmpty() && !ThreadLocalOperationLock.getInstance().isAcquired()
                 && ThreadLocalSSRFLock.getInstance().isAcquired(obj, sourceString, exectionId)) {
             try {
                 ThreadLocalOperationLock.getInstance().acquire();
-//				System.out.println(String.format("Exit : SSRF Value: %s : %s : %s", className, methodName, obj));
+//                System.out.println(String.format("Exit : SSRF Value: %s : %s : %s", className, methodName, obj));
+//                Method getURL = obj.getClass().getMethod("getURL");
+//                getURL.setAccessible(true);
+//                URL url = (URL) getURL.invoke(obj);
+//                OutBoundHttp outBoundHttp = new OutBoundHttp(url.toString(), K2Instrumentator.hostip, OutBoundHttpDirection.OUTBOUND);
+//                if (!K2Instrumentator.JA_HEALTH_CHECK.getHttpConnections().contains(outBoundHttp)) {
+//                    Object objToUse = obj;
+//                    if (objToUse instanceof HttpsURLConnection) {
+//                        Field delegate = objToUse.getClass().getDeclaredField("delegate");
+//                        delegate.setAccessible(true);
+//                        objToUse = delegate.get(objToUse);
+//                    }
+//
+//                    if (objToUse instanceof HttpURLConnection) {
+//                        Field httpField = HttpURLConnection.class.getDeclaredField("http");
+//                        httpField.setAccessible(true);
+//                        HttpClient client = (HttpClient) httpField.get(objToUse);
+//                        Field serverSocketField = NetworkClient.class.getDeclaredField("serverSocket");
+//                        serverSocketField.setAccessible(true);
+//                        Socket socket = (Socket) serverSocketField.get(client);
+//                        outBoundHttp.setDestinationIp(socket.getInetAddress().getHostAddress());
+//                        outBoundHttp.setDestinationPort(socket.getPort());
+//                        outBoundHttp.setSourcePort(socket.getLocalPort());
+//                        K2Instrumentator.JA_HEALTH_CHECK.getHttpConnections().add(outBoundHttp);
+//                    }
+//                }
 
 //				System.out.println(
 //						"OnExit :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj + " - return : "
 //								+ returnVal + " - eid : " + exectionId);
+
             } finally {
                 ThreadLocalOperationLock.getInstance().release();
                 ThreadLocalSSRFLock.getInstance().release(obj, sourceString, exectionId);

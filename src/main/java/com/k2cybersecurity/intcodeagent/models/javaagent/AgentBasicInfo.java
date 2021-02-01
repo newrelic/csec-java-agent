@@ -55,6 +55,8 @@ public class AgentBasicInfo {
             setJsonName(SCAN_COMPONENT_DATA);
         } else if (this instanceof FuzzFailEvent) {
             setJsonName(JSON_NAME_FUZZ_FAIL);
+        } else if (this instanceof HttpConnectionStat) {
+            setJsonName(JSON_NAME_HTTP_CONNECTION_STAT);
         }
 	}
 

@@ -22,43 +22,47 @@ public class JAHealthCheck extends AgentBasicInfo {
 
 	private AtomicInteger eventDropCount;
 
-	private Boolean isHost;
+    private Boolean isHost;
 
-	private AtomicInteger eventProcessed;
+    private AtomicInteger eventProcessed;
 
-	private AtomicInteger eventSentCount;
+    private AtomicInteger eventSentCount;
 
-	private AtomicInteger httpRequestCount;
+    private AtomicInteger httpRequestCount;
 
-	private Set protectedVulnerabilties;
+    private Set protectedVulnerabilties;
 
-	public JAHealthCheck(String applicationUUID) {
-		super();
-		this.applicationUUID = applicationUUID;
-		this.setProtectedServer(K2Instrumentator.APPLICATION_INFO_BEAN.getServerInfo().getName());
-		this.eventDropCount = new AtomicInteger(0);
-		this.eventProcessed = new AtomicInteger(0);
-		this.eventSentCount = new AtomicInteger(0);
-		this.httpRequestCount = new AtomicInteger(0);
-		this.setProtectedDB(new HashSet());
-		this.setProtectedVulnerabilties(AgentUtils.getInstance().getProtectedVulnerabilties());
-		this.setIsHost(K2Instrumentator.APPLICATION_INFO_BEAN.getIdentifier().getIsHost());
-		logger.log(LogLevel.INFO, "JA Healthcheck created : " + this.toString(), JAHealthCheck.class.getName());
-	}
+    private Set<OutBoundHttp> httpConnections;
+
+    public JAHealthCheck(String applicationUUID) {
+        super();
+        this.applicationUUID = applicationUUID;
+        this.setProtectedServer(K2Instrumentator.APPLICATION_INFO_BEAN.getServerInfo().getName());
+        this.eventDropCount = new AtomicInteger(0);
+        this.eventProcessed = new AtomicInteger(0);
+        this.eventSentCount = new AtomicInteger(0);
+        this.httpRequestCount = new AtomicInteger(0);
+        this.setHttpConnections(new HashSet<>());
+        this.setProtectedDB(new HashSet());
+        this.setProtectedVulnerabilties(AgentUtils.getInstance().getProtectedVulnerabilties());
+        this.setIsHost(K2Instrumentator.APPLICATION_INFO_BEAN.getIdentifier().getIsHost());
+        logger.log(LogLevel.INFO, "JA Healthcheck created : " + this.toString(), JAHealthCheck.class.getName());
+    }
 
 	public JAHealthCheck(JAHealthCheck jaHealthCheck) {
-		super();
-		this.applicationUUID = jaHealthCheck.applicationUUID;
-		this.protectedServer = jaHealthCheck.protectedServer;
-		this.protectedDB = jaHealthCheck.protectedDB;
-		this.protectedVulnerabilties = jaHealthCheck.protectedVulnerabilties;
-		this.eventDropCount = jaHealthCheck.eventDropCount;
-		this.eventProcessed = jaHealthCheck.eventProcessed;
-		this.eventSentCount = jaHealthCheck.eventSentCount;
-		this.httpRequestCount = jaHealthCheck.httpRequestCount;
-		this.isHost = jaHealthCheck.isHost;
-		logger.log(LogLevel.INFO, "JA Healthcheck created : " + this.toString(), JAHealthCheck.class.getName());
-	}
+        super();
+        this.applicationUUID = jaHealthCheck.applicationUUID;
+        this.protectedServer = jaHealthCheck.protectedServer;
+        this.protectedDB = jaHealthCheck.protectedDB;
+        this.protectedVulnerabilties = jaHealthCheck.protectedVulnerabilties;
+        this.eventDropCount = jaHealthCheck.eventDropCount;
+        this.eventProcessed = jaHealthCheck.eventProcessed;
+        this.eventSentCount = jaHealthCheck.eventSentCount;
+        this.httpRequestCount = jaHealthCheck.httpRequestCount;
+        this.httpConnections = new HashSet<>(jaHealthCheck.getHttpConnections());
+        this.isHost = jaHealthCheck.isHost;
+        logger.log(LogLevel.INFO, "JA Healthcheck created : " + this.toString(), JAHealthCheck.class.getName());
+    }
 
 	/**
 	 * @return the isHost
@@ -190,14 +194,22 @@ public class JAHealthCheck extends AgentBasicInfo {
 	}
 
 	public Set getProtectedVulnerabilties() {
-		return protectedVulnerabilties;
-	}
+        return protectedVulnerabilties;
+    }
 
-	public void setProtectedVulnerabilties(Set protectedVulnerabilties) {
-		this.protectedVulnerabilties = protectedVulnerabilties;
-	}
+    public void setProtectedVulnerabilties(Set protectedVulnerabilties) {
+        this.protectedVulnerabilties = protectedVulnerabilties;
+    }
 
-	public void setHttpRequestCount(Integer httpRequestCount) {
-		this.httpRequestCount.set(httpRequestCount);
-	}
+    public void setHttpRequestCount(Integer httpRequestCount) {
+        this.httpRequestCount.set(httpRequestCount);
+    }
+
+    public Set<OutBoundHttp> getHttpConnections() {
+        return httpConnections;
+    }
+
+    public void setHttpConnections(Set<OutBoundHttp> httpConnections) {
+        this.httpConnections = httpConnections;
+    }
 }
