@@ -66,18 +66,18 @@ public class JsonConverter {
 						} else if (field.getType().isPrimitive()) {
 							jsonString.append(value);
 						} else if (field.getType().isAssignableFrom(Set.class)) {
-							JSONArray setField = new JSONArray();
-							setField.addAll(processCollection((Set) value));
-							jsonString.append(setField);
-						} else if (field.getType().isArray()) {
+                            JSONArray setField = new JSONArray();
+                            setField.addAll(processCollection((Collection) value));
+                            jsonString.append(setField);
+                        } else if (field.getType().isArray()) {
 							JSONArray setField = new JSONArray();
 							setField.addAll(processCollection(Arrays.asList((Object[]) value)));
 							jsonString.append(setField);
 						} else if (field.getType().isAssignableFrom(List.class)) {
-							JSONArray setField = new JSONArray();
-							setField.addAll(processCollection((List) value));
-							jsonString.append(setField);
-						} else if (field.getType().isAssignableFrom(Map.class)) {
+                            JSONArray setField = new JSONArray();
+                            setField.addAll(processCollection((Collection) value));
+                            jsonString.append(setField);
+                        } else if (field.getType().isAssignableFrom(Map.class)) {
 							JSONObject mapField = new JSONObject();
 							mapField.putAll(processMap((Map) value));
 							jsonString.append(mapField);

@@ -4,6 +4,7 @@ import com.k2cybersecurity.instrumentator.K2Instrumentator;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.models.javaagent.JAHealthCheck;
+import com.k2cybersecurity.intcodeagent.monitoring.InBoundOutBoundST;
 import com.k2cybersecurity.intcodeagent.websocket.WSClient;
 
 import java.net.URISyntaxException;
@@ -34,6 +35,7 @@ public class HealthCheckScheduleThread {
 
 //						channel.write(ByteBuffer.wrap(new JAHealthCheck(AgentNew.JA_HEALTH_CHECK).toString().getBytes()));
 					if (WSClient.getInstance().isOpen()) {
+                        K2Instrumentator.JA_HEALTH_CHECK.setHttpConnections(InBoundOutBoundST.getInstance().getNewConnections());
                         WSClient.getInstance().send(new JAHealthCheck(K2Instrumentator.JA_HEALTH_CHECK).toString());
                         K2Instrumentator.JA_HEALTH_CHECK.setEventDropCount(0);
                         K2Instrumentator.JA_HEALTH_CHECK.setEventProcessed(0);
@@ -46,6 +48,7 @@ public class HealthCheckScheduleThread {
 							if (WSClient.getInstance().isOpen()) {
                                 logger.log(LogLevel.DEBUG, "K2-JavaAgent re-installed successfully.",
                                         HealthCheckScheduleThread.class.getName());
+                                K2Instrumentator.JA_HEALTH_CHECK.setHttpConnections(InBoundOutBoundST.getInstance().getNewConnections());
                                 WSClient.getInstance()
                                         .send(new JAHealthCheck(K2Instrumentator.JA_HEALTH_CHECK).toString());
                                 K2Instrumentator.JA_HEALTH_CHECK.setEventDropCount(0);
@@ -59,17 +62,19 @@ public class HealthCheckScheduleThread {
 						} catch (URISyntaxException | InterruptedException e) {
 							logger.log(LogLevel.SEVERE,
 									"Error in WSock reconnection : " + e.getMessage() + " : " + e.getCause(), e,
-									HealthCheckScheduleThread.class.getName());
-						}
-					}
+                                    HealthCheckScheduleThread.class.getName());
+                        }
+                    }
 
-				} catch (NullPointerException ex) {
-					logger.log(LogLevel.WARNING, "No reference to Socket's OutputStream",
-							HealthCheckScheduleThread.class.getName());
-				} catch (Throwable e) {
-					logger.log(LogLevel.WARNING, "Error while trying to verify connection: ", e,
-							HealthCheckScheduleThread.class.getName());
-				}
+                } catch (NullPointerException ex) {
+                    logger.log(LogLevel.WARNING, "No reference to Socket's OutputStream",
+                            HealthCheckScheduleThread.class.getName());
+                } catch (Throwable e) {
+                    logger.log(LogLevel.WARNING, "Error while trying to verify connection: ", e,
+                            HealthCheckScheduleThread.class.getName());
+                } finally {
+                    InBoundOutBoundST.getInstance().clearNewConnections();
+                }
 			}
 		};
 		hcScheduledService = Executors.newSingleThreadScheduledExecutor(new ThreadFactory() {

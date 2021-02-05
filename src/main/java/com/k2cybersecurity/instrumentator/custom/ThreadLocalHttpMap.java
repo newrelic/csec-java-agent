@@ -7,6 +7,9 @@ import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.logging.IAgentConstants;
 import com.k2cybersecurity.intcodeagent.models.javaagent.AgentMetaData;
 import com.k2cybersecurity.intcodeagent.models.javaagent.HttpRequestBean;
+import com.k2cybersecurity.intcodeagent.models.javaagent.OutBoundHttp;
+import com.k2cybersecurity.intcodeagent.models.javaagent.OutBoundHttpDirection;
+import com.k2cybersecurity.intcodeagent.monitoring.InBoundOutBoundST;
 import org.apache.commons.lang3.StringUtils;
 import org.json.simple.JSONObject;
 
@@ -30,36 +33,38 @@ public class ThreadLocalHttpMap {
     public static final String GET_CONTENT_TYPE = GET_CONTENT_TYPE1;
     public static final String QUESTION_MARK = "?";
     public static final String GET_SERVLET_CONTEXT = "getServletContext";
-    public static final String GET_CONTEXT_PATH = "getContextPath";
-    public static final String GET_LOCAL_PORT = "getLocalPort";
-    public static final String GET_PARAMETER_MAP = "getParameterMap";
-    public static final String GET_SERVLET_PATH = "getServletPath";
-    public static final String GET_PATH_TRANSLATED = "getPathTranslated";
-    public static final String GET_URI_INFO = "getUriInfo";
-    public static final String GET_PATH_PARAMETERS = "getPathParameters";
-    public static final String ERROR = "Error : ";
-    public static final String STRING_COLON = " : ";
-    public static final String RAW_INTERCEPTED_REQUEST = "RAW Intercepted Request : ";
-    public static final String GET_HEADER_NAMES = "getHeaderNames";
-    public static final String GET_HEADERS = "getHeaders";
-    public static final String STRING_SEMICOLON = "; ";
-    public static final String NO_HTTP_RESPONSE_FOUND_FOR_CURRENT_CONTEXT = "No HTTP response found for current context";
-    public static final String HTTP_RESPONSE_ALREADY_PARSED_FOR_CURRENT_CONTEXT = "HTTP response already parsed for current context";
-    public static final String GET_CHARACTER_ENCODING = "getCharacterEncoding";
-    public static final String FORWARD_SLASH = "/";
-    public static final String GET_REMOTE_PORT = "getRemotePort";
-    public static final String X_FORWARDED_FOR = "X-Forwarded-For";
-    public static final String GET_SCHEME = "getScheme";
+	public static final String GET_CONTEXT_PATH = "getContextPath";
+	public static final String GET_LOCAL_PORT = "getLocalPort";
+	public static final String GET_PARAMETER_MAP = "getParameterMap";
+	public static final String GET_SERVLET_PATH = "getServletPath";
+	public static final String GET_PATH_TRANSLATED = "getPathTranslated";
+	public static final String GET_URI_INFO = "getUriInfo";
+	public static final String GET_PATH_PARAMETERS = "getPathParameters";
+	public static final String ERROR = "Error : ";
+	public static final String STRING_COLON = " : ";
+	public static final String RAW_INTERCEPTED_REQUEST = "RAW Intercepted Request : ";
+	public static final String GET_HEADER_NAMES = "getHeaderNames";
+	public static final String GET_HEADERS = "getHeaders";
+	public static final String STRING_SEMICOLON = "; ";
+	public static final String NO_HTTP_RESPONSE_FOUND_FOR_CURRENT_CONTEXT = "No HTTP response found for current context";
+	public static final String HTTP_RESPONSE_ALREADY_PARSED_FOR_CURRENT_CONTEXT = "HTTP response already parsed for current context";
+	public static final String GET_CHARACTER_ENCODING = "getCharacterEncoding";
+	public static final String FORWARD_SLASH = "/";
+	public static final String GET_REMOTE_PORT = "getRemotePort";
+	public static final String X_FORWARDED_FOR = "X-Forwarded-For";
+	public static final String GET_SCHEME = "getScheme";
+	public static final String ASTRISK = "*";
+	public static final String DESTINATION_IP_ALL = "0.0.0.0";
 
-    private Object httpRequest;
+	private Object httpRequest;
 
-    private boolean isHttpRequestParsed = false;
+	private boolean isHttpRequestParsed = false;
 
-    private Object httpResponse;
+	private Object httpResponse;
 
-    private ByteBuffer byteBuffer;
+	private ByteBuffer byteBuffer;
 
-    private StringBuilder outputBodyBuilder;
+	private StringBuilder outputBodyBuilder;
 
 	private int bufferOffset = 0;
 
@@ -231,18 +236,23 @@ public class ThreadLocalHttpMap {
             }
             Map<String, String> headers = new HashMap<>();
             processHeaders(headers, httpRequest);
-            httpRequestBean.setHeaders(new JSONObject(headers));
+			httpRequestBean.setHeaders(new JSONObject(headers));
 
-            Method getScheme = requestClass.getMethod(GET_SCHEME);
-            getScheme.setAccessible(true);
-            httpRequestBean.setProtocol((String) getScheme.invoke(httpRequest, null));
+			Method getScheme = requestClass.getMethod(GET_SCHEME);
+			getScheme.setAccessible(true);
+			httpRequestBean.setProtocol((String) getScheme.invoke(httpRequest, null));
 
-            Method getRequestURI = requestClass.getMethod(GET_REQUEST_URI);
-            getRequestURI.setAccessible(true);
-            httpRequestBean.setUrl((String) getRequestURI.invoke(httpRequest, null));
+			Method getRequestURI = requestClass.getMethod(GET_REQUEST_URI);
+			getRequestURI.setAccessible(true);
+			httpRequestBean.setUrl((String) getRequestURI.invoke(httpRequest, null));
 
-            Method getQueryString = requestClass.getMethod(GET_QUERY_STRING);
-            getQueryString.setAccessible(true);
+			OutBoundHttp inBoundHttp = new OutBoundHttp(httpRequestBean.getUrl(), ASTRISK, DESTINATION_IP_ALL, OutBoundHttpDirection.INBOUND);
+			inBoundHttp.setDestinationPort(httpRequestBean.getServerPort());
+			InBoundOutBoundST.getInstance().addOutBoundHTTPConnection(inBoundHttp);
+
+
+			Method getQueryString = requestClass.getMethod(GET_QUERY_STRING);
+			getQueryString.setAccessible(true);
 			String queryString = (String) getQueryString.invoke(httpRequest, null);
 
 			Method getContentType = requestClass.getMethod(GET_CONTENT_TYPE);

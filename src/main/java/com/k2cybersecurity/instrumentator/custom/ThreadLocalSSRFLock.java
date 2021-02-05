@@ -14,6 +14,8 @@ public class ThreadLocalSSRFLock {
 
     private String eId = StringUtils.EMPTY;
 
+    private String url = StringUtils.EMPTY;
+
     private static ThreadLocal<ThreadLocalSSRFLock> instance = new ThreadLocal<ThreadLocalSSRFLock>() {
         @Override
         protected ThreadLocalSSRFLock initialValue() {
@@ -45,9 +47,11 @@ public class ThreadLocalSSRFLock {
                 && StringUtils.equals(sourceSignature, this.sourceSignature)
                 && StringUtils.equals(eId, this.eId)) {
             lock.release();
+            ThreadLocalSSRFMap.getInstance().cleanUp();
             this.takenBy = null;
             this.sourceSignature = StringUtils.EMPTY;
             this.eId = StringUtils.EMPTY;
+            url = StringUtils.EMPTY;
         }
     }
 
@@ -57,7 +61,7 @@ public class ThreadLocalSSRFLock {
 
     public boolean isAcquired(Object takenBy, String sourceSignature, String eId) {
         if (this.takenBy != null) {
-            return this.takenBy.equals(takenBy) && isAcquired() && StringUtils.equals(sourceSignature, this.sourceSignature) && StringUtils.equals(eId, this.eId);
+            return takenBy != null && this.takenBy.hashCode() == takenBy.hashCode() && isAcquired() && StringUtils.equals(sourceSignature, this.sourceSignature) && StringUtils.equals(eId, this.eId);
         } else {
             return false;
         }
@@ -65,7 +69,11 @@ public class ThreadLocalSSRFLock {
 
     public void resetLock() {
         lock = new Semaphore(1);
+        ThreadLocalSSRFMap.getInstance().cleanUp();
         takenBy = null;
+        sourceSignature = StringUtils.EMPTY;
+        eId = StringUtils.EMPTY;
+        url = StringUtils.EMPTY;
     }
 
     public Object isTakenBy() {
@@ -80,5 +88,12 @@ public class ThreadLocalSSRFLock {
         return eId;
     }
 
+    public String getUrl() {
+        return url;
+    }
+
+    public void setUrl(String url) {
+        this.url = url;
+    }
 
 }

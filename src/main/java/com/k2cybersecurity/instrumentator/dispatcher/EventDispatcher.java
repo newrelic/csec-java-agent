@@ -24,8 +24,6 @@ public class EventDispatcher {
     private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
     public static final String DROPPING_EVENT_DUE_TO_CORRUPT_INCOMPLETE_HTTP_REQUEST = "Dropping event due to corrupt/incomplete HTTP request : ";
     public static final String DROPPING_EVENT_DUE_TO_EMPTY_OBJECT = "Dropping event due to empty object : ";
-    public static final String DROPPING_EVENT_DUE_TO_CORRUPT_INCOMPLETE_HTTP_REQUEST1 = "Dropping event due to corrupt/incomplete HTTP request : ";
-    public static final String DROPPING_EVENT_DUE_TO_CORRUPT_INCOMPLETE_HTTP_REQUEST2 = "Dropping event due to corrupt/incomplete HTTP request : ";
     public static final String DROPPING_EVENT_DUE_TO_EMPTY_OBJECT1 = "Dropping event due to empty object : ";
     public static final String STRING_3_COLON = " ::: ";
     public static final String EVENT_RESPONSE_TIME_TAKEN = "Event response time taken : ";
@@ -73,7 +71,7 @@ public class EventDispatcher {
 
         boolean ret = ThreadLocalHttpMap.getInstance().parseHttpRequest();
         if (!ret) {
-            logger.log(LogLevel.ERROR,
+            logger.log(LogLevel.DEBUG,
                     DROPPING_EVENT_DUE_TO_CORRUPT_INCOMPLETE_HTTP_REQUEST
                             + ThreadLocalExecutionMap.getInstance().getHttpRequestBean() + STRING_3_COLON + objectBean,
                     EventDispatcher.class.getName());
@@ -103,7 +101,7 @@ public class EventDispatcher {
             }
         } else {
             logger.log(
-                    LogLevel.ERROR, DROPPING_EVENT_DUE_TO_EMPTY_OBJECT
+                    LogLevel.DEBUG, DROPPING_EVENT_DUE_TO_EMPTY_OBJECT
                             + ThreadLocalExecutionMap.getInstance().getHttpRequestBean() + STRING_3_COLON + objectBean,
                     EventDispatcher.class.getName());
         }
@@ -115,7 +113,7 @@ public class EventDispatcher {
         boolean ret = ThreadLocalHttpMap.getInstance().parseHttpRequest();
         if (!ret) {
             logger.log(
-                    LogLevel.ERROR, DROPPING_EVENT_DUE_TO_CORRUPT_INCOMPLETE_HTTP_REQUEST1
+                    LogLevel.DEBUG, DROPPING_EVENT_DUE_TO_CORRUPT_INCOMPLETE_HTTP_REQUEST
                             + ThreadLocalExecutionMap.getInstance().getHttpRequestBean() + STRING_3_COLON + objectBeanList,
                     EventDispatcher.class.getName());
             return;

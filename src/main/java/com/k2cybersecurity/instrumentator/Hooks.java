@@ -170,26 +170,31 @@ public class Hooks {
 
 		TYPE_BASED_HOOKS.put("org.apache.http.client.HttpClient", Collections.singletonList("execute"));
 		TYPE_BASED_HOOKS.put("org.apache.http.nio.client.HttpAsyncClient", Collections.singletonList("execute"));
-		TYPE_BASED_HOOKS.put("org.apache.http.nio.protocol.HttpAsyncRequestProducer", Collections.singletonList("generateRequest"));
-		NAME_BASED_HOOKS.put("org.apache.commons.httpclient.HttpClient", Collections.singletonList("executeMethod"));
-		NAME_BASED_HOOKS.put("com.google.api.client.http.HttpRequest", Arrays.asList("execute", "executeAsync"));
-		TYPE_BASED_HOOKS.put("java.net.URLConnection", Collections.singletonList("connect"));
-		NAME_BASED_HOOKS.put(StringUtils.replace("com@squareup@okhttp@Call", "@", "."), Arrays.asList("execute", null));
-		NAME_BASED_HOOKS.put(StringUtils.replace("com@squareup@okhttp@Call", "@", ".") + "$AsyncCall", Collections.singletonList("execute"));
+        TYPE_BASED_HOOKS.put("org.apache.http.nio.protocol.HttpAsyncRequestProducer", Collections.singletonList("generateRequest"));
+        NAME_BASED_HOOKS.put("org.apache.commons.httpclient.HttpClient", Collections.singletonList("executeMethod"));
+        NAME_BASED_HOOKS.put("com.google.api.client.http.HttpRequest", Arrays.asList("execute", "executeAsync"));
+        TYPE_BASED_HOOKS.put("java.net.URLConnection", Collections.singletonList("connect"));
+        NAME_BASED_HOOKS.put(StringUtils.replace("com@squareup@okhttp@Call", "@", "."), Arrays.asList("execute", null));
+        NAME_BASED_HOOKS.put(StringUtils.replace("com@squareup@okhttp@Call", "@", ".") + "$AsyncCall", Collections.singletonList("execute"));
 
-		NAME_BASED_HOOKS.put("okhttp3.OkHttpClient", Collections.singletonList("newCall"));
-		TYPE_BASED_HOOKS.put("okhttp3.Call", Collections.singletonList("execute"));
+        NAME_BASED_HOOKS.put("okhttp3.OkHttpClient", Collections.singletonList("newCall"));
+        TYPE_BASED_HOOKS.put("okhttp3.Call", Collections.singletonList("execute"));
 
+        // Outbound Connection
+//		NAME_BASED_HOOKS.put("okhttp3.internal.connection.RealConnection", Collections.singletonList("connect"));
+//		NAME_BASED_HOOKS.put(StringUtils.replace("com@squareup@okhttp@internal@io@RealConnection", "@", "."), Collections.singletonList("connect"));
+//		NAME_BASED_HOOKS.put("com.google.api.client.http.javanet.NetHttpResponse", Collections.singletonList(null));
+//		TYPE_BASED_HOOKS.put("org.apache.commons.httpclient.HttpMethod", Collections.singletonList("execute"));
+        TYPE_BASED_HOOKS.put("java.net.Socket", Collections.singletonList("getOutputStream"));
 
+        // NAME_BASED_HOOKS.put(CLASS_WEBLOGIC_SERVLET_INTERNAL_WEB_APP_SERVLET_CONTEXT,
+        // Collections.singletonList("execute")); // Handle differently
 
-		// NAME_BASED_HOOKS.put(CLASS_WEBLOGIC_SERVLET_INTERNAL_WEB_APP_SERVLET_CONTEXT,
-		// Collections.singletonList("execute")); // Handle differently
-
-		// JavaScript Injection
-		NAME_BASED_HOOKS.put("jdk.nashorn.api.scripting.NashornScriptEngine", Arrays.asList("evalImpl"));
-		NAME_BASED_HOOKS.put("com.oracle.truffle.polyglot.PolyglotContextImpl", Collections.singletonList("eval"));
-		NAME_BASED_HOOKS.put("org.mozilla.javascript.Context", Collections.singletonList("compileImpl"));
-		TYPE_BASED_HOOKS.put("org.mozilla.javascript.Script", Collections.singletonList("exec"));
+        // JavaScript Injection
+        NAME_BASED_HOOKS.put("jdk.nashorn.api.scripting.NashornScriptEngine", Arrays.asList("evalImpl"));
+        NAME_BASED_HOOKS.put("com.oracle.truffle.polyglot.PolyglotContextImpl", Collections.singletonList("eval"));
+        NAME_BASED_HOOKS.put("org.mozilla.javascript.Context", Collections.singletonList("compileImpl"));
+        TYPE_BASED_HOOKS.put("org.mozilla.javascript.Script", Collections.singletonList("exec"));
 
 //		NAME_BASED_HOOKS.put("org.mozilla.javascript.Parser", Collections.singletonList("parse"));
 //		TYPE_BASED_HOOKS.put("org.mozilla.javascript.Script", Collections.singletonList("exec"));
@@ -515,25 +520,34 @@ public class Hooks {
 		DECORATOR_ENTRY.put("org.eclipse.jetty.server.Handler.handle",
 				"com.k2cybersecurity.instrumentator.decorators.jettyhandle");
 
-		// JBoss Classloading
-		DECORATOR_ENTRY.put("org.jboss.modules.Main.main",
-				"com.k2cybersecurity.instrumentator.decorators.jbossadjustments");
+        // JBoss Classloading
+        DECORATOR_ENTRY.put("org.jboss.modules.Main.main",
+                "com.k2cybersecurity.instrumentator.decorators.jbossadjustments");
 
-		// OSGi Classloading
-		DECORATOR_ENTRY.put("org.osgi.framework.Bundle.start",
-				"com.k2cybersecurity.instrumentator.decorators.osgiadjustments");
-		DECORATOR_ENTRY.put("org.osgi.framework.Bundle.update",
-				"com.k2cybersecurity.instrumentator.decorators.osgiadjustments");
+        // OSGi Classloading
+        DECORATOR_ENTRY.put("org.osgi.framework.Bundle.start",
+                "com.k2cybersecurity.instrumentator.decorators.osgiadjustments");
+        DECORATOR_ENTRY.put("org.osgi.framework.Bundle.update",
+                "com.k2cybersecurity.instrumentator.decorators.osgiadjustments");
 
-		// SSRF
-		DECORATOR_ENTRY.put("java.net.URLConnection.connect", "com.k2cybersecurity.instrumentator.decorators.ssrf");
+        //Outbound
+//		DECORATOR_ENTRY.put("okhttp3.internal.connection.RealConnection.connect", "com.k2cybersecurity.instrumentator.decorators.outboundhttp.okhttp3");
+//		DECORATOR_ENTRY.put(StringUtils.replace("com@squareup@okhttp@internal@io@RealConnection@connect", "@", "."), "com.k2cybersecurity.instrumentator.decorators.outboundhttp.okhttp");
+//		DECORATOR_ENTRY.put("com.google.api.client.http.javanet.NetHttpResponse.null", "com.k2cybersecurity.instrumentator.decorators.outboundhttp.googlehttpclient");
+//
+//		DECORATOR_ENTRY.put("org.apache.commons.httpclient.HttpMethod.execute", "com.k2cybersecurity.instrumentator.decorators.outboundhttp.commonshttpclient2");
 
-		DECORATOR_ENTRY.put("akka.http.scaladsl.HttpExt.singleRequest", "com.k2cybersecurity.instrumentator.decorators.ssrf.akkahttp10");
-		DECORATOR_ENTRY.put("akka.http.scaladsl.HttpExt.singleRequestImpl", "com.k2cybersecurity.instrumentator.decorators.ssrf.akkahttp10");
+        DECORATOR_ENTRY.put("java.net.Socket.getOutputStream", "com.k2cybersecurity.instrumentator.decorators.outboundhttp.socket");
 
-		DECORATOR_ENTRY.put("org.apache.http.client.HttpClient.execute", "com.k2cybersecurity.instrumentator.decorators.ssrf.apachehttpclient4");
-		DECORATOR_ENTRY.put("org.apache.http.nio.client.HttpAsyncClient.execute", "com.k2cybersecurity.instrumentator.decorators.ssrf.apachehttpasyncclient4");
-		DECORATOR_ENTRY.put("org.apache.http.nio.protocol.HttpAsyncRequestProducer.generateRequest", "com.k2cybersecurity.instrumentator.decorators.ssrf.apachehttpasyncclient4");
+        // SSRF
+        DECORATOR_ENTRY.put("java.net.URLConnection.connect", "com.k2cybersecurity.instrumentator.decorators.ssrf");
+
+        DECORATOR_ENTRY.put("akka.http.scaladsl.HttpExt.singleRequest", "com.k2cybersecurity.instrumentator.decorators.ssrf.akkahttp10");
+        DECORATOR_ENTRY.put("akka.http.scaladsl.HttpExt.singleRequestImpl", "com.k2cybersecurity.instrumentator.decorators.ssrf.akkahttp10");
+
+        DECORATOR_ENTRY.put("org.apache.http.client.HttpClient.execute", "com.k2cybersecurity.instrumentator.decorators.ssrf.apachehttpclient4");
+        DECORATOR_ENTRY.put("org.apache.http.nio.client.HttpAsyncClient.execute", "com.k2cybersecurity.instrumentator.decorators.ssrf.apachehttpasyncclient4");
+        DECORATOR_ENTRY.put("org.apache.http.nio.protocol.HttpAsyncRequestProducer.generateRequest", "com.k2cybersecurity.instrumentator.decorators.ssrf.apachehttpasyncclient4");
 
 		DECORATOR_ENTRY.put("org.apache.commons.httpclient.HttpClient.executeMethod", "com.k2cybersecurity.instrumentator.decorators.ssrf.commonshttpclient2");
 		DECORATOR_ENTRY.put("com.google.api.client.http.HttpRequest.execute", "com.k2cybersecurity.instrumentator.decorators.ssrf.googlehttpclient");
