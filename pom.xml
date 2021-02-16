@@ -104,12 +104,6 @@
             <version>2.7.5</version>
         </dependency>
 
-        <!-- https://mvnrepository.com/artifact/com.github.oshi/oshi-core -->
-        <dependency>
-            <groupId>com.github.oshi</groupId>
-            <artifactId>oshi-core</artifactId>
-            <version>5.5.0</version>
-        </dependency>
 
         <dependency>
             <groupId>org.unbescape</groupId>
@@ -134,7 +128,12 @@
 			<artifactId>zero-allocation-hashing</artifactId>
 			<version>0.11</version>
 		</dependency>
-
+		<!-- https://mvnrepository.com/artifact/com.github.oshi/oshi-core -->
+		<dependency>
+			<groupId>com.github.oshi</groupId>
+			<artifactId>oshi-core</artifactId>
+			<version>5.5.0</version>
+		</dependency>
 	</dependencies>
 	<build>
 		<resources>
@@ -284,19 +283,19 @@
 								<relocation>
 									<pattern>net.openhft</pattern>
 									<shadedPattern>sun.reflect.com.k2cybersecurity.net.openhft</shadedPattern>
-                                </relocation>
-                                <relocation>
-                                    <pattern>oshi</pattern>
-                                    <shadedPattern>sun.reflect.com.k2cybersecurity.oshi</shadedPattern>
-                                </relocation>
-                                <relocation>
-                                    <pattern>com.sun.jna</pattern>
-                                    <shadedPattern>sun.reflect.com.k2cybersecurity.com.sun.jna</shadedPattern>
-                                </relocation>
-                                <relocation>
-                                    <pattern>org.yaml.snakeyaml</pattern>
-                                    <shadedPattern>sun.reflect.com.k2cybersecurity.org.yaml.snakeyaml</shadedPattern>
-                                </relocation>
+								</relocation>
+								<relocation>
+									<pattern>oshi</pattern>
+									<shadedPattern>sun.reflect.com.k2cybersecurity.oshi</shadedPattern>
+								</relocation>
+								<relocation>
+									<pattern>com.sun.jna</pattern>
+									<shadedPattern>sun.reflect.com.k2cybersecurity.com.sun.jna</shadedPattern>
+								</relocation>
+								<relocation>
+									<pattern>org.yaml.snakeyaml</pattern>
+									<shadedPattern>sun.reflect.com.k2cybersecurity.org.yaml.snakeyaml</shadedPattern>
+								</relocation>
 							</relocations>
 						</configuration>
 
