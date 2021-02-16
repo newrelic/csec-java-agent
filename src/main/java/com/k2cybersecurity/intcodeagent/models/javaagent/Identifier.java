@@ -26,7 +26,7 @@ public class Identifier {
      */
     private String collectorIp;
 
-    private Object envInfo;
+    private EnvInfo envInfo;
 
     public Identifier() {
     }
@@ -85,13 +85,13 @@ public class Identifier {
         this.collectorIp = collectorIp;
     }
 
-    public Object getEnvInfo() {
+    public EnvInfo getEnvInfo() {
         return envInfo;
     }
 
-    public void setEnvInfo(Object envInfo) {
+    public void setEnvInfo(EnvInfo envInfo) {
         this.envInfo = envInfo;
-	}
+    }
 
 	@Override
 	public String toString() {

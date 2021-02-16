@@ -11,6 +11,10 @@ import com.k2cybersecurity.intcodeagent.models.collectorconfig.NodeLevelConfig;
 import java.io.File;
 
 public class CollectorConfigurationUtils {
+    public static final String ERROR_WHILE_READING_NLC_COLLECTOR_CONFIG_S_S = "Error while reading NLC Collector config: %s : %s";
+    public static final String ERROR_WHILE_READING_NLC_COLLECTOR_CONFIG = "Error while reading NLC Collector config:";
+    public static final String ERROR_WHILE_READING_ALC_COLLECTOR_CONFIG_S_S = "Error while reading ALC Collector config: %s : %s";
+    public static final String ERROR_WHILE_READING_ALC_COLLECTOR_CONFIG = "Error while reading ALC Collector config:";
     private final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
 
     private static CollectorConfigurationUtils instance;
@@ -36,20 +40,35 @@ public class CollectorConfigurationUtils {
     }
 
     public boolean readCollectorConfig(String nodeLevelConfigurationPath, String applicationLevelConfigurationPath) {
+        NodeLevelConfig nodeLevelConfig = new NodeLevelConfig();
+        ApplicationLevelConfig applicationLevelConfig = new ApplicationLevelConfig();
         try {
-            NodeLevelConfig nodeLevelConfig = yamlMapper.readValue(new File(nodeLevelConfigurationPath), NodeLevelConfig.class);
-            logger.log(LogLevel.INFO, nodeLevelConfig.toString(), CollectorConfigurationUtils.class.getName());
-
-            ApplicationLevelConfig applicationLevelConfig = yamlMapper.readValue(new File(applicationLevelConfigurationPath), ApplicationLevelConfig.class);
-            logger.log(LogLevel.INFO, applicationLevelConfig.toString(), CollectorConfigurationUtils.class.getName());
-
-            setCollectorConfig(nodeLevelConfig, applicationLevelConfig);
-            return validateCollectorConfig();
+            File nlcFile = new File(nodeLevelConfigurationPath);
+            if (nlcFile.exists()) {
+                nodeLevelConfig = yamlMapper.readValue(nlcFile, NodeLevelConfig.class);
+                logger.log(LogLevel.INFO, "Node Level Configuration loaded " + nodeLevelConfig, CollectorConfigurationUtils.class.getName());
+            } else {
+                logger.log(LogLevel.WARNING, "Node Level Configuration was not provided.", CollectorConfigurationUtils.class.getName());
+            }
         } catch (Throwable e) {
-            logger.log(LogLevel.ERROR, String.format("Error while reading Collector config: %s : %s", e.getMessage(), e.getCause()), CollectorConfigurationUtils.class.getName());
-            logger.log(LogLevel.ERROR, "Error while reading Collector config:", e, CollectorConfigurationUtils.class.getName());
+            logger.log(LogLevel.ERROR, String.format(ERROR_WHILE_READING_NLC_COLLECTOR_CONFIG_S_S, e.getMessage(), e.getCause()), CollectorConfigurationUtils.class.getName());
+            logger.log(LogLevel.ERROR, ERROR_WHILE_READING_NLC_COLLECTOR_CONFIG, e, CollectorConfigurationUtils.class.getName());
         }
-        return false;
+        try {
+            File alcFile = new File(applicationLevelConfigurationPath);
+            if (alcFile.exists()) {
+                applicationLevelConfig = yamlMapper.readValue(alcFile, ApplicationLevelConfig.class);
+                logger.log(LogLevel.INFO, "Application Level Configuration loaded " + applicationLevelConfig, CollectorConfigurationUtils.class.getName());
+            } else {
+                logger.log(LogLevel.WARNING, "Application Level Configuration was not provided.", CollectorConfigurationUtils.class.getName());
+            }
+        } catch (Throwable e) {
+            logger.log(LogLevel.ERROR, String.format(ERROR_WHILE_READING_ALC_COLLECTOR_CONFIG_S_S, e.getMessage(), e.getCause()), CollectorConfigurationUtils.class.getName());
+            logger.log(LogLevel.ERROR, ERROR_WHILE_READING_ALC_COLLECTOR_CONFIG, e, CollectorConfigurationUtils.class.getName());
+        }
+
+        setCollectorConfig(nodeLevelConfig, applicationLevelConfig);
+        return validateCollectorConfig();
     }
 
     private void setCollectorConfig(NodeLevelConfig nodeLevelConfig, ApplicationLevelConfig applicationLevelConfig) {
@@ -75,10 +94,10 @@ public class CollectorConfigurationUtils {
 //            logger.log(LogLevel.ERROR, String.format("Improper CustomerInfo provided in collector configuration. Exiting : %s", collectorConfig.getCustomerInfo()), CollectorConfigurationUtils.class.getName());
 //            return false;
 //        }
-        if (collectorConfig.getK2ServiceInfo() == null || collectorConfig.getK2ServiceInfo().isEmpty()) {
-            logger.log(LogLevel.ERROR, String.format("Improper K2ServiceInfo provided in collector configuration. Exiting : %s", collectorConfig.getK2ServiceInfo()), CollectorConfigurationUtils.class.getName());
-            return false;
-        }
+//        if (collectorConfig.getK2ServiceInfo() == null || collectorConfig.getK2ServiceInfo().isEmpty()) {
+//            logger.log(LogLevel.ERROR, String.format("Improper K2ServiceInfo provided in collector configuration. Exiting : %s", collectorConfig.getK2ServiceInfo()), CollectorConfigurationUtils.class.getName());
+//            return false;
+//        }
 
         // TODO : Place a ENV based check here if the NLC are applicable in the current env, then perform validation on nodeId & nodeIP.
 

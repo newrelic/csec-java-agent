@@ -63,8 +63,6 @@ public class JsonConverter {
 					}
                     value = field.get(obj);
 					if (value != null) {
-                        Class fieldClass = value.getClass();
-                        logger.log(LogLevel.DEBUG, String.format("field : %s class : %s", field.getName(), fieldClass), JsonConverter.class.getName());
 						jsonString.append(STR_FORWARD_SLASH);
 						jsonString.append(field.getName());
 						jsonString.append(JSON_SEPRATER);
@@ -72,17 +70,21 @@ public class JsonConverter {
 							jsonString.append(STR_FORWARD_SLASH);
 							jsonString.append(StringEscapeUtils.escapeJava(value.toString()));
 							jsonString.append(STR_FORWARD_SLASH);
-                        } else if (fieldClass.isPrimitive()) {
+						} else if (field.getType().isPrimitive()) {
 							jsonString.append(value);
-                        } else if (fieldClass.isArray()) {
+						} else if (field.getType().isAssignableFrom(Set.class)) {
+							JSONArray setField = new JSONArray();
+							setField.addAll(processCollection((Collection) value));
+							jsonString.append(setField);
+						} else if (field.getType().isArray()) {
 							JSONArray setField = new JSONArray();
 							setField.addAll(processCollection(Arrays.asList((Object[]) value)));
 							jsonString.append(setField);
-                        } else if (fieldClass.isAssignableFrom(Collections.class)) {
-                            JSONArray setField = new JSONArray();
-                            setField.addAll(processCollection((Collection) value));
-                            jsonString.append(setField);
-                        } else if (fieldClass.isAssignableFrom(Map.class)) {
+						} else if (field.getType().isAssignableFrom(List.class)) {
+							JSONArray setField = new JSONArray();
+							setField.addAll(processCollection((Collection) value));
+							jsonString.append(setField);
+						} else if (field.getType().isAssignableFrom(Map.class)) {
 							JSONObject mapField = new JSONObject();
 							mapField.putAll(processMap((Map) value));
 							jsonString.append(mapField);

@@ -20,7 +20,8 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import oshi.SystemInfo;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
 import java.net.HttpURLConnection;
@@ -29,8 +30,9 @@ import java.net.URL;
 import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.time.Instant;
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.UUID;
 
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.*;
 
@@ -50,6 +52,8 @@ public class K2Instrumentator {
     public static boolean isk8sEnv = false;
     public static boolean isECSEnv = false;
 
+    public static String nlcDefaultPath = "/opt/k2-ic/node-level-config.yaml";
+
     static {
         try {
             RuntimeMXBean runtimeMXBean = ManagementFactory.getRuntimeMXBean();
@@ -62,8 +66,15 @@ public class K2Instrumentator {
 
     public static boolean init(Boolean isDynamicAttach) {
         K2Instrumentator.isDynamicAttach = isDynamicAttach;
-//		 ConfigK2Logs.getInstance().initializeLogs();
 
+        String nlcPath = System.getenv("K2_AGENT_NODE_CONFIG");
+        String alcPath = System.getenv("K2_AGENT_APP_CONFIG");
+        if (StringUtils.isBlank(nlcPath)) {
+            nlcPath = nlcDefaultPath;
+        }
+        if (!CollectorConfigurationUtils.getInstance().readCollectorConfig(nlcPath, alcPath)) {
+            return false;
+        }
         APPLICATION_INFO_BEAN = createApplicationInfoBean();
 
         if (APPLICATION_INFO_BEAN == null) {
