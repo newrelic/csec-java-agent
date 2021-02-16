@@ -64,6 +64,7 @@ public class JsonConverter {
                     value = field.get(obj);
 					if (value != null) {
                         Class fieldClass = value.getClass();
+                        logger.log(LogLevel.DEBUG, String.format("field : %s class : %s", field.getName(), fieldClass), JsonConverter.class.getName());
 						jsonString.append(STR_FORWARD_SLASH);
 						jsonString.append(field.getName());
 						jsonString.append(JSON_SEPRATER);
