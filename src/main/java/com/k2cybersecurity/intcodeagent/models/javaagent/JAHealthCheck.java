@@ -45,7 +45,7 @@ public class JAHealthCheck extends AgentBasicInfo {
         this.setHttpConnections(new HashSet<>());
         this.setProtectedDB(new HashSet());
         this.setProtectedVulnerabilties(AgentUtils.getInstance().getProtectedVulnerabilties());
-        this.setIsHost(K2Instrumentator.APPLICATION_INFO_BEAN.getIdentifier().getIsHost());
+		this.setIsHost(IdentifierEnvs.HOST.equals(K2Instrumentator.APPLICATION_INFO_BEAN.getIdentifier().getKind()));
         logger.log(LogLevel.INFO, "JA Healthcheck created : " + this.toString(), JAHealthCheck.class.getName());
     }
 

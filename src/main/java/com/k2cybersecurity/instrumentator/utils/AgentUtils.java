@@ -587,8 +587,7 @@ public class AgentUtils {
     public void enforcePolicy() {
 		if(AgentUtils.getInstance().getAgentPolicy().getIastMode().getEnabled() && AgentUtils.getInstance().getAgentPolicy().getIastMode().getStaticScanning().getEnabled() && !AgentUtils.getInstance().isCveEnvScanCompleted()){
 			//Run CVE scan on ENV
-			Pair<String, String> kindId = CommonUtils.getKindIdPair(K2Instrumentator.APPLICATION_INFO_BEAN.getIdentifier(), AgentUtils.getInstance().getInitMsg().getAgentInfo().getNodeId());
-			CVEScannerPool.getInstance().dispatchScanner(AgentUtils.getInstance().getInitMsg().getAgentInfo().getNodeId(), kindId.getKey(), kindId.getValue(), false, true, false);
+            CVEScannerPool.getInstance().dispatchScanner(AgentUtils.getInstance().getInitMsg().getAgentInfo().getNodeId(), K2Instrumentator.APPLICATION_INFO_BEAN.getIdentifier().getKind().name(), K2Instrumentator.APPLICATION_INFO_BEAN.getIdentifier().getId(), false, true, false);
 			AgentUtils.getInstance().setCveEnvScanCompleted(true);
 		}
     }

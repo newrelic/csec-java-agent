@@ -11,179 +11,90 @@ import com.k2cybersecurity.intcodeagent.websocket.JsonConverter;
  */
 public class Identifier {
 
-	private String ipaddress;
+    private String id;
+    private IdentifierEnvs kind;
 
-	private Boolean isHost = false;
+    /**
+     * IC properties
+     */
+    private String nodeName;
+    private String nodeId;
+    private String nodeIp;
 
-	private Boolean isContainer = false;
+    /**
+     * Below properties will be used later.
+     */
+    private String collectorIp;
 
-	private Boolean isPod = false;
-	
-	private Boolean isECSContainer = false;
+    private Object envInfo;
 
-	private String containerId;
+    public Identifier() {
+    }
 
-	private String podId;
+    public Identifier(String nodeName, String nodeId, String nodeIp) {
+        this.nodeName = nodeName;
+        this.nodeId = nodeId;
+        this.nodeIp = nodeIp;
+    }
 
-	private String namespace;
+    public String getId() {
+        return id;
+    }
 
-	private String hostname;
+    public void setId(String id) {
+        this.id = id;
+    }
 
-	private String ecsTaskId;
+    public IdentifierEnvs getKind() {
+        return kind;
+    }
 
-	private String containerName;
+    public void setKind(IdentifierEnvs kind) {
+        this.kind = kind;
+    }
 
-	private String imageId;
+    public String getNodeName() {
+        return nodeName;
+    }
 
-	private String imageName;
+    public void setNodeName(String nodeName) {
+        this.nodeName = nodeName;
+    }
 
-	private Long startedAt;
-	
-	private String ecsTaskDefinition;
+    public String getNodeId() {
+        return nodeId;
+    }
 
-	public String getEcsTaskDefinition() {
-		return ecsTaskDefinition;
-	}
+    public void setNodeId(String nodeId) {
+        this.nodeId = nodeId;
+    }
 
-	public void setEcsTaskDefinition(String ecsTaskDefinition) {
-		this.ecsTaskDefinition = ecsTaskDefinition;
-	}
+    public String getNodeIp() {
+        return nodeIp;
+    }
 
-	/**
-	 * @param ipaddress
-	 */
-	public Identifier(String ipaddress) {
-		super();
-		this.ipaddress = ipaddress;
-	}
+    public void setNodeIp(String nodeIp) {
+        this.nodeIp = nodeIp;
+    }
 
-	public String getIpaddress() {
-		return ipaddress;
-	}
+    public String getCollectorIp() {
+        return collectorIp;
+    }
 
-	public void setIpaddress(String ipaddress) {
-		this.ipaddress = ipaddress;
-	}
+    public void setCollectorIp(String collectorIp) {
+        this.collectorIp = collectorIp;
+    }
 
-	public Boolean getIsHost() {
-		return isHost;
-	}
+    public Object getEnvInfo() {
+        return envInfo;
+    }
 
-	public void setIsHost(Boolean isHost) {
-		this.isHost = isHost;
-	}
-
-	public Boolean getIsContainer() {
-		return isContainer;
-	}
-
-	public void setIsContainer(Boolean isContainer) {
-		this.isContainer = isContainer;
-	}
-
-	public Boolean getIsPod() {
-		return isPod;
-	}
-
-	public void setIsPod(Boolean isPod) {
-		this.isPod = isPod;
-	}
-
-	public String getContainerId() {
-		return containerId;
-	}
-
-	public void setContainerId(String containerId) {
-		this.containerId = containerId;
-	}
-
-	public String getPodId() {
-		return podId;
-	}
-
-	public void setPodId(String podId) {
-		this.podId = podId;
+    public void setEnvInfo(Object envInfo) {
+        this.envInfo = envInfo;
 	}
 
 	@Override
 	public String toString() {
 		return JsonConverter.toJSON(this);
 	}
-
-	/**
-	 * @return the namespace
-	 */
-	public String getNamespace() {
-		return namespace;
-	}
-
-	/**
-	 * @param namespace the namespace to set
-	 */
-	public void setNamespace(String namespace) {
-		this.namespace = namespace;
-	}
-
-	/**
-	 * @return the hostname
-	 */
-	public String getHostname() {
-		return hostname;
-	}
-
-	/**
-	 * @param hostname the hostname to set
-	 */
-	public void setHostname(String hostname) {
-		this.hostname = hostname;
-	}
-
-	public String getEcsTaskId() {
-		return ecsTaskId;
-	}
-
-	public void setEcsTaskId(String ecsTaskId) {
-		this.ecsTaskId = ecsTaskId;
-	}
-
-	public String getContainerName() {
-		return containerName;
-	}
-
-	public void setContainerName(String containerName) {
-		this.containerName = containerName;
-	}
-
-	public String getImageId() {
-		return imageId;
-	}
-
-	public void setImageId(String imageId) {
-		this.imageId = imageId;
-	}
-
-	public String getImageName() {
-		return imageName;
-	}
-
-	public void setImageName(String imageName) {
-		this.imageName = imageName;
-	}
-
-	public Long getStartedAt() {
-		return startedAt;
-	}
-
-	public void setStartedAt(Long startLong) {
-		this.startedAt = startLong;
-	}
-
-	public Boolean getIsECSContainer() {
-		return isECSContainer;
-	}
-
-	public void setIsECSContainer(Boolean isECSContainer) {
-		this.isECSContainer = isECSContainer;
-	}
-
 }
