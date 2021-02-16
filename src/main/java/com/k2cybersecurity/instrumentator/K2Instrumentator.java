@@ -24,10 +24,8 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
-import java.net.HttpURLConnection;
-import java.net.InetAddress;
 import java.net.URL;
-import java.net.UnknownHostException;
+import java.net.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.Collections;
@@ -247,12 +245,27 @@ public class K2Instrumentator {
         }
     }
 
-    private static String getIpAddress() {
+    public static String getIpAddress() {
         try {
-            return InetAddress.getLocalHost().getHostAddress();
+            String ip = detectDefaultGatewayIPViaUDP();
+            if (StringUtils.isBlank(ip)) {
+                ip = InetAddress.getLocalHost().getHostAddress();
+            }
+            return ip;
         } catch (UnknownHostException e) {
             return StringUtils.EMPTY;
         }
+    }
+
+    private static String detectDefaultGatewayIPViaUDP() {
+        String ipAddress = StringUtils.EMPTY;
+        try (final DatagramSocket socket = new DatagramSocket()) {
+            socket.connect(InetAddress.getByName("8.8.8.8"), 10002);
+            ipAddress = socket.getLocalAddress().getHostAddress();
+        } catch (Exception e) {
+            logger.log(LogLevel.ERROR, String.format("Error getting IP Address via UDP : %s : %s", e.getMessage(), e.getCause()), K2Instrumentator.class.getName());
+        }
+        return ipAddress;
     }
 
     private static String getCmdLineArgsByProc(Integer pid) {
