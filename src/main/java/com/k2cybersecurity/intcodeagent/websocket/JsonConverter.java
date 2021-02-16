@@ -62,8 +62,8 @@ public class JsonConverter {
 						continue;
 					}
                     value = field.get(obj);
-                    Class fieldClass = value.getClass();
 					if (value != null) {
+                        Class fieldClass = value.getClass();
 						jsonString.append(STR_FORWARD_SLASH);
 						jsonString.append(field.getName());
 						jsonString.append(JSON_SEPRATER);
