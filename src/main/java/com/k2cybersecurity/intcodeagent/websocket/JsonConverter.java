@@ -73,15 +73,11 @@ public class JsonConverter {
 							jsonString.append(STR_FORWARD_SLASH);
                         } else if (fieldClass.isPrimitive()) {
 							jsonString.append(value);
-                        } else if (fieldClass.isAssignableFrom(Set.class)) {
-                            JSONArray setField = new JSONArray();
-                            setField.addAll(processCollection((Collection) value));
-                            jsonString.append(setField);
                         } else if (fieldClass.isArray()) {
 							JSONArray setField = new JSONArray();
 							setField.addAll(processCollection(Arrays.asList((Object[]) value)));
 							jsonString.append(setField);
-                        } else if (fieldClass.isAssignableFrom(List.class)) {
+                        } else if (fieldClass.isAssignableFrom(Collections.class)) {
                             JSONArray setField = new JSONArray();
                             setField.addAll(processCollection((Collection) value));
                             jsonString.append(setField);
