@@ -62,6 +62,7 @@ public class JsonConverter {
 						continue;
 					}
                     value = field.get(obj);
+                    Class fieldClass = value.getClass();
 					if (value != null) {
 						jsonString.append(STR_FORWARD_SLASH);
 						jsonString.append(field.getName());
@@ -70,21 +71,21 @@ public class JsonConverter {
 							jsonString.append(STR_FORWARD_SLASH);
 							jsonString.append(StringEscapeUtils.escapeJava(value.toString()));
 							jsonString.append(STR_FORWARD_SLASH);
-						} else if (field.getType().isPrimitive()) {
+                        } else if (fieldClass.isPrimitive()) {
 							jsonString.append(value);
-						} else if (field.getType().isAssignableFrom(Set.class)) {
+                        } else if (fieldClass.isAssignableFrom(Set.class)) {
                             JSONArray setField = new JSONArray();
                             setField.addAll(processCollection((Collection) value));
                             jsonString.append(setField);
-                        } else if (field.getType().isArray()) {
+                        } else if (fieldClass.isArray()) {
 							JSONArray setField = new JSONArray();
 							setField.addAll(processCollection(Arrays.asList((Object[]) value)));
 							jsonString.append(setField);
-						} else if (field.getType().isAssignableFrom(List.class)) {
+                        } else if (fieldClass.isAssignableFrom(List.class)) {
                             JSONArray setField = new JSONArray();
                             setField.addAll(processCollection((Collection) value));
                             jsonString.append(setField);
-                        } else if (field.getType().isAssignableFrom(Map.class)) {
+                        } else if (fieldClass.isAssignableFrom(Map.class)) {
 							JSONObject mapField = new JSONObject();
 							mapField.putAll(processMap((Map) value));
 							jsonString.append(mapField);
