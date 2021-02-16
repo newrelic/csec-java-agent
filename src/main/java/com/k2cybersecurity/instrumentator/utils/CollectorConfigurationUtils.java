@@ -2,11 +2,13 @@ package com.k2cybersecurity.instrumentator.utils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import com.k2cybersecurity.instrumentator.K2Instrumentator;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.models.collectorconfig.ApplicationLevelConfig;
 import com.k2cybersecurity.intcodeagent.models.collectorconfig.CollectorConfig;
 import com.k2cybersecurity.intcodeagent.models.collectorconfig.NodeLevelConfig;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
 
@@ -94,14 +96,28 @@ public class CollectorConfigurationUtils {
 //            logger.log(LogLevel.ERROR, String.format("Improper CustomerInfo provided in collector configuration. Exiting : %s", collectorConfig.getCustomerInfo()), CollectorConfigurationUtils.class.getName());
 //            return false;
 //        }
-//        if (collectorConfig.getK2ServiceInfo() == null || collectorConfig.getK2ServiceInfo().isEmpty()) {
-//            logger.log(LogLevel.ERROR, String.format("Improper K2ServiceInfo provided in collector configuration. Exiting : %s", collectorConfig.getK2ServiceInfo()), CollectorConfigurationUtils.class.getName());
-//            return false;
-//        }
+        if (collectorConfig.getK2ServiceInfo() == null || collectorConfig.getK2ServiceInfo().isEmpty()) {
+            logger.log(LogLevel.ERROR, String.format("Improper K2ServiceInfo provided in collector configuration. Exiting : %s", collectorConfig), CollectorConfigurationUtils.class.getName());
+            return false;
+        }
 
-        // TODO : Place a ENV based check here if the NLC are applicable in the current env, then perform validation on nodeId & nodeIP.
+        switch (K2Instrumentator.APPLICATION_INFO_BEAN.getIdentifier().getKind()) {
+            // NLC required
+            case HOST:
+            case CONTAINER:
+            case POD:
+                if (StringUtils.isAnyBlank(collectorConfig.getNodeIp(), collectorConfig.getNodeId())) {
+                    logger.log(LogLevel.ERROR, String.format("Improper node details provided in collector configuration. Exiting : %s", collectorConfig), CollectorConfigurationUtils.class.getName());
+                    return false;
+                }
+                break;
 
-
+            // NLC not required
+            case ECS:
+            case FARGATE:
+            case LAMBDA:
+                break;
+        }
         return true;
     }
 

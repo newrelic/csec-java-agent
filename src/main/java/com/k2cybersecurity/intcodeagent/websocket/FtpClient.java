@@ -1,7 +1,7 @@
 package com.k2cybersecurity.intcodeagent.websocket;
 
-import com.k2cybersecurity.instrumentator.K2Instrumentator;
 import com.k2cybersecurity.instrumentator.utils.AgentUtils;
+import com.k2cybersecurity.instrumentator.utils.CollectorConfigurationUtils;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.filelogging.LogWriter;
@@ -26,7 +26,7 @@ public class FtpClient {
 
 
 				if (AgentUtils.getInstance().getInitMsg() != null) {
-					ftp.connect(K2Instrumentator.hostip, AgentUtils.getInstance().getInitMsg().getStartupProperties().getFtpProperties().getPort());
+					ftp.connect(CollectorConfigurationUtils.getInstance().getCollectorConfig().getK2ServiceInfo().getServiceEndpointAddress(), AgentUtils.getInstance().getInitMsg().getStartupProperties().getFtpProperties().getPort());
 					ftp.login(AgentUtils.getInstance().getInitMsg().getStartupProperties().getFtpProperties().getUsername(),
 							AgentUtils.getInstance().getInitMsg().getStartupProperties().getFtpProperties().getPassword());
 				} else {
@@ -46,12 +46,12 @@ public class FtpClient {
 						ftp.disconnect();
 					} catch (IOException e) {
 						logger.log(LogLevel.ERROR,
-								"FTP server refused connection : " + K2Instrumentator.hostip + ":54322",
+								"FTP server refused connection : " + CollectorConfigurationUtils.getInstance().getCollectorConfig().getK2ServiceInfo().getServiceEndpointAddress() + ":54322",
 								FTPClient.class.getName());
 					}
 				}
 			} catch (IOException e) {
-				logger.log(LogLevel.ERROR, "Error in connecting to FTP at " + K2Instrumentator.hostip + ":54322",e,
+				logger.log(LogLevel.ERROR, "Error in connecting to FTP at " + CollectorConfigurationUtils.getInstance().getCollectorConfig().getK2ServiceInfo().getServiceEndpointAddress() + ":54322", e,
 						FTPClient.class.getName());
 				return null;
 			}

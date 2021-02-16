@@ -38,7 +38,6 @@ import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.*;
 
 public class K2Instrumentator {
 
-    public static String hostip = StringUtils.EMPTY;
     public static Integer VMPID;
     public static final String APPLICATION_UUID = UUID.randomUUID().toString();
     public static ApplicationInfoBean APPLICATION_INFO_BEAN;
@@ -81,29 +80,6 @@ public class K2Instrumentator {
             return false;
         }
         JA_HEALTH_CHECK = new JAHealthCheck(APPLICATION_UUID);
-
-
-//		System.out.println("Env variables in container : ");
-//		Map<String, String> allEnv = System.getenv();
-//		allEnv.forEach((k, v) -> System.out.println(k + " : " + v));
-
-        if (StringUtils.isNotBlank(System.getenv("K2_HOST_IP"))) {
-            hostip = System.getenv("K2_HOST_IP");
-        } else if (isk8sEnv) {
-            hostip = System.getenv("K2_SERVICE_SERVICE_HOST");
-        } else if (isECSEnv) {
-            hostip = "k2-service.k2-ns";
-        } else if (IdentifierEnvs.HOST.equals(APPLICATION_INFO_BEAN.getIdentifier().getKind())) {
-            hostip = InetAddress.getLoopbackAddress().getHostAddress();
-        } else {
-            try {
-                hostip = ApplicationInfoUtils.getDefaultGateway();
-            } catch (IOException e) {
-                logger.log(LogLevel.ERROR, ERROR_WHILE_DETERMINING_HOSTIP_FROM_DEFAULT_GATEWAY, e,
-                        K2Instrumentator.class.getName());
-                return false;
-            }
-        }
 
         new Thread(() -> {
             try {

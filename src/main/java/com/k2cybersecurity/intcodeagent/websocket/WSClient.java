@@ -2,6 +2,7 @@ package com.k2cybersecurity.intcodeagent.websocket;
 
 import com.k2cybersecurity.instrumentator.K2Instrumentator;
 import com.k2cybersecurity.instrumentator.utils.AgentUtils;
+import com.k2cybersecurity.instrumentator.utils.CollectorConfigurationUtils;
 import com.k2cybersecurity.intcodeagent.controlcommand.ControlCommandProcessor;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
@@ -18,12 +19,12 @@ public class WSClient extends WebSocketClient {
 	private static WSClient instance;
 
 	private WSClient() throws URISyntaxException, InterruptedException {
-		super(new URI(String.format("ws://%s:%s", K2Instrumentator.hostip, 54321)));
-        this.setTcpNoDelay(true);
-		logger.log(LogLevel.INFO, "Creating WSock connection to : " + K2Instrumentator.hostip,
+		super(new URI(String.format("ws://%s:%s", CollectorConfigurationUtils.getInstance().getCollectorConfig().getK2ServiceInfo().getServiceEndpointAddress(), 54321)));
+		this.setTcpNoDelay(true);
+		logger.log(LogLevel.INFO, "Creating WSock connection to : " + CollectorConfigurationUtils.getInstance().getCollectorConfig().getK2ServiceInfo().getServiceEndpointAddress(),
 				WSClient.class.getName());
 		if (!connectBlocking()) {
-			logger.log(LogLevel.SEVERE, "WSock connection to " + K2Instrumentator.hostip + " failed",
+			logger.log(LogLevel.SEVERE, "WSock connection to " + CollectorConfigurationUtils.getInstance().getCollectorConfig().getK2ServiceInfo().getServiceEndpointAddress() + " failed",
 					WSClient.class.getName());
 			throw new InterruptedException("Unable to connect K2 Agent. Initial connect failed.");
 		}

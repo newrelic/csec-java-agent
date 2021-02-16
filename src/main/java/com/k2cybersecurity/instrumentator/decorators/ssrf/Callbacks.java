@@ -48,7 +48,7 @@ public class Callbacks {
 //                Method getURL = obj.getClass().getMethod("getURL");
 //                getURL.setAccessible(true);
 //                URL url = (URL) getURL.invoke(obj);
-//                OutBoundHttp outBoundHttp = new OutBoundHttp(url.toString(), K2Instrumentator.hostip, OutBoundHttpDirection.OUTBOUND);
+//                OutBoundHttp outBoundHttp = new OutBoundHttp(url.toString(), CollectorConfigurationUtils.getInstance().getCollectorConfig().getK2ServiceInfo().getServiceEndpointAddress(), OutBoundHttpDirection.OUTBOUND);
 //                if (!K2Instrumentator.JA_HEALTH_CHECK.getHttpConnections().contains(outBoundHttp)) {
 //                    Object objToUse = obj;
 //                    if (objToUse instanceof HttpsURLConnection) {

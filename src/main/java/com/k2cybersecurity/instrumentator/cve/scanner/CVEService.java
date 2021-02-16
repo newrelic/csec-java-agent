@@ -2,6 +2,7 @@ package com.k2cybersecurity.instrumentator.cve.scanner;
 
 import com.k2cybersecurity.instrumentator.K2Instrumentator;
 import com.k2cybersecurity.instrumentator.utils.AgentUtils;
+import com.k2cybersecurity.instrumentator.utils.CollectorConfigurationUtils;
 import com.k2cybersecurity.instrumentator.utils.HashGenerator;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
@@ -272,7 +273,7 @@ public class CVEService implements Runnable {
 
     protected File createServiceYml(String cveServicePath, String nodeId, String appName, String appSha256,
                                     String scanPath, String applicationUUID, Boolean env) throws IOException {
-        String yaml = String.format(YML_TEMPLATE, K2Instrumentator.hostip, nodeId, kind, id, appName, applicationUUID, appSha256,
+        String yaml = String.format(YML_TEMPLATE, CollectorConfigurationUtils.getInstance().getCollectorConfig().getK2ServiceInfo().getServiceEndpointAddress(), nodeId, kind, id, appName, applicationUUID, appSha256,
                 scanPath, env);
         File yml = new File(TMP_DIR, SERVICE_INPUT_YML);
         logger.log(LogLevel.INFO, INPUT_YML_LOG + yaml, CVEService.class.getName());
