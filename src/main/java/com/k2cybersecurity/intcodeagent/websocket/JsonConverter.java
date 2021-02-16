@@ -1,6 +1,8 @@
 package com.k2cybersecurity.intcodeagent.websocket;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import org.apache.commons.lang3.StringUtils;
@@ -94,7 +96,10 @@ public class JsonConverter {
 				}
             } catch (IllegalArgumentException | IllegalAccessException e) {
             } catch (Exception e) {
-                logger.log(LogLevel.ERROR, "Can't cast value : " + value, e, JsonConverter.class.getName());
+                try {
+                    logger.log(LogLevel.ERROR, "Can't cast value : " + new ObjectMapper().writeValueAsString(value), e, JsonConverter.class.getName());
+                } catch (JsonProcessingException ex) {
+                }
 			}
 		}
 		return StringUtils.removeEnd(jsonString.toString(), STR_COMMA);
