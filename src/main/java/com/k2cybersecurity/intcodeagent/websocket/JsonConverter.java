@@ -1,8 +1,10 @@
 package com.k2cybersecurity.intcodeagent.websocket;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import org.apache.commons.lang3.StringEscapeUtils;
+import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
+import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.text.StringEscapeUtils;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
@@ -12,6 +14,8 @@ import java.util.*;
 import java.util.Map.Entry;
 
 public class JsonConverter {
+
+    private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
 
 	private static final String JSON_SEPRATER = "\":";
 	private static final String STR_FORWARD_SLASH = "\"";
@@ -47,6 +51,7 @@ public class JsonConverter {
 	private static String getFieldsAsJsonString(Field[] fields, Object obj) {
 		StringBuilder jsonString = new StringBuilder();
 		for (int i = 0; i < fields.length; i++) {
+            Object value = null;
 			try {
 				if (!Modifier.isStatic(fields[i].getModifiers())) {
 					Field field = fields[i];
@@ -54,7 +59,7 @@ public class JsonConverter {
 					if (field.getAnnotation(JsonIgnore.class) != null) {
 						continue;
 					}
-					Object value = field.get(obj);
+                    value = field.get(obj);
 					if (value != null) {
 						jsonString.append(STR_FORWARD_SLASH);
 						jsonString.append(field.getName());
@@ -87,8 +92,9 @@ public class JsonConverter {
 						jsonString.append(STR_COMMA);
 					}
 				}
-			} catch (IllegalArgumentException | IllegalAccessException e) {
-
+            } catch (IllegalArgumentException | IllegalAccessException e) {
+            } catch (Exception e) {
+                logger.log(LogLevel.ERROR, "Can't cast value : " + value, e, JsonConverter.class.getName());
 			}
 		}
 		return StringUtils.removeEnd(jsonString.toString(), STR_COMMA);
