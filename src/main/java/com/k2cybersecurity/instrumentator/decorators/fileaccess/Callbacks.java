@@ -34,7 +34,8 @@ public class Callbacks {
 						.isNotBlank(args[0].toString())) {
 					FileOperationalBean fileOperationalBean = null;
 					if (StringUtils.equals(methodName, GET_BOOLEAN_ATTRIBUTES)) {
-						if (skipExistsEvent(args[0].toString())) {
+                        if (!(AgentUtils.getInstance().getAgentPolicy().getIastMode().getEnabled()
+                                && AgentUtils.getInstance().getAgentPolicy().getIastMode().getDynamicScanning().getEnabled()) && skipExistsEvent(args[0].toString())) {
 							return;
 						}
 						fileOperationalBean = new FileOperationalBean(args[0].toString(), className,
