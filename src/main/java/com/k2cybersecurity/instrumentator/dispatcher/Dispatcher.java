@@ -173,7 +173,8 @@ public class Dispatcher implements Runnable {
 				eventBean = setGenericProperties(fileOperationalBean, eventBean);
 				eventBean = prepareFileEvent(eventBean, fileOperationalBean);
 				String URL = StringUtils.substringBefore(httpRequestBean.getUrl(), QUESTION_CHAR);
-				if (allowedExtensionFileIO(eventBean.getParameters(), eventBean.getSourceMethod(), URL)) {
+				if (!(AgentUtils.getInstance().getAgentPolicy().getIastMode().getEnabled()
+						&& AgentUtils.getInstance().getAgentPolicy().getIastMode().getDynamicScanning().getEnabled()) && allowedExtensionFileIO(eventBean.getParameters(), eventBean.getSourceMethod(), URL)) {
 //				System.out.println("------- Event ByPass -----------");
 					return;
 				}
