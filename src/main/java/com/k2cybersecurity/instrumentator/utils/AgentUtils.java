@@ -99,6 +99,8 @@ public class AgentUtils {
 
 	private AtomicInteger cveServiceFailCount = new AtomicInteger(0);
 
+	private AtomicInteger outboundHttpConnectionId = new AtomicInteger(1000);
+
 	private AgentUtils() {
 
 		transformedClasses = new HashSet<>();
@@ -165,6 +167,14 @@ public class AgentUtils {
 
 	public void setInitMsg(CollectorInitMsg initMsg) {
 		this.initMsg = initMsg;
+	}
+
+	public int incrementOutboundHttpConnectionId() {
+		return this.outboundHttpConnectionId.getAndIncrement();
+	}
+
+	public void resetOutboundHttpConnectionId() {
+		this.outboundHttpConnectionId.set(1000);
 	}
 
 	public int incrementCVEServiceFailCount() {

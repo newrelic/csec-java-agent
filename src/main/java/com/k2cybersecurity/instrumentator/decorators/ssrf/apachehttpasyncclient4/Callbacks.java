@@ -6,6 +6,8 @@ import com.k2cybersecurity.instrumentator.custom.ThreadLocalOperationLock;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalSSRFLock;
 import com.k2cybersecurity.instrumentator.dispatcher.EventDispatcher;
 import com.k2cybersecurity.instrumentator.utils.AgentUtils;
+import com.k2cybersecurity.instrumentator.utils.CallbackUtils;
+import com.k2cybersecurity.intcodeagent.logging.IAgentConstants;
 import com.k2cybersecurity.intcodeagent.models.javaagent.VulnerabilityCaseType;
 import com.k2cybersecurity.intcodeagent.models.operationalbean.SSRFOperationalBean;
 import org.apache.commons.lang3.StringUtils;
@@ -53,6 +55,10 @@ public class Callbacks {
                         getUri.setAccessible(true);
                         String uriFromRequest = (String) getUri.invoke(requestLine);
 
+                        Method setHeader = args[1].getClass().getMethod("setHeader", String.class, String.class);
+                        setHeader.setAccessible(true);
+                        setHeader.invoke(args[1], IAgentConstants.K2_API_CALLER, CallbackUtils.generateApiCallerHeaderValue(uriFromRequest));
+
 //						System.out.println(String.format("Entry Value : SSRF : %s : %s : %s : %s", className, methodName, uri, uriFromRequest));
                         ThreadLocalSSRFLock.getInstance().setUrl(uriFromRequest);
 
@@ -65,10 +71,16 @@ public class Callbacks {
 
                         URI uri = (URI) getURI.invoke(args[0]);
 
-//						System.out.println(String.format("Entry Value : SSRF : %s : %s : %s", className, methodName, uri.toString()));
-                        ThreadLocalSSRFLock.getInstance().setUrl(uri.toString());
+                        String urlString = uri.toString();
 
-                        EventDispatcher.dispatch(new SSRFOperationalBean(uri.toString(), className, sourceString, exectionId,
+                        Method setHeader = args[0].getClass().getMethod("setHeader", String.class, String.class);
+                        setHeader.setAccessible(true);
+                        setHeader.invoke(args[0], IAgentConstants.K2_API_CALLER, CallbackUtils.generateApiCallerHeaderValue(urlString));
+
+//						System.out.println(String.format("Entry Value : SSRF : %s : %s : %s", className, methodName, uri.toString()));
+                        ThreadLocalSSRFLock.getInstance().setUrl(urlString);
+
+                        EventDispatcher.dispatch(new SSRFOperationalBean(urlString, className, sourceString, exectionId,
                                 Instant.now().toEpochMilli(), methodName), VulnerabilityCaseType.HTTP_REQUEST);
 
                     }
@@ -86,23 +98,27 @@ public class Callbacks {
 
 		if(!ThreadLocalHttpMap.getInstance().isEmpty() && !ThreadLocalOperationLock.getInstance().isAcquired()) {
 			try {
-				ThreadLocalOperationLock.getInstance().acquire();
+                ThreadLocalOperationLock.getInstance().acquire();
 //				System.out.println(String.format("Exit inside: SSRF : %s : %s : %s", className, methodName, obj));
 
-				if(StringUtils.equals(methodName, "generateRequest")){
-					Method getRequestLine = returnVal.getClass().getMethod("getRequestLine");
-					getRequestLine.setAccessible(true);
-					Object requestLine = getRequestLine.invoke(returnVal);
+                if (StringUtils.equals(methodName, "generateRequest")) {
+                    Method getRequestLine = returnVal.getClass().getMethod("getRequestLine");
+                    getRequestLine.setAccessible(true);
+                    Object requestLine = getRequestLine.invoke(returnVal);
 
-					Method getUri = requestLine.getClass().getMethod("getUri");
-					getUri.setAccessible(true);
-					String uriFromRequest = (String) getUri.invoke(requestLine);
+                    Method getUri = requestLine.getClass().getMethod("getUri");
+                    getUri.setAccessible(true);
+                    String uriFromRequest = (String) getUri.invoke(requestLine);
+
+                    Method setHeader = returnVal.getClass().getMethod("setHeader", String.class, String.class);
+                    setHeader.setAccessible(true);
+                    setHeader.invoke(returnVal, IAgentConstants.K2_API_CALLER, CallbackUtils.generateApiCallerHeaderValue(uriFromRequest));
 
 //					System.out.println(String.format("Exit inside Value : SSRF : %s : %s : %s", className, methodName, uriFromRequest));
-					EventDispatcher.dispatch(new SSRFOperationalBean(uriFromRequest, className, sourceString, exectionId,
-							Instant.now().toEpochMilli(), methodName), VulnerabilityCaseType.HTTP_REQUEST);
+                    EventDispatcher.dispatch(new SSRFOperationalBean(uriFromRequest, className, sourceString, exectionId,
+                            Instant.now().toEpochMilli(), methodName), VulnerabilityCaseType.HTTP_REQUEST);
 
-				}
+                }
 //				System.out.println(
 //						"OnExit :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj + " - return : "
 //								+ returnVal + " - eid : " + exectionId);

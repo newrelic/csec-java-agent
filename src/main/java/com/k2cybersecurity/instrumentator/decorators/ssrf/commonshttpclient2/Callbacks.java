@@ -5,6 +5,8 @@ import com.k2cybersecurity.instrumentator.custom.ThreadLocalHttpMap;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalOperationLock;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalSSRFLock;
 import com.k2cybersecurity.instrumentator.dispatcher.EventDispatcher;
+import com.k2cybersecurity.instrumentator.utils.CallbackUtils;
+import com.k2cybersecurity.intcodeagent.logging.IAgentConstants;
 import com.k2cybersecurity.intcodeagent.models.javaagent.VulnerabilityCaseType;
 import com.k2cybersecurity.intcodeagent.models.operationalbean.SSRFOperationalBean;
 
@@ -30,8 +32,15 @@ public class Callbacks {
                     Method getURI = args[1].getClass().getMethod("getURI");
                     getURI.setAccessible(true);
                     Object uri = getURI.invoke(args[1]);
-                    ThreadLocalSSRFLock.getInstance().setUrl(uri.toString());
-                    EventDispatcher.dispatch(new SSRFOperationalBean(uri.toString(), className, sourceString, exectionId,
+
+                    String urlString = uri.toString();
+
+                    ThreadLocalSSRFLock.getInstance().setUrl(urlString);
+
+                    Method setRequestHeader = args[1].getClass().getMethod("setRequestHeader", String.class, String.class);
+                    setRequestHeader.invoke(args[1], IAgentConstants.K2_API_CALLER, CallbackUtils.generateApiCallerHeaderValue(urlString));
+
+                    EventDispatcher.dispatch(new SSRFOperationalBean(urlString, className, sourceString, exectionId,
                             Instant.now().toEpochMilli(), methodName), VulnerabilityCaseType.HTTP_REQUEST);
 
                 }

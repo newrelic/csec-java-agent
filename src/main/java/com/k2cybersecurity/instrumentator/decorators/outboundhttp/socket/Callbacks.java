@@ -1,5 +1,6 @@
 package com.k2cybersecurity.instrumentator.decorators.outboundhttp.socket;
 
+import com.k2cybersecurity.instrumentator.K2Instrumentator;
 import com.k2cybersecurity.instrumentator.custom.*;
 import com.k2cybersecurity.intcodeagent.models.javaagent.OutBoundHttp;
 import com.k2cybersecurity.intcodeagent.models.javaagent.OutBoundHttpDirection;
@@ -24,15 +25,14 @@ public class Callbacks {
 
 
                 Socket socket = (Socket) obj;
-
-                OutBoundHttp outBoundHttp = new OutBoundHttp(ThreadLocalSSRFLock.getInstance().getUrl(), SOURCE_IP_ALL, socket.getInetAddress().getHostAddress(), OutBoundHttpDirection.OUTBOUND);
+                OutBoundHttp outBoundHttp = new OutBoundHttp(ThreadLocalSSRFLock.getInstance().getUrl(), SOURCE_IP_ALL, socket.getInetAddress().getHostAddress(), OutBoundHttpDirection.OUTBOUND, null);
                 outBoundHttp.setDestinationPort(socket.getPort());
 //				outBoundHttp.setSourcePort(socket.getLocalPort());
                 if (!ThreadLocalSSRFMap.getInstance().isAlreadyEncountered(outBoundHttp)) {
                     ThreadLocalSSRFMap.getInstance().addToAlreadyEncountered(outBoundHttp);
                     InBoundOutBoundST.getInstance().addOutBoundHTTPConnection(outBoundHttp);
                 }
-//				K2Instrumentator.JA_HEALTH_CHECK.getHttpConnections().add(outBoundHttp);
+                K2Instrumentator.JA_HEALTH_CHECK.getHttpConnections().add(outBoundHttp);
             } finally {
                 ThreadLocalOperationLock.getInstance().release();
             }
