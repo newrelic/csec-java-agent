@@ -5,20 +5,15 @@ import com.k2cybersecurity.instrumentator.utils.AgentUtils;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.logging.IAgentConstants;
-import com.k2cybersecurity.intcodeagent.models.javaagent.AgentMetaData;
-import com.k2cybersecurity.intcodeagent.models.javaagent.HttpRequestBean;
-import com.k2cybersecurity.intcodeagent.models.javaagent.OutBoundHttp;
-import com.k2cybersecurity.intcodeagent.models.javaagent.OutBoundHttpDirection;
+import com.k2cybersecurity.intcodeagent.models.javaagent.*;
 import com.k2cybersecurity.intcodeagent.monitoring.InBoundOutBoundST;
 import org.apache.commons.lang3.StringUtils;
 import org.json.simple.JSONObject;
 
 import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
-import java.util.Collection;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Map;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
 
 public class ThreadLocalHttpMap {
 
@@ -55,6 +50,7 @@ public class ThreadLocalHttpMap {
 	public static final String GET_SCHEME = "getScheme";
 	public static final String ASTRISK = "*";
 	public static final String DESTINATION_IP_ALL = "0.0.0.0";
+	public static final String SEPARATOR_CHARS_DOUBLE_PIPE = "||";
 
 	private Object httpRequest;
 
@@ -221,21 +217,24 @@ public class ThreadLocalHttpMap {
 
 		try {
 
-            Method getMethod = requestClass.getMethod(GET_METHOD);
-            getMethod.setAccessible(true);
-            httpRequestBean.setMethod((String) getMethod.invoke(httpRequest, null));
+			Method getMethod = requestClass.getMethod(GET_METHOD);
+			getMethod.setAccessible(true);
+			httpRequestBean.setMethod((String) getMethod.invoke(httpRequest, null));
 
-            Method getRemoteAddr = requestClass.getMethod(GET_REMOTE_ADDR);
-            getRemoteAddr.setAccessible(true);
-            httpRequestBean.setClientIP((String) getRemoteAddr.invoke(httpRequest, null));
-            metaData.getIps().add(httpRequestBean.getClientIP());
-            if (StringUtils.isNotBlank(httpRequestBean.getClientIP())) {
-                Method getRemotePort = requestClass.getMethod(GET_REMOTE_PORT);
-                getRemotePort.setAccessible(true);
-                httpRequestBean.setClientPort(String.valueOf(getRemotePort.invoke(httpRequest, null)));
-            }
-            Map<String, String> headers = new HashMap<>();
-            processHeaders(headers, httpRequest);
+			Method getRemoteAddr = requestClass.getMethod(GET_REMOTE_ADDR);
+			getRemoteAddr.setAccessible(true);
+			httpRequestBean.setClientIP((String) getRemoteAddr.invoke(httpRequest, null));
+			metaData.getIps().add(httpRequestBean.getClientIP());
+			if (StringUtils.isNotBlank(httpRequestBean.getClientIP())) {
+				Method getRemotePort = requestClass.getMethod(GET_REMOTE_PORT);
+				getRemotePort.setAccessible(true);
+				httpRequestBean.setClientPort(String.valueOf(getRemotePort.invoke(httpRequest, null)));
+			}
+			Map<String, String> headers = new HashMap<>();
+			processHeaders(headers, httpRequest);
+
+			OutboundHttpSourceId sourceId = getInboundHttpSourceIdFromHeaders(headers);
+
 			httpRequestBean.setHeaders(new JSONObject(headers));
 
 			Method getScheme = requestClass.getMethod(GET_SCHEME);
@@ -246,7 +245,8 @@ public class ThreadLocalHttpMap {
 			getRequestURI.setAccessible(true);
 			httpRequestBean.setUrl((String) getRequestURI.invoke(httpRequest, null));
 
-			OutBoundHttp inBoundHttp = new OutBoundHttp(httpRequestBean.getUrl(), ASTRISK, DESTINATION_IP_ALL, OutBoundHttpDirection.INBOUND);
+
+			OutBoundHttp inBoundHttp = new OutBoundHttp(httpRequestBean.getUrl(), ASTRISK, DESTINATION_IP_ALL, OutBoundHttpDirection.INBOUND, sourceId);
 			inBoundHttp.setDestinationPort(httpRequestBean.getServerPort());
 			InBoundOutBoundST.getInstance().addOutBoundHTTPConnection(inBoundHttp);
 
@@ -285,18 +285,34 @@ public class ThreadLocalHttpMap {
 			}
 
 
-
 			isHttpRequestParsed = true;
 			return true;
 		} catch (Throwable e) {
-            logger.log(LogLevel.DEBUG, ERROR, e, ThreadLocalHttpMap.class.getName());
+			logger.log(LogLevel.DEBUG, ERROR, e, ThreadLocalHttpMap.class.getName());
 //			e.printStackTrace();
-        } finally {
+		} finally {
 //			logger.log(LogLevel.DEBUG,
 //					RAW_INTERCEPTED_REQUEST + ThreadLocalExecutionMap.getInstance().getHttpRequestBean(),
 //					ThreadLocalHttpMap.class.getName());
 		}
 		return !httpRequestBean.isEmpty();
+	}
+
+	private OutboundHttpSourceId getInboundHttpSourceIdFromHeaders(Map<String, String> headers) {
+		OutboundHttpSourceId sourceId = null;
+		if (headers.containsKey(IAgentConstants.K2_API_CALLER) || headers.containsKey(IAgentConstants.K2_API_CALLER.toLowerCase())) {
+			String data = headers.get(IAgentConstants.K2_API_CALLER);
+			if (StringUtils.isBlank(data)) {
+				data = headers.get(IAgentConstants.K2_API_CALLER.toLowerCase());
+			}
+			headers.remove(IAgentConstants.K2_API_CALLER);
+			headers.remove(IAgentConstants.K2_API_CALLER.toLowerCase());
+			String[] components = StringUtils.split(data, SEPARATOR_CHARS_DOUBLE_PIPE);
+			if (components != null && components.length == 4) {
+				sourceId = new OutboundHttpSourceId(components[0], components[1], components[2], new String(Base64.getDecoder().decode(components[3]), StandardCharsets.UTF_8));
+			}
+		}
+		return sourceId;
 	}
 
 	public void processHeaders(Map<String, String> headers, Object httpRequest) {
