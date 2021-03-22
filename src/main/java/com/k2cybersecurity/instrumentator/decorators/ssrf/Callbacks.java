@@ -14,6 +14,7 @@ import org.apache.commons.lang3.StringUtils;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.time.Instant;
+import java.util.Arrays;
 
 public class Callbacks {
 
@@ -30,9 +31,12 @@ public class Callbacks {
                     String urlString = url.toString();
 
                     ThreadLocalSSRFLock.getInstance().setUrl(urlString);
-                    Method setRequestProperty = obj.getClass().getMethod("setRequestProperty", String.class, String.class);
-                    setRequestProperty.setAccessible(true);
-                    setRequestProperty.invoke(obj, IAgentConstants.K2_API_CALLER, CallbackUtils.generateApiCallerHeaderValue(urlString));
+                    try {
+                        Method setRequestProperty = obj.getClass().getMethod("setRequestProperty", String.class, String.class);
+                        setRequestProperty.setAccessible(true);
+                        setRequestProperty.invoke(obj, IAgentConstants.K2_API_CALLER, CallbackUtils.generateApiCallerHeaderValue(urlString));
+                    } catch (Exception e) {
+                    }
                     if (StringUtils.equalsAny(url.getProtocol(), "http", "https")) {
 //                        System.out.println(String.format("Entry : SSRF Value: %s : %s : %s : %s", className, methodName, obj, url.toString()));
                         EventDispatcher.dispatch(new SSRFOperationalBean(urlString, className, sourceString, exectionId,

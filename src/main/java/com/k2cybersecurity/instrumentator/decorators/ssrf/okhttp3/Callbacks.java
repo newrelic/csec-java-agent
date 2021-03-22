@@ -35,19 +35,22 @@ public class Callbacks {
                     }
                 } else if (StringUtils.equals(methodName, "newCall") && args != null && args.length > 0 && args[0] != null) {
 
-                    Method url = args[0].getClass().getMethod("url");
-                    url.setAccessible(true);
-                    String urlString = url.invoke(args[0]).toString();
+                    try {
+                        Method url = args[0].getClass().getMethod("url");
+                        url.setAccessible(true);
+                        String urlString = url.invoke(args[0]).toString();
 
-                    Method newBuilder = args[0].getClass().getMethod("newBuilder");
-                    newBuilder.setAccessible(true);
-                    Object builder = newBuilder.invoke(args[0], null);
-                    Method setHeader = builder.getClass().getMethod("header", String.class, String.class);
-                    setHeader.setAccessible(true);
-                    builder = setHeader.invoke(builder, IAgentConstants.K2_API_CALLER, CallbackUtils.generateApiCallerHeaderValue(urlString));
-                    Method build = builder.getClass().getMethod("build", null);
-                    build.setAccessible(true);
-                    args[0] = build.invoke(builder, null);
+                        Method newBuilder = args[0].getClass().getMethod("newBuilder");
+                        newBuilder.setAccessible(true);
+                        Object builder = newBuilder.invoke(args[0], null);
+                        Method setHeader = builder.getClass().getMethod("header", String.class, String.class);
+                        setHeader.setAccessible(true);
+                        builder = setHeader.invoke(builder, IAgentConstants.K2_API_CALLER, CallbackUtils.generateApiCallerHeaderValue(urlString));
+                        Method build = builder.getClass().getMethod("build", null);
+                        build.setAccessible(true);
+                        args[0] = build.invoke(builder, null);
+                    } catch (Exception e) {
+                    }
 
                 }
 

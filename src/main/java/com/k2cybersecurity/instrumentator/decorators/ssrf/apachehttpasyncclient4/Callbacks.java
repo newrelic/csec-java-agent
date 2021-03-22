@@ -55,9 +55,12 @@ public class Callbacks {
                         getUri.setAccessible(true);
                         String uriFromRequest = (String) getUri.invoke(requestLine);
 
-                        Method setHeader = args[1].getClass().getMethod("setHeader", String.class, String.class);
-                        setHeader.setAccessible(true);
-                        setHeader.invoke(args[1], IAgentConstants.K2_API_CALLER, CallbackUtils.generateApiCallerHeaderValue(uriFromRequest));
+                        try {
+                            Method setHeader = args[1].getClass().getMethod("setHeader", String.class, String.class);
+                            setHeader.setAccessible(true);
+                            setHeader.invoke(args[1], IAgentConstants.K2_API_CALLER, CallbackUtils.generateApiCallerHeaderValue(uriFromRequest));
+                        } catch (Exception e) {
+                        }
 
 //						System.out.println(String.format("Entry Value : SSRF : %s : %s : %s : %s", className, methodName, uri, uriFromRequest));
                         ThreadLocalSSRFLock.getInstance().setUrl(uriFromRequest);
@@ -73,10 +76,12 @@ public class Callbacks {
 
                         String urlString = uri.toString();
 
-                        Method setHeader = args[0].getClass().getMethod("setHeader", String.class, String.class);
-                        setHeader.setAccessible(true);
-                        setHeader.invoke(args[0], IAgentConstants.K2_API_CALLER, CallbackUtils.generateApiCallerHeaderValue(urlString));
-
+                        try {
+                            Method setHeader = args[0].getClass().getMethod("setHeader", String.class, String.class);
+                            setHeader.setAccessible(true);
+                            setHeader.invoke(args[0], IAgentConstants.K2_API_CALLER, CallbackUtils.generateApiCallerHeaderValue(urlString));
+                        } catch (Exception e) {
+                        }
 //						System.out.println(String.format("Entry Value : SSRF : %s : %s : %s", className, methodName, uri.toString()));
                         ThreadLocalSSRFLock.getInstance().setUrl(urlString);
 
@@ -110,10 +115,12 @@ public class Callbacks {
                     getUri.setAccessible(true);
                     String uriFromRequest = (String) getUri.invoke(requestLine);
 
-                    Method setHeader = returnVal.getClass().getMethod("setHeader", String.class, String.class);
-                    setHeader.setAccessible(true);
-                    setHeader.invoke(returnVal, IAgentConstants.K2_API_CALLER, CallbackUtils.generateApiCallerHeaderValue(uriFromRequest));
-
+                    try {
+                        Method setHeader = returnVal.getClass().getMethod("setHeader", String.class, String.class);
+                        setHeader.setAccessible(true);
+                        setHeader.invoke(returnVal, IAgentConstants.K2_API_CALLER, CallbackUtils.generateApiCallerHeaderValue(uriFromRequest));
+                    } catch (Exception e) {
+                    }
 //					System.out.println(String.format("Exit inside Value : SSRF : %s : %s : %s", className, methodName, uriFromRequest));
                     EventDispatcher.dispatch(new SSRFOperationalBean(uriFromRequest, className, sourceString, exectionId,
                             Instant.now().toEpochMilli(), methodName), VulnerabilityCaseType.HTTP_REQUEST);

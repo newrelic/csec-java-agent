@@ -38,11 +38,13 @@ public class Callbacks {
 
                     ThreadLocalSSRFLock.getInstance().setUrl(urlString);
 
-                    Method getHeaders = obj.getClass().getMethod("getHeaders", null);
-                    Object headers = getHeaders.invoke(obj);
-                    Method setHeader = headers.getClass().getMethod("set", String.class, Object.class);
-                    setHeader.invoke(headers, IAgentConstants.K2_API_CALLER, CallbackUtils.generateApiCallerHeaderValue(urlString));
-
+                    try {
+                        Method getHeaders = obj.getClass().getMethod("getHeaders", null);
+                        Object headers = getHeaders.invoke(obj);
+                        Method setHeader = headers.getClass().getMethod("set", String.class, Object.class);
+                        setHeader.invoke(headers, IAgentConstants.K2_API_CALLER, CallbackUtils.generateApiCallerHeaderValue(urlString));
+                    } catch (Exception e) {
+                    }
 
                     EventDispatcher.dispatch(new SSRFOperationalBean(urlString, className, sourceString, exectionId,
                             Instant.now().toEpochMilli(), methodName), VulnerabilityCaseType.HTTP_REQUEST);
