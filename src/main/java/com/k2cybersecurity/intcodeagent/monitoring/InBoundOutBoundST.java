@@ -1,7 +1,6 @@
 package com.k2cybersecurity.intcodeagent.monitoring;
 
 import com.k2cybersecurity.instrumentator.K2Instrumentator;
-import com.k2cybersecurity.instrumentator.utils.AgentUtils;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.models.javaagent.HttpConnectionStat;
@@ -77,6 +76,7 @@ public class InBoundOutBoundST {
         @Override
         public void run() {
             task(cache.values(), true);
+            cache.clear();
         }
     };
 
@@ -92,7 +92,6 @@ public class InBoundOutBoundST {
             HttpConnectionStat httpConnectionStat = new HttpConnectionStat(outBoundHttps.subList(i, maxIndex), K2Instrumentator.APPLICATION_UUID, isCached);
             EventSendPool.getInstance().sendEvent(httpConnectionStat.toString());
         }
-        allConnections.clear();
     }
 
 
