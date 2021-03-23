@@ -37,20 +37,23 @@ public class Callbacks {
                     }
                 } else if (StringUtils.equals(methodName, IAgentConstants.INIT) && args != null && args.length > 1
                         && args[1] != null) {
-                    Method httpUrl = args[1].getClass().getMethod("httpUrl");
-                    httpUrl.setAccessible(true);
-                    String url = httpUrl.invoke(args[1]).toString();
+                    try {
+                        Method httpUrl = args[1].getClass().getMethod("httpUrl");
+                        httpUrl.setAccessible(true);
+                        String url = httpUrl.invoke(args[1]).toString();
 
-                    Method newBuilder = args[1].getClass().getMethod("newBuilder");
-                    newBuilder.setAccessible(true);
-                    Object builder = newBuilder.invoke(args[1], null);
-                    Method setHeader = builder.getClass().getMethod("header", String.class, String.class);
-                    setHeader.setAccessible(true);
+                        Method newBuilder = args[1].getClass().getMethod("newBuilder");
+                        newBuilder.setAccessible(true);
+                        Object builder = newBuilder.invoke(args[1], null);
+                        Method setHeader = builder.getClass().getMethod("header", String.class, String.class);
+                        setHeader.setAccessible(true);
 
-                    builder = setHeader.invoke(builder, IAgentConstants.K2_API_CALLER, CallbackUtils.generateApiCallerHeaderValue(url));
-                    Method build = builder.getClass().getMethod("build", null);
-                    build.setAccessible(true);
-                    args[1] = build.invoke(builder, null);
+                        builder = setHeader.invoke(builder, IAgentConstants.K2_API_CALLER, CallbackUtils.generateApiCallerHeaderValue(url));
+                        Method build = builder.getClass().getMethod("build", null);
+                        build.setAccessible(true);
+                        args[1] = build.invoke(builder, null);
+                    } catch (Exception e) {
+                    }
 
                 }
             } finally {

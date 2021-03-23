@@ -49,12 +49,14 @@ public class Callbacks {
                     Method parse = classHttpHeader.getMethod("parse", String.class, String.class);
                     parse.setAccessible(true);
 
-                    Object header = parse.invoke(null, IAgentConstants.K2_API_CALLER, CallbackUtils.generateApiCallerHeaderValue(urlString));
+                    try {
+                        Object header = parse.invoke(null, IAgentConstants.K2_API_CALLER, CallbackUtils.generateApiCallerHeaderValue(urlString));
 
-                    Method addHeader = args[0].getClass().getMethod("addHeader", classHttpHeader);
-                    addHeader.setAccessible(true);
-                    args[0] = addHeader.invoke(args[0], header);
-
+                        Method addHeader = args[0].getClass().getMethod("addHeader", classHttpHeader);
+                        addHeader.setAccessible(true);
+                        args[0] = addHeader.invoke(args[0], header);
+                    } catch (Exception e) {
+                    }
 
 //                    System.out.println(String.format("Entry : SSRF : %s : %s : %s : %s", className, methodName, sourceString, exectionId));
                     ThreadLocalSSRFLock.getInstance().setUrl(urlString);

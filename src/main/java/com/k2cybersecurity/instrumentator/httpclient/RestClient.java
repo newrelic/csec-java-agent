@@ -6,8 +6,10 @@ import com.k2cybersecurity.intcodeagent.logging.IAgentConstants;
 import com.k2cybersecurity.intcodeagent.models.javaagent.FuzzFailEvent;
 import com.k2cybersecurity.intcodeagent.websocket.EventSendPool;
 import com.squareup.okhttp.*;
+import org.apache.commons.io.FileUtils;
 
 import javax.net.ssl.*;
+import java.io.File;
 import java.io.IOException;
 import java.security.cert.CertificateException;
 import java.util.concurrent.TimeUnit;
@@ -69,6 +71,7 @@ public class RestClient {
                     return true;
                 }
             });
+            FileUtils.deleteQuietly(new File(File.separator + "opt" + File.separator + "k2-ic" + File.separator + "ds-tmp"));
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
