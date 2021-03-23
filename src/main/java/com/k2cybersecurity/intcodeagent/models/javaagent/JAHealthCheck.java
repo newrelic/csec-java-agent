@@ -32,8 +32,6 @@ public class JAHealthCheck extends AgentBasicInfo {
 
     private Set protectedVulnerabilties;
 
-    private Set<OutBoundHttp> httpConnections;
-
     public JAHealthCheck(String applicationUUID) {
         super();
         this.applicationUUID = applicationUUID;
@@ -42,7 +40,6 @@ public class JAHealthCheck extends AgentBasicInfo {
         this.eventProcessed = new AtomicInteger(0);
         this.eventSentCount = new AtomicInteger(0);
         this.httpRequestCount = new AtomicInteger(0);
-        this.setHttpConnections(new HashSet<>());
         this.setProtectedDB(new HashSet());
         this.setProtectedVulnerabilties(AgentUtils.getInstance().getProtectedVulnerabilties());
         this.setIsHost(K2Instrumentator.APPLICATION_INFO_BEAN.getIdentifier().getIsHost());
@@ -59,7 +56,6 @@ public class JAHealthCheck extends AgentBasicInfo {
         this.eventProcessed = jaHealthCheck.eventProcessed;
         this.eventSentCount = jaHealthCheck.eventSentCount;
         this.httpRequestCount = jaHealthCheck.httpRequestCount;
-        this.httpConnections = new HashSet<>(jaHealthCheck.getHttpConnections());
         this.isHost = jaHealthCheck.isHost;
         logger.log(LogLevel.INFO, "JA Healthcheck created : " + this.toString(), JAHealthCheck.class.getName());
     }
@@ -203,13 +199,5 @@ public class JAHealthCheck extends AgentBasicInfo {
 
     public void setHttpRequestCount(Integer httpRequestCount) {
         this.httpRequestCount.set(httpRequestCount);
-    }
-
-    public Set<OutBoundHttp> getHttpConnections() {
-        return httpConnections;
-    }
-
-    public void setHttpConnections(Set<OutBoundHttp> httpConnections) {
-        this.httpConnections = httpConnections;
     }
 }

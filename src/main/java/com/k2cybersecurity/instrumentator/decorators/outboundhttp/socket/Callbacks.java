@@ -32,7 +32,7 @@ public class Callbacks {
                     ThreadLocalSSRFMap.getInstance().addToAlreadyEncountered(outBoundHttp);
                     InBoundOutBoundST.getInstance().addOutBoundHTTPConnection(outBoundHttp);
                 }
-                K2Instrumentator.JA_HEALTH_CHECK.getHttpConnections().add(outBoundHttp);
+                InBoundOutBoundST.getInstance().getNewConnections().add(outBoundHttp);
             } finally {
                 ThreadLocalOperationLock.getInstance().release();
             }

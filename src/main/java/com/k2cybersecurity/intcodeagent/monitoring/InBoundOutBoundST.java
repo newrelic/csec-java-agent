@@ -1,16 +1,14 @@
 package com.k2cybersecurity.intcodeagent.monitoring;
 
 import com.k2cybersecurity.instrumentator.K2Instrumentator;
+import com.k2cybersecurity.instrumentator.utils.AgentUtils;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.models.javaagent.HttpConnectionStat;
 import com.k2cybersecurity.intcodeagent.models.javaagent.OutBoundHttp;
 import com.k2cybersecurity.intcodeagent.websocket.EventSendPool;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
@@ -78,17 +76,24 @@ public class InBoundOutBoundST {
 
         @Override
         public void run() {
-
-            /**
-             * Create JSON
-             * Send to IC
-             * Clear cache
-             * */
-            HttpConnectionStat httpConnectionStat = new HttpConnectionStat(cache.values(), K2Instrumentator.APPLICATION_UUID, true);
-            EventSendPool.getInstance().sendEvent(httpConnectionStat.toString());
-            cache.clear();
+            task(cache.values(), true);
         }
     };
+
+    public static void task(Collection<OutBoundHttp> allConnections, boolean isCached) {
+        /**
+         * Create JSON
+         * Send to IC
+         * Clear cache
+         * */
+        List<OutBoundHttp> outBoundHttps = new ArrayList<>(allConnections);
+        for (int i = 0; i < outBoundHttps.size(); i += 40) {
+            int maxIndex = Math.min(i + 40, outBoundHttps.size());
+            HttpConnectionStat httpConnectionStat = new HttpConnectionStat(outBoundHttps.subList(i, maxIndex), K2Instrumentator.APPLICATION_UUID, isCached);
+            EventSendPool.getInstance().sendEvent(httpConnectionStat.toString());
+        }
+        allConnections.clear();
+    }
 
 
     public void clearNewConnections() {

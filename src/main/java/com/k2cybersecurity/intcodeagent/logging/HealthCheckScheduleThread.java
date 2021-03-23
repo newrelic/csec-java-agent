@@ -35,7 +35,7 @@ public class HealthCheckScheduleThread {
 
 //						channel.write(ByteBuffer.wrap(new JAHealthCheck(AgentNew.JA_HEALTH_CHECK).toString().getBytes()));
 					if (WSClient.getInstance().isOpen()) {
-                        K2Instrumentator.JA_HEALTH_CHECK.setHttpConnections(InBoundOutBoundST.getInstance().getNewConnections());
+						InBoundOutBoundST.task(InBoundOutBoundST.getInstance().getNewConnections(), false);
                         WSClient.getInstance().send(new JAHealthCheck(K2Instrumentator.JA_HEALTH_CHECK).toString());
                         K2Instrumentator.JA_HEALTH_CHECK.setEventDropCount(0);
                         K2Instrumentator.JA_HEALTH_CHECK.setEventProcessed(0);
@@ -48,7 +48,7 @@ public class HealthCheckScheduleThread {
 							if (WSClient.getInstance().isOpen()) {
                                 logger.log(LogLevel.DEBUG, "K2-JavaAgent re-installed successfully.",
                                         HealthCheckScheduleThread.class.getName());
-                                K2Instrumentator.JA_HEALTH_CHECK.setHttpConnections(InBoundOutBoundST.getInstance().getNewConnections());
+								InBoundOutBoundST.task(InBoundOutBoundST.getInstance().getNewConnections(), false);
                                 WSClient.getInstance()
                                         .send(new JAHealthCheck(K2Instrumentator.JA_HEALTH_CHECK).toString());
                                 K2Instrumentator.JA_HEALTH_CHECK.setEventDropCount(0);
