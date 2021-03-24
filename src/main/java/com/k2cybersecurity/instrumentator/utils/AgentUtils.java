@@ -87,7 +87,7 @@ public class AgentUtils {
 
 //	private Map<Integer, JADatabaseMetaData> sqlConnectionMap;
 
-	private AgentPolicy agentPolicy;
+	private AgentPolicy agentPolicy = new AgentPolicy();
 
 	private AgentPolicyIPBlockingParameters agentPolicyParameters;
 
