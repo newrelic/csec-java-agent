@@ -69,10 +69,13 @@ public class K2Instrumentator {
         if (StringUtils.isBlank(nlcPath)) {
             nlcPath = nlcDefaultPath;
         }
-        if (!CollectorConfigurationUtils.getInstance().readCollectorConfig(nlcPath, alcPath)) {
+        Identifier identifier = ApplicationInfoUtils.envDetection();
+
+        if (!CollectorConfigurationUtils.getInstance().readCollectorConfig(identifier.getKind(), nlcPath, alcPath)) {
             return false;
         }
-        APPLICATION_INFO_BEAN = createApplicationInfoBean();
+
+        APPLICATION_INFO_BEAN = createApplicationInfoBean(identifier);
 
         if (APPLICATION_INFO_BEAN == null) {
             return false;
@@ -107,13 +110,12 @@ public class K2Instrumentator {
         }
     }
 
-    public static ApplicationInfoBean createApplicationInfoBean() {
+    public static ApplicationInfoBean createApplicationInfoBean(Identifier identifier) {
         try {
             RuntimeMXBean runtimeMXBean = ManagementFactory.getRuntimeMXBean();
             ApplicationInfoBean applicationInfoBean = new ApplicationInfoBean(VMPID, APPLICATION_UUID,
                     isDynamicAttach ? DYNAMIC : STATIC);
             applicationInfoBean.setStartTime(runtimeMXBean.getStartTime());
-            Identifier identifier = ApplicationInfoUtils.envDetection();
             identifier.setCollectorIp(getIpAddress());
             String cmdLine = StringEscapeUtils.escapeJava(getCmdLineArgsByProc(VMPID));
             applicationInfoBean.setProcStartTime(getStartTimeByProc(VMPID));

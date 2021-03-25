@@ -2,12 +2,12 @@ package com.k2cybersecurity.instrumentator.utils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
-import com.k2cybersecurity.instrumentator.K2Instrumentator;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.models.collectorconfig.ApplicationLevelConfig;
 import com.k2cybersecurity.intcodeagent.models.collectorconfig.CollectorConfig;
 import com.k2cybersecurity.intcodeagent.models.collectorconfig.NodeLevelConfig;
+import com.k2cybersecurity.intcodeagent.models.javaagent.IdentifierEnvs;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
@@ -41,7 +41,7 @@ public class CollectorConfigurationUtils {
         return instance;
     }
 
-    public boolean readCollectorConfig(String nodeLevelConfigurationPath, String applicationLevelConfigurationPath) {
+    public boolean readCollectorConfig(IdentifierEnvs kind, String nodeLevelConfigurationPath, String applicationLevelConfigurationPath) {
         NodeLevelConfig nodeLevelConfig = new NodeLevelConfig();
         ApplicationLevelConfig applicationLevelConfig = new ApplicationLevelConfig();
         try {
@@ -70,7 +70,7 @@ public class CollectorConfigurationUtils {
         }
 
         setCollectorConfig(nodeLevelConfig, applicationLevelConfig);
-        return validateCollectorConfig();
+        return validateCollectorConfig(kind);
     }
 
     private void setCollectorConfig(NodeLevelConfig nodeLevelConfig, ApplicationLevelConfig applicationLevelConfig) {
@@ -91,7 +91,7 @@ public class CollectorConfigurationUtils {
         this.collectorConfig.setAppInfo(applicationLevelConfig.getAppInfo());
     }
 
-    private boolean validateCollectorConfig() {
+    private boolean validateCollectorConfig(IdentifierEnvs kind) {
 //        if (collectorConfig.getCustomerInfo() == null || collectorConfig.getCustomerInfo().isEmpty()) {
 //            logger.log(LogLevel.ERROR, String.format("Improper CustomerInfo provided in collector configuration. Exiting : %s", collectorConfig.getCustomerInfo()), CollectorConfigurationUtils.class.getName());
 //            return false;
@@ -101,7 +101,7 @@ public class CollectorConfigurationUtils {
             return false;
         }
 
-        switch (K2Instrumentator.APPLICATION_INFO_BEAN.getIdentifier().getKind()) {
+        switch (kind) {
             // NLC required
             case HOST:
             case CONTAINER:
