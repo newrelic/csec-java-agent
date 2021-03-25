@@ -5,6 +5,8 @@ import com.k2cybersecurity.instrumentator.custom.ThreadLocalHttpMap;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalOperationLock;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalSSRFLock;
 import com.k2cybersecurity.instrumentator.dispatcher.EventDispatcher;
+import com.k2cybersecurity.instrumentator.utils.CallbackUtils;
+import com.k2cybersecurity.intcodeagent.logging.IAgentConstants;
 import com.k2cybersecurity.intcodeagent.models.javaagent.VulnerabilityCaseType;
 import com.k2cybersecurity.intcodeagent.models.operationalbean.SSRFOperationalBean;
 
@@ -30,8 +32,21 @@ public class Callbacks {
                     Method toURL = genericUrl.getClass().getMethod("toURL");
                     toURL.setAccessible(true);
                     URL url = (URL) toURL.invoke(genericUrl);
-                    ThreadLocalSSRFLock.getInstance().setUrl(url.toString());
-                    EventDispatcher.dispatch(new SSRFOperationalBean(url.toString(), className, sourceString, exectionId,
+
+                    String urlString = url.toString();
+
+
+                    ThreadLocalSSRFLock.getInstance().setUrl(urlString);
+
+                    try {
+                        Method getHeaders = obj.getClass().getMethod("getHeaders", null);
+                        Object headers = getHeaders.invoke(obj);
+                        Method setHeader = headers.getClass().getMethod("set", String.class, Object.class);
+                        setHeader.invoke(headers, IAgentConstants.K2_API_CALLER, CallbackUtils.generateApiCallerHeaderValue(urlString));
+                    } catch (Exception e) {
+                    }
+
+                    EventDispatcher.dispatch(new SSRFOperationalBean(urlString, className, sourceString, exectionId,
                             Instant.now().toEpochMilli(), methodName), VulnerabilityCaseType.HTTP_REQUEST);
 
                 }

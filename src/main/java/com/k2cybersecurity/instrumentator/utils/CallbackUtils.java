@@ -1,5 +1,6 @@
 package com.k2cybersecurity.instrumentator.utils;
 
+import com.k2cybersecurity.instrumentator.K2Instrumentator;
 import com.k2cybersecurity.instrumentator.custom.*;
 import com.k2cybersecurity.instrumentator.dispatcher.EventDispatcher;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
@@ -705,18 +706,25 @@ public class CallbackUtils {
 
 	public static void cleanUpAllStates() {
 		// Clean up
-        ThreadLocalHTTPServiceLock.getInstance().resetLock();
-        ThreadLocalHttpMap.getInstance().cleanState();
-        ThreadLocalDBMap.getInstance().clearAll();
-        ThreadLocalSessionMap.getInstance().clearAll();
-        ThreadLocalLDAPMap.getInstance().clearAll();
-        ThreadLocalExecutionMap.getInstance().cleanUp();
-        ThreadLocalLdaptiveMap.getInstance().clearAll();
-        ThreadLocalXpathSaxonMap.getInstance().clearAll();
-        ThreadLocalXQuerySaxonMap.getInstance().clearAll();
-        ThreadLocalOkHttpMap.getInstance().clearAll();
-        ThreadLocalSSRFLock.getInstance().resetLock();
-        ThreadLocalJSRhinoMap.getInstance().clearAll();
-    }
+		ThreadLocalHTTPServiceLock.getInstance().resetLock();
+		ThreadLocalHttpMap.getInstance().cleanState();
+		ThreadLocalDBMap.getInstance().clearAll();
+		ThreadLocalSessionMap.getInstance().clearAll();
+		ThreadLocalLDAPMap.getInstance().clearAll();
+		ThreadLocalExecutionMap.getInstance().cleanUp();
+		ThreadLocalLdaptiveMap.getInstance().clearAll();
+		ThreadLocalXpathSaxonMap.getInstance().clearAll();
+		ThreadLocalXQuerySaxonMap.getInstance().clearAll();
+		ThreadLocalOkHttpMap.getInstance().clearAll();
+		ThreadLocalSSRFLock.getInstance().resetLock();
+		ThreadLocalJSRhinoMap.getInstance().clearAll();
+	}
 
+	public static String generateApiCallerHeaderValue(String targetURL) {
+		return String.format("%s||%s||%s||%s",
+				K2Instrumentator.APPLICATION_UUID,
+				ThreadLocalExecutionMap.getInstance().getHttpRequestBean().getContextPath(),
+				ThreadLocalExecutionMap.getInstance().getHttpRequestBean().getServerPort(),
+				Base64.getEncoder().encodeToString(targetURL.getBytes(StandardCharsets.UTF_8)));
+	}
 }

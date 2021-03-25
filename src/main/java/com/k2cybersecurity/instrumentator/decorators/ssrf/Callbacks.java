@@ -5,6 +5,8 @@ import com.k2cybersecurity.instrumentator.custom.ThreadLocalHttpMap;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalOperationLock;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalSSRFLock;
 import com.k2cybersecurity.instrumentator.dispatcher.EventDispatcher;
+import com.k2cybersecurity.instrumentator.utils.CallbackUtils;
+import com.k2cybersecurity.intcodeagent.logging.IAgentConstants;
 import com.k2cybersecurity.intcodeagent.models.javaagent.VulnerabilityCaseType;
 import com.k2cybersecurity.intcodeagent.models.operationalbean.SSRFOperationalBean;
 import org.apache.commons.lang3.StringUtils;
@@ -12,6 +14,7 @@ import org.apache.commons.lang3.StringUtils;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.time.Instant;
+import java.util.Arrays;
 
 public class Callbacks {
 
@@ -25,10 +28,18 @@ public class Callbacks {
                     Method getURL = obj.getClass().getMethod("getURL");
                     getURL.setAccessible(true);
                     URL url = (URL) getURL.invoke(obj);
-                    ThreadLocalSSRFLock.getInstance().setUrl(url.toString());
+                    String urlString = url.toString();
+
+                    ThreadLocalSSRFLock.getInstance().setUrl(urlString);
+                    try {
+                        Method setRequestProperty = obj.getClass().getMethod("setRequestProperty", String.class, String.class);
+                        setRequestProperty.setAccessible(true);
+                        setRequestProperty.invoke(obj, IAgentConstants.K2_API_CALLER, CallbackUtils.generateApiCallerHeaderValue(urlString));
+                    } catch (Exception e) {
+                    }
                     if (StringUtils.equalsAny(url.getProtocol(), "http", "https")) {
 //                        System.out.println(String.format("Entry : SSRF Value: %s : %s : %s : %s", className, methodName, obj, url.toString()));
-                        EventDispatcher.dispatch(new SSRFOperationalBean(url.toString(), className, sourceString, exectionId,
+                        EventDispatcher.dispatch(new SSRFOperationalBean(urlString, className, sourceString, exectionId,
                                 Instant.now().toEpochMilli(), methodName), VulnerabilityCaseType.HTTP_REQUEST);
                     }
                 }

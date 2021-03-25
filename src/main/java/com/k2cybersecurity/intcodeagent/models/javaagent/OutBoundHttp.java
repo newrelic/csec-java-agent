@@ -24,13 +24,16 @@ public class OutBoundHttp {
 
     private AtomicInteger count;
 
-    public OutBoundHttp(String url, String sourceIp, String destinationIp, OutBoundHttpDirection direction) {
+    private OutboundHttpSourceId sourceId;
+
+    public OutBoundHttp(String url, String sourceIp, String destinationIp, OutBoundHttpDirection direction, OutboundHttpSourceId sourceId) {
         this.url = url;
         this.sourceIp = sourceIp;
         this.direction = direction;
         this.destinationIp = destinationIp;
         this.count = new AtomicInteger(1);
-        this.hashCode = Objects.hash(url, direction, sourceIp, destinationIp);
+        this.sourceId = sourceId;
+        this.hashCode = Objects.hash(url, direction, sourceIp, destinationIp, sourceId);
     }
 
     public String getUrl() {
@@ -77,12 +80,16 @@ public class OutBoundHttp {
         this.count = count;
     }
 
+    public OutboundHttpSourceId getSourceId() {
+        return sourceId;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         OutBoundHttp that = (OutBoundHttp) o;
-        return Objects.equals(url, that.url) && Objects.equals(direction, that.direction) && Objects.equals(sourceIp, that.sourceIp) && Objects.equals(destinationIp, that.destinationIp);
+        return Objects.equals(url, that.url) && Objects.equals(direction, that.direction) && Objects.equals(sourceIp, that.sourceIp) && Objects.equals(destinationIp, that.destinationIp) && Objects.equals(sourceId, that.sourceId);
     }
 
     @Override
