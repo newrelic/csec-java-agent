@@ -26,12 +26,12 @@ public class HttpConnectionStat extends AgentBasicInfo {
         return httpConnections;
     }
 
-    public Boolean getCached() {
+    public Boolean getIsCached() {
         return isCached;
     }
 
-    public void setCached(Boolean cached) {
-        isCached = cached;
+    public void setIsCached(Boolean isCached) {
+        this.isCached = isCached;
     }
 
     public String getApplicationUUID() {
