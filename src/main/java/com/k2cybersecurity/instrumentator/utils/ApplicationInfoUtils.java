@@ -24,28 +24,10 @@ import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.*;
 
 public class ApplicationInfoUtils {
 
-	public static final String SELF_NET_ROUTE = "self/net/route";
-	public static final String CS_1 = "00000000";
 	public static final String DOT = ".";
 	private static final String SCOPE = ".scope";
 	private static final String DOCKER_1_13 = "/docker-";
 	public static final String LIBPOD = "/libpod-";
-
-	public static String getDefaultGateway() throws IOException {
-		try {
-			List<String> routes = IOUtils.readLines(new FileInputStream(new File(PROC_DIR + SELF_NET_ROUTE)));
-			for (int i = 1; i < routes.size(); i++) {
-				String[] route = routes.get(i).split("\\s+");
-				if (StringUtils.equals(CS_1, route[1])) {
-					return getDefaultGateway(route[2]);
-				}
-			}
-		} catch (UnknownHostException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		return StringUtils.EMPTY;
-	}
 
 	public static String getContainerID() {
 

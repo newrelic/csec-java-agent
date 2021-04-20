@@ -467,6 +467,7 @@ public interface IAgentConstants {
 	String HOST_IP_FOUND_MSG = "hostip found: ";
 	String JA_CONNECT_SUCCESS_MSG = "K2-JavaAgent installed successfully.";
 	String PROC_DIR = "/proc/";
+	String PROC_SELF_DIR = "/proc/self";
 	String CMD_LINE_DIR = "/cmdline";
 	String STAT = "/stat";
 	String BYTE_BUFFER_FIELD_LIMIT = "limit";

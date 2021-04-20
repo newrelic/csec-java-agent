@@ -117,9 +117,7 @@ public class K2Instrumentator {
                     isDynamicAttach ? DYNAMIC : STATIC);
             applicationInfoBean.setStartTime(runtimeMXBean.getStartTime());
             identifier.setCollectorIp(getIpAddress());
-            String cmdLine = StringEscapeUtils.escapeJava(getCmdLineArgsByProc(VMPID));
-            applicationInfoBean.setProcStartTime(getStartTimeByProc(VMPID));
-            applicationInfoBean.setCmdline(cmdLine);
+            applicationInfoBean.setCmdline(StringEscapeUtils.escapeJava(getCmdLineArgsByProc()));
 
             try {
                 applicationInfoBean.setBinaryPath(Files
@@ -270,8 +268,8 @@ public class K2Instrumentator {
         return ipAddress;
     }
 
-    private static String getCmdLineArgsByProc(Integer pid) {
-        File cmdlineFile = new File(PROC_DIR + "self" + CMD_LINE_DIR);
+    private static String getCmdLineArgsByProc() {
+        File cmdlineFile = new File(PROC_SELF_DIR + CMD_LINE_DIR);
         if (!cmdlineFile.isFile())
             return null;
         try {
