@@ -62,42 +62,51 @@ public class K2Instrumentator {
     }
 
     public static boolean init(Boolean isDynamicAttach) {
-        K2Instrumentator.isDynamicAttach = isDynamicAttach;
+        try {
+            K2Instrumentator.isDynamicAttach = isDynamicAttach;
 
-        String nlcPath = System.getenv("K2_AGENT_NODE_CONFIG");
-        String alcPath = System.getenv("K2_AGENT_APP_CONFIG");
-        if (StringUtils.isBlank(nlcPath)) {
-            nlcPath = nlcDefaultPath;
-        }
-        Identifier identifier = ApplicationInfoUtils.envDetection();
-
-        if (!CollectorConfigurationUtils.getInstance().readCollectorConfig(identifier.getKind(), nlcPath, alcPath)) {
-            return false;
-        }
-
-        APPLICATION_INFO_BEAN = createApplicationInfoBean(identifier);
-
-        if (APPLICATION_INFO_BEAN == null) {
-            return false;
-        }
-        JA_HEALTH_CHECK = new JAHealthCheck(APPLICATION_UUID);
-
-        new Thread(() -> {
-            try {
-                WSClient.getInstance();
-            } catch (Throwable e) {
-                logger.log(LogLevel.ERROR, ERROR_OCCURED_WHILE_TRYING_TO_CONNECT_TO_WSOCKET, e,
-                        K2Instrumentator.class.getName());
+            String nlcPath = System.getenv("K2_AGENT_NODE_CONFIG");
+            String alcPath = System.getenv("K2_AGENT_APP_CONFIG");
+            if (StringUtils.isBlank(nlcPath)) {
+                nlcPath = nlcDefaultPath;
             }
-            HealthCheckScheduleThread.getInstance();
-        }).start();
-        boolean isWorking = eventWritePool();
+            if (StringUtils.isBlank(alcPath)) {
+                alcPath = StringUtils.EMPTY;
+            }
 
-        // Place Classloader adjustments
-        ClassloaderAdjustments.jbossSpecificAdjustments();
+            Identifier identifier = ApplicationInfoUtils.envDetection();
 
-        System.out.println(String.format("This application instance is now being protected by K2 Agent under id %s", APPLICATION_UUID));
-        return isWorking;
+            if (!CollectorConfigurationUtils.getInstance().readCollectorConfig(identifier.getKind(), nlcPath, alcPath)) {
+                return false;
+            }
+
+            APPLICATION_INFO_BEAN = createApplicationInfoBean(identifier);
+
+            if (APPLICATION_INFO_BEAN == null) {
+                return false;
+            }
+            JA_HEALTH_CHECK = new JAHealthCheck(APPLICATION_UUID);
+
+            new Thread(() -> {
+                try {
+                    WSClient.getInstance();
+                } catch (Throwable e) {
+                    logger.log(LogLevel.ERROR, ERROR_OCCURED_WHILE_TRYING_TO_CONNECT_TO_WSOCKET, e,
+                            K2Instrumentator.class.getName());
+                }
+                HealthCheckScheduleThread.getInstance();
+            }).start();
+            boolean isWorking = eventWritePool();
+
+            // Place Classloader adjustments
+            ClassloaderAdjustments.jbossSpecificAdjustments();
+
+            System.out.println(String.format("This application instance is now being protected by K2 Agent under id %s", APPLICATION_UUID));
+            return isWorking;
+        } catch (Exception e) {
+            logger.log(LogLevel.ERROR, "Error in init ", e, K2Instrumentator.class.getName());
+        }
+        return false;
     }
 
     private static boolean eventWritePool() {
@@ -124,11 +133,11 @@ public class K2Instrumentator {
                         .readSymbolicLink(
                                 new File(String.format(PROC_S_EXE, applicationInfoBean.getPid())).toPath())
                         .toString());
+                applicationInfoBean
+                        .setBinaryName(StringUtils.substringAfterLast(applicationInfoBean.getBinaryPath(), File.separator));
+                applicationInfoBean.setSha256(HashGenerator.getChecksum(new File(applicationInfoBean.getBinaryPath())));
             } catch (IOException e) {
             }
-            applicationInfoBean
-                    .setBinaryName(StringUtils.substringAfterLast(applicationInfoBean.getBinaryPath(), File.separator));
-            applicationInfoBean.setSha256(HashGenerator.getChecksum(new File(applicationInfoBean.getBinaryPath())));
 
             populateEnvInfo(identifier);
             applicationInfoBean.setIdentifier(identifier);
@@ -153,7 +162,14 @@ public class K2Instrumentator {
     }
 
     private static void populateEnvInfo(Identifier identifier) {
-        SystemInfo systemInfo = new SystemInfo();
+        long bootTime = 0;
+        String buildNumber = StringUtils.EMPTY;
+        try {
+            SystemInfo systemInfo = new SystemInfo();
+            bootTime = systemInfo.getOperatingSystem().getSystemBootTime();
+            buildNumber = systemInfo.getOperatingSystem().getVersionInfo().getBuildNumber();
+        } catch (UnsatisfiedLinkError error) {
+        }
         switch (identifier.getKind()) {
             case HOST:
                 HostProperties hostProperties = new HostProperties();
@@ -166,8 +182,8 @@ public class K2Instrumentator {
                 hostProperties.setName(StringUtils.isNotBlank(CollectorConfigurationUtils.getInstance().getCollectorConfig().getNodeName()) ?
                         CollectorConfigurationUtils.getInstance().getCollectorConfig().getNodeName() :
                         SystemUtils.getHostName());
-                hostProperties.setCreationTimestamp(systemInfo.getOperatingSystem().getSystemBootTime() * 1000);
-                hostProperties.setBuildNumber(systemInfo.getOperatingSystem().getVersionInfo().getBuildNumber());
+                hostProperties.setCreationTimestamp(bootTime * 1000);
+                hostProperties.setBuildNumber(buildNumber);
                 identifier.setEnvInfo(hostProperties);
                 break;
             case CONTAINER:
@@ -175,7 +191,7 @@ public class K2Instrumentator {
                 containerProperties.setId(identifier.getId());
                 containerProperties.setName(SystemUtils.getHostName());
                 containerProperties.setIpAddress(identifier.getCollectorIp());
-                containerProperties.setCreationTimestamp(systemInfo.getOperatingSystem().getSystemBootTime() * 1000);
+                containerProperties.setCreationTimestamp(bootTime * 1000);
                 identifier.setEnvInfo(containerProperties);
                 break;
             case POD:
@@ -184,7 +200,7 @@ public class K2Instrumentator {
                 podProperties.setIpAddress(identifier.getCollectorIp());
                 podProperties.setNamespace(getPodNameSpace());
                 podProperties.setName(SystemUtils.getHostName());
-                podProperties.setCreationTimestamp(systemInfo.getOperatingSystem().getSystemBootTime() * 1000);
+                podProperties.setCreationTimestamp(bootTime * 1000);
                 ContainerProperties containerProperty = new ContainerProperties();
                 containerProperty.setId(ApplicationInfoUtils.getContainerID());
                 podProperties.setContainerProperties(Collections.singletonList(containerProperty));

@@ -1,6 +1,8 @@
 package com.k2cybersecurity.instrumentator.utils;
 
 import com.k2cybersecurity.instrumentator.K2Instrumentator;
+import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
+import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.logging.DeployedApplication;
 import com.k2cybersecurity.intcodeagent.models.collectorconfig.CollectorConfig;
 import com.k2cybersecurity.intcodeagent.models.collectorconfig.NodeLevelConfig;
@@ -28,6 +30,8 @@ public class ApplicationInfoUtils {
 	private static final String SCOPE = ".scope";
 	private static final String DOCKER_1_13 = "/docker-";
 	public static final String LIBPOD = "/libpod-";
+
+	private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
 
 	public static String getContainerID() {
 
@@ -132,22 +136,27 @@ public class ApplicationInfoUtils {
 		4. ECS
 		5. Fargate (To be done)
 		* */
-		Identifier identifier = new Identifier(CollectorConfigurationUtils.getInstance().getCollectorConfig().getNodeName(), CollectorConfigurationUtils.getInstance().getCollectorConfig().getNodeId(), CollectorConfigurationUtils.getInstance().getCollectorConfig().getNodeIp());
-		String containerId = getContainerID();
-		if (isECSEnv()) {
-			identifier.setKind(IdentifierEnvs.ECS);
-			identifier.setId(getECSTaskId());
-		} else if (isK8sEnv()) {
-			identifier.setKind(IdentifierEnvs.POD);
-			identifier.setId(getPodId());
-		} else if (StringUtils.isNotBlank(containerId)) {
-			identifier.setKind(IdentifierEnvs.CONTAINER);
-			identifier.setId(containerId);
-		} else {
-			identifier.setKind(IdentifierEnvs.HOST);
-			identifier.setId(CollectorConfigurationUtils.getInstance().getCollectorConfig().getNodeId());
+		try {
+			Identifier identifier = new Identifier(CollectorConfigurationUtils.getInstance().getCollectorConfig().getNodeName(), CollectorConfigurationUtils.getInstance().getCollectorConfig().getNodeId(), CollectorConfigurationUtils.getInstance().getCollectorConfig().getNodeIp());
+			String containerId = getContainerID();
+			if (isECSEnv()) {
+				identifier.setKind(IdentifierEnvs.ECS);
+				identifier.setId(getECSTaskId());
+			} else if (isK8sEnv()) {
+				identifier.setKind(IdentifierEnvs.POD);
+				identifier.setId(getPodId());
+			} else if (StringUtils.isNotBlank(containerId)) {
+				identifier.setKind(IdentifierEnvs.CONTAINER);
+				identifier.setId(containerId);
+			} else {
+				identifier.setKind(IdentifierEnvs.HOST);
+				identifier.setId(CollectorConfigurationUtils.getInstance().getCollectorConfig().getNodeId());
+			}
+			return identifier;
+		} catch (Exception e) {
+			logger.log(LogLevel.ERROR, "Error while env detection ", e, ApplicationInfoUtils.class.getName());
 		}
-		return identifier;
+		return null;
 	}
 
 	private static String getECSTaskId() {
