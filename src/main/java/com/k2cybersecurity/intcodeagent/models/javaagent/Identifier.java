@@ -15,7 +15,7 @@ public class Identifier {
     private IdentifierEnvs kind;
 
     /**
-     * IC properties
+     * Node properties
      */
     private String nodeName;
     private String nodeId;

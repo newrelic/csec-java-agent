@@ -137,7 +137,7 @@ public class ApplicationInfoUtils {
 		5. Fargate (To be done)
 		* */
 		try {
-			Identifier identifier = new Identifier(CollectorConfigurationUtils.getInstance().getCollectorConfig().getNodeName(), CollectorConfigurationUtils.getInstance().getCollectorConfig().getNodeId(), CollectorConfigurationUtils.getInstance().getCollectorConfig().getNodeIp());
+            Identifier identifier = new Identifier();
 			String containerId = getContainerID();
 			if (isECSEnv()) {
 				identifier.setKind(IdentifierEnvs.ECS);

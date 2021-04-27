@@ -79,7 +79,9 @@ public class K2Instrumentator {
             if (!CollectorConfigurationUtils.getInstance().readCollectorConfig(identifier.getKind(), nlcPath, alcPath)) {
                 return false;
             }
-
+            identifier.setNodeId(CollectorConfigurationUtils.getInstance().getCollectorConfig().getNodeId());
+            identifier.setNodeIp(CollectorConfigurationUtils.getInstance().getCollectorConfig().getNodeIp());
+            identifier.setNodeName(CollectorConfigurationUtils.getInstance().getCollectorConfig().getNodeName());
             APPLICATION_INFO_BEAN = createApplicationInfoBean(identifier);
 
             if (APPLICATION_INFO_BEAN == null) {
@@ -170,6 +172,7 @@ public class K2Instrumentator {
             buildNumber = systemInfo.getOperatingSystem().getVersionInfo().getBuildNumber();
         } catch (UnsatisfiedLinkError error) {
         }
+
         switch (identifier.getKind()) {
             case HOST:
                 HostProperties hostProperties = new HostProperties();
