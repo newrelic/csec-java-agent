@@ -74,6 +74,7 @@ public class CVEService implements Runnable {
     public static final String FAILED_TO_PROCESS_LIB_PATH = "Failed to process lib path  : ";
     public static final String FAILED_TO_PROCESS_DIRECTORY = "Failed to process directory : ";
     public static final String COLON_SEPERATOR = " : ";
+    public static final String SERVICE_ENDPOINT = "%s:%s";
 
     private String nodeId;
 
@@ -100,7 +101,7 @@ public class CVEService implements Runnable {
 
     private static final String YML_TEMPLATE = "# path to dependency check tool.\r\n"
             + "dependencycheck.command: sh /tmp/localcveservice/dist/dependency-check.sh\r\n"
-            + "# connecting back to k2agent.\r\n" + "k2agent.websocket: ws://%s:54321/\r\n" + "k2agent.nodeId: %s\r\n"
+            + "# connecting back to k2agent.\r\n" + "k2agent.websocket: ws://%s/\r\n" + "k2agent.nodeId: %s\r\n"
             + "k2agent.identifier.kind: %s\r\n" + "k2agent.identifier.id: %s\r\n"
             + "#----- following are file scan specific options\r\n" + "k2agent.scan.mode: file\r\n"
             + "k2agent.application: %s\r\n" + "k2agent.applicationUuid: %s\r\n" + "k2agent.applicationSha256: %s\r\n"
@@ -273,7 +274,9 @@ public class CVEService implements Runnable {
 
     protected File createServiceYml(String cveServicePath, String nodeId, String appName, String appSha256,
                                     String scanPath, String applicationUUID, Boolean env) throws IOException {
-        String yaml = String.format(YML_TEMPLATE, CollectorConfigurationUtils.getInstance().getCollectorConfig().getK2ServiceInfo().getServiceEndpointAddress(), nodeId, kind, id, appName, applicationUUID, appSha256,
+        String yaml = String.format(YML_TEMPLATE, String.format(SERVICE_ENDPOINT, CollectorConfigurationUtils.getInstance().getCollectorConfig().getK2ServiceInfo().getServiceEndpointAddress(),
+                CollectorConfigurationUtils.getInstance().getCollectorConfig().getK2ServiceInfo().getServiceEndpointPort()),
+                nodeId, kind, id, appName, applicationUUID, appSha256,
                 scanPath, env);
         File yml = new File(TMP_DIR, SERVICE_INPUT_YML);
         logger.log(LogLevel.INFO, INPUT_YML_LOG + yaml, CVEService.class.getName());
@@ -284,8 +287,8 @@ public class CVEService implements Runnable {
     protected List<CVEScanner> getAllScanDirs() {
     	List<CVEScanner> scanners = new ArrayList<>();
     	List<String> appJarNames = new ArrayList<>();
-    	
-    	if (K2Instrumentator.APPLICATION_INFO_BEAN.getServerInfo().getDeployedApplications() != null) {
+
+        if (K2Instrumentator.APPLICATION_INFO_BEAN.getServerInfo().getDeployedApplications() != null) {
             for (Object obj : K2Instrumentator.APPLICATION_INFO_BEAN.getServerInfo().getDeployedApplications()) {
                 DeployedApplication deployedApplication = (DeployedApplication) obj;
                 if (!AgentUtils.getInstance().getScannedDeployedApplications().contains(deployedApplication)) {

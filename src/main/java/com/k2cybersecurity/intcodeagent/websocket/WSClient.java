@@ -19,7 +19,7 @@ public class WSClient extends WebSocketClient {
 	private static WSClient instance;
 
 	private WSClient() throws URISyntaxException, InterruptedException {
-		super(new URI(String.format("ws://%s:%s", CollectorConfigurationUtils.getInstance().getCollectorConfig().getK2ServiceInfo().getServiceEndpointAddress(), 54321)));
+		super(new URI(String.format("ws://%s:%s", CollectorConfigurationUtils.getInstance().getCollectorConfig().getK2ServiceInfo().getServiceEndpointAddress(), CollectorConfigurationUtils.getInstance().getCollectorConfig().getK2ServiceInfo().getServiceEndpointPort())));
 		this.setTcpNoDelay(true);
 		logger.log(LogLevel.INFO, "Creating WSock connection to : " + CollectorConfigurationUtils.getInstance().getCollectorConfig().getK2ServiceInfo().getServiceEndpointAddress(),
 				WSClient.class.getName());

@@ -12,7 +12,7 @@ import java.util.Objects;
 @JsonPropertyOrder(alphabetic = true)
 public class CustomerInfo {
 
-    private String customerId;
+    private Integer customerId;
 
     private String apiAccessorToken;
 
@@ -22,11 +22,11 @@ public class CustomerInfo {
     public CustomerInfo() {
     }
 
-    public String getCustomerId() {
+    public Integer getCustomerId() {
         return customerId;
     }
 
-    public void setCustomerId(String customerId) {
+    public void setCustomerId(Integer customerId) {
         this.customerId = customerId;
     }
 
@@ -68,6 +68,6 @@ public class CustomerInfo {
     }
 
     public boolean isEmpty() {
-        return StringUtils.isAnyBlank(customerId, apiAccessorToken);
+        return StringUtils.isBlank(apiAccessorToken) || customerId == null;
     }
 }

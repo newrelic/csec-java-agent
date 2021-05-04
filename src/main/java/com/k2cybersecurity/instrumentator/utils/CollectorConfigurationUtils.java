@@ -7,6 +7,7 @@ import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.models.collectorconfig.ApplicationLevelConfig;
 import com.k2cybersecurity.intcodeagent.models.collectorconfig.CollectorConfig;
 import com.k2cybersecurity.intcodeagent.models.collectorconfig.NodeLevelConfig;
+import com.k2cybersecurity.intcodeagent.models.javaagent.AgentBasicInfo;
 import com.k2cybersecurity.intcodeagent.models.javaagent.IdentifierEnvs;
 import org.apache.commons.lang3.StringUtils;
 
@@ -70,7 +71,12 @@ public class CollectorConfigurationUtils {
         }
 
         setCollectorConfig(nodeLevelConfig, applicationLevelConfig);
-        return validateCollectorConfig(kind);
+        if (validateCollectorConfig(kind)) {
+            AgentBasicInfo.setNodeId(CollectorConfigurationUtils.getInstance().getCollectorConfig().getNodeId());
+            AgentBasicInfo.setCustomerId(CollectorConfigurationUtils.getInstance().getCollectorConfig().getCustomerInfo().getCustomerId());
+            return true;
+        }
+        return false;
     }
 
     private void setCollectorConfig(NodeLevelConfig nodeLevelConfig, ApplicationLevelConfig applicationLevelConfig) {
