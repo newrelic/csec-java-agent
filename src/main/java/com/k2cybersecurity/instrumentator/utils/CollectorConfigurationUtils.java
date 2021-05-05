@@ -18,6 +18,11 @@ public class CollectorConfigurationUtils {
     public static final String ERROR_WHILE_READING_NLC_COLLECTOR_CONFIG = "Error while reading NLC Collector config:";
     public static final String ERROR_WHILE_READING_ALC_COLLECTOR_CONFIG_S_S = "Error while reading ALC Collector config: %s : %s";
     public static final String ERROR_WHILE_READING_ALC_COLLECTOR_CONFIG = "Error while reading ALC Collector config:";
+    public static final String NODE_LEVEL_CONFIGURATION_LOADED = "Node Level Configuration loaded ";
+    public static final String NODE_LEVEL_CONFIGURATION_WAS_NOT_PROVIDED = "Node Level Configuration was not provided.";
+    public static final String APPLICATION_LEVEL_CONFIGURATION_LOADED = "Application Level Configuration loaded ";
+    public static final String APPLICATION_LEVEL_CONFIGURATION_WAS_NOT_PROVIDED = "Application Level Configuration was not provided.";
+    public static final String BASIC_INFO_SET_TO_NODE_ID_S_CUSTOMER_ID_S = "Basic info set to nodeId %s :: customerId : %s";
     private final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
 
     private static CollectorConfigurationUtils instance;
@@ -49,9 +54,9 @@ public class CollectorConfigurationUtils {
             File nlcFile = new File(nodeLevelConfigurationPath);
             if (nlcFile.exists()) {
                 nodeLevelConfig = yamlMapper.readValue(nlcFile, NodeLevelConfig.class);
-                logger.log(LogLevel.INFO, "Node Level Configuration loaded " + nodeLevelConfig, CollectorConfigurationUtils.class.getName());
+                logger.log(LogLevel.INFO, NODE_LEVEL_CONFIGURATION_LOADED + nodeLevelConfig, CollectorConfigurationUtils.class.getName());
             } else {
-                logger.log(LogLevel.WARNING, "Node Level Configuration was not provided.", CollectorConfigurationUtils.class.getName());
+                logger.log(LogLevel.WARNING, NODE_LEVEL_CONFIGURATION_WAS_NOT_PROVIDED, CollectorConfigurationUtils.class.getName());
             }
         } catch (Throwable e) {
             logger.log(LogLevel.ERROR, String.format(ERROR_WHILE_READING_NLC_COLLECTOR_CONFIG_S_S, e.getMessage(), e.getCause()), CollectorConfigurationUtils.class.getName());
@@ -61,9 +66,9 @@ public class CollectorConfigurationUtils {
             File alcFile = new File(applicationLevelConfigurationPath);
             if (alcFile.exists()) {
                 applicationLevelConfig = yamlMapper.readValue(alcFile, ApplicationLevelConfig.class);
-                logger.log(LogLevel.INFO, "Application Level Configuration loaded " + applicationLevelConfig, CollectorConfigurationUtils.class.getName());
+                logger.log(LogLevel.INFO, APPLICATION_LEVEL_CONFIGURATION_LOADED + applicationLevelConfig, CollectorConfigurationUtils.class.getName());
             } else {
-                logger.log(LogLevel.WARNING, "Application Level Configuration was not provided.", CollectorConfigurationUtils.class.getName());
+                logger.log(LogLevel.WARNING, APPLICATION_LEVEL_CONFIGURATION_WAS_NOT_PROVIDED, CollectorConfigurationUtils.class.getName());
             }
         } catch (Throwable e) {
             logger.log(LogLevel.ERROR, String.format(ERROR_WHILE_READING_ALC_COLLECTOR_CONFIG_S_S, e.getMessage(), e.getCause()), CollectorConfigurationUtils.class.getName());
@@ -74,6 +79,7 @@ public class CollectorConfigurationUtils {
         if (validateCollectorConfig(kind)) {
             AgentBasicInfo.setNodeId(this.collectorConfig.getNodeId());
             AgentBasicInfo.setCustomerId(this.collectorConfig.getCustomerInfo().getCustomerId());
+            logger.log(LogLevel.DEBUG, String.format(BASIC_INFO_SET_TO_NODE_ID_S_CUSTOMER_ID_S, this.collectorConfig.getNodeId(), this.collectorConfig.getCustomerInfo().getCustomerId()), CollectorConfigurationUtils.class.getName());
             return true;
         }
         return false;
