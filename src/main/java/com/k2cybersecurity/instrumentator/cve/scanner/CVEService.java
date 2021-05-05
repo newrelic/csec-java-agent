@@ -114,14 +114,19 @@ public class CVEService implements Runnable {
 
             int retry = 3;
             boolean downlaoded = false;
-            while (!downlaoded) {
-                downlaoded = downloadCVEJar(cveTar, TMP_LOCALCVESERVICE_PATH);
-                retry--;
-                if (retry == 0) {
-                    return;
+            try {
+                while (!downlaoded) {
+                    downlaoded = downloadCVEJar(cveTar, TMP_LOCALCVESERVICE_PATH);
+                    retry--;
+                    if (retry == 0) {
+                        return;
+                    }
+                    TimeUnit.SECONDS.sleep(10);
                 }
-                TimeUnit.SECONDS.sleep(10);
+            } catch (Exception e) {
+                logger.log(LogLevel.ERROR, "tar file downloaded fail.", e, CVEService.class.getName());
             }
+            logger.log(LogLevel.DEBUG, "tar file downloaded.", CVEService.class.getName());
             List<CVEScanner> scanDirs;
             if (isEnvScan) {
                 scanDirs = getLibScanDirs();

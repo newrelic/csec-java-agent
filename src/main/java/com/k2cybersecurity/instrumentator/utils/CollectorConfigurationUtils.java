@@ -72,8 +72,8 @@ public class CollectorConfigurationUtils {
 
         setCollectorConfig(nodeLevelConfig, applicationLevelConfig);
         if (validateCollectorConfig(kind)) {
-            AgentBasicInfo.setNodeId(CollectorConfigurationUtils.getInstance().getCollectorConfig().getNodeId());
-            AgentBasicInfo.setCustomerId(CollectorConfigurationUtils.getInstance().getCollectorConfig().getCustomerInfo().getCustomerId());
+            AgentBasicInfo.setNodeId(this.collectorConfig.getNodeId());
+            AgentBasicInfo.setCustomerId(this.collectorConfig.getCustomerInfo().getCustomerId());
             return true;
         }
         return false;

@@ -39,8 +39,6 @@ public class AgentBasicInfo {
 
 	private static Integer customerId;
 
-	private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
-
 	/**
 	 * Instantiates a new agent basic info according to the source class object.
 	 */

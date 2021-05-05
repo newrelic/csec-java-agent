@@ -4,6 +4,7 @@ import com.k2cybersecurity.instrumentator.K2Instrumentator;
 import com.k2cybersecurity.intcodeagent.properties.K2JALogProperties;
 import com.k2cybersecurity.intcodeagent.websocket.FtpClient;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.SystemUtils;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -57,7 +58,11 @@ public class LogWriter implements Runnable {
     private String threadName;
 
     static {
-        fileName = "/tmp/k2logs/k2_java_agent-" + K2Instrumentator.APPLICATION_UUID + ".log";
+		if (SystemUtils.IS_OS_WINDOWS) {
+			fileName = "C:\\Users\\Public\\k2agent\\k2logs\\k2_java_agent-" + K2Instrumentator.APPLICATION_UUID + ".log";
+		} else {
+			fileName = "/tmp/k2logs/k2_java_agent-" + K2Instrumentator.APPLICATION_UUID + ".log";
+		}
         currentLogFile = new File(fileName);
         currentLogFile.getParentFile().mkdirs();
         currentLogFileName = fileName;
