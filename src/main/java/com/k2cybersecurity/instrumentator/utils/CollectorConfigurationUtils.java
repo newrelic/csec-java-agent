@@ -76,13 +76,7 @@ public class CollectorConfigurationUtils {
         }
 
         setCollectorConfig(nodeLevelConfig, applicationLevelConfig);
-        if (validateCollectorConfig(kind)) {
-            AgentBasicInfo.setNodeId(this.collectorConfig.getNodeId());
-            AgentBasicInfo.setCustomerId(this.collectorConfig.getCustomerInfo().getCustomerId());
-            logger.log(LogLevel.INFO, String.format(BASIC_INFO_SET_TO_NODE_ID_S_CUSTOMER_ID_S, this.collectorConfig.getNodeId(), this.collectorConfig.getCustomerInfo().getCustomerId()), CollectorConfigurationUtils.class.getName());
-            return true;
-        }
-        return false;
+        return validateCollectorConfig(kind);
     }
 
     private void setCollectorConfig(NodeLevelConfig nodeLevelConfig, ApplicationLevelConfig applicationLevelConfig) {

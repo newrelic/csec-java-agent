@@ -35,9 +35,9 @@ public class AgentBasicInfo {
 
 	private final String framework = StringUtils.EMPTY;
 
-	private static String nodeId;
+	private String nodeId;
 
-	private static Integer customerId;
+	private Integer customerId;
 
 	/**
 	 * Instantiates a new agent basic info according to the source class object.
@@ -45,7 +45,8 @@ public class AgentBasicInfo {
 	public AgentBasicInfo() {
 		setJsonVersion(K2JAVersionInfo.jsonVersion);
 		setCollectorVersion(K2JAVersionInfo.collectorVersion);
-
+		setNodeId(CollectorConfigurationUtils.getInstance().getCollectorConfig().getNodeId());
+		setCustomerId(CollectorConfigurationUtils.getInstance().getCollectorConfig().getCustomerInfo().getCustomerId());
 		if (this instanceof ApplicationInfoBean) {
 			setJsonName(JSON_NAME_APPLICATION_INFO_BEAN);
 		} else if (this instanceof JavaAgentEventBean) {
@@ -134,19 +135,19 @@ public class AgentBasicInfo {
 		return collectorType;
 	}
 
-	public static String getNodeId() {
+	public String getNodeId() {
 		return nodeId;
 	}
 
-	public static void setNodeId(String nodeId) {
-		AgentBasicInfo.nodeId = nodeId;
+	public void setNodeId(String nodeId) {
+		this.nodeId = nodeId;
 	}
 
-	public static Integer getCustomerId() {
+	public Integer getCustomerId() {
 		return customerId;
 	}
 
-	public static void setCustomerId(Integer customerId) {
-		AgentBasicInfo.customerId = customerId;
+	public void setCustomerId(Integer customerId) {
+		this.customerId = customerId;
 	}
 }
