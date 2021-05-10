@@ -6,8 +6,10 @@ import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.models.javaagent.JAHealthCheck;
 import com.k2cybersecurity.intcodeagent.monitoring.InBoundOutBoundST;
 import com.k2cybersecurity.intcodeagent.websocket.WSClient;
+import com.k2cybersecurity.intcodeagent.models.javaagent.HttpConnectionStat;
 
 import java.net.URISyntaxException;
+import java.util.Collections;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
@@ -87,6 +89,8 @@ public class HealthCheckScheduleThread {
 			}
 		});
 		hcScheduledService.scheduleAtFixedRate(runnable, 5, 5, TimeUnit.MINUTES);
+		HttpConnectionStat httpConnectionStat = new HttpConnectionStat(Collections.emptyList(), K2Instrumentator.APPLICATION_UUID, false);
+		InBoundOutBoundST.getInstance().clearNewConnections();
 	}
 
 	public static HealthCheckScheduleThread getInstance() {

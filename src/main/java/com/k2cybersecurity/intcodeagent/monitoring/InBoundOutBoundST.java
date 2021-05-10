@@ -18,6 +18,9 @@ public class InBoundOutBoundST {
     private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
 
     final private static Object lock = new Object();
+    public static final String PRESENT_IN_CACHE_HTTP_CONNECTION = "present in cache http connection ";
+    public static final String ADDING_HTTP_CONNECTION = "Adding http connection ";
+    public static final String CONNECTION_LIST_FOR_POSTING = "Connection List for posting ";
 
     private ScheduledExecutorService inOutExecutorService;
 
@@ -37,11 +40,13 @@ public class InBoundOutBoundST {
 
     public boolean addOutBoundHTTPConnection(OutBoundHttp outBoundHttp) {
         if (getCache().containsKey(outBoundHttp.getHashCode())) {
+            logger.log(LogLevel.DEBUG, PRESENT_IN_CACHE_HTTP_CONNECTION + outBoundHttp, InBoundOutBoundST.class.getName());
             OutBoundHttp cachedHttpCon = cache.get(outBoundHttp.getHashCode());
             cachedHttpCon.getCount().incrementAndGet();
             return false;
         } else {
-            cache.put(outBoundHttp.getHashCode(), outBoundHttp);
+            cache.put(outBoundHttp.getHashCode(), new OutBoundHttp(outBoundHttp));
+            logger.log(LogLevel.DEBUG, ADDING_HTTP_CONNECTION + outBoundHttp, InBoundOutBoundST.class.getName());
             return newConnections.add(outBoundHttp);
         }
     }
@@ -86,6 +91,7 @@ public class InBoundOutBoundST {
          * Send to IC
          * Clear cache
          * */
+        logger.log(LogLevel.DEBUG, CONNECTION_LIST_FOR_POSTING + allConnections, InBoundOutBoundST.class.getName());
         List<OutBoundHttp> outBoundHttps = new ArrayList<>(allConnections);
         for (int i = 0; i < outBoundHttps.size(); i += 40) {
             int maxIndex = Math.min(i + 40, outBoundHttps.size());

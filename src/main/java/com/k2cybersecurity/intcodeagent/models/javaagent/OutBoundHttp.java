@@ -36,6 +36,17 @@ public class OutBoundHttp {
         this.hashCode = Objects.hash(url, direction, sourceIp, destinationIp, sourceId);
     }
 
+    public OutBoundHttp(OutBoundHttp outBoundHttp) {
+        this.url = outBoundHttp.url;
+        this.sourceIp = outBoundHttp.sourceIp;
+        this.destinationIp = outBoundHttp.destinationIp;
+        this.destinationPort = outBoundHttp.destinationPort;
+        this.sourcePort = outBoundHttp.sourcePort;
+        this.direction = outBoundHttp.direction;
+        this.count = outBoundHttp.count;
+        this.hashCode = Objects.hash(url, direction, sourceIp, destinationIp, sourceId);
+    }
+
     public String getUrl() {
         return url;
     }
