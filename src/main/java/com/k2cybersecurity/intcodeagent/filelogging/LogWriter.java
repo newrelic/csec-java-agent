@@ -59,7 +59,7 @@ public class LogWriter implements Runnable {
 
     static {
 		if (SystemUtils.IS_OS_WINDOWS) {
-			fileName = "C:\\Users\\Public\\k2agent\\k2logs\\k2_java_agent-" + K2Instrumentator.APPLICATION_UUID + ".log";
+			fileName = "C:\\Users\\Public\\k2agent\\logs\\k2_java_agent-" + K2Instrumentator.APPLICATION_UUID + ".log";
 		} else {
 			fileName = "/tmp/k2logs/k2_java_agent-" + K2Instrumentator.APPLICATION_UUID + ".log";
 		}
