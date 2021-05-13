@@ -32,7 +32,7 @@ public class Callbacks {
                     ThreadLocalSSRFMap.getInstance().addToAlreadyEncountered(outBoundHttp);
                     InBoundOutBoundST.getInstance().addOutBoundHTTPConnection(outBoundHttp);
                 }
-                InBoundOutBoundST.getInstance().getNewConnections().add(outBoundHttp);
+                InBoundOutBoundST.getInstance().addOutBoundHTTPConnection(outBoundHttp);
             } finally {
                 ThreadLocalOperationLock.getInstance().release();
             }
