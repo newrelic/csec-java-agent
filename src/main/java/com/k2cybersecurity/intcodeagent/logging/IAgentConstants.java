@@ -446,6 +446,8 @@ public interface IAgentConstants {
 	String HOST_IP_PROPERTIES_FILE = "/opt/k2-ic/hostip.properties";
 
 	String HCSCHEDULEDTHREAD_ = "K2-hcScheduledThread-";
+	String WSRECONNECTSCHEDULEDTHREAD_ = "K2-WSReconnect-";
+
 	String ACK_MSG = "ACK";
 	// EventThreadPool.java file constants
 

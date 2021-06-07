@@ -100,7 +100,7 @@ public class K2Instrumentator {
 
             new Thread(() -> {
                 try {
-                    WSClient.reconnectWSClient();
+                    WSClient.getInstance();
                 } catch (Throwable e) {
                     logger.log(LogLevel.ERROR, ERROR_OCCURED_WHILE_TRYING_TO_CONNECT_TO_WSOCKET, e,
                             K2Instrumentator.class.getName());
