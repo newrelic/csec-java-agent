@@ -1,6 +1,7 @@
 package com.k2cybersecurity.instrumentator;
 
 import com.k2cybersecurity.instrumentator.custom.ClassloaderAdjustments;
+import com.k2cybersecurity.instrumentator.utils.AgentUtils;
 import com.k2cybersecurity.instrumentator.utils.ApplicationInfoUtils;
 import com.k2cybersecurity.instrumentator.utils.CollectorConfigurationUtils;
 import com.k2cybersecurity.instrumentator.utils.HashGenerator;
@@ -64,6 +65,14 @@ public class K2Instrumentator {
     public static boolean init(Boolean isDynamicAttach) {
         try {
             K2Instrumentator.isDynamicAttach = isDynamicAttach;
+            String groupName = System.getenv("K2_GROUP_NAME");
+            if (StringUtils.isBlank(groupName)) {
+                logger.log(LogLevel.ERROR, "Incomplete startup env parameters provided: Missing K2_GROUP_NAME", K2Instrumentator.class.getName());
+                System.err.println("[K2 Java Collector] Incomplete startup env parameters provided : Missing K2_GROUP_NAME. Collector exiting.");
+                return false;
+            } else {
+                AgentUtils.getInstance().setGroupName(groupName);
+            }
 
             String nlcPath = System.getenv("K2_AGENT_NODE_CONFIG");
             String alcPath = System.getenv("K2_AGENT_APP_CONFIG");
@@ -91,7 +100,7 @@ public class K2Instrumentator {
 
             new Thread(() -> {
                 try {
-                    WSClient.getInstance();
+                    WSClient.reconnectWSClient();
                 } catch (Throwable e) {
                     logger.log(LogLevel.ERROR, ERROR_OCCURED_WHILE_TRYING_TO_CONNECT_TO_WSOCKET, e,
                             K2Instrumentator.class.getName());

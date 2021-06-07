@@ -101,6 +101,8 @@ public class AgentUtils {
 
 	private AtomicInteger outboundHttpConnectionId = new AtomicInteger(1000);
 
+	private String groupName = StringUtils.EMPTY;
+
 	private AgentUtils() {
 
 		transformedClasses = new HashSet<>();
@@ -187,6 +189,14 @@ public class AgentUtils {
 
 	public int getCVEServiceFailCount() {
 		return this.cveServiceFailCount.get();
+	}
+
+	public String getGroupName() {
+		return groupName;
+	}
+
+	public void setGroupName(String groupName) {
+		this.groupName = groupName;
 	}
 
 	public void createProtectedVulnerabilties(TypeDescription typeDescription, ClassLoader classLoader) {

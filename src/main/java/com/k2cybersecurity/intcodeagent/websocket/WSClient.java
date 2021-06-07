@@ -8,10 +8,12 @@ import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.properties.K2JAVersionInfo;
 import org.java_websocket.client.WebSocketClient;
+import org.java_websocket.framing.CloseFrame;
 import org.java_websocket.handshake.ServerHandshake;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.concurrent.TimeUnit;
 
 public class WSClient extends WebSocketClient {
 
@@ -28,6 +30,7 @@ public class WSClient extends WebSocketClient {
 		this.addHeader("K2-CUSTOMER-ID", String.valueOf(CollectorConfigurationUtils.getInstance().getCollectorConfig().getCustomerInfo().getCustomerId()));
 		this.addHeader("K2-VERSION", K2JAVersionInfo.collectorVersion);
 		this.addHeader("K2-COLLECTOR-TYPE", "JAVA");
+		this.addHeader("K2-GROUP", AgentUtils.getInstance().getGroupName());
 		logger.log(LogLevel.INFO, "Creating WSock connection to : " + CollectorConfigurationUtils.getInstance().getCollectorConfig().getK2ServiceInfo().getServiceEndpointAddress(),
 				WSClient.class.getName());
 		if (!connectBlocking()) {
@@ -67,11 +70,24 @@ public class WSClient extends WebSocketClient {
 	public void onClose(int code, String reason, boolean remote) {
 		logger.log(LogLevel.WARNING, "Connection closed by " + (remote ? "remote peer." : "local.") + " Code: " + code
 				+ " Reason: " + reason, WSClient.class.getName());
+		if (code != CloseFrame.POLICY_VALIDATION) {
+			new Thread(() -> {
+				try {
+					WSClient.reconnectWSClient();
+				} catch (Exception e) {
+					logger.log(LogLevel.ERROR, "Error while WS reconnection : " + e.getMessage() + " : " + e.getCause(), WSClient.class.getName());
+					logger.log(LogLevel.DEBUG, "Error while WS reconnection : ", e, WSClient.class.getName());
+
+				}
+			}).start();
+		}
 	}
 
 	@Override
 	public void onError(Exception ex) {
-		logger.log(LogLevel.SEVERE, "Error in WSock connection : " + ex.getMessage() + " : " + ex.getCause(), ex,
+		logger.log(LogLevel.SEVERE, "Error in WSock connection : " + ex.getMessage() + " : " + ex.getCause(),
+				WSClient.class.getName());
+		logger.log(LogLevel.DEBUG, "Error in WSock connection : " + ex.getMessage() + " : " + ex.getCause(), ex,
 				WSClient.class.getName());
 	}
 
@@ -103,22 +119,26 @@ public class WSClient extends WebSocketClient {
 	 * @throws InterruptedException
 	 */
 	public static WSClient reconnectWSClient() throws URISyntaxException, InterruptedException {
-		logger.log(LogLevel.WARNING, "Reconnecting with IC. Open status: " + instance.isOpen(),
-				WSClient.class.getName());
 		boolean reconnectStatus = false;
-		if (instance != null) {
-			instance.closeBlocking();
-			try {
-				reconnectStatus = instance.reconnectBlocking();
-			} catch (Throwable e) {
-				reconnectStatus = false;
-			}
-		}
-		if (!reconnectStatus) {
+		while (!reconnectStatus) {
+			logger.log(LogLevel.WARNING, "Reconnecting with IC. Open status: " + instance.isOpen(),
+					WSClient.class.getName());
 			if (instance != null) {
 				instance.closeBlocking();
+				try {
+					reconnectStatus = instance.reconnectBlocking();
+				} catch (Throwable e) {
+					reconnectStatus = false;
+				}
 			}
-			instance = new WSClient();
+			if (!reconnectStatus) {
+				if (instance != null) {
+					instance.closeBlocking();
+				}
+				instance = new WSClient();
+				reconnectStatus = true;
+			}
+			TimeUnit.SECONDS.sleep(30);
 		}
 		return instance;
 	}
