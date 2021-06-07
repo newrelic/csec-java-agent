@@ -28,6 +28,7 @@ public class JavaAgentEventBean extends AgentBasicInfo {
     private Long blockingProcessingTime = 0L;
     private List<StackTraceElement> completeStacktrace;
     private boolean isAPIBlocked = false;
+    private boolean isIASTenable = false;
     private String apiId;
     private DeployedApplication webappIdentifier;
 
@@ -44,18 +45,6 @@ public class JavaAgentEventBean extends AgentBasicInfo {
 		this.startTime = startTime;
 		this.setCaseType(vulnerabilityCaseType.getCaseType());
 		this.setPreProcessingTime(preProcessingTime);
-		this.metaData = new AgentMetaData();
-	}
-
-	public JavaAgentEventBean(Long startTime, String sourceMethod, JSONArray parameters, Integer pid, String applicationUUID,
-							  String id, VulnerabilityCaseType vulnerabilityCaseType) {
-		this.id = id;
-		this.setPid(pid);
-		this.applicationUUID = applicationUUID;
-		this.sourceMethod = sourceMethod;
-		this.parameters = parameters;
-		this.startTime = startTime;
-		this.setCaseType(vulnerabilityCaseType.getCaseType());
 		this.metaData = new AgentMetaData();
 	}
 
@@ -121,7 +110,15 @@ public class JavaAgentEventBean extends AgentBasicInfo {
 		this.validationBypass = validationBypass;
 	}
 
-	@Override
+    public boolean getIsIASTenable() {
+        return isIASTenable;
+    }
+
+    public void setIsIASTenable(boolean IASTenable) {
+        isIASTenable = IASTenable;
+    }
+
+    @Override
 	public String toString() {
 		return JsonConverter.toJSON(this);
 	}
