@@ -9,27 +9,29 @@ import java.util.Map;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({
-        "enabled",
-        "reportGenerationInterval",
-        "probing"
+        "enabled"
 })
-public class DynamicScanning {
+public class CVEScan {
 
     @JsonProperty("enabled")
     private Boolean enabled = false;
+    @JsonProperty("enableEnvScan")
+    private Boolean enableEnvScan = true;
+    @JsonProperty("cveDefinitionUpdateInterval")
+    private Integer cveDefinitionUpdateInterval = 360;
     @JsonIgnore
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
     /**
      * No args constructor for use in serialization
      */
-    public DynamicScanning() {
+    public CVEScan() {
     }
 
     /**
      * @param enabled
      */
-    public DynamicScanning(Boolean enabled) {
+    public CVEScan(Boolean enabled) {
         super();
         this.enabled = enabled;
     }
@@ -42,6 +44,26 @@ public class DynamicScanning {
     @JsonProperty("enabled")
     public void setEnabled(Boolean enabled) {
         this.enabled = enabled;
+    }
+
+    @JsonProperty("enableEnvScan")
+    public Boolean getEnableEnvScan() {
+        return enableEnvScan;
+    }
+
+    @JsonProperty("enableEnvScan")
+    public void setEnableEnvScan(Boolean enableEnvScan) {
+        this.enableEnvScan = enableEnvScan;
+    }
+
+    @JsonProperty("cveDefinitionUpdateInterval")
+    public Integer getCveDefinitionUpdateInterval() {
+        return cveDefinitionUpdateInterval;
+    }
+
+    @JsonProperty("cveDefinitionUpdateInterval")
+    public void setCveDefinitionUpdateInterval(Integer cveDefinitionUpdateInterval) {
+        this.cveDefinitionUpdateInterval = cveDefinitionUpdateInterval;
     }
 
     @JsonAnyGetter

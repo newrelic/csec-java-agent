@@ -1,6 +1,7 @@
 package com.k2cybersecurity.intcodeagent.controlcommand;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.TreeNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.k2cybersecurity.instrumentator.K2Instrumentator;
 import com.k2cybersecurity.instrumentator.cve.scanner.CVEScannerPool;
@@ -12,7 +13,7 @@ import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.filelogging.LogWriter;
 import com.k2cybersecurity.intcodeagent.logging.IAgentConstants;
 import com.k2cybersecurity.intcodeagent.models.config.AgentPolicy;
-import com.k2cybersecurity.intcodeagent.models.config.AgentPolicyIPBlockingParameters;
+import com.k2cybersecurity.intcodeagent.models.config.AgentPolicyParameters;
 import com.k2cybersecurity.intcodeagent.models.javaagent.CollectorInitMsg;
 import com.k2cybersecurity.intcodeagent.models.javaagent.EventResponse;
 import com.k2cybersecurity.intcodeagent.models.javaagent.IntCodeControlCommand;
@@ -62,6 +63,7 @@ public class ControlCommandProcessor implements Runnable {
             JSONObject object = (JSONObject) PARSER.parse(controlCommandMessage);
             controlCommand = new IntCodeControlCommand();
             controlCommand.setArguments((List<String>) object.get("arguments"));
+            controlCommand.setData(object.get("data"));
             controlCommand.setControlCommand(Integer.valueOf(object.get("controlCommand").toString()));
 
         } catch (Throwable e) {
@@ -71,28 +73,9 @@ public class ControlCommandProcessor implements Runnable {
         }
 
         switch (controlCommand.getControlCommand()) {
-            case IntCodeControlCommand.CHANGE_LOG_LEVEL:
-                if (controlCommand.getArguments().size() < 3)
-                    break;
-                try {
-                    LogLevel logLevel = LogLevel.valueOf(controlCommand.getArguments().get(0));
-                    Integer duration = Integer.parseInt(controlCommand.getArguments().get(1));
-                    TimeUnit timeUnit = TimeUnit.valueOf(controlCommand.getArguments().get(2));
-                    LogWriter.updateLogLevel(logLevel, timeUnit, duration);
-                } catch (Throwable e) {
-                    logger.log(LogLevel.SEVERE, "Error in controlCommandProcessor : ", e,
-                            ControlCommandProcessor.class.getSimpleName());
-                }
-                break;
 
             case IntCodeControlCommand.SHUTDOWN_LANGUAGE_AGENT:
                 InstrumentationUtils.shutdownLogic(true);
-                break;
-            case IntCodeControlCommand.SET_DEFAULT_LOG_LEVEL:
-                LogLevel logLevel = LogLevel.valueOf(controlCommand.getArguments().get(0));
-                LogWriter.setLogLevel(logLevel);
-                logger.log(LogLevel.INFO, "Changed default log level to " + controlCommand.getArguments().get(0),
-                        ControlCommandProcessor.class.getSimpleName());
                 break;
             case IntCodeControlCommand.UPLOAD_LOGS:
                 logger.log(LogLevel.INFO, "Is log file sent to IC: " + FtpClient.sendBootstrapLogFile(),
@@ -136,6 +119,7 @@ public class ControlCommandProcessor implements Runnable {
                 }
                 break;
             case IntCodeControlCommand.START_VULNERABILITY_SCAN:
+                //TODO rewrite
                 boolean fullReScanning = false;
                 boolean downloadTarBundle = false;
 
@@ -166,13 +150,14 @@ public class ControlCommandProcessor implements Runnable {
                 break;
 
             case IntCodeControlCommand.SEND_POLICY:
-                if (controlCommand.getArguments().size() != 1) {
+                if (controlCommand.getData() == null) {
                     return;
                 }
 
                 try {
                     AgentUtils.getInstance().setAgentPolicy(
-                            new ObjectMapper().readValue(controlCommand.getArguments().get(0), AgentPolicy.class));
+                            new ObjectMapper().treeToValue((TreeNode) controlCommand.getData(), AgentPolicy.class));
+                    //TODO create policy file system
                     AgentUtils.getInstance().enforcePolicy();
                     logger.log(LogLevel.INFO, String.format(IAgentConstants.AGENT_POLICY_APPLIED_S,
                             AgentUtils.getInstance().getAgentPolicy()), ControlCommandProcessor.class.getName());
@@ -183,25 +168,6 @@ public class ControlCommandProcessor implements Runnable {
 
                 break;
 
-            case IntCodeControlCommand.SEND_POLICY_PARAM:
-                if (controlCommand.getArguments().size() != 1) {
-                    return;
-                }
-
-                try {
-                    AgentUtils.getInstance().setAgentPolicyParameters(new ObjectMapper()
-                            .readValue(controlCommand.getArguments().get(0), AgentPolicyIPBlockingParameters.class));
-                    AgentUtils.getInstance().enforcePolicyParameters();
-                    logger.log(LogLevel.INFO,
-                            String.format(IAgentConstants.AGENT_POLICY_PARAM_APPLIED_S,
-                                    AgentUtils.getInstance().getAgentPolicyParameters()),
-                            ControlCommandProcessor.class.getName());
-                } catch (JsonProcessingException e) {
-                    logger.log(LogLevel.ERROR, IAgentConstants.UNABLE_TO_SET_AGENT_POLICY_PARAM_DUE_TO_ERROR, e,
-                            ControlCommandProcessor.class.getName());
-                }
-
-                break;
             case IntCodeControlCommand.STARTUP_WELCOME_MSG:
                 if (controlCommand.getArguments().size() != 1) {
                     return;
@@ -214,9 +180,6 @@ public class ControlCommandProcessor implements Runnable {
                     logger.log(LogLevel.INFO,
                             String.format(COLLECTOR_IS_INITIALIZED_WITH_PROPERTIES, initMsg.toString()),
                             ControlCommandProcessor.class.getName());
-                    logLevel = LogLevel.valueOf(initMsg.getStartupProperties().getLogLevel());
-                    LogWriter.setLogLevel(logLevel);
-                    K2Instrumentator.enableHTTPRequestPrinting = initMsg.getStartupProperties().isPrintHttpRequest();
                 } catch (JsonProcessingException e) {
                     logger.log(LogLevel.ERROR, IAgentConstants.UNABLE_TO_GET_AGENT_STARTUP_INFOARMATION, e,
                             ControlCommandProcessor.class.getName());

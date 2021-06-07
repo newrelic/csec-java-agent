@@ -124,7 +124,6 @@ public class JavaAgentEventBean extends AgentBasicInfo {
 	@Override
 	public String toString() {
 		return JsonConverter.toJSON(this);
-
 	}
 
 	/**
@@ -277,11 +276,11 @@ public class JavaAgentEventBean extends AgentBasicInfo {
         this.blockingProcessingTime = blockingProcessingTime;
     }
 
-    public boolean isAPIBlocked() {
+    public boolean getIsAPIBlocked() {
         return isAPIBlocked;
     }
 
-    public void setAPIBlocked(boolean APIBlocked) {
+    public void setIsAPIBlocked(boolean APIBlocked) {
         this.isAPIBlocked = APIBlocked;
     }
 

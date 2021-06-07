@@ -4,7 +4,7 @@ import com.k2cybersecurity.instrumentator.K2Instrumentator;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.models.javaagent.JAHealthCheck;
-import com.k2cybersecurity.intcodeagent.monitoring.InBoundOutBoundST;
+import com.k2cybersecurity.intcodeagent.schedulers.InBoundOutBoundST;
 import com.k2cybersecurity.intcodeagent.websocket.WSClient;
 import com.k2cybersecurity.intcodeagent.models.javaagent.HttpConnectionStat;
 

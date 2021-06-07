@@ -9,18 +9,38 @@ import java.util.Map;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({
-        "iastMode",
+        "version",
+        "logLevel",
+        "policyPull",
+        "policyPullInterval",
+        "vulnerabilityScan",
         "protectionMode",
-        "sendCompleteStackTrace"
+        "policyParameters",
+        "sendCompleteStackTrace",
+        "enableHTTPRequestPrinting"
 })
 public class AgentPolicy {
 
+    @JsonProperty("version")
+    private String version;
+    @JsonProperty("lastUpdateTimestamp")
+    private Long lastUpdateTimestamp;
+    @JsonProperty("logLevel")
+    private String logLevel = "INFO";
+    @JsonProperty("policyPull")
+    private Boolean policyPull;
+    @JsonProperty("policyPullInterval")
+    private Integer policyPullInterval;
     @JsonProperty("iastMode")
-    private IastMode iastMode = new IastMode();
+    private VulnerabilityScan vulnerabilityScan = new VulnerabilityScan();
     @JsonProperty("protectionMode")
     private ProtectionMode protectionMode = new ProtectionMode();
+    @JsonProperty("policyParameters")
+    private AgentPolicyParameters policyParameters;
     @JsonProperty("sendCompleteStackTrace")
     private Boolean sendCompleteStackTrace = false;
+    @JsonProperty("enableHTTPRequestPrinting")
+    private Boolean enableHTTPRequestPrinting = false;
     @JsonIgnore
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
@@ -31,24 +51,71 @@ public class AgentPolicy {
     }
 
     /**
-     * @param iastMode
+     * @param vulnerabilityScan
      * @param protectionMode
      */
-    public AgentPolicy(IastMode iastMode, ProtectionMode protectionMode) {
+    public AgentPolicy(VulnerabilityScan vulnerabilityScan, ProtectionMode protectionMode) {
         super();
-        this.iastMode = iastMode;
+        this.vulnerabilityScan = vulnerabilityScan;
         this.protectionMode = protectionMode;
         this.sendCompleteStackTrace = false;
     }
 
-    @JsonProperty("iastMode")
-    public IastMode getIastMode() {
-        return iastMode;
+
+    @JsonProperty("version")
+    public String getVersion() {
+        return version;
     }
 
-    @JsonProperty("iastMode")
-    public void setIastMode(IastMode iastMode) {
-        this.iastMode = iastMode;
+    @JsonProperty("version")
+    public void setVersion(String version) {
+        this.version = version;
+    }
+
+    @JsonProperty("lastUpdateTimestamp")
+    public Long getLastUpdateTimestamp() {
+        return lastUpdateTimestamp;
+    }
+
+    @JsonProperty("lastUpdateTimestamp")
+    public void setLastUpdateTimestamp(Long lastUpdateTimestamp) {
+        this.lastUpdateTimestamp = lastUpdateTimestamp;
+    }
+
+    @JsonProperty("logLevel")
+    public String getLogLevel() {
+        return logLevel;
+    }
+
+    @JsonProperty("logLevel")
+    public void setLogLevel(String logLevel) {
+        this.logLevel = logLevel;
+    }
+
+    public Boolean getPolicyPull() {
+        return policyPull;
+    }
+
+    public void setPolicyPull(Boolean policyPull) {
+        this.policyPull = policyPull;
+    }
+
+    public Integer getPolicyPullInterval() {
+        return policyPullInterval;
+    }
+
+    public void setPolicyPullInterval(Integer policyPullInterval) {
+        this.policyPullInterval = policyPullInterval;
+    }
+
+    @JsonProperty("vulnerabilityScan")
+    public VulnerabilityScan getVulnerabilityScan() {
+        return vulnerabilityScan;
+    }
+
+    @JsonProperty("vulnerabilityScan")
+    public void setVulnerabilityScan(VulnerabilityScan vulnerabilityScan) {
+        this.vulnerabilityScan = vulnerabilityScan;
     }
 
     @JsonProperty("protectionMode")
@@ -69,6 +136,26 @@ public class AgentPolicy {
     @JsonProperty("sendCompleteStackTrace")
     public void setSendCompleteStackTrace(Boolean sendCompleteStackTrace) {
         this.sendCompleteStackTrace = sendCompleteStackTrace;
+    }
+
+    @JsonProperty("enableHTTPRequestPrinting")
+    public Boolean getEnableHTTPRequestPrinting() {
+        return enableHTTPRequestPrinting;
+    }
+
+    @JsonProperty("enableHTTPRequestPrinting")
+    public void setEnableHTTPRequestPrinting(Boolean enableHTTPRequestPrinting) {
+        this.enableHTTPRequestPrinting = enableHTTPRequestPrinting;
+    }
+
+    @JsonProperty("policyParameters")
+    public AgentPolicyParameters getPolicyParameters() {
+        return policyParameters;
+    }
+
+    @JsonProperty("policyParameters")
+    public void setPolicyParameters(AgentPolicyParameters policyParameters) {
+        this.policyParameters = policyParameters;
     }
 
     @JsonAnyGetter

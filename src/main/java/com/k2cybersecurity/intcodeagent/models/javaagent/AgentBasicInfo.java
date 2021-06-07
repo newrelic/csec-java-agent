@@ -15,6 +15,7 @@ import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.*;
 public class AgentBasicInfo {
 
 	private static final String SCAN_COMPONENT_DATA = "scanComponentData";
+    public static final String FETCH_POLICY = "fetchPolicy";
 
 	/**  Tool id for Language Agent. */
 	private String collectorVersion;
@@ -63,6 +64,8 @@ public class AgentBasicInfo {
             setJsonName(JSON_NAME_FUZZ_FAIL);
         } else if (this instanceof HttpConnectionStat) {
             setJsonName(JSON_NAME_HTTP_CONNECTION_STAT);
+        } else if (this instanceof PolicyFetch) {
+            setJsonName(FETCH_POLICY);
         }
 	}
 

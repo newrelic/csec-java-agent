@@ -1,4 +1,4 @@
-package com.k2cybersecurity.intcodeagent.monitoring;
+package com.k2cybersecurity.intcodeagent.schedulers;
 
 import com.k2cybersecurity.instrumentator.K2Instrumentator;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;

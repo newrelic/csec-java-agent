@@ -1,6 +1,7 @@
 package com.k2cybersecurity.intcodeagent.filelogging;
 
 import com.k2cybersecurity.instrumentator.K2Instrumentator;
+import com.k2cybersecurity.instrumentator.utils.AgentUtils;
 import com.k2cybersecurity.intcodeagent.properties.K2JALogProperties;
 import com.k2cybersecurity.intcodeagent.websocket.FtpClient;
 import org.apache.commons.lang3.StringUtils;
@@ -26,7 +27,7 @@ public class LogWriter implements Runnable {
     private static final String K2_LOG = "K2-LOG : ";
     public static final String THREAD_NAME_TEMPLATE = " [%s] ";
 
-    public static int defaultLogLevel;
+	public static int defaultLogLevel = LogLevel.INFO.getLevel();
 
     private int logLevel;
 
@@ -73,23 +74,6 @@ public class LogWriter implements Runnable {
 
 			// k2.log.handler.maxfilesize=10
 			// k2.log.handler.maxfilesize.unit=MB
-
-			String level = K2JALogProperties.level;
-			if (level.equals("OFF")) {
-				defaultLogLevel = LogLevel.OFF.getLevel();
-			} else if (level.equals("SEVERE")) {
-				defaultLogLevel = LogLevel.SEVERE.getLevel();
-			} else if (level.equals("ERROR")) {
-				defaultLogLevel = LogLevel.ERROR.getLevel();
-			} else if (level.equals("WARNING")) {
-				defaultLogLevel = LogLevel.WARNING.getLevel();
-			} else if (level.equals("INFO")) {
-				defaultLogLevel = LogLevel.INFO.getLevel();
-			} else if (level.equals("DEBUG")) {
-                defaultLogLevel = LogLevel.DEBUG.getLevel();
-            } else if (level.equals("ALL")) {
-                defaultLogLevel = LogLevel.ALL.getLevel();
-            }
             Files.setPosixFilePermissions(currentLogFile.toPath(), PosixFilePermissions.fromString("rw-rw-rw-"));
         } catch (Throwable e) {
             e.printStackTrace();
@@ -186,17 +170,6 @@ public class LogWriter implements Runnable {
 		}
 	}
 
-	public static void updateLogLevel(LogLevel logLevel, TimeUnit timeUnit, Integer duration ) {
-		final int currentLogLevel = defaultLogLevel;
-		defaultLogLevel = logLevel.getLevel();
-		new Timer().schedule(new TimerTask() {
-			@Override
-			public void run() {
-				defaultLogLevel = currentLogLevel;
-			}
-		}, timeUnit.toMillis(duration));
-
-	}
 	public static void setLogLevel(LogLevel logLevel) {
 		defaultLogLevel = logLevel.getLevel();
 	}

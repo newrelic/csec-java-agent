@@ -24,6 +24,7 @@ public class IntCodeControlCommand {
 
     private String jsonName;
     private int controlCommand;
+    private Object data;
     private List<String> arguments;
 
     public IntCodeControlCommand() {
@@ -55,6 +56,14 @@ public class IntCodeControlCommand {
      */
     public void setControlCommand(int controlCommand) {
         this.controlCommand = controlCommand;
+    }
+
+    public Object getData() {
+        return data;
+    }
+
+    public void setData(Object data) {
+        this.data = data;
     }
 
     /**

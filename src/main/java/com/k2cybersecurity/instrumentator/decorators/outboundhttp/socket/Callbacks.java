@@ -1,10 +1,9 @@
 package com.k2cybersecurity.instrumentator.decorators.outboundhttp.socket;
 
-import com.k2cybersecurity.instrumentator.K2Instrumentator;
 import com.k2cybersecurity.instrumentator.custom.*;
 import com.k2cybersecurity.intcodeagent.models.javaagent.OutBoundHttp;
 import com.k2cybersecurity.intcodeagent.models.javaagent.OutBoundHttpDirection;
-import com.k2cybersecurity.intcodeagent.monitoring.InBoundOutBoundST;
+import com.k2cybersecurity.intcodeagent.schedulers.InBoundOutBoundST;
 
 import java.net.Socket;
 

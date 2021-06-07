@@ -122,8 +122,8 @@ public class Dispatcher implements Runnable {
 //				String url = StringUtils.substringBefore(httpRequestBean.getUrl(), SEPARATOR_QUESTIONMARK);
 //				url = String.format(S_S, eventBean.getHttpRequest().getMethod(), url);
 				if ((!xssConstructs.isEmpty() && !actuallyEmpty(xssConstructs) && StringUtils.isNotBlank(httpRequestBean.getHttpResponseBean().getResponseBody())) ||
-						(AgentUtils.getInstance().getAgentPolicy().getIastMode().getEnabled()
-								&& AgentUtils.getInstance().getAgentPolicy().getIastMode().getDynamicScanning().getEnabled())) {
+                        (AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getEnabled()
+                                && AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getIastTScan().getEnabled())) {
 //					System.out.println("Sending out RXSS");
 //					AgentUtils.getInstance().getRxssSentUrls().add(url);
 					JSONArray params = new JSONArray();
@@ -173,8 +173,8 @@ public class Dispatcher implements Runnable {
 				eventBean = setGenericProperties(fileOperationalBean, eventBean);
 				eventBean = prepareFileEvent(eventBean, fileOperationalBean);
 				String URL = StringUtils.substringBefore(httpRequestBean.getUrl(), QUESTION_CHAR);
-				if (!(AgentUtils.getInstance().getAgentPolicy().getIastMode().getEnabled()
-						&& AgentUtils.getInstance().getAgentPolicy().getIastMode().getDynamicScanning().getEnabled()) && allowedExtensionFileIO(eventBean.getParameters(), eventBean.getSourceMethod(), URL)) {
+                if (!(AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getEnabled()
+                        && AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getIastTScan().getEnabled()) && allowedExtensionFileIO(eventBean.getParameters(), eventBean.getSourceMethod(), URL)) {
 //				System.out.println("------- Event ByPass -----------");
 					return;
 				}
@@ -320,8 +320,8 @@ public class Dispatcher implements Runnable {
 			int fromLoc = 0;
 			int toLoc = this.trace.length;
 //		logger.log(LogLevel.DEBUG, INSIDE_SET_REQUIRED_STACK_TRACE + eventBean.getId() + STRING_COLON + JsonConverter.toJSON(userClassEntity) + STRING_COLON + JsonConverter.toJSON(Arrays.asList(trace)), Dispatcher.class.getName());
-			if ((metaData != null && metaData.isK2FuzzRequest()) || (AgentUtils.getInstance().getAgentPolicy().getIastMode().getEnabled()
-					&& AgentUtils.getInstance().getAgentPolicy().getIastMode().getDynamicScanning().getEnabled())) {
+            if ((metaData != null && metaData.isK2FuzzRequest()) || (AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getEnabled()
+                    && AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getIastTScan().getEnabled())) {
 				eventBean.setCompleteStacktrace(Arrays.asList(trace));
 			}
 
@@ -769,7 +769,7 @@ public class Dispatcher implements Runnable {
 		eventBean.setHttpRequest(httpRequestBean);
 		eventBean.setMetaData(metaData);
 		eventBean.setCaseType(vulnerabilityCaseType.getCaseType());
-		eventBean.setAPIBlocked(metaData.isApiBlocked());
+        eventBean.setIsAPIBlocked(metaData.isApiBlocked());
 		return eventBean;
 	}
 

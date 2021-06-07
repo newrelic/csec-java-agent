@@ -13,6 +13,7 @@ import com.k2cybersecurity.intcodeagent.logging.ServletEventPool;
 import com.k2cybersecurity.intcodeagent.models.javaagent.ShutDownEvent;
 import com.k2cybersecurity.intcodeagent.websocket.EventSendPool;
 import com.k2cybersecurity.intcodeagent.websocket.WSClient;
+import com.k2cybersecurity.intcodeagent.websocket.WSReconnectionST;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.agent.builder.ResettableClassFileTransformer;
 import net.bytebuddy.asm.Advice;
@@ -356,6 +357,7 @@ public class InstrumentationUtils {
             DispatcherPool.getInstance().shutDownThreadPoolExecutor();
             ControlCommandProcessorThreadPool.getInstance().shutDownThreadPoolExecutor();
             EventSendPool.getInstance().shutDownThreadPoolExecutor();
+            WSReconnectionST.getInstance().shutDownThreadPoolExecutor();
 
         } catch (Throwable e) {
             logger.log(LogLevel.SEVERE, "Error while shutting down K2 Pools : ", e,

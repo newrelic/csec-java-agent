@@ -9,9 +9,11 @@ import java.util.Map;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({
-        "enabled"
+        "enabled",
+        "reportGenerationInterval",
+        "probing"
 })
-public class StaticScanning {
+public class IASTScan {
 
     @JsonProperty("enabled")
     private Boolean enabled = false;
@@ -21,13 +23,13 @@ public class StaticScanning {
     /**
      * No args constructor for use in serialization
      */
-    public StaticScanning() {
+    public IASTScan() {
     }
 
     /**
      * @param enabled
      */
-    public StaticScanning(Boolean enabled) {
+    public IASTScan(Boolean enabled) {
         super();
         this.enabled = enabled;
     }

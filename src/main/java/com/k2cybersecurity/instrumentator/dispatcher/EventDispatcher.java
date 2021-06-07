@@ -214,11 +214,11 @@ public class EventDispatcher {
             return false;
         }
 
-        if (AgentUtils.getInstance().getAgentPolicyParameters().getAllowedApis().contains(apiId)) {
+        if (AgentUtils.getInstance().getAgentPolicy().getPolicyParameters().getAllowedApis().contains(apiId)) {
             return false;
 
         }
-        if (AgentUtils.getInstance().getAgentPolicyParameters().getBlockedApis().contains(apiId)) {
+        if (AgentUtils.getInstance().getAgentPolicy().getPolicyParameters().getBlockedApis().contains(apiId)) {
             return true;
         }
 
@@ -228,7 +228,7 @@ public class EventDispatcher {
     private static boolean needToGenerateEvent(String apiID) {
         return !(AgentUtils.getInstance().getAgentPolicy().getProtectionMode().getEnabled()
                 && AgentUtils.getInstance().getAgentPolicy().getProtectionMode().getApiBlocking().getEnabled()
-                && AgentUtils.getInstance().getAgentPolicyParameters().getAllowedApis().contains(apiID)
+                && AgentUtils.getInstance().getAgentPolicy().getPolicyParameters().getAllowedApis().contains(apiID)
         );
     }
 
@@ -384,13 +384,13 @@ public class EventDispatcher {
 
             String ip = ThreadLocalExecutionMap.getInstance().getHttpRequestBean().getClientIP();
 
-            if (AgentUtils.getInstance().getAgentPolicyParameters().getAllowedIps().contains(ip)) {
+            if (AgentUtils.getInstance().getAgentPolicy().getPolicyParameters().getAllowedIps().contains(ip)) {
                 return;
             }
 
             // For enforcing IP block list
             for (String ipEntry : ThreadLocalExecutionMap.getInstance().getMetaData().getIps()) {
-                if (AgentUtils.getInstance().getAgentPolicyParameters().getBlockedIps().contains(ipEntry)) {
+                if (AgentUtils.getInstance().getAgentPolicy().getPolicyParameters().getBlockedIps().contains(ipEntry)) {
                     sendK2BlockPage(ThreadLocalExecutionMap.getInstance().getHttpRequestBean().getClientIP());
                     throw new K2CyberSecurityException(String.format(ACCESS_BY_BLOCKED_IP_ADDRESS_DETECTED_S, ThreadLocalExecutionMap.getInstance().getHttpRequestBean().getClientIP()));
                 }

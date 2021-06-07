@@ -15,7 +15,7 @@ import java.util.Set;
         "allowedApis",
         "blockedApis"
 })
-public class AgentPolicyIPBlockingParameters {
+public class AgentPolicyParameters {
 
     @JsonProperty("allowedIps")
     private Set<String> allowedIps = new HashSet<>();
@@ -34,14 +34,14 @@ public class AgentPolicyIPBlockingParameters {
     /**
      * No args constructor for use in serialization
      */
-    public AgentPolicyIPBlockingParameters() {
+    public AgentPolicyParameters() {
     }
 
     /**
      * @param allowedIps
      * @param blockedIps
      */
-    public AgentPolicyIPBlockingParameters(Set<String> allowedIps, Set<String> blockedIps) {
+    public AgentPolicyParameters(Set<String> allowedIps, Set<String> blockedIps) {
         super();
         this.allowedIps = allowedIps;
         this.blockedIps = blockedIps;

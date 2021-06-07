@@ -5,15 +5,17 @@ import com.k2cybersecurity.instrumentator.custom.ClassloaderAdjustments;
 import com.k2cybersecurity.instrumentator.cve.scanner.CVEScannerPool;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
+import com.k2cybersecurity.intcodeagent.filelogging.LogWriter;
 import com.k2cybersecurity.intcodeagent.logging.DeployedApplication;
 import com.k2cybersecurity.intcodeagent.logging.IAgentConstants;
 import com.k2cybersecurity.intcodeagent.models.config.AgentPolicy;
-import com.k2cybersecurity.intcodeagent.models.config.AgentPolicyIPBlockingParameters;
+import com.k2cybersecurity.intcodeagent.models.config.AgentPolicyParameters;
 import com.k2cybersecurity.intcodeagent.models.javaagent.CollectorInitMsg;
 import com.k2cybersecurity.intcodeagent.models.javaagent.EventResponse;
 import com.k2cybersecurity.intcodeagent.models.javaagent.UserClassEntity;
 import com.k2cybersecurity.intcodeagent.models.javaagent.VulnerabilityCaseType;
 import com.k2cybersecurity.intcodeagent.models.operationalbean.AbstractOperationalBean;
+import com.k2cybersecurity.intcodeagent.schedulers.PolicyPullST;
 import net.bytebuddy.description.type.TypeDescription;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -88,8 +90,6 @@ public class AgentUtils {
 //	private Map<Integer, JADatabaseMetaData> sqlConnectionMap;
 
 	private AgentPolicy agentPolicy = new AgentPolicy();
-
-	private AgentPolicyIPBlockingParameters agentPolicyParameters;
 
 	private boolean isAgentActive = true;
 
@@ -596,23 +596,19 @@ public class AgentUtils {
         this.agentPolicy = agentPolicy;
     }
 
-    public AgentPolicyIPBlockingParameters getAgentPolicyParameters() {
-        return agentPolicyParameters;
-    }
-
-    public void setAgentPolicyParameters(AgentPolicyIPBlockingParameters agentPolicyParameters) {
-        this.agentPolicyParameters = agentPolicyParameters;
-    }
-
     public void enforcePolicy() {
-		if(AgentUtils.getInstance().getAgentPolicy().getIastMode().getEnabled() && AgentUtils.getInstance().getAgentPolicy().getIastMode().getStaticScanning().getEnabled() && !AgentUtils.getInstance().isCveEnvScanCompleted()){
+		LogWriter.setLogLevel(LogLevel.valueOf(AgentUtils.getInstance().getAgentPolicy().getLogLevel()));
+		K2Instrumentator.enableHTTPRequestPrinting = agentPolicy.getEnableHTTPRequestPrinting();
+		if (agentPolicy.getPolicyPull() && agentPolicy.getPolicyPullInterval() > 0) {
+			PolicyPullST.getInstance();
+		} else {
+			PolicyPullST.getInstance().cancelTask();
+		}
+		if (AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getEnabled() && AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getCveScan().getEnabled() && !AgentUtils.getInstance().isCveEnvScanCompleted()) {
 			//Run CVE scan on ENV
             CVEScannerPool.getInstance().dispatchScanner(AgentUtils.getInstance().getInitMsg().getAgentInfo().getNodeId(), K2Instrumentator.APPLICATION_INFO_BEAN.getIdentifier().getKind().name(), K2Instrumentator.APPLICATION_INFO_BEAN.getIdentifier().getId(), false, true, false);
 			AgentUtils.getInstance().setCveEnvScanCompleted(true);
 		}
-    }
-
-    public void enforcePolicyParameters() {
     }
 
     public void

@@ -3,6 +3,7 @@ package com.k2cybersecurity.intcodeagent.websocket;
 import com.k2cybersecurity.instrumentator.K2Instrumentator;
 import com.k2cybersecurity.instrumentator.utils.AgentUtils;
 import com.k2cybersecurity.instrumentator.utils.CollectorConfigurationUtils;
+import com.k2cybersecurity.instrumentator.utils.InstrumentationUtils;
 import com.k2cybersecurity.intcodeagent.controlcommand.ControlCommandProcessor;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
@@ -80,6 +81,8 @@ public class WSClient extends WebSocketClient {
                 + REASON + reason, WSClient.class.getName());
         if (code != CloseFrame.POLICY_VALIDATION) {
             WSReconnectionST.getInstance().submitNewTaskSchedule();
+        } else {
+            InstrumentationUtils.shutdownLogic(true);
         }
     }
 

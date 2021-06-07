@@ -6,7 +6,7 @@ import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.logging.IAgentConstants;
 import com.k2cybersecurity.intcodeagent.models.javaagent.*;
-import com.k2cybersecurity.intcodeagent.monitoring.InBoundOutBoundST;
+import com.k2cybersecurity.intcodeagent.schedulers.InBoundOutBoundST;
 import org.apache.commons.lang3.StringUtils;
 import org.json.simple.JSONObject;
 

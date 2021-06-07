@@ -147,8 +147,8 @@ public class CallbackUtils {
 				// httpRequestBean, httpRequestBean.getHttpResponseBean().getResponseBody()));
 				toReturn.add(construct);
 
-				if (!(AgentUtils.getInstance().getAgentPolicy().getIastMode().getEnabled()
-						&& AgentUtils.getInstance().getAgentPolicy().getIastMode().getDynamicScanning().getEnabled())) {
+                if (!(AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getEnabled()
+                        && AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getIastTScan().getEnabled())) {
 					break;
 				}
 			}
