@@ -15,16 +15,25 @@ import com.k2cybersecurity.intcodeagent.models.javaagent.EventResponse;
 import com.k2cybersecurity.intcodeagent.models.javaagent.UserClassEntity;
 import com.k2cybersecurity.intcodeagent.models.javaagent.VulnerabilityCaseType;
 import com.k2cybersecurity.intcodeagent.models.operationalbean.AbstractOperationalBean;
+import com.k2cybersecurity.intcodeagent.schedulers.CVEBundlePullST;
 import com.k2cybersecurity.intcodeagent.schedulers.PolicyPullST;
+import com.sun.jna.Pointer;
+import com.sun.jna.platform.win32.Kernel32;
+import com.sun.jna.platform.win32.WinNT;
 import net.bytebuddy.description.type.TypeDescription;
 import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
+import org.apache.commons.compress.archivers.zip.ZipArchiveInputStream;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.SystemUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
-import java.io.File;
+import java.io.*;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.net.URL;
+import java.nio.file.Files;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -36,7 +45,7 @@ import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.SUN_REFLE
 
 public class AgentUtils {
 
-    private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
+	private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
 
     public static final String IP_ADDRESS_UNBLOCKED_DUE_TO_TIMEOUT_S = "IP address unblocked due to timeout : %s";
     public static final String CLASSES_STR = "/classes/";
@@ -59,7 +68,7 @@ public class AgentUtils {
     public static final String CLASSLOADER_RECORD_MISSING_FOR_CLASS = "Classloader record missing for class : ";
     private static final String TWO_PIPES = "||";
 
-    public Set<Pair<String, ClassLoader>> getTransformedClasses() {
+	public Set<Pair<String, ClassLoader>> getTransformedClasses() {
         return transformedClasses;
     }
 
@@ -95,6 +104,8 @@ public class AgentUtils {
 
 	private CollectorInitMsg initMsg = null;
 
+	private String platform = IAgentConstants.LINUX;
+
 	private boolean cveEnvScanCompleted = false;
 
 	private AtomicInteger cveServiceFailCount = new AtomicInteger(0);
@@ -111,6 +122,13 @@ public class AgentUtils {
 		rxssSentUrls = new HashSet<>();
 		deployedApplicationUnderProcessing = new HashSet<>();
 		TRACE_PATTERN = Pattern.compile(IAgentConstants.TRACE_REGEX);
+		if (SystemUtils.IS_OS_WINDOWS) {
+			platform = IAgentConstants.WINDOWS;
+		} else if (SystemUtils.IS_OS_MAC) {
+			platform = IAgentConstants.MAC;
+		} else if (SystemUtils.IS_OS_LINUX) {
+			platform = IAgentConstants.LINUX;
+		}
 //		this.sqlConnectionMap = new LinkedHashMap<Integer, JADatabaseMetaData>(50, 0.75f, true) {
 //            @Override
 //            protected boolean removeEldestEntry(java.util.Map.Entry<Integer, JADatabaseMetaData> eldest) {
@@ -118,6 +136,10 @@ public class AgentUtils {
 //            }
 //        };
 
+	}
+
+	public String getPlatform() {
+		return platform;
 	}
 
 	public static AgentUtils getInstance() {
@@ -601,18 +623,23 @@ public class AgentUtils {
 		K2Instrumentator.enableHTTPRequestPrinting = agentPolicy.getEnableHTTPRequestPrinting();
 		if (agentPolicy.getPolicyPull() && agentPolicy.getPolicyPullInterval() > 0) {
 			PolicyPullST.getInstance();
-		} else {
-			PolicyPullST.getInstance().cancelTask();
 		}
-		if (AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getEnabled() && AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getCveScan().getEnabled() && !AgentUtils.getInstance().isCveEnvScanCompleted()) {
+		if (AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getEnabled()
+				&& AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getCveScan().getEnabled()
+				&& AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getCveScan().getEnableEnvScan()) {
+			CVEBundlePullST.getInstance();
+		}
+		if (AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getEnabled()
+				&& AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getCveScan().getEnabled()
+				&& AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getCveScan().getEnableEnvScan()
+				&& !AgentUtils.getInstance().isCveEnvScanCompleted()) {
 			//Run CVE scan on ENV
-            CVEScannerPool.getInstance().dispatchScanner(AgentUtils.getInstance().getInitMsg().getAgentInfo().getNodeId(), K2Instrumentator.APPLICATION_INFO_BEAN.getIdentifier().getKind().name(), K2Instrumentator.APPLICATION_INFO_BEAN.getIdentifier().getId(), false, true, false);
+			CVEScannerPool.getInstance().dispatchScanner(AgentUtils.getInstance().getInitMsg().getAgentInfo().getNodeId(), K2Instrumentator.APPLICATION_INFO_BEAN.getIdentifier().getKind().name(), K2Instrumentator.APPLICATION_INFO_BEAN.getIdentifier().getId(), false, true);
 			AgentUtils.getInstance().setCveEnvScanCompleted(true);
 		}
     }
 
-    public void
-    preProcessStackTrace(AbstractOperationalBean operationalBean, VulnerabilityCaseType vulnerabilityCaseType) {
+	public void preProcessStackTrace(AbstractOperationalBean operationalBean, VulnerabilityCaseType vulnerabilityCaseType) {
         StackTraceElement[] stackTrace = operationalBean.getStackTrace();
         int resetFactor = 0;
         List<StackTraceElement> recordsToDelete = new ArrayList<>();
@@ -659,22 +686,19 @@ public class AgentUtils {
 		long result = -1;
 		try {
 			//for windows
-//			if (p.getClass().getName().equals("java.lang.Win32Process") ||
-//					p.getClass().getName().equals("java.lang.ProcessImpl"))
-//			{
-//				Field f = p.getClass().getDeclaredField("handle");
-//				f.setAccessible(true);
-//				long handl = f.getLong(p);
-//				Kernel32 kernel = Kernel32.INSTANCE;
-//				WinNT.HANDLE hand = new WinNT.HANDLE();
-//				hand.setPointer(Pointer.createConstant(handl));
-//				result = kernel.GetProcessId(hand);
-//				f.setAccessible(false);
-//			}
-//			else
+			if (p.getClass().getName().equals("java.lang.Win32Process") ||
+					p.getClass().getName().equals("java.lang.ProcessImpl")) {
+				Field f = p.getClass().getDeclaredField("handle");
+				f.setAccessible(true);
+				long handl = f.getLong(p);
+				Kernel32 kernel = Kernel32.INSTANCE;
+				WinNT.HANDLE hand = new WinNT.HANDLE();
+				hand.setPointer(Pointer.createConstant(handl));
+				result = kernel.GetProcessId(hand);
+				f.setAccessible(false);
+			}
 			//for unix based operating systems
-
-			if (p.getClass().getName().equals("java.lang.UNIXProcess")) {
+			else if (p.getClass().getName().equals("java.lang.UNIXProcess")) {
 				Field f = p.getClass().getDeclaredField("pid");
 				f.setAccessible(true);
 				result = f.getLong(p);
@@ -686,7 +710,28 @@ public class AgentUtils {
 		return result;
 	}
 
-	public void killProcessTree(long pid) {
-//    	Runtime.getRuntime().exec()
+	public boolean unZipFile(File zipFile, File outputDir) {
+		// Create zip file stream.
+		try (ZipArchiveInputStream archive = new ZipArchiveInputStream(
+				new BufferedInputStream(new FileInputStream(zipFile)))) {
+
+			ZipArchiveEntry entry;
+			while ((entry = archive.getNextZipEntry()) != null) {
+				// Print values from entry.
+				// ZipEntry.DEFLATED is int 8
+				logger.log(LogLevel.DEBUG, String.format("zip entry : %s :: method : %s", entry.getName(), entry.getMethod()), AgentUtils.class.getName());
+				File file = new File(outputDir, entry.getName());
+				logger.log(LogLevel.DEBUG, String.format("Unzipping - %s", file), AgentUtils.class.getName());
+				// Create directory before streaming files.
+				String dir = file.toPath().toString().substring(0, file.toPath().toString().lastIndexOf(File.separator));
+				Files.createDirectories(new File(dir).toPath());
+				// Stream file content
+				IOUtils.copy(archive, new FileOutputStream(file));
+			}
+			return true;
+		} catch (IOException e) {
+			logger.log(LogLevel.ERROR, "Error : ", e, AgentUtils.class.getName());
+		}
+		return false;
 	}
 }

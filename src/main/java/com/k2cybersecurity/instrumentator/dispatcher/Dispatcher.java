@@ -2,6 +2,7 @@ package com.k2cybersecurity.instrumentator.dispatcher;
 
 import com.k2cybersecurity.instrumentator.K2Instrumentator;
 import com.k2cybersecurity.instrumentator.custom.ServletContextInfo;
+import com.k2cybersecurity.instrumentator.cve.scanner.CVEScannerPool;
 import com.k2cybersecurity.instrumentator.utils.AgentUtils;
 import com.k2cybersecurity.instrumentator.utils.CallbackUtils;
 import com.k2cybersecurity.instrumentator.utils.HashGenerator;
@@ -18,6 +19,7 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
+import java.io.File;
 import java.io.ObjectInputStream;
 import java.util.*;
 import java.util.regex.Pattern;
@@ -33,7 +35,7 @@ public class Dispatcher implements Runnable {
 	public static final String EMPTY_FILE_SHA = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855";
 	public static final String DROPPING_APPLICATION_INFO_POSTING_DUE_TO_SIZE_0 = "Dropping application info posting due to size 0 : ";
 	public static final String QUESTION_CHAR = SEPARATOR_QUESTIONMARK;
-	public static final String SLASH = "/";
+	//	public static final String SLASH = "/";
 	public static final String FOR_NAME = "forName";
 	public static final String SUN_REFLECT_COM_K_2_CYBERSECURITY_NET_BYTEBUDDY = "sun.reflect.com.k2cybersecurity.net.bytebuddy";
 	public static final String PUBLIC_JAVA_LANG_STRING_JAVA_IO_FILE_LIST = "public java.lang.String[] java.io.File.list()";
@@ -434,6 +436,11 @@ public class Dispatcher implements Runnable {
 				EventSendPool.getInstance().sendEvent(applicationInfoBean.toString());
 				logger.log(LogLevel.INFO, UPDATED_APPLICATION_INFO_POSTED + applicationInfoBean,
 						Dispatcher.class.getName());
+				// Dispatch call for cve scan.
+				if (AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getEnabled() && AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getCveScan().getEnabled()) {
+					//Run CVE scan on new deployed app
+					CVEScannerPool.getInstance().dispatchScanner(AgentUtils.getInstance().getInitMsg().getAgentInfo().getNodeId(), K2Instrumentator.APPLICATION_INFO_BEAN.getIdentifier().getKind().name(), K2Instrumentator.APPLICATION_INFO_BEAN.getIdentifier().getId(), false, false);
+				}
 //				ScanComponentData scanComponentData = CVEComponentsService.getAllComponents(deployedApplication);
 //				EventSendPool.getInstance().sendEvent(scanComponentData.toString());
 			}
@@ -658,12 +665,12 @@ public class Dispatcher implements Runnable {
 			for (int i = 0; i < params.size(); i++) {
 				String filePath = params.get(i).toString();
 
-				if (StringUtils.containsIgnoreCase(filePath, SLASH)) {
-					filePath = StringUtils.substringAfterLast(filePath, SLASH);
+				if (StringUtils.containsIgnoreCase(filePath, File.separator)) {
+					filePath = StringUtils.substringAfterLast(filePath, File.separator);
 				}
 
-				if (StringUtils.containsIgnoreCase(url, SLASH)) {
-					url = StringUtils.substringAfterLast(url, SLASH);
+				if (StringUtils.containsIgnoreCase(url, File.separator)) {
+					url = StringUtils.substringAfterLast(url, File.separator);
 				}
 
 				if (StringUtils.equals(url, filePath))

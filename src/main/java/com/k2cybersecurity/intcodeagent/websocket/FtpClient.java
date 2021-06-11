@@ -5,18 +5,23 @@ import com.k2cybersecurity.instrumentator.utils.CollectorConfigurationUtils;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.filelogging.LogWriter;
-import org.apache.commons.net.ftp.FTP;
-import org.apache.commons.net.ftp.FTPClient;
-import org.apache.commons.net.ftp.FTPConnectionClosedException;
-import org.apache.commons.net.ftp.FTPReply;
+import org.apache.commons.net.ftp.*;
 import org.apache.commons.net.io.CopyStreamException;
 
 import java.io.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class FtpClient {
 	private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
 
-	private static FTPClient getClient() {
+	/**
+	 * Remember to disconnect connection after use of the client. (Caller's responsibility)
+	 */
+	public static FTPClient getClient() {
 		FTPClient ftp = new FTPClient();
 		/* connecting to FTP server */
 		int retryFtp = 5;
@@ -62,36 +67,44 @@ public class FtpClient {
 	public static boolean sendLogFile(File file) {
 		boolean result = false;
 		FTPClient ftp = getClient();
-		if (ftp == null) {
-			return false;
-		}
 		InputStream input = null;
 		try {
-			input = new FileInputStream(file);
-		} catch (FileNotFoundException e) {
-			logger.log(LogLevel.ERROR, "log file not found " + file, FtpClient.class.getName());
-		}
+			if (ftp == null) {
+				return false;
+			}
+			try {
+				input = new FileInputStream(file);
+			} catch (FileNotFoundException e) {
+				logger.log(LogLevel.ERROR, "log file not found " + file, FtpClient.class.getName());
+			}
 
-		try {
-			result = ftp.storeFile(file.getName(), input);
-		} catch (FTPConnectionClosedException e) {
-			logger.log(LogLevel.ERROR, "Connection closed by FTP server : ", e, FtpClient.class.getName());
-		} catch (CopyStreamException e) {
-			logger.log(LogLevel.ERROR, "Exception in copying stream : ", e, FtpClient.class.getName());
-		} catch (IOException e) {
-			logger.log(LogLevel.ERROR, "Exception in storing file to server : " + e, FtpClient.class.getName());
-		}
-
-		try {
-			input.close();
-			ftp.disconnect();
-		} catch (IOException e) {
+			try {
+				result = ftp.storeFile(file.getName(), input);
+			} catch (FTPConnectionClosedException e) {
+				logger.log(LogLevel.ERROR, "Connection closed by FTP server : ", e, FtpClient.class.getName());
+			} catch (CopyStreamException e) {
+				logger.log(LogLevel.ERROR, "Exception in copying stream : ", e, FtpClient.class.getName());
+			} catch (IOException e) {
+				logger.log(LogLevel.ERROR, "Exception in storing file to server : " + e, FtpClient.class.getName());
+			}
+		} finally {
+			if (input != null) {
+				try {
+					input.close();
+				} catch (Exception e) {
+				}
+			}
+			if (ftp != null) {
+				try {
+					ftp.disconnect();
+				} catch (Exception e) {
+				}
+			}
 		}
 		return result;
 	}
 
-	public static boolean downloadFile(String fileName, String outputFile) {
-		FTPClient ftp = getClient();
+	public static boolean downloadFile(FTPClient ftp, String fileName, String outputFile) {
 		if (ftp == null) {
 			return false;
 		}
@@ -100,14 +113,31 @@ public class FtpClient {
 		} catch (IOException e) {
 			logger.log(LogLevel.WARNING, "Error : ", e, FtpClient.class.getName());
 		}
-		try {
-			ftp.disconnect();
-		} catch (IOException e) {}
 		return false;
 	}
 
 	public static boolean sendBootstrapLogFile() {
 		File blogFile = new File(LogWriter.getFileName());
 		return FtpClient.sendLogFile(blogFile);
+	}
+
+	public static List<String> listAllFiles(FTPClient ftp, String regex) {
+		try {
+			if (ftp == null) {
+				return Collections.emptyList();
+			}
+			FTPFile[] files = ftp.listFiles();
+			List<String> allFiles = new ArrayList<>();
+			Pattern pattern = Pattern.compile(regex);
+			for (FTPFile file : files) {
+				if (file.isFile() && pattern.matcher(file.getName()).matches()) {
+					allFiles.add(file.getName());
+				}
+			}
+			return allFiles;
+		} catch (IOException e) {
+			logger.log(LogLevel.ERROR, "list files via ftp failed : ", e, FtpClient.class.getName());
+		}
+		return Collections.emptyList();
 	}
 }

@@ -118,31 +118,6 @@ public class ControlCommandProcessor implements Runnable {
                     logger.log(LogLevel.SEVERE, ERROR_IN_EVENT_RESPONSE, e, ControlCommandProcessor.class.getSimpleName());
                 }
                 break;
-            case IntCodeControlCommand.START_VULNERABILITY_SCAN:
-                //TODO rewrite
-                boolean fullReScanning = false;
-                boolean downloadTarBundle = false;
-
-                if (controlCommand.getArguments().size() == 3) {
-                    fullReScanning = Boolean.parseBoolean(controlCommand.getArguments().get(1));
-                    downloadTarBundle = Boolean.parseBoolean(controlCommand.getArguments().get(2));
-                }
-                logger.log(LogLevel.INFO, String.format(
-                        "Starting K2 Vulnerability scanner on this instance : %s :: Full Rescan : %s :: Download tar bundle : %s",
-                        controlCommand.getArguments().get(0), fullReScanning, downloadTarBundle),
-                        ControlCommandProcessor.class.getSimpleName());
-                // This essentially mean to clear the scanned application entries.
-                if (fullReScanning) {
-                    AgentUtils.getInstance().getScannedDeployedApplications().clear();
-                    AgentUtils.getInstance().resetCVEServiceFailCount();
-                }
-
-                if (AgentUtils.getInstance().getCVEServiceFailCount() >= 2) {
-                    logger.log(LogLevel.WARNING, "CVE service failed for 2 times already. Discarding the scan request.", ControlCommandProcessor.class.getName());
-                    return;
-                }
-                CVEScannerPool.getInstance().dispatchScanner(controlCommand.getArguments().get(0), K2Instrumentator.APPLICATION_INFO_BEAN.getIdentifier().getKind().name(), K2Instrumentator.APPLICATION_INFO_BEAN.getIdentifier().getId(), downloadTarBundle, false, fullReScanning);
-                break;
             case IntCodeControlCommand.FUZZ_REQUEST:
                 logger.log(LogLevel.DEBUG, FUZZ_REQUEST + controlCommandMessage,
                         ControlCommandProcessor.class.getName());

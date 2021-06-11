@@ -1,0 +1,213 @@
+package com.k2cybersecurity.instrumentator.cve.scanner;
+
+import com.k2cybersecurity.instrumentator.K2Instrumentator;
+import com.k2cybersecurity.instrumentator.utils.AgentUtils;
+import com.k2cybersecurity.instrumentator.utils.CollectorConfigurationUtils;
+import com.k2cybersecurity.instrumentator.utils.HashGenerator;
+import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
+import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
+import com.k2cybersecurity.intcodeagent.logging.DeployedApplication;
+import com.k2cybersecurity.intcodeagent.models.javaagent.CVEScanner;
+import com.k2cybersecurity.intcodeagent.websocket.FtpClient;
+import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
+import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.net.ftp.FTPClient;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+
+public class CVEServiceLinux implements Runnable {
+
+    private static final String TMP_DIR = "/tmp";
+
+    private static final String ERROR_LOG = "Error : ";
+
+    private static final String CANNOT_CREATE_DIRECTORY = "Cannot create directory : ";
+
+    private static final String ERROR_PROCESS_TERMINATED = "Error Process terminated: {}";
+
+    private static final String ERROR = "Error: {}";
+
+    private static final String K2_VULNERABILITY_SCANNER_RESPONSE_ERROR = "K2 Vulnerability scanner response error : %s";
+
+    private static final String K2_VULNERABILITY_SCANNER_RESPONSE = "K2 Vulnerability scanner response : %s";
+
+    private static final String BASH_COMMAND = "bash";
+
+    private static final String TMP_LOCALCVESERVICE_DIST_STARTUP_SH = "/tmp/localcveservice/dist/startup.sh";
+
+    private static final String LOCALCVESERVICE_PATH = "localcveservice";
+
+    public static final String TMP_LOCALCVESERVICE_TAR = "/tmp/localcveservice.tar";
+    public static final String KILL_PROCESS_TREE_COMMAND = "kill -9 -%s";
+    public static final String KILLING_PROCESS_TREE_ROOTED_AT_S = "Killing process tree rooted at : %s";
+    public static final String SETSID = "setsid";
+    public static final String CORRUPTED_CVE_SERVICE_BUNDLE_DELETED = "Corrupted CVE service bundle deleted.";
+
+    private String nodeId;
+
+    private boolean downloadTarBundle = false;
+
+    private String kind;
+
+    private String id;
+
+    private boolean isEnvScan;
+
+    public CVEServiceLinux(String nodeId, String kind, String id, boolean downloadTarBundle, boolean isEnvScan) {
+        this.nodeId = nodeId;
+        this.kind = kind;
+        this.id = id;
+        this.downloadTarBundle = downloadTarBundle;
+        this.isEnvScan = isEnvScan;
+    }
+
+    private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
+
+    @Override
+    public void run() {
+        try {
+            FTPClient ftpClient = FtpClient.getClient();
+            String regex = "localcveservice-linux-(.*)\\.tar";
+            String packageParentDir = TMP_DIR;
+            File cvePackage;
+            try {
+                List<String> availablePackages = FtpClient.listAllFiles(ftpClient, regex);
+
+                if (availablePackages.isEmpty()) {
+                    return;
+                }
+                File packageParent = new File(packageParentDir);
+                if (!packageParent.isDirectory()) {
+                    FileUtils.deleteQuietly(packageParent);
+                    packageParent.mkdirs();
+                }
+                cvePackage = new File(packageParentDir, availablePackages.get(0));
+
+                int retry = 3;
+                boolean downloaded = false;
+                try {
+                    while (!downloaded) {
+                        downloaded = CVEComponentsService.downloadCVEPackage(ftpClient, cvePackage, downloadTarBundle);
+                        retry--;
+                        if (retry == 0) {
+                            return;
+                        }
+                        TimeUnit.SECONDS.sleep(10);
+                    }
+                } catch (Exception e) {
+                    logger.log(LogLevel.ERROR, "tar file downloaded fail.", e, CVEServiceLinux.class.getName());
+                }
+                logger.log(LogLevel.DEBUG, "tar file downloaded.", CVEServiceLinux.class.getName());
+            } finally {
+                if (ftpClient != null) {
+                    try {
+                        ftpClient.disconnect();
+                    } catch (Exception e) {
+                    }
+                }
+            }
+            //Create untar Directory
+            File parentDirectory = new File(packageParentDir, LOCALCVESERVICE_PATH);
+            FileUtils.deleteQuietly(parentDirectory);
+            if (!parentDirectory.exists()) {
+                try {
+                    parentDirectory.mkdirs();
+                } catch (Throwable e) {
+                    logger.log(LogLevel.ERROR, CANNOT_CREATE_DIRECTORY + parentDirectory, e,
+                            CVEServiceLinux.class.getName());
+                    return;
+                }
+            }
+
+            extractCVETar(cvePackage, parentDirectory);
+            CVEComponentsService.setAllLinuxPermissions(parentDirectory.getAbsolutePath());
+
+            List<CVEScanner> scanDirs;
+            if (isEnvScan) {
+                scanDirs = CVEComponentsService.getLibScanDirs(packageParentDir);
+            } else {
+                scanDirs = CVEComponentsService.getAppScanDirs();
+            }
+            for (CVEScanner scanner : scanDirs) {
+                File inputYaml = CVEComponentsService.createServiceYml(nodeId, scanner.getAppName(),
+                        scanner.getAppSha256(), scanner.getDir(),
+                        K2Instrumentator.APPLICATION_INFO_BEAN.getApplicationUUID(), scanner.getEnv(), kind, id, packageParentDir);
+                List<String> paramList = Arrays.asList(SETSID, BASH_COMMAND, TMP_LOCALCVESERVICE_DIST_STARTUP_SH,
+                        inputYaml.getAbsolutePath());
+                ProcessBuilder processBuilder = new ProcessBuilder(paramList);
+                Process process = processBuilder.start();
+                if (!process.waitFor(10, TimeUnit.MINUTES)) {
+                    long pid = AgentUtils.getInstance().getProcessID(process);
+                    if (pid > 1) {
+                        logger.log(LogLevel.WARNING, String.format(KILLING_PROCESS_TREE_ROOTED_AT_S, pid), CVEServiceLinux.class.getName());
+                        AgentUtils.getInstance().incrementCVEServiceFailCount();
+                        Runtime.getRuntime().exec(String.format(KILL_PROCESS_TREE_COMMAND, pid));
+                    }
+                } else if (process.exitValue() != 0) {
+                    AgentUtils.getInstance().incrementCVEServiceFailCount();
+                }
+                List<String> response = IOUtils.readLines(process.getInputStream(), StandardCharsets.UTF_8);
+                logger.log(LogLevel.INFO,
+                        String.format(K2_VULNERABILITY_SCANNER_RESPONSE, StringUtils.join(response, StringUtils.LF)),
+                        CVEServiceLinux.class.getName());
+                List<String> errResponse = IOUtils.readLines(process.getErrorStream(), StandardCharsets.UTF_8);
+                logger.log(LogLevel.ERROR, String.format(K2_VULNERABILITY_SCANNER_RESPONSE_ERROR,
+                        StringUtils.join(errResponse, StringUtils.LF)), CVEServiceLinux.class.getName());
+                try {
+                    FileUtils.forceDelete(inputYaml);
+                } catch (Throwable e) {
+                }
+            }
+            CVEComponentsService.deleteAllComponents(parentDirectory, packageParentDir);
+        } catch (InterruptedException e) {
+            logger.log(LogLevel.ERROR, ERROR_PROCESS_TERMINATED, e, CVEServiceLinux.class.getName());
+        } catch (Throwable e) {
+            logger.log(LogLevel.ERROR, ERROR, e, CVEServiceLinux.class.getName());
+        }
+
+    }
+
+    private boolean extractCVETar(File cveTar, File outputDir) {
+
+        try (TarArchiveInputStream inputStream = new TarArchiveInputStream(new FileInputStream(cveTar),
+                StandardCharsets.UTF_8.name())) {
+            TarArchiveEntry entry;
+            while ((entry = inputStream.getNextTarEntry()) != null) {
+                if (entry.isDirectory()) {
+                    continue;
+                }
+                File curfile = new File(outputDir, entry.getName());
+                File parent = curfile.getParentFile();
+                if (!parent.exists()) {
+                    parent.mkdirs();
+                }
+                try (FileOutputStream outputStream = new FileOutputStream(curfile)) {
+                    IOUtils.copy(inputStream, outputStream);
+                } catch (Throwable e) {
+                    logger.log(LogLevel.ERROR, ERROR_LOG, e, CVEServiceLinux.class.getName());
+                }
+            }
+            return true;
+        } catch (Throwable e) {
+            logger.log(LogLevel.ERROR, ERROR_LOG, e, CVEServiceLinux.class.getName());
+            FileUtils.deleteQuietly(cveTar);
+            logger.log(LogLevel.WARNING,
+                    CORRUPTED_CVE_SERVICE_BUNDLE_DELETED, CVEServiceLinux.class.getName());
+        }
+
+        return false;
+
+    }
+}

@@ -1,8 +1,10 @@
 package com.k2cybersecurity.instrumentator.cve.scanner;
 
+import com.k2cybersecurity.instrumentator.utils.AgentUtils;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.logging.EventThreadPool.EventAbortPolicy;
+import com.k2cybersecurity.intcodeagent.logging.IAgentConstants;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
@@ -62,7 +64,7 @@ public class CVEScannerPool {
 			}
 		});
 
-		File cveTar = new File(CVEService.TMP_LOCALCVESERVICE_TAR);
+		File cveTar = new File(CVEServiceLinux.TMP_LOCALCVESERVICE_TAR);
 		if (FileUtils.deleteQuietly(cveTar)) {
 			logger.log(LogLevel.INFO, "Stale CVE service bundle deleted.", CVEScannerPool.class.getName());
 		} else {
@@ -79,11 +81,20 @@ public class CVEScannerPool {
 		return instance;
 	}
 
-	public void dispatchScanner( String nodeId, String kind, String id, boolean downloadTarBundle, boolean isEnvScan, boolean fullReScan) {
+	public void dispatchScanner(String nodeId, String kind, String id, boolean downloadTarBundle, boolean isEnvScan) {
 		if (executor.isShutdown()) {
 			return;
 		}
-		this.executor.submit(new CVEService(nodeId, kind, id, downloadTarBundle, isEnvScan, fullReScan));
+		switch (AgentUtils.getInstance().getPlatform()) {
+			case IAgentConstants.LINUX:
+				this.executor.submit(new CVEServiceLinux(nodeId, kind, id, downloadTarBundle, isEnvScan));
+				break;
+			case IAgentConstants.MAC:
+				break;
+			case IAgentConstants.WINDOWS:
+				this.executor.submit(new CVEServiceWindows(nodeId, kind, id, downloadTarBundle, isEnvScan));
+				break;
+		}
 	}
 
 	public void shutDownThreadPoolExecutor() {
