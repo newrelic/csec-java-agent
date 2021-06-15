@@ -1,10 +1,13 @@
 package com.k2cybersecurity.intcodeagent.websocket;
 
+import com.k2cybersecurity.instrumentator.K2Instrumentator;
 import com.k2cybersecurity.instrumentator.utils.AgentUtils;
 import com.k2cybersecurity.instrumentator.utils.CollectorConfigurationUtils;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.filelogging.LogWriter;
+import com.k2cybersecurity.intcodeagent.logging.IAgentConstants;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.net.ftp.*;
 import org.apache.commons.net.io.CopyStreamException;
 
@@ -64,7 +67,7 @@ public class FtpClient {
 		return ftp;
 	}
 
-	public static boolean sendLogFile(File file) {
+	public static boolean sendLogFile(File file, String hostDir) {
 		boolean result = false;
 		FTPClient ftp = getClient();
 		InputStream input = null;
@@ -79,7 +82,7 @@ public class FtpClient {
 			}
 
 			try {
-				result = ftp.storeFile(file.getName(), input);
+				result = ftp.storeFile(StringUtils.join(hostDir, file.getName()), input);
 			} catch (FTPConnectionClosedException e) {
 				logger.log(LogLevel.ERROR, "Connection closed by FTP server : ", e, FtpClient.class.getName());
 			} catch (CopyStreamException e) {
@@ -116,9 +119,21 @@ public class FtpClient {
 		return false;
 	}
 
+	public static String logUploadDir() {
+		StringBuilder hostDir = new StringBuilder("logs");
+		hostDir.append(File.separator);
+		hostDir.append(CollectorConfigurationUtils.getInstance().getCollectorConfig().getCustomerInfo().getCustomerId());
+		hostDir.append(File.separator);
+		hostDir.append("application-logs");
+		hostDir.append(File.separator);
+		hostDir.append(K2Instrumentator.APPLICATION_UUID);
+		hostDir.append(File.separator);
+		return hostDir.toString();
+	}
+
 	public static boolean sendBootstrapLogFile() {
 		File blogFile = new File(LogWriter.getFileName());
-		return FtpClient.sendLogFile(blogFile);
+		return FtpClient.sendLogFile(blogFile, logUploadDir());
 	}
 
 	public static List<String> listAllFiles(FTPClient ftp, String regex) {

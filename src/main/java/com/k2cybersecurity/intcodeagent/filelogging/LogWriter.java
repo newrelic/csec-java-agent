@@ -27,7 +27,7 @@ public class LogWriter implements Runnable {
     private static final String K2_LOG = "K2-LOG : ";
     public static final String THREAD_NAME_TEMPLATE = " [%s] ";
 
-	public static int defaultLogLevel = LogLevel.INFO.getLevel();
+    public static int defaultLogLevel = LogLevel.INFO.getLevel();
 
     private int logLevel;
 
@@ -175,7 +175,7 @@ public class LogWriter implements Runnable {
 	}
 	
 	private static void uploadLogsAndDeleteFile(File file) {
-		boolean result = FtpClient.sendLogFile(file);
+        boolean result = FtpClient.sendLogFile(file, FtpClient.logUploadDir());
 		if (result) {
 			file.delete();
 		}
