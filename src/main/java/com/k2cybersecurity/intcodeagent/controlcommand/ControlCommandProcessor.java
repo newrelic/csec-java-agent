@@ -144,16 +144,15 @@ public class ControlCommandProcessor implements Runnable {
                 break;
 
             case IntCodeControlCommand.STARTUP_WELCOME_MSG:
-                if (controlCommand.getArguments().size() != 1) {
+                if (controlCommand.getData() == null) {
                     return;
                 }
 
                 try {
-                    CollectorInitMsg initMsg = new ObjectMapper().readValue(controlCommand.getArguments().get(0),
-                            CollectorInitMsg.class);
-                    AgentUtils.getInstance().setInitMsg(initMsg);
+                    AgentUtils.getInstance().setInitMsg(
+                            new ObjectMapper().treeToValue((TreeNode) controlCommand.getData(), CollectorInitMsg.class));
                     logger.log(LogLevel.INFO,
-                            String.format(COLLECTOR_IS_INITIALIZED_WITH_PROPERTIES, initMsg.toString()),
+                            String.format(COLLECTOR_IS_INITIALIZED_WITH_PROPERTIES, AgentUtils.getInstance().getInitMsg().toString()),
                             ControlCommandProcessor.class.getName());
                 } catch (JsonProcessingException e) {
                     logger.log(LogLevel.ERROR, IAgentConstants.UNABLE_TO_GET_AGENT_STARTUP_INFOARMATION, e,
