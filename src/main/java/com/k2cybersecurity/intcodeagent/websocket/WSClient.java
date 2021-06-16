@@ -14,7 +14,6 @@ import org.java_websocket.handshake.ServerHandshake;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.concurrent.TimeUnit;
 
 public class WSClient extends WebSocketClient {
 
@@ -38,7 +37,7 @@ public class WSClient extends WebSocketClient {
         super(new URI(String.format("ws://%s:%s", CollectorConfigurationUtils.getInstance().getCollectorConfig().getK2ServiceInfo().getServiceEndpointAddress(), CollectorConfigurationUtils.getInstance().getCollectorConfig().getK2ServiceInfo().getServiceEndpointPort())));
         this.setTcpNoDelay(true);
         this.setConnectionLostTimeout(15);
-        this.addHeader("K2-CONNECTION-TYPE", "COLLECTOR");
+        this.addHeader("K2-CONNECTION-TYPE", "LANGUAGE_COLLECTOR");
         this.addHeader("K2-API-ACCESSOR", CollectorConfigurationUtils.getInstance().getCollectorConfig().getCustomerInfo().getApiAccessorToken());
         this.addHeader("K2-CUSTOMER-ID", String.valueOf(CollectorConfigurationUtils.getInstance().getCollectorConfig().getCustomerInfo().getCustomerId()));
         this.addHeader("K2-VERSION", K2JAVersionInfo.collectorVersion);
