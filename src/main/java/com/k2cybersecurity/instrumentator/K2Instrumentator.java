@@ -40,7 +40,6 @@ public class K2Instrumentator {
 
     public static Integer VMPID;
     public static final String APPLICATION_UUID = UUID.randomUUID().toString();
-    public static String AGENT_GROUP;
     public static ApplicationInfoBean APPLICATION_INFO_BEAN;
     public static JAHealthCheck JA_HEALTH_CHECK;
 
@@ -84,8 +83,6 @@ public class K2Instrumentator {
             if (StringUtils.isBlank(alcPath)) {
                 alcPath = StringUtils.EMPTY;
             }
-
-            AGENT_GROUP = System.getenv("K2_AGENT_GROUP");
 
             Identifier identifier = ApplicationInfoUtils.envDetection();
 

@@ -48,7 +48,7 @@ public class PolicyPullST {
     };
 
     private void task() {
-        PolicyFetch policyFetch = new PolicyFetch(K2Instrumentator.AGENT_GROUP, K2Instrumentator.APPLICATION_UUID);
+        PolicyFetch policyFetch = new PolicyFetch(AgentUtils.getInstance().getGroupName(), K2Instrumentator.APPLICATION_UUID);
         EventSendPool.getInstance().sendEvent(policyFetch.toString());
     }
 
