@@ -132,7 +132,7 @@ public class ControlCommandProcessor implements Runnable {
 
                 try {
                     AgentUtils.getInstance().setAgentPolicy(
-                            new ObjectMapper().treeToValue((TreeNode) controlCommand.getData(), AgentPolicy.class));
+                            new ObjectMapper().readValue(controlCommand.getData().toString(), AgentPolicy.class));
                     //TODO create policy file system
                     logger.log(LogLevel.INFO, controlCommand.toString(), ControlCommandProcessor.class.getName());
                     AgentUtils.getInstance().enforcePolicy();
@@ -152,7 +152,7 @@ public class ControlCommandProcessor implements Runnable {
 
                 try {
                     AgentUtils.getInstance().setInitMsg(
-                            new ObjectMapper().treeToValue((TreeNode) controlCommand.getData(), CollectorInitMsg.class));
+                            new ObjectMapper().readValue(controlCommand.getData().toString(), CollectorInitMsg.class));
                     logger.log(LogLevel.INFO,
                             String.format(COLLECTOR_IS_INITIALIZED_WITH_PROPERTIES, AgentUtils.getInstance().getInitMsg().toString()),
                             ControlCommandProcessor.class.getName());
