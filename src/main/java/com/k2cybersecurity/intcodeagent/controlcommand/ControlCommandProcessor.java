@@ -138,7 +138,7 @@ public class ControlCommandProcessor implements Runnable {
                     AgentUtils.getInstance().enforcePolicy();
                     logger.log(LogLevel.INFO, String.format(IAgentConstants.AGENT_POLICY_APPLIED_S,
                             AgentUtils.getInstance().getAgentPolicy()), ControlCommandProcessor.class.getName());
-                } catch (JsonProcessingException e) {
+                } catch (Throwable e) {
                     logger.log(LogLevel.ERROR, IAgentConstants.UNABLE_TO_SET_AGENT_POLICY_DUE_TO_ERROR, e,
                             ControlCommandProcessor.class.getName());
                 }
