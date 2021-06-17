@@ -1,5 +1,6 @@
 package com.k2cybersecurity.intcodeagent.models.javaagent;
 
+import com.k2cybersecurity.instrumentator.utils.AgentUtils;
 import com.k2cybersecurity.instrumentator.utils.CollectorConfigurationUtils;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.models.collectorconfig.CustomerInfo;
@@ -36,6 +37,8 @@ public class AgentBasicInfo {
 
 	private final String framework = StringUtils.EMPTY;
 
+	private String groupName;
+
 	private String nodeId;
 
 	private Integer customerId;
@@ -48,6 +51,7 @@ public class AgentBasicInfo {
 		setCollectorVersion(K2JAVersionInfo.collectorVersion);
 		setNodeId(CollectorConfigurationUtils.getInstance().getCollectorConfig().getNodeId());
 		setCustomerId(CollectorConfigurationUtils.getInstance().getCollectorConfig().getCustomerInfo().getCustomerId());
+		setGroupName(AgentUtils.getInstance().getGroupName());
 		if (this instanceof ApplicationInfoBean) {
 			setJsonName(JSON_NAME_APPLICATION_INFO_BEAN);
 		} else if (this instanceof JavaAgentEventBean) {
@@ -152,5 +156,13 @@ public class AgentBasicInfo {
 
 	public void setCustomerId(Integer customerId) {
 		this.customerId = customerId;
+	}
+
+	public String getGroupName() {
+		return groupName;
+	}
+
+	public void setGroupName(String groupName) {
+		this.groupName = groupName;
 	}
 }

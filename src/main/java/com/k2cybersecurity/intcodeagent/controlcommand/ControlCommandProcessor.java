@@ -126,6 +126,7 @@ public class ControlCommandProcessor implements Runnable {
 
             case IntCodeControlCommand.SEND_POLICY:
                 if (controlCommand.getData() == null) {
+                    logger.log(LogLevel.WARNING, controlCommand.toString(), ControlCommandProcessor.class.getName());
                     return;
                 }
 
@@ -133,6 +134,7 @@ public class ControlCommandProcessor implements Runnable {
                     AgentUtils.getInstance().setAgentPolicy(
                             new ObjectMapper().treeToValue((TreeNode) controlCommand.getData(), AgentPolicy.class));
                     //TODO create policy file system
+                    logger.log(LogLevel.INFO, controlCommand.toString(), ControlCommandProcessor.class.getName());
                     AgentUtils.getInstance().enforcePolicy();
                     logger.log(LogLevel.INFO, String.format(IAgentConstants.AGENT_POLICY_APPLIED_S,
                             AgentUtils.getInstance().getAgentPolicy()), ControlCommandProcessor.class.getName());

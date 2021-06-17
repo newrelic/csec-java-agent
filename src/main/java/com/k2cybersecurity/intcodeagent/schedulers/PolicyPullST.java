@@ -23,6 +23,7 @@ public class PolicyPullST {
     private static PolicyPullST instance;
 
     private PolicyPullST() {
+        logger.log(LogLevel.INFO, "policy pull for group name: " + AgentUtils.getInstance().getGroupName(), PolicyPullST.class.getName());
         executorService = Executors.newSingleThreadScheduledExecutor(new ThreadFactory() {
             @Override
             public Thread newThread(Runnable r) {
