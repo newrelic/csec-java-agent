@@ -29,6 +29,7 @@ public class FtpClient {
 		while (retryFtp-- > 0) {
 			try {
 				ftp.setRemoteVerificationEnabled(false);
+				ftp.setUseEPSVwithIPv4(true);
 
 				if (AgentUtils.getInstance().getInitMsg() != null) {
 					ftp.connect(CollectorConfigurationUtils.getInstance().getCollectorConfig().getK2ServiceInfo().getServiceEndpointAddress(), AgentUtils.getInstance().getInitMsg().getStartupProperties().getFtpProperties().getPort());
@@ -42,8 +43,8 @@ public class FtpClient {
 
 				int reply = ftp.getReplyCode();
 				logger.log(LogLevel.DEBUG, "FTP server connection reply code : " + reply, FtpClient.class.getName());
-				ftp.setUseEPSVwithIPv4(true);
 				ftp.setFileType(FTP.BINARY_FILE_TYPE);
+				ftp.enterLocalPassiveMode();
 				if (FTPReply.isPositiveCompletion(reply)) {
 					return ftp;
 				} else {
