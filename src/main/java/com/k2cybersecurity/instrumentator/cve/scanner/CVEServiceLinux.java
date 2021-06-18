@@ -48,6 +48,9 @@ public class CVEServiceLinux implements Runnable {
     public static final String KILLING_PROCESS_TREE_ROOTED_AT_S = "Killing process tree rooted at : %s";
     public static final String SETSID = "setsid";
     public static final String CORRUPTED_CVE_SERVICE_BUNDLE_DELETED = "Corrupted CVE service bundle deleted.";
+    public static final String TAR_FILE_DOWNLOADED_FAIL = "tar file downloaded fail.";
+    public static final String TAR_FILE_DOWNLOADED = "tar file downloaded.";
+    public static final String CAME_TO_EXTRACT_TAR_BUNDLE = "Came to extract tar bundle : ";
 
     private String nodeId;
 
@@ -78,7 +81,6 @@ public class CVEServiceLinux implements Runnable {
             File cvePackage;
             try {
                 List<String> availablePackages = FtpClient.listAllFiles(ftpClient, bundleNameRegex);
-                logger.log(LogLevel.INFO, "All the listed files are  : " + availablePackages.toString(), CVEServiceLinux.class.getName());
                 if (availablePackages.isEmpty()) {
                     return;
                 }
@@ -101,10 +103,10 @@ public class CVEServiceLinux implements Runnable {
                         TimeUnit.SECONDS.sleep(10);
                     }
                 } catch (Exception e) {
-                    logger.log(LogLevel.ERROR, "tar file downloaded fail.", e, CVEServiceLinux.class.getName());
+                    logger.log(LogLevel.ERROR, TAR_FILE_DOWNLOADED_FAIL, e, CVEServiceLinux.class.getName());
                 }
                 CVEBundlePullST.getInstance().setLastKnownCVEBundle(availablePackages.get(0));
-                logger.log(LogLevel.DEBUG, "tar file downloaded.", CVEServiceLinux.class.getName());
+                logger.log(LogLevel.DEBUG, TAR_FILE_DOWNLOADED, CVEServiceLinux.class.getName());
             } finally {
                 if (ftpClient != null) {
                     try {
@@ -175,7 +177,7 @@ public class CVEServiceLinux implements Runnable {
     }
 
     private boolean extractCVETar(File cveTar, File outputDir) {
-        logger.log(LogLevel.DEBUG, "Came to extract tar bundle : " + cveTar.getAbsolutePath(), CVEServiceLinux.class.getName());
+        logger.log(LogLevel.DEBUG, CAME_TO_EXTRACT_TAR_BUNDLE + cveTar.getAbsolutePath(), CVEServiceLinux.class.getName());
         try (TarArchiveInputStream inputStream = new TarArchiveInputStream(new FileInputStream(cveTar),
                 StandardCharsets.UTF_8.name())) {
             TarArchiveEntry entry;

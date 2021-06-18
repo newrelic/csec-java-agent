@@ -42,6 +42,8 @@ public class CVEServiceWindows implements Runnable {
     public static final String KILL_PROCESS_TREE_COMMAND = "kill -9 -%s";
     public static final String KILLING_PROCESS_TREE_ROOTED_AT_S = "Killing process tree rooted at : %s";
     public static final String SETSID = "setsid";
+    public static final String ZIP_FILE_DOWNLOADED_FAIL = "zip file downloaded fail.";
+    public static final String ZIP_FILE_DOWNLOADED = "zip file downloaded.";
 
     private String nodeId;
 
@@ -95,9 +97,9 @@ public class CVEServiceWindows implements Runnable {
                         TimeUnit.SECONDS.sleep(10);
                     }
                 } catch (Exception e) {
-                    logger.log(LogLevel.ERROR, "zip file downloaded fail.", e, CVEServiceWindows.class.getName());
+                    logger.log(LogLevel.ERROR, ZIP_FILE_DOWNLOADED_FAIL, e, CVEServiceWindows.class.getName());
                 }
-                logger.log(LogLevel.DEBUG, "zip file downloaded.", CVEServiceWindows.class.getName());
+                logger.log(LogLevel.DEBUG, ZIP_FILE_DOWNLOADED, CVEServiceWindows.class.getName());
                 CVEBundlePullST.getInstance().setLastKnownCVEBundle(availablePackages.get(0));
             } finally {
                 if (ftpClient != null) {

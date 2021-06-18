@@ -44,7 +44,7 @@ public class FtpClient {
 				int reply = ftp.getReplyCode();
 				logger.log(LogLevel.DEBUG, "FTP server connection reply code : " + reply, FtpClient.class.getName());
 				ftp.setFileType(FTP.BINARY_FILE_TYPE);
-				ftp.setDataTimeout(1000);
+//				ftp.setDataTimeout(1000);
 				if (FTPReply.isPositiveCompletion(reply)) {
 					return ftp;
 				} else {
@@ -143,7 +143,6 @@ public class FtpClient {
 			List<String> allFiles = new ArrayList<>();
 			Pattern pattern = Pattern.compile(regex);
 			for (FTPFile file : files) {
-				logger.log(LogLevel.INFO, "FTP File listing  : " + file.toString(), FtpClient.class.getName());
 				if (file.isFile() && pattern.matcher(file.getName()).matches()) {
 					allFiles.add(file.getName());
 				}
