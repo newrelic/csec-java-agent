@@ -44,7 +44,6 @@ public class FtpClient {
 				int reply = ftp.getReplyCode();
 				logger.log(LogLevel.DEBUG, "FTP server connection reply code : " + reply, FtpClient.class.getName());
 				ftp.setFileType(FTP.BINARY_FILE_TYPE);
-				ftp.setDataTimeout(5000);
 				if (FTPReply.isPositiveCompletion(reply)) {
 					return ftp;
 				} else {
