@@ -219,11 +219,11 @@ public class CVEComponentsService {
     public static String getPackageRegex(String platform) {
         switch (platform) {
             case IAgentConstants.LINUX:
-                return "localcveservice-linux-(.*)\\.tar";
+                return "localcveservice-(.*)\\.linux\\.tar";
             case IAgentConstants.MAC:
-                return "localcveservice-mac-(.*)\\.tar";
+                return "localcveservice-(.*)\\.mac\\.tar";
             case IAgentConstants.WINDOWS:
-                return "localcveservice-win-(.*)\\.zip";
+                return "localcveservice-(.*)\\.win\\.zip";
             default:
                 return StringUtils.EMPTY;
         }
