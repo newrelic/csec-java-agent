@@ -24,7 +24,7 @@ import java.util.concurrent.TimeUnit;
 
 public class CVEServiceLinux implements Runnable {
 
-    private static final String TMP_DIR = "/tmp";
+    static final String TMP_DIR = "/tmp";
 
     private static final String ERROR_LOG = "Error : ";
 
@@ -44,7 +44,6 @@ public class CVEServiceLinux implements Runnable {
 
     private static final String LOCALCVESERVICE_PATH = "localcveservice";
 
-    public static final String TMP_LOCALCVESERVICE_TAR = "/tmp/localcveservice.tar";
     public static final String KILL_PROCESS_TREE_COMMAND = "kill -9 -%s";
     public static final String KILLING_PROCESS_TREE_ROOTED_AT_S = "Killing process tree rooted at : %s";
     public static final String SETSID = "setsid";
@@ -59,6 +58,7 @@ public class CVEServiceLinux implements Runnable {
     private String id;
 
     private boolean isEnvScan;
+    final String bundleNameRegex = ICVEConstants.LOCALCVESERVICE_LINUX_TAR_REGEX;
 
     public CVEServiceLinux(String nodeId, String kind, String id, boolean downloadTarBundle, boolean isEnvScan) {
         this.nodeId = nodeId;
@@ -74,12 +74,11 @@ public class CVEServiceLinux implements Runnable {
     public void run() {
         try {
             FTPClient ftpClient = FtpClient.getClient();
-            String regex = "localcveservice-(.*)\\.linux\\.tar";
             String packageParentDir = TMP_DIR;
             File cvePackage;
             try {
-                List<String> availablePackages = FtpClient.listAllFiles(ftpClient, regex);
-
+                List<String> availablePackages = FtpClient.listAllFiles(ftpClient, bundleNameRegex);
+                logger.log(LogLevel.INFO, "All the listed files are  : " + availablePackages.toString(), CVEServiceLinux.class.getName());
                 if (availablePackages.isEmpty()) {
                     return;
                 }
@@ -176,7 +175,7 @@ public class CVEServiceLinux implements Runnable {
     }
 
     private boolean extractCVETar(File cveTar, File outputDir) {
-
+        logger.log(LogLevel.DEBUG, "Came to extract tar bundle : " + cveTar.getAbsolutePath(), CVEServiceLinux.class.getName());
         try (TarArchiveInputStream inputStream = new TarArchiveInputStream(new FileInputStream(cveTar),
                 StandardCharsets.UTF_8.name())) {
             TarArchiveEntry entry;

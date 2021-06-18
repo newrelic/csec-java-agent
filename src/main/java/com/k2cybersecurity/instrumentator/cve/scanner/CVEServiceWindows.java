@@ -21,7 +21,7 @@ import java.util.concurrent.TimeUnit;
 
 public class CVEServiceWindows implements Runnable {
 
-    private static final String TMP_DIR = SystemUtils.getUserHome() + "\\AppData\\Local\\K2\\";
+    static final String TMP_DIR = SystemUtils.getUserHome() + "\\AppData\\Local\\K2\\";
 
     private static final String CANNOT_CREATE_DIRECTORY = "Cannot create directory : ";
 
@@ -52,6 +52,7 @@ public class CVEServiceWindows implements Runnable {
     private String id;
 
     private boolean isEnvScan;
+    final String bundleNameRegex = ICVEConstants.LOCALCVESERVICE_WIN_ZIP_REGEX;
 
     public CVEServiceWindows(String nodeId, String kind, String id, boolean downloadTarBundle, boolean isEnvScan) {
         this.nodeId = nodeId;
@@ -67,11 +68,10 @@ public class CVEServiceWindows implements Runnable {
     public void run() {
         try {
             FTPClient ftpClient = FtpClient.getClient();
-            String regex = "localcveservice-(.*)\\.win\\.zip";
             String packageParentDir = TMP_DIR;
             File cvePackage;
             try {
-                List<String> availablePackages = FtpClient.listAllFiles(ftpClient, regex);
+                List<String> availablePackages = FtpClient.listAllFiles(ftpClient, bundleNameRegex);
 
                 if (availablePackages.isEmpty()) {
                     return;

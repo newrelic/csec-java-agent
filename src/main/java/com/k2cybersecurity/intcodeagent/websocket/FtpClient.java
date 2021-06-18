@@ -6,7 +6,6 @@ import com.k2cybersecurity.instrumentator.utils.CollectorConfigurationUtils;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.filelogging.LogWriter;
-import com.k2cybersecurity.intcodeagent.logging.IAgentConstants;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.net.ftp.*;
 import org.apache.commons.net.io.CopyStreamException;
@@ -15,7 +14,6 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class FtpClient {
@@ -46,7 +44,7 @@ public class FtpClient {
 				int reply = ftp.getReplyCode();
 				logger.log(LogLevel.DEBUG, "FTP server connection reply code : " + reply, FtpClient.class.getName());
 				ftp.setFileType(FTP.BINARY_FILE_TYPE);
-
+				ftp.setDataTimeout(1000);
 				if (FTPReply.isPositiveCompletion(reply)) {
 					return ftp;
 				} else {
@@ -145,6 +143,7 @@ public class FtpClient {
 			List<String> allFiles = new ArrayList<>();
 			Pattern pattern = Pattern.compile(regex);
 			for (FTPFile file : files) {
+				logger.log(LogLevel.INFO, "FTP File listing  : " + file.toString(), FtpClient.class.getName());
 				if (file.isFile() && pattern.matcher(file.getName()).matches()) {
 					allFiles.add(file.getName());
 				}

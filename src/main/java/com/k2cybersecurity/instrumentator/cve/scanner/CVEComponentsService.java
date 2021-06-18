@@ -133,16 +133,16 @@ public class CVEComponentsService {
             FileUtils.forceMkdir(directory);
             for (String path : libPaths) {
                 try {
-                    logger.log(LogLevel.DEBUG, "Add jar : " + path, CVEServiceWindows.class.getName());
+                    logger.log(LogLevel.DEBUG, "Add jar : " + path, CVEComponentsService.class.getName());
                     FileUtils.copyFileToDirectory(new File(path), directory, true);
                 } catch (Exception e) {
-                    logger.log(LogLevel.DEBUG, FAILED_TO_PROCESS_LIB_PATH + directory + COLON_SEPERATOR + path, e, CVEServiceWindows.class.getName());
+                    logger.log(LogLevel.DEBUG, FAILED_TO_PROCESS_LIB_PATH + directory + COLON_SEPERATOR + path, e, CVEComponentsService.class.getName());
                 }
             }
             return new CVEScanner(binaryName + " Env Libs " + applicationUUID,
                     HashGenerator.getSHA256ForDirectory(directory.getAbsolutePath()), directory.getAbsolutePath(), true);
         } catch (Exception e) {
-            logger.log(LogLevel.DEBUG, FAILED_TO_PROCESS_DIRECTORY + directory, e, CVEServiceWindows.class.getName());
+            logger.log(LogLevel.DEBUG, FAILED_TO_PROCESS_DIRECTORY + directory, e, CVEComponentsService.class.getName());
         }
         return null;
     }
@@ -193,12 +193,12 @@ public class CVEComponentsService {
             FileUtils.deleteQuietly(cveFile);
             download = FtpClient.downloadFile(client, cveFile.getName(), cveFile.getAbsolutePath());
             if (!download) {
-                logger.log(LogLevel.ERROR, "Unable to download Local CVE Service tar from IC", CVEServiceWindows.class.getName());
+                logger.log(LogLevel.ERROR, "Unable to download Local CVE Service tar from IC", CVEComponentsService.class.getName());
                 FileUtils.deleteQuietly(cveFile);
                 return false;
             }
         } else {
-            logger.log(LogLevel.INFO, "Local CVE Service tar bundle already present. No need for download from IC", CVEServiceWindows.class.getName());
+            logger.log(LogLevel.INFO, "Local CVE Service tar bundle already present. No need for download from IC", CVEComponentsService.class.getName());
         }
         return download;
     }
@@ -211,7 +211,7 @@ public class CVEComponentsService {
                 nodeId, kind, id, appName, applicationUUID, appSha256,
                 scanPath, env);
         File yml = new File(packageParentDir, "service-input.yml");
-        logger.log(LogLevel.INFO, "input yml : " + yaml, CVEServiceWindows.class.getName());
+        logger.log(LogLevel.INFO, "input yml : " + yaml, CVEComponentsService.class.getName());
         FileUtils.write(yml, yaml, StandardCharsets.UTF_8);
         return yml;
     }
@@ -219,11 +219,11 @@ public class CVEComponentsService {
     public static String getPackageRegex(String platform) {
         switch (platform) {
             case IAgentConstants.LINUX:
-                return "localcveservice-(.*)\\.linux\\.tar";
+                return ICVEConstants.LOCALCVESERVICE_LINUX_TAR_REGEX;
             case IAgentConstants.MAC:
-                return "localcveservice-(.*)\\.mac\\.tar";
+                return ICVEConstants.LOCALCVESERVICE_MAC_TAR_REGEX;
             case IAgentConstants.WINDOWS:
-                return "localcveservice-(.*)\\.win\\.zip";
+                return ICVEConstants.LOCALCVESERVICE_WIN_ZIP_REGEX;
             default:
                 return StringUtils.EMPTY;
         }

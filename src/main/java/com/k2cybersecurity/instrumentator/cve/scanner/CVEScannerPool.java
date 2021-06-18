@@ -6,6 +6,7 @@ import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.logging.EventThreadPool.EventAbortPolicy;
 import com.k2cybersecurity.intcodeagent.logging.IAgentConstants;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
 import java.util.concurrent.*;
@@ -64,11 +65,26 @@ public class CVEScannerPool {
 			}
 		});
 
-		File cveTar = new File(CVEServiceLinux.TMP_LOCALCVESERVICE_TAR);
-		if (FileUtils.deleteQuietly(cveTar)) {
-			logger.log(LogLevel.INFO, "Stale CVE service bundle deleted.", CVEScannerPool.class.getName());
-		} else {
-			logger.log(LogLevel.WARNING, "Unable to delete stale CVE service bundle.", CVEScannerPool.class.getName());
+		switch (AgentUtils.getInstance().getPlatform()) {
+			case IAgentConstants.LINUX:
+				FileUtils.listFiles(new File(CVEServiceLinux.TMP_DIR), new String[]{"linux.tar"}, false).forEach(file -> {
+					if (StringUtils.startsWith(file.getName(), "localcveservice")) {
+						FileUtils.deleteQuietly(file);
+					}
+				});
+				break;
+			case IAgentConstants.MAC:
+//				FileUtils.listFiles(new File(CVEServiceLinux.TMP_DIR), new String[]{"mac.tar"}, false).forEach(file -> {
+//					FileUtils.deleteQuietly(file);
+//				});
+				break;
+			case IAgentConstants.WINDOWS:
+				FileUtils.listFiles(new File(CVEServiceWindows.TMP_DIR), new String[]{"win.tar"}, false).forEach(file -> {
+					if (StringUtils.startsWith(file.getName(), "localcveservice")) {
+						FileUtils.deleteQuietly(file);
+					}
+				});
+				break;
 		}
 	}
 
