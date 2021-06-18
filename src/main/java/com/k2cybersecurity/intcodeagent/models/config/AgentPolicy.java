@@ -31,7 +31,7 @@ public class AgentPolicy {
     private Boolean policyPull;
     @JsonProperty("policyPullInterval")
     private Integer policyPullInterval;
-    @JsonProperty("iastMode")
+    @JsonProperty("vulnerabilityScan")
     private VulnerabilityScan vulnerabilityScan = new VulnerabilityScan();
     @JsonProperty("protectionMode")
     private ProtectionMode protectionMode = new ProtectionMode();

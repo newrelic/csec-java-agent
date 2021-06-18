@@ -148,7 +148,7 @@ public class CallbackUtils {
 				toReturn.add(construct);
 
                 if (!(AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getEnabled()
-                        && AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getIastTScan().getEnabled())) {
+						&& AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getIastScan().getEnabled())) {
 					break;
 				}
 			}

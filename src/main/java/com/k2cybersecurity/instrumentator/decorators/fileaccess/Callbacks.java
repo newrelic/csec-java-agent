@@ -57,7 +57,7 @@ public class Callbacks {
 	private static boolean skipExistsEvent(String filename) {
 		String extension = getFileExtension(filename);
         if (!(AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getEnabled() &&
-                AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getIastTScan().getEnabled()) &&
+				AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getIastScan().getEnabled()) &&
 				StringUtils.isNotBlank(extension) &&
 				(SOURCE_EXENSIONS.contains(extension) || ALLOWED_EXTENSIONS.contains(extension))) {
 			return true;
