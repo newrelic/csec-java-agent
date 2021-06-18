@@ -29,7 +29,7 @@ public class FtpClient {
 		while (retryFtp-- > 0) {
 			try {
 				ftp.setRemoteVerificationEnabled(false);
-
+				ftp.setUseEPSVwithIPv4(true);
 
 				if (AgentUtils.getInstance().getInitMsg() != null) {
 					ftp.connect(CollectorConfigurationUtils.getInstance().getCollectorConfig().getK2ServiceInfo().getServiceEndpointAddress(), AgentUtils.getInstance().getInitMsg().getStartupProperties().getFtpProperties().getPort());
