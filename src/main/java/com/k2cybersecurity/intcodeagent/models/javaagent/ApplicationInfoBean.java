@@ -1,6 +1,7 @@
 package com.k2cybersecurity.intcodeagent.models.javaagent;
 
 import com.k2cybersecurity.intcodeagent.logging.ServerInfo;
+import com.k2cybersecurity.intcodeagent.models.config.PolicyApplicationInfo;
 import com.k2cybersecurity.intcodeagent.websocket.JsonConverter;
 import org.json.simple.JSONArray;
 
@@ -58,6 +59,8 @@ public class ApplicationInfoBean extends AgentBasicInfo {
 	private String binaryPath;
 
 	private String agentAttachmentType;
+
+	private PolicyApplicationInfo userProvidedApplicationInfo;
 
 	private ServerInfo serverInfo;
 	
@@ -149,6 +152,14 @@ public class ApplicationInfoBean extends AgentBasicInfo {
 
 	public String getUserDir() {
 		return userDir;
+	}
+
+	public PolicyApplicationInfo getUserProvidedApplicationInfo() {
+		return userProvidedApplicationInfo;
+	}
+
+	public void setUserProvidedApplicationInfo(PolicyApplicationInfo userProvidedApplicationInfo) {
+		this.userProvidedApplicationInfo = userProvidedApplicationInfo;
 	}
 
 	public void setUserDir(String userDir) {

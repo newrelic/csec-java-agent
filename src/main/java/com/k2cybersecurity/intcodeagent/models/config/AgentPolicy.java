@@ -13,6 +13,7 @@ import java.util.Map;
         "logLevel",
         "policyPull",
         "policyPullInterval",
+        "applicationInfo",
         "vulnerabilityScan",
         "protectionMode",
         "policyParameters",
@@ -31,6 +32,8 @@ public class AgentPolicy {
     private Boolean policyPull;
     @JsonProperty("policyPullInterval")
     private Integer policyPullInterval;
+    @JsonProperty("applicationInfo")
+    private PolicyApplicationInfo applicationInfo;
     @JsonProperty("vulnerabilityScan")
     private VulnerabilityScan vulnerabilityScan = new VulnerabilityScan();
     @JsonProperty("protectionMode")
@@ -156,6 +159,16 @@ public class AgentPolicy {
     @JsonProperty("policyParameters")
     public void setPolicyParameters(AgentPolicyParameters policyParameters) {
         this.policyParameters = policyParameters;
+    }
+
+    @JsonProperty("applicationInfo")
+    public PolicyApplicationInfo getApplicationInfo() {
+        return applicationInfo;
+    }
+
+    @JsonProperty("applicationInfo")
+    public void setApplicationInfo(PolicyApplicationInfo applicationInfo) {
+        this.applicationInfo = applicationInfo;
     }
 
     @JsonAnyGetter

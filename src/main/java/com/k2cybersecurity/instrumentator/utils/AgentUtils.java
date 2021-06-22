@@ -10,6 +10,7 @@ import com.k2cybersecurity.intcodeagent.logging.DeployedApplication;
 import com.k2cybersecurity.intcodeagent.logging.IAgentConstants;
 import com.k2cybersecurity.intcodeagent.models.config.AgentPolicy;
 import com.k2cybersecurity.intcodeagent.models.config.AgentPolicyParameters;
+import com.k2cybersecurity.intcodeagent.models.config.PolicyApplicationInfo;
 import com.k2cybersecurity.intcodeagent.models.javaagent.CollectorInitMsg;
 import com.k2cybersecurity.intcodeagent.models.javaagent.EventResponse;
 import com.k2cybersecurity.intcodeagent.models.javaagent.UserClassEntity;
@@ -112,6 +113,10 @@ public class AgentUtils {
 
 	private AtomicInteger outboundHttpConnectionId = new AtomicInteger(1000);
 
+    private boolean collectAppInfoFromEnv = false;
+
+    private PolicyApplicationInfo applicationInfo;
+
 	private String groupName = StringUtils.EMPTY;
 
 	private AgentUtils() {
@@ -120,6 +125,7 @@ public class AgentUtils {
 		eventResponseSet = new ConcurrentHashMap<>();
 		classLoaderRecord = new ConcurrentHashMap<>();
 		rxssSentUrls = new HashSet<>();
+        applicationInfo = new PolicyApplicationInfo();
 		deployedApplicationUnderProcessing = new HashSet<>();
 		TRACE_PATTERN = Pattern.compile(IAgentConstants.TRACE_REGEX);
 		if (SystemUtils.IS_OS_WINDOWS) {
@@ -220,6 +226,22 @@ public class AgentUtils {
 	public void setGroupName(String groupName) {
 		this.groupName = groupName;
 	}
+
+    public boolean isCollectAppInfoFromEnv() {
+        return collectAppInfoFromEnv;
+    }
+
+    public void setCollectAppInfoFromEnv(boolean collectAppInfoFromEnv) {
+        this.collectAppInfoFromEnv = collectAppInfoFromEnv;
+    }
+
+    public PolicyApplicationInfo getApplicationInfo() {
+        return applicationInfo;
+    }
+
+    public void setApplicationInfo(PolicyApplicationInfo applicationInfo) {
+        this.applicationInfo = applicationInfo;
+    }
 
 	public void createProtectedVulnerabilties(TypeDescription typeDescription, ClassLoader classLoader) {
 		try {
@@ -637,6 +659,14 @@ public class AgentUtils {
 			CVEScannerPool.getInstance().dispatchScanner(AgentUtils.getInstance().getInitMsg().getAgentInfo().getNodeId(), K2Instrumentator.APPLICATION_INFO_BEAN.getIdentifier().getKind().name(), K2Instrumentator.APPLICATION_INFO_BEAN.getIdentifier().getId(), false, true);
 			AgentUtils.getInstance().setCveEnvScanCompleted(true);
 		}
+        setApplicationInfo();
+    }
+
+    private void setApplicationInfo() {
+        if (!isCollectAppInfoFromEnv()) {
+            applicationInfo = agentPolicy.getApplicationInfo();
+            K2Instrumentator.setApplicationInfo(K2Instrumentator.APPLICATION_INFO_BEAN);
+        }
     }
 
 	public void preProcessStackTrace(AbstractOperationalBean operationalBean, VulnerabilityCaseType vulnerabilityCaseType) {

@@ -7,7 +7,10 @@ import com.k2cybersecurity.instrumentator.utils.CollectorConfigurationUtils;
 import com.k2cybersecurity.instrumentator.utils.HashGenerator;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
+import com.k2cybersecurity.intcodeagent.logging.DeployedApplication;
 import com.k2cybersecurity.intcodeagent.logging.HealthCheckScheduleThread;
+import com.k2cybersecurity.intcodeagent.logging.ServerInfo;
+import com.k2cybersecurity.intcodeagent.models.config.PolicyApplicationInfo;
 import com.k2cybersecurity.intcodeagent.models.javaagent.*;
 import com.k2cybersecurity.intcodeagent.schedulers.PolicyPullST;
 import com.k2cybersecurity.intcodeagent.websocket.EventSendPool;
@@ -30,9 +33,7 @@ import java.net.URL;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.util.Collections;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.*;
 
@@ -77,6 +78,10 @@ public class K2Instrumentator {
 
             String nlcPath = System.getenv("K2_AGENT_NODE_CONFIG");
             String alcPath = System.getenv("K2_AGENT_APP_CONFIG");
+            String userAppName = System.getenv("K2_APP_NAME");
+            String userAppVersion = System.getenv("K2_APP_VERSION");
+            String userAppTags = System.getenv("K2_APP_TAGS");
+
             if (StringUtils.isBlank(nlcPath)) {
                 nlcPath = nlcDefaultPath;
             }
@@ -89,6 +94,16 @@ public class K2Instrumentator {
             if (!CollectorConfigurationUtils.getInstance().readCollectorConfig(identifier.getKind(), nlcPath, alcPath)) {
                 return false;
             }
+
+            if (StringUtils.isNotBlank(userAppName)) {
+                List<String> tags = Collections.emptyList();
+                if (StringUtils.isNotBlank(userAppTags)) {
+                    tags = Arrays.asList(StringUtils.split(userAppTags, ","));
+                }
+                AgentUtils.getInstance().setApplicationInfo(new PolicyApplicationInfo(userAppName, userAppVersion, tags));
+                AgentUtils.getInstance().setCollectAppInfoFromEnv(true);
+            }
+
             identifier.setNodeId(CollectorConfigurationUtils.getInstance().getCollectorConfig().getNodeId());
             identifier.setNodeIp(CollectorConfigurationUtils.getInstance().getCollectorConfig().getNodeIp());
             identifier.setNodeName(CollectorConfigurationUtils.getInstance().getCollectorConfig().getNodeName());
@@ -155,12 +170,19 @@ public class K2Instrumentator {
 
             populateEnvInfo(identifier);
             applicationInfoBean.setIdentifier(identifier);
+            setApplicationInfo(applicationInfoBean);
             return applicationInfoBean;
         } catch (Throwable e) {
             logger.log(LogLevel.WARNING, EXCEPTION_OCCURED_IN_CREATE_APPLICATION_INFO_BEAN, e,
                     K2Instrumentator.class.getName());
         }
         return null;
+    }
+
+    public static void setApplicationInfo(ApplicationInfoBean applicationInfoBean) {
+        if (AgentUtils.getInstance().getApplicationInfo() != null) {
+            applicationInfoBean.setUserProvidedApplicationInfo(AgentUtils.getInstance().getApplicationInfo());
+        }
     }
 
     public static String getPodNameSpace() {
