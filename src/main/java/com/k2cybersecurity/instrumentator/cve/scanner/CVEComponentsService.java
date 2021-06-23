@@ -230,6 +230,9 @@ public class CVEComponentsService {
                         FileUtils.copyInputStreamToFile(cvePackageResponse.body().byteStream(), cvePackage);
                         cvePackageResponse.body().close();
                         packageInfo.setCvePackage(cvePackage);
+                        if (!shaVerification(cvePackage, packageInfo.getLatestProcessedServiceSHA256())) {
+                            return false;
+                        }
                         CVEScannerPool.getInstance().setPackageInfo(packageInfo);
                         return true;
                     }
@@ -242,6 +245,11 @@ public class CVEComponentsService {
             logger.log(LogLevel.ERROR, String.format("API failure %s", e.getMessage()), e, CVEComponentsService.class.getName());
         }
         return false;
+    }
+
+    private static boolean shaVerification(File cvePackage, String latestProcessedServiceSHA256) {
+        String sha256 = HashGenerator.getChecksum(cvePackage);
+        return StringUtils.equals(sha256, latestProcessedServiceSHA256);
     }
 
     protected static File createServiceYml(String nodeId, String appName, String appSha256,
