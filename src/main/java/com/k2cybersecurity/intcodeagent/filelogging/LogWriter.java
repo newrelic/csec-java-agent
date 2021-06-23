@@ -1,20 +1,21 @@
 package com.k2cybersecurity.intcodeagent.filelogging;
 
 import com.k2cybersecurity.instrumentator.K2Instrumentator;
-import com.k2cybersecurity.instrumentator.utils.AgentUtils;
+import com.k2cybersecurity.instrumentator.httpclient.HttpClient;
+import com.k2cybersecurity.instrumentator.httpclient.IRestClientConstants;
+import com.k2cybersecurity.instrumentator.os.OSVariables;
+import com.k2cybersecurity.instrumentator.os.OsVariablesInstance;
+import com.k2cybersecurity.instrumentator.utils.CollectorConfigurationUtils;
 import com.k2cybersecurity.intcodeagent.properties.K2JALogProperties;
-import com.k2cybersecurity.intcodeagent.websocket.FtpClient;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.SystemUtils;
 
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.attribute.PosixFilePermissions;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.Timer;
-import java.util.TimerTask;
-import java.util.concurrent.TimeUnit;
+import java.util.HashMap;
+import java.util.Map;
 
 public class LogWriter implements Runnable {
 
@@ -58,12 +59,10 @@ public class LogWriter implements Runnable {
 
     private String threadName;
 
+	private static OSVariables osVariables = OsVariablesInstance.getInstance().getOsVariables();
+
     static {
-		if (SystemUtils.IS_OS_WINDOWS) {
-			fileName = "C:\\Users\\Public\\k2agent\\logs\\k2_java_agent-" + K2Instrumentator.APPLICATION_UUID + ".log";
-		} else {
-			fileName = "/tmp/k2logs/k2_java_agent-" + K2Instrumentator.APPLICATION_UUID + ".log";
-		}
+		fileName = new File(osVariables.getLogDirectory(), "k2_java_agent-" + K2Instrumentator.APPLICATION_UUID + ".log").getAbsolutePath();
         currentLogFile = new File(fileName);
         currentLogFile.getParentFile().mkdirs();
         currentLogFileName = fileName;
@@ -175,11 +174,11 @@ public class LogWriter implements Runnable {
 	}
 	
 	private static void uploadLogsAndDeleteFile(File file) {
-        boolean result = FtpClient.sendLogFile(file, FtpClient.logUploadDir());
-		if (result) {
-			file.delete();
-		}
-		
+		Map<String, String> queryParams = new HashMap<>();
+		queryParams.put("customerId", String.valueOf(CollectorConfigurationUtils.getInstance().getCollectorConfig().getCustomerInfo().getCustomerId()));
+		queryParams.put("applicationUUID", K2Instrumentator.APPLICATION_UUID);
+		queryParams.put("saveName", file.getName());
+		HttpClient.getInstance().doPost(IRestClientConstants.COLLECTOR_UPLOAD_LOG, null, queryParams, null, file);
 	}
 	
 	public static String getFileName() {

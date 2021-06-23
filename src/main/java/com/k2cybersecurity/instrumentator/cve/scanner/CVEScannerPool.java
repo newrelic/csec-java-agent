@@ -1,14 +1,18 @@
 package com.k2cybersecurity.instrumentator.cve.scanner;
 
+import com.k2cybersecurity.instrumentator.os.OSVariables;
+import com.k2cybersecurity.instrumentator.os.OsVariablesInstance;
 import com.k2cybersecurity.instrumentator.utils.AgentUtils;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.logging.EventThreadPool.EventAbortPolicy;
 import com.k2cybersecurity.intcodeagent.logging.IAgentConstants;
+import com.k2cybersecurity.intcodeagent.models.javaagent.CVEPackageInfo;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -28,6 +32,10 @@ public class CVEScannerPool {
 	final long keepAliveTime = 20;
 	final TimeUnit timeUnit = TimeUnit.SECONDS;
 	final boolean allowCoreThreadTimeOut = false;
+
+    private CVEPackageInfo packageInfo;
+
+    private OSVariables osVariables = OsVariablesInstance.getInstance().getOsVariables();
 
 	private CVEScannerPool() {
 		LinkedBlockingQueue<Runnable> processQueue;
@@ -65,26 +73,10 @@ public class CVEScannerPool {
 			}
 		});
 
-		switch (AgentUtils.getInstance().getPlatform()) {
-			case IAgentConstants.LINUX:
-				FileUtils.listFiles(new File(CVEServiceLinux.TMP_DIR), new String[]{"linux.tar"}, false).forEach(file -> {
-					if (StringUtils.startsWith(file.getName(), "localcveservice")) {
-						FileUtils.deleteQuietly(file);
-					}
-				});
-				break;
-			case IAgentConstants.MAC:
-//				FileUtils.listFiles(new File(CVEServiceLinux.TMP_DIR), new String[]{"mac.tar"}, false).forEach(file -> {
-//					FileUtils.deleteQuietly(file);
-//				});
-				break;
-			case IAgentConstants.WINDOWS:
-				FileUtils.listFiles(new File(CVEServiceWindows.TMP_DIR), new String[]{"win.tar"}, false).forEach(file -> {
-					if (StringUtils.startsWith(file.getName(), "localcveservice")) {
-						FileUtils.deleteQuietly(file);
-					}
-				});
-				break;
+        try {
+            FileUtils.cleanDirectory(new File(osVariables.getCvePackageBaseDir()));
+        } catch (IOException e) {
+            logger.log(LogLevel.WARNING, String.format("%s Directory cleanup failed", osVariables.getCvePackageBaseDir()), CVEScannerPool.class.getName());
 		}
 	}
 
@@ -101,7 +93,7 @@ public class CVEScannerPool {
 		if (executor.isShutdown()) {
 			return;
 		}
-		switch (AgentUtils.getInstance().getPlatform()) {
+        switch (osVariables.getOs()) {
 			case IAgentConstants.LINUX:
 				this.executor.submit(new CVEServiceLinux(nodeId, kind, id, downloadTarBundle, isEnvScan));
 				break;
@@ -133,4 +125,11 @@ public class CVEScannerPool {
 
 	}
 
+    public CVEPackageInfo getPackageInfo() {
+        return packageInfo;
+    }
+
+    public void setPackageInfo(CVEPackageInfo packageInfo) {
+        this.packageInfo = packageInfo;
+    }
 }

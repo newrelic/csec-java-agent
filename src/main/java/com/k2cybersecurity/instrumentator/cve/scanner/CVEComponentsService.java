@@ -1,6 +1,10 @@
 package com.k2cybersecurity.instrumentator.cve.scanner;
 
 import com.k2cybersecurity.instrumentator.K2Instrumentator;
+import com.k2cybersecurity.instrumentator.httpclient.HttpClient;
+import com.k2cybersecurity.instrumentator.httpclient.IRestClientConstants;
+import com.k2cybersecurity.instrumentator.os.OSVariables;
+import com.k2cybersecurity.instrumentator.os.OsVariablesInstance;
 import com.k2cybersecurity.instrumentator.utils.AgentUtils;
 import com.k2cybersecurity.instrumentator.utils.CollectorConfigurationUtils;
 import com.k2cybersecurity.instrumentator.utils.HashGenerator;
@@ -8,11 +12,8 @@ import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.logging.DeployedApplication;
 import com.k2cybersecurity.intcodeagent.logging.IAgentConstants;
-import com.k2cybersecurity.intcodeagent.models.javaagent.ApplicationScanComponentData;
-import com.k2cybersecurity.intcodeagent.models.javaagent.CVEComponent;
-import com.k2cybersecurity.intcodeagent.models.javaagent.CVEScanner;
-import com.k2cybersecurity.intcodeagent.models.javaagent.ScanComponentData;
-import com.k2cybersecurity.intcodeagent.websocket.FtpClient;
+import com.k2cybersecurity.intcodeagent.models.javaagent.*;
+import com.squareup.okhttp.Response;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.net.ftp.FTPClient;
@@ -22,6 +23,8 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class CVEComponentsService {
 
@@ -30,6 +33,7 @@ public class CVEComponentsService {
     public static final String FAILED_TO_PROCESS_LIB_PATH = "Failed to process lib path  : ";
     public static final String FAILED_TO_PROCESS_DIRECTORY = "Failed to process directory : ";
     public static final String COLON_SEPERATOR = " : ";
+    public static final String CONTENT_DISPOSITION = "Content-Disposition";
 
 	private static final String JAR_EXTENSION = ".jar";
 
@@ -44,12 +48,16 @@ public class CVEComponentsService {
             + "k2agent.scanPath: %s\r\n" + "k2agent.isEnv: %s\r\n";
 	
 	private static Set<CVEComponent> envCveComponents = new HashSet<>();
+
+    private static final Pattern fileNamePattern = Pattern.compile("filename=['\"]?([^'\"\\s]+)['\"]?");
 	
 	static {
 		envCveComponents = getCVEComponents(getLibPaths());
 	}
 
     private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
+
+    private static OSVariables osVariables = OsVariablesInstance.getInstance().getOsVariables();
 
 	public static ScanComponentData getAllComponents(DeployedApplication deployedApplication) {
 		Set<String> appJarPaths = getAllJarsFromApp(deployedApplication.getDeployedPath());
@@ -187,20 +195,53 @@ public class CVEComponentsService {
         }
     }
 
-    protected static boolean downloadCVEPackage(FTPClient client, File cveFile, boolean downloadTarBundle) {
-        boolean download = false;
-        if (downloadTarBundle || !cveFile.exists()) {
-            FileUtils.deleteQuietly(cveFile);
-            download = FtpClient.downloadFile(client, cveFile.getName(), cveFile.getAbsolutePath());
-            if (!download) {
-                logger.log(LogLevel.ERROR, "Unable to download Local CVE Service tar from IC", CVEComponentsService.class.getName());
-                FileUtils.deleteQuietly(cveFile);
-                return false;
+    public static CVEPackageInfo getCVEPackageInfo() {
+        try {
+            Response cveVersion = HttpClient.getInstance().doGet(IRestClientConstants.COLLECTOR_CVE_VERSION, null, Collections.singletonMap("platform", osVariables.getOs()), null, false);
+            if (!cveVersion.isSuccessful()) {
+                logger.log(LogLevel.WARNING, String.format("API (%s)response was %s", IRestClientConstants.COLLECTOR_CVE_VERSION, cveVersion.body().string()), CVEComponentsService.class.getName());
+                return null;
             }
-        } else {
-            logger.log(LogLevel.INFO, "Local CVE Service tar bundle already present. No need for download from IC", CVEComponentsService.class.getName());
+
+            CVEPackageInfo packageInfo = HttpClient.getInstance().readResponse(cveVersion.body().byteStream(), CVEPackageInfo.class);
+            cveVersion.body().close();
+            return packageInfo;
+        } catch (IOException e) {
+            logger.log(LogLevel.ERROR, String.format("getCVEPackageInfo API failure %s", e.getMessage()), e, CVEComponentsService.class.getName());
         }
-        return download;
+        return null;
+    }
+
+    protected static boolean downloadCVEPackage(CVEPackageInfo packageInfo) {
+        try {
+            Map<String, String> queryParams = new HashMap<>();
+            queryParams.put("platform", osVariables.getOs());
+            queryParams.put("version", packageInfo.getLatestServiceVersion());
+            Response cvePackageResponse = HttpClient.getInstance().doGet(IRestClientConstants.COLLECTOR_CVE, null, queryParams, null, false);
+            if (cvePackageResponse.isSuccessful()) {
+                String packageDownloadDir = osVariables.getCvePackageBaseDir();
+                String filename;
+                String contentDisposition = cvePackageResponse.header(CONTENT_DISPOSITION);
+                if (StringUtils.isNotBlank(contentDisposition)) {
+                    Matcher matcher = fileNamePattern.matcher(contentDisposition);
+                    if (matcher.find()) {
+                        filename = matcher.group(1);
+                        File cvePackage = new File(packageDownloadDir, filename);
+                        FileUtils.copyInputStreamToFile(cvePackageResponse.body().byteStream(), cvePackage);
+                        cvePackageResponse.body().close();
+                        packageInfo.setCvePackage(cvePackage);
+                        CVEScannerPool.getInstance().setPackageInfo(packageInfo);
+                        return true;
+                    }
+                }
+            } else {
+                logger.log(LogLevel.ERROR, "Download failed.", HttpClient.class.getName());
+            }
+
+        } catch (IOException e) {
+            logger.log(LogLevel.ERROR, String.format("API failure %s", e.getMessage()), e, CVEComponentsService.class.getName());
+        }
+        return false;
     }
 
     protected static File createServiceYml(String nodeId, String appName, String appSha256,

@@ -12,7 +12,6 @@ import com.k2cybersecurity.intcodeagent.models.config.AgentPolicy;
 import com.k2cybersecurity.intcodeagent.models.javaagent.CollectorInitMsg;
 import com.k2cybersecurity.intcodeagent.models.javaagent.EventResponse;
 import com.k2cybersecurity.intcodeagent.models.javaagent.IntCodeControlCommand;
-import com.k2cybersecurity.intcodeagent.websocket.FtpClient;
 import org.apache.commons.lang3.StringUtils;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -70,10 +69,6 @@ public class ControlCommandProcessor implements Runnable {
 
             case IntCodeControlCommand.SHUTDOWN_LANGUAGE_AGENT:
                 InstrumentationUtils.shutdownLogic(true);
-                break;
-            case IntCodeControlCommand.UPLOAD_LOGS:
-                logger.log(LogLevel.INFO, "Is log file sent to IC: " + FtpClient.sendBootstrapLogFile(),
-                        ControlCommandProcessor.class.getSimpleName());
                 break;
             case IntCodeControlCommand.UNSUPPORTED_AGENT:
                 logger.log(LogLevel.SEVERE, controlCommand.getArguments().get(0),

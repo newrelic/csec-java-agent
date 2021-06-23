@@ -1,18 +1,18 @@
 package com.k2cybersecurity.instrumentator.cve.scanner;
 
 import com.k2cybersecurity.instrumentator.K2Instrumentator;
+import com.k2cybersecurity.instrumentator.os.OSVariables;
+import com.k2cybersecurity.instrumentator.os.OsVariablesInstance;
 import com.k2cybersecurity.instrumentator.utils.AgentUtils;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
+import com.k2cybersecurity.intcodeagent.models.javaagent.CVEPackageInfo;
 import com.k2cybersecurity.intcodeagent.models.javaagent.CVEScanner;
-import com.k2cybersecurity.intcodeagent.schedulers.CVEBundlePullST;
-import com.k2cybersecurity.intcodeagent.websocket.FtpClient;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.net.ftp.FTPClient;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -63,6 +63,8 @@ public class CVEServiceLinux implements Runnable {
     private boolean isEnvScan;
     final String bundleNameRegex = ICVEConstants.LOCALCVESERVICE_LINUX_TAR_REGEX;
 
+    private OSVariables osVariables = OsVariablesInstance.getInstance().getOsVariables();
+
     public CVEServiceLinux(String nodeId, String kind, String id, boolean downloadTarBundle, boolean isEnvScan) {
         this.nodeId = nodeId;
         this.kind = kind;
@@ -76,44 +78,14 @@ public class CVEServiceLinux implements Runnable {
     @Override
     public void run() {
         try {
-            FTPClient ftpClient = FtpClient.getClient();
-            String packageParentDir = TMP_DIR;
-            File cvePackage;
-            try {
-                List<String> availablePackages = FtpClient.listAllFiles(ftpClient, bundleNameRegex);
-                if (availablePackages.isEmpty()) {
-                    return;
-                }
-                File packageParent = new File(packageParentDir);
-                if (!packageParent.isDirectory()) {
-                    FileUtils.deleteQuietly(packageParent);
-                    packageParent.mkdirs();
-                }
-                cvePackage = new File(packageParentDir, availablePackages.get(0));
-
-                int retry = 3;
-                boolean downloaded = false;
-                try {
-                    while (!downloaded) {
-                        downloaded = CVEComponentsService.downloadCVEPackage(ftpClient, cvePackage, downloadTarBundle);
-                        retry--;
-                        if (retry == 0) {
-                            return;
-                        }
-                        TimeUnit.SECONDS.sleep(10);
-                    }
-                } catch (Exception e) {
-                    logger.log(LogLevel.ERROR, TAR_FILE_DOWNLOADED_FAIL, e, CVEServiceLinux.class.getName());
-                }
-                CVEBundlePullST.getInstance().setLastKnownCVEBundle(availablePackages.get(0));
-                logger.log(LogLevel.DEBUG, TAR_FILE_DOWNLOADED, CVEServiceLinux.class.getName());
-            } finally {
-                if (ftpClient != null) {
-                    try {
-                        ftpClient.disconnect();
-                    } catch (Exception e) {
-                    }
-                }
+            String packageParentDir = osVariables.getCvePackageBaseDir();
+            CVEPackageInfo packageInfo = CVEComponentsService.getCVEPackageInfo();
+            boolean downloaded = false;
+            if (downloadTarBundle || StringUtils.equals(packageInfo.getLatestServiceVersion(), CVEScannerPool.getInstance().getPackageInfo().getLatestServiceVersion())) {
+                downloaded = CVEComponentsService.downloadCVEPackage(packageInfo);
+            }
+            if (!downloaded) {
+                return;
             }
             //Create untar Directory
             File parentDirectory = new File(packageParentDir, LOCALCVESERVICE_PATH);
@@ -128,7 +100,7 @@ public class CVEServiceLinux implements Runnable {
                 }
             }
 
-            extractCVETar(cvePackage, parentDirectory);
+            extractCVETar(CVEScannerPool.getInstance().getPackageInfo().getCvePackage(), parentDirectory);
             CVEComponentsService.setAllLinuxPermissions(parentDirectory.getAbsolutePath());
 
             List<CVEScanner> scanDirs;

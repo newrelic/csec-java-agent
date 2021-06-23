@@ -105,8 +105,6 @@ public class AgentUtils {
 
 	private CollectorInitMsg initMsg = null;
 
-	private String platform = IAgentConstants.LINUX;
-
 	private boolean cveEnvScanCompleted = false;
 
 	private AtomicInteger cveServiceFailCount = new AtomicInteger(0);
@@ -128,13 +126,6 @@ public class AgentUtils {
         applicationInfo = new PolicyApplicationInfo();
 		deployedApplicationUnderProcessing = new HashSet<>();
 		TRACE_PATTERN = Pattern.compile(IAgentConstants.TRACE_REGEX);
-		if (SystemUtils.IS_OS_WINDOWS) {
-			platform = IAgentConstants.WINDOWS;
-		} else if (SystemUtils.IS_OS_MAC) {
-			platform = IAgentConstants.MAC;
-		} else if (SystemUtils.IS_OS_LINUX) {
-			platform = IAgentConstants.LINUX;
-		}
 //		this.sqlConnectionMap = new LinkedHashMap<Integer, JADatabaseMetaData>(50, 0.75f, true) {
 //            @Override
 //            protected boolean removeEldestEntry(java.util.Map.Entry<Integer, JADatabaseMetaData> eldest) {
@@ -142,10 +133,6 @@ public class AgentUtils {
 //            }
 //        };
 
-	}
-
-	public String getPlatform() {
-		return platform;
 	}
 
 	public static AgentUtils getInstance() {
