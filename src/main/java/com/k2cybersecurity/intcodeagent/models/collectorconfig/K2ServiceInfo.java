@@ -12,30 +12,26 @@ import java.util.Objects;
 @JsonPropertyOrder(alphabetic = true)
 public class K2ServiceInfo {
 
-    private String serviceEndpointAddress;
-
-    private String serviceEndpointPort;
+    private String validatorServiceEndpointURL;
+    private String resourceServiceEndpointURL;
 
     @JsonIgnore
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
-    public K2ServiceInfo() {
+    public String getValidatorServiceEndpointURL() {
+        return validatorServiceEndpointURL;
     }
 
-    public String getServiceEndpointAddress() {
-        return serviceEndpointAddress;
+    public void setValidatorServiceEndpointURL(String validatorServiceEndpointURL) {
+        this.validatorServiceEndpointURL = validatorServiceEndpointURL;
     }
 
-    public void setServiceEndpointAddress(String serviceEndpointAddress) {
-        this.serviceEndpointAddress = serviceEndpointAddress;
+    public String getResourceServiceEndpointURL() {
+        return resourceServiceEndpointURL;
     }
 
-    public String getServiceEndpointPort() {
-        return serviceEndpointPort;
-    }
-
-    public void setServiceEndpointPort(String serviceEndpointPort) {
-        this.serviceEndpointPort = serviceEndpointPort;
+    public void setResourceServiceEndpointURL(String resourceServiceEndpointURL) {
+        this.resourceServiceEndpointURL = resourceServiceEndpointURL;
     }
 
     @JsonAnyGetter
@@ -53,13 +49,13 @@ public class K2ServiceInfo {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         K2ServiceInfo that = (K2ServiceInfo) o;
-        return Objects.equals(serviceEndpointAddress, that.serviceEndpointAddress) &&
-                Objects.equals(serviceEndpointPort, that.serviceEndpointPort);
+        return validatorServiceEndpointURL.equals(that.validatorServiceEndpointURL) &&
+                resourceServiceEndpointURL.equals(that.resourceServiceEndpointURL);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(serviceEndpointAddress, serviceEndpointPort);
+        return Objects.hash(validatorServiceEndpointURL, resourceServiceEndpointURL);
     }
 
     @Override
@@ -68,6 +64,6 @@ public class K2ServiceInfo {
     }
 
     public boolean isEmpty() {
-        return StringUtils.isAnyBlank(serviceEndpointAddress, serviceEndpointPort);
+        return StringUtils.isAnyBlank(validatorServiceEndpointURL, resourceServiceEndpointURL);
     }
 }

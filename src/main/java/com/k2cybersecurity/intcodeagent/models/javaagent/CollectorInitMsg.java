@@ -12,22 +12,8 @@ public class CollectorInitMsg {
 	private Long timestamp;
 	
 	private AgentInfo agentInfo;
-	
-	private StartupProperties startupProperties;
 
 	public CollectorInitMsg() {
-	}
-	
-	/**
-	 * @param timestamp
-	 * @param agentInfo
-	 * @param startupProperties
-	 */
-	public CollectorInitMsg(AgentInfo agentInfo, StartupProperties startupProperties) {
-		super();
-		this.timestamp = Instant.now().toEpochMilli();
-		this.agentInfo = agentInfo;
-		this.startupProperties = startupProperties;
 	}
 
 	/**
@@ -56,20 +42,6 @@ public class CollectorInitMsg {
 	 */
 	public void setAgentInfo(AgentInfo agentInfo) {
 		this.agentInfo = agentInfo;
-	}
-
-	/**
-	 * @return the startupProperties
-	 */
-	public StartupProperties getStartupProperties() {
-		return startupProperties;
-	}
-
-	/**
-	 * @param startupProperties the startupProperties to set
-	 */
-	public void setStartupProperties(StartupProperties startupProperties) {
-		this.startupProperties = startupProperties;
 	}
 	
 	@Override

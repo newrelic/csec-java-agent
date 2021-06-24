@@ -51,11 +51,9 @@ public class HttpClient {
 
     private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
     public static final String APPLICATION_JSON = "application/json";
-    public static final String API_CALL_S_FAILED = "API call %s failed.";
     public static final String UNKNOWN_ASYNC_API_S = "unknown async API: %s";
     public static final String K_2_API_ACCESSOR_TOKEN = "K2_API_ACCESSOR_TOKEN";
     public static final String K_2_CUSTOMER_ID = "K2_CUSTOMER_ID";
-    public static final String SCHEME = "http://";
     public static final String SSL = "SSL";
 
     private static HttpClient instance;
@@ -113,14 +111,7 @@ public class HttpClient {
             logger.log(LogLevel.ERROR, e.getMessage(), e, HttpClient.class.getName());
         }
 
-        StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append(SCHEME);
-        stringBuilder.append(CollectorConfigurationUtils.getInstance().getCollectorConfig().getK2ServiceInfo().getServiceEndpointAddress());
-        if (StringUtils.isNotBlank(CollectorConfigurationUtils.getInstance().getCollectorConfig().getK2ServiceInfo().getServiceEndpointPort())) {
-            stringBuilder.append(IAgentConstants.COLON_SEPERATOR);
-            stringBuilder.append(CollectorConfigurationUtils.getInstance().getCollectorConfig().getK2ServiceInfo().getServiceEndpointPort());
-        }
-        baseUrl = stringBuilder.toString();
+        baseUrl = CollectorConfigurationUtils.getInstance().getCollectorConfig().getK2ServiceInfo().getResourceServiceEndpointURL();
     }
 
     public static HttpClient getInstance() {

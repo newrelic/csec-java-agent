@@ -34,7 +34,7 @@ public class WSClient extends WebSocketClient {
 	private static WSClient instance;
 
     private WSClient() throws URISyntaxException {
-        super(new URI(String.format("ws://%s:%s", CollectorConfigurationUtils.getInstance().getCollectorConfig().getK2ServiceInfo().getServiceEndpointAddress(), CollectorConfigurationUtils.getInstance().getCollectorConfig().getK2ServiceInfo().getServiceEndpointPort())));
+        super(new URI(CollectorConfigurationUtils.getInstance().getCollectorConfig().getK2ServiceInfo().getValidatorServiceEndpointURL()));
         this.setTcpNoDelay(true);
         this.setConnectionLostTimeout(15);
         this.addHeader("K2-CONNECTION-TYPE", "LANGUAGE_COLLECTOR");
@@ -43,7 +43,7 @@ public class WSClient extends WebSocketClient {
         this.addHeader("K2-VERSION", K2JAVersionInfo.collectorVersion);
         this.addHeader("K2-COLLECTOR-TYPE", "JAVA");
         this.addHeader("K2-GROUP", AgentUtils.getInstance().getGroupName());
-        logger.log(LogLevel.INFO, "Creating WSock connection to : " + CollectorConfigurationUtils.getInstance().getCollectorConfig().getK2ServiceInfo().getServiceEndpointAddress(),
+        logger.log(LogLevel.INFO, "Creating WSock connection to : " + CollectorConfigurationUtils.getInstance().getCollectorConfig().getK2ServiceInfo().getValidatorServiceEndpointURL(),
                 WSClient.class.getName());
         connect();
     }
