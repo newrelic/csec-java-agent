@@ -39,13 +39,21 @@ public class CVEComponentsService {
 
 	private static final String JAR_EXT = "jar";
 
-    private static final String YML_TEMPLATE = "# path to dependency check tool.\r\n"
-            + "dependencycheck.command: sh /tmp/localcveservice/dist/dependency-check.sh\r\n"
-            + "# connecting back to k2agent.\r\n" + "k2agent.websocket: %s/\r\n" + "k2agent.nodeId: %s\r\n"
-            + "k2agent.identifier.kind: %s\r\n" + "k2agent.identifier.id: %s\r\n"
-            + "#----- following are file scan specific options\r\n" + "k2agent.scan.mode: file\r\n"
-            + "k2agent.application: %s\r\n" + "k2agent.applicationUuid: %s\r\n" + "k2agent.applicationSha256: %s\r\n"
-            + "k2agent.scanPath: %s\r\n" + "k2agent.isEnv: %s\r\n";
+    private static final String YML_TEMPLATE = "# connecting back to k2agent.\r\n" +
+            "k2customer.customerId: %s\r\n" +
+            "k2customer.apiAccessorToken: %s\r\n" +
+            "k2agent.websocket: %s/\r\n" +
+            "k2agent.nodeId: %s\r\n" +
+            "k2agent.identifier.kind: %s\r\n" +
+            "k2agent.identifier.id: %s\r\n" +
+            "k2agent.groupName: %s\r\n" +
+            "#----- following are file scan specific options\r\n" +
+            "k2agent.scan.mode: file\r\n" +
+            "k2agent.application: %s\r\n" +
+            "k2agent.applicationUuid: %s\r\n" +
+            "k2agent.applicationSha256: %s\r\n" +
+            "k2agent.scanPath: %s\r\n" +
+            "k2agent.isEnv: %s";
 	
 	private static Set<CVEComponent> envCveComponents = new HashSet<>();
 
@@ -255,8 +263,12 @@ public class CVEComponentsService {
     protected static File createServiceYml(String nodeId, String appName, String appSha256,
                                            String scanPath, String applicationUUID, Boolean env, String kind, String id, String packageParentDir) throws IOException {
         //TODO update YAML add WS headers (cid, api accessor token)
-        String yaml = String.format(YML_TEMPLATE, CollectorConfigurationUtils.getInstance().getCollectorConfig().getK2ServiceInfo().getValidatorServiceEndpointURL(),
-                nodeId, kind, id, appName, applicationUUID, appSha256,
+        String yaml = String.format(YML_TEMPLATE, CollectorConfigurationUtils.getInstance().getCollectorConfig().getCustomerInfo().getCustomerId(),
+                CollectorConfigurationUtils.getInstance().getCollectorConfig().getCustomerInfo().getApiAccessorToken(),
+                CollectorConfigurationUtils.getInstance().getCollectorConfig().getK2ServiceInfo().getValidatorServiceEndpointURL(),
+                nodeId, kind, id,
+                AgentUtils.getInstance().getGroupName(),
+                appName, applicationUUID, appSha256,
                 scanPath, env);
         File yml = new File(packageParentDir, "service-input.yml");
         logger.log(LogLevel.INFO, "input yml : " + yaml, CVEComponentsService.class.getName());
