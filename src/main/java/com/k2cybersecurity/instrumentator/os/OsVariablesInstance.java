@@ -7,8 +7,8 @@ public class OsVariablesInstance {
 
     public static final String TMP_K_2_LOGS = "/tmp/k2logs/";
     public static final String TMP = "/tmp/";
-    public static final String C_USERS_PUBLIC_K_2_AGENT_LOGS = "C:\\Users\\Public\\k2agent\\logs\\";
     public static final String APP_DATA_LOCAL_K_2 = "\\AppData\\Local\\K2\\";
+    public static final String APP_DATA_LOCAL_K_2_LOGS = "\\AppData\\Local\\K2\\logs\\";
     private static OsVariablesInstance instance;
 
     private final static Object lock = new Object();
@@ -29,7 +29,7 @@ public class OsVariablesInstance {
             osVariables.setOs(IAgentConstants.MAC);
         } else if (SystemUtils.IS_OS_WINDOWS) {
             osVariables.setWindows(true);
-            osVariables.setLogDirectory(C_USERS_PUBLIC_K_2_AGENT_LOGS);
+            osVariables.setLogDirectory(SystemUtils.getUserHome() + APP_DATA_LOCAL_K_2_LOGS);
             osVariables.setCvePackageBaseDir(SystemUtils.getUserHome() + APP_DATA_LOCAL_K_2);
             osVariables.setOs(IAgentConstants.WINDOWS);
         }

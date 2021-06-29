@@ -7,6 +7,7 @@ import com.k2cybersecurity.instrumentator.os.OSVariables;
 import com.k2cybersecurity.instrumentator.os.OsVariablesInstance;
 import com.k2cybersecurity.instrumentator.utils.CollectorConfigurationUtils;
 import com.k2cybersecurity.intcodeagent.properties.K2JALogProperties;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.*;
@@ -64,7 +65,10 @@ public class LogWriter implements Runnable {
     static {
 		fileName = new File(osVariables.getLogDirectory(), "k2_java_agent-" + K2Instrumentator.APPLICATION_UUID + ".log").getAbsolutePath();
         currentLogFile = new File(fileName);
-        currentLogFile.getParentFile().mkdirs();
+        boolean created = currentLogFile.getParentFile().mkdirs();
+        if (!created) {
+            System.err.println(String.format("[K2-Agent]:Unable to create directory %s!!!", currentLogFile.getParentFile()));
+        }
         currentLogFileName = fileName;
         try {
             currentLogFile.setReadable(true, false);
@@ -136,16 +140,15 @@ public class LogWriter implements Runnable {
 			writer.flush();
 
 //			writer.newLine();
-			rollover(currentLogFile);
-			currentLogFile.setReadable(true,false);
-			Files.setPosixFilePermissions(currentLogFile.toPath(), PosixFilePermissions.fromString("rw-rw-rw-"));
+            rollover(currentLogFileName);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 
 	}
 
-	private static void rollover(File currentFile) throws IOException {
+    private static void rollover(String fileName) throws IOException {
+        File currentFile = new File(fileName);
 		if (currentFile.length() > maxFileSize) {
 			writer.close();
 			logFileCounter++;
@@ -160,12 +163,17 @@ public class LogWriter implements Runnable {
 
 			writer = new BufferedWriter(new FileWriter(currentLogFileName, true));
 
+            currentFile.setReadable(true, false);
+            Files.setPosixFilePermissions(currentFile.toPath(), PosixFilePermissions.fromString("rw-rw-rw-"));
+
 			int removeFile = logFileCounter - K2JALogProperties.maxfiles;
-			if (removeFile > 0) {
-				File remove = new File(fileName + STRING_DOT + removeFile);
-				if (remove.exists())
-					remove.delete();
-			}
+            while (removeFile > 0) {
+                File remove = new File(fileName + STRING_DOT + removeFile);
+                if (remove.exists()) {
+                    FileUtils.deleteQuietly(remove);
+                }
+                removeFile--;
+            }
 		}
 	}
 

@@ -72,12 +72,6 @@ public class CVEScannerPool {
 						"K2-local-cve-service-" + threadNumber.getAndIncrement());
 			}
 		});
-
-        try {
-            FileUtils.cleanDirectory(new File(osVariables.getCvePackageBaseDir()));
-        } catch (IOException e) {
-            logger.log(LogLevel.WARNING, String.format("%s Directory cleanup failed", osVariables.getCvePackageBaseDir()), CVEScannerPool.class.getName());
-		}
 	}
 
 	public static CVEScannerPool getInstance() {
