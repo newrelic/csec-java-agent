@@ -22,7 +22,7 @@ public class JAHealthCheck extends AgentBasicInfo {
 
 	private AtomicInteger eventDropCount;
 
-    private Boolean isHost;
+    private IdentifierEnvs kind;
 
     private AtomicInteger eventProcessed;
 
@@ -30,7 +30,7 @@ public class JAHealthCheck extends AgentBasicInfo {
 
     private AtomicInteger httpRequestCount;
 
-    private Set protectedVulnerabilties;
+    private Set protectedVulnerabilities;
 
     public JAHealthCheck(String applicationUUID) {
         super();
@@ -41,8 +41,8 @@ public class JAHealthCheck extends AgentBasicInfo {
         this.eventSentCount = new AtomicInteger(0);
         this.httpRequestCount = new AtomicInteger(0);
         this.setProtectedDB(new HashSet());
-        this.setProtectedVulnerabilties(AgentUtils.getInstance().getProtectedVulnerabilties());
-		this.setIsHost(IdentifierEnvs.HOST.equals(K2Instrumentator.APPLICATION_INFO_BEAN.getIdentifier().getKind()));
+        this.setProtectedVulnerabilities(AgentUtils.getInstance().getProtectedVulnerabilties());
+        this.setKind(K2Instrumentator.APPLICATION_INFO_BEAN.getIdentifier().getKind());
         logger.log(LogLevel.INFO, "JA Healthcheck created : " + this.toString(), JAHealthCheck.class.getName());
     }
 
@@ -51,27 +51,21 @@ public class JAHealthCheck extends AgentBasicInfo {
         this.applicationUUID = jaHealthCheck.applicationUUID;
         this.protectedServer = jaHealthCheck.protectedServer;
         this.protectedDB = jaHealthCheck.protectedDB;
-        this.protectedVulnerabilties = jaHealthCheck.protectedVulnerabilties;
+        this.protectedVulnerabilities = jaHealthCheck.protectedVulnerabilities;
         this.eventDropCount = jaHealthCheck.eventDropCount;
         this.eventProcessed = jaHealthCheck.eventProcessed;
         this.eventSentCount = jaHealthCheck.eventSentCount;
         this.httpRequestCount = jaHealthCheck.httpRequestCount;
-        this.isHost = jaHealthCheck.isHost;
+        this.kind = jaHealthCheck.kind;
         logger.log(LogLevel.INFO, "JA Healthcheck created : " + this.toString(), JAHealthCheck.class.getName());
     }
 
-	/**
-	 * @return the isHost
-	 */
-	public Boolean getIsHost() {
-		return isHost;
-	}
+    public IdentifierEnvs getKind() {
+        return kind;
+    }
 
-	/**
-	 * @param isHost the isHost to set
-	 */
-	public void setIsHost(Boolean isHost) {
-		this.isHost = isHost;
+    public void setKind(IdentifierEnvs kind) {
+        this.kind = kind;
 	}
 
 	/**
@@ -189,12 +183,12 @@ public class JAHealthCheck extends AgentBasicInfo {
 		this.eventSentCount.set(eventSentCount);
 	}
 
-	public Set getProtectedVulnerabilties() {
-        return protectedVulnerabilties;
+    public Set getProtectedVulnerabilities() {
+        return protectedVulnerabilities;
     }
 
-    public void setProtectedVulnerabilties(Set protectedVulnerabilties) {
-        this.protectedVulnerabilties = protectedVulnerabilties;
+    public void setProtectedVulnerabilities(Set protectedVulnerabilities) {
+        this.protectedVulnerabilities = protectedVulnerabilities;
     }
 
     public void setHttpRequestCount(Integer httpRequestCount) {

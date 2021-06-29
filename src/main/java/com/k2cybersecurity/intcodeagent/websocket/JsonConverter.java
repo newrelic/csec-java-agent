@@ -66,7 +66,7 @@ public class JsonConverter {
 						jsonString.append(STR_FORWARD_SLASH);
 						jsonString.append(field.getName());
 						jsonString.append(JSON_SEPRATER);
-						if (field.getType().equals(String.class)) {
+						if (field.getType().equals(String.class) || field.getType().isEnum()) {
 							jsonString.append(STR_FORWARD_SLASH);
 							jsonString.append(StringEscapeUtils.escapeJava(value.toString()));
 							jsonString.append(STR_FORWARD_SLASH);
