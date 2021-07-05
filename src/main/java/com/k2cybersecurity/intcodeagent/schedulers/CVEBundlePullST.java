@@ -3,7 +3,6 @@ package com.k2cybersecurity.intcodeagent.schedulers;
 import com.k2cybersecurity.instrumentator.K2Instrumentator;
 import com.k2cybersecurity.instrumentator.cve.scanner.CVEComponentsService;
 import com.k2cybersecurity.instrumentator.cve.scanner.CVEScannerPool;
-import com.k2cybersecurity.instrumentator.os.OsVariablesInstance;
 import com.k2cybersecurity.instrumentator.utils.AgentUtils;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
@@ -24,12 +23,9 @@ public class CVEBundlePullST {
 
     private static CVEBundlePullST instance;
 
-    private String platform;
-
     private String lastKnownCVEBundle;
 
-    private CVEBundlePullST(String platform) {
-        this.platform = platform;
+    private CVEBundlePullST() {
         executorService = Executors.newSingleThreadScheduledExecutor(new ThreadFactory() {
             @Override
             public Thread newThread(Runnable r) {
@@ -73,7 +69,7 @@ public class CVEBundlePullST {
         if (instance == null) {
             synchronized (lock) {
                 if (instance == null) {
-                    instance = new CVEBundlePullST(OsVariablesInstance.getInstance().getOsVariables().getOs());
+                    instance = new CVEBundlePullST();
                 }
             }
         }

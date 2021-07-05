@@ -1,7 +1,5 @@
 package com.k2cybersecurity.instrumentator.os;
 
-import java.util.Optional;
-
 public class OSVariables {
     private String os;
     private Boolean isWindows = Boolean.FALSE;
@@ -9,6 +7,7 @@ public class OSVariables {
     private Boolean isMac = Boolean.FALSE;
     private String logDirectory;
     private String cvePackageBaseDir;
+    private String osArch;
 
     public String getOs() {
         return os;
@@ -52,6 +51,14 @@ public class OSVariables {
 
     public String getCvePackageBaseDir() {
         return cvePackageBaseDir;
+    }
+
+    public String getOsArch() {
+        return osArch;
+    }
+
+    public void setOsArch(String osArch) {
+        this.osArch = osArch;
     }
 
     public void setCvePackageBaseDir(String cvePackageBaseDir) {

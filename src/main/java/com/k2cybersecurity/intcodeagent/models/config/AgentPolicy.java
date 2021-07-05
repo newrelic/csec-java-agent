@@ -20,6 +20,7 @@ import java.util.Map;
         "sendCompleteStackTrace",
         "enableHTTPRequestPrinting"
 })
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class AgentPolicy {
 
     @JsonProperty("version")

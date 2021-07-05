@@ -1,26 +1,23 @@
 package com.k2cybersecurity.intcodeagent.models.javaagent;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
 import java.util.List;
 
 @JsonInclude(Include.NON_NULL)
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class IntCodeControlCommand {
 
-    public static final int CHANGE_LOG_LEVEL = 0;
     public static final int SHUTDOWN_LANGUAGE_AGENT = 1;
-    public static final int SET_DEFAULT_LOG_LEVEL = 2;
-    public static final int UPLOAD_LOGS = 4;
     public static final int UNSUPPORTED_AGENT = 5;
     public static final int EVENT_RESPONSE = 6;
-    public static final int START_VULNERABILITY_SCAN = 8;
     public static final int STARTUP_WELCOME_MSG = 10;
 
     public static final int FUZZ_REQUEST = 11;
 
     public static final int SEND_POLICY = 100;
-    public static final int SEND_POLICY_PARAM = 101;
 
     private String jsonName;
     private int controlCommand;

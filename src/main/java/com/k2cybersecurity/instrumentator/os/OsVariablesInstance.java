@@ -1,6 +1,7 @@
 package com.k2cybersecurity.instrumentator.os;
 
 import com.k2cybersecurity.intcodeagent.logging.IAgentConstants;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
 
 public class OsVariablesInstance {
@@ -32,6 +33,20 @@ public class OsVariablesInstance {
             osVariables.setLogDirectory(SystemUtils.getUserHome() + APP_DATA_LOCAL_K_2_LOGS);
             osVariables.setCvePackageBaseDir(SystemUtils.getUserHome() + APP_DATA_LOCAL_K_2);
             osVariables.setOs(IAgentConstants.WINDOWS);
+        }
+        String arch = SystemUtils.OS_ARCH;
+        osVariables.setOsArch(getOsArch(arch));
+    }
+
+    private String getOsArch(String arch) {
+        switch (arch) {
+            case "aarch64":
+            case "arm64":
+                return "aarch64";
+            case "amd64":
+            case "x86_64":
+            default:
+                return "x64";
         }
     }
 

@@ -1,10 +1,12 @@
 package com.k2cybersecurity.intcodeagent.models.javaagent;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.k2cybersecurity.intcodeagent.websocket.JsonConverter;
 
 import java.util.concurrent.Semaphore;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class EventResponse {
 
     private String id;
@@ -46,39 +48,39 @@ public class EventResponse {
     }
 
     public String getJsonName() {
-		return jsonName;
-	}
+        return jsonName;
+    }
 
-	public boolean isAttack() {
-		return attack;
-	}
+    public boolean isAttack() {
+        return attack;
+    }
 
-	public void setAttack(boolean attack) {
-		this.attack = attack;
-	}
+    public void setAttack(boolean attack) {
+        this.attack = attack;
+    }
 
-	public String getResultMessage() {
-		return resultMessage;
-	}
+    public String getResultMessage() {
+        return resultMessage;
+    }
 
-	public void setResultMessage(String resultMessage) {
-		this.resultMessage = resultMessage;
-	}
+    public void setResultMessage(String resultMessage) {
+        this.resultMessage = resultMessage;
+    }
 
-	public String getEventId() {
-		return eventId;
-	}
+    public String getEventId() {
+        return eventId;
+    }
 
-	public void setEventId(String eventId) {
-		this.eventId = eventId;
-	}
+    public void setEventId(String eventId) {
+        this.eventId = eventId;
+    }
 
-	public long getGenerationTime() {
-		return generationTime;
-	}
+    public long getGenerationTime() {
+        return generationTime;
+    }
 
-	public void setGenerationTime(long generationTime) {
-		this.generationTime = generationTime;
+    public void setGenerationTime(long generationTime) {
+        this.generationTime = generationTime;
     }
 
     public long getReceivedTime() {

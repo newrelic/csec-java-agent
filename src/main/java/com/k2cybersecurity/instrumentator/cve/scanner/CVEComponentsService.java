@@ -208,7 +208,10 @@ public class CVEComponentsService {
 
     public static CVEPackageInfo getCVEPackageInfo() {
         try {
-            Response cveVersion = HttpClient.getInstance().doGet(IRestClientConstants.COLLECTOR_CVE_VERSION, null, Collections.singletonMap("platform", osVariables.getOs()), null, false);
+            Map<String, String> queryParams = new HashMap<>();
+            queryParams.put("platform", osVariables.getOs());
+            queryParams.put("osArch", osVariables.getOsArch());
+            Response cveVersion = HttpClient.getInstance().doGet(IRestClientConstants.COLLECTOR_CVE_VERSION, null, queryParams, null, false);
             if (!cveVersion.isSuccessful()) {
                 logger.log(LogLevel.WARNING, String.format("API (%s)response was %s", IRestClientConstants.COLLECTOR_CVE_VERSION, cveVersion.body().string()), CVEComponentsService.class.getName());
                 return null;
@@ -229,7 +232,6 @@ public class CVEComponentsService {
             queryParams.put("platform", osVariables.getOs());
             queryParams.put("version", packageInfo.getLatestServiceVersion());
             Response cvePackageResponse = HttpClient.getInstance().doGet(IRestClientConstants.COLLECTOR_CVE, null, queryParams, null, false);
-            logger.log(LogLevel.DEBUG, "Response of cve package get api : " + cvePackageResponse.code(), CVEComponentsService.class.getName());
             if (cvePackageResponse.isSuccessful()) {
                 String packageDownloadDir = osVariables.getCvePackageBaseDir();
                 String filename;
