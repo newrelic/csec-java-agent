@@ -8,6 +8,7 @@ import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.models.javaagent.CVEPackageInfo;
 import com.k2cybersecurity.intcodeagent.models.javaagent.CVEScanner;
+import com.k2cybersecurity.intcodeagent.schedulers.CVEBundlePullST;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.io.FileUtils;
@@ -74,6 +75,7 @@ public class CVEServiceLinux implements Runnable {
         try {
             String packageParentDir = osVariables.getCvePackageBaseDir();
             CVEPackageInfo packageInfo = CVEComponentsService.getCVEPackageInfo();
+            logger.log(LogLevel.DEBUG, "Package Info  : " + packageInfo.toString() + " :: " + CVEScannerPool.getInstance().getPackageInfo(), CVEServiceLinux.class.getName());
             boolean downloaded = false;
             if (downloadTarBundle || CVEScannerPool.getInstance().getPackageInfo() == null || StringUtils.equals(packageInfo.getLatestServiceVersion(), CVEScannerPool.getInstance().getPackageInfo().getLatestServiceVersion())) {
                 downloaded = CVEComponentsService.downloadCVEPackage(packageInfo);
