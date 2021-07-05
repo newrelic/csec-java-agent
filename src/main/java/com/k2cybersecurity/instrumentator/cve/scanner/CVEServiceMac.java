@@ -98,7 +98,7 @@ public class CVEServiceMac implements Runnable {
                 }
             }
 
-            extractCVETar(CVEScannerPool.getInstance().getPackageInfo().getCvePackage(), parentDirectory);
+            AgentUtils.extractCVETar(CVEScannerPool.getInstance().getPackageInfo().getCvePackage(), parentDirectory);
             CVEComponentsService.setAllLinuxPermissions(parentDirectory.getAbsolutePath());
 
             logger.log(LogLevel.DEBUG, ICVEConstants.CVE_PACKAGE_EXTRACTION_COMPLETED, CVEServiceLinux.class.getName());
@@ -145,45 +145,13 @@ public class CVEServiceMac implements Runnable {
                 } catch (Throwable e) {
                 }
             }
-            CVEComponentsService.deleteAllComponents(parentDirectory, packageParentDir);
+//            CVEComponentsService.deleteAllComponents(parentDirectory, packageParentDir);
             logger.log(LogLevel.DEBUG, ICVEConstants.CVE_PACKAGE_DELETED, CVEServiceLinux.class.getName());
         } catch (InterruptedException e) {
             logger.log(LogLevel.ERROR, ERROR_PROCESS_TERMINATED, e, CVEServiceMac.class.getName());
         } catch (Throwable e) {
             logger.log(LogLevel.ERROR, ERROR, e, CVEServiceMac.class.getName());
         }
-
-    }
-
-    private boolean extractCVETar(File cveTar, File outputDir) {
-        logger.log(LogLevel.DEBUG, CAME_TO_EXTRACT_TAR_BUNDLE + cveTar.getAbsolutePath(), CVEServiceMac.class.getName());
-        try (TarArchiveInputStream inputStream = new TarArchiveInputStream(new FileInputStream(cveTar),
-                StandardCharsets.UTF_8.name())) {
-            TarArchiveEntry entry;
-            while ((entry = inputStream.getNextTarEntry()) != null) {
-                if (entry.isDirectory()) {
-                    continue;
-                }
-                File curfile = new File(outputDir, entry.getName());
-                File parent = curfile.getParentFile();
-                if (!parent.exists()) {
-                    parent.mkdirs();
-                }
-                try (FileOutputStream outputStream = new FileOutputStream(curfile)) {
-                    IOUtils.copy(inputStream, outputStream);
-                } catch (Throwable e) {
-                    logger.log(LogLevel.ERROR, ERROR_LOG, e, CVEServiceMac.class.getName());
-                }
-            }
-            return true;
-        } catch (Throwable e) {
-            logger.log(LogLevel.ERROR, ERROR_LOG, e, CVEServiceMac.class.getName());
-            FileUtils.deleteQuietly(cveTar);
-            logger.log(LogLevel.WARNING,
-                    CORRUPTED_CVE_SERVICE_BUNDLE_DELETED, CVEServiceMac.class.getName());
-        }
-
-        return false;
 
     }
 }

@@ -3,6 +3,7 @@ package com.k2cybersecurity.instrumentator.utils;
 import com.k2cybersecurity.instrumentator.K2Instrumentator;
 import com.k2cybersecurity.instrumentator.custom.ClassloaderAdjustments;
 import com.k2cybersecurity.instrumentator.cve.scanner.CVEScannerPool;
+import com.k2cybersecurity.instrumentator.cve.scanner.CVEServiceLinux;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.filelogging.LogWriter;
@@ -23,8 +24,12 @@ import com.sun.jna.platform.win32.Kernel32;
 import com.sun.jna.platform.win32.WinNT;
 import net.bytebuddy.description.type.TypeDescription;
 import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
+import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipArchiveInputStream;
+import org.apache.commons.compress.utils.Sets;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
@@ -34,7 +39,11 @@ import java.io.*;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.FileSystems;
 import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.attribute.PosixFilePermission;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -68,12 +77,14 @@ public class AgentUtils {
     public static final String ERROR = "Error :";
     public static final String CLASSLOADER_RECORD_MISSING_FOR_CLASS = "Classloader record missing for class : ";
     private static final String TWO_PIPES = "||";
+	public static final String CAME_TO_EXTRACT_TAR_BUNDLE = "Came to extract tar bundle : ";
+	public static final String CORRUPTED_CVE_SERVICE_BUNDLE_DELETED = "Corrupted CVE service bundle deleted.";
 
 	public Set<Pair<String, ClassLoader>> getTransformedClasses() {
         return transformedClasses;
     }
 
-    private Set<Pair<String, ClassLoader>> transformedClasses;
+	private Set<Pair<String, ClassLoader>> transformedClasses;
 
     private Map<String, ClassLoader> classLoaderRecord;
 
@@ -749,6 +760,90 @@ public class AgentUtils {
 		} catch (IOException e) {
 			logger.log(LogLevel.ERROR, "Error : ", e, AgentUtils.class.getName());
 		}
+		return false;
+	}
+
+	public static Set<PosixFilePermission> intToPosixFilePermission(int mode) {
+		if (mode >= 1000 || mode < 0) {
+			throw new IllegalArgumentException("Invalid mode " + mode);
+		}
+
+		final int owner = mode / 100;
+		final int group = (mode - owner * 100) / 10;
+		final int others = mode - owner * 100 - group * 10;
+
+		if (owner > 7 || group > 7 || others > 7) {
+			throw new IllegalArgumentException("Invalid mode " + mode);
+		}
+
+		Set<PosixFilePermission> posixFilePermissionSet = new HashSet<>();
+		posixFilePermissionSet.addAll(singleIntToFilePermission(owner, "OWNER"));
+		posixFilePermissionSet.addAll(singleIntToFilePermission(owner, "GROUP"));
+		posixFilePermissionSet.addAll(singleIntToFilePermission(owner, "OTHERS"));
+		return posixFilePermissionSet;
+	}
+
+	private static Set<PosixFilePermission> singleIntToFilePermission(Integer mode, String groupType) {
+		Set<PosixFilePermission> permissions = new HashSet<>(9);
+
+		if (Arrays.asList(new Integer[]{1, 3, 5, 7}).contains(mode)) {
+			permissions.add(PosixFilePermission.valueOf(groupType + "_EXECUTE"));
+		}
+
+		if (Arrays.asList(new Integer[]{2, 3, 6, 7}).contains(mode)) {
+			permissions.add(PosixFilePermission.valueOf(groupType + "_WRITE"));
+		}
+
+		if (Arrays.asList(new Integer[]{4, 5, 6, 7}).contains(mode)) {
+			permissions.add(PosixFilePermission.valueOf(groupType + "_READ"));
+		}
+
+		return permissions;
+	}
+
+	public static Set<PosixFilePermission> octToPosixFilePermission(int modeOct) {
+		// TODO: optimize this method and make it cleaner
+		int modeInt = Integer.parseInt(Integer.toString(modeOct, 8));
+
+		return intToPosixFilePermission(modeInt);
+	}
+
+	public static boolean extractCVETar(File tarFile, File outputDir) {
+		logger.log(LogLevel.DEBUG, CAME_TO_EXTRACT_TAR_BUNDLE + tarFile.getAbsolutePath(), AgentUtils.class.getName());
+		try (TarArchiveInputStream inputStream = new TarArchiveInputStream(new FileInputStream(tarFile),
+				StandardCharsets.UTF_8.name())) {
+			TarArchiveEntry entry;
+			while ((entry = inputStream.getNextTarEntry()) != null) {
+				File curfile = new File(outputDir, entry.getName());
+				if (entry.isDirectory()) {
+					if (!curfile.exists()) {
+						curfile.mkdirs();
+					}
+					continue;
+				} else if (entry.isSymbolicLink()) {
+					// Create symbolic link relative to tar parent dir
+					Files.createSymbolicLink(FileSystems.getDefault()
+									.getPath(outputDir.getPath(), entry.getName()),
+							FileSystems.getDefault().getPath(entry.getLinkName()));
+
+					continue;
+				}
+				try (FileOutputStream outputStream = new FileOutputStream(curfile)) {
+					IOUtils.copy(inputStream, outputStream);
+					Files.setPosixFilePermissions(Paths.get(curfile.getPath()),
+							octToPosixFilePermission(entry.getMode()));
+				} catch (Throwable e) {
+					logger.log(LogLevel.ERROR, ERROR, e, CVEServiceLinux.class.getName());
+				}
+			}
+			return true;
+		} catch (Throwable e) {
+			logger.log(LogLevel.ERROR, ERROR, e, CVEServiceLinux.class.getName());
+			FileUtils.deleteQuietly(tarFile);
+			logger.log(LogLevel.WARNING,
+					CORRUPTED_CVE_SERVICE_BUNDLE_DELETED, CVEServiceLinux.class.getName());
+		}
+
 		return false;
 	}
 }

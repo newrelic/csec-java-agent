@@ -43,7 +43,7 @@ public class CVEServiceLinux implements Runnable {
     public static final String KILLING_PROCESS_TREE_ROOTED_AT_S = "Killing process tree rooted at : %s";
     public static final String SETSID = "setsid";
     public static final String CORRUPTED_CVE_SERVICE_BUNDLE_DELETED = "Corrupted CVE service bundle deleted.";
-    public static final String CAME_TO_EXTRACT_TAR_BUNDLE = "Came to extract tar bundle : ";
+
     public static final String LINUX_SHELL = "sh";
     public static final String PATH_TO_DEPENDENCY_CHECK = "/K2/dependency-check.sh";
     public static final String STARTUP_SH_PATH = "K2/startup.sh";
@@ -97,7 +97,7 @@ public class CVEServiceLinux implements Runnable {
                 }
             }
 
-            extractCVETar(CVEScannerPool.getInstance().getPackageInfo().getCvePackage(), parentDirectory);
+            AgentUtils.extractCVETar(CVEScannerPool.getInstance().getPackageInfo().getCvePackage(), parentDirectory);
             CVEComponentsService.setAllLinuxPermissions(parentDirectory.getAbsolutePath());
             logger.log(LogLevel.DEBUG, ICVEConstants.CVE_PACKAGE_EXTRACTION_COMPLETED, CVEServiceLinux.class.getName());
             StringBuilder dcCommand = new StringBuilder(LINUX_SHELL);
@@ -150,38 +150,6 @@ public class CVEServiceLinux implements Runnable {
         } catch (Throwable e) {
             logger.log(LogLevel.ERROR, ERROR, e, CVEServiceLinux.class.getName());
         }
-
-    }
-
-    private boolean extractCVETar(File cveTar, File outputDir) {
-        logger.log(LogLevel.DEBUG, CAME_TO_EXTRACT_TAR_BUNDLE + cveTar.getAbsolutePath(), CVEServiceLinux.class.getName());
-        try (TarArchiveInputStream inputStream = new TarArchiveInputStream(new FileInputStream(cveTar),
-                StandardCharsets.UTF_8.name())) {
-            TarArchiveEntry entry;
-            while ((entry = inputStream.getNextTarEntry()) != null) {
-                if (entry.isDirectory()) {
-                    continue;
-                }
-                File curfile = new File(outputDir, entry.getName());
-                File parent = curfile.getParentFile();
-                if (!parent.exists()) {
-                    parent.mkdirs();
-                }
-                try (FileOutputStream outputStream = new FileOutputStream(curfile)) {
-                    IOUtils.copy(inputStream, outputStream);
-                } catch (Throwable e) {
-                    logger.log(LogLevel.ERROR, ERROR_LOG, e, CVEServiceLinux.class.getName());
-                }
-            }
-            return true;
-        } catch (Throwable e) {
-            logger.log(LogLevel.ERROR, ERROR_LOG, e, CVEServiceLinux.class.getName());
-            FileUtils.deleteQuietly(cveTar);
-            logger.log(LogLevel.WARNING,
-                    CORRUPTED_CVE_SERVICE_BUNDLE_DELETED, CVEServiceLinux.class.getName());
-        }
-
-        return false;
 
     }
 }

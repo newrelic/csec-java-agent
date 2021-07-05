@@ -157,6 +157,7 @@ public class K2Instrumentator {
             identifier.setCollectorIp(getIpAddress());
             applicationInfoBean.setCmdline(StringEscapeUtils.escapeJava(getCmdLineArgsByProc()));
 
+            //TODO remove use of proc
             try {
                 applicationInfoBean.setBinaryPath(Files
                         .readSymbolicLink(
