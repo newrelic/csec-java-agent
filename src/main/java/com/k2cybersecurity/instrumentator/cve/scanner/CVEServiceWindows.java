@@ -76,13 +76,15 @@ public class CVEServiceWindows implements Runnable {
         try {
             String packageParentDir = osVariables.getCvePackageBaseDir();
             CVEPackageInfo packageInfo = CVEComponentsService.getCVEPackageInfo();
+            logger.log(LogLevel.DEBUG, "Package Info  : " + packageInfo.toString() + " :: " + CVEScannerPool.getInstance().getPackageInfo(), CVEServiceLinux.class.getName());
             boolean downloaded = false;
-            if (downloadTarBundle || StringUtils.equals(packageInfo.getLatestServiceVersion(), CVEScannerPool.getInstance().getPackageInfo().getLatestServiceVersion())) {
+            if (downloadTarBundle || CVEScannerPool.getInstance().getPackageInfo() == null || StringUtils.equals(packageInfo.getLatestServiceVersion(), CVEScannerPool.getInstance().getPackageInfo().getLatestServiceVersion())) {
                 downloaded = CVEComponentsService.downloadCVEPackage(packageInfo);
             }
             if (!downloaded) {
                 return;
             }
+            logger.log(LogLevel.DEBUG, "CVE package downloaded", CVEServiceLinux.class.getName());
             //Create untar Directory
             File extractedPackageDir = new File(packageParentDir, LOCALCVESERVICE_PATH);
             FileUtils.deleteQuietly(extractedPackageDir);
@@ -99,6 +101,8 @@ public class CVEServiceWindows implements Runnable {
             AgentUtils.getInstance().unZipFile(CVEScannerPool.getInstance().getPackageInfo().getCvePackage(), extractedPackageDir);
             //TODO set permissions for extracted package if needed.
 //            setAllPermissions(parentDirectory.getAbsolutePath());
+
+            logger.log(LogLevel.DEBUG, "CVE package extraction completed.", CVEServiceLinux.class.getName());
 
             StringBuilder dcCommand = new StringBuilder(POWERSHELL_EXE);
             dcCommand.append(StringUtils.SPACE);
@@ -142,6 +146,7 @@ public class CVEServiceWindows implements Runnable {
                         StringUtils.join(errResponse, StringUtils.LF)), CVEServiceWindows.class.getName());
                 try {
                     FileUtils.forceDelete(inputYaml);
+                    logger.log(LogLevel.DEBUG, "CVE package deleted", CVEServiceLinux.class.getName());
                 } catch (Throwable e) {
                 }
             }

@@ -59,7 +59,7 @@ public class CVEBundlePullST {
     private void task() {
         CVEPackageInfo packageInfo = CVEComponentsService.getCVEPackageInfo();
         logger.log(LogLevel.DEBUG, packageInfo.toString() + " :: " + CVEScannerPool.getInstance().getPackageInfo(), CVEBundlePullST.class.getName());
-        if (StringUtils.equals(packageInfo.getLatestServiceVersion(), CVEScannerPool.getInstance().getPackageInfo().getLatestServiceVersion())) {
+        if (CVEScannerPool.getInstance().getPackageInfo() == null || StringUtils.equals(packageInfo.getLatestServiceVersion(), CVEScannerPool.getInstance().getPackageInfo().getLatestServiceVersion())) {
             if (AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getCveScan().getEnableEnvScan()) {
                 //Run CVE scan on ENV
                 CVEScannerPool.getInstance().dispatchScanner(AgentUtils.getInstance().getInitMsg().getAgentInfo().getNodeId(), K2Instrumentator.APPLICATION_INFO_BEAN.getIdentifier().getKind().name(), K2Instrumentator.APPLICATION_INFO_BEAN.getIdentifier().getId(), false, true);
