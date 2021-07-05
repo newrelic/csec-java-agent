@@ -105,7 +105,7 @@ public class CVEServiceLinux implements Runnable {
             dcCommand.append(parentDirectory.getAbsolutePath());
             dcCommand.append(PATH_TO_DEPENDENCY_CHECK);
 
-            String startupScriptPath = new File(packageParentDir, STARTUP_SH_PATH).getAbsolutePath();
+            String startupScriptPath = new File(parentDirectory.getAbsolutePath(), STARTUP_SH_PATH).getAbsolutePath();
 
             List<CVEScanner> scanDirs;
             if (isEnvScan) {

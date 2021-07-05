@@ -109,7 +109,7 @@ public class CVEServiceWindows implements Runnable {
             dcCommand.append(extractedPackageDir.getAbsolutePath());
             dcCommand.append(K_2_DEPENDENCY_CHECK_PATH);
 
-            String startupScriptPath = new File(packageParentDir, K_2_STARTUP_SCRIPT).getAbsolutePath();
+            String startupScriptPath = new File(extractedPackageDir.getAbsolutePath(), K_2_STARTUP_SCRIPT).getAbsolutePath();
 
             List<CVEScanner> scanDirs;
             if (isEnvScan) {
