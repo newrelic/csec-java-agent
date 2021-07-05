@@ -8,20 +8,23 @@ import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.models.javaagent.CVEPackageInfo;
 import com.k2cybersecurity.intcodeagent.models.javaagent.CVEScanner;
+import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
+import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.SystemUtils;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-public class CVEServiceWindows implements Runnable {
+public class CVEServiceMac implements Runnable {
 
-    static final String TMP_DIR = SystemUtils.getUserHome() + "\\AppData\\Local\\K2\\";
+    private static final String ERROR_LOG = "Error : ";
 
     private static final String CANNOT_CREATE_DIRECTORY = "Cannot create directory : ";
 
@@ -35,18 +38,16 @@ public class CVEServiceWindows implements Runnable {
 
     private static final String BASH_COMMAND = "bash";
 
-    private static final String TMP_LOCALCVESERVICE_DIST_STARTUP_SH = "/tmp/localcveservice/dist/startup.sh";
-
     private static final String LOCALCVESERVICE_PATH = "localcveservice";
 
     public static final String KILL_PROCESS_TREE_COMMAND = "kill -9 -%s";
     public static final String KILLING_PROCESS_TREE_ROOTED_AT_S = "Killing process tree rooted at : %s";
     public static final String SETSID = "setsid";
-    public static final String ZIP_FILE_DOWNLOADED_FAIL = "zip file downloaded fail.";
-    public static final String ZIP_FILE_DOWNLOADED = "zip file downloaded.";
-    public static final String POWERSHELL_EXE = "powershell.exe";
-    public static final String K_2_DEPENDENCY_CHECK_PATH = "\\K2\\dependency-check.ps1";
-    public static final String K_2_STARTUP_SCRIPT = "K2\\startup.ps1";
+    public static final String CORRUPTED_CVE_SERVICE_BUNDLE_DELETED = "Corrupted CVE service bundle deleted.";
+    public static final String CAME_TO_EXTRACT_TAR_BUNDLE = "Came to extract tar bundle : ";
+    public static final String MAC_SHELL = "bash ";
+    public static final String PATH_TO_DEPENDENCY_CHECK = "/K2/dependency-check.sh";
+    public static final String STARTUP_SH_PATH = "K2/startup.sh";
 
     private String nodeId;
 
@@ -57,11 +58,10 @@ public class CVEServiceWindows implements Runnable {
     private String id;
 
     private boolean isEnvScan;
-    final String bundleNameRegex = ICVEConstants.LOCALCVESERVICE_WIN_ZIP_REGEX;
 
     private OSVariables osVariables = OsVariablesInstance.getInstance().getOsVariables();
 
-    public CVEServiceWindows(String nodeId, String kind, String id, boolean downloadTarBundle, boolean isEnvScan) {
+    public CVEServiceMac(String nodeId, String kind, String id, boolean downloadTarBundle, boolean isEnvScan) {
         this.nodeId = nodeId;
         this.kind = kind;
         this.id = id;
@@ -84,28 +84,26 @@ public class CVEServiceWindows implements Runnable {
                 return;
             }
             //Create untar Directory
-            File extractedPackageDir = new File(packageParentDir, LOCALCVESERVICE_PATH);
-            FileUtils.deleteQuietly(extractedPackageDir);
-            if (!extractedPackageDir.exists()) {
+            File parentDirectory = new File(packageParentDir, LOCALCVESERVICE_PATH);
+            FileUtils.deleteQuietly(parentDirectory);
+            if (!parentDirectory.exists()) {
                 try {
-                    extractedPackageDir.mkdirs();
+                    parentDirectory.mkdirs();
                 } catch (Throwable e) {
-                    logger.log(LogLevel.ERROR, CANNOT_CREATE_DIRECTORY + extractedPackageDir, e,
-                            CVEServiceWindows.class.getName());
+                    logger.log(LogLevel.ERROR, CANNOT_CREATE_DIRECTORY + parentDirectory, e,
+                            CVEServiceMac.class.getName());
                     return;
                 }
             }
 
-            AgentUtils.getInstance().unZipFile(CVEScannerPool.getInstance().getPackageInfo().getCvePackage(), extractedPackageDir);
-            //TODO set permissions for extracted package if needed.
-//            setAllPermissions(parentDirectory.getAbsolutePath());
+            extractCVETar(CVEScannerPool.getInstance().getPackageInfo().getCvePackage(), parentDirectory);
+            CVEComponentsService.setAllLinuxPermissions(parentDirectory.getAbsolutePath());
 
-            StringBuilder dcCommand = new StringBuilder(POWERSHELL_EXE);
-            dcCommand.append(StringUtils.SPACE);
-            dcCommand.append(extractedPackageDir.getAbsolutePath());
-            dcCommand.append(K_2_DEPENDENCY_CHECK_PATH);
+            StringBuilder dcCommand = new StringBuilder(MAC_SHELL);
+            dcCommand.append(parentDirectory.getAbsolutePath());
+            dcCommand.append(PATH_TO_DEPENDENCY_CHECK);
 
-            String startupScriptPath = new File(packageParentDir, K_2_STARTUP_SCRIPT).getAbsolutePath();
+            String startupScriptPath = new File(packageParentDir, STARTUP_SH_PATH).getAbsolutePath();
 
             List<CVEScanner> scanDirs;
             if (isEnvScan) {
@@ -117,42 +115,70 @@ public class CVEServiceWindows implements Runnable {
                 File inputYaml = CVEComponentsService.createServiceYml(dcCommand.toString(), nodeId, scanner.getAppName(),
                         scanner.getAppSha256(), scanner.getDir(),
                         K2Instrumentator.APPLICATION_INFO_BEAN.getApplicationUUID(), scanner.getEnv(), kind, id, packageParentDir);
-                List<String> paramList = Arrays.asList(POWERSHELL_EXE, startupScriptPath,
+                List<String> paramList = Arrays.asList(SETSID, BASH_COMMAND, startupScriptPath,
                         inputYaml.getAbsolutePath());
                 ProcessBuilder processBuilder = new ProcessBuilder(paramList);
                 Process process = processBuilder.start();
                 if (!process.waitFor(10, TimeUnit.MINUTES)) {
-                    //TODO windows ki maaya
                     long pid = AgentUtils.getInstance().getProcessID(process);
                     if (pid > 1) {
-                        logger.log(LogLevel.WARNING, String.format(KILLING_PROCESS_TREE_ROOTED_AT_S, pid), CVEServiceWindows.class.getName());
+                        logger.log(LogLevel.WARNING, String.format(KILLING_PROCESS_TREE_ROOTED_AT_S, pid), CVEServiceMac.class.getName());
                         AgentUtils.getInstance().incrementCVEServiceFailCount();
-//                        Runtime.getRuntime().exec(String.format(KILL_PROCESS_TREE_COMMAND, pid));
+                        Runtime.getRuntime().exec(String.format(KILL_PROCESS_TREE_COMMAND, pid));
                     }
                 } else if (process.exitValue() != 0) {
                     AgentUtils.getInstance().incrementCVEServiceFailCount();
                 }
-                //Till here
                 List<String> response = IOUtils.readLines(process.getInputStream(), StandardCharsets.UTF_8);
                 logger.log(LogLevel.INFO,
                         String.format(K2_VULNERABILITY_SCANNER_RESPONSE, StringUtils.join(response, StringUtils.LF)),
-                        CVEServiceWindows.class.getName());
+                        CVEServiceMac.class.getName());
                 List<String> errResponse = IOUtils.readLines(process.getErrorStream(), StandardCharsets.UTF_8);
                 logger.log(LogLevel.ERROR, String.format(K2_VULNERABILITY_SCANNER_RESPONSE_ERROR,
-                        StringUtils.join(errResponse, StringUtils.LF)), CVEServiceWindows.class.getName());
+                        StringUtils.join(errResponse, StringUtils.LF)), CVEServiceMac.class.getName());
                 try {
                     FileUtils.forceDelete(inputYaml);
                 } catch (Throwable e) {
                 }
             }
-            CVEComponentsService.deleteAllComponents(extractedPackageDir, packageParentDir);
+            CVEComponentsService.deleteAllComponents(parentDirectory, packageParentDir);
         } catch (InterruptedException e) {
-            logger.log(LogLevel.ERROR, ERROR_PROCESS_TERMINATED, e, CVEServiceWindows.class.getName());
+            logger.log(LogLevel.ERROR, ERROR_PROCESS_TERMINATED, e, CVEServiceMac.class.getName());
         } catch (Throwable e) {
-            logger.log(LogLevel.ERROR, ERROR, e, CVEServiceWindows.class.getName());
+            logger.log(LogLevel.ERROR, ERROR, e, CVEServiceMac.class.getName());
         }
 
     }
 
+    private boolean extractCVETar(File cveTar, File outputDir) {
+        logger.log(LogLevel.DEBUG, CAME_TO_EXTRACT_TAR_BUNDLE + cveTar.getAbsolutePath(), CVEServiceMac.class.getName());
+        try (TarArchiveInputStream inputStream = new TarArchiveInputStream(new FileInputStream(cveTar),
+                StandardCharsets.UTF_8.name())) {
+            TarArchiveEntry entry;
+            while ((entry = inputStream.getNextTarEntry()) != null) {
+                if (entry.isDirectory()) {
+                    continue;
+                }
+                File curfile = new File(outputDir, entry.getName());
+                File parent = curfile.getParentFile();
+                if (!parent.exists()) {
+                    parent.mkdirs();
+                }
+                try (FileOutputStream outputStream = new FileOutputStream(curfile)) {
+                    IOUtils.copy(inputStream, outputStream);
+                } catch (Throwable e) {
+                    logger.log(LogLevel.ERROR, ERROR_LOG, e, CVEServiceMac.class.getName());
+                }
+            }
+            return true;
+        } catch (Throwable e) {
+            logger.log(LogLevel.ERROR, ERROR_LOG, e, CVEServiceMac.class.getName());
+            FileUtils.deleteQuietly(cveTar);
+            logger.log(LogLevel.WARNING,
+                    CORRUPTED_CVE_SERVICE_BUNDLE_DELETED, CVEServiceMac.class.getName());
+        }
 
+        return false;
+
+    }
 }

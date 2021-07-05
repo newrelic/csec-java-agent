@@ -24,8 +24,6 @@ import java.util.concurrent.TimeUnit;
 
 public class CVEServiceLinux implements Runnable {
 
-    static final String TMP_DIR = "/tmp";
-
     private static final String ERROR_LOG = "Error : ";
 
     private static final String CANNOT_CREATE_DIRECTORY = "Cannot create directory : ";
@@ -38,19 +36,16 @@ public class CVEServiceLinux implements Runnable {
 
     private static final String K2_VULNERABILITY_SCANNER_RESPONSE = "K2 Vulnerability scanner response : %s";
 
-    private static final String BASH_COMMAND = "bash";
-
-    private static final String TMP_LOCALCVESERVICE_DIST_STARTUP_SH = "/tmp/localcveservice/dist/startup.sh";
-
     private static final String LOCALCVESERVICE_PATH = "localcveservice";
 
     public static final String KILL_PROCESS_TREE_COMMAND = "kill -9 -%s";
     public static final String KILLING_PROCESS_TREE_ROOTED_AT_S = "Killing process tree rooted at : %s";
     public static final String SETSID = "setsid";
     public static final String CORRUPTED_CVE_SERVICE_BUNDLE_DELETED = "Corrupted CVE service bundle deleted.";
-    public static final String TAR_FILE_DOWNLOADED_FAIL = "tar file downloaded fail.";
-    public static final String TAR_FILE_DOWNLOADED = "tar file downloaded.";
     public static final String CAME_TO_EXTRACT_TAR_BUNDLE = "Came to extract tar bundle : ";
+    public static final String LINUX_SHELL = "sh";
+    public static final String PATH_TO_DEPENDENCY_CHECK = "/K2/dependency-check.sh";
+    public static final String STARTUP_SH_PATH = "K2/startup.sh";
 
     private String nodeId;
 
@@ -61,7 +56,6 @@ public class CVEServiceLinux implements Runnable {
     private String id;
 
     private boolean isEnvScan;
-    final String bundleNameRegex = ICVEConstants.LOCALCVESERVICE_LINUX_TAR_REGEX;
 
     private OSVariables osVariables = OsVariablesInstance.getInstance().getOsVariables();
 
@@ -103,6 +97,13 @@ public class CVEServiceLinux implements Runnable {
             extractCVETar(CVEScannerPool.getInstance().getPackageInfo().getCvePackage(), parentDirectory);
             CVEComponentsService.setAllLinuxPermissions(parentDirectory.getAbsolutePath());
 
+            StringBuilder dcCommand = new StringBuilder(LINUX_SHELL);
+            dcCommand.append(StringUtils.SPACE);
+            dcCommand.append(parentDirectory.getAbsolutePath());
+            dcCommand.append(PATH_TO_DEPENDENCY_CHECK);
+
+            String startupScriptPath = new File(packageParentDir, STARTUP_SH_PATH).getAbsolutePath();
+
             List<CVEScanner> scanDirs;
             if (isEnvScan) {
                 scanDirs = CVEComponentsService.getLibScanDirs(packageParentDir);
@@ -110,10 +111,10 @@ public class CVEServiceLinux implements Runnable {
                 scanDirs = CVEComponentsService.getAppScanDirs();
             }
             for (CVEScanner scanner : scanDirs) {
-                File inputYaml = CVEComponentsService.createServiceYml(nodeId, scanner.getAppName(),
+                File inputYaml = CVEComponentsService.createServiceYml(dcCommand.toString(), nodeId, scanner.getAppName(),
                         scanner.getAppSha256(), scanner.getDir(),
                         K2Instrumentator.APPLICATION_INFO_BEAN.getApplicationUUID(), scanner.getEnv(), kind, id, packageParentDir);
-                List<String> paramList = Arrays.asList(SETSID, BASH_COMMAND, TMP_LOCALCVESERVICE_DIST_STARTUP_SH,
+                List<String> paramList = Arrays.asList(SETSID, LINUX_SHELL, startupScriptPath,
                         inputYaml.getAbsolutePath());
                 ProcessBuilder processBuilder = new ProcessBuilder(paramList);
                 Process process = processBuilder.start();

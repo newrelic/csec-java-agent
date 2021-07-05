@@ -39,7 +39,9 @@ public class CVEComponentsService {
 
 	private static final String JAR_EXT = "jar";
 
-    private static final String YML_TEMPLATE = "# connecting back to k2agent.\r\n" +
+    private static final String YML_TEMPLATE = "# path to dependency check tool.\r\n" +
+            "dependencycheck.command: %s\r\n" +
+            "# connecting back to k2agent.\r\n" +
             "k2customer.customerId: %s\r\n" +
             "k2customer.apiAccessorToken: %s\r\n" +
             "k2agent.websocket: %s/\r\n" +
@@ -260,10 +262,10 @@ public class CVEComponentsService {
         return StringUtils.equals(sha256, latestProcessedServiceSHA256);
     }
 
-    protected static File createServiceYml(String nodeId, String appName, String appSha256,
+    protected static File createServiceYml(String dcCommand, String nodeId, String appName, String appSha256,
                                            String scanPath, String applicationUUID, Boolean env, String kind, String id, String packageParentDir) throws IOException {
         //TODO update YAML add WS headers (cid, api accessor token)
-        String yaml = String.format(YML_TEMPLATE, CollectorConfigurationUtils.getInstance().getCollectorConfig().getCustomerInfo().getCustomerId(),
+        String yaml = String.format(YML_TEMPLATE, dcCommand, CollectorConfigurationUtils.getInstance().getCollectorConfig().getCustomerInfo().getCustomerId(),
                 CollectorConfigurationUtils.getInstance().getCollectorConfig().getCustomerInfo().getApiAccessorToken(),
                 CollectorConfigurationUtils.getInstance().getCollectorConfig().getK2ServiceInfo().getValidatorServiceEndpointURL(),
                 nodeId, kind, id,

@@ -92,6 +92,7 @@ public class CVEScannerPool {
 				this.executor.submit(new CVEServiceLinux(nodeId, kind, id, downloadTarBundle, isEnvScan));
 				break;
 			case IAgentConstants.MAC:
+				this.executor.submit(new CVEServiceMac(nodeId, kind, id, downloadTarBundle, isEnvScan));
 				break;
 			case IAgentConstants.WINDOWS:
 				this.executor.submit(new CVEServiceWindows(nodeId, kind, id, downloadTarBundle, isEnvScan));
