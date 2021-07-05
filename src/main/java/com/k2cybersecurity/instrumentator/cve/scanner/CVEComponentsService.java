@@ -15,6 +15,7 @@ import com.k2cybersecurity.intcodeagent.logging.IAgentConstants;
 import com.k2cybersecurity.intcodeagent.models.javaagent.*;
 import com.squareup.okhttp.Response;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.net.ftp.FTPClient;
 
@@ -228,6 +229,7 @@ public class CVEComponentsService {
             queryParams.put("platform", osVariables.getOs());
             queryParams.put("version", packageInfo.getLatestServiceVersion());
             Response cvePackageResponse = HttpClient.getInstance().doGet(IRestClientConstants.COLLECTOR_CVE, null, queryParams, null, false);
+            logger.log(LogLevel.DEBUG, "Response of cve package get api : " + cvePackageResponse.code(), CVEComponentsService.class.getName());
             if (cvePackageResponse.isSuccessful()) {
                 String packageDownloadDir = osVariables.getCvePackageBaseDir();
                 String filename;
@@ -248,7 +250,8 @@ public class CVEComponentsService {
                     }
                 }
             } else {
-                logger.log(LogLevel.ERROR, "Download failed.", HttpClient.class.getName());
+                logger.log(LogLevel.ERROR, "Download failed : " + IOUtils.readLines(cvePackageResponse.body().byteStream(), StandardCharsets.UTF_8), HttpClient.class.getName());
+                cvePackageResponse.body().close();
             }
 
         } catch (IOException e) {
