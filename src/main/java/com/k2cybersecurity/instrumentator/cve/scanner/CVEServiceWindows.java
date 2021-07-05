@@ -150,7 +150,7 @@ public class CVEServiceWindows implements Runnable {
                 } catch (Throwable e) {
                 }
             }
-            CVEComponentsService.deleteAllComponents(extractedPackageDir, packageParentDir);
+//            CVEComponentsService.deleteAllComponents(extractedPackageDir, packageParentDir);
         } catch (InterruptedException e) {
             logger.log(LogLevel.ERROR, ERROR_PROCESS_TERMINATED, e, CVEServiceWindows.class.getName());
         } catch (Throwable e) {

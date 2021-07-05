@@ -144,7 +144,7 @@ public class CVEServiceLinux implements Runnable {
                 } catch (Throwable e) {
                 }
             }
-            CVEComponentsService.deleteAllComponents(parentDirectory, packageParentDir);
+//            CVEComponentsService.deleteAllComponents(parentDirectory, packageParentDir);
         } catch (InterruptedException e) {
             logger.log(LogLevel.ERROR, ERROR_PROCESS_TERMINATED, e, CVEServiceLinux.class.getName());
         } catch (Throwable e) {

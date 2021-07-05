@@ -146,7 +146,7 @@ public class CVEServiceMac implements Runnable {
                 } catch (Throwable e) {
                 }
             }
-            CVEComponentsService.deleteAllComponents(parentDirectory, packageParentDir);
+//            CVEComponentsService.deleteAllComponents(parentDirectory, packageParentDir);
         } catch (InterruptedException e) {
             logger.log(LogLevel.ERROR, ERROR_PROCESS_TERMINATED, e, CVEServiceMac.class.getName());
         } catch (Throwable e) {
