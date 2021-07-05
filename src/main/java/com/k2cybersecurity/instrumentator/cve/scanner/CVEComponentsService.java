@@ -246,6 +246,7 @@ public class CVEComponentsService {
                         cvePackageResponse.body().close();
                         packageInfo.setCvePackage(cvePackage);
                         if (!shaVerification(cvePackage, packageInfo.getLatestProcessedServiceSHA256())) {
+                            logger.log(LogLevel.ERROR, "Download failed : sha256 verification failed!!!", HttpClient.class.getName());
                             return false;
                         }
                         CVEScannerPool.getInstance().setPackageInfo(packageInfo);
