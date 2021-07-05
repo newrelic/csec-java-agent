@@ -210,7 +210,7 @@ public class CVEComponentsService {
         try {
             Map<String, String> queryParams = new HashMap<>();
             queryParams.put("platform", osVariables.getOs());
-            queryParams.put("osArch", osVariables.getOsArch());
+            queryParams.put("arch", osVariables.getOsArch());
             Response cveVersion = HttpClient.getInstance().doGet(IRestClientConstants.COLLECTOR_CVE_VERSION, null, queryParams, null, false);
             if (!cveVersion.isSuccessful()) {
                 logger.log(LogLevel.WARNING, String.format("API (%s)response was %s", IRestClientConstants.COLLECTOR_CVE_VERSION, cveVersion.body().string()), CVEComponentsService.class.getName());
@@ -231,6 +231,7 @@ public class CVEComponentsService {
             Map<String, String> queryParams = new HashMap<>();
             queryParams.put("platform", osVariables.getOs());
             queryParams.put("version", packageInfo.getLatestServiceVersion());
+            queryParams.put("arch", osVariables.getOsArch());
             Response cvePackageResponse = HttpClient.getInstance().doGet(IRestClientConstants.COLLECTOR_CVE, null, queryParams, null, false);
             if (cvePackageResponse.isSuccessful()) {
                 String packageDownloadDir = osVariables.getCvePackageBaseDir();

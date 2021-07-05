@@ -119,7 +119,7 @@ public class CVEServiceMac implements Runnable {
                 File inputYaml = CVEComponentsService.createServiceYml(dcCommand.toString(), nodeId, scanner.getAppName(),
                         scanner.getAppSha256(), scanner.getDir(),
                         K2Instrumentator.APPLICATION_INFO_BEAN.getApplicationUUID(), scanner.getEnv(), kind, id, packageParentDir);
-                List<String> paramList = Arrays.asList(SETSID, BASH_COMMAND, startupScriptPath,
+                List<String> paramList = Arrays.asList(BASH_COMMAND, startupScriptPath,
                         inputYaml.getAbsolutePath());
                 ProcessBuilder processBuilder = new ProcessBuilder(paramList);
                 Process process = processBuilder.start();
