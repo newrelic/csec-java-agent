@@ -81,6 +81,7 @@ public class CVEServiceLinux implements Runnable {
             if (!downloaded) {
                 return;
             }
+            logger.log(LogLevel.DEBUG, "CVE package downloaded", CVEServiceLinux.class.getName());
             //Create untar Directory
             File parentDirectory = new File(packageParentDir, LOCALCVESERVICE_PATH);
             FileUtils.deleteQuietly(parentDirectory);
@@ -96,7 +97,7 @@ public class CVEServiceLinux implements Runnable {
 
             extractCVETar(CVEScannerPool.getInstance().getPackageInfo().getCvePackage(), parentDirectory);
             CVEComponentsService.setAllLinuxPermissions(parentDirectory.getAbsolutePath());
-
+            logger.log(LogLevel.DEBUG, "CVE package extraction completed.", CVEServiceLinux.class.getName());
             StringBuilder dcCommand = new StringBuilder(LINUX_SHELL);
             dcCommand.append(StringUtils.SPACE);
             dcCommand.append(parentDirectory.getAbsolutePath());
@@ -137,6 +138,7 @@ public class CVEServiceLinux implements Runnable {
                         StringUtils.join(errResponse, StringUtils.LF)), CVEServiceLinux.class.getName());
                 try {
                     FileUtils.forceDelete(inputYaml);
+                    logger.log(LogLevel.DEBUG, "CVE package deleted", CVEServiceLinux.class.getName());
                 } catch (Throwable e) {
                 }
             }

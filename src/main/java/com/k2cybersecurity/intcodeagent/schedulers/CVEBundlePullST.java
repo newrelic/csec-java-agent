@@ -58,6 +58,7 @@ public class CVEBundlePullST {
 
     private void task() {
         CVEPackageInfo packageInfo = CVEComponentsService.getCVEPackageInfo();
+        logger.log(LogLevel.DEBUG, packageInfo.toString() + " :: " + CVEScannerPool.getInstance().getPackageInfo(), CVEBundlePullST.class.getName());
         if (StringUtils.equals(packageInfo.getLatestServiceVersion(), CVEScannerPool.getInstance().getPackageInfo().getLatestServiceVersion())) {
             if (AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getCveScan().getEnableEnvScan()) {
                 //Run CVE scan on ENV
