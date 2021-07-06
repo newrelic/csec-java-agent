@@ -1,5 +1,7 @@
 package com.k2cybersecurity.intcodeagent.models.javaagent;
 
+import com.k2cybersecurity.instrumentator.os.OSVariables;
+import com.k2cybersecurity.instrumentator.os.OsVariablesInstance;
 import com.k2cybersecurity.intcodeagent.logging.ServerInfo;
 import com.k2cybersecurity.intcodeagent.models.config.PolicyApplicationInfo;
 import com.k2cybersecurity.intcodeagent.websocket.JsonConverter;
@@ -73,8 +75,14 @@ public class ApplicationInfoBean extends AgentBasicInfo {
 		this.runCommand = System.getProperty("sun.java.command");
 		this.userDir = System.getProperty("user.dir");
 		this.libraryPath = new ArrayList<String>();
-		this.libraryPath.addAll(Arrays.asList(System.getProperty("java.library.path").split(":")));
-		this.libraryPath.addAll(Arrays.asList(System.getProperty("java.class.path").split(":")));
+		OSVariables osVariables = OsVariablesInstance.getInstance().getOsVariables();
+		if (osVariables.getWindows()) {
+			this.libraryPath.addAll(Arrays.asList(System.getProperty("java.library.path").split(";")));
+			this.libraryPath.addAll(Arrays.asList(System.getProperty("java.class.path").split(";")));
+		} else {
+			this.libraryPath.addAll(Arrays.asList(System.getProperty("java.library.path").split(":")));
+			this.libraryPath.addAll(Arrays.asList(System.getProperty("java.class.path").split(":")));
+		}
 		this.bootLibraryPath = System.getProperty("sun.boot.library.path");
 		this.binaryVersion = System.getProperty("java.runtime.version");
 		this.osArch = System.getProperty("os.arch");

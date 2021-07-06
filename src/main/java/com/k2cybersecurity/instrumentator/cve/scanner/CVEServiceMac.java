@@ -67,7 +67,7 @@ public class CVEServiceMac implements Runnable {
         try {
             String packageParentDir = osVariables.getCvePackageBaseDir();
             CVEPackageInfo packageInfo = CVEComponentsService.getCVEPackageInfo();
-            logger.log(LogLevel.DEBUG, String.format(ICVEConstants.PACKAGE_INFO_LOGGER, packageInfo.toString(), CVEScannerPool.getInstance().getPackageInfo()), CVEServiceLinux.class.getName());
+            logger.log(LogLevel.DEBUG, String.format(ICVEConstants.PACKAGE_INFO_LOGGER, packageInfo.toString(), CVEScannerPool.getInstance().getPackageInfo()), CVEServiceMac.class.getName());
             boolean downloaded = false;
             if (downloadTarBundle || CVEScannerPool.getInstance().getPackageInfo() == null || !StringUtils.equals(packageInfo.getLatestServiceVersion(), CVEScannerPool.getInstance().getPackageInfo().getLatestServiceVersion())) {
                 downloaded = CVEComponentsService.downloadCVEPackage(packageInfo);
@@ -75,7 +75,7 @@ public class CVEServiceMac implements Runnable {
             if (!downloaded) {
                 return;
             }
-            logger.log(LogLevel.DEBUG, ICVEConstants.CVE_PACKAGE_DOWNLOADED, CVEServiceLinux.class.getName());
+            logger.log(LogLevel.DEBUG, ICVEConstants.CVE_PACKAGE_DOWNLOADED, CVEServiceMac.class.getName());
             //Create untar Directory
             File parentDirectory = new File(packageParentDir, LOCALCVESERVICE_PATH);
             FileUtils.deleteQuietly(parentDirectory);
@@ -92,7 +92,7 @@ public class CVEServiceMac implements Runnable {
             AgentUtils.extractCVETar(CVEScannerPool.getInstance().getPackageInfo().getCvePackage(), parentDirectory);
             CVEComponentsService.setAllLinuxPermissions(parentDirectory.getAbsolutePath());
 
-            logger.log(LogLevel.DEBUG, ICVEConstants.CVE_PACKAGE_EXTRACTION_COMPLETED, CVEServiceLinux.class.getName());
+            logger.log(LogLevel.DEBUG, ICVEConstants.CVE_PACKAGE_EXTRACTION_COMPLETED, CVEServiceMac.class.getName());
 
             StringBuilder dcCommand = new StringBuilder(MAC_SHELL);
             dcCommand.append(parentDirectory.getAbsolutePath());
@@ -137,7 +137,7 @@ public class CVEServiceMac implements Runnable {
                 }
             }
             CVEComponentsService.deleteAllComponents(parentDirectory, packageParentDir);
-            logger.log(LogLevel.DEBUG, ICVEConstants.CVE_PACKAGE_DELETED, CVEServiceLinux.class.getName());
+            logger.log(LogLevel.DEBUG, ICVEConstants.CVE_PACKAGE_DELETED, CVEServiceMac.class.getName());
         } catch (InterruptedException e) {
             logger.log(LogLevel.ERROR, ERROR_PROCESS_TERMINATED, e, CVEServiceMac.class.getName());
         } catch (Throwable e) {
