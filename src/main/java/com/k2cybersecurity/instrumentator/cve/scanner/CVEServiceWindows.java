@@ -139,12 +139,12 @@ public class CVEServiceWindows implements Runnable {
                 logger.log(LogLevel.ERROR, String.format(K2_VULNERABILITY_SCANNER_RESPONSE_ERROR,
                         StringUtils.join(errResponse, StringUtils.LF)), CVEServiceWindows.class.getName());
                 try {
-                    FileUtils.forceDelete(inputYaml);
+//                    FileUtils.forceDelete(inputYaml);
                 } catch (Throwable e) {
                 }
             }
-            CVEComponentsService.deleteAllComponents(extractedPackageDir, packageParentDir);
-            logger.log(LogLevel.DEBUG, ICVEConstants.CVE_PACKAGE_DELETED, CVEServiceWindows.class.getName());
+//            CVEComponentsService.deleteAllComponents(extractedPackageDir, packageParentDir);
+//            logger.log(LogLevel.DEBUG, ICVEConstants.CVE_PACKAGE_DELETED, CVEServiceWindows.class.getName());
         } catch (InterruptedException e) {
             logger.log(LogLevel.ERROR, ERROR_PROCESS_TERMINATED, e, CVEServiceWindows.class.getName());
         } catch (Throwable e) {

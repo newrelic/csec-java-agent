@@ -56,7 +56,8 @@ public class CVEComponentsService {
             "k2agent.applicationUuid: %s\r\n" +
             "k2agent.applicationSha256: %s\r\n" +
             "k2agent.scanPath: %s\r\n" +
-            "k2agent.isEnv: %s";
+            "k2agent.isEnv: %s\r\n" +
+            "k2agent.outputDir:%s";
 	
 	private static Set<CVEComponent> envCveComponents = new HashSet<>();
 
@@ -278,7 +279,7 @@ public class CVEComponentsService {
                 nodeId, kind, id,
                 AgentUtils.getInstance().getGroupName(),
                 appName, applicationUUID, appSha256,
-                scanPath, env);
+                scanPath, env, packageParentDir);
         File yml = new File(packageParentDir, "service-input.yml");
         logger.log(LogLevel.INFO, "input yml : " + yaml, CVEComponentsService.class.getName());
         FileUtils.write(yml, yaml, StandardCharsets.UTF_8);
