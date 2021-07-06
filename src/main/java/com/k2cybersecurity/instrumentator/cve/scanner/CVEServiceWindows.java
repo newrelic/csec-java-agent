@@ -9,12 +9,11 @@ import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.models.javaagent.CVEPackageInfo;
 import com.k2cybersecurity.intcodeagent.models.javaagent.CVEScanner;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.SystemUtils;
 
 import java.io.File;
-import java.nio.charset.StandardCharsets;
+import java.nio.charset.Charset;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -118,6 +117,9 @@ public class CVEServiceWindows implements Runnable {
                 List<String> paramList = Arrays.asList(POWERSHELL_EXE, startupScriptPath,
                         inputYaml.getAbsolutePath());
                 ProcessBuilder processBuilder = new ProcessBuilder(paramList);
+                File dcout = Paths.get(extractedPackageDir.getAbsolutePath(), "dc-trigger.log").toFile();
+                processBuilder.redirectErrorStream(true);
+                processBuilder.redirectOutput(dcout);
                 Process process = processBuilder.start();
                 if (!process.waitFor(10, TimeUnit.MINUTES)) {
                     //TODO windows ki maaya
@@ -131,13 +133,17 @@ public class CVEServiceWindows implements Runnable {
                     AgentUtils.getInstance().incrementCVEServiceFailCount();
                 }
                 //Till here
-                List<String> response = IOUtils.readLines(process.getInputStream(), StandardCharsets.UTF_8);
+//                List<String> response = IOUtils.readLines(process.getInputStream(), StandardCharsets.UTF_8);
+//                logger.log(LogLevel.INFO,
+//                        String.format(K2_VULNERABILITY_SCANNER_RESPONSE, StringUtils.join(response, StringUtils.LF)),
+//                        CVEServiceWindows.class.getName());
+//                List<String> errResponse = IOUtils.readLines(process.getErrorStream(), StandardCharsets.UTF_8);
+//                logger.log(LogLevel.ERROR, String.format(K2_VULNERABILITY_SCANNER_RESPONSE_ERROR,
+//                        StringUtils.join(errResponse, StringUtils.LF)), CVEServiceWindows.class.getName());
+
                 logger.log(LogLevel.INFO,
-                        String.format(K2_VULNERABILITY_SCANNER_RESPONSE, StringUtils.join(response, StringUtils.LF)),
+                        String.format(K2_VULNERABILITY_SCANNER_RESPONSE, FileUtils.readFileToString(Paths.get(extractedPackageDir.getAbsolutePath(), "dc-trigger.log").toFile(), Charset.defaultCharset())),
                         CVEServiceWindows.class.getName());
-                List<String> errResponse = IOUtils.readLines(process.getErrorStream(), StandardCharsets.UTF_8);
-                logger.log(LogLevel.ERROR, String.format(K2_VULNERABILITY_SCANNER_RESPONSE_ERROR,
-                        StringUtils.join(errResponse, StringUtils.LF)), CVEServiceWindows.class.getName());
                 try {
 //                    FileUtils.forceDelete(inputYaml);
                 } catch (Throwable e) {
