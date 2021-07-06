@@ -750,11 +750,12 @@ public class AgentUtils {
 				logger.log(LogLevel.DEBUG, String.format("zip entry : %s :: method : %s", entry.getName(), entry.getMethod()), AgentUtils.class.getName());
 				File file = new File(outputDir, entry.getName());
 				logger.log(LogLevel.DEBUG, String.format("Unzipping - %s", file), AgentUtils.class.getName());
-				// Create directory before streaming files.
-				String dir = file.toPath().toString().substring(0, file.toPath().toString().lastIndexOf(File.separator));
-                new File(dir).mkdirs();
-				// Stream file content
-				IOUtils.copy(archive, new FileOutputStream(file));
+                if (entry.isDirectory()) {
+                    file.mkdirs();
+                } else {
+                    // Stream file content
+                    IOUtils.copy(archive, new FileOutputStream(file));
+                }
 			}
 			return true;
 		} catch (IOException e) {
