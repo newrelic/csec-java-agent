@@ -57,7 +57,7 @@ public class CVEComponentsService {
             "k2agent.applicationSha256: %s\r\n" +
             "k2agent.scanPath: %s\r\n" +
             "k2agent.isEnv: %s\r\n" +
-            "k2agent.outputDir:%s";
+            "k2agent.outputDir: %s";
 	
 	private static Set<CVEComponent> envCveComponents = new HashSet<>();
 
