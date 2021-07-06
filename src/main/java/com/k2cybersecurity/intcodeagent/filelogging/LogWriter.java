@@ -77,7 +77,9 @@ public class LogWriter implements Runnable {
 
 			// k2.log.handler.maxfilesize=10
 			// k2.log.handler.maxfilesize.unit=MB
-            Files.setPosixFilePermissions(currentLogFile.toPath(), PosixFilePermissions.fromString("rw-rw-rw-"));
+            if (!osVariables.getWindows()) {
+                Files.setPosixFilePermissions(currentLogFile.toPath(), PosixFilePermissions.fromString("rw-rw-rw-"));
+            }
         } catch (Throwable e) {
             e.printStackTrace();
         }
@@ -164,8 +166,9 @@ public class LogWriter implements Runnable {
 			writer = new BufferedWriter(new FileWriter(currentLogFileName, true));
 
             currentFile.setReadable(true, false);
-            Files.setPosixFilePermissions(currentFile.toPath(), PosixFilePermissions.fromString("rw-rw-rw-"));
-
+            if (!osVariables.getWindows()) {
+                Files.setPosixFilePermissions(currentFile.toPath(), PosixFilePermissions.fromString("rw-rw-rw-"));
+            }
 			int removeFile = logFileCounter - K2JALogProperties.maxfiles;
             while (removeFile > 0) {
                 File remove = new File(fileName + STRING_DOT + removeFile);

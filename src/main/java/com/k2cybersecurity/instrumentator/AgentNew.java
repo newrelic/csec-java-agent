@@ -111,7 +111,7 @@ public class AgentNew {
 			retransformHookedClasses(instrumentation);
 		} catch (Throwable e) {
             String tmpDir = System.getProperty("java.io.tmpdir");
-            System.out.println("[K2-JA] Process initialization failed!!! Please find the error in " + tmpDir + File.separator + "K2-Instrumentation.err");
+			System.err.println("[K2-JA] Process initialization failed!!! Please find the error in " + tmpDir + File.separator + "K2-Instrumentation.err");
 			try {
                 e.printStackTrace(new PrintStream(tmpDir + File.separator + "K2-Instrumentation.err"));
 			} catch (FileNotFoundException ex) {
