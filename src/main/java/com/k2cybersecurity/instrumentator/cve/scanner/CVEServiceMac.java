@@ -8,23 +8,17 @@ import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.models.javaagent.CVEPackageInfo;
 import com.k2cybersecurity.intcodeagent.models.javaagent.CVEScanner;
-import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
-import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 public class CVEServiceMac implements Runnable {
-
-    private static final String ERROR_LOG = "Error : ";
 
     private static final String CANNOT_CREATE_DIRECTORY = "Cannot create directory : ";
 
@@ -42,9 +36,6 @@ public class CVEServiceMac implements Runnable {
 
     public static final String KILL_PROCESS_TREE_COMMAND = "kill -9 -%s";
     public static final String KILLING_PROCESS_TREE_ROOTED_AT_S = "Killing process tree rooted at : %s";
-    public static final String SETSID = "setsid";
-    public static final String CORRUPTED_CVE_SERVICE_BUNDLE_DELETED = "Corrupted CVE service bundle deleted.";
-    public static final String CAME_TO_EXTRACT_TAR_BUNDLE = "Came to extract tar bundle : ";
     public static final String MAC_SHELL = "bash ";
     public static final String PATH_TO_DEPENDENCY_CHECK = "/K2/dependency-check.sh";
     public static final String STARTUP_SH_PATH = "K2/startup.sh";
@@ -145,7 +136,7 @@ public class CVEServiceMac implements Runnable {
                 } catch (Throwable e) {
                 }
             }
-//            CVEComponentsService.deleteAllComponents(parentDirectory, packageParentDir);
+            CVEComponentsService.deleteAllComponents(parentDirectory, packageParentDir);
             logger.log(LogLevel.DEBUG, ICVEConstants.CVE_PACKAGE_DELETED, CVEServiceLinux.class.getName());
         } catch (InterruptedException e) {
             logger.log(LogLevel.ERROR, ERROR_PROCESS_TERMINATED, e, CVEServiceMac.class.getName());
