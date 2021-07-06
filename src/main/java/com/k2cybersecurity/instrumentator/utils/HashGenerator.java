@@ -132,7 +132,6 @@ public class HashGenerator {
     }
 
     public static String getSHA256ForDirectory(String file) {
-        File tmpShaFile = null;
         try {
             File dir = new File(file);
             if (dir.isDirectory()) {
@@ -151,11 +150,6 @@ public class HashGenerator {
             }
         } catch (Exception e) {
             logger.log(LogLevel.ERROR, ERROR, e, HashGenerator.class.getName());
-        } finally {
-            try {
-                FileUtils.forceDelete(tmpShaFile);
-            } catch (IOException e) {
-            }
         }
         return null;
     }
