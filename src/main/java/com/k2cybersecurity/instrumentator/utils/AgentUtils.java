@@ -752,7 +752,7 @@ public class AgentUtils {
 				logger.log(LogLevel.DEBUG, String.format("Unzipping - %s", file), AgentUtils.class.getName());
 				// Create directory before streaming files.
 				String dir = file.toPath().toString().substring(0, file.toPath().toString().lastIndexOf(File.separator));
-				Files.createDirectories(new File(dir).toPath());
+                new File(dir).mkdirs();
 				// Stream file content
 				IOUtils.copy(archive, new FileOutputStream(file));
 			}
