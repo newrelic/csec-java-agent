@@ -134,27 +134,22 @@ public class HashGenerator {
     public static String getSHA256ForDirectory(String file) {
         File tmpShaFile = null;
         try {
-            tmpShaFile = Files.createTempFile(Paths.get(TMP_DIR), K2_TEMP_DIR, "sha").toFile();
             File dir = new File(file);
             if (dir.isDirectory()) {
-                try (FileOutputStream fOutputStream = new FileOutputStream(tmpShaFile)) {
-                    Collection<File> allFiles = FileUtils.listFiles(dir, TrueFileFilter.INSTANCE, TrueFileFilter.INSTANCE);
-                    List<File> sortedFiles = new ArrayList<>(allFiles);
-                    Collections.sort(sortedFiles);
-                    for (File tempFile : sortedFiles) {
-                        String extension = FilenameUtils.getExtension(tempFile.getName());
-                        if (OTHER_CRITICAL_FILE_EXT.contains(extension)
-                                || JAVA_APPLICATION_ALLOWED_FILE_EXT.contains(extension)) {
-                            IOUtils.write(tempFile.getName() + STRING_SEP + getChecksum(tempFile) + StringUtils.LF,
-                                    fOutputStream, StandardCharsets.UTF_8);
-                        }
+                List<String> sha256s = new ArrayList<>();
+                Collection<File> allFiles = FileUtils.listFiles(dir, TrueFileFilter.INSTANCE, TrueFileFilter.INSTANCE);
+                List<File> sortedFiles = new ArrayList<>(allFiles);
+                Collections.sort(sortedFiles);
+                for (File tempFile : sortedFiles) {
+                    String extension = FilenameUtils.getExtension(tempFile.getName());
+                    if (OTHER_CRITICAL_FILE_EXT.contains(extension)
+                            || JAVA_APPLICATION_ALLOWED_FILE_EXT.contains(extension)) {
+                        sha256s.add(getChecksum(tempFile));
                     }
-                    return getChecksum(tmpShaFile);
-                } finally {
-                    logger.log(LogLevel.INFO, String.format(WEBAPP_DETECTION_SHA_INFO_S, IOUtils.toString(tmpShaFile.toURI(), StandardCharsets.UTF_8)), HashGenerator.class.getName());
                 }
+                return getSHA256HexDigest(sha256s);
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             logger.log(LogLevel.ERROR, ERROR, e, HashGenerator.class.getName());
         } finally {
             try {
@@ -167,7 +162,7 @@ public class HashGenerator {
 
     public static String getSHA256HexDigest(List<String> data) {
         data.removeAll(Collections.singletonList(null));
-        String input = StringUtils.join(data, TWO_PIPES);
+        String input = StringUtils.join(data);
         return getChecksum(input);
     }
 

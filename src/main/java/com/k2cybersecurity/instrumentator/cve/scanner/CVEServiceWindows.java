@@ -21,8 +21,6 @@ import java.util.concurrent.TimeUnit;
 
 public class CVEServiceWindows implements Runnable {
 
-    static final String TMP_DIR = SystemUtils.getUserHome() + "\\AppData\\Local\\K2\\";
-
     private static final String CANNOT_CREATE_DIRECTORY = "Cannot create directory : ";
 
     private static final String ERROR_PROCESS_TERMINATED = "Error Process terminated: {}";
@@ -32,10 +30,6 @@ public class CVEServiceWindows implements Runnable {
     private static final String K2_VULNERABILITY_SCANNER_RESPONSE_ERROR = "K2 Vulnerability scanner response error : %s";
 
     private static final String K2_VULNERABILITY_SCANNER_RESPONSE = "K2 Vulnerability scanner response : %s";
-
-    private static final String BASH_COMMAND = "bash";
-
-    private static final String TMP_LOCALCVESERVICE_DIST_STARTUP_SH = "/tmp/localcveservice/dist/startup.sh";
 
     private static final String LOCALCVESERVICE_PATH = "localcveservice";
 
