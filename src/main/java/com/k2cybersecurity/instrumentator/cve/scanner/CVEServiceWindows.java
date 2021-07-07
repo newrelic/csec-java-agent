@@ -117,7 +117,7 @@ public class CVEServiceWindows implements Runnable {
                 List<String> paramList = Arrays.asList(POWERSHELL_EXE, startupScriptPath,
                         inputYaml.getAbsolutePath());
                 ProcessBuilder processBuilder = new ProcessBuilder(paramList);
-                File dcout = Paths.get(extractedPackageDir.getAbsolutePath(), "dc-trigger.log").toFile();
+                File dcout = Paths.get(extractedPackageDir.getAbsolutePath(), ICVEConstants.DC_TRIGGER_LOG).toFile();
                 processBuilder.redirectErrorStream(true);
                 processBuilder.redirectOutput(dcout);
                 Process process = processBuilder.start();
@@ -142,15 +142,15 @@ public class CVEServiceWindows implements Runnable {
 //                        StringUtils.join(errResponse, StringUtils.LF)), CVEServiceWindows.class.getName());
 
                 logger.log(LogLevel.INFO,
-                        String.format(K2_VULNERABILITY_SCANNER_RESPONSE, FileUtils.readFileToString(Paths.get(extractedPackageDir.getAbsolutePath(), "dc-trigger.log").toFile(), Charset.defaultCharset())),
+                        String.format(K2_VULNERABILITY_SCANNER_RESPONSE, FileUtils.readFileToString(Paths.get(extractedPackageDir.getAbsolutePath(), ICVEConstants.DC_TRIGGER_LOG).toFile(), Charset.defaultCharset())),
                         CVEServiceWindows.class.getName());
                 try {
-//                    FileUtils.forceDelete(inputYaml);
+                    FileUtils.forceDelete(inputYaml);
                 } catch (Throwable e) {
                 }
             }
-//            CVEComponentsService.deleteAllComponents(extractedPackageDir, packageParentDir);
-//            logger.log(LogLevel.DEBUG, ICVEConstants.CVE_PACKAGE_DELETED, CVEServiceWindows.class.getName());
+            CVEComponentsService.deleteAllComponents(extractedPackageDir, packageParentDir);
+            logger.log(LogLevel.DEBUG, ICVEConstants.CVE_PACKAGE_DELETED, CVEServiceWindows.class.getName());
         } catch (InterruptedException e) {
             logger.log(LogLevel.ERROR, ERROR_PROCESS_TERMINATED, e, CVEServiceWindows.class.getName());
         } catch (Throwable e) {

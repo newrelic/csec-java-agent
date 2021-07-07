@@ -21,7 +21,10 @@ package com.k2cybersecurity.intcodeagent.logging;
 
 import com.k2cybersecurity.intcodeagent.websocket.JsonConverter;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.SystemUtils;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -37,6 +40,7 @@ public class DeployedApplication {
 	public static final String FORWARD_SLASH = "/";
 
 	public static final String UNDERSCORE = "_";
+	public static final String FILE_SEPARATOR = "/";
 
 	/** Application deployed path. */
 	private String deployedPath;
@@ -78,7 +82,11 @@ public class DeployedApplication {
 		if (StringUtils.isBlank(deployedPath)) {
 			this.deployedPath = StringUtils.EMPTY;
 		} else {
-			this.deployedPath = deployedPath;
+			if (SystemUtils.IS_OS_WINDOWS) {
+				this.deployedPath = Paths.get(StringUtils.removeStart(FILE_SEPARATOR, deployedPath)).toString();
+			} else {
+				this.deployedPath = deployedPath;
+			}
 		}
 	}
 

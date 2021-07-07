@@ -13,7 +13,9 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -113,6 +115,9 @@ public class CVEServiceMac implements Runnable {
                 List<String> paramList = Arrays.asList(BASH_COMMAND, startupScriptPath,
                         inputYaml.getAbsolutePath());
                 ProcessBuilder processBuilder = new ProcessBuilder(paramList);
+                File dcout = Paths.get(parentDirectory.getAbsolutePath(), ICVEConstants.DC_TRIGGER_LOG).toFile();
+                processBuilder.redirectErrorStream(true);
+                processBuilder.redirectOutput(dcout);
                 Process process = processBuilder.start();
                 if (!process.waitFor(10, TimeUnit.MINUTES)) {
                     long pid = AgentUtils.getInstance().getProcessID(process);
@@ -124,13 +129,17 @@ public class CVEServiceMac implements Runnable {
                 } else if (process.exitValue() != 0) {
                     AgentUtils.getInstance().incrementCVEServiceFailCount();
                 }
-                List<String> response = IOUtils.readLines(process.getInputStream(), StandardCharsets.UTF_8);
+//                List<String> response = IOUtils.readLines(process.getInputStream(), StandardCharsets.UTF_8);
+//                logger.log(LogLevel.INFO,
+//                        String.format(K2_VULNERABILITY_SCANNER_RESPONSE, StringUtils.join(response, StringUtils.LF)),
+//                        CVEServiceMac.class.getName());
+//                List<String> errResponse = IOUtils.readLines(process.getErrorStream(), StandardCharsets.UTF_8);
+//                logger.log(LogLevel.ERROR, String.format(K2_VULNERABILITY_SCANNER_RESPONSE_ERROR,
+//                        StringUtils.join(errResponse, StringUtils.LF)), CVEServiceMac.class.getName());
+
                 logger.log(LogLevel.INFO,
-                        String.format(K2_VULNERABILITY_SCANNER_RESPONSE, StringUtils.join(response, StringUtils.LF)),
+                        String.format(K2_VULNERABILITY_SCANNER_RESPONSE, FileUtils.readFileToString(Paths.get(parentDirectory.getAbsolutePath(), ICVEConstants.DC_TRIGGER_LOG).toFile(), Charset.defaultCharset())),
                         CVEServiceMac.class.getName());
-                List<String> errResponse = IOUtils.readLines(process.getErrorStream(), StandardCharsets.UTF_8);
-                logger.log(LogLevel.ERROR, String.format(K2_VULNERABILITY_SCANNER_RESPONSE_ERROR,
-                        StringUtils.join(errResponse, StringUtils.LF)), CVEServiceMac.class.getName());
                 try {
                     FileUtils.forceDelete(inputYaml);
                 } catch (Throwable e) {
