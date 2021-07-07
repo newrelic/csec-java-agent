@@ -113,7 +113,7 @@ public class CVEServiceWindows implements Runnable {
             for (CVEScanner scanner : scanDirs) {
                 File inputYaml = CVEComponentsService.createServiceYml(dcCommand.toString(), nodeId, scanner.getAppName(),
                         scanner.getAppSha256(), scanner.getDir(),
-                        K2Instrumentator.APPLICATION_INFO_BEAN.getApplicationUUID(), scanner.getEnv(), kind, id, packageParentDir);
+                        K2Instrumentator.APPLICATION_INFO_BEAN.getApplicationUUID(), scanner.getEnv(), kind, id, extractedPackageDir.getAbsolutePath());
                 List<String> paramList = Arrays.asList(POWERSHELL_EXE, startupScriptPath,
                         inputYaml.getAbsolutePath());
                 ProcessBuilder processBuilder = new ProcessBuilder(paramList);

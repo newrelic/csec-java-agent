@@ -271,7 +271,7 @@ public class CVEComponentsService {
     }
 
     protected static File createServiceYml(String dcCommand, String nodeId, String appName, String appSha256,
-                                           String scanPath, String applicationUUID, Boolean env, String kind, String id, String packageParentDir) throws IOException {
+                                           String scanPath, String applicationUUID, Boolean env, String kind, String id, String packageExtractedDir) throws IOException {
         //TODO update YAML add WS headers (cid, api accessor token)
         String yaml = String.format(YML_TEMPLATE, dcCommand, CollectorConfigurationUtils.getInstance().getCollectorConfig().getCustomerInfo().getCustomerId(),
                 CollectorConfigurationUtils.getInstance().getCollectorConfig().getCustomerInfo().getApiAccessorToken(),
@@ -279,8 +279,8 @@ public class CVEComponentsService {
                 nodeId, kind, id,
                 AgentUtils.getInstance().getGroupName(),
                 appName, applicationUUID, appSha256,
-                scanPath, env, packageParentDir);
-        File yml = new File(packageParentDir, "service-input.yml");
+                scanPath, env, packageExtractedDir);
+        File yml = new File(packageExtractedDir, "service-input.yml");
         logger.log(LogLevel.INFO, "input yml : " + yaml, CVEComponentsService.class.getName());
         FileUtils.write(yml, yaml, StandardCharsets.UTF_8);
         return yml;
