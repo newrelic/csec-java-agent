@@ -82,7 +82,7 @@ public class CVEServiceLinux implements Runnable {
             }
             logger.log(LogLevel.DEBUG, ICVEConstants.CVE_PACKAGE_DOWNLOADED, CVEServiceLinux.class.getName());
             //Create untar Directory
-            File parentDirectory = new File(packageParentDir, LOCALCVESERVICE_PATH);
+            File parentDirectory = new File(packageParentDir, String.format("%s-%s", LOCALCVESERVICE_PATH, K2Instrumentator.APPLICATION_UUID));
             FileUtils.deleteQuietly(parentDirectory);
             if (!parentDirectory.exists()) {
                 try {

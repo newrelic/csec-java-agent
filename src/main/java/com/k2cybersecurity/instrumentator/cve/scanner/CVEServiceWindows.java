@@ -79,7 +79,7 @@ public class CVEServiceWindows implements Runnable {
             }
             logger.log(LogLevel.DEBUG, ICVEConstants.CVE_PACKAGE_DOWNLOADED, CVEServiceWindows.class.getName());
             //Create untar Directory
-            File extractedPackageDir = new File(packageParentDir, LOCALCVESERVICE_PATH);
+            File extractedPackageDir = new File(packageParentDir, String.format("%s-%s", LOCALCVESERVICE_PATH, K2Instrumentator.APPLICATION_UUID));
             FileUtils.deleteQuietly(extractedPackageDir);
             if (!extractedPackageDir.exists()) {
                 try {
