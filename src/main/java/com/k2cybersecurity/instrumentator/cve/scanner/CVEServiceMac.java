@@ -75,6 +75,7 @@ public class CVEServiceMac implements Runnable {
             boolean downloaded = false;
             if (downloadTarBundle || CVEScannerPool.getInstance().getPackageInfo() == null || !StringUtils.equals(packageInfo.getLatestServiceVersion(), CVEScannerPool.getInstance().getPackageInfo().getLatestServiceVersion())) {
                 Collection<File> cvePackages = FileUtils.listFiles(new File(osVariables.getCvePackageBaseDir()), new NameFileFilter(ICVEConstants.LOCALCVESERVICE), null);
+                logger.log(LogLevel.DEBUG, ICVEConstants.FILES_TO_DELETE + cvePackages, CVEServiceMac.class.getName());
                 cvePackages.forEach(FileUtils::deleteQuietly);
                 downloaded = CVEComponentsService.downloadCVEPackage(packageInfo);
             }
@@ -83,7 +84,7 @@ public class CVEServiceMac implements Runnable {
             }
             logger.log(LogLevel.DEBUG, ICVEConstants.CVE_PACKAGE_DOWNLOADED, CVEServiceMac.class.getName());
             //Create untar Directory
-            File parentDirectory = new File(packageParentDir, String.format("%s-%s", LOCALCVESERVICE_PATH, K2Instrumentator.APPLICATION_UUID));
+            File parentDirectory = new File(packageParentDir, String.format(ICVEConstants.EXTR_DIR, LOCALCVESERVICE_PATH, K2Instrumentator.APPLICATION_UUID));
             FileUtils.deleteQuietly(parentDirectory);
             if (!parentDirectory.exists()) {
                 try {

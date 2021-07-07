@@ -10,4 +10,6 @@ public interface ICVEConstants {
     String CVE_PACKAGE_DOWNLOADED = "CVE package downloaded";
     String PACKAGE_INFO_LOGGER = "Package Info  : %s :: %s";
     String DC_TRIGGER_LOG = "dc-trigger.log";
+    String FILES_TO_DELETE = "Files to delete : ";
+    String EXTR_DIR = "%s-%s";
 }

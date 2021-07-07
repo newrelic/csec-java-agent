@@ -193,11 +193,6 @@ public class CVEComponentsService {
             FileUtils.forceDelete(cveDir);
         } catch (IOException e) {
         }
-
-        try {
-            FileUtils.forceDelete(new File(cveDir, TMP_LIBS + K2Instrumentator.APPLICATION_UUID));
-        } catch (IOException e) {
-        }
     }
 
     protected static void setAllLinuxPermissions(String loc) {

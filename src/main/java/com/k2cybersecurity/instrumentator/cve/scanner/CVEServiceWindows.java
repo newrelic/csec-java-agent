@@ -75,10 +75,8 @@ public class CVEServiceWindows implements Runnable {
             boolean downloaded = false;
             if (downloadTarBundle || CVEScannerPool.getInstance().getPackageInfo() == null || !StringUtils.equals(packageInfo.getLatestServiceVersion(), CVEScannerPool.getInstance().getPackageInfo().getLatestServiceVersion())) {
                 Collection<File> cvePackages = FileUtils.listFiles(new File(osVariables.getCvePackageBaseDir()), new NameFileFilter(ICVEConstants.LOCALCVESERVICE), null);
-                logger.log(LogLevel.DEBUG, "Files to delete : " + cvePackages, CVEServiceWindows.class.getName());
-                cvePackages.forEach(packge -> {
-                    logger.log(LogLevel.DEBUG, "Deleting : " + packge + ":: status : " + FileUtils.deleteQuietly(packge), CVEServiceWindows.class.getName());
-                });
+                logger.log(LogLevel.DEBUG, ICVEConstants.FILES_TO_DELETE + cvePackages, CVEServiceWindows.class.getName());
+                cvePackages.forEach(FileUtils::deleteQuietly);
                 downloaded = CVEComponentsService.downloadCVEPackage(packageInfo);
             }
             if (!downloaded) {
@@ -86,7 +84,7 @@ public class CVEServiceWindows implements Runnable {
             }
             logger.log(LogLevel.DEBUG, ICVEConstants.CVE_PACKAGE_DOWNLOADED, CVEServiceWindows.class.getName());
             //Create untar Directory
-            File extractedPackageDir = new File(packageParentDir, String.format("%s-%s", LOCALCVESERVICE_PATH, K2Instrumentator.APPLICATION_UUID));
+            File extractedPackageDir = new File(packageParentDir, String.format(ICVEConstants.EXTR_DIR, LOCALCVESERVICE_PATH, K2Instrumentator.APPLICATION_UUID));
             FileUtils.deleteQuietly(extractedPackageDir);
             if (!extractedPackageDir.exists()) {
                 try {
@@ -140,13 +138,6 @@ public class CVEServiceWindows implements Runnable {
                     AgentUtils.getInstance().incrementCVEServiceFailCount();
                 }
                 //Till here
-//                List<String> response = IOUtils.readLines(process.getInputStream(), StandardCharsets.UTF_8);
-//                logger.log(LogLevel.INFO,
-//                        String.format(K2_VULNERABILITY_SCANNER_RESPONSE, StringUtils.join(response, StringUtils.LF)),
-//                        CVEServiceWindows.class.getName());
-//                List<String> errResponse = IOUtils.readLines(process.getErrorStream(), StandardCharsets.UTF_8);
-//                logger.log(LogLevel.ERROR, String.format(K2_VULNERABILITY_SCANNER_RESPONSE_ERROR,
-//                        StringUtils.join(errResponse, StringUtils.LF)), CVEServiceWindows.class.getName());
 
                 logger.log(LogLevel.INFO,
                         String.format(K2_VULNERABILITY_SCANNER_RESPONSE, FileUtils.readFileToString(Paths.get(extractedPackageDir.getAbsolutePath(), ICVEConstants.DC_TRIGGER_LOG).toFile(), Charset.defaultCharset())),
