@@ -3,12 +3,18 @@ package com.k2cybersecurity.intcodeagent.schedulers;
 import com.k2cybersecurity.instrumentator.K2Instrumentator;
 import com.k2cybersecurity.instrumentator.cve.scanner.CVEComponentsService;
 import com.k2cybersecurity.instrumentator.cve.scanner.CVEScannerPool;
+import com.k2cybersecurity.instrumentator.cve.scanner.ICVEConstants;
+import com.k2cybersecurity.instrumentator.os.OsVariablesInstance;
 import com.k2cybersecurity.instrumentator.utils.AgentUtils;
+import com.k2cybersecurity.instrumentator.utils.NameFileFilter;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.models.javaagent.CVEPackageInfo;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 
+import java.io.File;
+import java.util.Collection;
 import java.util.concurrent.*;
 
 public class CVEBundlePullST {
@@ -56,6 +62,8 @@ public class CVEBundlePullST {
         CVEPackageInfo packageInfo = CVEComponentsService.getCVEPackageInfo();
         logger.log(LogLevel.DEBUG, packageInfo.toString() + " :: " + CVEScannerPool.getInstance().getPackageInfo(), CVEBundlePullST.class.getName());
         if (CVEScannerPool.getInstance().getPackageInfo() == null || StringUtils.equals(packageInfo.getLatestServiceVersion(), CVEScannerPool.getInstance().getPackageInfo().getLatestServiceVersion())) {
+            Collection<File> cvePackages = FileUtils.listFiles(new File(OsVariablesInstance.getInstance().getOsVariables().getCvePackageBaseDir()), new NameFileFilter(ICVEConstants.LOCALCVESERVICE), null);
+            cvePackages.forEach(FileUtils::deleteQuietly);
             if (AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getCveScan().getEnableEnvScan()) {
                 //Run CVE scan on ENV
                 CVEScannerPool.getInstance().dispatchScanner(AgentUtils.getInstance().getInitMsg().getAgentInfo().getNodeId(), K2Instrumentator.APPLICATION_INFO_BEAN.getIdentifier().getKind().name(), K2Instrumentator.APPLICATION_INFO_BEAN.getIdentifier().getId(), false, true);

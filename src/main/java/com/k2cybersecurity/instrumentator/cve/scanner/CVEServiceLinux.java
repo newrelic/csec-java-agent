@@ -4,6 +4,7 @@ import com.k2cybersecurity.instrumentator.K2Instrumentator;
 import com.k2cybersecurity.instrumentator.os.OSVariables;
 import com.k2cybersecurity.instrumentator.os.OsVariablesInstance;
 import com.k2cybersecurity.instrumentator.utils.AgentUtils;
+import com.k2cybersecurity.instrumentator.utils.NameFileFilter;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.models.javaagent.CVEPackageInfo;
@@ -17,6 +18,7 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -75,6 +77,8 @@ public class CVEServiceLinux implements Runnable {
             logger.log(LogLevel.DEBUG, String.format(ICVEConstants.PACKAGE_INFO_LOGGER, packageInfo.toString(), CVEScannerPool.getInstance().getPackageInfo()), CVEServiceLinux.class.getName());
             boolean downloaded = false;
             if (downloadTarBundle || CVEScannerPool.getInstance().getPackageInfo() == null || !StringUtils.equals(packageInfo.getLatestServiceVersion(), CVEScannerPool.getInstance().getPackageInfo().getLatestServiceVersion())) {
+                Collection<File> cvePackages = FileUtils.listFiles(new File(osVariables.getCvePackageBaseDir()), new NameFileFilter(ICVEConstants.LOCALCVESERVICE), null);
+                cvePackages.forEach(FileUtils::deleteQuietly);
                 downloaded = CVEComponentsService.downloadCVEPackage(packageInfo);
             }
             if (!downloaded) {

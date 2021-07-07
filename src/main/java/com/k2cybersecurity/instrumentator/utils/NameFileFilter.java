@@ -5,7 +5,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
 
-class NameFileFilter extends AbstractFileFilter {
+public class NameFileFilter extends AbstractFileFilter {
 
     private String namePrefix;
 

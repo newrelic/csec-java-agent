@@ -74,11 +74,6 @@ public class CVEScannerPool {
 						"K2-local-cve-service-" + threadNumber.getAndIncrement());
 			}
 		});
-
-        Collection<File> cvePackages = FileUtils.listFiles(new File(osVariables.getCvePackageBaseDir()), new NameFileFilter(ICVEConstants.LOCALCVESERVICE), null);
-        cvePackages.forEach(packge -> {
-            FileUtils.deleteQuietly(packge);
-        });
 	}
 
 	public static CVEScannerPool getInstance() {
