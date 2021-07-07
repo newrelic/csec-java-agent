@@ -75,7 +75,10 @@ public class CVEServiceWindows implements Runnable {
             boolean downloaded = false;
             if (downloadTarBundle || CVEScannerPool.getInstance().getPackageInfo() == null || !StringUtils.equals(packageInfo.getLatestServiceVersion(), CVEScannerPool.getInstance().getPackageInfo().getLatestServiceVersion())) {
                 Collection<File> cvePackages = FileUtils.listFiles(new File(osVariables.getCvePackageBaseDir()), new NameFileFilter(ICVEConstants.LOCALCVESERVICE), null);
-                cvePackages.forEach(FileUtils::deleteQuietly);
+                logger.log(LogLevel.DEBUG, "Files to delete : " + cvePackages, CVEServiceWindows.class.getName());
+                cvePackages.forEach(packge -> {
+                    logger.log(LogLevel.DEBUG, "Deleting : " + packge + ":: status : " + FileUtils.deleteQuietly(packge), CVEServiceWindows.class.getName());
+                });
                 downloaded = CVEComponentsService.downloadCVEPackage(packageInfo);
             }
             if (!downloaded) {
