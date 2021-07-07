@@ -110,7 +110,7 @@ public class CVEServiceLinux implements Runnable {
 
             List<CVEScanner> scanDirs;
             if (isEnvScan) {
-                scanDirs = CVEComponentsService.getLibScanDirs(packageParentDir);
+                scanDirs = CVEComponentsService.getLibScanDirs(parentDirectory.getAbsolutePath());
             } else {
                 scanDirs = CVEComponentsService.getAppScanDirs();
             }
@@ -151,7 +151,7 @@ public class CVEServiceLinux implements Runnable {
                 } catch (Throwable e) {
                 }
             }
-            CVEComponentsService.deleteAllComponents(parentDirectory, packageParentDir);
+            CVEComponentsService.deleteAllComponents(parentDirectory);
             logger.log(LogLevel.DEBUG, ICVEConstants.CVE_PACKAGE_DELETED, CVEServiceLinux.class.getName());
         } catch (InterruptedException e) {
             logger.log(LogLevel.ERROR, ERROR_PROCESS_TERMINATED, e, CVEServiceLinux.class.getName());

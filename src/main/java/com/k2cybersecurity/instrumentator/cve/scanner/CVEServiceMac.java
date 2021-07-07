@@ -108,7 +108,7 @@ public class CVEServiceMac implements Runnable {
 
             List<CVEScanner> scanDirs;
             if (isEnvScan) {
-                scanDirs = CVEComponentsService.getLibScanDirs(packageParentDir);
+                scanDirs = CVEComponentsService.getLibScanDirs(parentDirectory.getAbsolutePath());
             } else {
                 scanDirs = CVEComponentsService.getAppScanDirs();
             }
@@ -149,7 +149,7 @@ public class CVEServiceMac implements Runnable {
                 } catch (Throwable e) {
                 }
             }
-            CVEComponentsService.deleteAllComponents(parentDirectory, packageParentDir);
+            CVEComponentsService.deleteAllComponents(parentDirectory);
             logger.log(LogLevel.DEBUG, ICVEConstants.CVE_PACKAGE_DELETED, CVEServiceMac.class.getName());
         } catch (InterruptedException e) {
             logger.log(LogLevel.ERROR, ERROR_PROCESS_TERMINATED, e, CVEServiceMac.class.getName());

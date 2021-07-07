@@ -188,14 +188,14 @@ public class CVEComponentsService {
         return scanners;
     }
 
-    protected static void deleteAllComponents(File cveDir, String cvePackageDir) {
+    protected static void deleteAllComponents(File cveDir) {
         try {
             FileUtils.forceDelete(cveDir);
         } catch (IOException e) {
         }
 
         try {
-            FileUtils.forceDelete(new File(cvePackageDir, TMP_LIBS + K2Instrumentator.APPLICATION_UUID));
+            FileUtils.forceDelete(new File(cveDir, TMP_LIBS + K2Instrumentator.APPLICATION_UUID));
         } catch (IOException e) {
         }
     }

@@ -113,7 +113,7 @@ public class CVEServiceWindows implements Runnable {
 
             List<CVEScanner> scanDirs;
             if (isEnvScan) {
-                scanDirs = CVEComponentsService.getLibScanDirs(packageParentDir);
+                scanDirs = CVEComponentsService.getLibScanDirs(extractedPackageDir.getAbsolutePath());
             } else {
                 scanDirs = CVEComponentsService.getAppScanDirs();
             }
@@ -156,7 +156,7 @@ public class CVEServiceWindows implements Runnable {
                 } catch (Throwable e) {
                 }
             }
-            CVEComponentsService.deleteAllComponents(extractedPackageDir, packageParentDir);
+            CVEComponentsService.deleteAllComponents(extractedPackageDir);
             logger.log(LogLevel.DEBUG, ICVEConstants.CVE_PACKAGE_DELETED, CVEServiceWindows.class.getName());
         } catch (InterruptedException e) {
             logger.log(LogLevel.ERROR, ERROR_PROCESS_TERMINATED, e, CVEServiceWindows.class.getName());
