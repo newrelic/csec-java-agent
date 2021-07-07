@@ -9,10 +9,12 @@ import com.k2cybersecurity.intcodeagent.logging.EventThreadPool.EventAbortPolicy
 import com.k2cybersecurity.intcodeagent.logging.IAgentConstants;
 import com.k2cybersecurity.intcodeagent.models.javaagent.CVEPackageInfo;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.filefilter.NameFileFilter;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -72,6 +74,11 @@ public class CVEScannerPool {
 						"K2-local-cve-service-" + threadNumber.getAndIncrement());
 			}
 		});
+
+        Collection<File> cvePackages = FileUtils.listFiles(new File(osVariables.getCvePackageBaseDir()), new NameFileFilter(ICVEConstants.LOCALCVESERVICE), null);
+        cvePackages.forEach(packge -> {
+            FileUtils.deleteQuietly(packge);
+        });
 	}
 
 	public static CVEScannerPool getInstance() {
