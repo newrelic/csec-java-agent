@@ -26,7 +26,7 @@ import static com.k2cybersecurity.instrumentator.httpclient.IRestClientConstants
 
 class LoggingInterceptor implements Interceptor {
     private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
-    public static final String SENDING_REQUEST_S_ON_S_N_S = "Sending request %s on %s%n%s";
+    public static final String SENDING_REQUEST_S_ON_S_N_S = "Sending request %s";
     public static final String RECEIVED_RESPONSE_FOR_S_IN_1_FMS_N_S = "Received response is %s for %s in %.1fms%n";
 
     @Override
@@ -35,7 +35,7 @@ class LoggingInterceptor implements Interceptor {
 
         long t1 = System.nanoTime();
         logger.log(LogLevel.INFO, String.format(SENDING_REQUEST_S_ON_S_N_S,
-                request.url(), chain.connection(), request.headers()), LoggingInterceptor.class.getName());
+                request.url()), LoggingInterceptor.class.getName());
 
         Response response = chain.proceed(request);
 
