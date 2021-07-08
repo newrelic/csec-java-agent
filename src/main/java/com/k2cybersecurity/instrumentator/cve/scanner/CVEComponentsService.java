@@ -16,12 +16,15 @@ import com.k2cybersecurity.intcodeagent.models.javaagent.*;
 import com.squareup.okhttp.Response;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.filefilter.FileFilterUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.net.ftp.FTPClient;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -190,9 +193,17 @@ public class CVEComponentsService {
 
     protected static void deleteAllComponents(File cveDir) {
         try {
-            FileUtils.forceDelete(cveDir);
-            logger.log(LogLevel.ERROR, String.format("Deleted dir %s ", cveDir), CVEComponentsService.class.getName());
-        } catch (IOException e) {
+            Files.walk(cveDir.toPath())
+                    .sorted(Comparator.reverseOrder())
+                    .forEach(path -> {
+                        try {
+                            Files.delete(path);
+                        } catch (IOException e) {
+                        }
+                    });
+
+            logger.log(LogLevel.DEBUG, String.format("Deleted dir %s ", cveDir), CVEComponentsService.class.getName());
+        } catch (Exception e) {
             logger.log(LogLevel.ERROR, String.format("deletion of %s dir failed!", cveDir), CVEComponentsService.class.getName());
         }
     }
