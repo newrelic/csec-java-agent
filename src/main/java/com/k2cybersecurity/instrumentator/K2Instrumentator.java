@@ -1,6 +1,8 @@
 package com.k2cybersecurity.instrumentator;
 
 import com.k2cybersecurity.instrumentator.custom.ClassloaderAdjustments;
+import com.k2cybersecurity.instrumentator.os.OSVariables;
+import com.k2cybersecurity.instrumentator.os.OsVariablesInstance;
 import com.k2cybersecurity.instrumentator.utils.AgentUtils;
 import com.k2cybersecurity.instrumentator.utils.ApplicationInfoUtils;
 import com.k2cybersecurity.instrumentator.utils.CollectorConfigurationUtils;
@@ -49,10 +51,7 @@ public class K2Instrumentator {
     public static boolean isDynamicAttach = false;
     public static boolean enableHTTPRequestPrinting = false;
 
-    public static boolean isk8sEnv = false;
-    public static boolean isECSEnv = false;
-
-    public static String nlcDefaultPath = "/opt/k2-ic/node-level-config.yaml";
+    private static OSVariables osVariables = OsVariablesInstance.getInstance().getOsVariables();
 
     static {
         try {
@@ -82,11 +81,13 @@ public class K2Instrumentator {
             String userAppVersion = System.getenv("K2_APP_VERSION");
             String userAppTags = System.getenv("K2_APP_TAGS");
 
+            String nlcDefaultPath = new File(osVariables.getConfigPath(), "node-level-config.yaml").toString();
+            String alcDefaultPath = new File(osVariables.getConfigPath(), "application-level-config.yaml").toString();
             if (StringUtils.isBlank(nlcPath)) {
                 nlcPath = nlcDefaultPath;
             }
             if (StringUtils.isBlank(alcPath)) {
-                alcPath = StringUtils.EMPTY;
+                alcPath = alcDefaultPath;
             }
 
             Identifier identifier = ApplicationInfoUtils.envDetection();

@@ -22,7 +22,6 @@ public class CollectorConfigurationUtils {
     public static final String NODE_LEVEL_CONFIGURATION_WAS_NOT_PROVIDED = "Node Level Configuration was not provided.";
     public static final String APPLICATION_LEVEL_CONFIGURATION_LOADED = "Application Level Configuration loaded ";
     public static final String APPLICATION_LEVEL_CONFIGURATION_WAS_NOT_PROVIDED = "Application Level Configuration was not provided.";
-    public static final String BASIC_INFO_SET_TO_NODE_ID_S_CUSTOMER_ID_S = "Basic info set to nodeId %s :: customerId : %s";
     private final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
 
     private static CollectorConfigurationUtils instance;
@@ -94,7 +93,6 @@ public class CollectorConfigurationUtils {
         if (applicationLevelConfig.getK2ServiceInfo() != null && !applicationLevelConfig.getK2ServiceInfo().isEmpty()) {
             this.collectorConfig.setK2ServiceInfo(applicationLevelConfig.getK2ServiceInfo());
         }
-        this.collectorConfig.setAppInfo(applicationLevelConfig.getAppInfo());
     }
 
     private boolean validateCollectorConfig(IdentifierEnvs kind) {

@@ -2,6 +2,7 @@ package com.k2cybersecurity.intcodeagent.models.collectorconfig;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import com.k2cybersecurity.intcodeagent.models.config.PolicyApplicationInfo;
 import com.k2cybersecurity.intcodeagent.websocket.JsonConverter;
 
 import java.util.HashSet;
@@ -23,7 +24,7 @@ public class CollectorConfig {
 
     private CustomerInfo customerInfo;
 
-    private AppInfo appInfo;
+    private PolicyApplicationInfo applicationInfo;
 
     public CollectorConfig() {
     }
@@ -76,12 +77,12 @@ public class CollectorConfig {
         this.customerInfo = customerInfo;
     }
 
-    public AppInfo getAppInfo() {
-        return appInfo;
+    public PolicyApplicationInfo getApplicationInfo() {
+        return applicationInfo;
     }
 
-    public void setAppInfo(AppInfo appInfo) {
-        this.appInfo = appInfo;
+    public void setApplicationInfo(PolicyApplicationInfo applicationInfo) {
+        this.applicationInfo = applicationInfo;
     }
 
     @Override

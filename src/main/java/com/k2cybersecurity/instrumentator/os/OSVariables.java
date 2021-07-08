@@ -8,6 +8,7 @@ public class OSVariables {
     private String logDirectory;
     private String cvePackageBaseDir;
     private String osArch;
+    private String configPath;
 
     public String getOs() {
         return os;
@@ -63,5 +64,13 @@ public class OSVariables {
 
     public void setCvePackageBaseDir(String cvePackageBaseDir) {
         this.cvePackageBaseDir = cvePackageBaseDir;
+    }
+
+    public String getConfigPath() {
+        return configPath;
+    }
+
+    public void setConfigPath(String configPath) {
+        this.configPath = configPath;
     }
 }

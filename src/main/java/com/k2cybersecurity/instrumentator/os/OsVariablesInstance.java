@@ -10,7 +10,11 @@ public class OsVariablesInstance {
     public static final String TMP = "/tmp/";
     public static final String APP_DATA_LOCAL_K_2 = "\\AppData\\Local\\K2\\";
     public static final String APP_DATA_LOCAL_K_2_LOGS = "\\AppData\\Local\\K2\\logs\\";
+    public static final String OPT_K_2_IC = "/opt/k2-ic/";
+    public static final String C_USERS_PUBLIC_K_2_OPT_K_2_IC = "C:\\Users\\Public\\K2\\opt\\k2-ic\\";
+
     private static OsVariablesInstance instance;
+
 
     private final static Object lock = new Object();
 
@@ -23,16 +27,19 @@ public class OsVariablesInstance {
             osVariables.setLogDirectory(TMP_K_2_LOGS);
             osVariables.setCvePackageBaseDir(TMP);
             osVariables.setOs(IAgentConstants.LINUX);
+            osVariables.setConfigPath(OPT_K_2_IC);
         } else if (SystemUtils.IS_OS_MAC) {
             osVariables.setMac(true);
             osVariables.setLogDirectory(TMP_K_2_LOGS);
             osVariables.setCvePackageBaseDir(TMP);
             osVariables.setOs(IAgentConstants.MAC);
+            osVariables.setConfigPath(OPT_K_2_IC);
         } else if (SystemUtils.IS_OS_WINDOWS) {
             osVariables.setWindows(true);
             osVariables.setLogDirectory(SystemUtils.getUserHome() + APP_DATA_LOCAL_K_2_LOGS);
             osVariables.setCvePackageBaseDir(SystemUtils.getUserHome() + APP_DATA_LOCAL_K_2);
             osVariables.setOs(IAgentConstants.WINDOWS);
+            osVariables.setConfigPath(C_USERS_PUBLIC_K_2_OPT_K_2_IC);
         }
         String arch = SystemUtils.OS_ARCH;
         osVariables.setOsArch(getOsArch(arch));

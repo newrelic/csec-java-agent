@@ -1,6 +1,7 @@
 package com.k2cybersecurity.intcodeagent.models.collectorconfig;
 
 import com.fasterxml.jackson.annotation.*;
+import com.k2cybersecurity.intcodeagent.models.config.PolicyApplicationInfo;
 import com.k2cybersecurity.intcodeagent.websocket.JsonConverter;
 
 import java.util.HashMap;
@@ -14,8 +15,6 @@ public class ApplicationLevelConfig {
     private CustomerInfo customerInfo;
 
     private K2ServiceInfo k2ServiceInfo;
-
-    private AppInfo appInfo;
 
     @JsonIgnore
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
@@ -39,14 +38,6 @@ public class ApplicationLevelConfig {
         this.k2ServiceInfo = k2ServiceInfo;
     }
 
-    public AppInfo getAppInfo() {
-        return appInfo;
-    }
-
-    public void setAppInfo(AppInfo appInfo) {
-        this.appInfo = appInfo;
-    }
-
     @JsonAnyGetter
     public Map<String, Object> getAdditionalProperties() {
         return this.additionalProperties;
@@ -63,13 +54,12 @@ public class ApplicationLevelConfig {
         if (o == null || getClass() != o.getClass()) return false;
         ApplicationLevelConfig that = (ApplicationLevelConfig) o;
         return Objects.equals(customerInfo, that.customerInfo) &&
-                Objects.equals(k2ServiceInfo, that.k2ServiceInfo) &&
-                Objects.equals(appInfo, that.appInfo);
+                Objects.equals(k2ServiceInfo, that.k2ServiceInfo);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(customerInfo, k2ServiceInfo, appInfo);
+        return Objects.hash(customerInfo, k2ServiceInfo);
     }
 
     @Override
