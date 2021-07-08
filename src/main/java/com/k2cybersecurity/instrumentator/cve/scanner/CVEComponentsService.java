@@ -192,6 +192,7 @@ public class CVEComponentsService {
         try {
             FileUtils.forceDelete(cveDir);
         } catch (IOException e) {
+            logger.log(LogLevel.ERROR, String.format("deletion of %s dir failed!", cveDir), CVEComponentsService.class.getName());
         }
     }
 
