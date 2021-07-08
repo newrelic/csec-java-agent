@@ -198,7 +198,6 @@ public class CVEComponentsService {
                     .forEach(path -> {
                         try {
                             Files.delete(path);
-                            logger.log(LogLevel.DEBUG, String.format("Deleting %s ", path), CVEComponentsService.class.getName());
                         } catch (IOException e) {
                         }
                     });

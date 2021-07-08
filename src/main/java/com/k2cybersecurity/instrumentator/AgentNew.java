@@ -122,7 +122,7 @@ public class AgentNew {
 
 	public static void agentmain(String agentArgs, Instrumentation instrumentation) {
 		isDynamicAttachment = true;
-		if (StringUtils.equals(System.getenv().get("K2_DYNAMIC_ATTACH"), "false")) {
+		if (!StringUtils.equals(System.getenv().get("K2_DYNAMIC_ATTACH"), "true")) {
 			System.err.println("[K2-JA] Process attachment aborted!!! collector's dynamic attachment not allowed.");
 			return;
 		}

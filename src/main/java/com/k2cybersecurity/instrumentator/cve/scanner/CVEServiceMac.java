@@ -84,43 +84,43 @@ public class CVEServiceMac implements Runnable {
             }
             logger.log(LogLevel.DEBUG, ICVEConstants.CVE_PACKAGE_DOWNLOADED, CVEServiceMac.class.getName());
             //Create untar Directory
-            File parentDirectory = new File(packageParentDir, String.format(ICVEConstants.EXTR_DIR, LOCALCVESERVICE_PATH, K2Instrumentator.APPLICATION_UUID));
-            FileUtils.deleteQuietly(parentDirectory);
-            if (!parentDirectory.exists()) {
+            File packageExtractedDirectory = new File(packageParentDir, String.format(ICVEConstants.EXTR_DIR, LOCALCVESERVICE_PATH, K2Instrumentator.APPLICATION_UUID));
+            FileUtils.deleteQuietly(packageExtractedDirectory);
+            if (!packageExtractedDirectory.exists()) {
                 try {
-                    parentDirectory.mkdirs();
+                    packageExtractedDirectory.mkdirs();
                 } catch (Throwable e) {
-                    logger.log(LogLevel.ERROR, CANNOT_CREATE_DIRECTORY + parentDirectory, e,
+                    logger.log(LogLevel.ERROR, CANNOT_CREATE_DIRECTORY + packageExtractedDirectory, e,
                             CVEServiceMac.class.getName());
                     return;
                 }
             }
 
-            AgentUtils.extractCVETar(CVEScannerPool.getInstance().getPackageInfo().getCvePackage(), parentDirectory);
-            CVEComponentsService.setAllLinuxPermissions(parentDirectory.getAbsolutePath());
+            AgentUtils.extractCVETar(CVEScannerPool.getInstance().getPackageInfo().getCvePackage(), packageExtractedDirectory);
+            CVEComponentsService.setAllLinuxPermissions(packageExtractedDirectory.getAbsolutePath());
 
             logger.log(LogLevel.DEBUG, ICVEConstants.CVE_PACKAGE_EXTRACTION_COMPLETED, CVEServiceMac.class.getName());
 
             StringBuilder dcCommand = new StringBuilder(MAC_SHELL);
-            dcCommand.append(parentDirectory.getAbsolutePath());
+            dcCommand.append(packageExtractedDirectory.getAbsolutePath());
             dcCommand.append(PATH_TO_DEPENDENCY_CHECK);
 
-            String startupScriptPath = new File(parentDirectory.getAbsolutePath(), STARTUP_SH_PATH).getAbsolutePath();
+            String startupScriptPath = new File(packageExtractedDirectory.getAbsolutePath(), STARTUP_SH_PATH).getAbsolutePath();
 
             List<CVEScanner> scanDirs;
             if (isEnvScan) {
-                scanDirs = CVEComponentsService.getLibScanDirs(parentDirectory.getAbsolutePath());
+                scanDirs = CVEComponentsService.getLibScanDirs(packageExtractedDirectory.getAbsolutePath());
             } else {
                 scanDirs = CVEComponentsService.getAppScanDirs();
             }
             for (CVEScanner scanner : scanDirs) {
                 File inputYaml = CVEComponentsService.createServiceYml(dcCommand.toString(), nodeId, scanner.getAppName(),
                         scanner.getAppSha256(), scanner.getDir(),
-                        K2Instrumentator.APPLICATION_INFO_BEAN.getApplicationUUID(), scanner.getEnv(), kind, id, parentDirectory.getAbsolutePath());
+                        K2Instrumentator.APPLICATION_INFO_BEAN.getApplicationUUID(), scanner.getEnv(), kind, id, packageExtractedDirectory.getAbsolutePath());
                 List<String> paramList = Arrays.asList(BASH_COMMAND, startupScriptPath,
                         inputYaml.getAbsolutePath());
                 ProcessBuilder processBuilder = new ProcessBuilder(paramList);
-                File dcout = Paths.get(parentDirectory.getAbsolutePath(), ICVEConstants.DC_TRIGGER_LOG).toFile();
+                File dcout = Paths.get(packageExtractedDirectory.getAbsolutePath(), ICVEConstants.DC_TRIGGER_LOG).toFile();
                 processBuilder.redirectErrorStream(true);
                 processBuilder.redirectOutput(dcout);
                 Process process = processBuilder.start();
@@ -143,14 +143,14 @@ public class CVEServiceMac implements Runnable {
 //                        StringUtils.join(errResponse, StringUtils.LF)), CVEServiceMac.class.getName());
 
                 logger.log(LogLevel.INFO,
-                        String.format(K2_VULNERABILITY_SCANNER_RESPONSE, FileUtils.readFileToString(Paths.get(parentDirectory.getAbsolutePath(), ICVEConstants.DC_TRIGGER_LOG).toFile(), Charset.defaultCharset())),
+                        String.format(K2_VULNERABILITY_SCANNER_RESPONSE, FileUtils.readFileToString(Paths.get(packageExtractedDirectory.getAbsolutePath(), ICVEConstants.DC_TRIGGER_LOG).toFile(), Charset.defaultCharset())),
                         CVEServiceMac.class.getName());
                 try {
                     FileUtils.forceDelete(inputYaml);
                 } catch (Throwable e) {
                 }
             }
-            CVEComponentsService.deleteAllComponents(parentDirectory);
+            CVEComponentsService.deleteAllComponents(packageExtractedDirectory);
             logger.log(LogLevel.DEBUG, ICVEConstants.CVE_PACKAGE_DELETED, CVEServiceMac.class.getName());
         } catch (InterruptedException e) {
             logger.log(LogLevel.ERROR, ERROR_PROCESS_TERMINATED, e, CVEServiceMac.class.getName());
