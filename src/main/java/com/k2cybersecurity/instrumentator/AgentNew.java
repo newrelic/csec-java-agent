@@ -37,6 +37,10 @@ public class AgentNew {
 			System.err.println("[K2-JA] Process attachment aborted!!! K2 is set to disable.");
 			return;
 		}
+        if (StringUtils.isBlank(System.getenv("K2_GROUP_NAME"))) {
+            System.err.println("[K2-JA] Process attachment aborted!!! K2_GROUP_NAME is not set.");
+            return;
+        }
 
 		System.setProperty("org.slf4j.simpleLogger.defaultLogLevel", "off");
 		System.setProperty("org.slf4j.simpleLogger.logFile", "System.out");
