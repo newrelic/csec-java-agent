@@ -407,7 +407,7 @@ public class InstrumentationUtils {
 
     public static void awaitServerStartUp(Instrumentation instrumentation, ClassLoader classLoader) {
         System.out.println("[K2-JA] trying server detection .");
-        if (jbossDetected(classLoader)) {
+        if (jbossDetected(classLoader, instrumentation)) {
             // Place Classloader adjustments
 //            ClassloaderAdjustments.jbossSpecificAdjustments();
             System.out.println("[K2-JA] JBoss detected server wait initialised.");
@@ -415,8 +415,14 @@ public class InstrumentationUtils {
         }
     }
 
-    private static boolean jbossDetected(ClassLoader classLoader) {
-        return classLoader.getResource("org/jboss/modules/Main.class") != null;
+    private static boolean jbossDetected(ClassLoader classLoader, Instrumentation instrumentation) {
+        if (classLoader.getResource("org/jboss/modules/Main.class") != null) {
+            return true;
+        }
+        if (isClassLoaded("org.jboss.modules.Main.class", instrumentation)) {
+            return true;
+        }
+        return false;
     }
 
     private static void awaitJbossServerStartInitialization(Instrumentation instrumentation) {
