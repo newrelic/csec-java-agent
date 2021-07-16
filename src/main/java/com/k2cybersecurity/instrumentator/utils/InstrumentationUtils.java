@@ -427,7 +427,7 @@ public class InstrumentationUtils {
 
     private static void awaitJbossServerStartInitialization(Instrumentation instrumentation) {
         //wait max 5 mins
-        long interval = 250;
+        long interval = 1000;
 
         long waitTime = TimeUnit.MINUTES.toMillis(5);
         int itr = 0;
@@ -449,10 +449,12 @@ public class InstrumentationUtils {
             throw new IllegalArgumentException("instrumentation and className must not be null");
         }
         Class<?>[] classes = instrumentation.getAllLoadedClasses();
-        for (Class<?> klass : classes) {
+        if (classes != null) {
+            for (Class<?> klass : classes) {
 //            System.out.println("[K2-JA] loaded classes : " + klass.getName());
-            if (className.equals(klass.getName())) {
-                return true;
+                if (className.equals(klass.getName())) {
+                    return true;
+                }
             }
         }
         return false;
