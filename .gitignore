@@ -19,4 +19,4 @@ logs/
 .idea/
 **/Decorators.java
 *.iml
-!.idea/
+!.idea/runConfigurations
