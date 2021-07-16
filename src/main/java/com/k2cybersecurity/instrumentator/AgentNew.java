@@ -31,11 +31,11 @@ public class AgentNew {
 	public static void premain(String arguments, Instrumentation instrumentation) {
 
 		if (StringUtils.equals(System.getenv().get("K2_DISABLE"), "true") || StringUtils.equals(System.getenv().get("K2_ATTACH"), "false")) {
-//			System.err.println("[K2-JA] Process attachment aborted!!! K2 is set to disable.");
+            System.err.println("[K2-JA] Process attachment aborted!!! K2 is set to disable.");
 			return;
 		}
         if (StringUtils.isBlank(System.getenv("K2_GROUP_NAME"))) {
-//            System.err.println("[K2-JA] Process attachment aborted!!! K2_GROUP_NAME is not set.");
+            System.err.println("[K2-JA] Process attachment aborted!!! K2_GROUP_NAME is not set.");
             return;
         }
 
@@ -49,10 +49,6 @@ public class AgentNew {
 			@Override
 			public void run() {
 				try {
-                    try {
-                        TimeUnit.MINUTES.sleep(1);
-                    } catch (InterruptedException e) {
-                    }
 					awaitServerStartUp(instrumentation, ClassLoader.getSystemClassLoader());
 
 					Class<?> clazz = Class.forName("com.k2cybersecurity.instrumentator.K2Instrumentator");
@@ -142,11 +138,11 @@ public class AgentNew {
 	}
 
 	public static void awaitServerStartUp(Instrumentation instrumentation, ClassLoader classLoader) {
-//		System.out.println("[K2-JA] trying server detection .");
+        System.out.println("[K2-JA] trying server detection .");
 		if (jbossDetected(classLoader, instrumentation)) {
 			// Place Classloader adjustments
 //            ClassloaderAdjustments.jbossSpecificAdjustments();
-//			System.out.println("[K2-JA] JBoss detected server wait initialised.");
+            System.out.println("[K2-JA] JBoss detected server wait initialised.");
 			awaitJbossServerStartInitialization(instrumentation);
 		}
 	}
@@ -172,7 +168,7 @@ public class AgentNew {
 			if (StringUtils.isBlank(loggingManagerClassName)) {
 				continue;
 			}
-//			System.out.println("[K2-JA] log manager detected : " + loggingManagerClassName);
+            System.out.println("[K2-JA] log manager detected : " + loggingManagerClassName);
 			if (isClassLoaded(loggingManagerClassName, instrumentation)) {
 				return;
 			}
