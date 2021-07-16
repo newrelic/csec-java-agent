@@ -29,6 +29,12 @@ public class AgentNew {
 	public static Instrumentation gobalInstrumentation;
 
 	public static void premain(String arguments, Instrumentation instrumentation) {
+
+        try {
+            TimeUnit.MINUTES.sleep(1);
+        } catch (InterruptedException e) {
+        }
+
 		if (StringUtils.equals(System.getenv().get("K2_DISABLE"), "true") || StringUtils.equals(System.getenv().get("K2_ATTACH"), "false")) {
 //			System.err.println("[K2-JA] Process attachment aborted!!! K2 is set to disable.");
 			return;
