@@ -450,6 +450,7 @@ public class InstrumentationUtils {
         }
         Class<?>[] classes = instrumentation.getAllLoadedClasses();
         for (Class<?> klass : classes) {
+            System.out.println("[K2-JA] loaded classes : " + klass.getName());
             if (className.equals(klass.getName())) {
                 return true;
             }
