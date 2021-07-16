@@ -30,11 +30,6 @@ public class AgentNew {
 
 	public static void premain(String arguments, Instrumentation instrumentation) {
 
-        try {
-            TimeUnit.MINUTES.sleep(1);
-        } catch (InterruptedException e) {
-        }
-
 		if (StringUtils.equals(System.getenv().get("K2_DISABLE"), "true") || StringUtils.equals(System.getenv().get("K2_ATTACH"), "false")) {
 //			System.err.println("[K2-JA] Process attachment aborted!!! K2 is set to disable.");
 			return;
@@ -54,6 +49,10 @@ public class AgentNew {
 			@Override
 			public void run() {
 				try {
+                    try {
+                        TimeUnit.MINUTES.sleep(1);
+                    } catch (InterruptedException e) {
+                    }
 					awaitServerStartUp(instrumentation, ClassLoader.getSystemClassLoader());
 
 					Class<?> clazz = Class.forName("com.k2cybersecurity.instrumentator.K2Instrumentator");
