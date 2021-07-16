@@ -419,7 +419,7 @@ public class InstrumentationUtils {
         if (classLoader.getResource("org/jboss/modules/Main.class") != null) {
             return true;
         }
-        if (isClassLoaded("org.jboss.modules.Main.class", instrumentation)) {
+        if (isClassLoaded("org.jboss.modules.Main", instrumentation)) {
             return true;
         }
         return false;
