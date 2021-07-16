@@ -416,9 +416,9 @@ public class InstrumentationUtils {
     }
 
     private static boolean jbossDetected(ClassLoader classLoader, Instrumentation instrumentation) {
-//        if (classLoader.getResource("org/jboss/modules/Main.class") != null) {
-//            return true;
-//        }
+        if (classLoader.getResource("org/jboss/modules/Main.class") != null) {
+            return true;
+        }
         if (isClassLoaded("org.jboss.modules.Main", instrumentation)) {
             return true;
         }

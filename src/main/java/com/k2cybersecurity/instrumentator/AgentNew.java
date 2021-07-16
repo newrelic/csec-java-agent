@@ -50,7 +50,7 @@ public class AgentNew {
 			@Override
 			public void run() {
 				try {
-					InstrumentationUtils.awaitServerStartUp(instrumentation, this.getClass().getClassLoader());
+					InstrumentationUtils.awaitServerStartUp(instrumentation, ClassLoader.getSystemClassLoader());
 
 					Class<?> clazz = Class.forName("com.k2cybersecurity.instrumentator.K2Instrumentator");
 					Method init = clazz.getMethod("init", Boolean.class);
