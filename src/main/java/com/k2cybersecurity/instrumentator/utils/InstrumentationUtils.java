@@ -3,6 +3,7 @@ package com.k2cybersecurity.instrumentator.utils;
 import com.k2cybersecurity.instrumentator.AgentNew;
 import com.k2cybersecurity.instrumentator.K2Instrumentator;
 import com.k2cybersecurity.instrumentator.custom.ByteBuddyElementMatchers;
+import com.k2cybersecurity.instrumentator.custom.ClassloaderAdjustments;
 import com.k2cybersecurity.instrumentator.dispatcher.DispatcherPool;
 import com.k2cybersecurity.intcodeagent.controlcommand.ControlCommandProcessorThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
@@ -20,6 +21,7 @@ import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.dynamic.DynamicType;
 import net.bytebuddy.utility.JavaModule;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.lang.instrument.Instrumentation;
@@ -403,4 +405,49 @@ public class InstrumentationUtils {
         }
     }
 
+    public static void awaitServerStartUp(Instrumentation instrumentation, ClassLoader classLoader) {
+        System.out.println("[K2-JA] trying server detection .");
+        if (jbossDetected(classLoader)) {
+            // Place Classloader adjustments
+//            ClassloaderAdjustments.jbossSpecificAdjustments();
+            System.out.println("[K2-JA] JBoss detected server wait initialised.");
+            awaitJbossServerStartInitialization(instrumentation);
+        }
+    }
+
+    private static boolean jbossDetected(ClassLoader classLoader) {
+        return classLoader.getResource("org/jboss/modules/Main.class") != null;
+    }
+
+    private static void awaitJbossServerStartInitialization(Instrumentation instrumentation) {
+        //wait max 5 mins
+        long interval = 250;
+
+        long waitTime = TimeUnit.MINUTES.toMillis(5);
+        int itr = 0;
+        while (itr * interval < waitTime) {
+            String loggingManagerClassName = System.getProperty("java.util.logging.manager");
+            if (StringUtils.isBlank(loggingManagerClassName)) {
+                continue;
+            }
+            System.out.println("[K2-JA] log manager detected : " + loggingManagerClassName);
+            if (isClassLoaded(loggingManagerClassName, instrumentation)) {
+                return;
+            }
+        }
+
+    }
+
+    protected static boolean isClassLoaded(String className, Instrumentation instrumentation) {
+        if (instrumentation == null || className == null) {
+            throw new IllegalArgumentException("instrumentation and className must not be null");
+        }
+        Class<?>[] classes = instrumentation.getAllLoadedClasses();
+        for (Class<?> klass : classes) {
+            if (className.equals(klass.getName())) {
+                return true;
+            }
+        }
+        return false;
+    }
 }

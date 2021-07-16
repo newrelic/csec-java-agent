@@ -21,6 +21,15 @@ public class ClassloaderAdjustments {
 		} else if (!StringUtils.containsIgnoreCase(cur, K2_BOOTSTAP_LOADED_PACKAGE_NAME)) {
 			System.setProperty("jboss.modules.system.pkgs", StringUtils.joinWith(",", cur, K2_BOOTSTAP_LOADED_PACKAGE_NAME));
 		}
+
+        String logging = System.getProperty("java.util.logging.manager");
+        logger.log(LogLevel.INFO, "logging property : " + logging, ClassloaderAdjustments.class.getName());
+        if (StringUtils.isBlank(logging)) {
+            System.setProperty("java.util.logging.manager", "org.jboss.logmanager.LogManager");
+        } else if (!StringUtils.containsIgnoreCase(logging, "org.jboss.logmanager.LogManager")) {
+            System.setProperty("java.util.logging.manager", StringUtils.joinWith(",", logging, "org.jboss.logmanager.LogManager"));
+        }
+        logger.log(LogLevel.INFO, "new logging property : " + System.getProperty("java.util.logging.manager"), ClassloaderAdjustments.class.getName());
 	}
 
 	//
