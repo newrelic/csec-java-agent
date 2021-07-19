@@ -1,6 +1,7 @@
 package com.k2cybersecurity.instrumentator;
 
 import com.k2cybersecurity.instrumentator.custom.ClassLoadListener;
+import com.k2cybersecurity.instrumentator.custom.ClassloaderAdjustments;
 import com.k2cybersecurity.instrumentator.utils.AgentUtils;
 import com.k2cybersecurity.instrumentator.utils.InstrumentationUtils;
 import net.bytebuddy.ByteBuddy;
@@ -141,8 +142,8 @@ public class AgentNew {
         System.out.println("[K2-JA] trying server detection .");
 		if (jbossDetected(classLoader, instrumentation)) {
 			// Place Classloader adjustments
-//            ClassloaderAdjustments.jbossSpecificAdjustments();
-            System.out.println("[K2-JA] JBoss detected server wait initialised.");
+			ClassloaderAdjustments.jbossSpecificAdjustments();
+			System.out.println("[K2-JA] JBoss detected server wait initialised.");
 			awaitJbossServerStartInitialization(instrumentation);
 		}
 	}
