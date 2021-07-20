@@ -1,6 +1,7 @@
 package com.k2cybersecurity.instrumentator;
 
 import com.k2cybersecurity.instrumentator.custom.ClassLoadListener;
+import com.k2cybersecurity.instrumentator.custom.ClassloaderAdjustments;
 import com.k2cybersecurity.instrumentator.utils.AgentUtils;
 import com.k2cybersecurity.instrumentator.utils.InstrumentationUtils;
 import net.bytebuddy.ByteBuddy;
@@ -17,6 +18,7 @@ import java.lang.instrument.Instrumentation;
 import java.lang.reflect.Method;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import static com.k2cybersecurity.instrumentator.utils.InstrumentationUtils.*;
 
@@ -24,8 +26,6 @@ import static com.k2cybersecurity.instrumentator.utils.InstrumentationUtils.*;
 public class AgentNew {
 
     private static boolean isDynamicAttachment = false;
-
-    private static boolean initDone = false;
 
     public static Instrumentation gobalInstrumentation;
 
@@ -42,13 +42,15 @@ public class AgentNew {
         System.setProperty("org.slf4j.simpleLogger.defaultLogLevel", "off");
         System.setProperty("org.slf4j.simpleLogger.logFile", "System.out");
 
-        if (initDone) {
-            return;
-        }
-        initDone = true;
         gobalInstrumentation = instrumentation;
 
+
+		Thread k2JaStartupThread = new Thread("K2-JA-StartUp") {
+			@Override
+			public void run() {
         try {
+					awaitServerStartUp(instrumentation, ClassLoader.getSystemClassLoader());
+
             Class<?> clazz = Class.forName("com.k2cybersecurity.instrumentator.K2Instrumentator");
             Method init = clazz.getMethod("init", Boolean.class);
             Boolean isStarted = (Boolean) init.invoke(null, isDynamicAttachment);
@@ -120,6 +122,11 @@ public class AgentNew {
             }
         }
     }
+		};
+		k2JaStartupThread.setDaemon(true);
+		k2JaStartupThread.start();
+
+	}
 
     public static void agentmain(String agentArgs, Instrumentation instrumentation) {
         isDynamicAttachment = true;
@@ -129,5 +136,64 @@ public class AgentNew {
         }
         premain(agentArgs, instrumentation);
     }
+
+	public static void awaitServerStartUp(Instrumentation instrumentation, ClassLoader classLoader) {
+        System.out.println("[K2-JA] trying server detection .");
+		if (jbossDetected(classLoader, instrumentation)) {
+			// Place Classloader adjustments
+			ClassloaderAdjustments.jbossSpecificAdjustments();
+			System.out.println("[K2-JA] JBoss detected server wait initialised.");
+			awaitJbossServerStartInitialization(instrumentation);
+		}
+	}
+
+	private static boolean jbossDetected(ClassLoader classLoader, Instrumentation instrumentation) {
+		if (classLoader.getResource("org/jboss/modules/Main.class") != null) {
+			return true;
+		}
+		if (isClassLoaded("org.jboss.modules.Main", instrumentation)) {
+			return true;
+		}
+		return false;
+	}
+
+	private static void awaitJbossServerStartInitialization(Instrumentation instrumentation) {
+		//wait max 5 mins
+		long interval = 1000;
+
+		long waitTime = TimeUnit.MINUTES.toMillis(5);
+		int itr = 0;
+		while (itr * interval < waitTime) {
+			String loggingManagerClassName = System.getProperty("java.util.logging.manager");
+			if (StringUtils.isBlank(loggingManagerClassName)) {
+				continue;
+			}
+            System.out.println("[K2-JA] log manager detected : " + loggingManagerClassName);
+			if (isClassLoaded(loggingManagerClassName, instrumentation)) {
+				return;
+			}
+            try {
+                TimeUnit.MILLISECONDS.sleep(interval);
+            } catch (InterruptedException e) {
+            }
+		}
+
+	}
+
+	protected static boolean isClassLoaded(String className, Instrumentation instrumentation) {
+		if (instrumentation == null || className == null) {
+			throw new IllegalArgumentException("instrumentation and className must not be null");
+		}
+		Class<?>[] classes = instrumentation.getAllLoadedClasses();
+		if (classes != null) {
+			for (Class<?> klass : classes) {
+//            System.out.println("[K2-JA] loaded classes : " + klass.getName());
+				if (className.equals(klass.getName())) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
 
 }

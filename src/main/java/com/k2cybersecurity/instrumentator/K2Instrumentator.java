@@ -127,9 +127,6 @@ public class K2Instrumentator {
             }).start();
             boolean isWorking = eventWritePool();
 
-            // Place Classloader adjustments
-            ClassloaderAdjustments.jbossSpecificAdjustments();
-
             PolicyPullST.getInstance();
 
             System.out.println(String.format("This application instance is now being protected by K2 Agent under id %s", APPLICATION_UUID));
