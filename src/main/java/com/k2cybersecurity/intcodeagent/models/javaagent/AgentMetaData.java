@@ -46,40 +46,40 @@ public class AgentMetaData {
         this.apiBlocked = agentMetaData.apiBlocked;
     }
 
-	@Override
-	public String toString() {
-		return JsonConverter.toJSON(this);
-	}
+    @Override
+    public String toString() {
+        return JsonConverter.toJSON(this);
+    }
 
-	public boolean isTriggerViaRCI() {
-		return triggerViaRCI;
-	}
+    public boolean isTriggerViaRCI() {
+        return triggerViaRCI;
+    }
 
-	public void setTriggerViaRCI(boolean triggerViaRCI) {
-		this.triggerViaRCI = triggerViaRCI;
-	}
+    public void setTriggerViaRCI(boolean triggerViaRCI) {
+        this.triggerViaRCI = triggerViaRCI;
+    }
 
-	public boolean isTriggerViaDeserialisation() {
-		return triggerViaDeserialisation;
-	}
+    public boolean isTriggerViaDeserialisation() {
+        return triggerViaDeserialisation;
+    }
 
-	public void setTriggerViaDeserialisation(boolean triggerViaDeserialisation) {
-		this.triggerViaDeserialisation = triggerViaDeserialisation;
-	}
+    public void setTriggerViaDeserialisation(boolean triggerViaDeserialisation) {
+        this.triggerViaDeserialisation = triggerViaDeserialisation;
+    }
 
-	public boolean isTriggerViaXXE() {
-		return triggerViaXXE;
-	}
+    public boolean isTriggerViaXXE() {
+        return triggerViaXXE;
+    }
 
-	public void setTriggerViaXXE(boolean triggerViaXXE) {
-		this.triggerViaXXE = triggerViaXXE;
-	}
+    public void setTriggerViaXXE(boolean triggerViaXXE) {
+        this.triggerViaXXE = triggerViaXXE;
+    }
 
-	public JSONArray getRciMethodsCalls() {
-		return rciMethodsCalls;
-	}
+    public JSONArray getRciMethodsCalls() {
+        return rciMethodsCalls;
+    }
 
-	public void setRciMethodsCalls(JSONArray rciMethodsCalls) {
+    public void setRciMethodsCalls(JSONArray rciMethodsCalls) {
         this.rciMethodsCalls = rciMethodsCalls;
     }
 

@@ -1,7 +1,5 @@
 package com.k2cybersecurity.intcodeagent.models.javaagent;
 
-import java.time.Instant;
-
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
@@ -11,44 +9,44 @@ import com.k2cybersecurity.intcodeagent.websocket.JsonConverter;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class CollectorInitMsg {
 
-	private Long timestamp;
-	
-	private AgentInfo agentInfo;
+    private Long timestamp;
 
-	public CollectorInitMsg() {
-	}
+    private AgentInfo agentInfo;
 
-	/**
-	 * @return the timestamp
-	 */
-	public Long getTimestamp() {
-		return timestamp;
-	}
+    public CollectorInitMsg() {
+    }
 
-	/**
-	 * @param timestamp the timestamp to set
-	 */
-	public void setTimestamp(Long timestamp) {
-		this.timestamp = timestamp;
-	}
+    /**
+     * @return the timestamp
+     */
+    public Long getTimestamp() {
+        return timestamp;
+    }
 
-	/**
-	 * @return the agentInfo
-	 */
-	public AgentInfo getAgentInfo() {
-		return agentInfo;
-	}
+    /**
+     * @param timestamp the timestamp to set
+     */
+    public void setTimestamp(Long timestamp) {
+        this.timestamp = timestamp;
+    }
 
-	/**
-	 * @param agentInfo the agentInfo to set
-	 */
-	public void setAgentInfo(AgentInfo agentInfo) {
-		this.agentInfo = agentInfo;
-	}
-	
-	@Override
+    /**
+     * @return the agentInfo
+     */
+    public AgentInfo getAgentInfo() {
+        return agentInfo;
+    }
+
+    /**
+     * @param agentInfo the agentInfo to set
+     */
+    public void setAgentInfo(AgentInfo agentInfo) {
+        this.agentInfo = agentInfo;
+    }
+
+    @Override
     public String toString() {
         return JsonConverter.toJSON(this);
-	}
-	
+    }
+
 }

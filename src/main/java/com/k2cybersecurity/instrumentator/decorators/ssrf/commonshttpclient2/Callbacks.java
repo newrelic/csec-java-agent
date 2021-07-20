@@ -46,14 +46,14 @@ public class Callbacks {
                             Instant.now().toEpochMilli(), methodName), VulnerabilityCaseType.HTTP_REQUEST);
 
                 }
-			} finally {
-				ThreadLocalOperationLock.getInstance().release();
-			}
-		}
-	}
+            } finally {
+                ThreadLocalOperationLock.getInstance().release();
+            }
+        }
+    }
 
-	public static void doOnExit(String sourceString, String className, String methodName, Object obj, Object[] args,
-			Object returnVal, String exectionId) {
+    public static void doOnExit(String sourceString, String className, String methodName, Object obj, Object[] args,
+                                Object returnVal, String exectionId) {
         if (!ThreadLocalHttpMap.getInstance().isEmpty() && !ThreadLocalOperationLock.getInstance().isAcquired()
                 && ThreadLocalSSRFLock.getInstance().isAcquired(obj, sourceString, exectionId)
         ) {
@@ -69,11 +69,11 @@ public class Callbacks {
                 ThreadLocalSSRFLock.getInstance().release(obj, sourceString, exectionId);
 
             }
-		}
-	}
+        }
+    }
 
-	public static void doOnError(String sourceString, String className, String methodName, Object obj, Object[] args,
-			Throwable error, String exectionId) throws Throwable {
+    public static void doOnError(String sourceString, String className, String methodName, Object obj, Object[] args,
+                                 Throwable error, String exectionId) throws Throwable {
         if (!ThreadLocalHttpMap.getInstance().isEmpty() && !ThreadLocalOperationLock.getInstance().isAcquired()
                 && ThreadLocalSSRFLock.getInstance().isAcquired(obj, sourceString, exectionId)
         ) {

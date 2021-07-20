@@ -16,15 +16,12 @@ import com.k2cybersecurity.intcodeagent.models.javaagent.*;
 import com.squareup.okhttp.Response;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.io.filefilter.FileFilterUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.net.ftp.FTPClient;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -39,9 +36,9 @@ public class CVEComponentsService {
     public static final String COLON_SEPERATOR = " : ";
     public static final String CONTENT_DISPOSITION = "Content-Disposition";
 
-	private static final String JAR_EXTENSION = ".jar";
+    private static final String JAR_EXTENSION = ".jar";
 
-	private static final String JAR_EXT = "jar";
+    private static final String JAR_EXT = "jar";
 
     private static final String YML_TEMPLATE = "# path to dependency check tool.\r\n" +
             "dependencycheck.command: %s\r\n" +
@@ -61,70 +58,70 @@ public class CVEComponentsService {
             "k2agent.scanPath: %s\r\n" +
             "k2agent.isEnv: %s\r\n" +
             "k2agent.outputDir: %s";
-	
-	private static Set<CVEComponent> envCveComponents = new HashSet<>();
+
+    private static Set<CVEComponent> envCveComponents = new HashSet<>();
 
     private static final Pattern fileNamePattern = Pattern.compile("filename=['\"]?([^'\"\\s]+)['\"]?");
-	
-	static {
-		envCveComponents = getCVEComponents(getLibPaths());
-	}
+
+    static {
+        envCveComponents = getCVEComponents(getLibPaths());
+    }
 
     private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
 
     private static OSVariables osVariables = OsVariablesInstance.getInstance().getOsVariables();
 
-	public static ScanComponentData getAllComponents(DeployedApplication deployedApplication) {
-		Set<String> appJarPaths = getAllJarsFromApp(deployedApplication.getDeployedPath());
-		ScanComponentData scanComponentData = new ScanComponentData(K2Instrumentator.APPLICATION_UUID);
-		ApplicationScanComponentData applicationScanComponentData = new ApplicationScanComponentData(
-				deployedApplication.getAppName(), deployedApplication.getSha256());
-		applicationScanComponentData.setComponents(getCVEComponents(appJarPaths));
-		envCveComponents.removeAll(applicationScanComponentData.getComponents());
-		scanComponentData.setEnvComponents(envCveComponents);
-		scanComponentData.setDeployedApplications(Collections.singleton(applicationScanComponentData));
-		return scanComponentData;
-	}
+    public static ScanComponentData getAllComponents(DeployedApplication deployedApplication) {
+        Set<String> appJarPaths = getAllJarsFromApp(deployedApplication.getDeployedPath());
+        ScanComponentData scanComponentData = new ScanComponentData(K2Instrumentator.APPLICATION_UUID);
+        ApplicationScanComponentData applicationScanComponentData = new ApplicationScanComponentData(
+                deployedApplication.getAppName(), deployedApplication.getSha256());
+        applicationScanComponentData.setComponents(getCVEComponents(appJarPaths));
+        envCveComponents.removeAll(applicationScanComponentData.getComponents());
+        scanComponentData.setEnvComponents(envCveComponents);
+        scanComponentData.setDeployedApplications(Collections.singleton(applicationScanComponentData));
+        return scanComponentData;
+    }
 
-	private static Set<CVEComponent> getCVEComponents(Set<String> libPaths) {
-		Set<CVEComponent> cveComponents = new HashSet();
+    private static Set<CVEComponent> getCVEComponents(Set<String> libPaths) {
+        Set<CVEComponent> cveComponents = new HashSet();
 
-		for (String path : libPaths) {
-			File file = new File(path);
-			if (file.length() != 0) {
-				cveComponents.add(new CVEComponent(file.getName(), HashGenerator.getChecksum(file)));
-			}
-		}
+        for (String path : libPaths) {
+            File file = new File(path);
+            if (file.length() != 0) {
+                cveComponents.add(new CVEComponent(file.getName(), HashGenerator.getChecksum(file)));
+            }
+        }
 
-		return cveComponents;
-	}
+        return cveComponents;
+    }
 
-	private static Set<String> getAllJarsFromApp(String deployedPath) {
-		Set<String> jars = new HashSet<>();
-		File app = new File(deployedPath);
-		if (app.isFile()) {
-			jars.add(deployedPath);
-		} else if (app.isDirectory()) {
-			FileUtils.listFiles(app, new String[] { JAR_EXT }, true)
-					.forEach(jarFile -> jars.add(jarFile.getAbsolutePath()));
-		}
-		return jars;
-	}
+    private static Set<String> getAllJarsFromApp(String deployedPath) {
+        Set<String> jars = new HashSet<>();
+        File app = new File(deployedPath);
+        if (app.isFile()) {
+            jars.add(deployedPath);
+        } else if (app.isDirectory()) {
+            FileUtils.listFiles(app, new String[]{JAR_EXT}, true)
+                    .forEach(jarFile -> jars.add(jarFile.getAbsolutePath()));
+        }
+        return jars;
+    }
 
-	public static Set<String> getLibPaths() {
-		Set<String> libPaths = new HashSet<>();
-		if (!K2Instrumentator.APPLICATION_INFO_BEAN.getLibraryPath().isEmpty()) {
-			for (String path : K2Instrumentator.APPLICATION_INFO_BEAN.getLibraryPath()) {
-				if (StringUtils.endsWith(path, JAR_EXTENSION) && !StringUtils.endsWithIgnoreCase(path, "K2-JavaAgent-1.0.0-jar-with-dependencies.jar")) {
-					libPaths.add(path);
-				} else if (new File(path).isDirectory()) {
-					FileUtils.listFiles(new File(path), new String[]{JAR_EXT}, true)
-							.forEach(jarFile -> libPaths.add(jarFile.getAbsolutePath()));
-				}
-			}
-		}
-		return libPaths;
-	}
+    public static Set<String> getLibPaths() {
+        Set<String> libPaths = new HashSet<>();
+        if (!K2Instrumentator.APPLICATION_INFO_BEAN.getLibraryPath().isEmpty()) {
+            for (String path : K2Instrumentator.APPLICATION_INFO_BEAN.getLibraryPath()) {
+                if (StringUtils.endsWith(path, JAR_EXTENSION) && !StringUtils.endsWithIgnoreCase(path, "K2-JavaAgent-1.0.0-jar-with-dependencies.jar")) {
+                    libPaths.add(path);
+                } else if (new File(path).isDirectory()) {
+                    FileUtils.listFiles(new File(path), new String[]{JAR_EXT}, true)
+                            .forEach(jarFile -> libPaths.add(jarFile.getAbsolutePath()));
+                }
+            }
+        }
+        return libPaths;
+    }
 
     protected static List<CVEScanner> getLibScanDirs(String cvePackageDir) {
         List<CVEScanner> scanners = new ArrayList<>();

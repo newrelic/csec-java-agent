@@ -35,13 +35,13 @@ public class Callbacks {
                 ThreadLocalOperationLock.getInstance().acquire();
 
                 switch (methodName) {
-                case READ:
-                        if(args != null && args.length == 1 && args[0] instanceof char[] && (int)returnVal != -1){
-                            ThreadLocalHttpMap.getInstance().insertToRequestByteBuffer(String.valueOf((char[]) args[0], 0, (int)returnVal).getBytes());
-                        } else if(args != null && args.length == 1 && args[0] instanceof CharBuffer && (int)returnVal != -1){
-                            ThreadLocalHttpMap.getInstance().insertToRequestByteBuffer(String.valueOf(((CharBuffer) args[0]).array(), 0, (int)returnVal).getBytes());
-                        }else if (args != null && args.length == 3 && args[0] instanceof char[] && (int)returnVal != -1) {
-                            ThreadLocalHttpMap.getInstance().insertToRequestByteBuffer(String.valueOf((char[]) args[0], (int) args[1], (int)returnVal).getBytes());
+                    case READ:
+                        if (args != null && args.length == 1 && args[0] instanceof char[] && (int) returnVal != -1) {
+                            ThreadLocalHttpMap.getInstance().insertToRequestByteBuffer(String.valueOf((char[]) args[0], 0, (int) returnVal).getBytes());
+                        } else if (args != null && args.length == 1 && args[0] instanceof CharBuffer && (int) returnVal != -1) {
+                            ThreadLocalHttpMap.getInstance().insertToRequestByteBuffer(String.valueOf(((CharBuffer) args[0]).array(), 0, (int) returnVal).getBytes());
+                        } else if (args != null && args.length == 3 && args[0] instanceof char[] && (int) returnVal != -1) {
+                            ThreadLocalHttpMap.getInstance().insertToRequestByteBuffer(String.valueOf((char[]) args[0], (int) args[1], (int) returnVal).getBytes());
                         } else if (returnVal instanceof Integer) {
                             int readByte = (int) returnVal;
                             if (readByte != -1) {
@@ -50,7 +50,7 @@ public class Callbacks {
                         }
                         //                        System.out.println("Inserting to request via reader : " + args[0] + " :: " + obj.hashCode());
                         break;
-                case READ_LINE:
+                    case READ_LINE:
                         if (returnVal != null) {
                             ThreadLocalHttpMap.getInstance().insertToRequestByteBuffer(((String) returnVal).getBytes());
                         }

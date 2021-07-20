@@ -18,51 +18,51 @@ import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.SOURCE_EX
 
 public class Callbacks {
 
-	public static void doOnEnter(String sourceString, String className, String methodName, Object obj, Object[] args,
-			String exectionId) throws K2CyberSecurityException {
+    public static void doOnEnter(String sourceString, String className, String methodName, Object obj, Object[] args,
+                                 String exectionId) throws K2CyberSecurityException {
 //		System.out.println("OnEnter :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj
 //				+ " - eid : " + exectionId);
-		if (!ThreadLocalHttpMap.getInstance().isEmpty() && !ThreadLocalOperationLock.getInstance().isAcquired()) {
-			try {
-				ThreadLocalOperationLock.getInstance().acquire();
-				if (obj instanceof File) {
-					String fileName = StringUtils.EMPTY;
-					fileName = ((File) obj).toString();
+        if (!ThreadLocalHttpMap.getInstance().isEmpty() && !ThreadLocalOperationLock.getInstance().isAcquired()) {
+            try {
+                ThreadLocalOperationLock.getInstance().acquire();
+                if (obj instanceof File) {
+                    String fileName = StringUtils.EMPTY;
+                    fileName = ((File) obj).toString();
 
-					FileOperationalBean fileOperationalBean = new FileOperationalBean(fileName,
-							className, sourceString, exectionId, Instant.now().toEpochMilli(), false, methodName);
-					EventDispatcher.dispatch(fileOperationalBean, VulnerabilityCaseType.FILE_OPERATION);
-				}
-			} finally {
-				ThreadLocalOperationLock.getInstance().release();
-			}
-		}
+                    FileOperationalBean fileOperationalBean = new FileOperationalBean(fileName,
+                            className, sourceString, exectionId, Instant.now().toEpochMilli(), false, methodName);
+                    EventDispatcher.dispatch(fileOperationalBean, VulnerabilityCaseType.FILE_OPERATION);
+                }
+            } finally {
+                ThreadLocalOperationLock.getInstance().release();
+            }
+        }
 
-	}
+    }
 
-	private static String getFileExtension(File file) {
-		String fileName = file.getName();
-		if (fileName.lastIndexOf(".") != -1 && fileName.lastIndexOf(".") != 0)
-			return fileName.substring(fileName.lastIndexOf(".") + 1);
-		else
-			return StringUtils.EMPTY;
-	}
+    private static String getFileExtension(File file) {
+        String fileName = file.getName();
+        if (fileName.lastIndexOf(".") != -1 && fileName.lastIndexOf(".") != 0)
+            return fileName.substring(fileName.lastIndexOf(".") + 1);
+        else
+            return StringUtils.EMPTY;
+    }
 
-	private static FileIntegrityBean createEntryOfFileIntegrity(String fileName, String sourceString, String className,
-			String methodName, String exectionId) {
-		File file = Paths.get(fileName).toFile();
-		String extension = getFileExtension(file);
-		if (SOURCE_EXENSIONS.contains(extension)) {
-			FileIntegrityBean fbean = new FileIntegrityBean(file.exists(), fileName, className, sourceString,
-					exectionId, Instant.now().toEpochMilli(), methodName);
-			ThreadLocalExecutionMap.getInstance().getFileLocalMap().put(fileName, fbean);
-			return fbean;
-		}
-		return null;
-	}
+    private static FileIntegrityBean createEntryOfFileIntegrity(String fileName, String sourceString, String className,
+                                                                String methodName, String exectionId) {
+        File file = Paths.get(fileName).toFile();
+        String extension = getFileExtension(file);
+        if (SOURCE_EXENSIONS.contains(extension)) {
+            FileIntegrityBean fbean = new FileIntegrityBean(file.exists(), fileName, className, sourceString,
+                    exectionId, Instant.now().toEpochMilli(), methodName);
+            ThreadLocalExecutionMap.getInstance().getFileLocalMap().put(fileName, fbean);
+            return fbean;
+        }
+        return null;
+    }
 
-	public static void doOnExit(String sourceString, String className, String methodName, Object obj, Object[] args,
-			Object returnVal, String exectionId) {
+    public static void doOnExit(String sourceString, String className, String methodName, Object obj, Object[] args,
+                                Object returnVal, String exectionId) {
 //		if (!ThreadLocalOperationLock.getInstance().isAcquired()) {
 //			try {
 //				ThreadLocalOperationLock.getInstance().acquire();
@@ -73,10 +73,10 @@ public class Callbacks {
 //				ThreadLocalOperationLock.getInstance().release();
 //			}
 //		}
-	}
+    }
 
-	public static void doOnError(String sourceString, String className, String methodName, Object obj, Object[] args,
-			Throwable error, String exectionId) throws Throwable {
+    public static void doOnError(String sourceString, String className, String methodName, Object obj, Object[] args,
+                                 Throwable error, String exectionId) throws Throwable {
 
 //		if (!ThreadLocalHttpMap.getInstance().isEmpty() && !ThreadLocalOperationLock.getInstance().isAcquired()) {
 //			try {
@@ -88,5 +88,5 @@ public class Callbacks {
 //			}
 //		}
 
-	}
+    }
 }

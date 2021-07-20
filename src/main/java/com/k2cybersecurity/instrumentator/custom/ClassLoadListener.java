@@ -12,82 +12,82 @@ import org.apache.commons.lang3.tuple.Pair;
 
 public class ClassLoadListener implements AgentBuilder.Listener {
 
-	private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
-	public static final String TRANSFORMATION_ERROR_CLASS_S_ERROR = "Transformation error : class : %s :: error";
-	public static final String TRANSFORMED_CLASS_S = "Transformed : class : %s";
-	public static final String IGNORED_CLASS_S = "Ignored : class : %s";
-	public static final String COMPLETED_CLASS_S = "Completed : class : %s";
-	public static final String DISCOVERED_CLASS_S = "Discovered : class : %s";
-	public static final String JAVA_LANG_ARRAY_STORE_EXCEPTION = "java.lang.ArrayStoreException:";
+    private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
+    public static final String TRANSFORMATION_ERROR_CLASS_S_ERROR = "Transformation error : class : %s :: error";
+    public static final String TRANSFORMED_CLASS_S = "Transformed : class : %s";
+    public static final String IGNORED_CLASS_S = "Ignored : class : %s";
+    public static final String COMPLETED_CLASS_S = "Completed : class : %s";
+    public static final String DISCOVERED_CLASS_S = "Discovered : class : %s";
+    public static final String JAVA_LANG_ARRAY_STORE_EXCEPTION = "java.lang.ArrayStoreException:";
 
-	@Override
-	public void onError(
-			final String typeName,
-			final ClassLoader classLoader,
-			final JavaModule module,
-			final boolean loaded,
-			final Throwable throwable) {
+    @Override
+    public void onError(
+            final String typeName,
+            final ClassLoader classLoader,
+            final JavaModule module,
+            final boolean loaded,
+            final Throwable throwable) {
 //		System.out.println(String.format("Transformation error : class : %s :: error %s", typeName,
 //				Arrays.asList(throwable.getStackTrace())));
-		if (!StringUtils.contains(throwable.toString(), JAVA_LANG_ARRAY_STORE_EXCEPTION)) {
-			logger.log(LogLevel.ERROR, String.format(TRANSFORMATION_ERROR_CLASS_S_ERROR, typeName), throwable, ClassLoadListener.class.getName());
-		}
+        if (!StringUtils.contains(throwable.toString(), JAVA_LANG_ARRAY_STORE_EXCEPTION)) {
+            logger.log(LogLevel.ERROR, String.format(TRANSFORMATION_ERROR_CLASS_S_ERROR, typeName), throwable, ClassLoadListener.class.getName());
+        }
 
-	}
+    }
 
-	@Override
-	public void onTransformation(
-			final TypeDescription typeDescription,
-			final ClassLoader classLoader,
-			final JavaModule module,
-			final boolean loaded,
-			final DynamicType dynamicType) {
-		AgentUtils.getInstance().getTransformedClasses().add(Pair.of(typeDescription.getName(), classLoader));
-		AgentUtils.getInstance().createProtectedVulnerabilties(typeDescription, classLoader);
+    @Override
+    public void onTransformation(
+            final TypeDescription typeDescription,
+            final ClassLoader classLoader,
+            final JavaModule module,
+            final boolean loaded,
+            final DynamicType dynamicType) {
+        AgentUtils.getInstance().getTransformedClasses().add(Pair.of(typeDescription.getName(), classLoader));
+        AgentUtils.getInstance().createProtectedVulnerabilties(typeDescription, classLoader);
 //		System.out.println("Transformed class : " + typeDescription.getName());
-		logger.log(LogLevel.INFO, String.format(TRANSFORMED_CLASS_S, typeDescription.getName()), ClassLoadListener.class.getName());
-	}
+        logger.log(LogLevel.INFO, String.format(TRANSFORMED_CLASS_S, typeDescription.getName()), ClassLoadListener.class.getName());
+    }
 
-	@Override
-	public void onIgnored(
-			final TypeDescription typeDescription,
-			final ClassLoader classLoader,
-			final JavaModule module,
-			final boolean loaded) {
+    @Override
+    public void onIgnored(
+            final TypeDescription typeDescription,
+            final ClassLoader classLoader,
+            final JavaModule module,
+            final boolean loaded) {
 //		logger.log(LogLevel.DEBUG, String.format(IGNORED_CLASS_S, typeDescription.getName()), ClassLoadListener.class.getName());
 
-		//      log.debug("onIgnored {}", typeDescription.getName());
-	}
+        //      log.debug("onIgnored {}", typeDescription.getName());
+    }
 
-	@Override
-	public void onComplete(
-			final String typeName,
-			final ClassLoader classLoader,
-			final JavaModule module,
-			final boolean loaded) {
-		//      log.debug("onComplete {}", typeName);
-		try {
-			ThreadLocalTransformationLock.getInstance().release(typeName);
+    @Override
+    public void onComplete(
+            final String typeName,
+            final ClassLoader classLoader,
+            final JavaModule module,
+            final boolean loaded) {
+        //      log.debug("onComplete {}", typeName);
+        try {
+            ThreadLocalTransformationLock.getInstance().release(typeName);
 
-			AgentUtils.getInstance().putClassloaderRecord(typeName, classLoader);
+            AgentUtils.getInstance().putClassloaderRecord(typeName, classLoader);
 //			logger.log(LogLevel.DEBUG, String.format(COMPLETED_CLASS_S, typeName), ClassLoadListener.class.getName());
-		} catch (Throwable e){
+        } catch (Throwable e) {
 //			System.out.println("Error while registering classloader : " + typeName + " : " + classLoader + " : " + e.getMessage() + " : " + e.getCause());
-		}
-		AgentUtils.getInstance().addProtectedVulnerabilties(typeName);
-	}
+        }
+        AgentUtils.getInstance().addProtectedVulnerabilties(typeName);
+    }
 
-	@Override
-	public void onDiscovery(
-			final String typeName,
-			final ClassLoader classLoader,
-			final JavaModule module,
-			final boolean loaded) {
-		ThreadLocalTransformationLock.getInstance().acquire(typeName);
+    @Override
+    public void onDiscovery(
+            final String typeName,
+            final ClassLoader classLoader,
+            final JavaModule module,
+            final boolean loaded) {
+        ThreadLocalTransformationLock.getInstance().acquire(typeName);
 //		logger.log(LogLevel.DEBUG, String.format(DISCOVERED_CLASS_S, typeName), ClassLoadListener.class.getName());
 
-		//      log.debug("onDiscovery {}", typeName);
+        //      log.debug("onDiscovery {}", typeName);
 //		System.out.println("Discovered class : " + typeName);
 
-	}
+    }
 }

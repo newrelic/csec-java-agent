@@ -1,7 +1,6 @@
 package com.k2cybersecurity.instrumentator.os;
 
 import com.k2cybersecurity.intcodeagent.logging.IAgentConstants;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
 
 public class OsVariablesInstance {

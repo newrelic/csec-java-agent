@@ -6,7 +6,6 @@ import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.models.javaagent.PolicyFetch;
 import com.k2cybersecurity.intcodeagent.websocket.EventSendPool;
-import com.k2cybersecurity.intcodeagent.websocket.WSClient;
 
 import java.util.concurrent.*;
 

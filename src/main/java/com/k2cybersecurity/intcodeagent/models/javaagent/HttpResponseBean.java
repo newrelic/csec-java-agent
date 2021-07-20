@@ -66,15 +66,15 @@ public class HttpResponseBean {
     }
 
     public void setResponseContentType(String responseContentType) {
-        if(StringUtils.isNotBlank(responseContentType)) {
+        if (StringUtils.isNotBlank(responseContentType)) {
             this.responseContentType = StringUtils.substringBefore(responseContentType, ";").trim().toLowerCase();
         } else {
             this.responseContentType = StringUtils.EMPTY;
         }
     }
 
-    public boolean isEmpty(){
-        return StringUtils.isAllBlank(responseBody, headers.toString(),responseCharacterEncoding, responseContentType);
+    public boolean isEmpty() {
+        return StringUtils.isAllBlank(responseBody, headers.toString(), responseCharacterEncoding, responseContentType);
     }
 
     public String getDecodedResponseBody() {

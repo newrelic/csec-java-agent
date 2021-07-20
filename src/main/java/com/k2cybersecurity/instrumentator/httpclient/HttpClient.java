@@ -6,7 +6,6 @@ import com.k2cybersecurity.instrumentator.os.OsVariablesInstance;
 import com.k2cybersecurity.instrumentator.utils.CollectorConfigurationUtils;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
-import com.k2cybersecurity.intcodeagent.logging.IAgentConstants;
 import com.squareup.okhttp.*;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;

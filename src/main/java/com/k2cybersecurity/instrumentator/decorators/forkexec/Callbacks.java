@@ -12,32 +12,32 @@ import java.util.Map;
 
 public class Callbacks {
 
-	public static void doOnEnter(String sourceString, String className, String methodName, Object obj, Object[] args,
-			String exectionId) throws Throwable {
+    public static void doOnEnter(String sourceString, String className, String methodName, Object obj, Object[] args,
+                                 String exectionId) throws Throwable {
 
 //		System.out.println("OnEnter :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj
 //				+ " - eid : " + exectionId);
-		if (!ThreadLocalHttpMap.getInstance().isEmpty() && !ThreadLocalOperationLock.getInstance().isAcquired()) {
-			try {
-				ThreadLocalOperationLock.getInstance().acquire();
+        if (!ThreadLocalHttpMap.getInstance().isEmpty() && !ThreadLocalOperationLock.getInstance().isAcquired()) {
+            try {
+                ThreadLocalOperationLock.getInstance().acquire();
 
-				String command = StringUtils.join((String[]) args[0], StringUtils.SPACE);
-				if (((String[]) args[0]).length != 0) {
-					if (StringUtils.isNotBlank(command)) {
-						ForkExecOperationalBean forkExecOperationalBean = new ForkExecOperationalBean(command,
-								(Map<String, String>) args[1], className, sourceString, exectionId,
-								Instant.now().toEpochMilli(), methodName);
-						EventDispatcher.dispatch(forkExecOperationalBean, VulnerabilityCaseType.SYSTEM_COMMAND);
-					}
-				}
-			} finally {
-				ThreadLocalOperationLock.getInstance().release();
-			}
-		}
-	}
+                String command = StringUtils.join((String[]) args[0], StringUtils.SPACE);
+                if (((String[]) args[0]).length != 0) {
+                    if (StringUtils.isNotBlank(command)) {
+                        ForkExecOperationalBean forkExecOperationalBean = new ForkExecOperationalBean(command,
+                                (Map<String, String>) args[1], className, sourceString, exectionId,
+                                Instant.now().toEpochMilli(), methodName);
+                        EventDispatcher.dispatch(forkExecOperationalBean, VulnerabilityCaseType.SYSTEM_COMMAND);
+                    }
+                }
+            } finally {
+                ThreadLocalOperationLock.getInstance().release();
+            }
+        }
+    }
 
-	public static void doOnExit(String sourceString, String className, String methodName, Object obj, Object[] args,
-			Object returnVal, String exectionId) {
+    public static void doOnExit(String sourceString, String className, String methodName, Object obj, Object[] args,
+                                Object returnVal, String exectionId) {
 //		if (!ThreadLocalHttpMap.getInstance().isEmpty() && !ThreadLocalOperationLock.getInstance().isAcquired()) {
 //			try {
 //				ThreadLocalOperationLock.getInstance().acquire();
@@ -47,10 +47,10 @@ public class Callbacks {
 //				ThreadLocalOperationLock.getInstance().release();
 //			}
 //		}
-	}
+    }
 
-	public static void doOnError(String sourceString, String className, String methodName, Object obj, Object[] args,
-			Throwable error, String exectionId) throws Throwable {
+    public static void doOnError(String sourceString, String className, String methodName, Object obj, Object[] args,
+                                 Throwable error, String exectionId) throws Throwable {
 
 //		if (!ThreadLocalHttpMap.getInstance().isEmpty() && !ThreadLocalOperationLock.getInstance().isAcquired()) {
 //			try {
@@ -62,5 +62,5 @@ public class Callbacks {
 //			}
 //		}
 
-	}
+    }
 }

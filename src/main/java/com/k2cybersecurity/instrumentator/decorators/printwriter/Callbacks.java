@@ -29,7 +29,7 @@ public class Callbacks {
 //                "OnEnter initial :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj
 //                        + " - eid : " + exectionId);
         if (!ThreadLocalHttpMap.getInstance().isEmpty()) {
-            if (ThreadLocalHttpMap.getInstance().getResponseWriter() != null && obj != null  && ThreadLocalHttpMap.getInstance().getResponseWriter().hashCode() == obj.hashCode()
+            if (ThreadLocalHttpMap.getInstance().getResponseWriter() != null && obj != null && ThreadLocalHttpMap.getInstance().getResponseWriter().hashCode() == obj.hashCode()
                     && !ThreadLocalOperationLock
                     .getInstance().isAcquired() && !ThreadLocalHTTPIOLock.getInstance().isAcquired()) {
                 try {
@@ -69,7 +69,7 @@ public class Callbacks {
                                                 .insertToResponseBufferString((String) args[0], (int) args[1], (int) args[2]);
                                         break;
 
-                                    case CHAR_ARRAY :
+                                    case CHAR_ARRAY:
                                     case LJAVA_LANG_CHARACTER:
                                         ThreadLocalHttpMap.getInstance()
                                                 .insertToResponseBufferString((char[]) args[0], (int) args[1], (int) args[2]);

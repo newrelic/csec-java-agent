@@ -7,15 +7,15 @@ import org.json.simple.JSONArray;
 import java.util.List;
 
 public class JavaAgentEventBean extends AgentBasicInfo {
-	private Integer pid;
-	private String applicationUUID;
-	private Long startTime;
-	private String sourceMethod;
-	private String userFileName;
-	private String userMethodName;
-	private String currentMethod;
-	private Boolean validationBypass;
-	private Integer lineNumber;
+    private Integer pid;
+    private String applicationUUID;
+    private Long startTime;
+    private String sourceMethod;
+    private String userFileName;
+    private String userMethodName;
+    private String currentMethod;
+    private Boolean validationBypass;
+    private Integer lineNumber;
     private JSONArray parameters;
     private Long eventGenerationTime;
     private HttpRequestBean httpRequest;
@@ -41,74 +41,74 @@ public class JavaAgentEventBean extends AgentBasicInfo {
         this.id = id;
         this.setPid(pid);
         this.applicationUUID = applicationUUID;
-		this.sourceMethod = sourceMethod;
-		this.startTime = startTime;
-		this.setCaseType(vulnerabilityCaseType.getCaseType());
-		this.setPreProcessingTime(preProcessingTime);
-		this.metaData = new AgentMetaData();
-	}
+        this.sourceMethod = sourceMethod;
+        this.startTime = startTime;
+        this.setCaseType(vulnerabilityCaseType.getCaseType());
+        this.setPreProcessingTime(preProcessingTime);
+        this.metaData = new AgentMetaData();
+    }
 
-	public void setUserAPIInfo(Integer lineNumber, String userClassName, String userMethodName) {
-		this.userMethodName = userMethodName;
-		this.userFileName = userClassName;
-		this.lineNumber = lineNumber;
-	}
+    public void setUserAPIInfo(Integer lineNumber, String userClassName, String userMethodName) {
+        this.userMethodName = userMethodName;
+        this.userFileName = userClassName;
+        this.lineNumber = lineNumber;
+    }
 
-	public Long getStartTime() {
-		return startTime;
-	}
+    public Long getStartTime() {
+        return startTime;
+    }
 
-	public void setStartTime(Long startTime) {
-		this.startTime = startTime;
-	}
+    public void setStartTime(Long startTime) {
+        this.startTime = startTime;
+    }
 
-	public String getSourceMethod() {
-		return sourceMethod;
-	}
+    public String getSourceMethod() {
+        return sourceMethod;
+    }
 
-	public void setSourceMethod(String sourceMethod) {
-		this.sourceMethod = sourceMethod;
-	}
+    public void setSourceMethod(String sourceMethod) {
+        this.sourceMethod = sourceMethod;
+    }
 
-	public String getUserFileName() {
-		return userFileName;
-	}
+    public String getUserFileName() {
+        return userFileName;
+    }
 
-	public void setUserFileName(String userClassName) {
-		this.userFileName = userClassName;
-	}
+    public void setUserFileName(String userClassName) {
+        this.userFileName = userClassName;
+    }
 
-	public String getUserMethodName() {
-		return userMethodName;
-	}
+    public String getUserMethodName() {
+        return userMethodName;
+    }
 
-	public void setUserMethodName(String userMethodName) {
-		this.userMethodName = userMethodName;
-	}
+    public void setUserMethodName(String userMethodName) {
+        this.userMethodName = userMethodName;
+    }
 
-	public Integer getLineNumber() {
-		return lineNumber;
-	}
+    public Integer getLineNumber() {
+        return lineNumber;
+    }
 
-	public void setLineNumber(Integer lineNumber) {
-		this.lineNumber = lineNumber;
-	}
+    public void setLineNumber(Integer lineNumber) {
+        this.lineNumber = lineNumber;
+    }
 
-	public JSONArray getParameters() {
-		return parameters;
-	}
+    public JSONArray getParameters() {
+        return parameters;
+    }
 
-	public void setParameters(JSONArray parameters) {
-		this.parameters = parameters;
-	}
+    public void setParameters(JSONArray parameters) {
+        this.parameters = parameters;
+    }
 
-	public Boolean getValidationBypass() {
-		return validationBypass;
-	}
+    public Boolean getValidationBypass() {
+        return validationBypass;
+    }
 
-	public void setValidationBypass(Boolean validationBypass) {
-		this.validationBypass = validationBypass;
-	}
+    public void setValidationBypass(Boolean validationBypass) {
+        this.validationBypass = validationBypass;
+    }
 
     public boolean getIsIASTenable() {
         return isIASTenable;
@@ -119,150 +119,150 @@ public class JavaAgentEventBean extends AgentBasicInfo {
     }
 
     @Override
-	public String toString() {
-		return JsonConverter.toJSON(this);
-	}
+    public String toString() {
+        return JsonConverter.toJSON(this);
+    }
 
-	/**
-	 * @return the pid
-	 */
-	public Integer getPid() {
-		return pid;
-	}
+    /**
+     * @return the pid
+     */
+    public Integer getPid() {
+        return pid;
+    }
 
-	/**
-	 * @param pid the pid to set
-	 */
-	public void setPid(Integer pid) {
-		this.pid = pid;
-	}
+    /**
+     * @param pid the pid to set
+     */
+    public void setPid(Integer pid) {
+        this.pid = pid;
+    }
 
-	/**
-	 * @return the currentMethod
-	 */
-	public String getCurrentMethod() {
-		return currentMethod;
-	}
+    /**
+     * @return the currentMethod
+     */
+    public String getCurrentMethod() {
+        return currentMethod;
+    }
 
-	/**
-	 * @param currentMethod the currentMethod to set
-	 */
-	public void setCurrentMethod(String currentMethod) {
-		this.currentMethod = currentMethod;
-	}
+    /**
+     * @param currentMethod the currentMethod to set
+     */
+    public void setCurrentMethod(String currentMethod) {
+        this.currentMethod = currentMethod;
+    }
 
-	/**
-	 * @return the eventGenerationTime
-	 */
-	public Long getEventGenerationTime() {
-		return eventGenerationTime;
-	}
+    /**
+     * @return the eventGenerationTime
+     */
+    public Long getEventGenerationTime() {
+        return eventGenerationTime;
+    }
 
-	/**
-	 * @param eventGenerationTime the eventGenerationTime to set
-	 */
-	public void setEventGenerationTime(Long eventGenerationTime) {
-		this.eventGenerationTime = eventGenerationTime;
-	}
+    /**
+     * @param eventGenerationTime the eventGenerationTime to set
+     */
+    public void setEventGenerationTime(Long eventGenerationTime) {
+        this.eventGenerationTime = eventGenerationTime;
+    }
 
-	/**
-	 * @return the applicationUUID
-	 */
-	public String getApplicationUUID() {
-		return applicationUUID;
-	}
+    /**
+     * @return the applicationUUID
+     */
+    public String getApplicationUUID() {
+        return applicationUUID;
+    }
 
-	/**
-	 * @param applicationUUID the applicationUUID to set
-	 */
-	public void setApplicationUUID(String applicationUUID) {
-		this.applicationUUID = applicationUUID;
-	}
+    /**
+     * @param applicationUUID the applicationUUID to set
+     */
+    public void setApplicationUUID(String applicationUUID) {
+        this.applicationUUID = applicationUUID;
+    }
 
-	/**
-	 * @return the servletInfo
-	 */
-	public HttpRequestBean getHttpRequest() {
-		return httpRequest;
-	}
+    /**
+     * @return the servletInfo
+     */
+    public HttpRequestBean getHttpRequest() {
+        return httpRequest;
+    }
 
-	/**
-	 * @param servletInfo the servletInfo to set
-	 */
-	public void setHttpRequest(HttpRequestBean servletInfo) {
-		this.httpRequest = servletInfo;
-	}
+    /**
+     * @param servletInfo the servletInfo to set
+     */
+    public void setHttpRequest(HttpRequestBean servletInfo) {
+        this.httpRequest = servletInfo;
+    }
 
-	/**
-	 * @return the id
-	 */
-	public String getId() {
-		return id;
-	}
+    /**
+     * @return the id
+     */
+    public String getId() {
+        return id;
+    }
 
-	/**
-	 * @param id the id to set
-	 */
-	public void setId(String id) {
-		this.id = id;
-	}
+    /**
+     * @param id the id to set
+     */
+    public void setId(String id) {
+        this.id = id;
+    }
 
-	/**
-	 * @return the stacktrace
-	 */
-	public List<StackTraceElement> getStacktrace() {
-		return stacktrace;
-	}
+    /**
+     * @return the stacktrace
+     */
+    public List<StackTraceElement> getStacktrace() {
+        return stacktrace;
+    }
 
-	/**
-	 * @param stacktrace the stacktrace to set
-	 */
-	public void setStacktrace(List<StackTraceElement> stacktrace) {
-		this.stacktrace = stacktrace;
-	}
+    /**
+     * @param stacktrace the stacktrace to set
+     */
+    public void setStacktrace(List<StackTraceElement> stacktrace) {
+        this.stacktrace = stacktrace;
+    }
 
-	/**
-	 * @return the caseType
-	 */
-	public String getCaseType() {
-		return caseType;
-	}
+    /**
+     * @return the caseType
+     */
+    public String getCaseType() {
+        return caseType;
+    }
 
-	/**
-	 * @param caseType the caseType to set
-	 */
-	public void setCaseType(String caseType) {
-		this.caseType = caseType;
-	}
+    /**
+     * @param caseType the caseType to set
+     */
+    public void setCaseType(String caseType) {
+        this.caseType = caseType;
+    }
 
-	/**
-	 * @return the preProcessingTime
-	 */
-	public Long getPreProcessingTime() {
-		return preProcessingTime;
-	}
+    /**
+     * @return the preProcessingTime
+     */
+    public Long getPreProcessingTime() {
+        return preProcessingTime;
+    }
 
-	/**
-	 * @param preProcessingTime the preProcessingTime to set
-	 */
-	public void setPreProcessingTime(Long preProcessingTime) {
-		this.preProcessingTime = preProcessingTime;
-	}
+    /**
+     * @param preProcessingTime the preProcessingTime to set
+     */
+    public void setPreProcessingTime(Long preProcessingTime) {
+        this.preProcessingTime = preProcessingTime;
+    }
 
-	public AgentMetaData getMetaData() {
-		return metaData;
-	}
+    public AgentMetaData getMetaData() {
+        return metaData;
+    }
 
-	public void setMetaData(AgentMetaData metaData) {
-		this.metaData = metaData;
-	}
+    public void setMetaData(AgentMetaData metaData) {
+        this.metaData = metaData;
+    }
 
-	public String getEventCategory() {
-		return eventCategory;
-	}
+    public String getEventCategory() {
+        return eventCategory;
+    }
 
-	public void setEventCategory(String eventCategory) {
-		this.eventCategory = eventCategory;
+    public void setEventCategory(String eventCategory) {
+        this.eventCategory = eventCategory;
     }
 
     public Long getBlockingProcessingTime() {

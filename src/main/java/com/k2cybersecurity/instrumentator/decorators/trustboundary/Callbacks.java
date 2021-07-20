@@ -12,29 +12,29 @@ import java.time.Instant;
 
 public class Callbacks {
 
-	public static void doOnEnter(String sourceString, String className, String methodName, Object obj, Object[] args,
-			String exectionId) throws K2CyberSecurityException {
-		if (!ThreadLocalHttpMap.getInstance().isEmpty() && !ThreadLocalOperationLock.getInstance().isAcquired()) {
-			try {
-				ThreadLocalOperationLock.getInstance().acquire();
+    public static void doOnEnter(String sourceString, String className, String methodName, Object obj, Object[] args,
+                                 String exectionId) throws K2CyberSecurityException {
+        if (!ThreadLocalHttpMap.getInstance().isEmpty() && !ThreadLocalOperationLock.getInstance().isAcquired()) {
+            try {
+                ThreadLocalOperationLock.getInstance().acquire();
 //				System.out.println("OnEnter :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj
 //						+ " - eid : " + exectionId);
-				if (args.length >= 2 && args[0] != null && ThreadLocalSessionMap.getInstance().put((String) args[0], args[1])) {
-					TrustBoundaryOperationalBean operationalBean = new TrustBoundaryOperationalBean((String) args[0],
-							args[1], className, sourceString, exectionId, Instant.now().toEpochMilli(), methodName);
-					EventDispatcher.dispatch(operationalBean, VulnerabilityCaseType.TRUSTBOUNDARY);
-				}
+                if (args.length >= 2 && args[0] != null && ThreadLocalSessionMap.getInstance().put((String) args[0], args[1])) {
+                    TrustBoundaryOperationalBean operationalBean = new TrustBoundaryOperationalBean((String) args[0],
+                            args[1], className, sourceString, exectionId, Instant.now().toEpochMilli(), methodName);
+                    EventDispatcher.dispatch(operationalBean, VulnerabilityCaseType.TRUSTBOUNDARY);
+                }
 //				EventDispatcher.dispatch(new SSRFOperationalBean(args, className, sourceString, exectionId,
 //						Instant.now().toEpochMilli()), VulnerabilityCaseType.HTTP_REQUEST);
 
-			} finally {
-				ThreadLocalOperationLock.getInstance().release();
-			}
-		}
-	}
+            } finally {
+                ThreadLocalOperationLock.getInstance().release();
+            }
+        }
+    }
 
-	public static void doOnExit(String sourceString, String className, String methodName, Object obj, Object[] args,
-			Object returnVal, String exectionId) {
+    public static void doOnExit(String sourceString, String className, String methodName, Object obj, Object[] args,
+                                Object returnVal, String exectionId) {
 //		if(!ThreadLocalHttpMap.getInstance().isEmpty() && !ThreadLocalOperationLock.getInstance().isAcquired()) {
 //			try {
 //				ThreadLocalOperationLock.getInstance().acquire();
@@ -45,10 +45,10 @@ public class Callbacks {
 //				ThreadLocalOperationLock.getInstance().release();
 //			}
 //		}
-	}
+    }
 
-	public static void doOnError(String sourceString, String className, String methodName, Object obj, Object[] args,
-			Throwable error, String exectionId) throws Throwable {
+    public static void doOnError(String sourceString, String className, String methodName, Object obj, Object[] args,
+                                 Throwable error, String exectionId) throws Throwable {
 //		if (!ThreadLocalHttpMap.getInstance().isEmpty() && !ThreadLocalOperationLock.getInstance().isAcquired()) {
 //			try {
 //				ThreadLocalOperationLock.getInstance().acquire();
@@ -58,5 +58,5 @@ public class Callbacks {
 //				ThreadLocalOperationLock.getInstance().release();
 //			}
 //		}
-	}
+    }
 }

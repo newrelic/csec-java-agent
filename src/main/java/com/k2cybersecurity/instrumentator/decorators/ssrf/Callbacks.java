@@ -14,7 +14,6 @@ import org.apache.commons.lang3.StringUtils;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.time.Instant;
-import java.util.Arrays;
 
 public class Callbacks {
 

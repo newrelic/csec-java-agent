@@ -1,79 +1,78 @@
 package com.k2cybersecurity.intcodeagent.models.javaagent;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.k2cybersecurity.intcodeagent.websocket.JsonConverter;
 
 public class FTPProperties {
 
-	private boolean enableFtp;
-	
-	private Integer port;
-	
-	private String username;
-	
-	private String password;
-	
-	public FTPProperties() {
-	}
-	
-	/**
-	 * @return the enableFtp
-	 */
-	public boolean isEnableFtp() {
-		return enableFtp;
-	}
+    private boolean enableFtp;
 
-	/**
-	 * @param enableFtp the enableFtp to set
-	 */
-	public void setEnableFtp(boolean enableFtp) {
-		this.enableFtp = enableFtp;
-	}
+    private Integer port;
 
-	/**
-	 * @return the port
-	 */
-	public Integer getPort() {
-		return port;
-	}
+    private String username;
 
-	/**
-	 * @param port the port to set
-	 */
-	public void setPort(Integer port) {
-		this.port = port;
-	}
+    private String password;
 
-	/**
-	 * @return the username
-	 */
-	public String getUsername() {
-		return username;
-	}
+    public FTPProperties() {
+    }
 
-	/**
-	 * @param username the username to set
-	 */
-	public void setUsername(String username) {
-		this.username = username;
-	}
+    /**
+     * @return the enableFtp
+     */
+    public boolean isEnableFtp() {
+        return enableFtp;
+    }
 
-	/**
-	 * @return the password
-	 */
-	public String getPassword() {
-		return password;
-	}
+    /**
+     * @param enableFtp the enableFtp to set
+     */
+    public void setEnableFtp(boolean enableFtp) {
+        this.enableFtp = enableFtp;
+    }
 
-	/**
-	 * @param password the password to set
-	 */
-	public void setPassword(String password) {
-		this.password = password;
-	}
+    /**
+     * @return the port
+     */
+    public Integer getPort() {
+        return port;
+    }
 
-	@Override
+    /**
+     * @param port the port to set
+     */
+    public void setPort(Integer port) {
+        this.port = port;
+    }
+
+    /**
+     * @return the username
+     */
+    public String getUsername() {
+        return username;
+    }
+
+    /**
+     * @param username the username to set
+     */
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    /**
+     * @return the password
+     */
+    public String getPassword() {
+        return password;
+    }
+
+    /**
+     * @param password the password to set
+     */
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    @Override
     public String toString() {
         return JsonConverter.toJSON(this);
-	}
+    }
 }

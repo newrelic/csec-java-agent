@@ -7,7 +7,6 @@ import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.models.collectorconfig.ApplicationLevelConfig;
 import com.k2cybersecurity.intcodeagent.models.collectorconfig.CollectorConfig;
 import com.k2cybersecurity.intcodeagent.models.collectorconfig.NodeLevelConfig;
-import com.k2cybersecurity.intcodeagent.models.javaagent.AgentBasicInfo;
 import com.k2cybersecurity.intcodeagent.models.javaagent.IdentifierEnvs;
 import org.apache.commons.lang3.StringUtils;
 

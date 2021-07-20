@@ -13,34 +13,34 @@ import java.time.Instant;
 
 public class Callbacks {
 
-	public static void doOnEnter(String sourceString, String className, String methodName, Object obj, Object[] args,
-			String exectionId) throws K2CyberSecurityException {
-		if (!ThreadLocalHttpMap.getInstance().isEmpty() && !ThreadLocalOperationLock.getInstance().isAcquired()) {
-			try {
-				ThreadLocalOperationLock.getInstance().acquire();
-				if (args[0] != null) {
-					String name = args[0].toString();
-					HashCryptoOperationalBean hashCryptoOperationalBean = new HashCryptoOperationalBean(name, className,
-							sourceString, exectionId, Instant.now().toEpochMilli(), methodName);
-					String provider = StringUtils.EMPTY;
-					if (args.length >= 2 && args[1] != null && args[1] instanceof Provider) {
-						provider = args[1].getClass().getSimpleName();
-					} else if (args.length >= 2 && args[1] != null && args[1] instanceof String) {
-						provider = args[1].toString();
-					}
-					hashCryptoOperationalBean.setProvider(provider);
-					EventDispatcher.dispatch(hashCryptoOperationalBean, VulnerabilityCaseType.HASH);
+    public static void doOnEnter(String sourceString, String className, String methodName, Object obj, Object[] args,
+                                 String exectionId) throws K2CyberSecurityException {
+        if (!ThreadLocalHttpMap.getInstance().isEmpty() && !ThreadLocalOperationLock.getInstance().isAcquired()) {
+            try {
+                ThreadLocalOperationLock.getInstance().acquire();
+                if (args[0] != null) {
+                    String name = args[0].toString();
+                    HashCryptoOperationalBean hashCryptoOperationalBean = new HashCryptoOperationalBean(name, className,
+                            sourceString, exectionId, Instant.now().toEpochMilli(), methodName);
+                    String provider = StringUtils.EMPTY;
+                    if (args.length >= 2 && args[1] != null && args[1] instanceof Provider) {
+                        provider = args[1].getClass().getSimpleName();
+                    } else if (args.length >= 2 && args[1] != null && args[1] instanceof String) {
+                        provider = args[1].toString();
+                    }
+                    hashCryptoOperationalBean.setProvider(provider);
+                    EventDispatcher.dispatch(hashCryptoOperationalBean, VulnerabilityCaseType.HASH);
 //					System.out.println("OnEnter :" + sourceString + " - args : " + Arrays.asList(args) + " - this : "
 //							+ obj + " - eid : " + exectionId);
-				}
-			} finally {
-				ThreadLocalOperationLock.getInstance().release();
-			}
-		}
-	}
+                }
+            } finally {
+                ThreadLocalOperationLock.getInstance().release();
+            }
+        }
+    }
 
-	public static void doOnExit(String sourceString, String className, String methodName, Object obj, Object[] args,
-			Object returnVal, String exectionId) {
+    public static void doOnExit(String sourceString, String className, String methodName, Object obj, Object[] args,
+                                Object returnVal, String exectionId) {
 //		if (!ThreadLocalHttpMap.getInstance().isEmpty() && !ThreadLocalOperationLock.getInstance().isAcquired()) {
 //			try {
 //				ThreadLocalOperationLock.getInstance().acquire();
@@ -50,10 +50,10 @@ public class Callbacks {
 //				ThreadLocalOperationLock.getInstance().release();
 //			}
 //		}
-	}
+    }
 
-	public static void doOnError(String sourceString, String className, String methodName, Object obj, Object[] args,
-			Throwable error, String exectionId) throws Throwable {
+    public static void doOnError(String sourceString, String className, String methodName, Object obj, Object[] args,
+                                 Throwable error, String exectionId) throws Throwable {
 //		if (!ThreadLocalHttpMap.getInstance().isEmpty() && !ThreadLocalOperationLock.getInstance().isAcquired()) {
 //			try {
 //				ThreadLocalOperationLock.getInstance().acquire();
@@ -63,5 +63,5 @@ public class Callbacks {
 //				ThreadLocalOperationLock.getInstance().release();
 //			}
 //		}
-	}
+    }
 }

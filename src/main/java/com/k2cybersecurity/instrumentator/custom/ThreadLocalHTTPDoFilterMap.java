@@ -1,14 +1,8 @@
 package com.k2cybersecurity.instrumentator.custom;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.k2cybersecurity.intcodeagent.models.javaagent.AgentMetaData;
-import com.k2cybersecurity.intcodeagent.models.javaagent.FileIntegrityBean;
-import com.k2cybersecurity.intcodeagent.models.javaagent.HttpRequestBean;
 import com.k2cybersecurity.intcodeagent.websocket.JsonConverter;
 import org.apache.commons.lang3.StringUtils;
-
-import java.util.HashMap;
-import java.util.Map;
 
 public class ThreadLocalHTTPDoFilterMap {
 
@@ -43,7 +37,8 @@ public class ThreadLocalHTTPDoFilterMap {
                 }
             };
 
-    private ThreadLocalHTTPDoFilterMap() {}
+    private ThreadLocalHTTPDoFilterMap() {
+    }
 
     public static ThreadLocalHTTPDoFilterMap getInstance() {
         return instance.get();
@@ -54,9 +49,9 @@ public class ThreadLocalHTTPDoFilterMap {
         return JsonConverter.toJSON(this);
     }
 
-	public void cleanUp() {
-		currentGenericServletInstance = null;
-		currentGenericServletMethodName = StringUtils.EMPTY;
-	}
+    public void cleanUp() {
+        currentGenericServletInstance = null;
+        currentGenericServletMethodName = StringUtils.EMPTY;
+    }
 
 }

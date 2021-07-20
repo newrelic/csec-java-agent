@@ -6,7 +6,8 @@ public class UserClassEntity {
     private int traceLocationStart = -1;
     private int traceLocationEnd = -1;
 
-    public UserClassEntity() {}
+    public UserClassEntity() {
+    }
 
     public boolean isCalledByUserCode() {
         return isCalledByUserCode;

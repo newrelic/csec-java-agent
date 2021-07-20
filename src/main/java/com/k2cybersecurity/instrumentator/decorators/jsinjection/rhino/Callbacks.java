@@ -10,29 +10,29 @@ import com.k2cybersecurity.intcodeagent.models.operationalbean.JSInjectionOperat
 
 public class Callbacks {
 
-	public static void doOnEnter(String sourceString, String className, String methodName, Object thisObject,
-			Object[] args, String executionId) {
-		if (!ThreadLocalHttpMap.getInstance().isEmpty() && !ThreadLocalOperationLock.getInstance().isAcquired()) {
-			try {
-				ThreadLocalOperationLock.getInstance().acquire();
+    public static void doOnEnter(String sourceString, String className, String methodName, Object thisObject,
+                                 Object[] args, String executionId) {
+        if (!ThreadLocalHttpMap.getInstance().isEmpty() && !ThreadLocalOperationLock.getInstance().isAcquired()) {
+            try {
+                ThreadLocalOperationLock.getInstance().acquire();
 //				System.out.println("OnEnter :" + sourceString + " - args : " + Arrays.asList(args) + " - this : "
 //						+ thisObject + " - eid : " + executionId);
-				JSInjectionOperationalBean jsInjectionOperationalBean = ThreadLocalJSRhinoMap.getInstance()
-						.get(thisObject);
-				if (jsInjectionOperationalBean != null) {
+                JSInjectionOperationalBean jsInjectionOperationalBean = ThreadLocalJSRhinoMap.getInstance()
+                        .get(thisObject);
+                if (jsInjectionOperationalBean != null) {
 //					System.out.println("HERE :::::" + jsInjectionOperationalBean.getJavaScriptCode());
-					EventDispatcher.dispatch(jsInjectionOperationalBean, VulnerabilityCaseType.JAVASCRIPT_INJECTION);
-				}
-			} catch (Exception | K2CyberSecurityException e) {
-				e.printStackTrace();
-			} finally {
-				ThreadLocalOperationLock.getInstance().release();
-			}
-		}
-	}
+                    EventDispatcher.dispatch(jsInjectionOperationalBean, VulnerabilityCaseType.JAVASCRIPT_INJECTION);
+                }
+            } catch (Exception | K2CyberSecurityException e) {
+                e.printStackTrace();
+            } finally {
+                ThreadLocalOperationLock.getInstance().release();
+            }
+        }
+    }
 
-	public static void doOnExit(String sourceString, String className, String methodName, Object obj, Object[] args,
-			Object returnVal, String exectionId) {
+    public static void doOnExit(String sourceString, String className, String methodName, Object obj, Object[] args,
+                                Object returnVal, String exectionId) {
 //		if (!ThreadLocalHttpMap.getInstance().isEmpty() && !ThreadLocalOperationLock.getInstance().isAcquired()) {
 //			try {
 //				ThreadLocalOperationLock.getInstance().acquire();
@@ -43,10 +43,10 @@ public class Callbacks {
 //				ThreadLocalOperationLock.getInstance().release();
 //			}
 //		}
-	}
+    }
 
-	public static void doOnError(String sourceString, String className, String methodName, Object obj, Object[] args,
-			Throwable error, String exectionId) throws Throwable {
+    public static void doOnError(String sourceString, String className, String methodName, Object obj, Object[] args,
+                                 Throwable error, String exectionId) throws Throwable {
 //		if (!ThreadLocalHttpMap.getInstance().isEmpty() && !ThreadLocalOperationLock.getInstance().isAcquired()) {
 //			try {
 //				ThreadLocalOperationLock.getInstance().acquire();
@@ -56,5 +56,5 @@ public class Callbacks {
 //				ThreadLocalOperationLock.getInstance().release();
 //			}
 //		}
-	}
+    }
 }

@@ -11,26 +11,26 @@ import java.time.Instant;
 
 public class Callbacks {
 
-	public static final String SECURE_RANDOM = "SECURERANDOM";
+    public static final String SECURE_RANDOM = "SECURERANDOM";
 
-	public static void doOnEnter(String sourceString, String className, String methodName, Object obj, Object[] args,
-			String exectionId) throws K2CyberSecurityException {
-		if (!ThreadLocalHttpMap.getInstance().isEmpty() && !ThreadLocalOperationLock.getInstance().isAcquired()) {
-			try {
-				ThreadLocalOperationLock.getInstance().acquire();
-				RandomOperationalBean randomOperationalBean = new RandomOperationalBean(SECURE_RANDOM, className,
-						sourceString, exectionId, Instant.now().toEpochMilli(), methodName);
-				EventDispatcher.dispatch(randomOperationalBean, VulnerabilityCaseType.RANDOM);
+    public static void doOnEnter(String sourceString, String className, String methodName, Object obj, Object[] args,
+                                 String exectionId) throws K2CyberSecurityException {
+        if (!ThreadLocalHttpMap.getInstance().isEmpty() && !ThreadLocalOperationLock.getInstance().isAcquired()) {
+            try {
+                ThreadLocalOperationLock.getInstance().acquire();
+                RandomOperationalBean randomOperationalBean = new RandomOperationalBean(SECURE_RANDOM, className,
+                        sourceString, exectionId, Instant.now().toEpochMilli(), methodName);
+                EventDispatcher.dispatch(randomOperationalBean, VulnerabilityCaseType.RANDOM);
 //				System.out.println("OnEnter :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj
 //						+ " - eid : " + exectionId);
-			} finally {
-				ThreadLocalOperationLock.getInstance().release();
-			}
-		}
-	}
+            } finally {
+                ThreadLocalOperationLock.getInstance().release();
+            }
+        }
+    }
 
-	public static void doOnExit(String sourceString, String className, String methodName, Object obj, Object[] args,
-			Object returnVal, String exectionId) {
+    public static void doOnExit(String sourceString, String className, String methodName, Object obj, Object[] args,
+                                Object returnVal, String exectionId) {
 //		if (!ThreadLocalHttpMap.getInstance().isEmpty() && !ThreadLocalOperationLock.getInstance().isAcquired()) {
 //			try {
 //				ThreadLocalOperationLock.getInstance().acquire();
@@ -40,10 +40,10 @@ public class Callbacks {
 //				ThreadLocalOperationLock.getInstance().release();
 //			}
 //		}
-	}
+    }
 
-	public static void doOnError(String sourceString, String className, String methodName, Object obj, Object[] args,
-			Throwable error, String exectionId) throws Throwable {
+    public static void doOnError(String sourceString, String className, String methodName, Object obj, Object[] args,
+                                 Throwable error, String exectionId) throws Throwable {
 //		if (!ThreadLocalHttpMap.getInstance().isEmpty() && !ThreadLocalOperationLock.getInstance().isAcquired()) {
 //			try {
 //				ThreadLocalOperationLock.getInstance().acquire();
@@ -53,5 +53,5 @@ public class Callbacks {
 //				ThreadLocalOperationLock.getInstance().release();
 //			}
 //		}
-	}
+    }
 }

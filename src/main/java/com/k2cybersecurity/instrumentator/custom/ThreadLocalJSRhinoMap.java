@@ -1,55 +1,55 @@
 package com.k2cybersecurity.instrumentator.custom;
 
+import com.k2cybersecurity.intcodeagent.models.operationalbean.JSInjectionOperationalBean;
+import org.apache.commons.lang3.StringUtils;
+
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.commons.lang3.StringUtils;
-
-import com.k2cybersecurity.intcodeagent.models.operationalbean.JSInjectionOperationalBean;
-
 public class ThreadLocalJSRhinoMap {
 
-	private Map<Object, JSInjectionOperationalBean> jsInjectionCodeValues;
-	
-	private static ThreadLocal<ThreadLocalJSRhinoMap> instance = new ThreadLocal<ThreadLocalJSRhinoMap>() {
-		@Override protected ThreadLocalJSRhinoMap initialValue() {
-			return new ThreadLocalJSRhinoMap();
-		}
-	};
+    private Map<Object, JSInjectionOperationalBean> jsInjectionCodeValues;
 
-	private ThreadLocalJSRhinoMap() {
-		jsInjectionCodeValues = new HashMap<>();
-	}
+    private static ThreadLocal<ThreadLocalJSRhinoMap> instance = new ThreadLocal<ThreadLocalJSRhinoMap>() {
+        @Override
+        protected ThreadLocalJSRhinoMap initialValue() {
+            return new ThreadLocalJSRhinoMap();
+        }
+    };
 
-	public static ThreadLocalJSRhinoMap getInstance() {
-		return instance.get();
-	}
+    private ThreadLocalJSRhinoMap() {
+        jsInjectionCodeValues = new HashMap<>();
+    }
 
-	public void create(Object ref, String javaScriptCode, String className, String sourceMethod, String executionId, long startTime, String methodName) {
-		if (StringUtils.isBlank(javaScriptCode)){
-			return;
-		}
-		JSInjectionOperationalBean bean = new JSInjectionOperationalBean(javaScriptCode, className, sourceMethod, executionId, startTime, methodName);
-		if (!jsInjectionCodeValues.containsKey(ref)) {
-			jsInjectionCodeValues.put(ref, bean);
-		}
-	}
+    public static ThreadLocalJSRhinoMap getInstance() {
+        return instance.get();
+    }
 
-	public JSInjectionOperationalBean get(Object ref) {
-		if (jsInjectionCodeValues.containsKey(ref)) {
-			return jsInjectionCodeValues.get(ref);
-		} else {
+    public void create(Object ref, String javaScriptCode, String className, String sourceMethod, String executionId, long startTime, String methodName) {
+        if (StringUtils.isBlank(javaScriptCode)) {
+            return;
+        }
+        JSInjectionOperationalBean bean = new JSInjectionOperationalBean(javaScriptCode, className, sourceMethod, executionId, startTime, methodName);
+        if (!jsInjectionCodeValues.containsKey(ref)) {
+            jsInjectionCodeValues.put(ref, bean);
+        }
+    }
+
+    public JSInjectionOperationalBean get(Object ref) {
+        if (jsInjectionCodeValues.containsKey(ref)) {
+            return jsInjectionCodeValues.get(ref);
+        } else {
 //			System.out.println("NOT FOUND");
-		}
-		return null;
-	}
+        }
+        return null;
+    }
 
-	public boolean clear (Object ref) {
-		return jsInjectionCodeValues.remove(ref) != null ;
-	}
+    public boolean clear(Object ref) {
+        return jsInjectionCodeValues.remove(ref) != null;
+    }
 
-	public void clearAll () {
-		jsInjectionCodeValues.clear();
-	}
-	
+    public void clearAll() {
+        jsInjectionCodeValues.clear();
+    }
+
 }

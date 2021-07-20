@@ -39,14 +39,14 @@ public class LogWriter implements Runnable {
 
     private Throwable throwableLogEntry;
 
-	private String loggingClassName;
+    private String loggingClassName;
 
-	private static long maxFileSize;
+    private static long maxFileSize;
 
-	Calendar cal = Calendar.getInstance();
-	SimpleDateFormat sdf = new SimpleDateFormat(DATE_FORMAT_NOW);
+    Calendar cal = Calendar.getInstance();
+    SimpleDateFormat sdf = new SimpleDateFormat(DATE_FORMAT_NOW);
 
-	public static final String DATE_FORMAT_NOW = "yyyy-MM-dd HH:mm:ss";
+    public static final String DATE_FORMAT_NOW = "yyyy-MM-dd HH:mm:ss";
 
     private static final String fileName;
 
@@ -60,10 +60,10 @@ public class LogWriter implements Runnable {
 
     private String threadName;
 
-	private static OSVariables osVariables = OsVariablesInstance.getInstance().getOsVariables();
+    private static OSVariables osVariables = OsVariablesInstance.getInstance().getOsVariables();
 
     static {
-		fileName = new File(osVariables.getLogDirectory(), "k2_java_agent-" + K2Instrumentator.APPLICATION_UUID + ".log").getAbsolutePath();
+        fileName = new File(osVariables.getLogDirectory(), "k2_java_agent-" + K2Instrumentator.APPLICATION_UUID + ".log").getAbsolutePath();
         currentLogFile = new File(fileName);
         currentLogFile.getParentFile().mkdirs();
         if (!currentLogFile.isFile()) {
@@ -75,8 +75,8 @@ public class LogWriter implements Runnable {
             writer = new BufferedWriter(new FileWriter(currentLogFileName, true));
             maxFileSize = K2JALogProperties.maxfilesize * 1048576;
 
-			// k2.log.handler.maxfilesize=10
-			// k2.log.handler.maxfilesize.unit=MB
+            // k2.log.handler.maxfilesize=10
+            // k2.log.handler.maxfilesize.unit=MB
             if (!osVariables.getWindows()) {
                 Files.setPosixFilePermissions(currentLogFile.toPath(), PosixFilePermissions.fromString("rw-rw-rw-"));
             }
@@ -122,54 +122,54 @@ public class LogWriter implements Runnable {
         if (this.throwableLogEntry != null) {
 //			this.throwableLogEntry.printStackTrace();
             sb.append(this.throwableLogEntry.toString());
-			sb.append(StringUtils.LF);
-			sb.append(StringUtils.join(this.throwableLogEntry.getStackTrace(), StringUtils.LF));
-			sb.append(StringUtils.LF);
-			Throwable cause = this.throwableLogEntry.getCause();
-			while (cause != null) {
-				sb.append("Caused by: ");
-				sb.append(this.throwableLogEntry.getCause().getMessage());
-				sb.append(StringUtils.LF);
-				sb.append(StringUtils.join(this.throwableLogEntry.getCause().getStackTrace(), StringUtils.LF));
-				sb.append(StringUtils.LF);
-				cause = cause.getCause();
-			}
-		}
-		sb.append(StringUtils.LF);
-		try {
+            sb.append(StringUtils.LF);
+            sb.append(StringUtils.join(this.throwableLogEntry.getStackTrace(), StringUtils.LF));
+            sb.append(StringUtils.LF);
+            Throwable cause = this.throwableLogEntry.getCause();
+            while (cause != null) {
+                sb.append("Caused by: ");
+                sb.append(this.throwableLogEntry.getCause().getMessage());
+                sb.append(StringUtils.LF);
+                sb.append(StringUtils.join(this.throwableLogEntry.getCause().getStackTrace(), StringUtils.LF));
+                sb.append(StringUtils.LF);
+                cause = cause.getCause();
+            }
+        }
+        sb.append(StringUtils.LF);
+        try {
 //			System.out.println(sb.toString());
-			writer.write(sb.toString());
-			writer.flush();
+            writer.write(sb.toString());
+            writer.flush();
 
 //			writer.newLine();
             rollover(currentLogFileName);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
-	}
+    }
 
     private static void rollover(String fileName) throws IOException {
         File currentFile = new File(fileName);
-		if (currentFile.length() > maxFileSize) {
-			writer.close();
-			logFileCounter++;
-			File rolloverFile = new File(fileName + STRING_DOT + logFileCounter);
-			currentFile.renameTo(rolloverFile);
-			
-			uploadLogsAndDeleteFile(rolloverFile);
-			
-			PrintWriter pw = new PrintWriter(new File(currentLogFileName));
-			pw.write(StringUtils.EMPTY);
-			pw.close();
+        if (currentFile.length() > maxFileSize) {
+            writer.close();
+            logFileCounter++;
+            File rolloverFile = new File(fileName + STRING_DOT + logFileCounter);
+            currentFile.renameTo(rolloverFile);
 
-			writer = new BufferedWriter(new FileWriter(currentLogFileName, true));
+            uploadLogsAndDeleteFile(rolloverFile);
+
+            PrintWriter pw = new PrintWriter(new File(currentLogFileName));
+            pw.write(StringUtils.EMPTY);
+            pw.close();
+
+            writer = new BufferedWriter(new FileWriter(currentLogFileName, true));
 
             currentFile.setReadable(true, false);
             if (!osVariables.getWindows()) {
                 Files.setPosixFilePermissions(currentFile.toPath(), PosixFilePermissions.fromString("rw-rw-rw-"));
             }
-			int removeFile = logFileCounter - K2JALogProperties.maxfiles;
+            int removeFile = logFileCounter - K2JALogProperties.maxfiles;
             while (removeFile > 0) {
                 File remove = new File(fileName + STRING_DOT + removeFile);
                 if (remove.exists()) {
@@ -177,23 +177,23 @@ public class LogWriter implements Runnable {
                 }
                 removeFile--;
             }
-		}
-	}
+        }
+    }
 
-	public static void setLogLevel(LogLevel logLevel) {
-		defaultLogLevel = logLevel.getLevel();
-	}
-	
-	private static void uploadLogsAndDeleteFile(File file) {
-		Map<String, String> queryParams = new HashMap<>();
-		queryParams.put("customerId", String.valueOf(CollectorConfigurationUtils.getInstance().getCollectorConfig().getCustomerInfo().getCustomerId()));
-		queryParams.put("applicationUUID", K2Instrumentator.APPLICATION_UUID);
-		queryParams.put("saveName", file.getName());
-		HttpClient.getInstance().doPost(IRestClientConstants.COLLECTOR_UPLOAD_LOG, null, queryParams, null, file);
-	}
-	
-	public static String getFileName() {
-		return fileName;
-	}
-	
+    public static void setLogLevel(LogLevel logLevel) {
+        defaultLogLevel = logLevel.getLevel();
+    }
+
+    private static void uploadLogsAndDeleteFile(File file) {
+        Map<String, String> queryParams = new HashMap<>();
+        queryParams.put("customerId", String.valueOf(CollectorConfigurationUtils.getInstance().getCollectorConfig().getCustomerInfo().getCustomerId()));
+        queryParams.put("applicationUUID", K2Instrumentator.APPLICATION_UUID);
+        queryParams.put("saveName", file.getName());
+        HttpClient.getInstance().doPost(IRestClientConstants.COLLECTOR_UPLOAD_LOG, null, queryParams, null, file);
+    }
+
+    public static String getFileName() {
+        return fileName;
+    }
+
 }

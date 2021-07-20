@@ -7,52 +7,53 @@ import org.apache.commons.lang3.StringUtils;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ForkExecOperationalBean extends AbstractOperationalBean{
+public class ForkExecOperationalBean extends AbstractOperationalBean {
 
-	private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
+    private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
 
-	private String command;
+    private String command;
 
-	private Map<String,String> environment;
+    private Map<String, String> environment;
 
-	public ForkExecOperationalBean(String cmd, Map<String,String> environment, String className, String sourceMethod, String executionId, long startTime, String methodName) {
-		super(className, sourceMethod, executionId, startTime, methodName);
-		this.command = cmd;
-		if(environment != null) {
-			this.environment = new HashMap<>(environment);
-		}
+    public ForkExecOperationalBean(String cmd, Map<String, String> environment, String className, String sourceMethod, String executionId, long startTime, String methodName) {
+        super(className, sourceMethod, executionId, startTime, methodName);
+        this.command = cmd;
+        if (environment != null) {
+            this.environment = new HashMap<>(environment);
+        }
 
-	}
+    }
 
-	@Override
-	public String toString() {
-		return JsonConverter.toJSON(this);
-	}
+    @Override
+    public String toString() {
+        return JsonConverter.toJSON(this);
+    }
 
-	@Override public boolean isEmpty() {
-		return StringUtils.isBlank(command);
-	}
+    @Override
+    public boolean isEmpty() {
+        return StringUtils.isBlank(command);
+    }
 
-	public String getCommand() {
-		return command;
-	}
+    public String getCommand() {
+        return command;
+    }
 
-	public void setCommand(String command) {
-		this.command = command;
-	}
+    public void setCommand(String command) {
+        this.command = command;
+    }
 
-	/**
-	 * @return the environment
-	 */
-	public Map<String, String> getEnvironment() {
-		return environment;
-	}
+    /**
+     * @return the environment
+     */
+    public Map<String, String> getEnvironment() {
+        return environment;
+    }
 
-	/**
-	 * @param environment the environment to set
-	 */
-	public void setEnvironment(Map<String, String> environment) {
-		this.environment = environment;
-	}
+    /**
+     * @param environment the environment to set
+     */
+    public void setEnvironment(Map<String, String> environment) {
+        this.environment = environment;
+    }
 
 }

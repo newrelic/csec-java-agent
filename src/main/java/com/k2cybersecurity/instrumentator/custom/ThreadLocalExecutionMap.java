@@ -13,7 +13,7 @@ public class ThreadLocalExecutionMap {
     private HttpRequestBean httpRequestBean;
 
     private AgentMetaData metaData;
-    
+
     private Map<String, FileIntegrityBean> fileLocalMap;
 
     private static ThreadLocal<ThreadLocalExecutionMap> instance =
@@ -61,25 +61,25 @@ public class ThreadLocalExecutionMap {
         this.metaData = metaData;
     }
 
-	/**
-	 * @return the fileLocalMap
-	 */
-	public Map<String, FileIntegrityBean> getFileLocalMap() {
-		return fileLocalMap;
-	}
+    /**
+     * @return the fileLocalMap
+     */
+    public Map<String, FileIntegrityBean> getFileLocalMap() {
+        return fileLocalMap;
+    }
 
-	/**
-	 * @param fileLocalMap the fileLocalMap to set
-	 */
-	public void setFileLocalMap(Map<String, FileIntegrityBean> fileLocalMap) {
-		this.fileLocalMap = fileLocalMap;
-	}
+    /**
+     * @param fileLocalMap the fileLocalMap to set
+     */
+    public void setFileLocalMap(Map<String, FileIntegrityBean> fileLocalMap) {
+        this.fileLocalMap = fileLocalMap;
+    }
 
 
-	public void cleanUp() {
-		httpRequestBean = new HttpRequestBean();
-		metaData = new AgentMetaData();
-		fileLocalMap.clear();
-	}
+    public void cleanUp() {
+        httpRequestBean = new HttpRequestBean();
+        metaData = new AgentMetaData();
+        fileLocalMap.clear();
+    }
 
 }

@@ -1,9 +1,6 @@
 package com.k2cybersecurity.intcodeagent.models.javaagent;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.k2cybersecurity.intcodeagent.websocket.JsonConverter;
-import org.apache.commons.lang3.StringUtils;
 
 import java.util.Objects;
 

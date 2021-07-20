@@ -37,73 +37,73 @@ public class DispatcherPool {
         // load the settings
         processQueue = new LinkedBlockingQueue<>(queueSize);
         executor = new ThreadPoolExecutor(corePoolSize, maxPoolSize, keepAliveTime, timeUnit, processQueue,
-				new EventAbortPolicy()) {
+                new EventAbortPolicy()) {
 
-			@Override
-			protected void afterExecute(Runnable r, Throwable t) {
-				if (r instanceof Future<?>) {
-					try {
-						Future<?> future = (Future<?>) r;
-						if (future.isDone()) {
-							K2Instrumentator.JA_HEALTH_CHECK.incrementProcessedCount();
-							future.get();
-						}
-					} catch (Throwable e) {
-						K2Instrumentator.JA_HEALTH_CHECK.incrementDropCount();
-					}
-				}
-				super.afterExecute(r, t);
-			}
+            @Override
+            protected void afterExecute(Runnable r, Throwable t) {
+                if (r instanceof Future<?>) {
+                    try {
+                        Future<?> future = (Future<?>) r;
+                        if (future.isDone()) {
+                            K2Instrumentator.JA_HEALTH_CHECK.incrementProcessedCount();
+                            future.get();
+                        }
+                    } catch (Throwable e) {
+                        K2Instrumentator.JA_HEALTH_CHECK.incrementDropCount();
+                    }
+                }
+                super.afterExecute(r, t);
+            }
 
-			@Override
-			protected void beforeExecute(Thread t, Runnable r) {
-				// TODO increment event proccessed count
-				super.beforeExecute(t, r);
-			}
+            @Override
+            protected void beforeExecute(Thread t, Runnable r) {
+                // TODO increment event proccessed count
+                super.beforeExecute(t, r);
+            }
 
-		};
-		executor.allowCoreThreadTimeOut(allowCoreThreadTimeOut);
-		executor.setThreadFactory(new ThreadFactory() {
-			private final AtomicInteger threadNumber = new AtomicInteger(1);
+        };
+        executor.allowCoreThreadTimeOut(allowCoreThreadTimeOut);
+        executor.setThreadFactory(new ThreadFactory() {
+            private final AtomicInteger threadNumber = new AtomicInteger(1);
 
-			@Override
-			public Thread newThread(Runnable r) {
-				return new Thread(Thread.currentThread().getThreadGroup(), r,
-						IAgentConstants.K2_JAVA_AGENT + threadNumber.getAndIncrement());
-			}
-		});
-	}
+            @Override
+            public Thread newThread(Runnable r) {
+                return new Thread(Thread.currentThread().getThreadGroup(), r,
+                        IAgentConstants.K2_JAVA_AGENT + threadNumber.getAndIncrement());
+            }
+        });
+    }
 
-	public static DispatcherPool getInstance() {
+    public static DispatcherPool getInstance() {
 
-		if (instance == null) {
-			synchronized (mutex) {
-				if (instance == null) {
-					instance = new DispatcherPool();
-				}
-				return instance;
-			}
-		}
-		return instance;
-	}
+        if (instance == null) {
+            synchronized (mutex) {
+                if (instance == null) {
+                    instance = new DispatcherPool();
+                }
+                return instance;
+            }
+        }
+        return instance;
+    }
 
-	public void dispatchEvent(HttpRequestBean httpRequestBean, AgentMetaData metaData,
-			Object event, VulnerabilityCaseType vulnerabilityCaseType) {
-		if(executor.isShutdown()){
-			return;
-		}
-		this.executor.submit(new Dispatcher(httpRequestBean, metaData, event, vulnerabilityCaseType));
-	}
+    public void dispatchEvent(HttpRequestBean httpRequestBean, AgentMetaData metaData,
+                              Object event, VulnerabilityCaseType vulnerabilityCaseType) {
+        if (executor.isShutdown()) {
+            return;
+        }
+        this.executor.submit(new Dispatcher(httpRequestBean, metaData, event, vulnerabilityCaseType));
+    }
 
-	public void dispatchEvent(HttpRequestBean httpRequestBean, AgentMetaData metaData,
-							  Object event, VulnerabilityCaseType vulnerabilityCaseType, String currentGenericServletMethodName,
-							  Object currentGenericServletInstance,
-							  StackTraceElement[] stackTrace, UserClassEntity userClassEntity) {
-		if(executor.isShutdown()){
-			return;
-		}
-		this.executor.submit(new Dispatcher(httpRequestBean, metaData, event, vulnerabilityCaseType, currentGenericServletMethodName,
-				currentGenericServletInstance, stackTrace, userClassEntity));
+    public void dispatchEvent(HttpRequestBean httpRequestBean, AgentMetaData metaData,
+                              Object event, VulnerabilityCaseType vulnerabilityCaseType, String currentGenericServletMethodName,
+                              Object currentGenericServletInstance,
+                              StackTraceElement[] stackTrace, UserClassEntity userClassEntity) {
+        if (executor.isShutdown()) {
+            return;
+        }
+        this.executor.submit(new Dispatcher(httpRequestBean, metaData, event, vulnerabilityCaseType, currentGenericServletMethodName,
+                currentGenericServletInstance, stackTrace, userClassEntity));
     }
 
     /**
@@ -126,26 +126,26 @@ public class DispatcherPool {
         }
         this.executor.submit(new Dispatcher(httpRequestBean, agentMetaData, reflectedXss, sourceString, exectionId, startTime, currentGenericServletMethodName,
                 currentGenericServletInstance, stackTrace, userClassEntity, apiID));
-	}
+    }
 
-	public void shutDownThreadPoolExecutor() {
+    public void shutDownThreadPoolExecutor() {
 
-		if (executor != null) {
-			try {
-				executor.shutdown(); // disable new tasks from being submitted
-				if (!executor.awaitTermination(1, TimeUnit.SECONDS)) {
-					// wait for termination for a timeout
-					executor.shutdownNow(); // cancel currently executing tasks
+        if (executor != null) {
+            try {
+                executor.shutdown(); // disable new tasks from being submitted
+                if (!executor.awaitTermination(1, TimeUnit.SECONDS)) {
+                    // wait for termination for a timeout
+                    executor.shutdownNow(); // cancel currently executing tasks
 
-					if (!executor.awaitTermination(1, TimeUnit.SECONDS)) {
-						logger.log(LogLevel.SEVERE, "Thread pool executor did not terminate",
-								DispatcherPool.class.getName());
-					}
-				}
-			} catch (InterruptedException e) {
-			}
-		}
+                    if (!executor.awaitTermination(1, TimeUnit.SECONDS)) {
+                        logger.log(LogLevel.SEVERE, "Thread pool executor did not terminate",
+                                DispatcherPool.class.getName());
+                    }
+                }
+            } catch (InterruptedException e) {
+            }
+        }
 
-	}
+    }
 
 }

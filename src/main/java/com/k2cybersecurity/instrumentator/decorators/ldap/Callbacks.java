@@ -15,38 +15,38 @@ public class Callbacks {
 
 //	private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
 
-	public static void doOnEnter(String sourceString, String className, String methodName, Object obj, Object[] args,
-			String executionId) throws K2CyberSecurityException {
-		if (!ThreadLocalHttpMap.getInstance().isEmpty() && !ThreadLocalOperationLock.getInstance().isAcquired()) {
-			try {
-				ThreadLocalOperationLock.getInstance().acquire();
+    public static void doOnEnter(String sourceString, String className, String methodName, Object obj, Object[] args,
+                                 String executionId) throws K2CyberSecurityException {
+        if (!ThreadLocalHttpMap.getInstance().isEmpty() && !ThreadLocalOperationLock.getInstance().isAcquired()) {
+            try {
+                ThreadLocalOperationLock.getInstance().acquire();
 //				logger.log(LogLevel.INFO,
 //						"OnEnter :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj
 //								+ " - eid : " + executionId, Callbacks.class.getName());
-				if (args.length != 0) {
+                if (args.length != 0) {
 
-					String name = args[0].toString();
-					if (StringUtils.isBlank(name)) {
-						name = "EMPTY_VALUE";
-					}
-					if (StringUtils.isNotBlank(name)) {
-						
-						String filter = args[1].toString();
-						if (StringUtils.isNotBlank(filter) && ThreadLocalLDAPMap.getInstance().put(filter)) {
-							LDAPOperationalBean ldapOperationalBean = new LDAPOperationalBean(name, filter, className, sourceString,
-									executionId, Instant.now().toEpochMilli(), methodName);
-							EventDispatcher.dispatch(ldapOperationalBean, VulnerabilityCaseType.LDAP);
-						}
-					}
-				}
-			} finally {
-				ThreadLocalOperationLock.getInstance().release();
-			}
-		}
-	}
+                    String name = args[0].toString();
+                    if (StringUtils.isBlank(name)) {
+                        name = "EMPTY_VALUE";
+                    }
+                    if (StringUtils.isNotBlank(name)) {
 
-	public static void doOnExit(String sourceString, String className, String methodName, Object obj, Object[] args,
-			Object returnVal, String exectionId) {
+                        String filter = args[1].toString();
+                        if (StringUtils.isNotBlank(filter) && ThreadLocalLDAPMap.getInstance().put(filter)) {
+                            LDAPOperationalBean ldapOperationalBean = new LDAPOperationalBean(name, filter, className, sourceString,
+                                    executionId, Instant.now().toEpochMilli(), methodName);
+                            EventDispatcher.dispatch(ldapOperationalBean, VulnerabilityCaseType.LDAP);
+                        }
+                    }
+                }
+            } finally {
+                ThreadLocalOperationLock.getInstance().release();
+            }
+        }
+    }
+
+    public static void doOnExit(String sourceString, String className, String methodName, Object obj, Object[] args,
+                                Object returnVal, String exectionId) {
 //		if (!ThreadLocalHttpMap.getInstance().isEmpty() && !ThreadLocalOperationLock.getInstance().isAcquired()) {
 //			try {
 //				ThreadLocalOperationLock.getInstance().acquire();
@@ -56,10 +56,10 @@ public class Callbacks {
 //				ThreadLocalOperationLock.getInstance().release();
 //			}
 //		}
-	}
+    }
 
-	public static void doOnError(String sourceString, String className, String methodName, Object obj, Object[] args,
-			Throwable error, String exectionId) throws Throwable {
+    public static void doOnError(String sourceString, String className, String methodName, Object obj, Object[] args,
+                                 Throwable error, String exectionId) throws Throwable {
 //		if(!ThreadLocalHttpMap.getInstance().isEmpty() && !ThreadLocalOperationLock.getInstance().isAcquired()) {
 //			try {
 //				ThreadLocalOperationLock.getInstance().acquire();
@@ -70,5 +70,5 @@ public class Callbacks {
 //			}
 //		}
 
-	}
+    }
 }

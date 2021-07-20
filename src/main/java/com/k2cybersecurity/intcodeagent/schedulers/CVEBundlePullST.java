@@ -3,18 +3,12 @@ package com.k2cybersecurity.intcodeagent.schedulers;
 import com.k2cybersecurity.instrumentator.K2Instrumentator;
 import com.k2cybersecurity.instrumentator.cve.scanner.CVEComponentsService;
 import com.k2cybersecurity.instrumentator.cve.scanner.CVEScannerPool;
-import com.k2cybersecurity.instrumentator.cve.scanner.ICVEConstants;
-import com.k2cybersecurity.instrumentator.os.OsVariablesInstance;
 import com.k2cybersecurity.instrumentator.utils.AgentUtils;
-import com.k2cybersecurity.instrumentator.utils.NameFileFilter;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.models.javaagent.CVEPackageInfo;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 
-import java.io.File;
-import java.util.Collection;
 import java.util.concurrent.*;
 
 public class CVEBundlePullST {

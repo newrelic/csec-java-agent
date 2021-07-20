@@ -1,7 +1,6 @@
 package com.k2cybersecurity.intcodeagent.models.collectorconfig;
 
 import com.fasterxml.jackson.annotation.*;
-import com.k2cybersecurity.intcodeagent.models.config.PolicyApplicationInfo;
 import com.k2cybersecurity.intcodeagent.websocket.JsonConverter;
 
 import java.util.HashMap;

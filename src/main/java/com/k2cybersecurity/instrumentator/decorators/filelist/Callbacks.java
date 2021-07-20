@@ -11,32 +11,32 @@ import java.time.Instant;
 
 public class Callbacks {
 
-	public static final String CLASS = ".class";
+    public static final String CLASS = ".class";
 
-	public static void doOnEnter(String sourceString, String className, String methodName, Object obj, Object[] args,
-								 String exectionId) throws K2CyberSecurityException {
+    public static void doOnEnter(String sourceString, String className, String methodName, Object obj, Object[] args,
+                                 String exectionId) throws K2CyberSecurityException {
 //		System.out.println("OnEnter :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj + " - eid : " + exectionId);
 
-		if (!ThreadLocalHttpMap.getInstance().isEmpty() && !ThreadLocalOperationLock.getInstance().isAcquired()) {
-			try {
-				ThreadLocalOperationLock.getInstance().acquire();
-				if (args == null || args.length == 0) {
-					FileOperationalBean fileOperationalBean = new FileOperationalBean(obj.toString(), className,
-							sourceString, exectionId, Instant.now().toEpochMilli(), true, methodName);
-					EventDispatcher.dispatch(fileOperationalBean, VulnerabilityCaseType.FILE_OPERATION);
-				}
-			} catch (Throwable e) {
-				e.printStackTrace();
-			} finally {
-				ThreadLocalOperationLock.getInstance().release();
-			}
-		}
+        if (!ThreadLocalHttpMap.getInstance().isEmpty() && !ThreadLocalOperationLock.getInstance().isAcquired()) {
+            try {
+                ThreadLocalOperationLock.getInstance().acquire();
+                if (args == null || args.length == 0) {
+                    FileOperationalBean fileOperationalBean = new FileOperationalBean(obj.toString(), className,
+                            sourceString, exectionId, Instant.now().toEpochMilli(), true, methodName);
+                    EventDispatcher.dispatch(fileOperationalBean, VulnerabilityCaseType.FILE_OPERATION);
+                }
+            } catch (Throwable e) {
+                e.printStackTrace();
+            } finally {
+                ThreadLocalOperationLock.getInstance().release();
+            }
+        }
 
 
-	}
+    }
 
-	public static void doOnExit(String sourceString, String className, String methodName, Object obj, Object[] args,
-								Object returnVal, String exectionId) {
+    public static void doOnExit(String sourceString, String className, String methodName, Object obj, Object[] args,
+                                Object returnVal, String exectionId) {
 //		if (!ThreadLocalOperationLock.getInstance().isAcquired()) {
 //			try {
 //				ThreadLocalOperationLock.getInstance().acquire();
@@ -47,10 +47,10 @@ public class Callbacks {
 //				ThreadLocalOperationLock.getInstance().release();
 //			}
 //		}
-	}
+    }
 
-	public static void doOnError(String sourceString, String className, String methodName, Object obj, Object[] args,
-								 Throwable error, String exectionId) throws Throwable {
+    public static void doOnError(String sourceString, String className, String methodName, Object obj, Object[] args,
+                                 Throwable error, String exectionId) throws Throwable {
 
 //		if (!ThreadLocalHttpMap.getInstance().isEmpty() && !ThreadLocalOperationLock.getInstance().isAcquired()) {
 //			try {
@@ -62,5 +62,5 @@ public class Callbacks {
 //			}
 //		}
 
-	}
+    }
 }

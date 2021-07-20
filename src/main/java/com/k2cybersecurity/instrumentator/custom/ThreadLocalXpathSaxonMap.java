@@ -1,55 +1,55 @@
 package com.k2cybersecurity.instrumentator.custom;
 
+import com.k2cybersecurity.intcodeagent.models.operationalbean.XPathOperationalBean;
+import org.apache.commons.lang3.StringUtils;
+
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.commons.lang3.StringUtils;
-
-import com.k2cybersecurity.intcodeagent.models.operationalbean.XPathOperationalBean;
-
 public class ThreadLocalXpathSaxonMap {
 
-	private Map<Object, XPathOperationalBean> xpathExpressionValues;
-	
-	private static ThreadLocal<ThreadLocalXpathSaxonMap> instance = new ThreadLocal<ThreadLocalXpathSaxonMap>() {
-		@Override protected ThreadLocalXpathSaxonMap initialValue() {
-			return new ThreadLocalXpathSaxonMap();
-		}
-	};
+    private Map<Object, XPathOperationalBean> xpathExpressionValues;
 
-	private ThreadLocalXpathSaxonMap() {
-		xpathExpressionValues = new HashMap<>();
-	}
+    private static ThreadLocal<ThreadLocalXpathSaxonMap> instance = new ThreadLocal<ThreadLocalXpathSaxonMap>() {
+        @Override
+        protected ThreadLocalXpathSaxonMap initialValue() {
+            return new ThreadLocalXpathSaxonMap();
+        }
+    };
 
-	public static ThreadLocalXpathSaxonMap getInstance() {
-		return instance.get();
-	}
+    private ThreadLocalXpathSaxonMap() {
+        xpathExpressionValues = new HashMap<>();
+    }
 
-	public void create(Object ref, String expression, String className, String sourceMethod, String executionId, long startTime, String methodName) {
-		if (StringUtils.isBlank(expression)){
-			return;
-		}
-		XPathOperationalBean bean = new XPathOperationalBean(expression, className, sourceMethod, executionId, startTime, methodName);
-		if (!xpathExpressionValues.containsKey(ref)) {
-			xpathExpressionValues.put(ref, bean);
-		}
-	}
+    public static ThreadLocalXpathSaxonMap getInstance() {
+        return instance.get();
+    }
 
-	public XPathOperationalBean get(Object ref) {
-		if (xpathExpressionValues.containsKey(ref)) {
-			return xpathExpressionValues.get(ref);
-		} else {
+    public void create(Object ref, String expression, String className, String sourceMethod, String executionId, long startTime, String methodName) {
+        if (StringUtils.isBlank(expression)) {
+            return;
+        }
+        XPathOperationalBean bean = new XPathOperationalBean(expression, className, sourceMethod, executionId, startTime, methodName);
+        if (!xpathExpressionValues.containsKey(ref)) {
+            xpathExpressionValues.put(ref, bean);
+        }
+    }
+
+    public XPathOperationalBean get(Object ref) {
+        if (xpathExpressionValues.containsKey(ref)) {
+            return xpathExpressionValues.get(ref);
+        } else {
 //			System.out.println("NOT FOUND");
-		}
-		return null;
-	}
+        }
+        return null;
+    }
 
-	public boolean clear (Object ref) {
-		return xpathExpressionValues.remove(ref) != null ;
-	}
+    public boolean clear(Object ref) {
+        return xpathExpressionValues.remove(ref) != null;
+    }
 
-	public void clearAll () {
-		xpathExpressionValues.clear();
-	}
-	
+    public void clearAll() {
+        xpathExpressionValues.clear();
+    }
+
 }

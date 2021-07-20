@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.k2cybersecurity.intcodeagent.models.javaagent;
 
@@ -93,8 +93,8 @@ public class Identifier {
         this.envInfo = envInfo;
     }
 
-	@Override
-	public String toString() {
-		return JsonConverter.toJSON(this);
-	}
+    @Override
+    public String toString() {
+        return JsonConverter.toJSON(this);
+    }
 }

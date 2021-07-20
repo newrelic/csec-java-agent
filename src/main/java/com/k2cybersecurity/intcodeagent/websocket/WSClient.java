@@ -17,21 +17,21 @@ import java.net.URISyntaxException;
 
 public class WSClient extends WebSocketClient {
 
-	private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
-	public static final String SENDING_EVENT = "sending event: ";
-	public static final String UNABLE_TO_SEND_EVENT = "Unable to send event : ";
-	public static final String ERROR_IN_WSOCK_CONNECTION = "Error in WSock connection : ";
-	public static final String CONNECTION_CLOSED_BY = "Connection closed by ";
-	public static final String REMOTE_PEER = "remote peer.";
-	public static final String LOCAL = "local.";
-	public static final String CODE = " Code: ";
-	public static final String REASON = " Reason: ";
-	public static final String UNABLE_TO_PROCESS_INCOMING_MESSAGE = "Unable to process incoming message : ";
-	public static final String DUE_TO_ERROR = " : due to error : ";
-	public static final String RECONNECTING_TO_IC = "Reconnecting to IC";
-	public static final String COLON_STRING = " : ";
+    private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
+    public static final String SENDING_EVENT = "sending event: ";
+    public static final String UNABLE_TO_SEND_EVENT = "Unable to send event : ";
+    public static final String ERROR_IN_WSOCK_CONNECTION = "Error in WSock connection : ";
+    public static final String CONNECTION_CLOSED_BY = "Connection closed by ";
+    public static final String REMOTE_PEER = "remote peer.";
+    public static final String LOCAL = "local.";
+    public static final String CODE = " Code: ";
+    public static final String REASON = " Reason: ";
+    public static final String UNABLE_TO_PROCESS_INCOMING_MESSAGE = "Unable to process incoming message : ";
+    public static final String DUE_TO_ERROR = " : due to error : ";
+    public static final String RECONNECTING_TO_IC = "Reconnecting to IC";
+    public static final String COLON_STRING = " : ";
 
-	private static WSClient instance;
+    private static WSClient instance;
 
     private WSClient() throws URISyntaxException {
         super(new URI(CollectorConfigurationUtils.getInstance().getCollectorConfig().getK2ServiceInfo().getValidatorServiceEndpointURL()));

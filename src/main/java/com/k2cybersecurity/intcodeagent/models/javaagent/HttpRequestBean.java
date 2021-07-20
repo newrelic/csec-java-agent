@@ -261,14 +261,14 @@ public class HttpRequestBean {
     }
 
     public void setContentType(String contentType) {
-        if(StringUtils.isNotBlank(contentType)) {
+        if (StringUtils.isNotBlank(contentType)) {
             this.contentType = StringUtils.substringBefore(contentType, ";").trim().toLowerCase();
         } else {
             this.contentType = StringUtils.EMPTY;
         }
     }
 
-    public boolean isEmpty(){
+    public boolean isEmpty() {
         return StringUtils.isAnyBlank(url, method);
     }
 

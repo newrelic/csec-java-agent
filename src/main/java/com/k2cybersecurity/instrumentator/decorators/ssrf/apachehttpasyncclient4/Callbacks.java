@@ -18,16 +18,16 @@ import java.time.Instant;
 
 public class Callbacks {
 
-	public static Class httpHost = null;
+    public static Class httpHost = null;
 
-	public static Class httpUriRequest = null;
+    public static Class httpUriRequest = null;
 
-	public static void doOnEnter(String sourceString, String className, String methodName, Object obj, Object[] args,
-			String exectionId) throws K2CyberSecurityException, Exception {
+    public static void doOnEnter(String sourceString, String className, String methodName, Object obj, Object[] args,
+                                 String exectionId) throws K2CyberSecurityException, Exception {
 //		System.out.println(String.format("Entry : SSRF : %s : %s : %s", className, methodName, obj));
-		if (!ThreadLocalOperationLock.getInstance().isAcquired()) {
-			try {
-				ThreadLocalOperationLock.getInstance().acquire();
+        if (!ThreadLocalOperationLock.getInstance().isAcquired()) {
+            try {
+                ThreadLocalOperationLock.getInstance().acquire();
                 if (ThreadLocalHttpMap.getInstance().getHttpRequest() != null && args != null &&
                         args.length > 0) {
 //					System.out.println(String.format("Entry inside lock : SSRF : %s : %s : %s", className, methodName, obj));
@@ -39,14 +39,14 @@ public class Callbacks {
                         }
                     }
 
-					if (httpUriRequest == null) {
-						ClassLoader classLoader = AgentUtils.getInstance().getClassLoaderRecord().get("org.apache.http.client.methods.HttpUriRequest");
-						if (classLoader != null) {
-							httpUriRequest = classLoader.loadClass("org.apache.http.client.methods.HttpUriRequest");
-						}
-					}
+                    if (httpUriRequest == null) {
+                        ClassLoader classLoader = AgentUtils.getInstance().getClassLoaderRecord().get("org.apache.http.client.methods.HttpUriRequest");
+                        if (classLoader != null) {
+                            httpUriRequest = classLoader.loadClass("org.apache.http.client.methods.HttpUriRequest");
+                        }
+                    }
 
-					if (httpHost != null && httpHost.isInstance(args[0])) {
+                    if (httpHost != null && httpHost.isInstance(args[0])) {
                         Method getRequestLine = args[1].getClass().getMethod("getRequestLine");
                         getRequestLine.setAccessible(true);
                         Object requestLine = getRequestLine.invoke(args[1]);
@@ -89,20 +89,20 @@ public class Callbacks {
                                 Instant.now().toEpochMilli(), methodName), VulnerabilityCaseType.HTTP_REQUEST);
 
                     }
-				}
+                }
 
-			} finally {
-				ThreadLocalOperationLock.getInstance().release();
-			}
-		}
-	}
+            } finally {
+                ThreadLocalOperationLock.getInstance().release();
+            }
+        }
+    }
 
-	public static void doOnExit(String sourceString, String className, String methodName, Object obj, Object[] args,
-			Object returnVal, String exectionId) throws K2CyberSecurityException, Exception {
+    public static void doOnExit(String sourceString, String className, String methodName, Object obj, Object[] args,
+                                Object returnVal, String exectionId) throws K2CyberSecurityException, Exception {
 //		System.out.println(String.format("Exit : SSRF : %s : %s : %s", className, methodName, obj));
 
-		if(!ThreadLocalHttpMap.getInstance().isEmpty() && !ThreadLocalOperationLock.getInstance().isAcquired()) {
-			try {
+        if (!ThreadLocalHttpMap.getInstance().isEmpty() && !ThreadLocalOperationLock.getInstance().isAcquired()) {
+            try {
                 ThreadLocalOperationLock.getInstance().acquire();
 //				System.out.println(String.format("Exit inside: SSRF : %s : %s : %s", className, methodName, obj));
 
@@ -129,24 +129,24 @@ public class Callbacks {
 //				System.out.println(
 //						"OnExit :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj + " - return : "
 //								+ returnVal + " - eid : " + exectionId);
-			} finally {
-				ThreadLocalOperationLock.getInstance().release();
-			}
-		}
-	}
+            } finally {
+                ThreadLocalOperationLock.getInstance().release();
+            }
+        }
+    }
 
-	public static void doOnError(String sourceString, String className, String methodName, Object obj, Object[] args,
-			Throwable error, String exectionId) throws Throwable {
+    public static void doOnError(String sourceString, String className, String methodName, Object obj, Object[] args,
+                                 Throwable error, String exectionId) throws Throwable {
 //		System.out.println(String.format("Error : SSRF : %s : %s : %s", className, methodName, obj));
-		if(!ThreadLocalHttpMap.getInstance().isEmpty() && !ThreadLocalOperationLock.getInstance().isAcquired()) {
-			try {
-				ThreadLocalOperationLock.getInstance().acquire();
+        if (!ThreadLocalHttpMap.getInstance().isEmpty() && !ThreadLocalOperationLock.getInstance().isAcquired()) {
+            try {
+                ThreadLocalOperationLock.getInstance().acquire();
 //				System.out.println(String.format("Error inside: SSRF : %s : %s : %s", className, methodName, obj));
 //				System.out.println("OnError :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj
 //						+ " - error : " + error + " - eid : " + exectionId);
-			} finally {
-				ThreadLocalOperationLock.getInstance().release();
-			}
-		}
-	}
+            } finally {
+                ThreadLocalOperationLock.getInstance().release();
+            }
+        }
+    }
 }

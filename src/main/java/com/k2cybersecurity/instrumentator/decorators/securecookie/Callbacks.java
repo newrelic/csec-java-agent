@@ -12,40 +12,40 @@ import java.time.Instant;
 
 public class Callbacks {
 
-	public static final String GET_SECURE = "getSecure";
-	public static final String TRUE = "true";
-	public static final String FALSE = "false";
+    public static final String GET_SECURE = "getSecure";
+    public static final String TRUE = "true";
+    public static final String FALSE = "false";
 
-	public static void doOnEnter(String sourceString, String className, String methodName, Object obj, Object[] args,
-			String exectionId) throws K2CyberSecurityException, Exception {
-		if (!ThreadLocalHttpMap.getInstance().isEmpty() && !ThreadLocalOperationLock.getInstance().isAcquired()) {
-			try {
-				ThreadLocalOperationLock.getInstance().acquire();
+    public static void doOnEnter(String sourceString, String className, String methodName, Object obj, Object[] args,
+                                 String exectionId) throws K2CyberSecurityException, Exception {
+        if (!ThreadLocalHttpMap.getInstance().isEmpty() && !ThreadLocalOperationLock.getInstance().isAcquired()) {
+            try {
+                ThreadLocalOperationLock.getInstance().acquire();
 
-				if (args.length > 0 && args[0] != null) {
+                if (args.length > 0 && args[0] != null) {
 
-					Class cookieClass = args[0].getClass();
-					Method getSecure = cookieClass.getMethod(GET_SECURE, null);
-					getSecure.setAccessible(true);
+                    Class cookieClass = args[0].getClass();
+                    Method getSecure = cookieClass.getMethod(GET_SECURE, null);
+                    getSecure.setAccessible(true);
 
-					boolean value = (boolean) getSecure.invoke(args[0], null);
+                    boolean value = (boolean) getSecure.invoke(args[0], null);
 
-					SecureCookieOperationalBean secureCookieOperationalBean = new SecureCookieOperationalBean(
-							(value ? TRUE : FALSE), className, sourceString, exectionId,
-							Instant.now().toEpochMilli(), methodName);
-					EventDispatcher.dispatch(secureCookieOperationalBean, VulnerabilityCaseType.SECURE_COOKIE);
+                    SecureCookieOperationalBean secureCookieOperationalBean = new SecureCookieOperationalBean(
+                            (value ? TRUE : FALSE), className, sourceString, exectionId,
+                            Instant.now().toEpochMilli(), methodName);
+                    EventDispatcher.dispatch(secureCookieOperationalBean, VulnerabilityCaseType.SECURE_COOKIE);
 //					System.out.println("OnEnter :" + sourceString + " - args : " + Arrays.asList(args) + " - this : "
 //							+ obj + " - eid : " + exectionId);
-				}
+                }
 
-			} finally {
-				ThreadLocalOperationLock.getInstance().release();
-			}
-		}
-	}
+            } finally {
+                ThreadLocalOperationLock.getInstance().release();
+            }
+        }
+    }
 
-	public static void doOnExit(String sourceString, String className, String methodName, Object obj, Object[] args,
-			Object returnVal, String exectionId) {
+    public static void doOnExit(String sourceString, String className, String methodName, Object obj, Object[] args,
+                                Object returnVal, String exectionId) {
 //		if(!ThreadLocalHttpMap.getInstance().isEmpty() && !ThreadLocalOperationLock.getInstance().isAcquired()) {
 //			try {
 //				ThreadLocalOperationLock.getInstance().acquire();
@@ -56,10 +56,10 @@ public class Callbacks {
 //				ThreadLocalOperationLock.getInstance().release();
 //			}
 //		}
-	}
+    }
 
-	public static void doOnError(String sourceString, String className, String methodName, Object obj, Object[] args,
-			Throwable error, String exectionId) throws Throwable {
+    public static void doOnError(String sourceString, String className, String methodName, Object obj, Object[] args,
+                                 Throwable error, String exectionId) throws Throwable {
 //		if (!ThreadLocalHttpMap.getInstance().isEmpty() && !ThreadLocalOperationLock.getInstance().isAcquired()) {
 //			try {
 //				ThreadLocalOperationLock.getInstance().acquire();
@@ -69,5 +69,5 @@ public class Callbacks {
 //				ThreadLocalOperationLock.getInstance().release();
 //			}
 //		}
-	}
+    }
 }

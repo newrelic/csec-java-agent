@@ -12,15 +12,15 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class JAHealthCheck extends AgentBasicInfo {
 
-	private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
+    private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
 
-	private String applicationUUID;
+    private String applicationUUID;
 
-	private String protectedServer;
+    private String protectedServer;
 
-	private Set protectedDB;
+    private Set protectedDB;
 
-	private AtomicInteger eventDropCount;
+    private AtomicInteger eventDropCount;
 
     private IdentifierEnvs kind;
 
@@ -46,7 +46,7 @@ public class JAHealthCheck extends AgentBasicInfo {
         logger.log(LogLevel.INFO, "JA Healthcheck created : " + this.toString(), JAHealthCheck.class.getName());
     }
 
-	public JAHealthCheck(JAHealthCheck jaHealthCheck) {
+    public JAHealthCheck(JAHealthCheck jaHealthCheck) {
         super();
         this.applicationUUID = jaHealthCheck.applicationUUID;
         this.protectedServer = jaHealthCheck.protectedServer;
@@ -66,122 +66,122 @@ public class JAHealthCheck extends AgentBasicInfo {
 
     public void setKind(IdentifierEnvs kind) {
         this.kind = kind;
-	}
+    }
 
-	/**
-	 * @return the applicationUUID
-	 */
-	public String getApplicationUUID() {
-		return applicationUUID;
-	}
+    /**
+     * @return the applicationUUID
+     */
+    public String getApplicationUUID() {
+        return applicationUUID;
+    }
 
-	/**
-	 * @param applicationUUID the applicationUUID to set
-	 */
-	public void setApplicationUUID(String applicationUUID) {
-		this.applicationUUID = applicationUUID;
-	}
+    /**
+     * @param applicationUUID the applicationUUID to set
+     */
+    public void setApplicationUUID(String applicationUUID) {
+        this.applicationUUID = applicationUUID;
+    }
 
-	/**
-	 * @return the protectedServer
-	 */
-	public String getProtectedServer() {
-		return protectedServer;
-	}
+    /**
+     * @return the protectedServer
+     */
+    public String getProtectedServer() {
+        return protectedServer;
+    }
 
-	/**
-	 * @param protectedServer the protectedServer to set
-	 */
-	public void setProtectedServer(String protectedServer) {
-		this.protectedServer = protectedServer;
-		K2Instrumentator.APPLICATION_INFO_BEAN.getServerInfo().setName(protectedServer);
-	}
+    /**
+     * @param protectedServer the protectedServer to set
+     */
+    public void setProtectedServer(String protectedServer) {
+        this.protectedServer = protectedServer;
+        K2Instrumentator.APPLICATION_INFO_BEAN.getServerInfo().setName(protectedServer);
+    }
 
-	/**
-	 * @return the protectedDB
-	 */
-	public Set getProtectedDB() {
-		return protectedDB;
-	}
+    /**
+     * @return the protectedDB
+     */
+    public Set getProtectedDB() {
+        return protectedDB;
+    }
 
-	/**
-	 * @param protectedDB the protectedDB to set
-	 */
-	public void setProtectedDB(Set protectedDB) {
-		this.protectedDB = protectedDB;
-	}
+    /**
+     * @param protectedDB the protectedDB to set
+     */
+    public void setProtectedDB(Set protectedDB) {
+        this.protectedDB = protectedDB;
+    }
 
-	/**
-	 * @return the eventDropCount
-	 */
-	public Integer getEventDropCount() {
-		return eventDropCount.get();
-	}
+    /**
+     * @return the eventDropCount
+     */
+    public Integer getEventDropCount() {
+        return eventDropCount.get();
+    }
 
-	/**
-	 * @param eventDropCount the eventDropCount to set
-	 */
-	public void setEventDropCount(Integer eventDropCount) {
-		this.eventDropCount.set(eventDropCount);
-	}
+    /**
+     * @param eventDropCount the eventDropCount to set
+     */
+    public void setEventDropCount(Integer eventDropCount) {
+        this.eventDropCount.set(eventDropCount);
+    }
 
-	public void incrementDropCount() {
-		this.eventDropCount.getAndIncrement();
-	}
-	
-	public void incrementProcessedCount() {
-		this.eventProcessed.getAndIncrement();
-	}
+    public void incrementDropCount() {
+        this.eventDropCount.getAndIncrement();
+    }
 
-	public void incrementEventSentCount() {
-		this.eventSentCount.getAndIncrement();
-	}
+    public void incrementProcessedCount() {
+        this.eventProcessed.getAndIncrement();
+    }
 
-	public void decrementEventSentCount() {
-		this.eventSentCount.getAndDecrement();
-	}
+    public void incrementEventSentCount() {
+        this.eventSentCount.getAndIncrement();
+    }
 
-	public void incrementHttpRequestCount() {
-		this.httpRequestCount.getAndIncrement();
-	}
+    public void decrementEventSentCount() {
+        this.eventSentCount.getAndDecrement();
+    }
 
-	public void decrementHttpRequestCount() {
-		this.httpRequestCount.getAndDecrement();
-	}
+    public void incrementHttpRequestCount() {
+        this.httpRequestCount.getAndIncrement();
+    }
+
+    public void decrementHttpRequestCount() {
+        this.httpRequestCount.getAndDecrement();
+    }
 
 
-	@Override
-	public String toString() {
-		return JsonConverter.toJSON(this);
-	}
+    @Override
+    public String toString() {
+        return JsonConverter.toJSON(this);
+    }
 
-	/**
-	 * @return the eventProcessed
-	 */
-	public Integer getEventProcessed() {
-		return eventProcessed.get();
-	}
+    /**
+     * @return the eventProcessed
+     */
+    public Integer getEventProcessed() {
+        return eventProcessed.get();
+    }
 
-	/**
-	 * @param eventProcessed the eventProcessed to set
-	 */
-	public void setEventProcessed(Integer eventProcessed) {
-		this.eventProcessed.set(eventProcessed);
-	}
+    /**
+     * @param eventProcessed the eventProcessed to set
+     */
+    public void setEventProcessed(Integer eventProcessed) {
+        this.eventProcessed.set(eventProcessed);
+    }
 
-	/**
-	 * @return the eventSentCount
-	 */
-	public AtomicInteger getEventSentCount() {
-		return eventSentCount;
-	}
+    /**
+     * @return the eventSentCount
+     */
+    public AtomicInteger getEventSentCount() {
+        return eventSentCount;
+    }
 
-	/**
-	 * @param eventSentCount the eventSentCount to set
-	 */
-	public void setEventSentCount(Integer eventSentCount) {
-		this.eventSentCount.set(eventSentCount);
-	}
+    /**
+     * @param eventSentCount the eventSentCount to set
+     */
+    public void setEventSentCount(Integer eventSentCount) {
+        this.eventSentCount.set(eventSentCount);
+    }
 
     public Set getProtectedVulnerabilities() {
         return protectedVulnerabilities;

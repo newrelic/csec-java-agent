@@ -4,32 +4,32 @@ import org.apache.commons.lang3.StringUtils;
 
 public class RandomOperationalBean extends AbstractOperationalBean {
 
-	private String eventCatgory;
-	
-	public RandomOperationalBean(String eventCatgory, String className, String sourceMethod, String executionId, long startTime, String methodName) {
-		super(className, sourceMethod, executionId, startTime, methodName);
-		this.eventCatgory = eventCatgory;
-	}
+    private String eventCatgory;
 
-	/**
-	 * @return the eventCatgory
-	 */
-	public String getEventCatgory() {
-		return eventCatgory;
-	}
+    public RandomOperationalBean(String eventCatgory, String className, String sourceMethod, String executionId, long startTime, String methodName) {
+        super(className, sourceMethod, executionId, startTime, methodName);
+        this.eventCatgory = eventCatgory;
+    }
 
-	/**
-	 * @param eventCatgory the eventCatgory to set
-	 */
-	public void setEventCatgory(String eventCatgory) {
-		this.eventCatgory = eventCatgory;
-	}
+    /**
+     * @return the eventCatgory
+     */
+    public String getEventCatgory() {
+        return eventCatgory;
+    }
 
-	@Override
-	public boolean isEmpty() {
-		// TODO Auto-generated method stub
-		return StringUtils.isBlank(eventCatgory);
-	}
+    /**
+     * @param eventCatgory the eventCatgory to set
+     */
+    public void setEventCatgory(String eventCatgory) {
+        this.eventCatgory = eventCatgory;
+    }
 
-	
+    @Override
+    public boolean isEmpty() {
+        // TODO Auto-generated method stub
+        return StringUtils.isBlank(eventCatgory);
+    }
+
+
 }

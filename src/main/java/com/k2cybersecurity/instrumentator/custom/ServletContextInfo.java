@@ -12,9 +12,6 @@ import java.io.File;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.nio.file.Paths;
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.Enumeration;
 
 public class ServletContextInfo {
@@ -24,9 +21,9 @@ public class ServletContextInfo {
     public static final String GET_MINOR_VERSION = "getMinorVersion";
     public static final String GET_REAL_PATH = "getRealPath";
     public static final String GET_SERVLET_CONTEXT_NAME = "getServletContextName";
-    public static final String GET_RESOURCE_PATHS= "getResourcePaths";
-    public static final String GET_RESOURCE= "getResource";
-    public static final String GET_RESOURCES= "getResources";
+    public static final String GET_RESOURCE_PATHS = "getResourcePaths";
+    public static final String GET_RESOURCE = "getResource";
+    public static final String GET_RESOURCES = "getResources";
     public static final String ERROR = "Error : ";
     public static final String GET_CLASS_LOADER = "getClassLoader";
     public static final String FORWARD_SLASH = "/";
@@ -148,12 +145,12 @@ public class ServletContextInfo {
             if (StringUtils.startsWithIgnoreCase(deployedApplication.getDeployedPath(), JAR_FILE)) {
                 deployedApplication.setEmbedded(true);
                 deployedApplication.setDeployedPath(StringUtils.substringBetween(deployedApplication.getDeployedPath(), JAR_FILE, NOT));
-            } else if(StringUtils.startsWithIgnoreCase(deployedApplication.getDeployedPath(), FILE)) {
+            } else if (StringUtils.startsWithIgnoreCase(deployedApplication.getDeployedPath(), FILE)) {
                 deployedApplication.setDeployedPath(StringUtils.substringBetween(deployedApplication.getDeployedPath(), FILE, NOT));
             }
 
             String intermediatePath = deployedApplication.getDeployedPath();
-            if(StringUtils.contains(intermediatePath, INF + File.separator)){
+            if (StringUtils.contains(intermediatePath, INF + File.separator)) {
                 intermediatePath = StringUtils.substringBefore(intermediatePath, INF + File.separator);
                 deployedApplication.setDeployedPath(new File(intermediatePath).getParent());
             }
@@ -166,11 +163,10 @@ public class ServletContextInfo {
             return false;
         }
 
-        if (StringUtils.equalsAnyIgnoreCase(deployedApplication.getAppName(), ROOT, APPLICATION)){
+        if (StringUtils.equalsAnyIgnoreCase(deployedApplication.getAppName(), ROOT, APPLICATION)) {
             if (StringUtils.endsWithIgnoreCase(deployedApplication.getDeployedPath(), JAR_EXT)) {
                 deployedApplication.setAppName(Paths.get(deployedApplication.getDeployedPath()).getFileName().toString());
-            }
-            else if(!StringUtils.equals(deployedApplication.getContextPath(), FORWARD_SLASH)){
+            } else if (!StringUtils.equals(deployedApplication.getContextPath(), FORWARD_SLASH)) {
                 deployedApplication.setAppName(StringUtils.removeStart(StringUtils.replace(deployedApplication.getContextPath(), FORWARD_SLASH, REPLACEMENT),
                         REPLACEMENT));
                 deployedApplication.setAppName(StringUtils.removeEnd(deployedApplication.getAppName(), REPLACEMENT));
@@ -194,24 +190,24 @@ public class ServletContextInfo {
             getClassLoader.setAccessible(true);
             ClassLoader classLoader = (ClassLoader) getClassLoader.invoke(servletContext, null);
 
-            if(classLoader != null) {
+            if (classLoader != null) {
                 Enumeration<URL> appPathURLEnum = classLoader.getResources(StringUtils.EMPTY);
-                while(appPathURLEnum !=null && appPathURLEnum.hasMoreElements()){
+                while (appPathURLEnum != null && appPathURLEnum.hasMoreElements()) {
                     URL app = appPathURLEnum.nextElement();
 //                    System.out.println("L1 : " + app.getPath());
                     logger.log(LogLevel.DEBUG, L_1 + app.getPath(), ServletContextInfo.class.getName());
 
-                    if(StringUtils.containsAny(app.getPath(), CLASSES_STR, CLASSES_STR_1)){
+                    if (StringUtils.containsAny(app.getPath(), CLASSES_STR, CLASSES_STR_1)) {
                         appPath = app.getPath();
                         break;
                     }
                 }
-                if(StringUtils.isNotBlank((appPath))){
+                if (StringUtils.isNotBlank((appPath))) {
                     logger.log(LogLevel.DEBUG, WEBAPP_PATH_DETECTED_USING_METHOD_1 + appPath, ServletContextInfo.class.getName());
                     return appPath;
                 }
             }
-        } catch (Throwable e){
+        } catch (Throwable e) {
             logger.log(LogLevel.ERROR, ERROR, e, ServletContextInfo.class.getName());
         }
 

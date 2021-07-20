@@ -9,9 +9,7 @@ import com.k2cybersecurity.instrumentator.utils.CollectorConfigurationUtils;
 import com.k2cybersecurity.instrumentator.utils.HashGenerator;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
-import com.k2cybersecurity.intcodeagent.logging.DeployedApplication;
 import com.k2cybersecurity.intcodeagent.logging.HealthCheckScheduleThread;
-import com.k2cybersecurity.intcodeagent.logging.ServerInfo;
 import com.k2cybersecurity.intcodeagent.models.config.PolicyApplicationInfo;
 import com.k2cybersecurity.intcodeagent.models.javaagent.*;
 import com.k2cybersecurity.intcodeagent.schedulers.PolicyPullST;
@@ -35,7 +33,10 @@ import java.net.URL;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.UUID;
 
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.*;
 

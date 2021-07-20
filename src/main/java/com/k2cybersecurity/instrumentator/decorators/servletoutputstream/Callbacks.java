@@ -4,8 +4,6 @@ import com.k2cybersecurity.instrumentator.custom.ThreadLocalHTTPIOLock;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalHttpMap;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalOperationLock;
 
-import java.util.Arrays;
-
 public class Callbacks {
 
     public static final String PRINT = "print";
@@ -16,7 +14,7 @@ public class Callbacks {
                                  String exectionId) {
 
 //        System.out.println("Came to reponse output stream :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj + " - eid : " + exectionId);
-        if (!ThreadLocalHttpMap.getInstance().isEmpty() && !ThreadLocalOperationLock.getInstance().isAcquired() && ThreadLocalHttpMap.getInstance().getResponseOutputStream()!= null && obj!=null && ThreadLocalHttpMap.getInstance().getResponseOutputStream().hashCode() == obj.hashCode()
+        if (!ThreadLocalHttpMap.getInstance().isEmpty() && !ThreadLocalOperationLock.getInstance().isAcquired() && ThreadLocalHttpMap.getInstance().getResponseOutputStream() != null && obj != null && ThreadLocalHttpMap.getInstance().getResponseOutputStream().hashCode() == obj.hashCode()
                 && !ThreadLocalHTTPIOLock.getInstance().isAcquired()) {
             try {
                 ThreadLocalOperationLock.getInstance().acquire();

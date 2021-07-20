@@ -9,17 +9,17 @@ import org.apache.commons.lang3.StringUtils;
 
 public abstract class AbstractOperationalBean {
 
-	private String className;
+    private String className;
 
-	private String methodName;
+    private String methodName;
 
-	private String sourceMethod;
+    private String sourceMethod;
 
-	private String executionId;
+    private String executionId;
 
-	private long startTime;
+    private long startTime;
 
-	private long blockingEndTime;
+    private long blockingEndTime;
 
     @JsonIgnore
     private Object currentGenericServletInstance;
@@ -43,104 +43,105 @@ public abstract class AbstractOperationalBean {
     }
 
     public AbstractOperationalBean(String className, String sourceMethod, String executionId
-			, long startTime, String methodName){
-		this.className = className;
-		this.sourceMethod = sourceMethod;
-		this.executionId = executionId;
-		this.startTime = startTime;
-		this.methodName = methodName;
-		this.blockingEndTime = 0L;
-		this.currentGenericServletMethodName = ThreadLocalHTTPDoFilterMap.getInstance().getCurrentGenericServletMethodName();
-		this.currentGenericServletInstance = ThreadLocalHTTPDoFilterMap.getInstance().getCurrentGenericServletInstance();
-		this.stackTrace = Thread.currentThread().getStackTrace();
-		this.userClassEntity = AgentUtils.getInstance().detectUserClass(this.stackTrace,
-				this.currentGenericServletInstance,
-				this.currentGenericServletMethodName, className, methodName);
+            , long startTime, String methodName) {
+        this.className = className;
+        this.sourceMethod = sourceMethod;
+        this.executionId = executionId;
+        this.startTime = startTime;
+        this.methodName = methodName;
+        this.blockingEndTime = 0L;
+        this.currentGenericServletMethodName = ThreadLocalHTTPDoFilterMap.getInstance().getCurrentGenericServletMethodName();
+        this.currentGenericServletInstance = ThreadLocalHTTPDoFilterMap.getInstance().getCurrentGenericServletInstance();
+        this.stackTrace = Thread.currentThread().getStackTrace();
+        this.userClassEntity = AgentUtils.getInstance().detectUserClass(this.stackTrace,
+                this.currentGenericServletInstance,
+                this.currentGenericServletMethodName, className, methodName);
 
 
-	}
+    }
 
-	public String toString() {
-		return JsonConverter.toJSON(this);
-	}
+    public String toString() {
+        return JsonConverter.toJSON(this);
+    }
 
-	public String getClassName() {
-		return className;
-	}
+    public String getClassName() {
+        return className;
+    }
 
-	public void setClassName(String className) {
-		this.className = className;
-	}
+    public void setClassName(String className) {
+        this.className = className;
+    }
 
-	public String getSourceMethod() {
-		return sourceMethod;
-	}
+    public String getSourceMethod() {
+        return sourceMethod;
+    }
 
-	public void setSourceMethod(String sourceMethod) {
-		this.sourceMethod = sourceMethod;
-	}
+    public void setSourceMethod(String sourceMethod) {
+        this.sourceMethod = sourceMethod;
+    }
 
-	public String getExecutionId() {
-		return executionId;
-	}
+    public String getExecutionId() {
+        return executionId;
+    }
 
-	public void setExecutionId(String executionId) {
-		this.executionId = executionId;
-	}
+    public void setExecutionId(String executionId) {
+        this.executionId = executionId;
+    }
 
-	public long getStartTime() {
-		return startTime;
-	}
+    public long getStartTime() {
+        return startTime;
+    }
 
-	/**
-	 * Logically determines if the bean is empty.
-	 * @return boolean
-	 */
-	public abstract boolean isEmpty();
+    /**
+     * Logically determines if the bean is empty.
+     *
+     * @return boolean
+     */
+    public abstract boolean isEmpty();
 
-	public void setStartTime(long startTime) {
-		this.startTime = startTime;
-	}
+    public void setStartTime(long startTime) {
+        this.startTime = startTime;
+    }
 
-	public long getBlockingEndTime() {
-		return blockingEndTime;
-	}
+    public long getBlockingEndTime() {
+        return blockingEndTime;
+    }
 
-	public void setBlockingEndTime(long blockingEndTime) {
-		this.blockingEndTime = blockingEndTime;
-	}
+    public void setBlockingEndTime(long blockingEndTime) {
+        this.blockingEndTime = blockingEndTime;
+    }
 
-	@JsonIgnore
-	public Object getCurrentGenericServletInstance() {
-		return currentGenericServletInstance;
-	}
+    @JsonIgnore
+    public Object getCurrentGenericServletInstance() {
+        return currentGenericServletInstance;
+    }
 
-	@JsonIgnore
-	public void setCurrentGenericServletInstance(Object currentGenericServletInstance) {
-		this.currentGenericServletInstance = currentGenericServletInstance;
-	}
+    @JsonIgnore
+    public void setCurrentGenericServletInstance(Object currentGenericServletInstance) {
+        this.currentGenericServletInstance = currentGenericServletInstance;
+    }
 
-	public String getCurrentGenericServletMethodName() {
-		return currentGenericServletMethodName;
-	}
+    public String getCurrentGenericServletMethodName() {
+        return currentGenericServletMethodName;
+    }
 
-	public void setCurrentGenericServletMethodName(String currentGenericServletMethodName) {
-		this.currentGenericServletMethodName = currentGenericServletMethodName;
-	}
+    public void setCurrentGenericServletMethodName(String currentGenericServletMethodName) {
+        this.currentGenericServletMethodName = currentGenericServletMethodName;
+    }
 
-	public StackTraceElement[] getStackTrace() {
-		return stackTrace;
-	}
+    public StackTraceElement[] getStackTrace() {
+        return stackTrace;
+    }
 
-	public void setStackTrace(StackTraceElement[] stackTrace) {
-		this.stackTrace = stackTrace;
-	}
+    public void setStackTrace(StackTraceElement[] stackTrace) {
+        this.stackTrace = stackTrace;
+    }
 
-	public String getMethodName() {
-		return methodName;
-	}
+    public String getMethodName() {
+        return methodName;
+    }
 
-	public void setMethodName(String methodName) {
+    public void setMethodName(String methodName) {
         this.methodName = methodName;
     }
 
