@@ -12,7 +12,9 @@ import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.logging.DeployedApplication;
 import com.k2cybersecurity.intcodeagent.logging.IAgentConstants;
-import com.k2cybersecurity.intcodeagent.models.javaagent.*;
+import com.k2cybersecurity.intcodeagent.models.javaagent.CVEComponent;
+import com.k2cybersecurity.intcodeagent.models.javaagent.CVEPackageInfo;
+import com.k2cybersecurity.intcodeagent.models.javaagent.CVEScanner;
 import com.squareup.okhttp.Response;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -70,18 +72,6 @@ public class CVEComponentsService {
     private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
 
     private static OSVariables osVariables = OsVariablesInstance.getInstance().getOsVariables();
-
-    public static ScanComponentData getAllComponents(DeployedApplication deployedApplication) {
-        Set<String> appJarPaths = getAllJarsFromApp(deployedApplication.getDeployedPath());
-        ScanComponentData scanComponentData = new ScanComponentData(K2Instrumentator.APPLICATION_UUID);
-        ApplicationScanComponentData applicationScanComponentData = new ApplicationScanComponentData(
-                deployedApplication.getAppName(), deployedApplication.getSha256());
-        applicationScanComponentData.setComponents(getCVEComponents(appJarPaths));
-        envCveComponents.removeAll(applicationScanComponentData.getComponents());
-        scanComponentData.setEnvComponents(envCveComponents);
-        scanComponentData.setDeployedApplications(Collections.singleton(applicationScanComponentData));
-        return scanComponentData;
-    }
 
     private static Set<CVEComponent> getCVEComponents(Set<String> libPaths) {
         Set<CVEComponent> cveComponents = new HashSet();

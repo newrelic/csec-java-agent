@@ -8,7 +8,6 @@ import com.k2cybersecurity.instrumentator.utils.InstrumentationUtils;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.logging.IAgentConstants;
-import com.k2cybersecurity.intcodeagent.models.config.AgentPolicy;
 import com.k2cybersecurity.intcodeagent.models.javaagent.CollectorInitMsg;
 import com.k2cybersecurity.intcodeagent.models.javaagent.EventResponse;
 import com.k2cybersecurity.intcodeagent.models.javaagent.IntCodeControlCommand;
@@ -111,28 +110,6 @@ public class ControlCommandProcessor implements Runnable {
                 logger.log(LogLevel.DEBUG, FUZZ_REQUEST + controlCommandMessage,
                         ControlCommandProcessor.class.getName());
                 RestRequestProcessor.processControlCommand(controlCommand);
-                break;
-
-            case IntCodeControlCommand.SEND_POLICY:
-                if (controlCommand.getData() == null) {
-                    logger.log(LogLevel.WARNING, controlCommand.toString(), ControlCommandProcessor.class.getName());
-                    return;
-                }
-
-                try {
-                    AgentPolicy newPolicy = new ObjectMapper().readValue(controlCommand.getData().toString(), AgentPolicy.class);
-                    if (StringUtils.equals(newPolicy.getVersion(), AgentUtils.getInstance().getAgentPolicy().getVersion())) {
-                        return;
-                    }
-                    AgentUtils.getInstance().setAgentPolicy(newPolicy);
-                    AgentUtils.getInstance().enforcePolicy();
-                    logger.log(LogLevel.INFO, String.format(IAgentConstants.AGENT_POLICY_APPLIED_S,
-                            AgentUtils.getInstance().getAgentPolicy()), ControlCommandProcessor.class.getName());
-                } catch (Throwable e) {
-                    logger.log(LogLevel.ERROR, IAgentConstants.UNABLE_TO_SET_AGENT_POLICY_DUE_TO_ERROR, e,
-                            ControlCommandProcessor.class.getName());
-                }
-
                 break;
 
             case IntCodeControlCommand.STARTUP_WELCOME_MSG:

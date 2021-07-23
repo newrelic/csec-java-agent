@@ -7,4 +7,7 @@ public interface IRestClientConstants {
     String COLLECTOR_CVE = "/collector/cve";
 
     String COLLECTOR_UPLOAD_LOG = "/collector/uploadLog";
+
+    String GET_POLICY = "POLICY";
+
 }

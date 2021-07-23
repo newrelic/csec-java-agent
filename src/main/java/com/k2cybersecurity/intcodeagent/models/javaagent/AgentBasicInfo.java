@@ -62,8 +62,6 @@ public class AgentBasicInfo {
             setJsonName(JSON_NAME_SHUTDOWN);
         } else if (this instanceof JavaAgentDynamicPathBean) {
             setJsonName(JSON_NAME_DYNAMICJARPATH_BEAN);
-        } else if (this instanceof ScanComponentData) {
-            setJsonName(SCAN_COMPONENT_DATA);
         } else if (this instanceof FuzzFailEvent) {
             setJsonName(JSON_NAME_FUZZ_FAIL);
         } else if (this instanceof HttpConnectionStat) {
