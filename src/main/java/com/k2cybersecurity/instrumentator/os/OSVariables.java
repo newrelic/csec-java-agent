@@ -9,6 +9,7 @@ public class OSVariables {
     private String cvePackageBaseDir;
     private String osArch;
     private String configPath;
+    private String policyConfigPath;
 
     public String getOs() {
         return os;
@@ -72,5 +73,13 @@ public class OSVariables {
 
     public void setConfigPath(String configPath) {
         this.configPath = configPath;
+    }
+
+    public String getPolicyConfigPath() {
+        return policyConfigPath;
+    }
+
+    public void setPolicyConfigPath(String policyConfigPath) {
+        this.policyConfigPath = policyConfigPath;
     }
 }

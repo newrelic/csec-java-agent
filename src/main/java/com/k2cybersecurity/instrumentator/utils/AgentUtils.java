@@ -4,6 +4,8 @@ import com.k2cybersecurity.instrumentator.K2Instrumentator;
 import com.k2cybersecurity.instrumentator.custom.ClassloaderAdjustments;
 import com.k2cybersecurity.instrumentator.cve.scanner.CVEScannerPool;
 import com.k2cybersecurity.instrumentator.cve.scanner.CVEServiceLinux;
+import com.k2cybersecurity.instrumentator.os.OSVariables;
+import com.k2cybersecurity.instrumentator.os.OsVariablesInstance;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.filelogging.LogWriter;
@@ -125,6 +127,10 @@ public class AgentUtils {
 
     private String groupName = StringUtils.EMPTY;
 
+    private File configLoadPath;
+
+    private OSVariables osVariables = OsVariablesInstance.getInstance().getOsVariables();
+
     private AgentUtils() {
 
         transformedClasses = new HashSet<>();
@@ -134,6 +140,7 @@ public class AgentUtils {
         applicationInfo = new PolicyApplicationInfo();
         deployedApplicationUnderProcessing = new HashSet<>();
         TRACE_PATTERN = Pattern.compile(IAgentConstants.TRACE_REGEX);
+        configLoadPath = new File(osVariables.getPolicyConfigPath(), String.format("policy-%s.yaml", K2Instrumentator.APPLICATION_UUID));
 //		this.sqlConnectionMap = new LinkedHashMap<Integer, JADatabaseMetaData>(50, 0.75f, true) {
 //            @Override
 //            protected boolean removeEldestEntry(java.util.Map.Entry<Integer, JADatabaseMetaData> eldest) {
@@ -228,6 +235,10 @@ public class AgentUtils {
 
     public void setCollectAppInfoFromEnv(boolean collectAppInfoFromEnv) {
         this.collectAppInfoFromEnv = collectAppInfoFromEnv;
+    }
+
+    public File getConfigLoadPath() {
+        return configLoadPath;
     }
 
     public PolicyApplicationInfo getApplicationInfo() {

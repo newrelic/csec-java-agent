@@ -9,6 +9,7 @@ import com.k2cybersecurity.instrumentator.httpclient.IRestClientConstants;
 import com.k2cybersecurity.instrumentator.os.OSVariables;
 import com.k2cybersecurity.instrumentator.os.OsVariablesInstance;
 import com.k2cybersecurity.instrumentator.utils.AgentUtils;
+import com.k2cybersecurity.instrumentator.utils.DirectoryWatcher;
 import com.k2cybersecurity.intcodeagent.controlcommand.ControlCommandProcessor;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
@@ -17,8 +18,9 @@ import com.k2cybersecurity.intcodeagent.models.config.AgentPolicy;
 import com.squareup.okhttp.Response;
 import org.apache.commons.lang3.StringUtils;
 
-import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.*;
 
@@ -30,6 +32,7 @@ public class PolicyPullST {
     public static final String POLICY_WRITE_FAILED = "policy write failed : ";
     public static final String POLICY_READ_FAILED_S_S = "Policy read failed : %s : %s";
     public static final String POLICY_READ_FAILED = "Policy read failed !!! ";
+    public static final String FALLING_BACK_TO_DEFAULT_CONFIG = "Falling back to default config.";
 
     private ScheduledExecutorService executorService;
 
@@ -84,7 +87,7 @@ public class PolicyPullST {
         }
     }
 
-    private void readAndApplyConfig(AgentPolicy newPolicy) {
+    public void readAndApplyConfig(AgentPolicy newPolicy) {
         try {
             if (StringUtils.equals(newPolicy.getVersion(), AgentUtils.getInstance().getAgentPolicy().getVersion())) {
                 return;
@@ -102,8 +105,8 @@ public class PolicyPullST {
     private void writePolicyToFile() {
         try {
             ObjectMapper mapper = new ObjectMapper(new YAMLFactory().disable(YAMLGenerator.Feature.WRITE_DOC_START_MARKER));
-            mapper.writeValue(new File(osVariables.getConfigPath(), String.format("policy-%s.yaml", K2Instrumentator.APPLICATION_UUID)), AgentUtils.getInstance().getAgentPolicy());
-
+            mapper.writeValue(AgentUtils.getInstance().getConfigLoadPath(), AgentUtils.getInstance().getAgentPolicy());
+            DirectoryWatcher.watchDirectories(Collections.singletonList(AgentUtils.getInstance().getConfigLoadPath().getAbsolutePath()), false);
         } catch (IOException e) {
             logger.log(LogLevel.ERROR, POLICY_WRITE_FAILED, e, PolicyPullST.class.getName());
         }
@@ -123,6 +126,32 @@ public class PolicyPullST {
     public void cancelTask() {
         if (future != null) {
             future.cancel(false);
+        }
+    }
+
+    public AgentPolicy populateConfig() {
+        if (!AgentUtils.getInstance().getConfigLoadPath().isFile()) {
+            return loadDefaultConfig();
+        }
+        ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
+        try {
+            AgentUtils.getInstance()
+                    .setAgentPolicy(mapper.readValue(AgentUtils.getInstance().getConfigLoadPath(), AgentPolicy.class));
+            return AgentUtils.getInstance().getAgentPolicy();
+        } catch (Exception e) {
+            logger.log(LogLevel.ERROR, FALLING_BACK_TO_DEFAULT_CONFIG, e, DirectoryWatcher.class.getName());
+            return loadDefaultConfig();
+        }
+    }
+
+    private AgentPolicy loadDefaultConfig() {
+        try {
+            InputStream in = this.getClass().getClassLoader().getResourceAsStream("default-policy.yaml");
+            ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
+            return mapper.readValue(in, AgentPolicy.class);
+        } catch (Exception e) {
+            logger.log(LogLevel.ERROR, FALLING_BACK_TO_DEFAULT_CONFIG, e, DirectoryWatcher.class.getName());
+            return null;
         }
     }
 }

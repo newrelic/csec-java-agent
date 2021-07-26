@@ -1,0 +1,28 @@
+version: “1"
+logLevel: "INFO"
+policyPull: true
+policyPullInterval: 1
+vulnerabilityScan:
+  enabled: true
+  cveScan:
+    enabled: true
+    enableEnvScan: true
+    cveDefinitionUpdateInterval: 360
+  iastScan:
+    enabled: false
+    probing:
+      interval: 1
+      batchSize: 17
+protectionMode:
+  enabled: false
+  ipBlocking:
+    enabled: false
+    attackerIpBlocking: false
+    ipDetectViaXFF: false
+    timeout: 2
+  apiBlocking:
+    enabled: false
+    protectAllApis: false
+    protectKnownVulnerableApis: false
+    protectAttackedApis: false
+sendCompleteStackTrace: false

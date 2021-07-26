@@ -1,12 +1,8 @@
 package com.k2cybersecurity.instrumentator;
 
-import com.k2cybersecurity.instrumentator.custom.ClassloaderAdjustments;
 import com.k2cybersecurity.instrumentator.os.OSVariables;
 import com.k2cybersecurity.instrumentator.os.OsVariablesInstance;
-import com.k2cybersecurity.instrumentator.utils.AgentUtils;
-import com.k2cybersecurity.instrumentator.utils.ApplicationInfoUtils;
-import com.k2cybersecurity.instrumentator.utils.CollectorConfigurationUtils;
-import com.k2cybersecurity.instrumentator.utils.HashGenerator;
+import com.k2cybersecurity.instrumentator.utils.*;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.logging.HealthCheckScheduleThread;
@@ -128,6 +124,7 @@ public class K2Instrumentator {
             boolean isWorking = eventWritePool();
 
             PolicyPullST.getInstance();
+            DirectoryWatcher.startMonitorDaemon();
 
             System.out.println(String.format("This application instance is now being protected by K2 Agent under id %s", APPLICATION_UUID));
             return isWorking;
