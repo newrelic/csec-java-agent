@@ -15,7 +15,6 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
-import org.apache.commons.text.StringEscapeUtils;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -29,10 +28,7 @@ import java.net.URL;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.*;
 
@@ -151,7 +147,7 @@ public class K2Instrumentator {
                     isDynamicAttach ? DYNAMIC : STATIC);
             applicationInfoBean.setStartTime(runtimeMXBean.getStartTime());
             identifier.setCollectorIp(getIpAddress());
-            applicationInfoBean.setCmdline(StringEscapeUtils.escapeJava(getCmdLineArgsByProc()));
+            applicationInfoBean.setCmdline(new ArrayList<>(Arrays.asList(getCmdLineArgsByProc().split("(\\s+)|(\0+)"))));
 
             //TODO remove use of proc
             try {
@@ -160,7 +156,7 @@ public class K2Instrumentator {
                                 new File(String.format(PROC_S_EXE, applicationInfoBean.getPid())).toPath())
                         .toString());
                 applicationInfoBean
-                        .setBinaryName(StringUtils.substringAfterLast(applicationInfoBean.getBinaryPath(), File.separator));
+                        .setBinaryName(String.format(PROC_S_COMM, applicationInfoBean.getPid()));
                 applicationInfoBean.setSha256(HashGenerator.getChecksum(new File(applicationInfoBean.getBinaryPath())));
             } catch (IOException e) {
             }
@@ -321,7 +317,7 @@ public class K2Instrumentator {
     private static String getCmdLineArgsByProc() {
         File cmdlineFile = new File(PROC_SELF_DIR + CMD_LINE_DIR);
         if (!cmdlineFile.isFile())
-            return null;
+            return StringUtils.EMPTY;
         try {
             String cmdline = FileUtils.readFileToString(cmdlineFile,
                     StandardCharsets.UTF_8);
@@ -329,7 +325,7 @@ public class K2Instrumentator {
                 return cmdline;
         } catch (IOException e) {
         }
-        return null;
+        return StringUtils.EMPTY;
     }
 
     private static String getStartTimeByProc(Integer pid) {

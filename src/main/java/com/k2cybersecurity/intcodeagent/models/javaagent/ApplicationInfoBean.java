@@ -35,7 +35,7 @@ public class ApplicationInfoBean extends AgentBasicInfo {
     /**
      * cmdline.
      */
-    private String cmdline;
+    private List<String> cmdline;
 
     /**
      * application start time.
@@ -138,11 +138,11 @@ public class ApplicationInfoBean extends AgentBasicInfo {
         this.applicationName = applicationName;
     }
 
-    public String getCmdline() {
+    public List<String> getCmdline() {
         return cmdline;
     }
 
-    public void setCmdline(String cmdline) {
+    public void setCmdline(List<String> cmdline) {
         this.cmdline = cmdline;
     }
 

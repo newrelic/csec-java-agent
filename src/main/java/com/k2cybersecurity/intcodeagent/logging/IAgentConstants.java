@@ -429,6 +429,7 @@ public interface IAgentConstants {
     String UNCHECKED = "unchecked";
     String UNUSED = "unused";
     String PROC_S_EXE = "/proc/%s/exe";
+    String PROC_S_COMM = "/proc/%s/comm";
     String STATIC = "STATIC";
     String DYNAMIC = "DYNAMIC";
 
