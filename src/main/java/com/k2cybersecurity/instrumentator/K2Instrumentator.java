@@ -156,7 +156,7 @@ public class K2Instrumentator {
                                 new File(String.format(PROC_S_EXE, applicationInfoBean.getPid())).toPath())
                         .toString());
                 applicationInfoBean
-                        .setBinaryName(String.format(PROC_S_COMM, applicationInfoBean.getPid()));
+                        .setBinaryName(FileUtils.readFileToString(new File(String.format(PROC_S_COMM, applicationInfoBean.getPid())), StandardCharsets.UTF_8));
                 applicationInfoBean.setSha256(HashGenerator.getChecksum(new File(applicationInfoBean.getBinaryPath())));
             } catch (IOException e) {
             }
