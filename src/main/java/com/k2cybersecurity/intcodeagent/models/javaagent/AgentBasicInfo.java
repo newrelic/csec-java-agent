@@ -43,6 +43,8 @@ public class AgentBasicInfo {
 
     private Integer customerId;
 
+    private String emailId;
+
     /**
      * Instantiates a new agent basic info according to the source class object.
      */
@@ -52,6 +54,7 @@ public class AgentBasicInfo {
         setNodeId(CollectorConfigurationUtils.getInstance().getCollectorConfig().getNodeId());
         setCustomerId(CollectorConfigurationUtils.getInstance().getCollectorConfig().getCustomerInfo().getCustomerId());
         setGroupName(AgentUtils.getInstance().getGroupName());
+        setEmailId(CollectorConfigurationUtils.getInstance().getCollectorConfig().getCustomerInfo().getEmailId());
         if (this instanceof ApplicationInfoBean) {
             setJsonName(JSON_NAME_APPLICATION_INFO_BEAN);
         } else if (this instanceof JavaAgentEventBean) {
@@ -162,5 +165,13 @@ public class AgentBasicInfo {
 
     public void setGroupName(String groupName) {
         this.groupName = groupName;
+    }
+
+    public String getEmailId() {
+        return emailId;
+    }
+
+    public void setEmailId(String emailId) {
+        this.emailId = emailId;
     }
 }

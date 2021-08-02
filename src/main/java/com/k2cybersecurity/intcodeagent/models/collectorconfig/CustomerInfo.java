@@ -16,6 +16,8 @@ public class CustomerInfo {
 
     private String apiAccessorToken;
 
+    private String emailId;
+
     @JsonIgnore
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
@@ -38,6 +40,14 @@ public class CustomerInfo {
         this.apiAccessorToken = apiAccessorToken;
     }
 
+    public String getEmailId() {
+        return emailId;
+    }
+
+    public void setEmailId(String emailId) {
+        this.emailId = emailId;
+    }
+
     @JsonAnyGetter
     public Map<String, Object> getAdditionalProperties() {
         return this.additionalProperties;
@@ -54,12 +64,13 @@ public class CustomerInfo {
         if (o == null || getClass() != o.getClass()) return false;
         CustomerInfo that = (CustomerInfo) o;
         return Objects.equals(customerId, that.customerId) &&
-                Objects.equals(apiAccessorToken, that.apiAccessorToken);
+                Objects.equals(apiAccessorToken, that.apiAccessorToken) &&
+                Objects.equals(emailId, that.emailId);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(customerId, apiAccessorToken);
+        return Objects.hash(customerId, apiAccessorToken, emailId);
     }
 
     @Override
