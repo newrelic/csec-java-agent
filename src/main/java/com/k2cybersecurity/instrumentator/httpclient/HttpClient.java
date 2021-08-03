@@ -182,10 +182,10 @@ public class HttpClient {
     }
 
     private HttpUrl buildUrl(String url, List<String> pathParams, Map<String, String> queryParams) {
-        logger.log(LogLevel.DEBUG, String.format("url : %s  path param : %s  query params : %s", url, pathParams, queryParams), HttpClient.class.getName());
+        logger.log(LogLevel.INFO, String.format("url : %s  path param : %s  query params : %s", url, pathParams, queryParams), HttpClient.class.getName());
         url = String.format(url, pathParams);
         url = StringUtils.join(baseUrl, url);
-        logger.log(LogLevel.DEBUG, String.format("updated url : %s ", url), HttpClient.class.getName());
+        logger.log(LogLevel.INFO, String.format("updated url : %s ", url), HttpClient.class.getName());
         HttpUrl.Builder builder = HttpUrl.parse(url).newBuilder();
         if (queryParams != null) {
             for (String paramName : queryParams.keySet()) {
