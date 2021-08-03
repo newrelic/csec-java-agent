@@ -53,10 +53,11 @@ public class PolicyPullST {
                         "K2-pull-policy-st");
             }
         });
-        executorService.schedule(runnable, 0, TimeUnit.MINUTES);
+
         queryParam.put("group", AgentUtils.getInstance().getGroupName());
         queryParam.put("applicationUUID", K2Instrumentator.APPLICATION_UUID);
         logger.log(LogLevel.INFO, " Query param created : " + queryParam, PolicyPullST.class.getName());
+        executorService.schedule(runnable, 0, TimeUnit.MINUTES);
         logger.log(LogLevel.INFO, "policy fetch schedule thread started successfully!!!", PolicyPullST.class.getName());
     }
 
