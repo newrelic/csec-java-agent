@@ -100,7 +100,7 @@ public class DirectoryWatcher {
                     Paths.get(dirPath.get(i)).register(watchService, StandardWatchEventKinds.ENTRY_CREATE,
                             StandardWatchEventKinds.ENTRY_MODIFY, StandardWatchEventKinds.ENTRY_DELETE);
                 } catch (IOException e) {
-                    logger.log(LogLevel.ERROR, "Error registring path to watcher: ", e, DirectoryWatcher.class.getName());
+                    logger.log(LogLevel.ERROR, "Error registering path to watcher: ", e, DirectoryWatcher.class.getName());
                 }
             return;
         }
