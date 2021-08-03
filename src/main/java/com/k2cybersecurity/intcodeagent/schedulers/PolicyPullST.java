@@ -143,6 +143,7 @@ public class PolicyPullST {
         try {
             AgentUtils.getInstance()
                     .setAgentPolicy(mapper.readValue(AgentUtils.getInstance().getConfigLoadPath(), AgentPolicy.class));
+            AgentUtils.getInstance().enforcePolicy();
             return AgentUtils.getInstance().getAgentPolicy();
         } catch (Exception e) {
             logger.log(LogLevel.ERROR, FALLING_BACK_TO_DEFAULT_CONFIG, e, DirectoryWatcher.class.getName());

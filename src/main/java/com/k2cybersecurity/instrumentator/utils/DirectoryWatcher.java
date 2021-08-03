@@ -114,8 +114,7 @@ public class DirectoryWatcher {
                 try {
                     directoriesBeingWatched.addAll(Arrays.asList(allInnerDirectory.list()));
                     Paths.get(allInnerDirectory.getAbsolutePath()).register(watchService,
-                            StandardWatchEventKinds.ENTRY_CREATE, StandardWatchEventKinds.ENTRY_MODIFY,
-                            StandardWatchEventKinds.ENTRY_DELETE);
+                            StandardWatchEventKinds.ENTRY_MODIFY);
                 } catch (IOException e) {
                     logger.log(LogLevel.ERROR, "Error registring path to watcher: ", e, DirectoryWatcher.class.getName());
                 }
@@ -158,8 +157,7 @@ public class DirectoryWatcher {
         if (event.kind().equals(StandardWatchEventKinds.ENTRY_MODIFY)
                 && (watchDirs.toString().equals(osVariables.getConfigPath()))) {
             try {
-                Thread.sleep(1000);
-                TimeUnit.SECONDS.sleep(2);
+                TimeUnit.SECONDS.sleep(1);
                 AgentPolicy newPolicy = PolicyPullST.getInstance().populateConfig();
                 if (newPolicy != null) {
                     PolicyPullST.getInstance().readAndApplyConfig(newPolicy);
