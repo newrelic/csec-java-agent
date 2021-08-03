@@ -56,6 +56,7 @@ public class PolicyPullST {
         executorService.schedule(runnable, 0, TimeUnit.MINUTES);
         queryParam.put("group", AgentUtils.getInstance().getGroupName());
         queryParam.put("applicationUUID", K2Instrumentator.APPLICATION_UUID);
+        logger.log(LogLevel.INFO, " Query param created : " + queryParam, PolicyPullST.class.getName());
         logger.log(LogLevel.INFO, "policy fetch schedule thread started successfully!!!", PolicyPullST.class.getName());
     }
 
@@ -74,6 +75,7 @@ public class PolicyPullST {
 
     private void task() {
         try {
+            logger.log(LogLevel.INFO, " Query param found : " + queryParam, PolicyPullST.class.getName());
             Response response = HttpClient.getInstance().doGet(IRestClientConstants.GET_POLICY, null, queryParam, null, false);
             if (response.isSuccessful()) {
                 AgentPolicy newPolicy = HttpClient.getInstance().readResponse(response.body().byteStream(), AgentPolicy.class);

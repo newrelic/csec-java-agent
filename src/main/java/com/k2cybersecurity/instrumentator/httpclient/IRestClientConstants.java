@@ -8,6 +8,6 @@ public interface IRestClientConstants {
 
     String COLLECTOR_UPLOAD_LOG = "/collector/uploadLog";
 
-    String GET_POLICY = "POLICY";
+    String GET_POLICY = "/collector/policy";
 
 }
