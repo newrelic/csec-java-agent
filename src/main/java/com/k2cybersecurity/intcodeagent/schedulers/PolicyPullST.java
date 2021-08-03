@@ -21,6 +21,7 @@ import org.apache.commons.lang3.StringUtils;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.*;
 
@@ -38,7 +39,7 @@ public class PolicyPullST {
 
     private Future future;
 
-    private Map<String, String> queryParam;
+    private Map<String, String> queryParam = new HashMap<>();
 
     private static PolicyPullST instance;
 
