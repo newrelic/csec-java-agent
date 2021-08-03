@@ -113,7 +113,7 @@ public class DirectoryWatcher {
             for (File allInnerDirectory : allInnerDirectories) {
                 try {
                     directoriesBeingWatched.addAll(Arrays.asList(allInnerDirectory.list()));
-                    Paths.get(allInnerDirectory.getAbsolutePath()).register(watchService,
+                    Paths.get(allInnerDirectory.getName()).register(watchService,
                             StandardWatchEventKinds.ENTRY_MODIFY);
                 } catch (IOException e) {
                     logger.log(LogLevel.ERROR, "Error registring path to watcher: ", e, DirectoryWatcher.class.getName());
