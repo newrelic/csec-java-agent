@@ -1,7 +1,7 @@
-version: “1"
+version: "DEFAULT"
 logLevel: "INFO"
 policyPull: true
-policyPullInterval: 1
+policyPullInterval: 60
 vulnerabilityScan:
   enabled: true
   cveScan:
@@ -26,3 +26,10 @@ protectionMode:
     protectKnownVulnerableApis: false
     protectAttackedApis: false
 sendCompleteStackTrace: false
+enableHTTPRequestPrinting: false
+policyParameters:
+  allowedIps: []
+  blockedIps: []
+  allowedApis: []
+  blockedApis: []
+  allowedRequests: []
