@@ -157,6 +157,7 @@ public class DirectoryWatcher {
         if (event.kind().equals(StandardWatchEventKinds.ENTRY_MODIFY)
                 && (watchDirs.toString().equals(AgentUtils.getInstance().getConfigLoadPath().getName()))) {
             try {
+                logger.log(LogLevel.INFO, "Config file updated locally!!!", DirectoryWatcher.class.getName());
                 TimeUnit.SECONDS.sleep(1);
                 AgentPolicy newPolicy = PolicyPullST.getInstance().populateConfig();
                 if (newPolicy != null) {

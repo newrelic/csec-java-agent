@@ -78,6 +78,7 @@ public class AgentUtils {
     private static final String TWO_PIPES = "||";
     public static final String CAME_TO_EXTRACT_TAR_BUNDLE = "Came to extract tar bundle : ";
     public static final String CORRUPTED_CVE_SERVICE_BUNDLE_DELETED = "Corrupted CVE service bundle deleted.";
+    public static final String ENFORCING_POLICY = "Enforcing policy";
 
     public Set<Pair<String, ClassLoader>> getTransformedClasses() {
         return transformedClasses;
@@ -649,6 +650,7 @@ public class AgentUtils {
     public void enforcePolicy() {
         LogWriter.setLogLevel(LogLevel.valueOf(AgentUtils.getInstance().getAgentPolicy().getLogLevel()));
         K2Instrumentator.enableHTTPRequestPrinting = agentPolicy.getEnableHTTPRequestPrinting();
+        logger.log(LogLevel.INFO, ENFORCING_POLICY, AgentUtils.class.getName());
         if (agentPolicy.getPolicyPull() && agentPolicy.getPolicyPullInterval() > 0) {
             PolicyPullST.getInstance();
         }
