@@ -112,6 +112,7 @@ public class PolicyPullST {
             ObjectMapper mapper = new ObjectMapper(new YAMLFactory().disable(YAMLGenerator.Feature.WRITE_DOC_START_MARKER));
             FileUtils.touch(AgentUtils.getInstance().getConfigLoadPath());
             mapper.writeValue(AgentUtils.getInstance().getConfigLoadPath(), AgentUtils.getInstance().getAgentPolicy());
+            logger.log(LogLevel.DEBUG, "policy written to file : " + AgentUtils.getInstance().getConfigLoadPath(), PolicyPullST.class.getName());
             DirectoryWatcher.watchDirectories(Collections.singletonList(AgentUtils.getInstance().getConfigLoadPath().getParent()), false);
         } catch (IOException e) {
             logger.log(LogLevel.ERROR, POLICY_WRITE_FAILED, e, PolicyPullST.class.getName());
