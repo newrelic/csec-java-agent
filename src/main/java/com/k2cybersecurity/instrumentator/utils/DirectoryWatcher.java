@@ -34,6 +34,7 @@ import org.apache.commons.lang3.StringUtils;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.*;
+import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -58,6 +59,8 @@ public class DirectoryWatcher {
     private static Thread directoryWatcherThread;
 
     private static OSVariables osVariables = OsVariablesInstance.getInstance().getOsVariables();
+
+    private static Instant policyLastUpdated = Instant.now();
 
     static {
         try {
@@ -155,9 +158,15 @@ public class DirectoryWatcher {
     }
 
     private static void performAction(WatchEvent<?> event, Path watchDirs) {
-        logger.log(LogLevel.INFO, "watchDir : " + watchDirs.toString(), DirectoryWatcher.class.getName());
-        logger.log(LogLevel.INFO, "event context : " + event.context(), DirectoryWatcher.class.getName());
-        logger.log(LogLevel.INFO, "ConfigLoadPath : " + AgentUtils.getInstance().getConfigLoadPath().getName(), DirectoryWatcher.class.getName());
+        if (Instant.now().minusSeconds(60).isAfter(policyLastUpdated)) {
+            updatedPolicy(event);
+            policyLastUpdated = Instant.now();
+            return;
+        }
+        logger.log(LogLevel.DEBUG, "Returning as policy was last updated in less than 60secs ", DirectoryWatcher.class.getName());
+    }
+
+    private static void updatedPolicy(WatchEvent<?> event) {
         if (event.kind().equals(StandardWatchEventKinds.ENTRY_MODIFY)
                 && (StringUtils.equals(event.context().toString(), AgentUtils.getInstance().getConfigLoadPath().getName()))) {
             try {
