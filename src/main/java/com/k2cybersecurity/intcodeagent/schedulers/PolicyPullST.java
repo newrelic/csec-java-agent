@@ -82,8 +82,10 @@ public class PolicyPullST {
             Response response = HttpClient.getInstance().doGet(IRestClientConstants.GET_POLICY, null, queryParam, null, false);
             if (response.isSuccessful()) {
                 AgentPolicy newPolicy = HttpClient.getInstance().readResponse(response.body().byteStream(), AgentPolicy.class);
-                readAndApplyConfig(newPolicy);
-                writePolicyToFile();
+                boolean changed = readAndApplyConfig(newPolicy);
+                if (changed) {
+                    writePolicyToFile();
+                }
             } else {
                 logger.log(LogLevel.ERROR, String.format(POLICY_READ_FAILED_S_S, response.code(), response.body().string()), PolicyPullST.class.getName());
             }
@@ -92,18 +94,20 @@ public class PolicyPullST {
         }
     }
 
-    public void readAndApplyConfig(AgentPolicy newPolicy) {
+    public boolean readAndApplyConfig(AgentPolicy newPolicy) {
         try {
             if (StringUtils.equals(newPolicy.getVersion(), AgentUtils.getInstance().getAgentPolicy().getVersion())) {
-                return;
+                return false;
             }
             AgentUtils.getInstance().setAgentPolicy(newPolicy);
             AgentUtils.getInstance().enforcePolicy();
             logger.log(LogLevel.INFO, String.format(IAgentConstants.AGENT_POLICY_APPLIED_S,
                     AgentUtils.getInstance().getAgentPolicy()), ControlCommandProcessor.class.getName());
+            return true;
         } catch (Throwable e) {
             logger.log(LogLevel.ERROR, IAgentConstants.UNABLE_TO_SET_AGENT_POLICY_DUE_TO_ERROR, e,
                     ControlCommandProcessor.class.getName());
+            return false;
         }
     }
 

@@ -29,6 +29,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.DirectoryFileFilter;
 import org.apache.commons.io.filefilter.NotFileFilter;
 import org.apache.commons.io.filefilter.TrueFileFilter;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -154,8 +155,11 @@ public class DirectoryWatcher {
     }
 
     private static void performAction(WatchEvent<?> event, Path watchDirs) {
+        logger.log(LogLevel.INFO, "watchDir : " + watchDirs.toString(), DirectoryWatcher.class.getName());
+        logger.log(LogLevel.INFO, "event context : " + event.context(), DirectoryWatcher.class.getName());
+        logger.log(LogLevel.INFO, "ConfigLoadPath : " + AgentUtils.getInstance().getConfigLoadPath().getName(), DirectoryWatcher.class.getName());
         if (event.kind().equals(StandardWatchEventKinds.ENTRY_MODIFY)
-                && (watchDirs.toString().equals(AgentUtils.getInstance().getConfigLoadPath().getName()))) {
+                && (StringUtils.equals(event.context().toString(), AgentUtils.getInstance().getConfigLoadPath().getName()))) {
             try {
                 logger.log(LogLevel.INFO, "Config file updated locally!!!", DirectoryWatcher.class.getName());
                 TimeUnit.SECONDS.sleep(1);
