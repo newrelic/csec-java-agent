@@ -35,6 +35,7 @@ public class PolicyPullST {
     public static final String POLICY_READ_FAILED = "Policy read failed !!! ";
     public static final String FALLING_BACK_TO_DEFAULT_CONFIG = "Falling back to default config.";
     public static final String POLICY_WRITTEN_TO_FILE = "policy written to file : ";
+    public static final String SHUTTING_POLICY_PULL = "Shutting policy pull!!!";
 
     private ScheduledExecutorService executorService;
 
@@ -137,6 +138,7 @@ public class PolicyPullST {
     }
 
     public void cancelTask() {
+        logger.log(LogLevel.INFO, SHUTTING_POLICY_PULL, PolicyPullST.class.getName());
         if (future != null) {
             future.cancel(false);
         }
@@ -150,7 +152,6 @@ public class PolicyPullST {
         try {
             AgentUtils.getInstance()
                     .setAgentPolicy(mapper.readValue(AgentUtils.getInstance().getConfigLoadPath(), AgentPolicy.class));
-            AgentUtils.getInstance().enforcePolicy();
             return AgentUtils.getInstance().getAgentPolicy();
         } catch (Exception e) {
             logger.log(LogLevel.ERROR, FALLING_BACK_TO_DEFAULT_CONFIG, e, DirectoryWatcher.class.getName());
