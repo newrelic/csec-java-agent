@@ -160,7 +160,7 @@ public class PolicyPullST {
 
     private AgentPolicy loadDefaultConfig() {
         try {
-            InputStream in = this.getClass().getClassLoader().getResourceAsStream("default-policy.yaml");
+            InputStream in = ClassLoader.getSystemResourceAsStream("default-policy.yaml");
             ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
             return mapper.readValue(in, AgentPolicy.class);
         } catch (Exception e) {
