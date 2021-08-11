@@ -10,7 +10,6 @@ import com.k2cybersecurity.instrumentator.os.OSVariables;
 import com.k2cybersecurity.instrumentator.os.OsVariablesInstance;
 import com.k2cybersecurity.instrumentator.utils.AgentUtils;
 import com.k2cybersecurity.instrumentator.utils.DirectoryWatcher;
-import com.k2cybersecurity.intcodeagent.controlcommand.ControlCommandProcessor;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.logging.IAgentConstants;
@@ -35,6 +34,7 @@ public class PolicyPullST {
     public static final String POLICY_READ_FAILED_S_S = "Policy read failed : %s : %s";
     public static final String POLICY_READ_FAILED = "Policy read failed !!! ";
     public static final String FALLING_BACK_TO_DEFAULT_CONFIG = "Falling back to default config.";
+    public static final String POLICY_WRITTEN_TO_FILE = "policy written to file : ";
 
     private ScheduledExecutorService executorService;
 
@@ -79,15 +79,18 @@ public class PolicyPullST {
     private void task() {
         try {
             logger.log(LogLevel.INFO, " Query param found : " + queryParam, PolicyPullST.class.getName());
+            AgentPolicy newPolicy;
             Response response = HttpClient.getInstance().doGet(IRestClientConstants.GET_POLICY, null, queryParam, null, false);
             if (response.isSuccessful()) {
-                AgentPolicy newPolicy = HttpClient.getInstance().readResponse(response.body().byteStream(), AgentPolicy.class);
-                boolean changed = readAndApplyConfig(newPolicy);
-                if (changed) {
-                    writePolicyToFile();
-                }
+                newPolicy = HttpClient.getInstance().readResponse(response.body().byteStream(), AgentPolicy.class);
             } else {
                 logger.log(LogLevel.ERROR, String.format(POLICY_READ_FAILED_S_S, response.code(), response.body().string()), PolicyPullST.class.getName());
+                newPolicy = loadDefaultConfig();
+            }
+            boolean changed = readAndApplyConfig(newPolicy);
+            if (changed) {
+                writePolicyToFile();
+                DirectoryWatcher.watchDirectories(Collections.singletonList(AgentUtils.getInstance().getConfigLoadPath().getParent()), false);
             }
         } catch (Exception e) {
             logger.log(LogLevel.ERROR, POLICY_READ_FAILED, e, PolicyPullST.class.getName());
@@ -102,11 +105,11 @@ public class PolicyPullST {
             AgentUtils.getInstance().setAgentPolicy(newPolicy);
             AgentUtils.getInstance().enforcePolicy();
             logger.log(LogLevel.INFO, String.format(IAgentConstants.AGENT_POLICY_APPLIED_S,
-                    AgentUtils.getInstance().getAgentPolicy()), ControlCommandProcessor.class.getName());
+                    AgentUtils.getInstance().getAgentPolicy()), PolicyPullST.class.getName());
             return true;
         } catch (Throwable e) {
             logger.log(LogLevel.ERROR, IAgentConstants.UNABLE_TO_SET_AGENT_POLICY_DUE_TO_ERROR, e,
-                    ControlCommandProcessor.class.getName());
+                    PolicyPullST.class.getName());
             return false;
         }
     }
@@ -116,8 +119,7 @@ public class PolicyPullST {
             ObjectMapper mapper = new ObjectMapper(new YAMLFactory().disable(YAMLGenerator.Feature.WRITE_DOC_START_MARKER));
             FileUtils.touch(AgentUtils.getInstance().getConfigLoadPath());
             mapper.writeValue(AgentUtils.getInstance().getConfigLoadPath(), AgentUtils.getInstance().getAgentPolicy());
-            logger.log(LogLevel.DEBUG, "policy written to file : " + AgentUtils.getInstance().getConfigLoadPath(), PolicyPullST.class.getName());
-            DirectoryWatcher.watchDirectories(Collections.singletonList(AgentUtils.getInstance().getConfigLoadPath().getParent()), false);
+            logger.log(LogLevel.DEBUG, POLICY_WRITTEN_TO_FILE + AgentUtils.getInstance().getConfigLoadPath(), PolicyPullST.class.getName());
         } catch (IOException e) {
             logger.log(LogLevel.ERROR, POLICY_WRITE_FAILED, e, PolicyPullST.class.getName());
         }

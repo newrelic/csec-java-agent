@@ -653,11 +653,15 @@ public class AgentUtils {
         logger.log(LogLevel.INFO, ENFORCING_POLICY, AgentUtils.class.getName());
         if (agentPolicy.getPolicyPull() && agentPolicy.getPolicyPullInterval() > 0) {
             PolicyPullST.getInstance();
+        } else {
+            PolicyPullST.getInstance().cancelTask();
         }
         if (AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getEnabled()
                 && AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getCveScan().getEnabled()
                 && AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getCveScan().getEnableEnvScan()) {
             CVEBundlePullST.getInstance();
+        } else if (!AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getEnabled()) {
+            CVEBundlePullST.getInstance().cancelTask();
         }
         if (AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getEnabled()
                 && AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getCveScan().getEnabled()

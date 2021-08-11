@@ -132,7 +132,7 @@ public class DirectoryWatcher {
      * bloack of same class, which makes the thread start on load time.
      */
     public static void startMonitorDaemon() {
-        directoryWatcherThread = new Thread("K2_JC__WATCHER") {
+        directoryWatcherThread = new Thread("K2-JC-watcher") {
             @Override
             public void run() {
                 WatchKey key;
