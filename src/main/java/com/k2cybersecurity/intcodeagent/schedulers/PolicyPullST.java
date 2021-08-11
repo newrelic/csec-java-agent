@@ -150,9 +150,7 @@ public class PolicyPullST {
         }
         ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
         try {
-            AgentUtils.getInstance()
-                    .setAgentPolicy(mapper.readValue(AgentUtils.getInstance().getConfigLoadPath(), AgentPolicy.class));
-            return AgentUtils.getInstance().getAgentPolicy();
+            return mapper.readValue(AgentUtils.getInstance().getConfigLoadPath(), AgentPolicy.class);
         } catch (Exception e) {
             logger.log(LogLevel.ERROR, FALLING_BACK_TO_DEFAULT_CONFIG, e, DirectoryWatcher.class.getName());
             return loadDefaultConfig();
