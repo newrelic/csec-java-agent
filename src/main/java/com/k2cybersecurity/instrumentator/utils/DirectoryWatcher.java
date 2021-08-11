@@ -158,17 +158,19 @@ public class DirectoryWatcher {
     }
 
     private static void performAction(WatchEvent<?> event, Path watchDirs) {
-        if (Instant.now().minusSeconds(60).isAfter(policyLastUpdated)) {
-            updatedPolicy(event);
-            policyLastUpdated = Instant.now();
+        if (event.kind().equals(StandardWatchEventKinds.ENTRY_MODIFY)
+                && (StringUtils.equals(event.context().toString(), AgentUtils.getInstance().getConfigLoadPath().getName()))) {
+            if (Instant.now().minusSeconds(60).isAfter(policyLastUpdated)) {
+                updatedPolicy(event);
+                policyLastUpdated = Instant.now();
+                return;
+            }
+            logger.log(LogLevel.DEBUG, "Returning as policy was last updated in less than 60secs ", DirectoryWatcher.class.getName());
             return;
         }
-        logger.log(LogLevel.DEBUG, "Returning as policy was last updated in less than 60secs ", DirectoryWatcher.class.getName());
     }
 
     private static void updatedPolicy(WatchEvent<?> event) {
-        if (event.kind().equals(StandardWatchEventKinds.ENTRY_MODIFY)
-                && (StringUtils.equals(event.context().toString(), AgentUtils.getInstance().getConfigLoadPath().getName()))) {
             try {
                 logger.log(LogLevel.INFO, "Config file updated locally!!!", DirectoryWatcher.class.getName());
                 TimeUnit.SECONDS.sleep(1);
@@ -179,6 +181,5 @@ public class DirectoryWatcher {
             } catch (Exception e) {
                 logger.log(LogLevel.INFO, "Config update was unsuccessful for configs at : " + AgentUtils.getInstance().getConfigLoadPath(), e, DirectoryWatcher.class.getName());
             }
-        }
     }
 }
