@@ -761,9 +761,7 @@ public class AgentUtils {
             while ((entry = archive.getNextZipEntry()) != null) {
                 // Print values from entry.
                 // ZipEntry.DEFLATED is int 8
-                logger.log(LogLevel.DEBUG, String.format("zip entry : %s :: method : %s", entry.getName(), entry.getMethod()), AgentUtils.class.getName());
                 File file = new File(outputDir, entry.getName());
-                logger.log(LogLevel.DEBUG, String.format("Unzipping - %s", file), AgentUtils.class.getName());
                 if (entry.isDirectory()) {
                     file.mkdirs();
                 } else {
