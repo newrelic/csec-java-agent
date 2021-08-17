@@ -6,8 +6,19 @@ public class FuzzFailEvent extends AgentBasicInfo {
 
     private String fuzzHeader;
 
-    public FuzzFailEvent() {
+    private String applicationUUID;
+
+    public String getApplicationUUID() {
+        return applicationUUID;
+    }
+
+    public void setApplicationUUID(String applicationUUID) {
+        this.applicationUUID = applicationUUID;
+    }
+
+    public FuzzFailEvent(String applicationUUID) {
         super();
+        this.applicationUUID = applicationUUID;
     }
 
     public String getFuzzHeader() {

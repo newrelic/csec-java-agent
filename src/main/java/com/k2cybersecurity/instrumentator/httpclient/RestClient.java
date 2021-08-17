@@ -1,5 +1,6 @@
 package com.k2cybersecurity.instrumentator.httpclient;
 
+import com.k2cybersecurity.instrumentator.K2Instrumentator;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.logging.IAgentConstants;
@@ -100,7 +101,7 @@ public class RestClient {
             public void onFailure(Request request, IOException e) {
                 // TODO Auto-generated method stub
                 logger.log(LogLevel.DEBUG, String.format(CALL_FAILED_REQUEST_S_REASON, request), e, RestClient.class.getName());
-                FuzzFailEvent fuzzFailEvent = new FuzzFailEvent();
+                FuzzFailEvent fuzzFailEvent = new FuzzFailEvent(K2Instrumentator.APPLICATION_UUID);
                 fuzzFailEvent.setFuzzHeader(request.header(IAgentConstants.K2_FUZZ_REQUEST_ID));
                 EventSendPool.getInstance().sendEvent(fuzzFailEvent.toString());
             }
@@ -136,7 +137,7 @@ public class RestClient {
             client.getConnectionPool().evictAll();
         } catch (IOException e) {
             logger.log(LogLevel.DEBUG, String.format(CALL_FAILED_REQUEST_S_REASON, request), e, RestClient.class.getName());
-            FuzzFailEvent fuzzFailEvent = new FuzzFailEvent();
+            FuzzFailEvent fuzzFailEvent = new FuzzFailEvent(K2Instrumentator.APPLICATION_UUID);
             fuzzFailEvent.setFuzzHeader(request.header(IAgentConstants.K2_FUZZ_REQUEST_ID));
             EventSendPool.getInstance().sendEvent(fuzzFailEvent.toString());
         }
