@@ -38,7 +38,7 @@ public class WSClient extends WebSocketClient {
     private WSClient() throws URISyntaxException {
         super(new URI(CollectorConfigurationUtils.getInstance().getCollectorConfig().getK2ServiceInfo().getValidatorServiceEndpointURL()));
         this.setTcpNoDelay(true);
-        this.setConnectionLostTimeout(15);
+        this.setConnectionLostTimeout(30);
         this.addHeader("K2-CONNECTION-TYPE", "LANGUAGE_COLLECTOR");
         this.addHeader("K2-API-ACCESSOR", CollectorConfigurationUtils.getInstance().getCollectorConfig().getCustomerInfo().getApiAccessorToken());
         this.addHeader("K2-CUSTOMER-ID", String.valueOf(CollectorConfigurationUtils.getInstance().getCollectorConfig().getCustomerInfo().getCustomerId()));
