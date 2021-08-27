@@ -778,7 +778,7 @@ public class Dispatcher implements Runnable {
         eventBean.setCaseType(vulnerabilityCaseType.getCaseType());
         eventBean.setIsAPIBlocked(metaData.isApiBlocked());
         if (AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getEnabled() && AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getIastScan().getEnabled()) {
-            eventBean.setIsIASTenable(true);
+            eventBean.setIsIASTEnable(true);
         }
         return eventBean;
     }
