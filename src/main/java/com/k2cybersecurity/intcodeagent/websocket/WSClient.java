@@ -8,8 +8,10 @@ import com.k2cybersecurity.intcodeagent.controlcommand.ControlCommandProcessor;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.properties.K2JAVersionInfo;
+import org.java_websocket.WebSocket;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.framing.CloseFrame;
+import org.java_websocket.framing.Framedata;
 import org.java_websocket.handshake.ServerHandshake;
 
 import java.net.URI;
@@ -101,6 +103,12 @@ public class WSClient extends WebSocketClient {
         } else {
             logger.log(LogLevel.DEBUG, UNABLE_TO_SEND_EVENT + text, WSClient.class.getName());
         }
+    }
+
+    @Override
+    public void onWebsocketPing(WebSocket conn, Framedata f) {
+        logger.log(LogLevel.INFO, "received ping sending pong", WSClient.class.getName());
+        super.onWebsocketPing(conn, f);
     }
 
     /**
