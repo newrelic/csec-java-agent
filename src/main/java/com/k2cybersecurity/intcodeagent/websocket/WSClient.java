@@ -12,10 +12,13 @@ import org.java_websocket.WebSocket;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.framing.CloseFrame;
 import org.java_websocket.framing.Framedata;
+import org.java_websocket.framing.PingFrame;
 import org.java_websocket.handshake.ServerHandshake;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.time.Instant;
+import java.time.ZoneId;
 
 public class WSClient extends WebSocketClient {
 
@@ -107,7 +110,7 @@ public class WSClient extends WebSocketClient {
 
     @Override
     public void onWebsocketPing(WebSocket conn, Framedata f) {
-        logger.log(LogLevel.INFO, "received ping sending pong", WSClient.class.getName());
+        logger.log(LogLevel.INFO, String.format("received ping  at %s sending pong", Instant.now().atZone(ZoneId.of("UTC")).toLocalTime()), WSClient.class.getName());
         super.onWebsocketPing(conn, f);
     }
 
@@ -120,6 +123,12 @@ public class WSClient extends WebSocketClient {
             instance = new WSClient();
         }
         return instance;
+    }
+
+    @Override
+    public PingFrame onPreparePing(WebSocket conn) {
+        logger.log(LogLevel.INFO, String.format("Prepare ping at %s for pong", Instant.now().atZone(ZoneId.of("UTC")).toLocalTime()), WSClient.class.getName());
+        return super.onPreparePing(conn);
     }
 
     /**
