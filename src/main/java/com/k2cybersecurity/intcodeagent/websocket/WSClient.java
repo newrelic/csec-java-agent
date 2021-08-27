@@ -9,6 +9,7 @@ import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.properties.K2JAVersionInfo;
 import org.java_websocket.WebSocket;
+import org.java_websocket.WebSocketImpl;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.framing.CloseFrame;
 import org.java_websocket.framing.Framedata;
@@ -71,6 +72,10 @@ public class WSClient extends WebSocketClient {
     @Override
     public void onMessage(String message) {
         // Receive communication from IC side.
+        WebSocket conn = getConnection();
+        if (conn instanceof WebSocketImpl) {
+            ((WebSocketImpl) conn).updateLastPong();
+        }
         try {
             ControlCommandProcessor.processControlCommand(message, System.currentTimeMillis());
         } catch (Throwable e) {
