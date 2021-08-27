@@ -9,9 +9,11 @@ import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.properties.K2JAVersionInfo;
 import org.java_websocket.WebSocket;
+import org.java_websocket.WebSocketImpl;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.framing.CloseFrame;
 import org.java_websocket.framing.Framedata;
+import org.java_websocket.framing.PingFrame;
 import org.java_websocket.handshake.ServerHandshake;
 
 import java.net.URI;
@@ -37,10 +39,12 @@ public class WSClient extends WebSocketClient {
 
     private static WSClient instance;
 
+    private WebSocketImpl connection = null;
+
     private WSClient() throws URISyntaxException {
         super(new URI(CollectorConfigurationUtils.getInstance().getCollectorConfig().getK2ServiceInfo().getValidatorServiceEndpointURL()));
-        //this.setTcpNoDelay(true);
-        this.setConnectionLostTimeout(0);
+        this.setTcpNoDelay(true);
+        this.setConnectionLostTimeout(15);
         this.addHeader("K2-CONNECTION-TYPE", "LANGUAGE_COLLECTOR");
         this.addHeader("K2-API-ACCESSOR", CollectorConfigurationUtils.getInstance().getCollectorConfig().getCustomerInfo().getApiAccessorToken());
         this.addHeader("K2-CUSTOMER-ID", String.valueOf(CollectorConfigurationUtils.getInstance().getCollectorConfig().getCustomerInfo().getCustomerId()));
@@ -50,6 +54,10 @@ public class WSClient extends WebSocketClient {
         logger.log(LogLevel.INFO, "Creating WSock connection to : " + CollectorConfigurationUtils.getInstance().getCollectorConfig().getK2ServiceInfo().getValidatorServiceEndpointURL(),
                 WSClient.class.getName());
         connect();
+        WebSocket conn = getConnection();
+        if (conn instanceof WebSocketImpl) {
+            this.connection = (WebSocketImpl) conn;
+        }
     }
 
     @Override
@@ -70,6 +78,9 @@ public class WSClient extends WebSocketClient {
     @Override
     public void onMessage(String message) {
         // Receive communication from IC side.
+        if (connection != null) {
+            connection.updateLastPong();
+        }
         try {
             ControlCommandProcessor.processControlCommand(message, System.currentTimeMillis());
         } catch (Throwable e) {
@@ -100,6 +111,9 @@ public class WSClient extends WebSocketClient {
     @Override
     public void send(String text) {
         if (this.isOpen()) {
+            if (connection != null) {
+                connection.updateLastPong();
+            }
             logger.log(LogLevel.DEBUG, SENDING_EVENT + text, WSClient.class.getName());
             super.send(text);
         } else {
@@ -108,8 +122,16 @@ public class WSClient extends WebSocketClient {
     }
 
     @Override
+    public void onWebsocketPong(WebSocket conn, Framedata f) {
+        super.onWebsocketPong(conn, f);
+    }
+
+    @Override
     public void onWebsocketPing(WebSocket conn, Framedata f) {
         logger.log(LogLevel.INFO, String.format("received ping  at %s sending pong", Instant.now().atZone(ZoneId.of("UTC")).toLocalTime()), WSClient.class.getName());
+        if (connection != null) {
+            connection.updateLastPong();
+        }
         super.onWebsocketPing(conn, f);
     }
 
@@ -122,6 +144,14 @@ public class WSClient extends WebSocketClient {
             instance = new WSClient();
         }
         return instance;
+    }
+
+    @Override
+    public PingFrame onPreparePing(WebSocket conn) {
+        logger.log(LogLevel.INFO, String.format("Prepare ping at %s for pong", Instant.now().atZone(ZoneId.of("UTC")).toLocalTime()), WSClient.class.getName());
+        PingFrame frame = super.onPreparePing(conn);
+        logger.log(LogLevel.INFO, String.format("Ping sent at %s for pong", Instant.now().atZone(ZoneId.of("UTC")).toLocalTime()), WSClient.class.getName());
+        return frame;
     }
 
     /**
