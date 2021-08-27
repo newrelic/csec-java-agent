@@ -10,7 +10,10 @@ import com.k2cybersecurity.intcodeagent.properties.K2JALogProperties;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 
-import java.io.*;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.attribute.PosixFilePermissions;
 import java.text.SimpleDateFormat;
@@ -157,11 +160,7 @@ public class LogWriter implements Runnable {
             File rolloverFile = new File(fileName + STRING_DOT + logFileCounter);
             currentFile.renameTo(rolloverFile);
 
-            uploadLogsAndDeleteFile(rolloverFile);
-
-            PrintWriter pw = new PrintWriter(new File(currentLogFileName));
-            pw.write(StringUtils.EMPTY);
-            pw.close();
+//            FileUtils.touch(new File(currentLogFileName));
 
             writer = new BufferedWriter(new FileWriter(currentLogFileName, true));
 
@@ -169,6 +168,7 @@ public class LogWriter implements Runnable {
             if (!osVariables.getWindows()) {
                 Files.setPosixFilePermissions(currentFile.toPath(), PosixFilePermissions.fromString("rw-rw-rw-"));
             }
+            uploadLogsAndDeleteFile(rolloverFile);
             int removeFile = logFileCounter - K2JALogProperties.maxfiles;
             while (removeFile > 0) {
                 File remove = new File(fileName + STRING_DOT + removeFile);
