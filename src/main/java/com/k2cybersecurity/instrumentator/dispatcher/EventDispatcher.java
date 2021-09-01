@@ -239,7 +239,7 @@ public class EventDispatcher {
         AgentUtils.getInstance().getEventResponseSet().put(executionId, eventResponse);
         try {
             eventResponse.getResponseSemaphore().acquire();
-            if (eventResponse.getResponseSemaphore().tryAcquire(100, TimeUnit.MILLISECONDS)) {
+            if (eventResponse.getResponseSemaphore().tryAcquire(2, TimeUnit.SECONDS)) {
 //                    logger.log(LogLevel.DEBUG,
 //                            EVENT_RESPONSE_TIME_TAKEN + eventResponse.getEventId() + DOUBLE_COLON_SEPERATOR + (
 //                                    eventResponse.getReceivedTime() - eventResponse.getGenerationTime()) + DOUBLE_COLON_SEPERATOR + executionId,
