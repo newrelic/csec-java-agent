@@ -8,6 +8,7 @@ import com.k2cybersecurity.instrumentator.utils.InstrumentationUtils;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.logging.IAgentConstants;
+import com.k2cybersecurity.intcodeagent.models.config.AgentPolicyParameters;
 import com.k2cybersecurity.intcodeagent.models.javaagent.CollectorInitMsg;
 import com.k2cybersecurity.intcodeagent.models.javaagent.EventResponse;
 import com.k2cybersecurity.intcodeagent.models.javaagent.IntCodeControlCommand;
@@ -32,6 +33,7 @@ public class ControlCommandProcessor implements Runnable {
     public static final String ADDING_IP_ADDRESS_S_TO_BLOCKING_LIST_WITH_TIMEOUT_S = "Adding IP address %s to blocking list with timeout %s";
     public static final String ERROR_IN_EVENT_RESPONSE = "Error in EVENT_RESPONSE : ";
     public static final String FUZZ_REQUEST = "Fuzz request : ";
+    public static final String POLICY_PARAMETERS_ARE_UPDATED_TO_S = "Policy parameters are updated to : %s";
 
 
     private String controlCommandMessage;
@@ -128,6 +130,21 @@ public class ControlCommandProcessor implements Runnable {
                             ControlCommandProcessor.class.getName());
                 }
 
+                break;
+
+            case IntCodeControlCommand.SEND_POLICY:
+                if (controlCommand.getData() == null) {
+                    return;
+                }
+                try {
+                    AgentUtils.getInstance().getAgentPolicy().setPolicyParameters(new ObjectMapper().readValue(controlCommand.getData().toString(), AgentPolicyParameters.class));
+                    logger.log(LogLevel.INFO,
+                            String.format(POLICY_PARAMETERS_ARE_UPDATED_TO_S, AgentUtils.getInstance().getAgentPolicy().getPolicyParameters()),
+                            ControlCommandProcessor.class.getName());
+                } catch (JsonProcessingException e) {
+                    logger.log(LogLevel.DEBUG, IAgentConstants.UNABLE_TO_SET_AGENT_POLICY_PARAM_DUE_TO_ERROR, e,
+                            ControlCommandProcessor.class.getName());
+                }
                 break;
 
             default:
