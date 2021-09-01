@@ -18,6 +18,7 @@ public class IntCodeControlCommand {
     public static final int FUZZ_REQUEST = 11;
 
     public static final int SEND_POLICY = 100;
+    public static final int SEND_POLICY_PARAMETERS = 101;
 
     private String jsonName;
     private int controlCommand;

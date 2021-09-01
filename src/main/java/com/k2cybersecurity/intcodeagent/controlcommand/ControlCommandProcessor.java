@@ -132,7 +132,7 @@ public class ControlCommandProcessor implements Runnable {
 
                 break;
 
-            case IntCodeControlCommand.SEND_POLICY:
+            case IntCodeControlCommand.SEND_POLICY_PARAMETERS:
                 if (controlCommand.getData() == null) {
                     return;
                 }
