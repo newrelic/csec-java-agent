@@ -50,6 +50,7 @@ public class WSClient extends WebSocketClient {
         this.addHeader("K2-VERSION", K2JAVersionInfo.collectorVersion);
         this.addHeader("K2-COLLECTOR-TYPE", "JAVA");
         this.addHeader("K2-GROUP", AgentUtils.getInstance().getGroupName());
+        this.addHeader("K2-APPLICATION-UUID", K2Instrumentator.APPLICATION_UUID);
         logger.log(LogLevel.INFO, "Creating WSock connection to : " + CollectorConfigurationUtils.getInstance().getCollectorConfig().getK2ServiceInfo().getValidatorServiceEndpointURL(),
                 WSClient.class.getName());
         connect();
