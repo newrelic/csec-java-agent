@@ -4,6 +4,7 @@ import com.k2cybersecurity.instrumentator.custom.K2CyberSecurityException;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalHttpMap;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalOperationLock;
 import com.k2cybersecurity.instrumentator.dispatcher.EventDispatcher;
+import com.k2cybersecurity.instrumentator.utils.AgentUtils;
 import com.k2cybersecurity.intcodeagent.models.javaagent.VulnerabilityCaseType;
 import com.k2cybersecurity.intcodeagent.models.operationalbean.JSInjectionOperationalBean;
 
@@ -80,16 +81,22 @@ public class Callbacks {
 
     public static void doOnExit(String sourceString, String className, String methodName, Object obj, Object[] args,
                                 Object returnVal, String exectionId) {
-//		if (!ThreadLocalHttpMap.getInstance().isEmpty() && !ThreadLocalOperationLock.getInstance().isAcquired()) {
-//			try {
-//				ThreadLocalOperationLock.getInstance().acquire();
-//				System.out.println(
-//						"OnExit :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj + " - return : "
-//								+ returnVal + " - eid : " + exectionId);
-//			} finally {
-//				ThreadLocalOperationLock.getInstance().release();
-//			}
-//		}
+        if (!ThreadLocalHttpMap.getInstance().isEmpty()
+                && AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getEnabled()
+                && AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getIastScan().getEnabled()
+                && !ThreadLocalOperationLock.getInstance().isAcquired()) {
+            if ((args.length == 2 && args[0] != null && sourceString.equals(
+                    "private java.lang.Object jdk.nashorn.api.scripting.NashornScriptEngine.evalImpl(jdk.nashorn.internal.runtime.Source,javax.script.ScriptContext) throws javax.script.ScriptException")) ||
+                    (args.length == 2 && args[1] != null && sourceString.equals(
+                            "public org.graalvm.polyglot.Value com.oracle.truffle.polyglot.PolyglotContextImpl.eval(java.lang.String,java.lang.Object)"))) {
+                try {
+                    ThreadLocalOperationLock.getInstance().acquire();
+                    EventDispatcher.dispatchExitEvent(exectionId, VulnerabilityCaseType.JAVASCRIPT_INJECTION);
+                } finally {
+                    ThreadLocalOperationLock.getInstance().release();
+                }
+            }
+        }
     }
 
     public static void doOnError(String sourceString, String className, String methodName, Object obj, Object[] args,

@@ -585,4 +585,5 @@ public interface IAgentConstants {
     String LINUX = "linux";
     String WINDOWS = "windows";
     String MAC = "mac";
+    String K_2_FUZZ_REQUEST_ID = "k2-fuzz-request-id";
 }

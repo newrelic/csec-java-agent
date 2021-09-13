@@ -7,8 +7,6 @@ import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.models.javaagent.*;
 import com.k2cybersecurity.intcodeagent.models.operationalbean.AbstractOperationalBean;
 import com.k2cybersecurity.intcodeagent.models.operationalbean.SQLOperationalBean;
-import com.k2cybersecurity.intcodeagent.websocket.EventSendPool;
-import com.k2cybersecurity.intcodeagent.websocket.EventSender;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -70,6 +68,10 @@ public class EventDispatcher {
 
     public static void dispatchExitEvent(String executionId, VulnerabilityCaseType caseType) {
         ExitEventBean exitEventBean = new ExitEventBean(executionId, caseType.getCaseType());
+        HttpRequestBean requestBean = ThreadLocalExecutionMap.getInstance().getHttpRequestBean();
+        if (requestBean != null && StringUtils.isNotBlank(requestBean.getK2RequestIdentifier())) {
+            exitEventBean.setK2RequestIdentifier(requestBean.getK2RequestIdentifier());
+        }
         DispatcherPool.getInstance().dispatchExitEvent(exitEventBean);
     }
 

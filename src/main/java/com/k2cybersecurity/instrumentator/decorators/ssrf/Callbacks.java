@@ -5,6 +5,7 @@ import com.k2cybersecurity.instrumentator.custom.ThreadLocalHttpMap;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalOperationLock;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalSSRFLock;
 import com.k2cybersecurity.instrumentator.dispatcher.EventDispatcher;
+import com.k2cybersecurity.instrumentator.utils.AgentUtils;
 import com.k2cybersecurity.instrumentator.utils.CallbackUtils;
 import com.k2cybersecurity.intcodeagent.logging.IAgentConstants;
 import com.k2cybersecurity.intcodeagent.models.javaagent.VulnerabilityCaseType;
@@ -54,37 +55,10 @@ public class Callbacks {
                 && ThreadLocalSSRFLock.getInstance().isAcquired(obj, sourceString, exectionId)) {
             try {
                 ThreadLocalOperationLock.getInstance().acquire();
-//                System.out.println(String.format("Exit : SSRF Value: %s : %s : %s", className, methodName, obj));
-//                Method getURL = obj.getClass().getMethod("getURL");
-//                getURL.setAccessible(true);
-//                URL url = (URL) getURL.invoke(obj);
-//                OutBoundHttp outBoundHttp = new OutBoundHttp(url.toString(), CollectorConfigurationUtils.getInstance().getCollectorConfig().getK2ServiceInfo().getServiceEndpointAddress(), OutBoundHttpDirection.OUTBOUND);
-//                if (!K2Instrumentator.JA_HEALTH_CHECK.getHttpConnections().contains(outBoundHttp)) {
-//                    Object objToUse = obj;
-//                    if (objToUse instanceof HttpsURLConnection) {
-//                        Field delegate = objToUse.getClass().getDeclaredField("delegate");
-//                        delegate.setAccessible(true);
-//                        objToUse = delegate.get(objToUse);
-//                    }
-//
-//                    if (objToUse instanceof HttpURLConnection) {
-//                        Field httpField = HttpURLConnection.class.getDeclaredField("http");
-//                        httpField.setAccessible(true);
-//                        HttpClient client = (HttpClient) httpField.get(objToUse);
-//                        Field serverSocketField = NetworkClient.class.getDeclaredField("serverSocket");
-//                        serverSocketField.setAccessible(true);
-//                        Socket socket = (Socket) serverSocketField.get(client);
-//                        outBoundHttp.setDestinationIp(socket.getInetAddress().getHostAddress());
-//                        outBoundHttp.setDestinationPort(socket.getPort());
-//                        outBoundHttp.setSourcePort(socket.getLocalPort());
-//                        K2Instrumentator.JA_HEALTH_CHECK.getHttpConnections().add(outBoundHttp);
-//                    }
-//                }
-
-//				System.out.println(
-//						"OnExit :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj + " - return : "
-//								+ returnVal + " - eid : " + exectionId);
-
+                if (AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getEnabled()
+                        && AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getIastScan().getEnabled()) {
+                    EventDispatcher.dispatchExitEvent(exectionId, VulnerabilityCaseType.HTTP_REQUEST);
+                }
             } finally {
                 ThreadLocalOperationLock.getInstance().release();
                 ThreadLocalSSRFLock.getInstance().release(obj, sourceString, exectionId);

@@ -102,11 +102,10 @@ public class Callbacks {
                 && ThreadLocalSSRFLock.getInstance().isAcquired(obj, sourceString, exectionId)) {
             try {
                 ThreadLocalOperationLock.getInstance().acquire();
-//				System.out.println(String.format("Exit : SSRF : %s : %s", className, methodName));
-
-//				System.out.println(
-//						"OnExit :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj + " - return : "
-//								+ returnVal + " - eid : " + exectionId);
+                if (AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getEnabled()
+                        && AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getIastScan().getEnabled()) {
+                    EventDispatcher.dispatchExitEvent(exectionId, VulnerabilityCaseType.HTTP_REQUEST);
+                }
             } finally {
                 ThreadLocalOperationLock.getInstance().release();
                 ThreadLocalSSRFLock.getInstance().release(obj, sourceString, exectionId);
