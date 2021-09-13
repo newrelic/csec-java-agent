@@ -5,10 +5,7 @@ import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.logging.EventThreadPool.EventAbortPolicy;
 import com.k2cybersecurity.intcodeagent.logging.IAgentConstants;
-import com.k2cybersecurity.intcodeagent.models.javaagent.AgentMetaData;
-import com.k2cybersecurity.intcodeagent.models.javaagent.HttpRequestBean;
-import com.k2cybersecurity.intcodeagent.models.javaagent.UserClassEntity;
-import com.k2cybersecurity.intcodeagent.models.javaagent.VulnerabilityCaseType;
+import com.k2cybersecurity.intcodeagent.models.javaagent.*;
 
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -104,6 +101,13 @@ public class DispatcherPool {
         }
         this.executor.submit(new Dispatcher(httpRequestBean, metaData, event, vulnerabilityCaseType, currentGenericServletMethodName,
                 currentGenericServletInstance, stackTrace, userClassEntity));
+    }
+
+    public void dispatchExitEvent(ExitEventBean exitEventBean) {
+        if (executor.isShutdown()) {
+            return;
+        }
+        this.executor.submit(new Dispatcher(exitEventBean));
     }
 
     /**

@@ -49,6 +49,7 @@ public class Dispatcher implements Runnable {
 
     private static final Object deployedAppDetectionLock = new Object();
     public static final String S_S = "%s-%s";
+    private ExitEventBean exitEventBean;
     private HttpRequestBean httpRequestBean;
     private AgentMetaData metaData;
     private Object event;
@@ -112,9 +113,16 @@ public class Dispatcher implements Runnable {
         this.apiID = apiID;
     }
 
+    public Dispatcher(ExitEventBean exitEventBean) {
+        this.exitEventBean = exitEventBean;
+    }
+
     @Override
     public void run() {
-
+        if (this.exitEventBean != null) {
+            EventSendPool.getInstance().sendEvent(exitEventBean);
+            return;
+        }
 //        printDispatch();
         try {
             if (vulnerabilityCaseType.equals(VulnerabilityCaseType.REFLECTED_XSS)) {

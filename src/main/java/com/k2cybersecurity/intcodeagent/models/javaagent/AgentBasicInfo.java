@@ -71,6 +71,8 @@ public class AgentBasicInfo {
             setJsonName(JSON_NAME_HTTP_CONNECTION_STAT);
         } else if (this instanceof PolicyFetch) {
             setJsonName(FETCH_POLICY);
+        } else if (this instanceof ExitEventBean) {
+            setJsonName(JSON_NAME_EXIT_EVENT);
         }
     }
 

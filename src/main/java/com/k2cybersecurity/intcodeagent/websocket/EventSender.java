@@ -16,6 +16,9 @@ public class EventSender implements Callable<Boolean> {
         this.event = event;
     }
 
+    public EventSender(Object event) {
+        this.event = event;
+    }
 
     @Override
     public Boolean call() throws Exception {
