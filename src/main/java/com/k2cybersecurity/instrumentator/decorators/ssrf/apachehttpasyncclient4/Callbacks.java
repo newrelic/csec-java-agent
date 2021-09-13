@@ -100,12 +100,12 @@ public class Callbacks {
     public static void doOnExit(String sourceString, String className, String methodName, Object obj, Object[] args,
                                 Object returnVal, String exectionId) throws K2CyberSecurityException, Exception {
 //		System.out.println(String.format("Exit : SSRF : %s : %s : %s", className, methodName, obj));
-
         if (!ThreadLocalHttpMap.getInstance().isEmpty() && !ThreadLocalOperationLock.getInstance().isAcquired()) {
             try {
                 ThreadLocalOperationLock.getInstance().acquire();
 //				System.out.println(String.format("Exit inside: SSRF : %s : %s : %s", className, methodName, obj));
 
+                //TODO revisit this hook
                 if (StringUtils.equals(methodName, "generateRequest")) {
                     Method getRequestLine = returnVal.getClass().getMethod("getRequestLine");
                     getRequestLine.setAccessible(true);
