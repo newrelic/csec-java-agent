@@ -3,26 +3,27 @@ package com.k2cybersecurity.intcodeagent.models.javaagent;
 import com.k2cybersecurity.intcodeagent.websocket.JsonConverter;
 
 public class ExitEventBean extends AgentBasicInfo {
-    private String id;
+    private String executionId;
     private String caseType;
     private String k2RequestIdentifier;
+    private String applicationUUID;
 
     public ExitEventBean() {
         super();
     }
 
-    public ExitEventBean(String id, String caseType) {
+    public ExitEventBean(String executionId, String caseType) {
         this();
-        this.id = id;
+        this.executionId = executionId;
         this.caseType = caseType;
     }
 
-    public String getId() {
-        return id;
+    public String getExecutionId() {
+        return executionId;
     }
 
-    public void setId(String id) {
-        this.id = id;
+    public void setExecutionId(String executionId) {
+        this.executionId = executionId;
     }
 
     public String getCaseType() {
@@ -39,6 +40,14 @@ public class ExitEventBean extends AgentBasicInfo {
 
     public void setK2RequestIdentifier(String k2RequestIdentifier) {
         this.k2RequestIdentifier = k2RequestIdentifier;
+    }
+
+    public String getApplicationUUID() {
+        return applicationUUID;
+    }
+
+    public void setApplicationUUID(String applicationUUID) {
+        this.applicationUUID = applicationUUID;
     }
 
     @Override
