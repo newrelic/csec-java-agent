@@ -71,8 +71,8 @@ public class EventDispatcher {
         HttpRequestBean requestBean = ThreadLocalExecutionMap.getInstance().getHttpRequestBean();
         if (requestBean != null && StringUtils.isNotBlank(requestBean.getK2RequestIdentifier())) {
             exitEventBean.setK2RequestIdentifier(requestBean.getK2RequestIdentifier());
+            DispatcherPool.getInstance().dispatchExitEvent(exitEventBean);
         }
-        DispatcherPool.getInstance().dispatchExitEvent(exitEventBean);
     }
 
     public static void dispatch(AbstractOperationalBean objectBean, VulnerabilityCaseType vulnerabilityCaseType, boolean blockAndCheck)
