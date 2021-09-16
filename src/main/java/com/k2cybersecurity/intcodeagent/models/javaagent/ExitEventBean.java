@@ -1,5 +1,6 @@
 package com.k2cybersecurity.intcodeagent.models.javaagent;
 
+import com.k2cybersecurity.instrumentator.K2Instrumentator;
 import com.k2cybersecurity.intcodeagent.websocket.JsonConverter;
 
 public class ExitEventBean extends AgentBasicInfo {
@@ -16,6 +17,7 @@ public class ExitEventBean extends AgentBasicInfo {
         this();
         this.executionId = executionId;
         this.caseType = caseType;
+        this.applicationUUID = K2Instrumentator.APPLICATION_UUID;
     }
 
     public String getExecutionId() {
