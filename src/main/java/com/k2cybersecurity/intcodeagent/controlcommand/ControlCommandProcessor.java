@@ -122,6 +122,7 @@ public class ControlCommandProcessor implements Runnable {
                 try {
                     AgentUtils.getInstance().setInitMsg(
                             new ObjectMapper().readValue(controlCommand.getData().toString(), CollectorInitMsg.class));
+                    // TODO : Remove usage of CC #10 data
                     logger.log(LogLevel.INFO,
                             String.format(COLLECTOR_IS_INITIALIZED_WITH_PROPERTIES, AgentUtils.getInstance().getInitMsg().toString()),
                             ControlCommandProcessor.class.getName());

@@ -447,6 +447,7 @@ public class Dispatcher implements Runnable {
                 // Dispatch call for cve scan.
                 if (AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getEnabled() && AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getCveScan().getEnabled()) {
                     //Run CVE scan on new deployed app
+                    // TODO : Remove usage of CC #10 data
                     CVEScannerPool.getInstance().dispatchScanner(AgentUtils.getInstance().getInitMsg().getAgentInfo().getNodeId(), K2Instrumentator.APPLICATION_INFO_BEAN.getIdentifier().getKind().name(), K2Instrumentator.APPLICATION_INFO_BEAN.getIdentifier().getId(), false, false);
                 }
 //				ScanComponentData scanComponentData = CVEComponentsService.getAllComponents(deployedApplication);
