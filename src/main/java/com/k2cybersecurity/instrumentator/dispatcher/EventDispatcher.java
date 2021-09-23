@@ -71,6 +71,7 @@ public class EventDispatcher {
         HttpRequestBean requestBean = ThreadLocalExecutionMap.getInstance().getHttpRequestBean();
         if (requestBean != null && StringUtils.isNotBlank(requestBean.getK2RequestIdentifier())) {
             exitEventBean.setK2RequestIdentifier(requestBean.getK2RequestIdentifier());
+            logger.log(LogLevel.INFO, "Exit event : " + exitEventBean, EventDispatcher.class.getName());
             DispatcherPool.getInstance().dispatchExitEvent(exitEventBean);
         }
     }
