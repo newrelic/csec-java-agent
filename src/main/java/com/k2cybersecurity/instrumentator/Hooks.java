@@ -158,9 +158,6 @@ public class Hooks {
         NAME_BASED_HOOKS.put("io.zorba.api.Zorba", Collections.singletonList("compileQuery"));
         NAME_BASED_HOOKS.put("io.zorba.api.XQuery", Arrays.asList("iterator", "compile", "execute"));
 
-        // JBoss Classloading Hook
-//		NAME_BASED_HOOKS.put("org.jboss.modules.Main", Collections.singletonList("main"));
-
         // OSGi Classloading Hook
         NAME_BASED_HOOKS.put("org.osgi.framework.Bundle", Arrays.asList("start", "update"));
 
@@ -518,10 +515,6 @@ public class Hooks {
         // Jetty Servlet
         DECORATOR_ENTRY.put("org.eclipse.jetty.server.Handler.handle",
                 "com.k2cybersecurity.instrumentator.decorators.jettyhandle");
-
-        // JBoss Classloading
-        DECORATOR_ENTRY.put("org.jboss.modules.Main.main",
-                "com.k2cybersecurity.instrumentator.decorators.jbossadjustments");
 
         // OSGi Classloading
         DECORATOR_ENTRY.put("org.osgi.framework.Bundle.start",

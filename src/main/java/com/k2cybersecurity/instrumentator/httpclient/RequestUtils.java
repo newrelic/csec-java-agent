@@ -37,6 +37,9 @@ public class RequestUtils {
                 requestBody = RequestBody.create(MediaType.parse(httpRequestBean.getContentType()),
                         httpRequestBean.getBody());
             }
+        } else if (StringUtils.equalsIgnoreCase(httpRequestBean.getMethod(), "POST")) {
+            requestBody = RequestBody.create(null,
+                    httpRequestBean.getBody());
         }
 
         Builder requestBuilder = new Request.Builder();

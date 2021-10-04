@@ -1,7 +1,6 @@
 package com.k2cybersecurity.instrumentator;
 
 import com.k2cybersecurity.instrumentator.custom.ClassLoadListener;
-import com.k2cybersecurity.instrumentator.custom.ClassloaderAdjustments;
 import com.k2cybersecurity.instrumentator.utils.AgentUtils;
 import com.k2cybersecurity.instrumentator.utils.InstrumentationUtils;
 import net.bytebuddy.ByteBuddy;
@@ -28,6 +27,8 @@ public class AgentNew {
     private static boolean isDynamicAttachment = false;
 
     public static Instrumentation gobalInstrumentation;
+
+    public static final String K2_BOOTSTAP_LOADED_PACKAGE_NAME = "sun.reflect.com.k2cybersecurity";
 
     public static void premain(String arguments, Instrumentation instrumentation) {
         if (StringUtils.equals(System.getenv().get("K2_DISABLE"), "true") || StringUtils.equals(System.getenv().get("K2_ATTACH"), "false")) {
@@ -142,7 +143,7 @@ public class AgentNew {
             System.out.println("[K2-JA] trying server detection .");
             if (jbossDetected(classLoader, instrumentation)) {
                 // Place Classloader adjustments
-                ClassloaderAdjustments.jbossSpecificAdjustments();
+                jbossSpecificAdjustments();
                 System.out.println("[K2-JA] JBoss detected server wait initialised.");
                 awaitJbossServerStartInitialization(instrumentation);
             }
@@ -158,6 +159,15 @@ public class AgentNew {
             return true;
         }
         return false;
+    }
+
+    public static void jbossSpecificAdjustments() {
+        String cur = System.getProperty("jboss.modules.system.pkgs");
+        if (StringUtils.isBlank(cur)) {
+            System.setProperty("jboss.modules.system.pkgs", K2_BOOTSTAP_LOADED_PACKAGE_NAME);
+        } else if (!StringUtils.containsIgnoreCase(cur, K2_BOOTSTAP_LOADED_PACKAGE_NAME)) {
+            System.setProperty("jboss.modules.system.pkgs", StringUtils.joinWith(",", cur, K2_BOOTSTAP_LOADED_PACKAGE_NAME));
+        }
     }
 
     private static void awaitJbossServerStartInitialization(Instrumentation instrumentation) {

@@ -2,9 +2,11 @@ package com.k2cybersecurity.instrumentator.httpclient;
 
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
-import com.k2cybersecurity.intcodeagent.logging.EventThreadPool;
 
-import java.util.concurrent.*;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class RestRequestThreadPool {
@@ -31,19 +33,10 @@ public class RestRequestThreadPool {
         // load the settings
         processQueue = new LinkedBlockingQueue<>(queueSize);
         executor = new ThreadPoolExecutor(corePoolSize, maxPoolSize, keepAliveTime, timeUnit, processQueue,
-                new EventThreadPool.EventAbortPolicy()) {
+                new EventAbortPolicy()) {
 
             @Override
             protected void afterExecute(Runnable r, Throwable t) {
-                if (r instanceof Future<?>) {
-                    try {
-                        Future<?> future = (Future<?>) r;
-                        if (future.isDone()) {
-                            future.get();
-                        }
-                    } catch (Throwable e) {
-                    }
-                }
                 super.afterExecute(r, t);
             }
 

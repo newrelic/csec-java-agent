@@ -160,9 +160,10 @@ public class LogWriter implements Runnable {
             File rolloverFile = new File(fileName + STRING_DOT + logFileCounter);
             currentFile.renameTo(rolloverFile);
 
-//            FileUtils.touch(new File(currentLogFileName));
 
             writer = new BufferedWriter(new FileWriter(currentLogFileName, true));
+
+            uploadLogsAndDeleteFile(rolloverFile);
 
             currentFile.setReadable(true, false);
             if (!osVariables.getWindows()) {
