@@ -72,7 +72,8 @@ public class RestClient {
                     return true;
                 }
             });
-            FileUtils.deleteQuietly(new File(File.separator + "opt" + File.separator + "k2-ic" + File.separator + "ds-tmp"));
+            // TODO: Add handling for Windows platform
+            FileUtils.deleteQuietly(new File(File.separator + "tmp" + File.separator + "k2-ic" + File.separator + "ds-tmp"));
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -134,7 +135,9 @@ public class RestClient {
             Response response = call.execute();
             logger.log(LogLevel.DEBUG, String.format(REQUEST_SUCCESS_S_RESPONSE_S_S, request, response, response.body().string()), RestClient.class.getName());
             response.body().close();
-            client.getConnectionPool().evictAll();
+            if (client.getConnectionPool() != null) {
+                client.getConnectionPool().evictAll();
+            }
         } catch (IOException e) {
             logger.log(LogLevel.DEBUG, String.format(CALL_FAILED_REQUEST_S_REASON, request), e, RestClient.class.getName());
             FuzzFailEvent fuzzFailEvent = new FuzzFailEvent(K2Instrumentator.APPLICATION_UUID);

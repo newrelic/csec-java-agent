@@ -20,7 +20,7 @@ public class ControlCommandProcessorThreadPool {
     private static ControlCommandProcessorThreadPool instance;
 
     private final int queueSize = 1500;
-    private final int maxPoolSize = 3;
+    private final int maxPoolSize = 1;
     private final int corePoolSize = 1;
     private final long keepAliveTime = 10;
     private final TimeUnit timeUnit = TimeUnit.SECONDS;

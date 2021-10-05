@@ -44,8 +44,8 @@ public class RestRequestProcessor implements Runnable {
                         }
                         FileUtils.touch(fileToCreate);
                     } catch (Exception e) {
-                        logger.log(LogLevel.ERROR, String.format("Unable to create setup files for fuzzing request : %s",
-                                fileToCreate), e, RestRequestProcessor.class.getName());
+                        logger.log(LogLevel.ERROR, String.format("Unable to create setup files for fuzzing request : %s : %s : %s",
+                                fileToCreate, e.getMessage(), e.getCause()), RestRequestProcessor.class.getName());
                     } finally {
                         filesCreated.add(file);
                     }
