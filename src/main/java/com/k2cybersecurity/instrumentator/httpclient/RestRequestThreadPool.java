@@ -22,7 +22,7 @@ public class RestRequestThreadPool {
 
     private final int queueSize = 5000;
     private final int maxPoolSize = 5;
-    private final int corePoolSize = 5;
+    private final int corePoolSize = 3;
     private final long keepAliveTime = 10;
     private final TimeUnit timeUnit = TimeUnit.SECONDS;
     private final boolean allowCoreThreadTimeOut = false;

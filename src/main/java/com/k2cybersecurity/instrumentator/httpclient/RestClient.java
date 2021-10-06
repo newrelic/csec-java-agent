@@ -26,7 +26,8 @@ public class RestClient {
     private final ThreadLocal<OkHttpClient> clientThreadLocal = new ThreadLocal<OkHttpClient>() {
         @Override
         protected OkHttpClient initialValue() {
-            return new OkHttpClient();
+            OkHttpClient client = new OkHttpClient();
+            return clientInit(client);
         }
     };
 //    private final OkHttpClient client = new OkHttpClient();
@@ -34,6 +35,8 @@ public class RestClient {
     private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
 
     public static RestClient instance;
+
+    private static final Object lock = new Object();
 
     // Create a trust manager that does not validate certificate chains
     private final TrustManager[] trustAllCerts = new TrustManager[]{
@@ -54,8 +57,12 @@ public class RestClient {
     };
 
     private RestClient() {
+        //            // TODO: Add handling for Windows platform
+        FileUtils.deleteQuietly(new File(File.separator + "tmp" + File.separator + "k2-ic" + File.separator + "ds-tmp"));
+    }
+
+    private OkHttpClient clientInit(OkHttpClient client) {
         ConnectionPool connectionPool = new ConnectionPool(1, 5, TimeUnit.MINUTES);
-        OkHttpClient client = clientThreadLocal.get();
         client.setConnectionPool(connectionPool);
 
         try {
@@ -72,16 +79,19 @@ public class RestClient {
                     return true;
                 }
             });
-            // TODO: Add handling for Windows platform
-            FileUtils.deleteQuietly(new File(File.separator + "tmp" + File.separator + "k2-ic" + File.separator + "ds-tmp"));
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+        return client;
     }
 
     public static RestClient getInstance() {
         if (instance == null) {
-            instance = new RestClient();
+            synchronized (lock) {
+                if (instance == null) {
+                    instance = new RestClient();
+                }
+            }
         }
         return instance;
     }
