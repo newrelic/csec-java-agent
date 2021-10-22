@@ -123,7 +123,8 @@ public class Dispatcher implements Runnable {
                 JavaAgentEventBean eventBean = prepareEvent(httpRequestBean, metaData, vulnerabilityCaseType);
 //				String url = StringUtils.substringBefore(httpRequestBean.getUrl(), SEPARATOR_QUESTIONMARK);
 //				url = String.format(S_S, eventBean.getHttpRequest().getMethod(), url);
-                if ((!xssConstructs.isEmpty() && !actuallyEmpty(xssConstructs) && StringUtils.isNotBlank(httpRequestBean.getHttpResponseBean().getResponseBody())) ||
+                if (K2Instrumentator.APPLICATION_INFO_BEAN.getServerInfo().getDeployedApplications().isEmpty() ||
+                        (!xssConstructs.isEmpty() && !actuallyEmpty(xssConstructs) && StringUtils.isNotBlank(httpRequestBean.getHttpResponseBean().getResponseBody())) ||
                         (AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getEnabled()
                                 && AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getIastScan().getEnabled())) {
 //					System.out.println("Sending out RXSS");

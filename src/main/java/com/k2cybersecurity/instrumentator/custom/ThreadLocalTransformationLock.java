@@ -26,7 +26,7 @@ public class ThreadLocalTransformationLock {
     }
 
     public void acquire(String typeName) {
-        if (StringUtils.isNotBlank(this.takenBy)) {
+        if (!isAcquired()) {
             lock.tryAcquire();
             this.takenBy = typeName;
         }

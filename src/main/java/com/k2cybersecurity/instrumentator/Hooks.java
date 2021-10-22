@@ -46,6 +46,8 @@ public class Hooks {
 
         // Spring MVC
         ANNOTATION_BASED_HOOKS.add("org.springframework.web.bind.annotation.Mapping");
+        ANNOTATION_BASED_HOOKS.add("org.springframework.stereotype.Controller");
+
 
         // Jersey
         ANNOTATION_BASED_HOOKS.add("javax.ws.rs.Path");
@@ -266,6 +268,9 @@ public class Hooks {
 
         // Spring MVC
         DECORATOR_ENTRY.put("org.springframework.web.bind.annotation.Mapping",
+                "com.k2cybersecurity.instrumentator.decorators.servicetrace");
+
+        DECORATOR_ENTRY.put("org.springframework.stereotype.Controller",
                 "com.k2cybersecurity.instrumentator.decorators.servicetrace");
 
         // Jersey

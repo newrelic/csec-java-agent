@@ -195,16 +195,16 @@ public class ThreadLocalHttpMap {
             Method getServletContext = requestClass.getMethod(GET_SERVLET_CONTEXT);
             getServletContext.setAccessible(true);
             Object servletContext = getServletContext.invoke(httpRequest, null);
-
-            httpRequestBean.setServletContextObject(servletContext);
-
-            Method getContextPath = servletContext.getClass().getMethod(GET_CONTEXT_PATH);
-            getContextPath.setAccessible(true);
-            String contextPath = (String) getContextPath.invoke(servletContext, null);
-            if (StringUtils.isBlank(contextPath)) {
-                contextPath = FORWARD_SLASH;
+            if (servletContext != null) {
+                httpRequestBean.setServletContextObject(servletContext);
+                Method getContextPath = servletContext.getClass().getMethod(GET_CONTEXT_PATH);
+                getContextPath.setAccessible(true);
+                String contextPath = (String) getContextPath.invoke(servletContext, null);
+                if (StringUtils.isBlank(contextPath)) {
+                    contextPath = FORWARD_SLASH;
+                }
+                httpRequestBean.setContextPath(contextPath);
             }
-            httpRequestBean.setContextPath(contextPath);
         } catch (Throwable e) {
             logger.log(LogLevel.DEBUG, ERROR, e, ThreadLocalHttpMap.class.getName());
         }
