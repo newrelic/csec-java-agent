@@ -49,7 +49,7 @@ public class ControlCommandProcessorThreadPool {
          * @throws RejectedExecutionException always
          */
         public void rejectedExecution(Runnable r, ThreadPoolExecutor e) {
-            logger.log(LogLevel.SEVERE, String.format(CUSTOM_CODE_VULNERABILITY_TASK_REJECTED_FROM_S_S, r.toString(), e.toString()),
+            logger.log(LogLevel.WARNING, String.format(CUSTOM_CODE_VULNERABILITY_TASK_REJECTED_FROM_S_S, r.toString(), e.toString()),
                     ControlCommandProcessorThreadPool.class.getName());
         }
     }
@@ -91,8 +91,10 @@ public class ControlCommandProcessorThreadPool {
 
             @Override
             public Thread newThread(Runnable r) {
-                return new Thread(Thread.currentThread().getThreadGroup(), r,
+                Thread t = new Thread(Thread.currentThread().getThreadGroup(), r,
                         IAgentConstants.K2_LISTERNER + threadNumber.getAndIncrement());
+                t.setDaemon(true);
+                return t;
             }
         });
     }

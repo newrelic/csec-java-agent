@@ -3,14 +3,11 @@ package com.k2cybersecurity.instrumentator.utils;
 import com.k2cybersecurity.instrumentator.AgentNew;
 import com.k2cybersecurity.instrumentator.K2Instrumentator;
 import com.k2cybersecurity.instrumentator.custom.ByteBuddyElementMatchers;
-import com.k2cybersecurity.instrumentator.custom.ClassloaderAdjustments;
 import com.k2cybersecurity.instrumentator.dispatcher.DispatcherPool;
 import com.k2cybersecurity.intcodeagent.controlcommand.ControlCommandProcessorThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
-import com.k2cybersecurity.intcodeagent.logging.EventThreadPool;
 import com.k2cybersecurity.intcodeagent.logging.HealthCheckScheduleThread;
-import com.k2cybersecurity.intcodeagent.logging.ServletEventPool;
 import com.k2cybersecurity.intcodeagent.models.javaagent.ShutDownEvent;
 import com.k2cybersecurity.intcodeagent.websocket.EventSendPool;
 import com.k2cybersecurity.intcodeagent.websocket.WSClient;
@@ -21,7 +18,6 @@ import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.dynamic.DynamicType;
 import net.bytebuddy.utility.JavaModule;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.lang.instrument.Instrumentation;
@@ -353,9 +349,9 @@ public class InstrumentationUtils {
         } catch (Throwable e) {
         }
         try {
-            ServletEventPool.getInstance().shutDownThreadPoolExecutor();
+//            ServletEventPool.getInstance().shutDownThreadPoolExecutor();
             HealthCheckScheduleThread.getInstance().shutDownThreadPoolExecutor();
-            EventThreadPool.getInstance().shutDownThreadPoolExecutor();
+//            EventThreadPool.getInstance().shutDownThreadPoolExecutor();
             DispatcherPool.getInstance().shutDownThreadPoolExecutor();
             ControlCommandProcessorThreadPool.getInstance().shutDownThreadPoolExecutor();
             EventSendPool.getInstance().shutDownThreadPoolExecutor();

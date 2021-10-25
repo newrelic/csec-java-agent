@@ -68,8 +68,10 @@ public class DispatcherPool {
 
             @Override
             public Thread newThread(Runnable r) {
-                return new Thread(Thread.currentThread().getThreadGroup(), r,
+                Thread t = new Thread(Thread.currentThread().getThreadGroup(), r,
                         IAgentConstants.K2_JAVA_AGENT + threadNumber.getAndIncrement());
+                t.setDaemon(true);
+                return t;
             }
         });
     }

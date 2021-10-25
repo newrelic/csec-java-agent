@@ -69,8 +69,9 @@ public class LogWriter implements Runnable {
         fileName = new File(osVariables.getLogDirectory(), "k2_java_agent-" + K2Instrumentator.APPLICATION_UUID + ".log").getAbsolutePath();
         currentLogFile = new File(fileName);
         currentLogFile.getParentFile().mkdirs();
-        if (!currentLogFile.isFile()) {
-            System.err.println(String.format("[K2-Agent]:Unable to create directory %s!!!", currentLogFile.getParentFile()));
+        try {
+            Files.setPosixFilePermissions(currentLogFile.getParentFile().toPath(), PosixFilePermissions.fromString("rwxrwxrwx"));
+        } catch (Exception e) {
         }
         currentLogFileName = fileName;
         try {

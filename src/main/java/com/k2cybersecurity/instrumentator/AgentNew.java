@@ -1,7 +1,6 @@
 package com.k2cybersecurity.instrumentator;
 
 import com.k2cybersecurity.instrumentator.custom.ClassLoadListener;
-import com.k2cybersecurity.instrumentator.custom.ClassloaderAdjustments;
 import com.k2cybersecurity.instrumentator.utils.AgentUtils;
 import com.k2cybersecurity.instrumentator.utils.InstrumentationUtils;
 import net.bytebuddy.ByteBuddy;
@@ -58,7 +57,9 @@ public class AgentNew {
                         System.err.println("[K2-JA] Process initialization failed!!! Environment incompatible.");
                         return;
                     }
-                    Runtime.getRuntime().addShutdownHook(new Thread(() -> InstrumentationUtils.shutdownLogic(false)));
+                    Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+                        InstrumentationUtils.shutdownLogic(false);
+                    }, "k2-shutdown-hook"));
 
                     Set<Class> typeBasedClassSet = new HashSet<>();
                     for (Class aClass : instrumentation.getAllLoadedClasses()) {

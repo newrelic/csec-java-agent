@@ -55,8 +55,10 @@ public class InBoundOutBoundST {
         inOutExecutorService = Executors.newSingleThreadScheduledExecutor(new ThreadFactory() {
             @Override
             public Thread newThread(Runnable r) {
-                return new Thread(Thread.currentThread().getThreadGroup(), r,
+                Thread t = new Thread(Thread.currentThread().getThreadGroup(), r,
                         "K2-inbound-outbound-st");
+                t.setDaemon(true);
+                return t;
             }
         });
         inOutExecutorService.scheduleAtFixedRate(runnable, 2, 2, TimeUnit.HOURS);

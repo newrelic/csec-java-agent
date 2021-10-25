@@ -20,8 +20,10 @@ public class FuzzCleanUpST {
         executor = Executors.newSingleThreadScheduledExecutor(new ThreadFactory() {
             @Override
             public Thread newThread(Runnable r) {
-                return new Thread(Thread.currentThread().getThreadGroup(), r,
+                Thread worker = new Thread(Thread.currentThread().getThreadGroup(), r,
                         "fuzz-clean-up-scheduler");
+                worker.setDaemon(true);
+                return worker;
             }
         });
     }
