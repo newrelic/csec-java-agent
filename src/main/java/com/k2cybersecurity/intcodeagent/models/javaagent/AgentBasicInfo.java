@@ -45,10 +45,16 @@ public class AgentBasicInfo {
 
     private String emailId;
 
+    private static String agentGroup;
+
+    private static String policyVersion;
+
     /**
      * Instantiates a new agent basic info according to the source class object.
      */
     public AgentBasicInfo() {
+        setPolicyVersion(AgentUtils.getInstance().getAgentPolicy().getVersion());
+        setAgentGroup(AgentUtils.getInstance().getGroupName());
         setJsonVersion(K2JAVersionInfo.jsonVersion);
         setCollectorVersion(K2JAVersionInfo.collectorVersion);
         setNodeId(CollectorConfigurationUtils.getInstance().getCollectorConfig().getNodeId());
@@ -74,6 +80,22 @@ public class AgentBasicInfo {
         } else if (this instanceof ExitEventBean) {
             setJsonName(JSON_NAME_EXIT_EVENT);
         }
+    }
+
+    public String getAgentGroup() {
+        return agentGroup;
+    }
+
+    public void setAgentGroup(String agentGroup) {
+        this.agentGroup = agentGroup;
+    }
+
+    public String getPolicyVersion() {
+        return this.policyVersion;
+    }
+
+    public void setPolicyVersion(String policyVersion) {
+        this.policyVersion = policyVersion;
     }
 
     /**

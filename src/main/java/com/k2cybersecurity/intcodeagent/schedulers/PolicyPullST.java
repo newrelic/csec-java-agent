@@ -14,6 +14,7 @@ import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.logging.IAgentConstants;
 import com.k2cybersecurity.intcodeagent.models.config.AgentPolicy;
+import com.k2cybersecurity.intcodeagent.websocket.EventSendPool;
 import com.squareup.okhttp.Response;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -103,8 +104,10 @@ public class PolicyPullST {
             }
             AgentUtils.getInstance().setAgentPolicy(newPolicy);
             AgentUtils.getInstance().enforcePolicy();
+            K2Instrumentator.APPLICATION_INFO_BEAN.setPolicyVersion(AgentUtils.getInstance().getAgentPolicy().getVersion());
             logger.log(LogLevel.INFO, String.format(IAgentConstants.AGENT_POLICY_APPLIED_S,
                     AgentUtils.getInstance().getAgentPolicy()), PolicyPullST.class.getName());
+            EventSendPool.getInstance().sendEvent(K2Instrumentator.APPLICATION_INFO_BEAN.toString());
             return true;
         } catch (Throwable e) {
             logger.log(LogLevel.ERROR, IAgentConstants.UNABLE_TO_SET_AGENT_POLICY_DUE_TO_ERROR, e,
