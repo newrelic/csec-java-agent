@@ -8,10 +8,7 @@ import com.k2cybersecurity.intcodeagent.models.javaagent.OutBoundHttp;
 import com.k2cybersecurity.intcodeagent.websocket.EventSendPool;
 
 import java.util.*;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 public class InBoundOutBoundST {
 
@@ -62,8 +59,8 @@ public class InBoundOutBoundST {
             }
         });
         inOutExecutorService.scheduleAtFixedRate(runnable, 2, 2, TimeUnit.HOURS);
-        cache = new HashMap<>();
-        newConnections = new HashSet<>();
+        cache = new ConcurrentHashMap<>();
+        newConnections = ConcurrentHashMap.newKeySet();
         logger.log(LogLevel.INFO, "in-bound out-bound monitor thread started successfully!!!", InBoundOutBoundST.class.getName());
     }
 
@@ -87,7 +84,7 @@ public class InBoundOutBoundST {
         }
     };
 
-    public static void task(Collection<OutBoundHttp> allConnections, boolean isCached) {
+    public void task(Collection<OutBoundHttp> allConnections, boolean isCached) {
         /**
          * Create JSON
          * Send to IC

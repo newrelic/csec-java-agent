@@ -16,7 +16,7 @@ public class RequestUtils {
     private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
 
     public static Request generateK2Request(HttpRequestBean httpRequestBean) {
-        logger.log(LogLevel.DEBUG, String.format("Firing request : %s", httpRequestBean), RestClient.class.getName());
+        logger.log(LogLevel.DEBUG, String.format("Firing request : %s", httpRequestBean), RequestUtils.class.getName());
         StringBuilder url = new StringBuilder(String.format("%s://localhost", httpRequestBean.getProtocol()));
         url.append(":");
         url.append(httpRequestBean.getServerPort());
@@ -37,6 +37,9 @@ public class RequestUtils {
                 requestBody = RequestBody.create(MediaType.parse(httpRequestBean.getContentType()),
                         httpRequestBean.getBody());
             }
+        } else if (StringUtils.equalsIgnoreCase(httpRequestBean.getMethod(), "POST")) {
+            requestBody = RequestBody.create(null,
+                    httpRequestBean.getBody());
         }
 
         Builder requestBuilder = new Request.Builder();

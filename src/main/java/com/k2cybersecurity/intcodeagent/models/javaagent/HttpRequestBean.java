@@ -2,6 +2,7 @@ package com.k2cybersecurity.intcodeagent.models.javaagent;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.k2cybersecurity.intcodeagent.logging.IAgentConstants;
 import com.k2cybersecurity.intcodeagent.websocket.JsonConverter;
 import org.apache.commons.lang3.StringUtils;
 import org.json.simple.JSONObject;
@@ -33,6 +34,8 @@ public class HttpRequestBean {
     private String clientPort;
 
     private JSONObject headers;
+
+    private String k2RequestIdentifier;
 
     private Map<String, FileIntegrityBean> fileExist;
 
@@ -127,6 +130,9 @@ public class HttpRequestBean {
 
     public void setHeaders(JSONObject headers) {
         this.headers = headers;
+        if (headers.containsKey(IAgentConstants.K_2_FUZZ_REQUEST_ID)) {
+            k2RequestIdentifier = headers.get(IAgentConstants.K_2_FUZZ_REQUEST_ID).toString();
+        }
     }
 
     /**
@@ -191,6 +197,14 @@ public class HttpRequestBean {
     public Integer addGenerationTime(Integer time) {
         this.generationTime += time;
         return this.generationTime;
+    }
+
+    public String getK2RequestIdentifier() {
+        return k2RequestIdentifier;
+    }
+
+    public void setK2RequestIdentifier(String k2RequestIdentifier) {
+        this.k2RequestIdentifier = k2RequestIdentifier;
     }
 
     @Override

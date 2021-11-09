@@ -4,6 +4,7 @@ import com.k2cybersecurity.instrumentator.custom.K2CyberSecurityException;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalHttpMap;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalOperationLock;
 import com.k2cybersecurity.instrumentator.dispatcher.EventDispatcher;
+import com.k2cybersecurity.instrumentator.utils.AgentUtils;
 import com.k2cybersecurity.intcodeagent.models.javaagent.VulnerabilityCaseType;
 import com.k2cybersecurity.intcodeagent.models.operationalbean.HashCryptoOperationalBean;
 import org.apache.commons.lang3.StringUtils;
@@ -41,12 +42,13 @@ public class Callbacks {
 
     public static void doOnExit(String sourceString, String className, String methodName, Object obj, Object[] args,
                                 Object returnVal, String exectionId) {
-        if (!ThreadLocalHttpMap.getInstance().isEmpty() && !ThreadLocalOperationLock.getInstance().isAcquired()) {
+        if (!ThreadLocalHttpMap.getInstance().isEmpty()
+                && AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getEnabled()
+                && AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getIastScan().getEnabled()
+                && !ThreadLocalOperationLock.getInstance().isAcquired()) {
             try {
                 ThreadLocalOperationLock.getInstance().acquire();
-//				System.out.println(
-//						"OnExit :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj + " - return : "
-//								+ returnVal + " - eid : " + exectionId);
+                EventDispatcher.dispatchExitEvent(exectionId, VulnerabilityCaseType.CRYPTO);
             } finally {
                 ThreadLocalOperationLock.getInstance().release();
             }

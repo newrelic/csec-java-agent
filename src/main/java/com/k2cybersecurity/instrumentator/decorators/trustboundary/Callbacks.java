@@ -5,6 +5,7 @@ import com.k2cybersecurity.instrumentator.custom.ThreadLocalHttpMap;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalOperationLock;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalSessionMap;
 import com.k2cybersecurity.instrumentator.dispatcher.EventDispatcher;
+import com.k2cybersecurity.instrumentator.utils.AgentUtils;
 import com.k2cybersecurity.intcodeagent.models.javaagent.VulnerabilityCaseType;
 import com.k2cybersecurity.intcodeagent.models.operationalbean.TrustBoundaryOperationalBean;
 
@@ -35,16 +36,17 @@ public class Callbacks {
 
     public static void doOnExit(String sourceString, String className, String methodName, Object obj, Object[] args,
                                 Object returnVal, String exectionId) {
-//		if(!ThreadLocalHttpMap.getInstance().isEmpty() && !ThreadLocalOperationLock.getInstance().isAcquired()) {
-//			try {
-//				ThreadLocalOperationLock.getInstance().acquire();
-//				System.out.println(
-//						"OnExit :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj + " - return : "
-//								+ returnVal + " - eid : " + exectionId);
-//			} finally {
-//				ThreadLocalOperationLock.getInstance().release();
-//			}
-//		}
+        if (!ThreadLocalHttpMap.getInstance().isEmpty()
+                && AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getEnabled()
+                && AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getIastScan().getEnabled()
+                && !ThreadLocalOperationLock.getInstance().isAcquired()) {
+            try {
+                ThreadLocalOperationLock.getInstance().acquire();
+                EventDispatcher.dispatchExitEvent(exectionId, VulnerabilityCaseType.TRUSTBOUNDARY);
+            } finally {
+                ThreadLocalOperationLock.getInstance().release();
+            }
+        }
     }
 
     public static void doOnError(String sourceString, String className, String methodName, Object obj, Object[] args,

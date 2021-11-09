@@ -84,6 +84,10 @@ public class EventSendPool {
         executor.submit(new EventSender(event));
     }
 
+    public void sendEvent(Object event) {
+        executor.submit(new EventSender(event));
+    }
+
 
     public void shutDownThreadPoolExecutor() {
 

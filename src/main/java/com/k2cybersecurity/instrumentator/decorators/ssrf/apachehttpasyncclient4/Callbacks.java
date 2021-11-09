@@ -100,12 +100,12 @@ public class Callbacks {
     public static void doOnExit(String sourceString, String className, String methodName, Object obj, Object[] args,
                                 Object returnVal, String exectionId) throws K2CyberSecurityException, Exception {
 //		System.out.println(String.format("Exit : SSRF : %s : %s : %s", className, methodName, obj));
-
         if (!ThreadLocalHttpMap.getInstance().isEmpty() && !ThreadLocalOperationLock.getInstance().isAcquired()) {
             try {
                 ThreadLocalOperationLock.getInstance().acquire();
 //				System.out.println(String.format("Exit inside: SSRF : %s : %s : %s", className, methodName, obj));
 
+                //TODO revisit this hook
                 if (StringUtils.equals(methodName, "generateRequest")) {
                     Method getRequestLine = returnVal.getClass().getMethod("getRequestLine");
                     getRequestLine.setAccessible(true);
@@ -124,7 +124,10 @@ public class Callbacks {
 //					System.out.println(String.format("Exit inside Value : SSRF : %s : %s : %s", className, methodName, uriFromRequest));
                     EventDispatcher.dispatch(new SSRFOperationalBean(uriFromRequest, className, sourceString, exectionId,
                             Instant.now().toEpochMilli(), methodName), VulnerabilityCaseType.HTTP_REQUEST);
-
+                }
+                if (AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getEnabled()
+                        && AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getIastScan().getEnabled()) {
+                    EventDispatcher.dispatchExitEvent(exectionId, VulnerabilityCaseType.HTTP_REQUEST);
                 }
 //				System.out.println(
 //						"OnExit :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj + " - return : "

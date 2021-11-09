@@ -5,6 +5,7 @@ import com.k2cybersecurity.instrumentator.custom.ThreadLocalDBMap;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalHttpMap;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalOperationLock;
 import com.k2cybersecurity.instrumentator.dispatcher.EventDispatcher;
+import com.k2cybersecurity.instrumentator.utils.AgentUtils;
 import com.k2cybersecurity.intcodeagent.models.javaagent.VulnerabilityCaseType;
 import org.apache.commons.lang3.StringUtils;
 
@@ -48,14 +49,17 @@ public class Callbacks {
 
     public static void doOnExit(String sourceString, String className, String methodName, Object obj, Object[] args,
                                 Object returnVal, String exectionId) {
-        //        System.out.println("OnExit :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj + " - return : " + returnVal + " - eid : " + exectionId);
-        //		if(!ThreadLocalHttpMap.getInstance().isEmpty() && !ThreadLocalOperationLock.getInstance().isAcquired()) {
-        //			try {
-        //				ThreadLocalOperationLock.getInstance().acquire();
-        //			} finally {
-        //				ThreadLocalOperationLock.getInstance().release();
-        //			}
-        //		}
+        if (!ThreadLocalHttpMap.getInstance().isEmpty()
+                && AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getEnabled()
+                && AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getIastScan().getEnabled()
+                && !ThreadLocalOperationLock.getInstance().isAcquired()) {
+            try {
+                ThreadLocalOperationLock.getInstance().acquire();
+                EventDispatcher.dispatchExitEvent(exectionId, VulnerabilityCaseType.SQL_DB_COMMAND);
+            } finally {
+                ThreadLocalOperationLock.getInstance().release();
+            }
+        }
     }
 
     public static void doOnError(String sourceString, String className, String methodName, Object obj, Object[] args,

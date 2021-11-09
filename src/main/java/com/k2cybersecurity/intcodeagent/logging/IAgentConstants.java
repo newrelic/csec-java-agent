@@ -520,6 +520,8 @@ public interface IAgentConstants {
     String JSON_NAME_SHUTDOWN = "shutdown";
     String JSON_NAME_FUZZ_FAIL = "fuzzfail";
     String JSON_NAME_HTTP_CONNECTION_STAT = "http-connection-stat";
+    String JSON_NAME_EXIT_EVENT = "exit-event";
+
 
 
     String FIELD_SOCKET_CHANNEL = "socketChannel";
@@ -583,4 +585,5 @@ public interface IAgentConstants {
     String LINUX = "linux";
     String WINDOWS = "windows";
     String MAC = "mac";
+    String K_2_FUZZ_REQUEST_ID = "k2-fuzz-request-id";
 }

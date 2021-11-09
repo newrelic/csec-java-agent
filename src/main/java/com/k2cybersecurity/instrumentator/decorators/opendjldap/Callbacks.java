@@ -1,9 +1,11 @@
 package com.k2cybersecurity.instrumentator.decorators.opendjldap;
 
 import com.k2cybersecurity.instrumentator.custom.K2CyberSecurityException;
+import com.k2cybersecurity.instrumentator.custom.ThreadLocalHttpMap;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalLDAPMap;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalOperationLock;
 import com.k2cybersecurity.instrumentator.dispatcher.EventDispatcher;
+import com.k2cybersecurity.instrumentator.utils.AgentUtils;
 import com.k2cybersecurity.intcodeagent.models.javaagent.VulnerabilityCaseType;
 import com.k2cybersecurity.intcodeagent.models.operationalbean.LDAPOperationalBean;
 import org.apache.commons.lang3.StringUtils;
@@ -17,61 +19,63 @@ public class Callbacks {
 
     public static void doOnEnter(String sourceString, String className, String methodName, Object obj, Object[] args,
                                  String executionId) {
-        //if (!ThreadLocalHttpMap.getInstance().isEmpty() && !ThreadLocalOperationLock.getInstance().isAcquired()) {
-        try {
-//				System.out.println("sourceString : " + sourceString + " args : " + Arrays.asList(args) + " this : " + obj);
-            ThreadLocalOperationLock.getInstance().acquire();
-//				logger.log(LogLevel.INFO,
-//						"OnEnter :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj
-//								+ " - eid : " + executionId, Callbacks.class.getName());
-            if (args.length != 0) {
+        if (!ThreadLocalHttpMap.getInstance().isEmpty() && !ThreadLocalOperationLock.getInstance().isAcquired()) {
+            try {
+                //				System.out.println("sourceString : " + sourceString + " args : " + Arrays.asList(args) + " this : " + obj);
+                ThreadLocalOperationLock.getInstance().acquire();
+                //				logger.log(LogLevel.INFO,
+                //						"OnEnter :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj
+                //								+ " - eid : " + executionId, Callbacks.class.getName());
+                if (args.length != 0) {
 
-                Object searchRequestObj = args[0];
-                Method getNameMethod = searchRequestObj.getClass().getDeclaredMethod("getName");
-                getNameMethod.setAccessible(true);
-                Object dnObj = getNameMethod.invoke(searchRequestObj);
-                String dnValue = StringUtils.EMPTY;
-                if (dnObj != null) {
-                    dnValue = dnObj.toString();
+                    Object searchRequestObj = args[0];
+                    Method getNameMethod = searchRequestObj.getClass().getDeclaredMethod("getName");
+                    getNameMethod.setAccessible(true);
+                    Object dnObj = getNameMethod.invoke(searchRequestObj);
+                    String dnValue = StringUtils.EMPTY;
+                    if (dnObj != null) {
+                        dnValue = dnObj.toString();
+                    }
+
+                    Method getFilterMethod = searchRequestObj.getClass().getDeclaredMethod("getFilter");
+                    getFilterMethod.setAccessible(true);
+                    Object filterObj = getFilterMethod.invoke(searchRequestObj);
+                    String filterValue = StringUtils.EMPTY;
+                    if (filterObj != null) {
+                        filterValue = filterObj.toString();
+                    }
+
+                    //					System.out.println("DN is : " + dnValue + " filter is : " + filterValue);
+
+                    if (StringUtils.isNotBlank(dnValue) && StringUtils.isNotBlank(filterValue)
+                            && ThreadLocalLDAPMap.getInstance().put(filterValue)) {
+                        LDAPOperationalBean ldapOperationalBean = new LDAPOperationalBean(dnValue, filterValue, className,
+                                sourceString, executionId, Instant.now().toEpochMilli(), methodName);
+                        EventDispatcher.dispatch(ldapOperationalBean, VulnerabilityCaseType.LDAP);
+                    }
+
                 }
-
-                Method getFilterMethod = searchRequestObj.getClass().getDeclaredMethod("getFilter");
-                getFilterMethod.setAccessible(true);
-                Object filterObj = getFilterMethod.invoke(searchRequestObj);
-                String filterValue = StringUtils.EMPTY;
-                if (filterObj != null) {
-                    filterValue = filterObj.toString();
-                }
-
-//					System.out.println("DN is : " + dnValue + " filter is : " + filterValue);
-
-                if (StringUtils.isNotBlank(dnValue) && StringUtils.isNotBlank(filterValue)
-                        && ThreadLocalLDAPMap.getInstance().put(filterValue)) {
-                    LDAPOperationalBean ldapOperationalBean = new LDAPOperationalBean(dnValue, filterValue, className,
-                            sourceString, executionId, Instant.now().toEpochMilli(), methodName);
-                    EventDispatcher.dispatch(ldapOperationalBean, VulnerabilityCaseType.LDAP);
-                }
-
+            } catch (Exception | K2CyberSecurityException ex) {
+                ex.printStackTrace();
+            } finally {
+                ThreadLocalOperationLock.getInstance().release();
             }
-        } catch (Exception | K2CyberSecurityException ex) {
-            ex.printStackTrace();
-        } finally {
-            ThreadLocalOperationLock.getInstance().release();
         }
-        //}
     }
 
     public static void doOnExit(String sourceString, String className, String methodName, Object obj, Object[] args,
                                 Object returnVal, String exectionId) {
-//		if (!ThreadLocalHttpMap.getInstance().isEmpty() && !ThreadLocalOperationLock.getInstance().isAcquired()) {
-//			try {
-//				ThreadLocalOperationLock.getInstance().acquire();
-////				System.out.println("OnExit :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj
-////						+ " - return : " + returnVal + " - eid : " + exectionId);
-//			} finally {
-//				ThreadLocalOperationLock.getInstance().release();
-//			}
-//		}
+        if (!ThreadLocalHttpMap.getInstance().isEmpty()
+                && AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getEnabled()
+                && AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getIastScan().getEnabled()
+                && !ThreadLocalOperationLock.getInstance().isAcquired()) {
+            try {
+                ThreadLocalOperationLock.getInstance().acquire();
+                EventDispatcher.dispatchExitEvent(exectionId, VulnerabilityCaseType.LDAP);
+            } finally {
+                ThreadLocalOperationLock.getInstance().release();
+            }
+        }
     }
 
     public static void doOnError(String sourceString, String className, String methodName, Object obj, Object[] args,

@@ -5,6 +5,7 @@ import com.k2cybersecurity.instrumentator.custom.ThreadLocalHttpMap;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalOperationLock;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalSSRFLock;
 import com.k2cybersecurity.instrumentator.dispatcher.EventDispatcher;
+import com.k2cybersecurity.instrumentator.utils.AgentUtils;
 import com.k2cybersecurity.instrumentator.utils.CallbackUtils;
 import com.k2cybersecurity.intcodeagent.logging.IAgentConstants;
 import com.k2cybersecurity.intcodeagent.models.javaagent.VulnerabilityCaseType;
@@ -79,9 +80,11 @@ public class Callbacks {
         ) {
             try {
                 ThreadLocalOperationLock.getInstance().acquire();
-//				System.out.println(
-//						"OnExit :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj + " - return : "
-//								+ returnVal + " - eid : " + exectionId);
+                if (AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getEnabled()
+                        && AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getIastScan().getEnabled()) {
+                    EventDispatcher.dispatchExitEvent(exectionId, VulnerabilityCaseType.HTTP_REQUEST);
+                }
+
             } finally {
                 ThreadLocalOperationLock.getInstance().release();
                 ThreadLocalSSRFLock.getInstance().release(obj, sourceString, exectionId);

@@ -117,7 +117,7 @@ public class WSClient extends WebSocketClient {
 
     @Override
     public void onWebsocketPing(WebSocket conn, Framedata f) {
-        logger.log(LogLevel.INFO, String.format("received ping  at %s sending pong", Instant.now().atZone(ZoneId.of("UTC")).toLocalTime()), WSClient.class.getName());
+        logger.log(LogLevel.DEBUG, String.format("received ping  at %s sending pong", Instant.now().atZone(ZoneId.of("UTC")).toLocalTime()), WSClient.class.getName());
         if (connection != null) {
             connection.updateLastPong();
         }

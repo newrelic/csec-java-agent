@@ -5,6 +5,7 @@ import com.k2cybersecurity.instrumentator.custom.ServletContextInfo;
 import com.k2cybersecurity.instrumentator.cve.scanner.CVEScannerPool;
 import com.k2cybersecurity.instrumentator.utils.AgentUtils;
 import com.k2cybersecurity.instrumentator.utils.CallbackUtils;
+import com.k2cybersecurity.instrumentator.utils.CollectorConfigurationUtils;
 import com.k2cybersecurity.instrumentator.utils.HashGenerator;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
@@ -49,6 +50,7 @@ public class Dispatcher implements Runnable {
 
     private static final Object deployedAppDetectionLock = new Object();
     public static final String S_S = "%s-%s";
+    private ExitEventBean exitEventBean;
     private HttpRequestBean httpRequestBean;
     private AgentMetaData metaData;
     private Object event;
@@ -112,9 +114,16 @@ public class Dispatcher implements Runnable {
         this.apiID = apiID;
     }
 
+    public Dispatcher(ExitEventBean exitEventBean) {
+        this.exitEventBean = exitEventBean;
+    }
+
     @Override
     public void run() {
-
+        if (this.exitEventBean != null) {
+            EventSendPool.getInstance().sendEvent(exitEventBean);
+            return;
+        }
 //        printDispatch();
         try {
             if (vulnerabilityCaseType.equals(VulnerabilityCaseType.REFLECTED_XSS)) {
@@ -440,7 +449,7 @@ public class Dispatcher implements Runnable {
                 // Dispatch call for cve scan.
                 if (AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getEnabled() && AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getCveScan().getEnabled()) {
                     //Run CVE scan on new deployed app
-                    CVEScannerPool.getInstance().dispatchScanner(AgentUtils.getInstance().getInitMsg().getAgentInfo().getNodeId(), K2Instrumentator.APPLICATION_INFO_BEAN.getIdentifier().getKind().name(), K2Instrumentator.APPLICATION_INFO_BEAN.getIdentifier().getId(), false, false);
+                    CVEScannerPool.getInstance().dispatchScanner(CollectorConfigurationUtils.getInstance().getCollectorConfig().getNodeId(), K2Instrumentator.APPLICATION_INFO_BEAN.getIdentifier().getKind().name(), K2Instrumentator.APPLICATION_INFO_BEAN.getIdentifier().getId(), false, false);
                 }
 //				ScanComponentData scanComponentData = CVEComponentsService.getAllComponents(deployedApplication);
 //				EventSendPool.getInstance().sendEvent(scanComponentData.toString());

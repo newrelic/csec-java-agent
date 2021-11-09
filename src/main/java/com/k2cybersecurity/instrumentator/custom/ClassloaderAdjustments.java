@@ -11,17 +11,6 @@ public class ClassloaderAdjustments {
 
 
     private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
-    public static final String IMPLEMENTING_J_BOSS_CLASSLOADER_ADJUSTMENTS = "Implementing JBoss Classloader adjustments";
-
-    public static void jbossSpecificAdjustments() {
-        logger.log(LogLevel.INFO, IMPLEMENTING_J_BOSS_CLASSLOADER_ADJUSTMENTS, ClassloaderAdjustments.class.getName());
-        String cur = System.getProperty("jboss.modules.system.pkgs");
-        if (StringUtils.isBlank(cur)) {
-            System.setProperty("jboss.modules.system.pkgs", K2_BOOTSTAP_LOADED_PACKAGE_NAME);
-        } else if (!StringUtils.containsIgnoreCase(cur, K2_BOOTSTAP_LOADED_PACKAGE_NAME)) {
-            System.setProperty("jboss.modules.system.pkgs", StringUtils.joinWith(",", cur, K2_BOOTSTAP_LOADED_PACKAGE_NAME));
-        }
-    }
 
     //
     // TODO: Need to check : https://github.com/DataDog/dd-trace-java/blob/master/dd-java-agent/instrumentation/tomcat-classloading

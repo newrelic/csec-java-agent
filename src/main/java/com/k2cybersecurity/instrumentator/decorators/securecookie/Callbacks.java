@@ -4,6 +4,7 @@ import com.k2cybersecurity.instrumentator.custom.K2CyberSecurityException;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalHttpMap;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalOperationLock;
 import com.k2cybersecurity.instrumentator.dispatcher.EventDispatcher;
+import com.k2cybersecurity.instrumentator.utils.AgentUtils;
 import com.k2cybersecurity.intcodeagent.models.javaagent.VulnerabilityCaseType;
 import com.k2cybersecurity.intcodeagent.models.operationalbean.SecureCookieOperationalBean;
 
@@ -46,16 +47,18 @@ public class Callbacks {
 
     public static void doOnExit(String sourceString, String className, String methodName, Object obj, Object[] args,
                                 Object returnVal, String exectionId) {
-//		if(!ThreadLocalHttpMap.getInstance().isEmpty() && !ThreadLocalOperationLock.getInstance().isAcquired()) {
-//			try {
-//				ThreadLocalOperationLock.getInstance().acquire();
-//				System.out.println(
-//						"OnExit :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj + " - return : "
-//								+ returnVal + " - eid : " + exectionId);
-//			} finally {
-//				ThreadLocalOperationLock.getInstance().release();
-//			}
-//		}
+        if (!ThreadLocalHttpMap.getInstance().isEmpty()
+                && AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getEnabled()
+                && AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getIastScan().getEnabled()
+                && !ThreadLocalOperationLock.getInstance().isAcquired()
+                && args.length > 0 && args[0] != null) {
+            try {
+                ThreadLocalOperationLock.getInstance().acquire();
+                EventDispatcher.dispatchExitEvent(exectionId, VulnerabilityCaseType.SECURE_COOKIE);
+            } finally {
+                ThreadLocalOperationLock.getInstance().release();
+            }
+        }
     }
 
     public static void doOnError(String sourceString, String className, String methodName, Object obj, Object[] args,

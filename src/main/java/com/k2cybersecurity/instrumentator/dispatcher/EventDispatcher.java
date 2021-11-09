@@ -66,6 +66,16 @@ public class EventDispatcher {
         dispatch(objectBean, vulnerabilityCaseType, true);
     }
 
+    public static void dispatchExitEvent(String executionId, VulnerabilityCaseType caseType) {
+        ExitEventBean exitEventBean = new ExitEventBean(executionId, caseType.getCaseType());
+        HttpRequestBean requestBean = ThreadLocalExecutionMap.getInstance().getHttpRequestBean();
+        if (requestBean != null && StringUtils.isNotBlank(requestBean.getK2RequestIdentifier())) {
+            exitEventBean.setK2RequestIdentifier(requestBean.getK2RequestIdentifier());
+            logger.log(LogLevel.DEBUG, "Exit event : " + exitEventBean, EventDispatcher.class.getName());
+            DispatcherPool.getInstance().dispatchExitEvent(exitEventBean);
+        }
+    }
+
     public static void dispatch(AbstractOperationalBean objectBean, VulnerabilityCaseType vulnerabilityCaseType, boolean blockAndCheck)
             throws K2CyberSecurityException {
 

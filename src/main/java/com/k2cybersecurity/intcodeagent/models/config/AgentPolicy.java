@@ -52,6 +52,7 @@ public class AgentPolicy {
      * No args constructor for use in serialization
      */
     public AgentPolicy() {
+        this.version = "DEFAULT";
     }
 
     /**
@@ -59,7 +60,7 @@ public class AgentPolicy {
      * @param protectionMode
      */
     public AgentPolicy(VulnerabilityScan vulnerabilityScan, ProtectionMode protectionMode) {
-        super();
+        this();
         this.vulnerabilityScan = vulnerabilityScan;
         this.protectionMode = protectionMode;
         this.sendCompleteStackTrace = false;

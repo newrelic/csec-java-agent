@@ -1,6 +1,7 @@
 package com.k2cybersecurity.intcodeagent.websocket;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
@@ -55,7 +56,7 @@ public class JsonConverter {
         for (int i = 0; i < fields.length; i++) {
             Object value = null;
             try {
-                if (!Modifier.isStatic(fields[i].getModifiers())) {
+                if (!Modifier.isStatic(fields[i].getModifiers()) || fields[i].getAnnotation(JsonInclude.class) != null) {
                     Field field = fields[i];
                     field.setAccessible(true);
                     if (field.getAnnotation(JsonIgnore.class) != null) {
