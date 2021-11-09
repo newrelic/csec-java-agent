@@ -101,6 +101,7 @@ public class K2Instrumentator {
             identifier.setNodeId(CollectorConfigurationUtils.getInstance().getCollectorConfig().getNodeId());
             identifier.setNodeIp(CollectorConfigurationUtils.getInstance().getCollectorConfig().getNodeIp());
             identifier.setNodeName(CollectorConfigurationUtils.getInstance().getCollectorConfig().getNodeName());
+            PolicyPullST.getInstance();
             APPLICATION_INFO_BEAN = createApplicationInfoBean(identifier);
 
             if (APPLICATION_INFO_BEAN == null) {
@@ -119,7 +120,6 @@ public class K2Instrumentator {
             }).start();
             boolean isWorking = eventWritePool();
 
-            PolicyPullST.getInstance();
             DirectoryWatcher.startMonitorDaemon();
 
             System.out.println(String.format("This application instance is now being protected by K2 Agent under id %s", APPLICATION_UUID));

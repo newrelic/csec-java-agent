@@ -1,5 +1,6 @@
 package com.k2cybersecurity.intcodeagent.models.javaagent;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.k2cybersecurity.instrumentator.utils.AgentUtils;
 import com.k2cybersecurity.instrumentator.utils.CollectorConfigurationUtils;
 import com.k2cybersecurity.intcodeagent.properties.K2JAVersionInfo;
@@ -45,20 +46,14 @@ public class AgentBasicInfo {
 
     private String emailId;
 
-    private static String agentGroup;
-
+    @JsonInclude
     private static String policyVersion;
 
     /**
      * Instantiates a new agent basic info according to the source class object.
      */
     public AgentBasicInfo() {
-        if (StringUtils.isNotBlank(AgentUtils.getInstance().getAgentPolicy().getVersion())) {
-            setPolicyVersion(AgentUtils.getInstance().getAgentPolicy().getVersion());
-        } else {
-            setPolicyVersion("DEFAULT");
-        }
-        setAgentGroup(AgentUtils.getInstance().getGroupName());
+        setPolicyVersion(AgentUtils.getInstance().getAgentPolicy().getVersion());
         setJsonVersion(K2JAVersionInfo.jsonVersion);
         setCollectorVersion(K2JAVersionInfo.collectorVersion);
         setNodeId(CollectorConfigurationUtils.getInstance().getCollectorConfig().getNodeId());
@@ -84,14 +79,6 @@ public class AgentBasicInfo {
         } else if (this instanceof ExitEventBean) {
             setJsonName(JSON_NAME_EXIT_EVENT);
         }
-    }
-
-    public String getAgentGroup() {
-        return agentGroup;
-    }
-
-    public void setAgentGroup(String agentGroup) {
-        AgentBasicInfo.agentGroup = agentGroup;
     }
 
     public String getPolicyVersion() {
