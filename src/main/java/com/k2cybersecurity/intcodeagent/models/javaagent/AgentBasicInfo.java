@@ -53,7 +53,11 @@ public class AgentBasicInfo {
      * Instantiates a new agent basic info according to the source class object.
      */
     public AgentBasicInfo() {
-        setPolicyVersion(AgentUtils.getInstance().getAgentPolicy().getVersion());
+        if (StringUtils.isNotBlank(AgentUtils.getInstance().getAgentPolicy().getVersion())) {
+            setPolicyVersion(AgentUtils.getInstance().getAgentPolicy().getVersion());
+        } else {
+            setPolicyVersion("DEFAULT");
+        }
         setAgentGroup(AgentUtils.getInstance().getGroupName());
         setJsonVersion(K2JAVersionInfo.jsonVersion);
         setCollectorVersion(K2JAVersionInfo.collectorVersion);
@@ -87,15 +91,15 @@ public class AgentBasicInfo {
     }
 
     public void setAgentGroup(String agentGroup) {
-        this.agentGroup = agentGroup;
+        AgentBasicInfo.agentGroup = agentGroup;
     }
 
     public String getPolicyVersion() {
-        return this.policyVersion;
+        return AgentBasicInfo.policyVersion;
     }
 
     public void setPolicyVersion(String policyVersion) {
-        this.policyVersion = policyVersion;
+        AgentBasicInfo.policyVersion = policyVersion;
     }
 
     /**
