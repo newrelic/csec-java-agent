@@ -1,6 +1,7 @@
 package com.k2cybersecurity.intcodeagent.logging;
 
 import com.k2cybersecurity.instrumentator.K2Instrumentator;
+import com.k2cybersecurity.instrumentator.httpclient.RestRequestThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.models.javaagent.HttpConnectionStat;
@@ -35,6 +36,7 @@ public class HealthCheckScheduleThread {
                     // we send our custom object to check if connectino is still alive or not
                     // this will be ignored by ic agent on the other side.
 
+                    K2Instrumentator.JA_HEALTH_CHECK.setDsBackLog(RestRequestThreadPool.getInstance().getQueueSize());
 //						channel.write(ByteBuffer.wrap(new JAHealthCheck(AgentNew.JA_HEALTH_CHECK).toString().getBytes()));
                     if (WSClient.getInstance().isOpen()) {
                         InBoundOutBoundST.getInstance().task(InBoundOutBoundST.getInstance().getNewConnections(), false);

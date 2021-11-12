@@ -46,10 +46,12 @@ public class Dispatcher implements Runnable {
     public static final String UPDATED_APPLICATION_INFO_POSTED = "Updated application info posted : ";
     public static final char SEPARATOR = '.';
     public static final String INSIDE_SET_REQUIRED_STACK_TRACE = "Inside setRequiredStackTrace : ";
-    public static final String STRING_COLON = " : ";
 
     private static final Object deployedAppDetectionLock = new Object();
     public static final String S_S = "%s-%s";
+    public static final String K_2_SERVICE_NAME = "K2_SERVICE_NAME";
+    public static final String SEPARATOR_COLON = ":";
+    public static final String SETTING_UP_USER_PROVIDED_NAME = "Setting up user provided name : ";
     private ExitEventBean exitEventBean;
     private HttpRequestBean httpRequestBean;
     private AgentMetaData metaData;

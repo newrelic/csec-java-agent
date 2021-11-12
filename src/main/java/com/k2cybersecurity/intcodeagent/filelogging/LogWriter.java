@@ -164,8 +164,6 @@ public class LogWriter implements Runnable {
 
             writer = new BufferedWriter(new FileWriter(currentLogFileName, true));
 
-            uploadLogsAndDeleteFile(rolloverFile);
-
             currentFile.setReadable(true, false);
             if (!osVariables.getWindows()) {
                 Files.setPosixFilePermissions(currentFile.toPath(), PosixFilePermissions.fromString("rw-rw-rw-"));

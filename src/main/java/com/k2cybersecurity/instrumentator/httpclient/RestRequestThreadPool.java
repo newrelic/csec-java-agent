@@ -92,4 +92,8 @@ public class RestRequestThreadPool {
         }
     }
 
+    public int getQueueSize() {
+        return this.executor.getQueue().size();
+    }
+
 }

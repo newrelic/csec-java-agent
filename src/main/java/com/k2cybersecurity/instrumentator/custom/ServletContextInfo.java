@@ -45,6 +45,7 @@ public class ServletContextInfo {
     public static final String CLASSES_STR_1 = "/classes!";
     public static final String L_1 = "L1 : ";
     public static final String APPLICATION = "application";
+    public static final String CAUSE = " CAUSE :";
 
     @JsonIgnore
     private static ServletContextInfo instance;
@@ -114,13 +115,15 @@ public class ServletContextInfo {
 
         deployedApplication.setContextPath(contextPath);
 
+        // TODO: Lets separate these out just in case.
         try {
             getServerInfo = servletContext.getClass().getMethod(GET_SERVER_INFO);
             getMajorVersion = servletContext.getClass().getMethod(GET_MAJOR_VERSION);
             getMinorVersion = servletContext.getClass().getMethod(GET_MINOR_VERSION);
             getServletContextName = servletContext.getClass().getMethod(GET_SERVLET_CONTEXT_NAME);
         } catch (Throwable e) {
-            logger.log(LogLevel.ERROR, ERROR, e, ServletContextInfo.class.getName());
+            logger.log(LogLevel.WARNING, ERROR + e.getMessage() + CAUSE + e.getCause(), ServletContextInfo.class.getName());
+            logger.log(LogLevel.DEBUG, ERROR, e, ServletContextInfo.class.getName());
         }
 
         try {
@@ -130,7 +133,8 @@ public class ServletContextInfo {
             applicationName = (String) getServletContextName.invoke(servletContext, null);
 
         } catch (Throwable e) {
-            logger.log(LogLevel.ERROR, ERROR, e, ServletContextInfo.class.getName());
+            logger.log(LogLevel.WARNING, ERROR + e.getMessage() + CAUSE + e.getCause(), ServletContextInfo.class.getName());
+            logger.log(LogLevel.DEBUG, ERROR, e, ServletContextInfo.class.getName());
         }
 
 
