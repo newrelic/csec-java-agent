@@ -19,6 +19,9 @@
  */
 package com.k2cybersecurity.instrumentator.utils;
 
+import com.k2cybersecurity.instrumentator.K2Instrumentator;
+import com.k2cybersecurity.instrumentator.httpclient.HttpClient;
+import com.k2cybersecurity.instrumentator.httpclient.IRestClientConstants;
 import com.k2cybersecurity.instrumentator.os.OSVariables;
 import com.k2cybersecurity.instrumentator.os.OsVariablesInstance;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
@@ -176,7 +179,13 @@ public class DirectoryWatcher {
                 TimeUnit.SECONDS.sleep(1);
                 AgentPolicy newPolicy = PolicyPullST.getInstance().populateConfig();
                 if (newPolicy != null) {
-                    PolicyPullST.getInstance().readAndApplyConfig(newPolicy);
+                    if (PolicyPullST.getInstance().readAndApplyConfig(newPolicy)) {
+                        Map<String, String> queryParam = new HashMap<>();
+                        queryParam.put("group", AgentUtils.getInstance().getGroupName());
+                        queryParam.put("applicationUUID", K2Instrumentator.APPLICATION_UUID);
+
+                        HttpClient.getInstance().doPost(IRestClientConstants.UPDATE_POLICY, null, queryParam, null, newPolicy, false);
+                    }
                 }
             } catch (Exception e) {
                 logger.log(LogLevel.INFO, "Config update was unsuccessful for configs at : " + AgentUtils.getInstance().getConfigLoadPath(), e, DirectoryWatcher.class.getName());

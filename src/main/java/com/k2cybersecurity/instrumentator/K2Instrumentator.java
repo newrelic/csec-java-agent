@@ -101,7 +101,6 @@ public class K2Instrumentator {
             identifier.setNodeId(CollectorConfigurationUtils.getInstance().getCollectorConfig().getNodeId());
             identifier.setNodeIp(CollectorConfigurationUtils.getInstance().getCollectorConfig().getNodeIp());
             identifier.setNodeName(CollectorConfigurationUtils.getInstance().getCollectorConfig().getNodeName());
-            PolicyPullST.getInstance();
             APPLICATION_INFO_BEAN = createApplicationInfoBean(identifier);
 
             if (APPLICATION_INFO_BEAN == null) {
@@ -118,6 +117,7 @@ public class K2Instrumentator {
                 }
                 HealthCheckScheduleThread.getInstance();
             }).start();
+            PolicyPullST.getInstance();
             boolean isWorking = eventWritePool();
 
             DirectoryWatcher.startMonitorDaemon();

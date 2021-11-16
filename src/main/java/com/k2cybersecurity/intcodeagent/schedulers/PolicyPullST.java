@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.*;
 
+// TODO: Need to revisit since task cancellation is not implemented.
 public class PolicyPullST {
 
     private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();

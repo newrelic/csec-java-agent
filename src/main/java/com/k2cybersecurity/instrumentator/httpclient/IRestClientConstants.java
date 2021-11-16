@@ -10,4 +10,6 @@ public interface IRestClientConstants {
 
     String GET_POLICY = "/collector/policy";
 
+    String UPDATE_POLICY = "/collector/policy/update";
+
 }
