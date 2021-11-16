@@ -52,7 +52,6 @@ public class AgentPolicy {
      * No args constructor for use in serialization
      */
     public AgentPolicy() {
-        this.version = "DEFAULT";
     }
 
     /**
