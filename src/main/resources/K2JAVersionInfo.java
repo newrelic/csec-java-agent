@@ -4,5 +4,5 @@ public interface K2JAVersionInfo {
     String collectorVersion = "${collectorVersion}";
     String buildTime = "${buildTime}";
     String commitId = "${commitId}";
-    String jsonVersion = "1.10.2";
+    String jsonVersion = "2.0.0";
 }
