@@ -477,6 +477,7 @@ public interface IAgentConstants {
     String DOCKER_DIR = "docker/";
     String ECS_DIR = "ecs/";
     String KUBEPODS_DIR = "kubepods/";
+    String KUBEPODS_SLICE_DIR = "kubepods.slice/";
     String LXC_DIR = "lxc/";
     String JAR_PATH_INIT_MSG = "Pooling getJarPathResultExecutorService to fetch results.";
     String JAR_PATH_FETCH_SUCCESS_MSG = "getJarPathResultExecutorService result fetched successfully.";
