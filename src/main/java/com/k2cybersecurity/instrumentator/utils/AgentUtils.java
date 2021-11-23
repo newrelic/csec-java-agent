@@ -141,13 +141,8 @@ public class AgentUtils {
         applicationInfo = new PolicyApplicationInfo();
         deployedApplicationUnderProcessing = new HashSet<>();
         TRACE_PATTERN = Pattern.compile(IAgentConstants.TRACE_REGEX);
-        configLoadPath = new File(osVariables.getPolicyConfigPath(), String.format("policy-%s.yaml", K2Instrumentator.APPLICATION_UUID));
-//		this.sqlConnectionMap = new LinkedHashMap<Integer, JADatabaseMetaData>(50, 0.75f, true) {
-//            @Override
-//            protected boolean removeEldestEntry(java.util.Map.Entry<Integer, JADatabaseMetaData> eldest) {
-//                return size() > 50;
-//            }
-//        };
+        File configParentPath = new File(osVariables.getPolicyConfigPath(), K2Instrumentator.APPLICATION_UUID);
+        configLoadPath = new File(configParentPath, String.format("lc-policy.yaml", K2Instrumentator.APPLICATION_UUID));
 
     }
 
