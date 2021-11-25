@@ -73,14 +73,13 @@ public class CVEServiceLinux implements Runnable {
             String packageParentDir = osVariables.getCvePackageBaseDir();
             CVEPackageInfo packageInfo = CVEComponentsService.getCVEPackageInfo();
             logger.log(LogLevel.DEBUG, String.format(ICVEConstants.PACKAGE_INFO_LOGGER, packageInfo.toString(), CVEScannerPool.getInstance().getPackageInfo()), CVEServiceLinux.class.getName());
-            boolean downloaded = false;
             if (downloadTarBundle || CVEScannerPool.getInstance().getPackageInfo() == null || !StringUtils.equals(packageInfo.getLatestServiceVersion(), CVEScannerPool.getInstance().getPackageInfo().getLatestServiceVersion())) {
                 Collection<File> cvePackages = FileUtils.listFiles(new File(osVariables.getCvePackageBaseDir()), new NameFileFilter(ICVEConstants.LOCALCVESERVICE), null);
                 logger.log(LogLevel.DEBUG, ICVEConstants.FILES_TO_DELETE + cvePackages, CVEServiceLinux.class.getName());
                 cvePackages.forEach(FileUtils::deleteQuietly);
-                downloaded = CVEComponentsService.downloadCVEPackage(packageInfo);
+                CVEComponentsService.downloadCVEPackage(packageInfo);
             }
-            if (!downloaded) {
+            if (CVEScannerPool.getInstance().getPackageInfo() == null || !CVEScannerPool.getInstance().getPackageInfo().getCvePackage().exists()) {
                 return;
             }
             logger.log(LogLevel.DEBUG, ICVEConstants.CVE_PACKAGE_DOWNLOADED, CVEServiceLinux.class.getName());
@@ -152,11 +151,12 @@ public class CVEServiceLinux implements Runnable {
             }
             CVEComponentsService.deleteAllComponents(packageExtractedDirectory);
             logger.log(LogLevel.DEBUG, ICVEConstants.CVE_PACKAGE_DELETED, CVEServiceLinux.class.getName());
+            return;
         } catch (InterruptedException e) {
             logger.log(LogLevel.ERROR, ERROR_PROCESS_TERMINATED, e, CVEServiceLinux.class.getName());
         } catch (Throwable e) {
             logger.log(LogLevel.ERROR, ERROR, e, CVEServiceLinux.class.getName());
         }
-
+        AgentUtils.getInstance().setCveEnvScanCompleted(false);
     }
 }

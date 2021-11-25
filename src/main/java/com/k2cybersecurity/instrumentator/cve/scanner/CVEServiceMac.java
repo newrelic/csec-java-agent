@@ -70,14 +70,13 @@ public class CVEServiceMac implements Runnable {
             String packageParentDir = osVariables.getCvePackageBaseDir();
             CVEPackageInfo packageInfo = CVEComponentsService.getCVEPackageInfo();
             logger.log(LogLevel.DEBUG, String.format(ICVEConstants.PACKAGE_INFO_LOGGER, packageInfo.toString(), CVEScannerPool.getInstance().getPackageInfo()), CVEServiceMac.class.getName());
-            boolean downloaded = false;
             if (downloadTarBundle || CVEScannerPool.getInstance().getPackageInfo() == null || !StringUtils.equals(packageInfo.getLatestServiceVersion(), CVEScannerPool.getInstance().getPackageInfo().getLatestServiceVersion())) {
                 Collection<File> cvePackages = FileUtils.listFiles(new File(osVariables.getCvePackageBaseDir()), new NameFileFilter(ICVEConstants.LOCALCVESERVICE), null);
                 logger.log(LogLevel.DEBUG, ICVEConstants.FILES_TO_DELETE + cvePackages, CVEServiceMac.class.getName());
                 cvePackages.forEach(FileUtils::deleteQuietly);
-                downloaded = CVEComponentsService.downloadCVEPackage(packageInfo);
+                CVEComponentsService.downloadCVEPackage(packageInfo);
             }
-            if (!downloaded) {
+            if (CVEScannerPool.getInstance().getPackageInfo() == null || !CVEScannerPool.getInstance().getPackageInfo().getCvePackage().exists()) {
                 return;
             }
             logger.log(LogLevel.DEBUG, ICVEConstants.CVE_PACKAGE_DOWNLOADED, CVEServiceMac.class.getName());
@@ -150,11 +149,13 @@ public class CVEServiceMac implements Runnable {
             }
             CVEComponentsService.deleteAllComponents(packageExtractedDirectory);
             logger.log(LogLevel.DEBUG, ICVEConstants.CVE_PACKAGE_DELETED, CVEServiceMac.class.getName());
+            return;
         } catch (InterruptedException e) {
             logger.log(LogLevel.ERROR, ERROR_PROCESS_TERMINATED, e, CVEServiceMac.class.getName());
         } catch (Throwable e) {
             logger.log(LogLevel.ERROR, ERROR, e, CVEServiceMac.class.getName());
         }
+        AgentUtils.getInstance().setCveEnvScanCompleted(false);
 
     }
 }
