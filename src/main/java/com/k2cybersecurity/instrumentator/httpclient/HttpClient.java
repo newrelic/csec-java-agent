@@ -54,6 +54,14 @@ public class HttpClient {
     public static final String K_2_API_ACCESSOR_TOKEN = "K2_API_ACCESSOR_TOKEN";
     public static final String K_2_CUSTOMER_ID = "K2_CUSTOMER_ID";
     public static final String SSL = "SSL";
+    public static final String API_S_FAILED = "API %s failed!";
+    public static final String ASYNC_API_EXECUTION_FAILED_S = "Async API execution failed %s";
+    public static final String ASYNC_API_EXECUTION_UNSUCCESSFULLY_S_RESPONSE_IS_S_BODY_S = "Async API execution unsuccessfully %s : response is %s :: body : %s";
+    public static final String ASYNC_API_EXECUTED_SUCCESSFULLY_S_RESPONSE_IS_S = "Async API executed successfully %s : response is %s";
+    public static final String API_S_FAILED_CODE_S_S = "API %s failed! code : %s : %s ";
+    public static final String API_S_RETURNS_SUCCESS_CODE_S_S = "API %s returns success! code : %s : %s ";
+    public static final String MULTIPART_FILE = "file";
+    public static final String MULTIPART_FORM_DATA = "multipart/form-data";
 
     private static HttpClient instance;
 
@@ -153,7 +161,7 @@ public class HttpClient {
         HttpUrl httpUrl = buildUrl(url, pathParams, queryParams);
 
         RequestBody requestBody = new MultipartBuilder().type(MultipartBuilder.FORM)
-                .addFormDataPart("file", fileToUpload.getName(), RequestBody.create(MediaType.parse("multipart/form-data"), fileToUpload))
+                .addFormDataPart(MULTIPART_FILE, fileToUpload.getName(), RequestBody.create(MediaType.parse(MULTIPART_FORM_DATA), fileToUpload))
                 .build();
 
         Headers httpHeaders = getHeaders(headers);
@@ -200,7 +208,8 @@ public class HttpClient {
                 case COLLECTOR_UPLOAD_LOG:
                     fileUploadAndDelete(call, api, file);
                 default:
-                    logger.log(LogLevel.WARNING, String.format(UNKNOWN_ASYNC_API_S, api), HttpClient.class.getName());
+                    executeAsync(call, api);
+//                    logger.log(LogLevel.WARNING, String.format(UNKNOWN_ASYNC_API_S, api), HttpClient.class.getName());
             }
             return new Response.Builder().code(200).build();
         }
@@ -212,21 +221,41 @@ public class HttpClient {
         return new Response.Builder().code(400).build();
     }
 
+    private void executeAsync(Call call, String api) {
+        call.enqueue(new Callback() {
+            @Override
+            public void onFailure(Request request, IOException e) {
+                logger.log(LogLevel.ERROR, String.format(ASYNC_API_EXECUTION_FAILED_S, request), e, HttpClient.class.getName());
+            }
+
+            @Override
+            public void onResponse(Response response) throws IOException {
+                if (!response.isSuccessful()) {
+                    try (ResponseBody responseBody = response.body()) {
+                        logger.log(LogLevel.WARNING, String.format(ASYNC_API_EXECUTION_UNSUCCESSFULLY_S_RESPONSE_IS_S_BODY_S, api, response.code(), responseBody), HttpClient.class.getName());
+                    }
+                } else {
+                    logger.log(LogLevel.INFO, String.format(ASYNC_API_EXECUTED_SUCCESSFULLY_S_RESPONSE_IS_S, api, response.code()), HttpClient.class.getName());
+                }
+            }
+        });
+    }
+
     private void fileUploadAndDelete(Call request, String api, File file) {
         request.enqueue(new Callback() {
             @Override
             public void onFailure(Request request, IOException e) {
-                logger.log(LogLevel.ERROR, String.format("API %s failed!", api), e, HttpClient.class.getName());
+                logger.log(LogLevel.ERROR, String.format(API_S_FAILED, api), e, HttpClient.class.getName());
             }
 
             @Override
             public void onResponse(Response response) throws IOException {
                 try (ResponseBody responseBody = response.body()) {
                     if (!response.isSuccessful()) {
-                        logger.log(LogLevel.ERROR, String.format("API %s failed! code : %s : %s ", api, response.code(), responseBody), HttpClient.class.getName());
+                        logger.log(LogLevel.WARNING, String.format(API_S_FAILED_CODE_S_S, api, response.code(), responseBody), HttpClient.class.getName());
                         FileUtils.deleteQuietly(file);
                     }
-                    logger.log(LogLevel.INFO, String.format("API %s returns success! code : %s : %s ", api, response.code(), responseBody), HttpClient.class.getName());
+                    logger.log(LogLevel.INFO, String.format(API_S_RETURNS_SUCCESS_CODE_S_S, api, response.code(), responseBody), HttpClient.class.getName());
                 }
             }
         });

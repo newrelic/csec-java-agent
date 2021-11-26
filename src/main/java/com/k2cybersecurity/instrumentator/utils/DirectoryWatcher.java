@@ -184,7 +184,7 @@ public class DirectoryWatcher {
                         queryParam.put("group", AgentUtils.getInstance().getGroupName());
                         queryParam.put("applicationUUID", K2Instrumentator.APPLICATION_UUID);
 
-                        HttpClient.getInstance().doPost(IRestClientConstants.UPDATE_POLICY, null, queryParam, null, newPolicy, false);
+                        HttpClient.getInstance().doPost(IRestClientConstants.UPDATE_POLICY, null, queryParam, null, newPolicy, true);
                     }
                 }
             } catch (Exception e) {
