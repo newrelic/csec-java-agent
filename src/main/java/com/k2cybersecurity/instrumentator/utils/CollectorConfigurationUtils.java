@@ -74,7 +74,7 @@ public class CollectorConfigurationUtils {
         }
 
         setCollectorConfig(nodeLevelConfig, applicationLevelConfig);
-        return validateCollectorConfig(kind);
+        return validateCollectorConfig(kind, nodeLevelConfigurationPath);
     }
 
     private void setCollectorConfig(NodeLevelConfig nodeLevelConfig, ApplicationLevelConfig applicationLevelConfig) {
@@ -94,13 +94,13 @@ public class CollectorConfigurationUtils {
         }
     }
 
-    private boolean validateCollectorConfig(IdentifierEnvs kind) {
+    private boolean validateCollectorConfig(IdentifierEnvs kind, String nodeLevelConfigurationPath) {
 //        if (collectorConfig.getCustomerInfo() == null || collectorConfig.getCustomerInfo().isEmpty()) {
 //            logger.log(LogLevel.ERROR, String.format("Improper CustomerInfo provided in collector configuration. Exiting : %s", collectorConfig.getCustomerInfo()), CollectorConfigurationUtils.class.getName());
 //            return false;
 //        }
         if (collectorConfig.getK2ServiceInfo() == null || collectorConfig.getK2ServiceInfo().isEmpty()) {
-            logger.log(LogLevel.ERROR, String.format("Improper K2ServiceInfo provided in collector configuration. Exiting : %s", collectorConfig), CollectorConfigurationUtils.class.getName());
+            logger.log(LogLevel.ERROR, String.format("[STEP-1][ENV] Improper K2ServiceInfo provided in collector configuration. Exiting : %s", collectorConfig), CollectorConfigurationUtils.class.getName());
             return false;
         }
 
@@ -111,6 +111,7 @@ public class CollectorConfigurationUtils {
             case POD:
                 if (StringUtils.isAnyBlank(collectorConfig.getNodeIp(), collectorConfig.getNodeId())) {
                     logger.log(LogLevel.ERROR, String.format("Improper node details provided in collector configuration. Exiting : %s", collectorConfig), CollectorConfigurationUtils.class.getName());
+                    logger.log(LogLevel.ERROR, String.format("[STEP-1][ENV] Node level configuration was not found or incorrect on path : %s", nodeLevelConfigurationPath), CollectorConfigurationUtils.class.getName());
                     return false;
                 }
                 break;
