@@ -32,6 +32,9 @@ public abstract class AbstractOperationalBean {
 
     private String apiID;
 
+    @JsonIgnore
+    private boolean stackProcessed = false;
+
     public AbstractOperationalBean() {
         this.className = StringUtils.EMPTY;
         this.sourceMethod = StringUtils.EMPTY;
@@ -40,6 +43,7 @@ public abstract class AbstractOperationalBean {
         this.startTime = 0L;
         this.blockingEndTime = 0L;
         this.apiID = StringUtils.EMPTY;
+        this.stackProcessed = false;
     }
 
     public AbstractOperationalBean(String className, String sourceMethod, String executionId
@@ -56,7 +60,7 @@ public abstract class AbstractOperationalBean {
         this.userClassEntity = AgentUtils.getInstance().detectUserClass(this.stackTrace,
                 this.currentGenericServletInstance,
                 this.currentGenericServletMethodName, className, methodName);
-
+        this.stackProcessed = false;
 
     }
 
@@ -159,5 +163,13 @@ public abstract class AbstractOperationalBean {
 
     public void setApiID(String apiID) {
         this.apiID = apiID;
+    }
+
+    public boolean isStackProcessed() {
+        return stackProcessed;
+    }
+
+    public void setStackProcessed(boolean stackProcessed) {
+        this.stackProcessed = stackProcessed;
     }
 }

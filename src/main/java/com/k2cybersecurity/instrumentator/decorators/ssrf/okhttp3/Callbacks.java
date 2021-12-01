@@ -1,9 +1,6 @@
 package com.k2cybersecurity.instrumentator.decorators.ssrf.okhttp3;
 
-import com.k2cybersecurity.instrumentator.custom.ThreadLocalHttpMap;
-import com.k2cybersecurity.instrumentator.custom.ThreadLocalOkHttpMap;
-import com.k2cybersecurity.instrumentator.custom.ThreadLocalOperationLock;
-import com.k2cybersecurity.instrumentator.custom.ThreadLocalSSRFLock;
+import com.k2cybersecurity.instrumentator.custom.*;
 import com.k2cybersecurity.instrumentator.dispatcher.EventDispatcher;
 import com.k2cybersecurity.instrumentator.utils.AgentUtils;
 import com.k2cybersecurity.instrumentator.utils.CallbackUtils;
@@ -32,6 +29,8 @@ public class Callbacks {
                     ThreadLocalSSRFLock.getInstance().setUrl(ssrfOperationalBean.getArg());
 
                     if (ssrfOperationalBean != null) {
+                        ssrfOperationalBean.setStackTrace(Thread.currentThread().getStackTrace());
+                        AgentUtils.reformStackStrace(ssrfOperationalBean);
                         EventDispatcher.dispatch(ssrfOperationalBean, VulnerabilityCaseType.HTTP_REQUEST);
                     }
                 } else if (StringUtils.equals(methodName, "newCall") && args != null && args.length > 0 && args[0] != null) {
@@ -47,6 +46,14 @@ public class Callbacks {
                         Method setHeader = builder.getClass().getMethod("header", String.class, String.class);
                         setHeader.setAccessible(true);
                         builder = setHeader.invoke(builder, IAgentConstants.K2_API_CALLER, CallbackUtils.generateApiCallerHeaderValue(urlString));
+
+                        SSRFOperationalBean operationalBean = ThreadLocalOkHttpMap.getInstance().create(obj, urlString, className, sourceString, exectionId,
+                                Instant.now().toEpochMilli(), methodName);
+
+                        AgentUtils.preProcessStackTrace(operationalBean, VulnerabilityCaseType.HTTP_REQUEST);
+                        builder = setHeader.invoke(builder, IAgentConstants.K2_TRACING_HEADER, CallbackUtils.generateTracingHeaderValue(ThreadLocalExecutionMap.getInstance().getTracingHeaderValue(), operationalBean.getApiID()));
+
+
                         Method build = builder.getClass().getMethod("build", null);
                         build.setAccessible(true);
                         args[0] = build.invoke(builder, null);
@@ -75,8 +82,7 @@ public class Callbacks {
                     String urlString = url.invoke(args[0]).toString();
 
 //					System.out.println(String.format("Exit Value : Ok http3 SSRF : %s : %s : %s on onject : %s", className, methodName, urlString, obj));
-                    ThreadLocalOkHttpMap.getInstance().create(returnVal, urlString, className, sourceString, exectionId,
-                            Instant.now().toEpochMilli(), methodName);
+                    ThreadLocalOkHttpMap.getInstance().get(obj).setArg(urlString);
                 }
 
                 if (AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getEnabled()

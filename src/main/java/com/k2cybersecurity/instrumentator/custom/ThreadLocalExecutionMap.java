@@ -16,6 +16,8 @@ public class ThreadLocalExecutionMap {
 
     private Map<String, FileIntegrityBean> fileLocalMap;
 
+    private String tracingHeaderValue;
+
     private static ThreadLocal<ThreadLocalExecutionMap> instance =
             new ThreadLocal<ThreadLocalExecutionMap>() {
                 @Override
@@ -75,6 +77,13 @@ public class ThreadLocalExecutionMap {
         this.fileLocalMap = fileLocalMap;
     }
 
+    public String getTracingHeaderValue() {
+        return tracingHeaderValue;
+    }
+
+    public void setTracingHeaderValue(String tracingHeaderValue) {
+        this.tracingHeaderValue = tracingHeaderValue;
+    }
 
     public void cleanUp() {
         httpRequestBean = new HttpRequestBean();

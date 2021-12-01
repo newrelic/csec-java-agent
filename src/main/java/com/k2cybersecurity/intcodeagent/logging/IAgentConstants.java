@@ -582,6 +582,7 @@ public interface IAgentConstants {
     String AGENT_POLICY_PARAM_APPLIED_S = "Agent Policy parameters applied : %s";
 
     String K2_API_CALLER = "K2-API-CALLER";
+    String K2_TRACING_HEADER = "K2-TRACING-DATA";
 
     String LINUX = "linux";
     String WINDOWS = "windows";

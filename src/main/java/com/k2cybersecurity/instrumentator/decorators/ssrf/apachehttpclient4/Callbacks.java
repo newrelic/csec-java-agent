@@ -1,9 +1,6 @@
 package com.k2cybersecurity.instrumentator.decorators.ssrf.apachehttpclient4;
 
-import com.k2cybersecurity.instrumentator.custom.K2CyberSecurityException;
-import com.k2cybersecurity.instrumentator.custom.ThreadLocalHttpMap;
-import com.k2cybersecurity.instrumentator.custom.ThreadLocalOperationLock;
-import com.k2cybersecurity.instrumentator.custom.ThreadLocalSSRFLock;
+import com.k2cybersecurity.instrumentator.custom.*;
 import com.k2cybersecurity.instrumentator.dispatcher.EventDispatcher;
 import com.k2cybersecurity.instrumentator.utils.AgentUtils;
 import com.k2cybersecurity.instrumentator.utils.CallbackUtils;
@@ -55,17 +52,18 @@ public class Callbacks {
                         getUri.setAccessible(true);
                         String uriFromRequest = (String) getUri.invoke(requestLine);
 
-                        try {
-                            Method setHeader = args[1].getClass().getMethod("setHeader", String.class, String.class);
-                            setHeader.setAccessible(true);
-                            setHeader.invoke(args[1], IAgentConstants.K2_API_CALLER, CallbackUtils.generateApiCallerHeaderValue(uriFromRequest));
-                        } catch (Exception e) {
-                        }
+                        addHeaderHttpHost(IAgentConstants.K2_API_CALLER, CallbackUtils.generateApiCallerHeaderValue(uriFromRequest), args[1]);
+
 //						System.out.println(String.format("Entry Value : SSRF : %s : %s : %s : %s", className, methodName, uri, uriFromRequest));
                         ThreadLocalSSRFLock.getInstance().setUrl(uriFromRequest);
 
-                        EventDispatcher.dispatch(new SSRFOperationalBean(uriFromRequest, className, sourceString, exectionId,
-                                Instant.now().toEpochMilli(), methodName), VulnerabilityCaseType.HTTP_REQUEST);
+                        SSRFOperationalBean operationalBean = new SSRFOperationalBean(uriFromRequest, className, sourceString, exectionId,
+                                Instant.now().toEpochMilli(), methodName);
+
+                        AgentUtils.preProcessStackTrace(operationalBean, VulnerabilityCaseType.HTTP_REQUEST);
+                        addHeaderHttpHost(IAgentConstants.K2_TRACING_HEADER, CallbackUtils.generateTracingHeaderValue(ThreadLocalExecutionMap.getInstance().getTracingHeaderValue(), operationalBean.getApiID()), args[1]);
+
+                        EventDispatcher.dispatch(operationalBean, VulnerabilityCaseType.HTTP_REQUEST);
 
                     } else if (httpUriRequest != null && httpUriRequest.isInstance(args[0])) {
                         Method getURI = args[0].getClass().getMethod("getURI");
@@ -75,17 +73,17 @@ public class Callbacks {
 
                         String urlString = uri.toString();
 
-                        try {
-                            Method setHeader = args[0].getClass().getMethod("setHeader", String.class, String.class);
-                            setHeader.setAccessible(true);
-                            setHeader.invoke(args[0], IAgentConstants.K2_API_CALLER, CallbackUtils.generateApiCallerHeaderValue(urlString));
-                        } catch (Exception e) {
-                        }
+                        addHeaderHttpUriRequest(IAgentConstants.K2_API_CALLER, CallbackUtils.generateApiCallerHeaderValue(urlString), args[0]);
 //						System.out.println(String.format("Entry Value : SSRF : %s : %s : %s", className, methodName, uri.toString()));
                         ThreadLocalSSRFLock.getInstance().setUrl(urlString);
 
-                        EventDispatcher.dispatch(new SSRFOperationalBean(urlString, className, sourceString, exectionId,
-                                Instant.now().toEpochMilli(), methodName), VulnerabilityCaseType.HTTP_REQUEST);
+                        SSRFOperationalBean operationalBean = new SSRFOperationalBean(urlString, className, sourceString, exectionId,
+                                Instant.now().toEpochMilli(), methodName);
+
+                        AgentUtils.preProcessStackTrace(operationalBean, VulnerabilityCaseType.HTTP_REQUEST);
+                        addHeaderHttpUriRequest(IAgentConstants.K2_TRACING_HEADER, CallbackUtils.generateTracingHeaderValue(ThreadLocalExecutionMap.getInstance().getTracingHeaderValue(), operationalBean.getApiID()), args[0]);
+
+                        EventDispatcher.dispatch(operationalBean, VulnerabilityCaseType.HTTP_REQUEST);
 
                     }
 
@@ -93,6 +91,24 @@ public class Callbacks {
             } finally {
                 ThreadLocalOperationLock.getInstance().release();
             }
+        }
+    }
+
+    private static void addHeaderHttpHost(String key, String value, Object caller) {
+        try {
+            Method setHeader = caller.getClass().getMethod("setHeader", String.class, String.class);
+            setHeader.setAccessible(true);
+            setHeader.invoke(caller, key, value);
+        } catch (Exception e) {
+        }
+    }
+
+    private static void addHeaderHttpUriRequest(String key, String value, Object caller) {
+        try {
+            Method setHeader = caller.getClass().getMethod("setHeader", String.class, String.class);
+            setHeader.setAccessible(true);
+            setHeader.invoke(caller, key, value);
+        } catch (Exception e) {
         }
     }
 
