@@ -108,7 +108,7 @@ public class LogWriter implements Runnable {
 
     @Override
     public void run() {
-        if (this.logLevel == 0 || this.logLevel > defaultLogLevel) {
+        if (this.logLevel == 1 || this.logLevel > defaultLogLevel) {
             return;
         }
         StringBuilder sb = new StringBuilder();
