@@ -825,7 +825,7 @@ public class AgentUtils {
     public static boolean extractCVETar(File tarFile, File outputDir) {
         logger.log(LogLevel.DEBUG, CAME_TO_EXTRACT_TAR_BUNDLE + tarFile.getAbsolutePath(), AgentUtils.class.getName());
         try (TarArchiveInputStream inputStream = new TarArchiveInputStream(new FileInputStream(tarFile),
-                StandardCharsets.UTF_16.name())) {
+                StandardCharsets.UTF_8.name())) {
             TarArchiveEntry entry;
             while ((entry = inputStream.getNextTarEntry()) != null) {
                 File curfile = new File(outputDir, entry.getName());
