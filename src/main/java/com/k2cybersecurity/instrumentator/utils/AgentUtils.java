@@ -825,7 +825,7 @@ public class AgentUtils {
     public static boolean extractCVETar(File tarFile, File outputDir) {
         logger.log(LogLevel.DEBUG, CAME_TO_EXTRACT_TAR_BUNDLE + tarFile.getAbsolutePath(), AgentUtils.class.getName());
         try (TarArchiveInputStream inputStream = new TarArchiveInputStream(new FileInputStream(tarFile),
-                StandardCharsets.UTF_8.name())) {
+                StandardCharsets.UTF_16.name())) {
             TarArchiveEntry entry;
             while ((entry = inputStream.getNextTarEntry()) != null) {
                 File curfile = new File(outputDir, entry.getName());
@@ -844,7 +844,7 @@ public class AgentUtils {
                 }
                 try (FileOutputStream outputStream = new FileOutputStream(curfile)) {
                     IOUtils.copy(inputStream, outputStream);
-                    Files.setPosixFilePermissions(Paths.get(curfile.getPath()),
+                    Files.setPosixFilePermissions(Paths.get(curfile.toURI()),
                             octToPosixFilePermission(entry.getMode()));
                 } catch (Throwable e) {
                     logger.log(LogLevel.ERROR, ERROR, e, CVEServiceLinux.class.getName());
