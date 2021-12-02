@@ -211,14 +211,14 @@ public class HttpClient {
                     executeAsync(call, api);
 //                    logger.log(LogLevel.WARNING, String.format(UNKNOWN_ASYNC_API_S, api), HttpClient.class.getName());
             }
-            return new Response.Builder().code(200).build();
+            return new Response.Builder().request(request).code(204).build();
         }
         try {
             return call.execute();
         } catch (IOException e) {
             logger.log(LogLevel.ERROR, e.getMessage(), e, HttpClient.class.getName());
         }
-        return new Response.Builder().code(400).build();
+        return new Response.Builder().request(request).code(400).build();
     }
 
     private void executeAsync(Call call, String api) {
