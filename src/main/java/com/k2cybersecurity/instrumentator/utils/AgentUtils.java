@@ -79,6 +79,7 @@ public class AgentUtils {
     public static final String CAME_TO_EXTRACT_TAR_BUNDLE = "Came to extract tar bundle : ";
     public static final String CORRUPTED_CVE_SERVICE_BUNDLE_DELETED = "Corrupted CVE service bundle deleted.";
     public static final String ENFORCING_POLICY = "Enforcing policy";
+    public static final String LOG_LEVEL_PROVIDED_IN_POLICY_IS_INCORRECT_DEFAULTING_TO_INFO = "Log level provided in policy is incorrect: %s. Defaulting to INFO";
 
     public Set<Pair<String, ClassLoader>> getTransformedClasses() {
         return transformedClasses;
@@ -643,7 +644,12 @@ public class AgentUtils {
     }
 
     public void enforcePolicy() {
-        LogWriter.setLogLevel(LogLevel.valueOf(AgentUtils.getInstance().getAgentPolicy().getLogLevel()));
+        try {
+            LogWriter.setLogLevel(LogLevel.valueOf(AgentUtils.getInstance().getAgentPolicy().getLogLevel()));
+        } catch (IllegalArgumentException | NullPointerException e) {
+            LogWriter.setLogLevel(LogLevel.INFO);
+            logger.log(LogLevel.WARNING, String.format(LOG_LEVEL_PROVIDED_IN_POLICY_IS_INCORRECT_DEFAULTING_TO_INFO, AgentUtils.getInstance().getAgentPolicy().getLogLevel()), AgentUtils.class.getName());
+        }
         K2Instrumentator.enableHTTPRequestPrinting = agentPolicy.getEnableHTTPRequestPrinting();
         logger.log(LogLevel.INFO, ENFORCING_POLICY, AgentUtils.class.getName());
         if (agentPolicy.getPolicyPull() && agentPolicy.getPolicyPullInterval() > 0) {
