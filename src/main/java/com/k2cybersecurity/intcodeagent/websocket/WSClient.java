@@ -10,6 +10,7 @@ import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.properties.K2JAVersionInfo;
 import org.java_websocket.WebSocket;
 import org.java_websocket.WebSocketImpl;
+import com.k2cybersecurity.intcodeagent.logging.IAgentConstants;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.framing.CloseFrame;
 import org.java_websocket.framing.Framedata;
@@ -51,7 +52,7 @@ public class WSClient extends WebSocketClient {
         this.addHeader("K2-COLLECTOR-TYPE", "JAVA");
         this.addHeader("K2-GROUP", AgentUtils.getInstance().getGroupName());
         this.addHeader("K2-APPLICATION-UUID", K2Instrumentator.APPLICATION_UUID);
-        logger.log(LogLevel.INFO, "Creating WSock connection to : " + CollectorConfigurationUtils.getInstance().getCollectorConfig().getK2ServiceInfo().getValidatorServiceEndpointURL(),
+        logger.logInit(LogLevel.INFO, String.format(IAgentConstants.INIT_WS_CONNECTION, CollectorConfigurationUtils.getInstance().getCollectorConfig().getK2ServiceInfo().getValidatorServiceEndpointURL()),
                 WSClient.class.getName());
         connect();
         WebSocket conn = getConnection();
@@ -62,16 +63,17 @@ public class WSClient extends WebSocketClient {
 
     @Override
     public void onOpen(ServerHandshake handshakedata) {
-        logger.log(LogLevel.INFO, "Opened WSock to " + this.getRemoteSocketAddress(), WSClient.class.getName());
+        logger.logInit(LogLevel.INFO, String.format(IAgentConstants.WS_CONNECTION_SUCCESSFUL, this.getRemoteSocketAddress()) , WSClient.class.getName());
 //		logger.log(LogLevel.INFO, "Current WSock ready status : {0},{1},{2}",
 //				new Object[] { this.isOpen(), this.isClosing(), this.isClosed() });
+        logger.logInit(LogLevel.INFO, String.format(IAgentConstants.SENDING_APPLICATION_INFO_ON_WS_CONNECT, K2Instrumentator.APPLICATION_INFO_BEAN) , WSClient.class.getName());
         super.send(K2Instrumentator.APPLICATION_INFO_BEAN.toString());
 //		Agent.allClassLoadersCount.set(0);
 //		Agent.jarPathSet.clear();
 //		logger.log(LogLevel.INFO, "Resetting allClassLoadersCount to " + Agent.allClassLoadersCount.get(),
 //				WSClient.class.getName());
-        logger.log(LogLevel.INFO, "Application info posted : " + K2Instrumentator.APPLICATION_INFO_BEAN,
-                WSClient.class.getName());
+
+        logger.logInit(LogLevel.INFO, String.format(IAgentConstants.APPLICATION_INFO_SENT_ON_WS_CONNECT, K2Instrumentator.APPLICATION_INFO_BEAN), WSClient.class.getName());
         AgentUtils.getInstance().resetCVEServiceFailCount();
     }
 
@@ -101,7 +103,8 @@ public class WSClient extends WebSocketClient {
     public void onError(Exception ex) {
 //        logger.log(LogLevel.SEVERE, "Error in WSock connection : " + ex.getMessage() + " : " + ex.getCause(),
 //                WSClient.class.getName());
-        logger.log(LogLevel.DEBUG, ERROR_IN_WSOCK_CONNECTION + ex.getMessage() + COLON_STRING + ex.getCause(), ex,
+        logger.logInit(LogLevel.SEVERE, String.format(IAgentConstants.WS_CONNECTION_UNSUCCESSFUL, this.getRemoteSocketAddress()),
+                ex,
                 WSClient.class.getName());
     }
 

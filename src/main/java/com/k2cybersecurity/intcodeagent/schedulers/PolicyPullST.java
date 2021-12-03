@@ -88,6 +88,16 @@ public class PolicyPullST {
                 logger.log(LogLevel.ERROR, String.format(POLICY_READ_FAILED_S_S, response.code(), response.body().string()), PolicyPullST.class.getName());
                 newPolicy = loadDefaultConfig();
             }
+            if (newPolicy == null) {
+                byte bodyBytes[] = new byte[response.body().byteStream().available()];
+                response.body().byteStream().read(bodyBytes);
+                String body = new String(bodyBytes);
+                logger.logInit(LogLevel.ERROR, String.format(
+                                IAgentConstants.UNABLE_TO_PARSE_AGENT_POLICY_DUE_TO_ERROR,
+                                body
+                        ),
+                        PolicyPullST.class.getName());
+            }
             boolean changed = readAndApplyConfig(newPolicy);
             if (changed) {
                 writePolicyToFile();
@@ -103,15 +113,18 @@ public class PolicyPullST {
             if (StringUtils.equals(newPolicy.getVersion(), AgentUtils.getInstance().getAgentPolicy().getVersion())) {
                 return false;
             }
+            logger.logInit(LogLevel.INFO,
+                    String.format(IAgentConstants.RECEIVED_AGENT_POLICY, newPolicy),
+                    PolicyPullST.class.getName());
             AgentUtils.getInstance().setAgentPolicy(newPolicy);
             AgentUtils.getInstance().enforcePolicy();
             K2Instrumentator.APPLICATION_INFO_BEAN.setPolicyVersion(AgentUtils.getInstance().getAgentPolicy().getVersion());
-            logger.log(LogLevel.INFO, String.format(IAgentConstants.AGENT_POLICY_APPLIED_S,
+            logger.logInit(LogLevel.INFO, String.format(IAgentConstants.AGENT_POLICY_APPLIED_S,
                     AgentUtils.getInstance().getAgentPolicy()), PolicyPullST.class.getName());
             EventSendPool.getInstance().sendEvent(K2Instrumentator.APPLICATION_INFO_BEAN.toString());
             return true;
         } catch (Throwable e) {
-            logger.log(LogLevel.ERROR, IAgentConstants.UNABLE_TO_SET_AGENT_POLICY_DUE_TO_ERROR, e,
+            logger.logInit(LogLevel.ERROR, IAgentConstants.UNABLE_TO_SET_AGENT_POLICY_DUE_TO_ERROR, e,
                     PolicyPullST.class.getName());
             return false;
         }

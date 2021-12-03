@@ -139,11 +139,11 @@ public class ControlCommandProcessor implements Runnable {
                 }
                 try {
                     AgentUtils.getInstance().getAgentPolicy().setPolicyParameters(new ObjectMapper().readValue(controlCommand.getData().toString(), AgentPolicyParameters.class));
-                    logger.log(LogLevel.INFO,
-                            String.format(POLICY_PARAMETERS_ARE_UPDATED_TO_S, AgentUtils.getInstance().getAgentPolicy().getPolicyParameters()),
+                    logger.logInit(LogLevel.INFO,
+                            String.format(IAgentConstants.AGENT_POLICY_PARAM_APPLIED_S, AgentUtils.getInstance().getAgentPolicy().getPolicyParameters()),
                             ControlCommandProcessor.class.getName());
                 } catch (JsonProcessingException e) {
-                    logger.log(LogLevel.DEBUG, IAgentConstants.UNABLE_TO_SET_AGENT_POLICY_PARAM_DUE_TO_ERROR, e,
+                    logger.logInit(LogLevel.DEBUG, IAgentConstants.UNABLE_TO_SET_AGENT_POLICY_PARAM_DUE_TO_ERROR, e,
                             ControlCommandProcessor.class.getName());
                 }
                 break;

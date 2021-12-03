@@ -21,7 +21,7 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 
-public class LogWriter implements Runnable {
+public class InitLogWriter implements Runnable {
 
     private static final String STRING_DOT = ".";
 
@@ -32,6 +32,8 @@ public class LogWriter implements Runnable {
     private static final String K2_LOG = "K2-LOG : ";
     public static final String THREAD_NAME_TEMPLATE = " [%s] ";
 
+    private static final String LOG_FILE_INITIATED_MSG = "Init Log File initiated.\n";
+    private static final String LOG_CONFIGURED_SUCCESSFULLY_MSG = "Init Logger configured successfully with level: %s and rollover on max size %s.\n";
     public static int defaultLogLevel = LogLevel.INFO.getLevel();
 
 
@@ -67,7 +69,7 @@ public class LogWriter implements Runnable {
     private static OSVariables osVariables = OsVariablesInstance.getInstance().getOsVariables();
 
     static {
-        fileName = new File(osVariables.getLogDirectory(), "k2_java_agent-" + K2Instrumentator.APPLICATION_UUID + ".log").getAbsolutePath();
+        fileName = new File(osVariables.getLogDirectory(), "k2-java-agent-init-" + K2Instrumentator.APPLICATION_UUID + ".log").getAbsolutePath();
         currentLogFile = new File(fileName);
         currentLogFile.getParentFile().mkdirs();
         try {
@@ -78,7 +80,8 @@ public class LogWriter implements Runnable {
         try {
             currentLogFile.setReadable(true, false);
             writer = new BufferedWriter(new FileWriter(currentLogFileName, true));
-
+            writer.write(LOG_FILE_INITIATED_MSG);
+            writer.flush();
             maxFileSize = K2JALogProperties.maxfilesize * 1048576;
 
             // k2.log.handler.maxfilesize=10
@@ -86,13 +89,14 @@ public class LogWriter implements Runnable {
             if (!osVariables.getWindows()) {
                 Files.setPosixFilePermissions(currentLogFile.toPath(), PosixFilePermissions.fromString("rw-rw-rw-"));
             }
-
+            writer.write(String.format(LOG_CONFIGURED_SUCCESSFULLY_MSG, LogLevel.getLevelName(defaultLogLevel), maxFileSize));
+            writer.flush();
         } catch (Throwable e) {
             e.printStackTrace();
         }
     }
 
-    public LogWriter(LogLevel logLevel, String logEntry, String loggingClassName, String threadName) {
+    public InitLogWriter(LogLevel logLevel, String logEntry, String loggingClassName, String threadName) {
         this.logEntry = logEntry;
         this.logLevel = logLevel.getLevel();
         this.logLevelName = logLevel.name();
@@ -100,7 +104,7 @@ public class LogWriter implements Runnable {
         this.threadName = threadName;
     }
 
-    public LogWriter(LogLevel logLevel, String logEntry, Throwable throwableLogEntry, String loggingClassName, String threadName) {
+    public InitLogWriter(LogLevel logLevel, String logEntry, Throwable throwableLogEntry, String loggingClassName, String threadName) {
         this.throwableLogEntry = throwableLogEntry;
         this.logEntry = logEntry;
         this.logLevel = logLevel.getLevel();
@@ -111,7 +115,7 @@ public class LogWriter implements Runnable {
 
     @Override
     public void run() {
-        if (this.logLevel == 1 || this.logLevel > defaultLogLevel) {
+        if (this.logLevel == 0 || this.logLevel > defaultLogLevel) {
             return;
         }
         StringBuilder sb = new StringBuilder();

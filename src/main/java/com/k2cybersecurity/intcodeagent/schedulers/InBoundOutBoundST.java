@@ -1,6 +1,7 @@
 package com.k2cybersecurity.intcodeagent.schedulers;
 
 import com.k2cybersecurity.instrumentator.K2Instrumentator;
+import com.k2cybersecurity.intcodeagent.constants.AgentServices;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.models.javaagent.HttpConnectionStat;
@@ -9,6 +10,9 @@ import com.k2cybersecurity.intcodeagent.websocket.EventSendPool;
 
 import java.util.*;
 import java.util.concurrent.*;
+
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.STARTED_MODULE_LOG;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.STARTING_MODULE_LOG;
 
 public class InBoundOutBoundST {
 
@@ -49,6 +53,11 @@ public class InBoundOutBoundST {
     }
 
     private InBoundOutBoundST() {
+        logger.logInit(
+                LogLevel.INFO,
+                String.format(STARTING_MODULE_LOG, AgentServices.InBoundOutBoundMonitor.name()),
+                InBoundOutBoundST.class.getName()
+        );
         inOutExecutorService = Executors.newSingleThreadScheduledExecutor(new ThreadFactory() {
             @Override
             public Thread newThread(Runnable r) {
@@ -61,7 +70,11 @@ public class InBoundOutBoundST {
         inOutExecutorService.scheduleAtFixedRate(runnable, 2, 2, TimeUnit.HOURS);
         cache = new ConcurrentHashMap<>();
         newConnections = ConcurrentHashMap.newKeySet();
-        logger.log(LogLevel.INFO, "in-bound out-bound monitor thread started successfully!!!", InBoundOutBoundST.class.getName());
+        logger.logInit(
+                LogLevel.INFO,
+                String.format(STARTED_MODULE_LOG, AgentServices.InBoundOutBoundMonitor.name()),
+                InBoundOutBoundST.class.getName()
+        );
     }
 
     public static InBoundOutBoundST getInstance() {

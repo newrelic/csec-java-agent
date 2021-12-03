@@ -18,6 +18,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class EventDispatcher {
 
@@ -33,9 +34,11 @@ public class EventDispatcher {
     public static final String ERROR = "Error: ";
     public static final String ID_PLACEHOLDER = "{{ID}}";
     public static final String ACCESS_BY_BLOCKED_IP_ADDRESS_DETECTED_S = "Access by blocked IP address detected : %s";
+    private static final String INTERCEPTED_EVENT_ZERO = "[STEP-8][BEGIN][EVENT] First event intercepted : %s : %s";
+    private static final String EVENT_ZERO_PROCESSED = "[EVENT] First event processed : %s";
     public static String ATTACK_PAGE_CONTENT = StringUtils.EMPTY;
     public static String BLOCK_PAGE_CONTENT = StringUtils.EMPTY;
-
+    static AtomicBoolean firstEventProcessed = new AtomicBoolean(false);
 
     static {
         try {
@@ -78,6 +81,11 @@ public class EventDispatcher {
 
     public static void dispatch(AbstractOperationalBean objectBean, VulnerabilityCaseType vulnerabilityCaseType, boolean blockAndCheck)
             throws K2CyberSecurityException {
+        if(!firstEventProcessed.get()) {
+            logger.logInit(LogLevel.INFO,
+                    String.format(INTERCEPTED_EVENT_ZERO, vulnerabilityCaseType, objectBean),
+                    EventDispatcher.class.getName());
+        }
 
         boolean ret = ThreadLocalHttpMap.getInstance().parseHttpRequest();
         if (!ret) {
@@ -100,6 +108,12 @@ public class EventDispatcher {
                         new HttpRequestBean(ThreadLocalExecutionMap.getInstance().getHttpRequestBean()),
                         agentMetaData,
                         objectBean, vulnerabilityCaseType);
+                if(!firstEventProcessed.get()) {
+                    logger.logInit(LogLevel.INFO,
+                            String.format(EVENT_ZERO_PROCESSED, objectBean),
+                            EventDispatcher.class.getName());
+                    firstEventProcessed.set(true);
+                }
             } else {
                 return;
             }
@@ -109,6 +123,7 @@ public class EventDispatcher {
                 }
                 checkIfClientIPBlocked();
             }
+
         } else {
             logger.log(
                     LogLevel.DEBUG, DROPPING_EVENT_DUE_TO_EMPTY_OBJECT
@@ -120,6 +135,11 @@ public class EventDispatcher {
     public static void dispatch(List<SQLOperationalBean> objectBeanList, VulnerabilityCaseType vulnerabilityCaseType,
                                 String exectionId, String className, String methodName, String sourceMethod)
             throws K2CyberSecurityException {
+        if(!firstEventProcessed.get()) {
+            logger.logInit(LogLevel.INFO,
+                    String.format(INTERCEPTED_EVENT_ZERO, vulnerabilityCaseType, objectBeanList),
+                    EventDispatcher.class.getName());
+        }
         boolean ret = ThreadLocalHttpMap.getInstance().parseHttpRequest();
         if (!ret) {
             logger.log(
@@ -161,6 +181,12 @@ public class EventDispatcher {
                         agentMetaData,
                         toBeSentBeans, vulnerabilityCaseType, currentGenericServletMethodName,
                         currentGenericServletInstance, objectBeanList.get(0).getStackTrace(), objectBeanList.get(0).getUserClassEntity());
+                if(!firstEventProcessed.get()) {
+                    logger.logInit(LogLevel.INFO,
+                            String.format(EVENT_ZERO_PROCESSED, objectBeanList),
+                            EventDispatcher.class.getName());
+                    firstEventProcessed.set(true);
+                }
             } else {
                 return;
             }
@@ -174,7 +200,11 @@ public class EventDispatcher {
     public static void dispatch(HttpRequestBean httpRequestBean, AgentMetaData agentMetaData, String sourceString, String exectionId, long startTime,
                                 VulnerabilityCaseType reflectedXss, String className, String methodName) throws K2CyberSecurityException {
 //		System.out.println("Passed to XSS detection : " + exectionId + " :: " + httpRequestBean.toString()+ " :: " + httpRequestBean.getHttpResponseBean().toString());
-
+        if(!firstEventProcessed.get()) {
+            logger.logInit(LogLevel.INFO,
+                    String.format(INTERCEPTED_EVENT_ZERO, reflectedXss, httpRequestBean),
+                    EventDispatcher.class.getName());
+        }
 
         if (!httpRequestBean.isEmpty()) {
 
@@ -208,6 +238,12 @@ public class EventDispatcher {
                 DispatcherPool.getInstance().dispatchEventRXSS(httpRequestBean, agentMetaData, sourceString, exectionId, startTime,
                         reflectedXss, currentGenericServletMethodName,
                         currentGenericServletInstance, operationalBean.getStackTrace(), operationalBean.getUserClassEntity(), operationalBean.getApiID());
+                if(!firstEventProcessed.get()) {
+                    logger.logInit(LogLevel.INFO,
+                            String.format(EVENT_ZERO_PROCESSED, httpRequestBean),
+                            EventDispatcher.class.getName());
+                    firstEventProcessed.set(true);
+                }
             } else {
                 return;
             }

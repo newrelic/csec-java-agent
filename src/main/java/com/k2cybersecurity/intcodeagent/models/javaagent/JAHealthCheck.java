@@ -13,6 +13,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class JAHealthCheck extends AgentBasicInfo {
 
     private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
+	private static final String HC_CREATED = "Created K2 Health Check: %s";
 
     private String applicationUUID;
 
@@ -43,9 +44,10 @@ public class JAHealthCheck extends AgentBasicInfo {
         this.eventSentCount = new AtomicInteger(0);
         this.httpRequestCount = new AtomicInteger(0);
         this.setProtectedDB(new HashSet());
+
         this.setProtectedVulnerabilities(AgentUtils.getInstance().getProtectedVulnerabilties());
         this.setKind(K2Instrumentator.APPLICATION_INFO_BEAN.getIdentifier().getKind());
-        logger.log(LogLevel.INFO, "JA Healthcheck created : " + this.toString(), JAHealthCheck.class.getName());
+        logger.log(LogLevel.INFO, String.format(HC_CREATED, this.toString()), JAHealthCheck.class.getName());
     }
 
     public JAHealthCheck(JAHealthCheck jaHealthCheck) {
@@ -60,7 +62,7 @@ public class JAHealthCheck extends AgentBasicInfo {
         this.httpRequestCount = jaHealthCheck.httpRequestCount;
         this.kind = jaHealthCheck.kind;
         this.dsBackLog = jaHealthCheck.dsBackLog;
-        logger.log(LogLevel.INFO, "JA Healthcheck created : " + this.toString(), JAHealthCheck.class.getName());
+        logger.log(LogLevel.INFO, String.format(HC_CREATED, this.toString()), JAHealthCheck.class.getName());
     }
 
     public IdentifierEnvs getKind() {

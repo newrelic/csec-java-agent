@@ -2,7 +2,10 @@ package com.k2cybersecurity.instrumentator;
 
 import com.k2cybersecurity.instrumentator.custom.ClassLoadListener;
 import com.k2cybersecurity.instrumentator.utils.AgentUtils;
+import com.k2cybersecurity.instrumentator.utils.EnvLogUtils;
 import com.k2cybersecurity.instrumentator.utils.InstrumentationUtils;
+import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
+import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import net.bytebuddy.ByteBuddy;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.dynamic.scaffold.TypeValidation;
@@ -23,6 +26,11 @@ import static com.k2cybersecurity.instrumentator.utils.InstrumentationUtils.*;
 
 
 public class AgentNew {
+
+    private static final String HOOKS_ADDED_SUCCESSFULLY = "[STEP-6][COMPLETE][INSTRUMENTATION] Instrumentation applied.";
+    private static final String CONTINUED_TRANSFORMATION_MSG = "[INSTRUMENTATION] Dynamic security hooks will be placed as the classes are loaded.";
+    private static final String INSTRUMENT_WILL_INSTRUMENT_CLASS = "[INSTRUMENTATION] Will modify class %s";
+    private static final String STARTED_ADDING_HOOKS = "[STEP-6][BEGIN][INSTRUMENTATION] Applying instrumentation";
 
     private static boolean isDynamicAttachment = false;
 
@@ -51,6 +59,8 @@ public class AgentNew {
             public void run() {
                 try {
                     awaitServerStartUp(instrumentation, ClassLoader.getSystemClassLoader());
+                    FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
+                    EnvLogUtils.logK2Env();
 
                     Class<?> clazz = Class.forName("com.k2cybersecurity.instrumentator.K2Instrumentator");
                     Method init = clazz.getMethod("init", Boolean.class);
@@ -59,6 +69,7 @@ public class AgentNew {
                         System.err.println("[K2-JA] Process initialization failed!!! Environment incompatible.");
                         return;
                     }
+                    logger.logInit(LogLevel.INFO, STARTED_ADDING_HOOKS, AgentNew.class.getName());
                     Runtime.getRuntime().addShutdownHook(new Thread(() -> {
                         InstrumentationUtils.shutdownLogic(false);
                     }, "k2-shutdown-hook"));
@@ -109,6 +120,7 @@ public class AgentNew {
                             for (Class typeClass : typeBasedClassSet) {
                                 if (typeClass.isAssignableFrom(aClass) && !AgentUtils.getInstance().getTransformedClasses()
                                         .contains(Pair.of(aClass.getName(), aClass.getClassLoader()))) {
+                                    logger.logInit(LogLevel.INFO, String.format(INSTRUMENT_WILL_INSTRUMENT_CLASS, aClass.getName()),AgentNew.class.getName());
                                     AgentUtils.getInstance().getTransformedClasses().add(Pair.of(aClass.getName(), aClass.getClassLoader()));
                                     break;
                                 }
@@ -116,6 +128,9 @@ public class AgentNew {
                         }
                     }
                     retransformHookedClasses(instrumentation);
+                    logger.logInit(LogLevel.INFO, HOOKS_ADDED_SUCCESSFULLY, AgentNew.class.getName());
+                    switchLazyInstrumentationLogs(logger);
+
                 } catch (Throwable e) {
                     String tmpDir = System.getProperty("java.io.tmpdir");
                     System.err.println("[K2-JA] Process initialization failed!!! Please find the error in " + tmpDir + File.separator + "K2-Instrumentation.err");
@@ -131,6 +146,11 @@ public class AgentNew {
 
     }
 
+    private static void switchLazyInstrumentationLogs(FileLoggerThreadPool logger) {
+        ClassLoadListener.TRANSFORMED_CLASS_S = ClassLoadListener.TRANSFORMED_CLASS_S_LAZY;
+        ClassLoadListener.TRANSFORMATION_ERROR_CLASS_S_ERROR = ClassLoadListener.TRANSFORMATION_ERROR_CLASS_S_ERROR_LAZY;
+        logger.logInit(LogLevel.INFO, CONTINUED_TRANSFORMATION_MSG, AgentNew.class.getName());
+    }
     public static void agentmain(String agentArgs, Instrumentation instrumentation) {
         isDynamicAttachment = true;
         if (!StringUtils.equals(System.getenv().get("K2_DYNAMIC_ATTACH"), "true")) {

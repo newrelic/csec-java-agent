@@ -19,4 +19,13 @@ public enum LogLevel {
     public int getLevel() {
         return this.level;
     }
+
+    public static String getLevelName(int level) {
+        for(LogLevel lvl : LogLevel.values()){
+            if (lvl.getLevel() == level){
+                return lvl.name();
+            }
+        }
+        return "Unknown";
+    }
 }

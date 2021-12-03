@@ -53,6 +53,9 @@ public class InstrumentationUtils {
     public static final String DOT = ".";
     public static final String DECORATORS = "Decorators";
     public static final String $ = "$";
+    private static final String INSTRUMENTATION_TRANSFORM_ERROR = "[INSTRUMENTATION] Couldn't transform class `%s`: ";
+    private static final String INSTRUMENTATION_RETRANSFORM_STARTED = "[INSTRUMENTATION] Started static re-transformation of classes.";
+    private static final String INSTRUMENTATION_RETRANSFORM_ENDED = "[INSTRUMENTATION] Finished static re-transformation of classes.";
 
     private static Boolean IAST = false;
 
@@ -390,14 +393,16 @@ public class InstrumentationUtils {
     }
 
     public static void retransformHookedClasses(Instrumentation instrumentation) {
+        logger.logInit(LogLevel.INFO, INSTRUMENTATION_RETRANSFORM_STARTED, AgentNew.class.getName());
         for (Pair<String, ClassLoader> pair : new ArrayList<>(AgentUtils.getInstance().getTransformedClasses())) {
             try {
                 Class klass = Class.forName(pair.getLeft(), false, pair.getRight());
                 instrumentation.retransformClasses(klass);
             } catch (Throwable e) {
-                logger.log(LogLevel.SEVERE, "Error while retransformHookedClasses : ", e,
+                logger.logInit(LogLevel.SEVERE, String.format(INSTRUMENTATION_TRANSFORM_ERROR, pair.getLeft()), e,
                         InstrumentationUtils.class.getName());
             }
         }
+        logger.logInit(LogLevel.INFO, INSTRUMENTATION_RETRANSFORM_ENDED,AgentNew.class.getName());
     }
 }
