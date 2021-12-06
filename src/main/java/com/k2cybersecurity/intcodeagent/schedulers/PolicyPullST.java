@@ -38,10 +38,11 @@ public class PolicyPullST {
     public static final String FALLING_BACK_TO_DEFAULT_CONFIG = "Falling back to default config.";
     public static final String POLICY_WRITTEN_TO_FILE = "policy written to file : ";
     public static final String SHUTTING_POLICY_PULL = "Shutting policy pull!!!";
+    public static final String CANCEL_CURRENT_TASK_OF_POLICY_PULL = "Cancel current task of policy pull.";
 
     private ScheduledExecutorService executorService;
 
-    private Future future;
+    private ScheduledFuture future;
 
     private Map<String, String> queryParam = new HashMap<>();
 
@@ -77,6 +78,13 @@ public class PolicyPullST {
             }
         }
     };
+
+    public void submitNewTask() {
+        cancelTask();
+        if (AgentUtils.getInstance().getAgentPolicy().getPolicyPull() && AgentUtils.getInstance().getAgentPolicy().getPolicyPullInterval() > 0) {
+            future = executorService.schedule(runnable, AgentUtils.getInstance().getAgentPolicy().getPolicyPullInterval(), TimeUnit.SECONDS);
+        }
+    }
 
     private void task() {
         try {
@@ -153,9 +161,11 @@ public class PolicyPullST {
     }
 
     public void cancelTask() {
-        logger.log(LogLevel.INFO, SHUTTING_POLICY_PULL, PolicyPullST.class.getName());
-        if (future != null) {
-            future.cancel(false);
+        if (future == null || future.isDone() || future.getDelay(TimeUnit.SECONDS) > AgentUtils.getInstance().getAgentPolicy().getPolicyPullInterval()) {
+            logger.log(LogLevel.INFO, CANCEL_CURRENT_TASK_OF_POLICY_PULL, PolicyPullST.class.getName());
+            if (future != null) {
+                future.cancel(false);
+            }
         }
     }
 

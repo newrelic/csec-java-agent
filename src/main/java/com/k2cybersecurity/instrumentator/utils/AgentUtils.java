@@ -654,7 +654,7 @@ public class AgentUtils {
         K2Instrumentator.enableHTTPRequestPrinting = agentPolicy.getEnableHTTPRequestPrinting();
         logger.log(LogLevel.INFO, ENFORCING_POLICY, AgentUtils.class.getName());
         if (agentPolicy.getPolicyPull() && agentPolicy.getPolicyPullInterval() > 0) {
-            PolicyPullST.getInstance();
+            PolicyPullST.getInstance().submitNewTask();
         } else {
             PolicyPullST.getInstance().cancelTask();
         }
