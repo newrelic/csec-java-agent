@@ -81,6 +81,7 @@ public class AgentUtils {
     public static final String CORRUPTED_CVE_SERVICE_BUNDLE_DELETED = "Corrupted CVE service bundle deleted.";
     public static final String ENFORCING_POLICY = "Enforcing policy";
     public static final String LOG_LEVEL_PROVIDED_IN_POLICY_IS_INCORRECT_DEFAULTING_TO_INFO = "Log level provided in policy is incorrect: %s. Defaulting to INFO";
+    public static final String ERROR_WHILE_EXTRACTING_FILE_FROM_ARCHIVE_S_S = "Error while extracting file from archive : %s : %s";
 
     public Set<Pair<String, ClassLoader>> getTransformedClasses() {
         return transformedClasses;
@@ -848,7 +849,8 @@ public class AgentUtils {
                     Files.setPosixFilePermissions(Paths.get(curfile.toURI()),
                             octToPosixFilePermission(entry.getMode()));
                 } catch (Throwable e) {
-                    logger.log(LogLevel.ERROR, ERROR, e, CVEServiceLinux.class.getName());
+                    logger.log(LogLevel.ERROR, String.format(ERROR_WHILE_EXTRACTING_FILE_FROM_ARCHIVE_S_S, entry.getName(), e.getMessage()), CVEServiceLinux.class.getName());
+                    logger.log(LogLevel.DEBUG, ERROR, e, CVEServiceLinux.class.getName());
                 }
             }
             return true;
