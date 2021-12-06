@@ -129,7 +129,7 @@ public class CVEServiceWindows implements Runnable {
                     //TODO windows ki maaya
                     long pid = AgentUtils.getInstance().getProcessID(process);
                     if (pid > 1) {
-                        logger.log(LogLevel.WARNING, String.format(KILLING_PROCESS_TREE_ROOTED_AT_S, pid), CVEServiceWindows.class.getName());
+                        logger.log(LogLevel.WARN, String.format(KILLING_PROCESS_TREE_ROOTED_AT_S, pid), CVEServiceWindows.class.getName());
                         AgentUtils.getInstance().incrementCVEServiceFailCount();
 //                        Runtime.getRuntime().exec(String.format(KILL_PROCESS_TREE_COMMAND, pid));
                     }

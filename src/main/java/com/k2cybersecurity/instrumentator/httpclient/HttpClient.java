@@ -232,7 +232,7 @@ public class HttpClient {
             public void onResponse(Response response) throws IOException {
                 if (!response.isSuccessful()) {
                     try (ResponseBody responseBody = response.body()) {
-                        logger.log(LogLevel.WARNING, String.format(ASYNC_API_EXECUTION_UNSUCCESSFULLY_S_RESPONSE_IS_S_BODY_S, api, response.code(), responseBody), HttpClient.class.getName());
+                        logger.log(LogLevel.WARN, String.format(ASYNC_API_EXECUTION_UNSUCCESSFULLY_S_RESPONSE_IS_S_BODY_S, api, response.code(), responseBody), HttpClient.class.getName());
                     }
                 } else {
                     logger.log(LogLevel.INFO, String.format(ASYNC_API_EXECUTED_SUCCESSFULLY_S_RESPONSE_IS_S, api, response.code()), HttpClient.class.getName());
@@ -252,7 +252,7 @@ public class HttpClient {
             public void onResponse(Response response) throws IOException {
                 try (ResponseBody responseBody = response.body()) {
                     if (!response.isSuccessful()) {
-                        logger.log(LogLevel.WARNING, String.format(API_S_FAILED_CODE_S_S, api, response.code(), responseBody), HttpClient.class.getName());
+                        logger.log(LogLevel.WARN, String.format(API_S_FAILED_CODE_S_S, api, response.code(), responseBody), HttpClient.class.getName());
                         FileUtils.deleteQuietly(file);
                     }
                     logger.log(LogLevel.INFO, String.format(API_S_RETURNS_SUCCESS_CODE_S_S, api, response.code(), responseBody), HttpClient.class.getName());

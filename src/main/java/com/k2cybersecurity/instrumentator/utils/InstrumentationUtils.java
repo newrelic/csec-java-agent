@@ -344,7 +344,7 @@ public class InstrumentationUtils {
             logger.log(LogLevel.INFO, SHUTTING_DOWN_WITH_STATUS + shutDownEvent, InstrumentationUtils.class.getName());
             TimeUnit.SECONDS.sleep(1);
         } catch (Throwable e) {
-            logger.log(LogLevel.SEVERE, "Error while sending shut down event : ", e,
+            logger.log(LogLevel.FATAL, "Error while sending shut down event : ", e,
                     InstrumentationUtils.class.getName());
         }
         try {
@@ -361,7 +361,7 @@ public class InstrumentationUtils {
             WSReconnectionST.getInstance().shutDownThreadPoolExecutor();
 
         } catch (Throwable e) {
-            logger.log(LogLevel.SEVERE, "Error while shutting down K2 Pools : ", e,
+            logger.log(LogLevel.FATAL, "Error while shutting down K2 Pools : ", e,
                     InstrumentationUtils.class.getName());
         }
 
@@ -374,10 +374,10 @@ public class InstrumentationUtils {
 
 //            retransformHookedClasses(AgentNew.gobalInstrumentation);
         } catch (Throwable e) {
-            logger.log(LogLevel.SEVERE, "Error while resetting K2 instrumentation : ", e,
+            logger.log(LogLevel.FATAL, "Error while resetting K2 instrumentation : ", e,
                     InstrumentationUtils.class.getName());
         }
-        logger.log(LogLevel.SEVERE, JAVA_AGENT_SHUTDOWN_COMPLETE, InstrumentationUtils.class.getName());
+        logger.log(LogLevel.FATAL, JAVA_AGENT_SHUTDOWN_COMPLETE, InstrumentationUtils.class.getName());
         try {
             FileLoggerThreadPool.getInstance().shutDownThreadPoolExecutor();
         } catch (Exception e) {
@@ -399,7 +399,7 @@ public class InstrumentationUtils {
                 Class klass = Class.forName(pair.getLeft(), false, pair.getRight());
                 instrumentation.retransformClasses(klass);
             } catch (Throwable e) {
-                logger.logInit(LogLevel.SEVERE, String.format(INSTRUMENTATION_TRANSFORM_ERROR, pair.getLeft()), e,
+                logger.logInit(LogLevel.FATAL, String.format(INSTRUMENTATION_TRANSFORM_ERROR, pair.getLeft()), e,
                         InstrumentationUtils.class.getName());
             }
         }

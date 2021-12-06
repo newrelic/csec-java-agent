@@ -61,7 +61,7 @@ public class ControlCommandProcessor implements Runnable {
             controlCommand.setControlCommand(Integer.valueOf(object.get("controlCommand").toString()));
 
         } catch (Throwable e) {
-            logger.log(LogLevel.SEVERE, "Error in controlCommandProcessor : ", e,
+            logger.log(LogLevel.FATAL, "Error in controlCommandProcessor : ", e,
                     ControlCommandProcessor.class.getSimpleName());
             return;
         }
@@ -72,7 +72,7 @@ public class ControlCommandProcessor implements Runnable {
                 InstrumentationUtils.shutdownLogic(true);
                 break;
             case IntCodeControlCommand.UNSUPPORTED_AGENT:
-                logger.log(LogLevel.SEVERE, controlCommand.getArguments().get(0),
+                logger.log(LogLevel.FATAL, controlCommand.getArguments().get(0),
                         ControlCommandProcessor.class.getSimpleName());
                 System.err.println(controlCommand.getArguments().get(0));
                 InstrumentationUtils.shutdownLogic(true);
@@ -105,7 +105,7 @@ public class ControlCommandProcessor implements Runnable {
                         AgentUtils.getInstance().getEventResponseSet().remove(receivedEventResponse.getId());
                     }
                 } catch (Exception e) {
-                    logger.log(LogLevel.SEVERE, ERROR_IN_EVENT_RESPONSE, e, ControlCommandProcessor.class.getSimpleName());
+                    logger.log(LogLevel.FATAL, ERROR_IN_EVENT_RESPONSE, e, ControlCommandProcessor.class.getSimpleName());
                 }
                 break;
             case IntCodeControlCommand.FUZZ_REQUEST:
@@ -149,7 +149,7 @@ public class ControlCommandProcessor implements Runnable {
                 break;
 
             default:
-                logger.log(LogLevel.WARNING, String.format(UNKNOWN_CONTROL_COMMAND_S, controlCommandMessage),
+                logger.log(LogLevel.WARN, String.format(UNKNOWN_CONTROL_COMMAND_S, controlCommandMessage),
                         ControlCommandProcessor.class.getName());
                 break;
         }

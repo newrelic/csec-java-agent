@@ -151,7 +151,7 @@ public class ServletEventPool {
                 refCount = 1l;
             }
         } catch (Throwable e) {
-            logger.log(LogLevel.WARNING, "Unable to increment servletInfo ref count for eId " + threadId + ":" + executionId, e, this.getClass().getName());
+            logger.log(LogLevel.WARN, "Unable to increment servletInfo ref count for eId " + threadId + ":" + executionId, e, this.getClass().getName());
         }
         return refCount;
     }
@@ -168,7 +168,7 @@ public class ServletEventPool {
                 }
             }
         } catch (Throwable e) {
-            logger.log(LogLevel.WARNING, "Unable to decrement servletInfo ref count for eId " + threadId + ":" + executionId, e, this.getClass().getName());
+            logger.log(LogLevel.WARN, "Unable to decrement servletInfo ref count for eId " + threadId + ":" + executionId, e, this.getClass().getName());
         }
 
         return refCount;
@@ -184,7 +184,7 @@ public class ServletEventPool {
                     executor.shutdownNow(); // cancel currently executing tasks
 
                     if (!executor.awaitTermination(1, TimeUnit.SECONDS)) {
-                        logger.log(LogLevel.SEVERE, "Thread pool executor did not terminate", ServletEventPool.class.getName());
+                        logger.log(LogLevel.FATAL, "Thread pool executor did not terminate", ServletEventPool.class.getName());
                     }
                 }
             } catch (InterruptedException e) {

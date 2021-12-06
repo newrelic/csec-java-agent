@@ -60,21 +60,21 @@ public class HealthCheckScheduleThread {
                                 K2Instrumentator.JA_HEALTH_CHECK.setEventSentCount(0);
                                 K2Instrumentator.JA_HEALTH_CHECK.setHttpRequestCount(0);
                             } else {
-                                logger.log(LogLevel.SEVERE, "Failed in WSock reconnection.",
+                                logger.log(LogLevel.FATAL, "Failed in WSock reconnection.",
                                         HealthCheckScheduleThread.class.getName());
                             }
                         } catch (URISyntaxException | InterruptedException e) {
-                            logger.log(LogLevel.SEVERE,
+                            logger.log(LogLevel.FATAL,
                                     "Error in WSock reconnection : " + e.getMessage() + " : " + e.getCause(), e,
                                     HealthCheckScheduleThread.class.getName());
                         }
                     }
 
                 } catch (NullPointerException ex) {
-                    logger.log(LogLevel.WARNING, "No reference to Socket's OutputStream",
+                    logger.log(LogLevel.WARN, "No reference to Socket's OutputStream",
                             HealthCheckScheduleThread.class.getName());
                 } catch (Throwable e) {
-                    logger.log(LogLevel.WARNING, "Error while trying to verify connection: ", e,
+                    logger.log(LogLevel.WARN, "Error while trying to verify connection: ", e,
                             HealthCheckScheduleThread.class.getName());
                 } finally {
                     InBoundOutBoundST.getInstance().clearNewConnections();
@@ -101,7 +101,7 @@ public class HealthCheckScheduleThread {
                 instance = new HealthCheckScheduleThread();
             return instance;
         } catch (Throwable e) {
-            logger.log(LogLevel.WARNING, "Error while starting: ", e, HealthCheckScheduleThread.class.getName());
+            logger.log(LogLevel.WARN, "Error while starting: ", e, HealthCheckScheduleThread.class.getName());
         }
         throw null;
     }
@@ -121,7 +121,7 @@ public class HealthCheckScheduleThread {
                     hcScheduledService.shutdownNow(); // cancel currently executing tasks
 
                     if (!hcScheduledService.awaitTermination(1, TimeUnit.SECONDS)) {
-                        logger.log(LogLevel.SEVERE, "Thread pool executor did not terminate",
+                        logger.log(LogLevel.FATAL, "Thread pool executor did not terminate",
                                 HealthCheckScheduleThread.class.getName());
                     } else {
                         logger.log(LogLevel.INFO, "Thread pool executor terminated",

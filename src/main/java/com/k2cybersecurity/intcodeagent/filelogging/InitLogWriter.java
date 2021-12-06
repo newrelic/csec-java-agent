@@ -34,6 +34,7 @@ public class InitLogWriter implements Runnable {
 
     private static final String LOG_FILE_INITIATED_MSG = "Init Log File initiated.\n";
     private static final String LOG_CONFIGURED_SUCCESSFULLY_MSG = "Init Logger configured successfully with level: %s and rollover on max size %s.\n";
+    public static final String CAUSED_BY = "Caused by: ";
     public static int defaultLogLevel = LogLevel.INFO.getLevel();
 
 
@@ -115,7 +116,7 @@ public class InitLogWriter implements Runnable {
 
     @Override
     public void run() {
-        if (this.logLevel == 0 || this.logLevel > defaultLogLevel) {
+        if (this.logLevel == 1 || this.logLevel > defaultLogLevel) {
             return;
         }
         StringBuilder sb = new StringBuilder();
@@ -138,7 +139,7 @@ public class InitLogWriter implements Runnable {
             sb.append(StringUtils.LF);
             Throwable cause = this.throwableLogEntry.getCause();
             while (cause != null) {
-                sb.append("Caused by: ");
+                sb.append(CAUSED_BY);
                 sb.append(this.throwableLogEntry.getCause().getMessage());
                 sb.append(StringUtils.LF);
                 sb.append(StringUtils.join(this.throwableLogEntry.getCause().getStackTrace(), StringUtils.LF));

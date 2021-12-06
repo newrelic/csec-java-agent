@@ -54,7 +54,7 @@ public class WSReconnectionST {
             }
             return instance;
         } catch (Throwable e) {
-            logger.log(LogLevel.WARNING, "Error while starting: ", e, WSReconnectionST.class.getName());
+            logger.log(LogLevel.WARN, "Error while starting: ", e, WSReconnectionST.class.getName());
         }
         throw null;
     }
@@ -81,7 +81,7 @@ public class WSReconnectionST {
                     scheduledService.shutdownNow(); // cancel currently executing tasks
 
                     if (!scheduledService.awaitTermination(1, TimeUnit.SECONDS)) {
-                        logger.log(LogLevel.SEVERE, "Thread pool executor did not terminate",
+                        logger.log(LogLevel.FATAL, "Thread pool executor did not terminate",
                                 WSReconnectionST.class.getName());
                     } else {
                         logger.log(LogLevel.INFO, "Thread pool executor terminated",

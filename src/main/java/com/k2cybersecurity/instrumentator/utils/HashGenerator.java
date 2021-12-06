@@ -105,7 +105,7 @@ public class HashGenerator {
     public static void updateShaAndSize(DeployedApplication deployedApplication) {
         File deplyementDirFile = new File(deployedApplication.getDeployedPath());
         if (StringUtils.isBlank(deployedApplication.getDeployedPath())) {
-            logger.log(LogLevel.WARNING, "Empty deployed path detected. Not calculating SHA256 & size.", HashGenerator.class.getName());
+            logger.log(LogLevel.WARN, "Empty deployed path detected. Not calculating SHA256 & size.", HashGenerator.class.getName());
             return;
         }
         if (deplyementDirFile.isFile()) {

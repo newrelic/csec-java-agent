@@ -7,10 +7,10 @@ import com.k2cybersecurity.instrumentator.utils.InstrumentationUtils;
 import com.k2cybersecurity.intcodeagent.controlcommand.ControlCommandProcessor;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
+import com.k2cybersecurity.intcodeagent.logging.IAgentConstants;
 import com.k2cybersecurity.intcodeagent.properties.K2JAVersionInfo;
 import org.java_websocket.WebSocket;
 import org.java_websocket.WebSocketImpl;
-import com.k2cybersecurity.intcodeagent.logging.IAgentConstants;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.framing.CloseFrame;
 import org.java_websocket.framing.Framedata;
@@ -83,14 +83,14 @@ public class WSClient extends WebSocketClient {
         try {
             ControlCommandProcessor.processControlCommand(message, System.currentTimeMillis());
         } catch (Throwable e) {
-            logger.log(LogLevel.SEVERE, UNABLE_TO_PROCESS_INCOMING_MESSAGE + message + DUE_TO_ERROR, e,
+            logger.log(LogLevel.FATAL, UNABLE_TO_PROCESS_INCOMING_MESSAGE + message + DUE_TO_ERROR, e,
                     WSClient.class.getName());
         }
     }
 
     @Override
     public void onClose(int code, String reason, boolean remote) {
-        logger.log(LogLevel.WARNING, CONNECTION_CLOSED_BY + (remote ? REMOTE_PEER : LOCAL) + CODE + code
+        logger.log(LogLevel.WARN, CONNECTION_CLOSED_BY + (remote ? REMOTE_PEER : LOCAL) + CODE + code
                 + REASON + reason, WSClient.class.getName());
         if (code != CloseFrame.POLICY_VALIDATION) {
             WSReconnectionST.getInstance().submitNewTaskSchedule();
@@ -103,7 +103,7 @@ public class WSClient extends WebSocketClient {
     public void onError(Exception ex) {
 //        logger.log(LogLevel.SEVERE, "Error in WSock connection : " + ex.getMessage() + " : " + ex.getCause(),
 //                WSClient.class.getName());
-        logger.logInit(LogLevel.SEVERE, String.format(IAgentConstants.WS_CONNECTION_UNSUCCESSFUL, this.getRemoteSocketAddress()),
+        logger.logInit(LogLevel.FATAL, String.format(IAgentConstants.WS_CONNECTION_UNSUCCESSFUL, this.getRemoteSocketAddress()),
                 ex,
                 WSClient.class.getName());
     }
@@ -145,7 +145,7 @@ public class WSClient extends WebSocketClient {
      */
     public static WSClient reconnectWSClient() throws URISyntaxException, InterruptedException {
         boolean reconnectStatus = false;
-        logger.log(LogLevel.WARNING, RECONNECTING_TO_IC,
+        logger.log(LogLevel.WARN, RECONNECTING_TO_IC,
                 WSClient.class.getName());
         if (instance != null) {
             instance.closeBlocking();

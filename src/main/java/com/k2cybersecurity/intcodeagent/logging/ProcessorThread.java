@@ -272,7 +272,7 @@ public class ProcessorThread implements Runnable {
                 }
             }
         } catch (Throwable e) {
-            logger.log(LogLevel.WARNING, "Error in run: ", e, ProcessorThread.class.getName());
+            logger.log(LogLevel.WARN, "Error in run: ", e, ProcessorThread.class.getName());
         } finally {
             ServletEventPool.getInstance().decrementServletInfoReference(threadId, executionId, true);
         }
@@ -466,7 +466,7 @@ public class ProcessorThread implements Runnable {
             parameters.add(String.valueOf(arg[sqlObjectLocation]));
 
         } catch (Throwable e) {
-            logger.log(LogLevel.WARNING, ERROR_IN_GET_MY_SQL_PARAMETER_VALUE, e, ProcessorThread.class.getName());
+            logger.log(LogLevel.WARN, ERROR_IN_GET_MY_SQL_PARAMETER_VALUE, e, ProcessorThread.class.getName());
         }
     }
 
@@ -653,7 +653,7 @@ public class ProcessorThread implements Runnable {
 
             }
         } catch (Throwable e) {
-            logger.log(LogLevel.WARNING, ERROR_IN_GET_ORACLE_PARAMETER_VALUE, e, ProcessorThread.class.getName());
+            logger.log(LogLevel.WARN, ERROR_IN_GET_ORACLE_PARAMETER_VALUE, e, ProcessorThread.class.getName());
         }
         return parameters;
     }
@@ -714,7 +714,7 @@ public class ProcessorThread implements Runnable {
 
         } catch (Throwable th) {
             parameters.add((obj != null) ? obj.toString() : null);
-            logger.log(LogLevel.WARNING, ERROR_IN_TO_STRING, th, ProcessorThread.class.getName());
+            logger.log(LogLevel.WARN, ERROR_IN_TO_STRING, th, ProcessorThread.class.getName());
         }
         return parameters;
     }
@@ -757,7 +757,7 @@ public class ProcessorThread implements Runnable {
             parameters.add(uriObj.getPath());
 
         } catch (Throwable e) {
-            logger.log(LogLevel.WARNING, ERROR_IN_GET_JAVA9_HTTP_CLIENT_PARAMETERS, e,
+            logger.log(LogLevel.WARN, ERROR_IN_GET_JAVA9_HTTP_CLIENT_PARAMETERS, e,
                     ProcessorThread.class.getName());
         }
     }
@@ -805,7 +805,7 @@ public class ProcessorThread implements Runnable {
             parameters.add(pathOnly);
 
         } catch (Throwable e) {
-            logger.log(LogLevel.WARNING, ERROR_IN_GET_APACHE_HTTP_REQUEST_PARAMETERS, e,
+            logger.log(LogLevel.WARN, ERROR_IN_GET_APACHE_HTTP_REQUEST_PARAMETERS, e,
                     ProcessorThread.class.getName());
         }
 
@@ -840,7 +840,7 @@ public class ProcessorThread implements Runnable {
             parameters.add(path);
 
         } catch (Throwable e) {
-            logger.log(LogLevel.WARNING, ERROR_IN_GET_APACHE_COMMONS_HTTP_REQUEST_PARAMETERS, e,
+            logger.log(LogLevel.WARN, ERROR_IN_GET_APACHE_COMMONS_HTTP_REQUEST_PARAMETERS, e,
                     ProcessorThread.class.getName());
         }
 
@@ -864,7 +864,7 @@ public class ProcessorThread implements Runnable {
             parameters.add(url.getPath());
 
         } catch (Throwable e) {
-            logger.log(LogLevel.WARNING, ERROR_IN_GET_OK_HTTP_REQUEST_PARAMETERS, e, ProcessorThread.class.getName());
+            logger.log(LogLevel.WARN, ERROR_IN_GET_OK_HTTP_REQUEST_PARAMETERS, e, ProcessorThread.class.getName());
         }
 
     }
@@ -880,7 +880,7 @@ public class ProcessorThread implements Runnable {
                     sqlField.setAccessible(true);
                     parameters.add((String) sqlField.get(object));
                 } catch (Throwable e) {
-                    logger.log(LogLevel.WARNING, ERROR_IN_GET_HSQL_PARAMETER_VALUE_FOR_HSQL_V2_4, e,
+                    logger.log(LogLevel.WARN, ERROR_IN_GET_HSQL_PARAMETER_VALUE_FOR_HSQL_V2_4, e,
                             ProcessorThread.class.getName());
                 }
                 return;
@@ -917,7 +917,7 @@ public class ProcessorThread implements Runnable {
                         }
                     }
                 } catch (Throwable e) {
-                    logger.log(LogLevel.WARNING, ERROR_IN_GET_HSQL_PARAMETER_VALUE_FOR_HSQL_V1_8_V2_3_4, e,
+                    logger.log(LogLevel.WARN, ERROR_IN_GET_HSQL_PARAMETER_VALUE_FOR_HSQL_V1_8_V2_3_4, e,
                             ProcessorThread.class.getName());
                 }
                 return;
@@ -946,7 +946,7 @@ public class ProcessorThread implements Runnable {
                 parameters.add(paramArray);
             } catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException
                     | JsonProcessingException e) {
-                logger.log(LogLevel.WARNING, ERROR_IN_GET_PSQL_PARAMETER_VALUE, e, ProcessorThread.class.getName());
+                logger.log(LogLevel.WARN, ERROR_IN_GET_PSQL_PARAMETER_VALUE, e, ProcessorThread.class.getName());
             }
 
         }
@@ -1006,7 +1006,7 @@ public class ProcessorThread implements Runnable {
                         + DUE_TO_BUFFER_CAPACITY_REACHED, ProcessorThread.class.getName());
                 K2Instrumentator.JA_HEALTH_CHECK.incrementDropCount();
             } catch (Throwable e) {
-                logger.log(LogLevel.WARNING, ERROR_IN_GENERATE_EVENT_WHILE_CREATING_JAVA_AGENT_DYNAMIC_PATH_BEAN, e,
+                logger.log(LogLevel.WARN, ERROR_IN_GENERATE_EVENT_WHILE_CREATING_JAVA_AGENT_DYNAMIC_PATH_BEAN, e,
                         ProcessorThread.class.getName());
             }
         } else {
@@ -1032,7 +1032,7 @@ public class ProcessorThread implements Runnable {
                         ProcessorThread.class.getName());
                 K2Instrumentator.JA_HEALTH_CHECK.incrementDropCount();
             } catch (Throwable e) {
-                logger.log(LogLevel.WARNING, ERROR_IN_GENERATE_EVENT_WHILE_CREATING_INT_CODE_RESULT_BEAN, e,
+                logger.log(LogLevel.WARN, ERROR_IN_GENERATE_EVENT_WHILE_CREATING_INT_CODE_RESULT_BEAN, e,
                         ProcessorThread.class.getName());
             }
 
@@ -1064,7 +1064,7 @@ public class ProcessorThread implements Runnable {
             if (StringUtils.containsIgnoreCase(urlDecoded, host) || StringUtils.containsIgnoreCase(urlDecoded, path))
                 return true;
         } catch (UnsupportedEncodingException e) {
-            logger.log(LogLevel.WARNING, ERROR_IN_PARTIAL_SSRF_VALIDATOR, e, ProcessorThread.class.getName());
+            logger.log(LogLevel.WARN, ERROR_IN_PARTIAL_SSRF_VALIDATOR, e, ProcessorThread.class.getName());
         }
 //		logger.log(Level.FINE, "Dropping SSRF event: {0}", intCodeResultBean);
         return false;

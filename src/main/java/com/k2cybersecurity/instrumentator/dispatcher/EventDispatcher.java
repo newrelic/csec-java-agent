@@ -310,7 +310,7 @@ public class EventDispatcher {
         try {
             if (ThreadLocalHttpMap.getInstance().getHttpResponse() != null) {
                 String attackPage = StringUtils.replace(ATTACK_PAGE_CONTENT, ID_PLACEHOLDER, eventId);
-                logger.log(LogLevel.WARNING, "Sending K2 Attack page for : " + eventId, EventDispatcher.class.getName());
+                logger.log(LogLevel.WARN, "Sending K2 Attack page for : " + eventId, EventDispatcher.class.getName());
                 if (ThreadLocalHttpMap.getInstance().getResponseOutputStream() != null) {
                     OutputStream outputStream = (OutputStream) ThreadLocalHttpMap.getInstance().getResponseOutputStream();
                     outputStream.write(attackPage.getBytes());
@@ -372,13 +372,13 @@ public class EventDispatcher {
                     outputStream.write(attackPage.getBytes());
                     outputStream.flush();
                     outputStream.close();
-                    logger.log(LogLevel.WARNING, "Sending K2 Blocking page to : " + ip + " via OutputStream", EventDispatcher.class.getName());
+                    logger.log(LogLevel.WARN, "Sending K2 Blocking page to : " + ip + " via OutputStream", EventDispatcher.class.getName());
                 } else if (ThreadLocalHttpMap.getInstance().getResponseWriter() != null) {
                     PrintWriter printWriter = (PrintWriter) ThreadLocalHttpMap.getInstance().getResponseWriter();
                     printWriter.println(attackPage);
                     printWriter.flush();
                     printWriter.close();
-                    logger.log(LogLevel.WARNING, "Sending K2 Blocking page to : " + ip + " via PrintWriter", EventDispatcher.class.getName());
+                    logger.log(LogLevel.WARN, "Sending K2 Blocking page to : " + ip + " via PrintWriter", EventDispatcher.class.getName());
                 } else {
                     Object resp = ThreadLocalHttpMap.getInstance().getHttpResponse();
                     try {
@@ -389,7 +389,7 @@ public class EventDispatcher {
                         outputStream.write(attackPage.getBytes());
                         outputStream.flush();
                         outputStream.close();
-                        logger.log(LogLevel.WARNING, "Sending K2 Blocking page to : " + ip + " via last resort OutputStream", EventDispatcher.class.getName());
+                        logger.log(LogLevel.WARN, "Sending K2 Blocking page to : " + ip + " via last resort OutputStream", EventDispatcher.class.getName());
                     } catch (Throwable e) {
                         Method getWriter = resp.getClass().getMethod("getWriter");
                         getWriter.setAccessible(true);
@@ -398,7 +398,7 @@ public class EventDispatcher {
                         printWriter.println(attackPage);
                         printWriter.flush();
                         printWriter.close();
-                        logger.log(LogLevel.WARNING, "Sending K2 Blocking page to : " + ip + " via last resort PrintWriter", EventDispatcher.class.getName());
+                        logger.log(LogLevel.WARN, "Sending K2 Blocking page to : " + ip + " via last resort PrintWriter", EventDispatcher.class.getName());
 
                     }
                 }

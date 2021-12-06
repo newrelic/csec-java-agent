@@ -122,7 +122,7 @@ public class ServletContextInfo {
             getMinorVersion = servletContext.getClass().getMethod(GET_MINOR_VERSION);
             getServletContextName = servletContext.getClass().getMethod(GET_SERVLET_CONTEXT_NAME);
         } catch (Throwable e) {
-            logger.log(LogLevel.WARNING, ERROR + e.getMessage() + CAUSE + e.getCause(), ServletContextInfo.class.getName());
+            logger.log(LogLevel.WARN, ERROR + e.getMessage() + CAUSE + e.getCause(), ServletContextInfo.class.getName());
             logger.log(LogLevel.DEBUG, ERROR, e, ServletContextInfo.class.getName());
         }
 
@@ -133,7 +133,7 @@ public class ServletContextInfo {
             applicationName = (String) getServletContextName.invoke(servletContext, null);
 
         } catch (Throwable e) {
-            logger.log(LogLevel.WARNING, ERROR + e.getMessage() + CAUSE + e.getCause(), ServletContextInfo.class.getName());
+            logger.log(LogLevel.WARN, ERROR + e.getMessage() + CAUSE + e.getCause(), ServletContextInfo.class.getName());
             logger.log(LogLevel.DEBUG, ERROR, e, ServletContextInfo.class.getName());
         }
 

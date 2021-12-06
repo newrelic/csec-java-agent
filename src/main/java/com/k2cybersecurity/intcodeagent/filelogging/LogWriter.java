@@ -31,6 +31,7 @@ public class LogWriter implements Runnable {
 
     private static final String K2_LOG = "K2-LOG : ";
     public static final String THREAD_NAME_TEMPLATE = " [%s] ";
+    public static final String CAUSED_BY = "Caused by: ";
 
     public static int defaultLogLevel = LogLevel.INFO.getLevel();
 
@@ -134,7 +135,7 @@ public class LogWriter implements Runnable {
             sb.append(StringUtils.LF);
             Throwable cause = this.throwableLogEntry.getCause();
             while (cause != null) {
-                sb.append("Caused by: ");
+                sb.append(CAUSED_BY);
                 sb.append(this.throwableLogEntry.getCause().getMessage());
                 sb.append(StringUtils.LF);
                 sb.append(StringUtils.join(this.throwableLogEntry.getCause().getStackTrace(), StringUtils.LF));

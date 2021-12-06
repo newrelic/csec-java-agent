@@ -45,6 +45,7 @@ import java.nio.file.Paths;
 import java.nio.file.attribute.PosixFilePermission;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -117,7 +118,7 @@ public class AgentUtils {
 
     private CollectorInitMsg initMsg = null;
 
-    private boolean cveEnvScanCompleted = false;
+    private AtomicBoolean cveEnvScanCompleted = new AtomicBoolean(false);
 
     private AtomicInteger cveServiceFailCount = new AtomicInteger(0);
 
@@ -158,12 +159,12 @@ public class AgentUtils {
         return instance;
     }
 
-    public boolean isCveEnvScanCompleted() {
-        return cveEnvScanCompleted;
+    public Boolean isCveEnvScanCompleted() {
+        return cveEnvScanCompleted.get();
     }
 
-    public void setCveEnvScanCompleted(boolean cveEnvScanCompleted) {
-        this.cveEnvScanCompleted = cveEnvScanCompleted;
+    public void setCveEnvScanCompleted(Boolean cveEnvScanCompleted) {
+        this.cveEnvScanCompleted.set(cveEnvScanCompleted);
     }
 
     public boolean isAgentActive() {
@@ -527,7 +528,7 @@ public class AgentUtils {
                 }
 
                 if (uncleanExit) {
-                    logger.log(LogLevel.WARNING, CLASSLOADER_RECORD_MISSING_FOR_CLASS + userClassName,
+                    logger.log(LogLevel.WARN, CLASSLOADER_RECORD_MISSING_FOR_CLASS + userClassName,
                             AgentUtils.class.getName());
                     try {
                         cls = Class.forName(userClassName, false,
@@ -537,7 +538,7 @@ public class AgentUtils {
                     }
                 }
             } else {
-                logger.log(LogLevel.WARNING, CURRENT_GENERIC_SERVLET_INSTANCE_NULL_IN_DETECT_DEPLOYED_APPLICATION_PATH,
+                logger.log(LogLevel.WARN, CURRENT_GENERIC_SERVLET_INSTANCE_NULL_IN_DETECT_DEPLOYED_APPLICATION_PATH,
                         AgentUtils.class.getName());
                 return appPath;
             }
@@ -558,7 +559,7 @@ public class AgentUtils {
                                     AgentUtils.class.getName());
                         }
                     } else {
-                        logger.log(LogLevel.WARNING,
+                        logger.log(LogLevel.WARN,
                                 CLASS_DIR_NOT_FOUND_IN_JBOSS_PROTECTION_DOMAIN + protectionDomainLocation.getContent(),
                                 AgentUtils.class.getName());
                     }
@@ -589,7 +590,7 @@ public class AgentUtils {
                                             AgentUtils.class.getName());
                                 }
                             } else {
-                                logger.log(LogLevel.WARNING, CLASS_DIR_NOT_FOUND_IN_JBOSS_PROTECTION_DOMAIN + app.getContent(), AgentUtils.class.getName());
+                                logger.log(LogLevel.WARN, CLASS_DIR_NOT_FOUND_IN_JBOSS_PROTECTION_DOMAIN + app.getContent(), AgentUtils.class.getName());
                             }
                         } else {
                             appPath = app.getPath();
@@ -601,7 +602,7 @@ public class AgentUtils {
                         }
                     }
                 } else {
-                    logger.log(LogLevel.WARNING, CLASSLOADER_IS_NULL_IN_DETECT_DEPLOYED_APPLICATION_PATH,
+                    logger.log(LogLevel.WARN, CLASSLOADER_IS_NULL_IN_DETECT_DEPLOYED_APPLICATION_PATH,
                             AgentUtils.class.getName());
                 }
             }
@@ -648,7 +649,7 @@ public class AgentUtils {
             LogWriter.setLogLevel(LogLevel.valueOf(AgentUtils.getInstance().getAgentPolicy().getLogLevel()));
         } catch (IllegalArgumentException | NullPointerException e) {
             LogWriter.setLogLevel(LogLevel.INFO);
-            logger.log(LogLevel.WARNING, String.format(LOG_LEVEL_PROVIDED_IN_POLICY_IS_INCORRECT_DEFAULTING_TO_INFO, AgentUtils.getInstance().getAgentPolicy().getLogLevel()), AgentUtils.class.getName());
+            logger.log(LogLevel.WARN, String.format(LOG_LEVEL_PROVIDED_IN_POLICY_IS_INCORRECT_DEFAULTING_TO_INFO, AgentUtils.getInstance().getAgentPolicy().getLogLevel()), AgentUtils.class.getName());
         }
         K2Instrumentator.enableHTTPRequestPrinting = agentPolicy.getEnableHTTPRequestPrinting();
         logger.log(LogLevel.INFO, ENFORCING_POLICY, AgentUtils.class.getName());
@@ -669,8 +670,8 @@ public class AgentUtils {
                 && AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getCveScan().getEnableEnvScan()
                 && !AgentUtils.getInstance().isCveEnvScanCompleted()) {
             //Run CVE scan on ENV
-            CVEScannerPool.getInstance().dispatchScanner(CollectorConfigurationUtils.getInstance().getCollectorConfig().getNodeId(), K2Instrumentator.APPLICATION_INFO_BEAN.getIdentifier().getKind().name(), K2Instrumentator.APPLICATION_INFO_BEAN.getIdentifier().getId(), false, true);
             AgentUtils.getInstance().setCveEnvScanCompleted(true);
+            CVEScannerPool.getInstance().dispatchScanner(CollectorConfigurationUtils.getInstance().getCollectorConfig().getNodeId(), K2Instrumentator.APPLICATION_INFO_BEAN.getIdentifier().getKind().name(), K2Instrumentator.APPLICATION_INFO_BEAN.getIdentifier().getId(), false, true);
         }
         setApplicationInfo();
     }
@@ -854,7 +855,7 @@ public class AgentUtils {
         } catch (Throwable e) {
             logger.log(LogLevel.ERROR, ERROR, e, CVEServiceLinux.class.getName());
             FileUtils.deleteQuietly(tarFile);
-            logger.log(LogLevel.WARNING,
+            logger.log(LogLevel.WARN,
                     CORRUPTED_CVE_SERVICE_BUNDLE_DELETED, CVEServiceLinux.class.getName());
         }
 

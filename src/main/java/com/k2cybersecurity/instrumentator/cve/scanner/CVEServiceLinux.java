@@ -126,7 +126,7 @@ public class CVEServiceLinux implements Runnable {
                 if (!process.waitFor(10, TimeUnit.MINUTES)) {
                     long pid = AgentUtils.getInstance().getProcessID(process);
                     if (pid > 1) {
-                        logger.log(LogLevel.WARNING, String.format(KILLING_PROCESS_TREE_ROOTED_AT_S, pid), CVEServiceLinux.class.getName());
+                        logger.log(LogLevel.WARN, String.format(KILLING_PROCESS_TREE_ROOTED_AT_S, pid), CVEServiceLinux.class.getName());
                         AgentUtils.getInstance().incrementCVEServiceFailCount();
                         Runtime.getRuntime().exec(String.format(KILL_PROCESS_TREE_COMMAND, pid));
                     }

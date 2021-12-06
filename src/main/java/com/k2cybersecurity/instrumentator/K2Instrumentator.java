@@ -193,7 +193,7 @@ public class K2Instrumentator {
             EventSendPool.getInstance();
             return true;
         } catch (Throwable e) {
-            logger.log(LogLevel.WARNING, EXCEPTION_OCCURED_IN_EVENT_SEND_POOL, e, K2Instrumentator.class.getName());
+            logger.log(LogLevel.WARN, EXCEPTION_OCCURED_IN_EVENT_SEND_POOL, e, K2Instrumentator.class.getName());
             return false;
         }
     }
@@ -237,7 +237,7 @@ public class K2Instrumentator {
             );
             return applicationInfoBean;
         } catch (Throwable e) {
-            logger.log(LogLevel.WARNING, EXCEPTION_OCCURED_IN_CREATE_APPLICATION_INFO_BEAN, e,
+            logger.log(LogLevel.WARN, EXCEPTION_OCCURED_IN_CREATE_APPLICATION_INFO_BEAN, e,
                     K2Instrumentator.class.getName());
         }
         return null;

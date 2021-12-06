@@ -114,7 +114,7 @@ public class FileLoggerThreadPool {
     }
 
     public void logInit(LogLevel logLevel, String event, String logSourceClassName) {
-        if (logLevel.getLevel() == 0 || logLevel.getLevel() > InitLogWriter.defaultLogLevel) {
+        if (logLevel.getLevel() == 1 || logLevel.getLevel() > InitLogWriter.defaultLogLevel) {
             return;
         }
         executor.submit(new InitLogWriter(logLevel, event, logSourceClassName, Thread.currentThread().getName()));
@@ -122,7 +122,7 @@ public class FileLoggerThreadPool {
     }
 
     public void logInit(LogLevel logLevel, String event, Throwable throwableEvent, String logSourceClassName) {
-        if (logLevel.getLevel() == 0 || logLevel.getLevel() > InitLogWriter.defaultLogLevel) {
+        if (logLevel.getLevel() == 1 || logLevel.getLevel() > InitLogWriter.defaultLogLevel) {
             return;
         }
         executor.submit(new InitLogWriter(logLevel, event, throwableEvent, logSourceClassName, Thread.currentThread().getName()));

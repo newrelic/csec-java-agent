@@ -209,7 +209,7 @@ public class CVEComponentsService {
             queryParams.put("arch", osVariables.getOsArch());
             Response cveVersion = HttpClient.getInstance().doGet(IRestClientConstants.COLLECTOR_CVE_VERSION, null, queryParams, null, false);
             if (!cveVersion.isSuccessful()) {
-                logger.log(LogLevel.WARNING, String.format("API (%s)response was %s", IRestClientConstants.COLLECTOR_CVE_VERSION, cveVersion.body().string()), CVEComponentsService.class.getName());
+                logger.log(LogLevel.WARN, String.format("API (%s)response was %s", IRestClientConstants.COLLECTOR_CVE_VERSION, cveVersion.body().string()), CVEComponentsService.class.getName());
                 return null;
             }
 

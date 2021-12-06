@@ -5,9 +5,9 @@ public enum LogLevel {
     ALL(7),
     DEBUG(6),
     INFO(5),
-    WARNING(4),
+    WARN(4),
     ERROR(3),
-    SEVERE(2),
+    FATAL(2),
     OFF(1);
 
     private int level;

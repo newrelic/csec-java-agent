@@ -54,7 +54,7 @@ public class CollectorConfigurationUtils {
                 nodeLevelConfig = yamlMapper.readValue(nlcFile, NodeLevelConfig.class);
                 logger.log(LogLevel.INFO, NODE_LEVEL_CONFIGURATION_LOADED + nodeLevelConfig, CollectorConfigurationUtils.class.getName());
             } else {
-                logger.log(LogLevel.WARNING, NODE_LEVEL_CONFIGURATION_WAS_NOT_PROVIDED, CollectorConfigurationUtils.class.getName());
+                logger.log(LogLevel.WARN, NODE_LEVEL_CONFIGURATION_WAS_NOT_PROVIDED, CollectorConfigurationUtils.class.getName());
             }
         } catch (Throwable e) {
             logger.log(LogLevel.ERROR, String.format(ERROR_WHILE_READING_NLC_COLLECTOR_CONFIG_S_S, e.getMessage(), e.getCause()), CollectorConfigurationUtils.class.getName());
@@ -66,7 +66,7 @@ public class CollectorConfigurationUtils {
                 applicationLevelConfig = yamlMapper.readValue(alcFile, ApplicationLevelConfig.class);
                 logger.log(LogLevel.INFO, APPLICATION_LEVEL_CONFIGURATION_LOADED + applicationLevelConfig, CollectorConfigurationUtils.class.getName());
             } else {
-                logger.log(LogLevel.WARNING, APPLICATION_LEVEL_CONFIGURATION_WAS_NOT_PROVIDED, CollectorConfigurationUtils.class.getName());
+                logger.log(LogLevel.WARN, APPLICATION_LEVEL_CONFIGURATION_WAS_NOT_PROVIDED, CollectorConfigurationUtils.class.getName());
             }
         } catch (Throwable e) {
             logger.log(LogLevel.ERROR, String.format(ERROR_WHILE_READING_ALC_COLLECTOR_CONFIG_S_S, e.getMessage(), e.getCause()), CollectorConfigurationUtils.class.getName());
