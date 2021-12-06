@@ -2,6 +2,7 @@ package com.k2cybersecurity.instrumentator.cve.scanner;
 
 import com.k2cybersecurity.instrumentator.os.OSVariables;
 import com.k2cybersecurity.instrumentator.os.OsVariablesInstance;
+import com.k2cybersecurity.instrumentator.utils.AgentUtils;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.logging.EventThreadPool.EventAbortPolicy;
@@ -19,6 +20,7 @@ public class CVEScannerPool {
     private ThreadPoolExecutor executor;
     private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
 
+    private final static Object lock = new Object();
     private static CVEScannerPool instance;
 
     final int queueSize = 10;
@@ -70,28 +72,37 @@ public class CVEScannerPool {
     }
 
     public static CVEScannerPool getInstance() {
-
         if (instance == null) {
-            instance = new CVEScannerPool();
-            return instance;
+            synchronized (lock) {
+                if (instance == null) {
+                    instance = new CVEScannerPool();
+                    return instance;
+                }
+            }
         }
         return instance;
     }
 
     public void dispatchScanner(String nodeId, String kind, String id, boolean downloadTarBundle, boolean isEnvScan) {
-        if (executor.isShutdown()) {
-            return;
-        }
-        switch (osVariables.getOs()) {
-            case IAgentConstants.LINUX:
-                this.executor.submit(new CVEServiceLinux(nodeId, kind, id, downloadTarBundle, isEnvScan));
-                break;
-            case IAgentConstants.MAC:
-                this.executor.submit(new CVEServiceMac(nodeId, kind, id, downloadTarBundle, isEnvScan));
-                break;
-            case IAgentConstants.WINDOWS:
-                this.executor.submit(new CVEServiceWindows(nodeId, kind, id, downloadTarBundle, isEnvScan));
-                break;
+        synchronized (lock) {
+            if (isEnvScan && AgentUtils.getInstance().isCveEnvScanCompleted()) {
+                return;
+            }
+            AgentUtils.getInstance().setCveEnvScanCompleted(true);
+            if (executor.isShutdown()) {
+                return;
+            }
+            switch (osVariables.getOs()) {
+                case IAgentConstants.LINUX:
+                    this.executor.submit(new CVEServiceLinux(nodeId, kind, id, downloadTarBundle, isEnvScan));
+                    break;
+                case IAgentConstants.MAC:
+                    this.executor.submit(new CVEServiceMac(nodeId, kind, id, downloadTarBundle, isEnvScan));
+                    break;
+                case IAgentConstants.WINDOWS:
+                    this.executor.submit(new CVEServiceWindows(nodeId, kind, id, downloadTarBundle, isEnvScan));
+                    break;
+            }
         }
     }
 

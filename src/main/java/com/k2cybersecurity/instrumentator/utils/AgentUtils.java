@@ -671,7 +671,6 @@ public class AgentUtils {
                 && AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getCveScan().getEnableEnvScan()
                 && !AgentUtils.getInstance().isCveEnvScanCompleted()) {
             //Run CVE scan on ENV
-            AgentUtils.getInstance().setCveEnvScanCompleted(true);
             CVEScannerPool.getInstance().dispatchScanner(CollectorConfigurationUtils.getInstance().getCollectorConfig().getNodeId(), K2Instrumentator.APPLICATION_INFO_BEAN.getIdentifier().getKind().name(), K2Instrumentator.APPLICATION_INFO_BEAN.getIdentifier().getId(), false, true);
         }
         setApplicationInfo();
