@@ -26,8 +26,10 @@ import com.k2cybersecurity.instrumentator.os.OSVariables;
 import com.k2cybersecurity.instrumentator.os.OsVariablesInstance;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
+import com.k2cybersecurity.intcodeagent.logging.IAgentConstants;
 import com.k2cybersecurity.intcodeagent.models.config.AgentPolicy;
 import com.k2cybersecurity.intcodeagent.schedulers.PolicyPullST;
+import com.k2cybersecurity.intcodeagent.utils.CommonUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.DirectoryFileFilter;
 import org.apache.commons.io.filefilter.NotFileFilter;
@@ -179,6 +181,14 @@ public class DirectoryWatcher {
                 TimeUnit.SECONDS.sleep(1);
                 AgentPolicy newPolicy = PolicyPullST.getInstance().populateConfig();
                 if (newPolicy != null) {
+                    if (StringUtils.equals(newPolicy.getVersion(), AgentUtils.getInstance().getAgentPolicy().getVersion())) {
+                        return;
+                    }
+                    if (!CommonUtils.validateCollectorPolicySchema(newPolicy)) {
+                        logger.log(LogLevel.WARN, String.format(IAgentConstants.UNABLE_TO_VALIDATE_AGENT_POLICY_DUE_TO_ERROR_FILE, newPolicy), PolicyPullST.class.getName());
+                        CommonUtils.writePolicyToFile();
+                        return;
+                    }
                     if (PolicyPullST.getInstance().readAndApplyConfig(newPolicy)) {
                         Map<String, String> queryParam = new HashMap<>();
                         queryParam.put("group", AgentUtils.getInstance().getGroupName());

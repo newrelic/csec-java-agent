@@ -1,0 +1,212 @@
+{
+  "$schema": "http://json-schema.org/drafit-04/schema#",
+  "title": "LCPolicy",
+  "description": "A policy for language collectors",
+  "type": "object",
+  "properties": {
+    "version": {
+      "type": "string"
+    },
+    "logLevel": {
+      "type": "string",
+      "enum": [
+        "ALL",
+        "DEBUG",
+        "INFO",
+        "WARN",
+        "ERROR",
+        "FATAL",
+        "OFF"
+      ]
+    },
+    "policyPull": {
+      "type": "boolean"
+    },
+    "policyPullInterval": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 2592000
+    },
+    "vulnerabilityScan": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "cveScan": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "enableEnvScan": {
+              "type": "boolean"
+            },
+            "cveDefinitionUpdateInterval": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1440
+            }
+          },
+          "required": [
+            "enabled",
+            "enableEnvScan",
+            "cveDefinitionUpdateInterval"
+          ]
+        },
+        "iastScan": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "probing": {
+              "type": "object",
+              "properties": {
+                "interval": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 60
+                },
+                "batchSize": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 300
+                }
+              },
+              "required": [
+                "interval",
+                "batchSize"
+              ]
+            }
+          },
+          "required": [
+            "enabled",
+            "probing"
+          ]
+        }
+      },
+      "required": [
+        "enabled",
+        "cveScan",
+        "iastScan"
+      ]
+    },
+    "protectionMode": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "ipBlocking": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "attackerIpBlocking": {
+              "type": "boolean"
+            },
+            "ipDetectViaXFF": {
+              "type": "boolean"
+            },
+            "timeout": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 4313200
+            }
+          },
+          "required": [
+            "enabled",
+            "attackerIpBlocking",
+            "ipDetectViaXFF",
+            "timeout"
+          ]
+        },
+        "apiBlocking": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "protectAllApis": {
+              "type": "boolean"
+            },
+            "protectKnownVulnerableApis": {
+              "type": "boolean"
+            },
+            "protectAttackedApis": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "enabled",
+            "protectAllApis",
+            "protectKnownVulnerableApis",
+            "protectAttackedApis"
+          ]
+        }
+      },
+      "required": [
+        "enabled",
+        "ipBlocking",
+        "apiBlocking"
+      ]
+    },
+    "sendCompleteStackTrace": {
+      "type": "boolean"
+    },
+    "enableHTTPRequestPrinting": {
+      "type": "boolean"
+    },
+    "policyParameters": {
+      "type": "object",
+      "properties": {
+        "allowedIps": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "blockedIps": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "allowedApis": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "blockedApis": {
+          "type": "array",
+          "items": {}
+        },
+        "allowedRequests": {
+          "type": "array",
+          "items": {}
+        }
+      },
+      "required": [
+        "allowedIps",
+        "blockedIps",
+        "allowedApis",
+        "blockedApis",
+        "allowedRequests"
+      ]
+    }
+  },
+  "required": [
+    "version",
+    "logLevel",
+    "policyPull",
+    "policyPullInterval",
+    "vulnerabilityScan",
+    "protectionMode",
+    "sendCompleteStackTrace",
+    "enableHTTPRequestPrinting",
+    "policyParameters"
+  ]
+}

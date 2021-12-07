@@ -597,6 +597,9 @@ public interface IAgentConstants {
 
     String RECEIVED_AGENT_POLICY = "[STEP-7][BEGIN][POLICY] Received policy data from Prevent-Web service : %s";
     String UNABLE_TO_PARSE_AGENT_POLICY_DUE_TO_ERROR = "[POLICY] Error while parsing policy data from Prevent-Web service : %s : ";
+    String UNABLE_TO_VALIDATE_AGENT_POLICY_DUE_TO_ERROR = "[POLICY] Error while validating policy data from Prevent-Web service : %s : ";
+
+    String UNABLE_TO_VALIDATE_AGENT_POLICY_DUE_TO_ERROR_FILE = "[POLICY] Error while validating policy data from local policy file change. Falling back to current : %s : ";
     String UNABLE_TO_SET_AGENT_POLICY_DUE_TO_ERROR = "[POLICY] Error while applying policy : %s :";
     String AGENT_POLICY_APPLIED_S = "[STEP-7][COMPLETE][POLICY] Policy applied : : %s";
     String AGENT_POLICY_PARAM_APPLIED_S = "[POLICY] Agent Policy parameters applied : %s";

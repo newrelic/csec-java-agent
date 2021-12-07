@@ -2,7 +2,6 @@ package com.k2cybersecurity.intcodeagent.schedulers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
-import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator;
 import com.k2cybersecurity.instrumentator.K2Instrumentator;
 import com.k2cybersecurity.instrumentator.httpclient.HttpClient;
 import com.k2cybersecurity.instrumentator.httpclient.IRestClientConstants;
@@ -14,12 +13,11 @@ import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.logging.IAgentConstants;
 import com.k2cybersecurity.intcodeagent.models.config.AgentPolicy;
+import com.k2cybersecurity.intcodeagent.utils.CommonUtils;
 import com.k2cybersecurity.intcodeagent.websocket.EventSendPool;
 import com.squareup.okhttp.Response;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collections;
 import java.util.HashMap;
@@ -106,9 +104,15 @@ public class PolicyPullST {
                         ),
                         PolicyPullST.class.getName());
             }
+
+            if (!CommonUtils.validateCollectorPolicySchema(newPolicy)) {
+                logger.log(LogLevel.WARN, String.format(IAgentConstants.UNABLE_TO_VALIDATE_AGENT_POLICY_DUE_TO_ERROR, newPolicy), PolicyPullST.class.getName());
+                return;
+            }
+
             boolean changed = readAndApplyConfig(newPolicy);
             if (changed) {
-                writePolicyToFile();
+                CommonUtils.writePolicyToFile();
                 DirectoryWatcher.watchDirectories(Collections.singletonList(AgentUtils.getInstance().getConfigLoadPath().getParent()), false);
             }
         } catch (Exception e) {
@@ -135,17 +139,6 @@ public class PolicyPullST {
             logger.logInit(LogLevel.ERROR, IAgentConstants.UNABLE_TO_SET_AGENT_POLICY_DUE_TO_ERROR, e,
                     PolicyPullST.class.getName());
             return false;
-        }
-    }
-
-    private void writePolicyToFile() {
-        try {
-            ObjectMapper mapper = new ObjectMapper(new YAMLFactory().disable(YAMLGenerator.Feature.WRITE_DOC_START_MARKER));
-            FileUtils.touch(AgentUtils.getInstance().getConfigLoadPath());
-            mapper.writeValue(AgentUtils.getInstance().getConfigLoadPath(), AgentUtils.getInstance().getAgentPolicy());
-            logger.log(LogLevel.DEBUG, POLICY_WRITTEN_TO_FILE + AgentUtils.getInstance().getConfigLoadPath(), PolicyPullST.class.getName());
-        } catch (IOException e) {
-            logger.log(LogLevel.ERROR, POLICY_WRITE_FAILED, e, PolicyPullST.class.getName());
         }
     }
 

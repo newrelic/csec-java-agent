@@ -45,7 +45,6 @@ public class EventSendPool {
                     try {
                         Future<?> future = (Future<?>) r;
                         if (future.isDone()) {
-                            K2Instrumentator.JA_HEALTH_CHECK.incrementEventSentCount();
                             future.get();
                         }
                     } catch (Throwable e) {
@@ -82,6 +81,7 @@ public class EventSendPool {
 
     public void sendEvent(JavaAgentEventBean event) {
         executor.submit(new EventSender(event));
+        K2Instrumentator.JA_HEALTH_CHECK.incrementEventSentCount();
     }
 
     public void sendEvent(Object event) {
