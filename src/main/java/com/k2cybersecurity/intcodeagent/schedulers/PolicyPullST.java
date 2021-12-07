@@ -86,13 +86,15 @@ public class PolicyPullST {
 
     private void task() {
         try {
-            AgentPolicy newPolicy;
+            AgentPolicy newPolicy = null;
             Response response = HttpClient.getInstance().doGet(IRestClientConstants.GET_POLICY, null, queryParam, null, false);
             if (response.isSuccessful()) {
                 newPolicy = HttpClient.getInstance().readResponse(response.body().byteStream(), AgentPolicy.class);
             } else {
                 logger.log(LogLevel.ERROR, String.format(POLICY_READ_FAILED_S_S, response.code(), response.body().string()), PolicyPullST.class.getName());
-                newPolicy = loadDefaultConfig();
+                if (!AgentUtils.getInstance().getConfigLoadPath().isFile()) {
+                    newPolicy = loadDefaultConfig();
+                }
             }
             if (newPolicy == null) {
                 byte bodyBytes[] = new byte[response.body().byteStream().available()];
@@ -164,14 +166,14 @@ public class PolicyPullST {
 
     public AgentPolicy populateConfig() {
         if (!AgentUtils.getInstance().getConfigLoadPath().isFile()) {
-            return loadDefaultConfig();
+            return null;
         }
         ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
         try {
             return mapper.readValue(AgentUtils.getInstance().getConfigLoadPath(), AgentPolicy.class);
         } catch (Exception e) {
             logger.log(LogLevel.ERROR, FALLING_BACK_TO_DEFAULT_CONFIG, e, DirectoryWatcher.class.getName());
-            return loadDefaultConfig();
+            return null;
         }
     }
 
