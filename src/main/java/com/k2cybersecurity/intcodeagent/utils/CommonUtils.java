@@ -27,7 +27,7 @@ public class CommonUtils {
 
         try {
             JSONObject jsonSchema = new JSONObject(
-                    new JSONTokener(ClassLoader.getSystemResourceAsStream("lc-policy-schema.json.json")));
+                    new JSONTokener(ClassLoader.getSystemResourceAsStream("lc-policy-schema.json")));
             JSONObject jsonSubject = new JSONObject(
                     new JSONTokener(policy.toString()));
 
