@@ -193,8 +193,7 @@
         "allowedIps",
         "blockedIps",
         "allowedApis",
-        "blockedApis",
-        "allowedRequests"
+        "blockedApis"
       ]
     }
   },

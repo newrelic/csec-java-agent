@@ -32,4 +32,3 @@ policyParameters:
   blockedIps: []
   allowedApis: []
   blockedApis: []
-  allowedRequests: []
