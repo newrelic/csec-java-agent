@@ -664,7 +664,7 @@ public class AgentUtils {
                 && AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getCveScan().getEnableEnvScan()) {
             CVEBundlePullST.getInstance();
         } else if (!AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getEnabled()) {
-            CVEBundlePullST.getInstance().cancelTask();
+            CVEBundlePullST.shutDown();
         }
         if (AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getEnabled()
                 && AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getCveScan().getEnabled()

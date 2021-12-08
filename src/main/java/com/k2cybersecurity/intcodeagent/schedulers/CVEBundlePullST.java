@@ -20,7 +20,7 @@ public class CVEBundlePullST {
 
     private ScheduledExecutorService executorService;
 
-    private Future future;
+    private ScheduledFuture future;
 
     private static CVEBundlePullST instance;
 
@@ -52,6 +52,12 @@ public class CVEBundlePullST {
             }
         }
     };
+
+    public static void shutDown() {
+        if (instance != null) {
+            instance.cancelTask();
+        }
+    }
 
     private void task() {
         CVEPackageInfo packageInfo = CVEComponentsService.getCVEPackageInfo();
