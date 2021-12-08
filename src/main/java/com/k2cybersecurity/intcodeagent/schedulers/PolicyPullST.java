@@ -91,20 +91,10 @@ public class PolicyPullST {
             if (response.isSuccessful()) {
                 newPolicy = HttpClient.getInstance().readResponse(response.body().byteStream(), AgentPolicy.class);
             } else {
-                logger.log(LogLevel.ERROR, String.format(POLICY_READ_FAILED_S_S, response.code(), response.body().string()), PolicyPullST.class.getName());
+                logger.log(LogLevel.ERROR, String.format(IAgentConstants.UNABLE_TO_PARSE_AGENT_POLICY_DUE_TO_ERROR, response.code(), response.body().string()), PolicyPullST.class.getName());
                 if (!AgentUtils.getInstance().getConfigLoadPath().isFile()) {
                     newPolicy = loadDefaultConfig();
                 }
-            }
-            if (newPolicy == null) {
-                byte bodyBytes[] = new byte[response.body().byteStream().available()];
-                response.body().byteStream().read(bodyBytes);
-                String body = new String(bodyBytes);
-                logger.logInit(LogLevel.ERROR, String.format(
-                                IAgentConstants.UNABLE_TO_PARSE_AGENT_POLICY_DUE_TO_ERROR,
-                                body
-                        ),
-                        PolicyPullST.class.getName());
             }
 
             if (!CommonUtils.validateCollectorPolicySchema(newPolicy)) {
