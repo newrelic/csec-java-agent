@@ -14,11 +14,11 @@ import java.util.Map;
 public class CVEScan {
 
     @JsonProperty("enabled")
-    private Boolean enabled = false;
+    private Boolean enabled;
     @JsonProperty("enableEnvScan")
-    private Boolean enableEnvScan = true;
+    private Boolean enableEnvScan;
     @JsonProperty("cveDefinitionUpdateInterval")
-    private Integer cveDefinitionUpdateInterval = 360;
+    private Integer cveDefinitionUpdateInterval;
     @JsonIgnore
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 

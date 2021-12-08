@@ -15,7 +15,7 @@ import java.util.Map;
 public class IASTScan {
 
     @JsonProperty("enabled")
-    private Boolean enabled = false;
+    private Boolean enabled;
     @JsonProperty("probing")
     private Probing probing;
     @JsonIgnore

@@ -28,7 +28,7 @@ public class AgentPolicy {
     @JsonProperty("lastUpdateTimestamp")
     private Long lastUpdateTimestamp;
     @JsonProperty("logLevel")
-    private String logLevel = "INFO";
+    private String logLevel;
     @JsonProperty("policyPull")
     private Boolean policyPull;
     @JsonProperty("policyPullInterval")
@@ -42,9 +42,9 @@ public class AgentPolicy {
     @JsonProperty("policyParameters")
     private AgentPolicyParameters policyParameters;
     @JsonProperty("sendCompleteStackTrace")
-    private Boolean sendCompleteStackTrace = false;
+    private Boolean sendCompleteStackTrace;
     @JsonProperty("enableHTTPRequestPrinting")
-    private Boolean enableHTTPRequestPrinting = false;
+    private Boolean enableHTTPRequestPrinting;
     @JsonIgnore
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
