@@ -210,7 +210,7 @@ public class CVEComponentsService {
             Response cveVersion = HttpClient.getInstance().doGet(IRestClientConstants.COLLECTOR_CVE_VERSION, null, queryParams, null, false);
             if (!cveVersion.isSuccessful()) {
                 logger.log(LogLevel.WARN, String.format("API (%s)response was %s", IRestClientConstants.COLLECTOR_CVE_VERSION, cveVersion.body().string()), CVEComponentsService.class.getName());
-                return null;
+                return new CVEPackageInfo();
             }
 
             CVEPackageInfo packageInfo = HttpClient.getInstance().readResponse(cveVersion.body().byteStream(), CVEPackageInfo.class);
@@ -219,7 +219,7 @@ public class CVEComponentsService {
         } catch (IOException e) {
             logger.log(LogLevel.ERROR, String.format("getCVEPackageInfo API failure %s", e.getMessage()), e, CVEComponentsService.class.getName());
         }
-        return null;
+        return new CVEPackageInfo();
     }
 
     protected static boolean downloadCVEPackage(CVEPackageInfo packageInfo) {

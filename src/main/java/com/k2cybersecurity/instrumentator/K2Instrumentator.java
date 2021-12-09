@@ -150,6 +150,8 @@ public class K2Instrumentator {
                         K2Instrumentator.class.getName()
                 );
             }).start();
+            DirectoryWatcher.startMonitorDaemon();
+            PolicyPullST.instantiateDefaultPolicy();
             PolicyPullST.getInstance();
             logger.logInit(
                     LogLevel.INFO,
@@ -167,7 +169,6 @@ public class K2Instrumentator {
                     String.format(STARTING_MODULE_LOG, AgentServices.DirectoryWatcher.name()),
                     K2Instrumentator.class.getName()
             );
-            DirectoryWatcher.startMonitorDaemon();
             logger.logInit(
                     LogLevel.INFO,
                     String.format(STARTED_MODULE_LOG, AgentServices.DirectoryWatcher.name()),

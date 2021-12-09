@@ -17,6 +17,7 @@ public class CVEBundlePullST {
     private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
 
     final private static Object lock = new Object();
+    public static final String LOG_SEPARATOR = " :: ";
 
     private ScheduledExecutorService executorService;
 
@@ -61,7 +62,7 @@ public class CVEBundlePullST {
 
     private void task() {
         CVEPackageInfo packageInfo = CVEComponentsService.getCVEPackageInfo();
-        logger.log(LogLevel.DEBUG, packageInfo.toString() + " :: " + CVEScannerPool.getInstance().getPackageInfo(), CVEBundlePullST.class.getName());
+        logger.log(LogLevel.DEBUG, packageInfo.toString() + LOG_SEPARATOR + CVEScannerPool.getInstance().getPackageInfo(), CVEBundlePullST.class.getName());
         if (CVEScannerPool.getInstance().getPackageInfo() == null || !StringUtils.equals(packageInfo.getLatestServiceVersion(), CVEScannerPool.getInstance().getPackageInfo().getLatestServiceVersion())) {
             if (AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getCveScan().getEnableEnvScan()) {
                 //Run CVE scan on ENV

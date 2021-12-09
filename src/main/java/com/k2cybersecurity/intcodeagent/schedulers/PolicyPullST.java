@@ -16,6 +16,7 @@ import com.k2cybersecurity.intcodeagent.models.config.AgentPolicy;
 import com.k2cybersecurity.intcodeagent.utils.CommonUtils;
 import com.k2cybersecurity.intcodeagent.websocket.EventSendPool;
 import com.squareup.okhttp.Response;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.InputStream;
@@ -33,7 +34,8 @@ public class PolicyPullST {
     public static final String POLICY_WRITE_FAILED = "policy write failed : ";
     public static final String POLICY_READ_FAILED_S_S = "Policy read failed : %s : %s";
     public static final String POLICY_READ_FAILED = "Policy read failed !!! ";
-    public static final String FALLING_BACK_TO_DEFAULT_CONFIG = "Falling back to default config.";
+    public static final String FALLING_BACK_TO_DEFAULT_CONFIG = "Falling back to current config.";
+    public static final String FALLING_BACK_TO_DEFAULT_CONFIG_MSG = "Falling back to current config due to %s";
     public static final String POLICY_WRITTEN_TO_FILE = "policy written to file : ";
     public static final String SHUTTING_POLICY_PULL = "Shutting policy pull!!!";
     public static final String CANCEL_CURRENT_TASK_OF_POLICY_PULL = "Cancel current task of policy pull.";
@@ -84,17 +86,23 @@ public class PolicyPullST {
         }
     }
 
+    public static void instantiateDefaultPolicy() {
+        logger.log(LogLevel.INFO, "Instantiating collector policy with default!!!", PolicyPullST.class.getName());
+        FileUtils.deleteQuietly(AgentUtils.getInstance().getConfigLoadPath());
+        readAndApplyConfig(loadDefaultConfig());
+        CommonUtils.writePolicyToFile();
+        DirectoryWatcher.watchDirectories(Collections.singletonList(AgentUtils.getInstance().getConfigLoadPath().getParent()), false);
+    }
+
     private void task() {
         try {
-            AgentPolicy newPolicy = null;
+            AgentPolicy newPolicy = AgentUtils.getInstance().getAgentPolicy();
             Response response = HttpClient.getInstance().doGet(IRestClientConstants.GET_POLICY, null, queryParam, null, false);
             if (response.isSuccessful()) {
                 newPolicy = HttpClient.getInstance().readResponse(response.body().byteStream(), AgentPolicy.class);
             } else {
                 logger.log(LogLevel.ERROR, String.format(IAgentConstants.UNABLE_TO_PARSE_AGENT_POLICY_DUE_TO_ERROR, response.code(), response.body().string()), PolicyPullST.class.getName());
-                if (!AgentUtils.getInstance().getConfigLoadPath().isFile()) {
-                    newPolicy = loadDefaultConfig();
-                }
+                return;
             }
 
             if (!CommonUtils.validateCollectorPolicySchema(newPolicy)) {
@@ -105,14 +113,13 @@ public class PolicyPullST {
             boolean changed = readAndApplyConfig(newPolicy);
             if (changed) {
                 CommonUtils.writePolicyToFile();
-                DirectoryWatcher.watchDirectories(Collections.singletonList(AgentUtils.getInstance().getConfigLoadPath().getParent()), false);
             }
         } catch (Exception e) {
             logger.log(LogLevel.ERROR, POLICY_READ_FAILED, e, PolicyPullST.class.getName());
         }
     }
 
-    public boolean readAndApplyConfig(AgentPolicy newPolicy) {
+    public static boolean readAndApplyConfig(AgentPolicy newPolicy) {
         try {
             if (StringUtils.equals(newPolicy.getVersion(), AgentUtils.getInstance().getAgentPolicy().getVersion())) {
                 return false;
@@ -162,12 +169,14 @@ public class PolicyPullST {
         try {
             return mapper.readValue(AgentUtils.getInstance().getConfigLoadPath(), AgentPolicy.class);
         } catch (Exception e) {
-            logger.log(LogLevel.ERROR, FALLING_BACK_TO_DEFAULT_CONFIG, e, DirectoryWatcher.class.getName());
+            logger.log(LogLevel.ERROR, String.format(FALLING_BACK_TO_DEFAULT_CONFIG_MSG, e.getMessage()), DirectoryWatcher.class.getName());
+            logger.log(LogLevel.DEBUG, FALLING_BACK_TO_DEFAULT_CONFIG, e, DirectoryWatcher.class.getName());
+            CommonUtils.writePolicyToFile();
             return null;
         }
     }
 
-    private AgentPolicy loadDefaultConfig() {
+    private static AgentPolicy loadDefaultConfig() {
         try {
             InputStream in = ClassLoader.getSystemResourceAsStream("default-policy.yaml");
             ObjectMapper mapper = new ObjectMapper(new YAMLFactory());

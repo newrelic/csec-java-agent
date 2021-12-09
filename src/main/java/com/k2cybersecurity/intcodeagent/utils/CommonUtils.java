@@ -27,7 +27,7 @@ public class CommonUtils {
 
         try {
             JSONObject jsonSchema = new JSONObject(
-                    new JSONTokener(ClassLoader.getSystemResourceAsStream("lc-policy-schema.json")));
+                    new JSONTokener(CommonUtils.class.getClassLoader().getSystemResourceAsStream("lc-policy-schema.json")));
             JSONObject jsonSubject = new JSONObject(
                     new JSONTokener(policy.toString()));
 
@@ -48,6 +48,11 @@ public class CommonUtils {
         try {
             ObjectMapper mapper = new ObjectMapper(new YAMLFactory().disable(YAMLGenerator.Feature.WRITE_DOC_START_MARKER));
             FileUtils.touch(AgentUtils.getInstance().getConfigLoadPath());
+            try {
+                AgentUtils.getInstance().getConfigLoadPath().setReadable(true, false);
+                AgentUtils.getInstance().getConfigLoadPath().setWritable(true, false);
+            } catch (Exception e) {
+            }
             mapper.writeValue(AgentUtils.getInstance().getConfigLoadPath(), AgentUtils.getInstance().getAgentPolicy());
             logger.log(LogLevel.DEBUG, POLICY_WRITTEN_TO_FILE + AgentUtils.getInstance().getConfigLoadPath(), PolicyPullST.class.getName());
         } catch (IOException e) {

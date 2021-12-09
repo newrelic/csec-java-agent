@@ -165,7 +165,7 @@ public class DirectoryWatcher {
     private static void performAction(WatchEvent<?> event, Path watchDirs) {
         if (event.kind().equals(StandardWatchEventKinds.ENTRY_MODIFY)
                 && (StringUtils.equals(event.context().toString(), AgentUtils.getInstance().getConfigLoadPath().getName()))) {
-            if (Instant.now().minusSeconds(30).isAfter(policyLastUpdated)) {
+            if (Instant.now().minusSeconds(5).isAfter(policyLastUpdated)) {
                 updatedPolicy(event);
                 policyLastUpdated = Instant.now();
                 return;
@@ -185,7 +185,7 @@ public class DirectoryWatcher {
                         return;
                     }
                     if (!CommonUtils.validateCollectorPolicySchema(newPolicy)) {
-                        logger.log(LogLevel.WARN, String.format(IAgentConstants.UNABLE_TO_VALIDATE_AGENT_POLICY_DUE_TO_ERROR_FILE, newPolicy), PolicyPullST.class.getName());
+                        logger.log(LogLevel.WARN, String.format(IAgentConstants.UNABLE_TO_VALIDATE_AGENT_POLICY_DUE_TO_ERROR_FILE, AgentUtils.getInstance().getAgentPolicy()), PolicyPullST.class.getName());
                         CommonUtils.writePolicyToFile();
                         return;
                     }
