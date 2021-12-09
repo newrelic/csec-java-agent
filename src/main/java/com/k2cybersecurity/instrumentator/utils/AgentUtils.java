@@ -667,13 +667,20 @@ public class AgentUtils {
             CVEBundlePullST.shutDown();
         }
         if (AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getEnabled()
-                && AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getCveScan().getEnabled()
-                && AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getCveScan().getEnableEnvScan()
-                && !AgentUtils.getInstance().isCveEnvScanCompleted()) {
+                && AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getCveScan().getEnabled()) {
             //Run CVE scan on ENV
-            CVEScannerPool.getInstance().dispatchScanner(CollectorConfigurationUtils.getInstance().getCollectorConfig().getNodeId(), K2Instrumentator.APPLICATION_INFO_BEAN.getIdentifier().getKind().name(), K2Instrumentator.APPLICATION_INFO_BEAN.getIdentifier().getId(), false, true);
+            if (AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getCveScan().getEnableEnvScan() && !AgentUtils.getInstance().isCveEnvScanCompleted()) {
+                CVEScannerPool.getInstance().dispatchScanner(CollectorConfigurationUtils.getInstance().getCollectorConfig().getNodeId(), K2Instrumentator.APPLICATION_INFO_BEAN.getIdentifier().getKind().name(), K2Instrumentator.APPLICATION_INFO_BEAN.getIdentifier().getId(), true);
+            }
+            if (AgentUtils.getInstance().isAppScanNeeded()) {
+                CVEScannerPool.getInstance().dispatchScanner(CollectorConfigurationUtils.getInstance().getCollectorConfig().getNodeId(), K2Instrumentator.APPLICATION_INFO_BEAN.getIdentifier().getKind().name(), K2Instrumentator.APPLICATION_INFO_BEAN.getIdentifier().getId(), false);
+            }
         }
         setApplicationInfo();
+    }
+
+    private boolean isAppScanNeeded() {
+        return scannedDeployedApplications.containsAll(K2Instrumentator.APPLICATION_INFO_BEAN.getServerInfo().getDeployedApplications());
     }
 
     private void setApplicationInfo() {

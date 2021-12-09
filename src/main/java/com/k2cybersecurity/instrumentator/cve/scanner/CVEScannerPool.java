@@ -83,24 +83,27 @@ public class CVEScannerPool {
         return instance;
     }
 
-    public void dispatchScanner(String nodeId, String kind, String id, boolean downloadTarBundle, boolean isEnvScan) {
+    public void dispatchScanner(String nodeId, String kind, String id, boolean isEnvScan) {
         synchronized (lock) {
             if (isEnvScan && AgentUtils.getInstance().isCveEnvScanCompleted()) {
                 return;
             }
-            AgentUtils.getInstance().setCveEnvScanCompleted(true);
+            if (isEnvScan) {
+                AgentUtils.getInstance().setCveEnvScanCompleted(true);
+            }
             if (executor.isShutdown()) {
                 return;
             }
+            CVEPackageInfo packageInfo = CVEComponentsService.getCVEPackageInfo();
             switch (osVariables.getOs()) {
                 case IAgentConstants.LINUX:
-                    this.executor.submit(new CVEServiceLinux(nodeId, kind, id, downloadTarBundle, isEnvScan));
+                    this.executor.submit(new CVEServiceLinux(nodeId, kind, id, packageInfo, isEnvScan));
                     break;
                 case IAgentConstants.MAC:
-                    this.executor.submit(new CVEServiceMac(nodeId, kind, id, downloadTarBundle, isEnvScan));
+                    this.executor.submit(new CVEServiceMac(nodeId, kind, id, packageInfo, isEnvScan));
                     break;
                 case IAgentConstants.WINDOWS:
-                    this.executor.submit(new CVEServiceWindows(nodeId, kind, id, downloadTarBundle, isEnvScan));
+                    this.executor.submit(new CVEServiceWindows(nodeId, kind, id, packageInfo, isEnvScan));
                     break;
             }
         }

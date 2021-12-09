@@ -44,7 +44,7 @@ public class CVEServiceMac implements Runnable {
 
     private String nodeId;
 
-    private boolean downloadTarBundle = false;
+    private CVEPackageInfo packageInfo;
 
     private String kind;
 
@@ -54,11 +54,11 @@ public class CVEServiceMac implements Runnable {
 
     private OSVariables osVariables = OsVariablesInstance.getInstance().getOsVariables();
 
-    public CVEServiceMac(String nodeId, String kind, String id, boolean downloadTarBundle, boolean isEnvScan) {
+    public CVEServiceMac(String nodeId, String kind, String id, CVEPackageInfo packageInfo, boolean isEnvScan) {
         this.nodeId = nodeId;
         this.kind = kind;
         this.id = id;
-        this.downloadTarBundle = downloadTarBundle;
+        this.packageInfo = packageInfo;
         this.isEnvScan = isEnvScan;
     }
 
@@ -68,9 +68,8 @@ public class CVEServiceMac implements Runnable {
     public void run() {
         try {
             String packageParentDir = osVariables.getCvePackageBaseDir();
-            CVEPackageInfo packageInfo = CVEComponentsService.getCVEPackageInfo();
             logger.log(LogLevel.DEBUG, String.format(ICVEConstants.PACKAGE_INFO_LOGGER, packageInfo.toString(), CVEScannerPool.getInstance().getPackageInfo()), CVEServiceMac.class.getName());
-            if (downloadTarBundle || CVEScannerPool.getInstance().getPackageInfo() == null || !StringUtils.equals(packageInfo.getLatestServiceVersion(), CVEScannerPool.getInstance().getPackageInfo().getLatestServiceVersion())) {
+            if (CVEScannerPool.getInstance().getPackageInfo() == null || !StringUtils.equals(packageInfo.getLatestServiceVersion(), CVEScannerPool.getInstance().getPackageInfo().getLatestServiceVersion())) {
                 Collection<File> cvePackages = FileUtils.listFiles(new File(osVariables.getCvePackageBaseDir()), new NameFileFilter(ICVEConstants.LOCALCVESERVICE), null);
                 logger.log(LogLevel.DEBUG, ICVEConstants.FILES_TO_DELETE + cvePackages, CVEServiceMac.class.getName());
                 cvePackages.forEach(FileUtils::deleteQuietly);
