@@ -3,10 +3,10 @@ logLevel: "INFO"
 policyPull: true
 policyPullInterval: 60
 vulnerabilityScan:
-  enabled: true
+  enabled: false
   cveScan:
-    enabled: true
-    enableEnvScan: true
+    enabled: false
+    enableEnvScan: false
     cveDefinitionUpdateInterval: 360
   iastScan:
     enabled: false

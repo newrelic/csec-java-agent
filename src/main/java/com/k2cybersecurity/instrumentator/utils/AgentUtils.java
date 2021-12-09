@@ -80,7 +80,7 @@ public class AgentUtils {
     public static final String CAME_TO_EXTRACT_TAR_BUNDLE = "Came to extract tar bundle : ";
     public static final String CORRUPTED_CVE_SERVICE_BUNDLE_DELETED = "Corrupted CVE service bundle deleted.";
     public static final String ENFORCING_POLICY = "Enforcing policy";
-    public static final String LOG_LEVEL_PROVIDED_IN_POLICY_IS_INCORRECT_DEFAULTING_TO_INFO = "Log level provided in policy is incorrect: %s. Defaulting to INFO";
+    public static final String LOG_LEVEL_PROVIDED_IN_POLICY_IS_INCORRECT_DEFAULTING_TO_INFO = "Log level provided in policy is incorrect: %s. Staying at current level";
     public static final String ERROR_WHILE_EXTRACTING_FILE_FROM_ARCHIVE_S_S = "Error while extracting file from archive : %s : %s";
 
     public Set<Pair<String, ClassLoader>> getTransformedClasses() {
@@ -649,7 +649,6 @@ public class AgentUtils {
         try {
             LogWriter.setLogLevel(LogLevel.valueOf(AgentUtils.getInstance().getAgentPolicy().getLogLevel()));
         } catch (IllegalArgumentException | NullPointerException e) {
-            LogWriter.setLogLevel(LogLevel.INFO);
             logger.log(LogLevel.WARN, String.format(LOG_LEVEL_PROVIDED_IN_POLICY_IS_INCORRECT_DEFAULTING_TO_INFO, AgentUtils.getInstance().getAgentPolicy().getLogLevel()), AgentUtils.class.getName());
         }
         K2Instrumentator.enableHTTPRequestPrinting = agentPolicy.getEnableHTTPRequestPrinting();
@@ -660,8 +659,7 @@ public class AgentUtils {
             PolicyPullST.getInstance().cancelTask();
         }
         if (AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getEnabled()
-                && AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getCveScan().getEnabled()
-                && AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getCveScan().getEnableEnvScan()) {
+                && AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getCveScan().getEnabled()) {
             CVEBundlePullST.getInstance();
         } else if (!AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getEnabled()) {
             CVEBundlePullST.shutDown();
@@ -680,7 +678,7 @@ public class AgentUtils {
     }
 
     private boolean isAppScanNeeded() {
-        return scannedDeployedApplications.containsAll(K2Instrumentator.APPLICATION_INFO_BEAN.getServerInfo().getDeployedApplications());
+        return !scannedDeployedApplications.containsAll(K2Instrumentator.APPLICATION_INFO_BEAN.getServerInfo().getDeployedApplications());
     }
 
     private void setApplicationInfo() {

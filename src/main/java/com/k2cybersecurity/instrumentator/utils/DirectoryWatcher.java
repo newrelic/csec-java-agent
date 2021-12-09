@@ -163,8 +163,7 @@ public class DirectoryWatcher {
     }
 
     private static void performAction(WatchEvent<?> event, Path watchDirs) {
-        if (event.kind().equals(StandardWatchEventKinds.ENTRY_MODIFY)
-                && (StringUtils.equals(event.context().toString(), AgentUtils.getInstance().getConfigLoadPath().getName()))) {
+        if (StringUtils.equals(event.context().toString(), AgentUtils.getInstance().getConfigLoadPath().getName())) {
             if (Instant.now().minusSeconds(5).isAfter(policyLastUpdated)) {
                 updatedPolicy(event);
                 policyLastUpdated = Instant.now();
