@@ -80,8 +80,7 @@ public class PolicyPullST {
     };
 
     public void submitNewTask() {
-        cancelTask();
-        if (AgentUtils.getInstance().getAgentPolicy().getPolicyPull() && AgentUtils.getInstance().getAgentPolicy().getPolicyPullInterval() > 0) {
+        if (cancelTask(false) && AgentUtils.getInstance().getAgentPolicy().getPolicyPull() && AgentUtils.getInstance().getAgentPolicy().getPolicyPullInterval() > 0) {
             future = executorService.schedule(runnable, AgentUtils.getInstance().getAgentPolicy().getPolicyPullInterval(), TimeUnit.SECONDS);
         }
     }
@@ -152,13 +151,12 @@ public class PolicyPullST {
         return instance;
     }
 
-    public void cancelTask() {
-        if (future == null || future.isDone() || future.getDelay(TimeUnit.SECONDS) > AgentUtils.getInstance().getAgentPolicy().getPolicyPullInterval()) {
+    public boolean cancelTask(boolean forceCancel) {
+        if (future != null && (forceCancel || future.isDone() || future.getDelay(TimeUnit.SECONDS) > AgentUtils.getInstance().getAgentPolicy().getPolicyPullInterval())) {
             logger.log(LogLevel.INFO, CANCEL_CURRENT_TASK_OF_POLICY_PULL, PolicyPullST.class.getName());
-            if (future != null) {
-                future.cancel(false);
-            }
+            return future.cancel(false);
         }
+        return false;
     }
 
     public AgentPolicy populateConfig() {

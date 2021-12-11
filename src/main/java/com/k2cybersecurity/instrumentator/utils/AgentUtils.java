@@ -656,13 +656,13 @@ public class AgentUtils {
         if (agentPolicy.getPolicyPull() && agentPolicy.getPolicyPullInterval() > 0) {
             PolicyPullST.getInstance().submitNewTask();
         } else {
-            PolicyPullST.getInstance().cancelTask();
+            PolicyPullST.getInstance().cancelTask(true);
         }
         if (AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getEnabled()
                 && AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getCveScan().getEnabled()) {
-            CVEBundlePullST.getInstance();
-        } else if (!AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getEnabled()) {
-            CVEBundlePullST.shutDown();
+            CVEBundlePullST.getInstance().submitNewTask();
+        } else {
+            CVEBundlePullST.getInstance().cancelTask(true);
         }
         if (AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getEnabled()
                 && AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getCveScan().getEnabled()) {

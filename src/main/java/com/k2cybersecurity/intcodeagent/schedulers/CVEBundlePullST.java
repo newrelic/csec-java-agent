@@ -18,6 +18,7 @@ public class CVEBundlePullST {
 
     final private static Object lock = new Object();
     public static final String LOG_SEPARATOR = " :: ";
+    public static final String CANCEL_CURRENT_TASK_OF_CVE_PULL = "Cancel current task of CVE bundle pull.";
 
     private ScheduledExecutorService executorService;
 
@@ -54,12 +55,6 @@ public class CVEBundlePullST {
         }
     };
 
-    public static void shutDown() {
-        if (instance != null) {
-            instance.cancelTask();
-        }
-    }
-
     private void task() {
         CVEPackageInfo packageInfo = CVEComponentsService.getCVEPackageInfo();
         logger.log(LogLevel.DEBUG, packageInfo.toString() + LOG_SEPARATOR + CVEScannerPool.getInstance().getPackageInfo(), CVEBundlePullST.class.getName());
@@ -74,6 +69,14 @@ public class CVEBundlePullST {
                 AgentUtils.getInstance().getScannedDeployedApplications().clear();
                 CVEScannerPool.getInstance().dispatchScanner(CollectorConfigurationUtils.getInstance().getCollectorConfig().getNodeId(), K2Instrumentator.APPLICATION_INFO_BEAN.getIdentifier().getKind().name(), K2Instrumentator.APPLICATION_INFO_BEAN.getIdentifier().getId(), false);
             }
+        }
+    }
+
+    public void submitNewTask() {
+        if (cancelTask(false) && AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getEnabled()
+                && AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getCveScan().getEnabled()
+                && AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getCveScan().getCveDefinitionUpdateInterval() > 0) {
+            future = executorService.schedule(runnable, AgentUtils.getInstance().getAgentPolicy().getPolicyPullInterval(), TimeUnit.SECONDS);
         }
     }
 
@@ -96,9 +99,11 @@ public class CVEBundlePullST {
         this.lastKnownCVEBundle = lastKnownCVEBundle;
     }
 
-    public void cancelTask() {
-        if (future != null) {
-            future.cancel(false);
+    public boolean cancelTask(boolean forceCancel) {
+        if (future != null && (forceCancel || future.isDone() || future.getDelay(TimeUnit.MINUTES) > AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getCveScan().getCveDefinitionUpdateInterval())) {
+            logger.log(LogLevel.INFO, CANCEL_CURRENT_TASK_OF_CVE_PULL, CVEBundlePullST.class.getName());
+            return future.cancel(false);
         }
+        return false;
     }
 }
