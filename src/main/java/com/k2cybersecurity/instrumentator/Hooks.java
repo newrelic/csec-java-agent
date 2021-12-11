@@ -198,6 +198,10 @@ public class Hooks {
 //		TYPE_BASED_HOOKS.put("org.mozilla.javascript.Script", Collections.singletonList("exec"));
 
 
+        // JNDI hooks
+        TYPE_BASED_HOOKS.put("javax.naming.Context", Arrays.asList("lookup", "lookupLink"));
+
+
         /**
          * ------------------------------------ Decorators
          * ------------------------------------------------
@@ -568,5 +572,9 @@ public class Hooks {
 //		DECORATOR_ENTRY.put("org.mozilla.javascript.Script.exec", "com.k2cybersecurity.instrumentator.decorators.jsinjection.rhino");
 //		NAME_BASED_HOOKS.put("org.mozilla.javascript.Parser", Collections.singletonList("parse"));
 //		TYPE_BASED_HOOKS.put("org.mozilla.javascript.Script", Collections.singletonList("exec"));
+
+        // JNDI hooks
+        DECORATOR_ENTRY.put("javax.naming.Context.lookup", "com.k2cybersecurity.instrumentator.decorators.jndi");
+        DECORATOR_ENTRY.put("javax.naming.Context.lookupLink", "com.k2cybersecurity.instrumentator.decorators.jndi");
     }
 }
