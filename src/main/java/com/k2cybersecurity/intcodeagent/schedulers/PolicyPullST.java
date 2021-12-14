@@ -39,6 +39,8 @@ public class PolicyPullST {
     public static final String POLICY_WRITTEN_TO_FILE = "policy written to file : ";
     public static final String SHUTTING_POLICY_PULL = "Shutting policy pull!!!";
     public static final String CANCEL_CURRENT_TASK_OF_POLICY_PULL = "Cancel current task of policy pull.";
+    public static final String THE_POLICY_FILE_IS_NOT_PRESENT_ON_LOCATION_CREATING_NEW = "The policy file is not present on location creating new!!!";
+    public static final String DEFAULT_POLICY_YAML = "default-policy.yaml";
 
     private ScheduledExecutorService executorService;
 
@@ -161,6 +163,8 @@ public class PolicyPullST {
 
     public AgentPolicy populateConfig() {
         if (!AgentUtils.getInstance().getConfigLoadPath().isFile()) {
+            logger.log(LogLevel.INFO, THE_POLICY_FILE_IS_NOT_PRESENT_ON_LOCATION_CREATING_NEW, DirectoryWatcher.class.getName());
+            CommonUtils.writePolicyToFile();
             return null;
         }
         ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
@@ -176,7 +180,7 @@ public class PolicyPullST {
 
     private static AgentPolicy loadDefaultConfig() {
         try {
-            InputStream in = ClassLoader.getSystemResourceAsStream("default-policy.yaml");
+            InputStream in = ClassLoader.getSystemResourceAsStream(DEFAULT_POLICY_YAML);
             ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
             return mapper.readValue(in, AgentPolicy.class);
         } catch (Exception e) {

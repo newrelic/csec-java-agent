@@ -189,15 +189,20 @@ public class DirectoryWatcher {
                         return;
                     }
                     if (PolicyPullST.getInstance().readAndApplyConfig(newPolicy)) {
-                        Map<String, String> queryParam = new HashMap<>();
-                        queryParam.put("group", AgentUtils.getInstance().getGroupName());
-                        queryParam.put("applicationUUID", K2Instrumentator.APPLICATION_UUID);
+                        try {
+                            Map<String, String> queryParam = new HashMap<>();
+                            queryParam.put("group", AgentUtils.getInstance().getGroupName());
+                            queryParam.put("applicationUUID", K2Instrumentator.APPLICATION_UUID);
 
-                        HttpClient.getInstance().doPost(IRestClientConstants.UPDATE_POLICY, null, queryParam, null, newPolicy, true);
+                            HttpClient.getInstance().doPost(IRestClientConstants.UPDATE_POLICY, null, queryParam, null, newPolicy, true);
+                        } catch (Exception e) {
+                            logger.log(LogLevel.WARN, String.format("Update policy to IC failed due to %s", e.getMessage()), DirectoryWatcher.class.getName());
+                        }
                     }
                 }
             } catch (Exception e) {
-                logger.log(LogLevel.INFO, "Config update was unsuccessful for configs at : " + AgentUtils.getInstance().getConfigLoadPath(), e, DirectoryWatcher.class.getName());
+                logger.log(LogLevel.ERROR, "Config update was unsuccessful for configs at : " + AgentUtils.getInstance().getConfigLoadPath(), e, DirectoryWatcher.class.getName());
+                CommonUtils.writePolicyToFile();
             }
     }
 }

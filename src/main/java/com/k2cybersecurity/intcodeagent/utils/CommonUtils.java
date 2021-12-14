@@ -15,8 +15,6 @@ import org.everit.json.schema.loader.SchemaLoader;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
-import java.io.IOException;
-
 public class CommonUtils {
 
     private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
@@ -54,8 +52,8 @@ public class CommonUtils {
             } catch (Exception e) {
             }
             mapper.writeValue(AgentUtils.getInstance().getConfigLoadPath(), AgentUtils.getInstance().getAgentPolicy());
-            logger.log(LogLevel.DEBUG, POLICY_WRITTEN_TO_FILE + AgentUtils.getInstance().getConfigLoadPath(), PolicyPullST.class.getName());
-        } catch (IOException e) {
+            logger.log(LogLevel.INFO, POLICY_WRITTEN_TO_FILE + AgentUtils.getInstance().getConfigLoadPath(), PolicyPullST.class.getName());
+        } catch (Exception e) {
             logger.log(LogLevel.ERROR, POLICY_WRITE_FAILED, e, PolicyPullST.class.getName());
         }
     }
