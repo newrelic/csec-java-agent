@@ -12,6 +12,8 @@ import com.k2cybersecurity.intcodeagent.models.config.AgentPolicyParameters;
 import com.k2cybersecurity.intcodeagent.models.javaagent.CollectorInitMsg;
 import com.k2cybersecurity.intcodeagent.models.javaagent.EventResponse;
 import com.k2cybersecurity.intcodeagent.models.javaagent.IntCodeControlCommand;
+import com.k2cybersecurity.intcodeagent.utils.CommonUtils;
+
 import org.apache.commons.lang3.StringUtils;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -138,10 +140,12 @@ public class ControlCommandProcessor implements Runnable {
                     return;
                 }
                 try {
-                    AgentUtils.getInstance().getAgentPolicy().setPolicyParameters(new ObjectMapper().readValue(controlCommand.getData().toString(), AgentPolicyParameters.class));
+                    AgentUtils.getInstance().getAgentPolicy().setPolicyParameters(new ObjectMapper()
+                            .readValue(controlCommand.getData().toString(), AgentPolicyParameters.class));
                     logger.logInit(LogLevel.INFO,
                             String.format(IAgentConstants.AGENT_POLICY_PARAM_APPLIED_S, AgentUtils.getInstance().getAgentPolicy().getPolicyParameters()),
                             ControlCommandProcessor.class.getName());
+                    CommonUtils.writePolicyToFile();
                 } catch (JsonProcessingException e) {
                     logger.logInit(LogLevel.DEBUG, IAgentConstants.UNABLE_TO_SET_AGENT_POLICY_PARAM_DUE_TO_ERROR, e,
                             ControlCommandProcessor.class.getName());
