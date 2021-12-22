@@ -100,6 +100,9 @@ public class CVEBundlePullST {
     }
 
     public boolean cancelTask(boolean forceCancel) {
+        if (future == null) {
+            return true;
+        }
         if (future != null && (forceCancel || future.isDone() || future.getDelay(TimeUnit.MINUTES) > AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getCveScan().getCveDefinitionUpdateInterval())) {
             logger.log(LogLevel.INFO, CANCEL_CURRENT_TASK_OF_CVE_PULL, CVEBundlePullST.class.getName());
             future.cancel(false);
