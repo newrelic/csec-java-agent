@@ -19,6 +19,7 @@ public class AgentMetaData {
 
     private JSONArray rciMethodsCalls;
 
+    @JsonIgnore
     private boolean apiBlocked = false;
 
     @JsonIgnore
