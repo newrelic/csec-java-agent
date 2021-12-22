@@ -156,7 +156,8 @@ public class PolicyPullST {
     public boolean cancelTask(boolean forceCancel) {
         if (future != null && (forceCancel || future.isDone() || future.getDelay(TimeUnit.SECONDS) > AgentUtils.getInstance().getAgentPolicy().getPolicyPullInterval())) {
             logger.log(LogLevel.INFO, CANCEL_CURRENT_TASK_OF_POLICY_PULL, PolicyPullST.class.getName());
-            return future.cancel(false);
+            future.cancel(false);
+            return true;
         }
         return false;
     }
