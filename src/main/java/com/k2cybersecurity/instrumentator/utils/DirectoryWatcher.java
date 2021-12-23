@@ -169,7 +169,7 @@ public class DirectoryWatcher {
                 policyLastUpdated = Instant.now();
                 return;
             }
-            logger.log(LogLevel.DEBUG, "Returning as policy was last updated in less than 60secs ", DirectoryWatcher.class.getName());
+            logger.log(LogLevel.DEBUG, "Returning as policy was last updated in less than 5secs ", DirectoryWatcher.class.getName());
             return;
         }
     }
