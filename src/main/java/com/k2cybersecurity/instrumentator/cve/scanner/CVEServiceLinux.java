@@ -69,6 +69,7 @@ public class CVEServiceLinux implements Runnable {
 
     @Override
     public void run() {
+        boolean runStatus = false;
         try {
             String packageParentDir = osVariables.getCvePackageBaseDir();
             logger.log(LogLevel.DEBUG, String.format(ICVEConstants.PACKAGE_INFO_LOGGER, packageInfo.toString(), CVEScannerPool.getInstance().getPackageInfo()), CVEServiceLinux.class.getName());
@@ -150,12 +151,17 @@ public class CVEServiceLinux implements Runnable {
             }
             CVEComponentsService.deleteAllComponents(packageExtractedDirectory);
             logger.log(LogLevel.DEBUG, ICVEConstants.CVE_PACKAGE_DELETED, CVEServiceLinux.class.getName());
+            runStatus = true;
             return;
         } catch (InterruptedException e) {
             logger.log(LogLevel.ERROR, ERROR_PROCESS_TERMINATED, e, CVEServiceLinux.class.getName());
         } catch (Throwable e) {
             logger.log(LogLevel.ERROR, ERROR, e, CVEServiceLinux.class.getName());
+        } finally {
+            if (!runStatus && this.isEnvScan) {
+                AgentUtils.getInstance().setCveEnvScanCompleted(false);
+            }
         }
-        AgentUtils.getInstance().setCveEnvScanCompleted(false);
+
     }
 }

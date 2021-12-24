@@ -64,7 +64,7 @@ public class PolicyPullST {
 
         queryParam.put("group", AgentUtils.getInstance().getGroupName());
         queryParam.put("applicationUUID", K2Instrumentator.APPLICATION_UUID);
-        executorService.schedule(runnable, 0, TimeUnit.SECONDS);
+        future = executorService.schedule(runnable, 0, TimeUnit.SECONDS);
         logger.log(LogLevel.INFO, "policy fetch schedule thread started successfully!!!", PolicyPullST.class.getName());
     }
 

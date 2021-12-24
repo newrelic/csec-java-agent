@@ -36,7 +36,7 @@ public class CVEBundlePullST {
                         "K2-cve-bundle-st");
             }
         });
-        executorService.schedule(runnable, 1, TimeUnit.MINUTES);
+        future = executorService.schedule(runnable, 1, TimeUnit.MINUTES);
         logger.log(LogLevel.INFO, "CVE bundle fetch schedule thread started successfully!!!", CVEBundlePullST.class.getName());
     }
 
@@ -76,7 +76,7 @@ public class CVEBundlePullST {
         if (cancelTask(false) && AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getEnabled()
                 && AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getCveScan().getEnabled()
                 && AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getCveScan().getCveDefinitionUpdateInterval() > 0) {
-            future = executorService.schedule(runnable, AgentUtils.getInstance().getAgentPolicy().getPolicyPullInterval(), TimeUnit.SECONDS);
+            future = executorService.schedule(runnable, AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getCveScan().getCveDefinitionUpdateInterval(), TimeUnit.MINUTES);
         }
     }
 

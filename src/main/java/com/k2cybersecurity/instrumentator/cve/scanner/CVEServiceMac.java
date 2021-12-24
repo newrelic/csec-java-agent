@@ -66,6 +66,7 @@ public class CVEServiceMac implements Runnable {
 
     @Override
     public void run() {
+        boolean runStatus = false;
         try {
             String packageParentDir = osVariables.getCvePackageBaseDir();
             logger.log(LogLevel.DEBUG, String.format(ICVEConstants.PACKAGE_INFO_LOGGER, packageInfo.toString(), CVEScannerPool.getInstance().getPackageInfo()), CVEServiceMac.class.getName());
@@ -148,13 +149,17 @@ public class CVEServiceMac implements Runnable {
             }
             CVEComponentsService.deleteAllComponents(packageExtractedDirectory);
             logger.log(LogLevel.DEBUG, ICVEConstants.CVE_PACKAGE_DELETED, CVEServiceMac.class.getName());
+            runStatus = true;
             return;
         } catch (InterruptedException e) {
             logger.log(LogLevel.ERROR, ERROR_PROCESS_TERMINATED, e, CVEServiceMac.class.getName());
         } catch (Throwable e) {
             logger.log(LogLevel.ERROR, ERROR, e, CVEServiceMac.class.getName());
+        } finally {
+            if (!runStatus && this.isEnvScan) {
+                AgentUtils.getInstance().setCveEnvScanCompleted(false);
+            }
         }
-        AgentUtils.getInstance().setCveEnvScanCompleted(false);
 
     }
 }
