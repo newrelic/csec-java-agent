@@ -159,7 +159,7 @@ public class PolicyPullST {
         }
         if (future != null && (forceCancel || future.isDone() || future.getDelay(TimeUnit.SECONDS) > AgentUtils.getInstance().getAgentPolicy().getPolicyPullInterval())) {
             logger.log(LogLevel.INFO, CANCEL_CURRENT_TASK_OF_POLICY_PULL, PolicyPullST.class.getName());
-            future.cancel(false);
+            future.cancel(true);
             return true;
         }
         return false;
