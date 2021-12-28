@@ -1,9 +1,11 @@
 package com.k2cybersecurity.instrumentator.os;
 
+import com.k2cybersecurity.instrumentator.K2Instrumentator;
 import com.k2cybersecurity.intcodeagent.logging.IAgentConstants;
 import org.apache.commons.lang3.SystemUtils;
 
 import java.io.File;
+import java.nio.file.Paths;
 
 public class OsVariablesInstance {
 
@@ -26,21 +28,21 @@ public class OsVariablesInstance {
         if (SystemUtils.IS_OS_LINUX) {
             osVariables.setLinux(true);
             osVariables.setLogDirectory(TMP_K_2_LOGS);
-            osVariables.setCvePackageBaseDir(TMP);
+            osVariables.setCvePackageBaseDir(new File(TMP, K2Instrumentator.APPLICATION_UUID).getAbsolutePath());
             osVariables.setOs(IAgentConstants.LINUX);
             osVariables.setConfigPath(OPT_K_2_IC);
             osVariables.setPolicyConfigPath(new File(OPT_K_2_IC, "config").getAbsolutePath());
         } else if (SystemUtils.IS_OS_MAC) {
             osVariables.setMac(true);
             osVariables.setLogDirectory(TMP_K_2_LOGS);
-            osVariables.setCvePackageBaseDir(TMP);
+            osVariables.setCvePackageBaseDir(new File(TMP, K2Instrumentator.APPLICATION_UUID).getAbsolutePath());
             osVariables.setOs(IAgentConstants.MAC);
             osVariables.setConfigPath(OPT_K_2_IC);
             osVariables.setPolicyConfigPath(new File(OPT_K_2_IC, "config").getAbsolutePath());
         } else if (SystemUtils.IS_OS_WINDOWS) {
             osVariables.setWindows(true);
-            osVariables.setLogDirectory(SystemUtils.getUserHome() + APP_DATA_LOCAL_K_2_LOGS);
-            osVariables.setCvePackageBaseDir(SystemUtils.getUserHome() + APP_DATA_LOCAL_K_2);
+            osVariables.setLogDirectory(Paths.get(SystemUtils.getUserHome().getAbsolutePath(), APP_DATA_LOCAL_K_2_LOGS).toString());
+            osVariables.setCvePackageBaseDir(Paths.get(SystemUtils.getUserHome().getAbsolutePath(), APP_DATA_LOCAL_K_2, K2Instrumentator.APPLICATION_UUID).toString());
             osVariables.setOs(IAgentConstants.WINDOWS);
             osVariables.setConfigPath(C_USERS_PUBLIC_K_2_OPT_K_2_IC);
             osVariables.setPolicyConfigPath(new File(C_USERS_PUBLIC_K_2_OPT_K_2_IC, "config").getAbsolutePath());

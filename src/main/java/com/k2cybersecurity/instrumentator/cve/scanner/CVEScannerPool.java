@@ -9,6 +9,7 @@ import com.k2cybersecurity.intcodeagent.logging.EventThreadPool.EventAbortPolicy
 import com.k2cybersecurity.intcodeagent.logging.IAgentConstants;
 import com.k2cybersecurity.intcodeagent.models.javaagent.CVEPackageInfo;
 
+import java.io.File;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -95,6 +96,9 @@ public class CVEScannerPool {
                 return;
             }
             CVEPackageInfo packageInfo = CVEComponentsService.getCVEPackageInfo();
+
+            new File(osVariables.getCvePackageBaseDir()).mkdirs();
+
             switch (osVariables.getOs()) {
                 case IAgentConstants.LINUX:
                     this.executor.submit(new CVEServiceLinux(nodeId, kind, id, packageInfo, isEnvScan));

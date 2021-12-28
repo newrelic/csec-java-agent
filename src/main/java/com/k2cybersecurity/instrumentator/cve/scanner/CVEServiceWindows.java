@@ -71,7 +71,7 @@ public class CVEServiceWindows implements Runnable {
         try {
             String packageParentDir = osVariables.getCvePackageBaseDir();
             logger.log(LogLevel.DEBUG, String.format(ICVEConstants.PACKAGE_INFO_LOGGER, packageInfo.toString(), CVEScannerPool.getInstance().getPackageInfo()), CVEServiceWindows.class.getName());
-            if (CVEScannerPool.getInstance().getPackageInfo() == null || !StringUtils.equals(packageInfo.getLatestServiceVersion(), CVEScannerPool.getInstance().getPackageInfo().getLatestServiceVersion())) {
+            if (CVEScannerPool.getInstance().getPackageInfo() == null || !CVEScannerPool.getInstance().getPackageInfo().getCvePackage().exists() || !StringUtils.equals(packageInfo.getLatestServiceVersion(), CVEScannerPool.getInstance().getPackageInfo().getLatestServiceVersion())) {
                 Collection<File> cvePackages = FileUtils.listFiles(new File(osVariables.getCvePackageBaseDir()), new NameFileFilter(ICVEConstants.LOCALCVESERVICE), null);
                 logger.log(LogLevel.DEBUG, ICVEConstants.FILES_TO_DELETE + cvePackages, CVEServiceWindows.class.getName());
                 cvePackages.forEach(FileUtils::deleteQuietly);
@@ -82,7 +82,7 @@ public class CVEServiceWindows implements Runnable {
             }
             logger.log(LogLevel.DEBUG, ICVEConstants.CVE_PACKAGE_DOWNLOADED, CVEServiceWindows.class.getName());
             //Create untar Directory
-            File extractedPackageDir = new File(packageParentDir, String.format(ICVEConstants.EXTR_DIR, LOCALCVESERVICE_PATH, K2Instrumentator.APPLICATION_UUID));
+            File extractedPackageDir = new File(packageParentDir, LOCALCVESERVICE_PATH);
             FileUtils.deleteQuietly(extractedPackageDir);
             if (!extractedPackageDir.exists()) {
                 try {
@@ -95,6 +95,7 @@ public class CVEServiceWindows implements Runnable {
             }
 
             AgentUtils.getInstance().unZipFile(CVEScannerPool.getInstance().getPackageInfo().getCvePackage(), extractedPackageDir);
+            FileUtils.deleteQuietly(CVEScannerPool.getInstance().getPackageInfo().getCvePackage());
             //TODO set permissions for extracted package if needed.
 //            setAllPermissions(parentDirectory.getAbsolutePath());
 
@@ -145,7 +146,7 @@ public class CVEServiceWindows implements Runnable {
                 } catch (Throwable e) {
                 }
             }
-            CVEComponentsService.deleteAllComponents(extractedPackageDir);
+            CVEComponentsService.deleteAllComponents(osVariables.getCvePackageBaseDir());
             logger.log(LogLevel.DEBUG, ICVEConstants.CVE_PACKAGE_DELETED, CVEServiceWindows.class.getName());
             return;
         } catch (InterruptedException e) {

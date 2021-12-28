@@ -1,9 +1,6 @@
 package com.k2cybersecurity.instrumentator.decorators.jndi;
 
-import com.k2cybersecurity.instrumentator.custom.K2CyberSecurityException;
-import com.k2cybersecurity.instrumentator.custom.ThreadLocalHttpMap;
-import com.k2cybersecurity.instrumentator.custom.ThreadLocalJNDILock;
-import com.k2cybersecurity.instrumentator.custom.ThreadLocalOperationLock;
+import com.k2cybersecurity.instrumentator.custom.*;
 import com.k2cybersecurity.instrumentator.dispatcher.EventDispatcher;
 import com.k2cybersecurity.intcodeagent.models.javaagent.VulnerabilityCaseType;
 import com.k2cybersecurity.intcodeagent.models.operationalbean.FileOperationalBean;
@@ -62,13 +59,33 @@ public class Callbacks {
         }
     }
 
-    private static void handleFileAccess(String reference, String className, String sourceString, String exectionId, String methodName) throws K2CyberSecurityException {
+    private static void placeAdditionalTemplateData() {
+        String baseData = StringUtils.substring(ThreadLocalJNDILock.getInstance().getBuf().toString(),
+                ThreadLocalJNDILock.getInstance().getStartPos(),
+                ThreadLocalJNDILock.getInstance().getEndPos());
+
+        if (StringUtils.isNoneBlank(ThreadLocalJNDILock.getInstance().getMappingValue(),
+                baseData)
+                && StringUtils.equals(ThreadLocalJNDILock.getInstance().getMappingValue().trim(), baseData.trim())) {
+            return;
+        }
+
+        ThreadLocalExecutionMap.getInstance().getMetaData().getUserDataTranslationMap().put(
+                ThreadLocalJNDILock.getInstance().getMappingValue(), baseData);
+    }
+
+    private static void handleFileAccess(String reference, String className, String sourceString, String exectionId,
+                                         String methodName) throws K2CyberSecurityException {
+        placeAdditionalTemplateData();
         EventDispatcher.dispatch(new FileOperationalBean(reference, className,
-                sourceString, exectionId, Instant.now().toEpochMilli(), false, methodName), VulnerabilityCaseType.FILE_OPERATION);
+                        sourceString, exectionId, Instant.now().toEpochMilli(), false, methodName),
+                VulnerabilityCaseType.FILE_OPERATION);
 
     }
 
-    private static void handleSSRF(String reference, String className, String sourceString, String exectionId, String methodName) throws K2CyberSecurityException {
+    private static void handleSSRF(String reference, String className, String sourceString, String exectionId,
+                                   String methodName) throws K2CyberSecurityException {
+        placeAdditionalTemplateData();
         EventDispatcher.dispatch(new SSRFOperationalBean(reference, className, sourceString, exectionId,
                 Instant.now().toEpochMilli(), methodName), VulnerabilityCaseType.HTTP_REQUEST);
     }

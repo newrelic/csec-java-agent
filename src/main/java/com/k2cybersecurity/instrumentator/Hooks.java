@@ -201,7 +201,9 @@ public class Hooks {
         // JNDI hooks
         TYPE_BASED_HOOKS.put("javax.naming.Context", Arrays.asList("lookup", "lookupLink"));
 
-
+        // Log4j templating hook
+        NAME_BASED_HOOKS.put("org.apache.logging.log4j.core.lookup.StrSubstitutor",
+                Collections.singletonList("resolveVariable"));
         /**
          * ------------------------------------ Decorators
          * ------------------------------------------------
@@ -576,5 +578,9 @@ public class Hooks {
         // JNDI hooks
         DECORATOR_ENTRY.put("javax.naming.Context.lookup", "com.k2cybersecurity.instrumentator.decorators.jndi");
         DECORATOR_ENTRY.put("javax.naming.Context.lookupLink", "com.k2cybersecurity.instrumentator.decorators.jndi");
+
+        // Log4j templating hooks
+        DECORATOR_ENTRY.put("org.apache.logging.log4j.core.lookup.StrSubstitutor.resolveVariable", "com.k2cybersecurity.instrumentator.decorators.log4jtemplating");
+
     }
 }

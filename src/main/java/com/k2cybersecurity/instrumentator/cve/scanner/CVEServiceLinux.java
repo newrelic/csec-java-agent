@@ -72,7 +72,7 @@ public class CVEServiceLinux implements Runnable {
         try {
             String packageParentDir = osVariables.getCvePackageBaseDir();
             logger.log(LogLevel.DEBUG, String.format(ICVEConstants.PACKAGE_INFO_LOGGER, packageInfo.toString(), CVEScannerPool.getInstance().getPackageInfo()), CVEServiceLinux.class.getName());
-            if (CVEScannerPool.getInstance().getPackageInfo() == null || !StringUtils.equals(packageInfo.getLatestServiceVersion(), CVEScannerPool.getInstance().getPackageInfo().getLatestServiceVersion())) {
+            if (CVEScannerPool.getInstance().getPackageInfo() == null || !CVEScannerPool.getInstance().getPackageInfo().getCvePackage().exists() || !StringUtils.equals(packageInfo.getLatestServiceVersion(), CVEScannerPool.getInstance().getPackageInfo().getLatestServiceVersion())) {
                 Collection<File> cvePackages = FileUtils.listFiles(new File(osVariables.getCvePackageBaseDir()), new NameFileFilter(ICVEConstants.LOCALCVESERVICE), null);
                 logger.log(LogLevel.DEBUG, ICVEConstants.FILES_TO_DELETE + cvePackages, CVEServiceLinux.class.getName());
                 cvePackages.forEach(FileUtils::deleteQuietly);
@@ -83,8 +83,8 @@ public class CVEServiceLinux implements Runnable {
             }
             logger.log(LogLevel.DEBUG, ICVEConstants.CVE_PACKAGE_DOWNLOADED, CVEServiceLinux.class.getName());
             //Create untar Directory
-            File packageExtractedDirectory = new File(packageParentDir, String.format(ICVEConstants.EXTR_DIR, LOCALCVESERVICE_PATH, K2Instrumentator.APPLICATION_UUID));
-            FileUtils.deleteQuietly(packageExtractedDirectory);
+            File packageExtractedDirectory = new File(packageParentDir, LOCALCVESERVICE_PATH);
+//            FileUtils.deleteQuietly(packageExtractedDirectory);
             if (!packageExtractedDirectory.exists()) {
                 try {
                     packageExtractedDirectory.mkdirs();
@@ -96,6 +96,7 @@ public class CVEServiceLinux implements Runnable {
             }
 
             AgentUtils.extractCVETar(CVEScannerPool.getInstance().getPackageInfo().getCvePackage(), packageExtractedDirectory);
+//            FileUtils.deleteQuietly(CVEScannerPool.getInstance().getPackageInfo().getCvePackage());
             CVEComponentsService.setAllLinuxPermissions(packageExtractedDirectory.getAbsolutePath());
             logger.log(LogLevel.DEBUG, ICVEConstants.CVE_PACKAGE_EXTRACTION_COMPLETED, CVEServiceLinux.class.getName());
             StringBuilder dcCommand = new StringBuilder(LINUX_SHELL);
@@ -144,11 +145,11 @@ public class CVEServiceLinux implements Runnable {
                         String.format(K2_VULNERABILITY_SCANNER_RESPONSE, FileUtils.readFileToString(Paths.get(packageExtractedDirectory.getAbsolutePath(), ICVEConstants.DC_TRIGGER_LOG).toFile(), Charset.defaultCharset())),
                         CVEServiceLinux.class.getName());
                 try {
-                    FileUtils.forceDelete(inputYaml);
+//                    FileUtils.forceDelete(inputYaml);
                 } catch (Throwable e) {
                 }
             }
-            CVEComponentsService.deleteAllComponents(packageExtractedDirectory);
+//            CVEComponentsService.deleteAllComponents(osVariables.getCvePackageBaseDir());
             logger.log(LogLevel.DEBUG, ICVEConstants.CVE_PACKAGE_DELETED, CVEServiceLinux.class.getName());
             return;
         } catch (InterruptedException e) {

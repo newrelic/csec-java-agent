@@ -24,6 +24,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -154,13 +155,15 @@ public class CVEComponentsService {
     }
 
     private static CVEScanner createLibTmpDir(String cvePackageDir, Collection<String> libPaths, String binaryName, String applicationUUID) {
-        File directory = new File(cvePackageDir, TMP_LIBS + applicationUUID);
+        File directory = new File(osVariables.getCvePackageBaseDir(), TMP_LIBS + applicationUUID);
         try {
             FileUtils.forceMkdir(directory);
             for (String path : libPaths) {
                 try {
                     logger.log(LogLevel.DEBUG, "Add jar : " + path, CVEComponentsService.class.getName());
-                    FileUtils.copyFileToDirectory(new File(path), directory, true);
+                    Path fileToLink = Paths.get(path);
+                    Files.createSymbolicLink(Paths.get(directory.getAbsolutePath(), fileToLink.getFileName().toString()), fileToLink);
+//                    FileUtils.copyFileToDirectory(new File(path), directory, true);
                 } catch (Exception e) {
                     logger.log(LogLevel.DEBUG, FAILED_TO_PROCESS_LIB_PATH + directory + COLON_SEPERATOR + path, e, CVEComponentsService.class.getName());
                 }
@@ -194,8 +197,9 @@ public class CVEComponentsService {
         return scanners;
     }
 
-    protected static void deleteAllComponents(File cveDir) {
+    protected static void deleteAllComponents(String cveBaseDir) {
         try {
+            File cveDir = new File(cveBaseDir);
             Files.walk(cveDir.toPath())
                     .sorted(Comparator.reverseOrder())
                     .forEach(path -> {
@@ -207,7 +211,7 @@ public class CVEComponentsService {
 
             logger.log(LogLevel.DEBUG, String.format("Deleted dir %s ", cveDir), CVEComponentsService.class.getName());
         } catch (Exception e) {
-            logger.log(LogLevel.ERROR, String.format("deletion of %s dir failed!", cveDir), CVEComponentsService.class.getName());
+            logger.log(LogLevel.ERROR, String.format("deletion of %s dir failed!", cveBaseDir), CVEComponentsService.class.getName());
         }
     }
 
