@@ -110,7 +110,7 @@ public class CVEServiceWindows implements Runnable {
 
             List<CVEScanner> scanDirs;
             if (isEnvScan) {
-                scanDirs = CVEComponentsService.getLibScanDirs(extractedPackageDir.getAbsolutePath());
+                scanDirs = CVEComponentsService.getLibScanDirs();
             } else {
                 scanDirs = CVEComponentsService.getAppScanDirs();
             }

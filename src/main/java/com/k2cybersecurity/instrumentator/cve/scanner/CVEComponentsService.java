@@ -122,7 +122,7 @@ public class CVEComponentsService {
         return libPaths;
     }
 
-    protected static List<CVEScanner> getLibScanDirs(String cvePackageDir) {
+    protected static List<CVEScanner> getLibScanDirs() {
         List<CVEScanner> scanners = new ArrayList<>();
         Set<String> libPaths = new HashSet<>();
         if (!K2Instrumentator.APPLICATION_INFO_BEAN.getLibraryPath().isEmpty()) {
@@ -145,7 +145,7 @@ public class CVEComponentsService {
         }
 
         if (!libPaths.isEmpty()) {
-            CVEScanner cveScanner = createLibTmpDir(cvePackageDir, libPaths, K2Instrumentator.APPLICATION_INFO_BEAN.getBinaryName(),
+            CVEScanner cveScanner = createLibTmpDir(libPaths, K2Instrumentator.APPLICATION_INFO_BEAN.getBinaryName(),
                     K2Instrumentator.APPLICATION_INFO_BEAN.getApplicationUUID());
             if (cveScanner != null) {
                 scanners.add(cveScanner);
@@ -154,7 +154,7 @@ public class CVEComponentsService {
         return scanners;
     }
 
-    private static CVEScanner createLibTmpDir(String cvePackageDir, Collection<String> libPaths, String binaryName, String applicationUUID) {
+    private static CVEScanner createLibTmpDir(Collection<String> libPaths, String binaryName, String applicationUUID) {
         File directory = new File(osVariables.getCvePackageBaseDir(), TMP_LIBS + applicationUUID);
         try {
             FileUtils.forceMkdir(directory);
