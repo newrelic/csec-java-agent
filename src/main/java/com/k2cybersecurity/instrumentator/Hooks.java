@@ -271,20 +271,20 @@ public class Hooks {
 
         // Spring MVC
         DECORATOR_ENTRY.put("org.springframework.web.bind.annotation.Mapping",
-                "com.k2cybersecurity.instrumentator.decorators.servicetrace");
+                "com.k2cybersecurity.instrumentator.decorators.servicetraceannotation");
 
         DECORATOR_ENTRY.put("org.springframework.stereotype.Controller",
-                "com.k2cybersecurity.instrumentator.decorators.servicetrace");
+                "com.k2cybersecurity.instrumentator.decorators.servicetraceannotation");
 
         // Jersey
         DECORATOR_ENTRY.put("javax.ws.rs.Path",
-                "com.k2cybersecurity.instrumentator.decorators.servicetrace");
+                "com.k2cybersecurity.instrumentator.decorators.servicetraceannotation");
         DECORATOR_ENTRY.put("javax.ws.rs.HttpMethod",
-                "com.k2cybersecurity.instrumentator.decorators.servicetrace");
+                "com.k2cybersecurity.instrumentator.decorators.servicetraceannotation");
 
         // Servlet Annotation
         DECORATOR_ENTRY.put("javax.servlet.annotation.WebServlet",
-                "com.k2cybersecurity.instrumentator.decorators.servicetrace");
+                "com.k2cybersecurity.instrumentator.decorators.servicetraceannotation");
 
         // Apache Wicket
         DECORATOR_ENTRY.put("org.apache.wicket.markup.html.WebPage.null",

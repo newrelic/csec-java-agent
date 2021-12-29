@@ -322,7 +322,7 @@ public class InstrumentationUtils {
                                                 .and(isMethod())));
                     } catch (ClassNotFoundException e) {
                         logger.log(LogLevel.ERROR,
-                                String.format(FAILED_TO_INSTRUMENT_S_S_DUE_TO_ERROR_S, entry, e), e,
+                                String.format(FAILED_TO_INSTRUMENT_ANNOTATION_DUE_TO_ERROR, entry, e), e,
                                 InstrumentationUtils.class.getName());
                     }
                     return builder;
