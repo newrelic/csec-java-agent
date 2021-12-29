@@ -11,5 +11,4 @@ public interface ICVEConstants {
     String PACKAGE_INFO_LOGGER = "Package Info  : %s :: %s";
     String DC_TRIGGER_LOG = "dc-trigger.log";
     String FILES_TO_DELETE = "Files to delete : ";
-    String EXTR_DIR = "%s-%s";
 }

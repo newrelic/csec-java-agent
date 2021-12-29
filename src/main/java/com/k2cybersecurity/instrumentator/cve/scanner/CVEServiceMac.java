@@ -70,7 +70,7 @@ public class CVEServiceMac implements Runnable {
         try {
             String packageParentDir = osVariables.getCvePackageBaseDir();
             logger.log(LogLevel.DEBUG, String.format(ICVEConstants.PACKAGE_INFO_LOGGER, packageInfo.toString(), CVEScannerPool.getInstance().getPackageInfo()), CVEServiceMac.class.getName());
-            if (CVEScannerPool.getInstance().getPackageInfo() == null || !StringUtils.equals(packageInfo.getLatestServiceVersion(), CVEScannerPool.getInstance().getPackageInfo().getLatestServiceVersion())) {
+            if (CVEScannerPool.getInstance().getPackageInfo() == null || !CVEScannerPool.getInstance().getPackageInfo().getCvePackage().exists() || !StringUtils.equals(packageInfo.getLatestServiceVersion(), CVEScannerPool.getInstance().getPackageInfo().getLatestServiceVersion())) {
                 Collection<File> cvePackages = FileUtils.listFiles(new File(osVariables.getCvePackageBaseDir()), new NameFileFilter(ICVEConstants.LOCALCVESERVICE), null);
                 logger.log(LogLevel.DEBUG, ICVEConstants.FILES_TO_DELETE + cvePackages, CVEServiceMac.class.getName());
                 cvePackages.forEach(FileUtils::deleteQuietly);
@@ -81,7 +81,7 @@ public class CVEServiceMac implements Runnable {
             }
             logger.log(LogLevel.DEBUG, ICVEConstants.CVE_PACKAGE_DOWNLOADED, CVEServiceMac.class.getName());
             //Create untar Directory
-            File packageExtractedDirectory = new File(packageParentDir, String.format(ICVEConstants.EXTR_DIR, LOCALCVESERVICE_PATH, K2Instrumentator.APPLICATION_UUID));
+            File packageExtractedDirectory = new File(packageParentDir, LOCALCVESERVICE_PATH);
             FileUtils.deleteQuietly(packageExtractedDirectory);
             if (!packageExtractedDirectory.exists()) {
                 try {
@@ -94,6 +94,8 @@ public class CVEServiceMac implements Runnable {
             }
 
             AgentUtils.extractCVETar(CVEScannerPool.getInstance().getPackageInfo().getCvePackage(), packageExtractedDirectory);
+            FileUtils.deleteQuietly(CVEScannerPool.getInstance().getPackageInfo().getCvePackage());
+
             CVEComponentsService.setAllLinuxPermissions(packageExtractedDirectory.getAbsolutePath());
 
             logger.log(LogLevel.DEBUG, ICVEConstants.CVE_PACKAGE_EXTRACTION_COMPLETED, CVEServiceMac.class.getName());
@@ -106,7 +108,7 @@ public class CVEServiceMac implements Runnable {
 
             List<CVEScanner> scanDirs;
             if (isEnvScan) {
-                scanDirs = CVEComponentsService.getLibScanDirs(packageExtractedDirectory.getAbsolutePath());
+                scanDirs = CVEComponentsService.getLibScanDirs();
             } else {
                 scanDirs = CVEComponentsService.getAppScanDirs();
             }
@@ -147,7 +149,7 @@ public class CVEServiceMac implements Runnable {
                 } catch (Throwable e) {
                 }
             }
-            CVEComponentsService.deleteAllComponents(packageExtractedDirectory);
+            CVEComponentsService.deleteAllComponents(osVariables.getCvePackageBaseDir());
             logger.log(LogLevel.DEBUG, ICVEConstants.CVE_PACKAGE_DELETED, CVEServiceMac.class.getName());
             runStatus = true;
             return;
