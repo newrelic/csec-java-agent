@@ -8,51 +8,34 @@ import com.k2cybersecurity.instrumentator.utils.AgentUtils;
 import com.k2cybersecurity.intcodeagent.models.javaagent.VulnerabilityCaseType;
 import com.k2cybersecurity.intcodeagent.models.operationalbean.NoSQLOperationalBean;
 
-import java.lang.reflect.Method;
 import java.time.Instant;
-import java.util.List;
 
 public class Callbacks {
-
     public static void doOnEnter(String sourceString, String className, String methodName, Object obj, Object[] args,
                                  String exectionId) throws K2CyberSecurityException, Exception {
         if (!ThreadLocalHttpMap.getInstance().isEmpty() && !ThreadLocalOperationLock.getInstance().isAcquired()
                 && args != null
         ) {
-            // For version 3.6.x - 3.12.x
             ThreadLocalOperationLock.getInstance().acquire();
+            int streamingPayloadIndex = -1;
             try {
-                if (args.length == 9) {
+                switch (args.length) {
+                    // For version 3.6.x - 3.12.x
+                    case 9:
+                        streamingPayloadIndex = 6;
+                        break;
+                    // For version 4.x and above
+                    case 10:
+                        streamingPayloadIndex = 7;
+                        break;
+                    default:
+                }
 
-                    if (args[6] != null) {
-                        Method getPayload = args[6].getClass().getMethod("getPayload");
-                        getPayload.setAccessible(true);
-                        List<Object> docs = (List<Object>) getPayload.invoke(args[6]);
-                        EventDispatcher.dispatch(new NoSQLOperationalBean(docs, className, sourceString, exectionId,
-                                Instant.now().toEpochMilli(), methodName), VulnerabilityCaseType.NOSQL_DB_COMMAND);
-                    } else if (args[1] != null) {
-                        EventDispatcher.dispatch(new NoSQLOperationalBean(args[1], className, sourceString, exectionId,
-                                Instant.now().toEpochMilli(), methodName), VulnerabilityCaseType.NOSQL_DB_COMMAND);
+                MongoPayload data = MongoPayload.getParser().generateMongoPayload(args, streamingPayloadIndex);
 
-                    }
-
-
-                    // For version 4.x +
-                } else if (args.length == 10) {
-
-                    ThreadLocalOperationLock.getInstance().acquire();
-                    if (args[7] != null) {
-                        Method getPayload = args[7].getClass().getMethod("getPayload");
-                        getPayload.setAccessible(true);
-                        List<Object> docs = (List<Object>) getPayload.invoke(args[6]);
-                        EventDispatcher.dispatch(new NoSQLOperationalBean(docs, className, sourceString, exectionId,
-                                Instant.now().toEpochMilli(), methodName), VulnerabilityCaseType.NOSQL_DB_COMMAND);
-                    } else if (args[1] != null) {
-                        EventDispatcher.dispatch(new NoSQLOperationalBean(args[1], className, sourceString, exectionId,
-                                Instant.now().toEpochMilli(), methodName), VulnerabilityCaseType.NOSQL_DB_COMMAND);
-
-                    }
-
+                if (data != null) {
+                    EventDispatcher.dispatch(new NoSQLOperationalBean(data.getJSON(), className, sourceString, exectionId,
+                            Instant.now().toEpochMilli(), methodName), VulnerabilityCaseType.NOSQL_DB_COMMAND);
                 }
             } finally {
                 ThreadLocalOperationLock.getInstance().release();
