@@ -24,9 +24,9 @@ import java.util.concurrent.TimeUnit;
 import static com.k2cybersecurity.instrumentator.httpclient.IRestClientConstants.COLLECTOR_UPLOAD_LOG;
 
 class LoggingInterceptor implements Interceptor {
-    private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
     public static final String SENDING_REQUEST_S_ON_S_N_S = "Sending request %s";
     public static final String RECEIVED_RESPONSE_FOR_S_IN_1_FMS_N_S = "Received response is %s for %s in %.1fms%n";
+    private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
 
     @Override
     public Response intercept(Interceptor.Chain chain) throws IOException {
@@ -48,7 +48,6 @@ class LoggingInterceptor implements Interceptor {
 
 public class HttpClient {
 
-    private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
     public static final String APPLICATION_JSON = "application/json";
     public static final String UNKNOWN_ASYNC_API_S = "unknown async API: %s";
     public static final String K_2_API_ACCESSOR_TOKEN = "K2_API_ACCESSOR_TOKEN";
@@ -62,19 +61,9 @@ public class HttpClient {
     public static final String API_S_RETURNS_SUCCESS_CODE_S_S = "API %s returns success! code : %s : %s ";
     public static final String MULTIPART_FILE = "file";
     public static final String MULTIPART_FORM_DATA = "multipart/form-data";
-
-    private static HttpClient instance;
-
+    private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
     private static final Object lock = new Object();
-
-    private OkHttpClient client;
-
-    private String baseUrl;
-
-    private ObjectMapper objectMapper = new ObjectMapper();
-
-    private OSVariables osVariables = OsVariablesInstance.getInstance().getOsVariables();
-
+    private static HttpClient instance;
     // Create a trust manager that does not validate certificate chains
     private final TrustManager[] trustAllCerts = new TrustManager[]{
             new X509TrustManager() {
@@ -92,6 +81,10 @@ public class HttpClient {
                 }
             }
     };
+    private OkHttpClient client;
+    private String baseUrl;
+    private ObjectMapper objectMapper = new ObjectMapper();
+    private OSVariables osVariables = OsVariablesInstance.getInstance().getOsVariables();
 
     private HttpClient() {
         ConnectionPool pool = new ConnectionPool(1, TimeUnit.MINUTES.toMillis(10));
@@ -202,20 +195,23 @@ public class HttpClient {
     }
 
     private Response fire(Request request, Boolean isAsync, String api, File file) {
-        Call call = client.newCall(request);
-        if (isAsync) {
-            switch (api) {
-                case COLLECTOR_UPLOAD_LOG:
-                    fileUploadAndDelete(call, api, file);
-                default:
-                    executeAsync(call, api);
-//                    logger.log(LogLevel.WARNING, String.format(UNKNOWN_ASYNC_API_S, api), HttpClient.class.getName());
-            }
-            return new Response.Builder().protocol(Protocol.HTTP_1_1).request(request).code(204).build();
-        }
         try {
+            Call call = client.newCall(request);
+            if (isAsync) {
+                switch (api) {
+                    case COLLECTOR_UPLOAD_LOG:
+                        fileUploadAndDelete(call, api, file);
+                        break;
+                    default:
+                        executeAsync(call, api);
+                        break;
+//                    logger.log(LogLevel.WARNING, String.format(UNKNOWN_ASYNC_API_S, api), HttpClient.class.getName());
+                }
+                return new Response.Builder().protocol(Protocol.HTTP_1_1).request(request).code(204).build();
+            }
+
             return call.execute();
-        } catch (IOException e) {
+        } catch (Exception e) {
             logger.log(LogLevel.ERROR, e.getMessage(), e, HttpClient.class.getName());
         }
         return new Response.Builder().protocol(Protocol.HTTP_1_1).request(request).code(400).build();
@@ -253,9 +249,10 @@ public class HttpClient {
                 try (ResponseBody responseBody = response.body()) {
                     if (!response.isSuccessful()) {
                         logger.log(LogLevel.WARN, String.format(API_S_FAILED_CODE_S_S, api, response.code(), responseBody), HttpClient.class.getName());
+                    } else {
                         FileUtils.deleteQuietly(file);
+                        logger.log(LogLevel.INFO, String.format(API_S_RETURNS_SUCCESS_CODE_S_S, api, response.code(), responseBody), HttpClient.class.getName());
                     }
-                    logger.log(LogLevel.INFO, String.format(API_S_RETURNS_SUCCESS_CODE_S_S, api, response.code(), responseBody), HttpClient.class.getName());
                 }
             }
         });

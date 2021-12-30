@@ -185,12 +185,11 @@ public class LogWriter implements Runnable {
             }
             uploadLogsAndDeleteFile(rolloverFile);
             int removeFile = logFileCounter - K2JALogProperties.maxfiles;
-            while (removeFile > 0) {
+            if (removeFile > 0) {
                 File remove = new File(fileName + STRING_DOT + removeFile);
                 if (remove.exists()) {
                     FileUtils.deleteQuietly(remove);
                 }
-                removeFile--;
             }
         }
     }
