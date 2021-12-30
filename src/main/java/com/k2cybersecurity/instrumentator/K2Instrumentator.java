@@ -104,6 +104,10 @@ public class K2Instrumentator {
                 return false;
             }
 
+            if (IdentifierEnvs.HOST.equals(identifier.getKind())) {
+                identifier.setId(CollectorConfigurationUtils.getInstance().getCollectorConfig().getNodeId());
+            }
+
             if (StringUtils.isNotBlank(userAppName)) {
                 List<String> tags = Collections.emptyList();
                 if (StringUtils.isNotBlank(userAppTags)) {

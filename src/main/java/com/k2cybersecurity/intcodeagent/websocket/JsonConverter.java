@@ -33,7 +33,7 @@ public class JsonConverter {
         Class<?> superClass = obj.getClass().getSuperclass();
 
         Field[] superFields = superClass.getDeclaredFields();
-        if (superFields.length > 1) {
+        if (superFields.length > 0) {
             jsonString.append(getFieldsAsJsonString(superFields, obj));
             jsonString.append(STR_COMMA);
         }
