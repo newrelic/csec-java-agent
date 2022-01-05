@@ -88,6 +88,11 @@ public class EventSendPool {
         executor.submit(new EventSender(event));
     }
 
+    public static void shutDownPool() {
+        if (instance != null) {
+            instance.shutDownThreadPoolExecutor();
+        }
+    }
 
     public void shutDownThreadPoolExecutor() {
 

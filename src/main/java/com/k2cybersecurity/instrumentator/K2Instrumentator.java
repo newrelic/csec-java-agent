@@ -30,6 +30,7 @@ import java.net.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.*;
 
@@ -135,9 +136,18 @@ public class K2Instrumentator {
             }
             JA_HEALTH_CHECK = new JAHealthCheck(APPLICATION_UUID);
             logger.logInit(LogLevel.INFO, AGENT_INIT_LOG_STEP_FIVE, K2Instrumentator.class.getName());
-            new Thread(() -> {
+            int retries = NUMBER_OF_RETRIES;
+            WSClient.getInstance().openConnection();
+            while (retries > 0) {
                 try {
-                    WSClient.getInstance();
+                    if (!WSClient.isConnected()) {
+                        retries--;
+                        int timeout = (NUMBER_OF_RETRIES - retries);
+                        logger.logInit(LogLevel.INFO, String.format("WS client connection failed will retry after %s minute(s)", timeout), K2Instrumentator.class.getName());
+                        TimeUnit.MINUTES.sleep(timeout);
+                        WSClient.reconnectWSClient();
+                        continue;
+                    }
                 } catch (Throwable e) {
                     logger.log(LogLevel.ERROR, ERROR_OCCURED_WHILE_TRYING_TO_CONNECT_TO_WSOCKET, e,
                             K2Instrumentator.class.getName());
@@ -153,7 +163,12 @@ public class K2Instrumentator {
                         String.format(STARTED_MODULE_LOG, AgentServices.HealthCheck.name()),
                         K2Instrumentator.class.getName()
                 );
-            }).start();
+            }
+
+            if (!WSClient.isConnected()) {
+                return false;
+            }
+
             DirectoryWatcher.startMonitorDaemon();
             PolicyPullST.instantiateDefaultPolicy();
             PolicyPullST.getInstance();

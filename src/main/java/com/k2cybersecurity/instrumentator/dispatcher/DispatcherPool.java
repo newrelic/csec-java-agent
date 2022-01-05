@@ -134,6 +134,12 @@ public class DispatcherPool {
                 currentGenericServletInstance, stackTrace, userClassEntity, apiID));
     }
 
+    public static void shutDownPool() {
+        if (instance != null) {
+            instance.shutDownThreadPoolExecutor();
+        }
+    }
+
     public void shutDownThreadPoolExecutor() {
 
         if (executor != null) {

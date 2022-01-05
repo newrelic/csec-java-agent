@@ -192,4 +192,37 @@ public class PolicyPullST {
             return null;
         }
     }
+
+    public static void shutDownPool() {
+        if (instance != null) {
+            instance.shutDownThreadPoolExecutor();
+        }
+    }
+
+    /**
+     * Shut down the thread pool executor. Calls normal shutdown of thread pool
+     * executor and awaits for termination. If not terminated, forcefully shuts down
+     * the executor after a timeout.
+     */
+    public void shutDownThreadPoolExecutor() {
+
+        if (executorService != null) {
+            try {
+                executorService.shutdown(); // disable new tasks from being submitted
+                if (!executorService.awaitTermination(1, TimeUnit.SECONDS)) {
+                    // wait for termination for a timeout
+                    executorService.shutdownNow(); // cancel currently executing tasks
+
+                    if (!executorService.awaitTermination(1, TimeUnit.SECONDS)) {
+                        logger.log(LogLevel.FATAL, "Thread pool executor did not terminate",
+                                PolicyPullST.class.getName());
+                    } else {
+                        logger.log(LogLevel.INFO, "Thread pool executor terminated",
+                                PolicyPullST.class.getName());
+                    }
+                }
+            } catch (InterruptedException e) {
+            }
+        }
+    }
 }

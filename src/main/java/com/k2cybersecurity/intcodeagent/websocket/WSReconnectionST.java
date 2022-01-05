@@ -66,6 +66,12 @@ public class WSReconnectionST {
         }
     }
 
+    public static void shutDownPool() {
+        if (instance != null) {
+            instance.shutDownThreadPoolExecutor();
+        }
+    }
+
     /**
      * Shut down the thread pool executor. Calls normal shutdown of thread pool
      * executor and awaits for termination. If not terminated, forcefully shuts down

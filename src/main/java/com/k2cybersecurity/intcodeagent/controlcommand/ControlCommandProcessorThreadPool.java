@@ -112,6 +112,11 @@ public class ControlCommandProcessorThreadPool {
         return instance;
     }
 
+    public static void shutDownPool() {
+        if (instance != null) {
+            instance.shutDownThreadPoolExecutor();
+        }
+    }
 
     public void shutDownThreadPoolExecutor() {
         if (executor != null) {

@@ -113,6 +113,17 @@ public class CVEScannerPool {
         }
     }
 
+    public static void shutDownPool() {
+        if (instance != null) {
+            instance.shutDownThreadPoolExecutor();
+        }
+    }
+
+    /**
+     * Shut down the thread pool executor. Calls normal shutdown of thread pool
+     * executor and awaits for termination. If not terminated, forcefully shuts down
+     * the executor after a timeout.
+     */
     public void shutDownThreadPoolExecutor() {
 
         if (executor != null) {
@@ -125,12 +136,14 @@ public class CVEScannerPool {
                     if (!executor.awaitTermination(1, TimeUnit.SECONDS)) {
                         logger.log(LogLevel.FATAL, "Thread pool executor did not terminate",
                                 CVEScannerPool.class.getName());
+                    } else {
+                        logger.log(LogLevel.INFO, "Thread pool executor terminated",
+                                CVEScannerPool.class.getName());
                     }
                 }
             } catch (InterruptedException e) {
             }
         }
-
     }
 
     public CVEPackageInfo getPackageInfo() {
@@ -140,4 +153,6 @@ public class CVEScannerPool {
     public void setPackageInfo(CVEPackageInfo packageInfo) {
         this.packageInfo = packageInfo;
     }
+
+
 }

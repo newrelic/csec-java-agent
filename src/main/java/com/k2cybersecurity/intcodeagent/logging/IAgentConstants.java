@@ -611,4 +611,5 @@ public interface IAgentConstants {
 
     String AGENT_INIT_LOG_STEP_FIVE = "[STEP-5][BEGIN][MODULE] Start Threads/pools/scheduler.";
     String AGENT_INIT_LOG_STEP_FIVE_END = "[STEP-5][COMPLETE][MODULE] Started Threads/pools/scheduler.";
+    int NUMBER_OF_RETRIES = 7;
 }

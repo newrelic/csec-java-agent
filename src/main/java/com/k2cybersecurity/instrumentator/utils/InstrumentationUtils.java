@@ -3,12 +3,16 @@ package com.k2cybersecurity.instrumentator.utils;
 import com.k2cybersecurity.instrumentator.AgentNew;
 import com.k2cybersecurity.instrumentator.K2Instrumentator;
 import com.k2cybersecurity.instrumentator.custom.ByteBuddyElementMatchers;
+import com.k2cybersecurity.instrumentator.cve.scanner.CVEScannerPool;
 import com.k2cybersecurity.instrumentator.dispatcher.DispatcherPool;
 import com.k2cybersecurity.intcodeagent.controlcommand.ControlCommandProcessorThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.logging.HealthCheckScheduleThread;
 import com.k2cybersecurity.intcodeagent.models.javaagent.ShutDownEvent;
+import com.k2cybersecurity.intcodeagent.schedulers.CVEBundlePullST;
+import com.k2cybersecurity.intcodeagent.schedulers.InBoundOutBoundST;
+import com.k2cybersecurity.intcodeagent.schedulers.PolicyPullST;
 import com.k2cybersecurity.intcodeagent.websocket.EventSendPool;
 import com.k2cybersecurity.intcodeagent.websocket.WSClient;
 import com.k2cybersecurity.intcodeagent.websocket.WSReconnectionST;
@@ -353,12 +357,16 @@ public class InstrumentationUtils {
         }
         try {
 //            ServletEventPool.getInstance().shutDownThreadPoolExecutor();
-            HealthCheckScheduleThread.getInstance().shutDownThreadPoolExecutor();
+            HealthCheckScheduleThread.shutDownPool();
 //            EventThreadPool.getInstance().shutDownThreadPoolExecutor();
-            DispatcherPool.getInstance().shutDownThreadPoolExecutor();
-            ControlCommandProcessorThreadPool.getInstance().shutDownThreadPoolExecutor();
-            EventSendPool.getInstance().shutDownThreadPoolExecutor();
-            WSReconnectionST.getInstance().shutDownThreadPoolExecutor();
+            DispatcherPool.shutDownPool();
+            ControlCommandProcessorThreadPool.shutDownPool();
+            EventSendPool.shutDownPool();
+            WSReconnectionST.shutDownPool();
+            PolicyPullST.shutDownPool();
+            CVEScannerPool.shutDownPool();
+            CVEBundlePullST.shutDownPool();
+            InBoundOutBoundST.shutDownPool();
 
         } catch (Throwable e) {
             logger.log(LogLevel.FATAL, "Error while shutting down K2 Pools : ", e,

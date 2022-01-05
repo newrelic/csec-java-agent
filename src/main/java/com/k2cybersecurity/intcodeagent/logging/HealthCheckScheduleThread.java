@@ -9,7 +9,6 @@ import com.k2cybersecurity.intcodeagent.models.javaagent.JAHealthCheck;
 import com.k2cybersecurity.intcodeagent.schedulers.InBoundOutBoundST;
 import com.k2cybersecurity.intcodeagent.websocket.WSClient;
 
-import java.net.URISyntaxException;
 import java.util.Collections;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -45,29 +44,6 @@ public class HealthCheckScheduleThread {
                         K2Instrumentator.JA_HEALTH_CHECK.setEventProcessed(0);
                         K2Instrumentator.JA_HEALTH_CHECK.setEventSentCount(0);
                         K2Instrumentator.JA_HEALTH_CHECK.setHttpRequestCount(0);
-                    } else {
-                        try {
-                            WSClient.reconnectWSClient();
-                            TimeUnit.SECONDS.sleep(5);
-                            if (WSClient.getInstance().isOpen()) {
-                                logger.log(LogLevel.DEBUG, "K2-JavaAgent re-installed successfully.",
-                                        HealthCheckScheduleThread.class.getName());
-                                InBoundOutBoundST.getInstance().task(InBoundOutBoundST.getInstance().getNewConnections(), false);
-                                WSClient.getInstance()
-                                        .send(new JAHealthCheck(K2Instrumentator.JA_HEALTH_CHECK).toString());
-                                K2Instrumentator.JA_HEALTH_CHECK.setEventDropCount(0);
-                                K2Instrumentator.JA_HEALTH_CHECK.setEventProcessed(0);
-                                K2Instrumentator.JA_HEALTH_CHECK.setEventSentCount(0);
-                                K2Instrumentator.JA_HEALTH_CHECK.setHttpRequestCount(0);
-                            } else {
-                                logger.log(LogLevel.FATAL, "Failed in WSock reconnection.",
-                                        HealthCheckScheduleThread.class.getName());
-                            }
-                        } catch (URISyntaxException | InterruptedException e) {
-                            logger.log(LogLevel.FATAL,
-                                    "Error in WSock reconnection : " + e.getMessage() + " : " + e.getCause(), e,
-                                    HealthCheckScheduleThread.class.getName());
-                        }
                     }
 
                 } catch (NullPointerException ex) {
@@ -104,6 +80,12 @@ public class HealthCheckScheduleThread {
             logger.log(LogLevel.WARN, "Error while starting: ", e, HealthCheckScheduleThread.class.getName());
         }
         throw null;
+    }
+
+    public static void shutDownPool() {
+        if (instance != null) {
+            instance.shutDownThreadPoolExecutor();
+        }
     }
 
     /**
