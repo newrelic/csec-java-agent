@@ -1,5 +1,6 @@
 package com.k2cybersecurity.intcodeagent.models.javaagent;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.k2cybersecurity.instrumentator.utils.AgentUtils;
 import com.k2cybersecurity.instrumentator.utils.CollectorConfigurationUtils;
@@ -30,6 +31,7 @@ public class AgentBasicInfo {
     /**
      * Json version number.
      */
+    @JsonAlias({"jsonVersion", "apiVersion"})
     private String apiVersion;
 
     private final String collectorType = "JAVA";

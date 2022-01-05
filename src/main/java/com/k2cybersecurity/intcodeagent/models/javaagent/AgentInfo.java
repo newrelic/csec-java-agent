@@ -1,5 +1,6 @@
 package com.k2cybersecurity.intcodeagent.models.javaagent;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.k2cybersecurity.intcodeagent.websocket.JsonConverter;
 
 public class AgentInfo {
@@ -8,6 +9,7 @@ public class AgentInfo {
 
     private String k2ICToolId;
 
+    @JsonAlias({"jsonVersion", "apiVersion"})
     private String apiVersion;
 
     private Integer customerId;
