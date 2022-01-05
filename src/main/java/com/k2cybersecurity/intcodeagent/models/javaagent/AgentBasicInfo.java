@@ -30,7 +30,7 @@ public class AgentBasicInfo {
     /**
      * Json version number.
      */
-    private String jsonVersion;
+    private String apiVersion;
 
     private final String collectorType = "JAVA";
 
@@ -54,7 +54,7 @@ public class AgentBasicInfo {
      */
     public AgentBasicInfo() {
         setPolicyVersion(AgentUtils.getInstance().getAgentPolicy().getVersion());
-        setJsonVersion(K2JAVersionInfo.jsonVersion);
+        setApiVersion(K2JAVersionInfo.apiVersion);
         setCollectorVersion(K2JAVersionInfo.collectorVersion);
         setNodeId(CollectorConfigurationUtils.getInstance().getCollectorConfig().getNodeId());
         setCustomerId(CollectorConfigurationUtils.getInstance().getCollectorConfig().getCustomerInfo().getCustomerId());
@@ -130,17 +130,17 @@ public class AgentBasicInfo {
      *
      * @return the version
      */
-    public String getJsonVersion() {
-        return jsonVersion;
+    public String getApiVersion() {
+        return apiVersion;
     }
 
     /**
      * Sets the version.
      *
-     * @param jsonVersion the new version
+     * @param apiVersion the new version
      */
-    public void setJsonVersion(String jsonVersion) {
-        this.jsonVersion = jsonVersion;
+    public void setApiVersion(String apiVersion) {
+        this.apiVersion = apiVersion;
     }
 
     public String getLanguage() {

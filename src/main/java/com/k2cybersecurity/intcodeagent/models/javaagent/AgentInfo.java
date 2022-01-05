@@ -8,7 +8,7 @@ public class AgentInfo {
 
     private String k2ICToolId;
 
-    private String jsonVersion;
+    private String apiVersion;
 
     private Integer customerId;
 
@@ -111,17 +111,17 @@ public class AgentInfo {
     }
 
     /**
-     * @return the jsonVersion
+     * @return the apiVersion
      */
-    public String getJsonVersion() {
-        return jsonVersion;
+    public String getApiVersion() {
+        return apiVersion;
     }
 
     /**
-     * @param jsonVersion the jsonVersion to set
+     * @param apiVersion the apiVersion to set
      */
-    public void setJsonVersion(String jsonVersion) {
-        this.jsonVersion = jsonVersion;
+    public void setApiVersion(String apiVersion) {
+        this.apiVersion = apiVersion;
     }
 
 }
