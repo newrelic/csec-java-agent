@@ -152,22 +152,22 @@ public class K2Instrumentator {
                     logger.log(LogLevel.ERROR, ERROR_OCCURED_WHILE_TRYING_TO_CONNECT_TO_WSOCKET, e,
                             K2Instrumentator.class.getName());
                 }
-                logger.logInit(
-                        LogLevel.INFO,
-                        String.format(STARTING_MODULE_LOG, AgentServices.HealthCheck.name()),
-                        K2Instrumentator.class.getName()
-                );
-                HealthCheckScheduleThread.getInstance();
-                logger.logInit(
-                        LogLevel.INFO,
-                        String.format(STARTED_MODULE_LOG, AgentServices.HealthCheck.name()),
-                        K2Instrumentator.class.getName()
-                );
             }
-
             if (!WSClient.isConnected()) {
                 return false;
             }
+
+            logger.logInit(
+                    LogLevel.INFO,
+                    String.format(STARTING_MODULE_LOG, AgentServices.HealthCheck.name()),
+                    K2Instrumentator.class.getName()
+            );
+            HealthCheckScheduleThread.getInstance();
+            logger.logInit(
+                    LogLevel.INFO,
+                    String.format(STARTED_MODULE_LOG, AgentServices.HealthCheck.name()),
+                    K2Instrumentator.class.getName()
+            );
 
             DirectoryWatcher.startMonitorDaemon();
             PolicyPullST.instantiateDefaultPolicy();
