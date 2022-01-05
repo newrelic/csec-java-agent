@@ -146,7 +146,8 @@ public class K2Instrumentator {
                         logger.logInit(LogLevel.INFO, String.format("WS client connection failed will retry after %s minute(s)", timeout), K2Instrumentator.class.getName());
                         TimeUnit.MINUTES.sleep(timeout);
                         WSClient.reconnectWSClient();
-                        continue;
+                    } else {
+                        break;
                     }
                 } catch (Throwable e) {
                     logger.log(LogLevel.ERROR, ERROR_OCCURED_WHILE_TRYING_TO_CONNECT_TO_WSOCKET, e,
