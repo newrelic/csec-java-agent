@@ -1,6 +1,5 @@
 package com.k2cybersecurity.intcodeagent.models.javaagent;
 
-import com.fasterxml.jackson.annotation.JsonAlias;
 import com.k2cybersecurity.intcodeagent.websocket.JsonConverter;
 
 public class AgentInfo {
@@ -9,8 +8,7 @@ public class AgentInfo {
 
     private String k2ICToolId;
 
-    @JsonAlias({"jsonVersion", "apiVersion"})
-    private String apiVersion;
+    private String jsonVersion;
 
     private Integer customerId;
 
@@ -113,17 +111,17 @@ public class AgentInfo {
     }
 
     /**
-     * @return the apiVersion
+     * @return the jsonVersion
      */
-    public String getApiVersion() {
-        return apiVersion;
+    public String getJsonVersion() {
+        return jsonVersion;
     }
 
     /**
-     * @param apiVersion the apiVersion to set
+     * @param jsonVersion the jsonVersion to set
      */
-    public void setApiVersion(String apiVersion) {
-        this.apiVersion = apiVersion;
+    public void setJsonVersion(String jsonVersion) {
+        this.jsonVersion = jsonVersion;
     }
 
 }

@@ -1,6 +1,5 @@
 package com.k2cybersecurity.intcodeagent.models.javaagent;
 
-import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.k2cybersecurity.instrumentator.utils.AgentUtils;
 import com.k2cybersecurity.instrumentator.utils.CollectorConfigurationUtils;
@@ -31,8 +30,7 @@ public class AgentBasicInfo {
     /**
      * Json version number.
      */
-    @JsonAlias({"jsonVersion", "apiVersion"})
-    private String apiVersion;
+    private String jsonVersion;
 
     private final String collectorType = "JAVA";
 
@@ -56,7 +54,7 @@ public class AgentBasicInfo {
      */
     public AgentBasicInfo() {
         setPolicyVersion(AgentUtils.getInstance().getAgentPolicy().getVersion());
-        setApiVersion(K2JAVersionInfo.apiVersion);
+        setJsonVersion(K2JAVersionInfo.jsonVersion);
         setCollectorVersion(K2JAVersionInfo.collectorVersion);
         setNodeId(CollectorConfigurationUtils.getInstance().getCollectorConfig().getNodeId());
         setCustomerId(CollectorConfigurationUtils.getInstance().getCollectorConfig().getCustomerInfo().getCustomerId());
@@ -132,17 +130,17 @@ public class AgentBasicInfo {
      *
      * @return the version
      */
-    public String getApiVersion() {
-        return apiVersion;
+    public String getJsonVersion() {
+        return jsonVersion;
     }
 
     /**
      * Sets the version.
      *
-     * @param apiVersion the new version
+     * @param jsonVersion the new version
      */
-    public void setApiVersion(String apiVersion) {
-        this.apiVersion = apiVersion;
+    public void setJsonVersion(String jsonVersion) {
+        this.jsonVersion = jsonVersion;
     }
 
     public String getLanguage() {

@@ -21,7 +21,7 @@
         <collectorVersion>0</collectorVersion>
         <buildTime>0</buildTime>
         <commitId>0</commitId>
-        <apiVersion>2.0.0</apiVersion>
+        <jsonVersion>2.0.0</jsonVersion>
         <maven.build.timestamp.format>yyyy</maven.build.timestamp.format>
         <license.build.timestamp>${maven.build.timestamp}</license.build.timestamp>
     </properties>
