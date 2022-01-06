@@ -54,6 +54,7 @@ public class WSClient extends WebSocketClient {
         this.addHeader("K2-COLLECTOR-TYPE", "JAVA");
         this.addHeader("K2-GROUP", AgentUtils.getInstance().getGroupName());
         this.addHeader("K2-APPLICATION-UUID", K2Instrumentator.APPLICATION_UUID);
+        this.addHeader("K2-JSON-VERSION", K2JAVersionInfo.jsonVersion);
     }
 
     public void openConnection() throws InterruptedException {
