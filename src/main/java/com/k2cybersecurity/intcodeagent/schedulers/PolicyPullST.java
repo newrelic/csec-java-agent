@@ -97,7 +97,7 @@ public class PolicyPullST {
 
     private void task() {
         try {
-            AgentPolicy newPolicy = AgentUtils.getInstance().getAgentPolicy();
+            AgentPolicy newPolicy;
             Response response = HttpClient.getInstance().doGet(IRestClientConstants.GET_POLICY, null, queryParam, null, false);
             if (response.isSuccessful()) {
                 newPolicy = HttpClient.getInstance().readResponse(response.body().byteStream(), AgentPolicy.class);

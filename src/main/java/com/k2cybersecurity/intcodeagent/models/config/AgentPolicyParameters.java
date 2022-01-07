@@ -10,12 +10,21 @@ import java.util.Set;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({
+        "version",
+        "policyPullInterval",
         "allowedIps",
         "blockedIps",
         "allowedApis",
-        "blockedApis"
+        "blockedApis",
+        "allowedRequests"
 })
 public class AgentPolicyParameters {
+
+    @JsonProperty("version")
+    private String version;
+
+    @JsonProperty("policyPullInterval")
+    private Integer policyPullInterval;
 
     @JsonProperty("allowedIps")
     private Set<String> allowedIps = new HashSet<>();
@@ -27,6 +36,8 @@ public class AgentPolicyParameters {
     @JsonProperty("blockedApis")
     private Set<String> blockedApis = new HashSet<>();
 
+    @JsonProperty("allowedRequests")
+    private Set<BlockedRequest> allowedRequests = new HashSet<>();
 
     @JsonIgnore
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
@@ -45,6 +56,26 @@ public class AgentPolicyParameters {
         super();
         this.allowedIps = allowedIps;
         this.blockedIps = blockedIps;
+    }
+
+    @JsonProperty("version")
+    public String getVersion() {
+        return version;
+    }
+
+    @JsonProperty("version")
+    public void setVersion(String version) {
+        this.version = version;
+    }
+
+    @JsonProperty("policyPullInterval")
+    public Integer getPolicyPullInterval() {
+        return policyPullInterval;
+    }
+
+    @JsonProperty("policyPullInterval")
+    public void setPolicyPullInterval(Integer policyPullInterval) {
+        this.policyPullInterval = policyPullInterval;
     }
 
     @JsonProperty("allowedIps")
@@ -95,6 +126,20 @@ public class AgentPolicyParameters {
     @JsonProperty("blockedApis")
     public void setBlockedApis(Set<String> blockedApis) {
         this.blockedApis = blockedApis;
+    }
+
+    @JsonProperty("allowedRequests")
+    public Set<BlockedRequest> getAllowedRequests() {
+        return allowedRequests;
+    }
+
+    @JsonProperty("allowedRequests")
+    public void setAllowedRequests(Set<BlockedRequest> allowedRequests) {
+        this.allowedRequests = allowedRequests;
+    }
+
+    public void setAdditionalProperties(Map<String, Object> additionalProperties) {
+        this.additionalProperties = additionalProperties;
     }
 
     @Override

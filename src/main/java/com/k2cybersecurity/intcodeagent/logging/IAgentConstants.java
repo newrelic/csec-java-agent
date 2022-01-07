@@ -598,6 +598,7 @@ public interface IAgentConstants {
     String RECEIVED_AGENT_POLICY = "[STEP-7][BEGIN][POLICY] Received policy data from Prevent-Web service : %s";
     String UNABLE_TO_PARSE_AGENT_POLICY_DUE_TO_ERROR = "[POLICY] Error while parsing policy data from Prevent-Web service : %s : %s";
     String UNABLE_TO_VALIDATE_AGENT_POLICY_DUE_TO_ERROR = "[POLICY] Error while validating policy data from Prevent-Web service : %s : ";
+    String UNABLE_TO_VALIDATE_AGENT_POLICY_PARAMETER_DUE_TO_ERROR = "[POLICY] Error while validating policy parameters data from Prevent-Web service : %s : ";
 
     String UNABLE_TO_VALIDATE_AGENT_POLICY_DUE_TO_ERROR_FILE = "[POLICY] Error while validating policy data from local policy file change. Falling back to current : %s : ";
     String UNABLE_TO_SET_AGENT_POLICY_DUE_TO_ERROR = "[POLICY] Error while applying policy : %s :";
@@ -612,4 +613,7 @@ public interface IAgentConstants {
     String AGENT_INIT_LOG_STEP_FIVE = "[STEP-5][BEGIN][MODULE] Start Threads/pools/scheduler.";
     String AGENT_INIT_LOG_STEP_FIVE_END = "[STEP-5][COMPLETE][MODULE] Started Threads/pools/scheduler.";
     int NUMBER_OF_RETRIES = 7;
+    String POLICY_NO_CHANGE_IN_GLOBAL_POLICY_PARAMETERS_RESPONSE_BODY = "[POLICY] No change in global policy parameters response : %s : body: %s";
+    String POLICY_VERSION_CHANGED_POLICY_PARAMETER_PULL_REQUIRED_RESPONSE_BODY = "[POLICY] Version changed policy parameter pull required response : %s : body: %s";
+    String POLICY_PARAMETER_VERSION_CHECK_FAILED_MESSAGE_CAUSE = "Policy parameter version check failed MESSAGE: %s CAUSE: %s";
 }

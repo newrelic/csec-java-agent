@@ -12,6 +12,7 @@ import com.k2cybersecurity.intcodeagent.filelogging.LogWriter;
 import com.k2cybersecurity.intcodeagent.logging.DeployedApplication;
 import com.k2cybersecurity.intcodeagent.logging.IAgentConstants;
 import com.k2cybersecurity.intcodeagent.models.config.AgentPolicy;
+import com.k2cybersecurity.intcodeagent.models.config.AgentPolicyParameters;
 import com.k2cybersecurity.intcodeagent.models.config.PolicyApplicationInfo;
 import com.k2cybersecurity.intcodeagent.models.javaagent.CollectorInitMsg;
 import com.k2cybersecurity.intcodeagent.models.javaagent.EventResponse;
@@ -114,6 +115,8 @@ public class AgentUtils {
 //	private Map<Integer, JADatabaseMetaData> sqlConnectionMap;
 
     private AgentPolicy agentPolicy = new AgentPolicy();
+
+    private AgentPolicyParameters agentPolicyParameters = new AgentPolicyParameters();
 
     private boolean isAgentActive = true;
 
@@ -246,6 +249,14 @@ public class AgentUtils {
 
     public void setApplicationInfo(PolicyApplicationInfo applicationInfo) {
         this.applicationInfo = applicationInfo;
+    }
+
+    public AgentPolicyParameters getAgentPolicyParameters() {
+        return agentPolicyParameters;
+    }
+
+    public void setAgentPolicyParameters(AgentPolicyParameters agentPolicyParameters) {
+        this.agentPolicyParameters = agentPolicyParameters;
     }
 
     public void createProtectedVulnerabilties(TypeDescription typeDescription, ClassLoader classLoader) {

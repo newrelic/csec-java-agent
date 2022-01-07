@@ -16,7 +16,6 @@ import java.util.Map;
         "applicationInfo",
         "vulnerabilityScan",
         "protectionMode",
-        "policyParameters",
         "sendCompleteStackTrace",
         "enableHTTPRequestPrinting"
 })
@@ -39,8 +38,8 @@ public class AgentPolicy {
     private VulnerabilityScan vulnerabilityScan = new VulnerabilityScan();
     @JsonProperty("protectionMode")
     private ProtectionMode protectionMode = new ProtectionMode();
-    @JsonProperty("policyParameters")
-    private AgentPolicyParameters policyParameters;
+    //    @JsonProperty("policyParameters")
+//    private AgentPolicyParameters policyParameters;
     @JsonProperty("sendCompleteStackTrace")
     private Boolean sendCompleteStackTrace;
     @JsonProperty("enableHTTPRequestPrinting")
@@ -152,15 +151,15 @@ public class AgentPolicy {
         this.enableHTTPRequestPrinting = enableHTTPRequestPrinting;
     }
 
-    @JsonProperty("policyParameters")
-    public AgentPolicyParameters getPolicyParameters() {
-        return policyParameters;
-    }
-
-    @JsonProperty("policyParameters")
-    public void setPolicyParameters(AgentPolicyParameters policyParameters) {
-        this.policyParameters = policyParameters;
-    }
+//    @JsonProperty("policyParameters")
+//    public AgentPolicyParameters getPolicyParameters() {
+//        return policyParameters;
+//    }
+//
+//    @JsonProperty("policyParameters")
+//    public void setPolicyParameters(AgentPolicyParameters policyParameters) {
+//        this.policyParameters = policyParameters;
+//    }
 
     @JsonProperty("applicationInfo")
     public PolicyApplicationInfo getApplicationInfo() {

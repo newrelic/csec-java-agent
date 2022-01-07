@@ -159,43 +159,6 @@
     },
     "enableHTTPRequestPrinting": {
       "type": "boolean"
-    },
-    "policyParameters": {
-      "type": "object",
-      "properties": {
-        "allowedIps": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
-        "blockedIps": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
-        "allowedApis": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
-        "blockedApis": {
-          "type": "array",
-          "items": {}
-        },
-        "allowedRequests": {
-          "type": "array",
-          "items": {}
-        }
-      },
-      "required": [
-        "allowedIps",
-        "blockedIps",
-        "allowedApis",
-        "blockedApis"
-      ]
     }
   },
   "required": [
@@ -206,7 +169,6 @@
     "vulnerabilityScan",
     "protectionMode",
     "sendCompleteStackTrace",
-    "enableHTTPRequestPrinting",
-    "policyParameters"
+    "enableHTTPRequestPrinting"
   ]
 }
