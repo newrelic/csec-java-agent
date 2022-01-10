@@ -8,9 +8,12 @@ import com.k2cybersecurity.instrumentator.utils.InstrumentationUtils;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.logging.IAgentConstants;
+import com.k2cybersecurity.intcodeagent.models.config.AgentPolicyParameters;
 import com.k2cybersecurity.intcodeagent.models.javaagent.CollectorInitMsg;
 import com.k2cybersecurity.intcodeagent.models.javaagent.EventResponse;
 import com.k2cybersecurity.intcodeagent.models.javaagent.IntCodeControlCommand;
+import com.k2cybersecurity.intcodeagent.schedulers.GlobalPolicyParameterPullST;
+import com.k2cybersecurity.intcodeagent.utils.CommonUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -81,6 +84,28 @@ public class ControlCommandProcessor implements Runnable {
                         ControlCommandProcessor.class.getSimpleName());
                 System.err.println(controlCommand.getArguments().get(0));
                 break;
+
+            case IntCodeControlCommand.SEND_POLICY_PARAMETERS:
+                if (controlCommand.getData() == null) {
+                    return;
+                }
+                try {
+                    AgentPolicyParameters parameters = new ObjectMapper()
+                            .readValue(controlCommand.getData().toString(), AgentPolicyParameters.class);
+                    if (!CommonUtils.validateCollectorPolicyParameterSchema(parameters)) {
+                        logger.log(LogLevel.WARN, String.format(IAgentConstants.UNABLE_TO_VALIDATE_AGENT_POLICY_PARAMETER_DUE_TO_ERROR, parameters), GlobalPolicyParameterPullST.class.getName());
+                        return;
+                    }
+                    AgentUtils.getInstance().setAgentPolicyParameters(parameters);
+                    logger.logInit(LogLevel.INFO,
+                            String.format(IAgentConstants.AGENT_POLICY_PARAM_APPLIED_S, AgentUtils.getInstance().getAgentPolicyParameters()),
+                            ControlCommandProcessor.class.getName());
+                } catch (JsonProcessingException e) {
+                    logger.logInit(LogLevel.DEBUG, IAgentConstants.UNABLE_TO_SET_AGENT_POLICY_PARAM_DUE_TO_ERROR, e,
+                            ControlCommandProcessor.class.getName());
+                }
+                break;
+
             case IntCodeControlCommand.EVENT_RESPONSE:
                 boolean cleanUp = false;
                 try {

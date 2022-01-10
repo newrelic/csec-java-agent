@@ -1,10 +1,8 @@
 package com.k2cybersecurity.intcodeagent.models.javaagent;
 
-import com.k2cybersecurity.instrumentator.utils.AgentUtils;
 import com.k2cybersecurity.intcodeagent.websocket.JsonConverter;
 
 import java.util.Objects;
-import java.util.concurrent.TimeUnit;
 
 public class IPBlockingEntry {
 
@@ -51,13 +49,6 @@ public class IPBlockingEntry {
     @Override
     public int hashCode() {
         return Objects.hash(creationTimestamp, targetIP);
-    }
-
-    public boolean isValid() {
-        if (AgentUtils.getInstance().getAgentPolicy() != null) {
-            return (System.currentTimeMillis() - creationTimestamp) < TimeUnit.MINUTES.toMillis(AgentUtils.getInstance().getAgentPolicy().getProtectionMode().getIpBlocking().getTimeout());
-        }
-        return false;
     }
 
 }

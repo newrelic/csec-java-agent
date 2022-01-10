@@ -1,5 +1,4 @@
 {
-  "$schema": "http://json-schema.org/drafit-04/schema#",
   "title": "LCPolicy",
   "description": "A policy for language collectors",
   "type": "object",
@@ -110,18 +109,12 @@
             },
             "ipDetectViaXFF": {
               "type": "boolean"
-            },
-            "timeout": {
-              "type": "integer",
-              "minimum": 1,
-              "maximum": 4313200
             }
           },
           "required": [
             "enabled",
             "attackerIpBlocking",
-            "ipDetectViaXFF",
-            "timeout"
+            "ipDetectViaXFF"
           ]
         },
         "apiBlocking": {

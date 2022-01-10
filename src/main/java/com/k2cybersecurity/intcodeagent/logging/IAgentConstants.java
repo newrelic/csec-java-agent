@@ -614,6 +614,7 @@ public interface IAgentConstants {
     String AGENT_INIT_LOG_STEP_FIVE_END = "[STEP-5][COMPLETE][MODULE] Started Threads/pools/scheduler.";
     int NUMBER_OF_RETRIES = 7;
     String POLICY_NO_CHANGE_IN_GLOBAL_POLICY_PARAMETERS_RESPONSE_BODY = "[POLICY] No change in global policy parameters response : %s : body: %s";
+    String POLICY_GLOBAL_POLICY_PARAMETERS_API_FAILURE_RESPONSE_BODY = "[POLICY] API global policy parameters failure!!! response : %s : body: %s";
     String POLICY_VERSION_CHANGED_POLICY_PARAMETER_PULL_REQUIRED_RESPONSE_BODY = "[POLICY] Version changed policy parameter pull required response : %s : body: %s";
     String POLICY_PARAMETER_VERSION_CHECK_FAILED_MESSAGE_CAUSE = "Policy parameter version check failed MESSAGE: %s CAUSE: %s";
 }

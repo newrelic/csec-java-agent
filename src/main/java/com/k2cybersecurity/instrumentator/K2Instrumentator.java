@@ -9,6 +9,7 @@ import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.logging.HealthCheckScheduleThread;
 import com.k2cybersecurity.intcodeagent.models.config.PolicyApplicationInfo;
 import com.k2cybersecurity.intcodeagent.models.javaagent.*;
+import com.k2cybersecurity.intcodeagent.schedulers.GlobalPolicyParameterPullST;
 import com.k2cybersecurity.intcodeagent.schedulers.PolicyPullST;
 import com.k2cybersecurity.intcodeagent.websocket.EventSendPool;
 import com.k2cybersecurity.intcodeagent.websocket.WSClient;
@@ -173,6 +174,7 @@ public class K2Instrumentator {
             DirectoryWatcher.startMonitorDaemon();
             PolicyPullST.instantiateDefaultPolicy();
             PolicyPullST.getInstance();
+            GlobalPolicyParameterPullST.getInstance();
             logger.logInit(
                     LogLevel.INFO,
                     String.format(STARTING_MODULE_LOG, AgentServices.EventWritePool.name()),

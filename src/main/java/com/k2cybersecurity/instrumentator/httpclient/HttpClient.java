@@ -65,6 +65,8 @@ public class HttpClient {
     public static final String MULTIPART_FORM_DATA = "multipart/form-data";
     private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
     private static final Object lock = new Object();
+    public static final String READ_RESPONSE_FAILED = "Read response failed!!!";
+    public static final String READ_RESPONSE_FAILED_MESSAGE_S_CAUSE_S = "Read response failed MESSAGE: %s  CAUSE: %s";
     private static HttpClient instance;
     // Create a trust manager that does not validate certificate chains
     private final TrustManager[] trustAllCerts = new TrustManager[]{
@@ -265,7 +267,8 @@ public class HttpClient {
         try {
             return objectMapper.readValue(stream, valueType);
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.log(LogLevel.ERROR, String.format(READ_RESPONSE_FAILED_MESSAGE_S_CAUSE_S, e.getMessage(), e.getCause()), HttpClient.class.getName());
+            logger.log(LogLevel.DEBUG, READ_RESPONSE_FAILED, e, HttpClient.class.getName());
         }
         return null;
     }

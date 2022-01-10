@@ -1,6 +1,5 @@
 package com.k2cybersecurity.intcodeagent.schedulers;
 
-import com.k2cybersecurity.instrumentator.K2Instrumentator;
 import com.k2cybersecurity.instrumentator.httpclient.HttpClient;
 import com.k2cybersecurity.instrumentator.httpclient.IRestClientConstants;
 import com.k2cybersecurity.instrumentator.utils.AgentUtils;
@@ -22,10 +21,9 @@ public class GlobalPolicyParameterPullST {
     final private static Object lock = new Object();
     public static final String VERSION = "version";
     public static final String CANCEL_CURRENT_TASK_OF_GLOBAL_POLICY_PULL = "Cancel current task of global policy pull.";
+    public static final String CURRENT_VERSION = "currentVersion";
 
     private ScheduledExecutorService executorService;
-
-    private Map<String, String> queryParam = new HashMap<>();
 
     public static GlobalPolicyParameterPullST instance;
 
@@ -51,10 +49,7 @@ public class GlobalPolicyParameterPullST {
                         "K2-pull-policy-st");
             }
         });
-
-        queryParam.put("group", AgentUtils.getInstance().getGroupName());
-        queryParam.put("applicationUUID", K2Instrumentator.APPLICATION_UUID);
-        future = executorService.schedule(runnable, 5, TimeUnit.MINUTES);
+        future = executorService.schedule(runnable, 1, TimeUnit.MINUTES);
         logger.log(LogLevel.INFO, "policy fetch schedule thread started successfully!!!", PolicyPullST.class.getName());
     }
 
@@ -62,11 +57,10 @@ public class GlobalPolicyParameterPullST {
         @Override
         public void run() {
             try {
-                boolean pullRequired = isGlobalPolicyPullRequired(AgentUtils.getInstance().getAgentPolicyParameters().getVersion());
-                if (!pullRequired) {
+                AgentPolicyParameters parameters = getPolicyParamters(AgentUtils.getInstance().getAgentPolicyParameters().getVersion());
+                if (parameters == null) {
                     return;
                 }
-                AgentPolicyParameters parameters = getPolicyParamters();
                 if (!CommonUtils.validateCollectorPolicyParameterSchema(parameters)) {
                     logger.log(LogLevel.WARN, String.format(IAgentConstants.UNABLE_TO_VALIDATE_AGENT_POLICY_PARAMETER_DUE_TO_ERROR, parameters), GlobalPolicyParameterPullST.class.getName());
                     return;
@@ -80,35 +74,23 @@ public class GlobalPolicyParameterPullST {
         }
     };
 
-    private AgentPolicyParameters getPolicyParamters() {
+    private AgentPolicyParameters getPolicyParamters(String version) {
         try {
+            Map<String, String> queryParam = new HashMap<>();
+            queryParam.put(CURRENT_VERSION, version);
             Response response = HttpClient.getInstance().doGet(IRestClientConstants.POLICY_PARAMETER, null, queryParam, null, false);
-            if (response.isSuccessful()) {
+            if (response.isSuccessful() && response.code() == 200) {
                 logger.log(LogLevel.INFO, String.format(IAgentConstants.POLICY_VERSION_CHANGED_POLICY_PARAMETER_PULL_REQUIRED_RESPONSE_BODY, response.code(), response.body().string()), GlobalPolicyParameterPullST.class.getName());
                 return HttpClient.getInstance().readResponse(response.body().byteStream(), AgentPolicyParameters.class);
+            } else if (response.isSuccessful() && response.code() == 204) {
+                logger.log(LogLevel.INFO, String.format(IAgentConstants.POLICY_NO_CHANGE_IN_GLOBAL_POLICY_PARAMETERS_RESPONSE_BODY, response.code(), response.body().string()), GlobalPolicyParameterPullST.class.getName());
             } else {
-                logger.log(LogLevel.ERROR, String.format(IAgentConstants.POLICY_NO_CHANGE_IN_GLOBAL_POLICY_PARAMETERS_RESPONSE_BODY, response.code(), response.body().string()), GlobalPolicyParameterPullST.class.getName());
+                logger.log(LogLevel.ERROR, String.format(IAgentConstants.POLICY_GLOBAL_POLICY_PARAMETERS_API_FAILURE_RESPONSE_BODY, response.code(), response.body().string()), GlobalPolicyParameterPullST.class.getName());
             }
         } catch (Exception e) {
             logger.log(LogLevel.ERROR, String.format(IAgentConstants.POLICY_PARAMETER_VERSION_CHECK_FAILED_MESSAGE_CAUSE, e.getMessage(), e.getCause()), GlobalPolicyParameterPullST.class.getName());
         }
-        return new AgentPolicyParameters();
-    }
-
-    private boolean isGlobalPolicyPullRequired(String version) {
-        try {
-            queryParam.put(VERSION, version);
-            Response response = HttpClient.getInstance().doGet(IRestClientConstants.POLICY_PARAMETER, null, queryParam, null, false);
-            if (response.isSuccessful()) {
-                logger.log(LogLevel.INFO, String.format(IAgentConstants.POLICY_VERSION_CHANGED_POLICY_PARAMETER_PULL_REQUIRED_RESPONSE_BODY, response.code(), response.body().string()), GlobalPolicyParameterPullST.class.getName());
-                return true;
-            } else {
-                logger.log(LogLevel.ERROR, String.format(IAgentConstants.POLICY_NO_CHANGE_IN_GLOBAL_POLICY_PARAMETERS_RESPONSE_BODY, response.code(), response.body().string()), GlobalPolicyParameterPullST.class.getName());
-            }
-        } catch (Exception e) {
-            logger.log(LogLevel.ERROR, String.format(IAgentConstants.POLICY_PARAMETER_VERSION_CHECK_FAILED_MESSAGE_CAUSE, e.getMessage(), e.getCause()), GlobalPolicyParameterPullST.class.getName());
-        }
-        return false;
+        return null;
     }
 
     public void submitNewTask() {

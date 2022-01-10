@@ -11,17 +11,31 @@ import java.util.Set;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({
         "version",
+        "timestamp",
+        "lastUpdateTimestamp",
         "policyPullInterval",
+        "attackerIpTimeout",
         "allowedIps",
         "blockedIps",
         "allowedApis",
         "blockedApis",
         "allowedRequests"
 })
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class AgentPolicyParameters {
 
     @JsonProperty("version")
     private String version;
+
+    @JsonProperty("timestamp")
+    private Long timestamp;
+
+    @JsonProperty("lastUpdateTimestamp")
+    private Long lastUpdateTimestamp;
+
+    //In minutes
+    @JsonProperty("attackerIpTimeout")
+    private Integer attackerIpTimeout;
 
     @JsonProperty("policyPullInterval")
     private Integer policyPullInterval;
@@ -46,6 +60,7 @@ public class AgentPolicyParameters {
      * No args constructor for use in serialization
      */
     public AgentPolicyParameters() {
+        this.version = "0";
     }
 
     /**
@@ -140,6 +155,36 @@ public class AgentPolicyParameters {
 
     public void setAdditionalProperties(Map<String, Object> additionalProperties) {
         this.additionalProperties = additionalProperties;
+    }
+
+    @JsonProperty("timestamp")
+    public Long getTimestamp() {
+        return timestamp;
+    }
+
+    @JsonProperty("timestamp")
+    public void setTimestamp(Long timestamp) {
+        this.timestamp = timestamp;
+    }
+
+    @JsonProperty("lastUpdateTimestamp")
+    public Long getLastUpdateTimestamp() {
+        return lastUpdateTimestamp;
+    }
+
+    @JsonProperty("lastUpdateTimestamp")
+    public void setLastUpdateTimestamp(Long lastUpdateTimestamp) {
+        this.lastUpdateTimestamp = lastUpdateTimestamp;
+    }
+
+    @JsonProperty("attackerIpTimeout")
+    public Integer getAttackerIpTimeout() {
+        return attackerIpTimeout;
+    }
+
+    @JsonProperty("attackerIpTimeout")
+    public void setAttackerIpTimeout(Integer attackerIpTimeout) {
+        this.attackerIpTimeout = attackerIpTimeout;
     }
 
     @Override
