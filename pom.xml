@@ -187,7 +187,7 @@
                             <Can-Retransform-Classes>true</Can-Retransform-Classes>
                             <Can-Redefine-Classes>true</Can-Redefine-Classes>
                             <Boot-Class-Path>
-                                ${project.artifactId}-${project.version}-jar-with-dependencies.${project.packaging}
+                                ${project.artifactId}-jar-with-dependencies.${project.packaging}
                             </Boot-Class-Path>
                         </manifestEntries>
                     </archive>
@@ -225,7 +225,7 @@
                                     <addHeader>false</addHeader>
                                 </transformer>
                             </transformers>
-                            <finalName>${project.artifactId}-${project.version}-jar-with-dependencies</finalName>
+                            <finalName>${project.artifactId}-jar-with-dependencies</finalName>
                             <relocations>
 
                                 <relocation>
