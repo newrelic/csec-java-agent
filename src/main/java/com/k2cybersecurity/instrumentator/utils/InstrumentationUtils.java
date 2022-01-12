@@ -11,6 +11,7 @@ import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.logging.HealthCheckScheduleThread;
 import com.k2cybersecurity.intcodeagent.models.javaagent.ShutDownEvent;
 import com.k2cybersecurity.intcodeagent.schedulers.CVEBundlePullST;
+import com.k2cybersecurity.intcodeagent.schedulers.GlobalPolicyParameterPullST;
 import com.k2cybersecurity.intcodeagent.schedulers.InBoundOutBoundST;
 import com.k2cybersecurity.intcodeagent.schedulers.PolicyPullST;
 import com.k2cybersecurity.intcodeagent.websocket.EventSendPool;
@@ -364,6 +365,7 @@ public class InstrumentationUtils {
             EventSendPool.shutDownPool();
             WSReconnectionST.shutDownPool();
             PolicyPullST.shutDownPool();
+            GlobalPolicyParameterPullST.shutDownPool();
             CVEScannerPool.shutDownPool();
             CVEBundlePullST.shutDownPool();
             InBoundOutBoundST.shutDownPool();

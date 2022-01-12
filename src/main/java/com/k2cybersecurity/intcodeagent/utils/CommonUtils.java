@@ -7,6 +7,7 @@ import com.k2cybersecurity.instrumentator.utils.AgentUtils;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.models.config.AgentPolicy;
+import com.k2cybersecurity.intcodeagent.models.config.AgentPolicyParameters;
 import com.k2cybersecurity.intcodeagent.schedulers.PolicyPullST;
 import org.apache.commons.io.FileUtils;
 import org.everit.json.schema.Schema;
@@ -20,6 +21,27 @@ public class CommonUtils {
     private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
     public static final String POLICY_WRITE_FAILED = "policy write failed : ";
     public static final String POLICY_WRITTEN_TO_FILE = "policy written to file : ";
+
+    public static boolean validateCollectorPolicyParameterSchema(AgentPolicyParameters policyParameters) {
+
+        try {
+            JSONObject jsonSchema = new JSONObject(
+                    new JSONTokener(CommonUtils.class.getClassLoader().getSystemResourceAsStream("lc-policy-parameters-schema.json")));
+            JSONObject jsonSubject = new JSONObject(
+                    new JSONTokener(policyParameters.toString()));
+
+            Schema schema = SchemaLoader.load(jsonSchema);
+            schema.validate(jsonSubject);
+            return true;
+        } catch (ValidationException e) {
+            logger.log(LogLevel.ERROR, String.format("LC Policy Parameters validation failed due to following violations: %s", e.getAllMessages()), CommonUtils.class.getName());
+            logger.log(LogLevel.DEBUG, "LC Policy Parameters validation failed due to", e, CommonUtils.class.getName());
+        } catch (Exception e) {
+            logger.log(LogLevel.ERROR, String.format("Exception raised in LC policy Parameters validation : %s :: caused by : %s", e.getMessage(), e.getCause()), CommonUtils.class.getName());
+            logger.log(LogLevel.DEBUG, "Exception raised in LC policy Parameters validation", e, CommonUtils.class.getName());
+        }
+        return false;
+    }
 
     public static boolean validateCollectorPolicySchema(AgentPolicy policy) {
 

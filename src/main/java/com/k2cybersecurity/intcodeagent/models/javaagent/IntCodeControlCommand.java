@@ -13,6 +13,7 @@ public class IntCodeControlCommand {
     public static final int SHUTDOWN_LANGUAGE_AGENT = 1;
     public static final int UNSUPPORTED_AGENT = 5;
     public static final int EVENT_RESPONSE = 6;
+    public static final int OLD_AGENT = 7;
     public static final int STARTUP_WELCOME_MSG = 10;
 
     public static final int FUZZ_REQUEST = 11;

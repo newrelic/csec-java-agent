@@ -23,8 +23,6 @@ public class IpBlocking {
     private Boolean attackerIpBlocking;
     @JsonProperty("ipDetectViaXFF")
     private Boolean ipDetectViaXFF;
-    @JsonProperty("timeout")
-    private Integer timeout;
     @JsonIgnore
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
@@ -39,13 +37,11 @@ public class IpBlocking {
      * @param ipDetectViaXFF
      * @param enabled
      */
-    public IpBlocking(Boolean enabled, Boolean attackerIpBlocking, Boolean ipDetectViaXFF,
-                      Integer timeout) {
+    public IpBlocking(Boolean enabled, Boolean attackerIpBlocking, Boolean ipDetectViaXFF) {
         super();
         this.enabled = enabled;
         this.attackerIpBlocking = attackerIpBlocking;
         this.ipDetectViaXFF = ipDetectViaXFF;
-        this.timeout = timeout;
     }
 
     @JsonProperty("enabled")
@@ -76,16 +72,6 @@ public class IpBlocking {
     @JsonProperty("ipDetectViaXFF")
     public void setIpDetectViaXFF(Boolean ipDetectViaXFF) {
         this.ipDetectViaXFF = ipDetectViaXFF;
-    }
-
-    @JsonProperty("timeout")
-    public Integer getTimeout() {
-        return timeout;
-    }
-
-    @JsonProperty("timeout")
-    public void setTimeout(Integer timeout) {
-        this.timeout = timeout;
     }
 
     @JsonAnyGetter

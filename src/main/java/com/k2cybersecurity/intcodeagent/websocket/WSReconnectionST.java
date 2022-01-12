@@ -62,7 +62,7 @@ public class WSReconnectionST {
     public void submitNewTaskSchedule() {
         getInstance();
         if (futureTask == null || futureTask.isDone()) {
-            futureTask = scheduledService.schedule(runnable, 30, TimeUnit.SECONDS);
+            futureTask = scheduledService.scheduleWithFixedDelay(runnable, 30, 30, TimeUnit.SECONDS);
         }
     }
 

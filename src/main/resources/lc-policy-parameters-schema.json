@@ -1,0 +1,59 @@
+{
+  "title": "LCPolicyParameters",
+  "description": "Global policy parameters for language collectors",
+  "type": "object",
+  "properties": {
+    "version": {
+      "type": "integer"
+    },
+    "timestamp": {
+      "type": "integer"
+    },
+    "lastUpdateTimestamp": {
+      "type": "integer"
+    },
+    "policyPullInterval": {
+      "type": "integer"
+    },
+    "attackerIpTimeout": {
+      "type": "integer"
+    },
+    "allowedIps": {
+      "type": "array",
+      "items": [
+        {
+          "type": "string"
+        }
+      ]
+    },
+    "blockedIps": {
+      "type": "array",
+      "items": [
+        {
+          "type": "string"
+        }
+      ]
+    },
+    "allowedApis": {
+      "type": "array",
+      "items": {}
+    },
+    "blockedApis": {
+      "type": "array",
+      "items": {}
+    },
+    "allowedRequests": {
+      "type": "array",
+      "items": {}
+    }
+  },
+  "required": [
+    "version",
+    "policyPullInterval",
+    "allowedIps",
+    "blockedIps",
+    "allowedApis",
+    "blockedApis",
+    "allowedRequests"
+  ]
+}

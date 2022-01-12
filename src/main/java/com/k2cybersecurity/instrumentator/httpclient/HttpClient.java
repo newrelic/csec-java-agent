@@ -6,7 +6,6 @@ import com.k2cybersecurity.instrumentator.os.OsVariablesInstance;
 import com.k2cybersecurity.instrumentator.utils.CollectorConfigurationUtils;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
-import com.k2cybersecurity.intcodeagent.properties.K2JAVersionInfo;
 import com.squareup.okhttp.*;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -53,7 +52,6 @@ public class HttpClient {
     public static final String UNKNOWN_ASYNC_API_S = "unknown async API: %s";
     public static final String K_2_API_ACCESSOR_TOKEN = "K2_API_ACCESSOR_TOKEN";
     public static final String K_2_CUSTOMER_ID = "K2_CUSTOMER_ID";
-    public static final String K_2_JSON_VERSION = "K2_JSON_VERSION";
     public static final String SSL = "SSL";
     public static final String API_S_FAILED = "API %s failed!";
     public static final String ASYNC_API_EXECUTION_FAILED_S = "Async API execution failed %s";
@@ -65,6 +63,8 @@ public class HttpClient {
     public static final String MULTIPART_FORM_DATA = "multipart/form-data";
     private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
     private static final Object lock = new Object();
+    public static final String READ_RESPONSE_FAILED = "Read response failed!!!";
+    public static final String READ_RESPONSE_FAILED_MESSAGE_S_CAUSE_S = "Read response failed MESSAGE: %s  CAUSE: %s";
     private static HttpClient instance;
     // Create a trust manager that does not validate certificate chains
     private final TrustManager[] trustAllCerts = new TrustManager[]{
@@ -131,7 +131,6 @@ public class HttpClient {
         Headers.Builder builder = new Headers.Builder();
         builder.add(K_2_API_ACCESSOR_TOKEN, CollectorConfigurationUtils.getInstance().getCollectorConfig().getCustomerInfo().getApiAccessorToken());
         builder.add(K_2_CUSTOMER_ID, String.valueOf(CollectorConfigurationUtils.getInstance().getCollectorConfig().getCustomerInfo().getCustomerId()));
-        builder.add(K_2_JSON_VERSION, K2JAVersionInfo.jsonVersion);
         if (headers != null) {
             headers.forEach((key, value) -> {
                 builder.add(key, value);
@@ -265,7 +264,8 @@ public class HttpClient {
         try {
             return objectMapper.readValue(stream, valueType);
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.log(LogLevel.ERROR, String.format(READ_RESPONSE_FAILED_MESSAGE_S_CAUSE_S, e.getMessage(), e.getCause()), HttpClient.class.getName());
+            logger.log(LogLevel.DEBUG, READ_RESPONSE_FAILED, e, HttpClient.class.getName());
         }
         return null;
     }
