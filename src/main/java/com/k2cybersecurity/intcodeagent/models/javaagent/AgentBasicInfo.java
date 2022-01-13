@@ -20,7 +20,10 @@ public class AgentBasicInfo {
     /**
      * Tool id for Language Agent.
      */
-    private String collectorVersion;
+    @JsonInclude
+    private static String collectorVersion;
+
+    private String buildNumber;
 
     /**
      * The Json name.
@@ -56,6 +59,7 @@ public class AgentBasicInfo {
         setPolicyVersion(AgentUtils.getInstance().getAgentPolicy().getVersion());
         setJsonVersion(K2JAVersionInfo.jsonVersion);
         setCollectorVersion(K2JAVersionInfo.collectorVersion);
+        setBuildNumber(K2JAVersionInfo.buildNumber);
         setNodeId(CollectorConfigurationUtils.getInstance().getCollectorConfig().getNodeId());
         setCustomerId(CollectorConfigurationUtils.getInstance().getCollectorConfig().getCustomerInfo().getCustomerId());
         setGroupName(AgentUtils.getInstance().getGroupName());
@@ -95,16 +99,16 @@ public class AgentBasicInfo {
      * @return the Language Agent tool id.
      */
     public String getCollectorVersion() {
-        return collectorVersion;
+        return AgentBasicInfo.collectorVersion;
     }
 
     /**
      * Sets the Language Agent tool id.
      *
-     * @param k2jaToolId Language Agent tool id.
+     * @param collectorVersion Language Agent tool id.
      */
-    public void setCollectorVersion(String k2jaToolId) {
-        collectorVersion = k2jaToolId;
+    public void setCollectorVersion(String collectorVersion) {
+        AgentBasicInfo.collectorVersion = collectorVersion;
     }
 
     /**
@@ -188,5 +192,13 @@ public class AgentBasicInfo {
 
     public void setEmailId(String emailId) {
         this.emailId = emailId;
+    }
+
+    public String getBuildNumber() {
+        return buildNumber;
+    }
+
+    public void setBuildNumber(String buildNumber) {
+        this.buildNumber = buildNumber;
     }
 }

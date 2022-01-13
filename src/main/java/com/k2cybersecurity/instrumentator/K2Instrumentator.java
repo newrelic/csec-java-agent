@@ -9,6 +9,7 @@ import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.logging.HealthCheckScheduleThread;
 import com.k2cybersecurity.intcodeagent.models.config.PolicyApplicationInfo;
 import com.k2cybersecurity.intcodeagent.models.javaagent.*;
+import com.k2cybersecurity.intcodeagent.properties.K2JAVersionInfo;
 import com.k2cybersecurity.intcodeagent.schedulers.GlobalPolicyParameterPullST;
 import com.k2cybersecurity.intcodeagent.schedulers.PolicyPullST;
 import com.k2cybersecurity.intcodeagent.websocket.EventSendPool;
@@ -98,6 +99,14 @@ public class K2Instrumentator {
             }
             if (StringUtils.isBlank(alcPath)) {
                 alcPath = alcDefaultPath;
+            }
+
+            try {
+                String collectorVersion = IOUtils.toString(ClassLoader.getSystemResourceAsStream("k2version"), StandardCharsets.UTF_8);
+                if (StringUtils.isNotBlank(collectorVersion)) {
+                    K2JAVersionInfo.collectorVersion = collectorVersion;
+                }
+            } catch (Exception e) {
             }
 
             Identifier identifier = ApplicationInfoUtils.envDetection();

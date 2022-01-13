@@ -1,8 +1,9 @@
 package com.k2cybersecurity.intcodeagent.properties;
 
-public interface K2JAVersionInfo {
-    String collectorVersion = "0";
-    String buildTime = "0";
-    String commitId = "0";
-    String jsonVersion = "2.0.0";
+public class K2JAVersionInfo {
+    public static String collectorVersion = "2.0.0";
+    public static String buildTime = "0";
+    public static String commitId = "0";
+    public static String jsonVersion = "2.0.0";
+    public static String buildNumber = "0";
 }

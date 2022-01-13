@@ -52,6 +52,7 @@ public class WSClient extends WebSocketClient {
         this.addHeader("K2-CUSTOMER-ID", String.valueOf(CollectorConfigurationUtils.getInstance().getCollectorConfig().getCustomerInfo().getCustomerId()));
         this.addHeader("K2-VERSION", K2JAVersionInfo.collectorVersion);
         this.addHeader("K2-COLLECTOR-TYPE", "JAVA");
+        this.addHeader("K2-BUILD-NUMBER", K2JAVersionInfo.buildNumber);
         this.addHeader("K2-GROUP", AgentUtils.getInstance().getGroupName());
         this.addHeader("K2-APPLICATION-UUID", K2Instrumentator.APPLICATION_UUID);
         this.addHeader("K2-JSON-VERSION", K2JAVersionInfo.jsonVersion);

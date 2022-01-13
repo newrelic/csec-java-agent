@@ -5,4 +5,5 @@ public class K2JAVersionInfo {
     public static String buildTime = "${buildTime}";
     public static String commitId = "${commitId}";
     public static String jsonVersion = "${jsonVersion}";
+    public static String buildNumber = "${buildNumber}";
 }
