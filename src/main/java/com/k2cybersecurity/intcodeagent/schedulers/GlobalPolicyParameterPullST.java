@@ -41,12 +41,12 @@ public class GlobalPolicyParameterPullST {
     }
 
     private GlobalPolicyParameterPullST() {
-        logger.log(LogLevel.INFO, "policy pull for group name: " + AgentUtils.getInstance().getGroupName(), PolicyPullST.class.getName());
+        logger.log(LogLevel.INFO, "policy pull parameters for group name: " + AgentUtils.getInstance().getGroupName(), PolicyPullST.class.getName());
         executorService = Executors.newSingleThreadScheduledExecutor(new ThreadFactory() {
             @Override
             public Thread newThread(Runnable r) {
                 return new Thread(Thread.currentThread().getThreadGroup(), r,
-                        "K2-pull-policy-st");
+                        "K2-policy-param-st");
             }
         });
         future = executorService.schedule(runnable, 1, TimeUnit.MINUTES);
@@ -80,8 +80,9 @@ public class GlobalPolicyParameterPullST {
             queryParam.put(CURRENT_VERSION, version);
             Response response = HttpClient.getInstance().doGet(IRestClientConstants.POLICY_PARAMETER, null, queryParam, null, false);
             if (response.isSuccessful() && response.code() == 200) {
-                logger.log(LogLevel.INFO, String.format(IAgentConstants.POLICY_VERSION_CHANGED_POLICY_PARAMETER_PULL_REQUIRED_RESPONSE_BODY, response.code(), response.body().string()), GlobalPolicyParameterPullST.class.getName());
-                return HttpClient.getInstance().readResponse(response.body().byteStream(), AgentPolicyParameters.class);
+                AgentPolicyParameters parameters = HttpClient.getInstance().readResponse(response.body().byteStream(), AgentPolicyParameters.class);
+                logger.log(LogLevel.INFO, String.format(IAgentConstants.POLICY_VERSION_CHANGED_POLICY_PARAMETER_PULL_REQUIRED_RESPONSE_BODY, response.code(), parameters), GlobalPolicyParameterPullST.class.getName());
+                return parameters;
             } else if (response.isSuccessful() && response.code() == 204) {
                 logger.log(LogLevel.INFO, String.format(IAgentConstants.POLICY_NO_CHANGE_IN_GLOBAL_POLICY_PARAMETERS_RESPONSE_BODY, response.code(), response.body().string()), GlobalPolicyParameterPullST.class.getName());
             } else {
