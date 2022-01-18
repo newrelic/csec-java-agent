@@ -95,8 +95,8 @@ public class LogWriter implements Runnable {
     static {
         fileName = new File(osVariables.getLogDirectory(), "k2_java_agent-" + K2Instrumentator.APPLICATION_UUID + ".log").getAbsolutePath();
         currentLogFile = new File(fileName);
-        createLogFile();
         currentLogFileName = fileName;
+        createLogFile();
     }
 
     public LogWriter(LogLevel logLevel, String logEntry, String loggingClassName, String threadName) {

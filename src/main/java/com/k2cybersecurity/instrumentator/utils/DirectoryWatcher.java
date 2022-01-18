@@ -19,9 +19,6 @@
  */
 package com.k2cybersecurity.instrumentator.utils;
 
-import com.k2cybersecurity.instrumentator.K2Instrumentator;
-import com.k2cybersecurity.instrumentator.httpclient.HttpClient;
-import com.k2cybersecurity.instrumentator.httpclient.IRestClientConstants;
 import com.k2cybersecurity.instrumentator.os.OSVariables;
 import com.k2cybersecurity.instrumentator.os.OsVariablesInstance;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
@@ -189,15 +186,7 @@ public class DirectoryWatcher {
                         return;
                     }
                     if (PolicyPullST.getInstance().readAndApplyConfig(newPolicy)) {
-                        try {
-                            Map<String, String> queryParam = new HashMap<>();
-                            queryParam.put("group", AgentUtils.getInstance().getGroupName());
-                            queryParam.put("applicationUUID", K2Instrumentator.APPLICATION_UUID);
-
-                            HttpClient.getInstance().doPost(IRestClientConstants.UPDATE_POLICY, null, queryParam, null, newPolicy, true);
-                        } catch (Exception e) {
-                            logger.log(LogLevel.WARN, String.format("Update policy to IC failed due to %s", e.getMessage()), DirectoryWatcher.class.getName());
-                        }
+                        CommonUtils.fireUpdatePolicyAPI(newPolicy);
                     }
                 }
             } catch (Exception e) {

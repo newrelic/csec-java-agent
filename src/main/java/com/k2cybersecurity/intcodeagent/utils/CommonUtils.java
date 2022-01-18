@@ -3,7 +3,11 @@ package com.k2cybersecurity.intcodeagent.utils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator;
+import com.k2cybersecurity.instrumentator.K2Instrumentator;
+import com.k2cybersecurity.instrumentator.httpclient.HttpClient;
+import com.k2cybersecurity.instrumentator.httpclient.IRestClientConstants;
 import com.k2cybersecurity.instrumentator.utils.AgentUtils;
+import com.k2cybersecurity.instrumentator.utils.DirectoryWatcher;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.models.config.AgentPolicy;
@@ -15,6 +19,9 @@ import org.everit.json.schema.ValidationException;
 import org.everit.json.schema.loader.SchemaLoader;
 import org.json.JSONObject;
 import org.json.JSONTokener;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class CommonUtils {
 
@@ -62,6 +69,18 @@ public class CommonUtils {
             logger.log(LogLevel.DEBUG, "Exception raised in LC policy validation", e, CommonUtils.class.getName());
         }
         return false;
+    }
+
+    public static void fireUpdatePolicyAPI(AgentPolicy policy) {
+        try {
+            Map<String, String> queryParam = new HashMap<>();
+            queryParam.put("group", AgentUtils.getInstance().getGroupName());
+            queryParam.put("applicationUUID", K2Instrumentator.APPLICATION_UUID);
+
+            HttpClient.getInstance().doPost(IRestClientConstants.UPDATE_POLICY, null, queryParam, null, policy, true);
+        } catch (Exception e) {
+            logger.log(LogLevel.WARN, String.format("Update policy to IC failed due to %s", e.getMessage()), DirectoryWatcher.class.getName());
+        }
     }
 
     public static void writePolicyToFile() {
