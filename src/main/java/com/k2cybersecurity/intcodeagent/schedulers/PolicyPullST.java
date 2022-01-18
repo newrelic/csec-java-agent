@@ -101,8 +101,11 @@ public class PolicyPullST {
             Response response = HttpClient.getInstance().doGet(IRestClientConstants.GET_POLICY, null, queryParam, null, false);
             if (response.isSuccessful()) {
                 newPolicy = HttpClient.getInstance().readResponse(response.body().byteStream(), AgentPolicy.class);
-            } else {
+            } else if (response != null && response.body() != null) {
                 logger.log(LogLevel.ERROR, String.format(IAgentConstants.UNABLE_TO_PARSE_AGENT_POLICY_DUE_TO_ERROR, response.code(), response.body().string()), PolicyPullST.class.getName());
+                return;
+            } else {
+                logger.log(LogLevel.ERROR, IAgentConstants.POLICY_PULL_RESPONSE_IS_NULL, PolicyPullST.class.getName());
                 return;
             }
 

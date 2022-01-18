@@ -30,7 +30,7 @@ public class WSReconnectionST {
         }
     };
 
-    private WSReconnectionST() {
+    private void instantiateScheduler() {
         scheduledService = Executors.newSingleThreadScheduledExecutor(new ThreadFactory() {
             private final AtomicInteger threadNumber = new AtomicInteger(1);
 
@@ -40,6 +40,10 @@ public class WSReconnectionST {
                         WSRECONNECTSCHEDULEDTHREAD_ + threadNumber.getAndIncrement());
             }
         });
+    }
+
+    private WSReconnectionST() {
+        instantiateScheduler();
     }
 
 
@@ -60,9 +64,11 @@ public class WSReconnectionST {
     }
 
     public void submitNewTaskSchedule() {
-        getInstance();
         if (futureTask == null || futureTask.isDone()) {
-            futureTask = scheduledService.scheduleWithFixedDelay(runnable, 30, 30, TimeUnit.SECONDS);
+            if (scheduledService.isShutdown()) {
+                instance.instantiateScheduler();
+            }
+            futureTask = scheduledService.schedule(runnable, 30, TimeUnit.SECONDS);
         }
     }
 
