@@ -617,5 +617,9 @@ public interface IAgentConstants {
     String POLICY_GLOBAL_POLICY_PARAMETERS_API_FAILURE_RESPONSE_BODY = "[POLICY] API global policy parameters failure!!! response : %s : body: %s";
     String POLICY_VERSION_CHANGED_POLICY_PARAMETER_PULL_REQUIRED_RESPONSE_BODY = "[POLICY] Version changed policy parameter pull required response : %s : body: %s";
     String POLICY_PARAMETER_VERSION_CHECK_FAILED_MESSAGE_CAUSE = "Policy parameter version check failed MESSAGE: %s CAUSE: %s";
+
+
+    String DEFAULT_K2HOME_LINUX = "/opt/k2root";
+    String DEFAULT_K2HOME_WIN = "C:\\Users\\Public\\K2\\k2root";
     String POLICY_PULL_RESPONSE_IS_NULL = "Policy pull response is null!!!";
 }

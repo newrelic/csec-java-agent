@@ -20,8 +20,15 @@ import org.everit.json.schema.loader.SchemaLoader;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.attribute.PosixFilePermissions;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Stack;
 
 public class CommonUtils {
 
@@ -97,5 +104,34 @@ public class CommonUtils {
         } catch (Exception e) {
             logger.log(LogLevel.ERROR, POLICY_WRITE_FAILED, e, PolicyPullST.class.getName());
         }
+    }
+
+    public static Boolean forceMkdirs(Path directory, String permissions) {
+        File existingDirectory = directory.toFile();
+        Stack<String> pathStack = new Stack<>();
+        while (!existingDirectory.isDirectory()) {
+            pathStack.push(existingDirectory.getName());
+            File next = existingDirectory.getParentFile();
+            if (next == null) {
+                break;
+            }
+            existingDirectory = next;
+        }
+
+        try {
+            FileUtils.forceMkdir(directory.toFile());
+        } catch (IOException e) {
+            return false;
+        }
+
+        while (!pathStack.isEmpty()) {
+            try {
+                String nextDirectory = pathStack.pop();
+                Files.setPosixFilePermissions(Paths.get(existingDirectory.getAbsolutePath(), nextDirectory), PosixFilePermissions.fromString(permissions));
+                existingDirectory = new File(existingDirectory, nextDirectory);
+            } catch (Exception e) {
+            }
+        }
+        return true;
     }
 }

@@ -7,6 +7,7 @@ import com.k2cybersecurity.instrumentator.os.OSVariables;
 import com.k2cybersecurity.instrumentator.os.OsVariablesInstance;
 import com.k2cybersecurity.instrumentator.utils.CollectorConfigurationUtils;
 import com.k2cybersecurity.intcodeagent.properties.K2JALogProperties;
+import com.k2cybersecurity.intcodeagent.utils.CommonUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -72,11 +73,7 @@ public class InitLogWriter implements Runnable {
     static {
         fileName = new File(osVariables.getLogDirectory(), "k2-java-agent-init-" + K2Instrumentator.APPLICATION_UUID + ".log").getAbsolutePath();
         currentLogFile = new File(fileName);
-        currentLogFile.getParentFile().mkdirs();
-        try {
-            Files.setPosixFilePermissions(currentLogFile.getParentFile().toPath(), PosixFilePermissions.fromString("rwxrwxrwx"));
-        } catch (Exception e) {
-        }
+        CommonUtils.forceMkdirs(currentLogFile.getParentFile().toPath(), "rwxrwxrwx");
         currentLogFileName = fileName;
         try {
             currentLogFile.setReadable(true, false);

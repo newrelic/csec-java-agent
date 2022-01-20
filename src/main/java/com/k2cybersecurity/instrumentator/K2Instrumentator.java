@@ -31,6 +31,7 @@ import java.net.URL;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -49,13 +50,14 @@ public class K2Instrumentator {
     public static final String APPLICATION_UUID = UUID.randomUUID().toString();
     public static ApplicationInfoBean APPLICATION_INFO_BEAN;
     public static JAHealthCheck JA_HEALTH_CHECK;
+    public static String K2_HOME;
 
     private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
 
     public static boolean isDynamicAttach = false;
     public static boolean enableHTTPRequestPrinting = false;
 
-    private static OSVariables osVariables = OsVariablesInstance.getInstance().getOsVariables();
+    private static OSVariables osVariables;
 
     static {
         try {
@@ -71,6 +73,25 @@ public class K2Instrumentator {
         try {
             K2Instrumentator.isDynamicAttach = isDynamicAttach;
             String attachmentType = isDynamicAttach ? DYNAMIC : STATIC;
+
+            K2_HOME = System.getenv("K2_HOME");
+            if (!isValidK2HomePath(K2_HOME)) {
+                //Fall back to default K2Home
+                if (SystemUtils.IS_OS_WINDOWS) {
+                    K2_HOME = DEFAULT_K2HOME_WIN;
+                } else {
+                    K2_HOME = DEFAULT_K2HOME_LINUX;
+                }
+                if (!isValidK2HomePath(K2_HOME)) {
+                    System.err.println("[K2 Java Collector] Incomplete startup env parameters provided : Missing or Incorrect K2_HOME. Collector exiting.");
+                    return false;
+                }
+            }
+
+            osVariables = OsVariablesInstance.getInstance().getOsVariables();
+
+            EnvLogUtils.logK2Env();
+
             // log init
             logger.logInit(
                     LogLevel.INFO,
@@ -215,7 +236,28 @@ public class K2Instrumentator {
             System.out.println(String.format("This application instance is now being protected by K2 Agent under id %s", APPLICATION_UUID));
             return isWorking;
         } catch (Exception e) {
+            e.printStackTrace();
             logger.log(LogLevel.ERROR, "Error in init ", e, K2Instrumentator.class.getName());
+        }
+        return false;
+    }
+
+    private static boolean isValidK2HomePath(String k2Home) {
+        if (StringUtils.isNotBlank(k2Home) && Paths.get(k2Home).toFile().isDirectory()) {
+            long avail = 0;
+            try {
+                avail = Files.getFileStore(Paths.get(k2Home)).getUsableSpace();
+            } catch (Exception e) {
+//                logger.logInit(LogLevel.WARN, "Can't determine disk space available to this Java virtual machine.", K2Instrumentator.class.getName());
+                return true;
+            }
+
+            if (avail > FileUtils.ONE_GB) {
+//                logger.logInit(LogLevel.INFO, String.format("Disk space available to this Java virtual machine on the file store : %s", FileUtils.byteCountToDisplaySize(avail)), K2Instrumentator.class.getName());
+                return true;
+            }
+//            logger.logInit(LogLevel.FATAL, String.format("Insufficient disk space available to the location %s is : %s", k2Home, FileUtils.byteCountToDisplaySize(avail)), K2Instrumentator.class.getName());
+            return false;
         }
         return false;
     }

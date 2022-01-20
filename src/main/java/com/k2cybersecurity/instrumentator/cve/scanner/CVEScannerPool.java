@@ -8,13 +8,15 @@ import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.logging.EventThreadPool.EventAbortPolicy;
 import com.k2cybersecurity.intcodeagent.logging.IAgentConstants;
 import com.k2cybersecurity.intcodeagent.models.javaagent.CVEPackageInfo;
+import com.k2cybersecurity.intcodeagent.utils.CommonUtils;
 
-import java.io.File;
+import java.nio.file.Paths;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class CVEScannerPool {
 
+    public static final String ALL_PERMISSIONS = "rwxrwxrwx";
     /**
      * Thread pool executor.
      */
@@ -97,7 +99,8 @@ public class CVEScannerPool {
             }
             CVEPackageInfo packageInfo = CVEComponentsService.getCVEPackageInfo();
 
-            new File(osVariables.getCvePackageBaseDir()).mkdirs();
+//            new File(osVariables.getCvePackageBaseDir()).mkdirs();
+            CommonUtils.forceMkdirs(Paths.get(osVariables.getCvePackageBaseDir()), ALL_PERMISSIONS);
 
             switch (osVariables.getOs()) {
                 case IAgentConstants.LINUX:

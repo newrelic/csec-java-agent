@@ -2,7 +2,6 @@ package com.k2cybersecurity.instrumentator;
 
 import com.k2cybersecurity.instrumentator.custom.ClassLoadListener;
 import com.k2cybersecurity.instrumentator.utils.AgentUtils;
-import com.k2cybersecurity.instrumentator.utils.EnvLogUtils;
 import com.k2cybersecurity.instrumentator.utils.InstrumentationUtils;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
@@ -60,7 +59,6 @@ public class AgentNew {
                 try {
                     awaitServerStartUp(instrumentation, ClassLoader.getSystemClassLoader());
                     FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
-                    EnvLogUtils.logK2Env();
 
                     Class<?> clazz = Class.forName("com.k2cybersecurity.instrumentator.K2Instrumentator");
                     Method init = clazz.getMethod("init", Boolean.class);
