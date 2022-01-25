@@ -91,7 +91,7 @@ public class LogWriter implements Runnable {
     }
 
     static {
-        fileName = new File(osVariables.getLogDirectory(), "k2_java_agent-" + K2Instrumentator.APPLICATION_UUID + ".log").getAbsolutePath();
+        fileName = new File(osVariables.getLogDirectory(), "k2-java-agent-" + K2Instrumentator.APPLICATION_UUID + ".log").getAbsolutePath();
         currentLogFile = new File(fileName);
         currentLogFileName = fileName;
         createLogFile();

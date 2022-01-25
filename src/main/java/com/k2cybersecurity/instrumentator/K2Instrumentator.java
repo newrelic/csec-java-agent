@@ -83,7 +83,7 @@ public class K2Instrumentator {
                     K2_HOME = DEFAULT_K2HOME_LINUX;
                 }
                 if (!isValidK2HomePath(K2_HOME)) {
-                    System.err.println("[K2 Java Collector] Incomplete startup env parameters provided : Missing or Incorrect K2_HOME. Collector exiting.");
+                    System.err.println("[K2-JA] Incomplete startup env parameters provided : Missing or Incorrect K2_HOME. Collector exiting.");
                     return false;
                 }
             }
@@ -257,6 +257,7 @@ public class K2Instrumentator {
                 return true;
             }
 //            logger.logInit(LogLevel.FATAL, String.format("Insufficient disk space available to the location %s is : %s", k2Home, FileUtils.byteCountToDisplaySize(avail)), K2Instrumentator.class.getName());
+            System.err.println(String.format("[K2-JA] Insufficient disk space available to the location %s is : %s", k2Home, FileUtils.byteCountToDisplaySize(avail)));
             return false;
         }
         return false;

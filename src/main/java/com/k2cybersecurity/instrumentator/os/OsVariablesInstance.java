@@ -36,7 +36,7 @@ public class OsVariablesInstance {
         }
 
         osVariables.setK2RootDir(k2root.toString());
-        osVariables.setLogDirectory(Paths.get(k2root.toString(), LOGS, LANGUAGE_AGENT).toString());
+        osVariables.setLogDirectory(Paths.get(k2root.toString(), LOGS, LANGUAGE_AGENT, K2Instrumentator.APPLICATION_UUID).toString());
         osVariables.setCvePackageBaseDir(Paths.get(k2root.toString(), TMP, LANGUAGE_AGENT, K2Instrumentator.APPLICATION_UUID).toString());
         osVariables.setConfigPath(Paths.get(k2root.toString(), CONFIG).toString());
         osVariables.setPolicyConfigPath(Paths.get(k2root.toString(), CONFIG, LANGUAGE_AGENT).toString());
