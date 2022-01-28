@@ -255,8 +255,8 @@
                                     <shadedPattern>sun.reflect.com.k2cybersecurity.org.java_websocket.</shadedPattern>
                                 </relocation>
                                 <relocation>
-                                    <pattern>com.google.gson.</pattern>
-                                    <shadedPattern>sun.reflect.com.k2cybersecurity.com.google.gson.</shadedPattern>
+                                    <pattern>com.google.</pattern>
+                                    <shadedPattern>sun.reflect.com.k2cybersecurity.com.google.</shadedPattern>
                                 </relocation>
 
                                 <relocation>
