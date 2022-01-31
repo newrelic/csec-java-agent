@@ -155,7 +155,7 @@ public class CVEComponentsService {
     }
 
     private static CVEScanner createLibTmpDir(Collection<String> libPaths, String binaryName, String applicationUUID) {
-        File directory = new File(osVariables.getCvePackageBaseDir(), TMP_LIBS + applicationUUID);
+        File directory = new File(osVariables.getTmpDirectory(), TMP_LIBS + applicationUUID);
         try {
             FileUtils.forceMkdir(directory);
             for (String path : libPaths) {
@@ -250,7 +250,7 @@ public class CVEComponentsService {
             queryParams.put("arch", osVariables.getOsArch());
             Response cvePackageResponse = HttpClient.getInstance().doGet(IRestClientConstants.COLLECTOR_CVE, null, queryParams, null, false);
             if (cvePackageResponse.isSuccessful()) {
-                String packageDownloadDir = osVariables.getCvePackageBaseDir();
+                String packageDownloadDir = osVariables.getTmpDirectory();
                 String filename;
                 String contentDisposition = cvePackageResponse.header(CONTENT_DISPOSITION);
                 if (StringUtils.isNotBlank(contentDisposition)) {

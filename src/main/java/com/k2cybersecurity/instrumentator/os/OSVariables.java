@@ -7,7 +7,7 @@ public class OSVariables {
     private Boolean isMac = Boolean.FALSE;
     private String k2RootDir;
     private String logDirectory;
-    private String cvePackageBaseDir;
+    private String tmpDirectory;
     private String osArch;
     private String configPath;
     private String policyConfigPath;
@@ -52,8 +52,8 @@ public class OSVariables {
         this.logDirectory = logDirectory;
     }
 
-    public String getCvePackageBaseDir() {
-        return cvePackageBaseDir;
+    public String getTmpDirectory() {
+        return tmpDirectory;
     }
 
     public String getOsArch() {
@@ -64,8 +64,8 @@ public class OSVariables {
         this.osArch = osArch;
     }
 
-    public void setCvePackageBaseDir(String cvePackageBaseDir) {
-        this.cvePackageBaseDir = cvePackageBaseDir;
+    public void setTmpDirectory(String tmpDirectory) {
+        this.tmpDirectory = tmpDirectory;
     }
 
     public String getConfigPath() {

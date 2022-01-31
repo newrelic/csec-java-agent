@@ -71,10 +71,10 @@ public class CVEServiceLinux implements Runnable {
     public void run() {
         boolean runStatus = false;
         try {
-            String packageParentDir = osVariables.getCvePackageBaseDir();
+            String packageParentDir = osVariables.getTmpDirectory();
             logger.log(LogLevel.DEBUG, String.format(ICVEConstants.PACKAGE_INFO_LOGGER, packageInfo.toString(), CVEScannerPool.getInstance().getPackageInfo()), CVEServiceLinux.class.getName());
             if (CVEScannerPool.getInstance().getPackageInfo() == null || !CVEScannerPool.getInstance().getPackageInfo().getCvePackage().exists() || !StringUtils.equals(packageInfo.getLatestServiceVersion(), CVEScannerPool.getInstance().getPackageInfo().getLatestServiceVersion())) {
-                Collection<File> cvePackages = FileUtils.listFiles(new File(osVariables.getCvePackageBaseDir()), new NameFileFilter(ICVEConstants.LOCALCVESERVICE), null);
+                Collection<File> cvePackages = FileUtils.listFiles(new File(osVariables.getTmpDirectory()), new NameFileFilter(ICVEConstants.LOCALCVESERVICE), null);
                 logger.log(LogLevel.DEBUG, ICVEConstants.FILES_TO_DELETE + cvePackages, CVEServiceLinux.class.getName());
                 cvePackages.forEach(FileUtils::deleteQuietly);
                 CVEComponentsService.downloadCVEPackage(packageInfo);
@@ -150,7 +150,7 @@ public class CVEServiceLinux implements Runnable {
                 } catch (Throwable e) {
                 }
             }
-            CVEComponentsService.deleteAllComponents(osVariables.getCvePackageBaseDir());
+            CVEComponentsService.deleteAllComponents(osVariables.getTmpDirectory());
             logger.log(LogLevel.DEBUG, ICVEConstants.CVE_PACKAGE_DELETED, CVEServiceLinux.class.getName());
             runStatus = true;
             return;

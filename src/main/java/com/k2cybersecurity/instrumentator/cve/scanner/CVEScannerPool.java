@@ -100,7 +100,7 @@ public class CVEScannerPool {
             CVEPackageInfo packageInfo = CVEComponentsService.getCVEPackageInfo();
 
 //            new File(osVariables.getCvePackageBaseDir()).mkdirs();
-            CommonUtils.forceMkdirs(Paths.get(osVariables.getCvePackageBaseDir()), ALL_PERMISSIONS);
+            CommonUtils.forceMkdirs(Paths.get(osVariables.getTmpDirectory()), ALL_PERMISSIONS);
 
             switch (osVariables.getOs()) {
                 case IAgentConstants.LINUX:
