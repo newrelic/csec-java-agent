@@ -1,6 +1,5 @@
 package com.k2cybersecurity.intcodeagent.controlcommand;
 
-import com.k2cybersecurity.instrumentator.K2Instrumentator;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.logging.IAgentConstants;
@@ -68,11 +67,9 @@ public class ControlCommandProcessorThreadPool {
                     try {
                         Future<?> future = (Future<?>) r;
                         if (future.isDone()) {
-                            K2Instrumentator.JA_HEALTH_CHECK.incrementProcessedCount();
                             future.get();
                         }
                     } catch (Throwable e) {
-                        K2Instrumentator.JA_HEALTH_CHECK.incrementDropCount();
                     }
                 }
                 super.afterExecute(r, t);
@@ -80,7 +77,6 @@ public class ControlCommandProcessorThreadPool {
 
             @Override
             protected void beforeExecute(Thread t, Runnable r) {
-                // TODO increment event proccessed count
                 super.beforeExecute(t, r);
             }
 

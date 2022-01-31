@@ -149,7 +149,7 @@ public class EventDispatcher {
             return;
         }
         // Place dispatch here
-        List<SQLOperationalBean> toBeSentBeans = new ArrayList<>();
+        List<AbstractOperationalBean> toBeSentBeans = new ArrayList<>();
         objectBeanList.forEach((bean) -> {
             SQLOperationalBean beanChecked = ThreadLocalDBMap.getInstance().checkAndUpdateSentSQLCalls(bean);
             if (beanChecked != null && !beanChecked.isEmpty()) {

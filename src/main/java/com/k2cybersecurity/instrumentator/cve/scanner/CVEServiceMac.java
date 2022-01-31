@@ -13,6 +13,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Paths;
 import java.util.Arrays;
@@ -20,7 +21,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-public class CVEServiceMac implements Runnable {
+public class CVEServiceMac extends CVEScan {
 
     private static final String CANNOT_CREATE_DIRECTORY = "Cannot create directory : ";
 
@@ -51,6 +52,8 @@ public class CVEServiceMac implements Runnable {
     private String id;
 
     private boolean isEnvScan;
+
+    private Process liveProcess;
 
     private OSVariables osVariables = OsVariablesInstance.getInstance().getOsVariables();
 
@@ -122,15 +125,15 @@ public class CVEServiceMac implements Runnable {
                 File dcout = Paths.get(packageExtractedDirectory.getAbsolutePath(), ICVEConstants.DC_TRIGGER_LOG).toFile();
                 processBuilder.redirectErrorStream(true);
                 processBuilder.redirectOutput(dcout);
-                Process process = processBuilder.start();
-                if (!process.waitFor(10, TimeUnit.MINUTES)) {
-                    long pid = AgentUtils.getInstance().getProcessID(process);
+                liveProcess = processBuilder.start();
+                if (!liveProcess.waitFor(10, TimeUnit.MINUTES)) {
+                    long pid = AgentUtils.getInstance().getProcessID(liveProcess);
                     if (pid > 1) {
                         logger.log(LogLevel.WARN, String.format(KILLING_PROCESS_TREE_ROOTED_AT_S, pid), CVEServiceMac.class.getName());
                         AgentUtils.getInstance().incrementCVEServiceFailCount();
                         Runtime.getRuntime().exec(String.format(KILL_PROCESS_TREE_COMMAND, pid));
                     }
-                } else if (process.exitValue() != 0) {
+                } else if (liveProcess.exitValue() != 0) {
                     AgentUtils.getInstance().incrementCVEServiceFailCount();
                 }
 //                List<String> response = IOUtils.readLines(process.getInputStream(), StandardCharsets.UTF_8);
@@ -163,5 +166,21 @@ public class CVEServiceMac implements Runnable {
             }
         }
 
+    }
+
+    @Override
+    public void destroyForcibly() {
+        if (liveProcess != null) {
+            long pid = AgentUtils.getInstance().getProcessID(liveProcess);
+            if (pid > 1) {
+                logger.log(LogLevel.WARN, String.format(KILLING_PROCESS_TREE_ROOTED_AT_S, pid), CVEServiceLinux.class.getName());
+                AgentUtils.getInstance().incrementCVEServiceFailCount();
+                try {
+                    Runtime.getRuntime().exec(String.format(KILL_PROCESS_TREE_COMMAND, pid));
+                } catch (IOException e) {
+                    liveProcess.destroyForcibly();
+                }
+            }
+        }
     }
 }

@@ -352,13 +352,15 @@ public class Dispatcher implements Runnable {
             int fromLoc = 0;
             int toLoc = this.trace.length;
 //		logger.log(LogLevel.DEBUG, INSIDE_SET_REQUIRED_STACK_TRACE + eventBean.getId() + STRING_COLON + JsonConverter.toJSON(userClassEntity) + STRING_COLON + JsonConverter.toJSON(Arrays.asList(trace)), Dispatcher.class.getName());
-            if ((metaData != null && metaData.isK2FuzzRequest()) || (AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getEnabled()
-                    && AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getIastScan().getEnabled())) {
-                eventBean.setCompleteStacktrace(Arrays.asList(trace));
+            if (metaData != null && metaData.isK2FuzzRequest()) {
+                if (StringUtils.contains(eventBean.getHttpRequest().getK2RequestIdentifier(), eventBean.getApiId()) && StringUtils.contains(eventBean.getHttpRequest().getK2RequestIdentifier(), IAgentConstants.VULNERABLE)) {
+                    eventBean.setCompleteStacktrace(Arrays.asList(trace).subList(0, Math.min(trace.length, 120)));
+                }
+                return;
             }
 
             if (AgentUtils.getInstance().getAgentPolicy().getSendCompleteStackTrace()) {
-                eventBean.setStacktrace(Arrays.asList(trace));
+                eventBean.setStacktrace(Arrays.asList(trace).subList(0, Math.min(trace.length, 120)));
                 return;
             }
 

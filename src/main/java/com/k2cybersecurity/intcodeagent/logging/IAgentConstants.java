@@ -622,4 +622,5 @@ public interface IAgentConstants {
     String DEFAULT_K2HOME_LINUX = "/opt/k2root";
     String DEFAULT_K2HOME_WIN = "C:\\Users\\Public\\K2\\k2root";
     String POLICY_PULL_RESPONSE_IS_NULL = "Policy pull response is null!!!";
+    String VULNERABLE = "VULNERABLE";
 }
