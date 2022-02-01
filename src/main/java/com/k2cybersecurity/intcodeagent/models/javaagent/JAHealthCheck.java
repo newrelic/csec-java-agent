@@ -29,6 +29,8 @@ public class JAHealthCheck extends AgentBasicInfo {
 
     private AtomicInteger eventSentCount;
 
+    private AtomicInteger exitEventSentCount;
+
     private AtomicInteger httpRequestCount;
 
     private Set protectedVulnerabilities;
@@ -43,6 +45,7 @@ public class JAHealthCheck extends AgentBasicInfo {
         this.eventProcessed = new AtomicInteger(0);
         this.eventSentCount = new AtomicInteger(0);
         this.httpRequestCount = new AtomicInteger(0);
+        this.exitEventSentCount = new AtomicInteger(0);
         this.setProtectedDB(new HashSet());
 
         this.setProtectedVulnerabilities(AgentUtils.getInstance().getProtectedVulnerabilties());
@@ -59,6 +62,7 @@ public class JAHealthCheck extends AgentBasicInfo {
         this.eventDropCount = jaHealthCheck.eventDropCount;
         this.eventProcessed = jaHealthCheck.eventProcessed;
         this.eventSentCount = jaHealthCheck.eventSentCount;
+        this.exitEventSentCount = jaHealthCheck.exitEventSentCount;
         this.httpRequestCount = jaHealthCheck.httpRequestCount;
         this.kind = jaHealthCheck.kind;
         this.dsBackLog = jaHealthCheck.dsBackLog;
@@ -154,6 +158,17 @@ public class JAHealthCheck extends AgentBasicInfo {
         this.httpRequestCount.getAndDecrement();
     }
 
+    public void incrementExitEventSentCount() {
+        this.exitEventSentCount.getAndIncrement();
+    }
+
+    public void decrementExitEventSentCount() {
+        this.exitEventSentCount.getAndDecrement();
+    }
+
+    public void setExitEventSentCount(Integer exitEventSentCount) {
+        this.exitEventSentCount.set(exitEventSentCount);
+    }
 
     @Override
     public String toString() {

@@ -5,6 +5,7 @@ import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
+import java.util.List;
 import java.util.concurrent.*;
 
 public class FuzzCleanUpST {
@@ -28,7 +29,7 @@ public class FuzzCleanUpST {
         });
     }
 
-    public void scheduleCleanUp(String path) {
+    public void scheduleCleanUp(List<String> path) {
         executor.schedule(new FuzzCleanUpTask(path), 10, TimeUnit.SECONDS);
     }
 
@@ -65,25 +66,27 @@ public class FuzzCleanUpST {
     }
 }
 
-class FuzzCleanUpTask implements Callable<Boolean> {
+class FuzzCleanUpTask implements Callable {
 
     private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
     public static final String UNABLE_TO_DO_FUZZ_CLEANUP = "Unable to do fuzz cleanup :";
 
-    private String path;
+    private List<String> paths;
 
-    public FuzzCleanUpTask(String path) {
-        this.path = path;
+    public FuzzCleanUpTask(List<String> paths) {
+        this.paths = paths;
     }
 
     @Override
-    public Boolean call() {
+    public Object call() {
         try {
-            return FileUtils.deleteQuietly(new File(this.path));
+            if (paths != null) {
+                paths.forEach(path -> FileUtils.deleteQuietly(new File(path)));
+            }
         } catch (Throwable e) {
-            logger.log(LogLevel.ERROR, UNABLE_TO_DO_FUZZ_CLEANUP + this.path, e,
+            logger.log(LogLevel.ERROR, UNABLE_TO_DO_FUZZ_CLEANUP + this.paths, e,
                     RestRequestThreadPool.class.getName());
         }
-        return false;
+        return null;
     }
 }

@@ -63,10 +63,9 @@ public class RestRequestProcessor implements Runnable {
             String req = StringUtils.replace(controlCommand.getArguments().get(0), K2_HOME_TMP_CONST, OsVariablesInstance.getInstance().getOsVariables().getTmpDirectory());
             httpRequest = new ObjectMapper().readValue(req, HttpRequestBean.class);
             RestClient.getInstance().fireRequest(RequestUtils.generateK2Request(httpRequest));
-            // TODO: Create one schedule for this.
-            filesCreated.forEach((path) -> {
-                FuzzCleanUpST.getInstance().scheduleCleanUp(path);
-            });
+
+            FuzzCleanUpST.getInstance().scheduleCleanUp(filesCreated);
+
         } catch (Throwable e) {
             logger.log(LogLevel.ERROR,
                     String.format("Error while processing fuzzing request : %s", controlCommand.getArguments().get(0)),
