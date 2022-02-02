@@ -2,6 +2,7 @@ package com.k2cybersecurity.instrumentator.utils;
 
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
+import com.k2cybersecurity.intcodeagent.properties.K2JAVersionInfo;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.HashMap;
@@ -48,6 +49,9 @@ public class EnvLogUtils {
         }
         logger.logInit(LogLevel.INFO,
                 String.format(LOADED_K2_ENVS_MSG, StringUtils.join(k2Envs)),
+                EnvLogUtils.class.getName());
+        logger.logInit(LogLevel.INFO,
+                String.format("K2 JA collector version : %s , json version : %s and build number : %s", K2JAVersionInfo.collectorVersion, K2JAVersionInfo.jsonVersion, K2JAVersionInfo.buildNumber),
                 EnvLogUtils.class.getName());
     }
 
