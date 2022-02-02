@@ -4,6 +4,7 @@ import com.k2cybersecurity.instrumentator.custom.K2CyberSecurityException;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalHttpMap;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalOperationLock;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalSSRFLock;
+import com.k2cybersecurity.instrumentator.dispatcher.DispatcherPool;
 import com.k2cybersecurity.instrumentator.dispatcher.EventDispatcher;
 import com.k2cybersecurity.instrumentator.utils.AgentUtils;
 import com.k2cybersecurity.instrumentator.utils.CallbackUtils;
@@ -86,6 +87,7 @@ public class Callbacks {
                 }
 
             } finally {
+                DispatcherPool.getInstance().getEid().remove(exectionId);
                 ThreadLocalOperationLock.getInstance().release();
                 ThreadLocalSSRFLock.getInstance().release(obj, sourceString, exectionId);
 
@@ -103,6 +105,7 @@ public class Callbacks {
 //				System.out.println("OnError :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj
 //						+ " - error : " + error + " - eid : " + exectionId);
             } finally {
+                DispatcherPool.getInstance().getEid().remove(exectionId);
                 ThreadLocalOperationLock.getInstance().release();
                 ThreadLocalSSRFLock.getInstance().release(obj, sourceString, exectionId);
 

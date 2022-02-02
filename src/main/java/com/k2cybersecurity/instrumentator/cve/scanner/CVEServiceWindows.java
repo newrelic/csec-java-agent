@@ -20,7 +20,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-public class CVEServiceWindows implements Runnable {
+public class CVEServiceWindows extends CVEScan {
 
     private static final String CANNOT_CREATE_DIRECTORY = "Cannot create directory : ";
 
@@ -52,7 +52,8 @@ public class CVEServiceWindows implements Runnable {
     private String id;
 
     private boolean isEnvScan;
-    final String bundleNameRegex = ICVEConstants.LOCALCVESERVICE_WIN_ZIP_REGEX;
+
+    private Process liveProcess;
 
     private OSVariables osVariables = OsVariablesInstance.getInstance().getOsVariables();
 
@@ -125,16 +126,17 @@ public class CVEServiceWindows implements Runnable {
                 File dcout = Paths.get(extractedPackageDir.getAbsolutePath(), ICVEConstants.DC_TRIGGER_LOG).toFile();
                 processBuilder.redirectErrorStream(true);
                 processBuilder.redirectOutput(dcout);
-                Process process = processBuilder.start();
-                if (!process.waitFor(10, TimeUnit.MINUTES)) {
+                liveProcess = processBuilder.start();
+                if (!liveProcess.waitFor(10, TimeUnit.MINUTES)) {
                     //TODO windows ki maaya
-                    long pid = AgentUtils.getInstance().getProcessID(process);
+                    long pid = AgentUtils.getInstance().getProcessID(liveProcess);
                     if (pid > 1) {
                         logger.log(LogLevel.WARN, String.format(KILLING_PROCESS_TREE_ROOTED_AT_S, pid), CVEServiceWindows.class.getName());
                         AgentUtils.getInstance().incrementCVEServiceFailCount();
+                        liveProcess.destroyForcibly();
 //                        Runtime.getRuntime().exec(String.format(KILL_PROCESS_TREE_COMMAND, pid));
                     }
-                } else if (process.exitValue() != 0) {
+                } else if (liveProcess.exitValue() != 0) {
                     AgentUtils.getInstance().incrementCVEServiceFailCount();
                 }
                 //Till here
@@ -159,6 +161,13 @@ public class CVEServiceWindows implements Runnable {
             if (!runStatus && this.isEnvScan) {
                 AgentUtils.getInstance().setCveEnvScanCompleted(false);
             }
+        }
+    }
+
+    @Override
+    public void destroyForcibly() {
+        if (liveProcess != null) {
+            liveProcess.destroyForcibly();
         }
     }
 

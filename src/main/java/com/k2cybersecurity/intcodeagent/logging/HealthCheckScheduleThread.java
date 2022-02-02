@@ -44,6 +44,7 @@ public class HealthCheckScheduleThread {
                         K2Instrumentator.JA_HEALTH_CHECK.setEventProcessed(0);
                         K2Instrumentator.JA_HEALTH_CHECK.setEventSentCount(0);
                         K2Instrumentator.JA_HEALTH_CHECK.setHttpRequestCount(0);
+                        K2Instrumentator.JA_HEALTH_CHECK.setExitEventSentCount(0);
                     }
 
                 } catch (NullPointerException ex) {

@@ -5,6 +5,7 @@ import com.k2cybersecurity.instrumentator.K2Instrumentator;
 import com.k2cybersecurity.instrumentator.custom.ByteBuddyElementMatchers;
 import com.k2cybersecurity.instrumentator.cve.scanner.CVEScannerPool;
 import com.k2cybersecurity.instrumentator.dispatcher.DispatcherPool;
+import com.k2cybersecurity.instrumentator.os.OsVariablesInstance;
 import com.k2cybersecurity.intcodeagent.controlcommand.ControlCommandProcessorThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
@@ -23,8 +24,10 @@ import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.dynamic.DynamicType;
 import net.bytebuddy.utility.JavaModule;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
+import java.io.File;
 import java.lang.instrument.Instrumentation;
 import java.util.ArrayList;
 import java.util.List;
@@ -369,6 +372,7 @@ public class InstrumentationUtils {
             CVEScannerPool.shutDownPool();
             CVEBundlePullST.shutDownPool();
             InBoundOutBoundST.shutDownPool();
+            FileUtils.deleteQuietly(new File(OsVariablesInstance.getInstance().getOsVariables().getTmpDirectory()));
 
         } catch (Throwable e) {
             logger.log(LogLevel.FATAL, "Error while shutting down K2 Pools : ", e,

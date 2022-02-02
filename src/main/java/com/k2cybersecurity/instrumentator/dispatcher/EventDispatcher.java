@@ -1,5 +1,6 @@
 package com.k2cybersecurity.instrumentator.dispatcher;
 
+import com.k2cybersecurity.instrumentator.K2Instrumentator;
 import com.k2cybersecurity.instrumentator.custom.*;
 import com.k2cybersecurity.instrumentator.utils.AgentUtils;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
@@ -76,6 +77,7 @@ public class EventDispatcher {
             exitEventBean.setK2RequestIdentifier(requestBean.getK2RequestIdentifier());
             logger.log(LogLevel.DEBUG, "Exit event : " + exitEventBean, EventDispatcher.class.getName());
             DispatcherPool.getInstance().dispatchExitEvent(exitEventBean);
+            K2Instrumentator.JA_HEALTH_CHECK.incrementExitEventSentCount();
         }
     }
 
@@ -149,7 +151,7 @@ public class EventDispatcher {
             return;
         }
         // Place dispatch here
-        List<SQLOperationalBean> toBeSentBeans = new ArrayList<>();
+        List<AbstractOperationalBean> toBeSentBeans = new ArrayList<>();
         objectBeanList.forEach((bean) -> {
             SQLOperationalBean beanChecked = ThreadLocalDBMap.getInstance().checkAndUpdateSentSQLCalls(bean);
             if (beanChecked != null && !beanChecked.isEmpty()) {

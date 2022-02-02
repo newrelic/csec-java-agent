@@ -46,7 +46,7 @@ public class ThreadLocalHttpMap {
     public static final String GET_CHARACTER_ENCODING = "getCharacterEncoding";
     public static final String FORWARD_SLASH = "/";
     public static final String GET_REMOTE_PORT = "getRemotePort";
-    public static final String X_FORWARDED_FOR = "X-Forwarded-For";
+    public static final String X_FORWARDED_FOR = "x-forwarded-for";
     public static final String GET_SCHEME = "getScheme";
     public static final String ASTRISK = "*";
     public static final String DESTINATION_IP_ALL = "0.0.0.0";
@@ -327,14 +327,14 @@ public class ThreadLocalHttpMap {
             Enumeration<String> attribs = ((Enumeration<String>) getHeaderNames.invoke(httpRequest, null));
             while (attribs.hasMoreElements()) {
                 boolean takeNextValue = false;
-                String headerKey = attribs.nextElement();
+                String headerKey = StringUtils.lowerCase(attribs.nextElement());
                 if (AgentUtils.getInstance().getAgentPolicy() != null
                         && AgentUtils.getInstance().getAgentPolicy().getProtectionMode().getEnabled()
                         && AgentUtils.getInstance().getAgentPolicy().getProtectionMode().getIpBlocking().getEnabled()
                         && AgentUtils.getInstance().getAgentPolicy().getProtectionMode().getIpBlocking().getIpDetectViaXFF()
-                        && StringUtils.equalsAnyIgnoreCase(headerKey, X_FORWARDED_FOR)) {
+                        && StringUtils.equals(headerKey, X_FORWARDED_FOR)) {
                     takeNextValue = true;
-                } else if (StringUtils.equalsAnyIgnoreCase(headerKey, IAgentConstants.K2_FUZZ_REQUEST_ID)) {
+                } else if (StringUtils.equals(headerKey, IAgentConstants.K2_FUZZ_REQUEST_ID)) {
                     ThreadLocalExecutionMap.getInstance().getMetaData().setK2FuzzRequest(true);
                 }
                 String headerFullValue = StringUtils.EMPTY;
@@ -574,6 +574,7 @@ public class ThreadLocalHttpMap {
 
     public void updateResponseBody() {
         try {
+
             if (outputBodyBuilder.length() > ThreadLocalExecutionMap.getInstance().getHttpRequestBean()
                     .getHttpResponseBean().getResponseBody().length()) {
                 ThreadLocalExecutionMap.getInstance().getHttpRequestBean().getHttpResponseBean()

@@ -35,6 +35,8 @@ public class CVEScannerPool {
 
     private CVEPackageInfo packageInfo;
 
+    private CVEScan liveScan;
+
     private OSVariables osVariables = OsVariablesInstance.getInstance().getOsVariables();
 
     private CVEScannerPool() {
@@ -54,6 +56,7 @@ public class CVEScannerPool {
                     }
                 }
                 super.afterExecute(r, t);
+                liveScan = null;
             }
 
             @Override
@@ -104,20 +107,25 @@ public class CVEScannerPool {
 
             switch (osVariables.getOs()) {
                 case IAgentConstants.LINUX:
-                    this.executor.submit(new CVEServiceLinux(nodeId, kind, id, packageInfo, isEnvScan));
+                    liveScan = new CVEServiceLinux(nodeId, kind, id, packageInfo, isEnvScan);
                     break;
                 case IAgentConstants.MAC:
-                    this.executor.submit(new CVEServiceMac(nodeId, kind, id, packageInfo, isEnvScan));
+                    liveScan = new CVEServiceMac(nodeId, kind, id, packageInfo, isEnvScan);
                     break;
                 case IAgentConstants.WINDOWS:
-                    this.executor.submit(new CVEServiceWindows(nodeId, kind, id, packageInfo, isEnvScan));
+                    liveScan = new CVEServiceWindows(nodeId, kind, id, packageInfo, isEnvScan);
                     break;
             }
+
+            this.executor.submit(liveScan);
         }
     }
 
     public static void shutDownPool() {
         if (instance != null) {
+            if (instance.liveScan != null) {
+                instance.liveScan.destroyForcibly();
+            }
             instance.shutDownThreadPoolExecutor();
         }
     }
