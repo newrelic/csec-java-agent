@@ -39,7 +39,7 @@ public class DispatcherPool {
         LinkedBlockingQueue<Runnable> processQueue;
         // load the settings
         processQueue = new LinkedBlockingQueue<>(queueSize);
-        eid = new ConcurrentHashMap<>().newKeySet();
+        eid = ConcurrentHashMap.newKeySet();
         executor = new ThreadPoolExecutor(corePoolSize, maxPoolSize, keepAliveTime, timeUnit, processQueue,
                 new EventAbortPolicy()) {
 
