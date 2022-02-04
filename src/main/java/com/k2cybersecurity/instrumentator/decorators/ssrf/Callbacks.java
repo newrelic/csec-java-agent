@@ -38,7 +38,7 @@ public class Callbacks {
                         setRequestProperty.invoke(obj, IAgentConstants.K2_API_CALLER, CallbackUtils.generateApiCallerHeaderValue(urlString));
                     } catch (Exception e) {
                     }
-                    if (StringUtils.equalsAny(url.getProtocol(), "http", "https")) {
+                    if (!StringUtils.equalsAnyIgnoreCase(url.getProtocol(), "file", "jar", "war")) {
 //                        System.out.println(String.format("Entry : SSRF Value: %s : %s : %s : %s", className, methodName, obj, url.toString()));
                         EventDispatcher.dispatch(new SSRFOperationalBean(urlString, className, sourceString, exectionId,
                                 Instant.now().toEpochMilli(), methodName), VulnerabilityCaseType.HTTP_REQUEST);
