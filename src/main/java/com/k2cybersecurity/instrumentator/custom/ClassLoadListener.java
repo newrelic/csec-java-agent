@@ -32,6 +32,10 @@ public class ClassLoadListener implements AgentBuilder.Listener {
             final Throwable throwable) {
 //		System.out.println(String.format("Transformation error : class : %s :: error %s", typeName,
 //				Arrays.asList(throwable.getStackTrace())));
+        if (StringUtils.contains(typeName, "sun.net.www.protocol.http.HttpURLConnection")) {
+            System.err.println("[TRACE] Error while inst : " + typeName + " : " + throwable.getMessage() + " : " + throwable.getCause());
+            throwable.printStackTrace();
+        }
         if (!StringUtils.contains(throwable.toString(), JAVA_LANG_ARRAY_STORE_EXCEPTION)) {
             logger.logInit(LogLevel.ERROR, String.format(TRANSFORMATION_ERROR_CLASS_S_ERROR, typeName), throwable, ClassLoadListener.class.getName());
         }
@@ -57,6 +61,9 @@ public class ClassLoadListener implements AgentBuilder.Listener {
             final ClassLoader classLoader,
             final JavaModule module,
             final boolean loaded) {
+        if (StringUtils.contains(typeDescription.getName(), "sun.net.www.protocol.http.HttpURLConnection")) {
+            System.out.println("[TRACE] Ignored from inst : " + typeDescription.getName());
+        }
 //		logger.log(LogLevel.DEBUG, String.format(IGNORED_CLASS_S, typeDescription.getName()), ClassLoadListener.class.getName());
 
         //      log.debug("onIgnored {}", typeDescription.getName());
@@ -86,6 +93,9 @@ public class ClassLoadListener implements AgentBuilder.Listener {
             final ClassLoader classLoader,
             final JavaModule module,
             final boolean loaded) {
+        if (StringUtils.contains(typeName, "sun.net.www.protocol.http.HttpURLConnection")) {
+            System.out.println("[TRACE] Discovered for inst : " + typeName);
+        }
         ThreadLocalTransformationLock.getInstance().acquire(typeName);
 //		logger.log(LogLevel.DEBUG, String.format(DISCOVERED_CLASS_S, typeName), ClassLoadListener.class.getName());
 

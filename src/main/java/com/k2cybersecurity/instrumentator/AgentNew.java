@@ -72,14 +72,6 @@ public class AgentNew {
                         InstrumentationUtils.shutdownLogic(false);
                     }, "k2-shutdown-hook"));
 
-                    Set<Class> typeBasedClassSet = new HashSet<>();
-                    for (Class aClass : instrumentation.getAllLoadedClasses()) {
-                        if (Hooks.NAME_BASED_HOOKS.containsKey(aClass.getName())) {
-                            AgentUtils.getInstance().getTransformedClasses().add(Pair.of(aClass.getName(), aClass.getClassLoader()));
-                        } else if (Hooks.TYPE_BASED_HOOKS.containsKey(aClass.getName())) {
-                            typeBasedClassSet.add(aClass);
-                        }
-                    }
 
                     /**
                      * IMPORTANT : Don't touch this shit until & unless very very necessary.
@@ -112,13 +104,25 @@ public class AgentNew {
 
                     resettableClassFileTransformer = agentBuilder.installOn(instrumentation);
 
+                    Set<Class> typeBasedClassSet = new HashSet<>();
+                    for (Class aClass : instrumentation.getAllLoadedClasses()) {
+                        if (StringUtils.contains(aClass.getName(), "sun.net.www.protocol.http.HttpURLConnection")) {
+                            System.out.println("[TRACE] Already loaded : " + aClass.getName());
+                        }
+                        if (Hooks.NAME_BASED_HOOKS.containsKey(aClass.getName())) {
+                            AgentUtils.getInstance().getTransformedClasses().add(Pair.of(aClass.getName(), aClass.getClassLoader()));
+                        } else if (Hooks.TYPE_BASED_HOOKS.containsKey(aClass.getName())) {
+                            typeBasedClassSet.add(aClass);
+                        }
+                    }
+
                     // Checks for type based classes to hook
                     for (Class aClass : instrumentation.getAllLoadedClasses()) {
                         if (instrumentation.isModifiableClass(aClass)) {
                             for (Class typeClass : typeBasedClassSet) {
                                 if (typeClass.isAssignableFrom(aClass) && !AgentUtils.getInstance().getTransformedClasses()
                                         .contains(Pair.of(aClass.getName(), aClass.getClassLoader()))) {
-                                    logger.logInit(LogLevel.INFO, String.format(INSTRUMENT_WILL_INSTRUMENT_CLASS, aClass.getName()),AgentNew.class.getName());
+                                    logger.logInit(LogLevel.INFO, String.format(INSTRUMENT_WILL_INSTRUMENT_CLASS, aClass.getName()), AgentNew.class.getName());
                                     AgentUtils.getInstance().getTransformedClasses().add(Pair.of(aClass.getName(), aClass.getClassLoader()));
                                     break;
                                 }
@@ -142,6 +146,23 @@ public class AgentNew {
         k2JaStartupThread.setDaemon(true);
         k2JaStartupThread.start();
 
+        Thread test = new Thread() {
+            @Override
+            public void run() {
+                try {
+                    sleep(120 * 1000);
+                    for (Class aClass : instrumentation.getAllLoadedClasses()) {
+                        if (StringUtils.equals(aClass.getName(), "sun.net.www.protocol.http.HttpURLConnection")) {
+                            System.out.println("[TRACE] Required class found : " + aClass.getName());
+                        }
+                    }
+                } catch (Throwable ignored) {
+
+                }
+            }
+        };
+        test.setDaemon(true);
+        test.start();
     }
 
     private static void switchLazyInstrumentationLogs(FileLoggerThreadPool logger) {
