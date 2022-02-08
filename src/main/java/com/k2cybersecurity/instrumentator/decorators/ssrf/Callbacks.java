@@ -22,10 +22,10 @@ public class Callbacks {
 
     public static void doOnEnter(String sourceString, String className, String methodName, Object obj, Object[] args,
                                  String exectionId) throws K2CyberSecurityException, Exception {
-        System.out.println("OnEnter :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj + " - eid : " + exectionId);
+//        System.out.println("OnEnter :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj + " - eid : " + exectionId);
         if (!ThreadLocalOperationLock.getInstance().isAcquired() && !ThreadLocalSSRFLock.getInstance().isAcquired()) {
             try {
-                System.out.println("OnEnter Internal:" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj + " - eid : " + exectionId);
+//                System.out.println("OnEnter Internal:" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj + " - eid : " + exectionId);
                 ThreadLocalOperationLock.getInstance().acquire();
                 if (ThreadLocalHttpMap.getInstance().getHttpRequest() != null) {
                     ThreadLocalSSRFLock.getInstance().acquire(obj, sourceString, exectionId);

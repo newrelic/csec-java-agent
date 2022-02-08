@@ -1,7 +1,6 @@
 package com.k2cybersecurity.instrumentator;
 
 import com.k2cybersecurity.instrumentator.custom.ClassLoadListener;
-import com.k2cybersecurity.instrumentator.utils.AgentUtils;
 import com.k2cybersecurity.instrumentator.utils.InstrumentationUtils;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
@@ -10,15 +9,12 @@ import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.dynamic.scaffold.TypeValidation;
 import net.bytebuddy.matcher.ElementMatchers;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.Pair;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintStream;
 import java.lang.instrument.Instrumentation;
 import java.lang.reflect.Method;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import static com.k2cybersecurity.instrumentator.utils.InstrumentationUtils.*;
@@ -72,15 +68,24 @@ public class AgentNew {
                         InstrumentationUtils.shutdownLogic(false);
                     }, "k2-shutdown-hook"));
 
+                    for (Class aClass : instrumentation.getAllLoadedClasses()) {
+                        if (StringUtils.equals(aClass.getName(), "sun.net.www.protocol.http.HttpURLConnection")) {
+                            System.out.println("[TRACE] Already loaded 1 : " + aClass.getName());
+                            break;
+                        }
+                    }
 
                     /**
                      * IMPORTANT : Don't touch this shit until & unless very very necessary.
                      */
                     AgentBuilder agentBuilder = new AgentBuilder.Default(new ByteBuddy().with(TypeValidation.DISABLED))
-                            .ignore(ElementMatchers.nameStartsWith("sun.reflect.com.k2cybersecurity"))
                             .disableClassFormatChanges()
 //									.with(AgentBuilder.Listener.StreamWriting.toSystemOut())
-                            .with(AgentBuilder.RedefinitionStrategy.RETRANSFORMATION).with(new ClassLoadListener()).with(AgentBuilder.TypeStrategy.Default.REDEFINE)
+                            .with(AgentBuilder.RedefinitionStrategy.RETRANSFORMATION)
+                            .with(AgentBuilder.RedefinitionStrategy.DiscoveryStrategy.Reiterating.INSTANCE)
+                            .with(AgentBuilder.TypeStrategy.Default.REDEFINE)
+                            .with(new ClassLoadListener())
+                            .ignore(ElementMatchers.nameStartsWith("sun.reflect.com.k2cybersecurity"))
 //					.with(AgentBuilder.CircularityLock.Inactive.INSTANCE)
 //					.with(new AgentBuilder.CircularityLock.Global())
 //					.with(AgentBuilder.LambdaInstrumentationStrategy.ENABLED)
@@ -101,38 +106,29 @@ public class AgentNew {
 
                     }
 
-
+                    for (Class aClass : instrumentation.getAllLoadedClasses()) {
+                        if (StringUtils.equals(aClass.getName(), "sun.net.www.protocol.http.HttpURLConnection")) {
+                            System.out.println("[TRACE] Already loaded 2 : " + aClass.getName());
+                            break;
+                        }
+                    }
                     resettableClassFileTransformer = agentBuilder.installOn(instrumentation);
 
-                    Set<Class> typeBasedClassSet = new HashSet<>();
                     for (Class aClass : instrumentation.getAllLoadedClasses()) {
-                        if (StringUtils.contains(aClass.getName(), "sun.net.www.protocol.http.HttpURLConnection")) {
-                            System.out.println("[TRACE] Already loaded : " + aClass.getName());
-                        }
-                        if (Hooks.NAME_BASED_HOOKS.containsKey(aClass.getName())) {
-                            AgentUtils.getInstance().getTransformedClasses().add(Pair.of(aClass.getName(), aClass.getClassLoader()));
-                        } else if (Hooks.TYPE_BASED_HOOKS.containsKey(aClass.getName())) {
-                            typeBasedClassSet.add(aClass);
+                        if (StringUtils.equals(aClass.getName(), "sun.net.www.protocol.http.HttpURLConnection")) {
+                            System.out.println("[TRACE] Already loaded 3 : " + aClass.getName());
+                            break;
                         }
                     }
 
-                    // Checks for type based classes to hook
-                    for (Class aClass : instrumentation.getAllLoadedClasses()) {
-                        if (instrumentation.isModifiableClass(aClass)) {
-                            for (Class typeClass : typeBasedClassSet) {
-                                if (typeClass.isAssignableFrom(aClass) && !AgentUtils.getInstance().getTransformedClasses()
-                                        .contains(Pair.of(aClass.getName(), aClass.getClassLoader()))) {
-                                    logger.logInit(LogLevel.INFO, String.format(INSTRUMENT_WILL_INSTRUMENT_CLASS, aClass.getName()), AgentNew.class.getName());
-                                    AgentUtils.getInstance().getTransformedClasses().add(Pair.of(aClass.getName(), aClass.getClassLoader()));
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                    retransformHookedClasses(instrumentation);
                     logger.logInit(LogLevel.INFO, HOOKS_ADDED_SUCCESSFULLY, AgentNew.class.getName());
                     switchLazyInstrumentationLogs(logger);
-
+                    for (Class aClass : instrumentation.getAllLoadedClasses()) {
+                        if (StringUtils.equals(aClass.getName(), "sun.net.www.protocol.http.HttpURLConnection")) {
+                            System.out.println("[TRACE] Already loaded 4: " + aClass.getName());
+                            break;
+                        }
+                    }
                 } catch (Throwable e) {
                     String tmpDir = System.getProperty("java.io.tmpdir");
                     System.err.println("[K2-JA] Process initialization failed!!! Please find the error in " + tmpDir + File.separator + "K2-Instrumentation.err");
@@ -146,23 +142,6 @@ public class AgentNew {
         k2JaStartupThread.setDaemon(true);
         k2JaStartupThread.start();
 
-        Thread test = new Thread() {
-            @Override
-            public void run() {
-                try {
-                    sleep(120 * 1000);
-                    for (Class aClass : instrumentation.getAllLoadedClasses()) {
-                        if (StringUtils.equals(aClass.getName(), "sun.net.www.protocol.http.HttpURLConnection")) {
-                            System.out.println("[TRACE] Required class found : " + aClass.getName());
-                        }
-                    }
-                } catch (Throwable ignored) {
-
-                }
-            }
-        };
-        test.setDaemon(true);
-        test.start();
     }
 
     private static void switchLazyInstrumentationLogs(FileLoggerThreadPool logger) {
