@@ -353,7 +353,6 @@ public class Dispatcher implements Runnable {
             int toLoc = this.trace.length;
 //		logger.log(LogLevel.DEBUG, INSIDE_SET_REQUIRED_STACK_TRACE + eventBean.getId() + STRING_COLON + JsonConverter.toJSON(userClassEntity) + STRING_COLON + JsonConverter.toJSON(Arrays.asList(trace)), Dispatcher.class.getName());
             if (metaData != null && metaData.isK2FuzzRequest()) {
-                logger.log(LogLevel.DEBUG, String.format("DS : API id : %s :: K2RequestIdentifier : %s", eventBean.getApiId(), eventBean.getHttpRequest().getK2RequestIdentifier()), Dispatcher.class.getName());
                 if (StringUtils.contains(eventBean.getHttpRequest().getK2RequestIdentifier(), eventBean.getApiId()) && StringUtils.contains(eventBean.getHttpRequest().getK2RequestIdentifier(), IAgentConstants.VULNERABLE)) {
                     eventBean.setCompleteStacktrace(Arrays.asList(trace).subList(0, Math.min(trace.length, 120)));
                 }
