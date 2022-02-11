@@ -16,16 +16,13 @@ import org.apache.commons.lang3.StringUtils;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.time.Instant;
-import java.util.Arrays;
 
 public class Callbacks {
 
     public static void doOnEnter(String sourceString, String className, String methodName, Object obj, Object[] args,
                                  String exectionId) throws K2CyberSecurityException, Exception {
-//        System.out.println("OnEnter :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj + " - eid : " + exectionId);
         if (!ThreadLocalOperationLock.getInstance().isAcquired() && !ThreadLocalSSRFLock.getInstance().isAcquired()) {
             try {
-//                System.out.println("OnEnter Internal:" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj + " - eid : " + exectionId);
                 ThreadLocalOperationLock.getInstance().acquire();
                 if (ThreadLocalHttpMap.getInstance().getHttpRequest() != null) {
                     ThreadLocalSSRFLock.getInstance().acquire(obj, sourceString, exectionId);
@@ -42,7 +39,6 @@ public class Callbacks {
                     } catch (Exception e) {
                     }
                     if (!StringUtils.equalsAnyIgnoreCase(url.getProtocol(), "file", "jar", "war")) {
-                        System.out.println("OnEnter Final:" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj + " - eid : " + exectionId);
 //                        System.out.println(String.format("Entry : SSRF Value: %s : %s : %s : %s", className, methodName, obj, url.toString()));
                         EventDispatcher.dispatch(new SSRFOperationalBean(urlString, className, sourceString, exectionId,
                                 Instant.now().toEpochMilli(), methodName), VulnerabilityCaseType.HTTP_REQUEST);
@@ -68,7 +64,6 @@ public class Callbacks {
                 DispatcherPool.getInstance().getEid().remove(exectionId);
                 ThreadLocalOperationLock.getInstance().release();
                 ThreadLocalSSRFLock.getInstance().release(obj, sourceString, exectionId);
-                System.out.println("OnExit Final:" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj + " - eid : " + exectionId);
             }
         }
     }
@@ -87,7 +82,6 @@ public class Callbacks {
                 DispatcherPool.getInstance().getEid().remove(exectionId);
                 ThreadLocalOperationLock.getInstance().release();
                 ThreadLocalSSRFLock.getInstance().release(obj, sourceString, exectionId);
-                System.out.println("OnError Final:" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj + " - eid : " + exectionId);
             }
         }
     }

@@ -68,12 +68,6 @@ public class AgentNew {
                         InstrumentationUtils.shutdownLogic(false);
                     }, "k2-shutdown-hook"));
 
-                    for (Class aClass : instrumentation.getAllLoadedClasses()) {
-                        if (StringUtils.equals(aClass.getName(), "sun.net.www.protocol.http.HttpURLConnection")) {
-                            System.out.println("[TRACE] Already loaded 1 : " + aClass.getName());
-                            break;
-                        }
-                    }
 
                     /**
                      * IMPORTANT : Don't touch this shit until & unless very very necessary.
@@ -106,29 +100,10 @@ public class AgentNew {
 
                     }
 
-                    for (Class aClass : instrumentation.getAllLoadedClasses()) {
-                        if (StringUtils.equals(aClass.getName(), "sun.net.www.protocol.http.HttpURLConnection")) {
-                            System.out.println("[TRACE] Already loaded 2 : " + aClass.getName());
-                            break;
-                        }
-                    }
                     resettableClassFileTransformer = agentBuilder.installOn(instrumentation);
-
-                    for (Class aClass : instrumentation.getAllLoadedClasses()) {
-                        if (StringUtils.equals(aClass.getName(), "sun.net.www.protocol.http.HttpURLConnection")) {
-                            System.out.println("[TRACE] Already loaded 3 : " + aClass.getName());
-                            break;
-                        }
-                    }
 
                     logger.logInit(LogLevel.INFO, HOOKS_ADDED_SUCCESSFULLY, AgentNew.class.getName());
                     switchLazyInstrumentationLogs(logger);
-                    for (Class aClass : instrumentation.getAllLoadedClasses()) {
-                        if (StringUtils.equals(aClass.getName(), "sun.net.www.protocol.http.HttpURLConnection")) {
-                            System.out.println("[TRACE] Already loaded 4: " + aClass.getName());
-                            break;
-                        }
-                    }
                 } catch (Throwable e) {
                     String tmpDir = System.getProperty("java.io.tmpdir");
                     System.err.println("[K2-JA] Process initialization failed!!! Please find the error in " + tmpDir + File.separator + "K2-Instrumentation.err");

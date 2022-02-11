@@ -55,9 +55,6 @@ public class ClassLoadListener implements AgentBuilder.Listener {
             final ClassLoader classLoader,
             final JavaModule module,
             final boolean loaded) {
-        if (StringUtils.equals(typeDescription.getName(), "sun.net.www.protocol.http.HttpURLConnection")) {
-            System.out.println("[TRACE] Ignored from inst : " + typeDescription.getName());
-        }
 //		logger.log(LogLevel.DEBUG, String.format(IGNORED_CLASS_S, typeDescription.getName()), ClassLoadListener.class.getName());
 
         //      log.debug("onIgnored {}", typeDescription.getName());
@@ -87,9 +84,6 @@ public class ClassLoadListener implements AgentBuilder.Listener {
             final ClassLoader classLoader,
             final JavaModule module,
             final boolean loaded) {
-        if (StringUtils.equals(typeName, "sun.net.www.protocol.http.HttpURLConnection")) {
-            System.out.println("[TRACE] Discovered for inst : " + typeName + " : " + classLoader);
-        }
         ThreadLocalTransformationLock.getInstance().acquire();
 //		logger.log(LogLevel.DEBUG, String.format(DISCOVERED_CLASS_S, typeName), ClassLoadListener.class.getName());
 

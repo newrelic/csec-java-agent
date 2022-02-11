@@ -3,9 +3,6 @@ package com.k2cybersecurity.instrumentator.custom;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class ThreadLocalTransformationLock {
-
-    private String takenBy;
-
     private AtomicInteger counter;
 
     private static ThreadLocal<ThreadLocalTransformationLock> instance = new ThreadLocal<ThreadLocalTransformationLock>() {
