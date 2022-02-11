@@ -33,7 +33,13 @@ public class AgentNew {
 
     public static final String K2_BOOTSTAP_LOADED_PACKAGE_NAME = "sun.reflect.com.k2cybersecurity";
 
+    private static boolean initDone = false;
     public static void premain(String arguments, Instrumentation instrumentation) {
+        if (initDone) {
+            return;
+        }
+        initDone = true;
+
         if (StringUtils.equals(System.getenv().get("K2_DISABLE"), "true") || StringUtils.equals(System.getenv().get("K2_ATTACH"), "false")) {
             System.err.println("[K2-JA] Process attachment aborted!!! K2 is set to disable.");
             return;
