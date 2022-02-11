@@ -130,9 +130,7 @@ public class DispatcherPool {
         if (executor.isShutdown()) {
             return;
         }
-        if (eid.contains(exitEventBean.getExecutionId())) {
-            this.executor.submit(new Dispatcher(exitEventBean));
-        }
+        this.executor.submit(new Dispatcher(exitEventBean));
     }
 
     /**

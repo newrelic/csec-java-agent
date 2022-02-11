@@ -80,7 +80,7 @@ public class WSClient extends WebSocketClient {
 //		logger.log(LogLevel.INFO, "Resetting allClassLoadersCount to " + Agent.allClassLoadersCount.get(),
 //				WSClient.class.getName());
         isConnected = true;
-        WSReconnectionST.shutDownPool();
+//        WSReconnectionST.cancelTask(false);
         logger.logInit(LogLevel.INFO, String.format(IAgentConstants.APPLICATION_INFO_SENT_ON_WS_CONNECT, K2Instrumentator.APPLICATION_INFO_BEAN), WSClient.class.getName());
         AgentUtils.getInstance().resetCVEServiceFailCount();
     }

@@ -71,13 +71,15 @@ public class EventDispatcher {
     }
 
     public static void dispatchExitEvent(String executionId, VulnerabilityCaseType caseType) {
-        ExitEventBean exitEventBean = new ExitEventBean(executionId, caseType.getCaseType());
-        HttpRequestBean requestBean = ThreadLocalExecutionMap.getInstance().getHttpRequestBean();
-        if (requestBean != null && StringUtils.isNotBlank(requestBean.getK2RequestIdentifier())) {
-            exitEventBean.setK2RequestIdentifier(requestBean.getK2RequestIdentifier());
-            logger.log(LogLevel.DEBUG, "Exit event : " + exitEventBean, EventDispatcher.class.getName());
-            DispatcherPool.getInstance().dispatchExitEvent(exitEventBean);
-            K2Instrumentator.JA_HEALTH_CHECK.incrementExitEventSentCount();
+        if (DispatcherPool.getInstance().getEid().contains(executionId)) {
+            ExitEventBean exitEventBean = new ExitEventBean(executionId, caseType.getCaseType());
+            HttpRequestBean requestBean = ThreadLocalExecutionMap.getInstance().getHttpRequestBean();
+            if (requestBean != null && StringUtils.isNotBlank(requestBean.getK2RequestIdentifier())) {
+                exitEventBean.setK2RequestIdentifier(requestBean.getK2RequestIdentifier());
+                logger.log(LogLevel.DEBUG, "Exit event : " + exitEventBean, EventDispatcher.class.getName());
+                DispatcherPool.getInstance().dispatchExitEvent(exitEventBean);
+                K2Instrumentator.JA_HEALTH_CHECK.incrementExitEventSentCount();
+            }
         }
     }
 

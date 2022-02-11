@@ -21,12 +21,19 @@ public class WSReconnectionST {
 
     private ScheduledFuture futureTask;
 
-    private Runnable runnable = () -> {
-        try {
-            WSClient.reconnectWSClient();
-        } catch (Exception e) {
-            logger.log(LogLevel.ERROR, ERROR_WHILE_WS_RECONNECTION + e.getMessage() + COLON_SEPARATOR + e.getCause(), WSClient.class.getName());
-            logger.log(LogLevel.DEBUG, ERROR_WHILE_WS_RECONNECTION, e, WSClient.class.getName());
+    private Runnable runnable = new Runnable() {
+        @Override
+        public void run() {
+            try {
+                WSClient.reconnectWSClient();
+            } catch (Exception e) {
+                logger.log(LogLevel.ERROR, ERROR_WHILE_WS_RECONNECTION + e.getMessage() + COLON_SEPARATOR + e.getCause(), WSClient.class.getName());
+                logger.log(LogLevel.DEBUG, ERROR_WHILE_WS_RECONNECTION, e, WSClient.class.getName());
+            } finally {
+                if (!WSClient.isConnected()) {
+                    futureTask = scheduledService.schedule(runnable, 30, TimeUnit.SECONDS);
+                }
+            }
         }
     };
 
@@ -64,11 +71,24 @@ public class WSReconnectionST {
     }
 
     public void submitNewTaskSchedule() {
-        if (futureTask == null || futureTask.isDone()) {
-            if (scheduledService.isShutdown()) {
-                instance.instantiateScheduler();
+        synchronized (lock) {
+            if (futureTask == null || futureTask.isDone()) {
+                if (scheduledService.isShutdown()) {
+                    instance.instantiateScheduler();
+                }
+                futureTask = scheduledService.schedule(runnable, 30, TimeUnit.SECONDS);
             }
-            futureTask = scheduledService.schedule(runnable, 30, TimeUnit.SECONDS);
+        }
+    }
+
+    public static void cancelTask(boolean force) {
+        if (instance != null) {
+            if (instance.futureTask == null) {
+                return;
+            }
+            if (instance.futureTask != null && (force || instance.futureTask.isDone())) {
+                instance.futureTask.cancel(force);
+            }
         }
     }
 
@@ -88,11 +108,11 @@ public class WSReconnectionST {
         if (scheduledService != null) {
             try {
                 scheduledService.shutdown(); // disable new tasks from being submitted
-                if (!scheduledService.awaitTermination(1, TimeUnit.SECONDS)) {
+                if (!scheduledService.awaitTermination(10, TimeUnit.SECONDS)) {
                     // wait for termination for a timeout
                     scheduledService.shutdownNow(); // cancel currently executing tasks
 
-                    if (!scheduledService.awaitTermination(1, TimeUnit.SECONDS)) {
+                    if (!scheduledService.awaitTermination(10, TimeUnit.SECONDS)) {
                         logger.log(LogLevel.FATAL, "Thread pool executor did not terminate",
                                 WSReconnectionST.class.getName());
                     } else {
