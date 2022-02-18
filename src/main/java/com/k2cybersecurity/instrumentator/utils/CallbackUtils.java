@@ -727,10 +727,10 @@ public class CallbackUtils {
                 Base64.getEncoder().encodeToString(targetURL.getBytes(StandardCharsets.UTF_8)));
     }
 
-    public static String generateTracingHeaderValue(String previousValue, String apiId) {
+    public static String generateTracingHeaderValue(String previousValue, String apiId, String executionId) {
 
         previousValue = StringUtils.appendIfMissing(previousValue, ";");
-        return String.format("%s%s:%s;", previousValue, K2Instrumentator.APPLICATION_UUID, apiId);
+        return String.format("%s%s/%s/%s;", previousValue, K2Instrumentator.APPLICATION_UUID, apiId, executionId);
 
 //        StringBuilder value = new StringBuilder(previousValue);
 //        if((AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getEnabled() && AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getIastScan().getEnabled())){

@@ -61,7 +61,7 @@ public class Callbacks {
                                 Instant.now().toEpochMilli(), methodName);
 
                         AgentUtils.preProcessStackTrace(operationalBean, VulnerabilityCaseType.HTTP_REQUEST);
-                        addHeaderHttpHost(IAgentConstants.K2_TRACING_HEADER, CallbackUtils.generateTracingHeaderValue(ThreadLocalExecutionMap.getInstance().getTracingHeaderValue(), operationalBean.getApiID()), args[1]);
+                        addHeaderHttpHost(IAgentConstants.K2_TRACING_HEADER, CallbackUtils.generateTracingHeaderValue(ThreadLocalExecutionMap.getInstance().getTracingHeaderValue(), operationalBean.getApiID(), exectionId), args[1]);
 
                         EventDispatcher.dispatch(operationalBean, VulnerabilityCaseType.HTTP_REQUEST);
 
@@ -81,7 +81,7 @@ public class Callbacks {
                                 Instant.now().toEpochMilli(), methodName);
 
                         AgentUtils.preProcessStackTrace(operationalBean, VulnerabilityCaseType.HTTP_REQUEST);
-                        addHeaderHttpUriRequest(IAgentConstants.K2_TRACING_HEADER, CallbackUtils.generateTracingHeaderValue(ThreadLocalExecutionMap.getInstance().getTracingHeaderValue(), operationalBean.getApiID()), args[0]);
+                        addHeaderHttpUriRequest(IAgentConstants.K2_TRACING_HEADER, CallbackUtils.generateTracingHeaderValue(ThreadLocalExecutionMap.getInstance().getTracingHeaderValue(), operationalBean.getApiID(), exectionId), args[0]);
 
                         EventDispatcher.dispatch(operationalBean, VulnerabilityCaseType.HTTP_REQUEST);
 

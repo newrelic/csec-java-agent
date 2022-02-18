@@ -51,7 +51,7 @@ public class Callbacks {
                                 Instant.now().toEpochMilli(), methodName);
 
                         AgentUtils.preProcessStackTrace(operationalBean, VulnerabilityCaseType.HTTP_REQUEST);
-                        builder = setHeader.invoke(builder, IAgentConstants.K2_TRACING_HEADER, CallbackUtils.generateTracingHeaderValue(ThreadLocalExecutionMap.getInstance().getTracingHeaderValue(), operationalBean.getApiID()));
+                        builder = setHeader.invoke(builder, IAgentConstants.K2_TRACING_HEADER, CallbackUtils.generateTracingHeaderValue(ThreadLocalExecutionMap.getInstance().getTracingHeaderValue(), operationalBean.getApiID(), exectionId));
 
 
                         Method build = builder.getClass().getMethod("build", null);
