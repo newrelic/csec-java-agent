@@ -6,7 +6,11 @@ import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.logging.EventThreadPool.EventAbortPolicy;
 import com.k2cybersecurity.intcodeagent.logging.IAgentConstants;
 import com.k2cybersecurity.intcodeagent.models.javaagent.*;
+import com.k2cybersecurity.intcodeagent.models.operationalbean.AbstractOperationalBean;
+import org.apache.commons.lang3.StringUtils;
 
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -29,10 +33,13 @@ public class DispatcherPool {
     final boolean allowCoreThreadTimeOut = false;
     private static Object mutex = new Object();
 
+    private Set<String> eid;
+
     private DispatcherPool() {
         LinkedBlockingQueue<Runnable> processQueue;
         // load the settings
         processQueue = new LinkedBlockingQueue<>(queueSize);
+        eid = ConcurrentHashMap.newKeySet();
         executor = new ThreadPoolExecutor(corePoolSize, maxPoolSize, keepAliveTime, timeUnit, processQueue,
                 new EventAbortPolicy()) {
 
@@ -86,20 +93,34 @@ public class DispatcherPool {
         return instance;
     }
 
+    public Set<String> getEid() {
+        return eid;
+    }
+
     public void dispatchEvent(HttpRequestBean httpRequestBean, AgentMetaData metaData,
-                              Object event, VulnerabilityCaseType vulnerabilityCaseType) {
+                              AbstractOperationalBean event, VulnerabilityCaseType vulnerabilityCaseType) {
         if (executor.isShutdown()) {
             return;
+        }
+        if (!event.isEmpty() && metaData.isK2FuzzRequest()) {
+            if (StringUtils.contains(httpRequestBean.getK2RequestIdentifier(), event.getApiID()) && StringUtils.contains(httpRequestBean.getK2RequestIdentifier(), IAgentConstants.VULNERABLE)) {
+                eid.add(event.getExecutionId());
+            }
         }
         this.executor.submit(new Dispatcher(httpRequestBean, metaData, event, vulnerabilityCaseType));
     }
 
     public void dispatchEvent(HttpRequestBean httpRequestBean, AgentMetaData metaData,
-                              Object event, VulnerabilityCaseType vulnerabilityCaseType, String currentGenericServletMethodName,
+                              List<AbstractOperationalBean> event, VulnerabilityCaseType vulnerabilityCaseType, String currentGenericServletMethodName,
                               Object currentGenericServletInstance,
                               StackTraceElement[] stackTrace, UserClassEntity userClassEntity) {
         if (executor.isShutdown()) {
             return;
+        }
+        if (!event.isEmpty() && metaData.isK2FuzzRequest()) {
+            if (StringUtils.contains(httpRequestBean.getK2RequestIdentifier(), event.get(0).getApiID()) && StringUtils.contains(httpRequestBean.getK2RequestIdentifier(), IAgentConstants.VULNERABLE)) {
+                eid.add(event.get(0).getExecutionId());
+            }
         }
         this.executor.submit(new Dispatcher(httpRequestBean, metaData, event, vulnerabilityCaseType, currentGenericServletMethodName,
                 currentGenericServletInstance, stackTrace, userClassEntity));
@@ -134,6 +155,12 @@ public class DispatcherPool {
                 currentGenericServletInstance, stackTrace, userClassEntity, apiID));
     }
 
+    public static void shutDownPool() {
+        if (instance != null) {
+            instance.shutDownThreadPoolExecutor();
+        }
+    }
+
     public void shutDownThreadPoolExecutor() {
 
         if (executor != null) {
@@ -144,7 +171,7 @@ public class DispatcherPool {
                     executor.shutdownNow(); // cancel currently executing tasks
 
                     if (!executor.awaitTermination(1, TimeUnit.SECONDS)) {
-                        logger.log(LogLevel.SEVERE, "Thread pool executor did not terminate",
+                        logger.log(LogLevel.FATAL, "Thread pool executor did not terminate",
                                 DispatcherPool.class.getName());
                     }
                 }

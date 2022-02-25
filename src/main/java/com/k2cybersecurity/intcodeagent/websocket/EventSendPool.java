@@ -45,7 +45,6 @@ public class EventSendPool {
                     try {
                         Future<?> future = (Future<?>) r;
                         if (future.isDone()) {
-                            K2Instrumentator.JA_HEALTH_CHECK.incrementEventSentCount();
                             future.get();
                         }
                     } catch (Throwable e) {
@@ -82,12 +81,18 @@ public class EventSendPool {
 
     public void sendEvent(JavaAgentEventBean event) {
         executor.submit(new EventSender(event));
+        K2Instrumentator.JA_HEALTH_CHECK.incrementEventSentCount();
     }
 
     public void sendEvent(Object event) {
         executor.submit(new EventSender(event));
     }
 
+    public static void shutDownPool() {
+        if (instance != null) {
+            instance.shutDownThreadPoolExecutor();
+        }
+    }
 
     public void shutDownThreadPoolExecutor() {
 
@@ -99,7 +104,7 @@ public class EventSendPool {
                     executor.shutdownNow(); // cancel currently executing tasks
 
                     if (!executor.awaitTermination(1, TimeUnit.SECONDS)) {
-                        logger.log(LogLevel.SEVERE, "Thread pool executor did not terminate",
+                        logger.log(LogLevel.FATAL, "Thread pool executor did not terminate",
                                 EventSendPool.class.getName());
                     }
                 }

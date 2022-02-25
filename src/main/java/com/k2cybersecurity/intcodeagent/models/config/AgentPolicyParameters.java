@@ -10,12 +10,35 @@ import java.util.Set;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({
+        "version",
+        "timestamp",
+        "lastUpdateTimestamp",
+        "policyPullInterval",
+        "attackerIpTimeout",
         "allowedIps",
         "blockedIps",
         "allowedApis",
-        "blockedApis"
+        "blockedApis",
+        "allowedRequests"
 })
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class AgentPolicyParameters {
+
+    @JsonProperty("version")
+    private String version;
+
+    @JsonProperty("timestamp")
+    private Long timestamp;
+
+    @JsonProperty("lastUpdateTimestamp")
+    private Long lastUpdateTimestamp;
+
+    //In minutes
+    @JsonProperty("attackerIpTimeout")
+    private Integer attackerIpTimeout;
+
+    @JsonProperty("policyPullInterval")
+    private Integer policyPullInterval;
 
     @JsonProperty("allowedIps")
     private Set<String> allowedIps = new HashSet<>();
@@ -27,6 +50,8 @@ public class AgentPolicyParameters {
     @JsonProperty("blockedApis")
     private Set<String> blockedApis = new HashSet<>();
 
+    @JsonProperty("allowedRequests")
+    private Set<BlockedRequest> allowedRequests = new HashSet<>();
 
     @JsonIgnore
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
@@ -35,6 +60,7 @@ public class AgentPolicyParameters {
      * No args constructor for use in serialization
      */
     public AgentPolicyParameters() {
+        this.version = "0";
     }
 
     /**
@@ -45,6 +71,26 @@ public class AgentPolicyParameters {
         super();
         this.allowedIps = allowedIps;
         this.blockedIps = blockedIps;
+    }
+
+    @JsonProperty("version")
+    public String getVersion() {
+        return version;
+    }
+
+    @JsonProperty("version")
+    public void setVersion(String version) {
+        this.version = version;
+    }
+
+    @JsonProperty("policyPullInterval")
+    public Integer getPolicyPullInterval() {
+        return policyPullInterval;
+    }
+
+    @JsonProperty("policyPullInterval")
+    public void setPolicyPullInterval(Integer policyPullInterval) {
+        this.policyPullInterval = policyPullInterval;
     }
 
     @JsonProperty("allowedIps")
@@ -95,6 +141,50 @@ public class AgentPolicyParameters {
     @JsonProperty("blockedApis")
     public void setBlockedApis(Set<String> blockedApis) {
         this.blockedApis = blockedApis;
+    }
+
+    @JsonProperty("allowedRequests")
+    public Set<BlockedRequest> getAllowedRequests() {
+        return allowedRequests;
+    }
+
+    @JsonProperty("allowedRequests")
+    public void setAllowedRequests(Set<BlockedRequest> allowedRequests) {
+        this.allowedRequests = allowedRequests;
+    }
+
+    public void setAdditionalProperties(Map<String, Object> additionalProperties) {
+        this.additionalProperties = additionalProperties;
+    }
+
+    @JsonProperty("timestamp")
+    public Long getTimestamp() {
+        return timestamp;
+    }
+
+    @JsonProperty("timestamp")
+    public void setTimestamp(Long timestamp) {
+        this.timestamp = timestamp;
+    }
+
+    @JsonProperty("lastUpdateTimestamp")
+    public Long getLastUpdateTimestamp() {
+        return lastUpdateTimestamp;
+    }
+
+    @JsonProperty("lastUpdateTimestamp")
+    public void setLastUpdateTimestamp(Long lastUpdateTimestamp) {
+        this.lastUpdateTimestamp = lastUpdateTimestamp;
+    }
+
+    @JsonProperty("attackerIpTimeout")
+    public Integer getAttackerIpTimeout() {
+        return attackerIpTimeout;
+    }
+
+    @JsonProperty("attackerIpTimeout")
+    public void setAttackerIpTimeout(Integer attackerIpTimeout) {
+        this.attackerIpTimeout = attackerIpTimeout;
     }
 
     @Override

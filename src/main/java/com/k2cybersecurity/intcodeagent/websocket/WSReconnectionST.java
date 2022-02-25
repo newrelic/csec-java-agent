@@ -21,16 +21,23 @@ public class WSReconnectionST {
 
     private ScheduledFuture futureTask;
 
-    private Runnable runnable = () -> {
-        try {
-            WSClient.reconnectWSClient();
-        } catch (Exception e) {
-            logger.log(LogLevel.ERROR, ERROR_WHILE_WS_RECONNECTION + e.getMessage() + COLON_SEPARATOR + e.getCause(), WSClient.class.getName());
-            logger.log(LogLevel.DEBUG, ERROR_WHILE_WS_RECONNECTION, e, WSClient.class.getName());
+    private Runnable runnable = new Runnable() {
+        @Override
+        public void run() {
+            try {
+                WSClient.reconnectWSClient();
+            } catch (Exception e) {
+                logger.log(LogLevel.ERROR, ERROR_WHILE_WS_RECONNECTION + e.getMessage() + COLON_SEPARATOR + e.getCause(), WSClient.class.getName());
+                logger.log(LogLevel.DEBUG, ERROR_WHILE_WS_RECONNECTION, e, WSClient.class.getName());
+            } finally {
+                if (!WSClient.isConnected()) {
+                    futureTask = scheduledService.schedule(runnable, 30, TimeUnit.SECONDS);
+                }
+            }
         }
     };
 
-    private WSReconnectionST() {
+    private void instantiateScheduler() {
         scheduledService = Executors.newSingleThreadScheduledExecutor(new ThreadFactory() {
             private final AtomicInteger threadNumber = new AtomicInteger(1);
 
@@ -40,6 +47,10 @@ public class WSReconnectionST {
                         WSRECONNECTSCHEDULEDTHREAD_ + threadNumber.getAndIncrement());
             }
         });
+    }
+
+    private WSReconnectionST() {
+        instantiateScheduler();
     }
 
 
@@ -54,15 +65,36 @@ public class WSReconnectionST {
             }
             return instance;
         } catch (Throwable e) {
-            logger.log(LogLevel.WARNING, "Error while starting: ", e, WSReconnectionST.class.getName());
+            logger.log(LogLevel.WARN, "Error while starting: ", e, WSReconnectionST.class.getName());
         }
         throw null;
     }
 
     public void submitNewTaskSchedule() {
-        getInstance();
-        if (futureTask == null || futureTask.isDone()) {
-            futureTask = scheduledService.schedule(runnable, 30, TimeUnit.SECONDS);
+        synchronized (lock) {
+            if (futureTask == null || futureTask.isDone()) {
+                if (scheduledService.isShutdown()) {
+                    instance.instantiateScheduler();
+                }
+                futureTask = scheduledService.schedule(runnable, 30, TimeUnit.SECONDS);
+            }
+        }
+    }
+
+    public static void cancelTask(boolean force) {
+        if (instance != null) {
+            if (instance.futureTask == null) {
+                return;
+            }
+            if (instance.futureTask != null && (force || instance.futureTask.isDone())) {
+                instance.futureTask.cancel(force);
+            }
+        }
+    }
+
+    public static void shutDownPool() {
+        if (instance != null) {
+            instance.shutDownThreadPoolExecutor();
         }
     }
 
@@ -76,12 +108,12 @@ public class WSReconnectionST {
         if (scheduledService != null) {
             try {
                 scheduledService.shutdown(); // disable new tasks from being submitted
-                if (!scheduledService.awaitTermination(1, TimeUnit.SECONDS)) {
+                if (!scheduledService.awaitTermination(10, TimeUnit.SECONDS)) {
                     // wait for termination for a timeout
                     scheduledService.shutdownNow(); // cancel currently executing tasks
 
-                    if (!scheduledService.awaitTermination(1, TimeUnit.SECONDS)) {
-                        logger.log(LogLevel.SEVERE, "Thread pool executor did not terminate",
+                    if (!scheduledService.awaitTermination(10, TimeUnit.SECONDS)) {
+                        logger.log(LogLevel.FATAL, "Thread pool executor did not terminate",
                                 WSReconnectionST.class.getName());
                     } else {
                         logger.log(LogLevel.INFO, "Thread pool executor terminated",

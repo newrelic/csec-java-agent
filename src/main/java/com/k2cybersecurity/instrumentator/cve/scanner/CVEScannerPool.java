@@ -2,23 +2,28 @@ package com.k2cybersecurity.instrumentator.cve.scanner;
 
 import com.k2cybersecurity.instrumentator.os.OSVariables;
 import com.k2cybersecurity.instrumentator.os.OsVariablesInstance;
+import com.k2cybersecurity.instrumentator.utils.AgentUtils;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.logging.EventThreadPool.EventAbortPolicy;
 import com.k2cybersecurity.intcodeagent.logging.IAgentConstants;
 import com.k2cybersecurity.intcodeagent.models.javaagent.CVEPackageInfo;
+import com.k2cybersecurity.intcodeagent.utils.CommonUtils;
 
+import java.nio.file.Paths;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class CVEScannerPool {
 
+    public static final String ALL_PERMISSIONS = "rwxrwxrwx";
     /**
      * Thread pool executor.
      */
     private ThreadPoolExecutor executor;
     private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
 
+    private final static Object lock = new Object();
     private static CVEScannerPool instance;
 
     final int queueSize = 10;
@@ -29,6 +34,8 @@ public class CVEScannerPool {
     final boolean allowCoreThreadTimeOut = false;
 
     private CVEPackageInfo packageInfo;
+
+    private CVEScan liveScan;
 
     private OSVariables osVariables = OsVariablesInstance.getInstance().getOsVariables();
 
@@ -49,6 +56,7 @@ public class CVEScannerPool {
                     }
                 }
                 super.afterExecute(r, t);
+                liveScan = null;
             }
 
             @Override
@@ -70,31 +78,63 @@ public class CVEScannerPool {
     }
 
     public static CVEScannerPool getInstance() {
-
         if (instance == null) {
-            instance = new CVEScannerPool();
-            return instance;
+            synchronized (lock) {
+                if (instance == null) {
+                    instance = new CVEScannerPool();
+                    return instance;
+                }
+            }
         }
         return instance;
     }
 
-    public void dispatchScanner(String nodeId, String kind, String id, boolean downloadTarBundle, boolean isEnvScan) {
-        if (executor.isShutdown()) {
-            return;
-        }
-        switch (osVariables.getOs()) {
-            case IAgentConstants.LINUX:
-                this.executor.submit(new CVEServiceLinux(nodeId, kind, id, downloadTarBundle, isEnvScan));
-                break;
-            case IAgentConstants.MAC:
-                this.executor.submit(new CVEServiceMac(nodeId, kind, id, downloadTarBundle, isEnvScan));
-                break;
-            case IAgentConstants.WINDOWS:
-                this.executor.submit(new CVEServiceWindows(nodeId, kind, id, downloadTarBundle, isEnvScan));
-                break;
+    public void dispatchScanner(String nodeId, String kind, String id, boolean isEnvScan) {
+        synchronized (lock) {
+            if (isEnvScan && AgentUtils.getInstance().isCveEnvScanCompleted()) {
+                return;
+            }
+            if (isEnvScan) {
+                AgentUtils.getInstance().setCveEnvScanCompleted(true);
+            }
+            if (executor.isShutdown()) {
+                return;
+            }
+            CVEPackageInfo packageInfo = CVEComponentsService.getCVEPackageInfo();
+
+//            new File(osVariables.getCvePackageBaseDir()).mkdirs();
+            CommonUtils.forceMkdirs(Paths.get(osVariables.getTmpDirectory()), ALL_PERMISSIONS);
+
+            switch (osVariables.getOs()) {
+                case IAgentConstants.LINUX:
+                    liveScan = new CVEServiceLinux(nodeId, kind, id, packageInfo, isEnvScan);
+                    break;
+                case IAgentConstants.MAC:
+                    liveScan = new CVEServiceMac(nodeId, kind, id, packageInfo, isEnvScan);
+                    break;
+                case IAgentConstants.WINDOWS:
+                    liveScan = new CVEServiceWindows(nodeId, kind, id, packageInfo, isEnvScan);
+                    break;
+            }
+
+            this.executor.submit(liveScan);
         }
     }
 
+    public static void shutDownPool() {
+        if (instance != null) {
+            if (instance.liveScan != null) {
+                instance.liveScan.destroyForcibly();
+            }
+            instance.shutDownThreadPoolExecutor();
+        }
+    }
+
+    /**
+     * Shut down the thread pool executor. Calls normal shutdown of thread pool
+     * executor and awaits for termination. If not terminated, forcefully shuts down
+     * the executor after a timeout.
+     */
     public void shutDownThreadPoolExecutor() {
 
         if (executor != null) {
@@ -105,14 +145,16 @@ public class CVEScannerPool {
                     executor.shutdownNow(); // cancel currently executing tasks
 
                     if (!executor.awaitTermination(1, TimeUnit.SECONDS)) {
-                        logger.log(LogLevel.SEVERE, "Thread pool executor did not terminate",
+                        logger.log(LogLevel.FATAL, "Thread pool executor did not terminate",
+                                CVEScannerPool.class.getName());
+                    } else {
+                        logger.log(LogLevel.INFO, "Thread pool executor terminated",
                                 CVEScannerPool.class.getName());
                     }
                 }
             } catch (InterruptedException e) {
             }
         }
-
     }
 
     public CVEPackageInfo getPackageInfo() {
@@ -122,4 +164,6 @@ public class CVEScannerPool {
     public void setPackageInfo(CVEPackageInfo packageInfo) {
         this.packageInfo = packageInfo;
     }
+
+
 }

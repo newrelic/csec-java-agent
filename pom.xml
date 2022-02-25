@@ -21,7 +21,9 @@
         <collectorVersion>0</collectorVersion>
         <buildTime>0</buildTime>
         <commitId>0</commitId>
-        <jsonVersion>0</jsonVersion>
+        <jsonVersion>2.0.0</jsonVersion>
+        <buildNumber>0</buildNumber>
+        <collectorVersion>2.0.0</collectorVersion>
         <maven.build.timestamp.format>yyyy</maven.build.timestamp.format>
         <license.build.timestamp>${maven.build.timestamp}</license.build.timestamp>
     </properties>
@@ -124,6 +126,12 @@
         </dependency>
 
         <dependency>
+            <groupId>org.everit.json</groupId>
+            <artifactId>org.everit.json.schema</artifactId>
+            <version>1.5.1</version>
+        </dependency>
+
+        <dependency>
             <groupId>net.openhft</groupId>
             <artifactId>zero-allocation-hashing</artifactId>
             <version>0.12</version>
@@ -181,7 +189,7 @@
                             <Can-Retransform-Classes>true</Can-Retransform-Classes>
                             <Can-Redefine-Classes>true</Can-Redefine-Classes>
                             <Boot-Class-Path>
-                                ${project.artifactId}-${project.version}-jar-with-dependencies.${project.packaging}
+                                k2-java-agent.${project.packaging}
                             </Boot-Class-Path>
                         </manifestEntries>
                     </archive>
@@ -219,7 +227,7 @@
                                     <addHeader>false</addHeader>
                                 </transformer>
                             </transformers>
-                            <finalName>${project.artifactId}-${project.version}-jar-with-dependencies</finalName>
+                            <finalName>k2-java-agent</finalName>
                             <relocations>
 
                                 <relocation>
@@ -247,8 +255,8 @@
                                     <shadedPattern>sun.reflect.com.k2cybersecurity.org.java_websocket.</shadedPattern>
                                 </relocation>
                                 <relocation>
-                                    <pattern>com.google.gson.</pattern>
-                                    <shadedPattern>sun.reflect.com.k2cybersecurity.com.google.gson.</shadedPattern>
+                                    <pattern>com.google.</pattern>
+                                    <shadedPattern>sun.reflect.com.k2cybersecurity.com.google.</shadedPattern>
                                 </relocation>
 
                                 <relocation>
@@ -297,6 +305,10 @@
                                 <relocation>
                                     <pattern>org.yaml.snakeyaml</pattern>
                                     <shadedPattern>sun.reflect.com.k2cybersecurity.org.yaml.snakeyaml</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>org.everit</pattern>
+                                    <shadedPattern>sun.reflect.com.k2cybersecurity.org.everit</shadedPattern>
                                 </relocation>
                             </relocations>
                         </configuration>

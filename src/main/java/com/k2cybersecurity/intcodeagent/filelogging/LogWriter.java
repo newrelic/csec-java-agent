@@ -7,13 +7,11 @@ import com.k2cybersecurity.instrumentator.os.OSVariables;
 import com.k2cybersecurity.instrumentator.os.OsVariablesInstance;
 import com.k2cybersecurity.instrumentator.utils.CollectorConfigurationUtils;
 import com.k2cybersecurity.intcodeagent.properties.K2JALogProperties;
+import com.k2cybersecurity.intcodeagent.utils.CommonUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.attribute.PosixFilePermissions;
 import java.text.SimpleDateFormat;
@@ -31,8 +29,10 @@ public class LogWriter implements Runnable {
 
     private static final String K2_LOG = "K2-LOG : ";
     public static final String THREAD_NAME_TEMPLATE = " [%s] ";
+    public static final String CAUSED_BY = "Caused by: ";
 
     public static int defaultLogLevel = LogLevel.INFO.getLevel();
+
 
     private int logLevel;
 
@@ -65,28 +65,36 @@ public class LogWriter implements Runnable {
 
     private static OSVariables osVariables = OsVariablesInstance.getInstance().getOsVariables();
 
-    static {
-        fileName = new File(osVariables.getLogDirectory(), "k2_java_agent-" + K2Instrumentator.APPLICATION_UUID + ".log").getAbsolutePath();
-        currentLogFile = new File(fileName);
-        currentLogFile.getParentFile().mkdirs();
-        try {
-            Files.setPosixFilePermissions(currentLogFile.getParentFile().toPath(), PosixFilePermissions.fromString("rwxrwxrwx"));
-        } catch (Exception e) {
-        }
-        currentLogFileName = fileName;
+    private static boolean createLogFile() {
+        CommonUtils.forceMkdirs(currentLogFile.getParentFile().toPath(), "rwxrwxrwx");
+
         try {
             currentLogFile.setReadable(true, false);
             writer = new BufferedWriter(new FileWriter(currentLogFileName, true));
+
             maxFileSize = K2JALogProperties.maxfilesize * 1048576;
 
-            // k2.log.handler.maxfilesize=10
-            // k2.log.handler.maxfilesize.unit=MB
             if (!osVariables.getWindows()) {
                 Files.setPosixFilePermissions(currentLogFile.toPath(), PosixFilePermissions.fromString("rw-rw-rw-"));
             }
+
         } catch (Throwable e) {
-            e.printStackTrace();
+            String tmpDir = System.getProperty("java.io.tmpdir");
+            System.err.println("[K2-JA] Unable to create log file!!! Please find the error in  " + tmpDir + File.separator + "K2-Logger.err");
+            try {
+                e.printStackTrace(new PrintStream(tmpDir + File.separator + "K2-Logger.err"));
+            } catch (FileNotFoundException ex) {
+            }
+            return false;
         }
+        return true;
+    }
+
+    static {
+        fileName = new File(osVariables.getLogDirectory(), "k2-java-agent-" + K2Instrumentator.APPLICATION_UUID + ".log").getAbsolutePath();
+        currentLogFile = new File(fileName);
+        currentLogFileName = fileName;
+        createLogFile();
     }
 
     public LogWriter(LogLevel logLevel, String logEntry, String loggingClassName, String threadName) {
@@ -108,7 +116,7 @@ public class LogWriter implements Runnable {
 
     @Override
     public void run() {
-        if (this.logLevel == 0 || this.logLevel > defaultLogLevel) {
+        if (this.logLevel == 1 || this.logLevel > defaultLogLevel) {
             return;
         }
         StringBuilder sb = new StringBuilder();
@@ -131,7 +139,7 @@ public class LogWriter implements Runnable {
             sb.append(StringUtils.LF);
             Throwable cause = this.throwableLogEntry.getCause();
             while (cause != null) {
-                sb.append("Caused by: ");
+                sb.append(CAUSED_BY);
                 sb.append(this.throwableLogEntry.getCause().getMessage());
                 sb.append(StringUtils.LF);
                 sb.append(StringUtils.join(this.throwableLogEntry.getCause().getStackTrace(), StringUtils.LF));
@@ -141,6 +149,10 @@ public class LogWriter implements Runnable {
         }
         sb.append(StringUtils.LF);
         try {
+
+            if (!currentLogFile.isFile()) {
+                createLogFile();
+            }
 //			System.out.println(sb.toString());
             writer.write(sb.toString());
             writer.flush();
@@ -154,6 +166,7 @@ public class LogWriter implements Runnable {
     }
 
     private static void rollover(String fileName) throws IOException {
+
         File currentFile = new File(fileName);
         if (currentFile.length() > maxFileSize) {
             writer.close();
@@ -170,12 +183,11 @@ public class LogWriter implements Runnable {
             }
             uploadLogsAndDeleteFile(rolloverFile);
             int removeFile = logFileCounter - K2JALogProperties.maxfiles;
-            while (removeFile > 0) {
+            if (removeFile > 0) {
                 File remove = new File(fileName + STRING_DOT + removeFile);
                 if (remove.exists()) {
                     FileUtils.deleteQuietly(remove);
                 }
-                removeFile--;
             }
         }
     }

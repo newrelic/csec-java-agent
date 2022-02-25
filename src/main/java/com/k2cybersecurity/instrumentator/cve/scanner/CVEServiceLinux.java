@@ -13,6 +13,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Paths;
 import java.util.Arrays;
@@ -20,7 +21,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-public class CVEServiceLinux implements Runnable {
+public class CVEServiceLinux extends CVEScan {
 
     private static final String ERROR_LOG = "Error : ";
 
@@ -47,21 +48,23 @@ public class CVEServiceLinux implements Runnable {
 
     private String nodeId;
 
-    private boolean downloadTarBundle = false;
-
     private String kind;
 
     private String id;
 
     private boolean isEnvScan;
 
+    private CVEPackageInfo packageInfo;
+
+    private Process liveProcess;
+
     private OSVariables osVariables = OsVariablesInstance.getInstance().getOsVariables();
 
-    public CVEServiceLinux(String nodeId, String kind, String id, boolean downloadTarBundle, boolean isEnvScan) {
+    public CVEServiceLinux(String nodeId, String kind, String id, CVEPackageInfo packageInfo, boolean isEnvScan) {
         this.nodeId = nodeId;
         this.kind = kind;
         this.id = id;
-        this.downloadTarBundle = downloadTarBundle;
+        this.packageInfo = packageInfo;
         this.isEnvScan = isEnvScan;
     }
 
@@ -69,12 +72,12 @@ public class CVEServiceLinux implements Runnable {
 
     @Override
     public void run() {
+        boolean runStatus = false;
         try {
-            String packageParentDir = osVariables.getCvePackageBaseDir();
-            CVEPackageInfo packageInfo = CVEComponentsService.getCVEPackageInfo();
+            String packageParentDir = osVariables.getTmpDirectory();
             logger.log(LogLevel.DEBUG, String.format(ICVEConstants.PACKAGE_INFO_LOGGER, packageInfo.toString(), CVEScannerPool.getInstance().getPackageInfo()), CVEServiceLinux.class.getName());
-            if (downloadTarBundle || CVEScannerPool.getInstance().getPackageInfo() == null || !StringUtils.equals(packageInfo.getLatestServiceVersion(), CVEScannerPool.getInstance().getPackageInfo().getLatestServiceVersion())) {
-                Collection<File> cvePackages = FileUtils.listFiles(new File(osVariables.getCvePackageBaseDir()), new NameFileFilter(ICVEConstants.LOCALCVESERVICE), null);
+            if (CVEScannerPool.getInstance().getPackageInfo() == null || !CVEScannerPool.getInstance().getPackageInfo().getCvePackage().exists() || !StringUtils.equals(packageInfo.getLatestServiceVersion(), CVEScannerPool.getInstance().getPackageInfo().getLatestServiceVersion())) {
+                Collection<File> cvePackages = FileUtils.listFiles(new File(osVariables.getTmpDirectory()), new NameFileFilter(ICVEConstants.LOCALCVESERVICE), null);
                 logger.log(LogLevel.DEBUG, ICVEConstants.FILES_TO_DELETE + cvePackages, CVEServiceLinux.class.getName());
                 cvePackages.forEach(FileUtils::deleteQuietly);
                 CVEComponentsService.downloadCVEPackage(packageInfo);
@@ -84,7 +87,7 @@ public class CVEServiceLinux implements Runnable {
             }
             logger.log(LogLevel.DEBUG, ICVEConstants.CVE_PACKAGE_DOWNLOADED, CVEServiceLinux.class.getName());
             //Create untar Directory
-            File packageExtractedDirectory = new File(packageParentDir, String.format(ICVEConstants.EXTR_DIR, LOCALCVESERVICE_PATH, K2Instrumentator.APPLICATION_UUID));
+            File packageExtractedDirectory = new File(packageParentDir, LOCALCVESERVICE_PATH);
             FileUtils.deleteQuietly(packageExtractedDirectory);
             if (!packageExtractedDirectory.exists()) {
                 try {
@@ -97,6 +100,7 @@ public class CVEServiceLinux implements Runnable {
             }
 
             AgentUtils.extractCVETar(CVEScannerPool.getInstance().getPackageInfo().getCvePackage(), packageExtractedDirectory);
+            FileUtils.deleteQuietly(CVEScannerPool.getInstance().getPackageInfo().getCvePackage());
             CVEComponentsService.setAllLinuxPermissions(packageExtractedDirectory.getAbsolutePath());
             logger.log(LogLevel.DEBUG, ICVEConstants.CVE_PACKAGE_EXTRACTION_COMPLETED, CVEServiceLinux.class.getName());
             StringBuilder dcCommand = new StringBuilder(LINUX_SHELL);
@@ -108,7 +112,7 @@ public class CVEServiceLinux implements Runnable {
 
             List<CVEScanner> scanDirs;
             if (isEnvScan) {
-                scanDirs = CVEComponentsService.getLibScanDirs(packageExtractedDirectory.getAbsolutePath());
+                scanDirs = CVEComponentsService.getLibScanDirs();
             } else {
                 scanDirs = CVEComponentsService.getAppScanDirs();
             }
@@ -122,15 +126,15 @@ public class CVEServiceLinux implements Runnable {
                 File dcout = Paths.get(packageExtractedDirectory.getAbsolutePath(), ICVEConstants.DC_TRIGGER_LOG).toFile();
                 processBuilder.redirectErrorStream(true);
                 processBuilder.redirectOutput(dcout);
-                Process process = processBuilder.start();
-                if (!process.waitFor(10, TimeUnit.MINUTES)) {
-                    long pid = AgentUtils.getInstance().getProcessID(process);
+                liveProcess = processBuilder.start();
+                if (!liveProcess.waitFor(10, TimeUnit.MINUTES)) {
+                    long pid = AgentUtils.getInstance().getProcessID(liveProcess);
                     if (pid > 1) {
-                        logger.log(LogLevel.WARNING, String.format(KILLING_PROCESS_TREE_ROOTED_AT_S, pid), CVEServiceLinux.class.getName());
+                        logger.log(LogLevel.WARN, String.format(KILLING_PROCESS_TREE_ROOTED_AT_S, pid), CVEServiceLinux.class.getName());
                         AgentUtils.getInstance().incrementCVEServiceFailCount();
                         Runtime.getRuntime().exec(String.format(KILL_PROCESS_TREE_COMMAND, pid));
                     }
-                } else if (process.exitValue() != 0) {
+                } else if (liveProcess.exitValue() != 0) {
                     AgentUtils.getInstance().incrementCVEServiceFailCount();
                 }
 //                List<String> response = IOUtils.readLines(process.getInputStream(), StandardCharsets.UTF_8);
@@ -149,14 +153,35 @@ public class CVEServiceLinux implements Runnable {
                 } catch (Throwable e) {
                 }
             }
-            CVEComponentsService.deleteAllComponents(packageExtractedDirectory);
+            CVEComponentsService.deleteAllComponents(osVariables.getTmpDirectory());
             logger.log(LogLevel.DEBUG, ICVEConstants.CVE_PACKAGE_DELETED, CVEServiceLinux.class.getName());
+            runStatus = true;
             return;
         } catch (InterruptedException e) {
             logger.log(LogLevel.ERROR, ERROR_PROCESS_TERMINATED, e, CVEServiceLinux.class.getName());
         } catch (Throwable e) {
             logger.log(LogLevel.ERROR, ERROR, e, CVEServiceLinux.class.getName());
+        } finally {
+            if (!runStatus && this.isEnvScan) {
+                AgentUtils.getInstance().setCveEnvScanCompleted(false);
+            }
         }
-        AgentUtils.getInstance().setCveEnvScanCompleted(false);
+
+    }
+
+    @Override
+    public void destroyForcibly() {
+        if (liveProcess != null) {
+            long pid = AgentUtils.getInstance().getProcessID(liveProcess);
+            if (pid > 1) {
+                logger.log(LogLevel.WARN, String.format(KILLING_PROCESS_TREE_ROOTED_AT_S, pid), CVEServiceLinux.class.getName());
+                AgentUtils.getInstance().incrementCVEServiceFailCount();
+                try {
+                    Runtime.getRuntime().exec(String.format(KILL_PROCESS_TREE_COMMAND, pid));
+                } catch (IOException e) {
+                    liveProcess.destroyForcibly();
+                }
+            }
+        }
     }
 }

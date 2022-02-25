@@ -575,11 +575,7 @@ public interface IAgentConstants {
     String INIT = "<init>";
     String SUN_REFLECT = "sun.reflect.";
     String COM_SUN = "com.sun.";
-    String UNABLE_TO_SET_AGENT_POLICY_DUE_TO_ERROR = "Unable to set Agent Policy due to error:";
-    String UNABLE_TO_SET_AGENT_POLICY_PARAM_DUE_TO_ERROR = "Unable to set Agent Policy Parameters due to error:";
     String UNABLE_TO_GET_AGENT_STARTUP_INFOARMATION = "Unable to get Agent startup information due to error:";
-    String AGENT_POLICY_APPLIED_S = "Agent Policy applied : %s";
-    String AGENT_POLICY_PARAM_APPLIED_S = "Agent Policy parameters applied : %s";
 
     String K2_API_CALLER = "K2-API-CALLER";
     String K2_TRACING_HEADER = "K2-TRACING-DATA";
@@ -588,4 +584,44 @@ public interface IAgentConstants {
     String WINDOWS = "windows";
     String MAC = "mac";
     String K_2_FUZZ_REQUEST_ID = "k2-fuzz-request-id";
+
+    String EXCEPTION_OCCURRED_IN_CREATE_APPLICATION_INFO_BEAN = "Exception occurred in createApplicationInfoBean: ";
+    String EXCEPTION_OCCURRED_IN_EVENT_SEND_POOL = "Exception occurred in EventSendPool: ";
+    String ERROR_OCCURRED_WHILE_TRYING_TO_CONNECT_TO_WSOCKET = "Error occurred while trying to connect to web-socket: ";
+
+    String APPLICATION_INFO_SENT_ON_WS_CONNECT = "[STEP-3][COMPLETE][APP_INFO] Application info sent to Prevent-Web service : %s";
+    String SENDING_APPLICATION_INFO_ON_WS_CONNECT = "[APP_INFO] Sending application info to Prevent-Web service : %s";
+    String WS_CONNECTION_SUCCESSFUL = "[STEP-4][COMPLETE][WS] Connected to Prevent-Web service at %s.";
+    String WS_CONNECTION_UNSUCCESSFUL = "[WS] Error connecting to Prevent-Web service at %s :";
+    String INIT_WS_CONNECTION = "[STEP-4][BEGIN][WS] Connecting to Prevent-Web service at %s.";
+
+
+    String RECEIVED_AGENT_POLICY = "[STEP-7][BEGIN][POLICY] Received policy data from Prevent-Web service : %s";
+    String UNABLE_TO_PARSE_AGENT_POLICY_DUE_TO_ERROR = "[POLICY] Error while parsing policy data from Prevent-Web service : %s : %s";
+    String UNABLE_TO_VALIDATE_AGENT_POLICY_DUE_TO_ERROR = "[POLICY] Error while validating policy data from Prevent-Web service : %s : ";
+    String UNABLE_TO_VALIDATE_AGENT_POLICY_PARAMETER_DUE_TO_ERROR = "[POLICY] Error while validating policy parameters data from Prevent-Web service : %s : ";
+
+    String UNABLE_TO_VALIDATE_AGENT_POLICY_DUE_TO_ERROR_FILE = "[POLICY] Error while validating policy data from local policy file change. Falling back to current : %s : ";
+    String UNABLE_TO_SET_AGENT_POLICY_DUE_TO_ERROR = "[POLICY] Error while applying policy : %s :";
+    String AGENT_POLICY_APPLIED_S = "[STEP-7][COMPLETE][POLICY] Policy applied : : %s";
+    String AGENT_POLICY_PARAM_APPLIED_S = "[POLICY] Agent Policy parameters applied : %s";
+    String UNABLE_TO_SET_AGENT_POLICY_PARAM_DUE_TO_ERROR = "[POLICY] Unable to set Agent Policy Parameters due to error:";
+
+    String STARTING_MODULE_LOG = "[BEGIN][MODULE] Starting %s.";
+    String ERROR_STARTING_MODULE_LOG = "[MODULE] Error while starting %s :L ";
+    String STARTED_MODULE_LOG = "[COMPLETE][MODULE] Started %s.";
+
+    String AGENT_INIT_LOG_STEP_FIVE = "[STEP-5][BEGIN][MODULE] Start Threads/pools/scheduler.";
+    String AGENT_INIT_LOG_STEP_FIVE_END = "[STEP-5][COMPLETE][MODULE] Started Threads/pools/scheduler.";
+    int NUMBER_OF_RETRIES = 7;
+    String POLICY_NO_CHANGE_IN_GLOBAL_POLICY_PARAMETERS_RESPONSE_BODY = "[POLICY] No change in global policy parameters response : %s : body: %s";
+    String POLICY_GLOBAL_POLICY_PARAMETERS_API_FAILURE_RESPONSE_BODY = "[POLICY] API global policy parameters failure!!! response : %s : body: %s";
+    String POLICY_VERSION_CHANGED_POLICY_PARAMETER_PULL_REQUIRED_RESPONSE_BODY = "[POLICY] Version changed policy parameter pull required response : %s : body: %s";
+    String POLICY_PARAMETER_VERSION_CHECK_FAILED_MESSAGE_CAUSE = "Policy parameter version check failed MESSAGE: %s CAUSE: %s";
+
+
+    String DEFAULT_K2HOME_LINUX = "/opt/k2root";
+    String DEFAULT_K2HOME_WIN = "C:\\Users\\Public\\K2\\k2root";
+    String POLICY_PULL_RESPONSE_IS_NULL = "Policy pull response is null!!!";
+    String VULNERABLE = "VULNERABLE";
 }

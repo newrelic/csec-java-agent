@@ -3,11 +3,14 @@ package com.k2cybersecurity.instrumentator;
 import com.k2cybersecurity.instrumentator.os.OSVariables;
 import com.k2cybersecurity.instrumentator.os.OsVariablesInstance;
 import com.k2cybersecurity.instrumentator.utils.*;
+import com.k2cybersecurity.intcodeagent.constants.AgentServices;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.logging.HealthCheckScheduleThread;
 import com.k2cybersecurity.intcodeagent.models.config.PolicyApplicationInfo;
 import com.k2cybersecurity.intcodeagent.models.javaagent.*;
+import com.k2cybersecurity.intcodeagent.properties.K2JAVersionInfo;
+import com.k2cybersecurity.intcodeagent.schedulers.GlobalPolicyParameterPullST;
 import com.k2cybersecurity.intcodeagent.schedulers.PolicyPullST;
 import com.k2cybersecurity.intcodeagent.websocket.EventSendPool;
 import com.k2cybersecurity.intcodeagent.websocket.WSClient;
@@ -28,23 +31,33 @@ import java.net.URL;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.*;
 
 public class K2Instrumentator {
 
+    private static final String APP_INFO_GATHERING_FINISHED = "[APP_INFO] Application info generated : %s.";
+    private static final String APP_INFO_GATHERING_STARTED = "[STEP-3][BEGIN][APP_INFO] Gathering application info for current process.";
+    private static final String APP_INFO_BEAN_NOT_CREATED = "[APP_INFO] Error K2 application info bean not created.";
+    private static final String AGENT_INIT_SUCCESSFUL = "[STEP-2][PROTECTION][COMPLETE] Protecting new process with PID %s and UUID %s : %s.";
+
+    private static final String INIT_STARTED_AGENT_ATTACHED = "[STEP-2][PROTECTION][BEGIN] K2 Java collector attached to process: PID = %s, with generated applicationUID = %s by %s attachment";
+
     public static Integer VMPID;
     public static final String APPLICATION_UUID = UUID.randomUUID().toString();
     public static ApplicationInfoBean APPLICATION_INFO_BEAN;
     public static JAHealthCheck JA_HEALTH_CHECK;
+    public static String K2_HOME;
 
     private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
 
     public static boolean isDynamicAttach = false;
     public static boolean enableHTTPRequestPrinting = false;
 
-    private static OSVariables osVariables = OsVariablesInstance.getInstance().getOsVariables();
+    private static OSVariables osVariables;
 
     static {
         try {
@@ -59,6 +72,32 @@ public class K2Instrumentator {
     public static boolean init(Boolean isDynamicAttach) {
         try {
             K2Instrumentator.isDynamicAttach = isDynamicAttach;
+            String attachmentType = isDynamicAttach ? DYNAMIC : STATIC;
+
+            K2_HOME = System.getenv("K2_HOME");
+            if (!isValidK2HomePath(K2_HOME)) {
+                //Fall back to default K2Home
+                if (SystemUtils.IS_OS_WINDOWS) {
+                    K2_HOME = DEFAULT_K2HOME_WIN;
+                } else {
+                    K2_HOME = DEFAULT_K2HOME_LINUX;
+                }
+                if (!isValidK2HomePath(K2_HOME)) {
+                    System.err.println("[K2-JA] Incomplete startup env parameters provided : Missing or Incorrect K2_HOME. Collector exiting.");
+                    return false;
+                }
+            }
+
+            osVariables = OsVariablesInstance.getInstance().getOsVariables();
+
+            EnvLogUtils.logK2Env();
+
+            // log init
+            logger.logInit(
+                    LogLevel.INFO,
+                    String.format(INIT_STARTED_AGENT_ATTACHED, VMPID, APPLICATION_UUID, attachmentType),
+                    K2Instrumentator.class.getName()
+            );
             String groupName = System.getenv("K2_GROUP_NAME");
             if (StringUtils.isBlank(groupName)) {
                 logger.log(LogLevel.ERROR, "Incomplete startup env parameters provided: Missing K2_GROUP_NAME", K2Instrumentator.class.getName());
@@ -83,10 +122,22 @@ public class K2Instrumentator {
                 alcPath = alcDefaultPath;
             }
 
+            try {
+                String collectorVersion = IOUtils.toString(ClassLoader.getSystemResourceAsStream("k2version"), StandardCharsets.UTF_8);
+                if (StringUtils.isNotBlank(collectorVersion)) {
+                    K2JAVersionInfo.collectorVersion = collectorVersion;
+                }
+            } catch (Exception e) {
+            }
+
             Identifier identifier = ApplicationInfoUtils.envDetection();
 
             if (!CollectorConfigurationUtils.getInstance().readCollectorConfig(identifier.getKind(), nlcPath, alcPath)) {
                 return false;
+            }
+
+            if (IdentifierEnvs.HOST.equals(identifier.getKind())) {
+                identifier.setId(CollectorConfigurationUtils.getInstance().getCollectorConfig().getNodeId());
             }
 
             if (StringUtils.isNotBlank(userAppName)) {
@@ -102,30 +153,112 @@ public class K2Instrumentator {
             identifier.setNodeIp(CollectorConfigurationUtils.getInstance().getCollectorConfig().getNodeIp());
             identifier.setNodeName(CollectorConfigurationUtils.getInstance().getCollectorConfig().getNodeName());
             APPLICATION_INFO_BEAN = createApplicationInfoBean(identifier);
-
+            if(APPLICATION_INFO_BEAN == null) {
+                // log appinfo not created
+                logger.logInit(
+                        LogLevel.ERROR,
+                        APP_INFO_BEAN_NOT_CREATED,
+                        K2Instrumentator.class.getName()
+                );
+                return false;
+            }
             if (APPLICATION_INFO_BEAN == null) {
                 return false;
             }
             JA_HEALTH_CHECK = new JAHealthCheck(APPLICATION_UUID);
-
-            new Thread(() -> {
+            logger.logInit(LogLevel.INFO, AGENT_INIT_LOG_STEP_FIVE, K2Instrumentator.class.getName());
+            int retries = NUMBER_OF_RETRIES;
+            WSClient.getInstance().openConnection();
+            while (retries > 0) {
                 try {
-                    WSClient.getInstance();
+                    if (!WSClient.isConnected()) {
+                        retries--;
+                        int timeout = (NUMBER_OF_RETRIES - retries);
+                        logger.logInit(LogLevel.INFO, String.format("WS client connection failed will retry after %s minute(s)", timeout), K2Instrumentator.class.getName());
+                        TimeUnit.MINUTES.sleep(timeout);
+                        WSClient.reconnectWSClient();
+                    } else {
+                        break;
+                    }
                 } catch (Throwable e) {
                     logger.log(LogLevel.ERROR, ERROR_OCCURED_WHILE_TRYING_TO_CONNECT_TO_WSOCKET, e,
                             K2Instrumentator.class.getName());
                 }
-                HealthCheckScheduleThread.getInstance();
-            }).start();
-            PolicyPullST.getInstance();
-            boolean isWorking = eventWritePool();
+            }
+            if (!WSClient.isConnected()) {
+                return false;
+            }
+
+            logger.logInit(
+                    LogLevel.INFO,
+                    String.format(STARTING_MODULE_LOG, AgentServices.HealthCheck.name()),
+                    K2Instrumentator.class.getName()
+            );
+            HealthCheckScheduleThread.getInstance();
+            logger.logInit(
+                    LogLevel.INFO,
+                    String.format(STARTED_MODULE_LOG, AgentServices.HealthCheck.name()),
+                    K2Instrumentator.class.getName()
+            );
 
             DirectoryWatcher.startMonitorDaemon();
-
+            PolicyPullST.instantiateDefaultPolicy();
+            PolicyPullST.getInstance();
+            GlobalPolicyParameterPullST.getInstance();
+            logger.logInit(
+                    LogLevel.INFO,
+                    String.format(STARTING_MODULE_LOG, AgentServices.EventWritePool.name()),
+                    K2Instrumentator.class.getName()
+            );
+            boolean isWorking = eventWritePool();
+            logger.logInit(
+                    LogLevel.INFO,
+                    String.format(STARTED_MODULE_LOG, AgentServices.EventWritePool.name()),
+                    K2Instrumentator.class.getName()
+            );
+            logger.logInit(
+                    LogLevel.INFO,
+                    String.format(STARTING_MODULE_LOG, AgentServices.DirectoryWatcher.name()),
+                    K2Instrumentator.class.getName()
+            );
+            logger.logInit(
+                    LogLevel.INFO,
+                    String.format(STARTED_MODULE_LOG, AgentServices.DirectoryWatcher.name()),
+                    K2Instrumentator.class.getName()
+            );
+            logger.logInit(LogLevel.INFO, AGENT_INIT_LOG_STEP_FIVE_END, K2Instrumentator.class.getName());
+            // log init finish
+            logger.logInit(
+                    LogLevel.INFO,
+                    String.format(AGENT_INIT_SUCCESSFUL, VMPID, APPLICATION_UUID, APPLICATION_INFO_BEAN),
+                    K2Instrumentator.class.getName()
+            );
             System.out.println(String.format("This application instance is now being protected by K2 Agent under id %s", APPLICATION_UUID));
             return isWorking;
         } catch (Exception e) {
+            e.printStackTrace();
             logger.log(LogLevel.ERROR, "Error in init ", e, K2Instrumentator.class.getName());
+        }
+        return false;
+    }
+
+    private static boolean isValidK2HomePath(String k2Home) {
+        if (StringUtils.isNotBlank(k2Home) && Paths.get(k2Home).toFile().isDirectory()) {
+            long avail = 0;
+            try {
+                avail = Files.getFileStore(Paths.get(k2Home)).getUsableSpace();
+            } catch (Exception e) {
+//                logger.logInit(LogLevel.WARN, "Can't determine disk space available to this Java virtual machine.", K2Instrumentator.class.getName());
+                return true;
+            }
+
+            if (avail > FileUtils.ONE_GB) {
+//                logger.logInit(LogLevel.INFO, String.format("Disk space available to this Java virtual machine on the file store : %s", FileUtils.byteCountToDisplaySize(avail)), K2Instrumentator.class.getName());
+                return true;
+            }
+//            logger.logInit(LogLevel.FATAL, String.format("Insufficient disk space available to the location %s is : %s", k2Home, FileUtils.byteCountToDisplaySize(avail)), K2Instrumentator.class.getName());
+            System.err.println(String.format("[K2-JA] Insufficient disk space available to the location %s is : %s", k2Home, FileUtils.byteCountToDisplaySize(avail)));
+            return false;
         }
         return false;
     }
@@ -135,12 +268,18 @@ public class K2Instrumentator {
             EventSendPool.getInstance();
             return true;
         } catch (Throwable e) {
-            logger.log(LogLevel.WARNING, EXCEPTION_OCCURED_IN_EVENT_SEND_POOL, e, K2Instrumentator.class.getName());
+            logger.log(LogLevel.WARN, EXCEPTION_OCCURED_IN_EVENT_SEND_POOL, e, K2Instrumentator.class.getName());
             return false;
         }
     }
 
     public static ApplicationInfoBean createApplicationInfoBean(Identifier identifier) {
+        // log appinfo create started
+        logger.logInit(
+                LogLevel.INFO,
+                APP_INFO_GATHERING_STARTED,
+                K2Instrumentator.class.getName()
+        );
         try {
             RuntimeMXBean runtimeMXBean = ManagementFactory.getRuntimeMXBean();
             ApplicationInfoBean applicationInfoBean = new ApplicationInfoBean(VMPID, APPLICATION_UUID,
@@ -164,9 +303,16 @@ public class K2Instrumentator {
             populateEnvInfo(identifier);
             applicationInfoBean.setIdentifier(identifier);
             setApplicationInfo(applicationInfoBean);
+
+            // log appinfo gathering ended
+            logger.logInit(
+                    LogLevel.INFO,
+                    String.format(APP_INFO_GATHERING_FINISHED, VMPID),
+                    K2Instrumentator.class.getName()
+            );
             return applicationInfoBean;
         } catch (Throwable e) {
-            logger.log(LogLevel.WARNING, EXCEPTION_OCCURED_IN_CREATE_APPLICATION_INFO_BEAN, e,
+            logger.log(LogLevel.WARN, EXCEPTION_OCCURED_IN_CREATE_APPLICATION_INFO_BEAN, e,
                     K2Instrumentator.class.getName());
         }
         return null;

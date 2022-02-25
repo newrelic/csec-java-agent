@@ -1,6 +1,5 @@
 package com.k2cybersecurity.intcodeagent.controlcommand;
 
-import com.k2cybersecurity.instrumentator.K2Instrumentator;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.logging.IAgentConstants;
@@ -49,7 +48,7 @@ public class ControlCommandProcessorThreadPool {
          * @throws RejectedExecutionException always
          */
         public void rejectedExecution(Runnable r, ThreadPoolExecutor e) {
-            logger.log(LogLevel.WARNING, String.format(CUSTOM_CODE_VULNERABILITY_TASK_REJECTED_FROM_S_S, r.toString(), e.toString()),
+            logger.log(LogLevel.WARN, String.format(CUSTOM_CODE_VULNERABILITY_TASK_REJECTED_FROM_S_S, r.toString(), e.toString()),
                     ControlCommandProcessorThreadPool.class.getName());
         }
     }
@@ -68,11 +67,9 @@ public class ControlCommandProcessorThreadPool {
                     try {
                         Future<?> future = (Future<?>) r;
                         if (future.isDone()) {
-                            K2Instrumentator.JA_HEALTH_CHECK.incrementProcessedCount();
                             future.get();
                         }
                     } catch (Throwable e) {
-                        K2Instrumentator.JA_HEALTH_CHECK.incrementDropCount();
                     }
                 }
                 super.afterExecute(r, t);
@@ -80,7 +77,6 @@ public class ControlCommandProcessorThreadPool {
 
             @Override
             protected void beforeExecute(Thread t, Runnable r) {
-                // TODO increment event proccessed count
                 super.beforeExecute(t, r);
             }
 
@@ -112,6 +108,11 @@ public class ControlCommandProcessorThreadPool {
         return instance;
     }
 
+    public static void shutDownPool() {
+        if (instance != null) {
+            instance.shutDownThreadPoolExecutor();
+        }
+    }
 
     public void shutDownThreadPoolExecutor() {
         if (executor != null) {
@@ -122,7 +123,7 @@ public class ControlCommandProcessorThreadPool {
                     executor.shutdownNow(); // cancel currently executing tasks
 
                     if (!executor.awaitTermination(1, TimeUnit.SECONDS)) {
-                        logger.log(LogLevel.SEVERE, "Thread pool executor did not terminate",
+                        logger.log(LogLevel.FATAL, "Thread pool executor did not terminate",
                                 ControlCommandProcessorThreadPool.class.getName());
                     }
                 }

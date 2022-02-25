@@ -16,7 +16,7 @@ import java.util.Map;
 public class ProtectionMode {
 
     @JsonProperty("enabled")
-    private Boolean enabled = false;
+    private Boolean enabled;
     @JsonProperty("ipBlocking")
     private IpBlocking ipBlocking = new IpBlocking();
     @JsonProperty("apiBlocking")

@@ -1,6 +1,7 @@
 package com.k2cybersecurity.instrumentator.decorators.ssrf;
 
 import com.k2cybersecurity.instrumentator.custom.*;
+import com.k2cybersecurity.instrumentator.dispatcher.DispatcherPool;
 import com.k2cybersecurity.instrumentator.dispatcher.EventDispatcher;
 import com.k2cybersecurity.instrumentator.utils.AgentUtils;
 import com.k2cybersecurity.instrumentator.utils.CallbackUtils;
@@ -30,7 +31,7 @@ public class Callbacks {
                     ThreadLocalSSRFLock.getInstance().setUrl(urlString);
                     addHeader(IAgentConstants.K2_API_CALLER, CallbackUtils.generateApiCallerHeaderValue(urlString), obj);
 
-                    if (StringUtils.equalsAny(url.getProtocol(), "http", "https")) {
+                    if (!StringUtils.equalsAnyIgnoreCase(url.getProtocol(), "file", "jar", "war")) {
 //                        System.out.println(String.format("Entry : SSRF Value: %s : %s : %s : %s", className, methodName, obj, url.toString()));
                         SSRFOperationalBean operationalBean = new SSRFOperationalBean(urlString, className, sourceString, exectionId,
                                 Instant.now().toEpochMilli(), methodName);
@@ -65,6 +66,7 @@ public class Callbacks {
                     EventDispatcher.dispatchExitEvent(exectionId, VulnerabilityCaseType.HTTP_REQUEST);
                 }
             } finally {
+                DispatcherPool.getInstance().getEid().remove(exectionId);
                 ThreadLocalOperationLock.getInstance().release();
                 ThreadLocalSSRFLock.getInstance().release(obj, sourceString, exectionId);
             }
@@ -82,6 +84,7 @@ public class Callbacks {
 //				System.out.println("OnError :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj
 //						+ " - error : " + error + " - eid : " + exectionId);
             } finally {
+                DispatcherPool.getInstance().getEid().remove(exectionId);
                 ThreadLocalOperationLock.getInstance().release();
                 ThreadLocalSSRFLock.getInstance().release(obj, sourceString, exectionId);
             }

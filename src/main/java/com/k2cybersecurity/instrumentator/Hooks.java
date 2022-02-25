@@ -198,6 +198,12 @@ public class Hooks {
 //		TYPE_BASED_HOOKS.put("org.mozilla.javascript.Script", Collections.singletonList("exec"));
 
 
+        // JNDI hooks
+        TYPE_BASED_HOOKS.put("javax.naming.Context", Arrays.asList("lookup", "lookupLink"));
+
+        // Log4j templating hook
+        NAME_BASED_HOOKS.put("org.apache.logging.log4j.core.lookup.StrSubstitutor",
+                Collections.singletonList("resolveVariable"));
         /**
          * ------------------------------------ Decorators
          * ------------------------------------------------
@@ -265,20 +271,20 @@ public class Hooks {
 
         // Spring MVC
         DECORATOR_ENTRY.put("org.springframework.web.bind.annotation.Mapping",
-                "com.k2cybersecurity.instrumentator.decorators.servicetrace");
+                "com.k2cybersecurity.instrumentator.decorators.servicetraceannotation");
 
         DECORATOR_ENTRY.put("org.springframework.stereotype.Controller",
-                "com.k2cybersecurity.instrumentator.decorators.servicetrace");
+                "com.k2cybersecurity.instrumentator.decorators.servicetraceannotation");
 
         // Jersey
         DECORATOR_ENTRY.put("javax.ws.rs.Path",
-                "com.k2cybersecurity.instrumentator.decorators.servicetrace");
+                "com.k2cybersecurity.instrumentator.decorators.servicetraceannotation");
         DECORATOR_ENTRY.put("javax.ws.rs.HttpMethod",
-                "com.k2cybersecurity.instrumentator.decorators.servicetrace");
+                "com.k2cybersecurity.instrumentator.decorators.servicetraceannotation");
 
         // Servlet Annotation
         DECORATOR_ENTRY.put("javax.servlet.annotation.WebServlet",
-                "com.k2cybersecurity.instrumentator.decorators.servicetrace");
+                "com.k2cybersecurity.instrumentator.decorators.servicetraceannotation");
 
         // Apache Wicket
         DECORATOR_ENTRY.put("org.apache.wicket.markup.html.WebPage.null",
@@ -568,5 +574,13 @@ public class Hooks {
 //		DECORATOR_ENTRY.put("org.mozilla.javascript.Script.exec", "com.k2cybersecurity.instrumentator.decorators.jsinjection.rhino");
 //		NAME_BASED_HOOKS.put("org.mozilla.javascript.Parser", Collections.singletonList("parse"));
 //		TYPE_BASED_HOOKS.put("org.mozilla.javascript.Script", Collections.singletonList("exec"));
+
+        // JNDI hooks
+        DECORATOR_ENTRY.put("javax.naming.Context.lookup", "com.k2cybersecurity.instrumentator.decorators.jndi");
+        DECORATOR_ENTRY.put("javax.naming.Context.lookupLink", "com.k2cybersecurity.instrumentator.decorators.jndi");
+
+        // Log4j templating hooks
+        DECORATOR_ENTRY.put("org.apache.logging.log4j.core.lookup.StrSubstitutor.resolveVariable", "com.k2cybersecurity.instrumentator.decorators.log4jtemplating");
+
     }
 }

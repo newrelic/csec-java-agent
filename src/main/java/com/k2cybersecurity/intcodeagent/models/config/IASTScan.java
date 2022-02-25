@@ -10,13 +10,14 @@ import java.util.Map;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({
         "enabled",
-        "reportGenerationInterval",
         "probing"
 })
 public class IASTScan {
 
     @JsonProperty("enabled")
-    private Boolean enabled = false;
+    private Boolean enabled;
+    @JsonProperty("probing")
+    private Probing probing;
     @JsonIgnore
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
@@ -42,6 +43,16 @@ public class IASTScan {
     @JsonProperty("enabled")
     public void setEnabled(Boolean enabled) {
         this.enabled = enabled;
+    }
+
+    @JsonProperty("probing")
+    public Probing getProbing() {
+        return probing;
+    }
+
+    @JsonProperty("probing")
+    public void setProbing(Probing probing) {
+        this.probing = probing;
     }
 
     @JsonAnyGetter

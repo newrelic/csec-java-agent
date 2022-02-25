@@ -3,12 +3,18 @@ package com.k2cybersecurity.instrumentator.utils;
 import com.k2cybersecurity.instrumentator.AgentNew;
 import com.k2cybersecurity.instrumentator.K2Instrumentator;
 import com.k2cybersecurity.instrumentator.custom.ByteBuddyElementMatchers;
+import com.k2cybersecurity.instrumentator.cve.scanner.CVEScannerPool;
 import com.k2cybersecurity.instrumentator.dispatcher.DispatcherPool;
+import com.k2cybersecurity.instrumentator.os.OsVariablesInstance;
 import com.k2cybersecurity.intcodeagent.controlcommand.ControlCommandProcessorThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.logging.HealthCheckScheduleThread;
 import com.k2cybersecurity.intcodeagent.models.javaagent.ShutDownEvent;
+import com.k2cybersecurity.intcodeagent.schedulers.CVEBundlePullST;
+import com.k2cybersecurity.intcodeagent.schedulers.GlobalPolicyParameterPullST;
+import com.k2cybersecurity.intcodeagent.schedulers.InBoundOutBoundST;
+import com.k2cybersecurity.intcodeagent.schedulers.PolicyPullST;
 import com.k2cybersecurity.intcodeagent.websocket.EventSendPool;
 import com.k2cybersecurity.intcodeagent.websocket.WSClient;
 import com.k2cybersecurity.intcodeagent.websocket.WSReconnectionST;
@@ -18,8 +24,10 @@ import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.dynamic.DynamicType;
 import net.bytebuddy.utility.JavaModule;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
+import java.io.File;
 import java.lang.instrument.Instrumentation;
 import java.util.ArrayList;
 import java.util.List;
@@ -53,6 +61,9 @@ public class InstrumentationUtils {
     public static final String DOT = ".";
     public static final String DECORATORS = "Decorators";
     public static final String $ = "$";
+    private static final String INSTRUMENTATION_TRANSFORM_ERROR = "[INSTRUMENTATION] Couldn't transform class `%s`: ";
+    private static final String INSTRUMENTATION_RETRANSFORM_STARTED = "[INSTRUMENTATION] Started static re-transformation of classes.";
+    private static final String INSTRUMENTATION_RETRANSFORM_ENDED = "[INSTRUMENTATION] Finished static re-transformation of classes.";
 
     private static Boolean IAST = false;
 
@@ -319,7 +330,7 @@ public class InstrumentationUtils {
                                                 .and(isMethod())));
                     } catch (ClassNotFoundException e) {
                         logger.log(LogLevel.ERROR,
-                                String.format(FAILED_TO_INSTRUMENT_S_S_DUE_TO_ERROR_S, entry, e), e,
+                                String.format(FAILED_TO_INSTRUMENT_ANNOTATION_DUE_TO_ERROR, entry, e), e,
                                 InstrumentationUtils.class.getName());
                     }
                     return builder;
@@ -341,7 +352,7 @@ public class InstrumentationUtils {
             logger.log(LogLevel.INFO, SHUTTING_DOWN_WITH_STATUS + shutDownEvent, InstrumentationUtils.class.getName());
             TimeUnit.SECONDS.sleep(1);
         } catch (Throwable e) {
-            logger.log(LogLevel.SEVERE, "Error while sending shut down event : ", e,
+            logger.log(LogLevel.FATAL, "Error while sending shut down event : ", e,
                     InstrumentationUtils.class.getName());
         }
         try {
@@ -350,15 +361,21 @@ public class InstrumentationUtils {
         }
         try {
 //            ServletEventPool.getInstance().shutDownThreadPoolExecutor();
-            HealthCheckScheduleThread.getInstance().shutDownThreadPoolExecutor();
+            HealthCheckScheduleThread.shutDownPool();
 //            EventThreadPool.getInstance().shutDownThreadPoolExecutor();
-            DispatcherPool.getInstance().shutDownThreadPoolExecutor();
-            ControlCommandProcessorThreadPool.getInstance().shutDownThreadPoolExecutor();
-            EventSendPool.getInstance().shutDownThreadPoolExecutor();
-            WSReconnectionST.getInstance().shutDownThreadPoolExecutor();
+            DispatcherPool.shutDownPool();
+            ControlCommandProcessorThreadPool.shutDownPool();
+            EventSendPool.shutDownPool();
+            WSReconnectionST.shutDownPool();
+            PolicyPullST.shutDownPool();
+            GlobalPolicyParameterPullST.shutDownPool();
+            CVEScannerPool.shutDownPool();
+            CVEBundlePullST.shutDownPool();
+            InBoundOutBoundST.shutDownPool();
+            FileUtils.deleteQuietly(new File(OsVariablesInstance.getInstance().getOsVariables().getTmpDirectory()));
 
         } catch (Throwable e) {
-            logger.log(LogLevel.SEVERE, "Error while shutting down K2 Pools : ", e,
+            logger.log(LogLevel.FATAL, "Error while shutting down K2 Pools : ", e,
                     InstrumentationUtils.class.getName());
         }
 
@@ -371,10 +388,10 @@ public class InstrumentationUtils {
 
 //            retransformHookedClasses(AgentNew.gobalInstrumentation);
         } catch (Throwable e) {
-            logger.log(LogLevel.SEVERE, "Error while resetting K2 instrumentation : ", e,
+            logger.log(LogLevel.FATAL, "Error while resetting K2 instrumentation : ", e,
                     InstrumentationUtils.class.getName());
         }
-        logger.log(LogLevel.SEVERE, JAVA_AGENT_SHUTDOWN_COMPLETE, InstrumentationUtils.class.getName());
+        logger.log(LogLevel.FATAL, JAVA_AGENT_SHUTDOWN_COMPLETE, InstrumentationUtils.class.getName());
         try {
             FileLoggerThreadPool.getInstance().shutDownThreadPoolExecutor();
         } catch (Exception e) {
@@ -390,14 +407,16 @@ public class InstrumentationUtils {
     }
 
     public static void retransformHookedClasses(Instrumentation instrumentation) {
+        logger.logInit(LogLevel.INFO, INSTRUMENTATION_RETRANSFORM_STARTED, AgentNew.class.getName());
         for (Pair<String, ClassLoader> pair : new ArrayList<>(AgentUtils.getInstance().getTransformedClasses())) {
             try {
                 Class klass = Class.forName(pair.getLeft(), false, pair.getRight());
                 instrumentation.retransformClasses(klass);
             } catch (Throwable e) {
-                logger.log(LogLevel.SEVERE, "Error while retransformHookedClasses : ", e,
+                logger.logInit(LogLevel.FATAL, String.format(INSTRUMENTATION_TRANSFORM_ERROR, pair.getLeft()), e,
                         InstrumentationUtils.class.getName());
             }
         }
+        logger.logInit(LogLevel.INFO, INSTRUMENTATION_RETRANSFORM_ENDED,AgentNew.class.getName());
     }
 }

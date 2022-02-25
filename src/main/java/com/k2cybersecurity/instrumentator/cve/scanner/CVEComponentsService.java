@@ -24,6 +24,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -103,32 +104,48 @@ public class CVEComponentsService {
         if (!K2Instrumentator.APPLICATION_INFO_BEAN.getLibraryPath().isEmpty()) {
             for (String path : K2Instrumentator.APPLICATION_INFO_BEAN.getLibraryPath()) {
                 if (StringUtils.endsWith(path, JAR_EXTENSION) && !StringUtils.endsWithIgnoreCase(path, "K2-JavaAgent-1.0.0-jar-with-dependencies.jar")) {
-                    libPaths.add(path);
+                    try {
+                        libPaths.add((new File(path)).toPath().toRealPath().toString());
+                    } catch (IOException e) {
+                    }
                 } else if (new File(path).isDirectory()) {
                     FileUtils.listFiles(new File(path), new String[]{JAR_EXT}, true)
-                            .forEach(jarFile -> libPaths.add(jarFile.getAbsolutePath()));
+                            .forEach(jarFile -> {
+                                try {
+                                    libPaths.add(jarFile.toPath().toRealPath().toString());
+                                } catch (IOException e) {
+                                }
+                            });
                 }
             }
         }
         return libPaths;
     }
 
-    protected static List<CVEScanner> getLibScanDirs(String cvePackageDir) {
+    protected static List<CVEScanner> getLibScanDirs() {
         List<CVEScanner> scanners = new ArrayList<>();
-        List<String> libPaths = new ArrayList<>();
+        Set<String> libPaths = new HashSet<>();
         if (!K2Instrumentator.APPLICATION_INFO_BEAN.getLibraryPath().isEmpty()) {
             for (String path : K2Instrumentator.APPLICATION_INFO_BEAN.getLibraryPath()) {
                 if (StringUtils.endsWith(path, JAR_EXTENSION) && !StringUtils.endsWithIgnoreCase(path, K_2_JAVA_AGENT_1_0_0_JAR_WITH_DEPENDENCIES_JAR)) {
-                    libPaths.add(path);
+                    try {
+                        libPaths.add((new File(path)).toPath().toRealPath().toString());
+                    } catch (IOException e) {
+                    }
                 } else if (new File(path).isDirectory()) {
                     FileUtils.listFiles(new File(path), new String[]{JAR_EXT}, true)
-                            .forEach(jarFile -> libPaths.add(jarFile.getAbsolutePath()));
+                            .forEach(jarFile -> {
+                                try {
+                                    libPaths.add(jarFile.toPath().toRealPath().toString());
+                                } catch (IOException e) {
+                                }
+                            });
                 }
             }
         }
 
         if (!libPaths.isEmpty()) {
-            CVEScanner cveScanner = createLibTmpDir(cvePackageDir, libPaths, K2Instrumentator.APPLICATION_INFO_BEAN.getBinaryName(),
+            CVEScanner cveScanner = createLibTmpDir(libPaths, K2Instrumentator.APPLICATION_INFO_BEAN.getBinaryName(),
                     K2Instrumentator.APPLICATION_INFO_BEAN.getApplicationUUID());
             if (cveScanner != null) {
                 scanners.add(cveScanner);
@@ -137,14 +154,16 @@ public class CVEComponentsService {
         return scanners;
     }
 
-    private static CVEScanner createLibTmpDir(String cvePackageDir, List<String> libPaths, String binaryName, String applicationUUID) {
-        File directory = new File(cvePackageDir, TMP_LIBS + applicationUUID);
+    private static CVEScanner createLibTmpDir(Collection<String> libPaths, String binaryName, String applicationUUID) {
+        File directory = new File(osVariables.getTmpDirectory(), TMP_LIBS + applicationUUID);
         try {
             FileUtils.forceMkdir(directory);
             for (String path : libPaths) {
                 try {
                     logger.log(LogLevel.DEBUG, "Add jar : " + path, CVEComponentsService.class.getName());
-                    FileUtils.copyFileToDirectory(new File(path), directory, true);
+                    Path fileToLink = Paths.get(path);
+                    Files.createSymbolicLink(Paths.get(directory.getAbsolutePath(), fileToLink.getFileName().toString()), fileToLink);
+//                    FileUtils.copyFileToDirectory(new File(path), directory, true);
                 } catch (Exception e) {
                     logger.log(LogLevel.DEBUG, FAILED_TO_PROCESS_LIB_PATH + directory + COLON_SEPERATOR + path, e, CVEComponentsService.class.getName());
                 }
@@ -178,8 +197,9 @@ public class CVEComponentsService {
         return scanners;
     }
 
-    protected static void deleteAllComponents(File cveDir) {
+    protected static void deleteAllComponents(String cveBaseDir) {
         try {
+            File cveDir = new File(cveBaseDir);
             Files.walk(cveDir.toPath())
                     .sorted(Comparator.reverseOrder())
                     .forEach(path -> {
@@ -191,7 +211,7 @@ public class CVEComponentsService {
 
             logger.log(LogLevel.DEBUG, String.format("Deleted dir %s ", cveDir), CVEComponentsService.class.getName());
         } catch (Exception e) {
-            logger.log(LogLevel.ERROR, String.format("deletion of %s dir failed!", cveDir), CVEComponentsService.class.getName());
+            logger.log(LogLevel.ERROR, String.format("deletion of %s dir failed!", cveBaseDir), CVEComponentsService.class.getName());
         }
     }
 
@@ -209,8 +229,8 @@ public class CVEComponentsService {
             queryParams.put("arch", osVariables.getOsArch());
             Response cveVersion = HttpClient.getInstance().doGet(IRestClientConstants.COLLECTOR_CVE_VERSION, null, queryParams, null, false);
             if (!cveVersion.isSuccessful()) {
-                logger.log(LogLevel.WARNING, String.format("API (%s)response was %s", IRestClientConstants.COLLECTOR_CVE_VERSION, cveVersion.body().string()), CVEComponentsService.class.getName());
-                return null;
+                logger.log(LogLevel.WARN, String.format("API (%s)response was %s", IRestClientConstants.COLLECTOR_CVE_VERSION, cveVersion.body().string()), CVEComponentsService.class.getName());
+                return new CVEPackageInfo();
             }
 
             CVEPackageInfo packageInfo = HttpClient.getInstance().readResponse(cveVersion.body().byteStream(), CVEPackageInfo.class);
@@ -219,7 +239,7 @@ public class CVEComponentsService {
         } catch (IOException e) {
             logger.log(LogLevel.ERROR, String.format("getCVEPackageInfo API failure %s", e.getMessage()), e, CVEComponentsService.class.getName());
         }
-        return null;
+        return new CVEPackageInfo();
     }
 
     protected static boolean downloadCVEPackage(CVEPackageInfo packageInfo) {
@@ -230,7 +250,7 @@ public class CVEComponentsService {
             queryParams.put("arch", osVariables.getOsArch());
             Response cvePackageResponse = HttpClient.getInstance().doGet(IRestClientConstants.COLLECTOR_CVE, null, queryParams, null, false);
             if (cvePackageResponse.isSuccessful()) {
-                String packageDownloadDir = osVariables.getCvePackageBaseDir();
+                String packageDownloadDir = osVariables.getTmpDirectory();
                 String filename;
                 String contentDisposition = cvePackageResponse.header(CONTENT_DISPOSITION);
                 if (StringUtils.isNotBlank(contentDisposition)) {

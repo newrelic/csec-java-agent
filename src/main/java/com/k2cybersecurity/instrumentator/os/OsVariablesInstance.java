@@ -1,21 +1,23 @@
 package com.k2cybersecurity.instrumentator.os;
 
+import com.k2cybersecurity.instrumentator.K2Instrumentator;
 import com.k2cybersecurity.intcodeagent.logging.IAgentConstants;
 import org.apache.commons.lang3.SystemUtils;
 
-import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.attribute.PosixFilePermissions;
 
 public class OsVariablesInstance {
 
-    public static final String TMP_K_2_LOGS = "/tmp/k2logs/";
-    public static final String TMP = "/tmp/";
-    public static final String APP_DATA_LOCAL_K_2 = "\\AppData\\Local\\K2\\";
-    public static final String APP_DATA_LOCAL_K_2_LOGS = "\\AppData\\Local\\K2\\logs\\";
-    public static final String OPT_K_2_IC = "/opt/k2-ic/";
-    public static final String C_USERS_PUBLIC_K_2_OPT_K_2_IC = "C:\\Users\\Public\\K2\\opt\\k2-ic\\";
+    public static final String LOGS = "logs";
+    public static final String LANGUAGE_AGENT = "language-agent";
+    public static final String CONFIG = "config";
+    public static final String K_2_ROOT = "k2root";
+    public static final String TMP = "tmp";
 
     private static OsVariablesInstance instance;
-
 
     private final static Object lock = new Object();
 
@@ -23,27 +25,31 @@ public class OsVariablesInstance {
 
     private OsVariablesInstance() {
         osVariables = new OSVariables();
+        Path k2root = Paths.get(K2Instrumentator.K2_HOME, K_2_ROOT);
+        if (!k2root.toFile().isDirectory()) {
+            k2root.toFile().mkdir();
+        }
+
+        try {
+            Files.setPosixFilePermissions(k2root, PosixFilePermissions.fromString("rwxrwxrwx"));
+        } catch (Exception e) {
+        }
+
+        osVariables.setK2RootDir(k2root.toString());
+        osVariables.setLogDirectory(Paths.get(k2root.toString(), LOGS, LANGUAGE_AGENT, K2Instrumentator.APPLICATION_UUID).toString());
+        osVariables.setTmpDirectory(Paths.get(k2root.toString(), TMP, LANGUAGE_AGENT, K2Instrumentator.APPLICATION_UUID).toString());
+        osVariables.setConfigPath(Paths.get(k2root.toString(), CONFIG).toString());
+        osVariables.setPolicyConfigPath(Paths.get(k2root.toString(), CONFIG, LANGUAGE_AGENT).toString());
+
         if (SystemUtils.IS_OS_LINUX) {
             osVariables.setLinux(true);
-            osVariables.setLogDirectory(TMP_K_2_LOGS);
-            osVariables.setCvePackageBaseDir(TMP);
             osVariables.setOs(IAgentConstants.LINUX);
-            osVariables.setConfigPath(OPT_K_2_IC);
-            osVariables.setPolicyConfigPath(new File(OPT_K_2_IC, "config").getAbsolutePath());
         } else if (SystemUtils.IS_OS_MAC) {
             osVariables.setMac(true);
-            osVariables.setLogDirectory(TMP_K_2_LOGS);
-            osVariables.setCvePackageBaseDir(TMP);
             osVariables.setOs(IAgentConstants.MAC);
-            osVariables.setConfigPath(OPT_K_2_IC);
-            osVariables.setPolicyConfigPath(new File(OPT_K_2_IC, "config").getAbsolutePath());
         } else if (SystemUtils.IS_OS_WINDOWS) {
             osVariables.setWindows(true);
-            osVariables.setLogDirectory(SystemUtils.getUserHome() + APP_DATA_LOCAL_K_2_LOGS);
-            osVariables.setCvePackageBaseDir(SystemUtils.getUserHome() + APP_DATA_LOCAL_K_2);
             osVariables.setOs(IAgentConstants.WINDOWS);
-            osVariables.setConfigPath(C_USERS_PUBLIC_K_2_OPT_K_2_IC);
-            osVariables.setPolicyConfigPath(new File(C_USERS_PUBLIC_K_2_OPT_K_2_IC, "config").getAbsolutePath());
         }
         String arch = SystemUtils.OS_ARCH;
         osVariables.setOsArch(getOsArch(arch));

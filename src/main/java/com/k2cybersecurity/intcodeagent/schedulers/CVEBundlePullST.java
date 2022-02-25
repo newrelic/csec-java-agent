@@ -17,10 +17,12 @@ public class CVEBundlePullST {
     private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
 
     final private static Object lock = new Object();
+    public static final String LOG_SEPARATOR = " :: ";
+    public static final String CANCEL_CURRENT_TASK_OF_CVE_PULL = "Cancel current task of CVE bundle pull.";
 
     private ScheduledExecutorService executorService;
 
-    private Future future;
+    private ScheduledFuture future;
 
     private static CVEBundlePullST instance;
 
@@ -34,7 +36,7 @@ public class CVEBundlePullST {
                         "K2-cve-bundle-st");
             }
         });
-        executorService.schedule(runnable, 1, TimeUnit.MINUTES);
+        future = executorService.schedule(runnable, 1, TimeUnit.MINUTES);
         logger.log(LogLevel.INFO, "CVE bundle fetch schedule thread started successfully!!!", CVEBundlePullST.class.getName());
     }
 
@@ -55,14 +57,26 @@ public class CVEBundlePullST {
 
     private void task() {
         CVEPackageInfo packageInfo = CVEComponentsService.getCVEPackageInfo();
-        logger.log(LogLevel.DEBUG, packageInfo.toString() + " :: " + CVEScannerPool.getInstance().getPackageInfo(), CVEBundlePullST.class.getName());
+        logger.log(LogLevel.DEBUG, packageInfo.toString() + LOG_SEPARATOR + CVEScannerPool.getInstance().getPackageInfo(), CVEBundlePullST.class.getName());
         if (CVEScannerPool.getInstance().getPackageInfo() == null || !StringUtils.equals(packageInfo.getLatestServiceVersion(), CVEScannerPool.getInstance().getPackageInfo().getLatestServiceVersion())) {
-            if (AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getCveScan().getEnableEnvScan()) {
-                //Run CVE scan on ENV
-                CVEScannerPool.getInstance().dispatchScanner(CollectorConfigurationUtils.getInstance().getCollectorConfig().getNodeId(), K2Instrumentator.APPLICATION_INFO_BEAN.getIdentifier().getKind().name(), K2Instrumentator.APPLICATION_INFO_BEAN.getIdentifier().getId(), false, true);
-                AgentUtils.getInstance().setCveEnvScanCompleted(true);
+            if (AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getEnabled()
+                    && AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getCveScan().getEnabled()) {
+                if (AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getCveScan().getEnableEnvScan()) {
+                    //Run CVE scan on ENV
+                    AgentUtils.getInstance().setCveEnvScanCompleted(false);
+                    CVEScannerPool.getInstance().dispatchScanner(CollectorConfigurationUtils.getInstance().getCollectorConfig().getNodeId(), K2Instrumentator.APPLICATION_INFO_BEAN.getIdentifier().getKind().name(), K2Instrumentator.APPLICATION_INFO_BEAN.getIdentifier().getId(), true);
+                }
+                AgentUtils.getInstance().getScannedDeployedApplications().clear();
+                CVEScannerPool.getInstance().dispatchScanner(CollectorConfigurationUtils.getInstance().getCollectorConfig().getNodeId(), K2Instrumentator.APPLICATION_INFO_BEAN.getIdentifier().getKind().name(), K2Instrumentator.APPLICATION_INFO_BEAN.getIdentifier().getId(), false);
             }
-            CVEScannerPool.getInstance().dispatchScanner(CollectorConfigurationUtils.getInstance().getCollectorConfig().getNodeId(), K2Instrumentator.APPLICATION_INFO_BEAN.getIdentifier().getKind().name(), K2Instrumentator.APPLICATION_INFO_BEAN.getIdentifier().getId(), false, false);
+        }
+    }
+
+    public void submitNewTask() {
+        if (cancelTask(false) && AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getEnabled()
+                && AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getCveScan().getEnabled()
+                && AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getCveScan().getCveDefinitionUpdateInterval() > 0) {
+            future = executorService.schedule(runnable, AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getCveScan().getCveDefinitionUpdateInterval(), TimeUnit.MINUTES);
         }
     }
 
@@ -85,9 +99,48 @@ public class CVEBundlePullST {
         this.lastKnownCVEBundle = lastKnownCVEBundle;
     }
 
-    public void cancelTask() {
-        if (future != null) {
-            future.cancel(false);
+    public boolean cancelTask(boolean forceCancel) {
+        if (future == null) {
+            return true;
+        }
+        if (future != null && (forceCancel || future.isDone() || future.getDelay(TimeUnit.MINUTES) > AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getCveScan().getCveDefinitionUpdateInterval())) {
+            logger.log(LogLevel.INFO, CANCEL_CURRENT_TASK_OF_CVE_PULL, CVEBundlePullST.class.getName());
+            future.cancel(true);
+            return true;
+        }
+        return false;
+    }
+
+    public static void shutDownPool() {
+        if (instance != null) {
+            instance.shutDownThreadPoolExecutor();
+        }
+    }
+
+    /**
+     * Shut down the thread pool executor. Calls normal shutdown of thread pool
+     * executor and awaits for termination. If not terminated, forcefully shuts down
+     * the executor after a timeout.
+     */
+    public void shutDownThreadPoolExecutor() {
+
+        if (executorService != null) {
+            try {
+                executorService.shutdown(); // disable new tasks from being submitted
+                if (!executorService.awaitTermination(1, TimeUnit.SECONDS)) {
+                    // wait for termination for a timeout
+                    executorService.shutdownNow(); // cancel currently executing tasks
+
+                    if (!executorService.awaitTermination(1, TimeUnit.SECONDS)) {
+                        logger.log(LogLevel.FATAL, "Thread pool executor did not terminate",
+                                CVEBundlePullST.class.getName());
+                    } else {
+                        logger.log(LogLevel.INFO, "Thread pool executor terminated",
+                                CVEBundlePullST.class.getName());
+                    }
+                }
+            } catch (InterruptedException e) {
+            }
         }
     }
 }

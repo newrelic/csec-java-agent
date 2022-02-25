@@ -2,6 +2,7 @@ package com.k2cybersecurity.instrumentator.decorators.forkexec;
 
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalHttpMap;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalOperationLock;
+import com.k2cybersecurity.instrumentator.dispatcher.DispatcherPool;
 import com.k2cybersecurity.instrumentator.dispatcher.EventDispatcher;
 import com.k2cybersecurity.instrumentator.utils.AgentUtils;
 import com.k2cybersecurity.intcodeagent.models.javaagent.VulnerabilityCaseType;
@@ -47,6 +48,7 @@ public class Callbacks {
                 ThreadLocalOperationLock.getInstance().acquire();
                 EventDispatcher.dispatchExitEvent(exectionId, VulnerabilityCaseType.SYSTEM_COMMAND);
             } finally {
+                DispatcherPool.getInstance().getEid().remove(exectionId);
                 ThreadLocalOperationLock.getInstance().release();
             }
         }
@@ -55,15 +57,16 @@ public class Callbacks {
     public static void doOnError(String sourceString, String className, String methodName, Object obj, Object[] args,
                                  Throwable error, String exectionId) throws Throwable {
 
-//		if (!ThreadLocalHttpMap.getInstance().isEmpty() && !ThreadLocalOperationLock.getInstance().isAcquired()) {
-//			try {
-//				ThreadLocalOperationLock.getInstance().acquire();
+        if (!ThreadLocalHttpMap.getInstance().isEmpty() && !ThreadLocalOperationLock.getInstance().isAcquired()) {
+            try {
+                ThreadLocalOperationLock.getInstance().acquire();
 //				System.out.println("OnError :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj
 //						+ " - error : " + error + " - eid : " + exectionId);
-//			} finally {
-//				ThreadLocalOperationLock.getInstance().release();
-//			}
-//		}
+            } finally {
+                DispatcherPool.getInstance().getEid().remove(exectionId);
+                ThreadLocalOperationLock.getInstance().release();
+            }
+        }
 
     }
 }

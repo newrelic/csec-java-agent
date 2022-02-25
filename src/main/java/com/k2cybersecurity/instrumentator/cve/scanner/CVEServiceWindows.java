@@ -20,7 +20,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-public class CVEServiceWindows implements Runnable {
+public class CVEServiceWindows extends CVEScan {
 
     private static final String CANNOT_CREATE_DIRECTORY = "Cannot create directory : ";
 
@@ -45,22 +45,23 @@ public class CVEServiceWindows implements Runnable {
 
     private String nodeId;
 
-    private boolean downloadTarBundle = false;
+    private CVEPackageInfo packageInfo;
 
     private String kind;
 
     private String id;
 
     private boolean isEnvScan;
-    final String bundleNameRegex = ICVEConstants.LOCALCVESERVICE_WIN_ZIP_REGEX;
+
+    private Process liveProcess;
 
     private OSVariables osVariables = OsVariablesInstance.getInstance().getOsVariables();
 
-    public CVEServiceWindows(String nodeId, String kind, String id, boolean downloadTarBundle, boolean isEnvScan) {
+    public CVEServiceWindows(String nodeId, String kind, String id, CVEPackageInfo packageInfo, boolean isEnvScan) {
         this.nodeId = nodeId;
         this.kind = kind;
         this.id = id;
-        this.downloadTarBundle = downloadTarBundle;
+        this.packageInfo = packageInfo;
         this.isEnvScan = isEnvScan;
     }
 
@@ -68,12 +69,12 @@ public class CVEServiceWindows implements Runnable {
 
     @Override
     public void run() {
+        boolean runStatus = false;
         try {
-            String packageParentDir = osVariables.getCvePackageBaseDir();
-            CVEPackageInfo packageInfo = CVEComponentsService.getCVEPackageInfo();
+            String packageParentDir = osVariables.getTmpDirectory();
             logger.log(LogLevel.DEBUG, String.format(ICVEConstants.PACKAGE_INFO_LOGGER, packageInfo.toString(), CVEScannerPool.getInstance().getPackageInfo()), CVEServiceWindows.class.getName());
-            if (downloadTarBundle || CVEScannerPool.getInstance().getPackageInfo() == null || !StringUtils.equals(packageInfo.getLatestServiceVersion(), CVEScannerPool.getInstance().getPackageInfo().getLatestServiceVersion())) {
-                Collection<File> cvePackages = FileUtils.listFiles(new File(osVariables.getCvePackageBaseDir()), new NameFileFilter(ICVEConstants.LOCALCVESERVICE), null);
+            if (CVEScannerPool.getInstance().getPackageInfo() == null || !CVEScannerPool.getInstance().getPackageInfo().getCvePackage().exists() || !StringUtils.equals(packageInfo.getLatestServiceVersion(), CVEScannerPool.getInstance().getPackageInfo().getLatestServiceVersion())) {
+                Collection<File> cvePackages = FileUtils.listFiles(new File(osVariables.getTmpDirectory()), new NameFileFilter(ICVEConstants.LOCALCVESERVICE), null);
                 logger.log(LogLevel.DEBUG, ICVEConstants.FILES_TO_DELETE + cvePackages, CVEServiceWindows.class.getName());
                 cvePackages.forEach(FileUtils::deleteQuietly);
                 CVEComponentsService.downloadCVEPackage(packageInfo);
@@ -83,7 +84,7 @@ public class CVEServiceWindows implements Runnable {
             }
             logger.log(LogLevel.DEBUG, ICVEConstants.CVE_PACKAGE_DOWNLOADED, CVEServiceWindows.class.getName());
             //Create untar Directory
-            File extractedPackageDir = new File(packageParentDir, String.format(ICVEConstants.EXTR_DIR, LOCALCVESERVICE_PATH, K2Instrumentator.APPLICATION_UUID));
+            File extractedPackageDir = new File(packageParentDir, LOCALCVESERVICE_PATH);
             FileUtils.deleteQuietly(extractedPackageDir);
             if (!extractedPackageDir.exists()) {
                 try {
@@ -96,6 +97,7 @@ public class CVEServiceWindows implements Runnable {
             }
 
             AgentUtils.getInstance().unZipFile(CVEScannerPool.getInstance().getPackageInfo().getCvePackage(), extractedPackageDir);
+            FileUtils.deleteQuietly(CVEScannerPool.getInstance().getPackageInfo().getCvePackage());
             //TODO set permissions for extracted package if needed.
 //            setAllPermissions(parentDirectory.getAbsolutePath());
 
@@ -110,7 +112,7 @@ public class CVEServiceWindows implements Runnable {
 
             List<CVEScanner> scanDirs;
             if (isEnvScan) {
-                scanDirs = CVEComponentsService.getLibScanDirs(extractedPackageDir.getAbsolutePath());
+                scanDirs = CVEComponentsService.getLibScanDirs();
             } else {
                 scanDirs = CVEComponentsService.getAppScanDirs();
             }
@@ -124,16 +126,17 @@ public class CVEServiceWindows implements Runnable {
                 File dcout = Paths.get(extractedPackageDir.getAbsolutePath(), ICVEConstants.DC_TRIGGER_LOG).toFile();
                 processBuilder.redirectErrorStream(true);
                 processBuilder.redirectOutput(dcout);
-                Process process = processBuilder.start();
-                if (!process.waitFor(10, TimeUnit.MINUTES)) {
+                liveProcess = processBuilder.start();
+                if (!liveProcess.waitFor(10, TimeUnit.MINUTES)) {
                     //TODO windows ki maaya
-                    long pid = AgentUtils.getInstance().getProcessID(process);
+                    long pid = AgentUtils.getInstance().getProcessID(liveProcess);
                     if (pid > 1) {
-                        logger.log(LogLevel.WARNING, String.format(KILLING_PROCESS_TREE_ROOTED_AT_S, pid), CVEServiceWindows.class.getName());
+                        logger.log(LogLevel.WARN, String.format(KILLING_PROCESS_TREE_ROOTED_AT_S, pid), CVEServiceWindows.class.getName());
                         AgentUtils.getInstance().incrementCVEServiceFailCount();
+                        liveProcess.destroyForcibly();
 //                        Runtime.getRuntime().exec(String.format(KILL_PROCESS_TREE_COMMAND, pid));
                     }
-                } else if (process.exitValue() != 0) {
+                } else if (liveProcess.exitValue() != 0) {
                     AgentUtils.getInstance().incrementCVEServiceFailCount();
                 }
                 //Till here
@@ -146,16 +149,26 @@ public class CVEServiceWindows implements Runnable {
                 } catch (Throwable e) {
                 }
             }
-            CVEComponentsService.deleteAllComponents(extractedPackageDir);
+            CVEComponentsService.deleteAllComponents(osVariables.getTmpDirectory());
             logger.log(LogLevel.DEBUG, ICVEConstants.CVE_PACKAGE_DELETED, CVEServiceWindows.class.getName());
+            runStatus = true;
             return;
         } catch (InterruptedException e) {
             logger.log(LogLevel.ERROR, ERROR_PROCESS_TERMINATED, e, CVEServiceWindows.class.getName());
         } catch (Throwable e) {
             logger.log(LogLevel.ERROR, ERROR, e, CVEServiceWindows.class.getName());
+        } finally {
+            if (!runStatus && this.isEnvScan) {
+                AgentUtils.getInstance().setCveEnvScanCompleted(false);
+            }
         }
-        AgentUtils.getInstance().setCveEnvScanCompleted(false);
+    }
 
+    @Override
+    public void destroyForcibly() {
+        if (liveProcess != null) {
+            liveProcess.destroyForcibly();
+        }
     }
 
 

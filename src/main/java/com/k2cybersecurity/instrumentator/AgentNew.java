@@ -1,22 +1,20 @@
 package com.k2cybersecurity.instrumentator;
 
 import com.k2cybersecurity.instrumentator.custom.ClassLoadListener;
-import com.k2cybersecurity.instrumentator.utils.AgentUtils;
 import com.k2cybersecurity.instrumentator.utils.InstrumentationUtils;
+import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
+import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import net.bytebuddy.ByteBuddy;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.dynamic.scaffold.TypeValidation;
 import net.bytebuddy.matcher.ElementMatchers;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.Pair;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintStream;
 import java.lang.instrument.Instrumentation;
 import java.lang.reflect.Method;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import static com.k2cybersecurity.instrumentator.utils.InstrumentationUtils.*;
@@ -24,13 +22,24 @@ import static com.k2cybersecurity.instrumentator.utils.InstrumentationUtils.*;
 
 public class AgentNew {
 
+    private static final String HOOKS_ADDED_SUCCESSFULLY = "[STEP-6][COMPLETE][INSTRUMENTATION] Instrumentation applied.";
+    private static final String CONTINUED_TRANSFORMATION_MSG = "[INSTRUMENTATION] Dynamic security hooks will be placed as the classes are loaded.";
+    private static final String INSTRUMENT_WILL_INSTRUMENT_CLASS = "[INSTRUMENTATION] Will modify class %s";
+    private static final String STARTED_ADDING_HOOKS = "[STEP-6][BEGIN][INSTRUMENTATION] Applying instrumentation";
+
     private static boolean isDynamicAttachment = false;
 
     public static Instrumentation gobalInstrumentation;
 
     public static final String K2_BOOTSTAP_LOADED_PACKAGE_NAME = "sun.reflect.com.k2cybersecurity";
 
+    private static boolean initDone = false;
     public static void premain(String arguments, Instrumentation instrumentation) {
+        if (initDone) {
+            return;
+        }
+        initDone = true;
+
         if (StringUtils.equals(System.getenv().get("K2_DISABLE"), "true") || StringUtils.equals(System.getenv().get("K2_ATTACH"), "false")) {
             System.err.println("[K2-JA] Process attachment aborted!!! K2 is set to disable.");
             return;
@@ -51,6 +60,7 @@ public class AgentNew {
             public void run() {
                 try {
                     awaitServerStartUp(instrumentation, ClassLoader.getSystemClassLoader());
+                    FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
 
                     Class<?> clazz = Class.forName("com.k2cybersecurity.instrumentator.K2Instrumentator");
                     Method init = clazz.getMethod("init", Boolean.class);
@@ -59,27 +69,23 @@ public class AgentNew {
                         System.err.println("[K2-JA] Process initialization failed!!! Environment incompatible.");
                         return;
                     }
+                    logger.logInit(LogLevel.INFO, STARTED_ADDING_HOOKS, AgentNew.class.getName());
                     Runtime.getRuntime().addShutdownHook(new Thread(() -> {
                         InstrumentationUtils.shutdownLogic(false);
                     }, "k2-shutdown-hook"));
 
-                    Set<Class> typeBasedClassSet = new HashSet<>();
-                    for (Class aClass : instrumentation.getAllLoadedClasses()) {
-                        if (Hooks.NAME_BASED_HOOKS.containsKey(aClass.getName())) {
-                            AgentUtils.getInstance().getTransformedClasses().add(Pair.of(aClass.getName(), aClass.getClassLoader()));
-                        } else if (Hooks.TYPE_BASED_HOOKS.containsKey(aClass.getName())) {
-                            typeBasedClassSet.add(aClass);
-                        }
-                    }
 
                     /**
                      * IMPORTANT : Don't touch this shit until & unless very very necessary.
                      */
                     AgentBuilder agentBuilder = new AgentBuilder.Default(new ByteBuddy().with(TypeValidation.DISABLED))
-                            .ignore(ElementMatchers.nameStartsWith("sun.reflect.com.k2cybersecurity"))
                             .disableClassFormatChanges()
 //									.with(AgentBuilder.Listener.StreamWriting.toSystemOut())
-                            .with(AgentBuilder.RedefinitionStrategy.RETRANSFORMATION).with(new ClassLoadListener()).with(AgentBuilder.TypeStrategy.Default.REDEFINE)
+                            .with(AgentBuilder.RedefinitionStrategy.RETRANSFORMATION)
+                            .with(AgentBuilder.RedefinitionStrategy.DiscoveryStrategy.Reiterating.INSTANCE)
+                            .with(AgentBuilder.TypeStrategy.Default.REDEFINE)
+                            .with(new ClassLoadListener())
+                            .ignore(ElementMatchers.nameStartsWith("sun.reflect.com.k2cybersecurity"))
 //					.with(AgentBuilder.CircularityLock.Inactive.INSTANCE)
 //					.with(new AgentBuilder.CircularityLock.Global())
 //					.with(AgentBuilder.LambdaInstrumentationStrategy.ENABLED)
@@ -100,22 +106,10 @@ public class AgentNew {
 
                     }
 
-
                     resettableClassFileTransformer = agentBuilder.installOn(instrumentation);
 
-                    // Checks for type based classes to hook
-                    for (Class aClass : instrumentation.getAllLoadedClasses()) {
-                        if (instrumentation.isModifiableClass(aClass)) {
-                            for (Class typeClass : typeBasedClassSet) {
-                                if (typeClass.isAssignableFrom(aClass) && !AgentUtils.getInstance().getTransformedClasses()
-                                        .contains(Pair.of(aClass.getName(), aClass.getClassLoader()))) {
-                                    AgentUtils.getInstance().getTransformedClasses().add(Pair.of(aClass.getName(), aClass.getClassLoader()));
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                    retransformHookedClasses(instrumentation);
+                    logger.logInit(LogLevel.INFO, HOOKS_ADDED_SUCCESSFULLY, AgentNew.class.getName());
+                    switchLazyInstrumentationLogs(logger);
                 } catch (Throwable e) {
                     String tmpDir = System.getProperty("java.io.tmpdir");
                     System.err.println("[K2-JA] Process initialization failed!!! Please find the error in " + tmpDir + File.separator + "K2-Instrumentation.err");
@@ -131,6 +125,11 @@ public class AgentNew {
 
     }
 
+    private static void switchLazyInstrumentationLogs(FileLoggerThreadPool logger) {
+        ClassLoadListener.TRANSFORMED_CLASS_S = ClassLoadListener.TRANSFORMED_CLASS_S_LAZY;
+        ClassLoadListener.TRANSFORMATION_ERROR_CLASS_S_ERROR = ClassLoadListener.TRANSFORMATION_ERROR_CLASS_S_ERROR_LAZY;
+        logger.logInit(LogLevel.INFO, CONTINUED_TRANSFORMATION_MSG, AgentNew.class.getName());
+    }
     public static void agentmain(String agentArgs, Instrumentation instrumentation) {
         isDynamicAttachment = true;
         if (!StringUtils.equals(System.getenv().get("K2_DYNAMIC_ATTACH"), "true")) {

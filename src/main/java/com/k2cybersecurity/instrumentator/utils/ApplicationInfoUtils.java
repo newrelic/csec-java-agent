@@ -75,6 +75,7 @@ public class ApplicationInfoUtils {
 
     public static String getPodId() {
         File cgroupFile = new File(CGROUP_FILE_NAME);
+        String podId = StringUtils.EMPTY;
         try (FileInputStream fileInputStream = new FileInputStream(cgroupFile)) {
             List<String> cgroupEntries = IOUtils.readLines(fileInputStream, StandardCharsets.UTF_8);
             for (String line : cgroupEntries) {
@@ -82,18 +83,18 @@ public class ApplicationInfoUtils {
                 if (index > -1) {
                     String[] fields = StringUtils.split(line, File.separator);
                     if (StringUtils.isNotBlank(fields[fields.length - 2])) {
-                        return fields[fields.length - 2];
+                        podId = fields[fields.length - 2];
                     }
                 }
                 index = line.indexOf(KUBEPODS_SLICE_DIR);
                 if (index > -1) {
-                    return StringUtils.substringBetween(line, "kubepods-besteffort-pod", ".slice");
+                    podId = StringUtils.substringBetween(line, "kubepods-besteffort-pod", ".slice");
                 }
             }
         } catch (Throwable e) {
             e.printStackTrace();
         }
-        return StringUtils.EMPTY;
+        return StringUtils.replaceChars(podId, "_", "-");
     }
 
     private static String getDefaultGateway(String hexGateway) {
@@ -117,7 +118,7 @@ public class ApplicationInfoUtils {
     }
 
     public static boolean isECSEnv() {
-        if (StringUtils.equals(System.getenv("AWS_EXECUTION_ENV"), "AWS_ECS_FARGATE")) {
+        if (StringUtils.startsWith(System.getenv("AWS_EXECUTION_ENV"), "AWS_ECS")) {
             return true;
         }
         return false;

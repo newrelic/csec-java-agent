@@ -1,6 +1,7 @@
 package com.k2cybersecurity.instrumentator.decorators.ssrf.apachehttpasyncclient4;
 
 import com.k2cybersecurity.instrumentator.custom.*;
+import com.k2cybersecurity.instrumentator.dispatcher.DispatcherPool;
 import com.k2cybersecurity.instrumentator.dispatcher.EventDispatcher;
 import com.k2cybersecurity.instrumentator.utils.AgentUtils;
 import com.k2cybersecurity.instrumentator.utils.CallbackUtils;
@@ -147,6 +148,7 @@ public class Callbacks {
 //						"OnExit :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj + " - return : "
 //								+ returnVal + " - eid : " + exectionId);
             } finally {
+                DispatcherPool.getInstance().getEid().remove(exectionId);
                 ThreadLocalOperationLock.getInstance().release();
             }
         }
@@ -171,6 +173,7 @@ public class Callbacks {
 //				System.out.println("OnError :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj
 //						+ " - error : " + error + " - eid : " + exectionId);
             } finally {
+                DispatcherPool.getInstance().getEid().remove(exectionId);
                 ThreadLocalOperationLock.getInstance().release();
             }
         }

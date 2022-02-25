@@ -9,7 +9,6 @@ import com.k2cybersecurity.intcodeagent.models.javaagent.JAHealthCheck;
 import com.k2cybersecurity.intcodeagent.schedulers.InBoundOutBoundST;
 import com.k2cybersecurity.intcodeagent.websocket.WSClient;
 
-import java.net.URISyntaxException;
 import java.util.Collections;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -45,36 +44,14 @@ public class HealthCheckScheduleThread {
                         K2Instrumentator.JA_HEALTH_CHECK.setEventProcessed(0);
                         K2Instrumentator.JA_HEALTH_CHECK.setEventSentCount(0);
                         K2Instrumentator.JA_HEALTH_CHECK.setHttpRequestCount(0);
-                    } else {
-                        try {
-                            WSClient.reconnectWSClient();
-                            TimeUnit.SECONDS.sleep(5);
-                            if (WSClient.getInstance().isOpen()) {
-                                logger.log(LogLevel.DEBUG, "K2-JavaAgent re-installed successfully.",
-                                        HealthCheckScheduleThread.class.getName());
-                                InBoundOutBoundST.getInstance().task(InBoundOutBoundST.getInstance().getNewConnections(), false);
-                                WSClient.getInstance()
-                                        .send(new JAHealthCheck(K2Instrumentator.JA_HEALTH_CHECK).toString());
-                                K2Instrumentator.JA_HEALTH_CHECK.setEventDropCount(0);
-                                K2Instrumentator.JA_HEALTH_CHECK.setEventProcessed(0);
-                                K2Instrumentator.JA_HEALTH_CHECK.setEventSentCount(0);
-                                K2Instrumentator.JA_HEALTH_CHECK.setHttpRequestCount(0);
-                            } else {
-                                logger.log(LogLevel.SEVERE, "Failed in WSock reconnection.",
-                                        HealthCheckScheduleThread.class.getName());
-                            }
-                        } catch (URISyntaxException | InterruptedException e) {
-                            logger.log(LogLevel.SEVERE,
-                                    "Error in WSock reconnection : " + e.getMessage() + " : " + e.getCause(), e,
-                                    HealthCheckScheduleThread.class.getName());
-                        }
+                        K2Instrumentator.JA_HEALTH_CHECK.setExitEventSentCount(0);
                     }
 
                 } catch (NullPointerException ex) {
-                    logger.log(LogLevel.WARNING, "No reference to Socket's OutputStream",
+                    logger.log(LogLevel.WARN, "No reference to Socket's OutputStream",
                             HealthCheckScheduleThread.class.getName());
                 } catch (Throwable e) {
-                    logger.log(LogLevel.WARNING, "Error while trying to verify connection: ", e,
+                    logger.log(LogLevel.WARN, "Error while trying to verify connection: ", e,
                             HealthCheckScheduleThread.class.getName());
                 } finally {
                     InBoundOutBoundST.getInstance().clearNewConnections();
@@ -101,9 +78,15 @@ public class HealthCheckScheduleThread {
                 instance = new HealthCheckScheduleThread();
             return instance;
         } catch (Throwable e) {
-            logger.log(LogLevel.WARNING, "Error while starting: ", e, HealthCheckScheduleThread.class.getName());
+            logger.log(LogLevel.WARN, "Error while starting: ", e, HealthCheckScheduleThread.class.getName());
         }
         throw null;
+    }
+
+    public static void shutDownPool() {
+        if (instance != null) {
+            instance.shutDownThreadPoolExecutor();
+        }
     }
 
     /**
@@ -121,7 +104,7 @@ public class HealthCheckScheduleThread {
                     hcScheduledService.shutdownNow(); // cancel currently executing tasks
 
                     if (!hcScheduledService.awaitTermination(1, TimeUnit.SECONDS)) {
-                        logger.log(LogLevel.SEVERE, "Thread pool executor did not terminate",
+                        logger.log(LogLevel.FATAL, "Thread pool executor did not terminate",
                                 HealthCheckScheduleThread.class.getName());
                     } else {
                         logger.log(LogLevel.INFO, "Thread pool executor terminated",

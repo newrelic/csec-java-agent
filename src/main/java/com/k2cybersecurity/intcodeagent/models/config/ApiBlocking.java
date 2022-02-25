@@ -17,13 +17,13 @@ import java.util.Map;
 public class ApiBlocking {
 
     @JsonProperty("enabled")
-    private Boolean enabled = false;
+    private Boolean enabled;
     @JsonProperty("protectAllApis")
-    private Boolean protectAllApis = false;
+    private Boolean protectAllApis;
     @JsonProperty("protectKnownVulnerableApis")
-    private Boolean protectKnownVulnerableApis = false;
+    private Boolean protectKnownVulnerableApis;
     @JsonProperty("protectAttackedApis")
-    private Boolean protectAttackedApis = false;
+    private Boolean protectAttackedApis;
     @JsonIgnore
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 

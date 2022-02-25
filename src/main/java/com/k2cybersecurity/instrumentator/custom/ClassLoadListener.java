@@ -8,13 +8,15 @@ import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.dynamic.DynamicType;
 import net.bytebuddy.utility.JavaModule;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.Pair;
 
 public class ClassLoadListener implements AgentBuilder.Listener {
 
+
     private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
-    public static final String TRANSFORMATION_ERROR_CLASS_S_ERROR = "Transformation error : class : %s :: error";
-    public static final String TRANSFORMED_CLASS_S = "Transformed : class : %s";
+    public static final String TRANSFORMATION_ERROR_CLASS_S_ERROR_LAZY = "[INSTRUMENTATION][LAZY] Error while instrumenting class : %s";
+    public static final String TRANSFORMED_CLASS_S_LAZY = "[INSTRUMENTATION][LAZY] Instrumented %s";
+    public static String TRANSFORMATION_ERROR_CLASS_S_ERROR = "[INSTRUMENTATION] Error while instrumenting class : %s";
+    public static String TRANSFORMED_CLASS_S = "[INSTRUMENTATION] Instrumented %s";
     public static final String IGNORED_CLASS_S = "Ignored : class : %s";
     public static final String COMPLETED_CLASS_S = "Completed : class : %s";
     public static final String DISCOVERED_CLASS_S = "Discovered : class : %s";
@@ -30,7 +32,7 @@ public class ClassLoadListener implements AgentBuilder.Listener {
 //		System.out.println(String.format("Transformation error : class : %s :: error %s", typeName,
 //				Arrays.asList(throwable.getStackTrace())));
         if (!StringUtils.contains(throwable.toString(), JAVA_LANG_ARRAY_STORE_EXCEPTION)) {
-            logger.log(LogLevel.ERROR, String.format(TRANSFORMATION_ERROR_CLASS_S_ERROR, typeName), throwable, ClassLoadListener.class.getName());
+            logger.logInit(LogLevel.ERROR, String.format(TRANSFORMATION_ERROR_CLASS_S_ERROR, typeName), throwable, ClassLoadListener.class.getName());
         }
 
     }
@@ -42,10 +44,9 @@ public class ClassLoadListener implements AgentBuilder.Listener {
             final JavaModule module,
             final boolean loaded,
             final DynamicType dynamicType) {
-        AgentUtils.getInstance().getTransformedClasses().add(Pair.of(typeDescription.getName(), classLoader));
         AgentUtils.getInstance().createProtectedVulnerabilties(typeDescription, classLoader);
 //		System.out.println("Transformed class : " + typeDescription.getName());
-        logger.log(LogLevel.INFO, String.format(TRANSFORMED_CLASS_S, typeDescription.getName()), ClassLoadListener.class.getName());
+        logger.logInit(LogLevel.INFO, String.format(TRANSFORMED_CLASS_S, typeDescription.getName()), ClassLoadListener.class.getName());
     }
 
     @Override
@@ -67,7 +68,7 @@ public class ClassLoadListener implements AgentBuilder.Listener {
             final boolean loaded) {
         //      log.debug("onComplete {}", typeName);
         try {
-            ThreadLocalTransformationLock.getInstance().release(typeName);
+            ThreadLocalTransformationLock.getInstance().release();
 
             AgentUtils.getInstance().putClassloaderRecord(typeName, classLoader);
 //			logger.log(LogLevel.DEBUG, String.format(COMPLETED_CLASS_S, typeName), ClassLoadListener.class.getName());
@@ -83,7 +84,7 @@ public class ClassLoadListener implements AgentBuilder.Listener {
             final ClassLoader classLoader,
             final JavaModule module,
             final boolean loaded) {
-        ThreadLocalTransformationLock.getInstance().acquire(typeName);
+        ThreadLocalTransformationLock.getInstance().acquire();
 //		logger.log(LogLevel.DEBUG, String.format(DISCOVERED_CLASS_S, typeName), ClassLoadListener.class.getName());
 
         //      log.debug("onDiscovery {}", typeName);

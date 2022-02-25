@@ -100,16 +100,32 @@ public class FileLoggerThreadPool {
     }
 
     public void log(LogLevel logLevel, String event, String logSourceClassName) {
-        if (logLevel.getLevel() == 0 || logLevel.getLevel() > LogWriter.defaultLogLevel) {
+        if (logLevel.getLevel() == 1 || logLevel.getLevel() > LogWriter.defaultLogLevel) {
             return;
         }
         executor.submit(new LogWriter(logLevel, event, logSourceClassName, Thread.currentThread().getName()));
     }
 
     public void log(LogLevel logLevel, String event, Throwable throwableEvent, String logSourceClassName) {
-        if (logLevel.getLevel() == 0 || logLevel.getLevel() > LogWriter.defaultLogLevel) {
+        if (logLevel.getLevel() == 1 || logLevel.getLevel() > LogWriter.defaultLogLevel) {
             return;
         }
         executor.submit(new LogWriter(logLevel, event, throwableEvent, logSourceClassName, Thread.currentThread().getName()));
+    }
+
+    public void logInit(LogLevel logLevel, String event, String logSourceClassName) {
+        if (logLevel.getLevel() == 1 || logLevel.getLevel() > InitLogWriter.defaultLogLevel) {
+            return;
+        }
+        executor.submit(new InitLogWriter(logLevel, event, logSourceClassName, Thread.currentThread().getName()));
+        log(logLevel, event, logSourceClassName);
+    }
+
+    public void logInit(LogLevel logLevel, String event, Throwable throwableEvent, String logSourceClassName) {
+        if (logLevel.getLevel() == 1 || logLevel.getLevel() > InitLogWriter.defaultLogLevel) {
+            return;
+        }
+        executor.submit(new InitLogWriter(logLevel, event, throwableEvent, logSourceClassName, Thread.currentThread().getName()));
+        log(logLevel, event, throwableEvent, logSourceClassName);
     }
 }

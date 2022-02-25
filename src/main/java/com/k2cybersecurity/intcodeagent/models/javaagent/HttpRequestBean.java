@@ -98,6 +98,7 @@ public class HttpRequestBean {
         this.servletContextObject = servletInfo.servletContextObject;
         this.protocol = new String(servletInfo.protocol);
         this.clientPort = new String(servletInfo.clientPort);
+        this.k2RequestIdentifier = StringUtils.isNotBlank(servletInfo.k2RequestIdentifier) ? new String(servletInfo.k2RequestIdentifier) : null;
     }
 
     public String getRawRequest() {
@@ -131,7 +132,7 @@ public class HttpRequestBean {
     public void setHeaders(JSONObject headers) {
         this.headers = headers;
         if (headers.containsKey(IAgentConstants.K_2_FUZZ_REQUEST_ID)) {
-            k2RequestIdentifier = headers.get(IAgentConstants.K_2_FUZZ_REQUEST_ID).toString();
+            k2RequestIdentifier = (String) headers.get(IAgentConstants.K_2_FUZZ_REQUEST_ID);
         }
     }
 

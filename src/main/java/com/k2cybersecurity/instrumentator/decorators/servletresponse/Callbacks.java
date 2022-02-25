@@ -34,7 +34,10 @@ public class Callbacks {
         if (!ThreadLocalOperationLock.getInstance().isAcquired()) {
             try {
                 ThreadLocalOperationLock.getInstance().acquire();
-                if (!ThreadLocalHttpMap.getInstance().isEmpty() && obj != null && ThreadLocalHttpMap.getInstance().getHttpResponse() != null && ThreadLocalHttpMap.getInstance().getHttpResponse().hashCode() == obj.hashCode()) {
+                if (!ThreadLocalHttpMap.getInstance().isEmpty()
+                        && obj != null
+                        && ThreadLocalHttpMap.getInstance().getHttpResponse() != null
+                ) {
 //                    System.out.println("Came to servletresponse hook exit :" + exectionId + " :: " + sourceString + " :: " + obj + " :: " + returnVal);
                     if (StringUtils.equals(methodName, GET_WRITER)) {
                         ThreadLocalHttpMap.getInstance().setResponseWriter(returnVal);

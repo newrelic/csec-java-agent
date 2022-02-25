@@ -86,7 +86,7 @@ public class EventThreadPool {
                     executor.shutdownNow(); // cancel currently executing tasks
 
                     if (!executor.awaitTermination(1, TimeUnit.SECONDS)) {
-                        logger.log(LogLevel.SEVERE, "Thread pool executor did not terminate",
+                        logger.log(LogLevel.FATAL, "Thread pool executor did not terminate",
                                 EventThreadPool.class.getName());
                     }
                 }
@@ -143,7 +143,7 @@ public class EventThreadPool {
             logger.log(LogLevel.INFO, "Rejected to process Event At: " + this.executor.getQueue().size() + ": ",
                     rejected, EventThreadPool.class.getName());
         } catch (Throwable e) {
-            logger.log(LogLevel.WARNING, "Error in processReceivedEvent: ", e, EventThreadPool.class.getName());
+            logger.log(LogLevel.WARN, "Error in processReceivedEvent: ", e, EventThreadPool.class.getName());
         }
     }
 
@@ -157,7 +157,7 @@ public class EventThreadPool {
             logger.log(LogLevel.INFO, "Rejected to process Event At: " + this.executor.getQueue().size() + ": ",
                     rejected, EventThreadPool.class.getName());
         } catch (Throwable e) {
-            logger.log(LogLevel.WARNING, "Error in processReceivedEvent: ", e, EventThreadPool.class.getName());
+            logger.log(LogLevel.WARN, "Error in processReceivedEvent: ", e, EventThreadPool.class.getName());
         }
 
     }

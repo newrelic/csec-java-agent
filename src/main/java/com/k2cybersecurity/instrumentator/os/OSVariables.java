@@ -5,8 +5,9 @@ public class OSVariables {
     private Boolean isWindows = Boolean.FALSE;
     private Boolean isLinux = Boolean.FALSE;
     private Boolean isMac = Boolean.FALSE;
+    private String k2RootDir;
     private String logDirectory;
-    private String cvePackageBaseDir;
+    private String tmpDirectory;
     private String osArch;
     private String configPath;
     private String policyConfigPath;
@@ -51,8 +52,8 @@ public class OSVariables {
         this.logDirectory = logDirectory;
     }
 
-    public String getCvePackageBaseDir() {
-        return cvePackageBaseDir;
+    public String getTmpDirectory() {
+        return tmpDirectory;
     }
 
     public String getOsArch() {
@@ -63,8 +64,8 @@ public class OSVariables {
         this.osArch = osArch;
     }
 
-    public void setCvePackageBaseDir(String cvePackageBaseDir) {
-        this.cvePackageBaseDir = cvePackageBaseDir;
+    public void setTmpDirectory(String tmpDirectory) {
+        this.tmpDirectory = tmpDirectory;
     }
 
     public String getConfigPath() {
@@ -81,5 +82,13 @@ public class OSVariables {
 
     public void setPolicyConfigPath(String policyConfigPath) {
         this.policyConfigPath = policyConfigPath;
+    }
+
+    public String getK2RootDir() {
+        return k2RootDir;
+    }
+
+    public void setK2RootDir(String k2RootDir) {
+        this.k2RootDir = k2RootDir;
     }
 }

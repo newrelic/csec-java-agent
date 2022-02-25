@@ -1,6 +1,7 @@
 package com.k2cybersecurity.intcodeagent.schedulers;
 
 import com.k2cybersecurity.instrumentator.K2Instrumentator;
+import com.k2cybersecurity.intcodeagent.constants.AgentServices;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.models.javaagent.HttpConnectionStat;
@@ -9,6 +10,9 @@ import com.k2cybersecurity.intcodeagent.websocket.EventSendPool;
 
 import java.util.*;
 import java.util.concurrent.*;
+
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.STARTED_MODULE_LOG;
+import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.STARTING_MODULE_LOG;
 
 public class InBoundOutBoundST {
 
@@ -49,6 +53,11 @@ public class InBoundOutBoundST {
     }
 
     private InBoundOutBoundST() {
+        logger.logInit(
+                LogLevel.INFO,
+                String.format(STARTING_MODULE_LOG, AgentServices.InBoundOutBoundMonitor.name()),
+                InBoundOutBoundST.class.getName()
+        );
         inOutExecutorService = Executors.newSingleThreadScheduledExecutor(new ThreadFactory() {
             @Override
             public Thread newThread(Runnable r) {
@@ -61,7 +70,11 @@ public class InBoundOutBoundST {
         inOutExecutorService.scheduleAtFixedRate(runnable, 2, 2, TimeUnit.HOURS);
         cache = new ConcurrentHashMap<>();
         newConnections = ConcurrentHashMap.newKeySet();
-        logger.log(LogLevel.INFO, "in-bound out-bound monitor thread started successfully!!!", InBoundOutBoundST.class.getName());
+        logger.logInit(
+                LogLevel.INFO,
+                String.format(STARTED_MODULE_LOG, AgentServices.InBoundOutBoundMonitor.name()),
+                InBoundOutBoundST.class.getName()
+        );
     }
 
     public static InBoundOutBoundST getInstance() {
@@ -102,5 +115,38 @@ public class InBoundOutBoundST {
 
     public void clearNewConnections() {
         newConnections.clear();
+    }
+
+    public static void shutDownPool() {
+        if (instance != null) {
+            instance.shutDownThreadPoolExecutor();
+        }
+    }
+
+    /**
+     * Shut down the thread pool executor. Calls normal shutdown of thread pool
+     * executor and awaits for termination. If not terminated, forcefully shuts down
+     * the executor after a timeout.
+     */
+    public void shutDownThreadPoolExecutor() {
+
+        if (inOutExecutorService != null) {
+            try {
+                inOutExecutorService.shutdown(); // disable new tasks from being submitted
+                if (!inOutExecutorService.awaitTermination(1, TimeUnit.SECONDS)) {
+                    // wait for termination for a timeout
+                    inOutExecutorService.shutdownNow(); // cancel currently executing tasks
+
+                    if (!inOutExecutorService.awaitTermination(1, TimeUnit.SECONDS)) {
+                        logger.log(LogLevel.FATAL, "Thread pool executor did not terminate",
+                                InBoundOutBoundST.class.getName());
+                    } else {
+                        logger.log(LogLevel.INFO, "Thread pool executor terminated",
+                                InBoundOutBoundST.class.getName());
+                    }
+                }
+            } catch (InterruptedException e) {
+            }
+        }
     }
 }

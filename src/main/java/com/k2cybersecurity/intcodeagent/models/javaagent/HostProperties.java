@@ -1,5 +1,10 @@
 package com.k2cybersecurity.intcodeagent.models.javaagent;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
+
+@JsonInclude(value = JsonInclude.Include.NON_NULL)
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class HostProperties extends EnvInfo {
 
     private String name;
@@ -19,10 +24,6 @@ public class HostProperties extends EnvInfo {
     private String ipAddress;
 
     public HostProperties() {
-    }
-
-    public HostProperties(String id) {
-        super(id);
     }
 
     public String getName() {

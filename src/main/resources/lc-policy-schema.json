@@ -1,0 +1,167 @@
+{
+  "title": "LCPolicy",
+  "description": "A policy for language collectors",
+  "type": "object",
+  "properties": {
+    "version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "logLevel": {
+      "type": "string",
+      "enum": [
+        "ALL",
+        "DEBUG",
+        "INFO",
+        "WARN",
+        "ERROR",
+        "FATAL",
+        "OFF"
+      ]
+    },
+    "policyPull": {
+      "type": "boolean"
+    },
+    "policyPullInterval": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 2678400
+    },
+    "vulnerabilityScan": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "cveScan": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "enableEnvScan": {
+              "type": "boolean"
+            },
+            "cveDefinitionUpdateInterval": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1440
+            }
+          },
+          "required": [
+            "enabled",
+            "enableEnvScan",
+            "cveDefinitionUpdateInterval"
+          ]
+        },
+        "iastScan": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "probing": {
+              "type": "object",
+              "properties": {
+                "interval": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 60
+                },
+                "batchSize": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 300
+                }
+              },
+              "required": [
+                "interval",
+                "batchSize"
+              ]
+            }
+          },
+          "required": [
+            "enabled",
+            "probing"
+          ]
+        }
+      },
+      "required": [
+        "enabled",
+        "cveScan",
+        "iastScan"
+      ]
+    },
+    "protectionMode": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "ipBlocking": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "attackerIpBlocking": {
+              "type": "boolean"
+            },
+            "ipDetectViaXFF": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "enabled",
+            "attackerIpBlocking",
+            "ipDetectViaXFF"
+          ]
+        },
+        "apiBlocking": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "protectAllApis": {
+              "type": "boolean"
+            },
+            "protectKnownVulnerableApis": {
+              "type": "boolean"
+            },
+            "protectAttackedApis": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "enabled",
+            "protectAllApis",
+            "protectKnownVulnerableApis",
+            "protectAttackedApis"
+          ]
+        }
+      },
+      "required": [
+        "enabled",
+        "ipBlocking",
+        "apiBlocking"
+      ]
+    },
+    "sendCompleteStackTrace": {
+      "type": "boolean"
+    },
+    "enableHTTPRequestPrinting": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "version",
+    "logLevel",
+    "policyPull",
+    "policyPullInterval",
+    "vulnerabilityScan",
+    "protectionMode",
+    "sendCompleteStackTrace",
+    "enableHTTPRequestPrinting"
+  ]
+}

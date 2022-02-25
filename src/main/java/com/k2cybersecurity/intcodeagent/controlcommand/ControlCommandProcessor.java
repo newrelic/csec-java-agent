@@ -12,6 +12,8 @@ import com.k2cybersecurity.intcodeagent.models.config.AgentPolicyParameters;
 import com.k2cybersecurity.intcodeagent.models.javaagent.CollectorInitMsg;
 import com.k2cybersecurity.intcodeagent.models.javaagent.EventResponse;
 import com.k2cybersecurity.intcodeagent.models.javaagent.IntCodeControlCommand;
+import com.k2cybersecurity.intcodeagent.schedulers.GlobalPolicyParameterPullST;
+import com.k2cybersecurity.intcodeagent.utils.CommonUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -61,7 +63,7 @@ public class ControlCommandProcessor implements Runnable {
             controlCommand.setControlCommand(Integer.valueOf(object.get("controlCommand").toString()));
 
         } catch (Throwable e) {
-            logger.log(LogLevel.SEVERE, "Error in controlCommandProcessor : ", e,
+            logger.log(LogLevel.FATAL, "Error in controlCommandProcessor : ", e,
                     ControlCommandProcessor.class.getSimpleName());
             return;
         }
@@ -72,11 +74,38 @@ public class ControlCommandProcessor implements Runnable {
                 InstrumentationUtils.shutdownLogic(true);
                 break;
             case IntCodeControlCommand.UNSUPPORTED_AGENT:
-                logger.log(LogLevel.SEVERE, controlCommand.getArguments().get(0),
+                logger.log(LogLevel.FATAL, controlCommand.getArguments().get(0),
                         ControlCommandProcessor.class.getSimpleName());
                 System.err.println(controlCommand.getArguments().get(0));
                 InstrumentationUtils.shutdownLogic(true);
                 break;
+            case IntCodeControlCommand.OLD_AGENT:
+                logger.log(LogLevel.WARN, controlCommand.getArguments().get(0),
+                        ControlCommandProcessor.class.getSimpleName());
+                System.err.println(controlCommand.getArguments().get(0));
+                break;
+
+            case IntCodeControlCommand.SEND_POLICY_PARAMETERS:
+                if (controlCommand.getData() == null) {
+                    return;
+                }
+                try {
+                    AgentPolicyParameters parameters = new ObjectMapper()
+                            .readValue(controlCommand.getData().toString(), AgentPolicyParameters.class);
+                    if (!CommonUtils.validateCollectorPolicyParameterSchema(parameters)) {
+                        logger.log(LogLevel.WARN, String.format(IAgentConstants.UNABLE_TO_VALIDATE_AGENT_POLICY_PARAMETER_DUE_TO_ERROR, parameters), GlobalPolicyParameterPullST.class.getName());
+                        return;
+                    }
+                    AgentUtils.getInstance().setAgentPolicyParameters(parameters);
+                    logger.logInit(LogLevel.INFO,
+                            String.format(IAgentConstants.AGENT_POLICY_PARAM_APPLIED_S, AgentUtils.getInstance().getAgentPolicyParameters()),
+                            ControlCommandProcessor.class.getName());
+                } catch (JsonProcessingException e) {
+                    logger.logInit(LogLevel.DEBUG, IAgentConstants.UNABLE_TO_SET_AGENT_POLICY_PARAM_DUE_TO_ERROR, e,
+                            ControlCommandProcessor.class.getName());
+                }
+                break;
+
             case IntCodeControlCommand.EVENT_RESPONSE:
                 boolean cleanUp = false;
                 try {
@@ -105,7 +134,7 @@ public class ControlCommandProcessor implements Runnable {
                         AgentUtils.getInstance().getEventResponseSet().remove(receivedEventResponse.getId());
                     }
                 } catch (Exception e) {
-                    logger.log(LogLevel.SEVERE, ERROR_IN_EVENT_RESPONSE, e, ControlCommandProcessor.class.getSimpleName());
+                    logger.log(LogLevel.FATAL, ERROR_IN_EVENT_RESPONSE, e, ControlCommandProcessor.class.getSimpleName());
                 }
                 break;
             case IntCodeControlCommand.FUZZ_REQUEST:
@@ -133,23 +162,8 @@ public class ControlCommandProcessor implements Runnable {
 
                 break;
 
-            case IntCodeControlCommand.SEND_POLICY_PARAMETERS:
-                if (controlCommand.getData() == null) {
-                    return;
-                }
-                try {
-                    AgentUtils.getInstance().getAgentPolicy().setPolicyParameters(new ObjectMapper().readValue(controlCommand.getData().toString(), AgentPolicyParameters.class));
-                    logger.log(LogLevel.INFO,
-                            String.format(POLICY_PARAMETERS_ARE_UPDATED_TO_S, AgentUtils.getInstance().getAgentPolicy().getPolicyParameters()),
-                            ControlCommandProcessor.class.getName());
-                } catch (JsonProcessingException e) {
-                    logger.log(LogLevel.DEBUG, IAgentConstants.UNABLE_TO_SET_AGENT_POLICY_PARAM_DUE_TO_ERROR, e,
-                            ControlCommandProcessor.class.getName());
-                }
-                break;
-
             default:
-                logger.log(LogLevel.WARNING, String.format(UNKNOWN_CONTROL_COMMAND_S, controlCommandMessage),
+                logger.log(LogLevel.WARN, String.format(UNKNOWN_CONTROL_COMMAND_S, controlCommandMessage),
                         ControlCommandProcessor.class.getName());
                 break;
         }

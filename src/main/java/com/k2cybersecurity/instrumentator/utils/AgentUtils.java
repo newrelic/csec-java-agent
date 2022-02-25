@@ -12,6 +12,7 @@ import com.k2cybersecurity.intcodeagent.filelogging.LogWriter;
 import com.k2cybersecurity.intcodeagent.logging.DeployedApplication;
 import com.k2cybersecurity.intcodeagent.logging.IAgentConstants;
 import com.k2cybersecurity.intcodeagent.models.config.AgentPolicy;
+import com.k2cybersecurity.intcodeagent.models.config.AgentPolicyParameters;
 import com.k2cybersecurity.intcodeagent.models.config.PolicyApplicationInfo;
 import com.k2cybersecurity.intcodeagent.models.javaagent.CollectorInitMsg;
 import com.k2cybersecurity.intcodeagent.models.javaagent.EventResponse;
@@ -45,6 +46,7 @@ import java.nio.file.Paths;
 import java.nio.file.attribute.PosixFilePermission;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -79,6 +81,8 @@ public class AgentUtils {
     public static final String CAME_TO_EXTRACT_TAR_BUNDLE = "Came to extract tar bundle : ";
     public static final String CORRUPTED_CVE_SERVICE_BUNDLE_DELETED = "Corrupted CVE service bundle deleted.";
     public static final String ENFORCING_POLICY = "Enforcing policy";
+    public static final String LOG_LEVEL_PROVIDED_IN_POLICY_IS_INCORRECT_DEFAULTING_TO_INFO = "Log level provided in policy is incorrect: %s. Staying at current level";
+    public static final String ERROR_WHILE_EXTRACTING_FILE_FROM_ARCHIVE_S_S = "Error while extracting file from archive : %s : %s";
 
     public Set<Pair<String, ClassLoader>> getTransformedClasses() {
         return transformedClasses;
@@ -112,11 +116,13 @@ public class AgentUtils {
 
     private AgentPolicy agentPolicy = new AgentPolicy();
 
+    private AgentPolicyParameters agentPolicyParameters = new AgentPolicyParameters();
+
     private boolean isAgentActive = true;
 
     private CollectorInitMsg initMsg = null;
 
-    private boolean cveEnvScanCompleted = false;
+    private AtomicBoolean cveEnvScanCompleted = new AtomicBoolean(false);
 
     private AtomicInteger cveServiceFailCount = new AtomicInteger(0);
 
@@ -157,12 +163,12 @@ public class AgentUtils {
         return instance;
     }
 
-    public boolean isCveEnvScanCompleted() {
-        return cveEnvScanCompleted;
+    public Boolean isCveEnvScanCompleted() {
+        return cveEnvScanCompleted.get();
     }
 
-    public void setCveEnvScanCompleted(boolean cveEnvScanCompleted) {
-        this.cveEnvScanCompleted = cveEnvScanCompleted;
+    public void setCveEnvScanCompleted(Boolean cveEnvScanCompleted) {
+        this.cveEnvScanCompleted.set(cveEnvScanCompleted);
     }
 
     public boolean isAgentActive() {
@@ -243,6 +249,14 @@ public class AgentUtils {
 
     public void setApplicationInfo(PolicyApplicationInfo applicationInfo) {
         this.applicationInfo = applicationInfo;
+    }
+
+    public AgentPolicyParameters getAgentPolicyParameters() {
+        return agentPolicyParameters;
+    }
+
+    public void setAgentPolicyParameters(AgentPolicyParameters agentPolicyParameters) {
+        this.agentPolicyParameters = agentPolicyParameters;
     }
 
     public void createProtectedVulnerabilties(TypeDescription typeDescription, ClassLoader classLoader) {
@@ -526,7 +540,7 @@ public class AgentUtils {
                 }
 
                 if (uncleanExit) {
-                    logger.log(LogLevel.WARNING, CLASSLOADER_RECORD_MISSING_FOR_CLASS + userClassName,
+                    logger.log(LogLevel.WARN, CLASSLOADER_RECORD_MISSING_FOR_CLASS + userClassName,
                             AgentUtils.class.getName());
                     try {
                         cls = Class.forName(userClassName, false,
@@ -536,7 +550,7 @@ public class AgentUtils {
                     }
                 }
             } else {
-                logger.log(LogLevel.WARNING, CURRENT_GENERIC_SERVLET_INSTANCE_NULL_IN_DETECT_DEPLOYED_APPLICATION_PATH,
+                logger.log(LogLevel.WARN, CURRENT_GENERIC_SERVLET_INSTANCE_NULL_IN_DETECT_DEPLOYED_APPLICATION_PATH,
                         AgentUtils.class.getName());
                 return appPath;
             }
@@ -557,7 +571,7 @@ public class AgentUtils {
                                     AgentUtils.class.getName());
                         }
                     } else {
-                        logger.log(LogLevel.WARNING,
+                        logger.log(LogLevel.WARN,
                                 CLASS_DIR_NOT_FOUND_IN_JBOSS_PROTECTION_DOMAIN + protectionDomainLocation.getContent(),
                                 AgentUtils.class.getName());
                     }
@@ -588,7 +602,7 @@ public class AgentUtils {
                                             AgentUtils.class.getName());
                                 }
                             } else {
-                                logger.log(LogLevel.WARNING, CLASS_DIR_NOT_FOUND_IN_JBOSS_PROTECTION_DOMAIN + app.getContent(), AgentUtils.class.getName());
+                                logger.log(LogLevel.WARN, CLASS_DIR_NOT_FOUND_IN_JBOSS_PROTECTION_DOMAIN + app.getContent(), AgentUtils.class.getName());
                             }
                         } else {
                             appPath = app.getPath();
@@ -600,7 +614,7 @@ public class AgentUtils {
                         }
                     }
                 } else {
-                    logger.log(LogLevel.WARNING, CLASSLOADER_IS_NULL_IN_DETECT_DEPLOYED_APPLICATION_PATH,
+                    logger.log(LogLevel.WARN, CLASSLOADER_IS_NULL_IN_DETECT_DEPLOYED_APPLICATION_PATH,
                             AgentUtils.class.getName());
                 }
             }
@@ -643,30 +657,39 @@ public class AgentUtils {
     }
 
     public void enforcePolicy() {
-        LogWriter.setLogLevel(LogLevel.valueOf(AgentUtils.getInstance().getAgentPolicy().getLogLevel()));
+        try {
+            LogWriter.setLogLevel(LogLevel.valueOf(AgentUtils.getInstance().getAgentPolicy().getLogLevel()));
+        } catch (IllegalArgumentException | NullPointerException e) {
+            logger.log(LogLevel.WARN, String.format(LOG_LEVEL_PROVIDED_IN_POLICY_IS_INCORRECT_DEFAULTING_TO_INFO, AgentUtils.getInstance().getAgentPolicy().getLogLevel()), AgentUtils.class.getName());
+        }
         K2Instrumentator.enableHTTPRequestPrinting = agentPolicy.getEnableHTTPRequestPrinting();
         logger.log(LogLevel.INFO, ENFORCING_POLICY, AgentUtils.class.getName());
         if (agentPolicy.getPolicyPull() && agentPolicy.getPolicyPullInterval() > 0) {
-            PolicyPullST.getInstance();
+            PolicyPullST.getInstance().submitNewTask();
         } else {
-            PolicyPullST.getInstance().cancelTask();
+            PolicyPullST.getInstance().cancelTask(true);
         }
         if (AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getEnabled()
-                && AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getCveScan().getEnabled()
-                && AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getCveScan().getEnableEnvScan()) {
-            CVEBundlePullST.getInstance();
-        } else if (!AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getEnabled()) {
-            CVEBundlePullST.getInstance().cancelTask();
+                && AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getCveScan().getEnabled()) {
+            CVEBundlePullST.getInstance().submitNewTask();
+        } else {
+            CVEBundlePullST.getInstance().cancelTask(true);
         }
         if (AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getEnabled()
-                && AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getCveScan().getEnabled()
-                && AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getCveScan().getEnableEnvScan()
-                && !AgentUtils.getInstance().isCveEnvScanCompleted()) {
+                && AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getCveScan().getEnabled()) {
             //Run CVE scan on ENV
-            CVEScannerPool.getInstance().dispatchScanner(CollectorConfigurationUtils.getInstance().getCollectorConfig().getNodeId(), K2Instrumentator.APPLICATION_INFO_BEAN.getIdentifier().getKind().name(), K2Instrumentator.APPLICATION_INFO_BEAN.getIdentifier().getId(), false, true);
-            AgentUtils.getInstance().setCveEnvScanCompleted(true);
+            if (AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getCveScan().getEnableEnvScan() && !AgentUtils.getInstance().isCveEnvScanCompleted()) {
+                CVEScannerPool.getInstance().dispatchScanner(CollectorConfigurationUtils.getInstance().getCollectorConfig().getNodeId(), K2Instrumentator.APPLICATION_INFO_BEAN.getIdentifier().getKind().name(), K2Instrumentator.APPLICATION_INFO_BEAN.getIdentifier().getId(), true);
+            }
+            if (AgentUtils.getInstance().isAppScanNeeded()) {
+                CVEScannerPool.getInstance().dispatchScanner(CollectorConfigurationUtils.getInstance().getCollectorConfig().getNodeId(), K2Instrumentator.APPLICATION_INFO_BEAN.getIdentifier().getKind().name(), K2Instrumentator.APPLICATION_INFO_BEAN.getIdentifier().getId(), false);
+            }
         }
         setApplicationInfo();
+    }
+
+    private boolean isAppScanNeeded() {
+        return !scannedDeployedApplications.containsAll(K2Instrumentator.APPLICATION_INFO_BEAN.getServerInfo().getDeployedApplications());
     }
 
     private void setApplicationInfo() {
@@ -856,17 +879,18 @@ public class AgentUtils {
                 }
                 try (FileOutputStream outputStream = new FileOutputStream(curfile)) {
                     IOUtils.copy(inputStream, outputStream);
-                    Files.setPosixFilePermissions(Paths.get(curfile.getPath()),
+                    Files.setPosixFilePermissions(Paths.get(curfile.toURI()),
                             octToPosixFilePermission(entry.getMode()));
                 } catch (Throwable e) {
-                    logger.log(LogLevel.ERROR, ERROR, e, CVEServiceLinux.class.getName());
+                    logger.log(LogLevel.ERROR, String.format(ERROR_WHILE_EXTRACTING_FILE_FROM_ARCHIVE_S_S, entry.getName(), e.getMessage()), CVEServiceLinux.class.getName());
+                    logger.log(LogLevel.DEBUG, ERROR, e, CVEServiceLinux.class.getName());
                 }
             }
             return true;
         } catch (Throwable e) {
             logger.log(LogLevel.ERROR, ERROR, e, CVEServiceLinux.class.getName());
             FileUtils.deleteQuietly(tarFile);
-            logger.log(LogLevel.WARNING,
+            logger.log(LogLevel.WARN,
                     CORRUPTED_CVE_SERVICE_BUNDLE_DELETED, CVEServiceLinux.class.getName());
         }
 

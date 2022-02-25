@@ -19,15 +19,14 @@
  */
 package com.k2cybersecurity.instrumentator.utils;
 
-import com.k2cybersecurity.instrumentator.K2Instrumentator;
-import com.k2cybersecurity.instrumentator.httpclient.HttpClient;
-import com.k2cybersecurity.instrumentator.httpclient.IRestClientConstants;
 import com.k2cybersecurity.instrumentator.os.OSVariables;
 import com.k2cybersecurity.instrumentator.os.OsVariablesInstance;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
+import com.k2cybersecurity.intcodeagent.logging.IAgentConstants;
 import com.k2cybersecurity.intcodeagent.models.config.AgentPolicy;
 import com.k2cybersecurity.intcodeagent.schedulers.PolicyPullST;
+import com.k2cybersecurity.intcodeagent.utils.CommonUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.DirectoryFileFilter;
 import org.apache.commons.io.filefilter.NotFileFilter;
@@ -161,14 +160,13 @@ public class DirectoryWatcher {
     }
 
     private static void performAction(WatchEvent<?> event, Path watchDirs) {
-        if (event.kind().equals(StandardWatchEventKinds.ENTRY_MODIFY)
-                && (StringUtils.equals(event.context().toString(), AgentUtils.getInstance().getConfigLoadPath().getName()))) {
-            if (Instant.now().minusSeconds(60).isAfter(policyLastUpdated)) {
+        if (StringUtils.equals(event.context().toString(), AgentUtils.getInstance().getConfigLoadPath().getName())) {
+            if (Instant.now().minusSeconds(5).isAfter(policyLastUpdated)) {
                 updatedPolicy(event);
                 policyLastUpdated = Instant.now();
                 return;
             }
-            logger.log(LogLevel.DEBUG, "Returning as policy was last updated in less than 60secs ", DirectoryWatcher.class.getName());
+            logger.log(LogLevel.DEBUG, "Returning as policy was last updated in less than 5secs ", DirectoryWatcher.class.getName());
             return;
         }
     }
@@ -179,16 +177,21 @@ public class DirectoryWatcher {
                 TimeUnit.SECONDS.sleep(1);
                 AgentPolicy newPolicy = PolicyPullST.getInstance().populateConfig();
                 if (newPolicy != null) {
+                    if (StringUtils.equals(newPolicy.getVersion(), AgentUtils.getInstance().getAgentPolicy().getVersion())) {
+                        return;
+                    }
+                    if (!CommonUtils.validateCollectorPolicySchema(newPolicy)) {
+                        logger.log(LogLevel.WARN, String.format(IAgentConstants.UNABLE_TO_VALIDATE_AGENT_POLICY_DUE_TO_ERROR_FILE, AgentUtils.getInstance().getAgentPolicy()), PolicyPullST.class.getName());
+                        CommonUtils.writePolicyToFile();
+                        return;
+                    }
                     if (PolicyPullST.getInstance().readAndApplyConfig(newPolicy)) {
-                        Map<String, String> queryParam = new HashMap<>();
-                        queryParam.put("group", AgentUtils.getInstance().getGroupName());
-                        queryParam.put("applicationUUID", K2Instrumentator.APPLICATION_UUID);
-
-                        HttpClient.getInstance().doPost(IRestClientConstants.UPDATE_POLICY, null, queryParam, null, newPolicy, true);
+                        CommonUtils.fireUpdatePolicyAPI(newPolicy);
                     }
                 }
             } catch (Exception e) {
-                logger.log(LogLevel.INFO, "Config update was unsuccessful for configs at : " + AgentUtils.getInstance().getConfigLoadPath(), e, DirectoryWatcher.class.getName());
+                logger.log(LogLevel.ERROR, "Config update was unsuccessful for configs at : " + AgentUtils.getInstance().getConfigLoadPath(), e, DirectoryWatcher.class.getName());
+                CommonUtils.writePolicyToFile();
             }
     }
 }

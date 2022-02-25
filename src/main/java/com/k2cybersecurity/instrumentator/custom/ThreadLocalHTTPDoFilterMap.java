@@ -12,6 +12,16 @@ public class ThreadLocalHTTPDoFilterMap {
     @JsonIgnore
     private String currentGenericServletMethodName = StringUtils.EMPTY;
 
+    @JsonIgnore
+    private boolean userCodeEncountered = false;
+
+    public boolean isUserCodeEncountered() {
+        return userCodeEncountered;
+    }
+
+    public void setUserCodeEncountered(boolean userCodeEncountered) {
+        this.userCodeEncountered = userCodeEncountered;
+    }
 
     public Object getCurrentGenericServletInstance() {
         return currentGenericServletInstance;
@@ -52,6 +62,7 @@ public class ThreadLocalHTTPDoFilterMap {
     public void cleanUp() {
         currentGenericServletInstance = null;
         currentGenericServletMethodName = StringUtils.EMPTY;
+        userCodeEncountered = false;
     }
 
 }

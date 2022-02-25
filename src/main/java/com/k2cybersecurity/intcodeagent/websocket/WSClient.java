@@ -7,6 +7,7 @@ import com.k2cybersecurity.instrumentator.utils.InstrumentationUtils;
 import com.k2cybersecurity.intcodeagent.controlcommand.ControlCommandProcessor;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
+import com.k2cybersecurity.intcodeagent.logging.IAgentConstants;
 import com.k2cybersecurity.intcodeagent.properties.K2JAVersionInfo;
 import org.java_websocket.WebSocket;
 import org.java_websocket.WebSocketImpl;
@@ -40,6 +41,8 @@ public class WSClient extends WebSocketClient {
 
     private WebSocketImpl connection = null;
 
+    private boolean isConnected = false;
+
     private WSClient() throws URISyntaxException {
         super(new URI(CollectorConfigurationUtils.getInstance().getCollectorConfig().getK2ServiceInfo().getValidatorServiceEndpointURL()));
         this.setTcpNoDelay(true);
@@ -49,11 +52,16 @@ public class WSClient extends WebSocketClient {
         this.addHeader("K2-CUSTOMER-ID", String.valueOf(CollectorConfigurationUtils.getInstance().getCollectorConfig().getCustomerInfo().getCustomerId()));
         this.addHeader("K2-VERSION", K2JAVersionInfo.collectorVersion);
         this.addHeader("K2-COLLECTOR-TYPE", "JAVA");
+        this.addHeader("K2-BUILD-NUMBER", K2JAVersionInfo.buildNumber);
         this.addHeader("K2-GROUP", AgentUtils.getInstance().getGroupName());
         this.addHeader("K2-APPLICATION-UUID", K2Instrumentator.APPLICATION_UUID);
-        logger.log(LogLevel.INFO, "Creating WSock connection to : " + CollectorConfigurationUtils.getInstance().getCollectorConfig().getK2ServiceInfo().getValidatorServiceEndpointURL(),
+        this.addHeader("K2-JSON-VERSION", K2JAVersionInfo.jsonVersion);
+    }
+
+    public void openConnection() throws InterruptedException {
+        logger.logInit(LogLevel.INFO, String.format(IAgentConstants.INIT_WS_CONNECTION, CollectorConfigurationUtils.getInstance().getCollectorConfig().getK2ServiceInfo().getValidatorServiceEndpointURL()),
                 WSClient.class.getName());
-        connect();
+        connectBlocking();
         WebSocket conn = getConnection();
         if (conn instanceof WebSocketImpl) {
             this.connection = (WebSocketImpl) conn;
@@ -62,16 +70,18 @@ public class WSClient extends WebSocketClient {
 
     @Override
     public void onOpen(ServerHandshake handshakedata) {
-        logger.log(LogLevel.INFO, "Opened WSock to " + this.getRemoteSocketAddress(), WSClient.class.getName());
+        logger.logInit(LogLevel.INFO, String.format(IAgentConstants.WS_CONNECTION_SUCCESSFUL, this.getRemoteSocketAddress()) , WSClient.class.getName());
 //		logger.log(LogLevel.INFO, "Current WSock ready status : {0},{1},{2}",
 //				new Object[] { this.isOpen(), this.isClosing(), this.isClosed() });
+        logger.logInit(LogLevel.INFO, String.format(IAgentConstants.SENDING_APPLICATION_INFO_ON_WS_CONNECT, K2Instrumentator.APPLICATION_INFO_BEAN) , WSClient.class.getName());
         super.send(K2Instrumentator.APPLICATION_INFO_BEAN.toString());
 //		Agent.allClassLoadersCount.set(0);
 //		Agent.jarPathSet.clear();
 //		logger.log(LogLevel.INFO, "Resetting allClassLoadersCount to " + Agent.allClassLoadersCount.get(),
 //				WSClient.class.getName());
-        logger.log(LogLevel.INFO, "Application info posted : " + K2Instrumentator.APPLICATION_INFO_BEAN,
-                WSClient.class.getName());
+        isConnected = true;
+//        WSReconnectionST.cancelTask(false);
+        logger.logInit(LogLevel.INFO, String.format(IAgentConstants.APPLICATION_INFO_SENT_ON_WS_CONNECT, K2Instrumentator.APPLICATION_INFO_BEAN), WSClient.class.getName());
         AgentUtils.getInstance().resetCVEServiceFailCount();
     }
 
@@ -81,15 +91,20 @@ public class WSClient extends WebSocketClient {
         try {
             ControlCommandProcessor.processControlCommand(message, System.currentTimeMillis());
         } catch (Throwable e) {
-            logger.log(LogLevel.SEVERE, UNABLE_TO_PROCESS_INCOMING_MESSAGE + message + DUE_TO_ERROR, e,
+            logger.log(LogLevel.FATAL, UNABLE_TO_PROCESS_INCOMING_MESSAGE + message + DUE_TO_ERROR, e,
                     WSClient.class.getName());
         }
     }
 
     @Override
     public void onClose(int code, String reason, boolean remote) {
-        logger.log(LogLevel.WARNING, CONNECTION_CLOSED_BY + (remote ? REMOTE_PEER : LOCAL) + CODE + code
+        isConnected = false;
+        logger.log(LogLevel.WARN, CONNECTION_CLOSED_BY + (remote ? REMOTE_PEER : LOCAL) + CODE + code
                 + REASON + reason, WSClient.class.getName());
+        if (code == CloseFrame.NEVER_CONNECTED) {
+            return;
+        }
+
         if (code != CloseFrame.POLICY_VALIDATION) {
             WSReconnectionST.getInstance().submitNewTaskSchedule();
         } else {
@@ -101,7 +116,8 @@ public class WSClient extends WebSocketClient {
     public void onError(Exception ex) {
 //        logger.log(LogLevel.SEVERE, "Error in WSock connection : " + ex.getMessage() + " : " + ex.getCause(),
 //                WSClient.class.getName());
-        logger.log(LogLevel.DEBUG, ERROR_IN_WSOCK_CONNECTION + ex.getMessage() + COLON_STRING + ex.getCause(), ex,
+        logger.logInit(LogLevel.FATAL, String.format(IAgentConstants.WS_CONNECTION_UNSUCCESSFUL, this.getRemoteSocketAddress()),
+                ex,
                 WSClient.class.getName());
     }
 
@@ -128,7 +144,7 @@ public class WSClient extends WebSocketClient {
      * @return the instance
      * @throws URISyntaxException
      */
-    public static WSClient getInstance() throws URISyntaxException {
+    public static WSClient getInstance() throws URISyntaxException, InterruptedException {
         if (instance == null) {
             instance = new WSClient();
         }
@@ -141,23 +157,20 @@ public class WSClient extends WebSocketClient {
      * @throws InterruptedException
      */
     public static WSClient reconnectWSClient() throws URISyntaxException, InterruptedException {
-        boolean reconnectStatus = false;
-        logger.log(LogLevel.WARNING, RECONNECTING_TO_IC,
+        logger.log(LogLevel.WARN, RECONNECTING_TO_IC,
                 WSClient.class.getName());
         if (instance != null) {
             instance.closeBlocking();
-            try {
-                reconnectStatus = instance.reconnectBlocking();
-            } catch (Throwable e) {
-                reconnectStatus = false;
-            }
         }
-        if (!reconnectStatus) {
-            if (instance != null) {
-                instance.closeBlocking();
-            }
-            instance = new WSClient();
-        }
+        instance = new WSClient();
+        instance.openConnection();
         return instance;
+    }
+
+    public static boolean isConnected() {
+        if (instance != null) {
+            return instance.isConnected;
+        }
+        return false;
     }
 }
