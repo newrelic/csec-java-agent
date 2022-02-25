@@ -729,7 +729,9 @@ public class CallbackUtils {
 
     public static String generateTracingHeaderValue(String previousValue, String apiId, String executionId) {
 
-        previousValue = StringUtils.appendIfMissing(previousValue, ";");
+        if (StringUtils.isNotBlank(previousValue)) {
+            previousValue = StringUtils.appendIfMissing(previousValue, ";");
+        }
         return String.format("%s%s/%s/%s;", previousValue, K2Instrumentator.APPLICATION_UUID, apiId, executionId);
 
 //        StringBuilder value = new StringBuilder(previousValue);
