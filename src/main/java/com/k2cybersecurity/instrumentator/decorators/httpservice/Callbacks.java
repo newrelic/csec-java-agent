@@ -150,6 +150,8 @@ public class Callbacks {
                     String tid = StringUtils.substringBefore(exectionId, SEPARATOR_COLON);
                 }
             }
+        } catch (Throwable e) {
+            e.printStackTrace();
         } finally {
 
             // Clean up

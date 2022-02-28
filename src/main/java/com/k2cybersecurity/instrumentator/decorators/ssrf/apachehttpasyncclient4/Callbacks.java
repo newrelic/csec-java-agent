@@ -54,7 +54,9 @@ public class Callbacks {
                         String uriFromRequest = (String) getUri.invoke(requestLine);
 
                         addHeaderHttpHost(IAgentConstants.K2_API_CALLER, CallbackUtils.generateApiCallerHeaderValue(uriFromRequest), args[1]);
-
+                        if (StringUtils.isNotBlank(ThreadLocalExecutionMap.getInstance().getHttpRequestBean().getK2RequestIdentifier())) {
+                            addHeaderHttpHost(IAgentConstants.K2_FUZZ_REQUEST_ID, ThreadLocalExecutionMap.getInstance().getHttpRequestBean().getK2RequestIdentifier(), args[1]);
+                        }
 //						System.out.println(String.format("Entry Value : SSRF : %s : %s : %s : %s", className, methodName, uri, uriFromRequest));
                         ThreadLocalSSRFLock.getInstance().setUrl(uriFromRequest);
                         SSRFOperationalBean operationalBean = new SSRFOperationalBean(uriFromRequest, className, sourceString, exectionId,
@@ -73,7 +75,9 @@ public class Callbacks {
                         String urlString = uri.toString();
 
                         addHeaderHttpUriRequest(IAgentConstants.K2_API_CALLER, CallbackUtils.generateApiCallerHeaderValue(urlString), args[0]);
-
+                        if (StringUtils.isNotBlank(ThreadLocalExecutionMap.getInstance().getHttpRequestBean().getK2RequestIdentifier())) {
+                            addHeaderHttpUriRequest(IAgentConstants.K2_FUZZ_REQUEST_ID, ThreadLocalExecutionMap.getInstance().getHttpRequestBean().getK2RequestIdentifier(), args[0]);
+                        }
 //						System.out.println(String.format("Entry Value : SSRF : %s : %s : %s", className, methodName, uri.toString()));
                         ThreadLocalSSRFLock.getInstance().setUrl(urlString);
                         SSRFOperationalBean operationalBean = new SSRFOperationalBean(urlString, className, sourceString, exectionId,
@@ -130,7 +134,9 @@ public class Callbacks {
                     String uriFromRequest = (String) getUri.invoke(requestLine);
 
                     addHeaderGenerateRequest(IAgentConstants.K2_API_CALLER, CallbackUtils.generateApiCallerHeaderValue(uriFromRequest), returnVal);
-
+                    if (StringUtils.isNotBlank(ThreadLocalExecutionMap.getInstance().getHttpRequestBean().getK2RequestIdentifier())) {
+                        addHeaderGenerateRequest(IAgentConstants.K2_FUZZ_REQUEST_ID, ThreadLocalExecutionMap.getInstance().getHttpRequestBean().getK2RequestIdentifier(), returnVal);
+                    }
 //					System.out.println(String.format("Exit inside Value : SSRF : %s : %s : %s", className, methodName, uriFromRequest));
                     SSRFOperationalBean operationalBean = new SSRFOperationalBean(uriFromRequest, className, sourceString, exectionId,
                             Instant.now().toEpochMilli(), methodName);

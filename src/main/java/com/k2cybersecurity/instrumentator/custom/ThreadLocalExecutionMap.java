@@ -1,5 +1,6 @@
 package com.k2cybersecurity.instrumentator.custom;
 
+import com.k2cybersecurity.instrumentator.httpclient.FuzzCleanUpST;
 import com.k2cybersecurity.intcodeagent.models.javaagent.AgentMetaData;
 import com.k2cybersecurity.intcodeagent.models.javaagent.FileIntegrityBean;
 import com.k2cybersecurity.intcodeagent.models.javaagent.HttpRequestBean;
@@ -86,6 +87,9 @@ public class ThreadLocalExecutionMap {
     }
 
     public void cleanUp() {
+        if (httpRequestBean != null && httpRequestBean.getK2RequestIdentifierInstance() != null && httpRequestBean.getK2RequestIdentifierInstance().getTempFiles() != null) {
+            FuzzCleanUpST.getInstance().scheduleCleanUp(httpRequestBean.getK2RequestIdentifierInstance().getTempFiles());
+        }
         httpRequestBean = new HttpRequestBean();
         metaData = new AgentMetaData();
         fileLocalMap.clear();

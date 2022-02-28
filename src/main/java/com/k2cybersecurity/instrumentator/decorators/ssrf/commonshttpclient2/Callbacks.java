@@ -8,6 +8,7 @@ import com.k2cybersecurity.instrumentator.utils.CallbackUtils;
 import com.k2cybersecurity.intcodeagent.logging.IAgentConstants;
 import com.k2cybersecurity.intcodeagent.models.javaagent.VulnerabilityCaseType;
 import com.k2cybersecurity.intcodeagent.models.operationalbean.SSRFOperationalBean;
+import org.apache.commons.lang3.StringUtils;
 
 import java.lang.reflect.Method;
 import java.time.Instant;
@@ -37,6 +38,9 @@ public class Callbacks {
                     ThreadLocalSSRFLock.getInstance().setUrl(urlString);
 
                     addHeader(IAgentConstants.K2_API_CALLER, CallbackUtils.generateApiCallerHeaderValue(urlString), args[1]);
+                    if (StringUtils.isNotBlank(ThreadLocalExecutionMap.getInstance().getHttpRequestBean().getK2RequestIdentifier())) {
+                        addHeader(IAgentConstants.K2_FUZZ_REQUEST_ID, ThreadLocalExecutionMap.getInstance().getHttpRequestBean().getK2RequestIdentifier(), args[1]);
+                    }
                     SSRFOperationalBean operationalBean = new SSRFOperationalBean(urlString, className, sourceString, exectionId,
                             Instant.now().toEpochMilli(), methodName);
 

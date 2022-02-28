@@ -8,6 +8,7 @@ import com.k2cybersecurity.instrumentator.utils.CallbackUtils;
 import com.k2cybersecurity.intcodeagent.logging.IAgentConstants;
 import com.k2cybersecurity.intcodeagent.models.javaagent.VulnerabilityCaseType;
 import com.k2cybersecurity.intcodeagent.models.operationalbean.SSRFOperationalBean;
+import org.apache.commons.lang3.StringUtils;
 
 import java.lang.reflect.Method;
 import java.net.URI;
@@ -54,7 +55,9 @@ public class Callbacks {
                         String uriFromRequest = (String) getUri.invoke(requestLine);
 
                         addHeaderHttpHost(IAgentConstants.K2_API_CALLER, CallbackUtils.generateApiCallerHeaderValue(uriFromRequest), args[1]);
-
+                        if (StringUtils.isNotBlank(ThreadLocalExecutionMap.getInstance().getHttpRequestBean().getK2RequestIdentifier())) {
+                            addHeaderHttpHost(IAgentConstants.K2_FUZZ_REQUEST_ID, ThreadLocalExecutionMap.getInstance().getHttpRequestBean().getK2RequestIdentifier(), args[1]);
+                        }
 //						System.out.println(String.format("Entry Value : SSRF : %s : %s : %s : %s", className, methodName, uri, uriFromRequest));
                         ThreadLocalSSRFLock.getInstance().setUrl(uriFromRequest);
 
@@ -75,6 +78,9 @@ public class Callbacks {
                         String urlString = uri.toString();
 
                         addHeaderHttpUriRequest(IAgentConstants.K2_API_CALLER, CallbackUtils.generateApiCallerHeaderValue(urlString), args[0]);
+                        if (StringUtils.isNotBlank(ThreadLocalExecutionMap.getInstance().getHttpRequestBean().getK2RequestIdentifier())) {
+                            addHeaderHttpUriRequest(IAgentConstants.K2_FUZZ_REQUEST_ID, ThreadLocalExecutionMap.getInstance().getHttpRequestBean().getK2RequestIdentifier(), args[0]);
+                        }
 //						System.out.println(String.format("Entry Value : SSRF : %s : %s : %s", className, methodName, uri.toString()));
                         ThreadLocalSSRFLock.getInstance().setUrl(urlString);
 

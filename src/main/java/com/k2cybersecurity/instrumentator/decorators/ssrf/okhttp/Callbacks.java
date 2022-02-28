@@ -49,7 +49,9 @@ public class Callbacks {
                         Method setHeader = builder.getClass().getMethod("header", String.class, String.class);
                         setHeader.setAccessible(true);
                         builder = setHeader.invoke(builder, IAgentConstants.K2_API_CALLER, CallbackUtils.generateApiCallerHeaderValue(url));
-
+                        if (StringUtils.isNotBlank(ThreadLocalExecutionMap.getInstance().getHttpRequestBean().getK2RequestIdentifier())) {
+                            builder = setHeader.invoke(builder, IAgentConstants.K2_FUZZ_REQUEST_ID, ThreadLocalExecutionMap.getInstance().getHttpRequestBean().getK2RequestIdentifier());
+                        }
                         SSRFOperationalBean operationalBean = ThreadLocalOkHttpMap.getInstance().create(obj, url, className, sourceString, exectionId,
                                 Instant.now().toEpochMilli(), methodName);
 
