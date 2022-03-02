@@ -146,15 +146,18 @@ public class HttpRequestBean {
     }
 
     private void parseK2IdentifierHeader(String requestHeaderVal) {
-        if (StringUtils.isBlank(requestHeaderVal) && !(AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getEnabled()
-                && AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getIastScan().getEnabled())) {
+        if (StringUtils.isBlank(requestHeaderVal)) {
             k2RequestIdentifierInstance.setRaw(StringUtils.EMPTY);
             return;
         }
         if (StringUtils.isNotBlank(requestHeaderVal)) {
+            k2RequestIdentifierInstance.setRaw(requestHeaderVal);
+            if (!(AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getEnabled()
+                    && AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getIastScan().getEnabled())) {
+                return;
+            }
             String[] data = StringUtils.splitByWholeSeparator(requestHeaderVal, SEPARATOR_SEMICOLON);
             if (data.length >= 5) {
-                k2RequestIdentifierInstance.setRaw(requestHeaderVal);
                 k2RequestIdentifierInstance.setApiRecordId(data[0].trim());
                 k2RequestIdentifierInstance.setRefId(data[1].trim());
                 k2RequestIdentifierInstance.setRefValue(data[2].trim());
