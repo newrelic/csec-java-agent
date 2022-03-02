@@ -103,7 +103,7 @@ public class DispatcherPool {
             return;
         }
         if (!event.isEmpty() && metaData.isK2FuzzRequest()) {
-            if (StringUtils.contains(httpRequestBean.getK2RequestIdentifier(), event.getApiID()) && StringUtils.contains(httpRequestBean.getK2RequestIdentifier(), IAgentConstants.VULNERABLE)) {
+            if (StringUtils.equals(httpRequestBean.getK2RequestIdentifierInstance().getApiRecordId(), event.getApiID()) && StringUtils.equals(httpRequestBean.getK2RequestIdentifierInstance().getNextStage().getStatus(), IAgentConstants.VULNERABLE)) {
                 eid.add(event.getExecutionId());
             }
         }
@@ -118,7 +118,7 @@ public class DispatcherPool {
             return;
         }
         if (!event.isEmpty() && metaData.isK2FuzzRequest()) {
-            if (StringUtils.contains(httpRequestBean.getK2RequestIdentifier(), event.get(0).getApiID()) && StringUtils.contains(httpRequestBean.getK2RequestIdentifier(), IAgentConstants.VULNERABLE)) {
+            if (StringUtils.equals(httpRequestBean.getK2RequestIdentifierInstance().getApiRecordId(), event.get(0).getApiID()) && StringUtils.equals(httpRequestBean.getK2RequestIdentifierInstance().getNextStage().getStatus(), IAgentConstants.VULNERABLE)) {
                 eid.add(event.get(0).getExecutionId());
             }
         }

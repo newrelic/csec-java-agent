@@ -3,6 +3,7 @@ package com.k2cybersecurity.intcodeagent.models.javaagent;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.k2cybersecurity.instrumentator.os.OsVariablesInstance;
+import com.k2cybersecurity.instrumentator.utils.AgentUtils;
 import com.k2cybersecurity.intcodeagent.logging.IAgentConstants;
 import com.k2cybersecurity.intcodeagent.websocket.JsonConverter;
 import org.apache.commons.io.FileUtils;
@@ -145,7 +146,8 @@ public class HttpRequestBean {
     }
 
     private void parseK2IdentifierHeader(String requestHeaderVal) {
-        if (StringUtils.isBlank(requestHeaderVal)) {
+        if (StringUtils.isBlank(requestHeaderVal) && !(AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getEnabled()
+                && AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getIastScan().getEnabled())) {
             k2RequestIdentifierInstance.setRaw(StringUtils.EMPTY);
             return;
         }
