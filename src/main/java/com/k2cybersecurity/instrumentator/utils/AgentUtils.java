@@ -33,7 +33,6 @@ import org.apache.commons.compress.archivers.zip.ZipArchiveInputStream;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.Pair;
 
 import java.io.*;
 import java.lang.reflect.Field;
@@ -84,12 +83,6 @@ public class AgentUtils {
     public static final String LOG_LEVEL_PROVIDED_IN_POLICY_IS_INCORRECT_DEFAULTING_TO_INFO = "Log level provided in policy is incorrect: %s. Staying at current level";
     public static final String ERROR_WHILE_EXTRACTING_FILE_FROM_ARCHIVE_S_S = "Error while extracting file from archive : %s : %s";
 
-    public Set<Pair<String, ClassLoader>> getTransformedClasses() {
-        return transformedClasses;
-    }
-
-    private Set<Pair<String, ClassLoader>> transformedClasses;
-
     private Map<String, ClassLoader> classLoaderRecord;
 
     private Map<String, EventResponse> eventResponseSet;
@@ -139,8 +132,6 @@ public class AgentUtils {
     private OSVariables osVariables = OsVariablesInstance.getInstance().getOsVariables();
 
     private AgentUtils() {
-
-        transformedClasses = new HashSet<>();
         eventResponseSet = new ConcurrentHashMap<>();
         classLoaderRecord = new ConcurrentHashMap<>();
         rxssSentUrls = new HashSet<>();
@@ -185,10 +176,6 @@ public class AgentUtils {
 
     public Map<String, ClassLoader> getClassLoaderRecord() {
         return classLoaderRecord;
-    }
-
-    public void clearTransformedClassSet() {
-        transformedClasses.clear();
     }
 
     public Map<String, EventResponse> getEventResponseSet() {
