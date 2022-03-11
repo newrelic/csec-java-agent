@@ -686,7 +686,24 @@ public class AgentUtils {
         }
     }
 
-    public void preProcessStackTrace(AbstractOperationalBean operationalBean, VulnerabilityCaseType vulnerabilityCaseType) {
+    public static void reformStackStrace(AbstractOperationalBean operationalBean) {
+
+        StackTraceElement[] stackTrace = operationalBean.getStackTrace();
+        int resetFactor = 1;
+        for (int i = 1; i < stackTrace.length; i++) {
+            if (i < operationalBean.getUserClassEntity().getTraceLocationEnd() && i == resetFactor &&
+                    StringUtils.startsWith(stackTrace[i].getClassName(), ClassloaderAdjustments.K2_BOOTSTAP_LOADED_PACKAGE_NAME)) {
+                resetFactor++;
+            }
+        }
+        stackTrace = Arrays.copyOfRange(stackTrace, resetFactor, stackTrace.length);
+        operationalBean.setStackTrace(stackTrace);
+    }
+
+    public static void preProcessStackTrace(AbstractOperationalBean operationalBean, VulnerabilityCaseType vulnerabilityCaseType) {
+        if (operationalBean.isStackProcessed()) {
+            return;
+        }
         StackTraceElement[] stackTrace = operationalBean.getStackTrace();
         int resetFactor = 0;
         List<StackTraceElement> recordsToDelete = new ArrayList<>();
@@ -718,9 +735,10 @@ public class AgentUtils {
         operationalBean.setStackTrace(stackTrace);
         operationalBean.getUserClassEntity().setTraceLocationEnd(operationalBean.getUserClassEntity().getTraceLocationEnd() - resetFactor);
         setAPIId(operationalBean, newTraceStringForIdCalc, vulnerabilityCaseType);
+        operationalBean.setStackProcessed(true);
     }
 
-    private void setAPIId(AbstractOperationalBean operationalBean, List<String> traceForIdCalc, VulnerabilityCaseType vulnerabilityCaseType) {
+    private static void setAPIId(AbstractOperationalBean operationalBean, List<String> traceForIdCalc, VulnerabilityCaseType vulnerabilityCaseType) {
         List<String> idData = new ArrayList<>();
 
         // TODO : Write Application detection mechanism for a given event.

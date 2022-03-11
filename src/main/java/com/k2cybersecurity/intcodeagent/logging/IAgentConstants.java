@@ -578,6 +578,7 @@ public interface IAgentConstants {
     String UNABLE_TO_GET_AGENT_STARTUP_INFOARMATION = "Unable to get Agent startup information due to error:";
 
     String K2_API_CALLER = "K2-API-CALLER";
+    String K2_TRACING_HEADER = "K2-TRACING-DATA";
 
     String LINUX = "linux";
     String WINDOWS = "windows";

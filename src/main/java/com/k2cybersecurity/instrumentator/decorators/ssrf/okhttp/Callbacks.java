@@ -1,9 +1,6 @@
 package com.k2cybersecurity.instrumentator.decorators.ssrf.okhttp;
 
-import com.k2cybersecurity.instrumentator.custom.ThreadLocalHttpMap;
-import com.k2cybersecurity.instrumentator.custom.ThreadLocalOkHttpMap;
-import com.k2cybersecurity.instrumentator.custom.ThreadLocalOperationLock;
-import com.k2cybersecurity.instrumentator.custom.ThreadLocalSSRFLock;
+import com.k2cybersecurity.instrumentator.custom.*;
 import com.k2cybersecurity.instrumentator.dispatcher.DispatcherPool;
 import com.k2cybersecurity.instrumentator.dispatcher.EventDispatcher;
 import com.k2cybersecurity.instrumentator.utils.AgentUtils;
@@ -35,6 +32,8 @@ public class Callbacks {
                     ThreadLocalSSRFLock.getInstance().setUrl(ssrfOperationalBean.getArg());
 
                     if (ssrfOperationalBean != null) {
+                        ssrfOperationalBean.setStackTrace(Thread.currentThread().getStackTrace());
+                        AgentUtils.reformStackStrace(ssrfOperationalBean);
                         EventDispatcher.dispatch(ssrfOperationalBean, VulnerabilityCaseType.HTTP_REQUEST);
                     }
                 } else if (StringUtils.equals(methodName, IAgentConstants.INIT) && args != null && args.length > 1
@@ -49,8 +48,16 @@ public class Callbacks {
                         Object builder = newBuilder.invoke(args[1], null);
                         Method setHeader = builder.getClass().getMethod("header", String.class, String.class);
                         setHeader.setAccessible(true);
-
                         builder = setHeader.invoke(builder, IAgentConstants.K2_API_CALLER, CallbackUtils.generateApiCallerHeaderValue(url));
+                        if (StringUtils.isNotBlank(ThreadLocalExecutionMap.getInstance().getHttpRequestBean().getK2RequestIdentifier())) {
+                            builder = setHeader.invoke(builder, IAgentConstants.K2_FUZZ_REQUEST_ID, ThreadLocalExecutionMap.getInstance().getHttpRequestBean().getK2RequestIdentifier());
+                        }
+                        SSRFOperationalBean operationalBean = ThreadLocalOkHttpMap.getInstance().create(obj, url, className, sourceString, exectionId,
+                                Instant.now().toEpochMilli(), methodName);
+
+                        AgentUtils.preProcessStackTrace(operationalBean, VulnerabilityCaseType.HTTP_REQUEST);
+                        builder = setHeader.invoke(builder, IAgentConstants.K2_TRACING_HEADER, CallbackUtils.generateTracingHeaderValue(ThreadLocalExecutionMap.getInstance().getTracingHeaderValue(), operationalBean.getApiID(), exectionId));
+
                         Method build = builder.getClass().getMethod("build", null);
                         build.setAccessible(true);
                         args[1] = build.invoke(builder, null);
@@ -78,8 +85,8 @@ public class Callbacks {
                     String url = httpUrl.invoke(args[1]).toString();
 
 //					System.out.println(String.format("Exit Value : Ok http SSRF : %s : %s : %s on onject : %s", className, methodName, url, obj));
-                    ThreadLocalOkHttpMap.getInstance().create(obj, url, className, sourceString, exectionId,
-                            Instant.now().toEpochMilli(), methodName);
+                    ThreadLocalOkHttpMap.getInstance().get(obj).setArg(url);
+
                 }
                 if (AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getEnabled()
                         && AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getIastScan().getEnabled()) {

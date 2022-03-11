@@ -1,9 +1,6 @@
 package com.k2cybersecurity.instrumentator.decorators.ssrf.akkahttp10;
 
-import com.k2cybersecurity.instrumentator.custom.K2CyberSecurityException;
-import com.k2cybersecurity.instrumentator.custom.ThreadLocalHttpMap;
-import com.k2cybersecurity.instrumentator.custom.ThreadLocalOperationLock;
-import com.k2cybersecurity.instrumentator.custom.ThreadLocalSSRFLock;
+import com.k2cybersecurity.instrumentator.custom.*;
 import com.k2cybersecurity.instrumentator.dispatcher.DispatcherPool;
 import com.k2cybersecurity.instrumentator.dispatcher.EventDispatcher;
 import com.k2cybersecurity.instrumentator.utils.AgentUtils;
@@ -11,6 +8,7 @@ import com.k2cybersecurity.instrumentator.utils.CallbackUtils;
 import com.k2cybersecurity.intcodeagent.logging.IAgentConstants;
 import com.k2cybersecurity.intcodeagent.models.javaagent.VulnerabilityCaseType;
 import com.k2cybersecurity.intcodeagent.models.operationalbean.SSRFOperationalBean;
+import org.apache.commons.lang3.StringUtils;
 
 import java.lang.reflect.Method;
 import java.net.URL;
@@ -46,31 +44,40 @@ public class Callbacks {
                             getPathString.invoke(uri).toString());
 
                     String urlString = url.toString();
-                    Class classHttpHeader = Class.forName("akka.http.javadsl.model.HttpHeader", false, Thread.currentThread().getContextClassLoader());
 
-                    Method parse = classHttpHeader.getMethod("parse", String.class, String.class);
-                    parse.setAccessible(true);
-
-                    try {
-                        Object header = parse.invoke(null, IAgentConstants.K2_API_CALLER, CallbackUtils.generateApiCallerHeaderValue(urlString));
-
-                        Method addHeader = args[0].getClass().getMethod("addHeader", classHttpHeader);
-                        addHeader.setAccessible(true);
-                        args[0] = addHeader.invoke(args[0], header);
-                    } catch (Exception e) {
+                    args[0] = addHeader(IAgentConstants.K2_API_CALLER, CallbackUtils.generateApiCallerHeaderValue(urlString), args[0]);
+                    if (StringUtils.isNotBlank(ThreadLocalExecutionMap.getInstance().getHttpRequestBean().getK2RequestIdentifier())) {
+                        args[0] = addHeader(IAgentConstants.K2_FUZZ_REQUEST_ID, ThreadLocalExecutionMap.getInstance().getHttpRequestBean().getK2RequestIdentifier(), args[0]);
                     }
-
 //                    System.out.println(String.format("Entry : SSRF : %s : %s : %s : %s", className, methodName, sourceString, exectionId));
                     ThreadLocalSSRFLock.getInstance().setUrl(urlString);
+                    SSRFOperationalBean operationalBean = new SSRFOperationalBean(urlString, className, sourceString, exectionId,
+                            Instant.now().toEpochMilli(), methodName);
+                    AgentUtils.preProcessStackTrace(operationalBean, VulnerabilityCaseType.HTTP_REQUEST);
 
-                    EventDispatcher.dispatch(new SSRFOperationalBean(urlString, className, sourceString, exectionId,
-                            Instant.now().toEpochMilli(), methodName), VulnerabilityCaseType.HTTP_REQUEST);
+                    args[0] = addHeader(IAgentConstants.K2_TRACING_HEADER, CallbackUtils.generateTracingHeaderValue(ThreadLocalExecutionMap.getInstance().getTracingHeaderValue(), operationalBean.getApiID(), exectionId), args[0]);
+
+                    EventDispatcher.dispatch(operationalBean, VulnerabilityCaseType.HTTP_REQUEST);
 
                 }
             } finally {
                 ThreadLocalOperationLock.getInstance().release();
             }
         }
+    }
+
+    private static Object addHeader(String key, String value, Object caller) {
+        try {
+            Class classHttpHeader = Class.forName("akka.http.javadsl.model.HttpHeader", false, Thread.currentThread().getContextClassLoader());
+            Method parse = classHttpHeader.getMethod("parse", String.class, String.class);
+            parse.setAccessible(true);
+            Method addHeader = caller.getClass().getMethod("addHeader", classHttpHeader);
+            addHeader.setAccessible(true);
+            Object header = parse.invoke(null, key, value);
+            return addHeader.invoke(caller, header);
+        } catch (Exception e) {
+        }
+        return caller;
     }
 
     public static void doOnExit(String sourceString, String className, String methodName, Object obj, Object[] args,

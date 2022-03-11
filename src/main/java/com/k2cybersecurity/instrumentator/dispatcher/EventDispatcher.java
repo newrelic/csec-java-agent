@@ -90,7 +90,6 @@ public class EventDispatcher {
                     String.format(INTERCEPTED_EVENT_ZERO, vulnerabilityCaseType, objectBean),
                     EventDispatcher.class.getName());
         }
-
         boolean ret = ThreadLocalHttpMap.getInstance().parseHttpRequest();
         if (!ret) {
             logger.log(LogLevel.DEBUG,

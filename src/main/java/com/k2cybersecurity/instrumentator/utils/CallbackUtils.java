@@ -726,4 +726,21 @@ public class CallbackUtils {
                 ThreadLocalExecutionMap.getInstance().getHttpRequestBean().getServerPort(),
                 Base64.getEncoder().encodeToString(targetURL.getBytes(StandardCharsets.UTF_8)));
     }
+
+    public static String generateTracingHeaderValue(String previousValue, String apiId, String executionId) {
+
+        if (StringUtils.isNotBlank(previousValue)) {
+            previousValue = StringUtils.appendIfMissing(previousValue, ";");
+        }
+        return String.format("%s%s/%s/%s;", previousValue, K2Instrumentator.APPLICATION_UUID, apiId, executionId);
+
+//        StringBuilder value = new StringBuilder(previousValue);
+//        if((AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getEnabled() && AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getIastScan().getEnabled())){
+//            value.append(K2Instrumentator.APPLICATION_UUID);
+//            value.append(':');
+//        }
+//        value.append(apiId);
+//        value.append(';');
+//        return value.toString();
+    }
 }

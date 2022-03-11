@@ -25,14 +25,15 @@ public class ThreadLocalOkHttpMap {
         return instance.get();
     }
 
-    public void create(Object ref, String args, String className, String sourceMethod, String executionId, long startTime, String methodName) {
+    public SSRFOperationalBean create(Object ref, String args, String className, String sourceMethod, String executionId, long startTime, String methodName) {
         if (StringUtils.isBlank(args)) {
-            return;
+            return null;
         }
         SSRFOperationalBean bean = new SSRFOperationalBean(args, className, sourceMethod, executionId, startTime, methodName);
         if (!operationalBeanMap.containsKey(ref)) {
             operationalBeanMap.put(ref, bean);
         }
+        return bean;
     }
 
     public SSRFOperationalBean get(Object ref) {

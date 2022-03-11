@@ -2,11 +2,15 @@ package com.k2cybersecurity.intcodeagent.models.javaagent;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.k2cybersecurity.instrumentator.os.OsVariablesInstance;
+import com.k2cybersecurity.instrumentator.utils.AgentUtils;
 import com.k2cybersecurity.intcodeagent.logging.IAgentConstants;
 import com.k2cybersecurity.intcodeagent.websocket.JsonConverter;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.json.simple.JSONObject;
 
+import java.io.File;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -16,6 +20,8 @@ public class HttpRequestBean {
 
     public static final String HTTP = "http";
     public static final String FORWARD_SLASH = "/";
+    public static final String SEPARATOR_SEMICOLON = ":K2:";
+    public static final String K2_HOME_TMP_CONST = "{{K2_HOME_TMP}}";
 
     private String body;
 
@@ -35,7 +41,7 @@ public class HttpRequestBean {
 
     private JSONObject headers;
 
-    private String k2RequestIdentifier;
+    private K2RequestIdentifier k2RequestIdentifierInstance;
 
     private Map<String, FileIntegrityBean> fileExist;
 
@@ -78,6 +84,7 @@ public class HttpRequestBean {
         this.protocol = HTTP;
         this.clientPort = StringUtils.EMPTY;
         this.parameterMap = new HashMap<>();
+        this.k2RequestIdentifierInstance = new K2RequestIdentifier();
     }
 
     public HttpRequestBean(HttpRequestBean servletInfo) {
@@ -98,7 +105,9 @@ public class HttpRequestBean {
         this.servletContextObject = servletInfo.servletContextObject;
         this.protocol = new String(servletInfo.protocol);
         this.clientPort = new String(servletInfo.clientPort);
-        this.k2RequestIdentifier = StringUtils.isNotBlank(servletInfo.k2RequestIdentifier) ? new String(servletInfo.k2RequestIdentifier) : null;
+        if (servletInfo.k2RequestIdentifierInstance != null) {
+            this.k2RequestIdentifierInstance = new K2RequestIdentifier(servletInfo.k2RequestIdentifierInstance);
+        }
     }
 
     public String getRawRequest() {
@@ -132,7 +141,48 @@ public class HttpRequestBean {
     public void setHeaders(JSONObject headers) {
         this.headers = headers;
         if (headers.containsKey(IAgentConstants.K_2_FUZZ_REQUEST_ID)) {
-            k2RequestIdentifier = (String) headers.get(IAgentConstants.K_2_FUZZ_REQUEST_ID);
+            parseK2IdentifierHeader((String) headers.get(IAgentConstants.K_2_FUZZ_REQUEST_ID));
+        }
+    }
+
+    private void parseK2IdentifierHeader(String requestHeaderVal) {
+        if (StringUtils.isBlank(requestHeaderVal)) {
+            k2RequestIdentifierInstance.setRaw(StringUtils.EMPTY);
+            return;
+        }
+        if (StringUtils.isNotBlank(requestHeaderVal)) {
+            k2RequestIdentifierInstance.setRaw(requestHeaderVal);
+            if (!(AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getEnabled()
+                    && AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getIastScan().getEnabled())) {
+                return;
+            }
+            String[] data = StringUtils.splitByWholeSeparator(requestHeaderVal, SEPARATOR_SEMICOLON);
+            if (data.length >= 5) {
+                k2RequestIdentifierInstance.setApiRecordId(data[0].trim());
+                k2RequestIdentifierInstance.setRefId(data[1].trim());
+                k2RequestIdentifierInstance.setRefValue(data[2].trim());
+                k2RequestIdentifierInstance.setNextStage(APIRecordStatus.valueOf(data[3].trim()));
+                k2RequestIdentifierInstance.setRecordIndex(Integer.parseInt(data[4].trim()));
+                k2RequestIdentifierInstance.setK2Request(true);
+                if (data.length >= 6 && StringUtils.isNotBlank(data[5])) {
+                    k2RequestIdentifierInstance.setRefKey(data[5].trim());
+                }
+                if (data.length >= 7) {
+                    for (int i = 6; i < data.length; i++) {
+                        String tmpFile = StringUtils.trim(data[i]);
+                        k2RequestIdentifierInstance.getTempFiles().add(tmpFile);
+                        try {
+                            tmpFile = StringUtils.replace(tmpFile, K2_HOME_TMP_CONST, OsVariablesInstance.getInstance().getOsVariables().getTmpDirectory());
+                            File fileToCreate = new File(tmpFile);
+                            if (fileToCreate.getParentFile() != null) {
+                                fileToCreate.getParentFile().mkdirs();
+                            }
+                            FileUtils.touch(fileToCreate);
+                        } catch (Throwable ignored) {
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -201,11 +251,15 @@ public class HttpRequestBean {
     }
 
     public String getK2RequestIdentifier() {
-        return k2RequestIdentifier;
+        return (k2RequestIdentifierInstance != null && StringUtils.isNotBlank(k2RequestIdentifierInstance.getRaw())) ? k2RequestIdentifierInstance.getRaw() : StringUtils.EMPTY;
+    }
+
+    public K2RequestIdentifier getK2RequestIdentifierInstance() {
+        return k2RequestIdentifierInstance;
     }
 
     public void setK2RequestIdentifier(String k2RequestIdentifier) {
-        this.k2RequestIdentifier = k2RequestIdentifier;
+        parseK2IdentifierHeader(k2RequestIdentifier);
     }
 
     @Override

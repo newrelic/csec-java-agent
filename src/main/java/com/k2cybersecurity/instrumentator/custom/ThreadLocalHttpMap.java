@@ -234,6 +234,7 @@ public class ThreadLocalHttpMap {
             processHeaders(headers, httpRequest);
 
             OutboundHttpSourceId sourceId = getInboundHttpSourceIdFromHeaders(headers);
+            ThreadLocalExecutionMap.getInstance().setTracingHeaderValue(getTraceHeader(headers));
 
             httpRequestBean.setHeaders(new JSONObject(headers));
 
@@ -313,6 +314,17 @@ public class ThreadLocalHttpMap {
             }
         }
         return sourceId;
+    }
+
+    private String getTraceHeader(Map<String, String> headers) {
+        String data = StringUtils.EMPTY;
+        if (headers.containsKey(IAgentConstants.K2_TRACING_HEADER) || headers.containsKey(IAgentConstants.K2_TRACING_HEADER.toLowerCase())) {
+            data = headers.get(IAgentConstants.K2_TRACING_HEADER);
+            if (StringUtils.isBlank(data)) {
+                data = headers.get(IAgentConstants.K2_TRACING_HEADER.toLowerCase());
+            }
+        }
+        return data;
     }
 
     public void processHeaders(Map<String, String> headers, Object httpRequest) {
