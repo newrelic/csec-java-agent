@@ -60,6 +60,9 @@ public class Callbacks {
     }
 
     private static void placeAdditionalTemplateData() {
+        if (ThreadLocalJNDILock.getInstance().getBuf() == null) {
+            return;
+        }
         String baseData = StringUtils.substring(ThreadLocalJNDILock.getInstance().getBuf().toString(),
                 ThreadLocalJNDILock.getInstance().getStartPos(),
                 ThreadLocalJNDILock.getInstance().getEndPos());
