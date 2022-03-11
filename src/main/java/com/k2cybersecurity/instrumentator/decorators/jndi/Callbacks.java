@@ -7,6 +7,7 @@ import com.k2cybersecurity.intcodeagent.models.operationalbean.FileOperationalBe
 import com.k2cybersecurity.intcodeagent.models.operationalbean.SSRFOperationalBean;
 import org.apache.commons.lang3.StringUtils;
 
+import java.io.File;
 import java.lang.reflect.Method;
 import java.net.URI;
 import java.time.Instant;
@@ -80,7 +81,7 @@ public class Callbacks {
     private static void handleFileAccess(String reference, String className, String sourceString, String exectionId,
                                          String methodName) throws K2CyberSecurityException {
         placeAdditionalTemplateData();
-        EventDispatcher.dispatch(new FileOperationalBean(reference, className,
+        EventDispatcher.dispatch(new FileOperationalBean(new File(reference).getAbsolutePath(), className,
                         sourceString, exectionId, Instant.now().toEpochMilli(), false, methodName),
                 VulnerabilityCaseType.FILE_OPERATION);
 

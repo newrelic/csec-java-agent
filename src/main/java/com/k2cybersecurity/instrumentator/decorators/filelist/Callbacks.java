@@ -8,12 +8,12 @@ import com.k2cybersecurity.instrumentator.dispatcher.EventDispatcher;
 import com.k2cybersecurity.instrumentator.utils.AgentUtils;
 import com.k2cybersecurity.intcodeagent.models.javaagent.VulnerabilityCaseType;
 import com.k2cybersecurity.intcodeagent.models.operationalbean.FileOperationalBean;
+import org.apache.commons.lang3.StringUtils;
 
+import java.io.File;
 import java.time.Instant;
 
 public class Callbacks {
-
-    public static final String CLASS = ".class";
 
     public static void doOnEnter(String sourceString, String className, String methodName, Object obj, Object[] args,
                                  String exectionId) throws K2CyberSecurityException {
@@ -22,8 +22,8 @@ public class Callbacks {
         if (!ThreadLocalHttpMap.getInstance().isEmpty() && !ThreadLocalOperationLock.getInstance().isAcquired()) {
             try {
                 ThreadLocalOperationLock.getInstance().acquire();
-                if (args == null || args.length == 0) {
-                    FileOperationalBean fileOperationalBean = new FileOperationalBean(obj.toString(), className,
+                if ((args == null || args.length == 0) && obj != null && StringUtils.isNotBlank(obj.toString())) {
+                    FileOperationalBean fileOperationalBean = new FileOperationalBean(new File(obj.toString()).getAbsolutePath(), className,
                             sourceString, exectionId, Instant.now().toEpochMilli(), true, methodName);
                     EventDispatcher.dispatch(fileOperationalBean, VulnerabilityCaseType.FILE_OPERATION);
                 }

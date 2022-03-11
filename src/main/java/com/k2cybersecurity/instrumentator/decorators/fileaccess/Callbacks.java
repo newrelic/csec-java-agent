@@ -31,19 +31,20 @@ public class Callbacks {
         if (!ThreadLocalHttpMap.getInstance().isEmpty() && !ThreadLocalOperationLock.getInstance().isAcquired()) {
             try {
                 ThreadLocalOperationLock.getInstance().acquire();
+                String filePath = new File(args[0].toString()).getAbsolutePath();
                 if (StringUtils
-                        .isNotBlank(args[0].toString())) {
+                        .isNotBlank(filePath)) {
                     FileOperationalBean fileOperationalBean = null;
                     if (StringUtils.equals(methodName, GET_BOOLEAN_ATTRIBUTES)) {
-                        if (skipExistsEvent(args[0].toString())) {
+                        if (skipExistsEvent(filePath)) {
                             return;
                         }
-                        fileOperationalBean = new FileOperationalBean(args[0].toString(), className,
+                        fileOperationalBean = new FileOperationalBean(filePath, className,
                                 sourceString, exectionId, Instant.now().toEpochMilli(), true, methodName);
                     } else {
-                        fileOperationalBean = new FileOperationalBean(args[0].toString(), className,
+                        fileOperationalBean = new FileOperationalBean(filePath, className,
                                 sourceString, exectionId, Instant.now().toEpochMilli(), false, methodName);
-                        createEntryOfFileIntegrity(args[0].toString(), sourceString, className, methodName, exectionId);
+                        createEntryOfFileIntegrity(filePath, sourceString, className, methodName, exectionId);
                     }
                     EventDispatcher.dispatch(fileOperationalBean, VulnerabilityCaseType.FILE_OPERATION);
                 }
