@@ -1,7 +1,9 @@
 package com.k2cybersecurity.instrumentator.decorators.jndi;
 
 import com.k2cybersecurity.instrumentator.custom.*;
+import com.k2cybersecurity.instrumentator.dispatcher.DispatcherPool;
 import com.k2cybersecurity.instrumentator.dispatcher.EventDispatcher;
+import com.k2cybersecurity.instrumentator.utils.AgentUtils;
 import com.k2cybersecurity.intcodeagent.models.javaagent.VulnerabilityCaseType;
 import com.k2cybersecurity.intcodeagent.models.operationalbean.FileOperationalBean;
 import com.k2cybersecurity.intcodeagent.models.operationalbean.SSRFOperationalBean;
@@ -96,17 +98,38 @@ public class Callbacks {
 
     public static void doOnExit(String sourceString, String className, String methodName, Object obj, Object[] args,
                                 Object returnVal, String exectionId) {
-        if (!ThreadLocalHttpMap.getInstance().isEmpty()
+        if (!ThreadLocalHttpMap.getInstance().isEmpty() && !ThreadLocalOperationLock.getInstance().isAcquired()
                 && ThreadLocalJNDILock.getInstance().isAcquired(obj, sourceString, exectionId)) {
             ThreadLocalJNDILock.getInstance().release(obj, sourceString, exectionId);
+            try {
+                ThreadLocalOperationLock.getInstance().acquire();
+                if (AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getEnabled()
+                        && AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getIastScan().getEnabled()) {
+                    EventDispatcher.dispatchExitEvent(exectionId, VulnerabilityCaseType.HTTP_REQUEST);
+                }
+            } finally {
+                DispatcherPool.getInstance().getEid().remove(exectionId);
+                ThreadLocalOperationLock.getInstance().release();
+            }
         }
     }
 
     public static void doOnError(String sourceString, String className, String methodName, Object obj, Object[] args,
                                  Throwable error, String exectionId) throws Throwable {
-        if (!ThreadLocalHttpMap.getInstance().isEmpty()
+        if (!ThreadLocalHttpMap.getInstance().isEmpty() && !ThreadLocalOperationLock.getInstance().isAcquired()
                 && ThreadLocalJNDILock.getInstance().isAcquired(obj, sourceString, exectionId)) {
             ThreadLocalJNDILock.getInstance().release(obj, sourceString, exectionId);
+            try {
+                ThreadLocalOperationLock.getInstance().acquire();
+                if (AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getEnabled()
+                        && AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getIastScan().getEnabled()) {
+                    EventDispatcher.dispatchExitEvent(exectionId, VulnerabilityCaseType.HTTP_REQUEST);
+                }
+            } finally {
+                DispatcherPool.getInstance().getEid().remove(exectionId);
+                ThreadLocalOperationLock.getInstance().release();
+            }
         }
+
     }
 }
