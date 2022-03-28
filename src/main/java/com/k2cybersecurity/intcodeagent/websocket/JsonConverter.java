@@ -32,13 +32,13 @@ public class JsonConverter {
         Class<?> objClass = obj.getClass();
         Class<?> superClass = obj.getClass().getSuperclass();
 
+        List<Field> fields = new ArrayList<>();
+
         Field[] superFields = superClass.getDeclaredFields();
-        if (superFields.length > 0) {
-            jsonString.append(getFieldsAsJsonString(superFields, obj));
-            jsonString.append(STR_COMMA);
-        }
+        fields.addAll(Arrays.asList(superFields));
         Field[] objFields = objClass.getDeclaredFields();
-        jsonString.append(getFieldsAsJsonString(objFields, obj));
+        fields.addAll(Arrays.asList(objFields));
+        jsonString.append(getFieldsAsJsonString(fields, obj));
         jsonString.append(STR_END_CUELY_BRACKET);
         return jsonString.toString();
     }
@@ -51,13 +51,13 @@ public class JsonConverter {
         return jsonString.toString();
     }
 
-    private static String getFieldsAsJsonString(Field[] fields, Object obj) {
+    private static String getFieldsAsJsonString(List<Field> fields, Object obj) {
         StringBuilder jsonString = new StringBuilder();
-        for (int i = 0; i < fields.length; i++) {
+        for (int i = 0; i < fields.size(); i++) {
             Object value = null;
             try {
-                if (!Modifier.isStatic(fields[i].getModifiers()) || fields[i].getAnnotation(JsonInclude.class) != null) {
-                    Field field = fields[i];
+                if (!Modifier.isStatic(fields.get(i).getModifiers()) || fields.get(i).getAnnotation(JsonInclude.class) != null) {
+                    Field field = fields.get(i);
                     field.setAccessible(true);
                     if (field.getAnnotation(JsonIgnore.class) != null) {
                         continue;
