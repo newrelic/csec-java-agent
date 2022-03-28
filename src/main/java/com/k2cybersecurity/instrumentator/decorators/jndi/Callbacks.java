@@ -118,13 +118,9 @@ public class Callbacks {
                                  Throwable error, String exectionId) throws Throwable {
         if (!ThreadLocalHttpMap.getInstance().isEmpty() && !ThreadLocalOperationLock.getInstance().isAcquired()
                 && ThreadLocalJNDILock.getInstance().isAcquired(obj, sourceString, exectionId)) {
-            ThreadLocalJNDILock.getInstance().release(obj, sourceString, exectionId);
             try {
                 ThreadLocalOperationLock.getInstance().acquire();
-                if (AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getEnabled()
-                        && AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getIastScan().getEnabled()) {
-                    EventDispatcher.dispatchExitEvent(exectionId, VulnerabilityCaseType.HTTP_REQUEST);
-                }
+                ThreadLocalJNDILock.getInstance().release(obj, sourceString, exectionId);
             } finally {
                 DispatcherPool.getInstance().getEid().remove(exectionId);
                 ThreadLocalOperationLock.getInstance().release();
