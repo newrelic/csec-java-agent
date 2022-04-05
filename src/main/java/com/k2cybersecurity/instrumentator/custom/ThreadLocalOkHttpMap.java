@@ -45,6 +45,11 @@ public class ThreadLocalOkHttpMap {
         return null;
     }
 
+    public void put(Object ref, SSRFOperationalBean operationalBean) {
+        operationalBeanMap.put(ref, operationalBean);
+    }
+
+
     public boolean clear(Object ref) {
         return operationalBeanMap.remove(ref) != null;
     }

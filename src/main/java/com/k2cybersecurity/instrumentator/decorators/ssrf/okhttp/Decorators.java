@@ -16,7 +16,7 @@ public class Decorators {
 //	private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
 
         @Advice.OnMethodExit()
-        public static void exit(@Advice.Origin String signature, @Advice.Origin("#t") String className, @Advice.Origin("#m") String methodName, @Advice.AllArguments Object[] args, @Advice.This Object thisObject) throws Throwable {
+        public static void exit(@Advice.Origin String signature, @Advice.Origin("#t") String className, @Advice.Origin("#m") String methodName, @Advice.AllArguments Object[] args, @Advice.This Object thisObject, @Advice.Local("k2execId") String eId) throws Throwable {
             try {
                 if (!AgentUtils.getInstance().isAgentActive() || ThreadLocalTransformationLock.getInstance().isAcquired()) {
                     return;
@@ -25,8 +25,7 @@ public class Decorators {
                 if (StringUtils.startsWith(threadName, "K2-")) {
                     return;
                 }
-                String executionId = ExecutionIDGenerator.getExecutionId();
-                Callbacks.doOnExit(signature, className, methodName, thisObject, args, null, executionId);
+                Callbacks.doOnExit(signature, className, methodName, thisObject, args, null, eId);
             } catch (Throwable e) {
                 if (e instanceof K2CyberSecurityException) {
                     e.printStackTrace();
@@ -167,7 +166,7 @@ public class Decorators {
 //	private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
 
         @Advice.OnMethodEnter
-        public static Object enter(@Advice.Origin String signature, @Advice.Origin("#t") String className, @Advice.Origin("#m") String methodName, @Advice.AllArguments(readOnly = false, typing = Assigner.Typing.DYNAMIC) Object[] args) throws Throwable {
+        public static Object enter(@Advice.Origin String signature, @Advice.Origin("#t") String className, @Advice.Origin("#m") String methodName, @Advice.AllArguments(readOnly = false, typing = Assigner.Typing.DYNAMIC) Object[] args, @Advice.Local("k2execId") String eId) throws Throwable {
             try {
                 if (!AgentUtils.getInstance().isAgentActive() || ThreadLocalTransformationLock.getInstance().isAcquired()) {
                     return null;
@@ -177,8 +176,9 @@ public class Decorators {
                     return null;
                 }
                 String executionId = ExecutionIDGenerator.getExecutionId();
+                eId = new String(executionId);
                 Object[] argsCopy = Arrays.copyOf(args, args.length);
-                Callbacks.doOnEnter(signature, className, methodName, null, argsCopy, executionId);
+                Callbacks.doOnEnter(signature, className, methodName, null, argsCopy, eId);
                 args = argsCopy;
 
             } catch (Throwable e) {

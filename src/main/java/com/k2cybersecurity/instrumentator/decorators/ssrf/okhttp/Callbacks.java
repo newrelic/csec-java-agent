@@ -38,31 +38,28 @@ public class Callbacks {
                     }
                 } else if (StringUtils.equals(methodName, IAgentConstants.INIT) && args != null && args.length > 1
                         && args[1] != null) {
-                    try {
-                        Method httpUrl = args[1].getClass().getMethod("httpUrl");
-                        httpUrl.setAccessible(true);
-                        String url = httpUrl.invoke(args[1]).toString();
+                    Method httpUrl = args[1].getClass().getMethod("httpUrl");
+                    httpUrl.setAccessible(true);
+                    String url = httpUrl.invoke(args[1]).toString();
 
-                        Method newBuilder = args[1].getClass().getMethod("newBuilder");
-                        newBuilder.setAccessible(true);
-                        Object builder = newBuilder.invoke(args[1], null);
-                        Method setHeader = builder.getClass().getMethod("header", String.class, String.class);
-                        setHeader.setAccessible(true);
-                        builder = setHeader.invoke(builder, IAgentConstants.K2_API_CALLER, CallbackUtils.generateApiCallerHeaderValue(url));
-                        if (StringUtils.isNotBlank(ThreadLocalExecutionMap.getInstance().getHttpRequestBean().getK2RequestIdentifier())) {
-                            builder = setHeader.invoke(builder, IAgentConstants.K2_FUZZ_REQUEST_ID, ThreadLocalExecutionMap.getInstance().getHttpRequestBean().getK2RequestIdentifier());
-                        }
-                        SSRFOperationalBean operationalBean = ThreadLocalOkHttpMap.getInstance().create(obj, url, className, sourceString, exectionId,
-                                Instant.now().toEpochMilli(), methodName);
-
-                        AgentUtils.preProcessStackTrace(operationalBean, VulnerabilityCaseType.HTTP_REQUEST);
-                        builder = setHeader.invoke(builder, IAgentConstants.K2_TRACING_HEADER, CallbackUtils.generateTracingHeaderValue(ThreadLocalExecutionMap.getInstance().getTracingHeaderValue(), operationalBean.getApiID(), exectionId));
-
-                        Method build = builder.getClass().getMethod("build", null);
-                        build.setAccessible(true);
-                        args[1] = build.invoke(builder, null);
-                    } catch (Exception e) {
+                    Method newBuilder = args[1].getClass().getMethod("newBuilder");
+                    newBuilder.setAccessible(true);
+                    Object builder = newBuilder.invoke(args[1], null);
+                    Method setHeader = builder.getClass().getMethod("header", String.class, String.class);
+                    setHeader.setAccessible(true);
+                    builder = setHeader.invoke(builder, IAgentConstants.K2_API_CALLER, CallbackUtils.generateApiCallerHeaderValue(url));
+                    if (StringUtils.isNotBlank(ThreadLocalExecutionMap.getInstance().getHttpRequestBean().getK2RequestIdentifier())) {
+                        builder = setHeader.invoke(builder, IAgentConstants.K2_FUZZ_REQUEST_ID, ThreadLocalExecutionMap.getInstance().getHttpRequestBean().getK2RequestIdentifier());
                     }
+                    SSRFOperationalBean operationalBean = ThreadLocalOkHttpMap.getInstance().create(exectionId, url, className, sourceString, exectionId,
+                            Instant.now().toEpochMilli(), methodName);
+
+                    AgentUtils.preProcessStackTrace(operationalBean, VulnerabilityCaseType.HTTP_REQUEST);
+                    builder = setHeader.invoke(builder, IAgentConstants.K2_TRACING_HEADER, CallbackUtils.generateTracingHeaderValue(ThreadLocalExecutionMap.getInstance().getTracingHeaderValue(), operationalBean.getApiID(), exectionId));
+
+                    Method build = builder.getClass().getMethod("build", null);
+                    build.setAccessible(true);
+                    args[1] = build.invoke(builder, null);
 
                 }
             } finally {
@@ -85,14 +82,16 @@ public class Callbacks {
                     String url = httpUrl.invoke(args[1]).toString();
 
 //					System.out.println(String.format("Exit Value : Ok http SSRF : %s : %s : %s on onject : %s", className, methodName, url, obj));
-                    ThreadLocalOkHttpMap.getInstance().get(obj).setArg(url);
+                    SSRFOperationalBean ssrfOperationalBean = ThreadLocalOkHttpMap.getInstance().get(exectionId);
+                    ssrfOperationalBean.setArg(url);
+                    ThreadLocalOkHttpMap.getInstance().put(obj, ssrfOperationalBean);
+                    ThreadLocalOkHttpMap.getInstance().clear(exectionId);
 
-                }
-                if (AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getEnabled()
+                } else if (AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getEnabled()
                         && AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getIastScan().getEnabled()) {
                     EventDispatcher.dispatchExitEvent(exectionId, VulnerabilityCaseType.HTTP_REQUEST);
                 }
-//				
+//
             } finally {
                 DispatcherPool.getInstance().getEid().remove(exectionId);
                 ThreadLocalOperationLock.getInstance().release();

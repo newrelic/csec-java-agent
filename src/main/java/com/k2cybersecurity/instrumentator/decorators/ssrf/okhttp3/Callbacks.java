@@ -50,7 +50,7 @@ public class Callbacks {
                         if (StringUtils.isNotBlank(ThreadLocalExecutionMap.getInstance().getHttpRequestBean().getK2RequestIdentifier())) {
                             builder = setHeader.invoke(builder, IAgentConstants.K2_FUZZ_REQUEST_ID, ThreadLocalExecutionMap.getInstance().getHttpRequestBean().getK2RequestIdentifier());
                         }
-                        SSRFOperationalBean operationalBean = ThreadLocalOkHttpMap.getInstance().create(obj, urlString, className, sourceString, exectionId,
+                        SSRFOperationalBean operationalBean = ThreadLocalOkHttpMap.getInstance().create(exectionId, urlString, className, sourceString, exectionId,
                                 Instant.now().toEpochMilli(), methodName);
 
                         AgentUtils.preProcessStackTrace(operationalBean, VulnerabilityCaseType.HTTP_REQUEST);
@@ -85,10 +85,11 @@ public class Callbacks {
                     String urlString = url.invoke(args[0]).toString();
 
 //					System.out.println(String.format("Exit Value : Ok http3 SSRF : %s : %s : %s on onject : %s", className, methodName, urlString, obj));
-                    ThreadLocalOkHttpMap.getInstance().get(obj).setArg(urlString);
-                }
-
-                if (AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getEnabled()
+                    SSRFOperationalBean ssrfOperationalBean = ThreadLocalOkHttpMap.getInstance().get(exectionId);
+                    ssrfOperationalBean.setArg(urlString);
+                    ThreadLocalOkHttpMap.getInstance().put(returnVal, ssrfOperationalBean);
+                    ThreadLocalOkHttpMap.getInstance().clear(exectionId);
+                } else if (AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getEnabled()
                         && AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getIastScan().getEnabled()) {
                     EventDispatcher.dispatchExitEvent(exectionId, VulnerabilityCaseType.HTTP_REQUEST);
                 }
