@@ -171,7 +171,7 @@ public class Hooks {
         TYPE_BASED_HOOKS.put("org.apache.http.nio.protocol.HttpAsyncRequestProducer", Collections.singletonList("generateRequest"));
         NAME_BASED_HOOKS.put("org.apache.commons.httpclient.HttpClient", Collections.singletonList("executeMethod"));
         NAME_BASED_HOOKS.put("com.google.api.client.http.HttpRequest", Arrays.asList("execute", "executeAsync"));
-        TYPE_BASED_HOOKS.put("java.net.URLConnection", Collections.singletonList("connect"));
+        TYPE_BASED_HOOKS.put("java.net.URLConnection", Arrays.asList("connect", "getInputStream", "getOutputStream"));
         NAME_BASED_HOOKS.put(StringUtils.replace("com@squareup@okhttp@Call", "@", "."), Arrays.asList("execute", null));
         NAME_BASED_HOOKS.put(StringUtils.replace("com@squareup@okhttp@Call", "@", ".") + "$AsyncCall", Collections.singletonList("execute"));
 
@@ -544,6 +544,8 @@ public class Hooks {
 
         // SSRF
         DECORATOR_ENTRY.put("java.net.URLConnection.connect", "com.k2cybersecurity.instrumentator.decorators.ssrf");
+        DECORATOR_ENTRY.put("java.net.URLConnection.getInputStream", "com.k2cybersecurity.instrumentator.decorators.ssrf");
+        DECORATOR_ENTRY.put("java.net.URLConnection.getOutputStream", "com.k2cybersecurity.instrumentator.decorators.ssrf");
 
         DECORATOR_ENTRY.put("akka.http.scaladsl.HttpExt.singleRequest", "com.k2cybersecurity.instrumentator.decorators.ssrf.akkahttp10");
         DECORATOR_ENTRY.put("akka.http.scaladsl.HttpExt.singleRequestImpl", "com.k2cybersecurity.instrumentator.decorators.ssrf.akkahttp10");
