@@ -47,7 +47,8 @@ public class Callbacks {
                         try {
                             URI url = new URI(reference);
                             if (StringUtils.equals("file", url.getScheme()) || StringUtils.isBlank(url.getScheme())) {
-                                handleFileAccess(url.getPath(), className, sourceString, exectionId, methodName);
+                                // TODO : Research required to ensure that a file access attack is possible via JNDI.
+//                                handleFileAccess(url.getPath(), className, sourceString, exectionId, methodName);
                             } else {
                                 handleSSRF(reference, className, sourceString, exectionId, methodName);
                             }
