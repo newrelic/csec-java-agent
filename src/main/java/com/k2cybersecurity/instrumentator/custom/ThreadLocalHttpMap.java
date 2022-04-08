@@ -306,8 +306,8 @@ public class ThreadLocalHttpMap {
             if (StringUtils.isBlank(data)) {
                 data = headers.get(IAgentConstants.K2_API_CALLER.toLowerCase());
             }
-            headers.remove(IAgentConstants.K2_API_CALLER);
-            headers.remove(IAgentConstants.K2_API_CALLER.toLowerCase());
+//            headers.remove(IAgentConstants.K2_API_CALLER);
+//            headers.remove(IAgentConstants.K2_API_CALLER.toLowerCase());
             String[] components = StringUtils.split(data, SEPARATOR_CHARS_DOUBLE_PIPE);
             if (components != null && components.length == 4) {
                 sourceId = new OutboundHttpSourceId(components[0], components[1], components[2], new String(Base64.getDecoder().decode(components[3]), StandardCharsets.UTF_8));
