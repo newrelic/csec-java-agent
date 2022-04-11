@@ -46,14 +46,23 @@ public class Callbacks {
                     for (String reference : references) {
                         try {
                             URI url = new URI(reference);
-                            if (StringUtils.equals("file", url.getScheme()) || StringUtils.isBlank(url.getScheme())) {
-                                // TODO : Research required to ensure that a file access attack is possible via JNDI.
-//                                handleFileAccess(url.getPath(), className, sourceString, exectionId, methodName);
-                            } else {
+//                            if (StringUtils.equals("file", url.getScheme()) || StringUtils.isBlank(url.getScheme())) {
+//                                // TODO : Research required to ensure that a file access attack is possible via JNDI.
+////                                handleFileAccess(url.getPath(), className, sourceString, exectionId, methodName);
+//                            } else {
+//                                handleSSRF(reference, className, sourceString, exectionId, methodName);
+//                            }
+
+                            if (StringUtils.isNotBlank(url.getScheme()) && (
+                                    StringUtils.equalsIgnoreCase(url.getScheme(), "ldap")
+                                            || StringUtils.equalsIgnoreCase(url.getScheme(), "rmi")
+                                            || StringUtils.equalsIgnoreCase(url.getScheme(), "dns")
+                                            || StringUtils.equalsIgnoreCase(url.getScheme(), "iiop")
+                            )) {
                                 handleSSRF(reference, className, sourceString, exectionId, methodName);
                             }
                         } catch (Exception e) {
-                            handleFileAccess(reference, className, sourceString, exectionId, methodName);
+//                            handleFileAccess(reference, className, sourceString, exectionId, methodName);
                         }
                     }
                 }
