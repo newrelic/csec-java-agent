@@ -22,14 +22,14 @@ public class Callbacks {
             try {
                 ThreadLocalOperationLock.getInstance().acquire();
                 if (ThreadLocalHttpMap.getInstance().getHttpRequest() != null) {
-                    ThreadLocalSSRFLock.getInstance().acquire(obj, sourceString, exectionId);
                     Method getURL = obj.getClass().getMethod("getURL");
                     getURL.setAccessible(true);
                     URL url = (URL) getURL.invoke(obj);
                     String urlString = url.toString();
 
-                    ThreadLocalSSRFLock.getInstance().setUrl(urlString);
                     if (!StringUtils.equalsAnyIgnoreCase(url.getProtocol(), "file", "jar", "war")) {
+                        ThreadLocalSSRFLock.getInstance().acquire(obj, sourceString, exectionId);
+                        ThreadLocalSSRFLock.getInstance().setUrl(urlString);
                         addHeader(IAgentConstants.K2_API_CALLER, CallbackUtils.generateApiCallerHeaderValue(urlString), obj);
                         if (StringUtils.isNotBlank(ThreadLocalExecutionMap.getInstance().getHttpRequestBean().getK2RequestIdentifier())) {
                             addHeader(IAgentConstants.K2_FUZZ_REQUEST_ID, ThreadLocalExecutionMap.getInstance().getHttpRequestBean().getK2RequestIdentifier(), obj);
