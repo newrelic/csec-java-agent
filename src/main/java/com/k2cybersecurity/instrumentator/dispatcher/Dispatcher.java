@@ -679,6 +679,9 @@ public class Dispatcher implements Runnable {
         JSONArray params = new JSONArray();
         params.add(ssrfOperationalBean.getArg());
         eventBean.setParameters(params);
+        if (ssrfOperationalBean.isJNDILookup()) {
+            eventBean.setEventCategory("JNDILookup");
+        }
         return eventBean;
     }
 

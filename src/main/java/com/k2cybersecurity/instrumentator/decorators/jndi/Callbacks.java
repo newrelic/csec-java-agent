@@ -103,7 +103,7 @@ public class Callbacks {
                                    String methodName) throws K2CyberSecurityException {
         placeAdditionalTemplateData();
         EventDispatcher.dispatch(new SSRFOperationalBean(reference, className, sourceString, exectionId,
-                Instant.now().toEpochMilli(), methodName), VulnerabilityCaseType.HTTP_REQUEST);
+                Instant.now().toEpochMilli(), methodName, true), VulnerabilityCaseType.HTTP_REQUEST);
     }
 
     public static void doOnExit(String sourceString, String className, String methodName, Object obj, Object[] args,

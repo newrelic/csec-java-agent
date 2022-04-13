@@ -7,9 +7,25 @@ public class SSRFOperationalBean extends AbstractOperationalBean {
 
     private String arg = StringUtils.EMPTY;
 
+    private boolean isJNDILookup = false;
+
     public SSRFOperationalBean(String apiCallArg, String className, String sourceMethod, String executionId, long startTime, String methodName) {
         super(className, sourceMethod, executionId, startTime, methodName);
         this.arg = apiCallArg;
+    }
+
+    public SSRFOperationalBean(String apiCallArg, String className, String sourceMethod, String executionId, long startTime, String methodName, boolean isJNDILookup) {
+        super(className, sourceMethod, executionId, startTime, methodName);
+        this.arg = apiCallArg;
+        this.isJNDILookup = isJNDILookup;
+    }
+
+    public boolean isJNDILookup() {
+        return isJNDILookup;
+    }
+
+    public void setJNDILookup(boolean JNDILookup) {
+        isJNDILookup = JNDILookup;
     }
 
     @Override
