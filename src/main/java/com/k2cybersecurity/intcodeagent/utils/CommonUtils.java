@@ -93,6 +93,7 @@ public class CommonUtils {
     public static void writePolicyToFile() {
         try {
             ObjectMapper mapper = new ObjectMapper(new YAMLFactory().disable(YAMLGenerator.Feature.WRITE_DOC_START_MARKER));
+            CommonUtils.forceMkdirs(AgentUtils.getInstance().getConfigLoadPath().getParentFile().toPath(), "rwxrwxrwx");
             FileUtils.touch(AgentUtils.getInstance().getConfigLoadPath());
             try {
                 AgentUtils.getInstance().getConfigLoadPath().setReadable(true, false);
