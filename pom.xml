@@ -4,7 +4,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.k2cybersecurity</groupId>
-    <artifactId>K2-JavaAgent</artifactId>
+    <artifactId>k2-java-agent</artifactId>
     <version>1.0.0</version>
     <name>K2-JavaAgent</name>
     <description>A configurable java agent to log programs running on the JVM</description>
@@ -144,6 +144,7 @@
         </dependency>
     </dependencies>
     <build>
+        <finalName>${artifactId}</finalName>
         <resources>
             <resource>
                 <directory>src/main/resources</directory>
@@ -227,7 +228,7 @@
                                     <addHeader>false</addHeader>
                                 </transformer>
                             </transformers>
-                            <finalName>k2-java-agent</finalName>
+                            <!--                            <finalName>k2-java-agent</finalName>-->
                             <relocations>
 
                                 <relocation>
