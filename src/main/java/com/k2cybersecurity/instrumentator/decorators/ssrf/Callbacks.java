@@ -25,8 +25,10 @@ public class Callbacks {
                     Method getURL = obj.getClass().getMethod("getURL");
                     getURL.setAccessible(true);
                     URL url = (URL) getURL.invoke(obj);
+                    if (url == null) {
+                        return;
+                    }
                     String urlString = url.toString();
-
                     if (!StringUtils.equalsAnyIgnoreCase(url.getProtocol(), "file", "jar", "war")) {
                         ThreadLocalSSRFLock.getInstance().acquire(obj, sourceString, exectionId);
                         ThreadLocalSSRFLock.getInstance().setUrl(urlString);
