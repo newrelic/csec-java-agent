@@ -152,10 +152,10 @@ public class CVEServiceMac extends CVEScan {
                 } catch (Throwable e) {
                 }
             }
-            CVEComponentsService.deleteAllComponents(osVariables.getTmpDirectory());
+            CVEComponentsService.deleteAllComponents(packageExtractedDirectory);
             logger.log(LogLevel.DEBUG, ICVEConstants.CVE_PACKAGE_DELETED, CVEServiceMac.class.getName());
             runStatus = true;
-            return;
+            FileUtils.cleanDirectory(new File(osVariables.getTmpDirectory()));
         } catch (InterruptedException e) {
             logger.log(LogLevel.ERROR, ERROR_PROCESS_TERMINATED, e, CVEServiceMac.class.getName());
         } catch (Throwable e) {

@@ -197,9 +197,8 @@ public class CVEComponentsService {
         return scanners;
     }
 
-    protected static void deleteAllComponents(String cveBaseDir) {
+    protected static void deleteAllComponents(File cveDir) {
         try {
-            File cveDir = new File(cveBaseDir);
             Files.walk(cveDir.toPath())
                     .sorted(Comparator.reverseOrder())
                     .forEach(path -> {
@@ -211,7 +210,7 @@ public class CVEComponentsService {
 
             logger.log(LogLevel.DEBUG, String.format("Deleted dir %s ", cveDir), CVEComponentsService.class.getName());
         } catch (Exception e) {
-            logger.log(LogLevel.ERROR, String.format("deletion of %s dir failed!", cveBaseDir), CVEComponentsService.class.getName());
+            logger.log(LogLevel.ERROR, String.format("deletion of %s dir failed!", cveDir), CVEComponentsService.class.getName());
         }
     }
 

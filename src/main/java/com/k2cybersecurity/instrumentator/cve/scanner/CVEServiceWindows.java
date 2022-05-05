@@ -149,10 +149,10 @@ public class CVEServiceWindows extends CVEScan {
                 } catch (Throwable e) {
                 }
             }
-            CVEComponentsService.deleteAllComponents(osVariables.getTmpDirectory());
+            CVEComponentsService.deleteAllComponents(extractedPackageDir);
             logger.log(LogLevel.DEBUG, ICVEConstants.CVE_PACKAGE_DELETED, CVEServiceWindows.class.getName());
             runStatus = true;
-            return;
+            FileUtils.cleanDirectory(new File(osVariables.getTmpDirectory()));
         } catch (InterruptedException e) {
             logger.log(LogLevel.ERROR, ERROR_PROCESS_TERMINATED, e, CVEServiceWindows.class.getName());
         } catch (Throwable e) {
