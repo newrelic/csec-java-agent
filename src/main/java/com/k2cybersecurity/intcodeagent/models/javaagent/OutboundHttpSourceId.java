@@ -21,6 +21,13 @@ public class OutboundHttpSourceId {
         this.target = target;
     }
 
+    public OutboundHttpSourceId(OutboundHttpSourceId outboundHttpSourceId) {
+        this.applicationUUID = outboundHttpSourceId.applicationUUID;
+        this.contextPath = outboundHttpSourceId.contextPath;
+        this.serverPort = outboundHttpSourceId.serverPort;
+        this.target = outboundHttpSourceId.target;
+    }
+
     public String getApplicationUUID() {
         return applicationUUID;
     }

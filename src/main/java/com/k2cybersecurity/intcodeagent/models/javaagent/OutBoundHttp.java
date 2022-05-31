@@ -44,6 +44,9 @@ public class OutBoundHttp {
         this.sourcePort = outBoundHttp.sourcePort;
         this.direction = outBoundHttp.direction;
         this.count = new AtomicInteger(outBoundHttp.count.get());
+        if (outBoundHttp.sourceId != null) {
+            this.sourceId = new OutboundHttpSourceId(outBoundHttp.sourceId);
+        }
         this.hashCode = Objects.hash(url, direction, sourceIp, destinationIp, sourceId);
     }
 
