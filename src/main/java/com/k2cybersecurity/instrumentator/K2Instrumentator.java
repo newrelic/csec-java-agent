@@ -45,7 +45,7 @@ public class K2Instrumentator {
     private static final String AGENT_INIT_SUCCESSFUL = "[STEP-2][PROTECTION][COMPLETE] Protecting new process with PID %s and UUID %s : %s.";
 
     private static final String INIT_STARTED_AGENT_ATTACHED = "[STEP-2][PROTECTION][BEGIN] K2 Java collector attached to process: PID = %s, with generated applicationUID = %s by %s attachment";
-    public static final String DEFAUL_GROUP_NAME = "IAST";
+    public static final String DEFAULT_GROUP_NAME = "IAST";
 
     public static Integer VMPID;
     public static final String APPLICATION_UUID = UUID.randomUUID().toString();
@@ -101,7 +101,7 @@ public class K2Instrumentator {
             );
             String groupName = System.getenv("K2_GROUP_NAME");
             if (StringUtils.isBlank(groupName)) {
-                groupName = DEFAUL_GROUP_NAME;
+                groupName = DEFAULT_GROUP_NAME;
 //                logger.log(LogLevel.ERROR, "Incomplete startup env parameters provided: Missing K2_GROUP_NAME", K2Instrumentator.class.getName());
 //                System.err.println("[K2 Java Collector] Incomplete startup env parameters provided : Missing K2_GROUP_NAME. Collector exiting.");
 //                return false;

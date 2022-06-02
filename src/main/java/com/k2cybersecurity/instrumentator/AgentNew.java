@@ -45,8 +45,8 @@ public class AgentNew {
             return;
         }
         if (StringUtils.isBlank(System.getenv("K2_GROUP_NAME"))) {
-            System.err.println("[K2-JA] Process attachment aborted!!! K2_GROUP_NAME is not set.");
-            return;
+            System.err.println("[K2-JA] K2_GROUP_NAME is not set. Falling back to IAST");
+//            return;
         }
 
         System.setProperty("org.slf4j.simpleLogger.defaultLogLevel", "off");
