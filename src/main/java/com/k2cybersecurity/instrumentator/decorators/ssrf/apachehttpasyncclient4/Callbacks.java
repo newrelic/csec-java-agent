@@ -53,6 +53,12 @@ public class Callbacks {
                         getUri.setAccessible(true);
                         String uriFromRequest = (String) getUri.invoke(requestLine);
 
+                        if (!new URI(uriFromRequest).isAbsolute()) {
+                            Method toURI = args[0].getClass().getMethod("toURI");
+                            toURI.setAccessible(true);
+                            String httpHost = (String) toURI.invoke(args[0]);
+                            uriFromRequest = new URI(StringUtils.appendIfMissing(httpHost, "/") + uriFromRequest).toString();
+                        }
                         addHeaderHttpHost(IAgentConstants.K2_API_CALLER, CallbackUtils.generateApiCallerHeaderValue(uriFromRequest), args[1]);
                         if (StringUtils.isNotBlank(ThreadLocalExecutionMap.getInstance().getHttpRequestBean().getK2RequestIdentifier())) {
                             addHeaderHttpHost(IAgentConstants.K2_FUZZ_REQUEST_ID, ThreadLocalExecutionMap.getInstance().getHttpRequestBean().getK2RequestIdentifier(), args[1]);
