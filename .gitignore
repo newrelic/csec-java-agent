@@ -21,3 +21,4 @@ logs/
 *.iml
 !.idea/runConfigurations
 src/main/java/com/k2cybersecurity/instrumentator/Testing.java
+dependency-reduced-pom.xml
