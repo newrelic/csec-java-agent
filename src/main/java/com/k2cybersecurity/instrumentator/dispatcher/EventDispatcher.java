@@ -162,7 +162,7 @@ public class EventDispatcher {
 //		printDispatch(toBeSentBeans);
 
         String currentGenericServletMethodName = ThreadLocalHTTPDoFilterMap.getInstance().getCurrentGenericServletMethodName();
-        Object currentGenericServletInstance = ThreadLocalHTTPDoFilterMap.getInstance().getCurrentGenericServletInstance();
+        Class<?> currentGenericServletInstance = ThreadLocalHTTPDoFilterMap.getInstance().getCurrentGenericServletInstance();
         StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
         UserClassEntity userClassEntity = AgentUtils.getInstance().detectUserClass(stackTrace,
                 currentGenericServletInstance,
@@ -212,7 +212,7 @@ public class EventDispatcher {
         if (!httpRequestBean.isEmpty()) {
 
             String currentGenericServletMethodName = ThreadLocalHTTPDoFilterMap.getInstance().getCurrentGenericServletMethodName();
-            Object currentGenericServletInstance = ThreadLocalHTTPDoFilterMap.getInstance().getCurrentGenericServletInstance();
+            Class<?> currentGenericServletInstance = ThreadLocalHTTPDoFilterMap.getInstance().getCurrentGenericServletInstance();
             StackTraceElement[] stackTrace;
             if (agentMetaData.getServiceTrace() == null) {
                 stackTrace = Thread.currentThread().getStackTrace();

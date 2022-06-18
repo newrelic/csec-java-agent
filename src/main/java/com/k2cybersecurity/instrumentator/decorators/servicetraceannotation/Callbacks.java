@@ -9,7 +9,7 @@ public class Callbacks {
 
     public static final String SEPARATOR_COLON = ":";
 
-    public static void doOnEnter(String sourceString, String className, String methodName, Object obj, Object[] args,
+    public static void doOnEnter(String sourceString, Class<?> classRef, String methodName, Object obj, Object[] args,
                                  String exectionId) throws K2CyberSecurityException {
 
         if (!ThreadLocalOperationLock.getInstance().isAcquired()) {
@@ -18,7 +18,7 @@ public class Callbacks {
 //				System.out.println("JSP trace : " +exectionId + " : " + Arrays.asList(Thread.currentThread().getStackTrace()));
                 if (!ThreadLocalHTTPDoFilterMap.getInstance().isUserCodeEncountered()) {
                     ThreadLocalHTTPDoFilterMap.getInstance().setUserCodeEncountered(true);
-                    ThreadLocalHTTPDoFilterMap.getInstance().setCurrentGenericServletInstance(obj);
+                    ThreadLocalHTTPDoFilterMap.getInstance().setCurrentGenericServletInstance(classRef);
                     ThreadLocalHTTPDoFilterMap.getInstance().setCurrentGenericServletMethodName(methodName);
                     ThreadLocalExecutionMap.getInstance().getMetaData().setServiceTrace(Thread.currentThread().getStackTrace());
                 }
@@ -30,7 +30,7 @@ public class Callbacks {
         }
     }
 
-    public static void doOnExit(String sourceString, String className, String methodName, Object obj, Object[] args,
+    public static void doOnExit(String sourceString, Class<?> classRef, String methodName, Object obj, Object[] args,
                                 Object returnVal, String exectionId) throws K2CyberSecurityException {
 
 //        System.out.println("OnExit Initial:" + sourceString + " - this : " + obj + " - return : " + returnVal + " - eid : " + exectionId);
@@ -47,7 +47,7 @@ public class Callbacks {
 
     }
 
-    public static void doOnError(String sourceString, String className, String methodName, Object obj, Object[] args,
+    public static void doOnError(String sourceString, Class<?> classRef, String methodName, Object obj, Object[] args,
                                  Throwable error, String exectionId) throws Throwable {
 //        System.out.println("OnError Initial:" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj.hashCode()	+ " - error : " + error + " - eid : " + exectionId);
 

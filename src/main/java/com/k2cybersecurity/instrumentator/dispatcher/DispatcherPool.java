@@ -112,7 +112,7 @@ public class DispatcherPool {
 
     public void dispatchEvent(HttpRequestBean httpRequestBean, AgentMetaData metaData,
                               List<AbstractOperationalBean> event, VulnerabilityCaseType vulnerabilityCaseType, String currentGenericServletMethodName,
-                              Object currentGenericServletInstance,
+                              Class<?> currentGenericServletInstance,
                               StackTraceElement[] stackTrace, UserClassEntity userClassEntity) {
         if (executor.isShutdown()) {
             return;
@@ -146,7 +146,7 @@ public class DispatcherPool {
      */
     public void dispatchEventRXSS(HttpRequestBean httpRequestBean, AgentMetaData agentMetaData, String sourceString, String exectionId,
                                   long startTime, VulnerabilityCaseType reflectedXss, String currentGenericServletMethodName,
-                                  Object currentGenericServletInstance,
+                                  Class<?> currentGenericServletInstance,
                                   StackTraceElement[] stackTrace, UserClassEntity userClassEntity, String apiID) {
         if (executor.isShutdown()) {
             return;

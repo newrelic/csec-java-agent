@@ -22,7 +22,7 @@ public abstract class AbstractOperationalBean {
     private long blockingEndTime;
 
     @JsonIgnore
-    private Object currentGenericServletInstance;
+    private Class<?> currentGenericServletInstance;
 
     private String currentGenericServletMethodName = StringUtils.EMPTY;
 
@@ -116,12 +116,12 @@ public abstract class AbstractOperationalBean {
     }
 
     @JsonIgnore
-    public Object getCurrentGenericServletInstance() {
+    public Class<?> getCurrentGenericServletInstance() {
         return currentGenericServletInstance;
     }
 
     @JsonIgnore
-    public void setCurrentGenericServletInstance(Object currentGenericServletInstance) {
+    public void setCurrentGenericServletInstance(Class<?> currentGenericServletInstance) {
         this.currentGenericServletInstance = currentGenericServletInstance;
     }
 

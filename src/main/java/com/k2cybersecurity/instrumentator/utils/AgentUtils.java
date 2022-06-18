@@ -418,7 +418,7 @@ public class AgentUtils {
         }
     }
 
-    public UserClassEntity detectUserClass(StackTraceElement[] trace, Object currentGenericServletInstance,
+    public UserClassEntity detectUserClass(StackTraceElement[] trace, Class<?> currentGenericServletInstance,
                                            String currentGenericServletMethodName, String fakeClassName, String fakeMethodName) {
 
         StackTraceElement userClass = null;
@@ -430,7 +430,7 @@ public class AgentUtils {
 //		logger.log(LogLevel.INFO, "Trace: " + Arrays.asList(trace),
 //				AgentUtils.class.getName());
         if (currentGenericServletInstance != null) {
-            Class currClass = currentGenericServletInstance.getClass();
+            Class<?> currClass = currentGenericServletInstance;
             superClasses.add(currClass.getName());
             while (currClass.getSuperclass() != null) {
                 currClass = currClass.getSuperclass();
@@ -503,7 +503,7 @@ public class AgentUtils {
         return userClassEntity;
     }
 
-    public String detectDeployedApplicationPath(String userClassName, Object currentGenericServletInstance,
+    public String detectDeployedApplicationPath(String userClassName, Class<?> currentGenericServletInstance,
                                                 String methodName) {
         String appPath = StringUtils.EMPTY;
         try {
@@ -531,7 +531,7 @@ public class AgentUtils {
                             AgentUtils.class.getName());
                     try {
                         cls = Class.forName(userClassName, false,
-                                currentGenericServletInstance.getClass().getClassLoader());
+                                currentGenericServletInstance.getClassLoader());
                     } catch (ClassNotFoundException e) {
                         cls = Class.forName(userClassName, false, null);
                     }

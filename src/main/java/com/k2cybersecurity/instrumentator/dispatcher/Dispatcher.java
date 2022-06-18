@@ -67,7 +67,7 @@ public class Dispatcher implements Runnable {
     private VulnerabilityCaseType vulnerabilityCaseType;
     private Map<String, Object> extraInfo = new HashMap<String, Object>();
     private boolean isGeneratedByBuddy = false;
-    private Object currentGenericServletInstance;
+    private Class<?> currentGenericServletInstance;
     private String currentGenericServletMethodName = StringUtils.EMPTY;
     private UserClassEntity userClassEntity;
     private String apiID = StringUtils.EMPTY;
@@ -92,7 +92,7 @@ public class Dispatcher implements Runnable {
 
     public Dispatcher(HttpRequestBean httpRequestBean, AgentMetaData metaData, Object event,
                       VulnerabilityCaseType vulnerabilityCaseType, String currentGenericServletMethodName,
-                      Object currentGenericServletInstance,
+                      Class<?> currentGenericServletInstance,
                       StackTraceElement[] stackTrace, UserClassEntity userClassEntity) {
         this.httpRequestBean = httpRequestBean;
         this.metaData = metaData;
@@ -107,7 +107,7 @@ public class Dispatcher implements Runnable {
 
     public Dispatcher(HttpRequestBean httpRequestBean, AgentMetaData agentMetaData, VulnerabilityCaseType reflectedXss,
                       String sourceString, String exectionId, long startTime, String currentGenericServletMethodName,
-                      Object currentGenericServletInstance,
+                      Class<?> currentGenericServletInstance,
                       StackTraceElement[] stackTrace, UserClassEntity userClassEntity, String apiID) {
         this.httpRequestBean = httpRequestBean;
         this.vulnerabilityCaseType = reflectedXss;

@@ -7,7 +7,7 @@ import org.apache.commons.lang3.StringUtils;
 public class ThreadLocalHTTPDoFilterMap {
 
     @JsonIgnore
-    private Object currentGenericServletInstance;
+    private Class<?> currentGenericServletInstance;
 
     @JsonIgnore
     private String currentGenericServletMethodName = StringUtils.EMPTY;
@@ -23,11 +23,11 @@ public class ThreadLocalHTTPDoFilterMap {
         this.userCodeEncountered = userCodeEncountered;
     }
 
-    public Object getCurrentGenericServletInstance() {
+    public Class<?> getCurrentGenericServletInstance() {
         return currentGenericServletInstance;
     }
 
-    public void setCurrentGenericServletInstance(Object currentGenericServletInstance) {
+    public void setCurrentGenericServletInstance(Class<?> currentGenericServletInstance) {
         this.currentGenericServletInstance = currentGenericServletInstance;
     }
 

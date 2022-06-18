@@ -6,9 +6,9 @@ import com.k2cybersecurity.instrumentator.custom.ThreadLocalOperationLock;
 
 public class Callbacks {
 
-    public static void doOnEnter(String sourceString, String className, String methodName, Object obj, Object[] args,
+    public static void doOnEnter(String sourceString, Class<?> classRef, String methodName, Object obj, Object[] args,
                                  String exectionId) {
-        ThreadLocalHTTPDoFilterMap.getInstance().setCurrentGenericServletInstance(obj);
+        ThreadLocalHTTPDoFilterMap.getInstance().setCurrentGenericServletInstance(classRef);
         ThreadLocalHTTPDoFilterMap.getInstance().setCurrentGenericServletMethodName(methodName);
 
         if (!ThreadLocalOperationLock.getInstance().isAcquired()
@@ -27,7 +27,7 @@ public class Callbacks {
         }
     }
 
-    public static void doOnExit(String sourceString, String className, String methodName, Object obj, Object[] args,
+    public static void doOnExit(String sourceString, Class<?> classRef, String methodName, Object obj, Object[] args,
                                 Object returnVal, String exectionId) {
         if (!ThreadLocalOperationLock.getInstance().isAcquired()
                 && ThreadLocalHTTPDoFilterLock.getInstance().isAcquired(obj, sourceString, exectionId)) {
@@ -42,7 +42,7 @@ public class Callbacks {
         }
     }
 
-    public static void doOnError(String sourceString, String className, String methodName, Object obj, Object[] args,
+    public static void doOnError(String sourceString, Class<?> classRef, String methodName, Object obj, Object[] args,
                                  Throwable error, String exectionId) throws Throwable {
         if (!ThreadLocalOperationLock.getInstance().isAcquired()
                 && ThreadLocalHTTPDoFilterLock.getInstance().isAcquired(obj, sourceString, exectionId)) {
