@@ -2,7 +2,6 @@ package com.k2cybersecurity.instrumentator.dispatcher;
 
 import com.k2cybersecurity.instrumentator.K2Instrumentator;
 import com.k2cybersecurity.instrumentator.custom.ServletContextInfo;
-import com.k2cybersecurity.instrumentator.cve.scanner.CVEScannerPool;
 import com.k2cybersecurity.instrumentator.utils.AgentUtils;
 import com.k2cybersecurity.instrumentator.utils.CallbackUtils;
 import com.k2cybersecurity.instrumentator.utils.CollectorConfigurationUtils;
@@ -483,12 +482,6 @@ public class Dispatcher implements Runnable {
                 logger.logInit(LogLevel.INFO,
                         String.format(UPDATED_APPLICATION_INFO_POSTED, applicationInfoBean),
                         Dispatcher.class.getName());
-                // Dispatch call for cve scan.
-                if (AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getEnabled() && AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getCveScan().getEnabled()) {
-                    //Run CVE scan on new deployed app
-                    CVEScannerPool.getInstance().dispatchScanner(CollectorConfigurationUtils.getInstance().getCollectorConfig().getNodeId(), K2Instrumentator.APPLICATION_INFO_BEAN.getIdentifier().getKind().name(), K2Instrumentator.APPLICATION_INFO_BEAN.getIdentifier().getId(), false);
-                }
-//				ScanComponentData scanComponentData = CVEComponentsService.getAllComponents(deployedApplication);
 //				EventSendPool.getInstance().sendEvent(scanComponentData.toString());
             }
 //				System.out.println("============= AppInfo Start ============");
