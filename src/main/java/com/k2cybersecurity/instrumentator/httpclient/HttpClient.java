@@ -6,7 +6,10 @@ import com.k2cybersecurity.instrumentator.os.OsVariablesInstance;
 import com.k2cybersecurity.instrumentator.utils.CollectorConfigurationUtils;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
-import com.squareup.okhttp.*;
+
+import okhttp3.*;
+import okhttp3.OkHttpClient.Builder;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -67,51 +70,58 @@ public class HttpClient {
     public static final String READ_RESPONSE_FAILED_MESSAGE_S_CAUSE_S = "Read response failed MESSAGE: %s  CAUSE: %s";
     private static HttpClient instance;
     // Create a trust manager that does not validate certificate chains
-    private final TrustManager[] trustAllCerts = new TrustManager[]{
-            new X509TrustManager() {
-                @Override
-                public void checkClientTrusted(java.security.cert.X509Certificate[] chain, String authType) throws CertificateException {
-                }
+    private final X509TrustManager x509TrustManager = new X509TrustManager() {
+        @Override
+        public void checkClientTrusted(java.security.cert.X509Certificate[] chain, String authType)
+                throws CertificateException {
+        }
 
-                @Override
-                public void checkServerTrusted(java.security.cert.X509Certificate[] chain, String authType) throws CertificateException {
-                }
+        @Override
+        public void checkServerTrusted(java.security.cert.X509Certificate[] chain, String authType)
+                throws CertificateException {
+        }
 
-                @Override
-                public java.security.cert.X509Certificate[] getAcceptedIssuers() {
-                    return new java.security.cert.X509Certificate[]{};
-                }
-            }
+        @Override
+        public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+            return new java.security.cert.X509Certificate[] {};
+        }
     };
+
+    // Create a trust manager that does not validate certificate chains
+    private final TrustManager[] trustAllCerts = new TrustManager[] {
+            x509TrustManager
+    };
+
     private OkHttpClient client;
     private String baseUrl;
     private ObjectMapper objectMapper = new ObjectMapper();
     private OSVariables osVariables = OsVariablesInstance.getInstance().getOsVariables();
 
     private HttpClient() {
-        ConnectionPool pool = new ConnectionPool(1, TimeUnit.MINUTES.toMillis(10));
-        client = new OkHttpClient();
-        client.setConnectionPool(pool);
-        client.interceptors().add(new LoggingInterceptor());
-
-        // Install the all-trusting trust manager
+        Builder builder = new OkHttpClient.Builder();
         try {
-            final SSLContext sslContext;
-            sslContext = SSLContext.getInstance(SSL);
+            ConnectionPool connectionPool = new ConnectionPool(1, 5, TimeUnit.MINUTES);
+            builder = builder.connectionPool(connectionPool);
+
+            // Install the all-trusting trust manager
+            final SSLContext sslContext = SSLContext.getInstance("TLS");
             sslContext.init(null, trustAllCerts, new java.security.SecureRandom());
             // Create an ssl socket factory with our all-trusting manager
             final SSLSocketFactory sslSocketFactory = sslContext.getSocketFactory();
+            builder = builder.sslSocketFactory(sslSocketFactory, x509TrustManager);
 
-            client.setSslSocketFactory(sslSocketFactory);
-            client.setHostnameVerifier(new HostnameVerifier() {
+            builder.interceptors().add(new LoggingInterceptor());
+            builder = builder.hostnameVerifier(new HostnameVerifier() {
                 @Override
                 public boolean verify(String hostname, SSLSession session) {
                     return true;
                 }
             });
-        } catch (NoSuchAlgorithmException | KeyManagementException e) {
-            logger.log(LogLevel.ERROR, e.getMessage(), e, HttpClient.class.getName());
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
+
+        client = builder.build();
 
         baseUrl = CollectorConfigurationUtils.getInstance().getCollectorConfig().getK2ServiceInfo().getResourceServiceEndpointURL();
     }
@@ -155,8 +165,9 @@ public class HttpClient {
     public Response doPost(String url, List<String> pathParams, Map<String, String> queryParams, Map<String, String> headers, File fileToUpload) {
         HttpUrl httpUrl = buildUrl(url, pathParams, queryParams);
 
-        RequestBody requestBody = new MultipartBuilder().type(MultipartBuilder.FORM)
-                .addFormDataPart(MULTIPART_FILE, fileToUpload.getName(), RequestBody.create(MediaType.parse(MULTIPART_FORM_DATA), fileToUpload))
+        RequestBody requestBody = new MultipartBody.Builder().setType(MultipartBody.FORM)
+                .addFormDataPart(MULTIPART_FILE, fileToUpload.getName(), RequestBody.create(fileToUpload, MediaType
+                        .parse(MULTIPART_FORM_DATA)))
                 .build();
 
         Headers httpHeaders = getHeaders(headers);
@@ -222,12 +233,13 @@ public class HttpClient {
     private void executeAsync(Call call, String api) {
         call.enqueue(new Callback() {
             @Override
-            public void onFailure(Request request, IOException e) {
-                logger.log(LogLevel.ERROR, String.format(ASYNC_API_EXECUTION_FAILED_S, request), e, HttpClient.class.getName());
+            public void onFailure(Call call, IOException e) {
+                logger.log(LogLevel.ERROR, String.format(ASYNC_API_EXECUTION_FAILED_S, 
+                        call.request().toString()), e, HttpClient.class.getName());
             }
 
             @Override
-            public void onResponse(Response response) throws IOException {
+            public void onResponse(Call call, Response response) throws IOException {
                 if (!response.isSuccessful()) {
                     try (ResponseBody responseBody = response.body()) {
                         logger.log(LogLevel.WARN, String.format(ASYNC_API_EXECUTION_UNSUCCESSFULLY_S_RESPONSE_IS_S_BODY_S, api, response.code(), responseBody), HttpClient.class.getName());
@@ -242,12 +254,12 @@ public class HttpClient {
     private void fileUploadAndDelete(Call request, String api, File file) {
         request.enqueue(new Callback() {
             @Override
-            public void onFailure(Request request, IOException e) {
+            public void onFailure(Call call, IOException e) {
                 logger.log(LogLevel.ERROR, String.format(API_S_FAILED, api), e, HttpClient.class.getName());
             }
 
             @Override
-            public void onResponse(Response response) throws IOException {
+            public void onResponse(Call call, Response response) throws IOException {
                 try (ResponseBody responseBody = response.body()) {
                     if (!response.isSuccessful()) {
                         logger.log(LogLevel.WARN, String.format(API_S_FAILED_CODE_S_S, api, response.code(), responseBody), HttpClient.class.getName());
