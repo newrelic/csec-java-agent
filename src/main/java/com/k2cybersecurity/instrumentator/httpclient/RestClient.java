@@ -6,14 +6,8 @@ import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.logging.IAgentConstants;
 import com.k2cybersecurity.intcodeagent.models.javaagent.FuzzFailEvent;
 import com.k2cybersecurity.intcodeagent.websocket.EventSendPool;
-
-import okhttp3.Call;
-import okhttp3.ConnectionPool;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
+import okhttp3.*;
 import okhttp3.OkHttpClient.Builder;
-
 import org.apache.commons.io.FileUtils;
 
 import javax.net.ssl.*;
@@ -69,7 +63,7 @@ public class RestClient {
                 builder = builder.connectionPool(connectionPool);
 
                 // Install the all-trusting trust manager
-                final SSLContext sslContext = SSLContext.getInstance("TLS");
+                final SSLContext sslContext = SSLContext.getInstance("TLSv1.2");
                 sslContext.init(null, trustAllCerts, new java.security.SecureRandom());
                 // Create an ssl socket factory with our all-trusting manager
                 final SSLSocketFactory sslSocketFactory = sslContext.getSocketFactory();
