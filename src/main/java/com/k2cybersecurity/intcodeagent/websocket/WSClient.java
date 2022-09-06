@@ -82,7 +82,6 @@ public class WSClient extends WebSocketClient {
         isConnected = true;
 //        WSReconnectionST.cancelTask(false);
         logger.logInit(LogLevel.INFO, String.format(IAgentConstants.APPLICATION_INFO_SENT_ON_WS_CONNECT, K2Instrumentator.APPLICATION_INFO_BEAN), WSClient.class.getName());
-        AgentUtils.getInstance().resetCVEServiceFailCount();
     }
 
     @Override

@@ -2,8 +2,6 @@ package com.k2cybersecurity.instrumentator.utils;
 
 import com.k2cybersecurity.instrumentator.K2Instrumentator;
 import com.k2cybersecurity.instrumentator.custom.ClassloaderAdjustments;
-import com.k2cybersecurity.instrumentator.cve.scanner.CVEScannerPool;
-import com.k2cybersecurity.instrumentator.cve.scanner.CVEServiceLinux;
 import com.k2cybersecurity.instrumentator.os.OSVariables;
 import com.k2cybersecurity.instrumentator.os.OsVariablesInstance;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
@@ -19,7 +17,6 @@ import com.k2cybersecurity.intcodeagent.models.javaagent.EventResponse;
 import com.k2cybersecurity.intcodeagent.models.javaagent.UserClassEntity;
 import com.k2cybersecurity.intcodeagent.models.javaagent.VulnerabilityCaseType;
 import com.k2cybersecurity.intcodeagent.models.operationalbean.AbstractOperationalBean;
-import com.k2cybersecurity.intcodeagent.schedulers.CVEBundlePullST;
 import com.k2cybersecurity.intcodeagent.schedulers.PolicyPullST;
 import com.sun.jna.Pointer;
 import com.sun.jna.platform.win32.Kernel32;
@@ -78,7 +75,6 @@ public class AgentUtils {
     public static final String CLASSLOADER_RECORD_MISSING_FOR_CLASS = "Classloader record missing for class : ";
     private static final String TWO_PIPES = "||";
     public static final String CAME_TO_EXTRACT_TAR_BUNDLE = "Came to extract tar bundle : ";
-    public static final String CORRUPTED_CVE_SERVICE_BUNDLE_DELETED = "Corrupted CVE service bundle deleted.";
     public static final String ENFORCING_POLICY = "Enforcing policy";
     public static final String LOG_LEVEL_PROVIDED_IN_POLICY_IS_INCORRECT_DEFAULTING_TO_INFO = "Log level provided in policy is incorrect: %s. Staying at current level";
     public static final String ERROR_WHILE_EXTRACTING_FILE_FROM_ARCHIVE_S_S = "Error while extracting file from archive : %s : %s";
@@ -115,10 +111,6 @@ public class AgentUtils {
 
     private CollectorInitMsg initMsg = null;
 
-    private AtomicBoolean cveEnvScanCompleted = new AtomicBoolean(false);
-
-    private AtomicInteger cveServiceFailCount = new AtomicInteger(0);
-
     private AtomicInteger outboundHttpConnectionId = new AtomicInteger(1000);
 
     private boolean collectAppInfoFromEnv = false;
@@ -152,14 +144,6 @@ public class AgentUtils {
             }
         }
         return instance;
-    }
-
-    public Boolean isCveEnvScanCompleted() {
-        return cveEnvScanCompleted.get();
-    }
-
-    public void setCveEnvScanCompleted(Boolean cveEnvScanCompleted) {
-        this.cveEnvScanCompleted.set(cveEnvScanCompleted);
     }
 
     public boolean isAgentActive() {
@@ -196,18 +180,6 @@ public class AgentUtils {
 
     public void resetOutboundHttpConnectionId() {
         this.outboundHttpConnectionId.set(1000);
-    }
-
-    public int incrementCVEServiceFailCount() {
-        return this.cveServiceFailCount.incrementAndGet();
-    }
-
-    public void resetCVEServiceFailCount() {
-        this.cveServiceFailCount.set(0);
-    }
-
-    public int getCVEServiceFailCount() {
-        return this.cveServiceFailCount.get();
     }
 
     public String getGroupName() {
@@ -656,22 +628,6 @@ public class AgentUtils {
         } else {
             PolicyPullST.getInstance().cancelTask(true);
         }
-        if (AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getEnabled()
-                && AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getCveScan().getEnabled()) {
-            CVEBundlePullST.getInstance().submitNewTask();
-        } else {
-            CVEBundlePullST.getInstance().cancelTask(true);
-        }
-        if (AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getEnabled()
-                && AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getCveScan().getEnabled()) {
-            //Run CVE scan on ENV
-            if (AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getCveScan().getEnableEnvScan() && !AgentUtils.getInstance().isCveEnvScanCompleted()) {
-                CVEScannerPool.getInstance().dispatchScanner(CollectorConfigurationUtils.getInstance().getCollectorConfig().getNodeId(), K2Instrumentator.APPLICATION_INFO_BEAN.getIdentifier().getKind().name(), K2Instrumentator.APPLICATION_INFO_BEAN.getIdentifier().getId(), true);
-            }
-            if (AgentUtils.getInstance().isAppScanNeeded()) {
-                CVEScannerPool.getInstance().dispatchScanner(CollectorConfigurationUtils.getInstance().getCollectorConfig().getNodeId(), K2Instrumentator.APPLICATION_INFO_BEAN.getIdentifier().getKind().name(), K2Instrumentator.APPLICATION_INFO_BEAN.getIdentifier().getId(), false);
-            }
-        }
         setApplicationInfo();
     }
 
@@ -842,45 +798,5 @@ public class AgentUtils {
         int modeInt = Integer.parseInt(Integer.toString(modeOct, 8));
 
         return intToPosixFilePermission(modeInt);
-    }
-
-    public static boolean extractCVETar(File tarFile, File outputDir) {
-        logger.log(LogLevel.DEBUG, CAME_TO_EXTRACT_TAR_BUNDLE + tarFile.getAbsolutePath(), AgentUtils.class.getName());
-        try (TarArchiveInputStream inputStream = new TarArchiveInputStream(new FileInputStream(tarFile),
-                StandardCharsets.UTF_8.name())) {
-            TarArchiveEntry entry;
-            while ((entry = inputStream.getNextTarEntry()) != null) {
-                File curfile = new File(outputDir, entry.getName());
-                if (entry.isDirectory()) {
-                    if (!curfile.exists()) {
-                        curfile.mkdirs();
-                    }
-                    continue;
-                } else if (entry.isSymbolicLink()) {
-                    // Create symbolic link relative to tar parent dir
-                    Files.createSymbolicLink(FileSystems.getDefault()
-                                    .getPath(outputDir.getPath(), entry.getName()),
-                            FileSystems.getDefault().getPath(entry.getLinkName()));
-
-                    continue;
-                }
-                try (FileOutputStream outputStream = new FileOutputStream(curfile)) {
-                    IOUtils.copy(inputStream, outputStream);
-                    Files.setPosixFilePermissions(Paths.get(curfile.toURI()),
-                            octToPosixFilePermission(entry.getMode()));
-                } catch (Throwable e) {
-                    logger.log(LogLevel.ERROR, String.format(ERROR_WHILE_EXTRACTING_FILE_FROM_ARCHIVE_S_S, entry.getName(), e.getMessage()), CVEServiceLinux.class.getName());
-                    logger.log(LogLevel.DEBUG, ERROR, e, CVEServiceLinux.class.getName());
-                }
-            }
-            return true;
-        } catch (Throwable e) {
-            logger.log(LogLevel.ERROR, ERROR, e, CVEServiceLinux.class.getName());
-            FileUtils.deleteQuietly(tarFile);
-            logger.log(LogLevel.WARN,
-                    CORRUPTED_CVE_SERVICE_BUNDLE_DELETED, CVEServiceLinux.class.getName());
-        }
-
-        return false;
-    }
+    }   
 }

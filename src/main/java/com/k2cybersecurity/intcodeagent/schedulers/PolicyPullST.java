@@ -15,7 +15,9 @@ import com.k2cybersecurity.intcodeagent.logging.IAgentConstants;
 import com.k2cybersecurity.intcodeagent.models.config.AgentPolicy;
 import com.k2cybersecurity.intcodeagent.utils.CommonUtils;
 import com.k2cybersecurity.intcodeagent.websocket.EventSendPool;
-import com.squareup.okhttp.Response;
+
+import okhttp3.Response;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 

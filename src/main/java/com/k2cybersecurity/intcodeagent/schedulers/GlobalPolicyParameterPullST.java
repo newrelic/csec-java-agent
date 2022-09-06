@@ -8,7 +8,7 @@ import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.logging.IAgentConstants;
 import com.k2cybersecurity.intcodeagent.models.config.AgentPolicyParameters;
 import com.k2cybersecurity.intcodeagent.utils.CommonUtils;
-import com.squareup.okhttp.Response;
+import okhttp3.Response;
 
 import java.util.HashMap;
 import java.util.Map;

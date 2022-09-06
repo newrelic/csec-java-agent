@@ -3,9 +3,11 @@ package com.k2cybersecurity.instrumentator.httpclient;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.models.javaagent.HttpRequestBean;
-import com.squareup.okhttp.*;
-import com.squareup.okhttp.Request.Builder;
-import com.squareup.okhttp.internal.http.HttpMethod;
+
+import okhttp3.*;
+import okhttp3.Request.Builder;
+import okhttp3.internal.http.HttpMethod;
+
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.Map;
@@ -26,7 +28,7 @@ public class RequestUtils {
 
         if (StringUtils.isNotBlank(httpRequestBean.getContentType())) {
             if (httpRequestBean.getParameterMap() != null && !httpRequestBean.getParameterMap().isEmpty()) {
-                FormEncodingBuilder builder = new FormEncodingBuilder();
+                FormBody.Builder builder = new FormBody.Builder();
                 for (Entry<String, String[]> param : httpRequestBean.getParameterMap().entrySet()) {
                     for (int i = 0; i < param.getValue().length; i++) {
                         builder.add(param.getKey(), param.getValue()[i]);

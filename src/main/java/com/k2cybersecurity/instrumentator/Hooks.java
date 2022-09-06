@@ -175,8 +175,10 @@ public class Hooks {
         NAME_BASED_HOOKS.put(StringUtils.replace("com@squareup@okhttp@Call", "@", "."), Arrays.asList("execute", null));
         NAME_BASED_HOOKS.put(StringUtils.replace("com@squareup@okhttp@Call", "@", ".") + "$AsyncCall", Collections.singletonList("execute"));
 
-        NAME_BASED_HOOKS.put("okhttp3.OkHttpClient", Collections.singletonList("newCall"));
-        TYPE_BASED_HOOKS.put("okhttp3.Call", Collections.singletonList("execute"));
+        NAME_BASED_HOOKS.put(StringUtils.replace("okhttp3@OkHttpClient", "@",
+                        ".") , Collections.singletonList("newCall"));
+        TYPE_BASED_HOOKS.put(StringUtils.replace("okhttp3@Call", "@",
+                        "."),  Collections.singletonList("execute"));
 
         // Outbound Connection
 //		NAME_BASED_HOOKS.put("okhttp3.internal.connection.RealConnection", Collections.singletonList("connect"));
@@ -562,8 +564,10 @@ public class Hooks {
         DECORATOR_ENTRY.put(StringUtils.replace("com@squareup@okhttp@Call", "@", ".") + ".execute", "com.k2cybersecurity.instrumentator.decorators.ssrf.okhttp");
         DECORATOR_ENTRY.put(StringUtils.replace("com@squareup@okhttp@Call", "@", ".") + "$AsyncCall.execute", "com.k2cybersecurity.instrumentator.decorators.ssrf.okhttp");
 
-        DECORATOR_ENTRY.put("okhttp3.OkHttpClient.newCall", "com.k2cybersecurity.instrumentator.decorators.ssrf.okhttp3");
-        DECORATOR_ENTRY.put("okhttp3.Call.execute", "com.k2cybersecurity.instrumentator.decorators.ssrf.okhttp3");
+        DECORATOR_ENTRY.put(StringUtils.replace("okhttp3@OkHttpClient", "@",
+                        ".") + ".newCall", "com.k2cybersecurity.instrumentator.decorators.ssrf.okhttp3");
+        DECORATOR_ENTRY.put(StringUtils.replace("okhttp3@Call", "@",
+                        ".") + ".execute", "com.k2cybersecurity.instrumentator.decorators.ssrf.okhttp3");
 
 
         // JavaScript Injection

@@ -56,6 +56,18 @@
             <groupId>com.fasterxml.jackson.dataformat</groupId>
             <artifactId>jackson-dataformat-yaml</artifactId>
             <version>2.13.3</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.yaml</groupId>
+                    <artifactId>snakeyaml</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.yaml</groupId>
+            <artifactId>snakeyaml</artifactId>
+            <version>1.31</version>
         </dependency>
 
         <dependency>
@@ -99,11 +111,11 @@
             <version>1.11.21</version>
         </dependency>
 
-        <!-- https://mvnrepository.com/artifact/com.squareup.okhttp/okhttp -->
+        <!-- https://mvnrepository.com/artifact/com.squareup.okhttp3/okhttp -->
         <dependency>
-            <groupId>com.squareup.okhttp</groupId>
+            <groupId>com.squareup.okhttp3</groupId>
             <artifactId>okhttp</artifactId>
-            <version>2.7.5</version>
+            <version>4.10.0</version>
         </dependency>
 
 
@@ -117,7 +129,7 @@
         <dependency>
             <groupId>commons-codec</groupId>
             <artifactId>commons-codec</artifactId>
-            <version>1.11</version>
+            <version>1.15</version>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
@@ -126,9 +138,9 @@
         </dependency>
 
         <dependency>
-            <groupId>org.everit.json</groupId>
-            <artifactId>org.everit.json.schema</artifactId>
-            <version>1.5.1</version>
+            <groupId>com.github.erosb</groupId>
+            <artifactId>everit-json-schema</artifactId>
+            <version>1.14.1</version>
         </dependency>
 
         <dependency>
@@ -215,6 +227,9 @@
                                         <exclude>**/Log4j2Plugins.dat</exclude>
                                         <exclude>META-INF/maven/**</exclude>
                                         <exclude>META-INF/licenses/**</exclude>
+										<exclude>META-INF/NOTICE</exclude>
+										<exclude>META-INF/AL2.0</exclude>
+										<exclude>META-INF/LGPL2.1</exclude>
                                     </excludes>
                                 </filter>
                             </filters>
@@ -284,8 +299,8 @@
                                     <shadedPattern>sun.reflect.com.k2cybersecurity.okio</shadedPattern>
                                 </relocation>
                                 <relocation>
-                                    <pattern>com.squareup.okhttp</pattern>
-                                    <shadedPattern>sun.reflect.com.k2cybersecurity.com.squareup.okhttp</shadedPattern>
+                                    <pattern>okhttp3.</pattern>
+                                    <shadedPattern>sun.reflect.com.k2cybersecurity.okhttp3.</shadedPattern>
                                 </relocation>
                                 <relocation>
                                     <pattern>org.slf4j</pattern>
@@ -310,6 +325,26 @@
                                 <relocation>
                                     <pattern>org.everit</pattern>
                                     <shadedPattern>sun.reflect.com.k2cybersecurity.org.everit</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>com.damnhandy</pattern>
+                                    <shadedPattern>sun.reflect.com.k2cybersecurity.com.damnhandy</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>kotlin.</pattern>
+                                    <shadedPattern>sun.reflect.com.k2cybersecurity.kotlin.</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>org.joda</pattern>
+                                    <shadedPattern>sun.reflect.com.k2cybersecurity.org.joda</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>org.jetbrains</pattern>
+                                    <shadedPattern>sun.reflect.com.k2cybersecurity.org.jetbrains</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>org.intellij</pattern>
+                                    <shadedPattern>sun.reflect.com.k2cybersecurity.org.intellij</shadedPattern>
                                 </relocation>
                             </relocations>
                         </configuration>
