@@ -18,6 +18,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
+import org.jetbrains.annotations.Nullable;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -75,18 +76,8 @@ public class K2Instrumentator {
             K2Instrumentator.isDynamicAttach = isDynamicAttach;
             String attachmentType = isDynamicAttach ? DYNAMIC : STATIC;
 
-            K2_HOME = System.getenv("K2_HOME");
-            if (!isValidK2HomePath(K2_HOME)) {
-                //Fall back to default K2Home
-                if (SystemUtils.IS_OS_WINDOWS) {
-                    K2_HOME = DEFAULT_K2HOME_WIN;
-                } else {
-                    K2_HOME = DEFAULT_K2HOME_LINUX;
-                }
-                if (!isValidK2HomePath(K2_HOME)) {
-                    System.err.println("[K2-JA] Incomplete startup env parameters provided : Missing or Incorrect K2_HOME. Collector exiting.");
-                    return false;
-                }
+            if (setK2HomePath()) {
+                return false;
             }
 
             osVariables = OsVariablesInstance.getInstance().getOsVariables();
@@ -138,22 +129,9 @@ public class K2Instrumentator {
                 return false;
             }
 
-            if (IdentifierEnvs.HOST.equals(identifier.getKind())) {
-                identifier.setId(CollectorConfigurationUtils.getInstance().getCollectorConfig().getNodeId());
-            }
+            setUserAppInformation(userAppName, userAppVersion, userAppTags);
 
-            if (StringUtils.isNotBlank(userAppName)) {
-                List<String> tags = Collections.emptyList();
-                if (StringUtils.isNotBlank(userAppTags)) {
-                    tags = Arrays.asList(StringUtils.split(userAppTags, ","));
-                }
-                AgentUtils.getInstance().setApplicationInfo(new PolicyApplicationInfo(userAppName, userAppVersion, tags));
-                AgentUtils.getInstance().setCollectAppInfoFromEnv(true);
-            }
-
-            identifier.setNodeId(CollectorConfigurationUtils.getInstance().getCollectorConfig().getNodeId());
-            identifier.setNodeIp(CollectorConfigurationUtils.getInstance().getCollectorConfig().getNodeIp());
-            identifier.setNodeName(CollectorConfigurationUtils.getInstance().getCollectorConfig().getNodeName());
+            continueIdentifierProcessing(identifier);
             APPLICATION_INFO_BEAN = createApplicationInfoBean(identifier);
             if(APPLICATION_INFO_BEAN == null) {
                 // log appinfo not created
@@ -169,66 +147,11 @@ public class K2Instrumentator {
             }
             JA_HEALTH_CHECK = new JAHealthCheck(APPLICATION_UUID);
             logger.logInit(LogLevel.INFO, AGENT_INIT_LOG_STEP_FIVE, K2Instrumentator.class.getName());
-            int retries = NUMBER_OF_RETRIES;
-            WSClient.getInstance().openConnection();
-            while (retries > 0) {
-                try {
-                    if (!WSClient.isConnected()) {
-                        retries--;
-                        int timeout = (NUMBER_OF_RETRIES - retries);
-                        logger.logInit(LogLevel.INFO, String.format("WS client connection failed will retry after %s minute(s)", timeout), K2Instrumentator.class.getName());
-                        TimeUnit.MINUTES.sleep(timeout);
-                        WSClient.reconnectWSClient();
-                    } else {
-                        break;
-                    }
-                } catch (Throwable e) {
-                    logger.log(LogLevel.ERROR, ERROR_OCCURED_WHILE_TRYING_TO_CONNECT_TO_WSOCKET, e,
-                            K2Instrumentator.class.getName());
-                }
-            }
-            if (!WSClient.isConnected()) {
+
+            boolean isWorking = startK2Services();
+            if (!isWorking) {
                 return false;
             }
-
-            logger.logInit(
-                    LogLevel.INFO,
-                    String.format(STARTING_MODULE_LOG, AgentServices.HealthCheck.name()),
-                    K2Instrumentator.class.getName()
-            );
-            HealthCheckScheduleThread.getInstance();
-            logger.logInit(
-                    LogLevel.INFO,
-                    String.format(STARTED_MODULE_LOG, AgentServices.HealthCheck.name()),
-                    K2Instrumentator.class.getName()
-            );
-
-            DirectoryWatcher.startMonitorDaemon();
-            PolicyPullST.instantiateDefaultPolicy();
-            PolicyPullST.getInstance();
-            GlobalPolicyParameterPullST.getInstance();
-            logger.logInit(
-                    LogLevel.INFO,
-                    String.format(STARTING_MODULE_LOG, AgentServices.EventWritePool.name()),
-                    K2Instrumentator.class.getName()
-            );
-            boolean isWorking = eventWritePool();
-            logger.logInit(
-                    LogLevel.INFO,
-                    String.format(STARTED_MODULE_LOG, AgentServices.EventWritePool.name()),
-                    K2Instrumentator.class.getName()
-            );
-            logger.logInit(
-                    LogLevel.INFO,
-                    String.format(STARTING_MODULE_LOG, AgentServices.DirectoryWatcher.name()),
-                    K2Instrumentator.class.getName()
-            );
-            logger.logInit(
-                    LogLevel.INFO,
-                    String.format(STARTED_MODULE_LOG, AgentServices.DirectoryWatcher.name()),
-                    K2Instrumentator.class.getName()
-            );
-            logger.logInit(LogLevel.INFO, AGENT_INIT_LOG_STEP_FIVE_END, K2Instrumentator.class.getName());
             // log init finish
             logger.logInit(
                     LogLevel.INFO,
@@ -240,6 +163,117 @@ public class K2Instrumentator {
         } catch (Exception e) {
             e.printStackTrace();
             logger.log(LogLevel.ERROR, "Error in init ", e, K2Instrumentator.class.getName());
+        }
+        return false;
+    }
+
+    @Nullable
+    private static boolean startK2Services() throws InterruptedException, URISyntaxException {
+        if (tryWebsocketConnection()) {
+            return false;
+        }
+
+        logger.logInit(
+                LogLevel.INFO,
+                String.format(STARTING_MODULE_LOG, AgentServices.HealthCheck.name()),
+                K2Instrumentator.class.getName()
+        );
+        HealthCheckScheduleThread.getInstance();
+        logger.logInit(
+                LogLevel.INFO,
+                String.format(STARTED_MODULE_LOG, AgentServices.HealthCheck.name()),
+                K2Instrumentator.class.getName()
+        );
+
+        logger.logInit(
+                LogLevel.INFO,
+                String.format(STARTING_MODULE_LOG, AgentServices.DirectoryWatcher.name()),
+                K2Instrumentator.class.getName()
+        );
+        DirectoryWatcher.startMonitorDaemon();
+        logger.logInit(
+                LogLevel.INFO,
+                String.format(STARTED_MODULE_LOG, AgentServices.DirectoryWatcher.name()),
+                K2Instrumentator.class.getName()
+        );
+
+        PolicyPullST.instantiateDefaultPolicy();
+        PolicyPullST.getInstance();
+        GlobalPolicyParameterPullST.getInstance();
+        logger.logInit(
+                LogLevel.INFO,
+                String.format(STARTING_MODULE_LOG, AgentServices.EventWritePool.name()),
+                K2Instrumentator.class.getName()
+        );
+        boolean isWorking = eventWritePool();
+        logger.logInit(
+                LogLevel.INFO,
+                String.format(STARTED_MODULE_LOG, AgentServices.EventWritePool.name()),
+                K2Instrumentator.class.getName()
+        );
+
+        logger.logInit(LogLevel.INFO, AGENT_INIT_LOG_STEP_FIVE_END, K2Instrumentator.class.getName());
+        return isWorking;
+    }
+
+    private static boolean tryWebsocketConnection() throws InterruptedException, URISyntaxException {
+        int retries = NUMBER_OF_RETRIES;
+        WSClient.getInstance().openConnection();
+        while (retries > 0) {
+            try {
+                if (!WSClient.isConnected()) {
+                    retries--;
+                    int timeout = (NUMBER_OF_RETRIES - retries);
+                    logger.logInit(LogLevel.INFO, String.format("WS client connection failed will retry after %s minute(s)", timeout), K2Instrumentator.class.getName());
+                    TimeUnit.MINUTES.sleep(timeout);
+                    WSClient.reconnectWSClient();
+                } else {
+                    break;
+                }
+            } catch (Throwable e) {
+                logger.log(LogLevel.ERROR, ERROR_OCCURED_WHILE_TRYING_TO_CONNECT_TO_WSOCKET, e,
+                        K2Instrumentator.class.getName());
+            }
+        }
+        if (!WSClient.isConnected()) {
+            return true;
+        }
+        return false;
+    }
+
+    private static void continueIdentifierProcessing(Identifier identifier) {
+        if (IdentifierEnvs.HOST.equals(identifier.getKind())) {
+            identifier.setId(CollectorConfigurationUtils.getInstance().getCollectorConfig().getNodeId());
+        }
+        identifier.setNodeId(CollectorConfigurationUtils.getInstance().getCollectorConfig().getNodeId());
+        identifier.setNodeIp(CollectorConfigurationUtils.getInstance().getCollectorConfig().getNodeIp());
+        identifier.setNodeName(CollectorConfigurationUtils.getInstance().getCollectorConfig().getNodeName());
+    }
+
+    private static void setUserAppInformation(String userAppName, String userAppVersion, String userAppTags) {
+        if (StringUtils.isNotBlank(userAppName)) {
+            List<String> tags = Collections.emptyList();
+            if (StringUtils.isNotBlank(userAppTags)) {
+                tags = Arrays.asList(StringUtils.split(userAppTags, ","));
+            }
+            AgentUtils.getInstance().setApplicationInfo(new PolicyApplicationInfo(userAppName, userAppVersion, tags));
+            AgentUtils.getInstance().setCollectAppInfoFromEnv(true);
+        }
+    }
+
+    private static boolean setK2HomePath() {
+        K2_HOME = System.getenv("K2_HOME");
+        if (!isValidK2HomePath(K2_HOME)) {
+            //Fall back to default K2Home
+            if (SystemUtils.IS_OS_WINDOWS) {
+                K2_HOME = DEFAULT_K2HOME_WIN;
+            } else {
+                K2_HOME = DEFAULT_K2HOME_LINUX;
+            }
+            if (!isValidK2HomePath(K2_HOME)) {
+                System.err.println("[K2-JA] Incomplete startup env parameters provided : Missing or Incorrect K2_HOME. Collector exiting.");
+                return true;
+            }
         }
         return false;
     }

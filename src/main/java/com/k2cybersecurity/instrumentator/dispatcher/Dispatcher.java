@@ -14,6 +14,7 @@ import com.k2cybersecurity.intcodeagent.models.javaagent.*;
 import com.k2cybersecurity.intcodeagent.models.operationalbean.*;
 import com.k2cybersecurity.intcodeagent.websocket.EventSendPool;
 import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.Nullable;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -136,52 +137,9 @@ public class Dispatcher implements Runnable {
         if(!firstEventSent.get()) {
             logger.logInit(LogLevel.INFO, SENDING_EVENT_ZERO, EventDispatcher.class.getName());
         }
-//        printDispatch();
         try {
             if (vulnerabilityCaseType.equals(VulnerabilityCaseType.REFLECTED_XSS)) {
-                Set<String> xssConstructs = CallbackUtils.checkForReflectedXSS(httpRequestBean);
-//				System.out.println("Changes reflected : " + httpRequestBean.getHttpResponseBean().getResponseBody() + " :: " + xssConstruct);
-                JavaAgentEventBean eventBean = prepareEvent(httpRequestBean, metaData, vulnerabilityCaseType);
-//				String url = StringUtils.substringBefore(httpRequestBean.getUrl(), SEPARATOR_QUESTIONMARK);
-//				url = String.format(S_S, eventBean.getHttpRequest().getMethod(), url);
-                if (K2Instrumentator.APPLICATION_INFO_BEAN.getServerInfo().getDeployedApplications().isEmpty() ||
-                        (!xssConstructs.isEmpty() && !actuallyEmpty(xssConstructs) && StringUtils.isNotBlank(httpRequestBean.getHttpResponseBean().getResponseBody())) ||
-                        (AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getEnabled()
-                                && AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getIastScan().getEnabled())) {
-//					System.out.println("Sending out RXSS");
-//					AgentUtils.getInstance().getRxssSentUrls().add(url);
-                    JSONArray params = new JSONArray();
-                    params.addAll(xssConstructs);
-                    params.add(httpRequestBean.getHttpResponseBean().getResponseBody());
-//					params.add(httpRequestBean.getHttpResponseBean());
-                    eventBean.setParameters(params);
-                    eventBean.setApplicationUUID(K2Instrumentator.APPLICATION_UUID);
-                    eventBean.setPid(K2Instrumentator.VMPID);
-                    // TODO set these
-                    eventBean.setSourceMethod((String) extraInfo.get(SOURCESTRING));
-                    eventBean.setId((String) extraInfo.get(EXECUTIONID));
-                    eventBean.setStartTime((Long) extraInfo.get(STARTTIME));
-                    eventBean.setBlockingProcessingTime(
-                            (Long) extraInfo.get(BLOCKING_END_TIME) - eventBean.getStartTime());
-
-                    eventBean.setUserAPIInfo(userClassEntity.getUserClassElement().getLineNumber(),
-                            userClassEntity.getUserClassElement().getClassName(),
-                            userClassEntity.getUserClassElement().getMethodName());
-
-                    eventBean.setApiId(apiID);
-
-                    setRequiredStackRelatedInfoToEvent(eventBean);
-                    EventSendPool.getInstance().sendEvent(eventBean);
-                    if(!firstEventSent.get()) {
-                        logger.logInit(LogLevel.INFO, String.format(EVENT_ZERO_SENT, eventBean), EventDispatcher.class.getName());
-                        firstEventSent.set(true);
-                    }
-                    detectDeployedApplication();
-
-//					System.out.println("============= Event Start ============");
-//					System.out.println(eventBean);
-//					System.out.println("============= Event End ============");
-                }
+                processReflectedXSSEvent();
                 return;
             }
         } catch (Throwable e) {
@@ -189,7 +147,7 @@ public class Dispatcher implements Runnable {
         }
 
         if (event == null) {
-//			System.out.println("------- Invalid event -----------");
+            // Invalid Event. Just drop.
             return;
         }
 
@@ -197,13 +155,8 @@ public class Dispatcher implements Runnable {
 
         switch (vulnerabilityCaseType) {
             case FILE_OPERATION:
-                FileOperationalBean fileOperationalBean = (FileOperationalBean) event;
-                eventBean = setGenericProperties(fileOperationalBean, eventBean);
-                eventBean = prepareFileEvent(eventBean, fileOperationalBean);
-                String URL = StringUtils.substringBefore(httpRequestBean.getUrl(), QUESTION_CHAR);
-                if (!(AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getEnabled()
-                        && AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getIastScan().getEnabled()) && allowedExtensionFileIO(eventBean.getParameters(), eventBean.getSourceMethod(), URL)) {
-//				System.out.println("------- Event ByPass -----------");
+                eventBean = processFileOperationEvent(eventBean);
+                if (eventBean == null) {
                     return;
                 }
                 break;
@@ -221,10 +174,9 @@ public class Dispatcher implements Runnable {
             case SQL_DB_COMMAND:
                 List<SQLOperationalBean> operationalList = (List<SQLOperationalBean>) event;
                 if (operationalList.isEmpty()) {
-//				System.out.println("------- Invalid event -----------");
+                    // Invalid Event. Just drop.
                     return;
                 }
-                // eventBean.setEventCategory(getDbName(operationalList.get(0).getClassName()));
                 eventBean = setGenericProperties(operationalList.get(0), eventBean);
                 eventBean = prepareSQLDbCommandEvent(operationalList, eventBean);
                 break;
@@ -235,7 +187,6 @@ public class Dispatcher implements Runnable {
                 try {
                     eventBean = prepareNoSQLEvent(eventBean, noSQLOperationalBean);
                 } catch (ParseException e) {
-                    e.printStackTrace();
                     return;
                 }
                 break;
@@ -318,9 +269,55 @@ public class Dispatcher implements Runnable {
             firstEventSent.set(true);
         }
         detectDeployedApplication();
-//		System.out.println("============= Event Start ============");
-//		System.out.println(eventBean);
-//		System.out.println("============= Event End ============");
+    }
+
+    @Nullable
+    private JavaAgentEventBean processFileOperationEvent(JavaAgentEventBean eventBean) {
+        FileOperationalBean fileOperationalBean = (FileOperationalBean) event;
+        eventBean = setGenericProperties(fileOperationalBean, eventBean);
+        eventBean = prepareFileEvent(eventBean, fileOperationalBean);
+        String URL = StringUtils.substringBefore(httpRequestBean.getUrl(), QUESTION_CHAR);
+        if (!(AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getEnabled()
+                && AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getIastScan().getEnabled()) && allowedExtensionFileIO(eventBean.getParameters(), eventBean.getSourceMethod(), URL)) {
+            // Event is bypassed. Drop it.
+            return null;
+        }
+        return eventBean;
+    }
+
+    private void processReflectedXSSEvent() {
+        Set<String> xssConstructs = CallbackUtils.checkForReflectedXSS(httpRequestBean);
+        JavaAgentEventBean eventBean = prepareEvent(httpRequestBean, metaData, vulnerabilityCaseType);
+        if (K2Instrumentator.APPLICATION_INFO_BEAN.getServerInfo().getDeployedApplications().isEmpty() ||
+                (!xssConstructs.isEmpty() && !actuallyEmpty(xssConstructs) && StringUtils.isNotBlank(httpRequestBean.getHttpResponseBean().getResponseBody())) ||
+                (AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getEnabled()
+                        && AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getIastScan().getEnabled())) {
+            JSONArray params = new JSONArray();
+            params.addAll(xssConstructs);
+            params.add(httpRequestBean.getHttpResponseBean().getResponseBody());
+            eventBean.setParameters(params);
+            eventBean.setApplicationUUID(K2Instrumentator.APPLICATION_UUID);
+            eventBean.setPid(K2Instrumentator.VMPID);
+            eventBean.setSourceMethod((String) extraInfo.get(SOURCESTRING));
+            eventBean.setId((String) extraInfo.get(EXECUTIONID));
+            eventBean.setStartTime((Long) extraInfo.get(STARTTIME));
+            eventBean.setBlockingProcessingTime(
+                    (Long) extraInfo.get(BLOCKING_END_TIME) - eventBean.getStartTime());
+
+            eventBean.setUserAPIInfo(userClassEntity.getUserClassElement().getLineNumber(),
+                    userClassEntity.getUserClassElement().getClassName(),
+                    userClassEntity.getUserClassElement().getMethodName());
+
+            eventBean.setApiId(apiID);
+
+            setRequiredStackRelatedInfoToEvent(eventBean);
+            EventSendPool.getInstance().sendEvent(eventBean);
+            if(!firstEventSent.get()) {
+                logger.logInit(LogLevel.INFO, String.format(EVENT_ZERO_SENT, eventBean), EventDispatcher.class.getName());
+                firstEventSent.set(true);
+            }
+            detectDeployedApplication();
+        }
     }
 
     private boolean actuallyEmpty(Set<String> xssConstructs) {
@@ -657,10 +654,6 @@ public class Dispatcher implements Runnable {
         JSONArray params = new JSONArray();
         eventBean.setEventCategory(MONGO);
         JSONParser jsonParser = new JSONParser();
-//        for(Object doc : noSQLOperationalBean.getData()){
-//            params.add(jsonParser.parse(doc));
-//
-//        }
         params.addAll((JSONArray) jsonParser.parse(noSQLOperationalBean.getData().toString()));
         eventBean.setParameters(params);
         K2Instrumentator.JA_HEALTH_CHECK.getProtectedDB().add(MONGO);

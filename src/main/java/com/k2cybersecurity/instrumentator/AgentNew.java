@@ -74,41 +74,7 @@ public class AgentNew {
                         InstrumentationUtils.shutdownLogic(false);
                     }, "k2-shutdown-hook"));
 
-
-                    /**
-                     * IMPORTANT : Don't touch this shit until & unless very very necessary.
-                     */
-                    AgentBuilder agentBuilder = new AgentBuilder.Default(new ByteBuddy().with(TypeValidation.DISABLED))
-                            .disableClassFormatChanges()
-//									.with(AgentBuilder.Listener.StreamWriting.toSystemOut())
-                            .with(AgentBuilder.RedefinitionStrategy.RETRANSFORMATION)
-                            .with(AgentBuilder.RedefinitionStrategy.DiscoveryStrategy.Reiterating.INSTANCE)
-                            .with(AgentBuilder.TypeStrategy.Default.REDEFINE)
-                            .with(new ClassLoadListener())
-                            .ignore(ElementMatchers.nameStartsWith("sun.reflect.com.k2cybersecurity"))
-//					.with(AgentBuilder.CircularityLock.Inactive.INSTANCE)
-//					.with(new AgentBuilder.CircularityLock.Global())
-//					.with(AgentBuilder.LambdaInstrumentationStrategy.ENABLED)
-                            ;
-
-                    if (StringUtils.equals("IAST", arguments)) {
-                        setIAST(true);
-                    }
-
-                    agentBuilder = doInstrument(agentBuilder, Hooks.TYPE_BASED_HOOKS, "TYPE_BASED", Hooks.DECORATOR_ENTRY);
-                    agentBuilder = doInstrument(agentBuilder, Hooks.NAME_BASED_HOOKS, "NAME_BASED", Hooks.DECORATOR_ENTRY);
-                    agentBuilder = doInstrument(agentBuilder, Hooks.ANNOTATION_BASED_HOOKS, Hooks.DECORATOR_ENTRY);
-
-                    if (getIAST()) {
-                        agentBuilder = doInstrument(agentBuilder, IASTHooks.TYPE_BASED_HOOKS, "TYPE_BASED", IASTHooks.DECORATOR_ENTRY);
-                        agentBuilder = doInstrument(agentBuilder, IASTHooks.NAME_BASED_HOOKS, "NAME_BASED", IASTHooks.DECORATOR_ENTRY);
-                        agentBuilder = doInstrument(agentBuilder, IASTHooks.ANNOTATION_BASED_HOOKS, IASTHooks.DECORATOR_ENTRY);
-
-                    }
-
-                    resettableClassFileTransformer = agentBuilder.installOn(instrumentation);
-
-                    logger.logInit(LogLevel.INFO, HOOKS_ADDED_SUCCESSFULLY, AgentNew.class.getName());
+                    initialiseInstrumentation(logger, arguments, instrumentation);
                     switchLazyInstrumentationLogs(logger);
                 } catch (Throwable e) {
                     String tmpDir = System.getProperty("java.io.tmpdir");
@@ -123,6 +89,43 @@ public class AgentNew {
         k2JaStartupThread.setDaemon(true);
         k2JaStartupThread.start();
 
+    }
+
+    private static void initialiseInstrumentation(FileLoggerThreadPool logger, String arguments, Instrumentation instrumentation) {
+        /**
+         * IMPORTANT : Don't touch this shit until & unless very very necessary.
+         */
+        AgentBuilder agentBuilder = new AgentBuilder.Default(new ByteBuddy().with(TypeValidation.DISABLED))
+                .disableClassFormatChanges()
+//									.with(AgentBuilder.Listener.StreamWriting.toSystemOut())
+                .with(AgentBuilder.RedefinitionStrategy.RETRANSFORMATION)
+                .with(AgentBuilder.RedefinitionStrategy.DiscoveryStrategy.Reiterating.INSTANCE)
+                .with(AgentBuilder.TypeStrategy.Default.REDEFINE)
+                .with(new ClassLoadListener())
+                .ignore(ElementMatchers.nameStartsWith("sun.reflect.com.k2cybersecurity"))
+//					.with(AgentBuilder.CircularityLock.Inactive.INSTANCE)
+//					.with(new AgentBuilder.CircularityLock.Global())
+//					.with(AgentBuilder.LambdaInstrumentationStrategy.ENABLED)
+                ;
+
+        if (StringUtils.equals("IAST", arguments)) {
+            setIAST(true);
+        }
+
+        agentBuilder = doInstrument(agentBuilder, Hooks.TYPE_BASED_HOOKS, "TYPE_BASED", Hooks.DECORATOR_ENTRY);
+        agentBuilder = doInstrument(agentBuilder, Hooks.NAME_BASED_HOOKS, "NAME_BASED", Hooks.DECORATOR_ENTRY);
+        agentBuilder = doInstrument(agentBuilder, Hooks.ANNOTATION_BASED_HOOKS, Hooks.DECORATOR_ENTRY);
+
+        if (getIAST()) {
+            agentBuilder = doInstrument(agentBuilder, IASTHooks.TYPE_BASED_HOOKS, "TYPE_BASED", IASTHooks.DECORATOR_ENTRY);
+            agentBuilder = doInstrument(agentBuilder, IASTHooks.NAME_BASED_HOOKS, "NAME_BASED", IASTHooks.DECORATOR_ENTRY);
+            agentBuilder = doInstrument(agentBuilder, IASTHooks.ANNOTATION_BASED_HOOKS, IASTHooks.DECORATOR_ENTRY);
+
+        }
+
+        resettableClassFileTransformer = agentBuilder.installOn(instrumentation);
+
+        logger.logInit(LogLevel.INFO, HOOKS_ADDED_SUCCESSFULLY, AgentNew.class.getName());
     }
 
     private static void switchLazyInstrumentationLogs(FileLoggerThreadPool logger) {
