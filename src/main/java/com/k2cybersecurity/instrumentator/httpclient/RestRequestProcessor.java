@@ -8,6 +8,9 @@ import com.k2cybersecurity.intcodeagent.models.javaagent.HttpRequestBean;
 import com.k2cybersecurity.intcodeagent.models.javaagent.IntCodeControlCommand;
 import org.apache.commons.lang3.StringUtils;
 
+/**
+ * Request repeater for IAST
+ */
 public class RestRequestProcessor implements Runnable {
 
     public static final String K2_HOME_TMP_CONST = "{{K2_HOME_TMP}}";
@@ -19,6 +22,10 @@ public class RestRequestProcessor implements Runnable {
         this.controlCommand = controlCommand;
     }
 
+
+    /**
+     * Does the request replay in IAST mode.
+     */
     @Override
     public void run() {
         if (controlCommand.getArguments().size() < 2) {

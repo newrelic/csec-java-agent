@@ -4,6 +4,9 @@ import com.k2cybersecurity.intcodeagent.models.javaagent.JavaAgentEventBean;
 
 import java.util.concurrent.Callable;
 
+/**
+ * Task to send events
+ */
 public class EventSender implements Callable<Boolean> {
 
     private Object event;
@@ -20,6 +23,12 @@ public class EventSender implements Callable<Boolean> {
         this.event = event;
     }
 
+    /**
+     * Utility thread to carry and send event one by one.
+     *
+     * @return
+     * @throws Exception
+     */
     @Override
     public Boolean call() throws Exception {
         if (event instanceof JavaAgentEventBean) {

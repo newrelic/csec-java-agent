@@ -38,6 +38,9 @@ import java.util.concurrent.TimeUnit;
 
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.*;
 
+/**
+ * Utility entry point for K2 services
+ */
 public class K2Instrumentator {
 
     private static final String APP_INFO_GATHERING_FINISHED = "[APP_INFO] Application info generated : %s.";
@@ -71,6 +74,12 @@ public class K2Instrumentator {
         }
     }
 
+    /**
+     * In continuation of premain, this will initialise all required K2 service and register application to K2 int code.
+     *
+     * @param isDynamicAttach true, if k2 agent is attached dynamically.
+     * @return
+     */
     public static boolean init(Boolean isDynamicAttach) {
         try {
             K2Instrumentator.isDynamicAttach = isDynamicAttach;
@@ -309,6 +318,14 @@ public class K2Instrumentator {
         }
     }
 
+    /**
+     * Gather all required information of current process.
+     * Generates an {@link ApplicationInfoBean} using the information
+     *
+     * @param identifier
+     *          runtime environment identifier.
+     * @return
+     */
     public static ApplicationInfoBean createApplicationInfoBean(Identifier identifier) {
         // log appinfo create started
         logger.logInit(

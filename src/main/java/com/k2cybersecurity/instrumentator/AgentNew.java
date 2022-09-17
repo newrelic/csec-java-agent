@@ -34,6 +34,12 @@ public class AgentNew {
     public static final String K2_BOOTSTAP_LOADED_PACKAGE_NAME = "sun.reflect.com.k2cybersecurity";
 
     private static boolean initDone = false;
+
+
+    /**
+     * This is called via the Java 1.5 Instrumentation startup. init of the agent.
+     * Will add required transformer to underline JVM.
+     **/
     public static void premain(String arguments, Instrumentation instrumentation) {
         if (initDone) {
             return;

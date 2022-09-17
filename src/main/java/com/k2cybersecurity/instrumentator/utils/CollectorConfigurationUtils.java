@@ -12,6 +12,9 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
 
+/**
+ * Utility class for K2 policy and configuration handling
+ */
 public class CollectorConfigurationUtils {
     public static final String ERROR_WHILE_READING_NLC_COLLECTOR_CONFIG_S_S = "Error while reading NLC Collector config: %s : %s";
     public static final String ERROR_WHILE_READING_NLC_COLLECTOR_CONFIG = "Error while reading NLC Collector config:";
@@ -45,6 +48,16 @@ public class CollectorConfigurationUtils {
         return instance;
     }
 
+
+    /**
+     * Reads the policy and configuration from nlc and alc, perform validation and setup of k2 policies.
+     * If validation fails, set k2 policy to default.
+     *
+     * @param kind                              type of runtime environment {@link IdentifierEnvs}
+     * @param nodeLevelConfigurationPath        file location of node level configuration
+     * @param applicationLevelConfigurationPath file location of application level configuration
+     * @return
+     */
     public boolean readCollectorConfig(IdentifierEnvs kind, String nodeLevelConfigurationPath, String applicationLevelConfigurationPath) {
         NodeLevelConfig nodeLevelConfig = new NodeLevelConfig();
         ApplicationLevelConfig applicationLevelConfig = new ApplicationLevelConfig();

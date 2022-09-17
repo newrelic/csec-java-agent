@@ -15,9 +15,7 @@ import com.k2cybersecurity.intcodeagent.logging.IAgentConstants;
 import com.k2cybersecurity.intcodeagent.models.config.AgentPolicy;
 import com.k2cybersecurity.intcodeagent.utils.CommonUtils;
 import com.k2cybersecurity.intcodeagent.websocket.EventSendPool;
-
 import okhttp3.Response;
-
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -89,6 +87,10 @@ public class PolicyPullST {
         }
     }
 
+
+    /**
+     * On startup, Instantiating collector policy with default values.
+     */
     public static void instantiateDefaultPolicy() {
         logger.log(LogLevel.INFO, "Instantiating collector policy with default!!!", PolicyPullST.class.getName());
         FileUtils.deleteQuietly(AgentUtils.getInstance().getConfigLoadPath());

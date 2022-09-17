@@ -4,7 +4,6 @@ import com.k2cybersecurity.instrumentator.K2Instrumentator;
 import com.k2cybersecurity.instrumentator.custom.ServletContextInfo;
 import com.k2cybersecurity.instrumentator.utils.AgentUtils;
 import com.k2cybersecurity.instrumentator.utils.CallbackUtils;
-import com.k2cybersecurity.instrumentator.utils.CollectorConfigurationUtils;
 import com.k2cybersecurity.instrumentator.utils.HashGenerator;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
@@ -28,6 +27,9 @@ import java.util.regex.Pattern;
 
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.*;
 
+/**
+ * Agent utility for out of band processing and sending of events to K2 validator.
+ */
 public class Dispatcher implements Runnable {
 
     private static final String SEPARATOR_QUESTIONMARK = "?";
@@ -128,6 +130,11 @@ public class Dispatcher implements Runnable {
         this.exitEventBean = exitEventBean;
     }
 
+
+    /**
+     * Processing of hooked data on the basis of case type.
+     * Followed by delegated sending of event.
+     */
     @Override
     public void run() {
         if (this.exitEventBean != null) {
@@ -285,6 +292,10 @@ public class Dispatcher implements Runnable {
         return eventBean;
     }
 
+
+    /**
+     * Validate and send if required event for REFLECTED XSS
+     */
     private void processReflectedXSSEvent() {
         Set<String> xssConstructs = CallbackUtils.checkForReflectedXSS(httpRequestBean);
         JavaAgentEventBean eventBean = prepareEvent(httpRequestBean, metaData, vulnerabilityCaseType);

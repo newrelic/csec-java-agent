@@ -58,6 +58,11 @@ public class WSClient extends WebSocketClient {
         this.addHeader("K2-JSON-VERSION", K2JAVersionInfo.jsonVersion);
     }
 
+    /**
+     * Connects to K2 intcode over a websocket channel with the configuration provided in the constructor itself.
+     *
+     * @throws InterruptedException
+     */
     public void openConnection() throws InterruptedException {
         logger.logInit(LogLevel.INFO, String.format(IAgentConstants.INIT_WS_CONNECTION, CollectorConfigurationUtils.getInstance().getCollectorConfig().getK2ServiceInfo().getValidatorServiceEndpointURL()),
                 WSClient.class.getName());

@@ -21,6 +21,9 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+/**
+ * Event generator and pre processor
+ */
 public class EventDispatcher {
 
     private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
@@ -83,6 +86,17 @@ public class EventDispatcher {
         }
     }
 
+
+    /**
+     * Final information gathering before releasing transaction execution thread.
+     * Pass on control to K2's thread for further processing, event generation and send.
+     * Block the thread if validation response is required to continue transaction execution.
+     *
+     * @param objectBean            parameter and execution info of current transaction
+     * @param vulnerabilityCaseType enum to determine vulnerability case type family.
+     * @param blockAndCheck         true, if protection mode is enabled.
+     * @throws K2CyberSecurityException
+     */
     public static void dispatch(AbstractOperationalBean objectBean, VulnerabilityCaseType vulnerabilityCaseType, boolean blockAndCheck)
             throws K2CyberSecurityException {
         if(!firstEventProcessed.get()) {
@@ -135,6 +149,25 @@ public class EventDispatcher {
         }
     }
 
+    /**
+     * Final information gathering before releasing transaction execution thread.
+     * Pass on control to K2's thread for further processing, event generation and send.
+     * Block the thread if validation response is required to continue transaction execution.
+     *
+     * @param objectBeanList
+     *          list of parameter and execution info of current transaction
+     * @param vulnerabilityCaseType
+     *          enum to determine vulnerability case type family.
+     * @param exectionId
+     *          first execution id from the complete list of transactions being executed
+     * @param className
+     *          user class name of the transaction
+     * @param methodName
+     *          user method name of the transaction
+     * @param sourceMethod
+     *          the hooked method signature
+     * @throws K2CyberSecurityException
+     */
     public static void dispatch(List<SQLOperationalBean> objectBeanList, VulnerabilityCaseType vulnerabilityCaseType,
                                 String exectionId, String className, String methodName, String sourceMethod)
             throws K2CyberSecurityException {
@@ -200,6 +233,31 @@ public class EventDispatcher {
         }
     }
 
+
+    /**
+     * Dispatch for event type REFLECTED_XSS
+     * Final information gathering before releasing transaction execution thread.
+     * Pass on control to K2's thread for further processing, event generation and send.
+     * Block the thread if validation response is required to continue transaction execution.
+     *
+     * @param httpRequestBean
+     *          web/http request of the current execution
+     * @param agentMetaData
+     *          meta information related to the thread in execution
+     * @param sourceString
+     *          the hooked method signature
+     * @param exectionId
+     *          execution id by agent for the current transaction
+     * @param startTime
+     *          timestamp of request hook interception
+     * @param reflectedXss
+     *          Case type denoting reflected XSS
+     * @param className
+     *          user class name
+     * @param methodName
+     *          user method name
+     * @throws K2CyberSecurityException
+     */
     public static void dispatch(HttpRequestBean httpRequestBean, AgentMetaData agentMetaData, String sourceString, String exectionId, long startTime,
                                 VulnerabilityCaseType reflectedXss, String className, String methodName) throws K2CyberSecurityException {
 //		System.out.println("Passed to XSS detection : " + exectionId + " :: " + httpRequestBean.toString()+ " :: " + httpRequestBean.getHttpResponseBean().toString());

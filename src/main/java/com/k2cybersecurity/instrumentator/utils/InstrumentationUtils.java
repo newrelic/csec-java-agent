@@ -32,6 +32,9 @@ import java.util.concurrent.TimeUnit;
 
 import static net.bytebuddy.matcher.ElementMatchers.*;
 
+/**
+ * Instrumentation related Utilities
+ */
 public class InstrumentationUtils {
 
     private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
@@ -64,6 +67,16 @@ public class InstrumentationUtils {
 
     public static ResettableClassFileTransformer resettableClassFileTransformer;
 
+
+    /**
+     * Generate advices for Name Based and Type Based hooks listed in {@link com.k2cybersecurity.instrumentator.Hooks}
+     *
+     * @param builder    ByteBuddy agent builder
+     * @param hookMap    map containing list of advices to be generated
+     * @param typeOfHook This can be either NAME_BASED or TYPE_BASED
+     * @param decorators map containing list of decorators w.r.t hookMap
+     * @return
+     */
     public static AgentBuilder doInstrument(AgentBuilder builder, Map<String, List<String>> hookMap,
                                             String typeOfHook, Map<String, String> decorators) {
         for (Map.Entry<String, List<String>> entry : hookMap.entrySet()) {
@@ -219,6 +232,17 @@ public class InstrumentationUtils {
     }
 
 
+    /**
+     * Generate advices for Annotation Based hooks listed in {@link com.k2cybersecurity.instrumentator.Hooks}
+     *
+     * @param builder
+     *          ByteBuddy agent builder
+     * @param hooks
+     *          map containing list of advices to be generated
+     * @param decorators
+     *          map containing list of decorators w.r.t hookMap
+     * @return
+     */
     public static AgentBuilder doInstrument(AgentBuilder builder, Set<String> hooks, Map<String, String> decorators) {
         for (String entry : hooks) {
             AgentBuilder.Identified.Narrowable junction = builder.type(not(isInterface()));
