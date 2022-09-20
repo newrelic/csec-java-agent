@@ -591,8 +591,7 @@ public class AgentUtils {
 
     public String getSHA256HexDigest(List<String> data) {
         data.removeAll(Collections.singletonList(null));
-        String input = StringUtils.joinWith(TWO_PIPES, data);
-        return DigestUtils.sha256Hex(input);
+        return HashGenerator.getXxHash64Digest(data);
     }
 
     /**

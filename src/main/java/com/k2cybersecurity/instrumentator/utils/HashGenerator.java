@@ -3,6 +3,9 @@ package com.k2cybersecurity.instrumentator.utils;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.logging.DeployedApplication;
+
+import net.openhft.hashing.LongHashFunction;
+
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.apache.commons.io.FileUtils;
@@ -40,6 +43,7 @@ public class HashGenerator {
     public static final String ERROR = "Error :";
     public static final String WEBAPP_DETECTION_SHA_INFO_S = "Webapp detection SHA info :  %s";
     public static final String STRING_SEP = "-";
+    private static final LongHashFunction xxHashFunction = LongHashFunction.xx3(3214658854114272368L);
 
     /**
      * generates hash of a file content according to the algorithm provided.
@@ -144,6 +148,18 @@ public class HashGenerator {
         data.removeAll(Collections.singletonList(null));
         String input = StringUtils.join(data);
         return getChecksum(input);
+    }
+    
+    /**
+     * Gets the xxHash64 hex digest.
+     *
+     * @param data list of strings who's hash is to be generated
+     * @return the digest as a hex string
+     */
+    public static String getXxHash64Digest(List<String> data) {
+        data.removeAll(Collections.singletonList(null));
+        String input = String.join(TWO_PIPES, data);;
+        return String.valueOf(xxHashFunction.hashChars(input));
     }
 
     public static void createTarGz(File tmpAppDir, File tmpTarFile) throws IOException {
