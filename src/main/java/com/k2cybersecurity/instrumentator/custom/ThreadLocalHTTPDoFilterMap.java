@@ -13,6 +13,9 @@ public class ThreadLocalHTTPDoFilterMap {
     private String currentGenericServletMethodName = StringUtils.EMPTY;
 
     @JsonIgnore
+    private int currentGenericServletStackLength = -1;
+
+    @JsonIgnore
     private boolean userCodeEncountered = false;
 
     public boolean isUserCodeEncountered() {
@@ -39,6 +42,14 @@ public class ThreadLocalHTTPDoFilterMap {
         this.currentGenericServletMethodName = currentGenericServletMethodName;
     }
 
+    public int getCurrentGenericServletStackLength() {
+        return currentGenericServletStackLength;
+    }
+
+    public void setCurrentGenericServletStackLength(int currentGenericServletStackLength) {
+        this.currentGenericServletStackLength = currentGenericServletStackLength;
+    }
+
     private static ThreadLocal<ThreadLocalHTTPDoFilterMap> instance =
             new ThreadLocal<ThreadLocalHTTPDoFilterMap>() {
                 @Override
@@ -63,6 +74,7 @@ public class ThreadLocalHTTPDoFilterMap {
         currentGenericServletInstance = null;
         currentGenericServletMethodName = StringUtils.EMPTY;
         userCodeEncountered = false;
+        currentGenericServletStackLength = -1;
     }
 
 }

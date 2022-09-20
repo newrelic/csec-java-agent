@@ -5,6 +5,9 @@ import com.k2cybersecurity.instrumentator.custom.ThreadLocalHTTPDoFilterMap;
 import com.k2cybersecurity.instrumentator.utils.AgentUtils;
 import com.k2cybersecurity.intcodeagent.models.javaagent.UserClassEntity;
 import com.k2cybersecurity.intcodeagent.websocket.JsonConverter;
+
+import java.util.Arrays;
+
 import org.apache.commons.lang3.StringUtils;
 
 public abstract class AbstractOperationalBean {
@@ -57,6 +60,10 @@ public abstract class AbstractOperationalBean {
         this.currentGenericServletMethodName = ThreadLocalHTTPDoFilterMap.getInstance().getCurrentGenericServletMethodName();
         this.currentGenericServletInstance = ThreadLocalHTTPDoFilterMap.getInstance().getCurrentGenericServletInstance();
         this.stackTrace = Thread.currentThread().getStackTrace();
+        if (ThreadLocalHTTPDoFilterMap.getInstance().getCurrentGenericServletStackLength() >= 0) {
+            // TODO: Can think of adding 2-3 more frames to give context of the execution.
+            this.stackTrace = Arrays.copyOfRange(this.stackTrace, 0, this.stackTrace.length - ThreadLocalHTTPDoFilterMap.getInstance().getCurrentGenericServletStackLength() + 1);
+        }
         this.userClassEntity = AgentUtils.getInstance().detectUserClass(this.stackTrace,
                 this.currentGenericServletInstance,
                 this.currentGenericServletMethodName, className, methodName);
