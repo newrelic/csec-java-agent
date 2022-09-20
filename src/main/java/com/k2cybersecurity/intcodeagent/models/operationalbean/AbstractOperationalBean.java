@@ -62,7 +62,7 @@ public abstract class AbstractOperationalBean {
         this.stackTrace = Thread.currentThread().getStackTrace();
         if (ThreadLocalHTTPDoFilterMap.getInstance().getCurrentGenericServletStackLength() >= 0) {
             // TODO: Can think of adding 2-3 more frames to give context of the execution.
-            this.stackTrace = Arrays.copyOfRange(this.stackTrace, 0, this.stackTrace.length - ThreadLocalHTTPDoFilterMap.getInstance().getCurrentGenericServletStackLength() + 1);
+            this.stackTrace = Arrays.copyOfRange(this.stackTrace, 0, this.stackTrace.length - ThreadLocalHTTPDoFilterMap.getInstance().getCurrentGenericServletStackLength() + 3);
         }
         this.userClassEntity = AgentUtils.getInstance().detectUserClass(this.stackTrace,
                 this.currentGenericServletInstance,
