@@ -683,9 +683,9 @@ public class AgentUtils {
             }
         }
         newTraceForIdCalc.removeAll(recordsToDelete);
-        newTraceForIdCalc.forEach(stackTraceElement -> {
+        for (StackTraceElement stackTraceElement : newTraceForIdCalc) {
             newTraceStringForIdCalc.add(stackTraceElement.toString());
-        });
+        }
         stackTrace = Arrays.copyOfRange(stackTrace, resetFactor, stackTrace.length);
         operationalBean.setStackTrace(stackTrace);
         operationalBean.getUserClassEntity().setTraceLocationEnd(operationalBean.getUserClassEntity().getTraceLocationEnd() - resetFactor);
