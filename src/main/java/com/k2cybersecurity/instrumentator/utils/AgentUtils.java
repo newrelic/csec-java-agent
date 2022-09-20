@@ -589,7 +589,7 @@ public class AgentUtils {
         }
     }
 
-    public String getSHA256HexDigest(List<String> data) {
+    public String getSHA256HexDigest(List<String> data) throws IOException {
         data.removeAll(Collections.singletonList(null));
         return HashGenerator.getXxHash64Digest(data);
     }
@@ -699,7 +699,11 @@ public class AgentUtils {
         // TODO : Write Application detection mechanism for a given event.
         idData.addAll(traceForIdCalc);
         idData.add(vulnerabilityCaseType.getCaseType());
-        operationalBean.setApiID(AgentUtils.getInstance().getSHA256HexDigest(idData));
+        try {
+            operationalBean.setApiID(AgentUtils.getInstance().getSHA256HexDigest(idData));
+        } catch (IOException e) {
+            operationalBean.setApiID("UNDEFINED");
+        }
     }
 
     public long getProcessID(Process p) {

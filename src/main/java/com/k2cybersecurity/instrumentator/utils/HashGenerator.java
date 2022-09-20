@@ -156,10 +156,12 @@ public class HashGenerator {
      * @param data list of strings who's hash is to be generated
      * @return the digest as a hex string
      */
-    public static String getXxHash64Digest(List<String> data) {
+    public static String getXxHash64Digest(List<String> data) throws IOException {
         data.removeAll(Collections.singletonList(null));
-        String input = String.join(TWO_PIPES, data);;
-        return String.valueOf(xxHashFunction.hashChars(input));
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        ObjectOutputStream outputStream = new ObjectOutputStream(byteArrayOutputStream);
+        outputStream.writeObject(data);
+        return String.valueOf(xxHashFunction.hashBytes(byteArrayOutputStream.toByteArray()));
     }
 
     public static void createTarGz(File tmpAppDir, File tmpTarFile) throws IOException {
