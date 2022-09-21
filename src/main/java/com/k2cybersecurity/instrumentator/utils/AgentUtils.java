@@ -589,11 +589,6 @@ public class AgentUtils {
         }
     }
 
-    public String getSHA256HexDigest(List<String> data) throws IOException {
-        data.removeAll(Collections.singletonList(null));
-        return HashGenerator.getXxHash64Digest(data);
-    }
-
     /**
      * @return the rxssSentUrls
      */
@@ -691,7 +686,6 @@ public class AgentUtils {
         List<StackTraceElement> recordsToDelete = new ArrayList<>();
 
         List<StackTraceElement> newTraceForIdCalc = new ArrayList<>();
-        List<String> newTraceStringForIdCalc = new ArrayList<>();
 
         newTraceForIdCalc.addAll(Arrays.asList(stackTrace));
 
@@ -710,24 +704,16 @@ public class AgentUtils {
             }
         }
         newTraceForIdCalc.removeAll(recordsToDelete);
-        for (StackTraceElement stackTraceElement : newTraceForIdCalc) {
-            newTraceStringForIdCalc.add(stackTraceElementToString(stackTraceElement));
-        }
         stackTrace = Arrays.copyOfRange(stackTrace, resetFactor, stackTrace.length);
         operationalBean.setStackTrace(stackTrace);
         operationalBean.getUserClassEntity().setTraceLocationEnd(operationalBean.getUserClassEntity().getTraceLocationEnd() - resetFactor);
-        setAPIId(operationalBean, newTraceStringForIdCalc, vulnerabilityCaseType);
+        setAPIId(operationalBean, newTraceForIdCalc, vulnerabilityCaseType);
         operationalBean.setStackProcessed(true);
     }
 
-    private static void setAPIId(AbstractOperationalBean operationalBean, List<String> traceForIdCalc, VulnerabilityCaseType vulnerabilityCaseType) {
-        List<String> idData = new ArrayList<>();
-
-        // TODO : Write Application detection mechanism for a given event.
-        idData.addAll(traceForIdCalc);
-        idData.add(vulnerabilityCaseType.getCaseType());
+    private static void setAPIId(AbstractOperationalBean operationalBean, List<StackTraceElement> traceForIdCalc, VulnerabilityCaseType vulnerabilityCaseType) {
         try {
-            operationalBean.setApiID(AgentUtils.getInstance().getSHA256HexDigest(idData));
+            operationalBean.setApiID(HashGenerator.getXxHash64Digest(traceForIdCalc) + "-" + vulnerabilityCaseType.getCaseType());
         } catch (IOException e) {
             operationalBean.setApiID("UNDEFINED");
         }

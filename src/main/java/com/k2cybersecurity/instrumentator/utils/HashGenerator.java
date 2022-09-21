@@ -156,8 +156,7 @@ public class HashGenerator {
      * @param data list of strings who's hash is to be generated
      * @return the digest as a hex string
      */
-    public static String getXxHash64Digest(List<String> data) throws IOException {
-        data.removeAll(Collections.singletonList(null));
+    public static String getXxHash64Digest(List<?> data) throws IOException {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         ObjectOutputStream outputStream = new ObjectOutputStream(byteArrayOutputStream);
         outputStream.writeObject(data);
