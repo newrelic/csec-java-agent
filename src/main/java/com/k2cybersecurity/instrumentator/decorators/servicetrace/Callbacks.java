@@ -19,6 +19,7 @@ public class Callbacks {
 
                 ThreadLocalHTTPDoFilterMap.getInstance().setCurrentGenericServletInstance(classRef);
                 ThreadLocalHTTPDoFilterMap.getInstance().setCurrentGenericServletMethodName(methodName);
+                // TODO: We need to place this inside some lock. For all jsp nested invocation, this stack fetch is happening which is expensive
                 StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
                 ThreadLocalHTTPDoFilterMap.getInstance()
                         .setCurrentGenericServletStackLength(stackTrace.length);

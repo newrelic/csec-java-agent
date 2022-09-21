@@ -10,8 +10,6 @@ public class Callbacks {
                                  String exectionId) {
         ThreadLocalHTTPDoFilterMap.getInstance().setCurrentGenericServletInstance(classRef);
         ThreadLocalHTTPDoFilterMap.getInstance().setCurrentGenericServletMethodName(methodName);
-        ThreadLocalHTTPDoFilterMap.getInstance()
-                .setCurrentGenericServletStackLength(Thread.currentThread().getStackTrace().length);
 
         if (!ThreadLocalOperationLock.getInstance().isAcquired()
                 && !ThreadLocalHTTPDoFilterLock.getInstance().isAcquired()) {
@@ -21,6 +19,10 @@ public class Callbacks {
                 ThreadLocalHTTPDoFilterLock.getInstance().resetLock();
                 ThreadLocalHTTPDoFilterMap.getInstance().cleanUp();
                 ThreadLocalHTTPDoFilterLock.getInstance().acquire(obj, sourceString, exectionId);
+                ThreadLocalHTTPDoFilterMap.getInstance().setCurrentGenericServletInstance(classRef);
+                ThreadLocalHTTPDoFilterMap.getInstance().setCurrentGenericServletMethodName(methodName);
+                ThreadLocalHTTPDoFilterMap.getInstance()
+                        .setCurrentGenericServletStackLength(Thread.currentThread().getStackTrace().length);
 
 
             } finally {
