@@ -734,7 +734,7 @@ public class Dispatcher implements Runnable {
         String[] traceData = new String[trace.length];
 
         for (int i = trace.length - 1; i >= 0; i--) {
-            traceData[i] = trace[i].toString();
+            traceData[i] = AgentUtils.stackTraceElementToString(trace[i]);
         }
 
         for (int i = 0; i < traceData.length; i++) {
