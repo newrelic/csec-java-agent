@@ -150,9 +150,9 @@ public class LogWriter implements Runnable {
         sb.append(StringUtils.LF);
         try {
 
-            if (!currentLogFile.isFile()) {
-                createLogFile();
-            }
+//            if (!currentLogFile.isFile()) {
+//                createLogFile();
+//            }
 //			System.out.println(sb.toString());
             writer.write(sb.toString());
             writer.flush();
