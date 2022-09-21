@@ -606,7 +606,7 @@ public class ThreadLocalHttpMap {
         bufferOffset = 0;
         bufferLimit = 0;
         responseBufferLimit = 0;
-        byteBuffer = ByteBuffer.allocate(1024 * 8);
+        byteBuffer.clear();
         outputBodyBuilder = new StringBuilder();
         requestInputStream = null;
         requestReader = null;

@@ -655,6 +655,33 @@ public class AgentUtils {
         operationalBean.setStackTrace(stackTrace);
     }
 
+    public static String stackTraceElementToString(StackTraceElement element){
+        StringBuilder builder = new StringBuilder(element.getClassName());
+        builder.append(".");
+        builder.append(element.getMethodName());
+        
+        if(element.isNativeMethod()) {
+            builder.append("(Native Method)");
+        } else {
+            if(element.getFileName() != null && element.getLineNumber() >= 0){
+                builder.append("(");
+                builder.append(element.getFileName());
+                builder.append(":");
+                builder.append(element.getLineNumber());
+                builder.append(")");
+            } else {
+                if(element.getFileName() != null) {
+                    builder.append("(");
+                    builder.append(element.getFileName());
+                    builder.append(")");
+                } else {
+                    builder.append("(Unknown Source)");
+                }
+            }
+        }
+        
+        return builder.toString();
+    }
     public static void preProcessStackTrace(AbstractOperationalBean operationalBean, VulnerabilityCaseType vulnerabilityCaseType) {
         if (operationalBean.isStackProcessed()) {
             return;
@@ -684,7 +711,7 @@ public class AgentUtils {
         }
         newTraceForIdCalc.removeAll(recordsToDelete);
         for (StackTraceElement stackTraceElement : newTraceForIdCalc) {
-            newTraceStringForIdCalc.add(stackTraceElement.toString());
+            newTraceStringForIdCalc.add(stackTraceElementToString(stackTraceElement));
         }
         stackTrace = Arrays.copyOfRange(stackTrace, resetFactor, stackTrace.length);
         operationalBean.setStackTrace(stackTrace);

@@ -168,6 +168,7 @@ public class LogWriter implements Runnable {
     private static void rollover(String fileName) throws IOException {
 
         File currentFile = new File(fileName);
+        // TODO: we should check file size using FS meta.
         if (currentFile.length() > maxFileSize) {
             writer.close();
             logFileCounter++;
