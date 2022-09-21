@@ -731,8 +731,14 @@ public class Dispatcher implements Runnable {
                                                  VulnerabilityCaseType vulnerabilityCaseType, boolean deserialisationCheck) {
 
         String klassName = null;
+        String[] traceData = new String[trace.length];
 
-        for (int i = 0; i < trace.length; i++) {
+        for (int i = trace.length - 1; i >= 0; i--) {
+            traceData[i] = trace[i].toString();
+        }
+
+        for (int i = 0; i < traceData.length; i++) {
+            // TODO : check this sequence. Why this is being set from inside Deserialisation check.
             if (isGeneratedByBuddy) {
                 logger.log(LogLevel.DEBUG, DROPPING_EVENT_AS_IT_WAS_GENERATED_BY_K_2_INTERNAL_API_CALL + eventBean,
                         Dispatcher.class.getName());
@@ -746,8 +752,8 @@ public class Dispatcher implements Runnable {
                     || VulnerabilityCaseType.FILE_OPERATION.equals(vulnerabilityCaseType)
                     || VulnerabilityCaseType.HTTP_REQUEST.equals(vulnerabilityCaseType)
                     || VulnerabilityCaseType.SYSTEM_EXIT.equals(vulnerabilityCaseType)) {
-                rciTriggerCheck(i, eventBean, klassName);
-                xxeTriggerCheck(i, eventBean, klassName);
+                rciTriggerCheck(i, eventBean, klassName, traceData);
+                xxeTriggerCheck(i, eventBean, klassName, traceData);
                 if (deserialisationCheck) {
                     deserializationTriggerCheck(i, eventBean, klassName);
                 }
@@ -759,7 +765,7 @@ public class Dispatcher implements Runnable {
         return eventBean;
     }
 
-    private void xxeTriggerCheck(int i, JavaAgentEventBean eventBean, String klassName) {
+    private void xxeTriggerCheck(int i, JavaAgentEventBean eventBean, String klassName, String[] traceData) {
 
         if ((StringUtils.contains(klassName, XML_DOCUMENT_FRAGMENT_SCANNER_IMPL)
                 && StringUtils.equals(trace[i].getMethodName(), SCAN_DOCUMENT))
@@ -767,7 +773,7 @@ public class Dispatcher implements Runnable {
                 && StringUtils.equals(trace[i].getMethodName(), SETUP_CURRENT_ENTITY))) {
             eventBean.getMetaData().setTriggerViaXXE(true);
             logger.log(LogLevel.DEBUG,
-                    String.format(PRINTING_STACK_TRACE_FOR_XXE_EVENT_S_S, eventBean.getId(), Arrays.asList(trace)),
+                    String.format(PRINTING_STACK_TRACE_FOR_XXE_EVENT_S_S, eventBean.getId(), Arrays.asList(traceData)),
                     Dispatcher.class.getName());
         }
     }
@@ -788,19 +794,19 @@ public class Dispatcher implements Runnable {
         }
     }
 
-    private void rciTriggerCheck(int index, JavaAgentEventBean eventBean, String klassName) {
-        if (!StringUtils.contains(trace[index].toString(), DOT_JAVA_COLON) && index > 0
-                && StringUtils.contains(trace[index - 1].toString(), DOT_JAVA_COLON)) {
+    private void rciTriggerCheck(int index, JavaAgentEventBean eventBean, String klassName, String[] traceData) {
+        if (!StringUtils.contains(traceData[index], DOT_JAVA_COLON) && index > 0
+                && StringUtils.contains(traceData[index - 1], DOT_JAVA_COLON)) {
             eventBean.getMetaData().setTriggerViaRCI(true);
-            eventBean.getMetaData().getRciMethodsCalls().add(trace[index].toString());
-            eventBean.getMetaData().getRciMethodsCalls().add(trace[index - 1].toString());
+            eventBean.getMetaData().getRciMethodsCalls().add(traceData[index]);
+            eventBean.getMetaData().getRciMethodsCalls().add(traceData[index - 1]);
 //			logger.log(LogLevel.DEBUG, String.format(PRINTING_STACK_TRACE_FOR_PROBABLE_RCI_EVENT_S_S,
 //					eventBean.getId(), Arrays.asList(trace)), Dispatcher.class.getName());
         }
         if (StringUtils.contains(klassName, REFLECT_NATIVE_METHOD_ACCESSOR_IMPL)
                 && StringUtils.equals(trace[index].getMethodName(), INVOKE_0) && index > 0) {
             eventBean.getMetaData().setTriggerViaRCI(true);
-            eventBean.getMetaData().getRciMethodsCalls().add(trace[index - 1].toString());
+            eventBean.getMetaData().getRciMethodsCalls().add(traceData[index - 1]);
 //			logger.log(LogLevel.DEBUG, String.format(PRINTING_STACK_TRACE_FOR_RCI_EVENT_S_S, eventBean.getId(),
 //					Arrays.asList(trace)), Dispatcher.class.getName());
         }
