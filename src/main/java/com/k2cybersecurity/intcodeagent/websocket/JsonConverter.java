@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.k2cybersecurity.instrumentator.utils.AgentUtils;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import org.apache.commons.lang3.StringUtils;
@@ -123,7 +124,7 @@ public class JsonConverter {
         } else if (value instanceof Map) {
             return processMap((Map) value);
         } else if (value instanceof StackTraceElement) {
-            return value.toString();
+            return AgentUtils.stackTraceElementToString((StackTraceElement) value);
         } else {
             return value;
         }
