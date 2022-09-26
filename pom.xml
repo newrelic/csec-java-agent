@@ -154,6 +154,11 @@
             <artifactId>oshi-core</artifactId>
             <version>5.5.0</version>
         </dependency>
+        <dependency>
+            <groupId>com.newrelic.agent.java</groupId>
+            <artifactId>newrelic-api</artifactId>
+            <version>7.11.0-SNAPSHOT</version>
+        </dependency>
     </dependencies>
     <build>
         <finalName>${artifactId}</finalName>
