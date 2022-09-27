@@ -4,6 +4,7 @@ import com.k2cybersecurity.instrumentator.custom.ClassLoadListener;
 import com.k2cybersecurity.instrumentator.utils.InstrumentationUtils;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
+import com.newrelic.api.agent.NewRelic;
 import net.bytebuddy.ByteBuddy;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.dynamic.scaffold.TypeValidation;
@@ -16,6 +17,7 @@ import java.io.PrintStream;
 import java.lang.instrument.Instrumentation;
 import java.lang.reflect.Method;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
 
 import static com.k2cybersecurity.instrumentator.utils.InstrumentationUtils.*;
 
@@ -65,6 +67,12 @@ public class AgentNew {
             @Override
             public void run() {
                 try {
+                    int attempt = 0;
+                    while(attempt <= 3 && StringUtils.isBlank(NewRelic.getAgent().getLinkingMetadata().getOrDefault("entity.guid", StringUtils.EMPTY))) {
+                        attempt++;
+                        sleep(10000);
+                    }
+                    NewRelic.getAgent().getLogger().log(Level.INFO, "Start K2 security module services since entity.guid is now know: {0}", NewRelic.getAgent().getLinkingMetadata().getOrDefault("entity.guid", StringUtils.EMPTY));
                     awaitServerStartUp(instrumentation, ClassLoader.getSystemClassLoader());
                     FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
 
@@ -94,7 +102,6 @@ public class AgentNew {
         };
         k2JaStartupThread.setDaemon(true);
         k2JaStartupThread.start();
-
     }
 
     private static void initialiseInstrumentation(FileLoggerThreadPool logger, String arguments, Instrumentation instrumentation) {
