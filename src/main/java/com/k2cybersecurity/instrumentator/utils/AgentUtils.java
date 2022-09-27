@@ -18,16 +18,13 @@ import com.k2cybersecurity.intcodeagent.models.javaagent.UserClassEntity;
 import com.k2cybersecurity.intcodeagent.models.javaagent.VulnerabilityCaseType;
 import com.k2cybersecurity.intcodeagent.models.operationalbean.AbstractOperationalBean;
 import com.k2cybersecurity.intcodeagent.schedulers.PolicyPullST;
+import com.newrelic.api.agent.NewRelic;
 import com.sun.jna.Pointer;
 import com.sun.jna.platform.win32.Kernel32;
 import com.sun.jna.platform.win32.WinNT;
 import net.bytebuddy.description.type.TypeDescription;
-import org.apache.commons.codec.digest.DigestUtils;
-import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
-import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipArchiveInputStream;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -35,14 +32,9 @@ import java.io.*;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.FileSystems;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.nio.file.attribute.PosixFilePermission;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -78,6 +70,7 @@ public class AgentUtils {
     public static final String ENFORCING_POLICY = "Enforcing policy";
     public static final String LOG_LEVEL_PROVIDED_IN_POLICY_IS_INCORRECT_DEFAULTING_TO_INFO = "Log level provided in policy is incorrect: %s. Staying at current level";
     public static final String ERROR_WHILE_EXTRACTING_FILE_FROM_ARCHIVE_S_S = "Error while extracting file from archive : %s : %s";
+    public static final String NR_SECURITY_ENABLE = "security.enable";
 
     private Map<String, ClassLoader> classLoaderRecord;
 
@@ -107,8 +100,6 @@ public class AgentUtils {
 
     private AgentPolicyParameters agentPolicyParameters = new AgentPolicyParameters();
 
-    private boolean isAgentActive = true;
-
     private CollectorInitMsg initMsg = null;
 
     private AtomicInteger outboundHttpConnectionId = new AtomicInteger(1000);
@@ -132,7 +123,6 @@ public class AgentUtils {
         TRACE_PATTERN = Pattern.compile(IAgentConstants.TRACE_REGEX);
         File configParentPath = new File(osVariables.getPolicyConfigPath(), K2Instrumentator.APPLICATION_UUID);
         configLoadPath = new File(configParentPath, String.format("lc-policy.yaml", K2Instrumentator.APPLICATION_UUID));
-
     }
 
     public static AgentUtils getInstance() {
@@ -147,11 +137,7 @@ public class AgentUtils {
     }
 
     public boolean isAgentActive() {
-        return isAgentActive;
-    }
-
-    public void setAgentActive(boolean agentActive) {
-        isAgentActive = agentActive;
+        return NewRelic.getAgent().getConfig().getValue(NR_SECURITY_ENABLE, false);
     }
 
 //	public Map<Integer, JADatabaseMetaData> getSqlConnectionMap() {
