@@ -16,6 +16,8 @@ public class AgentBasicInfo {
 
     private static final String SCAN_COMPONENT_DATA = "scanComponentData";
     public static final String FETCH_POLICY = "fetchPolicy";
+    public static final String SEC_EVENT = "sec_event";
+    public static final String SEC_HEALTH_CHECK = "sec_health_check";
 
     /**
      * Tool id for Language Agent.
@@ -49,6 +51,10 @@ public class AgentBasicInfo {
 
     private String emailId;
 
+    private String eventType;
+
+    private String entityGuid;
+
     @JsonInclude
     private static String policyVersion;
 
@@ -64,12 +70,15 @@ public class AgentBasicInfo {
         setCustomerId(CollectorConfigurationUtils.getInstance().getCollectorConfig().getCustomerInfo().getCustomerId());
         setGroupName(AgentUtils.getInstance().getGroupName());
         setEmailId(CollectorConfigurationUtils.getInstance().getCollectorConfig().getCustomerInfo().getEmailId());
+        setEventType(AgentUtils.getInstance().getEntityGuid());
         if (this instanceof ApplicationInfoBean) {
             setJsonName(JSON_NAME_APPLICATION_INFO_BEAN);
         } else if (this instanceof JavaAgentEventBean) {
             setJsonName(JSON_NAME_INTCODE_RESULT_BEAN);
+            setEventType(SEC_EVENT);
         } else if (this instanceof JAHealthCheck) {
             setJsonName(JSON_NAME_HEALTHCHECK);
+            setEventType(SEC_HEALTH_CHECK);
         } else if (this instanceof ShutDownEvent) {
             setJsonName(JSON_NAME_SHUTDOWN);
         } else if (this instanceof JavaAgentDynamicPathBean) {
@@ -200,5 +209,21 @@ public class AgentBasicInfo {
 
     public void setBuildNumber(String buildNumber) {
         this.buildNumber = buildNumber;
+    }
+
+    public String getEventType() {
+        return eventType;
+    }
+
+    public void setEventType(String eventType) {
+        this.eventType = eventType;
+    }
+
+    public String getEntityGuid() {
+        return entityGuid;
+    }
+
+    public void setEntityGuid(String entityGuid) {
+        this.entityGuid = entityGuid;
     }
 }

@@ -1,6 +1,7 @@
 package com.k2cybersecurity.instrumentator;
 
 import com.k2cybersecurity.instrumentator.custom.ClassLoadListener;
+import com.k2cybersecurity.instrumentator.utils.AgentUtils;
 import com.k2cybersecurity.instrumentator.utils.InstrumentationUtils;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
@@ -48,10 +49,14 @@ public class AgentNew {
         }
         initDone = true;
 
-        if (StringUtils.equals(System.getenv().get("K2_DISABLE"), "true") || StringUtils.equals(System.getenv().get("K2_ATTACH"), "false")) {
+        /* K2_DISABLE is no longer valid */
+        if (StringUtils.equals(System.getenv().get("K2_DISABLE"), "true") || NewRelic.getAgent().getConfig().getValue("security.force_disable", false)) {
             System.err.println("[K2-JA] Process attachment aborted!!! K2 is set to disable.");
+            NewRelic.getAgent().getLogger().log(Level.INFO, "Security disabled forcefully!!! To enable security please set config parameter security.force_disable to true and restart the application.");
             return;
         }
+
+        //TODO read NR config for mode/group name. clean the below code afterwards
         if (StringUtils.isBlank(System.getenv("K2_GROUP_NAME"))) {
             System.err.println("[K2-JA] K2_GROUP_NAME is not set. Falling back to IAST");
 //            return;
@@ -63,15 +68,23 @@ public class AgentNew {
         gobalInstrumentation = instrumentation;
 
 
-        Thread k2JaStartupThread = new Thread("K2-JA-StartUp") {
+        Thread k2JaStartupThread = new Thread("K2-Security-StartUp") {
             @Override
             public void run() {
                 try {
                     int attempt = 0;
-                    while(attempt <= 3 && StringUtils.isBlank(NewRelic.getAgent().getLinkingMetadata().getOrDefault("entity.guid", StringUtils.EMPTY))) {
+                    String entityGuid = NewRelic.getAgent().getLinkingMetadata().getOrDefault("entity.guid", StringUtils.EMPTY);
+                    while (attempt <= 3 && StringUtils.isBlank(entityGuid)) {
                         attempt++;
-                        sleep(10000);
+                        TimeUnit.SECONDS.sleep(10);
+                        entityGuid = NewRelic.getAgent().getLinkingMetadata().getOrDefault("entity.guid", StringUtils.EMPTY);
                     }
+                    if (StringUtils.isBlank(entityGuid)) {
+                        NewRelic.getAgent().getLogger().log(Level.SEVERE, "Process security aborted!!! since entity.guid is not known.");
+                        return;
+                    }
+                    AgentUtils.getInstance().setEntityGuid(entityGuid);
+                    AgentUtils.getInstance().setAgentActive(true);
                     NewRelic.getAgent().getLogger().log(Level.INFO, "Start K2 security module services since entity.guid is now know: {0}", NewRelic.getAgent().getLinkingMetadata().getOrDefault("entity.guid", StringUtils.EMPTY));
                     awaitServerStartUp(instrumentation, ClassLoader.getSystemClassLoader());
                     FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();

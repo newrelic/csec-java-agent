@@ -114,6 +114,10 @@ public class AgentUtils {
 
     private OSVariables osVariables = OsVariablesInstance.getInstance().getOsVariables();
 
+    private boolean isAgentActive = false;
+
+    private String entityGuid;
+
     private AgentUtils() {
         eventResponseSet = new ConcurrentHashMap<>();
         classLoaderRecord = new ConcurrentHashMap<>();
@@ -136,8 +140,12 @@ public class AgentUtils {
         return instance;
     }
 
+    public void setAgentActive(boolean agentActive) {
+        isAgentActive = agentActive;
+    }
+
     public boolean isAgentActive() {
-        return NewRelic.getAgent().getConfig().getValue(NR_SECURITY_ENABLE, false);
+        return isAgentActive && NewRelic.getAgent().getConfig().getValue(NR_SECURITY_ENABLE, false);
     }
 
 //	public Map<Integer, JADatabaseMetaData> getSqlConnectionMap() {
@@ -202,6 +210,14 @@ public class AgentUtils {
 
     public void setAgentPolicyParameters(AgentPolicyParameters agentPolicyParameters) {
         this.agentPolicyParameters = agentPolicyParameters;
+    }
+
+    public String getEntityGuid() {
+        return entityGuid;
+    }
+
+    public void setEntityGuid(String entityGuid) {
+        this.entityGuid = entityGuid;
     }
 
     public void createProtectedVulnerabilties(TypeDescription typeDescription, ClassLoader classLoader) {
