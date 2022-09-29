@@ -6,6 +6,7 @@ import com.k2cybersecurity.instrumentator.utils.*;
 import com.k2cybersecurity.intcodeagent.constants.AgentServices;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
+import com.k2cybersecurity.intcodeagent.filelogging.LogWriter;
 import com.k2cybersecurity.intcodeagent.logging.HealthCheckScheduleThread;
 import com.k2cybersecurity.intcodeagent.models.config.PolicyApplicationInfo;
 import com.k2cybersecurity.intcodeagent.models.javaagent.*;
@@ -14,11 +15,11 @@ import com.k2cybersecurity.intcodeagent.schedulers.GlobalPolicyParameterPullST;
 import com.k2cybersecurity.intcodeagent.schedulers.PolicyPullST;
 import com.k2cybersecurity.intcodeagent.websocket.EventSendPool;
 import com.k2cybersecurity.intcodeagent.websocket.WSClient;
+import com.newrelic.api.agent.NewRelic;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
-import org.jetbrains.annotations.Nullable;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -99,15 +100,11 @@ public class K2Instrumentator {
                     String.format(INIT_STARTED_AGENT_ATTACHED, VMPID, APPLICATION_UUID, attachmentType),
                     K2Instrumentator.class.getName()
             );
-            String groupName = System.getenv("K2_GROUP_NAME");
-            if (StringUtils.isBlank(groupName)) {
-                groupName = DEFAULT_GROUP_NAME;
-//                logger.log(LogLevel.ERROR, "Incomplete startup env parameters provided: Missing K2_GROUP_NAME", K2Instrumentator.class.getName());
-//                System.err.println("[K2 Java Collector] Incomplete startup env parameters provided : Missing K2_GROUP_NAME. Collector exiting.");
-//                return false;
-            }
 
-            AgentUtils.getInstance().setGroupName(groupName);
+            // Set required Group
+            applyRequiredGroup();
+            // Set required LogLevel
+            applyRequiredLogLevel();
 
             String nlcPath = System.getenv("K2_AGENT_NODE_CONFIG");
             String alcPath = System.getenv("K2_AGENT_APP_CONFIG");
@@ -176,7 +173,39 @@ public class K2Instrumentator {
         return false;
     }
 
-    @Nullable
+    /*
+        TODO : This does best effort translation of loglevel from NR config log level to K2 log level.
+        Proper translation or use of NR logger completely needs to be implemented.
+     */
+    private static void applyRequiredLogLevel() {
+        String logLevel = "INFO";
+
+        if(System.getenv().containsKey("K2_LOG_LEVEL")){
+            logLevel = System.getenv().get("K2_LOG_LEVEL");
+        } else if (StringUtils.isNotBlank(NewRelic.getAgent().getConfig().getValue("log_level"))) {
+            logLevel = NewRelic.getAgent().getConfig().getValue("log_level");
+        } else if (StringUtils.isNotBlank(NewRelic.getAgent().getConfig().getValue("log_level"))) {
+            logLevel = NewRelic.getAgent().getConfig().getValue("log_level");
+        }
+
+        try {
+            LogWriter.setLogLevel(LogLevel.valueOf(logLevel));
+        } catch (Exception e) {
+            LogWriter.setLogLevel(LogLevel.INFO);
+        }
+    }
+
+    private static void applyRequiredGroup() {
+        String groupName = System.getenv().get("K2_GROUP_NAME");
+        if(StringUtils.isNotBlank(groupName)){
+            AgentUtils.getInstance().setGroupName(groupName);
+        } else if (StringUtils.isNotBlank(NewRelic.getAgent().getConfig().getValue("security.mode"))) {
+            AgentUtils.getInstance().setGroupName(NewRelic.getAgent().getConfig().getValue("security.mode"));
+        } else {
+            AgentUtils.getInstance().setGroupName("RASP");
+        }
+    }
+
     private static boolean startK2Services() throws InterruptedException, URISyntaxException {
         if (tryWebsocketConnection()) {
             return false;
@@ -191,18 +220,6 @@ public class K2Instrumentator {
         logger.logInit(
                 LogLevel.INFO,
                 String.format(STARTED_MODULE_LOG, AgentServices.HealthCheck.name()),
-                K2Instrumentator.class.getName()
-        );
-
-        logger.logInit(
-                LogLevel.INFO,
-                String.format(STARTING_MODULE_LOG, AgentServices.DirectoryWatcher.name()),
-                K2Instrumentator.class.getName()
-        );
-        DirectoryWatcher.startMonitorDaemon();
-        logger.logInit(
-                LogLevel.INFO,
-                String.format(STARTED_MODULE_LOG, AgentServices.DirectoryWatcher.name()),
                 K2Instrumentator.class.getName()
         );
 
@@ -270,7 +287,7 @@ public class K2Instrumentator {
         }
     }
 
-    private static boolean setK2HomePath() {
+    public static boolean setK2HomePath() {
         K2_HOME = System.getenv("K2_HOME");
         if (!isValidK2HomePath(K2_HOME)) {
             //Fall back to default K2Home
@@ -339,6 +356,7 @@ public class K2Instrumentator {
                     isDynamicAttach ? DYNAMIC : STATIC);
             applicationInfoBean.setStartTime(runtimeMXBean.getStartTime());
             identifier.setCollectorIp(getIpAddress());
+            // TODO: Need to write platform agnostic alternative for this.
             applicationInfoBean.setCmdline(new ArrayList<>(Arrays.asList(getCmdLineArgsByProc().split("(\\s+)|(\0+)"))));
 
             //TODO remove use of proc

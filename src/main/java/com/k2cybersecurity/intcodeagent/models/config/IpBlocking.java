@@ -18,11 +18,11 @@ import java.util.Map;
 public class IpBlocking {
 
     @JsonProperty("enabled")
-    private Boolean enabled;
+    private Boolean enabled = false;
     @JsonProperty("attackerIpBlocking")
-    private Boolean attackerIpBlocking;
+    private Boolean attackerIpBlocking = false;
     @JsonProperty("ipDetectViaXFF")
-    private Boolean ipDetectViaXFF;
+    private Boolean ipDetectViaXFF = false;
     @JsonIgnore
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 

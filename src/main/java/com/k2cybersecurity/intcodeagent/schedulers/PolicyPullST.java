@@ -8,7 +8,6 @@ import com.k2cybersecurity.instrumentator.httpclient.IRestClientConstants;
 import com.k2cybersecurity.instrumentator.os.OSVariables;
 import com.k2cybersecurity.instrumentator.os.OsVariablesInstance;
 import com.k2cybersecurity.instrumentator.utils.AgentUtils;
-import com.k2cybersecurity.instrumentator.utils.DirectoryWatcher;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.logging.IAgentConstants;
@@ -95,8 +94,8 @@ public class PolicyPullST {
         logger.log(LogLevel.INFO, "Instantiating collector policy with default!!!", PolicyPullST.class.getName());
         FileUtils.deleteQuietly(AgentUtils.getInstance().getConfigLoadPath());
         readAndApplyConfig(loadDefaultConfig());
-        CommonUtils.writePolicyToFile();
-        DirectoryWatcher.watchDirectories(Collections.singletonList(AgentUtils.getInstance().getConfigLoadPath().getParent()), false);
+//        CommonUtils.writePolicyToFile();
+//        DirectoryWatcher.watchDirectories(Collections.singletonList(AgentUtils.getInstance().getConfigLoadPath().getParent()), false);
     }
 
     private void task() {
@@ -120,7 +119,7 @@ public class PolicyPullST {
 
             boolean changed = readAndApplyConfig(newPolicy);
             if (changed) {
-                CommonUtils.writePolicyToFile();
+//                CommonUtils.writePolicyToFile();
             }
         } catch (Exception e) {
             logger.log(LogLevel.ERROR, POLICY_READ_FAILED, e, PolicyPullST.class.getName());
@@ -174,7 +173,7 @@ public class PolicyPullST {
 
     public AgentPolicy populateConfig() {
         if (!AgentUtils.getInstance().getConfigLoadPath().isFile()) {
-            logger.log(LogLevel.INFO, THE_POLICY_FILE_IS_NOT_PRESENT_ON_LOCATION_CREATING_NEW, DirectoryWatcher.class.getName());
+            logger.log(LogLevel.INFO, THE_POLICY_FILE_IS_NOT_PRESENT_ON_LOCATION_CREATING_NEW, PolicyPullST.class.getName());
             CommonUtils.writePolicyToFile();
             return null;
         }
@@ -182,8 +181,8 @@ public class PolicyPullST {
         try {
             return mapper.readValue(AgentUtils.getInstance().getConfigLoadPath(), AgentPolicy.class);
         } catch (Exception e) {
-            logger.log(LogLevel.ERROR, String.format(FALLING_BACK_TO_DEFAULT_CONFIG_MSG, e.getMessage()), DirectoryWatcher.class.getName());
-            logger.log(LogLevel.DEBUG, FALLING_BACK_TO_DEFAULT_CONFIG, e, DirectoryWatcher.class.getName());
+            logger.log(LogLevel.ERROR, String.format(FALLING_BACK_TO_DEFAULT_CONFIG_MSG, e.getMessage()), PolicyPullST.class.getName());
+            logger.log(LogLevel.DEBUG, FALLING_BACK_TO_DEFAULT_CONFIG, e, PolicyPullST.class.getName());
             CommonUtils.writePolicyToFile();
             return null;
         }
@@ -195,7 +194,7 @@ public class PolicyPullST {
             ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
             return mapper.readValue(in, AgentPolicy.class);
         } catch (Exception e) {
-            logger.log(LogLevel.ERROR, FALLING_BACK_TO_DEFAULT_CONFIG, e, DirectoryWatcher.class.getName());
+            logger.log(LogLevel.ERROR, FALLING_BACK_TO_DEFAULT_CONFIG, e, PolicyPullST.class.getName());
             return null;
         }
     }

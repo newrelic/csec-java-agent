@@ -67,25 +67,33 @@ public class AgentNew {
 
         gobalInstrumentation = instrumentation;
 
+        // Setting K2_HOME
+        K2Instrumentator.setK2HomePath();
 
+        /*
+            Check if agent is running in standalone mode.
+         */
+        if(StringUtils.equals(NewRelic.getAgent().getClass().getSimpleName(), "NoOpAgent")) {
+            AgentUtils.getInstance().setStandaloneMode(true);
+        }
         Thread k2JaStartupThread = new Thread("K2-Security-StartUp") {
             @Override
             public void run() {
                 try {
                     int attempt = 0;
                     String entityGuid = NewRelic.getAgent().getLinkingMetadata().getOrDefault("entity.guid", StringUtils.EMPTY);
-                    while (attempt <= 3 && StringUtils.isBlank(entityGuid)) {
+                    while(!AgentUtils.getInstance().isStandaloneMode() && attempt <= 3 && StringUtils.isBlank(entityGuid)) {
                         attempt++;
                         TimeUnit.SECONDS.sleep(10);
                         entityGuid = NewRelic.getAgent().getLinkingMetadata().getOrDefault("entity.guid", StringUtils.EMPTY);
                     }
-                    if (StringUtils.isBlank(entityGuid)) {
-                        NewRelic.getAgent().getLogger().log(Level.SEVERE, "Process security aborted!!! since entity.guid is not known.");
+                    if (!AgentUtils.getInstance().isStandaloneMode() && StringUtils.isBlank(entityGuid)) {
+                        NewRelic.getAgent().getLogger().log(Level.SEVERE, "K2 security module aborted!!! since entity.guid is not known.");
                         return;
                     }
                     AgentUtils.getInstance().setEntityGuid(entityGuid);
                     AgentUtils.getInstance().setAgentActive(true);
-                    NewRelic.getAgent().getLogger().log(Level.INFO, "Start K2 security module services since entity.guid is now know: {0}", NewRelic.getAgent().getLinkingMetadata().getOrDefault("entity.guid", StringUtils.EMPTY));
+                    NewRelic.getAgent().getLogger().log(Level.INFO, "Start K2 security module services since entity.guid is now know: {0} :: active : {1}", NewRelic.getAgent().getLinkingMetadata().getOrDefault("entity.guid", StringUtils.EMPTY), AgentUtils.getInstance().isAgentActive());
                     awaitServerStartUp(instrumentation, ClassLoader.getSystemClassLoader());
                     FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
 

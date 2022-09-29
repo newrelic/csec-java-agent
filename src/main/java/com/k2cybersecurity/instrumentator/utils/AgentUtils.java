@@ -112,6 +112,8 @@ public class AgentUtils {
 
     private File configLoadPath;
 
+    private boolean standaloneMode = false;
+
     private OSVariables osVariables = OsVariablesInstance.getInstance().getOsVariables();
 
     private boolean isAgentActive = false;
@@ -145,12 +147,20 @@ public class AgentUtils {
     }
 
     public boolean isAgentActive() {
-        return isAgentActive && NewRelic.getAgent().getConfig().getValue(NR_SECURITY_ENABLE, false);
+        return isAgentActive && (standaloneMode || NewRelic.getAgent().getConfig().getValue(NR_SECURITY_ENABLE, false));
     }
 
 //	public Map<Integer, JADatabaseMetaData> getSqlConnectionMap() {
 //		return sqlConnectionMap;
 //	}
+
+    public boolean isStandaloneMode() {
+        return standaloneMode;
+    }
+
+    public void setStandaloneMode(boolean standaloneMode) {
+        this.standaloneMode = standaloneMode;
+    }
 
     public Map<String, ClassLoader> getClassLoaderRecord() {
         return classLoaderRecord;
@@ -612,11 +622,6 @@ public class AgentUtils {
     }
 
     public void enforcePolicy() {
-        try {
-            LogWriter.setLogLevel(LogLevel.valueOf(AgentUtils.getInstance().getAgentPolicy().getLogLevel()));
-        } catch (IllegalArgumentException | NullPointerException e) {
-            logger.log(LogLevel.WARN, String.format(LOG_LEVEL_PROVIDED_IN_POLICY_IS_INCORRECT_DEFAULTING_TO_INFO, AgentUtils.getInstance().getAgentPolicy().getLogLevel()), AgentUtils.class.getName());
-        }
         K2Instrumentator.enableHTTPRequestPrinting = agentPolicy.getEnableHTTPRequestPrinting();
         logger.log(LogLevel.INFO, ENFORCING_POLICY, AgentUtils.class.getName());
         if (agentPolicy.getPolicyPull() && agentPolicy.getPolicyPullInterval() > 0) {

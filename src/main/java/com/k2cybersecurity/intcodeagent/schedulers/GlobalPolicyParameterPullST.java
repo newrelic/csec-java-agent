@@ -41,7 +41,7 @@ public class GlobalPolicyParameterPullST {
     }
 
     private GlobalPolicyParameterPullST() {
-        logger.log(LogLevel.INFO, "policy pull parameters for group name: " + AgentUtils.getInstance().getGroupName(), PolicyPullST.class.getName());
+        logger.log(LogLevel.INFO, "policy pull parameters for group name: " + AgentUtils.getInstance().getGroupName(), GlobalPolicyParameterPullST.class.getName());
         executorService = Executors.newSingleThreadScheduledExecutor(new ThreadFactory() {
             @Override
             public Thread newThread(Runnable r) {
@@ -50,7 +50,7 @@ public class GlobalPolicyParameterPullST {
             }
         });
         future = executorService.schedule(runnable, 1, TimeUnit.MINUTES);
-        logger.log(LogLevel.INFO, "policy fetch schedule thread started successfully!!!", PolicyPullST.class.getName());
+        logger.log(LogLevel.INFO, "policy fetch schedule thread started successfully!!!", GlobalPolicyParameterPullST.class.getName());
     }
 
     Runnable runnable = new Runnable() {

@@ -15,9 +15,9 @@ import java.util.Map;
 public class IASTScan {
 
     @JsonProperty("enabled")
-    private Boolean enabled;
+    private Boolean enabled = false;
     @JsonProperty("probing")
-    private Probing probing;
+    private Probing probing = new Probing();
     @JsonIgnore
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 

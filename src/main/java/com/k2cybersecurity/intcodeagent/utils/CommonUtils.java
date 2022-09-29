@@ -7,7 +7,6 @@ import com.k2cybersecurity.instrumentator.K2Instrumentator;
 import com.k2cybersecurity.instrumentator.httpclient.HttpClient;
 import com.k2cybersecurity.instrumentator.httpclient.IRestClientConstants;
 import com.k2cybersecurity.instrumentator.utils.AgentUtils;
-import com.k2cybersecurity.instrumentator.utils.DirectoryWatcher;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.models.config.AgentPolicy;
@@ -78,18 +77,6 @@ public class CommonUtils {
         return false;
     }
 
-    public static void fireUpdatePolicyAPI(AgentPolicy policy) {
-        try {
-            Map<String, String> queryParam = new HashMap<>();
-            queryParam.put("group", AgentUtils.getInstance().getGroupName());
-            queryParam.put("applicationUUID", K2Instrumentator.APPLICATION_UUID);
-
-            HttpClient.getInstance().doPost(IRestClientConstants.UPDATE_POLICY, null, queryParam, null, policy, true);
-        } catch (Exception e) {
-            logger.log(LogLevel.WARN, String.format("Update policy to IC failed due to %s", e.getMessage()), DirectoryWatcher.class.getName());
-        }
-    }
-
     public static void writePolicyToFile() {
         try {
             ObjectMapper mapper = new ObjectMapper(new YAMLFactory().disable(YAMLGenerator.Feature.WRITE_DOC_START_MARKER));
@@ -101,9 +88,9 @@ public class CommonUtils {
             } catch (Exception e) {
             }
             mapper.writeValue(AgentUtils.getInstance().getConfigLoadPath(), AgentUtils.getInstance().getAgentPolicy());
-            logger.log(LogLevel.INFO, POLICY_WRITTEN_TO_FILE + AgentUtils.getInstance().getConfigLoadPath(), PolicyPullST.class.getName());
+            logger.log(LogLevel.INFO, POLICY_WRITTEN_TO_FILE + AgentUtils.getInstance().getConfigLoadPath(), CommonUtils.class.getName());
         } catch (Exception e) {
-            logger.log(LogLevel.ERROR, POLICY_WRITE_FAILED, e, PolicyPullST.class.getName());
+            logger.log(LogLevel.ERROR, POLICY_WRITE_FAILED, e, CommonUtils.class.getName());
         }
     }
 

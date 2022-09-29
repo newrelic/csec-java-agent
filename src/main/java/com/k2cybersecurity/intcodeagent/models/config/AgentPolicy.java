@@ -151,16 +151,6 @@ public class AgentPolicy {
         this.enableHTTPRequestPrinting = enableHTTPRequestPrinting;
     }
 
-//    @JsonProperty("policyParameters")
-//    public AgentPolicyParameters getPolicyParameters() {
-//        return policyParameters;
-//    }
-//
-//    @JsonProperty("policyParameters")
-//    public void setPolicyParameters(AgentPolicyParameters policyParameters) {
-//        this.policyParameters = policyParameters;
-//    }
-
     @JsonProperty("applicationInfo")
     public PolicyApplicationInfo getApplicationInfo() {
         return applicationInfo;
@@ -185,6 +175,5 @@ public class AgentPolicy {
     public String toString() {
         return JsonConverter.toJSON(this);
     }
-
 
 }
