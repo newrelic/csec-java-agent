@@ -58,6 +58,8 @@ public class AgentBasicInfo {
     @JsonInclude
     private static String policyVersion;
 
+    private boolean isPolicyOverridden = AgentUtils.getInstance().isPolicyOverridden();
+
     /**
      * Instantiates a new agent basic info according to the source class object.
      */
@@ -225,5 +227,13 @@ public class AgentBasicInfo {
 
     public void setEntityGuid(String entityGuid) {
         this.entityGuid = entityGuid;
+    }
+
+    public boolean isPolicyOverridden() {
+        return isPolicyOverridden;
+    }
+
+    public void setPolicyOverridden(boolean policyOverridden) {
+        isPolicyOverridden = policyOverridden;
     }
 }

@@ -139,6 +139,11 @@ public class PolicyPullST {
             K2Instrumentator.APPLICATION_INFO_BEAN.setPolicyVersion(AgentUtils.getInstance().getAgentPolicy().getVersion());
             logger.logInit(LogLevel.INFO, String.format(IAgentConstants.AGENT_POLICY_APPLIED_S,
                     AgentUtils.getInstance().getAgentPolicy()), PolicyPullST.class.getName());
+            AgentUtils.getInstance().applyNRPolicyOverride();
+            if (AgentUtils.getInstance().isPolicyOverridden()){
+                logger.log(LogLevel.INFO, String.format("NR policy over-ride in place. Updated policy : %s",
+                        AgentUtils.getInstance().getAgentPolicy()), PolicyPullST.class.getName());
+            }
             EventSendPool.getInstance().sendEvent(K2Instrumentator.APPLICATION_INFO_BEAN.toString());
             return true;
         } catch (Throwable e) {

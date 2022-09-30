@@ -6,7 +6,6 @@ import com.k2cybersecurity.instrumentator.os.OSVariables;
 import com.k2cybersecurity.instrumentator.os.OsVariablesInstance;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
-import com.k2cybersecurity.intcodeagent.filelogging.LogWriter;
 import com.k2cybersecurity.intcodeagent.logging.DeployedApplication;
 import com.k2cybersecurity.intcodeagent.logging.IAgentConstants;
 import com.k2cybersecurity.intcodeagent.models.config.AgentPolicy;
@@ -120,6 +119,8 @@ public class AgentUtils {
 
     private String entityGuid;
 
+    private boolean isPolicyOverridden = false;
+
     private AgentUtils() {
         eventResponseSet = new ConcurrentHashMap<>();
         classLoaderRecord = new ConcurrentHashMap<>();
@@ -228,6 +229,14 @@ public class AgentUtils {
 
     public void setEntityGuid(String entityGuid) {
         this.entityGuid = entityGuid;
+    }
+
+    public boolean isPolicyOverridden() {
+        return isPolicyOverridden;
+    }
+
+    public void setPolicyOverridden(boolean policyOverridden) {
+        isPolicyOverridden = policyOverridden;
     }
 
     public void createProtectedVulnerabilties(TypeDescription typeDescription, ClassLoader classLoader) {
@@ -821,5 +830,86 @@ public class AgentUtils {
         int modeInt = Integer.parseInt(Integer.toString(modeOct, 8));
 
         return intToPosixFilePermission(modeInt);
-    }   
+    }
+
+    /*
+        Apply any applicable NR policy over-rides
+        TODO: in long term we shall look into alternate approaches to set these over-rides
+                since the current one is an exhaustive book-keeping.
+     */
+    public void applyNRPolicyOverride() {
+        boolean override = false;
+        if (NewRelic.getAgent().getConfig().getValue(INRSettingsKey.SECURITY_POLICY_VULNERABILITY_SCAN_ENABLE) != null){
+            this.getAgentPolicy().getVulnerabilityScan().setEnabled(NewRelic.getAgent().getConfig().getValue(
+                    INRSettingsKey.SECURITY_POLICY_VULNERABILITY_SCAN_ENABLE));
+            override = true;
+        }
+
+        if (NewRelic.getAgent().getConfig().getValue(INRSettingsKey.SECURITY_POLICY_VULNERABILITY_SCAN_IAST_SCAN_ENABLE) != null){
+            this.getAgentPolicy().getVulnerabilityScan().getIastScan().setEnabled(NewRelic.getAgent().getConfig().getValue(
+                    INRSettingsKey.SECURITY_POLICY_VULNERABILITY_SCAN_IAST_SCAN_ENABLE));
+            override = true;
+        }
+
+        if (NewRelic.getAgent().getConfig().getValue(INRSettingsKey.SECURITY_POLICY_VULNERABILITY_SCAN_IAST_SCAN_PROBING_INTERVAL) != null){
+            this.getAgentPolicy().getVulnerabilityScan().getIastScan().getProbing().setInterval(NewRelic.getAgent().getConfig().getValue(
+                    INRSettingsKey.SECURITY_POLICY_VULNERABILITY_SCAN_IAST_SCAN_PROBING_INTERVAL));
+            override = true;
+        }
+
+        if (NewRelic.getAgent().getConfig().getValue(INRSettingsKey.SECURITY_POLICY_VULNERABILITY_SCAN_IAST_SCAN_PROBING_BATCH_SIZE) != null){
+            this.getAgentPolicy().getVulnerabilityScan().getIastScan().getProbing().setBatchSize(NewRelic.getAgent().getConfig().getValue(
+                    INRSettingsKey.SECURITY_POLICY_VULNERABILITY_SCAN_IAST_SCAN_PROBING_BATCH_SIZE));
+            override = true;
+        }
+
+        if (NewRelic.getAgent().getConfig().getValue(INRSettingsKey.SECURITY_POLICY_PROTECTION_MODE_ENABLE) != null){
+            this.getAgentPolicy().getProtectionMode().setEnabled(NewRelic.getAgent().getConfig().getValue(INRSettingsKey.SECURITY_POLICY_PROTECTION_MODE_ENABLE));
+            override = true;
+        }
+
+        if (NewRelic.getAgent().getConfig().getValue(INRSettingsKey.SECURITY_POLICY_PROTECTION_MODE_IP_BLOCKING_ENABLE) != null){
+            this.getAgentPolicy().getProtectionMode().getIpBlocking().setEnabled(NewRelic.getAgent().getConfig().getValue(
+                    INRSettingsKey.SECURITY_POLICY_PROTECTION_MODE_IP_BLOCKING_ENABLE));
+            override = true;
+        }
+
+        if (NewRelic.getAgent().getConfig().getValue(INRSettingsKey.SECURITY_POLICY_PROTECTION_MODE_IP_BLOCKING_ATTACKER_IP_BLOCKING) != null){
+            this.getAgentPolicy().getProtectionMode().getIpBlocking().setAttackerIpBlocking(NewRelic.getAgent().getConfig().getValue(
+                    INRSettingsKey.SECURITY_POLICY_PROTECTION_MODE_IP_BLOCKING_ATTACKER_IP_BLOCKING));
+            override = true;
+        }
+
+        if (NewRelic.getAgent().getConfig().getValue(INRSettingsKey.SECURITY_POLICY_PROTECTION_MODE_IP_BLOCKING_IP_DETECT_VIA_XFF) != null){
+            this.getAgentPolicy().getProtectionMode().getIpBlocking().setIpDetectViaXFF(NewRelic.getAgent().getConfig().getValue(
+                    INRSettingsKey.SECURITY_POLICY_PROTECTION_MODE_IP_BLOCKING_IP_DETECT_VIA_XFF));
+            override = true;
+        }
+
+        if (NewRelic.getAgent().getConfig().getValue(INRSettingsKey.SECURITY_POLICY_PROTECTION_MODE_API_BLOCKING_ENABLE) != null){
+            this.getAgentPolicy().getProtectionMode().getApiBlocking().setEnabled(NewRelic.getAgent().getConfig().getValue(
+                    INRSettingsKey.SECURITY_POLICY_PROTECTION_MODE_API_BLOCKING_ENABLE));
+            override = true;
+        }
+
+        if (NewRelic.getAgent().getConfig().getValue(INRSettingsKey.SECURITY_POLICY_PROTECTION_MODE_API_BLOCKING_PROTECT_ALL_APIS) != null){
+            this.getAgentPolicy().getProtectionMode().getApiBlocking().setProtectAllApis(NewRelic.getAgent().getConfig().getValue(
+                    INRSettingsKey.SECURITY_POLICY_PROTECTION_MODE_API_BLOCKING_PROTECT_ALL_APIS));
+            override = true;
+        }
+
+        if (NewRelic.getAgent().getConfig().getValue(INRSettingsKey.SECURITY_POLICY_PROTECTION_MODE_API_BLOCKING_PROTECT_KNOWN_VULNERABLE_APIS) != null){
+            this.getAgentPolicy().getProtectionMode().getApiBlocking().setProtectKnownVulnerableApis(NewRelic.getAgent().getConfig().getValue(
+                    INRSettingsKey.SECURITY_POLICY_PROTECTION_MODE_API_BLOCKING_PROTECT_KNOWN_VULNERABLE_APIS));
+            override = true;
+        }
+
+        if (NewRelic.getAgent().getConfig().getValue(INRSettingsKey.SECURITY_POLICY_PROTECTION_MODE_API_BLOCKING_PROTECT_ATTACKED_APIS) != null){
+            this.getAgentPolicy().getProtectionMode().getApiBlocking().setProtectAttackedApis(NewRelic.getAgent().getConfig().getValue(
+                    INRSettingsKey.SECURITY_POLICY_PROTECTION_MODE_API_BLOCKING_PROTECT_ATTACKED_APIS));
+            override = true;
+        }
+
+        this.setPolicyOverridden(override);
+    }
 }
