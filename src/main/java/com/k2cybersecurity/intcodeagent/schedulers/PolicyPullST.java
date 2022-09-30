@@ -143,6 +143,7 @@ public class PolicyPullST {
             if (AgentUtils.getInstance().isPolicyOverridden()){
                 logger.log(LogLevel.INFO, String.format("NR policy over-ride in place. Updated policy : %s",
                         AgentUtils.getInstance().getAgentPolicy()), PolicyPullST.class.getName());
+                CommonUtils.fireUpdatePolicyAPI(AgentUtils.getInstance().getAgentPolicy());
             }
             EventSendPool.getInstance().sendEvent(K2Instrumentator.APPLICATION_INFO_BEAN.toString());
             return true;

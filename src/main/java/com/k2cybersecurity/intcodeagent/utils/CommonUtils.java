@@ -77,6 +77,18 @@ public class CommonUtils {
         return false;
     }
 
+    public static void fireUpdatePolicyAPI(AgentPolicy policy) {
+        try {
+            Map<String, String> queryParam = new HashMap<>();
+            queryParam.put("group", AgentUtils.getInstance().getGroupName());
+            queryParam.put("applicationUUID", K2Instrumentator.APPLICATION_UUID);
+
+            HttpClient.getInstance().doPost(IRestClientConstants.UPDATE_POLICY, null, queryParam, null, policy, true);
+        } catch (Exception e) {
+            logger.log(LogLevel.WARN, String.format("Update policy to IC failed due to %s", e.getMessage()), CommonUtils.class.getName());
+        }
+    }
+
     public static void writePolicyToFile() {
         try {
             ObjectMapper mapper = new ObjectMapper(new YAMLFactory().disable(YAMLGenerator.Feature.WRITE_DOC_START_MARKER));

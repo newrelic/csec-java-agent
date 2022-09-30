@@ -7,18 +7,6 @@
       "type": "string",
       "minLength": 1
     },
-    "logLevel": {
-      "type": "string",
-      "enum": [
-        "ALL",
-        "DEBUG",
-        "INFO",
-        "WARN",
-        "ERROR",
-        "FATAL",
-        "OFF"
-      ]
-    },
     "policyPull": {
       "type": "boolean"
     },
@@ -32,27 +20,6 @@
       "properties": {
         "enabled": {
           "type": "boolean"
-        },
-        "cveScan": {
-          "type": "object",
-          "properties": {
-            "enabled": {
-              "type": "boolean"
-            },
-            "enableEnvScan": {
-              "type": "boolean"
-            },
-            "cveDefinitionUpdateInterval": {
-              "type": "integer",
-              "minimum": 0,
-              "maximum": 1440
-            }
-          },
-          "required": [
-            "enabled",
-            "enableEnvScan",
-            "cveDefinitionUpdateInterval"
-          ]
         },
         "iastScan": {
           "type": "object",
@@ -88,7 +55,6 @@
       },
       "required": [
         "enabled",
-        "cveScan",
         "iastScan"
       ]
     },
@@ -156,7 +122,6 @@
   },
   "required": [
     "version",
-    "logLevel",
     "policyPull",
     "policyPullInterval",
     "vulnerabilityScan",
