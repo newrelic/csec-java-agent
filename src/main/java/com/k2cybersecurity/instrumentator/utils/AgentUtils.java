@@ -128,7 +128,7 @@ public class AgentUtils {
         applicationInfo = new PolicyApplicationInfo();
         deployedApplicationUnderProcessing = new HashSet<>();
         TRACE_PATTERN = Pattern.compile(IAgentConstants.TRACE_REGEX);
-        File configParentPath = new File(osVariables.getPolicyConfigPath(), K2Instrumentator.APPLICATION_UUID);
+        File configParentPath = new File(osVariables.getConfigPath(), K2Instrumentator.APPLICATION_UUID);
         configLoadPath = new File(configParentPath, String.format("lc-policy.yaml", K2Instrumentator.APPLICATION_UUID));
     }
 

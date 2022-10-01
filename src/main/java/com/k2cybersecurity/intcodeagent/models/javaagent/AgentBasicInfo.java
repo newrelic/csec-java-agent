@@ -72,7 +72,7 @@ public class AgentBasicInfo {
         setCustomerId(CollectorConfigurationUtils.getInstance().getCollectorConfig().getCustomerInfo().getCustomerId());
         setGroupName(AgentUtils.getInstance().getGroupName());
         setEmailId(CollectorConfigurationUtils.getInstance().getCollectorConfig().getCustomerInfo().getEmailId());
-        setEventType(AgentUtils.getInstance().getEntityGuid());
+        setEntityGuid(AgentUtils.getInstance().getEntityGuid());
         if (this instanceof ApplicationInfoBean) {
             setJsonName(JSON_NAME_APPLICATION_INFO_BEAN);
         } else if (this instanceof JavaAgentEventBean) {

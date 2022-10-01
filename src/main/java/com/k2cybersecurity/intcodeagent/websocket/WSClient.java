@@ -9,6 +9,7 @@ import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.logging.IAgentConstants;
 import com.k2cybersecurity.intcodeagent.properties.K2JAVersionInfo;
+import com.k2cybersecurity.intcodeagent.utils.NRApiUtils;
 import org.java_websocket.WebSocket;
 import org.java_websocket.WebSocketImpl;
 import org.java_websocket.client.WebSocketClient;
@@ -49,6 +50,7 @@ public class WSClient extends WebSocketClient {
         this.setConnectionLostTimeout(30);
         this.addHeader("K2-CONNECTION-TYPE", "LANGUAGE_COLLECTOR");
         this.addHeader("K2-API-ACCESSOR", CollectorConfigurationUtils.getInstance().getCollectorConfig().getCustomerInfo().getApiAccessorToken());
+        this.addHeader("Api-Key", NRApiUtils.getLicenseKey());
         this.addHeader("K2-CUSTOMER-ID", String.valueOf(CollectorConfigurationUtils.getInstance().getCollectorConfig().getCustomerInfo().getCustomerId()));
         this.addHeader("K2-VERSION", K2JAVersionInfo.collectorVersion);
         this.addHeader("K2-COLLECTOR-TYPE", "JAVA");

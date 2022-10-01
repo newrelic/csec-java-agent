@@ -2,12 +2,10 @@ package com.k2cybersecurity.instrumentator.os;
 
 import com.k2cybersecurity.instrumentator.K2Instrumentator;
 import com.k2cybersecurity.intcodeagent.logging.IAgentConstants;
+import com.k2cybersecurity.intcodeagent.utils.NRApiUtils;
 import org.apache.commons.lang3.SystemUtils;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.attribute.PosixFilePermissions;
 
 public class OsVariablesInstance {
 
@@ -25,7 +23,7 @@ public class OsVariablesInstance {
 
     private OsVariablesInstance() {
         osVariables = new OSVariables();
-        Path k2root = Paths.get(K2Instrumentator.K2_HOME, K_2_ROOT);
+        /*Path k2root = Paths.get(K2Instrumentator.K2_HOME, K_2_ROOT);
         if (!k2root.toFile().isDirectory()) {
             k2root.toFile().mkdir();
         }
@@ -33,13 +31,14 @@ public class OsVariablesInstance {
         try {
             Files.setPosixFilePermissions(k2root, PosixFilePermissions.fromString("rwxrwxrwx"));
         } catch (Exception e) {
-        }
+        }*/
 
-        osVariables.setK2RootDir(k2root.toString());
-        osVariables.setLogDirectory(Paths.get(k2root.toString(), LOGS, LANGUAGE_AGENT, K2Instrumentator.APPLICATION_UUID).toString());
-        osVariables.setTmpDirectory(Paths.get(k2root.toString(), TMP, LANGUAGE_AGENT, K2Instrumentator.APPLICATION_UUID).toString());
-        osVariables.setConfigPath(Paths.get(k2root.toString(), CONFIG).toString());
-        osVariables.setPolicyConfigPath(Paths.get(k2root.toString(), CONFIG, LANGUAGE_AGENT).toString());
+//        osVariables.setK2RootDir(k2root.toString());
+//        osVariables.setLogDirectory(Paths.get(k2root.toString(), LOGS, LANGUAGE_AGENT, K2Instrumentator.APPLICATION_UUID).toString());
+        osVariables.setLogDirectory(Paths.get(K2Instrumentator.K2_HOME, NRApiUtils.getLogPath()).toString());
+        osVariables.setTmpDirectory(Paths.get(K2Instrumentator.K2_HOME, TMP, LANGUAGE_AGENT, K2Instrumentator.APPLICATION_UUID).toString());
+        osVariables.setConfigPath(Paths.get(K2Instrumentator.K2_HOME).toString());
+//        osVariables.setPolicyConfigPath(Paths.get(k2root.toString(), CONFIG, LANGUAGE_AGENT).toString());
 
         if (SystemUtils.IS_OS_LINUX) {
             osVariables.setLinux(true);

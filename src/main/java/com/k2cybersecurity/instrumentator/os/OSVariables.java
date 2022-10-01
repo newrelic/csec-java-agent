@@ -5,12 +5,12 @@ public class OSVariables {
     private Boolean isWindows = Boolean.FALSE;
     private Boolean isLinux = Boolean.FALSE;
     private Boolean isMac = Boolean.FALSE;
-    private String k2RootDir;
+//    private String k2RootDir;
     private String logDirectory;
     private String tmpDirectory;
     private String osArch;
     private String configPath;
-    private String policyConfigPath;
+//    private String policyConfigPath;
 
     public String getOs() {
         return os;
@@ -76,7 +76,7 @@ public class OSVariables {
         this.configPath = configPath;
     }
 
-    public String getPolicyConfigPath() {
+    /*public String getPolicyConfigPath() {
         return policyConfigPath;
     }
 
@@ -90,5 +90,5 @@ public class OSVariables {
 
     public void setK2RootDir(String k2RootDir) {
         this.k2RootDir = k2RootDir;
-    }
+    }*/
 }

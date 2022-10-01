@@ -86,10 +86,6 @@ public class K2Instrumentator {
             K2Instrumentator.isDynamicAttach = isDynamicAttach;
             String attachmentType = isDynamicAttach ? DYNAMIC : STATIC;
 
-            if (setK2HomePath()) {
-                return false;
-            }
-
             osVariables = OsVariablesInstance.getInstance().getOsVariables();
 
             EnvLogUtils.logK2Env();
