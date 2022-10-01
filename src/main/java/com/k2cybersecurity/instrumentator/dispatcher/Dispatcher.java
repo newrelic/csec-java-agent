@@ -5,6 +5,7 @@ import com.k2cybersecurity.instrumentator.custom.ServletContextInfo;
 import com.k2cybersecurity.instrumentator.utils.AgentUtils;
 import com.k2cybersecurity.instrumentator.utils.CallbackUtils;
 import com.k2cybersecurity.instrumentator.utils.HashGenerator;
+import com.k2cybersecurity.instrumentator.utils.INRSettingsKey;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.logging.DeployedApplication;
@@ -12,6 +13,7 @@ import com.k2cybersecurity.intcodeagent.logging.IAgentConstants;
 import com.k2cybersecurity.intcodeagent.models.javaagent.*;
 import com.k2cybersecurity.intcodeagent.models.operationalbean.*;
 import com.k2cybersecurity.intcodeagent.websocket.EventSendPool;
+import com.newrelic.api.agent.NewRelic;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
 import org.json.simple.JSONArray;
@@ -297,6 +299,9 @@ public class Dispatcher implements Runnable {
      * Validate and send if required event for REFLECTED XSS
      */
     private void processReflectedXSSEvent() {
+        if (NewRelic.getAgent().getConfig().getValue(INRSettingsKey.SECURITY_DETECTION_DISABLE_RXSS, false)){
+            return;
+        }
         Set<String> xssConstructs = CallbackUtils.checkForReflectedXSS(httpRequestBean);
         JavaAgentEventBean eventBean = prepareEvent(httpRequestBean, metaData, vulnerabilityCaseType);
         if (K2Instrumentator.APPLICATION_INFO_BEAN.getServerInfo().getDeployedApplications().isEmpty() ||
@@ -770,6 +775,9 @@ public class Dispatcher implements Runnable {
     }
 
     private void deserializationTriggerCheck(int index, JavaAgentEventBean eventBean, String klassName) {
+        if (NewRelic.getAgent().getConfig().getValue(INRSettingsKey.SECURITY_DETECTION_DISABLE_DESERIALIZATION, false)){
+            return;
+        }
         if (ObjectInputStream.class.getName().equals(klassName)
                 && StringUtils.equals(trace[index].getMethodName(), READ_OBJECT)) {
             eventBean.getMetaData().setTriggerViaDeserialisation(true);
@@ -786,6 +794,10 @@ public class Dispatcher implements Runnable {
     }
 
     private void rciTriggerCheck(int index, JavaAgentEventBean eventBean, String klassName) {
+        if (NewRelic.getAgent().getConfig().getValue(INRSettingsKey.SECURITY_DETECTION_DISABLE_RCI, false)){
+            return;
+        }
+
         if (trace[index].getLineNumber() <= 0 && index > 0
                 && trace[index - 1].getLineNumber() > 0 && StringUtils.isNotBlank(trace[index-1].getFileName())) {
             eventBean.getMetaData().setTriggerViaRCI(true);

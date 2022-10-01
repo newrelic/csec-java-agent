@@ -13,4 +13,8 @@ public class INRSettingsKey {
     public static final String SECURITY_POLICY_PROTECTION_MODE_API_BLOCKING_PROTECT_ALL_APIS = "security.policy.protectionMode.apiBlocking.protectAllApis";
     public static final String SECURITY_POLICY_PROTECTION_MODE_API_BLOCKING_PROTECT_KNOWN_VULNERABLE_APIS = "security.policy.protectionMode.apiBlocking.protectKnownVulnerableApis";
     public static final String SECURITY_POLICY_PROTECTION_MODE_API_BLOCKING_PROTECT_ATTACKED_APIS = "security.policy.protectionMode.apiBlocking.protectAttackedApis";
+    public static final String SECURITY_DETECTION_DISABLE_RCI = "security.detection.disable_rci";
+    public static final String SECURITY_DETECTION_DISABLE_RXSS = "security.detection.disable_rxss";
+    public static final String SECURITY_DETECTION_DISABLE_DESERIALIZATION = "security.detection.disable_deserialization";
+
 }
