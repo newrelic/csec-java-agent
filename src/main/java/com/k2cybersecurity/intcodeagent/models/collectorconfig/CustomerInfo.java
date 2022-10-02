@@ -12,24 +12,12 @@ import java.util.Objects;
 @JsonPropertyOrder(alphabetic = true)
 public class CustomerInfo {
 
-    private Integer customerId;
-
     private String apiAccessorToken;
-
-    private String emailId;
 
     @JsonIgnore
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
     public CustomerInfo() {
-    }
-
-    public Integer getCustomerId() {
-        return customerId;
-    }
-
-    public void setCustomerId(Integer customerId) {
-        this.customerId = customerId;
     }
 
     public String getApiAccessorToken() {
@@ -38,14 +26,6 @@ public class CustomerInfo {
 
     public void setApiAccessorToken(String apiAccessorToken) {
         this.apiAccessorToken = apiAccessorToken;
-    }
-
-    public String getEmailId() {
-        return emailId;
-    }
-
-    public void setEmailId(String emailId) {
-        this.emailId = emailId;
     }
 
     @JsonAnyGetter
@@ -63,14 +43,12 @@ public class CustomerInfo {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         CustomerInfo that = (CustomerInfo) o;
-        return Objects.equals(customerId, that.customerId) &&
-                Objects.equals(apiAccessorToken, that.apiAccessorToken) &&
-                Objects.equals(emailId, that.emailId);
+        return Objects.equals(apiAccessorToken, that.apiAccessorToken);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(customerId, apiAccessorToken, emailId);
+        return Objects.hash(apiAccessorToken);
     }
 
     @Override
@@ -79,6 +57,6 @@ public class CustomerInfo {
     }
 
     public boolean isEmpty() {
-        return StringUtils.isBlank(apiAccessorToken) || customerId == null;
+        return StringUtils.isBlank(apiAccessorToken);
     }
 }

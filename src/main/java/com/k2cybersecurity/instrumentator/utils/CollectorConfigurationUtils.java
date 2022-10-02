@@ -2,15 +2,21 @@ package com.k2cybersecurity.instrumentator.utils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import com.k2cybersecurity.instrumentator.K2Instrumentator;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.models.collectorconfig.ApplicationLevelConfig;
 import com.k2cybersecurity.intcodeagent.models.collectorconfig.CollectorConfig;
+import com.k2cybersecurity.intcodeagent.models.collectorconfig.CustomerInfo;
+import com.k2cybersecurity.intcodeagent.models.collectorconfig.K2ServiceInfo;
 import com.k2cybersecurity.intcodeagent.models.collectorconfig.NodeLevelConfig;
 import com.k2cybersecurity.intcodeagent.models.javaagent.IdentifierEnvs;
+import com.newrelic.api.agent.NewRelic;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
+import java.util.Collections;
+import java.util.Set;
 
 /**
  * Utility class for K2 policy and configuration handling
@@ -48,63 +54,69 @@ public class CollectorConfigurationUtils {
         return instance;
     }
 
-
-    /**
-     * Reads the policy and configuration from nlc and alc, perform validation and setup of k2 policies.
-     * If validation fails, set k2 policy to default.
-     *
-     * @param kind                              type of runtime environment {@link IdentifierEnvs}
-     * @param nodeLevelConfigurationPath        file location of node level configuration
-     * @param applicationLevelConfigurationPath file location of application level configuration
-     * @return
+    /*
+        Create required collector config from NR config and env vars.
      */
-    public boolean readCollectorConfig(IdentifierEnvs kind, String nodeLevelConfigurationPath, String applicationLevelConfigurationPath) {
-        NodeLevelConfig nodeLevelConfig = new NodeLevelConfig();
-        ApplicationLevelConfig applicationLevelConfig = new ApplicationLevelConfig();
-        try {
-            File nlcFile = new File(nodeLevelConfigurationPath);
-            if (nlcFile.exists()) {
-                nodeLevelConfig = yamlMapper.readValue(nlcFile, NodeLevelConfig.class);
-                logger.log(LogLevel.INFO, NODE_LEVEL_CONFIGURATION_LOADED + nodeLevelConfig, CollectorConfigurationUtils.class.getName());
-            } else {
-                logger.log(LogLevel.WARN, NODE_LEVEL_CONFIGURATION_WAS_NOT_PROVIDED, CollectorConfigurationUtils.class.getName());
-            }
-        } catch (Throwable e) {
-            logger.log(LogLevel.ERROR, String.format(ERROR_WHILE_READING_NLC_COLLECTOR_CONFIG_S_S, e.getMessage(), e.getCause()), CollectorConfigurationUtils.class.getName());
-            logger.log(LogLevel.ERROR, ERROR_WHILE_READING_NLC_COLLECTOR_CONFIG, e, CollectorConfigurationUtils.class.getName());
-        }
-        try {
-            File alcFile = new File(applicationLevelConfigurationPath);
-            if (alcFile.exists()) {
-                applicationLevelConfig = yamlMapper.readValue(alcFile, ApplicationLevelConfig.class);
-                logger.log(LogLevel.INFO, APPLICATION_LEVEL_CONFIGURATION_LOADED + applicationLevelConfig, CollectorConfigurationUtils.class.getName());
-            } else {
-                logger.log(LogLevel.WARN, APPLICATION_LEVEL_CONFIGURATION_WAS_NOT_PROVIDED, CollectorConfigurationUtils.class.getName());
-            }
-        } catch (Throwable e) {
-            logger.log(LogLevel.ERROR, String.format(ERROR_WHILE_READING_ALC_COLLECTOR_CONFIG_S_S, e.getMessage(), e.getCause()), CollectorConfigurationUtils.class.getName());
-            logger.log(LogLevel.ERROR, ERROR_WHILE_READING_ALC_COLLECTOR_CONFIG, e, CollectorConfigurationUtils.class.getName());
+    public boolean populateCollectorConfig() {
+        String validatorServiceEndpointUrl = null;
+        String resourceServiceEndpointUrl = null;
+        String apiAccessor = null;
+        String hostName = null;
+
+        // Loading validatorServiceEndpointUrl value
+        if(System.getenv().containsKey("K2_VALIDATOR_SERVICE_URL")){
+            validatorServiceEndpointUrl = System.getenv().get("K2_VALIDATOR_SERVICE_URL");
+        } else if(NewRelic.getAgent().getConfig().getValue("security.validator_service_endpoint_url") != null) {
+            validatorServiceEndpointUrl = NewRelic.getAgent().getConfig().getValue("security.validator_service_endpoint_url");
+        } else {
+            logger.log(LogLevel.ERROR, "Unable to find Validator service endpoint url. Please specify either env K2_VALIDATOR_SERVICE_URL or NR config key 'security.validator_service_endpoint_url'", K2Instrumentator.class.getName());
+            return false;
         }
 
-        setCollectorConfig(nodeLevelConfig, applicationLevelConfig);
-        return validateCollectorConfig(kind, nodeLevelConfigurationPath);
-    }
-
-    private void setCollectorConfig(NodeLevelConfig nodeLevelConfig, ApplicationLevelConfig applicationLevelConfig) {
-        this.collectorConfig.setNodeId(nodeLevelConfig.getNodeId());
-        this.collectorConfig.setNodeIp(nodeLevelConfig.getNodeIp());
-        this.collectorConfig.setNodeName(nodeLevelConfig.getNodeName());
-        this.collectorConfig.setNodeGroupTags(nodeLevelConfig.getNodeGroupTags());
-        this.collectorConfig.setCustomerInfo(nodeLevelConfig.getCustomerInfo());
-        this.collectorConfig.setK2ServiceInfo(nodeLevelConfig.getK2ServiceInfo());
-
-        // Values available in ApplicationLevelConfig will override NodeLevelConfig (if applicable)
-        if (applicationLevelConfig.getCustomerInfo() != null && !applicationLevelConfig.getCustomerInfo().isEmpty()) {
-            this.collectorConfig.setCustomerInfo(applicationLevelConfig.getCustomerInfo());
+        // Loading resourceServiceEndpointUrl value
+        if(System.getenv().containsKey("K2_RESOURCE_SERVICE_URL")){
+            resourceServiceEndpointUrl = System.getenv().get("K2_RESOURCE_SERVICE_URL");
+        } else if(NewRelic.getAgent().getConfig().getValue("security.resource_service_endpoint_url") != null) {
+            resourceServiceEndpointUrl = NewRelic.getAgent().getConfig().getValue("security.resource_service_endpoint_url");
+        } else {
+            logger.log(LogLevel.ERROR, "Unable to find Resource service endpoint url. Please specify either env K2_RESOURCE_SERVICE_URL or NR config key 'security.resource_service_endpoint_url'", K2Instrumentator.class.getName());
+            return false;
         }
-        if (applicationLevelConfig.getK2ServiceInfo() != null && !applicationLevelConfig.getK2ServiceInfo().isEmpty()) {
-            this.collectorConfig.setK2ServiceInfo(applicationLevelConfig.getK2ServiceInfo());
+
+        // Loading apiAccessor value
+        if(System.getenv().containsKey("K2_API_ACCESSOR_TOKEN")){
+            apiAccessor = System.getenv().get("K2_API_ACCESSOR_TOKEN");
+        } else if(NewRelic.getAgent().getConfig().getValue("license_key") != null) {
+            apiAccessor = NewRelic.getAgent().getConfig().getValue("license_key");
+        } else {
+            logger.log(LogLevel.ERROR, "Unable to find api accessor key. Please specify either env K2_API_ACCESSOR_TOKEN or NR config key 'license_key'", K2Instrumentator.class.getName());
+            return false;
         }
+
+        // Loading resourceServiceEndpointUrl value
+        if(System.getenv().containsKey("K2_NODE_NAME")){
+            hostName = System.getenv().get("K2_NODE_NAME");
+        } else if(NewRelic.getAgent().getConfig().getValue("process_host.display_name") != null) {
+            hostName = NewRelic.getAgent().getConfig().getValue("process_host.display_name");
+        }
+//        else {
+//            logger.log(LogLevel.ERROR, "Unable to find api accessor key. Please specify either env K2_API_ACCESSOR_TOKEN or NR config key 'license_key'", K2Instrumentator.class.getName());
+//            return false;
+//        }
+
+        this.collectorConfig.setNodeId(AgentUtils.getInstance().getEntityGuid());
+        this.collectorConfig.setNodeName(hostName);
+        this.collectorConfig.setNodeGroupTags(Collections.emptySet());
+
+        CustomerInfo customerInfo = new CustomerInfo();
+        customerInfo.setApiAccessorToken(apiAccessor);
+        this.collectorConfig.setCustomerInfo(customerInfo);
+
+        K2ServiceInfo serviceInfo = new K2ServiceInfo();
+        serviceInfo.setResourceServiceEndpointURL(resourceServiceEndpointUrl);
+        serviceInfo.setValidatorServiceEndpointURL(validatorServiceEndpointUrl);
+        this.collectorConfig.setK2ServiceInfo(serviceInfo);
+        return true;
     }
 
     private boolean validateCollectorConfig(IdentifierEnvs kind, String nodeLevelConfigurationPath) {
@@ -122,11 +134,12 @@ public class CollectorConfigurationUtils {
             case HOST:
             case CONTAINER:
             case POD:
-                if (StringUtils.isAnyBlank(collectorConfig.getNodeIp(), collectorConfig.getNodeId())) {
-                    logger.log(LogLevel.ERROR, String.format("Improper node details provided in collector configuration. Exiting : %s", collectorConfig), CollectorConfigurationUtils.class.getName());
-                    logger.log(LogLevel.ERROR, String.format("[STEP-1][ENV] Node level configuration was not found or incorrect on path : %s", nodeLevelConfigurationPath), CollectorConfigurationUtils.class.getName());
-                    return false;
-                }
+                // TODO : Alternative of nodeID needed here
+//                if (StringUtils.isAnyBlank(collectorConfig.getNodeIp(), collectorConfig.getNodeId())) {
+//                    logger.log(LogLevel.ERROR, String.format("Improper node details provided in collector configuration. Exiting : %s", collectorConfig), CollectorConfigurationUtils.class.getName());
+//                    logger.log(LogLevel.ERROR, String.format("[STEP-1][ENV] Node level configuration was not found or incorrect on path : %s", nodeLevelConfigurationPath), CollectorConfigurationUtils.class.getName());
+//                    return false;
+//                }
                 break;
 
             // NLC not required

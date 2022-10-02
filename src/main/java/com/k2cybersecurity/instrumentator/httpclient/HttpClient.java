@@ -137,7 +137,6 @@ public class HttpClient {
     private Headers getHeaders(Map<String, String> headers) {
         Headers.Builder builder = new Headers.Builder();
         builder.add(K_2_API_ACCESSOR_TOKEN, CollectorConfigurationUtils.getInstance().getCollectorConfig().getCustomerInfo().getApiAccessorToken());
-        builder.add(K_2_CUSTOMER_ID, String.valueOf(CollectorConfigurationUtils.getInstance().getCollectorConfig().getCustomerInfo().getCustomerId()));
         if (headers != null) {
             headers.forEach((key, value) -> {
                 builder.add(key, value);

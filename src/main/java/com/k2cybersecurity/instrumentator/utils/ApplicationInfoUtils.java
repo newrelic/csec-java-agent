@@ -149,6 +149,7 @@ public class ApplicationInfoUtils {
                 identifier.setId(containerId);
             } else {
                 identifier.setKind(IdentifierEnvs.HOST);
+                // TODO: find alternate nodeId for this case.
                 identifier.setId(CollectorConfigurationUtils.getInstance().getCollectorConfig().getNodeId());
             }
             return identifier;

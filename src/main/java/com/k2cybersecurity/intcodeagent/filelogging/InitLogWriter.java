@@ -191,7 +191,6 @@ public class InitLogWriter implements Runnable {
 
     private static void uploadLogsAndDeleteFile(File file) {
         Map<String, String> queryParams = new HashMap<>();
-        queryParams.put("customerId", String.valueOf(CollectorConfigurationUtils.getInstance().getCollectorConfig().getCustomerInfo().getCustomerId()));
         queryParams.put("applicationUUID", K2Instrumentator.APPLICATION_UUID);
         queryParams.put("saveName", file.getName());
         HttpClient.getInstance().doPost(IRestClientConstants.COLLECTOR_UPLOAD_LOG, null, queryParams, null, file);

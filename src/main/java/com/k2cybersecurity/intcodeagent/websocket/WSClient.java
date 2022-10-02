@@ -50,8 +50,6 @@ public class WSClient extends WebSocketClient {
         this.setConnectionLostTimeout(30);
         this.addHeader("K2-CONNECTION-TYPE", "LANGUAGE_COLLECTOR");
         this.addHeader("K2-API-ACCESSOR", CollectorConfigurationUtils.getInstance().getCollectorConfig().getCustomerInfo().getApiAccessorToken());
-        this.addHeader("Api-Key", NRApiUtils.getLicenseKey());
-        this.addHeader("K2-CUSTOMER-ID", String.valueOf(CollectorConfigurationUtils.getInstance().getCollectorConfig().getCustomerInfo().getCustomerId()));
         this.addHeader("K2-VERSION", K2JAVersionInfo.collectorVersion);
         this.addHeader("K2-COLLECTOR-TYPE", "JAVA");
         this.addHeader("K2-BUILD-NUMBER", K2JAVersionInfo.buildNumber);

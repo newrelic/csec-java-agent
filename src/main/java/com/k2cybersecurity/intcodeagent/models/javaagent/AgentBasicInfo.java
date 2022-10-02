@@ -47,10 +47,6 @@ public class AgentBasicInfo {
 
     private String nodeId;
 
-    private Integer customerId;
-
-    private String emailId;
-
     private String eventType;
 
     private String entityGuid;
@@ -68,11 +64,9 @@ public class AgentBasicInfo {
         setJsonVersion(K2JAVersionInfo.jsonVersion);
         setCollectorVersion(K2JAVersionInfo.collectorVersion);
         setBuildNumber(K2JAVersionInfo.buildNumber);
-        setNodeId(CollectorConfigurationUtils.getInstance().getCollectorConfig().getNodeId());
-        setCustomerId(CollectorConfigurationUtils.getInstance().getCollectorConfig().getCustomerInfo().getCustomerId());
         setGroupName(AgentUtils.getInstance().getGroupName());
-        setEmailId(CollectorConfigurationUtils.getInstance().getCollectorConfig().getCustomerInfo().getEmailId());
         setEntityGuid(AgentUtils.getInstance().getEntityGuid());
+        setNodeId(AgentUtils.getInstance().getEntityGuid());
         if (this instanceof ApplicationInfoBean) {
             setJsonName(JSON_NAME_APPLICATION_INFO_BEAN);
         } else if (this instanceof JavaAgentEventBean) {
@@ -180,29 +174,12 @@ public class AgentBasicInfo {
     public void setNodeId(String nodeId) {
         this.nodeId = nodeId;
     }
-
-    public Integer getCustomerId() {
-        return customerId;
-    }
-
-    public void setCustomerId(Integer customerId) {
-        this.customerId = customerId;
-    }
-
     public String getGroupName() {
         return groupName;
     }
 
     public void setGroupName(String groupName) {
         this.groupName = groupName;
-    }
-
-    public String getEmailId() {
-        return emailId;
-    }
-
-    public void setEmailId(String emailId) {
-        this.emailId = emailId;
     }
 
     public String getBuildNumber() {

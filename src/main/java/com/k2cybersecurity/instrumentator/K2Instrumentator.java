@@ -102,20 +102,9 @@ public class K2Instrumentator {
             // Set required LogLevel
             applyRequiredLogLevel();
 
-            String nlcPath = System.getenv("K2_AGENT_NODE_CONFIG");
-            String alcPath = System.getenv("K2_AGENT_APP_CONFIG");
             String userAppName = System.getenv("K2_APP_NAME");
             String userAppVersion = System.getenv("K2_APP_VERSION");
             String userAppTags = System.getenv("K2_APP_TAGS");
-
-            String nlcDefaultPath = new File(osVariables.getConfigPath(), "node-level-config.yaml").toString();
-            String alcDefaultPath = new File(osVariables.getConfigPath(), "application-level-config.yaml").toString();
-            if (StringUtils.isBlank(nlcPath)) {
-                nlcPath = nlcDefaultPath;
-            }
-            if (StringUtils.isBlank(alcPath)) {
-                alcPath = alcDefaultPath;
-            }
 
             try {
                 String collectorVersion = IOUtils.toString(ClassLoader.getSystemResourceAsStream("k2version"), StandardCharsets.UTF_8);
@@ -127,7 +116,7 @@ public class K2Instrumentator {
 
             Identifier identifier = ApplicationInfoUtils.envDetection();
 
-            if (!CollectorConfigurationUtils.getInstance().readCollectorConfig(identifier.getKind(), nlcPath, alcPath)) {
+            if (!CollectorConfigurationUtils.getInstance().populateCollectorConfig()) {
                 return false;
             }
 
@@ -264,10 +253,11 @@ public class K2Instrumentator {
     }
 
     private static void continueIdentifierProcessing(Identifier identifier) {
-        if (IdentifierEnvs.HOST.equals(identifier.getKind())) {
-            identifier.setId(CollectorConfigurationUtils.getInstance().getCollectorConfig().getNodeId());
-        }
-        identifier.setNodeId(CollectorConfigurationUtils.getInstance().getCollectorConfig().getNodeId());
+        // TODO : Alternative of nodeID and nodeIP needed here
+//        if (IdentifierEnvs.HOST.equals(identifier.getKind())) {
+//            identifier.setId(CollectorConfigurationUtils.getInstance().getCollectorConfig().getNodeId());
+//        }
+//        identifier.setNodeId(CollectorConfigurationUtils.getInstance().getCollectorConfig().getNodeId());
         identifier.setNodeIp(CollectorConfigurationUtils.getInstance().getCollectorConfig().getNodeIp());
         identifier.setNodeName(CollectorConfigurationUtils.getInstance().getCollectorConfig().getNodeName());
     }
@@ -416,6 +406,7 @@ public class K2Instrumentator {
         switch (identifier.getKind()) {
             case HOST:
                 HostProperties hostProperties = new HostProperties();
+                // TODO : Alternative of nodeID and nodeIP needed here
                 hostProperties.setId(CollectorConfigurationUtils.getInstance().getCollectorConfig().getNodeId());
                 hostProperties.setOs(SystemUtils.OS_NAME);
                 hostProperties.setArch(SystemUtils.OS_ARCH);
