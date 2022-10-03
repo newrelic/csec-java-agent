@@ -12,6 +12,7 @@ import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.models.config.AgentPolicy;
 import com.k2cybersecurity.intcodeagent.models.config.AgentPolicyParameters;
 import com.k2cybersecurity.intcodeagent.schedulers.PolicyPullST;
+import com.newrelic.api.agent.NewRelic;
 import org.apache.commons.io.FileUtils;
 import org.everit.json.schema.Schema;
 import org.everit.json.schema.ValidationException;
@@ -21,6 +22,10 @@ import org.json.JSONTokener;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.net.URLDecoder;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -28,6 +33,8 @@ import java.nio.file.attribute.PosixFilePermissions;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Stack;
+import java.util.jar.JarFile;
+import java.util.zip.ZipEntry;
 
 public class CommonUtils {
 
@@ -89,22 +96,22 @@ public class CommonUtils {
         }
     }
 
-    public static void writePolicyToFile() {
-        try {
-            ObjectMapper mapper = new ObjectMapper(new YAMLFactory().disable(YAMLGenerator.Feature.WRITE_DOC_START_MARKER));
-            CommonUtils.forceMkdirs(AgentUtils.getInstance().getConfigLoadPath().getParentFile().toPath(), "rwxrwxrwx");
-            FileUtils.touch(AgentUtils.getInstance().getConfigLoadPath());
-            try {
-                AgentUtils.getInstance().getConfigLoadPath().setReadable(true, false);
-                AgentUtils.getInstance().getConfigLoadPath().setWritable(true, false);
-            } catch (Exception e) {
-            }
-            mapper.writeValue(AgentUtils.getInstance().getConfigLoadPath(), AgentUtils.getInstance().getAgentPolicy());
-            logger.log(LogLevel.INFO, POLICY_WRITTEN_TO_FILE + AgentUtils.getInstance().getConfigLoadPath(), CommonUtils.class.getName());
-        } catch (Exception e) {
-            logger.log(LogLevel.ERROR, POLICY_WRITE_FAILED, e, CommonUtils.class.getName());
-        }
-    }
+//    public static void writePolicyToFile() {
+//        try {
+//            ObjectMapper mapper = new ObjectMapper(new YAMLFactory().disable(YAMLGenerator.Feature.WRITE_DOC_START_MARKER));
+//            CommonUtils.forceMkdirs(AgentUtils.getInstance().getConfigLoadPath().getParentFile().toPath(), "rwxrwxrwx");
+//            FileUtils.touch(AgentUtils.getInstance().getConfigLoadPath());
+//            try {
+//                AgentUtils.getInstance().getConfigLoadPath().setReadable(true, false);
+//                AgentUtils.getInstance().getConfigLoadPath().setWritable(true, false);
+//            } catch (Exception e) {
+//            }
+//            mapper.writeValue(AgentUtils.getInstance().getConfigLoadPath(), AgentUtils.getInstance().getAgentPolicy());
+//            logger.log(LogLevel.INFO, POLICY_WRITTEN_TO_FILE + AgentUtils.getInstance().getConfigLoadPath(), CommonUtils.class.getName());
+//        } catch (Exception e) {
+//            logger.log(LogLevel.ERROR, POLICY_WRITE_FAILED, e, CommonUtils.class.getName());
+//        }
+//    }
 
     public static Boolean forceMkdirs(Path directory, String permissions) {
         File existingDirectory = directory.toFile();
@@ -133,5 +140,89 @@ public class CommonUtils {
             }
         }
         return true;
+    }
+
+    public static String getNRAgentJarDirectory() {
+        URL agentJarUrl = getAgentJarUrl();
+        if (agentJarUrl != null) {
+            File file = new File(getAgentJarFileName(agentJarUrl));
+            if (file.exists()) {
+                return file.getParent();
+            }
+        }
+        return null;
+    }
+
+    /*
+        Below methods are taken from com.newrelic.agent.config.AgentJarHelper
+     */
+    public static URL getAgentJarUrl() {
+        if (System.getProperty("newrelic.agent_jarfile") != null) {
+            try {
+                return new URL("file://" + System.getProperty("newrelic.agent_jarfile"));
+            } catch (MalformedURLException e) {
+                logger.log(LogLevel.DEBUG,"Unable to create a valid url from " + System.getProperty("newrelic.agent_jarfile"), e, CommonUtils.class.getName());
+
+            }
+        }
+
+        // Use AgentJarHelper's ClassLoader here because this is called from the BootstrapAgent premain
+        ClassLoader classLoader = NewRelic.getAgent().getClass().getClassLoader();
+        if (classLoader instanceof URLClassLoader) {
+            URL[] urls = ((URLClassLoader) classLoader).getURLs();
+            for (URL url : urls) {
+                if (url.getFile().endsWith("newrelic.jar")) {
+                    if (jarFileNameExists(url, "com/newrelic/agent/Agent.class")) {
+                        return url;
+                    }
+                }
+            }
+            String agentClassName = "com/newrelic/agent/Agent.class".replace('.', '/');
+            for (URL url : urls) {
+                try (JarFile jarFile = new JarFile(url.getFile())) {
+                    ZipEntry entry = jarFile.getEntry(agentClassName);
+                    if (entry != null) {
+                        return url;
+                    }
+                } catch (IOException e) {
+                }
+            }
+        }
+        // technically this is all that is needed to get the jar URL
+        // but it does require a new permission so it will be the
+        // fallback method for the time being (the above approach
+        // frequently fails when using a custom system class loader)
+        return NewRelic.getAgent().getClass().getProtectionDomain().getCodeSource().getLocation();
+    }
+
+    public static boolean jarFileNameExists(URL agentJarUrl, String name) {
+        try (JarFile jarFile = getAgentJarFile(agentJarUrl)) {
+            return jarFile.getEntry(name) != null;
+        } catch (Exception e) {
+            logger.log(LogLevel.DEBUG,"Unable to search the agent jar for " + name, e, CommonUtils.class.getName());
+        }
+        return false;
+    }
+
+    private static JarFile getAgentJarFile(URL agentJarUrl) {
+        if (agentJarUrl == null) {
+            return null;
+        }
+        try {
+            return new JarFile(getAgentJarFileName(agentJarUrl));
+        } catch (IOException e) {
+            return null;
+        }
+    }
+
+    private static String getAgentJarFileName(URL agentJarUrl) {
+        if (agentJarUrl == null) {
+            return null;
+        }
+        try {
+            return URLDecoder.decode(agentJarUrl.getFile().replace("+", "%2B"), "UTF-8");
+        } catch (IOException e) {
+            return null;
+        }
     }
 }

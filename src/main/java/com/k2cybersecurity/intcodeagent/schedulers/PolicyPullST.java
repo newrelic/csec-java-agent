@@ -92,7 +92,7 @@ public class PolicyPullST {
      */
     public static void instantiateDefaultPolicy() {
         logger.log(LogLevel.INFO, "Instantiating collector policy with default!!!", PolicyPullST.class.getName());
-        FileUtils.deleteQuietly(AgentUtils.getInstance().getConfigLoadPath());
+//        FileUtils.deleteQuietly(AgentUtils.getInstance().getConfigLoadPath());
         readAndApplyConfig(loadDefaultConfig());
 //        CommonUtils.writePolicyToFile();
 //        DirectoryWatcher.watchDirectories(Collections.singletonList(AgentUtils.getInstance().getConfigLoadPath().getParent()), false);
@@ -177,22 +177,22 @@ public class PolicyPullST {
         return false;
     }
 
-    public AgentPolicy populateConfig() {
-        if (!AgentUtils.getInstance().getConfigLoadPath().isFile()) {
-            logger.log(LogLevel.INFO, THE_POLICY_FILE_IS_NOT_PRESENT_ON_LOCATION_CREATING_NEW, PolicyPullST.class.getName());
-            CommonUtils.writePolicyToFile();
-            return null;
-        }
-        ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
-        try {
-            return mapper.readValue(AgentUtils.getInstance().getConfigLoadPath(), AgentPolicy.class);
-        } catch (Exception e) {
-            logger.log(LogLevel.ERROR, String.format(FALLING_BACK_TO_DEFAULT_CONFIG_MSG, e.getMessage()), PolicyPullST.class.getName());
-            logger.log(LogLevel.DEBUG, FALLING_BACK_TO_DEFAULT_CONFIG, e, PolicyPullST.class.getName());
-            CommonUtils.writePolicyToFile();
-            return null;
-        }
-    }
+//    public AgentPolicy populateConfig() {
+//        if (!AgentUtils.getInstance().getConfigLoadPath().isFile()) {
+//            logger.log(LogLevel.INFO, THE_POLICY_FILE_IS_NOT_PRESENT_ON_LOCATION_CREATING_NEW, PolicyPullST.class.getName());
+//            CommonUtils.writePolicyToFile();
+//            return null;
+//        }
+//        ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
+//        try {
+//            return mapper.readValue(AgentUtils.getInstance().getConfigLoadPath(), AgentPolicy.class);
+//        } catch (Exception e) {
+//            logger.log(LogLevel.ERROR, String.format(FALLING_BACK_TO_DEFAULT_CONFIG_MSG, e.getMessage()), PolicyPullST.class.getName());
+//            logger.log(LogLevel.DEBUG, FALLING_BACK_TO_DEFAULT_CONFIG, e, PolicyPullST.class.getName());
+//            CommonUtils.writePolicyToFile();
+//            return null;
+//        }
+//    }
 
     private static AgentPolicy loadDefaultConfig() {
         try {

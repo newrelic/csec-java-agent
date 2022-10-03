@@ -109,8 +109,6 @@ public class AgentUtils {
 
     private String groupName = StringUtils.EMPTY;
 
-    private File configLoadPath;
-
     private boolean standaloneMode = false;
 
     private OSVariables osVariables = OsVariablesInstance.getInstance().getOsVariables();
@@ -128,8 +126,6 @@ public class AgentUtils {
         applicationInfo = new PolicyApplicationInfo();
         deployedApplicationUnderProcessing = new HashSet<>();
         TRACE_PATTERN = Pattern.compile(IAgentConstants.TRACE_REGEX);
-        File configParentPath = new File(osVariables.getConfigPath(), K2Instrumentator.APPLICATION_UUID);
-        configLoadPath = new File(configParentPath, String.format("lc-policy.yaml", K2Instrumentator.APPLICATION_UUID));
     }
 
     public static AgentUtils getInstance() {
@@ -201,10 +197,6 @@ public class AgentUtils {
 
     public void setCollectAppInfoFromEnv(boolean collectAppInfoFromEnv) {
         this.collectAppInfoFromEnv = collectAppInfoFromEnv;
-    }
-
-    public File getConfigLoadPath() {
-        return configLoadPath;
     }
 
     public PolicyApplicationInfo getApplicationInfo() {

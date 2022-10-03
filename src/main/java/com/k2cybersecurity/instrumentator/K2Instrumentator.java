@@ -13,6 +13,7 @@ import com.k2cybersecurity.intcodeagent.models.javaagent.*;
 import com.k2cybersecurity.intcodeagent.properties.K2JAVersionInfo;
 import com.k2cybersecurity.intcodeagent.schedulers.GlobalPolicyParameterPullST;
 import com.k2cybersecurity.intcodeagent.schedulers.PolicyPullST;
+import com.k2cybersecurity.intcodeagent.utils.CommonUtils;
 import com.k2cybersecurity.intcodeagent.websocket.EventSendPool;
 import com.k2cybersecurity.intcodeagent.websocket.WSClient;
 import com.newrelic.api.agent.NewRelic;
@@ -33,6 +34,7 @@ import java.net.URL;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -167,10 +169,8 @@ public class K2Instrumentator {
 
         if(System.getenv().containsKey("K2_LOG_LEVEL")){
             logLevel = System.getenv().get("K2_LOG_LEVEL");
-        } else if (StringUtils.isNotBlank(NewRelic.getAgent().getConfig().getValue("log_level"))) {
-            logLevel = NewRelic.getAgent().getConfig().getValue("log_level");
-        } else if (StringUtils.isNotBlank(NewRelic.getAgent().getConfig().getValue("log_level"))) {
-            logLevel = NewRelic.getAgent().getConfig().getValue("log_level");
+        } else if (StringUtils.isNotBlank(NewRelic.getAgent().getConfig().getValue("security.log_level"))) {
+            logLevel = NewRelic.getAgent().getConfig().getValue("security.log_level");
         }
 
         try {
@@ -254,10 +254,10 @@ public class K2Instrumentator {
 
     private static void continueIdentifierProcessing(Identifier identifier) {
         // TODO : Alternative of nodeID and nodeIP needed here
-//        if (IdentifierEnvs.HOST.equals(identifier.getKind())) {
-//            identifier.setId(CollectorConfigurationUtils.getInstance().getCollectorConfig().getNodeId());
-//        }
-//        identifier.setNodeId(CollectorConfigurationUtils.getInstance().getCollectorConfig().getNodeId());
+        if (IdentifierEnvs.HOST.equals(identifier.getKind())) {
+            identifier.setId(CollectorConfigurationUtils.getInstance().getCollectorConfig().getNodeId());
+        }
+        identifier.setNodeId(CollectorConfigurationUtils.getInstance().getCollectorConfig().getNodeId());
         identifier.setNodeIp(CollectorConfigurationUtils.getInstance().getCollectorConfig().getNodeIp());
         identifier.setNodeName(CollectorConfigurationUtils.getInstance().getCollectorConfig().getNodeName());
     }
@@ -274,18 +274,22 @@ public class K2Instrumentator {
     }
 
     public static boolean setK2HomePath() {
-        K2_HOME = System.getenv("K2_HOME");
+
+        if(System.getenv().containsKey("K2_HOME")){
+            K2_HOME = System.getenv("K2_HOME");
+        }else if(NewRelic.getAgent().getConfig().getValue("newrelic.home") != null) {
+            K2_HOME = NewRelic.getAgent().getConfig().getValue("newrelic.home");
+        } else if(CommonUtils.getNRAgentJarDirectory() != null) {
+            K2_HOME = CommonUtils.getNRAgentJarDirectory();
+        } else {
+            K2_HOME = ".";
+        }
+        Path k2homePath = Paths.get(K2_HOME, "k2home");
+        CommonUtils.forceMkdirs(k2homePath, "rwxrwxrwx");
+        K2_HOME = k2homePath.toString();
         if (!isValidK2HomePath(K2_HOME)) {
-            //Fall back to default K2Home
-            if (SystemUtils.IS_OS_WINDOWS) {
-                K2_HOME = DEFAULT_K2HOME_WIN;
-            } else {
-                K2_HOME = DEFAULT_K2HOME_LINUX;
-            }
-            if (!isValidK2HomePath(K2_HOME)) {
-                System.err.println("[K2-JA] Incomplete startup env parameters provided : Missing or Incorrect K2_HOME. Collector exiting.");
-                return true;
-            }
+            System.err.println("[K2-JA] Incomplete startup env parameters provided : Missing or Incorrect K2_HOME. Collector exiting.");
+            return true;
         }
         return false;
     }

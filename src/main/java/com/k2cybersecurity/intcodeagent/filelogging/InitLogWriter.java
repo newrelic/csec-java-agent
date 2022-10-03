@@ -31,7 +31,7 @@ public class InitLogWriter implements Runnable {
     private static final String STR_COLON = " : ";
 
     private static final String K2_LOG = "K2-LOG : ";
-    public static final String THREAD_NAME_TEMPLATE = " [%s] ";
+    public static final String THREAD_NAME_TEMPLATE = " [%s] [%s] ";
 
     private static final String LOG_FILE_INITIATED_MSG = "Init Log File initiated.\n";
     private static final String LOG_CONFIGURED_SUCCESSFULLY_MSG = "Init Logger configured successfully with level: %s and rollover on max size %s.\n";
@@ -71,7 +71,7 @@ public class InitLogWriter implements Runnable {
     private static OSVariables osVariables = OsVariablesInstance.getInstance().getOsVariables();
 
     static {
-        fileName = new File(osVariables.getLogDirectory(), "k2-java-agent-init-" + K2Instrumentator.APPLICATION_UUID + ".log").getAbsolutePath();
+        fileName = new File(osVariables.getLogDirectory(), "k2-java-agent-init.log").getAbsolutePath();
         currentLogFile = new File(fileName);
         CommonUtils.forceMkdirs(currentLogFile.getParentFile().toPath(), "rwxrwxrwx");
         currentLogFileName = fileName;
@@ -120,7 +120,7 @@ public class InitLogWriter implements Runnable {
 //		sb.append(K2_LOG);
         sb.append(sdf.format(cal.getTime()));
         sb.append(STR_COLON);
-        sb.append(String.format(THREAD_NAME_TEMPLATE, threadName));
+        sb.append(String.format(THREAD_NAME_TEMPLATE, K2Instrumentator.VMPID, threadName));
         sb.append(this.logLevelName);
         if (this.loggingClassName != null)
             sb.append(STR_COLON);

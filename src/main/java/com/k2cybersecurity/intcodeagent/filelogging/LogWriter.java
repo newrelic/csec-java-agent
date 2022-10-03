@@ -10,8 +10,10 @@ import com.k2cybersecurity.intcodeagent.properties.K2JALogProperties;
 import com.k2cybersecurity.intcodeagent.utils.CommonUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
+import oshi.SystemInfo;
 
 import java.io.*;
+import java.lang.management.ManagementFactory;
 import java.nio.file.Files;
 import java.nio.file.attribute.PosixFilePermissions;
 import java.text.SimpleDateFormat;
@@ -28,7 +30,7 @@ public class LogWriter implements Runnable {
     private static final String STR_COLON = " : ";
 
     private static final String K2_LOG = "K2-LOG : ";
-    public static final String THREAD_NAME_TEMPLATE = " [%s] ";
+    public static final String THREAD_NAME_TEMPLATE = " [%s] [%s] ";
     public static final String CAUSED_BY = "Caused by: ";
 
     public static int defaultLogLevel = LogLevel.INFO.getLevel();
@@ -91,7 +93,7 @@ public class LogWriter implements Runnable {
     }
 
     static {
-        fileName = new File(osVariables.getLogDirectory(), "k2-java-agent-" + K2Instrumentator.APPLICATION_UUID + ".log").getAbsolutePath();
+        fileName = new File(osVariables.getLogDirectory(), "k2-java-agent.log").getAbsolutePath();
         currentLogFile = new File(fileName);
         currentLogFileName = fileName;
         createLogFile();
@@ -123,7 +125,7 @@ public class LogWriter implements Runnable {
 //		sb.append(K2_LOG);
         sb.append(sdf.format(cal.getTime()));
         sb.append(STR_COLON);
-        sb.append(String.format(THREAD_NAME_TEMPLATE, threadName));
+        sb.append(String.format(THREAD_NAME_TEMPLATE, K2Instrumentator.VMPID, threadName));
         sb.append(this.logLevelName);
         if (this.loggingClassName != null)
             sb.append(STR_COLON);

@@ -2,7 +2,8 @@ package com.k2cybersecurity.instrumentator.os;
 
 import com.k2cybersecurity.instrumentator.K2Instrumentator;
 import com.k2cybersecurity.intcodeagent.logging.IAgentConstants;
-import com.k2cybersecurity.intcodeagent.utils.NRApiUtils;
+import com.k2cybersecurity.intcodeagent.utils.CommonUtils;
+import com.newrelic.api.agent.NewRelic;
 import org.apache.commons.lang3.SystemUtils;
 
 import java.nio.file.Paths;
@@ -12,7 +13,7 @@ public class OsVariablesInstance {
     public static final String LOGS = "logs";
     public static final String LANGUAGE_AGENT = "language-agent";
     public static final String CONFIG = "config";
-    public static final String K_2_ROOT = "k2root";
+    public static final String K2HOME = "k2home";
     public static final String TMP = "tmp";
 
     private static OsVariablesInstance instance;
@@ -35,9 +36,14 @@ public class OsVariablesInstance {
 
 //        osVariables.setK2RootDir(k2root.toString());
 //        osVariables.setLogDirectory(Paths.get(k2root.toString(), LOGS, LANGUAGE_AGENT, K2Instrumentator.APPLICATION_UUID).toString());
-        osVariables.setLogDirectory(Paths.get(K2Instrumentator.K2_HOME, NRApiUtils.getLogPath()).toString());
+
+
+        if(NewRelic.getAgent().getConfig().getValue("log_file_path") != null) {
+            osVariables.setLogDirectory(Paths.get(NewRelic.getAgent().getConfig().getValue("log_file_path"), K2HOME, LOGS).toString());
+        } else {
+            osVariables.setLogDirectory(Paths.get(K2Instrumentator.K2_HOME, LOGS).toString());
+        }
         osVariables.setTmpDirectory(Paths.get(K2Instrumentator.K2_HOME, TMP, LANGUAGE_AGENT, K2Instrumentator.APPLICATION_UUID).toString());
-        osVariables.setConfigPath(Paths.get(K2Instrumentator.K2_HOME).toString());
 //        osVariables.setPolicyConfigPath(Paths.get(k2root.toString(), CONFIG, LANGUAGE_AGENT).toString());
 
         if (SystemUtils.IS_OS_LINUX) {
