@@ -275,11 +275,13 @@ public class K2Instrumentator {
 
     public static boolean setK2HomePath() {
 
-        if(System.getenv().containsKey("K2_HOME")){
+        if (System.getenv().containsKey("K2_HOME")) {
             K2_HOME = System.getenv("K2_HOME");
-        }else if(NewRelic.getAgent().getConfig().getValue("newrelic.home") != null) {
+        } else if (NewRelic.getAgent().getConfig().getValue("security.sec_home_path") != null) {
+            K2_HOME = NewRelic.getAgent().getConfig().getValue("security.sec_home_path");
+        } else if (NewRelic.getAgent().getConfig().getValue("newrelic.home") != null) {
             K2_HOME = NewRelic.getAgent().getConfig().getValue("newrelic.home");
-        } else if(CommonUtils.getNRAgentJarDirectory() != null) {
+        } else if (CommonUtils.getNRAgentJarDirectory() != null) {
             K2_HOME = CommonUtils.getNRAgentJarDirectory();
         } else {
             K2_HOME = ".";
