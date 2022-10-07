@@ -17,4 +17,5 @@ public class INRSettingsKey {
     public static final String SECURITY_DETECTION_DISABLE_RXSS = "security.detection.disable_rxss";
     public static final String SECURITY_DETECTION_DISABLE_DESERIALIZATION = "security.detection.disable_deserialization";
 
+    public static final String SECURITY_POLICY_ENFORCE = "security.policy.enforce";
 }

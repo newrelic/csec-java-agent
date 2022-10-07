@@ -70,6 +70,7 @@ public class AgentUtils {
     public static final String LOG_LEVEL_PROVIDED_IN_POLICY_IS_INCORRECT_DEFAULTING_TO_INFO = "Log level provided in policy is incorrect: %s. Staying at current level";
     public static final String ERROR_WHILE_EXTRACTING_FILE_FROM_ARCHIVE_S_S = "Error while extracting file from archive : %s : %s";
     public static final String NR_SECURITY_ENABLE = "security.enable";
+    public static final String OVER_RIDE_POLICY_DISABLED_IN_NR_CONFIG_AT_S = "Over-ride policy disabled in NR config at '%s'.";
 
     private Map<String, ClassLoader> classLoaderRecord;
 
@@ -831,13 +832,17 @@ public class AgentUtils {
      */
     public void applyNRPolicyOverride() {
         boolean override = false;
-        if (NewRelic.getAgent().getConfig().getValue(INRSettingsKey.SECURITY_POLICY_VULNERABILITY_SCAN_ENABLE) != null){
+        if (!NewRelic.getAgent().getConfig().getValue(INRSettingsKey.SECURITY_POLICY_ENFORCE, false)) {
+            logger.log(LogLevel.DEBUG, String.format(OVER_RIDE_POLICY_DISABLED_IN_NR_CONFIG_AT_S, INRSettingsKey.SECURITY_POLICY_ENFORCE), AgentUtils.class.getName());
+            return;
+        }
+        if (NewRelic.getAgent().getConfig().getValue(INRSettingsKey.SECURITY_POLICY_VULNERABILITY_SCAN_ENABLE) != null) {
             this.getAgentPolicy().getVulnerabilityScan().setEnabled(NewRelic.getAgent().getConfig().getValue(
                     INRSettingsKey.SECURITY_POLICY_VULNERABILITY_SCAN_ENABLE));
             override = true;
         }
 
-        if (NewRelic.getAgent().getConfig().getValue(INRSettingsKey.SECURITY_POLICY_VULNERABILITY_SCAN_IAST_SCAN_ENABLE) != null){
+        if (NewRelic.getAgent().getConfig().getValue(INRSettingsKey.SECURITY_POLICY_VULNERABILITY_SCAN_IAST_SCAN_ENABLE) != null) {
             this.getAgentPolicy().getVulnerabilityScan().getIastScan().setEnabled(NewRelic.getAgent().getConfig().getValue(
                     INRSettingsKey.SECURITY_POLICY_VULNERABILITY_SCAN_IAST_SCAN_ENABLE));
             override = true;
