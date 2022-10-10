@@ -15,11 +15,9 @@ import com.k2cybersecurity.intcodeagent.models.config.AgentPolicy;
 import com.k2cybersecurity.intcodeagent.utils.CommonUtils;
 import com.k2cybersecurity.intcodeagent.websocket.EventSendPool;
 import okhttp3.Response;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.InputStream;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.*;
@@ -40,12 +38,12 @@ public class PolicyPullST {
     public static final String CANCEL_CURRENT_TASK_OF_POLICY_PULL = "Cancel current task of policy pull.";
     public static final String THE_POLICY_FILE_IS_NOT_PRESENT_ON_LOCATION_CREATING_NEW = "The policy file is not present on location creating new!!!";
     public static final String DEFAULT_POLICY_YAML = "default-policy.yaml";
+    public static final String GROUP_NAME = "group";
+    public static final String APPLICATION_UUID = "applicationUUID";
 
     private ScheduledExecutorService executorService;
 
     private ScheduledFuture future;
-
-    private Map<String, String> queryParam = new HashMap<>();
 
     private static PolicyPullST instance;
 
@@ -61,8 +59,6 @@ public class PolicyPullST {
             }
         });
 
-        queryParam.put("group", AgentUtils.getInstance().getGroupName());
-        queryParam.put("applicationUUID", K2Instrumentator.APPLICATION_UUID);
         future = executorService.schedule(runnable, 0, TimeUnit.SECONDS);
         logger.log(LogLevel.INFO, "policy fetch schedule thread started successfully!!!", PolicyPullST.class.getName());
     }
@@ -93,7 +89,9 @@ public class PolicyPullST {
     public static void instantiateDefaultPolicy() {
         logger.log(LogLevel.INFO, "Instantiating collector policy with default!!!", PolicyPullST.class.getName());
 //        FileUtils.deleteQuietly(AgentUtils.getInstance().getConfigLoadPath());
-        readAndApplyConfig(loadDefaultConfig());
+        if (readAndApplyConfig(loadDefaultConfig())) {
+            AgentUtils.getInstance().enforcePolicy();
+        }
 //        CommonUtils.writePolicyToFile();
 //        DirectoryWatcher.watchDirectories(Collections.singletonList(AgentUtils.getInstance().getConfigLoadPath().getParent()), false);
     }
@@ -101,6 +99,10 @@ public class PolicyPullST {
     private void task() {
         try {
             AgentPolicy newPolicy;
+
+            Map<String, String> queryParam = new HashMap<>();
+            queryParam.put(GROUP_NAME, AgentUtils.getInstance().getGroupName());
+            queryParam.put(APPLICATION_UUID, K2Instrumentator.APPLICATION_UUID);
             Response response = HttpClient.getInstance().doGet(IRestClientConstants.GET_POLICY, null, queryParam, null, false);
             if (response.isSuccessful()) {
                 newPolicy = HttpClient.getInstance().readResponse(response.body().byteStream(), AgentPolicy.class);
@@ -135,11 +137,11 @@ public class PolicyPullST {
                     String.format(IAgentConstants.RECEIVED_AGENT_POLICY, newPolicy),
                     PolicyPullST.class.getName());
             AgentUtils.getInstance().setAgentPolicy(newPolicy);
-            AgentUtils.getInstance().enforcePolicy();
             K2Instrumentator.APPLICATION_INFO_BEAN.setPolicyVersion(AgentUtils.getInstance().getAgentPolicy().getVersion());
             logger.logInit(LogLevel.INFO, String.format(IAgentConstants.AGENT_POLICY_APPLIED_S,
                     AgentUtils.getInstance().getAgentPolicy()), PolicyPullST.class.getName());
             AgentUtils.getInstance().applyNRPolicyOverride();
+            AgentUtils.getInstance().setApplicationInfo();
             if (AgentUtils.getInstance().isPolicyOverridden()){
                 logger.log(LogLevel.INFO, String.format("NR policy over-ride in place. Updated policy : %s",
                         AgentUtils.getInstance().getAgentPolicy()), PolicyPullST.class.getName());

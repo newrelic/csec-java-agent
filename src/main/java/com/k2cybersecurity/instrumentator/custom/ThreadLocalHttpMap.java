@@ -1,6 +1,5 @@
 package com.k2cybersecurity.instrumentator.custom;
 
-import com.k2cybersecurity.instrumentator.K2Instrumentator;
 import com.k2cybersecurity.instrumentator.utils.AgentUtils;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
@@ -617,7 +616,7 @@ public class ThreadLocalHttpMap {
     }
 
     public void printInterceptedRequestResponse() {
-        if (K2Instrumentator.enableHTTPRequestPrinting) {
+        if (AgentUtils.getInstance().getAgentPolicy().getEnableHTTPRequestPrinting()) {
             logger.log(LogLevel.INFO,
                     String.format(IAgentConstants.INTERCEPTED_HTTP_REQUEST,
                             ThreadLocalExecutionMap.getInstance().getHttpRequestBean(),

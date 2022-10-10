@@ -624,21 +624,19 @@ public class AgentUtils {
     }
 
     public void enforcePolicy() {
-        K2Instrumentator.enableHTTPRequestPrinting = agentPolicy.getEnableHTTPRequestPrinting();
         logger.log(LogLevel.INFO, ENFORCING_POLICY, AgentUtils.class.getName());
         if (agentPolicy.getPolicyPull() && agentPolicy.getPolicyPullInterval() > 0) {
             PolicyPullST.getInstance().submitNewTask();
         } else {
             PolicyPullST.getInstance().cancelTask(true);
         }
-        setApplicationInfo();
     }
 
     private boolean isAppScanNeeded() {
         return !scannedDeployedApplications.containsAll(K2Instrumentator.APPLICATION_INFO_BEAN.getServerInfo().getDeployedApplications());
     }
 
-    private void setApplicationInfo() {
+    public void setApplicationInfo() {
         if (!isCollectAppInfoFromEnv()) {
             applicationInfo = agentPolicy.getApplicationInfo();
             K2Instrumentator.setApplicationInfo(K2Instrumentator.APPLICATION_INFO_BEAN);
@@ -834,6 +832,7 @@ public class AgentUtils {
         boolean override = false;
         if (!NewRelic.getAgent().getConfig().getValue(INRSettingsKey.SECURITY_POLICY_ENFORCE, false)) {
             logger.log(LogLevel.DEBUG, String.format(OVER_RIDE_POLICY_DISABLED_IN_NR_CONFIG_AT_S, INRSettingsKey.SECURITY_POLICY_ENFORCE), AgentUtils.class.getName());
+            this.setPolicyOverridden(override);
             return;
         }
         if (NewRelic.getAgent().getConfig().getValue(INRSettingsKey.SECURITY_POLICY_VULNERABILITY_SCAN_ENABLE) != null) {

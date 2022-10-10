@@ -8,10 +8,8 @@ import com.k2cybersecurity.intcodeagent.models.javaagent.FuzzFailEvent;
 import com.k2cybersecurity.intcodeagent.websocket.EventSendPool;
 import okhttp3.*;
 import okhttp3.OkHttpClient.Builder;
-import org.apache.commons.io.FileUtils;
 
 import javax.net.ssl.*;
-import java.io.File;
 import java.io.IOException;
 import java.security.cert.CertificateException;
 import java.util.concurrent.TimeUnit;
@@ -84,8 +82,6 @@ public class RestClient {
     };
 
     private RestClient() {
-        //            // TODO: Add handling for Windows platform
-        FileUtils.deleteQuietly(new File(File.separator + "tmp" + File.separator + "k2-ic" + File.separator + "ds-tmp"));
     }
 
     public static RestClient getInstance() {
@@ -124,7 +120,6 @@ public class RestClient {
             fuzzFailEvent.setFuzzHeader(request.header(IAgentConstants.K2_FUZZ_REQUEST_ID));
             EventSendPool.getInstance().sendEvent(fuzzFailEvent.toString());
         }
-
 
     }
 

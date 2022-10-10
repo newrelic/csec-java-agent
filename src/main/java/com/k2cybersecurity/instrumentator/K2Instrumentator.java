@@ -1,5 +1,6 @@
 package com.k2cybersecurity.instrumentator;
 
+import com.k2cybersecurity.instrumentator.httpclient.HttpClient;
 import com.k2cybersecurity.instrumentator.os.OSVariables;
 import com.k2cybersecurity.instrumentator.os.OsVariablesInstance;
 import com.k2cybersecurity.instrumentator.utils.*;
@@ -30,6 +31,7 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
+import java.net.URI;
 import java.net.URL;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
@@ -38,6 +40,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
 
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.*;
 
@@ -63,7 +66,6 @@ public class K2Instrumentator {
     private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
 
     public static boolean isDynamicAttach = false;
-    public static boolean enableHTTPRequestPrinting = false;
 
     private static OSVariables osVariables;
 
@@ -555,6 +557,42 @@ public class K2Instrumentator {
             return null;
         }
         return null;
+    }
+
+    public static boolean refresh() {
+        NewRelic.getAgent().getLogger().log(Level.INFO, "NR agent refresh received!!!.");
+        logger.log(LogLevel.INFO, "NR agent refresh received!!!", K2Instrumentator.class.getName());
+        String entityGuid = NewRelic.getAgent().getLinkingMetadata().getOrDefault("entity.guid", StringUtils.EMPTY);
+        if (!AgentUtils.getInstance().isStandaloneMode() && StringUtils.isBlank(entityGuid)) {
+            AgentUtils.getInstance().setAgentActive(false);
+            NewRelic.getAgent().getLogger().log(Level.SEVERE, "K2 security module aborted!!! since entity.guid is not known.");
+            return false;
+        }
+        AgentUtils.getInstance().setEntityGuid(entityGuid);
+        AgentUtils.getInstance().setAgentActive(true);
+
+        // Set required Group
+        applyRequiredGroup();
+        // Set required LogLevel
+        applyRequiredLogLevel();
+
+        if (!CollectorConfigurationUtils.getInstance().populateCollectorConfig()) {
+            return false;
+        }
+
+        try {
+            HttpClient.getInstance().resetClientURL();
+            if (WSClient.getInstance().getURI().compareTo(new URI(CollectorConfigurationUtils.getInstance().getCollectorConfig().getK2ServiceInfo().getValidatorServiceEndpointURL())) != 0) {
+                WSClient.reconnectWSClient();
+            }
+        } catch (URISyntaxException | InterruptedException e) {
+            NewRelic.getAgent().getLogger().log(Level.SEVERE, "WS Server re-instantiation fails due to {1}", e.getMessage());
+            logger.log(LogLevel.ERROR, String.format("WS Server re-instantiation fails due to %s", e.getMessage()), K2Instrumentator.class.getName());
+            return false;
+        }
+
+        PolicyPullST.instantiateDefaultPolicy();
+        return true;
     }
 
 }

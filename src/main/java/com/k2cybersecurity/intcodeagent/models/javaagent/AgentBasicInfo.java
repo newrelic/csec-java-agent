@@ -2,7 +2,6 @@ package com.k2cybersecurity.intcodeagent.models.javaagent;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.k2cybersecurity.instrumentator.utils.AgentUtils;
-import com.k2cybersecurity.instrumentator.utils.CollectorConfigurationUtils;
 import com.k2cybersecurity.intcodeagent.properties.K2JAVersionInfo;
 import org.apache.commons.lang3.StringUtils;
 
@@ -17,7 +16,7 @@ public class AgentBasicInfo {
     private static final String SCAN_COMPONENT_DATA = "scanComponentData";
     public static final String FETCH_POLICY = "fetchPolicy";
     public static final String SEC_EVENT = "sec_event";
-    public static final String SEC_HEALTH_CHECK = "sec_health_check";
+    public static final String SEC_HEALTH_CHECK = "sec_health_check_lc";
 
     /**
      * Tool id for Language Agent.
