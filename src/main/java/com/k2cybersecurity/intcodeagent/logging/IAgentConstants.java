@@ -624,4 +624,8 @@ public interface IAgentConstants {
     String DEFAULT_K2HOME_WIN = "C:\\Users\\Public\\K2\\k2root";
     String POLICY_PULL_RESPONSE_IS_NULL = "Policy pull response is null!!!";
     String VULNERABLE = "VULNERABLE";
+    String NR_ENTITY_GUID = "entity.guid";
+
+    String TERMINATING = "Terminating";
+    String SHUTTING_DOWN_WITH_STATUS = "Shutting down with status: ";
 }

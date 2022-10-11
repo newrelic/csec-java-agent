@@ -2,8 +2,11 @@ package com.k2cybersecurity.intcodeagent.models.javaagent;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.k2cybersecurity.instrumentator.utils.AgentUtils;
+import com.k2cybersecurity.intcodeagent.logging.IAgentConstants;
 import com.k2cybersecurity.intcodeagent.properties.K2JAVersionInfo;
 import org.apache.commons.lang3.StringUtils;
+
+import java.util.Map;
 
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.*;
 
@@ -17,6 +20,7 @@ public class AgentBasicInfo {
     public static final String FETCH_POLICY = "fetchPolicy";
     public static final String SEC_EVENT = "sec_event";
     public static final String SEC_HEALTH_CHECK = "sec_health_check_lc";
+    public static final String NR_ENTITY_GUID = "entityGuid";
 
     /**
      * Tool id for Language Agent.
@@ -48,7 +52,7 @@ public class AgentBasicInfo {
 
     private String eventType;
 
-    private String entityGuid;
+    private Map<String, String> liningMetaData;
 
     @JsonInclude
     private static String policyVersion;
@@ -64,8 +68,8 @@ public class AgentBasicInfo {
         setCollectorVersion(K2JAVersionInfo.collectorVersion);
         setBuildNumber(K2JAVersionInfo.buildNumber);
         setGroupName(AgentUtils.getInstance().getGroupName());
-        setEntityGuid(AgentUtils.getInstance().getEntityGuid());
-        setNodeId(AgentUtils.getInstance().getEntityGuid());
+        setNodeId(AgentUtils.getInstance().getLinkingMetaData().getOrDefault(IAgentConstants.NR_ENTITY_GUID, StringUtils.EMPTY));
+        setLiningMetaData(AgentUtils.getInstance().getLinkingMetaData());
         if (this instanceof ApplicationInfoBean) {
             setJsonName(JSON_NAME_APPLICATION_INFO_BEAN);
         } else if (this instanceof JavaAgentEventBean) {
@@ -197,19 +201,20 @@ public class AgentBasicInfo {
         this.eventType = eventType;
     }
 
-    public String getEntityGuid() {
-        return entityGuid;
-    }
-
-    public void setEntityGuid(String entityGuid) {
-        this.entityGuid = entityGuid;
-    }
-
     public boolean isPolicyOverridden() {
         return isPolicyOverridden;
     }
 
     public void setPolicyOverridden(boolean policyOverridden) {
         isPolicyOverridden = policyOverridden;
+    }
+
+
+    public Map<String, String> getLiningMetaData() {
+        return liningMetaData;
+    }
+
+    public void setLiningMetaData(Map<String, String> liningMetaData) {
+        this.liningMetaData = liningMetaData;
     }
 }

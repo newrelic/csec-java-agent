@@ -116,7 +116,7 @@ public class AgentUtils {
 
     private boolean isAgentActive = false;
 
-    private String entityGuid;
+    private Map<String, String> linkingMetaData;
 
     private boolean isPolicyOverridden = false;
 
@@ -216,12 +216,12 @@ public class AgentUtils {
         this.agentPolicyParameters = agentPolicyParameters;
     }
 
-    public String getEntityGuid() {
-        return entityGuid;
+    public Map<String, String> getLinkingMetaData() {
+        return linkingMetaData;
     }
 
-    public void setEntityGuid(String entityGuid) {
-        this.entityGuid = entityGuid;
+    public void setLinkingMetaData(Map<String, String> linkingMetaData) {
+        this.linkingMetaData = linkingMetaData;
     }
 
     public boolean isPolicyOverridden() {

@@ -304,4 +304,5 @@ public class JavaAgentEventBean extends AgentBasicInfo {
     public void setWebappIdentifier(DeployedApplication webappIdentifier) {
         this.webappIdentifier = webappIdentifier;
     }
+
 }

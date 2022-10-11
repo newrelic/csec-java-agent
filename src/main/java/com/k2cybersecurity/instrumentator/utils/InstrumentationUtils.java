@@ -9,6 +9,7 @@ import com.k2cybersecurity.intcodeagent.controlcommand.ControlCommandProcessorTh
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.logging.HealthCheckScheduleThread;
+import com.k2cybersecurity.intcodeagent.logging.IAgentConstants;
 import com.k2cybersecurity.intcodeagent.models.javaagent.ShutDownEvent;
 import com.k2cybersecurity.intcodeagent.schedulers.GlobalPolicyParameterPullST;
 import com.k2cybersecurity.intcodeagent.schedulers.InBoundOutBoundST;
@@ -50,9 +51,6 @@ public class InstrumentationUtils {
     public static final String STATIC_METHOD_VOID_EXIT = "StaticMethodVoidExit";
     public static final String FAILED_TO_INSTRUMENT_S_S_DUE_TO_ERROR_S = "Failed to instrument : %s::%s due to error : %s";
     public static final String FAILED_TO_INSTRUMENT_ANNOTATION_DUE_TO_ERROR = "Failed to instrument : %s due to error : %s";
-
-    public static final String TERMINATING = "Terminating";
-    public static final String SHUTTING_DOWN_WITH_STATUS = "Shutting down with status: ";
     public static final String JAVA_AGENT_SHUTDOWN_COMPLETE = "Java Agent shutdown complete.";
     public static final String ORG_JBOSS_MODULES_MAIN = "org.jboss.modules.Main";
     public static final String ORG_OSGI_FRAMEWORK_BUNDLE = "org.osgi.framework.Bundle";
@@ -364,11 +362,12 @@ public class InstrumentationUtils {
 //        System.out.println("K2 Collector's shutdown hooked called.");
 //        AgentUtils.getInstance().setAgentActive(false);
         try {
+            AgentUtils.getInstance().setAgentActive(false);
             ShutDownEvent shutDownEvent = new ShutDownEvent();
             shutDownEvent.setApplicationUUID(K2Instrumentator.APPLICATION_UUID);
-            shutDownEvent.setStatus(TERMINATING);
+            shutDownEvent.setStatus(IAgentConstants.TERMINATING);
             EventSendPool.getInstance().sendEvent(shutDownEvent.toString());
-            logger.log(LogLevel.INFO, SHUTTING_DOWN_WITH_STATUS + shutDownEvent, InstrumentationUtils.class.getName());
+            logger.log(LogLevel.INFO, IAgentConstants.SHUTTING_DOWN_WITH_STATUS + shutDownEvent, InstrumentationUtils.class.getName());
             TimeUnit.SECONDS.sleep(1);
         } catch (Throwable e) {
             logger.log(LogLevel.FATAL, "Error while sending shut down event : ", e,

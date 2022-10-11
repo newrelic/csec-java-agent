@@ -9,6 +9,7 @@ import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.filelogging.LogWriter;
 import com.k2cybersecurity.intcodeagent.logging.HealthCheckScheduleThread;
+import com.k2cybersecurity.intcodeagent.logging.IAgentConstants;
 import com.k2cybersecurity.intcodeagent.models.config.PolicyApplicationInfo;
 import com.k2cybersecurity.intcodeagent.models.javaagent.*;
 import com.k2cybersecurity.intcodeagent.properties.K2JAVersionInfo;
@@ -224,6 +225,8 @@ public class K2Instrumentator {
                 String.format(STARTED_MODULE_LOG, AgentServices.EventWritePool.name()),
                 K2Instrumentator.class.getName()
         );
+
+        AgentUtils.getInstance().setLinkingMetaData(NewRelic.getAgent().getLinkingMetadata());
 
         logger.logInit(LogLevel.INFO, AGENT_INIT_LOG_STEP_FIVE_END, K2Instrumentator.class.getName());
         return isWorking;
@@ -568,7 +571,7 @@ public class K2Instrumentator {
             NewRelic.getAgent().getLogger().log(Level.SEVERE, "K2 security module aborted!!! since entity.guid is not known.");
             return false;
         }
-        AgentUtils.getInstance().setEntityGuid(entityGuid);
+        AgentUtils.getInstance().setLinkingMetaData(NewRelic.getAgent().getLinkingMetadata());
         AgentUtils.getInstance().setAgentActive(true);
 
         // Set required Group
@@ -593,6 +596,15 @@ public class K2Instrumentator {
 
         PolicyPullST.instantiateDefaultPolicy();
         return true;
+    }
+
+    public static void agentInactive() {
+        AgentUtils.getInstance().setAgentActive(false);
+        ShutDownEvent shutDownEvent = new ShutDownEvent();
+        shutDownEvent.setApplicationUUID(K2Instrumentator.APPLICATION_UUID);
+        shutDownEvent.setStatus(IAgentConstants.TERMINATING);
+        EventSendPool.getInstance().sendEvent(shutDownEvent.toString());
+        logger.log(LogLevel.INFO, IAgentConstants.SHUTTING_DOWN_WITH_STATUS + shutDownEvent, K2Instrumentator.class.getName());
     }
 
 }

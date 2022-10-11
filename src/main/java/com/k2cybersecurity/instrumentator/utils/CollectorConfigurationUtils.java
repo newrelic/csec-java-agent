@@ -5,18 +5,14 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.k2cybersecurity.instrumentator.K2Instrumentator;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
-import com.k2cybersecurity.intcodeagent.models.collectorconfig.ApplicationLevelConfig;
 import com.k2cybersecurity.intcodeagent.models.collectorconfig.CollectorConfig;
 import com.k2cybersecurity.intcodeagent.models.collectorconfig.CustomerInfo;
 import com.k2cybersecurity.intcodeagent.models.collectorconfig.K2ServiceInfo;
-import com.k2cybersecurity.intcodeagent.models.collectorconfig.NodeLevelConfig;
 import com.k2cybersecurity.intcodeagent.models.javaagent.IdentifierEnvs;
 import com.newrelic.api.agent.NewRelic;
 import org.apache.commons.lang3.StringUtils;
 
-import java.io.File;
 import java.util.Collections;
-import java.util.Set;
 
 /**
  * Utility class for K2 policy and configuration handling
@@ -104,7 +100,7 @@ public class CollectorConfigurationUtils {
 //            return false;
 //        }
 
-        this.collectorConfig.setNodeId(AgentUtils.getInstance().getEntityGuid());
+        this.collectorConfig.setNodeId(AgentUtils.getInstance().getLinkingMetaData().getOrDefault("entity.guid", StringUtils.EMPTY));
         this.collectorConfig.setNodeName(hostName);
         this.collectorConfig.setNodeGroupTags(Collections.emptySet());
 
