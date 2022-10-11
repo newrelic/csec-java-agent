@@ -116,7 +116,7 @@ public class AgentUtils {
 
     private boolean isAgentActive = false;
 
-    private Map<String, String> linkingMetaData;
+    private Map<String, String> linkingMetadata;
 
     private boolean isPolicyOverridden = false;
 
@@ -216,12 +216,12 @@ public class AgentUtils {
         this.agentPolicyParameters = agentPolicyParameters;
     }
 
-    public Map<String, String> getLinkingMetaData() {
-        return linkingMetaData;
+    public Map<String, String> getLinkingMetadata() {
+        return linkingMetadata;
     }
 
-    public void setLinkingMetaData(Map<String, String> linkingMetaData) {
-        this.linkingMetaData = linkingMetaData;
+    public void setLinkingMetadata(Map<String, String> linkingMetadata) {
+        this.linkingMetadata = linkingMetadata;
     }
 
     public boolean isPolicyOverridden() {

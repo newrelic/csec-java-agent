@@ -226,8 +226,6 @@ public class K2Instrumentator {
                 K2Instrumentator.class.getName()
         );
 
-        AgentUtils.getInstance().setLinkingMetaData(NewRelic.getAgent().getLinkingMetadata());
-
         logger.logInit(LogLevel.INFO, AGENT_INIT_LOG_STEP_FIVE_END, K2Instrumentator.class.getName());
         return isWorking;
     }
@@ -565,13 +563,14 @@ public class K2Instrumentator {
     public static boolean refresh() {
         NewRelic.getAgent().getLogger().log(Level.INFO, "NR agent refresh received!!!.");
         logger.log(LogLevel.INFO, "NR agent refresh received!!!", K2Instrumentator.class.getName());
-        String entityGuid = NewRelic.getAgent().getLinkingMetadata().getOrDefault("entity.guid", StringUtils.EMPTY);
+        String entityGuid = NewRelic.getAgent().getLinkingMetadata().getOrDefault(INRSettingsKey.NR_ENTITY_GUID, StringUtils.EMPTY);
         if (!AgentUtils.getInstance().isStandaloneMode() && StringUtils.isBlank(entityGuid)) {
             AgentUtils.getInstance().setAgentActive(false);
             NewRelic.getAgent().getLogger().log(Level.SEVERE, "K2 security module aborted!!! since entity.guid is not known.");
             return false;
         }
-        AgentUtils.getInstance().setLinkingMetaData(NewRelic.getAgent().getLinkingMetadata());
+        AgentUtils.getInstance().setLinkingMetadata(NewRelic.getAgent().getLinkingMetadata());
+        AgentUtils.getInstance().getLinkingMetadata().put("agentRunId", NewRelic.getAgent().getConfig().getValue(INRSettingsKey.AGENT_RUN_ID));
         AgentUtils.getInstance().setAgentActive(true);
 
         // Set required Group

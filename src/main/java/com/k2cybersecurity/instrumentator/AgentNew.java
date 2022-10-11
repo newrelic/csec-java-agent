@@ -2,10 +2,10 @@ package com.k2cybersecurity.instrumentator;
 
 import com.k2cybersecurity.instrumentator.custom.ClassLoadListener;
 import com.k2cybersecurity.instrumentator.utils.AgentUtils;
+import com.k2cybersecurity.instrumentator.utils.INRSettingsKey;
 import com.k2cybersecurity.instrumentator.utils.InstrumentationUtils;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
-import com.k2cybersecurity.intcodeagent.logging.IAgentConstants;
 import com.newrelic.api.agent.NewRelic;
 import net.bytebuddy.ByteBuddy;
 import net.bytebuddy.agent.builder.AgentBuilder;
@@ -84,20 +84,21 @@ public class AgentNew {
                 try {
                     int attempt = 0;
                     Map<String, String> linkingMetaData = NewRelic.getAgent().getLinkingMetadata();
-                    String entityGuid = linkingMetaData.getOrDefault(IAgentConstants.NR_ENTITY_GUID, StringUtils.EMPTY);
+                    String entityGuid = linkingMetaData.getOrDefault(INRSettingsKey.NR_ENTITY_GUID, StringUtils.EMPTY);
                     while (!AgentUtils.getInstance().isStandaloneMode() && attempt <= 3 && StringUtils.isBlank(entityGuid)) {
                         attempt++;
                         TimeUnit.SECONDS.sleep(10);
                         linkingMetaData = NewRelic.getAgent().getLinkingMetadata();
-                        entityGuid = linkingMetaData.getOrDefault(IAgentConstants.NR_ENTITY_GUID, StringUtils.EMPTY);
+                        entityGuid = linkingMetaData.getOrDefault(INRSettingsKey.NR_ENTITY_GUID, StringUtils.EMPTY);
                     }
                     if (!AgentUtils.getInstance().isStandaloneMode() && StringUtils.isBlank(entityGuid)) {
                         NewRelic.getAgent().getLogger().log(Level.SEVERE, "K2 security module aborted!!! since entity.guid is not known.");
                         return;
                     }
-                    AgentUtils.getInstance().setLinkingMetaData(linkingMetaData);
+                    linkingMetaData.put("agentRunId", NewRelic.getAgent().getConfig().getValue(INRSettingsKey.AGENT_RUN_ID));
+                    AgentUtils.getInstance().setLinkingMetadata(linkingMetaData);
                     AgentUtils.getInstance().setAgentActive(true);
-                    NewRelic.getAgent().getLogger().log(Level.INFO, "Start K2 security module services since entity.guid is now know: {0} :: active : {1}", NewRelic.getAgent().getLinkingMetadata().getOrDefault(IAgentConstants.NR_ENTITY_GUID, StringUtils.EMPTY), AgentUtils.getInstance().isAgentActive());
+                    NewRelic.getAgent().getLogger().log(Level.INFO, "Start K2 security module services since entity.guid is now know: {0} :: active : {1}", NewRelic.getAgent().getLinkingMetadata().getOrDefault(INRSettingsKey.NR_ENTITY_GUID, StringUtils.EMPTY), AgentUtils.getInstance().isAgentActive());
                     awaitServerStartUp(instrumentation, ClassLoader.getSystemClassLoader());
                     FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
 

@@ -2,7 +2,7 @@ package com.k2cybersecurity.intcodeagent.models.javaagent;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.k2cybersecurity.instrumentator.utils.AgentUtils;
-import com.k2cybersecurity.intcodeagent.logging.IAgentConstants;
+import com.k2cybersecurity.instrumentator.utils.INRSettingsKey;
 import com.k2cybersecurity.intcodeagent.properties.K2JAVersionInfo;
 import org.apache.commons.lang3.StringUtils;
 
@@ -52,7 +52,7 @@ public class AgentBasicInfo {
 
     private String eventType;
 
-    private Map<String, String> liningMetaData;
+    private Map<String, String> linkingMetadata;
 
     @JsonInclude
     private static String policyVersion;
@@ -68,8 +68,8 @@ public class AgentBasicInfo {
         setCollectorVersion(K2JAVersionInfo.collectorVersion);
         setBuildNumber(K2JAVersionInfo.buildNumber);
         setGroupName(AgentUtils.getInstance().getGroupName());
-        setNodeId(AgentUtils.getInstance().getLinkingMetaData().getOrDefault(IAgentConstants.NR_ENTITY_GUID, StringUtils.EMPTY));
-        setLiningMetaData(AgentUtils.getInstance().getLinkingMetaData());
+        setNodeId(AgentUtils.getInstance().getLinkingMetadata().getOrDefault(INRSettingsKey.NR_ENTITY_GUID, StringUtils.EMPTY));
+        setLinkingMetadata(AgentUtils.getInstance().getLinkingMetadata());
         if (this instanceof ApplicationInfoBean) {
             setJsonName(JSON_NAME_APPLICATION_INFO_BEAN);
         } else if (this instanceof JavaAgentEventBean) {
@@ -210,11 +210,11 @@ public class AgentBasicInfo {
     }
 
 
-    public Map<String, String> getLiningMetaData() {
-        return liningMetaData;
+    public Map<String, String> getLinkingMetadata() {
+        return linkingMetadata;
     }
 
-    public void setLiningMetaData(Map<String, String> liningMetaData) {
-        this.liningMetaData = liningMetaData;
+    public void setLinkingMetadata(Map<String, String> linkingMetadata) {
+        this.linkingMetadata = linkingMetadata;
     }
 }

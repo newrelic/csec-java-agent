@@ -90,17 +90,17 @@ public class CollectorConfigurationUtils {
         }
 
         // Loading resourceServiceEndpointUrl value
-        if(System.getenv().containsKey("K2_NODE_NAME")){
+        if (System.getenv().containsKey("K2_NODE_NAME")) {
             hostName = System.getenv().get("K2_NODE_NAME");
-        } else if(NewRelic.getAgent().getConfig().getValue("process_host.display_name") != null) {
-            hostName = NewRelic.getAgent().getConfig().getValue("process_host.display_name");
+        } else {
+            hostName = AgentUtils.getInstance().getLinkingMetadata().getOrDefault(INRSettingsKey.HOSTNAME, StringUtils.EMPTY);
         }
 //        else {
 //            logger.log(LogLevel.ERROR, "Unable to find api accessor key. Please specify either env K2_API_ACCESSOR_TOKEN or NR config key 'license_key'", K2Instrumentator.class.getName());
 //            return false;
 //        }
 
-        this.collectorConfig.setNodeId(AgentUtils.getInstance().getLinkingMetaData().getOrDefault("entity.guid", StringUtils.EMPTY));
+        this.collectorConfig.setNodeId(AgentUtils.getInstance().getLinkingMetadata().getOrDefault(INRSettingsKey.NR_ENTITY_GUID, StringUtils.EMPTY));
         this.collectorConfig.setNodeName(hostName);
         this.collectorConfig.setNodeGroupTags(Collections.emptySet());
 

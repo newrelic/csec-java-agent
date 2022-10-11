@@ -63,8 +63,8 @@ public class Dispatcher implements Runnable {
     public static final String K_2_SERVICE_NAME = "K2_SERVICE_NAME";
     public static final String SEPARATOR_COLON = ":";
     public static final String SETTING_UP_USER_PROVIDED_NAME = "Setting up user provided name : ";
-    public static final String NR_TRACE_ID = "traceId";
-    public static final String NR_SPAN_ID = "spanId";
+    public static final String NR_TRACE_ID = "trace.id";
+    public static final String NR_SPAN_ID = "span.id";
     public static final String NR_IS_SAMPLED = "isSampled";
     private ExitEventBean exitEventBean;
     private HttpRequestBean httpRequestBean;
@@ -826,9 +826,9 @@ public class Dispatcher implements Runnable {
         eventBean.setStartTime(objectBean.getStartTime());
         eventBean.setBlockingProcessingTime((Long) extraInfo.get(BLOCKING_END_TIME) - eventBean.getStartTime());
         eventBean.setApiId(objectBean.getApiID());
-        eventBean.getLiningMetaData().put(NR_TRACE_ID, objectBean.getTraceMetaData().getTraceId());
-        eventBean.getLiningMetaData().put(NR_SPAN_ID, objectBean.getTraceMetaData().getSpanId());
-        eventBean.getLiningMetaData().put(NR_IS_SAMPLED, String.valueOf(objectBean.getTraceMetaData().isSampled()));
+        eventBean.getLinkingMetadata().put(NR_TRACE_ID, objectBean.getTraceMetaData().getTraceId());
+        eventBean.getLinkingMetadata().put(NR_SPAN_ID, objectBean.getTraceMetaData().getSpanId());
+        eventBean.getLinkingMetadata().put(NR_IS_SAMPLED, String.valueOf(objectBean.getTraceMetaData().isSampled()));
         return eventBean;
     }
 
