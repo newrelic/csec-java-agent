@@ -2,7 +2,6 @@ package com.k2cybersecurity.instrumentator;
 
 import com.k2cybersecurity.instrumentator.custom.ClassLoadListener;
 import com.k2cybersecurity.instrumentator.utils.AgentUtils;
-import com.k2cybersecurity.instrumentator.utils.INRSettingsKey;
 import com.k2cybersecurity.instrumentator.utils.InstrumentationUtils;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
@@ -18,7 +17,6 @@ import java.io.FileNotFoundException;
 import java.io.PrintStream;
 import java.lang.instrument.Instrumentation;
 import java.lang.reflect.Method;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 
@@ -58,12 +56,6 @@ public class AgentNew {
             return;
         }
 
-//        //TODO read NR config for mode/group name. clean the below code afterwards
-//        if (StringUtils.isBlank(System.getenv("K2_GROUP_NAME"))) {
-//            System.err.println("[K2-JA] K2_GROUP_NAME is not set. Falling back to IAST");
-////            return;
-//        }
-
         System.setProperty("org.slf4j.simpleLogger.defaultLogLevel", "off");
         System.setProperty("org.slf4j.simpleLogger.logFile", "System.out");
 
@@ -75,30 +67,16 @@ public class AgentNew {
         /*
             Check if agent is running in standalone mode.
          */
-        if(StringUtils.equals(NewRelic.getAgent().getClass().getSimpleName(), "NoOpAgent")) {
+        if (StringUtils.equals(NewRelic.getAgent().getClass().getSimpleName(), "NoOpAgent")) {
             AgentUtils.getInstance().setStandaloneMode(true);
+            AgentUtils.getInstance().setAgentActive(true);
+        } else {
+            AgentUtils.getInstance().setAgentActive(false);
         }
         Thread k2JaStartupThread = new Thread("K2-Security-StartUp") {
             @Override
             public void run() {
                 try {
-                    int attempt = 0;
-                    Map<String, String> linkingMetaData = NewRelic.getAgent().getLinkingMetadata();
-                    String entityGuid = linkingMetaData.getOrDefault(INRSettingsKey.NR_ENTITY_GUID, StringUtils.EMPTY);
-                    while (!AgentUtils.getInstance().isStandaloneMode() && attempt <= 3 && StringUtils.isBlank(entityGuid)) {
-                        attempt++;
-                        TimeUnit.SECONDS.sleep(10);
-                        linkingMetaData = NewRelic.getAgent().getLinkingMetadata();
-                        entityGuid = linkingMetaData.getOrDefault(INRSettingsKey.NR_ENTITY_GUID, StringUtils.EMPTY);
-                    }
-                    if (!AgentUtils.getInstance().isStandaloneMode() && StringUtils.isBlank(entityGuid)) {
-                        NewRelic.getAgent().getLogger().log(Level.SEVERE, "K2 security module aborted!!! since entity.guid is not known.");
-                        return;
-                    }
-                    linkingMetaData.put("agentRunId", NewRelic.getAgent().getConfig().getValue(INRSettingsKey.AGENT_RUN_ID));
-                    AgentUtils.getInstance().setLinkingMetadata(linkingMetaData);
-                    AgentUtils.getInstance().setAgentActive(true);
-                    NewRelic.getAgent().getLogger().log(Level.INFO, "Start K2 security module services since entity.guid is now know: {0} :: active : {1}", NewRelic.getAgent().getLinkingMetadata().getOrDefault(INRSettingsKey.NR_ENTITY_GUID, StringUtils.EMPTY), AgentUtils.getInstance().isAgentActive());
                     awaitServerStartUp(instrumentation, ClassLoader.getSystemClassLoader());
                     FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
 

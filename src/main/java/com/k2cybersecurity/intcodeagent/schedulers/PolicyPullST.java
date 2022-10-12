@@ -78,7 +78,7 @@ public class PolicyPullST {
 
     public void submitNewTask() {
         if (cancelTask(false) && AgentUtils.getInstance().getAgentPolicy().getPolicyPull() && AgentUtils.getInstance().getAgentPolicy().getPolicyPullInterval() > 0) {
-            future = executorService.schedule(runnable, AgentUtils.getInstance().getAgentPolicy().getPolicyPullInterval(), TimeUnit.SECONDS);
+            future = executorService.schedule(runnable, 0, TimeUnit.SECONDS);
         }
     }
 

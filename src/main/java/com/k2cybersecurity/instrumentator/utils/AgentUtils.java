@@ -116,7 +116,7 @@ public class AgentUtils {
 
     private boolean isAgentActive = false;
 
-    private Map<String, String> linkingMetadata;
+    private Map<String, String> linkingMetadata = new HashMap<>();
 
     private boolean isPolicyOverridden = false;
 
