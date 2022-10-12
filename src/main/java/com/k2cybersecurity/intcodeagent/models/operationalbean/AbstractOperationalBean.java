@@ -5,8 +5,6 @@ import com.k2cybersecurity.instrumentator.custom.ThreadLocalHTTPDoFilterMap;
 import com.k2cybersecurity.instrumentator.utils.AgentUtils;
 import com.k2cybersecurity.intcodeagent.models.javaagent.UserClassEntity;
 import com.k2cybersecurity.intcodeagent.websocket.JsonConverter;
-import com.newrelic.api.agent.NewRelic;
-import com.newrelic.api.agent.TraceMetadata;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.Arrays;
@@ -36,8 +34,8 @@ public abstract class AbstractOperationalBean {
 
     private String apiID;
 
-    @JsonIgnore
-    private TraceMetadata traceMetaData;
+//    @JsonIgnore
+//    private TraceMetadata traceMetaData;
 
     @JsonIgnore
     private boolean stackProcessed = false;
@@ -51,7 +49,7 @@ public abstract class AbstractOperationalBean {
         this.blockingEndTime = 0L;
         this.apiID = StringUtils.EMPTY;
         this.stackProcessed = false;
-        this.traceMetaData = NewRelic.getAgent().getTraceMetadata();
+//        this.traceMetaData = NewRelic.getAgent().getTraceMetadata();
     }
 
     public AbstractOperationalBean(String className, String sourceMethod, String executionId
@@ -73,7 +71,7 @@ public abstract class AbstractOperationalBean {
                 this.currentGenericServletInstance,
                 this.currentGenericServletMethodName, className, methodName);
         this.stackProcessed = false;
-        this.traceMetaData = NewRelic.getAgent().getTraceMetadata();
+//        this.traceMetaData = NewRelic.getAgent().getTraceMetadata();
 
     }
 
@@ -186,11 +184,11 @@ public abstract class AbstractOperationalBean {
         this.stackProcessed = stackProcessed;
     }
 
-    public TraceMetadata getTraceMetaData() {
-        return traceMetaData;
-    }
-
-    public void setTraceMetaData(TraceMetadata traceMetaData) {
-        this.traceMetaData = traceMetaData;
-    }
+//    public TraceMetadata getTraceMetaData() {
+//        return traceMetaData;
+//    }
+//
+//    public void setTraceMetaData(TraceMetadata traceMetaData) {
+//        this.traceMetaData = traceMetaData;
+//    }
 }

@@ -826,9 +826,9 @@ public class Dispatcher implements Runnable {
         eventBean.setStartTime(objectBean.getStartTime());
         eventBean.setBlockingProcessingTime((Long) extraInfo.get(BLOCKING_END_TIME) - eventBean.getStartTime());
         eventBean.setApiId(objectBean.getApiID());
-        eventBean.getLinkingMetadata().put(NR_TRACE_ID, objectBean.getTraceMetaData().getTraceId());
-        eventBean.getLinkingMetadata().put(NR_SPAN_ID, objectBean.getTraceMetaData().getSpanId());
-        eventBean.getLinkingMetadata().put(NR_IS_SAMPLED, String.valueOf(objectBean.getTraceMetaData().isSampled()));
+//        eventBean.getLinkingMetadata().put(NR_TRACE_ID, objectBean.getTraceMetaData().getTraceId());
+//        eventBean.getLinkingMetadata().put(NR_SPAN_ID, objectBean.getTraceMetaData().getSpanId());
+//        eventBean.getLinkingMetadata().put(NR_IS_SAMPLED, String.valueOf(objectBean.getTraceMetaData().isSampled()));
         return eventBean;
     }
 
