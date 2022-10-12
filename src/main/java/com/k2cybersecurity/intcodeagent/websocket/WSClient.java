@@ -9,6 +9,7 @@ import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.logging.IAgentConstants;
 import com.k2cybersecurity.intcodeagent.properties.K2JAVersionInfo;
+import com.k2cybersecurity.intcodeagent.utils.CommonUtils;
 import org.java_websocket.WebSocket;
 import org.java_websocket.WebSocketImpl;
 import org.java_websocket.client.WebSocketClient;
@@ -79,6 +80,7 @@ public class WSClient extends WebSocketClient {
 //				new Object[] { this.isOpen(), this.isClosing(), this.isClosed() });
         logger.logInit(LogLevel.INFO, String.format(IAgentConstants.SENDING_APPLICATION_INFO_ON_WS_CONNECT, K2Instrumentator.APPLICATION_INFO_BEAN) , WSClient.class.getName());
         super.send(K2Instrumentator.APPLICATION_INFO_BEAN.toString());
+        CommonUtils.fireUpdatePolicyAPI(AgentUtils.getInstance().getAgentPolicy());
 //		Agent.allClassLoadersCount.set(0);
 //		Agent.jarPathSet.clear();
 //		logger.log(LogLevel.INFO, "Resetting allClassLoadersCount to " + Agent.allClassLoadersCount.get(),
