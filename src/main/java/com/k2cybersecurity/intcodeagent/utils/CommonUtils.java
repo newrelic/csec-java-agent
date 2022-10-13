@@ -1,8 +1,5 @@
 package com.k2cybersecurity.intcodeagent.utils;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
-import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator;
 import com.k2cybersecurity.instrumentator.K2Instrumentator;
 import com.k2cybersecurity.instrumentator.httpclient.HttpClient;
 import com.k2cybersecurity.instrumentator.httpclient.IRestClientConstants;
@@ -11,7 +8,6 @@ import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.models.config.AgentPolicy;
 import com.k2cybersecurity.intcodeagent.models.config.AgentPolicyParameters;
-import com.k2cybersecurity.intcodeagent.schedulers.PolicyPullST;
 import com.newrelic.api.agent.NewRelic;
 import org.apache.commons.io.FileUtils;
 import org.everit.json.schema.Schema;
@@ -85,6 +81,9 @@ public class CommonUtils {
     }
 
     public static void fireUpdatePolicyAPI(AgentPolicy policy) {
+        if (policy == null) {
+            return;
+        }
         try {
             Map<String, String> queryParam = new HashMap<>();
             queryParam.put("group", AgentUtils.getInstance().getGroupName());

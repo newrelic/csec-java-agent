@@ -89,7 +89,7 @@ public class PolicyPullST {
     public static void instantiateDefaultPolicy() {
         logger.log(LogLevel.INFO, "Instantiating collector policy with default!!!", PolicyPullST.class.getName());
 //        FileUtils.deleteQuietly(AgentUtils.getInstance().getConfigLoadPath());
-        if (readAndApplyConfig(loadDefaultConfig())) {
+        if (readAndApplyConfig(new AgentPolicy())) {
             AgentUtils.getInstance().enforcePolicy();
         }
 //        CommonUtils.writePolicyToFile();

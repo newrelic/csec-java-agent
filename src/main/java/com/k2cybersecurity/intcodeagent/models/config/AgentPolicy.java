@@ -23,15 +23,15 @@ import java.util.Map;
 public class AgentPolicy {
 
     @JsonProperty("version")
-    private String version;
+    private String version = "DEFAULT";
     @JsonProperty("lastUpdateTimestamp")
-    private Long lastUpdateTimestamp;
+    private Long lastUpdateTimestamp = 0L;
     @JsonProperty("logLevel")
-    private String logLevel;
+    private String logLevel = "INFO";
     @JsonProperty("policyPull")
-    private Boolean policyPull;
+    private Boolean policyPull = true;
     @JsonProperty("policyPullInterval")
-    private Integer policyPullInterval;
+    private Integer policyPullInterval = 60;
     @JsonProperty("applicationInfo")
     private PolicyApplicationInfo applicationInfo;
     @JsonProperty("vulnerabilityScan")
@@ -41,9 +41,9 @@ public class AgentPolicy {
     //    @JsonProperty("policyParameters")
 //    private AgentPolicyParameters policyParameters;
     @JsonProperty("sendCompleteStackTrace")
-    private Boolean sendCompleteStackTrace;
+    private Boolean sendCompleteStackTrace = false;
     @JsonProperty("enableHTTPRequestPrinting")
-    private Boolean enableHTTPRequestPrinting;
+    private Boolean enableHTTPRequestPrinting = false;
     @JsonIgnore
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 

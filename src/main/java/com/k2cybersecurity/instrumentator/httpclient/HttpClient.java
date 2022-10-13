@@ -64,6 +64,7 @@ public class HttpClient {
     private static final Object lock = new Object();
     public static final String READ_RESPONSE_FAILED = "Read response failed!!!";
     public static final String READ_RESPONSE_FAILED_MESSAGE_S_CAUSE_S = "Read response failed MESSAGE: %s  CAUSE: %s";
+    public static final String NO_CONTENT = "No Content";
     private static HttpClient instance;
     // Create a trust manager that does not validate certificate chains
     private final X509TrustManager x509TrustManager = new X509TrustManager() {
@@ -219,7 +220,7 @@ public class HttpClient {
                         break;
 //                    logger.log(LogLevel.WARNING, String.format(UNKNOWN_ASYNC_API_S, api), HttpClient.class.getName());
                 }
-                return new Response.Builder().protocol(Protocol.HTTP_1_1).request(request).code(204).build();
+                return new Response.Builder().protocol(Protocol.HTTP_1_1).request(request).code(204).message(NO_CONTENT).build();
             }
 
             return call.execute();
