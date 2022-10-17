@@ -142,12 +142,15 @@ public class CommonUtils {
     }
 
     public static String getNRAgentJarDirectory() {
-        URL agentJarUrl = getAgentJarUrl();
-        if (agentJarUrl != null) {
-            File file = new File(getAgentJarFileName(agentJarUrl));
-            if (file.exists()) {
-                return file.getParent();
+        try {
+            URL agentJarUrl = getAgentJarUrl();
+            if (agentJarUrl != null) {
+                File file = new File(getAgentJarFileName(agentJarUrl));
+                if (file.exists()) {
+                    return file.getParent();
+                }
             }
+        } catch (Throwable ignored) {
         }
         return null;
     }
