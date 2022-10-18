@@ -10,6 +10,7 @@ import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.logging.IAgentConstants;
 import com.k2cybersecurity.intcodeagent.properties.K2JAVersionInfo;
 import com.k2cybersecurity.intcodeagent.utils.CommonUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.java_websocket.WebSocket;
 import org.java_websocket.WebSocketImpl;
 import org.java_websocket.client.WebSocketClient;
@@ -128,6 +129,9 @@ public class WSClient extends WebSocketClient {
 
     @Override
     public void send(String text) {
+        if (StringUtils.isBlank(text)) {
+            return;
+        }
         if (this.isOpen()) {
             logger.log(LogLevel.DEBUG, SENDING_EVENT + text, WSClient.class.getName());
             super.send(text);

@@ -1,5 +1,7 @@
 package com.k2cybersecurity.intcodeagent.models.javaagent;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.k2cybersecurity.intcodeagent.deserializers.K2StackTraceSerializer;
 import com.k2cybersecurity.intcodeagent.logging.DeployedApplication;
 import com.k2cybersecurity.intcodeagent.websocket.JsonConverter;
 import org.json.simple.JSONArray;
@@ -20,12 +22,16 @@ public class JavaAgentEventBean extends AgentBasicInfo {
     private Long eventGenerationTime;
     private HttpRequestBean httpRequest;
     private String id;
+
+    @JsonSerialize(using = K2StackTraceSerializer.class)
     private List<StackTraceElement> stacktrace;
     private String caseType;
     private String eventCategory;
     private Long preProcessingTime;
     private AgentMetaData metaData;
     private Long blockingProcessingTime = 0L;
+
+    @JsonSerialize(using = K2StackTraceSerializer.class)
     private List<StackTraceElement> completeStacktrace;
     private boolean isAPIBlocked = false;
     private boolean isIASTEnable = false;

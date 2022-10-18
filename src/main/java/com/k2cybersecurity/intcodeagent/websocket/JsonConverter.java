@@ -27,21 +27,14 @@ public class JsonConverter {
     private static final String STR_END_CUELY_BRACKET = "}";
     private static final String STR_START_CUELY_BRACKET = "{";
 
+    private static final ObjectMapper mapper = new ObjectMapper();
+
     public static String toJSON(Object obj) {
-        StringBuilder jsonString = new StringBuilder(STR_START_CUELY_BRACKET);
-
-        Class<?> objClass = obj.getClass();
-        Class<?> superClass = obj.getClass().getSuperclass();
-
-        List<Field> fields = new ArrayList<>();
-
-        Field[] superFields = superClass.getDeclaredFields();
-        fields.addAll(Arrays.asList(superFields));
-        Field[] objFields = objClass.getDeclaredFields();
-        fields.addAll(Arrays.asList(objFields));
-        jsonString.append(getFieldsAsJsonString(fields, obj));
-        jsonString.append(STR_END_CUELY_BRACKET);
-        return jsonString.toString();
+        try {
+            return mapper.writeValueAsString(obj);
+        } catch (JsonProcessingException e) {
+            return StringUtils.EMPTY;
+        }
     }
 
     public static String toJSONMap(Map obj) {

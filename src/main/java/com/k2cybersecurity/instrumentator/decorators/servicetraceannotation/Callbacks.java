@@ -20,10 +20,12 @@ public class Callbacks {
                     ThreadLocalHTTPDoFilterMap.getInstance().setUserCodeEncountered(true);
                     ThreadLocalHTTPDoFilterMap.getInstance().setCurrentGenericServletInstance(classRef);
                     ThreadLocalHTTPDoFilterMap.getInstance().setCurrentGenericServletMethodName(methodName);
-                    StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
-                    ThreadLocalHTTPDoFilterMap.getInstance()
-                            .setCurrentGenericServletStackLength(stackTrace.length);
-                    ThreadLocalExecutionMap.getInstance().getMetaData().setServiceTrace(stackTrace);
+                    if (ThreadLocalExecutionMap.getInstance().getMetaData().getServiceTrace() == null) {
+                        StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
+                        ThreadLocalHTTPDoFilterMap.getInstance()
+                                .setCurrentGenericServletStackLength(stackTrace.length);
+                        ThreadLocalExecutionMap.getInstance().getMetaData().setServiceTrace(stackTrace);
+                    }
                 }
 //                System.out.println("Came to service hook :" + exectionId + " :: " + sourceString + " :: " +args[0]+ " :: " +args[1]);
 
