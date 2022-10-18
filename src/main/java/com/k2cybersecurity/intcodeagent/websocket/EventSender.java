@@ -34,7 +34,7 @@ public class EventSender implements Callable<Boolean> {
         if (event instanceof JavaAgentEventBean) {
             ((JavaAgentEventBean) event).setEventGenerationTime(System.currentTimeMillis());
         }
-        WSClient.getInstance().send(this.event.toString());
+        WSClient.getInstance().send(EventSendPool.getInstance().objectMapper.writeValueAsString(event));
         return true;
     }
 

@@ -1,5 +1,6 @@
 package com.k2cybersecurity.intcodeagent.websocket;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.k2cybersecurity.instrumentator.K2Instrumentator;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
@@ -25,6 +26,7 @@ public class EventSendPool {
     }
 
     private Map<String, Long> eventMap = new ConcurrentHashMap<>();
+    ObjectMapper objectMapper = new ObjectMapper();
 
     private EventSendPool() {
         // load the settings
