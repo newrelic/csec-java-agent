@@ -36,6 +36,7 @@ class LoggingInterceptor implements Interceptor {
                 request.url()), LoggingInterceptor.class.getName());
 
         Response response = chain.proceed(request);
+        HttpClient.getInstance().setConnected(!(response.code() == 503 || response.code() == 504));
 
         long t2 = System.nanoTime();
         logger.log(LogLevel.INFO, String.format(RECEIVED_RESPONSE_FOR_S_IN_1_FMS_N_S, response.code(),
@@ -85,7 +86,7 @@ public class HttpClient {
     };
 
     // Create a trust manager that does not validate certificate chains
-    private final TrustManager[] trustAllCerts = new TrustManager[] {
+    private final TrustManager[] trustAllCerts = new TrustManager[]{
             x509TrustManager
     };
 
@@ -93,6 +94,8 @@ public class HttpClient {
     private String baseUrl;
     private ObjectMapper objectMapper = new ObjectMapper();
     private OSVariables osVariables = OsVariablesInstance.getInstance().getOsVariables();
+
+    private boolean isConnected = false;
 
     private HttpClient() {
         Builder builder = new OkHttpClient.Builder();
@@ -224,6 +227,9 @@ public class HttpClient {
             }
 
             return call.execute();
+        } catch (IOException e) {
+            setConnected(false);
+            logger.log(LogLevel.ERROR, e.getMessage(), e, HttpClient.class.getName());
         } catch (Exception e) {
             logger.log(LogLevel.ERROR, e.getMessage(), e, HttpClient.class.getName());
         }
@@ -234,8 +240,9 @@ public class HttpClient {
         call.enqueue(new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
-                logger.log(LogLevel.ERROR, String.format(ASYNC_API_EXECUTION_FAILED_S, 
+                logger.log(LogLevel.ERROR, String.format(ASYNC_API_EXECUTION_FAILED_S,
                         call.request().toString()), e, HttpClient.class.getName());
+                setConnected(false);
             }
 
             @Override
@@ -256,6 +263,7 @@ public class HttpClient {
             @Override
             public void onFailure(Call call, IOException e) {
                 logger.log(LogLevel.ERROR, String.format(API_S_FAILED, api), e, HttpClient.class.getName());
+                setConnected(false);
             }
 
             @Override
@@ -280,5 +288,13 @@ public class HttpClient {
             logger.log(LogLevel.DEBUG, READ_RESPONSE_FAILED, e, HttpClient.class.getName());
         }
         return null;
+    }
+
+    public boolean isConnected() {
+        return isConnected;
+    }
+
+    public void setConnected(boolean connected) {
+        isConnected = connected;
     }
 }

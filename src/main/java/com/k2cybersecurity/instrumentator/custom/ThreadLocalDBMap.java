@@ -1,6 +1,5 @@
 package com.k2cybersecurity.instrumentator.custom;
 
-import com.k2cybersecurity.instrumentator.K2Instrumentator;
 import com.k2cybersecurity.instrumentator.utils.CallbackUtils;
 import com.k2cybersecurity.intcodeagent.models.operationalbean.SQLOperationalBean;
 import org.apache.commons.lang3.StringUtils;
@@ -67,7 +66,6 @@ public class ThreadLocalDBMap {
         if (thisRef != null) {
             //Get connection information
             dbName = CallbackUtils.getConnectionInformation(ref, needToGetConnection);
-            K2Instrumentator.JA_HEALTH_CHECK.getProtectedDB().add(dbName);
         }
 
         SQLOperationalBean bean = new SQLOperationalBean();

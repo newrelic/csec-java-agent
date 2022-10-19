@@ -5,15 +5,12 @@ import com.k2cybersecurity.instrumentator.httpclient.HttpClient;
 import com.k2cybersecurity.instrumentator.httpclient.IRestClientConstants;
 import com.k2cybersecurity.instrumentator.os.OSVariables;
 import com.k2cybersecurity.instrumentator.os.OsVariablesInstance;
-import com.k2cybersecurity.instrumentator.utils.CollectorConfigurationUtils;
 import com.k2cybersecurity.intcodeagent.properties.K2JALogProperties;
 import com.k2cybersecurity.intcodeagent.utils.CommonUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
-import oshi.SystemInfo;
 
 import java.io.*;
-import java.lang.management.ManagementFactory;
 import java.nio.file.Files;
 import java.nio.file.attribute.PosixFilePermissions;
 import java.text.SimpleDateFormat;
@@ -81,6 +78,10 @@ public class LogWriter implements Runnable {
             }
 
         } catch (Throwable e) {
+            if (FileLoggerThreadPool.getInstance().isLoggingActive()) {
+                //TODO report to cloud
+                FileLoggerThreadPool.getInstance().setLoggingActive(false);
+            }
             String tmpDir = System.getProperty("java.io.tmpdir");
             System.err.println("[K2-JA] Unable to create log file!!! Please find the error in  " + tmpDir + File.separator + "K2-Logger.err");
             try {
@@ -162,7 +163,10 @@ public class LogWriter implements Runnable {
 //			writer.newLine();
             rollover(currentLogFileName);
         } catch (IOException e) {
-            e.printStackTrace();
+            if (FileLoggerThreadPool.getInstance().isLoggingActive()) {
+                //TODO report to cloud
+                FileLoggerThreadPool.getInstance().setLoggingActive(false);
+            }
         }
 
     }

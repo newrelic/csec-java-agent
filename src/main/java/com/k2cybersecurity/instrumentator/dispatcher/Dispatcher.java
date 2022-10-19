@@ -486,7 +486,6 @@ public class Dispatcher implements Runnable {
                     String.format(APPLICATION_SERVER_DETECTION_COMPLETE, applicationInfoBean),
                     Dispatcher.class.getName()
             );
-            K2Instrumentator.JA_HEALTH_CHECK.setProtectedServer(ServletContextInfo.getInstance().getServerInfo());
 
             if (applicationInfoBean.getServerInfo().getDeployedApplications().add(deployedApplication)) {
                 logger.logInit(
@@ -675,7 +674,6 @@ public class Dispatcher implements Runnable {
         JSONParser jsonParser = new JSONParser();
         params.addAll((JSONArray) jsonParser.parse(noSQLOperationalBean.getData().toString()));
         eventBean.setParameters(params);
-        K2Instrumentator.JA_HEALTH_CHECK.getProtectedDB().add(MONGO);
         return eventBean;
     }
 

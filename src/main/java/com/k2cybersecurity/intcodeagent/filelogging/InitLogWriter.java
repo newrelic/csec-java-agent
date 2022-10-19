@@ -5,16 +5,12 @@ import com.k2cybersecurity.instrumentator.httpclient.HttpClient;
 import com.k2cybersecurity.instrumentator.httpclient.IRestClientConstants;
 import com.k2cybersecurity.instrumentator.os.OSVariables;
 import com.k2cybersecurity.instrumentator.os.OsVariablesInstance;
-import com.k2cybersecurity.instrumentator.utils.CollectorConfigurationUtils;
 import com.k2cybersecurity.intcodeagent.properties.K2JALogProperties;
 import com.k2cybersecurity.intcodeagent.utils.CommonUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.attribute.PosixFilePermissions;
 import java.text.SimpleDateFormat;
@@ -90,7 +86,16 @@ public class InitLogWriter implements Runnable {
             writer.write(String.format(LOG_CONFIGURED_SUCCESSFULLY_MSG, LogLevel.getLevelName(defaultLogLevel), maxFileSize));
             writer.flush();
         } catch (Throwable e) {
-            e.printStackTrace();
+            if (FileLoggerThreadPool.getInstance().isStatusLoggingActive()) {
+                //TODO report to cloud
+                FileLoggerThreadPool.getInstance().setStatusLoggingActive(false);
+            }
+            String tmpDir = System.getProperty("java.io.tmpdir");
+            System.err.println("[K2-JA] Unable to create status log file!!! Please find the error in  " + tmpDir + File.separator + "K2-Logger.err");
+            try {
+                e.printStackTrace(new PrintStream(tmpDir + File.separator + "K2-Logger.err"));
+            } catch (FileNotFoundException ex) {
+            }
         }
     }
 
@@ -153,7 +158,10 @@ public class InitLogWriter implements Runnable {
 //			writer.newLine();
             rollover(currentLogFileName);
         } catch (IOException e) {
-            e.printStackTrace();
+            if (FileLoggerThreadPool.getInstance().isStatusLoggingActive()) {
+                //TODO report to cloud
+                FileLoggerThreadPool.getInstance().setStatusLoggingActive(false);
+            }
         }
 
     }

@@ -1,5 +1,7 @@
 package com.k2cybersecurity.instrumentator.os;
 
+import java.io.File;
+
 public class OSVariables {
     private String os;
     private Boolean isWindows = Boolean.FALSE;
@@ -9,6 +11,8 @@ public class OSVariables {
     private String logDirectory;
     private String tmpDirectory;
     private String osArch;
+
+    private File rootDir;
 
     public String getOs() {
         return os;
@@ -64,6 +68,14 @@ public class OSVariables {
 
     public void setTmpDirectory(String tmpDirectory) {
         this.tmpDirectory = tmpDirectory;
+    }
+
+    public File getRootDir() {
+        return rootDir;
+    }
+
+    public void setRootDir(File rootDir) {
+        this.rootDir = rootDir;
     }
 
     /*public String getPolicyConfigPath() {

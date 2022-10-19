@@ -2,10 +2,10 @@ package com.k2cybersecurity.instrumentator.os;
 
 import com.k2cybersecurity.instrumentator.K2Instrumentator;
 import com.k2cybersecurity.intcodeagent.logging.IAgentConstants;
-import com.k2cybersecurity.intcodeagent.utils.CommonUtils;
 import com.newrelic.api.agent.NewRelic;
 import org.apache.commons.lang3.SystemUtils;
 
+import java.io.File;
 import java.nio.file.Paths;
 
 public class OsVariablesInstance {
@@ -49,12 +49,15 @@ public class OsVariablesInstance {
         if (SystemUtils.IS_OS_LINUX) {
             osVariables.setLinux(true);
             osVariables.setOs(IAgentConstants.LINUX);
+            osVariables.setRootDir(new File(File.separator));
         } else if (SystemUtils.IS_OS_MAC) {
             osVariables.setMac(true);
             osVariables.setOs(IAgentConstants.MAC);
+            osVariables.setRootDir(new File(File.separator));
         } else if (SystemUtils.IS_OS_WINDOWS) {
             osVariables.setWindows(true);
             osVariables.setOs(IAgentConstants.WINDOWS);
+            osVariables.setRootDir(new File("C:"));
         }
         String arch = SystemUtils.OS_ARCH;
         osVariables.setOsArch(getOsArch(arch));

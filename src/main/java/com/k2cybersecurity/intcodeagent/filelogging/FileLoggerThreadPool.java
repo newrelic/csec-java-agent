@@ -8,9 +8,9 @@ public class FileLoggerThreadPool {
 
     private static FileLoggerThreadPool instance;
 
-    private String updatedFileName;
+    private boolean isLoggingActive = true;
 
-    private int logFileCounter = 0;
+    private boolean isStatusLoggingActive = true;
 
     private FileLoggerThreadPool() throws IOException {
         // load the settings
@@ -127,5 +127,21 @@ public class FileLoggerThreadPool {
         }
         executor.submit(new InitLogWriter(logLevel, event, throwableEvent, logSourceClassName, Thread.currentThread().getName()));
         log(logLevel, event, throwableEvent, logSourceClassName);
+    }
+
+    public boolean isLoggingActive() {
+        return isLoggingActive;
+    }
+
+    public void setLoggingActive(boolean loggingActive) {
+        isLoggingActive = loggingActive;
+    }
+
+    public boolean isStatusLoggingActive() {
+        return isStatusLoggingActive;
+    }
+
+    public void setStatusLoggingActive(boolean statusLoggingActive) {
+        isStatusLoggingActive = statusLoggingActive;
     }
 }

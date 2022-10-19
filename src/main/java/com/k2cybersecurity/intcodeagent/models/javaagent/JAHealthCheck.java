@@ -1,13 +1,12 @@
 package com.k2cybersecurity.intcodeagent.models.javaagent;
 
 import com.k2cybersecurity.instrumentator.K2Instrumentator;
-import com.k2cybersecurity.instrumentator.utils.AgentUtils;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.websocket.JsonConverter;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class JAHealthCheck extends AgentBasicInfo {
@@ -17,9 +16,9 @@ public class JAHealthCheck extends AgentBasicInfo {
 
     private String applicationUUID;
 
-    private String protectedServer;
+//    private String protectedServer;
 
-    private Set protectedDB;
+//    private Set protectedDB;
 
     private AtomicInteger eventDropCount;
 
@@ -33,22 +32,24 @@ public class JAHealthCheck extends AgentBasicInfo {
 
     private AtomicInteger httpRequestCount;
 
-    private Set protectedVulnerabilities;
+    private Map<String, Object> stat;
+
+    private Map<String, Object> serviceStatus;
+
+//    private Set protectedVulnerabilities;
 
     private Integer dsBackLog;
 
     public JAHealthCheck(String applicationUUID) {
         super();
         this.applicationUUID = applicationUUID;
-        this.setProtectedServer(K2Instrumentator.APPLICATION_INFO_BEAN.getServerInfo().getName());
         this.eventDropCount = new AtomicInteger(0);
         this.eventProcessed = new AtomicInteger(0);
         this.eventSentCount = new AtomicInteger(0);
         this.httpRequestCount = new AtomicInteger(0);
         this.exitEventSentCount = new AtomicInteger(0);
-        this.setProtectedDB(new HashSet());
-
-        this.setProtectedVulnerabilities(AgentUtils.getInstance().getProtectedVulnerabilties());
+        this.stat = new HashMap<>();
+        this.serviceStatus = new HashMap<>();
         this.setKind(K2Instrumentator.APPLICATION_INFO_BEAN.getIdentifier().getKind());
         logger.log(LogLevel.INFO, String.format(HC_CREATED, this.toString()), JAHealthCheck.class.getName());
     }
@@ -56,15 +57,14 @@ public class JAHealthCheck extends AgentBasicInfo {
     public JAHealthCheck(JAHealthCheck jaHealthCheck) {
         super();
         this.applicationUUID = jaHealthCheck.applicationUUID;
-        this.protectedServer = jaHealthCheck.protectedServer;
-        this.protectedDB = jaHealthCheck.protectedDB;
-        this.protectedVulnerabilities = jaHealthCheck.protectedVulnerabilities;
         this.eventDropCount = jaHealthCheck.eventDropCount;
         this.eventProcessed = jaHealthCheck.eventProcessed;
         this.eventSentCount = jaHealthCheck.eventSentCount;
         this.exitEventSentCount = jaHealthCheck.exitEventSentCount;
         this.httpRequestCount = jaHealthCheck.httpRequestCount;
         this.kind = jaHealthCheck.kind;
+        this.stat = jaHealthCheck.stat;
+        this.serviceStatus = jaHealthCheck.serviceStatus;
         this.dsBackLog = jaHealthCheck.dsBackLog;
         logger.log(LogLevel.INFO, String.format(HC_CREATED, this.toString()), JAHealthCheck.class.getName());
     }
@@ -89,35 +89,6 @@ public class JAHealthCheck extends AgentBasicInfo {
      */
     public void setApplicationUUID(String applicationUUID) {
         this.applicationUUID = applicationUUID;
-    }
-
-    /**
-     * @return the protectedServer
-     */
-    public String getProtectedServer() {
-        return protectedServer;
-    }
-
-    /**
-     * @param protectedServer the protectedServer to set
-     */
-    public void setProtectedServer(String protectedServer) {
-        this.protectedServer = protectedServer;
-        K2Instrumentator.APPLICATION_INFO_BEAN.getServerInfo().setName(protectedServer);
-    }
-
-    /**
-     * @return the protectedDB
-     */
-    public Set getProtectedDB() {
-        return protectedDB;
-    }
-
-    /**
-     * @param protectedDB the protectedDB to set
-     */
-    public void setProtectedDB(Set protectedDB) {
-        this.protectedDB = protectedDB;
     }
 
     /**
@@ -203,14 +174,6 @@ public class JAHealthCheck extends AgentBasicInfo {
         this.eventSentCount.set(eventSentCount);
     }
 
-    public Set getProtectedVulnerabilities() {
-        return protectedVulnerabilities;
-    }
-
-    public void setProtectedVulnerabilities(Set protectedVulnerabilities) {
-        this.protectedVulnerabilities = protectedVulnerabilities;
-    }
-
     public void setHttpRequestCount(Integer httpRequestCount) {
         this.httpRequestCount.set(httpRequestCount);
     }
@@ -221,5 +184,21 @@ public class JAHealthCheck extends AgentBasicInfo {
 
     public void setDsBackLog(Integer dsBackLog) {
         this.dsBackLog = dsBackLog;
+    }
+
+    public Map<String, Object> getStat() {
+        return stat;
+    }
+
+    public void setStat(Map<String, Object> stat) {
+        this.stat = stat;
+    }
+
+    public Map<String, Object> getServiceStatus() {
+        return serviceStatus;
+    }
+
+    public void setServiceStatus(Map<String, Object> serviceStatus) {
+        this.serviceStatus = serviceStatus;
     }
 }

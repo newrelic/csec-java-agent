@@ -8,6 +8,7 @@ import com.k2cybersecurity.intcodeagent.models.javaagent.FuzzFailEvent;
 import com.k2cybersecurity.intcodeagent.websocket.EventSendPool;
 import okhttp3.*;
 import okhttp3.OkHttpClient.Builder;
+import org.jetbrains.annotations.NotNull;
 
 import javax.net.ssl.*;
 import java.io.IOException;
@@ -22,10 +23,12 @@ public class RestClient {
     public static final String FIRING_REQUEST_METHOD_S = "Firing request :: Method : %s";
     public static final String FIRING_REQUEST_URL_S = "Firing request :: URL : %s";
     public static final String FIRING_REQUEST_HEADERS_S = "Firing request :: Headers : %s";
-    
+
     private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
 
     public static RestClient instance;
+
+    private boolean isConnected = false;
 
     private static final Object lock = new Object();
 
@@ -66,6 +69,16 @@ public class RestClient {
                 // Create an ssl socket factory with our all-trusting manager
                 final SSLSocketFactory sslSocketFactory = sslContext.getSocketFactory();
                 builder = builder.sslSocketFactory(sslSocketFactory, x509TrustManager);
+                builder.addInterceptor(new Interceptor() {
+                    @NotNull
+                    @Override
+                    public Response intercept(@NotNull Chain chain) throws IOException {
+                        Request request = chain.request();
+                        Response response = chain.proceed(request);
+                        RestClient.getInstance().setConnected(!(response.code() == 503 || response.code() == 504));
+                        return response;
+                    }
+                });
 
                 builder = builder.hostnameVerifier(new HostnameVerifier() {
                     @Override
@@ -123,4 +136,11 @@ public class RestClient {
 
     }
 
+    public boolean isConnected() {
+        return isConnected;
+    }
+
+    public void setConnected(boolean connected) {
+        isConnected = connected;
+    }
 }
