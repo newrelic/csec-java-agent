@@ -29,12 +29,42 @@ public class JsonConverter {
 
     private static final ObjectMapper mapper = new ObjectMapper();
 
+    private static String serializerSelection = System.getenv().getOrDefault("K2_JSON_SERIALIZER", "K2");
+
     public static String toJSON(Object obj) {
+
+        switch (serializerSelection) {
+            case "Jackson":
+                return toJSONObjectMapper(obj);
+            case "K2":
+            default:
+                return toJSONK2Impl(obj);
+        }
+    }
+
+    public static String toJSONObjectMapper(Object obj) {
         try {
             return mapper.writeValueAsString(obj);
         } catch (JsonProcessingException e) {
             return StringUtils.EMPTY;
         }
+    }
+
+    public static String toJSONK2Impl(Object obj) {
+        StringBuilder jsonString = new StringBuilder(STR_START_CUELY_BRACKET);
+
+        Class<?> objClass = obj.getClass();
+        Class<?> superClass = obj.getClass().getSuperclass();
+
+        List<Field> fields = new ArrayList<>();
+
+        Field[] superFields = superClass.getDeclaredFields();
+        fields.addAll(Arrays.asList(superFields));
+        Field[] objFields = objClass.getDeclaredFields();
+        fields.addAll(Arrays.asList(objFields));
+        jsonString.append(getFieldsAsJsonString(fields, obj));
+        jsonString.append(STR_END_CUELY_BRACKET);
+        return jsonString.toString();
     }
 
     public static String toJSONMap(Map obj) {
