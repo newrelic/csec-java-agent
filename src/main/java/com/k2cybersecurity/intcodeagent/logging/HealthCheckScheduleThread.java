@@ -106,13 +106,13 @@ public class HealthCheckScheduleThread {
          * */
 
         serviceStatus.put("websocket", WSClient.isConnected() ? "OK" : "Error");
-        serviceStatus.put("log-writer", FileLoggerThreadPool.getInstance().isLoggingActive() ? "OK" : "Error");
-        serviceStatus.put("status-log-writer", FileLoggerThreadPool.getInstance().isStatusLoggingActive() ? "OK" : "Error");
+        serviceStatus.put("logWriter", FileLoggerThreadPool.getInstance().isLoggingActive() ? "OK" : "Error");
+        serviceStatus.put("statusLogWriter", FileLoggerThreadPool.getInstance().isStatusLoggingActive() ? "OK" : "Error");
 
-        serviceStatus.put("agent-active-stat", AgentUtils.getInstance().isAgentActive() ? "OK" : "Error");
+        serviceStatus.put("agentActiveStat", AgentUtils.getInstance().isAgentActive() ? "OK" : "Error");
 
-        serviceStatus.put("resource-server", HttpClient.getInstance().isConnected() ? "OK" : "Error");
-        serviceStatus.put("iast-rest-client", RestClient.getInstance().isConnected() ? "OK" : "Error");
+        serviceStatus.put("resourceServer", HttpClient.getInstance().isConnected() ? "OK" : "Error");
+        serviceStatus.put("iastRestClient", RestClient.getInstance().isConnected() ? "OK" : "Error");
 
         return serviceStatus;
     }

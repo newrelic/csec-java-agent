@@ -121,6 +121,14 @@ public class JAHealthCheck extends AgentBasicInfo {
         this.eventSentCount.getAndDecrement();
     }
 
+    public AtomicInteger getExitEventSentCount() {
+        return exitEventSentCount;
+    }
+
+    public AtomicInteger getHttpRequestCount() {
+        return httpRequestCount;
+    }
+
     public void incrementHttpRequestCount() {
         this.httpRequestCount.getAndIncrement();
     }
