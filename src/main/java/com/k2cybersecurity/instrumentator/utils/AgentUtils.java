@@ -694,27 +694,29 @@ public class AgentUtils {
         }
         StackTraceElement[] stackTrace = operationalBean.getStackTrace();
         int resetFactor = 0;
-        List<StackTraceElement> recordsToDelete = new ArrayList<>();
 
-        List<StackTraceElement> newTraceForIdCalc = new ArrayList<>();
+        ArrayList<Integer> newTraceForIdCalc = new ArrayList<>(stackTrace.length);
 
-        newTraceForIdCalc.addAll(Arrays.asList(stackTrace));
-
-        recordsToDelete.add(stackTrace[0]);
         resetFactor++;
+        boolean markedForRemoval = false;
         for (int i = 1; i < stackTrace.length; i++) {
+            markedForRemoval = false;
             if (i < operationalBean.getUserClassEntity().getTraceLocationEnd() && i == resetFactor &&
                     StringUtils.startsWith(stackTrace[i].getClassName(), ClassloaderAdjustments.K2_BOOTSTAP_LOADED_PACKAGE_NAME)) {
-                recordsToDelete.add(stackTrace[i]);
                 resetFactor++;
+                markedForRemoval = true;
             }
 
             if (StringUtils.startsWithAny(stackTrace[i].getClassName(), SUN_REFLECT, COM_SUN)
                     || stackTrace[i].isNativeMethod() || stackTrace[i].getLineNumber() < 0) {
-                recordsToDelete.add(stackTrace[i]);
+                markedForRemoval = true;
+            }
+
+            if (markedForRemoval) {
+                newTraceForIdCalc.add(stackTrace[i].hashCode());
             }
         }
-        newTraceForIdCalc.removeAll(recordsToDelete);
+
         stackTrace = Arrays.copyOfRange(stackTrace, resetFactor, stackTrace.length);
         operationalBean.setStackTrace(stackTrace);
         operationalBean.getUserClassEntity().setTraceLocationEnd(operationalBean.getUserClassEntity().getTraceLocationEnd() - resetFactor);
@@ -722,9 +724,9 @@ public class AgentUtils {
         operationalBean.setStackProcessed(true);
     }
 
-    private static void setAPIId(AbstractOperationalBean operationalBean, List<StackTraceElement> traceForIdCalc, VulnerabilityCaseType vulnerabilityCaseType) {
+    private static void setAPIId(AbstractOperationalBean operationalBean, List<Integer> traceForIdCalc, VulnerabilityCaseType vulnerabilityCaseType) {
         try {
-            operationalBean.setApiID(HashGenerator.getXxHash64Digest(traceForIdCalc) + "-" + vulnerabilityCaseType.getCaseType());
+            operationalBean.setApiID(HashGenerator.getXxHash64Digest(traceForIdCalc.stream().mapToInt(Integer::intValue).toArray()) + "-" + vulnerabilityCaseType.getCaseType());
         } catch (IOException e) {
             operationalBean.setApiID("UNDEFINED");
         }
