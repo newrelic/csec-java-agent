@@ -14,9 +14,11 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.attribute.PosixFilePermissions;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 public class LogWriter implements Runnable {
 
@@ -31,8 +33,7 @@ public class LogWriter implements Runnable {
     public static final String CAUSED_BY = "Caused by: ";
 
     public static int defaultLogLevel = LogLevel.INFO.getLevel();
-
-
+    private static long lastRolloverCheckTime = 0L;
     private int logLevel;
 
     private String logLevelName;
@@ -172,16 +173,17 @@ public class LogWriter implements Runnable {
     }
 
     private static void rollover(String fileName) throws IOException {
+        if (!rolloverCheckNeeded()) {
+            return;
+        }
 
         File currentFile = new File(fileName);
         // TODO: we should check file size using FS meta.
-        if (currentFile.length() > maxFileSize) {
+        if (Files.size(currentFile.toPath()) > maxFileSize) {
             writer.close();
             logFileCounter++;
             File rolloverFile = new File(fileName + STRING_DOT + logFileCounter);
             currentFile.renameTo(rolloverFile);
-
-
             writer = new BufferedWriter(new FileWriter(currentLogFileName, true));
 
             currentFile.setReadable(true, false);
@@ -197,6 +199,15 @@ public class LogWriter implements Runnable {
                 }
             }
         }
+    }
+
+    private static boolean rolloverCheckNeeded() {
+        long currTimeMilli = Instant.now().toEpochMilli();
+        if (currTimeMilli - lastRolloverCheckTime > TimeUnit.SECONDS.toMillis(30)) {
+            lastRolloverCheckTime = currTimeMilli;
+            return true;
+        }
+        return false;
     }
 
     public static void setLogLevel(LogLevel logLevel) {

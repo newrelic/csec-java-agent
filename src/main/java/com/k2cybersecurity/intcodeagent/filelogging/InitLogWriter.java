@@ -14,9 +14,11 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.attribute.PosixFilePermissions;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 public class InitLogWriter implements Runnable {
 
@@ -34,6 +36,7 @@ public class InitLogWriter implements Runnable {
     public static final String CAUSED_BY = "Caused by: ";
     public static int defaultLogLevel = LogLevel.INFO.getLevel();
 
+    private static long lastRolloverCheckTime = 0L;
 
     private int logLevel;
 
@@ -167,8 +170,12 @@ public class InitLogWriter implements Runnable {
     }
 
     private static void rollover(String fileName) throws IOException {
+        if (!rolloverCheckNeeded()) {
+            return;
+        }
+
         File currentFile = new File(fileName);
-        if (currentFile.length() > maxFileSize) {
+        if (Files.size(currentFile.toPath()) > maxFileSize) {
             writer.close();
             logFileCounter++;
             File rolloverFile = new File(fileName + STRING_DOT + logFileCounter);
@@ -191,6 +198,15 @@ public class InitLogWriter implements Runnable {
                 removeFile--;
             }
         }
+    }
+
+    private static boolean rolloverCheckNeeded() {
+        long currTimeMilli = Instant.now().toEpochMilli();
+        if (currTimeMilli - lastRolloverCheckTime > TimeUnit.SECONDS.toMillis(30)) {
+            lastRolloverCheckTime = currTimeMilli;
+            return true;
+        }
+        return false;
     }
 
     public static void setLogLevel(LogLevel logLevel) {
