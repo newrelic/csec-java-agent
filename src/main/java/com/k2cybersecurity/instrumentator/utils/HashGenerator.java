@@ -3,9 +3,7 @@ package com.k2cybersecurity.instrumentator.utils;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.logging.DeployedApplication;
-
 import net.openhft.hashing.LongHashFunction;
-
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.apache.commons.io.FileUtils;
@@ -153,7 +151,7 @@ public class HashGenerator {
     /**
      * Gets the xxHash64 hex digest.
      *
-     * @param data list of strings who's hash is to be generated
+     * @param data list of strings whose hash is to be generated
      * @return the digest as a hex string
      */
     public static String getXxHash64Digest(List<?> data) throws IOException {
@@ -161,6 +159,16 @@ public class HashGenerator {
         ObjectOutputStream outputStream = new ObjectOutputStream(byteArrayOutputStream);
         outputStream.writeObject(data);
         return String.valueOf(xxHashFunction.hashBytes(byteArrayOutputStream.toByteArray()));
+    }
+
+    /**
+     * Gets the xxHash64 hex digest.
+     *
+     * @param data array of Integers whose hash is to be generated
+     * @return the digest as a hex string
+     */
+    public static String getXxHash64Digest(int[] data) throws IOException {
+        return String.valueOf(xxHashFunction.hashInts(data));
     }
 
     public static void createTarGz(File tmpAppDir, File tmpTarFile) throws IOException {
