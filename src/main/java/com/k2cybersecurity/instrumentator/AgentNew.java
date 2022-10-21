@@ -50,9 +50,9 @@ public class AgentNew {
         initDone = true;
 
         /* K2_DISABLE is no longer valid */
-        if (StringUtils.equals(System.getenv().get("K2_DISABLE"), "true") || NewRelic.getAgent().getConfig().getValue("security.force_disable", false)) {
+        if (StringUtils.equals(System.getenv().get("K2_DISABLE"), "true") || NewRelic.getAgent().getConfig().getValue("security.force_complete_disable", false)) {
             System.err.println("[K2-JA] Process attachment aborted!!! K2 is set to disable.");
-            NewRelic.getAgent().getLogger().log(Level.INFO, "Security disabled forcefully!!! To enable security please set config parameter security.force_disable to true and restart the application.");
+            NewRelic.getAgent().getLogger().log(Level.INFO, "Security disabled forcefully!!! To enable security please set config parameter security.force_complete_disable or env K2_DISABLE to false and restart the application.");
             return;
         }
 
