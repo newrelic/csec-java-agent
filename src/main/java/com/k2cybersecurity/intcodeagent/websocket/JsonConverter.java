@@ -34,11 +34,11 @@ public class JsonConverter {
     public static String toJSON(Object obj) {
 
         switch (serializerSelection) {
+            case "K2":
+                return toJSONK2Impl(obj);
+            default:
             case "Jackson":
                 return toJSONObjectMapper(obj);
-            case "K2":
-            default:
-                return toJSONK2Impl(obj);
         }
     }
 
