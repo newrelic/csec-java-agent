@@ -5,6 +5,8 @@ import com.k2cybersecurity.instrumentator.custom.ThreadLocalExecutionMap;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalHTTPDoFilterMap;
 import com.k2cybersecurity.instrumentator.custom.ThreadLocalOperationLock;
 
+import java.util.Arrays;
+
 public class Callbacks {
 
     public static final String SEPARATOR_COLON = ":";
@@ -19,11 +21,14 @@ public class Callbacks {
 
                 ThreadLocalHTTPDoFilterMap.getInstance().setCurrentGenericServletInstance(classRef);
                 ThreadLocalHTTPDoFilterMap.getInstance().setCurrentGenericServletMethodName(methodName);
-                // TODO: We need to place this inside some lock. For all jsp nested invocation, this stack fetch is happening which is expensive
                 if (ThreadLocalExecutionMap.getInstance().getMetaData().getServiceTrace() == null) {
                     StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
-                    ThreadLocalHTTPDoFilterMap.getInstance()
-                            .setCurrentGenericServletStackLength(stackTrace.length);
+                    if (ThreadLocalHTTPDoFilterMap.getInstance().getCurrentGenericServletStackLength() >= 0) {
+                        stackTrace = Arrays.copyOfRange(stackTrace, 0, stackTrace.length - ThreadLocalHTTPDoFilterMap.getInstance().getCurrentGenericServletStackLength() + 3);
+                    } else {
+                        ThreadLocalHTTPDoFilterMap.getInstance()
+                                .setCurrentGenericServletStackLength(stackTrace.length);
+                    }
                     ThreadLocalExecutionMap.getInstance().getMetaData().setServiceTrace(stackTrace);
                 }
 
