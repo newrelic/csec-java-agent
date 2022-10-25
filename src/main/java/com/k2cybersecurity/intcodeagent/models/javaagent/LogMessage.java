@@ -51,6 +51,10 @@ public class LogMessage {
         return exception;
     }
 
+    public Map<String, String> getLinkingMetadata() {
+        return linkingMetadata;
+    }
+
     @Override
     public String toString() {
         return JsonConverter.toJSON(this);
