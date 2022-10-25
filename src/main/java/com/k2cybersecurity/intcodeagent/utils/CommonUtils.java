@@ -8,6 +8,7 @@ import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.models.config.AgentPolicy;
 import com.k2cybersecurity.intcodeagent.models.config.AgentPolicyParameters;
+import com.k2cybersecurity.intcodeagent.models.javaagent.LogMessage;
 import com.newrelic.api.agent.NewRelic;
 import org.apache.commons.io.FileUtils;
 import org.everit.json.schema.Schema;
@@ -92,6 +93,17 @@ public class CommonUtils {
             HttpClient.getInstance().doPost(IRestClientConstants.UPDATE_POLICY, null, queryParam, null, policy, true);
         } catch (Exception e) {
             logger.log(LogLevel.WARN, String.format("Update policy to IC failed due to %s", e.getMessage()), CommonUtils.class.getName());
+        }
+    }
+
+    public static void fireLogMessageUploadAPI(LogMessage logMessage) {
+        if (logMessage == null) {
+            return;
+        }
+        try {
+            HttpClient.getInstance().doPost(IRestClientConstants.POST_LOG_MESSAGE, null, null, null, logMessage, true);
+        } catch (Exception e) {
+            logger.log(LogLevel.WARN, String.format("Upload log message to IC failed due to %s", e.getMessage()), CommonUtils.class.getName());
         }
     }
 

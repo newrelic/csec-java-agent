@@ -10,4 +10,5 @@ public interface IRestClientConstants {
 
     String UPDATE_POLICY = "/collector/policy/update";
 
+    String POST_LOG_MESSAGE = "/collector/logMessage";
 }
