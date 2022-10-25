@@ -1,5 +1,9 @@
 package com.k2cybersecurity.intcodeagent.filelogging;
 
+import com.k2cybersecurity.instrumentator.utils.AgentUtils;
+import com.k2cybersecurity.intcodeagent.models.javaagent.LogMessage;
+import com.k2cybersecurity.intcodeagent.utils.CommonUtils;
+
 import java.io.IOException;
 import java.util.concurrent.*;
 
@@ -114,6 +118,7 @@ public class FileLoggerThreadPool {
     }
 
     public void logInit(LogLevel logLevel, String event, String logSourceClassName) {
+        postLogMessage(logLevel, event, null, logSourceClassName);
         if (logLevel.getLevel() == 1 || logLevel.getLevel() > InitLogWriter.defaultLogLevel) {
             return;
         }
@@ -122,11 +127,24 @@ public class FileLoggerThreadPool {
     }
 
     public void logInit(LogLevel logLevel, String event, Throwable throwableEvent, String logSourceClassName) {
+        postLogMessage(logLevel, event, throwableEvent, logSourceClassName);
         if (logLevel.getLevel() == 1 || logLevel.getLevel() > InitLogWriter.defaultLogLevel) {
             return;
         }
         executor.submit(new InitLogWriter(logLevel, event, throwableEvent, logSourceClassName, Thread.currentThread().getName()));
         log(logLevel, event, throwableEvent, logSourceClassName);
+    }
+
+    private void postLogMessageIfNecessary(LogLevel logLevel, String event, Throwable exception, String caller) {
+        if (logLevel.getLevel() > LogLevel.WARN.getLevel()) {
+            return;
+        }
+        postLogMessage(logLevel, event, exception, caller);
+    }
+
+    private void postLogMessage(LogLevel logLevel, String event, Throwable exception, String caller) {
+        LogMessage message = new LogMessage(logLevel.name(), event, caller, exception, AgentUtils.getInstance().getLinkingMetadata());
+        CommonUtils.fireLogMessageUploadAPI(message);
     }
 
     public boolean isLoggingActive() {

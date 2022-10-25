@@ -249,7 +249,7 @@ public class HttpClient {
             public void onResponse(Call call, Response response) throws IOException {
                 if (!response.isSuccessful()) {
                     try (ResponseBody responseBody = response.body()) {
-                        logger.log(LogLevel.WARN, String.format(ASYNC_API_EXECUTION_UNSUCCESSFULLY_S_RESPONSE_IS_S_BODY_S, api, response.code(), responseBody), HttpClient.class.getName());
+                        logger.log(LogLevel.WARN, String.format(ASYNC_API_EXECUTION_UNSUCCESSFULLY_S_RESPONSE_IS_S_BODY_S, api, response.code(), responseBody.string()), HttpClient.class.getName());
                     }
                 } else {
                     logger.log(LogLevel.INFO, String.format(ASYNC_API_EXECUTED_SUCCESSFULLY_S_RESPONSE_IS_S, api, response.code()), HttpClient.class.getName());
