@@ -630,19 +630,27 @@ public interface IAgentConstants {
     String STATUS_FILE_TEMPLATE = "Snapshot taken at: ${timestamp}\n" +
             "K2 Java Agent started at: ${start-time} with application uuid: ${application-uuid}\n" +
             "K2HOME is: ${k2-home}, permissions read & write: ${k2-home-permissions}\n" +
-            "Loading Agent from ${agent-location}\n" +
-            "Java version:${java-version}, PID:${pid}\n" +
-            "Application binary ${java-binary}\n" +
-            "Current working directory : ${cwd}, permissions read & write: ${cwd-permissions}\n" +
+            "Loading Agent from ${agent-location}, permissions read & write: ${agent-location-permissions}\n" +
+            "Using K2 for JAVA, Java version:${java-version}, PID:${pid}\n" +
+            "Application was invoked as: ${java-binary}\n" +
+            "Current working directory: ${cwd}, permissions read & write: ${cwd-permissions}\n" +
             "Agent is running in mode: ${group-name}\n" +
-            "Attach K2 instrumentator\n" +
-            "Agent is connected to Prevent Web and started\n" +
-            "Policy applied version is ${policy-version}\n" +
-            "Current log level: ${log-level}\n" +
+            "Application server: ${server-name}\n" +
+            "Framework detected: ${framework}\n" +
+            "Established websocket connection to Prevent Web: ${validator-url}, Staus: ${validator-server-status}\n" +
+            "Instrumentation successful\n" +
+            "Policy applied successfully. Policy version is: ${policy-version}\n" +
+            "Started Inbound and Outbound monitoring \n" +
+            "\n" +
+            "Process stats: \n" +
+            "${latest-process-stats}\n" +
+            "\n" +
+            "Service stats: \n" +
+            "${latest-service-stats}\n" +
             "\n" +
             "Last 5 errors:\n" +
             "${last-5-errors}\n" +
             "\n" +
-            "Last 5 Heath Checks are:\n" +
+            "Last 5 Heath Checks:\n" +
             "${last-5-hc}";
 }

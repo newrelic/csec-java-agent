@@ -26,6 +26,7 @@ public class CollectorConfigurationUtils {
     public static final String NODE_LEVEL_CONFIGURATION_WAS_NOT_PROVIDED = "Node Level Configuration was not provided.";
     public static final String APPLICATION_LEVEL_CONFIGURATION_LOADED = "Application Level Configuration loaded ";
     public static final String APPLICATION_LEVEL_CONFIGURATION_WAS_NOT_PROVIDED = "Application Level Configuration was not provided.";
+    public static final String VALIDATOR_URL = "validator-url";
     private final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
 
     private static CollectorConfigurationUtils instance;
@@ -112,6 +113,7 @@ public class CollectorConfigurationUtils {
         serviceInfo.setResourceServiceEndpointURL(resourceServiceEndpointUrl);
         serviceInfo.setValidatorServiceEndpointURL(validatorServiceEndpointUrl);
         this.collectorConfig.setK2ServiceInfo(serviceInfo);
+        AgentUtils.getInstance().getStatusLogValues().put(VALIDATOR_URL, validatorServiceEndpointUrl);
         return true;
     }
 

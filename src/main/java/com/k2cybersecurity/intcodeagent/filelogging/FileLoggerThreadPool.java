@@ -1,13 +1,22 @@
 package com.k2cybersecurity.intcodeagent.filelogging;
 
+import com.k2cybersecurity.instrumentator.os.OSVariables;
+import com.k2cybersecurity.instrumentator.os.OsVariablesInstance;
 import com.k2cybersecurity.instrumentator.utils.AgentUtils;
 import com.k2cybersecurity.intcodeagent.models.javaagent.LogMessage;
 import com.k2cybersecurity.intcodeagent.utils.CommonUtils;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.comparator.LastModifiedFileComparator;
+import org.apache.commons.io.filefilter.FileFilterUtils;
 
+import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.concurrent.*;
 
 public class FileLoggerThreadPool {
+    public static final String CLEANING_STATUS_SNAPSHOTS_FROM_LOG_DIRECTORY_MAX_S_FILE_COUNT_REACHED_REMOVED_S = "Cleaning status-snapshots from log directory, max %s file count reached removed : %s";
     private ThreadPoolExecutor executor;
 
     private static FileLoggerThreadPool instance;
@@ -15,6 +24,8 @@ public class FileLoggerThreadPool {
     private boolean isLoggingActive = true;
 
     private boolean isStatusLoggingActive = true;
+
+    private static OSVariables osVariables = OsVariablesInstance.getInstance().getOsVariables();
 
     private FileLoggerThreadPool() throws IOException {
         // load the settings
@@ -51,6 +62,19 @@ public class FileLoggerThreadPool {
                 return t;
             }
         });
+
+        //This will remove the oldest status log file if count of files is grater than 100.
+        keepMaxStatusLogFiles(100);
+    }
+
+    private void keepMaxStatusLogFiles(int max) {
+        Collection<File> statusFiles = FileUtils.listFiles(new File(osVariables.getLogDirectory()), FileFilterUtils.prefixFileFilter("k2-agent-status-"), null);
+        if (statusFiles.size() >= max) {
+            File[] sortedStatusFiles = statusFiles.toArray(new File[0]);
+            Arrays.sort(sortedStatusFiles, LastModifiedFileComparator.LASTMODIFIED_REVERSE);
+            FileUtils.deleteQuietly(sortedStatusFiles[0]);
+            log(LogLevel.INFO, String.format(CLEANING_STATUS_SNAPSHOTS_FROM_LOG_DIRECTORY_MAX_S_FILE_COUNT_REACHED_REMOVED_S, max, sortedStatusFiles[0].getAbsolutePath()), FileLoggerThreadPool.class.getName());
+        }
     }
 
     public void shutDownThreadPoolExecutor() {

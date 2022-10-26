@@ -157,19 +157,26 @@ public class K2Instrumentator {
                     K2Instrumentator.class.getName()
             );
             System.out.println(String.format("This application instance is now being protected by K2 Agent under id %s", APPLICATION_UUID));
-            AgentUtils.getInstance().getStatusLogValues().put("start-time", Instant.now().toString());
-            AgentUtils.getInstance().getStatusLogValues().put("application-uuid", APPLICATION_UUID);
-            AgentUtils.getInstance().getStatusLogValues().put("pid", VMPID.toString());
-            AgentUtils.getInstance().getStatusLogValues().put("java-version", ManagementFactory.getRuntimeMXBean().getName());
-            File cwd = new File(".");
-            AgentUtils.getInstance().getStatusLogValues().put("cwd", cwd.getAbsolutePath());
-            AgentUtils.getInstance().getStatusLogValues().put("cwd-permissions", String.valueOf(cwd.canWrite() && cwd.canRead()));
+            setStatusLogValues();
             return isWorking;
         } catch (Exception e) {
             logger.log(LogLevel.ERROR, "Error in init ", e, K2Instrumentator.class.getName());
             logger.postLogMessageIfNecessary(LogLevel.ERROR, "Error in security module init ", e, K2Instrumentator.class.getName());
         }
         return false;
+    }
+
+    private static void setStatusLogValues() {
+        AgentUtils.getInstance().getStatusLogValues().put("start-time", Instant.now().toString());
+        AgentUtils.getInstance().getStatusLogValues().put("application-uuid", APPLICATION_UUID);
+        AgentUtils.getInstance().getStatusLogValues().put("pid", VMPID.toString());
+        AgentUtils.getInstance().getStatusLogValues().put("java-version", ManagementFactory.getRuntimeMXBean().getSpecVersion());
+        AgentUtils.getInstance().getStatusLogValues().put("java-binary", ManagementFactory.getRuntimeMXBean().getName());
+        File cwd = new File(".");
+        AgentUtils.getInstance().getStatusLogValues().put("cwd", cwd.getAbsolutePath());
+        AgentUtils.getInstance().getStatusLogValues().put("cwd-permissions", String.valueOf(cwd.canWrite() && cwd.canRead()));
+        AgentUtils.getInstance().getStatusLogValues().put("server-name", "Not Available");
+        AgentUtils.getInstance().getStatusLogValues().put("framework", "Not Available");
     }
 
     /*
@@ -179,7 +186,7 @@ public class K2Instrumentator {
     private static void applyRequiredLogLevel() {
         String logLevel = "INFO";
 
-        if(System.getenv().containsKey("K2_LOG_LEVEL")){
+        if (System.getenv().containsKey("K2_LOG_LEVEL")) {
             logLevel = System.getenv().get("K2_LOG_LEVEL");
         } else if (StringUtils.isNotBlank(NewRelic.getAgent().getConfig().getValue("security.log_level"))) {
             logLevel = NewRelic.getAgent().getConfig().getValue("security.log_level");

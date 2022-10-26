@@ -28,7 +28,7 @@ public class RestClient {
 
     public static RestClient instance;
 
-    private boolean isConnected = false;
+    private boolean isConnected = true;
 
     private static final Object lock = new Object();
 

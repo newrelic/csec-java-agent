@@ -43,6 +43,11 @@ public class HealthCheckScheduleThread {
     public static final String CAN_T_WRITE_STATUS_LOG_FILE_S_REASON_S = "Can't write status log file : %s , reason : %s ";
     public static final String LAST_5_ERRORS = "last-5-errors";
     public static final String LAST_5_HC = "last-5-hc";
+    public static final String K_2_AGENT_STATUS_LOG = "k2-agent-status-%s.log";
+    public static final String LATEST_PROCESS_STATS = "latest-process-stats";
+    public static final String LATEST_SERVICE_STATS = "latest-service-stats";
+    public static final String VALIDATOR_SERVER_STATUS = "validator-server-status";
+    public static final String WEBSOCKET = "websocket";
     private static HealthCheckScheduleThread instance;
 
     private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
@@ -107,14 +112,17 @@ public class HealthCheckScheduleThread {
     }
 
     private void writeStatusLogFile() {
-        File statusLog = new File(osVariables.getLogDirectory(), "k2-java-agent-status.log");
+        File statusLog = new File(osVariables.getLogDirectory(), String.format(K_2_AGENT_STATUS_LOG, K2Instrumentator.APPLICATION_UUID));
         try {
             FileUtils.deleteQuietly(statusLog);
             if (statusLog.createNewFile()) {
                 Map<String, String> substitutes = AgentUtils.getInstance().getStatusLogValues();
                 substitutes.put(STATUS_TIMESTAMP, Instant.now().toString());
+                substitutes.put(LATEST_PROCESS_STATS, K2Instrumentator.JA_HEALTH_CHECK.getStat().toString());
+                substitutes.put(LATEST_SERVICE_STATS, K2Instrumentator.JA_HEALTH_CHECK.getServiceStatus().toString());
                 substitutes.put(LAST_5_ERRORS, StringUtils.joinWith(StringUtils.LF, AgentUtils.getInstance().getStatusLogMostRecentErrors().toArray()));
                 substitutes.put(LAST_5_HC, StringUtils.joinWith(StringUtils.LF, AgentUtils.getInstance().getStatusLogMostRecentHCs().toArray()));
+                substitutes.put(VALIDATOR_SERVER_STATUS, K2Instrumentator.JA_HEALTH_CHECK.getServiceStatus().get(WEBSOCKET).toString());
                 StringSubstitutor substitutor = new StringSubstitutor(substitutes);
                 FileUtils.writeStringToFile(statusLog, substitutor.replace(IAgentConstants.STATUS_FILE_TEMPLATE), StandardCharsets.UTF_8);
             }
@@ -135,7 +143,7 @@ public class HealthCheckScheduleThread {
          * 6. Status log writer
          * */
 
-        serviceStatus.put("websocket", WSClient.isConnected() ? "OK" : "Error");
+        serviceStatus.put(WEBSOCKET, WSClient.isConnected() ? "OK" : "Error");
         serviceStatus.put("logWriter", FileLoggerThreadPool.getInstance().isLoggingActive() ? "OK" : "Error");
         serviceStatus.put("statusLogWriter", FileLoggerThreadPool.getInstance().isStatusLoggingActive() ? "OK" : "Error");
 

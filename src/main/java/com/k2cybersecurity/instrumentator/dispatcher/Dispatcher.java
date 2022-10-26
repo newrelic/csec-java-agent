@@ -72,6 +72,7 @@ public class Dispatcher implements Runnable {
     public static final String DEPLOYED_APP_AFTER_PROCESSING = "Deployed app after processing : ";
     public static final String DEPLOYED_APP_AFTER_PROCESSING_1 = "Deployed app after processing 1 : ";
     public static final String ERROR_WHILE_DEPLOYED_APP_PROCESSING = "Error while deployed app processing : ";
+    public static final String SERVER_NAME = "server-name";
     private ExitEventBean exitEventBean;
     private HttpRequestBean httpRequestBean;
     private AgentMetaData metaData;
@@ -489,6 +490,7 @@ public class Dispatcher implements Runnable {
             ApplicationInfoBean applicationInfoBean = K2Instrumentator.APPLICATION_INFO_BEAN;
 
             applicationInfoBean.getServerInfo().setName(ServletContextInfo.getInstance().getServerInfo());
+            AgentUtils.getInstance().getStatusLogValues().put(SERVER_NAME, applicationInfoBean.getServerInfo().getName());
             logger.logInit(
                     LogLevel.INFO,
                     String.format(APPLICATION_SERVER_DETECTION_COMPLETE, applicationInfoBean),
