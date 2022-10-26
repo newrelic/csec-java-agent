@@ -29,6 +29,7 @@ public class WSReconnectionST {
             } catch (Exception e) {
                 logger.log(LogLevel.ERROR, ERROR_WHILE_WS_RECONNECTION + e.getMessage() + COLON_SEPARATOR + e.getCause(), WSClient.class.getName());
                 logger.log(LogLevel.DEBUG, ERROR_WHILE_WS_RECONNECTION, e, WSClient.class.getName());
+                logger.postLogMessageIfNecessary(LogLevel.ERROR, ERROR_WHILE_WS_RECONNECTION + e.getMessage() + COLON_SEPARATOR + e.getCause(), e, WSClient.class.getName());
             } finally {
                 if (!WSClient.isConnected()) {
                     futureTask = scheduledService.schedule(runnable, 30, TimeUnit.SECONDS);

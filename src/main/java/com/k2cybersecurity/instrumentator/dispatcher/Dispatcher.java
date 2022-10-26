@@ -66,6 +66,12 @@ public class Dispatcher implements Runnable {
     public static final String NR_TRACE_ID = "trace.id";
     public static final String NR_SPAN_ID = "span.id";
     public static final String NR_IS_SAMPLED = "isSampled";
+    public static final String ERROR_WHILE_SETTING_REQUIRED_STACK_TRACE_IN_EVENT = "Error while setting required stack trace in event: ";
+    public static final String CREATING_NEW_DEPLOYED_APPLICATION = "Creating new deployed application";
+    public static final String DEPLOYED_APP_AFTER_SET_PATH = "Deployed app after set path : ";
+    public static final String DEPLOYED_APP_AFTER_PROCESSING = "Deployed app after processing : ";
+    public static final String DEPLOYED_APP_AFTER_PROCESSING_1 = "Deployed app after processing 1 : ";
+    public static final String ERROR_WHILE_DEPLOYED_APP_PROCESSING = "Error while deployed app processing : ";
     private ExitEventBean exitEventBean;
     private HttpRequestBean httpRequestBean;
     private AgentMetaData metaData;
@@ -418,6 +424,7 @@ public class Dispatcher implements Runnable {
             }
         } catch (Exception e) {
             logger.log(LogLevel.ERROR, ERROR, e, Dispatcher.class.getName());
+            logger.postLogMessageIfNecessary(LogLevel.ERROR, ERROR_WHILE_SETTING_REQUIRED_STACK_TRACE_IN_EVENT, e, Dispatcher.class.getName());
         }
     }
 
@@ -454,19 +461,20 @@ public class Dispatcher implements Runnable {
                     .contains(deployedApplication)) {
                 return false;
             }
-            logger.log(LogLevel.INFO, "Creating new deployed application", Dispatcher.class.getName());
+            logger.log(LogLevel.INFO, CREATING_NEW_DEPLOYED_APPLICATION, Dispatcher.class.getName());
             deployedApplication.setDeployedPath(AgentUtils.getInstance().detectDeployedApplicationPath(
                     userClassEntity.getUserClassElement().getClassName(), currentGenericServletInstance,
                     userClassEntity.getUserClassElement().getMethodName()));
-            logger.log(LogLevel.INFO, "Deployed app after set path : " + deployedApplication, Dispatcher.class.getName());
+            logger.log(LogLevel.INFO, DEPLOYED_APP_AFTER_SET_PATH + deployedApplication, Dispatcher.class.getName());
             boolean ret = false;
             try {
                 ret = ServletContextInfo.getInstance().processServletContext(httpRequestBean, deployedApplication);
-                logger.log(LogLevel.INFO, "Deployed app after processing : " + deployedApplication + " :: " + ret, Dispatcher.class.getName());
+                logger.log(LogLevel.INFO, DEPLOYED_APP_AFTER_PROCESSING + deployedApplication + " :: " + ret, Dispatcher.class.getName());
                 HashGenerator.updateShaAndSize(deployedApplication);
-                logger.log(LogLevel.INFO, "Deployed app after processing 1 : " + deployedApplication + " :: " + ret, Dispatcher.class.getName());
+                logger.log(LogLevel.INFO, DEPLOYED_APP_AFTER_PROCESSING_1 + deployedApplication + " :: " + ret, Dispatcher.class.getName());
             } catch (Throwable e) {
-                logger.log(LogLevel.ERROR, "Error while deployed app processing : " + deployedApplication, e, Dispatcher.class.getName());
+                logger.log(LogLevel.ERROR, ERROR_WHILE_DEPLOYED_APP_PROCESSING + deployedApplication, e, Dispatcher.class.getName());
+                logger.postLogMessageIfNecessary(LogLevel.ERROR, ERROR_WHILE_DEPLOYED_APP_PROCESSING + deployedApplication, e, Dispatcher.class.getName());
             }
 
             if (deployedApplication.isEmpty() ||

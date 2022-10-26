@@ -32,14 +32,14 @@ class LoggingInterceptor implements Interceptor {
         Request request = chain.request();
 
         long t1 = System.nanoTime();
-        logger.log(LogLevel.INFO, String.format(SENDING_REQUEST_S_ON_S_N_S,
+        logger.log(LogLevel.DEBUG, String.format(SENDING_REQUEST_S_ON_S_N_S,
                 request.url()), LoggingInterceptor.class.getName());
 
         Response response = chain.proceed(request);
         HttpClient.getInstance().setConnected(!(response.code() == 503 || response.code() == 504));
 
         long t2 = System.nanoTime();
-        logger.log(LogLevel.INFO, String.format(RECEIVED_RESPONSE_FOR_S_IN_1_FMS_N_S, response.code(),
+        logger.log(LogLevel.DEBUG, String.format(RECEIVED_RESPONSE_FOR_S_IN_1_FMS_N_S, response.code(),
                 response.request().url(), (t2 - t1) / 1e6d), LoggingInterceptor.class.getName());
 
         return response;
@@ -252,7 +252,7 @@ public class HttpClient {
                         logger.log(LogLevel.WARN, String.format(ASYNC_API_EXECUTION_UNSUCCESSFULLY_S_RESPONSE_IS_S_BODY_S, api, response.code(), responseBody.string()), HttpClient.class.getName());
                     }
                 } else {
-                    logger.log(LogLevel.INFO, String.format(ASYNC_API_EXECUTED_SUCCESSFULLY_S_RESPONSE_IS_S, api, response.code()), HttpClient.class.getName());
+                    logger.log(LogLevel.DEBUG, String.format(ASYNC_API_EXECUTED_SUCCESSFULLY_S_RESPONSE_IS_S, api, response.code()), HttpClient.class.getName());
                 }
             }
         });

@@ -14,6 +14,7 @@ import org.apache.commons.lang3.StringUtils;
 public class RestRequestProcessor implements Runnable {
 
     public static final String K2_HOME_TMP_CONST = "{{K2_HOME_TMP}}";
+    public static final String ERROR_WHILE_PROCESSING_FUZZING_REQUEST_S = "Error while processing fuzzing request : %s";
     private IntCodeControlCommand controlCommand;
 
     private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
@@ -40,7 +41,10 @@ public class RestRequestProcessor implements Runnable {
 
         } catch (Throwable e) {
             logger.log(LogLevel.ERROR,
-                    String.format("Error while processing fuzzing request : %s", controlCommand.getArguments().get(0)),
+                    String.format(ERROR_WHILE_PROCESSING_FUZZING_REQUEST_S, controlCommand.getArguments().get(0)),
+                    e, RestRequestProcessor.class.getName());
+            logger.postLogMessageIfNecessary(LogLevel.ERROR,
+                    String.format(ERROR_WHILE_PROCESSING_FUZZING_REQUEST_S, controlCommand.getArguments().get(0)),
                     e, RestRequestProcessor.class.getName());
         }
     }

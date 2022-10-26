@@ -3,7 +3,6 @@ package com.k2cybersecurity.instrumentator.dispatcher;
 import com.k2cybersecurity.instrumentator.K2Instrumentator;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
-import com.k2cybersecurity.intcodeagent.logging.EventThreadPool.EventAbortPolicy;
 import com.k2cybersecurity.intcodeagent.logging.IAgentConstants;
 import com.k2cybersecurity.intcodeagent.models.javaagent.*;
 import com.k2cybersecurity.intcodeagent.models.operationalbean.AbstractOperationalBean;
@@ -34,6 +33,32 @@ public class DispatcherPool {
     private static Object mutex = new Object();
 
     private Set<String> eid;
+
+
+    /**
+     * A handler for rejected tasks that throws a
+     * {@code RejectedExecutionException}.
+     */
+    public static class EventAbortPolicy implements RejectedExecutionHandler {
+        /**
+         * Creates an {@code ValidationAbortPolicy}.
+         */
+        public EventAbortPolicy() {
+        }
+
+        /**
+         * Always throws RejectedExecutionException.
+         *
+         * @param r the runnable task requested to be executed
+         * @param e the executor attempting to execute this task
+         * @throws RejectedExecutionException always
+         */
+        public void rejectedExecution(Runnable r, ThreadPoolExecutor e) {
+            K2Instrumentator.JA_HEALTH_CHECK.incrementDropCount();
+            K2Instrumentator.JA_HEALTH_CHECK.incrementProcessedCount();
+//			logger.log(LogLevel.FINE,"Event Task " + r.toString() + " rejected from  " + e.toString(), EventThreadPool.class.getName());
+        }
+    }
 
     private DispatcherPool() {
         LinkedBlockingQueue<Runnable> processQueue;

@@ -53,9 +53,12 @@ public class CommonUtils {
         } catch (ValidationException e) {
             logger.log(LogLevel.ERROR, String.format("LC Policy Parameters validation failed due to following violations: %s", e.getAllMessages()), CommonUtils.class.getName());
             logger.log(LogLevel.DEBUG, "LC Policy Parameters validation failed due to", e, CommonUtils.class.getName());
+            logger.postLogMessageIfNecessary(LogLevel.ERROR, String.format("LC Policy Parameters validation failed due to following violations: %s", e.getAllMessages()), e, CommonUtils.class.getName());
         } catch (Exception e) {
             logger.log(LogLevel.ERROR, String.format("Exception raised in LC policy Parameters validation : %s :: caused by : %s", e.getMessage(), e.getCause()), CommonUtils.class.getName());
             logger.log(LogLevel.DEBUG, "Exception raised in LC policy Parameters validation", e, CommonUtils.class.getName());
+            logger.postLogMessageIfNecessary(LogLevel.ERROR, String.format("Exception raised in LC policy Parameters validation : %s :: caused by : %s", e.getMessage(), e.getCause()), e, CommonUtils.class.getName());
+
         }
         return false;
     }
@@ -74,9 +77,11 @@ public class CommonUtils {
         } catch (ValidationException e) {
             logger.log(LogLevel.ERROR, String.format("LC Policy validation failed due to following violations: %s", e.getAllMessages()), CommonUtils.class.getName());
             logger.log(LogLevel.DEBUG, "LC Policy validation failed due to", e, CommonUtils.class.getName());
+            logger.postLogMessageIfNecessary(LogLevel.ERROR, String.format("LC Policy validation failed due to following violations: %s", e.getAllMessages()), e, CommonUtils.class.getName());
         } catch (Exception e) {
             logger.log(LogLevel.ERROR, String.format("Exception raised in LC policy validation : %s :: caused by : %s", e.getMessage(), e.getCause()), CommonUtils.class.getName());
             logger.log(LogLevel.DEBUG, "Exception raised in LC policy validation", e, CommonUtils.class.getName());
+            logger.postLogMessageIfNecessary(LogLevel.ERROR, String.format("Exception raised in LC policy validation : %s :: caused by : %s", e.getMessage(), e.getCause()), e, CommonUtils.class.getName());
         }
         return false;
     }

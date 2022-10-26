@@ -1,7 +1,5 @@
 package com.k2cybersecurity.intcodeagent.schedulers;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.k2cybersecurity.instrumentator.K2Instrumentator;
 import com.k2cybersecurity.instrumentator.httpclient.HttpClient;
 import com.k2cybersecurity.instrumentator.httpclient.IRestClientConstants;
@@ -17,7 +15,6 @@ import com.k2cybersecurity.intcodeagent.websocket.EventSendPool;
 import okhttp3.Response;
 import org.apache.commons.lang3.StringUtils;
 
-import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.*;
@@ -108,6 +105,7 @@ public class PolicyPullST {
                 newPolicy = HttpClient.getInstance().readResponse(response.body().byteStream(), AgentPolicy.class);
             } else if (response != null && response.body() != null) {
                 logger.log(LogLevel.ERROR, String.format(IAgentConstants.UNABLE_TO_PARSE_AGENT_POLICY_DUE_TO_ERROR, response.code(), response.body().string()), PolicyPullST.class.getName());
+                logger.postLogMessageIfNecessary(LogLevel.ERROR, String.format(IAgentConstants.UNABLE_TO_PARSE_AGENT_POLICY_DUE_TO_ERROR, response.code(), response.body().string()), null, PolicyPullST.class.getName());
                 return;
             } else {
                 logger.log(LogLevel.ERROR, IAgentConstants.POLICY_PULL_RESPONSE_IS_NULL, PolicyPullST.class.getName());
@@ -116,6 +114,7 @@ public class PolicyPullST {
 
             if (!CommonUtils.validateCollectorPolicySchema(newPolicy)) {
                 logger.log(LogLevel.WARN, String.format(IAgentConstants.UNABLE_TO_VALIDATE_AGENT_POLICY_DUE_TO_ERROR, newPolicy), PolicyPullST.class.getName());
+                logger.postLogMessageIfNecessary(LogLevel.WARN, String.format(IAgentConstants.UNABLE_TO_VALIDATE_AGENT_POLICY_DUE_TO_ERROR, newPolicy), null, PolicyPullST.class.getName());
                 return;
             }
 
@@ -177,34 +176,6 @@ public class PolicyPullST {
             return true;
         }
         return false;
-    }
-
-//    public AgentPolicy populateConfig() {
-//        if (!AgentUtils.getInstance().getConfigLoadPath().isFile()) {
-//            logger.log(LogLevel.INFO, THE_POLICY_FILE_IS_NOT_PRESENT_ON_LOCATION_CREATING_NEW, PolicyPullST.class.getName());
-//            CommonUtils.writePolicyToFile();
-//            return null;
-//        }
-//        ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
-//        try {
-//            return mapper.readValue(AgentUtils.getInstance().getConfigLoadPath(), AgentPolicy.class);
-//        } catch (Exception e) {
-//            logger.log(LogLevel.ERROR, String.format(FALLING_BACK_TO_DEFAULT_CONFIG_MSG, e.getMessage()), PolicyPullST.class.getName());
-//            logger.log(LogLevel.DEBUG, FALLING_BACK_TO_DEFAULT_CONFIG, e, PolicyPullST.class.getName());
-//            CommonUtils.writePolicyToFile();
-//            return null;
-//        }
-//    }
-
-    private static AgentPolicy loadDefaultConfig() {
-        try {
-            InputStream in = ClassLoader.getSystemResourceAsStream(DEFAULT_POLICY_YAML);
-            ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
-            return mapper.readValue(in, AgentPolicy.class);
-        } catch (Exception e) {
-            logger.log(LogLevel.ERROR, FALLING_BACK_TO_DEFAULT_CONFIG, e, PolicyPullST.class.getName());
-            return null;
-        }
     }
 
     public static void shutDownPool() {

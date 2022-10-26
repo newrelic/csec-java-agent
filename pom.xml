@@ -28,6 +28,18 @@
         <license.build.timestamp>${maven.build.timestamp}</license.build.timestamp>
     </properties>
 
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>io.opentelemetry</groupId>
+                <artifactId>opentelemetry-bom</artifactId>
+                <version>1.19.0</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
     <dependencies>
         <!-- https://mvnrepository.com/artifact/com.googlecode.json-simple/json-simple -->
         <dependency>
@@ -159,6 +171,14 @@
             <artifactId>newrelic-api</artifactId>
             <version>7.11.0-SNAPSHOT</version>
         </dependency>
+
+        <!-- https://mvnrepository.com/artifact/io.opentelemetry.proto/opentelemetry-proto -->
+        <dependency>
+            <groupId>io.opentelemetry.proto</groupId>
+            <artifactId>opentelemetry-proto</artifactId>
+            <version>0.19.0-alpha</version>
+        </dependency>
+
     </dependencies>
     <build>
         <finalName>${artifactId}</finalName>

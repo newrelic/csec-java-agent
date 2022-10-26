@@ -135,7 +135,7 @@ public class FileLoggerThreadPool {
         log(logLevel, event, throwableEvent, logSourceClassName);
     }
 
-    private void postLogMessageIfNecessary(LogLevel logLevel, String event, Throwable exception, String caller) {
+    public void postLogMessageIfNecessary(LogLevel logLevel, String event, Throwable exception, String caller) {
         if (logLevel.getLevel() > LogLevel.WARN.getLevel()) {
             return;
         }

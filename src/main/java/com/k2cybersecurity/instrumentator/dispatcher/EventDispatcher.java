@@ -40,6 +40,7 @@ public class EventDispatcher {
     public static final String ACCESS_BY_BLOCKED_IP_ADDRESS_DETECTED_S = "Access by blocked IP address detected : %s";
     private static final String INTERCEPTED_EVENT_ZERO = "[STEP-8][BEGIN][EVENT] First event intercepted : %s : %s";
     private static final String EVENT_ZERO_PROCESSED = "[EVENT] First event processed : %s";
+    public static final String ERROR_WHILE_BLOCKING_FOR_RESPONSE = "Error while blocking for response: ";
     public static String ATTACK_PAGE_CONTENT = StringUtils.EMPTY;
     public static String BLOCK_PAGE_CONTENT = StringUtils.EMPTY;
     static AtomicBoolean firstEventProcessed = new AtomicBoolean(false);
@@ -361,6 +362,7 @@ public class EventDispatcher {
             }
         } catch (Exception e) {
             logger.log(LogLevel.ERROR, ERROR, e, EventDispatcher.class.getSimpleName());
+            logger.postLogMessageIfNecessary(LogLevel.ERROR, ERROR_WHILE_BLOCKING_FOR_RESPONSE, e, EventDispatcher.class.getSimpleName());
         } finally {
             AgentUtils.getInstance().getEventResponseSet().remove(executionId);
         }
@@ -404,10 +406,11 @@ public class EventDispatcher {
                 }
             } else {
                 logger.log(LogLevel.ERROR, "Unable to locate response object for this attack.", EventDispatcher.class.getSimpleName());
+                logger.postLogMessageIfNecessary(LogLevel.ERROR, "Unable to locate response object for this attack.", null, EventDispatcher.class.getSimpleName());
             }
         } catch (Throwable e) {
             logger.log(LogLevel.ERROR, "Unable to process response for this attack.", e, EventDispatcher.class.getSimpleName());
-
+            logger.postLogMessageIfNecessary(LogLevel.ERROR, "Unable to process response for this attack.", e, EventDispatcher.class.getSimpleName());
         } finally {
             try {
                 if (ThreadLocalHttpMap.getInstance().getResponseOutputStream() != null) {
@@ -465,9 +468,11 @@ public class EventDispatcher {
                 }
             } else {
                 logger.log(LogLevel.ERROR, "Unable to locate response object for this attack.", EventDispatcher.class.getSimpleName());
+                logger.postLogMessageIfNecessary(LogLevel.ERROR, "Unable to locate response object for this attack.", null, EventDispatcher.class.getSimpleName());
             }
         } catch (Throwable e) {
             logger.log(LogLevel.ERROR, "Unable to process response for this attack.", e, EventDispatcher.class.getSimpleName());
+            logger.postLogMessageIfNecessary(LogLevel.ERROR, "Unable to process response for this attack.", e, EventDispatcher.class.getSimpleName());
 
         } finally {
             try {

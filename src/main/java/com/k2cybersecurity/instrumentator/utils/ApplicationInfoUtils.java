@@ -155,6 +155,7 @@ public class ApplicationInfoUtils {
             return identifier;
         } catch (Exception e) {
             logger.log(LogLevel.ERROR, "Error while env detection ", e, ApplicationInfoUtils.class.getName());
+            logger.postLogMessageIfNecessary(LogLevel.ERROR, "Error while env detection ", e, ApplicationInfoUtils.class.getName());
         }
         return null;
     }

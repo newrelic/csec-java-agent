@@ -1,11 +1,13 @@
 package com.k2cybersecurity.instrumentator.custom;
 
 import com.k2cybersecurity.instrumentator.utils.AgentUtils;
+import com.k2cybersecurity.instrumentator.utils.INRSettingsKey;
 import com.k2cybersecurity.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.logging.IAgentConstants;
 import com.k2cybersecurity.intcodeagent.models.javaagent.*;
 import com.k2cybersecurity.intcodeagent.schedulers.InBoundOutBoundST;
+import com.newrelic.api.agent.NewRelic;
 import org.apache.commons.lang3.StringUtils;
 import org.json.simple.JSONObject;
 
@@ -383,6 +385,10 @@ public class ThreadLocalHttpMap {
         if (httpResponse == null) {
 //			logger.log(LogLevel.DEBUG, NO_HTTP_RESPONSE_FOUND_FOR_CURRENT_CONTEXT, ThreadLocalHttpMap.class.getName());
             return false;
+        }
+        // TODO : remove this from code hot path since it is not cheap lookup
+        if (NewRelic.getAgent().getConfig().getValue(INRSettingsKey.SECURITY_DETECTION_DISABLE_RXSS, false)) {
+            return true;
         }
         // System.out.println("Parsing HTTP response : " + httpResponse.hashCode());
         HttpRequestBean httpRequestBean = ThreadLocalExecutionMap.getInstance().getHttpRequestBean();

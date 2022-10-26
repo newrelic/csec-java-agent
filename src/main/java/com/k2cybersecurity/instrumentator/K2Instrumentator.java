@@ -77,6 +77,7 @@ public class K2Instrumentator {
             VMPID = Integer.parseInt(runningVM.substring(0, runningVM.indexOf(VMPID_SPLIT_CHAR)));
         } catch (Throwable th) {
             logger.log(LogLevel.ERROR, ERROR_WHILE_INITIALISING_THE_K2_AGENT + th.getCause() + " : " + th.getMessage(), K2Instrumentator.class.getName());
+            logger.postLogMessageIfNecessary(LogLevel.ERROR, ERROR_WHILE_INITIALISING_THE_K2_AGENT + th.getCause() + " : " + th.getMessage(), th, K2Instrumentator.class.getName());
         }
     }
 
@@ -157,8 +158,8 @@ public class K2Instrumentator {
             System.out.println(String.format("This application instance is now being protected by K2 Agent under id %s", APPLICATION_UUID));
             return isWorking;
         } catch (Exception e) {
-            e.printStackTrace();
             logger.log(LogLevel.ERROR, "Error in init ", e, K2Instrumentator.class.getName());
+            logger.postLogMessageIfNecessary(LogLevel.ERROR, "Error in security module init ", e, K2Instrumentator.class.getName());
         }
         return false;
     }
@@ -247,6 +248,9 @@ public class K2Instrumentator {
             } catch (Throwable e) {
                 logger.log(LogLevel.ERROR, ERROR_OCCURED_WHILE_TRYING_TO_CONNECT_TO_WSOCKET, e,
                         K2Instrumentator.class.getName());
+                logger.postLogMessageIfNecessary(LogLevel.ERROR, ERROR_OCCURED_WHILE_TRYING_TO_CONNECT_TO_WSOCKET, e,
+                        K2Instrumentator.class.getName());
+
             }
         }
         if (!WSClient.isConnected()) {

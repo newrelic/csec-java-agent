@@ -87,9 +87,11 @@ public class GlobalPolicyParameterPullST {
                 logger.log(LogLevel.INFO, String.format(IAgentConstants.POLICY_NO_CHANGE_IN_GLOBAL_POLICY_PARAMETERS_RESPONSE_BODY, response.code(), response.body().string()), GlobalPolicyParameterPullST.class.getName());
             } else {
                 logger.log(LogLevel.ERROR, String.format(IAgentConstants.POLICY_GLOBAL_POLICY_PARAMETERS_API_FAILURE_RESPONSE_BODY, response.code(), response.body().string()), GlobalPolicyParameterPullST.class.getName());
+                logger.postLogMessageIfNecessary(LogLevel.ERROR, String.format(IAgentConstants.POLICY_GLOBAL_POLICY_PARAMETERS_API_FAILURE_RESPONSE_BODY, response.code(), response.body().string()), null, GlobalPolicyParameterPullST.class.getName());
             }
         } catch (Exception e) {
             logger.log(LogLevel.ERROR, String.format(IAgentConstants.POLICY_PARAMETER_VERSION_CHECK_FAILED_MESSAGE_CAUSE, e.getMessage(), e.getCause()), GlobalPolicyParameterPullST.class.getName());
+            logger.postLogMessageIfNecessary(LogLevel.ERROR, String.format(IAgentConstants.POLICY_PARAMETER_VERSION_CHECK_FAILED_MESSAGE_CAUSE, e.getMessage(), e.getCause()), e, GlobalPolicyParameterPullST.class.getName());
         }
         return null;
     }
