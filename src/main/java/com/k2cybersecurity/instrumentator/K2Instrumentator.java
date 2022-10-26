@@ -21,6 +21,8 @@ import com.k2cybersecurity.intcodeagent.websocket.WSClient;
 import com.newrelic.api.agent.NewRelic;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.comparator.LastModifiedFileComparator;
+import org.apache.commons.io.filefilter.FileFilterUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
 import org.json.simple.JSONObject;
@@ -58,6 +60,8 @@ public class K2Instrumentator {
 
     private static final String INIT_STARTED_AGENT_ATTACHED = "[STEP-2][PROTECTION][BEGIN] K2 Java collector attached to process: PID = %s, with generated applicationUID = %s by %s attachment";
     public static final String DEFAULT_GROUP_NAME = "IAST";
+    public static final String CLEANING_STATUS_SNAPSHOTS_FROM_LOG_DIRECTORY_MAX_S_FILE_COUNT_REACHED_REMOVED_S = "Cleaning status-snapshots from log directory, max %s file count reached removed : %s";
+
 
     public static Integer VMPID;
     public static final String APPLICATION_UUID = UUID.randomUUID().toString();
@@ -157,6 +161,8 @@ public class K2Instrumentator {
                     K2Instrumentator.class.getName()
             );
             System.out.println(String.format("This application instance is now being protected by K2 Agent under id %s", APPLICATION_UUID));
+            //This will remove the oldest status log file if count of files is grater than 100.
+            keepMaxStatusLogFiles(100);
             setStatusLogValues();
             return isWorking;
         } catch (Exception e) {
@@ -166,11 +172,21 @@ public class K2Instrumentator {
         return false;
     }
 
+    private static void keepMaxStatusLogFiles(int max) {
+        Collection<File> statusFiles = FileUtils.listFiles(new File(osVariables.getLogDirectory()), FileFilterUtils.prefixFileFilter("k2-agent-status-"), null);
+        if (statusFiles.size() >= max) {
+            File[] sortedStatusFiles = statusFiles.toArray(new File[0]);
+            Arrays.sort(sortedStatusFiles, LastModifiedFileComparator.LASTMODIFIED_REVERSE);
+            FileUtils.deleteQuietly(sortedStatusFiles[0]);
+            logger.log(LogLevel.INFO, String.format(CLEANING_STATUS_SNAPSHOTS_FROM_LOG_DIRECTORY_MAX_S_FILE_COUNT_REACHED_REMOVED_S, max, sortedStatusFiles[0].getAbsolutePath()), FileLoggerThreadPool.class.getName());
+        }
+    }
+
     private static void setStatusLogValues() {
         AgentUtils.getInstance().getStatusLogValues().put("start-time", Instant.now().toString());
         AgentUtils.getInstance().getStatusLogValues().put("application-uuid", APPLICATION_UUID);
         AgentUtils.getInstance().getStatusLogValues().put("pid", VMPID.toString());
-        AgentUtils.getInstance().getStatusLogValues().put("java-version", ManagementFactory.getRuntimeMXBean().getSpecVersion());
+        AgentUtils.getInstance().getStatusLogValues().put("java-version", String.format("%s (%s) (build %s)", System.getProperty("java.runtime.name"), System.getProperty("java.vendor"), System.getProperty("java.runtime.version")));
         AgentUtils.getInstance().getStatusLogValues().put("java-binary", ManagementFactory.getRuntimeMXBean().getName());
         File cwd = new File(".");
         AgentUtils.getInstance().getStatusLogValues().put("cwd", cwd.getAbsolutePath());
