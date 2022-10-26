@@ -102,7 +102,7 @@ public class CommonUtils {
     }
 
     public static void fireLogMessageUploadAPI(LogMessage logMessage) {
-        if (logMessage == null) {
+        if (logMessage == null || !HttpClient.getInstance().isConnected()) {
             return;
         }
         try {

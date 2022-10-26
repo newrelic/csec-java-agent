@@ -101,7 +101,7 @@ public class HealthCheckScheduleThread {
                         HCSCHEDULEDTHREAD_ + threadNumber.getAndIncrement());
             }
         });
-        hcScheduledService.scheduleAtFixedRate(runnable, 5, 5, TimeUnit.MINUTES);
+        hcScheduledService.scheduleAtFixedRate(runnable, 0, 5, TimeUnit.MINUTES);
         HttpConnectionStat httpConnectionStat = new HttpConnectionStat(Collections.emptyList(), K2Instrumentator.APPLICATION_UUID, false);
         InBoundOutBoundST.getInstance().clearNewConnections();
     }
@@ -113,8 +113,8 @@ public class HealthCheckScheduleThread {
             if (statusLog.createNewFile()) {
                 Map<String, String> substitutes = AgentUtils.getInstance().getStatusLogValues();
                 substitutes.put(STATUS_TIMESTAMP, Instant.now().toString());
-                substitutes.put(LAST_5_ERRORS, StringUtils.joinWith(StringUtils.LF, AgentUtils.getInstance().getStatusLogMostRecentErrors()));
-                substitutes.put(LAST_5_HC, StringUtils.joinWith(StringUtils.LF, AgentUtils.getInstance().getStatusLogMostRecentHCs()));
+                substitutes.put(LAST_5_ERRORS, StringUtils.joinWith(StringUtils.LF, AgentUtils.getInstance().getStatusLogMostRecentErrors().toArray()));
+                substitutes.put(LAST_5_HC, StringUtils.joinWith(StringUtils.LF, AgentUtils.getInstance().getStatusLogMostRecentHCs().toArray()));
                 StringSubstitutor substitutor = new StringSubstitutor(substitutes);
                 FileUtils.writeStringToFile(statusLog, substitutor.replace(IAgentConstants.STATUS_FILE_TEMPLATE), StandardCharsets.UTF_8);
             }

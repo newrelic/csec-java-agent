@@ -160,7 +160,7 @@ public class K2Instrumentator {
             AgentUtils.getInstance().getStatusLogValues().put("start-time", Instant.now().toString());
             AgentUtils.getInstance().getStatusLogValues().put("application-uuid", APPLICATION_UUID);
             AgentUtils.getInstance().getStatusLogValues().put("pid", VMPID.toString());
-            AgentUtils.getInstance().getStatusLogValues().put("java-version", ManagementFactory.getRuntimeMXBean().getSpecVersion());
+            AgentUtils.getInstance().getStatusLogValues().put("java-version", ManagementFactory.getRuntimeMXBean().getName());
             File cwd = new File(".");
             AgentUtils.getInstance().getStatusLogValues().put("cwd", cwd.getAbsolutePath());
             AgentUtils.getInstance().getStatusLogValues().put("cwd-permissions", String.valueOf(cwd.canWrite() && cwd.canRead()));

@@ -290,8 +290,11 @@ public class HttpClient {
         return null;
     }
 
-    public boolean isConnected() {
-        return isConnected;
+    public static boolean isConnected() {
+        if (instance != null) {
+            return instance.isConnected;
+        }
+        return false;
     }
 
     public void setConnected(boolean connected) {
