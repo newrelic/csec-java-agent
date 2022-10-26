@@ -626,4 +626,23 @@ public interface IAgentConstants {
     String VULNERABLE = "VULNERABLE";
     String TERMINATING = "Terminating";
     String SHUTTING_DOWN_WITH_STATUS = "Shutting down with status: ";
+
+    String STATUS_FILE_TEMPLATE = "Snapshot taken at: ${timestamp}\n" +
+            "K2 Java Agent started at: ${start-time} with application uuid: ${application-uuid}\n" +
+            "K2HOME is: ${k2-home}, permissions read & write: ${k2-home-permissions}\n" +
+            "Loading Agent from ${agent-location}\n" +
+            "Java version:${java-version}, PID:${pid}\n" +
+            "Application binary ${java-binary}\n" +
+            "Current working directory : ${cwd}, permissions read & write: ${cwd-permissions}\n" +
+            "Agent is running in mode: ${group-name}\n" +
+            "Attach K2 instrumentator\n" +
+            "Agent is connected to Prevent Web and started\n" +
+            "Policy applied version is ${policy-version}\n" +
+            "Current log level: ${log-level}\n" +
+            "\n" +
+            "Last 5 errors:\n" +
+            "${last-5-errors}\n" +
+            "\n" +
+            "Last 5 Heath Checks are:\n" +
+            "${last-5-hc}";
 }

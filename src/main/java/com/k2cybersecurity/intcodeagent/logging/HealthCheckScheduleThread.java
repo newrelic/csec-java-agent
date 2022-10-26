@@ -14,12 +14,18 @@ import com.k2cybersecurity.intcodeagent.models.javaagent.JAHealthCheck;
 import com.k2cybersecurity.intcodeagent.schedulers.InBoundOutBoundST;
 import com.k2cybersecurity.intcodeagent.websocket.WSClient;
 import com.sun.management.OperatingSystemMXBean;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
+import org.apache.commons.text.StringSubstitutor;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
 import java.math.RoundingMode;
+import java.nio.charset.StandardCharsets;
+import java.time.Instant;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -33,6 +39,10 @@ import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.HCSCHEDUL
 
 public class HealthCheckScheduleThread {
 
+    public static final String STATUS_TIMESTAMP = "timestamp";
+    public static final String CAN_T_WRITE_STATUS_LOG_FILE_S_REASON_S = "Can't write status log file : %s , reason : %s ";
+    public static final String LAST_5_ERRORS = "last-5-errors";
+    public static final String LAST_5_HC = "last-5-hc";
     private static HealthCheckScheduleThread instance;
 
     private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
@@ -58,6 +68,7 @@ public class HealthCheckScheduleThread {
                     K2Instrumentator.JA_HEALTH_CHECK.setServiceStatus(getServiceStatus());
 
                     K2Instrumentator.JA_HEALTH_CHECK.setDsBackLog(RestRequestThreadPool.getInstance().getQueueSize());
+                    AgentUtils.getInstance().getStatusLogMostRecentHCs().add(K2Instrumentator.JA_HEALTH_CHECK.toString());
 //						channel.write(ByteBuffer.wrap(new JAHealthCheck(AgentNew.JA_HEALTH_CHECK).toString().getBytes()));
                     if (WSClient.getInstance().isOpen()) {
                         InBoundOutBoundST.getInstance().task(InBoundOutBoundST.getInstance().getNewConnections(), false);
@@ -77,6 +88,7 @@ public class HealthCheckScheduleThread {
                             HealthCheckScheduleThread.class.getName());
                 } finally {
                     InBoundOutBoundST.getInstance().clearNewConnections();
+                    writeStatusLogFile();
                 }
             }
         };
@@ -92,6 +104,24 @@ public class HealthCheckScheduleThread {
         hcScheduledService.scheduleAtFixedRate(runnable, 5, 5, TimeUnit.MINUTES);
         HttpConnectionStat httpConnectionStat = new HttpConnectionStat(Collections.emptyList(), K2Instrumentator.APPLICATION_UUID, false);
         InBoundOutBoundST.getInstance().clearNewConnections();
+    }
+
+    private void writeStatusLogFile() {
+        File statusLog = new File(osVariables.getLogDirectory(), "k2-java-agent-status.log");
+        try {
+            FileUtils.deleteQuietly(statusLog);
+            if (statusLog.createNewFile()) {
+                Map<String, String> substitutes = AgentUtils.getInstance().getStatusLogValues();
+                substitutes.put(STATUS_TIMESTAMP, Instant.now().toString());
+                substitutes.put(LAST_5_ERRORS, StringUtils.joinWith(StringUtils.LF, AgentUtils.getInstance().getStatusLogMostRecentErrors()));
+                substitutes.put(LAST_5_HC, StringUtils.joinWith(StringUtils.LF, AgentUtils.getInstance().getStatusLogMostRecentHCs()));
+                StringSubstitutor substitutor = new StringSubstitutor(substitutes);
+                FileUtils.writeStringToFile(statusLog, substitutor.replace(IAgentConstants.STATUS_FILE_TEMPLATE), StandardCharsets.UTF_8);
+            }
+        } catch (IOException e) {
+            String error = String.format(CAN_T_WRITE_STATUS_LOG_FILE_S_REASON_S, statusLog, e.getMessage());
+            logger.log(LogLevel.ERROR, error, e, HealthCheckScheduleThread.class.getName());
+        }
     }
 
     private static Map<String, Object> getServiceStatus() {

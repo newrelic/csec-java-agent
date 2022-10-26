@@ -62,7 +62,9 @@ public class AgentNew {
         gobalInstrumentation = instrumentation;
 
         // Setting K2_HOME
-        K2Instrumentator.setK2HomePath();
+        if (!K2Instrumentator.setK2HomePath()) {
+            return;
+        }
 
         /*
             Check if agent is running in standalone mode.
@@ -141,7 +143,6 @@ public class AgentNew {
         }
 
         resettableClassFileTransformer = agentBuilder.installOn(instrumentation);
-
         logger.logInit(LogLevel.INFO, HOOKS_ADDED_SUCCESSFULLY, AgentNew.class.getName());
     }
 

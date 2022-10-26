@@ -146,6 +146,7 @@ public class PolicyPullST {
                         AgentUtils.getInstance().getAgentPolicy()), PolicyPullST.class.getName());
                 CommonUtils.fireUpdatePolicyAPI(AgentUtils.getInstance().getAgentPolicy());
             }
+            AgentUtils.getInstance().getStatusLogValues().put("policy-version", AgentUtils.getInstance().getAgentPolicy().getVersion());
             EventSendPool.getInstance().sendEvent(K2Instrumentator.APPLICATION_INFO_BEAN.toString());
             return true;
         } catch (Throwable e) {

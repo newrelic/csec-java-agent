@@ -39,6 +39,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
@@ -156,6 +157,13 @@ public class K2Instrumentator {
                     K2Instrumentator.class.getName()
             );
             System.out.println(String.format("This application instance is now being protected by K2 Agent under id %s", APPLICATION_UUID));
+            AgentUtils.getInstance().getStatusLogValues().put("start-time", Instant.now().toString());
+            AgentUtils.getInstance().getStatusLogValues().put("application-uuid", APPLICATION_UUID);
+            AgentUtils.getInstance().getStatusLogValues().put("pid", VMPID.toString());
+            AgentUtils.getInstance().getStatusLogValues().put("java-version", ManagementFactory.getRuntimeMXBean().getSpecVersion());
+            File cwd = new File(".");
+            AgentUtils.getInstance().getStatusLogValues().put("cwd", cwd.getAbsolutePath());
+            AgentUtils.getInstance().getStatusLogValues().put("cwd-permissions", String.valueOf(cwd.canWrite() && cwd.canRead()));
             return isWorking;
         } catch (Exception e) {
             logger.log(LogLevel.ERROR, "Error in init ", e, K2Instrumentator.class.getName());
@@ -181,7 +189,9 @@ public class K2Instrumentator {
             LogWriter.setLogLevel(LogLevel.valueOf(logLevel));
         } catch (Exception e) {
             LogWriter.setLogLevel(LogLevel.INFO);
+            logLevel = LogLevel.INFO.name();
         }
+        AgentUtils.getInstance().getStatusLogValues().put("log-level", logLevel);
     }
 
     private static void applyRequiredGroup() {
@@ -193,6 +203,7 @@ public class K2Instrumentator {
         } else {
             AgentUtils.getInstance().setGroupName("RASP");
         }
+        AgentUtils.getInstance().getStatusLogValues().put("group-name", AgentUtils.getInstance().getGroupName());
     }
 
     private static boolean startK2Services() throws InterruptedException, URISyntaxException {
@@ -296,11 +307,14 @@ public class K2Instrumentator {
         Path k2homePath = Paths.get(K2_HOME, "k2home");
         CommonUtils.forceMkdirs(k2homePath, "rwxrwxrwx");
         K2_HOME = k2homePath.toString();
+        AgentUtils.getInstance().getStatusLogValues().put("k2-home", K2_HOME);
+        AgentUtils.getInstance().getStatusLogValues().put("k2-home-permissions", String.valueOf(k2homePath.toFile().canWrite() && k2homePath.toFile().canRead()));
+        AgentUtils.getInstance().getStatusLogValues().put("agent-location", CommonUtils.getNRAgentJarDirectory());
         if (!isValidK2HomePath(K2_HOME)) {
             System.err.println("[K2-JA] Incomplete startup env parameters provided : Missing or Incorrect K2_HOME. Collector exiting.");
-            return true;
+            return false;
         }
-        return false;
+        return true;
     }
 
     private static boolean isValidK2HomePath(String k2Home) {

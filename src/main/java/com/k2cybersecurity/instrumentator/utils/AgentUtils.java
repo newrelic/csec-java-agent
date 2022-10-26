@@ -22,6 +22,7 @@ import com.sun.jna.Pointer;
 import com.sun.jna.platform.win32.Kernel32;
 import com.sun.jna.platform.win32.WinNT;
 import net.bytebuddy.description.type.TypeDescription;
+import org.apache.commons.collections.buffer.CircularFifoBuffer;
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipArchiveInputStream;
 import org.apache.commons.io.IOUtils;
@@ -122,6 +123,12 @@ public class AgentUtils {
     private boolean isNRSecurityEnabled = false;
 
     private Map<String, String> linkingMetadata = new HashMap<>();
+
+    private Map<String, String> statusLogValues = new HashMap<>();
+
+    private Collection<String> statusLogMostRecentHCs = new CircularFifoBuffer(5);
+
+    private Collection<String> statusLogMostRecentErrors = new CircularFifoBuffer(5);
 
     private boolean isPolicyOverridden = false;
 
@@ -234,6 +241,30 @@ public class AgentUtils {
 
     public void setPolicyOverridden(boolean policyOverridden) {
         isPolicyOverridden = policyOverridden;
+    }
+
+    public Map<String, String> getStatusLogValues() {
+        return statusLogValues;
+    }
+
+    public void setStatusLogValues(Map<String, String> statusLogValues) {
+        this.statusLogValues = statusLogValues;
+    }
+
+    public Collection<String> getStatusLogMostRecentHCs() {
+        return statusLogMostRecentHCs;
+    }
+
+    public void setStatusLogMostRecentHCs(Collection<String> statusLogMostRecentHCs) {
+        this.statusLogMostRecentHCs = statusLogMostRecentHCs;
+    }
+
+    public Collection<String> getStatusLogMostRecentErrors() {
+        return statusLogMostRecentErrors;
+    }
+
+    public void setStatusLogMostRecentErrors(Collection<String> statusLogMostRecentErrors) {
+        this.statusLogMostRecentErrors = statusLogMostRecentErrors;
     }
 
     public void createProtectedVulnerabilties(TypeDescription typeDescription, ClassLoader classLoader) {
