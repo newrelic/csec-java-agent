@@ -627,17 +627,17 @@ public interface IAgentConstants {
     String TERMINATING = "Terminating";
     String SHUTTING_DOWN_WITH_STATUS = "Shutting down with status: ";
 
-    String STATUS_FILE_TEMPLATE = "Snapshot taken at: ${timestamp}\n" +
-            "K2 Java Agent started at: ${start-time} with application uuid: ${application-uuid}\n" +
-            "K2HOME is: ${k2-home}, permissions read & write: ${k2-home-permissions}\n" +
-            "Loading Agent from ${agent-location}\n" +
+    String STATUS_FILE_TEMPLATE = "Snapshot timestamp: ${timestamp}\n" +
+            "K2 Java Agent start timestamp: ${start-time} with application uuid: ${application-uuid}\n" +
+            "K2HOME: ${k2-home}, permissions read & write: ${k2-home-permissions}\n" +
+            "Agent location: ${agent-location}\n" +
             "Using K2 for JAVA, Java version: ${java-version}, PID:${pid}\n" +
-            "Application was invoked as: ${java-binary}\n" +
+            "Application location: ${java-binary}\n" +
             "Current working directory: ${cwd}, permissions read & write: ${cwd-permissions}\n" +
-            "Agent is running in mode: ${group-name}\n" +
+            "Agent mode: ${group-name}\n" +
             "Application server: ${server-name}\n" +
-            "Framework detected: ${framework}\n" +
-            "Established websocket connection to Prevent Web: ${validator-url}, Status: ${validator-server-status}\n" +
+            "Application Framework: ${framework}\n" +
+            "Websocket connection to Prevent Web: ${validator-url}, Status: ${validator-server-status}\n" +
             "Instrumentation successful\n" +
             "Policy applied successfully. Policy version is: ${policy-version}\n" +
             "Started Inbound and Outbound HTTP request monitoring \n" +
