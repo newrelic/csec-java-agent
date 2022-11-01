@@ -193,7 +193,6 @@ public class K2Instrumentator {
         File cwd = new File(".");
         AgentUtils.getInstance().getStatusLogValues().put("cwd", cwd.getAbsolutePath());
         AgentUtils.getInstance().getStatusLogValues().put("cwd-permissions", String.valueOf(cwd.canWrite() && cwd.canRead()));
-        // TODO: Need to add real values here
         AgentUtils.getInstance().getStatusLogValues().put("server-name", "Not Available");
         AgentUtils.getInstance().getStatusLogValues().put("framework", "Not Available");
     }
@@ -615,7 +614,6 @@ public class K2Instrumentator {
         }
         AgentUtils.getInstance().setLinkingMetadata(NewRelic.getAgent().getLinkingMetadata());
         AgentUtils.getInstance().getLinkingMetadata().put("agentRunId", NewRelic.getAgent().getConfig().getValue(INRSettingsKey.AGENT_RUN_ID));
-        AgentUtils.getInstance().getLinkingMetadata().put("requestHeadersMap", NewRelic.getAgent().getConfig().getValue(INRSettingsKey.REQUEST_HEADERS_MAP));
         AgentUtils.getInstance().setAgentActive(true);
 
         // Set required Group
