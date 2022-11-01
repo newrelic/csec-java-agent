@@ -141,11 +141,15 @@ public class FileLoggerThreadPool {
         if (logLevel.getLevel() > LogLevel.WARN.getLevel()) {
             return;
         }
-        AgentUtils.getInstance().getStatusLogMostRecentErrors().add(postLogMessage(logLevel, event, exception, caller).toString());
+        postLogMessage(logLevel, event, exception, caller);
     }
 
     private LogMessage postLogMessage(LogLevel logLevel, String event, Throwable exception, String caller) {
         LogMessage message = new LogMessage(logLevel.name(), event, caller, exception, AgentUtils.getInstance().getLinkingMetadata());
+        if (logLevel.getLevel() <= LogLevel.WARN.getLevel()) {
+            AgentUtils.getInstance().getStatusLogMostRecentErrors().add(message.toString());
+            ;
+        }
         CommonUtils.fireLogMessageUploadAPI(message);
         return message;
     }

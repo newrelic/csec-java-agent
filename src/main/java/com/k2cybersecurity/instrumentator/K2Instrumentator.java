@@ -150,6 +150,10 @@ public class K2Instrumentator {
             JA_HEALTH_CHECK = new JAHealthCheck(APPLICATION_UUID);
             logger.logInit(LogLevel.INFO, AGENT_INIT_LOG_STEP_FIVE, K2Instrumentator.class.getName());
 
+            //This will remove the oldest status log file if count of files is grater than 100.
+            keepMaxStatusLogFiles(100);
+            setStatusLogValues();
+
             boolean isWorking = startK2Services();
             if (!isWorking) {
                 return false;
@@ -161,9 +165,7 @@ public class K2Instrumentator {
                     K2Instrumentator.class.getName()
             );
             System.out.println(String.format("This application instance is now being protected by K2 Agent under id %s", APPLICATION_UUID));
-            //This will remove the oldest status log file if count of files is grater than 100.
-            keepMaxStatusLogFiles(100);
-            setStatusLogValues();
+
             return isWorking;
         } catch (Exception e) {
             logger.log(LogLevel.ERROR, "Error in init ", e, K2Instrumentator.class.getName());
@@ -191,6 +193,7 @@ public class K2Instrumentator {
         File cwd = new File(".");
         AgentUtils.getInstance().getStatusLogValues().put("cwd", cwd.getAbsolutePath());
         AgentUtils.getInstance().getStatusLogValues().put("cwd-permissions", String.valueOf(cwd.canWrite() && cwd.canRead()));
+        // TODO: Need to add real values here
         AgentUtils.getInstance().getStatusLogValues().put("server-name", "Not Available");
         AgentUtils.getInstance().getStatusLogValues().put("framework", "Not Available");
     }
@@ -230,6 +233,13 @@ public class K2Instrumentator {
     }
 
     private static boolean startK2Services() throws InterruptedException, URISyntaxException {
+        HealthCheckScheduleThread.getInstance();
+        logger.logInit(
+                LogLevel.INFO,
+                String.format(STARTED_MODULE_LOG, AgentServices.HealthCheck.name()),
+                K2Instrumentator.class.getName()
+        );
+
         if (tryWebsocketConnection()) {
             return false;
         }
@@ -239,13 +249,6 @@ public class K2Instrumentator {
                 String.format(STARTING_MODULE_LOG, AgentServices.HealthCheck.name()),
                 K2Instrumentator.class.getName()
         );
-        HealthCheckScheduleThread.getInstance();
-        logger.logInit(
-                LogLevel.INFO,
-                String.format(STARTED_MODULE_LOG, AgentServices.HealthCheck.name()),
-                K2Instrumentator.class.getName()
-        );
-
         PolicyPullST.instantiateDefaultPolicy();
         PolicyPullST.getInstance();
         GlobalPolicyParameterPullST.getInstance();
@@ -612,6 +615,7 @@ public class K2Instrumentator {
         }
         AgentUtils.getInstance().setLinkingMetadata(NewRelic.getAgent().getLinkingMetadata());
         AgentUtils.getInstance().getLinkingMetadata().put("agentRunId", NewRelic.getAgent().getConfig().getValue(INRSettingsKey.AGENT_RUN_ID));
+        AgentUtils.getInstance().getLinkingMetadata().put("requestHeadersMap", NewRelic.getAgent().getConfig().getValue(INRSettingsKey.REQUEST_HEADERS_MAP));
         AgentUtils.getInstance().setAgentActive(true);
 
         // Set required Group
