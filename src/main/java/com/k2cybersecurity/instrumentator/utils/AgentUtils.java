@@ -743,7 +743,7 @@ public class AgentUtils {
                 markedForRemoval = true;
             }
 
-            if (markedForRemoval) {
+            if (!markedForRemoval) {
                 newTraceForIdCalc.add(stackTrace[i].hashCode());
             }
         }
