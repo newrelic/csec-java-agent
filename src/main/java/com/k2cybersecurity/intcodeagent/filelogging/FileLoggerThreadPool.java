@@ -14,7 +14,7 @@ public class FileLoggerThreadPool {
 
     private boolean isLoggingActive = true;
 
-    private boolean isStatusLoggingActive = true;
+    private boolean isInitLoggingActive = true;
 
     private FileLoggerThreadPool() throws IOException {
         // load the settings
@@ -162,11 +162,11 @@ public class FileLoggerThreadPool {
         isLoggingActive = loggingActive;
     }
 
-    public boolean isStatusLoggingActive() {
-        return isStatusLoggingActive;
+    public boolean isInitLoggingActive() {
+        return isInitLoggingActive;
     }
 
-    public void setStatusLoggingActive(boolean statusLoggingActive) {
-        isStatusLoggingActive = statusLoggingActive;
+    public void setInitLoggingActive(boolean initLoggingActive) {
+        isInitLoggingActive = initLoggingActive;
     }
 }

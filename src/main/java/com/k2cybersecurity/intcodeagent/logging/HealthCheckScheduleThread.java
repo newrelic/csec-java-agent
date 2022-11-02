@@ -54,6 +54,8 @@ public class HealthCheckScheduleThread {
 
     private static ScheduledExecutorService hcScheduledService;
 
+    private static boolean isStatusLoggingActive = true;
+
     private static OSVariables osVariables = OsVariablesInstance.getInstance().getOsVariables();
 
     private HealthCheckScheduleThread() {
@@ -125,9 +127,11 @@ public class HealthCheckScheduleThread {
                 substitutes.put(VALIDATOR_SERVER_STATUS, K2Instrumentator.JA_HEALTH_CHECK.getServiceStatus().getOrDefault(WEBSOCKET, StringUtils.EMPTY).toString());
                 StringSubstitutor substitutor = new StringSubstitutor(substitutes);
                 FileUtils.writeStringToFile(statusLog, substitutor.replace(IAgentConstants.STATUS_FILE_TEMPLATE), StandardCharsets.UTF_8);
+                isStatusLoggingActive = true;
             }
         } catch (IOException e) {
             String error = String.format(CAN_T_WRITE_STATUS_LOG_FILE_S_REASON_S, statusLog, e.getMessage());
+            isStatusLoggingActive = false;
             logger.log(LogLevel.ERROR, error, e, HealthCheckScheduleThread.class.getName());
         }
     }
@@ -145,7 +149,8 @@ public class HealthCheckScheduleThread {
 
         serviceStatus.put(WEBSOCKET, WSClient.isConnected() ? "OK" : "Error");
         serviceStatus.put("logWriter", FileLoggerThreadPool.getInstance().isLoggingActive() ? "OK" : "Error");
-        serviceStatus.put("statusLogWriter", FileLoggerThreadPool.getInstance().isStatusLoggingActive() ? "OK" : "Error");
+        serviceStatus.put("initLogWriter", FileLoggerThreadPool.getInstance().isInitLoggingActive() ? "OK" : "Error");
+        serviceStatus.put("statusLogWriter", isStatusLoggingActive ? "OK" : "Error");
 
         serviceStatus.put("agentActiveStat", AgentUtils.getInstance().isAgentActive() ? "OK" : "Error");
 
