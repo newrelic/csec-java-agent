@@ -70,7 +70,7 @@ public class InitLogWriter implements Runnable {
     private static OSVariables osVariables = OsVariablesInstance.getInstance().getOsVariables();
 
     static {
-        fileName = new File(osVariables.getLogDirectory(), "java-security-agent-init.log").getAbsolutePath();
+        fileName = new File(osVariables.getLogDirectory(), "java-security-collector-init.log").getAbsolutePath();
         currentLogFile = new File(fileName);
         CommonUtils.forceMkdirs(currentLogFile.getParentFile().toPath(), "rwxrwxrwx");
         currentLogFileName = fileName;

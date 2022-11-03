@@ -10,6 +10,9 @@ public class OSVariables {
 
     private String logDirectory;
     private String tmpDirectory;
+
+    private String snapshotDir;
+
     private String osArch;
 
     private File rootDir;
@@ -76,6 +79,14 @@ public class OSVariables {
 
     public void setRootDir(File rootDir) {
         this.rootDir = rootDir;
+    }
+
+    public String getSnapshotDir() {
+        return snapshotDir;
+    }
+
+    public void setSnapshotDir(String snapshotDir) {
+        this.snapshotDir = snapshotDir;
     }
 
     /*public String getPolicyConfigPath() {

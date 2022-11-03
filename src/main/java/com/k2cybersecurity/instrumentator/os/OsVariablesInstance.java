@@ -15,6 +15,7 @@ public class OsVariablesInstance {
     public static final String CONFIG = "config";
     public static final String K2HOME = "k2home";
     public static final String TMP = "tmp";
+    public static final String SNAPSHOTS = "snapshots";
 
     private static OsVariablesInstance instance;
 
@@ -44,6 +45,7 @@ public class OsVariablesInstance {
             osVariables.setLogDirectory(Paths.get(K2Instrumentator.K2_HOME, LOGS).toString());
         }
         osVariables.setTmpDirectory(Paths.get(K2Instrumentator.K2_HOME, TMP, LANGUAGE_AGENT, K2Instrumentator.APPLICATION_UUID).toString());
+        osVariables.setSnapshotDir(Paths.get(K2Instrumentator.K2_HOME, LOGS, SNAPSHOTS).toString());
 //        osVariables.setPolicyConfigPath(Paths.get(k2root.toString(), CONFIG, LANGUAGE_AGENT).toString());
 
         if (SystemUtils.IS_OS_LINUX) {

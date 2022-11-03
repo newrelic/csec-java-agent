@@ -329,7 +329,7 @@ public class K2Instrumentator {
         } else {
             K2_HOME = ".";
         }
-        Path k2homePath = Paths.get(K2_HOME, "k2home");
+        Path k2homePath = Paths.get(K2_HOME, "nr-security-home");
         CommonUtils.forceMkdirs(k2homePath, "rwxrwxrwx");
         K2_HOME = k2homePath.toString();
         AgentUtils.getInstance().getStatusLogValues().put("k2-home", K2_HOME);

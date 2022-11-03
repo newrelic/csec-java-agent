@@ -95,7 +95,7 @@ public class LogWriter implements Runnable {
     }
 
     static {
-        fileName = new File(osVariables.getLogDirectory(), "java-security-agent.log").getAbsolutePath();
+        fileName = new File(osVariables.getLogDirectory(), "java-security-collector.log").getAbsolutePath();
         currentLogFile = new File(fileName);
         currentLogFileName = fileName;
         createLogFile();
