@@ -73,7 +73,7 @@ public class AgentUtils {
     public static final String ERROR_WHILE_EXTRACTING_FILE_FROM_ARCHIVE_S_S = "Error while extracting file from archive : %s : %s";
     public static final String NR_SECURITY_ENABLE = "security.enable";
     public static final String OVER_RIDE_POLICY_DISABLED_IN_NR_CONFIG_AT_S = "Over-ride policy disabled in NR config at '%s'.";
-    public static final String COLLECTOR_IS_NOW_S = "Collector is now %s";
+    public static final String COLLECTOR_IS_NOW_S = "Collector is now %s for %s";
     public static final String ACTIVE = "active";
     public static final String INACTIVE = "inactive";
 
@@ -157,7 +157,7 @@ public class AgentUtils {
     public void setAgentActive(boolean agentActive) {
         isAgentActive = agentActive;
         isNRSecurityEnabled = NewRelic.getAgent().getConfig().getValue(NR_SECURITY_ENABLE, false);
-        logger.logInit(LogLevel.INFO, String.format(COLLECTOR_IS_NOW_S, (isAgentActive) ? ACTIVE : INACTIVE), AgentUtils.class.getName());
+        logger.logInit(LogLevel.INFO, String.format(COLLECTOR_IS_NOW_S, (isAgentActive) ? ACTIVE : INACTIVE, K2Instrumentator.APPLICATION_UUID), AgentUtils.class.getName());
     }
 
     public boolean isAgentActive() {
