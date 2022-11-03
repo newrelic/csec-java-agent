@@ -185,16 +185,12 @@ public class InitLogWriter implements Runnable {
             if (!osVariables.getWindows()) {
                 Files.setPosixFilePermissions(currentFile.toPath(), PosixFilePermissions.fromString("rw-rw-rw-"));
             }
-            FileUtils.deleteQuietly(rolloverFile);
-            /*uploadLogsAndDeleteFile(rolloverFile);
             int removeFile = logFileCounter - K2JALogProperties.maxfiles;
             while (removeFile > 0) {
                 File remove = new File(fileName + STRING_DOT + removeFile);
-                if (remove.exists()) {
-                    FileUtils.deleteQuietly(remove);
-                }
+                FileUtils.deleteQuietly(remove);
                 removeFile--;
-            }*/
+            }
         }
     }
 
