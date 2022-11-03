@@ -3,6 +3,7 @@ package com.k2cybersecurity.instrumentator.decorators.httpservice;
 import com.k2cybersecurity.instrumentator.K2Instrumentator;
 import com.k2cybersecurity.instrumentator.custom.*;
 import com.k2cybersecurity.instrumentator.dispatcher.EventDispatcher;
+import com.k2cybersecurity.instrumentator.utils.AgentUtils;
 import com.k2cybersecurity.instrumentator.utils.CallbackUtils;
 import com.k2cybersecurity.intcodeagent.models.javaagent.AgentMetaData;
 import com.k2cybersecurity.intcodeagent.models.javaagent.HttpRequestBean;
@@ -145,7 +146,9 @@ public class Callbacks {
                 // " :: " +
                 // ThreadLocalExecutionMap.getInstance().getHttpRequestBean().getHttpResponseBean().toString());
                 ThreadLocalHttpMap.getInstance().printInterceptedRequestResponse();
-                if (!ThreadLocalExecutionMap.getInstance().getHttpRequestBean().getHttpResponseBean().isEmpty()) {
+                if (!ThreadLocalExecutionMap.getInstance().getHttpRequestBean().getHttpResponseBean().isEmpty() ||
+                        (AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getEnabled()
+                                && AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getIastScan().getEnabled())) {
                     EventDispatcher.dispatch(
                             new HttpRequestBean(ThreadLocalExecutionMap.getInstance().getHttpRequestBean()),
                             new AgentMetaData(ThreadLocalExecutionMap.getInstance().getMetaData()),
