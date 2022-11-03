@@ -60,7 +60,7 @@ public class K2Instrumentator {
 
     private static final String INIT_STARTED_AGENT_ATTACHED = "[STEP-2][PROTECTION][BEGIN] K2 Java collector attached to process: PID = %s, with generated applicationUID = %s by %s attachment";
     public static final String DEFAULT_GROUP_NAME = "IAST";
-    public static final String CLEANING_STATUS_SNAPSHOTS_FROM_LOG_DIRECTORY_MAX_S_FILE_COUNT_REACHED_REMOVED_S = "Cleaning status-snapshots from log directory, max %s file count reached removed : %s";
+    public static final String CLEANING_STATUS_SNAPSHOTS_FROM_LOG_DIRECTORY_MAX_S_FILE_COUNT_REACHED_REMOVED_S = "Cleaning status-snapshots from snapshots directory, max %s file count reached removed : %s";
 
 
     public static Integer VMPID;
@@ -175,7 +175,7 @@ public class K2Instrumentator {
     }
 
     private static void keepMaxStatusLogFiles(int max) {
-        Collection<File> statusFiles = FileUtils.listFiles(new File(osVariables.getLogDirectory()), FileFilterUtils.prefixFileFilter("k2-agent-status-"), null);
+        Collection<File> statusFiles = FileUtils.listFiles(new File(osVariables.getSnapshotDir()), FileFilterUtils.trueFileFilter(), null);
         if (statusFiles.size() >= max) {
             File[] sortedStatusFiles = statusFiles.toArray(new File[0]);
             Arrays.sort(sortedStatusFiles, LastModifiedFileComparator.LASTMODIFIED_REVERSE);

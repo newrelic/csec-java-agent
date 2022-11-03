@@ -122,7 +122,8 @@ public class HealthCheckScheduleThread {
 
     private void createSnapshotDirectory() {
         Path snapshotDir = Paths.get(osVariables.getSnapshotDir());
-        if (snapshotDir.toFile().isDirectory()) {
+        // Remove any file with this name from target.
+        if (!snapshotDir.toFile().isDirectory()) {
             FileUtils.deleteQuietly(snapshotDir.toFile());
         }
         CommonUtils.forceMkdirs(snapshotDir, PERMISSIONS);
