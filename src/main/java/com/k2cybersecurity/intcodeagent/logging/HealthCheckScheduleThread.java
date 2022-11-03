@@ -47,6 +47,8 @@ public class HealthCheckScheduleThread {
     public static final String LATEST_PROCESS_STATS = "latest-process-stats";
     public static final String LATEST_SERVICE_STATS = "latest-service-stats";
     public static final String VALIDATOR_SERVER_STATUS = "validator-server-status";
+    public static final String ENFORCED_POLICY = "enforced-policy";
+
     public static final String WEBSOCKET = "websocket";
     private static HealthCheckScheduleThread instance;
 
@@ -125,6 +127,7 @@ public class HealthCheckScheduleThread {
                 substitutes.put(LAST_5_ERRORS, StringUtils.joinWith(StringUtils.LF, AgentUtils.getInstance().getStatusLogMostRecentErrors().toArray()));
                 substitutes.put(LAST_5_HC, StringUtils.joinWith(StringUtils.LF, AgentUtils.getInstance().getStatusLogMostRecentHCs().toArray()));
                 substitutes.put(VALIDATOR_SERVER_STATUS, K2Instrumentator.JA_HEALTH_CHECK.getServiceStatus().getOrDefault(WEBSOCKET, StringUtils.EMPTY).toString());
+                substitutes.put(ENFORCED_POLICY, AgentUtils.getInstance().getAgentPolicy().toString());
                 StringSubstitutor substitutor = new StringSubstitutor(substitutes);
                 FileUtils.writeStringToFile(statusLog, substitutor.replace(IAgentConstants.STATUS_FILE_TEMPLATE), StandardCharsets.UTF_8);
                 isStatusLoggingActive = true;

@@ -639,8 +639,9 @@ public interface IAgentConstants {
             "Application Framework: ${framework}\n" +
             "Websocket connection to Prevent Web: ${validator-url}, Status: ${validator-server-status}\n" +
             "Instrumentation successful\n" +
-            "Policy applied successfully. Policy version is: ${policy-version}\n" +
             "Started Inbound and Outbound HTTP request monitoring \n" +
+            "Policy applied successfully. Policy version is: ${policy-version}\n" +
+            "Currently enforced policy is : \n${enforced-policy}\n" +
             "\n" +
             "Process stats: \n" +
             "${latest-process-stats}\n" +
