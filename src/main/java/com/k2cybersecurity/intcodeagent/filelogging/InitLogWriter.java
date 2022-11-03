@@ -89,10 +89,9 @@ public class InitLogWriter implements Runnable {
             writer.write(String.format(LOG_CONFIGURED_SUCCESSFULLY_MSG, LogLevel.getLevelName(defaultLogLevel), maxFileSize));
             writer.flush();
         } catch (Throwable e) {
-            if (FileLoggerThreadPool.getInstance().isInitLoggingActive()) {
-                //TODO report to cloud
-                FileLoggerThreadPool.getInstance().setInitLoggingActive(false);
-            }
+            //TODO report to cloud
+            FileLoggerThreadPool.getInstance().setInitLoggingActive(false);
+
             String tmpDir = System.getProperty("java.io.tmpdir");
             System.err.println("[K2-JA] Unable to create status log file!!! Please find the error in  " + tmpDir + File.separator + "K2-Logger.err");
             try {
@@ -161,10 +160,8 @@ public class InitLogWriter implements Runnable {
 //			writer.newLine();
             rollover(currentLogFileName);
         } catch (IOException e) {
-            if (FileLoggerThreadPool.getInstance().isInitLoggingActive()) {
-                //TODO report to cloud
-                FileLoggerThreadPool.getInstance().setInitLoggingActive(false);
-            }
+            //TODO report to cloud
+            FileLoggerThreadPool.getInstance().setInitLoggingActive(false);
         }
 
     }
