@@ -144,6 +144,7 @@ public class PolicyPullST {
             if (AgentUtils.getInstance().isPolicyOverridden()){
                 logger.log(LogLevel.INFO, String.format("NR policy over-ride in place. Updated policy : %s",
                         AgentUtils.getInstance().getAgentPolicy()), PolicyPullST.class.getName());
+                AgentUtils.getInstance().getAgentPolicy().setVersion("overridden");
                 CommonUtils.fireUpdatePolicyAPI(AgentUtils.getInstance().getAgentPolicy());
             }
             AgentUtils.getInstance().getStatusLogValues().put("policy-version", AgentUtils.getInstance().getAgentPolicy().getVersion());
