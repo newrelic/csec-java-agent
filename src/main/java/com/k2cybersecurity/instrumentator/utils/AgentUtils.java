@@ -22,6 +22,7 @@ import com.sun.jna.Pointer;
 import com.sun.jna.platform.win32.Kernel32;
 import com.sun.jna.platform.win32.WinNT;
 import net.bytebuddy.description.type.TypeDescription;
+import org.apache.commons.collections.BufferUtils;
 import org.apache.commons.collections.buffer.CircularFifoBuffer;
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipArchiveInputStream;
@@ -126,9 +127,9 @@ public class AgentUtils {
 
     private Map<String, String> statusLogValues = new HashMap<>();
 
-    private Collection<String> statusLogMostRecentHCs = new CircularFifoBuffer(5);
+    private Collection<String> statusLogMostRecentHCs = BufferUtils.synchronizedBuffer(new CircularFifoBuffer(5));
 
-    private Collection<String> statusLogMostRecentErrors = new CircularFifoBuffer(5);
+    private Collection<String> statusLogMostRecentErrors = BufferUtils.synchronizedBuffer(new CircularFifoBuffer(5));
 
     private boolean isPolicyOverridden = false;
 
@@ -139,6 +140,7 @@ public class AgentUtils {
         applicationInfo = new PolicyApplicationInfo();
         deployedApplicationUnderProcessing = new HashSet<>();
         TRACE_PATTERN = Pattern.compile(IAgentConstants.TRACE_REGEX);
+
     }
 
     public static AgentUtils getInstance() {
