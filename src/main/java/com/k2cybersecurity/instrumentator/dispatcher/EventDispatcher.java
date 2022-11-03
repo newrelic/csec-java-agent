@@ -17,6 +17,7 @@ import java.io.PrintWriter;
 import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -277,6 +278,10 @@ public class EventDispatcher {
                 stackTrace = Thread.currentThread().getStackTrace();
             } else {
                 stackTrace = agentMetaData.getServiceTrace();
+            }
+
+            if (ThreadLocalHTTPDoFilterMap.getInstance().getCurrentGenericServletStackLength() >= 0) {
+                stackTrace = Arrays.copyOfRange(stackTrace, 0, stackTrace.length - ThreadLocalHTTPDoFilterMap.getInstance().getCurrentGenericServletStackLength() + 3);
             }
             UserClassEntity userClassEntity = AgentUtils.getInstance().detectUserClass(stackTrace,
                     currentGenericServletInstance,
