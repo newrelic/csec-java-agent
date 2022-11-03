@@ -26,8 +26,6 @@ public class AgentPolicy {
     private String version = "DEFAULT";
     @JsonProperty("lastUpdateTimestamp")
     private Long lastUpdateTimestamp = 0L;
-    @JsonProperty("logLevel")
-    private String logLevel = "INFO";
     @JsonProperty("policyPull")
     private Boolean policyPull = true;
     @JsonProperty("policyPullInterval")
@@ -38,8 +36,6 @@ public class AgentPolicy {
     private VulnerabilityScan vulnerabilityScan = new VulnerabilityScan();
     @JsonProperty("protectionMode")
     private ProtectionMode protectionMode = new ProtectionMode();
-    //    @JsonProperty("policyParameters")
-//    private AgentPolicyParameters policyParameters;
     @JsonProperty("sendCompleteStackTrace")
     private Boolean sendCompleteStackTrace = false;
     @JsonProperty("enableHTTPRequestPrinting")
@@ -83,16 +79,6 @@ public class AgentPolicy {
     @JsonProperty("lastUpdateTimestamp")
     public void setLastUpdateTimestamp(Long lastUpdateTimestamp) {
         this.lastUpdateTimestamp = lastUpdateTimestamp;
-    }
-
-    @JsonProperty("logLevel")
-    public String getLogLevel() {
-        return logLevel;
-    }
-
-    @JsonProperty("logLevel")
-    public void setLogLevel(String logLevel) {
-        this.logLevel = logLevel;
     }
 
     public Boolean getPolicyPull() {
