@@ -95,7 +95,7 @@ public class LogWriter implements Runnable {
     }
 
     static {
-        fileName = new File(osVariables.getLogDirectory(), "k2-java-agent.log").getAbsolutePath();
+        fileName = new File(osVariables.getLogDirectory(), "java-security-agent.log").getAbsolutePath();
         currentLogFile = new File(fileName);
         currentLogFileName = fileName;
         createLogFile();
@@ -190,14 +190,15 @@ public class LogWriter implements Runnable {
             if (!osVariables.getWindows()) {
                 Files.setPosixFilePermissions(currentFile.toPath(), PosixFilePermissions.fromString("rw-rw-rw-"));
             }
-            uploadLogsAndDeleteFile(rolloverFile);
+            FileUtils.deleteQuietly(rolloverFile);
+            /*uploadLogsAndDeleteFile(rolloverFile);
             int removeFile = logFileCounter - K2JALogProperties.maxfiles;
             if (removeFile > 0) {
                 File remove = new File(fileName + STRING_DOT + removeFile);
                 if (remove.exists()) {
                     FileUtils.deleteQuietly(remove);
                 }
-            }
+            }*/
         }
     }
 

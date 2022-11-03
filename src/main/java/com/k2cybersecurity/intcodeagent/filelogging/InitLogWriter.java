@@ -70,7 +70,7 @@ public class InitLogWriter implements Runnable {
     private static OSVariables osVariables = OsVariablesInstance.getInstance().getOsVariables();
 
     static {
-        fileName = new File(osVariables.getLogDirectory(), "k2-java-agent-init.log").getAbsolutePath();
+        fileName = new File(osVariables.getLogDirectory(), "java-security-agent-init.log").getAbsolutePath();
         currentLogFile = new File(fileName);
         CommonUtils.forceMkdirs(currentLogFile.getParentFile().toPath(), "rwxrwxrwx");
         currentLogFileName = fileName;
@@ -185,7 +185,8 @@ public class InitLogWriter implements Runnable {
             if (!osVariables.getWindows()) {
                 Files.setPosixFilePermissions(currentFile.toPath(), PosixFilePermissions.fromString("rw-rw-rw-"));
             }
-            uploadLogsAndDeleteFile(rolloverFile);
+            FileUtils.deleteQuietly(rolloverFile);
+            /*uploadLogsAndDeleteFile(rolloverFile);
             int removeFile = logFileCounter - K2JALogProperties.maxfiles;
             while (removeFile > 0) {
                 File remove = new File(fileName + STRING_DOT + removeFile);
@@ -193,7 +194,7 @@ public class InitLogWriter implements Runnable {
                     FileUtils.deleteQuietly(remove);
                 }
                 removeFile--;
-            }
+            }*/
         }
     }
 
