@@ -61,6 +61,7 @@ public class K2Instrumentator {
     private static final String INIT_STARTED_AGENT_ATTACHED = "[STEP-2][PROTECTION][BEGIN] K2 Java collector attached to process: PID = %s, with generated applicationUID = %s by %s attachment";
     public static final String DEFAULT_GROUP_NAME = "IAST";
     public static final String CLEANING_STATUS_SNAPSHOTS_FROM_LOG_DIRECTORY_MAX_S_FILE_COUNT_REACHED_REMOVED_S = "Cleaning status-snapshots from snapshots directory, max %s file count reached removed : %s";
+    public static final String PERMISSIONS = "rwxrwxrwx";
 
 
     public static Integer VMPID;
@@ -150,6 +151,7 @@ public class K2Instrumentator {
             JA_HEALTH_CHECK = new JAHealthCheck(APPLICATION_UUID);
             logger.logInit(LogLevel.INFO, AGENT_INIT_LOG_STEP_FIVE, K2Instrumentator.class.getName());
 
+            createSnapshotDirectory();
             //This will remove the oldest status log file if count of files is grater than 100.
             keepMaxStatusLogFiles(100);
             setStatusLogValues();
@@ -649,4 +651,12 @@ public class K2Instrumentator {
         logger.log(LogLevel.INFO, IAgentConstants.SHUTTING_DOWN_WITH_STATUS + shutDownEvent, K2Instrumentator.class.getName());
     }
 
+    private static void createSnapshotDirectory() {
+        Path snapshotDir = Paths.get(osVariables.getSnapshotDir());
+        // Remove any file with this name from target.
+        if (!snapshotDir.toFile().isDirectory()) {
+            FileUtils.deleteQuietly(snapshotDir.toFile());
+        }
+        CommonUtils.forceMkdirs(snapshotDir, PERMISSIONS);
+    }
 }

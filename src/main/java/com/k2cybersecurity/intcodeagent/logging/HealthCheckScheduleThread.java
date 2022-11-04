@@ -12,7 +12,6 @@ import com.k2cybersecurity.intcodeagent.filelogging.LogLevel;
 import com.k2cybersecurity.intcodeagent.models.javaagent.HttpConnectionStat;
 import com.k2cybersecurity.intcodeagent.models.javaagent.JAHealthCheck;
 import com.k2cybersecurity.intcodeagent.schedulers.InBoundOutBoundST;
-import com.k2cybersecurity.intcodeagent.utils.CommonUtils;
 import com.k2cybersecurity.intcodeagent.websocket.WSClient;
 import com.sun.management.OperatingSystemMXBean;
 import org.apache.commons.io.FileUtils;
@@ -26,8 +25,6 @@ import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
 import java.math.RoundingMode;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.HashMap;
@@ -53,7 +50,6 @@ public class HealthCheckScheduleThread {
     public static final String ENFORCED_POLICY = "enforced-policy";
 
     public static final String WEBSOCKET = "websocket";
-    public static final String PERMISSIONS = "rwxrwxrwx";
     private static HealthCheckScheduleThread instance;
 
     private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
@@ -117,17 +113,8 @@ public class HealthCheckScheduleThread {
         hcScheduledService.scheduleAtFixedRate(runnable, 1, 5, TimeUnit.MINUTES);
         HttpConnectionStat httpConnectionStat = new HttpConnectionStat(Collections.emptyList(), K2Instrumentator.APPLICATION_UUID, false);
         InBoundOutBoundST.getInstance().clearNewConnections();
-        createSnapshotDirectory();
     }
 
-    private void createSnapshotDirectory() {
-        Path snapshotDir = Paths.get(osVariables.getSnapshotDir());
-        // Remove any file with this name from target.
-        if (!snapshotDir.toFile().isDirectory()) {
-            FileUtils.deleteQuietly(snapshotDir.toFile());
-        }
-        CommonUtils.forceMkdirs(snapshotDir, PERMISSIONS);
-    }
 
     private void writeStatusLogFile() {
         File statusLog = new File(osVariables.getSnapshotDir(), String.format(K_2_AGENT_STATUS_LOG, K2Instrumentator.APPLICATION_UUID));
