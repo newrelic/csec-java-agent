@@ -143,11 +143,11 @@ public class PolicyPullST {
             AgentUtils.getInstance().setApplicationInfo();
             if (AgentUtils.getInstance().isPolicyOverridden()){
                 AgentUtils.getInstance().getAgentPolicy().setVersion("overridden");
-                AgentUtils.getInstance().getStatusLogValues().put("policy-version", AgentUtils.getInstance().getAgentPolicy().getVersion());
                 logger.log(LogLevel.INFO, String.format("NR policy over-ride in place. Updated policy : %s",
                         AgentUtils.getInstance().getAgentPolicy()), PolicyPullST.class.getName());
                 CommonUtils.fireUpdatePolicyAPI(AgentUtils.getInstance().getAgentPolicy());
             }
+            AgentUtils.getInstance().getStatusLogValues().put("policy-version", AgentUtils.getInstance().getAgentPolicy().getVersion());
             EventSendPool.getInstance().sendEvent(K2Instrumentator.APPLICATION_INFO_BEAN.toString());
             return true;
         } catch (Throwable e) {
