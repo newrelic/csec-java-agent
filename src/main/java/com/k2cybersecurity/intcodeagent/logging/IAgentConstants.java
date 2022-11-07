@@ -632,6 +632,8 @@ public interface IAgentConstants {
             "K2HOME: ${k2-home}, permissions read & write: ${k2-home-permissions}\n" +
             "Agent location: ${agent-location}\n" +
             "Using K2 for JAVA, Java version: ${java-version}, PID:${pid}\n" +
+            "Process title: Java\n" +
+            "Process binary: ${process-binary}\n" +
             "Application location: ${java-binary}\n" +
             "Current working directory: ${cwd}, permissions read & write: ${cwd-permissions}\n" +
             "Agent mode: ${group-name}\n" +
@@ -639,6 +641,7 @@ public interface IAgentConstants {
             "Application Framework: ${framework}\n" +
             "Websocket connection to Prevent Web: ${validator-url}, Status: ${validator-server-status}\n" +
             "Instrumentation successful\n" +
+            "Started Health Check for Agent\n" +
             "Started Inbound and Outbound HTTP request monitoring \n" +
             "Policy applied successfully. Policy version is: ${policy-version}\n" +
             "Currently enforced policy is : \n${enforced-policy}\n" +
@@ -654,4 +657,5 @@ public interface IAgentConstants {
             "\n" +
             "Last 5 Heath Checks:\n" +
             "${last-5-hc}";
+    String PROCESS_BINARY = "process-binary";
 }

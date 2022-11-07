@@ -62,6 +62,7 @@ public class K2Instrumentator {
     public static final String DEFAULT_GROUP_NAME = "IAST";
     public static final String CLEANING_STATUS_SNAPSHOTS_FROM_LOG_DIRECTORY_MAX_S_FILE_COUNT_REACHED_REMOVED_S = "Cleaning status-snapshots from snapshots directory, max %s file count reached removed : %s";
     public static final String PERMISSIONS = "rwxrwxrwx";
+    public static final String NOT_AVAILABLE = "Not Available";
 
 
     public static Integer VMPID;
@@ -195,8 +196,8 @@ public class K2Instrumentator {
         File cwd = new File(".");
         AgentUtils.getInstance().getStatusLogValues().put("cwd", cwd.getAbsolutePath());
         AgentUtils.getInstance().getStatusLogValues().put("cwd-permissions", String.valueOf(cwd.canWrite() && cwd.canRead()));
-        AgentUtils.getInstance().getStatusLogValues().put("server-name", "Not Available");
-        AgentUtils.getInstance().getStatusLogValues().put("framework", "Not Available");
+        AgentUtils.getInstance().getStatusLogValues().put("server-name", NOT_AVAILABLE);
+        AgentUtils.getInstance().getStatusLogValues().put("framework", NOT_AVAILABLE);
     }
 
     /*
@@ -390,6 +391,7 @@ public class K2Instrumentator {
                 APP_INFO_GATHERING_STARTED,
                 K2Instrumentator.class.getName()
         );
+        AgentUtils.getInstance().getStatusLogValues().put(PROCESS_BINARY, NOT_AVAILABLE);
         try {
             RuntimeMXBean runtimeMXBean = ManagementFactory.getRuntimeMXBean();
             ApplicationInfoBean applicationInfoBean = new ApplicationInfoBean(VMPID, APPLICATION_UUID,
@@ -405,6 +407,7 @@ public class K2Instrumentator {
                         .readSymbolicLink(
                                 new File(String.format(PROC_S_EXE, applicationInfoBean.getPid())).toPath())
                         .toString());
+                AgentUtils.getInstance().getStatusLogValues().put(PROCESS_BINARY, applicationInfoBean.getBinaryPath());
                 applicationInfoBean
                         .setBinaryName(FileUtils.readFileToString(new File(String.format(PROC_S_COMM, applicationInfoBean.getPid())), StandardCharsets.UTF_8));
                 applicationInfoBean.setSha256(HashGenerator.getChecksum(new File(applicationInfoBean.getBinaryPath())));
