@@ -34,6 +34,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 import static com.k2cybersecurity.intcodeagent.logging.IAgentConstants.HCSCHEDULEDTHREAD_;
 
@@ -50,6 +51,7 @@ public class HealthCheckScheduleThread {
     public static final String ENFORCED_POLICY = "enforced-policy";
 
     public static final String WEBSOCKET = "websocket";
+    public static final String SEPARATOR = ": ";
     private static HealthCheckScheduleThread instance;
 
     private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
@@ -123,8 +125,12 @@ public class HealthCheckScheduleThread {
             if (statusLog.createNewFile()) {
                 Map<String, String> substitutes = AgentUtils.getInstance().getStatusLogValues();
                 substitutes.put(STATUS_TIMESTAMP, Instant.now().toString());
-                substitutes.put(LATEST_PROCESS_STATS, K2Instrumentator.JA_HEALTH_CHECK.getStat().toString());
-                substitutes.put(LATEST_SERVICE_STATS, K2Instrumentator.JA_HEALTH_CHECK.getServiceStatus().toString());
+                substitutes.put(LATEST_PROCESS_STATS, K2Instrumentator.JA_HEALTH_CHECK.getStat().keySet().stream()
+                        .map(key -> key + SEPARATOR + K2Instrumentator.JA_HEALTH_CHECK.getStat().get(key))
+                        .collect(Collectors.joining(StringUtils.LF, StringUtils.EMPTY, StringUtils.EMPTY)));
+                substitutes.put(LATEST_SERVICE_STATS, K2Instrumentator.JA_HEALTH_CHECK.getServiceStatus().keySet().stream()
+                        .map(key -> key + SEPARATOR + K2Instrumentator.JA_HEALTH_CHECK.getServiceStatus().get(key))
+                        .collect(Collectors.joining(StringUtils.LF, StringUtils.EMPTY, StringUtils.EMPTY)));
                 substitutes.put(LAST_5_ERRORS, StringUtils.joinWith(StringUtils.LF, AgentUtils.getInstance().getStatusLogMostRecentErrors().toArray()));
                 substitutes.put(LAST_5_HC, StringUtils.joinWith(StringUtils.LF, AgentUtils.getInstance().getStatusLogMostRecentHCs().toArray()));
                 substitutes.put(VALIDATOR_SERVER_STATUS, K2Instrumentator.JA_HEALTH_CHECK.getServiceStatus().getOrDefault(WEBSOCKET, StringUtils.EMPTY).toString());

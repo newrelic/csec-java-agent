@@ -148,7 +148,6 @@ public class FileLoggerThreadPool {
         LogMessage message = new LogMessage(logLevel.name(), event, caller, exception, AgentUtils.getInstance().getLinkingMetadata());
         if (logLevel.getLevel() <= LogLevel.WARN.getLevel()) {
             AgentUtils.getInstance().getStatusLogMostRecentErrors().add(message.toString());
-            ;
         }
         CommonUtils.fireLogMessageUploadAPI(message);
         return message;
