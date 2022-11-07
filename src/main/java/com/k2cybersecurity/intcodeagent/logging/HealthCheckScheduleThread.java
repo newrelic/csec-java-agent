@@ -52,6 +52,7 @@ public class HealthCheckScheduleThread {
 
     public static final String WEBSOCKET = "websocket";
     public static final String SEPARATOR = ": ";
+    public static final String CAN_T_CREATE_STATUS_LOG_FILE = "Can't create status log file!!!";
     private static HealthCheckScheduleThread instance;
 
     private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
@@ -140,6 +141,7 @@ public class HealthCheckScheduleThread {
                 isStatusLoggingActive = true;
             } else {
                 isStatusLoggingActive = false;
+                logger.log(LogLevel.ERROR, CAN_T_CREATE_STATUS_LOG_FILE, HealthCheckScheduleThread.class.getName());
             }
         } catch (IOException e) {
             String error = String.format(CAN_T_WRITE_STATUS_LOG_FILE_S_REASON_S, statusLog, e.getMessage());
