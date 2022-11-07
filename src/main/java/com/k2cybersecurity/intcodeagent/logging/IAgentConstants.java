@@ -634,7 +634,7 @@ public interface IAgentConstants {
             "Using K2 for JAVA, Java version: ${java-version}, PID:${pid}\n" +
             "Process title: Java\n" +
             "Process binary: ${process-binary}\n" +
-            "Application location: ${java-binary}\n" +
+            "Application location: ${app-location}\n" +
             "Current working directory: ${cwd}, permissions read & write: ${cwd-permissions}\n" +
             "Agent mode: ${group-name}\n" +
             "Application server: ${server-name}\n" +

@@ -197,6 +197,7 @@ public class K2Instrumentator {
         AgentUtils.getInstance().getStatusLogValues().put("cwd", cwd.getAbsolutePath());
         AgentUtils.getInstance().getStatusLogValues().put("cwd-permissions", String.valueOf(cwd.canWrite() && cwd.canRead()));
         AgentUtils.getInstance().getStatusLogValues().put("server-name", NOT_AVAILABLE);
+        AgentUtils.getInstance().getStatusLogValues().put("app-location", NOT_AVAILABLE);
         AgentUtils.getInstance().getStatusLogValues().put("framework", NOT_AVAILABLE);
     }
 

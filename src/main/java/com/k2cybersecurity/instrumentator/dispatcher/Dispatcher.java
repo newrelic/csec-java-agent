@@ -73,6 +73,8 @@ public class Dispatcher implements Runnable {
     public static final String DEPLOYED_APP_AFTER_PROCESSING_1 = "Deployed app after processing 1 : ";
     public static final String ERROR_WHILE_DEPLOYED_APP_PROCESSING = "Error while deployed app processing : ";
     public static final String SERVER_NAME = "server-name";
+    public static final String SEPARATOR1 = ", ";
+    public static final String APP_LOCATION = "app-location";
     private ExitEventBean exitEventBean;
     private HttpRequestBean httpRequestBean;
     private AgentMetaData metaData;
@@ -504,6 +506,9 @@ public class Dispatcher implements Runnable {
                         Dispatcher.class.getName()
                 );
                 EventSendPool.getInstance().sendEvent(applicationInfoBean.toString());
+
+                setAppLocationStatusFile(applicationInfoBean.getServerInfo().getDeployedApplications());
+
                 logger.logInit(LogLevel.INFO,
                         String.format(UPDATED_APPLICATION_INFO_POSTED, applicationInfoBean),
                         Dispatcher.class.getName());
@@ -517,6 +522,17 @@ public class Dispatcher implements Runnable {
         } finally {
             AgentUtils.getInstance().getDeployedApplicationUnderProcessing().remove(deployedApplication);
         }
+    }
+
+    private void setAppLocationStatusFile(Set<DeployedApplication> deployedApplications) {
+        String appLocations = StringUtils.EMPTY;
+
+        for (DeployedApplication deployedApplication : deployedApplications) {
+            if (StringUtils.isNotBlank(deployedApplication.getDeployedPath())) {
+                StringUtils.joinWith(SEPARATOR1, appLocations, deployedApplication.getDeployedPath());
+            }
+        }
+        AgentUtils.getInstance().getStatusLogValues().put(APP_LOCATION, appLocations);
     }
 
 
