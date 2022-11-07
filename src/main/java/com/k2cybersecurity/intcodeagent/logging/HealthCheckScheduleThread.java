@@ -138,6 +138,8 @@ public class HealthCheckScheduleThread {
                 StringSubstitutor substitutor = new StringSubstitutor(substitutes);
                 FileUtils.writeStringToFile(statusLog, substitutor.replace(IAgentConstants.STATUS_FILE_TEMPLATE), StandardCharsets.UTF_8);
                 isStatusLoggingActive = true;
+            } else {
+                isStatusLoggingActive = false;
             }
         } catch (IOException e) {
             String error = String.format(CAN_T_WRITE_STATUS_LOG_FILE_S_REASON_S, statusLog, e.getMessage());
