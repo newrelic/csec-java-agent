@@ -1,0 +1,25 @@
+pluginManagement {
+    repositories {
+        mavenLocal()
+        mavenCentral()
+        gradlePluginPortal()
+    }
+}
+
+plugins {
+    id "com.gradle.enterprise" version "3.7.1"
+    id 'com.gradle.common-custom-user-data-gradle-plugin' version '1.6.1'
+}
+
+buildCache {
+    local {
+        enabled = true
+    }
+    remote(HttpBuildCache) {
+        enabled = false
+    }
+}
+
+include 'newrelic-security-data-schema'
+include 'newrelic-security-api'
+include 'newrelic-security-agent'

@@ -1,0 +1,46 @@
+import com.nr.builder.publish.PublishConfig
+
+plugins {
+    id("java-library")
+    id("maven-publish")
+    id("signing")
+}
+
+java.sourceCompatibility = JavaVersion.VERSION_1_8
+
+
+jar {
+    from("$rootDir/LICENSE")
+    manifest {
+        attributes 'Implementation-Title': 'New Relic Security Agent Data Schema', 'Implementation-Version': project.version, 'Automatic-Module-Name': 'newrelic.api'
+    }
+}
+
+java {
+    withSourcesJar()
+    withJavadocJar()
+}
+
+tasks.withType(GenerateModuleMetadata.class) {
+    enabled = false
+}
+
+tasks.withType(Javadoc).configureEach {
+    javadocTool = javaToolchains.javadocToolFor {
+        languageVersion = JavaLanguageVersion.of(11)
+    }
+
+    options.addBooleanOption("-frames", true)
+    options.addBooleanOption("-no-module-directories", true)
+}
+
+PublishConfig.config(
+        project,
+        "New Relic Security Java agent data schema",
+        "The public data schemas of the Security Java agent, and no-op implementations for safe usage without the agent.") { it ->
+    it.from(components.java)
+}
+
+task install(dependsOn: publishToMavenLocal)
+
+build.finalizedBy(install)

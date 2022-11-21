@@ -1,0 +1,53 @@
+plugins {
+    id("com.newrelic.gradle-verify-instrumentation-plugin") version "3.2"
+    id "com.newrelic.gradle-compatibility-doc-plugin" version "1.1"
+}
+
+subprojects {
+
+    // the version of all instrumentation-security projects.
+    version = 1.0
+
+    tasks.withType(Test) { task ->
+        task.enabled = !project.hasProperty('noInstrumentation')
+    }
+
+    tasks.withType(AbstractArchiveTask) {
+        preserveFileTimestamps = false
+        reproducibleFileOrder = true
+    }
+
+    jar {
+        manifest {
+            attributes 'Implementation-Vendor': 'New Relic', 'Implementation-Version': project.version
+        }
+    }
+
+//    dependencies {
+//        testImplementation(project(":instrumentation-security-test"))
+//    }
+
+//    test {
+//        // FIXME: these are all flaky on GHA so temporarily disabling
+//        // It is likely they can be fixed with test containers
+//        exclude '**/BasicRequestsTest.class'
+//        exclude '**/BlazeClientTest'
+//        exclude '**/CassandraTest.class'
+//        exclude '**/DefaultDynamoDbClient_InstrumentationTest.class'
+//        exclude '**/QuartzSystemTest.class'
+//        exclude '**/RabbitMQTest.class'
+//    }
+}
+
+//
+//task test {
+//    dependsOn subprojects.collect {
+//        it.tasks.getByName 'test'
+//    }
+//}
+
+def isScalaProjectEnabled(Project project, String... scalaVersions) {
+    return scalaVersions.any {scalaVersion -> project.hasProperty(scalaVersion) }  ? project.tasks.all { task -> task.enabled = true }  // Enable tasks if project property matching scala version is passed
+            : project.hasProperty('noInstrumentation') ? project.tasks.all { task -> task.enabled = false } // Disable tasks if project property noInstrumentation is passed
+            : project.tasks.all { task -> task.enabled = task.name != "test" && task.name != "compileTestScala" ? task.enabled : task.enabled && project.hasProperty('includeScala')  }  // Default to task enabled flag
+}
