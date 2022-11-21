@@ -1,0 +1,73 @@
+package com.newrelic.agent.security.instrumentator.decorators.hash;
+
+import com.newrelic.agent.security.instrumentator.custom.K2CyberSecurityException;
+import com.newrelic.agent.security.instrumentator.custom.ThreadLocalHttpMap;
+import com.newrelic.agent.security.instrumentator.custom.ThreadLocalOperationLock;
+import com.newrelic.agent.security.instrumentator.dispatcher.DispatcherPool;
+import com.newrelic.agent.security.instrumentator.dispatcher.EventDispatcher;
+import com.newrelic.agent.security.instrumentator.utils.AgentUtils;
+import com.newrelic.agent.security.intcodeagent.models.javaagent.VulnerabilityCaseType;
+import com.newrelic.agent.security.intcodeagent.models.operationalbean.HashCryptoOperationalBean;
+import org.apache.commons.lang3.StringUtils;
+
+import java.security.Provider;
+import java.time.Instant;
+
+public class Callbacks {
+
+    public static void doOnEnter(String sourceString, String className, String methodName, Object obj, Object[] args,
+                                 String exectionId) throws K2CyberSecurityException {
+        if (!ThreadLocalHttpMap.getInstance().isEmpty() && !ThreadLocalOperationLock.getInstance().isAcquired()) {
+            try {
+                ThreadLocalOperationLock.getInstance().acquire();
+                if (args[0] != null) {
+                    String name = args[0].toString();
+                    HashCryptoOperationalBean hashCryptoOperationalBean = new HashCryptoOperationalBean(name, className,
+                            sourceString, exectionId, Instant.now().toEpochMilli(), methodName);
+                    String provider = StringUtils.EMPTY;
+                    if (args.length >= 2 && args[1] != null && args[1] instanceof Provider) {
+                        provider = args[1].getClass().getSimpleName();
+                    } else if (args.length >= 2 && args[1] != null && args[1] instanceof String) {
+                        provider = args[1].toString();
+                    }
+                    hashCryptoOperationalBean.setProvider(provider);
+                    EventDispatcher.dispatch(hashCryptoOperationalBean, VulnerabilityCaseType.HASH);
+//					System.out.println("OnEnter :" + sourceString + " - args : " + Arrays.asList(args) + " - this : "
+//							+ obj + " - eid : " + exectionId);
+                }
+            } finally {
+                ThreadLocalOperationLock.getInstance().release();
+            }
+        }
+    }
+
+    public static void doOnExit(String sourceString, String className, String methodName, Object obj, Object[] args,
+                                Object returnVal, String exectionId) {
+        if (!ThreadLocalHttpMap.getInstance().isEmpty()
+                && AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getEnabled()
+                && AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getIastScan().getEnabled()
+                && !ThreadLocalOperationLock.getInstance().isAcquired()) {
+            try {
+                ThreadLocalOperationLock.getInstance().acquire();
+                EventDispatcher.dispatchExitEvent(exectionId, VulnerabilityCaseType.HASH);
+            } finally {
+                DispatcherPool.getInstance().getEid().remove(exectionId);
+                ThreadLocalOperationLock.getInstance().release();
+            }
+        }
+    }
+
+    public static void doOnError(String sourceString, String className, String methodName, Object obj, Object[] args,
+                                 Throwable error, String exectionId) throws Throwable {
+        if (!ThreadLocalHttpMap.getInstance().isEmpty() && !ThreadLocalOperationLock.getInstance().isAcquired()) {
+            try {
+                ThreadLocalOperationLock.getInstance().acquire();
+//				System.out.println("OnError :" + sourceString + " - args : " + Arrays.asList(args) + " - this : " + obj
+//						+ " - error : " + error + " - eid : " + exectionId);
+            } finally {
+                DispatcherPool.getInstance().getEid().remove(exectionId);
+                ThreadLocalOperationLock.getInstance().release();
+            }
+        }
+    }
+}
