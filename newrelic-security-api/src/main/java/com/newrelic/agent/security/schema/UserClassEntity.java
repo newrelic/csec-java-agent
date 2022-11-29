@@ -1,4 +1,4 @@
-package com.k2cybersecurity.intcodeagent.models.javaagent;
+package com.newrelic.agent.security.schema;
 
 public class UserClassEntity {
     private boolean isCalledByUserCode;

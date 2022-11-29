@@ -20,6 +20,15 @@ buildCache {
     }
 }
 
-include 'newrelic-security-data-schema'
 include 'newrelic-security-api'
 include 'newrelic-security-agent'
+
+// Security Instrumentation modules
+include 'instrumentation-security:java-lang'
+include 'instrumentation-security:java-io'
+//include 'instrumentation-security:httpclient-4.0'
+include 'instrumentation-security:servlet-2.4'
+
+
+
+
