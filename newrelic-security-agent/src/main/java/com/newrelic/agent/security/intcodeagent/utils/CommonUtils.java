@@ -1,14 +1,15 @@
 package com.newrelic.agent.security.intcodeagent.utils;
 
+import com.newrelic.api.agent.security.Agent;
 import com.newrelic.agent.security.AgentConfig;
 import com.newrelic.agent.security.AgentInfo;
 import com.newrelic.agent.security.instrumentator.httpclient.HttpClient;
 import com.newrelic.agent.security.instrumentator.httpclient.IRestClientConstants;
-import com.newrelic.agent.security.instrumentator.utils.AgentUtils;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.newrelic.agent.security.intcodeagent.filelogging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.models.config.AgentPolicyParameters;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.LogMessage;
+import com.newrelic.agent.security.intcodeagent.websocket.JsonConverter;
 import com.newrelic.api.agent.security.schema.policy.AgentPolicy;
 import com.newrelic.api.agent.NewRelic;
 import org.apache.commons.io.FileUtils;
@@ -20,6 +21,7 @@ import org.json.JSONTokener;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -44,9 +46,9 @@ public class CommonUtils {
 
         try {
             JSONObject jsonSchema = new JSONObject(
-                    new JSONTokener(CommonUtils.class.getClassLoader().getSystemResourceAsStream("lc-policy-parameters-schema.json")));
+                    new JSONTokener(getResourceStreamFromAgentJar("lc-policy-parameters-schema.json")));
             JSONObject jsonSubject = new JSONObject(
-                    new JSONTokener(policyParameters.toString()));
+                    new JSONTokener(JsonConverter.toJSON(policyParameters)));
 
             Schema schema = SchemaLoader.load(jsonSchema);
             schema.validate(jsonSubject);
@@ -68,9 +70,9 @@ public class CommonUtils {
 
         try {
             JSONObject jsonSchema = new JSONObject(
-                    new JSONTokener(CommonUtils.class.getClassLoader().getSystemResourceAsStream("lc-policy-schema.json")));
+                    new JSONTokener(getResourceStreamFromAgentJar("lc-policy-schema.json")));
             JSONObject jsonSubject = new JSONObject(
-                    new JSONTokener(policy.toString()));
+                    new JSONTokener(JsonConverter.toJSON(policy)));
 
             Schema schema = SchemaLoader.load(jsonSchema);
             schema.validate(jsonSubject);
@@ -244,5 +246,15 @@ public class CommonUtils {
         } catch (IOException e) {
             return null;
         }
+    }
+
+    public static InputStream getResourceStreamFromAgentJar(String resourceName) {
+        try {
+            return new URL("jar:" + Agent.getAgentJarURL().toExternalForm() + "!/" + resourceName).openStream();
+        } catch (Exception e) {
+            logger.log(LogLevel.ERROR, String.format("Unable to locate resource from agent jar : %s", e.getMessage()), CommonUtils.class.getName());
+            logger.log(LogLevel.DEBUG, "Unable to locate resource from agent jar : ", e, CommonUtils.class.getName());
+        }
+        return null;
     }
 }

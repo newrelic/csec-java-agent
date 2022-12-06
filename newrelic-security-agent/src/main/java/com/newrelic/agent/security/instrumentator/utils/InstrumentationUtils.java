@@ -13,6 +13,7 @@ import com.newrelic.agent.security.intcodeagent.schedulers.GlobalPolicyParameter
 import com.newrelic.agent.security.intcodeagent.schedulers.InBoundOutBoundST;
 import com.newrelic.agent.security.intcodeagent.schedulers.PolicyPullST;
 import com.newrelic.agent.security.intcodeagent.websocket.EventSendPool;
+import com.newrelic.agent.security.intcodeagent.websocket.JsonConverter;
 import com.newrelic.agent.security.intcodeagent.websocket.WSClient;
 import com.newrelic.agent.security.intcodeagent.websocket.WSReconnectionST;
 import org.apache.commons.io.FileUtils;
@@ -58,7 +59,7 @@ public class InstrumentationUtils {
             ShutDownEvent shutDownEvent = new ShutDownEvent();
             shutDownEvent.setApplicationUUID(AgentInfo.getInstance().getApplicationUUID());
             shutDownEvent.setStatus(IAgentConstants.TERMINATING);
-            EventSendPool.getInstance().sendEvent(shutDownEvent.toString());
+            EventSendPool.getInstance().sendEvent(shutDownEvent);
             logger.log(LogLevel.INFO, IAgentConstants.SHUTTING_DOWN_WITH_STATUS + shutDownEvent, InstrumentationUtils.class.getName());
             TimeUnit.SECONDS.sleep(1);
         } catch (Throwable e) {

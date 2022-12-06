@@ -13,6 +13,7 @@ import com.newrelic.agent.security.intcodeagent.logging.IAgentConstants;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.*;
 import com.newrelic.agent.security.intcodeagent.models.operationalbean.*;
 import com.newrelic.agent.security.intcodeagent.websocket.EventSendPool;
+import com.newrelic.agent.security.intcodeagent.websocket.JsonConverter;
 import com.newrelic.api.agent.NewRelic;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
@@ -459,7 +460,7 @@ public class Dispatcher implements Runnable {
                         String.format(POSTING_UPDATED_APPLICATION_INFO, applicationInfoBean),
                         Dispatcher.class.getName()
                 );
-                EventSendPool.getInstance().sendEvent(applicationInfoBean.toString());
+                EventSendPool.getInstance().sendEvent(applicationInfoBean);
 
                 setAppLocationStatusFile(applicationInfoBean.getServerInfo().getDeployedApplications());
 

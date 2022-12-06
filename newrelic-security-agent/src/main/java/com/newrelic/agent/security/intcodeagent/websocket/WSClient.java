@@ -80,7 +80,7 @@ public class WSClient extends WebSocketClient {
 //		logger.log(LogLevel.INFO, "Current WSock ready status : {0},{1},{2}",
 //				new Object[] { this.isOpen(), this.isClosing(), this.isClosed() });
         logger.logInit(LogLevel.INFO, String.format(IAgentConstants.SENDING_APPLICATION_INFO_ON_WS_CONNECT, AgentInfo.getInstance().getApplicationInfo()) , WSClient.class.getName());
-        super.send(AgentInfo.getInstance().getApplicationInfo().toString());
+        super.send(JsonConverter.toJSON(AgentInfo.getInstance().getApplicationInfo()));
         CommonUtils.fireUpdatePolicyAPI(AgentUtils.getInstance().getAgentPolicy());
 //		Agent.allClassLoadersCount.set(0);
 //		Agent.jarPathSet.clear();

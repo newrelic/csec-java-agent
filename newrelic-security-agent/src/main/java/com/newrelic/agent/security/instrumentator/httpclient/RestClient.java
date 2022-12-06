@@ -131,7 +131,7 @@ public class RestClient {
             logger.log(LogLevel.DEBUG, String.format(CALL_FAILED_REQUEST_S_REASON, request), e, RestClient.class.getName());
             FuzzFailEvent fuzzFailEvent = new FuzzFailEvent(AgentInfo.getInstance().getApplicationUUID());
             fuzzFailEvent.setFuzzHeader(request.header(IAgentConstants.K2_FUZZ_REQUEST_ID));
-            EventSendPool.getInstance().sendEvent(fuzzFailEvent.toString());
+            EventSendPool.getInstance().sendEvent(fuzzFailEvent);
         }
 
     }

@@ -1,7 +1,7 @@
-package com.newrelic.agent.security;
+package com.newrelic.api.agent.security;
 
-import com.newrelic.api.agent.security.NewRelicSecurity;
-import com.newrelic.api.agent.security.SecurityAgent;
+import com.newrelic.agent.security.AgentConfig;
+import com.newrelic.agent.security.AgentInfo;
 import com.newrelic.agent.security.instrumentator.utils.AgentUtils;
 import com.newrelic.agent.security.instrumentator.utils.ApplicationInfoUtils;
 import com.newrelic.agent.security.instrumentator.utils.CollectorConfigurationUtils;
@@ -39,6 +39,8 @@ public class Agent implements SecurityAgent {
     private AgentConfig config;
 
     private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
+
+    private java.net.URL agentJarURL;
 
     public static SecurityAgent getInstance() {
         if(instance == null) {
@@ -103,6 +105,7 @@ public class Agent implements SecurityAgent {
     private void populateLinkingMetadata() {
         Map<String, String> linkingMetaData = NewRelic.getAgent().getLinkingMetadata();
         linkingMetaData.put(INRSettingsKey.AGENT_RUN_ID_LINKING_METADATA, NewRelic.getAgent().getConfig().getValue(INRSettingsKey.AGENT_RUN_ID));
+        info.setLinkingMetadata(linkingMetaData);
     }
 
     private void startK2Services() {
@@ -156,13 +159,12 @@ public class Agent implements SecurityAgent {
     }
 
     @Override
-    public boolean refreshState() {
+    public boolean refreshState(java.net.URL agentJarURL) {
         /**
          * restart k2 services
          **/
-        System.out.println("Refresh called");
+        this.agentJarURL = agentJarURL;
         config.setNRSecurityEnabled(false);
-        config.instantiate();
         cancelActiveServiceTasks();
         initialise();
         return true;
@@ -226,22 +228,15 @@ public class Agent implements SecurityAgent {
         try {
             Transaction tx = NewRelic.getAgent().getTransaction();
             if (tx != null) {
-//                Object meta = tx.getSecurityMetaData();
-//                if (meta instanceof SecurityMetaData) {
-//                    return (SecurityMetaData) meta;
-//                }
+                Object meta = tx.getSecurityMetaData();
+                if (meta instanceof SecurityMetaData) {
+                    return (SecurityMetaData) meta;
+                }
             }
         } catch (Throwable e) {
             e.printStackTrace();
         }
         return null;
-    }
-
-    @Override
-    public boolean isHookProcessingActive() {
-        // TODO:  rethink the case where WS is frequently reconnected. This will negate the event buffering.
-        return NewRelicSecurity.getAgent().isSecurityActive() &&
-                (NewRelicSecurity.getAgent().getSecurityMetaData() != null);
     }
 
     public AgentInfo getInfo() {
@@ -250,5 +245,9 @@ public class Agent implements SecurityAgent {
 
     public AgentConfig getConfig() {
         return config;
+    }
+
+    public static java.net.URL getAgentJarURL() {
+        return instance.agentJarURL;
     }
 }

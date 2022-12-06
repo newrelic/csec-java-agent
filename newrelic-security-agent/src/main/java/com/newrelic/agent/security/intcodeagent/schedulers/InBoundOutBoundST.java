@@ -8,6 +8,7 @@ import com.newrelic.agent.security.intcodeagent.logging.IAgentConstants;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.HttpConnectionStat;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.OutBoundHttp;
 import com.newrelic.agent.security.intcodeagent.websocket.EventSendPool;
+import com.newrelic.agent.security.intcodeagent.websocket.JsonConverter;
 
 import java.util.*;
 import java.util.concurrent.*;
@@ -106,7 +107,7 @@ public class InBoundOutBoundST {
         for (int i = 0; i < outBoundHttps.size(); i += 40) {
             int maxIndex = Math.min(i + 40, outBoundHttps.size());
             HttpConnectionStat httpConnectionStat = new HttpConnectionStat(outBoundHttps.subList(i, maxIndex), AgentInfo.getInstance().getApplicationUUID(), isCached);
-            EventSendPool.getInstance().sendEvent(httpConnectionStat.toString());
+            EventSendPool.getInstance().sendEvent(httpConnectionStat);
         }
     }
 

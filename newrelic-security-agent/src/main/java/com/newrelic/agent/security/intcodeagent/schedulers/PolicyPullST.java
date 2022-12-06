@@ -12,6 +12,7 @@ import com.newrelic.agent.security.intcodeagent.filelogging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.logging.IAgentConstants;
 import com.newrelic.agent.security.intcodeagent.utils.CommonUtils;
 import com.newrelic.agent.security.intcodeagent.websocket.EventSendPool;
+import com.newrelic.agent.security.intcodeagent.websocket.JsonConverter;
 import com.newrelic.api.agent.security.schema.policy.AgentPolicy;
 import okhttp3.Response;
 import org.apache.commons.lang3.StringUtils;
@@ -134,21 +135,21 @@ public class PolicyPullST {
                 return false;
             }
             logger.logInit(LogLevel.INFO,
-                    String.format(IAgentConstants.RECEIVED_AGENT_POLICY, newPolicy),
+                    String.format(IAgentConstants.RECEIVED_AGENT_POLICY, JsonConverter.toJSON(newPolicy)),
                     PolicyPullST.class.getName());
             AgentUtils.getInstance().setAgentPolicy(newPolicy);
             AgentInfo.getInstance().getApplicationInfo().setPolicyVersion(AgentUtils.getInstance().getAgentPolicy().getVersion());
             logger.logInit(LogLevel.INFO, String.format(IAgentConstants.AGENT_POLICY_APPLIED_S,
-                    AgentUtils.getInstance().getAgentPolicy()), PolicyPullST.class.getName());
+                    JsonConverter.toJSON(AgentUtils.getInstance().getAgentPolicy())), PolicyPullST.class.getName());
             AgentUtils.getInstance().applyNRPolicyOverride();
             if (AgentUtils.getInstance().isPolicyOverridden()){
                 AgentUtils.getInstance().getAgentPolicy().setVersion("overridden");
                 logger.log(LogLevel.INFO, String.format("NR policy over-ride in place. Updated policy : %s",
-                        AgentUtils.getInstance().getAgentPolicy()), PolicyPullST.class.getName());
+                        JsonConverter.toJSON(AgentUtils.getInstance().getAgentPolicy())), PolicyPullST.class.getName());
                 CommonUtils.fireUpdatePolicyAPI(AgentUtils.getInstance().getAgentPolicy());
             }
             AgentUtils.getInstance().getStatusLogValues().put("policy-version", AgentUtils.getInstance().getAgentPolicy().getVersion());
-            EventSendPool.getInstance().sendEvent(AgentInfo.getInstance().getApplicationInfo().toString());
+            EventSendPool.getInstance().sendEvent(AgentInfo.getInstance().getApplicationInfo());
             return true;
         } catch (Throwable e) {
             logger.logInit(LogLevel.ERROR, IAgentConstants.UNABLE_TO_SET_AGENT_POLICY_DUE_TO_ERROR, e,

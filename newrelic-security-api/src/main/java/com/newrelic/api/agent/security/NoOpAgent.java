@@ -11,6 +11,8 @@ import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.SecurityMetaData;
 import com.newrelic.api.agent.security.schema.policy.AgentPolicy;
 
+import java.net.URL;
+
 /**
  * Provides NoOps for API objects to avoid returning <code>null</code>. Do not call these objects directly.
  */
@@ -22,7 +24,7 @@ class NoOpAgent implements SecurityAgent {
     }
 
     @Override
-    public boolean refreshState() {
+    public boolean refreshState(URL agentJarURL) {
         return true;
     }
 
@@ -50,8 +52,4 @@ class NoOpAgent implements SecurityAgent {
         return null;
     }
 
-    @Override
-    public boolean isHookProcessingActive() {
-        return false;
-    }
 }

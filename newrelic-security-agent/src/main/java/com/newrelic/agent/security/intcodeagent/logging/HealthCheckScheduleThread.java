@@ -13,6 +13,7 @@ import com.newrelic.agent.security.intcodeagent.models.javaagent.HttpConnectionS
 import com.newrelic.agent.security.intcodeagent.models.javaagent.JAHealthCheck;
 import com.newrelic.agent.security.intcodeagent.schedulers.GlobalPolicyParameterPullST;
 import com.newrelic.agent.security.intcodeagent.schedulers.InBoundOutBoundST;
+import com.newrelic.agent.security.intcodeagent.websocket.JsonConverter;
 import com.newrelic.agent.security.intcodeagent.websocket.WSClient;
 import com.sun.management.OperatingSystemMXBean;
 import org.apache.commons.io.FileUtils;
@@ -82,7 +83,7 @@ public class HealthCheckScheduleThread {
 //						channel.write(ByteBuffer.wrap(new JAHealthCheck(AgentNew.JA_HEALTH_CHECK).toString().getBytes()));
                     if (WSClient.getInstance().isOpen()) {
                         InBoundOutBoundST.getInstance().task(InBoundOutBoundST.getInstance().getNewConnections(), false);
-                        WSClient.getInstance().send(new JAHealthCheck(AgentInfo.getInstance().getJaHealthCheck()).toString());
+                        WSClient.getInstance().send(JsonConverter.toJSON(new JAHealthCheck(AgentInfo.getInstance().getJaHealthCheck())));
                         AgentInfo.getInstance().getJaHealthCheck().setEventDropCount(0);
                         AgentInfo.getInstance().getJaHealthCheck().setEventProcessed(0);
                         AgentInfo.getInstance().getJaHealthCheck().setEventSentCount(0);
@@ -144,7 +145,7 @@ public class HealthCheckScheduleThread {
                 substitutes.put(LAST_5_ERRORS, StringUtils.joinWith(StringUtils.LF, AgentUtils.getInstance().getStatusLogMostRecentErrors().toArray()));
                 substitutes.put(LAST_5_HC, StringUtils.joinWith(StringUtils.LF, AgentUtils.getInstance().getStatusLogMostRecentHCs().toArray()));
                 substitutes.put(VALIDATOR_SERVER_STATUS, AgentInfo.getInstance().getJaHealthCheck().getServiceStatus().getOrDefault(WEBSOCKET, StringUtils.EMPTY).toString());
-                substitutes.put(ENFORCED_POLICY, AgentUtils.getInstance().getAgentPolicy().toString());
+                substitutes.put(ENFORCED_POLICY, JsonConverter.toJSON(AgentUtils.getInstance().getAgentPolicy()));
                 StringSubstitutor substitutor = new StringSubstitutor(substitutes);
                 FileUtils.writeStringToFile(statusLog, substitutor.replace(IAgentConstants.STATUS_FILE_TEMPLATE), StandardCharsets.UTF_8);
                 isStatusLoggingActive = true;

@@ -11,12 +11,14 @@ import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.SecurityMetaData;
 import com.newrelic.api.agent.security.schema.policy.AgentPolicy;
 
+import java.net.URL;
+
 /**
  * The New Relic Security Java Agent's API.
  */
 public interface SecurityAgent {
 
-    boolean refreshState();
+    boolean refreshState(URL agentJarURL);
 
     boolean deactivateSecurity();
 
@@ -31,12 +33,5 @@ public interface SecurityAgent {
      * @return {@link SecurityAgent} object associated with the current transaction in the context or {@code null} otherwise.
      */
     SecurityMetaData getSecurityMetaData();
-
-    /**
-     * Indicates whether the hook processing can be done in the instrumentation modules.
-     * @return {@code true} iff security module init is completed and hook processing can be allowed.
-     * {@code false} otherwise.
-     */
-    boolean isHookProcessingActive();
 
 }

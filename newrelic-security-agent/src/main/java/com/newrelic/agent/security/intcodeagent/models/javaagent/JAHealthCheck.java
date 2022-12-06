@@ -51,7 +51,7 @@ public class JAHealthCheck extends AgentBasicInfo {
         this.stat = new HashMap<>();
         this.serviceStatus = new HashMap<>();
         this.setKind(AgentInfo.getInstance().getApplicationInfo().getIdentifier().getKind());
-        logger.log(LogLevel.INFO, String.format(HC_CREATED, this.toString()), JAHealthCheck.class.getName());
+        logger.log(LogLevel.INFO, String.format(HC_CREATED, JsonConverter.toJSON(this)), JAHealthCheck.class.getName());
     }
 
     public JAHealthCheck(JAHealthCheck jaHealthCheck) {
@@ -66,7 +66,7 @@ public class JAHealthCheck extends AgentBasicInfo {
         this.stat = jaHealthCheck.stat;
         this.serviceStatus = jaHealthCheck.serviceStatus;
         this.dsBackLog = jaHealthCheck.dsBackLog;
-        logger.log(LogLevel.INFO, String.format(HC_CREATED, this.toString()), JAHealthCheck.class.getName());
+        logger.log(LogLevel.INFO, String.format(HC_CREATED, JsonConverter.toJSON(this)), JAHealthCheck.class.getName());
     }
 
     public IdentifierEnvs getKind() {

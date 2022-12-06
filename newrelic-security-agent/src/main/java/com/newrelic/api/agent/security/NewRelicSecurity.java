@@ -7,16 +7,12 @@
 
 package com.newrelic.api.agent.security;
 
-import java.lang.reflect.Method;
-
 /**
- * The New Relic Security API. Consumers of this API should add the newrelic-security-api.jar to their classpath. The static methods of
- * this class form the Security Agent's basic Java API. Use {@link NewRelicSecurity#getAgent} to obtain the root of a hierarchy of
+ * The New Relic Security API Implementation. Use {@link NewRelicSecurity#getAgent} to obtain the root of a hierarchy of
  * objects offering additional capabilities.
  */
 public final class NewRelicSecurity {
-
-    private static SecurityAgent securityAgent = new NoOpAgent();
+    private static boolean isAgentInitComplete = false;
 
     /**
      * Returns the root of the New Relic Security Java Agent API object hierarchy.
@@ -24,8 +20,9 @@ public final class NewRelicSecurity {
      * @return the root of the New Relic Security Java Agent API object hierarchy
      */
     public static SecurityAgent getAgent(){
-        return securityAgent;
+        return Agent.getInstance();
     }
+
 
     /**
      * Indicates whether the hook processing can be done in the instrumentation modules.
@@ -33,11 +30,14 @@ public final class NewRelicSecurity {
      * {@code false} otherwise.
      */
     public static boolean isHookProcessingActive(){
-        return false;
+        return isAgentInitComplete && Agent.getInstance().isSecurityActive() &&
+                (Agent.getInstance().getSecurityMetaData() != null);
     }
 
     /**
      *  Marks the end of agent init. Hooks can now be processed.
      */
-    public static void markAgentAsInitialised(){}
+    public static void markAgentAsInitialised(){
+        isAgentInitComplete = true;
+    }
 }

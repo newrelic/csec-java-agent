@@ -4,6 +4,7 @@ import com.newrelic.agent.security.AgentInfo;
 import com.newrelic.agent.security.instrumentator.utils.AgentUtils;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.LogMessage;
 import com.newrelic.agent.security.intcodeagent.utils.CommonUtils;
+import com.newrelic.agent.security.intcodeagent.websocket.JsonConverter;
 
 import java.io.IOException;
 import java.util.concurrent.*;
@@ -148,7 +149,7 @@ public class FileLoggerThreadPool {
     private LogMessage postLogMessage(LogLevel logLevel, String event, Throwable exception, String caller) {
         LogMessage message = new LogMessage(logLevel.name(), event, caller, exception, AgentInfo.getInstance().getLinkingMetadata());
         if (logLevel.getLevel() <= LogLevel.WARN.getLevel()) {
-            AgentUtils.getInstance().getStatusLogMostRecentErrors().add(message.toString());
+            AgentUtils.getInstance().getStatusLogMostRecentErrors().add(JsonConverter.toJSON(message));
         }
         CommonUtils.fireLogMessageUploadAPI(message);
         return message;
