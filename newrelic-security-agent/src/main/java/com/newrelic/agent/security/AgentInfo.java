@@ -39,8 +39,6 @@ public class AgentInfo {
 
     private final Integer VMPID;
 
-    private OSVariables osVariables;
-
     private Identifier identifier;
 
     private final String applicationUUID;
@@ -55,7 +53,7 @@ public class AgentInfo {
         RuntimeMXBean runtimeMXBean = ManagementFactory.getRuntimeMXBean();
         String runningVM = runtimeMXBean.getName();
         VMPID = Integer.parseInt(runningVM.substring(0, runningVM.indexOf(VMPID_SPLIT_CHAR)));
-        osVariables = OsVariablesInstance.getInstance().getOsVariables();
+//        osVariables = OsVariablesInstance.getInstance().getOsVariables();
         applicationUUID = UUID.randomUUID().toString();
         jaHealthCheck = new JAHealthCheck(applicationUUID);
         //TODO collector version to be set via gradle
@@ -83,10 +81,6 @@ public class AgentInfo {
 
     public Integer getVMPID() {
         return VMPID;
-    }
-
-    public OSVariables getOsVariables() {
-        return osVariables;
     }
 
     public Identifier getIdentifier() {
