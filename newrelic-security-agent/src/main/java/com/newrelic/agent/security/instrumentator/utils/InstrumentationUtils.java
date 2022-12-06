@@ -54,7 +54,7 @@ public class InstrumentationUtils {
 //        System.out.println("K2 Collector's shutdown hooked called.");
 //        AgentUtils.getInstance().setAgentActive(false);
         try {
-            AgentUtils.getInstance().setAgentActive(false);
+            AgentInfo.getInstance().setAgentActive(false);
             ShutDownEvent shutDownEvent = new ShutDownEvent();
             shutDownEvent.setApplicationUUID(AgentInfo.getInstance().getApplicationUUID());
             shutDownEvent.setStatus(IAgentConstants.TERMINATING);

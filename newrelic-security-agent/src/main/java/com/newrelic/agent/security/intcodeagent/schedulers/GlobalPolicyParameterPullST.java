@@ -30,7 +30,7 @@ public class GlobalPolicyParameterPullST {
     private ScheduledFuture future;
 
     public static GlobalPolicyParameterPullST getInstance() {
-        if (AgentUtils.getInstance().isStandaloneMode() && instance == null) {
+        if (instance == null) {
             synchronized (lock) {
                 if (instance == null) {
                     instance = new GlobalPolicyParameterPullST();

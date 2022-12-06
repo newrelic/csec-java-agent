@@ -66,6 +66,7 @@ public class Agent implements SecurityAgent {
         config = AgentConfig.getInstance();
         info = AgentInfo.getInstance();
         config.instantiate();
+        info.initialiseHC();
         info.setIdentifier(ApplicationInfoUtils.envDetection());
     }
 

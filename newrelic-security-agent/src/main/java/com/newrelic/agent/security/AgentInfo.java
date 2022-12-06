@@ -55,7 +55,6 @@ public class AgentInfo {
         VMPID = Integer.parseInt(runningVM.substring(0, runningVM.indexOf(VMPID_SPLIT_CHAR)));
 //        osVariables = OsVariablesInstance.getInstance().getOsVariables();
         applicationUUID = UUID.randomUUID().toString();
-        jaHealthCheck = new JAHealthCheck(applicationUUID);
         //TODO collector version to be set via gradle
 
     }
@@ -69,6 +68,10 @@ public class AgentInfo {
             }
         }
         return instance;
+    }
+
+    public void initialiseHC(){
+        jaHealthCheck = new JAHealthCheck(applicationUUID);
     }
 
     public ApplicationInfoBean getApplicationInfo() {

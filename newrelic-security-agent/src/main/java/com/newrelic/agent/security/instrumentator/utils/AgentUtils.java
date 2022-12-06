@@ -110,17 +110,6 @@ public class AgentUtils {
     private boolean collectAppInfoFromEnv = false;
 
     private String groupName = StringUtils.EMPTY;
-
-    private boolean standaloneMode = false;
-
-    private OSVariables osVariables = OsVariablesInstance.getInstance().getOsVariables();
-
-    private boolean isAgentActive = false;
-
-    private boolean isNRSecurityEnabled = false;
-
-    private Map<String, String> linkingMetadata = new HashMap<>();
-
     private Map<String, String> statusLogValues = new HashMap<>();
 
     private Collection<String> statusLogMostRecentHCs = BufferUtils.synchronizedBuffer(new CircularFifoBuffer(5));
@@ -147,25 +136,6 @@ public class AgentUtils {
             }
         }
         return instance;
-    }
-
-    public void setAgentActive(boolean agentActive) {
-        isAgentActive = agentActive;
-        isNRSecurityEnabled = NewRelic.getAgent().getConfig().getValue(NR_SECURITY_ENABLE, false);
-        logger.logInit(LogLevel.INFO, String.format(COLLECTOR_IS_NOW_S, (isAgentActive) ? ACTIVE : INACTIVE, AgentInfo.getInstance().getApplicationUUID()), AgentUtils.class.getName());
-    }
-
-    public boolean isAgentActive() {
-        return isAgentActive && (standaloneMode || isNRSecurityEnabled);
-    }
-
-
-    public boolean isStandaloneMode() {
-        return standaloneMode;
-    }
-
-    public void setStandaloneMode(boolean standaloneMode) {
-        this.standaloneMode = standaloneMode;
     }
 
     public Map<String, ClassLoader> getClassLoaderRecord() {
@@ -214,14 +184,6 @@ public class AgentUtils {
 
     public void setAgentPolicyParameters(AgentPolicyParameters agentPolicyParameters) {
         this.agentPolicyParameters = agentPolicyParameters;
-    }
-
-    public Map<String, String> getLinkingMetadata() {
-        return linkingMetadata;
-    }
-
-    public void setLinkingMetadata(Map<String, String> linkingMetadata) {
-        this.linkingMetadata = linkingMetadata;
     }
 
     public boolean isPolicyOverridden() {

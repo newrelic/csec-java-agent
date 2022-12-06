@@ -2,6 +2,7 @@ package com.newrelic.agent.security.instrumentator.utils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import com.newrelic.agent.security.AgentInfo;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.newrelic.agent.security.intcodeagent.filelogging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.models.collectorconfig.CollectorConfig;
@@ -91,10 +92,10 @@ public class CollectorConfigurationUtils {
         if (System.getenv().containsKey("K2_NODE_NAME")) {
             hostName = System.getenv().get("K2_NODE_NAME");
         } else {
-            hostName = AgentUtils.getInstance().getLinkingMetadata().getOrDefault(INRSettingsKey.HOSTNAME, StringUtils.EMPTY);
+            hostName = AgentInfo.getInstance().getLinkingMetadata().getOrDefault(INRSettingsKey.HOSTNAME, StringUtils.EMPTY);
         }
 
-        collectorConfig.setNodeId(AgentUtils.getInstance().getLinkingMetadata().getOrDefault(INRSettingsKey.NR_ENTITY_GUID, StringUtils.EMPTY));
+        collectorConfig.setNodeId(AgentInfo.getInstance().getLinkingMetadata().getOrDefault(INRSettingsKey.NR_ENTITY_GUID, StringUtils.EMPTY));
         collectorConfig.setNodeName(hostName);
         collectorConfig.setNodeGroupTags(Collections.emptySet());
 

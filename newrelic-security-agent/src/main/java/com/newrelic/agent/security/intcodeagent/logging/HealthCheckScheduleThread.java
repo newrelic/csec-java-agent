@@ -70,7 +70,7 @@ public class HealthCheckScheduleThread {
                     // we send our custom object to check if connection is still alive or not
                     // this will be ignored by ic agent on the other side.
 
-                    if (!AgentUtils.getInstance().isAgentActive()) {
+                    if (!AgentInfo.getInstance().isAgentActive()) {
                         return;
                     }
 
@@ -175,7 +175,7 @@ public class HealthCheckScheduleThread {
         serviceStatus.put("initLogWriter", FileLoggerThreadPool.getInstance().isInitLoggingActive() ? "OK" : "Error");
         serviceStatus.put("statusLogWriter", isStatusLoggingActive ? "OK" : "Error");
 
-        serviceStatus.put("agentActiveStat", AgentUtils.getInstance().isAgentActive() ? "OK" : "Error");
+        serviceStatus.put("agentActiveStat", AgentInfo.getInstance().isAgentActive() ? "OK" : "Error");
 
         serviceStatus.put("resourceServer", HttpClient.getInstance().isConnected() ? "OK" : "Error");
         serviceStatus.put("iastRestClient", RestClient.getInstance().isConnected() ? "OK" : "Error");

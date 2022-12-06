@@ -1,6 +1,7 @@
 package com.newrelic.agent.security.intcodeagent.models.javaagent;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.newrelic.agent.security.AgentInfo;
 import com.newrelic.agent.security.instrumentator.utils.AgentUtils;
 import com.newrelic.agent.security.instrumentator.utils.INRSettingsKey;
 import com.newrelic.agent.security.intcodeagent.properties.K2JAVersionInfo;
@@ -68,8 +69,8 @@ public class AgentBasicInfo {
         setCollectorVersion(K2JAVersionInfo.collectorVersion);
         setBuildNumber(K2JAVersionInfo.buildNumber);
         setGroupName(AgentUtils.getInstance().getGroupName());
-        setNodeId(AgentUtils.getInstance().getLinkingMetadata().getOrDefault(INRSettingsKey.NR_ENTITY_GUID, StringUtils.EMPTY));
-        setLinkingMetadata(AgentUtils.getInstance().getLinkingMetadata());
+        setNodeId(AgentInfo.getInstance().getLinkingMetadata().getOrDefault(INRSettingsKey.NR_ENTITY_GUID, StringUtils.EMPTY));
+        setLinkingMetadata(AgentInfo.getInstance().getLinkingMetadata());
         if (this instanceof ApplicationInfoBean) {
             setJsonName(JSON_NAME_APPLICATION_INFO_BEAN);
         } else if (this instanceof JavaAgentEventBean) {
