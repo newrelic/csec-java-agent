@@ -64,8 +64,9 @@ public class Agent implements SecurityAgent {
         System.setProperty("org.slf4j.simpleLogger.defaultLogLevel", "off");
         System.setProperty("org.slf4j.simpleLogger.logFile", "System.out");
         config = AgentConfig.getInstance();
-        config.instantiate();
         info = AgentInfo.getInstance();
+        config.instantiate();
+        info.setIdentifier(ApplicationInfoUtils.envDetection());
     }
 
     private void initialise() {

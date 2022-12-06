@@ -56,7 +56,6 @@ public class AgentInfo {
         String runningVM = runtimeMXBean.getName();
         VMPID = Integer.parseInt(runningVM.substring(0, runningVM.indexOf(VMPID_SPLIT_CHAR)));
         osVariables = OsVariablesInstance.getInstance().getOsVariables();
-        identifier = ApplicationInfoUtils.envDetection();
         applicationUUID = UUID.randomUUID().toString();
         jaHealthCheck = new JAHealthCheck(applicationUUID);
         //TODO collector version to be set via gradle
@@ -100,6 +99,10 @@ public class AgentInfo {
 
     public Map<String, String> getLinkingMetadata() {
         return linkingMetadata;
+    }
+
+    public void setIdentifier(Identifier identifier) {
+        this.identifier = identifier;
     }
 
     public void setLinkingMetadata(Map<String, String> linkingMetadata) {
