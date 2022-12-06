@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.newrelic.agent.security.AgentConfig;
 import com.newrelic.agent.security.instrumentator.os.OSVariables;
 import com.newrelic.agent.security.instrumentator.os.OsVariablesInstance;
-import com.newrelic.agent.security.instrumentator.utils.CollectorConfigurationUtils;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.newrelic.agent.security.intcodeagent.filelogging.LogLevel;
 import okhttp3.*;

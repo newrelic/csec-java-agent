@@ -8,7 +8,7 @@ import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool
 import com.newrelic.agent.security.intcodeagent.filelogging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.models.config.AgentPolicyParameters;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.LogMessage;
-import com.newrelic.agent.security.schema.policy.AgentPolicy;
+import com.newrelic.api.agent.security.schema.policy.AgentPolicy;
 import com.newrelic.api.agent.NewRelic;
 import org.apache.commons.io.FileUtils;
 import org.everit.json.schema.Schema;

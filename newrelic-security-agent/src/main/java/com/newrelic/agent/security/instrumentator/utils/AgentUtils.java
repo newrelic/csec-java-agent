@@ -15,7 +15,7 @@ import com.newrelic.agent.security.intcodeagent.models.javaagent.UserClassEntity
 import com.newrelic.agent.security.intcodeagent.models.javaagent.VulnerabilityCaseType;
 import com.newrelic.agent.security.intcodeagent.models.operationalbean.AbstractOperationalBean;
 import com.newrelic.agent.security.intcodeagent.schedulers.PolicyPullST;
-import com.newrelic.agent.security.schema.policy.AgentPolicy;
+import com.newrelic.api.agent.security.schema.policy.AgentPolicy;
 import com.newrelic.api.agent.NewRelic;
 import com.sun.jna.Pointer;
 import com.sun.jna.platform.win32.Kernel32;

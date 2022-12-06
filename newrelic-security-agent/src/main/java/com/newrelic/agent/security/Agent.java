@@ -1,7 +1,7 @@
 package com.newrelic.agent.security;
 
-import com.newrelic.agent.security.api.NewRelicSecurity;
-import com.newrelic.agent.security.api.SecurityAgent;
+import com.newrelic.api.agent.security.NewRelicSecurity;
+import com.newrelic.api.agent.security.SecurityAgent;
 import com.newrelic.agent.security.instrumentator.utils.AgentUtils;
 import com.newrelic.agent.security.instrumentator.utils.ApplicationInfoUtils;
 import com.newrelic.agent.security.instrumentator.utils.CollectorConfigurationUtils;
@@ -15,9 +15,9 @@ import com.newrelic.agent.security.intcodeagent.schedulers.PolicyPullST;
 import com.newrelic.agent.security.intcodeagent.websocket.EventSendPool;
 import com.newrelic.agent.security.intcodeagent.websocket.JsonConverter;
 import com.newrelic.agent.security.intcodeagent.websocket.WSClient;
-import com.newrelic.agent.security.schema.AbstractOperation;
-import com.newrelic.agent.security.schema.SecurityMetaData;
-import com.newrelic.agent.security.schema.policy.AgentPolicy;
+import com.newrelic.api.agent.security.schema.AbstractOperation;
+import com.newrelic.api.agent.security.schema.SecurityMetaData;
+import com.newrelic.api.agent.security.schema.policy.AgentPolicy;
 import com.newrelic.api.agent.NewRelic;
 import com.newrelic.api.agent.Transaction;
 

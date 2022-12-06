@@ -11,7 +11,7 @@ import com.newrelic.agent.security.intcodeagent.filelogging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.logging.IAgentConstants;
 import com.newrelic.agent.security.intcodeagent.utils.CommonUtils;
 import com.newrelic.agent.security.intcodeagent.websocket.EventSendPool;
-import com.newrelic.agent.security.schema.policy.AgentPolicy;
+import com.newrelic.api.agent.security.schema.policy.AgentPolicy;
 import okhttp3.Response;
 import org.apache.commons.lang3.StringUtils;
 
