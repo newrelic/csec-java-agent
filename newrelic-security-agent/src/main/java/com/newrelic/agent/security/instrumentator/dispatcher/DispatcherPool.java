@@ -1,11 +1,9 @@
 package com.newrelic.agent.security.instrumentator.dispatcher;
 
-import com.newrelic.agent.security.instrumentator.K2Instrumentator;
+import com.newrelic.agent.security.AgentInfo;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.newrelic.agent.security.intcodeagent.filelogging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.logging.IAgentConstants;
-
-
 import com.newrelic.agent.security.intcodeagent.models.javaagent.*;
 import com.newrelic.agent.security.intcodeagent.models.operationalbean.AbstractOperationalBean;
 import org.apache.commons.lang3.StringUtils;
@@ -56,8 +54,8 @@ public class DispatcherPool {
          * @throws RejectedExecutionException always
          */
         public void rejectedExecution(Runnable r, ThreadPoolExecutor e) {
-            K2Instrumentator.JA_HEALTH_CHECK.incrementDropCount();
-            K2Instrumentator.JA_HEALTH_CHECK.incrementProcessedCount();
+            AgentInfo.getInstance().getJaHealthCheck().incrementDropCount();
+            AgentInfo.getInstance().getJaHealthCheck().incrementProcessedCount();
 //			logger.log(LogLevel.FINE,"Event Task " + r.toString() + " rejected from  " + e.toString(), EventThreadPool.class.getName());
         }
     }
@@ -76,11 +74,11 @@ public class DispatcherPool {
                     try {
                         Future<?> future = (Future<?>) r;
                         if (future.isDone()) {
-                            K2Instrumentator.JA_HEALTH_CHECK.incrementProcessedCount();
+                            AgentInfo.getInstance().getJaHealthCheck().incrementProcessedCount();
                             future.get();
                         }
                     } catch (Throwable e) {
-                        K2Instrumentator.JA_HEALTH_CHECK.incrementDropCount();
+                        AgentInfo.getInstance().getJaHealthCheck().incrementDropCount();
                     }
                 }
                 super.afterExecute(r, t);

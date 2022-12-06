@@ -1,6 +1,6 @@
 package com.newrelic.agent.security.instrumentator.utils;
 
-import com.newrelic.agent.security.instrumentator.K2Instrumentator;
+import com.newrelic.agent.security.AgentInfo;
 import com.newrelic.agent.security.instrumentator.custom.ClassloaderAdjustments;
 import com.newrelic.agent.security.instrumentator.os.OSVariables;
 import com.newrelic.agent.security.instrumentator.os.OsVariablesInstance;
@@ -8,15 +8,14 @@ import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool
 import com.newrelic.agent.security.intcodeagent.filelogging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.logging.DeployedApplication;
 import com.newrelic.agent.security.intcodeagent.logging.IAgentConstants;
-import com.newrelic.agent.security.intcodeagent.models.config.AgentPolicy;
 import com.newrelic.agent.security.intcodeagent.models.config.AgentPolicyParameters;
-import com.newrelic.agent.security.intcodeagent.models.config.PolicyApplicationInfo;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.CollectorInitMsg;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.EventResponse;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.UserClassEntity;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.VulnerabilityCaseType;
 import com.newrelic.agent.security.intcodeagent.models.operationalbean.AbstractOperationalBean;
 import com.newrelic.agent.security.intcodeagent.schedulers.PolicyPullST;
+import com.newrelic.agent.security.schema.policy.AgentPolicy;
 import com.newrelic.api.agent.NewRelic;
 import com.sun.jna.Pointer;
 import com.sun.jna.platform.win32.Kernel32;
@@ -110,8 +109,6 @@ public class AgentUtils {
 
     private boolean collectAppInfoFromEnv = false;
 
-    private PolicyApplicationInfo applicationInfo;
-
     private String groupName = StringUtils.EMPTY;
 
     private boolean standaloneMode = false;
@@ -136,7 +133,6 @@ public class AgentUtils {
         eventResponseSet = new ConcurrentHashMap<>();
         classLoaderRecord = new ConcurrentHashMap<>();
         rxssSentUrls = new HashSet<>();
-        applicationInfo = new PolicyApplicationInfo();
         deployedApplicationUnderProcessing = new HashSet<>();
         TRACE_PATTERN = Pattern.compile(IAgentConstants.TRACE_REGEX);
 
@@ -156,7 +152,7 @@ public class AgentUtils {
     public void setAgentActive(boolean agentActive) {
         isAgentActive = agentActive;
         isNRSecurityEnabled = NewRelic.getAgent().getConfig().getValue(NR_SECURITY_ENABLE, false);
-        logger.logInit(LogLevel.INFO, String.format(COLLECTOR_IS_NOW_S, (isAgentActive) ? ACTIVE : INACTIVE, K2Instrumentator.APPLICATION_UUID), AgentUtils.class.getName());
+        logger.logInit(LogLevel.INFO, String.format(COLLECTOR_IS_NOW_S, (isAgentActive) ? ACTIVE : INACTIVE, AgentInfo.getInstance().getApplicationUUID()), AgentUtils.class.getName());
     }
 
     public boolean isAgentActive() {
@@ -210,14 +206,6 @@ public class AgentUtils {
 
     public void setCollectAppInfoFromEnv(boolean collectAppInfoFromEnv) {
         this.collectAppInfoFromEnv = collectAppInfoFromEnv;
-    }
-
-    public PolicyApplicationInfo getApplicationInfo() {
-        return applicationInfo;
-    }
-
-    public void setApplicationInfo(PolicyApplicationInfo applicationInfo) {
-        this.applicationInfo = applicationInfo;
     }
 
     public AgentPolicyParameters getAgentPolicyParameters() {
@@ -516,15 +504,9 @@ public class AgentUtils {
     }
 
     private boolean isAppScanNeeded() {
-        return !scannedDeployedApplications.containsAll(K2Instrumentator.APPLICATION_INFO_BEAN.getServerInfo().getDeployedApplications());
+        return !scannedDeployedApplications.containsAll(AgentInfo.getInstance().getApplicationInfo().getServerInfo().getDeployedApplications());
     }
 
-    public void setApplicationInfo() {
-        if (!isCollectAppInfoFromEnv()) {
-            applicationInfo = agentPolicy.getApplicationInfo();
-            K2Instrumentator.setApplicationInfo(K2Instrumentator.APPLICATION_INFO_BEAN);
-        }
-    }
 
     public static void reformStackStrace(AbstractOperationalBean operationalBean) {
 

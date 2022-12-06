@@ -1,6 +1,6 @@
 package com.newrelic.agent.security.instrumentator.utils;
 
-import com.newrelic.agent.security.instrumentator.K2Instrumentator;
+import com.newrelic.agent.security.AgentInfo;
 import com.newrelic.agent.security.instrumentator.dispatcher.DispatcherPool;
 import com.newrelic.agent.security.instrumentator.os.OsVariablesInstance;
 import com.newrelic.agent.security.intcodeagent.controlcommand.ControlCommandProcessorThreadPool;
@@ -56,7 +56,7 @@ public class InstrumentationUtils {
         try {
             AgentUtils.getInstance().setAgentActive(false);
             ShutDownEvent shutDownEvent = new ShutDownEvent();
-            shutDownEvent.setApplicationUUID(K2Instrumentator.APPLICATION_UUID);
+            shutDownEvent.setApplicationUUID(AgentInfo.getInstance().getApplicationUUID());
             shutDownEvent.setStatus(IAgentConstants.TERMINATING);
             EventSendPool.getInstance().sendEvent(shutDownEvent.toString());
             logger.log(LogLevel.INFO, IAgentConstants.SHUTTING_DOWN_WITH_STATUS + shutDownEvent, InstrumentationUtils.class.getName());

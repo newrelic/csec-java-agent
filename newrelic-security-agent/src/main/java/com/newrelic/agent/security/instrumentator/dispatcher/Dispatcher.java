@@ -1,6 +1,6 @@
 package com.newrelic.agent.security.instrumentator.dispatcher;
 
-import com.newrelic.agent.security.instrumentator.K2Instrumentator;
+import com.newrelic.agent.security.AgentInfo;
 import com.newrelic.agent.security.instrumentator.custom.ServletContextInfo;
 import com.newrelic.agent.security.instrumentator.utils.AgentUtils;
 import com.newrelic.agent.security.instrumentator.utils.CallbackUtils;
@@ -10,10 +10,6 @@ import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool
 import com.newrelic.agent.security.intcodeagent.filelogging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.logging.DeployedApplication;
 import com.newrelic.agent.security.intcodeagent.logging.IAgentConstants;
-
-
-
-
 import com.newrelic.agent.security.intcodeagent.models.javaagent.*;
 import com.newrelic.agent.security.intcodeagent.models.operationalbean.*;
 import com.newrelic.agent.security.intcodeagent.websocket.EventSendPool;
@@ -320,7 +316,7 @@ public class Dispatcher implements Runnable {
         }
         Set<String> xssConstructs = CallbackUtils.checkForReflectedXSS(httpRequestBean);
         JavaAgentEventBean eventBean = prepareEvent(httpRequestBean, metaData, vulnerabilityCaseType);
-        if (K2Instrumentator.APPLICATION_INFO_BEAN.getServerInfo().getDeployedApplications().isEmpty() ||
+        if (AgentInfo.getInstance().getApplicationInfo().getServerInfo().getDeployedApplications().isEmpty() ||
                 (!xssConstructs.isEmpty() && !actuallyEmpty(xssConstructs) && StringUtils.isNotBlank(httpRequestBean.getHttpResponseBean().getResponseBody())) ||
                 (AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getEnabled()
                         && AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getIastScan().getEnabled())) {
@@ -328,8 +324,8 @@ public class Dispatcher implements Runnable {
             params.addAll(xssConstructs);
             params.add(httpRequestBean.getHttpResponseBean().getResponseBody());
             eventBean.setParameters(params);
-            eventBean.setApplicationUUID(K2Instrumentator.APPLICATION_UUID);
-            eventBean.setPid(K2Instrumentator.VMPID);
+            eventBean.setApplicationUUID(AgentInfo.getInstance().getApplicationUUID());
+            eventBean.setPid(AgentInfo.getInstance().getVMPID());
             eventBean.setSourceMethod((String) extraInfo.get(SOURCESTRING));
             eventBean.setId((String) extraInfo.get(EXECUTIONID));
             eventBean.setStartTime((Long) extraInfo.get(STARTTIME));
@@ -366,7 +362,7 @@ public class Dispatcher implements Runnable {
             DeployedApplication deployedApplication = new DeployedApplication();
             deployedApplication.getPorts().add(httpRequestBean.getServerPort());
             deployedApplication.setContextPath(httpRequestBean.getContextPath());
-            if (!K2Instrumentator.APPLICATION_INFO_BEAN.getServerInfo().getDeployedApplications().contains(deployedApplication)
+            if (!AgentInfo.getInstance().getApplicationInfo().getServerInfo().getDeployedApplications().contains(deployedApplication)
                     && !AgentUtils.getInstance().getDeployedApplicationUnderProcessing().contains(deployedApplication)) {
                 AgentUtils.getInstance().getDeployedApplicationUnderProcessing().add(deployedApplication);
                 detectAndSendDeployedAppInfo(deployedApplication);
@@ -418,7 +414,7 @@ public class Dispatcher implements Runnable {
                 Dispatcher.class.getName()
         );
         try {
-            if (K2Instrumentator.APPLICATION_INFO_BEAN.getServerInfo().getDeployedApplications()
+            if (AgentInfo.getInstance().getApplicationInfo().getServerInfo().getDeployedApplications()
                     .contains(deployedApplication)) {
                 return false;
             }
@@ -447,7 +443,7 @@ public class Dispatcher implements Runnable {
             }
 
 //			System.out.println("Processed App Info : " + deployedApplication);
-            ApplicationInfoBean applicationInfoBean = K2Instrumentator.APPLICATION_INFO_BEAN;
+            ApplicationInfoBean applicationInfoBean = AgentInfo.getInstance().getApplicationInfo();
 
             applicationInfoBean.getServerInfo().setName(ServletContextInfo.getInstance().getServerInfo());
             AgentUtils.getInstance().getStatusLogValues().put(SERVER_NAME, applicationInfoBean.getServerInfo().getName());
@@ -801,8 +797,8 @@ public class Dispatcher implements Runnable {
     }
 
     private JavaAgentEventBean setGenericProperties(AbstractOperationalBean objectBean, JavaAgentEventBean eventBean) {
-        eventBean.setApplicationUUID(K2Instrumentator.APPLICATION_UUID);
-        eventBean.setPid(K2Instrumentator.VMPID);
+        eventBean.setApplicationUUID(AgentInfo.getInstance().getApplicationUUID());
+        eventBean.setPid(AgentInfo.getInstance().getVMPID());
         eventBean.setSourceMethod(objectBean.getSourceMethod());
         eventBean.setId(objectBean.getExecutionId());
         eventBean.setStartTime(objectBean.getStartTime());

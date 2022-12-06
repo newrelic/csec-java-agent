@@ -1,6 +1,6 @@
 package com.newrelic.agent.security.instrumentator.httpclient;
 
-import com.newrelic.agent.security.instrumentator.K2Instrumentator;
+import com.newrelic.agent.security.AgentInfo;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.newrelic.agent.security.intcodeagent.filelogging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.logging.IAgentConstants;
@@ -129,7 +129,7 @@ public class RestClient {
             }
         } catch (IOException e) {
             logger.log(LogLevel.DEBUG, String.format(CALL_FAILED_REQUEST_S_REASON, request), e, RestClient.class.getName());
-            FuzzFailEvent fuzzFailEvent = new FuzzFailEvent(K2Instrumentator.APPLICATION_UUID);
+            FuzzFailEvent fuzzFailEvent = new FuzzFailEvent(AgentInfo.getInstance().getApplicationUUID());
             fuzzFailEvent.setFuzzHeader(request.header(IAgentConstants.K2_FUZZ_REQUEST_ID));
             EventSendPool.getInstance().sendEvent(fuzzFailEvent.toString());
         }

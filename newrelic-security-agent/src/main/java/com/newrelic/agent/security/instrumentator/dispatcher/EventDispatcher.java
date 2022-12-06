@@ -1,14 +1,10 @@
 package com.newrelic.agent.security.instrumentator.dispatcher;
 
-import com.newrelic.agent.security.instrumentator.K2Instrumentator;
-
-
+import com.newrelic.agent.security.AgentInfo;
 import com.newrelic.agent.security.instrumentator.custom.*;
 import com.newrelic.agent.security.instrumentator.utils.AgentUtils;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.newrelic.agent.security.intcodeagent.filelogging.LogLevel;
-
-
 import com.newrelic.agent.security.intcodeagent.models.javaagent.*;
 import com.newrelic.agent.security.intcodeagent.models.operationalbean.AbstractOperationalBean;
 import com.newrelic.agent.security.intcodeagent.models.operationalbean.SQLOperationalBean;
@@ -87,7 +83,7 @@ public class EventDispatcher {
                 exitEventBean.setK2RequestIdentifier(requestBean.getK2RequestIdentifier());
                 logger.log(LogLevel.DEBUG, "Exit event : " + exitEventBean, EventDispatcher.class.getName());
                 DispatcherPool.getInstance().dispatchExitEvent(exitEventBean);
-                K2Instrumentator.JA_HEALTH_CHECK.incrementExitEventSentCount();
+                AgentInfo.getInstance().getJaHealthCheck().incrementExitEventSentCount();
             }
         }
     }

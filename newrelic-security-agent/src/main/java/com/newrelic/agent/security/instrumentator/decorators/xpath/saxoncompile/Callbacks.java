@@ -3,8 +3,8 @@ package com.newrelic.agent.security.instrumentator.decorators.xpath.saxoncompile
 import com.newrelic.agent.security.instrumentator.custom.ThreadLocalHttpMap;
 import com.newrelic.agent.security.instrumentator.custom.ThreadLocalOperationLock;
 import com.newrelic.agent.security.instrumentator.custom.ThreadLocalXpathSaxonMap;
-import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.newrelic.agent.security.instrumentator.decorators.xpath.IXPathConstants;
+import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
 import org.apache.commons.lang3.StringUtils;
 
 import java.lang.reflect.Field;

@@ -1,7 +1,6 @@
 package com.newrelic.agent.security.instrumentator.decorators.httpservice;
 
-import com.newrelic.agent.security.instrumentator.K2Instrumentator;
-
+import com.newrelic.agent.security.AgentInfo;
 import com.newrelic.agent.security.instrumentator.custom.*;
 import com.newrelic.agent.security.instrumentator.dispatcher.EventDispatcher;
 import com.newrelic.agent.security.instrumentator.utils.AgentUtils;
@@ -9,7 +8,6 @@ import com.newrelic.agent.security.instrumentator.utils.CallbackUtils;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.AgentMetaData;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.HttpRequestBean;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.VulnerabilityCaseType;
-
 import org.apache.commons.lang3.StringUtils;
 
 import java.time.Instant;
@@ -61,7 +59,7 @@ public class Callbacks {
                         CallbackUtils.cleanUpAllStates();
 //                        System.out.println("Came to service hook 1:" + exectionId + " :: " + sourceString + " :: " + args[0] + " :: " + args[1]);
                         ThreadLocalHTTPServiceLock.getInstance().acquire(obj, sourceString, exectionId);
-                        K2Instrumentator.JA_HEALTH_CHECK.incrementHttpRequestCount();
+                        AgentInfo.getInstance().getJaHealthCheck().incrementHttpRequestCount();
                         ThreadLocalHttpMap.getInstance().setHttpRequest(args[0]);
                         ThreadLocalHttpMap.getInstance().setHttpResponse(args[1]);
                         ThreadLocalHttpMap.getInstance().setServiceMethodEncountered(true);

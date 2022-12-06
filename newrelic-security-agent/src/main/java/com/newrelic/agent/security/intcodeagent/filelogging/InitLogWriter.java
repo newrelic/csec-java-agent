@@ -1,6 +1,6 @@
 package com.newrelic.agent.security.intcodeagent.filelogging;
 
-import com.newrelic.agent.security.instrumentator.K2Instrumentator;
+import com.newrelic.agent.security.AgentInfo;
 import com.newrelic.agent.security.instrumentator.httpclient.HttpClient;
 import com.newrelic.agent.security.instrumentator.httpclient.IRestClientConstants;
 import com.newrelic.agent.security.instrumentator.os.OSVariables;
@@ -127,7 +127,7 @@ public class InitLogWriter implements Runnable {
 //		sb.append(K2_LOG);
         sb.append(sdf.format(cal.getTime()));
         sb.append(STR_COLON);
-        sb.append(String.format(THREAD_NAME_TEMPLATE, K2Instrumentator.VMPID, threadName));
+        sb.append(String.format(THREAD_NAME_TEMPLATE, AgentInfo.getInstance().getVMPID(), threadName));
         sb.append(this.logLevelName);
         if (this.loggingClassName != null)
             sb.append(STR_COLON);
@@ -209,7 +209,7 @@ public class InitLogWriter implements Runnable {
 
     private static void uploadLogsAndDeleteFile(File file) {
         Map<String, String> queryParams = new HashMap<>();
-        queryParams.put("applicationUUID", K2Instrumentator.APPLICATION_UUID);
+        queryParams.put("applicationUUID", AgentInfo.getInstance().getApplicationUUID());
         queryParams.put("saveName", file.getName());
         HttpClient.getInstance().doPost(IRestClientConstants.COLLECTOR_UPLOAD_LOG, null, queryParams, null, file);
     }

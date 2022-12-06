@@ -1,8 +1,8 @@
 package com.newrelic.agent.security.intcodeagent.websocket;
 
-import com.newrelic.agent.security.instrumentator.K2Instrumentator;
+import com.newrelic.agent.security.AgentConfig;
+import com.newrelic.agent.security.AgentInfo;
 import com.newrelic.agent.security.instrumentator.utils.AgentUtils;
-import com.newrelic.agent.security.instrumentator.utils.CollectorConfigurationUtils;
 import com.newrelic.agent.security.instrumentator.utils.InstrumentationUtils;
 import com.newrelic.agent.security.intcodeagent.controlcommand.ControlCommandProcessor;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
@@ -46,16 +46,16 @@ public class WSClient extends WebSocketClient {
     private boolean isConnected = false;
 
     private WSClient() throws URISyntaxException {
-        super(new URI(CollectorConfigurationUtils.getInstance().getCollectorConfig().getK2ServiceInfo().getValidatorServiceEndpointURL()));
+        super(new URI(AgentConfig.getInstance().getConfig().getK2ServiceInfo().getValidatorServiceEndpointURL()));
         this.setTcpNoDelay(true);
         this.setConnectionLostTimeout(30);
         this.addHeader("K2-CONNECTION-TYPE", "LANGUAGE_COLLECTOR");
-        this.addHeader("K2-API-ACCESSOR", CollectorConfigurationUtils.getInstance().getCollectorConfig().getCustomerInfo().getApiAccessorToken());
+        this.addHeader("K2-API-ACCESSOR", AgentConfig.getInstance().getConfig().getCustomerInfo().getApiAccessorToken());
         this.addHeader("K2-VERSION", K2JAVersionInfo.collectorVersion);
         this.addHeader("K2-COLLECTOR-TYPE", "JAVA");
         this.addHeader("K2-BUILD-NUMBER", K2JAVersionInfo.buildNumber);
         this.addHeader("K2-GROUP", AgentUtils.getInstance().getGroupName());
-        this.addHeader("K2-APPLICATION-UUID", K2Instrumentator.APPLICATION_UUID);
+        this.addHeader("K2-APPLICATION-UUID", AgentInfo.getInstance().getApplicationUUID());
         this.addHeader("K2-JSON-VERSION", K2JAVersionInfo.jsonVersion);
     }
 
@@ -65,7 +65,7 @@ public class WSClient extends WebSocketClient {
      * @throws InterruptedException
      */
     public void openConnection() throws InterruptedException {
-        logger.logInit(LogLevel.INFO, String.format(IAgentConstants.INIT_WS_CONNECTION, CollectorConfigurationUtils.getInstance().getCollectorConfig().getK2ServiceInfo().getValidatorServiceEndpointURL()),
+        logger.logInit(LogLevel.INFO, String.format(IAgentConstants.INIT_WS_CONNECTION, AgentConfig.getInstance().getConfig().getK2ServiceInfo().getValidatorServiceEndpointURL()),
                 WSClient.class.getName());
         connectBlocking();
         WebSocket conn = getConnection();
@@ -79,16 +79,16 @@ public class WSClient extends WebSocketClient {
         logger.logInit(LogLevel.INFO, String.format(IAgentConstants.WS_CONNECTION_SUCCESSFUL, this.getRemoteSocketAddress()) , WSClient.class.getName());
 //		logger.log(LogLevel.INFO, "Current WSock ready status : {0},{1},{2}",
 //				new Object[] { this.isOpen(), this.isClosing(), this.isClosed() });
-        logger.logInit(LogLevel.INFO, String.format(IAgentConstants.SENDING_APPLICATION_INFO_ON_WS_CONNECT, K2Instrumentator.APPLICATION_INFO_BEAN) , WSClient.class.getName());
-        super.send(K2Instrumentator.APPLICATION_INFO_BEAN.toString());
+        logger.logInit(LogLevel.INFO, String.format(IAgentConstants.SENDING_APPLICATION_INFO_ON_WS_CONNECT, AgentInfo.getInstance().getApplicationInfo()) , WSClient.class.getName());
+        super.send(AgentInfo.getInstance().getApplicationInfo().toString());
         CommonUtils.fireUpdatePolicyAPI(AgentUtils.getInstance().getAgentPolicy());
 //		Agent.allClassLoadersCount.set(0);
 //		Agent.jarPathSet.clear();
 //		logger.log(LogLevel.INFO, "Resetting allClassLoadersCount to " + Agent.allClassLoadersCount.get(),
 //				WSClient.class.getName());
-        isConnected = true;
+        setConnected(true);
 //        WSReconnectionST.cancelTask(false);
-        logger.logInit(LogLevel.INFO, String.format(IAgentConstants.APPLICATION_INFO_SENT_ON_WS_CONNECT, K2Instrumentator.APPLICATION_INFO_BEAN), WSClient.class.getName());
+        logger.logInit(LogLevel.INFO, String.format(IAgentConstants.APPLICATION_INFO_SENT_ON_WS_CONNECT, AgentInfo.getInstance().getApplicationInfo()), WSClient.class.getName());
     }
 
     @Override
@@ -104,7 +104,7 @@ public class WSClient extends WebSocketClient {
 
     @Override
     public void onClose(int code, String reason, boolean remote) {
-        isConnected = false;
+        setConnected(false);
         logger.log(LogLevel.WARN, CONNECTION_CLOSED_BY + (remote ? REMOTE_PEER : LOCAL) + CODE + code
                 + REASON + reason, WSClient.class.getName());
         if (code == CloseFrame.NEVER_CONNECTED) {
@@ -122,7 +122,7 @@ public class WSClient extends WebSocketClient {
     public void onError(Exception ex) {
 //        logger.log(LogLevel.SEVERE, "Error in WSock connection : " + ex.getMessage() + " : " + ex.getCause(),
 //                WSClient.class.getName());
-        logger.logInit(LogLevel.FATAL, String.format(IAgentConstants.WS_CONNECTION_UNSUCCESSFUL, CollectorConfigurationUtils.getInstance().getCollectorConfig().getK2ServiceInfo().getValidatorServiceEndpointURL()),
+        logger.logInit(LogLevel.FATAL, String.format(IAgentConstants.WS_CONNECTION_UNSUCCESSFUL, AgentConfig.getInstance().getConfig().getK2ServiceInfo().getValidatorServiceEndpointURL()),
                 ex,
                 WSClient.class.getName());
     }
@@ -174,6 +174,23 @@ public class WSClient extends WebSocketClient {
         instance = new WSClient();
         instance.openConnection();
         return instance;
+    }
+
+    public static void shutDownWSClient() {
+        logger.log(LogLevel.WARN, "Disconnecting WS client",
+                WSClient.class.getName());
+        if (instance != null) {
+            try {
+                instance.closeBlocking();
+            } catch (InterruptedException e) {
+            }
+        }
+        instance = null;
+    }
+
+    private void setConnected(boolean connected) {
+        isConnected = connected;
+        AgentInfo.getInstance().agentStatTrigger();
     }
 
     public static boolean isConnected() {

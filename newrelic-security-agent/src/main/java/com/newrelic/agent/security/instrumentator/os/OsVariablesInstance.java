@@ -1,6 +1,7 @@
 package com.newrelic.agent.security.instrumentator.os;
 
-import com.newrelic.agent.security.instrumentator.K2Instrumentator;
+import com.newrelic.agent.security.AgentConfig;
+import com.newrelic.agent.security.AgentInfo;
 import com.newrelic.agent.security.intcodeagent.logging.IAgentConstants;
 import com.newrelic.api.agent.NewRelic;
 import org.apache.commons.lang3.SystemUtils;
@@ -25,7 +26,7 @@ public class OsVariablesInstance {
 
     private OsVariablesInstance() {
         osVariables = new OSVariables();
-        /*Path k2root = Paths.get(K2Instrumentator.K2_HOME, K_2_ROOT);
+        /*Path k2root = Paths.get(AgentInfo.getInstance().getK2Home(), K_2_ROOT);
         if (!k2root.toFile().isDirectory()) {
             k2root.toFile().mkdir();
         }
@@ -36,16 +37,16 @@ public class OsVariablesInstance {
         }*/
 
 //        osVariables.setK2RootDir(k2root.toString());
-//        osVariables.setLogDirectory(Paths.get(k2root.toString(), LOGS, LANGUAGE_AGENT, K2Instrumentator.APPLICATION_UUID).toString());
+//        osVariables.setLogDirectory(Paths.get(k2root.toString(), LOGS, LANGUAGE_AGENT, AgentInfo.getInstance().getApplicationUUID()).toString());
 
 
         if(NewRelic.getAgent().getConfig().getValue("log_file_path") != null) {
             osVariables.setLogDirectory(Paths.get(NewRelic.getAgent().getConfig().getValue("log_file_path"), K2HOME, LOGS).toString());
         } else {
-            osVariables.setLogDirectory(Paths.get(K2Instrumentator.K2_HOME, LOGS).toString());
+            osVariables.setLogDirectory(Paths.get(AgentConfig.getInstance().getK2Home(), LOGS).toString());
         }
-        osVariables.setTmpDirectory(Paths.get(K2Instrumentator.K2_HOME, TMP, LANGUAGE_AGENT, K2Instrumentator.APPLICATION_UUID).toString());
-        osVariables.setSnapshotDir(Paths.get(K2Instrumentator.K2_HOME, LOGS, SNAPSHOTS).toString());
+        osVariables.setTmpDirectory(Paths.get(AgentConfig.getInstance().getK2Home(), TMP, LANGUAGE_AGENT, AgentInfo.getInstance().getApplicationUUID()).toString());
+        osVariables.setSnapshotDir(Paths.get(AgentConfig.getInstance().getK2Home(), LOGS, SNAPSHOTS).toString());
 //        osVariables.setPolicyConfigPath(Paths.get(k2root.toString(), CONFIG, LANGUAGE_AGENT).toString());
 
         if (SystemUtils.IS_OS_LINUX) {

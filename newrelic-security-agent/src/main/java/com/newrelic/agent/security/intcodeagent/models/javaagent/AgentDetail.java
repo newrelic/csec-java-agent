@@ -2,7 +2,7 @@ package com.newrelic.agent.security.intcodeagent.models.javaagent;
 
 import com.newrelic.agent.security.intcodeagent.websocket.JsonConverter;
 
-public class AgentInfo {
+public class AgentDetail {
 
     private String k2Version;
 
@@ -18,7 +18,7 @@ public class AgentInfo {
 
     private String nodeName;
 
-    public AgentInfo() {
+    public AgentDetail() {
     }
 
     /**

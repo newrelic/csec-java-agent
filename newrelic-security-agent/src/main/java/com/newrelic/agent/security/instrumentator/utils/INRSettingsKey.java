@@ -22,4 +22,6 @@ public interface INRSettingsKey {
     String NR_ENTITY_GUID = "entity.guid";
     String AGENT_RUN_ID = "agent_run_id";
     String HOSTNAME = "hostname";
+
+    String AGENT_RUN_ID_LINKING_METADATA = "agentRunId";
 }

@@ -40,6 +40,11 @@ public class GlobalPolicyParameterPullST {
         return instance;
     }
 
+    public static GlobalPolicyParameterPullST reinstantiate() {
+        instance = new GlobalPolicyParameterPullST();
+        return instance;
+    }
+
     private GlobalPolicyParameterPullST() {
         logger.log(LogLevel.INFO, "policy pull parameters for group name: " + AgentUtils.getInstance().getGroupName(), GlobalPolicyParameterPullST.class.getName());
         executorService = Executors.newSingleThreadScheduledExecutor(new ThreadFactory() {
@@ -118,6 +123,7 @@ public class GlobalPolicyParameterPullST {
         if (instance != null) {
             instance.shutDownThreadPoolExecutor();
         }
+        instance = null;
     }
 
     /**
@@ -126,7 +132,6 @@ public class GlobalPolicyParameterPullST {
      * the executor after a timeout.
      */
     public void shutDownThreadPoolExecutor() {
-
         if (executorService != null) {
             try {
                 executorService.shutdown(); // disable new tasks from being submitted

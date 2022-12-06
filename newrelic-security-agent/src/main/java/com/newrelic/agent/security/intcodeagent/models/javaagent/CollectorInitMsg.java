@@ -11,7 +11,7 @@ public class CollectorInitMsg {
 
     private Long timestamp;
 
-    private AgentInfo agentInfo;
+    private AgentDetail agentInfo;
 
     public CollectorInitMsg() {
     }
@@ -33,15 +33,15 @@ public class CollectorInitMsg {
     /**
      * @return the agentInfo
      */
-    public AgentInfo getAgentInfo() {
+    public AgentDetail getAgentInfo() {
         return agentInfo;
     }
 
     /**
-     * @param agentInfo the agentInfo to set
+     * @param agentDetail the agentInfo to set
      */
-    public void setAgentInfo(AgentInfo agentInfo) {
-        this.agentInfo = agentInfo;
+    public void setAgentInfo(AgentDetail agentDetail) {
+        this.agentInfo = agentDetail;
     }
 
     @Override

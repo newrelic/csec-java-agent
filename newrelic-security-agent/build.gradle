@@ -1,6 +1,5 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import com.github.jengelman.gradle.plugins.shadow.transformers.Log4j2PluginsCacheFileTransformer
-import com.nr.builder.BuildManifestTask
 import com.nr.builder.DependencyPatcher
 import com.nr.builder.GitUtil
 import com.nr.builder.Log4j2PluginFileMover
@@ -54,7 +53,6 @@ java {
 
 dependencies {
     shadowIntoJar project(":newrelic-security-api")
-    shadowIntoJar project(":newrelic-security-data-schema")
     shadowIntoJar 'com.googlecode.json-simple:json-simple:1.1.1'
     shadowIntoJar 'com.fasterxml.jackson.core:jackson-databind:2.13.4'
     shadowIntoJar 'com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.13.4'

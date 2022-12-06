@@ -1,12 +1,10 @@
 package com.newrelic.agent.security.instrumentator.utils;
 
-import com.newrelic.agent.security.instrumentator.K2Instrumentator;
-
+import com.newrelic.agent.security.AgentInfo;
 import com.newrelic.agent.security.instrumentator.custom.*;
 import com.newrelic.agent.security.instrumentator.dispatcher.EventDispatcher;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.newrelic.agent.security.intcodeagent.filelogging.LogLevel;
-
 import com.newrelic.agent.security.intcodeagent.models.javaagent.*;
 import org.apache.commons.lang3.RegExUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -671,7 +669,7 @@ public class CallbackUtils {
 
     public static String generateApiCallerHeaderValue(String targetURL) {
         return String.format("%s||%s||%s||%s",
-                K2Instrumentator.APPLICATION_UUID,
+                AgentInfo.getInstance().getApplicationUUID(),
                 ThreadLocalExecutionMap.getInstance().getHttpRequestBean().getContextPath(),
                 ThreadLocalExecutionMap.getInstance().getHttpRequestBean().getServerPort(),
                 Base64.getEncoder().encodeToString(targetURL.getBytes(StandardCharsets.UTF_8)));
@@ -682,11 +680,11 @@ public class CallbackUtils {
         if (StringUtils.isNotBlank(previousValue)) {
             previousValue = StringUtils.appendIfMissing(previousValue, ";");
         }
-        return String.format("%s%s/%s/%s;", previousValue, K2Instrumentator.APPLICATION_UUID, apiId, executionId);
+        return String.format("%s%s/%s/%s;", previousValue, AgentInfo.getInstance().getApplicationUUID(), apiId, executionId);
 
 //        StringBuilder value = new StringBuilder(previousValue);
 //        if((AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getEnabled() && AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getIastScan().getEnabled())){
-//            value.append(K2Instrumentator.APPLICATION_UUID);
+//            value.append(AgentInfo.getInstance().getApplicationUUID());
 //            value.append(':');
 //        }
 //        value.append(apiId);

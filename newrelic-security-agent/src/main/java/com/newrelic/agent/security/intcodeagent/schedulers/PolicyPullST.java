@@ -1,6 +1,6 @@
 package com.newrelic.agent.security.intcodeagent.schedulers;
 
-import com.newrelic.agent.security.instrumentator.K2Instrumentator;
+import com.newrelic.agent.security.AgentInfo;
 import com.newrelic.agent.security.instrumentator.httpclient.HttpClient;
 import com.newrelic.agent.security.instrumentator.httpclient.IRestClientConstants;
 import com.newrelic.agent.security.instrumentator.os.OSVariables;
@@ -9,9 +9,9 @@ import com.newrelic.agent.security.instrumentator.utils.AgentUtils;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.newrelic.agent.security.intcodeagent.filelogging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.logging.IAgentConstants;
-import com.newrelic.agent.security.intcodeagent.models.config.AgentPolicy;
 import com.newrelic.agent.security.intcodeagent.utils.CommonUtils;
 import com.newrelic.agent.security.intcodeagent.websocket.EventSendPool;
+import com.newrelic.agent.security.schema.policy.AgentPolicy;
 import okhttp3.Response;
 import org.apache.commons.lang3.StringUtils;
 
@@ -99,7 +99,7 @@ public class PolicyPullST {
 
             Map<String, String> queryParam = new HashMap<>();
             queryParam.put(GROUP_NAME, AgentUtils.getInstance().getGroupName());
-            queryParam.put(APPLICATION_UUID, K2Instrumentator.APPLICATION_UUID);
+            queryParam.put(APPLICATION_UUID, AgentInfo.getInstance().getApplicationUUID());
             Response response = HttpClient.getInstance().doGet(IRestClientConstants.GET_POLICY, null, queryParam, null, false);
             if (response.isSuccessful()) {
                 newPolicy = HttpClient.getInstance().readResponse(response.body().byteStream(), AgentPolicy.class);
@@ -136,11 +136,10 @@ public class PolicyPullST {
                     String.format(IAgentConstants.RECEIVED_AGENT_POLICY, newPolicy),
                     PolicyPullST.class.getName());
             AgentUtils.getInstance().setAgentPolicy(newPolicy);
-            K2Instrumentator.APPLICATION_INFO_BEAN.setPolicyVersion(AgentUtils.getInstance().getAgentPolicy().getVersion());
+            AgentInfo.getInstance().getApplicationInfo().setPolicyVersion(AgentUtils.getInstance().getAgentPolicy().getVersion());
             logger.logInit(LogLevel.INFO, String.format(IAgentConstants.AGENT_POLICY_APPLIED_S,
                     AgentUtils.getInstance().getAgentPolicy()), PolicyPullST.class.getName());
             AgentUtils.getInstance().applyNRPolicyOverride();
-            AgentUtils.getInstance().setApplicationInfo();
             if (AgentUtils.getInstance().isPolicyOverridden()){
                 AgentUtils.getInstance().getAgentPolicy().setVersion("overridden");
                 logger.log(LogLevel.INFO, String.format("NR policy over-ride in place. Updated policy : %s",
@@ -148,7 +147,7 @@ public class PolicyPullST {
                 CommonUtils.fireUpdatePolicyAPI(AgentUtils.getInstance().getAgentPolicy());
             }
             AgentUtils.getInstance().getStatusLogValues().put("policy-version", AgentUtils.getInstance().getAgentPolicy().getVersion());
-            EventSendPool.getInstance().sendEvent(K2Instrumentator.APPLICATION_INFO_BEAN.toString());
+            EventSendPool.getInstance().sendEvent(AgentInfo.getInstance().getApplicationInfo().toString());
             return true;
         } catch (Throwable e) {
             logger.logInit(LogLevel.ERROR, IAgentConstants.UNABLE_TO_SET_AGENT_POLICY_DUE_TO_ERROR, e,
@@ -184,6 +183,7 @@ public class PolicyPullST {
         if (instance != null) {
             instance.shutDownThreadPoolExecutor();
         }
+        instance = null;
     }
 
     /**

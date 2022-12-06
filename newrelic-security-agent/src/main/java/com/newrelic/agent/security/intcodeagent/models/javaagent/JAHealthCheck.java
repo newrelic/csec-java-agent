@@ -1,6 +1,6 @@
 package com.newrelic.agent.security.intcodeagent.models.javaagent;
 
-import com.newrelic.agent.security.instrumentator.K2Instrumentator;
+import com.newrelic.agent.security.AgentInfo;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.newrelic.agent.security.intcodeagent.filelogging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.websocket.JsonConverter;
@@ -50,7 +50,7 @@ public class JAHealthCheck extends AgentBasicInfo {
         this.exitEventSentCount = new AtomicInteger(0);
         this.stat = new HashMap<>();
         this.serviceStatus = new HashMap<>();
-        this.setKind(K2Instrumentator.APPLICATION_INFO_BEAN.getIdentifier().getKind());
+        this.setKind(AgentInfo.getInstance().getApplicationInfo().getIdentifier().getKind());
         logger.log(LogLevel.INFO, String.format(HC_CREATED, this.toString()), JAHealthCheck.class.getName());
     }
 

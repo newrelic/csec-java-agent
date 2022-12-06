@@ -2,7 +2,6 @@ package com.newrelic.agent.security.intcodeagent.models.collectorconfig;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import com.newrelic.agent.security.intcodeagent.models.config.PolicyApplicationInfo;
 import com.newrelic.agent.security.intcodeagent.websocket.JsonConverter;
 
 import java.util.HashSet;
@@ -23,8 +22,6 @@ public class CollectorConfig {
     private Set<String> nodeGroupTags = new HashSet<>();
 
     private CustomerInfo customerInfo;
-
-    private PolicyApplicationInfo applicationInfo;
 
     public CollectorConfig() {
     }
@@ -75,14 +72,6 @@ public class CollectorConfig {
 
     public void setCustomerInfo(CustomerInfo customerInfo) {
         this.customerInfo = customerInfo;
-    }
-
-    public PolicyApplicationInfo getApplicationInfo() {
-        return applicationInfo;
-    }
-
-    public void setApplicationInfo(PolicyApplicationInfo applicationInfo) {
-        this.applicationInfo = applicationInfo;
     }
 
     @Override

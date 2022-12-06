@@ -29,7 +29,7 @@ public class JsonConverter {
 
     private static final ObjectMapper mapper = new ObjectMapper();
 
-    private static String serializerSelection = System.getenv().getOrDefault("K2_JSON_SERIALIZER", "K2");
+    private static String serializerSelection = System.getenv().getOrDefault("K2_JSON_SERIALIZER", "Jackson");
 
     public static String toJSON(Object obj) {
 

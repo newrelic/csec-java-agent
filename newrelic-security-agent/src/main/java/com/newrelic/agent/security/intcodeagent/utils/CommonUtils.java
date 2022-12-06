@@ -1,14 +1,14 @@
 package com.newrelic.agent.security.intcodeagent.utils;
 
-import com.newrelic.agent.security.instrumentator.K2Instrumentator;
+import com.newrelic.agent.security.AgentInfo;
 import com.newrelic.agent.security.instrumentator.httpclient.HttpClient;
 import com.newrelic.agent.security.instrumentator.httpclient.IRestClientConstants;
 import com.newrelic.agent.security.instrumentator.utils.AgentUtils;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.newrelic.agent.security.intcodeagent.filelogging.LogLevel;
-import com.newrelic.agent.security.intcodeagent.models.config.AgentPolicy;
 import com.newrelic.agent.security.intcodeagent.models.config.AgentPolicyParameters;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.LogMessage;
+import com.newrelic.agent.security.schema.policy.AgentPolicy;
 import com.newrelic.api.agent.NewRelic;
 import org.apache.commons.io.FileUtils;
 import org.everit.json.schema.Schema;
@@ -93,7 +93,7 @@ public class CommonUtils {
         try {
             Map<String, String> queryParam = new HashMap<>();
             queryParam.put("group", AgentUtils.getInstance().getGroupName());
-            queryParam.put("applicationUUID", K2Instrumentator.APPLICATION_UUID);
+            queryParam.put("applicationUUID", AgentInfo.getInstance().getApplicationUUID());
 
             HttpClient.getInstance().doPost(IRestClientConstants.UPDATE_POLICY, null, queryParam, null, policy, true);
         } catch (Exception e) {

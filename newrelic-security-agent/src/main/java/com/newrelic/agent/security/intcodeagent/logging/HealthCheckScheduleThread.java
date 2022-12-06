@@ -1,6 +1,6 @@
 package com.newrelic.agent.security.intcodeagent.logging;
 
-import com.newrelic.agent.security.instrumentator.K2Instrumentator;
+import com.newrelic.agent.security.AgentInfo;
 import com.newrelic.agent.security.instrumentator.httpclient.HttpClient;
 import com.newrelic.agent.security.instrumentator.httpclient.RestClient;
 import com.newrelic.agent.security.instrumentator.httpclient.RestRequestThreadPool;
@@ -11,6 +11,7 @@ import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool
 import com.newrelic.agent.security.intcodeagent.filelogging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.HttpConnectionStat;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.JAHealthCheck;
+import com.newrelic.agent.security.intcodeagent.schedulers.GlobalPolicyParameterPullST;
 import com.newrelic.agent.security.intcodeagent.schedulers.InBoundOutBoundST;
 import com.newrelic.agent.security.intcodeagent.websocket.WSClient;
 import com.sun.management.OperatingSystemMXBean;
@@ -29,10 +30,7 @@ import java.time.Instant;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
@@ -57,6 +55,8 @@ public class HealthCheckScheduleThread {
 
     private static ScheduledExecutorService hcScheduledService;
 
+    private ScheduledFuture future;
+
     private static boolean isStatusLoggingActive = true;
 
     private static OSVariables osVariables = OsVariablesInstance.getInstance().getOsVariables();
@@ -74,20 +74,20 @@ public class HealthCheckScheduleThread {
                         return;
                     }
 
-                    K2Instrumentator.JA_HEALTH_CHECK.setStat(populateJVMStats());
-                    K2Instrumentator.JA_HEALTH_CHECK.setServiceStatus(getServiceStatus());
+                    AgentInfo.getInstance().getJaHealthCheck().setStat(populateJVMStats());
+                    AgentInfo.getInstance().getJaHealthCheck().setServiceStatus(getServiceStatus());
 
-                    K2Instrumentator.JA_HEALTH_CHECK.setDsBackLog(RestRequestThreadPool.getInstance().getQueueSize());
-                    AgentUtils.getInstance().getStatusLogMostRecentHCs().add(K2Instrumentator.JA_HEALTH_CHECK.toString());
+                    AgentInfo.getInstance().getJaHealthCheck().setDsBackLog(RestRequestThreadPool.getInstance().getQueueSize());
+                    AgentUtils.getInstance().getStatusLogMostRecentHCs().add(AgentInfo.getInstance().getJaHealthCheck().toString());
 //						channel.write(ByteBuffer.wrap(new JAHealthCheck(AgentNew.JA_HEALTH_CHECK).toString().getBytes()));
                     if (WSClient.getInstance().isOpen()) {
                         InBoundOutBoundST.getInstance().task(InBoundOutBoundST.getInstance().getNewConnections(), false);
-                        WSClient.getInstance().send(new JAHealthCheck(K2Instrumentator.JA_HEALTH_CHECK).toString());
-                        K2Instrumentator.JA_HEALTH_CHECK.setEventDropCount(0);
-                        K2Instrumentator.JA_HEALTH_CHECK.setEventProcessed(0);
-                        K2Instrumentator.JA_HEALTH_CHECK.setEventSentCount(0);
-                        K2Instrumentator.JA_HEALTH_CHECK.setHttpRequestCount(0);
-                        K2Instrumentator.JA_HEALTH_CHECK.setExitEventSentCount(0);
+                        WSClient.getInstance().send(new JAHealthCheck(AgentInfo.getInstance().getJaHealthCheck()).toString());
+                        AgentInfo.getInstance().getJaHealthCheck().setEventDropCount(0);
+                        AgentInfo.getInstance().getJaHealthCheck().setEventProcessed(0);
+                        AgentInfo.getInstance().getJaHealthCheck().setEventSentCount(0);
+                        AgentInfo.getInstance().getJaHealthCheck().setHttpRequestCount(0);
+                        AgentInfo.getInstance().getJaHealthCheck().setExitEventSentCount(0);
                     }
 
                 } catch (NullPointerException ex) {
@@ -111,28 +111,39 @@ public class HealthCheckScheduleThread {
                         IAgentConstants.HCSCHEDULEDTHREAD_ + threadNumber.getAndIncrement());
             }
         });
-        hcScheduledService.scheduleAtFixedRate(runnable, 1, 5, TimeUnit.MINUTES);
-        HttpConnectionStat httpConnectionStat = new HttpConnectionStat(Collections.emptyList(), K2Instrumentator.APPLICATION_UUID, false);
+        future = hcScheduledService.scheduleAtFixedRate(runnable, 1, 5, TimeUnit.MINUTES);
+        HttpConnectionStat httpConnectionStat = new HttpConnectionStat(Collections.emptyList(), AgentInfo.getInstance().getApplicationUUID(), false);
         InBoundOutBoundST.getInstance().clearNewConnections();
     }
 
+    public boolean cancelTask(boolean forceCancel) {
+        if (future == null) {
+            return true;
+        }
+        if (future != null && (forceCancel || future.isDone() || future.getDelay(TimeUnit.MINUTES) > 5)) {
+            logger.log(LogLevel.INFO, "Cancel current task of HealthCheck Schedule", GlobalPolicyParameterPullST.class.getName());
+            future.cancel(true);
+            return true;
+        }
+        return false;
+    }
 
     private void writeStatusLogFile() {
-        File statusLog = new File(osVariables.getSnapshotDir(), String.format(K_2_AGENT_STATUS_LOG, K2Instrumentator.APPLICATION_UUID));
+        File statusLog = new File(osVariables.getSnapshotDir(), String.format(K_2_AGENT_STATUS_LOG, AgentInfo.getInstance().getApplicationUUID()));
         try {
             FileUtils.deleteQuietly(statusLog);
             if (statusLog.createNewFile()) {
                 Map<String, String> substitutes = AgentUtils.getInstance().getStatusLogValues();
                 substitutes.put(STATUS_TIMESTAMP, Instant.now().toString());
-                substitutes.put(LATEST_PROCESS_STATS, K2Instrumentator.JA_HEALTH_CHECK.getStat().keySet().stream()
-                        .map(key -> key + SEPARATOR + K2Instrumentator.JA_HEALTH_CHECK.getStat().get(key))
+                substitutes.put(LATEST_PROCESS_STATS, AgentInfo.getInstance().getJaHealthCheck().getStat().keySet().stream()
+                        .map(key -> key + SEPARATOR + AgentInfo.getInstance().getJaHealthCheck().getStat().get(key))
                         .collect(Collectors.joining(StringUtils.LF, StringUtils.EMPTY, StringUtils.EMPTY)));
-                substitutes.put(LATEST_SERVICE_STATS, K2Instrumentator.JA_HEALTH_CHECK.getServiceStatus().keySet().stream()
-                        .map(key -> key + SEPARATOR + K2Instrumentator.JA_HEALTH_CHECK.getServiceStatus().get(key))
+                substitutes.put(LATEST_SERVICE_STATS, AgentInfo.getInstance().getJaHealthCheck().getServiceStatus().keySet().stream()
+                        .map(key -> key + SEPARATOR + AgentInfo.getInstance().getJaHealthCheck().getServiceStatus().get(key))
                         .collect(Collectors.joining(StringUtils.LF, StringUtils.EMPTY, StringUtils.EMPTY)));
                 substitutes.put(LAST_5_ERRORS, StringUtils.joinWith(StringUtils.LF, AgentUtils.getInstance().getStatusLogMostRecentErrors().toArray()));
                 substitutes.put(LAST_5_HC, StringUtils.joinWith(StringUtils.LF, AgentUtils.getInstance().getStatusLogMostRecentHCs().toArray()));
-                substitutes.put(VALIDATOR_SERVER_STATUS, K2Instrumentator.JA_HEALTH_CHECK.getServiceStatus().getOrDefault(WEBSOCKET, StringUtils.EMPTY).toString());
+                substitutes.put(VALIDATOR_SERVER_STATUS, AgentInfo.getInstance().getJaHealthCheck().getServiceStatus().getOrDefault(WEBSOCKET, StringUtils.EMPTY).toString());
                 substitutes.put(ENFORCED_POLICY, AgentUtils.getInstance().getAgentPolicy().toString());
                 StringSubstitutor substitutor = new StringSubstitutor(substitutes);
                 FileUtils.writeStringToFile(statusLog, substitutor.replace(IAgentConstants.STATUS_FILE_TEMPLATE), StandardCharsets.UTF_8);
@@ -213,6 +224,7 @@ public class HealthCheckScheduleThread {
         if (instance != null) {
             instance.shutDownThreadPoolExecutor();
         }
+        instance = null;
     }
 
     /**

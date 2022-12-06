@@ -1,11 +1,11 @@
 package com.newrelic.agent.security.intcodeagent.websocket;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.newrelic.agent.security.instrumentator.K2Instrumentator;
+import com.newrelic.agent.security.AgentInfo;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.newrelic.agent.security.intcodeagent.filelogging.LogLevel;
-import com.newrelic.agent.security.intcodeagent.models.javaagent.JavaAgentEventBean;
 import com.newrelic.agent.security.intcodeagent.logging.ServletEventPool;
+import com.newrelic.agent.security.intcodeagent.models.javaagent.JavaAgentEventBean;
 
 import java.util.Map;
 import java.util.concurrent.*;
@@ -50,7 +50,7 @@ public class EventSendPool {
                             future.get();
                         }
                     } catch (Throwable e) {
-                        K2Instrumentator.JA_HEALTH_CHECK.incrementDropCount();
+                        AgentInfo.getInstance().getJaHealthCheck().incrementDropCount();
                     }
                 }
                 super.afterExecute(r, t);
@@ -83,7 +83,7 @@ public class EventSendPool {
 
     public void sendEvent(JavaAgentEventBean event) {
         executor.submit(new EventSender(event));
-        K2Instrumentator.JA_HEALTH_CHECK.incrementEventSentCount();
+        AgentInfo.getInstance().getJaHealthCheck().incrementEventSentCount();
     }
 
     public void sendEvent(Object event) {
@@ -94,6 +94,7 @@ public class EventSendPool {
         if (instance != null) {
             instance.shutDownThreadPoolExecutor();
         }
+        instance = null;
     }
 
     public void shutDownThreadPoolExecutor() {

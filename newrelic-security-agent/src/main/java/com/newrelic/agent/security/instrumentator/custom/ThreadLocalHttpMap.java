@@ -4,10 +4,8 @@ import com.newrelic.agent.security.instrumentator.utils.AgentUtils;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.newrelic.agent.security.intcodeagent.filelogging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.logging.IAgentConstants;
-
-import com.newrelic.agent.security.intcodeagent.schedulers.InBoundOutBoundST;
-
 import com.newrelic.agent.security.intcodeagent.models.javaagent.*;
+import com.newrelic.agent.security.intcodeagent.schedulers.InBoundOutBoundST;
 import org.apache.commons.lang3.StringUtils;
 import org.json.simple.JSONObject;
 

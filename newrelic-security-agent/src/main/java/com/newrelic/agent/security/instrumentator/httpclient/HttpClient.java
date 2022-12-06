@@ -1,6 +1,7 @@
 package com.newrelic.agent.security.instrumentator.httpclient;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.newrelic.agent.security.AgentConfig;
 import com.newrelic.agent.security.instrumentator.os.OSVariables;
 import com.newrelic.agent.security.instrumentator.os.OsVariablesInstance;
 import com.newrelic.agent.security.instrumentator.utils.CollectorConfigurationUtils;
@@ -123,11 +124,11 @@ public class HttpClient {
 
         client = builder.build();
 
-        baseUrl = CollectorConfigurationUtils.getInstance().getCollectorConfig().getK2ServiceInfo().getResourceServiceEndpointURL();
+        baseUrl = AgentConfig.getInstance().getConfig().getK2ServiceInfo().getResourceServiceEndpointURL();
     }
 
     public void resetClientURL() {
-        baseUrl = CollectorConfigurationUtils.getInstance().getCollectorConfig().getK2ServiceInfo().getResourceServiceEndpointURL();
+        baseUrl = AgentConfig.getInstance().getConfig().getK2ServiceInfo().getResourceServiceEndpointURL();
     }
 
     public static HttpClient getInstance() {
@@ -143,7 +144,7 @@ public class HttpClient {
 
     private Headers getHeaders(Map<String, String> headers) {
         Headers.Builder builder = new Headers.Builder();
-        builder.add(K_2_API_ACCESSOR_TOKEN, CollectorConfigurationUtils.getInstance().getCollectorConfig().getCustomerInfo().getApiAccessorToken());
+        builder.add(K_2_API_ACCESSOR_TOKEN, AgentConfig.getInstance().getConfig().getCustomerInfo().getApiAccessorToken());
         if (headers != null) {
             headers.forEach((key, value) -> {
                 builder.add(key, value);
