@@ -1,5 +1,6 @@
 package com.newrelic.agent.security.intcodeagent.utils;
 
+import com.newrelic.agent.security.AgentConfig;
 import com.newrelic.agent.security.AgentInfo;
 import com.newrelic.agent.security.instrumentator.httpclient.HttpClient;
 import com.newrelic.agent.security.instrumentator.httpclient.IRestClientConstants;
@@ -92,7 +93,7 @@ public class CommonUtils {
         }
         try {
             Map<String, String> queryParam = new HashMap<>();
-            queryParam.put("group", AgentUtils.getInstance().getGroupName());
+            queryParam.put("group", AgentConfig.getInstance().getGroupName());
             queryParam.put("applicationUUID", AgentInfo.getInstance().getApplicationUUID());
 
             HttpClient.getInstance().doPost(IRestClientConstants.UPDATE_POLICY, null, queryParam, null, policy, true);

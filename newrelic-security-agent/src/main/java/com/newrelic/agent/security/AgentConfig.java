@@ -62,7 +62,8 @@ public class AgentConfig {
         // Set required LogLevel
         logLevel = applyRequiredLogLevel();
 
-        osVariables = OsVariablesInstance.getInstance().getOsVariables();
+        //Instantiation call please do not move or repeat this.
+        osVariables = OsVariablesInstance.instantiate().getOsVariables();
     }
 
     public static AgentConfig getInstance(){
@@ -84,7 +85,7 @@ public class AgentConfig {
         } else {
             groupName = IUtilConstants.RASP;
         }
-        AgentUtils.getInstance().getStatusLogValues().put(IUtilConstants.GROUP_NAME, AgentUtils.getInstance().getGroupName());
+        AgentUtils.getInstance().getStatusLogValues().put(IUtilConstants.GROUP_NAME, AgentConfig.getInstance().getGroupName());
         return groupName;
     }
 

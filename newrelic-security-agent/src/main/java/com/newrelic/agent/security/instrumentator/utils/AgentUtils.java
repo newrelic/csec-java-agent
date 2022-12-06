@@ -108,8 +108,6 @@ public class AgentUtils {
     private AtomicInteger outboundHttpConnectionId = new AtomicInteger(1000);
 
     private boolean collectAppInfoFromEnv = false;
-
-    private String groupName = StringUtils.EMPTY;
     private Map<String, String> statusLogValues = new HashMap<>();
 
     private Collection<String> statusLogMostRecentHCs = BufferUtils.synchronizedBuffer(new CircularFifoBuffer(5));
@@ -160,14 +158,6 @@ public class AgentUtils {
 
     public void resetOutboundHttpConnectionId() {
         this.outboundHttpConnectionId.set(1000);
-    }
-
-    public String getGroupName() {
-        return groupName;
-    }
-
-    public void setGroupName(String groupName) {
-        this.groupName = groupName;
     }
 
     public boolean isCollectAppInfoFromEnv() {

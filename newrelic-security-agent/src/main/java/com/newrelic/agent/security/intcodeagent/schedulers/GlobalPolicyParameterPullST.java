@@ -1,5 +1,6 @@
 package com.newrelic.agent.security.intcodeagent.schedulers;
 
+import com.newrelic.agent.security.AgentConfig;
 import com.newrelic.agent.security.instrumentator.httpclient.HttpClient;
 import com.newrelic.agent.security.instrumentator.httpclient.IRestClientConstants;
 import com.newrelic.agent.security.instrumentator.utils.AgentUtils;
@@ -46,7 +47,7 @@ public class GlobalPolicyParameterPullST {
     }
 
     private GlobalPolicyParameterPullST() {
-        logger.log(LogLevel.INFO, "policy pull parameters for group name: " + AgentUtils.getInstance().getGroupName(), GlobalPolicyParameterPullST.class.getName());
+        logger.log(LogLevel.INFO, "policy pull parameters for group name: " + AgentConfig.getInstance().getGroupName(), GlobalPolicyParameterPullST.class.getName());
         executorService = Executors.newSingleThreadScheduledExecutor(new ThreadFactory() {
             @Override
             public Thread newThread(Runnable r) {

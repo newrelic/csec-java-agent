@@ -1,5 +1,6 @@
 package com.newrelic.agent.security.intcodeagent.schedulers;
 
+import com.newrelic.agent.security.AgentConfig;
 import com.newrelic.agent.security.AgentInfo;
 import com.newrelic.agent.security.instrumentator.httpclient.HttpClient;
 import com.newrelic.agent.security.instrumentator.httpclient.IRestClientConstants;
@@ -47,7 +48,7 @@ public class PolicyPullST {
     private OSVariables osVariables = OsVariablesInstance.getInstance().getOsVariables();
 
     private PolicyPullST() {
-        logger.log(LogLevel.INFO, "policy pull for group name: " + AgentUtils.getInstance().getGroupName(), PolicyPullST.class.getName());
+        logger.log(LogLevel.INFO, "policy pull for group name: " + AgentConfig.getInstance().getGroupName(), PolicyPullST.class.getName());
         executorService = Executors.newSingleThreadScheduledExecutor(new ThreadFactory() {
             @Override
             public Thread newThread(Runnable r) {
@@ -98,7 +99,7 @@ public class PolicyPullST {
             AgentPolicy newPolicy;
 
             Map<String, String> queryParam = new HashMap<>();
-            queryParam.put(GROUP_NAME, AgentUtils.getInstance().getGroupName());
+            queryParam.put(GROUP_NAME, AgentConfig.getInstance().getGroupName());
             queryParam.put(APPLICATION_UUID, AgentInfo.getInstance().getApplicationUUID());
             Response response = HttpClient.getInstance().doGet(IRestClientConstants.GET_POLICY, null, queryParam, null, false);
             if (response.isSuccessful()) {

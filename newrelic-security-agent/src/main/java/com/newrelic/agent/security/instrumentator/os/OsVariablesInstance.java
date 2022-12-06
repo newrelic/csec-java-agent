@@ -96,4 +96,13 @@ public class OsVariablesInstance {
         }
         return instance;
     }
+
+    /***
+     * Do not call this method more than once.
+     * @return
+     */
+    public static OsVariablesInstance instantiate() {
+        instance = new OsVariablesInstance();
+        return instance;
+    }
 }
