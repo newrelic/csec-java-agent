@@ -45,7 +45,6 @@ public class Agent implements SecurityAgent {
             synchronized (lock){
                 if(instance == null){
                     instance = new Agent();
-                    instance.initialise();
                 }
             }
         }
@@ -65,9 +64,6 @@ public class Agent implements SecurityAgent {
         System.setProperty("org.slf4j.simpleLogger.logFile", "System.out");
         config = AgentConfig.getInstance();
         info = AgentInfo.getInstance();
-        config.instantiate();
-        info.initialiseHC();
-        info.setIdentifier(ApplicationInfoUtils.envDetection());
     }
 
     private void initialise() {
@@ -80,9 +76,13 @@ public class Agent implements SecurityAgent {
          * */
 
         //NOTE: The bellow call sequence is critical and dependent on each other
+        config.instantiate();
         config.setConfig(CollectorConfigurationUtils.populateCollectorConfig());
+
+        info.setIdentifier(ApplicationInfoUtils.envDetection());
         ApplicationInfoUtils.continueIdentifierProcessing(info.getIdentifier(), config.getConfig());
         info.generateAppInfo(config.getConfig());
+        info.initialiseHC();
         config.populateAgentPolicy();
         config.populateAgentPolicyParameters();
         config.setupSnapshotDir();
@@ -160,6 +160,7 @@ public class Agent implements SecurityAgent {
         /**
          * restart k2 services
          **/
+        System.out.println("Refresh called");
         config.setNRSecurityEnabled(false);
         config.instantiate();
         cancelActiveServiceTasks();
