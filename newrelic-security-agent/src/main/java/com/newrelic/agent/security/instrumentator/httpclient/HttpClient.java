@@ -6,6 +6,7 @@ import com.newrelic.agent.security.instrumentator.os.OSVariables;
 import com.newrelic.agent.security.instrumentator.os.OsVariablesInstance;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.newrelic.agent.security.intcodeagent.filelogging.LogLevel;
+import com.newrelic.agent.security.intcodeagent.websocket.JsonConverter;
 import okhttp3.*;
 import okhttp3.OkHttpClient.Builder;
 import org.apache.commons.io.FileUtils;
@@ -186,7 +187,7 @@ public class HttpClient {
     public Response doPost(String url, List<String> pathParams, Map<String, String> queryParams, Map<String, String> headers, Object body, Boolean isAsync) {
         HttpUrl httpUrl = buildUrl(url, pathParams, queryParams);
 
-        RequestBody requestBody = RequestBody.create(body.toString(), MediaType.parse(APPLICATION_JSON));
+        RequestBody requestBody = RequestBody.create(JsonConverter.toJSON(body), MediaType.parse(APPLICATION_JSON));
 
         Headers httpHeaders = getHeaders(headers);
 
