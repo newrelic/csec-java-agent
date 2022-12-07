@@ -41,14 +41,13 @@ public abstract class AbstractOperation {
         this.startTime = startTime;
         this.methodName = methodName;
         this.blockingEndTime = 0L;
-        this.stackTrace = Thread.currentThread().getStackTrace();
     }
 
     public AbstractOperation(String className, String methodName, String executionId
             , long startTime, int currentGenericServletStackLength) {
         this(className, methodName, executionId, startTime);
         if (currentGenericServletStackLength >= 0) {
-            this.stackTrace = Arrays.copyOfRange(this.stackTrace, 0, this.stackTrace.length - currentGenericServletStackLength + 3);
+//            this.stackTrace = Arrays.copyOfRange(this.stackTrace, 0, this.stackTrace.length - currentGenericServletStackLength + 3);
         }
     }
 

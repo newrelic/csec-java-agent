@@ -1,7 +1,7 @@
 package com.newrelic.agent.security.intcodeagent.models.javaagent;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.newrelic.agent.security.intcodeagent.deserializers.K2StackTraceSerializer;
+import com.newrelic.agent.security.intcodeagent.serializers.K2StackTraceSerializer;
 import com.newrelic.agent.security.intcodeagent.logging.DeployedApplication;
 import com.newrelic.agent.security.intcodeagent.websocket.JsonConverter;
 import org.json.simple.JSONArray;
@@ -23,7 +23,6 @@ public class JavaAgentEventBean extends AgentBasicInfo {
     private HttpRequestBean httpRequest;
     private String id;
 
-    @JsonSerialize(using = K2StackTraceSerializer.class)
     private List<StackTraceElement> stacktrace;
     private String caseType;
     private String eventCategory;
@@ -31,7 +30,6 @@ public class JavaAgentEventBean extends AgentBasicInfo {
     private AgentMetaData metaData;
     private Long blockingProcessingTime = 0L;
 
-    @JsonSerialize(using = K2StackTraceSerializer.class)
     private List<StackTraceElement> completeStacktrace;
     private boolean isAPIBlocked = false;
     private boolean isIASTEnable = false;

@@ -207,6 +207,7 @@ public class Agent implements SecurityAgent {
 
     @Override
     public void registerOperation(AbstractOperation operation, String executionId) {
+        operation.setStackTrace(Thread.currentThread().getStackTrace());
         System.out.println(JsonConverter.toJSON(operation));
     }
 
