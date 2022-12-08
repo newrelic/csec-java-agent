@@ -9,7 +9,6 @@ package com.newrelic.api.agent.security;
 
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.SecurityMetaData;
-import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.security.schema.policy.AgentPolicy;
 
 import java.net.URL;
@@ -25,7 +24,7 @@ public interface SecurityAgent {
 
     String registerOperation(AbstractOperation operation);
 
-    void registerExitEvent(String executionId, VulnerabilityCaseType type);
+    void registerExitEvent(AbstractOperation operation);
 
     boolean isSecurityActive();
 

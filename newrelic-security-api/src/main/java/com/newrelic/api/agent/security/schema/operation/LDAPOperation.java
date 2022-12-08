@@ -1,23 +1,20 @@
 package com.newrelic.api.agent.security.schema.operation;
 
 import com.newrelic.api.agent.security.schema.AbstractOperation;
+import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 
 public class LDAPOperation extends AbstractOperation {
 
     private String name;
     private String filter;
 
-    public LDAPOperation(String className, String methodName) {
-        super(className, methodName);
-    }
-
     public LDAPOperation(String name, String className, String methodName) {
         super(className, methodName);
+        this.setCaseType(VulnerabilityCaseType.LDAP);
         this.name = name;
     }
 
-    public LDAPOperation(String name, String filter, String className, String methodName, String executionId,
-                         long startTime) {
+    public LDAPOperation(String name, String filter, String className, String methodName) {
         this(name, className, methodName);
         this.filter = filter;
     }

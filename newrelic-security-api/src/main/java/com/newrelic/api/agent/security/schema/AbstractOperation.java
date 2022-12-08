@@ -23,6 +23,8 @@ public abstract class AbstractOperation {
 
     private String apiID;
 
+    private VulnerabilityCaseType caseType;
+
     public AbstractOperation() {
         this.className = EMPTY;
         this.sourceMethod = EMPTY;
@@ -116,5 +118,13 @@ public abstract class AbstractOperation {
 
     public void setApiID(String apiID) {
         this.apiID = apiID;
+    }
+
+    public VulnerabilityCaseType getCaseType() {
+        return caseType;
+    }
+
+    public void setCaseType(VulnerabilityCaseType caseType) {
+        this.caseType = caseType;
     }
 }

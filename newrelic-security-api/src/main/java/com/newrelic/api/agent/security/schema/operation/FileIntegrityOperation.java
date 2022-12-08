@@ -1,6 +1,7 @@
 package com.newrelic.api.agent.security.schema.operation;
 
 import com.newrelic.api.agent.security.schema.AbstractOperation;
+import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 
 public class FileIntegrityOperation extends AbstractOperation {
 
@@ -11,12 +12,9 @@ public class FileIntegrityOperation extends AbstractOperation {
     private Integer lineNumber;
     private String fileName;
 
-    public FileIntegrityOperation(String className, String methodName) {
-        super(className, methodName);
-    }
-
     public FileIntegrityOperation(Boolean exists, String fileName, String className, String methodName) {
-        this(className, methodName);
+        super(className, methodName);
+        this.setCaseType(VulnerabilityCaseType.FILE_INTEGRITY);
         this.exists = exists;
         this.setFileName(fileName);
     }

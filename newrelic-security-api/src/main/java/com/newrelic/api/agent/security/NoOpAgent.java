@@ -9,7 +9,6 @@ package com.newrelic.api.agent.security;
 
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.SecurityMetaData;
-import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.security.schema.policy.AgentPolicy;
 
 import java.net.URL;
@@ -41,7 +40,7 @@ class NoOpAgent implements SecurityAgent {
     }
 
     @Override
-    public void registerExitEvent(String executionId, VulnerabilityCaseType type) {}
+    public void registerExitEvent(AbstractOperation operation) {}
 
     @Override
     public boolean isSecurityActive() {

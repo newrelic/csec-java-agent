@@ -1,6 +1,7 @@
 package com.newrelic.api.agent.security.schema.operation;
 
 import com.newrelic.api.agent.security.schema.AbstractOperation;
+import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 
 public class XPathOperation extends AbstractOperation {
 
@@ -8,6 +9,7 @@ public class XPathOperation extends AbstractOperation {
 
     public XPathOperation(String expression, String className, String methodName) {
         super(className, methodName);
+        this.setCaseType(VulnerabilityCaseType.XPATH);
         this.expression = expression;
     }
 

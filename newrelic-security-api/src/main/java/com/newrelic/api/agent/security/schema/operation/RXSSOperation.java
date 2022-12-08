@@ -3,6 +3,7 @@ package com.newrelic.api.agent.security.schema.operation;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.HttpRequest;
 import com.newrelic.api.agent.security.schema.HttpResponse;
+import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 
 public class RXSSOperation extends AbstractOperation {
 
@@ -12,6 +13,7 @@ public class RXSSOperation extends AbstractOperation {
 
     public RXSSOperation(HttpRequest  request, HttpResponse response, String className, String methodName) {
         super(className, methodName);
+        this.setCaseType(VulnerabilityCaseType.REFLECTED_XSS);
         this.request = request;
         this.response = response;
     }

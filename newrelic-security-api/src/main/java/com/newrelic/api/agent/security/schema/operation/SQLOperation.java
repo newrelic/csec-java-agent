@@ -1,6 +1,7 @@
 package com.newrelic.api.agent.security.schema.operation;
 
 import com.newrelic.api.agent.security.schema.AbstractOperation;
+import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -18,6 +19,7 @@ public class SQLOperation extends AbstractOperation {
 
     public SQLOperation() {
         super();
+        this.setCaseType(VulnerabilityCaseType.SQL_DB_COMMAND);
         this.query = EMPTY;
         this.params = new HashMap<>();
     }

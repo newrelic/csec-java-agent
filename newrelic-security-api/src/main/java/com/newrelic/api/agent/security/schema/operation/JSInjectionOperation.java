@@ -1,6 +1,7 @@
 package com.newrelic.api.agent.security.schema.operation;
 
 import com.newrelic.api.agent.security.schema.AbstractOperation;
+import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 
 public class JSInjectionOperation extends AbstractOperation {
 
@@ -9,6 +10,7 @@ public class JSInjectionOperation extends AbstractOperation {
     public JSInjectionOperation(String javaScriptCode, String className, String methodName, String executionId,
                                 long startTime) {
         super(className, methodName);
+        this.setCaseType(VulnerabilityCaseType.JAVASCRIPT_INJECTION);
         this.javaScriptCode = javaScriptCode;
     }
 

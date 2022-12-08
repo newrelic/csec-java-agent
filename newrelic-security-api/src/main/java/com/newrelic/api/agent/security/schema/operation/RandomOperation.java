@@ -1,6 +1,7 @@
 package com.newrelic.api.agent.security.schema.operation;
 
 import com.newrelic.api.agent.security.schema.AbstractOperation;
+import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 
 public class RandomOperation extends AbstractOperation {
 
@@ -8,6 +9,7 @@ public class RandomOperation extends AbstractOperation {
 
     public RandomOperation(String eventCatgory, String className, String methodName) {
         super(className, methodName);
+        this.setCaseType(VulnerabilityCaseType.RANDOM);
         this.eventCatgory = eventCatgory;
     }
 

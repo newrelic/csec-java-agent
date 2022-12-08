@@ -1,6 +1,7 @@
 package com.newrelic.api.agent.security.schema.operation;
 
 import com.newrelic.api.agent.security.schema.AbstractOperation;
+import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 
 public class SSRFOperation extends AbstractOperation {
 
@@ -10,11 +11,13 @@ public class SSRFOperation extends AbstractOperation {
 
     public SSRFOperation(String apiCallArg, String className, String methodName) {
         super(className, methodName);
+        this.setCaseType(VulnerabilityCaseType.HTTP_REQUEST);
         this.arg = apiCallArg;
     }
 
     public SSRFOperation(String apiCallArg, String className, String methodName, boolean isJNDILookup) {
         super(className, methodName);
+        this.setCaseType(VulnerabilityCaseType.HTTP_REQUEST);
         this.arg = apiCallArg;
         this.isJNDILookup = isJNDILookup;
     }

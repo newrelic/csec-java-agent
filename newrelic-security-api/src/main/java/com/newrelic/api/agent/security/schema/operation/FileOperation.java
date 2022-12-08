@@ -1,6 +1,7 @@
 package com.newrelic.api.agent.security.schema.operation;
 
 import com.newrelic.api.agent.security.schema.AbstractOperation;
+import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 
 import java.io.File;
 
@@ -12,6 +13,7 @@ public class FileOperation extends AbstractOperation {
 
     public FileOperation(String fileName, String className, String methodName, boolean getBooleanAttributesCall) {
         super(className, methodName);
+        this.setCaseType(VulnerabilityCaseType.FILE_OPERATION);
         this.fileName = fileName;
         this.isExists = new File(this.fileName).exists();
         this.getBooleanAttributesCall = getBooleanAttributesCall;

@@ -1,6 +1,7 @@
 package com.newrelic.api.agent.security.schema.operation;
 
 import com.newrelic.api.agent.security.schema.AbstractOperation;
+import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,11 +13,13 @@ public class NoSQLOperation extends AbstractOperation {
 
     public NoSQLOperation(List<Object> data, String className, String methodName) {
         super(className, methodName);
+        this.setCaseType(VulnerabilityCaseType.NOSQL_DB_COMMAND);
         this.data.addAll(data);
     }
 
     public NoSQLOperation(Object data, String className, String methodName) {
         super(className, methodName);
+        this.setCaseType(VulnerabilityCaseType.NOSQL_DB_COMMAND);
         this.data.add(data);
     }
 

@@ -1,6 +1,7 @@
 package com.newrelic.api.agent.security.schema.operation;
 
 import com.newrelic.api.agent.security.schema.AbstractOperation;
+import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 
 public class TrustBoundaryOperation extends AbstractOperation {
 
@@ -9,6 +10,7 @@ public class TrustBoundaryOperation extends AbstractOperation {
 
     public TrustBoundaryOperation(String key, Object value, String className, String methodName) {
         super(className, methodName);
+        this.setCaseType(VulnerabilityCaseType.TRUSTBOUNDARY);
         this.key = key;
         this.value = value;
     }

@@ -1,6 +1,7 @@
 package com.newrelic.api.agent.security.schema.operation;
 
 import com.newrelic.api.agent.security.schema.AbstractOperation;
+import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -13,6 +14,8 @@ public class ForkExecOperation extends AbstractOperation {
 
     public ForkExecOperation(String cmd, Map<String, String> environment, String className, String methodName) {
         super(className, methodName);
+        this.setCaseType(VulnerabilityCaseType.SYSTEM_COMMAND);
+
         this.command = cmd;
         if (environment != null) {
             this.environment = new HashMap<>(environment);
