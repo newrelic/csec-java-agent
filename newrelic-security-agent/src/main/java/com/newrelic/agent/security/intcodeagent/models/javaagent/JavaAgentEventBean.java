@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.newrelic.agent.security.intcodeagent.serializers.K2StackTraceSerializer;
 import com.newrelic.agent.security.intcodeagent.logging.DeployedApplication;
 import com.newrelic.agent.security.intcodeagent.websocket.JsonConverter;
+import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import org.json.simple.JSONArray;
 
 import java.util.List;

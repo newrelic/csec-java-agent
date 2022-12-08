@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.newrelic.agent.security.intcodeagent.websocket.JsonConverter;
+import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 
 import java.util.Set;
 

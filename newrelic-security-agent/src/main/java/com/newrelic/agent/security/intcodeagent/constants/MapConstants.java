@@ -1,6 +1,7 @@
 package com.newrelic.agent.security.intcodeagent.constants;
 
 import com.newrelic.agent.security.intcodeagent.logging.IAgentConstants;
+import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 
 import java.util.*;
 

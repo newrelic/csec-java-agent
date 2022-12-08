@@ -2,23 +2,28 @@ package com.newrelic.api.agent.security;
 
 import com.newrelic.agent.security.AgentConfig;
 import com.newrelic.agent.security.AgentInfo;
+import com.newrelic.agent.security.instrumentator.dispatcher.DispatcherPool;
 import com.newrelic.agent.security.instrumentator.dispatcher.EventDispatcher;
 import com.newrelic.agent.security.instrumentator.utils.*;
 import com.newrelic.agent.security.intcodeagent.constants.AgentServices;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.newrelic.agent.security.intcodeagent.filelogging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.logging.HealthCheckScheduleThread;
+import com.newrelic.agent.security.intcodeagent.logging.IAgentConstants;
+import com.newrelic.agent.security.intcodeagent.models.javaagent.ExitEventBean;
 import com.newrelic.agent.security.intcodeagent.schedulers.GlobalPolicyParameterPullST;
 import com.newrelic.agent.security.intcodeagent.schedulers.PolicyPullST;
 import com.newrelic.agent.security.intcodeagent.websocket.EventSendPool;
 import com.newrelic.agent.security.intcodeagent.websocket.JsonConverter;
 import com.newrelic.agent.security.intcodeagent.websocket.WSClient;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
+import com.newrelic.api.agent.security.schema.HttpRequest;
+import com.newrelic.api.agent.security.schema.K2RequestIdentifier;
 import com.newrelic.api.agent.security.schema.SecurityMetaData;
-import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.security.schema.policy.AgentPolicy;
 import com.newrelic.api.agent.NewRelic;
 import com.newrelic.api.agent.Transaction;
+import org.apache.commons.lang3.StringUtils;
 
 import java.time.Instant;
 import java.util.Map;
@@ -211,13 +216,29 @@ public class Agent implements SecurityAgent {
         operation.setExecutionId(executionId);
         operation.setStartTime(Instant.now().toEpochMilli());
         operation.setStackTrace(Thread.currentThread().getStackTrace());
-        System.out.println(JsonConverter.toJSON(operation));
+        System.out.println("Operation : " + JsonConverter.toJSON(operation));
         return executionId;
     }
 
     @Override
-    public void registerExitEvent(String executionId, VulnerabilityCaseType type) {
-        EventDispatcher.dispatchExitEvent(executionId, type);
+    public void registerExitEvent(AbstractOperation operation) {
+        if (operation == null) {
+            return;
+        }
+        K2RequestIdentifier k2RequestIdentifier = NewRelicSecurity.getAgent().getSecurityMetaData().getFuzzRequestIdentifier();
+        HttpRequest request = NewRelicSecurity.getAgent().getSecurityMetaData().getRequest();
+
+        if (!request.isEmpty() && !operation.isEmpty() && k2RequestIdentifier.getK2Request()) {
+            if (StringUtils.equals(k2RequestIdentifier.getApiRecordId(), operation.getApiID())
+                    && StringUtils.equals(k2RequestIdentifier.getNextStage().getStatus(), IAgentConstants.VULNERABLE)) {
+                ExitEventBean exitEventBean = new ExitEventBean(operation.getExecutionId(), operation.getCaseType().getCaseType());
+                exitEventBean.setK2RequestIdentifier(k2RequestIdentifier.getRaw());
+                logger.log(LogLevel.DEBUG, "Exit event : " + exitEventBean, EventDispatcher.class.getName());
+                System.out.println("Exit event : " + exitEventBean);
+                DispatcherPool.getInstance().dispatchExitEvent(exitEventBean);
+                AgentInfo.getInstance().getJaHealthCheck().incrementExitEventSentCount();
+            }
+        }
     }
 
     @Override
