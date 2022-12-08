@@ -1,7 +1,7 @@
 package java.lang;
 
 import com.newrelic.api.agent.security.NewRelicSecurity;
-import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
+import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
 import com.newrelic.api.agent.security.schema.operation.ForkExecOperation;
 import com.newrelic.api.agent.weaver.MatchType;
@@ -20,22 +20,23 @@ abstract class ProcessImpl_Instrumentation {
                          ProcessBuilder.Redirect[] redirects,
                          boolean redirectErrorStream) throws IOException {
         Process p = null;
-        String executionId = preprocessSecurityHook(cmdarray, environment);
-        try {
-            p = Weaver.callOriginal();
-        } finally {
-            registerExitOperation(executionId, VulnerabilityCaseType.SYSTEM_COMMAND);
-        }
+        AbstractOperation operation = preprocessSecurityHook(cmdarray, environment);
+        p = Weaver.callOriginal();
+        registerExitOperation(operation);
         return p;
     }
 
-    private static void registerExitOperation(String executionId, VulnerabilityCaseType type) {
+    private static void registerExitOperation(AbstractOperation operation) {
         try {
-            NewRelicSecurity.getAgent().registerExitEvent(executionId, type);
+            if (!NewRelicSecurity.isHookProcessingActive() || NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()
+            ) {
+                return;
+            }
+            NewRelicSecurity.getAgent().registerExitEvent(operation);
         } catch (Throwable ignored){}
     }
 
-    private static String preprocessSecurityHook(String[] cmdarray, Map<String, String> environment) {
+    private static AbstractOperation preprocessSecurityHook(String[] cmdarray, Map<String, String> environment) {
         try {
             if (!NewRelicSecurity.isHookProcessingActive() || NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()
                 || cmdarray == null || cmdarray.length == 0
@@ -45,8 +46,8 @@ abstract class ProcessImpl_Instrumentation {
             String command = String.join(" ", cmdarray);
             ForkExecOperation operation = new ForkExecOperation(command, environment,
                     ProcessImpl_Instrumentation.class.getName(), "start");
-            return NewRelicSecurity.getAgent().registerOperation(operation);
-
+            NewRelicSecurity.getAgent().registerOperation(operation);
+            return operation;
         } catch (Throwable e) {
             if(e instanceof NewRelicSecurityException){
                 e.printStackTrace();
