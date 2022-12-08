@@ -15,6 +15,7 @@ import com.newrelic.agent.security.intcodeagent.models.operationalbean.*;
 import com.newrelic.agent.security.intcodeagent.websocket.EventSendPool;
 import com.newrelic.agent.security.intcodeagent.websocket.JsonConverter;
 import com.newrelic.api.agent.NewRelic;
+import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
 import org.json.simple.JSONArray;

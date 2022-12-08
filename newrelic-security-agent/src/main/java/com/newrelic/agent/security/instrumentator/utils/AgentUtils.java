@@ -2,8 +2,6 @@ package com.newrelic.agent.security.instrumentator.utils;
 
 import com.newrelic.agent.security.AgentInfo;
 import com.newrelic.agent.security.instrumentator.custom.ClassloaderAdjustments;
-import com.newrelic.agent.security.instrumentator.os.OSVariables;
-import com.newrelic.agent.security.instrumentator.os.OsVariablesInstance;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.newrelic.agent.security.intcodeagent.filelogging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.logging.DeployedApplication;
@@ -12,9 +10,9 @@ import com.newrelic.agent.security.intcodeagent.models.config.AgentPolicyParamet
 import com.newrelic.agent.security.intcodeagent.models.javaagent.CollectorInitMsg;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.EventResponse;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.UserClassEntity;
-import com.newrelic.agent.security.intcodeagent.models.javaagent.VulnerabilityCaseType;
 import com.newrelic.agent.security.intcodeagent.models.operationalbean.AbstractOperationalBean;
 import com.newrelic.agent.security.intcodeagent.schedulers.PolicyPullST;
+import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.security.schema.policy.AgentPolicy;
 import com.newrelic.api.agent.NewRelic;
 import com.sun.jna.Pointer;
@@ -478,7 +476,6 @@ public class AgentUtils {
         StringBuilder builder = new StringBuilder(element.getClassName());
         builder.append(".");
         builder.append(element.getMethodName());
-        
         if(element.isNativeMethod()) {
             builder.append("(Native Method)");
         } else {

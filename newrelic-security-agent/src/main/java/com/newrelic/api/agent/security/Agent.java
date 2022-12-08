@@ -2,10 +2,8 @@ package com.newrelic.api.agent.security;
 
 import com.newrelic.agent.security.AgentConfig;
 import com.newrelic.agent.security.AgentInfo;
-import com.newrelic.agent.security.instrumentator.utils.AgentUtils;
-import com.newrelic.agent.security.instrumentator.utils.ApplicationInfoUtils;
-import com.newrelic.agent.security.instrumentator.utils.CollectorConfigurationUtils;
-import com.newrelic.agent.security.instrumentator.utils.INRSettingsKey;
+import com.newrelic.agent.security.instrumentator.dispatcher.EventDispatcher;
+import com.newrelic.agent.security.instrumentator.utils.*;
 import com.newrelic.agent.security.intcodeagent.constants.AgentServices;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.newrelic.agent.security.intcodeagent.filelogging.LogLevel;
@@ -17,10 +15,12 @@ import com.newrelic.agent.security.intcodeagent.websocket.JsonConverter;
 import com.newrelic.agent.security.intcodeagent.websocket.WSClient;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.SecurityMetaData;
+import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.security.schema.policy.AgentPolicy;
 import com.newrelic.api.agent.NewRelic;
 import com.newrelic.api.agent.Transaction;
 
+import java.time.Instant;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -206,9 +206,18 @@ public class Agent implements SecurityAgent {
     }
 
     @Override
-    public void registerOperation(AbstractOperation operation, String executionId) {
+    public String registerOperation(AbstractOperation operation) {
+        String executionId = ExecutionIDGenerator.getExecutionId();
+        operation.setExecutionId(executionId);
+        operation.setStartTime(Instant.now().toEpochMilli());
         operation.setStackTrace(Thread.currentThread().getStackTrace());
         System.out.println(JsonConverter.toJSON(operation));
+        return executionId;
+    }
+
+    @Override
+    public void registerExitEvent(String executionId, VulnerabilityCaseType type) {
+        EventDispatcher.dispatchExitEvent(executionId, type);
     }
 
     @Override

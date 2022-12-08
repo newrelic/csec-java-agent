@@ -8,6 +8,7 @@ import com.newrelic.agent.security.intcodeagent.filelogging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.*;
 import com.newrelic.agent.security.intcodeagent.models.operationalbean.AbstractOperationalBean;
 import com.newrelic.agent.security.intcodeagent.models.operationalbean.SQLOperationalBean;
+import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 

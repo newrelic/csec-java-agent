@@ -6,6 +6,7 @@ import com.newrelic.agent.security.intcodeagent.filelogging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.logging.IAgentConstants;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.*;
 import com.newrelic.agent.security.intcodeagent.models.operationalbean.AbstractOperationalBean;
+import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
