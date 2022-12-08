@@ -1,16 +1,14 @@
 package java.lang;
 
 import com.newrelic.api.agent.security.NewRelicSecurity;
+import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
 import com.newrelic.api.agent.security.schema.operation.ForkExecOperation;
-import com.newrelic.api.agent.security.schema.operation.RXSSOperation;
 import com.newrelic.api.agent.weaver.MatchType;
-import com.newrelic.api.agent.weaver.NewField;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Map;
 
 @Weave(type = MatchType.ExactClass, originalName = "java.lang.ProcessImpl")
@@ -26,9 +24,15 @@ abstract class ProcessImpl_Instrumentation {
         try {
             p = Weaver.callOriginal();
         } finally {
-            // TODO : Place exit event code here.
+            registerExitOperation(executionId, VulnerabilityCaseType.SYSTEM_COMMAND);
         }
         return p;
+    }
+
+    private static void registerExitOperation(String executionId, VulnerabilityCaseType type) {
+        try {
+            NewRelicSecurity.getAgent().registerExitEvent(executionId, type);
+        } catch (Throwable ignored){}
     }
 
     private static String preprocessSecurityHook(String[] cmdarray, Map<String, String> environment) {
