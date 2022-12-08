@@ -10,13 +10,13 @@ public class NoSQLOperation extends AbstractOperation {
 
     private List<Object> data = new ArrayList<>();
 
-    public NoSQLOperation(List<Object> data, String className, String methodName, String executionId, long startTime) {
-        super(className, methodName, executionId, startTime);
+    public NoSQLOperation(List<Object> data, String className, String methodName) {
+        super(className, methodName);
         this.data.addAll(data);
     }
 
-    public NoSQLOperation(Object data, String className, String methodName, String executionId, long startTime) {
-        super(className, methodName, executionId, startTime);
+    public NoSQLOperation(Object data, String className, String methodName) {
+        super(className, methodName);
         this.data.add(data);
     }
 

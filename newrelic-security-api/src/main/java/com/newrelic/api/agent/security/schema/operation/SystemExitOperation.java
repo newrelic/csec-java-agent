@@ -8,7 +8,7 @@ public class SystemExitOperation extends AbstractOperation {
 
     public SystemExitOperation(String cmd, String className, String methodName, String executionId,
                                long startTime) {
-        super(className, methodName, executionId, startTime);
+        super(className, methodName);
         this.exitCode = cmd;
 
     }

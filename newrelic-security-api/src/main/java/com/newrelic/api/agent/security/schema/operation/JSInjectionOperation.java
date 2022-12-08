@@ -8,7 +8,7 @@ public class JSInjectionOperation extends AbstractOperation {
 
     public JSInjectionOperation(String javaScriptCode, String className, String methodName, String executionId,
                                 long startTime) {
-        super(className, methodName, executionId, startTime);
+        super(className, methodName);
         this.javaScriptCode = javaScriptCode;
     }
 

@@ -8,13 +8,13 @@ public class SSRFOperation extends AbstractOperation {
 
     private boolean isJNDILookup = false;
 
-    public SSRFOperation(String apiCallArg, String className, String methodName, String executionId, long startTime) {
-        super(className, methodName, executionId, startTime);
+    public SSRFOperation(String apiCallArg, String className, String methodName) {
+        super(className, methodName);
         this.arg = apiCallArg;
     }
 
-    public SSRFOperation(String apiCallArg, String className, String methodName, String executionId, long startTime, boolean isJNDILookup) {
-        super(className, methodName, executionId, startTime);
+    public SSRFOperation(String apiCallArg, String className, String methodName, boolean isJNDILookup) {
+        super(className, methodName);
         this.arg = apiCallArg;
         this.isJNDILookup = isJNDILookup;
     }

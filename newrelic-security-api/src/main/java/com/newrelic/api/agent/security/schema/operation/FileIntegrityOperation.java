@@ -11,13 +11,12 @@ public class FileIntegrityOperation extends AbstractOperation {
     private Integer lineNumber;
     private String fileName;
 
-    public FileIntegrityOperation(String className, String methodName, String executionId, Long startTime) {
-        super(className, methodName, executionId, startTime);
+    public FileIntegrityOperation(String className, String methodName) {
+        super(className, methodName);
     }
 
-    public FileIntegrityOperation(Boolean exists, String fileName, String className, String methodName, String exectionId,
-                                  Long startTime) {
-        this(className, methodName, exectionId, startTime);
+    public FileIntegrityOperation(Boolean exists, String fileName, String className, String methodName) {
+        this(className, methodName);
         this.exists = exists;
         this.setFileName(fileName);
     }

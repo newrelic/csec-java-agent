@@ -9,6 +9,7 @@ package com.newrelic.api.agent.security;
 
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.SecurityMetaData;
+import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.security.schema.policy.AgentPolicy;
 
 import java.net.URL;
@@ -18,6 +19,7 @@ import java.net.URL;
  */
 class NoOpAgent implements SecurityAgent {
     private static final SecurityAgent INSTANCE = new NoOpAgent();
+    public static final String EMPTY = "";
 
     public static SecurityAgent getInstance() {
         return INSTANCE;
@@ -34,8 +36,12 @@ class NoOpAgent implements SecurityAgent {
     }
 
     @Override
-    public void registerOperation(AbstractOperation operation, String executionId) {
+    public String registerOperation(AbstractOperation operation) {
+        return EMPTY;
     }
+
+    @Override
+    public void registerExitEvent(String executionId, VulnerabilityCaseType type) {}
 
     @Override
     public boolean isSecurityActive() {

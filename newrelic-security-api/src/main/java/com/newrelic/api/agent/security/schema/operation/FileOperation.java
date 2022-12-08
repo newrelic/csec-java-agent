@@ -10,8 +10,8 @@ public class FileOperation extends AbstractOperation {
     private boolean isExists;
     private boolean getBooleanAttributesCall;
 
-    public FileOperation(String fileName, String className, String methodName, String executionId, long startTime, boolean getBooleanAttributesCall) {
-        super(className, methodName, executionId, startTime);
+    public FileOperation(String fileName, String className, String methodName, boolean getBooleanAttributesCall) {
+        super(className, methodName);
         this.fileName = fileName;
         this.isExists = new File(this.fileName).exists();
         this.getBooleanAttributesCall = getBooleanAttributesCall;

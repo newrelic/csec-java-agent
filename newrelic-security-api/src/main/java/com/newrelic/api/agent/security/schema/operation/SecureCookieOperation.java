@@ -7,7 +7,7 @@ public class SecureCookieOperation extends AbstractOperation {
 
     public SecureCookieOperation(String value, String className, String methodName, String executionId,
                                  long startTime) {
-        super(className, methodName, executionId, startTime);
+        super(className, methodName);
         this.value = value;
     }
 

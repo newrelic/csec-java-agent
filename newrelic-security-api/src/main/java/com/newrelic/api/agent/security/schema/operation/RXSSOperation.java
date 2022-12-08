@@ -10,8 +10,8 @@ public class RXSSOperation extends AbstractOperation {
 
     private HttpResponse response;
 
-    public RXSSOperation(HttpRequest  request, HttpResponse response, String className, String methodName, String executionId, long startTime) {
-        super(className, methodName, executionId, startTime);
+    public RXSSOperation(HttpRequest  request, HttpResponse response, String className, String methodName) {
+        super(className, methodName);
         this.request = request;
         this.response = response;
     }

@@ -11,8 +11,8 @@ public class ForkExecOperation extends AbstractOperation {
 
     private Map<String, String> environment;
 
-    public ForkExecOperation(String cmd, Map<String, String> environment, String className, String methodName, String executionId, long startTime) {
-        super(className, methodName, executionId, startTime);
+    public ForkExecOperation(String cmd, Map<String, String> environment, String className, String methodName) {
+        super(className, methodName);
         this.command = cmd;
         if (environment != null) {
             this.environment = new HashMap<>(environment);

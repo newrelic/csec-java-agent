@@ -7,18 +7,18 @@ public class LDAPOperation extends AbstractOperation {
     private String name;
     private String filter;
 
-    public LDAPOperation(String className, String methodName, String executionId, long startTime) {
-        super(className, methodName, executionId, startTime);
+    public LDAPOperation(String className, String methodName) {
+        super(className, methodName);
     }
 
-    public LDAPOperation(String name, String className, String methodName, String executionId, long startTime) {
-        super(className, methodName, executionId, startTime);
+    public LDAPOperation(String name, String className, String methodName) {
+        super(className, methodName);
         this.name = name;
     }
 
     public LDAPOperation(String name, String filter, String className, String methodName, String executionId,
                          long startTime) {
-        this(name, className, methodName, executionId, startTime);
+        this(name, className, methodName);
         this.filter = filter;
     }
 

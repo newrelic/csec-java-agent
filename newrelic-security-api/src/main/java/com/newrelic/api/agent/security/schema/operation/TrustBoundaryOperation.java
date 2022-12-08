@@ -7,8 +7,8 @@ public class TrustBoundaryOperation extends AbstractOperation {
     private String key;
     private Object value;
 
-    public TrustBoundaryOperation(String key, Object value, String className, String methodName, String executionId, long startTime) {
-        super(className, methodName, executionId, startTime);
+    public TrustBoundaryOperation(String key, Object value, String className, String methodName) {
+        super(className, methodName);
         this.key = key;
         this.value = value;
     }

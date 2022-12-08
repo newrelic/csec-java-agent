@@ -33,22 +33,10 @@ public abstract class AbstractOperation {
         this.apiID = EMPTY;
     }
 
-    public AbstractOperation(String className, String methodName, String executionId
-            , long startTime){
+    public AbstractOperation(String className, String methodName){
         this.className = className;
-        this.sourceMethod = sourceMethod;
-        this.executionId = executionId;
-        this.startTime = startTime;
         this.methodName = methodName;
         this.blockingEndTime = 0L;
-    }
-
-    public AbstractOperation(String className, String methodName, String executionId
-            , long startTime, int currentGenericServletStackLength) {
-        this(className, methodName, executionId, startTime);
-        if (currentGenericServletStackLength >= 0) {
-//            this.stackTrace = Arrays.copyOfRange(this.stackTrace, 0, this.stackTrace.length - currentGenericServletStackLength + 3);
-        }
     }
 
     public String getClassName() {

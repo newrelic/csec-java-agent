@@ -35,8 +35,8 @@ public class HashCryptoOperation extends AbstractOperation {
         this.provider = provider;
     }
 
-    public HashCryptoOperation(String name, String className, String methodName, String executionId, long startTime) {
-        super(className, methodName, executionId, startTime);
+    public HashCryptoOperation(String name, String className, String methodName) {
+        super(className, methodName);
         this.name = name;
     }
 

@@ -6,8 +6,8 @@ public class XPathOperation extends AbstractOperation {
 
     private String expression;
 
-    public XPathOperation(String expression, String className, String methodName, String executionId, long startTime) {
-        super(className, methodName, executionId, startTime);
+    public XPathOperation(String expression, String className, String methodName) {
+        super(className, methodName);
         this.expression = expression;
     }
 

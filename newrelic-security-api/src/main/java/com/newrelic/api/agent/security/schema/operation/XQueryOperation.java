@@ -6,8 +6,8 @@ public class XQueryOperation extends AbstractOperation {
 
     private String expression;
 
-    public XQueryOperation(String expression, String className, String methodName, String executionId, long startTime) {
-        super(className, methodName, executionId, startTime);
+    public XQueryOperation(String expression, String className, String methodName) {
+        super(className, methodName);
         this.expression = expression;
     }
 

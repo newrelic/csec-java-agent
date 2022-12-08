@@ -6,8 +6,8 @@ public class RandomOperation extends AbstractOperation {
 
     private String eventCatgory;
 
-    public RandomOperation(String eventCatgory, String className, String methodName, String executionId, long startTime) {
-        super(className, methodName, executionId, startTime);
+    public RandomOperation(String eventCatgory, String className, String methodName) {
+        super(className, methodName);
         this.eventCatgory = eventCatgory;
     }
 
