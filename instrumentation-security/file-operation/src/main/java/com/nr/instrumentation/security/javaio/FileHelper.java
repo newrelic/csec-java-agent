@@ -12,7 +12,7 @@ public class FileHelper {
 
     public static final String FILEOUTPUTSTREAM_OPEN = "open";
 
-    public static final String NR_SEC_CUSTOM_ATTRIB_NAME = "FILE_OPERATION_LOCK";
+    public static final String NR_SEC_CUSTOM_ATTRIB_NAME = "FILE_OPERATION_LOCK-";
 
     public static final List<String> ALLOWED_EXTENSIONS = Arrays.asList(new String[]{"css", "html", "htm", "jsp", "js", "classtmp"});
 
@@ -59,7 +59,7 @@ public class FileHelper {
 
     public static boolean isFileLockAcquired() {
         try {
-            return Boolean.TRUE.equals(NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(NR_SEC_CUSTOM_ATTRIB_NAME, Boolean.class));
+            return Boolean.TRUE.equals(NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(getNrSecCustomAttribName(), Boolean.class));
         } catch (Throwable ignored) {}
         return false;
     }
@@ -67,7 +67,7 @@ public class FileHelper {
     public static boolean acquireFileLockIfPossible() {
         try {
             if (!isFileLockAcquired()) {
-                NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(NR_SEC_CUSTOM_ATTRIB_NAME, true);
+                NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(getNrSecCustomAttribName(), true);
                 return true;
             }
         } catch (Throwable ignored){}
@@ -76,7 +76,11 @@ public class FileHelper {
 
     public static void releaseFileLock() {
         try {
-            NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(NR_SEC_CUSTOM_ATTRIB_NAME, false);
+            NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(getNrSecCustomAttribName(), false);
         } catch (Throwable ignored){}
+    }
+
+    private static String getNrSecCustomAttribName() {
+        return NR_SEC_CUSTOM_ATTRIB_NAME + Thread.currentThread().getId();
     }
 }
