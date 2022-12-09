@@ -36,6 +36,14 @@ public class FileHelper {
     public static final String MOVE = "move";
     public static final String SET_ATTRIBUTE = "setAttribute";
 
+    public static final String METHOD_NAME_SET_PERMISSION = "setPermission";
+    public static final String METHOD_NAME_CREATE_FILE_EXCLUSIVELY = "createFileExclusively";
+    public static final String METHOD_NAME_DELETE = "delete";
+    public static final String METHOD_NAME_LIST = "list";
+    public static final String METHOD_NAME_CREATE_DIRECTORY = "createDirectory";
+    public static final String METHOD_NAME_RENAME = "rename";
+    public static final String METHOD_NAME_SETREADONLY = "setReadOnly";
+
 
     public static boolean skipExistsEvent(String filename) {
         String extension = getFileExtension(filename);

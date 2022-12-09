@@ -314,8 +314,25 @@ public abstract class FileSystemProvider_Instrumentation {
         } catch (Throwable ignored){}
     }
 
-    private AbstractOperation preprocessSecurityHook(Path filename, String methodName) {
-        return preprocessSecurityHook(filename.toString(), methodName);
+    private AbstractOperation preprocessSecurityHook(Path file, String methodName) {
+        try {
+            if (!NewRelicSecurity.isHookProcessingActive() || NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()
+                    || file == null) {
+                return null;
+            }
+            String filePath = file.toFile().getAbsolutePath();
+            FileOperation operation = new FileOperation(filePath,
+                    FileSystemProvider_Instrumentation.class.getName(), methodName, false);
+            FileHelper.createEntryOfFileIntegrity(filePath, FileSystemProvider_Instrumentation.class.getName(), methodName);
+            NewRelicSecurity.getAgent().registerOperation(operation);
+            return operation;
+        } catch (Throwable e) {
+            if (e instanceof NewRelicSecurityException) {
+                e.printStackTrace();
+                throw e;
+            }
+        }
+        return null;
     }
 
     private AbstractOperation preprocessSecurityHook(String filename, String methodName) {

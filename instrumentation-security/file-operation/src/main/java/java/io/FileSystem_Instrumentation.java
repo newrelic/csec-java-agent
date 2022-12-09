@@ -37,6 +37,134 @@ abstract class FileSystem_Instrumentation {
         return returnVal;
     }
 
+    public boolean setPermission(File f, int access, boolean enable, boolean owneronly){
+        boolean isFileLockAcquired = acquireFileLockIfPossible();
+        AbstractOperation operation = null;
+        if(isFileLockAcquired && !FileHelper.skipExistsEvent(f.getName())) {
+            operation = preprocessSecurityHook(f, false, FileHelper.METHOD_NAME_SET_PERMISSION);
+        }
+        boolean returnVal = false;
+        try {
+            returnVal = Weaver.callOriginal();
+        } finally {
+            if(isFileLockAcquired){
+                releaseFileLock();
+            }
+        }
+        registerExitOperation(isFileLockAcquired, operation);
+        return returnVal;
+    }
+
+    public boolean createFileExclusively(String pathname)
+            throws IOException {
+        boolean isFileLockAcquired = acquireFileLockIfPossible();
+        AbstractOperation operation = null;
+        if(isFileLockAcquired && !FileHelper.skipExistsEvent(pathname)) {
+            operation = preprocessSecurityHook(pathname, false, FileHelper.METHOD_NAME_CREATE_FILE_EXCLUSIVELY);
+        }
+        boolean returnVal = false;
+        try {
+            returnVal = Weaver.callOriginal();
+        } finally {
+            if(isFileLockAcquired){
+                releaseFileLock();
+            }
+        }
+        registerExitOperation(isFileLockAcquired, operation);
+        return returnVal;
+    }
+
+    public boolean delete(File f){
+        boolean isFileLockAcquired = acquireFileLockIfPossible();
+        AbstractOperation operation = null;
+        if(isFileLockAcquired && !FileHelper.skipExistsEvent(f.getName())) {
+            operation = preprocessSecurityHook(f, false, FileHelper.METHOD_NAME_DELETE);
+        }
+        boolean returnVal = false;
+        try {
+            returnVal = Weaver.callOriginal();
+        } finally {
+            if(isFileLockAcquired){
+                releaseFileLock();
+            }
+        }
+        registerExitOperation(isFileLockAcquired, operation);
+        return returnVal;
+    }
+
+    public String[] list(File f){
+        boolean isFileLockAcquired = acquireFileLockIfPossible();
+        AbstractOperation operation = null;
+        if(isFileLockAcquired && !FileHelper.skipExistsEvent(f.getName())) {
+            operation = preprocessSecurityHook(f, false, FileHelper.METHOD_NAME_LIST);
+        }
+        String[] returnVal = null;
+        try {
+            returnVal = Weaver.callOriginal();
+        } finally {
+            if(isFileLockAcquired){
+                releaseFileLock();
+            }
+        }
+        registerExitOperation(isFileLockAcquired, operation);
+        return returnVal;
+    }
+
+
+    public boolean createDirectory(File f){
+        boolean isFileLockAcquired = acquireFileLockIfPossible();
+        AbstractOperation operation = null;
+        if(isFileLockAcquired && !FileHelper.skipExistsEvent(f.getName())) {
+            operation = preprocessSecurityHook(f, false, FileHelper.METHOD_NAME_CREATE_DIRECTORY);
+        }
+        boolean returnVal = false;
+        try {
+            returnVal = Weaver.callOriginal();
+        } finally {
+            if(isFileLockAcquired){
+                releaseFileLock();
+            }
+        }
+        registerExitOperation(isFileLockAcquired, operation);
+        return returnVal;
+    }
+
+    public boolean rename(File f1, File f2){
+        boolean isFileLockAcquired = acquireFileLockIfPossible();
+        AbstractOperation operation = null;
+        if(isFileLockAcquired && !FileHelper.skipExistsEvent(f1.getName())) {
+            operation = preprocessSecurityHook(f1, false, FileHelper.METHOD_NAME_RENAME);
+        }
+        boolean returnVal = false;
+        try {
+            returnVal = Weaver.callOriginal();
+        } finally {
+            if(isFileLockAcquired){
+                releaseFileLock();
+            }
+        }
+        registerExitOperation(isFileLockAcquired, operation);
+        return returnVal;
+    }
+
+    public boolean setReadOnly(File f){
+        boolean isFileLockAcquired = acquireFileLockIfPossible();
+        AbstractOperation operation = null;
+        if(isFileLockAcquired && !FileHelper.skipExistsEvent(f.getName())) {
+            operation = preprocessSecurityHook(f, false, FileHelper.METHOD_NAME_SETREADONLY);
+        }
+        boolean returnVal = false;
+        try {
+            returnVal = Weaver.callOriginal();
+        } finally {
+            if(isFileLockAcquired){
+                releaseFileLock();
+            }
+        }
+        registerExitOperation(isFileLockAcquired, operation);
+        return returnVal;
+    }
+
     private boolean acquireFileLockIfPossible() {
         try {
             return FileHelper.acquireFileLockIfPossible();
@@ -47,7 +175,7 @@ abstract class FileSystem_Instrumentation {
     private void releaseFileLock() {
         try {
             FileHelper.releaseFileLock();
-        } catch (Throwable e) {}
+        } catch (Throwable ignored) {}
     }
 
 
@@ -71,6 +199,29 @@ abstract class FileSystem_Instrumentation {
                 return null;
             }
             String filePath = file.getAbsolutePath();
+            FileOperation operation = new FileOperation(filePath,
+                    FileOutputStream_Instrumentation.class.getName(), methodName, isBooleanAttributesCall);
+            FileHelper.createEntryOfFileIntegrity(filePath, FileSystem_Instrumentation.class.getName(), methodName);
+            NewRelicSecurity.getAgent().registerOperation(operation);
+            return operation;
+        } catch (Throwable e) {
+            if (e instanceof NewRelicSecurityException) {
+                e.printStackTrace();
+                throw e;
+            }
+        }
+        return null;
+    }
+
+    private AbstractOperation preprocessSecurityHook(String fileName, boolean isBooleanAttributesCall, String methodName) {
+        try {
+            if (!NewRelicSecurity.isHookProcessingActive() ||
+                    NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()
+                    || fileName == null || fileName.trim().isEmpty()
+            ) {
+                return null;
+            }
+            String filePath = new File(fileName).getAbsolutePath();
             FileOperation operation = new FileOperation(filePath,
                     FileOutputStream_Instrumentation.class.getName(), methodName, isBooleanAttributesCall);
             FileHelper.createEntryOfFileIntegrity(filePath, FileSystem_Instrumentation.class.getName(), methodName);
