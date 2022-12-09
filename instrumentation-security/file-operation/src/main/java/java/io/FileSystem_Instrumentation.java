@@ -22,7 +22,7 @@ abstract class FileSystem_Instrumentation {
     public int getBooleanAttributes(File f){
         boolean isFileLockAcquired = acquireFileLockIfPossible();
         AbstractOperation operation = null;
-        if(isFileLockAcquired) {
+        if(isFileLockAcquired && !FileHelper.skipExistsEvent(f.getName())) {
             operation = preprocessSecurityHook(f, true, FileHelper.METHOD_NAME_GET_BOOLEAN_ATTRIBUTES);
         }
         int returnVal = -1;
@@ -72,7 +72,7 @@ abstract class FileSystem_Instrumentation {
             }
             String filePath = file.getAbsolutePath();
             FileOperation operation = new FileOperation(filePath,
-                    FileOutputStream_Instrumentation.class.getName(), FileHelper.METHOD_NAME_FILEOUTPUTSTREAM_OPEN, isBooleanAttributesCall);
+                    FileOutputStream_Instrumentation.class.getName(), methodName, isBooleanAttributesCall);
             FileHelper.createEntryOfFileIntegrity(filePath, FileSystem_Instrumentation.class.getName(), methodName);
             NewRelicSecurity.getAgent().registerOperation(operation);
             return operation;

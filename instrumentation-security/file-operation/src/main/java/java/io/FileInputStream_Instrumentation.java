@@ -20,14 +20,38 @@ import com.nr.instrumentation.security.javaio.FileHelper;
 public abstract class FileInputStream_Instrumentation {
 
     private void open(String name) throws FileNotFoundException {
-        AbstractOperation operation = preprocessSecurityHook(name);
-        Weaver.callOriginal();
-        registerExitOperation(operation);
+        boolean isFileLockAcquired = acquireFileLockIfPossible();
+        AbstractOperation operation = null;
+        if(isFileLockAcquired && !FileHelper.skipExistsEvent(name)) {
+            operation = preprocessSecurityHook(name);
+        }
+        try {
+            Weaver.callOriginal();
+        } finally {
+            if(isFileLockAcquired){
+                releaseFileLock();
+            }
+        }
+        registerExitOperation(isFileLockAcquired, operation);
     }
 
-    private void registerExitOperation(AbstractOperation operation) {
+    private boolean acquireFileLockIfPossible() {
         try {
-            if (!NewRelicSecurity.isHookProcessingActive() || NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()
+            return FileHelper.acquireFileLockIfPossible();
+        } catch (Throwable ignored) {}
+        return false;
+    }
+
+    private void releaseFileLock() {
+        try {
+            FileHelper.releaseFileLock();
+        } catch (Throwable e) {}
+    }
+
+    private void registerExitOperation(boolean isProcessingAllowed, AbstractOperation operation) {
+        try {
+            if (operation!= null || !isProcessingAllowed || !NewRelicSecurity.isHookProcessingActive() ||
+                    NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()
             ) {
                 return;
             }
@@ -37,7 +61,8 @@ public abstract class FileInputStream_Instrumentation {
 
     private AbstractOperation preprocessSecurityHook(String filename) {
         try {
-            if (!NewRelicSecurity.isHookProcessingActive() || NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()
+            if (!NewRelicSecurity.isHookProcessingActive() ||
+                    NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()
                     || filename == null || filename.trim().isEmpty()
             ) {
                 return null;

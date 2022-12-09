@@ -28,7 +28,7 @@ import java.nio.file.attribute.FileAttribute;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 
-@Weave(type = MatchType.BaseClass, originalName = "java.io.FileSystemProvider")
+@Weave(type = MatchType.BaseClass, originalName = "java.nio.file.spi.FileSystemProvider")
 public abstract class FileSystemProvider_Instrumentation {
 
     public void copy(Path source, Path target, CopyOption... options)
