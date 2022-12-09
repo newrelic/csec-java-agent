@@ -57,4 +57,26 @@ public class FileHelper {
         return null;
     }
 
+    public static boolean isFileLockAcquired() {
+        try {
+            return Boolean.TRUE.equals(NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(NR_SEC_CUSTOM_ATTRIB_NAME, Boolean.class));
+        } catch (Throwable ignored) {}
+        return false;
+    }
+
+    public static boolean acquireFileLockIfPossible() {
+        try {
+            if (!isFileLockAcquired()) {
+                NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(NR_SEC_CUSTOM_ATTRIB_NAME, true);
+                return true;
+            }
+        } catch (Throwable ignored){}
+        return false;
+    }
+
+    public static void releaseFileLock() {
+        try {
+            NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(NR_SEC_CUSTOM_ATTRIB_NAME, false);
+        } catch (Throwable ignored){}
+    }
 }
