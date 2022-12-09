@@ -16,6 +16,10 @@ import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
 import com.nr.instrumentation.security.javaio.FileHelper;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 @Weave(type = MatchType.BaseClass, originalName = "java.io.FileSystem")
 abstract class FileSystem_Instrumentation {
 
@@ -23,7 +27,7 @@ abstract class FileSystem_Instrumentation {
         boolean isFileLockAcquired = acquireFileLockIfPossible();
         AbstractOperation operation = null;
         if(isFileLockAcquired && !FileHelper.skipExistsEvent(f.getName())) {
-            operation = preprocessSecurityHook(f, true, FileHelper.METHOD_NAME_GET_BOOLEAN_ATTRIBUTES);
+            operation = preprocessSecurityHook(true, FileHelper.METHOD_NAME_GET_BOOLEAN_ATTRIBUTES, f);
         }
         int returnVal = -1;
         try {
@@ -41,7 +45,7 @@ abstract class FileSystem_Instrumentation {
         boolean isFileLockAcquired = acquireFileLockIfPossible();
         AbstractOperation operation = null;
         if(isFileLockAcquired && !FileHelper.skipExistsEvent(f.getName())) {
-            operation = preprocessSecurityHook(f, false, FileHelper.METHOD_NAME_SET_PERMISSION);
+            operation = preprocessSecurityHook(false, FileHelper.METHOD_NAME_SET_PERMISSION, f);
         }
         boolean returnVal = false;
         try {
@@ -60,7 +64,7 @@ abstract class FileSystem_Instrumentation {
         boolean isFileLockAcquired = acquireFileLockIfPossible();
         AbstractOperation operation = null;
         if(isFileLockAcquired && !FileHelper.skipExistsEvent(pathname)) {
-            operation = preprocessSecurityHook(new File(pathname), false, FileHelper.METHOD_NAME_CREATE_FILE_EXCLUSIVELY);
+            operation = preprocessSecurityHook(false, FileHelper.METHOD_NAME_CREATE_FILE_EXCLUSIVELY, new File(pathname));
         }
         boolean returnVal = false;
         try {
@@ -78,7 +82,7 @@ abstract class FileSystem_Instrumentation {
         boolean isFileLockAcquired = acquireFileLockIfPossible();
         AbstractOperation operation = null;
         if(isFileLockAcquired && !FileHelper.skipExistsEvent(f.getName())) {
-            operation = preprocessSecurityHook(f, false, FileHelper.METHOD_NAME_DELETE);
+            operation = preprocessSecurityHook(false, FileHelper.METHOD_NAME_DELETE, f);
         }
         boolean returnVal = false;
         try {
@@ -96,7 +100,7 @@ abstract class FileSystem_Instrumentation {
         boolean isFileLockAcquired = acquireFileLockIfPossible();
         AbstractOperation operation = null;
         if(isFileLockAcquired && !FileHelper.skipExistsEvent(f.getName())) {
-            operation = preprocessSecurityHook(f, false, FileHelper.METHOD_NAME_LIST);
+            operation = preprocessSecurityHook(false, FileHelper.METHOD_NAME_LIST, f);
         }
         String[] returnVal = null;
         try {
@@ -115,7 +119,7 @@ abstract class FileSystem_Instrumentation {
         boolean isFileLockAcquired = acquireFileLockIfPossible();
         AbstractOperation operation = null;
         if(isFileLockAcquired && !FileHelper.skipExistsEvent(f.getName())) {
-            operation = preprocessSecurityHook(f, false, FileHelper.METHOD_NAME_CREATE_DIRECTORY);
+            operation = preprocessSecurityHook(false, FileHelper.METHOD_NAME_CREATE_DIRECTORY, f);
         }
         boolean returnVal = false;
         try {
@@ -133,7 +137,7 @@ abstract class FileSystem_Instrumentation {
         boolean isFileLockAcquired = acquireFileLockIfPossible();
         AbstractOperation operation = null;
         if(isFileLockAcquired && !FileHelper.skipExistsEvent(f1.getName())) {
-            operation = preprocessSecurityHook(f1, false, FileHelper.METHOD_NAME_RENAME);
+            operation = preprocessSecurityHook(false, FileHelper.METHOD_NAME_RENAME, f1, f2);
         }
         boolean returnVal = false;
         try {
@@ -151,7 +155,7 @@ abstract class FileSystem_Instrumentation {
         boolean isFileLockAcquired = acquireFileLockIfPossible();
         AbstractOperation operation = null;
         if(isFileLockAcquired && !FileHelper.skipExistsEvent(f.getName())) {
-            operation = preprocessSecurityHook(f, false, FileHelper.METHOD_NAME_SETREADONLY);
+            operation = preprocessSecurityHook(false, FileHelper.METHOD_NAME_SETREADONLY, f);
         }
         boolean returnVal = false;
         try {
@@ -190,18 +194,22 @@ abstract class FileSystem_Instrumentation {
         } catch (Throwable ignored){}
     }
 
-    private AbstractOperation preprocessSecurityHook(File file, boolean isBooleanAttributesCall, String methodName) {
+    private AbstractOperation preprocessSecurityHook(boolean isBooleanAttributesCall, String methodName, File... files) {
         try {
             if (!NewRelicSecurity.isHookProcessingActive() ||
                     NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()
-                    || file == null
+                    || files == null || files.length == 0
             ) {
                 return null;
             }
-            String filePath = file.getAbsolutePath();
-            FileOperation operation = new FileOperation(filePath,
-                    FileOutputStream_Instrumentation.class.getName(), methodName, isBooleanAttributesCall);
-            FileHelper.createEntryOfFileIntegrity(filePath, FileSystem_Instrumentation.class.getName(), methodName);
+            List<String> fileNames = new ArrayList<>(files.length);
+            for (File file : files) {
+                String filePath = file.getAbsolutePath();
+                fileNames.add(filePath);
+                FileHelper.createEntryOfFileIntegrity(file.getAbsolutePath(), FileSystem_Instrumentation.class.getName(), methodName);
+            }
+            FileOperation operation = new FileOperation(
+                    FileOutputStream_Instrumentation.class.getName(), methodName, isBooleanAttributesCall, fileNames);
             NewRelicSecurity.getAgent().registerOperation(operation);
             return operation;
         } catch (Throwable e) {
