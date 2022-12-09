@@ -1,0 +1,15 @@
+dependencies {
+    implementation(project(":newrelic-security-api"))
+    implementation("com.newrelic.agent.java:newrelic-weaver-api:7.11.0-SNAPSHOT")
+}
+
+// This instrumentation module should not use the bootstrap classpath
+
+
+jar {
+    manifest { attributes 'Implementation-Title': 'com.newrelic.instrumentation.security.java-io-stream' }
+}
+
+verifyInstrumentation {
+    verifyClasspath = false // We don't want to verify classpath since these are JDK classes
+}

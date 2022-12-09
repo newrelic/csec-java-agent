@@ -7,7 +7,7 @@ dependencies {
 
 
 jar {
-    manifest { attributes 'Implementation-Title': 'com.newrelic.instrumentation.security.java-io' }
+    manifest { attributes 'Implementation-Title': 'com.newrelic.instrumentation.security.file-operation' }
 }
 
 verifyInstrumentation {
