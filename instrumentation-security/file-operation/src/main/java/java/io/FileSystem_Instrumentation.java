@@ -16,20 +16,45 @@ import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
 import com.nr.instrumentation.security.javaio.FileHelper;
 
-@Weave(type = MatchType.ExactClass, originalName = "java.io.FileSystem")
-public abstract class FileSystem_Instrumentation {
+@Weave(type = MatchType.BaseClass, originalName = "java.io.FileSystem")
+abstract class FileSystem_Instrumentation {
 
-//    private void open(String name) throws FileNotFoundException {
-//        AbstractOperation operation = preprocessSecurityHook(name);
-//        Weaver.callOriginal();
-//        registerExitOperation(operation);
-//    }
-
-
-
-    private void registerExitOperation(AbstractOperation operation) {
+    public int getBooleanAttributes(File f){
+        boolean isFileLockAcquired = acquireFileLockIfPossible();
+        AbstractOperation operation = null;
+        if(isFileLockAcquired) {
+            operation = preprocessSecurityHook(f, true, FileHelper.METHOD_NAME_GET_BOOLEAN_ATTRIBUTES);
+        }
+        int returnVal = -1;
         try {
-            if (!NewRelicSecurity.isHookProcessingActive() || NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()
+            returnVal = Weaver.callOriginal();
+        } finally {
+            if(isFileLockAcquired){
+                releaseFileLock();
+            }
+        }
+        registerExitOperation(isFileLockAcquired, operation);
+        return returnVal;
+    }
+
+    private boolean acquireFileLockIfPossible() {
+        try {
+            return FileHelper.acquireFileLockIfPossible();
+        } catch (Throwable ignored) {}
+        return false;
+    }
+
+    private void releaseFileLock() {
+        try {
+            FileHelper.releaseFileLock();
+        } catch (Throwable e) {}
+    }
+
+
+    private void registerExitOperation(boolean isProcessingAllowed, AbstractOperation operation) {
+        try {
+            if (operation!= null || !isProcessingAllowed || !NewRelicSecurity.isHookProcessingActive() ||
+                    NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()
             ) {
                 return;
             }
@@ -37,17 +62,18 @@ public abstract class FileSystem_Instrumentation {
         } catch (Throwable ignored){}
     }
 
-    private AbstractOperation preprocessSecurityHook(String filename) {
+    private AbstractOperation preprocessSecurityHook(File file, boolean isBooleanAttributesCall, String methodName) {
         try {
-            if (!NewRelicSecurity.isHookProcessingActive() || NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()
-                    || filename == null || filename.trim().isEmpty()
+            if (!NewRelicSecurity.isHookProcessingActive() ||
+                    NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()
+                    || file == null
             ) {
                 return null;
             }
-            String filePath = new File(filename).getAbsolutePath();
+            String filePath = file.getAbsolutePath();
             FileOperation operation = new FileOperation(filePath,
-                    FileOutputStream_Instrumentation.class.getName(), FileHelper.FILEOUTPUTSTREAM_OPEN, false);
-            FileHelper.createEntryOfFileIntegrity(filePath, FileOutputStream_Instrumentation.class.getName(), FileHelper.FILEOUTPUTSTREAM_OPEN);
+                    FileOutputStream_Instrumentation.class.getName(), FileHelper.METHOD_NAME_FILEOUTPUTSTREAM_OPEN, isBooleanAttributesCall);
+            FileHelper.createEntryOfFileIntegrity(filePath, FileSystem_Instrumentation.class.getName(), methodName);
             NewRelicSecurity.getAgent().registerOperation(operation);
             return operation;
         } catch (Throwable e) {

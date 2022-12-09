@@ -9,7 +9,6 @@ package java.io;
 
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
-import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
 import com.newrelic.api.agent.security.schema.operation.FileOperation;
 import com.newrelic.api.agent.weaver.MatchType;
@@ -46,8 +45,8 @@ public abstract class FileOutputStream_Instrumentation {
             }
             String filePath = new File(filename).getAbsolutePath();
             FileOperation operation = new FileOperation(filePath,
-                    FileOutputStream_Instrumentation.class.getName(), FileHelper.FILEOUTPUTSTREAM_OPEN, false);
-            FileHelper.createEntryOfFileIntegrity(filePath, FileOutputStream_Instrumentation.class.getName(), FileHelper.FILEOUTPUTSTREAM_OPEN);
+                    FileOutputStream_Instrumentation.class.getName(), FileHelper.METHOD_NAME_FILEOUTPUTSTREAM_OPEN, false);
+            FileHelper.createEntryOfFileIntegrity(filePath, FileOutputStream_Instrumentation.class.getName(), FileHelper.METHOD_NAME_FILEOUTPUTSTREAM_OPEN);
             NewRelicSecurity.getAgent().registerOperation(operation);
             return operation;
         } catch (Throwable e) {
