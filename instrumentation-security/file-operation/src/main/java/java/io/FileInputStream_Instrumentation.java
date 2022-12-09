@@ -50,7 +50,7 @@ public abstract class FileInputStream_Instrumentation {
 
     private void registerExitOperation(boolean isProcessingAllowed, AbstractOperation operation) {
         try {
-            if (operation!= null || !isProcessingAllowed || !NewRelicSecurity.isHookProcessingActive() ||
+            if (operation == null || !isProcessingAllowed || !NewRelicSecurity.isHookProcessingActive() ||
                     NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()
             ) {
                 return;
