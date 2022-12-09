@@ -60,7 +60,7 @@ abstract class FileSystem_Instrumentation {
         boolean isFileLockAcquired = acquireFileLockIfPossible();
         AbstractOperation operation = null;
         if(isFileLockAcquired && !FileHelper.skipExistsEvent(pathname)) {
-            operation = preprocessSecurityHook(pathname, false, FileHelper.METHOD_NAME_CREATE_FILE_EXCLUSIVELY);
+            operation = preprocessSecurityHook(new File(pathname), false, FileHelper.METHOD_NAME_CREATE_FILE_EXCLUSIVELY);
         }
         boolean returnVal = false;
         try {
@@ -199,29 +199,6 @@ abstract class FileSystem_Instrumentation {
                 return null;
             }
             String filePath = file.getAbsolutePath();
-            FileOperation operation = new FileOperation(filePath,
-                    FileOutputStream_Instrumentation.class.getName(), methodName, isBooleanAttributesCall);
-            FileHelper.createEntryOfFileIntegrity(filePath, FileSystem_Instrumentation.class.getName(), methodName);
-            NewRelicSecurity.getAgent().registerOperation(operation);
-            return operation;
-        } catch (Throwable e) {
-            if (e instanceof NewRelicSecurityException) {
-                e.printStackTrace();
-                throw e;
-            }
-        }
-        return null;
-    }
-
-    private AbstractOperation preprocessSecurityHook(String fileName, boolean isBooleanAttributesCall, String methodName) {
-        try {
-            if (!NewRelicSecurity.isHookProcessingActive() ||
-                    NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()
-                    || fileName == null || fileName.trim().isEmpty()
-            ) {
-                return null;
-            }
-            String filePath = new File(fileName).getAbsolutePath();
             FileOperation operation = new FileOperation(filePath,
                     FileOutputStream_Instrumentation.class.getName(), methodName, isBooleanAttributesCall);
             FileHelper.createEntryOfFileIntegrity(filePath, FileSystem_Instrumentation.class.getName(), methodName);
