@@ -4,46 +4,45 @@ import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 public class FileOperation extends AbstractOperation {
 
-    private String fileName;
-    private boolean isExists;
+    private List<String> fileName;
     private boolean getBooleanAttributesCall;
 
-    public FileOperation(String fileName, String className, String methodName, boolean getBooleanAttributesCall) {
+    private FileOperation(String className, String methodName) {
         super(className, methodName);
+        fileName = new ArrayList<>();
+    }
+
+    public FileOperation(String fileName, String className, String methodName, boolean getBooleanAttributesCall) {
+        this(className, methodName);
         this.setCaseType(VulnerabilityCaseType.FILE_OPERATION);
-        this.fileName = fileName;
-        this.isExists = new File(this.fileName).exists();
+        this.fileName.add(fileName);
+        this.getBooleanAttributesCall = getBooleanAttributesCall;
+    }
+
+    public FileOperation(String className, String methodName, boolean getBooleanAttributesCall, List<String> fileNames) {
+        this(className, methodName);
+        this.setCaseType(VulnerabilityCaseType.FILE_OPERATION);
+        this.fileName = fileNames;
         this.getBooleanAttributesCall = getBooleanAttributesCall;
     }
 
     @Override
     public boolean isEmpty() {
-        return (fileName == null || fileName.trim().isEmpty());
+        return (fileName == null || fileName.isEmpty() || fileName.get(0).trim().isEmpty());
     }
 
-    public String getFileName() {
+    public List<String> getFileName() {
         return fileName;
     }
 
-    public void setFileName(String fileName) {
+    public void setFileName(List<String> fileName) {
         this.fileName = fileName;
-    }
-
-    /**
-     * @return the isExists
-     */
-    public boolean isExists() {
-        return isExists;
-    }
-
-    /**
-     * @param isExists the isExists to set
-     */
-    public void setExists(boolean isExists) {
-        this.isExists = isExists;
     }
 
 

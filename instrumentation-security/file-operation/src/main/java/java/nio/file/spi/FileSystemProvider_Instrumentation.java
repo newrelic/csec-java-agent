@@ -25,6 +25,9 @@ import java.nio.channels.FileChannel;
 import java.nio.channels.SeekableByteChannel;
 import java.nio.file.*;
 import java.nio.file.attribute.FileAttribute;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 
@@ -36,7 +39,7 @@ public abstract class FileSystemProvider_Instrumentation {
         boolean isFileLockAcquired = acquireFileLockIfPossible();
         AbstractOperation operation = null;
         if(isFileLockAcquired) {
-            operation = preprocessSecurityHook(source, FileHelper.FILE_COPY);
+            operation = preprocessSecurityHook(FileHelper.FILE_COPY, source, target);
         }
         try {
             Weaver.callOriginal();
@@ -55,7 +58,7 @@ public abstract class FileSystemProvider_Instrumentation {
         AbstractOperation operation = null;
         InputStream returnData;
         if(isFileLockAcquired) {
-            operation = preprocessSecurityHook(path, FileHelper.NEW_INPUT_STREAM);
+            operation = preprocessSecurityHook(FileHelper.NEW_INPUT_STREAM, path);
         }
         try {
             returnData = Weaver.callOriginal();
@@ -75,7 +78,7 @@ public abstract class FileSystemProvider_Instrumentation {
         AbstractOperation operation = null;
         OutputStream returnData;
         if(isFileLockAcquired) {
-            operation = preprocessSecurityHook(path, FileHelper.NEW_OUTPUT_STREAM);
+            operation = preprocessSecurityHook(FileHelper.NEW_OUTPUT_STREAM, path);
         }
         try {
             returnData = Weaver.callOriginal();
@@ -97,7 +100,7 @@ public abstract class FileSystemProvider_Instrumentation {
         AbstractOperation operation = null;
         FileChannel returnData;
         if(isFileLockAcquired) {
-            operation = preprocessSecurityHook(path, FileHelper.NEW_FILE_CHANNEL);
+            operation = preprocessSecurityHook(FileHelper.NEW_FILE_CHANNEL, path);
         }
         try {
             returnData = Weaver.callOriginal();
@@ -120,7 +123,7 @@ public abstract class FileSystemProvider_Instrumentation {
         AbstractOperation operation = null;
         AsynchronousFileChannel returnData;
         if(isFileLockAcquired) {
-            operation = preprocessSecurityHook(path, FileHelper.NEW_ASYNCHRONOUS_FILE_CHANNEL);
+            operation = preprocessSecurityHook(FileHelper.NEW_ASYNCHRONOUS_FILE_CHANNEL, path);
         }
         try {
             returnData = Weaver.callOriginal();
@@ -140,7 +143,7 @@ public abstract class FileSystemProvider_Instrumentation {
         AbstractOperation operation = null;
         SeekableByteChannel returnData;
         if(isFileLockAcquired) {
-            operation = preprocessSecurityHook(path, FileHelper.NEW_BYTE_CHANNEL);
+            operation = preprocessSecurityHook(FileHelper.NEW_BYTE_CHANNEL, path);
         }
         try {
             returnData = Weaver.callOriginal();
@@ -159,7 +162,7 @@ public abstract class FileSystemProvider_Instrumentation {
         AbstractOperation operation = null;
         DirectoryStream<Path> returnData;
         if(isFileLockAcquired) {
-            operation = preprocessSecurityHook(dir, FileHelper.NEW_DIRECTORY_STREAM);
+            operation = preprocessSecurityHook(FileHelper.NEW_DIRECTORY_STREAM, dir);
         }
         try {
             returnData = Weaver.callOriginal();
@@ -177,7 +180,7 @@ public abstract class FileSystemProvider_Instrumentation {
         boolean isFileLockAcquired = acquireFileLockIfPossible();
         AbstractOperation operation = null;
         if(isFileLockAcquired) {
-            operation = preprocessSecurityHook(dir, FileHelper.CREATE_DIRECTORY);
+            operation = preprocessSecurityHook(FileHelper.CREATE_DIRECTORY, dir);
         }
         try {
             Weaver.callOriginal();
@@ -195,7 +198,7 @@ public abstract class FileSystemProvider_Instrumentation {
         boolean isFileLockAcquired = acquireFileLockIfPossible();
         AbstractOperation operation = null;
         if(isFileLockAcquired) {
-            operation = preprocessSecurityHook(target, FileHelper.CREATE_SYMBOLIC_LINK);
+            operation = preprocessSecurityHook(FileHelper.CREATE_SYMBOLIC_LINK, link, target);
         }
         try {
             Weaver.callOriginal();
@@ -211,7 +214,7 @@ public abstract class FileSystemProvider_Instrumentation {
         boolean isFileLockAcquired = acquireFileLockIfPossible();
         AbstractOperation operation = null;
         if(isFileLockAcquired) {
-            operation = preprocessSecurityHook(existing, FileHelper.CREATE_LINK);
+            operation = preprocessSecurityHook(FileHelper.CREATE_LINK, link, existing);
         }
         try {
             Weaver.callOriginal();
@@ -227,7 +230,7 @@ public abstract class FileSystemProvider_Instrumentation {
         boolean isFileLockAcquired = acquireFileLockIfPossible();
         AbstractOperation operation = null;
         if(isFileLockAcquired) {
-            operation = preprocessSecurityHook(path, FileHelper.DELETE);
+            operation = preprocessSecurityHook(FileHelper.DELETE, path);
         }
         try {
             Weaver.callOriginal();
@@ -244,7 +247,7 @@ public abstract class FileSystemProvider_Instrumentation {
         AbstractOperation operation = null;
         boolean returnData;
         if(isFileLockAcquired) {
-            operation = preprocessSecurityHook(path, FileHelper.DELETE_IF_EXISTS);
+            operation = preprocessSecurityHook(FileHelper.DELETE_IF_EXISTS, path);
         }
         try {
             returnData = Weaver.callOriginal();
@@ -262,7 +265,7 @@ public abstract class FileSystemProvider_Instrumentation {
         boolean isFileLockAcquired = acquireFileLockIfPossible();
         AbstractOperation operation = null;
         if(isFileLockAcquired) {
-            operation = preprocessSecurityHook(source, FileHelper.MOVE);
+            operation = preprocessSecurityHook(FileHelper.MOVE, source, target);
         }
         try {
             Weaver.callOriginal();
@@ -280,7 +283,7 @@ public abstract class FileSystemProvider_Instrumentation {
         boolean isFileLockAcquired = acquireFileLockIfPossible();
         AbstractOperation operation = null;
         if(isFileLockAcquired) {
-            operation = preprocessSecurityHook(path, FileHelper.SET_ATTRIBUTE);
+            operation = preprocessSecurityHook(FileHelper.SET_ATTRIBUTE, path);
         }
         try {
             Weaver.callOriginal();
@@ -314,37 +317,22 @@ public abstract class FileSystemProvider_Instrumentation {
         } catch (Throwable ignored){}
     }
 
-    private AbstractOperation preprocessSecurityHook(Path file, String methodName) {
+    private AbstractOperation preprocessSecurityHook(String methodName, Path... filename) {
         try {
-            if (!NewRelicSecurity.isHookProcessingActive() || NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()
-                    || file == null) {
+            if (!NewRelicSecurity.isHookProcessingActive() || NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()) {
                 return null;
             }
-            String filePath = file.toFile().getAbsolutePath();
-            FileOperation operation = new FileOperation(filePath,
-                    FileSystemProvider_Instrumentation.class.getName(), methodName, false);
-            FileHelper.createEntryOfFileIntegrity(filePath, FileSystemProvider_Instrumentation.class.getName(), methodName);
-            NewRelicSecurity.getAgent().registerOperation(operation);
-            return operation;
-        } catch (Throwable e) {
-            if (e instanceof NewRelicSecurityException) {
-                e.printStackTrace();
-                throw e;
-            }
-        }
-        return null;
-    }
 
-    private AbstractOperation preprocessSecurityHook(String filename, String methodName) {
-        try {
-            if (!NewRelicSecurity.isHookProcessingActive() || NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()
-                    || filename == null || filename.trim().isEmpty()) {
-                return null;
+            List<String> fileNames = new ArrayList<>();
+            for (Path path : filename) {
+                if(path != null){
+                    String absolutePath = path.toAbsolutePath().toString();
+                    fileNames.add(absolutePath);
+                    FileHelper.createEntryOfFileIntegrity(absolutePath, FileSystemProvider_Instrumentation.class.getName(), methodName);
+                }
             }
-            String filePath = new File(filename).getAbsolutePath();
-            FileOperation operation = new FileOperation(filePath,
-                    FileSystemProvider_Instrumentation.class.getName(), methodName, false);
-            FileHelper.createEntryOfFileIntegrity(filePath, FileSystemProvider_Instrumentation.class.getName(), methodName);
+
+            FileOperation operation = new FileOperation(FileSystemProvider_Instrumentation.class.getName(), methodName, false, fileNames);
             NewRelicSecurity.getAgent().registerOperation(operation);
             return operation;
         } catch (Throwable e) {
