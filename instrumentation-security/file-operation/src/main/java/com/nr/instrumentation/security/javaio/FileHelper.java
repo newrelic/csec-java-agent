@@ -12,6 +12,8 @@ public class FileHelper {
 
     public static final String FILEOUTPUTSTREAM_OPEN = "open";
 
+    public static final String NR_SEC_CUSTOM_ATTRIB_NAME = "FILE_OPERATION_LOCK";
+
     public static final List<String> ALLOWED_EXTENSIONS = Arrays.asList(new String[]{"css", "html", "htm", "jsp", "js", "classtmp"});
 
     public static final List<String> SOURCE_EXENSIONS = Arrays.asList(new String[]{"class", "jsp", "jar", "java"});
