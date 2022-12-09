@@ -12,12 +12,29 @@ public class FileHelper {
 
     public static final String METHOD_NAME_FILEOUTPUTSTREAM_OPEN = "open";
 
+    public static final String FILE_COPY = "copy";
+
+    public static final String NEW_INPUT_STREAM = "newInputStream";
+
+    public static final String NEW_OUTPUT_STREAM = "newOutputStream";
+
     public static final String NR_SEC_CUSTOM_ATTRIB_NAME = "FILE_OPERATION_LOCK-";
 
     public static final List<String> ALLOWED_EXTENSIONS = Arrays.asList(new String[]{"css", "html", "htm", "jsp", "js", "classtmp"});
 
     public static final List<String> SOURCE_EXENSIONS = Arrays.asList(new String[]{"class", "jsp", "jar", "java"});
     public static final String METHOD_NAME_GET_BOOLEAN_ATTRIBUTES = "getBooleanAttributes";
+    public static final String NEW_FILE_CHANNEL = "newFileChannel";
+    public static final String NEW_ASYNCHRONOUS_FILE_CHANNEL = "newAsynchronousFileChannel";
+    public static final String NEW_BYTE_CHANNEL = "newByteChannel";
+    public static final String NEW_DIRECTORY_STREAM = "newDirectoryStream";
+    public static final String CREATE_DIRECTORY = "createDirectory";
+    public static final String CREATE_SYMBOLIC_LINK = "createSymbolicLink";
+    public static final String CREATE_LINK = "createLink";
+    public static final String DELETE = "delete";
+    public static final String DELETE_IF_EXISTS = "deleteIfExists";
+    public static final String MOVE = "move";
+    public static final String SET_ATTRIBUTE = "setAttribute";
 
 
     public static boolean skipExistsEvent(String filename) {
