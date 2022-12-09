@@ -77,14 +77,16 @@ public class FileHelper {
 
     public static boolean isFileLockAcquired() {
         try {
-            return Boolean.TRUE.equals(NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(getNrSecCustomAttribName(), Boolean.class));
+            return NewRelicSecurity.isHookProcessingActive() &&
+                    Boolean.TRUE.equals(NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(getNrSecCustomAttribName(), Boolean.class));
         } catch (Throwable ignored) {}
         return false;
     }
 
     public static boolean acquireFileLockIfPossible() {
         try {
-            if (!isFileLockAcquired()) {
+            if (NewRelicSecurity.isHookProcessingActive() &&
+                    !isFileLockAcquired()) {
                 NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(getNrSecCustomAttribName(), true);
                 return true;
             }
@@ -94,7 +96,9 @@ public class FileHelper {
 
     public static void releaseFileLock() {
         try {
-            NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(getNrSecCustomAttribName(), false);
+            if(NewRelicSecurity.isHookProcessingActive()) {
+                NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(getNrSecCustomAttribName(), false);
+            }
         } catch (Throwable ignored){}
     }
 
