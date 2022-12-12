@@ -1,0 +1,23 @@
+dependencies {
+    implementation(project(":newrelic-security-api"))
+    implementation("com.newrelic.agent.java:newrelic-weaver-api:7.11.0-SNAPSHOT")
+}
+
+// This instrumentation module should not use the bootstrap classpath
+
+jar {
+    manifest { attributes 'Implementation-Title': 'com.newrelic.instrumentation.security.httpurlconnection' }
+}
+
+verifyInstrumentation {
+    // verifier works without Instrumentation class
+    // weave package wants to load java.net* into bootstrap - this doesn't work
+    // disable verification
+    verifyClasspath = false
+}
+
+site {
+    title 'Httpurlconnection'
+    type 'Messaging'
+    versionOverride '[0,)'
+}
