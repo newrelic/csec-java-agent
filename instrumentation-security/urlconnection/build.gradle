@@ -17,7 +17,7 @@ verifyInstrumentation {
 }
 
 site {
-    title 'Httpurlconnection'
+    title 'Urlconnection'
     type 'Messaging'
     versionOverride '[0,)'
 }
