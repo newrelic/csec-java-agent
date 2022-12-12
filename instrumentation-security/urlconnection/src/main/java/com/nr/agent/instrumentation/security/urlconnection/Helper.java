@@ -1,4 +1,4 @@
-package com.nr.agent.instrumentation.security.httpurlconnection;
+package com.nr.agent.instrumentation.security.urlconnection;
 
 public class Helper {
 

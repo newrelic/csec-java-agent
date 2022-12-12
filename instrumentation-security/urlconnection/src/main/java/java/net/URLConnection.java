@@ -18,7 +18,7 @@ import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.NewField;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
-import com.nr.agent.instrumentation.security.httpurlconnection.Helper;
+import com.nr.agent.instrumentation.security.urlconnection.Helper;
 
 import java.io.IOException;
 import java.io.InputStream;

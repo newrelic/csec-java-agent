@@ -6,7 +6,7 @@ dependencies {
 // This instrumentation module should not use the bootstrap classpath
 
 jar {
-    manifest { attributes 'Implementation-Title': 'com.newrelic.instrumentation.security.httpurlconnection' }
+    manifest { attributes 'Implementation-Title': 'com.newrelic.instrumentation.security.urlconnection' }
 }
 
 verifyInstrumentation {

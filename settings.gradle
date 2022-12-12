@@ -29,6 +29,7 @@ include 'instrumentation-security:java-io-stream'
 include 'instrumentation-security:file-operation'
 //include 'instrumentation-security:httpclient-4.0'
 include 'instrumentation-security:servlet-2.4'
+include 'instrumentation-security:urlconnection'
 
 
 
