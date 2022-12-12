@@ -18,6 +18,8 @@ public class HttpServletHelper {
     public static final String QUESTION_MARK = "?";
     public static final String SERVICE_METHOD_NAME = "service";
 
+    public static final String NR_SEC_CUSTOM_ATTRIB_NAME = "SERVLET_LOCK-";
+
     public static void processHttpRequestHeader(HttpServletRequest request, HttpRequest securityRequest){
         Enumeration<String> headerNames = request.getHeaderNames();
         while (headerNames.hasMoreElements()) {
@@ -72,5 +74,36 @@ public class HttpServletHelper {
             }
         }
         return data;
+    }
+
+    public static boolean isServletLockAcquired() {
+        try {
+            return NewRelicSecurity.isHookProcessingActive() &&
+                    Boolean.TRUE.equals(NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(getNrSecCustomAttribName(), Boolean.class));
+        } catch (Throwable ignored) {}
+        return false;
+    }
+
+    public static boolean acquireServletLockIfPossible() {
+        try {
+            if (NewRelicSecurity.isHookProcessingActive() &&
+                    !isServletLockAcquired()) {
+                NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(getNrSecCustomAttribName(), true);
+                return true;
+            }
+        } catch (Throwable ignored){}
+        return false;
+    }
+
+    public static void releaseServletLock() {
+        try {
+            if(NewRelicSecurity.isHookProcessingActive()) {
+                NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(getNrSecCustomAttribName(), null);
+            }
+        } catch (Throwable ignored){}
+    }
+
+    private static String getNrSecCustomAttribName() {
+        return NR_SEC_CUSTOM_ATTRIB_NAME + Thread.currentThread().getId();
     }
 }

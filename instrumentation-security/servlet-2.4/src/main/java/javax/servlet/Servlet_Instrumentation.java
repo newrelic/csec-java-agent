@@ -25,36 +25,37 @@ import javax.servlet.http.HttpServletRequest;
 @Weave(type = MatchType.Interface, originalName = "javax.servlet.Servlet")
 public abstract class Servlet_Instrumentation {
 
-    @NewField
-    public boolean cascadedCall;
-
     @Trace(dispatcher = true)
     public void service(ServletRequest_Instrumentation request, ServletResponse_Instrumentation response) {
-        boolean currentCascadedCall = cascadedCall;
-        preprocessSecurityHook(request, response, currentCascadedCall);
+        boolean isServletLockAcquired = acquireServletLockIfPossible();
+        if(isServletLockAcquired) {
+            preprocessSecurityHook(request, response);
+        }
         try {
             Weaver.callOriginal();
         } finally {
-            cascadedCall = currentCascadedCall;
+            if(isServletLockAcquired){
+                releaseServletLock();
+            }
         }
-        postProcessSecurityHook(request, response, currentCascadedCall);
+        if(isServletLockAcquired) {
+            postProcessSecurityHook(request, response);
+        }
     }
 
-    private void preprocessSecurityHook(ServletRequest_Instrumentation request, ServletResponse_Instrumentation response, boolean currentCascadedCall) {
+    private void preprocessSecurityHook(ServletRequest_Instrumentation request, ServletResponse_Instrumentation response) {
         try {
             if (!NewRelicSecurity.isHookProcessingActive()
-                    || !(request instanceof HttpServletRequest) || currentCascadedCall
+                    || !(request instanceof HttpServletRequest)
             ) {
                 return;
             }
-            cascadedCall = true;
             SecurityMetaData securityMetaData = NewRelicSecurity.getAgent().getSecurityMetaData();
 
             HttpRequest securityRequest = securityMetaData.getRequest();
             if (securityRequest.isRequestParsed()) {
                 return;
             }
-            System.out.println("Inside security hook");
 
             AgentMetaData securityAgentMetaData = securityMetaData.getMetaData();
 
@@ -87,9 +88,9 @@ public abstract class Servlet_Instrumentation {
         } catch (Throwable ignored){}
     }
 
-    private void postProcessSecurityHook(ServletRequest_Instrumentation request, ServletResponse_Instrumentation response, boolean currentCascadedCall) {
+    private void postProcessSecurityHook(ServletRequest_Instrumentation request, ServletResponse_Instrumentation response) {
         try {
-            if (!NewRelicSecurity.isHookProcessingActive() || currentCascadedCall
+            if (!NewRelicSecurity.isHookProcessingActive()
             ) {
                 return;
             }
@@ -104,5 +105,18 @@ public abstract class Servlet_Instrumentation {
                 throw e;
             }
         }
+    }
+
+    private boolean acquireServletLockIfPossible() {
+        try {
+            return HttpServletHelper.acquireServletLockIfPossible();
+        } catch (Throwable ignored) {}
+        return false;
+    }
+
+    private void releaseServletLock() {
+        try {
+            HttpServletHelper.releaseServletLock();
+        } catch (Throwable e) {}
     }
 }
