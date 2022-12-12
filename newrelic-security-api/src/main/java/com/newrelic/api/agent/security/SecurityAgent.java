@@ -36,4 +36,6 @@ public interface SecurityAgent {
      */
     SecurityMetaData getSecurityMetaData();
 
+    String getAgentUUID();
+
 }

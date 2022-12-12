@@ -57,4 +57,9 @@ class NoOpAgent implements SecurityAgent {
         return null;
     }
 
+    @Override
+    public String getAgentUUID() {
+        return EMPTY;
+    }
+
 }

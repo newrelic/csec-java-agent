@@ -86,7 +86,11 @@ public class SecurityMetaData {
     }
 
     public void addCustomAttribute(String key, Object value) {
-        this.customData.put(key,value);
+        if(value != null) {
+            this.customData.put(key, value);
+        } else {
+            this.customData.remove(key);
+        }
     }
 
     public <T> T getCustomAttribute(String key, Class<? extends T> klass) {
