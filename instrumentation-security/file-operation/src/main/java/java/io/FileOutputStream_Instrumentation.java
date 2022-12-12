@@ -70,8 +70,8 @@ public abstract class FileOutputStream_Instrumentation {
             }
             String filePath = new File(filename).getAbsolutePath();
             FileOperation operation = new FileOperation(filePath,
-                    FileOutputStream_Instrumentation.class.getName(), FileHelper.METHOD_NAME_FILEOUTPUTSTREAM_OPEN, false);
-            FileHelper.createEntryOfFileIntegrity(filePath, FileOutputStream_Instrumentation.class.getName(), FileHelper.METHOD_NAME_FILEOUTPUTSTREAM_OPEN);
+                    this.getClass().getName(), FileHelper.METHOD_NAME_FILEOUTPUTSTREAM_OPEN, false);
+            FileHelper.createEntryOfFileIntegrity(filePath, this.getClass().getName(), FileHelper.METHOD_NAME_FILEOUTPUTSTREAM_OPEN);
             NewRelicSecurity.getAgent().registerOperation(operation);
             return operation;
         } catch (Throwable e) {

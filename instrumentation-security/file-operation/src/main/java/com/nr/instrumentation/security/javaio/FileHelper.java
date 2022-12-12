@@ -105,7 +105,7 @@ public class FileHelper {
     public static void releaseFileLock() {
         try {
             if(NewRelicSecurity.isHookProcessingActive()) {
-                NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(getNrSecCustomAttribName(), false);
+                NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(getNrSecCustomAttribName(), null);
             }
         } catch (Throwable ignored){}
     }

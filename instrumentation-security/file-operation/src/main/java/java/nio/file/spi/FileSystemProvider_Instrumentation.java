@@ -328,11 +328,11 @@ public abstract class FileSystemProvider_Instrumentation {
                 if(path != null){
                     String absolutePath = path.toAbsolutePath().toString();
                     fileNames.add(absolutePath);
-                    FileHelper.createEntryOfFileIntegrity(absolutePath, FileSystemProvider_Instrumentation.class.getName(), methodName);
+                    FileHelper.createEntryOfFileIntegrity(absolutePath, this.getClass().getName(), methodName);
                 }
             }
 
-            FileOperation operation = new FileOperation(FileSystemProvider_Instrumentation.class.getName(), methodName, false, fileNames);
+            FileOperation operation = new FileOperation(this.getClass().getName(), methodName, false, fileNames);
             NewRelicSecurity.getAgent().registerOperation(operation);
             return operation;
         } catch (Throwable e) {

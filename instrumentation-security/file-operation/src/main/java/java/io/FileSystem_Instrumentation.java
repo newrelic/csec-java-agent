@@ -206,10 +206,10 @@ abstract class FileSystem_Instrumentation {
             for (File file : files) {
                 String filePath = file.getAbsolutePath();
                 fileNames.add(filePath);
-                FileHelper.createEntryOfFileIntegrity(file.getAbsolutePath(), FileSystem_Instrumentation.class.getName(), methodName);
+                FileHelper.createEntryOfFileIntegrity(file.getAbsolutePath(), this.getClass().getName(), methodName);
             }
             FileOperation operation = new FileOperation(
-                    FileOutputStream_Instrumentation.class.getName(), methodName, isBooleanAttributesCall, fileNames);
+                    this.getClass().getName(), methodName, isBooleanAttributesCall, fileNames);
             NewRelicSecurity.getAgent().registerOperation(operation);
             return operation;
         } catch (Throwable e) {
