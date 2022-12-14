@@ -1,0 +1,18 @@
+def shouldVerifyInstrumentation = ("instrumentation-security" == project.parent.name);
+if (shouldVerifyInstrumentation) {
+
+    apply plugin: 'com.newrelic.gradle-verify-instrumentation-plugin'
+    apply plugin: 'gradle-compatibility-site-plugin'
+
+    verifyInstrumentation {
+        nrAgent = "com.newrelic.agent.java:newrelic-agent:7.11.0"
+        // this property is used by the verifier jenkins job to aggregate all the versions of frameworks that pass
+        // so we can easily compare it with our public compatibility doc
+        def passesFile = findProperty('passesFile') ?: null
+        if (passesFile != null) {
+            passesFileName = passesFile
+        }
+        verifyClasspath = true
+        excludeRegex '.*[\\.-]SNAPSHOT$'
+    }
+}
