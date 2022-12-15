@@ -32,7 +32,7 @@ public abstract class ServletOutputStream_Instrumentation {
         // Preprocess Phase
         if(preprocessSecurityHook(currentCascadedCall)){
             try {
-                NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().getBody().append((char) b);
+                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getResponseBody().append((char) b);
             } catch (Throwable ignored) {
 //                ignored.printStackTrace(System.out);
             }
@@ -52,7 +52,7 @@ public abstract class ServletOutputStream_Instrumentation {
         // Preprocess Phase
         if(preprocessSecurityHook(currentCascadedCall)){
             try {
-                NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().getBody().append(o);
+                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getResponseBody().append(o);
             } catch (Throwable ignored) {
 //                ignored.printStackTrace(System.out);
             }
@@ -72,7 +72,7 @@ public abstract class ServletOutputStream_Instrumentation {
         // Preprocess Phase
         if(preprocessSecurityHook(currentCascadedCall)){
             try {
-                NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().getBody().append(o);
+                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getResponseBody().append(o);
             } catch (Throwable ignored) {
 //                ignored.printStackTrace(System.out);
             }
@@ -91,7 +91,7 @@ public abstract class ServletOutputStream_Instrumentation {
         // Preprocess Phase
         if(preprocessSecurityHook(currentCascadedCall)){
             try {
-                NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().getBody().append(o);
+                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getResponseBody().append(o);
             } catch (Throwable ignored) {
 //                ignored.printStackTrace(System.out);
             }
@@ -110,7 +110,7 @@ public abstract class ServletOutputStream_Instrumentation {
         // Preprocess Phase
         if(preprocessSecurityHook(currentCascadedCall)){
             try {
-                NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().getBody().append(o);
+                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getResponseBody().append(o);
             } catch (Throwable ignored) {
 //                ignored.printStackTrace(System.out);
             }
@@ -129,7 +129,7 @@ public abstract class ServletOutputStream_Instrumentation {
         // Preprocess Phase
         if(preprocessSecurityHook(currentCascadedCall)){
             try {
-                NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().getBody().append(o);
+                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getResponseBody().append(o);
             } catch (Throwable ignored) {
 //                ignored.printStackTrace(System.out);
             }
@@ -148,7 +148,7 @@ public abstract class ServletOutputStream_Instrumentation {
         // Preprocess Phase
         if(preprocessSecurityHook(currentCascadedCall)){
             try {
-                NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().getBody().append(o);
+                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getResponseBody().append(o);
             } catch (Throwable ignored) {
 //                ignored.printStackTrace(System.out);
             }
@@ -167,7 +167,7 @@ public abstract class ServletOutputStream_Instrumentation {
         // Preprocess Phase
         if(preprocessSecurityHook(currentCascadedCall)){
             try {
-                NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().getBody().append(o);
+                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getResponseBody().append(o);
             } catch (Throwable ignored) {
 //                ignored.printStackTrace(System.out);
             }
@@ -186,7 +186,7 @@ public abstract class ServletOutputStream_Instrumentation {
         // Preprocess Phase
         if(preprocessSecurityHook(currentCascadedCall)){
             try {
-                NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().getBody().append(ServletResponseCallback.LF);
+                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getResponseBody().append(ServletResponseCallback.LF);
             } catch (Throwable ignored) {
 //                ignored.printStackTrace(System.out);
             }
@@ -205,8 +205,8 @@ public abstract class ServletOutputStream_Instrumentation {
         // Preprocess Phase
         if(preprocessSecurityHook(currentCascadedCall)){
             try {
-                NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().getBody().append(o);
-                NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().getBody().append(ServletResponseCallback.LF);
+                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getResponseBody().append(o);
+                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getResponseBody().append(ServletResponseCallback.LF);
             } catch (Throwable ignored) {
 //                ignored.printStackTrace(System.out);
             }
@@ -225,8 +225,8 @@ public abstract class ServletOutputStream_Instrumentation {
         // Preprocess Phase
         if(preprocessSecurityHook(currentCascadedCall)){
             try {
-                NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().getBody().append(o);
-                NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().getBody().append(ServletResponseCallback.LF);
+                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getResponseBody().append(o);
+                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getResponseBody().append(ServletResponseCallback.LF);
             } catch (Throwable ignored) {
 //                ignored.printStackTrace(System.out);
             }
@@ -245,8 +245,8 @@ public abstract class ServletOutputStream_Instrumentation {
         // Preprocess Phase
         if(preprocessSecurityHook(currentCascadedCall)){
             try {
-                NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().getBody().append(o);
-                NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().getBody().append(ServletResponseCallback.LF);
+                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getResponseBody().append(o);
+                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getResponseBody().append(ServletResponseCallback.LF);
             } catch (Throwable ignored) {
 //                ignored.printStackTrace(System.out);
             }
@@ -265,8 +265,8 @@ public abstract class ServletOutputStream_Instrumentation {
         // Preprocess Phase
         if(preprocessSecurityHook(currentCascadedCall)){
             try {
-                NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().getBody().append(o);
-                NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().getBody().append(ServletResponseCallback.LF);
+                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getResponseBody().append(o);
+                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getResponseBody().append(ServletResponseCallback.LF);
             } catch (Throwable ignored) {
 //                ignored.printStackTrace(System.out);
             }
@@ -285,8 +285,8 @@ public abstract class ServletOutputStream_Instrumentation {
         // Preprocess Phase
         if(preprocessSecurityHook(currentCascadedCall)){
             try {
-                NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().getBody().append(o);
-                NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().getBody().append(ServletResponseCallback.LF);
+                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getResponseBody().append(o);
+                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getResponseBody().append(ServletResponseCallback.LF);
             } catch (Throwable ignored) {
 //                ignored.printStackTrace(System.out);
             }
@@ -305,8 +305,8 @@ public abstract class ServletOutputStream_Instrumentation {
         // Preprocess Phase
         if(preprocessSecurityHook(currentCascadedCall)){
             try {
-                NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().getBody().append(o);
-                NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().getBody().append(ServletResponseCallback.LF);
+                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getResponseBody().append(o);
+                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getResponseBody().append(ServletResponseCallback.LF);
             } catch (Throwable ignored) {
 //                ignored.printStackTrace(System.out);
             }
@@ -325,8 +325,8 @@ public abstract class ServletOutputStream_Instrumentation {
         // Preprocess Phase
         if(preprocessSecurityHook(currentCascadedCall)){
             try {
-                NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().getBody().append(o);
-                NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().getBody().append(ServletResponseCallback.LF);
+                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getResponseBody().append(o);
+                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getResponseBody().append(ServletResponseCallback.LF);
             } catch (Throwable ignored) {
 //                ignored.printStackTrace(System.out);
             }

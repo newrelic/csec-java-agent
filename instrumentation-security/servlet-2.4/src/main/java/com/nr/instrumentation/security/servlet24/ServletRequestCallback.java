@@ -13,7 +13,7 @@ public class ServletRequestCallback {
 
     public static boolean processHookData() {
         try {
-            if(NewRelicSecurity.getAgent().isSecurityActive()
+            if(NewRelicSecurity.isHookProcessingActive()
                 && (NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(REQUEST_STREAM_OR_READER_CALLED, Boolean.class) == null
                     || !NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(REQUEST_STREAM_OR_READER_CALLED, Boolean.class))
             ) {

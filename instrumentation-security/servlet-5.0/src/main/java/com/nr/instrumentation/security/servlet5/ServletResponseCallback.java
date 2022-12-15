@@ -13,11 +13,10 @@ public class ServletResponseCallback {
 
     public static boolean processHookData() {
         try {
-            if(NewRelicSecurity.getAgent().isSecurityActive()
+            if(NewRelicSecurity.isHookProcessingActive()
                 && (NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(RESPONSE_STREAM_OR_WRITER_CALLED, Boolean.class) == null
                     || !NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(RESPONSE_STREAM_OR_WRITER_CALLED, Boolean.class))
             ) {
-                System.out.println("Setting response data");
                 NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(RESPONSE_STREAM_OR_WRITER_CALLED, true);
                 return true;
             }
