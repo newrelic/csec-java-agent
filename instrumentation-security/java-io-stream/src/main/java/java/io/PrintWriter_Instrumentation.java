@@ -31,9 +31,7 @@ public abstract class PrintWriter_Instrumentation {
                 cascadedCall = true;
                 return true;
             }
-        } catch(Throwable ignored) {
-            ignored.printStackTrace();
-        }
+        } catch(Throwable ignored) {}
         return false;
     }
 
