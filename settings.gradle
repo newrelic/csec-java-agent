@@ -26,6 +26,8 @@ include 'newrelic-security-agent'
 // Security Instrumentation modules
 include 'instrumentation-security:java-lang'
 include 'instrumentation-security:java-io-stream'
+include 'instrumentation-security:java-io-inputstream-jdk8'
+include 'instrumentation-security:java-io-inputstream-jdk9'
 include 'instrumentation-security:file-operation'
 //include 'instrumentation-security:httpclient-4.0'
 include 'instrumentation-security:servlet-2.4'
