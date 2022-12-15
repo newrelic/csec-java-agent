@@ -12,7 +12,7 @@ import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.NewField;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
-import com.nr.instrumentation.security.javaio.Helper;
+import com.nr.instrumentation.security.javaio.IOStreamHelper;
 
 @Weave(type = MatchType.BaseClass, originalName = "java.io.OutputStream")
 public abstract class OutputStream_Instrumentation {
@@ -65,7 +65,7 @@ public abstract class OutputStream_Instrumentation {
             }
 //                System.out.println("Start IS2 "+ this.hashCode());
             if(outputStreamDataGatheringAllowed == null) {
-                outputStreamDataGatheringAllowed = Helper.processResponseOutputStreamHookData(this.hashCode());
+                outputStreamDataGatheringAllowed = IOStreamHelper.processResponseOutputStreamHookData(this.hashCode());
             }
 
             if (Boolean.TRUE.equals(outputStreamDataGatheringAllowed) && !currentCascadedCall && writeDataLength > -1) {

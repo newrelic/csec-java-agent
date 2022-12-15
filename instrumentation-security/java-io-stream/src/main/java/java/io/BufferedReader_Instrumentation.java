@@ -9,14 +9,10 @@ package java.io;
 
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.weaver.*;
-import com.nr.instrumentation.security.javaio.Helper;
+import com.nr.instrumentation.security.javaio.IOStreamHelper;
 
 @Weave(type = MatchType.BaseClass, originalName = "java.io.BufferedReader")
 public abstract class BufferedReader_Instrumentation {
-
-    @NewField
-    public Boolean dataGatheringAllowed;
-
     @NewField
     public boolean cascadedCall;
 
@@ -111,16 +107,10 @@ public abstract class BufferedReader_Instrumentation {
 
     private void preprocessSecurityHook(boolean currentCascadedCall) {
         try {
-            if(Boolean.FALSE.equals(dataGatheringAllowed) ||
-                    !NewRelicSecurity.isHookProcessingActive()) {
+            if(!NewRelicSecurity.isHookProcessingActive()) {
                 return;
             }
-
-//                System.out.println("Start IS2 "+ this.hashCode());
-            if (dataGatheringAllowed == null) {
-                dataGatheringAllowed = Helper.processRequestReaderHookData(this.hashCode());
-            }
-
+            boolean dataGatheringAllowed = IOStreamHelper.processRequestReaderHookData(this.hashCode());
             if (Boolean.TRUE.equals(dataGatheringAllowed) && !currentCascadedCall) {
                 cascadedCall = true;
             }
@@ -133,11 +123,10 @@ public abstract class BufferedReader_Instrumentation {
 
     private boolean postProcessSecurityHook(boolean currentCascadedCall) {
         try {
-            if(Boolean.FALSE.equals(dataGatheringAllowed) ||
-                    !NewRelicSecurity.isHookProcessingActive()) {
+            if(!NewRelicSecurity.isHookProcessingActive()) {
                 return false;
             }
-
+            boolean dataGatheringAllowed = IOStreamHelper.processRequestReaderHookData(this.hashCode());
             if (Boolean.TRUE.equals(dataGatheringAllowed) && !currentCascadedCall) {
                 return true;
             }
