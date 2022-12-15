@@ -1,0 +1,31 @@
+evaluationDependsOn(":newrelic-security-agent")
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+//    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
+//    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
+
+    api('junit:junit:4.13.2')
+    implementation(project(":newrelic-security-api"))
+    implementation(project(":newrelic-security-agent"))
+    implementation("com.newrelic.agent.java:newrelic-weaver-api:7.11.0-SNAPSHOT")
+    implementation("com.newrelic.agent.java:newrelic-api:7.11.0-SNAPSHOT")
+    implementation("com.newrelic.agent.java:newrelic-agent:7.11.0-SNAPSHOT")
+    implementation("com.newrelic.agent.java:agent-bridge:7.11.0-SNAPSHOT")
+    implementation("com.newrelic.agent.java:agent-bridge-datastore:7.11.0-SNAPSHOT")
+
+
+    api("org.apache.httpcomponents:httpclient:4.5.13")
+    api("org.nanohttpd:nanohttpd:2.3.1")
+}
+
+test {
+    useJUnitPlatform()
+}
+
+afterEvaluate {
+    compileJava.dependsOn project(":newrelic-security-agent").getTasksByName("newrelicJar", false)
+}

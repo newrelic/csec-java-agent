@@ -28,9 +28,11 @@ subprojects {
         }
     }
 
-//    dependencies {
-//        testImplementation(project(":instrumentation-security-test"))
-//    }
+    dependencies {
+        testImplementation(project(":instrumentation-security-test"))
+        implementation("com.newrelic.agent.java:newrelic-agent:7.11.0-SNAPSHOT")
+        implementation("com.newrelic.agent.java:agent-bridge:7.11.0-SNAPSHOT")
+    }
 
 //    test {
 //        // FIXME: these are all flaky on GHA so temporarily disabling

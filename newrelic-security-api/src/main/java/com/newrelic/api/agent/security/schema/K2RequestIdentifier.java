@@ -26,7 +26,7 @@ public class K2RequestIdentifier {
         this.apiRecordId = (StringUtils.isNotBlank(k2RequestIdentifierInstance.apiRecordId)) ? new String(k2RequestIdentifierInstance.apiRecordId) : null;
         this.k2Request = k2RequestIdentifierInstance.k2Request;
         this.nextStage = k2RequestIdentifierInstance.nextStage;
-        this.recordIndex = (k2RequestIdentifierInstance.recordIndex != null) ? new Integer(k2RequestIdentifierInstance.recordIndex) : null;
+        this.recordIndex = (k2RequestIdentifierInstance.recordIndex != null) ? Integer.valueOf(k2RequestIdentifierInstance.recordIndex) : null;
         this.refKey = (StringUtils.isNotBlank(k2RequestIdentifierInstance.refKey)) ? new String(k2RequestIdentifierInstance.refKey) : null;
         if (k2RequestIdentifierInstance.tempFiles != null) {
             this.tempFiles = new ArrayList<>(k2RequestIdentifierInstance.tempFiles);
