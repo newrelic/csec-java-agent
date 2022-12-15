@@ -8,7 +8,7 @@
 package java.io;
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.weaver.*;
-import com.nr.instrumentation.security.javaio.Helper;
+import com.nr.instrumentation.security.javaio.InputStreamHelper;
 
 @Weave(type = MatchType.BaseClass, originalName = "java.io.InputStream")
 public abstract class InputStream_Instrumentation {
@@ -131,7 +131,7 @@ public abstract class InputStream_Instrumentation {
             }
 //                System.out.println("Start IS2 "+ this.hashCode());
             if(inputStreamDataGatheringAllowed == null) {
-                inputStreamDataGatheringAllowed = Helper.processRequestInputStreamHookData(this.hashCode());
+                inputStreamDataGatheringAllowed = InputStreamHelper.processRequestInputStreamHookData(this.hashCode());
             }
 
             if (inputStreamDataGatheringAllowed && !currentCascadedCall) {

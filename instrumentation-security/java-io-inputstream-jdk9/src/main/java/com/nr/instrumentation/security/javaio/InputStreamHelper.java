@@ -2,7 +2,7 @@ package com.nr.instrumentation.security.javaio;
 
 import com.newrelic.api.agent.security.NewRelicSecurity;
 
-public class Helper {
+public class InputStreamHelper {
 
 
     private static final String REQUEST_INPUTSTREAM_HASH = "REQUEST_INPUTSTREAM_HASH";
