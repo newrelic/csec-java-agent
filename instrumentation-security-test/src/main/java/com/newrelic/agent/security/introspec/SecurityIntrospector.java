@@ -8,5 +8,7 @@ public interface SecurityIntrospector {
 
     Iterator<Operation> getOperations();
 
+    void addOperation(Operation operation);
+
     void clear();
 }

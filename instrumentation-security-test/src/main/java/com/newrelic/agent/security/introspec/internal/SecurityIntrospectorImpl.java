@@ -63,7 +63,8 @@ public class SecurityIntrospectorImpl implements SecurityIntrospector {
         return operations.iterator();
     }
 
-    public void addOperations(Operation operation) {
+    @Override
+    public void addOperation(Operation operation) {
         this.operations.add(operation);
     }
 
