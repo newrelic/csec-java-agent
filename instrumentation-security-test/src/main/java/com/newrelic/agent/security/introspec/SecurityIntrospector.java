@@ -2,11 +2,11 @@ package com.newrelic.agent.security.introspec;
 
 import com.newrelic.agent.security.introspec.schema.Operation;
 
-import java.util.Set;
+import java.util.Iterator;
 
 public interface SecurityIntrospector {
 
-    Operation getOperation();
+    Iterator<Operation> getOperations();
 
     void clear();
 }

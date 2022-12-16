@@ -6,14 +6,18 @@ import com.newrelic.agent.instrumentation.InstrumentationImpl;
 import com.newrelic.agent.security.introspec.SecurityIntrospector;
 import com.newrelic.agent.security.introspec.schema.Operation;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 public class SecurityIntrospectorImpl implements SecurityIntrospector {
 
-    private IntrospectData data;
+    //    private IntrospectData data;
+    List<Operation> operations = new ArrayList<>();
 
     private SecurityIntrospectorImpl() {
-        data = new IntrospectData();
+//        data = new IntrospectData();
     }
 
     public static SecurityIntrospectorImpl createIntrospector(Map<String, Object> config) {
@@ -55,12 +59,16 @@ public class SecurityIntrospectorImpl implements SecurityIntrospector {
     }
 
     @Override
-    public Operation getOperation() {
-        return null;
+    public Iterator<Operation> getOperations() {
+        return operations.iterator();
+    }
+
+    public void addOperations(Operation operation) {
+        this.operations.add(operation);
     }
 
     @Override
     public void clear() {
-
+        this.operations.clear();
     }
 }
