@@ -3,8 +3,10 @@ package com.newrelic.agent.security.introspec.internal;
 import com.newrelic.agent.Agent;
 import com.newrelic.agent.bridge.AgentBridge;
 import com.newrelic.agent.instrumentation.InstrumentationImpl;
+import com.newrelic.agent.security.intcodeagent.models.javaagent.ExitEventBean;
 import com.newrelic.agent.security.introspec.SecurityIntrospector;
 import com.newrelic.agent.security.introspec.schema.Operation;
+import com.newrelic.api.agent.security.schema.AbstractOperation;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -14,7 +16,9 @@ import java.util.Map;
 public class SecurityIntrospectorImpl implements SecurityIntrospector {
 
     //    private IntrospectData data;
-    List<Operation> operations = new ArrayList<>();
+    List<AbstractOperation> operations = new ArrayList<>();
+
+    List<ExitEventBean> exitEvents = new ArrayList<>();
 
     private SecurityIntrospectorImpl() {
 //        data = new IntrospectData();
@@ -59,17 +63,28 @@ public class SecurityIntrospectorImpl implements SecurityIntrospector {
     }
 
     @Override
-    public Iterator<Operation> getOperations() {
+    public Iterator<AbstractOperation> getOperations() {
         return operations.iterator();
     }
 
     @Override
-    public void addOperation(Operation operation) {
+    public void addExitEvent(AbstractOperation operation) {
         this.operations.add(operation);
+    }
+
+    @Override
+    public Iterator<ExitEventBean> getExitEvents() {
+        return exitEvents.iterator();
+    }
+
+    @Override
+    public void addExitEvent(ExitEventBean exitEvent) {
+        exitEvents.add(exitEvent);
     }
 
     @Override
     public void clear() {
         this.operations.clear();
+        this.exitEvents.clear();
     }
 }
