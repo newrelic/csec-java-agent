@@ -29,14 +29,14 @@ include 'instrumentation-security:java-io-stream'
 include 'instrumentation-security:java-io-inputstream-jdk8'
 include 'instrumentation-security:java-io-inputstream-jdk9'
 include 'instrumentation-security:file-operation'
-//include 'instrumentation-security:httpclient-4.0'
 include 'instrumentation-security:servlet-2.4'
 include 'instrumentation-security:servlet-5.0'
 include 'instrumentation-security:servlet-6.0'
 include 'instrumentation-security:jsp-2.4'
 include 'instrumentation-security:jsp-3'
 include 'instrumentation-security:urlconnection'
-
+include 'instrumentation-security:httpclient-3.0'
+include 'instrumentation-security:httpclient-3.1'
 
 
 
