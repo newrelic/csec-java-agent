@@ -30,8 +30,8 @@ subprojects {
 
     dependencies {
         testImplementation(project(":instrumentation-security-test"))
+        testImplementation("com.newrelic.agent.java:newrelic-api:7.11.0-SNAPSHOT")
         implementation("com.newrelic.agent.java:newrelic-agent:7.11.0-SNAPSHOT")
-        implementation("com.newrelic.agent.java:agent-bridge:7.11.0-SNAPSHOT")
     }
 
 //    test {

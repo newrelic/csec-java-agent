@@ -9,12 +9,7 @@ package com.newrelic.agent.security.introspec.internal;
 
 import com.newrelic.agent.Agent;
 import com.newrelic.agent.config.AgentConfig;
-import com.newrelic.agent.deps.org.objectweb.asm.AnnotationVisitor;
-import com.newrelic.agent.deps.org.objectweb.asm.ClassReader;
-import com.newrelic.agent.deps.org.objectweb.asm.ClassVisitor;
-import com.newrelic.agent.deps.org.objectweb.asm.ClassWriter;
-import com.newrelic.agent.deps.org.objectweb.asm.MethodVisitor;
-import com.newrelic.agent.deps.org.objectweb.asm.Type;
+import com.newrelic.agent.deps.org.objectweb.asm.*;
 import com.newrelic.agent.deps.org.objectweb.asm.commons.Method;
 import com.newrelic.agent.deps.org.objectweb.asm.tree.ClassNode;
 import com.newrelic.agent.instrumentation.InstrumentationType;
@@ -133,7 +128,6 @@ class InstrumentingClassLoader extends WeavingClassLoader {
         });
 
         // trace
-        System.out.println("Class "+className+" -> "+weaved);
         if (weaved != null) {
             classBytes = weaved;
         }

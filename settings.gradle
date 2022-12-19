@@ -22,7 +22,7 @@ buildCache {
 
 include 'newrelic-security-api'
 include 'newrelic-security-agent'
-
+include 'instrumentation-security-test'
 // Security Instrumentation modules
 include 'instrumentation-security:java-lang'
 include 'instrumentation-security:java-io-stream'
