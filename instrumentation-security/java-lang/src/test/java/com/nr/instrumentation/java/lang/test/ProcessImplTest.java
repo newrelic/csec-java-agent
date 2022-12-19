@@ -15,6 +15,7 @@ import java.io.InputStreamReader;
 public class ProcessImplTest {
     @Test
     public void testProcess() {
+//        NewRelicSecurity.getAgent();
         String[] cmd = {
                 "/bin/sh",
                 "-c",
@@ -55,6 +56,14 @@ public class ProcessImplTest {
 
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
         // Assert the event category and executed parameter
+        if (introspector.getOperations().hasNext()){
+            System.out.println(introspector.getOperations().next());
+        }
+        else {
+            System.out.println("no operations");
+        }
+
+
     }
 
 }
