@@ -17,8 +17,8 @@ public class SQLOperation extends AbstractOperation {
 
     private boolean isPreparedCall;
 
-    public SQLOperation() {
-        super();
+    public SQLOperation(String className, String methodName) {
+        super(className, methodName);
         this.setCaseType(VulnerabilityCaseType.SQL_DB_COMMAND);
         this.query = EMPTY;
         this.params = new HashMap<>();

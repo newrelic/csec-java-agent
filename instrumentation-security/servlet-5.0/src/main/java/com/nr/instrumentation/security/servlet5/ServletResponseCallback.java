@@ -14,8 +14,7 @@ public class ServletResponseCallback {
     public static boolean processHookData() {
         try {
             if(NewRelicSecurity.isHookProcessingActive()
-                && (NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(RESPONSE_STREAM_OR_WRITER_CALLED, Boolean.class) == null
-                    || !NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(RESPONSE_STREAM_OR_WRITER_CALLED, Boolean.class))
+                && Boolean.FALSE.equals(NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(RESPONSE_STREAM_OR_WRITER_CALLED, Boolean.class))
             ) {
                 NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(RESPONSE_STREAM_OR_WRITER_CALLED, true);
                 return true;
