@@ -43,7 +43,9 @@ public class Agent implements SecurityAgent {
 
     private AgentConfig config;
 
-    private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
+    private boolean isInitialised;
+
+    private static FileLoggerThreadPool logger;
 
     private java.net.URL agentJarURL;
 
@@ -69,8 +71,6 @@ public class Agent implements SecurityAgent {
          * */
         System.setProperty("org.slf4j.simpleLogger.defaultLogLevel", "off");
         System.setProperty("org.slf4j.simpleLogger.logFile", "System.out");
-        config = AgentConfig.getInstance();
-        info = AgentInfo.getInstance();
     }
 
     private void initialise() {
@@ -83,6 +83,11 @@ public class Agent implements SecurityAgent {
          * */
 
         //NOTE: The bellow call sequence is critical and dependent on each other
+        if (!isInitialised()) {
+            config = AgentConfig.getInstance();
+            info = AgentInfo.getInstance();
+        }
+        logger = FileLoggerThreadPool.getInstance();
         config.instantiate();
         config.setConfig(CollectorConfigurationUtils.populateCollectorConfig());
 
@@ -94,6 +99,7 @@ public class Agent implements SecurityAgent {
         config.populateAgentPolicyParameters();
         config.setupSnapshotDir();
         info.initStatusLogValues();
+        setInitialised(true);
 
         startK2Services();
         // log init finish
@@ -104,7 +110,8 @@ public class Agent implements SecurityAgent {
         );
         populateLinkingMetadata();
         info.agentStatTrigger();
-        System.out.println(String.format("This application instance is now being protected by K2 Agent under id %s", info.getApplicationUUID()));
+
+        System.out.printf("This application instance is now being protected by K2 Agent under id %s\n", info.getApplicationUUID());
     }
 
     private void populateLinkingMetadata() {
@@ -169,8 +176,10 @@ public class Agent implements SecurityAgent {
          * restart k2 services
          **/
         this.agentJarURL = agentJarURL;
-        config.setNRSecurityEnabled(false);
-        cancelActiveServiceTasks();
+        if(isInitialised()) {
+            config.setNRSecurityEnabled(false);
+            cancelActiveServiceTasks();
+        }
         initialise();
         return true;
     }
@@ -190,8 +199,10 @@ public class Agent implements SecurityAgent {
 
     @Override
     public boolean deactivateSecurity() {
-        config.setNRSecurityEnabled(false);
-        deactivateSecurityServices();
+        if(isInitialised()) {
+            config.setNRSecurityEnabled(false);
+            deactivateSecurityServices();
+        }
         return true;
     }
 
@@ -243,7 +254,10 @@ public class Agent implements SecurityAgent {
 
     @Override
     public boolean isSecurityActive() {
-        return info.isAgentActive();
+        if(isInitialised() && info != null){
+            return info.isAgentActive();
+        }
+        return false;
     }
 
     @Override
@@ -270,6 +284,14 @@ public class Agent implements SecurityAgent {
         return null;
     }
 
+    @Override
+    public String getAgentUUID() {
+        if(isInitialised() && info != null) {
+            return this.info.getApplicationUUID();
+        }
+        return StringUtils.EMPTY;
+    }
+
     public AgentInfo getInfo() {
         return info;
     }
@@ -280,5 +302,13 @@ public class Agent implements SecurityAgent {
 
     public static java.net.URL getAgentJarURL() {
         return instance.agentJarURL;
+    }
+
+    public boolean isInitialised() {
+        return isInitialised;
+    }
+
+    public void setInitialised(boolean initialised) {
+        isInitialised = initialised;
     }
 }
