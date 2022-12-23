@@ -45,7 +45,7 @@ public class BuildManifestTask extends DefaultTask {
                 .setExpandSuperTypes(false)
                 .setScanners(new TypeAnnotationsScanner().filterResultsBy(SCANNED_ANNOTATION_TYPES::contains))
                 .setSerializer(new PropertySerializer()));
-        reflections.save(getOutputFilePath());
+//        reflections.save(getOutputFilePath());
     }
 
     @OutputFile
