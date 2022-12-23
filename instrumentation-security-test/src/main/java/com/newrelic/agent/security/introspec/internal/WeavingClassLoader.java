@@ -7,39 +7,25 @@
 
 package com.newrelic.agent.security.introspec.internal;
 
-import com.newrelic.agent.deps.org.objectweb.asm.AnnotationVisitor;
-import com.newrelic.agent.deps.org.objectweb.asm.ClassReader;
-import com.newrelic.agent.deps.org.objectweb.asm.ClassVisitor;
-import com.newrelic.agent.deps.org.objectweb.asm.MethodVisitor;
-import com.newrelic.agent.deps.org.objectweb.asm.Type;
+import com.newrelic.agent.deps.org.objectweb.asm.*;
 import com.newrelic.agent.deps.org.objectweb.asm.commons.Method;
 import com.newrelic.agent.deps.org.objectweb.asm.tree.ClassNode;
 import com.newrelic.agent.security.introspec.InstrumentationTestConfig;
+import com.newrelic.agent.security.introspec.SecurityInstrumentationTestRunner;
 import com.newrelic.api.agent.weaver.scala.ScalaWeave;
 import com.newrelic.weave.utils.ClassCache;
 import com.newrelic.weave.utils.ClassLoaderFinder;
 import com.newrelic.weave.utils.WeaveClassInfo;
 import com.newrelic.weave.utils.WeaveUtils;
-import com.newrelic.weave.weavepackage.ClassWeavedListener;
-import com.newrelic.weave.weavepackage.WeavePackage;
-import com.newrelic.weave.weavepackage.WeavePackageConfig;
-import com.newrelic.weave.weavepackage.WeavePackageManager;
-import com.newrelic.weave.weavepackage.WeavePostprocessor;
-import com.newrelic.weave.weavepackage.WeavePreprocessor;
+import com.newrelic.weave.weavepackage.*;
 import org.junit.runners.model.InitializationError;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+import java.util.jar.JarFile;
 
 class WeavingClassLoader extends TransformingClassLoader {
 
@@ -52,7 +38,7 @@ class WeavingClassLoader extends TransformingClassLoader {
     private static final String SCALA_WEAVE_DESC = Type.getType(ScalaWeave.class).getDescriptor();
 
     protected final HashMap<String, ClassResource> shadowedClassResources = new HashMap<>();
-    protected final WeavePackageManager weavePackageManager = new WeavePackageManager(new FailingWeavePackageListener());
+    public final WeavePackageManager weavePackageManager = SecurityInstrumentationTestRunner.weavePackageManager;
     protected final ClassCache classCache = new ClassCache(new ClassLoaderFinder(this));
     protected final WeaveIncludes weaveIncludes;
     protected final ClassNode errorTrapClassNode;
@@ -105,6 +91,10 @@ class WeavingClassLoader extends TransformingClassLoader {
                 weavePackageURLs.add(classResource.sourceURL);
             } else if (className.equals(NEWRELIC_API_CLASS)) {
                 newRelicApiClasses.add(classResource);
+            } else if (className.equals("com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException")) {
+                JarFile jarFile = new JarFile(classResource.sourceURL.getFile());
+                SecurityInstrumentationTestRunner.instrumentation.appendToBootstrapClassLoaderSearch(jarFile);
+                SecurityInstrumentationTestRunner.instrumentation.appendToSystemClassLoaderSearch(jarFile);
             } else if (className.equals(AGENT_BRIDGE_CLASS)) {
                 agentBridgeSourceURL = classResource.sourceURL;
             }

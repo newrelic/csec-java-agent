@@ -23,7 +23,7 @@ import com.newrelic.agent.instrumentation.tracing.TraceDetailsBuilder;
 import com.newrelic.agent.instrumentation.weaver.ClassWeaverService;
 import com.newrelic.agent.instrumentation.weaver.preprocessors.AgentPostprocessors;
 import com.newrelic.agent.instrumentation.weaver.preprocessors.AgentPreprocessors;
-import com.newrelic.agent.instrumentation.weaver.preprocessors.TracedWeaveInstrumentationTracker;
+import com.newrelic.agent.security.introspec.SecurityInstrumentationTestRunner;
 import com.newrelic.agent.util.asm.PatchedClassWriter;
 import com.newrelic.api.agent.Trace;
 import com.newrelic.bootstrap.BootstrapLoader;
@@ -41,13 +41,9 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.URLClassLoader;
 import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentMap;
 import java.util.logging.Level;
 
-class InstrumentingClassLoader extends WeavingClassLoader {
-
-    private final ConcurrentMap<String, Set<TracedWeaveInstrumentationTracker>> tracedWeaveInstrumentationDetails;
+public class InstrumentingClassLoader extends WeavingClassLoader {
 
     public InstrumentingClassLoader(URLClassLoader parent, WeaveIncludes weaveIncludes, AgentConfig agentConfig)
             throws InitializationError {
@@ -56,8 +52,8 @@ class InstrumentingClassLoader extends WeavingClassLoader {
                 new AgentPostprocessors());
 
         AgentPreprocessors preprocessor = (AgentPreprocessors) weavePreprocessor;
-        tracedWeaveInstrumentationDetails = preprocessor.getTracedWeaveInstrumentationDetails();
-        ((AgentPostprocessors) weavePostprocessor).setTracedWeaveInstrumentationDetails(tracedWeaveInstrumentationDetails);
+        SecurityInstrumentationTestRunner.tracedWeaveInstrumentationDetails = preprocessor.getTracedWeaveInstrumentationDetails();
+        ((AgentPostprocessors) weavePostprocessor).setTracedWeaveInstrumentationDetails(SecurityInstrumentationTestRunner.tracedWeaveInstrumentationDetails);
     }
 
     public static class ThrowingErrorTrapHandler extends ErrorTrapHandler {
@@ -109,7 +105,7 @@ class InstrumentingClassLoader extends WeavingClassLoader {
                             context.addWeavedMethod(method, packageName);
                         }
                         ClassWeaverService.addTraceInformation(
-                                InstrumentingClassLoader.this.tracedWeaveInstrumentationDetails, packageName, context,
+                                SecurityInstrumentationTestRunner.tracedWeaveInstrumentationDetails, packageName, context,
                                 weaveResult.getComposite(), originalName);
                     }
 
@@ -198,7 +194,7 @@ class InstrumentingClassLoader extends WeavingClassLoader {
         }
     }
 
-    private static class SimpleTraceMatchVisitor extends ClassVisitor {
+    public static class SimpleTraceMatchVisitor extends ClassVisitor {
         private static final String TRACE_DESC = Type.getDescriptor(Trace.class);
         private final InstrumentationContext context;
         private String source;

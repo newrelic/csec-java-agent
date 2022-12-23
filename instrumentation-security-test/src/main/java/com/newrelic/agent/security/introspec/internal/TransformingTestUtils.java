@@ -14,7 +14,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 
-final class TransformingTestUtils {
+public final class TransformingTestUtils {
     private TransformingTestUtils() {
     }
 

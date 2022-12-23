@@ -19,7 +19,7 @@ import java.util.List;
 /**
  * Listens for weave package validated events and fails tests if weave violations occur.
  */
-class FailingWeavePackageListener implements WeavePackageLifetimeListener {
+public class FailingWeavePackageListener implements WeavePackageLifetimeListener {
 
     @Override
     public void registered(WeavePackage weavepackage) {

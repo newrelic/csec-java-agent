@@ -11,11 +11,7 @@ import com.newrelic.weave.utils.Streams;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.net.URLClassLoader;
+import java.net.*;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
@@ -23,7 +19,7 @@ import java.util.List;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
-class ClassResource {
+public class ClassResource {
     public static List<ClassResource> fromClassLoader(URLClassLoader classLoader) throws IOException {
         List<ClassResource> result = new ArrayList<>();
         URL[] urls = classLoader.getURLs();
