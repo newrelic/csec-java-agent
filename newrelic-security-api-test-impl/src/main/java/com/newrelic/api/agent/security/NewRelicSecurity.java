@@ -12,15 +12,19 @@ package com.newrelic.api.agent.security;
  * objects offering additional capabilities.
  */
 public final class NewRelicSecurity {
-    private static boolean isAgentInitComplete = false;
+
+    private NewRelicSecurity() {
+    }
+
+    private static SecurityAgent securityAgent = Agent.getInstance();
 
     /**
      * Returns the root of the New Relic Security Java Agent API object hierarchy.
      *
      * @return the root of the New Relic Security Java Agent API object hierarchy
      */
-    public static SecurityAgent getAgent(){
-        return Agent.getInstance();
+    public static SecurityAgent getAgent() {
+        return securityAgent;
     }
 
 
@@ -34,9 +38,8 @@ public final class NewRelicSecurity {
     }
 
     /**
-     *  Marks the end of agent init. Hooks can now be processed.
+     * Marks the end of agent init. Hooks can now be processed.
      */
-    public static void markAgentAsInitialised(){
-        isAgentInitComplete = true;
+    public static void markAgentAsInitialised() {
     }
 }
