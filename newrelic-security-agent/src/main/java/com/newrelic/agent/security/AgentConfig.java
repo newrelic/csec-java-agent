@@ -109,11 +109,12 @@ public class AgentConfig {
     }
 
     public boolean setK2HomePath() {
-
         if (System.getenv().containsKey("K2_HOME")) {
             K2_HOME = System.getenv("K2_HOME");
         } else if (NewRelic.getAgent().getConfig().getValue("security.sec_home_path") != null) {
             K2_HOME = NewRelic.getAgent().getConfig().getValue("security.sec_home_path");
+        } else if (System.getenv().containsKey("NEWRELIC_HOME")) {
+            K2_HOME = System.getenv("NEWRELIC_HOME");
         } else if (NewRelic.getAgent().getConfig().getValue("newrelic.home") != null) {
             K2_HOME = NewRelic.getAgent().getConfig().getValue("newrelic.home");
         } else if (CommonUtils.getNRAgentJarDirectory() != null) {
