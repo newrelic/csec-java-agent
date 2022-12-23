@@ -22,7 +22,13 @@ buildCache {
 
 include 'newrelic-security-api'
 include 'newrelic-security-agent'
+
+// Unit Testing related modules
 include 'instrumentation-security-test'
+include 'instrumentation-test-agent'
+include 'newrelic-security-api-test-impl'
+
+
 // Security Instrumentation modules
 include 'instrumentation-security:java-lang'
 include 'instrumentation-security:java-io-stream'

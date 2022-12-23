@@ -5,7 +5,7 @@
  *
  */
 
-package java.net;
+package com.nr.agent.instrumentation.security.urlconnection;
 
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
@@ -18,21 +18,21 @@ import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.NewField;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
-import com.nr.agent.instrumentation.security.urlconnection.Helper;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URL;
 
-@Weave(type = MatchType.BaseClass)
-public abstract class URLConnection {
+@Weave(type = MatchType.BaseClass, originalName = "java.net.URLConnection")
+public abstract class URLConnection_Instrumentation {
 
     @NewField
     public boolean cascadedCall;
 
     protected URL url;
 
-    protected URLConnection(URL url) {
+    protected URLConnection_Instrumentation(URL url) {
         this.url = url;
     }
 
