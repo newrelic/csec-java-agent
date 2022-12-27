@@ -8,7 +8,14 @@
 package com.newrelic.agent.security.introspec;
 
 import com.newrelic.agent.instrumentation.weaver.preprocessors.TracedWeaveInstrumentationTracker;
-import com.newrelic.agent.security.introspec.internal.*;
+import com.newrelic.agent.security.introspec.internal.ClassResource;
+import com.newrelic.agent.security.introspec.internal.FailingWeavePackageListener;
+import com.newrelic.agent.security.introspec.internal.ImplementationLocator;
+import com.newrelic.agent.security.introspec.internal.IntrospectorConfig;
+import com.newrelic.agent.security.introspec.internal.SecurityApiClassTransformer;
+import com.newrelic.agent.security.introspec.internal.SecurityIntrospectorImpl;
+import com.newrelic.agent.security.introspec.internal.TestClassReTransformer;
+import com.newrelic.agent.security.introspec.internal.TransformingTestUtils;
 import com.newrelic.weave.weavepackage.WeavePackageManager;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.runner.notification.RunNotifier;
@@ -30,22 +37,17 @@ public final class SecurityInstrumentationTestRunner extends BlockJUnit4ClassRun
 
     public static final String NEW_RELIC_SECURITY_CLASS = "com.newrelic.api.agent.security.NewRelicSecurity";
     public static final String AGENT_CLASS = "com.newrelic.api.agent.security.Agent";
-    private final Map<String, Object> configOverrides;
-
     public static Instrumentation instrumentation;
-
     public static WeavePackageManager weavePackageManager;
     public static ClassLoader instrumentingClassloader;
     public static ConcurrentMap<String, Set<TracedWeaveInstrumentationTracker>> tracedWeaveInstrumentationDetails;
-
     public static ClassResource nrSecurityClassResource;
     public static ClassResource agentClassResource;
-
-    private static String[] agentRelatedJarPatterns = new String[]{
+    private static SecurityIntrospector INTROSPECTOR;
+    private static final String[] agentRelatedJarPatterns = new String[] {
             "newrelic-security-api", "newrelic-security-api-test-impl", "newrelic-api"
     };
-
-    private static Set<URL> agentRelatedJars = new HashSet<>();
+    private static final Set<URL> agentRelatedJars = new HashSet<>();
 
     static {
         try {
@@ -70,6 +72,14 @@ public final class SecurityInstrumentationTestRunner extends BlockJUnit4ClassRun
         }
     }
 
+    private final Map<String, Object> configOverrides;
+
+    public SecurityInstrumentationTestRunner(Class<?> classUnderTest) throws Exception {
+        super(ImplementationLocator.loadWithInstrumentingClassLoader(classUnderTest, IntrospectorConfig.readConfig(classUnderTest)));
+        configOverrides = IntrospectorConfig.readConfig(classUnderTest);
+        instrumentation.addTransformer(new TestClassReTransformer(), true);
+    }
+
     private static void getSecurityClassResources() throws Exception {
         List<ClassResource> classResources = ClassResource.fromClassLoader(TransformingTestUtils.getParentAsUrlClassLoader());
         for (ClassResource classResource : classResources) {
@@ -92,20 +102,21 @@ public final class SecurityInstrumentationTestRunner extends BlockJUnit4ClassRun
         }
     }
 
-    public SecurityInstrumentationTestRunner(Class<?> classUnderTest) throws Exception {
-        super(ImplementationLocator.loadWithInstrumentingClassLoader(classUnderTest, IntrospectorConfig.readConfig(classUnderTest)));
-        configOverrides = IntrospectorConfig.readConfig(classUnderTest);
-        instrumentation.addTransformer(new TestClassReTransformer(), true);
-    }
-
     private static Instrumentation getInstrumentationRef() throws Exception {
         Class<?> instrumentationTestHelper = Class.forName("sun.reflect.com.nr.agent.security.instrumentation.InstrumentationTestHelper", false, null);
         Field instrumentationField = instrumentationTestHelper.getField("instrumentation");
         return (Instrumentation) instrumentationField.get(null);
     }
 
+    public static SecurityIntrospector getIntrospector() {
+        return INTROSPECTOR;
+    }
+
     @Override
     public void run(RunNotifier notifier) {
+        if (INTROSPECTOR == null) {
+            INTROSPECTOR = new SecurityIntrospectorImpl();
+        }
         super.run(notifier);
     }
 

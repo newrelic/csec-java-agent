@@ -9,15 +9,6 @@ import com.newrelic.api.agent.security.schema.AbstractOperation;
 import java.util.List;
 
 public class SecurityIntrospectorImpl implements SecurityIntrospector {
-
-    private SecurityIntrospectorImpl() {
-
-    }
-
-    public static SecurityIntrospectorImpl getIntrospector() {
-        return new SecurityIntrospectorImpl();
-    }
-
     @Override
     public List<AbstractOperation> getOperations() {
         return (List<AbstractOperation>) NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(Agent.OPERATIONS, List.class);
