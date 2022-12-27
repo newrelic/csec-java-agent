@@ -23,6 +23,12 @@ buildCache {
 include 'newrelic-security-api'
 include 'newrelic-security-agent'
 
+// Unit Testing related modules
+include 'instrumentation-security-test'
+include 'unittest-support-agent'
+include 'newrelic-security-api-test-impl'
+
+
 // Security Instrumentation modules
 include 'instrumentation-security:java-lang'
 include 'instrumentation-security:java-io-stream'
@@ -30,6 +36,7 @@ include 'instrumentation-security:java-io-inputstream-jdk8'
 include 'instrumentation-security:java-io-inputstream-jdk9'
 include 'instrumentation-security:file-operation'
 include 'instrumentation-security:servlet-2.4'
+include 'instrumentation-security-test'
 include 'instrumentation-security:servlet-5.0'
 include 'instrumentation-security:servlet-6.0'
 include 'instrumentation-security:jsp-2.4'
