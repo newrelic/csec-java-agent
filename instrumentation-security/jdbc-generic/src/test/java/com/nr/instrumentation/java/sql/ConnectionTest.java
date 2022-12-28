@@ -9,10 +9,6 @@ import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.security.schema.operation.SQLOperation;
 import org.h2.jdbc.JdbcCallableStatement;
 import org.h2.jdbc.JdbcPreparedStatement;
-//import org.h2.jdbc.JdbcStatement;
-import java.sql.PreparedStatement;
-//import java.sql.CallableStatement;
-import org.h2.jdbc.JdbcStatement;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -22,11 +18,11 @@ import org.junit.runner.RunWith;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 
 @RunWith(SecurityInstrumentationTestRunner.class)
 @InstrumentationTestConfig(includePrefixes = "java.sql")
@@ -38,9 +34,7 @@ public class ConnectionTest {
     private static final String DB_PASSWORD = "";
     private static final Connection CONNECTION = getDBConnection();
 
-    private static List<String> QUERIES = new ArrayList<>();
-
-    private static AtomicInteger id = new AtomicInteger(3);
+    private static final List<String> QUERIES = new ArrayList<>();
 
     @AfterClass
     public static void teardown() throws SQLException {
@@ -86,7 +80,6 @@ public class ConnectionTest {
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.SQL_DB_COMMAND, operation.getCaseType());
         Assert.assertEquals("Invalid executed class name.", JdbcPreparedStatement.class.getName(), operation.getClassName());
         Assert.assertEquals("Invalid executed method name.", "execute", operation.getMethodName());
-        id.getAndIncrement();
 
     }
 
@@ -96,127 +89,122 @@ public class ConnectionTest {
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
 
         List<AbstractOperation> operations = introspector.getOperations();
-            Assert.assertTrue("No operations detected", operations.size() > 0);
-            SQLOperation operation = (SQLOperation) operations.get(0);
+        Assert.assertTrue("No operations detected", operations.size() > 0);
+        SQLOperation operation = (SQLOperation) operations.get(0);
 
         Assert.assertEquals("Invalid executed parameters.", QUERIES.get(3), operation.getQuery());
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.SQL_DB_COMMAND, operation.getCaseType());
         Assert.assertEquals("Invalid executed class name.", JdbcCallableStatement.class.getName(), operation.getClassName());
         Assert.assertEquals("Invalid executed method name.", "execute", operation.getMethodName());
-        id.getAndIncrement();
-
     }
 
-        @Test
+    @Test
 
-        public void testPrepareStatement4() throws SQLException, IOException, InterruptedException {
-            prepareStatement4();
-            SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
+    public void testPrepareStatement4() throws SQLException, IOException, InterruptedException {
+        prepareStatement4();
+        SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
 
-            List<AbstractOperation>operations = introspector.getOperations();
-                Assert.assertTrue("No operations detected", operations.size() > 0);
-                SQLOperation operation = (SQLOperation)operations.get(0);
+        List<AbstractOperation> operations = introspector.getOperations();
+        Assert.assertTrue("No operations detected", operations.size() > 0);
+        SQLOperation operation = (SQLOperation) operations.get(0);
 
-            Assert.assertEquals("Invalid executed parameters.", QUERIES.get(3), operation.getQuery());
-            Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.SQL_DB_COMMAND, operation.getCaseType());
-            Assert.assertEquals("Invalid executed class name.", JdbcPreparedStatement.class.getName(), operation.getClassName());
-            Assert.assertEquals("Invalid executed method name.", "execute", operation.getMethodName());
-            id.getAndIncrement();
+        Assert.assertEquals("Invalid executed parameters.", QUERIES.get(3), operation.getQuery());
+        Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.SQL_DB_COMMAND, operation.getCaseType());
+        Assert.assertEquals("Invalid executed class name.", JdbcPreparedStatement.class.getName(), operation.getClassName());
+        Assert.assertEquals("Invalid executed method name.", "execute", operation.getMethodName());
+    }
 
-        }
+    @Test
 
-        @Test
+    public void testPrepareCall4() throws SQLException, IOException, InterruptedException {
+        prepareCall4();
+        SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
 
-        public void testPrepareCall4() throws SQLException, IOException, InterruptedException {
-            prepareCall4();
-            SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
+        List<AbstractOperation> operations = introspector.getOperations();
+        Assert.assertTrue("No operations detected", operations.size() > 0);
+        SQLOperation operation = (SQLOperation) operations.get(0);
 
-            List<AbstractOperation>operations = introspector.getOperations();
-                Assert.assertTrue("No operations detected", operations.size() > 0);
-                SQLOperation operation = (SQLOperation)operations.get(0);
+        Assert.assertEquals("Invalid executed parameters.", QUERIES.get(3), operation.getQuery());
+        Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.SQL_DB_COMMAND, operation.getCaseType());
+        Assert.assertEquals("Invalid executed class name.", JdbcCallableStatement.class.getName(), operation.getClassName());
+        Assert.assertEquals("Invalid executed method name.", "execute", operation.getMethodName());
+    }
 
-            Assert.assertEquals("Invalid executed parameters.", QUERIES.get(3), operation.getQuery());
-            Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.SQL_DB_COMMAND, operation.getCaseType());
-            Assert.assertEquals("Invalid executed class name.", JdbcCallableStatement.class.getName(), operation.getClassName());
-            Assert.assertEquals("Invalid executed method name.", "execute", operation.getMethodName());
-            id.getAndIncrement();
+    @Test
 
-        }
+    public void testPrepareCallNames() throws SQLException, IOException, InterruptedException {
+        prepareCallColNames();
+        SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
 
-        @Test
+        List<AbstractOperation> operations = introspector.getOperations();
+        Assert.assertTrue("No operations detected", operations.size() > 0);
 
-        public void testPrepareCallNames() throws SQLException, IOException, InterruptedException {
-            prepareCallColNames();
-            SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
+        SQLOperation operation = (SQLOperation) operations.get(0);
 
-            List<AbstractOperation>operations = introspector.getOperations();
-            Assert.assertTrue("No operations detected", operations.size() > 0);
+        Assert.assertEquals("Invalid executed parameters.", QUERIES.get(3), operation.getQuery());
+        Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.SQL_DB_COMMAND, operation.getCaseType());
+        Assert.assertEquals("Invalid executed class name.", JdbcPreparedStatement.class.getName(), operation.getClassName());
+        Assert.assertEquals("Invalid executed method name.", "execute", operation.getMethodName());
+    }
 
-                SQLOperation operation = (SQLOperation)operations.get(0);
+    @Test
+    public void testPrepareCallIndex() throws SQLException, IOException, InterruptedException {
+        prepareCallColIndex();
+        SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
 
-            Assert.assertEquals("Invalid executed parameters.", QUERIES.get(3), operation.getQuery());
-            Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.SQL_DB_COMMAND, operation.getCaseType());
-            Assert.assertEquals("Invalid executed class name.", JdbcPreparedStatement.class.getName(), operation.getClassName());
-            Assert.assertEquals("Invalid executed method name.", "execute", operation.getMethodName());
-            id.getAndIncrement();
+        List<AbstractOperation> operations = introspector.getOperations();
+        Assert.assertTrue("No operations detected", operations.size() > 0);
+        SQLOperation operation = (SQLOperation) operations.get(0);
 
-        }
+        Assert.assertEquals("Invalid executed parameters.", QUERIES.get(3), operation.getQuery());
+        Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.SQL_DB_COMMAND, operation.getCaseType());
+        Assert.assertEquals("Invalid executed class name.", JdbcPreparedStatement.class.getName(), operation.getClassName());
+        Assert.assertEquals("Invalid executed method name.", "execute", operation.getMethodName());
+    }
 
-        @Test
-        public void testPrepareCallIndex() throws SQLException, IOException, InterruptedException {
-            prepareCallColIndex();
-            SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
+    @Trace(dispatcher = true)
+    private void prepareStatement3() throws SQLException {
+        PreparedStatement stmt = CONNECTION.prepareStatement(QUERIES.get(3), 1, 1);
+        stmt.execute();
+        stmt.close();
+    }
 
-            List<AbstractOperation>operations = introspector.getOperations();
-            Assert.assertTrue("No operations detected", operations.size() > 0);
-                SQLOperation operation = (SQLOperation)operations.get(0);
+    @Trace(dispatcher = true)
+    private void prepareCall3() throws SQLException {
+        PreparedStatement stmt = CONNECTION.prepareCall(QUERIES.get(3), 1, 1);
+        stmt.execute();
+        stmt.close();
+    }
 
-            Assert.assertEquals("Invalid executed parameters.", QUERIES.get(3), operation.getQuery());
-            Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.SQL_DB_COMMAND, operation.getCaseType());
-            Assert.assertEquals("Invalid executed class name.", JdbcPreparedStatement.class.getName(), operation.getClassName());
-            Assert.assertEquals("Invalid executed method name.", "execute", operation.getMethodName());
-            id.getAndIncrement();
+    @Trace(dispatcher = true)
+    private void prepareStatement4() throws SQLException {
+        PreparedStatement stmt = CONNECTION.prepareStatement(QUERIES.get(3), 1, 1, 1);
+        stmt.execute();
+        stmt.close();
+    }
 
-        }
+    @Trace(dispatcher = true)
+    private void prepareCall4() throws SQLException {
+        PreparedStatement stmt = CONNECTION.prepareCall(QUERIES.get(3), 1, 1, 1);
+        stmt.execute();
+        stmt.close();
+    }
 
-    @Trace(dispatcher=true)
-        private void prepareStatement3() throws SQLException {
-            PreparedStatement stmt = CONNECTION.prepareStatement(QUERIES.get(3), 1, 1);
-            stmt.execute();
-            stmt.close();
-        }
-    @Trace(dispatcher=true)
-        private void prepareCall3() throws SQLException {
-            PreparedStatement stmt = CONNECTION.prepareCall(QUERIES.get(3), 1, 1);
-            stmt.execute();
-            stmt.close();
-        }
-    @Trace(dispatcher=true)
-        private void prepareStatement4() throws SQLException {
-            PreparedStatement stmt = CONNECTION.prepareStatement(QUERIES.get(3), 1, 1, 1);
-            stmt.execute();
-            stmt.close();
-        }
-    @Trace(dispatcher=true)
-        private void prepareCall4() throws SQLException {
-            PreparedStatement stmt = CONNECTION.prepareCall(QUERIES.get(3), 1, 1, 1);
-            stmt.execute();
-            stmt.close();
-        }
-    @Trace(dispatcher=true)
-        private void prepareCallColIndex() throws SQLException {
-            int[] columnIndexes = { 1, 2 };
-            PreparedStatement stmt = CONNECTION.prepareStatement(QUERIES.get(3), columnIndexes);
-            stmt.execute();
-            stmt.close();
-        }
-    @Trace(dispatcher=true)
-        private void prepareCallColNames() throws SQLException {
-            String[] columnNames = { "id", "first_name", "last_name" };
-            PreparedStatement stmt = CONNECTION.prepareStatement(QUERIES.get(3), columnNames);
-            stmt.execute();
-            stmt.close();
-        }
+    @Trace(dispatcher = true)
+    private void prepareCallColIndex() throws SQLException {
+        int[] columnIndexes = { 1, 2 };
+        PreparedStatement stmt = CONNECTION.prepareStatement(QUERIES.get(3), columnIndexes);
+        stmt.execute();
+        stmt.close();
+    }
+
+    @Trace(dispatcher = true)
+    private void prepareCallColNames() throws SQLException {
+        String[] columnNames = { "id", "first_name", "last_name" };
+        PreparedStatement stmt = CONNECTION.prepareStatement(QUERIES.get(3), columnNames);
+        stmt.execute();
+        stmt.close();
+    }
 }
 
 

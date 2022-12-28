@@ -7,14 +7,12 @@ import com.newrelic.api.agent.Trace;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.security.schema.operation.SQLOperation;
-import org.h2.jdbc.JdbcStatement;
+import org.h2.jdbc.JdbcPreparedStatement;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.apache.http.HttpResponse;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -81,12 +79,11 @@ public class PreparedStatementTest {
 
         Assert.assertEquals("Invalid executed parameters.", QUERIES.get(3), operation.getQuery());
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.SQL_DB_COMMAND, operation.getCaseType());
-        Assert.assertEquals("Invalid executed class name.", JdbcStatement.class.getName(), operation.getClassName());
+        Assert.assertEquals("Invalid executed class name.", JdbcPreparedStatement.class.getName(), operation.getClassName());
         Assert.assertEquals("Invalid executed method name.", "executeQuery", operation.getMethodName());
     }
 
     @Test
-    @Ignore
     public void testExecuteUpdate() throws SQLException {
         executeUpdate();
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
@@ -97,12 +94,11 @@ public class PreparedStatementTest {
 
         Assert.assertEquals("Invalid executed parameters.", QUERIES.get(4), operation.getQuery());
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.SQL_DB_COMMAND, operation.getCaseType());
-        Assert.assertEquals("Invalid executed class name.", JdbcStatement.class.getName(), operation.getClassName());
+        Assert.assertEquals("Invalid executed class name.", JdbcPreparedStatement.class.getName(), operation.getClassName());
         Assert.assertEquals("Invalid executed method name.", "executeUpdate", operation.getMethodName());
     }
 
     @Test
-    @Ignore
     public void testExecute() throws SQLException {
         execute();
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
@@ -113,7 +109,7 @@ public class PreparedStatementTest {
 
         Assert.assertEquals("Invalid executed parameters.", QUERIES.get(3), operation.getQuery());
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.SQL_DB_COMMAND, operation.getCaseType());
-        Assert.assertEquals("Invalid executed class name.", JdbcStatement.class.getName(), operation.getClassName());
+        Assert.assertEquals("Invalid executed class name.", JdbcPreparedStatement.class.getName(), operation.getClassName());
         Assert.assertEquals("Invalid executed method name.", "execute", operation.getMethodName());
     }
     @Trace(dispatcher = true)
