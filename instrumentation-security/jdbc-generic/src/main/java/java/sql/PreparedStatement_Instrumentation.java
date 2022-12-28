@@ -83,6 +83,9 @@ public abstract class PreparedStatement_Instrumentation {
         boolean isLockAcquired = acquireLockIfPossible();
         AbstractOperation operation = null;
         if(isLockAcquired) {
+            if(preparedSql == null){
+                preparedSql = JdbcHelper.getSql((Statement) this);
+            }
             operation = preprocessSecurityHook(preparedSql, JdbcHelper.METHOD_EXECUTE_QUERY);
         }
         ResultSet returnVal = null;
@@ -101,6 +104,9 @@ public abstract class PreparedStatement_Instrumentation {
         boolean isLockAcquired = acquireLockIfPossible();
         AbstractOperation operation = null;
         if(isLockAcquired) {
+            if(preparedSql == null){
+                preparedSql = JdbcHelper.getSql((Statement) this);
+            }
             operation = preprocessSecurityHook(preparedSql, JdbcHelper.METHOD_EXECUTE_UPDATE);
         }
         int returnVal = -1;
@@ -119,6 +125,9 @@ public abstract class PreparedStatement_Instrumentation {
         boolean isLockAcquired = acquireLockIfPossible();
         AbstractOperation operation = null;
         if(isLockAcquired) {
+            if(preparedSql == null){
+                preparedSql = JdbcHelper.getSql((Statement) this);
+            }
             operation = preprocessSecurityHook(preparedSql, JdbcHelper.METHOD_EXECUTE);
         }
         boolean returnVal;
