@@ -18,7 +18,9 @@ import java.security.ProtectionDomain;
  * ClassLoader that intercepts class loads, allowing classes to be transformed.
  */
 class TransformingClassLoader extends URLClassLoader {
-    private static final String[] ALLOWED_PREFIXES = new String[]{"com.sun.jersey", "java.net", "java.lang.ProcessImpl"};
+    private static final String[] ALLOWED_PREFIXES = new String[]{"com.sun.jersey", "java.net",
+            "java.lang.ProcessImpl", "java.io", "java.nio"
+    };
     private static final String[] PROTECTED_PREFIXES = new String[]{"java.", "javax.", "com.sun.", "sun.",
             "org.junit.", "junit.framework", "com.newrelic", "org.xml", "org.w3c"};
 
