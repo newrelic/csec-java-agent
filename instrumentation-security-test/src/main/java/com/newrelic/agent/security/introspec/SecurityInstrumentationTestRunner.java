@@ -122,6 +122,7 @@ public final class SecurityInstrumentationTestRunner extends BlockJUnit4ClassRun
 
     @Override
     protected void runChild(FrameworkMethod method, RunNotifier notifier) {
+        INTROSPECTOR.clear();
         super.runChild(method, notifier);
     }
 }

@@ -22,8 +22,7 @@ public class SecurityIntrospectorImpl implements SecurityIntrospector {
 
     @Override
     public void clear() {
-        // TODO: if required add implementation
-        synchronized (this){
-        }
+        NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(Agent.OPERATIONS, List.class).clear();
+        NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(Agent.EXIT_OPERATIONS, List.class).clear();
     }
 }
