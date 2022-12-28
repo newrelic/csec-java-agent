@@ -1,4 +1,4 @@
-package com.nr.instrumentation.security.javaio;
+package com.newrelic.api.agent.security.instrumentation.helpers;
 
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.schema.operation.FileIntegrityOperation;

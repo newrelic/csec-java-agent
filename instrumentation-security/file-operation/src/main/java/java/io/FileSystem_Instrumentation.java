@@ -8,16 +8,15 @@
 package java.io;
 
 import com.newrelic.api.agent.security.NewRelicSecurity;
+import com.newrelic.api.agent.security.instrumentation.helpers.FileHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
 import com.newrelic.api.agent.security.schema.operation.FileOperation;
 import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
-import com.nr.instrumentation.security.javaio.FileHelper;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 @Weave(type = MatchType.BaseClass, originalName = "java.io.FileSystem")
