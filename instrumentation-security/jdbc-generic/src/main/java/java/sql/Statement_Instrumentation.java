@@ -8,6 +8,7 @@
 package java.sql;
 
 import com.newrelic.api.agent.security.NewRelicSecurity;
+import com.newrelic.api.agent.security.jdbc.JdbcHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.JDBCVendor;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
@@ -15,7 +16,6 @@ import com.newrelic.api.agent.security.schema.operation.SQLOperation;
 import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
-import com.nr.instrumentation.security.java.jdbc.JdbcHelper;
 
 @Weave(originalName = "java.sql.Statement", type = MatchType.Interface)
 public abstract class Statement_Instrumentation {

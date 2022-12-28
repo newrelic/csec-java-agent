@@ -7,14 +7,14 @@
 
 package javax.sql;
 
-import java.sql.Connection;
-
 import com.newrelic.api.agent.security.NewRelicSecurity;
+import com.newrelic.api.agent.security.jdbc.JdbcHelper;
 import com.newrelic.api.agent.security.schema.JDBCVendor;
 import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
-import com.nr.instrumentation.security.java.jdbc.JdbcHelper;
+
+import java.sql.Connection;
 
 /**
  * This interface match is here to properly record every time that a connection is requested from a data source.

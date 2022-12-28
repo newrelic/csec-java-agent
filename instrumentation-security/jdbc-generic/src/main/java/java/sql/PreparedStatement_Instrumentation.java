@@ -7,8 +7,8 @@
 
 package java.sql;
 
-import com.newrelic.api.agent.Trace;
 import com.newrelic.api.agent.security.NewRelicSecurity;
+import com.newrelic.api.agent.security.jdbc.JdbcHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.JDBCVendor;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
@@ -17,7 +17,6 @@ import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.NewField;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
-import com.nr.instrumentation.security.java.jdbc.JdbcHelper;
 
 import java.math.BigDecimal;
 import java.util.HashMap;
