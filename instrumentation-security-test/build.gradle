@@ -11,7 +11,7 @@ dependencies {
     compileOnly(project(":newrelic-security-api"))
     implementation(project(":newrelic-security-api-test-impl"))
     implementation(project(":newrelic-security-agent"))
-    implementation(project(":unittest-support-agent"))
+    implementation(project(":unittest-helper-agent"))
     implementation("com.newrelic.agent.java:newrelic-weaver-api:7.11.0-SNAPSHOT")
     implementation("com.newrelic.agent.java:newrelic-api:7.11.0-SNAPSHOT")
     implementation("com.newrelic.agent.java:newrelic-agent:7.11.0-SNAPSHOT")
