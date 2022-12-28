@@ -3,6 +3,12 @@ package com.newrelic.api.agent.security.instrumentation.helpers;
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.schema.JDBCVendor;
 
+import java.sql.Statement;
+import java.util.Collections;
+import java.util.Map;
+import java.util.WeakHashMap;
+import java.util.logging.Level;
+
 public class JdbcHelper {
 
     public static final String UNKNOWN = "UNKNOWN";
@@ -28,6 +34,16 @@ public class JdbcHelper {
     public static final String METHOD_EXECUTE = "execute";
     public static final String METHOD_EXECUTE_UPDATE = "executeUpdate";
     public static final String METHOD_EXECUTE_QUERY = "executeQuery";
+
+    private static final Map<Statement, String> sqlQuery = Collections.synchronizedMap(new WeakHashMap<>());
+
+    public static void putSql(Statement statement, String sql) {
+        sqlQuery.put(statement, sql);
+    }
+
+    public static String getSql(Statement statement) {
+        return sqlQuery.get(statement);
+    }
 
     public static boolean skipExistsEvent() {
         if (!(NewRelicSecurity.getAgent().getCurrentPolicy().getVulnerabilityScan().getEnabled() &&
