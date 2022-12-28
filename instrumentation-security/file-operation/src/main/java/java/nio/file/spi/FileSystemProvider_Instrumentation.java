@@ -42,7 +42,7 @@ public abstract class FileSystemProvider_Instrumentation {
         try {
             Weaver.callOriginal();
         } finally {
-            if (!isFileLockAcquired) {
+            if (isFileLockAcquired) {
                 releaseFileLock();
             }
         }
@@ -61,7 +61,7 @@ public abstract class FileSystemProvider_Instrumentation {
         try {
             returnData = Weaver.callOriginal();
         } finally {
-            if (!isFileLockAcquired) {
+            if (isFileLockAcquired) {
                 releaseFileLock();
             }
         }
@@ -81,7 +81,7 @@ public abstract class FileSystemProvider_Instrumentation {
         try {
             returnData = Weaver.callOriginal();
         } finally {
-            if (!isFileLockAcquired) {
+            if (isFileLockAcquired) {
                 releaseFileLock();
             }
         }
@@ -103,7 +103,7 @@ public abstract class FileSystemProvider_Instrumentation {
         try {
             returnData = Weaver.callOriginal();
         } finally {
-            if (!isFileLockAcquired) {
+            if (isFileLockAcquired) {
                 releaseFileLock();
             }
         }
@@ -126,7 +126,7 @@ public abstract class FileSystemProvider_Instrumentation {
         try {
             returnData = Weaver.callOriginal();
         } finally {
-            if (!isFileLockAcquired) {
+            if (isFileLockAcquired) {
                 releaseFileLock();
             }
         }
@@ -146,7 +146,7 @@ public abstract class FileSystemProvider_Instrumentation {
         try {
             returnData = Weaver.callOriginal();
         } finally {
-            if (!isFileLockAcquired) {
+            if (isFileLockAcquired) {
                 releaseFileLock();
             }
         }
@@ -165,7 +165,7 @@ public abstract class FileSystemProvider_Instrumentation {
         try {
             returnData = Weaver.callOriginal();
         } finally {
-            if (!isFileLockAcquired) {
+            if (isFileLockAcquired) {
                 releaseFileLock();
             }
         }
@@ -183,7 +183,7 @@ public abstract class FileSystemProvider_Instrumentation {
         try {
             Weaver.callOriginal();
         } finally {
-            if (!isFileLockAcquired) {
+            if (isFileLockAcquired) {
                 releaseFileLock();
             }
         }
@@ -201,7 +201,7 @@ public abstract class FileSystemProvider_Instrumentation {
         try {
             Weaver.callOriginal();
         } finally {
-            if (!isFileLockAcquired) {
+            if (isFileLockAcquired) {
                 releaseFileLock();
             }
         }
@@ -217,7 +217,7 @@ public abstract class FileSystemProvider_Instrumentation {
         try {
             Weaver.callOriginal();
         } finally {
-            if (!isFileLockAcquired) {
+            if (isFileLockAcquired) {
                 releaseFileLock();
             }
         }
@@ -233,7 +233,7 @@ public abstract class FileSystemProvider_Instrumentation {
         try {
             Weaver.callOriginal();
         } finally {
-            if (!isFileLockAcquired) {
+            if (isFileLockAcquired) {
                 releaseFileLock();
             }
         }
@@ -250,7 +250,7 @@ public abstract class FileSystemProvider_Instrumentation {
         try {
             returnData = Weaver.callOriginal();
         } finally {
-            if (!isFileLockAcquired) {
+            if (isFileLockAcquired) {
                 releaseFileLock();
             }
         }
@@ -268,7 +268,7 @@ public abstract class FileSystemProvider_Instrumentation {
         try {
             Weaver.callOriginal();
         } finally {
-            if (!isFileLockAcquired) {
+            if (isFileLockAcquired) {
                 releaseFileLock();
             }
         }
@@ -286,7 +286,7 @@ public abstract class FileSystemProvider_Instrumentation {
         try {
             Weaver.callOriginal();
         } finally {
-            if (!isFileLockAcquired) {
+            if (isFileLockAcquired) {
                 releaseFileLock();
             }
         }
