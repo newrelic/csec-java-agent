@@ -1,0 +1,20 @@
+dependencies {
+    implementation(project(":newrelic-security-api"))
+    implementation("com.newrelic.agent.java:newrelic-api:7.11.0-SNAPSHOT")
+    implementation("com.newrelic.agent.java:newrelic-weaver-api:7.11.0-SNAPSHOT")
+    implementation("hsqldb:hsqldb:1.7.2.2")
+}
+
+jar {
+    manifest { attributes 'Implementation-Title': 'com.newrelic.instrumentation.security.jdbc-hsqldb-1.7.2.2' }
+}
+
+verifyInstrumentation {
+    passesOnly 'hsqldb:hsqldb:[1.7.2.2,)'
+    passesOnly 'org.hsqldb:hsqldb:[1.8.0.10]'
+}
+
+site {
+    title 'HSQLDB'
+    type 'Datastore'
+}
