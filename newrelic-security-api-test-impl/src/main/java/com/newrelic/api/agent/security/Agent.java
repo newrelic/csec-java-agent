@@ -8,9 +8,9 @@ import com.newrelic.api.agent.security.schema.policy.AgentPolicy;
 
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class Agent implements SecurityAgent {
 
@@ -22,7 +22,7 @@ public class Agent implements SecurityAgent {
 
     private static final Object lock = new Object();
 
-    private Map<Integer, SecurityMetaData> securityMetaDataMap = new HashMap<>();
+    private Map<Integer, SecurityMetaData> securityMetaDataMap = new ConcurrentHashMap<>();
 
     private java.net.URL agentJarURL;
 
