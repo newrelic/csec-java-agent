@@ -1,0 +1,23 @@
+dependencies {
+    implementation(project(":newrelic-security-api"))
+    implementation("com.newrelic.agent.java:newrelic-api:7.11.0-SNAPSHOT")
+    implementation("com.newrelic.agent.java:newrelic-weaver-api:7.11.0-SNAPSHOT")
+    implementation("postgresql:postgresql:8.0-312.jdbc3")
+}
+
+jar {
+    manifest { attributes 'Implementation-Title': 'com.newrelic.instrumentation.security.jdbc-postgresql-8.0-312.jdbc3' }
+}
+
+verifyInstrumentation {
+    passesOnly 'postgresql:postgresql:[8.0-312.jdbc3,)'
+    passesOnly 'org.postgresql:postgresql:[0,9.4.1207)'
+    exclude 'postgresql:postgresql:8.2-511.jdbc3' // Something wrong with this version
+    exclude 'postgresql:postgresql:9.3-1102.jdbc3' // Pulled from mule repo
+    excludeRegex 'postgresql:postgresql:.*-atlassian-hosted'
+}
+
+site {
+    title 'PostgreSQL'
+    type 'Datastore'
+}

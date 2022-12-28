@@ -1,0 +1,21 @@
+dependencies {
+    implementation(project(":newrelic-security-api"))
+    implementation("com.newrelic.agent.java:newrelic-api:7.11.0-SNAPSHOT")
+    implementation("com.newrelic.agent.java:newrelic-weaver-api:7.11.0-SNAPSHOT")
+    implementation("org.postgresql:postgresql:9.4.1208")
+
+}
+
+jar {
+    manifest { attributes 'Implementation-Title': 'com.newrelic.instrumentation.security.jdbc-postgresql-9.4.1208' }
+}
+
+verifyInstrumentation {
+    passesOnly 'org.postgresql:postgresql:[9.4.1208,)'
+    excludeRegex 'org.postgresql:postgresql:.*.jre6'
+}
+
+site {
+    title 'PostgreSQL'
+    type 'Datastore'
+}
