@@ -1,0 +1,19 @@
+dependencies {
+    implementation(project(":newrelic-security-api"))
+    implementation("com.newrelic.agent.java:newrelic-api:7.11.0-SNAPSHOT")
+    implementation("com.newrelic.agent.java:newrelic-weaver-api:7.11.0-SNAPSHOT")
+    implementation("mysql:mysql-connector-java:8.0.11")
+}
+
+jar {
+    manifest { attributes 'Implementation-Title': 'com.newrelic.instrumentation.security.jdbc-mysql-8.0.11' }
+}
+
+verifyInstrumentation {
+    passesOnly 'mysql:mysql-connector-java:[8.0.11,)'
+}
+
+site {
+    title 'MySQL'
+    type 'Datastore'
+}
