@@ -1,0 +1,22 @@
+dependencies {
+    implementation(project(":newrelic-security-api"))
+    implementation("com.newrelic.agent.java:newrelic-api:7.11.0-SNAPSHOT")
+    implementation("com.newrelic.agent.java:newrelic-weaver-api:7.11.0-SNAPSHOT")
+    implementation("net.sourceforge.jtds:jtds:1.2.4")
+}
+
+jar {
+    manifest {
+        attributes 'Implementation-Title': 'com.newrelic.instrumentation.security.jdbc-jtds-generic',
+                   'Enabled': 'false'
+    }
+}
+
+verifyInstrumentation {
+    passesOnly 'net.sourceforge.jtds:jtds:[1.2,)'
+}
+
+site {
+    title 'jTDS'
+    type 'Datastore'
+}
