@@ -19,9 +19,6 @@ public class TestSetupBringUp {
             Class<?> fileSystemClass = Class.forName("java.io.FileSystem");
             toReTransform.add(fileSystemClass);
 
-            Class<?> defaultFileSystemClass = Class.forName("java.io.DefaultFileSystem");
-            toReTransform.add(defaultFileSystemClass);
-
             Class<?> unixFileSystemClass = Class.forName("java.io.UnixFileSystem");
             toReTransform.add(unixFileSystemClass);
 

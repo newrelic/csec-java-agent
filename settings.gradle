@@ -59,6 +59,7 @@ include 'instrumentation-security:jdbc-hsqldb-2.2.9'
 include 'instrumentation-security:jdbc-mariadb-1.1.7'
 include 'instrumentation-security:jdbc-mariadb-1.3.0'
 include 'instrumentation-security:jdbc-jtds-generic'
+include 'instrumentation-security:jdbc-ojdbc7-12.1.0.2'
 
 
 
