@@ -4,10 +4,6 @@ import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.schema.JDBCVendor;
 
 import java.sql.Statement;
-import java.util.Collections;
-import java.util.Map;
-import java.util.WeakHashMap;
-import java.util.logging.Level;
 
 public class JdbcHelper {
 
@@ -35,14 +31,25 @@ public class JdbcHelper {
     public static final String METHOD_EXECUTE_UPDATE = "executeUpdate";
     public static final String METHOD_EXECUTE_QUERY = "executeQuery";
 
-    private static final Map<Statement, String> sqlQuery = Collections.synchronizedMap(new WeakHashMap<>());
+    public static final String NR_SEC_CUSTOM_ATTRIB_SQL_NAME = "SQL-QUERY-";
 
     public static void putSql(Statement statement, String sql) {
-        sqlQuery.put(statement, sql);
+        try {
+            if (NewRelicSecurity.isHookProcessingActive()) {
+                NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(NR_SEC_CUSTOM_ATTRIB_SQL_NAME + statement.hashCode(), sql);
+            }
+        } catch (Throwable ignored) {
+        }
     }
 
     public static String getSql(Statement statement) {
-        return sqlQuery.get(statement);
+        try {
+            if (NewRelicSecurity.isHookProcessingActive()) {
+                return NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(NR_SEC_CUSTOM_ATTRIB_SQL_NAME + statement.hashCode(), String.class);
+            }
+        } catch (Throwable ignored) {
+        }
+        return null;
     }
 
     public static boolean skipExistsEvent() {
