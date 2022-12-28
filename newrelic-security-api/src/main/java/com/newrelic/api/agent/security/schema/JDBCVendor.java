@@ -30,4 +30,6 @@ public interface JDBCVendor {
     String SAPANA = "SAPANA";
     String GREENPLUM = "Greenplum";
     String SOLID_DB = "solidDB";
+
+    String MARIA_DB = "mariaDB";
 }

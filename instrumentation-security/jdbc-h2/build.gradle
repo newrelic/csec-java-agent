@@ -9,6 +9,10 @@ jar {
     manifest { attributes 'Implementation-Title': 'com.newrelic.instrumentation.security.jdbc-h2' }
 }
 
+verifyInstrumentation {
+    passesOnly 'com.h2database:h2:[1.0.57,)'
+}
+
 site {
     title 'H2'
     type 'Datastore'
