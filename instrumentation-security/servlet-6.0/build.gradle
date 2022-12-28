@@ -16,6 +16,8 @@ verifyInstrumentation {
 java {
     toolchain {
         languageVersion.set(JavaLanguageVersion.of(11))
+        vendor = JvmVendorSpec.ADOPTOPENJDK
+        implementation = JvmImplementation.VENDOR_SPECIFIC
     }
 }
 
