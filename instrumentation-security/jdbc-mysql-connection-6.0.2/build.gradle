@@ -1,0 +1,23 @@
+dependencies {
+    implementation(project(":newrelic-security-api"))
+    implementation("com.newrelic.agent.java:newrelic-api:7.11.0-SNAPSHOT")
+    implementation("com.newrelic.agent.java:newrelic-weaver-api:7.11.0-SNAPSHOT")
+    implementation("mysql:mysql-connector-java:6.0.2")
+}
+
+jar {
+    manifest { attributes 'Implementation-Title': 'com.newrelic.instrumentation.security.jdbc-mysql-connection-6.0.2' }
+}
+
+verifyInstrumentation {
+    passesOnly 'mysql:mysql-connector-java:[6.0.2,8.0.9]'
+    // these versions are bad and they should feel bad
+    exclude 'mysql:mysql-connector-java:8.0.7'
+    exclude 'mysql:mysql-connector-java:8.0.8'
+    exclude 'mysql:mysql-connector-java:8.0.9'
+}
+
+site {
+    title 'MySQL'
+    type 'Datastore'
+}
