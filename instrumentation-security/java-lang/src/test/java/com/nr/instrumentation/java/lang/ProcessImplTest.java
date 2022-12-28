@@ -1,12 +1,12 @@
 package com.nr.instrumentation.java.lang;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.newrelic.agent.security.introspec.InstrumentationTestConfig;
 import com.newrelic.agent.security.introspec.SecurityInstrumentationTestRunner;
+import com.newrelic.agent.security.introspec.SecurityIntrospector;
 import com.newrelic.api.agent.Trace;
-import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
+import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
+import com.newrelic.api.agent.security.schema.operation.ForkExecOperation;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -19,35 +19,28 @@ import java.util.List;
 @RunWith(SecurityInstrumentationTestRunner.class)
 @InstrumentationTestConfig(includePrefixes = "java.lang.ProcessImpl_Instrumentation")
 public class ProcessImplTest {
+    private String cmd = "/bin/sh -c ls";
+
     @Test
-    public void testProcess() throws ClassNotFoundException, JsonProcessingException {
+    public void testStart() {
         callExecute();
-        // Assert the event category and executed parameter
-        List<AbstractOperation> operations = NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute("operations", List.class);
-        Assert.assertTrue("No operations detected", operations.size() > 0);
-        for (AbstractOperation operation : operations) {
-            System.out.println("Operation : " + new ObjectMapper().writeValueAsString(operation));
-        }
+        SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
+        List<AbstractOperation> operations = introspector.getOperations();
+        Assert.assertTrue("No operations detected.", operations.size() > 0);
+        ForkExecOperation operation = (ForkExecOperation) operations.get(0);
+        Assert.assertEquals("Invalid executed parameters.", cmd, operation.getCommand());
+        Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.SYSTEM_COMMAND, operation.getCaseType());
+        Assert.assertEquals("Invalid executed class name.", operation.getClassName(), "java.lang.ProcessImpl");
+        Assert.assertEquals("Invalid executed method name.", operation.getMethodName(), "start");
     }
 
     @Trace(dispatcher = true)
     public void callExecute() {
-        String[] cmd = {
-                "/bin/sh",
-                "-c",
-                "ls"
-        };
-
         StringBuffer output = new StringBuffer();
         try {
             Process pr = Runtime.getRuntime().exec(cmd);
             pr.waitFor();
             BufferedReader reader = new BufferedReader(new InputStreamReader(pr.getInputStream()));
-
-            String line = "";
-            while ((line = reader.readLine()) != null) {
-                output.append(line + "<br/>");
-            }
         } catch (IOException | InterruptedException e) {
             throw new RuntimeException(e);
         }
