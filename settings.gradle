@@ -25,7 +25,7 @@ include 'newrelic-security-agent'
 
 // Unit Testing related modules
 include 'instrumentation-security-test'
-include 'unittest-support-agent'
+include 'unittest-helper-agent'
 include 'newrelic-security-api-test-impl'
 
 
