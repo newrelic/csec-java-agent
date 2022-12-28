@@ -1,8 +1,7 @@
-package com.nr.instrumentation.security.java.jdbc;
+package com.newrelic.api.agent.security.jdbc;
 
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.schema.JDBCVendor;
-import com.newrelic.api.agent.security.schema.StringUtils;
 
 public class JdbcHelper {
 
