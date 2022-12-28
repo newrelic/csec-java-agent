@@ -9,6 +9,7 @@ package net.sourceforge.jtds.jdbc;
 
 import com.newrelic.api.agent.Trace;
 import com.newrelic.api.agent.security.NewRelicSecurity;
+import com.newrelic.api.agent.security.instrumentation.helpers.JdbcHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.JDBCVendor;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
@@ -16,7 +17,6 @@ import com.newrelic.api.agent.security.schema.operation.SQLOperation;
 import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
-import com.nr.instrumentation.security.java.jdbc.jtds.JdbcHelper;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
