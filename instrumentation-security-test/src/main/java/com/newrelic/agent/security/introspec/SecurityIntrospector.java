@@ -11,5 +11,7 @@ public interface SecurityIntrospector {
 
     List<ExitEventBean> getExitEvents();
 
+    String getJDBCVendor();
+
     void clear();
 }

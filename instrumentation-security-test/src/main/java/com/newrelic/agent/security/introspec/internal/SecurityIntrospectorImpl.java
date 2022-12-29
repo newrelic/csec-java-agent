@@ -5,6 +5,7 @@ import com.newrelic.agent.security.introspec.SecurityIntrospector;
 import com.newrelic.api.agent.security.Agent;
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
+import com.newrelic.api.agent.security.schema.JDBCVendor;
 
 import java.util.List;
 
@@ -19,6 +20,10 @@ public class SecurityIntrospectorImpl implements SecurityIntrospector {
         return (List<ExitEventBean>) NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(Agent.EXIT_OPERATIONS, List.class);
     }
 
+    @Override
+    public String getJDBCVendor() {
+        return NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(JDBCVendor.META_CONST_JDBC_VENDOR, String.class);
+    }
 
     @Override
     public void clear() {
