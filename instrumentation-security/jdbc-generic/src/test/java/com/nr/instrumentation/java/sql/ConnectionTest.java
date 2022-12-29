@@ -68,9 +68,8 @@ public class ConnectionTest {
     }
 
     @Test
-
-    public void testPrepareStatement3() throws SQLException, IOException, InterruptedException {
-        prepareStatement3();
+    public void testPrepareStatement() throws SQLException, IOException, InterruptedException {
+        prepareStatement();
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
         List<AbstractOperation> operations = introspector.getOperations();
         Assert.assertTrue("No operations detected", operations.size() > 0);
@@ -84,8 +83,8 @@ public class ConnectionTest {
     }
 
     @Test
-    public void testPrepareCall3() throws SQLException, IOException, InterruptedException {
-        prepareCall3();
+    public void testPrepareCall() throws SQLException, IOException, InterruptedException {
+        prepareCall();
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
 
         List<AbstractOperation> operations = introspector.getOperations();
@@ -99,9 +98,8 @@ public class ConnectionTest {
     }
 
     @Test
-
-    public void testPrepareStatement4() throws SQLException, IOException, InterruptedException {
-        prepareStatement4();
+    public void testPrepareStatement2() throws SQLException, IOException, InterruptedException {
+        prepareStatement2();
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
 
         List<AbstractOperation> operations = introspector.getOperations();
@@ -116,8 +114,8 @@ public class ConnectionTest {
 
     @Test
 
-    public void testPrepareCall4() throws SQLException, IOException, InterruptedException {
-        prepareCall4();
+    public void testPrepareCall2() throws SQLException, IOException, InterruptedException {
+        prepareCall2();
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
 
         List<AbstractOperation> operations = introspector.getOperations();
@@ -163,28 +161,28 @@ public class ConnectionTest {
     }
 
     @Trace(dispatcher = true)
-    private void prepareStatement3() throws SQLException {
+    private void prepareStatement() throws SQLException {
         PreparedStatement stmt = CONNECTION.prepareStatement(QUERIES.get(3), 1, 1);
         stmt.execute();
         stmt.close();
     }
 
     @Trace(dispatcher = true)
-    private void prepareCall3() throws SQLException {
+    private void prepareCall() throws SQLException {
         PreparedStatement stmt = CONNECTION.prepareCall(QUERIES.get(3), 1, 1);
         stmt.execute();
         stmt.close();
     }
 
     @Trace(dispatcher = true)
-    private void prepareStatement4() throws SQLException {
+    private void prepareStatement2() throws SQLException {
         PreparedStatement stmt = CONNECTION.prepareStatement(QUERIES.get(3), 1, 1, 1);
         stmt.execute();
         stmt.close();
     }
 
     @Trace(dispatcher = true)
-    private void prepareCall4() throws SQLException {
+    private void prepareCall2() throws SQLException {
         PreparedStatement stmt = CONNECTION.prepareCall(QUERIES.get(3), 1, 1, 1);
         stmt.execute();
         stmt.close();
