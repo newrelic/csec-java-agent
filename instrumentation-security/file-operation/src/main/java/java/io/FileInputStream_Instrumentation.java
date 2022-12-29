@@ -22,7 +22,7 @@ public abstract class FileInputStream_Instrumentation {
     private void open(String name) throws FileNotFoundException {
         boolean isFileLockAcquired = acquireFileLockIfPossible();
         AbstractOperation operation = null;
-        if(isFileLockAcquired && !FileHelper.skipExistsEvent(name)) {
+        if (isFileLockAcquired) {
             operation = preprocessSecurityHook(name);
         }
         try {

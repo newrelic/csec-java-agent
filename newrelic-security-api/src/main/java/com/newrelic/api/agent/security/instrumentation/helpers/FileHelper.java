@@ -24,6 +24,7 @@ public class FileHelper {
 
     public static final List<String> SOURCE_EXENSIONS = Arrays.asList(new String[]{"class", "jsp", "jar", "java"});
     public static final String METHOD_NAME_GET_BOOLEAN_ATTRIBUTES = "getBooleanAttributes";
+    public static final String METHOD_NAME_CREATE_NEW_FILE = "createNewFile";
     public static final String NEW_FILE_CHANNEL = "newFileChannel";
     public static final String NEW_ASYNCHRONOUS_FILE_CHANNEL = "newAsynchronousFileChannel";
     public static final String NEW_BYTE_CHANNEL = "newByteChannel";
@@ -43,6 +44,16 @@ public class FileHelper {
     public static final String METHOD_NAME_CREATE_DIRECTORY = "createDirectory";
     public static final String METHOD_NAME_RENAME = "rename";
     public static final String METHOD_NAME_SETREADONLY = "setReadOnly";
+    public static final String METHOD_NAME_DELETE_ON_EXIT = "deleteOnExit";
+    public static final String METHOD_NAME_LISTFILES = "listFiles";
+    public static final String METHOD_NAME_MKDIR = "mkdir";
+    public static final String METHOD_NAME_MKDIRS = "mkdirs";
+    public static final String METHOD_NAME_RENAME_TO = "renameTo";
+    public static final String METHOD_NAME_SET_READ_ONLY = "setReadOnly";
+    public static final String METHOD_NAME_SET_WRITABLE = "setWritable";
+    public static final String METHOD_NAME_SET_READABLE = "setReadable";
+    public static final String METHOD_NAME_SET_EXECUTABLE = "setExecutable";
+    public static final String METHOD_NAME_EXISTS = "exists";
 
 
     public static boolean skipExistsEvent(String filename) {

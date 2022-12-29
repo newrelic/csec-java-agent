@@ -43,7 +43,7 @@ abstract class FileSystem_Instrumentation {
     public boolean setPermission(File f, int access, boolean enable, boolean owneronly){
         boolean isFileLockAcquired = acquireFileLockIfPossible();
         AbstractOperation operation = null;
-        if(isFileLockAcquired && !FileHelper.skipExistsEvent(f.getName())) {
+        if (isFileLockAcquired) {
             operation = preprocessSecurityHook(false, FileHelper.METHOD_NAME_SET_PERMISSION, f);
         }
         boolean returnVal = false;
@@ -62,7 +62,7 @@ abstract class FileSystem_Instrumentation {
             throws IOException {
         boolean isFileLockAcquired = acquireFileLockIfPossible();
         AbstractOperation operation = null;
-        if(isFileLockAcquired && !FileHelper.skipExistsEvent(pathname)) {
+        if (isFileLockAcquired) {
             operation = preprocessSecurityHook(false, FileHelper.METHOD_NAME_CREATE_FILE_EXCLUSIVELY, new File(pathname));
         }
         boolean returnVal = false;
@@ -80,7 +80,7 @@ abstract class FileSystem_Instrumentation {
     public boolean delete(File f){
         boolean isFileLockAcquired = acquireFileLockIfPossible();
         AbstractOperation operation = null;
-        if(isFileLockAcquired && !FileHelper.skipExistsEvent(f.getName())) {
+        if (isFileLockAcquired) {
             operation = preprocessSecurityHook(false, FileHelper.METHOD_NAME_DELETE, f);
         }
         boolean returnVal = false;
@@ -98,7 +98,7 @@ abstract class FileSystem_Instrumentation {
     public String[] list(File f){
         boolean isFileLockAcquired = acquireFileLockIfPossible();
         AbstractOperation operation = null;
-        if(isFileLockAcquired && !FileHelper.skipExistsEvent(f.getName())) {
+        if (isFileLockAcquired) {
             operation = preprocessSecurityHook(false, FileHelper.METHOD_NAME_LIST, f);
         }
         String[] returnVal = null;
@@ -117,7 +117,7 @@ abstract class FileSystem_Instrumentation {
     public boolean createDirectory(File f){
         boolean isFileLockAcquired = acquireFileLockIfPossible();
         AbstractOperation operation = null;
-        if(isFileLockAcquired && !FileHelper.skipExistsEvent(f.getName())) {
+        if (isFileLockAcquired) {
             operation = preprocessSecurityHook(false, FileHelper.METHOD_NAME_CREATE_DIRECTORY, f);
         }
         boolean returnVal = false;
@@ -135,7 +135,7 @@ abstract class FileSystem_Instrumentation {
     public boolean rename(File f1, File f2){
         boolean isFileLockAcquired = acquireFileLockIfPossible();
         AbstractOperation operation = null;
-        if(isFileLockAcquired && !FileHelper.skipExistsEvent(f1.getName())) {
+        if (isFileLockAcquired) {
             operation = preprocessSecurityHook(false, FileHelper.METHOD_NAME_RENAME, f1, f2);
         }
         boolean returnVal = false;
@@ -153,7 +153,7 @@ abstract class FileSystem_Instrumentation {
     public boolean setReadOnly(File f){
         boolean isFileLockAcquired = acquireFileLockIfPossible();
         AbstractOperation operation = null;
-        if(isFileLockAcquired && !FileHelper.skipExistsEvent(f.getName())) {
+        if (isFileLockAcquired) {
             operation = preprocessSecurityHook(false, FileHelper.METHOD_NAME_SETREADONLY, f);
         }
         boolean returnVal = false;

@@ -23,7 +23,7 @@ public abstract class FileOutputStream_Instrumentation {
             throws FileNotFoundException {
         boolean isFileLockAcquired = acquireFileLockIfPossible();
         AbstractOperation operation = null;
-        if(isFileLockAcquired && !FileHelper.skipExistsEvent(name)) {
+        if (isFileLockAcquired) {
             operation = preprocessSecurityHook(name);
         }
         try {
