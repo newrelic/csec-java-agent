@@ -4,6 +4,7 @@
  *  * SPDX-License-Identifier: Apache-2.0
  *
  */
+package com.nr.instrumentation.security.mysqlconnection602;
 
 import ch.vorburger.mariadb4j.DB;
 import ch.vorburger.mariadb4j.DBConfigurationBuilder;
@@ -27,16 +28,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 @RunWith(SecurityInstrumentationTestRunner.class)
-@InstrumentationTestConfig(includePrefixes = {"com.mysql.cj.jdbc"})
+@InstrumentationTestConfig(includePrefixes = {"com.mysql.cj.api.jdbc"})
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class MySqlConnection8011Test {
+public class MySqlConnection602Test {
 
     private static DB mariaDb;
 
     private static String connectionString;
     private static String dbName;
 
-    private static com.mysql.cj.jdbc.JdbcConnection connection;
+    private static com.mysql.cj.api.jdbc.JdbcConnection connection;
 
     private static List<String> QUERIES = new ArrayList<>();
 
@@ -55,7 +56,7 @@ public class MySqlConnection8011Test {
         mariaDb.source("maria-db-test.sql", null, null, dbName);
 
         Class.forName("com.mysql.cj.jdbc.Driver");
-        connection = (com.mysql.cj.jdbc.JdbcConnection) DriverManager.getConnection(connectionString, "root", "");
+        connection = (com.mysql.cj.api.jdbc.JdbcConnection) DriverManager.getConnection(connectionString, "root", "");
     }
 
     @AfterClass

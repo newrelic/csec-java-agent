@@ -5,6 +5,8 @@
  *
  */
 
+package com.nr.instrumentation.security.mysqlconnection514;
+
 import ch.vorburger.mariadb4j.DB;
 import ch.vorburger.mariadb4j.DBConfigurationBuilder;
 import com.newrelic.agent.security.introspec.InstrumentationTestConfig;
