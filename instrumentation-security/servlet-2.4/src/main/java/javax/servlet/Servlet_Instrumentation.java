@@ -15,7 +15,6 @@ import com.newrelic.api.agent.security.schema.SecurityMetaData;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
 import com.newrelic.api.agent.security.schema.operation.RXSSOperation;
 import com.newrelic.api.agent.weaver.MatchType;
-import com.newrelic.api.agent.weaver.NewField;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
 import com.nr.instrumentation.security.servlet24.HttpServletHelper;
@@ -84,6 +83,7 @@ public abstract class Servlet_Instrumentation {
             }
             securityRequest.setContentType(httpServletRequest.getContentType());
 
+            securityAgentMetaData.setServiceTrace(Thread.currentThread().getStackTrace());
             securityRequest.setRequestParsed(true);
         } catch (Throwable ignored){}
     }

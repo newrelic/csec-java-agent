@@ -82,7 +82,7 @@ public abstract class Servlet_Instrumentation {
                 securityRequest.setUrl(securityRequest.getUrl() + HttpServletHelper.QUESTION_MARK + queryString);
             }
             securityRequest.setContentType(httpServletRequest.getContentType());
-
+            securityAgentMetaData.setServiceTrace(Thread.currentThread().getStackTrace());
             securityRequest.setRequestParsed(true);
         } catch (Throwable ignored){}
     }
