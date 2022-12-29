@@ -1,4 +1,4 @@
-package com.nr.agent.instrumentation.security.httpclient31;
+package com.nr.agent.instrumentation.security.httpclient3;
 
 public class SecurityHelper {
 
