@@ -8,6 +8,7 @@
 package org.mariadb.jdbc;
 
 import ch.vorburger.mariadb4j.DB;
+import ch.vorburger.mariadb4j.DBConfigurationBuilder;
 import com.newrelic.agent.security.introspec.InstrumentationTestConfig;
 import com.newrelic.agent.security.introspec.SecurityInstrumentationTestRunner;
 import com.newrelic.agent.security.introspec.SecurityIntrospector;
@@ -21,27 +22,45 @@ import org.junit.runner.RunWith;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 @RunWith(SecurityInstrumentationTestRunner.class)
 @InstrumentationTestConfig(includePrefixes = {"org.mariadb.jdbc"})
 public class MariaDb117Test {
 
-    public static DB database;
+    private static DB mariaDb;
+
+    private static String connectionString;
+    private static String dbName;
+
+    private static Connection connection;
+
+    private static List<String> QUERIES = new ArrayList<>();
 
     @BeforeClass
     public static void setUpDb() throws Exception {
-        database = DB.newEmbeddedDB(3306);
-        database.start();
-    }
+        QUERIES.add("select * from testQuery");
+        DBConfigurationBuilder builder = DBConfigurationBuilder.newBuilder()
+                .setPort(0); // This will automatically find a free port
 
+        dbName = "MariaDB" + System.currentTimeMillis();
+        mariaDb = DB.newEmbeddedDB(builder.build());
+        connectionString = builder.getURL(dbName);
+        mariaDb.start();
+
+        mariaDb.createDB(dbName);
+        mariaDb.source("maria-db-test.sql", null, null, dbName);
+    }
     @AfterClass
     public static void tearDownDb() throws Exception {
-        database.stop();
+        mariaDb.stop();
     }
 
     @Test
-    public void testConnect() throws SQLException {
-        Connection connection = DriverManager.getConnection("jdbc:mysql://localhost/test", "root", "");
+    public void testConnect() throws SQLException, ClassNotFoundException {
+        Class.forName("org.mariadb.jdbc.Driver");
+        connection = DriverManager.getConnection(connectionString, "root", "");
 
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
         String vendor = introspector.getJDBCVendor();
