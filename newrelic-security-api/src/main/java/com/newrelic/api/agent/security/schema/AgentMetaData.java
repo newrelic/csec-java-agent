@@ -25,6 +25,8 @@ public class AgentMetaData {
     private StackTraceElement[] serviceTrace;
 
     @JsonIgnore
+    private boolean userLevelServiceMethodEncountered = false;
+    @JsonIgnore
     private Set<String> ips;
 
     @JsonIgnore
@@ -129,5 +131,13 @@ public class AgentMetaData {
 
     public void setUserDataTranslationMap(Map<String, String> userDataTranslationMap) {
         this.userDataTranslationMap = userDataTranslationMap;
+    }
+
+    public boolean isUserLevelServiceMethodEncountered() {
+        return userLevelServiceMethodEncountered;
+    }
+
+    public void setUserLevelServiceMethodEncountered(boolean userLevelServiceMethodEncountered) {
+        this.userLevelServiceMethodEncountered = userLevelServiceMethodEncountered;
     }
 }

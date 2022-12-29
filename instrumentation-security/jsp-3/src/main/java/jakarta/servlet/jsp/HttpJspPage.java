@@ -30,7 +30,8 @@ public class HttpJspPage {
                 return;
             }
             SecurityMetaData securityMetaData = NewRelicSecurity.getAgent().getSecurityMetaData();
-            if(securityMetaData.getMetaData().getServiceTrace() == null) {
+            if (!securityMetaData.getMetaData().isUserLevelServiceMethodEncountered()) {
+                securityMetaData.getMetaData().setUserLevelServiceMethodEncountered(true);
                 securityMetaData.getMetaData().setServiceTrace(Thread.currentThread().getStackTrace());
             }
         } catch (Throwable ignored) {}
