@@ -1,6 +1,7 @@
 package com.nr.instrumentation.security.servlet5;
 
 import com.newrelic.api.agent.security.NewRelicSecurity;
+import com.newrelic.api.agent.security.instrumentation.helpers.ServletHelper;
 import com.newrelic.api.agent.security.schema.AgentMetaData;
 import com.newrelic.api.agent.security.schema.HttpRequest;
 import com.newrelic.api.agent.security.schema.policy.AgentPolicy;
@@ -38,7 +39,7 @@ public class HttpServletHelper {
                 takeNextValue = true;
             } else if (K2_FUZZ_REQUEST_ID.equals(headerKey)) {
                 // TODO: May think of removing this intermediate obj and directly create K2 Identifier.
-                agentMetaData.setK2FuzzRequest(true);
+                NewRelicSecurity.getAgent().getSecurityMetaData().setFuzzRequestIdentifier(ServletHelper.parseK2IdentifierHeader(request.getHeader(headerKey)));
             }
             String headerFullValue = EMPTY;
             Enumeration<String> headerElements = request.getHeaders(headerKey);

@@ -43,7 +43,7 @@ public abstract class ServletRequest_Instrumentation {
 
     public String getParameter(String name){
         String returnData = Weaver.callOriginal();
-        if(NewRelicSecurity.isHookProcessingActive()){
+        if (NewRelicSecurity.isHookProcessingActive() && returnData != null) {
             HttpRequest securityRequest = NewRelicSecurity.getAgent().getSecurityMetaData().getRequest();
             securityRequest.getParameterMap().putIfAbsent(name, new String[]{returnData});
         }
@@ -52,7 +52,7 @@ public abstract class ServletRequest_Instrumentation {
 
     public String[] getParameterValues(String name){
         String[] returnData = Weaver.callOriginal();
-        if(NewRelicSecurity.isHookProcessingActive()){
+        if (NewRelicSecurity.isHookProcessingActive() && returnData != null) {
             HttpRequest securityRequest = NewRelicSecurity.getAgent().getSecurityMetaData().getRequest();
             securityRequest.getParameterMap().putIfAbsent(name, returnData);
         }
@@ -61,7 +61,7 @@ public abstract class ServletRequest_Instrumentation {
 
     public Map<String, String[]> getParameterMap(){
         Map<String, String[]> returnData = Weaver.callOriginal();
-        if(NewRelicSecurity.isHookProcessingActive()){
+        if (NewRelicSecurity.isHookProcessingActive() && returnData != null) {
             HttpRequest securityRequest = NewRelicSecurity.getAgent().getSecurityMetaData().getRequest();
             securityRequest.getParameterMap().putAll(returnData);
         }

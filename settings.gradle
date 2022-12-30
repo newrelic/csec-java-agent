@@ -70,6 +70,7 @@ include 'instrumentation-security:jdbc-postgresql-8.0-312.jdbc3'
 include 'instrumentation-security:jdbc-postgresql-9.4.1207'
 include 'instrumentation-security:jdbc-postgresql-9.4.1208'
 include 'instrumentation-security:jdbc-ojdbc7-12.1.0.2'
+include 'instrumentation-security:spring-web'
 
 
 
