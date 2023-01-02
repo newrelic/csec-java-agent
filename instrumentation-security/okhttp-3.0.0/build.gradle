@@ -1,0 +1,24 @@
+apply plugin: 'java'
+
+dependencies {
+    implementation(project(":newrelic-security-api"))
+    implementation("com.newrelic.agent.java:newrelic-api:7.11.0-SNAPSHOT")
+    implementation("com.newrelic.agent.java:newrelic-weaver-api:7.11.0-SNAPSHOT")
+    implementation("com.squareup.okhttp3:okhttp:3.0.0")
+}
+
+jar {
+    manifest { attributes 'Implementation-Title': 'com.newrelic.instrumentation.security.okhttp-3.0.0' }
+}
+
+verifyInstrumentation {
+    passesOnly 'com.squareup.okhttp3:okhttp:[3.0.0,3.5.0)'
+
+    excludeRegex 'com.squareup.okhttp3:okhttp:.*(RC|rc)[0-9]*$'
+}
+
+
+site {
+    title 'OKHttp'
+    type 'Messaging'
+}
