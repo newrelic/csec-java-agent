@@ -3,7 +3,7 @@ package com.newrelic.api.agent.security;
 import com.newrelic.agent.security.AgentConfig;
 import com.newrelic.agent.security.AgentInfo;
 import com.newrelic.agent.security.instrumentator.dispatcher.DispatcherPool;
-import com.newrelic.agent.security.instrumentator.dispatcher.EventDispatcher;
+import com.newrelic.agent.security.instrumentator.os.OsVariablesInstance;
 import com.newrelic.agent.security.instrumentator.utils.*;
 import com.newrelic.agent.security.intcodeagent.constants.AgentServices;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
@@ -222,13 +222,12 @@ public class Agent implements SecurityAgent {
     }
 
     @Override
-    public String registerOperation(AbstractOperation operation) {
+    public void registerOperation(AbstractOperation operation) {
         String executionId = ExecutionIDGenerator.getExecutionId();
         operation.setExecutionId(executionId);
         operation.setStartTime(Instant.now().toEpochMilli());
         operation.setStackTrace(Thread.currentThread().getStackTrace());
         System.out.println("Operation : " + JsonConverter.toJSON(operation));
-        return executionId;
     }
 
     @Override
@@ -244,7 +243,7 @@ public class Agent implements SecurityAgent {
                     && StringUtils.equals(k2RequestIdentifier.getNextStage().getStatus(), IAgentConstants.VULNERABLE)) {
                 ExitEventBean exitEventBean = new ExitEventBean(operation.getExecutionId(), operation.getCaseType().getCaseType());
                 exitEventBean.setK2RequestIdentifier(k2RequestIdentifier.getRaw());
-                logger.log(LogLevel.DEBUG, "Exit event : " + exitEventBean, EventDispatcher.class.getName());
+                logger.log(LogLevel.DEBUG, "Exit event : " + exitEventBean, this.getClass().getName());
                 System.out.println("Exit event : " + exitEventBean);
                 DispatcherPool.getInstance().dispatchExitEvent(exitEventBean);
                 AgentInfo.getInstance().getJaHealthCheck().incrementExitEventSentCount();
@@ -286,8 +285,16 @@ public class Agent implements SecurityAgent {
 
     @Override
     public String getAgentUUID() {
-        if(isInitialised() && info != null) {
+        if (isInitialised() && info != null) {
             return this.info.getApplicationUUID();
+        }
+        return StringUtils.EMPTY;
+    }
+
+    @Override
+    public String getAgentTempDir() {
+        if (isInitialised() && info != null) {
+            return OsVariablesInstance.getInstance().getOsVariables().getTmpDirectory();
         }
         return StringUtils.EMPTY;
     }
