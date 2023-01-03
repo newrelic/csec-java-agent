@@ -12,6 +12,7 @@ import com.mysql.cj.api.jdbc.JdbcConnection;
 import com.newrelic.agent.security.introspec.InstrumentationTestConfig;
 import com.newrelic.agent.security.introspec.SecurityInstrumentationTestRunner;
 import com.newrelic.agent.security.introspec.SecurityIntrospector;
+import com.newrelic.api.agent.security.schema.JDBCVendor;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -20,6 +21,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 
+import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -62,6 +64,22 @@ public class MySql602Test {
     @AfterClass
     public static void tearDownDb() throws Exception {
         mariaDb.stop();
+    }
+
+    @Test
+    public void testConnect() throws SQLException {
+        Connection conn = null;
+        try {
+            conn = DriverManager.getConnection(connectionString, "root", "");
+        }
+        finally {
+            if (conn!=null) {
+                conn.close();
+            }
+        }
+        SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
+        String vendor = introspector.getJDBCVendor();
+        Assert.assertEquals("Incorrect DB vendor", vendor, JDBCVendor.MYSQL);
     }
 
     @Test
