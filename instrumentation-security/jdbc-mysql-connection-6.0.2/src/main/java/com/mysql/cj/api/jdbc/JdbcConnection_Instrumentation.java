@@ -14,8 +14,8 @@ import com.newrelic.api.agent.weaver.Weaver;
 
 import java.sql.SQLException;
 
-@Weave(type = MatchType.Interface)
-public abstract class JdbcConnection {
+@Weave(type = MatchType.Interface, originalName = "com.mysql.cj.api.jdbc.JdbcConnection" )
+public abstract class JdbcConnection_Instrumentation {
 
     public java.sql.PreparedStatement clientPrepareStatement(String sql) throws SQLException {
         java.sql.PreparedStatement preparedStatement = Weaver.callOriginal();
