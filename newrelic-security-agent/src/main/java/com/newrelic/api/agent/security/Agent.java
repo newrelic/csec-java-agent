@@ -16,24 +16,32 @@ import com.newrelic.agent.security.intcodeagent.schedulers.PolicyPullST;
 import com.newrelic.agent.security.intcodeagent.websocket.EventSendPool;
 import com.newrelic.agent.security.intcodeagent.websocket.JsonConverter;
 import com.newrelic.agent.security.intcodeagent.websocket.WSClient;
+import com.newrelic.api.agent.NewRelic;
+import com.newrelic.api.agent.Transaction;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.HttpRequest;
 import com.newrelic.api.agent.security.schema.K2RequestIdentifier;
 import com.newrelic.api.agent.security.schema.SecurityMetaData;
 import com.newrelic.api.agent.security.schema.policy.AgentPolicy;
-import com.newrelic.api.agent.NewRelic;
-import com.newrelic.api.agent.Transaction;
 import org.apache.commons.lang3.StringUtils;
 
 import java.time.Instant;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.newrelic.agent.security.intcodeagent.logging.IAgentConstants.*;
 
 public class Agent implements SecurityAgent {
 
     private static final String AGENT_INIT_SUCCESSFUL = "[STEP-2][PROTECTION][COMPLETE] Protecting new process with PID %s and UUID %s : %s.";
+    private static final String EVENT_ZERO_PROCESSED = "[EVENT] First event processed : %s";
+    public static final String SCHEDULING_FOR_EVENT_RESPONSE_OF = "Scheduling for event response of : ";
+    public static final String EVENT_RESPONSE_TIMEOUT_FOR = "Event response timeout for : ";
+    public static final String ERROR_WHILE_BLOCKING_FOR_RESPONSE = "Error while blocking for response: ";
+    public static final String ERROR = "Error: ";
+
+    private static AtomicBoolean firstEventProcessed = new AtomicBoolean(false);
 
     private static final Object lock = new Object();
 
