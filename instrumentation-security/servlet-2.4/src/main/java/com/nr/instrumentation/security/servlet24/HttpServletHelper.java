@@ -39,7 +39,7 @@ public class HttpServletHelper {
                 takeNextValue = true;
             } else if (K2_FUZZ_REQUEST_ID.equals(headerKey)) {
                 // TODO: May think of removing this intermediate obj and directly create K2 Identifier.
-                NewRelicSecurity.getAgent().getSecurityMetaData().setFuzzRequestIdentifier(ServletHelper.parseK2IdentifierHeader(request.getHeader(headerKey)));
+                NewRelicSecurity.getAgent().getSecurityMetaData().setFuzzRequestIdentifier(ServletHelper.parseFuzzRequestIdentifierHeader(request.getHeader(headerKey)));
             }
             String headerFullValue = EMPTY;
             Enumeration<String> headerElements = request.getHeaders(headerKey);
