@@ -54,14 +54,13 @@ public class Agent implements SecurityAgent {
     }
 
     @Override
-    public String registerOperation(AbstractOperation operation) {
+    public void registerOperation(AbstractOperation operation) {
         System.out.println("Registering operation : " + operation.hashCode() + " : " + NewRelic.getAgent().getTransaction().hashCode());
         String executionId = "dummy-exec-id";
         operation.setExecutionId(executionId);
         operation.setStartTime(Instant.now().toEpochMilli());
         operation.setStackTrace(Thread.currentThread().getStackTrace());
         this.getSecurityMetaData().getCustomAttribute(OPERATIONS, List.class).add(operation);
-        return executionId;
     }
 
     @Override
@@ -115,6 +114,11 @@ public class Agent implements SecurityAgent {
     @Override
     public String getAgentUUID() {
         return "DUMMY_UUID";
+    }
+
+    @Override
+    public String getAgentTempDir() {
+        return "";
     }
 
 }

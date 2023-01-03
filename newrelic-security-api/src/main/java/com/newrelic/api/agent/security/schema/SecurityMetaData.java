@@ -27,7 +27,7 @@ public class SecurityMetaData {
 
     private Map<String, Object> customData;
 
-    public SecurityMetaData(){
+    public SecurityMetaData() {
         request = new HttpRequest();
         response = new HttpResponse();
         metaData = new AgentMetaData();
@@ -35,6 +35,16 @@ public class SecurityMetaData {
         fileLocalMap = new HashMap<>();
         fuzzRequestIdentifier = new K2RequestIdentifier();
         customData = new ConcurrentHashMap<>();
+    }
+
+    public SecurityMetaData(SecurityMetaData securityMetaData) {
+        request = new HttpRequest(securityMetaData.getRequest());
+        response = new HttpResponse(securityMetaData.getResponse());
+        metaData = new AgentMetaData(securityMetaData.getMetaData());
+        tracingHeaderValue = EMPTY;
+        fileLocalMap = new HashMap<>(securityMetaData.getFileLocalMap());
+        fuzzRequestIdentifier = new K2RequestIdentifier(securityMetaData.getFuzzRequestIdentifier());
+        customData = new ConcurrentHashMap<>(securityMetaData.customData);
     }
 
     public HttpRequest getRequest() {

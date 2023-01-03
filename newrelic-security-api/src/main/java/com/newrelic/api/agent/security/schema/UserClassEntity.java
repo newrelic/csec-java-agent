@@ -3,8 +3,6 @@ package com.newrelic.api.agent.security.schema;
 public class UserClassEntity {
     private boolean isCalledByUserCode;
     private StackTraceElement userClassElement;
-    private int traceLocationStart = -1;
-    private int traceLocationEnd = -1;
 
     public UserClassEntity() {
     }
@@ -25,19 +23,4 @@ public class UserClassEntity {
         this.userClassElement = userClassElement;
     }
 
-    public int getTraceLocationStart() {
-        return traceLocationStart;
-    }
-
-    public void setTraceLocationStart(int traceLocationStart) {
-        this.traceLocationStart = traceLocationStart;
-    }
-
-    public int getTraceLocationEnd() {
-        return traceLocationEnd;
-    }
-
-    public void setTraceLocationEnd(int traceLocationEnd) {
-        this.traceLocationEnd = traceLocationEnd;
-    }
 }

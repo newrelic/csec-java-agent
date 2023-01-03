@@ -2,7 +2,10 @@ package com.newrelic.api.agent.security.schema;
 
 import com.newrelic.api.agent.security.schema.annotations.JsonIgnore;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 public class AgentMetaData {
 
@@ -14,7 +17,7 @@ public class AgentMetaData {
 
     private boolean isClientDetectedFromXFF;
 
-    private List<String> rciMethodsCalls;
+    private Set<String> rciMethodsCalls;
 
     @JsonIgnore
     private boolean apiBlocked = false;
@@ -29,26 +32,23 @@ public class AgentMetaData {
     @JsonIgnore
     private Set<String> ips;
 
-    @JsonIgnore
-    private boolean isK2FuzzRequest = false;
-
     public AgentMetaData() {
-        this.rciMethodsCalls = new ArrayList<>();
+        this.rciMethodsCalls = new HashSet<>();
         this.ips = new HashSet<>();
         this.userDataTranslationMap = new HashMap<>();
     }
 
     public AgentMetaData(AgentMetaData agentMetaData) {
-        this.rciMethodsCalls = new ArrayList<>();
+        this.rciMethodsCalls = new HashSet<>();
         this.rciMethodsCalls.addAll(agentMetaData.rciMethodsCalls);
         this.triggerViaDeserialisation = agentMetaData.triggerViaDeserialisation;
         this.triggerViaRCI = agentMetaData.triggerViaRCI;
         this.isClientDetectedFromXFF = agentMetaData.isClientDetectedFromXFF;
-        this.isK2FuzzRequest = agentMetaData.isK2FuzzRequest;
         this.serviceTrace = agentMetaData.serviceTrace;
         this.ips = new HashSet<>(agentMetaData.ips);
         this.apiBlocked = agentMetaData.apiBlocked;
         this.userDataTranslationMap = new HashMap<>(agentMetaData.userDataTranslationMap);
+        this.userLevelServiceMethodEncountered = agentMetaData.userLevelServiceMethodEncountered;
     }
 
     public boolean isTriggerViaRCI() {
@@ -75,11 +75,11 @@ public class AgentMetaData {
         this.triggerViaXXE = triggerViaXXE;
     }
 
-    public List<String> getRciMethodsCalls() {
+    public Set<String> getRciMethodsCalls() {
         return rciMethodsCalls;
     }
 
-    public void setRciMethodsCalls(List<String> rciMethodsCalls) {
+    public void setRciMethodsCalls(Set<String> rciMethodsCalls) {
         this.rciMethodsCalls = rciMethodsCalls;
     }
 
@@ -91,15 +91,6 @@ public class AgentMetaData {
         isClientDetectedFromXFF = clientDetectedFromXFF;
     }
 
-    @JsonIgnore
-    public boolean isK2FuzzRequest() {
-        return isK2FuzzRequest;
-    }
-
-    @JsonIgnore
-    public void setK2FuzzRequest(boolean k2FuzzRequest) {
-        isK2FuzzRequest = k2FuzzRequest;
-    }
 
     public StackTraceElement[] getServiceTrace() {
         return serviceTrace;

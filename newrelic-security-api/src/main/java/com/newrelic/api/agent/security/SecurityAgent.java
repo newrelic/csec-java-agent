@@ -22,7 +22,7 @@ public interface SecurityAgent {
 
     boolean deactivateSecurity();
 
-    String registerOperation(AbstractOperation operation);
+    void registerOperation(AbstractOperation operation);
 
     void registerExitEvent(AbstractOperation operation);
 
@@ -38,4 +38,5 @@ public interface SecurityAgent {
 
     String getAgentUUID();
 
+    String getAgentTempDir();
 }

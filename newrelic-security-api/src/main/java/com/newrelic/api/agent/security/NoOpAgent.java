@@ -35,8 +35,7 @@ class NoOpAgent implements SecurityAgent {
     }
 
     @Override
-    public String registerOperation(AbstractOperation operation) {
-        return EMPTY;
+    public void registerOperation(AbstractOperation operation) {
     }
 
     @Override
@@ -59,6 +58,11 @@ class NoOpAgent implements SecurityAgent {
 
     @Override
     public String getAgentUUID() {
+        return EMPTY;
+    }
+
+    @Override
+    public String getAgentTempDir() {
         return EMPTY;
     }
 
