@@ -15,8 +15,8 @@ import com.newrelic.api.agent.weaver.Weaver;
 
 import java.sql.Connection;
 
-@Weave(type = MatchType.BaseClass)
-public abstract class MysqlDataSource {
+@Weave(type = MatchType.BaseClass, originalName = "com.mysql.cj.jdbc.MysqlDataSource")
+public abstract class MysqlDataSource_Instrumentation {
 
     public Connection getConnection(String userID, String pass) {
         if(NewRelicSecurity.isHookProcessingActive() && !NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()) {
