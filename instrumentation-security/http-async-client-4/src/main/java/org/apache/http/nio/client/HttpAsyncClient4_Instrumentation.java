@@ -44,7 +44,7 @@ public class HttpAsyncClient4_Instrumentation {
 
         AbstractOperation operation = null;
         try {
-            final HttpRequest request = requestProducer.generateRequest();
+            HttpRequest request = requestProducer.generateRequest();
             // Preprocess Phase
             operation = preprocessSecurityHook(currentCascadedCall, request, requestProducer.getTarget().toString(), SecurityHelper.METHOD_NAME_EXECUTE);
         } catch (Throwable ignored) {
