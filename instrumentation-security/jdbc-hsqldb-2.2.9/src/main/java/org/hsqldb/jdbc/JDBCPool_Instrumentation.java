@@ -14,8 +14,8 @@ import com.newrelic.api.agent.weaver.Weaver;
 
 import java.sql.Connection;
 
-@Weave
-public abstract class JDBCDataSource {
+@Weave(originalName = "org.hsqldb.jdbc.JDBCPool")
+public abstract class JDBCPool_Instrumentation {
 
     public Connection getConnection() {
         if(NewRelicSecurity.isHookProcessingActive() && !NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()) {

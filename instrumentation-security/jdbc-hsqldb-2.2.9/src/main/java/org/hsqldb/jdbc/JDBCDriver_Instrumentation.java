@@ -16,8 +16,8 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Properties;
 
-@Weave
-public abstract class JDBCDriver {
+@Weave(originalName = "org.hsqldb.jdbc.JDBCDriver")
+public abstract class JDBCDriver_Instrumentation {
 
     public Connection connect(String url, Properties props) throws SQLException {
         if(NewRelicSecurity.isHookProcessingActive() && !NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()) {
