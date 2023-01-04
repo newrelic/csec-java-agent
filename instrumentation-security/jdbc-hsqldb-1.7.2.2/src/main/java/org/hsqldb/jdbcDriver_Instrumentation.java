@@ -17,7 +17,7 @@ import java.sql.SQLException;
 import java.util.Properties;
 
 @Weave
-public abstract class jdbcDriver {
+public abstract class jdbcDriver_Instrumentation {
 
     public Connection connect(String url, Properties props) throws SQLException {
         if(NewRelicSecurity.isHookProcessingActive() && !NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()) {
