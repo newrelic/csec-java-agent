@@ -23,8 +23,7 @@ import java.sql.SQLException;
 @InstrumentationTestConfig(includePrefixes = "org.hsqldb.jdbc")
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class HSql229DataStoreTest {
-    private static final String DB_DRIVER = "org.hsqldb.jdbc.JDBCDriver";
-    private static final String DB_CONNECTION = "jdbc:hsqldb:mem:test;DB_CLOSE_DELAY=-1";
+    private static final String DB_NAME = "test";
     private static final String DB_USER = "sa";
     private static final String DB_PASSWORD = "";
     private static Connection CONNECTION;
@@ -40,9 +39,9 @@ public class HSql229DataStoreTest {
     private static Connection getDBConnection() throws SQLException {
         Connection dbConnection = null;
         JDBCDataSource hsqlDataSource = new JDBCDataSource();
-        hsqlDataSource.setDatabase("test");
-        hsqlDataSource.setUser("sa");
-        hsqlDataSource.setPassword("");
+        hsqlDataSource.setDatabase(DB_NAME);
+        hsqlDataSource.setUser(DB_USER);
+        hsqlDataSource.setPassword(DB_PASSWORD);
         Connection conn = null;
 
         try {
@@ -61,7 +60,7 @@ public class HSql229DataStoreTest {
     private static Connection getDBConnection1() throws SQLException {
         Connection dbConnection = null;
         JDBCDataSource hsqlDataSource = new JDBCDataSource();
-        hsqlDataSource.setDatabase("test");
+        hsqlDataSource.setDatabase(DB_NAME);
         Connection conn = null;
 
         try {

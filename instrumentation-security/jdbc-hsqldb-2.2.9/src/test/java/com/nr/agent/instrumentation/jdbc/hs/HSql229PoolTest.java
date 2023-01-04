@@ -23,7 +23,6 @@ import java.sql.SQLException;
 @InstrumentationTestConfig(includePrefixes = "org.hsqldb.jdbc")
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class HSql229PoolTest {
-    private static final String DB_DRIVER = "org.hsqldb.jdbc.JDBCDriver";
     private static final String DB_CONNECTION = "jdbc:hsqldb:mem:test;DB_CLOSE_DELAY=-1";
     private static final String DB_USER = "sa";
     private static final String DB_PASSWORD = "";
@@ -41,8 +40,8 @@ public class HSql229PoolTest {
         Connection dbConnection = null;
         JDBCPool pool = new JDBCPool();
         pool.setUrl(DB_CONNECTION);
-        pool.setUser("sa");
-        pool.setPassword("");
+        pool.setUser(DB_USER);
+        pool.setPassword(DB_PASSWORD);
         Connection conn = null;
 
         try {
@@ -65,7 +64,7 @@ public class HSql229PoolTest {
         Connection conn = null;
 
         try {
-            conn = pool.getConnection("sa", "");
+            conn = pool.getConnection(DB_USER, DB_PASSWORD);
         } catch (Exception e) {
             System.out.println("Error in DB connection");
         } finally {
