@@ -28,7 +28,9 @@ public class HSql1722DriverTest {
 
     @AfterClass
     public static void teardown() throws SQLException {
-        CONNECTION.close();
+        if (CONNECTION!=null) {
+            CONNECTION.close();
+        }
     }
 
     @Trace(dispatcher = true)
