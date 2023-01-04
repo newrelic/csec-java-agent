@@ -38,7 +38,7 @@ public class HttpClientTest {
         List<AbstractOperation> operations = introspector.getOperations();
         Assert.assertTrue("No operations detected", operations.size() > 0);
         SSRFOperation operation = (SSRFOperation) operations.get(0);
-        Assert.assertEquals("Invalid executed parameters.", "http://localhost:" + server.getEndPoint().getPort(), operation.getArg());
+        Assert.assertEquals("Invalid executed parameters.", server.getEndPoint().toString(), operation.getArg());
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.HTTP_REQUEST, operation.getCaseType());
         Assert.assertEquals("Invalid executed method name.", "execute", operation.getMethodName());
 
@@ -52,7 +52,7 @@ public class HttpClientTest {
         List<AbstractOperation> operations = introspector.getOperations();
         Assert.assertTrue("No operations detected", operations.size() > 0);
         SSRFOperation operation = (SSRFOperation) operations.get(0);
-        Assert.assertEquals("Invalid executed parameters.", "http://localhost:" + server.getEndPoint().getPort(), operation.getArg());
+        Assert.assertEquals("Invalid executed parameters.", server.getEndPoint().toString(), operation.getArg());
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.HTTP_REQUEST, operation.getCaseType());
         Assert.assertEquals("Invalid executed method name.", "execute", operation.getMethodName());
     }
@@ -64,7 +64,7 @@ public class HttpClientTest {
         List<AbstractOperation> operations = introspector.getOperations();
         Assert.assertTrue("No operations detected", operations.size() > 0);
         SSRFOperation operation = (SSRFOperation) operations.get(0);
-        Assert.assertEquals("Invalid executed parameters.", "http://localhost:" + server.getEndPoint().getPort(), operation.getArg());
+        Assert.assertEquals("Invalid executed parameters.", server.getEndPoint().toString(), operation.getArg());
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.HTTP_REQUEST, operation.getCaseType());
         Assert.assertEquals("Invalid executed method name.", "execute", operation.getMethodName());
 
@@ -77,7 +77,7 @@ public class HttpClientTest {
         List<AbstractOperation> operations = introspector.getOperations();
         Assert.assertTrue("No operations detected", operations.size() > 0);
         SSRFOperation operation = (SSRFOperation) operations.get(0);
-        Assert.assertEquals("Invalid executed parameters.", "http://localhost:" + server.getEndPoint().getPort(), operation.getArg());
+        Assert.assertEquals("Invalid executed parameters.", server.getEndPoint().toString(), operation.getArg());
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.HTTP_REQUEST, operation.getCaseType());
         Assert.assertEquals("Invalid executed method name.", "execute", operation.getMethodName());
 
@@ -90,7 +90,7 @@ public class HttpClientTest {
         List<AbstractOperation> operations = introspector.getOperations();
         Assert.assertTrue("No operations detected", operations.size() > 0);
         SSRFOperation operation = (SSRFOperation) operations.get(0);
-        Assert.assertEquals("Invalid executed parameters.", "http://localhost:" + server.getEndPoint().getPort(), operation.getArg());
+        Assert.assertEquals("Invalid executed parameters.", server.getEndPoint().toString(), operation.getArg());
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.HTTP_REQUEST, operation.getCaseType());
         Assert.assertEquals("Invalid executed method name.", "execute", operation.getMethodName());
 
@@ -103,7 +103,7 @@ public class HttpClientTest {
         List<AbstractOperation> operations = introspector.getOperations();
         Assert.assertTrue("No operations detected", operations.size() > 0);
         SSRFOperation operation = (SSRFOperation) operations.get(0);
-        Assert.assertEquals("Invalid executed parameters.", "http://localhost:" + server.getEndPoint().getPort(), operation.getArg());
+        Assert.assertEquals("Invalid executed parameters.", server.getEndPoint().toString(), operation.getArg());
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.HTTP_REQUEST, operation.getCaseType());
         Assert.assertEquals("Invalid executed method name.", "execute", operation.getMethodName());
 
@@ -116,7 +116,7 @@ public class HttpClientTest {
         List<AbstractOperation> operations = introspector.getOperations();
         Assert.assertTrue("No operations detected", operations.size() > 0);
         SSRFOperation operation = (SSRFOperation) operations.get(0);
-        Assert.assertEquals("Invalid executed parameters.", "http://localhost:" + server.getEndPoint().getPort(), operation.getArg());
+        Assert.assertEquals("Invalid executed parameters.", server.getEndPoint().toString(), operation.getArg());
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.HTTP_REQUEST, operation.getCaseType());
         Assert.assertEquals("Invalid executed method name.", "execute", operation.getMethodName());
 
@@ -129,7 +129,7 @@ public class HttpClientTest {
         List<AbstractOperation> operations = introspector.getOperations();
         Assert.assertTrue("No operations detected", operations.size() > 0);
         SSRFOperation operation = (SSRFOperation) operations.get(0);
-        Assert.assertEquals("Invalid executed parameters.", "http://localhost:" + server.getEndPoint().getPort(), operation.getArg());
+        Assert.assertEquals("Invalid executed parameters.", server.getEndPoint().toString(), operation.getArg());
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.HTTP_REQUEST, operation.getCaseType());
         Assert.assertEquals("Invalid executed method name.", "execute", operation.getMethodName());
 
@@ -138,14 +138,14 @@ public class HttpClientTest {
     @Trace(dispatcher = true)
     public void callExecute() throws URISyntaxException, IOException {
         CloseableHttpClient httpclient = HttpClients.createDefault();
-        HttpGet httpGet = new HttpGet("http://localhost:" + server.getEndPoint().getPort());
+        HttpGet httpGet = new HttpGet(server.getEndPoint().toString());
         httpclient.execute(httpGet);
     }
 
     @Trace(dispatcher = true)
     public void callExecute1() throws URISyntaxException, IOException {
         CloseableHttpClient httpclient = HttpClients.createDefault();
-        HttpGet httpGet = new HttpGet("http://localhost:" + server.getEndPoint().getPort());
+        HttpGet httpGet = new HttpGet(server.getEndPoint().toString());
         HttpContext httpContext = new BasicHttpContext();
         httpclient.execute(httpGet, httpContext);
     }
@@ -154,7 +154,7 @@ public class HttpClientTest {
     public void callExecute2() throws URISyntaxException, IOException {
         CloseableHttpClient httpclient = HttpClients.createDefault();
         HttpHost httpHost = new HttpHost(server.getEndPoint().getHost(), server.getEndPoint().getPort(), server.getEndPoint().getScheme());
-        HttpGet httpGet = new HttpGet("http://localhost:" + server.getEndPoint().getPort());
+        HttpGet httpGet = new HttpGet(server.getEndPoint().toString());
         httpclient.execute(httpHost, httpGet);
     }
 
@@ -162,7 +162,7 @@ public class HttpClientTest {
     public void callExecute3() throws URISyntaxException, IOException {
         CloseableHttpClient httpclient = HttpClients.createDefault();
         HttpHost httpHost = new HttpHost(server.getEndPoint().getHost(), server.getEndPoint().getPort(), server.getEndPoint().getScheme());
-        HttpGet httpGet = new HttpGet("http://localhost:" + server.getEndPoint().getPort());
+        HttpGet httpGet = new HttpGet(server.getEndPoint().toString());
         HttpContext httpContext = new BasicHttpContext();
         httpclient.execute(httpHost, httpGet, httpContext);
     }
@@ -170,7 +170,7 @@ public class HttpClientTest {
     @Trace(dispatcher = true)
     public void callExecute4() throws Exception {
         CloseableHttpClient httpclient = HttpClients.createDefault();
-        HttpGet httpGet = new HttpGet("http://localhost:" + server.getEndPoint().getPort());
+        HttpGet httpGet = new HttpGet(server.getEndPoint().toString());
         ResponseHandler<String> responseHandler = new BasicResponseHandler();
         httpclient.execute(httpGet, responseHandler);
     }
@@ -178,7 +178,7 @@ public class HttpClientTest {
     @Trace(dispatcher = true)
     public void callExecute5() throws Exception {
         CloseableHttpClient httpclient = HttpClients.createDefault();
-        HttpGet httpGet = new HttpGet("http://localhost:" + server.getEndPoint().getPort());
+        HttpGet httpGet = new HttpGet(server.getEndPoint().toString());
         ResponseHandler<String> responseHandler = new BasicResponseHandler();
         HttpContext httpContext = new BasicHttpContext();
         httpclient.execute(httpGet, responseHandler, httpContext);
@@ -187,7 +187,7 @@ public class HttpClientTest {
     @Trace(dispatcher = true)
     public void callExecute6() throws Exception {
         CloseableHttpClient httpclient = HttpClients.createDefault();
-        HttpGet httpGet = new HttpGet("http://localhost:" + server.getEndPoint().getPort());
+        HttpGet httpGet = new HttpGet(server.getEndPoint().toString());
         ResponseHandler<String> responseHandler = new BasicResponseHandler();
         HttpHost httpHost = new HttpHost(server.getEndPoint().getHost(), server.getEndPoint().getPort(), server.getEndPoint().getScheme());
         httpclient.execute(httpHost, httpGet, responseHandler);
@@ -196,7 +196,7 @@ public class HttpClientTest {
     @Trace(dispatcher = true)
     public void callExecute7() throws Exception {
         CloseableHttpClient httpclient = HttpClients.createDefault();
-        HttpGet httpGet = new HttpGet("http://localhost:" + server.getEndPoint().getPort());
+        HttpGet httpGet = new HttpGet(server.getEndPoint().toString());
         ResponseHandler<String> responseHandler = new BasicResponseHandler();
         HttpHost httpHost = new HttpHost(server.getEndPoint().getHost(), server.getEndPoint().getPort(), server.getEndPoint().getScheme());
         HttpContext httpContext = new BasicHttpContext();
