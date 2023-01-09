@@ -13,7 +13,6 @@ import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 import org.postgresql.jdbc2.optional.ConnectionPool;
 import org.testcontainers.containers.PostgreSQLContainer;
-import ru.yandex.qatools.embed.postgresql.EmbeddedPostgres;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -24,21 +23,18 @@ import java.sql.SQLException;
 public class DataStoreTest {
     private static final String DB_USER = "postgres";
     private static final String DB_PASSWORD = "postgres";
+    private static final String DB_NAME = "test";
     @ClassRule
     public static PostgreSQLContainer postgreSQLContainer = new PostgreSQLContainer("postgres:11.1")
-            .withDatabaseName("test")
+            .withDatabaseName(DB_NAME)
             .withUsername(DB_USER)
             .withPassword(DB_PASSWORD);
     private static Connection CONNECTION;
-    private static EmbeddedPostgres postgres;
 
     @AfterClass
     public static void cleanup() throws SQLException {
         if (CONNECTION != null) {
             CONNECTION.close();
-        }
-        if (postgres != null) {
-            postgres.stop();
         }
     }
 
@@ -56,7 +52,7 @@ public class DataStoreTest {
         baseDataSource.setUser(DB_USER);
         baseDataSource.setPassword(DB_PASSWORD);
         baseDataSource.setUrl(postgreSQLContainer.getJdbcUrl());
-        baseDataSource.setDatabaseName("test");
+        baseDataSource.setDatabaseName(DB_NAME);
         Connection conn = null;
 
         try {

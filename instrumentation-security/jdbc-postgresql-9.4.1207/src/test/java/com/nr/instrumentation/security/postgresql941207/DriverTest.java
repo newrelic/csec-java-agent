@@ -11,21 +11,16 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.ClassRule;
 import org.junit.FixMethodOrder;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 import org.testcontainers.containers.PostgreSQLContainer;
-import ru.yandex.qatools.embed.postgresql.EmbeddedPostgres;
 
-import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
-
-import static ru.yandex.qatools.embed.postgresql.distribution.Version.Main.V9_6;
 
 @RunWith(SecurityInstrumentationTestRunner.class)
 @InstrumentationTestConfig(includePrefixes = "org.postgresql")
@@ -33,21 +28,18 @@ import static ru.yandex.qatools.embed.postgresql.distribution.Version.Main.V9_6;
 public class DriverTest {
     private static final String DB_USER = "postgres";
     private static final String DB_PASSWORD = "postgres";
+    private static final String DB_NAME = "test";
     @ClassRule
     public static PostgreSQLContainer postgreSQLContainer = new PostgreSQLContainer("postgres:11.1")
-            .withDatabaseName("test")
+            .withDatabaseName(DB_NAME)
             .withUsername(DB_USER)
             .withPassword(DB_PASSWORD);
     private static Connection CONNECTION;
-    private static EmbeddedPostgres postgres;
 
     @AfterClass
     public static void cleanup() throws SQLException {
         if (CONNECTION != null) {
             CONNECTION.close();
-        }
-        if (postgres != null) {
-            postgres.stop();
         }
     }
 
@@ -79,25 +71,6 @@ public class DriverTest {
         Assert.assertTrue("No operations detected", operations.size() > 0);
         SQLOperation operation = (SQLOperation) operations.get(0);
         Assert.assertEquals("Invalid executed parameters.", "select * from user", operation.getQuery());
-        Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.SQL_DB_COMMAND, operation.getCaseType());
-    }
-
-    @Test
-    @Ignore
-    public void testEmbedded() throws IOException, SQLException {
-        postgres = new EmbeddedPostgres(V9_6);
-
-        final String url = postgres.start("localhost", 5432, "dbName", "userName", "password");
-
-        final Connection conn = DriverManager.getConnection(url);
-        conn.createStatement().execute("CREATE TABLE IF NOT EXISTS films (code char(5));");
-        conn.close();
-
-        SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
-        List<AbstractOperation> operations = introspector.getOperations();
-        Assert.assertTrue("No operations detected", operations.size() > 0);
-        SQLOperation operation = (SQLOperation) operations.get(0);
-        Assert.assertEquals("Invalid executed parameters.", "CREATE TABLE IF NOT EXISTS films (code char(5));", operation.getQuery());
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.SQL_DB_COMMAND, operation.getCaseType());
     }
 

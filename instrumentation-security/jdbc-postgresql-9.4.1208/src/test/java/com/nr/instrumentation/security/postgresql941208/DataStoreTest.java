@@ -23,9 +23,10 @@ import java.sql.SQLException;
 public class DataStoreTest {
     private static final String DB_USER = "postgres";
     private static final String DB_PASSWORD = "postgres";
+    private static final String DB_NAME = "test";
     @ClassRule
     public static PostgreSQLContainer postgreSQLContainer = new PostgreSQLContainer("postgres:11.1")
-            .withDatabaseName("test")
+            .withDatabaseName(DB_NAME)
             .withUsername(DB_USER)
             .withPassword(DB_PASSWORD);
     private static Connection CONNECTION;
@@ -49,7 +50,7 @@ public class DataStoreTest {
     private void getConnection() throws SQLException {
         ConnectionPool baseDataSource = new ConnectionPool();
         baseDataSource.setUrl(postgreSQLContainer.getJdbcUrl());
-        baseDataSource.setDatabaseName("test");
+        baseDataSource.setDatabaseName(DB_NAME);
         Connection conn = null;
 
         try {
