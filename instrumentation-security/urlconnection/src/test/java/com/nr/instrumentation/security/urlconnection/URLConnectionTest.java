@@ -61,8 +61,7 @@ public class URLConnectionTest {
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
         List<AbstractOperation> operations = introspector.getOperations();
         Assert.assertTrue("No operations detected", operations.size() > 0);
-        // FIXME: after implementation of clear()
-        SSRFOperation operation = (SSRFOperation) operations.get(1);
+        SSRFOperation operation = (SSRFOperation) operations.get(0);
         Assert.assertEquals("Invalid executed parameters.", operation.getArg(), endpoint);
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.HTTP_REQUEST, operation.getCaseType());
         Assert.assertEquals("Invalid executed class name.", sun.net.www.protocol.http.HttpURLConnection.class.getName(), operation.getClassName());
@@ -76,8 +75,7 @@ public class URLConnectionTest {
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
         List<AbstractOperation> operations = introspector.getOperations();
         Assert.assertTrue("No operations detected", operations.size() > 0);
-        // FIXME: after implementation of clear()
-        SSRFOperation operation = (SSRFOperation) operations.get(2);
+        SSRFOperation operation = (SSRFOperation) operations.get(0);
         Assert.assertEquals("Invalid executed parameters.", operation.getArg(), endpoint);
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.HTTP_REQUEST, operation.getCaseType());
         Assert.assertEquals("Invalid executed class name.", sun.net.www.protocol.http.HttpURLConnection.class.getName(), operation.getClassName());
