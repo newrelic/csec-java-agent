@@ -1,8 +1,9 @@
-package com.nr.instrumentation.security.postgresql941208;
+package com.nr.instrumentation.security.postgresql941207;
 
 import com.newrelic.agent.security.introspec.InstrumentationTestConfig;
 import com.newrelic.agent.security.introspec.SecurityInstrumentationTestRunner;
 import com.newrelic.agent.security.introspec.SecurityIntrospector;
+import com.newrelic.api.agent.Trace;
 import com.newrelic.api.agent.security.schema.JDBCVendor;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -16,6 +17,7 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.Properties;
 
 @RunWith(SecurityInstrumentationTestRunner.class)
 @InstrumentationTestConfig(includePrefixes = "org.postgresql")
@@ -29,17 +31,34 @@ public class DriverTest {
             .withDatabaseName(DB_NAME)
             .withUsername(DB_USER)
             .withPassword(DB_PASSWORD);
-    private static Connection CONNECTION;
 
     @AfterClass
     public static void cleanup() throws SQLException {
-        if (CONNECTION != null) {
-            CONNECTION.close();
+        if (postgreSQLContainer != null) {
+            postgreSQLContainer.close();
         }
     }
 
     @Test
     public void testConnect() throws SQLException {
+        getConnection();
+
+        SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
+        String vendor = introspector.getJDBCVendor();
+        Assert.assertEquals("Incorrect DB vendor", vendor, JDBCVendor.POSTGRES);
+    }
+
+    @Test
+    public void testConnect1() throws SQLException {
+        getConnection1();
+
+        SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
+        String vendor = introspector.getJDBCVendor();
+        Assert.assertEquals("Incorrect DB vendor", vendor, JDBCVendor.POSTGRES);
+    }
+
+    @Trace(dispatcher = true)
+    private void getConnection() throws SQLException {
         Connection c = null;
         try {
             Class.forName("org.postgresql.Driver");
@@ -47,20 +66,27 @@ public class DriverTest {
         } catch (Exception e) {
             System.out.println("Error in DB connection: " + e);
         } finally {
-            c.close();
+            if (c != null) {
+                c.close();
+            }
         }
-
-        SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
-        String vendor = introspector.getJDBCVendor();
-        Assert.assertEquals("Incorrect DB vendor", vendor, JDBCVendor.POSTGRES);
     }
 
-    private void getConnection() {
+    @Trace(dispatcher = true)
+    private void getConnection1() throws SQLException {
+        Connection c = null;
         try {
             Class.forName("org.postgresql.Driver");
-            CONNECTION = DriverManager.getConnection(postgreSQLContainer.getJdbcUrl(), DB_USER, DB_PASSWORD);
+            Properties info = new Properties();
+            info.put("user", DB_USER);
+            info.put("password", DB_PASSWORD);
+            c = DriverManager.getConnection(postgreSQLContainer.getJdbcUrl(), info);
         } catch (Exception e) {
             System.out.println("Error in DB connection: " + e);
+        } finally {
+            if (c != null) {
+                c.close();
+            }
         }
     }
 }

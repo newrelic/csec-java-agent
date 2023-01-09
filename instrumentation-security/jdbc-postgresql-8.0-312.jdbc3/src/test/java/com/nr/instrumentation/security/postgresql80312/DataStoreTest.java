@@ -1,4 +1,4 @@
-package com.nr.instrumentation.security.postgresql941207;
+package com.nr.instrumentation.security.postgresql80312;
 
 import com.newrelic.agent.security.introspec.InstrumentationTestConfig;
 import com.newrelic.agent.security.introspec.SecurityInstrumentationTestRunner;
@@ -23,7 +23,6 @@ import org.postgresql.jdbc2.optional.SimpleDataSource;
 import org.postgresql.jdbc3.Jdbc3ConnectionPool;
 import org.postgresql.jdbc3.Jdbc3PoolingDataSource;
 import org.postgresql.jdbc3.Jdbc3SimpleDataSource;
-import org.postgresql.xa.PGXADataSource;
 import org.testcontainers.containers.PostgreSQLContainer;
 
 import java.sql.Connection;
@@ -177,24 +176,6 @@ public class DataStoreTest {
     }
 
     @Test
-    public void testGetConnectionPGXADataSource() throws SQLException {
-        callPGXADataSource();
-
-        SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
-        String vendor = introspector.getJDBCVendor();
-        Assert.assertEquals("Incorrect DB vendor", JDBCVendor.POSTGRES, vendor);
-    }
-
-    @Test
-    public void testGetConnectionPGXADataSource1() throws SQLException {
-        callPGXADataSource1();
-
-        SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
-        String vendor = introspector.getJDBCVendor();
-        Assert.assertEquals("Incorrect DB vendor", JDBCVendor.POSTGRES, vendor);
-    }
-
-    @Test
     public void testGetConnectionSimpleDataSource() throws SQLException {
         callSimpleDataSource();
 
@@ -298,16 +279,6 @@ public class DataStoreTest {
     @Trace(dispatcher = true)
     private void callPGSimpleDataSource1() throws SQLException {
         getConnection1(new PGSimpleDataSource());
-    }
-
-    @Trace(dispatcher = true)
-    private void callPGXADataSource() throws SQLException {
-        getConnection(new PGXADataSource());
-    }
-
-    @Trace(dispatcher = true)
-    private void callPGXADataSource1() throws SQLException {
-        getConnection1(new PGXADataSource());
     }
 
     @Trace(dispatcher = true)

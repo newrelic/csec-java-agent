@@ -1,4 +1,4 @@
-package com.nr.instrumentation.security.postgresql941207;
+package com.nr.instrumentation.security.postgresql80312;
 
 import com.newrelic.agent.security.introspec.InstrumentationTestConfig;
 import com.newrelic.agent.security.introspec.SecurityInstrumentationTestRunner;
@@ -24,6 +24,8 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Time;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -37,13 +39,13 @@ public class PgStatementTest {
     private static final String DB_USER = "postgres";
     private static final String DB_PASSWORD = "postgres";
     private static final String DB_NAME = "test";
+    private static final List<String> QUERIES = new ArrayList<>();
     @ClassRule
     public static PostgreSQLContainer postgreSQLContainer = new PostgreSQLContainer("postgres:11.1")
             .withDatabaseName(DB_NAME)
             .withUsername(DB_USER)
             .withPassword(DB_PASSWORD);
     private static Connection CONNECTION;
-    private static List<String> QUERIES = new ArrayList<>();
 
     @AfterClass
     public static void cleanup() throws SQLException {
@@ -55,19 +57,19 @@ public class PgStatementTest {
         }
     }
 
-    public static void getConnection(){
+    public static void getConnection() {
         try {
             Class.forName("org.postgresql.Driver");
             CONNECTION = DriverManager.getConnection(postgreSQLContainer.getJdbcUrl(), DB_USER, DB_PASSWORD);
         } catch (Exception e) {
-            System.out.println("Error in DB connection: "+e);
+            System.out.println("Error in DB connection: " + e);
         }
     }
 
     @BeforeClass
     public static void initData() throws SQLException {
         getConnection();
-        QUERIES.add("CREATE TABLE IF NOT EXISTS USERS(id int primary key, first_name varchar(255), last_name varchar(255), dob date, active boolean, arr bytea)");
+        QUERIES.add("CREATE TABLE IF NOT EXISTS USERS(id int primary key, first_name varchar(255), last_name varchar(255), dob date, dot time, dotz timestamptz, active boolean, arr bytea)");
         QUERIES.add("TRUNCATE TABLE USERS");
         QUERIES.add("INSERT INTO USERS(id, first_name, last_name) VALUES(1, 'john', 'doe')");
         QUERIES.add("SELECT * FROM USERS");
@@ -82,8 +84,7 @@ public class PgStatementTest {
 
     @Test
     public void testExecute() throws SQLException {
-        Statement stmt = CONNECTION.createStatement();
-        stmt.execute(QUERIES.get(3));
+        callExecute();
 
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
         List<AbstractOperation> operations = introspector.getOperations();
@@ -91,12 +92,17 @@ public class PgStatementTest {
         SQLOperation operation = (SQLOperation) operations.get(0);
         Assert.assertEquals("Invalid executed parameters.", QUERIES.get(3), operation.getQuery());
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.SQL_DB_COMMAND, operation.getCaseType());
+    }
+
+    @Trace(dispatcher = true)
+    private void callExecute() throws SQLException {
+        Statement stmt = CONNECTION.createStatement();
+        stmt.execute(QUERIES.get(3));
     }
 
     @Test
     public void testExecute1() throws SQLException {
-        PreparedStatement stmt = CONNECTION.prepareStatement(QUERIES.get(3));
-        stmt.execute();
+        callExecute1();
 
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
         List<AbstractOperation> operations = introspector.getOperations();
@@ -106,56 +112,82 @@ public class PgStatementTest {
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.SQL_DB_COMMAND, operation.getCaseType());
     }
 
+    @Trace(dispatcher = true)
+    private void callExecute1() throws SQLException {
+        PreparedStatement stmt = CONNECTION.prepareStatement(QUERIES.get(3));
+        stmt.execute();
+    }
+
     @Test
     public void testExecuteQuery() throws SQLException {
-        Statement stmt = CONNECTION.createStatement();
-        stmt.executeQuery(QUERIES.get(3));
+        callExecuteQuery();
 
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
         List<AbstractOperation> operations = introspector.getOperations();
         Assert.assertTrue("No operations detected", operations.size() > 0);
         SQLOperation operation = (SQLOperation) operations.get(0);
-        Assert.assertEquals("Invalid executed parameters.", QUERIES.get(3),operation.getQuery());
+        Assert.assertEquals("Invalid executed parameters.", QUERIES.get(3), operation.getQuery());
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.SQL_DB_COMMAND, operation.getCaseType());
+    }
+
+    @Trace(dispatcher = true)
+    private void callExecuteQuery() throws SQLException {
+        Statement stmt = CONNECTION.createStatement();
+        stmt.executeQuery(QUERIES.get(3));
     }
 
     @Test
     public void testExecuteQuery1() throws SQLException {
-        PreparedStatement stmt = CONNECTION.prepareStatement(QUERIES.get(3));
-        stmt.executeQuery();
+        callExecuteQuery1();
 
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
         List<AbstractOperation> operations = introspector.getOperations();
         Assert.assertTrue("No operations detected", operations.size() > 0);
         SQLOperation operation = (SQLOperation) operations.get(0);
-        Assert.assertEquals("Invalid executed parameters.", QUERIES.get(3),operation.getQuery());
+        Assert.assertEquals("Invalid executed parameters.", QUERIES.get(3), operation.getQuery());
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.SQL_DB_COMMAND, operation.getCaseType());
+    }
+
+    @Trace(dispatcher = true)
+    private void callExecuteQuery1() throws SQLException {
+        PreparedStatement stmt = CONNECTION.prepareStatement(QUERIES.get(3));
+        stmt.executeQuery();
     }
 
     @Test
     public void testExecuteUpdate() throws SQLException {
-        Statement stmt = CONNECTION.createStatement();
-        stmt.executeUpdate(QUERIES.get(4));
+        callExecuteUpdate();
 
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
         List<AbstractOperation> operations = introspector.getOperations();
         Assert.assertTrue("No operations detected", operations.size() > 0);
         SQLOperation operation = (SQLOperation) operations.get(0);
-        Assert.assertEquals("Invalid executed parameters.", QUERIES.get(4),operation.getQuery());
+        Assert.assertEquals("Invalid executed parameters.", QUERIES.get(4), operation.getQuery());
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.SQL_DB_COMMAND, operation.getCaseType());
+    }
+
+    @Trace(dispatcher = true)
+    private void callExecuteUpdate() throws SQLException {
+        Statement stmt = CONNECTION.createStatement();
+        stmt.executeUpdate(QUERIES.get(4));
     }
 
     @Test
     public void testExecuteUpdate1() throws SQLException {
-        PreparedStatement stmt = CONNECTION.prepareStatement(QUERIES.get(4));
-        stmt.executeUpdate();
+        callExecuteUpdate1();
 
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
         List<AbstractOperation> operations = introspector.getOperations();
         Assert.assertTrue("No operations detected", operations.size() > 0);
         SQLOperation operation = (SQLOperation) operations.get(0);
-        Assert.assertEquals("Invalid executed parameters.", QUERIES.get(4),operation.getQuery());
+        Assert.assertEquals("Invalid executed parameters.", QUERIES.get(4), operation.getQuery());
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.SQL_DB_COMMAND, operation.getCaseType());
+    }
+
+    @Trace(dispatcher = true)
+    private void callExecuteUpdate1() throws SQLException {
+        PreparedStatement stmt = CONNECTION.prepareStatement(QUERIES.get(4));
+        stmt.executeUpdate();
     }
 
     @Test
@@ -174,7 +206,7 @@ public class PgStatementTest {
     private Map<Integer, String> callParams() throws SQLException {
         Map<Integer, String> params = new HashMap<Integer, String>();
         PreparedStatement stmt = CONNECTION.prepareStatement(
-                "select * from users where id=? and id=? and id=? and id=? and id=? and id=? and first_name=? and first_name=? and id=? and dob=? and arr=? and active=?");
+                "select * from users where id=? and id=? and id=? and id=? and id=? and id=? and first_name=? and first_name=? and id=? and dob=? and arr=? and active=? and dot=? and dotz=?");
 
         stmt.setInt(1, 1);
         params.put(1, "1");
@@ -216,6 +248,14 @@ public class PgStatementTest {
 
         stmt.setBoolean(12, true);
         params.put(12, "true");
+
+        Time dot = new Time(System.currentTimeMillis());
+        stmt.setTime(13, dot);
+        params.put(13, dot.toString());
+
+        Timestamp dotz = new Timestamp(System.currentTimeMillis());
+        stmt.setTimestamp(14, dotz);
+        params.put(14, dotz.toString());
 
         stmt.execute();
         System.out.println(params);
