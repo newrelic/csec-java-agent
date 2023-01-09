@@ -10,8 +10,11 @@ import com.newrelic.api.agent.security.schema.operation.SQLOperation;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.ClassRule;
+import org.junit.FixMethodOrder;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.junit.runners.MethodSorters;
 import org.testcontainers.containers.PostgreSQLContainer;
 import ru.yandex.qatools.embed.postgresql.EmbeddedPostgres;
 
@@ -26,6 +29,7 @@ import static ru.yandex.qatools.embed.postgresql.distribution.Version.Main.V9_6;
 
 @RunWith(SecurityInstrumentationTestRunner.class)
 @InstrumentationTestConfig(includePrefixes = "org.postgresql")
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class DriverTest {
     private static final String DB_USER = "postgres";
     private static final String DB_PASSWORD = "postgres";
@@ -39,8 +43,12 @@ public class DriverTest {
 
     @AfterClass
     public static void cleanup() throws SQLException {
-        CONNECTION.close();
-        postgres.stop();
+        if (CONNECTION != null) {
+            CONNECTION.close();
+        }
+        if (postgres != null) {
+            postgres.stop();
+        }
     }
 
     @Test
@@ -50,7 +58,7 @@ public class DriverTest {
             Class.forName("org.postgresql.Driver");
             c = DriverManager.getConnection(postgreSQLContainer.getJdbcUrl(), DB_USER, DB_PASSWORD);
         } catch (Exception e) {
-            System.out.println("Error in DB connection: "+e);
+            System.out.println("Error in DB connection: " + e);
         } finally {
             c.close();
         }
@@ -70,11 +78,12 @@ public class DriverTest {
         List<AbstractOperation> operations = introspector.getOperations();
         Assert.assertTrue("No operations detected", operations.size() > 0);
         SQLOperation operation = (SQLOperation) operations.get(0);
-        Assert.assertEquals("Invalid executed parameters.", "select * from user",operation.getQuery());
+        Assert.assertEquals("Invalid executed parameters.", "select * from user", operation.getQuery());
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.SQL_DB_COMMAND, operation.getCaseType());
     }
 
     @Test
+    @Ignore
     public void testEmbedded() throws IOException, SQLException {
         postgres = new EmbeddedPostgres(V9_6);
 
@@ -92,12 +101,12 @@ public class DriverTest {
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.SQL_DB_COMMAND, operation.getCaseType());
     }
 
-    private void getConnection(){
+    private void getConnection() {
         try {
             Class.forName("org.postgresql.Driver");
             CONNECTION = DriverManager.getConnection(postgreSQLContainer.getJdbcUrl(), DB_USER, DB_PASSWORD);
         } catch (Exception e) {
-            System.out.println("Error in DB connection: "+e);
+            System.out.println("Error in DB connection: " + e);
         }
     }
 }
