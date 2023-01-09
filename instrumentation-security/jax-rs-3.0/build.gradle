@@ -1,0 +1,28 @@
+dependencies {
+    implementation(project(":newrelic-security-api"))
+    implementation("com.newrelic.agent.java:newrelic-api:7.11.0-SNAPSHOT")
+    implementation("com.newrelic.agent.java:newrelic-weaver-api:7.11.0-SNAPSHOT")
+    implementation("jakarta.ws.rs:jakarta.ws.rs-api:3.0.0")
+}
+
+jar {
+    manifest {
+        attributes 'Implementation-Title': 'com.newrelic.instrumentation.security.jax-rs-3.0',
+                'Implementation-Title-Alias': 'rest_annotations'
+    }
+}
+
+verifyInstrumentation {
+    passesOnly 'jakarta.ws.rs:jakarta.ws.rs-api:[3.0-M1,)'
+}
+
+compileJava {
+    options.fork = true
+    options.bootstrapClasspath = null
+}
+
+site {
+    title 'JAX-RS'
+    type 'Framework'
+    versionOverride '[3.0,)'
+}
