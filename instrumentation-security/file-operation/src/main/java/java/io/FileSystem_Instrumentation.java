@@ -22,25 +22,26 @@ import java.util.List;
 @Weave(type = MatchType.BaseClass, originalName = "java.io.FileSystem")
 abstract class FileSystem_Instrumentation {
 
-    public int getBooleanAttributes(File f){
-        boolean isFileLockAcquired = acquireFileLockIfPossible();
-        AbstractOperation operation = null;
-        if(isFileLockAcquired && !FileHelper.skipExistsEvent(f.getName())) {
-            operation = preprocessSecurityHook(true, FileHelper.METHOD_NAME_GET_BOOLEAN_ATTRIBUTES, f);
-        }
-        int returnVal = -1;
-        try {
-            returnVal = Weaver.callOriginal();
-        } finally {
-            if(isFileLockAcquired){
-                releaseFileLock();
-            }
-        }
-        registerExitOperation(isFileLockAcquired, operation);
-        return returnVal;
-    }
+    // TODO: Temporarily disabled
+//    public int getBooleanAttributes(File f){
+//        boolean isFileLockAcquired = acquireFileLockIfPossible();
+//        AbstractOperation operation = null;
+//        if(isFileLockAcquired && !FileHelper.skipExistsEvent(f.getName())) {
+//            operation = preprocessSecurityHook(true, FileHelper.METHOD_NAME_GET_BOOLEAN_ATTRIBUTES, f);
+//        }
+//        int returnVal = -1;
+//        try {
+//            returnVal = Weaver.callOriginal();
+//        } finally {
+//            if(isFileLockAcquired){
+//                releaseFileLock();
+//            }
+//        }
+//        registerExitOperation(isFileLockAcquired, operation);
+//        return returnVal;
+//    }
 
-    public boolean setPermission(File f, int access, boolean enable, boolean owneronly){
+    public boolean setPermission(File f, int access, boolean enable, boolean owneronly) {
         boolean isFileLockAcquired = acquireFileLockIfPossible();
         AbstractOperation operation = null;
         if (isFileLockAcquired) {

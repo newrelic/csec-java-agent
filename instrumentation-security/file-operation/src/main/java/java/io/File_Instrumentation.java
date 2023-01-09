@@ -15,23 +15,24 @@ import java.util.List;
 @Weave(type = MatchType.BaseClass, originalName = "java.io.File")
 public abstract class File_Instrumentation {
 
-    public boolean exists() {
-        boolean isFileLockAcquired = acquireFileLockIfPossible();
-        AbstractOperation operation = null;
-        if (isFileLockAcquired && !FileHelper.skipExistsEvent(this.getName())) {
-            operation = preprocessSecurityHook(true, FileHelper.METHOD_NAME_EXISTS, this);
-        }
-        boolean returnVal = false;
-        try {
-            returnVal = Weaver.callOriginal();
-        } finally {
-            if (isFileLockAcquired) {
-                releaseFileLock();
-            }
-        }
-        registerExitOperation(isFileLockAcquired, operation);
-        return returnVal;
-    }
+    // TODO: Temporarily disabled
+//    public boolean exists() {
+//        boolean isFileLockAcquired = acquireFileLockIfPossible();
+//        AbstractOperation operation = null;
+//        if (isFileLockAcquired && !FileHelper.skipExistsEvent(this.getName())) {
+//            operation = preprocessSecurityHook(true, FileHelper.METHOD_NAME_EXISTS, this);
+//        }
+//        boolean returnVal = false;
+//        try {
+//            returnVal = Weaver.callOriginal();
+//        } finally {
+//            if (isFileLockAcquired) {
+//                releaseFileLock();
+//            }
+//        }
+//        registerExitOperation(isFileLockAcquired, operation);
+//        return returnVal;
+//    }
 
     public boolean createNewFile() throws IOException {
         boolean isFileLockAcquired = acquireFileLockIfPossible();
