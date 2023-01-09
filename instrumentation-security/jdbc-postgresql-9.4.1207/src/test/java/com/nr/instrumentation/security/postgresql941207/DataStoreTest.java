@@ -39,7 +39,7 @@ public class DataStoreTest {
     }
 
     @Test
-    public void testConnect() throws SQLException {
+    public void testGetConnection() throws SQLException {
         getConnection();
 
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
