@@ -154,34 +154,37 @@ public abstract class OperationExecutor_Instrumentation {
     private AbstractOperation recordMongoOperation(List<BsonDocument> command, String typeOfOperation, String methodName) {
         NoSQLOperation operation = null;
         try {
-            if (!NewRelicSecurity.isHookProcessingActive() ||
-                    NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()) {
+            if (NewRelicSecurity.isHookProcessingActive() &&
+                    !NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()) {
                 List<String> operations = new ArrayList<>();
                 for (BsonDocument cmd : command) {
-                    operations.add(cmd.toJson());
+                    if(cmd != null) {
+                        operations.add(cmd.toJson());
+                    }
                 }
                 operation = new NoSQLOperation(operations, typeOfOperation, this.getClass().getName(), methodName);
                 NewRelicSecurity.getAgent().registerOperation(operation);
             }
         } catch (Throwable e) {
+            e.printStackTrace();
             if (e instanceof NewRelicSecurityException) {
                 throw e;
             }
         }
         return operation;
-//        System.out.println("Mongo operation : "+command);
     }
 
     private AbstractOperation recordMongoOperation(BsonDocument command, String typeOfOperation, String methodName) {
         NoSQLOperation operation = null;
         try {
-            if (!NewRelicSecurity.isHookProcessingActive() ||
-                    NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()) {
+            if (NewRelicSecurity.isHookProcessingActive() &&
+                    !NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty() && command != null) {
                 operation = new NoSQLOperation(command, typeOfOperation, this.getClass().getName(), methodName);
                 NewRelicSecurity.getAgent().registerOperation(operation);
             }
         } catch (Throwable e) {
             if (e instanceof NewRelicSecurityException) {
+                e.printStackTrace();
                 throw e;
             }
         }
