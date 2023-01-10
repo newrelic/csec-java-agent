@@ -59,7 +59,6 @@ public abstract class PreparedStatement_Instrumentation {
             return sqlOperation;
         } catch (Throwable e) {
             if (e instanceof NewRelicSecurityException) {
-                e.printStackTrace();
                 throw e;
             }
         }

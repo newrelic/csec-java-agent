@@ -5,7 +5,7 @@
  *
  */
 
-package com.nr.agent.instrumentation.okhttp35.internal.http;
+package com.nr.agent.instrumentation.security.okhttp35.internal.http;
 
 import com.newrelic.api.agent.weaver.SkipIfPresent;
 

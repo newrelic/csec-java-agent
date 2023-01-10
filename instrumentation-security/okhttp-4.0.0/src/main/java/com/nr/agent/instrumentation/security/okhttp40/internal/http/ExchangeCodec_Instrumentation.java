@@ -5,7 +5,7 @@
  *
  */
 
-package com.nr.agent.instrumentation.okhttp40.internal.http;
+package com.nr.agent.instrumentation.security.okhttp40.internal.http;
 
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.schema.AbstractOperation;

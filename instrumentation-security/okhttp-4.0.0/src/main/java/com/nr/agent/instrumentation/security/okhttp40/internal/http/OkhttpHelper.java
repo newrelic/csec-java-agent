@@ -1,4 +1,4 @@
-package com.nr.agent.instrumentation.okhttp35.internal;
+package com.nr.agent.instrumentation.security.okhttp40.internal.http;
 
 import com.newrelic.api.agent.security.NewRelicSecurity;
 

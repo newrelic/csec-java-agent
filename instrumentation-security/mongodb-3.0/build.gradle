@@ -1,0 +1,22 @@
+jar {
+    manifest { attributes 'Implementation-Title': 'com.newrelic.instrumentation.security.mongodb-3.0' }
+}
+
+dependencies {
+    implementation(project(":newrelic-security-api"))
+    implementation("com.newrelic.agent.java:newrelic-api:7.11.0-SNAPSHOT")
+    implementation("com.newrelic.agent.java:newrelic-weaver-api:7.11.0-SNAPSHOT")
+    implementation("org.mongodb:mongo-java-driver:3.0.0")
+
+}
+
+verifyInstrumentation {
+    passesOnly 'org.mongodb:mongo-java-driver:[3.0.0,3.7.0)'
+    exclude 'org.mongodb:mongo-java-driver:[3.0.0-rc0,3.0.0-rc1]'
+    exclude 'org.mongodb:mongo-java-driver:[3.0.0-beta1,3.0.0-beta3]'
+}
+
+site {
+    title 'MongoDB'
+    type 'Datastore'
+}

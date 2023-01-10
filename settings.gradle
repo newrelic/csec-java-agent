@@ -74,5 +74,7 @@ include 'instrumentation-security:spring-web'
 include 'instrumentation-security:http-async-client-4'
 include 'instrumentation-security:jax-rs-1.0'
 include 'instrumentation-security:jax-rs-3.0'
-
+include 'instrumentation-security:mongodb-3.0'
+//include 'instrumentation-security:mongodb-3.1'
+include 'instrumentation-security:mongodb-3.7'
 

@@ -5,7 +5,7 @@
  *
  */
 
-package com.nr.agent.instrumentation.okhttp30.internal;
+package com.nr.agent.instrumentation.security.okhttp35.internal;
 
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
@@ -20,7 +20,7 @@ import okhttp3.Response;
 @Weave(type = MatchType.ExactClass, originalName = "okhttp3.RealCall")
 abstract class RealCall_Instrumentation {
 
-    Request originalRequest = Weaver.callOriginal();
+    final Request originalRequest = Weaver.callOriginal();
 
     private void registerExitOperation(boolean isProcessingAllowed, AbstractOperation operation) {
         try {
