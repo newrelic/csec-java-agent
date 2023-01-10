@@ -69,11 +69,14 @@ public class PgStatementTest {
     @BeforeClass
     public static void initData() throws SQLException {
         getConnection();
-        QUERIES.add("CREATE TABLE IF NOT EXISTS USERS(id int primary key, first_name varchar(255), last_name varchar(255), dob date, dot time, dotz timestamptz, active boolean, arr bytea)");
+        QUERIES.add(
+                "CREATE TABLE IF NOT EXISTS USERS(id int primary key, first_name varchar(255), last_name varchar(255), dob date, dot time, dotz timestamptz, active boolean, arr bytea)");
         QUERIES.add("TRUNCATE TABLE USERS");
         QUERIES.add("INSERT INTO USERS(id, first_name, last_name) VALUES(1, 'john', 'doe')");
         QUERIES.add("SELECT * FROM USERS");
         QUERIES.add("UPDATE USERS SET \"last_name\"='Doe' WHERE id=1");
+        QUERIES.add(
+                "select * from users where id=? and id=? and id=? and id=? and id=? and id=? and first_name=? and first_name=? and id=? and dob=? and arr=? and active=? and dot=? and dotz=?");
         // set up data in h2
         Statement stmt = CONNECTION.createStatement();
         stmt.execute(QUERIES.get(0));
@@ -199,15 +202,14 @@ public class PgStatementTest {
         Assert.assertTrue("No operations detected", operations.size() > 0);
         SQLOperation operation = (SQLOperation) operations.get(0);
         Assert.assertEquals("Invalid executed parameters.", params, operation.getParams());
+        Assert.assertEquals("Invalid executed query.", QUERIES.get(5), operation.getQuery());
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.SQL_DB_COMMAND, operation.getCaseType());
     }
 
     @Trace(dispatcher = true)
     private Map<Integer, String> callParams() throws SQLException {
         Map<Integer, String> params = new HashMap<Integer, String>();
-        PreparedStatement stmt = CONNECTION.prepareStatement(
-                "select * from users where id=? and id=? and id=? and id=? and id=? and id=? and first_name=? and first_name=? and id=? and dob=? and arr=? and active=? and dot=? and dotz=?");
-
+        PreparedStatement stmt = CONNECTION.prepareStatement(QUERIES.get(5));
         stmt.setInt(1, 1);
         params.put(1, "1");
 

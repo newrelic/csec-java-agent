@@ -24,6 +24,8 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Time;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -37,13 +39,13 @@ public class PgStatementTest {
     private static final String DB_USER = "postgres";
     private static final String DB_PASSWORD = "postgres";
     private static final String DB_NAME = "test";
+    private static final List<String> QUERIES = new ArrayList<>();
     @ClassRule
     public static PostgreSQLContainer postgreSQLContainer = new PostgreSQLContainer("postgres:11.1")
             .withDatabaseName(DB_NAME)
             .withUsername(DB_USER)
             .withPassword(DB_PASSWORD);
     private static Connection CONNECTION;
-    private static List<String> QUERIES = new ArrayList<>();
 
     @AfterClass
     public static void cleanup() throws SQLException {
@@ -55,23 +57,26 @@ public class PgStatementTest {
         }
     }
 
-    public static void getConnection(){
+    public static void getConnection() {
         try {
             Class.forName("org.postgresql.Driver");
             CONNECTION = DriverManager.getConnection(postgreSQLContainer.getJdbcUrl(), DB_USER, DB_PASSWORD);
         } catch (Exception e) {
-            System.out.println("Error in DB connection: "+e);
+            System.out.println("Error in DB connection: " + e);
         }
     }
 
     @BeforeClass
     public static void initData() throws SQLException {
         getConnection();
-        QUERIES.add("CREATE TABLE IF NOT EXISTS USERS(id int primary key, first_name varchar(255), last_name varchar(255), dob date, active boolean, arr bytea)");
+        QUERIES.add(
+                "CREATE TABLE IF NOT EXISTS USERS(id int primary key, first_name varchar(255), last_name varchar(255), dob date, dot time, dotz timestamptz, active boolean, arr bytea)");
         QUERIES.add("TRUNCATE TABLE USERS");
         QUERIES.add("INSERT INTO USERS(id, first_name, last_name) VALUES(1, 'john', 'doe')");
         QUERIES.add("SELECT * FROM USERS");
         QUERIES.add("UPDATE USERS SET \"last_name\"='Doe' WHERE id=1");
+        QUERIES.add(
+                "select * from users where id=? and id=? and id=? and id=? and id=? and id=? and first_name=? and first_name=? and id=? and dob=? and arr=? and active=? and dot=? and dotz=?");
         // set up data in h2
         Statement stmt = CONNECTION.createStatement();
         stmt.execute(QUERIES.get(0));
@@ -115,7 +120,7 @@ public class PgStatementTest {
         List<AbstractOperation> operations = introspector.getOperations();
         Assert.assertTrue("No operations detected", operations.size() > 0);
         SQLOperation operation = (SQLOperation) operations.get(0);
-        Assert.assertEquals("Invalid executed parameters.", QUERIES.get(3),operation.getQuery());
+        Assert.assertEquals("Invalid executed parameters.", QUERIES.get(3), operation.getQuery());
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.SQL_DB_COMMAND, operation.getCaseType());
     }
 
@@ -128,7 +133,7 @@ public class PgStatementTest {
         List<AbstractOperation> operations = introspector.getOperations();
         Assert.assertTrue("No operations detected", operations.size() > 0);
         SQLOperation operation = (SQLOperation) operations.get(0);
-        Assert.assertEquals("Invalid executed parameters.", QUERIES.get(3),operation.getQuery());
+        Assert.assertEquals("Invalid executed parameters.", QUERIES.get(3), operation.getQuery());
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.SQL_DB_COMMAND, operation.getCaseType());
     }
 
@@ -141,7 +146,7 @@ public class PgStatementTest {
         List<AbstractOperation> operations = introspector.getOperations();
         Assert.assertTrue("No operations detected", operations.size() > 0);
         SQLOperation operation = (SQLOperation) operations.get(0);
-        Assert.assertEquals("Invalid executed parameters.", QUERIES.get(4),operation.getQuery());
+        Assert.assertEquals("Invalid executed parameters.", QUERIES.get(4), operation.getQuery());
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.SQL_DB_COMMAND, operation.getCaseType());
     }
 
@@ -154,7 +159,7 @@ public class PgStatementTest {
         List<AbstractOperation> operations = introspector.getOperations();
         Assert.assertTrue("No operations detected", operations.size() > 0);
         SQLOperation operation = (SQLOperation) operations.get(0);
-        Assert.assertEquals("Invalid executed parameters.", QUERIES.get(4),operation.getQuery());
+        Assert.assertEquals("Invalid executed parameters.", QUERIES.get(4), operation.getQuery());
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.SQL_DB_COMMAND, operation.getCaseType());
     }
 
@@ -167,14 +172,14 @@ public class PgStatementTest {
         Assert.assertTrue("No operations detected", operations.size() > 0);
         SQLOperation operation = (SQLOperation) operations.get(0);
         Assert.assertEquals("Invalid executed parameters.", params, operation.getParams());
+        Assert.assertEquals("Invalid executed query.", QUERIES.get(5), operation.getQuery());
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.SQL_DB_COMMAND, operation.getCaseType());
     }
 
     @Trace(dispatcher = true)
     private Map<Integer, String> callParams() throws SQLException {
         Map<Integer, String> params = new HashMap<Integer, String>();
-        PreparedStatement stmt = CONNECTION.prepareStatement(
-                "select * from users where id=? and id=? and id=? and id=? and id=? and id=? and first_name=? and first_name=? and id=? and dob=? and arr=? and active=?");
+        PreparedStatement stmt = CONNECTION.prepareStatement(QUERIES.get(5));
 
         stmt.setInt(1, 1);
         params.put(1, "1");
@@ -216,6 +221,14 @@ public class PgStatementTest {
 
         stmt.setBoolean(12, true);
         params.put(12, "true");
+
+        Time dot = new Time(System.currentTimeMillis());
+        stmt.setTime(13, dot);
+        params.put(13, dot.toString());
+
+        Timestamp dotz = new Timestamp(System.currentTimeMillis());
+        stmt.setTimestamp(14, dotz);
+        params.put(14, dotz.toString());
 
         stmt.execute();
         System.out.println(params);
