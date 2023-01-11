@@ -22,18 +22,18 @@ public class Hooks {
          **/
 
         // HTTP request hooks
-        TYPE_BASED_HOOKS.put("javax.servlet.Servlet", Arrays.asList("service"));
-        TYPE_BASED_HOOKS.put("javax.servlet.jsp.HttpJspPage", Arrays.asList("_jspService"));
+//        TYPE_BASED_HOOKS.put("javax.servlet.Servlet", Arrays.asList("service"));
+//        TYPE_BASED_HOOKS.put("javax.servlet.jsp.HttpJspPage", Arrays.asList("_jspService"));
 
-        TYPE_BASED_HOOKS.put("javax.servlet.ServletInputStream", Arrays.asList("read", "readLine"));
-        TYPE_BASED_HOOKS.put("javax.servlet.ServletOutputStream", Arrays.asList("print", "write", "println"));
+//        TYPE_BASED_HOOKS.put("javax.servlet.ServletInputStream", Arrays.asList("read", "readLine"));
+//        TYPE_BASED_HOOKS.put("javax.servlet.ServletOutputStream", Arrays.asList("print", "write", "println"));
 
-        TYPE_BASED_HOOKS.put("java.io.PrintWriter",
-                Arrays.asList("write", "newLine", "format", "println", "print", "printf", "append"));
-        TYPE_BASED_HOOKS.put("java.io.BufferedReader", Arrays.asList("read", "readLine"));
+//        TYPE_BASED_HOOKS.put("java.io.PrintWriter",
+//                Arrays.asList("write", "newLine", "format", "println", "print", "printf", "append"));
+//        TYPE_BASED_HOOKS.put("java.io.BufferedReader", Arrays.asList("read", "readLine"));
 
-        TYPE_BASED_HOOKS.put("javax.servlet.ServletRequest", Arrays.asList("getParameter", "getParameterValues", "getParameterMap", "getInputStream", "getReader", null));
-        TYPE_BASED_HOOKS.put("javax.servlet.ServletResponse", Arrays.asList("getOutputStream", "getWriter", null));
+//        TYPE_BASED_HOOKS.put("javax.servlet.ServletRequest", Arrays.asList("getParameter", "getParameterValues", "getParameterMap", "getInputStream", "getReader", null));
+//        TYPE_BASED_HOOKS.put("javax.servlet.ServletResponse", Arrays.asList("getOutputStream", "getWriter", null));
         TYPE_BASED_HOOKS.put("javax.servlet.Filter", Collections.singletonList("doFilter"));
         TYPE_BASED_HOOKS.put("javax.servlet.FilterChain", Collections.singletonList("doFilter"));
 
@@ -45,13 +45,13 @@ public class Hooks {
 
 
         // Spring MVC
-        ANNOTATION_BASED_HOOKS.add("org.springframework.web.bind.annotation.Mapping");
-        ANNOTATION_BASED_HOOKS.add("org.springframework.stereotype.Controller");
+//        ANNOTATION_BASED_HOOKS.add("org.springframework.web.bind.annotation.Mapping");
+//        ANNOTATION_BASED_HOOKS.add("org.springframework.stereotype.Controller");
 
 
         // Jersey
-        ANNOTATION_BASED_HOOKS.add("javax.ws.rs.Path");
-        ANNOTATION_BASED_HOOKS.add("javax.ws.rs.HttpMethod");
+//        ANNOTATION_BASED_HOOKS.add("javax.ws.rs.Path");
+//        ANNOTATION_BASED_HOOKS.add("javax.ws.rs.HttpMethod");
 
         // Servlet
         ANNOTATION_BASED_HOOKS.add("javax.servlet.annotation.WebServlet");
@@ -61,15 +61,15 @@ public class Hooks {
         TYPE_BASED_HOOKS.put("org.apache.wicket.markup.html.WebPage", Collections.singletonList(null));
 
         // SQL hooks
-        TYPE_BASED_HOOKS.put("java.sql.Statement", Arrays.asList("execute", "executeBatch", "executeLargeBatch",
-                "executeLargeUpdate", "executeQuery", "executeUpdate"));
-        TYPE_BASED_HOOKS.put("java.sql.PreparedStatement",
-                Arrays.asList("execute", "executeBatch", "executeLargeBatch", "executeLargeUpdate", "executeQuery",
-                        "executeUpdate", "setNull", "setBoolean", "setByte", "setShort", "setInt", "setLong",
-                        "setFloat", "setDouble", "setBigDecimal", "setString", "setBytes", "setDate", "setTime",
-                        "setTimestamp", "setAsciiStream", "setUnicodeStream", "setBinaryStream", "setObject",
-                        "setCharacterStream", "setRef", "setBlob", "setClob", "setArray", "setURL", "setRowId",
-                        "setNString", "setNCharacterStream", "setNClob", "setSQLXML"));
+//        TYPE_BASED_HOOKS.put("java.sql.Statement", Arrays.asList("execute", "executeBatch", "executeLargeBatch",
+//                "executeLargeUpdate", "executeQuery", "executeUpdate"));
+//        TYPE_BASED_HOOKS.put("java.sql.PreparedStatement",
+//                Arrays.asList("execute", "executeBatch", "executeLargeBatch", "executeLargeUpdate", "executeQuery",
+//                        "executeUpdate", "setNull", "setBoolean", "setByte", "setShort", "setInt", "setLong",
+//                        "setFloat", "setDouble", "setBigDecimal", "setString", "setBytes", "setDate", "setTime",
+//                        "setTimestamp", "setAsciiStream", "setUnicodeStream", "setBinaryStream", "setObject",
+//                        "setCharacterStream", "setRef", "setBlob", "setClob", "setArray", "setURL", "setRowId",
+//                        "setNString", "setNCharacterStream", "setNClob", "setSQLXML"));
 
         // Probably these are not needed as CallableStatement implements
         // PreparedStatement
@@ -81,7 +81,7 @@ public class Hooks {
 //						"setCharacterStream", "setRef", "setBlob", "setClob", "setArray", "setURL", "setRowId",
 //						"setNString", "setNCharacterStream", "setNClob", "setSQLXML"));
 
-        TYPE_BASED_HOOKS.put("java.sql.Connection", Arrays.asList("nativeSQL", "prepareCall", "prepareStatement"));
+//        TYPE_BASED_HOOKS.put("java.sql.Connection", Arrays.asList("nativeSQL", "prepareCall", "prepareStatement"));
 
         // LDAP Java Lib
         TYPE_BASED_HOOKS.put("javax.naming.directory.DirContext", Collections.singletonList("search"));
@@ -100,19 +100,19 @@ public class Hooks {
         TYPE_BASED_HOOKS.put("org.forgerock.opendj.ldap.Connection", Collections.singletonList("searchAsync"));
 
         // Forkexec hooks
-        NAME_BASED_HOOKS.put("java.lang.ProcessImpl", Arrays.asList("start"));
+//        NAME_BASED_HOOKS.put("java.lang.ProcessImpl", Arrays.asList("start"));
 
         //System Exit hooks
         NAME_BASED_HOOKS.put("java.lang.Shutdown", Arrays.asList(new String[]{"exit", "halt"}));
 
         // File Hooks
-        NAME_BASED_HOOKS.put("java.io.FileOutputStream", Arrays.asList("open"));
-        NAME_BASED_HOOKS.put("java.io.FileInputStream", Arrays.asList("open"));
-        NAME_BASED_HOOKS.put("sun.nio.fs.UnixNativeDispatcher", Arrays.asList(new String[]{"open", "fopen", "link",
-                "unlink", "mknod", "rename", "mkdir", "rmdir", "symlink", "chown", "chmod"}));
-        NAME_BASED_HOOKS.put("java.io.RandomAccessFile", Collections.singletonList("open"));
-        TYPE_BASED_HOOKS.put("java.io.FileSystem", Arrays.asList("delete"));
-        NAME_BASED_HOOKS.put("java.io.File", Collections.singletonList("list"));
+//        NAME_BASED_HOOKS.put("java.io.FileOutputStream", Arrays.asList("open"));
+//        NAME_BASED_HOOKS.put("java.io.FileInputStream", Arrays.asList("open"));
+//        NAME_BASED_HOOKS.put("sun.nio.fs.UnixNativeDispatcher", Arrays.asList(new String[]{"open", "fopen", "link",
+//                "unlink", "mknod", "rename", "mkdir", "rmdir", "symlink", "chown", "chmod"}));
+//        NAME_BASED_HOOKS.put("java.io.RandomAccessFile", Collections.singletonList("open"));
+//        TYPE_BASED_HOOKS.put("java.io.FileSystem", Arrays.asList("delete"));
+//        NAME_BASED_HOOKS.put("java.io.File", Collections.singletonList("list"));
 
 
         // Mongo Hooks
@@ -166,19 +166,19 @@ public class Hooks {
         // SSRF Hook
         NAME_BASED_HOOKS.put("akka.http.scaladsl.HttpExt", Arrays.asList("singleRequest", "singleRequestImpl"));
 
-        TYPE_BASED_HOOKS.put("org.apache.http.client.HttpClient", Collections.singletonList("execute"));
-        TYPE_BASED_HOOKS.put("org.apache.http.nio.client.HttpAsyncClient", Collections.singletonList("execute"));
-        TYPE_BASED_HOOKS.put("org.apache.http.nio.protocol.HttpAsyncRequestProducer", Collections.singletonList("generateRequest"));
-        NAME_BASED_HOOKS.put("org.apache.commons.httpclient.HttpClient", Collections.singletonList("executeMethod"));
+//        TYPE_BASED_HOOKS.put("org.apache.http.client.HttpClient", Collections.singletonList("execute"));
+//        TYPE_BASED_HOOKS.put("org.apache.http.nio.client.HttpAsyncClient", Collections.singletonList("execute"));
+//        TYPE_BASED_HOOKS.put("org.apache.http.nio.protocol.HttpAsyncRequestProducer", Collections.singletonList("generateRequest"));
+//        NAME_BASED_HOOKS.put("org.apache.commons.httpclient.HttpClient", Collections.singletonList("executeMethod"));
         NAME_BASED_HOOKS.put(StringUtils.replace("com@google@api@client@http@HttpRequest", "@", "."), Arrays.asList("execute", "executeAsync"));
-        TYPE_BASED_HOOKS.put("java.net.URLConnection", Arrays.asList("connect", "getInputStream", "getOutputStream"));
+//        TYPE_BASED_HOOKS.put("java.net.URLConnection", Arrays.asList("connect", "getInputStream", "getOutputStream"));
         NAME_BASED_HOOKS.put(StringUtils.replace("com@squareup@okhttp@Call", "@", "."), Arrays.asList("execute", null));
         NAME_BASED_HOOKS.put(StringUtils.replace("com@squareup@okhttp@Call", "@", ".") + "$AsyncCall", Collections.singletonList("execute"));
 
         NAME_BASED_HOOKS.put(StringUtils.replace("okhttp3@OkHttpClient", "@",
-                        ".") , Collections.singletonList("newCall"));
+                "."), Collections.singletonList("newCall"));
         TYPE_BASED_HOOKS.put(StringUtils.replace("okhttp3@Call", "@",
-                        "."),  Collections.singletonList("execute"));
+                "."), Collections.singletonList("execute"));
 
         // Outbound Connection
 //		NAME_BASED_HOOKS.put("okhttp3.internal.connection.RealConnection", Collections.singletonList("connect"));
@@ -206,6 +206,8 @@ public class Hooks {
         // Log4j templating hook
         NAME_BASED_HOOKS.put("org.apache.logging.log4j.core.lookup.StrSubstitutor",
                 Collections.singletonList("resolveVariable"));
+
+
         /**
          * ------------------------------------ Decorators
          * ------------------------------------------------

@@ -1,7 +1,6 @@
 package com.newrelic.agent.security.instrumentator.utils;
 
 import com.newrelic.agent.security.AgentInfo;
-import com.newrelic.agent.security.instrumentator.custom.ClassloaderAdjustments;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.newrelic.agent.security.intcodeagent.filelogging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.logging.DeployedApplication;
@@ -9,12 +8,9 @@ import com.newrelic.agent.security.intcodeagent.logging.IAgentConstants;
 import com.newrelic.agent.security.intcodeagent.models.config.AgentPolicyParameters;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.CollectorInitMsg;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.EventResponse;
-import com.newrelic.agent.security.intcodeagent.models.javaagent.UserClassEntity;
-import com.newrelic.agent.security.intcodeagent.models.operationalbean.AbstractOperationalBean;
 import com.newrelic.agent.security.intcodeagent.schedulers.PolicyPullST;
-import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
-import com.newrelic.api.agent.security.schema.policy.AgentPolicy;
 import com.newrelic.api.agent.NewRelic;
+import com.newrelic.api.agent.security.schema.policy.AgentPolicy;
 import com.sun.jna.Pointer;
 import com.sun.jna.platform.win32.Kernel32;
 import com.sun.jna.platform.win32.WinNT;
@@ -33,11 +29,7 @@ import java.nio.file.attribute.PosixFilePermission;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import static com.newrelic.agent.security.intcodeagent.logging.IAgentConstants.COM_SUN;
-import static com.newrelic.agent.security.intcodeagent.logging.IAgentConstants.SUN_REFLECT;
 
 public class AgentUtils {
 
@@ -225,91 +217,6 @@ public class AgentUtils {
         }
     }
 
-    public UserClassEntity detectUserClass(StackTraceElement[] trace, Class<?> currentGenericServletInstance,
-                                           String currentGenericServletMethodName, String fakeClassName, String fakeMethodName) {
-
-        StackTraceElement userClass = null;
-        int currentClassLoc = -1;
-
-        UserClassEntity userClassEntity = new UserClassEntity();
-
-        Set<String> superClasses = new HashSet<>();
-//		logger.log(LogLevel.INFO, "Trace: " + Arrays.asList(trace),
-//				AgentUtils.class.getName());
-        if (currentGenericServletInstance != null) {
-            Class<?> currClass = currentGenericServletInstance;
-            superClasses.add(currClass.getName());
-            while (currClass.getSuperclass() != null) {
-                currClass = currClass.getSuperclass();
-                superClasses.add(currClass.getName());
-            }
-            if (!superClasses.isEmpty()) {
-//				logger.log(LogLevel.INFO, "Detecting user class : " + superClasses + " : " + Arrays.asList(trace),
-//						AgentUtils.class.getName());
-                for (currentClassLoc = 0; currentClassLoc < trace.length; currentClassLoc++) {
-                    if (StringUtils.equals(trace[currentClassLoc].getMethodName(), currentGenericServletMethodName)
-                            && StringUtils.equalsAny(trace[currentClassLoc].getClassName(),
-                            superClasses.toArray(new String[0]))) {
-//						logger.log(LogLevel.INFO, "Process trace : " + trace[currentClassLoc],
-//								AgentUtils.class.getName());
-                        userClass = trace[currentClassLoc];
-                        break;
-                    }
-                }
-            }
-        }
-        if (userClass == null) {
-            return getFakeUserClass(trace, fakeClassName, fakeMethodName);
-        }
-
-        String packageName = StringUtils.EMPTY;
-        Matcher matcher = TRACE_PATTERN.matcher(userClass.getClassName());
-        if (!matcher.matches()) {
-//			logger.log(LogLevel.INFO, "Not matched : " + userClass, AgentUtils.class.getName());
-            userClassEntity.setCalledByUserCode(true);
-            userClassEntity.setTraceLocationEnd(currentClassLoc);
-            userClassEntity.setUserClassElement(userClass);
-            return userClassEntity;
-        } else {
-            packageName = matcher.group();
-            for (int i = currentClassLoc - 1; i >= 0; i--) {
-                Matcher m1 = TRACE_PATTERN.matcher(trace[i].getClassName());
-                if (!StringUtils.startsWith(trace[i].getClassName(), packageName) && !m1.matches()) {
-                    userClass = trace[i];
-//					logger.log(LogLevel.INFO, "else finding : " + userClass, AgentUtils.class.getName());
-                    userClassEntity.setCalledByUserCode(true);
-                    userClassEntity.setTraceLocationEnd(i);
-                    userClassEntity.setUserClassElement(userClass);
-                    return userClassEntity;
-                } else if (m1.matches()) {
-                    packageName = m1.group();
-                }
-            }
-        }
-        userClassEntity.setCalledByUserCode(false);
-        userClassEntity.setTraceLocationEnd(currentClassLoc);
-        userClassEntity.setUserClassElement(userClass);
-        return userClassEntity;
-    }
-
-    private UserClassEntity getFakeUserClass(StackTraceElement[] trace, String fakeClassName, String fakeMethodName) {
-        UserClassEntity userClassEntity = new UserClassEntity();
-        userClassEntity.setCalledByUserCode(false);
-        int loc = 0;
-        boolean detect = false;
-        for (loc = 0; loc < trace.length; loc++) {
-            if (!detect && StringUtils.equals(fakeMethodName, trace[loc].getMethodName())
-                    && StringUtils.equals(fakeClassName, trace[loc].getClassName())) {
-                detect = true;
-            } else if (detect && !IAgentConstants.TRACE_SKIP_REGEX.matcher(trace[loc].getClassName()).matches()) {
-                userClassEntity.setUserClassElement(trace[loc]);
-                userClassEntity.setTraceLocationEnd(loc);
-                break;
-            }
-        }
-        return userClassEntity;
-    }
-
     public String detectDeployedApplicationPath(String userClassName, Class<?> currentGenericServletInstance,
                                                 String methodName) {
         String appPath = StringUtils.EMPTY;
@@ -457,21 +364,6 @@ public class AgentUtils {
         return !scannedDeployedApplications.containsAll(AgentInfo.getInstance().getApplicationInfo().getServerInfo().getDeployedApplications());
     }
 
-
-    public static void reformStackStrace(AbstractOperationalBean operationalBean) {
-
-        StackTraceElement[] stackTrace = operationalBean.getStackTrace();
-        int resetFactor = 1;
-        for (int i = 1; i < stackTrace.length; i++) {
-            if (i < operationalBean.getUserClassEntity().getTraceLocationEnd() && i == resetFactor &&
-                    StringUtils.startsWith(stackTrace[i].getClassName(), ClassloaderAdjustments.K2_BOOTSTAP_LOADED_PACKAGE_NAME)) {
-                resetFactor++;
-            }
-        }
-        stackTrace = Arrays.copyOfRange(stackTrace, resetFactor, stackTrace.length);
-        operationalBean.setStackTrace(stackTrace);
-    }
-
     public static String stackTraceElementToString(StackTraceElement element){
         StringBuilder builder = new StringBuilder(element.getClassName());
         builder.append(".");
@@ -497,49 +389,6 @@ public class AgentUtils {
         }
         
         return builder.toString();
-    }
-    public static void preProcessStackTrace(AbstractOperationalBean operationalBean, VulnerabilityCaseType vulnerabilityCaseType) {
-        if (operationalBean.isStackProcessed()) {
-            return;
-        }
-        StackTraceElement[] stackTrace = operationalBean.getStackTrace();
-        int resetFactor = 0;
-
-        ArrayList<Integer> newTraceForIdCalc = new ArrayList<>(stackTrace.length);
-
-        resetFactor++;
-        boolean markedForRemoval = false;
-        for (int i = 1; i < stackTrace.length; i++) {
-            markedForRemoval = false;
-            if (i < operationalBean.getUserClassEntity().getTraceLocationEnd() && i == resetFactor &&
-                    StringUtils.startsWith(stackTrace[i].getClassName(), ClassloaderAdjustments.K2_BOOTSTAP_LOADED_PACKAGE_NAME)) {
-                resetFactor++;
-                markedForRemoval = true;
-            }
-
-            if (StringUtils.startsWithAny(stackTrace[i].getClassName(), SUN_REFLECT, COM_SUN)
-                    || stackTrace[i].isNativeMethod() || stackTrace[i].getLineNumber() < 0) {
-                markedForRemoval = true;
-            }
-
-            if (!markedForRemoval) {
-                newTraceForIdCalc.add(stackTrace[i].hashCode());
-            }
-        }
-
-        stackTrace = Arrays.copyOfRange(stackTrace, resetFactor, stackTrace.length);
-        operationalBean.setStackTrace(stackTrace);
-        operationalBean.getUserClassEntity().setTraceLocationEnd(operationalBean.getUserClassEntity().getTraceLocationEnd() - resetFactor);
-        setAPIId(operationalBean, newTraceForIdCalc, vulnerabilityCaseType);
-        operationalBean.setStackProcessed(true);
-    }
-
-    private static void setAPIId(AbstractOperationalBean operationalBean, List<Integer> traceForIdCalc, VulnerabilityCaseType vulnerabilityCaseType) {
-        try {
-            operationalBean.setApiID(HashGenerator.getXxHash64Digest(traceForIdCalc.stream().mapToInt(Integer::intValue).toArray()) + "-" + vulnerabilityCaseType.getCaseType());
-        } catch (IOException e) {
-            operationalBean.setApiID("UNDEFINED");
-        }
     }
 
     public long getProcessID(Process p) {

@@ -1,14 +1,16 @@
 package com.newrelic.agent.security.intcodeagent.websocket;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.introspect.AnnotatedMember;
+import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.newrelic.agent.security.instrumentator.utils.AgentUtils;
-import com.newrelic.agent.security.intcodeagent.serializers.K2StackTraceSerializer;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.newrelic.agent.security.intcodeagent.filelogging.LogLevel;
+import com.newrelic.agent.security.intcodeagent.serializers.K2StackTraceSerializer;
+import com.newrelic.api.agent.security.schema.annotations.JsonIgnore;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
 import org.json.simple.JSONArray;
@@ -29,7 +31,7 @@ public class JsonConverter {
     private static final String STR_END_CUELY_BRACKET = "}";
     private static final String STR_START_CUELY_BRACKET = "{";
 
-    private static final ObjectMapper mapper;
+    private static ObjectMapper mapper;
 
     private static String serializerSelection = System.getenv().getOrDefault("K2_JSON_SERIALIZER", "Jackson");
 
@@ -38,6 +40,14 @@ public class JsonConverter {
         SimpleModule module = new SimpleModule();
         module.addSerializer(StackTraceElement.class, new K2StackTraceSerializer());
         mapper.registerModule(module);
+
+        mapper.setAnnotationIntrospector(new JacksonAnnotationIntrospector() {
+
+            @Override
+            public boolean hasIgnoreMarker(AnnotatedMember m) {
+                return _findAnnotation(m, JsonIgnore.class) != null;
+            }
+        });
     }
 
     public static String toJSON(Object obj) {

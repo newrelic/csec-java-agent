@@ -18,14 +18,16 @@ import com.newrelic.agent.security.intcodeagent.websocket.JsonConverter;
 import com.newrelic.agent.security.intcodeagent.websocket.WSClient;
 import com.newrelic.api.agent.NewRelic;
 import com.newrelic.api.agent.Transaction;
-import com.newrelic.api.agent.security.schema.AbstractOperation;
-import com.newrelic.api.agent.security.schema.HttpRequest;
-import com.newrelic.api.agent.security.schema.K2RequestIdentifier;
-import com.newrelic.api.agent.security.schema.SecurityMetaData;
+import com.newrelic.api.agent.security.schema.*;
+import com.newrelic.api.agent.security.schema.operation.RXSSOperation;
 import com.newrelic.api.agent.security.schema.policy.AgentPolicy;
 import org.apache.commons.lang3.StringUtils;
 
+import java.io.IOException;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -235,7 +237,97 @@ public class Agent implements SecurityAgent {
         operation.setExecutionId(executionId);
         operation.setStartTime(Instant.now().toEpochMilli());
         operation.setStackTrace(Thread.currentThread().getStackTrace());
+        SecurityMetaData securityMetaData = NewRelicSecurity.getAgent().getSecurityMetaData();
+        setRequiredStackTrace(operation, securityMetaData);
+        setUserClassEntity(operation, securityMetaData);
+        processStackTrace(operation);
+//        boolean blockNeeded = checkIfBlockingNeeded(operation.getApiID());
+//        securityMetaData.getMetaData().setApiBlocked(blockNeeded);
+        if (needToGenerateEvent(operation.getApiID())) {
+            DispatcherPool.getInstance().dispatchEvent(operation, securityMetaData);
+            if (!firstEventProcessed.get()) {
+                logger.logInit(LogLevel.INFO,
+                        String.format(EVENT_ZERO_PROCESSED, securityMetaData.getRequest()),
+                        this.getClass().getName());
+                firstEventProcessed.set(true);
+            }
+        } else {
+            return;
+        }
+//        if (blockNeeded) {
+//            blockForResponse(operation.getExecutionId());
+//        }
+//        checkIfClientIPBlocked();
         System.out.println("Operation : " + JsonConverter.toJSON(operation));
+        System.out.println("SEC_META : " + JsonConverter.toJSON(securityMetaData));
+    }
+
+    private static boolean needToGenerateEvent(String apiID) {
+        return !(getInstance().getCurrentPolicy().getProtectionMode().getEnabled()
+                && getInstance().getCurrentPolicy().getProtectionMode().getApiBlocking().getEnabled()
+                && AgentUtils.getInstance().getAgentPolicyParameters().getAllowedApis().contains(apiID)
+        );
+    }
+
+    private void setUserClassEntity(AbstractOperation operation, SecurityMetaData securityMetaData) {
+        UserClassEntity userClassEntity = new UserClassEntity();
+        userClassEntity.setUserClassElement(operation.getStackTrace()[operation.getStackTrace().length - 2]);
+        userClassEntity.setCalledByUserCode(securityMetaData.getMetaData().isUserLevelServiceMethodEncountered());
+        operation.setUserClassEntity(userClassEntity);
+    }
+
+    private void setRequiredStackTrace(AbstractOperation operation, SecurityMetaData securityMetaData) {
+        StackTraceElement[] currentStackTrace = null;
+        if (operation instanceof RXSSOperation) {
+            currentStackTrace = securityMetaData.getMetaData().getServiceTrace();
+        } else {
+            currentStackTrace = Thread.currentThread().getStackTrace();
+        }
+
+        int targetBottomStackLength = currentStackTrace.length - securityMetaData.getMetaData().getServiceTrace().length + 3;
+        currentStackTrace = Arrays.copyOfRange(currentStackTrace, 0, targetBottomStackLength);
+        operation.setStackTrace(currentStackTrace);
+    }
+
+    private static void processStackTrace(AbstractOperation operation) {
+        StackTraceElement[] stackTrace = operation.getStackTrace();
+        int resetFactor = 0;
+
+        ArrayList<Integer> newTraceForIdCalc = new ArrayList<>(stackTrace.length);
+
+        resetFactor++;
+        boolean markedForRemoval = false;
+        for (int i = 1, j = 0; i < stackTrace.length; i++) {
+            markedForRemoval = false;
+
+            // Only remove consecutive top com.newrelic and com.nr. elements from stack.
+            if (i - 1 == j && StringUtils.startsWithAny(stackTrace[i].getClassName(), "com.newrelic.", "com.nr.")) {
+                resetFactor++;
+                j++;
+                markedForRemoval = true;
+            }
+
+            if (StringUtils.startsWithAny(stackTrace[i].getClassName(), SUN_REFLECT, COM_SUN)
+                    || stackTrace[i].isNativeMethod() || stackTrace[i].getLineNumber() < 0) {
+                markedForRemoval = true;
+            }
+
+            if (!markedForRemoval) {
+                newTraceForIdCalc.add(stackTrace[i].hashCode());
+            }
+        }
+        stackTrace = Arrays.copyOfRange(stackTrace, resetFactor, stackTrace.length);
+        operation.setStackTrace(stackTrace);
+        setAPIId(operation, newTraceForIdCalc, operation.getCaseType());
+        operation.setSourceMethod(operation.getStackTrace()[0].toString());
+    }
+
+    private static void setAPIId(AbstractOperation operation, List<Integer> traceForIdCalc, VulnerabilityCaseType vulnerabilityCaseType) {
+        try {
+            operation.setApiID(vulnerabilityCaseType.getCaseType() + "-" + HashGenerator.getXxHash64Digest(traceForIdCalc.stream().mapToInt(Integer::intValue).toArray()));
+        } catch (IOException e) {
+            operation.setApiID("UNDEFINED");
+        }
     }
 
     @Override

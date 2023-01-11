@@ -4,12 +4,11 @@ import com.newrelic.agent.security.AgentInfo;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.newrelic.agent.security.intcodeagent.filelogging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.logging.IAgentConstants;
-import com.newrelic.agent.security.intcodeagent.models.javaagent.*;
-import com.newrelic.agent.security.intcodeagent.models.operationalbean.AbstractOperationalBean;
-import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
+import com.newrelic.agent.security.intcodeagent.models.javaagent.ExitEventBean;
+import com.newrelic.api.agent.security.schema.AbstractOperation;
+import com.newrelic.api.agent.security.schema.SecurityMetaData;
 import org.apache.commons.lang3.StringUtils;
 
-import java.util.List;
 import java.util.Set;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -123,33 +122,17 @@ public class DispatcherPool {
         return eid;
     }
 
-    public void dispatchEvent(HttpRequestBean httpRequestBean, AgentMetaData metaData,
-                              AbstractOperationalBean event, VulnerabilityCaseType vulnerabilityCaseType) {
-        if (executor.isShutdown()) {
-            return;
-        }
-        if (!event.isEmpty() && metaData.isK2FuzzRequest()) {
-            if (StringUtils.equals(httpRequestBean.getK2RequestIdentifierInstance().getApiRecordId(), event.getApiID()) && StringUtils.equals(httpRequestBean.getK2RequestIdentifierInstance().getNextStage().getStatus(), IAgentConstants.VULNERABLE)) {
-                eid.add(event.getExecutionId());
-            }
-        }
-        this.executor.submit(new Dispatcher(httpRequestBean, metaData, event, vulnerabilityCaseType));
-    }
 
-    public void dispatchEvent(HttpRequestBean httpRequestBean, AgentMetaData metaData,
-                              List<AbstractOperationalBean> event, VulnerabilityCaseType vulnerabilityCaseType, String currentGenericServletMethodName,
-                              Class<?> currentGenericServletInstance,
-                              StackTraceElement[] stackTrace, UserClassEntity userClassEntity) {
+    public void dispatchEvent(AbstractOperation operation, SecurityMetaData securityMetaData) {
         if (executor.isShutdown()) {
             return;
         }
-        if (!event.isEmpty() && metaData.isK2FuzzRequest()) {
-            if (StringUtils.equals(httpRequestBean.getK2RequestIdentifierInstance().getApiRecordId(), event.get(0).getApiID()) && StringUtils.equals(httpRequestBean.getK2RequestIdentifierInstance().getNextStage().getStatus(), IAgentConstants.VULNERABLE)) {
-                eid.add(event.get(0).getExecutionId());
+        if (!operation.isEmpty() && securityMetaData.getFuzzRequestIdentifier().getK2Request()) {
+            if (StringUtils.equals(securityMetaData.getFuzzRequestIdentifier().getApiRecordId(), operation.getApiID()) && StringUtils.equals(securityMetaData.getFuzzRequestIdentifier().getNextStage().getStatus(), IAgentConstants.VULNERABLE)) {
+                eid.add(operation.getExecutionId());
             }
         }
-        this.executor.submit(new Dispatcher(httpRequestBean, metaData, event, vulnerabilityCaseType, currentGenericServletMethodName,
-                currentGenericServletInstance, stackTrace, userClassEntity));
+        this.executor.submit(new Dispatcher(operation, new SecurityMetaData(securityMetaData)));
     }
 
     public void dispatchExitEvent(ExitEventBean exitEventBean) {
@@ -157,28 +140,6 @@ public class DispatcherPool {
             return;
         }
         this.executor.submit(new Dispatcher(exitEventBean));
-    }
-
-    /**
-     * Specifically for reflected xss
-     *
-     * @param httpRequestBean
-     * @param agentMetaData
-     * @param sourceString
-     * @param exectionId
-     * @param startTime
-     * @param reflectedXss
-     * @param apiID
-     */
-    public void dispatchEventRXSS(HttpRequestBean httpRequestBean, AgentMetaData agentMetaData, String sourceString, String exectionId,
-                                  long startTime, VulnerabilityCaseType reflectedXss, String currentGenericServletMethodName,
-                                  Class<?> currentGenericServletInstance,
-                                  StackTraceElement[] stackTrace, UserClassEntity userClassEntity, String apiID) {
-        if (executor.isShutdown()) {
-            return;
-        }
-        this.executor.submit(new Dispatcher(httpRequestBean, agentMetaData, reflectedXss, sourceString, exectionId, startTime, currentGenericServletMethodName,
-                currentGenericServletInstance, stackTrace, userClassEntity, apiID));
     }
 
     public static void shutDownPool() {
