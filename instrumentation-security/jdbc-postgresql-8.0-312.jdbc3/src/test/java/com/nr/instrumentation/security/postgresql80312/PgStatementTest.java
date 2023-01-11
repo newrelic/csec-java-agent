@@ -77,6 +77,8 @@ public class PgStatementTest {
         QUERIES.add("UPDATE USERS SET \"last_name\"='Doe' WHERE id=1");
         QUERIES.add(
                 "select * from users where id=? and id=? and id=? and id=? and id=? and id=? and first_name=? and first_name=? and id=? and dob=? and arr=? and active=? and dot=? and dotz=?");
+        QUERIES.add("SELECT * FROM USERS WHERE id=?");
+
         // set up data in h2
         Statement stmt = CONNECTION.createStatement();
         stmt.execute(QUERIES.get(0));
@@ -258,6 +260,33 @@ public class PgStatementTest {
         Timestamp dotz = new Timestamp(System.currentTimeMillis());
         stmt.setTimestamp(14, dotz);
         params.put(14, dotz.toString());
+
+        stmt.execute();
+        System.out.println(params);
+        return params;
+    }
+
+    @Test
+    public void testClearParams() throws SQLException {
+        Map<Integer, String> params = callClearParams();
+
+        SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
+        List<AbstractOperation> operations = introspector.getOperations();
+        Assert.assertTrue("No operations detected", operations.size() > 0);
+        SQLOperation operation = (SQLOperation) operations.get(0);
+        Assert.assertEquals("Invalid executed parameters.", params, operation.getParams());
+        Assert.assertEquals("Invalid executed query.", QUERIES.get(6), operation.getQuery());
+        Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.SQL_DB_COMMAND, operation.getCaseType());
+    }
+
+    @Trace(dispatcher = true)
+    private Map<Integer, String> callClearParams() throws SQLException {
+        Map<Integer, String> params = new HashMap<Integer, String>();
+        PreparedStatement stmt = CONNECTION.prepareStatement(QUERIES.get(6));
+        stmt.setInt(1, 9);
+        stmt.clearParameters();
+        stmt.setInt(1, 1);
+        params.put(1, "1");
 
         stmt.execute();
         System.out.println(params);
