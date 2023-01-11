@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @RunWith(SecurityInstrumentationTestRunner.class)
-@InstrumentationTestConfig(includePrefixes = "java.sql")
+@InstrumentationTestConfig(includePrefixes = { "javax.sql", "java.sql" })
 
 public class StatementTest {
     private static final String DB_DRIVER = "org.h2.Driver";

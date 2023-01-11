@@ -32,7 +32,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @RunWith(SecurityInstrumentationTestRunner.class)
-@InstrumentationTestConfig(includePrefixes = "java.sql")
+@InstrumentationTestConfig(includePrefixes = { "javax.sql", "java.sql" })
 public class PreparedStatementTest {
     private static final String DB_DRIVER = "org.h2.Driver";
     private static final String DB_CONNECTION = "jdbc:h2:mem:test;DB_CLOSE_DELAY=-1";
