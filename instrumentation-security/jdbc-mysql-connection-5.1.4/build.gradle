@@ -3,7 +3,7 @@ dependencies {
     implementation("com.newrelic.agent.java:newrelic-api:7.11.0-SNAPSHOT")
     implementation("com.newrelic.agent.java:newrelic-weaver-api:7.11.0-SNAPSHOT")
     implementation("mysql:mysql-connector-java:5.1.4")
-    testImplementation group: 'ch.vorburger.mariaDB4j', name: 'mariaDB4j', version: '2.2.1'
+    testImplementation("com.wix:wix-embedded-mysql:4.6.2")
 }
 
 jar {

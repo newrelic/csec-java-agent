@@ -18,7 +18,6 @@ import java.sql.SQLException;
 public abstract class JdbcConnection_Instrumentation {
 
     public java.sql.PreparedStatement clientPrepareStatement(String sql) throws SQLException {
-        System.out.println("here");
         java.sql.PreparedStatement preparedStatement = Weaver.callOriginal();
         JdbcHelper.putSql(preparedStatement, sql);
         return preparedStatement;

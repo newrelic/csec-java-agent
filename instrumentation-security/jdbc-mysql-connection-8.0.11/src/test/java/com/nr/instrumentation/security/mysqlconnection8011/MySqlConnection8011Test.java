@@ -6,11 +6,13 @@
  */
 package com.nr.instrumentation.security.mysqlconnection8011;
 
-import ch.vorburger.mariadb4j.DB;
-import ch.vorburger.mariadb4j.DBConfigurationBuilder;
+import com.mysql.cj.jdbc.JdbcConnection;
 import com.newrelic.agent.security.introspec.InstrumentationTestConfig;
 import com.newrelic.agent.security.introspec.SecurityInstrumentationTestRunner;
 import com.newrelic.agent.security.introspec.SecurityIntrospector;
+import com.wix.mysql.EmbeddedMysql;
+import com.wix.mysql.config.Charset;
+import com.wix.mysql.config.MysqldConfig;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -26,42 +28,49 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
+
+import static com.wix.mysql.EmbeddedMysql.anEmbeddedMysql;
+import static com.wix.mysql.ScriptResolver.classPathScript;
+import static com.wix.mysql.config.MysqldConfig.aMysqldConfig;
+import static com.wix.mysql.distribution.Version.v5_7_latest;
 
 @RunWith(SecurityInstrumentationTestRunner.class)
 @InstrumentationTestConfig(includePrefixes = {"com.mysql.cj.jdbc"})
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class MySqlConnection8011Test {
-
-    private static DB mariaDb;
-
-    private static String connectionString;
-    private static String dbName;
-
-    private static com.mysql.cj.jdbc.JdbcConnection connection;
-
-    private static List<String> QUERIES = new ArrayList<>();
+    private static final String DB_USER = "";
+    private static final String DB_PASSWORD = "";
+    private static final List<String> QUERIES = new ArrayList<>();
+    private static final String DB_NAME = "test";
+    private static JdbcConnection connection;
+    private static String DB_CONNECTION;
+    private static EmbeddedMysql mysqld = null;
 
     @BeforeClass
     public static void setUpDb() throws Exception {
         QUERIES.add("select * from testQuery");
-        DBConfigurationBuilder builder = DBConfigurationBuilder.newBuilder()
-                .setPort(0); // This will automatically find a free port
+        MysqldConfig config = aMysqldConfig(v5_7_latest)
+                .withCharset(Charset.UTF8)
+                .withFreePort()
+                .withTimeout(2, TimeUnit.MINUTES)
+                .withUser(DB_USER, DB_PASSWORD)
+                .build();
 
-        dbName = "MariaDB" + System.currentTimeMillis();
-        mariaDb = DB.newEmbeddedDB(builder.build());
-        connectionString = builder.getURL(dbName);
-        mariaDb.start();
+        mysqld = anEmbeddedMysql(config)
+                .addSchema(DB_NAME, classPathScript("maria-db-test.sql"))
+                .start();
 
-        mariaDb.createDB(dbName);
-        mariaDb.source("maria-db-test.sql", null, null, dbName);
-
+        DB_CONNECTION = "jdbc:mysql://localhost:" + mysqld.getConfig().getPort() + "/" + DB_NAME + "?useSSL=false";
         Class.forName("com.mysql.cj.jdbc.Driver");
-        connection = (com.mysql.cj.jdbc.JdbcConnection) DriverManager.getConnection(connectionString, "root", "");
+        connection = (JdbcConnection) DriverManager.getConnection(DB_CONNECTION, DB_USER, DB_PASSWORD);
     }
 
     @AfterClass
     public static void tearDownDb() throws Exception {
-        mariaDb.stop();
+        if (mysqld != null) {
+            mysqld.stop();
+        }
     }
 
     @Test
