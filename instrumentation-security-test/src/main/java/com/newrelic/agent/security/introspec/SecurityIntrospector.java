@@ -16,5 +16,7 @@ public interface SecurityIntrospector {
 
     String getSqlQuery(Statement statement);
 
+    int getRequestHash();
+
     void clear();
 }
