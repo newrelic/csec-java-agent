@@ -6,12 +6,17 @@ import com.newrelic.api.agent.security.Agent;
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.instrumentation.helpers.JdbcHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
+import com.newrelic.api.agent.security.schema.HttpRequest;
+import com.newrelic.api.agent.security.schema.HttpResponse;
 import com.newrelic.api.agent.security.schema.JDBCVendor;
+import com.newrelic.api.agent.security.schema.SecurityMetaData;
 
 import java.sql.Statement;
 import java.util.List;
 
 public class SecurityIntrospectorImpl implements SecurityIntrospector {
+    private static final String REQUEST_READER_HASH = "REQUEST_READER_HASH";
+
     @Override
     public List<AbstractOperation> getOperations() {
         return (List<AbstractOperation>) NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(Agent.OPERATIONS, List.class);
@@ -33,9 +38,21 @@ public class SecurityIntrospectorImpl implements SecurityIntrospector {
     }
 
     @Override
+    public int getRequestHash() {
+        return NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(REQUEST_READER_HASH, Integer.class);
+
+    }
+
+    @Override
     public void clear() {
         NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(JDBCVendor.META_CONST_JDBC_VENDOR, null);
         NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(Agent.OPERATIONS, List.class).clear();
         NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(Agent.EXIT_OPERATIONS, List.class).clear();
+        NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(REQUEST_READER_HASH, null);
+        SecurityMetaData meta = NewRelicSecurity.getAgent().getSecurityMetaData();
+        meta.setRequest(new HttpRequest());
+        meta.setResponse(new HttpResponse());
+        meta.getRequest().setUrl("/TestUrl");
+        meta.getRequest().setMethod("GET");
     }
 }
