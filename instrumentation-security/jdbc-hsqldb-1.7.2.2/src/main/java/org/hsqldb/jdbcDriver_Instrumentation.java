@@ -16,7 +16,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Properties;
 
-@Weave
+@Weave(originalName = "org.hsqldb.jdbcDriver")
 public abstract class jdbcDriver_Instrumentation {
 
     public Connection connect(String url, Properties props) throws SQLException {

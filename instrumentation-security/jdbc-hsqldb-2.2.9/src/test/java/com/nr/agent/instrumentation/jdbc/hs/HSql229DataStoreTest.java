@@ -1,12 +1,12 @@
 package com.nr.agent.instrumentation.jdbc.hs;
 
+import com.newrelic.agent.deps.org.jetbrains.annotations.NotNull;
 import com.newrelic.agent.security.introspec.InstrumentationTestConfig;
 import com.newrelic.agent.security.introspec.SecurityInstrumentationTestRunner;
 import com.newrelic.agent.security.introspec.SecurityIntrospector;
 import com.newrelic.api.agent.Trace;
 import com.newrelic.api.agent.security.schema.JDBCVendor;
 import org.hsqldb.jdbc.JDBCDataSource;
-import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
@@ -26,62 +26,10 @@ public class HSql229DataStoreTest {
     private static final String DB_NAME = "test";
     private static final String DB_USER = "sa";
     private static final String DB_PASSWORD = "";
-    private static Connection CONNECTION;
-
-    @AfterClass
-    public static void teardown() throws SQLException {
-        if (CONNECTION!=null) {
-            CONNECTION.close();
-        }
-    }
-
-    @Trace(dispatcher = true)
-    private static Connection getDBConnection() throws SQLException {
-        Connection dbConnection = null;
-        JDBCDataSource hsqlDataSource = new JDBCDataSource();
-        hsqlDataSource.setDatabase(DB_NAME);
-        hsqlDataSource.setUser(DB_USER);
-        hsqlDataSource.setPassword(DB_PASSWORD);
-        Connection conn = null;
-
-        try {
-            conn = hsqlDataSource.getConnection();
-        } catch (Exception e) {
-            System.out.println("Error in DB connection");
-        } finally {
-            if (conn!=null) {
-                conn.close();
-            }
-        }
-        return dbConnection;
-    }
-
-    @Trace(dispatcher = true)
-    private static Connection getDBConnection1() throws SQLException {
-        Connection dbConnection = null;
-        JDBCDataSource hsqlDataSource = new JDBCDataSource();
-        hsqlDataSource.setDatabase(DB_NAME);
-        Connection conn = null;
-
-        try {
-            conn = hsqlDataSource.getConnection("sa", "");
-        } catch (Exception e) {
-            System.out.println("Error in DB connection");
-        } finally {
-            if (conn!=null) {
-                conn.close();
-            }
-        }
-        return dbConnection;
-    }
 
     @Test
-    public void testGetConnection(){
-        try {
-            CONNECTION = getDBConnection();
-        } catch (SQLException e) {
-            System.out.println("Error in DB connection");
-        }
+    public void testGetConnectionJDBCDataSource() throws SQLException {
+        callGetConnectionJDBCDataSource();
 
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
         String vendor = introspector.getJDBCVendor();
@@ -89,15 +37,53 @@ public class HSql229DataStoreTest {
     }
 
     @Test
-    public void testGetConnection1(){
-        try {
-            CONNECTION = getDBConnection1();
-        } catch (SQLException e) {
-            System.out.println("Error in DB connection");
-        }
+    public void testGetConnectionJDBCDataSource1() throws SQLException {
+        callGetConnectionJDBCDataSource1();
 
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
         String vendor = introspector.getJDBCVendor();
         Assert.assertEquals("Incorrect DB vendor", JDBCVendor.HSQLDB, vendor);
+    }
+
+    @Trace(dispatcher = true)
+    private void callGetConnectionJDBCDataSource() throws SQLException {
+        getConnection(new JDBCDataSource());
+    }
+
+    @Trace(dispatcher = true)
+    private void callGetConnectionJDBCDataSource1() throws SQLException {
+        getConnection1(new JDBCDataSource());
+    }
+
+    private void getConnection(@NotNull JDBCDataSource baseDataSource) throws SQLException {
+        baseDataSource.setDatabase(DB_NAME);
+        Connection conn = null;
+
+        try {
+            conn = baseDataSource.getConnection(DB_USER, DB_PASSWORD);
+        } catch (Exception e) {
+            System.out.println("Error in DB connection "+e);
+        } finally {
+            if (conn!=null) {
+                conn.close();
+            }
+        }
+    }
+
+    private void getConnection1(@NotNull JDBCDataSource baseDataSource) throws SQLException {
+        baseDataSource.setDatabase(DB_NAME);
+        baseDataSource.setUser(DB_USER);
+        baseDataSource.setPassword(DB_PASSWORD);
+        Connection conn = null;
+
+        try {
+            conn = baseDataSource.getConnection();
+        } catch (Exception e) {
+            System.out.println("Error in DB connection "+e);
+        } finally {
+            if (conn!=null) {
+                conn.close();
+            }
+        }
     }
 }
