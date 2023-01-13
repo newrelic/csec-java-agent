@@ -15,7 +15,10 @@ import java.sql.Statement;
 import java.util.List;
 
 public class SecurityIntrospectorImpl implements SecurityIntrospector {
+    private static final String RESPONSE_WRITER_HASH = "RESPONSE_WRITER_HASH";
+    private static final String RESPONSE_OUTPUTSTREAM_HASH = "RESPONSE_OUTPUTSTREAM_HASH";
     private static final String REQUEST_READER_HASH = "REQUEST_READER_HASH";
+    private static final String REQUEST_INPUTSTREAM_HASH = "REQUEST_INPUTSTREAM_HASH";
 
     @Override
     public List<AbstractOperation> getOperations() {
@@ -38,9 +41,23 @@ public class SecurityIntrospectorImpl implements SecurityIntrospector {
     }
 
     @Override
-    public int getRequestHash() {
-        return NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(REQUEST_READER_HASH, Integer.class);
+    public int getResponseWriterHash() {
+        return NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(RESPONSE_WRITER_HASH, Integer.class);
+    }
 
+    @Override
+    public int getRequestReaderHash() {
+        return NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(REQUEST_READER_HASH, Integer.class);
+    }
+
+    @Override
+    public int getResponseOutStreamHash() {
+        return NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(RESPONSE_OUTPUTSTREAM_HASH, Integer.class);
+    }
+
+    @Override
+    public int getRequestInStreamHash() {
+        return NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(REQUEST_INPUTSTREAM_HASH, Integer.class);
     }
 
     @Override
@@ -49,6 +66,9 @@ public class SecurityIntrospectorImpl implements SecurityIntrospector {
         NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(Agent.OPERATIONS, List.class).clear();
         NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(Agent.EXIT_OPERATIONS, List.class).clear();
         NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(REQUEST_READER_HASH, null);
+        NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(REQUEST_INPUTSTREAM_HASH, null);
+        NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(RESPONSE_WRITER_HASH, null);
+        NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(RESPONSE_OUTPUTSTREAM_HASH, null);
         SecurityMetaData meta = NewRelicSecurity.getAgent().getSecurityMetaData();
         meta.setRequest(new HttpRequest());
         meta.setResponse(new HttpResponse());
