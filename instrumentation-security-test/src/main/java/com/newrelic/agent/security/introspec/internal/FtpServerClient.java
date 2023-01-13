@@ -33,7 +33,6 @@ public class FtpServerClient extends ExternalResource {
         this.user = user;
         this.password = password;
         this.dir = dir;
-        this.fakeServer = startServer();
     }
 
     public FakeFtpServer getFakeServer() {
@@ -77,5 +76,20 @@ public class FtpServerClient extends ExternalResource {
 
     public void close() throws IOException {
         ftp.disconnect();
+    }
+
+    @Override
+    protected void before() throws Throwable {
+        this.fakeServer = startServer();
+    }
+
+    @Override
+    protected void after() {
+        fakeServer.stop();
+        try {
+            close();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
