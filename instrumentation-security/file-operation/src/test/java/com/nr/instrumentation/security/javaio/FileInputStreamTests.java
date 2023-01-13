@@ -1,6 +1,5 @@
 package com.nr.instrumentation.security.javaio;
 
-import com.newrelic.agent.deps.com.google.common.io.Files;
 import com.newrelic.agent.security.introspec.InstrumentationTestConfig;
 import com.newrelic.agent.security.introspec.SecurityInstrumentationTestRunner;
 import com.newrelic.agent.security.introspec.SecurityIntrospector;
@@ -51,7 +50,8 @@ public class FileInputStreamTests {
 
     @Trace(dispatcher = true)
     private FileInputStream getFileInputStream(String filePath) throws IOException {
-        Files.touch(new File(filePath));
+        new File(filePath).getParentFile().mkdirs();
+        new File(filePath).createNewFile();
         return new FileInputStream(filePath);
     }
 

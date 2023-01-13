@@ -7,23 +7,13 @@
 
 package com.newrelic.agent.security.introspec.internal;
 
-import com.newrelic.agent.ExpirationService;
-import com.newrelic.agent.HarvestService;
-import com.newrelic.agent.RPMServiceManager;
-import com.newrelic.agent.ThreadService;
-import com.newrelic.agent.TracerService;
-import com.newrelic.agent.TransactionService;
+import com.newrelic.agent.*;
 import com.newrelic.agent.attributes.AttributesService;
 import com.newrelic.agent.browser.BrowserService;
 import com.newrelic.agent.cache.CacheService;
 import com.newrelic.agent.circuitbreaker.CircuitBreakerService;
 import com.newrelic.agent.commands.CommandParser;
-import com.newrelic.agent.config.AgentConfig;
-import com.newrelic.agent.config.AgentConfigFactory;
-import com.newrelic.agent.config.AgentConfigImpl;
-import com.newrelic.agent.config.ConfigService;
-import com.newrelic.agent.config.ConfigServiceFactory;
-import com.newrelic.agent.config.DistributedTracingConfig;
+import com.newrelic.agent.config.*;
 import com.newrelic.agent.core.CoreService;
 import com.newrelic.agent.database.DatabaseService;
 import com.newrelic.agent.environment.EnvironmentService;
@@ -32,7 +22,6 @@ import com.newrelic.agent.extension.ExtensionService;
 import com.newrelic.agent.extension.ExtensionsLoadedListener;
 import com.newrelic.agent.instrumentation.ClassTransformerService;
 import com.newrelic.agent.interfaces.ReservoirManager;
-import com.newrelic.agent.interfaces.backport.Consumer;
 import com.newrelic.agent.jfr.JfrService;
 import com.newrelic.agent.jmx.JmxService;
 import com.newrelic.agent.language.SourceLanguageService;
@@ -48,13 +37,7 @@ import com.newrelic.agent.service.AbstractService;
 import com.newrelic.agent.service.Service;
 import com.newrelic.agent.service.ServiceFactory;
 import com.newrelic.agent.service.ServiceManager;
-import com.newrelic.agent.service.analytics.CollectorSpanEventReservoirManager;
-import com.newrelic.agent.service.analytics.CollectorSpanEventSender;
-import com.newrelic.agent.service.analytics.InsightsService;
-import com.newrelic.agent.service.analytics.SpanEventCreationDecider;
-import com.newrelic.agent.service.analytics.SpanEventsService;
-import com.newrelic.agent.service.analytics.TransactionDataToDistributedTraceIntrinsics;
-import com.newrelic.agent.service.analytics.TransactionEventsService;
+import com.newrelic.agent.service.analytics.*;
 import com.newrelic.agent.service.async.AsyncTransactionService;
 import com.newrelic.agent.service.logging.LogSenderService;
 import com.newrelic.agent.service.module.JarCollectorService;
@@ -66,11 +49,8 @@ import com.newrelic.agent.tracing.DistributedTraceService;
 import com.newrelic.agent.tracing.DistributedTraceServiceImpl;
 import com.newrelic.agent.utilization.UtilizationService;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.function.Consumer;
 
 class IntrospectorServiceManager extends AbstractService implements ServiceManager {
 
