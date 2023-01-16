@@ -56,6 +56,11 @@ public class SecurityIntrospectorImpl implements SecurityIntrospector {
     }
 
     @Override
+    public SecurityMetaData getSecurityMetaData() {
+        return NewRelicSecurity.getAgent().getSecurityMetaData();
+    }
+
+    @Override
     public int getRequestInStreamHash() {
         return NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(REQUEST_INPUTSTREAM_HASH, Integer.class);
     }
