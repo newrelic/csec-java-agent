@@ -19,6 +19,8 @@ public class SecurityIntrospectorImpl implements SecurityIntrospector {
     private static final String RESPONSE_OUTPUTSTREAM_HASH = "RESPONSE_OUTPUTSTREAM_HASH";
     private static final String REQUEST_READER_HASH = "REQUEST_READER_HASH";
     private static final String REQUEST_INPUTSTREAM_HASH = "REQUEST_INPUTSTREAM_HASH";
+    private static final String REQUEST_STREAM_OR_READER_CALLED = "REQUEST_STREAM_OR_READER_CALLED";
+    private static final String RESPONSE_STREAM_OR_WRITER_CALLED = "RESPONSE_STREAM_OR_WRITER_CALLED";
 
     @Override
     public List<AbstractOperation> getOperations() {
@@ -56,6 +58,11 @@ public class SecurityIntrospectorImpl implements SecurityIntrospector {
     }
 
     @Override
+    public SecurityMetaData getSecurityMetaData() {
+        return NewRelicSecurity.getAgent().getSecurityMetaData();
+    }
+
+    @Override
     public int getRequestInStreamHash() {
         return NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(REQUEST_INPUTSTREAM_HASH, Integer.class);
     }
@@ -69,6 +76,11 @@ public class SecurityIntrospectorImpl implements SecurityIntrospector {
         NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(REQUEST_INPUTSTREAM_HASH, null);
         NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(RESPONSE_WRITER_HASH, null);
         NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(RESPONSE_OUTPUTSTREAM_HASH, null);
+
+        // used internally by some methods before saving hash code hence cleanup required
+        NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(REQUEST_STREAM_OR_READER_CALLED, null);
+        NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(RESPONSE_STREAM_OR_WRITER_CALLED, null);
+
         SecurityMetaData meta = NewRelicSecurity.getAgent().getSecurityMetaData();
         meta.setRequest(new HttpRequest());
         meta.setResponse(new HttpResponse());
