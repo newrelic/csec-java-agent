@@ -32,7 +32,6 @@ subprojects {
         testImplementation(project(":instrumentation-security-test"))
         testImplementation("com.newrelic.agent.java:newrelic-api:7.11.0-SNAPSHOT")
         testImplementation('com.fasterxml.jackson.core:jackson-databind:2.13.4')
-        implementation("com.newrelic.agent.java:newrelic-agent:7.11.0-SNAPSHOT")
     }
 
 //    test {
