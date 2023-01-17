@@ -54,7 +54,7 @@ public class HttpServletServer extends ExternalResource {
         tmp = new File("./tmp");
         server.setBaseDir(tmp.getAbsolutePath());
 
-        Context context = server.addContext("/", tmp.getAbsolutePath());
+        Context context = server.addContext("", tmp.getAbsolutePath());
         server.addServlet( context, "servlet" , servlet);
         context.addServletMappingDecoded("/*","servlet");
 

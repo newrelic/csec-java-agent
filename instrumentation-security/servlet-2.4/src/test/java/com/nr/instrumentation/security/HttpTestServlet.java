@@ -47,17 +47,20 @@ public class HttpTestServlet extends HttpServlet {
         } else if(path.equals("/inputStream/read/byte-param")){
 
             ServletInputStream in = request.getInputStream();
-            in.read(new byte[5]);
+            byte[] b = new byte[in.available()];
+            in.read(b);
 
         } else if(path.equals("/inputStream/read/3-params")){
 
             ServletInputStream in = request.getInputStream();
-            in.read(new byte[5], 0, 5);
+            byte[] b = new byte[in.available()];
+            in.read(b, 0, b.length);
 
         } else if(path.equals("/inputStream/readLine")){
 
             ServletInputStream in = request.getInputStream();
-            in.readLine(new byte[5], 0, 5);
+            byte[] b = new byte[in.available()];
+            in.readLine(b, 0, b.length);
 
         } else if(path.equals("/outputStream/write")) {
 
