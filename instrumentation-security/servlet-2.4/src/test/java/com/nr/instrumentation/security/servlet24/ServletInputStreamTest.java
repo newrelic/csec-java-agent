@@ -1,12 +1,10 @@
 package com.nr.instrumentation.security.servlet24;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.newrelic.agent.security.introspec.InstrumentationTestConfig;
 import com.newrelic.agent.security.introspec.SecurityInstrumentationTestRunner;
 import com.newrelic.agent.security.introspec.SecurityIntrospector;
 import com.newrelic.api.agent.Trace;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
-import com.newrelic.api.agent.security.schema.StringUtils;
 import com.newrelic.api.agent.security.schema.operation.RXSSOperation;
 import com.nr.instrumentation.security.HttpServletServer;
 import org.junit.Assert;
@@ -16,9 +14,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URISyntaxException;
@@ -54,12 +50,11 @@ public class ServletInputStreamTest {
     public void testReadLine() throws Exception {
         String expected = readLine();
 
-        System.out.println(expected);
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
         List<AbstractOperation> operations = introspector.getOperations();
         Assert.assertTrue("No operations detected", operations.size() > 0);
+
         RXSSOperation targetOperation = (RXSSOperation) operations.get(0);
-        System.out.println(new ObjectMapper().writeValueAsString(targetOperation));
         Assert.assertNotNull("No target operation detected", targetOperation);
         Assert.assertEquals("Wrong port detected", servlet.getEndPoint("inputStream").getPort(), targetOperation.getRequest().getServerPort());
         Assert.assertEquals("Wrong Content-type detected", "multipart/form-data", targetOperation.getRequest().getContentType());
@@ -72,16 +67,16 @@ public class ServletInputStreamTest {
         String method = "POST";
         String POST_PARAMS = "hook=read";
         makeRequest(method, POST_PARAMS, "read");
-        return POST_PARAMS.charAt(0)+"";
+        return String.valueOf(POST_PARAMS.charAt(0));
     }
 
 
     @Trace(dispatcher = true)
     private String readLine() throws IOException, URISyntaxException {
         String method = "POST";
-        String POST_PARAMS = "1hook=readLine";
+        String POST_PARAMS = "hook=readLine";
         makeRequest(method, POST_PARAMS, "readLine");
-        return POST_PARAMS.substring(0,5);
+        return String.valueOf(POST_PARAMS.charAt(0));
     }
 
     private void makeRequest( String Method, final String POST_PARAMS, String path) throws URISyntaxException, IOException{
