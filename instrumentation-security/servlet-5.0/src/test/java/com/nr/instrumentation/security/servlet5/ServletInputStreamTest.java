@@ -67,7 +67,7 @@ public class ServletInputStreamTest {
         String method = "POST";
         String POST_PARAMS = "hook=read";
         makeRequest(method, POST_PARAMS, "read");
-        return String.valueOf(POST_PARAMS.charAt(0));
+        return POST_PARAMS;
     }
 
 
@@ -76,7 +76,7 @@ public class ServletInputStreamTest {
         String method = "POST";
         String POST_PARAMS = "hook=readLine";
         makeRequest(method, POST_PARAMS, "readLine");
-        return String.valueOf(POST_PARAMS.charAt(0));
+        return POST_PARAMS;
     }
 
     private void makeRequest( String Method, final String POST_PARAMS, String path) throws URISyntaxException, IOException{
