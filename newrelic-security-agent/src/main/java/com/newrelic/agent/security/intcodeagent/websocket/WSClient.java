@@ -3,7 +3,6 @@ package com.newrelic.agent.security.intcodeagent.websocket;
 import com.newrelic.agent.security.AgentConfig;
 import com.newrelic.agent.security.AgentInfo;
 import com.newrelic.agent.security.instrumentator.utils.AgentUtils;
-import com.newrelic.agent.security.instrumentator.utils.InstrumentationUtils;
 import com.newrelic.agent.security.intcodeagent.controlcommand.ControlCommandProcessor;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.newrelic.agent.security.intcodeagent.filelogging.LogLevel;
@@ -49,14 +48,15 @@ public class WSClient extends WebSocketClient {
         super(new URI(AgentConfig.getInstance().getConfig().getK2ServiceInfo().getValidatorServiceEndpointURL()));
         this.setTcpNoDelay(true);
         this.setConnectionLostTimeout(30);
-        this.addHeader("K2-CONNECTION-TYPE", "LANGUAGE_COLLECTOR");
-        this.addHeader("K2-API-ACCESSOR", AgentConfig.getInstance().getConfig().getCustomerInfo().getApiAccessorToken());
-        this.addHeader("K2-VERSION", K2JAVersionInfo.collectorVersion);
-        this.addHeader("K2-COLLECTOR-TYPE", "JAVA");
-        this.addHeader("K2-BUILD-NUMBER", K2JAVersionInfo.buildNumber);
-        this.addHeader("K2-GROUP", AgentConfig.getInstance().getGroupName());
-        this.addHeader("K2-APPLICATION-UUID", AgentInfo.getInstance().getApplicationUUID());
-        this.addHeader("K2-JSON-VERSION", K2JAVersionInfo.jsonVersion);
+        this.addHeader("NR-CSEC-CONNECTION-TYPE", "LANGUAGE_COLLECTOR");
+        this.addHeader("NR-AGENT-RUN-TOKEN", AgentConfig.getInstance().getConfig().getCustomerInfo().getApiAccessorToken());
+        this.addHeader("NR-CSEC-VERSION", K2JAVersionInfo.collectorVersion);
+        this.addHeader("NR-CSEC-COLLECTOR-TYPE", "JAVA");
+        this.addHeader("NR-CSEC-BUILD-NUMBER", K2JAVersionInfo.buildNumber);
+        this.addHeader("NR-CSEC-MODE", AgentConfig.getInstance().getGroupName());
+        this.addHeader("NR-CSEC-APP-UUID", AgentInfo.getInstance().getApplicationUUID());
+        this.addHeader("NR-CSEC-JSON-VERSION", K2JAVersionInfo.jsonVersion);
+        this.addHeader("NR-ACCOUNT-ID", AgentConfig.getInstance().getConfig().getCustomerInfo().getAccountId());
     }
 
     /**
@@ -111,10 +111,8 @@ public class WSClient extends WebSocketClient {
             return;
         }
 
-        if (code != CloseFrame.POLICY_VALIDATION) {
+        if (code != CloseFrame.POLICY_VALIDATION && code != CloseFrame.NORMAL) {
             WSReconnectionST.getInstance().submitNewTaskSchedule();
-        } else {
-            InstrumentationUtils.shutdownLogic(true);
         }
     }
 

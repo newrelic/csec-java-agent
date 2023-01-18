@@ -16,6 +16,7 @@ import com.newrelic.agent.security.intcodeagent.schedulers.PolicyPullST;
 import com.newrelic.agent.security.intcodeagent.websocket.EventSendPool;
 import com.newrelic.agent.security.intcodeagent.websocket.JsonConverter;
 import com.newrelic.agent.security.intcodeagent.websocket.WSClient;
+import com.newrelic.agent.security.intcodeagent.websocket.WSReconnectionST;
 import com.newrelic.api.agent.NewRelic;
 import com.newrelic.api.agent.Transaction;
 import com.newrelic.api.agent.security.schema.*;
@@ -201,6 +202,7 @@ public class Agent implements SecurityAgent {
          * policy
          * HealthCheck
          */
+        WSClient.shutDownWSClient();
         PolicyPullST.getInstance().cancelTask(true);
         GlobalPolicyParameterPullST.getInstance().cancelTask(true);
         HealthCheckScheduleThread.getInstance().cancelTask(true);
@@ -228,6 +230,7 @@ public class Agent implements SecurityAgent {
         GlobalPolicyParameterPullST.shutDownPool();
         HealthCheckScheduleThread.shutDownPool();
         WSClient.shutDownWSClient();
+        WSReconnectionST.shutDownPool();
         EventSendPool.shutDownPool();
     }
 
