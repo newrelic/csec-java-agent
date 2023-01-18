@@ -15,7 +15,6 @@ import java.net.URISyntaxException;
 public class HttpServletServer extends ExternalResource {
 
     private final int port;
-    private HttpTestServlet servlet;
     private Tomcat server;
     private File tmp;
     public HttpServletServer() {
@@ -47,7 +46,7 @@ public class HttpServletServer extends ExternalResource {
 
     private void startServer () throws Exception {
 
-        servlet = new HttpTestServlet();
+        HttpTestServlet servlet = new HttpTestServlet();
 
         server = new Tomcat();
         server.setPort(port);
@@ -55,7 +54,7 @@ public class HttpServletServer extends ExternalResource {
         server.setBaseDir(tmp.getAbsolutePath());
 
         Context context = server.addContext("", tmp.getAbsolutePath());
-        server.addServlet( context, "servlet" , servlet);
+        Tomcat.addServlet( context, "servlet" , servlet);
         context.addServletMappingDecoded("/*","servlet");
 
         final Connector connector = new Connector();
