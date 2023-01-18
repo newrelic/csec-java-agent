@@ -53,6 +53,16 @@ public class SecurityIntrospectorImpl implements SecurityIntrospector {
     }
 
     @Override
+    public void setResponseWriterHash(int hashCode) {
+        NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(RESPONSE_WRITER_HASH, hashCode);
+    }
+
+    @Override
+    public void setRequestReaderHash(int hashCode) {
+        NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(REQUEST_READER_HASH, hashCode);
+    }
+
+    @Override
     public int getRequestReaderHash() {
         return NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(REQUEST_READER_HASH, Integer.class);
     }
