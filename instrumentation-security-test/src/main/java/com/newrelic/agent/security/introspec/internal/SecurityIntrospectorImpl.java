@@ -48,6 +48,11 @@ public class SecurityIntrospectorImpl implements SecurityIntrospector {
     }
 
     @Override
+    public void setResponseOutStreamHash(int hashCode) {
+        NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(RESPONSE_OUTPUTSTREAM_HASH, hashCode);
+    }
+
+    @Override
     public int getRequestReaderHash() {
         return NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(REQUEST_READER_HASH, Integer.class);
     }
