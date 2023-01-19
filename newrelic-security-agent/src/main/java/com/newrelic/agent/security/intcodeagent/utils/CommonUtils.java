@@ -1,12 +1,8 @@
 package com.newrelic.agent.security.intcodeagent.utils;
 
-import com.newrelic.agent.security.AgentInfo;
-import com.newrelic.agent.security.instrumentator.httpclient.HttpClient;
-import com.newrelic.agent.security.instrumentator.httpclient.IRestClientConstants;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.newrelic.agent.security.intcodeagent.filelogging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.models.config.AgentPolicyParameters;
-import com.newrelic.agent.security.intcodeagent.models.javaagent.LogMessage;
 import com.newrelic.agent.security.intcodeagent.websocket.JsonConverter;
 import com.newrelic.api.agent.NewRelic;
 import com.newrelic.api.agent.security.Agent;
@@ -84,17 +80,6 @@ public class CommonUtils {
             logger.postLogMessageIfNecessary(LogLevel.ERROR, String.format("Exception raised in LC policy validation : %s :: caused by : %s", e.getMessage(), e.getCause()), e, CommonUtils.class.getName());
         }
         return false;
-    }
-
-    public static void fireLogMessageUploadAPI(LogMessage logMessage) {
-        if (logMessage == null || !HttpClient.isConnected() || !AgentInfo.getInstance().isAgentActive()) {
-            return;
-        }
-        try {
-            HttpClient.getInstance().doPost(IRestClientConstants.POST_LOG_MESSAGE, null, null, null, logMessage, true);
-        } catch (Exception e) {
-            logger.log(LogLevel.WARN, String.format("Upload log message to IC failed due to %s", e.getMessage()), CommonUtils.class.getName());
-        }
     }
 
 //    public static void writePolicyToFile() {

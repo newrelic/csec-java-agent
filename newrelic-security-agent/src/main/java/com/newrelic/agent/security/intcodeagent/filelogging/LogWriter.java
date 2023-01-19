@@ -1,8 +1,6 @@
 package com.newrelic.agent.security.intcodeagent.filelogging;
 
 import com.newrelic.agent.security.AgentInfo;
-import com.newrelic.agent.security.instrumentator.httpclient.HttpClient;
-import com.newrelic.agent.security.instrumentator.httpclient.IRestClientConstants;
 import com.newrelic.agent.security.instrumentator.os.OSVariables;
 import com.newrelic.agent.security.instrumentator.os.OsVariablesInstance;
 import com.newrelic.agent.security.intcodeagent.properties.K2JALogProperties;
@@ -16,8 +14,6 @@ import java.nio.file.attribute.PosixFilePermissions;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.util.Calendar;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 public class LogWriter implements Runnable {
@@ -210,13 +206,6 @@ public class LogWriter implements Runnable {
 
     public static void setLogLevel(LogLevel logLevel) {
         defaultLogLevel = logLevel.getLevel();
-    }
-
-    private static void uploadLogsAndDeleteFile(File file) {
-        Map<String, String> queryParams = new HashMap<>();
-        queryParams.put("applicationUUID", AgentInfo.getInstance().getApplicationUUID());
-        queryParams.put("saveName", file.getName());
-        HttpClient.getInstance().doPost(IRestClientConstants.COLLECTOR_UPLOAD_LOG, null, queryParams, null, file);
     }
 
     public static String getFileName() {

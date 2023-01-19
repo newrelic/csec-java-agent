@@ -11,7 +11,6 @@ import com.newrelic.agent.security.intcodeagent.models.config.AgentPolicyParamet
 import com.newrelic.agent.security.intcodeagent.models.javaagent.CollectorInitMsg;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.EventResponse;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.IntCodeControlCommand;
-import com.newrelic.agent.security.intcodeagent.schedulers.GlobalPolicyParameterPullST;
 import com.newrelic.agent.security.intcodeagent.utils.CommonUtils;
 import com.newrelic.agent.security.intcodeagent.websocket.JsonConverter;
 import com.newrelic.api.agent.security.schema.policy.AgentPolicy;
@@ -95,7 +94,7 @@ public class ControlCommandProcessor implements Runnable {
                     AgentPolicyParameters parameters = JsonConverter.getObjectMapper()
                             .readValue(controlCommand.getData().toString(), AgentPolicyParameters.class);
                     if (!CommonUtils.validateCollectorPolicyParameterSchema(parameters)) {
-                        logger.log(LogLevel.WARN, String.format(IAgentConstants.UNABLE_TO_VALIDATE_AGENT_POLICY_PARAMETER_DUE_TO_ERROR, parameters), GlobalPolicyParameterPullST.class.getName());
+                        logger.log(LogLevel.WARN, String.format(IAgentConstants.UNABLE_TO_VALIDATE_AGENT_POLICY_PARAMETER_DUE_TO_ERROR, parameters), ControlCommandProcessor.class.getName());
                         return;
                     }
                     AgentUtils.getInstance().setAgentPolicyParameters(parameters);

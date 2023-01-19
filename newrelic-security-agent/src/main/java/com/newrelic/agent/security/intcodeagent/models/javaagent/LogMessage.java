@@ -9,6 +9,8 @@ import java.util.Map;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class LogMessage {
 
+    private String jsonName = "log-message";
+
     private Long timestamp;
 
     private String level;
@@ -53,6 +55,15 @@ public class LogMessage {
 
     public Map<String, String> getLinkingMetadata() {
         return linkingMetadata;
+    }
+
+
+    public String getJsonName() {
+        return jsonName;
+    }
+
+    public void setJsonName(String jsonName) {
+        this.jsonName = jsonName;
     }
 
     @Override

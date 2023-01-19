@@ -7,7 +7,6 @@ import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool
 import com.newrelic.agent.security.intcodeagent.filelogging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.filelogging.LogWriter;
 import com.newrelic.agent.security.intcodeagent.models.collectorconfig.CollectorConfig;
-import com.newrelic.agent.security.intcodeagent.schedulers.GlobalPolicyParameterPullST;
 import com.newrelic.agent.security.intcodeagent.utils.CommonUtils;
 import com.newrelic.agent.security.util.IUtilConstants;
 import com.newrelic.api.agent.NewRelic;
@@ -158,7 +157,6 @@ public class AgentConfig {
 
     public void populateAgentPolicyParameters(){
         //TODO instantiate policy parameters if required
-        GlobalPolicyParameterPullST.getInstance();
     }
 
     public CollectorConfig getConfig() {

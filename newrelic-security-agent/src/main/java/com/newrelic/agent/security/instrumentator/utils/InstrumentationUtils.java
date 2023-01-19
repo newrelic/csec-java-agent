@@ -9,7 +9,6 @@ import com.newrelic.agent.security.intcodeagent.filelogging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.logging.HealthCheckScheduleThread;
 import com.newrelic.agent.security.intcodeagent.logging.IAgentConstants;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.ShutDownEvent;
-import com.newrelic.agent.security.intcodeagent.schedulers.GlobalPolicyParameterPullST;
 import com.newrelic.agent.security.intcodeagent.schedulers.InBoundOutBoundST;
 import com.newrelic.agent.security.intcodeagent.websocket.EventSendPool;
 import com.newrelic.agent.security.intcodeagent.websocket.WSClient;
@@ -76,7 +75,6 @@ public class InstrumentationUtils {
             ControlCommandProcessorThreadPool.shutDownPool();
             EventSendPool.shutDownPool();
             WSReconnectionST.shutDownPool();
-            GlobalPolicyParameterPullST.shutDownPool();
             InBoundOutBoundST.shutDownPool();
             FileUtils.deleteQuietly(new File(OsVariablesInstance.getInstance().getOsVariables().getTmpDirectory()));
 
