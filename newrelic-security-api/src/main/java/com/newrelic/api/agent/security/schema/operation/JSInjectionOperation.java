@@ -7,8 +7,7 @@ public class JSInjectionOperation extends AbstractOperation {
 
     private String javaScriptCode;
 
-    public JSInjectionOperation(String javaScriptCode, String className, String methodName, String executionId,
-                                long startTime) {
+    public JSInjectionOperation(String javaScriptCode, String className, String methodName) {
         super(className, methodName);
         this.setCaseType(VulnerabilityCaseType.JAVASCRIPT_INJECTION);
         this.javaScriptCode = javaScriptCode;
