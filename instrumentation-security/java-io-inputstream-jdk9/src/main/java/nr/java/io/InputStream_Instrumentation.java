@@ -5,10 +5,11 @@
  *
  */
 
-package java.io;
+package nr.java.io;
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.weaver.*;
 import com.nr.instrumentation.security.javaio.InputStreamHelper;
+import java.io.IOException;
 
 @Weave(type = MatchType.BaseClass, originalName = "java.io.InputStream")
 public abstract class InputStream_Instrumentation {
@@ -41,6 +42,7 @@ public abstract class InputStream_Instrumentation {
     }
 
     public int read(byte[] b, int off, int len) throws IOException {
+        System.out.println("read 3");
         int returnData = -1;
         boolean currentCascadedCall = cascadedCall;
         // Preprocess Phase
@@ -129,7 +131,6 @@ public abstract class InputStream_Instrumentation {
                     !NewRelicSecurity.isHookProcessingActive()) {
                 return;
             }
-//                System.out.println("Start IS2 "+ this.hashCode());
             if(inputStreamDataGatheringAllowed == null) {
                 inputStreamDataGatheringAllowed = InputStreamHelper.processRequestInputStreamHookData(this.hashCode());
             }
