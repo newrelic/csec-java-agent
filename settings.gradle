@@ -88,4 +88,8 @@ include 'instrumentation-security:xalan-xpath'
 include 'instrumentation-security:saxon-xpath'
 include 'instrumentation-security:jaxen-xpath'
 include 'instrumentation-security:jaxen-xpath-1.1'
+include 'instrumentation-security:nashorn-jsinjection'
+include 'instrumentation-security:rhino-jsinjection'
+include 'instrumentation-security:graalvm-jsinjection-19.0.0'
+include 'instrumentation-security:graalvm-jsinjection-22.0.0'
 
