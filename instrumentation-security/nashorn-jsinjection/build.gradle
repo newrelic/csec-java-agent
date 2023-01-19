@@ -1,0 +1,22 @@
+apply plugin: 'java'
+
+dependencies {
+    implementation(project(":newrelic-security-api"))
+    implementation("com.newrelic.agent.java:newrelic-api:7.11.0-SNAPSHOT")
+    implementation("com.newrelic.agent.java:newrelic-weaver-api:7.11.0-SNAPSHOT")
+    implementation("org.openjdk.nashorn:nashorn-core:15.0")
+}
+
+jar {
+    manifest { attributes 'Implementation-Title': 'com.newrelic.instrumentation.security.nashorn-jsinjection' }
+}
+
+verifyInstrumentation {
+    passesOnly 'org.openjdk.nashorn:nashorn-core:[15.0,)'
+}
+
+
+site {
+    title 'JSInjection'
+    type 'Messaging'
+}
