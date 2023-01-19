@@ -23,15 +23,17 @@ public interface SecurityIntrospector {
 
     int getResponseWriterHash();
 
+    int getResponseOutStreamHash();
+
+    SecurityMetaData getSecurityMetaData();
+
     void setResponseOutStreamHash(int hashCode);
 
     void setResponseWriterHash(int hashCode);
 
+    void setRequestInputStreamHash(int hashCode);
+
     void setRequestReaderHash(int hashCode);
-
-    int getResponseOutStreamHash();
-
-    SecurityMetaData getSecurityMetaData();
 
     void clear();
 }

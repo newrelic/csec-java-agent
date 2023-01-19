@@ -31,6 +31,7 @@ class TransformingClassLoader extends URLClassLoader {
             // These classes both trigger the HttpTestServerImpl to get loaded
             "com.newrelic.agent.security.introspec.internal.HttpServerRule",
             "com.newrelic.agent.security.introspec.internal.HttpServerLocator",
+            "com.newrelic.api.agent.security.NewRelicSecurity"
     };
 
     public TransformingClassLoader(URLClassLoader parent) {
