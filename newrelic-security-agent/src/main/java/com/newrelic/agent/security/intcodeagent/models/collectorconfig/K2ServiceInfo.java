@@ -13,7 +13,6 @@ import java.util.Objects;
 public class K2ServiceInfo {
 
     private String validatorServiceEndpointURL;
-    private String resourceServiceEndpointURL;
 
     @JsonIgnore
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
@@ -24,14 +23,6 @@ public class K2ServiceInfo {
 
     public void setValidatorServiceEndpointURL(String validatorServiceEndpointURL) {
         this.validatorServiceEndpointURL = validatorServiceEndpointURL;
-    }
-
-    public String getResourceServiceEndpointURL() {
-        return resourceServiceEndpointURL;
-    }
-
-    public void setResourceServiceEndpointURL(String resourceServiceEndpointURL) {
-        this.resourceServiceEndpointURL = resourceServiceEndpointURL;
     }
 
     @JsonAnyGetter
@@ -49,13 +40,12 @@ public class K2ServiceInfo {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         K2ServiceInfo that = (K2ServiceInfo) o;
-        return validatorServiceEndpointURL.equals(that.validatorServiceEndpointURL) &&
-                resourceServiceEndpointURL.equals(that.resourceServiceEndpointURL);
+        return validatorServiceEndpointURL.equals(that.validatorServiceEndpointURL);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(validatorServiceEndpointURL, resourceServiceEndpointURL);
+        return Objects.hash(validatorServiceEndpointURL);
     }
 
     @Override
@@ -64,6 +54,6 @@ public class K2ServiceInfo {
     }
 
     public boolean isEmpty() {
-        return StringUtils.isAnyBlank(validatorServiceEndpointURL, resourceServiceEndpointURL);
+        return StringUtils.isAnyBlank(validatorServiceEndpointURL);
     }
 }
