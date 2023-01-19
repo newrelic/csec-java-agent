@@ -13,6 +13,7 @@ jar {
 
 verifyInstrumentation {
     passesOnly 'org.ldaptive:ldaptive:[,2.0.0)'
+    excludeRegex '.*-RC[0-9]+'
 }
 
 

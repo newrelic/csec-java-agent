@@ -13,6 +13,7 @@ jar {
 
 verifyInstrumentation {
     passesOnly 'org.apache.camel:camel-core:[3.0.0-RC1,)'
+    excludeRegex '.*-M[0-9]+'
 }
 
 
