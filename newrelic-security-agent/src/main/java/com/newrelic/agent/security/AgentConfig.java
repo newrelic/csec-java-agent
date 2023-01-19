@@ -8,7 +8,6 @@ import com.newrelic.agent.security.intcodeagent.filelogging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.filelogging.LogWriter;
 import com.newrelic.agent.security.intcodeagent.models.collectorconfig.CollectorConfig;
 import com.newrelic.agent.security.intcodeagent.schedulers.GlobalPolicyParameterPullST;
-import com.newrelic.agent.security.intcodeagent.schedulers.PolicyPullST;
 import com.newrelic.agent.security.intcodeagent.utils.CommonUtils;
 import com.newrelic.agent.security.util.IUtilConstants;
 import com.newrelic.api.agent.NewRelic;
@@ -154,7 +153,7 @@ public class AgentConfig {
     }
 
     public void populateAgentPolicy(){
-        PolicyPullST.instantiateDefaultPolicy();
+        AgentUtils.getInstance().instantiateDefaultPolicy();
     }
 
     public void populateAgentPolicyParameters(){

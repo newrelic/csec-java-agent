@@ -12,7 +12,6 @@ import com.newrelic.agent.security.intcodeagent.logging.HealthCheckScheduleThrea
 import com.newrelic.agent.security.intcodeagent.logging.IAgentConstants;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.ExitEventBean;
 import com.newrelic.agent.security.intcodeagent.schedulers.GlobalPolicyParameterPullST;
-import com.newrelic.agent.security.intcodeagent.schedulers.PolicyPullST;
 import com.newrelic.agent.security.intcodeagent.websocket.EventSendPool;
 import com.newrelic.agent.security.intcodeagent.websocket.JsonConverter;
 import com.newrelic.agent.security.intcodeagent.websocket.WSClient;
@@ -132,7 +131,6 @@ public class Agent implements SecurityAgent {
     }
 
     private void startK2Services() {
-        PolicyPullST.getInstance();
         HealthCheckScheduleThread.getInstance();
         logger.logInit(
                 LogLevel.INFO,
@@ -203,7 +201,6 @@ public class Agent implements SecurityAgent {
          * HealthCheck
          */
         WSClient.shutDownWSClient();
-        PolicyPullST.getInstance().cancelTask(true);
         GlobalPolicyParameterPullST.getInstance().cancelTask(true);
         HealthCheckScheduleThread.getInstance().cancelTask(true);
 
@@ -226,7 +223,6 @@ public class Agent implements SecurityAgent {
          * 3. event pool
          * 4. HealthCheck
          **/
-        PolicyPullST.shutDownPool();
         GlobalPolicyParameterPullST.shutDownPool();
         HealthCheckScheduleThread.shutDownPool();
         WSClient.shutDownWSClient();

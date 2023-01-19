@@ -95,13 +95,6 @@ public class CollectorConfigurationUtils {
             hostName = AgentInfo.getInstance().getLinkingMetadata().getOrDefault(INRSettingsKey.HOSTNAME, StringUtils.EMPTY);
         }
 
-        String accountId = NewRelic.getAgent().getConfig().getValue("account_id");
-        if (StringUtils.isBlank(accountId)) {
-            logger.log(LogLevel.ERROR, "Unable to find account id.", CollectorConfigurationUtils.class.getName());
-            //TODO raise exception
-        } else {
-            collectorConfig.getCustomerInfo().setAccountId(accountId);
-        }
         collectorConfig.setNodeId(AgentInfo.getInstance().getLinkingMetadata().getOrDefault(INRSettingsKey.NR_ENTITY_GUID, StringUtils.EMPTY));
         collectorConfig.setNodeName(hostName);
         collectorConfig.setNodeGroupTags(Collections.emptySet());
@@ -109,6 +102,14 @@ public class CollectorConfigurationUtils {
         CustomerInfo customerInfo = new CustomerInfo();
         customerInfo.setApiAccessorToken(apiAccessor);
         collectorConfig.setCustomerInfo(customerInfo);
+
+        String accountId = NewRelic.getAgent().getConfig().getValue("account_id");
+        if (StringUtils.isBlank(accountId)) {
+            logger.log(LogLevel.ERROR, "Unable to find account id.", CollectorConfigurationUtils.class.getName());
+            //TODO raise exception
+        } else {
+            collectorConfig.getCustomerInfo().setAccountId(accountId);
+        }
 
         K2ServiceInfo serviceInfo = new K2ServiceInfo();
         serviceInfo.setResourceServiceEndpointURL(resourceServiceEndpointUrl);
