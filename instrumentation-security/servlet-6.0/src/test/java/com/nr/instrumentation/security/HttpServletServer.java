@@ -1,6 +1,7 @@
 package com.nr.instrumentation.security;
 
 import org.apache.catalina.Context;
+import org.apache.catalina.LifecycleState;
 import org.apache.catalina.startup.Tomcat;
 import org.apache.catalina.connector.Connector;
 
@@ -70,12 +71,17 @@ public class HttpServletServer extends ExternalResource {
     }
 
     private void stop() {
-        try {
-            server.stop();
-            server.destroy();
-            FileUtils.forceDelete(tmp);
-        } catch (Exception e) {
-            e.printStackTrace();
+        if (server.getServer() != null && server.getServer().getState() != LifecycleState.DESTROYED) {
+            try {
+                if (server.getServer().getState() != LifecycleState.STOPPED) {
+                    server.stop();
+                }
+                server.destroy();
+                FileUtils.forceDelete(tmp);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
         }
         tmp = null;
     }
