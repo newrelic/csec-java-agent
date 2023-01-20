@@ -12,7 +12,6 @@ import com.newrelic.agent.security.intcodeagent.logging.HealthCheckScheduleThrea
 import com.newrelic.agent.security.intcodeagent.logging.IAgentConstants;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.ExitEventBean;
 import com.newrelic.agent.security.intcodeagent.websocket.EventSendPool;
-import com.newrelic.agent.security.intcodeagent.websocket.JsonConverter;
 import com.newrelic.agent.security.intcodeagent.websocket.WSClient;
 import com.newrelic.agent.security.intcodeagent.websocket.WSReconnectionST;
 import com.newrelic.api.agent.NewRelic;
@@ -254,8 +253,6 @@ public class Agent implements SecurityAgent {
 //            blockForResponse(operation.getExecutionId());
 //        }
 //        checkIfClientIPBlocked();
-        System.out.println("Operation : " + JsonConverter.toJSON(operation));
-        System.out.println("SEC_META : " + JsonConverter.toJSON(securityMetaData));
     }
 
     private static boolean needToGenerateEvent(String apiID) {
@@ -340,7 +337,6 @@ public class Agent implements SecurityAgent {
                 ExitEventBean exitEventBean = new ExitEventBean(operation.getExecutionId(), operation.getCaseType().getCaseType());
                 exitEventBean.setK2RequestIdentifier(k2RequestIdentifier.getRaw());
                 logger.log(LogLevel.DEBUG, "Exit event : " + exitEventBean, this.getClass().getName());
-                System.out.println("Exit event : " + exitEventBean);
                 DispatcherPool.getInstance().dispatchExitEvent(exitEventBean);
                 AgentInfo.getInstance().getJaHealthCheck().incrementExitEventSentCount();
             }

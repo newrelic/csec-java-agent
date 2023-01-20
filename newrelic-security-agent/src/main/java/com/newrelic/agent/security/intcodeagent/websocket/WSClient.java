@@ -19,6 +19,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.Instant;
 import java.time.ZoneId;
+import java.util.concurrent.TimeUnit;
 
 public class WSClient extends WebSocketClient {
 
@@ -65,7 +66,7 @@ public class WSClient extends WebSocketClient {
     public void openConnection() throws InterruptedException {
         logger.logInit(LogLevel.INFO, String.format(IAgentConstants.INIT_WS_CONNECTION, AgentConfig.getInstance().getConfig().getK2ServiceInfo().getValidatorServiceEndpointURL()),
                 WSClient.class.getName());
-        connectBlocking();
+        connectBlocking(10, TimeUnit.SECONDS);
         WebSocket conn = getConnection();
         if (conn instanceof WebSocketImpl) {
             this.connection = (WebSocketImpl) conn;
