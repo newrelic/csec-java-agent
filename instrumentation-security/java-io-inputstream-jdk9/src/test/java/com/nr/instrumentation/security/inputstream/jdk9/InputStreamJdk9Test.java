@@ -76,10 +76,7 @@ public class InputStreamJdk9Test {
         try {
             InputStream inputStream = Files.newInputStream(Paths.get(FILE));
             introspector.setRequestInputStreamHash(inputStream.hashCode());
-            int i=inputStream.read();
-            while (i!=-1) {
-                i = inputStream.read();
-            }
+            while (inputStream.read()!=-1);
             inputStream.close();
         } catch (Exception ex) {
             System.out.println(ex.getMessage());
@@ -118,7 +115,64 @@ public class InputStreamJdk9Test {
         try {
             InputStream inputStream = Files.newInputStream(Paths.get(FILE));
             introspector.setRequestInputStreamHash(inputStream.hashCode());
-            System.out.println(inputStream.read(expected, 0, DATA.length()));
+            System.out.println(inputStream.read(expected, 5, 25));
+            inputStream.close();
+        } catch (Exception ex) {
+            System.out.println(ex.getMessage());
+        }
+
+        SecurityMetaData meta = introspector.getSecurityMetaData();
+        Assert.assertNotNull("Empty security meta data", meta);
+        Assert.assertFalse("Empty request in security meta data", meta.getRequest().isEmpty());
+        Assert.assertEquals(new String(expected).substring(5, 30), meta.getRequest().getBody().toString());
+    }
+
+    @Test
+    public void testReadWithFiles3() {
+        SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
+        byte[] expected = new byte[DATA.length()];
+        try {
+            InputStream inputStream = Files.newInputStream(Paths.get(FILE));
+            introspector.setRequestInputStreamHash(inputStream.hashCode());
+            expected = inputStream.readAllBytes();
+            inputStream.close();
+        } catch (Exception ex) {
+            System.out.println(ex.getMessage());
+        }
+
+        SecurityMetaData meta = introspector.getSecurityMetaData();
+        Assert.assertNotNull("Empty security meta data", meta);
+        Assert.assertFalse("Empty request in security meta data", meta.getRequest().isEmpty());
+        Assert.assertEquals(new String(expected), meta.getRequest().getBody().toString());
+    }
+
+    @Test
+    public void testReadWithFiles4() {
+        SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
+        byte[] expected = new byte[DATA.length()];
+        try {
+            InputStream inputStream = Files.newInputStream(Paths.get(FILE));
+            introspector.setRequestInputStreamHash(inputStream.hashCode());
+            expected = inputStream.readNBytes(30);
+            inputStream.close();
+        } catch (Exception ex) {
+            System.out.println(ex.getMessage());
+        }
+
+        SecurityMetaData meta = introspector.getSecurityMetaData();
+        Assert.assertNotNull("Empty security meta data", meta);
+        Assert.assertFalse("Empty request in security meta data", meta.getRequest().isEmpty());
+        Assert.assertEquals(new String(expected).substring(0, 30), meta.getRequest().getBody().toString());
+    }
+
+    @Test
+    public void testReadWithFiles5() {
+        SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
+        byte[] expected = new byte[DATA.length()];
+        try {
+            InputStream inputStream = Files.newInputStream(Paths.get(FILE));
+            introspector.setRequestInputStreamHash(inputStream.hashCode());
+            inputStream.readNBytes(expected, 5, 25);
             inputStream.close();
         } catch (Exception ex) {
             System.out.println(ex.getMessage());
@@ -136,12 +190,8 @@ public class InputStreamJdk9Test {
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
         try {
             InputStream inputStream = new FileInputStream(FILE);
-            System.out.println(inputStream.hashCode());
             introspector.setRequestInputStreamHash(inputStream.hashCode());
-            int i=inputStream.read();
-            while (i!=-1) {
-                i = inputStream.read();
-            }
+            while (inputStream.read()!=-1);
             inputStream.close();
         } catch (Exception ex) {
             System.out.println(ex.getMessage());
@@ -192,6 +242,63 @@ public class InputStreamJdk9Test {
     }
 
     @Test
+    public void testReadWithFileInputStream3() {
+        SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
+        byte[] expected = new byte[DATA.length()];
+        try {
+            InputStream inputStream = new FileInputStream(FILE);
+            introspector.setRequestInputStreamHash(inputStream.hashCode());
+            expected = inputStream.readAllBytes();
+            inputStream.close();
+        } catch (Exception ex) {
+            System.out.println(ex.getMessage());
+        }
+
+        SecurityMetaData meta = introspector.getSecurityMetaData();
+        Assert.assertNotNull("Empty security meta data", meta);
+        Assert.assertFalse("Empty request in security meta data", meta.getRequest().isEmpty());
+        Assert.assertEquals(new String(expected), meta.getRequest().getBody().toString());
+    }
+
+    @Test
+    public void testReadWithFileInputStream4() {
+        SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
+        byte[] expected = new byte[DATA.length()];
+        try {
+            InputStream inputStream = new FileInputStream(FILE);
+            introspector.setRequestInputStreamHash(inputStream.hashCode());
+            expected = inputStream.readNBytes(30);
+            inputStream.close();
+        } catch (Exception ex) {
+            System.out.println(ex.getMessage());
+        }
+
+        SecurityMetaData meta = introspector.getSecurityMetaData();
+        Assert.assertNotNull("Empty security meta data", meta);
+        Assert.assertFalse("Empty request in security meta data", meta.getRequest().isEmpty());
+        Assert.assertEquals(new String(expected).substring(0, 30), meta.getRequest().getBody().toString());
+    }
+
+    @Test
+    public void testReadWithFileInputStream5() {
+        SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
+        byte[] expected = new byte[DATA.length()];
+        try {
+            InputStream inputStream = new FileInputStream(FILE);
+            introspector.setRequestInputStreamHash(inputStream.hashCode());
+            inputStream.readNBytes(expected, 5, 25);
+            inputStream.close();
+        } catch (Exception ex) {
+            System.out.println(ex.getMessage());
+        }
+
+        SecurityMetaData meta = introspector.getSecurityMetaData();
+        Assert.assertNotNull("Empty security meta data", meta);
+        Assert.assertFalse("Empty request in security meta data", meta.getRequest().isEmpty());
+        Assert.assertEquals(new String(expected).substring(5, 30), meta.getRequest().getBody().toString());
+    }
+
+    @Test
     @Ignore("This type of construct's instrumentation is in servlet module")
     public void testReadWithByteArrayInputStream() {
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
@@ -200,10 +307,7 @@ public class InputStreamJdk9Test {
         try {
             ByteArrayInputStream inputStream = new ByteArrayInputStream(DATA.getBytes());
             introspector.setRequestInputStreamHash(inputStream.hashCode());
-            int i=inputStream.read();
-            while (i!=-1) {
-                i = inputStream.read();
-            }
+            while (inputStream.read()!=-1);
             inputStream.close();
         } catch(Exception e) {
             e.getStackTrace();
@@ -242,6 +346,63 @@ public class InputStreamJdk9Test {
             ByteArrayInputStream inputStream = new ByteArrayInputStream(DATA.getBytes());
             introspector.setRequestInputStreamHash(inputStream.hashCode());
             inputStream.read(expected, 5, 25);
+            inputStream.close();
+        } catch (Exception ex) {
+            System.out.println(ex.getMessage());
+        }
+
+        SecurityMetaData meta = introspector.getSecurityMetaData();
+        Assert.assertNotNull("Empty security meta data", meta);
+        Assert.assertFalse("Empty request in security meta data", meta.getRequest().isEmpty());
+        Assert.assertEquals(new String(expected).substring(5, 30), meta.getRequest().getBody().toString());
+    }
+
+    @Test
+    public void testReadWithByteArrayInputStream3() {
+        SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
+        byte[] expected = new byte[DATA.length()];
+        try {
+            ByteArrayInputStream inputStream = new ByteArrayInputStream(DATA.getBytes());
+            introspector.setRequestInputStreamHash(inputStream.hashCode());
+            expected = inputStream.readAllBytes();
+            inputStream.close();
+        } catch (Exception ex) {
+            System.out.println(ex.getMessage());
+        }
+
+        SecurityMetaData meta = introspector.getSecurityMetaData();
+        Assert.assertNotNull("Empty security meta data", meta);
+        Assert.assertFalse("Empty request in security meta data", meta.getRequest().isEmpty());
+        Assert.assertEquals(new String(expected), meta.getRequest().getBody().toString());
+    }
+
+    @Test
+    public void testReadWithByteArrayInputStream4() {
+        SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
+        byte[] expected = new byte[DATA.length()];
+        try {
+            ByteArrayInputStream inputStream = new ByteArrayInputStream(DATA.getBytes());
+            introspector.setRequestInputStreamHash(inputStream.hashCode());
+            expected = inputStream.readNBytes(30);
+            inputStream.close();
+        } catch (Exception ex) {
+            System.out.println(ex.getMessage());
+        }
+
+        SecurityMetaData meta = introspector.getSecurityMetaData();
+        Assert.assertNotNull("Empty security meta data", meta);
+        Assert.assertFalse("Empty request in security meta data", meta.getRequest().isEmpty());
+        Assert.assertEquals(new String(expected).substring(0, 30), meta.getRequest().getBody().toString());
+    }
+
+    @Test
+    public void testReadWithByteArrayInputStream5() {
+        SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
+        byte[] expected = new byte[DATA.length()];
+        try {
+            ByteArrayInputStream inputStream = new ByteArrayInputStream(DATA.getBytes());
+            introspector.setRequestInputStreamHash(inputStream.hashCode());
+            inputStream.readNBytes(expected, 5, 25);
             inputStream.close();
         } catch (Exception ex) {
             System.out.println(ex.getMessage());

@@ -42,7 +42,6 @@ public abstract class InputStream_Instrumentation {
     }
 
     public int read(byte[] b, int off, int len) throws IOException {
-        System.out.println("read 3");
         int returnData = -1;
         boolean currentCascadedCall = cascadedCall;
         // Preprocess Phase
