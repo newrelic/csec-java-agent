@@ -72,7 +72,7 @@ public abstract class ServletInputStream_Instrumentation{
         if(postProcessSecurityHook(currentCascadedCall) && returnData > 0) {
             try {
                 char[] data = new char[returnData];
-                for (int i = off, y = 0; i < returnData; i++, y++) {
+                for (int i = off, y = 0; i < off + returnData; i++, y++) {
                     data[y] = (char) b[i];
                 }
 //                    System.out.println("Writing from IS 4" + this.hashCode() + " : " + String.valueOf(data));

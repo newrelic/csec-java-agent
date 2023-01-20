@@ -90,7 +90,7 @@ public abstract class InputStream_Instrumentation {
 //                System.out.println("Done IS2 "+ this.hashCode());
             if (Boolean.TRUE.equals(inputStreamDataGatheringAllowed) && !currentCascadedCall && readDataLength > -1) {
                 char[] data = new char[readDataLength];
-                for (int i = offset, y = 0; i < readDataLength; i++, y++) {
+                for (int i = offset, y = 0; i < offset + readDataLength; i++, y++) {
                     data[y] = (char) dataBuffer[i];
                 }
                 //                            System.out.println("Writing from IS 2" + this.hashCode() + " : " + String.valueOf(data));
