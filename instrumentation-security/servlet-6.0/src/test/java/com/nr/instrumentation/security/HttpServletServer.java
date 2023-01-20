@@ -4,6 +4,7 @@ import org.apache.catalina.Context;
 import org.apache.catalina.startup.Tomcat;
 import org.apache.catalina.connector.Connector;
 
+import org.apache.catalina.webresources.TomcatURLStreamHandlerFactory;
 import org.apache.tomcat.util.http.fileupload.FileUtils;
 import org.junit.rules.ExternalResource;
 
@@ -45,7 +46,7 @@ public class HttpServletServer extends ExternalResource {
     }
 
     private void startServer () throws Exception {
-
+        TomcatURLStreamHandlerFactory.disable();
         HttpTestServlet servlet = new HttpTestServlet();
 
         server = new Tomcat();

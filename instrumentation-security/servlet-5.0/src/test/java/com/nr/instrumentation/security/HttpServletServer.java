@@ -4,6 +4,7 @@ import org.apache.catalina.Context;
 import org.apache.catalina.startup.Tomcat;
 import org.apache.catalina.connector.Connector;
 
+import org.apache.catalina.webresources.TomcatURLStreamHandlerFactory;
 import org.apache.tomcat.util.http.fileupload.FileUtils;
 import org.junit.rules.ExternalResource;
 
@@ -45,6 +46,7 @@ public class HttpServletServer extends ExternalResource {
     }
 
     private void startServer () throws Exception {
+        TomcatURLStreamHandlerFactory.disable();
 
         HttpTestServlet servlet = new HttpTestServlet();
 
@@ -54,7 +56,7 @@ public class HttpServletServer extends ExternalResource {
         server.setBaseDir(tmp.getAbsolutePath());
 
         Context context = server.addContext("", tmp.getAbsolutePath());
-        server.addServlet( context, "servlet" , servlet);
+        Tomcat.addServlet( context, "servlet" , servlet);
         context.addServletMappingDecoded("/*","servlet");
 
         final Connector connector = new Connector();

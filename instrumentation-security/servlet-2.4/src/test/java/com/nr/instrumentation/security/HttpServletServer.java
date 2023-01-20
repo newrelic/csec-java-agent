@@ -1,9 +1,11 @@
 package com.nr.instrumentation.security;
 
 import org.apache.catalina.Context;
+import org.apache.catalina.LifecycleState;
 import org.apache.catalina.startup.Tomcat;
 import org.apache.catalina.connector.Connector;
 
+import org.apache.catalina.webresources.TomcatURLStreamHandlerFactory;
 import org.apache.tomcat.util.http.fileupload.FileUtils;
 import org.junit.rules.ExternalResource;
 
@@ -12,6 +14,7 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.URI;
 import java.net.URISyntaxException;
+
 public class HttpServletServer extends ExternalResource {
 
     private final int port;
@@ -45,13 +48,18 @@ public class HttpServletServer extends ExternalResource {
     }
 
     private void startServer () throws Exception {
+        TomcatURLStreamHandlerFactory.disable();
 
         HttpTestServlet servlet = new HttpTestServlet();
 
         server = new Tomcat();
         server.setPort(port);
+
         tmp = new File("./tmp");
-        server.setBaseDir(tmp.getAbsolutePath());
+        String workingDir = tmp.getAbsolutePath();
+
+        server.setBaseDir(workingDir);
+
 
         Context context = server.addContext("", tmp.getAbsolutePath());
         Tomcat.addServlet( context, "servlet" , servlet);
@@ -69,13 +77,20 @@ public class HttpServletServer extends ExternalResource {
     }
 
     private void stop() {
-        try {
-            server.stop();
-            server.destroy();
+        if (server.getServer() != null && server.getServer().getState() != LifecycleState.DESTROYED) {
+            try {
+                if (server.getServer().getState() != LifecycleState.STOPPED) {
+                    server.stop();
+                }
+
+                server.destroy();
             FileUtils.forceDelete(tmp);
-        } catch (Exception e) {
-            e.printStackTrace();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
         }
+
         tmp = null;
     }
 }
