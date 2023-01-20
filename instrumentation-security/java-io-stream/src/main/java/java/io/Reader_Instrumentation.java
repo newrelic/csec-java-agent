@@ -66,7 +66,7 @@ public abstract class Reader_Instrumentation {
         // Postprocess Phase
         if(postProcessSecurityHook(currentCascadedCall) && returnData > 0){
             try {
-                NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().getBody().append(target, 0, returnData);
+                NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().getBody().append(target.array(), 0, returnData);
             } catch (Throwable ignored) {
 //                ignored.printStackTrace(System.out);
             }
