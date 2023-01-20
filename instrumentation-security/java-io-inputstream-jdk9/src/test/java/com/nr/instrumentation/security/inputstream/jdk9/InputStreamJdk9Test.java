@@ -128,7 +128,7 @@ public class InputStreamJdk9Test {
     }
 
     @Test
-    public void testReadWithFiles3() {
+    public void testReadAllBytesWithFiles() {
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
         byte[] expected = new byte[DATA.length()];
         try {
@@ -147,7 +147,7 @@ public class InputStreamJdk9Test {
     }
 
     @Test
-    public void testReadWithFiles4() {
+    public void testReadNBytesWithFiles() {
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
         byte[] expected = new byte[DATA.length()];
         try {
@@ -166,7 +166,7 @@ public class InputStreamJdk9Test {
     }
 
     @Test
-    public void testReadWithFiles5() {
+    public void testReadNBytesWithFiles1() {
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
         byte[] expected = new byte[DATA.length()];
         try {
@@ -242,7 +242,7 @@ public class InputStreamJdk9Test {
     }
 
     @Test
-    public void testReadWithFileInputStream3() {
+    public void testReadAllBytesWithFileInputStream() {
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
         byte[] expected = new byte[DATA.length()];
         try {
@@ -261,7 +261,7 @@ public class InputStreamJdk9Test {
     }
 
     @Test
-    public void testReadWithFileInputStream4() {
+    public void testReadNBytesWithFileInputStream() {
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
         byte[] expected = new byte[DATA.length()];
         try {
@@ -280,7 +280,7 @@ public class InputStreamJdk9Test {
     }
 
     @Test
-    public void testReadWithFileInputStream5() {
+    public void testReadNBytesWithFileInputStream1() {
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
         byte[] expected = new byte[DATA.length()];
         try {
@@ -358,7 +358,7 @@ public class InputStreamJdk9Test {
     }
 
     @Test
-    public void testReadWithByteArrayInputStream3() {
+    public void testReadAllBytesWithByteArrayInputStream() {
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
         byte[] expected = new byte[DATA.length()];
         try {
@@ -377,7 +377,7 @@ public class InputStreamJdk9Test {
     }
 
     @Test
-    public void testReadWithByteArrayInputStream4() {
+    public void testReadNBytesWithByteArrayInputStream() {
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
         byte[] expected = new byte[DATA.length()];
         try {
@@ -396,7 +396,7 @@ public class InputStreamJdk9Test {
     }
 
     @Test
-    public void testReadWithByteArrayInputStream5() {
+    public void testReadNBytesWithByteArrayInputStream1() {
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
         byte[] expected = new byte[DATA.length()];
         try {
