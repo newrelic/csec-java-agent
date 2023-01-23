@@ -119,7 +119,7 @@ public class Agent implements SecurityAgent {
         populateLinkingMetadata();
         info.agentStatTrigger();
 
-        System.out.printf("This application instance is now being protected by K2 Agent under id %s\n", info.getApplicationUUID());
+        System.out.printf("This application instance is now being protected by New Relic Security under id %s\n", info.getApplicationUUID());
     }
 
     private void populateLinkingMetadata() {

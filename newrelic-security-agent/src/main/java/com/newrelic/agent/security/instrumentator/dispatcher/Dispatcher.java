@@ -236,8 +236,7 @@ public class Dispatcher implements Runnable {
             return;
         }
         Set<String> xssConstructs = CallbackUtils.checkForReflectedXSS(securityMetaData.getRequest(), securityMetaData.getResponse());
-        if (AgentInfo.getInstance().getApplicationInfo().getServerInfo().getDeployedApplications().isEmpty() ||
-                (!xssConstructs.isEmpty() && !actuallyEmpty(xssConstructs) && StringUtils.isNotBlank(securityMetaData.getResponse().getResponseBody())) ||
+        if ((!xssConstructs.isEmpty() && !actuallyEmpty(xssConstructs) && StringUtils.isNotBlank(securityMetaData.getResponse().getResponseBody())) ||
                 (AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getEnabled()
                         && AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getIastScan().getEnabled())) {
             JSONArray params = new JSONArray();
@@ -250,7 +249,6 @@ public class Dispatcher implements Runnable {
             eventBean.setStartTime(operation.getStartTime());
             eventBean.setBlockingProcessingTime(
                     (Long) extraInfo.get(BLOCKING_END_TIME) - eventBean.getStartTime());
-
 
             eventBean.setApiId(operation.getApiID());
             EventSendPool.getInstance().sendEvent(eventBean);

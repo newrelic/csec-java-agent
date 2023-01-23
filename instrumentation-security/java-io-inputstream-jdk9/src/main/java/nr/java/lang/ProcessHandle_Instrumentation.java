@@ -1,7 +1,8 @@
 package nr.java.lang;
 
+import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
 
-@Weave(originalName = "java.lang.ProcessHandle")
-public interface ProcessHandle_Instrumentation {
+@Weave(type = MatchType.Interface, originalName = "java.lang.ProcessHandle")
+public abstract class ProcessHandle_Instrumentation {
 }
