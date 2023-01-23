@@ -3,7 +3,7 @@ package com.newrelic.agent.security.intcodeagent.filelogging;
 import com.newrelic.agent.security.AgentInfo;
 import com.newrelic.agent.security.instrumentator.utils.AgentUtils;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.LogMessage;
-import com.newrelic.agent.security.intcodeagent.utils.CommonUtils;
+import com.newrelic.agent.security.intcodeagent.websocket.EventSendPool;
 import com.newrelic.agent.security.intcodeagent.websocket.JsonConverter;
 
 import java.io.IOException;
@@ -151,7 +151,7 @@ public class FileLoggerThreadPool {
         if (logLevel.getLevel() <= LogLevel.WARN.getLevel()) {
             AgentUtils.getInstance().getStatusLogMostRecentErrors().add(JsonConverter.toJSON(message));
         }
-        CommonUtils.fireLogMessageUploadAPI(message);
+        EventSendPool.getInstance().sendEvent(message);
         return message;
     }
 

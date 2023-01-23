@@ -14,6 +14,8 @@ public class CustomerInfo {
 
     private String apiAccessorToken;
 
+    private String accountId;
+
     @JsonIgnore
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
@@ -26,6 +28,14 @@ public class CustomerInfo {
 
     public void setApiAccessorToken(String apiAccessorToken) {
         this.apiAccessorToken = apiAccessorToken;
+    }
+
+    public String getAccountId() {
+        return accountId;
+    }
+
+    public void setAccountId(String accountId) {
+        this.accountId = accountId;
     }
 
     @JsonAnyGetter
@@ -43,12 +53,13 @@ public class CustomerInfo {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         CustomerInfo that = (CustomerInfo) o;
-        return Objects.equals(apiAccessorToken, that.apiAccessorToken);
+        return Objects.equals(apiAccessorToken, that.apiAccessorToken) &&
+                Objects.equals(accountId, that.accountId);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(apiAccessorToken);
+        return Objects.hash(apiAccessorToken, accountId);
     }
 
     @Override
@@ -57,6 +68,6 @@ public class CustomerInfo {
     }
 
     public boolean isEmpty() {
-        return StringUtils.isBlank(apiAccessorToken);
+        return StringUtils.isAnyBlank(apiAccessorToken, accountId);
     }
 }

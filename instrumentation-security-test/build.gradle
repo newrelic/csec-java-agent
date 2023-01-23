@@ -8,7 +8,7 @@ repositories {
 dependencies {
 
     api('junit:junit:4.13.2')
-    compileOnly(project(":newrelic-security-api"))
+    implementation(project(":newrelic-security-api"))
     implementation(project(":newrelic-security-api-test-impl"))
     implementation(project(":newrelic-security-agent"))
     implementation(project(":unittest-helper-agent"))
@@ -24,6 +24,7 @@ dependencies {
 }
 
 test {
+    compileJava.dependsOn project(":unittest-helper-agent").getTasksByName("build", true)
     useJUnitPlatform()
 }
 

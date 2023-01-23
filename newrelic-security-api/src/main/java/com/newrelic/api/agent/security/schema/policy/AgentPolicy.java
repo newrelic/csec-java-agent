@@ -3,6 +3,7 @@ package com.newrelic.api.agent.security.schema.policy;
 
 public class AgentPolicy {
 
+    private String jsonName = "lc-policy";
     private String version = "DEFAULT";
     private Long lastUpdateTimestamp = 0L;
     private Boolean policyPull = true;
@@ -88,5 +89,13 @@ public class AgentPolicy {
 
     public void setEnableHTTPRequestPrinting(Boolean enableHTTPRequestPrinting) {
         this.enableHTTPRequestPrinting = enableHTTPRequestPrinting;
+    }
+
+    public String getJsonName() {
+        return jsonName;
+    }
+
+    public void setJsonName(String jsonName) {
+        this.jsonName = jsonName;
     }
 }

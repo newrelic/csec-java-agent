@@ -293,7 +293,6 @@ public class CallbackUtils {
 
             // Process ParameterMap
             if (httpRequest.getParameterMap() != null) {
-                System.out.println(httpRequest.getParameterMap());
                 for (Entry<String, String[]> entry : httpRequest.getParameterMap().entrySet()) {
                     if (StringUtils.contains(entry.getKey(), ANGLE_START)) {
                         processedData.add(entry.getKey());

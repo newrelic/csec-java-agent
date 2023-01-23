@@ -1,7 +1,6 @@
 package com.newrelic.agent.security.intcodeagent.controlcommand;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.newrelic.agent.security.instrumentator.httpclient.RestRequestProcessor;
 import com.newrelic.agent.security.instrumentator.utils.AgentUtils;
 import com.newrelic.agent.security.instrumentator.utils.InstrumentationUtils;
@@ -12,8 +11,9 @@ import com.newrelic.agent.security.intcodeagent.models.config.AgentPolicyParamet
 import com.newrelic.agent.security.intcodeagent.models.javaagent.CollectorInitMsg;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.EventResponse;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.IntCodeControlCommand;
-import com.newrelic.agent.security.intcodeagent.schedulers.GlobalPolicyParameterPullST;
 import com.newrelic.agent.security.intcodeagent.utils.CommonUtils;
+import com.newrelic.agent.security.intcodeagent.websocket.JsonConverter;
+import com.newrelic.api.agent.security.schema.policy.AgentPolicy;
 import org.apache.commons.lang3.StringUtils;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -36,6 +36,7 @@ public class ControlCommandProcessor implements Runnable {
     public static final String ERROR_IN_EVENT_RESPONSE = "Error in EVENT_RESPONSE : ";
     public static final String FUZZ_REQUEST = "Fuzz request : ";
     public static final String POLICY_PARAMETERS_ARE_UPDATED_TO_S = "Policy parameters are updated to : %s";
+    public static final String UPDATED_POLICY_FAILED_VALIDATION_REVERTING_TO_DEFAULT_POLICY_FOR_THE_MODE = "Updated policy failed validation. Reverting to default policy for the mode";
 
 
     private String controlCommandMessage;
@@ -90,10 +91,10 @@ public class ControlCommandProcessor implements Runnable {
                     return;
                 }
                 try {
-                    AgentPolicyParameters parameters = new ObjectMapper()
+                    AgentPolicyParameters parameters = JsonConverter.getObjectMapper()
                             .readValue(controlCommand.getData().toString(), AgentPolicyParameters.class);
                     if (!CommonUtils.validateCollectorPolicyParameterSchema(parameters)) {
-                        logger.log(LogLevel.WARN, String.format(IAgentConstants.UNABLE_TO_VALIDATE_AGENT_POLICY_PARAMETER_DUE_TO_ERROR, parameters), GlobalPolicyParameterPullST.class.getName());
+                        logger.log(LogLevel.WARN, String.format(IAgentConstants.UNABLE_TO_VALIDATE_AGENT_POLICY_PARAMETER_DUE_TO_ERROR, parameters), ControlCommandProcessor.class.getName());
                         return;
                     }
                     AgentUtils.getInstance().setAgentPolicyParameters(parameters);
@@ -109,7 +110,7 @@ public class ControlCommandProcessor implements Runnable {
             case IntCodeControlCommand.EVENT_RESPONSE:
                 boolean cleanUp = false;
                 try {
-                    EventResponse receivedEventResponse = new ObjectMapper().readValue(controlCommand.getArguments().get(0),
+                    EventResponse receivedEventResponse = JsonConverter.getObjectMapper().readValue(controlCommand.getArguments().get(0),
                             EventResponse.class);
 
                     EventResponse eventResponse = AgentUtils.getInstance().getEventResponseSet()
@@ -150,7 +151,7 @@ public class ControlCommandProcessor implements Runnable {
 
                 try {
                     AgentUtils.getInstance().setInitMsg(
-                            new ObjectMapper().readValue(controlCommand.getData().toString(), CollectorInitMsg.class));
+                            JsonConverter.getObjectMapper().readValue(controlCommand.getData().toString(), CollectorInitMsg.class));
                     // TODO : Remove usage of CC #10 data
                     logger.log(LogLevel.INFO,
                             String.format(COLLECTOR_IS_INITIALIZED_WITH_PROPERTIES, AgentUtils.getInstance().getInitMsg().toString()),
@@ -162,6 +163,29 @@ public class ControlCommandProcessor implements Runnable {
 
                 break;
 
+            case IntCodeControlCommand.SEND_POLICY:
+                if (controlCommand.getData() == null) {
+                    return;
+                }
+                try {
+                    AgentPolicy policy = JsonConverter.getObjectMapper().convertValue(controlCommand.getData(), AgentPolicy.class);
+                    logger.logInit(LogLevel.INFO,
+                            String.format(IAgentConstants.RECEIVED_AGENT_POLICY, JsonConverter.toJSON(policy)),
+                            AgentUtils.class.getName());
+                    AgentUtils.getInstance().setDefaultAgentPolicy(policy);
+                    if (AgentUtils.applyPolicy(policy)) {
+                        AgentUtils.getInstance().applyPolicyOverrideIfApplicable();
+                    }
+                } catch (IllegalArgumentException e) {
+                    logger.log(LogLevel.ERROR, "Unable to parse received default policy : ", e,
+                            ControlCommandProcessor.class.getName());
+                }
+                break;
+            case IntCodeControlCommand.POLICY_UPDATE_FAILED_DUE_TO_VALIDATION_ERROR:
+                logger.log(LogLevel.WARN, UPDATED_POLICY_FAILED_VALIDATION_REVERTING_TO_DEFAULT_POLICY_FOR_THE_MODE,
+                        ControlCommandProcessor.class.getName());
+                AgentUtils.instantiateDefaultPolicy();
+                break;
             default:
                 logger.log(LogLevel.WARN, String.format(UNKNOWN_CONTROL_COMMAND_S, controlCommandMessage),
                         ControlCommandProcessor.class.getName());

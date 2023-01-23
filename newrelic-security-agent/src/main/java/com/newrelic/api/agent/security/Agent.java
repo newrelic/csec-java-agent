@@ -11,11 +11,9 @@ import com.newrelic.agent.security.intcodeagent.filelogging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.logging.HealthCheckScheduleThread;
 import com.newrelic.agent.security.intcodeagent.logging.IAgentConstants;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.ExitEventBean;
-import com.newrelic.agent.security.intcodeagent.schedulers.GlobalPolicyParameterPullST;
-import com.newrelic.agent.security.intcodeagent.schedulers.PolicyPullST;
 import com.newrelic.agent.security.intcodeagent.websocket.EventSendPool;
-import com.newrelic.agent.security.intcodeagent.websocket.JsonConverter;
 import com.newrelic.agent.security.intcodeagent.websocket.WSClient;
+import com.newrelic.agent.security.intcodeagent.websocket.WSReconnectionST;
 import com.newrelic.api.agent.NewRelic;
 import com.newrelic.api.agent.Transaction;
 import com.newrelic.api.agent.security.schema.*;
@@ -131,7 +129,6 @@ public class Agent implements SecurityAgent {
     }
 
     private void startK2Services() {
-        PolicyPullST.getInstance();
         HealthCheckScheduleThread.getInstance();
         logger.logInit(
                 LogLevel.INFO,
@@ -201,8 +198,7 @@ public class Agent implements SecurityAgent {
          * policy
          * HealthCheck
          */
-        PolicyPullST.getInstance().cancelTask(true);
-        GlobalPolicyParameterPullST.getInstance().cancelTask(true);
+        WSClient.shutDownWSClient();
         HealthCheckScheduleThread.getInstance().cancelTask(true);
 
     }
@@ -224,10 +220,9 @@ public class Agent implements SecurityAgent {
          * 3. event pool
          * 4. HealthCheck
          **/
-        PolicyPullST.shutDownPool();
-        GlobalPolicyParameterPullST.shutDownPool();
         HealthCheckScheduleThread.shutDownPool();
         WSClient.shutDownWSClient();
+        WSReconnectionST.shutDownPool();
         EventSendPool.shutDownPool();
     }
 
@@ -258,8 +253,6 @@ public class Agent implements SecurityAgent {
 //            blockForResponse(operation.getExecutionId());
 //        }
 //        checkIfClientIPBlocked();
-        System.out.println("Operation : " + JsonConverter.toJSON(operation));
-        System.out.println("SEC_META : " + JsonConverter.toJSON(securityMetaData));
     }
 
     private static boolean needToGenerateEvent(String apiID) {
@@ -344,7 +337,6 @@ public class Agent implements SecurityAgent {
                 ExitEventBean exitEventBean = new ExitEventBean(operation.getExecutionId(), operation.getCaseType().getCaseType());
                 exitEventBean.setK2RequestIdentifier(k2RequestIdentifier.getRaw());
                 logger.log(LogLevel.DEBUG, "Exit event : " + exitEventBean, this.getClass().getName());
-                System.out.println("Exit event : " + exitEventBean);
                 DispatcherPool.getInstance().dispatchExitEvent(exitEventBean);
                 AgentInfo.getInstance().getJaHealthCheck().incrementExitEventSentCount();
             }

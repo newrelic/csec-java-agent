@@ -1,17 +1,12 @@
 package com.newrelic.agent.security.intcodeagent.utils;
 
-import com.newrelic.api.agent.security.Agent;
-import com.newrelic.agent.security.AgentConfig;
-import com.newrelic.agent.security.AgentInfo;
-import com.newrelic.agent.security.instrumentator.httpclient.HttpClient;
-import com.newrelic.agent.security.instrumentator.httpclient.IRestClientConstants;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.newrelic.agent.security.intcodeagent.filelogging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.models.config.AgentPolicyParameters;
-import com.newrelic.agent.security.intcodeagent.models.javaagent.LogMessage;
 import com.newrelic.agent.security.intcodeagent.websocket.JsonConverter;
-import com.newrelic.api.agent.security.schema.policy.AgentPolicy;
 import com.newrelic.api.agent.NewRelic;
+import com.newrelic.api.agent.security.Agent;
+import com.newrelic.api.agent.security.schema.policy.AgentPolicy;
 import org.apache.commons.io.FileUtils;
 import org.everit.json.schema.Schema;
 import org.everit.json.schema.ValidationException;
@@ -30,8 +25,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.PosixFilePermissions;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Stack;
 import java.util.jar.JarFile;
 import java.util.zip.ZipEntry;
@@ -87,32 +80,6 @@ public class CommonUtils {
             logger.postLogMessageIfNecessary(LogLevel.ERROR, String.format("Exception raised in LC policy validation : %s :: caused by : %s", e.getMessage(), e.getCause()), e, CommonUtils.class.getName());
         }
         return false;
-    }
-
-    public static void fireUpdatePolicyAPI(AgentPolicy policy) {
-        if (policy == null) {
-            return;
-        }
-        try {
-            Map<String, String> queryParam = new HashMap<>();
-            queryParam.put("group", AgentConfig.getInstance().getGroupName());
-            queryParam.put("applicationUUID", AgentInfo.getInstance().getApplicationUUID());
-
-            HttpClient.getInstance().doPost(IRestClientConstants.UPDATE_POLICY, null, queryParam, null, policy, true);
-        } catch (Exception e) {
-            logger.log(LogLevel.WARN, String.format("Update policy to IC failed due to %s", e.getMessage()), CommonUtils.class.getName());
-        }
-    }
-
-    public static void fireLogMessageUploadAPI(LogMessage logMessage) {
-        if (logMessage == null || !HttpClient.isConnected() || !AgentInfo.getInstance().isAgentActive()) {
-            return;
-        }
-        try {
-            HttpClient.getInstance().doPost(IRestClientConstants.POST_LOG_MESSAGE, null, null, null, logMessage, true);
-        } catch (Exception e) {
-            logger.log(LogLevel.WARN, String.format("Upload log message to IC failed due to %s", e.getMessage()), CommonUtils.class.getName());
-        }
     }
 
 //    public static void writePolicyToFile() {
