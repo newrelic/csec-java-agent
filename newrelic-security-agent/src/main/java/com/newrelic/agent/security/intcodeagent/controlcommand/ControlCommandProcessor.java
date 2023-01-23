@@ -80,11 +80,6 @@ public class ControlCommandProcessor implements Runnable {
                 System.err.println(controlCommand.getArguments().get(0));
                 InstrumentationUtils.shutdownLogic(true);
                 break;
-            case IntCodeControlCommand.OLD_AGENT:
-                logger.log(LogLevel.WARN, controlCommand.getArguments().get(0),
-                        ControlCommandProcessor.class.getSimpleName());
-                System.err.println(controlCommand.getArguments().get(0));
-                break;
 
             case IntCodeControlCommand.SEND_POLICY_PARAMETERS:
                 if (controlCommand.getData() == null) {

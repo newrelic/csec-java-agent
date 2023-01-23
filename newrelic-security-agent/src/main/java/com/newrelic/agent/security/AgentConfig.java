@@ -83,7 +83,7 @@ public class AgentConfig {
         } else {
             groupName = IUtilConstants.RASP;
         }
-        AgentUtils.getInstance().getStatusLogValues().put(IUtilConstants.GROUP_NAME, AgentConfig.getInstance().getGroupName());
+        AgentUtils.getInstance().getStatusLogValues().put(IUtilConstants.GROUP_NAME, groupName);
         return groupName;
     }
 
