@@ -11,9 +11,8 @@ dependencies {
 }
 
 verifyInstrumentation {
-    passesOnly 'org.mongodb:mongo-java-driver:[3.0.0,3.7.0)'
-    exclude 'org.mongodb:mongo-java-driver:[3.0.0-rc0,3.0.0-rc1]'
-    exclude 'org.mongodb:mongo-java-driver:[3.0.0-beta1,3.0.0-beta3]'
+    passes 'org.mongodb:mongo-java-driver:[3.0.0,3.7.0)'
+    excludeRegex '.*-(rc|beta)[0-9]+'
 }
 
 site {

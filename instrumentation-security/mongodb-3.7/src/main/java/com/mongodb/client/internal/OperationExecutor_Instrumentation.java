@@ -179,7 +179,7 @@ public abstract class OperationExecutor_Instrumentation {
         try {
             if (NewRelicSecurity.isHookProcessingActive() &&
                     !NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty() && command != null) {
-                operation = new NoSQLOperation(command, typeOfOperation, this.getClass().getName(), methodName);
+                operation = new NoSQLOperation(command.toJson(), typeOfOperation, this.getClass().getName(), methodName);
                 NewRelicSecurity.getAgent().registerOperation(operation);
             }
         } catch (Throwable e) {
@@ -260,6 +260,9 @@ public abstract class OperationExecutor_Instrumentation {
                         }
                     }
                     noSQLOperation = recordMongoOperation(operations, MongoUtil.OP_UPDATE, MongoUtil.METHOD_EXECUTE);
+                } else if (operation instanceof MixedBulkWriteOperation) {
+                    MixedBulkWriteOperation mixedBulkWriteOperation = (MixedBulkWriteOperation) operation;
+                    noSQLOperation = MongoUtil.recordWriteRequest(mixedBulkWriteOperation.getWriteRequests(), this.getClass().getName(), MongoUtil.METHOD_EXECUTE);
                 }
             }
         } catch (Exception e) {
@@ -347,6 +350,9 @@ public abstract class OperationExecutor_Instrumentation {
                         }
                     }
                     noSQLOperation = recordMongoOperation(operations, MongoUtil.OP_UPDATE, MongoUtil.METHOD_EXECUTE);
+                } else if (operation instanceof MixedBulkWriteOperation) {
+                    MixedBulkWriteOperation mixedBulkWriteOperation = (MixedBulkWriteOperation) operation;
+                    noSQLOperation = MongoUtil.recordWriteRequest(mixedBulkWriteOperation.getWriteRequests(), this.getClass().getName(), MongoUtil.METHOD_EXECUTE);
                 }
             }
         } catch (Exception e) {
