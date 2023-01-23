@@ -1,5 +1,6 @@
 package com.newrelic.agent.security.intcodeagent.utils;
 
+import com.newrelic.agent.security.instrumentator.os.OsVariablesInstance;
 import com.newrelic.api.agent.security.Agent;
 import com.newrelic.agent.security.AgentConfig;
 import com.newrelic.agent.security.AgentInfo;
@@ -13,6 +14,8 @@ import com.newrelic.agent.security.intcodeagent.websocket.JsonConverter;
 import com.newrelic.api.agent.security.schema.policy.AgentPolicy;
 import com.newrelic.api.agent.NewRelic;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.comparator.LastModifiedFileComparator;
+import org.apache.commons.io.filefilter.FileFilterUtils;
 import org.everit.json.schema.Schema;
 import org.everit.json.schema.ValidationException;
 import org.everit.json.schema.loader.SchemaLoader;
@@ -30,9 +33,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.PosixFilePermissions;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Stack;
+import java.util.*;
 import java.util.jar.JarFile;
 import java.util.zip.ZipEntry;
 
@@ -256,5 +257,18 @@ public class CommonUtils {
             logger.log(LogLevel.DEBUG, "Unable to locate resource from agent jar : ", e, CommonUtils.class.getName());
         }
         return null;
+    }
+
+    public static void deleteRolloverLogFiles(String fileName, int max) {
+        Collection<File> rolloverLogFiles = FileUtils.listFiles(new File(OsVariablesInstance.getInstance().getOsVariables().getLogDirectory()), FileFilterUtils.prefixFileFilter(fileName + "."), null);
+
+        if (rolloverLogFiles.size() > max) {
+            File[] sortedLogFiles = rolloverLogFiles.toArray(new File[0]);
+            Arrays.sort(sortedLogFiles, LastModifiedFileComparator.LASTMODIFIED_COMPARATOR);
+            for (int i = 0; i < sortedLogFiles.length - max; i++) {
+                FileUtils.deleteQuietly(sortedLogFiles[i]);
+
+            }
+        }
     }
 }
