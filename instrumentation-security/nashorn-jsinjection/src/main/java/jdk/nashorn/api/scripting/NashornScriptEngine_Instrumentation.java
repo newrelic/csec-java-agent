@@ -60,6 +60,7 @@ public class NashornScriptEngine_Instrumentation {
                 return null;
             }
             JSInjectionOperation jsInjectionOperation = new JSInjectionOperation(script, this.getClass().getName(), methodName);
+            NewRelicSecurity.getAgent().registerOperation(jsInjectionOperation);
             return jsInjectionOperation;
         } catch (Throwable e) {
             if (e instanceof NewRelicSecurityException) {

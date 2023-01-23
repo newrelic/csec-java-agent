@@ -56,6 +56,7 @@ public abstract class BaseXPath_Instrumentation {
                 return null;
             }
             XPathOperation xPathOperation = new XPathOperation(patternString, this.getClass().getName(), methodName);
+            NewRelicSecurity.getAgent().registerOperation(xPathOperation);
             return xPathOperation;
         } catch (Throwable e) {
             if (e instanceof NewRelicSecurityException) {

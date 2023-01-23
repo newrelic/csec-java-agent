@@ -34,6 +34,7 @@ public class BuilderSupport_Instrumentation {
                 return null;
             }
             XPathOperation xPathOperation = new XPathOperation(expression, this.getClass().getName(), methodName);
+            NewRelicSecurity.getAgent().registerOperation(xPathOperation);
             return xPathOperation;
         } catch (Throwable e) {
             if (e instanceof NewRelicSecurityException) {

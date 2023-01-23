@@ -54,6 +54,7 @@ public abstract class Script_Instrumentation {
             String script = NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(JSEngineUtils.NR_SEC_CUSTOM_ATTRIB_SCRIPT_NAME+hashCode, String.class);
             if(StringUtils.isNotBlank(script)) {
                 JSInjectionOperation jsInjectionOperation = new JSInjectionOperation(script, this.getClass().getName(), methodName);
+                NewRelicSecurity.getAgent().registerOperation(jsInjectionOperation);
                 return jsInjectionOperation;
             }
         } catch (Throwable e) {

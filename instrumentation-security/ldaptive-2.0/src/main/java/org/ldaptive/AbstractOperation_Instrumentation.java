@@ -55,6 +55,7 @@ public abstract class AbstractOperation_Instrumentation<Q extends Request, S ext
                 return null;
             }
             LDAPOperation ldapOperation = new LDAPOperation(name, NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(LDAPUtils.getNrSecCustomAttribName(filter.hashCode()), String.class), this.getClass().getName(), methodName);
+            NewRelicSecurity.getAgent().registerOperation(ldapOperation);
             return ldapOperation;
         } catch (Throwable e) {
             if (e instanceof NewRelicSecurityException) {

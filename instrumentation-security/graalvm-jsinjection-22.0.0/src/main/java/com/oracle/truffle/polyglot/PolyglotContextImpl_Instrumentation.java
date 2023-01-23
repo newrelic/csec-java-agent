@@ -54,6 +54,7 @@ final class PolyglotContextImpl_Instrumentation {
                 return null;
             }
             JSInjectionOperation jsInjectionOperation = new JSInjectionOperation(String.valueOf(source.getCharacters()), this.getClass().getName(), methodName);
+            NewRelicSecurity.getAgent().registerOperation(jsInjectionOperation);
             return jsInjectionOperation;
         } catch (Throwable e) {
             if (e instanceof NewRelicSecurityException) {

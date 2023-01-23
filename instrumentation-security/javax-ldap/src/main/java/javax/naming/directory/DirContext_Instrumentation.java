@@ -87,6 +87,7 @@ public abstract class DirContext_Instrumentation implements Context {
                 return null;
             }
             LDAPOperation ldapOperation = new LDAPOperation(name, filter, this.getClass().getName(), methodName);
+            NewRelicSecurity.getAgent().registerOperation(ldapOperation);
             return ldapOperation;
         } catch (Throwable e) {
             if (e instanceof NewRelicSecurityException) {
