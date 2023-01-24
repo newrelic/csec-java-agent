@@ -7,12 +7,14 @@ import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.security.schema.operation.LDAPOperation;
 import com.unboundid.ldap.sdk.Filter;
+import com.unboundid.ldap.sdk.LDAPException;
 import com.unboundid.ldap.sdk.LDAPInterface;
 import com.unboundid.ldap.sdk.SearchRequest;
 import com.unboundid.ldap.sdk.SearchResult;
 import com.unboundid.ldap.sdk.SearchResultEntry;
 import com.unboundid.ldap.sdk.SearchScope;
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
@@ -31,12 +33,16 @@ public class LDAPInterfaceTest {
     @ClassRule
     public static EmbeddedLdapRule embeddedLdapRule = EmbeddedLdapRuleBuilder.newInstance().usingDomainDsn(DOMAIN_DSN)
             .importingLdifs("users-import.ldif").build();
-    private LDAPInterface ldapConnection;
+    private static LDAPInterface ldapConnection;
+
+    @BeforeClass
+    public static void setup() throws LDAPException {
+        ldapConnection = embeddedLdapRule.ldapConnection();
+    }
 
     @Test
     public void testSearch() throws Exception {
         String filter = "(objectClass=person)";
-        ldapConnection = embeddedLdapRule.ldapConnection();
         final SearchResult searchResult = ldapConnection.search(DOMAIN_DSN, SearchScope.SUB, filter);
 
         List<SearchResultEntry> searchEntries = searchResult.getSearchEntries();
@@ -58,7 +64,6 @@ public class LDAPInterfaceTest {
     public void testSearch1() throws Exception {
         String baseDN = "cn=Santa Claus,ou=Users,dc=example,dc=com";
         String filter = "(objectClass=person)";
-        ldapConnection = embeddedLdapRule.ldapConnection();
         final SearchResult searchResult = ldapConnection.search(baseDN, SearchScope.SUB, filter);
         System.out.println(searchResult.getSearchEntries().get(0).getAttribute("cn").getValue());
 
@@ -78,7 +83,6 @@ public class LDAPInterfaceTest {
     public void testSearch2() throws Exception {
         String baseDN = "cn=Monu Lakshkar,ou=Users,dc=example,dc=com";
         String filter = "(objectClass=person)";
-        ldapConnection = embeddedLdapRule.ldapConnection();
 
         SearchRequest request = new SearchRequest(baseDN, SearchScope.SUB, filter);
         final SearchResult searchResult = ldapConnection.search(request);
@@ -100,7 +104,7 @@ public class LDAPInterfaceTest {
     public void testSearchWithFilter() throws Exception {
         String baseDN = "cn=Santa Claus,ou=Users,dc=example,dc=com";
         String filter = "(objectClass=person)";
-        ldapConnection = embeddedLdapRule.ldapConnection();
+
         final SearchResult searchResult = ldapConnection.search(baseDN, SearchScope.SUB, Filter.create(filter));
         System.out.println(searchResult.getSearchEntries().get(0).getAttribute("cn").getValue());
 
@@ -122,7 +126,6 @@ public class LDAPInterfaceTest {
         String password = "abc456";
         String query = String.format("(&(uid=%s)(userPassword=%s))", username, password);
 
-        ldapConnection = embeddedLdapRule.ldapConnection();
         final SearchResult searchResult = ldapConnection.search(DOMAIN_DSN, SearchScope.SUB, Filter.create(query));
         System.out.println(searchResult.getSearchEntries().get(0).getAttribute("cn").getValue());
 
@@ -143,7 +146,6 @@ public class LDAPInterfaceTest {
         String username = "mlakshkar";
         String query = String.format("(&(uid=%s))", username);
 
-        ldapConnection = embeddedLdapRule.ldapConnection();
         SearchRequest request = new SearchRequest(DOMAIN_DSN, SearchScope.SUB, Filter.create(query));
         final SearchResult searchResult = ldapConnection.search(request);
 
@@ -165,7 +167,6 @@ public class LDAPInterfaceTest {
         String password = "abc456";
         String query = String.format("(&(uid=%s)(userPassword=%s))", username, password);
 
-        ldapConnection = embeddedLdapRule.ldapConnection();
         final SearchResultEntry searchResult = ldapConnection.searchForEntry(DOMAIN_DSN, SearchScope.SUB, query, null);
 
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
@@ -185,7 +186,6 @@ public class LDAPInterfaceTest {
         String username = "mlakshkar";
         String query = String.format("(&(uid=%s))", username);
 
-        ldapConnection = embeddedLdapRule.ldapConnection();
         final SearchResultEntry searchResult = ldapConnection.searchForEntry(DOMAIN_DSN, SearchScope.SUB, Filter.create(query), null);
 
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
@@ -205,7 +205,6 @@ public class LDAPInterfaceTest {
         String password = "abc456";
         String query = String.format("(&(userPassword=%s))", password);
 
-        ldapConnection = embeddedLdapRule.ldapConnection();
         SearchRequest request = new SearchRequest(DOMAIN_DSN, SearchScope.SUB, Filter.create(query));
         final SearchResultEntry searchResult = ldapConnection.searchForEntry(request);
 
