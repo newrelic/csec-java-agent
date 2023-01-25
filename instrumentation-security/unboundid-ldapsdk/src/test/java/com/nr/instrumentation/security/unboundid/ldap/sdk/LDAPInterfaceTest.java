@@ -101,6 +101,26 @@ public class LDAPInterfaceTest {
     }
 
     @Test
+    public void testSearchWithoutBaseDn() throws Exception {
+        String filter = "(objectClass=person)";
+        final SearchResult searchResult = ldapConnection.search("", SearchScope.SUB, filter);
+
+        List<SearchResultEntry> searchEntries = searchResult.getSearchEntries();
+        System.out.println(searchEntries.get(0).getAttribute("cn").getValue());
+
+        SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
+        List<AbstractOperation> operations = introspector.getOperations();
+        Assert.assertTrue("No operations detected.", operations.size() > 0);
+        LDAPOperation operation = (LDAPOperation) operations.get(0);
+
+        Assert.assertEquals("Invalid executed parameters.", "", operation.getName());
+        Assert.assertEquals("Invalid executed parameters.", filter, operation.getFilter());
+        Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.LDAP, operation.getCaseType());
+        Assert.assertEquals("Invalid executed class name.", "com.unboundid.ldap.sdk.LDAPConnection", operation.getClassName());
+        Assert.assertEquals("Invalid executed method name.", "search", operation.getMethodName());
+    }
+
+    @Test
     public void testSearchWithFilter() throws Exception {
         String baseDN = "cn=Santa Claus,ou=Users,dc=example,dc=com";
         String filter = "(objectClass=person)";
