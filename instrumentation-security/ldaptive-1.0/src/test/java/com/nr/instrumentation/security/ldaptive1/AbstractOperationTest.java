@@ -32,7 +32,7 @@ import java.util.List;
 @RunWith(SecurityInstrumentationTestRunner.class)
 @InstrumentationTestConfig(includePrefixes = { "org.ldaptive", "com.nr.instrumentation.security.apache.ldap.LDAPUtils" })
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class Ldaptive1Test {
+public class AbstractOperationTest {
     public static final String DOMAIN_DSN = "dc=example,dc=com";
     @ClassRule
     public static EmbeddedLdapRule embeddedLdapRule = EmbeddedLdapRuleBuilder.newInstance().usingDomainDsn(DOMAIN_DSN)
