@@ -51,7 +51,7 @@ public abstract class AbstractOperation_Instrumentation<Q extends Request, S ext
         try {
             if (!NewRelicSecurity.isHookProcessingActive() ||
                     NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty() ||
-                    StringUtils.isBlank(name) || filter == null){
+                    filter == null){
                 return null;
             }
             LDAPOperation ldapOperation = new LDAPOperation(name, NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(LDAPUtils.getNrSecCustomAttribName(filter.hashCode()), String.class), this.getClass().getName(), methodName);
