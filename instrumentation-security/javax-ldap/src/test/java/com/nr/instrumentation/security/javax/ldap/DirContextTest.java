@@ -77,9 +77,10 @@ public class DirContextTest {
         List<AbstractOperation> operations = introspector.getOperations();
         Assert.assertTrue("No operations detected.", operations.size() > 0);
         LDAPOperation operation = (LDAPOperation) operations.get(0);
-        Assert.assertEquals("Invalid executed parameters.", "cmd", operation.getFilter());
+        Assert.assertEquals("Invalid executed baseDn.", DOMAIN_DSN, operation.getName());
+        Assert.assertEquals("Invalid executed parameters.", query, operation.getFilter());
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.LDAP, operation.getCaseType());
-        Assert.assertEquals("Invalid executed class name.", "java.lang.ProcessImpl", operation.getClassName());
+        Assert.assertEquals("Invalid executed class name.", InitialLdapContext.class.getName(), operation.getClassName());
         Assert.assertEquals("Invalid executed method name.", "search", operation.getMethodName());
     }
 
@@ -116,9 +117,10 @@ public class DirContextTest {
         List<AbstractOperation> operations = introspector.getOperations();
         Assert.assertTrue("No operations detected.", operations.size() > 0);
         LDAPOperation operation = (LDAPOperation) operations.get(0);
-        Assert.assertEquals("Invalid executed parameters.", "cmd", operation.getFilter());
+        Assert.assertEquals("Invalid executed baseDn.", DOMAIN_DSN, operation.getName());
+        Assert.assertEquals("Invalid executed parameters.", query, operation.getFilter());
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.LDAP, operation.getCaseType());
-        Assert.assertEquals("Invalid executed class name.", "java.lang.ProcessImpl", operation.getClassName());
+        Assert.assertEquals("Invalid executed class name.", InitialLdapContext.class.getName(), operation.getClassName());
         Assert.assertEquals("Invalid executed method name.", "search", operation.getMethodName());
     }
 
@@ -154,9 +156,10 @@ public class DirContextTest {
         List<AbstractOperation> operations = introspector.getOperations();
         Assert.assertTrue("No operations detected.", operations.size() > 0);
         LDAPOperation operation = (LDAPOperation) operations.get(0);
-        Assert.assertEquals("Invalid executed parameters.", "cmd", operation.getFilter());
+        Assert.assertEquals("Invalid executed baseDn.", DOMAIN_DSN, operation.getName());
+        Assert.assertEquals("Invalid executed parameters.", query, operation.getFilter());
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.LDAP, operation.getCaseType());
-        Assert.assertEquals("Invalid executed class name.", "java.lang.ProcessImpl", operation.getClassName());
+        Assert.assertEquals("Invalid executed class name.", InitialLdapContext.class.getName(), operation.getClassName());
         Assert.assertEquals("Invalid executed method name.", "search", operation.getMethodName());
     }
 
@@ -193,9 +196,10 @@ public class DirContextTest {
         List<AbstractOperation> operations = introspector.getOperations();
         Assert.assertTrue("No operations detected.", operations.size() > 0);
         LDAPOperation operation = (LDAPOperation) operations.get(0);
-        Assert.assertEquals("Invalid executed parameters.", "cmd", operation.getFilter());
+        Assert.assertEquals("Invalid executed baseDn.", DOMAIN_DSN, operation.getName());
+        Assert.assertEquals("Invalid executed parameters.", query, operation.getFilter());
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.LDAP, operation.getCaseType());
-        Assert.assertEquals("Invalid executed class name.", "java.lang.ProcessImpl", operation.getClassName());
+        Assert.assertEquals("Invalid executed class name.", InitialLdapContext.class.getName(), operation.getClassName());
         Assert.assertEquals("Invalid executed method name.", "search", operation.getMethodName());
     }
 
@@ -231,9 +235,10 @@ public class DirContextTest {
         List<AbstractOperation> operations = introspector.getOperations();
         Assert.assertTrue("No operations detected.", operations.size() > 0);
         LDAPOperation operation = (LDAPOperation) operations.get(0);
-        Assert.assertEquals("Invalid executed parameters.", "cmd", operation.getFilter());
+        Assert.assertEquals("Invalid executed baseDn.", DOMAIN_DSN, operation.getName());
+        Assert.assertEquals("Invalid executed parameters.", query, operation.getFilter());
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.LDAP, operation.getCaseType());
-        Assert.assertEquals("Invalid executed class name.", "java.lang.ProcessImpl", operation.getClassName());
+        Assert.assertEquals("Invalid executed class name.", InitialLdapContext.class.getName(), operation.getClassName());
         Assert.assertEquals("Invalid executed method name.", "search", operation.getMethodName());
     }
 
@@ -269,9 +274,10 @@ public class DirContextTest {
         List<AbstractOperation> operations = introspector.getOperations();
         Assert.assertTrue("No operations detected.", operations.size() > 0);
         LDAPOperation operation = (LDAPOperation) operations.get(0);
-        Assert.assertEquals("Invalid executed parameters.", "cmd", operation.getFilter());
+        Assert.assertEquals("Invalid executed baseDn.", DOMAIN_DSN, operation.getName());
+        Assert.assertEquals("Invalid executed parameters.", query, operation.getFilter());
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.LDAP, operation.getCaseType());
-        Assert.assertEquals("Invalid executed class name.", "java.lang.ProcessImpl", operation.getClassName());
+        Assert.assertEquals("Invalid executed class name.", InitialLdapContext.class.getName(), operation.getClassName());
         Assert.assertEquals("Invalid executed method name.", "search", operation.getMethodName());
     }
 
@@ -308,9 +314,10 @@ public class DirContextTest {
         List<AbstractOperation> operations = introspector.getOperations();
         Assert.assertTrue("No operations detected.", operations.size() > 0);
         LDAPOperation operation = (LDAPOperation) operations.get(0);
-        Assert.assertEquals("Invalid executed parameters.", "cmd", operation.getFilter());
+        Assert.assertEquals("Invalid executed baseDn.", DOMAIN_DSN, operation.getName());
+        Assert.assertEquals("Invalid executed parameters.", query, operation.getFilter());
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.LDAP, operation.getCaseType());
-        Assert.assertEquals("Invalid executed class name.", "java.lang.ProcessImpl", operation.getClassName());
+        Assert.assertEquals("Invalid executed class name.", DirContext.class.getName(), operation.getClassName());
         Assert.assertEquals("Invalid executed method name.", "search", operation.getMethodName());
     }
 
@@ -347,9 +354,10 @@ public class DirContextTest {
         List<AbstractOperation> operations = introspector.getOperations();
         Assert.assertTrue("No operations detected.", operations.size() > 0);
         LDAPOperation operation = (LDAPOperation) operations.get(0);
-        Assert.assertEquals("Invalid executed parameters.", "cmd", operation.getFilter());
+        Assert.assertEquals("Invalid executed baseDn.", DOMAIN_DSN, operation.getName());
+        Assert.assertEquals("Invalid executed parameters.", query, operation.getFilter());
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.LDAP, operation.getCaseType());
-        Assert.assertEquals("Invalid executed class name.", "java.lang.ProcessImpl", operation.getClassName());
+        Assert.assertEquals("Invalid executed class name.", DirContext.class.getName(), operation.getClassName());
         Assert.assertEquals("Invalid executed method name.", "search", operation.getMethodName());
     }
 
@@ -385,9 +393,10 @@ public class DirContextTest {
         List<AbstractOperation> operations = introspector.getOperations();
         Assert.assertTrue("No operations detected.", operations.size() > 0);
         LDAPOperation operation = (LDAPOperation) operations.get(0);
-        Assert.assertEquals("Invalid executed parameters.", "cmd", operation.getFilter());
+        Assert.assertEquals("Invalid executed baseDn.", DOMAIN_DSN, operation.getName());
+        Assert.assertEquals("Invalid executed parameters.", query, operation.getFilter());
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.LDAP, operation.getCaseType());
-        Assert.assertEquals("Invalid executed class name.", "java.lang.ProcessImpl", operation.getClassName());
+        Assert.assertEquals("Invalid executed class name.", DirContext.class.getName(), operation.getClassName());
         Assert.assertEquals("Invalid executed method name.", "search", operation.getMethodName());
     }
 
@@ -424,9 +433,10 @@ public class DirContextTest {
         List<AbstractOperation> operations = introspector.getOperations();
         Assert.assertTrue("No operations detected.", operations.size() > 0);
         LDAPOperation operation = (LDAPOperation) operations.get(0);
-        Assert.assertEquals("Invalid executed parameters.", "cmd", operation.getFilter());
+        Assert.assertEquals("Invalid executed baseDn.", DOMAIN_DSN, operation.getName());
+        Assert.assertEquals("Invalid executed parameters.", query, operation.getFilter());
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.LDAP, operation.getCaseType());
-        Assert.assertEquals("Invalid executed class name.", "java.lang.ProcessImpl", operation.getClassName());
+        Assert.assertEquals("Invalid executed class name.", DirContext.class.getName(), operation.getClassName());
         Assert.assertEquals("Invalid executed method name.", "search", operation.getMethodName());
     }
 
@@ -462,9 +472,10 @@ public class DirContextTest {
         List<AbstractOperation> operations = introspector.getOperations();
         Assert.assertTrue("No operations detected.", operations.size() > 0);
         LDAPOperation operation = (LDAPOperation) operations.get(0);
-        Assert.assertEquals("Invalid executed parameters.", "cmd", operation.getFilter());
+        Assert.assertEquals("Invalid executed baseDn.", DOMAIN_DSN, operation.getName());
+        Assert.assertEquals("Invalid executed parameters.", query, operation.getFilter());
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.LDAP, operation.getCaseType());
-        Assert.assertEquals("Invalid executed class name.", "java.lang.ProcessImpl", operation.getClassName());
+        Assert.assertEquals("Invalid executed class name.", DirContext.class.getName(), operation.getClassName());
         Assert.assertEquals("Invalid executed method name.", "search", operation.getMethodName());
     }
 
@@ -500,9 +511,10 @@ public class DirContextTest {
         List<AbstractOperation> operations = introspector.getOperations();
         Assert.assertTrue("No operations detected.", operations.size() > 0);
         LDAPOperation operation = (LDAPOperation) operations.get(0);
-        Assert.assertEquals("Invalid executed parameters.", "cmd", operation.getFilter());
+        Assert.assertEquals("Invalid executed baseDn.", DOMAIN_DSN, operation.getName());
+        Assert.assertEquals("Invalid executed parameters.", query, operation.getFilter());
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.LDAP, operation.getCaseType());
-        Assert.assertEquals("Invalid executed class name.", "java.lang.ProcessImpl", operation.getClassName());
+        Assert.assertEquals("Invalid executed class name.", DirContext.class.getName(), operation.getClassName());
         Assert.assertEquals("Invalid executed method name.", "search", operation.getMethodName());
     }
 }
