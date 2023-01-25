@@ -69,6 +69,25 @@ public class ServletInputStreamTest {
         Assert.assertEquals("Wrong data detected", expected, targetOperation.getRequest().getBody().toString());
     }
 
+    @Test
+    public void testReadLineWithOff() throws Exception {
+        String expected = readLineWithOff();
+
+        SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
+        List<AbstractOperation> operations = introspector.getOperations();
+        Assert.assertTrue("No operations detected", operations.size() > 0);
+
+        RXSSOperation targetOperation = (RXSSOperation) operations.get(0);
+        Assert.assertNotNull("No target operation detected", targetOperation);
+        Assert.assertEquals("Wrong case-type detected", VulnerabilityCaseType.REFLECTED_XSS, targetOperation.getCaseType());
+        Assert.assertEquals("Wrong client IP detected", "127.0.0.1", targetOperation.getRequest().getClientIP());
+        Assert.assertEquals("Wrong Protocol detected", "http", targetOperation.getRequest().getProtocol());
+        Assert.assertEquals("Wrong port detected", servlet.getEndPoint("inputStream").getPort(), targetOperation.getRequest().getServerPort());
+        Assert.assertEquals("Wrong Content-type detected", "multipart/form-data", targetOperation.getRequest().getContentType());
+        Assert.assertEquals("Wrong URL detected", "/TestUrl", targetOperation.getRequest().getUrl());
+        Assert.assertEquals("Wrong data detected", expected, targetOperation.getRequest().getBody().toString());
+    }
+
     @Trace(dispatcher = true)
     private String read() throws IOException, URISyntaxException {
         String method = "POST";
@@ -84,6 +103,14 @@ public class ServletInputStreamTest {
         String POST_PARAMS = "hook=readLine";
         makeRequest(method, POST_PARAMS, "readLine");
         return POST_PARAMS;
+    }
+
+    @Trace(dispatcher = true)
+    private String readLineWithOff() throws IOException, URISyntaxException {
+        String method = "POST";
+        String POST_PARAMS = "hook=readLine";
+        makeRequest(method, POST_PARAMS, "readLine/withOff");
+        return POST_PARAMS.substring(0,5);
     }
 
     private void makeRequest( String Method, final String POST_PARAMS, String path) throws URISyntaxException, IOException{

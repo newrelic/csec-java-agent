@@ -1,6 +1,5 @@
 package com.nr.instrumentation.security;
 
-import jakarta.servlet.ServletException;
 import jakarta.servlet.ServletInputStream;
 import jakarta.servlet.ServletOutputStream;
 import jakarta.servlet.http.HttpServlet;
@@ -15,7 +14,7 @@ public class HttpTestServlet extends HttpServlet {
     }
 
     @Override
-    protected void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    protected void service(HttpServletRequest request, HttpServletResponse response) throws IOException {
 
         String method = request.getMethod();
         if( method.equals("POST")) {
@@ -26,7 +25,7 @@ public class HttpTestServlet extends HttpServlet {
     }
 
     @Override
-    public void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
 
         String path = request.getRequestURI();
 
@@ -68,6 +67,13 @@ public class HttpTestServlet extends HttpServlet {
                 byte[] b = new byte[in.available()];
                 in.readLine(b, 0, b.length);
             }
+
+        } else if(path.equals("/inputStream/readLine/withOff")){
+
+            ServletInputStream in = request.getInputStream();
+            byte[] b = new byte[10];
+            in.readLine(b, 5, 5);
+            in.close();
 
         } else if(path.equals("/outputStream/write")) {
 
@@ -191,7 +197,7 @@ public class HttpTestServlet extends HttpServlet {
         }else if (type.equals("long")) {
 
             ServletOutputStream out = response.getOutputStream();
-            out.print(1l);
+            out.print(1L);
             out.flush();
 
         }else if (type.equals("float")) {
@@ -234,7 +240,7 @@ public class HttpTestServlet extends HttpServlet {
             out.flush();
         }else if (type.equals("long")) {
             ServletOutputStream out = response.getOutputStream();
-            out.println(1l);
+            out.println(1L);
             out.flush();
         }else if (type.equals("float")) {
             ServletOutputStream out = response.getOutputStream();
