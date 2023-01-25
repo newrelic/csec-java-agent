@@ -1,11 +1,6 @@
 package com.newrelic.agent.security.intcodeagent.utils;
 
 import com.newrelic.agent.security.instrumentator.os.OsVariablesInstance;
-import com.newrelic.api.agent.security.Agent;
-import com.newrelic.agent.security.AgentConfig;
-import com.newrelic.agent.security.AgentInfo;
-import com.newrelic.agent.security.instrumentator.httpclient.HttpClient;
-import com.newrelic.agent.security.instrumentator.httpclient.IRestClientConstants;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.newrelic.agent.security.intcodeagent.filelogging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.models.config.AgentPolicyParameters;
@@ -33,7 +28,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.PosixFilePermissions;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Stack;
 import java.util.jar.JarFile;
 import java.util.zip.ZipEntry;
 
