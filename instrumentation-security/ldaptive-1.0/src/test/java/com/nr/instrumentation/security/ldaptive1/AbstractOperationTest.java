@@ -26,7 +26,6 @@ import org.ldaptive.pool.PooledConnectionFactory;
 import org.zapodot.junit.ldap.EmbeddedLdapRule;
 import org.zapodot.junit.ldap.EmbeddedLdapRuleBuilder;
 
-import java.util.Hashtable;
 import java.util.List;
 
 @RunWith(SecurityInstrumentationTestRunner.class)
@@ -47,10 +46,6 @@ public class AbstractOperationTest {
         String query = String.format("(&(uid=%s)(userPassword=%s))", username, password);
         System.out.println("LDAP query: " + query);
 
-        Hashtable<String, Object> env = new Hashtable<String, Object>();
-        env.put("java.naming.provider.url", "ldap://localhost:"+port+"/dc=example,dc=com");
-        env.put("java.naming.factory.initial", "com.sun.jndi.ldap.LdapCtxFactory");
-
         ConnectionConfig config = new ConnectionConfig();
         config.setLdapUrl("ldap://localhost:" + port);
         DefaultConnectionFactory cf = new DefaultConnectionFactory(config);
@@ -69,6 +64,7 @@ public class AbstractOperationTest {
         List<AbstractOperation> operations = introspector.getOperations();
         Assert.assertTrue("No operations detected.", operations.size() > 0);
         LDAPOperation operation = (LDAPOperation) operations.get(0);
+        Assert.assertEquals("Invalid executed baseDn.", DOMAIN_DSN, operation.getName());
         Assert.assertEquals("Invalid executed parameters.", query, operation.getFilter());
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.LDAP, operation.getCaseType());
         Assert.assertEquals("Invalid executed class name.", SearchOperation.class.getName(), operation.getClassName());
@@ -82,10 +78,6 @@ public class AbstractOperationTest {
 
         String query = String.format("(&(userPassword=%s))", password);
         System.out.println("LDAP query: " + query);
-
-        Hashtable<String, Object> env = new Hashtable<String, Object>();
-        env.put("java.naming.provider.url", "ldap://localhost:"+port+"/dc=example,dc=com");
-        env.put("java.naming.factory.initial", "com.sun.jndi.ldap.LdapCtxFactory");
 
         ConnectionConfig config = new ConnectionConfig();
         config.setLdapUrl("ldap://localhost:" + port);
@@ -104,6 +96,7 @@ public class AbstractOperationTest {
         List<AbstractOperation> operations = introspector.getOperations();
         Assert.assertTrue("No operations detected.", operations.size() > 0);
         LDAPOperation operation = (LDAPOperation) operations.get(0);
+        Assert.assertEquals("Invalid executed baseDn.", DOMAIN_DSN, operation.getName());
         Assert.assertEquals("Invalid executed parameters.", query, operation.getFilter());
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.LDAP, operation.getCaseType());
         Assert.assertEquals("Invalid executed class name.", SearchOperation.class.getName(), operation.getClassName());
@@ -117,10 +110,6 @@ public class AbstractOperationTest {
 
         String query = String.format("(&(uid=%s))", username);
         System.out.println("LDAP query: " + query);
-
-        Hashtable<String, Object> env = new Hashtable<String, Object>();
-        env.put("java.naming.provider.url", "ldap://localhost:"+port+"/dc=example,dc=com");
-        env.put("java.naming.factory.initial", "com.sun.jndi.ldap.LdapCtxFactory");
 
         ConnectionConfig config = new ConnectionConfig();
         config.setLdapUrl("ldap://localhost:" + port);
@@ -139,6 +128,7 @@ public class AbstractOperationTest {
         List<AbstractOperation> operations = introspector.getOperations();
         Assert.assertTrue("No operations detected.", operations.size() > 0);
         LDAPOperation operation = (LDAPOperation) operations.get(0);
+        Assert.assertEquals("Invalid executed baseDn.", DOMAIN_DSN, operation.getName());
         Assert.assertEquals("Invalid executed parameters.", query, operation.getFilter());
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.LDAP, operation.getCaseType());
         Assert.assertEquals("Invalid executed class name.", SearchOperation.class.getName(), operation.getClassName());
@@ -152,10 +142,6 @@ public class AbstractOperationTest {
 
         String query = String.format("(&(uid=%s))", username);
         System.out.println("LDAP query: " + query);
-
-        Hashtable<String, Object> env = new Hashtable<String, Object>();
-        env.put("java.naming.provider.url", "ldap://localhost:"+port+"/dc=example,dc=com");
-        env.put("java.naming.factory.initial", "com.sun.jndi.ldap.LdapCtxFactory");
 
         ConnectionConfig config = new ConnectionConfig();
         config.setLdapUrl("ldap://localhost:" + port);
@@ -174,10 +160,44 @@ public class AbstractOperationTest {
         List<AbstractOperation> operations = introspector.getOperations();
         Assert.assertTrue("No operations detected.", operations.size() > 0);
         LDAPOperation operation = (LDAPOperation) operations.get(0);
+        Assert.assertEquals("Invalid executed baseDn.", DOMAIN_DSN, operation.getName());
         Assert.assertEquals("Invalid executed parameters.", query, operation.getFilter());
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.LDAP, operation.getCaseType());
         Assert.assertEquals("Invalid executed class name.", SearchOperation.class.getName(), operation.getClassName());
         Assert.assertEquals("Invalid executed method name.", "invoke", operation.getMethodName());
+    }
+
+    @Test
+    public void testSearch4() throws LdapException {
+        int port = embeddedLdapRule.embeddedServerPort();
+        String username = "sclaus";
+        String password = "123efg";
+
+        String query = String.format("(&(uid=%s)(userPassword=%s))", username, password);
+        System.out.println("LDAP query: " + query);
+
+        ConnectionConfig config = new ConnectionConfig();
+        config.setLdapUrl("ldap://localhost:" + port);
+        DefaultConnectionFactory cf = new DefaultConnectionFactory(config);
+        Connection conn = cf.getConnection();
+
+        conn.open();
+
+        SearchRequest sr = new SearchRequest();
+        sr.setSearchFilter(new SearchFilter(query));
+        SearchOperation search = new SearchOperation(conn);
+        SearchResult result = search.execute(sr).getResult();
+        System.out.println("Name: " + result.getEntry().getAttribute("cn").getStringValue());
+
+        SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
+        List<AbstractOperation> operations = introspector.getOperations();
+        Assert.assertTrue("No operations detected.", operations.size() > 0);
+        LDAPOperation operation = (LDAPOperation) operations.get(0);
+        Assert.assertEquals("Invalid executed baseDn.", DOMAIN_DSN, operation.getName());
+        Assert.assertEquals("Invalid executed parameters.", query, operation.getFilter());
+        Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.LDAP, operation.getCaseType());
+        Assert.assertEquals("Invalid executed class name.", SearchOperation.class.getName(), operation.getClassName());
+        Assert.assertEquals("Invalid executed method name.", "configureRequest", operation.getMethodName());
     }
 
     @Test
@@ -210,6 +230,7 @@ public class AbstractOperationTest {
         List<AbstractOperation> operations = introspector.getOperations();
         Assert.assertTrue("No operations detected.", operations.size() > 0);
         LDAPOperation operation = (LDAPOperation) operations.get(0);
+        Assert.assertEquals("Invalid executed baseDn.", DOMAIN_DSN, operation.getName());
         Assert.assertEquals("Invalid executed parameters.", query, operation.getFilter());
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.LDAP, operation.getCaseType());
         Assert.assertEquals("Invalid executed class name.", SearchOperation.class.getName(), operation.getClassName());
@@ -244,6 +265,7 @@ public class AbstractOperationTest {
         List<AbstractOperation> operations = introspector.getOperations();
         Assert.assertTrue("No operations detected.", operations.size() > 0);
         LDAPOperation operation = (LDAPOperation) operations.get(0);
+        Assert.assertEquals("Invalid executed baseDn.", DOMAIN_DSN, operation.getName());
         Assert.assertEquals("Invalid executed parameters.", query, operation.getFilter());
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.LDAP, operation.getCaseType());
         Assert.assertEquals("Invalid executed class name.", SearchOperation.class.getName(), operation.getClassName());
@@ -278,6 +300,7 @@ public class AbstractOperationTest {
         List<AbstractOperation> operations = introspector.getOperations();
         Assert.assertTrue("No operations detected.", operations.size() > 0);
         LDAPOperation operation = (LDAPOperation) operations.get(0);
+        Assert.assertEquals("Invalid executed baseDn.", DOMAIN_DSN, operation.getName());
         Assert.assertEquals("Invalid executed parameters.", query, operation.getFilter());
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.LDAP, operation.getCaseType());
         Assert.assertEquals("Invalid executed class name.", SearchOperation.class.getName(), operation.getClassName());
@@ -312,6 +335,42 @@ public class AbstractOperationTest {
         List<AbstractOperation> operations = introspector.getOperations();
         Assert.assertTrue("No operations detected.", operations.size() > 0);
         LDAPOperation operation = (LDAPOperation) operations.get(0);
+        Assert.assertEquals("Invalid executed baseDn.", DOMAIN_DSN, operation.getName());
+        Assert.assertEquals("Invalid executed parameters.", query, operation.getFilter());
+        Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.LDAP, operation.getCaseType());
+        Assert.assertEquals("Invalid executed class name.", SearchOperation.class.getName(), operation.getClassName());
+        Assert.assertEquals("Invalid executed method name.", "invoke", operation.getMethodName());
+    }
+
+    @Test
+    public void testSearchWithConnPool4() throws LdapException {
+        int port = embeddedLdapRule.embeddedServerPort();
+        String username = "mlakshkar";
+
+        String query = String.format("(&(uid=%s))", username);
+        System.out.println("LDAP query: " + query);
+        ConnectionConfig config = new ConnectionConfig();
+        config.setLdapUrl("ldap://localhost:" + port);
+
+        config.setConnectionInitializer(new BindConnectionInitializer());
+        BlockingConnectionPool pool = new BlockingConnectionPool(new DefaultConnectionFactory(config));
+        pool.initialize();
+        PooledConnectionFactory connFactory = new PooledConnectionFactory(pool);
+
+        Connection conn = connFactory.getConnection();
+        conn.open();
+
+        SearchRequest sr = new SearchRequest();
+        sr.setSearchFilter(new SearchFilter(query));
+        SearchOperation search = new SearchOperation(conn);
+        SearchResult result = search.execute(sr).getResult();
+        System.out.println("Name: " + result.getEntry().getAttribute("cn").getStringValue());
+
+        SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
+        List<AbstractOperation> operations = introspector.getOperations();
+        Assert.assertTrue("No operations detected.", operations.size() > 0);
+        LDAPOperation operation = (LDAPOperation) operations.get(0);
+        Assert.assertEquals("Invalid executed baseDn.", DOMAIN_DSN, operation.getName());
         Assert.assertEquals("Invalid executed parameters.", query, operation.getFilter());
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.LDAP, operation.getCaseType());
         Assert.assertEquals("Invalid executed class name.", SearchOperation.class.getName(), operation.getClassName());
