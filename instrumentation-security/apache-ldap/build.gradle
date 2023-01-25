@@ -1,0 +1,22 @@
+apply plugin: 'java'
+
+dependencies {
+    implementation(project(":newrelic-security-api"))
+    implementation("com.newrelic.agent.java:newrelic-api:7.11.0-SNAPSHOT")
+    implementation("com.newrelic.agent.java:newrelic-weaver-api:7.11.0-SNAPSHOT")
+    implementation("org.apache.directory.api:api-all:1.0.0")
+}
+
+jar {
+    manifest { attributes 'Implementation-Title': 'com.newrelic.instrumentation.security.apache-ldap' }
+}
+
+verifyInstrumentation {
+    passesOnly 'org.apache.directory.api:api-all:[1.0.0-M14,)'
+}
+
+
+site {
+    title 'LDAP'
+    type 'Messaging'
+}

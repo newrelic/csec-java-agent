@@ -68,13 +68,13 @@ public class HealthCheckScheduleThread {
                     // since tcp connection keep alive check is more than 2 hours
                     // we send our custom object to check if connection is still alive or not
                     // this will be ignored by ic agent on the other side.
+                    
+                    AgentInfo.getInstance().getJaHealthCheck().setStat(populateJVMStats());
+                    AgentInfo.getInstance().getJaHealthCheck().setServiceStatus(getServiceStatus());
 
                     if (!AgentInfo.getInstance().isAgentActive()) {
                         return;
                     }
-
-                    AgentInfo.getInstance().getJaHealthCheck().setStat(populateJVMStats());
-                    AgentInfo.getInstance().getJaHealthCheck().setServiceStatus(getServiceStatus());
 
                     AgentInfo.getInstance().getJaHealthCheck().setDsBackLog(RestRequestThreadPool.getInstance().getQueueSize());
                     AgentUtils.getInstance().getStatusLogMostRecentHCs().add(AgentInfo.getInstance().getJaHealthCheck().toString());

@@ -9,7 +9,10 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.*;
+import java.nio.channels.FileChannel;
+import java.nio.channels.FileLock;
 import java.nio.file.Files;
+import java.nio.file.StandardOpenOption;
 import java.nio.file.attribute.PosixFilePermissions;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
@@ -152,6 +155,7 @@ public class InitLogWriter implements Runnable {
 //			System.out.println(sb.toString());
             writer.write(sb.toString());
             writer.flush();
+            FileLoggerThreadPool.getInstance().setInitLoggingActive(true);
 
 //			writer.newLine();
             rollover(currentLogFileName);
@@ -168,24 +172,26 @@ public class InitLogWriter implements Runnable {
         }
 
         File currentFile = new File(fileName);
-        if (Files.size(currentFile.toPath()) > maxFileSize) {
+        try {
             writer.close();
-            logFileCounter++;
-            File rolloverFile = new File(fileName + STRING_DOT + logFileCounter);
-            currentFile.renameTo(rolloverFile);
+            if (Files.size(currentFile.toPath()) > maxFileSize) {
+                try (FileLock lock = FileChannel.open(currentFile.toPath(), StandardOpenOption.WRITE).lock()) {
+                    if (lock.isValid() && currentFile.exists() && Files.size(currentFile.toPath()) > maxFileSize) {
+                        File rolloverFile = new File(fileName + STRING_DOT + Instant.now().toEpochMilli());
+                        FileUtils.moveFile(currentFile, rolloverFile);
+                    }
+                    lock.release();
+                } catch (IOException e) {
+                }
 
-
-            writer = new BufferedWriter(new FileWriter(currentLogFileName, true));
-
+                CommonUtils.deleteRolloverLogFiles(currentFile.getName(), K2JALogProperties.maxfiles);
+            }
+        } finally {
+            writer = new BufferedWriter(new FileWriter(currentFile, true));
             currentFile.setReadable(true, false);
+            currentFile.setWritable(true, false);
             if (!osVariables.getWindows()) {
                 Files.setPosixFilePermissions(currentFile.toPath(), PosixFilePermissions.fromString("rw-rw-rw-"));
-            }
-            int removeFile = logFileCounter - K2JALogProperties.maxfiles;
-            while (removeFile > 0) {
-                File remove = new File(fileName + STRING_DOT + removeFile);
-                FileUtils.deleteQuietly(remove);
-                removeFile--;
             }
         }
     }

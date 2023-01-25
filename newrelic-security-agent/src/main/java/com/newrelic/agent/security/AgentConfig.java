@@ -180,7 +180,7 @@ public class AgentConfig {
         Collection<File> statusFiles = FileUtils.listFiles(new File(osVariables.getSnapshotDir()), FileFilterUtils.trueFileFilter(), null);
         if (statusFiles.size() >= max) {
             File[] sortedStatusFiles = statusFiles.toArray(new File[0]);
-            Arrays.sort(sortedStatusFiles, LastModifiedFileComparator.LASTMODIFIED_REVERSE);
+            Arrays.sort(sortedStatusFiles, LastModifiedFileComparator.LASTMODIFIED_COMPARATOR);
             FileUtils.deleteQuietly(sortedStatusFiles[0]);
             logger.log(LogLevel.INFO, String.format(CLEANING_STATUS_SNAPSHOTS_FROM_LOG_DIRECTORY_MAX_S_FILE_COUNT_REACHED_REMOVED_S, max, sortedStatusFiles[0].getAbsolutePath()), FileLoggerThreadPool.class.getName());
         }
