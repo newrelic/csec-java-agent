@@ -3,13 +3,12 @@ package org.ldaptive;
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
-import com.newrelic.api.agent.security.schema.StringUtils;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
 import com.newrelic.api.agent.security.schema.operation.LDAPOperation;
 import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
-import com.nr.instrumentation.security.apache.ldap.LDAPUtils;
+import com.nr.instrumentation.security.ldaptive2x.ldap.LDAPUtils;
 import org.ldaptive.filter.Filter;
 
 @Weave(type = MatchType.BaseClass, originalName = "org.ldaptive.AbstractOperation")

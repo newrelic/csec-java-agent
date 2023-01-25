@@ -1,4 +1,4 @@
-package com.nr.instrumentation.security.apache.ldap;
+package com.nr.instrumentation.security.ldaptive2x.ldap;
 
 public class LDAPUtils {
 
