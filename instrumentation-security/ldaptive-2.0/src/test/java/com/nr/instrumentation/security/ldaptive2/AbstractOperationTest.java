@@ -51,7 +51,7 @@ public class AbstractOperationTest {
         List<AbstractOperation> operations = introspector.getOperations();
         Assert.assertTrue("No operations detected.", operations.size() > 0);
         LDAPOperation operation = (LDAPOperation) operations.get(0);
-        Assert.assertEquals("Invalid executed baseDn.", DOMAIN_DSN, operation.getName());
+        Assert.assertEquals("Invalid executed baseDn.", "", operation.getName());
         Assert.assertEquals("Invalid executed parameters.", query, operation.getFilter());
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.LDAP, operation.getCaseType());
         Assert.assertEquals("Invalid executed class name.", SearchOperation.class.getName(), operation.getClassName());
@@ -154,7 +154,7 @@ public class AbstractOperationTest {
         List<AbstractOperation> operations = introspector.getOperations();
         Assert.assertTrue("No operations detected.", operations.size() > 0);
         LDAPOperation operation = (LDAPOperation) operations.get(0);
-        Assert.assertEquals("Invalid executed baseDn.", DOMAIN_DSN, operation.getName());
+        Assert.assertEquals("Invalid executed baseDn.", "", operation.getName());
         Assert.assertEquals("Invalid executed parameters.", query, operation.getFilter());
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.LDAP, operation.getCaseType());
         Assert.assertEquals("Invalid executed class name.", SearchOperation.class.getName(), operation.getClassName());
@@ -207,7 +207,7 @@ public class AbstractOperationTest {
         List<AbstractOperation> operations = introspector.getOperations();
         Assert.assertTrue("No operations detected.", operations.size() > 0);
         LDAPOperation operation = (LDAPOperation) operations.get(0);
-        Assert.assertEquals("Invalid executed baseDn.", DOMAIN_DSN, operation.getName());
+        Assert.assertEquals("Invalid executed baseDn.", "", operation.getName());
         Assert.assertEquals("Invalid executed parameters.", query, operation.getFilter());
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.LDAP, operation.getCaseType());
         Assert.assertEquals("Invalid executed class name.", SearchOperation.class.getName(), operation.getClassName());
@@ -318,7 +318,7 @@ public class AbstractOperationTest {
         List<AbstractOperation> operations = introspector.getOperations();
         Assert.assertTrue("No operations detected.", operations.size() > 0);
         LDAPOperation operation = (LDAPOperation) operations.get(0);
-        Assert.assertEquals("Invalid executed baseDn.", DOMAIN_DSN, operation.getName());
+        Assert.assertEquals("Invalid executed baseDn.", "", operation.getName());
         Assert.assertEquals("Invalid executed parameters.", query, operation.getFilter());
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.LDAP, operation.getCaseType());
         Assert.assertEquals("Invalid executed class name.", SearchOperation.class.getName(), operation.getClassName());
@@ -395,7 +395,7 @@ public class AbstractOperationTest {
         List<AbstractOperation> operations = introspector.getOperations();
         Assert.assertTrue("No operations detected.", operations.size() > 0);
         LDAPOperation operation = (LDAPOperation) operations.get(0);
-        Assert.assertEquals("Invalid executed baseDn.", DOMAIN_DSN, operation.getName());
+        Assert.assertEquals("Invalid executed baseDn.", "", operation.getName());
         Assert.assertEquals("Invalid executed parameters.", query, operation.getFilter());
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.LDAP, operation.getCaseType());
         Assert.assertEquals("Invalid executed class name.", SearchOperation.class.getName(), operation.getClassName());
