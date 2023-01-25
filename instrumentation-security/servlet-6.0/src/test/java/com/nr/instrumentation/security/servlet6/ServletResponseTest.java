@@ -5,6 +5,7 @@ import com.newrelic.agent.security.introspec.SecurityInstrumentationTestRunner;
 import com.newrelic.agent.security.introspec.SecurityIntrospector;
 import com.newrelic.api.agent.Trace;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
+import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.security.schema.operation.RXSSOperation;
 import com.nr.instrumentation.security.HttpServletServer;
 import org.junit.Assert;
@@ -15,7 +16,6 @@ import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 
 import java.io.BufferedReader;
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
@@ -41,6 +41,9 @@ public class ServletResponseTest {
 
         RXSSOperation targetOperation = (RXSSOperation) operations.get(0);
         Assert.assertNotNull("No target operation detected", targetOperation);
+        Assert.assertEquals("Wrong case-type detected", VulnerabilityCaseType.REFLECTED_XSS, targetOperation.getCaseType());
+        Assert.assertEquals("Wrong client IP detected", "127.0.0.1", targetOperation.getRequest().getClientIP());
+        Assert.assertEquals("Wrong Protocol detected", "http", targetOperation.getRequest().getProtocol());
         Assert.assertEquals("Wrong port detected", servlet.getEndPoint("response").getPort(), targetOperation.getRequest().getServerPort());
         Assert.assertEquals("Wrong method name detected", "service", targetOperation.getMethodName());
         Assert.assertEquals("Wrong Content-type detected", "application/x-www-form-urlencoded", targetOperation.getRequest().getContentType());
@@ -59,6 +62,9 @@ public class ServletResponseTest {
 
         RXSSOperation targetOperation = (RXSSOperation) operations.get(0);
         Assert.assertNotNull("No target operation detected", targetOperation);
+        Assert.assertEquals("Wrong case-type detected", VulnerabilityCaseType.REFLECTED_XSS, targetOperation.getCaseType());
+        Assert.assertEquals("Wrong client IP detected", "127.0.0.1", targetOperation.getRequest().getClientIP());
+        Assert.assertEquals("Wrong Protocol detected", "http", targetOperation.getRequest().getProtocol());
         Assert.assertEquals("Wrong port detected", servlet.getEndPoint("response").getPort(), targetOperation.getRequest().getServerPort());
         Assert.assertEquals("Wrong method name detected", "service", targetOperation.getMethodName());
         Assert.assertEquals("Wrong Content-type detected", "application/x-www-form-urlencoded", targetOperation.getRequest().getContentType());
@@ -71,8 +77,7 @@ public class ServletResponseTest {
 
         String method = "POST";
         String POST_PARAMS = "hook=getOutputStream";
-        int hashCode = makeRequest(method, POST_PARAMS);
-        return hashCode;
+        return makeRequest(method, POST_PARAMS);
 
     }
 
@@ -81,8 +86,7 @@ public class ServletResponseTest {
 
         String method = "POST";
         String POST_PARAMS = "hook=getWriter";
-        int hashCode = makeRequest(method, POST_PARAMS);
-        return hashCode;
+        return makeRequest(method, POST_PARAMS);
 
     }
 

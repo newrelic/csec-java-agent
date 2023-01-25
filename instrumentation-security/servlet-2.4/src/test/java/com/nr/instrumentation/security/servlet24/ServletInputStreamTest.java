@@ -5,6 +5,7 @@ import com.newrelic.agent.security.introspec.SecurityInstrumentationTestRunner;
 import com.newrelic.agent.security.introspec.SecurityIntrospector;
 import com.newrelic.api.agent.Trace;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
+import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.security.schema.operation.RXSSOperation;
 import com.nr.instrumentation.security.HttpServletServer;
 import org.junit.Assert;
@@ -36,9 +37,12 @@ public class ServletInputStreamTest {
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
         List<AbstractOperation> operations = introspector.getOperations();
         Assert.assertTrue("No operations detected", operations.size() > 0);
-        RXSSOperation targetOperation = (RXSSOperation) operations.get(0);
 
+        RXSSOperation targetOperation = (RXSSOperation) operations.get(0);
         Assert.assertNotNull("No target operation detected", targetOperation);
+        Assert.assertEquals("Wrong case-type detected", VulnerabilityCaseType.REFLECTED_XSS, targetOperation.getCaseType());
+        Assert.assertEquals("Wrong client IP detected", "127.0.0.1", targetOperation.getRequest().getClientIP());
+        Assert.assertEquals("Wrong Protocol detected", "http", targetOperation.getRequest().getProtocol());
         Assert.assertEquals("Wrong port detected", servlet.getEndPoint("inputStream").getPort(), targetOperation.getRequest().getServerPort());
         Assert.assertEquals("Wrong Content-type detected", "multipart/form-data", targetOperation.getRequest().getContentType());
         Assert.assertEquals("Wrong URL detected", "/TestUrl", targetOperation.getRequest().getUrl());
@@ -56,6 +60,9 @@ public class ServletInputStreamTest {
 
         RXSSOperation targetOperation = (RXSSOperation) operations.get(0);
         Assert.assertNotNull("No target operation detected", targetOperation);
+        Assert.assertEquals("Wrong case-type detected", VulnerabilityCaseType.REFLECTED_XSS, targetOperation.getCaseType());
+        Assert.assertEquals("Wrong client IP detected", "127.0.0.1", targetOperation.getRequest().getClientIP());
+        Assert.assertEquals("Wrong Protocol detected", "http", targetOperation.getRequest().getProtocol());
         Assert.assertEquals("Wrong port detected", servlet.getEndPoint("inputStream").getPort(), targetOperation.getRequest().getServerPort());
         Assert.assertEquals("Wrong Content-type detected", "multipart/form-data", targetOperation.getRequest().getContentType());
         Assert.assertEquals("Wrong URL detected", "/TestUrl", targetOperation.getRequest().getUrl());
