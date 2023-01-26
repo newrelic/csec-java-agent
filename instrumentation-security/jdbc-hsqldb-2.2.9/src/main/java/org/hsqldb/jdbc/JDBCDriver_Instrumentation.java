@@ -13,18 +13,13 @@ import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
 
 import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.Properties;
 
-@Weave
-public abstract class JDBCPool {
+@Weave(originalName = "org.hsqldb.jdbc.JDBCDriver")
+public abstract class JDBCDriver_Instrumentation {
 
-    public Connection getConnection() {
-        if(NewRelicSecurity.isHookProcessingActive() && !NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()) {
-            NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(JDBCVendor.META_CONST_JDBC_VENDOR, JDBCVendor.HSQLDB);
-        }
-        return Weaver.callOriginal();
-    }
-
-    public Connection getConnection(String user, String password) {
+    public Connection connect(String url, Properties props) throws SQLException {
         if(NewRelicSecurity.isHookProcessingActive() && !NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()) {
             NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(JDBCVendor.META_CONST_JDBC_VENDOR, JDBCVendor.HSQLDB);
         }
