@@ -3,6 +3,7 @@ dependencies {
     implementation("com.newrelic.agent.java:newrelic-api:7.11.0-SNAPSHOT")
     implementation("com.newrelic.agent.java:newrelic-weaver-api:7.11.0-SNAPSHOT")
     implementation("postgresql:postgresql:8.0-312.jdbc3")
+    testImplementation("org.testcontainers:postgresql:1.17.6")
 }
 
 jar {

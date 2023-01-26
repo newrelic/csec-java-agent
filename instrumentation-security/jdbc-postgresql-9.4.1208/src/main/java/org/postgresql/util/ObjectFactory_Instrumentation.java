@@ -12,7 +12,7 @@ import com.newrelic.api.agent.weaver.Weave;
 /**
  * This is here to prevent 9.4-1207 from applying since this only exists in 1208 and above
  */
-@Weave
-public class ObjectFactory {
+@Weave(originalName = "org.postgresql.util.ObjectFactory")
+public class ObjectFactory_Instrumentation {
 
 }

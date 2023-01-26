@@ -23,8 +23,8 @@ import java.sql.*;
 import java.util.HashMap;
 import java.util.Map;
 
-@Weave(type = MatchType.BaseClass)
-public abstract class AbstractJdbc2Statement {
+@Weave(type = MatchType.BaseClass, originalName = "org.postgresql.jdbc2.AbstractJdbc2Statement")
+public abstract class AbstractJdbc2Statement_Instrumentation {
 
     @NewField
     private Map<Integer, String> params;
@@ -79,7 +79,7 @@ public abstract class AbstractJdbc2Statement {
         return false;
     }
 
-    public AbstractJdbc2Statement(AbstractJdbc2Connection connection, String sql, boolean isCallable, int rsType, int rsConcurrency) throws SQLException {
+    public AbstractJdbc2Statement_Instrumentation(AbstractJdbc2Connection connection, String sql, boolean isCallable, int rsType, int rsConcurrency) throws SQLException {
         this.sqlQuery = sql;
     }
 

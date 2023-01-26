@@ -7,7 +7,6 @@
 
 package org.postgresql.ds.common;
 
-import com.newrelic.api.agent.Trace;
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.schema.JDBCVendor;
 import com.newrelic.api.agent.weaver.MatchType;
@@ -16,8 +15,8 @@ import com.newrelic.api.agent.weaver.Weaver;
 
 import java.sql.Connection;
 
-@Weave(type = MatchType.BaseClass)
-public abstract class BaseDataSource {
+@Weave(type = MatchType.BaseClass, originalName = "org.postgresql.ds.common.BaseDataSource")
+public abstract class BaseDataSource_Instrumentation {
 
     public Connection getConnection(String userID, String pass) throws Exception {
         if(NewRelicSecurity.isHookProcessingActive() && !NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()) {
