@@ -1,7 +1,6 @@
 package com.newrelic.agent.security.instrumentator.utils;
 
 import com.newrelic.agent.security.AgentInfo;
-import com.newrelic.agent.security.instrumentator.custom.ClassloaderAdjustments;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.newrelic.agent.security.intcodeagent.filelogging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.logging.DeployedApplication;
@@ -9,12 +8,11 @@ import com.newrelic.agent.security.intcodeagent.logging.IAgentConstants;
 import com.newrelic.agent.security.intcodeagent.models.config.AgentPolicyParameters;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.CollectorInitMsg;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.EventResponse;
-import com.newrelic.agent.security.intcodeagent.models.javaagent.UserClassEntity;
-import com.newrelic.agent.security.intcodeagent.models.operationalbean.AbstractOperationalBean;
-import com.newrelic.agent.security.intcodeagent.schedulers.PolicyPullST;
-import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
-import com.newrelic.api.agent.security.schema.policy.AgentPolicy;
+import com.newrelic.agent.security.intcodeagent.websocket.EventSendPool;
+import com.newrelic.agent.security.intcodeagent.websocket.JsonConverter;
+import com.newrelic.agent.security.intcodeagent.websocket.WSClient;
 import com.newrelic.api.agent.NewRelic;
+import com.newrelic.api.agent.security.schema.policy.AgentPolicy;
 import com.sun.jna.Pointer;
 import com.sun.jna.platform.win32.Kernel32;
 import com.sun.jna.platform.win32.WinNT;
@@ -33,11 +31,7 @@ import java.nio.file.attribute.PosixFilePermission;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import static com.newrelic.agent.security.intcodeagent.logging.IAgentConstants.COM_SUN;
-import static com.newrelic.agent.security.intcodeagent.logging.IAgentConstants.SUN_REFLECT;
 
 public class AgentUtils {
 
@@ -72,6 +66,11 @@ public class AgentUtils {
     public static final String COLLECTOR_IS_NOW_S = "Collector is now %s for %s";
     public static final String ACTIVE = "active";
     public static final String INACTIVE = "inactive";
+    public static final String OVERRIDDEN = "overridden";
+    public static final String NR_POLICY_OVER_RIDE_IN_PLACE_UPDATED_POLICY_S = "NR policy over-ride in place. Updated policy : %s";
+    public static final String POLICY_VERSION = "policy-version";
+    public static final String ERROR_WHILE_SENDING_UPDATED_POLICY_TO_REMOTE = "Error while sending updated policy to remote";
+    public static final String ERROR_WHILE_SENDING_UPDATED_POLICY_TO_REMOTE_S_S = "Error while sending updated policy to remote : %s : %s";
 
     private Map<String, ClassLoader> classLoaderRecord;
 
@@ -98,6 +97,8 @@ public class AgentUtils {
 //	private Map<Integer, JADatabaseMetaData> sqlConnectionMap;
 
     private AgentPolicy agentPolicy = new AgentPolicy();
+
+    private AgentPolicy defaultAgentPolicy = new AgentPolicy();
 
     private AgentPolicyParameters agentPolicyParameters = new AgentPolicyParameters();
 
@@ -206,6 +207,14 @@ public class AgentUtils {
         this.statusLogMostRecentErrors = statusLogMostRecentErrors;
     }
 
+    public AgentPolicy getDefaultAgentPolicy() {
+        return defaultAgentPolicy;
+    }
+
+    public void setDefaultAgentPolicy(AgentPolicy defaultAgentPolicy) {
+        this.defaultAgentPolicy = defaultAgentPolicy;
+    }
+
     public void addProtectedVulnerabilties(String className) {
         if (StringUtils.equalsAny(className, "com.sun.org.apache.xerces.internal.impl.XMLDocumentFragmentScannerImpl",
                 "com.sun.org.apache.xerces.internal.impl.XMLEntityManager")) {
@@ -223,91 +232,6 @@ public class AgentUtils {
         if (scannedDeployedApplications != null && !scannedDeployedApplications.isEmpty()) {
             this.scannedDeployedApplications.add(scannedDeployedApplications);
         }
-    }
-
-    public UserClassEntity detectUserClass(StackTraceElement[] trace, Class<?> currentGenericServletInstance,
-                                           String currentGenericServletMethodName, String fakeClassName, String fakeMethodName) {
-
-        StackTraceElement userClass = null;
-        int currentClassLoc = -1;
-
-        UserClassEntity userClassEntity = new UserClassEntity();
-
-        Set<String> superClasses = new HashSet<>();
-//		logger.log(LogLevel.INFO, "Trace: " + Arrays.asList(trace),
-//				AgentUtils.class.getName());
-        if (currentGenericServletInstance != null) {
-            Class<?> currClass = currentGenericServletInstance;
-            superClasses.add(currClass.getName());
-            while (currClass.getSuperclass() != null) {
-                currClass = currClass.getSuperclass();
-                superClasses.add(currClass.getName());
-            }
-            if (!superClasses.isEmpty()) {
-//				logger.log(LogLevel.INFO, "Detecting user class : " + superClasses + " : " + Arrays.asList(trace),
-//						AgentUtils.class.getName());
-                for (currentClassLoc = 0; currentClassLoc < trace.length; currentClassLoc++) {
-                    if (StringUtils.equals(trace[currentClassLoc].getMethodName(), currentGenericServletMethodName)
-                            && StringUtils.equalsAny(trace[currentClassLoc].getClassName(),
-                            superClasses.toArray(new String[0]))) {
-//						logger.log(LogLevel.INFO, "Process trace : " + trace[currentClassLoc],
-//								AgentUtils.class.getName());
-                        userClass = trace[currentClassLoc];
-                        break;
-                    }
-                }
-            }
-        }
-        if (userClass == null) {
-            return getFakeUserClass(trace, fakeClassName, fakeMethodName);
-        }
-
-        String packageName = StringUtils.EMPTY;
-        Matcher matcher = TRACE_PATTERN.matcher(userClass.getClassName());
-        if (!matcher.matches()) {
-//			logger.log(LogLevel.INFO, "Not matched : " + userClass, AgentUtils.class.getName());
-            userClassEntity.setCalledByUserCode(true);
-            userClassEntity.setTraceLocationEnd(currentClassLoc);
-            userClassEntity.setUserClassElement(userClass);
-            return userClassEntity;
-        } else {
-            packageName = matcher.group();
-            for (int i = currentClassLoc - 1; i >= 0; i--) {
-                Matcher m1 = TRACE_PATTERN.matcher(trace[i].getClassName());
-                if (!StringUtils.startsWith(trace[i].getClassName(), packageName) && !m1.matches()) {
-                    userClass = trace[i];
-//					logger.log(LogLevel.INFO, "else finding : " + userClass, AgentUtils.class.getName());
-                    userClassEntity.setCalledByUserCode(true);
-                    userClassEntity.setTraceLocationEnd(i);
-                    userClassEntity.setUserClassElement(userClass);
-                    return userClassEntity;
-                } else if (m1.matches()) {
-                    packageName = m1.group();
-                }
-            }
-        }
-        userClassEntity.setCalledByUserCode(false);
-        userClassEntity.setTraceLocationEnd(currentClassLoc);
-        userClassEntity.setUserClassElement(userClass);
-        return userClassEntity;
-    }
-
-    private UserClassEntity getFakeUserClass(StackTraceElement[] trace, String fakeClassName, String fakeMethodName) {
-        UserClassEntity userClassEntity = new UserClassEntity();
-        userClassEntity.setCalledByUserCode(false);
-        int loc = 0;
-        boolean detect = false;
-        for (loc = 0; loc < trace.length; loc++) {
-            if (!detect && StringUtils.equals(fakeMethodName, trace[loc].getMethodName())
-                    && StringUtils.equals(fakeClassName, trace[loc].getClassName())) {
-                detect = true;
-            } else if (detect && !IAgentConstants.TRACE_SKIP_REGEX.matcher(trace[loc].getClassName()).matches()) {
-                userClassEntity.setUserClassElement(trace[loc]);
-                userClassEntity.setTraceLocationEnd(loc);
-                break;
-            }
-        }
-        return userClassEntity;
     }
 
     public String detectDeployedApplicationPath(String userClassName, Class<?> currentGenericServletInstance,
@@ -444,12 +368,46 @@ public class AgentUtils {
         this.agentPolicy = agentPolicy;
     }
 
-    public void enforcePolicy() {
-        logger.log(LogLevel.INFO, ENFORCING_POLICY, AgentUtils.class.getName());
-        if (agentPolicy.getPolicyPull() && agentPolicy.getPolicyPullInterval() > 0) {
-            PolicyPullST.getInstance().submitNewTask();
-        } else {
-            PolicyPullST.getInstance().cancelTask(true);
+    public boolean applyPolicyOverrideIfApplicable() {
+        AgentUtils.getInstance().applyNRPolicyOverride();
+        if (AgentUtils.getInstance().isPolicyOverridden()) {
+            AgentUtils.getInstance().getAgentPolicy().setVersion(OVERRIDDEN);
+            logger.log(LogLevel.INFO, String.format(NR_POLICY_OVER_RIDE_IN_PLACE_UPDATED_POLICY_S,
+                    JsonConverter.toJSON(AgentUtils.getInstance().getAgentPolicy())), AgentUtils.class.getName());
+            try {
+                WSClient.getInstance().send(JsonConverter.toJSON(AgentUtils.getInstance().getAgentPolicy()));
+                AgentUtils.getInstance().getStatusLogValues().put(POLICY_VERSION, AgentUtils.getInstance().getAgentPolicy().getVersion());
+                EventSendPool.getInstance().sendEvent(AgentInfo.getInstance().getApplicationInfo());
+                return true;
+            } catch (Throwable e) {
+                logger.log(LogLevel.ERROR, String.format(ERROR_WHILE_SENDING_UPDATED_POLICY_TO_REMOTE_S_S, e.getMessage(), e.getCause()), AgentUtils.class.getName());
+                logger.log(LogLevel.DEBUG, ERROR_WHILE_SENDING_UPDATED_POLICY_TO_REMOTE, e, AgentUtils.class.getName());
+            }
+        }
+        return false;
+    }
+
+    /**
+     * On startup, Instantiating collector policy with default values.
+     */
+    public static void instantiateDefaultPolicy() {
+        logger.log(LogLevel.INFO, "Instantiating collector policy with default!!!", AgentUtils.class.getName());
+        applyPolicy(AgentUtils.getInstance().getDefaultAgentPolicy());
+    }
+
+    public static boolean applyPolicy(AgentPolicy newPolicy) {
+        try {
+            AgentUtils.getInstance().setAgentPolicy(newPolicy);
+            AgentInfo.getInstance().getApplicationInfo().setPolicyVersion(AgentUtils.getInstance().getAgentPolicy().getVersion());
+            logger.logInit(LogLevel.INFO, String.format(IAgentConstants.AGENT_POLICY_APPLIED_S,
+                    JsonConverter.toJSON(AgentUtils.getInstance().getAgentPolicy())), AgentUtils.class.getName());
+            AgentUtils.getInstance().getStatusLogValues().put(POLICY_VERSION, AgentUtils.getInstance().getAgentPolicy().getVersion());
+            EventSendPool.getInstance().sendEvent(AgentInfo.getInstance().getApplicationInfo());
+            return true;
+        } catch (Throwable e) {
+            logger.logInit(LogLevel.ERROR, IAgentConstants.UNABLE_TO_SET_AGENT_POLICY_DUE_TO_ERROR, e,
+                    AgentUtils.class.getName());
+            return false;
         }
     }
 
@@ -457,22 +415,7 @@ public class AgentUtils {
         return !scannedDeployedApplications.containsAll(AgentInfo.getInstance().getApplicationInfo().getServerInfo().getDeployedApplications());
     }
 
-
-    public static void reformStackStrace(AbstractOperationalBean operationalBean) {
-
-        StackTraceElement[] stackTrace = operationalBean.getStackTrace();
-        int resetFactor = 1;
-        for (int i = 1; i < stackTrace.length; i++) {
-            if (i < operationalBean.getUserClassEntity().getTraceLocationEnd() && i == resetFactor &&
-                    StringUtils.startsWith(stackTrace[i].getClassName(), ClassloaderAdjustments.K2_BOOTSTAP_LOADED_PACKAGE_NAME)) {
-                resetFactor++;
-            }
-        }
-        stackTrace = Arrays.copyOfRange(stackTrace, resetFactor, stackTrace.length);
-        operationalBean.setStackTrace(stackTrace);
-    }
-
-    public static String stackTraceElementToString(StackTraceElement element){
+    public static String stackTraceElementToString(StackTraceElement element) {
         StringBuilder builder = new StringBuilder(element.getClassName());
         builder.append(".");
         builder.append(element.getMethodName());
@@ -497,49 +440,6 @@ public class AgentUtils {
         }
         
         return builder.toString();
-    }
-    public static void preProcessStackTrace(AbstractOperationalBean operationalBean, VulnerabilityCaseType vulnerabilityCaseType) {
-        if (operationalBean.isStackProcessed()) {
-            return;
-        }
-        StackTraceElement[] stackTrace = operationalBean.getStackTrace();
-        int resetFactor = 0;
-
-        ArrayList<Integer> newTraceForIdCalc = new ArrayList<>(stackTrace.length);
-
-        resetFactor++;
-        boolean markedForRemoval = false;
-        for (int i = 1; i < stackTrace.length; i++) {
-            markedForRemoval = false;
-            if (i < operationalBean.getUserClassEntity().getTraceLocationEnd() && i == resetFactor &&
-                    StringUtils.startsWith(stackTrace[i].getClassName(), ClassloaderAdjustments.K2_BOOTSTAP_LOADED_PACKAGE_NAME)) {
-                resetFactor++;
-                markedForRemoval = true;
-            }
-
-            if (StringUtils.startsWithAny(stackTrace[i].getClassName(), SUN_REFLECT, COM_SUN)
-                    || stackTrace[i].isNativeMethod() || stackTrace[i].getLineNumber() < 0) {
-                markedForRemoval = true;
-            }
-
-            if (!markedForRemoval) {
-                newTraceForIdCalc.add(stackTrace[i].hashCode());
-            }
-        }
-
-        stackTrace = Arrays.copyOfRange(stackTrace, resetFactor, stackTrace.length);
-        operationalBean.setStackTrace(stackTrace);
-        operationalBean.getUserClassEntity().setTraceLocationEnd(operationalBean.getUserClassEntity().getTraceLocationEnd() - resetFactor);
-        setAPIId(operationalBean, newTraceForIdCalc, vulnerabilityCaseType);
-        operationalBean.setStackProcessed(true);
-    }
-
-    private static void setAPIId(AbstractOperationalBean operationalBean, List<Integer> traceForIdCalc, VulnerabilityCaseType vulnerabilityCaseType) {
-        try {
-            operationalBean.setApiID(HashGenerator.getXxHash64Digest(traceForIdCalc.stream().mapToInt(Integer::intValue).toArray()) + "-" + vulnerabilityCaseType.getCaseType());
-        } catch (IOException e) {
-            operationalBean.setApiID("UNDEFINED");
-        }
     }
 
     public long getProcessID(Process p) {
@@ -644,7 +544,7 @@ public class AgentUtils {
         TODO: in long term we shall look into alternate approaches to set these over-rides
                 since the current one is an exhaustive book-keeping.
      */
-    public void applyNRPolicyOverride() {
+    private void applyNRPolicyOverride() {
         boolean override = false;
         if (!NewRelic.getAgent().getConfig().getValue(INRSettingsKey.SECURITY_POLICY_ENFORCE, false)) {
             logger.log(LogLevel.DEBUG, String.format(OVER_RIDE_POLICY_DISABLED_IN_NR_CONFIG_AT_S, INRSettingsKey.SECURITY_POLICY_ENFORCE), AgentUtils.class.getName());

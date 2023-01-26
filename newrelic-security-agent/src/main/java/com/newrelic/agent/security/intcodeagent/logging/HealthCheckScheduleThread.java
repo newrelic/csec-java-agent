@@ -1,7 +1,6 @@
 package com.newrelic.agent.security.intcodeagent.logging;
 
 import com.newrelic.agent.security.AgentInfo;
-import com.newrelic.agent.security.instrumentator.httpclient.HttpClient;
 import com.newrelic.agent.security.instrumentator.httpclient.RestClient;
 import com.newrelic.agent.security.instrumentator.httpclient.RestRequestThreadPool;
 import com.newrelic.agent.security.instrumentator.os.OSVariables;
@@ -11,7 +10,6 @@ import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool
 import com.newrelic.agent.security.intcodeagent.filelogging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.HttpConnectionStat;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.JAHealthCheck;
-import com.newrelic.agent.security.intcodeagent.schedulers.GlobalPolicyParameterPullST;
 import com.newrelic.agent.security.intcodeagent.schedulers.InBoundOutBoundST;
 import com.newrelic.agent.security.intcodeagent.websocket.JsonConverter;
 import com.newrelic.agent.security.intcodeagent.websocket.WSClient;
@@ -70,13 +68,13 @@ public class HealthCheckScheduleThread {
                     // since tcp connection keep alive check is more than 2 hours
                     // we send our custom object to check if connection is still alive or not
                     // this will be ignored by ic agent on the other side.
+                    
+                    AgentInfo.getInstance().getJaHealthCheck().setStat(populateJVMStats());
+                    AgentInfo.getInstance().getJaHealthCheck().setServiceStatus(getServiceStatus());
 
                     if (!AgentInfo.getInstance().isAgentActive()) {
                         return;
                     }
-
-                    AgentInfo.getInstance().getJaHealthCheck().setStat(populateJVMStats());
-                    AgentInfo.getInstance().getJaHealthCheck().setServiceStatus(getServiceStatus());
 
                     AgentInfo.getInstance().getJaHealthCheck().setDsBackLog(RestRequestThreadPool.getInstance().getQueueSize());
                     AgentUtils.getInstance().getStatusLogMostRecentHCs().add(AgentInfo.getInstance().getJaHealthCheck().toString());
@@ -122,7 +120,7 @@ public class HealthCheckScheduleThread {
             return true;
         }
         if (future != null && (forceCancel || future.isDone() || future.getDelay(TimeUnit.MINUTES) > 5)) {
-            logger.log(LogLevel.INFO, "Cancel current task of HealthCheck Schedule", GlobalPolicyParameterPullST.class.getName());
+            logger.log(LogLevel.INFO, "Cancel current task of HealthCheck Schedule", HealthCheckScheduleThread.class.getName());
             future.cancel(true);
             return true;
         }
@@ -178,7 +176,6 @@ public class HealthCheckScheduleThread {
 
         serviceStatus.put("agentActiveStat", AgentInfo.getInstance().isAgentActive() ? "OK" : "Error");
 
-        serviceStatus.put("resourceServer", HttpClient.getInstance().isConnected() ? "OK" : "Error");
         serviceStatus.put("iastRestClient", RestClient.getInstance().isConnected() ? "OK" : "Error");
 
         return serviceStatus;

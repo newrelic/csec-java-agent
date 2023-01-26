@@ -1,8 +1,6 @@
 package com.newrelic.agent.security.intcodeagent.filelogging;
 
 import com.newrelic.agent.security.AgentInfo;
-import com.newrelic.agent.security.instrumentator.httpclient.HttpClient;
-import com.newrelic.agent.security.instrumentator.httpclient.IRestClientConstants;
 import com.newrelic.agent.security.instrumentator.os.OSVariables;
 import com.newrelic.agent.security.instrumentator.os.OsVariablesInstance;
 import com.newrelic.agent.security.intcodeagent.properties.K2JALogProperties;
@@ -11,13 +9,14 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.*;
+import java.nio.channels.FileChannel;
+import java.nio.channels.FileLock;
 import java.nio.file.Files;
+import java.nio.file.StandardOpenOption;
 import java.nio.file.attribute.PosixFilePermissions;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.util.Calendar;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 public class LogWriter implements Runnable {
@@ -54,8 +53,6 @@ public class LogWriter implements Runnable {
     private static final String fileName;
 
     private static final String currentLogFileName;
-
-    private static int logFileCounter = 0;
 
     private static BufferedWriter writer;
 
@@ -160,6 +157,7 @@ public class LogWriter implements Runnable {
 //			System.out.println(sb.toString());
             writer.write(sb.toString());
             writer.flush();
+            FileLoggerThreadPool.getInstance().setLoggingActive(true);
 
 //			writer.newLine();
             rollover(currentLogFileName);
@@ -169,7 +167,6 @@ public class LogWriter implements Runnable {
                 FileLoggerThreadPool.getInstance().setLoggingActive(false);
             }
         }
-
     }
 
     private static void rollover(String fileName) throws IOException {
@@ -179,24 +176,30 @@ public class LogWriter implements Runnable {
 
         File currentFile = new File(fileName);
         // TODO: we should check file size using FS meta.
-        if (Files.size(currentFile.toPath()) > maxFileSize) {
+        try {
             writer.close();
-            logFileCounter++;
-            File rolloverFile = new File(fileName + STRING_DOT + logFileCounter);
-            currentFile.renameTo(rolloverFile);
-            writer = new BufferedWriter(new FileWriter(currentLogFileName, true));
+            if (Files.size(currentFile.toPath()) > maxFileSize) {
+                try (FileLock lock = FileChannel.open(currentFile.toPath(), StandardOpenOption.WRITE).lock()) {
+                    if (lock.isValid() && currentFile.exists() && Files.size(currentFile.toPath()) > maxFileSize) {
+                        File rolloverFile = new File(fileName + STRING_DOT + Instant.now().toEpochMilli());
+                        FileUtils.moveFile(currentFile, rolloverFile);
+                    }
+                    lock.release();
+                } catch (IOException e) {
+                }
 
+                CommonUtils.deleteRolloverLogFiles(currentFile.getName(), K2JALogProperties.maxfiles);
+            }
+        } finally {
+            writer = new BufferedWriter(new FileWriter(currentFile, true));
             currentFile.setReadable(true, false);
+            currentFile.setWritable(true, false);
             if (!osVariables.getWindows()) {
                 Files.setPosixFilePermissions(currentFile.toPath(), PosixFilePermissions.fromString("rw-rw-rw-"));
             }
-            int removeFile = logFileCounter - K2JALogProperties.maxfiles;
-            while (removeFile > 0) {
-                File remove = new File(fileName + STRING_DOT + removeFile);
-                FileUtils.deleteQuietly(remove);
-                removeFile--;
-            }
         }
+
+
     }
 
     private static boolean rolloverCheckNeeded() {
@@ -210,13 +213,6 @@ public class LogWriter implements Runnable {
 
     public static void setLogLevel(LogLevel logLevel) {
         defaultLogLevel = logLevel.getLevel();
-    }
-
-    private static void uploadLogsAndDeleteFile(File file) {
-        Map<String, String> queryParams = new HashMap<>();
-        queryParams.put("applicationUUID", AgentInfo.getInstance().getApplicationUUID());
-        queryParams.put("saveName", file.getName());
-        HttpClient.getInstance().doPost(IRestClientConstants.COLLECTOR_UPLOAD_LOG, null, queryParams, null, file);
     }
 
     public static String getFileName() {

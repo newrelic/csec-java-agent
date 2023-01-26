@@ -2,14 +2,11 @@ package com.newrelic.agent.security.intcodeagent.websocket;
 
 import com.newrelic.agent.security.AgentConfig;
 import com.newrelic.agent.security.AgentInfo;
-import com.newrelic.agent.security.instrumentator.utils.AgentUtils;
-import com.newrelic.agent.security.instrumentator.utils.InstrumentationUtils;
 import com.newrelic.agent.security.intcodeagent.controlcommand.ControlCommandProcessor;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.newrelic.agent.security.intcodeagent.filelogging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.logging.IAgentConstants;
 import com.newrelic.agent.security.intcodeagent.properties.K2JAVersionInfo;
-import com.newrelic.agent.security.intcodeagent.utils.CommonUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.java_websocket.WebSocket;
 import org.java_websocket.WebSocketImpl;
@@ -22,6 +19,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.Instant;
 import java.time.ZoneId;
+import java.util.concurrent.TimeUnit;
 
 public class WSClient extends WebSocketClient {
 
@@ -49,14 +47,15 @@ public class WSClient extends WebSocketClient {
         super(new URI(AgentConfig.getInstance().getConfig().getK2ServiceInfo().getValidatorServiceEndpointURL()));
         this.setTcpNoDelay(true);
         this.setConnectionLostTimeout(30);
-        this.addHeader("K2-CONNECTION-TYPE", "LANGUAGE_COLLECTOR");
-        this.addHeader("K2-API-ACCESSOR", AgentConfig.getInstance().getConfig().getCustomerInfo().getApiAccessorToken());
-        this.addHeader("K2-VERSION", K2JAVersionInfo.collectorVersion);
-        this.addHeader("K2-COLLECTOR-TYPE", "JAVA");
-        this.addHeader("K2-BUILD-NUMBER", K2JAVersionInfo.buildNumber);
-        this.addHeader("K2-GROUP", AgentConfig.getInstance().getGroupName());
-        this.addHeader("K2-APPLICATION-UUID", AgentInfo.getInstance().getApplicationUUID());
-        this.addHeader("K2-JSON-VERSION", K2JAVersionInfo.jsonVersion);
+        this.addHeader("NR-CSEC-CONNECTION-TYPE", "LANGUAGE_COLLECTOR");
+        this.addHeader("NR-AGENT-RUN-TOKEN", AgentConfig.getInstance().getConfig().getCustomerInfo().getApiAccessorToken());
+        this.addHeader("NR-CSEC-VERSION", K2JAVersionInfo.collectorVersion);
+        this.addHeader("NR-CSEC-COLLECTOR-TYPE", "JAVA");
+        this.addHeader("NR-CSEC-BUILD-NUMBER", K2JAVersionInfo.buildNumber);
+        this.addHeader("NR-CSEC-MODE", AgentConfig.getInstance().getGroupName());
+        this.addHeader("NR-CSEC-APP-UUID", AgentInfo.getInstance().getApplicationUUID());
+        this.addHeader("NR-CSEC-JSON-VERSION", K2JAVersionInfo.jsonVersion);
+        this.addHeader("NR-ACCOUNT-ID", AgentConfig.getInstance().getConfig().getCustomerInfo().getAccountId());
     }
 
     /**
@@ -67,7 +66,7 @@ public class WSClient extends WebSocketClient {
     public void openConnection() throws InterruptedException {
         logger.logInit(LogLevel.INFO, String.format(IAgentConstants.INIT_WS_CONNECTION, AgentConfig.getInstance().getConfig().getK2ServiceInfo().getValidatorServiceEndpointURL()),
                 WSClient.class.getName());
-        connectBlocking();
+        connectBlocking(10, TimeUnit.SECONDS);
         WebSocket conn = getConnection();
         if (conn instanceof WebSocketImpl) {
             this.connection = (WebSocketImpl) conn;
@@ -81,7 +80,6 @@ public class WSClient extends WebSocketClient {
 //				new Object[] { this.isOpen(), this.isClosing(), this.isClosed() });
         logger.logInit(LogLevel.INFO, String.format(IAgentConstants.SENDING_APPLICATION_INFO_ON_WS_CONNECT, AgentInfo.getInstance().getApplicationInfo()) , WSClient.class.getName());
         super.send(JsonConverter.toJSON(AgentInfo.getInstance().getApplicationInfo()));
-        CommonUtils.fireUpdatePolicyAPI(AgentUtils.getInstance().getAgentPolicy());
 //		Agent.allClassLoadersCount.set(0);
 //		Agent.jarPathSet.clear();
 //		logger.log(LogLevel.INFO, "Resetting allClassLoadersCount to " + Agent.allClassLoadersCount.get(),
@@ -111,10 +109,8 @@ public class WSClient extends WebSocketClient {
             return;
         }
 
-        if (code != CloseFrame.POLICY_VALIDATION) {
+        if (code != CloseFrame.POLICY_VALIDATION && code != CloseFrame.NORMAL) {
             WSReconnectionST.getInstance().submitNewTaskSchedule();
-        } else {
-            InstrumentationUtils.shutdownLogic(true);
         }
     }
 

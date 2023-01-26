@@ -13,15 +13,9 @@ import com.newrelic.agent.environment.EnvironmentService;
 import com.newrelic.agent.errors.ErrorAnalyzerImpl;
 import com.newrelic.agent.errors.ErrorMessageReplacer;
 import com.newrelic.agent.interfaces.ReservoirManager;
-import com.newrelic.agent.interfaces.backport.Consumer;
 import com.newrelic.agent.logging.IAgentLogger;
 import com.newrelic.agent.model.SpanEvent;
-import com.newrelic.agent.service.analytics.DistributedSamplingPriorityQueue;
-import com.newrelic.agent.service.analytics.SpanErrorBuilder;
-import com.newrelic.agent.service.analytics.SpanEventCreationDecider;
-import com.newrelic.agent.service.analytics.SpanEventsServiceImpl;
-import com.newrelic.agent.service.analytics.TracerToSpanEvent;
-import com.newrelic.agent.service.analytics.TransactionDataToDistributedTraceIntrinsics;
+import com.newrelic.agent.service.analytics.*;
 import com.newrelic.agent.stats.TransactionStats;
 
 import java.util.Collection;
@@ -29,6 +23,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.function.Consumer;
 
 public class IntrospectorSpanEventService extends SpanEventsServiceImpl {
     Queue<com.newrelic.agent.security.introspec.SpanEvent> events = new ConcurrentLinkedQueue<>();

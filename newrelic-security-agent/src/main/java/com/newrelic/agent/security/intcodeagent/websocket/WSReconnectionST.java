@@ -96,6 +96,7 @@ public class WSReconnectionST {
         if (instance != null) {
             instance.shutDownThreadPoolExecutor();
         }
+        instance = null;
     }
 
     /**

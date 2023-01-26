@@ -220,6 +220,11 @@ public abstract class AbstractJdbc2Statement_Instrumentation {
         Weaver.callOriginal();
     }
 
+    public void setBytes(int parameterIndex, byte x[]) throws SQLException {
+        setParamValue(parameterIndex, x);
+        Weaver.callOriginal();
+    }
+
     public void setShort(int parameterIndex, short x) throws SQLException {
         setParamValue(parameterIndex, x);
         Weaver.callOriginal();
@@ -277,5 +282,13 @@ public abstract class AbstractJdbc2Statement_Instrumentation {
         if(index > -1) {
             params.put(index, String.valueOf(value));
         }
+    }
+
+    private void setParamValue(int index, byte[] value) {
+        if (params == null) {
+            params = new HashMap<>();
+        }
+
+        params.put(index, new String(value));
     }
 }

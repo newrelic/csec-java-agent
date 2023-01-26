@@ -2,7 +2,8 @@ package com.newrelic.agent.security.intcodeagent.models.javaagent;
 
 import com.newrelic.agent.security.intcodeagent.logging.DeployedApplication;
 import com.newrelic.agent.security.intcodeagent.websocket.JsonConverter;
-import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
+import com.newrelic.api.agent.security.schema.AgentMetaData;
+import com.newrelic.api.agent.security.schema.HttpRequest;
 import org.json.simple.JSONArray;
 
 import java.util.List;
@@ -19,10 +20,9 @@ public class JavaAgentEventBean extends AgentBasicInfo {
     private Integer lineNumber;
     private JSONArray parameters;
     private Long eventGenerationTime;
-    private HttpRequestBean httpRequest;
+    private HttpRequest httpRequest;
     private String id;
-
-    private List<StackTraceElement> stacktrace;
+    private StackTraceElement[] stacktrace;
     private String caseType;
     private String eventCategory;
     private Long preProcessingTime;
@@ -37,18 +37,6 @@ public class JavaAgentEventBean extends AgentBasicInfo {
 
     public JavaAgentEventBean() {
         super();
-    }
-
-    public JavaAgentEventBean(Long startTime, Long preProcessingTime, String sourceMethod, Integer pid,
-                              String applicationUUID, String id, VulnerabilityCaseType vulnerabilityCaseType) {
-        this.id = id;
-        this.setPid(pid);
-        this.applicationUUID = applicationUUID;
-        this.sourceMethod = sourceMethod;
-        this.startTime = startTime;
-        this.setCaseType(vulnerabilityCaseType.getCaseType());
-        this.setPreProcessingTime(preProcessingTime);
-        this.metaData = new AgentMetaData();
     }
 
     public void setUserAPIInfo(Integer lineNumber, String userClassName, String userMethodName) {
@@ -185,14 +173,14 @@ public class JavaAgentEventBean extends AgentBasicInfo {
     /**
      * @return the servletInfo
      */
-    public HttpRequestBean getHttpRequest() {
+    public HttpRequest getHttpRequest() {
         return httpRequest;
     }
 
     /**
      * @param servletInfo the servletInfo to set
      */
-    public void setHttpRequest(HttpRequestBean servletInfo) {
+    public void setHttpRequest(HttpRequest servletInfo) {
         this.httpRequest = servletInfo;
     }
 
@@ -213,14 +201,14 @@ public class JavaAgentEventBean extends AgentBasicInfo {
     /**
      * @return the stacktrace
      */
-    public List<StackTraceElement> getStacktrace() {
+    public StackTraceElement[] getStacktrace() {
         return stacktrace;
     }
 
     /**
      * @param stacktrace the stacktrace to set
      */
-    public void setStacktrace(List<StackTraceElement> stacktrace) {
+    public void setStacktrace(StackTraceElement[] stacktrace) {
         this.stacktrace = stacktrace;
     }
 

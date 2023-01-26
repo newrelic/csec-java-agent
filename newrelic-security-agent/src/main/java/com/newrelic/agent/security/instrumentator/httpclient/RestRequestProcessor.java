@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.newrelic.agent.security.instrumentator.os.OsVariablesInstance;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.newrelic.agent.security.intcodeagent.filelogging.LogLevel;
-import com.newrelic.agent.security.intcodeagent.models.javaagent.HttpRequestBean;
+import com.newrelic.agent.security.intcodeagent.models.FuzzRequestBean;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.IntCodeControlCommand;
 import org.apache.commons.lang3.StringUtils;
 
@@ -16,6 +16,8 @@ public class RestRequestProcessor implements Runnable {
     public static final String K2_HOME_TMP_CONST = "{{K2_HOME_TMP}}";
     public static final String ERROR_WHILE_PROCESSING_FUZZING_REQUEST_S = "Error while processing fuzzing request : %s";
     private IntCodeControlCommand controlCommand;
+
+    private ObjectMapper objectMapper = new ObjectMapper();
 
     private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
 
@@ -33,10 +35,10 @@ public class RestRequestProcessor implements Runnable {
             return;
         }
 
-        HttpRequestBean httpRequest = null;
+        FuzzRequestBean httpRequest = null;
         try {
             String req = StringUtils.replace(controlCommand.getArguments().get(0), K2_HOME_TMP_CONST, OsVariablesInstance.getInstance().getOsVariables().getTmpDirectory());
-            httpRequest = new ObjectMapper().readValue(req, HttpRequestBean.class);
+            httpRequest = objectMapper.readValue(req, FuzzRequestBean.class);
             RestClient.getInstance().fireRequest(RequestUtils.generateK2Request(httpRequest));
 
         } catch (Throwable e) {

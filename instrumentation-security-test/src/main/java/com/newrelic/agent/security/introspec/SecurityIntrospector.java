@@ -2,6 +2,7 @@ package com.newrelic.agent.security.introspec;
 
 import com.newrelic.agent.security.intcodeagent.models.javaagent.ExitEventBean;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
+import com.newrelic.api.agent.security.schema.SecurityMetaData;
 
 import java.sql.Statement;
 import java.util.List;
@@ -15,6 +16,24 @@ public interface SecurityIntrospector {
     String getJDBCVendor();
 
     String getSqlQuery(Statement statement);
+
+    int getRequestReaderHash();
+
+    int getRequestInStreamHash();
+
+    int getResponseWriterHash();
+
+    int getResponseOutStreamHash();
+
+    SecurityMetaData getSecurityMetaData();
+
+    void setResponseOutStreamHash(int hashCode);
+
+    void setResponseWriterHash(int hashCode);
+
+    void setRequestInputStreamHash(int hashCode);
+
+    void setRequestReaderHash(int hashCode);
 
     void clear();
 }

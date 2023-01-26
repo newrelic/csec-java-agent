@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.newrelic.agent.security.AgentInfo;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.newrelic.agent.security.intcodeagent.filelogging.LogLevel;
-import com.newrelic.agent.security.intcodeagent.logging.ServletEventPool;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.JavaAgentEventBean;
 
 import java.util.Map;
@@ -40,7 +39,7 @@ public class EventSendPool {
         boolean allowCoreThreadTimeOut = false;
 
         executor = new ThreadPoolExecutor(corePoolSize, maxPoolSize, keepAliveTime, timeUnit,
-                new LinkedBlockingQueue<Runnable>(queueSize), new ServletEventPool.EventAbortPolicy()) {
+                new LinkedBlockingQueue<Runnable>(queueSize), new EventAbortPolicy()) {
             @Override
             protected void afterExecute(Runnable r, Throwable t) {
                 if (r instanceof Future<?>) {
@@ -115,5 +114,24 @@ public class EventSendPool {
             }
         }
 
+    }
+
+    public static class EventAbortPolicy implements RejectedExecutionHandler {
+        /**
+         * Creates an {@code ValidationAbortPolicy}.
+         */
+        public EventAbortPolicy() {
+        }
+
+        /**
+         * Always throws RejectedExecutionException.
+         *
+         * @param r the runnable task requested to be executed
+         * @param e the executor attempting to execute this task
+         * @throws RejectedExecutionException always
+         */
+        public void rejectedExecution(Runnable r, ThreadPoolExecutor e) {
+            logger.log(LogLevel.DEBUG, "Event Task " + r.toString() + " rejected from  " + e.toString(), EventSendPool.class.getName());
+        }
     }
 }

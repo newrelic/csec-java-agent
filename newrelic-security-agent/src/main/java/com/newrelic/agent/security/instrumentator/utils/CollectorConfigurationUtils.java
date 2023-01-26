@@ -54,7 +54,6 @@ public class CollectorConfigurationUtils {
     public static CollectorConfig populateCollectorConfig() {
         CollectorConfig collectorConfig = new CollectorConfig();
         String validatorServiceEndpointUrl = null;
-        String resourceServiceEndpointUrl = null;
         String apiAccessor = null;
         String hostName = null;
 
@@ -65,16 +64,6 @@ public class CollectorConfigurationUtils {
             validatorServiceEndpointUrl = NewRelic.getAgent().getConfig().getValue("security.validator_service_endpoint_url");
         } else {
             logger.log(LogLevel.ERROR, "Unable to find Validator service endpoint url. Please specify either env K2_VALIDATOR_SERVICE_URL or NR config key 'security.validator_service_endpoint_url'", CollectorConfigurationUtils.class.getName());
-            //TODO raise exception
-        }
-
-        // Loading resourceServiceEndpointUrl value
-        if(System.getenv().containsKey("K2_RESOURCE_SERVICE_URL")){
-            resourceServiceEndpointUrl = System.getenv().get("K2_RESOURCE_SERVICE_URL");
-        } else if(NewRelic.getAgent().getConfig().getValue("security.resource_service_endpoint_url") != null) {
-            resourceServiceEndpointUrl = NewRelic.getAgent().getConfig().getValue("security.resource_service_endpoint_url");
-        } else {
-            logger.log(LogLevel.ERROR, "Unable to find Resource service endpoint url. Please specify either env K2_RESOURCE_SERVICE_URL or NR config key 'security.resource_service_endpoint_url'", CollectorConfigurationUtils.class.getName());
             //TODO raise exception
         }
 
@@ -103,8 +92,15 @@ public class CollectorConfigurationUtils {
         customerInfo.setApiAccessorToken(apiAccessor);
         collectorConfig.setCustomerInfo(customerInfo);
 
+        String accountId = NewRelic.getAgent().getConfig().getValue("account_id");
+        if (StringUtils.isBlank(accountId)) {
+            logger.log(LogLevel.ERROR, "Unable to find account id.", CollectorConfigurationUtils.class.getName());
+            //TODO raise exception
+        } else {
+            collectorConfig.getCustomerInfo().setAccountId(accountId);
+        }
+
         K2ServiceInfo serviceInfo = new K2ServiceInfo();
-        serviceInfo.setResourceServiceEndpointURL(resourceServiceEndpointUrl);
         serviceInfo.setValidatorServiceEndpointURL(validatorServiceEndpointUrl);
         collectorConfig.setK2ServiceInfo(serviceInfo);
         AgentUtils.getInstance().getStatusLogValues().put(VALIDATOR_URL, validatorServiceEndpointUrl);

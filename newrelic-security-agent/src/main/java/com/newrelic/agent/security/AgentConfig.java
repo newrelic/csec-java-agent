@@ -7,8 +7,6 @@ import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool
 import com.newrelic.agent.security.intcodeagent.filelogging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.filelogging.LogWriter;
 import com.newrelic.agent.security.intcodeagent.models.collectorconfig.CollectorConfig;
-import com.newrelic.agent.security.intcodeagent.schedulers.GlobalPolicyParameterPullST;
-import com.newrelic.agent.security.intcodeagent.schedulers.PolicyPullST;
 import com.newrelic.agent.security.intcodeagent.utils.CommonUtils;
 import com.newrelic.agent.security.util.IUtilConstants;
 import com.newrelic.api.agent.NewRelic;
@@ -85,7 +83,7 @@ public class AgentConfig {
         } else {
             groupName = IUtilConstants.RASP;
         }
-        AgentUtils.getInstance().getStatusLogValues().put(IUtilConstants.GROUP_NAME, AgentConfig.getInstance().getGroupName());
+        AgentUtils.getInstance().getStatusLogValues().put(IUtilConstants.GROUP_NAME, groupName);
         return groupName;
     }
 
@@ -154,12 +152,11 @@ public class AgentConfig {
     }
 
     public void populateAgentPolicy(){
-        PolicyPullST.instantiateDefaultPolicy();
+        AgentUtils.getInstance().instantiateDefaultPolicy();
     }
 
     public void populateAgentPolicyParameters(){
         //TODO instantiate policy parameters if required
-        GlobalPolicyParameterPullST.getInstance();
     }
 
     public CollectorConfig getConfig() {
@@ -183,7 +180,7 @@ public class AgentConfig {
         Collection<File> statusFiles = FileUtils.listFiles(new File(osVariables.getSnapshotDir()), FileFilterUtils.trueFileFilter(), null);
         if (statusFiles.size() >= max) {
             File[] sortedStatusFiles = statusFiles.toArray(new File[0]);
-            Arrays.sort(sortedStatusFiles, LastModifiedFileComparator.LASTMODIFIED_REVERSE);
+            Arrays.sort(sortedStatusFiles, LastModifiedFileComparator.LASTMODIFIED_COMPARATOR);
             FileUtils.deleteQuietly(sortedStatusFiles[0]);
             logger.log(LogLevel.INFO, String.format(CLEANING_STATUS_SNAPSHOTS_FROM_LOG_DIRECTORY_MAX_S_FILE_COUNT_REACHED_REMOVED_S, max, sortedStatusFiles[0].getAbsolutePath()), FileLoggerThreadPool.class.getName());
         }
