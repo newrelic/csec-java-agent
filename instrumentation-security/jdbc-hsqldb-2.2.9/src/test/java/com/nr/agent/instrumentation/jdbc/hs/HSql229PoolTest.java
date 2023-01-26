@@ -1,6 +1,5 @@
 package com.nr.agent.instrumentation.jdbc.hs;
 
-import com.newrelic.agent.deps.org.jetbrains.annotations.NotNull;
 import com.newrelic.agent.security.introspec.InstrumentationTestConfig;
 import com.newrelic.agent.security.introspec.SecurityInstrumentationTestRunner;
 import com.newrelic.agent.security.introspec.SecurityIntrospector;
@@ -54,22 +53,22 @@ public class HSql229PoolTest {
         getConnection1(new JDBCPool());
     }
 
-    private void getConnection(@NotNull JDBCPool baseDataSource) throws SQLException {
+    private void getConnection(JDBCPool baseDataSource) throws SQLException {
         baseDataSource.setUrl(DB_CONNECTION);
         Connection conn = null;
 
         try {
             conn = baseDataSource.getConnection(DB_USER, DB_PASSWORD);
         } catch (Exception e) {
-            System.out.println("Error in DB connection "+e);
+            System.out.println("Error in DB connection " + e);
         } finally {
-            if (conn!=null) {
+            if (conn != null) {
                 conn.close();
             }
         }
     }
 
-    private void getConnection1(@NotNull JDBCPool baseDataSource) throws SQLException {
+    private void getConnection1(JDBCPool baseDataSource) throws SQLException {
         baseDataSource.setUrl(DB_CONNECTION);
         baseDataSource.setUser(DB_USER);
         baseDataSource.setPassword(DB_PASSWORD);
@@ -78,7 +77,7 @@ public class HSql229PoolTest {
         try {
             conn = baseDataSource.getConnection();
         } catch (Exception e) {
-            System.out.println("Error in DB connection "+e);
+            System.out.println("Error in DB connection " + e);
         } finally {
             if (conn!=null) {
                 conn.close();
