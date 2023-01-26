@@ -16,8 +16,8 @@ import com.newrelic.api.agent.weaver.Weaver;
 import java.sql.SQLException;
 import java.util.Properties;
 
-@Weave(type = MatchType.BaseClass)
-public abstract class NonRegisteringDriver {
+@Weave(type = MatchType.BaseClass, originalName = "com.mysql.cj.jdbc.NonRegisteringDriver")
+public abstract class NonRegisteringDriver_Instrumentation {
 
     public java.sql.Connection connect(String url, Properties props) throws SQLException {
         if(NewRelicSecurity.isHookProcessingActive() && !NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()) {
