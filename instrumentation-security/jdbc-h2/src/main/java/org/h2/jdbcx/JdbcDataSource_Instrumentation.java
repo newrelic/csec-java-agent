@@ -7,15 +7,15 @@
 
 package org.h2.jdbcx;
 
-import java.sql.Connection;
-
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.schema.JDBCVendor;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
 
-@Weave
-public abstract class JdbcDataSource {
+import java.sql.Connection;
+
+@Weave(originalName = "org.h2.jdbcx.JdbcDataSource")
+public abstract class JdbcDataSource_Instrumentation {
 
     public Connection getConnection() {
         if(NewRelicSecurity.isHookProcessingActive() && !NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()) {
