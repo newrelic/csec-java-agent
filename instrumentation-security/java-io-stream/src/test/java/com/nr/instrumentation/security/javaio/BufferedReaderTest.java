@@ -1,3 +1,5 @@
+package com.nr.instrumentation.security.javaio;
+
 import com.newrelic.agent.security.introspec.InstrumentationTestConfig;
 import com.newrelic.agent.security.introspec.SecurityInstrumentationTestRunner;
 import com.newrelic.agent.security.introspec.SecurityIntrospector;
@@ -7,20 +9,16 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.nio.CharBuffer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -28,7 +26,7 @@ import java.util.UUID;
 @RunWith(SecurityInstrumentationTestRunner.class)
 @InstrumentationTestConfig(includePrefixes = { "java.io", "com.nr.instrumentation.security.javaio"})
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class ReaderTest {
+public class BufferedReaderTest {
     private static String FILE;
     private static String FILE_TEMP;
     private static String DIR;
@@ -69,129 +67,105 @@ public class ReaderTest {
     }
 
     @Test
-    @Ignore("This type of construct's instrumentation is in BufferedReader class of this module")
-    public void testReadWithFileReader(){
+    public void testRead(){
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
         try {
-            Reader reader = new FileReader(FILE);
-            introspector.setRequestReaderHash(reader.hashCode());
-            int data = reader.read();
+            FileReader fr = new FileReader(FILE);
+            BufferedReader br = new BufferedReader(fr);
+            introspector.setRequestReaderHash(br.hashCode());
+            int data = br.read();
             while (data != -1) {
-                data = reader.read();
+                System.out.print((char) data);
+                data = br.read();
             }
-            reader.close();
+            br.close();
         } catch (Exception ex) {
             System.out.println(ex.getMessage());
         }
 
         SecurityMetaData meta = introspector.getSecurityMetaData();
         Assert.assertNotNull("Empty security meta data", meta);
-        Assert.assertEquals(DATA.substring(2, 20), meta.getRequest().getBody().toString());
-    }
-
-    @Test
-    public void testReadWithFileReader1(){
-        SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
-        char[] input = new char[DATA.length()];
-        try {
-            Reader reader = new FileReader(FILE);
-            introspector.setRequestReaderHash(reader.hashCode());
-            int data = reader.read(input);
-            reader.close();
-        } catch (Exception ex) {
-            System.out.println(ex.getMessage());
-        }
-
-        SecurityMetaData meta = introspector.getSecurityMetaData();
-        Assert.assertNotNull("Empty security meta data", meta);
-        Assert.assertEquals(new String(input), meta.getRequest().getBody().toString());
-    }
-
-    @Test
-    public void testReadWithFileReader2(){
-        SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
-        CharBuffer input = CharBuffer.wrap(new char[DATA.length()]);
-        try {
-            Reader reader = new FileReader(FILE);
-            introspector.setRequestReaderHash(reader.hashCode());
-            int data = reader.read(input);
-            System.out.println(data);
-            reader.close();
-        } catch (Exception ex) {
-            System.out.println(ex.getMessage());
-        }
-
-        SecurityMetaData meta = introspector.getSecurityMetaData();
-        Assert.assertNotNull("Empty security meta data", meta);
-        Assert.assertEquals(new String(input.array()), meta.getRequest().getBody().toString());
-    }
-
-    @Test
-    @Ignore("This type of construct's instrumentation is in BufferedReader class of this module")
-    public void testReadWithInputStreamReader(){
-        SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
-        try {
-            FileInputStream file = new FileInputStream(FILE);
-
-            Reader reader = new InputStreamReader(file);
-            introspector.setRequestReaderHash(reader.hashCode());
-            int data = reader.read();
-            while (data != -1) {
-                data = reader.read();
-            }
-
-            reader.close();
-            file.close();
-        } catch (Exception ex) {
-            System.out.println(ex.getMessage());
-        }
-
-        SecurityMetaData meta = introspector.getSecurityMetaData();
-        Assert.assertNotNull("Empty security meta data", meta);
+        Assert.assertFalse("Empty request in security meta data", meta.getRequest().isEmpty());
         Assert.assertEquals(DATA, meta.getRequest().getBody().toString());
     }
 
     @Test
-    public void testReadWithInputStreamReader1(){
+    public void testRead1(){
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
         char[] input = new char[DATA.length()];
         try {
-            FileInputStream file = new FileInputStream(FILE);
-
-            Reader reader = new InputStreamReader(file);
-            introspector.setRequestReaderHash(reader.hashCode());
-            int data = reader.read(input);
-
-            reader.close();
-            file.close();
+            FileReader fr = new FileReader(FILE);
+            BufferedReader br = new BufferedReader(fr);
+            introspector.setRequestReaderHash(br.hashCode());
+            br.read(input);
+            br.close();
         } catch (Exception ex) {
             System.out.println(ex.getMessage());
         }
 
         SecurityMetaData meta = introspector.getSecurityMetaData();
         Assert.assertNotNull("Empty security meta data", meta);
+        Assert.assertFalse("Empty request in security meta data", meta.getRequest().isEmpty());
         Assert.assertEquals(new String(input), meta.getRequest().getBody().toString());
     }
 
     @Test
-    public void testReadWithInputStreamReader2(){
+    public void testRead2(){
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
-        CharBuffer input = CharBuffer.wrap(new char[DATA.length()]);
+        char[] input = new char[30];
         try {
-            FileInputStream file = new FileInputStream(FILE);
-
-            Reader reader = new InputStreamReader(file);
-            introspector.setRequestReaderHash(reader.hashCode());
-            int data = reader.read(input);
-
-            reader.close();
-            file.close();
+            FileReader fr = new FileReader(FILE);
+            BufferedReader br = new BufferedReader(fr);
+            introspector.setRequestReaderHash(br.hashCode());
+            br.read(input, 3, 27);
+            br.close();
         } catch (Exception ex) {
             System.out.println(ex.getMessage());
         }
 
         SecurityMetaData meta = introspector.getSecurityMetaData();
         Assert.assertNotNull("Empty security meta data", meta);
-        Assert.assertEquals(new String(input.array()), meta.getRequest().getBody().toString());
+        Assert.assertFalse("Empty request in security meta data", meta.getRequest().isEmpty());
+        Assert.assertEquals(new String(input).substring(3, 30), meta.getRequest().getBody().toString());
+    }
+
+    @Test
+    public void testReadLine(){
+        SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
+        try {
+            FileReader fr = new FileReader(FILE);
+            BufferedReader br = new BufferedReader(fr);
+            introspector.setRequestReaderHash(br.hashCode());
+            String data = br.readLine();
+            System.out.println(data);
+            br.close();
+        } catch (Exception ex) {
+            System.out.println(ex.getMessage());
+        }
+
+        SecurityMetaData meta = introspector.getSecurityMetaData();
+        Assert.assertNotNull("Empty security meta data", meta);
+        Assert.assertFalse("Empty request in security meta data", meta.getRequest().isEmpty());
+        Assert.assertEquals(DATA, meta.getRequest().getBody().toString());
+    }
+
+    @Test
+    public void testErrorInRead(){
+        SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
+        char[] input = DATA.toCharArray();
+        try {
+            FileReader fr = new FileReader(FILE);
+            BufferedReader br = new BufferedReader(fr);
+            introspector.setRequestReaderHash(br.hashCode());
+            int data = br.read(input, 2, 100);
+            System.out.println(data);
+            br.close();
+        } catch (Exception ex) {
+            System.out.println(ex.getMessage());
+        }
+
+        SecurityMetaData meta = introspector.getSecurityMetaData();
+        Assert.assertNotNull("Empty security meta data", meta);
+        Assert.assertEquals("", meta.getRequest().getBody().toString());
     }
 }

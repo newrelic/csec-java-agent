@@ -1,3 +1,5 @@
+package com.nr.instrumentation.security.javaio;
+
 import com.newrelic.agent.security.introspec.SecurityInstrumentationTestRunner;
 
 import java.io.BufferedReader;
