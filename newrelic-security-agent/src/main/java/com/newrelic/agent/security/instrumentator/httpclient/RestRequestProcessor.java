@@ -6,6 +6,7 @@ import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool
 import com.newrelic.agent.security.intcodeagent.filelogging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.models.FuzzRequestBean;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.IntCodeControlCommand;
+import com.newrelic.agent.security.intcodeagent.websocket.WSUtils;
 import org.apache.commons.lang3.StringUtils;
 
 /**
@@ -37,6 +38,13 @@ public class RestRequestProcessor implements Runnable {
 
         FuzzRequestBean httpRequest = null;
         try {
+            if (WSUtils.getInstance().isReconnecting()) {
+                synchronized (WSUtils.getInstance()) {
+                    RestRequestThreadPool.getInstance().isWaiting().set(true);
+                    WSUtils.getInstance().wait();
+                    RestRequestThreadPool.getInstance().isWaiting().set(false);
+                }
+            }
             String req = StringUtils.replace(controlCommand.getArguments().get(0), K2_HOME_TMP_CONST, OsVariablesInstance.getInstance().getOsVariables().getTmpDirectory());
             httpRequest = objectMapper.readValue(req, FuzzRequestBean.class);
             RestClient.getInstance().fireRequest(RequestUtils.generateK2Request(httpRequest));

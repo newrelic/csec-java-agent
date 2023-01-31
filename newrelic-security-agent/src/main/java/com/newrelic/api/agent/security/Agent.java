@@ -14,6 +14,7 @@ import com.newrelic.agent.security.intcodeagent.models.javaagent.ExitEventBean;
 import com.newrelic.agent.security.intcodeagent.websocket.EventSendPool;
 import com.newrelic.agent.security.intcodeagent.websocket.WSClient;
 import com.newrelic.agent.security.intcodeagent.websocket.WSReconnectionST;
+import com.newrelic.agent.security.intcodeagent.websocket.WSUtils;
 import com.newrelic.api.agent.NewRelic;
 import com.newrelic.api.agent.Transaction;
 import com.newrelic.api.agent.security.schema.*;
@@ -152,7 +153,7 @@ public class Agent implements SecurityAgent {
             WSClient.getInstance().openConnection();
             while (retries > 0) {
                 try {
-                    if (!WSClient.isConnected()) {
+                    if (!WSUtils.isConnected()) {
                         retries--;
                         int timeout = (NUMBER_OF_RETRIES - retries);
                         logger.logInit(LogLevel.INFO, String.format("WS client connection failed will retry after %s minute(s)", timeout), Agent.class.getName());
@@ -169,7 +170,7 @@ public class Agent implements SecurityAgent {
 
                 }
             }
-            if (!WSClient.isConnected()) {
+            if (!WSUtils.isConnected()) {
                 throw new RuntimeException("Websocket not connected!!!");
             }
         } catch (Exception e){
