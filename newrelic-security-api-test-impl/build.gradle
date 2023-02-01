@@ -5,5 +5,5 @@ repositories {
 
 dependencies {
     compileOnly(project(":newrelic-security-api"))
-    compileOnly("com.newrelic.agent.java:newrelic-api:7.11.0-SNAPSHOT")
+    compileOnly("com.newrelic.agent.java:newrelic-api:${nrAPIVersion}")
 }

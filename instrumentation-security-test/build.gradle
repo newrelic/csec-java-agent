@@ -12,12 +12,12 @@ dependencies {
     implementation(project(":newrelic-security-api-test-impl"))
     implementation(project(":newrelic-security-agent"))
     implementation(project(":unittest-helper-agent"))
-    implementation("com.newrelic.agent.java:newrelic-weaver-api:7.11.0-SNAPSHOT")
-    implementation("com.newrelic.agent.java:newrelic-api:7.11.0-SNAPSHOT")
-    implementation("com.newrelic.agent.java:newrelic-agent:7.11.0")
+    implementation("com.newrelic.agent.java:newrelic-weaver-api:${nrAPIVersion}")
+    implementation("com.newrelic.agent.java:newrelic-api:${nrAPIVersion}")
+    implementation("com.newrelic.agent.java:newrelic-agent:${nrAgentVersion}")
     implementation 'org.apache.commons:commons-text:1.7'
-    implementation("com.newrelic.agent.java:agent-bridge:7.11.0-SNAPSHOT")
-    implementation("com.newrelic.agent.java:agent-bridge-datastore:7.11.0-SNAPSHOT")
+    implementation("com.newrelic.agent.java:agent-bridge:${nrAPIVersion}")
+    implementation("com.newrelic.agent.java:agent-bridge-datastore:${nrAPIVersion}")
 
     api("org.apache.httpcomponents:httpclient:4.5.13")
     api("org.nanohttpd:nanohttpd:2.3.1")
