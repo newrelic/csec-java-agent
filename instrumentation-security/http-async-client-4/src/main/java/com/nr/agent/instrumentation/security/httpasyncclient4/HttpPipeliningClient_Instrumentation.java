@@ -5,7 +5,7 @@
  *
  */
 
-package org.apache.http.nio.client;
+package com.nr.agent.instrumentation.security.httpasyncclient4;
 
 import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;

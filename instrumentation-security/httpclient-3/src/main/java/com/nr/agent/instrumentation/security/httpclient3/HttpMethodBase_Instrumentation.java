@@ -5,9 +5,10 @@
  *
  */
 
-package org.apache.commons.httpclient;
+package com.nr.agent.instrumentation.security.httpclient3;
 
 import com.newrelic.api.agent.security.NewRelicSecurity;
+import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.SecurityMetaData;
 import com.newrelic.api.agent.security.schema.constants.AgentConstants;
@@ -15,40 +16,39 @@ import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityExcepti
 import com.newrelic.api.agent.security.schema.operation.SSRFOperation;
 import com.newrelic.api.agent.security.utils.SSRFUtils;
 import com.newrelic.api.agent.weaver.MatchType;
-import com.newrelic.api.agent.weaver.NewField;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
-import com.nr.agent.instrumentation.security.httpclient3.SecurityHelper;
+import org.apache.commons.httpclient.*;
 
 import java.io.IOException;
 
-@Weave(type = MatchType.ExactClass)
-public abstract class HttpMethodBase implements HttpMethod {
-
-    @NewField
-    public boolean cascadedCall;
-
+@Weave(type = MatchType.ExactClass, originalName = "org.apache.commons.httpclient.HttpMethodBase")
+public abstract class HttpMethodBase_Instrumentation implements HttpMethod {
     public abstract void setRequestHeader(String headerName, String headerValue);
 
     public int execute(HttpState state, HttpConnection conn) throws HttpException, IOException {
-        boolean currentCascadedCall = cascadedCall;
+        boolean isLockAcquired = acquireLockIfPossible();
+        AbstractOperation operation = null;
         // Preprocess Phase
-        AbstractOperation operation = preprocessSecurityHook(currentCascadedCall, conn, SecurityHelper.METHOD_NAME_EXECUTE);
-
+        if (isLockAcquired) {
+            operation = preprocessSecurityHook(conn, SecurityHelper.METHOD_NAME_EXECUTE);
+        }
         int returnCode = -1;
         // Actual Call
         try {
             returnCode = Weaver.callOriginal();
         } finally {
-            cascadedCall = currentCascadedCall;
+            if (isLockAcquired) {
+                releaseLock();
+            }
         }
-        registerExitOperation(operation);
+        registerExitOperation(isLockAcquired, operation);
         return returnCode;
     }
 
-    private static void registerExitOperation(AbstractOperation operation) {
+    private static void registerExitOperation(boolean isProcessingAllowed, AbstractOperation operation) {
         try {
-            if (!NewRelicSecurity.isHookProcessingActive() || NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()
+            if (operation == null || !isProcessingAllowed || !NewRelicSecurity.isHookProcessingActive() || NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()
             ) {
                 return;
             }
@@ -57,15 +57,13 @@ public abstract class HttpMethodBase implements HttpMethod {
         }
     }
 
-    private AbstractOperation preprocessSecurityHook(boolean currentCascadedCall, HttpConnection conn, String methodName) {
+    private AbstractOperation preprocessSecurityHook(HttpConnection conn, String methodName) {
         try {
             SecurityMetaData securityMetaData = NewRelicSecurity.getAgent().getSecurityMetaData();
             if (!NewRelicSecurity.isHookProcessingActive() || securityMetaData.getRequest().isEmpty()
-                    || currentCascadedCall
             ) {
                 return null;
             }
-            cascadedCall = true;
 
             // Generate required URL
 
@@ -127,5 +125,20 @@ public abstract class HttpMethodBase implements HttpMethod {
             }
         }
         return null;
+    }
+
+    private void releaseLock() {
+        try {
+            GenericHelper.releaseLock(SecurityHelper.NR_SEC_CUSTOM_ATTRIB_NAME, this.hashCode());
+        } catch (Throwable ignored) {
+        }
+    }
+
+    private boolean acquireLockIfPossible() {
+        try {
+            return GenericHelper.acquireLockIfPossible(SecurityHelper.NR_SEC_CUSTOM_ATTRIB_NAME, this.hashCode());
+        } catch (Throwable ignored) {
+        }
+        return false;
     }
 }

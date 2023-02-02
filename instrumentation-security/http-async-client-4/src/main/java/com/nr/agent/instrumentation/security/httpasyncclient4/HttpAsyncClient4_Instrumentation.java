@@ -5,9 +5,10 @@
  *
  */
 
-package org.apache.http.nio.client;
+package com.nr.agent.instrumentation.security.httpasyncclient4;
 
 import com.newrelic.api.agent.security.NewRelicSecurity;
+import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.SecurityMetaData;
 import com.newrelic.api.agent.security.schema.constants.AgentConstants;
@@ -15,10 +16,8 @@ import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityExcepti
 import com.newrelic.api.agent.security.schema.operation.SSRFOperation;
 import com.newrelic.api.agent.security.utils.SSRFUtils;
 import com.newrelic.api.agent.weaver.MatchType;
-import com.newrelic.api.agent.weaver.NewField;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
-import com.nr.agent.instrumentation.security.httpasyncclient4.SecurityHelper;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
@@ -36,18 +35,17 @@ import java.util.concurrent.Future;
 @Weave(type = MatchType.Interface, originalName = "org.apache.http.nio.client.HttpAsyncClient")
 public class HttpAsyncClient4_Instrumentation {
 
-    @NewField
-    public boolean cascadedCall;
-
     public <T> Future<T> execute(HttpAsyncRequestProducer requestProducer, HttpAsyncResponseConsumer<T> responseConsumer, HttpContext context, FutureCallback<T> callback) {
-        boolean currentCascadedCall = cascadedCall;
-
+        boolean isLockAcquired = acquireLockIfPossible();
         AbstractOperation operation = null;
-        try {
-            HttpRequest request = requestProducer.generateRequest();
-            // Preprocess Phase
-            operation = preprocessSecurityHook(currentCascadedCall, request, requestProducer.getTarget().toString(), SecurityHelper.METHOD_NAME_EXECUTE);
-        } catch (Throwable ignored) {
+        // Preprocess Phase
+        if (isLockAcquired) {
+            try {
+                HttpRequest request = requestProducer.generateRequest();
+                // Preprocess Phase
+                operation = preprocessSecurityHook(request, requestProducer.getTarget().toString(), SecurityHelper.METHOD_NAME_EXECUTE);
+            } catch (Throwable ignored) {
+            }
         }
 
         Future<T> returnObj = null;
@@ -55,21 +53,25 @@ public class HttpAsyncClient4_Instrumentation {
         try {
             returnObj = Weaver.callOriginal();
         } finally {
-            cascadedCall = currentCascadedCall;
+            if (isLockAcquired) {
+                releaseLock();
+            }
         }
-        registerExitOperation(operation);
+        registerExitOperation(isLockAcquired, operation);
         return returnObj;
     }
 
     public <T> Future<T> execute(HttpAsyncRequestProducer requestProducer, HttpAsyncResponseConsumer<T> responseConsumer, FutureCallback<T> callback) {
-        boolean currentCascadedCall = cascadedCall;
-
+        boolean isLockAcquired = acquireLockIfPossible();
         AbstractOperation operation = null;
-        try {
-            final HttpRequest request = requestProducer.generateRequest();
-            // Preprocess Phase
-            operation = preprocessSecurityHook(currentCascadedCall, request, requestProducer.getTarget().toString(), SecurityHelper.METHOD_NAME_EXECUTE);
-        } catch (Throwable ignored) {
+        // Preprocess Phase
+        if (isLockAcquired) {
+            try {
+                HttpRequest request = requestProducer.generateRequest();
+                // Preprocess Phase
+                operation = preprocessSecurityHook(request, requestProducer.getTarget().toString(), SecurityHelper.METHOD_NAME_EXECUTE);
+            } catch (Throwable ignored) {
+            }
         }
 
         Future<T> returnObj = null;
@@ -77,75 +79,97 @@ public class HttpAsyncClient4_Instrumentation {
         try {
             returnObj = Weaver.callOriginal();
         } finally {
-            cascadedCall = currentCascadedCall;
+            if (isLockAcquired) {
+                releaseLock();
+            }
         }
-        registerExitOperation(operation);
+        registerExitOperation(isLockAcquired, operation);
         return returnObj;
     }
 
     public Future<HttpResponse> execute(HttpHost target, HttpRequest request, HttpContext context, FutureCallback<HttpResponse> callback) throws Exception {
-        String actualURI = getUri(target, request).toString();
-        boolean currentCascadedCall = cascadedCall;
+        boolean isLockAcquired = acquireLockIfPossible();
+        AbstractOperation operation = null;
+
         // Preprocess Phase
-        AbstractOperation operation = preprocessSecurityHook(currentCascadedCall, request, actualURI, SecurityHelper.METHOD_NAME_EXECUTE);
+        if (isLockAcquired) {
+            String actualURI = getUri(target, request).toString();
+            operation = preprocessSecurityHook(request, actualURI, SecurityHelper.METHOD_NAME_EXECUTE);
+        }
 
         Future<HttpResponse> returnObj = null;
         // Actual Call
         try {
             returnObj = Weaver.callOriginal();
         } finally {
-            cascadedCall = currentCascadedCall;
+            if (isLockAcquired) {
+                releaseLock();
+            }
         }
-        registerExitOperation(operation);
+        registerExitOperation(isLockAcquired, operation);
         return returnObj;
     }
 
     public Future<HttpResponse> execute(HttpHost target, HttpRequest request, FutureCallback<HttpResponse> callback) throws Exception {
-        String actualURI = getUri(target, request).toString();
-        boolean currentCascadedCall = cascadedCall;
+        boolean isLockAcquired = acquireLockIfPossible();
+        AbstractOperation operation = null;
+
         // Preprocess Phase
-        AbstractOperation operation = preprocessSecurityHook(currentCascadedCall, request, actualURI, SecurityHelper.METHOD_NAME_EXECUTE);
+        if (isLockAcquired) {
+            String actualURI = getUri(target, request).toString();
+            operation = preprocessSecurityHook(request, actualURI, SecurityHelper.METHOD_NAME_EXECUTE);
+        }
 
         Future<HttpResponse> returnObj = null;
         // Actual Call
         try {
             returnObj = Weaver.callOriginal();
         } finally {
-            cascadedCall = currentCascadedCall;
+            if (isLockAcquired) {
+                releaseLock();
+            }
         }
-        registerExitOperation(operation);
+        registerExitOperation(isLockAcquired, operation);
         return returnObj;
     }
 
     public Future<HttpResponse> execute(HttpUriRequest request, HttpContext context, FutureCallback<HttpResponse> callback) {
-        boolean currentCascadedCall = cascadedCall;
+        boolean isLockAcquired = acquireLockIfPossible();
+        AbstractOperation operation = null;
         // Preprocess Phase
-        AbstractOperation operation = preprocessSecurityHook(currentCascadedCall, request, request.getURI().toString(), SecurityHelper.METHOD_NAME_EXECUTE);
-
+        if (isLockAcquired) {
+            operation = preprocessSecurityHook(request, request.getURI().toString(), SecurityHelper.METHOD_NAME_EXECUTE);
+        }
         Future<HttpResponse> returnObj = null;
         // Actual Call
         try {
             returnObj = Weaver.callOriginal();
         } finally {
-            cascadedCall = currentCascadedCall;
+            if (isLockAcquired) {
+                releaseLock();
+            }
         }
-        registerExitOperation(operation);
+        registerExitOperation(isLockAcquired, operation);
         return returnObj;
     }
 
     public Future<HttpResponse> execute(HttpUriRequest request, FutureCallback<HttpResponse> callback) {
-        boolean currentCascadedCall = cascadedCall;
+        boolean isLockAcquired = acquireLockIfPossible();
+        AbstractOperation operation = null;
         // Preprocess Phase
-        AbstractOperation operation = preprocessSecurityHook(currentCascadedCall, request, request.getURI().toString(), SecurityHelper.METHOD_NAME_EXECUTE);
-
+        if (isLockAcquired) {
+            operation = preprocessSecurityHook(request, request.getURI().toString(), SecurityHelper.METHOD_NAME_EXECUTE);
+        }
         Future<HttpResponse> returnObj = null;
         // Actual Call
         try {
             returnObj = Weaver.callOriginal();
         } finally {
-            cascadedCall = currentCascadedCall;
+            if (isLockAcquired) {
+                releaseLock();
+            }
         }
-        registerExitOperation(operation);
+        registerExitOperation(isLockAcquired, operation);
         return returnObj;
     }
 
@@ -156,9 +180,9 @@ public class HttpAsyncClient4_Instrumentation {
         return new URI(scheme, null, target.getHostName(), target.getPort(), requestURI.getPath(), null, null);
     }
 
-    private static void registerExitOperation(AbstractOperation operation) {
+    private static void registerExitOperation(boolean isProcessingAllowed, AbstractOperation operation) {
         try {
-            if (!NewRelicSecurity.isHookProcessingActive() || NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()
+            if (operation == null || !isProcessingAllowed || !NewRelicSecurity.isHookProcessingActive() || NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()
             ) {
                 return;
             }
@@ -167,15 +191,13 @@ public class HttpAsyncClient4_Instrumentation {
         }
     }
 
-    private AbstractOperation preprocessSecurityHook(boolean currentCascadedCall, HttpRequest request, String uri, String methodName) {
+    private AbstractOperation preprocessSecurityHook(HttpRequest request, String uri, String methodName) {
         try {
             SecurityMetaData securityMetaData = NewRelicSecurity.getAgent().getSecurityMetaData();
             if (!NewRelicSecurity.isHookProcessingActive() || securityMetaData.getRequest().isEmpty()
-                    || currentCascadedCall
             ) {
                 return null;
             }
-            cascadedCall = true;
 
             // Add Security IAST header
             String iastHeader = NewRelicSecurity.getAgent().getSecurityMetaData().getFuzzRequestIdentifier().getRaw();
@@ -202,5 +224,20 @@ public class HttpAsyncClient4_Instrumentation {
             }
         }
         return null;
+    }
+
+    private void releaseLock() {
+        try {
+            GenericHelper.releaseLock(SecurityHelper.NR_SEC_CUSTOM_ATTRIB_NAME, this.hashCode());
+        } catch (Throwable ignored) {
+        }
+    }
+
+    private boolean acquireLockIfPossible() {
+        try {
+            return GenericHelper.acquireLockIfPossible(SecurityHelper.NR_SEC_CUSTOM_ATTRIB_NAME, this.hashCode());
+        } catch (Throwable ignored) {
+        }
+        return false;
     }
 }

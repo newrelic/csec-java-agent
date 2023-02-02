@@ -229,6 +229,9 @@ public class Agent implements SecurityAgent {
 
     @Override
     public void registerOperation(AbstractOperation operation) {
+        if (operation == null || operation.isEmpty()) {
+            return;
+        }
         String executionId = ExecutionIDGenerator.getExecutionId();
         operation.setExecutionId(executionId);
         operation.setStartTime(Instant.now().toEpochMilli());
@@ -371,9 +374,9 @@ public class Agent implements SecurityAgent {
                 }
             }
         } catch (Throwable e) {
-            e.printStackTrace();
+//            e.printStackTrace();
         }
-        return null;
+        return new SecurityMetaData();
     }
 
     @Override

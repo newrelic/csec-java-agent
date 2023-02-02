@@ -6,8 +6,6 @@ import com.newrelic.api.agent.security.schema.AgentMetaData;
 import com.newrelic.api.agent.security.schema.HttpRequest;
 import org.json.simple.JSONArray;
 
-import java.util.List;
-
 public class JavaAgentEventBean extends AgentBasicInfo {
     private Integer pid;
     private String applicationUUID;
@@ -29,7 +27,6 @@ public class JavaAgentEventBean extends AgentBasicInfo {
     private AgentMetaData metaData;
     private Long blockingProcessingTime = 0L;
 
-    private List<StackTraceElement> completeStacktrace;
     private boolean isAPIBlocked = false;
     private boolean isIASTEnable = false;
     private String apiId;
@@ -270,14 +267,6 @@ public class JavaAgentEventBean extends AgentBasicInfo {
 
     public void setIsAPIBlocked(boolean APIBlocked) {
         this.isAPIBlocked = APIBlocked;
-    }
-
-    public List<StackTraceElement> getCompleteStacktrace() {
-        return completeStacktrace;
-    }
-
-    public void setCompleteStacktrace(List<StackTraceElement> completeStacktrace) {
-        this.completeStacktrace = completeStacktrace;
     }
 
     public String getApiId() {
