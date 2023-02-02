@@ -11,8 +11,10 @@ import com.newrelic.api.agent.security.schema.operation.RXSSOperation;
 import com.nr.instrumentation.security.HttpServletServer;
 import org.junit.Assert;
 import org.junit.ClassRule;
+import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.junit.runners.MethodSorters;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -25,6 +27,7 @@ import java.util.List;
 
 @RunWith(SecurityInstrumentationTestRunner.class)
 @InstrumentationTestConfig(includePrefixes = { "javax.servlet" })
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class ServletOutputStreamTest {
 
     @ClassRule
