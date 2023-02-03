@@ -11,6 +11,7 @@ plugins {
     id("java-library")
     id("maven-publish")
     id("signing")
+    id 'org.cyclonedx.bom' version '1.7.3'
 }
 
 java.sourceCompatibility = JavaVersion.VERSION_1_8
@@ -34,6 +35,11 @@ configurations {
 
 configurations.implementation.extendsFrom(configurations.shadowIntoJar)
 configurations.implementation.extendsFrom(configurations.jarIntoJar)
+
+cyclonedxBom {
+    outputFormat = "json"
+    outputName = "SBOM"
+}
 
 project.ext {
     instrumentProjects = {
@@ -196,9 +202,11 @@ task newrelicVersionedAgentJar(type: Jar) {
     group("build")
     dependsOn("transformedShadowJar")
     dependsOn(instrumentProjects().collect { it.tasks["jar"] })
+    dependsOn("cyclonedxBom")
 
     from("$rootDir/LICENSE")
     from("$rootDir/THIRD_PARTY_NOTICES.md")
+    from("$buildDir/reports/SBOM.json")
 
     includeEmptyDirs = false
 
