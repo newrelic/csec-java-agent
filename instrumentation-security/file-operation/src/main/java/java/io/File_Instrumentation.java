@@ -385,6 +385,7 @@ public abstract class File_Instrumentation {
             ) {
                 return;
             }
+            FileHelper.checkEntryOfFileIntegrity(((FileOperation)operation).getFileName());
             NewRelicSecurity.getAgent().registerExitEvent(operation);
         } catch (Throwable ignored) {
         }
