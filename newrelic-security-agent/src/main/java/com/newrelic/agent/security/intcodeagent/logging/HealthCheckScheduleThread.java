@@ -13,6 +13,7 @@ import com.newrelic.agent.security.intcodeagent.models.javaagent.JAHealthCheck;
 import com.newrelic.agent.security.intcodeagent.schedulers.InBoundOutBoundST;
 import com.newrelic.agent.security.intcodeagent.websocket.JsonConverter;
 import com.newrelic.agent.security.intcodeagent.websocket.WSClient;
+import com.newrelic.agent.security.intcodeagent.websocket.WSUtils;
 import com.sun.management.OperatingSystemMXBean;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -169,7 +170,7 @@ public class HealthCheckScheduleThread {
          * 6. Status log writer
          * */
 
-        serviceStatus.put(WEBSOCKET, WSClient.isConnected() ? "OK" : "Error");
+        serviceStatus.put(WEBSOCKET, WSUtils.isConnected() ? "OK" : "Error");
         serviceStatus.put("logWriter", FileLoggerThreadPool.getInstance().isLoggingActive() ? "OK" : "Error");
         serviceStatus.put("initLogWriter", FileLoggerThreadPool.getInstance().isInitLoggingActive() ? "OK" : "Error");
         serviceStatus.put("statusLogWriter", isStatusLoggingActive ? "OK" : "Error");

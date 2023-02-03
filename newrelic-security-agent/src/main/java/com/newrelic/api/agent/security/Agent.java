@@ -17,6 +17,7 @@ import com.newrelic.agent.security.intcodeagent.utils.CommonUtils;
 import com.newrelic.agent.security.intcodeagent.websocket.EventSendPool;
 import com.newrelic.agent.security.intcodeagent.websocket.WSClient;
 import com.newrelic.agent.security.intcodeagent.websocket.WSReconnectionST;
+import com.newrelic.agent.security.intcodeagent.websocket.WSUtils;
 import com.newrelic.api.agent.NewRelic;
 import com.newrelic.api.agent.Transaction;
 import com.newrelic.api.agent.security.schema.*;
@@ -178,7 +179,7 @@ public class Agent implements SecurityAgent {
             WSClient.getInstance().openConnection();
             while (retries > 0) {
                 try {
-                    if (!WSClient.isConnected()) {
+                    if (!WSUtils.isConnected()) {
                         retries--;
                         int timeout = (NUMBER_OF_RETRIES - retries);
                         logger.logInit(LogLevel.INFO, String.format("WS client connection failed will retry after %s minute(s)", timeout), Agent.class.getName());
@@ -195,7 +196,7 @@ public class Agent implements SecurityAgent {
 
                 }
             }
-            if (!WSClient.isConnected()) {
+            if (!WSUtils.isConnected()) {
                 throw new RuntimeException("Websocket not connected!!!");
             }
         } catch (Exception e){
@@ -254,6 +255,9 @@ public class Agent implements SecurityAgent {
 
     @Override
     public void registerOperation(AbstractOperation operation) {
+        if (operation == null || operation.isEmpty()) {
+            return;
+        }
         String executionId = ExecutionIDGenerator.getExecutionId();
         operation.setExecutionId(executionId);
         operation.setStartTime(Instant.now().toEpochMilli());
@@ -396,9 +400,9 @@ public class Agent implements SecurityAgent {
                 }
             }
         } catch (Throwable e) {
-            e.printStackTrace();
+//            e.printStackTrace();
         }
-        return null;
+        return new SecurityMetaData();
     }
 
     @Override

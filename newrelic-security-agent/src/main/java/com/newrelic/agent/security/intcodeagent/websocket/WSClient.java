@@ -33,14 +33,14 @@ public class WSClient extends WebSocketClient {
     public static final String REASON = " Reason: ";
     public static final String UNABLE_TO_PROCESS_INCOMING_MESSAGE = "Unable to process incoming message : ";
     public static final String DUE_TO_ERROR = " : due to error : ";
-    public static final String RECONNECTING_TO_IC = "Reconnecting to IC";
+    public static final String RECONNECTING_TO_IC = "Reconnecting to validator";
     public static final String COLON_STRING = " : ";
+    public static final String RECEIVED_PING_AT_S_SENDING_PONG = "received ping  at %s sending pong";
 
     private static WSClient instance;
 
     private WebSocketImpl connection = null;
 
-    private boolean isConnected = false;
 
     private WSClient() throws URISyntaxException {
         super(new URI(AgentConfig.getInstance().getConfig().getK2ServiceInfo().getValidatorServiceEndpointURL()));
@@ -74,17 +74,14 @@ public class WSClient extends WebSocketClient {
 
     @Override
     public void onOpen(ServerHandshake handshakedata) {
-        logger.logInit(LogLevel.INFO, String.format(IAgentConstants.WS_CONNECTION_SUCCESSFUL, this.getRemoteSocketAddress()) , WSClient.class.getName());
-//		logger.log(LogLevel.INFO, "Current WSock ready status : {0},{1},{2}",
-//				new Object[] { this.isOpen(), this.isClosing(), this.isClosed() });
-        logger.logInit(LogLevel.INFO, String.format(IAgentConstants.SENDING_APPLICATION_INFO_ON_WS_CONNECT, AgentInfo.getInstance().getApplicationInfo()) , WSClient.class.getName());
+        logger.logInit(LogLevel.INFO, String.format(IAgentConstants.WS_CONNECTION_SUCCESSFUL, this.getRemoteSocketAddress()), WSClient.class.getName());
+        logger.logInit(LogLevel.INFO, String.format(IAgentConstants.SENDING_APPLICATION_INFO_ON_WS_CONNECT, AgentInfo.getInstance().getApplicationInfo()), WSClient.class.getName());
         super.send(JsonConverter.toJSON(AgentInfo.getInstance().getApplicationInfo()));
-//		Agent.allClassLoadersCount.set(0);
-//		Agent.jarPathSet.clear();
-//		logger.log(LogLevel.INFO, "Resetting allClassLoadersCount to " + Agent.allClassLoadersCount.get(),
-//				WSClient.class.getName());
-        setConnected(true);
-//        WSReconnectionST.cancelTask(false);
+        WSUtils.getInstance().setReconnecting(false);
+        synchronized (WSUtils.getInstance()) {
+            WSUtils.getInstance().notifyAll();
+        }
+        WSUtils.getInstance().setConnected(true);
         logger.logInit(LogLevel.INFO, String.format(IAgentConstants.APPLICATION_INFO_SENT_ON_WS_CONNECT, AgentInfo.getInstance().getApplicationInfo()), WSClient.class.getName());
     }
 
@@ -101,7 +98,7 @@ public class WSClient extends WebSocketClient {
 
     @Override
     public void onClose(int code, String reason, boolean remote) {
-        setConnected(false);
+        WSUtils.getInstance().setConnected(false);
         logger.log(LogLevel.WARN, CONNECTION_CLOSED_BY + (remote ? REMOTE_PEER : LOCAL) + CODE + code
                 + REASON + reason, WSClient.class.getName());
         if (code == CloseFrame.NEVER_CONNECTED) {
@@ -137,7 +134,7 @@ public class WSClient extends WebSocketClient {
 
     @Override
     public void onWebsocketPing(WebSocket conn, Framedata f) {
-        logger.log(LogLevel.DEBUG, String.format("received ping  at %s sending pong", Instant.now().atZone(ZoneId.of("UTC")).toLocalTime()), WSClient.class.getName());
+        logger.log(LogLevel.DEBUG, String.format(RECEIVED_PING_AT_S_SENDING_PONG, Instant.now().atZone(ZoneId.of("UTC")).toLocalTime()), WSClient.class.getName());
         if (connection != null) {
             connection.updateLastPong();
         }
@@ -183,15 +180,4 @@ public class WSClient extends WebSocketClient {
         instance = null;
     }
 
-    private void setConnected(boolean connected) {
-        isConnected = connected;
-        AgentInfo.getInstance().agentStatTrigger();
-    }
-
-    public static boolean isConnected() {
-        if (instance != null) {
-            return instance.isConnected;
-        }
-        return false;
-    }
 }

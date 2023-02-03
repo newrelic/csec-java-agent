@@ -5,9 +5,10 @@
  *
  */
 
-package org.apache.http.client;
+package com.nr.agent.instrumentation.security.httpclient40;
 
 import com.newrelic.api.agent.security.NewRelicSecurity;
+import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.SecurityMetaData;
 import com.newrelic.api.agent.security.schema.constants.AgentConstants;
@@ -15,160 +16,194 @@ import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityExcepti
 import com.newrelic.api.agent.security.schema.operation.SSRFOperation;
 import com.newrelic.api.agent.security.utils.SSRFUtils;
 import com.newrelic.api.agent.weaver.MatchType;
-import com.newrelic.api.agent.weaver.NewField;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
-import com.nr.agent.instrumentation.security.httpclient40.SecurityHelper;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
+import org.apache.http.client.ResponseHandler;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.protocol.HttpContext;
 
 import java.net.URI;
 import java.net.URISyntaxException;
 
-@Weave(type = MatchType.Interface)
-public abstract class HttpClient {
-
-    @NewField
-    public boolean cascadedCall;
+@Weave(type = MatchType.Interface, originalName = "org.apache.http.client.HttpClient")
+public abstract class HttpClient_Instrumentation {
 
     public HttpResponse execute(HttpUriRequest request) throws Exception {
-        boolean currentCascadedCall = cascadedCall;
+        boolean isLockAcquired = acquireLockIfPossible();
+        AbstractOperation operation = null;
         // Preprocess Phase
-        AbstractOperation operation = preprocessSecurityHook(currentCascadedCall, request, request.getURI().toString(), SecurityHelper.METHOD_NAME_EXECUTE);
-
+        if (isLockAcquired) {
+            operation = preprocessSecurityHook(request, request.getURI().toString(), SecurityHelper.METHOD_NAME_EXECUTE);
+        }
         HttpResponse returnObj = null;
         // Actual Call
         try {
             returnObj = Weaver.callOriginal();
         } finally {
-            cascadedCall = currentCascadedCall;
+            if (isLockAcquired) {
+                releaseLock();
+            }
         }
-        registerExitOperation(operation);
+        registerExitOperation(isLockAcquired, operation);
         return returnObj;
     }
 
     public HttpResponse execute(HttpUriRequest request, HttpContext context) throws Exception {
-        boolean currentCascadedCall = cascadedCall;
+        boolean isLockAcquired = acquireLockIfPossible();
+        AbstractOperation operation = null;
         // Preprocess Phase
-        AbstractOperation operation = preprocessSecurityHook(currentCascadedCall, request, request.getURI().toString(), SecurityHelper.METHOD_NAME_EXECUTE);
-
+        if (isLockAcquired) {
+            operation = preprocessSecurityHook(request, request.getURI().toString(), SecurityHelper.METHOD_NAME_EXECUTE);
+        }
         HttpResponse returnObj = null;
         // Actual Call
         try {
             returnObj = Weaver.callOriginal();
         } finally {
-            cascadedCall = currentCascadedCall;
+            if (isLockAcquired) {
+                releaseLock();
+            }
         }
-        registerExitOperation(operation);
+        registerExitOperation(isLockAcquired, operation);
         return returnObj;
     }
 
     public HttpResponse execute(HttpHost target, HttpRequest request) throws Exception {
-        String actualURI = getUri(target, request).toString();
-        boolean currentCascadedCall = cascadedCall;
+        boolean isLockAcquired = acquireLockIfPossible();
+        AbstractOperation operation = null;
+
         // Preprocess Phase
-        AbstractOperation operation = preprocessSecurityHook(currentCascadedCall, request, actualURI, SecurityHelper.METHOD_NAME_EXECUTE);
+        if (isLockAcquired) {
+            String actualURI = getUri(target, request).toString();
+            operation = preprocessSecurityHook(request, actualURI, SecurityHelper.METHOD_NAME_EXECUTE);
+        }
 
         HttpResponse returnObj = null;
         // Actual Call
         try {
             returnObj = Weaver.callOriginal();
         } finally {
-            cascadedCall = currentCascadedCall;
+            if (isLockAcquired) {
+                releaseLock();
+            }
         }
-        registerExitOperation(operation);
+        registerExitOperation(isLockAcquired, operation);
         return returnObj;
     }
 
     public HttpResponse execute(HttpHost target, HttpRequest request, HttpContext context) throws Exception {
-        String actualURI = getUri(target, request).toString();
-        boolean currentCascadedCall = cascadedCall;
+        boolean isLockAcquired = acquireLockIfPossible();
+        AbstractOperation operation = null;
+
         // Preprocess Phase
-        AbstractOperation operation = preprocessSecurityHook(currentCascadedCall, request, actualURI, SecurityHelper.METHOD_NAME_EXECUTE);
+        if (isLockAcquired) {
+            String actualURI = getUri(target, request).toString();
+            operation = preprocessSecurityHook(request, actualURI, SecurityHelper.METHOD_NAME_EXECUTE);
+        }
 
         HttpResponse returnObj = null;
         // Actual Call
         try {
             returnObj = Weaver.callOriginal();
         } finally {
-            cascadedCall = currentCascadedCall;
+            if (isLockAcquired) {
+                releaseLock();
+            }
         }
-        registerExitOperation(operation);
+        registerExitOperation(isLockAcquired, operation);
         return returnObj;
     }
 
     public <T, R extends T> T execute(HttpUriRequest request, ResponseHandler<R> responseHandler)
             throws Exception {
-        boolean currentCascadedCall = cascadedCall;
+        boolean isLockAcquired = acquireLockIfPossible();
+        AbstractOperation operation = null;
         // Preprocess Phase
-        AbstractOperation operation = preprocessSecurityHook(currentCascadedCall, request, request.getURI().toString(),
-                SecurityHelper.METHOD_NAME_EXECUTE);
-
+        if (isLockAcquired) {
+            operation = preprocessSecurityHook(request, request.getURI().toString(), SecurityHelper.METHOD_NAME_EXECUTE);
+        }
         T returnObj = null;
         // Actual Call
         try {
             returnObj = Weaver.callOriginal();
         } finally {
-            cascadedCall = currentCascadedCall;
+            if (isLockAcquired) {
+                releaseLock();
+            }
         }
-        registerExitOperation(operation);
+        registerExitOperation(isLockAcquired, operation);
         return returnObj;
     }
 
     public <T, R extends T> T execute(HttpUriRequest request, ResponseHandler<R> responseHandler, HttpContext context)
             throws Exception {
-        boolean currentCascadedCall = cascadedCall;
+        boolean isLockAcquired = acquireLockIfPossible();
+        AbstractOperation operation = null;
         // Preprocess Phase
-        AbstractOperation operation = preprocessSecurityHook(currentCascadedCall, request, request.getURI().toString(),
-                SecurityHelper.METHOD_NAME_EXECUTE);
-
+        if (isLockAcquired) {
+            operation = preprocessSecurityHook(request, request.getURI().toString(), SecurityHelper.METHOD_NAME_EXECUTE);
+        }
         T returnObj = null;
         // Actual Call
         try {
             returnObj = Weaver.callOriginal();
         } finally {
-            cascadedCall = currentCascadedCall;
+            if (isLockAcquired) {
+                releaseLock();
+            }
         }
-        registerExitOperation(operation);
+        registerExitOperation(isLockAcquired, operation);
         return returnObj;
     }
 
     public <T, R extends T> T execute(HttpHost target, HttpRequest request, ResponseHandler<R> responseHandler)
             throws Exception {
-        String actualURI = getUri(target, request).toString();
-        boolean currentCascadedCall = cascadedCall;
+        boolean isLockAcquired = acquireLockIfPossible();
+        AbstractOperation operation = null;
+
         // Preprocess Phase
-        AbstractOperation operation = preprocessSecurityHook(currentCascadedCall, request, actualURI, SecurityHelper.METHOD_NAME_EXECUTE);
+        if (isLockAcquired) {
+            String actualURI = getUri(target, request).toString();
+            operation = preprocessSecurityHook(request, actualURI, SecurityHelper.METHOD_NAME_EXECUTE);
+        }
 
         T returnObj = null;
         // Actual Call
         try {
             returnObj = Weaver.callOriginal();
         } finally {
-            cascadedCall = currentCascadedCall;
+            if (isLockAcquired) {
+                releaseLock();
+            }
         }
-        registerExitOperation(operation);
+        registerExitOperation(isLockAcquired, operation);
         return returnObj;
     }
 
     public <T, R extends T> T execute(HttpHost target, HttpRequest request, ResponseHandler<R> responseHandler,
                                       HttpContext context) throws Exception {
-        String actualURI = getUri(target, request).toString();
-        boolean currentCascadedCall = cascadedCall;
+        boolean isLockAcquired = acquireLockIfPossible();
+        AbstractOperation operation = null;
+
         // Preprocess Phase
-        AbstractOperation operation = preprocessSecurityHook(currentCascadedCall, request, actualURI, SecurityHelper.METHOD_NAME_EXECUTE);
+        if (isLockAcquired) {
+            String actualURI = getUri(target, request).toString();
+            operation = preprocessSecurityHook(request, actualURI, SecurityHelper.METHOD_NAME_EXECUTE);
+        }
 
         T returnObj = null;
         // Actual Call
         try {
             returnObj = Weaver.callOriginal();
         } finally {
-            cascadedCall = currentCascadedCall;
+            if (isLockAcquired) {
+                releaseLock();
+            }
         }
-        registerExitOperation(operation);
+        registerExitOperation(isLockAcquired, operation);
         return returnObj;
     }
 
@@ -178,9 +213,9 @@ public abstract class HttpClient {
         return new URI(scheme, null, target.getHostName(), target.getPort(), requestURI.getPath(), null, null);
     }
 
-    private static void registerExitOperation(AbstractOperation operation) {
+    private static void registerExitOperation(boolean isProcessingAllowed, AbstractOperation operation) {
         try {
-            if (!NewRelicSecurity.isHookProcessingActive() || NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()
+            if (operation == null || !isProcessingAllowed || !NewRelicSecurity.isHookProcessingActive() || NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()
             ) {
                 return;
             }
@@ -189,15 +224,13 @@ public abstract class HttpClient {
         }
     }
 
-    private AbstractOperation preprocessSecurityHook(boolean currentCascadedCall, HttpRequest request, String uri, String methodName) {
+    private AbstractOperation preprocessSecurityHook(HttpRequest request, String uri, String methodName) {
         try {
             SecurityMetaData securityMetaData = NewRelicSecurity.getAgent().getSecurityMetaData();
             if (!NewRelicSecurity.isHookProcessingActive() || securityMetaData.getRequest().isEmpty()
-                    || currentCascadedCall
             ) {
                 return null;
             }
-            cascadedCall = true;
 
             // TODO : Need to check if this is required anymore in NR case.
 //            // Add Security app topology header
@@ -228,6 +261,21 @@ public abstract class HttpClient {
             }
         }
         return null;
+    }
+
+    private void releaseLock() {
+        try {
+            GenericHelper.releaseLock(SecurityHelper.NR_SEC_CUSTOM_ATTRIB_NAME, this.hashCode());
+        } catch (Throwable ignored) {
+        }
+    }
+
+    private boolean acquireLockIfPossible() {
+        try {
+            return GenericHelper.acquireLockIfPossible(SecurityHelper.NR_SEC_CUSTOM_ATTRIB_NAME, this.hashCode());
+        } catch (Throwable ignored) {
+        }
+        return false;
     }
 
 }

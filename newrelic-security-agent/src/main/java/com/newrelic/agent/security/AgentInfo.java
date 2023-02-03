@@ -10,7 +10,7 @@ import com.newrelic.agent.security.intcodeagent.models.javaagent.ApplicationInfo
 import com.newrelic.agent.security.intcodeagent.models.javaagent.Identifier;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.JAHealthCheck;
 import com.newrelic.agent.security.intcodeagent.properties.BuildInfo;
-import com.newrelic.agent.security.intcodeagent.websocket.WSClient;
+import com.newrelic.agent.security.intcodeagent.websocket.WSUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
@@ -158,11 +158,10 @@ public class AgentInfo {
             logger.log(LogLevel.WARN, "K2 security module INACTIVE!!! since agentRunId is not known.", AgentInfo.class.getName());
             state = false;
         }
-        else if(!AgentConfig.getInstance().isNRSecurityEnabled()){
+        else if (!AgentConfig.getInstance().isNRSecurityEnabled()) {
             logger.log(LogLevel.WARN, "K2 security module INACTIVE!!! since security config is disabled.", AgentInfo.class.getName());
             state = false;
-        }
-        else if(!WSClient.isConnected()){
+        } else if (!WSUtils.isConnected()) {
             logger.log(LogLevel.WARN, "K2 security module INACTIVE!!! Can't connect with prevent web agent.", AgentInfo.class.getName());
             state = false;
         }
