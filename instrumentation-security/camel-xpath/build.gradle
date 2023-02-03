@@ -1,5 +1,3 @@
-apply plugin: 'java'
-
 dependencies {
     implementation(project(":newrelic-security-api"))
     implementation("com.newrelic.agent.java:newrelic-api:${nrAPIVersion}")

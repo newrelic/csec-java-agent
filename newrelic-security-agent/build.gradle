@@ -94,7 +94,7 @@ task generateVersionProperties(type: WriteProperties) {
     property('jsonVersion', "$jsonVersion")
     property('buildNumber', "$buildNumber")
 }
-
+tasks.javadocJar.dependsOn(generateVersionProperties)
 /**
  * The `relocatedShadowJar` task builds the initial shaded jar. It performs the following tasks:
  *   - Identifies all dependencies in the "shadowIntoJar" configuration
@@ -140,6 +140,7 @@ task relocatedShadowJar(type: ShadowJar) {
             "META-INF/maven/**",
             // Multiple dependencies
             "LICENSE",
+            "LICENSE.txt",
             // log4j2
             "META-INF/versions/9/module-info.class",
             "META-INF/services/org.apache.logging*",
