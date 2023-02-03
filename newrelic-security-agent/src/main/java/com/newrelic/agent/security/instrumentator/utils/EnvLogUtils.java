@@ -1,8 +1,8 @@
 package com.newrelic.agent.security.instrumentator.utils;
 
+import com.newrelic.agent.security.AgentInfo;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.newrelic.agent.security.intcodeagent.filelogging.LogLevel;
-import com.newrelic.agent.security.intcodeagent.properties.K2JAVersionInfo;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.HashMap;
@@ -51,7 +51,10 @@ public class EnvLogUtils {
                 String.format(LOADED_K2_ENVS_MSG, StringUtils.join(k2Envs)),
                 EnvLogUtils.class.getName());
         logger.logInit(LogLevel.INFO,
-                String.format("K2 JA collector version : %s , json version : %s and build number : %s", K2JAVersionInfo.collectorVersion, K2JAVersionInfo.jsonVersion, K2JAVersionInfo.buildNumber),
+                String.format("K2 JA collector version : %s , json version : %s and build number : %s",
+                        AgentInfo.getInstance().getBuildInfo().getCollectorVersion(),
+                        AgentInfo.getInstance().getBuildInfo().getJsonVersion(),
+                        AgentInfo.getInstance().getBuildInfo().getBuildNumber()),
                 EnvLogUtils.class.getName());
     }
 

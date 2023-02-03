@@ -1,6 +1,5 @@
 package com.nr.instrumentation.org.h2;
 
-import com.newrelic.agent.deps.org.jetbrains.annotations.NotNull;
 import com.newrelic.agent.security.introspec.InstrumentationTestConfig;
 import com.newrelic.agent.security.introspec.SecurityInstrumentationTestRunner;
 import com.newrelic.agent.security.introspec.SecurityIntrospector;
@@ -49,22 +48,22 @@ public class DataStoreTest {
         getConnection1(new JdbcDataSource());
     }
 
-    private void getConnection(@NotNull JdbcDataSource baseDataSource) throws SQLException {
+    private void getConnection(JdbcDataSource baseDataSource) throws SQLException {
         Connection conn = null;
         baseDataSource.setURL(DB_CONNECTION);
 
         try {
             conn = baseDataSource.getConnection(DB_USER, DB_PASSWORD);
         } catch (Exception e) {
-            System.out.println("Error in DB connection "+e);
+            System.out.println("Error in DB connection " + e);
         } finally {
-            if (conn!=null) {
+            if (conn != null) {
                 conn.close();
             }
         }
     }
 
-    private void getConnection1(@NotNull JdbcDataSource baseDataSource) throws SQLException {
+    private void getConnection1(JdbcDataSource baseDataSource) throws SQLException {
         baseDataSource.setURL(DB_CONNECTION);
         baseDataSource.setUser(DB_USER);
         baseDataSource.setPassword(DB_PASSWORD);
@@ -73,7 +72,7 @@ public class DataStoreTest {
         try {
             conn = baseDataSource.getConnection();
         } catch (Exception e) {
-            System.out.println("Error in DB connection "+e);
+            System.out.println("Error in DB connection " + e);
         } finally {
             if (conn!=null) {
                 conn.close();

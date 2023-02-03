@@ -6,7 +6,6 @@ import com.newrelic.agent.security.intcodeagent.controlcommand.ControlCommandPro
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.newrelic.agent.security.intcodeagent.filelogging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.logging.IAgentConstants;
-import com.newrelic.agent.security.intcodeagent.properties.K2JAVersionInfo;
 import org.apache.commons.lang3.StringUtils;
 import org.java_websocket.WebSocket;
 import org.java_websocket.WebSocketImpl;
@@ -49,12 +48,12 @@ public class WSClient extends WebSocketClient {
         this.setConnectionLostTimeout(30);
         this.addHeader("NR-CSEC-CONNECTION-TYPE", "LANGUAGE_COLLECTOR");
         this.addHeader("NR-AGENT-RUN-TOKEN", AgentConfig.getInstance().getConfig().getCustomerInfo().getApiAccessorToken());
-        this.addHeader("NR-CSEC-VERSION", K2JAVersionInfo.collectorVersion);
+        this.addHeader("NR-CSEC-VERSION", AgentInfo.getInstance().getBuildInfo().getCollectorVersion());
         this.addHeader("NR-CSEC-COLLECTOR-TYPE", "JAVA");
-        this.addHeader("NR-CSEC-BUILD-NUMBER", K2JAVersionInfo.buildNumber);
+        this.addHeader("NR-CSEC-BUILD-NUMBER", AgentInfo.getInstance().getBuildInfo().getBuildNumber());
         this.addHeader("NR-CSEC-MODE", AgentConfig.getInstance().getGroupName());
         this.addHeader("NR-CSEC-APP-UUID", AgentInfo.getInstance().getApplicationUUID());
-        this.addHeader("NR-CSEC-JSON-VERSION", K2JAVersionInfo.jsonVersion);
+        this.addHeader("NR-CSEC-JSON-VERSION", AgentInfo.getInstance().getBuildInfo().getJsonVersion());
         this.addHeader("NR-ACCOUNT-ID", AgentConfig.getInstance().getConfig().getCustomerInfo().getAccountId());
     }
 

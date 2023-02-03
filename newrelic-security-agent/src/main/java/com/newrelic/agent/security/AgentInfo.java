@@ -1,7 +1,5 @@
 package com.newrelic.agent.security;
 
-import com.newrelic.agent.security.instrumentator.os.OSVariables;
-import com.newrelic.agent.security.instrumentator.os.OsVariablesInstance;
 import com.newrelic.agent.security.instrumentator.utils.AgentUtils;
 import com.newrelic.agent.security.instrumentator.utils.ApplicationInfoUtils;
 import com.newrelic.agent.security.instrumentator.utils.INRSettingsKey;
@@ -11,6 +9,7 @@ import com.newrelic.agent.security.intcodeagent.models.collectorconfig.Collector
 import com.newrelic.agent.security.intcodeagent.models.javaagent.ApplicationInfoBean;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.Identifier;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.JAHealthCheck;
+import com.newrelic.agent.security.intcodeagent.properties.BuildInfo;
 import com.newrelic.agent.security.intcodeagent.websocket.WSClient;
 import org.apache.commons.lang3.StringUtils;
 
@@ -47,16 +46,16 @@ public class AgentInfo {
 
     private Map<String, String> linkingMetadata = new HashMap<>();
 
+    private BuildInfo buildInfo = new BuildInfo();
+
     private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
 
-    private AgentInfo(){
+    private AgentInfo() {
         RuntimeMXBean runtimeMXBean = ManagementFactory.getRuntimeMXBean();
         String runningVM = runtimeMXBean.getName();
         VMPID = Integer.parseInt(runningVM.substring(0, runningVM.indexOf(VMPID_SPLIT_CHAR)));
 //        osVariables = OsVariablesInstance.getInstance().getOsVariables();
         applicationUUID = UUID.randomUUID().toString();
-        //TODO collector version to be set via gradle
-
     }
 
     public static AgentInfo getInstance(){
@@ -114,9 +113,17 @@ public class AgentInfo {
         isAgentActive = agentActive;
     }
 
-    public ApplicationInfoBean generateAppInfo(CollectorConfig config){
-        applicationInfo =  ApplicationInfoUtils.createApplicationInfoBean(identifier, getVMPID(), applicationUUID, config);
-        if(applicationInfo == null) {
+    public BuildInfo getBuildInfo() {
+        return buildInfo;
+    }
+
+    public void setBuildInfo(BuildInfo buildInfo) {
+        this.buildInfo = buildInfo;
+    }
+
+    public ApplicationInfoBean generateAppInfo(CollectorConfig config) {
+        applicationInfo = ApplicationInfoUtils.createApplicationInfoBean(identifier, getVMPID(), applicationUUID, config);
+        if (applicationInfo == null) {
             // TODO raise exception
             logger.logInit(
                     LogLevel.ERROR,

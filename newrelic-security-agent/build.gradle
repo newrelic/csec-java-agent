@@ -5,6 +5,8 @@ import com.nr.builder.GitUtil
 import com.nr.builder.Log4j2PluginFileMover
 import com.nr.builder.publish.PublishConfig
 
+import java.time.Clock
+
 plugins {
     id("java-library")
     id("maven-publish")
@@ -56,6 +58,7 @@ dependencies {
     shadowIntoJar 'com.googlecode.json-simple:json-simple:1.1.1'
     shadowIntoJar 'com.fasterxml.jackson.core:jackson-databind:2.13.4'
     shadowIntoJar 'com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.13.4'
+    shadowIntoJar 'com.fasterxml.jackson.dataformat:jackson-dataformat-properties:2.13.4'
     shadowIntoJar 'org.yaml:snakeyaml:1.31'
     shadowIntoJar 'org.java-websocket:Java-WebSocket:1.5.1'
     shadowIntoJar 'commons-io:commons-io:2.7'
@@ -77,14 +80,13 @@ dependencies {
  * The generateVersionProperties creates a properties file
  * containing the built version of the Jar.
  */
-task generateVersionProperties() {
-    def buildProps = new File(sourceSets.main.output.resourcesDir, "com/newrelic/agent/security/Agent.properties")
-    outputs.file(buildProps)
-
-    doLast {
-        buildProps.parentFile.mkdirs()
-        buildProps.text = """version=$version"""
-    }
+task generateVersionProperties(type: WriteProperties) {
+    outputFile = new File(sourceSets.main.output.resourcesDir, "Agent.properties")
+    property('collectorVersion', "$agentVersion")
+    property('buildTime', Clock.systemUTC().instant().toString())
+    property('commitId', "$commitId")
+    property('jsonVersion', "$jsonVersion")
+    property('buildNumber', "$buildNumber")
 }
 
 /**
