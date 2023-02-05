@@ -110,7 +110,7 @@ tasks.javadocJar.dependsOn(generateVersionProperties)
  *   - The newly-created Agent.properties from generateVersionProperties
  */
 task relocatedShadowJar(type: ShadowJar) {
-    dependsOn("classes", "processResources", "generateVersionProperties")
+    dependsOn("classes", "processResources", "generateVersionProperties", ":newrelic-security-api:newrelicVersionedAPIJar")
 
     from sourceSets.main.output.classesDirs
     from(sourceSets.main.output.resourcesDir) {
@@ -207,6 +207,7 @@ task newrelicVersionedAgentJar(type: Jar) {
 
     from("$rootDir/LICENSE")
     from("$rootDir/THIRD_PARTY_NOTICES.md")
+    new File(projectDir, 'src/main/resources/NOTICE')
     from("$buildDir/reports/SBOM.json")
 
     includeEmptyDirs = false
