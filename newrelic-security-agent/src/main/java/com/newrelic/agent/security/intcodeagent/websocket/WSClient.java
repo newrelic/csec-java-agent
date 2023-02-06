@@ -112,9 +112,11 @@ public class WSClient extends WebSocketClient {
 
     @Override
     public void onError(Exception ex) {
-//        logger.log(LogLevel.SEVERE, "Error in WSock connection : " + ex.getMessage() + " : " + ex.getCause(),
-//                WSClient.class.getName());
-        logger.logInit(LogLevel.FATAL, String.format(IAgentConstants.WS_CONNECTION_UNSUCCESSFUL, AgentConfig.getInstance().getConfig().getK2ServiceInfo().getValidatorServiceEndpointURL()),
+        logger.logInit(LogLevel.FATAL, String.format(IAgentConstants.WS_CONNECTION_UNSUCCESSFUL_INFO, AgentConfig
+                                .getInstance().getConfig().getK2ServiceInfo().getValidatorServiceEndpointURL(),
+                        ex.getMessage(), ex.getCause()),
+                WSClient.class.getName());
+        logger.logInit(LogLevel.DEBUG, String.format(IAgentConstants.WS_CONNECTION_UNSUCCESSFUL, AgentConfig.getInstance().getConfig().getK2ServiceInfo().getValidatorServiceEndpointURL()),
                 ex,
                 WSClient.class.getName());
     }

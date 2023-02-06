@@ -88,7 +88,7 @@ dependencies {
  */
 task generateVersionProperties(type: WriteProperties) {
     outputFile = new File(sourceSets.main.output.resourcesDir, "Agent.properties")
-    property('collectorVersion', "$agentVersion")
+    property('collectorVersion', "$version")
     property('buildTime', Clock.systemUTC().instant().toString())
     property('commitId', "$commitId")
     property('jsonVersion', "$jsonVersion")
