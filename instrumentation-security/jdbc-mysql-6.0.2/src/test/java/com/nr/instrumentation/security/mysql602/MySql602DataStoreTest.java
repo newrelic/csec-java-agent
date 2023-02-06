@@ -10,7 +10,6 @@ import com.mysql.cj.fabric.jdbc.FabricMySQLDataSource;
 import com.mysql.cj.jdbc.MysqlConnectionPoolDataSource;
 import com.mysql.cj.jdbc.MysqlDataSource;
 import com.mysql.cj.jdbc.MysqlXADataSource;
-import com.newrelic.agent.deps.org.jetbrains.annotations.NotNull;
 import com.newrelic.agent.security.introspec.InstrumentationTestConfig;
 import com.newrelic.agent.security.introspec.SecurityInstrumentationTestRunner;
 import com.newrelic.agent.security.introspec.SecurityIntrospector;
@@ -213,7 +212,7 @@ public class MySql602DataStoreTest {
         getConnection1(new MysqlXADataSource());
     }
 
-    private void getConnection(@NotNull MysqlDataSource baseDataSource) throws SQLException {
+    private void getConnection(MysqlDataSource baseDataSource) throws SQLException {
         baseDataSource.setURL(DB_CONNECTION);
         baseDataSource.setDatabaseName(DB_NAME);
         Connection conn = null;
@@ -229,7 +228,7 @@ public class MySql602DataStoreTest {
         }
     }
 
-    private void getConnection1(@NotNull MysqlDataSource baseDataSource) throws SQLException {
+    private void getConnection1(MysqlDataSource baseDataSource) throws SQLException {
         baseDataSource.setURL(DB_CONNECTION);
         baseDataSource.setDatabaseName(DB_NAME);
         baseDataSource.setUser(DB_USER);

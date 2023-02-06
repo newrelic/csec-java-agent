@@ -5,7 +5,6 @@ import com.newrelic.agent.security.introspec.SecurityInstrumentationTestRunner;
 import com.newrelic.agent.security.introspec.SecurityIntrospector;
 import com.newrelic.api.agent.Trace;
 import com.newrelic.api.agent.security.schema.JDBCVendor;
-import org.jetbrains.annotations.NotNull;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.ClassRule;
@@ -301,7 +300,7 @@ public class DataStoreTest {
         getConnection1(new PoolingDataSource());
     }
 
-    private void getConnection(@NotNull BaseDataSource baseDataSource) throws SQLException {
+    private void getConnection(BaseDataSource baseDataSource) throws SQLException {
         baseDataSource.setDatabaseName(DB_NAME);
         baseDataSource.setPortNumber(postgreSQLContainer.getMappedPort(5432));
         Connection conn = null;
@@ -317,7 +316,7 @@ public class DataStoreTest {
         }
     }
 
-    private void getConnection1(@NotNull BaseDataSource baseDataSource) throws SQLException {
+    private void getConnection1(BaseDataSource baseDataSource) throws SQLException {
         baseDataSource.setUser(DB_USER);
         baseDataSource.setPassword(DB_PASSWORD);
         baseDataSource.setDatabaseName(DB_NAME);
