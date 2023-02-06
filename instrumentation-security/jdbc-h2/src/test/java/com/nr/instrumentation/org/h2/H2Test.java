@@ -35,7 +35,7 @@ public class H2Test {
 
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
         String vendor = introspector.getJDBCVendor();
-        Assert.assertEquals("Incorrect DB vendor", vendor, JDBCVendor.H2);
+        Assert.assertEquals("Incorrect DB vendor", JDBCVendor.H2, vendor);
 
     }
 
@@ -45,7 +45,7 @@ public class H2Test {
 
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
         String vendor = introspector.getJDBCVendor();
-        Assert.assertEquals("Incorrect DB vendor", vendor, JDBCVendor.H2);
+        Assert.assertEquals("Incorrect DB vendor", JDBCVendor.H2, vendor);
 
     }
 
@@ -55,7 +55,7 @@ public class H2Test {
 
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
         String vendor = introspector.getJDBCVendor();
-        Assert.assertEquals("Incorrect DB vendor", vendor, JDBCVendor.H2);
+        Assert.assertEquals("Incorrect DB vendor", JDBCVendor.H2, vendor);
 
     }
 
@@ -82,7 +82,6 @@ public class H2Test {
             Properties info = new Properties();
             info.put("user", DB_USER);
             info.put("password", DB_PASSWORD);
-            c= new JdbcConnection(DB_CONNECTION, info);
             c = DriverManager.getConnection(DB_CONNECTION, info);
         } catch (Exception e) {
             System.out.println("Error in DB connection: " + e);
