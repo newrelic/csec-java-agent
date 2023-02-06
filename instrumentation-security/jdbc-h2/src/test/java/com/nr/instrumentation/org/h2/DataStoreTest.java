@@ -26,7 +26,7 @@ public class DataStoreTest {
 
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
         String vendor = introspector.getJDBCVendor();
-        Assert.assertEquals("Incorrect DB vendor", vendor, JDBCVendor.H2);
+        Assert.assertEquals("Incorrect DB vendor", JDBCVendor.H2, vendor);
     }
 
     @Test
@@ -35,7 +35,7 @@ public class DataStoreTest {
 
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
         String vendor = introspector.getJDBCVendor();
-        Assert.assertEquals("Incorrect DB vendor", vendor, JDBCVendor.H2);
+        Assert.assertEquals("Incorrect DB vendor", JDBCVendor.H2, vendor);
     }
 
     @Trace(dispatcher = true)
