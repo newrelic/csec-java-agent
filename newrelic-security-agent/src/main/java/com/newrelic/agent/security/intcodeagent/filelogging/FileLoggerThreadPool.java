@@ -3,8 +3,10 @@ package com.newrelic.agent.security.intcodeagent.filelogging;
 import com.newrelic.agent.security.AgentInfo;
 import com.newrelic.agent.security.instrumentator.utils.AgentUtils;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.LogMessage;
+import com.newrelic.agent.security.intcodeagent.properties.K2JALogProperties;
 import com.newrelic.agent.security.intcodeagent.websocket.EventSendPool;
 import com.newrelic.agent.security.intcodeagent.websocket.JsonConverter;
+import com.newrelic.agent.security.util.IUtilConstants;
 
 import java.io.IOException;
 import java.util.concurrent.*;
@@ -17,6 +19,10 @@ public class FileLoggerThreadPool {
     private boolean isLoggingActive = true;
 
     private boolean isInitLoggingActive = true;
+
+    protected int maxfilesize = K2JALogProperties.maxfilesize;
+
+    protected int maxfiles = K2JALogProperties.maxfiles;
 
     private FileLoggerThreadPool() throws IOException {
         // load the settings
@@ -53,6 +59,15 @@ public class FileLoggerThreadPool {
                 return t;
             }
         });
+        try {
+            if (System.getenv().containsKey(IUtilConstants.NR_CSEC_DEBUG_LOGFILE_SIZE)) {
+                this.maxfilesize = Integer.parseInt(System.getenv().get(IUtilConstants.NR_CSEC_DEBUG_LOGFILE_SIZE));
+            }
+
+            if (System.getenv().containsKey(IUtilConstants.NR_CSEC_DEBUG_LOGFILE_MAX_COUNT)) {
+                this.maxfiles = Integer.parseInt(System.getenv().get(IUtilConstants.NR_CSEC_DEBUG_LOGFILE_MAX_COUNT));
+            }
+        } catch (NumberFormatException e){}
 
     }
 

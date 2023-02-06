@@ -69,7 +69,7 @@ public class LogWriter implements Runnable {
             currentLogFile.setReadable(true, false);
             writer = new BufferedWriter(new FileWriter(currentLogFileName, true));
 
-            maxFileSize = K2JALogProperties.maxfilesize * 1048576;
+            maxFileSize = FileLoggerThreadPool.getInstance().maxfilesize * 1048576;
 
             if (!osVariables.getWindows()) {
                 Files.setPosixFilePermissions(currentLogFile.toPath(), PosixFilePermissions.fromString("rw-rw-rw-"));
@@ -188,7 +188,7 @@ public class LogWriter implements Runnable {
                 } catch (IOException e) {
                 }
 
-                CommonUtils.deleteRolloverLogFiles(currentFile.getName(), K2JALogProperties.maxfiles);
+                CommonUtils.deleteRolloverLogFiles(currentFile.getName(), FileLoggerThreadPool.getInstance().maxfiles);
             }
         } finally {
             writer = new BufferedWriter(new FileWriter(currentFile, true));
