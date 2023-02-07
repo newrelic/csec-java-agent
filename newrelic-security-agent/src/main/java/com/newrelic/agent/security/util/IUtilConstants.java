@@ -15,6 +15,8 @@ public interface IUtilConstants {
     String NOT_AVAILABLE = "Not Available";
 
     String NR_SECURITY_ENABLE = "security.enable";
+
+    String NR_SECURITY_CA_BUNDLE_PATH = "security.ca_bundle_path";
     String NR_CSEC_DEBUG_LOGFILE_SIZE = "NR_CSEC_DEBUG_LOGFILE_SIZE";
     String NR_CSEC_DEBUG_LOGFILE_MAX_COUNT = "NR_CSEC_DEBUG_LOGFILE_MAX_COUNT";
 }

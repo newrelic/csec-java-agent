@@ -6,7 +6,11 @@ import com.newrelic.agent.security.intcodeagent.controlcommand.ControlCommandPro
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.newrelic.agent.security.intcodeagent.filelogging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.logging.IAgentConstants;
+import com.newrelic.agent.security.intcodeagent.utils.CommonUtils;
+import com.newrelic.agent.security.util.IUtilConstants;
+import com.newrelic.api.agent.NewRelic;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.net.DefaultSocketFactory;
 import org.java_websocket.WebSocket;
 import org.java_websocket.WebSocketImpl;
 import org.java_websocket.client.WebSocketClient;
@@ -14,10 +18,23 @@ import org.java_websocket.framing.CloseFrame;
 import org.java_websocket.framing.Framedata;
 import org.java_websocket.handshake.ServerHandshake;
 
+import javax.net.SocketFactory;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManagerFactory;
+import java.io.*;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.security.KeyManagementException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
 import java.time.Instant;
 import java.time.ZoneId;
+import java.util.Collection;
+import java.util.LinkedList;
 import java.util.concurrent.TimeUnit;
 
 public class WSClient extends WebSocketClient {
@@ -42,6 +59,59 @@ public class WSClient extends WebSocketClient {
     private WebSocketImpl connection = null;
 
 
+    private SSLContext createSSLContext() throws KeyStoreException, CertificateException, IOException, NoSuchAlgorithmException, KeyManagementException {
+        KeyStore keystore = KeyStore.getInstance(KeyStore.getDefaultType());
+        Collection<X509Certificate> caCerts = new LinkedList<>();
+        try (InputStream is = new BufferedInputStream(getCaBundleStream())) {
+            CertificateFactory cf = CertificateFactory.getInstance("X.509");
+            while (is.available() > 0) {
+                try {
+                    caCerts.add((X509Certificate) cf.generateCertificate(is));
+                } catch (Exception e) {
+                    logger.log(LogLevel.FATAL,
+                            "Unable to generate ca certificate. Verify the certificate format. Will not process further certs.", e, WSClient.class.getName());
+                    break;
+                }
+            }
+        }
+
+        logger.log(caCerts.size() > 0 ? LogLevel.INFO : LogLevel.FATAL,
+                String.format("Found %s certificates.", caCerts.size()), WSClient.class.getName());
+        // Initialize the keystore
+        keystore.load(null, null);
+
+        int i = 1;
+        for (X509Certificate caCert : caCerts) {
+            if (caCert != null) {
+                String alias = "nr_csec_ca_bundle_" + i;
+                keystore.setCertificateEntry(alias, caCert);
+                logger.log(LogLevel.DEBUG, String.format("Installed certificate %s at alias: %s", i, alias), WSClient.class.getName());
+            }
+            i++;
+        }
+        TrustManagerFactory trustManagerFactory = TrustManagerFactory
+                .getInstance(TrustManagerFactory.getDefaultAlgorithm());
+        trustManagerFactory.init(keystore);
+
+        SSLContext sslContext = SSLContext.getInstance("TLS");
+        sslContext.init(null, trustManagerFactory.getTrustManagers(), null);
+        return sslContext;
+    }
+
+    private InputStream getCaBundleStream() throws FileNotFoundException {
+        String caBundlePath = System.getenv().getOrDefault("NR_CSEC_CA_BUNDLE_PATH", StringUtils.EMPTY);
+        InputStream inputStream;
+        if(StringUtils.isNotEmpty(caBundlePath)){
+            inputStream = new FileInputStream(caBundlePath);
+        } else if(StringUtils.isNotBlank(NewRelic.getAgent().getConfig().getValue(IUtilConstants.NR_SECURITY_CA_BUNDLE_PATH))){
+            caBundlePath = NewRelic.getAgent().getConfig().getValue(IUtilConstants.NR_SECURITY_CA_BUNDLE_PATH);
+            inputStream = new FileInputStream(caBundlePath);
+        } else {
+            inputStream = CommonUtils.getResourceStreamFromAgentJar("nr-custom-ca.pem");
+        }
+        return inputStream;
+    }
+
     private WSClient() throws URISyntaxException {
         super(new URI(AgentConfig.getInstance().getConfig().getK2ServiceInfo().getValidatorServiceEndpointURL()));
         this.setTcpNoDelay(true);
@@ -55,6 +125,12 @@ public class WSClient extends WebSocketClient {
         this.addHeader("NR-CSEC-APP-UUID", AgentInfo.getInstance().getApplicationUUID());
         this.addHeader("NR-CSEC-JSON-VERSION", AgentInfo.getInstance().getBuildInfo().getJsonVersion());
         this.addHeader("NR-ACCOUNT-ID", AgentConfig.getInstance().getConfig().getCustomerInfo().getAccountId());
+        try {
+            this.setSocketFactory(createSSLContext().getSocketFactory());
+        } catch (Exception e) {
+            logger.log(LogLevel.FATAL, String.format("Error creating socket factory message : %s , cause : %s", e.getMessage(), e.getCause()), WSClient.class.getName());
+            logger.log(LogLevel.DEBUG, "Error creating socket factory", e, WSClient.class.getName());
+        }
     }
 
     /**
