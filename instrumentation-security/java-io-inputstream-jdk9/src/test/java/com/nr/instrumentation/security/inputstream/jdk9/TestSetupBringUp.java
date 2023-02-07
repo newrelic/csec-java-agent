@@ -9,7 +9,8 @@ import java.io.InputStream;
 public class TestSetupBringUp {
     public static void bringUp() {
         try {
-            SecurityInstrumentationTestRunner.instrumentation.retransformClasses(InputStream.class, FileInputStream.class, ByteArrayInputStream.class);
+            SecurityInstrumentationTestRunner.instrumentation.retransformClasses(InputStream.class,
+                    FileInputStream.class, ByteArrayInputStream.class, sun.nio.ch.ChannelInputStream.class);
         } catch (Throwable e) {
             e.printStackTrace();
         }
