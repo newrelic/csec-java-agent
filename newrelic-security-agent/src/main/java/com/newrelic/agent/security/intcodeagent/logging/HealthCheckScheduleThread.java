@@ -70,7 +70,7 @@ public class HealthCheckScheduleThread {
                     // we send our custom object to check if connection is still alive or not
                     // this will be ignored by ic agent on the other side.
                     
-                    AgentInfo.getInstance().getJaHealthCheck().setStat(populateJVMStats());
+                    AgentInfo.getInstance().getJaHealthCheck().setStats(populateJVMStats());
                     AgentInfo.getInstance().getJaHealthCheck().setServiceStatus(getServiceStatus());
 
                     if (!AgentInfo.getInstance().isAgentActive()) {
@@ -135,8 +135,8 @@ public class HealthCheckScheduleThread {
             if (statusLog.createNewFile()) {
                 Map<String, String> substitutes = AgentUtils.getInstance().getStatusLogValues();
                 substitutes.put(STATUS_TIMESTAMP, Instant.now().toString());
-                substitutes.put(LATEST_PROCESS_STATS, AgentInfo.getInstance().getJaHealthCheck().getStat().keySet().stream()
-                        .map(key -> key + SEPARATOR + AgentInfo.getInstance().getJaHealthCheck().getStat().get(key))
+                substitutes.put(LATEST_PROCESS_STATS, AgentInfo.getInstance().getJaHealthCheck().getStats().keySet().stream()
+                        .map(key -> key + SEPARATOR + AgentInfo.getInstance().getJaHealthCheck().getStats().get(key))
                         .collect(Collectors.joining(StringUtils.LF, StringUtils.EMPTY, StringUtils.EMPTY)));
                 substitutes.put(LATEST_SERVICE_STATS, AgentInfo.getInstance().getJaHealthCheck().getServiceStatus().keySet().stream()
                         .map(key -> key + SEPARATOR + AgentInfo.getInstance().getJaHealthCheck().getServiceStatus().get(key))

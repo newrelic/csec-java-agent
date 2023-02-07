@@ -32,7 +32,7 @@ public class JAHealthCheck extends AgentBasicInfo {
 
     private AtomicInteger httpRequestCount;
 
-    private Map<String, Object> stat;
+    private Map<String, Object> stats;
 
     private Map<String, Object> serviceStatus;
 
@@ -48,7 +48,7 @@ public class JAHealthCheck extends AgentBasicInfo {
         this.eventSentCount = new AtomicInteger(0);
         this.httpRequestCount = new AtomicInteger(0);
         this.exitEventSentCount = new AtomicInteger(0);
-        this.stat = new HashMap<>();
+        this.stats = new HashMap<>();
         this.serviceStatus = new HashMap<>();
         this.setKind(AgentInfo.getInstance().getApplicationInfo().getIdentifier().getKind());
         logger.log(LogLevel.INFO, String.format(HC_CREATED, JsonConverter.toJSON(this)), JAHealthCheck.class.getName());
@@ -63,7 +63,7 @@ public class JAHealthCheck extends AgentBasicInfo {
         this.exitEventSentCount = jaHealthCheck.exitEventSentCount;
         this.httpRequestCount = jaHealthCheck.httpRequestCount;
         this.kind = jaHealthCheck.kind;
-        this.stat = jaHealthCheck.stat;
+        this.stats = jaHealthCheck.stats;
         this.serviceStatus = jaHealthCheck.serviceStatus;
         this.dsBackLog = jaHealthCheck.dsBackLog;
         logger.log(LogLevel.INFO, String.format(HC_CREATED, JsonConverter.toJSON(this)), JAHealthCheck.class.getName());
@@ -194,12 +194,12 @@ public class JAHealthCheck extends AgentBasicInfo {
         this.dsBackLog = dsBackLog;
     }
 
-    public Map<String, Object> getStat() {
-        return stat;
+    public Map<String, Object> getStats() {
+        return stats;
     }
 
-    public void setStat(Map<String, Object> stat) {
-        this.stat = stat;
+    public void setStats(Map<String, Object> stats) {
+        this.stats = stats;
     }
 
     public Map<String, Object> getServiceStatus() {
