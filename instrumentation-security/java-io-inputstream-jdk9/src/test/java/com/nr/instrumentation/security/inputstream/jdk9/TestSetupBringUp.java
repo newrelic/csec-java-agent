@@ -10,7 +10,7 @@ public class TestSetupBringUp {
     public static void bringUp() {
         try {
             SecurityInstrumentationTestRunner.instrumentation.retransformClasses(InputStream.class,
-                    FileInputStream.class, ByteArrayInputStream.class, sun.nio.ch.ChannelInputStream.class);
+                    FileInputStream.class, ByteArrayInputStream.class);
         } catch (Throwable e) {
             e.printStackTrace();
         }
