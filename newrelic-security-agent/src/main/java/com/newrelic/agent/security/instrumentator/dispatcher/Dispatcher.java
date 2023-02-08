@@ -113,7 +113,7 @@ public class Dispatcher implements Runnable {
             }
 
             JavaAgentEventBean eventBean = prepareEvent(securityMetaData.getRequest(), securityMetaData.getMetaData(),
-                    operation.getCaseType());
+                    operation.getCaseType(), securityMetaData.getFuzzRequestIdentifier());
             setGenericProperties(operation, eventBean);
             switch (operation.getCaseType()) {
                 case REFLECTED_XSS:
@@ -560,13 +560,14 @@ public class Dispatcher implements Runnable {
     }
 
     private JavaAgentEventBean prepareEvent(HttpRequest httpRequestBean, AgentMetaData metaData,
-                                            VulnerabilityCaseType vulnerabilityCaseType) {
+                                            VulnerabilityCaseType vulnerabilityCaseType, K2RequestIdentifier k2RequestIdentifier) {
         JavaAgentEventBean eventBean = new JavaAgentEventBean();
         eventBean.setHttpRequest(httpRequestBean);
         eventBean.setMetaData(metaData);
         eventBean.setCaseType(vulnerabilityCaseType.getCaseType());
         eventBean.setIsAPIBlocked(metaData.isApiBlocked());
         eventBean.setStacktrace(operation.getStackTrace());
+        eventBean.setIASTRequest(k2RequestIdentifier.getK2Request());
         if (AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getEnabled() && AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getIastScan().getEnabled()) {
             eventBean.setIsIASTEnable(true);
         }

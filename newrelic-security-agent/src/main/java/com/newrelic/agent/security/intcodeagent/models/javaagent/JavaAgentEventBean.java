@@ -29,6 +29,8 @@ public class JavaAgentEventBean extends AgentBasicInfo {
 
     private boolean isAPIBlocked = false;
     private boolean isIASTEnable = false;
+
+    private boolean isIASTRequest = false;
     private String apiId;
     private DeployedApplication webappIdentifier;
 
@@ -285,4 +287,11 @@ public class JavaAgentEventBean extends AgentBasicInfo {
         this.webappIdentifier = webappIdentifier;
     }
 
+    public boolean isIASTRequest() {
+        return isIASTRequest;
+    }
+
+    public void setIASTRequest(boolean IASTRequest) {
+        isIASTRequest = IASTRequest;
+    }
 }
