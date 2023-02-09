@@ -7,8 +7,7 @@
 
 package javax.servlet.jsp;
 
-import com.newrelic.api.agent.security.NewRelicSecurity;
-import com.newrelic.api.agent.security.schema.SecurityMetaData;
+import com.newrelic.api.agent.security.instrumentation.helpers.ServletHelper;
 import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
@@ -20,21 +19,7 @@ import javax.servlet.http.HttpServletResponse;
 public class HttpJspPage {
 
     public void _jspService(HttpServletRequest request, HttpServletResponse response) {
-        preprocessSecurityHook();
+        ServletHelper.registerUserLevelCode();
         Weaver.callOriginal();
-    }
-
-    private void preprocessSecurityHook() {
-        try {
-            if (!NewRelicSecurity.isHookProcessingActive() || NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()
-            ) {
-                return;
-            }
-            SecurityMetaData securityMetaData = NewRelicSecurity.getAgent().getSecurityMetaData();
-            if (!securityMetaData.getMetaData().isUserLevelServiceMethodEncountered()) {
-                securityMetaData.getMetaData().setUserLevelServiceMethodEncountered(true);
-                securityMetaData.getMetaData().setServiceTrace(Thread.currentThread().getStackTrace());
-            }
-        } catch (Throwable ignored) {}
     }
 }
