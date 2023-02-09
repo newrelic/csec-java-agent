@@ -125,12 +125,12 @@ public class WSClient extends WebSocketClient {
         this.addHeader("NR-CSEC-APP-UUID", AgentInfo.getInstance().getApplicationUUID());
         this.addHeader("NR-CSEC-JSON-VERSION", AgentInfo.getInstance().getBuildInfo().getJsonVersion());
         this.addHeader("NR-ACCOUNT-ID", AgentConfig.getInstance().getConfig().getCustomerInfo().getAccountId());
-        try {
-            this.setSocketFactory(createSSLContext().getSocketFactory());
-        } catch (Exception e) {
-            logger.log(LogLevel.FATAL, String.format("Error creating socket factory message : %s , cause : %s", e.getMessage(), e.getCause()), WSClient.class.getName());
-            logger.log(LogLevel.DEBUG, "Error creating socket factory", e, WSClient.class.getName());
-        }
+//        try {
+//            this.setSocketFactory(createSSLContext().getSocketFactory());
+//        } catch (Exception e) {
+//            logger.log(LogLevel.FATAL, String.format("Error creating socket factory message : %s , cause : %s", e.getMessage(), e.getCause()), WSClient.class.getName());
+//            logger.log(LogLevel.DEBUG, "Error creating socket factory", e, WSClient.class.getName());
+//        }
     }
 
     /**
