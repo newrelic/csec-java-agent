@@ -27,6 +27,7 @@ include 'newrelic-security-agent'
 include 'instrumentation-security-test'
 include 'unittest-helper-agent'
 include 'newrelic-security-api-test-impl'
+include 'test-annotations'
 
 
 // Security Instrumentation modules
