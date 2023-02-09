@@ -5,7 +5,10 @@ import com.newrelic.agent.security.introspec.SecurityInstrumentationTestRunner;
 import com.newrelic.agent.security.introspec.SecurityIntrospector;
 import com.newrelic.api.agent.Trace;
 import com.newrelic.api.agent.security.schema.JDBCVendor;
+import org.hsqldb.DatabaseURL;
+import org.hsqldb.jdbc.JDBCConnection;
 import org.hsqldb.jdbcDriver;
+import org.hsqldb.persist.HsqlProperties;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -48,6 +51,16 @@ public class HSql229DriverTest {
     @Test
     public void testConnect2() throws SQLException {
         getConnection2();
+
+        SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
+        String vendor = introspector.getJDBCVendor();
+        Assert.assertEquals("Incorrect DB vendor", JDBCVendor.HSQLDB, vendor);
+
+    }
+
+    @Test
+    public void testConnect3() throws SQLException {
+        getConnection3();
 
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
         String vendor = introspector.getJDBCVendor();
@@ -108,5 +121,25 @@ public class HSql229DriverTest {
             }
         }
     }
+    @Trace(dispatcher = true)
+    private void getConnection3() throws SQLException {
+        Connection dbConnection = null;
 
+        try {
+            DriverManager.registerDriver(new jdbcDriver());
+            HsqlProperties info = new HsqlProperties();
+            info.setProperty("user", DB_USER);
+            info.setProperty("password", DB_PASSWORD);
+            info.setProperty("connection_type", DatabaseURL.S_MEM);
+            info.setProperty("database", "test");
+            dbConnection = new JDBCConnection(info);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        finally {
+            if (dbConnection!=null) {
+                dbConnection.close();
+            }
+        }
+    }
 }
