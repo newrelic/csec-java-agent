@@ -1,10 +1,10 @@
-package com.mongodb.operation;
+package com.mongodb;
 
-import com.mongodb.ReadPreference;
 import com.mongodb.bulk.DeleteRequest;
 import com.mongodb.bulk.InsertRequest;
 import com.mongodb.bulk.UpdateRequest;
-import com.mongodb.bulk.WriteRequest;
+import com.mongodb.operation.*;
+import com.mongodb.session.ClientSession;
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
@@ -18,12 +18,11 @@ import org.bson.BsonDocument;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Predicate;
 
-@Weave(type = MatchType.Interface, originalName = "com.mongodb.operation.OperationExecutor")
-public abstract class OperationExecutor_Instrumentation {
+@Weave(type = MatchType.Interface, originalName = "com.mongodb.OperationExecutor")
+abstract class OperationExecutor_Instrumentation {
 
-    private void registerExitOperation(boolean isProcessingAllowed, AbstractOperation operation) {
+    private void registerExitOperation(boolean isProcessingAllowed, com.newrelic.api.agent.security.schema.AbstractOperation operation) {
         try {
             if (operation == null || !isProcessingAllowed || !NewRelicSecurity.isHookProcessingActive() ||
                     NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty() || GenericHelper.skipExistsEvent()
@@ -50,7 +49,8 @@ public abstract class OperationExecutor_Instrumentation {
         return false;
     }
 
-    public <T> T execute(ReadOperation<T> operation, ReadPreference readPreference) {
+    public <T> T execute(ReadOperation<T> operation, ReadPreference readPreference, ClientSession session) {
+        System.out.println("operation instance : " + operation.getClass());
 
         AbstractOperation noSQLOperation = null;
         boolean isLockAcquired = acquireLockIfPossible(operation.hashCode());
@@ -70,6 +70,26 @@ public abstract class OperationExecutor_Instrumentation {
         return returnVal;
     }
 
+    public <T> T execute(ReadOperation<T> operation, ReadPreference readPreference) {
+        AbstractOperation noSQLOperation = null;
+        boolean isLockAcquired = acquireLockIfPossible(operation.hashCode());
+        if (isLockAcquired) {
+            noSQLOperation = MongoUtil.getReadAbstractOperation(operation, this.getClass().getName(), MongoUtil.METHOD_EXECUTE);
+        }
+        T returnVal = null;
+        try {
+            returnVal = Weaver.callOriginal();
+        } catch (Throwable ignored) {
+        } finally {
+            if (isLockAcquired) {
+                releaseLock(operation.hashCode());
+            }
+        }
+        registerExitOperation(isLockAcquired, noSQLOperation);
+        return returnVal;
+    }
+
+
     public <T> T execute(WriteOperation<T> operation) {
         AbstractOperation noSQLOperation = null;
         boolean isLockAcquired = acquireLockIfPossible(operation.hashCode());
@@ -77,7 +97,6 @@ public abstract class OperationExecutor_Instrumentation {
             if (isLockAcquired) {
                 noSQLOperation = MongoUtil.getWriteAbstractOperation(operation, this.getClass().getName(), MongoUtil.METHOD_EXECUTE);
             }
-//            System.out.println("operation x instance : " + this.getClass().getName() + " " + operation.getClass());
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -94,4 +113,29 @@ public abstract class OperationExecutor_Instrumentation {
         registerExitOperation(isLockAcquired, noSQLOperation);
         return returnVal;
     }
+
+    public <T> T execute(WriteOperation<T> operation, ClientSession session) {
+        AbstractOperation noSQLOperation = null;
+        boolean isLockAcquired = acquireLockIfPossible(operation.hashCode());
+        try {
+            if (isLockAcquired) {
+                noSQLOperation = MongoUtil.getWriteAbstractOperation(operation, this.getClass().getName(), MongoUtil.METHOD_EXECUTE);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        T returnVal = null;
+        try {
+            returnVal = Weaver.callOriginal();
+        } catch (Throwable ignored) {
+        } finally {
+            if (isLockAcquired) {
+                releaseLock(operation.hashCode());
+            }
+        }
+        registerExitOperation(isLockAcquired, noSQLOperation);
+        return returnVal;
+    }
+
 }

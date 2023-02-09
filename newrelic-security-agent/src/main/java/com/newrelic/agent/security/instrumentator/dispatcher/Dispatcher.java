@@ -139,7 +139,7 @@ public class Dispatcher implements Runnable {
                     NoSQLOperation noSQLOperationalBean = (NoSQLOperation) operation;
                     try {
                         eventBean = prepareNoSQLEvent(eventBean, noSQLOperationalBean);
-                    } catch (ParseException e) {
+                    } catch (Throwable e) {
                         return;
                     }
                     break;
@@ -440,7 +440,12 @@ public class Dispatcher implements Runnable {
         JSONArray params = new JSONArray();
         eventBean.setEventCategory(MONGO);
         JSONParser jsonParser = new JSONParser();
-        params.addAll((JSONArray) jsonParser.parse(noSQLOperationalBean.getData().toString()));
+        for (String data : noSQLOperationalBean.getPayload()) {
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put("payload", jsonParser.parse(data));
+            jsonObject.put("command", noSQLOperationalBean.getCommand());
+            params.add(jsonObject);
+        }
         eventBean.setParameters(params);
         return eventBean;
     }

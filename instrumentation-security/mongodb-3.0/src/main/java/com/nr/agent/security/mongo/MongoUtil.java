@@ -11,6 +11,7 @@ import com.mongodb.bulk.DeleteRequest;
 import com.mongodb.bulk.InsertRequest;
 import com.mongodb.bulk.UpdateRequest;
 import com.mongodb.bulk.WriteRequest;
+import com.mongodb.operation.*;
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
@@ -163,5 +164,108 @@ public class MongoUtil {
             }
         }
         return operation;
+    }
+
+    public static <T> AbstractOperation getReadAbstractOperation(ReadOperation<T> operation, String className, String methodName) {
+        List<BsonDocument> operations;
+        AbstractOperation noSQLOperation = null;
+        if (operation instanceof AggregateOperation) {
+            AggregateOperation aggregateOperation = (AggregateOperation) operation;
+            noSQLOperation = recordMongoOperation(aggregateOperation.getPipeline(), MongoUtil.OP_AGGREGATE, className, methodName);
+        } else if (operation instanceof CountOperation) {
+            CountOperation countOperation = (CountOperation) operation;
+            noSQLOperation = recordMongoOperation(countOperation.getFilter(), MongoUtil.OP_COUNT, className, methodName);
+        } else if (operation instanceof DistinctOperation) {
+            DistinctOperation distinctOperation = (DistinctOperation) operation;
+            noSQLOperation = recordMongoOperation(distinctOperation.getFilter(), MongoUtil.OP_DISTINCT, className, methodName);
+        } else if (operation instanceof FindOperation) {
+            FindOperation findOperation = (FindOperation) operation;
+            noSQLOperation = recordMongoOperation(findOperation.getFilter(), MongoUtil.OP_FIND, className, methodName);
+        } else if (operation instanceof GroupOperation) {
+            GroupOperation groupOperation = (GroupOperation) operation;
+            operations = new ArrayList<>();
+            operations.add(groupOperation.getFilter());
+            operations.add(groupOperation.getReduceFunction().asDocument());
+            noSQLOperation = recordMongoOperation(operations, MongoUtil.OP_FIND, className, methodName);
+        } else if (operation instanceof ListCollectionsOperation) {
+            ListCollectionsOperation listCollectionsOperation = (ListCollectionsOperation) operation;
+            noSQLOperation = recordMongoOperation(listCollectionsOperation.getFilter(), MongoUtil.OP_READ, className, methodName);
+        } else if (operation instanceof MapReduceWithInlineResultsOperation) {
+            MapReduceWithInlineResultsOperation mapReduceWithInlineResultsOperation = (MapReduceWithInlineResultsOperation) operation;
+            operations = new ArrayList<>();
+            operations.add(mapReduceWithInlineResultsOperation.getFilter());
+            operations.add(mapReduceWithInlineResultsOperation.getSort());
+            operations.add(mapReduceWithInlineResultsOperation.getMapFunction().asDocument());
+            operations.add(mapReduceWithInlineResultsOperation.getReduceFunction().asDocument());
+            noSQLOperation = recordMongoOperation(operations, MongoUtil.OP_MAP_REDUCE, className, methodName);
+        }
+        return noSQLOperation;
+    }
+
+    public static <T> AbstractOperation getWriteAbstractOperation(WriteOperation<T> operation, String className, String methodName) {
+        List<BsonDocument> operations;
+        AbstractOperation noSQLOperation = null;
+        if (operation instanceof AggregateToCollectionOperation) {
+            AggregateToCollectionOperation aggregateToCollectionOperation = (AggregateToCollectionOperation) operation;
+            noSQLOperation = recordMongoOperation(aggregateToCollectionOperation.getPipeline(), MongoUtil.OP_WRITE, className, methodName);
+        } else if (operation instanceof DeleteOperation) {
+            DeleteOperation deleteOperation = (DeleteOperation) operation;
+            operations = new ArrayList<>();
+            for (DeleteRequest deleteRequest : deleteOperation.getDeleteRequests()) {
+                operations.add(deleteRequest.getFilter());
+            }
+            noSQLOperation = recordMongoOperation(operations, MongoUtil.OP_DELETE, className, methodName);
+        } else if (operation instanceof FindAndDeleteOperation) {
+            FindAndDeleteOperation findAndDeleteOperation = (FindAndDeleteOperation) operation;
+            operations = new ArrayList<>();
+            operations.add(findAndDeleteOperation.getFilter());
+            operations.add(findAndDeleteOperation.getProjection());
+            operations.add(findAndDeleteOperation.getSort());
+            noSQLOperation = recordMongoOperation(operations, MongoUtil.OP_FIND_AND_DELETE, className, methodName);
+        } else if (operation instanceof FindAndReplaceOperation) {
+            FindAndReplaceOperation findAndReplaceOperation = (FindAndReplaceOperation) operation;
+            operations = new ArrayList<>();
+            operations.add(findAndReplaceOperation.getFilter());
+            operations.add(findAndReplaceOperation.getProjection());
+            operations.add(findAndReplaceOperation.getSort());
+            operations.add(findAndReplaceOperation.getReplacement());
+            noSQLOperation = recordMongoOperation(operations, MongoUtil.OP_FIND_AND_REPLACE, className, methodName);
+        } else if (operation instanceof FindAndUpdateOperation) {
+            FindAndUpdateOperation findAndUpdateOperation = (FindAndUpdateOperation) operation;
+            operations = new ArrayList<>();
+            operations.add(findAndUpdateOperation.getFilter());
+            operations.add(findAndUpdateOperation.getProjection());
+            operations.add(findAndUpdateOperation.getSort());
+            operations.add(findAndUpdateOperation.getUpdate());
+            noSQLOperation = recordMongoOperation(operations, MongoUtil.OP_FIND_AND_UPDATE, className, methodName);
+        } else if (operation instanceof InsertOperation) {
+            System.out.println("inside insert");
+            InsertOperation insertOperation = (InsertOperation) operation;
+            operations = new ArrayList<>();
+            for (InsertRequest insertRequest : insertOperation.getInsertRequests()) {
+                operations.add(insertRequest.getDocument());
+            }
+            System.out.println("inside insert : " + operations);
+            noSQLOperation = recordMongoOperation(operations, MongoUtil.OP_INSERT, className, methodName);
+        } else if (operation instanceof MapReduceToCollectionOperation) {
+            MapReduceToCollectionOperation mapReduceToCollectionOperation = (MapReduceToCollectionOperation) operation;
+            operations = new ArrayList<>();
+            operations.add(mapReduceToCollectionOperation.getFilter());
+            operations.add(mapReduceToCollectionOperation.getMapFunction().asDocument());
+            operations.add(mapReduceToCollectionOperation.getReduceFunction().asDocument());
+            noSQLOperation = recordMongoOperation(operations, MongoUtil.OP_MAP_REDUCE, className, methodName);
+        } else if (operation instanceof UpdateOperation) {
+            UpdateOperation updateOperation = (UpdateOperation) operation;
+            operations = new ArrayList<>();
+            for (UpdateRequest updateRequest : updateOperation.getUpdateRequests()) {
+                operations.add(updateRequest.getUpdate());
+                operations.add(updateRequest.getFilter());
+            }
+            noSQLOperation = recordMongoOperation(operations, MongoUtil.OP_UPDATE, className, methodName);
+        } else if (operation instanceof MixedBulkWriteOperation) {
+            MixedBulkWriteOperation mixedBulkWriteOperation = (MixedBulkWriteOperation) operation;
+            noSQLOperation = MongoUtil.recordWriteRequest(mixedBulkWriteOperation.getWriteRequests(), className, methodName);
+        }
+        return noSQLOperation;
     }
 }
