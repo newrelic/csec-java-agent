@@ -81,7 +81,6 @@ public class HealthCheckScheduleThread {
                     AgentUtils.getInstance().getStatusLogMostRecentHCs().add(AgentInfo.getInstance().getJaHealthCheck().toString());
 //						channel.write(ByteBuffer.wrap(new JAHealthCheck(AgentNew.JA_HEALTH_CHECK).toString().getBytes()));
                     if (WSClient.getInstance().isOpen()) {
-                        InBoundOutBoundST.getInstance().task(InBoundOutBoundST.getInstance().getNewConnections(), false);
                         WSClient.getInstance().send(JsonConverter.toJSON(new JAHealthCheck(AgentInfo.getInstance().getJaHealthCheck())));
                         AgentInfo.getInstance().getJaHealthCheck().setEventDropCount(0);
                         AgentInfo.getInstance().getJaHealthCheck().setEventProcessed(0);
@@ -97,7 +96,6 @@ public class HealthCheckScheduleThread {
                     logger.log(LogLevel.WARN, "Error while trying to verify connection: ", e,
                             HealthCheckScheduleThread.class.getName());
                 } finally {
-                    InBoundOutBoundST.getInstance().clearNewConnections();
                     writeStatusLogFile();
                 }
             }
@@ -112,8 +110,6 @@ public class HealthCheckScheduleThread {
             }
         });
         future = hcScheduledService.scheduleAtFixedRate(runnable, 1, 5, TimeUnit.MINUTES);
-        HttpConnectionStat httpConnectionStat = new HttpConnectionStat(Collections.emptyList(), AgentInfo.getInstance().getApplicationUUID(), false);
-        InBoundOutBoundST.getInstance().clearNewConnections();
     }
 
     public boolean cancelTask(boolean forceCancel) {
