@@ -406,7 +406,9 @@ public class Dispatcher implements Runnable {
         for (SQLOperation operationalBean : operationalList) {
             JSONObject query = new JSONObject();
             query.put(QUERY, operationalBean.getQuery());
-            query.put(PARAMETERS, new JSONObject(operationalBean.getParams()));
+            if(operationalBean.getParams() != null) {
+                query.put(PARAMETERS, new JSONObject(operationalBean.getParams()));
+            }
             params.add(query);
         }
         eventBean.setParameters(params);
