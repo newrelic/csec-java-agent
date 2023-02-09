@@ -19,3 +19,10 @@ java {
         languageVersion.set(JavaLanguageVersion.of(11))
     }
 }
+
+test {
+//     These instrumentation tests only run on Java 8 regardless of the -PtestN gradle property that is set.
+    onlyIf {
+        inputs.getProperties()["test.jdk"]!="jdk8"
+    }
+}

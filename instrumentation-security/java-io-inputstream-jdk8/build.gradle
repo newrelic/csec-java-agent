@@ -13,3 +13,10 @@ jar {
 verifyInstrumentation {
     verifyClasspath = false // We don't want to verify classpath since these are JDK classes
 }
+
+test {
+    // These instrumentation tests only run on Java 8 regardless of the -PtestN gradle property that is set.
+    onlyIf {
+        inputs.getProperties()["test.jdk"]=="jdk8"
+    }
+}
