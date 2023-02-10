@@ -10,7 +10,6 @@ import com.newrelic.agent.security.intcodeagent.utils.CommonUtils;
 import com.newrelic.agent.security.util.IUtilConstants;
 import com.newrelic.api.agent.NewRelic;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.net.DefaultSocketFactory;
 import org.java_websocket.WebSocket;
 import org.java_websocket.WebSocketImpl;
 import org.java_websocket.client.WebSocketClient;
@@ -18,12 +17,15 @@ import org.java_websocket.framing.CloseFrame;
 import org.java_websocket.framing.Framedata;
 import org.java_websocket.handshake.ServerHandshake;
 
-import javax.net.SocketFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManagerFactory;
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.security.KeyManagementException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
@@ -98,14 +100,11 @@ public class WSClient extends WebSocketClient {
         return sslContext;
     }
 
-    private InputStream getCaBundleStream() throws FileNotFoundException {
-        String caBundlePath = System.getenv().getOrDefault("NR_CSEC_CA_BUNDLE_PATH", StringUtils.EMPTY);
+    private InputStream getCaBundleStream() throws IOException {
         InputStream inputStream;
-        if(StringUtils.isNotEmpty(caBundlePath)){
-            inputStream = new FileInputStream(caBundlePath);
-        } else if(StringUtils.isNotBlank(NewRelic.getAgent().getConfig().getValue(IUtilConstants.NR_SECURITY_CA_BUNDLE_PATH))){
-            caBundlePath = NewRelic.getAgent().getConfig().getValue(IUtilConstants.NR_SECURITY_CA_BUNDLE_PATH);
-            inputStream = new FileInputStream(caBundlePath);
+        String caBundlePath = NewRelic.getAgent().getConfig().getValue(IUtilConstants.NR_SECURITY_CA_BUNDLE_PATH);
+        if (StringUtils.isNotBlank(caBundlePath)) {
+            inputStream = Files.newInputStream(Paths.get(caBundlePath));
         } else {
             inputStream = CommonUtils.getResourceStreamFromAgentJar("nr-custom-ca.pem");
         }
@@ -125,12 +124,14 @@ public class WSClient extends WebSocketClient {
         this.addHeader("NR-CSEC-APP-UUID", AgentInfo.getInstance().getApplicationUUID());
         this.addHeader("NR-CSEC-JSON-VERSION", AgentInfo.getInstance().getBuildInfo().getJsonVersion());
         this.addHeader("NR-ACCOUNT-ID", AgentConfig.getInstance().getConfig().getCustomerInfo().getAccountId());
-//        try {
-//            this.setSocketFactory(createSSLContext().getSocketFactory());
-//        } catch (Exception e) {
-//            logger.log(LogLevel.FATAL, String.format("Error creating socket factory message : %s , cause : %s", e.getMessage(), e.getCause()), WSClient.class.getName());
-//            logger.log(LogLevel.DEBUG, "Error creating socket factory", e, WSClient.class.getName());
-//        }
+        if (StringUtils.startsWithIgnoreCase(AgentConfig.getInstance().getConfig().getK2ServiceInfo().getValidatorServiceEndpointURL(), "wss:")) {
+            try {
+                this.setSocketFactory(createSSLContext().getSocketFactory());
+            } catch (Exception e) {
+                logger.log(LogLevel.FATAL, String.format("Error creating socket factory message : %s , cause : %s", e.getMessage(), e.getCause()), WSClient.class.getName());
+                logger.log(LogLevel.DEBUG, "Error creating socket factory", e, WSClient.class.getName());
+            }
+        }
     }
 
     /**

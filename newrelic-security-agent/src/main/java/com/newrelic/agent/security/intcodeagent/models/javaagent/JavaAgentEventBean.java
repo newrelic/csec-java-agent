@@ -287,11 +287,11 @@ public class JavaAgentEventBean extends AgentBasicInfo {
         this.webappIdentifier = webappIdentifier;
     }
 
-    public boolean isIASTRequest() {
+    public boolean getIsIASTRequest() {
         return isIASTRequest;
     }
 
-    public void setIASTRequest(boolean IASTRequest) {
-        isIASTRequest = IASTRequest;
+    public void setIsIASTRequest(boolean isIASTRequest) {
+        this.isIASTRequest = isIASTRequest;
     }
 }
