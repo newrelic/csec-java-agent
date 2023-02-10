@@ -6,6 +6,8 @@
  */
 package com.nr.instrumentation.security.mysql602;
 
+import com.mysql.cj.core.ConnectionString;
+import com.mysql.cj.jdbc.ConnectionImpl;
 import com.newrelic.agent.security.introspec.InstrumentationTestConfig;
 import com.newrelic.agent.security.introspec.SecurityInstrumentationTestRunner;
 import com.newrelic.agent.security.introspec.SecurityIntrospector;
@@ -93,6 +95,15 @@ public class MySql602DriverTest {
         Assert.assertEquals("Incorrect DB vendor", JDBCVendor.MYSQL, vendor);
     }
 
+    @Test
+    public void testConnect3() throws SQLException {
+        getConnection3();
+
+        SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
+        String vendor = introspector.getJDBCVendor();
+        Assert.assertEquals("Incorrect DB vendor", JDBCVendor.MYSQL, vendor);
+    }
+
     @Trace(dispatcher = true)
     private void getConnection() throws SQLException {
         Connection dbConnection = null;
@@ -137,6 +148,23 @@ public class MySql602DriverTest {
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
             dbConnection = DriverManager.getConnection(DB_CONNECTION);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        finally {
+            if (dbConnection!=null) {
+                dbConnection.close();
+            }
+        }
+    }
+
+    @Trace(dispatcher = true)
+    private void getConnection3() throws SQLException {
+        Connection dbConnection = null;
+
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            dbConnection = ConnectionImpl.getInstance(new ConnectionString(DB_CONNECTION, new Properties()), "localhost", mysqld.getConfig().getPort(), new Properties());
         } catch (Exception e) {
             e.printStackTrace();
         }
