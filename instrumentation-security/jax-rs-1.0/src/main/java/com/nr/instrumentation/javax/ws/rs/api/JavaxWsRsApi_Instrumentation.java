@@ -19,6 +19,6 @@ public class JavaxWsRsApi_Instrumentation {
             "javax.ws.rs.DELETE", "javax.ws.rs.HEAD", "javax.ws.rs.OPTIONS", "javax.ws.rs.PATCH"})
     @WeaveIntoAllMethods
     public static void preprocessSecurityHook() {
-        ServletHelper.registerUserLevelCode();
+        ServletHelper.registerUserLevelCode("jax-rs");
     }
 }

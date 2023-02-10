@@ -34,6 +34,6 @@ public class JakartaWsRsApi_Subresource_Instrumentation {
             "jakarta.ws.rs.PATCH"})
     @WeaveIntoAllMethods
     public static void preprocessSecurityHook() {
-        ServletHelper.registerUserLevelCode();
+        ServletHelper.registerUserLevelCode("jax-rs");
     }
 }

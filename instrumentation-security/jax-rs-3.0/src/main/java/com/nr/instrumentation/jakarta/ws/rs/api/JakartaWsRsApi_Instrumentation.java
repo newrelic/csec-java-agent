@@ -19,6 +19,6 @@ public class JakartaWsRsApi_Instrumentation {
             "jakarta.ws.rs.DELETE", "jakarta.ws.rs.HEAD", "jakarta.ws.rs.OPTIONS", "jakarta.ws.rs.PATCH"})
     @WeaveIntoAllMethods
     public static void preprocessSecurityHook() {
-        ServletHelper.registerUserLevelCode();
+        ServletHelper.registerUserLevelCode("jax-rs");
     }
 }

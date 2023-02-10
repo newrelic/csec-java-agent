@@ -27,7 +27,7 @@ public class SpringController_Instrumentation {
             "org.springframework.web.bind.annotation.DeleteMapping"})
     @WeaveIntoAllMethods
     private static void requestMapping() {
-        ServletHelper.registerUserLevelCode();
+        ServletHelper.registerUserLevelCode("spring-annotation");
     }
 
 }

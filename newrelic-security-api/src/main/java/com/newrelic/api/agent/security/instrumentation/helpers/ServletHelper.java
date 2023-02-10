@@ -60,14 +60,14 @@ public class ServletHelper {
         return k2RequestIdentifierInstance;
     }
 
-    public static void registerUserLevelCode() {
+    public static void registerUserLevelCode(String frameworkName) {
         try {
             if (!NewRelicSecurity.isHookProcessingActive() || NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()
             ) {
                 return;
             }
             SecurityMetaData securityMetaData = NewRelicSecurity.getAgent().getSecurityMetaData();
-            if (!securityMetaData.getMetaData().isUserLevelServiceMethodEncountered()) {
+            if (!securityMetaData.getMetaData().isUserLevelServiceMethodEncountered(frameworkName)) {
                 securityMetaData.getMetaData().setUserLevelServiceMethodEncountered(true);
                 StackTraceElement[] trace = Thread.currentThread().getStackTrace();
                 securityMetaData.getMetaData().setServiceTrace(Arrays.copyOfRange(trace, 1, trace.length));

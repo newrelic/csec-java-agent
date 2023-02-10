@@ -10,7 +10,7 @@ import com.newrelic.api.agent.weaver.WeaveWithAnnotation;
 public class WebServlet_Instrumentation {
     @WeaveIntoAllMethods
     private static void preprocessSecurityHook() {
-        ServletHelper.registerUserLevelCode();
+        ServletHelper.registerUserLevelCode("servlet-annotation");
     }
 
 }
