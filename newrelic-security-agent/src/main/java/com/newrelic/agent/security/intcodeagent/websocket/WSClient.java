@@ -87,7 +87,9 @@ public class WSClient extends WebSocketClient {
             if (caCert != null) {
                 String alias = "nr_csec_ca_bundle_" + i;
                 keystore.setCertificateEntry(alias, caCert);
-                logger.log(LogLevel.DEBUG, String.format("Installed certificate %s at alias: %s", i, alias), WSClient.class.getName());
+                logger.log(LogLevel.DEBUG, String.format("Installed CA certificate %s(serial %s) for subjects : %s - %s",
+                        alias, caCert.getSerialNumber(), caCert.getSubjectDN().getName(),
+                        caCert.getSubjectAlternativeNames()), WSClient.class.getName());
             }
             i++;
         }
