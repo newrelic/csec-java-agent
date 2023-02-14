@@ -451,7 +451,7 @@ public class Hooks {
         // LDAP Unbounded Lib
         DECORATOR_ENTRY.put("com.unboundid.ldap.sdk.LDAPInterface.search",
                 "com.k2cybersecurity.instrumentator.decorators.ldaplibs");
-        // LDAP Unbounded Lib
+        // LDAP apache Lib
         DECORATOR_ENTRY.put("org.apache.directory.server.core.DefaultOperationManager.search",
                 "com.k2cybersecurity.instrumentator.decorators.ldaplibs");
         // LDAP ldaptive lib 2.x

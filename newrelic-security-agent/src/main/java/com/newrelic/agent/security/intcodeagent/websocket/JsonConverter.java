@@ -2,6 +2,7 @@ package com.newrelic.agent.security.intcodeagent.websocket;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.introspect.AnnotatedMember;
 import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
@@ -36,18 +37,19 @@ public class JsonConverter {
     private static String serializerSelection = System.getenv().getOrDefault("K2_JSON_SERIALIZER", "Jackson");
 
     static {
-        mapper = new ObjectMapper();
+        ObjectMapper objectMapper = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         SimpleModule module = new SimpleModule();
         module.addSerializer(StackTraceElement.class, new K2StackTraceSerializer());
-        mapper.registerModule(module);
+        objectMapper = objectMapper.registerModule(module);
 
-        mapper.setAnnotationIntrospector(new JacksonAnnotationIntrospector() {
+        objectMapper = objectMapper.setAnnotationIntrospector(new JacksonAnnotationIntrospector() {
 
             @Override
             public boolean hasIgnoreMarker(AnnotatedMember m) {
                 return _findAnnotation(m, JsonIgnore.class) != null;
             }
         });
+        mapper = objectMapper;
     }
 
     public static String toJSON(Object obj) {
@@ -184,7 +186,11 @@ public class JsonConverter {
         return list;
     }
 
-//	public static void main(String[] args) {
+    public static ObjectMapper getObjectMapper() {
+        return mapper;
+    }
+
+    //	public static void main(String[] args) {
 //
 //		String[] arr = new String[] {"as", "vd"};
 //

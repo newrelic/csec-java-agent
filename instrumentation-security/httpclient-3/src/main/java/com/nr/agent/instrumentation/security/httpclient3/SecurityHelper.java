@@ -5,6 +5,9 @@ public class SecurityHelper {
     public static final String METHOD_NAME_EXECUTE = "execute";
     public static final String NULL_STRING = "null";
 
+    public static final String NR_SEC_CUSTOM_ATTRIB_NAME = "SSRF_OPERATION_LOCK_APACHE_COMMONS-";
+
+
     public static String getURI(String scheme, String host, int port, String path) {
         StringBuilder sb = new StringBuilder();
         if (scheme != null) {

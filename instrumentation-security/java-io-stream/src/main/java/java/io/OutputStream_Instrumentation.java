@@ -71,7 +71,7 @@ public abstract class OutputStream_Instrumentation {
             if (Boolean.TRUE.equals(outputStreamDataGatheringAllowed) && !currentCascadedCall && writeDataLength > -1) {
                 cascadedCall = true;
                 char[] data = new char[writeDataLength];
-                for (int i = offset, y = 0; i < writeDataLength; i++, y++) {
+                for (int i = offset, y = 0; i < offset + writeDataLength; i++, y++) {
                     data[y] = (char) dataBuffer[i];
                 }
 

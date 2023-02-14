@@ -5,7 +5,7 @@ if (shouldVerifyInstrumentation) {
     apply plugin: 'gradle-compatibility-site-plugin'
 
     verifyInstrumentation {
-        nrAgent = "com.newrelic.agent.java:newrelic-agent:7.11.0"
+        nrAgent = "com.newrelic.agent.java:newrelic-agent:${nrAgentVersion}"
         // this property is used by the verifier jenkins job to aggregate all the versions of frameworks that pass
         // so we can easily compare it with our public compatibility doc
         def passesFile = findProperty('passesFile') ?: null

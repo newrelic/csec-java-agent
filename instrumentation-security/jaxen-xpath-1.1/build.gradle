@@ -1,0 +1,23 @@
+
+
+dependencies {
+    implementation(project(":newrelic-security-api"))
+    implementation("com.newrelic.agent.java:newrelic-api:${nrAPIVersion}")
+    implementation("com.newrelic.agent.java:newrelic-weaver-api:${nrAPIVersion}")
+    implementation("jaxen:jaxen:1.1")
+}
+
+jar {
+    manifest { attributes 'Implementation-Title': 'com.newrelic.instrumentation.security.jaxen-xpath-1.1' }
+}
+
+verifyInstrumentation {
+    passesOnly 'jaxen:jaxen:1.1'
+    excludeRegex '.*-beta-[0-9]+'
+}
+
+
+site {
+    title 'XPATH'
+    type 'Messaging'
+}

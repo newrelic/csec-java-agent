@@ -64,6 +64,7 @@ task relocatedShadowJar(type: ShadowJar) {
             "META-INF/maven/**",
             // Multiple dependencies
             "LICENSE",
+            "LICENSE.txt",
             // log4j2
             "META-INF/versions/9/module-info.class",
             "META-INF/services/org.apache.logging*",
@@ -159,8 +160,6 @@ tasks.withType(GenerateModuleMetadata.class) {
 tasks.withType(Javadoc).configureEach {
     javadocTool = javaToolchains.javadocToolFor {
         languageVersion = JavaLanguageVersion.of(11)
-        vendor = JvmVendorSpec.ADOPTOPENJDK
-        implementation = JvmImplementation.VENDOR_SPECIFIC
     }
 
     options.addBooleanOption("-frames", true)

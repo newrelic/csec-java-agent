@@ -7,9 +7,9 @@
 
 package jakarta.servlet.jsp;
 
-import com.newrelic.api.agent.security.NewRelicSecurity;
-import com.newrelic.api.agent.security.schema.SecurityMetaData;
+import com.newrelic.api.agent.security.instrumentation.helpers.ServletHelper;
 import com.newrelic.api.agent.weaver.MatchType;
+import com.newrelic.api.agent.weaver.NewField;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
 import jakarta.servlet.http.HttpServletRequest;
@@ -17,23 +17,11 @@ import jakarta.servlet.http.HttpServletResponse;
 
 @Weave(type = MatchType.Interface)
 public class HttpJspPage {
+    @NewField
+    private String LIBRARY_NAME = "jsp";
 
     public void _jspService(HttpServletRequest request, HttpServletResponse response) {
-        preprocessSecurityHook();
+        ServletHelper.registerUserLevelCode(LIBRARY_NAME);
         Weaver.callOriginal();
-    }
-
-    private void preprocessSecurityHook() {
-        try {
-            if (!NewRelicSecurity.isHookProcessingActive() || NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()
-            ) {
-                return;
-            }
-            SecurityMetaData securityMetaData = NewRelicSecurity.getAgent().getSecurityMetaData();
-            if (!securityMetaData.getMetaData().isUserLevelServiceMethodEncountered()) {
-                securityMetaData.getMetaData().setUserLevelServiceMethodEncountered(true);
-                securityMetaData.getMetaData().setServiceTrace(Thread.currentThread().getStackTrace());
-            }
-        } catch (Throwable ignored) {}
     }
 }

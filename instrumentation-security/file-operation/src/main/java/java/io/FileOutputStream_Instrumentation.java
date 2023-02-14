@@ -56,6 +56,7 @@ public abstract class FileOutputStream_Instrumentation {
             ) {
                 return;
             }
+            FileHelper.checkEntryOfFileIntegrity(((FileOperation)operation).getFileName());
             NewRelicSecurity.getAgent().registerExitEvent(operation);
         } catch (Throwable ignored){}
     }

@@ -1,0 +1,23 @@
+
+
+dependencies {
+    implementation(project(":newrelic-security-api"))
+    implementation("com.newrelic.agent.java:newrelic-api:${nrAPIVersion}")
+    implementation("com.newrelic.agent.java:newrelic-weaver-api:${nrAPIVersion}")
+    implementation("org.graalvm.js:js:22.0.0")
+}
+
+jar {
+    manifest { attributes 'Implementation-Title': 'com.newrelic.instrumentation.security.graalvm-jsinjection-22.0.0' }
+}
+
+verifyInstrumentation {
+    passesOnly 'org.graalvm.js:js:[22.0.0,)'
+//    excludeRegex '.*-rc[0-9]+'
+}
+
+
+site {
+    title 'JSInjection'
+    type 'Messaging'
+}

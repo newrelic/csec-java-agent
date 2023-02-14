@@ -17,9 +17,10 @@ public class IntCodeControlCommand {
     public static final int STARTUP_WELCOME_MSG = 10;
 
     public static final int FUZZ_REQUEST = 11;
-
+    public static final int RECONNECT_AT_WILL = 12;
     public static final int SEND_POLICY = 100;
     public static final int SEND_POLICY_PARAMETERS = 101;
+    public static final int POLICY_UPDATE_FAILED_DUE_TO_VALIDATION_ERROR = 102;
 
     private String jsonName;
     private int controlCommand;

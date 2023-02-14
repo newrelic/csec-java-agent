@@ -1,0 +1,23 @@
+
+
+dependencies {
+    implementation(project(":newrelic-security-api"))
+    implementation("com.newrelic.agent.java:newrelic-api:${nrAPIVersion}")
+    implementation("com.newrelic.agent.java:newrelic-weaver-api:${nrAPIVersion}")
+    implementation("org.ldaptive:ldaptive:1.0")
+}
+
+jar {
+    manifest { attributes 'Implementation-Title': 'com.newrelic.instrumentation.security.ldaptive-1.0' }
+}
+
+verifyInstrumentation {
+    passesOnly 'org.ldaptive:ldaptive:[,2.0.0)'
+    excludeRegex '.*-RC[0-9]+'
+}
+
+
+site {
+    title 'LDAP'
+    type 'Messaging'
+}

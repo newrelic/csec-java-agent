@@ -30,7 +30,7 @@ public class WSReconnectionST {
                 logger.log(LogLevel.DEBUG, ERROR_WHILE_WS_RECONNECTION, e, WSClient.class.getName());
                 logger.postLogMessageIfNecessary(LogLevel.ERROR, ERROR_WHILE_WS_RECONNECTION + e.getMessage() + COLON_SEPARATOR + e.getCause(), e, WSClient.class.getName());
             } finally {
-                if (!WSClient.isConnected()) {
+                if (!WSUtils.isConnected()) {
                     futureTask = scheduledService.schedule(runnable, 30, TimeUnit.SECONDS);
                 }
             }
@@ -96,6 +96,7 @@ public class WSReconnectionST {
         if (instance != null) {
             instance.shutDownThreadPoolExecutor();
         }
+        instance = null;
     }
 
     /**

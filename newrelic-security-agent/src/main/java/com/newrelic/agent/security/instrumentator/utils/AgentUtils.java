@@ -8,7 +8,9 @@ import com.newrelic.agent.security.intcodeagent.logging.IAgentConstants;
 import com.newrelic.agent.security.intcodeagent.models.config.AgentPolicyParameters;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.CollectorInitMsg;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.EventResponse;
-import com.newrelic.agent.security.intcodeagent.schedulers.PolicyPullST;
+import com.newrelic.agent.security.intcodeagent.websocket.EventSendPool;
+import com.newrelic.agent.security.intcodeagent.websocket.JsonConverter;
+import com.newrelic.agent.security.intcodeagent.websocket.WSClient;
 import com.newrelic.api.agent.NewRelic;
 import com.newrelic.api.agent.security.schema.policy.AgentPolicy;
 import com.sun.jna.Pointer;
@@ -64,6 +66,11 @@ public class AgentUtils {
     public static final String COLLECTOR_IS_NOW_S = "Collector is now %s for %s";
     public static final String ACTIVE = "active";
     public static final String INACTIVE = "inactive";
+    public static final String OVERRIDDEN = "overridden";
+    public static final String NR_POLICY_OVER_RIDE_IN_PLACE_UPDATED_POLICY_S = "NR policy over-ride in place. Updated policy : %s";
+    public static final String POLICY_VERSION = "policy-version";
+    public static final String ERROR_WHILE_SENDING_UPDATED_POLICY_TO_REMOTE = "Error while sending updated policy to remote";
+    public static final String ERROR_WHILE_SENDING_UPDATED_POLICY_TO_REMOTE_S_S = "Error while sending updated policy to remote : %s : %s";
 
     private Map<String, ClassLoader> classLoaderRecord;
 
@@ -90,6 +97,8 @@ public class AgentUtils {
 //	private Map<Integer, JADatabaseMetaData> sqlConnectionMap;
 
     private AgentPolicy agentPolicy = new AgentPolicy();
+
+    private AgentPolicy defaultAgentPolicy = new AgentPolicy();
 
     private AgentPolicyParameters agentPolicyParameters = new AgentPolicyParameters();
 
@@ -196,6 +205,14 @@ public class AgentUtils {
 
     public void setStatusLogMostRecentErrors(Collection<String> statusLogMostRecentErrors) {
         this.statusLogMostRecentErrors = statusLogMostRecentErrors;
+    }
+
+    public AgentPolicy getDefaultAgentPolicy() {
+        return defaultAgentPolicy;
+    }
+
+    public void setDefaultAgentPolicy(AgentPolicy defaultAgentPolicy) {
+        this.defaultAgentPolicy = defaultAgentPolicy;
     }
 
     public void addProtectedVulnerabilties(String className) {
@@ -351,12 +368,46 @@ public class AgentUtils {
         this.agentPolicy = agentPolicy;
     }
 
-    public void enforcePolicy() {
-        logger.log(LogLevel.INFO, ENFORCING_POLICY, AgentUtils.class.getName());
-        if (agentPolicy.getPolicyPull() && agentPolicy.getPolicyPullInterval() > 0) {
-            PolicyPullST.getInstance().submitNewTask();
-        } else {
-            PolicyPullST.getInstance().cancelTask(true);
+    public boolean applyPolicyOverrideIfApplicable() {
+        AgentUtils.getInstance().applyNRPolicyOverride();
+        if (AgentUtils.getInstance().isPolicyOverridden()) {
+            AgentUtils.getInstance().getAgentPolicy().setVersion(OVERRIDDEN);
+            logger.log(LogLevel.INFO, String.format(NR_POLICY_OVER_RIDE_IN_PLACE_UPDATED_POLICY_S,
+                    JsonConverter.toJSON(AgentUtils.getInstance().getAgentPolicy())), AgentUtils.class.getName());
+            try {
+                WSClient.getInstance().send(JsonConverter.toJSON(AgentUtils.getInstance().getAgentPolicy()));
+                AgentUtils.getInstance().getStatusLogValues().put(POLICY_VERSION, AgentUtils.getInstance().getAgentPolicy().getVersion());
+                EventSendPool.getInstance().sendEvent(AgentInfo.getInstance().getApplicationInfo());
+                return true;
+            } catch (Throwable e) {
+                logger.log(LogLevel.ERROR, String.format(ERROR_WHILE_SENDING_UPDATED_POLICY_TO_REMOTE_S_S, e.getMessage(), e.getCause()), AgentUtils.class.getName());
+                logger.log(LogLevel.DEBUG, ERROR_WHILE_SENDING_UPDATED_POLICY_TO_REMOTE, e, AgentUtils.class.getName());
+            }
+        }
+        return false;
+    }
+
+    /**
+     * On startup, Instantiating collector policy with default values.
+     */
+    public static void instantiateDefaultPolicy() {
+        logger.log(LogLevel.INFO, "Instantiating collector policy with default!!!", AgentUtils.class.getName());
+        applyPolicy(AgentUtils.getInstance().getDefaultAgentPolicy());
+    }
+
+    public static boolean applyPolicy(AgentPolicy newPolicy) {
+        try {
+            AgentUtils.getInstance().setAgentPolicy(newPolicy);
+            AgentInfo.getInstance().getApplicationInfo().setPolicyVersion(AgentUtils.getInstance().getAgentPolicy().getVersion());
+            logger.logInit(LogLevel.INFO, String.format(IAgentConstants.AGENT_POLICY_APPLIED_S,
+                    JsonConverter.toJSON(AgentUtils.getInstance().getAgentPolicy())), AgentUtils.class.getName());
+            AgentUtils.getInstance().getStatusLogValues().put(POLICY_VERSION, AgentUtils.getInstance().getAgentPolicy().getVersion());
+            EventSendPool.getInstance().sendEvent(AgentInfo.getInstance().getApplicationInfo());
+            return true;
+        } catch (Throwable e) {
+            logger.logInit(LogLevel.ERROR, IAgentConstants.UNABLE_TO_SET_AGENT_POLICY_DUE_TO_ERROR, e,
+                    AgentUtils.class.getName());
+            return false;
         }
     }
 
@@ -364,7 +415,7 @@ public class AgentUtils {
         return !scannedDeployedApplications.containsAll(AgentInfo.getInstance().getApplicationInfo().getServerInfo().getDeployedApplications());
     }
 
-    public static String stackTraceElementToString(StackTraceElement element){
+    public static String stackTraceElementToString(StackTraceElement element) {
         StringBuilder builder = new StringBuilder(element.getClassName());
         builder.append(".");
         builder.append(element.getMethodName());
@@ -493,7 +544,7 @@ public class AgentUtils {
         TODO: in long term we shall look into alternate approaches to set these over-rides
                 since the current one is an exhaustive book-keeping.
      */
-    public void applyNRPolicyOverride() {
+    private void applyNRPolicyOverride() {
         boolean override = false;
         if (!NewRelic.getAgent().getConfig().getValue(INRSettingsKey.SECURITY_POLICY_ENFORCE, false)) {
             logger.log(LogLevel.DEBUG, String.format(OVER_RIDE_POLICY_DISABLED_IN_NR_CONFIG_AT_S, INRSettingsKey.SECURITY_POLICY_ENFORCE), AgentUtils.class.getName());

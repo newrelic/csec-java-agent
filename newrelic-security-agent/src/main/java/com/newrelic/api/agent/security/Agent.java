@@ -1,5 +1,6 @@
 package com.newrelic.api.agent.security;
 
+import com.fasterxml.jackson.dataformat.javaprop.JavaPropsMapper;
 import com.newrelic.agent.security.AgentConfig;
 import com.newrelic.agent.security.AgentInfo;
 import com.newrelic.agent.security.instrumentator.dispatcher.DispatcherPool;
@@ -11,11 +12,12 @@ import com.newrelic.agent.security.intcodeagent.filelogging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.logging.HealthCheckScheduleThread;
 import com.newrelic.agent.security.intcodeagent.logging.IAgentConstants;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.ExitEventBean;
-import com.newrelic.agent.security.intcodeagent.schedulers.GlobalPolicyParameterPullST;
-import com.newrelic.agent.security.intcodeagent.schedulers.PolicyPullST;
+import com.newrelic.agent.security.intcodeagent.properties.BuildInfo;
+import com.newrelic.agent.security.intcodeagent.utils.CommonUtils;
 import com.newrelic.agent.security.intcodeagent.websocket.EventSendPool;
-import com.newrelic.agent.security.intcodeagent.websocket.JsonConverter;
 import com.newrelic.agent.security.intcodeagent.websocket.WSClient;
+import com.newrelic.agent.security.intcodeagent.websocket.WSReconnectionST;
+import com.newrelic.agent.security.intcodeagent.websocket.WSUtils;
 import com.newrelic.api.agent.NewRelic;
 import com.newrelic.api.agent.Transaction;
 import com.newrelic.api.agent.security.schema.*;
@@ -42,6 +44,8 @@ public class Agent implements SecurityAgent {
     public static final String EVENT_RESPONSE_TIMEOUT_FOR = "Event response timeout for : ";
     public static final String ERROR_WHILE_BLOCKING_FOR_RESPONSE = "Error while blocking for response: ";
     public static final String ERROR = "Error: ";
+    public static final String CRITICAL_ERROR_UNABLE_TO_READ_BUILD_INFO_AND_VERSION_S_S = "CSEC Critical error. Unable to read buildInfo and version: {1} : {2}";
+    public static final String CRITICAL_ERROR_UNABLE_TO_READ_BUILD_INFO_AND_VERSION = "CSEC Critical error. Unable to read buildInfo and version: ";
 
     private static AtomicBoolean firstEventProcessed = new AtomicBoolean(false);
 
@@ -101,6 +105,14 @@ public class Agent implements SecurityAgent {
         config.instantiate();
         config.setConfig(CollectorConfigurationUtils.populateCollectorConfig());
 
+        try {
+            info.setBuildInfo(readCollectorBuildInfo());
+            logger.log(LogLevel.INFO, String.format("CSEC Collector build info : %s", new JavaPropsMapper().writeValueAsProperties(info.getBuildInfo())), this.getClass().getName());
+        } catch (IOException e) {
+            // TODO: Need to confirm requirement of this throw.
+            throw new RuntimeException("Unable to read CSEC Collector build info", e);
+        }
+
         info.setIdentifier(ApplicationInfoUtils.envDetection());
         ApplicationInfoUtils.continueIdentifierProcessing(info.getIdentifier(), config.getConfig());
         info.generateAppInfo(config.getConfig());
@@ -121,7 +133,20 @@ public class Agent implements SecurityAgent {
         populateLinkingMetadata();
         info.agentStatTrigger();
 
-        System.out.printf("This application instance is now being protected by K2 Agent under id %s\n", info.getApplicationUUID());
+        System.out.printf("This application instance is now being protected by New Relic Security under id %s\n", info.getApplicationUUID());
+    }
+
+    private BuildInfo readCollectorBuildInfo() {
+        BuildInfo buildInfo = new BuildInfo();
+        try {
+            JavaPropsMapper mapper = new JavaPropsMapper();
+            buildInfo = mapper.
+                    readValue(CommonUtils.getResourceStreamFromAgentJar("Agent.properties"), BuildInfo.class);
+        } catch (Throwable e) {
+            logger.log(LogLevel.ERROR, String.format(CRITICAL_ERROR_UNABLE_TO_READ_BUILD_INFO_AND_VERSION_S_S, e.getMessage(), e.getCause()), this.getClass().getName());
+            logger.log(LogLevel.DEBUG, CRITICAL_ERROR_UNABLE_TO_READ_BUILD_INFO_AND_VERSION, e, this.getClass().getName());
+        }
+        return buildInfo;
     }
 
     private void populateLinkingMetadata() {
@@ -131,7 +156,6 @@ public class Agent implements SecurityAgent {
     }
 
     private void startK2Services() {
-        PolicyPullST.getInstance();
         HealthCheckScheduleThread.getInstance();
         logger.logInit(
                 LogLevel.INFO,
@@ -155,7 +179,7 @@ public class Agent implements SecurityAgent {
             WSClient.getInstance().openConnection();
             while (retries > 0) {
                 try {
-                    if (!WSClient.isConnected()) {
+                    if (!WSUtils.isConnected()) {
                         retries--;
                         int timeout = (NUMBER_OF_RETRIES - retries);
                         logger.logInit(LogLevel.INFO, String.format("WS client connection failed will retry after %s minute(s)", timeout), Agent.class.getName());
@@ -172,7 +196,7 @@ public class Agent implements SecurityAgent {
 
                 }
             }
-            if (!WSClient.isConnected()) {
+            if (!WSUtils.isConnected()) {
                 throw new RuntimeException("Websocket not connected!!!");
             }
         } catch (Exception e){
@@ -201,8 +225,7 @@ public class Agent implements SecurityAgent {
          * policy
          * HealthCheck
          */
-        PolicyPullST.getInstance().cancelTask(true);
-        GlobalPolicyParameterPullST.getInstance().cancelTask(true);
+        WSClient.shutDownWSClient();
         HealthCheckScheduleThread.getInstance().cancelTask(true);
 
     }
@@ -224,15 +247,17 @@ public class Agent implements SecurityAgent {
          * 3. event pool
          * 4. HealthCheck
          **/
-        PolicyPullST.shutDownPool();
-        GlobalPolicyParameterPullST.shutDownPool();
         HealthCheckScheduleThread.shutDownPool();
         WSClient.shutDownWSClient();
+        WSReconnectionST.shutDownPool();
         EventSendPool.shutDownPool();
     }
 
     @Override
     public void registerOperation(AbstractOperation operation) {
+        if (operation == null || operation.isEmpty()) {
+            return;
+        }
         String executionId = ExecutionIDGenerator.getExecutionId();
         operation.setExecutionId(executionId);
         operation.setStartTime(Instant.now().toEpochMilli());
@@ -258,8 +283,6 @@ public class Agent implements SecurityAgent {
 //            blockForResponse(operation.getExecutionId());
 //        }
 //        checkIfClientIPBlocked();
-        System.out.println("Operation : " + JsonConverter.toJSON(operation));
-        System.out.println("SEC_META : " + JsonConverter.toJSON(securityMetaData));
     }
 
     private static boolean needToGenerateEvent(String apiID) {
@@ -344,7 +367,6 @@ public class Agent implements SecurityAgent {
                 ExitEventBean exitEventBean = new ExitEventBean(operation.getExecutionId(), operation.getCaseType().getCaseType());
                 exitEventBean.setK2RequestIdentifier(k2RequestIdentifier.getRaw());
                 logger.log(LogLevel.DEBUG, "Exit event : " + exitEventBean, this.getClass().getName());
-                System.out.println("Exit event : " + exitEventBean);
                 DispatcherPool.getInstance().dispatchExitEvent(exitEventBean);
                 AgentInfo.getInstance().getJaHealthCheck().incrementExitEventSentCount();
             }
@@ -378,9 +400,9 @@ public class Agent implements SecurityAgent {
                 }
             }
         } catch (Throwable e) {
-            e.printStackTrace();
+//            e.printStackTrace();
         }
-        return null;
+        return new SecurityMetaData();
     }
 
     @Override

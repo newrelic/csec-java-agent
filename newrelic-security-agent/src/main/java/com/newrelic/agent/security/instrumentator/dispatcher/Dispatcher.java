@@ -113,7 +113,7 @@ public class Dispatcher implements Runnable {
             }
 
             JavaAgentEventBean eventBean = prepareEvent(securityMetaData.getRequest(), securityMetaData.getMetaData(),
-                    operation.getCaseType());
+                    operation.getCaseType(), securityMetaData.getFuzzRequestIdentifier());
             setGenericProperties(operation, eventBean);
             switch (operation.getCaseType()) {
                 case REFLECTED_XSS:
@@ -139,7 +139,7 @@ public class Dispatcher implements Runnable {
                     NoSQLOperation noSQLOperationalBean = (NoSQLOperation) operation;
                     try {
                         eventBean = prepareNoSQLEvent(eventBean, noSQLOperationalBean);
-                    } catch (ParseException e) {
+                    } catch (Throwable e) {
                         return;
                     }
                     break;
@@ -236,8 +236,7 @@ public class Dispatcher implements Runnable {
             return;
         }
         Set<String> xssConstructs = CallbackUtils.checkForReflectedXSS(securityMetaData.getRequest(), securityMetaData.getResponse());
-        if (AgentInfo.getInstance().getApplicationInfo().getServerInfo().getDeployedApplications().isEmpty() ||
-                (!xssConstructs.isEmpty() && !actuallyEmpty(xssConstructs) && StringUtils.isNotBlank(securityMetaData.getResponse().getResponseBody())) ||
+        if ((!xssConstructs.isEmpty() && !actuallyEmpty(xssConstructs) && StringUtils.isNotBlank(securityMetaData.getResponse().getResponseBody())) ||
                 (AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getEnabled()
                         && AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getIastScan().getEnabled())) {
             JSONArray params = new JSONArray();
@@ -250,7 +249,6 @@ public class Dispatcher implements Runnable {
             eventBean.setStartTime(operation.getStartTime());
             eventBean.setBlockingProcessingTime(
                     (Long) extraInfo.get(BLOCKING_END_TIME) - eventBean.getStartTime());
-
 
             eventBean.setApiId(operation.getApiID());
             EventSendPool.getInstance().sendEvent(eventBean);
@@ -408,7 +406,9 @@ public class Dispatcher implements Runnable {
         for (SQLOperation operationalBean : operationalList) {
             JSONObject query = new JSONObject();
             query.put(QUERY, operationalBean.getQuery());
-            query.put(PARAMETERS, new JSONObject(operationalBean.getParams()));
+            if(operationalBean.getParams() != null) {
+                query.put(PARAMETERS, new JSONObject(operationalBean.getParams()));
+            }
             params.add(query);
         }
         eventBean.setParameters(params);
@@ -440,7 +440,12 @@ public class Dispatcher implements Runnable {
         JSONArray params = new JSONArray();
         eventBean.setEventCategory(MONGO);
         JSONParser jsonParser = new JSONParser();
-        params.addAll((JSONArray) jsonParser.parse(noSQLOperationalBean.getData().toString()));
+        for (String data : noSQLOperationalBean.getPayload()) {
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put("payload", jsonParser.parse(data));
+            jsonObject.put("command", noSQLOperationalBean.getCommand());
+            params.add(jsonObject);
+        }
         eventBean.setParameters(params);
         return eventBean;
     }
@@ -562,13 +567,14 @@ public class Dispatcher implements Runnable {
     }
 
     private JavaAgentEventBean prepareEvent(HttpRequest httpRequestBean, AgentMetaData metaData,
-                                            VulnerabilityCaseType vulnerabilityCaseType) {
+                                            VulnerabilityCaseType vulnerabilityCaseType, K2RequestIdentifier k2RequestIdentifier) {
         JavaAgentEventBean eventBean = new JavaAgentEventBean();
         eventBean.setHttpRequest(httpRequestBean);
         eventBean.setMetaData(metaData);
         eventBean.setCaseType(vulnerabilityCaseType.getCaseType());
         eventBean.setIsAPIBlocked(metaData.isApiBlocked());
         eventBean.setStacktrace(operation.getStackTrace());
+        eventBean.setIsIASTRequest(k2RequestIdentifier.getK2Request());
         if (AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getEnabled() && AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getIastScan().getEnabled()) {
             eventBean.setIsIASTEnable(true);
         }

@@ -2,14 +2,13 @@ package com.newrelic.agent.security.intcodeagent.websocket;
 
 import com.newrelic.agent.security.AgentConfig;
 import com.newrelic.agent.security.AgentInfo;
-import com.newrelic.agent.security.instrumentator.utils.AgentUtils;
-import com.newrelic.agent.security.instrumentator.utils.InstrumentationUtils;
 import com.newrelic.agent.security.intcodeagent.controlcommand.ControlCommandProcessor;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.newrelic.agent.security.intcodeagent.filelogging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.logging.IAgentConstants;
-import com.newrelic.agent.security.intcodeagent.properties.K2JAVersionInfo;
 import com.newrelic.agent.security.intcodeagent.utils.CommonUtils;
+import com.newrelic.agent.security.util.IUtilConstants;
+import com.newrelic.api.agent.NewRelic;
 import org.apache.commons.lang3.StringUtils;
 import org.java_websocket.WebSocket;
 import org.java_websocket.WebSocketImpl;
@@ -18,10 +17,27 @@ import org.java_websocket.framing.CloseFrame;
 import org.java_websocket.framing.Framedata;
 import org.java_websocket.handshake.ServerHandshake;
 
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManagerFactory;
+import java.io.BufferedInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.security.KeyManagementException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
 import java.time.Instant;
 import java.time.ZoneId;
+import java.util.Collection;
+import java.util.LinkedList;
+import java.util.concurrent.TimeUnit;
 
 public class WSClient extends WebSocketClient {
 
@@ -36,27 +52,88 @@ public class WSClient extends WebSocketClient {
     public static final String REASON = " Reason: ";
     public static final String UNABLE_TO_PROCESS_INCOMING_MESSAGE = "Unable to process incoming message : ";
     public static final String DUE_TO_ERROR = " : due to error : ";
-    public static final String RECONNECTING_TO_IC = "Reconnecting to IC";
+    public static final String RECONNECTING_TO_IC = "Reconnecting to validator";
     public static final String COLON_STRING = " : ";
+    public static final String RECEIVED_PING_AT_S_SENDING_PONG = "received ping  at %s sending pong";
 
     private static WSClient instance;
 
     private WebSocketImpl connection = null;
 
-    private boolean isConnected = false;
+
+    private SSLContext createSSLContext() throws KeyStoreException, CertificateException, IOException, NoSuchAlgorithmException, KeyManagementException {
+        KeyStore keystore = KeyStore.getInstance(KeyStore.getDefaultType());
+        Collection<X509Certificate> caCerts = new LinkedList<>();
+        try (InputStream is = new BufferedInputStream(getCaBundleStream())) {
+            CertificateFactory cf = CertificateFactory.getInstance("X.509");
+            while (is.available() > 0) {
+                try {
+                    caCerts.add((X509Certificate) cf.generateCertificate(is));
+                } catch (Exception e) {
+                    logger.log(LogLevel.FATAL,
+                            "Unable to generate ca certificate. Verify the certificate format. Will not process further certs.", e, WSClient.class.getName());
+                    break;
+                }
+            }
+        }
+
+        logger.log(caCerts.size() > 0 ? LogLevel.INFO : LogLevel.FATAL,
+                String.format("Found %s certificates.", caCerts.size()), WSClient.class.getName());
+        // Initialize the keystore
+        keystore.load(null, null);
+
+        int i = 1;
+        for (X509Certificate caCert : caCerts) {
+            if (caCert != null) {
+                String alias = "nr_csec_ca_bundle_" + i;
+                keystore.setCertificateEntry(alias, caCert);
+                logger.log(LogLevel.DEBUG, String.format("Installed CA certificate %s(serial %s) for subjects : %s - %s",
+                        alias, caCert.getSerialNumber(), caCert.getSubjectDN().getName(),
+                        caCert.getSubjectAlternativeNames()), WSClient.class.getName());
+            }
+            i++;
+        }
+        TrustManagerFactory trustManagerFactory = TrustManagerFactory
+                .getInstance(TrustManagerFactory.getDefaultAlgorithm());
+        trustManagerFactory.init(keystore);
+
+        SSLContext sslContext = SSLContext.getInstance("TLS");
+        sslContext.init(null, trustManagerFactory.getTrustManagers(), null);
+        return sslContext;
+    }
+
+    private InputStream getCaBundleStream() throws IOException {
+        InputStream inputStream;
+        String caBundlePath = NewRelic.getAgent().getConfig().getValue(IUtilConstants.NR_SECURITY_CA_BUNDLE_PATH);
+        if (StringUtils.isNotBlank(caBundlePath)) {
+            inputStream = Files.newInputStream(Paths.get(caBundlePath));
+        } else {
+            inputStream = CommonUtils.getResourceStreamFromAgentJar("nr-custom-ca.pem");
+        }
+        return inputStream;
+    }
 
     private WSClient() throws URISyntaxException {
         super(new URI(AgentConfig.getInstance().getConfig().getK2ServiceInfo().getValidatorServiceEndpointURL()));
         this.setTcpNoDelay(true);
         this.setConnectionLostTimeout(30);
-        this.addHeader("K2-CONNECTION-TYPE", "LANGUAGE_COLLECTOR");
-        this.addHeader("K2-API-ACCESSOR", AgentConfig.getInstance().getConfig().getCustomerInfo().getApiAccessorToken());
-        this.addHeader("K2-VERSION", K2JAVersionInfo.collectorVersion);
-        this.addHeader("K2-COLLECTOR-TYPE", "JAVA");
-        this.addHeader("K2-BUILD-NUMBER", K2JAVersionInfo.buildNumber);
-        this.addHeader("K2-GROUP", AgentConfig.getInstance().getGroupName());
-        this.addHeader("K2-APPLICATION-UUID", AgentInfo.getInstance().getApplicationUUID());
-        this.addHeader("K2-JSON-VERSION", K2JAVersionInfo.jsonVersion);
+        this.addHeader("NR-CSEC-CONNECTION-TYPE", "LANGUAGE_COLLECTOR");
+        this.addHeader("NR-AGENT-RUN-TOKEN", AgentConfig.getInstance().getConfig().getCustomerInfo().getApiAccessorToken());
+        this.addHeader("NR-CSEC-VERSION", AgentInfo.getInstance().getBuildInfo().getCollectorVersion());
+        this.addHeader("NR-CSEC-COLLECTOR-TYPE", "JAVA");
+        this.addHeader("NR-CSEC-BUILD-NUMBER", AgentInfo.getInstance().getBuildInfo().getBuildNumber());
+        this.addHeader("NR-CSEC-MODE", AgentConfig.getInstance().getGroupName());
+        this.addHeader("NR-CSEC-APP-UUID", AgentInfo.getInstance().getApplicationUUID());
+        this.addHeader("NR-CSEC-JSON-VERSION", AgentInfo.getInstance().getBuildInfo().getJsonVersion());
+        this.addHeader("NR-ACCOUNT-ID", AgentConfig.getInstance().getConfig().getCustomerInfo().getAccountId());
+        if (StringUtils.startsWithIgnoreCase(AgentConfig.getInstance().getConfig().getK2ServiceInfo().getValidatorServiceEndpointURL(), "wss:")) {
+            try {
+                this.setSocketFactory(createSSLContext().getSocketFactory());
+            } catch (Exception e) {
+                logger.log(LogLevel.FATAL, String.format("Error creating socket factory message : %s , cause : %s", e.getMessage(), e.getCause()), WSClient.class.getName());
+                logger.log(LogLevel.DEBUG, "Error creating socket factory", e, WSClient.class.getName());
+            }
+        }
     }
 
     /**
@@ -67,7 +144,7 @@ public class WSClient extends WebSocketClient {
     public void openConnection() throws InterruptedException {
         logger.logInit(LogLevel.INFO, String.format(IAgentConstants.INIT_WS_CONNECTION, AgentConfig.getInstance().getConfig().getK2ServiceInfo().getValidatorServiceEndpointURL()),
                 WSClient.class.getName());
-        connectBlocking();
+        connectBlocking(10, TimeUnit.SECONDS);
         WebSocket conn = getConnection();
         if (conn instanceof WebSocketImpl) {
             this.connection = (WebSocketImpl) conn;
@@ -76,18 +153,14 @@ public class WSClient extends WebSocketClient {
 
     @Override
     public void onOpen(ServerHandshake handshakedata) {
-        logger.logInit(LogLevel.INFO, String.format(IAgentConstants.WS_CONNECTION_SUCCESSFUL, this.getRemoteSocketAddress()) , WSClient.class.getName());
-//		logger.log(LogLevel.INFO, "Current WSock ready status : {0},{1},{2}",
-//				new Object[] { this.isOpen(), this.isClosing(), this.isClosed() });
-        logger.logInit(LogLevel.INFO, String.format(IAgentConstants.SENDING_APPLICATION_INFO_ON_WS_CONNECT, AgentInfo.getInstance().getApplicationInfo()) , WSClient.class.getName());
+        logger.logInit(LogLevel.INFO, String.format(IAgentConstants.WS_CONNECTION_SUCCESSFUL, this.getRemoteSocketAddress()), WSClient.class.getName());
+        logger.logInit(LogLevel.INFO, String.format(IAgentConstants.SENDING_APPLICATION_INFO_ON_WS_CONNECT, AgentInfo.getInstance().getApplicationInfo()), WSClient.class.getName());
         super.send(JsonConverter.toJSON(AgentInfo.getInstance().getApplicationInfo()));
-        CommonUtils.fireUpdatePolicyAPI(AgentUtils.getInstance().getAgentPolicy());
-//		Agent.allClassLoadersCount.set(0);
-//		Agent.jarPathSet.clear();
-//		logger.log(LogLevel.INFO, "Resetting allClassLoadersCount to " + Agent.allClassLoadersCount.get(),
-//				WSClient.class.getName());
-        setConnected(true);
-//        WSReconnectionST.cancelTask(false);
+        WSUtils.getInstance().setReconnecting(false);
+        synchronized (WSUtils.getInstance()) {
+            WSUtils.getInstance().notifyAll();
+        }
+        WSUtils.getInstance().setConnected(true);
         logger.logInit(LogLevel.INFO, String.format(IAgentConstants.APPLICATION_INFO_SENT_ON_WS_CONNECT, AgentInfo.getInstance().getApplicationInfo()), WSClient.class.getName());
     }
 
@@ -104,25 +177,25 @@ public class WSClient extends WebSocketClient {
 
     @Override
     public void onClose(int code, String reason, boolean remote) {
-        setConnected(false);
+        WSUtils.getInstance().setConnected(false);
         logger.log(LogLevel.WARN, CONNECTION_CLOSED_BY + (remote ? REMOTE_PEER : LOCAL) + CODE + code
                 + REASON + reason, WSClient.class.getName());
         if (code == CloseFrame.NEVER_CONNECTED) {
             return;
         }
 
-        if (code != CloseFrame.POLICY_VALIDATION) {
+        if (code != CloseFrame.POLICY_VALIDATION && code != CloseFrame.NORMAL) {
             WSReconnectionST.getInstance().submitNewTaskSchedule();
-        } else {
-            InstrumentationUtils.shutdownLogic(true);
         }
     }
 
     @Override
     public void onError(Exception ex) {
-//        logger.log(LogLevel.SEVERE, "Error in WSock connection : " + ex.getMessage() + " : " + ex.getCause(),
-//                WSClient.class.getName());
-        logger.logInit(LogLevel.FATAL, String.format(IAgentConstants.WS_CONNECTION_UNSUCCESSFUL, AgentConfig.getInstance().getConfig().getK2ServiceInfo().getValidatorServiceEndpointURL()),
+        logger.logInit(LogLevel.FATAL, String.format(IAgentConstants.WS_CONNECTION_UNSUCCESSFUL_INFO, AgentConfig
+                                .getInstance().getConfig().getK2ServiceInfo().getValidatorServiceEndpointURL(),
+                        ex.getMessage(), ex.getCause()),
+                WSClient.class.getName());
+        logger.logInit(LogLevel.DEBUG, String.format(IAgentConstants.WS_CONNECTION_UNSUCCESSFUL, AgentConfig.getInstance().getConfig().getK2ServiceInfo().getValidatorServiceEndpointURL()),
                 ex,
                 WSClient.class.getName());
     }
@@ -142,7 +215,7 @@ public class WSClient extends WebSocketClient {
 
     @Override
     public void onWebsocketPing(WebSocket conn, Framedata f) {
-        logger.log(LogLevel.DEBUG, String.format("received ping  at %s sending pong", Instant.now().atZone(ZoneId.of("UTC")).toLocalTime()), WSClient.class.getName());
+        logger.log(LogLevel.DEBUG, String.format(RECEIVED_PING_AT_S_SENDING_PONG, Instant.now().atZone(ZoneId.of("UTC")).toLocalTime()), WSClient.class.getName());
         if (connection != null) {
             connection.updateLastPong();
         }
@@ -188,15 +261,4 @@ public class WSClient extends WebSocketClient {
         instance = null;
     }
 
-    private void setConnected(boolean connected) {
-        isConnected = connected;
-        AgentInfo.getInstance().agentStatTrigger();
-    }
-
-    public static boolean isConnected() {
-        if (instance != null) {
-            return instance.isConnected;
-        }
-        return false;
-    }
 }

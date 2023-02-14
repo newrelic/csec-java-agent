@@ -31,6 +31,13 @@ public class EventSender implements Callable<Boolean> {
      */
     @Override
     public Boolean call() throws Exception {
+        if (WSUtils.getInstance().isReconnecting()) {
+            synchronized (WSUtils.getInstance()) {
+                EventSendPool.getInstance().isWaiting().set(true);
+                WSUtils.getInstance().wait();
+                EventSendPool.getInstance().isWaiting().set(false);
+            }
+        }
         if (event instanceof JavaAgentEventBean) {
             ((JavaAgentEventBean) event).setEventGenerationTime(System.currentTimeMillis());
         }

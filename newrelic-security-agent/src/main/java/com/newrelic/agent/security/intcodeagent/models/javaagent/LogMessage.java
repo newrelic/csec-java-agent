@@ -1,6 +1,7 @@
 package com.newrelic.agent.security.intcodeagent.models.javaagent;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.newrelic.agent.security.AgentInfo;
 import com.newrelic.agent.security.intcodeagent.websocket.JsonConverter;
 
 import java.time.Instant;
@@ -8,6 +9,10 @@ import java.util.Map;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class LogMessage {
+
+    private String jsonName = "log-message";
+
+    private String applicationUUID = AgentInfo.getInstance().getApplicationUUID();
 
     private Long timestamp;
 
@@ -53,6 +58,23 @@ public class LogMessage {
 
     public Map<String, String> getLinkingMetadata() {
         return linkingMetadata;
+    }
+
+
+    public String getJsonName() {
+        return jsonName;
+    }
+
+    public void setJsonName(String jsonName) {
+        this.jsonName = jsonName;
+    }
+
+    public String getApplicationUUID() {
+        return applicationUUID;
+    }
+
+    public void setApplicationUUID(String applicationUUID) {
+        this.applicationUUID = applicationUUID;
     }
 
     @Override

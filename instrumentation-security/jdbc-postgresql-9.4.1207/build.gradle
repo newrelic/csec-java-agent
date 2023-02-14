@@ -1,9 +1,9 @@
 dependencies {
     implementation(project(":newrelic-security-api"))
-    implementation("com.newrelic.agent.java:newrelic-api:7.11.0-SNAPSHOT")
-    implementation("com.newrelic.agent.java:newrelic-weaver-api:7.11.0-SNAPSHOT")
+    implementation("com.newrelic.agent.java:newrelic-api:${nrAPIVersion}")
+    implementation("com.newrelic.agent.java:newrelic-weaver-api:${nrAPIVersion}")
     implementation("org.postgresql:postgresql:9.4.1207")
-
+    testImplementation("org.testcontainers:postgresql:1.17.6")
 }
 
 jar {

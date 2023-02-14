@@ -1,8 +1,9 @@
 dependencies {
     implementation(project(":newrelic-security-api"))
-    implementation("com.newrelic.agent.java:newrelic-api:7.11.0-SNAPSHOT")
-    implementation("com.newrelic.agent.java:newrelic-weaver-api:7.11.0-SNAPSHOT")
+    implementation("com.newrelic.agent.java:newrelic-api:${nrAPIVersion}")
+    implementation("com.newrelic.agent.java:newrelic-weaver-api:${nrAPIVersion}")
     implementation("mysql:mysql-connector-java:6.0.2")
+    testImplementation("com.wix:wix-embedded-mysql:4.6.2")
 }
 
 jar {
@@ -10,7 +11,7 @@ jar {
 }
 
 verifyInstrumentation {
-    passesOnly 'mysql:mysql-connector-java:[6.0.2,8.0.0)'
+    passesOnly 'mysql:mysql-connector-java:[6.0.2,6.0.4)'
     // verifier fails on both 8.0.7-dmr and 8.0.7
     excludeRegex 'mysql:mysql-connector-java:8.*'
 }

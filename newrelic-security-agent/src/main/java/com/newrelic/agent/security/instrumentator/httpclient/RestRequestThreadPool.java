@@ -7,6 +7,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class RestRequestThreadPool {
@@ -27,6 +28,8 @@ public class RestRequestThreadPool {
     private final TimeUnit timeUnit = TimeUnit.SECONDS;
     private final boolean allowCoreThreadTimeOut = false;
     private static final Object mutex = new Object();
+
+    private static final AtomicBoolean isWaiting = new AtomicBoolean(false);
 
     private RestRequestThreadPool() {
         LinkedBlockingQueue<Runnable> processQueue;
@@ -96,4 +99,11 @@ public class RestRequestThreadPool {
         return this.executor.getQueue().size();
     }
 
+    public AtomicBoolean isWaiting() {
+        return isWaiting;
+    }
+
+    public ThreadPoolExecutor getExecutor() {
+        return executor;
+    }
 }

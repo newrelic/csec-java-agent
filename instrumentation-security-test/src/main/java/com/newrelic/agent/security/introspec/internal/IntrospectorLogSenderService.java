@@ -8,10 +8,10 @@
 package com.newrelic.agent.security.introspec.internal;
 
 import com.newrelic.agent.Agent;
+import com.newrelic.agent.bridge.logging.LogAttributeKey;
 import com.newrelic.agent.config.AgentConfig;
 import com.newrelic.agent.deps.com.google.common.collect.LinkedListMultimap;
 import com.newrelic.agent.deps.com.google.common.collect.ListMultimap;
-import com.newrelic.agent.deps.com.google.common.collect.Maps;
 import com.newrelic.agent.deps.com.google.common.collect.Multimaps;
 import com.newrelic.agent.logging.IAgentLogger;
 import com.newrelic.agent.model.AnalyticsEvent;
@@ -23,6 +23,7 @@ import com.newrelic.api.agent.Logs;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static com.newrelic.agent.model.LogEvent.LOG_EVENT_TYPE;
 
@@ -75,9 +76,10 @@ class IntrospectorLogSenderService implements LogSenderService {
     }
 
     @Override
-    public void recordLogEvent(Map<String, ?> attributes) {
+    public void recordLogEvent(Map<LogAttributeKey, ?> attributes) {
         if (AnalyticsEvent.isValidType(LOG_EVENT_TYPE)) {
-            Map<String, Object> atts = Maps.newHashMap(attributes);
+            Map<String, Object> atts = attributes.entrySet().stream()
+                    .collect(Collectors.toMap(entry -> entry.getKey().getPrefixedKey(), Map.Entry::getValue));
             LogEvent event = new LogEvent(atts, DistributedTraceServiceImpl.nextTruncatedFloat());
             storeEvent("TestApp", event);
         }

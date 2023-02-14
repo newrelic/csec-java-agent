@@ -30,29 +30,20 @@ subprojects {
 
     dependencies {
         testImplementation(project(":instrumentation-security-test"))
-        testImplementation("com.newrelic.agent.java:newrelic-api:7.11.0-SNAPSHOT")
+        testImplementation("com.newrelic.agent.java:newrelic-api:${nrAPIVersion}")
         testImplementation('com.fasterxml.jackson.core:jackson-databind:2.13.4')
-        implementation("com.newrelic.agent.java:newrelic-agent:7.11.0-SNAPSHOT")
     }
 
-//    test {
-//        // FIXME: these are all flaky on GHA so temporarily disabling
-//        // It is likely they can be fixed with test containers
-//        exclude '**/BasicRequestsTest.class'
-//        exclude '**/BlazeClientTest'
-//        exclude '**/CassandraTest.class'
-//        exclude '**/DefaultDynamoDbClient_InstrumentationTest.class'
-//        exclude '**/QuartzSystemTest.class'
-//        exclude '**/RabbitMQTest.class'
-//    }
+    test {
+        jvmArgs '-javaagent:' + project.getRootProject().project("unittest-helper-agent").buildDir.getPath() + "/libs/unittest-helper-agent-1.0.jar"
+    }
 }
 
-//
-//task test {
-//    dependsOn subprojects.collect {
-//        it.tasks.getByName 'test'
-//    }
-//}
+task test {
+    dependsOn subprojects.collect {
+        it.tasks.getByName 'test'
+    }
+}
 
 def isScalaProjectEnabled(Project project, String... scalaVersions) {
     return scalaVersions.any {scalaVersion -> project.hasProperty(scalaVersion) }  ? project.tasks.all { task -> task.enabled = true }  // Enable tasks if project property matching scala version is passed

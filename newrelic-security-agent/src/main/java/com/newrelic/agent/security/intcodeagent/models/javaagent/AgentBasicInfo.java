@@ -5,7 +5,6 @@ import com.newrelic.agent.security.AgentConfig;
 import com.newrelic.agent.security.AgentInfo;
 import com.newrelic.agent.security.instrumentator.utils.AgentUtils;
 import com.newrelic.agent.security.instrumentator.utils.INRSettingsKey;
-import com.newrelic.agent.security.intcodeagent.properties.K2JAVersionInfo;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.Map;
@@ -66,9 +65,9 @@ public class AgentBasicInfo {
      */
     public AgentBasicInfo() {
         setPolicyVersion(AgentUtils.getInstance().getAgentPolicy().getVersion());
-        setJsonVersion(K2JAVersionInfo.jsonVersion);
-        setCollectorVersion(K2JAVersionInfo.collectorVersion);
-        setBuildNumber(K2JAVersionInfo.buildNumber);
+        setJsonVersion(AgentInfo.getInstance().getBuildInfo().getJsonVersion());
+        setCollectorVersion(AgentInfo.getInstance().getBuildInfo().getCollectorVersion());
+        setBuildNumber(AgentInfo.getInstance().getBuildInfo().getBuildNumber());
         setGroupName(AgentConfig.getInstance().getGroupName());
         setNodeId(AgentInfo.getInstance().getLinkingMetadata().getOrDefault(INRSettingsKey.NR_ENTITY_GUID, StringUtils.EMPTY));
         setLinkingMetadata(AgentInfo.getInstance().getLinkingMetadata());

@@ -9,39 +9,39 @@ import java.util.List;
 public class NoSQLOperation extends AbstractOperation {
 
 
-    private List<Object> data = new ArrayList<>();
+    private List<String> payload = new ArrayList<>();
 
     private String nameSpace;
 
     private String collection;
     private String command;
 
-    public NoSQLOperation(List<Object> data, String command, String className, String methodName) {
+    public NoSQLOperation(List<String> payload, String command, String className, String methodName) {
         super(className, methodName);
         this.setCaseType(VulnerabilityCaseType.NOSQL_DB_COMMAND);
-        this.data.addAll(data);
+        this.payload.addAll(payload);
         this.command = command;
 
     }
 
-    public NoSQLOperation(Object data, String command, String className, String methodName) {
+    public NoSQLOperation(String payload, String command, String className, String methodName) {
         super(className, methodName);
         this.setCaseType(VulnerabilityCaseType.NOSQL_DB_COMMAND);
-        this.data.add(data);
+        this.payload.add(payload);
         this.command = command;
     }
 
     @Override
     public boolean isEmpty() {
-        return data.isEmpty();
+        return payload.isEmpty();
     }
 
-    public List<Object> getData() {
-        return data;
+    public List<String> getPayload() {
+        return payload;
     }
 
-    public void setData(List<Object> data) {
-        this.data = data;
+    public void setPayload(List<String> payload) {
+        this.payload = payload;
     }
 
     public String getNameSpace() {
