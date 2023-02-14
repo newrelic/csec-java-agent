@@ -17,7 +17,6 @@ import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
@@ -32,6 +31,7 @@ import java.util.List;
 public class URLConnectionTest {
 
     public String endpoint;
+
     @Rule
     public HttpServerRule server  = new HttpServerRule();
 
@@ -55,6 +55,20 @@ public class URLConnectionTest {
     }
 
     @Test
+    public void testConnect1() throws IOException {
+        callConnect1(endpoint);
+
+        SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
+        List<AbstractOperation> operations = introspector.getOperations();
+        Assert.assertTrue("No operations detected", operations.size() > 0);
+        SSRFOperation operation = (SSRFOperation) operations.get(0);
+        Assert.assertEquals("Invalid executed parameters.", operation.getArg(), endpoint);
+        Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.HTTP_REQUEST, operation.getCaseType());
+        Assert.assertEquals("Invalid executed class name.", sun.net.www.protocol.http.HttpURLConnection.class.getName(), operation.getClassName());
+        Assert.assertEquals("Invalid executed method name.", "connect", operation.getMethodName());
+    }
+
+    @Test
     public void testGetInputStream() throws IOException {
         callGetInputStream(endpoint);
 
@@ -65,6 +79,76 @@ public class URLConnectionTest {
         Assert.assertEquals("Invalid executed parameters.", operation.getArg(), endpoint);
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.HTTP_REQUEST, operation.getCaseType());
         Assert.assertEquals("Invalid executed class name.", "sun.net.www.protocol.http.HttpURLConnection", operation.getClassName());
+        Assert.assertEquals("Invalid executed method name.", "getInputStream", operation.getMethodName());
+    }
+
+    @Test
+    public void testGetInputStreamByGetContent() throws IOException {
+        callGetInputStreamByGetContent(endpoint);
+
+        SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
+        List<AbstractOperation> operations = introspector.getOperations();
+        Assert.assertTrue("No operations detected", operations.size() > 0);
+        SSRFOperation operation = (SSRFOperation) operations.get(0);
+        Assert.assertEquals("Invalid executed parameters.", operation.getArg(), endpoint);
+        Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.HTTP_REQUEST, operation.getCaseType());
+        Assert.assertEquals("Invalid executed class name.", sun.net.www.protocol.http.HttpURLConnection.class.getName(), operation.getClassName());
+        Assert.assertEquals("Invalid executed method name.", "getInputStream", operation.getMethodName());
+    }
+
+    @Test
+    public void testGetInputStreamByGetContent1() throws IOException {
+        callGetInputStreamByGetContent1(endpoint);
+
+        SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
+        List<AbstractOperation> operations = introspector.getOperations();
+        Assert.assertTrue("No operations detected", operations.size() > 0);
+        SSRFOperation operation = (SSRFOperation) operations.get(0);
+        Assert.assertEquals("Invalid executed parameters.", operation.getArg(), endpoint);
+        Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.HTTP_REQUEST, operation.getCaseType());
+        Assert.assertEquals("Invalid executed class name.", sun.net.www.protocol.http.HttpURLConnection.class.getName(), operation.getClassName());
+        Assert.assertEquals("Invalid executed method name.", "getInputStream", operation.getMethodName());
+    }
+
+    @Test
+    public void testGetInputStreamByOpenStream() throws IOException {
+        callGetInputStreamByOpenStream(endpoint);
+
+        SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
+        List<AbstractOperation> operations = introspector.getOperations();
+        Assert.assertTrue("No operations detected", operations.size() > 0);
+        SSRFOperation operation = (SSRFOperation) operations.get(0);
+        Assert.assertEquals("Invalid executed parameters.", operation.getArg(), endpoint);
+        Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.HTTP_REQUEST, operation.getCaseType());
+        Assert.assertEquals("Invalid executed class name.", sun.net.www.protocol.http.HttpURLConnection.class.getName(), operation.getClassName());
+        Assert.assertEquals("Invalid executed method name.", "getInputStream", operation.getMethodName());
+    }
+
+    @Test
+    public void testGetInputStreamByConGetContent() throws IOException {
+        callGetInputStreamByConGetContent(endpoint);
+
+        SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
+        List<AbstractOperation> operations = introspector.getOperations();
+        Assert.assertTrue("No operations detected", operations.size() > 0);
+        SSRFOperation operation = (SSRFOperation) operations.get(0);
+        Assert.assertEquals("Invalid executed parameters.", operation.getArg(), endpoint);
+        Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.HTTP_REQUEST, operation.getCaseType());
+        Assert.assertEquals("Invalid executed class name.", sun.net.www.protocol.http.HttpURLConnection.class.getName(), operation.getClassName());
+        Assert.assertEquals("Invalid executed method name.", "getInputStream", operation.getMethodName());
+    }
+
+    @Test
+    public void testGetInputStreamByConGetContent1() throws IOException {
+        callGetInputStreamByConGetContent1(endpoint);
+
+        SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
+        List<AbstractOperation> operations = introspector.getOperations();
+        Assert.assertTrue("No operations detected", operations.size() > 0);
+        SSRFOperation operation = (SSRFOperation) operations.get(0);
+        Assert.assertEquals("Invalid executed parameters.", operation.getArg(), endpoint);
+        Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.HTTP_REQUEST, operation.getCaseType());
+        Assert.assertEquals("Invalid executed class name.", sun.net.www.protocol.http.HttpURLConnection.class.getName(), operation.getClassName());
         Assert.assertEquals("Invalid executed method name.", "getInputStream", operation.getMethodName());
     }
 
@@ -83,17 +167,45 @@ public class URLConnectionTest {
     }
 
     @Trace(dispatcher = true)
-    public void callConnect(String endpoint) throws IOException {
+    private void callConnect(String endpoint) throws IOException {
         URL u = new URL(endpoint);
         HttpURLConnection conn = (HttpURLConnection) u.openConnection();
         conn.connect();
     }
 
     @Trace(dispatcher = true)
+    private void callConnect1(String endpoint) throws IOException {
+        new URL(endpoint).openConnection().connect();
+    }
+
+    @Trace(dispatcher = true)
+    private void callGetInputStreamByConGetContent(String endpoint) throws IOException {
+        new URL(endpoint).openConnection().getContent();
+    }
+
+    @Trace(dispatcher = true)
+    private void callGetInputStreamByConGetContent1(String endpoint) throws IOException {
+        new URL(endpoint).openConnection().getContent(new Class[]{String.class});
+    }
+
+    @Trace(dispatcher = true)
     private void callGetInputStream(String endpoint) throws IOException {
-        URL u = new URL(endpoint);
-        URLConnection conn = u.openConnection();
-        InputStream in = conn.getInputStream();
+        new URL(endpoint).openConnection().getInputStream();
+    }
+
+    @Trace(dispatcher = true)
+    private void callGetInputStreamByGetContent(String endpoint) throws IOException {
+        new URL(endpoint).getContent();
+    }
+
+    @Trace(dispatcher = true)
+    private void callGetInputStreamByGetContent1(String endpoint) throws IOException {
+        new URL(endpoint).getContent(new Class[]{String.class});
+    }
+
+    @Trace(dispatcher = true)
+    private void callGetInputStreamByOpenStream(String endpoint) throws IOException {
+        new URL(endpoint).openStream();
     }
 
     @Trace(dispatcher = true)
