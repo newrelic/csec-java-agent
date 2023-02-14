@@ -111,8 +111,7 @@ public class MySql8011DriverTest {
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
             dbConnection = DriverManager.getConnection(DB_CONNECTION, DB_USER, DB_PASSWORD);
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (Exception ignored) {
         }
         finally {
             if (dbConnection!=null) {
@@ -131,8 +130,7 @@ public class MySql8011DriverTest {
             info.put("password", DB_PASSWORD);
             Class.forName("com.mysql.cj.jdbc.Driver");
             dbConnection = DriverManager.getConnection(DB_CONNECTION, info);
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (Exception ignored) {
         }
         finally {
             if (dbConnection!=null) {
@@ -148,8 +146,7 @@ public class MySql8011DriverTest {
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
             dbConnection = DriverManager.getConnection(DB_CONNECTION);
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (Exception ignored) {
         }
         finally {
             if (dbConnection!=null) {
@@ -170,8 +167,7 @@ public class MySql8011DriverTest {
             info.put("user", DB_USER);
             info.put("password", DB_PASSWORD);
             dbConnection = ConnectionImpl.getInstance(new HostInfo(info));
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (Exception ignored) {
         }
         finally {
             if (dbConnection!=null) {
