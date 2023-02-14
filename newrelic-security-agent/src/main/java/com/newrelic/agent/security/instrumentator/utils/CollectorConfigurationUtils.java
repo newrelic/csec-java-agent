@@ -56,21 +56,27 @@ public class CollectorConfigurationUtils {
         String validatorServiceEndpointUrl = null;
         String apiAccessor = null;
         String hostName = null;
+        K2ServiceInfo serviceInfo = new K2ServiceInfo();
 
         // Loading validatorServiceEndpointUrl value
-        if(System.getenv().containsKey("K2_VALIDATOR_SERVICE_URL")){
+        if (System.getenv().containsKey("K2_VALIDATOR_SERVICE_URL")) {
             validatorServiceEndpointUrl = System.getenv().get("K2_VALIDATOR_SERVICE_URL");
-        } else if(NewRelic.getAgent().getConfig().getValue("security.validator_service_endpoint_url") != null) {
+        } else if (NewRelic.getAgent().getConfig().getValue("security.validator_service_endpoint_url") != null) {
             validatorServiceEndpointUrl = NewRelic.getAgent().getConfig().getValue("security.validator_service_endpoint_url");
+        }
+
+        if (StringUtils.isNotBlank(validatorServiceEndpointUrl)) {
+            serviceInfo.setValidatorServiceEndpointURL(validatorServiceEndpointUrl);
+            AgentUtils.getInstance().getStatusLogValues().put(VALIDATOR_URL, validatorServiceEndpointUrl);
         } else {
-            logger.log(LogLevel.ERROR, "Unable to find Validator service endpoint url. Please specify either env K2_VALIDATOR_SERVICE_URL or NR config key 'security.validator_service_endpoint_url'", CollectorConfigurationUtils.class.getName());
-            //TODO raise exception
+            AgentUtils.getInstance().getStatusLogValues().put(VALIDATOR_URL,
+                    collectorConfig.getK2ServiceInfo().getValidatorServiceEndpointURL());
         }
 
         // Loading apiAccessor value
-        if(System.getenv().containsKey("K2_API_ACCESSOR_TOKEN")){
+        if (System.getenv().containsKey("K2_API_ACCESSOR_TOKEN")) {
             apiAccessor = System.getenv().get("K2_API_ACCESSOR_TOKEN");
-        } else if(NewRelic.getAgent().getConfig().getValue("license_key") != null) {
+        } else if (NewRelic.getAgent().getConfig().getValue("license_key") != null) {
             apiAccessor = NewRelic.getAgent().getConfig().getValue("license_key");
         } else {
             logger.log(LogLevel.ERROR, "Unable to find api accessor key. Please specify either env K2_API_ACCESSOR_TOKEN or NR config key 'license_key'", CollectorConfigurationUtils.class.getName());
@@ -100,10 +106,7 @@ public class CollectorConfigurationUtils {
             collectorConfig.getCustomerInfo().setAccountId(accountId);
         }
 
-        K2ServiceInfo serviceInfo = new K2ServiceInfo();
-        serviceInfo.setValidatorServiceEndpointURL(validatorServiceEndpointUrl);
         collectorConfig.setK2ServiceInfo(serviceInfo);
-        AgentUtils.getInstance().getStatusLogValues().put(VALIDATOR_URL, validatorServiceEndpointUrl);
         return collectorConfig;
     }
 
