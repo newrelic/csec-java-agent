@@ -197,7 +197,7 @@ public class AbstractOperationTest {
         Assert.assertEquals("Invalid executed parameters.", query, operation.getFilter());
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.LDAP, operation.getCaseType());
         Assert.assertEquals("Invalid executed class name.", SearchOperation.class.getName(), operation.getClassName());
-        Assert.assertEquals("Invalid executed method name.", "configureRequest", operation.getMethodName());
+        Assert.assertEquals("Invalid executed method name.", "invoke", operation.getMethodName());
     }
 
     @Test
