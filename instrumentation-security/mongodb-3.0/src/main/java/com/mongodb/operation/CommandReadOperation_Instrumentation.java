@@ -2,9 +2,7 @@ package com.mongodb.operation;
 
 import com.mongodb.async.SingleResultCallback;
 import com.mongodb.binding.AsyncReadBinding;
-import com.mongodb.binding.AsyncWriteBinding;
 import com.mongodb.binding.ReadBinding;
-import com.mongodb.binding.WriteBinding;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
@@ -21,7 +19,7 @@ public class CommandReadOperation_Instrumentation<T> {
         AbstractOperation noSQLOperation = null;
         boolean isLockAcquired = MongoUtil.acquireLockIfPossible(this.hashCode());
         if (isLockAcquired) {
-            noSQLOperation = MongoUtil.recordMongoOperation(command, MongoUtil.OP_READ, MongoUtil.METHOD_EXECUTE, this.getClass().getName());
+            noSQLOperation = MongoUtil.recordMongoOperation(command, MongoUtil.OP_READ, this.getClass().getName(), MongoUtil.METHOD_EXECUTE);
         }
         T returnVal = null;
         try {
@@ -40,7 +38,7 @@ public class CommandReadOperation_Instrumentation<T> {
         AbstractOperation noSQLOperation = null;
         boolean isLockAcquired = MongoUtil.acquireLockIfPossible(this.hashCode());
         if (isLockAcquired) {
-            noSQLOperation = MongoUtil.recordMongoOperation(command, MongoUtil.OP_READ, MongoUtil.METHOD_EXECUTE, this.getClass().getName());
+            noSQLOperation = MongoUtil.recordMongoOperation(command, MongoUtil.OP_READ, this.getClass().getName(), MongoUtil.METHOD_EXECUTE);
         }
         try {
             Weaver.callOriginal();

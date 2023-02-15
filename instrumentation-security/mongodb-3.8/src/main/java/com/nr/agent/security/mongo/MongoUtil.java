@@ -69,7 +69,7 @@ public class MongoUtil {
     public static final String METHOD_EXECUTE = "execute";
     public static final String METHOD_EXECUTE_WRAPPED_COMMAND_PROTOCOL = "executeWrappedCommandProtocol";
 
-    public static AbstractOperation recordMongoOperation(BsonDocument command, String typeOfOperation, String methodName, String klassName) {
+    public static AbstractOperation recordMongoOperation(BsonDocument command, String typeOfOperation, String klassName, String methodName) {
         NoSQLOperation operation = null;
         try {
             if (NewRelicSecurity.isHookProcessingActive() &&
@@ -86,7 +86,7 @@ public class MongoUtil {
         return operation;
     }
 
-    public static AbstractOperation recordMongoOperation(List<BsonDocument> command, String typeOfOperation, String methodName, String klassName) {
+    public static AbstractOperation recordMongoOperation(List<BsonDocument> command, String typeOfOperation, String klassName, String methodName) {
         NoSQLOperation operation = null;
         try {
             if (NewRelicSecurity.isHookProcessingActive() &&
