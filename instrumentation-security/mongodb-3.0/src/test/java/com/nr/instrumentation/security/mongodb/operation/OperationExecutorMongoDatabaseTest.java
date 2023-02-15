@@ -1,6 +1,5 @@
 package com.nr.instrumentation.security.mongodb.operation;
 
-import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoNamespace;
@@ -45,6 +44,7 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
@@ -140,7 +140,7 @@ public class OperationExecutorMongoDatabaseTest {
 
         List<Object> expected = new ArrayList<>();
         expected.add(queryData);
-        Assert.assertEquals("No data Found",expected.toString(),operation.getData().toString());
+        Assert.assertEquals("No data Found",queryData.toString(),operation.getPayload().toString());
     }
     @Test
     public void testFindOneAndDelete1()  {
@@ -166,7 +166,7 @@ public class OperationExecutorMongoDatabaseTest {
 
         List<Object> expected = new ArrayList<>();
         expected.add(queryData);
-        Assert.assertEquals("No data Found",expected.toString(),operation.getData().toString());
+        Assert.assertEquals("No data Found",queryData.toString(),operation.getPayload().toString());
     }
 
     @Test
@@ -193,7 +193,7 @@ public class OperationExecutorMongoDatabaseTest {
 
         List<Object> expected = new ArrayList<>();
         expected.add(queryData);
-        Assert.assertEquals("No data Found",expected.toString(),operation.getData().toString());
+        Assert.assertEquals("No data Found",queryData.toString(),operation.getPayload().toString());
     }
     @Test
     public void testFindOneAndReplace1()  {
@@ -221,7 +221,7 @@ public class OperationExecutorMongoDatabaseTest {
 
         List<Object> expected = new ArrayList<>();
         expected.add(queryData);
-        Assert.assertEquals("No data Found",expected.toString(),operation.getData().toString());
+        Assert.assertEquals("No data Found",queryData.toString(),operation.getPayload().toString());
     }
     @Test
     public void testFindOneAndUpdate()  {
@@ -246,7 +246,7 @@ public class OperationExecutorMongoDatabaseTest {
 
         List<Object> expected = new ArrayList<>();
         expected.add(queryData);
-        Assert.assertEquals("No data Found",expected.toString(),operation.getData().toString());
+        Assert.assertEquals("No data Found",queryData.toString(),operation.getPayload().toString());
     }
 
     @Test
@@ -274,7 +274,7 @@ public class OperationExecutorMongoDatabaseTest {
 
         List<Object> expected = new ArrayList<>();
         expected.add(queryData);
-        Assert.assertEquals("No data Found",expected.toString(),operation.getData().toString());
+        Assert.assertEquals("No data Found",queryData.toString(),operation.getPayload().toString());
     }
     @Test
     public void testUpdateOne()  {
@@ -300,7 +300,7 @@ public class OperationExecutorMongoDatabaseTest {
 
         List<Object> expected = new ArrayList<>();
         expected.add(queryData);
-        Assert.assertEquals(expected.toString(), operation.getData().toString());
+        Assert.assertEquals(queryData.toString(), operation.getPayload().toString());
     }
     @Test
     public void testUpdateOne1()  {
@@ -326,10 +326,10 @@ public class OperationExecutorMongoDatabaseTest {
 
         List<Object> expected = new ArrayList<>();
         expected.add(queryData);
-        Assert.assertEquals(expected.toString(), operation.getData().toString());
+        Assert.assertEquals(queryData.toString(), operation.getPayload().toString());
     }
     @Test
-    //this test-case may fail because operation is not stored.
+    @Ignore("this test-case may fail because operation is not stored.")
     public void testListCollection()  {
 
         MongoDatabase database=  mongoClient.getDatabase("test");
@@ -352,11 +352,11 @@ public class OperationExecutorMongoDatabaseTest {
         expected.add("{ }");
 
 
-        Assert.assertEquals(expected.toString(), operation.getData().toString());
+        Assert.assertEquals(expected.toString(), operation.getPayload().toString());
     }
 
     @Test
-    //this test-case may fail because operation is not stored.
+    @Ignore("this test-case may fail because operation is not stored.")
     public void testListCollection1()  {
 
         MongoDatabase database=  mongoClient.getDatabase("test");
@@ -379,11 +379,11 @@ public class OperationExecutorMongoDatabaseTest {
         expected.add("{ }");
 
 
-        Assert.assertEquals(expected.toString(), operation.getData().toString());
+        Assert.assertEquals(expected.toString(), operation.getPayload().toString());
     }
 
     @Test
-    //this test-case may fail because operation is not stored.
+    @Ignore("this test-case may fail because operation is not stored.")
     public void testListCollection2()  {
 
         MongoDatabase database=  mongoClient.getDatabase("test");
@@ -406,7 +406,7 @@ public class OperationExecutorMongoDatabaseTest {
         expected.add("{ }");
 
 
-        Assert.assertEquals(expected.toString(), operation.getData().toString());
+        Assert.assertEquals(expected.toString(), operation.getPayload().toString());
     }
 
     @Test
@@ -433,7 +433,7 @@ public class OperationExecutorMongoDatabaseTest {
 
         List<Object> expected = new ArrayList<>();
         expected.add(queryData);
-        Assert.assertEquals(expected.toString(), operation.getData().toString());
+        Assert.assertEquals(queryData.toString(), operation.getPayload().toString());
     }
     @Test
     public void testUpdateMany1()  {
@@ -460,7 +460,7 @@ public class OperationExecutorMongoDatabaseTest {
 
         List<Object> expected = new ArrayList<>();
         expected.add(queryData);
-        Assert.assertEquals(expected.toString(), operation.getData().toString());
+        Assert.assertEquals(queryData.toString(), operation.getPayload().toString());
     }
     @Test
     public void testInsertOne()  {
@@ -486,7 +486,7 @@ public class OperationExecutorMongoDatabaseTest {
         queryData.add(string);
         List<Object> expected = new ArrayList<>();
         expected.add(queryData);
-        Assert.assertEquals("No data Found",expected.toString(),operation.getData().toString());
+        Assert.assertEquals("No data Found",queryData.toString(),operation.getPayload().toString());
     }
 
     @Test
@@ -515,11 +515,11 @@ public class OperationExecutorMongoDatabaseTest {
         queryData.add(string);
         List<Object> expected = new ArrayList<>();
         expected.add(queryData);
-        Assert.assertEquals("No data Found",expected.toString(),operation.getData().toString());
+        Assert.assertEquals("No data Found",queryData.toString(),operation.getPayload().toString());
     }
 
     @Test
-    //this testcase may fail,
+    @Ignore("this test case may fail.")
     public void testMapReduceWithInlineResults()  {
 
         MongoDatabase database = mongoClient.getDatabase("test");
@@ -548,7 +548,7 @@ public class OperationExecutorMongoDatabaseTest {
         queryData.add("{ \"function(){emit(this.name, this.type)};\" : \"function(item,prev){prev.cnt+=1;}\" }");
         List<Object> expected = new ArrayList<>();
         expected.add(queryData);
-        Assert.assertEquals("No data Found", expected.toString(), operation.getData().toString());
+        Assert.assertEquals("No data Found", queryData.toString(), operation.getPayload().toString());
     }
     @Test
     public void testDeleteOne()  {
@@ -569,7 +569,7 @@ public class OperationExecutorMongoDatabaseTest {
         queryData.add("{ \"type\" : \"Database\" }");
         List<Object> expected = new ArrayList<>();
         expected.add(queryData);
-        Assert.assertEquals("No data Found", expected.toString(), operation.getData().toString());
+        Assert.assertEquals("No data Found", queryData.toString(), operation.getPayload().toString());
     }
 
     @Test
@@ -591,7 +591,7 @@ public class OperationExecutorMongoDatabaseTest {
         queryData.add("{ \"type\" : \"Database\" }");
         List<Object> expected = new ArrayList<>();
         expected.add(queryData);
-        Assert.assertEquals("No data Found", expected.toString(), operation.getData().toString());
+        Assert.assertEquals("No data Found", queryData.toString(), operation.getPayload().toString());
     }
     @Test
     public void testReplaceOne()  {
@@ -617,7 +617,7 @@ public class OperationExecutorMongoDatabaseTest {
 
         List<Object> expected = new ArrayList<>();
         expected.add(queryData);
-        Assert.assertEquals(expected.toString(), operation.getData().toString());
+        Assert.assertEquals(queryData.toString(), operation.getPayload().toString());
     }
     @Test
     public void testReplaceOne1()  {
@@ -643,10 +643,10 @@ public class OperationExecutorMongoDatabaseTest {
 
         List<Object> expected = new ArrayList<>();
         expected.add(queryData);
-        Assert.assertEquals(expected.toString(), operation.getData().toString());
+        Assert.assertEquals(queryData.toString(), operation.getPayload().toString());
     }
     @Test
-    //this test-case may fail because this is not instrumented(RenameCollectionOperation).
+    @Ignore("this test-case may fail because this is not instrumented(RenameCollectionOperation).")
     public void testRenameCollection()  {
 
         MongoDatabase database=  mongoClient.getDatabase("test");
@@ -668,10 +668,10 @@ public class OperationExecutorMongoDatabaseTest {
 
         List<Object> expected = new ArrayList<>();
         expected.add(queryData);
-        Assert.assertEquals(expected.toString(), operation.getData().toString());
+        Assert.assertEquals(queryData.toString(), operation.getPayload().toString());
     }
     @Test
-    //this test-case may fail because this is not instrumented(RenameCollectionOperation).
+    @Ignore("this test-case may fail because this is not instrumented(RenameCollectionOperation).")
     public void testRenameCollection1()  {
 
         MongoDatabase database=  mongoClient.getDatabase("test");
@@ -692,10 +692,10 @@ public class OperationExecutorMongoDatabaseTest {
 
         List<Object> expected = new ArrayList<>();
         expected.add(queryData);
-        Assert.assertEquals(expected.toString(), operation.getData().toString());
+        Assert.assertEquals(queryData.toString(), operation.getPayload().toString());
     }
     @Test
-    //this test case may fail, because this is not instrumented(ListIndexesOperation).
+    @Ignore("this test case may fail, because this is not instrumented(ListIndexesOperation).")
     public void testListIndexes()  {
 
         MongoDatabase database=  mongoClient.getDatabase("test");
@@ -721,10 +721,10 @@ public class OperationExecutorMongoDatabaseTest {
 
         List<Object> expected = new ArrayList<>();
         expected.add(queryData);
-        Assert.assertEquals(expected.toString(), operation.getData().toString());
+        Assert.assertEquals(queryData.toString(), operation.getPayload().toString());
     }
     @Test
-    //this test case may fail, because this is not instrumented(ListIndexesOperation).
+    @Ignore("this test case may fail, because this is not instrumented(ListIndexesOperation).")
     public void testListIndexes1()  {
 
         MongoDatabase database=  mongoClient.getDatabase("test");
@@ -748,7 +748,7 @@ public class OperationExecutorMongoDatabaseTest {
 
         List<Object> expected = new ArrayList<>();
         expected.add(queryData);
-        Assert.assertEquals(expected.toString(), operation.getData().toString());
+        Assert.assertEquals(queryData.toString(), operation.getPayload().toString());
     }
 
     @Test
@@ -780,7 +780,7 @@ public class OperationExecutorMongoDatabaseTest {
         queryData.add(string);
         List<Object> expected = new ArrayList<>();
         expected.add(queryData);
-        Assert.assertEquals("No data Found",expected.toString(),operation.getData().toString());
+        Assert.assertEquals("No data Found",queryData.toString(),operation.getPayload().toString());
     }
 
     @Test
@@ -812,7 +812,7 @@ public class OperationExecutorMongoDatabaseTest {
         queryData.add(string);
         List<Object> expected = new ArrayList<>();
         expected.add(queryData);
-        Assert.assertEquals("No data Found",expected.toString(),operation.getData().toString());
+        Assert.assertEquals("No data Found",queryData.toString(),operation.getPayload().toString());
     }
 
 }

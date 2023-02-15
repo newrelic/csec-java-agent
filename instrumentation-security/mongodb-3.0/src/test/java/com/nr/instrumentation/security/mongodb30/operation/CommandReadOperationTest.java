@@ -121,7 +121,7 @@ public class CommandReadOperationTest {
         Assert.assertEquals("No Command Detected", "read", operation.getCommand());
         List<Object> expected = new ArrayList<>();
         expected.add("{ \"name\" : \"MongoDB\" }");
-        Assert.assertEquals("No data Found", expected.toString(), operation.getData().toString());
+        Assert.assertEquals("No data Found", expected.toString(), operation.getPayload().toString());
     }
     @Test
     public void testExecuteAsync(){
@@ -150,6 +150,6 @@ public class CommandReadOperationTest {
         Assert.assertEquals("No Command Detected", "read", operation.getCommand());
         List<Object> expected = new ArrayList<>();
         expected.add("{ \"name\" : \"MongoDB\" }");
-        Assert.assertEquals("No data Found", expected.toString(), operation.getData().toString());
+        Assert.assertEquals("No data Found", expected.toString(), operation.getPayload().toString());
     }
 }

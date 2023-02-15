@@ -28,14 +28,17 @@ import org.bson.codecs.configuration.CodecRegistry;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
+import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.junit.runners.MethodSorters;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @RunWith(SecurityInstrumentationTestRunner.class)
-@InstrumentationTestConfig(includePrefixes = {"com.mongodb.client.internal","com.mongodb.operation"})
+@InstrumentationTestConfig(includePrefixes = {"com.mongodb.client.internal","com.mongodb.operation","com.nr.agent.security.mongo"})
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class CommandWriteOperationTest {
     private static final MongodStarter mongodStarter = MongodStarter.getDefaultInstance();
     private static MongodExecutable mongodExecutable;
@@ -99,7 +102,7 @@ public class CommandWriteOperationTest {
     Assert.assertEquals("No Command Detected", "write", operation.getCommand());
     List<Object> expected = new ArrayList<>();
     expected.add("{ \"name\" : \"MongoDB\" }");
-    Assert.assertEquals("No data Found", expected.toString(), operation.getData().toString());
+    Assert.assertEquals("No data Found", expected.toString(), operation.getPayload().toString());
 
 }
 
@@ -131,7 +134,7 @@ public class CommandWriteOperationTest {
         Assert.assertEquals("No Command Detected", "write", operation.getCommand());
         List<Object> expected = new ArrayList<>();
         expected.add("{ \"name\" : \"MongoDB\" }");
-        Assert.assertEquals("No data Found", expected.toString(), operation.getData().toString());
+        Assert.assertEquals("No data Found", expected.toString(), operation.getPayload().toString());
 
     }
 
