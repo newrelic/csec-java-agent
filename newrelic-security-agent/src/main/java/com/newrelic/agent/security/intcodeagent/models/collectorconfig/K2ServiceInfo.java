@@ -12,7 +12,7 @@ import java.util.Objects;
 @JsonPropertyOrder(alphabetic = true)
 public class K2ServiceInfo {
 
-    private String validatorServiceEndpointURL = "wss://csec.nr-data.net";
+    private String validatorServiceEndpointURL;
 
     @JsonIgnore
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();

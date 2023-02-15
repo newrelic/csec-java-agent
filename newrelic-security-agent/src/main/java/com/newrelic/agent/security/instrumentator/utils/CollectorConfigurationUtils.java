@@ -53,49 +53,20 @@ public class CollectorConfigurationUtils {
      */
     public static CollectorConfig populateCollectorConfig() {
         CollectorConfig collectorConfig = new CollectorConfig();
-        String validatorServiceEndpointUrl = null;
-        String apiAccessor = null;
-        String hostName = null;
+        String validatorServiceEndpointUrl = NewRelic.getAgent().getConfig()
+                .getValue("security.validator_service_endpoint_url", "wss://csec.nr-data.net");
+        ;
         K2ServiceInfo serviceInfo = new K2ServiceInfo();
 
-        // Loading validatorServiceEndpointUrl value
-        if (System.getenv().containsKey("K2_VALIDATOR_SERVICE_URL")) {
-            validatorServiceEndpointUrl = System.getenv().get("K2_VALIDATOR_SERVICE_URL");
-        } else if (NewRelic.getAgent().getConfig().getValue("security.validator_service_endpoint_url") != null) {
-            validatorServiceEndpointUrl = NewRelic.getAgent().getConfig().getValue("security.validator_service_endpoint_url");
-        }
-
-        if (StringUtils.isNotBlank(validatorServiceEndpointUrl)) {
-            serviceInfo.setValidatorServiceEndpointURL(validatorServiceEndpointUrl);
-            AgentUtils.getInstance().getStatusLogValues().put(VALIDATOR_URL, validatorServiceEndpointUrl);
-        } else {
-            AgentUtils.getInstance().getStatusLogValues().put(VALIDATOR_URL,
-                    collectorConfig.getK2ServiceInfo().getValidatorServiceEndpointURL());
-        }
-
-        // Loading apiAccessor value
-        if (System.getenv().containsKey("K2_API_ACCESSOR_TOKEN")) {
-            apiAccessor = System.getenv().get("K2_API_ACCESSOR_TOKEN");
-        } else if (NewRelic.getAgent().getConfig().getValue("license_key") != null) {
-            apiAccessor = NewRelic.getAgent().getConfig().getValue("license_key");
-        } else {
-            logger.log(LogLevel.ERROR, "Unable to find api accessor key. Please specify either env K2_API_ACCESSOR_TOKEN or NR config key 'license_key'", CollectorConfigurationUtils.class.getName());
-            //TODO raise exception
-        }
-
-        // Loading resourceServiceEndpointUrl value
-        if (System.getenv().containsKey("K2_NODE_NAME")) {
-            hostName = System.getenv().get("K2_NODE_NAME");
-        } else {
-            hostName = AgentInfo.getInstance().getLinkingMetadata().getOrDefault(INRSettingsKey.HOSTNAME, StringUtils.EMPTY);
-        }
+        serviceInfo.setValidatorServiceEndpointURL(validatorServiceEndpointUrl);
+        AgentUtils.getInstance().getStatusLogValues().put(VALIDATOR_URL, validatorServiceEndpointUrl);
 
         collectorConfig.setNodeId(AgentInfo.getInstance().getLinkingMetadata().getOrDefault(INRSettingsKey.NR_ENTITY_GUID, StringUtils.EMPTY));
-        collectorConfig.setNodeName(hostName);
+        collectorConfig.setNodeName(AgentInfo.getInstance().getLinkingMetadata().getOrDefault(INRSettingsKey.HOSTNAME, StringUtils.EMPTY));
         collectorConfig.setNodeGroupTags(Collections.emptySet());
 
         CustomerInfo customerInfo = new CustomerInfo();
-        customerInfo.setApiAccessorToken(apiAccessor);
+        customerInfo.setApiAccessorToken(NewRelic.getAgent().getConfig().getValue("license_key"));
         collectorConfig.setCustomerInfo(customerInfo);
 
         String accountId = NewRelic.getAgent().getConfig().getValue("account_id");
