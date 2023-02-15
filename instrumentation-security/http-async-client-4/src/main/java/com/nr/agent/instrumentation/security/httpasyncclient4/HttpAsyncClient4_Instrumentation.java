@@ -43,7 +43,7 @@ public class HttpAsyncClient4_Instrumentation {
             try {
                 HttpRequest request = requestProducer.generateRequest();
                 // Preprocess Phase
-                operation = preprocessSecurityHook(request, requestProducer.getTarget().toString(), SecurityHelper.METHOD_NAME_EXECUTE);
+                operation = preprocessSecurityHook(request, request.getRequestLine().getUri(), SecurityHelper.METHOD_NAME_EXECUTE);
             } catch (Throwable ignored) {
             }
         }
@@ -69,7 +69,7 @@ public class HttpAsyncClient4_Instrumentation {
             try {
                 HttpRequest request = requestProducer.generateRequest();
                 // Preprocess Phase
-                operation = preprocessSecurityHook(request, requestProducer.getTarget().toString(), SecurityHelper.METHOD_NAME_EXECUTE);
+                operation = preprocessSecurityHook(request, request.getRequestLine().getUri(), SecurityHelper.METHOD_NAME_EXECUTE);
             } catch (Throwable ignored) {
             }
         }
@@ -177,7 +177,8 @@ public class HttpAsyncClient4_Instrumentation {
     private static URI getUri(HttpHost target, HttpRequest request) throws URISyntaxException {
         URI requestURI = new URI(request.getRequestLine().getUri());
         String scheme = requestURI.getScheme() == null ? target.getSchemeName() : requestURI.getScheme();
-        return new URI(scheme, null, target.getHostName(), target.getPort(), requestURI.getPath(), null, null);
+        return new URI(scheme, null, target.getHostName(), target.getPort(), requestURI.getPath(),
+                requestURI.getQuery(), null);
     }
 
     private static void registerExitOperation(boolean isProcessingAllowed, AbstractOperation operation) {
