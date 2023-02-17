@@ -17,7 +17,7 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.protocol.BasicHttpContext;
 import org.apache.http.protocol.HttpContext;
 import org.junit.Assert;
-import org.junit.Rule;
+import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -26,10 +26,10 @@ import java.net.URISyntaxException;
 import java.util.List;
 
 @RunWith(SecurityInstrumentationTestRunner.class)
-@InstrumentationTestConfig(includePrefixes = "org.apache.http.client")
+@InstrumentationTestConfig(includePrefixes = "com.nr.agent.instrumentation.security.httpclient40")
 public class HttpClientTest {
-    @Rule
-    public HttpServerRule server = new HttpServerRule();
+    @ClassRule
+    public static HttpServerRule server = new HttpServerRule();
 
     @Test
     public void testExecute() throws URISyntaxException, IOException {
@@ -137,70 +137,77 @@ public class HttpClientTest {
 
     @Trace(dispatcher = true)
     public void callExecute() throws URISyntaxException, IOException {
-        CloseableHttpClient httpclient = HttpClients.createDefault();
-        HttpGet httpGet = new HttpGet(server.getEndPoint().toString());
-        httpclient.execute(httpGet);
+        try (CloseableHttpClient httpclient = HttpClients.createDefault()) {
+            HttpGet httpGet = new HttpGet(server.getEndPoint().toString());
+            httpclient.execute(httpGet);
+        }
     }
 
     @Trace(dispatcher = true)
     public void callExecute1() throws URISyntaxException, IOException {
-        CloseableHttpClient httpclient = HttpClients.createDefault();
-        HttpGet httpGet = new HttpGet(server.getEndPoint().toString());
-        HttpContext httpContext = new BasicHttpContext();
-        httpclient.execute(httpGet, httpContext);
+        try (CloseableHttpClient httpclient = HttpClients.createDefault()) {
+            HttpGet httpGet = new HttpGet(server.getEndPoint().toString());
+            HttpContext httpContext = new BasicHttpContext();
+            httpclient.execute(httpGet, httpContext);
+        }
     }
 
     @Trace(dispatcher = true)
     public void callExecute2() throws URISyntaxException, IOException {
-        CloseableHttpClient httpclient = HttpClients.createDefault();
-        HttpHost httpHost = new HttpHost(server.getEndPoint().getHost(), server.getEndPoint().getPort(), server.getEndPoint().getScheme());
-        HttpGet httpGet = new HttpGet(server.getEndPoint().toString());
-        httpclient.execute(httpHost, httpGet);
+        try (CloseableHttpClient httpclient = HttpClients.createDefault()) {
+            HttpHost httpHost = new HttpHost(server.getEndPoint().getHost(), server.getEndPoint().getPort(), server.getEndPoint().getScheme());
+            HttpGet httpGet = new HttpGet(server.getEndPoint().toString());
+            httpclient.execute(httpHost, httpGet);
+        }
     }
 
     @Trace(dispatcher = true)
     public void callExecute3() throws URISyntaxException, IOException {
-        CloseableHttpClient httpclient = HttpClients.createDefault();
-        HttpHost httpHost = new HttpHost(server.getEndPoint().getHost(), server.getEndPoint().getPort(), server.getEndPoint().getScheme());
-        HttpGet httpGet = new HttpGet(server.getEndPoint().toString());
-        HttpContext httpContext = new BasicHttpContext();
-        httpclient.execute(httpHost, httpGet, httpContext);
+        try(CloseableHttpClient httpclient = HttpClients.createDefault()) {
+            HttpHost httpHost = new HttpHost(server.getEndPoint().getHost(), server.getEndPoint().getPort(), server.getEndPoint().getScheme());
+            HttpGet httpGet = new HttpGet(server.getEndPoint().toString());
+            HttpContext httpContext = new BasicHttpContext();
+            httpclient.execute(httpHost, httpGet, httpContext);
+        }
     }
 
     @Trace(dispatcher = true)
     public void callExecute4() throws Exception {
-        CloseableHttpClient httpclient = HttpClients.createDefault();
-        HttpGet httpGet = new HttpGet(server.getEndPoint().toString());
-        ResponseHandler<String> responseHandler = new BasicResponseHandler();
-        httpclient.execute(httpGet, responseHandler);
+        try (CloseableHttpClient httpclient = HttpClients.createDefault()) {
+            HttpGet httpGet = new HttpGet(server.getEndPoint().toString());
+            ResponseHandler<String> responseHandler = new BasicResponseHandler();
+            httpclient.execute(httpGet, responseHandler);
+        }
     }
 
     @Trace(dispatcher = true)
     public void callExecute5() throws Exception {
-        CloseableHttpClient httpclient = HttpClients.createDefault();
-        HttpGet httpGet = new HttpGet(server.getEndPoint().toString());
-        ResponseHandler<String> responseHandler = new BasicResponseHandler();
-        HttpContext httpContext = new BasicHttpContext();
-        httpclient.execute(httpGet, responseHandler, httpContext);
+        try(CloseableHttpClient httpclient = HttpClients.createDefault()) {
+            HttpGet httpGet = new HttpGet(server.getEndPoint().toString());
+            ResponseHandler<String> responseHandler = new BasicResponseHandler();
+            HttpContext httpContext = new BasicHttpContext();
+            httpclient.execute(httpGet, responseHandler, httpContext);
+        }
     }
 
     @Trace(dispatcher = true)
     public void callExecute6() throws Exception {
-        CloseableHttpClient httpclient = HttpClients.createDefault();
-        HttpGet httpGet = new HttpGet(server.getEndPoint().toString());
-        ResponseHandler<String> responseHandler = new BasicResponseHandler();
-        HttpHost httpHost = new HttpHost(server.getEndPoint().getHost(), server.getEndPoint().getPort(), server.getEndPoint().getScheme());
-        httpclient.execute(httpHost, httpGet, responseHandler);
+        try(CloseableHttpClient httpclient = HttpClients.createDefault()) {
+            HttpGet httpGet = new HttpGet(server.getEndPoint().toString());
+            ResponseHandler<String> responseHandler = new BasicResponseHandler();
+            HttpHost httpHost = new HttpHost(server.getEndPoint().getHost(), server.getEndPoint().getPort(), server.getEndPoint().getScheme());
+            httpclient.execute(httpHost, httpGet, responseHandler);
+        }
     }
 
     @Trace(dispatcher = true)
     public void callExecute7() throws Exception {
-        CloseableHttpClient httpclient = HttpClients.createDefault();
-        HttpGet httpGet = new HttpGet(server.getEndPoint().toString());
-        ResponseHandler<String> responseHandler = new BasicResponseHandler();
-        HttpHost httpHost = new HttpHost(server.getEndPoint().getHost(), server.getEndPoint().getPort(), server.getEndPoint().getScheme());
-        HttpContext httpContext = new BasicHttpContext();
-        httpclient.execute(httpHost, httpGet, responseHandler, httpContext);
+        try(CloseableHttpClient httpclient = HttpClients.createDefault()) {
+            HttpGet httpGet = new HttpGet(server.getEndPoint().toString());
+            ResponseHandler<String> responseHandler = new BasicResponseHandler();
+            HttpHost httpHost = new HttpHost(server.getEndPoint().getHost(), server.getEndPoint().getPort(), server.getEndPoint().getScheme());
+            HttpContext httpContext = new BasicHttpContext();
+            httpclient.execute(httpHost, httpGet, responseHandler, httpContext);
+        }
     }
-
 }
