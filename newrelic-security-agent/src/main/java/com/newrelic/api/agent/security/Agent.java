@@ -341,12 +341,14 @@ public class Agent implements SecurityAgent {
         }
         stackTrace = Arrays.copyOfRange(stackTrace, resetFactor, stackTrace.length);
         operation.setStackTrace(stackTrace);
-        setAPIId(operation, newTraceForIdCalc, operation.getCaseType());
         operation.setSourceMethod(operation.getStackTrace()[0].toString());
+        setAPIId(operation, newTraceForIdCalc, operation.getCaseType());
     }
 
     private static void setAPIId(AbstractOperation operation, List<Integer> traceForIdCalc, VulnerabilityCaseType vulnerabilityCaseType) {
         try {
+            traceForIdCalc.add(operation.getSourceMethod().hashCode());
+            traceForIdCalc.add(operation.getUserClassEntity().getUserClassElement().hashCode());
             operation.setApiID(vulnerabilityCaseType.getCaseType() + "-" + HashGenerator.getXxHash64Digest(traceForIdCalc.stream().mapToInt(Integer::intValue).toArray()));
         } catch (IOException e) {
             operation.setApiID("UNDEFINED");
