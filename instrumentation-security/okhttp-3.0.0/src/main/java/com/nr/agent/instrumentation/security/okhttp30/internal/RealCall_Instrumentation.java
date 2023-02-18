@@ -42,6 +42,10 @@ abstract class RealCall_Instrumentation {
         if(isLockAcquired) {
             operation = OkhttpHelper.preprocessSecurityHook(getUrl(originalRequest), this.getClass().getName(),
                     OkhttpHelper.METHOD_EXECUTE);
+            Request updatedRequest = OkhttpHelper.addSecurityHeaders(originalRequest.newBuilder(), operation);
+            if (updatedRequest != null) {
+                originalRequest = updatedRequest;
+            }
         }
         Response returnVal = null;
         try {

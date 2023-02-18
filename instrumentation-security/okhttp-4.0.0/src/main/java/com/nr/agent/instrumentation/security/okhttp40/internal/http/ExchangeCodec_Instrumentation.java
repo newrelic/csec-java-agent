@@ -46,6 +46,10 @@ public abstract class ExchangeCodec_Instrumentation {
         AbstractOperation operation = null;
         if(isLockAcquired) {
             operation = OkhttpHelper.preprocessSecurityHook(getUrl(request), this.getClass().getName(), OkhttpHelper.METHOD_EXECUTE);
+            Request updatedRequest = OkhttpHelper.addSecurityHeaders(request.newBuilder(), operation);
+            if (updatedRequest != null) {
+                request = updatedRequest;
+            }
         }
         try {
             Weaver.callOriginal();

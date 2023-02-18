@@ -2,8 +2,11 @@ package com.nr.agent.instrumentation.security.okhttp30.internal;
 
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
+import com.newrelic.api.agent.security.schema.constants.AgentConstants;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
 import com.newrelic.api.agent.security.schema.operation.SSRFOperation;
+import com.newrelic.api.agent.security.utils.SSRFUtils;
+import okhttp3.Request;
 
 public class OkhttpHelper {
 
@@ -59,9 +62,11 @@ public class OkhttpHelper {
                     url == null || url.trim().isEmpty()) {
                 return null;
             }
-            SSRFOperation ssrfOperation = new SSRFOperation(url, className, methodName);
-            NewRelicSecurity.getAgent().registerOperation(ssrfOperation);
-            return ssrfOperation;
+
+            SSRFOperation operation = new SSRFOperation(url,
+                    className, methodName);
+            NewRelicSecurity.getAgent().registerOperation(operation);
+            return operation;
         } catch (Throwable e) {
             if (e instanceof NewRelicSecurityException) {
                 e.printStackTrace();
@@ -81,5 +86,29 @@ public class OkhttpHelper {
             NewRelicSecurity.getAgent().registerExitEvent(operation);
         } catch (Throwable ignored) {
         }
+    }
+
+    public static Request addSecurityHeaders(Request.Builder requestBuilder, AbstractOperation operation) {
+        if (operation == null || requestBuilder == null) {
+            return null;
+        }
+
+        // Add Security IAST header
+        String iastHeader = NewRelicSecurity.getAgent().getSecurityMetaData().getFuzzRequestIdentifier().getRaw();
+        if (iastHeader != null && !iastHeader.trim().isEmpty()) {
+            requestBuilder.addHeader(AgentConstants.K2_FUZZ_REQUEST_ID, iastHeader);
+        }
+
+        if (operation.getApiID() != null && !operation.getApiID().trim().isEmpty() &&
+                operation.getExecutionId() != null && !operation.getExecutionId().trim().isEmpty()) {
+            // Add Security distributed tracing header
+            requestBuilder.removeHeader(AgentConstants.K2_TRACING_DATA);
+            requestBuilder.addHeader(AgentConstants.K2_TRACING_DATA,
+                    SSRFUtils.generateTracingHeaderValue(NewRelicSecurity.getAgent().getSecurityMetaData()
+                                    .getTracingHeaderValue(),
+                            operation.getApiID(), operation.getExecutionId(),
+                            NewRelicSecurity.getAgent().getAgentUUID()));
+        }
+        return requestBuilder.build();
     }
 }
