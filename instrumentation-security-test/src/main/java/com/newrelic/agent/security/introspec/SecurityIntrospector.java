@@ -32,5 +32,9 @@ public interface SecurityIntrospector {
 
     void setRequestReaderHash(int hashCode);
 
+    void setK2FuzzRequestId(String value);
+
+    void setK2TracingData(String value);
+
     void clear();
 }
