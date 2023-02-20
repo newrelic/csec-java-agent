@@ -7,6 +7,7 @@ import com.newrelic.agent.security.introspec.internal.HttpServerRule;
 import com.newrelic.api.agent.Trace;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
+import com.newrelic.api.agent.security.schema.constants.AgentConstants;
 import com.newrelic.api.agent.security.schema.operation.SSRFOperation;
 import org.apache.http.HttpHost;
 import org.apache.http.client.ResponseHandler;
@@ -24,6 +25,8 @@ import org.junit.runner.RunWith;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 @RunWith(SecurityInstrumentationTestRunner.class)
 @InstrumentationTestConfig(includePrefixes = "com.nr.agent.instrumentation.security.httpclient40")
@@ -33,105 +36,199 @@ public class HttpClientTest {
 
     @Test
     public void testExecute() throws URISyntaxException, IOException {
-        callExecute();
+        String headerValue = String.valueOf(UUID.randomUUID());
+
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
+        introspector.setK2FuzzRequestId(headerValue);
+        introspector.setK2TracingData(headerValue);
+
+        callExecute();
+
         List<AbstractOperation> operations = introspector.getOperations();
         Assert.assertTrue("No operations detected", operations.size() > 0);
         SSRFOperation operation = (SSRFOperation) operations.get(0);
+        Map<String, String> headers = server.getHeaders();
         Assert.assertEquals("Invalid executed parameters.", server.getEndPoint().toString(), operation.getArg());
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.HTTP_REQUEST, operation.getCaseType());
         Assert.assertEquals("Invalid executed method name.", "execute", operation.getMethodName());
-
+        Assert.assertTrue(String.format("Missing K2 header: %s", AgentConstants.K2_FUZZ_REQUEST_ID), headers.containsKey(AgentConstants.K2_FUZZ_REQUEST_ID));
+        Assert.assertEquals(String.format("Invalid K2 header value for:  %s", AgentConstants.K2_FUZZ_REQUEST_ID), headerValue, headers.get(AgentConstants.K2_FUZZ_REQUEST_ID));
+        Assert.assertTrue(String.format("Missing K2 header: %s", AgentConstants.K2_TRACING_DATA), headers.containsKey(AgentConstants.K2_TRACING_DATA.toLowerCase()));
+        Assert.assertEquals(String.format("Invalid K2 header value for:  %s", AgentConstants.K2_TRACING_DATA), String.format("%s;DUMMY_UUID/dummy-api-id/dummy-exec-id;",headerValue), headers.get(
+                AgentConstants.K2_TRACING_DATA.toLowerCase()));
     }
 
     @Test
     public void testExecute1() throws URISyntaxException, IOException {
-        callExecute1();
+
+        String headerValue = String.valueOf(UUID.randomUUID());
 
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
+        introspector.setK2FuzzRequestId(headerValue);
+        introspector.setK2TracingData(headerValue);
+        callExecute1();
+
         List<AbstractOperation> operations = introspector.getOperations();
         Assert.assertTrue("No operations detected", operations.size() > 0);
         SSRFOperation operation = (SSRFOperation) operations.get(0);
+        Map<String, String> headers = server.getHeaders();
         Assert.assertEquals("Invalid executed parameters.", server.getEndPoint().toString(), operation.getArg());
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.HTTP_REQUEST, operation.getCaseType());
         Assert.assertEquals("Invalid executed method name.", "execute", operation.getMethodName());
+        Assert.assertTrue(String.format("Missing K2 header: %s", AgentConstants.K2_FUZZ_REQUEST_ID), headers.containsKey(AgentConstants.K2_FUZZ_REQUEST_ID));
+        Assert.assertEquals(String.format("Invalid K2 header value for:  %s", AgentConstants.K2_FUZZ_REQUEST_ID), headerValue, headers.get(AgentConstants.K2_FUZZ_REQUEST_ID));
+        Assert.assertTrue(String.format("Missing K2 header: %s", AgentConstants.K2_TRACING_DATA), headers.containsKey(AgentConstants.K2_TRACING_DATA.toLowerCase()));
+        Assert.assertEquals(String.format("Invalid K2 header value for:  %s", AgentConstants.K2_TRACING_DATA), String.format("%s;DUMMY_UUID/dummy-api-id/dummy-exec-id;",headerValue), headers.get(
+                AgentConstants.K2_TRACING_DATA.toLowerCase()));
     }
 
     @Test
     public void testExecute2() throws URISyntaxException, IOException {
-        callExecute2();
+
+        String headerValue = String.valueOf(UUID.randomUUID());
+
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
+        introspector.setK2FuzzRequestId(headerValue);
+        introspector.setK2TracingData(headerValue);
+        callExecute2();
+
         List<AbstractOperation> operations = introspector.getOperations();
         Assert.assertTrue("No operations detected", operations.size() > 0);
         SSRFOperation operation = (SSRFOperation) operations.get(0);
+        Map<String, String> headers = server.getHeaders();
         Assert.assertEquals("Invalid executed parameters.", server.getEndPoint().toString(), operation.getArg());
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.HTTP_REQUEST, operation.getCaseType());
         Assert.assertEquals("Invalid executed method name.", "execute", operation.getMethodName());
+        Assert.assertTrue(String.format("Missing K2 header: %s", AgentConstants.K2_FUZZ_REQUEST_ID), headers.containsKey(AgentConstants.K2_FUZZ_REQUEST_ID));
+        Assert.assertEquals(String.format("Invalid K2 header value for:  %s", AgentConstants.K2_FUZZ_REQUEST_ID), headerValue, headers.get(AgentConstants.K2_FUZZ_REQUEST_ID));
+        Assert.assertTrue(String.format("Missing K2 header: %s", AgentConstants.K2_TRACING_DATA), headers.containsKey(AgentConstants.K2_TRACING_DATA.toLowerCase()));
+        Assert.assertEquals(String.format("Invalid K2 header value for:  %s", AgentConstants.K2_TRACING_DATA), String.format("%s;DUMMY_UUID/dummy-api-id/dummy-exec-id;",headerValue), headers.get(
+                AgentConstants.K2_TRACING_DATA.toLowerCase()));
 
     }
 
     @Test
     public void testExecute3() throws URISyntaxException, IOException {
-        callExecute3();
+
+        String headerValue = String.valueOf(UUID.randomUUID());
+
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
+        introspector.setK2FuzzRequestId(headerValue);
+        introspector.setK2TracingData(headerValue);
+        callExecute3();
+
         List<AbstractOperation> operations = introspector.getOperations();
         Assert.assertTrue("No operations detected", operations.size() > 0);
         SSRFOperation operation = (SSRFOperation) operations.get(0);
+        Map<String, String> headers = server.getHeaders();
         Assert.assertEquals("Invalid executed parameters.", server.getEndPoint().toString(), operation.getArg());
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.HTTP_REQUEST, operation.getCaseType());
         Assert.assertEquals("Invalid executed method name.", "execute", operation.getMethodName());
+        Assert.assertTrue(String.format("Missing K2 header: %s", AgentConstants.K2_FUZZ_REQUEST_ID), headers.containsKey(AgentConstants.K2_FUZZ_REQUEST_ID));
+        Assert.assertEquals(String.format("Invalid K2 header value for:  %s", AgentConstants.K2_FUZZ_REQUEST_ID), headerValue, headers.get(AgentConstants.K2_FUZZ_REQUEST_ID));
+        Assert.assertTrue(String.format("Missing K2 header: %s", AgentConstants.K2_TRACING_DATA), headers.containsKey(AgentConstants.K2_TRACING_DATA.toLowerCase()));
+        Assert.assertEquals(String.format("Invalid K2 header value for:  %s", AgentConstants.K2_TRACING_DATA), String.format("%s;DUMMY_UUID/dummy-api-id/dummy-exec-id;",headerValue), headers.get(
+                AgentConstants.K2_TRACING_DATA.toLowerCase()));
 
     }
 
     @Test
     public void testExecute4() throws Exception {
-        callExecute4();
+
+
+        String headerValue = String.valueOf(UUID.randomUUID());
+
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
+        introspector.setK2FuzzRequestId(headerValue);
+        introspector.setK2TracingData(headerValue);      callExecute4();
+
         List<AbstractOperation> operations = introspector.getOperations();
         Assert.assertTrue("No operations detected", operations.size() > 0);
         SSRFOperation operation = (SSRFOperation) operations.get(0);
+        Map<String, String> headers = server.getHeaders();
         Assert.assertEquals("Invalid executed parameters.", server.getEndPoint().toString(), operation.getArg());
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.HTTP_REQUEST, operation.getCaseType());
         Assert.assertEquals("Invalid executed method name.", "execute", operation.getMethodName());
+        Assert.assertTrue(String.format("Missing K2 header: %s", AgentConstants.K2_FUZZ_REQUEST_ID), headers.containsKey(AgentConstants.K2_FUZZ_REQUEST_ID));
+        Assert.assertEquals(String.format("Invalid K2 header value for:  %s", AgentConstants.K2_FUZZ_REQUEST_ID), headerValue, headers.get(AgentConstants.K2_FUZZ_REQUEST_ID));
+        Assert.assertTrue(String.format("Missing K2 header: %s", AgentConstants.K2_TRACING_DATA), headers.containsKey(AgentConstants.K2_TRACING_DATA.toLowerCase()));
+        Assert.assertEquals(String.format("Invalid K2 header value for:  %s", AgentConstants.K2_TRACING_DATA), String.format("%s;DUMMY_UUID/dummy-api-id/dummy-exec-id;",headerValue), headers.get(
+                AgentConstants.K2_TRACING_DATA.toLowerCase()));
 
     }
 
     @Test
     public void testExecute5() throws Exception {
-        callExecute5();
+
+
+        String headerValue = String.valueOf(UUID.randomUUID());
+
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
+        introspector.setK2FuzzRequestId(headerValue);
+        introspector.setK2TracingData(headerValue);      callExecute5();
+
         List<AbstractOperation> operations = introspector.getOperations();
         Assert.assertTrue("No operations detected", operations.size() > 0);
         SSRFOperation operation = (SSRFOperation) operations.get(0);
+        Map<String, String> headers = server.getHeaders();
         Assert.assertEquals("Invalid executed parameters.", server.getEndPoint().toString(), operation.getArg());
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.HTTP_REQUEST, operation.getCaseType());
         Assert.assertEquals("Invalid executed method name.", "execute", operation.getMethodName());
+        Assert.assertTrue(String.format("Missing K2 header: %s", AgentConstants.K2_FUZZ_REQUEST_ID), headers.containsKey(AgentConstants.K2_FUZZ_REQUEST_ID));
+        Assert.assertEquals(String.format("Invalid K2 header value for:  %s", AgentConstants.K2_FUZZ_REQUEST_ID), headerValue, headers.get(AgentConstants.K2_FUZZ_REQUEST_ID));
+        Assert.assertTrue(String.format("Missing K2 header: %s", AgentConstants.K2_TRACING_DATA), headers.containsKey(AgentConstants.K2_TRACING_DATA.toLowerCase()));
+        Assert.assertEquals(String.format("Invalid K2 header value for:  %s", AgentConstants.K2_TRACING_DATA), String.format("%s;DUMMY_UUID/dummy-api-id/dummy-exec-id;",headerValue), headers.get(
+                AgentConstants.K2_TRACING_DATA.toLowerCase()));
 
     }
 
     @Test
     public void testExecute6() throws Exception {
-        callExecute6();
+
+
+        String headerValue = String.valueOf(UUID.randomUUID());
+
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
+        introspector.setK2FuzzRequestId(headerValue);
+        introspector.setK2TracingData(headerValue);      callExecute6();
+
         List<AbstractOperation> operations = introspector.getOperations();
         Assert.assertTrue("No operations detected", operations.size() > 0);
         SSRFOperation operation = (SSRFOperation) operations.get(0);
+        Map<String, String> headers = server.getHeaders();
         Assert.assertEquals("Invalid executed parameters.", server.getEndPoint().toString(), operation.getArg());
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.HTTP_REQUEST, operation.getCaseType());
         Assert.assertEquals("Invalid executed method name.", "execute", operation.getMethodName());
+        Assert.assertTrue(String.format("Missing K2 header: %s", AgentConstants.K2_FUZZ_REQUEST_ID), headers.containsKey(AgentConstants.K2_FUZZ_REQUEST_ID));
+        Assert.assertEquals(String.format("Invalid K2 header value for:  %s", AgentConstants.K2_FUZZ_REQUEST_ID), headerValue, headers.get(AgentConstants.K2_FUZZ_REQUEST_ID));
+        Assert.assertTrue(String.format("Missing K2 header: %s", AgentConstants.K2_TRACING_DATA), headers.containsKey(AgentConstants.K2_TRACING_DATA.toLowerCase()));
+        Assert.assertEquals(String.format("Invalid K2 header value for:  %s", AgentConstants.K2_TRACING_DATA), String.format("%s;DUMMY_UUID/dummy-api-id/dummy-exec-id;",headerValue), headers.get(
+                AgentConstants.K2_TRACING_DATA.toLowerCase()));
 
     }
 
     @Test
     public void testExecute7() throws Exception {
-        callExecute7();
+
+
+        String headerValue = String.valueOf(UUID.randomUUID());
+
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
+        introspector.setK2FuzzRequestId(headerValue);
+        introspector.setK2TracingData(headerValue);      callExecute7();
+
         List<AbstractOperation> operations = introspector.getOperations();
         Assert.assertTrue("No operations detected", operations.size() > 0);
         SSRFOperation operation = (SSRFOperation) operations.get(0);
+        Map<String, String> headers = server.getHeaders();
         Assert.assertEquals("Invalid executed parameters.", server.getEndPoint().toString(), operation.getArg());
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.HTTP_REQUEST, operation.getCaseType());
         Assert.assertEquals("Invalid executed method name.", "execute", operation.getMethodName());
+        Assert.assertTrue(String.format("Missing K2 header: %s", AgentConstants.K2_FUZZ_REQUEST_ID), headers.containsKey(AgentConstants.K2_FUZZ_REQUEST_ID));
+        Assert.assertEquals(String.format("Invalid K2 header value for:  %s", AgentConstants.K2_FUZZ_REQUEST_ID), headerValue, headers.get(AgentConstants.K2_FUZZ_REQUEST_ID));
+        Assert.assertTrue(String.format("Missing K2 header: %s", AgentConstants.K2_TRACING_DATA), headers.containsKey(AgentConstants.K2_TRACING_DATA.toLowerCase()));
+        Assert.assertEquals(String.format("Invalid K2 header value for:  %s", AgentConstants.K2_TRACING_DATA), String.format("%s;DUMMY_UUID/dummy-api-id/dummy-exec-id;",headerValue), headers.get(
+                AgentConstants.K2_TRACING_DATA.toLowerCase()));
 
     }
 
