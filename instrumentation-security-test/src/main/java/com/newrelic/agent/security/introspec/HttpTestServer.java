@@ -12,6 +12,7 @@ import com.newrelic.agent.security.introspec.internal.HttpServerLocator;
 import java.io.Closeable;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Map;
 
 /**
  * This can be used to test external calls with or without cat.
@@ -54,4 +55,5 @@ public interface HttpTestServer extends Closeable {
 
     String getCrossProcessId();
 
+    Map<String, String> getHeaders();
 }

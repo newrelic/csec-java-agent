@@ -26,13 +26,22 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Collections;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.Map;
 
 class HttpTestServerImpl extends NanoHTTPD implements HttpTestServer {
     private final int port;
 
+    private Map<String, String> headers = new HashMap<>();
+
     public HttpTestServerImpl() throws IOException {
         this(getRandomPort());
+    }
+
+    public HttpTestServerImpl(int port) throws IOException {
+        super(port);
+        this.port = port;
+        start(NanoHTTPD.SOCKET_READ_TIMEOUT, false);
     }
 
     private static int getRandomPort() {
@@ -48,17 +57,12 @@ class HttpTestServerImpl extends NanoHTTPD implements HttpTestServer {
         return port;
     }
 
-    public HttpTestServerImpl(int port) throws IOException {
-        super(port);
-        this.port = port;
-        start(NanoHTTPD.SOCKET_READ_TIMEOUT, false);
-    }
-
     @Override
     public Response serve(IHTTPSession session) {
         Map<String, ?> incomingParameters = session.getParameters();
         if (incomingParameters.containsKey(NO_TRANSACTION)) {
             return serveNonDispatcher(session);
+
         } else {
             return serveDispatcher(session);
         }
@@ -79,6 +83,8 @@ class HttpTestServerImpl extends NanoHTTPD implements HttpTestServer {
     private Response serveInternal(IHTTPSession session) {
         NewRelic.addCustomParameter("server.port", this.port);
         final Map<String, String> incomingHeaders = session.getHeaders();
+        headers = incomingHeaders;
+
         if (incomingHeaders.containsKey(SLEEP_MS_HEADER_KEY)) {
             try {
                 long input = Long.parseLong(incomingHeaders.remove(SLEEP_MS_HEADER_KEY));
@@ -112,8 +118,7 @@ class HttpTestServerImpl extends NanoHTTPD implements HttpTestServer {
             Response res = newFixedLengthResponse("<html><body><h1>SuccessfulResponse</h1>\n</body></html>\n");
 
             // outbound cat
-            com.newrelic.agent.Transaction.getTransaction().getCrossProcessTransactionState()
-                    .processOutboundResponseHeaders(new OutboundWrapper(res), -1L);
+            com.newrelic.agent.Transaction.getTransaction().getCrossProcessTransactionState().processOutboundResponseHeaders(new OutboundWrapper(res), -1L);
             return res;
         } else {
             return newFixedLengthResponse("<html><body><h1>SuccessfulResponse</h1>\n</body></html>\n");
@@ -135,6 +140,20 @@ class HttpTestServerImpl extends NanoHTTPD implements HttpTestServer {
         shutdown();
     }
 
+    @Override
+    public String getServerTransactionName() {
+        return "WebTransaction/Custom/ExternalHTTPServer";
+    }
+
+    public String getCrossProcessId() {
+        return ServiceFactory.getConfigService().getDefaultAgentConfig().getCrossProcessConfig().getCrossProcessId();
+    }
+
+    @Override
+    public Map<String, String> getHeaders() {
+        return headers;
+    }
+
     static class OutboundWrapper implements OutboundHeaders {
 
         private final Response delegate;
@@ -154,9 +173,8 @@ class HttpTestServerImpl extends NanoHTTPD implements HttpTestServer {
         }
     }
 
-
     static class RequestWrapper extends ExtendedRequest {
-        private IHTTPSession session;
+        private final IHTTPSession session;
 
         public RequestWrapper(IHTTPSession session) {
             super();
@@ -208,15 +226,6 @@ class HttpTestServerImpl extends NanoHTTPD implements HttpTestServer {
         public String getMethod() {
             return session.getMethod().name();
         }
-    }
-
-    @Override
-    public String getServerTransactionName() {
-        return "WebTransaction/Custom/ExternalHTTPServer";
-    }
-
-    public String getCrossProcessId() {
-        return ServiceFactory.getConfigService().getDefaultAgentConfig().getCrossProcessConfig().getCrossProcessId();
     }
 
 }
