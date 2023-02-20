@@ -3,6 +3,11 @@ dependencies {
     implementation("com.newrelic.agent.java:newrelic-api:${nrAPIVersion}")
     implementation("com.newrelic.agent.java:newrelic-weaver-api:${nrAPIVersion}")
     implementation("jakarta.ws.rs:jakarta.ws.rs-api:3.0.0")
+
+    testImplementation ('org.glassfish.jersey.inject:jersey-hk2:3.0.6')
+    testImplementation('org.glassfish.jersey.containers:jersey-container-servlet:3.0.6')
+    testImplementation('org.glassfish.jersey.test-framework:jersey-test-framework-core:3.0.6')
+    testImplementation('org.glassfish.jersey.test-framework.providers:jersey-test-framework-provider-grizzly2:3.0.5')
 }
 
 jar {
