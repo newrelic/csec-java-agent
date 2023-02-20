@@ -13,6 +13,7 @@ import org.junit.rules.ExternalResource;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Map;
 
 public class HttpServerRule extends ExternalResource implements HttpTestServer {
     private HttpTestServer server;
@@ -45,6 +46,11 @@ public class HttpServerRule extends ExternalResource implements HttpTestServer {
     @Override
     public String getCrossProcessId() {
         return server.getCrossProcessId();
+    }
+
+    @Override
+    public Map<String, String> getHeaders() {
+        return server.getHeaders();
     }
 
     @Override
