@@ -39,6 +39,9 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.concurrent.TimeUnit;
 
+import static com.newrelic.agent.security.intcodeagent.logging.IAgentConstants.ERROR_OCCURED_WHILE_TRYING_TO_CONNECT_TO_WSOCKET;
+import static com.newrelic.agent.security.intcodeagent.logging.IAgentConstants.NUMBER_OF_RETRIES;
+
 public class WSClient extends WebSocketClient {
 
     private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
@@ -268,4 +271,33 @@ public class WSClient extends WebSocketClient {
         instance = null;
     }
 
+    public static void tryWebsocketConnection() {
+        try {
+            int retries = NUMBER_OF_RETRIES;
+            WSClient.reconnectWSClient();
+            while (retries > 0) {
+                try {
+                    if (!WSUtils.isConnected()) {
+                        retries--;
+                        int timeout = (NUMBER_OF_RETRIES - retries);
+                        logger.logInit(LogLevel.INFO, String.format("WS client connection failed will retry after %s minute(s)", timeout), WSClient.class.getName());
+                        TimeUnit.MINUTES.sleep(timeout);
+                        WSClient.reconnectWSClient();
+                    } else {
+                        break;
+                    }
+                } catch (Throwable e) {
+                    logger.log(LogLevel.ERROR, ERROR_OCCURED_WHILE_TRYING_TO_CONNECT_TO_WSOCKET, e,
+                            WSClient.class.getName());
+                    logger.postLogMessageIfNecessary(LogLevel.ERROR, ERROR_OCCURED_WHILE_TRYING_TO_CONNECT_TO_WSOCKET, e,
+                            WSClient.class.getName());
+                }
+            }
+            if (!WSUtils.isConnected()) {
+                throw new RuntimeException("Websocket not connected!!!");
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
 }

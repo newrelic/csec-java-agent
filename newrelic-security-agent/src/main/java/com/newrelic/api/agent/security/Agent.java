@@ -17,7 +17,6 @@ import com.newrelic.agent.security.intcodeagent.utils.CommonUtils;
 import com.newrelic.agent.security.intcodeagent.websocket.EventSendPool;
 import com.newrelic.agent.security.intcodeagent.websocket.WSClient;
 import com.newrelic.agent.security.intcodeagent.websocket.WSReconnectionST;
-import com.newrelic.agent.security.intcodeagent.websocket.WSUtils;
 import com.newrelic.api.agent.NewRelic;
 import com.newrelic.api.agent.Transaction;
 import com.newrelic.api.agent.security.schema.*;
@@ -31,7 +30,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.newrelic.agent.security.intcodeagent.logging.IAgentConstants.*;
@@ -162,7 +160,7 @@ public class Agent implements SecurityAgent {
                 String.format(STARTED_MODULE_LOG, AgentServices.HealthCheck.name()),
                 Agent.class.getName()
         );
-        tryWebsocketConnection();
+        WSClient.tryWebsocketConnection();
         EventSendPool.getInstance();
         logger.logInit(
                 LogLevel.INFO,
@@ -171,37 +169,6 @@ public class Agent implements SecurityAgent {
         );
         logger.logInit(LogLevel.INFO, AGENT_INIT_LOG_STEP_FIVE_END, Agent.class.getName());
 
-    }
-
-    private static void tryWebsocketConnection() {
-        try {
-            int retries = NUMBER_OF_RETRIES;
-            WSClient.getInstance().openConnection();
-            while (retries > 0) {
-                try {
-                    if (!WSUtils.isConnected()) {
-                        retries--;
-                        int timeout = (NUMBER_OF_RETRIES - retries);
-                        logger.logInit(LogLevel.INFO, String.format("WS client connection failed will retry after %s minute(s)", timeout), Agent.class.getName());
-                        TimeUnit.MINUTES.sleep(timeout);
-                        WSClient.reconnectWSClient();
-                    } else {
-                        break;
-                    }
-                } catch (Throwable e) {
-                    logger.log(LogLevel.ERROR, ERROR_OCCURED_WHILE_TRYING_TO_CONNECT_TO_WSOCKET, e,
-                            Agent.class.getName());
-                    logger.postLogMessageIfNecessary(LogLevel.ERROR, ERROR_OCCURED_WHILE_TRYING_TO_CONNECT_TO_WSOCKET, e,
-                            Agent.class.getName());
-
-                }
-            }
-            if (!WSUtils.isConnected()) {
-                throw new RuntimeException("Websocket not connected!!!");
-            }
-        } catch (Exception e){
-            throw new RuntimeException(e);
-        }
     }
 
     @Override
