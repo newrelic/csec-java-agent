@@ -1,6 +1,7 @@
 package com.newrelic.api.agent.security.schema.operation;
 
 import com.newrelic.api.agent.security.schema.AbstractOperation;
+import com.newrelic.api.agent.security.schema.StringUtils;
 import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 
 import java.util.HashMap;
@@ -13,7 +14,7 @@ public class SQLOperation extends AbstractOperation {
 
     private Map<Integer, String> params;
 
-    private String dbName;
+    private String dbName = "UNKNOWN";
 
     private boolean isPreparedCall;
 
@@ -84,7 +85,11 @@ public class SQLOperation extends AbstractOperation {
      * @param dbName the dbName to set
      */
     public void setDbName(String dbName) {
-        this.dbName = dbName;
+        if (StringUtils.isBlank(dbName)) {
+            this.dbName = "UNKNOWN";
+        } else {
+            this.dbName = dbName;
+        }
     }
 }
 

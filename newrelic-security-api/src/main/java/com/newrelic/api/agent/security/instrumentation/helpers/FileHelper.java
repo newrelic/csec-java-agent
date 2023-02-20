@@ -94,6 +94,18 @@ public class FileHelper {
         return null;
     }
 
+    public static void checkEntryOfFileIntegrity(List<String> fileNames) {
+        for (String fileName : fileNames) {
+            File file = Paths.get(fileName).toFile();
+            if(NewRelicSecurity.getAgent().getSecurityMetaData().getFileLocalMap().containsKey(fileName)){
+                FileIntegrityOperation fbean = NewRelicSecurity.getAgent().getSecurityMetaData().getFileLocalMap().get(fileName);
+                if(!fbean.getExists().equals(file.exists())){
+                    NewRelicSecurity.getAgent().registerOperation(fbean);
+                }
+            }
+        }
+    }
+
     public static boolean isFileLockAcquired() {
         try {
             return NewRelicSecurity.isHookProcessingActive() &&

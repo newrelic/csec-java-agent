@@ -25,7 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @RunWith(SecurityInstrumentationTestRunner.class)
-@InstrumentationTestConfig(includePrefixes = "java.sql")
+@InstrumentationTestConfig(includePrefixes = { "javax.sql", "java.sql" })
 public class ConnectionTest {
 
     private static final String DB_DRIVER = "org.h2.Driver";

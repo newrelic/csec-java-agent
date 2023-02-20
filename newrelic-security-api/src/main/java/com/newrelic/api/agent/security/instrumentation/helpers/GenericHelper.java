@@ -1,7 +1,6 @@
 package com.newrelic.api.agent.security.instrumentation.helpers;
 
 import com.newrelic.api.agent.security.NewRelicSecurity;
-import com.newrelic.api.agent.security.schema.StringUtils;
 
 public class GenericHelper {
 
@@ -33,7 +32,7 @@ public class GenericHelper {
     public static boolean acquireLockIfPossible(String nrSecCustomAttrName, int hashCode) {
         try {
             if (NewRelicSecurity.isHookProcessingActive() &&
-                    !isLockAcquired(nrSecCustomAttrName)) {
+                    !isLockAcquired(nrSecCustomAttrName, hashCode)) {
                 NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(getNrSecCustomAttribName(nrSecCustomAttrName, hashCode), true);
                 return true;
             }

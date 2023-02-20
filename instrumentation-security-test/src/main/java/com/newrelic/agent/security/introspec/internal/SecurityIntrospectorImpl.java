@@ -1,6 +1,5 @@
 package com.newrelic.agent.security.introspec.internal;
 
-import com.newrelic.agent.security.intcodeagent.models.javaagent.ExitEventBean;
 import com.newrelic.agent.security.introspec.SecurityIntrospector;
 import com.newrelic.api.agent.security.Agent;
 import com.newrelic.api.agent.security.NewRelicSecurity;
@@ -9,6 +8,7 @@ import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.HttpRequest;
 import com.newrelic.api.agent.security.schema.HttpResponse;
 import com.newrelic.api.agent.security.schema.JDBCVendor;
+import com.newrelic.api.agent.security.schema.K2RequestIdentifier;
 import com.newrelic.api.agent.security.schema.SecurityMetaData;
 
 import java.sql.Statement;
@@ -25,11 +25,6 @@ public class SecurityIntrospectorImpl implements SecurityIntrospector {
     @Override
     public List<AbstractOperation> getOperations() {
         return (List<AbstractOperation>) NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(Agent.OPERATIONS, List.class);
-    }
-
-    @Override
-    public List<ExitEventBean> getExitEvents() {
-        return (List<ExitEventBean>) NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(Agent.EXIT_OPERATIONS, List.class);
     }
 
     @Override
@@ -80,6 +75,18 @@ public class SecurityIntrospectorImpl implements SecurityIntrospector {
     @Override
     public void setRequestReaderHash(int hashCode) {
         NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(REQUEST_READER_HASH, hashCode);
+    }
+
+    @Override
+    public void setK2FuzzRequestId(String value) {
+        K2RequestIdentifier k2RequestIdentifierInstance = new K2RequestIdentifier();
+        k2RequestIdentifierInstance.setRaw(value);
+        NewRelicSecurity.getAgent().getSecurityMetaData().setFuzzRequestIdentifier(k2RequestIdentifierInstance);
+    }
+
+    @Override
+    public void setK2TracingData(String value) {
+        NewRelicSecurity.getAgent().getSecurityMetaData().setTracingHeaderValue(value);
     }
 
     @Override

@@ -7,10 +7,7 @@
 
 package com.nr.agent.instrumentation.security.okhttp30.internal;
 
-import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
-import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
-import com.newrelic.api.agent.security.schema.operation.SSRFOperation;
 import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
@@ -21,36 +18,6 @@ import okhttp3.Response;
 abstract class RealCall_Instrumentation {
 
     Request originalRequest = Weaver.callOriginal();
-
-    private void registerExitOperation(boolean isProcessingAllowed, AbstractOperation operation) {
-        try {
-            if (operation == null || !isProcessingAllowed || !NewRelicSecurity.isHookProcessingActive() ||
-                    NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty() || OkhttpHelper.skipExistsEvent()
-            ) {
-                return;
-            }
-            NewRelicSecurity.getAgent().registerExitEvent(operation);
-        } catch (Throwable ignored){}
-    }
-
-    private AbstractOperation preprocessSecurityHook (String url, String methodName){
-        try {
-            if (!NewRelicSecurity.isHookProcessingActive() ||
-                    NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty() ||
-                    url == null || url.trim().isEmpty()){
-                return null;
-            }
-            SSRFOperation ssrfOperation = new SSRFOperation(url, this.getClass().getName(), methodName);
-            NewRelicSecurity.getAgent().registerOperation(ssrfOperation);
-            return ssrfOperation;
-        } catch (Throwable e) {
-            if (e instanceof NewRelicSecurityException) {
-                e.printStackTrace();
-                throw e;
-            }
-        }
-        return null;
-    }
 
     private void releaseLock() {
         try {
@@ -71,10 +38,14 @@ abstract class RealCall_Instrumentation {
      */
     public Response execute() {
         boolean isLockAcquired = acquireLockIfPossible();
-        System.out.println("real call execute");
         AbstractOperation operation = null;
         if(isLockAcquired) {
-            operation = preprocessSecurityHook(getUrl(originalRequest), OkhttpHelper.METHOD_EXECUTE);
+            operation = OkhttpHelper.preprocessSecurityHook(getUrl(originalRequest), this.getClass().getName(),
+                    OkhttpHelper.METHOD_EXECUTE);
+            Request updatedRequest = OkhttpHelper.addSecurityHeaders(originalRequest.newBuilder(), operation);
+            if (updatedRequest != null) {
+                originalRequest = updatedRequest;
+            }
         }
         Response returnVal = null;
         try {
@@ -84,7 +55,7 @@ abstract class RealCall_Instrumentation {
                 releaseLock();
             }
         }
-        registerExitOperation(isLockAcquired, operation);
+        OkhttpHelper.registerExitOperation(isLockAcquired, operation);
         return returnVal;
     }
 

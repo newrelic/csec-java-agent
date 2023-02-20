@@ -593,6 +593,8 @@ public interface IAgentConstants {
     String SENDING_APPLICATION_INFO_ON_WS_CONNECT = "[APP_INFO] Sending application info to Prevent-Web service : %s";
     String WS_CONNECTION_SUCCESSFUL = "[STEP-4][COMPLETE][WS] Connected to Prevent-Web service at %s.";
     String WS_CONNECTION_UNSUCCESSFUL = "[WS] Error connecting to Prevent-Web service at %s :";
+    String WS_CONNECTION_UNSUCCESSFUL_INFO = "[WS] Error connecting to Prevent-Web service at %s : %s : %s";
+
     String INIT_WS_CONNECTION = "[STEP-4][BEGIN][WS] Connecting to Prevent-Web service at %s.";
 
 

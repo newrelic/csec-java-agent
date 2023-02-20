@@ -21,7 +21,7 @@ public class CommandReadOperation_Instrumentation<T> {
         if (isLockAcquired) {
             noSQLOperation = MongoUtil.recordMongoOperation(command, MongoUtil.OP_WRITE, MongoUtil.METHOD_EXECUTE, this.getClass().getName());
         }
-        Object returnVal = null;
+        T returnVal = null;
         try {
             returnVal = Weaver.callOriginal();
         } catch (Throwable ignored) {
@@ -31,7 +31,7 @@ public class CommandReadOperation_Instrumentation<T> {
             }
         }
         MongoUtil.registerExitOperation(isLockAcquired, noSQLOperation);
-        return (T) returnVal;
+        return returnVal;
     }
 
     public void executeAsync(final AsyncReadBinding binding, final SingleResultCallback<T> callback) {

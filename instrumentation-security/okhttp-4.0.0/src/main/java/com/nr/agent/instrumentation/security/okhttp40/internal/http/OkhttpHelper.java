@@ -1,6 +1,12 @@
 package com.nr.agent.instrumentation.security.okhttp40.internal.http;
 
 import com.newrelic.api.agent.security.NewRelicSecurity;
+import com.newrelic.api.agent.security.schema.AbstractOperation;
+import com.newrelic.api.agent.security.schema.constants.AgentConstants;
+import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
+import com.newrelic.api.agent.security.schema.operation.SSRFOperation;
+import com.newrelic.api.agent.security.utils.SSRFUtils;
+import okhttp3.Request;
 
 public class OkhttpHelper {
 
@@ -38,13 +44,70 @@ public class OkhttpHelper {
 
     public static void releaseLock() {
         try {
-            if(NewRelicSecurity.isHookProcessingActive()) {
+            if (NewRelicSecurity.isHookProcessingActive()) {
                 NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(getNrSecCustomAttribName(), null);
             }
-        } catch (Throwable ignored){}
+        } catch (Throwable ignored) {
+        }
     }
 
     private static String getNrSecCustomAttribName() {
         return NR_SEC_CUSTOM_ATTRIB_NAME + Thread.currentThread().getId();
+    }
+
+
+    public static AbstractOperation preprocessSecurityHook(String url, String className, String methodName) {
+        try {
+            if (!NewRelicSecurity.isHookProcessingActive() ||
+                    NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty() ||
+                    url == null || url.trim().isEmpty()) {
+                return null;
+            }
+            SSRFOperation ssrfOperation = new SSRFOperation(url, className, methodName);
+            NewRelicSecurity.getAgent().registerOperation(ssrfOperation);
+            return ssrfOperation;
+        } catch (Throwable e) {
+            if (e instanceof NewRelicSecurityException) {
+                e.printStackTrace();
+                throw e;
+            }
+        }
+        return null;
+    }
+
+    public static void registerExitOperation(boolean isProcessingAllowed, AbstractOperation operation) {
+        try {
+            if (operation == null || !isProcessingAllowed || !NewRelicSecurity.isHookProcessingActive() ||
+                    NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty() || OkhttpHelper.skipExistsEvent()
+            ) {
+                return;
+            }
+            NewRelicSecurity.getAgent().registerExitEvent(operation);
+        } catch (Throwable ignored) {
+        }
+    }
+
+    public static Request addSecurityHeaders(Request.Builder requestBuilder, AbstractOperation operation) {
+        if (operation == null || requestBuilder == null) {
+            return null;
+        }
+
+        // Add Security IAST header
+        String iastHeader = NewRelicSecurity.getAgent().getSecurityMetaData().getFuzzRequestIdentifier().getRaw();
+        if (iastHeader != null && !iastHeader.trim().isEmpty()) {
+            requestBuilder.addHeader(AgentConstants.K2_FUZZ_REQUEST_ID, iastHeader);
+        }
+
+        if (operation.getApiID() != null && !operation.getApiID().trim().isEmpty() &&
+                operation.getExecutionId() != null && !operation.getExecutionId().trim().isEmpty()) {
+            // Add Security distributed tracing header
+            requestBuilder.removeHeader(AgentConstants.K2_TRACING_DATA);
+            requestBuilder.addHeader(AgentConstants.K2_TRACING_DATA,
+                    SSRFUtils.generateTracingHeaderValue(NewRelicSecurity.getAgent().getSecurityMetaData()
+                                    .getTracingHeaderValue(),
+                            operation.getApiID(), operation.getExecutionId(),
+                            NewRelicSecurity.getAgent().getAgentUUID()));
+        }
+        return requestBuilder.build();
     }
 }

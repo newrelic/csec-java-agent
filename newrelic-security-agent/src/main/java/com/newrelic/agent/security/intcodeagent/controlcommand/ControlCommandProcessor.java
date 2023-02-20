@@ -2,6 +2,7 @@ package com.newrelic.agent.security.intcodeagent.controlcommand;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.newrelic.agent.security.instrumentator.httpclient.RestRequestProcessor;
+import com.newrelic.agent.security.instrumentator.httpclient.RestRequestThreadPool;
 import com.newrelic.agent.security.instrumentator.utils.AgentUtils;
 import com.newrelic.agent.security.instrumentator.utils.InstrumentationUtils;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
@@ -12,7 +13,11 @@ import com.newrelic.agent.security.intcodeagent.models.javaagent.CollectorInitMs
 import com.newrelic.agent.security.intcodeagent.models.javaagent.EventResponse;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.IntCodeControlCommand;
 import com.newrelic.agent.security.intcodeagent.utils.CommonUtils;
+import com.newrelic.agent.security.intcodeagent.websocket.EventSendPool;
 import com.newrelic.agent.security.intcodeagent.websocket.JsonConverter;
+import com.newrelic.agent.security.intcodeagent.websocket.WSClient;
+import com.newrelic.agent.security.intcodeagent.websocket.WSUtils;
+import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.schema.policy.AgentPolicy;
 import org.apache.commons.lang3.StringUtils;
 import org.json.simple.JSONObject;
@@ -37,6 +42,16 @@ public class ControlCommandProcessor implements Runnable {
     public static final String FUZZ_REQUEST = "Fuzz request : ";
     public static final String POLICY_PARAMETERS_ARE_UPDATED_TO_S = "Policy parameters are updated to : %s";
     public static final String UPDATED_POLICY_FAILED_VALIDATION_REVERTING_TO_DEFAULT_POLICY_FOR_THE_MODE = "Updated policy failed validation. Reverting to default policy for the mode";
+    public static final String ERROR_WHILE_PROCESSING_RECONNECTION_CC_S_S = "Error while processing reconnection CC : %s : %s";
+    public static final String ERROR_WHILE_PROCESSING_RECONNECTION_CC = "Error while processing reconnection CC :";
+    public static final String UNABLE_TO_PARSE_RECEIVED_DEFAULT_POLICY = "Unable to parse received default policy : ";
+    public static final String ERROR_IN_CONTROL_COMMAND_PROCESSOR = "Error in controlCommandProcessor : ";
+    public static final String ARGUMENTS = "arguments";
+    public static final String DATA = "data";
+    public static final String CONTROL_COMMAND = "controlCommand";
+    public static final String RECEIVED_WS_RECONNECT_COMMAND_FROM_SERVER_INITIATING_SEQUENCE = "Received WS 'reconnect' command from server. Initiating sequence.";
+    public static final String WS_RECONNECT_EVENT_SEND_POOL_DRAINED = "[WS RECONNECT] EventSend pool drained.";
+    public static final String WS_RECONNECT_IAST_REQUEST_REPLAY_POOL_DRAINED = "[WS RECONNECT] IAST request replay pool drained.";
 
 
     private String controlCommandMessage;
@@ -59,12 +74,12 @@ public class ControlCommandProcessor implements Runnable {
         try {
             JSONObject object = (JSONObject) PARSER.parse(controlCommandMessage);
             controlCommand = new IntCodeControlCommand();
-            controlCommand.setArguments((List<String>) object.get("arguments"));
-            controlCommand.setData(object.get("data"));
-            controlCommand.setControlCommand(Integer.valueOf(object.get("controlCommand").toString()));
+            controlCommand.setArguments((List<String>) object.get(ARGUMENTS));
+            controlCommand.setData(object.get(DATA));
+            controlCommand.setControlCommand(Integer.valueOf(object.get(CONTROL_COMMAND).toString()));
 
         } catch (Throwable e) {
-            logger.log(LogLevel.FATAL, "Error in controlCommandProcessor : ", e,
+            logger.log(LogLevel.FATAL, ERROR_IN_CONTROL_COMMAND_PROCESSOR, e,
                     ControlCommandProcessor.class.getSimpleName());
             return;
         }
@@ -172,7 +187,7 @@ public class ControlCommandProcessor implements Runnable {
                         AgentUtils.getInstance().applyPolicyOverrideIfApplicable();
                     }
                 } catch (IllegalArgumentException e) {
-                    logger.log(LogLevel.ERROR, "Unable to parse received default policy : ", e,
+                    logger.log(LogLevel.ERROR, UNABLE_TO_PARSE_RECEIVED_DEFAULT_POLICY, e,
                             ControlCommandProcessor.class.getName());
                 }
                 break;
@@ -180,6 +195,37 @@ public class ControlCommandProcessor implements Runnable {
                 logger.log(LogLevel.WARN, UPDATED_POLICY_FAILED_VALIDATION_REVERTING_TO_DEFAULT_POLICY_FOR_THE_MODE,
                         ControlCommandProcessor.class.getName());
                 AgentUtils.instantiateDefaultPolicy();
+                break;
+            case IntCodeControlCommand.RECONNECT_AT_WILL:
+                /* This is only when we have IastScan enabled
+                 * 1. Mark LC in reconnecting phase
+                 * 2. Let IAST request processor ideal out.
+                 * 3. Mark LC in inactive state by disconnecting WS connection.
+                 * 4. Initiate WS reconnect
+                 *
+                 * Post reconnect: reset 'reconnecting phase' in WSClient.
+                 */
+                try {
+                    logger.log(LogLevel.INFO, RECEIVED_WS_RECONNECT_COMMAND_FROM_SERVER_INITIATING_SEQUENCE, this.getClass().getName());
+                    if (NewRelicSecurity.getAgent().getCurrentPolicy().getVulnerabilityScan().getEnabled() &&
+                            NewRelicSecurity.getAgent().getCurrentPolicy().getVulnerabilityScan().getIastScan().getEnabled()
+                    ) {
+                        WSUtils.getInstance().setReconnecting(true);
+                        while (EventSendPool.getInstance().getExecutor().getActiveCount() > 0 && !EventSendPool.getInstance().isWaiting().get()) {
+                            Thread.sleep(100);
+                        }
+                        logger.log(LogLevel.DEBUG, WS_RECONNECT_EVENT_SEND_POOL_DRAINED, this.getClass().getName());
+
+                        while (RestRequestThreadPool.getInstance().getExecutor().getActiveCount() > 0 && !RestRequestThreadPool.getInstance().isWaiting().get()) {
+                            Thread.sleep(100);
+                        }
+                        logger.log(LogLevel.DEBUG, WS_RECONNECT_IAST_REQUEST_REPLAY_POOL_DRAINED, this.getClass().getName());
+                    }
+                    WSClient.tryWebsocketConnection(20, true);
+                } catch (Throwable e) {
+                    logger.log(LogLevel.ERROR, String.format(ERROR_WHILE_PROCESSING_RECONNECTION_CC_S_S, e.getMessage(), e.getCause()), this.getClass().getName());
+                    logger.log(LogLevel.ERROR, ERROR_WHILE_PROCESSING_RECONNECTION_CC, e, this.getClass().getName());
+                }
                 break;
             default:
                 logger.log(LogLevel.WARN, String.format(UNKNOWN_CONTROL_COMMAND_S, controlCommandMessage),

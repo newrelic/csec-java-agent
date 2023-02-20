@@ -57,7 +57,9 @@ public class Agent implements SecurityAgent {
     public void registerOperation(AbstractOperation operation) {
         System.out.println("Registering operation : " + operation.hashCode() + " : " + NewRelic.getAgent().getTransaction().hashCode());
         String executionId = "dummy-exec-id";
+        String apiId = "dummy-api-id";
         operation.setExecutionId(executionId);
+        operation.setApiID(apiId);
         operation.setStartTime(Instant.now().toEpochMilli());
         operation.setStackTrace(Thread.currentThread().getStackTrace());
         this.getSecurityMetaData().getCustomAttribute(OPERATIONS, List.class).add(operation);

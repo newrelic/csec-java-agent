@@ -1,9 +1,7 @@
-apply plugin: 'java'
-
 dependencies {
     implementation(project(":newrelic-security-api"))
-    implementation("com.newrelic.agent.java:newrelic-api:7.11.0-SNAPSHOT")
-    implementation("com.newrelic.agent.java:newrelic-weaver-api:7.11.0-SNAPSHOT")
+    implementation("com.newrelic.agent.java:newrelic-api:${nrAPIVersion}")
+    implementation("com.newrelic.agent.java:newrelic-weaver-api:${nrAPIVersion}")
     implementation("org.apache.directory.api:api-all:1.0.0")
     testImplementation("org.zapodot:embedded-ldap-junit:0.9.0")
 }

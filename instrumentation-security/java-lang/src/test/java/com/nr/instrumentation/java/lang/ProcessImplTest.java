@@ -20,9 +20,10 @@ import java.util.List;
 @InstrumentationTestConfig(includePrefixes = "java.lang.ProcessImpl_Instrumentation")
 public class ProcessImplTest {
     private String cmd = "/bin/sh -c ls";
+    private String cmd2 = "ls";
 
     @Test
-    public void testStart() {
+    public void testStart() throws IOException, InterruptedException {
         callExecute();
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
         List<AbstractOperation> operations = introspector.getOperations();
@@ -30,18 +31,40 @@ public class ProcessImplTest {
         ForkExecOperation operation = (ForkExecOperation) operations.get(0);
         Assert.assertEquals("Invalid executed parameters.", cmd, operation.getCommand());
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.SYSTEM_COMMAND, operation.getCaseType());
-        Assert.assertEquals("Invalid executed class name.", operation.getClassName(), "java.lang.ProcessImpl");
-        Assert.assertEquals("Invalid executed method name.", operation.getMethodName(), "start");
+        Assert.assertEquals("Invalid executed class name.", "java.lang.ProcessImpl", operation.getClassName());
+        Assert.assertEquals("Invalid executed method name.", "start", operation.getMethodName());
     }
 
     @Trace(dispatcher = true)
-    public void callExecute() {
+    public void callExecute() throws InterruptedException, IOException {
+        StringBuffer output = new StringBuffer();
+        Process pr = Runtime.getRuntime().exec(cmd);
+        pr.waitFor();
+        BufferedReader reader = new BufferedReader(new InputStreamReader(pr.getInputStream()));
+        System.out.println(output);
+    }
+
+    @Test
+    public void testProcessBuilderStart() {
+        callProcessBuilderStart();
+        SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
+        List<AbstractOperation> operations = introspector.getOperations();
+        Assert.assertTrue("No operations detected.", operations.size() > 0);
+        ForkExecOperation operation = (ForkExecOperation) operations.get(0);
+        Assert.assertEquals("Invalid executed parameters.", cmd2, operation.getCommand());
+        Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.SYSTEM_COMMAND, operation.getCaseType());
+        Assert.assertEquals("Invalid executed class name.", "java.lang.ProcessImpl", operation.getClassName());
+        Assert.assertEquals("Invalid executed method name.", "start", operation.getMethodName());
+    }
+
+    @Trace(dispatcher = true)
+    public void callProcessBuilderStart() {
         StringBuffer output = new StringBuffer();
         try {
-            Process pr = Runtime.getRuntime().exec(cmd);
-            pr.waitFor();
+            ProcessBuilder builder = new ProcessBuilder(cmd2);
+            Process pr = builder.start();
             BufferedReader reader = new BufferedReader(new InputStreamReader(pr.getInputStream()));
-        } catch (IOException | InterruptedException e) {
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
         System.out.println(output);

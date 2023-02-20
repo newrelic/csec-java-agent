@@ -5,10 +5,13 @@ import com.nr.builder.GitUtil
 import com.nr.builder.Log4j2PluginFileMover
 import com.nr.builder.publish.PublishConfig
 
+import java.time.Clock
+
 plugins {
     id("java-library")
     id("maven-publish")
     id("signing")
+    id 'org.cyclonedx.bom' version '1.7.3'
 }
 
 java.sourceCompatibility = JavaVersion.VERSION_1_8
@@ -33,6 +36,11 @@ configurations {
 configurations.implementation.extendsFrom(configurations.shadowIntoJar)
 configurations.implementation.extendsFrom(configurations.jarIntoJar)
 
+cyclonedxBom {
+    outputFormat = "json"
+    outputName = "SBOM"
+}
+
 project.ext {
     instrumentProjects = {
         rootProject.subprojects.findAll { project -> project.path =~ /:instrumentation-security:/ }
@@ -56,6 +64,7 @@ dependencies {
     shadowIntoJar 'com.googlecode.json-simple:json-simple:1.1.1'
     shadowIntoJar 'com.fasterxml.jackson.core:jackson-databind:2.13.4'
     shadowIntoJar 'com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.13.4'
+    shadowIntoJar 'com.fasterxml.jackson.dataformat:jackson-dataformat-properties:2.13.4'
     shadowIntoJar 'org.yaml:snakeyaml:1.31'
     shadowIntoJar 'org.java-websocket:Java-WebSocket:1.5.1'
     shadowIntoJar 'commons-io:commons-io:2.7'
@@ -69,7 +78,7 @@ dependencies {
     shadowIntoJar 'com.github.erosb:everit-json-schema:1.14.1'
     shadowIntoJar 'net.openhft:zero-allocation-hashing:0.16'
     shadowIntoJar 'com.github.oshi:oshi-core:5.5.0'
-    shadowIntoJar 'com.newrelic.agent.java:newrelic-api:7.11.0-SNAPSHOT'
+    shadowIntoJar "com.newrelic.agent.java:newrelic-api:${nrAPIVersion}"
     shadowIntoJar 'io.opentelemetry.proto:opentelemetry-proto:0.19.0-alpha'
 }
 
@@ -77,16 +86,15 @@ dependencies {
  * The generateVersionProperties creates a properties file
  * containing the built version of the Jar.
  */
-task generateVersionProperties() {
-    def buildProps = new File(sourceSets.main.output.resourcesDir, "com/newrelic/agent/security/Agent.properties")
-    outputs.file(buildProps)
-
-    doLast {
-        buildProps.parentFile.mkdirs()
-        buildProps.text = """version=$version"""
-    }
+task generateVersionProperties(type: WriteProperties) {
+    outputFile = new File(sourceSets.main.output.resourcesDir, "Agent.properties")
+    property('collectorVersion', "$version")
+    property('buildTime', Clock.systemUTC().instant().toString())
+    property('commitId', "$commitId")
+    property('jsonVersion', "$jsonVersion")
+    property('buildNumber', "$buildNumber")
 }
-
+tasks.javadocJar.dependsOn(generateVersionProperties)
 /**
  * The `relocatedShadowJar` task builds the initial shaded jar. It performs the following tasks:
  *   - Identifies all dependencies in the "shadowIntoJar" configuration
@@ -102,7 +110,7 @@ task generateVersionProperties() {
  *   - The newly-created Agent.properties from generateVersionProperties
  */
 task relocatedShadowJar(type: ShadowJar) {
-    dependsOn("classes", "processResources", "generateVersionProperties")
+    dependsOn("classes", "processResources", "generateVersionProperties", ":newrelic-security-api:newrelicVersionedAPIJar")
 
     from sourceSets.main.output.classesDirs
     from(sourceSets.main.output.resourcesDir) {
@@ -132,6 +140,7 @@ task relocatedShadowJar(type: ShadowJar) {
             "META-INF/maven/**",
             // Multiple dependencies
             "LICENSE",
+            "LICENSE.txt",
             // log4j2
             "META-INF/versions/9/module-info.class",
             "META-INF/services/org.apache.logging*",
@@ -194,9 +203,12 @@ task newrelicVersionedAgentJar(type: Jar) {
     group("build")
     dependsOn("transformedShadowJar")
     dependsOn(instrumentProjects().collect { it.tasks["jar"] })
+    dependsOn("cyclonedxBom")
 
     from("$rootDir/LICENSE")
     from("$rootDir/THIRD_PARTY_NOTICES.md")
+    new File(projectDir, 'src/main/resources/NOTICE')
+    from("$buildDir/reports/SBOM.json")
 
     includeEmptyDirs = false
 

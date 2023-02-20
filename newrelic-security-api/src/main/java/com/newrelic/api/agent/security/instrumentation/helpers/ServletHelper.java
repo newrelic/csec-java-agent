@@ -3,10 +3,12 @@ package com.newrelic.api.agent.security.instrumentation.helpers;
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.schema.APIRecordStatus;
 import com.newrelic.api.agent.security.schema.K2RequestIdentifier;
+import com.newrelic.api.agent.security.schema.SecurityMetaData;
 import com.newrelic.api.agent.security.schema.StringUtils;
 
 import java.io.File;
 import java.nio.file.Files;
+import java.util.Arrays;
 
 public class ServletHelper {
     public static final String SEPARATOR_SEMICOLON = ":K2:";
@@ -56,5 +58,21 @@ public class ServletHelper {
             }
         }
         return k2RequestIdentifierInstance;
+    }
+
+    public static void registerUserLevelCode(String frameworkName) {
+        try {
+            if (!NewRelicSecurity.isHookProcessingActive() || NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()
+            ) {
+                return;
+            }
+            SecurityMetaData securityMetaData = NewRelicSecurity.getAgent().getSecurityMetaData();
+            if (!securityMetaData.getMetaData().isUserLevelServiceMethodEncountered(frameworkName)) {
+                securityMetaData.getMetaData().setUserLevelServiceMethodEncountered(true);
+                StackTraceElement[] trace = Thread.currentThread().getStackTrace();
+                securityMetaData.getMetaData().setServiceTrace(Arrays.copyOfRange(trace, 1, trace.length));
+            }
+        } catch (Throwable ignored) {
+        }
     }
 }

@@ -29,6 +29,10 @@ public class AgentMetaData {
 
     @JsonIgnore
     private boolean userLevelServiceMethodEncountered = false;
+
+    @JsonIgnore
+    private String userLevelServiceMethodEncounteredFramework;
+
     @JsonIgnore
     private Set<String> ips;
 
@@ -126,6 +130,11 @@ public class AgentMetaData {
 
     public boolean isUserLevelServiceMethodEncountered() {
         return userLevelServiceMethodEncountered;
+    }
+
+    public boolean isUserLevelServiceMethodEncountered(String framework) {
+        return userLevelServiceMethodEncountered &&
+                StringUtils.equals(userLevelServiceMethodEncounteredFramework, framework);
     }
 
     public void setUserLevelServiceMethodEncountered(boolean userLevelServiceMethodEncountered) {

@@ -1,6 +1,6 @@
 dependencies {
     implementation(project(":newrelic-security-api"))
-    implementation("com.newrelic.agent.java:newrelic-weaver-api:7.11.0-SNAPSHOT")
+    implementation("com.newrelic.agent.java:newrelic-weaver-api:${nrAPIVersion}")
 }
 
 // This instrumentation module should not use the bootstrap classpath
@@ -17,5 +17,12 @@ verifyInstrumentation {
 java {
     toolchain {
         languageVersion.set(JavaLanguageVersion.of(11))
+    }
+}
+
+test {
+//     These instrumentation tests only run on Java 8 regardless of the -PtestN gradle property that is set.
+    onlyIf {
+        inputs.getProperties()["test.jdk"]!="jdk8"
     }
 }

@@ -4,14 +4,14 @@ jar {
 
 dependencies {
     implementation(project(":newrelic-security-api"))
-    implementation("com.newrelic.agent.java:newrelic-api:7.11.0-SNAPSHOT")
-    implementation("com.newrelic.agent.java:newrelic-weaver-api:7.11.0-SNAPSHOT")
+    implementation("com.newrelic.agent.java:newrelic-api:${nrAPIVersion}")
+    implementation("com.newrelic.agent.java:newrelic-weaver-api:${nrAPIVersion}")
     implementation("org.mongodb:mongo-java-driver:3.0.0")
 
 }
 
 verifyInstrumentation {
-    passes 'org.mongodb:mongo-java-driver:[3.0.0,3.7.0)'
+    passes 'org.mongodb:mongo-java-driver:[3.0.0,3.6.0)'
     excludeRegex '.*-(rc|beta)[0-9]+'
 }
 

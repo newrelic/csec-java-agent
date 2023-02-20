@@ -6,7 +6,6 @@ import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.StringUtils;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
 import com.newrelic.api.agent.security.schema.operation.JSInjectionOperation;
-import com.newrelic.api.agent.security.schema.operation.XPathOperation;
 import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
@@ -19,7 +18,7 @@ public abstract class Script_Instrumentation {
         boolean isLockAcquired = acquireLockIfPossible();
         AbstractOperation operation = null;
         if(isLockAcquired) {
-            operation = preprocessSecurityHook(this.hashCode(), JSEngineUtils.METHOD_EVAL_IMPL);
+            operation = preprocessSecurityHook(this.hashCode(), JSEngineUtils.METHOD_EXEC);
         }
 
         Object returnVal = null;

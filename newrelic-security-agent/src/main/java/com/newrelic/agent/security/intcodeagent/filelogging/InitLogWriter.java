@@ -78,7 +78,7 @@ public class InitLogWriter implements Runnable {
             writer = new BufferedWriter(new FileWriter(currentLogFileName, true));
             writer.write(LOG_FILE_INITIATED_MSG);
             writer.flush();
-            maxFileSize = K2JALogProperties.maxfilesize * 1048576;
+            maxFileSize = FileLoggerThreadPool.getInstance().maxfilesize * 1048576;
 
             // k2.log.handler.maxfilesize=10
             // k2.log.handler.maxfilesize.unit=MB
@@ -184,7 +184,7 @@ public class InitLogWriter implements Runnable {
                 } catch (IOException e) {
                 }
 
-                CommonUtils.deleteRolloverLogFiles(currentFile.getName(), K2JALogProperties.maxfiles);
+                CommonUtils.deleteRolloverLogFiles(currentFile.getName(), FileLoggerThreadPool.getInstance().maxfiles);
             }
         } finally {
             writer = new BufferedWriter(new FileWriter(currentFile, true));

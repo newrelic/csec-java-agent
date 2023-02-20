@@ -1,6 +1,5 @@
 package com.newrelic.agent.security.intcodeagent.websocket;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.newrelic.agent.security.AgentInfo;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.newrelic.agent.security.intcodeagent.filelogging.LogLevel;
@@ -8,6 +7,7 @@ import com.newrelic.agent.security.intcodeagent.models.javaagent.JavaAgentEventB
 
 import java.util.Map;
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class EventSendPool {
 
@@ -25,7 +25,7 @@ public class EventSendPool {
     }
 
     private Map<String, Long> eventMap = new ConcurrentHashMap<>();
-    ObjectMapper objectMapper = new ObjectMapper();
+    private AtomicBoolean isWaiting = new AtomicBoolean(false);
 
     private EventSendPool() {
         // load the settings
@@ -133,5 +133,13 @@ public class EventSendPool {
         public void rejectedExecution(Runnable r, ThreadPoolExecutor e) {
             logger.log(LogLevel.DEBUG, "Event Task " + r.toString() + " rejected from  " + e.toString(), EventSendPool.class.getName());
         }
+    }
+
+    public AtomicBoolean isWaiting() {
+        return isWaiting;
+    }
+
+    public ThreadPoolExecutor getExecutor() {
+        return executor;
     }
 }

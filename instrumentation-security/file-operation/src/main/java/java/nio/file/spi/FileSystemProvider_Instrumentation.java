@@ -311,6 +311,7 @@ public abstract class FileSystemProvider_Instrumentation {
             if (operation == null || !isFileLockAcquired || !NewRelicSecurity.isHookProcessingActive() || NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()) {
                 return;
             }
+            FileHelper.checkEntryOfFileIntegrity(((FileOperation)operation).getFileName());
             NewRelicSecurity.getAgent().registerExitEvent(operation);
         } catch (Throwable ignored){}
     }
