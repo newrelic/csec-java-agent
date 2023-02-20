@@ -251,7 +251,7 @@ public class WSClient extends WebSocketClient {
     public static WSClient reconnectWSClient() throws URISyntaxException, InterruptedException {
         logger.log(LogLevel.WARN, RECONNECTING_TO_IC,
                 WSClient.class.getName());
-        if (instance != null) {
+        if (instance != null && instance.isOpen()) {
             instance.closeBlocking();
         }
         instance = new WSClient();
