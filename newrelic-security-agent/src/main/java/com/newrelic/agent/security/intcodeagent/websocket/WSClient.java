@@ -118,7 +118,7 @@ public class WSClient extends WebSocketClient {
 
     private WSClient() throws URISyntaxException {
         super(new URI(AgentConfig.getInstance().getConfig().getK2ServiceInfo().getValidatorServiceEndpointURL()),
-                new Draft_6455(), null, 30);
+                new Draft_6455(), null, (int) TimeUnit.SECONDS.toMillis(30));
         this.setTcpNoDelay(true);
         this.setConnectionLostTimeout(30);
         this.addHeader("NR-CSEC-CONNECTION-TYPE", "LANGUAGE_COLLECTOR");
@@ -206,7 +206,7 @@ public class WSClient extends WebSocketClient {
                                 .getInstance().getConfig().getK2ServiceInfo().getValidatorServiceEndpointURL(),
                         ex.toString(), ex.getCause()),
                 WSClient.class.getName());
-        logger.logInit(LogLevel.DEBUG, String.format(IAgentConstants.WS_CONNECTION_UNSUCCESSFUL, AgentConfig.getInstance().getConfig().getK2ServiceInfo().getValidatorServiceEndpointURL()),
+        logger.log(LogLevel.DEBUG, String.format(IAgentConstants.WS_CONNECTION_UNSUCCESSFUL, AgentConfig.getInstance().getConfig().getK2ServiceInfo().getValidatorServiceEndpointURL()),
                 ex,
                 WSClient.class.getName());
     }
