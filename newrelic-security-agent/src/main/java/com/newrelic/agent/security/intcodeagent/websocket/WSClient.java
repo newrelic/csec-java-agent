@@ -136,6 +136,13 @@ public class WSClient extends WebSocketClient {
         }
     }
 
+    @Override
+    public void addHeader(String key, String value) {
+        logger.log(LogLevel.INFO, String.format("Adding WS connection header: %s -> %s", key, value),
+                WSClient.class.getName());
+        super.addHeader(key, value);
+    }
+
     /**
      * Connects to K2 intcode over a websocket channel with the configuration provided in the constructor itself.
      *
