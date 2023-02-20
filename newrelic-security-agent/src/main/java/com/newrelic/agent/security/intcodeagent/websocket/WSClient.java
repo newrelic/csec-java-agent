@@ -151,7 +151,7 @@ public class WSClient extends WebSocketClient {
     public void openConnection() throws InterruptedException {
         logger.logInit(LogLevel.INFO, String.format(IAgentConstants.INIT_WS_CONNECTION, AgentConfig.getInstance().getConfig().getK2ServiceInfo().getValidatorServiceEndpointURL()),
                 WSClient.class.getName());
-        connectBlocking(10, TimeUnit.SECONDS);
+        connectBlocking(30, TimeUnit.SECONDS);
         WebSocket conn = getConnection();
         if (conn instanceof WebSocketImpl) {
             this.connection = (WebSocketImpl) conn;
