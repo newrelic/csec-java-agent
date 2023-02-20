@@ -5,6 +5,8 @@ dependencies {
     implementation("com.newrelic.agent.java:newrelic-api:${nrAPIVersion}")
     implementation("com.newrelic.agent.java:newrelic-weaver-api:${nrAPIVersion}")
     implementation("org.ldaptive:ldaptive:2.0.0")
+
+    testImplementation("org.zapodot:embedded-ldap-junit:0.9.0")
 }
 
 jar {

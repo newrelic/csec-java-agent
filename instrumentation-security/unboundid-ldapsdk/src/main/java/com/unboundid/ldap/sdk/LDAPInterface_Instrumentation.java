@@ -49,7 +49,7 @@ public class LDAPInterface_Instrumentation {
         try {
             if (!NewRelicSecurity.isHookProcessingActive() ||
                     NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty() ||
-                    StringUtils.isAnyBlank(name, filter)){
+                    StringUtils.isAnyBlank(filter)){
                 return null;
             }
             LDAPOperation ldapOperation = new LDAPOperation(name, filter, this.getClass().getName(), methodName);

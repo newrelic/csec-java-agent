@@ -102,7 +102,21 @@ public abstract class LdapAsyncConnection_Instrumentation {
     }
 
     public SearchFuture searchAsync( SearchRequest searchRequest ) throws LdapException {
-        //TODO incomplete as we need to extract filter and baseDn from searchRequest
-        return Weaver.callOriginal();
+        boolean isLockAcquired = acquireLockIfPossible();
+        AbstractOperation operation = null;
+        if(isLockAcquired) {
+            operation = preprocessSecurityHook(searchRequest.getBase().getName(), searchRequest.getFilter().toString(), LDAPUtils.METHOD_SEARCH_ASYNC);
+        }
+
+        SearchFuture returnVal = null;
+        try {
+            returnVal = Weaver.callOriginal();
+        } finally {
+            if(isLockAcquired){
+                releaseLock();
+            }
+        }
+        registerExitOperation(isLockAcquired, operation);
+        return returnVal;
     }
 }
