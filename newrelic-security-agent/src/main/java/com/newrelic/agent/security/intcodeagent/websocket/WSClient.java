@@ -41,7 +41,6 @@ import java.util.LinkedList;
 import java.util.concurrent.TimeUnit;
 
 import static com.newrelic.agent.security.intcodeagent.logging.IAgentConstants.ERROR_OCCURED_WHILE_TRYING_TO_CONNECT_TO_WSOCKET;
-import static com.newrelic.agent.security.intcodeagent.logging.IAgentConstants.NUMBER_OF_RETRIES;
 
 public class WSClient extends WebSocketClient {
 
@@ -273,17 +272,24 @@ public class WSClient extends WebSocketClient {
         instance = null;
     }
 
-    public static void tryWebsocketConnection() {
+    public static void tryWebsocketConnection(int numberOfRetries, boolean isConstantPooling) {
         try {
-            int retries = NUMBER_OF_RETRIES;
+            int retries = numberOfRetries;
             WSClient.reconnectWSClient();
             while (retries > 0) {
                 try {
                     if (!WSUtils.isConnected()) {
                         retries--;
-                        int timeout = (NUMBER_OF_RETRIES - retries);
-                        logger.logInit(LogLevel.INFO, String.format("WS client connection failed will retry after %s minute(s)", timeout), WSClient.class.getName());
-                        TimeUnit.MINUTES.sleep(timeout);
+                        int timeout;
+                        if (isConstantPooling) {
+                            timeout = 15;
+                            logger.logInit(LogLevel.INFO, String.format("WS client connection failed will retry after %s second(s)", timeout), WSClient.class.getName());
+                            TimeUnit.SECONDS.sleep(timeout);
+                        } else {
+                            timeout = (numberOfRetries - retries);
+                            logger.logInit(LogLevel.INFO, String.format("WS client connection failed will retry after %s minute(s)", timeout), WSClient.class.getName());
+                            TimeUnit.MINUTES.sleep(timeout);
+                        }
                         WSClient.reconnectWSClient();
                     } else {
                         break;
