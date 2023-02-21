@@ -3,7 +3,7 @@ package com.nr.instrumentation.security.javaio;
 import com.newrelic.api.agent.security.NewRelicSecurity;
 
 public class IOStreamHelper {
-
+    public static final String NR_SEC_CUSTOM_ATTRIB_NAME_READER = "NR_SEC_CUSTOM_ATTRIB_NAME_READER";
 
     private static final String REQUEST_READER_HASH = "REQUEST_READER_HASH";
 
