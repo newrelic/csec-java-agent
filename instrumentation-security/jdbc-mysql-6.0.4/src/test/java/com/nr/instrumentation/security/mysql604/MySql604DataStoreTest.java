@@ -4,7 +4,7 @@
  *  * SPDX-License-Identifier: Apache-2.0
  *
  */
-package com.nr.instrumentation.security.mysql602;
+package com.nr.instrumentation.security.mysql604;
 
 import com.mysql.cj.fabric.jdbc.FabricMySQLDataSource;
 import com.mysql.cj.jdbc.MysqlConnectionPoolDataSource;
@@ -38,7 +38,7 @@ import static com.wix.mysql.distribution.Version.v5_7_latest;
 @RunWith(SecurityInstrumentationTestRunner.class)
 @InstrumentationTestConfig(includePrefixes = {"com.mysql.cj"})
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class MySql602DataStoreTest {
+public class MySql604DataStoreTest {
     private static final String DB_USER = "";
     private static final String DB_PASSWORD = "";
     private static String DB_CONNECTION;

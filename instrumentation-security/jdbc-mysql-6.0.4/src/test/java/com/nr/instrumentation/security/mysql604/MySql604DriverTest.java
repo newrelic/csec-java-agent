@@ -4,9 +4,10 @@
  *  * SPDX-License-Identifier: Apache-2.0
  *
  */
-package com.nr.instrumentation.security.mysql602;
+package com.nr.instrumentation.security.mysql604;
 
-import com.mysql.cj.core.ConnectionString;
+import com.mysql.cj.core.conf.url.ConnectionUrl;
+import com.mysql.cj.core.conf.url.HostInfo;
 import com.mysql.cj.jdbc.ConnectionImpl;
 import com.newrelic.agent.security.introspec.InstrumentationTestConfig;
 import com.newrelic.agent.security.introspec.SecurityInstrumentationTestRunner;
@@ -38,7 +39,7 @@ import static com.wix.mysql.distribution.Version.v5_7_latest;
 @RunWith(SecurityInstrumentationTestRunner.class)
 @InstrumentationTestConfig(includePrefixes = {"com.mysql.cj"})
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class MySql602DriverTest {
+public class MySql604DriverTest {
     private static final String DB_USER = "";
     private static final String DB_PASSWORD = "";
     private static String DB_CONNECTION;
@@ -161,7 +162,12 @@ public class MySql602DriverTest {
 
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
-            dbConnection = ConnectionImpl.getInstance(new ConnectionString(DB_CONNECTION, new Properties()), "localhost", mysqld.getConfig().getPort(), new Properties());
+            Properties info = new Properties();
+            info.put("HOST", "localhost");
+            info.put("PORT", ""+mysqld.getConfig().getPort());
+            info.put("user", DB_USER);
+            info.put("password", DB_PASSWORD);
+            dbConnection = ConnectionImpl.getInstance(new HostInfo(ConnectionUrl.getConnectionUrlInstance(DB_CONNECTION, info), "localhost", mysqld.getConfig().getPort(), DB_USER, DB_PASSWORD));
         } catch (Exception ignored) {
         }
         finally {

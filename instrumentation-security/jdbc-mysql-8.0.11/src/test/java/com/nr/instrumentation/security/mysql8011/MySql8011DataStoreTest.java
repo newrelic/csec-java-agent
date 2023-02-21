@@ -71,8 +71,7 @@ public class MySql8011DataStoreTest {
     public void testGetConnectionMysqlDataSource() {
         try {
             callGetConnectionMysqlDataSource();
-        } catch (Exception e) {
-            System.out.println("Error in DB connection");
+        } catch (Exception ignored) {
         }
 
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
@@ -84,8 +83,7 @@ public class MySql8011DataStoreTest {
     public void testGetConnectionMysqlDataSource1() {
         try {
             callGetConnectionMysqlDataSource1();
-        } catch (Exception e) {
-            System.out.println("Error in DB connection");
+        } catch (Exception ignored) {
         }
 
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
@@ -97,8 +95,7 @@ public class MySql8011DataStoreTest {
     public void testGetConnectionMysqlConnectionPoolDataSource() {
         try {
             callGetConnectionMysqlConnectionPoolDataSource();
-        } catch (Exception e) {
-            System.out.println("Error in DB connection");
+        } catch (Exception ignored) {
         }
 
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
@@ -110,8 +107,7 @@ public class MySql8011DataStoreTest {
     public void testGetConnectionMysqlConnectionPoolDataSource1() {
         try {
             callGetConnectionMysqlConnectionPoolDataSource1();
-        } catch (Exception e) {
-            System.out.println("Error in DB connection");
+        } catch (Exception ignored) {
         }
 
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
@@ -123,8 +119,7 @@ public class MySql8011DataStoreTest {
     public void testGetConnectionMysqlXADataSource() {
         try {
             callGetConnectionMysqlXADataSource();
-        } catch (Exception e) {
-            System.out.println("Error in DB connection");
+        } catch (Exception ignored) {
         }
 
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
@@ -136,8 +131,7 @@ public class MySql8011DataStoreTest {
     public void testGetConnectionMysqlXADataSource1() {
         try {
             callGetConnectionMysqlXADataSource1();
-        } catch (Exception e) {
-            System.out.println("Error in DB connection");
+        } catch (Exception ignored) {
         }
 
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
@@ -182,8 +176,7 @@ public class MySql8011DataStoreTest {
 
         try {
             conn = baseDataSource.getConnection(DB_USER, DB_PASSWORD);
-        } catch (Exception e) {
-            System.out.println("Error in DB connection "+e);
+        } catch (Exception ignored) {
         } finally {
             if (conn!=null) {
                 conn.close();
@@ -200,8 +193,7 @@ public class MySql8011DataStoreTest {
 
         try {
             conn = baseDataSource.getConnection();
-        } catch (Exception e) {
-            System.out.println("Error in DB connection "+e);
+        } catch (Exception ignored) {
         } finally {
             if (conn!=null) {
                 conn.close();
