@@ -3,7 +3,6 @@ package com.nr.instrumentation.security.jax.rs.test;
 import com.newrelic.agent.security.introspec.InstrumentationTestConfig;
 import com.newrelic.agent.security.introspec.SecurityInstrumentationTestRunner;
 import com.newrelic.agent.security.introspec.SecurityIntrospector;
-import com.newrelic.agent.security.introspec.internal.HttpServerRule;
 import com.newrelic.api.agent.security.schema.AgentMetaData;
 import com.nr.instrumentation.security.jax.rs.app.CustomerLocatorResource;
 import com.nr.instrumentation.security.jax.rs.app.IdSubResource;
@@ -12,7 +11,7 @@ import org.glassfish.jersey.client.HttpUrlConnectorProvider;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.test.JerseyTest;
 import org.junit.Assert;
-import org.junit.Rule;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -23,14 +22,17 @@ import javax.ws.rs.core.Response;
 @RunWith(SecurityInstrumentationTestRunner.class)
 @InstrumentationTestConfig(includePrefixes = "com.nr.instrumentation.javax.ws.rs.api")
 public class SubresourceTest extends JerseyTest {
-
+    @BeforeClass
+    public static void bringUp() {
+        System.setProperty("jersey.config.test.container.port", "0");
+    }
 
     @Test
     public void testPost() {
         String postCustomer = "<customer>"
                 + "<first-name>William</first-name>"
                 + "</customer>";
-        final Response response = target("/customers/orders/getStuff/post").request().post(Entity.entity(postCustomer,"application/json"));
+        final Response response = target("/customers/orders/getStuff/post").request().post(Entity.entity(postCustomer, "application/json"));
 
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
         AgentMetaData meta = introspector.getSecurityMetaData().getMetaData();

@@ -14,18 +14,25 @@ import org.glassfish.jersey.client.HttpUrlConnectorProvider;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.test.JerseyTest;
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 @RunWith(SecurityInstrumentationTestRunner.class)
 @InstrumentationTestConfig(includePrefixes = "com.nr.instrumentation.jakarta.ws.rs.api")
 public class SubresourceTest extends JerseyTest {
+
+    @BeforeClass
+    public static void bringUp() {
+        System.setProperty("jersey.config.test.container.port", "0");
+    }
+
     @Test
-    public void testPost()  {
+    public void testPost() {
         String postCustomer = "<customer>"
                 + "<first-name>William</first-name>"
                 + "</customer>";
-        final Response response = target("/customers/orders/getStuff/post").request().post(Entity.entity(postCustomer,"application/json"));
+        final Response response = target("/customers/orders/getStuff/post").request().post(Entity.entity(postCustomer, "application/json"));
 
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
         AgentMetaData meta = introspector.getSecurityMetaData().getMetaData();
