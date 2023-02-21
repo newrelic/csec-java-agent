@@ -276,7 +276,7 @@ public class WSClient extends WebSocketClient {
         try {
             int retries = numberOfRetries;
             WSClient.reconnectWSClient();
-            while (retries > 0) {
+            while (numberOfRetries < 0 || retries > 0) {
                 try {
                     if (!WSUtils.isConnected()) {
                         retries--;

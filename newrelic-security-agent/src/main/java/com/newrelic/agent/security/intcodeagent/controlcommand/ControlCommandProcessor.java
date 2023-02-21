@@ -221,7 +221,7 @@ public class ControlCommandProcessor implements Runnable {
                         }
                         logger.log(LogLevel.DEBUG, WS_RECONNECT_IAST_REQUEST_REPLAY_POOL_DRAINED, this.getClass().getName());
                     }
-                    WSClient.tryWebsocketConnection(20, true);
+                    WSClient.tryWebsocketConnection(-1, true);
                 } catch (Throwable e) {
                     logger.log(LogLevel.ERROR, String.format(ERROR_WHILE_PROCESSING_RECONNECTION_CC_S_S, e.getMessage(), e.getCause()), this.getClass().getName());
                     logger.log(LogLevel.ERROR, ERROR_WHILE_PROCESSING_RECONNECTION_CC, e, this.getClass().getName());
