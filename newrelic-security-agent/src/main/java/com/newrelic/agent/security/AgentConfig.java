@@ -81,7 +81,7 @@ public class AgentConfig {
         } else if (StringUtils.isNotBlank(NewRelic.getAgent().getConfig().getValue(IUtilConstants.SECURITY_MODE))) {
             groupName = NewRelic.getAgent().getConfig().getValue(IUtilConstants.SECURITY_MODE);
         } else {
-            groupName = IUtilConstants.RASP;
+            groupName = IUtilConstants.IAST;
         }
         AgentUtils.getInstance().getStatusLogValues().put(IUtilConstants.GROUP_NAME, groupName);
         return groupName;

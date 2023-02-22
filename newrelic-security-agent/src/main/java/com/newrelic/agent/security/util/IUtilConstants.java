@@ -4,6 +4,8 @@ public interface IUtilConstants {
     String K_2_GROUP_NAME = "K2_GROUP_NAME";
     String SECURITY_MODE = "security.mode";
     String RASP = "RASP";
+
+    String IAST = "IAST";
     String GROUP_NAME = "group-name";
     String INFO = "INFO";
     String K_2_LOG_LEVEL = "K2_LOG_LEVEL";
