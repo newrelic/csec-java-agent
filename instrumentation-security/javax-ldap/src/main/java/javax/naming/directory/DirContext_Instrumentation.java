@@ -68,6 +68,53 @@ public abstract class DirContext_Instrumentation implements Context {
         return returnVal;
     }
 
+    public NamingEnumeration<SearchResult>
+    search(Name name,
+           String filter,
+           SearchControls cons)
+            throws NamingException {
+
+        boolean isLockAcquired = acquireLockIfPossible();
+        AbstractOperation operation = null;
+        if(isLockAcquired) {
+            operation = preprocessSecurityHook(name.toString(), filter, LDAPUtils.METHOD_SEARCH);
+        }
+
+        NamingEnumeration<SearchResult> returnVal = null;
+        try {
+            returnVal = Weaver.callOriginal();
+        } finally {
+            if(isLockAcquired){
+                releaseLock();
+            }
+        }
+        registerExitOperation(isLockAcquired, operation);
+        return returnVal;
+    }
+
+    public NamingEnumeration<SearchResult>
+    search(String name,
+           String filter,
+           SearchControls cons)
+            throws NamingException {
+        boolean isLockAcquired = acquireLockIfPossible();
+        AbstractOperation operation = null;
+        if(isLockAcquired) {
+            operation = preprocessSecurityHook(name.toString(), filter, LDAPUtils.METHOD_SEARCH);
+        }
+
+        NamingEnumeration<SearchResult> returnVal = null;
+        try {
+            returnVal = Weaver.callOriginal();
+        } finally {
+            if(isLockAcquired){
+                releaseLock();
+            }
+        }
+        registerExitOperation(isLockAcquired, operation);
+        return returnVal;
+    }
+
     private void registerExitOperation(boolean isProcessingAllowed, AbstractOperation operation) {
         try {
             if (operation == null || !isProcessingAllowed || !NewRelicSecurity.isHookProcessingActive() ||
