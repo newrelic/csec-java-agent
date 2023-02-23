@@ -120,6 +120,7 @@ public class Agent implements SecurityAgent {
         config.setupSnapshotDir();
         info.initStatusLogValues();
         setInitialised(true);
+        populateLinkingMetadata();
 
         startK2Services();
         // log init finish
@@ -128,7 +129,6 @@ public class Agent implements SecurityAgent {
                 String.format(AGENT_INIT_SUCCESSFUL, info.getVMPID(), info.getApplicationUUID(), info.getApplicationInfo()),
                 Agent.class.getName()
         );
-        populateLinkingMetadata();
         info.agentStatTrigger();
 
         System.out.printf("This application instance is now being protected by New Relic Security under id %s\n", info.getApplicationUUID());
