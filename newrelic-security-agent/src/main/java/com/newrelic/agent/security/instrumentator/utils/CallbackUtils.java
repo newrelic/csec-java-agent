@@ -2,6 +2,7 @@ package com.newrelic.agent.security.instrumentator.utils;
 
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.newrelic.agent.security.intcodeagent.filelogging.LogLevel;
+import com.newrelic.api.agent.security.instrumentation.helpers.ServletHelper;
 import com.newrelic.api.agent.security.schema.HttpRequest;
 import com.newrelic.api.agent.security.schema.HttpResponse;
 import org.apache.commons.lang3.RegExUtils;
@@ -282,7 +283,7 @@ public class CallbackUtils {
 
             // Process & add header keys & values separately.
             Map<String, String> headerCopy = new HashMap<>((Map<String, String>) httpRequest.getHeaders());
-            headerCopy.remove("k2-fuzz-request-id");
+            headerCopy.remove(ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID);
             for (Entry<String, String> entry : headerCopy.entrySet()) {
                 // For key
                 processURLEncodedDataForXSS(processedData, entry.getKey());

@@ -3,9 +3,9 @@ package com.newrelic.agent.security.instrumentator.httpclient;
 import com.newrelic.agent.security.AgentInfo;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.newrelic.agent.security.intcodeagent.filelogging.LogLevel;
-import com.newrelic.agent.security.intcodeagent.logging.IAgentConstants;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.FuzzFailEvent;
 import com.newrelic.agent.security.intcodeagent.websocket.EventSendPool;
+import com.newrelic.api.agent.security.instrumentation.helpers.ServletHelper;
 import okhttp3.*;
 import okhttp3.OkHttpClient.Builder;
 import org.jetbrains.annotations.NotNull;
@@ -130,7 +130,7 @@ public class RestClient {
         } catch (IOException e) {
             logger.log(LogLevel.DEBUG, String.format(CALL_FAILED_REQUEST_S_REASON, request), e, RestClient.class.getName());
             FuzzFailEvent fuzzFailEvent = new FuzzFailEvent(AgentInfo.getInstance().getApplicationUUID());
-            fuzzFailEvent.setFuzzHeader(request.header(IAgentConstants.K2_FUZZ_REQUEST_ID));
+            fuzzFailEvent.setFuzzHeader(request.header(ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID));
             EventSendPool.getInstance().sendEvent(fuzzFailEvent);
         }
 

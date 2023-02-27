@@ -13,9 +13,7 @@ import java.util.Map;
 public class HttpServletHelper {
 
     private static final String X_FORWARDED_FOR = "x-forwarded-for";
-    private static final String K2_FUZZ_REQUEST_ID = "k2-fuzz-request-id";
     private static final String EMPTY = "";
-    private static final String K2_TRACING_HEADER = "K2-TRACING-DATA";
     public static final String QUESTION_MARK = "?";
     public static final String SERVICE_METHOD_NAME = "service";
 
@@ -37,7 +35,7 @@ public class HttpServletHelper {
                     && agentPolicy.getProtectionMode().getIpBlocking().getIpDetectViaXFF()
                     && X_FORWARDED_FOR.equals(headerKey)) {
                 takeNextValue = true;
-            } else if (K2_FUZZ_REQUEST_ID.equals(headerKey)) {
+            } else if (ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID.equals(headerKey)) {
                 // TODO: May think of removing this intermediate obj and directly create K2 Identifier.
                 NewRelicSecurity.getAgent().getSecurityMetaData().setFuzzRequestIdentifier(ServletHelper.parseFuzzRequestIdentifierHeader(request.getHeader(headerKey)));
             }
@@ -68,10 +66,10 @@ public class HttpServletHelper {
 
     public static String getTraceHeader(Map<String, String> headers) {
         String data = EMPTY;
-        if (headers.containsKey(K2_TRACING_HEADER) || headers.containsKey(K2_TRACING_HEADER.toLowerCase())) {
-            data = headers.get(K2_TRACING_HEADER);
+        if (headers.containsKey(ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER) || headers.containsKey(ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER.toLowerCase())) {
+            data = headers.get(ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER);
             if (data == null || data.trim().isEmpty()) {
-                data = headers.get(K2_TRACING_HEADER.toLowerCase());
+                data = headers.get(ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER.toLowerCase());
             }
         }
         return data;

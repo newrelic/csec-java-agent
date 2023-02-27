@@ -8,9 +8,9 @@
 package com.nr.agent.instrumentation.security.urlconnection;
 
 import com.newrelic.api.agent.security.NewRelicSecurity;
+import com.newrelic.api.agent.security.instrumentation.helpers.ServletHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.SecurityMetaData;
-import com.newrelic.api.agent.security.schema.constants.AgentConstants;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
 import com.newrelic.api.agent.security.schema.operation.SSRFOperation;
 import com.newrelic.api.agent.security.utils.SSRFUtils;
@@ -132,7 +132,7 @@ public abstract class URLConnection_Instrumentation {
             // Add Security IAST header
             String iastHeader = NewRelicSecurity.getAgent().getSecurityMetaData().getFuzzRequestIdentifier().getRaw();
             if(iastHeader != null && !iastHeader.trim().isEmpty()) {
-                this.setRequestProperty(AgentConstants.K2_FUZZ_REQUEST_ID, iastHeader);
+                this.setRequestProperty(ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID, iastHeader);
             }
 
             SSRFOperation operation = new SSRFOperation(callArgs,
@@ -143,7 +143,7 @@ public abstract class URLConnection_Instrumentation {
                 if(operation.getApiID() != null && !operation.getApiID().trim().isEmpty() &&
                         operation.getExecutionId() != null && !operation.getExecutionId().trim().isEmpty()) {
                     // Add Security distributed tracing header
-                    this.setRequestProperty(AgentConstants.K2_TRACING_DATA, SSRFUtils.generateTracingHeaderValue(securityMetaData.getTracingHeaderValue(), operation.getApiID(), operation.getExecutionId(), NewRelicSecurity.getAgent().getAgentUUID()));
+                    this.setRequestProperty(ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER, SSRFUtils.generateTracingHeaderValue(securityMetaData.getTracingHeaderValue(), operation.getApiID(), operation.getExecutionId(), NewRelicSecurity.getAgent().getAgentUUID()));
                 }
             }
             return operation;
