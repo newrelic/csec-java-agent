@@ -1,6 +1,12 @@
-package jakarta.servlet;
+/*
+ *
+ *  * Copyright 2020 New Relic Corporation. All rights reserved.
+ *  * SPDX-License-Identifier: Apache-2.0
+ *
+ */
 
-import com.newrelic.api.agent.Trace;
+package org.eclipse.jetty.server;
+
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.schema.AgentMetaData;
 import com.newrelic.api.agent.security.schema.HttpRequest;
@@ -10,35 +16,53 @@ import com.newrelic.api.agent.security.schema.operation.RXSSOperation;
 import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
-import com.nr.instrumentation.security.servlet5.HttpServletHelper;
-import jakarta.servlet.http.HttpServletRequest;
+import com.nr.instrumentation.security.jetty7.HttpServletHelper;
 
-import java.io.IOException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
-@Weave(type = MatchType.Interface, originalName = "jakarta.servlet.Filter")
-public abstract class Filter_Instrumentation {
+@Weave(type = MatchType.BaseClass, originalName = "org.eclipse.jetty.server.Server")
+public abstract class Server_Instrumentation {
 
-
-    @Trace(dispatcher = true)
-    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
-            throws IOException, ServletException {
+    public void handle(HttpConnection connection) {
+        HttpServletRequest request = connection.getRequest();
+        HttpServletResponse response = connection.getResponse();
         boolean isServletLockAcquired = acquireServletLockIfPossible();
-        if(isServletLockAcquired) {
+        if (isServletLockAcquired) {
             preprocessSecurityHook(request, response);
         }
         try {
             Weaver.callOriginal();
         } finally {
-            if(isServletLockAcquired){
+            if (isServletLockAcquired) {
                 releaseServletLock();
             }
         }
-        if(isServletLockAcquired) {
+        if (isServletLockAcquired) {
             postProcessSecurityHook(request, response);
         }
     }
 
-    private void preprocessSecurityHook(ServletRequest request, ServletResponse response) {
+    public void handleAsync(HttpConnection connection) {
+        HttpServletRequest request = connection.getRequest();
+        HttpServletResponse response = connection.getResponse();
+        boolean isServletLockAcquired = acquireServletLockIfPossible();
+        if (isServletLockAcquired) {
+            preprocessSecurityHook(request, response);
+        }
+        try {
+            Weaver.callOriginal();
+        } finally {
+            if (isServletLockAcquired) {
+                releaseServletLock();
+            }
+        }
+        if (isServletLockAcquired) {
+            postProcessSecurityHook(request, response);
+        }
+    }
+
+    private void preprocessSecurityHook(HttpServletRequest request, HttpServletResponse response) {
         try {
             if (!NewRelicSecurity.isHookProcessingActive()
                     || !(request instanceof HttpServletRequest)
@@ -81,10 +105,11 @@ public abstract class Filter_Instrumentation {
 
             securityAgentMetaData.setServiceTrace(Thread.currentThread().getStackTrace());
             securityRequest.setRequestParsed(true);
-        } catch (Throwable ignored){}
+        } catch (Throwable ignored) {
+        }
     }
 
-    private void postProcessSecurityHook(ServletRequest request, ServletResponse response) {
+    private void postProcessSecurityHook(HttpServletRequest request, HttpServletResponse response) {
         try {
             if (!NewRelicSecurity.isHookProcessingActive()
             ) {
@@ -96,7 +121,7 @@ public abstract class Filter_Instrumentation {
             NewRelicSecurity.getAgent().registerOperation(rxssOperation);
 
         } catch (Throwable e) {
-            if(e instanceof NewRelicSecurityException){
+            if (e instanceof NewRelicSecurityException) {
                 e.printStackTrace();
                 throw e;
             }
@@ -106,13 +131,15 @@ public abstract class Filter_Instrumentation {
     private boolean acquireServletLockIfPossible() {
         try {
             return HttpServletHelper.acquireServletLockIfPossible();
-        } catch (Throwable ignored) {}
+        } catch (Throwable ignored) {
+        }
         return false;
     }
 
     private void releaseServletLock() {
         try {
             HttpServletHelper.releaseServletLock();
-        } catch (Throwable e) {}
+        } catch (Throwable e) {
+        }
     }
 }

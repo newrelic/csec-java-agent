@@ -1,0 +1,20 @@
+dependencies {
+    implementation(project(":newrelic-security-api"))
+    implementation("com.newrelic.agent.java:newrelic-weaver-api:${nrAPIVersion}")
+
+    implementation("org.eclipse.jetty:jetty-server:9.0.3.v20130506")
+}
+
+jar {
+    manifest { attributes 'Implementation-Title': 'com.newrelic.instrumentation.security.jetty-9' }
+}
+
+verifyInstrumentation {
+    passesOnly 'org.eclipse.jetty:jetty-server:[9.0.0.M0,)'
+    excludeRegex '.*(alpha|beta|rc).*'
+}
+
+site {
+    title 'Jetty'
+    type 'Appserver'
+}
