@@ -95,4 +95,7 @@ include 'instrumentation-security:nashorn-jsinjection'
 include 'instrumentation-security:rhino-jsinjection'
 include 'instrumentation-security:graalvm-jsinjection-19.0.0'
 include 'instrumentation-security:graalvm-jsinjection-22.0.0'
+include 'instrumentation-security:jdbc-inet-merlia'
+include 'instrumentation-security:jdbc-inet-oranxo'
+include 'instrumentation-security:jdbc-sybase-6'
 
