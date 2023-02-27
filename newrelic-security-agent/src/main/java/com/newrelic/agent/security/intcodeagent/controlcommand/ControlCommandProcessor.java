@@ -9,7 +9,6 @@ import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool
 import com.newrelic.agent.security.intcodeagent.filelogging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.logging.IAgentConstants;
 import com.newrelic.agent.security.intcodeagent.models.config.AgentPolicyParameters;
-import com.newrelic.agent.security.intcodeagent.models.javaagent.CollectorInitMsg;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.EventResponse;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.IntCodeControlCommand;
 import com.newrelic.agent.security.intcodeagent.utils.CommonUtils;
@@ -158,19 +157,9 @@ public class ControlCommandProcessor implements Runnable {
                 if (controlCommand.getData() == null) {
                     return;
                 }
-
-                try {
-                    AgentUtils.getInstance().setInitMsg(
-                            JsonConverter.getObjectMapper().readValue(controlCommand.getData().toString(), CollectorInitMsg.class));
-                    // TODO : Remove usage of CC #10 data
-                    logger.log(LogLevel.INFO,
-                            String.format(COLLECTOR_IS_INITIALIZED_WITH_PROPERTIES, AgentUtils.getInstance().getInitMsg().toString()),
-                            ControlCommandProcessor.class.getName());
-                } catch (JsonProcessingException e) {
-                    logger.log(LogLevel.ERROR, IAgentConstants.UNABLE_TO_GET_AGENT_STARTUP_INFOARMATION, e,
-                            ControlCommandProcessor.class.getName());
-                }
-
+                logger.log(LogLevel.INFO,
+                        String.format(COLLECTOR_IS_INITIALIZED_WITH_PROPERTIES, controlCommand.getData()),
+                        ControlCommandProcessor.class.getName());
                 break;
 
             case IntCodeControlCommand.SEND_POLICY:
