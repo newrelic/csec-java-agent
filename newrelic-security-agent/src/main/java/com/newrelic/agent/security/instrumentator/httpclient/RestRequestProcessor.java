@@ -16,14 +16,18 @@ public class RestRequestProcessor implements Runnable {
 
     public static final String K2_HOME_TMP_CONST = "{{K2_HOME_TMP}}";
     public static final String ERROR_WHILE_PROCESSING_FUZZING_REQUEST_S = "Error while processing fuzzing request : %s";
+    private static final int MAX_REPETITION = 3;
     private IntCodeControlCommand controlCommand;
+
+    private int repeatCount;
 
     private ObjectMapper objectMapper = new ObjectMapper();
 
     private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
 
-    public RestRequestProcessor(IntCodeControlCommand controlCommand) {
+    public RestRequestProcessor(IntCodeControlCommand controlCommand, int repeatCount) {
         this.controlCommand = controlCommand;
+        this.repeatCount = repeatCount;
     }
 
 
@@ -47,7 +51,7 @@ public class RestRequestProcessor implements Runnable {
             }
             String req = StringUtils.replace(controlCommand.getArguments().get(0), K2_HOME_TMP_CONST, OsVariablesInstance.getInstance().getOsVariables().getTmpDirectory());
             httpRequest = objectMapper.readValue(req, FuzzRequestBean.class);
-            RestClient.getInstance().fireRequest(RequestUtils.generateK2Request(httpRequest));
+            RestClient.getInstance().fireRequest(RequestUtils.generateK2Request(httpRequest), repeatCount);
 
         } catch (Throwable e) {
             logger.log(LogLevel.ERROR,
@@ -61,6 +65,11 @@ public class RestRequestProcessor implements Runnable {
 
     public static void processControlCommand(IntCodeControlCommand command) {
         RestRequestThreadPool.getInstance().executor
-                .submit(new RestRequestProcessor(command));
+                .submit(new RestRequestProcessor(command, MAX_REPETITION));
+    }
+
+    public static void processControlCommand(IntCodeControlCommand command, int repeat) {
+        RestRequestThreadPool.getInstance().executor
+                .submit(new RestRequestProcessor(command, repeat));
     }
 }

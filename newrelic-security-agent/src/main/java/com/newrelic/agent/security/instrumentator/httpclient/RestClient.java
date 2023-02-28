@@ -12,6 +12,7 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.net.ssl.*;
 import java.io.IOException;
+import java.io.InterruptedIOException;
 import java.security.cert.CertificateException;
 import java.util.concurrent.TimeUnit;
 
@@ -112,7 +113,7 @@ public class RestClient {
         return clientThreadLocal.get();
     }
 
-    public void fireRequest(Request request) {
+    public void fireRequest(Request request, int repeatCount) throws InterruptedIOException {
         OkHttpClient client = clientThreadLocal.get();
 
         logger.log(LogLevel.DEBUG, String.format(FIRING_REQUEST_METHOD_S, request.method()), RestClient.class.getName());
@@ -126,6 +127,10 @@ public class RestClient {
             response.body().close();
             if (client.connectionPool() != null) {
                 client.connectionPool().evictAll();
+            }
+        } catch (InterruptedIOException e){
+            if(repeatCount >= 0){
+                fireRequest(request, --repeatCount);
             }
         } catch (IOException e) {
             logger.log(LogLevel.DEBUG, String.format(CALL_FAILED_REQUEST_S_REASON, request), e, RestClient.class.getName());
