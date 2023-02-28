@@ -1,0 +1,22 @@
+apply plugin: 'java'
+
+dependencies {
+    implementation(project(":newrelic-security-api"))
+    implementation("com.newrelic.agent.java:newrelic-api:7.11.0-SNAPSHOT")
+    implementation("com.newrelic.agent.java:newrelic-weaver-api:7.11.0-SNAPSHOT")
+    implementation("saxpath:saxpath:1.0-FCS")
+}
+
+jar {
+    manifest { attributes 'Implementation-Title': 'com.newrelic.instrumentation.security.saxpath' }
+}
+
+verifyInstrumentation {
+    passesOnly 'saxpath:saxpath:1.0-FCS'
+}
+
+
+site {
+    title 'XPATH'
+    type 'Messaging'
+}
