@@ -1,6 +1,6 @@
 dependencies {
     implementation(project(":newrelic-security-api"))
-    implementation("com.newrelic.agent.java:newrelic-weaver-api:7.11.0-SNAPSHOT")
+    implementation("com.newrelic.agent.java:newrelic-weaver-api:${nrAPIVersion}")
 }
 
 // This instrumentation module should not use the bootstrap classpath
