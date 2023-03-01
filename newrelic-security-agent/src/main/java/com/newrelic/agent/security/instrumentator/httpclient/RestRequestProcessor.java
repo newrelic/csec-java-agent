@@ -14,7 +14,8 @@ import org.apache.commons.lang3.StringUtils;
  */
 public class RestRequestProcessor implements Runnable {
 
-    public static final String K2_HOME_TMP_CONST = "{{K2_HOME_TMP}}";
+    public static final String NR_CSEC_VALIDATOR_HOME_TMP = "{{NR_CSEC_VALIDATOR_HOME_TMP}}";
+
     public static final String ERROR_WHILE_PROCESSING_FUZZING_REQUEST_S = "Error while processing fuzzing request : %s";
     private static final int MAX_REPETITION = 3;
     private IntCodeControlCommand controlCommand;
@@ -49,7 +50,7 @@ public class RestRequestProcessor implements Runnable {
                     RestRequestThreadPool.getInstance().isWaiting().set(false);
                 }
             }
-            String req = StringUtils.replace(controlCommand.getArguments().get(0), K2_HOME_TMP_CONST, OsVariablesInstance.getInstance().getOsVariables().getTmpDirectory());
+            String req = StringUtils.replace(controlCommand.getArguments().get(0), NR_CSEC_VALIDATOR_HOME_TMP, OsVariablesInstance.getInstance().getOsVariables().getTmpDirectory());
             httpRequest = objectMapper.readValue(req, FuzzRequestBean.class);
             RestClient.getInstance().fireRequest(RequestUtils.generateK2Request(httpRequest), repeatCount);
 
