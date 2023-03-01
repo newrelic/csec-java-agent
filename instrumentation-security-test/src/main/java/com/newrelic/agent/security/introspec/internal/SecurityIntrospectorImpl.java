@@ -9,6 +9,7 @@ import com.newrelic.api.agent.security.schema.HttpRequest;
 import com.newrelic.api.agent.security.schema.HttpResponse;
 import com.newrelic.api.agent.security.schema.JDBCVendor;
 import com.newrelic.api.agent.security.schema.K2RequestIdentifier;
+import com.newrelic.api.agent.security.schema.R2DBCVendor;
 import com.newrelic.api.agent.security.schema.SecurityMetaData;
 
 import java.sql.Statement;
@@ -30,6 +31,12 @@ public class SecurityIntrospectorImpl implements SecurityIntrospector {
     @Override
     public String getJDBCVendor() {
         return NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(JDBCVendor.META_CONST_JDBC_VENDOR, String.class);
+    }
+
+    @Override
+    public String getR2DBCVendor() {
+        return NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(R2DBCVendor.META_CONST_R2DBC_VENDOR, String.class);
+
     }
 
     @Override
@@ -97,6 +104,7 @@ public class SecurityIntrospectorImpl implements SecurityIntrospector {
     @Override
     public void clear() {
         NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(JDBCVendor.META_CONST_JDBC_VENDOR, null);
+        NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(R2DBCVendor.META_CONST_R2DBC_VENDOR, null);
         NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(Agent.OPERATIONS, List.class).clear();
         NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(Agent.EXIT_OPERATIONS, List.class).clear();
         NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(REQUEST_READER_HASH, null);

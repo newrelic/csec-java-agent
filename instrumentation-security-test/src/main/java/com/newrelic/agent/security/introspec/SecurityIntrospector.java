@@ -12,6 +12,8 @@ public interface SecurityIntrospector {
 
     String getJDBCVendor();
 
+    String getR2DBCVendor();
+
     String getSqlQuery(Statement statement);
 
     int getRequestReaderHash();
