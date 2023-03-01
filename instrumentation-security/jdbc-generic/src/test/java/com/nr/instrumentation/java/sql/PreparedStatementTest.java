@@ -146,17 +146,17 @@ public class PreparedStatementTest {
 
     @Test
     public void testParams() throws SQLException {
-        Map<Integer, String> params = callParams();
+        Map<String, String> params = callParams();
 
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
         List<AbstractOperation> operations = introspector.getOperations();
         Assert.assertTrue("No operations detected", operations.size() > 0);
         SQLOperation operation = (SQLOperation) operations.get(0);
-        Map<Integer, String> actualParams = operation.getParams();
+        Map<String, String> actualParams = operation.getParams();
         try {
             Assert.assertEquals("Invalid executed parameters.", params, actualParams);
         } catch (AssertionError e){
-            HashSet<Integer> unionKeys = new HashSet<>(actualParams.keySet());
+            HashSet<String> unionKeys = new HashSet<>(actualParams.keySet());
             unionKeys.addAll(params.keySet());
             unionKeys.removeAll(actualParams.keySet());
             Assert.fail("Invalid executed parameters. Missing index: "+unionKeys);
@@ -166,57 +166,57 @@ public class PreparedStatementTest {
     }
 
     @Trace(dispatcher = true)
-    private Map<Integer, String> callParams() throws SQLException {
-        Map<Integer, String> params = new HashMap<Integer, String>();
+    private Map<String, String> callParams() throws SQLException {
+        Map<String, String> params = new HashMap<String, String>();
         PreparedStatement stmt = CONNECTION.prepareStatement(QUERIES.get(5));
         stmt.setInt(1, 1);
-        params.put(1, "1");
+        params.put(String.valueOf(1), "1");
 
         stmt.setShort(2, (short) 3);
-        params.put(2, "3");
+        params.put(String.valueOf(2), "3");
 
         stmt.setLong(3, 1789);
-        params.put(3, "1789");
+        params.put(String.valueOf(3), "1789");
 
         stmt.setBigDecimal(4, BigDecimal.valueOf(10));
-        params.put(4, "10");
+        params.put(String.valueOf(4), "10");
 
         stmt.setFloat(5, 14);
-        params.put(5, "14.0");
+        params.put(String.valueOf(5), "14.0");
 
         stmt.setDouble(6, 51);
-        params.put(6, "51.0");
+        params.put(String.valueOf(6), "51.0");
 
         stmt.setString(7, "monu");
-        params.put(7, "monu");
+        params.put(String.valueOf(7), "monu");
 
         stmt.setNull(8, 1);
-        params.put(8, "null");
+        params.put(String.valueOf(8), "null");
 
         byte b = new Integer(34).byteValue();
         stmt.setByte(9, b);
-        params.put(9, String.valueOf(b));
+        params.put(String.valueOf(9), String.valueOf(b));
 
         Date dob = new Date(System.currentTimeMillis());
         stmt.setDate(10, dob);
-        params.put(10, dob.toString());
+        params.put(String.valueOf(10), dob.toString());
 
         Date time = new Date(System.currentTimeMillis());
         String str = time.toString();
         byte[] myByte = str.getBytes();
         stmt.setBytes(11, myByte);
-        params.put(11, new String(myByte));
+        params.put(String.valueOf(11), new String(myByte));
 
         stmt.setBoolean(12, true);
-        params.put(12, "true");
+        params.put(String.valueOf(12), "true");
 
         Time dot = new Time(System.currentTimeMillis());
         stmt.setTime(13, dot);
-        params.put(13, dot.toString());
+        params.put(String.valueOf(13), dot.toString());
 
         Timestamp dotz = new Timestamp(System.currentTimeMillis());
         stmt.setTimestamp(14, dotz);
-        params.put(14, dotz.toString());
+        params.put(String.valueOf(14), dotz.toString());
 
         stmt.execute();
         return params;
