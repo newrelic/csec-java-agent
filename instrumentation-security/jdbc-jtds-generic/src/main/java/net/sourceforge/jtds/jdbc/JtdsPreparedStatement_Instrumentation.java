@@ -41,7 +41,7 @@ public abstract class JtdsPreparedStatement_Instrumentation {
         } catch (Throwable ignored){}
     }
 
-    private AbstractOperation preprocessSecurityHook (String sql, Map<Integer, String> params, String methodName){
+    private AbstractOperation preprocessSecurityHook (String sql, Map<String, String> params, String methodName){
         try {
             if (!NewRelicSecurity.isHookProcessingActive() ||
                     NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty() ||
@@ -136,11 +136,11 @@ public abstract class JtdsPreparedStatement_Instrumentation {
 
     public abstract Connection getConnection();
 
-    private Map<Integer, String> getParameterValues() {
-        Map<Integer, String> params = new HashMap<>();
+    private Map<String, String> getParameterValues() {
+        Map<String, String> params = new HashMap<>();
         if(parameters != null){
             for (int i = 0; i < parameters.length; i++) {
-                params.put(i, String.valueOf(parameters[i].value));
+                params.put(String.valueOf(i), String.valueOf(parameters[i].value));
             }
         }
         return params;
