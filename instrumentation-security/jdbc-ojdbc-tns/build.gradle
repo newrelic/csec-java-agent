@@ -1,0 +1,22 @@
+dependencies {
+    implementation(project(":newrelic-security-api"))
+    implementation("com.newrelic.agent.java:newrelic-api:${nrAPIVersion}")
+    implementation("com.newrelic.agent.java:newrelic-weaver-api:${nrAPIVersion}")
+    implementation("com.oracle.database.jdbc:ojdbc8:12.2.0.1")
+}
+
+jar {
+    manifest { attributes 'Implementation-Title': 'com.newrelic.instrumentation.security.jdbc-ojdbc-tns' }
+}
+
+verifyInstrumentation {
+    passes("com.oracle.database.jdbc:ojdbc8:[0,)")
+    passes("com.oracle.database.jdbc:ojdbc6:[0,)")
+    passes("com.oracle.database.jdbc:ojdbc5:[0,)")
+}
+
+site {
+    title 'Oracle JDBC'
+    type 'Datastore'
+    versionOverride '[5,)'
+}
