@@ -5,23 +5,20 @@
  *
  */
 
-package oracle.jdbc.driver;
+package oracle.jdbc.pool;
 
-import com.newrelic.api.agent.Trace;
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.schema.JDBCVendor;
+import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
 
 import java.sql.Connection;
-import java.sql.SQLException;
-import java.util.Properties;
 
-@Weave
-public abstract class OracleDriver {
+@Weave(type = MatchType.BaseClass, originalName = "oracle.jdbc.pool.OracleDataSource")
+public abstract class OracleDataSource_Instrumentation {
 
-    @Trace(leaf = true, excludeFromTransactionTrace = true)
-    public Connection connect(String url, Properties props) throws SQLException {
+    public Connection getConnection(String userID, String pass) {
         if (NewRelicSecurity.isHookProcessingActive() && !NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()) {
             NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(JDBCVendor.META_CONST_JDBC_VENDOR, JDBCVendor.ORACLE);
         }
