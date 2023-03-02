@@ -9,12 +9,14 @@ import org.apache.catalina.webresources.TomcatURLStreamHandlerFactory;
 import org.apache.tomcat.util.http.fileupload.FileUtils;
 import org.junit.rules.ExternalResource;
 
+import javax.servlet.annotation.WebServlet;
 import java.io.File;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.URI;
 import java.net.URISyntaxException;
 
+@WebServlet("/*")
 public class HttpServletServer extends ExternalResource {
 
     private final int port;

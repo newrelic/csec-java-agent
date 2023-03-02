@@ -14,17 +14,6 @@ public class HttpTestServlet extends HttpServlet {
     }
 
     @Override
-    protected void service(HttpServletRequest request, HttpServletResponse response) throws IOException {
-
-        String method = request.getMethod();
-        if( method.equals("POST")) {
-            this.doPost(request, response);
-        }
-
-        response.setStatus(HttpServletResponse.SC_OK);
-    }
-
-    @Override
     public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
 
         String path = request.getRequestURI();

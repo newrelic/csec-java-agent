@@ -1,5 +1,6 @@
 package com.nr.instrumentation.security;
 
+import jakarta.servlet.annotation.WebServlet;
 import org.apache.catalina.Context;
 import org.apache.catalina.LifecycleState;
 import org.apache.catalina.startup.Tomcat;
@@ -14,6 +15,8 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.URI;
 import java.net.URISyntaxException;
+
+@WebServlet("/*")
 public class HttpServletServer extends ExternalResource {
 
     private final int port;
