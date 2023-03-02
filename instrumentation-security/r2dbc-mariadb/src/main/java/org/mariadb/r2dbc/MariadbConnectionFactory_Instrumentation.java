@@ -11,7 +11,6 @@ import reactor.core.publisher.Mono;
 @Weave(type = MatchType.Interface, originalName = "org.mariadb.r2dbc.MariadbConnectionFactory")
 public class MariadbConnectionFactory_Instrumentation {
     public Mono<MariadbConnection> create() {
-        System.out.println("here in factory");
         if (NewRelicSecurity.isHookProcessingActive() && !NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()) {
             NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(R2DBCVendor.META_CONST_R2DBC_VENDOR, R2DBCVendor.MARIA_DB);
         }

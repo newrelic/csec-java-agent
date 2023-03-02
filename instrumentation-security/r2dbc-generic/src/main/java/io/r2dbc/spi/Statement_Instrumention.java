@@ -1,7 +1,7 @@
 package io.r2dbc.spi;
 
 import com.newrelic.api.agent.security.NewRelicSecurity;
-import com.newrelic.api.agent.security.instrumentation.helpers.JdbcHelper;
+import com.newrelic.api.agent.security.instrumentation.helpers.R2dbcHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.R2DBCVendor;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
@@ -28,7 +28,7 @@ public class Statement_Instrumention {
         boolean isLockAcquired = acquireLockIfPossible();
         AbstractOperation operation = null;
         if (isLockAcquired) {
-            operation = preprocessSecurityHook(sql, JdbcHelper.METHOD_EXECUTE);
+            operation = preprocessSecurityHook(sql, R2dbcHelper.METHOD_EXECUTE);
         }
         Publisher<? extends Result> returnVal;
         try {
@@ -65,7 +65,7 @@ public class Statement_Instrumention {
     private void registerExitOperation(boolean isProcessingAllowed, AbstractOperation operation) {
         try {
             if (operation == null || !isProcessingAllowed || !NewRelicSecurity.isHookProcessingActive() ||
-                    NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty() || JdbcHelper.skipExistsEvent()
+                    NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty() || R2dbcHelper.skipExistsEvent()
             ) {
                 return;
             }
@@ -101,14 +101,14 @@ public class Statement_Instrumention {
 
     private void releaseLock() {
         try {
-            JdbcHelper.releaseLock();
+            R2dbcHelper.releaseLock();
         } catch (Throwable ignored) {
         }
     }
 
     private boolean acquireLockIfPossible() {
         try {
-            return JdbcHelper.acquireLockIfPossible();
+            return R2dbcHelper.acquireLockIfPossible();
         } catch (Throwable ignored) {
         }
         return false;
