@@ -6,6 +6,8 @@ import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.SecurityMetaData;
 import com.newrelic.api.agent.security.schema.policy.AgentPolicy;
 
+import java.lang.instrument.Instrumentation;
+import java.net.URL;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -44,7 +46,7 @@ public class Agent implements SecurityAgent {
     }
 
     @Override
-    public boolean refreshState(java.net.URL agentJarURL) {
+    public boolean refreshState(URL agentJarURL, Instrumentation instrumentation) {
         return true;
     }
 
@@ -121,6 +123,11 @@ public class Agent implements SecurityAgent {
     @Override
     public String getAgentTempDir() {
         return "";
+    }
+
+    @Override
+    public Instrumentation getInstrumentation() {
+        return null;
     }
 
 }
