@@ -104,3 +104,6 @@ include 'instrumentation-security:r2dbc-h2'
 include 'instrumentation-security:r2dbc-mariadb'
 include 'instrumentation-security:r2dbc-mysql'
 include 'instrumentation-security:r2dbc-postgresql'
+include 'instrumentation-security:r2dbc-mssql'
+include 'instrumentation-security:r2dbc-oracle'
+
