@@ -6,7 +6,6 @@ import com.newrelic.agent.security.intcodeagent.filelogging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.logging.DeployedApplication;
 import com.newrelic.agent.security.intcodeagent.logging.IAgentConstants;
 import com.newrelic.agent.security.intcodeagent.models.config.AgentPolicyParameters;
-import com.newrelic.agent.security.intcodeagent.models.javaagent.CollectorInitMsg;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.EventResponse;
 import com.newrelic.agent.security.intcodeagent.websocket.EventSendPool;
 import com.newrelic.agent.security.intcodeagent.websocket.JsonConverter;
@@ -102,8 +101,6 @@ public class AgentUtils {
 
     private AgentPolicyParameters agentPolicyParameters = new AgentPolicyParameters();
 
-    private CollectorInitMsg initMsg = null;
-
     private AtomicInteger outboundHttpConnectionId = new AtomicInteger(1000);
 
     private boolean collectAppInfoFromEnv = false;
@@ -141,14 +138,6 @@ public class AgentUtils {
 
     public Map<String, EventResponse> getEventResponseSet() {
         return eventResponseSet;
-    }
-
-    public CollectorInitMsg getInitMsg() {
-        return initMsg;
-    }
-
-    public void setInitMsg(CollectorInitMsg initMsg) {
-        this.initMsg = initMsg;
     }
 
     public int incrementOutboundHttpConnectionId() {
