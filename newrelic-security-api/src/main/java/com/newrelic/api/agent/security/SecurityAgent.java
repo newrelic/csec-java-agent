@@ -11,6 +11,7 @@ import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.SecurityMetaData;
 import com.newrelic.api.agent.security.schema.policy.AgentPolicy;
 
+import java.lang.instrument.Instrumentation;
 import java.net.URL;
 
 /**
@@ -18,7 +19,7 @@ import java.net.URL;
  */
 public interface SecurityAgent {
 
-    boolean refreshState(URL agentJarURL);
+    boolean refreshState(URL agentJarURL, Instrumentation instrumentation);
 
     boolean deactivateSecurity();
 
@@ -32,6 +33,7 @@ public interface SecurityAgent {
 
     /**
      * Returns the associated security related metadata from the current transaction in the context.
+     *
      * @return {@link SecurityAgent} object associated with the current transaction in the context or {@code null} otherwise.
      */
     SecurityMetaData getSecurityMetaData();
@@ -39,4 +41,6 @@ public interface SecurityAgent {
     String getAgentUUID();
 
     String getAgentTempDir();
+
+    Instrumentation getInstrumentation();
 }

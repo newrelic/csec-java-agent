@@ -25,6 +25,7 @@ import com.newrelic.api.agent.security.schema.policy.AgentPolicy;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
+import java.lang.instrument.Instrumentation;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -60,6 +61,7 @@ public class Agent implements SecurityAgent {
     private static FileLoggerThreadPool logger;
 
     private java.net.URL agentJarURL;
+    private Instrumentation instrumentation;
 
     public static SecurityAgent getInstance() {
         if(instance == null) {
@@ -172,12 +174,13 @@ public class Agent implements SecurityAgent {
     }
 
     @Override
-    public boolean refreshState(java.net.URL agentJarURL) {
+    public boolean refreshState(java.net.URL agentJarURL, Instrumentation instrumentation) {
         /**
          * restart k2 services
          **/
         this.agentJarURL = agentJarURL;
-        if(isInitialised()) {
+        this.instrumentation = instrumentation;
+        if (isInitialised()) {
             config.setNRSecurityEnabled(false);
             cancelActiveServiceTasks();
         }
@@ -408,5 +411,10 @@ public class Agent implements SecurityAgent {
 
     public void setInitialised(boolean initialised) {
         isInitialised = initialised;
+    }
+
+    @Override
+    public Instrumentation getInstrumentation() {
+        return this.instrumentation;
     }
 }
