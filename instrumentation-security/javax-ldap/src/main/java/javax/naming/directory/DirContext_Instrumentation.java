@@ -15,28 +15,22 @@ import javax.naming.Context;
 import javax.naming.Name;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
-import java.sql.ResultSet;
 
 @Weave(type = MatchType.Interface, originalName = "javax.naming.directory.DirContext")
 public abstract class DirContext_Instrumentation implements Context {
 
-    public NamingEnumeration<SearchResult>
-    search(Name name,
-           String filterExpr,
-           Object[] filterArgs,
-           SearchControls cons)
-            throws NamingException {
+    public NamingEnumeration<SearchResult> search(Name name, String filterExpr, Object[] filterArgs, SearchControls cons) throws NamingException {
         boolean isLockAcquired = acquireLockIfPossible();
         AbstractOperation operation = null;
-        if(isLockAcquired) {
-            operation = preprocessSecurityHook(name.toString(), filterExpr, LDAPUtils.METHOD_SEARCH);
+        if (isLockAcquired) {
+            operation = preprocessSecurityHook(name.toString(), filterExpr);
         }
 
         NamingEnumeration<SearchResult> returnVal = null;
         try {
             returnVal = Weaver.callOriginal();
         } finally {
-            if(isLockAcquired){
+            if (isLockAcquired) {
                 releaseLock();
             }
         }
@@ -44,23 +38,57 @@ public abstract class DirContext_Instrumentation implements Context {
         return returnVal;
     }
 
-    public NamingEnumeration<SearchResult>
-    search(String name,
-           String filterExpr,
-           Object[] filterArgs,
-           SearchControls cons)
-            throws NamingException {
+    public NamingEnumeration<SearchResult> search(String name, String filterExpr, Object[] filterArgs, SearchControls cons) throws NamingException {
         boolean isLockAcquired = acquireLockIfPossible();
         AbstractOperation operation = null;
-        if(isLockAcquired) {
-            operation = preprocessSecurityHook(name.toString(), filterExpr, LDAPUtils.METHOD_SEARCH);
+        if (isLockAcquired) {
+            operation = preprocessSecurityHook(name, filterExpr);
         }
 
         NamingEnumeration<SearchResult> returnVal = null;
         try {
             returnVal = Weaver.callOriginal();
         } finally {
-            if(isLockAcquired){
+            if (isLockAcquired) {
+                releaseLock();
+            }
+        }
+        registerExitOperation(isLockAcquired, operation);
+        return returnVal;
+    }
+
+    public NamingEnumeration<SearchResult> search(Name name, String filter, SearchControls cons) throws NamingException {
+
+        boolean isLockAcquired = acquireLockIfPossible();
+        AbstractOperation operation = null;
+        if (isLockAcquired) {
+            operation = preprocessSecurityHook(name.toString(), filter);
+        }
+
+        NamingEnumeration<SearchResult> returnVal = null;
+        try {
+            returnVal = Weaver.callOriginal();
+        } finally {
+            if (isLockAcquired) {
+                releaseLock();
+            }
+        }
+        registerExitOperation(isLockAcquired, operation);
+        return returnVal;
+    }
+
+    public NamingEnumeration<SearchResult> search(String name, String filter, SearchControls cons) throws NamingException {
+        boolean isLockAcquired = acquireLockIfPossible();
+        AbstractOperation operation = null;
+        if (isLockAcquired) {
+            operation = preprocessSecurityHook(name, filter);
+        }
+
+        NamingEnumeration<SearchResult> returnVal = null;
+        try {
+            returnVal = Weaver.callOriginal();
+        } finally {
+            if (isLockAcquired) {
                 releaseLock();
             }
         }
@@ -71,22 +99,21 @@ public abstract class DirContext_Instrumentation implements Context {
     private void registerExitOperation(boolean isProcessingAllowed, AbstractOperation operation) {
         try {
             if (operation == null || !isProcessingAllowed || !NewRelicSecurity.isHookProcessingActive() ||
-                    NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty() || GenericHelper.skipExistsEvent()
-            ) {
+                    NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty() || GenericHelper.skipExistsEvent()) {
                 return;
             }
             NewRelicSecurity.getAgent().registerExitEvent(operation);
-        } catch (Throwable ignored){}
+        } catch (Throwable ignored) {
+        }
     }
 
-    private AbstractOperation preprocessSecurityHook (String name, String filter, String methodName){
+    private AbstractOperation preprocessSecurityHook(String name, String filter) {
         try {
-            if (!NewRelicSecurity.isHookProcessingActive() ||
-                    NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty() ||
-                    StringUtils.isAnyBlank(name, filter)){
+            if (!NewRelicSecurity.isHookProcessingActive() || NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty() ||
+                    StringUtils.isAnyBlank(filter)) {
                 return null;
             }
-            LDAPOperation ldapOperation = new LDAPOperation(name, filter, this.getClass().getName(), methodName);
+            LDAPOperation ldapOperation = new LDAPOperation(name, filter, this.getClass().getName(), LDAPUtils.METHOD_SEARCH);
             NewRelicSecurity.getAgent().registerOperation(ldapOperation);
             return ldapOperation;
         } catch (Throwable e) {
@@ -100,13 +127,15 @@ public abstract class DirContext_Instrumentation implements Context {
     private void releaseLock() {
         try {
             GenericHelper.releaseLock(LDAPUtils.NR_SEC_CUSTOM_ATTRIB_NAME);
-        } catch (Throwable ignored) {}
+        } catch (Throwable ignored) {
+        }
     }
 
     private boolean acquireLockIfPossible() {
         try {
             return GenericHelper.acquireLockIfPossible(LDAPUtils.NR_SEC_CUSTOM_ATTRIB_NAME);
-        } catch (Throwable ignored) {}
+        } catch (Throwable ignored) {
+        }
         return false;
     }
 
