@@ -1,5 +1,6 @@
 dependencies {
     implementation(project(":newrelic-security-api"))
+    implementation("com.newrelic.agent.java:newrelic-api:${nrAPIVersion}")
     implementation("com.newrelic.agent.java:newrelic-weaver-api:${nrAPIVersion}")
 
     implementation("org.eclipse.jetty:jetty-server:7.1.0.RC0")
