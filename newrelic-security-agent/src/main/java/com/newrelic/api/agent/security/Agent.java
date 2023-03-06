@@ -301,13 +301,25 @@ public class Agent implements SecurityAgent {
             }
 
             if (StringUtils.startsWithAny(stackTrace[i].getClassName(), SUN_REFLECT, COM_SUN)
-                    || stackTrace[i].isNativeMethod() || stackTrace[i].getLineNumber() < 0) {
+                    || stackTrace[i].isNativeMethod() || stackTrace[i].getLineNumber() < 0 ||
+                    !StringUtils.endsWith(stackTrace[i].getFileName(), ".java")) {
                 markedForRemoval = true;
+
+                // Checks for RCI flagging.
+                if (!NewRelic.getAgent().getConfig()
+                        .getValue(INRSettingsKey.SECURITY_DETECTION_DISABLE_RCI, false) && i > 0) {
+                    AgentMetaData metaData = NewRelicSecurity.getAgent().getSecurityMetaData().getMetaData();
+                    if (stackTrace[i - 1].getLineNumber() > 0 &&
+                            StringUtils.isNotBlank(stackTrace[i - 1].getFileName())) {
+                        metaData.setTriggerViaRCI(true);
+                        metaData.getRciMethodsCalls()
+                                .add(AgentUtils.stackTraceElementToString(operation.getStackTrace()[i]));
+                        metaData.getRciMethodsCalls()
+                                .add(AgentUtils.stackTraceElementToString(operation.getStackTrace()[i - 1]));
+                    }
+                }
             }
 
-            if (!StringUtils.endsWith(stackTrace[i].getFileName(), ".java")) {
-                markedForRemoval = true;
-            }
             if (!markedForRemoval) {
                 newTraceForIdCalc.add(stackTrace[i].hashCode());
             }
