@@ -9,6 +9,7 @@ package security.io.netty.channel;
 import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
+import io.netty.channel.ChannelHandlerContext;
 
 @Weave(type = MatchType.Interface, originalName = "io.netty.channel.ChannelHandler")
 public class ChannelHandler_Instrumentation {
@@ -35,7 +36,7 @@ public class ChannelHandler_Instrumentation {
      * static void invokeExceptionCaught(final AbstractChannelHandlerContext next, final Throwable cause)
      *
      * */
-    public void exceptionCaught(ChannelHandlerContext_Instrumentation ctx, Throwable cause) throws Exception {
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
         // TODO : Negative RXSS case. Read response.
         Weaver.callOriginal();
     }

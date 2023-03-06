@@ -11,13 +11,14 @@ import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelPromise;
 import security.io.netty.utils.NettyUtils;
 
-@Weave(type = MatchType.Interface, originalName = "io.netty.channel.ChannelInboundHandler")
-public abstract class ChannelInboundHandler_Instrumentation {
+@Weave(type = MatchType.Interface, originalName = "io.netty.channel.ChannelOutboundHandler")
+public abstract class ChannelOutboundHandler_Instrumentation {
 
-    public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+    void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
+        NettyUtils.sendRXSSEvent(ctx, msg, this.getClass().getName(), NettyUtils.WRITE_METHOD_NAME);
         Weaver.callOriginal();
-        NettyUtils.processSecurityRequest(ctx, msg);
     }
 }
