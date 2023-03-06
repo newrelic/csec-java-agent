@@ -305,6 +305,9 @@ public class Agent implements SecurityAgent {
                 markedForRemoval = true;
             }
 
+            if (!StringUtils.endsWith(stackTrace[i].getFileName(), ".java")) {
+                markedForRemoval = true;
+            }
             if (!markedForRemoval) {
                 newTraceForIdCalc.add(stackTrace[i].hashCode());
             }
