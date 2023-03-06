@@ -500,7 +500,6 @@ public class Dispatcher implements Runnable {
                     || VulnerabilityCaseType.FILE_OPERATION.equals(vulnerabilityCaseType)
                     || VulnerabilityCaseType.HTTP_REQUEST.equals(vulnerabilityCaseType)
                     || VulnerabilityCaseType.SYSTEM_EXIT.equals(vulnerabilityCaseType)) {
-                rciTriggerCheck(i, eventBean, klassName);
                 xxeTriggerCheck(i, eventBean, klassName);
                 if (deserialisationCheck) {
                     deserializationTriggerCheck(i, eventBean, klassName);
@@ -540,7 +539,8 @@ public class Dispatcher implements Runnable {
         }
 
         if (operation.getStackTrace()[index].getLineNumber() <= 0 && index > 0
-                && operation.getStackTrace()[index - 1].getLineNumber() > 0 && StringUtils.isNotBlank(operation.getStackTrace()[index - 1].getFileName())) {
+                && operation.getStackTrace()[index - 1].getLineNumber() > 0 &&
+                StringUtils.isNotBlank(operation.getStackTrace()[index - 1].getFileName())) {
             eventBean.getMetaData().setTriggerViaRCI(true);
             eventBean.getMetaData().getRciMethodsCalls().add(AgentUtils.stackTraceElementToString(operation.getStackTrace()[index]));
             eventBean.getMetaData().getRciMethodsCalls().add(AgentUtils.stackTraceElementToString(operation.getStackTrace()[index - 1]));
