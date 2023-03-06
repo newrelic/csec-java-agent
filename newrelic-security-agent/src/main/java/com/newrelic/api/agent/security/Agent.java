@@ -310,7 +310,9 @@ public class Agent implements SecurityAgent {
                         .getValue(INRSettingsKey.SECURITY_DETECTION_DISABLE_RCI, false) && i > 0) {
                     AgentMetaData metaData = NewRelicSecurity.getAgent().getSecurityMetaData().getMetaData();
                     if (stackTrace[i - 1].getLineNumber() > 0 &&
-                            StringUtils.isNotBlank(stackTrace[i - 1].getFileName())) {
+                            StringUtils.isNotBlank(stackTrace[i - 1].getFileName()) &&
+                            !StringUtils.startsWithAny(stackTrace[i - 1].getClassName(), "com.newrelic.", "com.nr.")
+                    ) {
                         metaData.setTriggerViaRCI(true);
                         metaData.getRciMethodsCalls()
                                 .add(AgentUtils.stackTraceElementToString(operation.getStackTrace()[i]));

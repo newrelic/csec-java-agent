@@ -114,7 +114,7 @@ public class HttpServletHelper {
     }
 
     private static String getNrSecCustomAttribName() {
-        return NR_SEC_CUSTOM_ATTRIB_NAME + Thread.currentThread().getId();
+        return NR_SEC_CUSTOM_ATTRIB_NAME;
     }
 
 

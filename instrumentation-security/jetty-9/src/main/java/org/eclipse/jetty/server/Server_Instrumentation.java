@@ -21,7 +21,6 @@ public abstract class Server_Instrumentation {
 
     @Trace(dispatcher = true)
     public void handle(HttpChannel connection) {
-        System.out.println("Intercepted");
         HttpServletRequest request = connection.getRequest();
         HttpServletResponse response = connection.getResponse();
         boolean isServletLockAcquired = acquireServletLockIfPossible();
