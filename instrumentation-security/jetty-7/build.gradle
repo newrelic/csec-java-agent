@@ -11,7 +11,7 @@ jar {
 }
 
 verifyInstrumentation {
-    passesOnly 'org.eclipse.jetty:jetty-server:[7.0.0.M0,8.1.0.RC0)'
+    passesOnly 'org.eclipse.jetty:jetty-server:[7.0.0.M2,8.1.0.RC0)'
     exclude 'org.eclipse.jetty:jetty-server:[7.6.0.RC0,7.7.0]'
     excludeRegex '.*(alpha|beta|rc).*'
 }
