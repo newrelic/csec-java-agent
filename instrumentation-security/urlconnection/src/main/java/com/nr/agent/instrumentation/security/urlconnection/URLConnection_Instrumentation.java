@@ -68,7 +68,7 @@ public abstract class URLConnection_Instrumentation {
         if(getURL != null) {
             boolean currentCascadedCall = cascadedCall;
             // Preprocess Phase
-            operation = preprocessSecurityHook(currentCascadedCall, url, getURL().getProtocol(), Helper.METHOD_NAME_GET_OUTPUT_STREAM);
+            operation = preprocessSecurityHook(currentCascadedCall, url, getURL.getProtocol(), Helper.METHOD_NAME_GET_OUTPUT_STREAM);
         }
         // Actual Call
         OutputStream returnStream = null;
@@ -90,7 +90,7 @@ public abstract class URLConnection_Instrumentation {
         if(getURL != null) {
             boolean currentCascadedCall = cascadedCall;
             // Preprocess Phase
-            operation = preprocessSecurityHook(currentCascadedCall, url, getURL().getProtocol(), Helper.METHOD_NAME_GET_INPUT_STREAM);
+            operation = preprocessSecurityHook(currentCascadedCall, url, getURL.getProtocol(), Helper.METHOD_NAME_GET_INPUT_STREAM);
         }
         // Actual Call
         InputStream returnStream = null;
