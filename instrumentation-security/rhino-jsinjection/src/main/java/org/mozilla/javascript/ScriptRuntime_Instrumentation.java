@@ -6,19 +6,20 @@ import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.StringUtils;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
 import com.newrelic.api.agent.security.schema.operation.JSInjectionOperation;
-import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
 import com.nr.agent.security.mongo.jsinjection.rhino.JSEngineUtils;
 
-@Weave(type = MatchType.Interface, originalName = "org.mozilla.javascript.Script")
-public abstract class Script_Instrumentation {
+@Weave(originalName = "org.mozilla.javascript.ScriptRuntime")
+public class ScriptRuntime_Instrumentation {
 
-    public Object exec(Context var1, Scriptable var2) {
-        boolean isLockAcquired = acquireLockIfPossible();
+    // TODO: changes for parameterized function calls in js script
+    public static Object doTopCall(Callable callable, Context_Instrumentation cx, Scriptable scope, Scriptable thisObj, Object[] args){
+        int code = cx.hashCode();
+        boolean isLockAcquired = acquireLockIfPossible(code);
         AbstractOperation operation = null;
         if(isLockAcquired) {
-            operation = preprocessSecurityHook(this.hashCode(), JSEngineUtils.METHOD_EXEC);
+            operation = preprocessSecurityHook(code, JSEngineUtils.METHOD_EXEC, cx);
         }
 
         Object returnVal = null;
@@ -26,14 +27,14 @@ public abstract class Script_Instrumentation {
             returnVal = Weaver.callOriginal();
         } finally {
             if(isLockAcquired){
-                releaseLock();
+                releaseLock(code);
             }
         }
         registerExitOperation(isLockAcquired, operation);
         return returnVal;
     }
 
-    private void registerExitOperation(boolean isProcessingAllowed, AbstractOperation operation) {
+    private static void registerExitOperation(boolean isProcessingAllowed, AbstractOperation operation) {
         try {
             if (operation == null || !isProcessingAllowed || !NewRelicSecurity.isHookProcessingActive() ||
                     NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty() || GenericHelper.skipExistsEvent()
@@ -44,15 +45,14 @@ public abstract class Script_Instrumentation {
         } catch (Throwable ignored){}
     }
 
-    private AbstractOperation preprocessSecurityHook (int hashCode, String methodName){
+    private static AbstractOperation preprocessSecurityHook(int hashCode, String methodName, Context_Instrumentation context){
         try {
             if (!NewRelicSecurity.isHookProcessingActive() ||
                     NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()){
                 return null;
             }
-            String script = NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(JSEngineUtils.NR_SEC_CUSTOM_ATTRIB_SCRIPT_NAME+hashCode, String.class);
-            if(StringUtils.isNotBlank(script)) {
-                JSInjectionOperation jsInjectionOperation = new JSInjectionOperation(script, this.getClass().getName(), methodName);
+            if(StringUtils.isNotBlank(context.newScript)) {
+                JSInjectionOperation jsInjectionOperation = new JSInjectionOperation(String.valueOf(context.newScript), "org.mozilla.javascript.Script", methodName);
                 NewRelicSecurity.getAgent().registerOperation(jsInjectionOperation);
                 return jsInjectionOperation;
             }
@@ -64,17 +64,16 @@ public abstract class Script_Instrumentation {
         return null;
     }
 
-    private void releaseLock() {
+    private static void releaseLock(int code) {
         try {
-            GenericHelper.releaseLock(JSEngineUtils.NR_SEC_CUSTOM_ATTRIB_NAME);
+            GenericHelper.releaseLock(JSEngineUtils.NR_SEC_CUSTOM_ATTRIB_NAME+code);
         } catch (Throwable ignored) {}
     }
 
-    private boolean acquireLockIfPossible() {
+    private static boolean acquireLockIfPossible(int code) {
         try {
-            return GenericHelper.acquireLockIfPossible(JSEngineUtils.NR_SEC_CUSTOM_ATTRIB_NAME);
+            return GenericHelper.acquireLockIfPossible(JSEngineUtils.NR_SEC_CUSTOM_ATTRIB_NAME+code);
         } catch (Throwable ignored) {}
         return false;
     }
-
 }
