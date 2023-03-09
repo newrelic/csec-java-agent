@@ -11,20 +11,21 @@ import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.schema.JDBCVendor;
 import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
-import com.newrelic.api.agent.weaver.WeaveIntoAllMethods;
 import com.newrelic.api.agent.weaver.Weaver;
+import oracle.jdbc.OracleHostnameResolver;
+import oracle.jdbc.driver.DMSFactory;
+import org.ietf.jgss.GSSCredential;
 
-import java.sql.SQLException;
+import javax.net.ssl.SSLContext;
+import java.io.IOException;
+import java.util.Properties;
 
 @Weave(type = MatchType.Interface, originalName = "oracle.net.ns.Communication")
 public abstract class Communication_Instrumentation {
-
-    @WeaveIntoAllMethods
-    static void connect() throws SQLException {
+    public void connect(String var1, Properties var2, GSSCredential var3, SSLContext var4, OracleHostnameResolver var5, DMSFactory.DMSNoun var6) throws IOException, NetException {
         if (NewRelicSecurity.isHookProcessingActive() && !NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()) {
             NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(JDBCVendor.META_CONST_JDBC_VENDOR, JDBCVendor.ORACLE);
         }
         Weaver.callOriginal();
     }
-
 }
