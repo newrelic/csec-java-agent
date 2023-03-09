@@ -41,11 +41,15 @@ public abstract class URLConnection_Instrumentation {
     public abstract URL getURL();
 
     public void connect() throws IOException {
-        String url = getURL().toString();
-        boolean currentCascadedCall = cascadedCall;
-        // Preprocess Phase
-        AbstractOperation operation = preprocessSecurityHook(currentCascadedCall, url, getURL().getProtocol(), Helper.METHOD_NAME_CONNECT);
-
+        String url = null;
+        AbstractOperation operation = null;
+        URL getURL = getURL();
+        if(getURL != null) {
+            url = getURL.toString();
+            boolean currentCascadedCall = cascadedCall;
+            // Preprocess Phase
+            operation = preprocessSecurityHook(currentCascadedCall, url, getURL.getProtocol(), Helper.METHOD_NAME_CONNECT);
+        }
         // Actual Call
         try {
             Weaver.callOriginal();
@@ -58,12 +62,14 @@ public abstract class URLConnection_Instrumentation {
     }
 
     public synchronized OutputStream getOutputStream() throws IOException {
-        String url = getURL().toString();
-        boolean currentCascadedCall = cascadedCall;
-
-        // Preprocess Phase
-        AbstractOperation operation = preprocessSecurityHook(currentCascadedCall, url, getURL().getProtocol(), Helper.METHOD_NAME_GET_OUTPUT_STREAM);
-
+        String url = null;
+        AbstractOperation operation = null;
+        URL getURL = getURL();
+        if(getURL != null) {
+            boolean currentCascadedCall = cascadedCall;
+            // Preprocess Phase
+            operation = preprocessSecurityHook(currentCascadedCall, url, getURL.getProtocol(), Helper.METHOD_NAME_GET_OUTPUT_STREAM);
+        }
         // Actual Call
         OutputStream returnStream = null;
         try {
@@ -78,12 +84,14 @@ public abstract class URLConnection_Instrumentation {
     }
 
     public synchronized InputStream getInputStream() throws IOException {
-        String url = getURL().toString();
-        boolean currentCascadedCall = cascadedCall;
-
-        // Preprocess Phase
-        AbstractOperation operation = preprocessSecurityHook(currentCascadedCall, url, getURL().getProtocol(), Helper.METHOD_NAME_GET_INPUT_STREAM);
-
+        String url = null;
+        AbstractOperation operation = null;
+        URL getURL = getURL();
+        if(getURL != null) {
+            boolean currentCascadedCall = cascadedCall;
+            // Preprocess Phase
+            operation = preprocessSecurityHook(currentCascadedCall, url, getURL.getProtocol(), Helper.METHOD_NAME_GET_INPUT_STREAM);
+        }
         // Actual Call
         InputStream returnStream = null;
         try {
@@ -99,7 +107,7 @@ public abstract class URLConnection_Instrumentation {
 
     private static void registerExitOperation(AbstractOperation operation) {
         try {
-            if (!NewRelicSecurity.isHookProcessingActive() || NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()
+            if (operation == null || operation.isEmpty() || !NewRelicSecurity.isHookProcessingActive() || NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()
             ) {
                 return;
             }
