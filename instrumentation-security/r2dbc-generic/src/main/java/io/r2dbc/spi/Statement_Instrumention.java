@@ -21,6 +21,8 @@ public class Statement_Instrumention {
     private Map<String, String> params;
     @NewField
     private boolean isPrepared = false;
+    @NewField
+    private boolean lock = false;
 
     public Publisher<? extends Result> execute() {
         boolean isLockAcquired = R2dbcHelper.acquireLockIfPossible();
@@ -41,23 +43,41 @@ public class Statement_Instrumention {
     }
 
     public Statement bind(int index, Object value){
-        setParamValue(String.valueOf(index), value);
+        if (!lock) {
+            setParamValue(String.valueOf(index), value);
+        }
         return Weaver.callOriginal();
     }
 
     public Statement bind(String index, Object value){
-        setParamValue(index, value);
-        return Weaver.callOriginal();
+        Statement var1;
+        try {
+            setParamValue(index, value);
+            lock = true;
+            var1 = Weaver.callOriginal();
+        } finally {
+            lock = false;
+        }
+        return var1;
     }
 
     public Statement bindNull(int index, Class<?> type){
-        setParamValue(String.valueOf(index), type);
+        if (!lock) {
+            setParamValue(String.valueOf(index), type);
+        }
         return Weaver.callOriginal();
     }
 
-    public Statement bindNull(String index, Class<?> type){
-        setParamValue(index, type);
-        return Weaver.callOriginal();
+    public Statement bindNull(String index, Class<?> type) {
+        Statement var1;
+        try {
+            setParamValue(index, type);
+            lock = true;
+            var1 = Weaver.callOriginal();
+        } finally {
+            lock = false;
+        }
+        return var1;
     }
 
     private void setParamValue(String index, Object value) {
