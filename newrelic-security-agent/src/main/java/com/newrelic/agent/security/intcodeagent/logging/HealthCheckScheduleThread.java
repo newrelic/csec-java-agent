@@ -212,7 +212,7 @@ public class HealthCheckScheduleThread {
             stats.put("systemTotalMemoryMB", NumberUtils.toScaledBigDecimal(((long) getTotalPhysicalMemorySize.invoke(operatingSystemMXBean)) / 1048576.0, 2, RoundingMode.HALF_DOWN).doubleValue());
 
         } catch (Throwable e) {
-            logger.log(LogLevel.ERROR, "Error while populating OS related resource usage stats : " + e.toString(), HealthCheckScheduleThread.class.getName());
+//            logger.log(LogLevel.ERROR, "Error while populating OS related resource usage stats : " + e.toString(), HealthCheckScheduleThread.class.getName());
             logger.log(LogLevel.DEBUG, "Error while populating OS related resource usage stats : ", e, HealthCheckScheduleThread.class.getName());
         }
     }
