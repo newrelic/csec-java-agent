@@ -51,6 +51,7 @@ subprojects {
 
     def isJavaProject = ![
             'newrelic-security-agent',  // is a parent project
+            'instrumentation-build',
             'newrelic-security-data-schema',
             'newrelic-security-api',
             'instrumentation-security',
