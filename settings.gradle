@@ -20,6 +20,8 @@ buildCache {
     }
 }
 
+include 'instrumentation-build'
+
 include 'newrelic-security-api'
 include 'newrelic-security-agent'
 
