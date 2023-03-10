@@ -74,11 +74,8 @@ public class MongoUtil {
         try {
             if (NewRelicSecurity.isHookProcessingActive() &&
                     !NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty() && command != null) {
-                System.out.println("register mongo operation");
                 operation = new NoSQLOperation(command.toJson(), typeOfOperation, klassName, methodName);
-                System.out.println("register op : "+operation);
                 NewRelicSecurity.getAgent().registerOperation(operation);
-                System.out.println("nr class : "+NewRelicSecurity.getAgent().getClass().getName());
             }
         } catch (Throwable e) {
             if (e instanceof NewRelicSecurityException) {
@@ -95,7 +92,6 @@ public class MongoUtil {
         try {
             if (NewRelicSecurity.isHookProcessingActive() &&
                     !NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()) {
-                System.out.println("register mongo operations : "+ command.size());
                 List<String> operations = new ArrayList<>();
                 for (BsonDocument cmd : command) {
                     if(cmd != null) {
@@ -103,7 +99,6 @@ public class MongoUtil {
                     }
                 }
                 operation = new NoSQLOperation(operations, typeOfOperation, klassName, methodName);
-                System.out.println("register op : "+operation);
                 NewRelicSecurity.getAgent().registerOperation(operation);
             }
         } catch (Throwable e) {
@@ -174,7 +169,6 @@ public class MongoUtil {
     public static <T> AbstractOperation getReadAbstractOperation(ReadOperation<T> operation, String className, String methodName) {
         List<BsonDocument> operations;
         AbstractOperation noSQLOperation = null;
-        System.out.println("Operation type : "+ operation);
         if (operation instanceof AggregateOperation) {
             AggregateOperation aggregateOperation = (AggregateOperation) operation;
             noSQLOperation = recordMongoOperation(aggregateOperation.getPipeline(), MongoUtil.OP_AGGREGATE, className, methodName);
@@ -245,13 +239,11 @@ public class MongoUtil {
             operations.add(findAndUpdateOperation.getUpdate());
             noSQLOperation = recordMongoOperation(operations, MongoUtil.OP_FIND_AND_UPDATE, className, methodName);
         } else if (operation instanceof InsertOperation) {
-            System.out.println("inside insert");
             InsertOperation insertOperation = (InsertOperation) operation;
             operations = new ArrayList<>();
             for (InsertRequest insertRequest : insertOperation.getInsertRequests()) {
                 operations.add(insertRequest.getDocument());
             }
-            System.out.println("inside insert : " + operations);
             noSQLOperation = recordMongoOperation(operations, MongoUtil.OP_INSERT, className, methodName);
         } else if (operation instanceof MapReduceToCollectionOperation) {
             MapReduceToCollectionOperation mapReduceToCollectionOperation = (MapReduceToCollectionOperation) operation;

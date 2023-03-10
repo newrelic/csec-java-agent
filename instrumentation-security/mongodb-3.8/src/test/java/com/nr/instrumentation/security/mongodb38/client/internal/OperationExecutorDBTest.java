@@ -473,7 +473,7 @@ public class OperationExecutorDBTest {
         try (DBCursor dbCursor = mcollection.find(query)) {
             Iterator<DBObject> var = dbCursor.iterator();
             while (var.hasNext()) {
-                System.out.println(var.next().get("name"));
+                var.next().get("name");
             }
         }
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
@@ -498,7 +498,7 @@ public class OperationExecutorDBTest {
         try (DBCursor dbCursor = mcollection.find()) {
             Iterator<DBObject> var = dbCursor.iterator();
             while (var.hasNext()) {
-                System.out.println(var.next().get("name"));
+                var.next().get("name");
             }
         }
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
@@ -525,7 +525,7 @@ public class OperationExecutorDBTest {
         try (DBCursor dbCursor = mcollection.find(query,new BasicDBObject("type", "db"))) {
             Iterator<DBObject> var = dbCursor.iterator();
             while (var.hasNext()) {
-                System.out.println(var.next().get("name"));
+                var.next().get("name");
             }
         }
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
@@ -551,7 +551,7 @@ public class OperationExecutorDBTest {
         try (DBCursor dbCursor = mcollection.find(query,dbcollectionfindoptions)) {
             Iterator<DBObject> var = dbCursor.iterator();
             while (var.hasNext()) {
-                System.out.println(var.next().get("name"));
+                var.next().get("name");
             }
         }
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();

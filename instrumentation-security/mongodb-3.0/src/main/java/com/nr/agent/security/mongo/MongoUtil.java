@@ -239,13 +239,11 @@ public class MongoUtil {
             operations.add(findAndUpdateOperation.getUpdate());
             noSQLOperation = recordMongoOperation(operations, MongoUtil.OP_FIND_AND_UPDATE, className, methodName);
         } else if (operation instanceof InsertOperation) {
-            System.out.println("inside insert");
             InsertOperation insertOperation = (InsertOperation) operation;
             operations = new ArrayList<>();
             for (InsertRequest insertRequest : insertOperation.getInsertRequests()) {
                 operations.add(insertRequest.getDocument());
             }
-            System.out.println("inside insert : " + operations);
             noSQLOperation = recordMongoOperation(operations, MongoUtil.OP_INSERT, className, methodName);
         } else if (operation instanceof MapReduceToCollectionOperation) {
             MapReduceToCollectionOperation mapReduceToCollectionOperation = (MapReduceToCollectionOperation) operation;
