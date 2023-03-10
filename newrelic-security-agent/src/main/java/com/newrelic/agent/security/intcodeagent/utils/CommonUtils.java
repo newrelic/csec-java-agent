@@ -5,7 +5,6 @@ import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool
 import com.newrelic.agent.security.intcodeagent.filelogging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.models.config.AgentPolicyParameters;
 import com.newrelic.agent.security.intcodeagent.websocket.JsonConverter;
-import com.newrelic.api.agent.NewRelic;
 import com.newrelic.api.agent.security.Agent;
 import com.newrelic.api.agent.security.schema.policy.AgentPolicy;
 import org.apache.commons.io.FileUtils;
@@ -20,10 +19,7 @@ import org.json.JSONTokener;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLClassLoader;
-import java.net.URLDecoder;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -31,8 +27,6 @@ import java.nio.file.attribute.PosixFilePermissions;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Stack;
-import java.util.jar.JarFile;
-import java.util.zip.ZipEntry;
 
 public class CommonUtils {
 
@@ -131,93 +125,6 @@ public class CommonUtils {
             }
         }
         return true;
-    }
-
-    public static String getNRAgentJarDirectory() {
-        try {
-            URL agentJarUrl = getAgentJarUrl();
-            if (agentJarUrl != null) {
-                File file = new File(getAgentJarFileName(agentJarUrl));
-                if (file.exists()) {
-                    return file.getParent();
-                }
-            }
-        } catch (Throwable ignored) {
-        }
-        return null;
-    }
-
-    /*
-        Below methods are taken from com.newrelic.agent.config.AgentJarHelper
-     */
-    public static URL getAgentJarUrl() {
-        if (System.getProperty("newrelic.agent_jarfile") != null) {
-            try {
-                return new URL("file://" + System.getProperty("newrelic.agent_jarfile"));
-            } catch (MalformedURLException e) {
-                logger.log(LogLevel.FINER,"Unable to create a valid url from " + System.getProperty("newrelic.agent_jarfile"), e, CommonUtils.class.getName());
-
-            }
-        }
-
-        // Use AgentJarHelper's ClassLoader here because this is called from the BootstrapAgent premain
-        ClassLoader classLoader = NewRelic.getAgent().getClass().getClassLoader();
-        if (classLoader instanceof URLClassLoader) {
-            URL[] urls = ((URLClassLoader) classLoader).getURLs();
-            for (URL url : urls) {
-                if (url.getFile().endsWith("newrelic.jar")) {
-                    if (jarFileNameExists(url, "com/newrelic/agent/Agent.class")) {
-                        return url;
-                    }
-                }
-            }
-            String agentClassName = "com/newrelic/agent/Agent.class".replace('.', '/');
-            for (URL url : urls) {
-                try (JarFile jarFile = new JarFile(url.getFile())) {
-                    ZipEntry entry = jarFile.getEntry(agentClassName);
-                    if (entry != null) {
-                        return url;
-                    }
-                } catch (IOException e) {
-                }
-            }
-        }
-        // technically this is all that is needed to get the jar URL
-        // but it does require a new permission so it will be the
-        // fallback method for the time being (the above approach
-        // frequently fails when using a custom system class loader)
-        return NewRelic.getAgent().getClass().getProtectionDomain().getCodeSource().getLocation();
-    }
-
-    public static boolean jarFileNameExists(URL agentJarUrl, String name) {
-        try (JarFile jarFile = getAgentJarFile(agentJarUrl)) {
-            return jarFile.getEntry(name) != null;
-        } catch (Exception e) {
-            logger.log(LogLevel.FINER,"Unable to search the agent jar for " + name, e, CommonUtils.class.getName());
-        }
-        return false;
-    }
-
-    private static JarFile getAgentJarFile(URL agentJarUrl) {
-        if (agentJarUrl == null) {
-            return null;
-        }
-        try {
-            return new JarFile(getAgentJarFileName(agentJarUrl));
-        } catch (IOException e) {
-            return null;
-        }
-    }
-
-    private static String getAgentJarFileName(URL agentJarUrl) {
-        if (agentJarUrl == null) {
-            return null;
-        }
-        try {
-            return URLDecoder.decode(agentJarUrl.getFile().replace("+", "%2B"), "UTF-8");
-        } catch (IOException e) {
-            return null;
-        }
     }
 
     public static InputStream getResourceStreamFromAgentJar(String resourceName) {

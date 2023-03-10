@@ -98,10 +98,8 @@ public class AgentConfig {
     }
 
     public boolean setK2HomePath() {
-        if (NewRelic.getAgent().getConfig().getValue("newrelic.home") != null) {
-            K2_HOME = NewRelic.getAgent().getConfig().getValue("newrelic.home");
-        } else if (CommonUtils.getNRAgentJarDirectory() != null) {
-            K2_HOME = CommonUtils.getNRAgentJarDirectory();
+        if (NewRelic.getAgent().getConfig().getValue("agent_home") != null) {
+            K2_HOME = NewRelic.getAgent().getConfig().getValue("agent_home");
         } else {
             K2_HOME = ".";
         }
@@ -110,7 +108,8 @@ public class AgentConfig {
         K2_HOME = k2homePath.toString();
         AgentUtils.getInstance().getStatusLogValues().put("k2-home", K2_HOME);
         AgentUtils.getInstance().getStatusLogValues().put("k2-home-permissions", String.valueOf(k2homePath.toFile().canWrite() && k2homePath.toFile().canRead()));
-        AgentUtils.getInstance().getStatusLogValues().put("agent-location", CommonUtils.getNRAgentJarDirectory());
+        AgentUtils.getInstance().getStatusLogValues().put("agent-location",
+                NewRelic.getAgent().getConfig().getValue("agent_jar_location"));
         if (!isValidK2HomePath(K2_HOME)) {
             System.err.println("[K2-JA] Incomplete startup env parameters provided : Missing or Incorrect K2_HOME. Collector exiting.");
             return false;
