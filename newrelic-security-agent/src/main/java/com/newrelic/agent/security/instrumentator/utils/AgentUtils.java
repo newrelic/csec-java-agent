@@ -60,7 +60,6 @@ public class AgentUtils {
     public static final String ENFORCING_POLICY = "Enforcing policy";
     public static final String LOG_LEVEL_PROVIDED_IN_POLICY_IS_INCORRECT_DEFAULTING_TO_INFO = "Log level provided in policy is incorrect: %s. Staying at current level";
     public static final String ERROR_WHILE_EXTRACTING_FILE_FROM_ARCHIVE_S_S = "Error while extracting file from archive : %s : %s";
-    public static final String NR_SECURITY_ENABLE = "security.enable";
     public static final String OVER_RIDE_POLICY_DISABLED_IN_NR_CONFIG_AT_S = "Over-ride policy disabled in NR config at '%s'.";
     public static final String COLLECTOR_IS_NOW_S = "Collector is now %s for %s";
     public static final String ACTIVE = "active";
@@ -247,7 +246,7 @@ public class AgentUtils {
                 }
 
                 if (uncleanExit) {
-                    logger.log(LogLevel.WARN, CLASSLOADER_RECORD_MISSING_FOR_CLASS + userClassName,
+                    logger.log(LogLevel.WARNING, CLASSLOADER_RECORD_MISSING_FOR_CLASS + userClassName,
                             AgentUtils.class.getName());
                     try {
                         cls = Class.forName(userClassName, false,
@@ -257,7 +256,7 @@ public class AgentUtils {
                     }
                 }
             } else {
-                logger.log(LogLevel.WARN, CURRENT_GENERIC_SERVLET_INSTANCE_NULL_IN_DETECT_DEPLOYED_APPLICATION_PATH,
+                logger.log(LogLevel.WARNING, CURRENT_GENERIC_SERVLET_INSTANCE_NULL_IN_DETECT_DEPLOYED_APPLICATION_PATH,
                         AgentUtils.class.getName());
                 return appPath;
             }
@@ -278,7 +277,7 @@ public class AgentUtils {
                                     AgentUtils.class.getName());
                         }
                     } else {
-                        logger.log(LogLevel.WARN,
+                        logger.log(LogLevel.WARNING,
                                 CLASS_DIR_NOT_FOUND_IN_JBOSS_PROTECTION_DOMAIN + protectionDomainLocation.getContent(),
                                 AgentUtils.class.getName());
                     }
@@ -309,7 +308,7 @@ public class AgentUtils {
                                             AgentUtils.class.getName());
                                 }
                             } else {
-                                logger.log(LogLevel.WARN, CLASS_DIR_NOT_FOUND_IN_JBOSS_PROTECTION_DOMAIN + app.getContent(), AgentUtils.class.getName());
+                                logger.log(LogLevel.WARNING, CLASS_DIR_NOT_FOUND_IN_JBOSS_PROTECTION_DOMAIN + app.getContent(), AgentUtils.class.getName());
                             }
                         } else {
                             appPath = app.getPath();
@@ -321,12 +320,12 @@ public class AgentUtils {
                         }
                     }
                 } else {
-                    logger.log(LogLevel.WARN, CLASSLOADER_IS_NULL_IN_DETECT_DEPLOYED_APPLICATION_PATH,
+                    logger.log(LogLevel.WARNING, CLASSLOADER_IS_NULL_IN_DETECT_DEPLOYED_APPLICATION_PATH,
                             AgentUtils.class.getName());
                 }
             }
         } catch (Throwable e) {
-            logger.log(LogLevel.ERROR, ERROR, e, AgentUtils.class.getName());
+            logger.log(LogLevel.SEVERE, ERROR, e, AgentUtils.class.getName());
         }
         return appPath;
     }
@@ -369,8 +368,8 @@ public class AgentUtils {
                 EventSendPool.getInstance().sendEvent(AgentInfo.getInstance().getApplicationInfo());
                 return true;
             } catch (Throwable e) {
-                logger.log(LogLevel.ERROR, String.format(ERROR_WHILE_SENDING_UPDATED_POLICY_TO_REMOTE_S_S, e.getMessage(), e.getCause()), AgentUtils.class.getName());
-                logger.log(LogLevel.DEBUG, ERROR_WHILE_SENDING_UPDATED_POLICY_TO_REMOTE, e, AgentUtils.class.getName());
+                logger.log(LogLevel.SEVERE, String.format(ERROR_WHILE_SENDING_UPDATED_POLICY_TO_REMOTE_S_S, e.getMessage(), e.getCause()), AgentUtils.class.getName());
+                logger.log(LogLevel.FINER, ERROR_WHILE_SENDING_UPDATED_POLICY_TO_REMOTE, e, AgentUtils.class.getName());
             }
         }
         return false;
@@ -394,7 +393,7 @@ public class AgentUtils {
             EventSendPool.getInstance().sendEvent(AgentInfo.getInstance().getApplicationInfo());
             return true;
         } catch (Throwable e) {
-            logger.logInit(LogLevel.ERROR, IAgentConstants.UNABLE_TO_SET_AGENT_POLICY_DUE_TO_ERROR, e,
+            logger.logInit(LogLevel.SEVERE, IAgentConstants.UNABLE_TO_SET_AGENT_POLICY_DUE_TO_ERROR, e,
                     AgentUtils.class.getName());
             return false;
         }
@@ -478,7 +477,7 @@ public class AgentUtils {
             }
             return true;
         } catch (IOException e) {
-            logger.log(LogLevel.ERROR, "Error : ", e, AgentUtils.class.getName());
+            logger.log(LogLevel.SEVERE, "Error : ", e, AgentUtils.class.getName());
         }
         return false;
     }
@@ -536,7 +535,7 @@ public class AgentUtils {
     private void applyNRPolicyOverride() {
         boolean override = false;
         if (!NewRelic.getAgent().getConfig().getValue(INRSettingsKey.SECURITY_POLICY_ENFORCE, false)) {
-            logger.log(LogLevel.DEBUG, String.format(OVER_RIDE_POLICY_DISABLED_IN_NR_CONFIG_AT_S, INRSettingsKey.SECURITY_POLICY_ENFORCE), AgentUtils.class.getName());
+            logger.log(LogLevel.FINER, String.format(OVER_RIDE_POLICY_DISABLED_IN_NR_CONFIG_AT_S, INRSettingsKey.SECURITY_POLICY_ENFORCE), AgentUtils.class.getName());
             this.setPolicyOverridden(override);
             return;
         }

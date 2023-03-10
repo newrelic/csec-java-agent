@@ -116,14 +116,14 @@ public class RestClient {
     public void fireRequest(Request request, int repeatCount) throws InterruptedIOException {
         OkHttpClient client = clientThreadLocal.get();
 
-        logger.log(LogLevel.DEBUG, String.format(FIRING_REQUEST_METHOD_S, request.method()), RestClient.class.getName());
-        logger.log(LogLevel.DEBUG, String.format(FIRING_REQUEST_URL_S, request.url()), RestClient.class.getName());
-        logger.log(LogLevel.DEBUG, String.format(FIRING_REQUEST_HEADERS_S, request.headers()), RestClient.class.getName());
+        logger.log(LogLevel.FINER, String.format(FIRING_REQUEST_METHOD_S, request.method()), RestClient.class.getName());
+        logger.log(LogLevel.FINER, String.format(FIRING_REQUEST_URL_S, request.url()), RestClient.class.getName());
+        logger.log(LogLevel.FINER, String.format(FIRING_REQUEST_HEADERS_S, request.headers()), RestClient.class.getName());
 
         Call call = client.newCall(request);
         try {
             Response response = call.execute();
-            logger.log(LogLevel.DEBUG, String.format(REQUEST_SUCCESS_S_RESPONSE_S_S, request, response, response.body().string()), RestClient.class.getName());
+            logger.log(LogLevel.FINER, String.format(REQUEST_SUCCESS_S_RESPONSE_S_S, request, response, response.body().string()), RestClient.class.getName());
             response.body().close();
             if (client.connectionPool() != null) {
                 client.connectionPool().evictAll();
@@ -133,7 +133,7 @@ public class RestClient {
                 fireRequest(request, --repeatCount);
             }
         } catch (IOException e) {
-            logger.log(LogLevel.DEBUG, String.format(CALL_FAILED_REQUEST_S_REASON, request), e, RestClient.class.getName());
+            logger.log(LogLevel.FINER, String.format(CALL_FAILED_REQUEST_S_REASON, request), e, RestClient.class.getName());
             FuzzFailEvent fuzzFailEvent = new FuzzFailEvent(AgentInfo.getInstance().getApplicationUUID());
             fuzzFailEvent.setFuzzHeader(request.header(ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID));
             EventSendPool.getInstance().sendEvent(fuzzFailEvent);

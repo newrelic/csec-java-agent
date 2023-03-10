@@ -51,10 +51,7 @@ public class AgentConfig {
     public void instantiate(){
         //Set k2 home path
         boolean validHomePath = setK2HomePath();
-        if(!validHomePath){
-            //TODO agent termination required.
-        }
-        isNRSecurityEnabled = NewRelic.getAgent().getConfig().getValue(IUtilConstants.NR_SECURITY_ENABLE, false);
+        isNRSecurityEnabled = NewRelic.getAgent().getConfig().getValue(IUtilConstants.NR_SECURITY_ENABLED, false);
         // Set required Group
         groupName = applyRequiredGroup();
         // Set required LogLevel
@@ -76,11 +73,8 @@ public class AgentConfig {
     }
 
     private String applyRequiredGroup() {
-        String groupName = System.getenv().get(IUtilConstants.K_2_GROUP_NAME);
-        if(StringUtils.isNotBlank(groupName)){
-        } else if (StringUtils.isNotBlank(NewRelic.getAgent().getConfig().getValue(IUtilConstants.SECURITY_MODE))) {
-            groupName = NewRelic.getAgent().getConfig().getValue(IUtilConstants.SECURITY_MODE);
-        } else {
+        String groupName = NewRelic.getAgent().getConfig().getValue(IUtilConstants.SECURITY_MODE);
+        if(StringUtils.isBlank(groupName)) {
             groupName = IUtilConstants.IAST;
         }
         AgentUtils.getInstance().getStatusLogValues().put(IUtilConstants.GROUP_NAME, groupName);
@@ -89,15 +83,12 @@ public class AgentConfig {
 
     private String applyRequiredLogLevel() {
         String logLevel = IUtilConstants.INFO;
-
-        if (System.getenv().containsKey(IUtilConstants.K_2_LOG_LEVEL)) {
-            logLevel = System.getenv().get(IUtilConstants.K_2_LOG_LEVEL);
-        } else if (StringUtils.isNotBlank(NewRelic.getAgent().getConfig().getValue(IUtilConstants.SECURITY_LOG_LEVEL))) {
-            logLevel = NewRelic.getAgent().getConfig().getValue(IUtilConstants.SECURITY_LOG_LEVEL);
+        if (StringUtils.isNotBlank(NewRelic.getAgent().getConfig().getValue(IUtilConstants.NR_LOG_LEVEL))) {
+            logLevel = NewRelic.getAgent().getConfig().getValue(IUtilConstants.NR_LOG_LEVEL);
         }
 
         try {
-            LogWriter.setLogLevel(LogLevel.valueOf(logLevel));
+            LogWriter.setLogLevel(LogLevel.valueOf(StringUtils.upperCase(logLevel)));
         } catch (Exception e) {
             LogWriter.setLogLevel(LogLevel.INFO);
             logLevel = LogLevel.INFO.name();
@@ -107,20 +98,14 @@ public class AgentConfig {
     }
 
     public boolean setK2HomePath() {
-        if (System.getenv().containsKey("K2_HOME")) {
-            K2_HOME = System.getenv("K2_HOME");
-        } else if (NewRelic.getAgent().getConfig().getValue("security.sec_home_path") != null) {
-            K2_HOME = NewRelic.getAgent().getConfig().getValue("security.sec_home_path");
-        } else if (System.getenv().containsKey("NEWRELIC_HOME")) {
-            K2_HOME = System.getenv("NEWRELIC_HOME");
-        } else if (NewRelic.getAgent().getConfig().getValue("newrelic.home") != null) {
+        if (NewRelic.getAgent().getConfig().getValue("newrelic.home") != null) {
             K2_HOME = NewRelic.getAgent().getConfig().getValue("newrelic.home");
         } else if (CommonUtils.getNRAgentJarDirectory() != null) {
             K2_HOME = CommonUtils.getNRAgentJarDirectory();
         } else {
             K2_HOME = ".";
         }
-        Path k2homePath = Paths.get(K2_HOME, "nr-security-home");
+        Path k2homePath = Paths.get(K2_HOME, IUtilConstants.NR_SECURITY_HOME);
         CommonUtils.forceMkdirs(k2homePath, "rwxrwxrwx");
         K2_HOME = k2homePath.toString();
         AgentUtils.getInstance().getStatusLogValues().put("k2-home", K2_HOME);

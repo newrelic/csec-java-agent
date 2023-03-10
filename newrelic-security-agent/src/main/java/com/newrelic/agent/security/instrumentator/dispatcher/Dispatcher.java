@@ -232,7 +232,7 @@ public class Dispatcher implements Runnable {
      * Validate and send if required event for REFLECTED XSS
      */
     private void processReflectedXSSEvent(JavaAgentEventBean eventBean) {
-        if (NewRelic.getAgent().getConfig().getValue(INRSettingsKey.SECURITY_DETECTION_DISABLE_RXSS, false)) {
+        if (!NewRelic.getAgent().getConfig().getValue(INRSettingsKey.SECURITY_DETECTION_RXSS_ENABLED, true)) {
             return;
         }
         Set<String> xssConstructs = CallbackUtils.checkForReflectedXSS(securityMetaData.getRequest(), securityMetaData.getResponse());
@@ -488,7 +488,7 @@ public class Dispatcher implements Runnable {
         for (int i = 0; i < operation.getStackTrace().length; i++) {
             // TODO : check this sequence. Why this is being set from inside Deserialisation check.
             if (isNRCode) {
-                logger.log(LogLevel.DEBUG, DROPPING_EVENT_AS_IT_WAS_GENERATED_BY_K_2_INTERNAL_API_CALL + eventBean,
+                logger.log(LogLevel.FINER, DROPPING_EVENT_AS_IT_WAS_GENERATED_BY_K_2_INTERNAL_API_CALL + eventBean,
                         Dispatcher.class.getName());
                 return null;
             }
@@ -520,7 +520,7 @@ public class Dispatcher implements Runnable {
     }
 
     private void deserializationTriggerCheck(int index, JavaAgentEventBean eventBean, String klassName) {
-        if (NewRelic.getAgent().getConfig().getValue(INRSettingsKey.SECURITY_DETECTION_DISABLE_DESERIALIZATION, false)) {
+        if (!NewRelic.getAgent().getConfig().getValue(INRSettingsKey.SECURITY_DETECTION_DESERIALIZATION_ENABLED, true)) {
             return;
         }
         if (ObjectInputStream.class.getName().equals(klassName)
@@ -534,7 +534,7 @@ public class Dispatcher implements Runnable {
     }
 
     private void rciTriggerCheck(int index, JavaAgentEventBean eventBean, String klassName) {
-        if (NewRelic.getAgent().getConfig().getValue(INRSettingsKey.SECURITY_DETECTION_DISABLE_RCI, false)) {
+        if (!NewRelic.getAgent().getConfig().getValue(INRSettingsKey.SECURITY_DETECTION_RCI_ENABLED, true)) {
             return;
         }
 

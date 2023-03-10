@@ -74,14 +74,14 @@ public class WSClient extends WebSocketClient {
                 try {
                     caCerts.add((X509Certificate) cf.generateCertificate(is));
                 } catch (Exception e) {
-                    logger.log(LogLevel.FATAL,
+                    logger.log(LogLevel.SEVERE,
                             "Unable to generate ca certificate. Verify the certificate format. Will not process further certs.", e, WSClient.class.getName());
                     break;
                 }
             }
         }
 
-        logger.log(caCerts.size() > 0 ? LogLevel.INFO : LogLevel.FATAL,
+        logger.log(caCerts.size() > 0 ? LogLevel.INFO : LogLevel.SEVERE,
                 String.format("Found %s certificates.", caCerts.size()), WSClient.class.getName());
         // Initialize the keystore
         keystore.load(null, null);
@@ -91,7 +91,7 @@ public class WSClient extends WebSocketClient {
             if (caCert != null) {
                 String alias = "nr_csec_ca_bundle_" + i;
                 keystore.setCertificateEntry(alias, caCert);
-                logger.log(LogLevel.DEBUG, String.format("Installed CA certificate %s(serial %s) for subjects : %s - %s",
+                logger.log(LogLevel.FINER, String.format("Installed CA certificate %s(serial %s) for subjects : %s - %s",
                         alias, caCert.getSerialNumber(), caCert.getSubjectDN().getName(),
                         caCert.getSubjectAlternativeNames()), WSClient.class.getName());
             }
@@ -136,8 +136,8 @@ public class WSClient extends WebSocketClient {
             try {
                 this.setSocketFactory(createSSLContext().getSocketFactory());
             } catch (Exception e) {
-                logger.log(LogLevel.FATAL, String.format("Error creating socket factory message : %s , cause : %s", e.getMessage(), e.getCause()), WSClient.class.getName());
-                logger.log(LogLevel.DEBUG, "Error creating socket factory", e, WSClient.class.getName());
+                logger.log(LogLevel.SEVERE, String.format("Error creating socket factory message : %s , cause : %s", e.getMessage(), e.getCause()), WSClient.class.getName());
+                logger.log(LogLevel.FINER, "Error creating socket factory", e, WSClient.class.getName());
             }
         }
     }
@@ -183,7 +183,7 @@ public class WSClient extends WebSocketClient {
         try {
             ControlCommandProcessor.processControlCommand(message, System.currentTimeMillis());
         } catch (Throwable e) {
-            logger.log(LogLevel.FATAL, UNABLE_TO_PROCESS_INCOMING_MESSAGE + message + DUE_TO_ERROR, e,
+            logger.log(LogLevel.SEVERE, UNABLE_TO_PROCESS_INCOMING_MESSAGE + message + DUE_TO_ERROR, e,
                     WSClient.class.getName());
         }
     }
@@ -191,7 +191,7 @@ public class WSClient extends WebSocketClient {
     @Override
     public void onClose(int code, String reason, boolean remote) {
         WSUtils.getInstance().setConnected(false);
-        logger.log(LogLevel.WARN, CONNECTION_CLOSED_BY + (remote ? REMOTE_PEER : LOCAL) + CODE + code
+        logger.log(LogLevel.WARNING, CONNECTION_CLOSED_BY + (remote ? REMOTE_PEER : LOCAL) + CODE + code
                 + REASON + reason, WSClient.class.getName());
         if (code == CloseFrame.NEVER_CONNECTED) {
             return;
@@ -204,11 +204,11 @@ public class WSClient extends WebSocketClient {
 
     @Override
     public void onError(Exception ex) {
-        logger.logInit(LogLevel.FATAL, String.format(IAgentConstants.WS_CONNECTION_UNSUCCESSFUL_INFO, AgentConfig
+        logger.logInit(LogLevel.SEVERE, String.format(IAgentConstants.WS_CONNECTION_UNSUCCESSFUL_INFO, AgentConfig
                                 .getInstance().getConfig().getK2ServiceInfo().getValidatorServiceEndpointURL(),
                         ex.toString(), ex.getCause()),
                 WSClient.class.getName());
-        logger.log(LogLevel.DEBUG, String.format(IAgentConstants.WS_CONNECTION_UNSUCCESSFUL, AgentConfig.getInstance().getConfig().getK2ServiceInfo().getValidatorServiceEndpointURL()),
+        logger.log(LogLevel.FINER, String.format(IAgentConstants.WS_CONNECTION_UNSUCCESSFUL, AgentConfig.getInstance().getConfig().getK2ServiceInfo().getValidatorServiceEndpointURL()),
                 ex,
                 WSClient.class.getName());
     }
@@ -219,16 +219,16 @@ public class WSClient extends WebSocketClient {
             return;
         }
         if (this.isOpen()) {
-            logger.log(LogLevel.DEBUG, SENDING_EVENT + text, WSClient.class.getName());
+            logger.log(LogLevel.FINER, SENDING_EVENT + text, WSClient.class.getName());
             super.send(text);
         } else {
-            logger.log(LogLevel.DEBUG, UNABLE_TO_SEND_EVENT + text, WSClient.class.getName());
+            logger.log(LogLevel.FINER, UNABLE_TO_SEND_EVENT + text, WSClient.class.getName());
         }
     }
 
     @Override
     public void onWebsocketPing(WebSocket conn, Framedata f) {
-        logger.log(LogLevel.DEBUG, String.format(RECEIVED_PING_AT_S_SENDING_PONG, Instant.now().atZone(ZoneId.of("UTC")).toLocalTime()), WSClient.class.getName());
+        logger.log(LogLevel.FINER, String.format(RECEIVED_PING_AT_S_SENDING_PONG, Instant.now().atZone(ZoneId.of("UTC")).toLocalTime()), WSClient.class.getName());
         if (connection != null) {
             connection.updateLastPong();
         }
@@ -252,7 +252,7 @@ public class WSClient extends WebSocketClient {
      * @throws InterruptedException
      */
     public static WSClient reconnectWSClient() throws URISyntaxException, InterruptedException {
-        logger.log(LogLevel.WARN, RECONNECTING_TO_IC,
+        logger.log(LogLevel.WARNING, RECONNECTING_TO_IC,
                 WSClient.class.getName());
         if (instance != null && instance.isOpen()) {
             instance.closeBlocking();
@@ -263,7 +263,7 @@ public class WSClient extends WebSocketClient {
     }
 
     public static void shutDownWSClient() {
-        logger.log(LogLevel.WARN, "Disconnecting WS client",
+        logger.log(LogLevel.WARNING, "Disconnecting WS client",
                 WSClient.class.getName());
         if (instance != null) {
             try {
@@ -297,9 +297,9 @@ public class WSClient extends WebSocketClient {
                         break;
                     }
                 } catch (Throwable e) {
-                    logger.log(LogLevel.ERROR, ERROR_OCCURED_WHILE_TRYING_TO_CONNECT_TO_WSOCKET, e,
+                    logger.log(LogLevel.SEVERE, ERROR_OCCURED_WHILE_TRYING_TO_CONNECT_TO_WSOCKET, e,
                             WSClient.class.getName());
-                    logger.postLogMessageIfNecessary(LogLevel.ERROR, ERROR_OCCURED_WHILE_TRYING_TO_CONNECT_TO_WSOCKET, e,
+                    logger.postLogMessageIfNecessary(LogLevel.SEVERE, ERROR_OCCURED_WHILE_TRYING_TO_CONNECT_TO_WSOCKET, e,
                             WSClient.class.getName());
                 }
             }

@@ -143,7 +143,7 @@ public class JsonConverter {
             } catch (IllegalArgumentException | IllegalAccessException e) {
             } catch (Exception e) {
                 try {
-                    logger.log(LogLevel.ERROR, "Can't cast value : " + new ObjectMapper().writeValueAsString(value), e, JsonConverter.class.getName());
+                    logger.log(LogLevel.SEVERE, "Can't cast value : " + new ObjectMapper().writeValueAsString(value), e, JsonConverter.class.getName());
                 } catch (JsonProcessingException ex) {
                 }
             }

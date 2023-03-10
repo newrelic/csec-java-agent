@@ -55,10 +55,10 @@ public class RestRequestProcessor implements Runnable {
             RestClient.getInstance().fireRequest(RequestUtils.generateK2Request(httpRequest), repeatCount);
 
         } catch (Throwable e) {
-            logger.log(LogLevel.ERROR,
+            logger.log(LogLevel.SEVERE,
                     String.format(ERROR_WHILE_PROCESSING_FUZZING_REQUEST_S, controlCommand.getArguments().get(0)),
                     e, RestRequestProcessor.class.getName());
-            logger.postLogMessageIfNecessary(LogLevel.ERROR,
+            logger.postLogMessageIfNecessary(LogLevel.SEVERE,
                     String.format(ERROR_WHILE_PROCESSING_FUZZING_REQUEST_S, controlCommand.getArguments().get(0)),
                     e, RestRequestProcessor.class.getName());
         }

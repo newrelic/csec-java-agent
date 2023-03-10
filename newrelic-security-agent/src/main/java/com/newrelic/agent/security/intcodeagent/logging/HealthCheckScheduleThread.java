@@ -88,10 +88,10 @@ public class HealthCheckScheduleThread {
                     }
 
                 } catch (NullPointerException ex) {
-                    logger.log(LogLevel.WARN, "No reference to Socket's OutputStream",
+                    logger.log(LogLevel.WARNING, "No reference to Socket's OutputStream",
                             HealthCheckScheduleThread.class.getName());
                 } catch (Throwable e) {
-                    logger.log(LogLevel.WARN, "Error while trying to verify connection: ", e,
+                    logger.log(LogLevel.WARNING, "Error while trying to verify connection: ", e,
                             HealthCheckScheduleThread.class.getName());
                 } finally {
                     writeStatusLogFile();
@@ -144,12 +144,12 @@ public class HealthCheckScheduleThread {
                 isStatusLoggingActive = true;
             } else {
                 isStatusLoggingActive = false;
-                logger.log(LogLevel.ERROR, CAN_T_CREATE_STATUS_LOG_FILE, HealthCheckScheduleThread.class.getName());
+                logger.log(LogLevel.SEVERE, CAN_T_CREATE_STATUS_LOG_FILE, HealthCheckScheduleThread.class.getName());
             }
         } catch (IOException e) {
             String error = String.format(CAN_T_WRITE_STATUS_LOG_FILE_S_REASON_S, statusLog, e.getMessage());
             isStatusLoggingActive = false;
-            logger.log(LogLevel.ERROR, error, e, HealthCheckScheduleThread.class.getName());
+            logger.log(LogLevel.SEVERE, error, e, HealthCheckScheduleThread.class.getName());
         }
     }
 
@@ -213,7 +213,7 @@ public class HealthCheckScheduleThread {
 
         } catch (Throwable e) {
 //            logger.log(LogLevel.ERROR, "Error while populating OS related resource usage stats : " + e.toString(), HealthCheckScheduleThread.class.getName());
-            logger.log(LogLevel.DEBUG, "Error while populating OS related resource usage stats : ", e, HealthCheckScheduleThread.class.getName());
+            logger.log(LogLevel.FINER, "Error while populating OS related resource usage stats : ", e, HealthCheckScheduleThread.class.getName());
         }
     }
 
@@ -223,7 +223,7 @@ public class HealthCheckScheduleThread {
                 instance = new HealthCheckScheduleThread();
             return instance;
         } catch (Throwable e) {
-            logger.log(LogLevel.WARN, "Error while starting: ", e, HealthCheckScheduleThread.class.getName());
+            logger.log(LogLevel.WARNING, "Error while starting: ", e, HealthCheckScheduleThread.class.getName());
         }
         throw null;
     }
@@ -250,7 +250,7 @@ public class HealthCheckScheduleThread {
                     hcScheduledService.shutdownNow(); // cancel currently executing tasks
 
                     if (!hcScheduledService.awaitTermination(1, TimeUnit.SECONDS)) {
-                        logger.log(LogLevel.FATAL, "Thread pool executor did not terminate",
+                        logger.log(LogLevel.SEVERE, "Thread pool executor did not terminate",
                                 HealthCheckScheduleThread.class.getName());
                     } else {
                         logger.log(LogLevel.INFO, "Thread pool executor terminated",

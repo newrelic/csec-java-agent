@@ -106,7 +106,7 @@ public class EventSendPool {
                     executor.shutdownNow(); // cancel currently executing tasks
 
                     if (!executor.awaitTermination(1, TimeUnit.SECONDS)) {
-                        logger.log(LogLevel.FATAL, "Thread pool executor did not terminate",
+                        logger.log(LogLevel.SEVERE, "Thread pool executor did not terminate",
                                 EventSendPool.class.getName());
                     }
                 }
@@ -131,7 +131,7 @@ public class EventSendPool {
          * @throws RejectedExecutionException always
          */
         public void rejectedExecution(Runnable r, ThreadPoolExecutor e) {
-            logger.log(LogLevel.DEBUG, "Event Task " + r.toString() + " rejected from  " + e.toString(), EventSendPool.class.getName());
+            logger.log(LogLevel.FINER, "Event Task " + r.toString() + " rejected from  " + e.toString(), EventSendPool.class.getName());
         }
     }
 

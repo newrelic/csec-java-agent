@@ -52,13 +52,13 @@ public class CommonUtils {
             schema.validate(jsonSubject);
             return true;
         } catch (ValidationException e) {
-            logger.log(LogLevel.ERROR, String.format("LC Policy Parameters validation failed due to following violations: %s", e.getAllMessages()), CommonUtils.class.getName());
-            logger.log(LogLevel.DEBUG, "LC Policy Parameters validation failed due to", e, CommonUtils.class.getName());
-            logger.postLogMessageIfNecessary(LogLevel.ERROR, String.format("LC Policy Parameters validation failed due to following violations: %s", e.getAllMessages()), e, CommonUtils.class.getName());
+            logger.log(LogLevel.SEVERE, String.format("LC Policy Parameters validation failed due to following violations: %s", e.getAllMessages()), CommonUtils.class.getName());
+            logger.log(LogLevel.FINER, "LC Policy Parameters validation failed due to", e, CommonUtils.class.getName());
+            logger.postLogMessageIfNecessary(LogLevel.SEVERE, String.format("LC Policy Parameters validation failed due to following violations: %s", e.getAllMessages()), e, CommonUtils.class.getName());
         } catch (Exception e) {
-            logger.log(LogLevel.ERROR, String.format("Exception raised in LC policy Parameters validation : %s :: caused by : %s", e.getMessage(), e.getCause()), CommonUtils.class.getName());
-            logger.log(LogLevel.DEBUG, "Exception raised in LC policy Parameters validation", e, CommonUtils.class.getName());
-            logger.postLogMessageIfNecessary(LogLevel.ERROR, String.format("Exception raised in LC policy Parameters validation : %s :: caused by : %s", e.getMessage(), e.getCause()), e, CommonUtils.class.getName());
+            logger.log(LogLevel.SEVERE, String.format("Exception raised in LC policy Parameters validation : %s :: caused by : %s", e.getMessage(), e.getCause()), CommonUtils.class.getName());
+            logger.log(LogLevel.FINER, "Exception raised in LC policy Parameters validation", e, CommonUtils.class.getName());
+            logger.postLogMessageIfNecessary(LogLevel.SEVERE, String.format("Exception raised in LC policy Parameters validation : %s :: caused by : %s", e.getMessage(), e.getCause()), e, CommonUtils.class.getName());
 
         }
         return false;
@@ -76,13 +76,13 @@ public class CommonUtils {
             schema.validate(jsonSubject);
             return true;
         } catch (ValidationException e) {
-            logger.log(LogLevel.ERROR, String.format("LC Policy validation failed due to following violations: %s", e.getAllMessages()), CommonUtils.class.getName());
-            logger.log(LogLevel.DEBUG, "LC Policy validation failed due to", e, CommonUtils.class.getName());
-            logger.postLogMessageIfNecessary(LogLevel.ERROR, String.format("LC Policy validation failed due to following violations: %s", e.getAllMessages()), e, CommonUtils.class.getName());
+            logger.log(LogLevel.SEVERE, String.format("LC Policy validation failed due to following violations: %s", e.getAllMessages()), CommonUtils.class.getName());
+            logger.log(LogLevel.FINER, "LC Policy validation failed due to", e, CommonUtils.class.getName());
+            logger.postLogMessageIfNecessary(LogLevel.SEVERE, String.format("LC Policy validation failed due to following violations: %s", e.getAllMessages()), e, CommonUtils.class.getName());
         } catch (Exception e) {
-            logger.log(LogLevel.ERROR, String.format("Exception raised in LC policy validation : %s :: caused by : %s", e.getMessage(), e.getCause()), CommonUtils.class.getName());
-            logger.log(LogLevel.DEBUG, "Exception raised in LC policy validation", e, CommonUtils.class.getName());
-            logger.postLogMessageIfNecessary(LogLevel.ERROR, String.format("Exception raised in LC policy validation : %s :: caused by : %s", e.getMessage(), e.getCause()), e, CommonUtils.class.getName());
+            logger.log(LogLevel.SEVERE, String.format("Exception raised in LC policy validation : %s :: caused by : %s", e.getMessage(), e.getCause()), CommonUtils.class.getName());
+            logger.log(LogLevel.FINER, "Exception raised in LC policy validation", e, CommonUtils.class.getName());
+            logger.postLogMessageIfNecessary(LogLevel.SEVERE, String.format("Exception raised in LC policy validation : %s :: caused by : %s", e.getMessage(), e.getCause()), e, CommonUtils.class.getName());
         }
         return false;
     }
@@ -155,7 +155,7 @@ public class CommonUtils {
             try {
                 return new URL("file://" + System.getProperty("newrelic.agent_jarfile"));
             } catch (MalformedURLException e) {
-                logger.log(LogLevel.DEBUG,"Unable to create a valid url from " + System.getProperty("newrelic.agent_jarfile"), e, CommonUtils.class.getName());
+                logger.log(LogLevel.FINER,"Unable to create a valid url from " + System.getProperty("newrelic.agent_jarfile"), e, CommonUtils.class.getName());
 
             }
         }
@@ -193,7 +193,7 @@ public class CommonUtils {
         try (JarFile jarFile = getAgentJarFile(agentJarUrl)) {
             return jarFile.getEntry(name) != null;
         } catch (Exception e) {
-            logger.log(LogLevel.DEBUG,"Unable to search the agent jar for " + name, e, CommonUtils.class.getName());
+            logger.log(LogLevel.FINER,"Unable to search the agent jar for " + name, e, CommonUtils.class.getName());
         }
         return false;
     }
@@ -224,8 +224,8 @@ public class CommonUtils {
         try {
             return new URL("jar:" + Agent.getAgentJarURL().toExternalForm() + "!/" + resourceName).openStream();
         } catch (Exception e) {
-            logger.log(LogLevel.ERROR, String.format("Unable to locate resource from agent jar : %s", e.getMessage()), CommonUtils.class.getName());
-            logger.log(LogLevel.DEBUG, "Unable to locate resource from agent jar : ", e, CommonUtils.class.getName());
+            logger.log(LogLevel.SEVERE, String.format("Unable to locate resource from agent jar : %s", e.getMessage()), CommonUtils.class.getName());
+            logger.log(LogLevel.FINER, "Unable to locate resource from agent jar : ", e, CommonUtils.class.getName());
         }
         return null;
     }

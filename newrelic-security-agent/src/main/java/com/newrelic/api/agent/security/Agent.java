@@ -143,8 +143,8 @@ public class Agent implements SecurityAgent {
             buildInfo = mapper.
                     readValue(CommonUtils.getResourceStreamFromAgentJar("Agent.properties"), BuildInfo.class);
         } catch (Throwable e) {
-            logger.log(LogLevel.ERROR, String.format(CRITICAL_ERROR_UNABLE_TO_READ_BUILD_INFO_AND_VERSION_S_S, e.getMessage(), e.getCause()), this.getClass().getName());
-            logger.log(LogLevel.DEBUG, CRITICAL_ERROR_UNABLE_TO_READ_BUILD_INFO_AND_VERSION, e, this.getClass().getName());
+            logger.log(LogLevel.SEVERE, String.format(CRITICAL_ERROR_UNABLE_TO_READ_BUILD_INFO_AND_VERSION_S_S, e.getMessage(), e.getCause()), this.getClass().getName());
+            logger.log(LogLevel.FINER, CRITICAL_ERROR_UNABLE_TO_READ_BUILD_INFO_AND_VERSION, e, this.getClass().getName());
         }
         return buildInfo;
     }
@@ -306,8 +306,8 @@ public class Agent implements SecurityAgent {
                 markedForRemoval = true;
 
                 // Checks for RCI flagging.
-                if (!NewRelic.getAgent().getConfig()
-                        .getValue(INRSettingsKey.SECURITY_DETECTION_DISABLE_RCI, false) && i > 0) {
+                if (NewRelic.getAgent().getConfig()
+                        .getValue(INRSettingsKey.SECURITY_DETECTION_RCI_ENABLED, true) && i > 0) {
                     AgentMetaData metaData = NewRelicSecurity.getAgent().getSecurityMetaData().getMetaData();
                     if (stackTrace[i - 1].getLineNumber() > 0 &&
                             StringUtils.isNotBlank(stackTrace[i - 1].getFileName()) &&
@@ -355,7 +355,7 @@ public class Agent implements SecurityAgent {
                     && StringUtils.equals(k2RequestIdentifier.getNextStage().getStatus(), IAgentConstants.VULNERABLE)) {
                 ExitEventBean exitEventBean = new ExitEventBean(operation.getExecutionId(), operation.getCaseType().getCaseType());
                 exitEventBean.setK2RequestIdentifier(k2RequestIdentifier.getRaw());
-                logger.log(LogLevel.DEBUG, "Exit event : " + exitEventBean, this.getClass().getName());
+                logger.log(LogLevel.FINER, "Exit event : " + exitEventBean, this.getClass().getName());
                 DispatcherPool.getInstance().dispatchExitEvent(exitEventBean);
                 AgentInfo.getInstance().getJaHealthCheck().incrementExitEventSentCount();
             }
