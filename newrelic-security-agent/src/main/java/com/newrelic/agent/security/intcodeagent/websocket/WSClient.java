@@ -18,6 +18,7 @@ import org.java_websocket.drafts.Draft_6455;
 import org.java_websocket.framing.CloseFrame;
 import org.java_websocket.framing.Framedata;
 import org.java_websocket.handshake.ServerHandshake;
+import sun.security.ssl.CustomTrustStoreManagerUtils;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManagerFactory;
@@ -28,17 +29,14 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.security.KeyManagementException;
 import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.util.Collection;
 import java.util.LinkedList;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import static com.newrelic.agent.security.intcodeagent.logging.IAgentConstants.ERROR_OCCURED_WHILE_TRYING_TO_CONNECT_TO_WSOCKET;
@@ -65,9 +63,15 @@ public class WSClient extends WebSocketClient {
     private WebSocketImpl connection = null;
 
 
-    private SSLContext createSSLContext() throws KeyStoreException, CertificateException, IOException, NoSuchAlgorithmException, KeyManagementException {
+    private SSLContext createSSLContext() throws Exception {
         KeyStore keystore = KeyStore.getInstance(KeyStore.getDefaultType());
         Collection<X509Certificate> caCerts = new LinkedList<>();
+        // Get the jvm default trust chain first.
+        Set<X509Certificate> defaultTrustCerts = CustomTrustStoreManagerUtils.getTrustedCerts();
+        if(defaultTrustCerts != null) {
+            caCerts.addAll(defaultTrustCerts);
+        }
+        // Add NR specific certs to trust store
         try (InputStream is = new BufferedInputStream(getCaBundleStream())) {
             CertificateFactory cf = CertificateFactory.getInstance("X.509");
             while (is.available() > 0) {
@@ -101,7 +105,7 @@ public class WSClient extends WebSocketClient {
                 .getInstance(TrustManagerFactory.getDefaultAlgorithm());
         trustManagerFactory.init(keystore);
 
-        SSLContext sslContext = SSLContext.getInstance("TLS");
+        SSLContext sslContext = SSLContext.getInstance("TLSv1.2");
         sslContext.init(null, trustManagerFactory.getTrustManagers(), null);
         return sslContext;
     }
