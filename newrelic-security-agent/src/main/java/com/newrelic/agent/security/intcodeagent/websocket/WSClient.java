@@ -144,6 +144,10 @@ public class WSClient extends WebSocketClient {
 
     @Override
     public void addHeader(String key, String value) {
+        if(StringUtils.equals(key, "NR-LICENSE-KEY")) {
+            value = StringUtils.substring(value, 0,4) + "-******-" +
+                    StringUtils.substring(value, value.length()-7);
+        }
         logger.log(LogLevel.INFO, String.format("Adding WS connection header: %s -> %s", key, value),
                 WSClient.class.getName());
         super.addHeader(key, value);
@@ -197,7 +201,7 @@ public class WSClient extends WebSocketClient {
             return;
         }
 
-        if (code != CloseFrame.POLICY_VALIDATION && code != CloseFrame.NORMAL) {
+        if (code != CloseFrame.POLICY_VALIDATION && code != CloseFrame.NORMAL && code != CloseFrame.PROTOCOL_ERROR) {
             WSReconnectionST.getInstance().submitNewTaskSchedule();
         }
     }
