@@ -5,13 +5,12 @@
  *
  */
 
-package security.io.netty.handler.codec.http;
+package security.io.netty400.handler.codec.http;
 
 import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
 import io.netty.channel.ChannelHandlerContext;
-import security.io.netty.utils.NettyUtils;
 
 import java.util.List;
 
@@ -21,7 +20,6 @@ public class HttpObjectEncoder_Instrumentation {
     // heading downstream
     protected void encode(ChannelHandlerContext ctx, Object msg, List<Object> out) {
         // TODO : Process response here
-        NettyUtils.processSecurityResponse(ctx, msg);
         Weaver.callOriginal();
     }
 

@@ -1,4 +1,4 @@
-package security.io.netty.utils;
+package security.io.netty400.utils;
 
 import com.newrelic.api.agent.NewRelic;
 import com.newrelic.api.agent.Transaction;
@@ -17,6 +17,7 @@ import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponse;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -27,8 +28,9 @@ public class NettyUtils {
     private static final String EMPTY = "";
     public static final String WRITE_METHOD_NAME = "write";
 
+    public static final String IO_NETTY = "io.netty.";
 
-    public static void processSecurityRequest(ChannelHandlerContext ctx, Object msg) {
+    public static void processSecurityRequest(ChannelHandlerContext ctx, Object msg, String className) {
         try {
             Transaction tx = NewRelic.getAgent().getTransaction();
             Object secMetaObj = tx.getSecurityMetaData();
@@ -48,12 +50,13 @@ public class NettyUtils {
                 securityRequest.setUrl(((HttpRequest) msg).getUri());
                 setClientAddressDetails(securityMetaData, ctx.channel().remoteAddress().toString());
                 setServerPortDetails(securityRequest, ctx.channel().localAddress().toString());
-                processHeaders((HttpRequest) msg, securityRequest);
+                processHttpRequestHeader((HttpRequest)msg, securityRequest);
                 securityMetaData.setTracingHeaderValue(getTraceHeader(securityRequest.getHeaders()));
 
                 securityRequest.setProtocol(((HttpRequest) msg).getProtocolVersion().protocolName());
                 securityRequest.setContentType(securityRequest.getHeaders().get("content-type"));
-                securityMetaData.getMetaData().setServiceTrace(Thread.currentThread().getStackTrace());
+                StackTraceElement[] stack = Thread.currentThread().getStackTrace();
+                securityMetaData.getMetaData().setServiceTrace(Arrays.copyOfRange(stack, 1, stack.length));
                 securityRequest.setRequestParsed(true);
             } else if (msg instanceof HttpContent) {
                 if (!(secMetaObj instanceof SecurityMetaData) ||
@@ -78,18 +81,6 @@ public class NettyUtils {
         }
     }
 
-    private static void processHeaders(HttpRequest msg, com.newrelic.api.agent.security.schema.HttpRequest securityRequest) {
-        for (Map.Entry<String, String> entry : msg.headers().entries()) {
-            String headerKey = entry.getKey().toLowerCase();
-            String headerValue = entry.getValue();
-            if (ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID.equals(headerKey)) {
-                // TODO: May think of removing this intermediate obj and directly create K2 Identifier.
-                NewRelicSecurity.getAgent().getSecurityMetaData().setFuzzRequestIdentifier(ServletHelper.parseFuzzRequestIdentifierHeader(msg.headers().get(headerKey)));
-            }
-            securityRequest.getHeaders().put(headerKey, headerValue);
-        }
-    }
-
     private static void setServerPortDetails(com.newrelic.api.agent.security.schema.HttpRequest securityRequest, String address) {
         try {
             String port = StringUtils.substringAfterLast(address, ":");
@@ -97,8 +88,7 @@ public class NettyUtils {
                 return;
             }
             securityRequest.setServerPort(Integer.parseInt(port));
-        } catch (Throwable ignored) {
-        }
+        } catch (Throwable throwable) {}
     }
 
     private static void setClientAddressDetails(SecurityMetaData securityMetaData, String address) {
@@ -180,7 +170,7 @@ public class NettyUtils {
                 SecurityMetaData securityMetaData = NewRelicSecurity.getAgent().getSecurityMetaData();
                 com.newrelic.api.agent.security.schema.HttpResponse securityResponse =
                         securityMetaData.getResponse();
-                processResponseHeaders((FullHttpResponse) msg, securityResponse);
+                processResponseHeaders((HttpResponse) msg, securityResponse);
                 securityResponse.setResponseContentType(((FullHttpResponse) msg).headers().get("content-type"));
                 securityResponse.getResponseBody().append(((FullHttpResponse) msg).content().toString(StandardCharsets.UTF_8));
             }
