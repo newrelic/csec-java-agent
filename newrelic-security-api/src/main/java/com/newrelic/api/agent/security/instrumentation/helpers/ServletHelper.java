@@ -11,7 +11,7 @@ import java.nio.file.Files;
 import java.util.Arrays;
 
 public class ServletHelper {
-    public static final String SEPARATOR_SEMICOLON = ":K2:";
+    public static final String SEPARATOR_SEMICOLON = ":IAST:";
     public static final String NR_CSEC_VALIDATOR_HOME_TMP = "{{NR_CSEC_VALIDATOR_HOME_TMP}}";
 
     public static final String CSEC_IAST_FUZZ_REQUEST_ID = "nr-csec-fuzz-request-id";
