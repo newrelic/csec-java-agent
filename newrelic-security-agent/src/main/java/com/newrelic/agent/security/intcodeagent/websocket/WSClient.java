@@ -148,11 +148,12 @@ public class WSClient extends WebSocketClient {
 
     @Override
     public void addHeader(String key, String value) {
+        String printValue = value;
         if(StringUtils.equals(key, "NR-LICENSE-KEY")) {
-            value = StringUtils.substring(value, 0,4) + "-******-" +
+            printValue = StringUtils.substring(value, 0,4) + "-******-" +
                     StringUtils.substring(value, value.length()-7);
         }
-        logger.log(LogLevel.INFO, String.format("Adding WS connection header: %s -> %s", key, value),
+        logger.log(LogLevel.INFO, String.format("Adding WS connection header: %s -> %s", key, printValue),
                 WSClient.class.getName());
         super.addHeader(key, value);
     }
