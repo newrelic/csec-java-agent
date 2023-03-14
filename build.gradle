@@ -55,6 +55,7 @@ subprojects {
             'newrelic-security-data-schema',
             'newrelic-security-api',
             'instrumentation-security',
+            'instrumentation',
     ].contains(project.name)
     if (isJavaProject) {
         project.ext.javaProject = true

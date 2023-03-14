@@ -1,6 +1,6 @@
 apply(from: "$rootProject.projectDir/gradle/script/cache_weave_attributes.gradle.kts")
 
-def shouldVerifyInstrumentation = ("instrumentation-security" == project.parent.name);
+def shouldVerifyInstrumentation = ("instrumentation" == project.parent.name);
 if (shouldVerifyInstrumentation) {
 
     apply plugin: 'com.newrelic.gradle-verify-instrumentation-plugin'

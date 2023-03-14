@@ -43,7 +43,7 @@ cyclonedxBom {
 
 project.ext {
     instrumentProjects = {
-        rootProject.subprojects.findAll { project -> project.path =~ /:instrumentation-security:/ }
+        rootProject.subprojects.findAll { project -> project.path =~ /:instrumentation:/ }
     }
 }
 
