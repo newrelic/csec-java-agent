@@ -821,10 +821,11 @@ public class StringUtils {
      */
     public static boolean equalsAny(final CharSequence string, final CharSequence... searchStrings) {
         if (searchStrings == null || searchStrings.length == 0) {
-            for (final CharSequence next : searchStrings) {
-                if (equals(string, next)) {
-                    return true;
-                }
+            return false;
+        }
+        for (final CharSequence next : searchStrings) {
+            if (equals(string, next)) {
+                return true;
             }
         }
         return false;
