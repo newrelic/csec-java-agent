@@ -191,7 +191,7 @@ public class MongoUtil {
             operations.add(findAndReplaceOperation.getProjection());
             operations.add(findAndReplaceOperation.getSort());
             operations.add(findAndReplaceOperation.getReplacement());
-            return recordMongoOperation(operations, MongoUtil.OP_FIND_AND_REPLACE, className, MongoUtil.METHOD_EXECUTE);
+            return recordMongoOperation(operations, MongoUtil.OP_WRITE, className, MongoUtil.METHOD_EXECUTE);
         } else if (operation instanceof FindAndUpdateOperation) {
             FindAndUpdateOperation findAndUpdateOperation = (FindAndUpdateOperation) operation;
             operations = new ArrayList<>();
@@ -202,7 +202,7 @@ public class MongoUtil {
             operations.add(findAndUpdateOperation.getProjection());
             operations.add(findAndUpdateOperation.getSort());
             operations.add(findAndUpdateOperation.getUpdate());
-            return recordMongoOperation(operations, MongoUtil.OP_FIND_AND_UPDATE, className, MongoUtil.METHOD_EXECUTE);
+            return recordMongoOperation(operations, MongoUtil.OP_WRITE, className, MongoUtil.METHOD_EXECUTE);
         } else if (operation instanceof InsertOperation) {
             InsertOperation insertOperation = (InsertOperation) operation;
             operations = new ArrayList<>();
@@ -298,7 +298,7 @@ public class MongoUtil {
             operations.add(findAndReplaceOperation.getProjection());
             operations.add(findAndReplaceOperation.getSort());
             operations.add(findAndReplaceOperation.getReplacement());
-            noSQLOperation = recordMongoOperation(operations, MongoUtil.OP_FIND_AND_REPLACE, className, methodName);
+            noSQLOperation = recordMongoOperation(operations, MongoUtil.OP_WRITE, className, methodName);
         } else if (operation instanceof FindAndUpdateOperation) {
             FindAndUpdateOperation findAndUpdateOperation = (FindAndUpdateOperation) operation;
             operations = new ArrayList<>();
@@ -306,7 +306,7 @@ public class MongoUtil {
             operations.add(findAndUpdateOperation.getProjection());
             operations.add(findAndUpdateOperation.getSort());
             operations.add(findAndUpdateOperation.getUpdate());
-            noSQLOperation = recordMongoOperation(operations, MongoUtil.OP_FIND_AND_UPDATE, className, methodName);
+            noSQLOperation = recordMongoOperation(operations, MongoUtil.OP_WRITE, className, methodName);
         } else if (operation instanceof InsertOperation) {
             InsertOperation insertOperation = (InsertOperation) operation;
             operations = new ArrayList<>();
