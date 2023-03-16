@@ -29,11 +29,7 @@ public class JNDIUtils {
             URI url = new URI(name);
             if (StringUtils.isNotBlank(url.getScheme()) &&
                     StringUtils.equalsAny(url.getScheme().toLowerCase(), "ldap", "rmi", "dns", "iiop")) {
-                SSRFOperation operation = new SSRFOperation(name, className, methodName);
-                NewRelicSecurity.getAgent().registerOperation(operation);
-                return operation;
-            } else {
-                FileOperation operation = new FileOperation(name, className, methodName, false);
+                SSRFOperation operation = new SSRFOperation(name, className, methodName, true);
                 NewRelicSecurity.getAgent().registerOperation(operation);
                 return operation;
             }
