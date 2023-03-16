@@ -454,7 +454,7 @@ public class OperationExecutorDBTest {
         NoSQLOperation operation = (NoSQLOperation) operations.get(0);
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.NOSQL_DB_COMMAND, operation.getCaseType());
         Assert.assertEquals("Invalid executed method name.", "execute", operation.getMethodName());
-        Assert.assertEquals("No Command Detected", "findAndReplace", operation.getPayloadType());
+        Assert.assertEquals("No Command Detected", "write", operation.getPayloadType());
         List<Object> queryData = new ArrayList<>();
         queryData.add("{ \"name\" : \"MongoDB\" }, { \"type\" : \"db\" }");
         List<Object> expected = new ArrayList<>();

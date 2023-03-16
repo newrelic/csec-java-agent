@@ -1,4 +1,4 @@
-package com.nr.instrumentation.security.mongodb30.operation;
+package com.nr.instrumentation.security.mongodb36.operation;
 
 import com.mongodb.MongoClient;
 import com.mongodb.client.MongoCollection;

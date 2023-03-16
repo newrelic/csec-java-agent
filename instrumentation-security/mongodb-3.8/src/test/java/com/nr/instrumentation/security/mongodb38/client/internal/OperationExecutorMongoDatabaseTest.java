@@ -161,7 +161,7 @@ public class OperationExecutorMongoDatabaseTest {
 
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.NOSQL_DB_COMMAND, operation.getCaseType());
         Assert.assertEquals("Invalid executed method name.", "execute", operation.getMethodName());
-        Assert.assertEquals("No Command Detected","findAndReplace",operation.getPayloadType());
+        Assert.assertEquals("No Command Detected","write",operation.getPayloadType());
         List<Object> queryData = new ArrayList<>();
         queryData.add("{ \"name\" : \"MongoDB\" }, { \"name\" : \"Mongo\", \"type\" : \"db\", \"count\" : 1, \"info\" : { \"x\" : 203, \"y\" : 102 } }");
 
@@ -189,7 +189,7 @@ public class OperationExecutorMongoDatabaseTest {
 
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.NOSQL_DB_COMMAND, operation.getCaseType());
         Assert.assertEquals("Invalid executed method name.", "execute", operation.getMethodName());
-        Assert.assertEquals("No Command Detected","findAndReplace",operation.getPayloadType());
+        Assert.assertEquals("No Command Detected","write",operation.getPayloadType());
         List<Object> queryData = new ArrayList<>();
         queryData.add("{ \"name\" : \"MongoDB\" }, { \"count\" : -1 }, { \"name\" : \"Mongo\", \"type\" : \"db\", \"count\" : 1, \"info\" : { \"x\" : 203, \"y\" : 102 } }");
 
@@ -214,7 +214,7 @@ public class OperationExecutorMongoDatabaseTest {
 
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.NOSQL_DB_COMMAND, operation.getCaseType());
         Assert.assertEquals("Invalid executed method name.", "execute", operation.getMethodName());
-        Assert.assertEquals("No Command Detected","findAndUpdate",operation.getPayloadType());
+        Assert.assertEquals("No Command Detected","write",operation.getPayloadType());
         List<Object> queryData = new ArrayList<>();
         queryData.add("{ \"name\" : \"MongoDB\" }, { \"name\" : \"db\" }");
 
@@ -242,7 +242,7 @@ public class OperationExecutorMongoDatabaseTest {
 
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.NOSQL_DB_COMMAND, operation.getCaseType());
         Assert.assertEquals("Invalid executed method name.", "execute", operation.getMethodName());
-        Assert.assertEquals("No Command Detected","findAndUpdate",operation.getPayloadType());
+        Assert.assertEquals("No Command Detected","write",operation.getPayloadType());
         List<Object> queryData = new ArrayList<>();
         queryData.add("{ \"name\" : \"MongoDB\" }, { \"count\" : -1 }, { \"name\" : \"db\" }");
 

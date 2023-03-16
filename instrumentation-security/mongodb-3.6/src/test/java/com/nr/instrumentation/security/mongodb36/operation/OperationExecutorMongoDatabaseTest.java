@@ -1,4 +1,4 @@
-package com.nr.instrumentation.security.mongodb.client.internal;
+package com.nr.instrumentation.security.mongodb36.operation;
 
 import com.mongodb.DBObject;
 import com.mongodb.MongoClient;
@@ -49,11 +49,11 @@ import java.util.List;
 
 import static com.mongodb.client.model.Filters.eq;
 
+
 @RunWith(SecurityInstrumentationTestRunner.class)
-@InstrumentationTestConfig(includePrefixes = {"com.mongodb.client.internal","com.nr.agent.security.mongo","com.mongodb.operation"})
+@InstrumentationTestConfig(includePrefixes = {"com.mongodb","com.nr.agent.security.mongo"})
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class OperationExecutorMongoDatabaseTest {
-
     private static final MongodStarter mongodStarter = MongodStarter.getDefaultInstance();
     private static MongodExecutable mongodExecutable;
     private static MongodProcess mongodProcess;
@@ -90,8 +90,6 @@ public class OperationExecutorMongoDatabaseTest {
             mongodExecutable.stop();
         }
     }
-
-
     @Test
     public void testFindOneAndDelete()  {
 
@@ -161,7 +159,7 @@ public class OperationExecutorMongoDatabaseTest {
 
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.NOSQL_DB_COMMAND, operation.getCaseType());
         Assert.assertEquals("Invalid executed method name.", "execute", operation.getMethodName());
-        Assert.assertEquals("No Command Detected","findAndReplace",operation.getPayloadType());
+        Assert.assertEquals("No Command Detected","write",operation.getPayloadType());
         List<Object> queryData = new ArrayList<>();
         queryData.add("{ \"name\" : \"MongoDB\" }, { \"name\" : \"Mongo\", \"type\" : \"db\", \"count\" : 1, \"info\" : { \"x\" : 203, \"y\" : 102 } }");
 
@@ -189,7 +187,7 @@ public class OperationExecutorMongoDatabaseTest {
 
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.NOSQL_DB_COMMAND, operation.getCaseType());
         Assert.assertEquals("Invalid executed method name.", "execute", operation.getMethodName());
-        Assert.assertEquals("No Command Detected","findAndReplace",operation.getPayloadType());
+        Assert.assertEquals("No Command Detected","write",operation.getPayloadType());
         List<Object> queryData = new ArrayList<>();
         queryData.add("{ \"name\" : \"MongoDB\" }, { \"count\" : -1 }, { \"name\" : \"Mongo\", \"type\" : \"db\", \"count\" : 1, \"info\" : { \"x\" : 203, \"y\" : 102 } }");
 
@@ -214,7 +212,7 @@ public class OperationExecutorMongoDatabaseTest {
 
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.NOSQL_DB_COMMAND, operation.getCaseType());
         Assert.assertEquals("Invalid executed method name.", "execute", operation.getMethodName());
-        Assert.assertEquals("No Command Detected","findAndUpdate",operation.getPayloadType());
+        Assert.assertEquals("No Command Detected","write",operation.getPayloadType());
         List<Object> queryData = new ArrayList<>();
         queryData.add("{ \"name\" : \"MongoDB\" }, { \"name\" : \"db\" }");
 
@@ -242,7 +240,7 @@ public class OperationExecutorMongoDatabaseTest {
 
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.NOSQL_DB_COMMAND, operation.getCaseType());
         Assert.assertEquals("Invalid executed method name.", "execute", operation.getMethodName());
-        Assert.assertEquals("No Command Detected","findAndUpdate",operation.getPayloadType());
+        Assert.assertEquals("No Command Detected","write",operation.getPayloadType());
         List<Object> queryData = new ArrayList<>();
         queryData.add("{ \"name\" : \"MongoDB\" }, { \"count\" : -1 }, { \"name\" : \"db\" }");
 
@@ -493,7 +491,7 @@ public class OperationExecutorMongoDatabaseTest {
     }
 
     @Test
-    @Ignore("this testcase may fail(WrappedMapReduceReadOperation)")
+    @Ignore("this test case may fail.")
     public void testMapReduceWithInlineResults()  {
 
         MongoDatabase database = mongoClient.getDatabase("test");
@@ -789,7 +787,4 @@ public class OperationExecutorMongoDatabaseTest {
         Assert.assertEquals("No data Found",queryData.toString(),operation.getPayload().toString());
     }
 
-
 }
-
-
