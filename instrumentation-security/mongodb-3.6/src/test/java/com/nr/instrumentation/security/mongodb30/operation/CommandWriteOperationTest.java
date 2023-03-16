@@ -96,7 +96,7 @@ public class CommandWriteOperationTest {
 
     Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.NOSQL_DB_COMMAND, operation.getCaseType());
     Assert.assertEquals("Invalid executed method name.", "execute", operation.getMethodName());
-    Assert.assertEquals("No Command Detected", "write", operation.getCommand());
+    Assert.assertEquals("No Command Detected", "write", operation.getPayloadType());
     List<Object> expected = new ArrayList<>();
     expected.add("{ \"name\" : \"MongoDB\" }");
     Assert.assertEquals("No data Found", expected.toString(), operation.getPayload().toString());
@@ -129,7 +129,7 @@ public class CommandWriteOperationTest {
 
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.NOSQL_DB_COMMAND, operation.getCaseType());
         Assert.assertEquals("Invalid executed method name.", "execute", operation.getMethodName());
-        Assert.assertEquals("No Command Detected", "write", operation.getCommand());
+        Assert.assertEquals("No Command Detected", "write", operation.getPayloadType());
         List<Object> expected = new ArrayList<>();
         expected.add("{ \"name\" : \"MongoDB\" }");
         Assert.assertEquals("No data Found", expected.toString(), operation.getPayload().toString());

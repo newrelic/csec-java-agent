@@ -443,7 +443,7 @@ public class Dispatcher implements Runnable {
         for (String data : noSQLOperationalBean.getPayload()) {
             JSONObject jsonObject = new JSONObject();
             jsonObject.put("payload", jsonParser.parse(data));
-            jsonObject.put("command", noSQLOperationalBean.getCommand());
+            jsonObject.put("payloadType", noSQLOperationalBean.getPayloadType());
             params.add(jsonObject);
         }
         eventBean.setParameters(params);

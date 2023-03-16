@@ -134,7 +134,7 @@ public class OperationExecutorMongoDatabaseTest {
 
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.NOSQL_DB_COMMAND, operation.getCaseType());
         Assert.assertEquals("Invalid executed method name.", "execute", operation.getMethodName());
-        Assert.assertEquals("No Command Detected","findAndDelete",operation.getCommand());
+        Assert.assertEquals("No Command Detected","findAndDelete",operation.getPayloadType());
         List<Object> queryData = new ArrayList<>();
         queryData.add("{ \"name\" : \"MongoDB\" }");
 
@@ -160,7 +160,7 @@ public class OperationExecutorMongoDatabaseTest {
 
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.NOSQL_DB_COMMAND, operation.getCaseType());
         Assert.assertEquals("Invalid executed method name.", "execute", operation.getMethodName());
-        Assert.assertEquals("No Command Detected","findAndDelete",operation.getCommand());
+        Assert.assertEquals("No Command Detected","findAndDelete",operation.getPayloadType());
         List<Object> queryData = new ArrayList<>();
         queryData.add("{ \"name\" : \"MongoDB\" }, { \"count\" : -1 }");
 
@@ -187,7 +187,7 @@ public class OperationExecutorMongoDatabaseTest {
 
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.NOSQL_DB_COMMAND, operation.getCaseType());
         Assert.assertEquals("Invalid executed method name.", "execute", operation.getMethodName());
-        Assert.assertEquals("No Command Detected","findAndReplace",operation.getCommand());
+        Assert.assertEquals("No Command Detected","findAndReplace",operation.getPayloadType());
         List<Object> queryData = new ArrayList<>();
         queryData.add("{ \"name\" : \"MongoDB\" }, { \"name\" : \"Mongo\", \"type\" : \"db\", \"count\" : 1, \"info\" : { \"x\" : 203, \"y\" : 102 } }");
 
@@ -215,7 +215,7 @@ public class OperationExecutorMongoDatabaseTest {
 
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.NOSQL_DB_COMMAND, operation.getCaseType());
         Assert.assertEquals("Invalid executed method name.", "execute", operation.getMethodName());
-        Assert.assertEquals("No Command Detected","findAndReplace",operation.getCommand());
+        Assert.assertEquals("No Command Detected","findAndReplace",operation.getPayloadType());
         List<Object> queryData = new ArrayList<>();
         queryData.add("{ \"name\" : \"MongoDB\" }, { \"count\" : -1 }, { \"name\" : \"Mongo\", \"type\" : \"db\", \"count\" : 1, \"info\" : { \"x\" : 203, \"y\" : 102 } }");
 
@@ -240,7 +240,7 @@ public class OperationExecutorMongoDatabaseTest {
 
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.NOSQL_DB_COMMAND, operation.getCaseType());
         Assert.assertEquals("Invalid executed method name.", "execute", operation.getMethodName());
-        Assert.assertEquals("No Command Detected","findAndUpdate",operation.getCommand());
+        Assert.assertEquals("No Command Detected","findAndUpdate",operation.getPayloadType());
         List<Object> queryData = new ArrayList<>();
         queryData.add("{ \"name\" : \"MongoDB\" }, { \"name\" : \"db\" }");
 
@@ -268,7 +268,7 @@ public class OperationExecutorMongoDatabaseTest {
 
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.NOSQL_DB_COMMAND, operation.getCaseType());
         Assert.assertEquals("Invalid executed method name.", "execute", operation.getMethodName());
-        Assert.assertEquals("No Command Detected","findAndUpdate",operation.getCommand());
+        Assert.assertEquals("No Command Detected","findAndUpdate",operation.getPayloadType());
         List<Object> queryData = new ArrayList<>();
         queryData.add("{ \"name\" : \"MongoDB\" }, { \"count\" : -1 }, { \"name\" : \"db\" }");
 
@@ -294,7 +294,7 @@ public class OperationExecutorMongoDatabaseTest {
 
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.NOSQL_DB_COMMAND, operation.getCaseType());
         Assert.assertEquals("Invalid executed method name.", "execute", operation.getMethodName());
-        Assert.assertEquals("No Command Detected","write",operation.getCommand());
+        Assert.assertEquals("No Command Detected","write",operation.getPayloadType());
         List<Object> queryData = new ArrayList<>();
         queryData.add("{ \"$set\" : { \"type\" : \"db\" } }, { \"name\" : \"MongoDB\" }");
 
@@ -320,7 +320,7 @@ public class OperationExecutorMongoDatabaseTest {
 
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.NOSQL_DB_COMMAND, operation.getCaseType());
         Assert.assertEquals("Invalid executed method name.", "execute", operation.getMethodName());
-        Assert.assertEquals("No Command Detected","write",operation.getCommand());
+        Assert.assertEquals("No Command Detected","write",operation.getPayloadType());
         List<Object> queryData = new ArrayList<>();
         queryData.add("{ \"$set\" : { \"type\" : \"db\" } }, { \"name\" : \"MongoDB\" }");
 
@@ -347,7 +347,7 @@ public class OperationExecutorMongoDatabaseTest {
 
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.NOSQL_DB_COMMAND, operation.getCaseType());
         Assert.assertEquals("Invalid executed method name.", "execute", operation.getMethodName());
-        Assert.assertEquals("No Command Detected","listCollections",operation.getCommand());
+        Assert.assertEquals("No Command Detected","listCollections",operation.getPayloadType());
         List<Object> expected = new ArrayList<>();
         expected.add("{ }");
 
@@ -374,7 +374,7 @@ public class OperationExecutorMongoDatabaseTest {
 
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.NOSQL_DB_COMMAND, operation.getCaseType());
         Assert.assertEquals("Invalid executed method name.", "execute", operation.getMethodName());
-        Assert.assertEquals("No Command Detected","listCollections",operation.getCommand());
+        Assert.assertEquals("No Command Detected","listCollections",operation.getPayloadType());
         List<Object> expected = new ArrayList<>();
         expected.add("{ }");
 
@@ -401,7 +401,7 @@ public class OperationExecutorMongoDatabaseTest {
 
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.NOSQL_DB_COMMAND, operation.getCaseType());
         Assert.assertEquals("Invalid executed method name.", "execute", operation.getMethodName());
-        Assert.assertEquals("No Command Detected","listCollections",operation.getCommand());
+        Assert.assertEquals("No Command Detected","listCollections",operation.getPayloadType());
         List<Object> expected = new ArrayList<>();
         expected.add("{ }");
 
@@ -427,7 +427,7 @@ public class OperationExecutorMongoDatabaseTest {
 
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.NOSQL_DB_COMMAND, operation.getCaseType());
         Assert.assertEquals("Invalid executed method name.", "execute", operation.getMethodName());
-        Assert.assertEquals("No Command Detected","write",operation.getCommand());
+        Assert.assertEquals("No Command Detected","write",operation.getPayloadType());
         List<Object> queryData = new ArrayList<>();
         queryData.add("{ \"$set\" : { \"type\" : \"db\" } }, { \"name\" : \"MongoDB\" }");
 
@@ -454,7 +454,7 @@ public class OperationExecutorMongoDatabaseTest {
 
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.NOSQL_DB_COMMAND, operation.getCaseType());
         Assert.assertEquals("Invalid executed method name.", "execute", operation.getMethodName());
-        Assert.assertEquals("No Command Detected","write",operation.getCommand());
+        Assert.assertEquals("No Command Detected","write",operation.getPayloadType());
         List<Object> queryData = new ArrayList<>();
         queryData.add("{ \"$set\" : { \"type\" : \"db\" } }, { \"name\" : \"MongoDB\" }");
 
@@ -480,7 +480,7 @@ public class OperationExecutorMongoDatabaseTest {
 
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.NOSQL_DB_COMMAND, operation.getCaseType());
         Assert.assertEquals("Invalid executed method name.", "execute", operation.getMethodName());
-        Assert.assertEquals("No Command Detected","write",operation.getCommand());
+        Assert.assertEquals("No Command Detected","write",operation.getPayloadType());
         List<Object> queryData = new ArrayList<>();
         String string=String.format("{ \"name\" : \"Mongo\", \"type\" : \"db\", \"count\" : 1, \"info\" : { \"x\" : 203, \"y\" : 102 }, \"_id\" : { \"$oid\" : \"%s\" } }",id);
         queryData.add(string);
@@ -509,7 +509,7 @@ public class OperationExecutorMongoDatabaseTest {
 
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.NOSQL_DB_COMMAND, operation.getCaseType());
         Assert.assertEquals("Invalid executed method name.", "execute", operation.getMethodName());
-        Assert.assertEquals("No Command Detected","write",operation.getCommand());
+        Assert.assertEquals("No Command Detected","write",operation.getPayloadType());
         List<Object> queryData = new ArrayList<>();
         String string=String.format("{ \"name\" : \"Ram\", \"age\" : 26, \"city\" : \"Hyderabad\", \"_id\" : { \"$oid\" : \"%s\" } }",id);
         queryData.add(string);
@@ -543,7 +543,7 @@ public class OperationExecutorMongoDatabaseTest {
         NoSQLOperation operation = (NoSQLOperation) operations.get(0);
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.NOSQL_DB_COMMAND, operation.getCaseType());
         Assert.assertEquals("Invalid executed method name.", "execute", operation.getMethodName());
-        Assert.assertEquals("No Command Detected", "mapReduce", operation.getCommand());
+        Assert.assertEquals("No Command Detected", "mapReduce", operation.getPayloadType());
         List<Object> queryData = new ArrayList<>();
         queryData.add("{ \"function(){emit(this.name, this.type)};\" : \"function(item,prev){prev.cnt+=1;}\" }");
         List<Object> expected = new ArrayList<>();
@@ -564,7 +564,7 @@ public class OperationExecutorMongoDatabaseTest {
         NoSQLOperation operation = (NoSQLOperation) operations.get(0);
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.NOSQL_DB_COMMAND, operation.getCaseType());
         Assert.assertEquals("Invalid executed method name.", "execute", operation.getMethodName());
-        Assert.assertEquals("No Command Detected", "write", operation.getCommand());
+        Assert.assertEquals("No Command Detected", "write", operation.getPayloadType());
         List<Object> queryData = new ArrayList<>();
         queryData.add("{ \"type\" : \"Database\" }");
         List<Object> expected = new ArrayList<>();
@@ -586,7 +586,7 @@ public class OperationExecutorMongoDatabaseTest {
         NoSQLOperation operation = (NoSQLOperation) operations.get(0);
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.NOSQL_DB_COMMAND, operation.getCaseType());
         Assert.assertEquals("Invalid executed method name.", "execute", operation.getMethodName());
-        Assert.assertEquals("No Command Detected", "write", operation.getCommand());
+        Assert.assertEquals("No Command Detected", "write", operation.getPayloadType());
         List<Object> queryData = new ArrayList<>();
         queryData.add("{ \"type\" : \"Database\" }");
         List<Object> expected = new ArrayList<>();
@@ -611,7 +611,7 @@ public class OperationExecutorMongoDatabaseTest {
 
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.NOSQL_DB_COMMAND, operation.getCaseType());
         Assert.assertEquals("Invalid executed method name.", "execute", operation.getMethodName());
-        Assert.assertEquals("No Command Detected","write",operation.getCommand());
+        Assert.assertEquals("No Command Detected","write",operation.getPayloadType());
         List<Object> queryData = new ArrayList<>();
         queryData.add("{ \"name\" : \"Mongo\" }, { \"name\" : \"MongoDB\" }");
 
@@ -637,7 +637,7 @@ public class OperationExecutorMongoDatabaseTest {
 
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.NOSQL_DB_COMMAND, operation.getCaseType());
         Assert.assertEquals("Invalid executed method name.", "execute", operation.getMethodName());
-        Assert.assertEquals("No Command Detected","write",operation.getCommand());
+        Assert.assertEquals("No Command Detected","write",operation.getPayloadType());
         List<Object> queryData = new ArrayList<>();
         queryData.add("{ \"name\" : \"Mongo\" }, { \"name\" : \"MongoDB\" }");
 
@@ -662,7 +662,7 @@ public class OperationExecutorMongoDatabaseTest {
 
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.NOSQL_DB_COMMAND, operation.getCaseType());
         Assert.assertEquals("Invalid executed method name.", "execute", operation.getMethodName());
-        Assert.assertEquals("No Command Detected","write",operation.getCommand());
+        Assert.assertEquals("No Command Detected","write",operation.getPayloadType());
         List<Object> queryData = new ArrayList<>();
         queryData.add("{ \"name\" : \"Mongo\" }, { \"name\" : \"MongoDB\" }");
 
@@ -686,7 +686,7 @@ public class OperationExecutorMongoDatabaseTest {
 
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.NOSQL_DB_COMMAND, operation.getCaseType());
         Assert.assertEquals("Invalid executed method name.", "execute", operation.getMethodName());
-        Assert.assertEquals("No Command Detected","write",operation.getCommand());
+        Assert.assertEquals("No Command Detected","write",operation.getPayloadType());
         List<Object> queryData = new ArrayList<>();
         queryData.add("{ \"name\" : \"Mongo\" }, { \"name\" : \"MongoDB\" }");
 
@@ -715,7 +715,7 @@ public class OperationExecutorMongoDatabaseTest {
 
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.NOSQL_DB_COMMAND, operation.getCaseType());
         Assert.assertEquals("Invalid executed method name.", "execute", operation.getMethodName());
-        Assert.assertEquals("No Command Detected","write",operation.getCommand());
+        Assert.assertEquals("No Command Detected","write",operation.getPayloadType());
         List<Object> queryData = new ArrayList<>();
         queryData.add("{ \"name\" : \"Mongo\" }, { \"name\" : \"MongoDB\" }");
 
@@ -742,7 +742,7 @@ public class OperationExecutorMongoDatabaseTest {
 
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.NOSQL_DB_COMMAND, operation.getCaseType());
         Assert.assertEquals("Invalid executed method name.", "execute", operation.getMethodName());
-        Assert.assertEquals("No Command Detected","write",operation.getCommand());
+        Assert.assertEquals("No Command Detected","write",operation.getPayloadType());
         List<Object> queryData = new ArrayList<>();
         queryData.add("{ \"name\" : \"Mongo\" }, { \"name\" : \"MongoDB\" }");
 
@@ -774,7 +774,7 @@ public class OperationExecutorMongoDatabaseTest {
 
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.NOSQL_DB_COMMAND, operation.getCaseType());
         Assert.assertEquals("Invalid executed method name.", "execute", operation.getMethodName());
-        Assert.assertEquals("No Command Detected","write",operation.getCommand());
+        Assert.assertEquals("No Command Detected","write",operation.getPayloadType());
         List<Object> queryData = new ArrayList<>();
         String string=String.format("{ \"title\" : \"The Great Gatsby\", \"author\" : \"F. Scott Fitzgerald\", \"year\" : 1925, \"_id\" : { \"$oid\" : \"%s\" } }",id);
         queryData.add(string);
@@ -806,7 +806,7 @@ public class OperationExecutorMongoDatabaseTest {
 
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.NOSQL_DB_COMMAND, operation.getCaseType());
         Assert.assertEquals("Invalid executed method name.", "execute", operation.getMethodName());
-        Assert.assertEquals("No Command Detected","write",operation.getCommand());
+        Assert.assertEquals("No Command Detected","write",operation.getPayloadType());
         List<Object> queryData = new ArrayList<>();
         String string=String.format("{ \"title\" : \"The Great Gatsby\", \"author\" : \"F. Scott Fitzgerald\", \"year\" : 1925, \"_id\" : { \"$oid\" : \"%s\" } }",id);
         queryData.add(string);
