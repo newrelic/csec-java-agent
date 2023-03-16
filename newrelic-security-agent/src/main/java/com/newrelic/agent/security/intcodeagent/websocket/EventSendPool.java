@@ -132,6 +132,8 @@ public class EventSendPool {
          */
         public void rejectedExecution(Runnable r, ThreadPoolExecutor e) {
             logger.log(LogLevel.FINER, "Event Task " + r.toString() + " rejected from  " + e.toString(), EventSendPool.class.getName());
+            AgentInfo.getInstance().getJaHealthCheck().incrementDropCount();
+            AgentInfo.getInstance().getJaHealthCheck().incrementProcessedCount();
         }
     }
 

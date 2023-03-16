@@ -118,7 +118,7 @@ public abstract class Context_Instrumentation {
         try {
             if (!NewRelicSecurity.isHookProcessingActive() ||
                     NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty() ||
-                    names == null || names.hasMoreElements()){
+                    names == null || !names.hasMoreElements()){
                 return null;
             }
             UserDataTranslationHelper.placeJNDIAdditionalTemplateData();
