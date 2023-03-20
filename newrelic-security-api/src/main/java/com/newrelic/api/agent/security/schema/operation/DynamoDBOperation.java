@@ -10,7 +10,7 @@ import java.util.List;
 public class DynamoDBOperation extends AbstractOperation {
 
     public enum Category {
-        AWSAPI, PARTIQL
+        DQL, PARTIQL
     }
 
     private List<DynamoDBRequest> payload = new ArrayList<>();
@@ -23,7 +23,7 @@ public class DynamoDBOperation extends AbstractOperation {
 
     public DynamoDBOperation(List<DynamoDBRequest> payload, String className, String methodName, Category category) {
         super(className, methodName);
-        this.setCaseType(VulnerabilityCaseType.DYNAMODB);
+        this.setCaseType(VulnerabilityCaseType.DYNAMO_DB_COMMAND);
         this.setCategory(category);
         this.payload.addAll(payload);
 
@@ -31,7 +31,7 @@ public class DynamoDBOperation extends AbstractOperation {
 
     public DynamoDBOperation(DynamoDBRequest payload, String className, String methodName, Category category) {
         super(className, methodName);
-        this.setCaseType(VulnerabilityCaseType.DYNAMODB);
+        this.setCaseType(VulnerabilityCaseType.DYNAMO_DB_COMMAND);
         this.setCategory(category);
         this.payload.add(payload);
     }

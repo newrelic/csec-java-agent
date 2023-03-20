@@ -143,11 +143,11 @@ public abstract class DynamoDBUtil {
                 if (!send)
                     return null;
                 addToList(requests, value, OP_READ);
-                operation = new DynamoDBOperation(requests, klassName, "executeBatchGetItem", DynamoDBOperation.Category.AWSAPI);
+                operation = new DynamoDBOperation(requests, klassName, "executeBatchGetItem", DynamoDBOperation.Category.DQL);
             }
             else if (value instanceof BatchWriteItemRequest) {
                 addToList(requests, value, OP_WRITE);
-                operation = new DynamoDBOperation(requests, klassName, "executeBatchWriteItem", DynamoDBOperation.Category.AWSAPI);
+                operation = new DynamoDBOperation(requests, klassName, "executeBatchWriteItem", DynamoDBOperation.Category.DQL);
             }
             else if (value instanceof DeleteItemRequest) {
                 DeleteItemRequest request = (DeleteItemRequest) value;
@@ -155,7 +155,7 @@ public abstract class DynamoDBUtil {
                     return null;
                 }
                 addToList(requests, value, OP_DELETE);
-                operation = new DynamoDBOperation(requests, klassName, "executeDeleteItem", DynamoDBOperation.Category.AWSAPI);
+                operation = new DynamoDBOperation(requests, klassName, "executeDeleteItem", DynamoDBOperation.Category.DQL);
             }
             else if (value instanceof QueryRequest) {
                 QueryRequest request = (QueryRequest) value;
@@ -163,7 +163,7 @@ public abstract class DynamoDBUtil {
                     return null;
                 }
                 addToList(requests, value, OP_READ);
-                operation = new DynamoDBOperation(requests, klassName, "executeQuery", DynamoDBOperation.Category.AWSAPI);
+                operation = new DynamoDBOperation(requests, klassName, "executeQuery", DynamoDBOperation.Category.DQL);
             }
             else if (value instanceof GetItemRequest) {
                 GetItemRequest request = (GetItemRequest) value;
@@ -171,11 +171,11 @@ public abstract class DynamoDBUtil {
                     return null;
                 }
                 addToList(requests, value, OP_READ);
-                operation = new DynamoDBOperation(requests, klassName, "executeGetItem", DynamoDBOperation.Category.AWSAPI);
+                operation = new DynamoDBOperation(requests, klassName, "executeGetItem", DynamoDBOperation.Category.DQL);
             }
             else if (value instanceof PutItemRequest) {
                 addToList(requests, value, OP_WRITE);
-                operation = new DynamoDBOperation(requests, klassName, "executePutItem", DynamoDBOperation.Category.AWSAPI);
+                operation = new DynamoDBOperation(requests, klassName, "executePutItem", DynamoDBOperation.Category.DQL);
             }
             else if (value instanceof ScanRequest) {
                 ScanRequest request = (ScanRequest) value;
@@ -183,11 +183,11 @@ public abstract class DynamoDBUtil {
                     return null;
                 }
                 addToList(requests, value, OP_READ);
-                operation = new DynamoDBOperation(requests, klassName, "executeScan", DynamoDBOperation.Category.AWSAPI);
+                operation = new DynamoDBOperation(requests, klassName, "executeScan", DynamoDBOperation.Category.DQL);
             }
             else if (value instanceof UpdateItemRequest) {
                 addToList(requests, value, OP_UPDATE);
-                operation = new DynamoDBOperation(requests, klassName, "executeUpdateItem", DynamoDBOperation.Category.AWSAPI);
+                operation = new DynamoDBOperation(requests, klassName, "executeUpdateItem", DynamoDBOperation.Category.DQL);
             }
         } catch (NullPointerException ignored) {
         }

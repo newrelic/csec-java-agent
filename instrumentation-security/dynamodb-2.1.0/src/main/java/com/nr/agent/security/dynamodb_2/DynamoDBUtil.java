@@ -62,28 +62,28 @@ public abstract class DynamoDBUtil {
                     InputT request = yRequest.getInput();
                     if (request instanceof BatchGetItemRequest) {
                         List<DynamoDBRequest> requests = getMarshalledRequest(yRequest.getMarshaller(), request, OP_READ);
-                        operation = new DynamoDBOperation(requests, klassName, "executeBatchGetItem", DynamoDBOperation.Category.AWSAPI);
+                        operation = new DynamoDBOperation(requests, klassName, "executeBatchGetItem", DynamoDBOperation.Category.DQL);
                     } else if (request instanceof BatchWriteItemRequest) {
                         List<DynamoDBRequest> requests = getMarshalledRequest(yRequest.getMarshaller(), request, OP_WRITE);
-                        operation = new DynamoDBOperation(requests, klassName, "executeBatchWriteItem", DynamoDBOperation.Category.AWSAPI);
+                        operation = new DynamoDBOperation(requests, klassName, "executeBatchWriteItem", DynamoDBOperation.Category.DQL);
                     } else if (request instanceof DeleteItemRequest) {
                         List<DynamoDBRequest> requests = getMarshalledRequest(yRequest.getMarshaller(), request, OP_DELETE);
-                        operation = new DynamoDBOperation(requests, klassName, "executeDeleteItem", DynamoDBOperation.Category.AWSAPI);
+                        operation = new DynamoDBOperation(requests, klassName, "executeDeleteItem", DynamoDBOperation.Category.DQL);
                     } else if (request instanceof QueryRequest) {
                         List<DynamoDBRequest> requests = getMarshalledRequest(yRequest.getMarshaller(), request, OP_READ);
-                        operation = new DynamoDBOperation(requests, klassName, "executeQuery", DynamoDBOperation.Category.AWSAPI);
+                        operation = new DynamoDBOperation(requests, klassName, "executeQuery", DynamoDBOperation.Category.DQL);
                     } else if (request instanceof GetItemRequest) {
                         List<DynamoDBRequest> requests = getMarshalledRequest(yRequest.getMarshaller(), request, OP_READ);
-                        operation = new DynamoDBOperation(requests, klassName, "executeGetItem", DynamoDBOperation.Category.AWSAPI);
+                        operation = new DynamoDBOperation(requests, klassName, "executeGetItem", DynamoDBOperation.Category.DQL);
                     } else if (request instanceof PutItemRequest) {
                         List<DynamoDBRequest> requests = getMarshalledRequest(yRequest.getMarshaller(), request, OP_WRITE);
-                        operation = new DynamoDBOperation(requests, klassName, "executePutItem", DynamoDBOperation.Category.AWSAPI);
+                        operation = new DynamoDBOperation(requests, klassName, "executePutItem", DynamoDBOperation.Category.DQL);
                     } else if (request instanceof ScanRequest) {
                         List<DynamoDBRequest> requests = getMarshalledRequest(yRequest.getMarshaller(), request, OP_READ);
-                        operation = new DynamoDBOperation(requests, klassName, "executeScan", DynamoDBOperation.Category.AWSAPI);
+                        operation = new DynamoDBOperation(requests, klassName, "executeScan", DynamoDBOperation.Category.DQL);
                     } else if (request instanceof UpdateItemRequest) {
                         List<DynamoDBRequest> requests = getMarshalledRequest(yRequest.getMarshaller(), request, OP_UPDATE);
-                        operation = new DynamoDBOperation(requests, klassName, "executeUpdateItem", DynamoDBOperation.Category.AWSAPI);
+                        operation = new DynamoDBOperation(requests, klassName, "executeUpdateItem", DynamoDBOperation.Category.DQL);
                     } else if (request instanceof ExecuteStatementRequest) {
                         List<DynamoDBRequest> requests = getMarshalledRequest(yRequest.getMarshaller(), request, OP_READ_WRITE);
                         operation = new DynamoDBOperation(requests, klassName, "executeStatement", DynamoDBOperation.Category.PARTIQL);
@@ -95,10 +95,10 @@ public abstract class DynamoDBUtil {
                         operation = new DynamoDBOperation(requests, klassName, "executeTransaction", DynamoDBOperation.Category.PARTIQL);
                     } else if (request instanceof TransactGetItemsRequest) {
                         List<DynamoDBRequest> requests = getMarshalledRequest(yRequest.getMarshaller(), request, OP_READ);
-                        operation = new DynamoDBOperation(requests, klassName, "transactGetItemsRequest", DynamoDBOperation.Category.AWSAPI);
+                        operation = new DynamoDBOperation(requests, klassName, "transactGetItemsRequest", DynamoDBOperation.Category.DQL);
                     } else if (request instanceof TransactWriteItemsRequest) {
                         List<DynamoDBRequest> requests = getMarshalledRequest(yRequest.getMarshaller(), request, OP_WRITE);
-                        operation = new DynamoDBOperation(requests, klassName, "transactWriteItemsRequest", DynamoDBOperation.Category.AWSAPI);
+                        operation = new DynamoDBOperation(requests, klassName, "transactWriteItemsRequest", DynamoDBOperation.Category.DQL);
                     }
 
                     if (operation != null){
