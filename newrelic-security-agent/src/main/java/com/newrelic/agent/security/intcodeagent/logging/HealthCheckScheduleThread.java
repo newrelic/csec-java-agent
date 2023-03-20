@@ -59,45 +59,46 @@ public class HealthCheckScheduleThread {
 
     private static OSVariables osVariables = OsVariablesInstance.getInstance().getOsVariables();
 
-    private HealthCheckScheduleThread() {
-        Runnable runnable = new Runnable() {
-            public void run() {
+    private Runnable runnable = new Runnable() {
+        public void run() {
 
-                try {
-                    // since tcp connection keep alive check is more than 2 hours
-                    // we send our custom object to check if connection is still alive or not
-                    // this will be ignored by ic agent on the other side.
-                    
-                    AgentInfo.getInstance().getJaHealthCheck().setStats(populateJVMStats());
-                    AgentInfo.getInstance().getJaHealthCheck().setServiceStatus(getServiceStatus());
+            try {
+                // since tcp connection keep alive check is more than 2 hours
+                // we send our custom object to check if connection is still alive or not
+                // this will be ignored by ic agent on the other side.
 
-                    if (!AgentInfo.getInstance().isAgentActive()) {
-                        return;
-                    }
+                AgentInfo.getInstance().getJaHealthCheck().setStats(populateJVMStats());
+                AgentInfo.getInstance().getJaHealthCheck().setServiceStatus(getServiceStatus());
 
-                    AgentInfo.getInstance().getJaHealthCheck().setDsBackLog(RestRequestThreadPool.getInstance().getQueueSize());
-                    AgentUtils.getInstance().getStatusLogMostRecentHCs().add(AgentInfo.getInstance().getJaHealthCheck().toString());
-//						channel.write(ByteBuffer.wrap(new JAHealthCheck(AgentNew.JA_HEALTH_CHECK).toString().getBytes()));
-                    if (WSClient.getInstance().isOpen()) {
-                        WSClient.getInstance().send(JsonConverter.toJSON(new JAHealthCheck(AgentInfo.getInstance().getJaHealthCheck())));
-                        AgentInfo.getInstance().getJaHealthCheck().setEventDropCount(0);
-                        AgentInfo.getInstance().getJaHealthCheck().setEventProcessed(0);
-                        AgentInfo.getInstance().getJaHealthCheck().setEventSentCount(0);
-                        AgentInfo.getInstance().getJaHealthCheck().setHttpRequestCount(0);
-                        AgentInfo.getInstance().getJaHealthCheck().setExitEventSentCount(0);
-                    }
-
-                } catch (NullPointerException ex) {
-                    logger.log(LogLevel.WARNING, "No reference to Socket's OutputStream",
-                            HealthCheckScheduleThread.class.getName());
-                } catch (Throwable e) {
-                    logger.log(LogLevel.WARNING, "Error while trying to verify connection: ", e,
-                            HealthCheckScheduleThread.class.getName());
-                } finally {
-                    writeStatusLogFile();
+                if (!AgentInfo.getInstance().isAgentActive()) {
+                    return;
                 }
+
+                AgentInfo.getInstance().getJaHealthCheck().setDsBackLog(RestRequestThreadPool.getInstance().getQueueSize());
+                AgentUtils.getInstance().getStatusLogMostRecentHCs().add(AgentInfo.getInstance().getJaHealthCheck().toString());
+//						channel.write(ByteBuffer.wrap(new JAHealthCheck(AgentNew.JA_HEALTH_CHECK).toString().getBytes()));
+                if (WSClient.getInstance().isOpen()) {
+                    WSClient.getInstance().send(JsonConverter.toJSON(new JAHealthCheck(AgentInfo.getInstance().getJaHealthCheck())));
+                    AgentInfo.getInstance().getJaHealthCheck().setEventDropCount(0);
+                    AgentInfo.getInstance().getJaHealthCheck().setEventProcessed(0);
+                    AgentInfo.getInstance().getJaHealthCheck().setEventSentCount(0);
+                    AgentInfo.getInstance().getJaHealthCheck().setHttpRequestCount(0);
+                    AgentInfo.getInstance().getJaHealthCheck().setExitEventSentCount(0);
+                }
+
+            } catch (NullPointerException ex) {
+                logger.log(LogLevel.WARNING, "No reference to Socket's OutputStream",
+                        HealthCheckScheduleThread.class.getName());
+            } catch (Throwable e) {
+                logger.log(LogLevel.WARNING, "Error while trying to verify connection: ", e,
+                        HealthCheckScheduleThread.class.getName());
+            } finally {
+                writeStatusLogFile();
             }
-        };
+        }
+    };
+
+    private HealthCheckScheduleThread() {
         hcScheduledService = Executors.newSingleThreadScheduledExecutor(new ThreadFactory() {
             private final AtomicInteger threadNumber = new AtomicInteger(1);
 
@@ -107,6 +108,9 @@ public class HealthCheckScheduleThread {
                         IAgentConstants.HCSCHEDULEDTHREAD_ + threadNumber.getAndIncrement());
             }
         });
+    }
+
+    public void scheduleNewTask() {
         future = hcScheduledService.scheduleAtFixedRate(runnable, 1, 5, TimeUnit.MINUTES);
     }
 

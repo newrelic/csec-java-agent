@@ -156,7 +156,7 @@ public class Agent implements SecurityAgent {
     }
 
     private void startK2Services() {
-        HealthCheckScheduleThread.getInstance();
+        HealthCheckScheduleThread.getInstance().scheduleNewTask();
         logger.logInit(
                 LogLevel.INFO,
                 String.format(STARTED_MODULE_LOG, AgentServices.HealthCheck.name()),
