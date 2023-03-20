@@ -61,7 +61,7 @@ public class CollectorConfigurationUtils {
         collectorConfig.setNodeGroupTags(Collections.emptySet());
 
         CustomerInfo customerInfo = new CustomerInfo();
-        customerInfo.setApiAccessorToken(NewRelic.getAgent().getConfig().getValue("license_key"));
+        customerInfo.setApiAccessorToken(parseLicenseKey(NewRelic.getAgent().getConfig().getValue("license_key")));
         collectorConfig.setCustomerInfo(customerInfo);
 
         String accountId = NewRelic.getAgent().getConfig().getValue("account_id");
@@ -74,6 +74,13 @@ public class CollectorConfigurationUtils {
 
         collectorConfig.setK2ServiceInfo(serviceInfo);
         return collectorConfig;
+    }
+
+    private static String parseLicenseKey(Object license_key) {
+        if(license_key instanceof String){
+            return StringUtils.strip((String) license_key, "'\"");
+        }
+        return "unknown_license_key";
     }
 
 }
