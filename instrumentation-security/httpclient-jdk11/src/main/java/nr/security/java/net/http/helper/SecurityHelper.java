@@ -1,8 +1,8 @@
 package nr.security.java.net.http.helper;
 
 import com.newrelic.api.agent.security.NewRelicSecurity;
+import com.newrelic.api.agent.security.instrumentation.helpers.ServletHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
-import com.newrelic.api.agent.security.schema.constants.AgentConstants;
 import com.newrelic.api.agent.security.utils.SSRFUtils;
 
 import java.net.http.HttpRequest;
@@ -22,11 +22,11 @@ public class SecurityHelper {
                     .getCustomAttribute(SecurityHelper.NR_SEC_CUSTOM_ATTRIB_NAME + req.hashCode(), HttpRequest.Builder.class);
             String iastHeader = NewRelicSecurity.getAgent().getSecurityMetaData().getFuzzRequestIdentifier().getRaw();
             if (iastHeader != null && !iastHeader.trim().isEmpty()) {
-                builder.setHeader(AgentConstants.K2_FUZZ_REQUEST_ID, iastHeader);
+                builder.setHeader(ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID, iastHeader);
             }
             if (operation.getApiID() != null && !operation.getApiID().trim().isEmpty() && operation.getExecutionId() != null &&
                     !operation.getExecutionId().trim().isEmpty()) {
-                updatedRequest = builder.setHeader(AgentConstants.K2_TRACING_DATA,
+                updatedRequest = builder.setHeader(ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER,
                         SSRFUtils.generateTracingHeaderValue(NewRelicSecurity.getAgent().getSecurityMetaData().getTracingHeaderValue(), operation.getApiID(),
                                 operation.getExecutionId(), NewRelicSecurity.getAgent().getAgentUUID())).build();
                 return updatedRequest;
