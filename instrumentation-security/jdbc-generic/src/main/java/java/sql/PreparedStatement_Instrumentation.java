@@ -26,7 +26,7 @@ import java.util.Map;
 public abstract class PreparedStatement_Instrumentation {
 
     @NewField
-    private Map<Integer, String> params;
+    private Map<String, String> params;
 
     @NewField
     String preparedSql;
@@ -225,14 +225,14 @@ public abstract class PreparedStatement_Instrumentation {
             params = new HashMap<>();
         }
 
-        params.put(index, String.valueOf(value));
+        params.put(String.valueOf(index), String.valueOf(value));
     }
     private void setParamValue(int index, byte[] value) {
         if (params == null) {
             params = new HashMap<>();
         }
 
-        params.put(index, new String(value));
+        params.put(String.valueOf(index), new String(value));
     }
 
 }

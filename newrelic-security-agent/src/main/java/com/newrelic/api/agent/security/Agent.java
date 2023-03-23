@@ -25,6 +25,7 @@ import com.newrelic.api.agent.security.schema.policy.AgentPolicy;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
+import java.lang.instrument.Instrumentation;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -60,6 +61,7 @@ public class Agent implements SecurityAgent {
     private static FileLoggerThreadPool logger;
 
     private java.net.URL agentJarURL;
+    private Instrumentation instrumentation;
 
     public static SecurityAgent getInstance() {
         if(instance == null) {
@@ -120,6 +122,7 @@ public class Agent implements SecurityAgent {
         config.setupSnapshotDir();
         info.initStatusLogValues();
         setInitialised(true);
+        populateLinkingMetadata();
 
         startK2Services();
         // log init finish
@@ -128,7 +131,6 @@ public class Agent implements SecurityAgent {
                 String.format(AGENT_INIT_SUCCESSFUL, info.getVMPID(), info.getApplicationUUID(), info.getApplicationInfo()),
                 Agent.class.getName()
         );
-        populateLinkingMetadata();
         info.agentStatTrigger();
 
         System.out.printf("This application instance is now being protected by New Relic Security under id %s\n", info.getApplicationUUID());
@@ -141,8 +143,8 @@ public class Agent implements SecurityAgent {
             buildInfo = mapper.
                     readValue(CommonUtils.getResourceStreamFromAgentJar("Agent.properties"), BuildInfo.class);
         } catch (Throwable e) {
-            logger.log(LogLevel.ERROR, String.format(CRITICAL_ERROR_UNABLE_TO_READ_BUILD_INFO_AND_VERSION_S_S, e.getMessage(), e.getCause()), this.getClass().getName());
-            logger.log(LogLevel.DEBUG, CRITICAL_ERROR_UNABLE_TO_READ_BUILD_INFO_AND_VERSION, e, this.getClass().getName());
+            logger.log(LogLevel.SEVERE, String.format(CRITICAL_ERROR_UNABLE_TO_READ_BUILD_INFO_AND_VERSION_S_S, e.getMessage(), e.getCause()), this.getClass().getName());
+            logger.log(LogLevel.FINER, CRITICAL_ERROR_UNABLE_TO_READ_BUILD_INFO_AND_VERSION, e, this.getClass().getName());
         }
         return buildInfo;
     }
@@ -154,7 +156,7 @@ public class Agent implements SecurityAgent {
     }
 
     private void startK2Services() {
-        HealthCheckScheduleThread.getInstance();
+        HealthCheckScheduleThread.getInstance().scheduleNewTask();
         logger.logInit(
                 LogLevel.INFO,
                 String.format(STARTED_MODULE_LOG, AgentServices.HealthCheck.name()),
@@ -172,12 +174,13 @@ public class Agent implements SecurityAgent {
     }
 
     @Override
-    public boolean refreshState(java.net.URL agentJarURL) {
+    public boolean refreshState(java.net.URL agentJarURL, Instrumentation instrumentation) {
         /**
          * restart k2 services
          **/
         this.agentJarURL = agentJarURL;
-        if(isInitialised()) {
+        this.instrumentation = instrumentation;
+        if (isInitialised()) {
             config.setNRSecurityEnabled(false);
             cancelActiveServiceTasks();
         }
@@ -298,8 +301,25 @@ public class Agent implements SecurityAgent {
             }
 
             if (StringUtils.startsWithAny(stackTrace[i].getClassName(), SUN_REFLECT, COM_SUN)
-                    || stackTrace[i].isNativeMethod() || stackTrace[i].getLineNumber() < 0) {
+                    || stackTrace[i].isNativeMethod() || stackTrace[i].getLineNumber() < 0 ||
+                    !StringUtils.endsWith(stackTrace[i].getFileName(), ".java")) {
                 markedForRemoval = true;
+
+                // Checks for RCI flagging.
+                if (NewRelic.getAgent().getConfig()
+                        .getValue(INRSettingsKey.SECURITY_DETECTION_RCI_ENABLED, true) && i > 0) {
+                    AgentMetaData metaData = NewRelicSecurity.getAgent().getSecurityMetaData().getMetaData();
+                    if (stackTrace[i - 1].getLineNumber() > 0 &&
+                            StringUtils.isNotBlank(stackTrace[i - 1].getFileName()) &&
+                            !StringUtils.startsWithAny(stackTrace[i - 1].getClassName(), "com.newrelic.", "com.nr.")
+                    ) {
+                        metaData.setTriggerViaRCI(true);
+                        metaData.getRciMethodsCalls()
+                                .add(AgentUtils.stackTraceElementToString(operation.getStackTrace()[i]));
+                        metaData.getRciMethodsCalls()
+                                .add(AgentUtils.stackTraceElementToString(operation.getStackTrace()[i - 1]));
+                    }
+                }
             }
 
             if (!markedForRemoval) {
@@ -335,7 +355,7 @@ public class Agent implements SecurityAgent {
                     && StringUtils.equals(k2RequestIdentifier.getNextStage().getStatus(), IAgentConstants.VULNERABLE)) {
                 ExitEventBean exitEventBean = new ExitEventBean(operation.getExecutionId(), operation.getCaseType().getCaseType());
                 exitEventBean.setK2RequestIdentifier(k2RequestIdentifier.getRaw());
-                logger.log(LogLevel.DEBUG, "Exit event : " + exitEventBean, this.getClass().getName());
+                logger.log(LogLevel.FINER, "Exit event : " + exitEventBean, this.getClass().getName());
                 DispatcherPool.getInstance().dispatchExitEvent(exitEventBean);
                 AgentInfo.getInstance().getJaHealthCheck().incrementExitEventSentCount();
             }
@@ -408,5 +428,10 @@ public class Agent implements SecurityAgent {
 
     public void setInitialised(boolean initialised) {
         isInitialised = initialised;
+    }
+
+    @Override
+    public Instrumentation getInstrumentation() {
+        return this.instrumentation;
     }
 }

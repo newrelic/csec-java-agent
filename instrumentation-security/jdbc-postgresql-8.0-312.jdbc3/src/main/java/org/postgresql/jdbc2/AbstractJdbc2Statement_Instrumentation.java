@@ -27,7 +27,7 @@ import java.util.Map;
 public abstract class AbstractJdbc2Statement_Instrumentation {
 
     @NewField
-    private Map<Integer, String> params;
+    private Map<String, String> params;
 
     @NewField
     private String sqlQuery;
@@ -280,7 +280,7 @@ public abstract class AbstractJdbc2Statement_Instrumentation {
             params = new HashMap<>();
         }
         if(index > -1) {
-            params.put(index, String.valueOf(value));
+            params.put(String.valueOf(index), String.valueOf(value));
         }
     }
 
@@ -289,6 +289,6 @@ public abstract class AbstractJdbc2Statement_Instrumentation {
             params = new HashMap<>();
         }
 
-        params.put(index, new String(value));
+        params.put(String.valueOf(index), new String(value));
     }
 }

@@ -1,0 +1,21 @@
+dependencies {
+    implementation(project(":newrelic-security-api"))
+    implementation("com.newrelic.agent.java:newrelic-api:${nrAPIVersion}")
+    implementation("com.newrelic.agent.java:newrelic-weaver-api:${nrAPIVersion}")
+    implementation("org.mariadb:r2dbc-mariadb:1.0.2")
+    testImplementation("ch.vorburger.mariaDB4j:mariaDB4j:2.2.1")
+}
+
+jar {
+    manifest { attributes 'Implementation-Title': 'com.newrelic.instrumentation.security.r2dbc-mariadb' }
+}
+
+verifyInstrumentation {
+    passesOnly 'org.mariadb:r2dbc-mariadb:[1.0.0,)'
+    excludeRegex(".*(alpha|beta|rc).*")
+}
+
+site {
+    title 'MariaDB R2DBC'
+    type 'Datastore'
+}

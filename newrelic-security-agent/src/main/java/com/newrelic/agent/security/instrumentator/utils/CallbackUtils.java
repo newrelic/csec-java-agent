@@ -2,6 +2,7 @@ package com.newrelic.agent.security.instrumentator.utils;
 
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.newrelic.agent.security.intcodeagent.filelogging.LogLevel;
+import com.newrelic.api.agent.security.instrumentation.helpers.ServletHelper;
 import com.newrelic.api.agent.security.schema.HttpRequest;
 import com.newrelic.api.agent.security.schema.HttpResponse;
 import org.apache.commons.lang3.RegExUtils;
@@ -66,7 +67,7 @@ public class CallbackUtils {
         }
         String combinedResponseDataString = StringUtils.joinWith(FIVE_COLON, combinedResponseData);
 
-        logger.log(LogLevel.DEBUG, String.format("Checking reflected XSS : %s :: %s", combinedRequestData, combinedResponseDataString), CallbackUtils.class.getName());
+        logger.log(LogLevel.FINER, String.format("Checking reflected XSS : %s :: %s", combinedRequestData, combinedResponseDataString), CallbackUtils.class.getName());
 
         Set<String> attackContructs = isXSS(combinedRequestData);
 
@@ -105,7 +106,7 @@ public class CallbackUtils {
 
 
     static Set<String> getXSSConstructs(String data) {
-        logger.log(LogLevel.DEBUG, CAME_TO_XSS_CHECK + data, CallbackUtils.class.getName());
+        logger.log(LogLevel.FINER, CAME_TO_XSS_CHECK + data, CallbackUtils.class.getName());
         List<String> construct = new ArrayList<>();
         boolean isAttackConstruct = false;
 
@@ -267,7 +268,7 @@ public class CallbackUtils {
                 }
             }
         } catch (Throwable e) {
-            logger.log(LogLevel.ERROR, ERROR, e, CallbackUtils.class.getName());
+            logger.log(LogLevel.SEVERE, ERROR, e, CallbackUtils.class.getName());
         }
         return processedData;
     }
@@ -282,7 +283,7 @@ public class CallbackUtils {
 
             // Process & add header keys & values separately.
             Map<String, String> headerCopy = new HashMap<>((Map<String, String>) httpRequest.getHeaders());
-            headerCopy.remove("k2-fuzz-request-id");
+            headerCopy.remove(ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID);
             for (Entry<String, String> entry : headerCopy.entrySet()) {
                 // For key
                 processURLEncodedDataForXSS(processedData, entry.getKey());
@@ -356,7 +357,7 @@ public class CallbackUtils {
 
             }
         } catch (Throwable e) {
-            logger.log(LogLevel.ERROR, ERROR, e, CallbackUtils.class.getName());
+            logger.log(LogLevel.SEVERE, ERROR, e, CallbackUtils.class.getName());
         }
         return processedData;
     }

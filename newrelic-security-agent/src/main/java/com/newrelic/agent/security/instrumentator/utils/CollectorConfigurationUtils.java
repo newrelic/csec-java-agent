@@ -1,7 +1,5 @@
 package com.newrelic.agent.security.instrumentator.utils;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.newrelic.agent.security.AgentInfo;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.newrelic.agent.security.intcodeagent.filelogging.LogLevel;
@@ -32,8 +30,6 @@ public class CollectorConfigurationUtils {
 
     private static final Object lock = new Object();
 
-    private ObjectMapper yamlMapper = new ObjectMapper(new YAMLFactory());
-
     private CollectorConfigurationUtils() {
     }
 
@@ -54,8 +50,7 @@ public class CollectorConfigurationUtils {
     public static CollectorConfig populateCollectorConfig() {
         CollectorConfig collectorConfig = new CollectorConfig();
         String validatorServiceEndpointUrl = NewRelic.getAgent().getConfig()
-                .getValue("security.validator_service_endpoint_url", "wss://csec.nr-data.net");
-        ;
+                .getValue("security.validator_service_url", "wss://csec.nr-data.net");
         K2ServiceInfo serviceInfo = new K2ServiceInfo();
 
         serviceInfo.setValidatorServiceEndpointURL(validatorServiceEndpointUrl);
@@ -66,12 +61,12 @@ public class CollectorConfigurationUtils {
         collectorConfig.setNodeGroupTags(Collections.emptySet());
 
         CustomerInfo customerInfo = new CustomerInfo();
-        customerInfo.setApiAccessorToken(NewRelic.getAgent().getConfig().getValue("license_key"));
+        customerInfo.setApiAccessorToken(parseLicenseKey(NewRelic.getAgent().getConfig().getValue("license_key")));
         collectorConfig.setCustomerInfo(customerInfo);
 
         String accountId = NewRelic.getAgent().getConfig().getValue("account_id");
         if (StringUtils.isBlank(accountId)) {
-            logger.log(LogLevel.ERROR, "Unable to find account id.", CollectorConfigurationUtils.class.getName());
+            logger.log(LogLevel.SEVERE, "Unable to find account id.", CollectorConfigurationUtils.class.getName());
             //TODO raise exception
         } else {
             collectorConfig.getCustomerInfo().setAccountId(accountId);
@@ -79,6 +74,13 @@ public class CollectorConfigurationUtils {
 
         collectorConfig.setK2ServiceInfo(serviceInfo);
         return collectorConfig;
+    }
+
+    private static String parseLicenseKey(Object license_key) {
+        if(license_key instanceof String){
+            return StringUtils.strip((String) license_key, "'\"");
+        }
+        return "unknown_license_key";
     }
 
 }

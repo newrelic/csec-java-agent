@@ -19,7 +19,7 @@ public class CommandWriteOperation_Instrumentation<T> {
         AbstractOperation noSQLOperation = null;
         boolean isLockAcquired = MongoUtil.acquireLockIfPossible(this.hashCode());
         if (isLockAcquired) {
-            noSQLOperation = MongoUtil.recordMongoOperation(command, MongoUtil.OP_WRITE, MongoUtil.METHOD_EXECUTE, this.getClass().getName());
+            noSQLOperation = MongoUtil.recordMongoOperation(command, MongoUtil.OP_WRITE, this.getClass().getName(), MongoUtil.METHOD_EXECUTE);
         }
         T returnVal = null;
         try {
@@ -38,7 +38,7 @@ public class CommandWriteOperation_Instrumentation<T> {
         AbstractOperation noSQLOperation = null;
         boolean isLockAcquired = MongoUtil.acquireLockIfPossible(this.hashCode());
         if (isLockAcquired) {
-            noSQLOperation = MongoUtil.recordMongoOperation(command, MongoUtil.OP_WRITE, MongoUtil.METHOD_EXECUTE, this.getClass().getName());
+            noSQLOperation = MongoUtil.recordMongoOperation(command, MongoUtil.OP_WRITE, this.getClass().getName(), MongoUtil.METHOD_EXECUTE);
         }
         try {
             Weaver.callOriginal();

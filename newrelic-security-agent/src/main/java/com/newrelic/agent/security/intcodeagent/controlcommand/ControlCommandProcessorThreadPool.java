@@ -48,7 +48,7 @@ public class ControlCommandProcessorThreadPool {
          * @throws RejectedExecutionException always
          */
         public void rejectedExecution(Runnable r, ThreadPoolExecutor e) {
-            logger.log(LogLevel.WARN, String.format(CUSTOM_CODE_VULNERABILITY_TASK_REJECTED_FROM_S_S, r.toString(), e.toString()),
+            logger.log(LogLevel.WARNING, String.format(CUSTOM_CODE_VULNERABILITY_TASK_REJECTED_FROM_S_S, r.toString(), e.toString()),
                     ControlCommandProcessorThreadPool.class.getName());
         }
     }
@@ -123,7 +123,7 @@ public class ControlCommandProcessorThreadPool {
                     executor.shutdownNow(); // cancel currently executing tasks
 
                     if (!executor.awaitTermination(1, TimeUnit.SECONDS)) {
-                        logger.log(LogLevel.FATAL, "Thread pool executor did not terminate",
+                        logger.log(LogLevel.SEVERE, "Thread pool executor did not terminate",
                                 ControlCommandProcessorThreadPool.class.getName());
                     }
                 }

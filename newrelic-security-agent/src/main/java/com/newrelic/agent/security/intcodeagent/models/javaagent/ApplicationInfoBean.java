@@ -4,6 +4,7 @@ import com.newrelic.agent.security.instrumentator.os.OSVariables;
 import com.newrelic.agent.security.instrumentator.os.OsVariablesInstance;
 import com.newrelic.agent.security.intcodeagent.logging.ServerInfo;
 import com.newrelic.agent.security.intcodeagent.websocket.JsonConverter;
+import com.newrelic.api.agent.security.schema.annotations.JsonIgnore;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -34,6 +35,7 @@ public class ApplicationInfoBean extends AgentBasicInfo {
     /**
      * cmdline.
      */
+    @JsonIgnore
     private List<String> cmdline;
 
     /**

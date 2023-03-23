@@ -138,6 +138,155 @@ public class StringUtils {
         return str.substring(0, pos);
     }
 
+    /**
+     * <p>Gets the substring before the last occurrence of a separator.
+     * The separator is not returned.</p>
+     *
+     * <p>A {@code null} string input will return {@code null}.
+     * An empty ("") string input will return the empty string.
+     * An empty or {@code null} separator will return the input string.</p>
+     *
+     * <p>If nothing is found, the string input is returned.</p>
+     *
+     * <pre>
+     * StringUtils.substringBeforeLast(null, *)      = null
+     * StringUtils.substringBeforeLast("", *)        = ""
+     * StringUtils.substringBeforeLast("abcba", "b") = "abc"
+     * StringUtils.substringBeforeLast("abc", "c")   = "ab"
+     * StringUtils.substringBeforeLast("a", "a")     = ""
+     * StringUtils.substringBeforeLast("a", "z")     = "a"
+     * StringUtils.substringBeforeLast("a", null)    = "a"
+     * StringUtils.substringBeforeLast("a", "")      = "a"
+     * </pre>
+     *
+     * @param str       the String to get a substring from, may be null
+     * @param separator the String to search for, may be null
+     * @return the substring before the last occurrence of the separator,
+     * {@code null} if null String input
+     * @since 2.0
+     */
+    public static String substringBeforeLast(final String str, final String separator) {
+        if (isEmpty(str) || isEmpty(separator)) {
+            return str;
+        }
+        final int pos = str.lastIndexOf(separator);
+        if (pos == INDEX_NOT_FOUND) {
+            return str;
+        }
+        return str.substring(0, pos);
+    }
+
+    /**
+     * <p>Gets the substring after the last occurrence of a separator.
+     * The separator is not returned.</p>
+     *
+     * <p>A {@code null} string input will return {@code null}.
+     * An empty ("") string input will return the empty string.
+     * An empty or {@code null} separator will return the empty string if
+     * the input string is not {@code null}.</p>
+     *
+     * <p>If nothing is found, the empty string is returned.</p>
+     *
+     * <pre>
+     * StringUtils.substringAfterLast(null, *)      = null
+     * StringUtils.substringAfterLast("", *)        = ""
+     * StringUtils.substringAfterLast(*, "")        = ""
+     * StringUtils.substringAfterLast(*, null)      = ""
+     * StringUtils.substringAfterLast("abc", "a")   = "bc"
+     * StringUtils.substringAfterLast("abcba", "b") = "a"
+     * StringUtils.substringAfterLast("abc", "c")   = ""
+     * StringUtils.substringAfterLast("a", "a")     = ""
+     * StringUtils.substringAfterLast("a", "z")     = ""
+     * </pre>
+     *
+     * @param str       the String to get a substring from, may be null
+     * @param separator the String to search for, may be null
+     * @return the substring after the last occurrence of the separator,
+     * {@code null} if null String input
+     * @since 2.0
+     */
+    public static String substringAfterLast(final String str, final String separator) {
+        if (isEmpty(str)) {
+            return str;
+        }
+        if (isEmpty(separator)) {
+            return EMPTY;
+        }
+        final int pos = str.lastIndexOf(separator);
+        if (pos == INDEX_NOT_FOUND || pos == str.length() - separator.length()) {
+            return EMPTY;
+        }
+        return str.substring(pos + separator.length());
+    }
+
+    /**
+     * <p>Gets a substring from the specified String avoiding exceptions.</p>
+     *
+     * <p>A negative start position can be used to start/end {@code n}
+     * characters from the end of the String.</p>
+     *
+     * <p>The returned substring starts with the character in the {@code start}
+     * position and ends before the {@code end} position. All position counting is
+     * zero-based -- i.e., to start at the beginning of the string use
+     * {@code start = 0}. Negative start and end positions can be used to
+     * specify offsets relative to the end of the String.</p>
+     *
+     * <p>If {@code start} is not strictly to the left of {@code end}, ""
+     * is returned.</p>
+     *
+     * <pre>
+     * StringUtils.substring(null, *, *)    = null
+     * StringUtils.substring("", * ,  *)    = "";
+     * StringUtils.substring("abc", 0, 2)   = "ab"
+     * StringUtils.substring("abc", 2, 0)   = ""
+     * StringUtils.substring("abc", 2, 4)   = "c"
+     * StringUtils.substring("abc", 4, 6)   = ""
+     * StringUtils.substring("abc", 2, 2)   = ""
+     * StringUtils.substring("abc", -2, -1) = "b"
+     * StringUtils.substring("abc", -4, 2)  = "ab"
+     * </pre>
+     *
+     * @param str  the String to get the substring from, may be null
+     * @param start  the position to start from, negative means
+     *  count back from the end of the String by this many characters
+     * @param end  the position to end at (exclusive), negative means
+     *  count back from the end of the String by this many characters
+     * @return substring from start position to end position,
+     *  {@code null} if null String input
+     */
+    public static String substring(final String str, int start, int end) {
+        if (str == null) {
+            return null;
+        }
+
+        // handle negatives
+        if (end < 0) {
+            end = str.length() + end; // remember end is negative
+        }
+        if (start < 0) {
+            start = str.length() + start; // remember start is negative
+        }
+
+        // check length next
+        if (end > str.length()) {
+            end = str.length();
+        }
+
+        // if start is greater than end, return ""
+        if (start > end) {
+            return EMPTY;
+        }
+
+        if (start < 0) {
+            start = 0;
+        }
+        if (end < 0) {
+            end = 0;
+        }
+
+        return str.substring(start, end);
+    }
+
 
     /**
      * Appends the suffix to the end of the string if the string does not
@@ -672,14 +821,121 @@ public class StringUtils {
      */
     public static boolean equalsAny(final CharSequence string, final CharSequence... searchStrings) {
         if (searchStrings == null || searchStrings.length == 0) {
-            for (final CharSequence next : searchStrings) {
-                if (equals(string, next)) {
-                    return true;
-                }
+            return false;
+        }
+        for (final CharSequence next : searchStrings) {
+            if (equals(string, next)) {
+                return true;
             }
         }
         return false;
     }
 
+    /**
+     * <p>Check if a CharSequence starts with a specified prefix (optionally case insensitive).</p>
+     *
+     * @see java.lang.String#startsWith(String)
+     * @param str  the CharSequence to check, may be null
+     * @param prefix the prefix to find, may be null
+     * @param ignoreCase indicates whether the compare should ignore case
+     *  (case insensitive) or not.
+     * @return {@code true} if the CharSequence starts with the prefix or
+     *  both {@code null}
+     */
+    private static boolean startsWith(final CharSequence str, final CharSequence prefix, final boolean ignoreCase) {
+        if (str == null || prefix == null) {
+            return str == prefix;
+        }
+        if (prefix.length() > str.length()) {
+            return false;
+        }
+        return regionMatches(str, ignoreCase, 0, prefix, 0, prefix.length());
+    }
+
+    /**
+     * <p>Check if a CharSequence starts with a specified prefix.</p>
+     *
+     * <p>{@code null}s are handled without exceptions. Two {@code null}
+     * references are considered to be equal. The comparison is case sensitive.</p>
+     *
+     * <pre>
+     * StringUtils.startsWith(null, null)      = true
+     * StringUtils.startsWith(null, "abc")     = false
+     * StringUtils.startsWith("abcdef", null)  = false
+     * StringUtils.startsWith("abcdef", "abc") = true
+     * StringUtils.startsWith("ABCDEF", "abc") = false
+     * </pre>
+     *
+     * @see java.lang.String#startsWith(String)
+     * @param str  the CharSequence to check, may be null
+     * @param prefix the prefix to find, may be null
+     * @return {@code true} if the CharSequence starts with the prefix, case sensitive, or
+     *  both {@code null}
+     * @since 2.4
+     * @since 3.0 Changed signature from startsWith(String, String) to startsWith(CharSequence, CharSequence)
+     */
+    public static boolean startsWith(final CharSequence str, final CharSequence prefix) {
+        return startsWith(str, prefix, false);
+    }
+
+    /**
+     * <p>Check if a CharSequence starts with any of the provided case-sensitive prefixes.</p>
+     *
+     * <pre>
+     * StringUtils.startsWithAny(null, null)      = false
+     * StringUtils.startsWithAny(null, new String[] {"abc"})  = false
+     * StringUtils.startsWithAny("abcxyz", null)     = false
+     * StringUtils.startsWithAny("abcxyz", new String[] {""}) = true
+     * StringUtils.startsWithAny("abcxyz", new String[] {"abc"}) = true
+     * StringUtils.startsWithAny("abcxyz", new String[] {null, "xyz", "abc"}) = true
+     * StringUtils.startsWithAny("abcxyz", null, "xyz", "ABCX") = false
+     * StringUtils.startsWithAny("ABCXYZ", null, "xyz", "abc") = false
+     * </pre>
+     *
+     * @param sequence the CharSequence to check, may be null
+     * @param searchStrings the case-sensitive CharSequence prefixes, may be empty or contain {@code null}
+     * @see StringUtils#startsWith(CharSequence, CharSequence)
+     * @return {@code true} if the input {@code sequence} is {@code null} AND no {@code searchStrings} are provided, or
+     *   the input {@code sequence} begins with any of the provided case-sensitive {@code searchStrings}.
+     * @since 2.5
+     * @since 3.0 Changed signature from startsWithAny(String, String[]) to startsWithAny(CharSequence, CharSequence...)
+     */
+    public static boolean startsWithAny(final CharSequence sequence, final CharSequence... searchStrings) {
+        if (isEmpty(sequence) || searchStrings == null || searchStrings.length == 0) {
+            return false;
+        }
+        for (final CharSequence searchString : searchStrings) {
+            if (startsWith(sequence, searchString)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * <p>Case insensitive check if a CharSequence starts with a specified prefix.</p>
+     *
+     * <p>{@code null}s are handled without exceptions. Two {@code null}
+     * references are considered to be equal. The comparison is case insensitive.</p>
+     *
+     * <pre>
+     * StringUtils.startsWithIgnoreCase(null, null)      = true
+     * StringUtils.startsWithIgnoreCase(null, "abc")     = false
+     * StringUtils.startsWithIgnoreCase("abcdef", null)  = false
+     * StringUtils.startsWithIgnoreCase("abcdef", "abc") = true
+     * StringUtils.startsWithIgnoreCase("ABCDEF", "abc") = true
+     * </pre>
+     *
+     * @see java.lang.String#startsWith(String)
+     * @param str  the CharSequence to check, may be null
+     * @param prefix the prefix to find, may be null
+     * @return {@code true} if the CharSequence starts with the prefix, case insensitive, or
+     *  both {@code null}
+     * @since 2.4
+     * @since 3.0 Changed signature from startsWithIgnoreCase(String, String) to startsWithIgnoreCase(CharSequence, CharSequence)
+     */
+    public static boolean startsWithIgnoreCase(final CharSequence str, final CharSequence prefix) {
+        return startsWith(str, prefix, true);
+    }
 
 }

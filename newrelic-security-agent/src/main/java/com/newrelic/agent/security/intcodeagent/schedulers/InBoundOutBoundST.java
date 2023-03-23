@@ -8,7 +8,6 @@ import com.newrelic.agent.security.intcodeagent.logging.IAgentConstants;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.HttpConnectionStat;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.OutBoundHttp;
 import com.newrelic.agent.security.intcodeagent.websocket.EventSendPool;
-import com.newrelic.agent.security.intcodeagent.websocket.JsonConverter;
 
 import java.util.*;
 import java.util.concurrent.*;
@@ -40,13 +39,13 @@ public class InBoundOutBoundST {
 
     public boolean addOutBoundHTTPConnection(OutBoundHttp outBoundHttp) {
         if (getCache().containsKey(outBoundHttp.getHashCode())) {
-            logger.log(LogLevel.DEBUG, PRESENT_IN_CACHE_HTTP_CONNECTION + outBoundHttp, InBoundOutBoundST.class.getName());
+            logger.log(LogLevel.FINER, PRESENT_IN_CACHE_HTTP_CONNECTION + outBoundHttp, InBoundOutBoundST.class.getName());
             OutBoundHttp cachedHttpCon = cache.get(outBoundHttp.getHashCode());
             cachedHttpCon.getCount().incrementAndGet();
             return false;
         } else {
             cache.put(outBoundHttp.getHashCode(), new OutBoundHttp(outBoundHttp));
-            logger.log(LogLevel.DEBUG, ADDING_HTTP_CONNECTION + outBoundHttp, InBoundOutBoundST.class.getName());
+            logger.log(LogLevel.FINER, ADDING_HTTP_CONNECTION + outBoundHttp, InBoundOutBoundST.class.getName());
             return newConnections.add(outBoundHttp);
         }
     }
@@ -102,7 +101,7 @@ public class InBoundOutBoundST {
          * Send to IC
          * Clear cache
          * */
-        logger.log(LogLevel.DEBUG, CONNECTION_LIST_FOR_POSTING + allConnections, InBoundOutBoundST.class.getName());
+        logger.log(LogLevel.FINER, CONNECTION_LIST_FOR_POSTING + allConnections, InBoundOutBoundST.class.getName());
         List<OutBoundHttp> outBoundHttps = new ArrayList<>(allConnections);
         for (int i = 0; i < outBoundHttps.size(); i += 40) {
             int maxIndex = Math.min(i + 40, outBoundHttps.size());
@@ -136,7 +135,7 @@ public class InBoundOutBoundST {
                     inOutExecutorService.shutdownNow(); // cancel currently executing tasks
 
                     if (!inOutExecutorService.awaitTermination(1, TimeUnit.SECONDS)) {
-                        logger.log(LogLevel.FATAL, "Thread pool executor did not terminate",
+                        logger.log(LogLevel.SEVERE, "Thread pool executor did not terminate",
                                 InBoundOutBoundST.class.getName());
                     } else {
                         logger.log(LogLevel.INFO, "Thread pool executor terminated",

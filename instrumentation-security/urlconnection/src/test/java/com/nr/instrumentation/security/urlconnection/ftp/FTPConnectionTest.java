@@ -8,12 +8,7 @@ import com.newrelic.api.agent.Trace;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.security.schema.operation.SSRFOperation;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.ClassRule;
-import org.junit.FixMethodOrder;
-import org.junit.Test;
+import org.junit.*;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 import sun.net.www.protocol.ftp.FtpURLConnection;
@@ -130,7 +125,7 @@ public class FTPConnectionTest {
         Assert.assertEquals("Invalid executed parameters.", ftpUrl, operation.getArg());
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.HTTP_REQUEST, operation.getCaseType());
         Assert.assertEquals("Invalid executed class name.", FtpURLConnection.class.getName(), operation.getClassName());
-        Assert.assertEquals("Invalid executed method name.", "getInputStream", operation.getMethodName());
+        Assert.assertEquals("Invalid executed method name.", "connect", operation.getMethodName());
     }
 
     @Test
@@ -146,7 +141,7 @@ public class FTPConnectionTest {
         Assert.assertEquals("Invalid executed parameters.", ftpUrl, operation.getArg());
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.HTTP_REQUEST, operation.getCaseType());
         Assert.assertEquals("Invalid executed class name.", FtpURLConnection.class.getName(), operation.getClassName());
-        Assert.assertEquals("Invalid executed method name.", "getInputStream", operation.getMethodName());
+        Assert.assertEquals("Invalid executed method name.", "connect", operation.getMethodName());
     }
 
     @Test
@@ -162,7 +157,7 @@ public class FTPConnectionTest {
         Assert.assertEquals("Invalid executed parameters.", ftpUrl, operation.getArg());
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.HTTP_REQUEST, operation.getCaseType());
         Assert.assertEquals("Invalid executed class name.", FtpURLConnection.class.getName(), operation.getClassName());
-        Assert.assertEquals("Invalid executed method name.", "getInputStream", operation.getMethodName());
+        Assert.assertEquals("Invalid executed method name.", "connect", operation.getMethodName());
     }
 
     @Test
@@ -178,7 +173,7 @@ public class FTPConnectionTest {
         Assert.assertEquals("Invalid executed parameters.", operation.getArg(), ftpUrl);
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.HTTP_REQUEST, operation.getCaseType());
         Assert.assertEquals("Invalid executed class name.", FtpURLConnection.class.getName(), operation.getClassName());
-        Assert.assertEquals("Invalid executed method name.", "getInputStream", operation.getMethodName());
+        Assert.assertEquals("Invalid executed method name.", "connect", operation.getMethodName());
     }
 
     @Trace(dispatcher = true)
@@ -199,7 +194,7 @@ public class FTPConnectionTest {
         Assert.assertEquals("Invalid executed parameters.", operation.getArg(), ftpUrl);
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.HTTP_REQUEST, operation.getCaseType());
         Assert.assertEquals("Invalid executed class name.", FtpURLConnection.class.getName(), operation.getClassName());
-        Assert.assertEquals("Invalid executed method name.", "getInputStream", operation.getMethodName());
+        Assert.assertEquals("Invalid executed method name.", "connect", operation.getMethodName());
     }
 
     @Trace(dispatcher = true)
@@ -220,7 +215,7 @@ public class FTPConnectionTest {
         Assert.assertEquals("Invalid executed parameters.", operation.getArg(), ftpUrl);
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.HTTP_REQUEST, operation.getCaseType());
         Assert.assertEquals("Invalid executed class name.", FtpURLConnection.class.getName(), operation.getClassName());
-        Assert.assertEquals("Invalid executed method name.", "getInputStream", operation.getMethodName());
+        Assert.assertEquals("Invalid executed method name.", "connect", operation.getMethodName());
     }
 
     @Trace(dispatcher = true)
@@ -241,6 +236,6 @@ public class FTPConnectionTest {
         Assert.assertEquals("Invalid executed parameters.", ftpUrl, operation.getArg());
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.HTTP_REQUEST, operation.getCaseType());
         Assert.assertEquals("Invalid executed class name.", FtpURLConnection.class.getName(), operation.getClassName());
-        Assert.assertEquals("Invalid executed method name.", "getOutputStream", operation.getMethodName());
+        Assert.assertEquals("Invalid executed method name.", "connect", operation.getMethodName());
     }
 }

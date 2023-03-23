@@ -12,7 +12,7 @@ public class SQLOperation extends AbstractOperation {
 
     private String query;
 
-    private Map<Integer, String> params;
+    private Map<String, String> params;
 
     private String dbName = "UNKNOWN";
 
@@ -33,11 +33,11 @@ public class SQLOperation extends AbstractOperation {
         this.query = query;
     }
 
-    public Map<Integer, String> getParams() {
+    public Map<String, String> getParams() {
         return params;
     }
 
-    public void setParams(Map<Integer, String> params) {
+    public void setParams(Map<String, String> params) {
         this.params = params;
     }
 
