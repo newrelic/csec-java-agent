@@ -224,7 +224,7 @@ public class PreparedStatementTest {
 
     @Test
     public void testClearParams() throws SQLException {
-        Map<Integer, String> params = callClearParams();
+        Map<String, String> params = callClearParams();
 
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
         List<AbstractOperation> operations = introspector.getOperations();
@@ -236,13 +236,13 @@ public class PreparedStatementTest {
     }
 
     @Trace(dispatcher = true)
-    private Map<Integer, String> callClearParams() throws SQLException {
-        Map<Integer, String> params = new HashMap<Integer, String>();
+    private Map<String, String> callClearParams() throws SQLException {
+        Map<String, String> params = new HashMap<>();
         PreparedStatement stmt = CONNECTION.prepareStatement(QUERIES.get(6));
         stmt.setInt(1, 9);
         stmt.clearParameters();
         stmt.setInt(1, 1);
-        params.put(1, "1");
+        params.put("1", "1");
 
         stmt.execute();
         System.out.println(params);
