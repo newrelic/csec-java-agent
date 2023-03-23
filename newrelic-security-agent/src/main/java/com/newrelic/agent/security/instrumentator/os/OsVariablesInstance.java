@@ -3,6 +3,7 @@ package com.newrelic.agent.security.instrumentator.os;
 import com.newrelic.agent.security.AgentConfig;
 import com.newrelic.agent.security.AgentInfo;
 import com.newrelic.agent.security.intcodeagent.logging.IAgentConstants;
+import com.newrelic.agent.security.util.IUtilConstants;
 import com.newrelic.api.agent.NewRelic;
 import org.apache.commons.lang3.SystemUtils;
 
@@ -13,8 +14,7 @@ public class OsVariablesInstance {
 
     public static final String LOGS = "logs";
     public static final String LANGUAGE_AGENT = "language-agent";
-    public static final String CONFIG = "config";
-    public static final String K2HOME = "k2home";
+
     public static final String TMP = "tmp";
     public static final String SNAPSHOTS = "snapshots";
 
@@ -41,7 +41,7 @@ public class OsVariablesInstance {
 
 
         if(NewRelic.getAgent().getConfig().getValue("log_file_path") != null) {
-            osVariables.setLogDirectory(Paths.get(NewRelic.getAgent().getConfig().getValue("log_file_path"), K2HOME, LOGS).toString());
+            osVariables.setLogDirectory(Paths.get(NewRelic.getAgent().getConfig().getValue("log_file_path"), IUtilConstants.NR_SECURITY_HOME, LOGS).toString());
         } else {
             osVariables.setLogDirectory(Paths.get(AgentConfig.getInstance().getK2Home(), LOGS).toString());
         }

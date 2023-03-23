@@ -166,8 +166,8 @@ public class ApplicationInfoUtils {
             }
             return identifier;
         } catch (Exception e) {
-            logger.log(LogLevel.ERROR, "Error while env detection ", e, ApplicationInfoUtils.class.getName());
-            logger.postLogMessageIfNecessary(LogLevel.ERROR, "Error while env detection ", e, ApplicationInfoUtils.class.getName());
+            logger.log(LogLevel.SEVERE, "Error while env detection ", e, ApplicationInfoUtils.class.getName());
+            logger.postLogMessageIfNecessary(LogLevel.SEVERE, "Error while env detection ", e, ApplicationInfoUtils.class.getName());
         }
         return null;
     }
@@ -242,7 +242,7 @@ public class ApplicationInfoUtils {
             );
             return applicationInfoBean;
         } catch (Throwable e) {
-            logger.log(LogLevel.WARN, EXCEPTION_OCCURED_IN_CREATE_APPLICATION_INFO_BEAN, e,
+            logger.log(LogLevel.WARNING, EXCEPTION_OCCURED_IN_CREATE_APPLICATION_INFO_BEAN, e,
                     ApplicationInfoUtils.class.getName());
         }
         return null;
@@ -366,7 +366,7 @@ public class ApplicationInfoUtils {
             socket.connect(InetAddress.getByName("8.8.8.8"), 10002);
             ipAddress = socket.getLocalAddress().getHostAddress();
         } catch (Exception e) {
-            logger.log(LogLevel.ERROR, String.format("Error getting IP Address via UDP : %s : %s", e.getMessage(), e.getCause()), ApplicationInfoUtils.class.getName());
+            logger.log(LogLevel.SEVERE, String.format("Error getting IP Address via UDP : %s : %s", e.getMessage(), e.getCause()), ApplicationInfoUtils.class.getName());
         }
         return ipAddress;
     }

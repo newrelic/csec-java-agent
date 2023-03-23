@@ -7,6 +7,7 @@
 
 package nr.java.io;
 import com.newrelic.api.agent.security.NewRelicSecurity;
+import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.weaver.*;
 import com.nr.instrumentation.security.javaio.InputStreamHelper;
 import java.io.IOException;
@@ -14,48 +15,58 @@ import java.io.IOException;
 @Weave(type = MatchType.BaseClass, originalName = "java.io.InputStream")
 public abstract class InputStream_Instrumentation {
 
-    @NewField
-    public Boolean inputStreamDataGatheringAllowed;
+    private boolean acquireLockIfPossible(int hashCode) {
+        try {
+            if(InputStreamHelper.processRequestInputStreamHookData(hashCode)) {
+                return GenericHelper.acquireLockIfPossible(InputStreamHelper.NR_SEC_CUSTOM_ATTRIB_NAME, hashCode);
+            }
+        } catch (Throwable ignored) {}
+        return false;
+    }
 
-    @NewField
-    public boolean cascadedCall;
+    private void releaseLock(int hashCode) {
+        try {
+            GenericHelper.releaseLock(InputStreamHelper.NR_SEC_CUSTOM_ATTRIB_NAME, hashCode);
+        } catch (Throwable ignored) {}
+    }
 
     public int read(byte[] b) throws IOException {
-        int returnData = -1;
-        boolean currentCascadedCall = cascadedCall;
-
-        // Preprocess Phase
-        preprocessSecurityHook(currentCascadedCall);
+        boolean isLockAcquired = acquireLockIfPossible(this.hashCode());
 
         // Actual Call
+        int returnData = -1;
+
         try {
             returnData = Weaver.callOriginal();
         } finally {
-            cascadedCall = currentCascadedCall;
+            if(isLockAcquired){
+                releaseLock(this.hashCode());
+            }
         }
 
         // Postprocess Phase
-        postProcessSecurityHook(b, currentCascadedCall, 0, returnData);
+        postProcessSecurityHook(b, isLockAcquired, 0, returnData);
 
         // Normal return
         return returnData;
     }
 
     public int read(byte[] b, int off, int len) throws IOException {
-        int returnData = -1;
-        boolean currentCascadedCall = cascadedCall;
-        // Preprocess Phase
-        preprocessSecurityHook(currentCascadedCall);
+        boolean isLockAcquired = acquireLockIfPossible(this.hashCode());
 
         // Actual Call
+        int returnData = -1;
+
         try {
             returnData = Weaver.callOriginal();
         } finally {
-            cascadedCall = currentCascadedCall;
+            if(isLockAcquired){
+                releaseLock(this.hashCode());
+            }
         }
 
         // Postprocess Phase
-        postProcessSecurityHook(b, currentCascadedCall, off, returnData);
+        postProcessSecurityHook(b, isLockAcquired, off, returnData);
 
         // Normal return
         return returnData;
@@ -63,19 +74,20 @@ public abstract class InputStream_Instrumentation {
 
     public byte[] readAllBytes() throws IOException {
         byte[] returnData = null;
-        boolean currentCascadedCall = cascadedCall;
-        // Preprocess Phase
-        preprocessSecurityHook(currentCascadedCall);
+
+        boolean isLockAcquired = acquireLockIfPossible(this.hashCode());
 
         // Actual Call
         try {
             returnData = Weaver.callOriginal();
         } finally {
-            cascadedCall = currentCascadedCall;
+            if(isLockAcquired){
+                releaseLock(this.hashCode());
+            }
         }
 
         // Postprocess Phase
-        postProcessSecurityHook(returnData, currentCascadedCall, 0, returnData.length);
+        postProcessSecurityHook(returnData, isLockAcquired, 0, returnData.length);
 
         // Normal return
         return returnData;
@@ -83,19 +95,20 @@ public abstract class InputStream_Instrumentation {
 
     public byte[] readNBytes(int len) throws IOException {
         byte[] returnData = null;
-        boolean currentCascadedCall = cascadedCall;
         // Preprocess Phase
-        preprocessSecurityHook(currentCascadedCall);
+        boolean isLockAcquired = acquireLockIfPossible(this.hashCode());
 
         // Actual Call
         try {
             returnData = Weaver.callOriginal();
         } finally {
-            cascadedCall = currentCascadedCall;
+            if(isLockAcquired){
+                releaseLock(this.hashCode());
+            }
         }
 
         // Postprocess Phase
-        postProcessSecurityHook(returnData, currentCascadedCall, 0, returnData.length);
+        postProcessSecurityHook(returnData, isLockAcquired, 0, returnData.length);
 
         // Normal return
         return returnData;
@@ -103,19 +116,20 @@ public abstract class InputStream_Instrumentation {
 
     public int readNBytes(byte[] b, int off, int len) throws IOException {
         int returnData = -1;
-        boolean currentCascadedCall = cascadedCall;
         // Preprocess Phase
-        preprocessSecurityHook(currentCascadedCall);
+        boolean isLockAcquired = acquireLockIfPossible(this.hashCode());
 
         // Actual Call
         try {
             returnData = Weaver.callOriginal();
         } finally {
-            cascadedCall = currentCascadedCall;
+            if(isLockAcquired){
+                releaseLock(this.hashCode());
+            }
         }
 
         // Postprocess Phase
-        postProcessSecurityHook(b, currentCascadedCall, off, returnData);
+        postProcessSecurityHook(b, isLockAcquired, off, returnData);
 
         // Normal return
         return returnData;
@@ -124,33 +138,12 @@ public abstract class InputStream_Instrumentation {
     // TODO : need to implement the following interception
 //    public long transferTo(OutputStream out) throws IOException {}
 
-    private void preprocessSecurityHook(boolean currentCascadedCall) {
+
+
+    private void postProcessSecurityHook(byte[] dataBuffer, boolean isLockAcquired, int offset, int readDataLength) {
         try {
-            if(Boolean.FALSE.equals(inputStreamDataGatheringAllowed) ||
-                    !NewRelicSecurity.isHookProcessingActive()) {
-                return;
-            }
-            if(inputStreamDataGatheringAllowed == null) {
-                inputStreamDataGatheringAllowed = InputStreamHelper.processRequestInputStreamHookData(this.hashCode());
-            }
-
-            if (inputStreamDataGatheringAllowed && !currentCascadedCall) {
-                cascadedCall = true;
-            }
-        } catch(Throwable ignored) {
-//            ignored.printStackTrace();
-        }
-    }
-
-
-    private void postProcessSecurityHook(byte[] dataBuffer, boolean currentCascadedCall, int offset, int readDataLength) {
-        try {
-            if(Boolean.FALSE.equals(inputStreamDataGatheringAllowed) ||
-                    !NewRelicSecurity.isHookProcessingActive()) {
-                return;
-            }
 //                System.out.println("Done IS2 "+ this.hashCode());
-            if (Boolean.TRUE.equals(inputStreamDataGatheringAllowed) && !currentCascadedCall && readDataLength > -1) {
+            if(isLockAcquired && readDataLength>0){
                 char[] data = new char[readDataLength];
                 for (int i = offset, y = 0; i < offset + readDataLength; i++, y++) {
                     data[y] = (char) dataBuffer[i];

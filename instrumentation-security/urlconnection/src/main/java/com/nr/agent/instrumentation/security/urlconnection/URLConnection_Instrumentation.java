@@ -8,9 +8,9 @@
 package com.nr.agent.instrumentation.security.urlconnection;
 
 import com.newrelic.api.agent.security.NewRelicSecurity;
+import com.newrelic.api.agent.security.instrumentation.helpers.ServletHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.SecurityMetaData;
-import com.newrelic.api.agent.security.schema.constants.AgentConstants;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
 import com.newrelic.api.agent.security.schema.operation.SSRFOperation;
 import com.newrelic.api.agent.security.utils.SSRFUtils;
@@ -41,11 +41,15 @@ public abstract class URLConnection_Instrumentation {
     public abstract URL getURL();
 
     public void connect() throws IOException {
-        String url = getURL().toString();
-        boolean currentCascadedCall = cascadedCall;
-        // Preprocess Phase
-        AbstractOperation operation = preprocessSecurityHook(currentCascadedCall, url, getURL().getProtocol(), Helper.METHOD_NAME_CONNECT);
-
+        String url = null;
+        AbstractOperation operation = null;
+        URL getURL = getURL();
+        if(getURL != null) {
+            url = getURL.toString();
+            boolean currentCascadedCall = cascadedCall;
+            // Preprocess Phase
+            operation = preprocessSecurityHook(currentCascadedCall, url, getURL.getProtocol(), Helper.METHOD_NAME_CONNECT);
+        }
         // Actual Call
         try {
             Weaver.callOriginal();
@@ -58,12 +62,14 @@ public abstract class URLConnection_Instrumentation {
     }
 
     public synchronized OutputStream getOutputStream() throws IOException {
-        String url = getURL().toString();
-        boolean currentCascadedCall = cascadedCall;
-
-        // Preprocess Phase
-        AbstractOperation operation = preprocessSecurityHook(currentCascadedCall, url, getURL().getProtocol(), Helper.METHOD_NAME_GET_OUTPUT_STREAM);
-
+        String url = null;
+        AbstractOperation operation = null;
+        URL getURL = getURL();
+        if(getURL != null) {
+            boolean currentCascadedCall = cascadedCall;
+            // Preprocess Phase
+            operation = preprocessSecurityHook(currentCascadedCall, url, getURL.getProtocol(), Helper.METHOD_NAME_GET_OUTPUT_STREAM);
+        }
         // Actual Call
         OutputStream returnStream = null;
         try {
@@ -78,12 +84,14 @@ public abstract class URLConnection_Instrumentation {
     }
 
     public synchronized InputStream getInputStream() throws IOException {
-        String url = getURL().toString();
-        boolean currentCascadedCall = cascadedCall;
-
-        // Preprocess Phase
-        AbstractOperation operation = preprocessSecurityHook(currentCascadedCall, url, getURL().getProtocol(), Helper.METHOD_NAME_GET_INPUT_STREAM);
-
+        String url = null;
+        AbstractOperation operation = null;
+        URL getURL = getURL();
+        if(getURL != null) {
+            boolean currentCascadedCall = cascadedCall;
+            // Preprocess Phase
+            operation = preprocessSecurityHook(currentCascadedCall, url, getURL.getProtocol(), Helper.METHOD_NAME_GET_INPUT_STREAM);
+        }
         // Actual Call
         InputStream returnStream = null;
         try {
@@ -99,7 +107,7 @@ public abstract class URLConnection_Instrumentation {
 
     private static void registerExitOperation(AbstractOperation operation) {
         try {
-            if (!NewRelicSecurity.isHookProcessingActive() || NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()
+            if (operation == null || operation.isEmpty() || !NewRelicSecurity.isHookProcessingActive() || NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()
             ) {
                 return;
             }
@@ -132,7 +140,7 @@ public abstract class URLConnection_Instrumentation {
             // Add Security IAST header
             String iastHeader = NewRelicSecurity.getAgent().getSecurityMetaData().getFuzzRequestIdentifier().getRaw();
             if(iastHeader != null && !iastHeader.trim().isEmpty()) {
-                this.setRequestProperty(AgentConstants.K2_FUZZ_REQUEST_ID, iastHeader);
+                this.setRequestProperty(ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID, iastHeader);
             }
 
             SSRFOperation operation = new SSRFOperation(callArgs,
@@ -143,7 +151,7 @@ public abstract class URLConnection_Instrumentation {
                 if(operation.getApiID() != null && !operation.getApiID().trim().isEmpty() &&
                         operation.getExecutionId() != null && !operation.getExecutionId().trim().isEmpty()) {
                     // Add Security distributed tracing header
-                    this.setRequestProperty(AgentConstants.K2_TRACING_DATA, SSRFUtils.generateTracingHeaderValue(securityMetaData.getTracingHeaderValue(), operation.getApiID(), operation.getExecutionId(), NewRelicSecurity.getAgent().getAgentUUID()));
+                    this.setRequestProperty(ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER, SSRFUtils.generateTracingHeaderValue(securityMetaData.getTracingHeaderValue(), operation.getApiID(), operation.getExecutionId(), NewRelicSecurity.getAgent().getAgentUUID()));
                 }
             }
             return operation;

@@ -49,7 +49,7 @@ public class LDAPOperation extends AbstractOperation {
 
     @Override
     public boolean isEmpty() {
-        return (name == null || name.trim().isEmpty() || filter == null || filter.trim().isEmpty());
+        return (filter == null || filter.trim().isEmpty());
     }
 
     @Override
