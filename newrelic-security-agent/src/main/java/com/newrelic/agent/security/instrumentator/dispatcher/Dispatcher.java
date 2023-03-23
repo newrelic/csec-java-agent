@@ -12,6 +12,7 @@ import com.newrelic.agent.security.intcodeagent.models.javaagent.JavaAgentEventB
 import com.newrelic.agent.security.intcodeagent.websocket.EventSendPool;
 import com.newrelic.api.agent.NewRelic;
 import com.newrelic.api.agent.security.schema.*;
+import com.newrelic.api.agent.security.schema.helper.DynamoDBRequest;
 import com.newrelic.api.agent.security.schema.operation.*;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
@@ -144,6 +145,18 @@ public class Dispatcher implements Runnable {
                     }
                     break;
 
+                case DYNAMO_DB_COMMAND:
+                    DynamoDBOperation dynamoDBOperation = (DynamoDBOperation) operation;
+                    try {
+                        eventBean = prepareDynamoDBEvent(eventBean, dynamoDBOperation);
+                        if (eventBean == null) {
+                            return;
+                        }
+                    } catch (Throwable e) {
+                        return;
+                    }
+                    break;
+
                 case FILE_INTEGRITY:
                     FileIntegrityOperation fileIntegrityBean = (FileIntegrityOperation) operation;
                     eventBean = prepareFileIntegrityEvent(eventBean, fileIntegrityBean);
@@ -232,7 +245,7 @@ public class Dispatcher implements Runnable {
      * Validate and send if required event for REFLECTED XSS
      */
     private void processReflectedXSSEvent(JavaAgentEventBean eventBean) {
-        if (NewRelic.getAgent().getConfig().getValue(INRSettingsKey.SECURITY_DETECTION_DISABLE_RXSS, false)) {
+        if (!NewRelic.getAgent().getConfig().getValue(INRSettingsKey.SECURITY_DETECTION_RXSS_ENABLED, true)) {
             return;
         }
         Set<String> xssConstructs = CallbackUtils.checkForReflectedXSS(securityMetaData.getRequest(), securityMetaData.getResponse());
@@ -296,7 +309,7 @@ public class Dispatcher implements Runnable {
 
 
     private JavaAgentEventBean prepareJSInjectionEvent(JavaAgentEventBean eventBean,
-                                                       JSInjectionOperation jsInjectionOperationalBean) {
+            JSInjectionOperation jsInjectionOperationalBean) {
         JSONArray params = new JSONArray();
         params.add(jsInjectionOperationalBean.getJavaScriptCode());
         eventBean.setParameters(params);
@@ -304,7 +317,7 @@ public class Dispatcher implements Runnable {
     }
 
     private JavaAgentEventBean prepareXQueryInjectionEvent(JavaAgentEventBean eventBean,
-                                                           XQueryOperation xQueryOperationalBean) {
+            XQueryOperation xQueryOperationalBean) {
         JSONArray params = new JSONArray();
         params.add(xQueryOperationalBean.getExpression());
         eventBean.setParameters(params);
@@ -313,7 +326,7 @@ public class Dispatcher implements Runnable {
 
 
     private JavaAgentEventBean prepareXPATHEvent(JavaAgentEventBean eventBean,
-                                                 XPathOperation xPathOperationalBean) {
+            XPathOperation xPathOperationalBean) {
         JSONArray params = new JSONArray();
         params.add(xPathOperationalBean.getExpression());
         eventBean.setParameters(params);
@@ -321,7 +334,7 @@ public class Dispatcher implements Runnable {
     }
 
     private JavaAgentEventBean prepareHashEvent(JavaAgentEventBean eventBean,
-                                                HashCryptoOperation hashOperationalBean) {
+            HashCryptoOperation hashOperationalBean) {
         JSONArray params = new JSONArray();
         params.add(hashOperationalBean.getName());
         if (StringUtils.isNotBlank(hashOperationalBean.getProvider())) {
@@ -332,7 +345,7 @@ public class Dispatcher implements Runnable {
     }
 
     private JavaAgentEventBean prepareCryptoEvent(JavaAgentEventBean eventBean,
-                                                  HashCryptoOperation hashCryptoOperationalBean) {
+            HashCryptoOperation hashCryptoOperationalBean) {
         JSONArray params = new JSONArray();
         params.add(hashCryptoOperationalBean.getName());
         if (StringUtils.isNotBlank(hashCryptoOperationalBean.getProvider())) {
@@ -355,7 +368,7 @@ public class Dispatcher implements Runnable {
     }
 
     private JavaAgentEventBean prepareTrustBoundaryEvent(JavaAgentEventBean eventBean,
-                                                         TrustBoundaryOperation trustBoundaryOperationalBean) {
+            TrustBoundaryOperation trustBoundaryOperationalBean) {
         JSONArray params = new JSONArray();
         params.add(trustBoundaryOperationalBean.getKey());
         params.add(trustBoundaryOperationalBean.getValue());
@@ -364,7 +377,7 @@ public class Dispatcher implements Runnable {
     }
 
     private JavaAgentEventBean prepareRandomEvent(JavaAgentEventBean eventBean,
-                                                  RandomOperation randomOperationalBean) {
+            RandomOperation randomOperationalBean) {
         JSONArray params = new JSONArray();
         params.add(randomOperationalBean.getClassName());
         eventBean.setEventCategory(randomOperationalBean.getEventCatgory());
@@ -373,7 +386,7 @@ public class Dispatcher implements Runnable {
     }
 
     private JavaAgentEventBean prepareSecureCookieEvent(JavaAgentEventBean eventBean,
-                                                        SecureCookieOperation secureCookieOperationalBean) {
+            SecureCookieOperation secureCookieOperationalBean) {
         JSONArray params = new JSONArray();
         params.add(secureCookieOperationalBean.getValue());
         eventBean.setParameters(params);
@@ -391,7 +404,7 @@ public class Dispatcher implements Runnable {
     }
 
     private JavaAgentEventBean prepareFileIntegrityEvent(JavaAgentEventBean eventBean,
-                                                         FileIntegrityOperation fileIntegrityBean) {
+            FileIntegrityOperation fileIntegrityBean) {
         JSONArray params = new JSONArray();
         params.add(fileIntegrityBean.getFileName());
         eventBean.setParameters(params);
@@ -401,7 +414,7 @@ public class Dispatcher implements Runnable {
     }
 
     private JavaAgentEventBean prepareSQLDbCommandEvent(List<SQLOperation> operationalList,
-                                                        JavaAgentEventBean eventBean) {
+            JavaAgentEventBean eventBean) {
         JSONArray params = new JSONArray();
         for (SQLOperation operationalBean : operationalList) {
             JSONObject query = new JSONObject();
@@ -417,7 +430,7 @@ public class Dispatcher implements Runnable {
     }
 
     private JavaAgentEventBean prepareSystemCommandEvent(JavaAgentEventBean eventBean,
-                                                         ForkExecOperation operationalBean) {
+            ForkExecOperation operationalBean) {
         JSONArray params = new JSONArray();
         params.add(operationalBean.getCommand());
         if (operationalBean.getEnvironment() != null) {
@@ -428,7 +441,7 @@ public class Dispatcher implements Runnable {
     }
 
     private static JavaAgentEventBean prepareFileEvent(JavaAgentEventBean eventBean,
-                                                       FileOperation fileOperationalBean) {
+            FileOperation fileOperationalBean) {
         JSONArray params = new JSONArray();
         params.addAll(fileOperationalBean.getFileName());
         eventBean.setParameters(params);
@@ -436,22 +449,169 @@ public class Dispatcher implements Runnable {
     }
 
     private static JavaAgentEventBean prepareNoSQLEvent(JavaAgentEventBean eventBean,
-                                                        NoSQLOperation noSQLOperationalBean) throws ParseException {
+            NoSQLOperation noSQLOperationalBean) throws ParseException {
         JSONArray params = new JSONArray();
         eventBean.setEventCategory(MONGO);
         JSONParser jsonParser = new JSONParser();
         for (String data : noSQLOperationalBean.getPayload()) {
             JSONObject jsonObject = new JSONObject();
             jsonObject.put("payload", jsonParser.parse(data));
-            jsonObject.put("command", noSQLOperationalBean.getCommand());
+            jsonObject.put("payloadType", noSQLOperationalBean.getPayloadType());
             params.add(jsonObject);
         }
         eventBean.setParameters(params);
         return eventBean;
     }
 
+    private static JavaAgentEventBean prepareDynamoDBEvent(JavaAgentEventBean eventBean, DynamoDBOperation dynamoDBOperation) throws ParseException {
+        JSONArray params = new JSONArray();
+        eventBean.setEventCategory(dynamoDBOperation.getCategory().toString());
+        JSONParser jsonParser = new JSONParser();
+        List<DynamoDBRequest> originalPayloads = dynamoDBOperation.getPayload();
+        boolean sendEvent = false;
+        try {
+            if (dynamoDBOperation.getCategory() == DynamoDBOperation.Category.DQL) {
+                for (DynamoDBRequest data : originalPayloads) {
+                    Object query = data.getQuery();
+                    if (query instanceof String) {
+                        JSONObject payload = (JSONObject) jsonParser.parse((String) query);
+                        if (payload.containsKey("RequestItems")) {
+                            Map<String, Object> map = (Map<String, Object>) payload.get("RequestItems");
+                            for (Map.Entry<String, Object> entry : map.entrySet()) {
+                                Object entryValue = entry.getValue();
+                                if (entryValue instanceof JSONObject) {
+                                    params.add(getPayloadJsonObject(entryValue, data.getQueryType()));
+                                } else if (entryValue instanceof JSONArray) {
+                                    for (Object var1 : ((JSONArray) entryValue)) {
+                                        JSONObject jsonObject = new JSONObject();
+                                        JSONObject obj = (JSONObject) var1;
+                                        if (obj.containsKey("PutRequest")) {
+                                            params.add(getPayloadJsonObject(obj.get("PutRequest"), "write"));
+                                        }
+                                        if (obj.containsKey("DeleteRequest")) {
+                                            params.add(getPayloadJsonObject(obj.get("DeleteRequest"), "delete"));
+                                        }
+                                    }
+                                }
+                            }
+                        } else if (payload.containsKey("TransactItems")) {
+                            JSONArray array = (JSONArray) payload.get("TransactItems");
+                            for (Object entry : array) {
+                                if (entry instanceof JSONObject) {
+                                    JSONObject entryValue = (JSONObject) entry;
+                                    if (entryValue.containsKey("Get")) {
+                                        params.add(getPayloadJsonObject(entryValue.get("Get"), "read"));
+                                    }
+                                    if (entryValue.containsKey("ConditionCheck")) {
+                                        params.add(getPayloadJsonObject(entryValue.get("ConditionCheck"), "read"));
+                                    }
+                                    if (entryValue.containsKey("Delete")) {
+                                        params.add(getPayloadJsonObject(entryValue.get("Delete"), "delete"));
+                                    }
+                                    if (entryValue.containsKey("Put")) {
+                                        params.add(getPayloadJsonObject(entryValue.get("Put"), "write"));
+                                    }
+                                    if (entryValue.containsKey("Update")) {
+                                        params.add(getPayloadJsonObject(entryValue.get("Update"), "update"));
+                                    }
+                                }
+                            }
+                        } else {
+                            params.add(getPayloadJsonObject(payload, data.getQueryType()));
+                        }
+                    } else {
+                        params.add(getPayloadJsonObject(data.getQuery(), data.getQueryType()));
+                    }
+                }
+
+                sendEvent = false;
+                for (Object para : params) {
+                    try {
+                        Object originalPayload = new JSONObject((Map) para).get("payload");
+                        if (!(originalPayload instanceof JSONObject)) {
+                            sendEvent = true;
+                            break;
+                        }
+                        JSONObject payload = (JSONObject) originalPayload;
+                        String payloadType = (String) new JSONObject((Map) para).get("payloadType");
+                        if (!((payloadType.equals("read") || payloadType.equals("delete"))
+                                && !(payload.containsKey("KeyConditionExpression")
+                                || payload.containsKey("ConditionExpression")
+                                || payload.containsKey("FilterExpression")
+                                || payload.containsKey("UpdateExpression")
+                                || payload.containsKey("ProjectionExpression")))) {
+                            sendEvent = true;
+                            break;
+                        }
+                    } catch (Exception ignored) {
+                        ignored.printStackTrace();
+                    }
+                }
+                eventBean.setParameters(params);
+            } else if (dynamoDBOperation.getCategory() == DynamoDBOperation.Category.PARTIQL) {
+                sendEvent = true;
+                for (DynamoDBRequest data : originalPayloads) {
+                    Object query = data.getQuery();
+                    if (query instanceof String) {
+                        JSONObject payload = (JSONObject) jsonParser.parse((String) query);
+                        if (payload.containsKey("TransactStatements")) {
+                            JSONArray map = (JSONArray) payload.get("TransactStatements");
+                            for (Object entry : map) {
+                                if (entry instanceof JSONObject) {
+                                    formatPartiqlPayload((JSONObject) entry, params);
+                                }
+                            }
+                        } else if (payload.containsKey("Statements")) {
+                            JSONArray map = (JSONArray) payload.get("Statements");
+                            for (Object entry : map) {
+                                if (entry instanceof JSONObject) {
+                                    formatPartiqlPayload((JSONObject) entry, params);
+                                }
+                            }
+                        } else {
+                            formatPartiqlPayload(payload, params);
+                        }
+                    }
+                }
+            }
+        } catch (Exception exception) {
+            exception.printStackTrace();
+            sendEvent=false;
+        }
+        if (sendEvent) {
+            return eventBean;
+        } else {
+            return null;
+        }
+    }
+
+    private static JSONObject getPayloadJsonObject(Object payload, String payloadType) {
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("payload", payload);
+        jsonObject.put("payloadType", payloadType);
+        return jsonObject;
+    }
+
+    private static JSONObject getPayloadObject(String query, Object parameters) {
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("query", query);
+        jsonObject.put("parameters", parameters);
+        return jsonObject;
+    }
+
+    private static void formatPartiqlPayload(JSONObject entry, JSONArray params) {
+        if (entry.containsKey("Statement")){
+            if (entry.containsKey("Parameters")){
+                params.add(getPayloadObject((String) entry.get("Statement"), entry.get("Parameters")));
+            }
+            else {
+                params.add(getPayloadObject((String) entry.get("Statement"), ""));
+            }
+        }
+    }
+
     private static JavaAgentEventBean prepareSSRFEvent(JavaAgentEventBean eventBean,
-                                                       SSRFOperation ssrfOperationalBean) {
+            SSRFOperation ssrfOperationalBean) {
         JSONArray params = new JSONArray();
         params.add(ssrfOperationalBean.getArg());
         eventBean.setParameters(params);
@@ -482,13 +642,13 @@ public class Dispatcher implements Runnable {
     }
 
     private JavaAgentEventBean processStackTrace(JavaAgentEventBean eventBean,
-                                                 VulnerabilityCaseType vulnerabilityCaseType, boolean deserialisationCheck) {
+            VulnerabilityCaseType vulnerabilityCaseType, boolean deserialisationCheck) {
 
         String klassName = null;
         for (int i = 0; i < operation.getStackTrace().length; i++) {
             // TODO : check this sequence. Why this is being set from inside Deserialisation check.
             if (isNRCode) {
-                logger.log(LogLevel.DEBUG, DROPPING_EVENT_AS_IT_WAS_GENERATED_BY_K_2_INTERNAL_API_CALL + eventBean,
+                logger.log(LogLevel.FINER, DROPPING_EVENT_AS_IT_WAS_GENERATED_BY_K_2_INTERNAL_API_CALL + eventBean,
                         Dispatcher.class.getName());
                 return null;
             }
@@ -500,7 +660,6 @@ public class Dispatcher implements Runnable {
                     || VulnerabilityCaseType.FILE_OPERATION.equals(vulnerabilityCaseType)
                     || VulnerabilityCaseType.HTTP_REQUEST.equals(vulnerabilityCaseType)
                     || VulnerabilityCaseType.SYSTEM_EXIT.equals(vulnerabilityCaseType)) {
-                rciTriggerCheck(i, eventBean, klassName);
                 xxeTriggerCheck(i, eventBean, klassName);
                 if (deserialisationCheck) {
                     deserializationTriggerCheck(i, eventBean, klassName);
@@ -521,7 +680,7 @@ public class Dispatcher implements Runnable {
     }
 
     private void deserializationTriggerCheck(int index, JavaAgentEventBean eventBean, String klassName) {
-        if (NewRelic.getAgent().getConfig().getValue(INRSettingsKey.SECURITY_DETECTION_DISABLE_DESERIALIZATION, false)) {
+        if (!NewRelic.getAgent().getConfig().getValue(INRSettingsKey.SECURITY_DETECTION_DESERIALIZATION_ENABLED, true)) {
             return;
         }
         if (ObjectInputStream.class.getName().equals(klassName)
@@ -535,12 +694,13 @@ public class Dispatcher implements Runnable {
     }
 
     private void rciTriggerCheck(int index, JavaAgentEventBean eventBean, String klassName) {
-        if (NewRelic.getAgent().getConfig().getValue(INRSettingsKey.SECURITY_DETECTION_DISABLE_RCI, false)) {
+        if (!NewRelic.getAgent().getConfig().getValue(INRSettingsKey.SECURITY_DETECTION_RCI_ENABLED, true)) {
             return;
         }
 
         if (operation.getStackTrace()[index].getLineNumber() <= 0 && index > 0
-                && operation.getStackTrace()[index - 1].getLineNumber() > 0 && StringUtils.isNotBlank(operation.getStackTrace()[index - 1].getFileName())) {
+                && operation.getStackTrace()[index - 1].getLineNumber() > 0 &&
+                StringUtils.isNotBlank(operation.getStackTrace()[index - 1].getFileName())) {
             eventBean.getMetaData().setTriggerViaRCI(true);
             eventBean.getMetaData().getRciMethodsCalls().add(AgentUtils.stackTraceElementToString(operation.getStackTrace()[index]));
             eventBean.getMetaData().getRciMethodsCalls().add(AgentUtils.stackTraceElementToString(operation.getStackTrace()[index - 1]));
@@ -567,7 +727,7 @@ public class Dispatcher implements Runnable {
     }
 
     private JavaAgentEventBean prepareEvent(HttpRequest httpRequestBean, AgentMetaData metaData,
-                                            VulnerabilityCaseType vulnerabilityCaseType, K2RequestIdentifier k2RequestIdentifier) {
+            VulnerabilityCaseType vulnerabilityCaseType, K2RequestIdentifier k2RequestIdentifier) {
         JavaAgentEventBean eventBean = new JavaAgentEventBean();
         eventBean.setHttpRequest(httpRequestBean);
         eventBean.setMetaData(metaData);

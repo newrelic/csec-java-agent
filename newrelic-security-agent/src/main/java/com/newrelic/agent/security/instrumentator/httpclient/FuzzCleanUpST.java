@@ -56,7 +56,7 @@ public class FuzzCleanUpST {
                     executor.shutdownNow(); // cancel currently executing tasks
 
                     if (!executor.awaitTermination(1, TimeUnit.SECONDS)) {
-                        logger.log(LogLevel.FATAL, "Thread pool executor did not terminate",
+                        logger.log(LogLevel.SEVERE, "Thread pool executor did not terminate",
                                 RestRequestThreadPool.class.getName());
                     }
                 }
@@ -84,7 +84,7 @@ class FuzzCleanUpTask implements Callable {
                 paths.forEach(path -> FileUtils.deleteQuietly(new File(path)));
             }
         } catch (Throwable e) {
-            logger.log(LogLevel.ERROR, UNABLE_TO_DO_FUZZ_CLEANUP + this.paths, e,
+            logger.log(LogLevel.SEVERE, UNABLE_TO_DO_FUZZ_CLEANUP + this.paths, e,
                     RestRequestThreadPool.class.getName());
         }
         return null;

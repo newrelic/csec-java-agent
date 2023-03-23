@@ -2,12 +2,12 @@ package com.newrelic.agent.security.intcodeagent.filelogging;
 
 public enum LogLevel {
 
-    ALL(7),
-    DEBUG(6),
-    INFO(5),
-    WARN(4),
-    ERROR(3),
-    FATAL(2),
+    FINEST(7),
+    FINER(6),
+    FINE(5),
+    INFO(4),
+    WARNING(3),
+    SEVERE(2),
     OFF(1);
 
     private int level;

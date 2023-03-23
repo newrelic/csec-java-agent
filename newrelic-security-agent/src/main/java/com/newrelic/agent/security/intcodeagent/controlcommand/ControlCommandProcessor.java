@@ -9,7 +9,6 @@ import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool
 import com.newrelic.agent.security.intcodeagent.filelogging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.logging.IAgentConstants;
 import com.newrelic.agent.security.intcodeagent.models.config.AgentPolicyParameters;
-import com.newrelic.agent.security.intcodeagent.models.javaagent.CollectorInitMsg;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.EventResponse;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.IntCodeControlCommand;
 import com.newrelic.agent.security.intcodeagent.utils.CommonUtils;
@@ -79,7 +78,7 @@ public class ControlCommandProcessor implements Runnable {
             controlCommand.setControlCommand(Integer.valueOf(object.get(CONTROL_COMMAND).toString()));
 
         } catch (Throwable e) {
-            logger.log(LogLevel.FATAL, ERROR_IN_CONTROL_COMMAND_PROCESSOR, e,
+            logger.log(LogLevel.SEVERE, ERROR_IN_CONTROL_COMMAND_PROCESSOR, e,
                     ControlCommandProcessor.class.getSimpleName());
             return;
         }
@@ -90,7 +89,7 @@ public class ControlCommandProcessor implements Runnable {
                 InstrumentationUtils.shutdownLogic(true);
                 break;
             case IntCodeControlCommand.UNSUPPORTED_AGENT:
-                logger.log(LogLevel.FATAL, controlCommand.getArguments().get(0),
+                logger.log(LogLevel.SEVERE, controlCommand.getArguments().get(0),
                         ControlCommandProcessor.class.getSimpleName());
                 System.err.println(controlCommand.getArguments().get(0));
                 InstrumentationUtils.shutdownLogic(true);
@@ -104,7 +103,7 @@ public class ControlCommandProcessor implements Runnable {
                     AgentPolicyParameters parameters = JsonConverter.getObjectMapper()
                             .readValue(controlCommand.getData().toString(), AgentPolicyParameters.class);
                     if (!CommonUtils.validateCollectorPolicyParameterSchema(parameters)) {
-                        logger.log(LogLevel.WARN, String.format(IAgentConstants.UNABLE_TO_VALIDATE_AGENT_POLICY_PARAMETER_DUE_TO_ERROR, parameters), ControlCommandProcessor.class.getName());
+                        logger.log(LogLevel.WARNING, String.format(IAgentConstants.UNABLE_TO_VALIDATE_AGENT_POLICY_PARAMETER_DUE_TO_ERROR, parameters), ControlCommandProcessor.class.getName());
                         return;
                     }
                     AgentUtils.getInstance().setAgentPolicyParameters(parameters);
@@ -112,7 +111,7 @@ public class ControlCommandProcessor implements Runnable {
                             String.format(IAgentConstants.AGENT_POLICY_PARAM_APPLIED_S, AgentUtils.getInstance().getAgentPolicyParameters()),
                             ControlCommandProcessor.class.getName());
                 } catch (JsonProcessingException e) {
-                    logger.logInit(LogLevel.DEBUG, IAgentConstants.UNABLE_TO_SET_AGENT_POLICY_PARAM_DUE_TO_ERROR, e,
+                    logger.logInit(LogLevel.FINER, IAgentConstants.UNABLE_TO_SET_AGENT_POLICY_PARAM_DUE_TO_ERROR, e,
                             ControlCommandProcessor.class.getName());
                 }
                 break;
@@ -126,7 +125,7 @@ public class ControlCommandProcessor implements Runnable {
                     EventResponse eventResponse = AgentUtils.getInstance().getEventResponseSet()
                             .get(receivedEventResponse.getId());
                     if (eventResponse == null) {
-                        logger.log(LogLevel.DEBUG,
+                        logger.log(LogLevel.FINER,
                                 String.format(EVENT_RESPONSE_ENTRY_NOT_FOUND_FOR_THIS_S, receivedEventResponse),
                                 ControlCommandProcessor.class.getSimpleName());
                         cleanUp = true;
@@ -137,7 +136,7 @@ public class ControlCommandProcessor implements Runnable {
                     AgentUtils.getInstance().getEventResponseSet().put(receivedEventResponse.getId(),
                             receivedEventResponse);
 
-                    logger.log(LogLevel.DEBUG, EVENT_RESPONSE + receivedEventResponse,
+                    logger.log(LogLevel.FINER, EVENT_RESPONSE + receivedEventResponse,
                             ControlCommandProcessor.class.getName());
 
                     receivedEventResponse.getResponseSemaphore().release();
@@ -145,11 +144,11 @@ public class ControlCommandProcessor implements Runnable {
                         AgentUtils.getInstance().getEventResponseSet().remove(receivedEventResponse.getId());
                     }
                 } catch (Exception e) {
-                    logger.log(LogLevel.FATAL, ERROR_IN_EVENT_RESPONSE, e, ControlCommandProcessor.class.getSimpleName());
+                    logger.log(LogLevel.SEVERE, ERROR_IN_EVENT_RESPONSE, e, ControlCommandProcessor.class.getSimpleName());
                 }
                 break;
             case IntCodeControlCommand.FUZZ_REQUEST:
-                logger.log(LogLevel.DEBUG, FUZZ_REQUEST + controlCommandMessage,
+                logger.log(LogLevel.FINER, FUZZ_REQUEST + controlCommandMessage,
                         ControlCommandProcessor.class.getName());
                 RestRequestProcessor.processControlCommand(controlCommand);
                 break;
@@ -158,19 +157,9 @@ public class ControlCommandProcessor implements Runnable {
                 if (controlCommand.getData() == null) {
                     return;
                 }
-
-                try {
-                    AgentUtils.getInstance().setInitMsg(
-                            JsonConverter.getObjectMapper().readValue(controlCommand.getData().toString(), CollectorInitMsg.class));
-                    // TODO : Remove usage of CC #10 data
-                    logger.log(LogLevel.INFO,
-                            String.format(COLLECTOR_IS_INITIALIZED_WITH_PROPERTIES, AgentUtils.getInstance().getInitMsg().toString()),
-                            ControlCommandProcessor.class.getName());
-                } catch (JsonProcessingException e) {
-                    logger.log(LogLevel.ERROR, IAgentConstants.UNABLE_TO_GET_AGENT_STARTUP_INFOARMATION, e,
-                            ControlCommandProcessor.class.getName());
-                }
-
+                logger.log(LogLevel.INFO,
+                        String.format(COLLECTOR_IS_INITIALIZED_WITH_PROPERTIES, controlCommand.getData()),
+                        ControlCommandProcessor.class.getName());
                 break;
 
             case IntCodeControlCommand.SEND_POLICY:
@@ -187,12 +176,12 @@ public class ControlCommandProcessor implements Runnable {
                         AgentUtils.getInstance().applyPolicyOverrideIfApplicable();
                     }
                 } catch (IllegalArgumentException e) {
-                    logger.log(LogLevel.ERROR, UNABLE_TO_PARSE_RECEIVED_DEFAULT_POLICY, e,
+                    logger.log(LogLevel.SEVERE, UNABLE_TO_PARSE_RECEIVED_DEFAULT_POLICY, e,
                             ControlCommandProcessor.class.getName());
                 }
                 break;
             case IntCodeControlCommand.POLICY_UPDATE_FAILED_DUE_TO_VALIDATION_ERROR:
-                logger.log(LogLevel.WARN, UPDATED_POLICY_FAILED_VALIDATION_REVERTING_TO_DEFAULT_POLICY_FOR_THE_MODE,
+                logger.log(LogLevel.WARNING, UPDATED_POLICY_FAILED_VALIDATION_REVERTING_TO_DEFAULT_POLICY_FOR_THE_MODE,
                         ControlCommandProcessor.class.getName());
                 AgentUtils.instantiateDefaultPolicy();
                 break;
@@ -214,21 +203,21 @@ public class ControlCommandProcessor implements Runnable {
                         while (EventSendPool.getInstance().getExecutor().getActiveCount() > 0 && !EventSendPool.getInstance().isWaiting().get()) {
                             Thread.sleep(100);
                         }
-                        logger.log(LogLevel.DEBUG, WS_RECONNECT_EVENT_SEND_POOL_DRAINED, this.getClass().getName());
+                        logger.log(LogLevel.FINER, WS_RECONNECT_EVENT_SEND_POOL_DRAINED, this.getClass().getName());
 
                         while (RestRequestThreadPool.getInstance().getExecutor().getActiveCount() > 0 && !RestRequestThreadPool.getInstance().isWaiting().get()) {
                             Thread.sleep(100);
                         }
-                        logger.log(LogLevel.DEBUG, WS_RECONNECT_IAST_REQUEST_REPLAY_POOL_DRAINED, this.getClass().getName());
+                        logger.log(LogLevel.FINER, WS_RECONNECT_IAST_REQUEST_REPLAY_POOL_DRAINED, this.getClass().getName());
                     }
                     WSClient.tryWebsocketConnection(-1, true);
                 } catch (Throwable e) {
-                    logger.log(LogLevel.ERROR, String.format(ERROR_WHILE_PROCESSING_RECONNECTION_CC_S_S, e.getMessage(), e.getCause()), this.getClass().getName());
-                    logger.log(LogLevel.ERROR, ERROR_WHILE_PROCESSING_RECONNECTION_CC, e, this.getClass().getName());
+                    logger.log(LogLevel.SEVERE, String.format(ERROR_WHILE_PROCESSING_RECONNECTION_CC_S_S, e.getMessage(), e.getCause()), this.getClass().getName());
+                    logger.log(LogLevel.SEVERE, ERROR_WHILE_PROCESSING_RECONNECTION_CC, e, this.getClass().getName());
                 }
                 break;
             default:
-                logger.log(LogLevel.WARN, String.format(UNKNOWN_CONTROL_COMMAND_S, controlCommandMessage),
+                logger.log(LogLevel.WARNING, String.format(UNKNOWN_CONTROL_COMMAND_S, controlCommandMessage),
                         ControlCommandProcessor.class.getName());
                 break;
         }

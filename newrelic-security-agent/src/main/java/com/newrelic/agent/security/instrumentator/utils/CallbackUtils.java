@@ -67,7 +67,7 @@ public class CallbackUtils {
         }
         String combinedResponseDataString = StringUtils.joinWith(FIVE_COLON, combinedResponseData);
 
-        logger.log(LogLevel.DEBUG, String.format("Checking reflected XSS : %s :: %s", combinedRequestData, combinedResponseDataString), CallbackUtils.class.getName());
+        logger.log(LogLevel.FINER, String.format("Checking reflected XSS : %s :: %s", combinedRequestData, combinedResponseDataString), CallbackUtils.class.getName());
 
         Set<String> attackContructs = isXSS(combinedRequestData);
 
@@ -106,7 +106,7 @@ public class CallbackUtils {
 
 
     static Set<String> getXSSConstructs(String data) {
-        logger.log(LogLevel.DEBUG, CAME_TO_XSS_CHECK + data, CallbackUtils.class.getName());
+        logger.log(LogLevel.FINER, CAME_TO_XSS_CHECK + data, CallbackUtils.class.getName());
         List<String> construct = new ArrayList<>();
         boolean isAttackConstruct = false;
 
@@ -268,7 +268,7 @@ public class CallbackUtils {
                 }
             }
         } catch (Throwable e) {
-            logger.log(LogLevel.ERROR, ERROR, e, CallbackUtils.class.getName());
+            logger.log(LogLevel.SEVERE, ERROR, e, CallbackUtils.class.getName());
         }
         return processedData;
     }
@@ -357,7 +357,7 @@ public class CallbackUtils {
 
             }
         } catch (Throwable e) {
-            logger.log(LogLevel.ERROR, ERROR, e, CallbackUtils.class.getName());
+            logger.log(LogLevel.SEVERE, ERROR, e, CallbackUtils.class.getName());
         }
         return processedData;
     }
