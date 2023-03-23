@@ -13,9 +13,9 @@ public interface INRSettingsKey {
     String SECURITY_POLICY_PROTECTION_MODE_API_BLOCKING_PROTECT_ALL_APIS = "security.policy.protectionMode.apiBlocking.protectAllApis";
     String SECURITY_POLICY_PROTECTION_MODE_API_BLOCKING_PROTECT_KNOWN_VULNERABLE_APIS = "security.policy.protectionMode.apiBlocking.protectKnownVulnerableApis";
     String SECURITY_POLICY_PROTECTION_MODE_API_BLOCKING_PROTECT_ATTACKED_APIS = "security.policy.protectionMode.apiBlocking.protectAttackedApis";
-    String SECURITY_DETECTION_DISABLE_RCI = "security.detection.disable_rci";
-    String SECURITY_DETECTION_DISABLE_RXSS = "security.detection.disable_rxss";
-    String SECURITY_DETECTION_DISABLE_DESERIALIZATION = "security.detection.disable_deserialization";
+    String SECURITY_DETECTION_RCI_ENABLED = "security.detection.rci.enabled";
+    String SECURITY_DETECTION_RXSS_ENABLED = "security.detection.rxss.enabled";
+    String SECURITY_DETECTION_DESERIALIZATION_ENABLED = "security.detection.deserialization.enabled";
 
     String SECURITY_POLICY_ENFORCE = "security.policy.enforce";
 

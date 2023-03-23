@@ -19,8 +19,14 @@ import org.json.simple.JSONObject;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 public class JsonConverter {
 
@@ -41,7 +47,7 @@ public class JsonConverter {
         SimpleModule module = new SimpleModule();
         module.addSerializer(StackTraceElement.class, new K2StackTraceSerializer());
         objectMapper = objectMapper.registerModule(module);
-
+        objectMapper = objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         objectMapper = objectMapper.setAnnotationIntrospector(new JacksonAnnotationIntrospector() {
 
             @Override
@@ -143,7 +149,7 @@ public class JsonConverter {
             } catch (IllegalArgumentException | IllegalAccessException e) {
             } catch (Exception e) {
                 try {
-                    logger.log(LogLevel.ERROR, "Can't cast value : " + new ObjectMapper().writeValueAsString(value), e, JsonConverter.class.getName());
+                    logger.log(LogLevel.SEVERE, "Can't cast value : " + new ObjectMapper().writeValueAsString(value), e, JsonConverter.class.getName());
                 } catch (JsonProcessingException ex) {
                 }
             }

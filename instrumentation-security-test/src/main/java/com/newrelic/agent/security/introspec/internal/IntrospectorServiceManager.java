@@ -124,7 +124,7 @@ class IntrospectorServiceManager extends AbstractService implements ServiceManag
         config.put("host", "staging-collector.newrelic.com");
         Map<String, Object> sec = new HashMap<>();
         sec.put("enable", true);
-        sec.put("validator_service_endpoint_url", "ws://192.168.5.138:54321");
+        sec.put("validator_service_url", "ws://192.168.5.138:54321");
         config.put("security", sec);
 
         if (configOverrides != null) {

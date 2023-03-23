@@ -14,16 +14,21 @@ import org.apache.commons.lang3.StringUtils;
  */
 public class RestRequestProcessor implements Runnable {
 
-    public static final String K2_HOME_TMP_CONST = "{{K2_HOME_TMP}}";
+    public static final String NR_CSEC_VALIDATOR_HOME_TMP = "{{NR_CSEC_VALIDATOR_HOME_TMP}}";
+
     public static final String ERROR_WHILE_PROCESSING_FUZZING_REQUEST_S = "Error while processing fuzzing request : %s";
+    private static final int MAX_REPETITION = 3;
     private IntCodeControlCommand controlCommand;
+
+    private int repeatCount;
 
     private ObjectMapper objectMapper = new ObjectMapper();
 
     private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
 
-    public RestRequestProcessor(IntCodeControlCommand controlCommand) {
+    public RestRequestProcessor(IntCodeControlCommand controlCommand, int repeatCount) {
         this.controlCommand = controlCommand;
+        this.repeatCount = repeatCount;
     }
 
 
@@ -45,15 +50,15 @@ public class RestRequestProcessor implements Runnable {
                     RestRequestThreadPool.getInstance().isWaiting().set(false);
                 }
             }
-            String req = StringUtils.replace(controlCommand.getArguments().get(0), K2_HOME_TMP_CONST, OsVariablesInstance.getInstance().getOsVariables().getTmpDirectory());
+            String req = StringUtils.replace(controlCommand.getArguments().get(0), NR_CSEC_VALIDATOR_HOME_TMP, OsVariablesInstance.getInstance().getOsVariables().getTmpDirectory());
             httpRequest = objectMapper.readValue(req, FuzzRequestBean.class);
-            RestClient.getInstance().fireRequest(RequestUtils.generateK2Request(httpRequest));
+            RestClient.getInstance().fireRequest(RequestUtils.generateK2Request(httpRequest), repeatCount);
 
         } catch (Throwable e) {
-            logger.log(LogLevel.ERROR,
+            logger.log(LogLevel.SEVERE,
                     String.format(ERROR_WHILE_PROCESSING_FUZZING_REQUEST_S, controlCommand.getArguments().get(0)),
                     e, RestRequestProcessor.class.getName());
-            logger.postLogMessageIfNecessary(LogLevel.ERROR,
+            logger.postLogMessageIfNecessary(LogLevel.SEVERE,
                     String.format(ERROR_WHILE_PROCESSING_FUZZING_REQUEST_S, controlCommand.getArguments().get(0)),
                     e, RestRequestProcessor.class.getName());
         }
@@ -61,6 +66,11 @@ public class RestRequestProcessor implements Runnable {
 
     public static void processControlCommand(IntCodeControlCommand command) {
         RestRequestThreadPool.getInstance().executor
-                .submit(new RestRequestProcessor(command));
+                .submit(new RestRequestProcessor(command, MAX_REPETITION));
+    }
+
+    public static void processControlCommand(IntCodeControlCommand command, int repeat) {
+        RestRequestThreadPool.getInstance().executor
+                .submit(new RestRequestProcessor(command, repeat));
     }
 }

@@ -22,7 +22,6 @@ public abstract class ServletResponse_Instrumentation {
     public ServletOutputStream_Instrumentation getOutputStream() throws IOException {
         ServletOutputStream_Instrumentation obj = Weaver.callOriginal();
         if(NewRelicSecurity.isHookProcessingActive() && obj != null) {
-            obj.servletOutputStreamDataGatheringAllowed = true;
             ServletResponseCallback.registerOutputStreamHashIfNeeded(obj.hashCode());
             NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setResponseContentType(getContentType());
 //            System.out.println("Allowing data gathering for servlet OS : " + obj.hashCode());

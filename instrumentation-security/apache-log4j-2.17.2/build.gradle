@@ -1,0 +1,23 @@
+jar {
+    manifest { attributes 'Implementation-Title': 'com.newrelic.instrumentation.security.apache-log4j' }
+}
+
+dependencies {
+    implementation(project(":newrelic-security-api"))
+    implementation("com.newrelic.agent.java:newrelic-api:${nrAPIVersion}")
+    implementation("com.newrelic.agent.java:newrelic-weaver-api:${nrAPIVersion}")
+    implementation("org.apache.logging.log4j:log4j-core:2.17.2")
+}
+
+verifyInstrumentation {
+    passes("org.apache.logging.log4j:log4j-core:[2.17.2,)")
+}
+
+site {
+    title 'Log4j'
+    type 'Framework'
+}
+
+test {
+    useJUnitPlatform()
+}

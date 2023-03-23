@@ -56,7 +56,7 @@ public class HashGenerator {
             byte[] hashedBytes = digest.digest();
             return convertByteArrayToHexString(hashedBytes);
         } catch (NoSuchAlgorithmException e) {
-            logger.log(LogLevel.ERROR, ERROR, e, HashGenerator.class.getName());
+            logger.log(LogLevel.SEVERE, ERROR, e, HashGenerator.class.getName());
         }
         return null;
     }
@@ -107,7 +107,7 @@ public class HashGenerator {
     public static void updateShaAndSize(DeployedApplication deployedApplication) {
         File deplyementDirFile = new File(deployedApplication.getDeployedPath());
         if (StringUtils.isBlank(deployedApplication.getDeployedPath())) {
-            logger.log(LogLevel.WARN, "Empty deployed path detected. Not calculating SHA256 & size.", HashGenerator.class.getName());
+            logger.log(LogLevel.WARNING, "Empty deployed path detected. Not calculating SHA256 & size.", HashGenerator.class.getName());
             return;
         }
         if (deplyementDirFile.isFile()) {
@@ -137,7 +137,7 @@ public class HashGenerator {
                 return getSHA256HexDigest(sha256s);
             }
         } catch (Exception e) {
-            logger.log(LogLevel.ERROR, ERROR, e, HashGenerator.class.getName());
+            logger.log(LogLevel.SEVERE, ERROR, e, HashGenerator.class.getName());
         }
         return null;
     }
@@ -194,11 +194,11 @@ public class HashGenerator {
 
             tmpTarFile = Files.createTempFile(K2_TEMP_DIR, TAR_GZ).toFile();
             createTarGz(tmpAppDir, tmpTarFile);
-            logger.log(LogLevel.DEBUG, TAR_SIZE + FileUtils.sizeOf(tmpTarFile), HashGenerator.class.getName());
+            logger.log(LogLevel.FINER, TAR_SIZE + FileUtils.sizeOf(tmpTarFile), HashGenerator.class.getName());
             deployedApplication.setSize(FileUtils.byteCountToDisplaySize(FileUtils.sizeOf(tmpTarFile)));
             deployedApplication.setSha256(getChecksum(tmpTarFile));
         } catch (Throwable e) {
-            logger.log(LogLevel.ERROR, ERROR2, e, HashGenerator.class.getName());
+            logger.log(LogLevel.SEVERE, ERROR2, e, HashGenerator.class.getName());
         } finally {
             try {
                 FileUtils.forceDelete(tmpTarFile);
@@ -230,7 +230,7 @@ public class HashGenerator {
                     String extension = FilenameUtils.getExtension(tempFile.getName());
                     if (!(OTHER_CRITICAL_FILE_EXT.contains(extension)
                             || JAVA_APPLICATION_ALLOWED_FILE_EXT.contains(extension))) {
-                        logger.log(LogLevel.DEBUG, FILE_FOR_SHA_CALC + tempFile.getAbsolutePath(),
+                        logger.log(LogLevel.FINER, FILE_FOR_SHA_CALC + tempFile.getAbsolutePath(),
                                 HashGenerator.class.getName());
                         FileUtils.forceDeleteOnExit(tempFile);
                     }

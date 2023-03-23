@@ -4,6 +4,7 @@ import com.newrelic.api.agent.security.NewRelicSecurity;
 
 public class ServletRequestCallback {
 
+    public static final String NR_SEC_CUSTOM_ATTRIB_NAME = "SERVLET_IS_OPERATION_LOCK-";
     private static final String REQUEST_STREAM_OR_READER_CALLED = "REQUEST_STREAM_OR_READER_CALLED";
     private static final String REQUEST_READER_HASH = "REQUEST_READER_HASH";
 

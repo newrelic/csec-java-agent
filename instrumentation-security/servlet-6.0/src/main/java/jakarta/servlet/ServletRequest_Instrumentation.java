@@ -24,7 +24,6 @@ public abstract class ServletRequest_Instrumentation {
     public ServletInputStream_Instrumentation getInputStream() throws IOException {
         ServletInputStream_Instrumentation obj = Weaver.callOriginal();
         if(NewRelicSecurity.isHookProcessingActive() && obj != null) {
-            obj.servletInputStreamDataGatheringAllowed = true;
             ServletRequestCallback.registerInputStreamHashIfNeeded(obj.hashCode());
 //            System.out.println("Allowing data gathering for servlet IS : " + obj.hashCode());
         }
