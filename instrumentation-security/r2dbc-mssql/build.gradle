@@ -1,0 +1,22 @@
+dependencies {
+    implementation(project(":newrelic-security-api"))
+    implementation("com.newrelic.agent.java:newrelic-api:${nrAPIVersion}")
+    implementation("com.newrelic.agent.java:newrelic-weaver-api:${nrAPIVersion}")
+    implementation("io.r2dbc:r2dbc-mssql:0.9.0.RELEASE")
+}
+
+jar {
+    manifest { attributes 'Implementation-Title': 'com.newrelic.instrumentation.security.r2dbc-mssql' }
+}
+
+verifyInstrumentation {
+    passesOnly 'io.r2dbc:r2dbc-mssql:[0,)'
+
+    // this version has a dependency to a reactor milestone that does not work well with us
+    exclude 'io.r2dbc:r2dbc-mssql:1.0.0.RC1'
+}
+
+site {
+    title 'MSSQL R2DBC'
+    type 'Datastore'
+}
