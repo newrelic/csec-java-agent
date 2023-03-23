@@ -7,12 +7,17 @@ public class InputStreamHelper {
 
     private static final String REQUEST_INPUTSTREAM_HASH = "REQUEST_INPUTSTREAM_HASH";
 
+    public static final String NR_SEC_CUSTOM_ATTRIB_NAME = "SERVLET_IS_OPERATION_LOCK-";
+
     public static final String LF = "\n";
 
     public static Boolean processRequestInputStreamHookData(Integer inputStreamHash) {
-        Integer x = NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(REQUEST_INPUTSTREAM_HASH, Integer.class);
-//        System.out.println("Hooking enabled for " + x + " : " + inputStreamHash);
-        return inputStreamHash.equals(x);
+        try {
+            if(NewRelicSecurity.isHookProcessingActive() && NewRelicSecurity.getAgent().getSecurityMetaData()!= null) {
+                return inputStreamHash.equals(NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(REQUEST_INPUTSTREAM_HASH, Integer.class));
+            }
+        } catch (Throwable ignored){}
+        return false;
     }
 
 }

@@ -32,45 +32,18 @@ public class MongoUtil {
     public static final String OP_INSERT = "insert";
     public static final String OP_UPDATE = "update";
     public static final String OP_AGGREGATE = "aggregate";
-    public static final String OP_REMOVE = "remove";
-    public static final String OP_PARALLEL_SCAN = "parallelCollectionScan";
-    public static final String OP_CREATE_INDEX = "createIndex";
-
-    public static final String OP_RENAME_COLLECTION = "renameCollection";
-    public static final String OP_FIND_AND_UPDATE = "findAndUpdate";
-    public static final String OP_FIND_AND_REPLACE = "findAndReplace";
     public static final String OP_FIND_AND_DELETE = "findAndDelete";
-    public static final String OP_DROP_INDEX = "dropIndex";
-    public static final String OP_DROP_COLLECTION = "drop";
     public static final String OP_DISTINCT = "distinct";
     public static final String OP_COUNT = "count";
     public static final String OP_MAP_REDUCE = "mapReduce";
-    public static final String OP_REPLACE = "replace";
-    public static final String OP_LIST_INDEX = "listIndex";
-    public static final String OP_BULK_WRITE = "bulkWrite";
-    public static final String OP_INSERT_MANY = "insertMany";
-    public static final String OP_UPDATE_MANY = "updateMany";
-    public static final String OP_GET_MORE = "getMore";
 
     // "delete" commands are different from DBCollection.remove
     public static final String OP_DELETE = "delete";
 
-    /**
-     * What to use when you can't get the operation.
-     */
-    public static final String DEFAULT_OPERATION = "other";
-
-    /**
-     * What to use when you can't get the collection name.
-     */
-    public static final String DEFAULT_COLLECTION = "other";
-
-    public static final String OP_DEFAULT = "other";
-
     public static final String METHOD_EXECUTE = "execute";
     public static final String METHOD_EXECUTE_WRAPPED_COMMAND_PROTOCOL = "executeWrappedCommandProtocol";
 
-    public static AbstractOperation recordMongoOperation(BsonDocument command, String typeOfOperation, String methodName, String klassName) {
+    public static AbstractOperation recordMongoOperation(BsonDocument command, String typeOfOperation, String klassName, String methodName) {
         NoSQLOperation operation = null;
         try {
             if (NewRelicSecurity.isHookProcessingActive() &&
@@ -87,7 +60,7 @@ public class MongoUtil {
         return operation;
     }
 
-    public static AbstractOperation recordMongoOperation(List<BsonDocument> command, String typeOfOperation, String methodName, String klassName) {
+    public static AbstractOperation recordMongoOperation(List<BsonDocument> command, String typeOfOperation, String klassName, String methodName) {
         NoSQLOperation operation = null;
         try {
             if (NewRelicSecurity.isHookProcessingActive() &&
@@ -229,7 +202,7 @@ public class MongoUtil {
             operations.add(findAndReplaceOperation.getProjection());
             operations.add(findAndReplaceOperation.getSort());
             operations.add(findAndReplaceOperation.getReplacement());
-            noSQLOperation = recordMongoOperation(operations, MongoUtil.OP_FIND_AND_REPLACE, className, methodName);
+            noSQLOperation = recordMongoOperation(operations, MongoUtil.OP_WRITE, className, methodName);
         } else if (operation instanceof FindAndUpdateOperation) {
             FindAndUpdateOperation findAndUpdateOperation = (FindAndUpdateOperation) operation;
             operations = new ArrayList<>();
@@ -237,15 +210,13 @@ public class MongoUtil {
             operations.add(findAndUpdateOperation.getProjection());
             operations.add(findAndUpdateOperation.getSort());
             operations.add(findAndUpdateOperation.getUpdate());
-            noSQLOperation = recordMongoOperation(operations, MongoUtil.OP_FIND_AND_UPDATE, className, methodName);
+            noSQLOperation = recordMongoOperation(operations, MongoUtil.OP_WRITE, className, methodName);
         } else if (operation instanceof InsertOperation) {
-            System.out.println("inside insert");
             InsertOperation insertOperation = (InsertOperation) operation;
             operations = new ArrayList<>();
             for (InsertRequest insertRequest : insertOperation.getInsertRequests()) {
                 operations.add(insertRequest.getDocument());
             }
-            System.out.println("inside insert : " + operations);
             noSQLOperation = recordMongoOperation(operations, MongoUtil.OP_INSERT, className, methodName);
         } else if (operation instanceof MapReduceToCollectionOperation) {
             MapReduceToCollectionOperation mapReduceToCollectionOperation = (MapReduceToCollectionOperation) operation;

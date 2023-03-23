@@ -126,7 +126,7 @@ public class AgentInfo {
         if (applicationInfo == null) {
             // TODO raise exception
             logger.logInit(
-                    LogLevel.ERROR,
+                    LogLevel.SEVERE,
                     APP_INFO_BEAN_NOT_CREATED,
                     AgentInfo.class.getName()
             );
@@ -151,18 +151,18 @@ public class AgentInfo {
     public boolean agentStatTrigger(){
         boolean state = true;
         if(StringUtils.isBlank(getLinkingMetadata().getOrDefault(INRSettingsKey.NR_ENTITY_GUID, StringUtils.EMPTY))){
-            logger.log(LogLevel.WARN, "NewRelic security module INACTIVE!!! since entity.guid is not known.", AgentInfo.class.getName());
+            logger.log(LogLevel.WARNING, "NewRelic security module INACTIVE!!! since entity.guid is not known.", AgentInfo.class.getName());
             state = false;
         }
         else if(StringUtils.isBlank(getLinkingMetadata().getOrDefault(INRSettingsKey.AGENT_RUN_ID_LINKING_METADATA, StringUtils.EMPTY))){
-            logger.log(LogLevel.WARN, "NewRelic security module INACTIVE!!! since agentRunId is not known.", AgentInfo.class.getName());
+            logger.log(LogLevel.WARNING, "NewRelic security module INACTIVE!!! since agentRunId is not known.", AgentInfo.class.getName());
             state = false;
         }
         else if (!AgentConfig.getInstance().isNRSecurityEnabled()) {
-            logger.log(LogLevel.WARN, "NewRelic security module INACTIVE!!! since security config is disabled.", AgentInfo.class.getName());
+            logger.log(LogLevel.WARNING, "NewRelic security module INACTIVE!!! since security config is disabled.", AgentInfo.class.getName());
             state = false;
         } else if (!WSUtils.isConnected()) {
-            logger.log(LogLevel.WARN, "NewRelic security module INACTIVE!!! Can't connect with prevent web agent.", AgentInfo.class.getName());
+            logger.log(LogLevel.WARNING, "NewRelic security module INACTIVE!!! Can't connect with prevent web agent.", AgentInfo.class.getName());
             state = false;
         }
         if(state) {

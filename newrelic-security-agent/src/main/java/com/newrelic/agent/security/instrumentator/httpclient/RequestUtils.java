@@ -16,7 +16,7 @@ public class RequestUtils {
     private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
 
     public static Request generateK2Request(FuzzRequestBean httpRequest) {
-        logger.log(LogLevel.DEBUG, String.format("Firing request : %s", httpRequest), RequestUtils.class.getName());
+        logger.log(LogLevel.FINER, String.format("Firing request : %s", httpRequest), RequestUtils.class.getName());
         StringBuilder url = new StringBuilder(String.format("%s://localhost", httpRequest.getProtocol()));
         url.append(":");
         url.append(httpRequest.getServerPort());

@@ -571,19 +571,14 @@ public interface IAgentConstants {
     String BLOCKING_END_TIME = "blockingEndTime";
     String ERROR_WHILE_DETERMINING_HOSTIP_FROM_DEFAULT_GATEWAY = "Error while determining hostip from default gateway";
 
-    String K2_FUZZ_REQUEST_ID = "k2-fuzz-request-id";
     String INIT = "<init>";
     String SUN_REFLECT = "sun.reflect.";
     String COM_SUN = "com.sun.";
     String UNABLE_TO_GET_AGENT_STARTUP_INFOARMATION = "Unable to get Agent startup information due to error:";
 
-    String K2_API_CALLER = "K2-API-CALLER";
-    String K2_TRACING_HEADER = "K2-TRACING-DATA";
-
     String LINUX = "linux";
     String WINDOWS = "windows";
     String MAC = "mac";
-    String K_2_FUZZ_REQUEST_ID = "k2-fuzz-request-id";
 
     String EXCEPTION_OCCURRED_IN_CREATE_APPLICATION_INFO_BEAN = "Exception occurred in createApplicationInfoBean: ";
     String EXCEPTION_OCCURRED_IN_EVENT_SEND_POOL = "Exception occurred in EventSendPool: ";

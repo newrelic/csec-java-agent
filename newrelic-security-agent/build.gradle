@@ -43,7 +43,7 @@ cyclonedxBom {
 
 project.ext {
     instrumentProjects = {
-        rootProject.subprojects.findAll { project -> project.path =~ /:instrumentation-security:/ }
+        rootProject.subprojects.findAll { project -> project.path =~ /:instrumentation:/ }
     }
 }
 
@@ -66,7 +66,7 @@ dependencies {
     shadowIntoJar 'com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.13.4'
     shadowIntoJar 'com.fasterxml.jackson.dataformat:jackson-dataformat-properties:2.13.4'
     shadowIntoJar 'org.yaml:snakeyaml:1.31'
-    shadowIntoJar 'org.java-websocket:Java-WebSocket:1.5.1'
+    shadowIntoJar 'org.java-websocket:Java-WebSocket:1.5.3'
     shadowIntoJar 'commons-io:commons-io:2.7'
     shadowIntoJar 'org.apache.commons:commons-text:1.7'
     shadowIntoJar 'commons-net:commons-net:3.6'

@@ -14,21 +14,21 @@ public class NoSQLOperation extends AbstractOperation {
     private String nameSpace;
 
     private String collection;
-    private String command;
+    private String payloadType;
 
-    public NoSQLOperation(List<String> payload, String command, String className, String methodName) {
+    public NoSQLOperation(List<String> payload, String payloadType, String className, String methodName) {
         super(className, methodName);
         this.setCaseType(VulnerabilityCaseType.NOSQL_DB_COMMAND);
         this.payload.addAll(payload);
-        this.command = command;
+        this.payloadType = payloadType;
 
     }
 
-    public NoSQLOperation(String payload, String command, String className, String methodName) {
+    public NoSQLOperation(String payload, String payloadType, String className, String methodName) {
         super(className, methodName);
         this.setCaseType(VulnerabilityCaseType.NOSQL_DB_COMMAND);
         this.payload.add(payload);
-        this.command = command;
+        this.payloadType = payloadType;
     }
 
     @Override
@@ -60,12 +60,12 @@ public class NoSQLOperation extends AbstractOperation {
         this.collection = collection;
     }
 
-    public String getCommand() {
-        return command;
+    public String getPayloadType() {
+        return payloadType;
     }
 
-    public void setCommand(String command) {
-        this.command = command;
+    public void setPayloadType(String payloadType) {
+        this.payloadType = payloadType;
     }
 }
 

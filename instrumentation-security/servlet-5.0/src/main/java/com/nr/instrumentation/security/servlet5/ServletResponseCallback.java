@@ -4,6 +4,7 @@ import com.newrelic.api.agent.security.NewRelicSecurity;
 
 public class ServletResponseCallback {
 
+    public static final String NR_SEC_CUSTOM_ATTRIB_NAME = "SERVLET_OS_OPERATION_LOCK-";
     private static final String RESPONSE_STREAM_OR_WRITER_CALLED = "RESPONSE_STREAM_OR_WRITER_CALLED";
     private static final String RESPONSE_WRITER_HASH = "RESPONSE_WRITER_HASH";
     private static final String RESPONSE_OUTPUTSTREAM_HASH = "RESPONSE_OUTPUTSTREAM_HASH";

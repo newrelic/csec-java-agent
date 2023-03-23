@@ -155,7 +155,7 @@ public class FileLoggerThreadPool {
     }
 
     public void postLogMessageIfNecessary(LogLevel logLevel, String event, Throwable exception, String caller) {
-        if (logLevel.getLevel() > LogLevel.WARN.getLevel()) {
+        if (logLevel.getLevel() > LogLevel.WARNING.getLevel()) {
             return;
         }
         postLogMessage(logLevel, event, exception, caller);
@@ -163,7 +163,7 @@ public class FileLoggerThreadPool {
 
     private LogMessage postLogMessage(LogLevel logLevel, String event, Throwable exception, String caller) {
         LogMessage message = new LogMessage(logLevel.name(), event, caller, exception, AgentInfo.getInstance().getLinkingMetadata());
-        if (logLevel.getLevel() <= LogLevel.WARN.getLevel()) {
+        if (logLevel.getLevel() <= LogLevel.WARNING.getLevel()) {
             AgentUtils.getInstance().getStatusLogMostRecentErrors().add(JsonConverter.toJSON(message));
         }
         EventSendPool.getInstance().sendEvent(message);

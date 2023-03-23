@@ -60,7 +60,7 @@ public class InstrumentationUtils {
             logger.log(LogLevel.INFO, IAgentConstants.SHUTTING_DOWN_WITH_STATUS + shutDownEvent, InstrumentationUtils.class.getName());
             TimeUnit.SECONDS.sleep(1);
         } catch (Throwable e) {
-            logger.log(LogLevel.FATAL, "Error while sending shut down event : ", e,
+            logger.log(LogLevel.SEVERE, "Error while sending shut down event : ", e,
                     InstrumentationUtils.class.getName());
         }
         try {
@@ -79,10 +79,10 @@ public class InstrumentationUtils {
             FileUtils.deleteQuietly(new File(OsVariablesInstance.getInstance().getOsVariables().getTmpDirectory()));
 
         } catch (Throwable e) {
-            logger.log(LogLevel.FATAL, "Error while shutting down K2 Pools : ", e,
+            logger.log(LogLevel.SEVERE, "Error while shutting down K2 Pools : ", e,
                     InstrumentationUtils.class.getName());
         }
-        logger.log(LogLevel.FATAL, JAVA_AGENT_SHUTDOWN_COMPLETE, InstrumentationUtils.class.getName());
+        logger.log(LogLevel.SEVERE, JAVA_AGENT_SHUTDOWN_COMPLETE, InstrumentationUtils.class.getName());
         try {
             FileLoggerThreadPool.getInstance().shutDownThreadPoolExecutor();
         } catch (Exception e) {

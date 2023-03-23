@@ -26,9 +26,9 @@ public class WSReconnectionST {
             try {
                 WSClient.reconnectWSClient();
             } catch (Exception e) {
-                logger.log(LogLevel.ERROR, ERROR_WHILE_WS_RECONNECTION + e.getMessage() + COLON_SEPARATOR + e.getCause(), WSClient.class.getName());
-                logger.log(LogLevel.DEBUG, ERROR_WHILE_WS_RECONNECTION, e, WSClient.class.getName());
-                logger.postLogMessageIfNecessary(LogLevel.ERROR, ERROR_WHILE_WS_RECONNECTION + e.getMessage() + COLON_SEPARATOR + e.getCause(), e, WSClient.class.getName());
+                logger.log(LogLevel.SEVERE, ERROR_WHILE_WS_RECONNECTION + e.getMessage() + COLON_SEPARATOR + e.getCause(), WSClient.class.getName());
+                logger.log(LogLevel.FINER, ERROR_WHILE_WS_RECONNECTION, e, WSClient.class.getName());
+                logger.postLogMessageIfNecessary(LogLevel.SEVERE, ERROR_WHILE_WS_RECONNECTION + e.getMessage() + COLON_SEPARATOR + e.getCause(), e, WSClient.class.getName());
             } finally {
                 if (!WSUtils.isConnected()) {
                     futureTask = scheduledService.schedule(runnable, 30, TimeUnit.SECONDS);
@@ -65,7 +65,7 @@ public class WSReconnectionST {
             }
             return instance;
         } catch (Throwable e) {
-            logger.log(LogLevel.WARN, "Error while starting: ", e, WSReconnectionST.class.getName());
+            logger.log(LogLevel.WARNING, "Error while starting: ", e, WSReconnectionST.class.getName());
         }
         throw null;
     }
@@ -114,7 +114,7 @@ public class WSReconnectionST {
                     scheduledService.shutdownNow(); // cancel currently executing tasks
 
                     if (!scheduledService.awaitTermination(10, TimeUnit.SECONDS)) {
-                        logger.log(LogLevel.FATAL, "Thread pool executor did not terminate",
+                        logger.log(LogLevel.SEVERE, "Thread pool executor did not terminate",
                                 WSReconnectionST.class.getName());
                     } else {
                         logger.log(LogLevel.INFO, "Thread pool executor terminated",

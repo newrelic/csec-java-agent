@@ -1,0 +1,21 @@
+dependencies {
+    implementation(project(":newrelic-security-api"))
+    implementation("com.newrelic.agent.java:newrelic-api:${nrAPIVersion}")
+    implementation("com.newrelic.agent.java:newrelic-weaver-api:${nrAPIVersion}")
+    implementation("io.netty:netty-all:4.0.0.Final")
+}
+
+jar {
+    manifest {
+        attributes 'Implementation-Title': 'com.newrelic.instrumentation.security.netty-4.0.0'
+    }
+}
+
+verifyInstrumentation {
+    passesOnly 'io.netty:netty-all:[4.0.0.Final,5.0.0.Alpha1)'
+}
+
+site {
+    title 'Netty'
+    type 'Appserver'
+}
