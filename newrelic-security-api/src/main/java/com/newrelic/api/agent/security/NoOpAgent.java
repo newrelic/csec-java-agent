@@ -11,6 +11,7 @@ import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.SecurityMetaData;
 import com.newrelic.api.agent.security.schema.policy.AgentPolicy;
 
+import java.lang.instrument.Instrumentation;
 import java.net.URL;
 
 /**
@@ -25,7 +26,7 @@ class NoOpAgent implements SecurityAgent {
     }
 
     @Override
-    public boolean refreshState(URL agentJarURL) {
+    public boolean refreshState(URL agentJarURL, Instrumentation instrumentation) {
         return true;
     }
 
@@ -64,6 +65,11 @@ class NoOpAgent implements SecurityAgent {
     @Override
     public String getAgentTempDir() {
         return EMPTY;
+    }
+
+    @Override
+    public Instrumentation getInstrumentation() {
+        return null;
     }
 
 }

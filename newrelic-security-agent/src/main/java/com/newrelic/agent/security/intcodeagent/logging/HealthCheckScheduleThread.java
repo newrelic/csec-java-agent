@@ -8,13 +8,10 @@ import com.newrelic.agent.security.instrumentator.os.OsVariablesInstance;
 import com.newrelic.agent.security.instrumentator.utils.AgentUtils;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.newrelic.agent.security.intcodeagent.filelogging.LogLevel;
-import com.newrelic.agent.security.intcodeagent.models.javaagent.HttpConnectionStat;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.JAHealthCheck;
-import com.newrelic.agent.security.intcodeagent.schedulers.InBoundOutBoundST;
 import com.newrelic.agent.security.intcodeagent.websocket.JsonConverter;
 import com.newrelic.agent.security.intcodeagent.websocket.WSClient;
 import com.newrelic.agent.security.intcodeagent.websocket.WSUtils;
-import com.sun.management.OperatingSystemMXBean;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
@@ -24,10 +21,11 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
+import java.lang.management.OperatingSystemMXBean;
+import java.lang.reflect.Method;
 import java.math.RoundingMode;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.*;
@@ -61,45 +59,46 @@ public class HealthCheckScheduleThread {
 
     private static OSVariables osVariables = OsVariablesInstance.getInstance().getOsVariables();
 
-    private HealthCheckScheduleThread() {
-        Runnable runnable = new Runnable() {
-            public void run() {
+    private Runnable runnable = new Runnable() {
+        public void run() {
 
-                try {
-                    // since tcp connection keep alive check is more than 2 hours
-                    // we send our custom object to check if connection is still alive or not
-                    // this will be ignored by ic agent on the other side.
-                    
-                    AgentInfo.getInstance().getJaHealthCheck().setStats(populateJVMStats());
-                    AgentInfo.getInstance().getJaHealthCheck().setServiceStatus(getServiceStatus());
+            try {
+                // since tcp connection keep alive check is more than 2 hours
+                // we send our custom object to check if connection is still alive or not
+                // this will be ignored by ic agent on the other side.
 
-                    if (!AgentInfo.getInstance().isAgentActive()) {
-                        return;
-                    }
+                AgentInfo.getInstance().getJaHealthCheck().setStats(populateJVMStats());
+                AgentInfo.getInstance().getJaHealthCheck().setServiceStatus(getServiceStatus());
 
-                    AgentInfo.getInstance().getJaHealthCheck().setDsBackLog(RestRequestThreadPool.getInstance().getQueueSize());
-                    AgentUtils.getInstance().getStatusLogMostRecentHCs().add(AgentInfo.getInstance().getJaHealthCheck().toString());
-//						channel.write(ByteBuffer.wrap(new JAHealthCheck(AgentNew.JA_HEALTH_CHECK).toString().getBytes()));
-                    if (WSClient.getInstance().isOpen()) {
-                        WSClient.getInstance().send(JsonConverter.toJSON(new JAHealthCheck(AgentInfo.getInstance().getJaHealthCheck())));
-                        AgentInfo.getInstance().getJaHealthCheck().setEventDropCount(0);
-                        AgentInfo.getInstance().getJaHealthCheck().setEventProcessed(0);
-                        AgentInfo.getInstance().getJaHealthCheck().setEventSentCount(0);
-                        AgentInfo.getInstance().getJaHealthCheck().setHttpRequestCount(0);
-                        AgentInfo.getInstance().getJaHealthCheck().setExitEventSentCount(0);
-                    }
-
-                } catch (NullPointerException ex) {
-                    logger.log(LogLevel.WARN, "No reference to Socket's OutputStream",
-                            HealthCheckScheduleThread.class.getName());
-                } catch (Throwable e) {
-                    logger.log(LogLevel.WARN, "Error while trying to verify connection: ", e,
-                            HealthCheckScheduleThread.class.getName());
-                } finally {
-                    writeStatusLogFile();
+                if (!AgentInfo.getInstance().isAgentActive()) {
+                    return;
                 }
+
+                AgentInfo.getInstance().getJaHealthCheck().setDsBackLog(RestRequestThreadPool.getInstance().getQueueSize());
+                AgentUtils.getInstance().getStatusLogMostRecentHCs().add(AgentInfo.getInstance().getJaHealthCheck().toString());
+//						channel.write(ByteBuffer.wrap(new JAHealthCheck(AgentNew.JA_HEALTH_CHECK).toString().getBytes()));
+                if (WSClient.getInstance().isOpen()) {
+                    WSClient.getInstance().send(JsonConverter.toJSON(new JAHealthCheck(AgentInfo.getInstance().getJaHealthCheck())));
+                    AgentInfo.getInstance().getJaHealthCheck().setEventDropCount(0);
+                    AgentInfo.getInstance().getJaHealthCheck().setEventProcessed(0);
+                    AgentInfo.getInstance().getJaHealthCheck().setEventSentCount(0);
+                    AgentInfo.getInstance().getJaHealthCheck().setHttpRequestCount(0);
+                    AgentInfo.getInstance().getJaHealthCheck().setExitEventSentCount(0);
+                }
+
+            } catch (NullPointerException ex) {
+                logger.log(LogLevel.WARNING, "No reference to Socket's OutputStream",
+                        HealthCheckScheduleThread.class.getName());
+            } catch (Throwable e) {
+                logger.log(LogLevel.WARNING, "Error while trying to verify connection: ", e,
+                        HealthCheckScheduleThread.class.getName());
+            } finally {
+                writeStatusLogFile();
             }
-        };
+        }
+    };
+
+    private HealthCheckScheduleThread() {
         hcScheduledService = Executors.newSingleThreadScheduledExecutor(new ThreadFactory() {
             private final AtomicInteger threadNumber = new AtomicInteger(1);
 
@@ -109,6 +108,9 @@ public class HealthCheckScheduleThread {
                         IAgentConstants.HCSCHEDULEDTHREAD_ + threadNumber.getAndIncrement());
             }
         });
+    }
+
+    public void scheduleNewTask() {
         future = hcScheduledService.scheduleAtFixedRate(runnable, 1, 5, TimeUnit.MINUTES);
     }
 
@@ -146,12 +148,12 @@ public class HealthCheckScheduleThread {
                 isStatusLoggingActive = true;
             } else {
                 isStatusLoggingActive = false;
-                logger.log(LogLevel.ERROR, CAN_T_CREATE_STATUS_LOG_FILE, HealthCheckScheduleThread.class.getName());
+                logger.log(LogLevel.SEVERE, CAN_T_CREATE_STATUS_LOG_FILE, HealthCheckScheduleThread.class.getName());
             }
         } catch (IOException e) {
             String error = String.format(CAN_T_WRITE_STATUS_LOG_FILE_S_REASON_S, statusLog, e.getMessage());
             isStatusLoggingActive = false;
-            logger.log(LogLevel.ERROR, error, e, HealthCheckScheduleThread.class.getName());
+            logger.log(LogLevel.SEVERE, error, e, HealthCheckScheduleThread.class.getName());
         }
     }
 
@@ -188,14 +190,7 @@ public class HealthCheckScheduleThread {
         stats.put("processRssMB", NumberUtils.toScaledBigDecimal((memoryMXBean.getHeapMemoryUsage().getUsed() + memoryMXBean.getNonHeapMemoryUsage().getUsed()) / 1048576.0, 2, RoundingMode.HALF_DOWN).doubleValue());
 
         stats.put("processFreeMemoryMB", NumberUtils.toScaledBigDecimal(Runtime.getRuntime().freeMemory() / 1048576.0, 2, RoundingMode.HALF_DOWN).doubleValue());
-
-        OperatingSystemMXBean operatingSystemMXBean = (OperatingSystemMXBean) ManagementFactory.getOperatingSystemMXBean();
-
-        stats.put("systemCpuLoad", NumberUtils.toScaledBigDecimal(operatingSystemMXBean.getSystemLoadAverage(), 2, RoundingMode.HALF_DOWN).doubleValue());
-        stats.put("processCpuUsage", NumberUtils.toScaledBigDecimal(operatingSystemMXBean.getProcessCpuLoad(), 2, RoundingMode.HALF_DOWN).doubleValue());
-
-        stats.put("systemFreeMemoryMB", NumberUtils.toScaledBigDecimal(operatingSystemMXBean.getFreePhysicalMemorySize() / 1048576.0, 2, RoundingMode.HALF_DOWN).doubleValue());
-        stats.put("systemTotalMemoryMB", NumberUtils.toScaledBigDecimal(operatingSystemMXBean.getTotalPhysicalMemorySize() / 1048576.0, 2, RoundingMode.HALF_DOWN).doubleValue());
+        setOsStats(stats);
         stats.put("nCores", Runtime.getRuntime().availableProcessors());
 
         stats.put("rootDiskFreeSpaceMB", NumberUtils.toScaledBigDecimal(osVariables.getRootDir().getFreeSpace() / 1048576.0, 2, RoundingMode.HALF_DOWN).doubleValue());
@@ -204,13 +199,35 @@ public class HealthCheckScheduleThread {
         return stats;
     }
 
+    private static void setOsStats(Map<String, Object> stats) {
+        try {
+            Object operatingSystemMXBean = ManagementFactory.getOperatingSystemMXBean();
+            Method getProcessCpuLoad = operatingSystemMXBean.getClass().getMethod("getProcessCpuLoad");
+            getProcessCpuLoad.setAccessible(true);
+            Method getFreePhysicalMemorySize = operatingSystemMXBean.getClass().getMethod("getFreePhysicalMemorySize");
+            getFreePhysicalMemorySize.setAccessible(true);
+            Method getTotalPhysicalMemorySize = operatingSystemMXBean.getClass().getMethod("getTotalPhysicalMemorySize");
+            getTotalPhysicalMemorySize.setAccessible(true);
+
+            stats.put("systemCpuLoad", NumberUtils.toScaledBigDecimal(((OperatingSystemMXBean) operatingSystemMXBean).getSystemLoadAverage(), 2, RoundingMode.HALF_DOWN).doubleValue());
+            stats.put("processCpuUsage", NumberUtils.toScaledBigDecimal((double) getProcessCpuLoad.invoke(operatingSystemMXBean), 2, RoundingMode.HALF_DOWN).doubleValue());
+
+            stats.put("systemFreeMemoryMB", NumberUtils.toScaledBigDecimal(((long) getFreePhysicalMemorySize.invoke(operatingSystemMXBean)) / 1048576.0, 2, RoundingMode.HALF_DOWN).doubleValue());
+            stats.put("systemTotalMemoryMB", NumberUtils.toScaledBigDecimal(((long) getTotalPhysicalMemorySize.invoke(operatingSystemMXBean)) / 1048576.0, 2, RoundingMode.HALF_DOWN).doubleValue());
+
+        } catch (Throwable e) {
+//            logger.log(LogLevel.ERROR, "Error while populating OS related resource usage stats : " + e.toString(), HealthCheckScheduleThread.class.getName());
+            logger.log(LogLevel.FINER, "Error while populating OS related resource usage stats : ", e, HealthCheckScheduleThread.class.getName());
+        }
+    }
+
     public static HealthCheckScheduleThread getInstance() {
         try {
             if (instance == null)
                 instance = new HealthCheckScheduleThread();
             return instance;
         } catch (Throwable e) {
-            logger.log(LogLevel.WARN, "Error while starting: ", e, HealthCheckScheduleThread.class.getName());
+            logger.log(LogLevel.WARNING, "Error while starting: ", e, HealthCheckScheduleThread.class.getName());
         }
         throw null;
     }
@@ -237,7 +254,7 @@ public class HealthCheckScheduleThread {
                     hcScheduledService.shutdownNow(); // cancel currently executing tasks
 
                     if (!hcScheduledService.awaitTermination(1, TimeUnit.SECONDS)) {
-                        logger.log(LogLevel.FATAL, "Thread pool executor did not terminate",
+                        logger.log(LogLevel.SEVERE, "Thread pool executor did not terminate",
                                 HealthCheckScheduleThread.class.getName());
                     } else {
                         logger.log(LogLevel.INFO, "Thread pool executor terminated",

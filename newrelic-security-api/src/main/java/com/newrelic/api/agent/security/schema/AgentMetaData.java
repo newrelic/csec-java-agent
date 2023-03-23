@@ -24,6 +24,8 @@ public class AgentMetaData {
 
     private Map<String, String> userDataTranslationMap;
 
+    private Map<String, String> reflectedMetaData;
+
     @JsonIgnore
     private StackTraceElement[] serviceTrace;
 
@@ -40,6 +42,7 @@ public class AgentMetaData {
         this.rciMethodsCalls = new HashSet<>();
         this.ips = new HashSet<>();
         this.userDataTranslationMap = new HashMap<>();
+        this.reflectedMetaData = new HashMap<>();
     }
 
     public AgentMetaData(AgentMetaData agentMetaData) {
@@ -53,6 +56,7 @@ public class AgentMetaData {
         this.apiBlocked = agentMetaData.apiBlocked;
         this.userDataTranslationMap = new HashMap<>(agentMetaData.userDataTranslationMap);
         this.userLevelServiceMethodEncountered = agentMetaData.userLevelServiceMethodEncountered;
+        this.reflectedMetaData = agentMetaData.reflectedMetaData;
     }
 
     public boolean isTriggerViaRCI() {
@@ -95,6 +99,13 @@ public class AgentMetaData {
         isClientDetectedFromXFF = clientDetectedFromXFF;
     }
 
+    public Map<String, String> getReflectedMetaData() {
+        return reflectedMetaData;
+    }
+
+    public void setReflectedMetaData(Map<String, String> reflectedMetaData) {
+        this.reflectedMetaData = reflectedMetaData;
+    }
 
     public StackTraceElement[] getServiceTrace() {
         return serviceTrace;

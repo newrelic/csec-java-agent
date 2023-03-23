@@ -11,8 +11,12 @@ import java.nio.file.Files;
 import java.util.Arrays;
 
 public class ServletHelper {
-    public static final String SEPARATOR_SEMICOLON = ":K2:";
-    public static final String K2_HOME_TMP_CONST = "{{K2_HOME_TMP}}";
+    public static final String SEPARATOR_SEMICOLON = ":IAST:";
+    public static final String NR_CSEC_VALIDATOR_HOME_TMP = "{{NR_CSEC_VALIDATOR_HOME_TMP}}";
+
+    public static final String CSEC_IAST_FUZZ_REQUEST_ID = "nr-csec-fuzz-request-id";
+
+    public static final String CSEC_DISTRIBUTED_TRACING_HEADER = "NR-CSEC-TRACING-DATA";
 
     public static K2RequestIdentifier parseFuzzRequestIdentifierHeader(String requestHeaderVal) {
         K2RequestIdentifier k2RequestIdentifierInstance = new K2RequestIdentifier();
@@ -43,7 +47,7 @@ public class ServletHelper {
                         String tmpFile = data[i].trim();
                         k2RequestIdentifierInstance.getTempFiles().add(tmpFile);
                         try {
-                            tmpFile = StringUtils.replace(tmpFile, K2_HOME_TMP_CONST,
+                            tmpFile = StringUtils.replace(tmpFile, NR_CSEC_VALIDATOR_HOME_TMP,
                                     NewRelicSecurity.getAgent().getAgentTempDir());
                             File fileToCreate = new File(tmpFile);
                             if (fileToCreate.getParentFile() != null) {
