@@ -1,0 +1,29 @@
+dependencies {
+    implementation(project(":newrelic-security-api"))
+    implementation("com.newrelic.agent.java:newrelic-api:${nrAPIVersion}")
+    implementation("com.newrelic.agent.java:newrelic-weaver-api:${nrAPIVersion}")
+    implementation(fileTree(include: ["*.jar"], dir: "lib"))
+}
+
+def shouldBuild = fileTree(include: ["*.jar"], dir: "lib").size() > 0
+
+compileJava {
+    enabled(shouldBuild)
+}
+
+compileTestJava {
+    enabled(shouldBuild)
+}
+
+//tasks.getByName("writeCachedWeaveAttributes").enabled(shouldBuild)
+
+jar {
+    enabled(shouldBuild)
+    manifest { attributes 'Implementation-Title': 'com.newrelic.instrumentation.security.jdbc-sybase-6' }
+}
+
+site {
+    title 'Sybase'
+    type 'Datastore'
+    versionOverride '[6,)'
+}
