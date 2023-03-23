@@ -1,0 +1,39 @@
+dependencies {
+    implementation(project(":newrelic-security-api"))
+    implementation("com.newrelic.agent.java:newrelic-api:${nrAPIVersion}")
+    implementation("com.newrelic.agent.java:newrelic-weaver-api:${nrAPIVersion}")
+    implementation("com.amazonaws:aws-java-sdk-dynamodb:1.11.390")
+}
+
+repositories {
+    maven {
+        url 'https://s3-us-west-2.amazonaws.com/dynamodb-local/release'
+    }
+}
+
+jar {
+    manifest { attributes 'Implementation-Title': 'com.newrelic.instrumentation.security.dynamodb-1.11.390' }
+}
+
+verifyInstrumentation {
+    passesOnly 'com.amazonaws:aws-java-sdk-dynamodb:[1.11.390,1.11.453)'
+}
+
+// copy the native files
+task copyNativeDeps(type: Copy) {
+    from(configurations.testCompileClasspath) {
+        include "*.so"
+        include "*.dylib"
+    }
+    into "build/nr-native-libs"
+}
+
+test {
+    dependsOn copyNativeDeps
+    jvmArgs(["-Dsqlite4java.library.path=build/nr-native-libs"])
+}
+
+site {
+    title 'AWS DynamoDB'
+    type 'Datastore'
+}
