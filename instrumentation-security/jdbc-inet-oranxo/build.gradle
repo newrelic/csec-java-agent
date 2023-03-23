@@ -15,7 +15,7 @@ compileTestJava {
     enabled(shouldBuild)
 }
 
-//tasks.getByName("writeCachedWeaveAttributes").enabled(shouldBuild)
+tasks.getByName("writeCachedWeaveAttributes").enabled(shouldBuild)
 
 jar {
     enabled(shouldBuild)
