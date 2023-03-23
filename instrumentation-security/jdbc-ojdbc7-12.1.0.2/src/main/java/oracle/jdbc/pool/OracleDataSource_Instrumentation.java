@@ -15,8 +15,8 @@ import com.newrelic.api.agent.weaver.Weaver;
 
 import java.sql.Connection;
 
-@Weave(type = MatchType.BaseClass)
-public abstract class OracleDataSource {
+@Weave(type = MatchType.BaseClass, originalName = "oracle.jdbc.pool.OracleDataSource")
+public abstract class OracleDataSource_Instrumentation {
 
     public Connection getConnection(String userID, String pass) {
         if (NewRelicSecurity.isHookProcessingActive() && !NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()) {
