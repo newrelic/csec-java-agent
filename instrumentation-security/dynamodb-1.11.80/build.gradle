@@ -16,7 +16,7 @@ jar {
 }
 
 verifyInstrumentation {
-    passesOnly 'com.amazonaws:aws-java-sdk-dynamodb:[1.11.80,1.11.390)'
+    passesOnly 'com.amazonaws:aws-java-sdk-dynamodb:[1.10.70,1.11.390)'
 }
 
 // copy the native files
