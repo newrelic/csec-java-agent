@@ -66,6 +66,7 @@ public abstract class URLConnection_Instrumentation {
         AbstractOperation operation = null;
         URL getURL = getURL();
         if(getURL != null) {
+            url = getURL.toString();
             boolean currentCascadedCall = cascadedCall;
             // Preprocess Phase
             operation = preprocessSecurityHook(currentCascadedCall, url, getURL.getProtocol(), Helper.METHOD_NAME_GET_OUTPUT_STREAM);
@@ -88,6 +89,7 @@ public abstract class URLConnection_Instrumentation {
         AbstractOperation operation = null;
         URL getURL = getURL();
         if(getURL != null) {
+            url = getURL.toString();
             boolean currentCascadedCall = cascadedCall;
             // Preprocess Phase
             operation = preprocessSecurityHook(currentCascadedCall, url, getURL.getProtocol(), Helper.METHOD_NAME_GET_INPUT_STREAM);
