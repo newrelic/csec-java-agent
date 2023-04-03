@@ -255,7 +255,7 @@ public class ApplicationInfoUtils {
             SystemInfo systemInfo = new SystemInfo();
             bootTime = systemInfo.getOperatingSystem().getSystemBootTime();
             buildNumber = systemInfo.getOperatingSystem().getVersionInfo().getBuildNumber();
-        } catch (UnsatisfiedLinkError error) {
+        } catch (Throwable ignored) {
         }
 
         switch (identifier.getKind()) {
@@ -294,7 +294,7 @@ public class ApplicationInfoUtils {
                 identifier.setEnvInfo(podProperties);
                 break;
             case ECS:
-                identifier.setEnvInfo(populateECSInfo(identifier));
+                identifier.setEnvInfo(populateECSInfo(identifier, bootTime));
                 break;
             case FARGATE:
             case LAMBDA:
@@ -302,13 +302,12 @@ public class ApplicationInfoUtils {
         }
     }
 
-    private static ECSProperties populateECSInfo(Identifier identifier) {
+    private static ECSProperties populateECSInfo(Identifier identifier, long bootTime) {
         ECSProperties ecsProperties = new ECSProperties();
         ecsProperties.setId(identifier.getId());
         ecsProperties.setIpAddress(identifier.getCollectorIp());
         JSONObject ecsData = getECSInfo();
-        SystemInfo systemInfo = new SystemInfo();
-        ecsProperties.setCreationTimestamp(systemInfo.getOperatingSystem().getSystemBootTime() * 1000);
+        ecsProperties.setCreationTimestamp(bootTime * 1000);
 
         if (ecsData != null) {
             String imageId = (String) ecsData.get("ImageID");
