@@ -71,7 +71,7 @@ public class URLConnectionTest {
         Assert.assertEquals("Invalid executed parameters.", operation.getArg(), endpoint);
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.HTTP_REQUEST, operation.getCaseType());
         Assert.assertEquals("Invalid executed class name.", "sun.net.www.protocol.http.HttpURLConnection", operation.getClassName());
-        Assert.assertEquals("Invalid executed method name.", "connect", operation.getMethodName());
+        Assert.assertEquals("Invalid executed method name.", "getInputStream", operation.getMethodName());
     }
 
     @Test
@@ -85,7 +85,7 @@ public class URLConnectionTest {
         Assert.assertEquals("Invalid executed parameters.", operation.getArg(), endpoint);
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.HTTP_REQUEST, operation.getCaseType());
         Assert.assertEquals("Invalid executed class name.", sun.net.www.protocol.http.HttpURLConnection.class.getName(), operation.getClassName());
-        Assert.assertEquals("Invalid executed method name.", "connect", operation.getMethodName());
+        Assert.assertEquals("Invalid executed method name.", "getInputStream", operation.getMethodName());
     }
 
     @Test
@@ -99,7 +99,7 @@ public class URLConnectionTest {
         Assert.assertEquals("Invalid executed parameters.", operation.getArg(), endpoint);
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.HTTP_REQUEST, operation.getCaseType());
         Assert.assertEquals("Invalid executed class name.", sun.net.www.protocol.http.HttpURLConnection.class.getName(), operation.getClassName());
-        Assert.assertEquals("Invalid executed method name.", "connect", operation.getMethodName());
+        Assert.assertEquals("Invalid executed method name.", "getInputStream", operation.getMethodName());
     }
 
     @Test
@@ -113,7 +113,7 @@ public class URLConnectionTest {
         Assert.assertEquals("Invalid executed parameters.", operation.getArg(), endpoint);
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.HTTP_REQUEST, operation.getCaseType());
         Assert.assertEquals("Invalid executed class name.", sun.net.www.protocol.http.HttpURLConnection.class.getName(), operation.getClassName());
-        Assert.assertEquals("Invalid executed method name.", "connect", operation.getMethodName());
+        Assert.assertEquals("Invalid executed method name.", "getInputStream", operation.getMethodName());
     }
 
     @Test
@@ -127,7 +127,7 @@ public class URLConnectionTest {
         Assert.assertEquals("Invalid executed parameters.", operation.getArg(), endpoint);
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.HTTP_REQUEST, operation.getCaseType());
         Assert.assertEquals("Invalid executed class name.", sun.net.www.protocol.http.HttpURLConnection.class.getName(), operation.getClassName());
-        Assert.assertEquals("Invalid executed method name.", "connect", operation.getMethodName());
+        Assert.assertEquals("Invalid executed method name.", "getInputStream", operation.getMethodName());
     }
 
     @Test
@@ -141,7 +141,7 @@ public class URLConnectionTest {
         Assert.assertEquals("Invalid executed parameters.", operation.getArg(), endpoint);
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.HTTP_REQUEST, operation.getCaseType());
         Assert.assertEquals("Invalid executed class name.", sun.net.www.protocol.http.HttpURLConnection.class.getName(), operation.getClassName());
-        Assert.assertEquals("Invalid executed method name.", "connect", operation.getMethodName());
+        Assert.assertEquals("Invalid executed method name.", "getInputStream", operation.getMethodName());
     }
 
     @Test
@@ -155,7 +155,7 @@ public class URLConnectionTest {
         Assert.assertEquals("Invalid executed parameters.", operation.getArg(), endpoint);
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.HTTP_REQUEST, operation.getCaseType());
         Assert.assertEquals("Invalid executed class name.", "sun.net.www.protocol.http.HttpURLConnection", operation.getClassName());
-        Assert.assertEquals("Invalid executed method name.", "connect", operation.getMethodName());
+        Assert.assertEquals("Invalid executed method name.", "getOutputStream", operation.getMethodName());
     }
 
     @Trace(dispatcher = true)
