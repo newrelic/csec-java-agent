@@ -7,7 +7,7 @@
 
 package java.io;
 
-import com.newrelic.api.agent.security.NewRelicSecurity;
+import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.NewField;
 import com.newrelic.api.agent.weaver.Weave;
@@ -17,74 +17,40 @@ import com.nr.instrumentation.security.javaio.IOStreamHelper;
 @Weave(type = MatchType.BaseClass, originalName = "java.io.OutputStream")
 public abstract class OutputStream_Instrumentation {
 
-    @NewField
-    public Boolean outputStreamDataGatheringAllowed;
-
-    @NewField
-    public boolean cascadedCall;
-
     public void write(byte b[]) throws IOException {
-        boolean currentCascadedCall = cascadedCall;
+        boolean isLockAcquired = IOStreamHelper.acquireLockIfPossible(this.hashCode());
 
         // Preprocess Phase
-        if (b != null) {
-            preprocessSecurityHook(b, currentCascadedCall, 0, b.length);
+        if (isLockAcquired && b != null) {
+            IOStreamHelper.preprocessSecurityHook(b, 0, b.length);
         }
 
         // Actual Call
         try {
             Weaver.callOriginal();
         } finally {
-            postProcessSecurityHook(currentCascadedCall);
+            if(isLockAcquired){
+                IOStreamHelper.releaseLock(this.hashCode());
+            }
         }
     }
 
     public void write(byte b[], int off, int len) throws IOException {
-        boolean currentCascadedCall = cascadedCall;
+        boolean isLockAcquired = IOStreamHelper.acquireLockIfPossible(this.hashCode());
 
         // Preprocess Phase
-        if (b != null) {
-            preprocessSecurityHook(b, currentCascadedCall, off, len);
+        if (isLockAcquired && b != null) {
+            IOStreamHelper.preprocessSecurityHook(b, off, len);
         }
 
         // Actual Call
         try {
             Weaver.callOriginal();
         } finally {
-            postProcessSecurityHook(currentCascadedCall);
+            if(isLockAcquired){
+                IOStreamHelper.releaseLock(this.hashCode());
+            }
         }
-    }
-
-
-    private void preprocessSecurityHook(byte[] dataBuffer, boolean currentCascadedCall,
-                                        int offset, int writeDataLength) {
-        try {
-            if(Boolean.FALSE.equals(outputStreamDataGatheringAllowed) ||
-                    !NewRelicSecurity.isHookProcessingActive()) {
-                return;
-            }
-//                System.out.println("Start IS2 "+ this.hashCode());
-            if(outputStreamDataGatheringAllowed == null) {
-                outputStreamDataGatheringAllowed = IOStreamHelper.processResponseOutputStreamHookData(this.hashCode());
-            }
-
-            if (Boolean.TRUE.equals(outputStreamDataGatheringAllowed) && !currentCascadedCall && writeDataLength > -1) {
-                cascadedCall = true;
-                char[] data = new char[writeDataLength];
-                for (int i = offset, y = 0; i < offset + writeDataLength; i++, y++) {
-                    data[y] = (char) dataBuffer[i];
-                }
-
-//                        System.out.println("Writing from IS 2" + this.hashCode() + " : " + String.valueOf(data));
-                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getResponseBody().append(data);
-            }
-        } catch(Throwable ignored) {
-//            ignored.printStackTrace();
-        }
-    }
-
-    private void postProcessSecurityHook(boolean currentCascadedCall) {
-        cascadedCall = currentCascadedCall;
     }
 
 }

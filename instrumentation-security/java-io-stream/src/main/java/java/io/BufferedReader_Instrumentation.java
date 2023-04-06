@@ -18,26 +18,40 @@ import com.nr.instrumentation.security.javaio.IOStreamHelper;
 @Weave(type = MatchType.BaseClass, originalName = "java.io.BufferedReader")
 public abstract class BufferedReader_Instrumentation {
 
+    private boolean acquireLockIfPossible(int hashCode) {
+        try {
+            if(IOStreamHelper.processRequestReaderHookData(hashCode)) {
+                return GenericHelper.acquireLockIfPossible(IOStreamHelper.NR_SEC_CUSTOM_ATTRIB_NAME_READER, hashCode);
+            }
+        } catch (Throwable ignored) {}
+        return false;
+    }
+
+    private void releaseLock(int hashCode) {
+        try {
+            GenericHelper.releaseLock(IOStreamHelper.NR_SEC_CUSTOM_ATTRIB_NAME_READER, hashCode);
+        } catch (Throwable ignored) {}
+    }
+
     @WeaveAllConstructors
     private BufferedReader_Instrumentation(){}
 
     public int read() throws IOException {
         int returnData = -1;
-        boolean isLockAcquired = acquireLockIfPossible();
-        // Preprocess Phase
-        boolean isDataGatheringAllowed = isLockAcquired && preprocessSecurityHook();
+        int hashCode = this.hashCode();
+        boolean isLockAcquired = acquireLockIfPossible(hashCode);
 
         // Actual Call
         try {
             returnData = Weaver.callOriginal();
         } finally {
             if (isLockAcquired) {
-                releaseLock();
+                releaseLock(hashCode);
             }
         }
 
         // Postprocess Phase
-        if (isDataGatheringAllowed && returnData > 0) {
+        if (isLockAcquired && returnData > 0) {
             try {
                 NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().getBody().append((char) returnData);
             } catch (Throwable ignored) {
@@ -52,21 +66,20 @@ public abstract class BufferedReader_Instrumentation {
 
     public int read(char cbuf[], int off, int len) throws IOException {
         int returnData = -1;
-        boolean isLockAcquired = acquireLockIfPossible();
-        // Preprocess Phase
-        boolean isDataGatheringAllowed = isLockAcquired && preprocessSecurityHook();
+        int hashCode = this.hashCode();
+        boolean isLockAcquired = acquireLockIfPossible(hashCode);
 
         // Actual Call
         try {
             returnData = Weaver.callOriginal();
         } finally {
             if (isLockAcquired) {
-                releaseLock();
+                releaseLock(hashCode);
             }
         }
 
         // Postprocess Phase
-        if (isDataGatheringAllowed && returnData > 0) {
+        if (isLockAcquired && returnData > 0) {
             try {
                 NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().getBody().append(cbuf, off, returnData);
             } catch (Throwable ignored) {
@@ -79,21 +92,20 @@ public abstract class BufferedReader_Instrumentation {
 
     public String readLine() throws IOException {
         String returnData = null;
-        boolean isLockAcquired = acquireLockIfPossible();
-        // Preprocess Phase
-        boolean isDataGatheringAllowed = isLockAcquired && preprocessSecurityHook();
+        int hashCode = this.hashCode();
+        boolean isLockAcquired = acquireLockIfPossible(hashCode);
 
         // Actual Call
         try {
             returnData = Weaver.callOriginal();
         } finally {
             if (isLockAcquired) {
-                releaseLock();
+                releaseLock(hashCode);
             }
         }
 
         // Postprocess Phase
-        if (isDataGatheringAllowed && returnData != null) {
+        if (isLockAcquired && returnData != null) {
             try {
                 NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().getBody().append(returnData);
             } catch (Throwable ignored) {
@@ -106,36 +118,5 @@ public abstract class BufferedReader_Instrumentation {
 
     // TODO: need way to clone or intercept this stream elements
 //    public Stream<String> lines() {}
-
-    private boolean preprocessSecurityHook() {
-        try {
-            if (!NewRelicSecurity.isHookProcessingActive() ||
-                    NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()) {
-                return false;
-            }
-            boolean dataGatheringAllowed = IOStreamHelper.processRequestReaderHookData(this.hashCode());
-            if (Boolean.TRUE.equals(dataGatheringAllowed)) {
-                return true;
-            }
-        } catch (Throwable ignored) {
-//                ignored.printStackTrace();
-        }
-        return false;
-    }
-
-    private void releaseLock() {
-        try {
-            GenericHelper.releaseLock(IOStreamHelper.NR_SEC_CUSTOM_ATTRIB_NAME_READER, this.hashCode());
-        } catch (Throwable ignored) {
-        }
-    }
-
-    private boolean acquireLockIfPossible() {
-        try {
-            return GenericHelper.acquireLockIfPossible(IOStreamHelper.NR_SEC_CUSTOM_ATTRIB_NAME_READER, this.hashCode());
-        } catch (Throwable ignored) {
-        }
-        return false;
-    }
 
 }
