@@ -8,6 +8,7 @@
 package java.io;
 
 import com.newrelic.api.agent.security.NewRelicSecurity;
+import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.weaver.*;
 import com.nr.instrumentation.security.javaio.IOStreamHelper;
 
@@ -18,9 +19,24 @@ public abstract class PrintWriter_Instrumentation {
     @WeaveAllConstructors
     private PrintWriter_Instrumentation(){}
 
+    private static boolean acquireLockIfPossible(int hashCode) {
+        try {
+            if(IOStreamHelper.processResponseWriterHookData(hashCode)) {
+                return GenericHelper.acquireLockIfPossible(IOStreamHelper.NR_SEC_CUSTOM_ATTRIB_NAME_WRITER, hashCode);
+            }
+        } catch (Throwable ignored) {}
+        return false;
+    }
+
+    private static void releaseLock(int hashCode) {
+        try {
+            GenericHelper.releaseLock(IOStreamHelper.NR_SEC_CUSTOM_ATTRIB_NAME_WRITER, hashCode);
+        } catch (Throwable ignored) {}
+    }
+
     public PrintWriter append(char c) {
         int hashcode = this.hashCode();
-        boolean isLockAcquired = IOStreamHelper.acquireLockIfPossible(hashcode);
+        boolean isLockAcquired = acquireLockIfPossible(hashcode);
 
         // Preprocess Phase
         if (isLockAcquired) {
@@ -37,7 +53,7 @@ public abstract class PrintWriter_Instrumentation {
             returnWriter = Weaver.callOriginal();
         } finally {
             if(isLockAcquired){
-                IOStreamHelper.releaseLock(hashcode);
+                releaseLock(hashcode);
             }
         }
         return returnWriter;
@@ -45,7 +61,7 @@ public abstract class PrintWriter_Instrumentation {
 
     public PrintWriter append(CharSequence csq) {
         int hashcode = this.hashCode();
-        boolean isLockAcquired = IOStreamHelper.acquireLockIfPossible(hashcode);
+        boolean isLockAcquired = acquireLockIfPossible(hashcode);
 
         // Preprocess Phase
         if (isLockAcquired) {
@@ -62,7 +78,7 @@ public abstract class PrintWriter_Instrumentation {
             returnWriter = Weaver.callOriginal();
         } finally {
             if(isLockAcquired){
-                IOStreamHelper.releaseLock(hashcode);
+                releaseLock(hashcode);
             }
         }
         return returnWriter;
@@ -70,7 +86,7 @@ public abstract class PrintWriter_Instrumentation {
 
     public PrintWriter append(CharSequence csq, int start, int end) {
         int hashcode = this.hashCode();
-        boolean isLockAcquired = IOStreamHelper.acquireLockIfPossible(hashcode);
+        boolean isLockAcquired = acquireLockIfPossible(hashcode);
 
         // Preprocess Phase
         if (isLockAcquired) {
@@ -87,7 +103,7 @@ public abstract class PrintWriter_Instrumentation {
             returnWriter = Weaver.callOriginal();
         } finally {
             if(isLockAcquired){
-                IOStreamHelper.releaseLock(hashcode);
+                releaseLock(hashcode);
             }
         }
         return returnWriter;
@@ -96,7 +112,7 @@ public abstract class PrintWriter_Instrumentation {
 
     public void print(boolean b) {
         int hashcode = this.hashCode();
-        boolean isLockAcquired = IOStreamHelper.acquireLockIfPossible(hashcode);
+        boolean isLockAcquired = acquireLockIfPossible(hashcode);
 
         // Preprocess Phase
         if (isLockAcquired) {
@@ -112,14 +128,14 @@ public abstract class PrintWriter_Instrumentation {
             Weaver.callOriginal();
         } finally {
             if(isLockAcquired){
-                IOStreamHelper.releaseLock(hashcode);
+                releaseLock(hashcode);
             }
         }
     }
 
     public void print(char c) {
         int hashcode = this.hashCode();
-        boolean isLockAcquired = IOStreamHelper.acquireLockIfPossible(hashcode);
+        boolean isLockAcquired = acquireLockIfPossible(hashcode);
 
         // Preprocess Phase
         if (isLockAcquired) {
@@ -135,14 +151,14 @@ public abstract class PrintWriter_Instrumentation {
             Weaver.callOriginal();
         } finally {
             if(isLockAcquired){
-                IOStreamHelper.releaseLock(hashcode);
+                releaseLock(hashcode);
             }
         }
     }
 
     public void print(int i) {
         int hashcode = this.hashCode();
-        boolean isLockAcquired = IOStreamHelper.acquireLockIfPossible(hashcode);
+        boolean isLockAcquired = acquireLockIfPossible(hashcode);
 
         // Preprocess Phase
         if (isLockAcquired) {
@@ -158,14 +174,14 @@ public abstract class PrintWriter_Instrumentation {
             Weaver.callOriginal();
         } finally {
             if(isLockAcquired){
-                IOStreamHelper.releaseLock(hashcode);
+                releaseLock(hashcode);
             }
         }
     }
 
     public void print(long l) {
         int hashcode = this.hashCode();
-        boolean isLockAcquired = IOStreamHelper.acquireLockIfPossible(hashcode);
+        boolean isLockAcquired = acquireLockIfPossible(hashcode);
 
         // Preprocess Phase
         if (isLockAcquired) {
@@ -181,14 +197,14 @@ public abstract class PrintWriter_Instrumentation {
             Weaver.callOriginal();
         } finally {
             if(isLockAcquired){
-                IOStreamHelper.releaseLock(hashcode);
+                releaseLock(hashcode);
             }
         }
     }
 
     public void print(float f) {
         int hashcode = this.hashCode();
-        boolean isLockAcquired = IOStreamHelper.acquireLockIfPossible(hashcode);
+        boolean isLockAcquired = acquireLockIfPossible(hashcode);
 
         // Preprocess Phase
         if (isLockAcquired) {
@@ -204,14 +220,14 @@ public abstract class PrintWriter_Instrumentation {
             Weaver.callOriginal();
         } finally {
             if(isLockAcquired){
-                IOStreamHelper.releaseLock(hashcode);
+                releaseLock(hashcode);
             }
         }
     }
 
     public void print(double d) {
         int hashcode = this.hashCode();
-        boolean isLockAcquired = IOStreamHelper.acquireLockIfPossible(hashcode);
+        boolean isLockAcquired = acquireLockIfPossible(hashcode);
 
         // Preprocess Phase
         if (isLockAcquired) {
@@ -227,14 +243,14 @@ public abstract class PrintWriter_Instrumentation {
             Weaver.callOriginal();
         } finally {
             if(isLockAcquired){
-                IOStreamHelper.releaseLock(hashcode);
+                releaseLock(hashcode);
             }
         }
     }
 
     public void print(char s[]) {
         int hashcode = this.hashCode();
-        boolean isLockAcquired = IOStreamHelper.acquireLockIfPossible(hashcode);
+        boolean isLockAcquired = acquireLockIfPossible(hashcode);
 
         // Preprocess Phase
         if (isLockAcquired) {
@@ -250,14 +266,14 @@ public abstract class PrintWriter_Instrumentation {
             Weaver.callOriginal();
         } finally {
             if(isLockAcquired){
-                IOStreamHelper.releaseLock(hashcode);
+                releaseLock(hashcode);
             }
         }
     }
 
     public void print(String s) {
         int hashcode = this.hashCode();
-        boolean isLockAcquired = IOStreamHelper.acquireLockIfPossible(hashcode);
+        boolean isLockAcquired = acquireLockIfPossible(hashcode);
 
         // Preprocess Phase
         if (isLockAcquired) {
@@ -273,14 +289,14 @@ public abstract class PrintWriter_Instrumentation {
             Weaver.callOriginal();
         } finally {
             if(isLockAcquired){
-                IOStreamHelper.releaseLock(hashcode);
+                releaseLock(hashcode);
             }
         }
     }
 
     public void print(Object obj) {
         int hashcode = this.hashCode();
-        boolean isLockAcquired = IOStreamHelper.acquireLockIfPossible(hashcode);
+        boolean isLockAcquired = acquireLockIfPossible(hashcode);
 
         // Preprocess Phase
         if (isLockAcquired) {
@@ -296,14 +312,14 @@ public abstract class PrintWriter_Instrumentation {
             Weaver.callOriginal();
         } finally {
             if(isLockAcquired){
-                IOStreamHelper.releaseLock(hashcode);
+                releaseLock(hashcode);
             }
         }
     }
 
     public void println() {
         int hashcode = this.hashCode();
-        boolean isLockAcquired = IOStreamHelper.acquireLockIfPossible(hashcode);
+        boolean isLockAcquired = acquireLockIfPossible(hashcode);
 
         // Preprocess Phase
         if (isLockAcquired) {
@@ -319,14 +335,14 @@ public abstract class PrintWriter_Instrumentation {
             Weaver.callOriginal();
         } finally {
             if(isLockAcquired){
-                IOStreamHelper.releaseLock(hashcode);
+                releaseLock(hashcode);
             }
         }
     }
 
     public void println(boolean x) {
         int hashcode = this.hashCode();
-        boolean isLockAcquired = IOStreamHelper.acquireLockIfPossible(hashcode);
+        boolean isLockAcquired = acquireLockIfPossible(hashcode);
 
         // Preprocess Phase
         if (isLockAcquired) {
@@ -343,13 +359,13 @@ public abstract class PrintWriter_Instrumentation {
             Weaver.callOriginal();
         } finally {
             if(isLockAcquired){
-                IOStreamHelper.releaseLock(hashcode);
+                releaseLock(hashcode);
             }
         }
     }
     public void println(char x) {
         int hashcode = this.hashCode();
-        boolean isLockAcquired = IOStreamHelper.acquireLockIfPossible(hashcode);
+        boolean isLockAcquired = acquireLockIfPossible(hashcode);
 
         // Preprocess Phase
         if (isLockAcquired) {
@@ -366,13 +382,13 @@ public abstract class PrintWriter_Instrumentation {
             Weaver.callOriginal();
         } finally {
             if(isLockAcquired){
-                IOStreamHelper.releaseLock(hashcode);
+                releaseLock(hashcode);
             }
         }
     }
     public void println(int x) {
         int hashcode = this.hashCode();
-        boolean isLockAcquired = IOStreamHelper.acquireLockIfPossible(hashcode);
+        boolean isLockAcquired = acquireLockIfPossible(hashcode);
 
         // Preprocess Phase
         if (isLockAcquired) {
@@ -389,13 +405,13 @@ public abstract class PrintWriter_Instrumentation {
             Weaver.callOriginal();
         } finally {
             if(isLockAcquired){
-                IOStreamHelper.releaseLock(hashcode);
+                releaseLock(hashcode);
             }
         }
     }
     public void println(long x) {
         int hashcode = this.hashCode();
-        boolean isLockAcquired = IOStreamHelper.acquireLockIfPossible(hashcode);
+        boolean isLockAcquired = acquireLockIfPossible(hashcode);
 
         // Preprocess Phase
         if (isLockAcquired) {
@@ -412,13 +428,13 @@ public abstract class PrintWriter_Instrumentation {
             Weaver.callOriginal();
         } finally {
             if(isLockAcquired){
-                IOStreamHelper.releaseLock(hashcode);
+                releaseLock(hashcode);
             }
         }
     }
     public void println(float x) {
         int hashcode = this.hashCode();
-        boolean isLockAcquired = IOStreamHelper.acquireLockIfPossible(hashcode);
+        boolean isLockAcquired = acquireLockIfPossible(hashcode);
 
         // Preprocess Phase
         if (isLockAcquired) {
@@ -435,13 +451,13 @@ public abstract class PrintWriter_Instrumentation {
             Weaver.callOriginal();
         } finally {
             if(isLockAcquired){
-                IOStreamHelper.releaseLock(hashcode);
+                releaseLock(hashcode);
             }
         }
     }
     public void println(double x) {
         int hashcode = this.hashCode();
-        boolean isLockAcquired = IOStreamHelper.acquireLockIfPossible(hashcode);
+        boolean isLockAcquired = acquireLockIfPossible(hashcode);
 
         // Preprocess Phase
         if (isLockAcquired) {
@@ -458,13 +474,13 @@ public abstract class PrintWriter_Instrumentation {
             Weaver.callOriginal();
         } finally {
             if(isLockAcquired){
-                IOStreamHelper.releaseLock(hashcode);
+                releaseLock(hashcode);
             }
         }
     }
     public void println(char x[]) {
         int hashcode = this.hashCode();
-        boolean isLockAcquired = IOStreamHelper.acquireLockIfPossible(hashcode);
+        boolean isLockAcquired = acquireLockIfPossible(hashcode);
 
         // Preprocess Phase
         if (isLockAcquired) {
@@ -481,13 +497,13 @@ public abstract class PrintWriter_Instrumentation {
             Weaver.callOriginal();
         } finally {
             if(isLockAcquired){
-                IOStreamHelper.releaseLock(hashcode);
+                releaseLock(hashcode);
             }
         }
     }
     public void println(String x) {
         int hashcode = this.hashCode();
-        boolean isLockAcquired = IOStreamHelper.acquireLockIfPossible(hashcode);
+        boolean isLockAcquired = acquireLockIfPossible(hashcode);
 
         // Preprocess Phase
         if (isLockAcquired) {
@@ -504,13 +520,13 @@ public abstract class PrintWriter_Instrumentation {
             Weaver.callOriginal();
         } finally {
             if(isLockAcquired){
-                IOStreamHelper.releaseLock(hashcode);
+                releaseLock(hashcode);
             }
         }
     }
     public void println(Object x) {
         int hashcode = this.hashCode();
-        boolean isLockAcquired = IOStreamHelper.acquireLockIfPossible(hashcode);
+        boolean isLockAcquired = acquireLockIfPossible(hashcode);
 
         // Preprocess Phase
         if (isLockAcquired) {
@@ -527,14 +543,14 @@ public abstract class PrintWriter_Instrumentation {
             Weaver.callOriginal();
         } finally {
             if(isLockAcquired){
-                IOStreamHelper.releaseLock(hashcode);
+                releaseLock(hashcode);
             }
         }
     }
 
     public void write(String s, int off, int len) {
         int hashcode = this.hashCode();
-        boolean isLockAcquired = IOStreamHelper.acquireLockIfPossible(hashcode);
+        boolean isLockAcquired = acquireLockIfPossible(hashcode);
 
         // Preprocess Phase
         if (isLockAcquired) {
@@ -550,13 +566,13 @@ public abstract class PrintWriter_Instrumentation {
             Weaver.callOriginal();
         } finally {
             if(isLockAcquired){
-                IOStreamHelper.releaseLock(hashcode);
+                releaseLock(hashcode);
             }
         }
     }
     public void write(String s) {
         int hashcode = this.hashCode();
-        boolean isLockAcquired = IOStreamHelper.acquireLockIfPossible(hashcode);
+        boolean isLockAcquired = acquireLockIfPossible(hashcode);
 
         // Preprocess Phase
         if (isLockAcquired) {
@@ -572,13 +588,13 @@ public abstract class PrintWriter_Instrumentation {
             Weaver.callOriginal();
         } finally {
             if(isLockAcquired){
-                IOStreamHelper.releaseLock(hashcode);
+                releaseLock(hashcode);
             }
         }
     }
     public void write(char buf[]) {
         int hashcode = this.hashCode();
-        boolean isLockAcquired = IOStreamHelper.acquireLockIfPossible(hashcode);
+        boolean isLockAcquired = acquireLockIfPossible(hashcode);
 
         // Preprocess Phase
         if (isLockAcquired) {
@@ -594,13 +610,13 @@ public abstract class PrintWriter_Instrumentation {
             Weaver.callOriginal();
         } finally {
             if(isLockAcquired){
-                IOStreamHelper.releaseLock(hashcode);
+                releaseLock(hashcode);
             }
         }
     }
     public void write(char buf[], int off, int len) {
         int hashcode = this.hashCode();
-        boolean isLockAcquired = IOStreamHelper.acquireLockIfPossible(hashcode);
+        boolean isLockAcquired = acquireLockIfPossible(hashcode);
 
         // Preprocess Phase
         if (isLockAcquired) {
@@ -616,13 +632,13 @@ public abstract class PrintWriter_Instrumentation {
             Weaver.callOriginal();
         } finally {
             if(isLockAcquired){
-                IOStreamHelper.releaseLock(hashcode);
+                releaseLock(hashcode);
             }
         }
     }
     public void write(int c) {
         int hashcode = this.hashCode();
-        boolean isLockAcquired = IOStreamHelper.acquireLockIfPossible(hashcode);
+        boolean isLockAcquired = acquireLockIfPossible(hashcode);
 
         // Preprocess Phase
         if (isLockAcquired) {
@@ -638,14 +654,14 @@ public abstract class PrintWriter_Instrumentation {
             Weaver.callOriginal();
         } finally {
             if(isLockAcquired){
-                IOStreamHelper.releaseLock(hashcode);
+                releaseLock(hashcode);
             }
         }
     }
 
     public PrintWriter printf(String format, Object ... args) {
         int hashcode = this.hashCode();
-        boolean isLockAcquired = IOStreamHelper.acquireLockIfPossible(hashcode);
+        boolean isLockAcquired = acquireLockIfPossible(hashcode);
 
         // Preprocess Phase
         if (isLockAcquired) {
@@ -662,7 +678,7 @@ public abstract class PrintWriter_Instrumentation {
             returnWriter = Weaver.callOriginal();
         } finally {
             if(isLockAcquired){
-                IOStreamHelper.releaseLock(hashcode);
+                releaseLock(hashcode);
             }
         }
         return returnWriter;
@@ -670,7 +686,7 @@ public abstract class PrintWriter_Instrumentation {
 
     public PrintWriter printf(Locale l, String format, Object ... args) {
         int hashcode = this.hashCode();
-        boolean isLockAcquired = IOStreamHelper.acquireLockIfPossible(hashcode);
+        boolean isLockAcquired = acquireLockIfPossible(hashcode);
 
         // Preprocess Phase
         if (isLockAcquired) {
@@ -687,14 +703,14 @@ public abstract class PrintWriter_Instrumentation {
             returnWriter = Weaver.callOriginal();
         } finally {
             if(isLockAcquired){
-                IOStreamHelper.releaseLock(hashcode);
+                releaseLock(hashcode);
             }
         }
         return returnWriter;
     }
     public PrintWriter format(String format, Object ... args) {
         int hashcode = this.hashCode();
-        boolean isLockAcquired = IOStreamHelper.acquireLockIfPossible(hashcode);
+        boolean isLockAcquired = acquireLockIfPossible(hashcode);
 
         // Preprocess Phase
         if (isLockAcquired) {
@@ -711,7 +727,7 @@ public abstract class PrintWriter_Instrumentation {
             returnWriter = Weaver.callOriginal();
         } finally {
             if(isLockAcquired){
-                IOStreamHelper.releaseLock(hashcode);
+                releaseLock(hashcode);
             }
         }
         return returnWriter;
@@ -719,7 +735,7 @@ public abstract class PrintWriter_Instrumentation {
 
     public PrintWriter format(Locale l, String format, Object ... args) {
         int hashcode = this.hashCode();
-        boolean isLockAcquired = IOStreamHelper.acquireLockIfPossible(hashcode);
+        boolean isLockAcquired = acquireLockIfPossible(hashcode);
 
         // Preprocess Phase
         if (isLockAcquired) {
@@ -736,7 +752,7 @@ public abstract class PrintWriter_Instrumentation {
             returnWriter = Weaver.callOriginal();
         } finally {
             if(isLockAcquired){
-                IOStreamHelper.releaseLock(hashcode);
+                releaseLock(hashcode);
             }
         }
         return returnWriter;

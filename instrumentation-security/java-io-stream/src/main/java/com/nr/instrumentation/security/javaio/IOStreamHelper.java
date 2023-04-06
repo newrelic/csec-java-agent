@@ -4,8 +4,9 @@ import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 
 public class IOStreamHelper {
-    public static final String NR_SEC_CUSTOM_ATTRIB_NAME_READER = "NR_SEC_CUSTOM_ATTRIB_NAME_READER";
-    public static final String NR_SEC_CUSTOM_ATTRIB_NAME_OUTPUT_STREAM = "NR_SEC_CUSTOM_ATTRIB_NAME_OUTPUT_STREAM";
+    public static final String NR_SEC_CUSTOM_ATTRIB_NAME_READER = "SERVLET_READER_OPERATION_LOCK-";
+    public static final String NR_SEC_CUSTOM_ATTRIB_NAME_WRITER = "SERVLET_WRITER_OPERATION_LOCK-";
+    public static final String NR_SEC_CUSTOM_ATTRIB_NAME_OUTPUT_STREAM = "SERVLET_OS_OPERATION_LOCK-";
 
     private static final String REQUEST_READER_HASH = "REQUEST_READER_HASH";
 
@@ -50,18 +51,5 @@ public class IOStreamHelper {
         } catch(Throwable ignored) {}
     }
 
-    public static boolean acquireLockIfPossible(int hashCode) {
-        try {
-            if(IOStreamHelper.processResponseOutputStreamHookData(hashCode)) {
-                return GenericHelper.acquireLockIfPossible(IOStreamHelper.NR_SEC_CUSTOM_ATTRIB_NAME_OUTPUT_STREAM, hashCode);
-            }
-        } catch (Throwable ignored) {}
-        return false;
-    }
 
-    public static void releaseLock(int hashCode) {
-        try {
-            GenericHelper.releaseLock(IOStreamHelper.NR_SEC_CUSTOM_ATTRIB_NAME_OUTPUT_STREAM, hashCode);
-        } catch (Throwable ignored) {}
-    }
 }
