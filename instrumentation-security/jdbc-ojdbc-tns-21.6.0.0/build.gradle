@@ -10,7 +10,7 @@ jar {
 }
 
 verifyInstrumentation {
-    passes("com.oracle.database.jdbc:ojdbc8:[21.6.0.0,)")
+    passes("com.oracle.database.jdbc:ojdbc8:[21.6.0.0,23.2.0.0)")
 }
 
 site {
