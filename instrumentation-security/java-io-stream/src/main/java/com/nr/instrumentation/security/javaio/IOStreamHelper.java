@@ -26,7 +26,12 @@ public class IOStreamHelper {
     }
 
     public static Boolean processResponseWriterHookData(Integer writerHash) {
-        return writerHash.equals(NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(RESPONSE_WRITER_HASH, Integer.class));
+        try {
+            if(NewRelicSecurity.isHookProcessingActive() && NewRelicSecurity.getAgent().getSecurityMetaData()!= null) {
+                return writerHash.equals(NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(RESPONSE_WRITER_HASH, Integer.class));
+            }
+        } catch (Throwable ignored){}
+        return false;
     }
 
     public static Boolean processResponseOutputStreamHookData(Integer outputStreamHash) {
