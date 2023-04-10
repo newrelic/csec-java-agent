@@ -49,7 +49,7 @@ public abstract class XPath_Instrumentation {
             operation = preprocessSecurityHook(expression, XPATHUtils.METHOD_EVALUATE);
         }
 
-        String returnVal = null;
+        Object returnVal = null;
         try {
             returnVal = Weaver.callOriginal();
         } finally {
@@ -89,7 +89,7 @@ public abstract class XPath_Instrumentation {
             operation = preprocessSecurityHook(expression, XPATHUtils.METHOD_EVALUATE);
         }
 
-        String returnVal = null;
+        Object returnVal = null;
         try {
             returnVal = Weaver.callOriginal();
         } finally {
