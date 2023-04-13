@@ -56,7 +56,7 @@ public class RestRequestThreadPool {
             @Override
             public Thread newThread(Runnable r) {
                 Thread t = new Thread(Thread.currentThread().getThreadGroup(), r,
-                        "K2-RequestRepeater" + threadNumber.getAndIncrement());
+                        "NewRelic-IAST-RequestRepeater" + threadNumber.getAndIncrement());
                 t.setDaemon(true);
                 return t;
             }

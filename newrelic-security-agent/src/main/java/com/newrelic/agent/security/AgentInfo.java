@@ -26,7 +26,7 @@ import static com.newrelic.agent.security.util.IUtilConstants.NOT_AVAILABLE;
 
 public class AgentInfo {
 
-    private static final String APP_INFO_BEAN_NOT_CREATED = "[APP_INFO] Error K2 application info bean not created.";
+    private static final String APP_INFO_BEAN_NOT_CREATED = "[APP_INFO] Error application info bean not created.";
 
     private static AgentInfo instance;
 

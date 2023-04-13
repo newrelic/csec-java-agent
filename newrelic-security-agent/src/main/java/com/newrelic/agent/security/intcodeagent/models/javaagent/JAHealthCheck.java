@@ -12,7 +12,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class JAHealthCheck extends AgentBasicInfo {
 
     private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
-	private static final String HC_CREATED = "Created K2 Health Check: %s";
+	private static final String HC_CREATED = "Created Health Check: %s";
 
     private String applicationUUID;
 

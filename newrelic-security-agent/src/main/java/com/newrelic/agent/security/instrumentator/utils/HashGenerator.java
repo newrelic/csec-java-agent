@@ -26,7 +26,7 @@ public class HashGenerator {
     private static final String ERROR2 = "Error : ";
     private static final String TAR_SIZE = "tar size : ";
     private static final String TAR_GZ = "tar.gz";
-    private static final String K2_TEMP_DIR = "K2-";
+    private static final String K2_TEMP_DIR = "NR-CSEC-";
     private static final Set<String> JAVA_APPLICATION_ALLOWED_FILE_EXT = new HashSet<>(
             Arrays.asList(new String[]{"java", "jsp", "class", "jar", "war", "ear"}));
     private static final Set<String> OTHER_CRITICAL_FILE_EXT = new HashSet<>(

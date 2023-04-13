@@ -54,7 +54,7 @@ public class FileLoggerThreadPool {
         executor.setThreadFactory(new ThreadFactory() {
             @Override
             public Thread newThread(Runnable r) {
-                Thread t = new Thread(Thread.currentThread().getThreadGroup(), r, "K2-Logger");
+                Thread t = new Thread(Thread.currentThread().getThreadGroup(), r, "NewRelic-CSEC-Logger");
                 t.setDaemon(true);
                 return t;
             }
