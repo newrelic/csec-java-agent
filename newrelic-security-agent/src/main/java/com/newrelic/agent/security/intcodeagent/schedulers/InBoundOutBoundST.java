@@ -60,7 +60,7 @@ public class InBoundOutBoundST {
             @Override
             public Thread newThread(Runnable r) {
                 Thread t = new Thread(Thread.currentThread().getThreadGroup(), r,
-                        "K2-inbound-outbound-st");
+                        "NR-CSEC-inbound-outbound-st");
                 t.setDaemon(true);
                 return t;
             }

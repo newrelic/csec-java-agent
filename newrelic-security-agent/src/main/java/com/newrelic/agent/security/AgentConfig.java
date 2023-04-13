@@ -106,12 +106,12 @@ public class AgentConfig {
         Path k2homePath = Paths.get(K2_HOME, IUtilConstants.NR_SECURITY_HOME);
         CommonUtils.forceMkdirs(k2homePath, "rwxrwxrwx");
         K2_HOME = k2homePath.toString();
-        AgentUtils.getInstance().getStatusLogValues().put("k2-home", K2_HOME);
-        AgentUtils.getInstance().getStatusLogValues().put("k2-home-permissions", String.valueOf(k2homePath.toFile().canWrite() && k2homePath.toFile().canRead()));
+        AgentUtils.getInstance().getStatusLogValues().put("csec-home", K2_HOME);
+        AgentUtils.getInstance().getStatusLogValues().put("csec-home-permissions", String.valueOf(k2homePath.toFile().canWrite() && k2homePath.toFile().canRead()));
         AgentUtils.getInstance().getStatusLogValues().put("agent-location",
                 NewRelic.getAgent().getConfig().getValue("agent_jar_location"));
         if (!isValidK2HomePath(K2_HOME)) {
-            System.err.println("[K2-JA] Incomplete startup env parameters provided : Missing or Incorrect K2_HOME. Collector exiting.");
+            System.err.println("[NR-CSEC-JA] Incomplete startup env parameters provided : Missing or Incorrect K2_HOME. Collector exiting.");
             return false;
         }
         return true;
@@ -129,7 +129,7 @@ public class AgentConfig {
             if (avail > FileUtils.ONE_GB) {
                 return true;
             }
-            System.err.println(String.format("[K2-JA] Insufficient disk space available to the location %s is : %s", k2Home, FileUtils.byteCountToDisplaySize(avail)));
+            System.err.println(String.format("[NR-CSEC-JA] Insufficient disk space available to the location %s is : %s", k2Home, FileUtils.byteCountToDisplaySize(avail)));
             return false;
         }
         return false;

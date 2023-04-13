@@ -79,7 +79,7 @@ public class InstrumentationUtils {
             FileUtils.deleteQuietly(new File(OsVariablesInstance.getInstance().getOsVariables().getTmpDirectory()));
 
         } catch (Throwable e) {
-            logger.log(LogLevel.SEVERE, "Error while shutting down K2 Pools : ", e,
+            logger.log(LogLevel.SEVERE, "Error while shutting down executor pools : ", e,
                     InstrumentationUtils.class.getName());
         }
         logger.log(LogLevel.SEVERE, JAVA_AGENT_SHUTDOWN_COMPLETE, InstrumentationUtils.class.getName());

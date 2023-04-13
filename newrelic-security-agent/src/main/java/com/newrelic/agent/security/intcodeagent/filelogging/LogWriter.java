@@ -26,7 +26,6 @@ public class LogWriter implements Runnable {
 
     private static final String STR_COLON = " : ";
 
-    private static final String K2_LOG = "K2-LOG : ";
     public static final String THREAD_NAME_TEMPLATE = " [%s] [%s] ";
     public static final String CAUSED_BY = "Caused by: ";
 
@@ -80,9 +79,9 @@ public class LogWriter implements Runnable {
                 FileLoggerThreadPool.getInstance().setLoggingActive(false);
             }
             String tmpDir = System.getProperty("java.io.tmpdir");
-            System.err.println("[K2-JA] Unable to create log file!!! Please find the error in  " + tmpDir + File.separator + "K2-Logger.err");
+            System.err.println("[NR-CSEC-JA] Unable to create log file!!! Please find the error in  " + tmpDir + File.separator + "NR-CSEC-Logger.err");
             try {
-                e.printStackTrace(new PrintStream(tmpDir + File.separator + "K2-Logger.err"));
+                e.printStackTrace(new PrintStream(tmpDir + File.separator + "NR-CSEC-Logger.err"));
             } catch (FileNotFoundException ex) {
             }
             return false;

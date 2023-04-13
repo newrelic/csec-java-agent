@@ -60,7 +60,7 @@ public class EventSendPool {
             @Override
             public Thread newThread(Runnable r) {
                 Thread t = new Thread(Thread.currentThread().getThreadGroup(), r,
-                        "K2-EventSender");
+                        "NR-CSEC-EventSender");
                 t.setDaemon(true);
                 return t;
             }

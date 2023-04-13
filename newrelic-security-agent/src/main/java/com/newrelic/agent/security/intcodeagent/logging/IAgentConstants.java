@@ -457,19 +457,15 @@ public interface IAgentConstants {
     String EXCEPTION_OCCURED_IN_CREATE_APPLICATION_INFO_BEAN = "Exception occured in createApplicationInfoBean: ";
     String EXCEPTION_OCCURED_IN_EVENT_SEND_POOL = "Exception occured in EventSendPool: ";
     String ERROR_OCCURED_WHILE_TRYING_TO_CONNECT_TO_WSOCKET = "Error occured while trying to connect to wsocket: ";
-    String ERROR_WHILE_INITIALISING_THE_K2_AGENT = "Error while initialising the K2 Agent :";
 
-    // IPScheduledThread.java file constants
-    String HOST_IP_PROPERTIES_FILE = "/opt/k2-ic/hostip.properties";
-
-    String HCSCHEDULEDTHREAD_ = "K2-hcScheduledThread-";
-    String WSRECONNECTSCHEDULEDTHREAD_ = "K2-WSReconnect-";
+    String HCSCHEDULEDTHREAD_ = "NR-CSEC-HC-ScheduledThread-";
+    String WSRECONNECTSCHEDULEDTHREAD_ = "NR-CSEC-WSReconnect-";
 
     String ACK_MSG = "ACK";
     // EventThreadPool.java file constants
 
-    String K2_JAVA_AGENT = "K2-Java-Agent-";
-    String K2_LISTERNER = "K2-ControlCommand-Listener-";
+    String K2_JAVA_AGENT = "NR-CSEC-Java-Agent-";
+    String K2_LISTERNER = "NR-CSEC-ControlCommand-Listener-";
 
     // LoggingInterceptor Constants
     char DIR_SEPERATOR = '/';
@@ -485,7 +481,6 @@ public interface IAgentConstants {
     String JAR_PATH_TIMEOUT_ERR = "Timeout reached waiting for getJarPathResultExecutorService.";
     String HOST_PROP_FILE_NAME = "/opt/k2-ic/hostip.properties";
     String HOST_IP_FOUND_MSG = "hostip found: ";
-    String JA_CONNECT_SUCCESS_MSG = "K2-JavaAgent installed successfully.";
     String PROC_DIR = "/proc/";
     String PROC_SELF_DIR = "/proc/self";
     String CMD_LINE_DIR = "/cmdline";
@@ -625,10 +620,10 @@ public interface IAgentConstants {
     String SHUTTING_DOWN_WITH_STATUS = "Shutting down with status: ";
 
     String STATUS_FILE_TEMPLATE = "Snapshot timestamp: ${timestamp}\n" +
-            "K2 Java Agent start timestamp: ${start-time} with application uuid: ${application-uuid}\n" +
-            "K2HOME: ${k2-home}, permissions read & write: ${k2-home-permissions}\n" +
+            "NR CSEC Java Agent start timestamp: ${start-time} with application uuid: ${application-uuid}\n" +
+            "CSEC HOME: ${csec-home}, permissions read & write: ${csec-home-permissions}\n" +
             "Agent location: ${agent-location}\n" +
-            "Using K2 for JAVA, Java version: ${java-version}, PID:${pid}\n" +
+            "Using NR CSEC for JAVA, Java version: ${java-version}, PID:${pid}\n" +
             "Process title: Java\n" +
             "Process binary: ${process-binary}\n" +
             "Application location: ${app-location}\n" +
