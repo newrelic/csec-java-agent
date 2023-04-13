@@ -47,7 +47,6 @@ public class JsonConverter {
         SimpleModule module = new SimpleModule();
         module.addSerializer(StackTraceElement.class, new K2StackTraceSerializer());
         objectMapper = objectMapper.registerModule(module);
-        objectMapper = objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         objectMapper = objectMapper.setAnnotationIntrospector(new JacksonAnnotationIntrospector() {
 
             @Override
