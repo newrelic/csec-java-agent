@@ -282,7 +282,7 @@ public class WSClient extends WebSocketClient {
         instance = null;
     }
 
-    public static void tryWebsocketConnection(int numberOfRetries, boolean isConstantPooling) {
+    public static void tryWebsocketConnection(int numberOfRetries) {
         try {
             int retries = numberOfRetries;
             WSClient.reconnectWSClient();
@@ -290,16 +290,9 @@ public class WSClient extends WebSocketClient {
                 try {
                     if (!WSUtils.isConnected()) {
                         retries--;
-                        int timeout;
-                        if (isConstantPooling) {
-                            timeout = 15;
-                            logger.logInit(LogLevel.INFO, String.format("WS client connection failed will retry after %s second(s)", timeout), WSClient.class.getName());
-                            TimeUnit.SECONDS.sleep(timeout);
-                        } else {
-                            timeout = (numberOfRetries - retries);
-                            logger.logInit(LogLevel.INFO, String.format("WS client connection failed will retry after %s minute(s)", timeout), WSClient.class.getName());
-                            TimeUnit.MINUTES.sleep(timeout);
-                        }
+                        int timeout = 15;
+                        logger.logInit(LogLevel.INFO, String.format("WS client connection failed will retry after %s second(s)", timeout), WSClient.class.getName());
+                        TimeUnit.SECONDS.sleep(timeout);
                         WSClient.reconnectWSClient();
                     } else {
                         break;

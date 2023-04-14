@@ -162,7 +162,7 @@ public class Agent implements SecurityAgent {
                 String.format(STARTED_MODULE_LOG, AgentServices.HealthCheck.name()),
                 Agent.class.getName()
         );
-        WSClient.tryWebsocketConnection(NUMBER_OF_RETRIES, false);
+        WSReconnectionST.getInstance().submitNewTaskSchedule();
         EventSendPool.getInstance();
         logger.logInit(
                 LogLevel.INFO,
