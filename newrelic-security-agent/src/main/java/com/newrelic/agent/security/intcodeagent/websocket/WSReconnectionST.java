@@ -31,7 +31,7 @@ public class WSReconnectionST {
                 logger.postLogMessageIfNecessary(LogLevel.SEVERE, ERROR_WHILE_WS_RECONNECTION + e.getMessage() + COLON_SEPARATOR + e.getCause(), e, WSClient.class.getName());
             } finally {
                 if (!WSUtils.isConnected()) {
-                    futureTask = scheduledService.schedule(runnable, 30, TimeUnit.SECONDS);
+                    futureTask = scheduledService.schedule(runnable, 15, TimeUnit.SECONDS);
                 }
             }
         }
@@ -76,7 +76,7 @@ public class WSReconnectionST {
                 if (scheduledService.isShutdown()) {
                     instance.instantiateScheduler();
                 }
-                futureTask = scheduledService.schedule(runnable, 30, TimeUnit.SECONDS);
+                futureTask = scheduledService.schedule(runnable, 15, TimeUnit.SECONDS);
             }
         }
     }
