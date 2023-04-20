@@ -11,7 +11,7 @@ jar {
 }
 
 verifyInstrumentation {
-    passesOnly 'mysql:mysql-connector-java:[6.0.2,8.0.32]'
+    passesOnly 'mysql:mysql-connector-java:[6.0.2,8.0.33]'
     // these versions are bad and they should feel bad
     exclude 'mysql:mysql-connector-java:8.0.7'
     exclude 'mysql:mysql-connector-java:8.0.8'
