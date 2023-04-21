@@ -1,8 +1,8 @@
-<a href="https://opensource.newrelic.com/oss-category/#community-project"><picture><source media="(prefers-color-scheme: dark)" srcset="https://github.com/newrelic/opensource-website/raw/main/src/images/categories/dark/Community_Project.png"><source media="(prefers-color-scheme: light)" srcset="https://github.com/newrelic/opensource-website/raw/main/src/images/categories/Community_Project.png"><img alt="New Relic Open Source community project banner." src="https://github.com/newrelic/opensource-website/raw/main/src/images/categories/Community_Project.png"></picture></a>
+# *The New Relic csec-java-agent is in preview and licensed under the New Relic Pre-Release Software Notice.*
 
-# [Name of Project] [build badges go here when available]
+## New Relic csec-java-agent [build badges go here when available]
 
->[Brief description - what is the software and what value does it provide? How often should users expect to get releases? How is versioning set up? What are some next phases for the project or how will it evolve?]
+The New Relic csec-java-agent is not generally available.  To participate in the csec-java-agent preview, follow the steps outlined here.
 
 ## Installing and using [project name]
 
@@ -19,15 +19,17 @@
 
 ## Support
 
-New Relic hosts and moderates an online forum where customers can interact with New Relic employees as well as other customers to get help and share best practices. Like all official New Relic open source projects, there's a related Community topic in the New Relic Explorers Hub. You can find this project's topic/threads here:
+New Relic hosts and moderates an online forum where customers can interact with New Relic employees as well as other customers to get help and share best practices. You can find this project's topic/threads here:
 
 >[Add the url for the support thread here: discuss.newrelic.com]
 
-## Contribute
+## Feedback
 
-We encourage your contributions to improve [project name]! Keep in mind that when you submit your pull request, you'll need to sign the CLA via the click-through using CLA-Assistant. You only have to sign the CLA one time per project.
+Any feedback provided to New Relic about the New Relic csec-java-agent, including feedback provided as source code, comments, or other copyrightable or patentable material, is provided to New Relic under the terms of the Apache Software License, version 2. If you do not provide attribution information or a copy of the license with your feedback, you waive the performance of those requirements of the Apache License with respect to New Relic. The license grant regarding any feedback is irrevocable and persists past the termination of the preview license.
 
-If you have any questions, or to execute our corporate CLA (which is required if your contribution is on behalf of a company), drop us an email at opensource@newrelic.com.
+Keep in mind that when you submit a pull request or other feedback, you'll need to sign the New Relic CSEC Agent CLA via the click-through using CLA-Assistant. You only have to sign this CLA one time per project.
+
+If you have any questions drop us an email at opensource@newrelic.com.
 
 **A note about vulnerabilities**
 
@@ -35,10 +37,10 @@ As noted in our [security policy](../../security/policy), New Relic is committed
 
 If you believe you have found a security vulnerability in this project or any of New Relic's products or websites, we welcome and greatly appreciate you reporting it to New Relic through [HackerOne](https://hackerone.com/newrelic).
 
-If you would like to contribute to this project, review [these guidelines](./CONTRIBUTING.md).
-
-To all contributors, we thank you!  Without your contribution, this project would not be what it is today.  We also host a community project page dedicated to [Project Name](<LINK TO https://opensource.newrelic.com/projects/... PAGE>).
+If you would like to contribute to this project, review [these guidelines](./Contributing Feedback.md).
 
 ## License
-[Project name] is licensed under the [Apache 2.0](http://apache.org/licenses/LICENSE-2.0.txt) License.
->[If applicable: The [project name] also uses source code from third-party libraries. Full details on which libraries are used and the terms under which they are licensed can be found in the third-party notices document.]
+
+The New Relic csec-java-agent is licensed under the New Relic Pre-Release Software Notice.
+
+The New Relic csec-java-agent also uses source code from third-party libraries. You can find full details on which libraries are used and the terms under which they are licensed in the third-party notices document.
