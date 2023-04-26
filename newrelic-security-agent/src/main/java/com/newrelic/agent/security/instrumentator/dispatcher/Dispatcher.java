@@ -133,10 +133,13 @@ public class Dispatcher implements Runnable {
                     eventBean = prepareSystemCommandEvent(eventBean, operationalBean);
                     break;
                 case SQL_DB_COMMAND:
-                    SQLOperation sqlOperation = (SQLOperation) operation;
-                    eventBean = prepareSQLDbCommandEvent(Collections.singletonList(sqlOperation), eventBean);
-                    break;
-
+                    if (operation instanceof SQLOperation) {
+                        eventBean = prepareSQLDbCommandEvent((SQLOperation) operation, eventBean);
+                        break;
+                    } else if (operation instanceof BatchSQLOperation) {
+                        eventBean = prepareSQLDbCommandEvent((BatchSQLOperation) operation, eventBean);
+                        break;
+                    }
                 case NOSQL_DB_COMMAND:
                     NoSQLOperation noSQLOperationalBean = (NoSQLOperation) operation;
                     try {
@@ -414,10 +417,10 @@ public class Dispatcher implements Runnable {
         return eventBean;
     }
 
-    private JavaAgentEventBean prepareSQLDbCommandEvent(List<SQLOperation> operationalList,
+    private JavaAgentEventBean prepareSQLDbCommandEvent(BatchSQLOperation operation,
             JavaAgentEventBean eventBean) {
         JSONArray params = new JSONArray();
-        for (SQLOperation operationalBean : operationalList) {
+        for (SQLOperation operationalBean : operation.getOperations()) {
             JSONObject query = new JSONObject();
             query.put(QUERY, operationalBean.getQuery());
             if(operationalBean.getParams() != null) {
@@ -426,7 +429,21 @@ public class Dispatcher implements Runnable {
             params.add(query);
         }
         eventBean.setParameters(params);
-        eventBean.setEventCategory(operationalList.get(0).getDbName());
+        eventBean.setEventCategory(operation.getOperations().get(0).getDbName());
+        return eventBean;
+    }
+
+    private JavaAgentEventBean prepareSQLDbCommandEvent(SQLOperation operation,
+                                                        JavaAgentEventBean eventBean) {
+        JSONArray params = new JSONArray();
+        JSONObject query = new JSONObject();
+        query.put(QUERY, operation.getQuery());
+        if(operation.getParams() != null) {
+            query.put(PARAMETERS, new JSONObject(operation.getParams()));
+        }
+        params.add(query);
+        eventBean.setParameters(params);
+        eventBean.setEventCategory(operation.getDbName());
         return eventBean;
     }
 
