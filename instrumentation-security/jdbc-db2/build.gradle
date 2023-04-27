@@ -1,0 +1,20 @@
+dependencies {
+    implementation(project(":newrelic-security-api"))
+    implementation("com.newrelic.agent.java:newrelic-api:${nrAPIVersion}")
+    implementation("com.newrelic.agent.java:newrelic-weaver-api:${nrAPIVersion}")
+    implementation("com.ibm.db2.jcc:db2jcc:db2jcc4")
+}
+
+jar {
+    manifest { attributes 'Implementation-Title': 'com.newrelic.instrumentation.security.jdbc-db2' }
+}
+
+verifyInstrumentation {
+    passes("com.ibm.db2.jcc:db2jcc:db2jcc4")
+}
+
+site {
+    title 'IBM DB2'
+    type 'Datastore'
+    versionOverride '[9.1,)'
+}

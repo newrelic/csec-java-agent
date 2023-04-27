@@ -1,0 +1,263 @@
+apply plugin: 'java-library'
+
+configurations {
+    includeInJar
+}
+
+dependencies {
+    configurations.implementation.extendsFrom(configurations.includeInJar)
+}
+
+jar {
+    // Allow any java projects to bundle third party libraries into the jar
+    from {
+        configurations.includeInJar.collect {
+            it.isDirectory() ? it : zipTree(it)
+        }
+    }
+    exclude("META-INF/maven/**")
+    eachFile {
+        // Exclude any MR Jar files that aren't ours. The deps patch task does not like
+        // MR Jar files and it doesn't know what to do with them.
+        if (getPath().contains("META-INF/versions") && !getPath().contains("com/newrelic")) {
+            exclude()
+        }
+    }
+
+    includeEmptyDirs false
+}
+
+def compiler = javaToolchains.compilerFor {
+    languageVersion = JavaLanguageVersion.of(8)
+}
+
+// Some modules need to be compiled with JDK8.
+task requiresJava8 {
+    doLast {
+        if (!compiler.isPresent()) {
+            throw new GradleException("Please set the 'org.gradle.java.installations.paths' property to a valid jdk1.8 path in ~/.gradle/gradle.properties")
+        }
+        if (!JavaVersion.current().isJava8Compatible()) {
+            throw new GradleException("Please set JAVA_HOME to a 1.8 JDK (detected ${JavaVersion.current()})")
+        }
+    }
+}
+
+tasks.withType(Javadoc) {
+    options.addStringOption('Xdoclint:none', '-quiet')
+}
+
+java {
+    toolchain {
+        // Compile all Java projects with 1.8
+        languageVersion.set(JavaLanguageVersion.of(8))
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    dependsOn 'requiresJava8'
+    options.encoding = 'UTF-8'
+    options.fork = true
+    compileJava.options.compilerArgs += '-proc:none'
+}
+
+// Compile all Java projects with jdk8 bootstrap classpath (to properly support target compatibility)
+def jdkPath = compiler.get().metadata.installationPath.asFile.absolutePath
+compileJava.options.bootstrapClasspath = files("${jdkPath}/jre/lib/rt.jar", "${jdkPath}/jre/lib/jsse.jar")
+
+// There is no clear way to run the same task under multiple JDKs, so we use the following gradle properties
+// and jenkins matrix plugin to run the instrumentation module tests.
+//
+// This should really use java toolchains instead of setting the executable, but in its current form, toolchains
+// can only select a JDK based on the version, vendor and implementation (i.e. J9).  Unfortunately, Zulu and Zing
+// have the same vendor, which means toolchain selection cannot differentiate between say, Zulu11 and Zing11.  This
+// will be better once https://github.com/gradle/gradle/issues/18896 is implemented, at which point the below could
+// be changed to simply select a toolchain based on appropriately specific criteria.
+//
+// These properties must be set in gradle.properties to point to the java executable.
+// For example: java8=/Library/Java/JavaVirtualMachines/jdk1.8.0_45.jdk/Contents/Home/bin/java
+//
+// Note: These test settings apply to both unit and instrumentation tests but some instrumentation tests override them in
+// their own build.gradle to force the use of a specific version of Java (e.g. instrumentation/async-http-client-2.0.0).
+// This could lead to an "Unrecognized option" with the failure "Could not create the Java Virtual Machine".
+test {
+    ext.configureTest = { String jdkName, Closure configuration ->
+        // Add an input property so that we differentiate between JDKs with the same version
+        inputs.property("test.jdk", jdkName)
+        // Null out the launcher so we can set an executable instead
+        javaLauncher.convention(null).value(null)
+        executable = project.property(jdkName) + '/bin/java'
+        configuration.call()
+    }
+    if (project.hasProperty("test19")) {
+        configureTest("jdk19") {
+            jvmArgs '--add-opens=java.base/java.lang=ALL-UNNAMED',
+                    '--add-opens=java.base/java.util=ALL-UNNAMED',
+                    '--add-opens=java.base/java.net=ALL-UNNAMED',
+                    '--add-opens=java.base/java.io=ALL-UNNAMED',
+                    '--add-opens=java.base/java.nio=ALL-UNNAMED',
+                    '--add-opens=java.base/sun.net.spi=ALL-UNNAMED',
+                    '--add-exports=java.base/sun.net.spi=ALL-UNNAMED',
+                    '--add-exports=java.xml/com.sun.org.apache.xalan.internal.xsltc.trax=ALL-UNNAMED'
+            useJUnit {
+                excludeCategories 'com.newrelic.security.test.marker.Java19IncompatibleTest'
+            }
+        }
+    }
+    if (project.hasProperty("test18")) {
+        configureTest("jdk18") {
+            jvmArgs '--add-opens=java.base/java.lang=ALL-UNNAMED',
+                    '--add-opens=java.base/java.util=ALL-UNNAMED',
+                    '--add-opens=java.base/java.net=ALL-UNNAMED',
+                    '--add-opens=java.base/java.io=ALL-UNNAMED',
+                    '--add-opens=java.base/sun.net.spi=ALL-UNNAMED',
+                    '--add-exports=java.base/sun.net.spi=ALL-UNNAMED',
+                    '--add-exports=java.xml/com.sun.org.apache.xalan.internal.xsltc.trax=ALL-UNNAMED'
+            useJUnit {
+                excludeCategories 'com.newrelic.security.test.marker.Java18IncompatibleTest'
+            }
+        }
+    }
+    if (project.hasProperty("test17")) {
+        configureTest("jdk17") {
+            jvmArgs '--add-opens=java.base/java.lang=ALL-UNNAMED',
+                '--add-opens=java.base/java.util=ALL-UNNAMED',
+                '--add-opens=java.base/java.net=ALL-UNNAMED',
+                '--add-opens=java.base/java.io=ALL-UNNAMED',
+                '--add-opens=java.base/sun.net.spi=ALL-UNNAMED',
+                '--add-exports=java.base/sun.net.spi=ALL-UNNAMED',
+                '--add-exports=java.xml/com.sun.org.apache.xalan.internal.xsltc.trax=ALL-UNNAMED'
+            useJUnit {
+                excludeCategories 'com.newrelic.security.test.marker.Java17IncompatibleTest'
+            }
+        }
+    }
+    if (project.hasProperty("test16")) {
+        configureTest("jdk16") {
+            jvmArgs '--add-opens=java.base/java.lang=ALL-UNNAMED',
+                '--add-opens=java.base/java.util=ALL-UNNAMED',
+                '--add-opens=java.base/java.net=ALL-UNNAMED',
+                '--add-opens=java.base/java.io=ALL-UNNAMED',
+                '--add-opens=java.base/sun.net.spi=ALL-UNNAMED',
+                '--add-exports=java.base/sun.net.spi=ALL-UNNAMED',
+                '--add-exports=java.xml/com.sun.org.apache.xalan.internal.xsltc.trax=ALL-UNNAMED'
+            useJUnit {
+                excludeCategories 'com.newrelic.security.test.marker.Java16IncompatibleTest'
+            }
+        }
+    }
+    if (project.hasProperty("test15")) {
+        configureTest("jdk15") {
+            useJUnit {
+                excludeCategories 'com.newrelic.security.test.marker.Java15IncompatibleTest'
+            }
+        }
+    }
+    if (project.hasProperty("test14")) {
+        configureTest("jdk14") {
+            useJUnit {
+                excludeCategories 'com.newrelic.security.test.marker.Java14IncompatibleTest'
+            }
+        }
+    }
+    if (project.hasProperty("test13")) {
+        configureTest("jdk13") {
+            useJUnit {
+                excludeCategories 'com.newrelic.security.test.marker.Java13IncompatibleTest'
+            }
+        }
+    }
+    if (project.hasProperty("test12")) {
+        configureTest("jdk12") {
+            useJUnit {
+                excludeCategories 'com.newrelic.security.test.marker.Java12IncompatibleTest'
+            }
+        }
+    }
+    if (project.hasProperty("testCoretto8")) {
+        configureTest("coretto8") {
+            useJUnit {
+                excludeCategories 'com.newrelic.security.test.marker.Java8IncompatibleTest'
+            }
+        }
+    }
+    if (project.hasProperty("testDragonWell8")) {
+        configureTest("dragonWell8") {
+            useJUnit {
+                excludeCategories 'com.newrelic.security.test.marker.Java8IncompatibleTest'
+            }
+        }
+    }
+    if (project.hasProperty("testZulu11")) {
+        configureTest("zulu11") {
+            useJUnit {
+                excludeCategories 'com.newrelic.security.test.marker.Java11IncompatibleTest'
+            }
+        }
+    }
+    if (project.hasProperty("testZing8")) {
+        configureTest("zing8") {
+            useJUnit {
+                excludeCategories 'com.newrelic.security.test.marker.Java8IncompatibleTest'
+            }
+        }
+    }
+    if (project.hasProperty("testZing11")) {
+        configureTest("zing11") {
+            useJUnit {
+                excludeCategories 'com.newrelic.security.test.marker.Java11IncompatibleTest'
+            }
+        }
+    }
+    if (project.hasProperty("test11")) {
+        configureTest("jdk11") {
+            useJUnit {
+                excludeCategories 'com.newrelic.security.test.marker.Java11IncompatibleTest'
+            }
+        }
+    }
+    if (project.hasProperty("test10")) {
+        configureTest("jdk10") {
+            useJUnit {
+                excludeCategories 'com.newrelic.security.test.marker.Java10IncompatibleTest'
+            }
+        }
+    }
+    if (project.hasProperty("test9")) {
+        configureTest("jdk9") {
+            useJUnit {
+                excludeCategories 'com.newrelic.security.test.marker.Java9IncompatibleTest'
+            }
+        }
+    }
+    if (project.hasProperty("test8")) {
+        configureTest("jdk8") {
+            useJUnit {
+                excludeCategories 'com.newrelic.security.test.marker.Java8IncompatibleTest'
+            }
+        }
+    }
+    if (project.hasProperty("test7")) {
+        configureTest("jdk7") {
+            useJUnit {
+                excludeCategories 'com.newrelic.security.test.marker.Java7IncompatibleTest'
+            }
+        }
+    }
+
+    if (project.hasProperty("development")) {
+        environment "ENVIRONMENT", "development"
+    }
+
+    testLogging {
+        events "failed"
+        exceptionFormat "short"
+    }
+}
+
+dependencies {
+    testImplementation("junit:junit:4.12")
+    testImplementation("org.mockito:mockito-core:3.9.0")
+    testImplementation("org.hamcrest:hamcrest-library:1.3")
+    testImplementation(project(":test-annotations"))
+}

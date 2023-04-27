@@ -1,0 +1,34 @@
+evaluationDependsOn(":newrelic-security-agent")
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+}
+
+dependencies {
+
+    api('junit:junit:4.13.2')
+    implementation(project(":newrelic-security-api"))
+    implementation(project(":newrelic-security-api-test-impl"))
+    implementation(project(":unittest-helper-agent"))
+    implementation("com.newrelic.agent.java:newrelic-weaver-api:${nrAPIVersion}")
+    implementation("com.newrelic.agent.java:newrelic-api:${nrAPIVersion}")
+    implementation("com.newrelic.agent.java:newrelic-agent:${nrAgentVersion}")
+    implementation 'org.apache.commons:commons-text:1.7'
+    implementation("com.newrelic.agent.java:agent-bridge:${nrAPIVersion}")
+    implementation("com.newrelic.agent.java:agent-bridge-datastore:${nrAPIVersion}")
+    implementation("commons-net:commons-net:3.9.0")
+    implementation("org.mockftpserver:MockFtpServer:3.1.0")
+
+    api("org.apache.httpcomponents:httpclient:4.5.13")
+    api("org.nanohttpd:nanohttpd:2.3.1")
+}
+
+test {
+    compileJava.dependsOn project(":unittest-helper-agent").getTasksByName("build", true)
+    useJUnitPlatform()
+}
+
+afterEvaluate {
+    compileJava.dependsOn project(":newrelic-security-agent").getTasksByName("newrelicJar", false)
+}

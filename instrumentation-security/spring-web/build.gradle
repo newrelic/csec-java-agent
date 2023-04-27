@@ -1,0 +1,30 @@
+plugins {
+    id "org.jetbrains.kotlin.jvm"
+}
+
+dependencies {
+    implementation(project(":newrelic-security-api"))
+    implementation("com.newrelic.agent.java:newrelic-api:${nrAPIVersion}")
+    implementation("com.newrelic.agent.java:newrelic-weaver-api:${nrAPIVersion}")
+    implementation("org.springframework:spring-context:4.3.0.RELEASE")
+    implementation("org.springframework:spring-web:4.3.0.RELEASE")
+    testImplementation("org.jetbrains.kotlin:kotlin-stdlib:1.6.20")
+}
+
+jar {
+    manifest {
+        attributes 'Implementation-Title': 'com.newrelic.instrumentation.security.spring-web',
+                'Implementation-Title-Alias': 'spring_annotations'
+    }
+}
+
+verifyInstrumentation {
+    passesOnly 'org.springframework:spring-web:[0,)'
+
+    excludeRegex 'org.springframework:spring-web:.*(RC|SEC|M)[0-9]*$'
+}
+
+site {
+    title 'Spring'
+    type 'Framework'
+}

@@ -1,0 +1,21 @@
+dependencies {
+    implementation(project(":newrelic-security-api"))
+    implementation("com.newrelic.agent.java:newrelic-api:${nrAPIVersion}")
+    implementation("com.newrelic.agent.java:newrelic-weaver-api:${nrAPIVersion}")
+    implementation('jakarta.servlet:jakarta.servlet-api:4.0.4')
+}
+
+jar {
+    manifest { attributes 'Implementation-Title': 'com.newrelic.instrumentation.security.servlet-2.4' }
+}
+
+verifyInstrumentation {
+    passesOnly 'javax.servlet:servlet-api:[2.4,)'
+    passesOnly 'jakarta.servlet:jakarta.servlet-api:[4.0.2,5.0.0-M1)'
+    exclude 'javax.servlet:servlet-api:2.4.public_draft'
+}
+
+site {
+    title 'Servlet'
+    type 'Framework'
+}

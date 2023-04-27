@@ -1,0 +1,28 @@
+
+
+dependencies {
+    implementation(project(":newrelic-security-api"))
+    implementation("com.newrelic.agent.java:newrelic-api:${nrAPIVersion}")
+    implementation("com.newrelic.agent.java:newrelic-weaver-api:${nrAPIVersion}")
+    implementation("com.squareup.okhttp3:okhttp:3.14.0")
+}
+
+jar {
+    manifest { attributes 'Implementation-Title': 'com.newrelic.instrumentation.security.okhttp-4.0.0' }
+}
+
+verifyInstrumentation {
+    passesOnly 'com.squareup.okhttp3:okhttp:[3.14.0,)'
+
+    excludeRegex 'com.squareup.okhttp3:okhttp:.*(RC|rc|alpha)[0-9]*$'
+}
+
+java {
+    // IDEA refused to find 4.4.0 without this.
+    disableAutoTargetJvm()
+}
+
+site {
+    title 'OKHttp'
+    type 'Messaging'
+}

@@ -1,0 +1,20 @@
+dependencies {
+    implementation(project(":newrelic-security-api"))
+    implementation("com.newrelic.agent.java:newrelic-api:${nrAPIVersion}")
+    implementation("com.newrelic.agent.java:newrelic-weaver-api:${nrAPIVersion}")
+    implementation("org.apache.derby:derby:10.6.1.0")
+}
+
+verifyInstrumentation {
+    passesOnly 'org.apache.derby:derby:[10.2.1.6,10.9.1.0]'
+    exclude    'org.apache.derby:derby:10.5.3.0' // Bad version
+}
+
+jar {
+    manifest { attributes 'Implementation-Title': 'com.newrelic.instrumentation.security.jdbc-embedded-derby-10.2.1.6' }
+}
+
+site {
+    title 'Embedded Derby'
+    type 'Datastore'
+}

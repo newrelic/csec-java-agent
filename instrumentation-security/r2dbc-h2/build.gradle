@@ -1,0 +1,23 @@
+dependencies {
+    implementation(project(":newrelic-security-api"))
+    implementation("com.newrelic.agent.java:newrelic-api:${nrAPIVersion}")
+    implementation("com.newrelic.agent.java:newrelic-weaver-api:${nrAPIVersion}")
+    implementation("io.r2dbc:r2dbc-h2:0.8.4.RELEASE")
+    testImplementation("com.h2database:h2:1.4.200")
+}
+
+jar {
+    manifest { attributes 'Implementation-Title': 'com.newrelic.instrumentation.security.r2dbc-h2' }
+}
+
+verifyInstrumentation {
+    passesOnly 'io.r2dbc:r2dbc-h2:[0,)'
+
+    // this version has a dependency to a reactor milestone that does not work well with us
+    exclude 'io.r2dbc:r2dbc-h2:1.0.0.RC1'
+}
+
+site {
+    title 'H2 R2DBC'
+    type 'Datastore'
+}

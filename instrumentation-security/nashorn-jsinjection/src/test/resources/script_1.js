@@ -1,0 +1,1 @@
+var myCode = new Object(); myCode.show = function(name) { print('Hi, ' + name); };

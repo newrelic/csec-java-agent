@@ -1,0 +1,89 @@
+import com.nr.builder.BuildManifestTask
+import com.nr.builder.GitUtil
+
+plugins {
+    id("java-library")
+}
+
+repositories {
+    mavenCentral()
+    mavenLocal()
+    jcenter()
+}
+
+configurations {
+    tests
+    // This configuration has the final artifact.
+    finalArtifact
+}
+version = 1.0
+
+java {
+    // by default, gradle will attempt to resolve only files
+    // that are compiled with a corresponding source version.
+    // However, module-util is compiled with Java 11 (because it
+    // has to be >= 9) and that will not work with this.
+    disableAutoTargetJvm()
+}
+
+
+/**
+ * The buildManifest task creates a Properties file using org.reflections
+ * that contains references to classes that have specific annotations.
+ * See the source of the task in buildSrc.
+ */
+task buildManifest(type: BuildManifestTask, dependsOn: 'classes') {
+    setInputRuntimeClasspath(sourceSets.main.output.classesDirs)
+}
+
+/**
+ * The newrelicVersionedAgentJar task builds the final output jar. This jar contains:
+ * <ul>
+ *     <li>All the files from the transformedShadowJar task</li>
+ *     <li>All the instrumentation jars as jars (not expanded)</li>
+ *     <li>The jars from the other projects that get added to other classloaders, like agent-bridge
+ *      (from the jarIntoJar configuration)</li>
+ *     <li>LICENSE from updateLicenseFile</li>
+ *     <li>PointcutClasses.properties from buildManifest</li>
+ * </ul>
+ */
+task newrelicVersionedAgentJar(type: Jar) {
+    group("build")
+    dependsOn("classes", "processResources", "buildManifest")
+
+    from("$rootDir/LICENSE")
+    from("$rootDir/THIRD_PARTY_NOTICES.md")
+    from sourceSets.main.output.classesDirs
+    from(sourceSets.main.output.resourcesDir) {
+        exclude("*.jar", "*.java")
+    }
+    includeEmptyDirs = false
+
+    from(project.tasks["buildManifest"].outputs.getFiles())
+
+    manifest {
+        attributes 'Implementation-Title': 'New Relic Instrumenation Helper',
+                'Implementation-Version': project.version,
+                'Created-By': 'New Relic, Inc',
+                'Built-By': System.getProperty('user.name'),
+                'Built-Date': project.version.toString().contains("DEV") ? "DEV" : new Date(),
+                'Can-Redefine-Classes': true,
+                'Can-Retransform-Classes': true,
+                'Specification-Version': project.version,
+                'Build-Id': System.getProperty('BUILD_ID') ?: "None",
+                'Multi-Release': true,
+                'Premain-Class': 'sun.reflect.com.nr.agent.security.instrumentation.InstrumentationTestHelper',
+                'Boot-Class-Path': project.name + "-" + project.version + ".jar",
+                'X-Git-SHA': System.getenv("GITHUB_SHA") ?: GitUtil.sha(project) ?: "UNKNOWN"
+    }
+}
+
+// because of the complex shadowing requirements, the auto-generated `jar` task is not useful.
+jar {
+    enabled = false
+}
+
+artifacts {
+    finalArtifact newrelicVersionedAgentJar
+    archives newrelicVersionedAgentJar
+}

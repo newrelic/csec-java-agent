@@ -1,0 +1,26 @@
+dependencies {
+    implementation(project(":newrelic-security-api"))
+    implementation("com.newrelic.agent.java:newrelic-weaver-api:${nrAPIVersion}")
+    implementation("commons-httpclient:commons-httpclient:3.0")
+}
+
+jar {
+    manifest { attributes 'Implementation-Title': 'com.newrelic.instrumentation.security.httpclient-3' }
+}
+
+verifyInstrumentation {
+    excludeRegex '.*-atlassian-[0-9]'
+
+    // These are pulled from the mule repo, so we can exclude them
+    excludeRegex '.*-jbossorg-[0-9]'
+    excludeRegex '.*-osgi'
+    excludeRegex '.*-jenkins.*'
+    excludeRegex '.*:[0-9]+'
+
+    passes 'commons-httpclient:commons-httpclient:[3.0,)'
+}
+
+site {
+    title 'Apache Httpclient'
+    type 'Messaging'
+}

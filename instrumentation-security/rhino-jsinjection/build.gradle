@@ -1,0 +1,22 @@
+
+
+dependencies {
+    implementation(project(":newrelic-security-api"))
+    implementation("com.newrelic.agent.java:newrelic-api:${nrAPIVersion}")
+    implementation("com.newrelic.agent.java:newrelic-weaver-api:${nrAPIVersion}")
+    implementation("cat.inspiracio:rhino-js-engine:1.7.7.1")
+}
+
+jar {
+    manifest { attributes 'Implementation-Title': 'com.newrelic.instrumentation.security.rhino-jsinjection' }
+}
+
+verifyInstrumentation {
+    passesOnly 'cat.inspiracio:rhino-js-engine:[1.7.7.1,)'
+}
+
+
+site {
+    title 'JSInjection'
+    type 'Messaging'
+}

@@ -1,0 +1,24 @@
+dependencies {
+    implementation(project(":newrelic-security-api"))
+    implementation("com.newrelic.agent.java:newrelic-api:${nrAPIVersion}")
+    implementation("com.newrelic.agent.java:newrelic-weaver-api:${nrAPIVersion}")
+    implementation("mysql:mysql-connector-java:6.0.2")
+    testImplementation("com.wix:wix-embedded-mysql:4.6.2")
+}
+
+jar {
+    manifest { attributes 'Implementation-Title': 'com.newrelic.instrumentation.jdbc-mysql-multihost-connections-6.0.2' }
+}
+
+verifyInstrumentation {
+    passesOnly 'mysql:mysql-connector-java:[6.0.2,8.0.33]'
+    // these versions are bad and they should feel bad
+    exclude 'mysql:mysql-connector-java:8.0.7'
+    exclude 'mysql:mysql-connector-java:8.0.8'
+    exclude 'mysql:mysql-connector-java:8.0.9'
+}
+
+site {
+    title 'MySQL'
+    type 'Datastore'
+}

@@ -1,0 +1,23 @@
+dependencies {
+    implementation(project(":newrelic-security-api"))
+    implementation("com.newrelic.agent.java:newrelic-api:${nrAPIVersion}")
+    implementation("com.newrelic.agent.java:newrelic-weaver-api:${nrAPIVersion}")
+}
+
+jar {
+    manifest { attributes 'Implementation-Title': 'com.newrelic.instrumentation.security.jdbc-sqlserver' }
+}
+
+verifyInstrumentation {
+    passes("com.microsoft.sqlserver:mssql-jdbc:[0,)")
+    excludeRegex(".*jre9.*")
+    excludeRegex(".*jre1\\d.*")
+    excludeRegex(".*preview.*")
+    verifyClasspath = false
+}
+
+site {
+    title 'SQLServer'
+    type 'Datastore'
+    versionOverride '[jdk6,)'
+}

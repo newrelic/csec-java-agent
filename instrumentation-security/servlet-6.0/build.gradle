@@ -1,0 +1,30 @@
+dependencies {
+    implementation(project(":newrelic-security-api"))
+    implementation("com.newrelic.agent.java:newrelic-api:${nrAPIVersion}")
+    implementation("com.newrelic.agent.java:newrelic-weaver-api:${nrAPIVersion}")
+    implementation('jakarta.servlet:jakarta.servlet-api:6.0.0')
+}
+
+jar {
+    manifest { attributes 'Implementation-Title': 'com.newrelic.instrumentation.security.servlet-6.0' }
+}
+
+verifyInstrumentation {
+    passesOnly 'jakarta.servlet:jakarta.servlet-api:[6.0.0,)'
+}
+
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(11))
+    }
+}
+
+compileJava {
+    options.fork = true
+    options.bootstrapClasspath = null
+}
+
+site {
+    title 'Servlet'
+    type 'Framework'
+}

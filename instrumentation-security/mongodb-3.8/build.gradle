@@ -1,0 +1,21 @@
+jar {
+    manifest { attributes 'Implementation-Title': 'com.newrelic.instrumentation.security.mongodb-3.8' }
+}
+
+dependencies {
+    implementation(project(":newrelic-security-api"))
+    implementation("com.newrelic.agent.java:newrelic-api:${nrAPIVersion}")
+    implementation("com.newrelic.agent.java:newrelic-weaver-api:${nrAPIVersion}")
+    implementation("org.mongodb:mongo-java-driver:3.8.0")
+    testImplementation("de.flapdoodle.embed:de.flapdoodle.embed.mongo:3.0.0")
+}
+
+verifyInstrumentation {
+    passes('org.mongodb:mongo-java-driver:[3.8.0-rc0,)')
+    excludeRegex '.*-(rc|beta)[0-9]+'
+}
+
+site {
+    title 'MongoDB'
+    type 'Datastore'
+}
