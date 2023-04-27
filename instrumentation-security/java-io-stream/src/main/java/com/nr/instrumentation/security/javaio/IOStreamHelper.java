@@ -3,6 +3,9 @@ package com.nr.instrumentation.security.javaio;
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 
+import java.util.HashSet;
+import java.util.Set;
+
 public class IOStreamHelper {
     public static final String NR_SEC_CUSTOM_ATTRIB_NAME_READER = "SERVLET_READER_OPERATION_LOCK-";
     public static final String NR_SEC_CUSTOM_ATTRIB_NAME_WRITER = "SERVLET_WRITER_OPERATION_LOCK-";
@@ -19,7 +22,10 @@ public class IOStreamHelper {
     public static Boolean processRequestReaderHookData(Integer readerHash) {
         try {
             if(NewRelicSecurity.isHookProcessingActive() && NewRelicSecurity.getAgent().getSecurityMetaData()!= null) {
-                return readerHash.equals(NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(REQUEST_READER_HASH, Integer.class));
+                Set<Integer> hashSet = NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(REQUEST_READER_HASH, Set.class);
+                if(hashSet != null){
+                    return hashSet.contains(readerHash);
+                }
             }
         } catch (Throwable ignored){}
         return false;
@@ -28,7 +34,10 @@ public class IOStreamHelper {
     public static Boolean processResponseWriterHookData(Integer writerHash) {
         try {
             if(NewRelicSecurity.isHookProcessingActive() && NewRelicSecurity.getAgent().getSecurityMetaData()!= null) {
-                return writerHash.equals(NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(RESPONSE_WRITER_HASH, Integer.class));
+                Set<Integer> hashSet = NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(RESPONSE_WRITER_HASH, Set.class);
+                if(hashSet != null){
+                    return hashSet.contains(writerHash);
+                }
             }
         } catch (Throwable ignored){}
         return false;
@@ -36,8 +45,12 @@ public class IOStreamHelper {
 
     public static Boolean processResponseOutputStreamHookData(Integer outputStreamHash) {
         try {
-            Integer x = NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(RESPONSE_OUTPUTSTREAM_HASH, Integer.class);
-            return outputStreamHash.equals(x);
+            if(NewRelicSecurity.isHookProcessingActive() && NewRelicSecurity.getAgent().getSecurityMetaData()!= null) {
+                Set<Integer> hashSet = NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(RESPONSE_OUTPUTSTREAM_HASH, Set.class);
+                if(hashSet != null){
+                    return hashSet.contains(outputStreamHash);
+                }
+            }
         } catch (Throwable ignored) {}
         return false;
     }

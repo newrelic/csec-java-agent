@@ -24,4 +24,7 @@ public interface INRSettingsKey {
     String HOSTNAME = "hostname";
 
     String AGENT_RUN_ID_LINKING_METADATA = "agentRunId";
+    String SECURITY_POLICY_VULNERABILITY_SCAN_IAST_SCAN_PROBING_THRESHOLD = "security.policy.vulnerabilityScan.iastScan.probing.threshold";
+
+
 }

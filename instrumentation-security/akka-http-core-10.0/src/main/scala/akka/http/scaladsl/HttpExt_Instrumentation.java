@@ -42,6 +42,24 @@ public class HttpExt_Instrumentation {
         if (isLockAcquired) {
             operation = preprocessSecurityHook(httpRequest, AkkaCoreUtils.METHOD_SINGLE_REQUEST_IMPL);
         }
+        if(operation!=null){
+            SecurityMetaData securityMetaData = NewRelicSecurity.getAgent().getSecurityMetaData();
+            // Add Security IAST header
+            String iastHeader = NewRelicSecurity.getAgent().getSecurityMetaData().getFuzzRequestIdentifier().getRaw();
+            if (iastHeader != null && !iastHeader.trim().isEmpty()) {
+                httpRequest = (HttpRequest) httpRequest.addHeader(RawHeader.apply(ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID, iastHeader));
+            }
+
+            try {
+                NewRelicSecurity.getAgent().registerOperation(operation);
+            } finally {
+                if (operation.getApiID() != null && !operation.getApiID().trim().isEmpty() &&
+                        operation.getExecutionId() != null && !operation.getExecutionId().trim().isEmpty()) {
+                    // Add Security distributed tracing header
+                    httpRequest = (HttpRequest) httpRequest.addHeader(RawHeader.apply(ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER, SSRFUtils.generateTracingHeaderValue(securityMetaData.getTracingHeaderValue(), operation.getApiID(), operation.getExecutionId(), NewRelicSecurity.getAgent().getAgentUUID())));
+                }
+            }
+        }
         Future<HttpResponse> returnCode = null;
         // Actual Call
         try {
@@ -74,7 +92,6 @@ public class HttpExt_Instrumentation {
             }
 
             // Generate required URL
-
             URI methodURI = null;
             String uri = null;
             try {
@@ -86,24 +103,7 @@ public class HttpExt_Instrumentation {
             } catch (Exception ignored){
                 return null;
             }
-
-            // Add Security IAST header
-            String iastHeader = NewRelicSecurity.getAgent().getSecurityMetaData().getFuzzRequestIdentifier().getRaw();
-            if (iastHeader != null && !iastHeader.trim().isEmpty()) {
-                httpRequest.addHeader(RawHeader.apply(ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID, iastHeader));
-            }
-
-            SSRFOperation operation = new SSRFOperation(uri,
-                    this.getClass().getName(), methodName);
-            try {
-                NewRelicSecurity.getAgent().registerOperation(operation);
-            } finally {
-                if (operation.getApiID() != null && !operation.getApiID().trim().isEmpty() &&
-                        operation.getExecutionId() != null && !operation.getExecutionId().trim().isEmpty()) {
-                    // Add Security distributed tracing header
-                    httpRequest.addHeader(RawHeader.apply(ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER, SSRFUtils.generateTracingHeaderValue(securityMetaData.getTracingHeaderValue(), operation.getApiID(), operation.getExecutionId(), NewRelicSecurity.getAgent().getAgentUUID())));
-                }
-            }
+            SSRFOperation operation = new SSRFOperation(uri, this.getClass().getName(), methodName);
             return operation;
         } catch (Throwable e) {
             if (e instanceof NewRelicSecurityException) {

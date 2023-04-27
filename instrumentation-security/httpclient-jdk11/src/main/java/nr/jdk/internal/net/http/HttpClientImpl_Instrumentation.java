@@ -3,10 +3,12 @@ package nr.jdk.internal.net.http;
 import com.newrelic.api.agent.Trace;
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
+import com.newrelic.api.agent.security.instrumentation.helpers.ServletHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.SecurityMetaData;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
 import com.newrelic.api.agent.security.schema.operation.SSRFOperation;
+import com.newrelic.api.agent.security.utils.SSRFUtils;
 import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
@@ -40,7 +42,7 @@ final class HttpClientImpl_Instrumentation {
             operation = preprocessSecurityHook(request, request.uri().toString(), SecurityHelper.METHOD_NAME_SEND);
         }
         if (operation!=null) {
-            request = SecurityHelper.addSecurityHeader(operation, request);
+            request = addSecurityHeader(operation, request);
         }
         CompletableFuture<HttpResponse<T>> returnObj = null;
         // Actual Call
@@ -90,5 +92,27 @@ final class HttpClientImpl_Instrumentation {
         } catch (Throwable ignored) {
         }
         return false;
+    }
+
+    private static HttpRequest addSecurityHeader(AbstractOperation operation, HttpRequest req) {
+        HttpRequest updatedRequest = null;
+        try {
+            HttpRequest.Builder builder = NewRelicSecurity.getAgent()
+                    .getSecurityMetaData()
+                    .getCustomAttribute(SecurityHelper.NR_SEC_CUSTOM_ATTRIB_NAME + req.hashCode(), HttpRequest.Builder.class);
+            String iastHeader = NewRelicSecurity.getAgent().getSecurityMetaData().getFuzzRequestIdentifier().getRaw();
+            if (iastHeader != null && !iastHeader.trim().isEmpty()) {
+                builder.setHeader(ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID, iastHeader);
+            }
+            if (operation.getApiID() != null && !operation.getApiID().trim().isEmpty() && operation.getExecutionId() != null &&
+                    !operation.getExecutionId().trim().isEmpty()) {
+                updatedRequest = builder.setHeader(ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER,
+                        SSRFUtils.generateTracingHeaderValue(NewRelicSecurity.getAgent().getSecurityMetaData().getTracingHeaderValue(), operation.getApiID(),
+                                operation.getExecutionId(), NewRelicSecurity.getAgent().getAgentUUID())).build();
+                return updatedRequest;
+            }
+        } catch (Exception ignored) {
+        }
+        return req.newBuilder(req.uri()).build();
     }
 }

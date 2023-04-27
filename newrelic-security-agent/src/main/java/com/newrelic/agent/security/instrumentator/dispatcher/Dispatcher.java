@@ -1,6 +1,7 @@
 package com.newrelic.agent.security.instrumentator.dispatcher;
 
 import com.newrelic.agent.security.AgentInfo;
+import com.newrelic.agent.security.instrumentator.helper.DynamoDBRequestConverter;
 import com.newrelic.agent.security.instrumentator.utils.AgentUtils;
 import com.newrelic.agent.security.instrumentator.utils.CallbackUtils;
 import com.newrelic.agent.security.instrumentator.utils.INRSettingsKey;
@@ -466,148 +467,16 @@ public class Dispatcher implements Runnable {
     private static JavaAgentEventBean prepareDynamoDBEvent(JavaAgentEventBean eventBean, DynamoDBOperation dynamoDBOperation) throws ParseException {
         JSONArray params = new JSONArray();
         eventBean.setEventCategory(dynamoDBOperation.getCategory().toString());
-        JSONParser jsonParser = new JSONParser();
         List<DynamoDBRequest> originalPayloads = dynamoDBOperation.getPayload();
-        boolean sendEvent = false;
         try {
-            if (dynamoDBOperation.getCategory() == DynamoDBOperation.Category.DQL) {
-                for (DynamoDBRequest data : originalPayloads) {
-                    Object query = data.getQuery();
-                    if (query instanceof String) {
-                        JSONObject payload = (JSONObject) jsonParser.parse((String) query);
-                        if (payload.containsKey("RequestItems")) {
-                            Map<String, Object> map = (Map<String, Object>) payload.get("RequestItems");
-                            for (Map.Entry<String, Object> entry : map.entrySet()) {
-                                Object entryValue = entry.getValue();
-                                if (entryValue instanceof JSONObject) {
-                                    params.add(getPayloadJsonObject(entryValue, data.getQueryType()));
-                                } else if (entryValue instanceof JSONArray) {
-                                    for (Object var1 : ((JSONArray) entryValue)) {
-                                        JSONObject jsonObject = new JSONObject();
-                                        JSONObject obj = (JSONObject) var1;
-                                        if (obj.containsKey("PutRequest")) {
-                                            params.add(getPayloadJsonObject(obj.get("PutRequest"), "write"));
-                                        }
-                                        if (obj.containsKey("DeleteRequest")) {
-                                            params.add(getPayloadJsonObject(obj.get("DeleteRequest"), "delete"));
-                                        }
-                                    }
-                                }
-                            }
-                        } else if (payload.containsKey("TransactItems")) {
-                            JSONArray array = (JSONArray) payload.get("TransactItems");
-                            for (Object entry : array) {
-                                if (entry instanceof JSONObject) {
-                                    JSONObject entryValue = (JSONObject) entry;
-                                    if (entryValue.containsKey("Get")) {
-                                        params.add(getPayloadJsonObject(entryValue.get("Get"), "read"));
-                                    }
-                                    if (entryValue.containsKey("ConditionCheck")) {
-                                        params.add(getPayloadJsonObject(entryValue.get("ConditionCheck"), "read"));
-                                    }
-                                    if (entryValue.containsKey("Delete")) {
-                                        params.add(getPayloadJsonObject(entryValue.get("Delete"), "delete"));
-                                    }
-                                    if (entryValue.containsKey("Put")) {
-                                        params.add(getPayloadJsonObject(entryValue.get("Put"), "write"));
-                                    }
-                                    if (entryValue.containsKey("Update")) {
-                                        params.add(getPayloadJsonObject(entryValue.get("Update"), "update"));
-                                    }
-                                }
-                            }
-                        } else {
-                            params.add(getPayloadJsonObject(payload, data.getQueryType()));
-                        }
-                    } else {
-                        params.add(getPayloadJsonObject(data.getQuery(), data.getQueryType()));
-                    }
-                }
-
-                sendEvent = false;
-                for (Object para : params) {
-                    try {
-                        Object originalPayload = new JSONObject((Map) para).get("payload");
-                        if (!(originalPayload instanceof JSONObject)) {
-                            sendEvent = true;
-                            break;
-                        }
-                        JSONObject payload = (JSONObject) originalPayload;
-                        String payloadType = (String) new JSONObject((Map) para).get("payloadType");
-                        if (!((payloadType.equals("read") || payloadType.equals("delete"))
-                                && !(payload.containsKey("KeyConditionExpression")
-                                || payload.containsKey("ConditionExpression")
-                                || payload.containsKey("FilterExpression")
-                                || payload.containsKey("UpdateExpression")
-                                || payload.containsKey("ProjectionExpression")))) {
-                            sendEvent = true;
-                            break;
-                        }
-                    } catch (Exception ignored) {
-                        ignored.printStackTrace();
-                    }
-                }
-                eventBean.setParameters(params);
-            } else if (dynamoDBOperation.getCategory() == DynamoDBOperation.Category.PARTIQL) {
-                sendEvent = true;
-                for (DynamoDBRequest data : originalPayloads) {
-                    Object query = data.getQuery();
-                    if (query instanceof String) {
-                        JSONObject payload = (JSONObject) jsonParser.parse((String) query);
-                        if (payload.containsKey("TransactStatements")) {
-                            JSONArray map = (JSONArray) payload.get("TransactStatements");
-                            for (Object entry : map) {
-                                if (entry instanceof JSONObject) {
-                                    formatPartiqlPayload((JSONObject) entry, params);
-                                }
-                            }
-                        } else if (payload.containsKey("Statements")) {
-                            JSONArray map = (JSONArray) payload.get("Statements");
-                            for (Object entry : map) {
-                                if (entry instanceof JSONObject) {
-                                    formatPartiqlPayload((JSONObject) entry, params);
-                                }
-                            }
-                        } else {
-                            formatPartiqlPayload(payload, params);
-                        }
-                    }
-                }
+            for (DynamoDBRequest data : originalPayloads) {
+                params.add(DynamoDBRequestConverter.convert(dynamoDBOperation.getCategory(), data));
             }
+            eventBean.setParameters(params);
         } catch (Exception exception) {
             exception.printStackTrace();
-            sendEvent=false;
         }
-        if (sendEvent) {
-            return eventBean;
-        } else {
-            return null;
-        }
-    }
-
-    private static JSONObject getPayloadJsonObject(Object payload, String payloadType) {
-        JSONObject jsonObject = new JSONObject();
-        jsonObject.put("payload", payload);
-        jsonObject.put("payloadType", payloadType);
-        return jsonObject;
-    }
-
-    private static JSONObject getPayloadObject(String query, Object parameters) {
-        JSONObject jsonObject = new JSONObject();
-        jsonObject.put("query", query);
-        jsonObject.put("parameters", parameters);
-        return jsonObject;
-    }
-
-    private static void formatPartiqlPayload(JSONObject entry, JSONArray params) {
-        if (entry.containsKey("Statement")){
-            if (entry.containsKey("Parameters")){
-                params.add(getPayloadObject((String) entry.get("Statement"), entry.get("Parameters")));
-            }
-            else {
-                params.add(getPayloadObject((String) entry.get("Statement"), ""));
-            }
-        }
+        return eventBean;
     }
 
     private static JavaAgentEventBean prepareSSRFEvent(JavaAgentEventBean eventBean,

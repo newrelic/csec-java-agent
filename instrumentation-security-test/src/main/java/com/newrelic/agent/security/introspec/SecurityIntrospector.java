@@ -16,14 +16,6 @@ public interface SecurityIntrospector {
 
     String getSqlQuery(Statement statement);
 
-    int getRequestReaderHash();
-
-    int getRequestInStreamHash();
-
-    int getResponseWriterHash();
-
-    int getResponseOutStreamHash();
-
     SecurityMetaData getSecurityMetaData();
 
     void setResponseOutStreamHash(int hashCode);
