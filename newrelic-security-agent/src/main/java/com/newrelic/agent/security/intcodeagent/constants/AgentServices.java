@@ -4,5 +4,6 @@ public enum AgentServices {
     HealthCheck,
     InBoundOutBoundMonitor,
     EventWritePool,
-    DirectoryWatcher
+    DirectoryWatcher,
+    IASTDataPullService
 }

@@ -1,12 +1,13 @@
 package com.newrelic.agent.security.instrumentator.httpclient;
 
+import com.newrelic.agent.security.intcodeagent.executor.CustomFutureTask;
+import com.newrelic.agent.security.intcodeagent.executor.CustomThreadPoolExecutor;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.newrelic.agent.security.intcodeagent.filelogging.LogLevel;
+import org.apache.commons.lang3.StringUtils;
 
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
+import java.util.Set;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -21,7 +22,7 @@ public class RestRequestThreadPool {
 
     private static RestRequestThreadPool instance;
 
-    private final int queueSize = 5000;
+    private final int queueSize = 1000;
     private final int maxPoolSize = 5;
     private final int corePoolSize = 3;
     private final long keepAliveTime = 10;
@@ -31,15 +32,22 @@ public class RestRequestThreadPool {
 
     private static final AtomicBoolean isWaiting = new AtomicBoolean(false);
 
+    private Set<String> processedIds = ConcurrentHashMap.newKeySet();
+
     private RestRequestThreadPool() {
         LinkedBlockingQueue<Runnable> processQueue;
         // load the settings
         processQueue = new LinkedBlockingQueue<>(queueSize);
-        executor = new ThreadPoolExecutor(corePoolSize, maxPoolSize, keepAliveTime, timeUnit, processQueue,
-                new EventAbortPolicy()) {
+        executor = new CustomThreadPoolExecutor(corePoolSize, maxPoolSize, keepAliveTime, timeUnit, processQueue, new EventAbortPolicy()) {
 
             @Override
             protected void afterExecute(Runnable r, Throwable t) {
+                if (r instanceof CustomFutureTask<?> && ((CustomFutureTask<?>) r).getTask() instanceof RestRequestProcessor) {
+                    RestRequestProcessor task = (RestRequestProcessor) ((CustomFutureTask<?>) r).getTask();
+                    if(StringUtils.isNotBlank(task.getControlCommand().getId())){
+                        processedIds.add(task.getControlCommand().getId());
+                    }
+                }
                 super.afterExecute(r, t);
             }
 
@@ -99,6 +107,10 @@ public class RestRequestThreadPool {
         return this.executor.getQueue().size();
     }
 
+    public BlockingQueue<Runnable> getQueue() {
+        return this.executor.getQueue();
+    }
+
     public AtomicBoolean isWaiting() {
         return isWaiting;
     }
@@ -106,4 +118,9 @@ public class RestRequestThreadPool {
     public ThreadPoolExecutor getExecutor() {
         return executor;
     }
+
+    public Set<String> getProcessedIds() {
+        return processedIds;
+    }
+
 }
