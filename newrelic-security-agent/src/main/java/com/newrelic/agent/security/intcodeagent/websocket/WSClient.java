@@ -280,10 +280,7 @@ public class WSClient extends WebSocketClient {
         logger.log(LogLevel.WARNING, "Disconnecting WS client",
                 WSClient.class.getName());
         if (instance != null) {
-            try {
-                instance.closeBlocking();
-            } catch (InterruptedException e) {
-            }
+            instance.close();
         }
         instance = null;
     }
