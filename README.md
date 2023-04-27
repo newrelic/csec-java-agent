@@ -1,50 +1,143 @@
-<a href="https://opensource.newrelic.com/oss-category/#community-project"><picture><source media="(prefers-color-scheme: dark)" srcset="https://github.com/newrelic/opensource-website/raw/main/src/images/categories/dark/Community_Project.png"><source media="(prefers-color-scheme: light)" srcset="https://github.com/newrelic/opensource-website/raw/main/src/images/categories/Community_Project.png"><img alt="New Relic Open Source community project banner." src="https://github.com/newrelic/opensource-website/raw/main/src/images/categories/Community_Project.png"></picture></a>
+#
+# **The New Relic Security Agent for Java is in preview and licensed under the New Relic Pre-Release Software Notice.**
 
-# [Name of Project] [build badges go here when available]
+**Repo:** [https://github.com/newrelic/csec-java-agent](https://github.com/newrelic/csec-java-agent)
 
->[Brief description - what is the project and value does it provide? How often should users expect to get releases? How is versioning set up? Where does this project want to go?]
+**Artifact Name:** newrelic-security-agent.jar
 
-## Installation
+The New Relic Security Agent for Java is in preview and is not generally available. This enables instrumentation of Java applications for security analysis and runtime application protection. This project is built as a dependency for use in [newrelic-java-agent](https://github.com/newrelic/newrelic-java-agent) only. Other use cases are not supported.
 
-> [Include a step-by-step procedure on how to get your code installed. Be sure to include any third-party dependencies that need to be installed separately]
+The IAST capability should only be used in pre-production environments and never in production.
 
-## Getting Started
->[Simple steps to start working with the software similar to a "Hello World"]
+## **Installation**
 
-## Usage
->[**Optional** - Include more thorough instructions on how to use the software. This section might not be needed if the Getting Started section is enough. Remove this section if it's not needed.]
+This project is built and published as a dependency for use in [newrelic-java-agent](https://github.com/newrelic/newrelic-java-agent) only. Hence this can not be used directly. Typically, most users use the version auto-installed by the APM agent. You can see agent install instructions [here](https://github.com/newrelic/java-newrelic#installation-and-getting-started).
+
+## **Support Matrix**
+
+### Frameworks and libraries
+
+The agent automatically instruments the following frameworks.
+
+- JAX-RS 1.0 to latest
+- Spring Boot 1.4 to latest
+- Struts 2.0.5 to latest
+- Log4j from 2.0 to latest
+- Servlet from 2.4 to latest
+- Spring from 0 to latest
+- JAX-RS from 1.0 to latest
+
+### Java Native Operations
+
+- File Operations 0 to latest
+- JNDI operations 0 to latest
+
+### HTTP and messaging
+
+The agent automatically instruments the following HTTP clients and messaging services.
+
+- HttpURLConnection (java.net)
+- XPATH from 0 to latest
+- Urlconnection from 0 to latest
+- Apache Httpclient from 3.0 to latest
+- LDAP from to latest
+- LDAPtive from 0 to latest
+- Apache LDAP from 1.0.0 to latest
+- Unbounded LDAP from 3.0.0 to latest
+- OKHttp from 3.0.0 to latest
+- JSInjection from 1.7.7.1 to latest
+- GraalVM JSInjection from 19.0.0 to latest
+- Rihno JSInjection from 1.7.7.1 to latest
+- Camel XPATH from 3.0.0 to latest
+- Jaxen XPATH from 1.1 to latest
+- Saxpath 1.0
+- Xalan XPATH 2.1.0 to latest
+
+### Datastores
+
+- Generic JDBC (any JDBC compliant driver)
+- Merlia from 7.03 to latest
+- Generic R2DBC from 0 to latest
+- Oranxo from 3.06 to latest
+- PostgreSQL from 8.0-312.jdbc3 to latest
+- MariaDB R2DBC from 1.0.0 to latest
+- jTDS from 1.2 to latest
+- MariaDB Java Client from 1.1.7 to 3.0.0-alpha
+- H2 from 1.0.57 to latest
+- H2 R2DBC from 0 to latest
+- Sybase from 6 to latest
+- HSQLDB from 1.7.2.2 to latest
+- Generic JDBC from 0 to latest
+- Embedded Derby from 10.2.1.6 to latest
+- MSSQL R2DBC from 0 to latest
+- MySQL from 3.0.8 to latest
+- Oracle JDBC from 5 to latest
+- MySQL R2DBC from 0.8.2 to latest
+- MongoDB from 3.0.0 to latest
+- IBM DB2 from 9.1 to latest
+- PostgreSQL R2DBC from 0.9.0 to latest
+- Oracle R2DBC from 0.0.0 to 1.1.2
+- SQLServer from jdk6 to latest
+
+## **Building**
+
+#### **JDK requirements**
+
+The Java agent uses a variety of JDK versions when building and running tests. These need to be installed and configured for your environment.
+
+Edit or create the ~/.gradle/gradle.properties file and add the following JDKs, ensuring that the vendors/versions match what is installed in your environment (Mac OS X examples shown).
+
+JDK 8 is required to build the agent:
+
+`jdk8=/Library/Java/JavaVirtualMachines/adoptopenjdk-8.jdk/Contents/Home`
+
+Additionally, the -PtestN Gradle property can be used to run tests on a specific JDK version which may require further JDK configuration. To keep test times reasonable the project only allows testing against supported LTS Java releases as well as the latest non-LTS release of Java. For example to run tests with Java 17, the -Ptest17 Gradle property would cause the test to use jdk17 as configured below:
+
+`jdk17=/Library/Java/JavaVirtualMachines/temurin-17.jdk/Contents/Home`
 
 
-## Building
 
->[**Optional** - Include this section if users will need to follow specific instructions to build the software from source. Be sure to include any third party build dependencies that need to be installed separately. Remove this section if it's not needed.]
+### **Gradle build**
 
-## Testing
+To build the agent dependency jar, run the following series of commands
 
->[**Optional** - Include instructions on how to run tests if we include tests with the codebase. Remove this section if it's not needed.]
+From APM Java agent root directory :
 
-## Support
+```./gradlew clean :newrelic-api:publishToMavenLocal :agent-bridge:publishToMavenLocal :agent-bridge-datastore:publishToMavenLocal :newrelic-weaver-api:publishToMavenLocal :newrelic-weaver:publishToMavenLocal :newrelic-weaver-scala:publishToMavenLocal :newrelic-weaver-scala-api:publishToMavenLocal --parallel```
 
-New Relic hosts and moderates an online forum where you can interact with New Relic employees as well as other customers to get help and share best practices. Like all official New Relic open source projects, there's a related Community topic in the New Relic Explorers Hub. You can find this project's topic/threads here:
+From CSEC java agent root dir :
 
->Add the url for the support thread here: discuss.newrelic.com
+```./gradlew clean jar --parallel```
 
-## Contribute
+Final artifacts should be present at \<csec project root directory\>/newrelic-security-agent/build/libs
 
-We encourage your contributions to improve [project name]! Keep in mind that when you submit your pull request, you'll need to sign the CLA via the click-through using CLA-Assistant. You only have to sign the CLA one time per project.
+To publish csec agent on maven local use below command :
 
-If you have any questions, or to execute our corporate CLA (which is required if your contribution is on behalf of a company), drop us an email at opensource@newrelic.com.
+```./gradlew clean publishToMavenLocal```
+
+## **Support**
+
+New Relic hosts and moderates an online forum where you can interact with New Relic employees as well as other customers to get help and share best practices. Like all official New Relic open source projects, there's a related Community topic in the New Relic Explorers Hub. You can find this project's topic/threads here: Add the url for the support thread here: https://forum.newrelic.com/s/
+
+## **Contribute**
+
+Any feedback provided to New Relic about the New Relic csec-java-agent, including feedback provided as source code, comments, or other copyrightable or patentable material, is provided to New Relic under the terms of the Apache Software License, version 2. If you do not provide attribution information or a copy of the license with your feedback, you waive the performance of those requirements of the Apache License with respect to New Relic. The license grant regarding any feedback is irrevocable and persists past the termination of the preview license.
+
+Keep in mind that when you submit a pull request or other feedback, you'll need to sign the CLA via the click-through using CLA-Assistant. You only have to sign the CLA one time per project.
+If you have any questions drop us an email at opensource@newrelic.com.
 
 **A note about vulnerabilities**
 
-As noted in our [security policy](../../security/policy), New Relic is committed to the privacy and security of our customers and their data. We believe that providing coordinated disclosure by security researchers and engaging with the security community are important means to achieve our security goals.
+As noted in our [security policy](https://github.com/newrelic/csec-ruby-agent/security/policy), New Relic is committed to the privacy and security of our customers and their data. We believe that providing coordinated disclosure by security researchers and engaging with the security community are important means to achieve our security goals.
 
 If you believe you have found a security vulnerability in this project or any of New Relic's products or websites, we welcome and greatly appreciate you reporting it to New Relic through [HackerOne](https://hackerone.com/newrelic).
 
-If you would like to contribute to this project, review [these guidelines](./CONTRIBUTING.md).
+If you would like to contribute to this project, review [these guidelines](https://github.com/newrelic/csec-ruby-agent/blob/main/CONTRIBUTING.md).
 
-To all contributors, we thank you!  Without your contribution, this project would not be what it is today.  We also host a community project page dedicated to [Project Name](<LINK TO https://opensource.newrelic.com/projects/... PAGE>).
+To all contributors, we thank you! Without your contribution, this project would not be what it is today. We also host a community project page dedicated to Project Name.
 
-## License
-[Project Name] is licensed under the [Apache 2.0](http://apache.org/licenses/LICENSE-2.0.txt) License.
->[If applicable: The [project name] also uses source code from third-party libraries. You can find full details on which libraries are used and the terms under which they are licensed in the third-party notices document.]
+## **License**
+
+@newrelic/csec-java-agent is licensed under the New Relic Software Notice.
+
+The @newrelic/csec-java-agent also uses source code from third-party libraries. You can find full details on which libraries are used and the terms under which they are licensed in the third-party notices document.
