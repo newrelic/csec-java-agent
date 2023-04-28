@@ -4,7 +4,7 @@ dependencies {
     implementation("com.newrelic.agent.java:newrelic-weaver-api:${nrAPIVersion}")
     implementation("org.apache.derby:derby:10.15.1.3")
     implementation("org.apache.derby:derbytools:10.15.1.3")
-
+    implementation("org.apache.derby:derbyshared:10.15.1.3")
 }
 
 jar {
@@ -22,3 +22,15 @@ site {
     title 'Embedded Derby'
     type 'Datastore'
 }
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(11)
+        vendor = JvmVendorSpec.ADOPTOPENJDK
+    }
+}
+
+//compileTestJava {
+//    sourceCompatibility = JavaVersion.VERSION_1_8
+//    targetCompatibility = JavaVersion.VERSION_1_8
+//}

@@ -11,8 +11,10 @@ import org.h2.jdbc.JdbcPreparedStatement;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
+import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.junit.runners.MethodSorters;
 
 import java.math.BigDecimal;
 import java.sql.Connection;
@@ -28,9 +30,9 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
 
 @RunWith(SecurityInstrumentationTestRunner.class)
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @InstrumentationTestConfig(includePrefixes = { "javax.sql", "java.sql" })
 public class PreparedStatementTest {
     private static final String DB_DRIVER = "org.h2.Driver";
@@ -39,9 +41,7 @@ public class PreparedStatementTest {
     private static final String DB_PASSWORD = "";
     private static final Connection CONNECTION = getDBConnection();
 
-    private static List<String> QUERIES = new ArrayList<>();
-
-    private static AtomicInteger id = new AtomicInteger(3);
+    private static final List<String> QUERIES = new ArrayList<>();
 
     @AfterClass
     public static void teardown() throws SQLException {
@@ -65,7 +65,7 @@ public class PreparedStatementTest {
             "CREATE TABLE IF NOT EXISTS USERS(id int primary key, first_name varchar(255), last_name varchar(255), dob date, dot time, dotz timestamp, active boolean, arr bytea)");
         QUERIES.add("TRUNCATE TABLE USERS");
         QUERIES.add("INSERT INTO USERS(id, first_name, last_name) VALUES(1, 'john', 'doe')");
-        QUERIES.add("select * from users");
+        QUERIES.add("select * from USERS");
         QUERIES.add("UPDATE USERS SET last_name='Doe' WHERE id=1");
         QUERIES.add(
                 "select * from users where id=? and id=? and id=? and id=? and id=? and id=? and first_name=? and first_name=? and id=? and dob=? and arr=? and active=? and dot=? and dotz=?");

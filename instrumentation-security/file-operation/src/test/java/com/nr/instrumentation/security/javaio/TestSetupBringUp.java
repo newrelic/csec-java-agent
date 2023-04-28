@@ -4,6 +4,7 @@ import com.newrelic.agent.security.introspec.SecurityInstrumentationTestRunner;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,7 +14,7 @@ public class TestSetupBringUp {
             List<Class> toReTransform = new ArrayList<>();
 
             // java.io.FileInputStream
-            SecurityInstrumentationTestRunner.instrumentation.retransformClasses(FileInputStream.class);
+            SecurityInstrumentationTestRunner.instrumentation.retransformClasses(FileInputStream.class, FileOutputStream.class);
 
             // java.io.FileSystem and alike
             Class<?> fileSystemClass = Class.forName("java.io.FileSystem");

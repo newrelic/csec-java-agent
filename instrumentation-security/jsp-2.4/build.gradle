@@ -4,6 +4,8 @@ dependencies {
     implementation("com.newrelic.agent.java:newrelic-weaver-api:${nrAPIVersion}")
     implementation("jakarta.servlet.jsp:jakarta.servlet.jsp-api:2.3.6")
     implementation("jakarta.servlet:jakarta.servlet-api:4.0.4")
+
+    testImplementation("org.apache.tomcat.embed:tomcat-embed-jasper:9.0.70")
 }
 
 jar {

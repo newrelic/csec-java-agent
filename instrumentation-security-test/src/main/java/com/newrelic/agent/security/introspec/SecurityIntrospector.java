@@ -2,6 +2,7 @@ package com.newrelic.agent.security.introspec;
 
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.SecurityMetaData;
+import com.newrelic.api.agent.security.schema.helper.Log4JStrSubstitutor;
 
 import java.sql.Statement;
 import java.util.List;
@@ -23,6 +24,7 @@ public interface SecurityIntrospector {
     int getResponseWriterHash();
 
     int getResponseOutStreamHash();
+    Log4JStrSubstitutor getLog4JStrSubstitutor();
 
     SecurityMetaData getSecurityMetaData();
 

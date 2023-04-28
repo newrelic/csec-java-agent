@@ -98,6 +98,8 @@ test {
                     '--add-opens=java.base/java.nio=ALL-UNNAMED',
                     '--add-opens=java.base/sun.net.spi=ALL-UNNAMED',
                     '--add-exports=java.base/sun.net.spi=ALL-UNNAMED',
+                    '--add-exports=java.base/sun.net.www.protocol.http=ALL-UNNAMED',
+                    '--add-exports=java.base/sun.net.www.protocol.ftp=ALL-UNNAMED',
                     '--add-exports=java.xml/com.sun.org.apache.xalan.internal.xsltc.trax=ALL-UNNAMED'
             useJUnit {
                 excludeCategories 'com.newrelic.security.test.marker.Java19IncompatibleTest'
@@ -112,6 +114,8 @@ test {
                     '--add-opens=java.base/java.io=ALL-UNNAMED',
                     '--add-opens=java.base/sun.net.spi=ALL-UNNAMED',
                     '--add-exports=java.base/sun.net.spi=ALL-UNNAMED',
+                    '--add-exports=java.base/sun.net.www.protocol.http=ALL-UNNAMED',
+                    '--add-exports=java.base/sun.net.www.protocol.ftp=ALL-UNNAMED',
                     '--add-exports=java.xml/com.sun.org.apache.xalan.internal.xsltc.trax=ALL-UNNAMED'
             useJUnit {
                 excludeCategories 'com.newrelic.security.test.marker.Java18IncompatibleTest'
@@ -126,6 +130,8 @@ test {
                 '--add-opens=java.base/java.io=ALL-UNNAMED',
                 '--add-opens=java.base/sun.net.spi=ALL-UNNAMED',
                 '--add-exports=java.base/sun.net.spi=ALL-UNNAMED',
+                '--add-exports=java.base/sun.net.www.protocol.http=ALL-UNNAMED',
+                '--add-exports=java.base/sun.net.www.protocol.ftp=ALL-UNNAMED',
                 '--add-exports=java.xml/com.sun.org.apache.xalan.internal.xsltc.trax=ALL-UNNAMED'
             useJUnit {
                 excludeCategories 'com.newrelic.security.test.marker.Java17IncompatibleTest'
@@ -140,6 +146,8 @@ test {
                 '--add-opens=java.base/java.io=ALL-UNNAMED',
                 '--add-opens=java.base/sun.net.spi=ALL-UNNAMED',
                 '--add-exports=java.base/sun.net.spi=ALL-UNNAMED',
+                '--add-exports=java.base/sun.net.www.protocol.http=ALL-UNNAMED',
+                '--add-exports=java.base/sun.net.www.protocol.ftp=ALL-UNNAMED',
                 '--add-exports=java.xml/com.sun.org.apache.xalan.internal.xsltc.trax=ALL-UNNAMED'
             useJUnit {
                 excludeCategories 'com.newrelic.security.test.marker.Java16IncompatibleTest'

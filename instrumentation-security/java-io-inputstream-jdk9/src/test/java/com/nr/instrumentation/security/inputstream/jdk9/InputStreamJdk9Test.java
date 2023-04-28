@@ -4,6 +4,7 @@ import com.newrelic.agent.security.introspec.InstrumentationTestConfig;
 import com.newrelic.agent.security.introspec.SecurityInstrumentationTestRunner;
 import com.newrelic.agent.security.introspec.SecurityIntrospector;
 import com.newrelic.api.agent.security.schema.SecurityMetaData;
+import com.newrelic.security.test.marker.Java11IncompatibleTest;
 import com.newrelic.security.test.marker.Java8IncompatibleTest;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -29,7 +30,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-@Category({ Java8IncompatibleTest.class })
+@Category({ Java8IncompatibleTest.class, Java11IncompatibleTest.class })
 @RunWith(SecurityInstrumentationTestRunner.class)
 @InstrumentationTestConfig(includePrefixes = {"nr.java.io","com.nr.instrumentation.security.javaio"})
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)

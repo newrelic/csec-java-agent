@@ -24,6 +24,11 @@ java {
     }
 }
 
+test {
+    onlyIf {
+        inputs.getProperties()["test.jdk"]!="jdk8" && inputs.getProperties()["test.jdk"]!="jdk9" && inputs.getProperties()["test.jdk"]!="jdk10"
+    }
+}
 
 site {
     title 'LDAP'

@@ -26,4 +26,11 @@ public abstract class JDBCDriver_Instrumentation {
         return Weaver.callOriginal();
     }
 
+    public static Connection getConnection(String var0, Properties var1) throws SQLException {
+        if(NewRelicSecurity.isHookProcessingActive() && !NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()) {
+            NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(JDBCVendor.META_CONST_JDBC_VENDOR, JDBCVendor.HSQLDB);
+        }
+        return Weaver.callOriginal();
+    }
+
 }

@@ -3,6 +3,7 @@ dependencies {
     implementation("com.newrelic.agent.java:newrelic-weaver-api:${nrAPIVersion}")
     implementation("com.newrelic.agent.java:newrelic-api:${nrAPIVersion}")
     implementation("org.eclipse.jetty:jetty-server:11.0.0")
+    testImplementation("org.eclipse.jetty:jetty-servlet:11.0.0")
 }
 
 jar {

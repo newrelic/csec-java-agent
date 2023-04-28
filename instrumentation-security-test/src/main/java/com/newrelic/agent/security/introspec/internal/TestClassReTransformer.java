@@ -48,7 +48,7 @@ public class TestClassReTransformer implements ClassFileTransformer {
             ClassCache classCache = new ClassCache(new ClassLoaderFinder(SecurityInstrumentationTestRunner.instrumentingClassloader));
             ;
             byte[] classBytes = classfileBuffer;
-            if (classBytes == null) {
+            if (classBytes == null || className == null) {
                 return null;
             }
 

@@ -4,6 +4,8 @@ dependencies {
     implementation("com.newrelic.agent.java:newrelic-weaver-api:${nrAPIVersion}")
     implementation("jakarta.servlet.jsp:jakarta.servlet.jsp-api:3.1.0")
     implementation("jakarta.servlet:jakarta.servlet-api:5.0.0")
+
+    testImplementation("org.apache.tomcat.embed:tomcat-embed-jasper:10.0.27")
 }
 
 jar {
@@ -13,6 +15,12 @@ jar {
 verifyInstrumentation {
     passesOnly('jakarta.servlet.jsp:jakarta.servlet.jsp-api:[3.0.0-M1,)') {
         implementation("jakarta.servlet:jakarta.servlet-api:5.0.0")
+    }
+}
+
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(11))
     }
 }
 
