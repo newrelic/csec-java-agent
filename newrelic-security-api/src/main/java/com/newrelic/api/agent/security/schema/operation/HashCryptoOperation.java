@@ -37,8 +37,12 @@ public class HashCryptoOperation extends AbstractOperation {
     }
 
     public HashCryptoOperation(String name, String className, String methodName) {
+        this(name, className, methodName, VulnerabilityCaseType.HASH);
+    }
+
+    public HashCryptoOperation(String name, String className, String methodName, VulnerabilityCaseType caseType) {
         super(className, methodName);
-        this.setCaseType(VulnerabilityCaseType.HASH);
+        this.setCaseType(caseType);
         this.name = name;
     }
 

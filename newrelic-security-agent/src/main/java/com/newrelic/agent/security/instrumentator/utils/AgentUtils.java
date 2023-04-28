@@ -26,12 +26,22 @@ import org.apache.commons.compress.archivers.zip.ZipArchiveInputStream;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.nio.file.attribute.PosixFilePermission;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -118,7 +128,10 @@ public class AgentUtils {
 
     private boolean isPolicyOverridden = false;
 
+    private Set<String> owaspEventApiIds;
+
     private AgentUtils() {
+        owaspEventApiIds = ConcurrentHashMap.newKeySet();
         eventResponseSet = new ConcurrentHashMap<>();
         classLoaderRecord = new ConcurrentHashMap<>();
         rxssSentUrls = new HashSet<>();
@@ -635,5 +648,13 @@ public class AgentUtils {
         }
 
         this.setPolicyOverridden(override);
+    }
+
+    public void addOwaspEventApiId(String owaspEventApiId) {
+        this.owaspEventApiIds.add(owaspEventApiId);
+    }
+
+    public boolean checkIfOwaspEventApiIdPresent(String owaspEventApiId) {
+        return owaspEventApiIds.contains(owaspEventApiId);
     }
 }
