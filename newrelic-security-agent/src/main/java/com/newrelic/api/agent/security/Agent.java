@@ -238,7 +238,7 @@ public class Agent implements SecurityAgent {
         processStackTrace(operation);
 //        boolean blockNeeded = checkIfBlockingNeeded(operation.getApiID());
 //        securityMetaData.getMetaData().setApiBlocked(blockNeeded);
-        if (needToGenerateEvent(operation.getApiID())) {
+        if (needToGenerateEvent(operation.getApiID()) && needToGenerateLowSeverityEvent(operation.getApiID(), operation.isLowSeverityHook())) {
             DispatcherPool.getInstance().dispatchEvent(operation, securityMetaData);
             if (!firstEventProcessed.get()) {
                 logger.logInit(LogLevel.INFO,
@@ -253,6 +253,18 @@ public class Agent implements SecurityAgent {
 //            blockForResponse(operation.getExecutionId());
 //        }
 //        checkIfClientIPBlocked();
+    }
+
+    private boolean needToGenerateLowSeverityEvent(String apiID, boolean isLowSeverityHook) {
+        if (isLowSeverityHook) {
+            if (!AgentUtils.getInstance().checkIfOwaspEventApiIdPresent(apiID)) {
+                AgentUtils.getInstance().addOwaspEventApiId(apiID);
+                return true;
+            } else {
+                return false;
+            }
+        }
+        return true;
     }
 
     private static boolean needToGenerateEvent(String apiID) {

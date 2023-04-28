@@ -533,6 +533,10 @@ public class Dispatcher implements Runnable {
         String klassName = null;
         for (int i = 0; i < operation.getStackTrace().length; i++) {
             // TODO : check this sequence. Why this is being set from inside Deserialisation check.
+
+            if (StringUtils.startsWithAny(klassName, SKIP_COM_NEWRELIC, SKIP_COM_NR)) {
+                isNRCode = true;
+            }
             if (isNRCode) {
                 logger.log(LogLevel.FINER, DROPPING_EVENT_AS_IT_WAS_GENERATED_BY_K_2_INTERNAL_API_CALL + eventBean,
                         Dispatcher.class.getName());
@@ -572,10 +576,6 @@ public class Dispatcher implements Runnable {
         if (ObjectInputStream.class.getName().equals(klassName)
                 && StringUtils.equals(operation.getStackTrace()[index].getMethodName(), READ_OBJECT)) {
             eventBean.getMetaData().setTriggerViaDeserialisation(true);
-        }
-
-        if (StringUtils.startsWithAny(klassName, SKIP_COM_NEWRELIC, SKIP_COM_NR)) {
-            isNRCode = true;
         }
     }
 
