@@ -115,10 +115,6 @@ To publish csec agent on maven local use below command :
 
 ```./gradlew clean publishToMavenLocal```
 
-## **Support**
-
-New Relic hosts and moderates an online forum where you can interact with New Relic employees as well as other customers to get help and share best practices. Like all official New Relic open source projects, there's a related Community topic in the New Relic Explorers Hub. You can find this project's topic/threads here: Add the url for the support thread here: https://forum.newrelic.com/s/
-
 ## **Contribute**
 
 Any feedback provided to New Relic about the New Relic csec-java-agent, including feedback provided as source code, comments, or other copyrightable or patentable material, is provided to New Relic under the terms of the Apache Software License, version 2. If you do not provide attribution information or a copy of the license with your feedback, you waive the performance of those requirements of the Apache License with respect to New Relic. The license grant regarding any feedback is irrevocable and persists past the termination of the preview license.
@@ -138,6 +134,6 @@ To all contributors, we thank you! Without your contribution, this project would
 
 ## **License**
 
-@newrelic/csec-java-agent is licensed under the New Relic Software Notice.
+New Relic Security Agent for Java is licensed under the New Relic Software Notice.
 
-The @newrelic/csec-java-agent also uses source code from third-party libraries. You can find full details on which libraries are used and the terms under which they are licensed in the third-party notices document.
+The New Relic Security Agent for Java also uses source code from third-party libraries. You can find full details on which libraries are used and the terms under which they are licensed in the third-party notices document.
