@@ -1,4 +1,4 @@
-package com.nr.instrumentation.security.postgresql941207;
+package com.nr.instrumentation.security.postgresql941208;
 
 import com.newrelic.agent.security.introspec.InstrumentationTestConfig;
 import com.newrelic.agent.security.introspec.SecurityInstrumentationTestRunner;
