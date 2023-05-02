@@ -19,7 +19,6 @@ import static com.newrelic.api.agent.security.instrumentation.helpers.LowSeverit
 @Weave(type = MatchType.BaseClass, originalName = "java.io.File")
 public abstract class File_Instrumentation {
 
-    // TODO: Temporarily disabled
     public boolean exists() {
         boolean isFileLockAcquired = acquireFileLockIfPossible();
         boolean isOwaspHookEnabled = NewRelic.getAgent().getConfig().getValue(LOW_SEVERITY_HOOKS_ENABLED, DEFAULT);
@@ -32,11 +31,11 @@ public abstract class File_Instrumentation {
         try {
             returnVal = Weaver.callOriginal();
         } finally {
+            registerExitOperation(isFileLockAcquired, operation);
             if (isFileLockAcquired) {
                 releaseFileLock();
             }
         }
-        registerExitOperation(isFileLockAcquired, operation);
         return returnVal;
     }
 
