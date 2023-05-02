@@ -26,10 +26,10 @@ public class MessageDigest_Instrumentation {
         MessageDigest returnValue = null;
         try {
             returnValue = Weaver.callOriginal();
-        } catch (Throwable ignored) {
-        }
-        if (isOwaspHookEnabled) {
-            registerExitOperation(operation);
+        } finally {
+            if (isOwaspHookEnabled) {
+                registerExitOperation(operation);
+            }
         }
         return returnValue;
     }
@@ -43,10 +43,10 @@ public class MessageDigest_Instrumentation {
         MessageDigest returnValue = null;
         try {
             returnValue = Weaver.callOriginal();
-        } catch (Throwable ignored) {
-        }
-        if (isOwaspHookEnabled) {
-            registerExitOperation(operation);
+        } finally {
+            if (isOwaspHookEnabled) {
+                registerExitOperation(operation);
+            }
         }
         return returnValue;
     }
@@ -60,10 +60,10 @@ public class MessageDigest_Instrumentation {
         MessageDigest returnValue = null;
         try {
             returnValue = Weaver.callOriginal();
-        } catch (Throwable ignored) {
-        }
-        if (isOwaspHookEnabled) {
-            registerExitOperation(operation);
+        } finally {
+            if (isOwaspHookEnabled) {
+                registerExitOperation(operation);
+            }
         }
         return returnValue;
     }

@@ -28,7 +28,6 @@ public class HttpSession_Instrumentation {
         }
         try {
             Weaver.callOriginal();
-        } catch (Throwable ignored) {
         } finally {
             if (isLockAcquired) {
                 releaseLock(hashCode());

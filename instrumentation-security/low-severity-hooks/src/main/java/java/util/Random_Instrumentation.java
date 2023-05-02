@@ -33,7 +33,6 @@ public class Random_Instrumentation {
         int returnValue = -1;
         try {
             returnValue = Weaver.callOriginal();
-        } catch (Throwable ignored) {
         } finally {
             if (isLockAcquired) {
                 releaseLock(hashCode());
@@ -56,7 +55,6 @@ public class Random_Instrumentation {
         int returnValue = -1;
         try {
             returnValue = Weaver.callOriginal();
-        } catch (Throwable ignored) {
         } finally {
             if (isLockAcquired) {
                 releaseLock(hashCode());
@@ -78,7 +76,6 @@ public class Random_Instrumentation {
         }
         try {
             Weaver.callOriginal();
-        } catch (Throwable ignored) {
         } finally {
             if (isLockAcquired) {
                 releaseLock(hashCode());
@@ -100,7 +97,6 @@ public class Random_Instrumentation {
         long returnValue = -1;
         try {
             returnValue = Weaver.callOriginal();
-        } catch (Throwable ignored) {
         } finally {
             if (isLockAcquired) {
                 releaseLock(hashCode());
@@ -123,7 +119,6 @@ public class Random_Instrumentation {
         float returnValue = -1;
         try {
             returnValue = Weaver.callOriginal();
-        } catch (Throwable ignored) {
         } finally {
             if (isLockAcquired) {
                 releaseLock(hashCode());
@@ -146,7 +141,6 @@ public class Random_Instrumentation {
         double returnValue = -1;
         try {
             returnValue = Weaver.callOriginal();
-        } catch (Throwable ignored) {
         } finally {
             if (isLockAcquired) {
                 releaseLock(hashCode());
@@ -169,7 +163,6 @@ public class Random_Instrumentation {
         double returnValue = -1;
         try {
             returnValue = Weaver.callOriginal();
-        } catch (Throwable ignored) {
         } finally {
             if (isLockAcquired) {
                 releaseLock(hashCode());

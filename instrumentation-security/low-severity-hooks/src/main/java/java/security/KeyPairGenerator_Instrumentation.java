@@ -22,10 +22,10 @@ public class KeyPairGenerator_Instrumentation {
         KeyPairGenerator returnValue = null;
         try {
             returnValue = Weaver.callOriginal();
-        } catch (Throwable ignored) {
-        }
-        if (isOwaspHookEnabled) {
-            CryptoUtils.registerExitOperation(operation);
+        } finally {
+            if (isOwaspHookEnabled) {
+                CryptoUtils.registerExitOperation(operation);
+            }
         }
         return returnValue;
     }
@@ -39,10 +39,10 @@ public class KeyPairGenerator_Instrumentation {
         KeyPairGenerator returnValue = null;
         try {
             returnValue = Weaver.callOriginal();
-        } catch (Throwable ignored) {
-        }
-        if (isOwaspHookEnabled) {
-            CryptoUtils.registerExitOperation(operation);
+        } finally {
+            if (isOwaspHookEnabled) {
+                CryptoUtils.registerExitOperation(operation);
+            }
         }
         return returnValue;
     }
@@ -56,10 +56,10 @@ public class KeyPairGenerator_Instrumentation {
         KeyPairGenerator returnValue = null;
         try {
             returnValue = Weaver.callOriginal();
-        } catch (Throwable ignored) {
-        }
-        if (isOwaspHookEnabled) {
-            CryptoUtils.registerExitOperation(operation);
+        } finally {
+            if (isOwaspHookEnabled) {
+                CryptoUtils.registerExitOperation(operation);
+            }
         }
         return returnValue;
     }
