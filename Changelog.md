@@ -13,7 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.0.1-limited-preview] - 2023-04-20
 
 ### Added
-- Matched NR APM + K2 support matrix
+- More instrumentations added wrt to APM
 - Thread Name Changes from K2 to NR-CSEC
 - Non-Blocking initial WS connection to address NR-107536 : APM Integration test failure due to WS
 
@@ -26,7 +26,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Xpath update incorrect return types of inst methods
 - Removed java.io.FileSystem Hooks since those are covered in java.io.File inst. Works around NR-98829
 - NR-106418, update JSON converter to include null values also.
-
 
 
 ## [1.0.0-limited-preview] - 2023-02-23
