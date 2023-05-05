@@ -6,7 +6,7 @@ dependencies {
 }
 
 jar {
-    manifest { attributes 'Implementation-Title': 'com.newrelic.instrumentation.security.servlet-5.0' }
+    manifest { attributes 'Implementation-Title': 'com.newrelic.instrumentation.security.servlet-5.0', 'Priority': '10' }
 }
 
 verifyInstrumentation {

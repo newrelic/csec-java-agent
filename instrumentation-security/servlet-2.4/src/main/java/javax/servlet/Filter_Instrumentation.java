@@ -1,6 +1,5 @@
 package javax.servlet;
 
-import com.newrelic.api.agent.Trace;
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.schema.AgentMetaData;
 import com.newrelic.api.agent.security.schema.HttpRequest;
@@ -19,7 +18,6 @@ import java.io.IOException;
 public abstract class Filter_Instrumentation {
 
 
-    @Trace(dispatcher = true)
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
             throws IOException, ServletException {
         boolean isServletLockAcquired = acquireServletLockIfPossible();
