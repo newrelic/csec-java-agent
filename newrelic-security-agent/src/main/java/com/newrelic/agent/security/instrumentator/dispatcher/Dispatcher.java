@@ -356,18 +356,19 @@ public class Dispatcher implements Runnable {
             params.add(hashCryptoOperationalBean.getProvider());
         }
         eventBean.setParameters(params);
-        if (eventBean.getSourceMethod().equals(JAVAX_CRYPTO_CIPHER_GETINSTANCE_STRING)
-                || eventBean.getSourceMethod().equals(JAVAX_CRYPTO_CIPHER_GETINSTANCE_STRING_PROVIDER)) {
-            eventBean.setEventCategory(CIPHER);
-        } else if (eventBean.getSourceMethod().equals(JAVAX_CRYPTO_KEYGENERATOR_GETINSTANCE_STRING)
-                || eventBean.getSourceMethod().equals(JAVAX_CRYPTO_KEYGENERATOR_GETINSTANCE_STRING_STRING)
-                || eventBean.getSourceMethod().equals(JAVAX_CRYPTO_KEYGENERATOR_GETINSTANCE_STRING_PROVIDER)) {
-            eventBean.setEventCategory(KEYGENERATOR);
-        } else if (eventBean.getSourceMethod().equals(JAVA_SECURITY_KEYPAIRGENERATOR_GETINSTANCE_STRING)
-                || eventBean.getSourceMethod().equals(JAVA_SECURITY_KEYPAIRGENERATOR_GETINSTANCE_STRING_STRING)
-                || eventBean.getSourceMethod().equals(JAVA_SECURITY_KEYPAIRGENERATOR_GETINSTANCE_STRING_PROVIDER)) {
-            eventBean.setEventCategory(KEYPAIRGENERATOR);
-        }
+        eventBean.setEventCategory(hashCryptoOperationalBean.getEventCategory());
+//        if (eventBean.getSourceMethod().equals(JAVAX_CRYPTO_CIPHER_GETINSTANCE_STRING)
+//                || eventBean.getSourceMethod().equals(JAVAX_CRYPTO_CIPHER_GETINSTANCE_STRING_PROVIDER)) {
+//            eventBean.setEventCategory(CIPHER);
+//        } else if (eventBean.getSourceMethod().equals(JAVAX_CRYPTO_KEYGENERATOR_GETINSTANCE_STRING)
+//                || eventBean.getSourceMethod().equals(JAVAX_CRYPTO_KEYGENERATOR_GETINSTANCE_STRING_STRING)
+//                || eventBean.getSourceMethod().equals(JAVAX_CRYPTO_KEYGENERATOR_GETINSTANCE_STRING_PROVIDER)) {
+//            eventBean.setEventCategory(KEYGENERATOR);
+//        } else if (eventBean.getSourceMethod().equals(JAVA_SECURITY_KEYPAIRGENERATOR_GETINSTANCE_STRING)
+//                || eventBean.getSourceMethod().equals(JAVA_SECURITY_KEYPAIRGENERATOR_GETINSTANCE_STRING_STRING)
+//                || eventBean.getSourceMethod().equals(JAVA_SECURITY_KEYPAIRGENERATOR_GETINSTANCE_STRING_PROVIDER)) {
+//            eventBean.setEventCategory(KEYPAIRGENERATOR);
+//        }
         return eventBean;
     }
 
@@ -463,6 +464,9 @@ public class Dispatcher implements Runnable {
         JSONArray params = new JSONArray();
         params.addAll(fileOperationalBean.getFileName());
         eventBean.setParameters(params);
+        if(fileOperationalBean.isGetBooleanAttributesCall()) {
+            eventBean.setEventCategory("FILE_EXISTS");
+        }
         return eventBean;
     }
 
@@ -534,14 +538,6 @@ public class Dispatcher implements Runnable {
         for (int i = 0; i < operation.getStackTrace().length; i++) {
             // TODO : check this sequence. Why this is being set from inside Deserialisation check.
 
-            if (StringUtils.startsWithAny(klassName, SKIP_COM_NEWRELIC, SKIP_COM_NR)) {
-                isNRCode = true;
-            }
-            if (isNRCode) {
-                logger.log(LogLevel.FINER, DROPPING_EVENT_AS_IT_WAS_GENERATED_BY_K_2_INTERNAL_API_CALL + eventBean,
-                        Dispatcher.class.getName());
-                return null;
-            }
             klassName = operation.getStackTrace()[i].getClassName();
             if (VulnerabilityCaseType.SYSTEM_COMMAND.equals(vulnerabilityCaseType)
                     || VulnerabilityCaseType.SQL_DB_COMMAND.equals(vulnerabilityCaseType)

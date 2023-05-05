@@ -19,7 +19,7 @@ public class Cipher_Instrumentation {
         AbstractOperation operation = null;
         boolean isOwaspHookEnabled = NewRelic.getAgent().getConfig().getValue(LOW_SEVERITY_HOOKS_ENABLED, DEFAULT);
         if (isOwaspHookEnabled){
-            operation = CryptoUtils.preprocessSecurityHook(algorithm, StringUtils.EMPTY, Cipher_Instrumentation.class.getName(), "getInstance");
+            operation = CryptoUtils.preprocessSecurityHook(algorithm, StringUtils.EMPTY, Cipher_Instrumentation.class.getName(), "getInstance", "CIPHER");
         }
         Cipher_Instrumentation returnValue = null;
         try {
@@ -36,7 +36,7 @@ public class Cipher_Instrumentation {
         AbstractOperation operation = null;
         boolean isOwaspHookEnabled = NewRelic.getAgent().getConfig().getValue(LOW_SEVERITY_HOOKS_ENABLED, DEFAULT);
         if (isOwaspHookEnabled){
-            operation = CryptoUtils.preprocessSecurityHook(transformation, provider.getClass().getSimpleName(), Cipher_Instrumentation.class.getName(), "getInstance");
+            operation = CryptoUtils.preprocessSecurityHook(transformation, provider.getClass().getSimpleName(), Cipher_Instrumentation.class.getName(), "getInstance", "CIPHER");
         }
         Cipher_Instrumentation returnValue = null;
         try {

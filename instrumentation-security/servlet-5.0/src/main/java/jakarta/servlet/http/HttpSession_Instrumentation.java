@@ -41,7 +41,7 @@ public class HttpSession_Instrumentation {
     public void putValue(String name, Object value){
         boolean isLockAcquired = acquireLockIfPossible(hashCode());
         AbstractOperation operation = null;
-        boolean isOwaspHookEnabled = NewRelic.getAgent().getConfig().getValue("owasp_hooks.enabled", false);
+        boolean isOwaspHookEnabled = NewRelic.getAgent().getConfig().getValue(LOW_SEVERITY_HOOKS_ENABLED, DEFAULT);
         if (isOwaspHookEnabled){
             if (isLockAcquired)
                 operation = preprocessSecurityHook(name, value, getClass().getName(), "putValue");
@@ -67,7 +67,7 @@ public class HttpSession_Instrumentation {
             }
 
             TrustBoundaryOperation operation = new TrustBoundaryOperation(name, value, className, methodName);
-
+            operation.setLowSeverityHook(true);
             NewRelicSecurity.getAgent().registerOperation(operation);
 
             return operation;

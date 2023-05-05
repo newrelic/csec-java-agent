@@ -70,13 +70,13 @@ public class WSReconnectionST {
         throw null;
     }
 
-    public void submitNewTaskSchedule() {
+    public void submitNewTaskSchedule(int delay) {
         synchronized (lock) {
             if (futureTask == null || futureTask.isDone()) {
                 if (scheduledService.isShutdown()) {
                     instance.instantiateScheduler();
                 }
-                futureTask = scheduledService.schedule(runnable, 15, TimeUnit.SECONDS);
+                futureTask = scheduledService.schedule(runnable, delay, TimeUnit.SECONDS);
             }
         }
     }

@@ -17,7 +17,7 @@ public class KeyPairGenerator_Instrumentation {
         AbstractOperation operation = null;
         boolean isOwaspHookEnabled = NewRelic.getAgent().getConfig().getValue(LOW_SEVERITY_HOOKS_ENABLED, DEFAULT);
         if (isOwaspHookEnabled){
-            operation = CryptoUtils.preprocessSecurityHook(algorithm, StringUtils.EMPTY, KeyPairGenerator.class.getName(), "getInstance");
+            operation = CryptoUtils.preprocessSecurityHook(algorithm, StringUtils.EMPTY, KeyPairGenerator.class.getName(), "getInstance", "KEYPAIRGENERATOR");
         }
         KeyPairGenerator returnValue = null;
         try {
@@ -34,7 +34,7 @@ public class KeyPairGenerator_Instrumentation {
         AbstractOperation operation = null;
         boolean isOwaspHookEnabled = NewRelic.getAgent().getConfig().getValue(LOW_SEVERITY_HOOKS_ENABLED, DEFAULT);
         if (isOwaspHookEnabled){
-            operation = CryptoUtils.preprocessSecurityHook(algorithm, provider, KeyPairGenerator.class.getName(), "getInstance");
+            operation = CryptoUtils.preprocessSecurityHook(algorithm, provider, KeyPairGenerator.class.getName(), "getInstance", "KEYPAIRGENERATOR");
         }
         KeyPairGenerator returnValue = null;
         try {
@@ -51,7 +51,7 @@ public class KeyPairGenerator_Instrumentation {
         AbstractOperation operation = null;
         boolean isOwaspHookEnabled = NewRelic.getAgent().getConfig().getValue(LOW_SEVERITY_HOOKS_ENABLED, DEFAULT);
         if (isOwaspHookEnabled){
-            operation = CryptoUtils.preprocessSecurityHook(algorithm, provider.getClass().getSimpleName(), KeyPairGenerator.class.getName(), "getInstance");
+            operation = CryptoUtils.preprocessSecurityHook(algorithm, provider.getClass().getSimpleName(), KeyPairGenerator.class.getName(), "getInstance", "KEYPAIRGENERATOR");
         }
         KeyPairGenerator returnValue = null;
         try {

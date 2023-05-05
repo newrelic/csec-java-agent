@@ -71,7 +71,7 @@ public abstract class FileOutputStream_Instrumentation {
             }
             String filePath = new File(filename).getAbsolutePath();
             FileOperation operation = new FileOperation(filePath,
-                    this.getClass().getName(), FileHelper.METHOD_NAME_FILEOUTPUTSTREAM_OPEN, false);
+                    this.getClass().getName(), FileHelper.METHOD_NAME_FILEOUTPUTSTREAM_OPEN);
             FileHelper.createEntryOfFileIntegrity(filePath, this.getClass().getName(), FileHelper.METHOD_NAME_FILEOUTPUTSTREAM_OPEN);
             NewRelicSecurity.getAgent().registerOperation(operation);
             return operation;

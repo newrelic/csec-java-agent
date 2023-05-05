@@ -47,7 +47,7 @@ public class HttpServletResponse_Instrumentation {
             }
 
             SecureCookieOperation operation = new SecureCookieOperation(Boolean.toString(cookie.getSecure()), className, methodName);
-
+            operation.setLowSeverityHook(true);
             NewRelicSecurity.getAgent().registerOperation(operation);
 
             return operation;

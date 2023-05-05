@@ -128,10 +128,10 @@ public class AgentUtils {
 
     private boolean isPolicyOverridden = false;
 
-    private Set<String> owaspEventApiIds;
+    private Set<String> encounteredLowSeverityEventApiIds;
 
     private AgentUtils() {
-        owaspEventApiIds = ConcurrentHashMap.newKeySet();
+        encounteredLowSeverityEventApiIds = ConcurrentHashMap.newKeySet();
         eventResponseSet = new ConcurrentHashMap<>();
         classLoaderRecord = new ConcurrentHashMap<>();
         rxssSentUrls = new HashSet<>();
@@ -650,11 +650,11 @@ public class AgentUtils {
         this.setPolicyOverridden(override);
     }
 
-    public void addOwaspEventApiId(String owaspEventApiId) {
-        this.owaspEventApiIds.add(owaspEventApiId);
+    public void addLowSeverityEventToEncounteredList(String owaspEventApiId) {
+        this.encounteredLowSeverityEventApiIds.add(owaspEventApiId);
     }
 
-    public boolean checkIfOwaspEventApiIdPresent(String owaspEventApiId) {
-        return owaspEventApiIds.contains(owaspEventApiId);
+    public boolean checkIfLowSeverityEventAlreadyEncountered(String eventApiId) {
+        return encounteredLowSeverityEventApiIds.contains(eventApiId);
     }
 }

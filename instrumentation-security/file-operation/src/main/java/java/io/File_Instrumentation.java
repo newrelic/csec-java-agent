@@ -413,7 +413,9 @@ public abstract class File_Instrumentation {
             }
             FileOperation operation = new FileOperation(
                     File_Instrumentation.class.getName(), methodName, isBooleanAttributesCall, fileNames);
-            operation.setLowSeverityHook(isLowSeverityHook);
+            if(isBooleanAttributesCall) {
+                operation.setLowSeverityHook(isLowSeverityHook);
+            }
             NewRelicSecurity.getAgent().registerOperation(operation);
             return operation;
         } catch (Throwable e) {

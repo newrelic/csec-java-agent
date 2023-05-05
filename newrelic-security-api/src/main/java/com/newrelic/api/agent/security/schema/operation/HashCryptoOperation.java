@@ -8,6 +8,8 @@ public class HashCryptoOperation extends AbstractOperation {
     private String name;
     private String provider;
 
+    private String eventCategory;
+
     /**
      * @return the name
      */
@@ -34,6 +36,14 @@ public class HashCryptoOperation extends AbstractOperation {
      */
     public void setProvider(String provider) {
         this.provider = provider;
+    }
+
+    public String getEventCategory() {
+        return eventCategory;
+    }
+
+    public void setEventCategory(String eventCategory) {
+        this.eventCategory = eventCategory;
     }
 
     public HashCryptoOperation(String name, String className, String methodName) {

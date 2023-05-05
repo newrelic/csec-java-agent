@@ -8,7 +8,7 @@ import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityExcepti
 import com.newrelic.api.agent.security.schema.operation.HashCryptoOperation;
 
 public class CryptoUtils {
-    public static AbstractOperation preprocessSecurityHook(String algorithm, String provider, String className, String methodName) {
+    public static AbstractOperation preprocessSecurityHook(String algorithm, String provider, String className, String methodName, String category) {
         try {
             SecurityMetaData securityMetaData = NewRelicSecurity.getAgent().getSecurityMetaData();
             if (!NewRelicSecurity.isHookProcessingActive() || securityMetaData.getRequest().isEmpty()
@@ -19,6 +19,7 @@ public class CryptoUtils {
             HashCryptoOperation operation = new HashCryptoOperation(algorithm, className, methodName, VulnerabilityCaseType.CRYPTO);
             operation.setProvider(provider);
             operation.setLowSeverityHook(true);
+            operation.setEventCategory(category);
 
             NewRelicSecurity.getAgent().registerOperation(operation);
 

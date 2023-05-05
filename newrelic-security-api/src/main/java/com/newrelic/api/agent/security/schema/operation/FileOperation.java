@@ -3,9 +3,7 @@ package com.newrelic.api.agent.security.schema.operation;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 
-import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class FileOperation extends AbstractOperation {
@@ -18,11 +16,10 @@ public class FileOperation extends AbstractOperation {
         fileName = new ArrayList<>();
     }
 
-    public FileOperation(String fileName, String className, String methodName, boolean getBooleanAttributesCall) {
+    public FileOperation(String fileName, String className, String methodName) {
         this(className, methodName);
         this.setCaseType(VulnerabilityCaseType.FILE_OPERATION);
         this.fileName.add(fileName);
-        this.getBooleanAttributesCall = getBooleanAttributesCall;
     }
 
     public FileOperation(String className, String methodName, boolean getBooleanAttributesCall, List<String> fileNames) {

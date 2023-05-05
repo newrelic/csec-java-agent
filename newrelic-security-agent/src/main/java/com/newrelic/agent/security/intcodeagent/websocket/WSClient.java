@@ -212,7 +212,7 @@ public class WSClient extends WebSocketClient {
         }
 
         if (code != CloseFrame.POLICY_VALIDATION && code != CloseFrame.NORMAL && code != CloseFrame.PROTOCOL_ERROR) {
-            WSReconnectionST.getInstance().submitNewTaskSchedule();
+            WSReconnectionST.getInstance().submitNewTaskSchedule(15);
         }
     }
 
