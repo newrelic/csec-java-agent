@@ -234,16 +234,22 @@ public class Agent implements SecurityAgent {
         String executionId = ExecutionIDGenerator.getExecutionId();
         operation.setExecutionId(executionId);
         operation.setStartTime(Instant.now().toEpochMilli());
-        operation.setStackTrace(Thread.currentThread().getStackTrace());
         SecurityMetaData securityMetaData = NewRelicSecurity.getAgent().getSecurityMetaData();
-        setRequiredStackTrace(operation, securityMetaData);
-        setUserClassEntity(operation, securityMetaData);
-        if(!processStackTrace(operation)) {
+        if (operation instanceof RXSSOperation) {
+            operation.setStackTrace(securityMetaData.getMetaData().getServiceTrace());
+        } else {
+            operation.setStackTrace(Thread.currentThread().getStackTrace());
+        }
+
+        if(checkIfNRGeneratedEvent(operation, securityMetaData)) {
             logger.log(LogLevel.FINER, DROPPING_EVENT_AS_IT_WAS_GENERATED_BY_K_2_INTERNAL_API_CALL +
                             JsonConverter.toJSON(operation),
                     Dispatcher.class.getName());
             return;
         }
+        setRequiredStackTrace(operation, securityMetaData);
+        setUserClassEntity(operation, securityMetaData);
+        processStackTrace(operation);
 //        boolean blockNeeded = checkIfBlockingNeeded(operation.getApiID());
 //        securityMetaData.getMetaData().setApiBlocked(blockNeeded);
         if (needToGenerateEvent(operation.getApiID()) &&
@@ -262,6 +268,18 @@ public class Agent implements SecurityAgent {
 //            blockForResponse(operation.getExecutionId());
 //        }
 //        checkIfClientIPBlocked();
+    }
+
+    private static boolean checkIfNRGeneratedEvent(AbstractOperation operation, SecurityMetaData securityMetaData) {
+        for (int i = 1, j = 0; i < operation.getStackTrace().length; i++) {
+            // Only remove consecutive top com.newrelic and com.nr. elements from stack.
+            if (i - 1 == j && StringUtils.startsWithAny(operation.getStackTrace()[i].getClassName(), "com.newrelic.", "com.nr.")) {
+                j++;
+            } else if (StringUtils.startsWithAny(operation.getStackTrace()[i].getClassName(), "com.newrelic.", "com.nr.")) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private boolean needToGenerateLowSeverityEvent(String apiID, boolean isLowSeverityHook,
@@ -292,19 +310,13 @@ public class Agent implements SecurityAgent {
     }
 
     private void setRequiredStackTrace(AbstractOperation operation, SecurityMetaData securityMetaData) {
-        StackTraceElement[] currentStackTrace = null;
-        if (operation instanceof RXSSOperation) {
-            currentStackTrace = securityMetaData.getMetaData().getServiceTrace();
-        } else {
-            currentStackTrace = operation.getStackTrace();
-        }
-
+        StackTraceElement[] currentStackTrace = operation.getStackTrace();
         int targetBottomStackLength = currentStackTrace.length - securityMetaData.getMetaData().getServiceTrace().length + 3;
         currentStackTrace = Arrays.copyOfRange(currentStackTrace, 0, targetBottomStackLength);
         operation.setStackTrace(currentStackTrace);
     }
 
-    private static boolean processStackTrace(AbstractOperation operation) {
+    private static void processStackTrace(AbstractOperation operation) {
         StackTraceElement[] stackTrace = operation.getStackTrace();
         int resetFactor = 0;
 
@@ -320,8 +332,6 @@ public class Agent implements SecurityAgent {
                 resetFactor++;
                 j++;
                 markedForRemoval = true;
-            } else if (StringUtils.startsWithAny(stackTrace[i].getClassName(), "com.newrelic.", "com.nr.")) {
-                return false;
             }
 
             if (StringUtils.startsWithAny(stackTrace[i].getClassName(), SUN_REFLECT, COM_SUN)
@@ -354,7 +364,6 @@ public class Agent implements SecurityAgent {
         operation.setStackTrace(stackTrace);
         operation.setSourceMethod(operation.getStackTrace()[0].toString());
         setAPIId(operation, newTraceForIdCalc, operation.getCaseType());
-        return true;
     }
 
     private static void setAPIId(AbstractOperation operation, List<Integer> traceForIdCalc, VulnerabilityCaseType vulnerabilityCaseType) {
