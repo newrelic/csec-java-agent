@@ -8,7 +8,6 @@ import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.StringUtils;
 import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.security.schema.operation.RXSSOperation;
-import com.nr.instrumentation.security.HttpServletServer;
 import org.junit.Assert;
 import org.junit.ClassRule;
 import org.junit.FixMethodOrder;
@@ -38,6 +37,7 @@ public class ServletOutputStreamTest {
         String expected = write();
 
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
+        waitForProcessing();
         List<AbstractOperation> operations = introspector.getOperations();
         Assert.assertTrue("No operations detected", operations.size() > 0);
 
@@ -60,6 +60,7 @@ public class ServletOutputStreamTest {
         String expected = printString();
 
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
+        waitForProcessing();
         List<AbstractOperation> operations = introspector.getOperations();
         Assert.assertTrue("No operations detected", operations.size() > 0);
 
@@ -81,6 +82,7 @@ public class ServletOutputStreamTest {
         boolean expected = printBoolean();
 
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
+        waitForProcessing();
         List<AbstractOperation> operations = introspector.getOperations();
         Assert.assertTrue("No operations detected", operations.size() > 0);
 
@@ -103,6 +105,7 @@ public class ServletOutputStreamTest {
         char expected = printChar();
 
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
+        waitForProcessing();
         List<AbstractOperation> operations = introspector.getOperations();
         Assert.assertTrue("No operations detected", operations.size() > 0);
 
@@ -126,6 +129,7 @@ public class ServletOutputStreamTest {
         int expected = printInt();
 
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
+        waitForProcessing();
         List<AbstractOperation> operations = introspector.getOperations();
         Assert.assertTrue("No operations detected", operations.size() > 0);
 
@@ -148,6 +152,7 @@ public class ServletOutputStreamTest {
         long expected = printLong();
 
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
+        waitForProcessing();
         List<AbstractOperation> operations = introspector.getOperations();
         Assert.assertTrue("No operations detected", operations.size() > 0);
 
@@ -170,6 +175,7 @@ public class ServletOutputStreamTest {
         float expected = printFloat();
 
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
+        waitForProcessing();
         List<AbstractOperation> operations = introspector.getOperations();
         Assert.assertTrue("No operations detected", operations.size() > 0);
 
@@ -192,6 +198,7 @@ public class ServletOutputStreamTest {
         double expected = printDouble();
 
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
+        waitForProcessing();
         List<AbstractOperation> operations = introspector.getOperations();
         Assert.assertTrue("No operations detected", operations.size() > 0);
 
@@ -214,6 +221,7 @@ public class ServletOutputStreamTest {
         String expected = println();
 
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
+        waitForProcessing();
         List<AbstractOperation> operations = introspector.getOperations();
         Assert.assertTrue("No operations detected", operations.size() > 0);
 
@@ -235,6 +243,7 @@ public class ServletOutputStreamTest {
         String expected = printlnString();
 
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
+        waitForProcessing();
         List<AbstractOperation> operations = introspector.getOperations();
         Assert.assertTrue("No operations detected", operations.size() > 0);
 
@@ -256,6 +265,7 @@ public class ServletOutputStreamTest {
         String expected = printlnBoolean();
 
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
+        waitForProcessing();
         List<AbstractOperation> operations = introspector.getOperations();
         Assert.assertTrue("No operations detected", operations.size() > 0);
 
@@ -277,6 +287,7 @@ public class ServletOutputStreamTest {
         String expected = printlnChar();
 
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
+        waitForProcessing();
         List<AbstractOperation> operations = introspector.getOperations();
         Assert.assertTrue("No operations detected", operations.size() > 0);
 
@@ -298,6 +309,7 @@ public class ServletOutputStreamTest {
         String expected = printlnInt();
 
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
+        waitForProcessing();
         List<AbstractOperation> operations = introspector.getOperations();
         Assert.assertTrue("No operations detected", operations.size() > 0);
 
@@ -319,6 +331,7 @@ public class ServletOutputStreamTest {
         String expected = printlnLong();
 
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
+        waitForProcessing();
         List<AbstractOperation> operations = introspector.getOperations();
         Assert.assertTrue("No operations detected", operations.size() > 0);
 
@@ -339,6 +352,7 @@ public class ServletOutputStreamTest {
         String expected = printlnFloat();
 
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
+        waitForProcessing();
         List<AbstractOperation> operations = introspector.getOperations();
         Assert.assertTrue("No operations detected", operations.size() > 0);
 
@@ -359,6 +373,7 @@ public class ServletOutputStreamTest {
         String expected = printlnDouble();
 
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
+        waitForProcessing();
         List<AbstractOperation> operations = introspector.getOperations();
         Assert.assertTrue("No operations detected", operations.size() > 0);
 
@@ -499,5 +514,13 @@ public class ServletOutputStreamTest {
         br.close();
 
         return returnVal;
+    }
+
+    private static void waitForProcessing() {
+        try {
+            Thread.sleep(100);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

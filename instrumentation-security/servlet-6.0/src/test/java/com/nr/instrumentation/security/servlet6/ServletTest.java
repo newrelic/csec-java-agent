@@ -7,7 +7,7 @@ import com.newrelic.api.agent.Trace;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.security.schema.operation.RXSSOperation;
-import com.nr.instrumentation.security.HttpServletServer;
+
 import org.junit.Assert;
 import org.junit.ClassRule;
 import org.junit.FixMethodOrder;

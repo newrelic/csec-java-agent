@@ -5,7 +5,6 @@ import com.newrelic.agent.security.introspec.SecurityInstrumentationTestRunner;
 import com.newrelic.agent.security.introspec.SecurityIntrospector;
 import com.newrelic.api.agent.Trace;
 import com.newrelic.api.agent.security.schema.AgentMetaData;
-import com.nr.instrumentation.security.HttpServletServer;
 import org.junit.Assert;
 import org.junit.ClassRule;
 import org.junit.FixMethodOrder;
