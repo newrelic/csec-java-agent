@@ -9,7 +9,6 @@ import com.newrelic.agent.security.intcodeagent.filelogging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.logging.HealthCheckScheduleThread;
 import com.newrelic.agent.security.intcodeagent.logging.IAgentConstants;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.ShutDownEvent;
-import com.newrelic.agent.security.intcodeagent.schedulers.InBoundOutBoundST;
 import com.newrelic.agent.security.intcodeagent.websocket.EventSendPool;
 import com.newrelic.agent.security.intcodeagent.websocket.WSClient;
 import com.newrelic.agent.security.intcodeagent.websocket.WSReconnectionST;
@@ -69,13 +68,12 @@ public class InstrumentationUtils {
         }
         try {
 //            ServletEventPool.getInstance().shutDownThreadPoolExecutor();
-            HealthCheckScheduleThread.shutDownPool();
+            HealthCheckScheduleThread.getInstance().cancelTask(true);
 //            EventThreadPool.getInstance().shutDownThreadPoolExecutor();
             DispatcherPool.shutDownPool();
             ControlCommandProcessorThreadPool.shutDownPool();
             EventSendPool.shutDownPool();
             WSReconnectionST.shutDownPool();
-            InBoundOutBoundST.shutDownPool();
             FileUtils.deleteQuietly(new File(OsVariablesInstance.getInstance().getOsVariables().getTmpDirectory()));
 
         } catch (Throwable e) {

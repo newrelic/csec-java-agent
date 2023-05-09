@@ -657,4 +657,11 @@ public class AgentUtils {
     public boolean checkIfLowSeverityEventAlreadyEncountered(String eventApiId) {
         return encounteredLowSeverityEventApiIds.contains(eventApiId);
     }
+
+    public static void clearLowSeverityEventFilter() {
+        if(instance != null) {
+            logger.log(LogLevel.FINE, "Low Severity event filter cleared", AgentUtils.class.getName());
+            instance.encounteredLowSeverityEventApiIds.clear();
+        }
+    }
 }
