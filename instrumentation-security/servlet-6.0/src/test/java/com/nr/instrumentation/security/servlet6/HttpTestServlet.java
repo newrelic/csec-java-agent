@@ -1,14 +1,17 @@
-package com.nr.instrumentation.security;
+package com.nr.instrumentation.security.servlet6;
 
+import jakarta.servlet.ServletException;
 import jakarta.servlet.ServletInputStream;
 import jakarta.servlet.ServletOutputStream;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
-
 public class HttpTestServlet extends HttpServlet {
     public HttpTestServlet () {
         super();
@@ -82,6 +85,23 @@ public class HttpTestServlet extends HttpServlet {
 
         }
 
+    }
+
+    @Override
+    public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        String path = request.getRequestURI();
+
+         if(path.equals("/session")){
+            HttpSession session = request.getSession(true);
+            session.setAttribute("key", "value");
+        } else if(path.equals("/securecookie")){
+             Cookie cookie = new Cookie("key", "value");
+             cookie.setSecure(true);
+             response.addCookie(cookie);
+        } else if(path.equals("/cookie")){
+             Cookie cookie = new Cookie("key", "value");
+             response.addCookie(cookie);
+        }
     }
 
     private void testServletRequestHooks( HttpServletRequest request, HttpServletResponse response) throws IOException {
