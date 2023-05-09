@@ -6,6 +6,7 @@ import com.newrelic.api.agent.security.schema.helper.Log4JStrSubstitutor;
 
 import java.sql.Statement;
 import java.util.List;
+import java.util.Set;
 
 public interface SecurityIntrospector {
 
@@ -17,13 +18,13 @@ public interface SecurityIntrospector {
 
     String getSqlQuery(Statement statement);
 
-    int getRequestReaderHash();
+    Set getRequestReaderHash();
 
-    int getRequestInStreamHash();
+    Set getRequestInStreamHash();
 
-    int getResponseWriterHash();
+    Set getResponseWriterHash();
 
-    int getResponseOutStreamHash();
+    Set getResponseOutStreamHash();
     Log4JStrSubstitutor getLog4JStrSubstitutor();
 
     SecurityMetaData getSecurityMetaData();
