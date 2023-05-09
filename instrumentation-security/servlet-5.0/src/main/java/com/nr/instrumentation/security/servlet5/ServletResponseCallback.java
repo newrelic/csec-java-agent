@@ -2,6 +2,9 @@ package com.nr.instrumentation.security.servlet5;
 
 import com.newrelic.api.agent.security.NewRelicSecurity;
 
+import java.util.HashSet;
+import java.util.Set;
+
 public class ServletResponseCallback {
 
     public static final String NR_SEC_CUSTOM_ATTRIB_NAME = "SERVLET_OS_OPERATION_LOCK-";
@@ -11,33 +14,37 @@ public class ServletResponseCallback {
 
     public static final String LF = "\n";
 
-
-    public static boolean processHookData() {
-        try {
-            if(NewRelicSecurity.isHookProcessingActive()
-                && (NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(RESPONSE_STREAM_OR_WRITER_CALLED, Boolean.class) == null
-                    || !NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(RESPONSE_STREAM_OR_WRITER_CALLED, Boolean.class))
-            ) {
-                NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(RESPONSE_STREAM_OR_WRITER_CALLED, true);
-                return true;
-            }
-        } catch (Throwable ignored){}
-        return false;
-    }
-
     public static void registerWriterHashIfNeeded(int writerHash){
-        if(processHookData()){
-            NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(RESPONSE_WRITER_HASH, writerHash);
-        }
+        try {
+            Set<Integer> hashSet = NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(RESPONSE_WRITER_HASH, Set.class);
+            if(hashSet == null){
+                hashSet = new HashSet<>();
+                NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(RESPONSE_WRITER_HASH, hashSet);
+            }
+            hashSet.add(writerHash);
+        } catch (Throwable ignored) {}
     }
 
     public static void registerOutputStreamHashIfNeeded(int outputStreamHash){
-        if(processHookData()){
-            NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(RESPONSE_OUTPUTSTREAM_HASH, outputStreamHash);
-        }
+        try {
+            Set<Integer> hashSet = NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(RESPONSE_OUTPUTSTREAM_HASH, Set.class);
+            if (hashSet == null) {
+                hashSet = new HashSet<>();
+                NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(RESPONSE_OUTPUTSTREAM_HASH, hashSet);
+            }
+            hashSet.add(outputStreamHash);
+        } catch (Throwable ignored) {}
     }
 
     public static Boolean processResponseOutputStreamHookData(Integer outputStreamHash) {
-        return outputStreamHash.equals(NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(RESPONSE_OUTPUTSTREAM_HASH, Integer.class));
+        try {
+            if(NewRelicSecurity.isHookProcessingActive() && NewRelicSecurity.getAgent().getSecurityMetaData()!= null) {
+                Set<Integer> hashSet = NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(RESPONSE_OUTPUTSTREAM_HASH, Set.class);
+                if(hashSet != null){
+                    return hashSet.contains(outputStreamHash);
+                }
+            }
+        } catch (Throwable ignored) {}
+        return false;
     }
 }

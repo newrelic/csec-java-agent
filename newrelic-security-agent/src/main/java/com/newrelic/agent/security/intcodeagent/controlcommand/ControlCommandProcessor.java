@@ -1,10 +1,12 @@
 package com.newrelic.agent.security.intcodeagent.controlcommand;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.newrelic.agent.security.instrumentator.httpclient.IASTDataTransferRequestProcessor;
 import com.newrelic.agent.security.instrumentator.httpclient.RestRequestProcessor;
 import com.newrelic.agent.security.instrumentator.httpclient.RestRequestThreadPool;
 import com.newrelic.agent.security.instrumentator.utils.AgentUtils;
 import com.newrelic.agent.security.instrumentator.utils.InstrumentationUtils;
+import com.newrelic.agent.security.intcodeagent.constants.AgentServices;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.newrelic.agent.security.intcodeagent.filelogging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.logging.IAgentConstants;
@@ -16,13 +18,19 @@ import com.newrelic.agent.security.intcodeagent.websocket.EventSendPool;
 import com.newrelic.agent.security.intcodeagent.websocket.JsonConverter;
 import com.newrelic.agent.security.intcodeagent.websocket.WSClient;
 import com.newrelic.agent.security.intcodeagent.websocket.WSUtils;
+import com.newrelic.api.agent.security.Agent;
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.schema.policy.AgentPolicy;
 import org.apache.commons.lang3.StringUtils;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
+
+import static com.newrelic.agent.security.intcodeagent.logging.IAgentConstants.STARTED_MODULE_LOG;
 
 public class ControlCommandProcessor implements Runnable {
 
@@ -51,6 +59,10 @@ public class ControlCommandProcessor implements Runnable {
     public static final String RECEIVED_WS_RECONNECT_COMMAND_FROM_SERVER_INITIATING_SEQUENCE = "Received WS 'reconnect' command from server. Initiating sequence.";
     public static final String WS_RECONNECT_EVENT_SEND_POOL_DRAINED = "[WS RECONNECT] EventSend pool drained.";
     public static final String WS_RECONNECT_IAST_REQUEST_REPLAY_POOL_DRAINED = "[WS RECONNECT] IAST request replay pool drained.";
+    public static final String ID = "id";
+    public static final String RECEIVED_IAST_COOLDOWN_WAITING_TILL_S = "Received IAST cooldown. Waiting till : %s";
+    public static final String PURGING_CONFIRMED_IAST_PROCESSED_RECORDS_COUNT_S = "Purging confirmed IAST processed records count : %s";
+    public static final String PURGING_CONFIRMED_IAST_PROCESSED_RECORDS_S = "Purging confirmed IAST processed records : %s";
 
 
     private String controlCommandMessage;
@@ -73,6 +85,9 @@ public class ControlCommandProcessor implements Runnable {
         try {
             JSONObject object = (JSONObject) PARSER.parse(controlCommandMessage);
             controlCommand = new IntCodeControlCommand();
+            if(object.get(ID) != null) {
+                controlCommand.setId(object.get(ID).toString());
+            }
             controlCommand.setArguments((List<String>) object.get(ARGUMENTS));
             controlCommand.setData(object.get(DATA));
             controlCommand.setControlCommand(Integer.valueOf(object.get(CONTROL_COMMAND).toString()));
@@ -150,6 +165,7 @@ public class ControlCommandProcessor implements Runnable {
             case IntCodeControlCommand.FUZZ_REQUEST:
                 logger.log(LogLevel.FINER, FUZZ_REQUEST + controlCommandMessage,
                         ControlCommandProcessor.class.getName());
+                IASTDataTransferRequestProcessor.getInstance().setLastFuzzCCTimestamp(Instant.now().toEpochMilli());
                 RestRequestProcessor.processControlCommand(controlCommand);
                 break;
 
@@ -215,6 +231,23 @@ public class ControlCommandProcessor implements Runnable {
                     logger.log(LogLevel.SEVERE, String.format(ERROR_WHILE_PROCESSING_RECONNECTION_CC_S_S, e.getMessage(), e.getCause()), this.getClass().getName());
                     logger.log(LogLevel.SEVERE, ERROR_WHILE_PROCESSING_RECONNECTION_CC, e, this.getClass().getName());
                 }
+                break;
+
+            case IntCodeControlCommand.ENTER_IAST_COOLDOWN:
+                if(controlCommand.getData() instanceof Long) {
+                    long sleepTill = Instant.now().plus((Long) controlCommand.getData(),
+                            ChronoUnit.SECONDS).toEpochMilli();
+                    IASTDataTransferRequestProcessor.getInstance().setCooldownTillTimestamp(sleepTill);
+                    logger.log(LogLevel.INFO, String.format(RECEIVED_IAST_COOLDOWN_WAITING_TILL_S, sleepTill),
+                            this.getClass().getName());
+                }
+                break;
+            case IntCodeControlCommand.IAST_RECORD_DELETE_CONFIRMATION:
+                logger.log(LogLevel.FINE, String.format(PURGING_CONFIRMED_IAST_PROCESSED_RECORDS_COUNT_S,
+                        controlCommand.getArguments().size()), this.getClass().getName());
+                logger.log(LogLevel.FINEST, String.format(PURGING_CONFIRMED_IAST_PROCESSED_RECORDS_S,
+                        controlCommand.getArguments()), this.getClass().getName());
+                controlCommand.getArguments().forEach(RestRequestThreadPool.getInstance().getProcessedIds()::remove);
                 break;
             default:
                 logger.log(LogLevel.WARNING, String.format(UNKNOWN_CONTROL_COMMAND_S, controlCommandMessage),

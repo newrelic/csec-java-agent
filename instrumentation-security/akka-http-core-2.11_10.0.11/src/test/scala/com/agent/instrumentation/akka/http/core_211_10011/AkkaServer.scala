@@ -5,7 +5,7 @@
  *
  */
 
-package com.agent.instrumentation.akka.http.core
+package com.agent.instrumentation.akka.http.core_211_10011
 
 import akka.actor.ActorSystem
 import akka.event.Logging
@@ -19,9 +19,10 @@ import com.typesafe.config.ConfigFactory
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
+import scala.language.postfixOps
 
-//how play 2.6 sets up a server
-class PlayServer() {
+//how the akka http core docs' example sets up a server
+class AkkaServer() {
   implicit val system = ActorSystem()
   implicit val executor = system.dispatcher
   implicit val materializer = ActorMaterializer()
@@ -30,28 +31,43 @@ class PlayServer() {
   val config = ConfigFactory.load()
   val logger = Logging(system, getClass)
 
+  var serverSource: Source[Http.IncomingConnection, Future[Http.ServerBinding]] = _
   var bindingFuture: Future[Http.ServerBinding] = _
+  var headers: Seq[HttpHeader] = Seq()
 
   def start(port: Int, async: Boolean) = {
+
+    serverSource = Http().bind(interface = "localhost", port)
 
     if (async) {
 
       val asyncRequestHandler: HttpRequest => Future[HttpResponse] = {
-        case HttpRequest(GET, Uri.Path("/asyncPing"), _, _, _) =>
+        case HttpRequest(GET, Uri.Path("/asyncPing"), var1, _, _) => {
+          headers = var1
           Future[HttpResponse](HttpResponse(entity = "Hoops!"))
+        }
       }
 
-      bindingFuture = Http().bindAndHandleAsync(asyncRequestHandler, interface = "localhost", port)
-
+      bindingFuture = serverSource.to(Sink.foreach {
+        connection =>
+          println("accepted connection from: " + connection.remoteAddress)
+          connection handleWithAsyncHandler asyncRequestHandler
+      }).run()
     }
     else {
 
       val requestHandler: HttpRequest => HttpResponse = {
-        case HttpRequest(GET, Uri.Path("/ping"), _, _, _) =>
-          HttpResponse(entity = "Boops!")
+        case HttpRequest(GET, Uri.Path("/ping"), var1, _, _) => {
+          headers = var1
+          HttpResponse(entity = "Hoops!")
+        }
       }
 
-      bindingFuture = Http().bindAndHandleSync(requestHandler, interface = "localhost", port)
+      bindingFuture = serverSource.to(Sink.foreach {
+        connection =>
+          println("accepted connection from: " + connection.remoteAddress)
+          connection handleWithSyncHandler requestHandler
+      }).run()
     }
 
     Await.ready({
@@ -61,9 +77,11 @@ class PlayServer() {
 
   def stop() = {
     if (bindingFuture != null) {
-      bindingFuture.flatMap(_.unbind()).onComplete(_ => {
-        system.terminate()
-      })
+      bindingFuture.flatMap(_.unbind()).onComplete(_ => system.terminate())
     }
+  }
+
+  def getHeders(): Seq[HttpHeader] = {
+    headers
   }
 }

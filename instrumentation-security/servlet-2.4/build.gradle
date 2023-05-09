@@ -8,7 +8,7 @@ dependencies {
 }
 
 jar {
-    manifest { attributes 'Implementation-Title': 'com.newrelic.instrumentation.security.servlet-2.4' }
+    manifest { attributes 'Implementation-Title': 'com.newrelic.instrumentation.security.servlet-2.4', 'Priority': '10' }
 }
 
 verifyInstrumentation {

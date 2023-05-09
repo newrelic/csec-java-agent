@@ -56,6 +56,7 @@ public class WSClient extends WebSocketClient {
     public static final String RECONNECTING_TO_IC = "Reconnecting to validator";
     public static final String COLON_STRING = " : ";
     public static final String RECEIVED_PING_AT_S_SENDING_PONG = "received ping  at %s sending pong";
+    public static final String INCOMING_CONTROL_COMMAND_S = "Incoming control command : %s";
 
     private static WSClient instance;
 
@@ -135,6 +136,7 @@ public class WSClient extends WebSocketClient {
         this.addHeader("NR-CSEC-APP-UUID", AgentInfo.getInstance().getApplicationUUID());
         this.addHeader("NR-CSEC-JSON-VERSION", AgentInfo.getInstance().getBuildInfo().getJsonVersion());
         this.addHeader("NR-ACCOUNT-ID", AgentConfig.getInstance().getConfig().getCustomerInfo().getAccountId());
+        this.addHeader("NR-CSEC-IAST-DATA-TRANSFER-MODE", "PULL");
         if (StringUtils.startsWithIgnoreCase(AgentConfig.getInstance().getConfig().getK2ServiceInfo().getValidatorServiceEndpointURL(), "wss:")) {
             try {
                 this.setSocketFactory(createSSLContext().getSocketFactory());
@@ -189,6 +191,10 @@ public class WSClient extends WebSocketClient {
     public void onMessage(String message) {
         // Receive communication from IC side.
         try {
+            if (logger.isLogLevelEnabled(LogLevel.FINEST)) {
+                logger.log(LogLevel.FINEST, String.format(INCOMING_CONTROL_COMMAND_S, message),
+                        this.getClass().getName());
+            }
             ControlCommandProcessor.processControlCommand(message, System.currentTimeMillis());
         } catch (Throwable e) {
             logger.log(LogLevel.SEVERE, UNABLE_TO_PROCESS_INCOMING_MESSAGE + message + DUE_TO_ERROR, e,
@@ -274,10 +280,7 @@ public class WSClient extends WebSocketClient {
         logger.log(LogLevel.WARNING, "Disconnecting WS client",
                 WSClient.class.getName());
         if (instance != null) {
-            try {
-                instance.closeBlocking();
-            } catch (InterruptedException e) {
-            }
+            instance.close();
         }
         instance = null;
     }

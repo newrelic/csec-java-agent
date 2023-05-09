@@ -2,42 +2,47 @@ package com.nr.instrumentation.security.servlet24;
 
 import com.newrelic.api.agent.security.NewRelicSecurity;
 
+import java.util.HashSet;
+import java.util.Set;
+
 public class ServletRequestCallback {
 
     public static final String NR_SEC_CUSTOM_ATTRIB_NAME = "SERVLET_IS_OPERATION_LOCK-";
     private static final String REQUEST_STREAM_OR_READER_CALLED = "REQUEST_STREAM_OR_READER_CALLED";
     private static final String REQUEST_READER_HASH = "REQUEST_READER_HASH";
-
     private static final String REQUEST_INPUTSTREAM_HASH = "REQUEST_INPUTSTREAM_HASH";
 
-
-
-    public static boolean processHookData() {
-        try {
-            if(NewRelicSecurity.isHookProcessingActive()
-                && (NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(REQUEST_STREAM_OR_READER_CALLED, Boolean.class) == null
-                    || !NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(REQUEST_STREAM_OR_READER_CALLED, Boolean.class))
-            ) {
-                NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(REQUEST_STREAM_OR_READER_CALLED, true);
-                return true;
-            }
-        } catch (Throwable ignored){}
-        return false;
-    }
-
     public static void registerReaderHashIfNeeded(int readerHash){
-        if(processHookData()){
-            NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(REQUEST_READER_HASH, readerHash);
-        }
+        try {
+            Set<Integer> hashSet = NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(REQUEST_READER_HASH, Set.class);
+            if(hashSet == null){
+                hashSet = new HashSet<>();
+                NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(REQUEST_READER_HASH, hashSet);
+            }
+            hashSet.add(readerHash);
+        } catch (Throwable ignored) {}
     }
 
     public static void registerInputStreamHashIfNeeded(int inputStreamHash){
-        if(processHookData()){
-            NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(REQUEST_INPUTSTREAM_HASH, inputStreamHash);
-        }
+        try {
+            Set<Integer> hashSet = NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(REQUEST_INPUTSTREAM_HASH, Set.class);
+            if(hashSet == null){
+                hashSet = new HashSet<>();
+                NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(REQUEST_INPUTSTREAM_HASH, hashSet);
+            }
+            hashSet.add(inputStreamHash);
+        } catch (Throwable ignored) {}
     }
 
     public static Boolean processRequestInputStreamHookData(Integer inputStreamHash) {
-        return inputStreamHash.equals(NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(REQUEST_INPUTSTREAM_HASH, Integer.class));
+        try {
+            if(NewRelicSecurity.isHookProcessingActive() && NewRelicSecurity.getAgent().getSecurityMetaData()!= null) {
+                Set<Integer> hashSet = NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(REQUEST_INPUTSTREAM_HASH, Set.class);
+                if(hashSet != null){
+                    return hashSet.contains(inputStreamHash);
+                }
+            }
+        } catch (Throwable ignored) {}
+        return false;
     }
 }

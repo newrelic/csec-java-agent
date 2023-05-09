@@ -7,7 +7,6 @@
 
 package security.org.eclipse.jetty11.server.server;
 
-import com.newrelic.api.agent.Trace;
 import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
@@ -18,7 +17,6 @@ import org.eclipse.jetty.server.HttpChannel;
 @Weave(type = MatchType.BaseClass, originalName = "org.eclipse.jetty.server.Server")
 public abstract class Server_Instrumentation {
 
-    @Trace(dispatcher = true)
     public void handle(HttpChannel connection) {
         HttpServletRequest request = connection.getRequest();
         HttpServletResponse response = connection.getResponse();
@@ -39,7 +37,6 @@ public abstract class Server_Instrumentation {
         }
     }
 
-    @Trace(dispatcher = true)
     public void handleAsync(HttpChannel connection) {
         HttpServletRequest request = connection.getRequest();
         HttpServletResponse response = connection.getResponse();

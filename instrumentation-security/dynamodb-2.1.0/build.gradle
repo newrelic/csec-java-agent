@@ -2,8 +2,8 @@ dependencies {
     implementation(project(":newrelic-security-api"))
     implementation("com.newrelic.agent.java:newrelic-api:${nrAPIVersion}")
     implementation("com.newrelic.agent.java:newrelic-weaver-api:${nrAPIVersion}")
-    implementation platform('software.amazon.awssdk:bom:2.16.81')
-    implementation("software.amazon.awssdk:dynamodb:2.16.81")
+    implementation platform('software.amazon.awssdk:bom:2.1.0')
+    implementation("software.amazon.awssdk:dynamodb:2.1.0")
 
     testImplementation("com.amazonaws:DynamoDBLocal:1.19.0")
     testImplementation("com.almworks.sqlite4java:sqlite4java:1.0.392")
@@ -20,11 +20,11 @@ repositories {
 }
 
 jar {
-    manifest { attributes 'Implementation-Title': 'com.newrelic.instrumentation.security.dynamodb-2.1.0', 'Enabled': 'false' }
+    manifest { attributes 'Implementation-Title': 'com.newrelic.instrumentation.security.dynamodb-2.1.0' }
 }
 
 verifyInstrumentation {
-    passes 'software.amazon.awssdk:dynamodb:[2.1.0,)'
+    passes 'software.amazon.awssdk:dynamodb:[2.1.0,2.1.2)'
     exclude 'software.amazon.awssdk:dynamodb:2.17.200' // this version failed the test, but the next one works again.
 }
 

@@ -17,6 +17,10 @@ public class ServletHelper {
     public static final String CSEC_IAST_FUZZ_REQUEST_ID = "nr-csec-fuzz-request-id";
 
     public static final String CSEC_DISTRIBUTED_TRACING_HEADER = "NR-CSEC-TRACING-DATA";
+    public static final String SERVLET_GET_IS_OPERATION_LOCK = "SERVLET_GET_IS_OPERATION_LOCK-";
+    public static final String SERVLET_GET_READER_OPERATION_LOCK = "SERVLET_GET_READER_OPERATION_LOCK-";
+    public static final String SERVLET_GET_OS_OPERATION_LOCK = "SERVLET_GET_OS_OPERATION_LOCK-";
+    public static final String SERVLET_GET_WRITER_OPERATION_LOCK = "SERVLET_GET_WRITER_OPERATION_LOCK-";
 
     public static K2RequestIdentifier parseFuzzRequestIdentifierHeader(String requestHeaderVal) {
         K2RequestIdentifier k2RequestIdentifierInstance = new K2RequestIdentifier();

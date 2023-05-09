@@ -8,6 +8,7 @@
 package jakarta.servlet;
 
 import com.newrelic.api.agent.security.NewRelicSecurity;
+import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.security.schema.HttpRequest;
 import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
@@ -18,24 +19,44 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.Map;
 
+import static com.newrelic.api.agent.security.instrumentation.helpers.ServletHelper.SERVLET_GET_IS_OPERATION_LOCK;
+import static com.newrelic.api.agent.security.instrumentation.helpers.ServletHelper.SERVLET_GET_READER_OPERATION_LOCK;
+
 @Weave(type = MatchType.Interface, originalName = "jakarta.servlet.ServletRequest")
 public abstract class ServletRequest_Instrumentation {
 
     public ServletInputStream_Instrumentation getInputStream() throws IOException {
-        ServletInputStream_Instrumentation obj = Weaver.callOriginal();
-        if(NewRelicSecurity.isHookProcessingActive() && obj != null) {
-            ServletRequestCallback.registerInputStreamHashIfNeeded(obj.hashCode());
-//            System.out.println("Allowing data gathering for servlet IS : " + obj.hashCode());
+        boolean isLockAcquired = false;
+        ServletInputStream_Instrumentation obj;
+        try {
+            isLockAcquired = GenericHelper.acquireLockIfPossible(SERVLET_GET_IS_OPERATION_LOCK);
+            obj = Weaver.callOriginal();
+            if (isLockAcquired && NewRelicSecurity.isHookProcessingActive() && obj != null) {
+                ServletRequestCallback.registerInputStreamHashIfNeeded(obj.hashCode());
+            }
+        } finally {
+            if(isLockAcquired) {
+                GenericHelper.releaseLock(SERVLET_GET_IS_OPERATION_LOCK);
+            }
         }
         return obj;
     }
 
 
     public BufferedReader getReader() throws IOException {
-        BufferedReader obj = Weaver.callOriginal();
-        if(NewRelicSecurity.isHookProcessingActive() && obj != null) {
-            ServletRequestCallback.registerReaderHashIfNeeded(obj.hashCode());
-//            System.out.println("Allowing data gathering for servlet reader : " + obj.hashCode());
+        boolean isLockAcquired = false;
+        BufferedReader obj;
+        try {
+            isLockAcquired = GenericHelper.acquireLockIfPossible(SERVLET_GET_READER_OPERATION_LOCK);
+            obj = Weaver.callOriginal();
+            if (isLockAcquired && NewRelicSecurity.isHookProcessingActive() && obj != null) {
+                ServletRequestCallback.registerReaderHashIfNeeded(obj.hashCode());
+                //            System.out.println("Allowing data gathering for servlet reader : " + obj.hashCode());
+            }
+        } finally {
+            if(isLockAcquired) {
+                GenericHelper.releaseLock(SERVLET_GET_READER_OPERATION_LOCK);
+            }
         }
         return obj;
     }

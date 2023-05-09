@@ -63,6 +63,7 @@ public class RestClient {
             try {
                 ConnectionPool connectionPool = new ConnectionPool(1, 5, TimeUnit.MINUTES);
                 builder = builder.connectionPool(connectionPool);
+                builder = builder.callTimeout(10, TimeUnit.SECONDS);
 
                 // Install the all-trusting trust manager
                 final SSLContext sslContext = SSLContext.getInstance("TLSv1.2");
