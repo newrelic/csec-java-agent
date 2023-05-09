@@ -47,18 +47,23 @@ public class SecurityIntrospectorImpl implements SecurityIntrospector {
     }
 
     @Override
-    public int getResponseWriterHash() {
-        return NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(RESPONSE_WRITER_HASH, Integer.class);
+    public Set getResponseWriterHash() {
+        return NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(RESPONSE_WRITER_HASH, Set.class);
     }
 
     @Override
-    public int getRequestReaderHash() {
-        return NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(REQUEST_READER_HASH, Integer.class);
+    public Set getRequestReaderHash() {
+        return NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(REQUEST_READER_HASH, Set.class);
     }
 
     @Override
-    public int getResponseOutStreamHash() {
-        return NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(RESPONSE_OUTPUTSTREAM_HASH, Integer.class);
+    public Set getRequestInStreamHash() {
+        return NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(REQUEST_INPUTSTREAM_HASH, Set.class);
+    }
+
+    @Override
+    public Set getResponseOutStreamHash() {
+        return NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(RESPONSE_OUTPUTSTREAM_HASH, Set.class);
     }
 
     @Override
