@@ -185,4 +185,8 @@ public class FileLoggerThreadPool {
     public void setInitLoggingActive(boolean initLoggingActive) {
         isInitLoggingActive = initLoggingActive;
     }
+
+    public boolean isLogLevelEnabled(LogLevel logLevel) {
+        return (logLevel.getLevel() >= LogWriter.defaultLogLevel);
+    }
 }

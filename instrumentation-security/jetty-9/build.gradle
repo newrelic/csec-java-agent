@@ -7,7 +7,7 @@ dependencies {
 }
 
 jar {
-    manifest { attributes 'Implementation-Title': 'com.newrelic.instrumentation.security.jetty-9' }
+    manifest { attributes 'Implementation-Title': 'com.newrelic.instrumentation.security.jetty-9', 'Priority': '10' }
 }
 
 verifyInstrumentation {

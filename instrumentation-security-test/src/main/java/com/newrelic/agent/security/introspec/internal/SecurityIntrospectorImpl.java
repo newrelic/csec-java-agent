@@ -11,11 +11,12 @@ import com.newrelic.api.agent.security.schema.JDBCVendor;
 import com.newrelic.api.agent.security.schema.K2RequestIdentifier;
 import com.newrelic.api.agent.security.schema.R2DBCVendor;
 import com.newrelic.api.agent.security.schema.SecurityMetaData;
-import com.newrelic.api.agent.security.schema.helper.Log4JStrSubstitutor;
-import com.newrelic.api.agent.security.utils.UserDataTranslationHelper;
 
 import java.sql.Statement;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class SecurityIntrospectorImpl implements SecurityIntrospector {
     private static final String RESPONSE_WRITER_HASH = "RESPONSE_WRITER_HASH";
@@ -47,51 +48,24 @@ public class SecurityIntrospectorImpl implements SecurityIntrospector {
     }
 
     @Override
-    public int getResponseWriterHash() {
-        return NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(RESPONSE_WRITER_HASH, Integer.class);
-    }
-
-    @Override
-    public int getRequestReaderHash() {
-        return NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(REQUEST_READER_HASH, Integer.class);
-    }
-
-    @Override
-    public int getResponseOutStreamHash() {
-        return NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(RESPONSE_OUTPUTSTREAM_HASH, Integer.class);
-    }
-
-    @Override
-    public Log4JStrSubstitutor getLog4JStrSubstitutor() {
-        return NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(
-                UserDataTranslationHelper.getAttributeName(Log4JStrSubstitutor.class.getName()),
-                Log4JStrSubstitutor.class
-        );
-    }
-
-    @Override
     public SecurityMetaData getSecurityMetaData() {
         return NewRelicSecurity.getAgent().getSecurityMetaData();
     }
 
-    @Override
-    public int getRequestInStreamHash() {
-        return NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(REQUEST_INPUTSTREAM_HASH, Integer.class);
-    }
 
     @Override
     public void setResponseOutStreamHash(int hashCode) {
-        NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(RESPONSE_OUTPUTSTREAM_HASH, hashCode);
+        NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(RESPONSE_OUTPUTSTREAM_HASH, Collections.singleton(hashCode));
     }
 
     @Override
     public void setResponseWriterHash(int hashCode) {
-        NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(RESPONSE_WRITER_HASH, hashCode);
+        NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(RESPONSE_WRITER_HASH, Collections.singleton(hashCode));
     }
 
     @Override
     public void setRequestReaderHash(int hashCode) {
-        NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(REQUEST_READER_HASH, hashCode);
+        NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(REQUEST_READER_HASH, Collections.singleton(hashCode));
     }
 
     @Override
@@ -108,7 +82,7 @@ public class SecurityIntrospectorImpl implements SecurityIntrospector {
 
     @Override
     public void setRequestInputStreamHash(int hashCode) {
-        NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(REQUEST_INPUTSTREAM_HASH, hashCode);
+        NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(REQUEST_INPUTSTREAM_HASH, Collections.singleton(hashCode));
     }
 
     @Override
@@ -121,7 +95,6 @@ public class SecurityIntrospectorImpl implements SecurityIntrospector {
         NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(REQUEST_INPUTSTREAM_HASH, null);
         NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(RESPONSE_WRITER_HASH, null);
         NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(RESPONSE_OUTPUTSTREAM_HASH, null);
-        NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(UserDataTranslationHelper.getAttributeName(Log4JStrSubstitutor.class.getName()), null);
 
         // used internally by some methods before saving hash code hence cleanup required
         NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(REQUEST_STREAM_OR_READER_CALLED, null);

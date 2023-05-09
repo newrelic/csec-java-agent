@@ -1,6 +1,8 @@
 package com.newrelic.agent.security.instrumentator.utils;
 
 import com.newrelic.agent.security.AgentInfo;
+import com.newrelic.agent.security.instrumentator.httpclient.IASTDataTransferRequestProcessor;
+import com.newrelic.agent.security.intcodeagent.constants.AgentServices;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.newrelic.agent.security.intcodeagent.filelogging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.logging.DeployedApplication;
@@ -11,6 +13,8 @@ import com.newrelic.agent.security.intcodeagent.websocket.EventSendPool;
 import com.newrelic.agent.security.intcodeagent.websocket.JsonConverter;
 import com.newrelic.agent.security.intcodeagent.websocket.WSClient;
 import com.newrelic.api.agent.NewRelic;
+import com.newrelic.api.agent.security.Agent;
+import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.schema.policy.AgentPolicy;
 import com.sun.jna.Pointer;
 import com.sun.jna.platform.win32.Kernel32;
@@ -29,8 +33,11 @@ import java.net.URL;
 import java.nio.file.attribute.PosixFilePermission;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Pattern;
+
+import static com.newrelic.agent.security.intcodeagent.logging.IAgentConstants.STARTED_MODULE_LOG;
 
 public class AgentUtils {
 
@@ -391,6 +398,23 @@ public class AgentUtils {
                     JsonConverter.toJSON(AgentUtils.getInstance().getAgentPolicy())), AgentUtils.class.getName());
             AgentUtils.getInstance().getStatusLogValues().put(POLICY_VERSION, AgentUtils.getInstance().getAgentPolicy().getVersion());
             EventSendPool.getInstance().sendEvent(AgentInfo.getInstance().getApplicationInfo());
+
+            // Start IAST data pull if policy allows
+            if (NewRelicSecurity.getAgent().getCurrentPolicy().getVulnerabilityScan().getEnabled() &&
+                    NewRelicSecurity.getAgent().getCurrentPolicy().getVulnerabilityScan().getIastScan().getEnabled()
+            ) {
+                IASTDataTransferRequestProcessor.getInstance().startDataRequestSchedule(
+                        NewRelicSecurity.getAgent().getCurrentPolicy()
+                                .getVulnerabilityScan().getIastScan().getProbing().getInterval(), TimeUnit.SECONDS);
+                logger.logInit(
+                        LogLevel.INFO,
+                        String.format(STARTED_MODULE_LOG, AgentServices.IASTDataPullService.name()),
+                        Agent.class.getName()
+                );
+            } else {
+                IASTDataTransferRequestProcessor.getInstance().stopDataRequestSchedule(true);
+            }
+
             return true;
         } catch (Throwable e) {
             logger.logInit(LogLevel.SEVERE, IAgentConstants.UNABLE_TO_SET_AGENT_POLICY_DUE_TO_ERROR, e,
