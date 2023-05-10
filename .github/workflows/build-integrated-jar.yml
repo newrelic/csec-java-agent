@@ -39,7 +39,7 @@ jobs:
           aws-region: us-east-2
 
       - name: Setup environment
-        uses: ./.github/setup-environment
+        uses: ./.github/actions/setup-environment
         with:
           apm-repo: ${{ inputs.apm-repo }}
           apm-branch: ${{ inputs.apm-branch }}
