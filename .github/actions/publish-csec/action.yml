@@ -1,0 +1,14 @@
+name: Publish CSEC Agent to central
+description:  Builds the CSEC Agent and the Agent API. Publish to central maven repo via sonatype.
+
+runs:
+  using: composite
+
+  steps:
+    - name: Publish CSEC agent API locally
+      shell: bash
+      run: ./gradlew $GRADLE_OPTIONS :newrelic-security-api:publish
+
+    - name: Publish CSEC agent locally
+      shell: bash
+      run: ./gradlew $GRADLE_OPTIONS publish

@@ -1,0 +1,62 @@
+name: Create Integrated Agent jar
+on:
+  workflow_dispatch:
+    inputs:
+      agent-ref:
+        description: "Specify branch/tag/hash"
+        required: true
+        default: 'github-actions'
+      apm-repo:
+        description: 'The repo of APM source code to use'
+        required: true
+        default: 'newrelic/newrelic-java-agent'
+      apm-branch:
+        description: 'The branch of APM source code to use'
+        required: true
+        default: 'k2-integration-build'
+      description:
+        description: "A description for the custom jar that will be generated. It will appear in the summary."
+        required: true
+        default: 'test'
+
+jobs:
+  create_integrated_jar:
+    name: Create Integrated Agent jar
+    runs-on: ubuntu-20.04
+    steps:
+
+      - name: Checkout CSEC Java agent
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ inputs.agent-ref }}
+
+      - name: Configure AWS Credentials
+        if: ${{ env.AWS_KEY != '' }}
+        uses: aws-actions/configure-aws-credentials@v1-node16
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-2
+
+      - name: Setup environment
+        uses: ./.github/actions/setup-environment
+        with:
+          apm-repo: ${{ inputs.apm-repo }}
+          apm-branch: ${{ inputs.apm-branch }}
+
+      - name: Run CSEC unit tests
+        uses: ./.github/actions/unit-test
+
+      - name: Publish CSEC to local
+        uses: ./.github/actions/publish-csec-local
+
+      - name: Verify CSEC instrumentation
+        uses: ./.github/actions/verify-instrumentation
+
+      - name: Build Integrated Agent Jar
+        uses: ./.github/actions/build-apm-jar
+
+      - name: Set summary
+        run: |
+          echo "${{ inputs.description }}" >> $GITHUB_STEP_SUMMARY
+          echo "This jar was built from the ref (branch/tag/hash): ${{ inputs.ref }}." >> $GITHUB_STEP_SUMMARY

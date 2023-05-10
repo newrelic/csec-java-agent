@@ -1,0 +1,10 @@
+name: Verify Instrumentation
+description: Run instrumentation verifier
+
+runs:
+  using: composite
+
+  steps:
+    - name: Run instrumentation unit tests
+      shell: bash
+      run: ./gradlew $GRADLE_OPTIONS verifyInstrumentation

@@ -1,0 +1,18 @@
+name: Publish CSEC Agent locally
+description:  Builds the CSEC Agent and the Agent API. Publish to local maven repo.
+
+runs:
+  using: composite
+
+  steps:
+    - name: Run instrumentation unit tests
+      shell: bash
+      run: ./gradlew $GRADLE_OPTIONS test
+
+    - name: Publish CSEC agent API locally
+      shell: bash
+      run: ./gradlew $GRADLE_OPTIONS :newrelic-security-api:publishToMavenLocal
+
+    - name: Publish CSEC agent locally
+      shell: bash
+      run: ./gradlew $GRADLE_OPTIONS publishToMavenLocal
