@@ -7,12 +7,16 @@ import com.newrelic.agent.security.intcodeagent.filelogging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.models.FuzzRequestBean;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.IntCodeControlCommand;
 import com.newrelic.agent.security.intcodeagent.websocket.WSUtils;
+import com.sun.org.apache.xpath.internal.operations.Bool;
 import org.apache.commons.lang3.StringUtils;
+
+import java.util.concurrent.Callable;
+import java.util.concurrent.RejectedExecutionException;
 
 /**
  * Request repeater for IAST
  */
-public class RestRequestProcessor implements Runnable {
+public class RestRequestProcessor implements Callable<Boolean> {
 
     public static final String NR_CSEC_VALIDATOR_HOME_TMP = "{{NR_CSEC_VALIDATOR_HOME_TMP}}";
 
@@ -36,15 +40,15 @@ public class RestRequestProcessor implements Runnable {
      * Does the request replay in IAST mode.
      */
     @Override
-    public void run() {
+    public Boolean call() {
         if (controlCommand.getArguments().size() < 2) {
-            return;
+            return true;
         }
 
         FuzzRequestBean httpRequest = null;
         try {
             if (WSUtils.getInstance().isReconnecting()) {
-                synchronized (WSUtils.getInstance()) {
+                   synchronized (WSUtils.getInstance()) {
                     RestRequestThreadPool.getInstance().isWaiting().set(true);
                     WSUtils.getInstance().wait();
                     RestRequestThreadPool.getInstance().isWaiting().set(false);
@@ -53,7 +57,7 @@ public class RestRequestProcessor implements Runnable {
             String req = StringUtils.replace(controlCommand.getArguments().get(0), NR_CSEC_VALIDATOR_HOME_TMP, OsVariablesInstance.getInstance().getOsVariables().getTmpDirectory());
             httpRequest = objectMapper.readValue(req, FuzzRequestBean.class);
             RestClient.getInstance().fireRequest(RequestUtils.generateK2Request(httpRequest), repeatCount);
-
+            return true;
         } catch (Throwable e) {
             logger.log(LogLevel.SEVERE,
                     String.format(ERROR_WHILE_PROCESSING_FUZZING_REQUEST_S, controlCommand.getArguments().get(0)),
@@ -62,6 +66,7 @@ public class RestRequestProcessor implements Runnable {
                     String.format(ERROR_WHILE_PROCESSING_FUZZING_REQUEST_S, controlCommand.getArguments().get(0)),
                     e, RestRequestProcessor.class.getName());
         }
+        return false;
     }
 
     public static void processControlCommand(IntCodeControlCommand command) {
@@ -72,5 +77,9 @@ public class RestRequestProcessor implements Runnable {
     public static void processControlCommand(IntCodeControlCommand command, int repeat) {
         RestRequestThreadPool.getInstance().executor
                 .submit(new RestRequestProcessor(command, repeat));
+    }
+
+    public IntCodeControlCommand getControlCommand() {
+        return controlCommand;
     }
 }

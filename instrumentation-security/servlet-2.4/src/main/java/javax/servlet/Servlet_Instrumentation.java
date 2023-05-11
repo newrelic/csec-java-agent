@@ -7,7 +7,6 @@
 
 package javax.servlet;
 
-import com.newrelic.api.agent.Trace;
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.schema.AgentMetaData;
 import com.newrelic.api.agent.security.schema.HttpRequest;
@@ -24,7 +23,6 @@ import javax.servlet.http.HttpServletRequest;
 @Weave(type = MatchType.Interface, originalName = "javax.servlet.Servlet")
 public abstract class Servlet_Instrumentation {
 
-    @Trace(dispatcher = true)
     public void service(ServletRequest_Instrumentation request, ServletResponse_Instrumentation response) {
         boolean isServletLockAcquired = acquireServletLockIfPossible();
         if(isServletLockAcquired) {

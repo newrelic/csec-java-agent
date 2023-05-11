@@ -18,9 +18,13 @@ public class IntCodeControlCommand {
 
     public static final int FUZZ_REQUEST = 11;
     public static final int RECONNECT_AT_WILL = 12;
+    public static final int ENTER_IAST_COOLDOWN = 13;
+    public static final int IAST_RECORD_DELETE_CONFIRMATION = 14;
     public static final int SEND_POLICY = 100;
     public static final int SEND_POLICY_PARAMETERS = 101;
     public static final int POLICY_UPDATE_FAILED_DUE_TO_VALIDATION_ERROR = 102;
+
+    private String id;
 
     private String jsonName;
     private int controlCommand;
@@ -78,5 +82,13 @@ public class IntCodeControlCommand {
      */
     public void setArguments(List<String> arguments) {
         this.arguments = arguments;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 }

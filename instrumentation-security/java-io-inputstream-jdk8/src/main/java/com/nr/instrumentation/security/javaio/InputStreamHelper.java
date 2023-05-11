@@ -2,6 +2,8 @@ package com.nr.instrumentation.security.javaio;
 
 import com.newrelic.api.agent.security.NewRelicSecurity;
 
+import java.util.Set;
+
 public class InputStreamHelper {
 
 
@@ -14,7 +16,10 @@ public class InputStreamHelper {
     public static Boolean processRequestInputStreamHookData(Integer inputStreamHash) {
         try {
             if(NewRelicSecurity.isHookProcessingActive() && NewRelicSecurity.getAgent().getSecurityMetaData()!= null) {
-                return inputStreamHash.equals(NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(REQUEST_INPUTSTREAM_HASH, Integer.class));
+                Set<Integer> hashSet = NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(REQUEST_INPUTSTREAM_HASH, Set.class);
+                if(hashSet != null){
+                    return hashSet.contains(inputStreamHash);
+                }
             }
         } catch (Throwable ignored){}
         return false;

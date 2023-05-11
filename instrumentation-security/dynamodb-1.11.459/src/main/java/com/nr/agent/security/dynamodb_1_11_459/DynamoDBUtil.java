@@ -11,16 +11,23 @@ import com.amazonaws.AmazonWebServiceRequest;
 import com.amazonaws.Request;
 import com.amazonaws.services.dynamodbv2.model.BatchGetItemRequest;
 import com.amazonaws.services.dynamodbv2.model.BatchWriteItemRequest;
+import com.amazonaws.services.dynamodbv2.model.ConditionCheck;
+import com.amazonaws.services.dynamodbv2.model.Delete;
 import com.amazonaws.services.dynamodbv2.model.DeleteItemRequest;
+import com.amazonaws.services.dynamodbv2.model.DeleteRequest;
+import com.amazonaws.services.dynamodbv2.model.Get;
 import com.amazonaws.services.dynamodbv2.model.GetItemRequest;
 import com.amazonaws.services.dynamodbv2.model.KeysAndAttributes;
+import com.amazonaws.services.dynamodbv2.model.Put;
 import com.amazonaws.services.dynamodbv2.model.PutItemRequest;
+import com.amazonaws.services.dynamodbv2.model.PutRequest;
 import com.amazonaws.services.dynamodbv2.model.QueryRequest;
 import com.amazonaws.services.dynamodbv2.model.ScanRequest;
 import com.amazonaws.services.dynamodbv2.model.TransactGetItem;
 import com.amazonaws.services.dynamodbv2.model.TransactGetItemsRequest;
 import com.amazonaws.services.dynamodbv2.model.TransactWriteItem;
 import com.amazonaws.services.dynamodbv2.model.TransactWriteItemsRequest;
+import com.amazonaws.services.dynamodbv2.model.Update;
 import com.amazonaws.services.dynamodbv2.model.UpdateItemRequest;
 import com.amazonaws.services.dynamodbv2.model.WriteRequest;
 import com.newrelic.api.agent.DatastoreParameters;
@@ -34,6 +41,7 @@ import com.newrelic.api.agent.security.schema.operation.DynamoDBOperation;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * This uses {@link DatastoreParameters} to create external metrics for all DynamoDB calls in
@@ -98,60 +106,6 @@ public abstract class DynamoDBUtil {
         return false;
     }
 
-    // collect data in generic form from nested data or from list of data else add original
-    private static void addToList(List<DynamoDBRequest> list, AmazonWebServiceRequest value, String command) {
-        try {
-            if(value!=null) {
-                if (value instanceof TransactGetItemsRequest){
-                    TransactGetItemsRequest request = (TransactGetItemsRequest) value;
-                    List<TransactGetItem> transactItems = request.getTransactItems();
-                    for (int i=0; i< transactItems.size(); i++) {
-                        if (transactItems.get(i).getGet() != null) {
-                            list.add(new DynamoDBRequest(transactItems.get(i).getGet(), OP_READ));
-                        }
-                    }
-                } else if (value instanceof TransactWriteItemsRequest){
-                    TransactWriteItemsRequest request = (TransactWriteItemsRequest) value;
-                    List<TransactWriteItem> transactItems = request.getTransactItems();
-                    for (int i=0; i< transactItems.size(); i++) {
-                        if (transactItems.get(i).getConditionCheck() != null) {
-                            list.add(new DynamoDBRequest(transactItems.get(i).getConditionCheck(), OP_READ));
-                        }
-                        if (transactItems.get(i).getPut() != null) {
-                            list.add(new DynamoDBRequest(transactItems.get(i).getPut(), OP_WRITE));
-                        }
-                        if (transactItems.get(i).getUpdate() != null) {
-                            list.add(new DynamoDBRequest(transactItems.get(i).getUpdate(), OP_UPDATE));
-                        }
-                        if (transactItems.get(i).getDelete() != null) {
-                            list.add(new DynamoDBRequest(transactItems.get(i).getDelete(), OP_DELETE));
-                        }
-                    }
-                } else if (value instanceof BatchGetItemRequest){
-                    BatchGetItemRequest request = (BatchGetItemRequest) value;
-                    for (Map.Entry<String, KeysAndAttributes> entry : request.getRequestItems().entrySet())
-                        if (entry.getValue() != null)
-                            list.add(new DynamoDBRequest(entry.getValue(), OP_READ));
-                } else if (value instanceof BatchWriteItemRequest){
-                    BatchWriteItemRequest request = (BatchWriteItemRequest) value;
-                    for (Map.Entry<String, List<WriteRequest>> entry : request.getRequestItems().entrySet())
-                        if (entry.getValue() != null)
-                            for(WriteRequest item : entry.getValue()) {
-                                if (item.getPutRequest() != null) {
-                                    list.add(new DynamoDBRequest(item.getPutRequest(), OP_WRITE));
-                                }
-                                if (item.getDeleteRequest() != null) {
-                                    list.add(new DynamoDBRequest(item.getDeleteRequest(), OP_DELETE));
-                                }
-                            }
-                } else {
-                    list.add(new DynamoDBRequest(value, command));
-                }
-            }
-        } catch (NullPointerException ignored){
-        }
-    }
-
     /**
      * This method is introduced to eliminate the unnecessary event being generated for CSEC agent
      */
@@ -160,23 +114,47 @@ public abstract class DynamoDBUtil {
         try {
             if (value instanceof BatchGetItemRequest) {
                 BatchGetItemRequest request = (BatchGetItemRequest) value;
-                boolean send = false;
                 Map<String, KeysAndAttributes> requestItems = request.getRequestItems();
-                for (Map.Entry<String, KeysAndAttributes> entry : requestItems.entrySet()) {
-                    KeysAndAttributes value1 = entry.getValue();
-                    if (value1 != null)
-                        if (value1.getProjectionExpression()!=null) {
-                            send = true;
-                            break;
+                boolean generate = false;
+                int i = 0;
+                Set<Map.Entry<String, KeysAndAttributes>> entries = requestItems.entrySet();
+                for (Map.Entry<String, KeysAndAttributes> entry : entries)
+                    if (entry.getValue() != null) {
+                        KeysAndAttributes value1 = entry.getValue();
+                        if (value1.getProjectionExpression() != null) {
+                            generate = true;
                         }
-                }
-                if (!send)
-                    return null;
-                addToList(requests, value, OP_READ);
+                        if (i + 1 == entries.size() && !generate) {
+                            return null;
+                        }
+                        DynamoDBRequest.Query query = new DynamoDBRequest.Query();
+                        query.setKey(value1.getKeys());
+                        query.setProjectionExpression(value1.getProjectionExpression());
+                        query.setExpressionAttributeNames(value1.getExpressionAttributeNames());
+                        query.setAttributesToGet(value1.getAttributesToGet());
+                        requests.add(new DynamoDBRequest(query, OP_READ));
+                        i++;
+                    }
                 operation = new DynamoDBOperation(requests, klassName, "executeBatchGetItem", DynamoDBOperation.Category.DQL);
             }
             else if (value instanceof BatchWriteItemRequest) {
-                addToList(requests, value, OP_READ);
+                BatchWriteItemRequest request = (BatchWriteItemRequest) value;
+                for (Map.Entry<String, List<WriteRequest>> entry : request.getRequestItems().entrySet())
+                    if (entry.getValue() != null)
+                        for(WriteRequest item : entry.getValue()) {
+                            if (item.getPutRequest() != null) {
+                                PutRequest putRequest = item.getPutRequest();
+                                DynamoDBRequest.Query query = new DynamoDBRequest.Query();
+                                query.setItem(putRequest.getItem());
+                                requests.add(new DynamoDBRequest(query, OP_WRITE));
+                            }
+                            if (item.getDeleteRequest() != null) {
+                                DeleteRequest deleteRequest = item.getDeleteRequest();
+                                DynamoDBRequest.Query query = new DynamoDBRequest.Query();
+                                query.setKey(deleteRequest.getKey());
+                                requests.add(new DynamoDBRequest(query, OP_DELETE));
+                            }
+                        }
                 operation = new DynamoDBOperation(requests, klassName, "executeBatchWriteItem", DynamoDBOperation.Category.DQL);
             }
             else if (value instanceof DeleteItemRequest) {
@@ -184,7 +162,14 @@ public abstract class DynamoDBUtil {
                 if (request.getConditionExpression() == null) {
                     return null;
                 }
-                addToList(requests, value, OP_DELETE);
+                DynamoDBRequest.Query query = new DynamoDBRequest.Query();
+                query.setKey(request.getKey());
+                query.setTableName(request.getTableName());
+                query.setExpected(request.getExpected());
+                query.setConditionExpression(request.getConditionExpression());
+                query.setExpressionAttributeNames(request.getExpressionAttributeNames());
+                query.setExpressionAttributeValues(request.getExpressionAttributeValues());
+                requests.add(new DynamoDBRequest(query, OP_DELETE));
                 operation = new DynamoDBOperation(requests, klassName, "executeDeleteItem", DynamoDBOperation.Category.DQL);
             }
             else if (value instanceof QueryRequest) {
@@ -192,7 +177,16 @@ public abstract class DynamoDBUtil {
                 if (request.getFilterExpression() == null && request.getKeyConditionExpression() == null && request.getProjectionExpression() == null) {
                     return null;
                 }
-                addToList(requests, value, OP_READ);
+                DynamoDBRequest.Query query = new DynamoDBRequest.Query();
+                query.setTableName(request.getTableName());
+                query.setKeyConditionExpression(request.getKeyConditionExpression());
+                query.setFilterExpression(request.getFilterExpression());
+                query.setProjectionExpression(request.getProjectionExpression());
+                query.setExpressionAttributeNames(request.getExpressionAttributeNames());
+                query.setExpressionAttributeValues(request.getExpressionAttributeValues());
+                query.setQueryFilter(request.getQueryFilter());
+                query.setAttributesToGet(request.getAttributesToGet());
+                requests.add(new DynamoDBRequest(query, OP_READ));
                 operation = new DynamoDBOperation(requests, klassName, "executeQuery", DynamoDBOperation.Category.DQL);
             }
             else if (value instanceof GetItemRequest) {
@@ -200,11 +194,25 @@ public abstract class DynamoDBUtil {
                 if (request.getProjectionExpression() == null) {
                     return null;
                 }
-                addToList(requests, value, OP_READ);
+                DynamoDBRequest.Query query = new DynamoDBRequest.Query();
+                query.setTableName(request.getTableName());
+                query.setKey(request.getKey());
+                query.setProjectionExpression(request.getProjectionExpression());
+                query.setExpressionAttributeNames(request.getExpressionAttributeNames());
+                query.setAttributesToGet(request.getAttributesToGet());
+                requests.add(new DynamoDBRequest(query, OP_READ));
                 operation = new DynamoDBOperation(requests, klassName, "executeGetItem", DynamoDBOperation.Category.DQL);
             }
             else if (value instanceof PutItemRequest) {
-                addToList(requests, value, OP_WRITE);
+                PutItemRequest request = (PutItemRequest) value;
+                DynamoDBRequest.Query query = new DynamoDBRequest.Query();
+                query.setTableName(request.getTableName());
+                query.setItem(request.getItem());
+                query.setExpected(request.getExpected());
+                query.setConditionExpression(request.getConditionExpression());
+                query.setExpressionAttributeNames(request.getExpressionAttributeNames());
+                query.setExpressionAttributeValues(request.getExpressionAttributeValues());
+                requests.add(new DynamoDBRequest(query, OP_WRITE));
                 operation = new DynamoDBOperation(requests, klassName, "executePutItem", DynamoDBOperation.Category.DQL);
             }
             else if (value instanceof ScanRequest) {
@@ -212,32 +220,103 @@ public abstract class DynamoDBUtil {
                 if (request.getProjectionExpression() == null && request.getFilterExpression() == null) {
                     return null;
                 }
-                addToList(requests, value, OP_READ);
+                DynamoDBRequest.Query query = new DynamoDBRequest.Query();
+                query.setTableName(request.getTableName());
+                query.setFilterExpression(request.getFilterExpression());
+                query.setScanFilter(request.getScanFilter());
+                query.setProjectionExpression(request.getProjectionExpression());
+                query.setAttributesToGet(request.getAttributesToGet());
+                query.setExpressionAttributeNames(request.getExpressionAttributeNames());
+                query.setExpressionAttributeValues(request.getExpressionAttributeValues());
+                requests.add(new DynamoDBRequest(query, OP_READ));
                 operation = new DynamoDBOperation(requests, klassName, "executeScan", DynamoDBOperation.Category.DQL);
             }
             else if (value instanceof UpdateItemRequest) {
-                addToList(requests, value, OP_UPDATE);
+                UpdateItemRequest request = (UpdateItemRequest) value;
+                DynamoDBRequest.Query query = new DynamoDBRequest.Query();
+                query.setTableName(request.getTableName());
+                query.setKey(request.getKey());
+                query.setExpected(request.getExpected());
+                query.setAttributeUpdates(request.getAttributeUpdates());
+                query.setUpdateExpression(request.getUpdateExpression());
+                query.setConditionExpression(request.getConditionExpression());
+                query.setExpressionAttributeNames(request.getExpressionAttributeNames());
+                query.setExpressionAttributeValues(request.getExpressionAttributeValues());
+                requests.add(new DynamoDBRequest(query, OP_UPDATE));
                 operation = new DynamoDBOperation(requests, klassName, "executeUpdateItem", DynamoDBOperation.Category.DQL);
             }
             else if (value instanceof TransactGetItemsRequest) {
                 TransactGetItemsRequest request = (TransactGetItemsRequest) value;
-                if (request.getTransactItems() == null && request.getTransactItems().size() == 0) {
+                List<TransactGetItem> transactItems = request.getTransactItems();
+                if (transactItems == null && transactItems.size() == 0) {
                     return null;
                 }
-                int i;
-                for (i = 0; i < request.getTransactItems().size(); i++) {
-                    if (request.getTransactItems().get(i).getGet().getProjectionExpression() != null) {
-                        break;
-                    }
-                    if (i + 1 == request.getTransactItems().size()) {
-                        return null;
+                boolean generate = false;
+                for (int i = 0; i < transactItems.size(); i++) {
+                    if (transactItems.get(i).getGet() != null) {
+                        if (transactItems.get(i).getGet().getProjectionExpression() != null) {
+                            generate = true;
+                        }
+                        if (i + 1 == transactItems.size() && !generate) {
+                            return null;
+                        }
+                        Get get = transactItems.get(i).getGet();
+                        DynamoDBRequest.Query query = new DynamoDBRequest.Query();
+                        query.setKey(get.getKey());
+                        query.setTableName(get.getTableName());
+                        query.setExpressionAttributeNames(get.getExpressionAttributeNames());
+                        query.setProjectionExpression(get.getProjectionExpression());
+                        requests.add(new DynamoDBRequest(query, OP_READ));
                     }
                 }
-                addToList(requests, value, OP_READ);
                 operation = new DynamoDBOperation(requests, klassName, "transactGetItemsRequest", DynamoDBOperation.Category.DQL);
             }
             else if (value instanceof TransactWriteItemsRequest) {
-                addToList(requests, value, OP_WRITE);
+                TransactWriteItemsRequest request = (TransactWriteItemsRequest) value;
+                List<TransactWriteItem> transactItems = request.getTransactItems();
+                for (int i=0; i< transactItems.size(); i++) {
+                    if (transactItems.get(i).getConditionCheck() != null) {
+                        ConditionCheck conditionCheck = transactItems.get(i).getConditionCheck();
+                        DynamoDBRequest.Query query = new DynamoDBRequest.Query();
+                        query.setKey(conditionCheck.getKey());
+                        query.setTableName(conditionCheck.getTableName());
+                        query.setConditionExpression(conditionCheck.getConditionExpression());
+                        query.setExpressionAttributeNames(conditionCheck.getExpressionAttributeNames());
+                        query.setExpressionAttributeValues(conditionCheck.getExpressionAttributeValues());
+                        requests.add(new DynamoDBRequest(query, OP_READ));
+                    }
+                    if (transactItems.get(i).getPut() != null) {
+                        Put put = transactItems.get(i).getPut();
+                        DynamoDBRequest.Query query = new DynamoDBRequest.Query();
+                        query.setItem(put.getItem());
+                        query.setTableName(put.getTableName());
+                        query.setConditionExpression(put.getConditionExpression());
+                        query.setExpressionAttributeNames(put.getExpressionAttributeNames());
+                        query.setExpressionAttributeValues(put.getExpressionAttributeValues());
+                        requests.add(new DynamoDBRequest(query, OP_WRITE));
+                    }
+                    if (transactItems.get(i).getUpdate() != null) {
+                        Update update = transactItems.get(i).getUpdate();
+                        DynamoDBRequest.Query query = new DynamoDBRequest.Query();
+                        query.setKey(update.getKey());
+                        query.setTableName(update.getTableName());
+                        query.setConditionExpression(update.getConditionExpression());
+                        query.setUpdateExpression(update.getUpdateExpression());
+                        query.setExpressionAttributeNames(update.getExpressionAttributeNames());
+                        query.setExpressionAttributeValues(update.getExpressionAttributeValues());
+                        requests.add(new DynamoDBRequest(query, OP_UPDATE));
+                    }
+                    if (transactItems.get(i).getDelete() != null) {
+                        Delete delete = transactItems.get(i).getDelete();
+                        DynamoDBRequest.Query query = new DynamoDBRequest.Query();
+                        query.setKey(delete.getKey());
+                        query.setTableName(delete.getTableName());
+                        query.setConditionExpression(delete.getConditionExpression());
+                        query.setExpressionAttributeNames(delete.getExpressionAttributeNames());
+                        query.setExpressionAttributeValues(delete.getExpressionAttributeValues());
+                        requests.add(new DynamoDBRequest(query, OP_DELETE));
+                    }
+                }
                 operation = new DynamoDBOperation(requests, klassName, "transactWriteItemsRequest", DynamoDBOperation.Category.DQL);
             }
 
