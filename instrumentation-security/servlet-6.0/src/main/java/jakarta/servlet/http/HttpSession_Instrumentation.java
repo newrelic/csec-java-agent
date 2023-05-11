@@ -38,27 +38,6 @@ public class HttpSession_Instrumentation {
         }
     }
 
-    public void putValue(String name, Object value){
-        boolean isLockAcquired = acquireLockIfPossible(hashCode());
-        AbstractOperation operation = null;
-        boolean isOwaspHookEnabled = NewRelic.getAgent().getConfig().getValue(LOW_SEVERITY_HOOKS_ENABLED, DEFAULT);
-        if (isOwaspHookEnabled){
-            if (isLockAcquired)
-                operation = preprocessSecurityHook(name, value, getClass().getName(), "putValue");
-        }
-        try {
-            Weaver.callOriginal();
-        } catch (Throwable ignored) {
-        } finally {
-            if (isLockAcquired) {
-                releaseLock(hashCode());
-            }
-        }
-        if (isOwaspHookEnabled) {
-            registerExitOperation(isLockAcquired, operation);
-        }
-    }
-
     private AbstractOperation preprocessSecurityHook(String name, Object value, String className, String methodName) {
         try {
             SecurityMetaData securityMetaData = NewRelicSecurity.getAgent().getSecurityMetaData();

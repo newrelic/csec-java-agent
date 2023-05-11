@@ -1,4 +1,4 @@
-package java.util;
+package com.nr.agent.security.random.java.util;
 
 import com.newrelic.api.agent.NewRelic;
 import com.newrelic.api.agent.security.NewRelicSecurity;
@@ -161,6 +161,28 @@ public class Random_Instrumentation {
                 operation = preprocessSecurityHook(getClass().getName(), "nextGaussian");
         }
         double returnValue = -1;
+        try {
+            returnValue = Weaver.callOriginal();
+        } finally {
+            if (isLockAcquired) {
+                releaseLock(hashCode());
+            }
+        }
+        if (isOwaspHookEnabled) {
+            registerExitOperation(isLockAcquired, operation);
+        }
+        return returnValue;
+    }
+
+    public boolean nextBoolean() {
+        boolean isLockAcquired = acquireLockIfPossible(hashCode());
+        AbstractOperation operation = null;
+        boolean isOwaspHookEnabled = NewRelic.getAgent().getConfig().getValue(LOW_SEVERITY_HOOKS_ENABLED, DEFAULT);
+        if (isOwaspHookEnabled){
+            if (isLockAcquired)
+                operation = preprocessSecurityHook(getClass().getName(), "nextBoolean");
+        }
+        boolean returnValue;
         try {
             returnValue = Weaver.callOriginal();
         } finally {
