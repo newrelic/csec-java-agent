@@ -1,0 +1,20 @@
+name: Build APM Jar
+description: Build APM jar with CSEC agent.
+
+runs:
+  using: composite
+
+  steps:
+    - name: Build APM agent
+      shell: bash
+      run: |
+        cd newrelic-java-agent 
+        ./gradlew $GRADLE_OPTIONS clean jar
+        cd ..
+
+    - name: Capture custom jar
+      uses: actions/upload-artifact@v3
+      with:
+        name: custom-newrelic-jar
+        path: |
+          newrelic-java-agent/newrelic-agent/build/newrelicJar/newrelic.jar

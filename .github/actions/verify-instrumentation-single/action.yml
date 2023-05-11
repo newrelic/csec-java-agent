@@ -1,0 +1,13 @@
+name: Verify Instrumentation Single
+description: Run instrumentation verifier on a single module
+inputs:
+  module-name:
+    description: 'The module on which instrumentation verifier is to be run'
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Run instrumentation unit tests
+      shell: bash
+      run: ./gradlew $GRADLE_OPTIONS :instrumentation:${{ inputs.apm-branch }}:verifyInstrumentation

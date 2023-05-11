@@ -14,7 +14,7 @@ test_database*
 .emacs.*
 .lock
 .cache-main
-
+*.secrets
 /functional_test/index/
 
 .DS_Store

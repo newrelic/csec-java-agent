@@ -1,0 +1,79 @@
+name: Setup Environment
+description:  Sets up the environment to build/test the agent.
+inputs:
+  apm-repo:
+    description: 'The repo of APM source code to use'
+    required: true
+    default: 'newrelic/newrelic-java-agent'
+  apm-branch:
+    description: 'The branch of APM source code to use'
+    required: true
+    default: 'k2-integration-build'
+
+
+# This action expects the csec collector to be checked out at $GITHUB_WORKSPACE and NR APM at $GITHUB_WORKSPACE/newrelic-java-agent.
+# It will also set up the instrumentation jar zip if S3 credentials are set.
+# This action requires these because composite actions cannot use secrets.
+
+runs:
+  using: composite
+
+  steps:
+    - name: Set up Javas
+      uses: actions/setup-java@v3
+      with:
+        distribution: 'temurin'
+        java-version: |
+          20
+          17
+          11
+          8
+        cache: 'gradle'
+
+    # Rewrite gradle.properties
+    - name: set gradle.properties for csec
+      shell: bash
+      run: |
+        sed -i -e "s|jdk8=8|jdk8=${JAVA_HOME_8_X64}|
+        s|jdk11=11|jdk11=${JAVA_HOME_11_X64}|
+        s|jdk17=17|jdk17=${JAVA_HOME_17_X64}|
+        s|jdk20=20|jdk20=${JAVA_HOME_20_X64}|" gradle.properties.gha
+        cat gradle.properties.gha >> gradle.properties
+
+    - name: Setup Gradle
+      uses: gradle/gradle-build-action@v2
+
+    - name: Setup Gradle options
+      shell: bash
+      run: echo "GRADLE_OPTIONS=-Porg.gradle.java.installations.auto-detect=false -Porg.gradle.java.installations.fromEnv=JAVA_HOME_8_X64,JAVA_HOME_11_X64,JAVA_HOME_17_X64,JAVA_HOME_19_X64,JAVA_HOME_20_X64" >> $GITHUB_ENV
+
+    - name: Checkout APM agent
+      uses: actions/checkout@v3
+      with:
+        repository: ${{ inputs.apm-repo }}
+        ref: ${{ inputs.apm-branch }}
+        path: newrelic-java-agent
+
+    - name: set gradle.properties for apm
+      shell: bash
+      run: |
+        sed -i -e "s|jdk8=8|jdk8=${JAVA_HOME_8_X64}|
+        s|jdk11=11|jdk11=${JAVA_HOME_11_X64}|
+        s|jdk17=17|jdk17=${JAVA_HOME_17_X64}|
+        s|jdk20=20|jdk20=${JAVA_HOME_20_X64}|" gradle.properties.gha
+        cat gradle.properties.gha >> gradle.properties
+
+    - name: Download S3 instrumentation jar zip
+      shell: bash
+      run: |
+        aws s3 cp s3://nr-java-agent-s3-instrumentation/proprietary-jars-20220805.zip proprietary-jars.zip && unzip proprietary-jars.zip && unzip -d newrelic-java-agent proprietary-jars.zip
+        if [ $? -ne 0 ]; then
+          echo "Instrumentation jar zip unavailable." >> $GITHUB_STEP_SUMMARY
+        fi
+
+    - name: Publish APM agent APIs locally
+      shell: bash
+      run: |
+        cd newrelic-java-agent
+        ./gradlew $GRADLE_OPTIONS :newrelic-api:publishToMavenLocal :agent-bridge:publishToMavenLocal :agent-bridge-datastore:publishToMavenLocal :newrelic-weaver-api:publishToMavenLocal :newrelic-weaver:publishToMavenLocal :newrelic-weaver-scala:publishToMavenLocal :newrelic-weaver-scala-api:publishToMavenLocal --parallel
+        cd ..

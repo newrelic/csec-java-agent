@@ -1,0 +1,10 @@
+name: Instrumentation unit tests
+description: Run all the instrumentation unit test.
+
+runs:
+  using: composite
+
+  steps:
+    - name: Run instrumentation unit tests
+      shell: bash
+      run: ./gradlew $GRADLE_OPTIONS test
