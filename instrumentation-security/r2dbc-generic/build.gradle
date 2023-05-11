@@ -4,6 +4,11 @@ dependencies {
     implementation("com.newrelic.agent.java:newrelic-weaver-api:${nrAPIVersion}")
     implementation("io.r2dbc:r2dbc-h2:0.8.4.RELEASE")
     testImplementation("com.h2database:h2:1.4.200")
+    testImplementation("ch.vorburger.mariaDB4j:mariaDB4j:2.2.1")
+    testImplementation("ru.yandex.qatools.embed:postgresql-embedded:2.10")
+    testImplementation("org.mariadb:r2dbc-mariadb:1.0.2")
+    testImplementation("dev.miku:r2dbc-mysql:0.8.2.RELEASE")
+    testImplementation("org.postgresql:r2dbc-postgresql:0.9.1.RELEASE")
 }
 
 jar {

@@ -12,6 +12,9 @@ import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.schema.JDBCVendor;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
+import oracle.jdbc.internal.AbstractConnectionBuilder;
+import oracle.jdbc.logging.annotations.Blind;
+import oracle.jdbc.logging.annotations.PropertiesBlinder;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -21,7 +24,7 @@ import java.util.Properties;
 public abstract class OracleDriver_Instrumentation {
 
     @Trace(leaf = true, excludeFromTransactionTrace = true)
-    public Connection connect(String url, Properties props) throws SQLException {
+    public Connection connect(String var1, @Blind(PropertiesBlinder.class) Properties var2, AbstractConnectionBuilder<?, ?> var3) throws SQLException {
         if (NewRelicSecurity.isHookProcessingActive() && !NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()) {
             NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(JDBCVendor.META_CONST_JDBC_VENDOR, JDBCVendor.ORACLE);
         }

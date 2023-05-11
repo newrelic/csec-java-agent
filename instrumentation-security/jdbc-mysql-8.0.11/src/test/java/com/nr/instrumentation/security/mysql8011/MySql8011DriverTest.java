@@ -62,7 +62,7 @@ public class MySql8011DriverTest {
     }
 
     @AfterClass
-    public static void tearDownDb() throws Exception {
+    public static void tearDownDb() {
         if (mysqld!=null) {
             mysqld.stop();
         }
@@ -161,12 +161,11 @@ public class MySql8011DriverTest {
 
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
-            Properties info = new Properties();
-            info.put("HOST", "localhost");
-            info.put("PORT", ""+mysqld.getConfig().getPort());
-            info.put("user", DB_USER);
-            info.put("password", DB_PASSWORD);
-            dbConnection = ConnectionImpl.getInstance(new HostInfo(info));
+            int port = mysqld.getConfig().getPort();
+            String host = "localhost";
+            dbConnection = ConnectionImpl.getInstance(new HostInfo(
+                    () -> DB_CONNECTION, host, port, DB_USER, DB_PASSWORD
+            ));
         } catch (Exception ignored) {
         }
         finally {

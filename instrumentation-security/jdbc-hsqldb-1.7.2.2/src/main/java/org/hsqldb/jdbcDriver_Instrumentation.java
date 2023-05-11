@@ -19,7 +19,7 @@ import java.util.Properties;
 @Weave(originalName = "org.hsqldb.jdbcDriver")
 public abstract class jdbcDriver_Instrumentation {
 
-    public Connection connect(String url, Properties props) throws SQLException {
+    public static Connection getConnection(String var0, Properties var1) throws SQLException {
         if(NewRelicSecurity.isHookProcessingActive() && !NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()) {
             NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(JDBCVendor.META_CONST_JDBC_VENDOR, JDBCVendor.HSQLDB);
         }

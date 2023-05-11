@@ -6,11 +6,9 @@ import com.newrelic.agent.security.introspec.SecurityIntrospector;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.security.schema.operation.LDAPOperation;
-import org.apache.directory.api.ldap.model.cursor.CursorException;
 import org.apache.directory.api.ldap.model.cursor.EntryCursor;
 import org.apache.directory.api.ldap.model.cursor.SearchCursor;
 import org.apache.directory.api.ldap.model.entry.Entry;
-import org.apache.directory.api.ldap.model.exception.LdapException;
 import org.apache.directory.api.ldap.model.message.Response;
 import org.apache.directory.api.ldap.model.message.SearchRequest;
 import org.apache.directory.api.ldap.model.message.SearchRequestImpl;
@@ -27,7 +25,6 @@ import org.junit.runners.MethodSorters;
 import org.zapodot.junit.ldap.EmbeddedLdapRule;
 import org.zapodot.junit.ldap.EmbeddedLdapRuleBuilder;
 
-import java.io.IOException;
 import java.util.List;
 
 @RunWith(SecurityInstrumentationTestRunner.class)
@@ -40,7 +37,7 @@ public class LdapConnectionTest {
             .importingLdifs("users-import.ldif").build();
 
     @Test
-    public void testSearch() throws IOException, LdapException, CursorException {
+    public void testSearch() throws Exception {
         int port = embeddedLdapRule.embeddedServerPort();
         String username = "mlakshkar";
         String password = "abc456";
@@ -49,6 +46,8 @@ public class LdapConnectionTest {
         System.out.println("LDAP query: " + query);
 
         LdapConnection connection = new LdapNetworkConnection("localhost", port);
+        connection.connect();
+
         EntryCursor cursor = connection.search(DOMAIN_DSN, query, SearchScope.SUBTREE, "");
         while (cursor.next()) {
             Entry entry = cursor.get();
@@ -67,7 +66,7 @@ public class LdapConnectionTest {
     }
 
     @Test
-    public void testSearch1() throws IOException, LdapException, CursorException {
+    public void testSearch1() throws Exception {
         int port = embeddedLdapRule.embeddedServerPort();
         String username = "sclaus";
 
@@ -75,6 +74,8 @@ public class LdapConnectionTest {
         System.out.println("LDAP query: " + query);
 
         LdapConnection connection = new LdapNetworkConnection("localhost", port);
+        connection.connect();
+
         EntryCursor cursor = connection.search(DOMAIN_DSN, query, SearchScope.SUBTREE, "cn");
         while (cursor.next()) {
             Entry entry = cursor.get();
@@ -93,7 +94,7 @@ public class LdapConnectionTest {
     }
 
     @Test
-    public void testSearch2() throws IOException, LdapException, CursorException {
+    public void testSearch2() throws Exception {
         int port = embeddedLdapRule.embeddedServerPort();
         String username = "mlakshkar";
 
@@ -101,6 +102,8 @@ public class LdapConnectionTest {
         System.out.println("LDAP query: " + query);
 
         LdapConnection connection = new LdapNetworkConnection("localhost", port);
+        connection.connect();
+
         EntryCursor cursor = connection.search(new Dn(DOMAIN_DSN), query, SearchScope.SUBTREE, "");
         while (cursor.next()) {
             Entry entry = cursor.get();
@@ -119,7 +122,7 @@ public class LdapConnectionTest {
     }
 
     @Test
-    public void testSearch3() throws IOException, LdapException, CursorException {
+    public void testSearch3() throws Exception {
         int port = embeddedLdapRule.embeddedServerPort();
         String password = "abc456";
 
@@ -127,6 +130,8 @@ public class LdapConnectionTest {
         System.out.println("LDAP query: " + query);
 
         LdapConnection connection = new LdapNetworkConnection("localhost", port);
+        connection.connect();
+
         EntryCursor cursor = connection.search(Dn.EMPTY_DN, query, SearchScope.SUBTREE, "");
         while (cursor.next()) {
             Entry entry = cursor.get();
@@ -145,7 +150,7 @@ public class LdapConnectionTest {
     }
 
     @Test
-    public void testSearch4() throws IOException, LdapException, CursorException {
+    public void testSearch4() throws Exception {
         int port = embeddedLdapRule.embeddedServerPort();
         String password = "123efg";
 
@@ -153,6 +158,8 @@ public class LdapConnectionTest {
         System.out.println("LDAP query: " + query);
 
         LdapConnection connection = new LdapNetworkConnection("localhost", port);
+        connection.connect();
+
         SearchRequest request = new SearchRequestImpl();
         request.setBase(new Dn(DOMAIN_DSN));
         request.setFilter(query);
@@ -176,7 +183,7 @@ public class LdapConnectionTest {
     }
 
     @Test
-    public void testSearch5() throws IOException, LdapException, CursorException {
+    public void testSearch5() throws Exception {
         int port = embeddedLdapRule.embeddedServerPort();
         String username = "mlakshkar";
         String password = "abc456";
@@ -185,6 +192,8 @@ public class LdapConnectionTest {
         System.out.println("LDAP query: " + query);
 
         LdapConnection connection = new LdapNetworkConnection("localhost", port);
+        connection.connect();
+
         SearchRequest request = new SearchRequestImpl();
         request.setBase(Dn.EMPTY_DN);
         request.setFilter(query);

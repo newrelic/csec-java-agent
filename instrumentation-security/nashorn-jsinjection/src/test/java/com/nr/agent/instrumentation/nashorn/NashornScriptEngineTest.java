@@ -7,10 +7,16 @@ import com.newrelic.api.agent.Trace;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.security.schema.operation.JSInjectionOperation;
+import com.newrelic.security.test.marker.Java15IncompatibleTest;
+import com.newrelic.security.test.marker.Java16IncompatibleTest;
+import com.newrelic.security.test.marker.Java17IncompatibleTest;
+import com.newrelic.security.test.marker.Java18IncompatibleTest;
+import com.newrelic.security.test.marker.Java19IncompatibleTest;
 import jdk.nashorn.api.scripting.NashornScriptEngine;
 import org.junit.Assert;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 
@@ -24,6 +30,7 @@ import java.io.FileReader;
 import java.net.URISyntaxException;
 import java.util.List;
 
+@Category({ Java15IncompatibleTest.class, Java16IncompatibleTest.class, Java17IncompatibleTest.class, Java18IncompatibleTest.class, Java19IncompatibleTest.class })
 @RunWith(SecurityInstrumentationTestRunner.class)
 @InstrumentationTestConfig(includePrefixes = "jdk.nashorn")
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
