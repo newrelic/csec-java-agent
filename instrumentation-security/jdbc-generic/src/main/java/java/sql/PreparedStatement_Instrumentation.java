@@ -12,6 +12,7 @@ import com.newrelic.api.agent.security.instrumentation.helpers.JdbcHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.JDBCVendor;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
+import com.newrelic.api.agent.security.schema.operation.BatchSQLOperation;
 import com.newrelic.api.agent.security.schema.operation.SQLOperation;
 import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.NewField;
@@ -24,13 +25,12 @@ import java.util.Map;
 
 @Weave(originalName = "java.sql.PreparedStatement", type = MatchType.Interface)
 public abstract class PreparedStatement_Instrumentation {
-
     @NewField
     private Map<String, String> params;
-
     @NewField
     String preparedSql;
-
+    @NewField
+    private BatchSQLOperation batchSQLOperation;
 
     private void registerExitOperation(boolean isProcessingAllowed, AbstractOperation operation) {
         try {
@@ -233,6 +233,32 @@ public abstract class PreparedStatement_Instrumentation {
         }
 
         params.put(String.valueOf(index), new String(value));
+    }
+
+    public void addBatch() throws SQLException {
+        boolean isLockAcquired = acquireLockIfPossible();
+        SQLOperation sqlOperation = null;
+        if(isLockAcquired) {
+            sqlOperation = new SQLOperation(this.getClass().getName(), JdbcHelper.METHOD_EXECUTE_BATCH);
+            sqlOperation.setQuery(preparedSql);
+            Map<String, String> localParams = new HashMap<>();
+            localParams.putAll(params);
+            sqlOperation.setParams(localParams);
+            sqlOperation.setDbName(NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(JDBCVendor.META_CONST_JDBC_VENDOR, String.class));
+            sqlOperation.setPreparedCall(true);
+            if(batchSQLOperation==null)
+                batchSQLOperation = new BatchSQLOperation(this.getClass().getName(), JdbcHelper.METHOD_EXECUTE_BATCH);
+            batchSQLOperation.addOperation(sqlOperation);
+
+            NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(JdbcHelper.NR_SEC_CUSTOM_ATTRIB_BATCH_SQL_NAME+hashCode(), batchSQLOperation);
+        }
+        try {
+            Weaver.callOriginal();
+        } finally {
+            if(isLockAcquired){
+                releaseLock();
+            }
+        }
     }
 
 }

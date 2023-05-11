@@ -9,6 +9,7 @@ import com.newrelic.agent.security.instrumentator.utils.AgentUtils;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.newrelic.agent.security.intcodeagent.filelogging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.JAHealthCheck;
+import com.newrelic.agent.security.intcodeagent.schedulers.SchedulerHelper;
 import com.newrelic.agent.security.intcodeagent.websocket.JsonConverter;
 import com.newrelic.agent.security.intcodeagent.websocket.WSClient;
 import com.newrelic.agent.security.intcodeagent.websocket.WSUtils;
@@ -49,8 +50,6 @@ public class HealthCheckScheduleThread {
     private static HealthCheckScheduleThread instance;
 
     private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
-
-    private static ScheduledExecutorService hcScheduledService;
 
     private ScheduledFuture future;
 
@@ -97,20 +96,10 @@ public class HealthCheckScheduleThread {
         }
     };
 
-    private HealthCheckScheduleThread() {
-        hcScheduledService = Executors.newSingleThreadScheduledExecutor(new ThreadFactory() {
-            private final AtomicInteger threadNumber = new AtomicInteger(1);
-
-            @Override
-            public Thread newThread(Runnable r) {
-                return new Thread(Thread.currentThread().getThreadGroup(), r,
-                        IAgentConstants.HCSCHEDULEDTHREAD_ + threadNumber.getAndIncrement());
-            }
-        });
-    }
+    private HealthCheckScheduleThread() {}
 
     public void scheduleNewTask() {
-        future = hcScheduledService.scheduleAtFixedRate(runnable, 1, 5, TimeUnit.MINUTES);
+        future = SchedulerHelper.getInstance().scheduleHealthCheck(runnable, 1, 5, TimeUnit.MINUTES);
     }
 
     public boolean cancelTask(boolean forceCancel) {
@@ -226,37 +215,4 @@ public class HealthCheckScheduleThread {
         throw null;
     }
 
-    public static void shutDownPool() {
-        if (instance != null) {
-            instance.shutDownThreadPoolExecutor();
-        }
-        instance = null;
-    }
-
-    /**
-     * Shut down the thread pool executor. Calls normal shutdown of thread pool
-     * executor and awaits for termination. If not terminated, forcefully shuts down
-     * the executor after a timeout.
-     */
-    public void shutDownThreadPoolExecutor() {
-
-        if (hcScheduledService != null) {
-            try {
-                hcScheduledService.shutdown(); // disable new tasks from being submitted
-                if (!hcScheduledService.awaitTermination(1, TimeUnit.SECONDS)) {
-                    // wait for termination for a timeout
-                    hcScheduledService.shutdownNow(); // cancel currently executing tasks
-
-                    if (!hcScheduledService.awaitTermination(1, TimeUnit.SECONDS)) {
-                        logger.log(LogLevel.SEVERE, "Thread pool executor did not terminate",
-                                HealthCheckScheduleThread.class.getName());
-                    } else {
-                        logger.log(LogLevel.INFO, "Thread pool executor terminated",
-                                HealthCheckScheduleThread.class.getName());
-                    }
-                }
-            } catch (InterruptedException e) {
-            }
-        }
-    }
 }

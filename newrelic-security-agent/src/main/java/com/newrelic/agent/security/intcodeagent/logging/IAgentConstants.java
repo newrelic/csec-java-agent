@@ -459,6 +459,9 @@ public interface IAgentConstants {
     String ERROR_OCCURED_WHILE_TRYING_TO_CONNECT_TO_WSOCKET = "Error occured while trying to connect to wsocket: ";
 
     String HCSCHEDULEDTHREAD_ = "NR-CSEC-HC-ScheduledThread-";
+
+    String SCHEDULEDTHREAD_ = "NR-CSEC-ScheduledThread-";
+
     String WSRECONNECTSCHEDULEDTHREAD_ = "NR-CSEC-WSReconnect-";
 
     String ACK_MSG = "ACK";
