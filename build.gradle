@@ -44,9 +44,20 @@ idea.module {
 
 subprojects {
     repositories {
+        // Sonatype SNAPSHOT repository
+        maven {
+            url 'https://oss.sonatype.org/content/repositories/snapshots/'
+        }
         mavenLocal()
         mavenCentral()
         jcenter()
+    }
+
+    // SNAPSHOTs are considered to be "changing dependencies" and they are cached by gradle for 24 hours by default.
+    // The setting below eliminates the caching and forces the build to always refresh the SNAPSHOT dependency.
+    // https://docs.gradle.org/current/userguide/dynamic_versions.html#sub:declaring_dependency_with_changing_version
+    configurations.all {
+        resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
     }
 
     def isJavaProject = ![
