@@ -52,7 +52,7 @@ public class Dispatcher implements Runnable {
     private static final String APPLICATION_SERVER_DETECTION_COMPLETE = "[APP_INFO][DEPLOYED_APP] Deployed application info generated : %s";
     private static final String APPLICATION_SERVER_DETECTION_STARTED = "[STEP-9][BEGIN][APP_INFO][DEPLOYED_APP] Gathering deployed application info for current process.";
     private static final String EVENT_ZERO_SENT = "[STEP-8][COMPLETE][EVENT] First event sent for validation %s";
-    private static final String SENDING_EVENT_ZERO = "[EVENT] Sending first event for validation.";
+    private static final String SENDING_EVENT_ZERO = "[EVENT] Sending first event for validation. Security agent started successfully ";
     private static final String POSTING_UPDATED_APPLICATION_INFO = "[APP_INFO][DEPLOYED_APP] Sending updated application info to Prevent-Web service : %s";
 
 

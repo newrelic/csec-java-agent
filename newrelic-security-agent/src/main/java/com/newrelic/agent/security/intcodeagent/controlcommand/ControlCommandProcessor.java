@@ -60,7 +60,7 @@ public class ControlCommandProcessor implements Runnable {
     public static final String WS_RECONNECT_EVENT_SEND_POOL_DRAINED = "[WS RECONNECT] EventSend pool drained.";
     public static final String WS_RECONNECT_IAST_REQUEST_REPLAY_POOL_DRAINED = "[WS RECONNECT] IAST request replay pool drained.";
     public static final String ID = "id";
-    public static final String RECEIVED_IAST_COOLDOWN_WAITING_TILL_S = "Received IAST cooldown. Waiting till : %s";
+    public static final String RECEIVED_IAST_COOLDOWN_WAITING_TILL_S = "Received IAST cooldown. Waiting for next : %s Seconds";
     public static final String PURGING_CONFIRMED_IAST_PROCESSED_RECORDS_COUNT_S = "Purging confirmed IAST processed records count : %s";
     public static final String PURGING_CONFIRMED_IAST_PROCESSED_RECORDS_S = "Purging confirmed IAST processed records : %s";
 
@@ -238,7 +238,7 @@ public class ControlCommandProcessor implements Runnable {
                     long sleepTill = Instant.now().plus((Long) controlCommand.getData(),
                             ChronoUnit.SECONDS).toEpochMilli();
                     IASTDataTransferRequestProcessor.getInstance().setCooldownTillTimestamp(sleepTill);
-                    logger.log(LogLevel.INFO, String.format(RECEIVED_IAST_COOLDOWN_WAITING_TILL_S, sleepTill),
+                    logger.log(LogLevel.INFO, String.format(RECEIVED_IAST_COOLDOWN_WAITING_TILL_S, controlCommand.getData()),
                             this.getClass().getName());
                 }
                 break;
