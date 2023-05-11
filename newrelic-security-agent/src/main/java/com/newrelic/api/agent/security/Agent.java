@@ -246,7 +246,7 @@ public class Agent implements SecurityAgent {
         }
 
         if(checkIfNRGeneratedEvent(operation, securityMetaData)) {
-            logger.log(LogLevel.FINER, DROPPING_EVENT_AS_IT_WAS_GENERATED_BY_K_2_INTERNAL_API_CALL +
+            logger.log(LogLevel.FINEST, DROPPING_EVENT_AS_IT_WAS_GENERATED_BY_K_2_INTERNAL_API_CALL +
                             JsonConverter.toJSON(operation),
                     Dispatcher.class.getName());
             return;
