@@ -134,6 +134,7 @@ public abstract class DynamoDBUtil {
                             return null;
                         }
                         DynamoDBRequest.Query query = new DynamoDBRequest.Query();
+                        query.setTableName(entry.getKey());
                         query.setKey(value1.keys());
                         query.setProjectionExpression(value1.projectionExpression());
                         query.setExpressionAttributeNames(value1.expressionAttributeNames());
@@ -152,12 +153,14 @@ public abstract class DynamoDBUtil {
                                 PutRequest putRequest = item.putRequest();
                                 DynamoDBRequest.Query query = new DynamoDBRequest.Query();
                                 query.setItem(putRequest.item());
+                                query.setTableName(entry.getKey());
                                 requests.add(new DynamoDBRequest(query, OP_WRITE));
                             }
                             if (item.deleteRequest() != null) {
                                 DeleteRequest deleteRequest = item.deleteRequest();
                                 DynamoDBRequest.Query query = new DynamoDBRequest.Query();
                                 query.setKey(deleteRequest.key());
+                                query.setTableName(entry.getKey());
                                 requests.add(new DynamoDBRequest(query, OP_DELETE));
                             }
                         }
@@ -275,7 +278,7 @@ public abstract class DynamoDBUtil {
                         requests.add(new DynamoDBRequest(query, OP_READ));
                     }
                 }
-                operation = new DynamoDBOperation(requests, klassName, "transactGetItemsRequest", DynamoDBOperation.Category.DQL);
+                operation = new DynamoDBOperation(requests, klassName, "transactGetItems", DynamoDBOperation.Category.DQL);
             }
             else if (value instanceof TransactWriteItemsRequest) {
                 TransactWriteItemsRequest request = (TransactWriteItemsRequest) value;
@@ -323,7 +326,7 @@ public abstract class DynamoDBUtil {
                         requests.add(new DynamoDBRequest(query, OP_DELETE));
                     }
                 }
-                operation = new DynamoDBOperation(requests, klassName, "transactWriteItemsRequest", DynamoDBOperation.Category.DQL);
+                operation = new DynamoDBOperation(requests, klassName, "transactWriteItems", DynamoDBOperation.Category.DQL);
             }
             else if (value instanceof ExecuteStatementRequest) {
                 ExecuteStatementRequest request = (ExecuteStatementRequest) value;

@@ -27,6 +27,12 @@ public class BatchSQLOperation extends AbstractOperation {
         }
     }
 
+    public void clearOperation() {
+        if(operations != null && !operations.isEmpty()) {
+            this.operations.clear();
+        }
+    }
+
     @Override
     public boolean isEmpty() {
         return this.operations.isEmpty();
