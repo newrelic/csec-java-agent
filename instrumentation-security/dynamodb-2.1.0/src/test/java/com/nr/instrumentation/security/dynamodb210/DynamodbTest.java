@@ -1,4 +1,4 @@
-package com.nr.instrumentation.security.dynamodb2;
+package com.nr.instrumentation.security.dynamodb210;
 
 import com.amazonaws.services.dynamodbv2.local.main.ServerRunner;
 import com.amazonaws.services.dynamodbv2.local.server.DynamoDBProxyServer;
@@ -46,7 +46,7 @@ import java.util.Map;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @RunWith(SecurityInstrumentationTestRunner.class)
-@InstrumentationTestConfig(includePrefixes = {"com.nr.agent.security.dynamodb_2", "software.amazon.awssdk.core.client.handler"})
+@InstrumentationTestConfig(includePrefixes = {"com.nr.agent.security.dynamodb_210", "software.amazon.awssdk.core"})
 public class DynamodbTest {
     private static final int PORT = DynamoUtil.getRandomPort();
     private static DynamoDBProxyServer server;
@@ -98,30 +98,15 @@ public class DynamodbTest {
         Assert.assertTrue("No payload detected", operation.getPayload().size() > 0);
 
         for(DynamoDBRequest request: operation.getPayload()) {
-            String req = "{\"RequestItems\":{\"test\":[{\"PutRequest\":{\"Item\":{\"artist\":{\"S\":\"Charlie\"},\"Genre\":{\"S\":\"Jazz\"}}}}]}}";
-            Assert.assertEquals("Invalid req.", req, request.getQuery());
-            Assert.assertEquals("Invalid req-type.", "write", request.getQueryType());
-        }
-    }
+            Map<String, AttributeValue> query = (Map<String, AttributeValue>) request.getQuery().getItem();
 
-    @Test
-    public void testBatchExecuteStmt() {
-        batchExecuteStmtTxn();
+            Assert.assertEquals("Invalid table name", "test", request.getQuery().getTableName());
+            Assert.assertNotNull("No such payload detected", query.get("artist"));
+            Assert.assertEquals("Invalid payload value.", "Charlie",query.get("artist").s());
+            Assert.assertNotNull("No such payload detected", query.get("Genre"));
+            Assert.assertEquals("Invalid payload value.", "Jazz",query.get("Genre").s());
 
-        SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
-        List<AbstractOperation> operations = introspector.getOperations();
-        Assert.assertTrue("No operations detected", operations.size() > 0);
-
-        DynamoDBOperation operation = (DynamoDBOperation) operations.get(0);
-        Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.DYNAMO_DB_COMMAND, operation.getCaseType());
-        Assert.assertEquals("Invalid executed method name.", "batchExecuteStatement", operation.getMethodName());
-        Assert.assertEquals("Invalid operation Category.", DynamoDBOperation.Category.PARTIQL, operation.getCategory());
-        Assert.assertTrue("No payload detected", operation.getPayload().size() > 0);
-
-        for(DynamoDBRequest request: operation.getPayload()) {
-            String req = "{\"Statements\":[{\"Statement\":\"SELECT * FROM test where Genre = ?\",\"Parameters\":[{\"S\":\"Jazz\"}],\"ConsistentRead\":true}]}";
-            Assert.assertEquals("Invalid stmt.", req, request.getQuery());
-            Assert.assertEquals("Invalid stmt-type.", "read_write", request.getQueryType());
+            Assert.assertEquals("Invalid query-type.", "write", request.getQueryType());
         }
     }
 
@@ -140,9 +125,14 @@ public class DynamodbTest {
         Assert.assertTrue("No payload detected", operation.getPayload().size() > 0);
 
         for(DynamoDBRequest request: operation.getPayload()) {
-            String req = "{\"RequestItems\":{\"test\":{\"Keys\":[{\"artist\":{\"S\":\"Charlie\"}}]}}}";
-            Assert.assertEquals("Invalid stmt.", req, request.getQuery());
-            Assert.assertEquals("Invalid stmt-type.", "read", request.getQueryType());
+            Map<String, AttributeValue> query = ((List<Map<String, AttributeValue>>) request.getQuery().getKey()).get(0);
+
+            Assert.assertEquals("Invalid table name", "test", request.getQuery().getTableName());
+            Assert.assertNotNull("No such payload detected", query.get("artist"));
+            Assert.assertEquals("Invalid payload value.", "Charlie",query.get("artist").s());
+            Assert.assertEquals("Invalid payload value.", "artist",request.getQuery().getProjectionExpression());
+
+            Assert.assertEquals("Invalid query-type.", "read", request.getQueryType());
         }
     }
     @Test
@@ -160,31 +150,17 @@ public class DynamodbTest {
         Assert.assertTrue("No payload detected", operation.getPayload().size() > 0);
 
         for(DynamoDBRequest request: operation.getPayload()) {
-            String req = "{\"TableName\":\"test\",\"Key\":{\"artist\":{\"S\":\"Charlie\"}},\"ProjectionExpression\":\"artist, Genre\"}";
-            Assert.assertEquals("Invalid stmt.", req, request.getQuery());
-            Assert.assertEquals("Invalid stmt-type.", "read", request.getQueryType());
+            Map<String, AttributeValue> query = (Map<String, AttributeValue>) request.getQuery().getKey();
+
+            Assert.assertEquals("Invalid table name", "test", request.getQuery().getTableName());
+            Assert.assertNotNull("No such payload detected", query.get("artist"));
+            Assert.assertEquals("Invalid payload value.", "Charlie",query.get("artist").s());
+            Assert.assertEquals("Invalid payload value.", "artist, Genre",request.getQuery().getProjectionExpression());
+
+            Assert.assertEquals("Invalid query-type.", "read", request.getQueryType());
         }
     }
-    @Test
-    public void testExecuteStmt() {
-        executeStmtTxn();
 
-        SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
-        List<AbstractOperation> operations = introspector.getOperations();
-        Assert.assertTrue("No operations detected", operations.size() > 0);
-
-        DynamoDBOperation operation = (DynamoDBOperation) operations.get(0);
-        Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.DYNAMO_DB_COMMAND, operation.getCaseType());
-        Assert.assertEquals("Invalid executed method name.", "executeStatement", operation.getMethodName());
-        Assert.assertEquals("Invalid operation Category.", DynamoDBOperation.Category.PARTIQL, operation.getCategory());
-        Assert.assertTrue("No payload detected", operation.getPayload().size() > 0);
-
-        for(DynamoDBRequest request: operation.getPayload()) {
-            String req = "{\"Statement\":\"SELECT * FROM test where Genre = ?\",\"Parameters\":[{\"S\":\"Jazz\"}],\"ConsistentRead\":true}";
-            Assert.assertEquals("Invalid stmt.", req, request.getQuery());
-            Assert.assertEquals("Invalid stmt-type.", "read_write", request.getQueryType());
-        }
-    }
     @Test
     public void testDeleteItem() {
         deleteItemTxn();
@@ -205,9 +181,13 @@ public class DynamodbTest {
         Assert.assertTrue("No payload detected", operation.getPayload().size() > 0);
 
         for(DynamoDBRequest request: operation.getPayload()) {
-            String req = "{\"TableName\":\"test\",\"Key\":{\"artist\":{\"S\":\"Charlie\"}}}";
-            Assert.assertEquals("Invalid stmt.", req, request.getQuery());
-            Assert.assertEquals("Invalid stmt-type.", "delete", request.getQueryType());
+            Map<String, AttributeValue> query = (Map<String, AttributeValue>) request.getQuery().getKey();
+
+            Assert.assertEquals("Invalid table name", "test", request.getQuery().getTableName());
+            Assert.assertNotNull("No such payload detected", query.get("artist"));
+            Assert.assertEquals("Invalid payload value.", "Charlie",query.get("artist").s());
+
+            Assert.assertEquals("Invalid query-type.", "delete", request.getQueryType());
         }
     }
     @Test
@@ -225,9 +205,15 @@ public class DynamodbTest {
         Assert.assertTrue("No payload detected", operation.getPayload().size() > 0);
 
         for(DynamoDBRequest request: operation.getPayload()) {
-            String req = "{\"TableName\":\"test\",\"ProjectionExpression\":\"artist\",\"KeyConditionExpression\":\"artist = :val\",\"ExpressionAttributeValues\":{\":val\":{\"S\":\"Charlie\"}}}";
-            Assert.assertEquals("Invalid stmt.", req, request.getQuery());
-            Assert.assertEquals("Invalid stmt-type.", "read", request.getQueryType());
+            DynamoDBRequest.Query query = request.getQuery();
+
+            Assert.assertEquals("Invalid table name", "test", query.getTableName());
+            Assert.assertEquals("Invalid key condition expression", "artist = :val", query.getKeyConditionExpression());
+            Assert.assertEquals("Invalid projection expression.", "artist", query.getProjectionExpression());
+            Assert.assertEquals("Invalid projection expression.", "Charlie", ((Map<String, AttributeValue>)query.getExpressionAttributeValues()).get(":val").s());
+
+
+            Assert.assertEquals("Invalid query-type.", "read", request.getQueryType());
         }
     }
     @Test
@@ -245,9 +231,12 @@ public class DynamodbTest {
         Assert.assertTrue("No payload detected", operation.getPayload().size() > 0);
 
         for(DynamoDBRequest request: operation.getPayload()) {
-            String req = "{\"TableName\":\"test\",\"ProjectionExpression\":\"artist, Genre\"}";
-            Assert.assertEquals("Invalid stmt.", req, request.getQuery());
-            Assert.assertEquals("Invalid stmt-type.", "read", request.getQueryType());
+            DynamoDBRequest.Query query = request.getQuery();
+
+            Assert.assertEquals("Invalid table name", "test", query.getTableName());
+            Assert.assertEquals("Invalid projection expression.", "artist, Genre", query.getProjectionExpression());
+
+            Assert.assertEquals("Invalid query-type.", "read", request.getQueryType());
         }
     }
     @Test
@@ -265,9 +254,15 @@ public class DynamodbTest {
         Assert.assertTrue("No payload detected", operation.getPayload().size() > 0);
 
         for(DynamoDBRequest request: operation.getPayload()) {
-            String req = "{\"TableName\":\"test\",\"Item\":{\"artist\":{\"S\":\"Charlie\"},\"Genre\":{\"S\":\"Jazz\"}}}";
-            Assert.assertEquals("Invalid stmt.", req, request.getQuery());
-            Assert.assertEquals("Invalid stmt-type.", "write", request.getQueryType());
+            Map<String, AttributeValue> query = (Map<String, AttributeValue>) request.getQuery().getItem();
+
+            Assert.assertEquals("Invalid table name", "test", request.getQuery().getTableName());
+            Assert.assertNotNull("No such payload detected", query.get("artist"));
+            Assert.assertEquals("Invalid payload value.", "Charlie",query.get("artist").s());
+            Assert.assertNotNull("No such payload detected", query.get("Genre"));
+            Assert.assertEquals("Invalid payload value.", "Jazz",query.get("Genre").s());
+
+            Assert.assertEquals("Invalid query-type.", "write", request.getQueryType());
         }
     }
     @Test
@@ -285,9 +280,16 @@ public class DynamodbTest {
         Assert.assertTrue("No payload detected", operation.getPayload().size() > 0);
 
         for(DynamoDBRequest request: operation.getPayload()) {
-            String req = "{\"TableName\":\"test\",\"Key\":{\"artist\":{\"S\":\"Charlie\"}},\"AttributeUpdates\":{\"Genre\":{\"Value\":{\"S\":\"Classic\"}}}}";
-            Assert.assertEquals("Invalid stmt.", req, request.getQuery());
-            Assert.assertEquals("Invalid stmt-type.", "update", request.getQueryType());
+            Map<String, AttributeValue> query = (Map<String, AttributeValue>) request.getQuery().getKey();
+            Map<String, AttributeValueUpdate> attrs = (Map<String, AttributeValueUpdate>) request.getQuery().getAttributeUpdates();
+
+            Assert.assertEquals("Invalid table name", "test", request.getQuery().getTableName());
+            Assert.assertNotNull("No such payload detected", query.get("artist"));
+            Assert.assertEquals("Invalid payload value.", "Charlie",query.get("artist").s());
+            Assert.assertNotNull("No such payload detected", attrs.get("Genre"));
+            Assert.assertEquals("Invalid payload value.", "Classic",attrs.get("Genre").value().s());
+
+            Assert.assertEquals("Invalid query-type.", "update", request.getQueryType());
         }
     }
     @Test
@@ -305,30 +307,15 @@ public class DynamodbTest {
         Assert.assertTrue("No payload detected", operation.getPayload().size() > 0);
 
         for(DynamoDBRequest request: operation.getPayload()) {
-            String req = "{\"RequestItems\":{\"test\":[{\"PutRequest\":{\"Item\":{\"artist\":{\"S\":\"Charlie\"},\"Genre\":{\"S\":\"Jazz\"}}}}]}}";
-            Assert.assertEquals("Invalid req.", req, request.getQuery());
-            Assert.assertEquals("Invalid req-type.", "write", request.getQueryType());
-        }
-    }
+            Map<String, AttributeValue> query = (Map<String, AttributeValue>) request.getQuery().getItem();
 
-    @Test
-    public void testBatchExecuteStmtAsync() {
-        batchExecuteStmtTxnAsync();
+            Assert.assertEquals("Invalid table name", "test", request.getQuery().getTableName());
+            Assert.assertNotNull("No such payload detected", query.get("artist"));
+            Assert.assertEquals("Invalid payload value.", "Charlie",query.get("artist").s());
+            Assert.assertNotNull("No such payload detected", query.get("Genre"));
+            Assert.assertEquals("Invalid payload value.", "Jazz",query.get("Genre").s());
 
-        SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
-        List<AbstractOperation> operations = introspector.getOperations();
-        Assert.assertTrue("No operations detected", operations.size() > 0);
-
-        DynamoDBOperation operation = (DynamoDBOperation) operations.get(0);
-        Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.DYNAMO_DB_COMMAND, operation.getCaseType());
-        Assert.assertEquals("Invalid executed method name.", "batchExecuteStatement", operation.getMethodName());
-        Assert.assertEquals("Invalid operation Category.", DynamoDBOperation.Category.PARTIQL, operation.getCategory());
-        Assert.assertTrue("No payload detected", operation.getPayload().size() > 0);
-
-        for(DynamoDBRequest request: operation.getPayload()) {
-            String req = "{\"Statements\":[{\"Statement\":\"SELECT * FROM test where Genre = ?\",\"Parameters\":[{\"S\":\"Jazz\"}],\"ConsistentRead\":true}]}";
-            Assert.assertEquals("Invalid stmt.", req, request.getQuery());
-            Assert.assertEquals("Invalid stmt-type.", "read_write", request.getQueryType());
+            Assert.assertEquals("Invalid query-type.", "write", request.getQueryType());
         }
     }
 
@@ -347,9 +334,14 @@ public class DynamodbTest {
         Assert.assertTrue("No payload detected", operation.getPayload().size() > 0);
 
         for(DynamoDBRequest request: operation.getPayload()) {
-            String req = "{\"RequestItems\":{\"test\":{\"Keys\":[{\"artist\":{\"S\":\"Charlie\"}}]}}}";
-            Assert.assertEquals("Invalid stmt.", req, request.getQuery());
-            Assert.assertEquals("Invalid stmt-type.", "read", request.getQueryType());
+            Map<String, AttributeValue> query = ((List<Map<String, AttributeValue>>) request.getQuery().getKey()).get(0);
+
+            Assert.assertEquals("Invalid table name", "test", request.getQuery().getTableName());
+            Assert.assertNotNull("No such payload detected", query.get("artist"));
+            Assert.assertEquals("Invalid payload value.", "Charlie",query.get("artist").s());
+            Assert.assertEquals("Invalid payload value.", "artist",request.getQuery().getProjectionExpression());
+
+            Assert.assertEquals("Invalid query-type.", "read", request.getQueryType());
         }
     }
     @Test
@@ -367,31 +359,17 @@ public class DynamodbTest {
         Assert.assertTrue("No payload detected", operation.getPayload().size() > 0);
 
         for(DynamoDBRequest request: operation.getPayload()) {
-            String req = "{\"TableName\":\"test\",\"Key\":{\"artist\":{\"S\":\"Charlie\"}},\"ProjectionExpression\":\"artist, Genre\"}";
-            Assert.assertEquals("Invalid stmt.", req, request.getQuery());
-            Assert.assertEquals("Invalid stmt-type.", "read", request.getQueryType());
+            Map<String, AttributeValue> query = (Map<String, AttributeValue>) request.getQuery().getKey();
+
+            Assert.assertEquals("Invalid table name", "test", request.getQuery().getTableName());
+            Assert.assertNotNull("No such payload detected", query.get("artist"));
+            Assert.assertEquals("Invalid payload value.", "Charlie",query.get("artist").s());
+            Assert.assertEquals("Invalid payload value.", "artist, Genre",request.getQuery().getProjectionExpression());
+
+            Assert.assertEquals("Invalid query-type.", "read", request.getQueryType());
         }
     }
-    @Test
-    public void testExecuteStmtAsync() {
-        executeStmtTxnAsync();
 
-        SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
-        List<AbstractOperation> operations = introspector.getOperations();
-        Assert.assertTrue("No operations detected", operations.size() > 0);
-
-        DynamoDBOperation operation = (DynamoDBOperation) operations.get(0);
-        Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.DYNAMO_DB_COMMAND, operation.getCaseType());
-        Assert.assertEquals("Invalid executed method name.", "executeStatement", operation.getMethodName());
-        Assert.assertEquals("Invalid operation Category.", DynamoDBOperation.Category.PARTIQL, operation.getCategory());
-        Assert.assertTrue("No payload detected", operation.getPayload().size() > 0);
-
-        for(DynamoDBRequest request: operation.getPayload()) {
-            String req = "{\"Statement\":\"SELECT * FROM test where Genre = ?\",\"Parameters\":[{\"S\":\"Jazz\"}],\"ConsistentRead\":true}";
-            Assert.assertEquals("Invalid stmt.", req, request.getQuery());
-            Assert.assertEquals("Invalid stmt-type.", "read_write", request.getQueryType());
-        }
-    }
     @Test
     public void testDeleteItemAsync() {
         deleteItemTxnAsync();
@@ -412,9 +390,13 @@ public class DynamodbTest {
         Assert.assertTrue("No payload detected", operation.getPayload().size() > 0);
 
         for(DynamoDBRequest request: operation.getPayload()) {
-            String req = "{\"TableName\":\"test\",\"Key\":{\"artist\":{\"S\":\"Charlie\"}}}";
-            Assert.assertEquals("Invalid stmt.", req, request.getQuery());
-            Assert.assertEquals("Invalid stmt-type.", "delete", request.getQueryType());
+            Map<String, AttributeValue> query = (Map<String, AttributeValue>) request.getQuery().getKey();
+
+            Assert.assertEquals("Invalid table name", "test", request.getQuery().getTableName());
+            Assert.assertNotNull("No such payload detected", query.get("artist"));
+            Assert.assertEquals("Invalid payload value.", "Charlie",query.get("artist").s());
+
+            Assert.assertEquals("Invalid query-type.", "delete", request.getQueryType());
         }
     }
     @Test
@@ -432,9 +414,15 @@ public class DynamodbTest {
         Assert.assertTrue("No payload detected", operation.getPayload().size() > 0);
 
         for(DynamoDBRequest request: operation.getPayload()) {
-            String req = "{\"TableName\":\"test\",\"ProjectionExpression\":\"artist\",\"KeyConditionExpression\":\"artist = :val\",\"ExpressionAttributeValues\":{\":val\":{\"S\":\"Charlie\"}}}";
-            Assert.assertEquals("Invalid stmt.", req, request.getQuery());
-            Assert.assertEquals("Invalid stmt-type.", "read", request.getQueryType());
+            DynamoDBRequest.Query query = request.getQuery();
+
+            Assert.assertEquals("Invalid table name", "test", query.getTableName());
+            Assert.assertEquals("Invalid key condition expression", "artist = :val", query.getKeyConditionExpression());
+            Assert.assertEquals("Invalid projection expression.", "artist", query.getProjectionExpression());
+            Assert.assertEquals("Invalid projection expression.", "Charlie", ((Map<String, AttributeValue>)query.getExpressionAttributeValues()).get(":val").s());
+
+
+            Assert.assertEquals("Invalid query-type.", "read", request.getQueryType());
         }
     }
     @Test
@@ -452,9 +440,12 @@ public class DynamodbTest {
         Assert.assertTrue("No payload detected", operation.getPayload().size() > 0);
 
         for(DynamoDBRequest request: operation.getPayload()) {
-            String req = "{\"TableName\":\"test\",\"ProjectionExpression\":\"artist, Genre\"}";
-            Assert.assertEquals("Invalid stmt.", req, request.getQuery());
-            Assert.assertEquals("Invalid stmt-type.", "read", request.getQueryType());
+            DynamoDBRequest.Query query = request.getQuery();
+
+            Assert.assertEquals("Invalid table name", "test", query.getTableName());
+            Assert.assertEquals("Invalid projection expression.", "artist, Genre", query.getProjectionExpression());
+
+            Assert.assertEquals("Invalid query-type.", "read", request.getQueryType());
         }
     }
     @Test
@@ -472,9 +463,15 @@ public class DynamodbTest {
         Assert.assertTrue("No payload detected", operation.getPayload().size() > 0);
 
         for(DynamoDBRequest request: operation.getPayload()) {
-            String req = "{\"TableName\":\"test\",\"Item\":{\"artist\":{\"S\":\"Charlie\"},\"Genre\":{\"S\":\"Jazz\"}}}";
-            Assert.assertEquals("Invalid stmt.", req, request.getQuery());
-            Assert.assertEquals("Invalid stmt-type.", "write", request.getQueryType());
+            Map<String, AttributeValue> query = (Map<String, AttributeValue>) request.getQuery().getItem();
+
+            Assert.assertEquals("Invalid table name", "test", request.getQuery().getTableName());
+            Assert.assertNotNull("No such payload detected", query.get("artist"));
+            Assert.assertEquals("Invalid payload value.", "Charlie",query.get("artist").s());
+            Assert.assertNotNull("No such payload detected", query.get("Genre"));
+            Assert.assertEquals("Invalid payload value.", "Jazz",query.get("Genre").s());
+
+            Assert.assertEquals("Invalid query-type.", "write", request.getQueryType());
         }
     }
     @Test
@@ -492,9 +489,16 @@ public class DynamodbTest {
         Assert.assertTrue("No payload detected", operation.getPayload().size() > 0);
 
         for(DynamoDBRequest request: operation.getPayload()) {
-            String req = "{\"TableName\":\"test\",\"Key\":{\"artist\":{\"S\":\"Charlie\"}},\"AttributeUpdates\":{\"Genre\":{\"Value\":{\"S\":\"Classic\"}}}}";
-            Assert.assertEquals("Invalid stmt.", req, request.getQuery());
-            Assert.assertEquals("Invalid stmt-type.", "update", request.getQueryType());
+            Map<String, AttributeValue> query = (Map<String, AttributeValue>) request.getQuery().getKey();
+            Map<String, AttributeValueUpdate> attrs = (Map<String, AttributeValueUpdate>) request.getQuery().getAttributeUpdates();
+
+            Assert.assertEquals("Invalid table name", "test", request.getQuery().getTableName());
+            Assert.assertNotNull("No such payload detected", query.get("artist"));
+            Assert.assertEquals("Invalid payload value.", "Charlie",query.get("artist").s());
+            Assert.assertNotNull("No such payload detected", attrs.get("Genre"));
+            Assert.assertEquals("Invalid payload value.", "Classic",attrs.get("Genre").value().s());
+
+            Assert.assertEquals("Invalid query-type.", "update", request.getQueryType());
         }
     }
     private void batchWriteTxn() {
@@ -516,19 +520,7 @@ public class DynamodbTest {
                 .build()
         );
     }
-    private void batchExecuteStmtTxn() {
-        String stmt = "SELECT * FROM test where Genre = ?";
-        client.batchExecuteStatement(
-            BatchExecuteStatementRequest.builder()
-            .statements(
-                BatchStatementRequest.builder()
-                    .statement(stmt)
-                    .parameters(Collections.singletonList(AttributeValue.builder().s("Jazz").build()))
-                    .consistentRead(true)
-                    .build()
-            )
-            .build());
-    }
+
     private void batchGetItemTxn() {
         client.batchGetItem(
                 BatchGetItemRequest
@@ -547,21 +539,15 @@ public class DynamodbTest {
                     .build()
             );
     }
-    private void executeStmtTxn() {
-        String stmt = "SELECT * FROM test where Genre = ?";
-        client.executeStatement(
-            ExecuteStatementRequest.builder()
-                .statement(stmt)
-                .parameters(Collections.singletonList(AttributeValue.builder().s("Jazz").build()))
-                .consistentRead(true)
-                .build());
-    }
+
     private void deleteItemTxn() {
         batchWriteTxn();
         client.deleteItem(
             DeleteItemRequest.builder()
-                .tableName(DynamoUtil.TABLE)
-                .key(DynamoUtil.getKey())
+                    .tableName(DynamoUtil.TABLE)
+                    .key(DynamoUtil.getKey())
+                    .conditionExpression("Genre = :val")
+                    .expressionAttributeValues(Collections.singletonMap(":val", AttributeValue.builder().s("Jazz").build()))
                 .build()
         );
     }
@@ -625,19 +611,7 @@ public class DynamodbTest {
                         .build()
         );
     }
-    private void batchExecuteStmtTxnAsync() {
-        String stmt = "SELECT * FROM test where Genre = ?";
-        asyncClient.batchExecuteStatement(
-                BatchExecuteStatementRequest.builder()
-                        .statements(
-                                BatchStatementRequest.builder()
-                                        .statement(stmt)
-                                        .parameters(Collections.singletonList(AttributeValue.builder().s("Jazz").build()))
-                                        .consistentRead(true)
-                                        .build()
-                        )
-                        .build());
-    }
+
     private void batchGetItemTxnAsync() {
         asyncClient.batchGetItem(
                 BatchGetItemRequest
@@ -656,21 +630,15 @@ public class DynamodbTest {
                         .build()
         );
     }
-    private void executeStmtTxnAsync() {
-        String stmt = "SELECT * FROM test where Genre = ?";
-        asyncClient.executeStatement(
-                ExecuteStatementRequest.builder()
-                        .statement(stmt)
-                        .parameters(Collections.singletonList(AttributeValue.builder().s("Jazz").build()))
-                        .consistentRead(true)
-                        .build());
-    }
+
     private void deleteItemTxnAsync() {
         batchWriteTxnAsync();
         asyncClient.deleteItem(
                 DeleteItemRequest.builder()
                         .tableName(DynamoUtil.TABLE)
                         .key(DynamoUtil.getKey())
+                        .conditionExpression("Genre = :val")
+                        .expressionAttributeValues(Collections.singletonMap(":val", AttributeValue.builder().s("Jazz").build()))
                         .build()
         );
     }
