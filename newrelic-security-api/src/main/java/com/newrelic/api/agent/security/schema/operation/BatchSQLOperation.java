@@ -42,6 +42,12 @@ public class BatchSQLOperation extends AbstractOperation {
         return operations.equals(that.operations);
     }
 
+    public void clearOperation() {
+        if(operations != null && !operations.isEmpty()) {
+            this.operations.clear();
+        }
+    }
+
     @Override
     public int hashCode() {
         return Objects.hash(operations);
