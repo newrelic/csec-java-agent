@@ -43,37 +43,46 @@ on:
       source-ref:
         description: "Specify source-ref/tag/hash"
         required: true
+        type: string
         default: 'main'
       apm-repo:
         description: 'The repo of APM source code to use'
         required: true
+        type: string
         default: 'newrelic/newrelic-java-agent'
       apm-source-ref:
         description: 'The source-ref of APM source code to use'
         required: true
+        type: string
         default: 'k2-integration'
       csec-run-unittest:
         description: 'Whether to run CSEC instrumentation unit tests'
         required: true
+        type: boolean
         default: true
       csec-run-instrumentation-verify:
         description: 'Whether to run CSEC instrumentation verifier'
         required: true
+        type: boolean
         default: true
       is-release:
         description: 'Is this a release run'
         required: true
-        default: 'false'
+        type: boolean
+        default: false
       version-suffix:
         description: 'version suffix to be added, if any'
         default: ''
+        type: string
       slack-notify:
         description: 'Whether to notify build status on slack'
         required: true
+        type: boolean
         default: false
       description:
         description: "A description for the custom jar that will be generated. It will appear in the summary."
         required: true
+        type: string
         default: ''
 
 jobs:
