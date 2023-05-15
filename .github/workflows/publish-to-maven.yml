@@ -33,10 +33,6 @@ on:
       version-suffix:
         description: 'version suffix to be added, if any'
         default: ''
-      description:
-        description: "A description for the custom jar that will be generated. It will appear in the summary."
-        required: true
-        default: ''
 
   workflow_call:
     inputs:
@@ -79,11 +75,6 @@ on:
         required: true
         type: boolean
         default: false
-      description:
-        description: "A description for the custom jar that will be generated. It will appear in the summary."
-        required: true
-        type: string
-        default: ''
 
 jobs:
   publish_to_maven_central:
@@ -143,7 +134,6 @@ jobs:
 
       - name: Set summary
         run: |
-          echo "${{ inputs.description }}" >> $GITHUB_STEP_SUMMARY
           echo "This jar was built from the ref (source-ref/tag/hash): ${{ inputs.source-ref }}." >> $GITHUB_STEP_SUMMARY
 
       - name: Send slack notification
