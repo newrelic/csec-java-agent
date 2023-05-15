@@ -274,6 +274,25 @@ public abstract class Statement_Instrumentation {
         }
     }
 
+    public void clearBatch() throws SQLException {
+        boolean isLockAcquired = acquireLockIfPossible();
+        if(isLockAcquired) {
+            if (batchSQLOperation==null){
+                batchSQLOperation = NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(JdbcHelper.NR_SEC_CUSTOM_ATTRIB_BATCH_SQL_NAME+hashCode(), BatchSQLOperation.class);
+            }
+            if(batchSQLOperation!=null){
+                batchSQLOperation.clearOperation();
+            }
+        }
+        try {
+            Weaver.callOriginal();
+        } finally {
+            if(isLockAcquired){
+                releaseLock();
+            }
+        }
+    }
+
     public int[] executeBatch() throws SQLException {
         boolean isLockAcquired = acquireLockIfPossible();
         AbstractOperation operation = null;

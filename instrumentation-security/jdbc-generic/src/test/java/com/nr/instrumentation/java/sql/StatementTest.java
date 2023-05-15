@@ -6,6 +6,7 @@ import com.newrelic.agent.security.introspec.SecurityIntrospector;
 import com.newrelic.api.agent.Trace;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
+import com.newrelic.api.agent.security.schema.operation.BatchSQLOperation;
 import com.newrelic.api.agent.security.schema.operation.SQLOperation;
 import org.h2.jdbc.JdbcStatement;
 import org.junit.AfterClass;
@@ -60,6 +61,7 @@ public class StatementTest {
         QUERIES.add("INSERT INTO USERS(id, first_name, last_name) VALUES(1, 'john', 'doe')");
         QUERIES.add("select * from USERS");
         QUERIES.add("UPDATE USERS SET last_name='Doe' WHERE id=1");
+        QUERIES.add("UPDATE USERS SET last_name='John' WHERE id=1");
         // set up data in h2
         Statement stmt = CONNECTION.createStatement();
         stmt.execute(QUERIES.get(0));
@@ -206,6 +208,37 @@ public class StatementTest {
         Assert.assertEquals("Invalid executed method name.", "execute", operation.getMethodName());
     }
 
+    @Test
+    public void testExecuteBatch() throws SQLException {
+        executeBatch();
+        SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
+        List<AbstractOperation> operations = introspector.getOperations();
+        Assert.assertTrue("No operations detected", operations.size() > 0);
+
+        BatchSQLOperation operation = (BatchSQLOperation) operations.get(0);
+
+        Assert.assertEquals("Invalid executed parameters.", QUERIES.get(4), operation.getOperations().get(0).getQuery());
+        Assert.assertEquals("Invalid executed parameters.", QUERIES.get(5), operation.getOperations().get(1).getQuery());
+        Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.SQL_DB_COMMAND, operation.getCaseType());
+        Assert.assertEquals("Invalid executed class name.", JdbcStatement.class.getName(), operation.getClassName());
+        Assert.assertEquals("Invalid executed method name.", "executeBatch", operation.getMethodName());
+    }
+
+    @Test
+    public void testClearBatch() throws SQLException {
+        clearBatch();
+        SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
+        List<AbstractOperation> operations = introspector.getOperations();
+        Assert.assertTrue("No operations detected", operations.size() > 0);
+
+        BatchSQLOperation operation = (BatchSQLOperation) operations.get(0);
+
+        Assert.assertEquals("Invalid executed parameters.", QUERIES.get(5), operation.getOperations().get(0).getQuery());
+        Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.SQL_DB_COMMAND, operation.getCaseType());
+        Assert.assertEquals("Invalid executed class name.", JdbcStatement.class.getName(), operation.getClassName());
+        Assert.assertEquals("Invalid executed method name.", "executeBatch", operation.getMethodName());
+    }
+
     @Trace(dispatcher = true)
     private void executeQuery() throws SQLException {
         Statement stmt = CONNECTION.createStatement();
@@ -266,6 +299,25 @@ public class StatementTest {
     private void execute4() throws SQLException {
         Statement stmt = CONNECTION.createStatement();
         stmt.execute(QUERIES.get(3), new int[] { 1, 2 });
+        stmt.close();
+    }
+
+    @Trace(dispatcher = true)
+    private void executeBatch() throws SQLException {
+        Statement stmt = CONNECTION.createStatement();
+        stmt.addBatch(QUERIES.get(4));
+        stmt.addBatch(QUERIES.get(5));
+        stmt.executeBatch();
+        stmt.close();
+    }
+
+    @Trace(dispatcher = true)
+    private void clearBatch() throws SQLException {
+        Statement stmt = CONNECTION.createStatement();
+        stmt.addBatch(QUERIES.get(4));
+        stmt.clearBatch();
+        stmt.addBatch(QUERIES.get(5));
+        stmt.executeBatch();
         stmt.close();
     }
 }
