@@ -1,4 +1,4 @@
-name: Create Integrated Agent jar
+name: Publishes CSEC artifacts to Sonatype repos
 on:
   workflow_dispatch:
     inputs:
@@ -31,13 +31,9 @@ on:
         required: true
         default: 'test'
 
-permissions:
-  id-token: write # This is required for requesting the JWT
-  contents: read  # This is required for actions/checkout
-
 jobs:
-  create_integrated_jar:
-    name: Create Integrated Agent jar
+  publish_to_maven_central:
+    name: Publish artifacts to Sonatype repos
     runs-on: ubuntu-20.04
     steps:
 
@@ -68,15 +64,6 @@ jobs:
             printf "${RED}Version of APM API used by CSEC: ${CSEC_CONFIGURED_APM_VERSION} ${NONE}\n"
             exit 1
           fi
-          
-          if [[ "${SECURITY_VERSION}" != "${APM_CONFIGURED_CSEC_VERSION}" ]]
-          then
-            printf "${RED}Version mismatch regarding Security: ${NONE}\n"
-            printf "${RED}Version of CSEC to build: ${SECURITY_VERSION} ${NONE}\n"
-            printf "${RED}Version of CSEC API used by APM: ${APM_CONFIGURED_CSEC_VERSION} ${NONE}\n"
-            exit 2
-          fi
-
       - name: Publish CSEC to local
         uses: ./.github/actions/publish-csec-local
 
@@ -88,8 +75,11 @@ jobs:
         if: ${{ inputs.csec-run-instrumentation-verify == 'true' }}
         uses: ./.github/actions/verify-instrumentation
 
-      - name: Build Integrated Agent Jar
-        uses: ./.github/actions/build-apm-jar
+      - name: Publish CSEC to central
+        uses: ./.github/actions/publish-csec
+        with:
+          sonatype-username: ${{ secrets.SONATYPE_USERNAME }}
+          sonatype-password: ${{ secrets.SONATYPE_PASSWORD }}
 
       - name: Set summary
         run: |
@@ -102,7 +92,7 @@ jobs:
         with:
           payload: |
             { 
-              "task": "Integrated jar build",
+              "task": "Publishing to Maven",
               "job-ref": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}",
               "build-number": "${{ github.run_id }}-${{ github.run_number }}",
               "apm-full-ref": "${{ github.server_url }}/${{ inputs.apm-repo }}/tree/${{ inputs.apm-source-ref }}",
@@ -114,7 +104,7 @@ jobs:
               "security-json-version": "${{ env.SECURITY_JSON_VERSION }}",
               "changelog-url": "${{ github.server_url }}/${{ github.repository }}/blob/${{ inputs.source-ref }}/Changelog.md",
               "custom-message": "${{ inputs.description }}",
-              "artifact-download-link": "https://nr-java-sec-agent.s3.us-west-2.amazonaws.com/integrated-builds/${{ github.run_id }}-${{ github.run_number }}/newrelic.zip"
+              "artifact-download-link": "N/A"
             }
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}

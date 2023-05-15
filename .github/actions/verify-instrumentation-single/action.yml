@@ -10,4 +10,6 @@ runs:
   steps:
     - name: Run instrumentation unit tests
       shell: bash
-      run: ./gradlew $GRADLE_OPTIONS :instrumentation:${{ inputs.apm-branch }}:verifyInstrumentation
+      run: ./gradlew $GRADLE_OPTIONS :instrumentation:${{ inputs.apm-branch }}:verifyInstrumentation --parallel
+      env:
+        JAVA_HOME: ${{ env.JAVA_HOME_17_X64 }}

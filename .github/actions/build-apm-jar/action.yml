@@ -5,16 +5,31 @@ runs:
   using: composite
 
   steps:
-    - name: Build APM agent
+    - name: Build APM agent zip
       shell: bash
       run: |
         cd newrelic-java-agent 
-        ./gradlew $GRADLE_OPTIONS clean jar
+        ./gradlew $GRADLE_OPTIONS dist --parallel 
         cd ..
 
     - name: Capture custom jar
       uses: actions/upload-artifact@v3
       with:
-        name: custom-newrelic-jar
+        name: newrelic-artifact
         path: |
-          newrelic-java-agent/newrelic-agent/build/newrelicJar/newrelic.jar
+          newrelic-java-agent/newrelic-java/build/zips/newrelic.zip
+
+    - name: configure aws credentials
+      uses: aws-actions/configure-aws-credentials@v2
+      with:
+        role-to-assume: arn:aws:iam::280901927509:role/github-actions/repo
+        aws-region: us-east-2
+
+    - name: Copy final integrated agent artifact to S3
+      shell: bash
+      run: |
+        aws s3 cp newrelic-java-agent/newrelic-java/build/zips/newrelic.zip s3://nr-java-sec-agent/integrated-builds/${{ github.run_id }}-${{ github.run_number }}/newrelic.zip
+        if [ $? -ne 0 ]; then
+          echo "Agent zip upload failed." >> $GITHUB_STEP_SUMMARY
+          #exit 1
+        fi
