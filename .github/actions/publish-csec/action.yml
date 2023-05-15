@@ -16,7 +16,7 @@ runs:
   steps:
     - name: Publish CSEC agent API locally
       shell: bash
-      run: ./gradlew $GRADLE_OPTIONS :newrelic-security-api:publish -PbuildNumber=${{ github.run_id }} -PcommitId=${{ github.sha }} --parallel
+      run: ./gradlew ${GRADLE_OPTIONS} :newrelic-security-api:publish -PbuildNumber=${{ github.run_id }}-${{ github.run_number }} -PcommitId=${{ github.sha }} --parallel
       env:
         SONATYPE_USERNAME: ${{ inputs.sonatype-username }}
         SONATYPE_PASSWORD: ${{ inputs.sonatype-password }}
@@ -26,7 +26,7 @@ runs:
 
     - name: Publish CSEC agent locally
       shell: bash
-      run: ./gradlew $GRADLE_OPTIONS publish -PbuildNumber=${{ github.run_id }} -PcommitId=${{ github.sha }} --parallel
+      run: ./gradlew ${GRADLE_OPTIONS} publish -PbuildNumber=${{ github.run_id }}-${{ github.run_number }} -PcommitId=${{ github.sha }} --parallel
       env:
         SONATYPE_USERNAME: ${{ inputs.sonatype-username }}
         SONATYPE_PASSWORD: ${{ inputs.sonatype-password }}

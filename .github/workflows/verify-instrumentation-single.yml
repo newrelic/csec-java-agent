@@ -1,0 +1,84 @@
+name: CSEC Single Instrumentation verification
+on:
+  workflow_call:
+    inputs:
+      source-ref:
+        description: "Specify source-ref/tag/hash"
+        required: true
+        type: string
+        default: 'main'
+      apm-repo:
+        description: 'The repo of APM source code to use'
+        required: true
+        type: string
+        default: 'newrelic/newrelic-java-agent'
+      apm-source-ref:
+        description: 'The source-ref of APM source code to use'
+        required: true
+        type: string
+        default: 'k2-integration'
+      module-name:
+        description: 'Instrumentation module name to test'
+        required: true
+        type: string
+        default: ''
+
+  workflow_dispatch:
+    inputs:
+      source-ref:
+        description: "Specify source-ref/tag/hash"
+        required: true
+        default: 'main'
+      apm-repo:
+        description: 'The repo of APM source code to use'
+        required: true
+        default: 'newrelic/newrelic-java-agent'
+      apm-source-ref:
+        description: 'The source-ref of APM source code to use'
+        required: true
+        default: 'k2-integration'
+      module-name:
+        description: 'Instrumentation module name to test'
+        required: true
+        default: ''
+
+jobs:
+  verify_instrumentation_single:
+    name: Verify Instrumentation Single
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Print Inputs
+        run: echo "${{ toJSON(github.event.inputs) }}"
+
+      - name: Checkout CSEC Java agent
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ inputs.source-ref }}
+
+      - name: Setup environment
+        uses: ./.github/actions/setup-environment
+        with:
+          apm-repo: ${{ inputs.apm-repo }}
+          apm-branch: ${{ inputs.apm-source-ref }}
+          apm-aws-access-key-id: ${{ secrets.APM_AWS_ACCESS_KEY_ID }}
+          apm-aws-secret-access-key: ${{ secrets.APM_AWS_SECRET_ACCESS_KEY }}
+          apm-aws-region: us-east-2
+
+      - name: Check version compatibility
+        shell: bash
+        run: |
+          APM_CONFIGURED_CSEC_VERSION=$(./gradlew ${GRADLE_OPTIONS} -p newrelic-java-agent/ properties | grep 'csecCollectorVersion:' | awk -F': ' '{print $2}')
+          CSEC_CONFIGURED_APM_VERSION=$(./gradlew ${GRADLE_OPTIONS} properties | grep 'nrAPIVersion:' | awk -F': ' '{print $2}')
+          
+          if [[ "${APM_VERSION}" != "${CSEC_CONFIGURED_APM_VERSION}" ]]
+          then
+            printf "${RED}Version mismatch regarding APM: ${NONE}\n"
+            printf "${RED}Version of APM to build: ${APM_VERSION} ${NONE}\n"
+            printf "${RED}Version of APM API used by CSEC: ${CSEC_CONFIGURED_APM_VERSION} ${NONE}\n"
+            exit 1
+          fi
+
+      - name: Verify CSEC instrumentation
+        uses: ./.github/actions/verify-instrumentation-single
+        with:
+          module-name: ${{ inputs.module-name }}

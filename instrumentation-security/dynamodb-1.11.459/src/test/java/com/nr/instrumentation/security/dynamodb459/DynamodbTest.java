@@ -48,13 +48,15 @@ public class DynamodbTest {
         Assert.assertTrue("No payload detected", operation.getPayload().size() > 0);
 
         for(DynamoDBRequest request: operation.getPayload()) {
-            PutRequest query = (PutRequest)request.getQuery();
-            Assert.assertNotNull("No such payload detected", query.getItem().get("artist"));
-            Assert.assertEquals("Invalid payload value.", "Charlie",query.getItem().get("artist").getS());
-            Assert.assertNotNull("No such payload detected", query.getItem().get("year"));
-            Assert.assertEquals("Invalid payload value.", "2000", query.getItem().get("year").getN());
-            Assert.assertNotNull("No such payload detected", query.getItem().get("Genre"));
-            Assert.assertEquals("Invalid payload value.", "Jazz", query.getItem().get("Genre").getS());
+            Map<String, AttributeValue> query = (Map<String, AttributeValue>) request.getQuery().getItem();
+
+            Assert.assertNotNull("No such payload detected", query.get("artist"));
+            Assert.assertEquals("Invalid payload value.", "Charlie",query.get("artist").getS());
+            Assert.assertNotNull("No such payload detected", query.get("year"));
+            Assert.assertEquals("Invalid payload value.", "2000", query.get("year").getN());
+            Assert.assertNotNull("No such payload detected", query.get("Genre"));
+            Assert.assertEquals("Invalid payload value.", "Jazz",query.get("Genre").getS());
+
             Assert.assertEquals("Invalid query-type.", "write", request.getQueryType());
         }
     }
@@ -72,13 +74,15 @@ public class DynamodbTest {
         Assert.assertEquals("Invalid operation category.", DynamoDBOperation.Category.DQL, operation.getCategory());
 
         for(DynamoDBRequest request: operation.getPayload()) {
-            PutRequest query = (PutRequest)request.getQuery();
-            Assert.assertNotNull("No such payload detected", query.getItem().get("artist"));
-            Assert.assertEquals("Invalid payload value.", "Charlie",query.getItem().get("artist").getS());
-            Assert.assertNotNull("No such payload detected", query.getItem().get("year"));
-            Assert.assertEquals("Invalid payload value.", "2000", query.getItem().get("year").getN());
-            Assert.assertNotNull("No such payload detected", query.getItem().get("Genre"));
-            Assert.assertEquals("Invalid payload value.", "Jazz", query.getItem().get("Genre").getS());
+            Map<String, AttributeValue> query = (Map<String, AttributeValue>) request.getQuery().getItem();
+
+            Assert.assertNotNull("No such payload detected", query.get("artist"));
+            Assert.assertEquals("Invalid payload value.", "Charlie",query.get("artist").getS());
+            Assert.assertNotNull("No such payload detected", query.get("year"));
+            Assert.assertEquals("Invalid payload value.", "2000", query.get("year").getN());
+            Assert.assertNotNull("No such payload detected", query.get("Genre"));
+            Assert.assertEquals("Invalid payload value.", "Jazz",query.get("Genre").getS());
+
             Assert.assertEquals("Invalid query-type.", "write", request.getQueryType());
         }
     }
@@ -104,8 +108,7 @@ public class DynamodbTest {
         Assert.assertEquals("Invalid operation category.", DynamoDBOperation.Category.DQL, operation.getCategory());
 
         for(DynamoDBRequest request: operation.getPayload()) {
-            KeysAndAttributes attributes = (KeysAndAttributes) request.getQuery();
-            List<Map<String, AttributeValue>> keys = attributes.getKeys();
+            List<Map<String, AttributeValue>> keys = (List<Map<String, AttributeValue>>) request.getQuery().getKey();
 
             Assert.assertTrue("No keys detected", keys.size() > 0);
             Assert.assertNotNull("No such payload detected", keys.get(0).get("artist"));
@@ -113,8 +116,7 @@ public class DynamodbTest {
             Assert.assertNotNull("No such payload detected", keys.get(0).get("year"));
             Assert.assertEquals("Invalid payload value.", "2000", keys.get(0).get("year").getN());
 
-            Assert.assertEquals("Invalid projection expression.", "artist, Genre", attributes.getProjectionExpression());
-            Assert.assertFalse("read consistency should be false", attributes.getConsistentRead());
+            Assert.assertEquals("Invalid projection expression.", "artist, Genre", request.getQuery().getProjectionExpression());
             Assert.assertEquals("Invalid query-type.", "read", request.getQueryType());
         }
     }
@@ -132,8 +134,7 @@ public class DynamodbTest {
         Assert.assertEquals("Invalid operation category.", DynamoDBOperation.Category.DQL, operation.getCategory());
 
         for(DynamoDBRequest request: operation.getPayload()) {
-            KeysAndAttributes attributes = (KeysAndAttributes) request.getQuery();
-            List<Map<String, AttributeValue>> keys = attributes.getKeys();
+            List<Map<String, AttributeValue>> keys = (List<Map<String, AttributeValue>>) request.getQuery().getKey();
 
             Assert.assertTrue("No keys detected", keys.size() > 0);
             Assert.assertNotNull("No such payload detected", keys.get(0).get("artist"));
@@ -141,8 +142,7 @@ public class DynamodbTest {
             Assert.assertNotNull("No such payload detected", keys.get(0).get("year"));
             Assert.assertEquals("Invalid payload value.", "2000", keys.get(0).get("year").getN());
 
-            Assert.assertEquals("Invalid projection expression.", "artist, Genre", attributes.getProjectionExpression());
-            Assert.assertFalse("read consistency should be false", attributes.getConsistentRead());
+            Assert.assertEquals("Invalid projection expression.", "artist, Genre", request.getQuery().getProjectionExpression());
             Assert.assertEquals("Invalid query-type.", "read", request.getQueryType());
         }
     }
@@ -176,19 +176,19 @@ public class DynamodbTest {
         Assert.assertEquals("Invalid operation category.", DynamoDBOperation.Category.DQL, operation.getCategory());
 
         for(DynamoDBRequest request: operation.getPayload()) {
-            DeleteItemRequest query = (DeleteItemRequest) request.getQuery();
-            Assert.assertEquals("No such payload detected", "test", query.getTableName());
-            Assert.assertTrue("No keys detected", query.getKey().size() > 0);
+            Map<String, AttributeValue> keys = (Map<String, AttributeValue>) request.getQuery().getKey();
+            Assert.assertEquals("No such payload detected", "test", request.getQuery().getTableName());
+            Assert.assertTrue("No keys detected", keys.size() > 0);
 
-            Assert.assertNotNull("No such keys detected", query.getKey().get("artist"));
-            Assert.assertEquals("Invalid payload value.", "Charlie",query.getKey().get("artist").getS());
-            Assert.assertNotNull("No such keys detected", query.getKey().get("year"));
-            Assert.assertEquals("Invalid payload value.", "2000",query.getKey().get("year").getN());
+            Assert.assertNotNull("No such keys detected", keys.get("artist"));
+            Assert.assertEquals("Invalid payload value.", "Charlie",keys.get("artist").getS());
+            Assert.assertNotNull("No such keys detected", keys.get("year"));
+            Assert.assertEquals("Invalid payload value.", "2000",keys.get("year").getN());
 
-            Assert.assertEquals("Invalid Condition-Expression.", "Genre = :val", query.getConditionExpression());
-            Assert.assertNotNull("No Expression-AttributeValues detected.", query.getExpressionAttributeValues());
-            Assert.assertNotNull("No such Attribute-value detected.", query.getExpressionAttributeValues().get(":val"));
-            Assert.assertEquals("No such Attribute-value detected.", "Jazz", query.getExpressionAttributeValues().get(":val").getS());
+            Assert.assertEquals("Invalid Condition-Expression.", "Genre = :val", request.getQuery().getConditionExpression());
+            Assert.assertNotNull("No Expression-AttributeValues detected.", request.getQuery().getExpressionAttributeValues());
+            Assert.assertNotNull("No such Attribute-value detected.", ((Map<String, AttributeValue>)request.getQuery().getExpressionAttributeValues()).get(":val"));
+            Assert.assertEquals("No such Attribute-value detected.", "Jazz", ((Map<String, AttributeValue>)request.getQuery().getExpressionAttributeValues()).get(":val").getS());
             Assert.assertEquals("Invalid query-type.", "delete", request.getQueryType());
         }
     }
@@ -211,19 +211,19 @@ public class DynamodbTest {
         Assert.assertEquals("Invalid operation category.", DynamoDBOperation.Category.DQL, operation.getCategory());
 
         for(DynamoDBRequest request: operation.getPayload()) {
-            DeleteItemRequest query = (DeleteItemRequest) request.getQuery();
-            Assert.assertEquals("No such payload detected", "test", query.getTableName());
-            Assert.assertTrue("No keys detected", query.getKey().size() > 0);
+            Map<String, AttributeValue> keys = (Map<String, AttributeValue>) request.getQuery().getKey();
+            Assert.assertEquals("No such payload detected", "test", request.getQuery().getTableName());
+            Assert.assertTrue("No keys detected", keys.size() > 0);
 
-            Assert.assertNotNull("No such keys detected", query.getKey().get("artist"));
-            Assert.assertEquals("Invalid payload value.", "Charlie",query.getKey().get("artist").getS());
-            Assert.assertNotNull("No such keys detected", query.getKey().get("year"));
-            Assert.assertEquals("Invalid payload value.", "2000",query.getKey().get("year").getN());
+            Assert.assertNotNull("No such keys detected", keys.get("artist"));
+            Assert.assertEquals("Invalid payload value.", "Charlie",keys.get("artist").getS());
+            Assert.assertNotNull("No such keys detected", keys.get("year"));
+            Assert.assertEquals("Invalid payload value.", "2000",keys.get("year").getN());
 
-            Assert.assertEquals("Invalid Condition-Expression.", "Genre = :val", query.getConditionExpression());
-            Assert.assertNotNull("No Expression-AttributeValues detected.", query.getExpressionAttributeValues());
-            Assert.assertNotNull("No such Attribute-value detected.", query.getExpressionAttributeValues().get(":val"));
-            Assert.assertEquals("No such Attribute-value detected.", "Jazz", query.getExpressionAttributeValues().get(":val").getS());
+            Assert.assertEquals("Invalid Condition-Expression.", "Genre = :val", request.getQuery().getConditionExpression());
+            Assert.assertNotNull("No Expression-AttributeValues detected.", request.getQuery().getExpressionAttributeValues());
+            Assert.assertNotNull("No such Attribute-value detected.", ((Map<String, AttributeValue>)request.getQuery().getExpressionAttributeValues()).get(":val"));
+            Assert.assertEquals("No such Attribute-value detected.", "Jazz", ((Map<String, AttributeValue>)request.getQuery().getExpressionAttributeValues()).get(":val").getS());
             Assert.assertEquals("Invalid query-type.", "delete", request.getQueryType());
         }
     }
@@ -246,16 +246,16 @@ public class DynamodbTest {
         Assert.assertEquals("Invalid operation category.", DynamoDBOperation.Category.DQL, operation.getCategory());
 
         for(DynamoDBRequest request: operation.getPayload()) {
-            DeleteItemRequest query = (DeleteItemRequest) request.getQuery();
-            Assert.assertEquals("No such payload detected", "test", query.getTableName());
-            Assert.assertTrue("No keys detected", query.getKey().size() > 0);
+            Map<String, AttributeValue> keys = (Map<String, AttributeValue>) request.getQuery().getKey();
+            Assert.assertEquals("No such payload detected", "test", request.getQuery().getTableName());
+            Assert.assertTrue("No keys detected", keys.size() > 0);
 
-            Assert.assertNotNull("No such keys detected", query.getKey().get("artist"));
-            Assert.assertEquals("Invalid payload value.", "Charlie",query.getKey().get("artist").getS());
-            Assert.assertNotNull("No such keys detected", query.getKey().get("year"));
-            Assert.assertEquals("Invalid payload value.", "2000",query.getKey().get("year").getN());
+            Assert.assertNotNull("No such keys detected", keys.get("artist"));
+            Assert.assertEquals("Invalid payload value.", "Charlie",keys.get("artist").getS());
+            Assert.assertNotNull("No such keys detected", keys.get("year"));
+            Assert.assertEquals("Invalid payload value.", "2000",keys.get("year").getN());
 
-            Assert.assertEquals("Invalid Condition-Expression.", "attribute_exists(#0)", query.getConditionExpression());
+            Assert.assertEquals("Invalid Condition-Expression.", "attribute_exists(#0)", request.getQuery().getConditionExpression());
             Assert.assertEquals("Invalid query-type.", "delete", request.getQueryType());
         }
     }
@@ -278,19 +278,19 @@ public class DynamodbTest {
         Assert.assertEquals("Invalid operation category.", DynamoDBOperation.Category.DQL, operation.getCategory());
 
         for(DynamoDBRequest request: operation.getPayload()) {
-            DeleteItemRequest query = (DeleteItemRequest) request.getQuery();
-            Assert.assertEquals("No such payload detected", "test", query.getTableName());
-            Assert.assertTrue("No keys detected", query.getKey().size() > 0);
+            Map<String, AttributeValue> keys = (Map<String, AttributeValue>) request.getQuery().getKey();
+            Assert.assertEquals("No such payload detected", "test", request.getQuery().getTableName());
+            Assert.assertTrue("No keys detected", keys.size() > 0);
 
-            Assert.assertNotNull("No such keys detected", query.getKey().get("artist"));
-            Assert.assertEquals("Invalid payload value.", "Charlie",query.getKey().get("artist").getS());
-            Assert.assertNotNull("No such keys detected", query.getKey().get("year"));
-            Assert.assertEquals("Invalid payload value.", "2000",query.getKey().get("year").getN());
+            Assert.assertNotNull("No such keys detected", keys.get("artist"));
+            Assert.assertEquals("Invalid payload value.", "Charlie",keys.get("artist").getS());
+            Assert.assertNotNull("No such keys detected", keys.get("year"));
+            Assert.assertEquals("Invalid payload value.", "2000",keys.get("year").getN());
 
-            Assert.assertEquals("Invalid Condition-Expression.", "Genre = :val", query.getConditionExpression());
-            Assert.assertNotNull("No Expression-AttributeValues detected.", query.getExpressionAttributeValues());
-            Assert.assertNotNull("No such Attribute-value detected.", query.getExpressionAttributeValues().get(":val"));
-            Assert.assertEquals("No such Attribute-value detected.", "Jazz", query.getExpressionAttributeValues().get(":val").getS());
+            Assert.assertEquals("Invalid Condition-Expression.", "Genre = :val", request.getQuery().getConditionExpression());
+            Assert.assertNotNull("No Expression-AttributeValues detected.", request.getQuery().getExpressionAttributeValues());
+            Assert.assertNotNull("No such Attribute-value detected.", ((Map<String, AttributeValue>)request.getQuery().getExpressionAttributeValues()).get(":val"));
+            Assert.assertEquals("No such Attribute-value detected.", "Jazz", ((Map<String, AttributeValue>)request.getQuery().getExpressionAttributeValues()).get(":val").getS());
             Assert.assertEquals("Invalid query-type.", "delete", request.getQueryType());
         }
     }
@@ -313,16 +313,16 @@ public class DynamodbTest {
         Assert.assertEquals("Invalid operation category.", DynamoDBOperation.Category.DQL, operation.getCategory());
 
         for(DynamoDBRequest request: operation.getPayload()) {
-            DeleteItemRequest query = (DeleteItemRequest) request.getQuery();
-            Assert.assertEquals("No such payload detected", "test", query.getTableName());
-            Assert.assertTrue("No keys detected", query.getKey().size() > 0);
+            Map<String, AttributeValue> keys = (Map<String, AttributeValue>) request.getQuery().getKey();
+            Assert.assertEquals("No such payload detected", "test", request.getQuery().getTableName());
+            Assert.assertTrue("No keys detected", keys.size() > 0);
 
-            Assert.assertNotNull("No such keys detected", query.getKey().get("artist"));
-            Assert.assertEquals("Invalid payload value.", "Charlie",query.getKey().get("artist").getS());
-            Assert.assertNotNull("No such keys detected", query.getKey().get("year"));
-            Assert.assertEquals("Invalid payload value.", "2000",query.getKey().get("year").getN());
+            Assert.assertNotNull("No such keys detected", keys.get("artist"));
+            Assert.assertEquals("Invalid payload value.", "Charlie",keys.get("artist").getS());
+            Assert.assertNotNull("No such keys detected", keys.get("year"));
+            Assert.assertEquals("Invalid payload value.", "2000",keys.get("year").getN());
 
-            Assert.assertEquals("Invalid Condition-Expression.", "attribute_exists(#0)", query.getConditionExpression());
+            Assert.assertEquals("Invalid Condition-Expression.", "attribute_exists(#0)", request.getQuery().getConditionExpression());
             Assert.assertEquals("Invalid query-type.", "delete", request.getQueryType());
         }
     }
@@ -340,14 +340,13 @@ public class DynamodbTest {
         Assert.assertEquals("Invalid operation category.", DynamoDBOperation.Category.DQL, operation.getCategory());
 
         for(DynamoDBRequest request: operation.getPayload()) {
-            QueryRequest query = (QueryRequest) request.getQuery();
+            DynamoDBRequest.Query query = request.getQuery();
             Assert.assertEquals("No such payload detected", "test", query.getTableName());
-            Assert.assertTrue("read consistency should be true", query.getConsistentRead());
 
             Assert.assertEquals("Invalid Condition-Expression.", "artist = :val", query.getKeyConditionExpression());
             Assert.assertNotNull("No Expression-AttributeValues detected.", query.getExpressionAttributeValues());
-            Assert.assertNotNull("No such Attribute-value detected.", query.getExpressionAttributeValues().get(":val"));
-            Assert.assertEquals("No such Attribute-value detected.", "Charlie", query.getExpressionAttributeValues().get(":val").getS());
+            Assert.assertNotNull("No such Attribute-value detected.", ((Map<String, AttributeValue>)query.getExpressionAttributeValues()).get(":val"));
+            Assert.assertEquals("No such Attribute-value detected.", "Charlie", ((Map<String, AttributeValue>)query.getExpressionAttributeValues()).get(":val").getS());
             Assert.assertEquals("Invalid query-type.", "read", request.getQueryType());
         }
     }
@@ -364,14 +363,13 @@ public class DynamodbTest {
         Assert.assertEquals("Invalid operation category.", DynamoDBOperation.Category.DQL, operation.getCategory());
 
         for(DynamoDBRequest request: operation.getPayload()) {
-            QueryRequest query = (QueryRequest) request.getQuery();
+            DynamoDBRequest.Query query = request.getQuery();
             Assert.assertEquals("No such payload detected", "test", query.getTableName());
-            Assert.assertTrue("read consistency should be true", query.getConsistentRead());
 
             Assert.assertEquals("Invalid Condition-Expression.", "artist = :val", query.getKeyConditionExpression());
             Assert.assertNotNull("No Expression-AttributeValues detected.", query.getExpressionAttributeValues());
-            Assert.assertNotNull("No such Attribute-value detected.", query.getExpressionAttributeValues().get(":val"));
-            Assert.assertEquals("No such Attribute-value detected.", "Charlie", query.getExpressionAttributeValues().get(":val").getS());
+            Assert.assertNotNull("No such Attribute-value detected.", ((Map<String, AttributeValue>)query.getExpressionAttributeValues()).get(":val"));
+            Assert.assertEquals("No such Attribute-value detected.", "Charlie", ((Map<String, AttributeValue>)query.getExpressionAttributeValues()).get(":val").getS());
             Assert.assertEquals("Invalid query-type.", "read", request.getQueryType());
         }
     }
@@ -388,14 +386,13 @@ public class DynamodbTest {
         Assert.assertEquals("Invalid operation category.", DynamoDBOperation.Category.DQL, operation.getCategory());
 
         for(DynamoDBRequest request: operation.getPayload()) {
-            QueryRequest query = (QueryRequest) request.getQuery();
+            DynamoDBRequest.Query query = request.getQuery();
             Assert.assertEquals("No such payload detected", "test", query.getTableName());
-            Assert.assertTrue("read consistency should be true", query.getConsistentRead());
 
             Assert.assertEquals("Invalid Condition-Expression.", "artist = :val", query.getKeyConditionExpression());
             Assert.assertNotNull("No Expression-AttributeValues detected.", query.getExpressionAttributeValues());
-            Assert.assertNotNull("No such Attribute-value detected.", query.getExpressionAttributeValues().get(":val"));
-            Assert.assertEquals("No such Attribute-value detected.", "Charlie", query.getExpressionAttributeValues().get(":val").getS());
+            Assert.assertNotNull("No such Attribute-value detected.", ((Map<String, AttributeValue>)query.getExpressionAttributeValues()).get(":val"));
+            Assert.assertEquals("No such Attribute-value detected.", "Charlie", ((Map<String, AttributeValue>)query.getExpressionAttributeValues()).get(":val").getS());
             Assert.assertEquals("Invalid query-type.", "read", request.getQueryType());
         }
     }
@@ -420,18 +417,16 @@ public class DynamodbTest {
         Assert.assertEquals("Invalid operation category.", DynamoDBOperation.Category.DQL, operation.getCategory());
 
         for(DynamoDBRequest request: operation.getPayload()) {
-            GetItemRequest query = (GetItemRequest) request.getQuery();
-            Assert.assertEquals("No such payload detected", "test", query.getTableName());
-            Assert.assertTrue("read consistency should be true", query.getConsistentRead());
+            Map<String, AttributeValue> keys = (Map<String, AttributeValue>) request.getQuery().getKey();
+            Assert.assertEquals("No such payload detected", "test", request.getQuery().getTableName());
 
-            Map<String, AttributeValue> keys = query.getKey();
             Assert.assertTrue("No keys detected", keys.size() > 0);
             Assert.assertNotNull("No such payload detected", keys.get("artist"));
             Assert.assertEquals("Invalid payload value.", "Charlie", keys.get("artist").getS());
             Assert.assertNotNull("No such payload detected", keys.get("year"));
             Assert.assertEquals("Invalid payload value.", "2000", keys.get("year").getN());
 
-            Assert.assertEquals("Invalid projection expression.", "artist, Genre", query.getProjectionExpression());
+            Assert.assertEquals("Invalid projection expression.", "artist, Genre", request.getQuery().getProjectionExpression());
             Assert.assertEquals("Invalid query-type.", "read", request.getQueryType());
         }
     }
@@ -448,18 +443,17 @@ public class DynamodbTest {
         Assert.assertEquals("Invalid operation category.", DynamoDBOperation.Category.DQL, operation.getCategory());
 
         for(DynamoDBRequest request: operation.getPayload()) {
-            GetItemRequest query = (GetItemRequest) request.getQuery();
-            Assert.assertEquals("No such payload detected", "test", query.getTableName());
+            Map<String, AttributeValue> keys = (Map<String, AttributeValue>) request.getQuery().getKey();
+            Assert.assertEquals("No such payload detected", "test", request.getQuery().getTableName());
 
-            Map<String, AttributeValue> keys = query.getKey();
             Assert.assertTrue("No keys detected", keys.size() > 0);
             Assert.assertNotNull("No such payload detected", keys.get("artist"));
             Assert.assertEquals("Invalid payload value.", "Charlie", keys.get("artist").getS());
             Assert.assertNotNull("No such payload detected", keys.get("year"));
             Assert.assertEquals("Invalid payload value.", "2000", keys.get("year").getN());
 
-            Assert.assertEquals("Invalid projection expression.", "#0", query.getProjectionExpression());
-            Assert.assertEquals("Invalid projection expression.", "artist, Genre", query.getExpressionAttributeNames().get("#0"));
+            Assert.assertEquals("Invalid projection expression.", "#0", request.getQuery().getProjectionExpression());
+            Assert.assertEquals("Invalid projection expression.", "artist, Genre", ((Map<String, AttributeValue>)request.getQuery().getExpressionAttributeNames()).get("#0"));
             Assert.assertEquals("Invalid query-type.", "read", request.getQueryType());
         }
     }
@@ -476,18 +470,16 @@ public class DynamodbTest {
         Assert.assertEquals("Invalid operation category.", DynamoDBOperation.Category.DQL, operation.getCategory());
 
         for(DynamoDBRequest request: operation.getPayload()) {
-            GetItemRequest query = (GetItemRequest) request.getQuery();
-            Assert.assertEquals("No such payload detected", "test", query.getTableName());
-            Assert.assertTrue("read consistency should be true", query.getConsistentRead());
+            Map<String, AttributeValue> keys = (Map<String, AttributeValue>) request.getQuery().getKey();
+            Assert.assertEquals("No such payload detected", "test", request.getQuery().getTableName());
 
-            Map<String, AttributeValue> keys = query.getKey();
             Assert.assertTrue("No keys detected", keys.size() > 0);
             Assert.assertNotNull("No such payload detected", keys.get("artist"));
             Assert.assertEquals("Invalid payload value.", "Charlie", keys.get("artist").getS());
             Assert.assertNotNull("No such payload detected", keys.get("year"));
             Assert.assertEquals("Invalid payload value.", "2000", keys.get("year").getN());
 
-            Assert.assertEquals("Invalid projection expression.", "artist, Genre", query.getProjectionExpression());
+            Assert.assertEquals("Invalid projection expression.", "artist, Genre", request.getQuery().getProjectionExpression());
             Assert.assertEquals("Invalid query-type.", "read", request.getQueryType());
         }
     }
@@ -504,18 +496,17 @@ public class DynamodbTest {
         Assert.assertEquals("Invalid operation category.", DynamoDBOperation.Category.DQL, operation.getCategory());
 
         for(DynamoDBRequest request: operation.getPayload()) {
-            GetItemRequest query = (GetItemRequest) request.getQuery();
-            Assert.assertEquals("No such payload detected", "test", query.getTableName());
+            Map<String, AttributeValue> keys = (Map<String, AttributeValue>) request.getQuery().getKey();
+            Assert.assertEquals("No such payload detected", "test", request.getQuery().getTableName());
 
-            Map<String, AttributeValue> keys = query.getKey();
             Assert.assertTrue("No keys detected", keys.size() > 0);
             Assert.assertNotNull("No such payload detected", keys.get("artist"));
             Assert.assertEquals("Invalid payload value.", "Charlie", keys.get("artist").getS());
             Assert.assertNotNull("No such payload detected", keys.get("year"));
             Assert.assertEquals("Invalid payload value.", "2000", keys.get("year").getN());
 
-            Assert.assertEquals("Invalid projection expression.", "#0", query.getProjectionExpression());
-            Assert.assertEquals("Invalid projection expression.", "artist, Genre", query.getExpressionAttributeNames().get("#0"));
+            Assert.assertEquals("Invalid projection expression.", "#0", request.getQuery().getProjectionExpression());
+            Assert.assertEquals("Invalid projection expression.", "artist, Genre", ((Map<String, AttributeValue>)request.getQuery().getExpressionAttributeNames()).get("#0"));
             Assert.assertEquals("Invalid query-type.", "read", request.getQueryType());
         }
     }
@@ -533,10 +524,9 @@ public class DynamodbTest {
         Assert.assertEquals("Invalid operation category.", DynamoDBOperation.Category.DQL, operation.getCategory());
 
         for(DynamoDBRequest request: operation.getPayload()) {
-            PutItemRequest query = (PutItemRequest) request.getQuery();
-            Assert.assertEquals("No such payload detected", "test", query.getTableName());
+            Map<String, AttributeValue> item = (Map<String, AttributeValue>) request.getQuery().getItem();
+            Assert.assertEquals("No such payload detected", "test", request.getQuery().getTableName());
 
-            Map<String, AttributeValue> item = query.getItem();
             Assert.assertTrue("No keys detected", item.size() > 0);
             Assert.assertNotNull("No such payload detected", item.get("artist"));
             Assert.assertEquals("Invalid payload value.", "Charlie", item.get("artist").getS());
@@ -560,10 +550,9 @@ public class DynamodbTest {
         Assert.assertEquals("Invalid operation category.", DynamoDBOperation.Category.DQL, operation.getCategory());
 
         for(DynamoDBRequest request: operation.getPayload()) {
-            PutItemRequest query = (PutItemRequest) request.getQuery();
-            Assert.assertEquals("No such payload detected", "test", query.getTableName());
+            Map<String, AttributeValue> item = (Map<String, AttributeValue>) request.getQuery().getItem();
+            Assert.assertEquals("No such payload detected", "test", request.getQuery().getTableName());
 
-            Map<String, AttributeValue> item = query.getItem();
             Assert.assertTrue("No keys detected", item.size() > 0);
             Assert.assertNotNull("No such payload detected", item.get("artist"));
             Assert.assertEquals("Invalid payload value.", "Charlie", item.get("artist").getS());
@@ -592,10 +581,9 @@ public class DynamodbTest {
         Assert.assertEquals("Invalid operation category.", DynamoDBOperation.Category.DQL, operation.getCategory());
 
         for(DynamoDBRequest request: operation.getPayload()) {
-            PutItemRequest query = (PutItemRequest) request.getQuery();
-            Assert.assertEquals("No such payload detected", "test", query.getTableName());
+            Map<String, AttributeValue> item = (Map<String, AttributeValue>) request.getQuery().getItem();
+            Assert.assertEquals("No such payload detected", "test", request.getQuery().getTableName());
 
-            Map<String, AttributeValue> item = query.getItem();
             Assert.assertTrue("No keys detected", item.size() > 0);
             Assert.assertNotNull("No such payload detected", item.get("artist"));
             Assert.assertEquals("Invalid payload value.", "Charlie", item.get("artist").getS());
@@ -627,14 +615,14 @@ public class DynamodbTest {
         Assert.assertEquals("Invalid operation category.", DynamoDBOperation.Category.DQL, operation.getCategory());
 
         for(DynamoDBRequest request: operation.getPayload()) {
-            ScanRequest query = (ScanRequest) request.getQuery();
+            DynamoDBRequest.Query query = request.getQuery();
             Assert.assertEquals("No such payload detected", "test", query.getTableName());
 
             Assert.assertEquals("Invalid projection expression.", "#1", query.getProjectionExpression());
             Assert.assertEquals("Invalid filter expression.", "attribute_exists(#0)", query.getFilterExpression());
-            Assert.assertTrue("Expression AttributeNames not detected", query.getExpressionAttributeNames().size() > 0);
-            Assert.assertEquals("Expression Attribute-Name not detected", "Genre", query.getExpressionAttributeNames().get("#0"));
-            Assert.assertEquals("Expression Attribute-Name not detected", "artist, Genre", query.getExpressionAttributeNames().get("#1"));
+            Assert.assertTrue("Expression AttributeNames not detected", ((Map<String, AttributeValue>)query.getExpressionAttributeNames()).size() > 0);
+            Assert.assertEquals("Expression Attribute-Name not detected", "Genre", ((Map<String, AttributeValue>)query.getExpressionAttributeNames()).get("#0"));
+            Assert.assertEquals("Expression Attribute-Name not detected", "artist, Genre", ((Map<String, AttributeValue>)query.getExpressionAttributeNames()).get("#1"));
             Assert.assertEquals("Invalid query-type.", "read", request.getQueryType());
         }
     }
@@ -651,13 +639,13 @@ public class DynamodbTest {
         Assert.assertEquals("Invalid operation category.", DynamoDBOperation.Category.DQL, operation.getCategory());
 
         for(DynamoDBRequest request: operation.getPayload()) {
-            ScanRequest query = (ScanRequest) request.getQuery();
+            DynamoDBRequest.Query query = request.getQuery();
             Assert.assertEquals("No such payload detected", "test", query.getTableName());
 
             Assert.assertEquals("Invalid projection expression.", "artist, Genre", query.getProjectionExpression());
             Assert.assertEquals("Invalid filter expression.", "Genre = :val", query.getFilterExpression());
-            Assert.assertTrue("Expression AttributeNames not detected", query.getExpressionAttributeValues().size() > 0);
-            Assert.assertEquals("Expression Attribute-Name not detected", "Jazz", query.getExpressionAttributeValues().get(":val").getS());
+            Assert.assertTrue("Expression AttributeNames not detected", ((Map<String, AttributeValue>)query.getExpressionAttributeValues()).size() > 0);
+            Assert.assertEquals("Expression Attribute-Name not detected", "Jazz", ((Map<String, AttributeValue>)query.getExpressionAttributeValues()).get(":val").getS());
             Assert.assertEquals("Invalid query-type.", "read", request.getQueryType());
         }
     }
@@ -679,16 +667,16 @@ public class DynamodbTest {
         Assert.assertEquals("Invalid operation category.", DynamoDBOperation.Category.DQL, operation.getCategory());
 
         for(DynamoDBRequest request: operation.getPayload()) {
-            UpdateItemRequest query = (UpdateItemRequest) request.getQuery();
-            Assert.assertEquals("No such payload detected", "test", query.getTableName());
-            Assert.assertTrue("No keys detected", query.getKey().size() > 0);
+            Map<String, AttributeValue> keys = (Map<String, AttributeValue>) request.getQuery().getKey();
+            Assert.assertEquals("No such payload detected", "test", request.getQuery().getTableName());
+            Assert.assertTrue("No keys detected", keys.size() > 0);
 
-            Assert.assertNotNull("No such keys detected", query.getKey().get("artist"));
-            Assert.assertEquals("Invalid payload value.", "Charlie",query.getKey().get("artist").getS());
-            Assert.assertNotNull("No such keys detected", query.getKey().get("year"));
-            Assert.assertEquals("Invalid payload value.", "2000",query.getKey().get("year").getN());
+            Assert.assertNotNull("No such keys detected", keys.get("artist"));
+            Assert.assertEquals("Invalid payload value.", "Charlie",keys.get("artist").getS());
+            Assert.assertNotNull("No such keys detected", keys.get("year"));
+            Assert.assertEquals("Invalid payload value.", "2000",keys.get("year").getN());
 
-            Map<String, AttributeValueUpdate> update = query.getAttributeUpdates();
+            Map<String, AttributeValueUpdate> update = (Map<String, AttributeValueUpdate>) request.getQuery().getAttributeUpdates();
             Assert.assertTrue("No such AttributeUpdates map detected", update.size() > 0);
             Assert.assertNotNull("No such AttributeUpdates map detected", update.get("Genre"));
             AttributeValueUpdate updateAttri = update.get("Genre");
@@ -716,23 +704,23 @@ public class DynamodbTest {
         Assert.assertEquals("Invalid operation category.", DynamoDBOperation.Category.DQL, operation.getCategory());
 
         for(DynamoDBRequest request: operation.getPayload()) {
-            UpdateItemRequest query = (UpdateItemRequest) request.getQuery();
-            Assert.assertEquals("No such payload detected", "test", query.getTableName());
-            Assert.assertTrue("No keys detected", query.getKey().size() > 0);
+            Map<String, AttributeValue> keys = (Map<String, AttributeValue>) request.getQuery().getKey();
+            Assert.assertEquals("No such payload detected", "test", request.getQuery().getTableName());
+            Assert.assertTrue("No keys detected", keys.size() > 0);
 
-            Assert.assertNotNull("No such keys detected", query.getKey().get("artist"));
-            Assert.assertEquals("Invalid payload value.", "Charlie",query.getKey().get("artist").getS());
-            Assert.assertNotNull("No such keys detected", query.getKey().get("year"));
-            Assert.assertEquals("Invalid payload value.", "2000",query.getKey().get("year").getN());
+            Assert.assertNotNull("No such keys detected", keys.get("artist"));
+            Assert.assertEquals("Invalid payload value.", "Charlie",keys.get("artist").getS());
+            Assert.assertNotNull("No such keys detected", keys.get("year"));
+            Assert.assertEquals("Invalid payload value.", "2000",keys.get("year").getN());
 
-            Assert.assertEquals("Invalid update expression", "set Genre = :newVal", query.getUpdateExpression());
-            Assert.assertEquals("Invalid condition expression", "Genre = :val", query.getConditionExpression());
+            Assert.assertEquals("Invalid update expression", "set Genre = :newVal", request.getQuery().getUpdateExpression());
+            Assert.assertEquals("Invalid condition expression", "Genre = :val", request.getQuery().getConditionExpression());
 
-            Assert.assertNotNull("No Expression-AttributeValues detected.", query.getExpressionAttributeValues());
-            Assert.assertNotNull("No such Attribute-value detected.", query.getExpressionAttributeValues().get(":val"));
-            Assert.assertEquals("No such Attribute-value detected.", "Jazz", query.getExpressionAttributeValues().get(":val").getS());
-            Assert.assertNotNull("No such Attribute-value detected.", query.getExpressionAttributeValues().get(":newVal"));
-            Assert.assertEquals("No such Attribute-value detected.", "Classic", query.getExpressionAttributeValues().get(":newVal").getS());
+            Assert.assertNotNull("No Expression-AttributeValues detected.", request.getQuery().getExpressionAttributeValues());
+            Assert.assertNotNull("No such Attribute-value detected.", ((Map<String, AttributeValue>)request.getQuery().getExpressionAttributeValues()).get(":val"));
+            Assert.assertEquals("No such Attribute-value detected.", "Jazz", ((Map<String, AttributeValue>)request.getQuery().getExpressionAttributeValues()).get(":val").getS());
+            Assert.assertNotNull("No such Attribute-value detected.", ((Map<String, AttributeValue>)request.getQuery().getExpressionAttributeValues()).get(":newVal"));
+            Assert.assertEquals("No such Attribute-value detected.", "Classic", ((Map<String, AttributeValue>)request.getQuery().getExpressionAttributeValues()).get(":newVal").getS());
             Assert.assertEquals("Invalid query-type.", "update", request.getQueryType());
         }
     }
@@ -754,16 +742,16 @@ public class DynamodbTest {
         Assert.assertEquals("Invalid operation category.", DynamoDBOperation.Category.DQL, operation.getCategory());
 
         for(DynamoDBRequest request: operation.getPayload()) {
-            UpdateItemRequest query = (UpdateItemRequest) request.getQuery();
-            Assert.assertEquals("No such payload detected", "test", query.getTableName());
-            Assert.assertTrue("No keys detected", query.getKey().size() > 0);
+            Map<String, AttributeValue> keys = (Map<String, AttributeValue>) request.getQuery().getKey();
+            Assert.assertEquals("No such payload detected", "test", request.getQuery().getTableName());
+            Assert.assertTrue("No keys detected", keys.size() > 0);
 
-            Assert.assertNotNull("No such keys detected", query.getKey().get("artist"));
-            Assert.assertEquals("Invalid payload value.", "Charlie",query.getKey().get("artist").getS());
-            Assert.assertNotNull("No such keys detected", query.getKey().get("year"));
-            Assert.assertEquals("Invalid payload value.", "2000",query.getKey().get("year").getN());
+            Assert.assertNotNull("No such keys detected", keys.get("artist"));
+            Assert.assertEquals("Invalid payload value.", "Charlie",keys.get("artist").getS());
+            Assert.assertNotNull("No such keys detected", keys.get("year"));
+            Assert.assertEquals("Invalid payload value.", "2000",keys.get("year").getN());
 
-            Map<String, AttributeValueUpdate> update = query.getAttributeUpdates();
+            Map<String, AttributeValueUpdate> update = (Map<String, AttributeValueUpdate>) request.getQuery().getAttributeUpdates();
             Assert.assertTrue("No such AttributeUpdates map detected", update.size() > 0);
             Assert.assertNotNull("No such AttributeUpdates map detected", update.get("Genre"));
             AttributeValueUpdate updateAttri = update.get("Genre");
@@ -791,20 +779,20 @@ public class DynamodbTest {
         Assert.assertEquals("Invalid operation category.", DynamoDBOperation.Category.DQL, operation.getCategory());
 
         for(DynamoDBRequest request: operation.getPayload()) {
-            UpdateItemRequest query = (UpdateItemRequest) request.getQuery();
-            Assert.assertEquals("No such payload detected", "test", query.getTableName());
-            Assert.assertTrue("No keys detected", query.getKey().size() > 0);
+            Map<String, AttributeValue> keys = (Map<String, AttributeValue>) request.getQuery().getKey();
+            Assert.assertEquals("No such payload detected", "test", request.getQuery().getTableName());
+            Assert.assertTrue("No keys detected", keys.size() > 0);
 
-            Assert.assertNotNull("No such keys detected", query.getKey().get("artist"));
-            Assert.assertEquals("Invalid payload value.", "Charlie",query.getKey().get("artist").getS());
-            Assert.assertNotNull("No such keys detected", query.getKey().get("year"));
-            Assert.assertEquals("Invalid payload value.", "2000",query.getKey().get("year").getN());
+            Assert.assertNotNull("No such keys detected", keys.get("artist"));
+            Assert.assertEquals("Invalid payload value.", "Charlie",keys.get("artist").getS());
+            Assert.assertNotNull("No such keys detected", keys.get("year"));
+            Assert.assertEquals("Invalid payload value.", "2000",keys.get("year").getN());
 
-            Assert.assertEquals("Invalid update expression", "set Genre = :newVal", query.getUpdateExpression());
+            Assert.assertEquals("Invalid update expression", "set Genre = :newVal", request.getQuery().getUpdateExpression());
 
-            Assert.assertNotNull("No Expression-AttributeValues detected.", query.getExpressionAttributeValues());
-            Assert.assertNotNull("No such Attribute-value detected.", query.getExpressionAttributeValues().get(":newVal"));
-            Assert.assertEquals("No such Attribute-value detected.", "Classic", query.getExpressionAttributeValues().get(":newVal").getS());
+            Assert.assertNotNull("No Expression-AttributeValues detected.", request.getQuery().getExpressionAttributeValues());
+            Assert.assertNotNull("No such Attribute-value detected.", ((Map<String, AttributeValue>)request.getQuery().getExpressionAttributeValues()).get(":newVal"));
+            Assert.assertEquals("No such Attribute-value detected.", "Classic", ((Map<String, AttributeValue>)request.getQuery().getExpressionAttributeValues()).get(":newVal").getS());
             Assert.assertEquals("Invalid query-type.", "update", request.getQueryType());
         }
     }
@@ -826,23 +814,23 @@ public class DynamodbTest {
         Assert.assertEquals("Invalid operation category.", DynamoDBOperation.Category.DQL, operation.getCategory());
 
         for(DynamoDBRequest request: operation.getPayload()) {
-            UpdateItemRequest query = (UpdateItemRequest) request.getQuery();
-            Assert.assertEquals("No such payload detected", "test", query.getTableName());
-            Assert.assertTrue("No keys detected", query.getKey().size() > 0);
+            Map<String, AttributeValue> keys = (Map<String, AttributeValue>) request.getQuery().getKey();
+            Assert.assertEquals("No such payload detected", "test", request.getQuery().getTableName());
+            Assert.assertTrue("No keys detected", keys.size() > 0);
 
-            Assert.assertNotNull("No such keys detected", query.getKey().get("artist"));
-            Assert.assertEquals("Invalid payload value.", "Charlie",query.getKey().get("artist").getS());
-            Assert.assertNotNull("No such keys detected", query.getKey().get("year"));
-            Assert.assertEquals("Invalid payload value.", "2000",query.getKey().get("year").getN());
+            Assert.assertNotNull("No such keys detected", keys.get("artist"));
+            Assert.assertEquals("Invalid payload value.", "Charlie",keys.get("artist").getS());
+            Assert.assertNotNull("No such keys detected", keys.get("year"));
+            Assert.assertEquals("Invalid payload value.", "2000",keys.get("year").getN());
 
-            Assert.assertEquals("Invalid update expression", "set Genre = :newVal", query.getUpdateExpression());
-            Assert.assertEquals("Invalid condition expression", "Genre = :val", query.getConditionExpression());
+            Assert.assertEquals("Invalid update expression", "set Genre = :newVal", request.getQuery().getUpdateExpression());
+            Assert.assertEquals("Invalid condition expression", "Genre = :val", request.getQuery().getConditionExpression());
 
-            Assert.assertNotNull("No Expression-AttributeValues detected.", query.getExpressionAttributeValues());
-            Assert.assertNotNull("No such Attribute-value detected.", query.getExpressionAttributeValues().get(":val"));
-            Assert.assertEquals("No such Attribute-value detected.", "Jazz", query.getExpressionAttributeValues().get(":val").getS());
-            Assert.assertNotNull("No such Attribute-value detected.", query.getExpressionAttributeValues().get(":newVal"));
-            Assert.assertEquals("No such Attribute-value detected.", "Classic", query.getExpressionAttributeValues().get(":newVal").getS());
+            Assert.assertNotNull("No Expression-AttributeValues detected.", request.getQuery().getExpressionAttributeValues());
+            Assert.assertNotNull("No such Attribute-value detected.", ((Map<String, AttributeValue>)request.getQuery().getExpressionAttributeValues()).get(":val"));
+            Assert.assertEquals("No such Attribute-value detected.", "Jazz", ((Map<String, AttributeValue>)request.getQuery().getExpressionAttributeValues()).get(":val").getS());
+            Assert.assertNotNull("No such Attribute-value detected.", ((Map<String, AttributeValue>)request.getQuery().getExpressionAttributeValues()).get(":newVal"));
+            Assert.assertEquals("No such Attribute-value detected.", "Classic", ((Map<String, AttributeValue>)request.getQuery().getExpressionAttributeValues()).get(":newVal").getS());
             Assert.assertEquals("Invalid query-type.", "update", request.getQueryType());
         }
     }
@@ -867,8 +855,7 @@ public class DynamodbTest {
         Assert.assertEquals("Invalid operation category.", DynamoDBOperation.Category.DQL, operation.getCategory());
 
         for(DynamoDBRequest request: operation.getPayload()) {
-            KeysAndAttributes attributes = (KeysAndAttributes) request.getQuery();
-            List<Map<String, AttributeValue>> keys = attributes.getKeys();
+            List<Map<String, AttributeValue>> keys = (List<Map<String, AttributeValue>>) request.getQuery().getKey();
 
             Assert.assertTrue("No keys detected", keys.size() > 0);
             Assert.assertNotNull("No such payload detected", keys.get(0).get("artist"));
@@ -876,7 +863,7 @@ public class DynamodbTest {
             Assert.assertNotNull("No such payload detected", keys.get(0).get("year"));
             Assert.assertEquals("Invalid payload value.", "2000", keys.get(0).get("year").getN());
 
-            Assert.assertEquals("Invalid projection expression.", "artist, Genre", attributes.getProjectionExpression());
+            Assert.assertEquals("Invalid projection expression.", "artist, Genre", request.getQuery().getProjectionExpression());
             Assert.assertEquals("Invalid query-type.", "read", request.getQueryType());
         }
     }
@@ -893,14 +880,14 @@ public class DynamodbTest {
         Assert.assertEquals("Invalid operation category.", DynamoDBOperation.Category.DQL, operation.getCategory());
 
         for(DynamoDBRequest request: operation.getPayload()) {
-            PutRequest query = (PutRequest) request.getQuery();
+            Map<String, AttributeValue> query = (Map<String, AttributeValue>) request.getQuery().getItem();
 
-            Assert.assertNotNull("No such payload detected", query.getItem().get("artist"));
-            Assert.assertEquals("Invalid payload value.", "Charlie",query.getItem().get("artist").getS());
-            Assert.assertNotNull("No such payload detected", query.getItem().get("year"));
-            Assert.assertEquals("Invalid payload value.", "2000", query.getItem().get("year").getN());
-            Assert.assertNotNull("No such payload detected", query.getItem().get("Genre"));
-            Assert.assertEquals("Invalid payload value.", "Jazz",query.getItem().get("Genre").getS());
+            Assert.assertNotNull("No such payload detected", query.get("artist"));
+            Assert.assertEquals("Invalid payload value.", "Charlie",query.get("artist").getS());
+            Assert.assertNotNull("No such payload detected", query.get("year"));
+            Assert.assertEquals("Invalid payload value.", "2000", query.get("year").getN());
+            Assert.assertNotNull("No such payload detected", query.get("Genre"));
+            Assert.assertEquals("Invalid payload value.", "Jazz",query.get("Genre").getS());
 
             Assert.assertEquals("Invalid query-type.", "write", request.getQueryType());
         }
@@ -923,19 +910,19 @@ public class DynamodbTest {
         Assert.assertEquals("Invalid operation category.", DynamoDBOperation.Category.DQL, operation.getCategory());
 
         for(DynamoDBRequest request: operation.getPayload()) {
-            DeleteItemRequest query = (DeleteItemRequest) request.getQuery();
-            Assert.assertEquals("No such payload detected", "test", query.getTableName());
-            Assert.assertTrue("No keys detected", query.getKey().size() > 0);
+            Map<String, AttributeValue> keys = (Map<String, AttributeValue>) request.getQuery().getKey();
+            Assert.assertEquals("No such payload detected", "test", request.getQuery().getTableName());
+            Assert.assertTrue("No keys detected", keys.size() > 0);
 
-            Assert.assertNotNull("No such keys detected", query.getKey().get("artist"));
-            Assert.assertEquals("Invalid payload value.", "Charlie",query.getKey().get("artist").getS());
-            Assert.assertNotNull("No such keys detected", query.getKey().get("year"));
-            Assert.assertEquals("Invalid payload value.", "2000",query.getKey().get("year").getN());
+            Assert.assertNotNull("No such keys detected", keys.get("artist"));
+            Assert.assertEquals("Invalid payload value.", "Charlie",keys.get("artist").getS());
+            Assert.assertNotNull("No such keys detected", keys.get("year"));
+            Assert.assertEquals("Invalid payload value.", "2000",keys.get("year").getN());
 
-            Assert.assertEquals("Invalid Condition-Expression.", "Genre = :val", query.getConditionExpression());
-            Assert.assertNotNull("No Expression-AttributeValues detected.", query.getExpressionAttributeValues());
-            Assert.assertNotNull("No such Attribute-value detected.", query.getExpressionAttributeValues().get(":val"));
-            Assert.assertEquals("No such Attribute-value detected.", "Jazz", query.getExpressionAttributeValues().get(":val").getS());
+            Assert.assertEquals("Invalid Condition-Expression.", "Genre = :val", request.getQuery().getConditionExpression());
+            Assert.assertNotNull("No Expression-AttributeValues detected.", request.getQuery().getExpressionAttributeValues());
+            Assert.assertNotNull("No such Attribute-value detected.", ((Map<String, AttributeValue>)request.getQuery().getExpressionAttributeValues()).get(":val"));
+            Assert.assertEquals("No such Attribute-value detected.", "Jazz", ((Map<String, AttributeValue>)request.getQuery().getExpressionAttributeValues()).get(":val").getS());
             Assert.assertEquals("Invalid query-type.", "delete", request.getQueryType());
         }
     }
@@ -957,13 +944,13 @@ public class DynamodbTest {
         Assert.assertEquals("Invalid operation category.", DynamoDBOperation.Category.DQL, operation.getCategory());
 
         for(DynamoDBRequest request: operation.getPayload()) {
-            QueryRequest query = (QueryRequest) request.getQuery();
+            DynamoDBRequest.Query query = request.getQuery();
             Assert.assertEquals("No such payload detected", "test", query.getTableName());
 
             Assert.assertEquals("Invalid Condition-Expression.", "artist = :val", query.getKeyConditionExpression());
             Assert.assertNotNull("No Expression-AttributeValues detected.", query.getExpressionAttributeValues());
-            Assert.assertNotNull("No such Attribute-value detected.", query.getExpressionAttributeValues().get(":val"));
-            Assert.assertEquals("No such Attribute-value detected.", "Charlie", query.getExpressionAttributeValues().get(":val").getS());
+            Assert.assertNotNull("No such Attribute-value detected.", ((Map<String, AttributeValue>)query.getExpressionAttributeValues()).get(":val"));
+            Assert.assertEquals("No such Attribute-value detected.", "Charlie", ((Map<String, AttributeValue>)query.getExpressionAttributeValues()).get(":val").getS());
             Assert.assertEquals("Invalid query-type.", "read", request.getQueryType());
         }
     }
@@ -984,18 +971,16 @@ public class DynamodbTest {
         Assert.assertEquals("Invalid operation category.", DynamoDBOperation.Category.DQL, operation.getCategory());
 
         for(DynamoDBRequest request: operation.getPayload()) {
-            GetItemRequest query = (GetItemRequest) request.getQuery();
-            Assert.assertEquals("No such payload detected", "test", query.getTableName());
-            Assert.assertTrue("read consistency should be true", query.getConsistentRead());
+            Map<String, AttributeValue> keys = (Map<String, AttributeValue>) request.getQuery().getKey();
+            Assert.assertEquals("No such payload detected", "test", request.getQuery().getTableName());
 
-            Map<String, AttributeValue> keys = query.getKey();
             Assert.assertTrue("No keys detected", keys.size() > 0);
             Assert.assertNotNull("No such payload detected", keys.get("artist"));
             Assert.assertEquals("Invalid payload value.", "Charlie", keys.get("artist").getS());
             Assert.assertNotNull("No such payload detected", keys.get("year"));
             Assert.assertEquals("Invalid payload value.", "2000", keys.get("year").getN());
 
-            Assert.assertEquals("Invalid projection expression.", "artist, Genre", query.getProjectionExpression());
+            Assert.assertEquals("Invalid projection expression.", "artist, Genre", request.getQuery().getProjectionExpression());
             Assert.assertEquals("Invalid query-type.", "read", request.getQueryType());
         }
     }
@@ -1011,10 +996,9 @@ public class DynamodbTest {
         Assert.assertEquals("Invalid operation category.", DynamoDBOperation.Category.DQL, operation.getCategory());
 
         for(DynamoDBRequest request: operation.getPayload()) {
-            PutItemRequest query = (PutItemRequest) request.getQuery();
-            Assert.assertEquals("No such payload detected", "test", query.getTableName());
+            Map<String, AttributeValue> item = (Map<String, AttributeValue>) request.getQuery().getItem();
+            Assert.assertEquals("No such payload detected", "test", request.getQuery().getTableName());
 
-            Map<String, AttributeValue> item = query.getItem();
             Assert.assertTrue("No keys detected", item.size() > 0);
             Assert.assertNotNull("No such payload detected", item.get("artist"));
             Assert.assertEquals("Invalid payload value.", "Charlie", item.get("artist").getS());
@@ -1037,7 +1021,7 @@ public class DynamodbTest {
         Assert.assertEquals("Invalid operation category.", DynamoDBOperation.Category.DQL, operation.getCategory());
 
         for(DynamoDBRequest request: operation.getPayload()) {
-            ScanRequest query = (ScanRequest) request.getQuery();
+            DynamoDBRequest.Query query = request.getQuery();
             Assert.assertEquals("No such payload detected", "test", query.getTableName());
             Assert.assertEquals("Invalid projection expression.", "artist, Genre", query.getProjectionExpression());
             Assert.assertEquals("Invalid query-type.", "read", request.getQueryType());
@@ -1060,23 +1044,23 @@ public class DynamodbTest {
         Assert.assertEquals("Invalid operation category.", DynamoDBOperation.Category.DQL, operation.getCategory());
 
         for(DynamoDBRequest request: operation.getPayload()) {
-            UpdateItemRequest query = (UpdateItemRequest) request.getQuery();
-            Assert.assertEquals("No such payload detected", "test", query.getTableName());
-            Assert.assertTrue("No keys detected", query.getKey().size() > 0);
+            Map<String, AttributeValue> keys = (Map<String, AttributeValue>) request.getQuery().getKey();
+            Assert.assertEquals("No such payload detected", "test", request.getQuery().getTableName());
+            Assert.assertTrue("No keys detected", keys.size() > 0);
 
-            Assert.assertNotNull("No such keys detected", query.getKey().get("artist"));
-            Assert.assertEquals("Invalid payload value.", "Charlie",query.getKey().get("artist").getS());
-            Assert.assertNotNull("No such keys detected", query.getKey().get("year"));
-            Assert.assertEquals("Invalid payload value.", "2000",query.getKey().get("year").getN());
+            Assert.assertNotNull("No such keys detected", keys.get("artist"));
+            Assert.assertEquals("Invalid payload value.", "Charlie",keys.get("artist").getS());
+            Assert.assertNotNull("No such keys detected", keys.get("year"));
+            Assert.assertEquals("Invalid payload value.", "2000",keys.get("year").getN());
 
-            Assert.assertEquals("Invalid update expression", "set Genre = :newVal", query.getUpdateExpression());
-            Assert.assertEquals("Invalid condition expression", "Genre = :val", query.getConditionExpression());
+            Assert.assertEquals("Invalid update expression", "set Genre = :newVal", request.getQuery().getUpdateExpression());
+            Assert.assertEquals("Invalid condition expression", "Genre = :val", request.getQuery().getConditionExpression());
 
-            Assert.assertNotNull("No Expression-AttributeValues detected.", query.getExpressionAttributeValues());
-            Assert.assertNotNull("No such Attribute-value detected.", query.getExpressionAttributeValues().get(":val"));
-            Assert.assertEquals("No such Attribute-value detected.", "Jazz", query.getExpressionAttributeValues().get(":val").getS());
-            Assert.assertNotNull("No such Attribute-value detected.", query.getExpressionAttributeValues().get(":newVal"));
-            Assert.assertEquals("No such Attribute-value detected.", "Classic", query.getExpressionAttributeValues().get(":newVal").getS());
+            Assert.assertNotNull("No Expression-AttributeValues detected.", request.getQuery().getExpressionAttributeValues());
+            Assert.assertNotNull("No such Attribute-value detected.", ((Map<String, AttributeValue>)request.getQuery().getExpressionAttributeValues()).get(":val"));
+            Assert.assertEquals("No such Attribute-value detected.", "Jazz", ((Map<String, AttributeValue>)request.getQuery().getExpressionAttributeValues()).get(":val").getS());
+            Assert.assertNotNull("No such Attribute-value detected.", ((Map<String, AttributeValue>)request.getQuery().getExpressionAttributeValues()).get(":newVal"));
+            Assert.assertEquals("No such Attribute-value detected.", "Classic", ((Map<String, AttributeValue>)request.getQuery().getExpressionAttributeValues()).get(":newVal").getS());
             Assert.assertEquals("Invalid query-type.", "update", request.getQueryType());
         }
     }

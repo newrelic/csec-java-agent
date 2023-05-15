@@ -15,7 +15,13 @@ inputs:
     description: 'APM AWS S3 access key'
   apm-aws-region:
     description: 'APM AWS S3 region'
-
+  is-release:
+    description: 'Is this a release run'
+    required: true
+    default: 'false'
+  version-suffix:
+    description: 'version suffix to be added, if any'
+    default: ''
 
 # This action expects the csec collector to be checked out at $GITHUB_WORKSPACE and NR APM at $GITHUB_WORKSPACE/newrelic-java-agent.
 # It will also set up the instrumentation jar zip if S3 credentials are set.
@@ -47,10 +53,12 @@ runs:
 
     - name: Setup Gradle
       uses: gradle/gradle-build-action@v2
+      with:
+        cache-disabled: true
 
     - name: Setup Gradle options
       shell: bash
-      run: echo "GRADLE_OPTIONS=-Porg.gradle.java.installations.auto-detect=false -Porg.gradle.java.installations.fromEnv=JAVA_HOME_8_X64,JAVA_HOME_11_X64,JAVA_HOME_17_X64,JAVA_HOME_19_X64,JAVA_HOME_20_X64" >> $GITHUB_ENV
+      run: echo "GRADLE_OPTIONS=-Porg.gradle.java.installations.auto-detect=false -Porg.gradle.java.installations.fromEnv=JAVA_HOME_8_X64,JAVA_HOME_11_X64,JAVA_HOME_17_X64,JAVA_HOME_19_X64,JAVA_HOME_20_X64 -Prelease=${{ inputs.is-release }} -Prelease-suffix=${{ inputs.version-suffix }} " >> $GITHUB_ENV
 
     # Restore the maven cache
     - name: Cache local Maven repository
@@ -65,7 +73,7 @@ runs:
           ${{ runner.os }}-maven
 
     # Restore the gradle cache
-    - uses: actions/cache@v2
+    - uses: actions/cache@v3
       with:
         path: |
           ~/.gradle/caches
@@ -102,9 +110,11 @@ runs:
     - name: Setup security agent version info
       shell: bash
       run: |
-        echo "SECURITY_VERSION=$(./gradlew properties | grep 'version:' | awk -F': ' '{print $2}')" >> $GITHUB_ENV
-        echo "APM_VERSION=$(./gradlew -p newrelic-java-agent/ properties | grep 'version:' | awk -F': ' '{print $2}')" >> $GITHUB_ENV
-        echo "SECURITY_JSON_VERSION=$(./gradlew properties | grep 'jsonVersion:' | awk -F": " '{print $2}')" >> $GITHUB_ENV
+        echo "SECURITY_VERSION=$(./gradlew ${GRADLE_OPTIONS} properties | grep 'version:' | awk -F': ' '{print $2}')" >> $GITHUB_ENV
+        echo "APM_VERSION=$(./gradlew ${GRADLE_OPTIONS} -p newrelic-java-agent/ properties | grep 'version:' | awk -F': ' '{print $2}')" >> $GITHUB_ENV
+        echo "SECURITY_JSON_VERSION=$(./gradlew ${GRADLE_OPTIONS} properties | grep 'jsonVersion:' | awk -F": " '{print $2}')" >> $GITHUB_ENV
+        source $GITHUB_ENV
+        echo "GRADLE_OPTIONS=${GRADLE_OPTIONS} -PcsecCollectorVersion=${SECURITY_VERSION} -PnrAPIVersion=${APM_VERSION}" >> $GITHUB_ENV
 
     - name: Configure AWS Credentials
       if: ${{ inputs.apm-aws-secret-access-key != '' }}
@@ -126,5 +136,6 @@ runs:
       shell: bash
       run: |
         cd newrelic-java-agent
-        ./gradlew $GRADLE_OPTIONS :newrelic-api:publishToMavenLocal :agent-bridge:publishToMavenLocal :agent-bridge-datastore:publishToMavenLocal :newrelic-weaver-api:publishToMavenLocal :newrelic-weaver:publishToMavenLocal :newrelic-weaver-scala:publishToMavenLocal :newrelic-weaver-scala-api:publishToMavenLocal --parallel
+        rm -rf ~/.m2/repository/com/newrelic
+        ./gradlew ${GRADLE_OPTIONS} :newrelic-api:publishToMavenLocal :agent-bridge:publishToMavenLocal :agent-bridge-datastore:publishToMavenLocal :newrelic-weaver-api:publishToMavenLocal :newrelic-weaver:publishToMavenLocal :newrelic-weaver-scala:publishToMavenLocal :newrelic-weaver-scala-api:publishToMavenLocal --parallel
         cd ..

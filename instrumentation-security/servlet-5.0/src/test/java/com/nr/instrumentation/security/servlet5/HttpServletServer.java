@@ -1,4 +1,4 @@
-package com.nr.instrumentation.security;
+package com.nr.instrumentation.security.servlet5;
 
 import jakarta.servlet.annotation.WebServlet;
 import org.apache.catalina.Context;

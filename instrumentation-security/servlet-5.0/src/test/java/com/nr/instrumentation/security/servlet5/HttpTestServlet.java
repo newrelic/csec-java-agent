@@ -1,10 +1,13 @@
-package com.nr.instrumentation.security;
+package com.nr.instrumentation.security.servlet5;
 
-import javax.servlet.ServletInputStream;
-import javax.servlet.ServletOutputStream;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.ServletInputStream;
+import jakarta.servlet.ServletOutputStream;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -57,7 +60,7 @@ public class HttpTestServlet extends HttpServlet {
                 byte[] b = new byte[in.available()];
                 in.readLine(b, 0, b.length);
             }
-            in.close();
+
         } else if(path.equals("/inputStream/readLine/withOff")){
 
             ServletInputStream in = request.getInputStream();
@@ -82,6 +85,28 @@ public class HttpTestServlet extends HttpServlet {
 
         }
 
+    }
+
+    @Override
+    public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        String path = request.getRequestURI();
+
+        if(path.equals("/session/set")){
+            HttpSession session = request.getSession(true);
+            session.setAttribute("key", "value");
+        }
+        else if(path.equals("/session/put")){
+            HttpSession session = request.getSession(true);
+            session.putValue("key1", "value1");
+        }
+        else if(path.equals("/session/securecookie")){
+            Cookie cookie = new Cookie("key", "value");
+            cookie.setSecure(true);
+            response.addCookie(cookie);
+        } else if(path.equals("/session/cookie")){
+            Cookie cookie = new Cookie("key1", "value1");
+            response.addCookie(cookie);
+        }
     }
 
     private void testServletRequestHooks( HttpServletRequest request, HttpServletResponse response) throws IOException {
