@@ -29,7 +29,7 @@ on:
       description:
         description: "A description for the custom jar that will be generated. It will appear in the summary."
         required: true
-        default: 'test'
+        default: ''
 
 permissions:
   id-token: write # This is required for requesting the JWT
@@ -40,6 +40,8 @@ jobs:
     name: Create Integrated Agent jar
     runs-on: ubuntu-20.04
     steps:
+      - name: Print Inputs
+        run: echo "${{ toJSON(github.event.inputs) }}"
 
       - name: Checkout CSEC Java agent
         uses: actions/checkout@v3
@@ -58,8 +60,8 @@ jobs:
       - name: Check version compatibility
         shell: bash
         run: |
-          APM_CONFIGURED_CSEC_VERSION=$(./gradlew -p newrelic-java-agent/ properties ${BUILD_PROPS} | grep 'csecCollectorVersion:' | awk -F': ' '{print $2}')
-          CSEC_CONFIGURED_APM_VERSION=$(./gradlew properties ${BUILD_PROPS}| grep 'nrAPIVersion:' | awk -F': ' '{print $2}')
+          APM_CONFIGURED_CSEC_VERSION=$(./gradlew ${GRADLE_OPTIONS} -p newrelic-java-agent/ properties | grep 'csecCollectorVersion:' | awk -F': ' '{print $2}')
+          CSEC_CONFIGURED_APM_VERSION=$(./gradlew ${GRADLE_OPTIONS} properties | grep 'nrAPIVersion:' | awk -F': ' '{print $2}')
           
           if [[ "${APM_VERSION}" != "${CSEC_CONFIGURED_APM_VERSION}" ]]
           then

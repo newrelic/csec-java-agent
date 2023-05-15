@@ -1,0 +1,19 @@
+name: Publish artifacts from main to maven snapshot repo
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  publish_snapshots_to_maven_central:
+    name: Publish snapshot artifacts to Maven repos
+    uses: ./.github/workflows/publish-to-maven.yml
+    secrets: inherit
+    with:
+      source-ref: 'main'
+      apm-repo: 'newrelic/newrelic-java-agent'
+      apm-source-ref: 'k2-integration'
+      csec-run-unittest: true
+      csec-run-instrumentation-verify: true
+      is-release: false
+      version-suffix: ''
+      slack-notify: false

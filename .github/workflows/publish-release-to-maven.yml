@@ -1,0 +1,20 @@
+name: Publish release artifacts to maven repo
+on:
+  release:
+    types:
+      - published
+
+jobs:
+  publish_release_to_maven_central:
+    name: Publish release artifacts to Maven repos
+    uses: ./.github/workflows/publish-to-maven.yml
+    secrets: inherit
+    with:
+      source-ref: 'main'
+      apm-repo: 'newrelic/newrelic-java-agent'
+      apm-source-ref: 'k2-integration'
+      csec-run-unittest: true
+      csec-run-instrumentation-verify: true
+      is-release: true
+      version-suffix: '-limited-preview'
+      slack-notify: true
