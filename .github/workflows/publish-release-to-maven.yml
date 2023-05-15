@@ -1,4 +1,4 @@
-name: Publish release artifacts maven snapshot repo
+name: Publish release artifacts to maven repo
 on:
   release:
     types:

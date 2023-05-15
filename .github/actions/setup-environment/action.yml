@@ -113,7 +113,7 @@ runs:
         echo "SECURITY_VERSION=$(./gradlew ${GRADLE_OPTIONS} properties | grep 'version:' | awk -F': ' '{print $2}')" >> $GITHUB_ENV
         echo "APM_VERSION=$(./gradlew ${GRADLE_OPTIONS} -p newrelic-java-agent/ properties | grep 'version:' | awk -F': ' '{print $2}')" >> $GITHUB_ENV
         echo "SECURITY_JSON_VERSION=$(./gradlew ${GRADLE_OPTIONS} properties | grep 'jsonVersion:' | awk -F": " '{print $2}')" >> $GITHUB_ENV
-        
+        source $GITHUB_ENV
         echo "GRADLE_OPTIONS=${GRADLE_OPTIONS} -PcsecCollectorVersion=${SECURITY_VERSION} -PnrAPIVersion=${APM_VERSION}" >> $GITHUB_ENV
 
     - name: Configure AWS Credentials
