@@ -1,10 +1,6 @@
-
-
 dependencies {
     implementation(project(":newrelic-security-api"))
-    implementation("com.newrelic.agent.java:newrelic-api:${nrAPIVersion}")
     implementation("com.newrelic.agent.java:newrelic-weaver-api:${nrAPIVersion}")
-    implementation("org.openjdk.nashorn:nashorn-core:15.0")
 }
 
 jar {
@@ -12,11 +8,5 @@ jar {
 }
 
 verifyInstrumentation {
-    passesOnly 'org.openjdk.nashorn:nashorn-core:[15.0,)'
-}
-
-
-site {
-    title 'JSInjection'
-    type 'Messaging'
+    verifyClasspath = false // We don't want to verify classpath since these are JDK classes
 }
