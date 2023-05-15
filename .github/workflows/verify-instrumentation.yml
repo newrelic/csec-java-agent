@@ -8,14 +8,17 @@ on:
       source-ref:
         description: "Specify source-ref/tag/hash"
         required: true
+        type: string
         default: 'main'
       apm-repo:
         description: 'The repo of APM source code to use'
         required: true
+        type: string
         default: 'newrelic/newrelic-java-agent'
       apm-source-ref:
         description: 'The source-ref of APM source code to use'
         required: true
+        type: string
         default: 'k2-integration'
 
   workflow_dispatch:
