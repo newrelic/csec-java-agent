@@ -15,3 +15,4 @@ jobs:
         with:
           is-release: true
           version-suffix: '-limited-preview'
+          slack-notify: true
