@@ -1,8 +1,5 @@
 name: CSEC Instrumentation verification
 on:
-  schedule:
-    - cron: '0 0 * * *'
-
   workflow_call:
     inputs:
       source-ref:
@@ -17,6 +14,10 @@ on:
         description: 'The source-ref of APM source code to use'
         required: true
         default: 'k2-integration'
+      module-name:
+        description: 'Instrumentation module name to test'
+        required: true
+        default: ''
 
   workflow_dispatch:
     inputs:
@@ -32,10 +33,14 @@ on:
         description: 'The source-ref of APM source code to use'
         required: true
         default: 'k2-integration'
+      module-name:
+        description: 'Instrumentation module name to test'
+        required: true
+        default: ''
 
 jobs:
-  verify_instrumentation:
-    name: Verify Instrumentation
+  verify_instrumentation_single:
+    name: Verify Instrumentation Single
     runs-on: ubuntu-20.04
     steps:
       - name: Print Inputs
@@ -70,4 +75,6 @@ jobs:
           fi
 
       - name: Verify CSEC instrumentation
-        uses: ./.github/actions/verify-instrumentation
+        uses: ./.github/actions/verify-instrumentation-single
+        with:
+          module-name: ${{ inputs.module-name }}
