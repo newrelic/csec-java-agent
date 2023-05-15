@@ -1,0 +1,13 @@
+name: Publish artifacts from main to maven snapshot repo
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  publish_snapshots_to_maven_central:
+    name: Publish snapshot artifacts to Maven repos
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Publish snapshot
+        uses: ./.github/workflows/publish-to-maven.yml
+        secrets: inherit

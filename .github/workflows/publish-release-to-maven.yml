@@ -1,0 +1,18 @@
+name: Publish release artifacts maven snapshot repo
+on:
+  release:
+    types:
+      - published
+
+jobs:
+  publish_release_to_maven_central:
+    name: Publish release artifacts to Maven repos
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Publish release
+        uses: ./.github/workflows/publish-to-maven.yml
+        secrets: inherit
+        with:
+          is-release: true
+          version-suffix: '-limited-preview'
+          slack-notify: true
