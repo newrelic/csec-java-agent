@@ -5,7 +5,7 @@
  *
  */
 
-package com.nr.instrumentation.security.dynamodb2;
+package com.nr.instrumentation.security.dynamodb212;
 
 import software.amazon.awssdk.services.dynamodb.model.AttributeDefinition;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
@@ -51,7 +51,7 @@ public class DynamoUtil {
 
     public static Map<String, KeysAndAttributes> getKeyAtt() {
         Map<String, KeysAndAttributes> keysAndAtt = new HashMap<>();
-        keysAndAtt.put(TABLE, KeysAndAttributes.builder().keys(getKey()).build());
+        keysAndAtt.put(TABLE, KeysAndAttributes.builder().keys(getKey()).projectionExpression("artist").build());
         return keysAndAtt;
     }
 
