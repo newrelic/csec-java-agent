@@ -22,6 +22,7 @@ import com.newrelic.agent.security.intcodeagent.websocket.WSClient;
 import com.newrelic.agent.security.intcodeagent.websocket.WSReconnectionST;
 import com.newrelic.api.agent.NewRelic;
 import com.newrelic.api.agent.Transaction;
+import com.newrelic.api.agent.security.instrumentation.helpers.LowSeverityHelper;
 import com.newrelic.api.agent.security.schema.*;
 import com.newrelic.api.agent.security.schema.operation.RXSSOperation;
 import com.newrelic.api.agent.security.schema.policy.AgentPolicy;
@@ -162,7 +163,7 @@ public class Agent implements SecurityAgent {
 
     private void startK2Services() {
         HealthCheckScheduleThread.getInstance().scheduleNewTask();
-        SchedulerHelper.getInstance().scheduleLowSeverityFilterCleanup(AgentUtils::clearLowSeverityEventFilter,
+        SchedulerHelper.getInstance().scheduleLowSeverityFilterCleanup(LowSeverityHelper::clearLowSeverityEventFilter,
                 30 , 30, TimeUnit.MINUTES);
         logger.logInit(
                 LogLevel.INFO,
@@ -257,7 +258,7 @@ public class Agent implements SecurityAgent {
 //        boolean blockNeeded = checkIfBlockingNeeded(operation.getApiID());
 //        securityMetaData.getMetaData().setApiBlocked(blockNeeded);
         if (needToGenerateEvent(operation.getApiID()) &&
-                needToGenerateLowSeverityEvent(operation.getApiID(), operation.isLowSeverityHook(), securityMetaData)) {
+                needToGenerateLowSeverityEvent(securityMetaData.getRequest(), operation.isLowSeverityHook(), securityMetaData)) {
             DispatcherPool.getInstance().dispatchEvent(operation, securityMetaData);
             if (!firstEventProcessed.get()) {
                 logger.logInit(LogLevel.INFO,
@@ -286,11 +287,11 @@ public class Agent implements SecurityAgent {
         return false;
     }
 
-    private boolean needToGenerateLowSeverityEvent(String apiID, boolean isLowSeverityHook,
+    private boolean needToGenerateLowSeverityEvent(HttpRequest request, boolean isLowSeverityHook,
                                                    SecurityMetaData securityMetaData) {
         if (isLowSeverityHook && !securityMetaData.getFuzzRequestIdentifier().getK2Request()) {
-            if (!AgentUtils.getInstance().checkIfLowSeverityEventAlreadyEncountered(apiID)) {
-                AgentUtils.getInstance().addLowSeverityEventToEncounteredList(apiID);
+            String requestURL = request.getUrl();
+            if (StringUtils.isNotBlank(requestURL) && !LowSeverityHelper.checkIfLowSeverityEventAlreadyEncountered(requestURL.hashCode())) {
                 return true;
             } else {
                 return false;
