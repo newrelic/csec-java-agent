@@ -1,8 +1,11 @@
 package com.newrelic.api.agent.security.instrumentation.helpers;
 
+import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.schema.HttpRequest;
+import com.newrelic.api.agent.security.schema.SecurityMetaData;
 import com.newrelic.api.agent.security.schema.StringUtils;
 
+import java.security.MessageDigest;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -28,6 +31,17 @@ public class LowSeverityHelper {
     public static boolean addRrequestUriToEventFilter(HttpRequest request) {
         if(request!= null && StringUtils.isNotBlank(request.getUrl())) {
             return addLowSeverityEventToEncounteredList(request.getUrl().hashCode());
+        }
+        return false;
+    }
+
+    public static boolean isOwaspHookProcessingNeeded(){
+        SecurityMetaData securityMetaData = NewRelicSecurity.getAgent().getSecurityMetaData();
+        if (!securityMetaData.getFuzzRequestIdentifier().getK2Request()) {
+            String requestURL = securityMetaData.getRequest().getUrl();
+            if (StringUtils.isNotBlank(requestURL) && !LowSeverityHelper.checkIfLowSeverityEventAlreadyEncountered(requestURL.hashCode())) {
+                return true;
+            }
         }
         return false;
     }

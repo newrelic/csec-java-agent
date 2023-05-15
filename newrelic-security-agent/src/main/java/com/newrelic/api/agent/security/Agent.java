@@ -257,8 +257,7 @@ public class Agent implements SecurityAgent {
         processStackTrace(operation);
 //        boolean blockNeeded = checkIfBlockingNeeded(operation.getApiID());
 //        securityMetaData.getMetaData().setApiBlocked(blockNeeded);
-        if (needToGenerateEvent(operation.getApiID()) &&
-                needToGenerateLowSeverityEvent(securityMetaData.getRequest(), operation.isLowSeverityHook(), securityMetaData)) {
+        if (needToGenerateEvent(operation.getApiID())) {
             DispatcherPool.getInstance().dispatchEvent(operation, securityMetaData);
             if (!firstEventProcessed.get()) {
                 logger.logInit(LogLevel.INFO,
@@ -285,19 +284,6 @@ public class Agent implements SecurityAgent {
             }
         }
         return false;
-    }
-
-    private boolean needToGenerateLowSeverityEvent(HttpRequest request, boolean isLowSeverityHook,
-                                                   SecurityMetaData securityMetaData) {
-        if (isLowSeverityHook && !securityMetaData.getFuzzRequestIdentifier().getK2Request()) {
-            String requestURL = request.getUrl();
-            if (StringUtils.isNotBlank(requestURL) && !LowSeverityHelper.checkIfLowSeverityEventAlreadyEncountered(requestURL.hashCode())) {
-                return true;
-            } else {
-                return false;
-            }
-        }
-        return true;
     }
 
     private static boolean needToGenerateEvent(String apiID) {
