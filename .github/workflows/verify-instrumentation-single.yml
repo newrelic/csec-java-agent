@@ -1,4 +1,4 @@
-name: CSEC Instrumentation verification
+name: CSEC Single Instrumentation verification
 on:
   workflow_call:
     inputs:
