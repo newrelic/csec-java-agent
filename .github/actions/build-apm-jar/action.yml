@@ -9,7 +9,7 @@ runs:
       shell: bash
       run: |
         cd newrelic-java-agent 
-        ./gradlew $GRADLE_OPTIONS dist --parallel 
+        ./gradlew ${GRADLE_OPTIONS} dist --parallel 
         cd ..
 
     - name: Capture custom jar

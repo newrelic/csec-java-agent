@@ -1,4 +1,4 @@
-name: Publishes CSEC artifacts to Sonatype repos
+name: Publishes artifacts to Maven repos
 on:
   workflow_dispatch:
     inputs:
@@ -25,17 +25,64 @@ on:
       slack-notify:
         description: 'Whether to notify build status on slack'
         required: true
-        default: true
+        default: false
+      is-release:
+        description: 'Is this a release run'
+        required: true
+        default: 'false'
+      version-suffix:
+        description: 'version suffix to be added, if any'
+        default: ''
       description:
         description: "A description for the custom jar that will be generated. It will appear in the summary."
         required: true
-        default: 'test'
+        default: ''
+
+  workflow_call:
+    inputs:
+      source-ref:
+        description: "Specify source-ref/tag/hash"
+        required: true
+        default: 'main'
+      apm-repo:
+        description: 'The repo of APM source code to use'
+        required: true
+        default: 'newrelic/newrelic-java-agent'
+      apm-source-ref:
+        description: 'The source-ref of APM source code to use'
+        required: true
+        default: 'k2-integration'
+      csec-run-unittest:
+        description: 'Whether to run CSEC instrumentation unit tests'
+        required: true
+        default: true
+      csec-run-instrumentation-verify:
+        description: 'Whether to run CSEC instrumentation verifier'
+        required: true
+        default: true
+      is-release:
+        description: 'Is this a release run'
+        required: true
+        default: 'false'
+      version-suffix:
+        description: 'version suffix to be added, if any'
+        default: ''
+      slack-notify:
+        description: 'Whether to notify build status on slack'
+        required: true
+        default: false
+      description:
+        description: "A description for the custom jar that will be generated. It will appear in the summary."
+        required: true
+        default: ''
 
 jobs:
   publish_to_maven_central:
-    name: Publish artifacts to Sonatype repos
+    name: Publish artifacts to maven
     runs-on: ubuntu-20.04
     steps:
+      - name: Print Inputs
+        run: echo "${{ toJSON(github.event.inputs) }}"
 
       - name: Checkout CSEC Java agent
         uses: actions/checkout@v3
@@ -50,12 +97,14 @@ jobs:
           apm-aws-access-key-id: ${{ secrets.APM_AWS_ACCESS_KEY_ID }}
           apm-aws-secret-access-key: ${{ secrets.APM_AWS_SECRET_ACCESS_KEY }}
           apm-aws-region: us-east-2
+          is-release: ${{ inputs.is-release }}
+          version-suffix: ${{ inputs.version-suffix }}
 
       - name: Check version compatibility
         shell: bash
         run: |
-          APM_CONFIGURED_CSEC_VERSION=$(./gradlew -p newrelic-java-agent/ properties ${BUILD_PROPS} | grep 'csecCollectorVersion:' | awk -F': ' '{print $2}')
-          CSEC_CONFIGURED_APM_VERSION=$(./gradlew properties ${BUILD_PROPS}| grep 'nrAPIVersion:' | awk -F': ' '{print $2}')
+          APM_CONFIGURED_CSEC_VERSION=$(./gradlew ${GRADLE_OPTIONS} -p newrelic-java-agent/ properties | grep 'csecCollectorVersion:' | awk -F': ' '{print $2}')
+          CSEC_CONFIGURED_APM_VERSION=$(./gradlew ${GRADLE_OPTIONS} properties | grep 'nrAPIVersion:' | awk -F': ' '{print $2}')
           
           if [[ "${APM_VERSION}" != "${CSEC_CONFIGURED_APM_VERSION}" ]]
           then
@@ -80,6 +129,8 @@ jobs:
         with:
           sonatype-username: ${{ secrets.SONATYPE_USERNAME }}
           sonatype-password: ${{ secrets.SONATYPE_PASSWORD }}
+          is-release: ${{ inputs.is-release }}
+          version-suffix: ${{ inputs.version-suffix }}
 
       - name: Set summary
         run: |
@@ -103,7 +154,7 @@ jobs:
               "security-version": "${{ env.SECURITY_VERSION }}",
               "security-json-version": "${{ env.SECURITY_JSON_VERSION }}",
               "changelog-url": "${{ github.server_url }}/${{ github.repository }}/blob/${{ inputs.source-ref }}/Changelog.md",
-              "custom-message": "${{ inputs.description }}",
+              "custom-message": "Auto trigger from ref ${{ inputs.apm-source-ref }}. Release build : ${{ inputs.is-release }}",
               "artifact-download-link": "N/A"
             }
         env:
