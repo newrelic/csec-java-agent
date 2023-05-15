@@ -6,8 +6,5 @@ on:
 jobs:
   publish_snapshots_to_maven_central:
     name: Publish snapshot artifacts to Maven repos
-    runs-on: ubuntu-20.04
-    steps:
-      - name: Publish snapshot
-        uses: ./.github/workflows/publish-to-maven.yml
-        secrets: inherit
+    uses: ./.github/workflows/publish-to-maven.yml
+    secrets: inherit
