@@ -1,4 +1,4 @@
-package com.nr.agent.security.mongo.jsinjection.nashorn;
+package com.nr.agent.security.jsinjection.nashorn;
 
 public class JSEngineUtils {
 
