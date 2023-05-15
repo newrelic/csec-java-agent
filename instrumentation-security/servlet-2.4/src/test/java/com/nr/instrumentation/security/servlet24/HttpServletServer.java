@@ -1,4 +1,4 @@
-package com.nr.instrumentation.security;
+package com.nr.instrumentation.security.servlet24;
 
 import org.apache.catalina.Context;
 import org.apache.catalina.LifecycleState;

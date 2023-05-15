@@ -7,7 +7,7 @@ import com.newrelic.api.agent.Trace;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.security.schema.operation.RXSSOperation;
-import com.nr.instrumentation.security.HttpServletServer;
+
 import org.junit.Assert;
 import org.junit.ClassRule;
 import org.junit.FixMethodOrder;
@@ -22,6 +22,7 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.Collections;
 import java.util.List;
 
 @RunWith(SecurityInstrumentationTestRunner.class)
@@ -48,7 +49,7 @@ public class ServletResponseTest {
         Assert.assertEquals("Wrong method name detected", "service", targetOperation.getMethodName());
         Assert.assertEquals("Wrong Content-type detected", "application/x-www-form-urlencoded", targetOperation.getRequest().getContentType());
         Assert.assertEquals("Wrong URL detected", "/TestUrl", targetOperation.getRequest().getUrl());
-        Assert.assertEquals("Wrong hashcode detected", expectedHash, introspector.getResponseOutStreamHash());
+        Assert.assertEquals("Wrong hashcode detected", Collections.singleton(expectedHash), introspector.getResponseOutStreamHash());
 
     }
 
@@ -69,7 +70,7 @@ public class ServletResponseTest {
         Assert.assertEquals("Wrong method name detected", "service", targetOperation.getMethodName());
         Assert.assertEquals("Wrong Content-type detected", "application/x-www-form-urlencoded", targetOperation.getRequest().getContentType());
         Assert.assertEquals("Wrong URL detected", "/TestUrl", targetOperation.getRequest().getUrl());
-        Assert.assertEquals("Wrong hashcode detected", expectedHash, introspector.getResponseWriterHash());
+        Assert.assertEquals("Wrong hashcode detected", Collections.singleton(expectedHash), introspector.getResponseWriterHash());
     }
 
     @Trace(dispatcher = true)
