@@ -5,7 +5,7 @@ on:
       source-ref:
         description: "Specify source-ref/tag/hash"
         required: true
-        default: 'github-actions'
+        default: 'main'
       apm-repo:
         description: 'The repo of APM source code to use'
         required: true
