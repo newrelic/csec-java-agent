@@ -9,6 +9,7 @@ package com.newrelic.api.agent.security;
 
 import com.newrelic.api.agent.NewRelic;
 import com.newrelic.api.agent.security.schema.SecurityMetaData;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * The New Relic Security API Implementation. Use {@link NewRelicSecurity#getAgent} to obtain the root of a hierarchy of
@@ -33,10 +34,15 @@ public final class NewRelicSecurity {
      * {@code false} otherwise.
      */
     public static boolean isHookProcessingActive(){
-        return isAgentInitComplete && Agent.getInstance().isSecurityActive()
+        return isAgentInitComplete && Agent.getInstance().isSecurityActive() && isInternalThread()
                 && NewRelic.getAgent().getTransaction() != null
                 && NewRelic.getAgent().getTransaction().getSecurityMetaData() instanceof SecurityMetaData;
 //                (Agent.getInstance().getSecurityMetaData() != null);
+    }
+
+    public static boolean isInternalThread(){
+        return StringUtils.startsWithAny(Thread.currentThread().getName(),
+                "NR-CSEC", "New Relic", "NewRelic", "Newrelic");
     }
 
     /**
