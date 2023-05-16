@@ -3,6 +3,7 @@ package jakarta.servlet.http;
 import com.newrelic.api.agent.NewRelic;
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
+import com.newrelic.api.agent.security.instrumentation.helpers.LowSeverityHelper;
 import com.newrelic.api.agent.security.instrumentation.helpers.ServletHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.SecurityMetaData;
@@ -22,7 +23,7 @@ public class HttpServletResponse_Instrumentation {
         boolean isLockAcquired = acquireLockIfPossible(cookie.hashCode());
         AbstractOperation operation = null;
         boolean isOwaspHookEnabled = NewRelic.getAgent().getConfig().getValue(LOW_SEVERITY_HOOKS_ENABLED, DEFAULT);
-        if (isOwaspHookEnabled){
+        if (isOwaspHookEnabled && LowSeverityHelper.isOwaspHookProcessingNeeded()){
             if (isLockAcquired)
                 operation = preprocessSecurityHook(cookie, getClass().getName(), "addCookie");
         }

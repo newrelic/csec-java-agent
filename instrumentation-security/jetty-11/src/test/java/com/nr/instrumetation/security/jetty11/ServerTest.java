@@ -9,7 +9,7 @@ import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.AgentMetaData;
 import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.security.schema.operation.RXSSOperation;
-import security.org.eclipse.jetty11.server.server.HttpServletHelper;
+import security.org.eclipse.jetty11.server.HttpServletHelper;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.handler.AbstractHandler;

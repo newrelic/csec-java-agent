@@ -2,6 +2,7 @@ package com.nr.agent.security.random.javax.crypto;
 
 import com.newrelic.api.agent.NewRelic;
 import com.newrelic.api.agent.security.NewRelicSecurity;
+import com.newrelic.api.agent.security.instrumentation.helpers.LowSeverityHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.SecurityMetaData;
 import com.newrelic.api.agent.security.schema.StringUtils;
@@ -22,7 +23,7 @@ public class Cipher_Instrumentation {
     public static final Cipher_Instrumentation getInstance(String algorithm) {
         AbstractOperation operation = null;
         boolean isOwaspHookEnabled = NewRelic.getAgent().getConfig().getValue(LOW_SEVERITY_HOOKS_ENABLED, DEFAULT);
-        if (isOwaspHookEnabled){
+        if (isOwaspHookEnabled && LowSeverityHelper.isOwaspHookProcessingNeeded()){
             operation = preprocessSecurityHook(algorithm, StringUtils.EMPTY, Cipher_Instrumentation.class.getName(), "getInstance", "CIPHER");
         }
         Cipher_Instrumentation returnValue = null;
@@ -39,7 +40,7 @@ public class Cipher_Instrumentation {
     public static final Cipher_Instrumentation getInstance(String transformation, Provider provider) {
         AbstractOperation operation = null;
         boolean isOwaspHookEnabled = NewRelic.getAgent().getConfig().getValue(LOW_SEVERITY_HOOKS_ENABLED, DEFAULT);
-        if (isOwaspHookEnabled){
+        if (isOwaspHookEnabled && LowSeverityHelper.isOwaspHookProcessingNeeded()){
             operation = preprocessSecurityHook(transformation, provider.getClass().getSimpleName(), Cipher_Instrumentation.class.getName(), "getInstance", "CIPHER");
         }
         Cipher_Instrumentation returnValue = null;

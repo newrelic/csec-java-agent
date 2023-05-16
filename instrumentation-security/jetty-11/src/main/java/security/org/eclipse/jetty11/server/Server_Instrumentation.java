@@ -5,7 +5,7 @@
  *
  */
 
-package security.org.eclipse.jetty11.server.server;
+package security.org.eclipse.jetty11.server;
 
 import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;

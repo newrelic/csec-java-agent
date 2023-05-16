@@ -3,6 +3,7 @@ package javax.servlet.http;
 import com.newrelic.api.agent.NewRelic;
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
+import com.newrelic.api.agent.security.instrumentation.helpers.LowSeverityHelper;
 import com.newrelic.api.agent.security.instrumentation.helpers.ServletHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.SecurityMetaData;
@@ -22,7 +23,7 @@ public class HttpSession_Instrumentation {
         boolean isLockAcquired = acquireLockIfPossible(hashCode());
         AbstractOperation operation = null;
         boolean isOwaspHookEnabled = NewRelic.getAgent().getConfig().getValue(LOW_SEVERITY_HOOKS_ENABLED, DEFAULT);
-        if (isOwaspHookEnabled){
+        if (isOwaspHookEnabled && LowSeverityHelper.isOwaspHookProcessingNeeded()){
             if (isLockAcquired)
                 operation = preprocessSecurityHook(name, value, getClass().getName(), "setAttribute");
         }
@@ -42,7 +43,7 @@ public class HttpSession_Instrumentation {
         boolean isLockAcquired = acquireLockIfPossible(hashCode());
         AbstractOperation operation = null;
         boolean isOwaspHookEnabled = NewRelic.getAgent().getConfig().getValue(LOW_SEVERITY_HOOKS_ENABLED, DEFAULT);
-        if (isOwaspHookEnabled){
+        if (isOwaspHookEnabled && LowSeverityHelper.isOwaspHookProcessingNeeded()){
             if (isLockAcquired)
                 operation = preprocessSecurityHook(name, value, getClass().getName(), "putValue");
         }

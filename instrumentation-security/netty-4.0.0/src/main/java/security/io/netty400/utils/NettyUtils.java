@@ -3,6 +3,7 @@ package security.io.netty400.utils;
 import com.newrelic.api.agent.NewRelic;
 import com.newrelic.api.agent.Transaction;
 import com.newrelic.api.agent.security.NewRelicSecurity;
+import com.newrelic.api.agent.security.instrumentation.helpers.LowSeverityHelper;
 import com.newrelic.api.agent.security.instrumentation.helpers.ServletHelper;
 import com.newrelic.api.agent.security.schema.AgentMetaData;
 import com.newrelic.api.agent.security.schema.SecurityMetaData;
@@ -184,6 +185,9 @@ public class NettyUtils {
             if (!NewRelicSecurity.isHookProcessingActive() || !(msg instanceof FullHttpResponse)) {
                 return;
             }
+            //Add request URI hash to low severity event filter
+            LowSeverityHelper.addRrequestUriToEventFilter(NewRelicSecurity.getAgent().getSecurityMetaData().getRequest());
+
             RXSSOperation rxssOperation = new RXSSOperation(NewRelicSecurity.getAgent().getSecurityMetaData().getRequest(),
                     NewRelicSecurity.getAgent().getSecurityMetaData().getResponse(),
                     className, methodName);

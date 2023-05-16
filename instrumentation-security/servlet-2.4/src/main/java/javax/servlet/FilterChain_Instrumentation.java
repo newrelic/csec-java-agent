@@ -1,6 +1,7 @@
 package javax.servlet;
 
 import com.newrelic.api.agent.security.NewRelicSecurity;
+import com.newrelic.api.agent.security.instrumentation.helpers.LowSeverityHelper;
 import com.newrelic.api.agent.security.schema.AgentMetaData;
 import com.newrelic.api.agent.security.schema.HttpRequest;
 import com.newrelic.api.agent.security.schema.SecurityMetaData;
@@ -86,6 +87,10 @@ public abstract class FilterChain_Instrumentation {
             ) {
                 return;
             }
+
+            //Add request URI hash to low severity event filter
+            LowSeverityHelper.addRrequestUriToEventFilter(NewRelicSecurity.getAgent().getSecurityMetaData().getRequest());
+
             RXSSOperation rxssOperation = new RXSSOperation(NewRelicSecurity.getAgent().getSecurityMetaData().getRequest(),
                     NewRelicSecurity.getAgent().getSecurityMetaData().getResponse(),
                     this.getClass().getName(), HttpServletHelper.SERVICE_METHOD_NAME);

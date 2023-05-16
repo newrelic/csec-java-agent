@@ -44,11 +44,11 @@ idea.module {
 
 subprojects {
     repositories {
+        mavenLocal()
         // Sonatype SNAPSHOT repository
         maven {
             url 'https://oss.sonatype.org/content/repositories/snapshots/'
         }
-        mavenLocal()
         mavenCentral()
         jcenter()
     }
