@@ -16,17 +16,25 @@ public class TestSetupBringUp {
             List<Class> toReTransform = new ArrayList<>();
 
             // java.io.FileSystem and alike
-            Class<?> unixFileSystemProvider = Class.forName("sun.nio.fs.UnixFileSystemProvider");
-            toReTransform.add(unixFileSystemProvider);
+            try {
+                Class<?> unixFileSystemProvider = Class.forName("sun.nio.fs.UnixFileSystemProvider");
+                toReTransform.add(unixFileSystemProvider);
+            } catch (Throwable ignored) {}
 
-            Class<?> bsdFileSystemProvider = Class.forName("sun.nio.fs.BsdFileSystemProvider");
-            toReTransform.add(bsdFileSystemProvider);
+            try {
+                Class<?> bsdFileSystemProvider = Class.forName("sun.nio.fs.BsdFileSystemProvider");
+                toReTransform.add(bsdFileSystemProvider);
+            } catch (Throwable ignored) {}
 
-            Class<?> macOSXFileSystemProvider = Class.forName("sun.nio.fs.MacOSXFileSystemProvider");
-            toReTransform.add(macOSXFileSystemProvider);
+            try {
+                Class<?> macOSXFileSystemProvider = Class.forName("sun.nio.fs.MacOSXFileSystemProvider");
+                toReTransform.add(macOSXFileSystemProvider);
+            } catch (Throwable ignored) {}
 
-            Class<?> abstractFileSystemProvider = Class.forName("sun.nio.fs.AbstractFileSystemProvider");
-            toReTransform.add(abstractFileSystemProvider);
+            try {
+                Class<?> abstractFileSystemProvider = Class.forName("sun.nio.fs.AbstractFileSystemProvider");
+                toReTransform.add(abstractFileSystemProvider);
+            } catch (Throwable ignored) {}
 
             SecurityInstrumentationTestRunner.instrumentation.retransformClasses(toReTransform.toArray(new Class<?>[0]));
         } catch (Throwable e) {
