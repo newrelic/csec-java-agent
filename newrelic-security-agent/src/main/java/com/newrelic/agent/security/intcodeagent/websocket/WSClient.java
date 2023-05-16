@@ -10,6 +10,7 @@ import com.newrelic.agent.security.intcodeagent.logging.IAgentConstants;
 import com.newrelic.agent.security.intcodeagent.utils.CommonUtils;
 import com.newrelic.agent.security.util.IUtilConstants;
 import com.newrelic.api.agent.NewRelic;
+import com.newrelic.api.agent.security.Agent;
 import org.apache.commons.lang3.StringUtils;
 import org.java_websocket.WebSocket;
 import org.java_websocket.WebSocketImpl;
@@ -171,6 +172,15 @@ public class WSClient extends WebSocketClient {
         WebSocket conn = getConnection();
         if (conn instanceof WebSocketImpl) {
             this.connection = (WebSocketImpl) conn;
+        }
+
+        // Set all WS thread names to start with NR-CSEC. This is needed to determine if a hook is invoked on NR thread.
+        Set<Thread> threadSet = Thread.getAllStackTraces().keySet();
+        for (Thread thread : threadSet) {
+            if(StringUtils.startsWithAny(thread.getName(), "WebSocketWriteThread-", "WebSocketConnectReadThread-", "connectionLostChecker")){
+                thread.setDaemon(true);
+                thread.setName("NR-CSEC-" + thread.getName());
+            }
         }
     }
 
