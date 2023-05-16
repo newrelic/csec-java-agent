@@ -37,11 +37,13 @@ public class LowSeverityHelper {
 
     public static boolean isOwaspHookProcessingNeeded(){
         SecurityMetaData securityMetaData = NewRelicSecurity.getAgent().getSecurityMetaData();
-        if (!securityMetaData.getFuzzRequestIdentifier().getK2Request()) {
-            String requestURL = securityMetaData.getRequest().getUrl();
-            if (StringUtils.isNotBlank(requestURL) && !LowSeverityHelper.checkIfLowSeverityEventAlreadyEncountered(requestURL.hashCode())) {
-                return true;
-            }
+        String requestURL = securityMetaData.getRequest().getUrl();
+        if (StringUtils.isNotBlank(requestURL) && !LowSeverityHelper.checkIfLowSeverityEventAlreadyEncountered(requestURL.hashCode())) {
+            return true;
+        }
+
+        if (securityMetaData != null && securityMetaData.getFuzzRequestIdentifier()!= null && securityMetaData.getFuzzRequestIdentifier().getK2Request()) {
+            return true;
         }
         return false;
     }
