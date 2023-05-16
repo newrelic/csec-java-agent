@@ -7,6 +7,9 @@
 
 package com.newrelic.api.agent.security;
 
+import com.newrelic.api.agent.NewRelic;
+import com.newrelic.api.agent.security.schema.SecurityMetaData;
+
 /**
  * The New Relic Security API Implementation. Use {@link NewRelicSecurity#getAgent} to obtain the root of a hierarchy of
  * objects offering additional capabilities.
@@ -30,8 +33,10 @@ public final class NewRelicSecurity {
      * {@code false} otherwise.
      */
     public static boolean isHookProcessingActive(){
-        return isAgentInitComplete && Agent.getInstance().isSecurityActive() &&
-                (Agent.getInstance().getSecurityMetaData() != null);
+        return isAgentInitComplete && Agent.getInstance().isSecurityActive()
+                && NewRelic.getAgent().getTransaction() != null
+                && NewRelic.getAgent().getTransaction().getSecurityMetaData() instanceof SecurityMetaData;
+//                (Agent.getInstance().getSecurityMetaData() != null);
     }
 
     /**
