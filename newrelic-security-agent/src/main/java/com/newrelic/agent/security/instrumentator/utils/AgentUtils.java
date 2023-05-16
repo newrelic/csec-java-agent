@@ -78,9 +78,6 @@ public class AgentUtils {
     public static final String LOG_LEVEL_PROVIDED_IN_POLICY_IS_INCORRECT_DEFAULTING_TO_INFO = "Log level provided in policy is incorrect: %s. Staying at current level";
     public static final String ERROR_WHILE_EXTRACTING_FILE_FROM_ARCHIVE_S_S = "Error while extracting file from archive : %s : %s";
     public static final String OVER_RIDE_POLICY_DISABLED_IN_NR_CONFIG_AT_S = "Over-ride policy disabled in NR config at '%s'.";
-    public static final String COLLECTOR_IS_NOW_S = "Collector is now %s for %s";
-    public static final String ACTIVE = "active";
-    public static final String INACTIVE = "inactive";
     public static final String OVERRIDDEN = "overridden";
     public static final String NR_POLICY_OVER_RIDE_IN_PLACE_UPDATED_POLICY_S = "NR policy over-ride in place. Updated policy : %s";
     public static final String POLICY_VERSION = "policy-version";

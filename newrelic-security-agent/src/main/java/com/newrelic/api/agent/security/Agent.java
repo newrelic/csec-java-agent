@@ -141,12 +141,6 @@ public class Agent implements SecurityAgent {
         populateLinkingMetadata();
 
         startK2Services();
-        // log init finish
-        logger.logInit(
-                LogLevel.INFO,
-                String.format(AGENT_INIT_SUCCESSFUL, info.getVMPID(), info.getApplicationUUID(), info.getApplicationInfo()),
-                Agent.class.getName()
-        );
         info.agentStatTrigger();
 
         System.out.printf("This application instance is now being protected by New Relic Security under id %s\n", info.getApplicationUUID());
@@ -203,7 +197,7 @@ public class Agent implements SecurityAgent {
             cancelActiveServiceTasks();
         }
         initialise();
-        NewRelic.getAgent().getLogger().log(Level.INFO, "Security refresh was invoked, agent initiation is successful ");
+        NewRelic.getAgent().getLogger().log(Level.INFO, "Security refresh was invoked, Security Agent initiation is successful.");
         return true;
     }
 

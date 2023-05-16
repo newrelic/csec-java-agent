@@ -523,51 +523,10 @@ public interface IAgentConstants {
 
 
 
-    String FIELD_SOCKET_CHANNEL = "socketChannel";
-    String ORG_XNIO_NIO_NIO_SOCKET_CONDUIT = "org.xnio.nio.NioSocketConduit";
-    String FIELD_ORIGINAL_SOURCE_CONDUIT = "originalSourceConduit";
-    String FIELD_CONNECTION = "connection";
-    String METHOD_GET_REMOTE_HOST_ADDRESS = "getRemoteHostAddress";
-    String METHOD_GET_CONNECTION_DESCRIPTOR = "getConnectionDescriptor";
-    String METHOD_GET_VIRTUAL_CONNECTION = "getVirtualConnection";
-    String COM_IBM_WSSPI_CHANNELFW_CONNECTION_DESCRIPTOR = "com.ibm.wsspi.channelfw.ConnectionDescriptor";
-    String COM_IBM_WSSPI_CHANNELFW_VIRTUAL_CONNECTION = "com.ibm.wsspi.channelfw.VirtualConnection";
-    String COM_IBM_WS_HTTP_CHANNEL_INTERNAL_INBOUND_HTTP_INBOUND_LINK = "com.ibm.ws.http.channel.internal.inbound.HttpInboundLink";
-    String COM_IBM_WS_HTTP_CHANNEL_INBOUND_HTTP_INBOUND_LINK = "com.ibm.ws.http.channel.inbound.impl.HttpInboundLink";
-
     String INVOKE_0 = "invoke0";
     String READ_OBJECT = "readObject";
     String REFLECT_NATIVE_METHOD_ACCESSOR_IMPL = "reflect.NativeMethodAccessorImpl";
-    String INVOKE = "invoke";
-    String JAVA_IO_UNIX_FILE_SYSTEM = "java/io/UnixFileSystem";
-    String JAVA_IO_RANDOM_ACCESS_FILE = "java/io/RandomAccessFile";
-    String INTERCEPTED_HTTP_REQUEST = "Intercepted HTTP request :: %s :: %s";
-
-    String GET_DATA = "getData";
-    String GET_SIZE = "getSize";
-    String GET_NAVIGATOR = "getNavigator";
-    String MAIN_STRING = "mainString";
-    // CRYPTO Constants
-    String CIPHER = "CIPHER";
-    String JAVAX_CRYPTO_CIPHER_GETINSTANCE_STRING = "public static final javax.crypto.Cipher javax.crypto.Cipher.getInstance(java.lang.String) throws java.security.NoSuchAlgorithmException,javax.crypto.NoSuchPaddingException";
-    String JAVAX_CRYPTO_CIPHER_GETINSTANCE_STRING_PROVIDER = "public static final javax.crypto.Cipher javax.crypto.Cipher.getInstance(java.lang.String,java.security.Provider) throws java.security.NoSuchAlgorithmException,javax.crypto.NoSuchPaddingException";
-
-    String KEYGENERATOR = "KEYGENERATOR";
-    String JAVAX_CRYPTO_KEYGENERATOR_GETINSTANCE_STRING = "public static final javax.crypto.KeyGenerator javax.crypto.KeyGenerator.getInstance(java.lang.String) throws java.security.NoSuchAlgorithmException";
-    String JAVAX_CRYPTO_KEYGENERATOR_GETINSTANCE_STRING_STRING = "public static final javax.crypto.KeyGenerator javax.crypto.KeyGenerator.getInstance(java.lang.String,java.lang.String) throws java.security.NoSuchAlgorithmException,java.security.NoSuchProviderException";
-    String JAVAX_CRYPTO_KEYGENERATOR_GETINSTANCE_STRING_PROVIDER = "public static final javax.crypto.KeyGenerator javax.crypto.KeyGenerator.getInstance(java.lang.String,java.security.Provider) throws java.security.NoSuchAlgorithmException";
-
-    String KEYPAIRGENERATOR = "KEYPAIRGENERATOR";
-    String JAVA_SECURITY_KEYPAIRGENERATOR_GETINSTANCE_STRING = "public static java.security.KeyPairGenerator java.security.KeyPairGenerator.getInstance(java.lang.String) throws java.security.NoSuchAlgorithmException";
-    String JAVA_SECURITY_KEYPAIRGENERATOR_GETINSTANCE_STRING_STRING = "public static java.security.KeyPairGenerator java.security.KeyPairGenerator.getInstance(java.lang.String,java.lang.String) throws java.security.NoSuchAlgorithmException,java.security.NoSuchProviderException";
-    String JAVA_SECURITY_KEYPAIRGENERATOR_GETINSTANCE_STRING_PROVIDER = "public static java.security.KeyPairGenerator java.security.KeyPairGenerator.getInstance(java.lang.String,java.security.Provider) throws java.security.NoSuchAlgorithmException";
-
-    // HASH Constants
-    String JAVA_SECURITY_MESSAGEDIGEST_GETINSTANCE_STRING = "public static java.security.MessageDigest java.security.MessageDigest.getInstance(java.lang.String) throws java.security.NoSuchAlgorithmException";
-    String JAVA_SECURITY_MESSAGEDIGEST_GETINSTANCE_STRING_STRING = "public static java.security.MessageDigest java.security.MessageDigest.getInstance(java.lang.String,java.lang.String) throws java.security.NoSuchAlgorithmException,java.security.NoSuchProviderException";
-    String JAVA_SECURITY_MESSAGEDIGEST_GETINSTANCE_STRING_PROVIDER = "public static java.security.MessageDigest java.security.MessageDigest.getInstance(java.lang.String,java.security.Provider) throws java.security.NoSuchAlgorithmException";
     String BLOCKING_END_TIME = "blockingEndTime";
-    String ERROR_WHILE_DETERMINING_HOSTIP_FROM_DEFAULT_GATEWAY = "Error while determining hostip from default gateway";
 
     String INIT = "<init>";
     String SUN_REFLECT = "sun.reflect.";
@@ -577,10 +536,6 @@ public interface IAgentConstants {
     String LINUX = "linux";
     String WINDOWS = "windows";
     String MAC = "mac";
-
-    String EXCEPTION_OCCURRED_IN_CREATE_APPLICATION_INFO_BEAN = "Exception occurred in createApplicationInfoBean: ";
-    String EXCEPTION_OCCURRED_IN_EVENT_SEND_POOL = "Exception occurred in EventSendPool: ";
-    String ERROR_OCCURRED_WHILE_TRYING_TO_CONNECT_TO_WSOCKET = "Error occurred while trying to connect to web-socket: ";
 
     String APPLICATION_INFO_SENT_ON_WS_CONNECT = "[STEP-3][COMPLETE][APP_INFO] Application info sent to Prevent-Web service : %s";
     String SENDING_APPLICATION_INFO_ON_WS_CONNECT = "[APP_INFO] Sending application info to Prevent-Web service : %s";
@@ -602,22 +557,9 @@ public interface IAgentConstants {
     String AGENT_POLICY_PARAM_APPLIED_S = "[POLICY] Agent Policy parameters applied : %s";
     String UNABLE_TO_SET_AGENT_POLICY_PARAM_DUE_TO_ERROR = "[POLICY] Unable to set Agent Policy Parameters due to error:";
 
-    String STARTING_MODULE_LOG = "[BEGIN][MODULE] Starting %s.";
-    String ERROR_STARTING_MODULE_LOG = "[MODULE] Error while starting %s :L ";
     String STARTED_MODULE_LOG = "[COMPLETE][MODULE] Started %s.";
-
-    String AGENT_INIT_LOG_STEP_FIVE = "[STEP-5][BEGIN][MODULE] Start Security agent Threads/pools/scheduler.";
     String AGENT_INIT_LOG_STEP_FIVE_END = "[STEP-5] => Started Security agent Threads/pools/scheduler.";
-    int NUMBER_OF_RETRIES = 7;
-    String POLICY_NO_CHANGE_IN_GLOBAL_POLICY_PARAMETERS_RESPONSE_BODY = "[POLICY] No change in global policy parameters response : %s : body: %s";
-    String POLICY_GLOBAL_POLICY_PARAMETERS_API_FAILURE_RESPONSE_BODY = "[POLICY] API global policy parameters failure!!! response : %s : body: %s";
-    String POLICY_VERSION_CHANGED_POLICY_PARAMETER_PULL_REQUIRED_RESPONSE_BODY = "[POLICY] Version changed policy parameter pull required response : %s : body: %s";
-    String POLICY_PARAMETER_VERSION_CHECK_FAILED_MESSAGE_CAUSE = "Policy parameter version check failed MESSAGE: %s CAUSE: %s";
 
-
-    String DEFAULT_K2HOME_LINUX = "/opt/k2root";
-    String DEFAULT_K2HOME_WIN = "C:\\Users\\Public\\K2\\k2root";
-    String POLICY_PULL_RESPONSE_IS_NULL = "Policy pull response is null!!!";
     String VULNERABLE = "VULNERABLE";
     String TERMINATING = "Terminating";
     String SHUTTING_DOWN_WITH_STATUS = "Shutting down with status: ";
