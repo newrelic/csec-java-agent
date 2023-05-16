@@ -82,9 +82,6 @@ jobs:
       - name: Publish CSEC to local
         uses: ./.github/actions/publish-csec-local
 
-      - name: Save caches
-        uses: ./.github/actions/save-caches
-
       - name: Run CSEC unit tests
         if: ${{ inputs.csec-run-unittest == 'true' }}
         uses: ./.github/actions/unit-test
