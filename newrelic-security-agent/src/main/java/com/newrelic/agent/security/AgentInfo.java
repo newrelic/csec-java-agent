@@ -151,22 +151,22 @@ public class AgentInfo {
     public boolean agentStatTrigger(){
         boolean state = true;
         if(StringUtils.isBlank(getLinkingMetadata().getOrDefault(INRSettingsKey.NR_ENTITY_GUID, StringUtils.EMPTY))){
-            logger.log(LogLevel.WARNING, "NewRelic security module INACTIVE!!! since entity.guid is not known.", AgentInfo.class.getName());
+            logger.log(LogLevel.WARNING, "NewRelic security Agent INACTIVE!!! since entity.guid is not known.", AgentInfo.class.getName());
             state = false;
         }
         else if(StringUtils.isBlank(getLinkingMetadata().getOrDefault(INRSettingsKey.AGENT_RUN_ID_LINKING_METADATA, StringUtils.EMPTY))){
-            logger.log(LogLevel.WARNING, "NewRelic security module INACTIVE!!! since agentRunId is not known.", AgentInfo.class.getName());
+            logger.log(LogLevel.WARNING, "NewRelic security Agent INACTIVE!!! since agentRunId is not known.", AgentInfo.class.getName());
             state = false;
         }
         else if (!AgentConfig.getInstance().isNRSecurityEnabled()) {
-            logger.log(LogLevel.WARNING, "NewRelic security module INACTIVE!!! since security config is disabled.", AgentInfo.class.getName());
+            logger.log(LogLevel.WARNING, "NewRelic security Agent INACTIVE!!! since security config is disabled.", AgentInfo.class.getName());
             state = false;
         } else if (!WSUtils.isConnected()) {
-            logger.log(LogLevel.WARNING, "NewRelic security module INACTIVE!!! Can't connect with prevent web agent.", AgentInfo.class.getName());
+            logger.log(LogLevel.WARNING, "NewRelic security Agent INACTIVE!!! Can't connect with prevent web agent.", AgentInfo.class.getName());
             state = false;
         }
         if(state) {
-            logger.logInit(LogLevel.INFO, String.format("Collector is now ACTIVE for %s", applicationUUID), AgentInfo.class.getName());
+            logger.logInit(LogLevel.INFO, String.format("Security Agent is now ACTIVE for %s", applicationUUID), AgentInfo.class.getName());
         }
         setAgentActive(state);
         return state;

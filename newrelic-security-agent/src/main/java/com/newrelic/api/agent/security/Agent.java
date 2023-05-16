@@ -36,6 +36,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
 
 import static com.newrelic.agent.security.intcodeagent.logging.IAgentConstants.*;
 
@@ -106,8 +107,15 @@ public class Agent implements SecurityAgent {
             config = AgentConfig.getInstance();
             info = AgentInfo.getInstance();
         }
-        logger = FileLoggerThreadPool.getInstance();
         config.instantiate();
+        logger = FileLoggerThreadPool.getInstance();
+        logger.logInit(
+                LogLevel.INFO,
+                "[STEP-1] => Security agent is starting",
+                Agent.class.getName());
+        logger.logInit(
+                LogLevel.INFO,
+                String.format("[STEP-2] => Generating unique identifier: %s", AgentInfo.getInstance().getApplicationUUID()), AgentInfo.class.getName());
         config.setConfig(CollectorConfigurationUtils.populateCollectorConfig());
 
         try {
@@ -117,7 +125,10 @@ public class Agent implements SecurityAgent {
             // TODO: Need to confirm requirement of this throw.
             throw new RuntimeException("Unable to read CSEC Collector build info", e);
         }
-
+        logger.logInit(
+                LogLevel.INFO,
+                "[STEP-3] => Gathering information about the application",
+                this.getClass().getName());
         info.setIdentifier(ApplicationInfoUtils.envDetection());
         ApplicationInfoUtils.continueIdentifierProcessing(info.getIdentifier(), config.getConfig());
         info.generateAppInfo(config.getConfig());
@@ -130,12 +141,6 @@ public class Agent implements SecurityAgent {
         populateLinkingMetadata();
 
         startK2Services();
-        // log init finish
-        logger.logInit(
-                LogLevel.INFO,
-                String.format(AGENT_INIT_SUCCESSFUL, info.getVMPID(), info.getApplicationUUID(), info.getApplicationInfo()),
-                Agent.class.getName()
-        );
         info.agentStatTrigger();
 
         System.out.printf("This application instance is now being protected by New Relic Security under id %s\n", info.getApplicationUUID());
@@ -192,6 +197,7 @@ public class Agent implements SecurityAgent {
             cancelActiveServiceTasks();
         }
         initialise();
+        NewRelic.getAgent().getLogger().log(Level.INFO, "Security refresh was invoked, Security Agent initiation is successful.");
         return true;
     }
 

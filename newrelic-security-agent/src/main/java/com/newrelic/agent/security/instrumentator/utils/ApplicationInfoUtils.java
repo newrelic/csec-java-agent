@@ -36,7 +36,7 @@ public class ApplicationInfoUtils {
 
     private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
 
-    private static final String APP_INFO_GATHERING_FINISHED = "[APP_INFO] Application info generated : %s.";
+    private static final String APP_INFO_GATHERING_FINISHED = "[APP_INFO] Application info generated for pid : %s.";
     private static final String APP_INFO_GATHERING_STARTED = "[STEP-3][BEGIN][APP_INFO] Gathering application info for current process.";
 
     public static String getContainerID() {
