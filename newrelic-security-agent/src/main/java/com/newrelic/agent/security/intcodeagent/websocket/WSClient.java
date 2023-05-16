@@ -173,15 +173,6 @@ public class WSClient extends WebSocketClient {
         if (conn instanceof WebSocketImpl) {
             this.connection = (WebSocketImpl) conn;
         }
-
-        // Set all WS thread names to start with NR-CSEC. This is needed to determine if a hook is invoked on NR thread.
-        Set<Thread> threadSet = Thread.getAllStackTraces().keySet();
-        for (Thread thread : threadSet) {
-            if(StringUtils.startsWithAny(thread.getName(), "WebSocketWriteThread-", "WebSocketConnectReadThread-", "connectionLostChecker")){
-                thread.setDaemon(true);
-                thread.setName("NR-CSEC-" + thread.getName());
-            }
-        }
     }
 
     @Override
