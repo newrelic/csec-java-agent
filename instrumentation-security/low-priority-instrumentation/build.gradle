@@ -10,7 +10,8 @@ dependencies {
 
 
 jar {
-    manifest { attributes 'Implementation-Title': 'com.newrelic.instrumentation.security.low-severity-hooks' }
+    manifest { attributes 'Implementation-Title': 'com.newrelic.instrumentation.security.low-priority-instrumentation',
+            'Enabled': 'false' }
 }
 
 verifyInstrumentation {

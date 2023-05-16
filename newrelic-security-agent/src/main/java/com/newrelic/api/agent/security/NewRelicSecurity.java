@@ -34,7 +34,7 @@ public final class NewRelicSecurity {
      * {@code false} otherwise.
      */
     public static boolean isHookProcessingActive(){
-        return isAgentInitComplete && Agent.getInstance().isSecurityActive() && isInternalThread()
+        return isAgentInitComplete && Agent.getInstance().isSecurityActive() && !isInternalThread()
                 && NewRelic.getAgent().getTransaction() != null
                 && NewRelic.getAgent().getTransaction().getSecurityMetaData() instanceof SecurityMetaData;
 //                (Agent.getInstance().getSecurityMetaData() != null);
