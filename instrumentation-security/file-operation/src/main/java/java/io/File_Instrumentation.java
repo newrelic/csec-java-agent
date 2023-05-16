@@ -20,26 +20,6 @@ import static com.newrelic.api.agent.security.instrumentation.helpers.LowSeverit
 @Weave(type = MatchType.BaseClass, originalName = "java.io.File")
 public abstract class File_Instrumentation {
 
-    public boolean exists() {
-        boolean isFileLockAcquired = acquireFileLockIfPossible();
-        boolean isOwaspHookEnabled = NewRelic.getAgent().getConfig().getValue(LOW_SEVERITY_HOOKS_ENABLED, DEFAULT);
-
-        AbstractOperation operation = null;
-        if (isOwaspHookEnabled && isFileLockAcquired && !FileHelper.skipExistsEvent(this.getName()) && LowSeverityHelper.isOwaspHookProcessingNeeded()) {
-            operation = preprocessSecurityHook(true, FileHelper.METHOD_NAME_EXISTS, true, this);
-        }
-        boolean returnVal = false;
-        try {
-            returnVal = Weaver.callOriginal();
-        } finally {
-            registerExitOperation(isFileLockAcquired, operation);
-            if (isFileLockAcquired) {
-                releaseFileLock();
-            }
-        }
-        return returnVal;
-    }
-
     public boolean createNewFile() throws IOException {
         boolean isFileLockAcquired = acquireFileLockIfPossible();
         AbstractOperation operation = null;
