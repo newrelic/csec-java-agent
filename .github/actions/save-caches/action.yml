@@ -1,0 +1,20 @@
+name: Save Gradle and Maven caches
+description: Save Gradle and Maven caches
+
+runs:
+  using: composite
+
+  steps:
+    - uses: actions/cache/save@v3
+      if: always()
+      with:
+        path: |
+          ~/.gradle/caches
+          ~/.gradle/wrapper
+        key: ${{ runner.os }}-gradle-${{ github.ref_name }}
+
+    - uses: actions/cache/save@v3
+      if: always()
+      with:
+        path: ~/.m2/repository
+        key: ${{ runner.os }}-maven-${{ github.ref_name }}

@@ -12,6 +12,9 @@ runs:
         ./gradlew ${GRADLE_OPTIONS} dist --parallel 
         cd ..
 
+    - name: Save caches
+      uses: ./.github/actions/save-caches
+
     - name: Capture custom jar
       uses: actions/upload-artifact@v3
       with:

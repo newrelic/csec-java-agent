@@ -10,3 +10,6 @@ runs:
       run: ./gradlew ${GRADLE_OPTIONS} verifyInstrumentation --parallel
       env:
         JAVA_HOME: ${{ env.JAVA_HOME_17_X64 }}
+
+    - name: Save caches
+      uses: ./.github/actions/save-caches
