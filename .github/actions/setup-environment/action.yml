@@ -139,6 +139,3 @@ runs:
         rm -rf ~/.m2/repository/com/newrelic
         ./gradlew ${GRADLE_OPTIONS} :newrelic-api:publishToMavenLocal :agent-bridge:publishToMavenLocal :agent-bridge-datastore:publishToMavenLocal :newrelic-weaver-api:publishToMavenLocal :newrelic-weaver:publishToMavenLocal :newrelic-weaver-scala:publishToMavenLocal :newrelic-weaver-scala-api:publishToMavenLocal --parallel
         cd ..
-
-    - name: Save caches
-      uses: ./.github/actions/save-caches
