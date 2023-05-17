@@ -13,8 +13,8 @@ jobs:
       source-ref: 'main'
       apm-repo: 'newrelic/newrelic-java-agent'
       apm-source-ref: 'k2-integration'
-      csec-run-unittest: true
-      csec-run-instrumentation-verify: true
-      is-release: true
+      csec-run-unittest: 'true'
+      csec-run-instrumentation-verify: 'true'
+      is-release: 'true'
       version-suffix: '-limited-preview'
-      slack-notify: true
+      slack-notify: 'true'

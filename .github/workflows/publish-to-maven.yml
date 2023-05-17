@@ -54,17 +54,17 @@ on:
       csec-run-unittest:
         description: 'Whether to run CSEC instrumentation unit tests'
         required: true
-        type: boolean
+        type: string
         default: true
       csec-run-instrumentation-verify:
         description: 'Whether to run CSEC instrumentation verifier'
         required: true
-        type: boolean
+        type: string
         default: true
       is-release:
         description: 'Is this a release run'
         required: true
-        type: boolean
+        type: string
         default: false
       version-suffix:
         description: 'version suffix to be added, if any'
@@ -73,7 +73,7 @@ on:
       slack-notify:
         description: 'Whether to notify build status on slack'
         required: true
-        type: boolean
+        type: string
         default: false
 
 jobs:
