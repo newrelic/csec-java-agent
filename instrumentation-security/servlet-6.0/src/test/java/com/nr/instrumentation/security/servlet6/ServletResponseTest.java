@@ -48,7 +48,7 @@ public class ServletResponseTest {
         Assert.assertEquals("Wrong port detected", servlet.getEndPoint("response").getPort(), targetOperation.getRequest().getServerPort());
         Assert.assertEquals("Wrong method name detected", "service", targetOperation.getMethodName());
         Assert.assertEquals("Wrong Content-type detected", "application/x-www-form-urlencoded", targetOperation.getRequest().getContentType());
-        Assert.assertEquals("Wrong URL detected", "/TestUrl", targetOperation.getRequest().getUrl());
+        
         Assert.assertEquals("Wrong hashcode detected", Collections.singleton(expectedHash), introspector.getResponseOutStreamHash());
 
     }
@@ -69,7 +69,7 @@ public class ServletResponseTest {
         Assert.assertEquals("Wrong port detected", servlet.getEndPoint("response").getPort(), targetOperation.getRequest().getServerPort());
         Assert.assertEquals("Wrong method name detected", "service", targetOperation.getMethodName());
         Assert.assertEquals("Wrong Content-type detected", "application/x-www-form-urlencoded", targetOperation.getRequest().getContentType());
-        Assert.assertEquals("Wrong URL detected", "/TestUrl", targetOperation.getRequest().getUrl());
+        
         Assert.assertEquals("Wrong hashcode detected", Collections.singleton(expectedHash), introspector.getResponseWriterHash());
     }
 

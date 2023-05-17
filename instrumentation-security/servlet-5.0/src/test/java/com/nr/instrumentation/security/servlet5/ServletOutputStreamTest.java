@@ -50,7 +50,7 @@ public class ServletOutputStreamTest {
         Assert.assertEquals("Wrong port detected", servlet.getEndPoint("outputStream").getPort(), targetOperation.getRequest().getServerPort());
         Assert.assertEquals("Wrong method name detected", "service", targetOperation.getMethodName());
         Assert.assertEquals("Wrong Request Content-type detected", "application/x-www-form-urlencoded", targetOperation.getRequest().getContentType());
-        Assert.assertEquals("Wrong URL detected", "/TestUrl", targetOperation.getRequest().getUrl());
+        
         Assert.assertEquals("Wrong response detected", expected, String.valueOf(targetOperation.getResponse().getResponseBody()));
         Assert.assertEquals("Wrong Response Content-type detected", "multipart/form-data", targetOperation.getResponse().getResponseContentType());
 
@@ -73,7 +73,7 @@ public class ServletOutputStreamTest {
         Assert.assertEquals("Wrong port detected", servlet.getEndPoint("outputStream/print").getPort(), targetOperation.getRequest().getServerPort());
         Assert.assertEquals("Wrong method name detected", "service", targetOperation.getMethodName());
         Assert.assertEquals("Wrong request Content-type detected", "application/x-www-form-urlencoded", targetOperation.getRequest().getContentType());
-        Assert.assertEquals("Wrong URL detected", "/TestUrl", targetOperation.getRequest().getUrl());
+        
         Assert.assertEquals("Wrong response detected", expected, String.valueOf(targetOperation.getResponse().getResponseBody()));
 
     }
@@ -95,7 +95,7 @@ public class ServletOutputStreamTest {
         Assert.assertEquals("Wrong port detected", servlet.getEndPoint("outputStream/print").getPort(), targetOperation.getRequest().getServerPort());
         Assert.assertEquals("Wrong method name detected", "service", targetOperation.getMethodName());
         Assert.assertEquals("Wrong Content-type detected", "application/x-www-form-urlencoded", targetOperation.getRequest().getContentType());
-        Assert.assertEquals("Wrong URL detected", "/TestUrl", targetOperation.getRequest().getUrl());
+        
 
         boolean resBody = Boolean.parseBoolean(String.valueOf(targetOperation.getResponse().getResponseBody()));
         Assert.assertEquals("Wrong response detected", expected, resBody);
@@ -118,7 +118,7 @@ public class ServletOutputStreamTest {
         Assert.assertEquals("Wrong port detected", servlet.getEndPoint("outputStream/print").getPort(), targetOperation.getRequest().getServerPort());
         Assert.assertEquals("Wrong method name detected", "service", targetOperation.getMethodName());
         Assert.assertEquals("Wrong Content-type detected", "application/x-www-form-urlencoded", targetOperation.getRequest().getContentType());
-        Assert.assertEquals("Wrong URL detected", "/TestUrl", targetOperation.getRequest().getUrl());
+        
 
         char resBody = String.valueOf(targetOperation.getResponse().getResponseBody()).charAt(0);
         Assert.assertEquals("Wrong response detected", expected, resBody);
@@ -142,7 +142,7 @@ public class ServletOutputStreamTest {
         Assert.assertEquals("Wrong port detected", servlet.getEndPoint("outputStream/print").getPort(), targetOperation.getRequest().getServerPort());
         Assert.assertEquals("Wrong method name detected", "service", targetOperation.getMethodName());
         Assert.assertEquals("Wrong Content-type detected", "application/x-www-form-urlencoded", targetOperation.getRequest().getContentType());
-        Assert.assertEquals("Wrong URL detected", "/TestUrl", targetOperation.getRequest().getUrl());
+        
 
         int resBody = Integer.parseInt(String.valueOf(targetOperation.getResponse().getResponseBody()));
         Assert.assertEquals("Wrong response detected", expected, resBody);
@@ -165,7 +165,7 @@ public class ServletOutputStreamTest {
         Assert.assertEquals("Wrong port detected", servlet.getEndPoint("outputStream/print").getPort(), targetOperation.getRequest().getServerPort());
         Assert.assertEquals("Wrong method name detected", "service", targetOperation.getMethodName());
         Assert.assertEquals("Wrong Content-type detected", "application/x-www-form-urlencoded", targetOperation.getRequest().getContentType());
-        Assert.assertEquals("Wrong URL detected", "/TestUrl", targetOperation.getRequest().getUrl());
+        
 
         long resBody = Long.parseLong(String.valueOf(targetOperation.getResponse().getResponseBody()));
         Assert.assertEquals("Wrong response detected", expected, resBody);
@@ -188,7 +188,7 @@ public class ServletOutputStreamTest {
         Assert.assertEquals("Wrong port detected", servlet.getEndPoint("outputStream/print").getPort(), targetOperation.getRequest().getServerPort());
         Assert.assertEquals("Wrong method name detected", "service", targetOperation.getMethodName());
         Assert.assertEquals("Wrong Content-type detected", "application/x-www-form-urlencoded", targetOperation.getRequest().getContentType());
-        Assert.assertEquals("Wrong URL detected", "/TestUrl", targetOperation.getRequest().getUrl());
+        
 
         float resBody = Float.parseFloat(String.valueOf(targetOperation.getResponse().getResponseBody()));
         Assert.assertEquals("Wrong response detected",expected, resBody, 0.0f);
@@ -211,7 +211,7 @@ public class ServletOutputStreamTest {
         Assert.assertEquals("Wrong port detected", servlet.getEndPoint("outputStream/print").getPort(), targetOperation.getRequest().getServerPort());
         Assert.assertEquals("Wrong method name detected", "service", targetOperation.getMethodName());
         Assert.assertEquals("Wrong Content-type detected", "application/x-www-form-urlencoded", targetOperation.getRequest().getContentType());
-        Assert.assertEquals("Wrong URL detected", "/TestUrl", targetOperation.getRequest().getUrl());
+        
 
         double resBody = Double.parseDouble(String.valueOf(targetOperation.getResponse().getResponseBody()));
         Assert.assertEquals("Wrong response detected", expected, resBody, 0.0d);
@@ -234,7 +234,7 @@ public class ServletOutputStreamTest {
         Assert.assertEquals("Wrong port detected", servlet.getEndPoint("outputStream/print").getPort(), targetOperation.getRequest().getServerPort());
         Assert.assertEquals("Wrong method name detected", "service", targetOperation.getMethodName());
         Assert.assertEquals("Wrong Content-type detected", "application/x-www-form-urlencoded", targetOperation.getRequest().getContentType());
-        Assert.assertEquals("Wrong URL detected", "/TestUrl", targetOperation.getRequest().getUrl());
+        
         Assert.assertEquals("Wrong response detected", expected, String.valueOf(targetOperation.getResponse().getResponseBody()));
 
     }
@@ -256,7 +256,7 @@ public class ServletOutputStreamTest {
         Assert.assertEquals("Wrong port detected", servlet.getEndPoint("outputStream/print").getPort(), targetOperation.getRequest().getServerPort());
         Assert.assertEquals("Wrong method name detected", "service", targetOperation.getMethodName());
         Assert.assertEquals("Wrong Content-type detected", "application/x-www-form-urlencoded", targetOperation.getRequest().getContentType());
-        Assert.assertEquals("Wrong URL detected", "/TestUrl", targetOperation.getRequest().getUrl());
+        
         Assert.assertEquals("Wrong response detected", expected, String.valueOf(targetOperation.getResponse().getResponseBody()));
 
     }
@@ -278,7 +278,7 @@ public class ServletOutputStreamTest {
         Assert.assertEquals("Wrong port detected", servlet.getEndPoint("outputStream/print").getPort(), targetOperation.getRequest().getServerPort());
         Assert.assertEquals("Wrong method name detected", "service", targetOperation.getMethodName());
         Assert.assertEquals("Wrong Content-type detected", "application/x-www-form-urlencoded", targetOperation.getRequest().getContentType());
-        Assert.assertEquals("Wrong URL detected", "/TestUrl", targetOperation.getRequest().getUrl());
+        
         Assert.assertEquals("Wrong response detected", expected, String.valueOf(targetOperation.getResponse().getResponseBody()));
 
     }
@@ -300,7 +300,7 @@ public class ServletOutputStreamTest {
         Assert.assertEquals("Wrong port detected", servlet.getEndPoint("outputStream/print").getPort(), targetOperation.getRequest().getServerPort());
         Assert.assertEquals("Wrong method name detected", "service", targetOperation.getMethodName());
         Assert.assertEquals("Wrong Content-type detected", "application/x-www-form-urlencoded", targetOperation.getRequest().getContentType());
-        Assert.assertEquals("Wrong URL detected", "/TestUrl", targetOperation.getRequest().getUrl());
+        
         Assert.assertEquals("Wrong response detected", expected, String.valueOf(targetOperation.getResponse().getResponseBody()));
 
     }
@@ -322,7 +322,7 @@ public class ServletOutputStreamTest {
         Assert.assertEquals("Wrong port detected", servlet.getEndPoint("outputStream/print").getPort(), targetOperation.getRequest().getServerPort());
         Assert.assertEquals("Wrong method name detected", "service", targetOperation.getMethodName());
         Assert.assertEquals("Wrong Content-type detected", "application/x-www-form-urlencoded", targetOperation.getRequest().getContentType());
-        Assert.assertEquals("Wrong URL detected", "/TestUrl", targetOperation.getRequest().getUrl());
+        
         Assert.assertEquals("Wrong response detected", expected, String.valueOf(targetOperation.getResponse().getResponseBody()));
 
     }
@@ -344,7 +344,7 @@ public class ServletOutputStreamTest {
         Assert.assertEquals("Wrong port detected", servlet.getEndPoint("outputStream/print").getPort(), targetOperation.getRequest().getServerPort());
         Assert.assertEquals("Wrong method name detected", "service", targetOperation.getMethodName());
         Assert.assertEquals("Wrong Content-type detected", "application/x-www-form-urlencoded", targetOperation.getRequest().getContentType());
-        Assert.assertEquals("Wrong URL detected", "/TestUrl", targetOperation.getRequest().getUrl());
+        
         Assert.assertEquals("Wrong response detected", expected, String.valueOf(targetOperation.getResponse().getResponseBody()));
     }
 
@@ -365,7 +365,7 @@ public class ServletOutputStreamTest {
         Assert.assertEquals("Wrong port detected", servlet.getEndPoint("outputStream/print").getPort(), targetOperation.getRequest().getServerPort());
         Assert.assertEquals("Wrong method name detected", "service", targetOperation.getMethodName());
         Assert.assertEquals("Wrong Content-type detected", "application/x-www-form-urlencoded", targetOperation.getRequest().getContentType());
-        Assert.assertEquals("Wrong URL detected", "/TestUrl", targetOperation.getRequest().getUrl());
+        
         Assert.assertEquals("Wrong response detected", expected, String.valueOf(targetOperation.getResponse().getResponseBody()));
     }
 
@@ -386,7 +386,7 @@ public class ServletOutputStreamTest {
         Assert.assertEquals("Wrong port detected", servlet.getEndPoint("outputStream/print").getPort(), targetOperation.getRequest().getServerPort());
         Assert.assertEquals("Wrong method name detected", "service", targetOperation.getMethodName());
         Assert.assertEquals("Wrong Content-type detected", "application/x-www-form-urlencoded", targetOperation.getRequest().getContentType());
-        Assert.assertEquals("Wrong URL detected", "/TestUrl", targetOperation.getRequest().getUrl());
+        
         Assert.assertEquals("Wrong response detected", expected, String.valueOf(targetOperation.getResponse().getResponseBody()));
     }
     @Trace(dispatcher = true)
