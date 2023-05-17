@@ -32,18 +32,18 @@ jobs:
       ref: ${{ inputs.agent-ref || 'main' }}
     secrets: inherit
 
-    notify-failure:
-      needs: [verify-instrumentation]
-      if: ${{ failure() }}
-      runs-on: ubuntu-20.04
-      steps:
-        - name: Send failure message to Slack
-          id: slack
-          uses: slackapi/slack-github-action@v1.23.0
-          with:
-            payload: |
-              {
-                "url": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-              }
-          env:
-            SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL_INST_VERIFIER }}
+  notify-failure:
+    needs: [verify-instrumentation]
+    if: ${{ failure() }}
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Send failure message to Slack
+        id: slack
+        uses: slackapi/slack-github-action@v1.23.0
+        with:
+          payload: |
+            {
+              "url": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL_INST_VERIFIER }}
