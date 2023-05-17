@@ -42,7 +42,7 @@ on:
       slack-notify:
         description: 'Whether to notify build status on slack'
         required: true
-        type: boolean
+        type: string
         default: true
       description:
         description: "A description for the custom jar that will be generated. It will appear in the summary."
