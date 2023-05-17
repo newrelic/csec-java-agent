@@ -62,7 +62,8 @@ public class ConnectionTest {
 
     @AfterClass
     public static void stop() {
-        mysqld.stop();
+        if (mysqld!=null)
+            mysqld.stop();
     }
 
     @After

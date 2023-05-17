@@ -60,7 +60,8 @@ public class ConnectionTest {
 
     @AfterClass
     public static void stop() {
-        postgres.stop();
+        if (postgres!=null)
+            postgres.stop();
     }
 
     @Test
