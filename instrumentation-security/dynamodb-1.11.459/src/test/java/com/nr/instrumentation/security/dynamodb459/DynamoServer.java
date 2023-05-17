@@ -89,7 +89,7 @@ public class DynamoServer extends ExternalResource {
     private static DynamoDB dynamo;
 
     private void setUp() throws Exception {
-
+        System.setProperty("sqlite4java.library.path", "src/test/resources/libs/");
         server = ServerRunner.createServerFromCommandLineArgs(new String[]{ "-inMemory", "-port", String.valueOf(PORT) });
         server.start();
 

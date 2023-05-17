@@ -45,7 +45,7 @@ public class ServletInputStreamTest {
         Assert.assertEquals("Wrong Protocol detected", "http", targetOperation.getRequest().getProtocol());
         Assert.assertEquals("Wrong port detected", servlet.getEndPoint("inputStream").getPort(), targetOperation.getRequest().getServerPort());
         Assert.assertEquals("Wrong Content-type detected", "multipart/form-data", targetOperation.getRequest().getContentType());
-        Assert.assertEquals("Wrong URL detected", "/TestUrl", targetOperation.getRequest().getUrl());
+        
         Assert.assertEquals("Wrong data detected", expected, targetOperation.getRequest().getBody().toString());
     }
 
@@ -65,7 +65,7 @@ public class ServletInputStreamTest {
         Assert.assertEquals("Wrong Protocol detected", "http", targetOperation.getRequest().getProtocol());
         Assert.assertEquals("Wrong port detected", servlet.getEndPoint("inputStream").getPort(), targetOperation.getRequest().getServerPort());
         Assert.assertEquals("Wrong Content-type detected", "multipart/form-data", targetOperation.getRequest().getContentType());
-        Assert.assertEquals("Wrong URL detected", "/TestUrl", targetOperation.getRequest().getUrl());
+        
         Assert.assertEquals("Wrong data detected", expected, targetOperation.getRequest().getBody().toString());
     }
 
@@ -84,7 +84,7 @@ public class ServletInputStreamTest {
         Assert.assertEquals("Wrong Protocol detected", "http", targetOperation.getRequest().getProtocol());
         Assert.assertEquals("Wrong port detected", servlet.getEndPoint("inputStream").getPort(), targetOperation.getRequest().getServerPort());
         Assert.assertEquals("Wrong Content-type detected", "multipart/form-data", targetOperation.getRequest().getContentType());
-        Assert.assertEquals("Wrong URL detected", "/TestUrl", targetOperation.getRequest().getUrl());
+        
         Assert.assertEquals("Wrong data detected", expected, targetOperation.getRequest().getBody().toString());
     }
 

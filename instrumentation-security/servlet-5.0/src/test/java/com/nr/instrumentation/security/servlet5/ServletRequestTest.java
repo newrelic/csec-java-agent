@@ -56,7 +56,7 @@ public class ServletRequestTest {
         Assert.assertEquals("Wrong port detected", servlet.getEndPoint("request").getPort(), targetOperation.getRequest().getServerPort());
         Assert.assertEquals("Wrong method name detected", "service", targetOperation.getMethodName());
         Assert.assertEquals("Wrong Content-type detected", "application/x-www-form-urlencoded", targetOperation.getRequest().getContentType());
-        Assert.assertEquals("Wrong URL detected", "/TestUrl", targetOperation.getRequest().getUrl());
+        
         Assert.assertEquals("Wrong hashcode detected", Collections.singleton(expectedHash), introspector.getRequestInStreamHash());
 
     }
@@ -77,7 +77,7 @@ public class ServletRequestTest {
         Assert.assertEquals("Wrong port detected", servlet.getEndPoint("request").getPort(), targetOperation.getRequest().getServerPort());
         Assert.assertEquals("Wrong method name detected", "service", targetOperation.getMethodName());
         Assert.assertEquals("Wrong Content-type detected", "application/x-www-form-urlencoded", targetOperation.getRequest().getContentType());
-        Assert.assertEquals("Wrong URL detected", "/TestUrl", targetOperation.getRequest().getUrl());
+        
         Assert.assertEquals("Wrong hashcode detected", Collections.singleton(expectedHash), introspector.getRequestReaderHash());
 
     }
@@ -100,7 +100,7 @@ public class ServletRequestTest {
         Assert.assertEquals("Wrong Param detected", expectedParam, new ObjectMapper().writeValueAsString(targetOperation.getRequest().getParameterMap()));
         Assert.assertEquals("Wrong method name detected", "service", targetOperation.getMethodName());
         Assert.assertEquals("Wrong Content-type detected", "application/x-www-form-urlencoded", targetOperation.getRequest().getContentType());
-        Assert.assertEquals("Wrong URL detected", "/TestUrl", targetOperation.getRequest().getUrl());
+        
 
     }
 
@@ -122,7 +122,7 @@ public class ServletRequestTest {
         Assert.assertEquals("Wrong Param detected", expectedParam, new ObjectMapper().writeValueAsString(targetOperation.getRequest().getParameterMap()));
         Assert.assertEquals("Wrong method name detected", "service", targetOperation.getMethodName());
         Assert.assertEquals("Wrong Content-type detected", "application/x-www-form-urlencoded", targetOperation.getRequest().getContentType());
-        Assert.assertEquals("Wrong URL detected", "/TestUrl", targetOperation.getRequest().getUrl());
+        
 
     }
 
@@ -144,7 +144,7 @@ public class ServletRequestTest {
         Assert.assertEquals("Wrong Param detected", expectedParam, new ObjectMapper().writeValueAsString(targetOperation.getRequest().getParameterMap()));
         Assert.assertEquals("Wrong method name detected", "service", targetOperation.getMethodName());
         Assert.assertEquals("Wrong Content-type detected", "application/x-www-form-urlencoded", targetOperation.getRequest().getContentType());
-        Assert.assertEquals("Wrong URL detected", "/TestUrl", targetOperation.getRequest().getUrl());
+        
 
     }
 

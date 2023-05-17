@@ -54,7 +54,8 @@ public class ConnectionTest {
 
     @AfterClass
     public static void stop() throws Exception {
-        mariaDb.stop();
+        if (mariaDb!=null)
+            mariaDb.stop();
     }
 
     @After

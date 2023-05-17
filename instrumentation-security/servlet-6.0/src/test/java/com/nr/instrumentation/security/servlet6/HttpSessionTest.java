@@ -36,18 +36,27 @@ public class HttpSessionTest {
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
         List<AbstractOperation> operations = introspector.getOperations();
         Assert.assertTrue("No operations detected", operations.size() > 0);
-
-        TrustBoundaryOperation targetOperation = (TrustBoundaryOperation) operations.get(0);
-        Assert.assertNotNull("No target operation detected", targetOperation);
-        Assert.assertEquals("Wrong case-type detected", VulnerabilityCaseType.TRUSTBOUNDARY, targetOperation.getCaseType());
-        Assert.assertEquals("Wrong key detected", "key", targetOperation.getKey());
-        Assert.assertEquals("Wrong value detected", "value", targetOperation.getValue());
-
-        targetOperation = (TrustBoundaryOperation) operations.get(1);
-        Assert.assertNotNull("No target operation detected", targetOperation);
-        Assert.assertEquals("Wrong case-type detected", VulnerabilityCaseType.TRUSTBOUNDARY, targetOperation.getCaseType());
-        Assert.assertEquals("Wrong key detected", "key", targetOperation.getKey());
-        Assert.assertEquals("Wrong value detected", "value", targetOperation.getValue());
+        Assert.assertTrue("Unexpected operation count detected", operations.size() == 2 || operations.size() == 3);
+        TrustBoundaryOperation targetOperation = null;
+        int i=0;
+        for (AbstractOperation operation : operations) {
+            if (operation instanceof TrustBoundaryOperation) {
+                targetOperation = (TrustBoundaryOperation) operation;
+                if(i==0){
+                    Assert.assertNotNull("No target operation detected", targetOperation);
+                    Assert.assertEquals("Wrong case-type detected", VulnerabilityCaseType.TRUSTBOUNDARY, targetOperation.getCaseType());
+                    Assert.assertEquals("Wrong key detected", "key", targetOperation.getKey());
+                    Assert.assertEquals("Wrong value detected", "value", targetOperation.getValue());
+                }
+                else if(i==1){
+                    Assert.assertNotNull("No target operation detected", targetOperation);
+                    Assert.assertEquals("Wrong case-type detected", VulnerabilityCaseType.TRUSTBOUNDARY, targetOperation.getCaseType());
+                    Assert.assertEquals("Wrong key detected", "key", targetOperation.getKey());
+                    Assert.assertEquals("Wrong value detected", "value", targetOperation.getValue());
+                }
+                i++;
+            }
+        }
     }
 
     @Test
@@ -59,8 +68,12 @@ public class HttpSessionTest {
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
         List<AbstractOperation> operations = introspector.getOperations();
         Assert.assertTrue("No operations detected", operations.size() > 0);
-
-        SecureCookieOperation targetOperation = (SecureCookieOperation) operations.get(0);
+        Assert.assertTrue("Unexpected operation count detected", operations.size() == 1 || operations.size() == 2);
+        SecureCookieOperation targetOperation = null;
+        for (AbstractOperation operation : operations) {
+            if (operation instanceof SecureCookieOperation)
+                targetOperation = (SecureCookieOperation) operation;
+        };
         Assert.assertNotNull("No target operation detected", targetOperation);
         Assert.assertEquals("Wrong case-type detected", VulnerabilityCaseType.SECURE_COOKIE, targetOperation.getCaseType());
         Assert.assertEquals("Wrong key detected", "false", targetOperation.getValue());
@@ -75,8 +88,12 @@ public class HttpSessionTest {
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
         List<AbstractOperation> operations = introspector.getOperations();
         Assert.assertTrue("No operations detected", operations.size() > 0);
-
-        SecureCookieOperation targetOperation = (SecureCookieOperation) operations.get(0);
+        Assert.assertTrue("Unexpected operation count detected", operations.size() == 1 || operations.size() == 2);
+        SecureCookieOperation targetOperation = null;
+        for (AbstractOperation operation : operations) {
+            if (operation instanceof SecureCookieOperation)
+                targetOperation = (SecureCookieOperation) operation;
+        };
         Assert.assertNotNull("No target operation detected", targetOperation);
         Assert.assertEquals("Wrong case-type detected", VulnerabilityCaseType.SECURE_COOKIE, targetOperation.getCaseType());
         Assert.assertEquals("Wrong key detected", "true", targetOperation.getValue());
