@@ -60,15 +60,11 @@ jobs:
           ref: ${{ inputs.ref }}
 
       - name: Setup environment
-        uses: ./.github/actions/setup-environment
+        uses: ./.github/actions/setup-environment-inst-verifier
         with:
-          apm-repo: 'newrelic/newrelic-java-agent'
-          apm-branch: 'k2-integration'
           apm-aws-access-key-id: ${{ secrets.APM_AWS_ACCESS_KEY_ID }}
           apm-aws-secret-access-key: ${{ secrets.APM_AWS_SECRET_ACCESS_KEY }}
           apm-aws-region: us-east-2
-          is-release: false
-          version-suffix: ''
 
       # Verify instrumentation must run with Java 17
       - name: Running verifyInstrumentation on (${{ matrix.modules }})
