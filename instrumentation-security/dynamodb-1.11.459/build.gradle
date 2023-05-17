@@ -6,9 +6,6 @@ dependencies {
 
     testImplementation("com.amazonaws:DynamoDBLocal:1.11.0")
     testImplementation("com.almworks.sqlite4java:sqlite4java:1.0.392")
-    testImplementation("com.almworks.sqlite4java:libsqlite4java-osx:1.0.392")
-    testImplementation("com.almworks.sqlite4java:libsqlite4java-linux-i386:1.0.392")
-    testImplementation("com.almworks.sqlite4java:libsqlite4java-linux-amd64:1.0.392")
 }
 
 repositories {
