@@ -30,8 +30,10 @@ public class JdbcHelper {
     public static final String METHOD_EXECUTE = "execute";
     public static final String METHOD_EXECUTE_UPDATE = "executeUpdate";
     public static final String METHOD_EXECUTE_QUERY = "executeQuery";
+    public static final String METHOD_EXECUTE_BATCH = "executeBatch";
 
     public static final String NR_SEC_CUSTOM_ATTRIB_SQL_NAME = "SQL-QUERY-";
+    public static final String NR_SEC_CUSTOM_ATTRIB_BATCH_SQL_NAME = "NR-BATCH-SQL-QUERY-";
 
     public static void putSql(Statement statement, String sql) {
         try {

@@ -12,19 +12,22 @@ import org.h2.jdbc.JdbcPreparedStatement;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
+import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.junit.runners.MethodSorters;
 
-import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
 @RunWith(SecurityInstrumentationTestRunner.class)
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @InstrumentationTestConfig(includePrefixes = { "javax.sql", "java.sql" })
 public class ConnectionTest {
 
@@ -55,10 +58,10 @@ public class ConnectionTest {
 
     @BeforeClass
     public static void initData() throws SQLException {
-        QUERIES.add("CREATE TABLE IF NOT EXISTS USER(id int primary key, first_name varchar(255), last_name varchar(255))");
-        QUERIES.add("TRUNCATE TABLE USER");
-        QUERIES.add("INSERT INTO USER(id, first_name, last_name) VALUES(1, 'john', 'doe')");
-        QUERIES.add("select * from USER");
+        QUERIES.add("CREATE TABLE IF NOT EXISTS USERS(id int primary key, first_name varchar(255), last_name varchar(255))");
+        QUERIES.add("TRUNCATE TABLE USERS");
+        QUERIES.add("INSERT INTO USERS(id, first_name, last_name) VALUES(1, 'john', 'doe')");
+        QUERIES.add("select * from USERS");
         // set up data in h2
         Statement stmt = CONNECTION.createStatement();
         stmt.execute(QUERIES.get(0));
@@ -68,7 +71,7 @@ public class ConnectionTest {
     }
 
     @Test
-    public void testPrepareStatement() throws SQLException, IOException, InterruptedException {
+    public void testPrepareStatement() throws SQLException {
         prepareStatement();
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
         List<AbstractOperation> operations = introspector.getOperations();
@@ -83,7 +86,7 @@ public class ConnectionTest {
     }
 
     @Test
-    public void testPrepareCall() throws SQLException, IOException, InterruptedException {
+    public void testPrepareCall() throws SQLException {
         prepareCall();
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
 
@@ -98,7 +101,7 @@ public class ConnectionTest {
     }
 
     @Test
-    public void testPrepareStatement2() throws SQLException, IOException, InterruptedException {
+    public void testPrepareStatement2() throws SQLException {
         prepareStatement2();
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
 
@@ -114,7 +117,7 @@ public class ConnectionTest {
 
     @Test
 
-    public void testPrepareCall2() throws SQLException, IOException, InterruptedException {
+    public void testPrepareCall2() throws SQLException {
         prepareCall2();
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
 
@@ -130,7 +133,7 @@ public class ConnectionTest {
 
     @Test
 
-    public void testPrepareCallNames() throws SQLException, IOException, InterruptedException {
+    public void testPrepareCallNames() throws SQLException {
         prepareCallColNames();
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
 
@@ -146,7 +149,7 @@ public class ConnectionTest {
     }
 
     @Test
-    public void testPrepareCallIndex() throws SQLException, IOException, InterruptedException {
+    public void testPrepareCallIndex() throws SQLException {
         prepareCallColIndex();
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
 
@@ -162,28 +165,28 @@ public class ConnectionTest {
 
     @Trace(dispatcher = true)
     private void prepareStatement() throws SQLException {
-        PreparedStatement stmt = CONNECTION.prepareStatement(QUERIES.get(3), 1, 1);
+        PreparedStatement stmt = CONNECTION.prepareStatement(QUERIES.get(3), ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
         stmt.execute();
         stmt.close();
     }
 
     @Trace(dispatcher = true)
     private void prepareCall() throws SQLException {
-        PreparedStatement stmt = CONNECTION.prepareCall(QUERIES.get(3), 1, 1);
+        PreparedStatement stmt = CONNECTION.prepareCall(QUERIES.get(3), ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
         stmt.execute();
         stmt.close();
     }
 
     @Trace(dispatcher = true)
     private void prepareStatement2() throws SQLException {
-        PreparedStatement stmt = CONNECTION.prepareStatement(QUERIES.get(3), 1, 1, 1);
+        PreparedStatement stmt = CONNECTION.prepareStatement(QUERIES.get(3), ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
         stmt.execute();
         stmt.close();
     }
 
     @Trace(dispatcher = true)
     private void prepareCall2() throws SQLException {
-        PreparedStatement stmt = CONNECTION.prepareCall(QUERIES.get(3), 1, 1, 1);
+        PreparedStatement stmt = CONNECTION.prepareCall(QUERIES.get(3), ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE, ResultSet.CLOSE_CURSORS_AT_COMMIT);
         stmt.execute();
         stmt.close();
     }

@@ -133,4 +133,5 @@ include 'instrumentation:r2dbc-oracle'
 include 'instrumentation:jdbc-inet-merlia'
 include 'instrumentation:jdbc-inet-oranxo'
 include 'instrumentation:jdbc-sybase-6'
+include 'instrumentation:low-priority-instrumentation'
 

@@ -1,7 +1,5 @@
 package com.newrelic.api.agent.security.schema;
 
-import java.util.Arrays;
-
 public abstract class AbstractOperation {
 
     public static final String EMPTY = "";
@@ -24,6 +22,8 @@ public abstract class AbstractOperation {
     private String apiID;
 
     private VulnerabilityCaseType caseType;
+
+    private boolean isLowSeverityHook;
 
     public AbstractOperation() {
         this.className = EMPTY;
@@ -126,5 +126,13 @@ public abstract class AbstractOperation {
 
     public void setCaseType(VulnerabilityCaseType caseType) {
         this.caseType = caseType;
+    }
+
+    public boolean isLowSeverityHook() {
+        return isLowSeverityHook;
+    }
+
+    public void setLowSeverityHook(boolean lowSeverityHook) {
+        this.isLowSeverityHook = lowSeverityHook;
     }
 }

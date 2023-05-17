@@ -6,13 +6,17 @@ import com.newrelic.agent.security.introspec.SecurityIntrospector;
 import com.newrelic.api.agent.Trace;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
+import com.newrelic.api.agent.security.schema.operation.BatchSQLOperation;
 import com.newrelic.api.agent.security.schema.operation.SQLOperation;
 import org.h2.jdbc.JdbcPreparedStatement;
+import org.h2.jdbc.JdbcStatement;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
+import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.junit.runners.MethodSorters;
 
 import java.math.BigDecimal;
 import java.sql.Connection;
@@ -24,13 +28,14 @@ import java.sql.Statement;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
 
 @RunWith(SecurityInstrumentationTestRunner.class)
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @InstrumentationTestConfig(includePrefixes = { "javax.sql", "java.sql" })
 public class PreparedStatementTest {
     private static final String DB_DRIVER = "org.h2.Driver";
@@ -39,9 +44,7 @@ public class PreparedStatementTest {
     private static final String DB_PASSWORD = "";
     private static final Connection CONNECTION = getDBConnection();
 
-    private static List<String> QUERIES = new ArrayList<>();
-
-    private static AtomicInteger id = new AtomicInteger(3);
+    private static final List<String> QUERIES = new ArrayList<>();
 
     @AfterClass
     public static void teardown() throws SQLException {
@@ -61,15 +64,18 @@ public class PreparedStatementTest {
     }
 
     @BeforeClass
-    public static void initData() throws SQLException {QUERIES.add(
+    public static void initData() throws SQLException {
+        QUERIES.add(
             "CREATE TABLE IF NOT EXISTS USERS(id int primary key, first_name varchar(255), last_name varchar(255), dob date, dot time, dotz timestamp, active boolean, arr bytea)");
         QUERIES.add("TRUNCATE TABLE USERS");
         QUERIES.add("INSERT INTO USERS(id, first_name, last_name) VALUES(1, 'john', 'doe')");
-        QUERIES.add("select * from users");
+        QUERIES.add("select * from USERS");
         QUERIES.add("UPDATE USERS SET last_name='Doe' WHERE id=1");
         QUERIES.add(
                 "select * from users where id=? and id=? and id=? and id=? and id=? and id=? and first_name=? and first_name=? and id=? and dob=? and arr=? and active=? and dot=? and dotz=?");
         QUERIES.add("SELECT * FROM USERS WHERE id=?");
+        QUERIES.add("UPDATE USERS SET last_name=? WHERE id=1");
+        QUERIES.add("UPDATE USERS SET last_name=? WHERE id=1");
 
         // set up data in h2
         Statement stmt = CONNECTION.createStatement();
@@ -123,6 +129,89 @@ public class PreparedStatementTest {
         Assert.assertEquals("Invalid executed class name.", JdbcPreparedStatement.class.getName(), operation.getClassName());
         Assert.assertEquals("Invalid executed method name.", "execute", operation.getMethodName());
     }
+
+    @Test
+    public void testExecuteBatch() throws SQLException {
+        executeBatch();
+        SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
+        List<AbstractOperation> operations = introspector.getOperations();
+        Assert.assertTrue("No operations detected", operations.size() > 0);
+
+        BatchSQLOperation operation = (BatchSQLOperation) operations.get(0);
+
+        Assert.assertEquals("Invalid executed query.", QUERIES.get(7), operation.getOperations().get(0).getQuery());
+        Assert.assertEquals("Invalid executed parameters.", Collections.singletonMap("1","John"), operation.getOperations().get(0).getParams());
+        Assert.assertEquals("Invalid executed query.", QUERIES.get(7), operation.getOperations().get(1).getQuery());
+        Assert.assertEquals("Invalid executed parameters.", Collections.singletonMap("1","Doe"), operation.getOperations().get(1).getParams());
+        Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.SQL_DB_COMMAND, operation.getCaseType());
+        Assert.assertEquals("Invalid executed class name.", JdbcPreparedStatement.class.getName(), operation.getClassName());
+        Assert.assertEquals("Invalid executed method name.", "executeBatch", operation.getMethodName());
+    }
+
+    @Test
+    public void testExecuteBatch2() throws SQLException {
+        executeBatch2();
+        SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
+        List<AbstractOperation> operations = introspector.getOperations();
+        Assert.assertTrue("No operations detected", operations.size() > 0);
+
+        BatchSQLOperation operation = (BatchSQLOperation) operations.get(0);
+
+        Assert.assertEquals("Invalid executed query.", QUERIES.get(7), operation.getOperations().get(0).getQuery());
+        Assert.assertEquals("Invalid executed parameters.", Collections.singletonMap("1","John"), operation.getOperations().get(0).getParams());
+        Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.SQL_DB_COMMAND, operation.getCaseType());
+        Assert.assertEquals("Invalid executed class name.", JdbcPreparedStatement.class.getName(), operation.getClassName());
+        Assert.assertEquals("Invalid executed method name.", "executeBatch", operation.getMethodName());
+
+        operation = (BatchSQLOperation) operations.get(1);
+
+        Assert.assertEquals("Invalid executed query.", QUERIES.get(7), operation.getOperations().get(0).getQuery());
+        Assert.assertEquals("Invalid executed parameters.", Collections.singletonMap("1","Doe"), operation.getOperations().get(0).getParams());
+        Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.SQL_DB_COMMAND, operation.getCaseType());
+        Assert.assertEquals("Invalid executed class name.", JdbcPreparedStatement.class.getName(), operation.getClassName());
+        Assert.assertEquals("Invalid executed method name.", "executeBatch", operation.getMethodName());
+    }
+
+    @Test
+    public void testClearBatch() throws SQLException {
+        clearBatch();
+        SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
+        List<AbstractOperation> operations = introspector.getOperations();
+        Assert.assertTrue("No operations detected", operations.size() > 0);
+
+        BatchSQLOperation operation = (BatchSQLOperation) operations.get(0);
+
+        Assert.assertEquals("Invalid executed query.", QUERIES.get(7), operation.getOperations().get(0).getQuery());
+        Assert.assertEquals("Invalid executed parameters.", Collections.singletonMap("1","Doe"), operation.getOperations().get(0).getParams());
+        Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.SQL_DB_COMMAND, operation.getCaseType());
+        Assert.assertEquals("Invalid executed class name.", JdbcPreparedStatement.class.getName(), operation.getClassName());
+        Assert.assertEquals("Invalid executed method name.", "executeBatch", operation.getMethodName());
+    }
+
+    @Test
+    public void testClearBatch2() throws SQLException {
+        clearBatch2();
+        SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
+        List<AbstractOperation> operations = introspector.getOperations();
+        Assert.assertTrue("No operations detected", operations.size() > 0);
+
+        BatchSQLOperation operation = (BatchSQLOperation) operations.get(0);
+
+        Assert.assertEquals("Invalid executed query.", QUERIES.get(7), operation.getOperations().get(0).getQuery());
+        Assert.assertEquals("Invalid executed parameters.", Collections.singletonMap("1","John"), operation.getOperations().get(0).getParams());
+        Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.SQL_DB_COMMAND, operation.getCaseType());
+        Assert.assertEquals("Invalid executed class name.", JdbcPreparedStatement.class.getName(), operation.getClassName());
+        Assert.assertEquals("Invalid executed method name.", "executeBatch", operation.getMethodName());
+
+        operation = (BatchSQLOperation) operations.get(1);
+
+        Assert.assertEquals("Invalid executed query.", QUERIES.get(7), operation.getOperations().get(0).getQuery());
+        Assert.assertEquals("Invalid executed parameters.", Collections.singletonMap("1","Doe"), operation.getOperations().get(0).getParams());
+        Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.SQL_DB_COMMAND, operation.getCaseType());
+        Assert.assertEquals("Invalid executed class name.", JdbcPreparedStatement.class.getName(), operation.getClassName());
+        Assert.assertEquals("Invalid executed method name.", "executeBatch", operation.getMethodName());
+    }
+
     @Trace(dispatcher = true)
     private void executeQuery() throws SQLException {
         PreparedStatement stmt = CONNECTION.prepareStatement(QUERIES.get(3));
@@ -247,5 +336,62 @@ public class PreparedStatementTest {
         stmt.execute();
         System.out.println(params);
         return params;
+    }
+
+    @Trace(dispatcher = true)
+    private void executeBatch() throws SQLException {
+        PreparedStatement stmt = CONNECTION.prepareStatement(QUERIES.get(7));
+        stmt.setString(1, "John");
+        stmt.addBatch();
+        stmt.setString(1, "Doe");
+        stmt.addBatch();
+        stmt.executeBatch();
+        stmt.close();
+    }
+
+    @Trace(dispatcher = true)
+    private void executeBatch2() throws SQLException {
+        PreparedStatement stmt = CONNECTION.prepareStatement(QUERIES.get(7));
+        stmt.setString(1, "John");
+        stmt.addBatch();
+        PreparedStatement stmt2 = CONNECTION.prepareStatement(QUERIES.get(7));
+        stmt2.setString(1, "Doe");
+        stmt2.addBatch();
+        stmt.executeBatch();
+        stmt2.executeBatch();
+        stmt.close();
+        stmt2.close();
+    }
+
+    @Trace(dispatcher = true)
+    private void clearBatch() throws SQLException {
+        PreparedStatement stmt = CONNECTION.prepareStatement(QUERIES.get(7));
+        stmt.setString(1, "John");
+        stmt.addBatch();
+        stmt.clearBatch();
+        stmt.setString(1, "Doe");
+        stmt.addBatch();
+        stmt.executeBatch();
+        stmt.close();
+    }
+
+    @Trace(dispatcher = true)
+    private void clearBatch2() throws SQLException {
+        PreparedStatement stmt = CONNECTION.prepareStatement(QUERIES.get(7));
+        stmt.setString(1, "Test");
+        stmt.addBatch();
+        stmt.clearBatch();
+        stmt.setString(1, "John");
+        stmt.addBatch();
+        PreparedStatement stmt2 = CONNECTION.prepareStatement(QUERIES.get(7));
+        stmt2.setString(1, "Test2");
+        stmt2.addBatch();
+        stmt2.clearBatch();
+        stmt2.setString(1, "Doe");
+        stmt2.addBatch();
+        stmt.executeBatch();
+        stmt2.executeBatch();
+        stmt.close();
+        stmt2.close();
     }
 }

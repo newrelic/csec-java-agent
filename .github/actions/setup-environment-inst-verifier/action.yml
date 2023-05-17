@@ -1,0 +1,56 @@
+name: Setup Environment for instrumentation verifier
+description:  Setup Environment for instrumentation verifier. This is a subset of setup-environment action.
+inputs:
+  apm-aws-access-key-id:
+    description: 'APM AWS S3 access key id'
+  apm-aws-secret-access-key:
+    description: 'APM AWS S3 access key'
+  apm-aws-region:
+    description: 'APM AWS S3 region'
+
+runs:
+  using: composite
+
+  steps:
+    - name: Set up Javas
+      uses: actions/setup-java@v3
+      with:
+        distribution: 'temurin'
+        java-version: |
+          20
+          17
+          11
+          8    
+
+    # Rewrite gradle.properties
+    - name: set gradle.properties for CSEC
+      shell: bash
+      run: |
+        sed -i -e "s|jdk8=8|jdk8=${JAVA_HOME_8_X64}|
+        s|jdk11=11|jdk11=${JAVA_HOME_11_X64}|
+        s|jdk17=17|jdk17=${JAVA_HOME_17_X64}|
+        s|jdk20=20|jdk20=${JAVA_HOME_20_X64}|" gradle.properties.gha
+        cat gradle.properties.gha >> gradle.properties
+
+    - name: Setup Gradle
+      uses: gradle/gradle-build-action@v2
+
+    - name: Setup Gradle options
+      shell: bash
+      run: echo "GRADLE_OPTIONS=-Porg.gradle.java.installations.auto-detect=false -Porg.gradle.java.installations.fromEnv=JAVA_HOME_8_X64,JAVA_HOME_11_X64,JAVA_HOME_17_X64,JAVA_HOME_19_X64,JAVA_HOME_20_X64" >> $GITHUB_ENV
+
+    - name: Configure AWS Credentials
+      if: ${{ inputs.apm-aws-secret-access-key != '' }}
+      uses: aws-actions/configure-aws-credentials@v1-node16
+      with:
+        aws-access-key-id: ${{ inputs.apm-aws-access-key-id }}
+        aws-secret-access-key: ${{ inputs.apm-aws-secret-access-key }}
+        aws-region: ${{ inputs.apm-aws-region }}
+
+    - name: Download S3 instrumentation jar zip
+      shell: bash
+      run: |
+        aws s3 cp s3://nr-java-agent-s3-instrumentation/proprietary-jars-20220805.zip proprietary-jars.zip && unzip proprietary-jars.zip && cp -rf instrumentation/** instrumentation-security/
+        if [ $? -ne 0 ]; then
+          echo "Instrumentation jar zip unavailable." >> $GITHUB_STEP_SUMMARY
+        fi

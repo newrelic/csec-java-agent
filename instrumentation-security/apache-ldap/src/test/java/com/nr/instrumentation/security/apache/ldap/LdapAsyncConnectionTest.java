@@ -6,8 +6,6 @@ import com.newrelic.agent.security.introspec.SecurityIntrospector;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.security.schema.operation.LDAPOperation;
-import org.apache.directory.api.ldap.codec.decorators.SearchResultEntryDecorator;
-import org.apache.directory.api.ldap.model.exception.LdapException;
 import org.apache.directory.api.ldap.model.message.SearchRequest;
 import org.apache.directory.api.ldap.model.message.SearchRequestImpl;
 import org.apache.directory.api.ldap.model.message.SearchScope;
@@ -36,7 +34,7 @@ public class LdapAsyncConnectionTest {
             .importingLdifs("users-import.ldif").build();
 
     @Test
-    public void testSearch() throws LdapException, InterruptedException {
+    public void testSearch() throws Exception {
         int port = embeddedLdapRule.embeddedServerPort();
         String username = "mlakshkar";
         String password = "abc456";
@@ -45,9 +43,10 @@ public class LdapAsyncConnectionTest {
         System.out.println("LDAP query: " + query);
 
         LdapAsyncConnection connection = new LdapNetworkConnection("localhost", port);
+        connection.connect();
+
         SearchFuture future = connection.searchAsync(DOMAIN_DSN, query, SearchScope.SUBTREE, "");
-        SearchResultEntryDecorator cursor = (SearchResultEntryDecorator) future.get();
-        System.out.println(cursor.getEntry());
+        future.get();
 
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
         List<AbstractOperation> operations = introspector.getOperations();
@@ -61,7 +60,7 @@ public class LdapAsyncConnectionTest {
     }
 
     @Test
-    public void testSearch1() throws LdapException, InterruptedException {
+    public void testSearch1() throws Exception {
         int port = embeddedLdapRule.embeddedServerPort();
         String username = "sclaus";
 
@@ -69,9 +68,10 @@ public class LdapAsyncConnectionTest {
         System.out.println("LDAP query: " + query);
 
         LdapAsyncConnection connection = new LdapNetworkConnection("localhost", port);
+        connection.connect();
+
         SearchFuture future = connection.searchAsync(DOMAIN_DSN, query, SearchScope.SUBTREE, "cn");
-        SearchResultEntryDecorator cursor = (SearchResultEntryDecorator) future.get();
-        System.out.println(cursor.getEntry());
+        future.get();
 
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
         List<AbstractOperation> operations = introspector.getOperations();
@@ -85,7 +85,7 @@ public class LdapAsyncConnectionTest {
     }
 
     @Test
-    public void testSearch2() throws LdapException, InterruptedException {
+    public void testSearch2() throws Exception {
         int port = embeddedLdapRule.embeddedServerPort();
         String username = "mlakshkar";
 
@@ -93,9 +93,10 @@ public class LdapAsyncConnectionTest {
         System.out.println("LDAP query: " + query);
 
         LdapAsyncConnection connection = new LdapNetworkConnection("localhost", port);
+        connection.connect();
+
         SearchFuture future = connection.searchAsync(new Dn(DOMAIN_DSN), query, SearchScope.SUBTREE, "");
-        SearchResultEntryDecorator cursor = (SearchResultEntryDecorator) future.get();
-        System.out.println(cursor.getEntry());
+        future.get();
 
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
         List<AbstractOperation> operations = introspector.getOperations();
@@ -109,7 +110,7 @@ public class LdapAsyncConnectionTest {
     }
 
     @Test
-    public void testSearch3() throws LdapException, InterruptedException {
+    public void testSearch3() throws Exception {
         int port = embeddedLdapRule.embeddedServerPort();
         String password = "123efg";
 
@@ -117,9 +118,10 @@ public class LdapAsyncConnectionTest {
         System.out.println("LDAP query: " + query);
 
         LdapAsyncConnection connection = new LdapNetworkConnection("localhost", port);
+        connection.connect();
+
         SearchFuture future = connection.searchAsync(Dn.EMPTY_DN, query, SearchScope.SUBTREE, "");
-        SearchResultEntryDecorator cursor = (SearchResultEntryDecorator) future.get();
-        System.out.println(cursor.getEntry());
+        future.get();
 
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
         List<AbstractOperation> operations = introspector.getOperations();
@@ -133,7 +135,7 @@ public class LdapAsyncConnectionTest {
     }
 
     @Test
-    public void testSearch4() throws LdapException, InterruptedException {
+    public void testSearch4() throws Exception {
         int port = embeddedLdapRule.embeddedServerPort();
         String password = "abc456";
 
@@ -141,14 +143,15 @@ public class LdapAsyncConnectionTest {
         System.out.println("LDAP query: " + query);
 
         LdapAsyncConnection connection = new LdapNetworkConnection("localhost", port);
+        connection.connect();
+
         SearchRequest request = new SearchRequestImpl();
         request.setBase(new Dn(DOMAIN_DSN));
         request.setFilter(query);
         request.setScope(SearchScope.SUBTREE);
 
         SearchFuture future = connection.searchAsync(request);
-        SearchResultEntryDecorator cursor = (SearchResultEntryDecorator) future.get();
-        System.out.println(cursor.getEntry());
+        future.get();
 
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
         List<AbstractOperation> operations = introspector.getOperations();
@@ -162,7 +165,7 @@ public class LdapAsyncConnectionTest {
     }
 
     @Test
-    public void testSearch5() throws LdapException, InterruptedException {
+    public void testSearch5() throws Exception {
         int port = embeddedLdapRule.embeddedServerPort();
         String username = "sclaus";
         String password = "123efg";
@@ -171,14 +174,15 @@ public class LdapAsyncConnectionTest {
         System.out.println("LDAP query: " + query);
 
         LdapAsyncConnection connection = new LdapNetworkConnection("localhost", port);
+        connection.connect();
+
         SearchRequest request = new SearchRequestImpl();
         request.setBase(Dn.EMPTY_DN);
         request.setFilter(query);
         request.setScope(SearchScope.SUBTREE);
 
         SearchFuture future = connection.searchAsync(request);
-        SearchResultEntryDecorator cursor = (SearchResultEntryDecorator) future.get();
-        System.out.println(cursor.getEntry());
+        future.get();
 
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
         List<AbstractOperation> operations = introspector.getOperations();

@@ -26,12 +26,22 @@ import org.apache.commons.compress.archivers.zip.ZipArchiveInputStream;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.nio.file.attribute.PosixFilePermission;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -68,9 +78,6 @@ public class AgentUtils {
     public static final String LOG_LEVEL_PROVIDED_IN_POLICY_IS_INCORRECT_DEFAULTING_TO_INFO = "Log level provided in policy is incorrect: %s. Staying at current level";
     public static final String ERROR_WHILE_EXTRACTING_FILE_FROM_ARCHIVE_S_S = "Error while extracting file from archive : %s : %s";
     public static final String OVER_RIDE_POLICY_DISABLED_IN_NR_CONFIG_AT_S = "Over-ride policy disabled in NR config at '%s'.";
-    public static final String COLLECTOR_IS_NOW_S = "Collector is now %s for %s";
-    public static final String ACTIVE = "active";
-    public static final String INACTIVE = "inactive";
     public static final String OVERRIDDEN = "overridden";
     public static final String NR_POLICY_OVER_RIDE_IN_PLACE_UPDATED_POLICY_S = "NR policy over-ride in place. Updated policy : %s";
     public static final String POLICY_VERSION = "policy-version";
@@ -636,4 +643,5 @@ public class AgentUtils {
 
         this.setPolicyOverridden(override);
     }
+
 }

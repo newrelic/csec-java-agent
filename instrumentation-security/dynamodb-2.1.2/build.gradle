@@ -4,6 +4,9 @@ dependencies {
     implementation("com.newrelic.agent.java:newrelic-weaver-api:${nrAPIVersion}")
     implementation platform('software.amazon.awssdk:bom:2.1.2')
     implementation("software.amazon.awssdk:dynamodb:2.1.2")
+
+    testImplementation("com.amazonaws:DynamoDBLocal:1.16.0")
+    testImplementation("com.almworks.sqlite4java:sqlite4java:1.0.392")
 }
 
 repositories {

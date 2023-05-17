@@ -1,0 +1,19 @@
+dependencies {
+    implementation(project(":newrelic-security-api"))
+    implementation("com.newrelic.agent.java:newrelic-api:${nrAPIVersion}")
+    implementation("com.newrelic.agent.java:newrelic-weaver-api:${nrAPIVersion}")
+
+    testImplementation("org.bouncycastle:bcprov-jdk18on:1.73")
+}
+
+// This instrumentation module should not use the bootstrap classpath
+
+
+jar {
+    manifest { attributes 'Implementation-Title': 'com.newrelic.instrumentation.security.low-priority-instrumentation',
+            'Enabled': 'false' }
+}
+
+verifyInstrumentation {
+    verifyClasspath = false // We don't want to verify classpath since these are JDK classes
+}

@@ -6,10 +6,13 @@ import com.newrelic.agent.security.introspec.SecurityIntrospector;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.security.schema.operation.LDAPOperation;
+import com.newrelic.security.test.marker.Java8IncompatibleTest;
+import com.newrelic.security.test.marker.Java9IncompatibleTest;
 import org.junit.Assert;
 import org.junit.ClassRule;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 import org.ldaptive.DefaultConnectionFactory;
@@ -24,6 +27,7 @@ import org.zapodot.junit.ldap.EmbeddedLdapRuleBuilder;
 
 import java.util.List;
 
+@Category({ Java8IncompatibleTest.class, Java9IncompatibleTest.class })
 @RunWith(SecurityInstrumentationTestRunner.class)
 @InstrumentationTestConfig(includePrefixes = { "org.ldaptive", "com.nr.instrumentation.security.apache.ldap.LDAPUtils" })
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)

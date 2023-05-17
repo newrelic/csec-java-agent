@@ -6,8 +6,7 @@ import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 public class SecureCookieOperation extends AbstractOperation {
     private String value;
 
-    public SecureCookieOperation(String value, String className, String methodName, String executionId,
-                                 long startTime) {
+    public SecureCookieOperation(String value, String className, String methodName) {
         super(className, methodName);
         this.setCaseType(VulnerabilityCaseType.SECURE_COOKIE);
         this.value = value;

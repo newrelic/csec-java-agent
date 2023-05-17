@@ -6,13 +6,16 @@ import com.newrelic.agent.security.introspec.SecurityIntrospector;
 import com.newrelic.api.agent.Trace;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
+import com.newrelic.api.agent.security.schema.operation.BatchSQLOperation;
 import com.newrelic.api.agent.security.schema.operation.SQLOperation;
 import org.h2.jdbc.JdbcStatement;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
+import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.junit.runners.MethodSorters;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -20,9 +23,9 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 
 @RunWith(SecurityInstrumentationTestRunner.class)
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @InstrumentationTestConfig(includePrefixes = { "javax.sql", "java.sql" })
 
 public class StatementTest {
@@ -32,9 +35,7 @@ public class StatementTest {
     private static final String DB_PASSWORD = "";
     private static final Connection CONNECTION = getDBConnection();
 
-    private static List<String> QUERIES = new ArrayList<>();
-
-    private static AtomicInteger id = new AtomicInteger(3);
+    private static final List<String> QUERIES = new ArrayList<>();
 
     @AfterClass
     public static void teardown() throws SQLException {
@@ -55,11 +56,12 @@ public class StatementTest {
 
     @BeforeClass
     public static void initData() throws SQLException {
-        QUERIES.add("CREATE TABLE IF NOT EXISTS USER(id int primary key, first_name varchar(255), last_name varchar(255))");
-        QUERIES.add("TRUNCATE TABLE USER");
-        QUERIES.add("INSERT INTO USER(id, first_name, last_name) VALUES(1, 'john', 'doe')");
-        QUERIES.add("select * from USER");
-        QUERIES.add("UPDATE USER SET last_name='Doe' WHERE id=1");
+        QUERIES.add("CREATE TABLE IF NOT EXISTS USERS(id int primary key, first_name varchar(255), last_name varchar(255))");
+        QUERIES.add("TRUNCATE TABLE USERS");
+        QUERIES.add("INSERT INTO USERS(id, first_name, last_name) VALUES(1, 'john', 'doe')");
+        QUERIES.add("select * from USERS");
+        QUERIES.add("UPDATE USERS SET last_name='Doe' WHERE id=1");
+        QUERIES.add("UPDATE USERS SET last_name='John' WHERE id=1");
         // set up data in h2
         Statement stmt = CONNECTION.createStatement();
         stmt.execute(QUERIES.get(0));
@@ -206,6 +208,37 @@ public class StatementTest {
         Assert.assertEquals("Invalid executed method name.", "execute", operation.getMethodName());
     }
 
+    @Test
+    public void testExecuteBatch() throws SQLException {
+        executeBatch();
+        SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
+        List<AbstractOperation> operations = introspector.getOperations();
+        Assert.assertTrue("No operations detected", operations.size() > 0);
+
+        BatchSQLOperation operation = (BatchSQLOperation) operations.get(0);
+
+        Assert.assertEquals("Invalid executed parameters.", QUERIES.get(4), operation.getOperations().get(0).getQuery());
+        Assert.assertEquals("Invalid executed parameters.", QUERIES.get(5), operation.getOperations().get(1).getQuery());
+        Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.SQL_DB_COMMAND, operation.getCaseType());
+        Assert.assertEquals("Invalid executed class name.", JdbcStatement.class.getName(), operation.getClassName());
+        Assert.assertEquals("Invalid executed method name.", "executeBatch", operation.getMethodName());
+    }
+
+    @Test
+    public void testClearBatch() throws SQLException {
+        clearBatch();
+        SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
+        List<AbstractOperation> operations = introspector.getOperations();
+        Assert.assertTrue("No operations detected", operations.size() > 0);
+
+        BatchSQLOperation operation = (BatchSQLOperation) operations.get(0);
+
+        Assert.assertEquals("Invalid executed parameters.", QUERIES.get(5), operation.getOperations().get(0).getQuery());
+        Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.SQL_DB_COMMAND, operation.getCaseType());
+        Assert.assertEquals("Invalid executed class name.", JdbcStatement.class.getName(), operation.getClassName());
+        Assert.assertEquals("Invalid executed method name.", "executeBatch", operation.getMethodName());
+    }
+
     @Trace(dispatcher = true)
     private void executeQuery() throws SQLException {
         Statement stmt = CONNECTION.createStatement();
@@ -230,7 +263,7 @@ public class StatementTest {
     @Trace(dispatcher = true)
     private void executeUpdate2() throws SQLException {
         Statement stmt = CONNECTION.createStatement();
-        stmt.executeUpdate(QUERIES.get(4), 1);
+        stmt.executeUpdate(QUERIES.get(4), Statement.RETURN_GENERATED_KEYS);
         stmt.close();
     }
 
@@ -244,7 +277,7 @@ public class StatementTest {
     @Trace(dispatcher = true)
     private void execute2() throws SQLException {
         Statement stmt = CONNECTION.createStatement();
-        stmt.execute(QUERIES.get(3), 2);
+        stmt.execute(QUERIES.get(3), Statement.NO_GENERATED_KEYS);
         stmt.close();
     }
 
@@ -266,6 +299,25 @@ public class StatementTest {
     private void execute4() throws SQLException {
         Statement stmt = CONNECTION.createStatement();
         stmt.execute(QUERIES.get(3), new int[] { 1, 2 });
+        stmt.close();
+    }
+
+    @Trace(dispatcher = true)
+    private void executeBatch() throws SQLException {
+        Statement stmt = CONNECTION.createStatement();
+        stmt.addBatch(QUERIES.get(4));
+        stmt.addBatch(QUERIES.get(5));
+        stmt.executeBatch();
+        stmt.close();
+    }
+
+    @Trace(dispatcher = true)
+    private void clearBatch() throws SQLException {
+        Statement stmt = CONNECTION.createStatement();
+        stmt.addBatch(QUERIES.get(4));
+        stmt.clearBatch();
+        stmt.addBatch(QUERIES.get(5));
+        stmt.executeBatch();
         stmt.close();
     }
 }

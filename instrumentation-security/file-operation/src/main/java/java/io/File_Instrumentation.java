@@ -1,7 +1,9 @@
 package java.io;
 
+import com.newrelic.api.agent.NewRelic;
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.instrumentation.helpers.FileHelper;
+import com.newrelic.api.agent.security.instrumentation.helpers.LowSeverityHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
 import com.newrelic.api.agent.security.schema.operation.FileOperation;
@@ -12,33 +14,17 @@ import com.newrelic.api.agent.weaver.Weaver;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.newrelic.api.agent.security.instrumentation.helpers.LowSeverityHelper.DEFAULT;
+import static com.newrelic.api.agent.security.instrumentation.helpers.LowSeverityHelper.LOW_SEVERITY_HOOKS_ENABLED;
+
 @Weave(type = MatchType.BaseClass, originalName = "java.io.File")
 public abstract class File_Instrumentation {
-
-    // TODO: Temporarily disabled
-//    public boolean exists() {
-//        boolean isFileLockAcquired = acquireFileLockIfPossible();
-//        AbstractOperation operation = null;
-//        if (isFileLockAcquired && !FileHelper.skipExistsEvent(this.getName())) {
-//            operation = preprocessSecurityHook(true, FileHelper.METHOD_NAME_EXISTS, this);
-//        }
-//        boolean returnVal = false;
-//        try {
-//            returnVal = Weaver.callOriginal();
-//        } finally {
-//            if (isFileLockAcquired) {
-//                releaseFileLock();
-//            }
-//        }
-//        registerExitOperation(isFileLockAcquired, operation);
-//        return returnVal;
-//    }
 
     public boolean createNewFile() throws IOException {
         boolean isFileLockAcquired = acquireFileLockIfPossible();
         AbstractOperation operation = null;
         if (isFileLockAcquired) {
-            operation = preprocessSecurityHook(false, FileHelper.METHOD_NAME_CREATE_NEW_FILE, this);
+            operation = preprocessSecurityHook(false, FileHelper.METHOD_NAME_CREATE_NEW_FILE, false, this);
         }
         boolean returnVal = false;
         try {
@@ -56,7 +42,7 @@ public abstract class File_Instrumentation {
         boolean isFileLockAcquired = acquireFileLockIfPossible();
         AbstractOperation operation = null;
         if (isFileLockAcquired) {
-            operation = preprocessSecurityHook(false, FileHelper.METHOD_NAME_DELETE, this);
+            operation = preprocessSecurityHook(false, FileHelper.METHOD_NAME_DELETE, false, this);
         }
         boolean returnVal = false;
         try {
@@ -74,7 +60,7 @@ public abstract class File_Instrumentation {
         boolean isFileLockAcquired = acquireFileLockIfPossible();
         AbstractOperation operation = null;
         if (isFileLockAcquired) {
-            operation = preprocessSecurityHook(false, FileHelper.METHOD_NAME_DELETE_ON_EXIT, this);
+            operation = preprocessSecurityHook(false, FileHelper.METHOD_NAME_DELETE_ON_EXIT, false, this);
         }
         try {
             Weaver.callOriginal();
@@ -90,7 +76,7 @@ public abstract class File_Instrumentation {
         boolean isFileLockAcquired = acquireFileLockIfPossible();
         AbstractOperation operation = null;
         if (isFileLockAcquired) {
-            operation = preprocessSecurityHook(false, FileHelper.METHOD_NAME_LIST, this);
+            operation = preprocessSecurityHook(false, FileHelper.METHOD_NAME_LIST, false, this);
         }
         String[] returnVal = null;
         try {
@@ -108,7 +94,7 @@ public abstract class File_Instrumentation {
         boolean isFileLockAcquired = acquireFileLockIfPossible();
         AbstractOperation operation = null;
         if (isFileLockAcquired) {
-            operation = preprocessSecurityHook(false, FileHelper.METHOD_NAME_LIST, this);
+            operation = preprocessSecurityHook(false, FileHelper.METHOD_NAME_LIST, false, this);
         }
         String[] returnVal = null;
         try {
@@ -126,7 +112,7 @@ public abstract class File_Instrumentation {
         boolean isFileLockAcquired = acquireFileLockIfPossible();
         AbstractOperation operation = null;
         if (isFileLockAcquired) {
-            operation = preprocessSecurityHook(false, FileHelper.METHOD_NAME_LISTFILES, this);
+            operation = preprocessSecurityHook(false, FileHelper.METHOD_NAME_LISTFILES, false, this);
         }
         File[] returnVal = null;
         try {
@@ -144,7 +130,7 @@ public abstract class File_Instrumentation {
         boolean isFileLockAcquired = acquireFileLockIfPossible();
         AbstractOperation operation = null;
         if (isFileLockAcquired) {
-            operation = preprocessSecurityHook(false, FileHelper.METHOD_NAME_LISTFILES, this);
+            operation = preprocessSecurityHook(false, FileHelper.METHOD_NAME_LISTFILES, false, this);
         }
         File[] returnVal = null;
         try {
@@ -162,7 +148,7 @@ public abstract class File_Instrumentation {
         boolean isFileLockAcquired = acquireFileLockIfPossible();
         AbstractOperation operation = null;
         if (isFileLockAcquired) {
-            operation = preprocessSecurityHook(false, FileHelper.METHOD_NAME_LISTFILES, this);
+            operation = preprocessSecurityHook(false, FileHelper.METHOD_NAME_LISTFILES, false, this);
         }
         File[] returnVal = null;
         try {
@@ -180,7 +166,7 @@ public abstract class File_Instrumentation {
         boolean isFileLockAcquired = acquireFileLockIfPossible();
         AbstractOperation operation = null;
         if (isFileLockAcquired) {
-            operation = preprocessSecurityHook(false, FileHelper.METHOD_NAME_MKDIR, this);
+            operation = preprocessSecurityHook(false, FileHelper.METHOD_NAME_MKDIR, false, this);
         }
         boolean returnVal = false;
         try {
@@ -198,7 +184,7 @@ public abstract class File_Instrumentation {
         boolean isFileLockAcquired = acquireFileLockIfPossible();
         AbstractOperation operation = null;
         if (isFileLockAcquired) {
-            operation = preprocessSecurityHook(false, FileHelper.METHOD_NAME_MKDIRS, this);
+            operation = preprocessSecurityHook(false, FileHelper.METHOD_NAME_MKDIRS, false, this);
         }
         boolean returnVal = false;
         try {
@@ -216,7 +202,7 @@ public abstract class File_Instrumentation {
         boolean isFileLockAcquired = acquireFileLockIfPossible();
         AbstractOperation operation = null;
         if (isFileLockAcquired) {
-            operation = preprocessSecurityHook(false, FileHelper.METHOD_NAME_RENAME_TO, this, dest);
+            operation = preprocessSecurityHook(false, FileHelper.METHOD_NAME_RENAME_TO, false, this, dest);
         }
         boolean returnVal = false;
         try {
@@ -234,7 +220,7 @@ public abstract class File_Instrumentation {
         boolean isFileLockAcquired = acquireFileLockIfPossible();
         AbstractOperation operation = null;
         if (isFileLockAcquired) {
-            operation = preprocessSecurityHook(false, FileHelper.METHOD_NAME_SET_READ_ONLY, this);
+            operation = preprocessSecurityHook(false, FileHelper.METHOD_NAME_SET_READ_ONLY, false, this);
         }
         boolean returnVal = false;
         try {
@@ -252,7 +238,7 @@ public abstract class File_Instrumentation {
         boolean isFileLockAcquired = acquireFileLockIfPossible();
         AbstractOperation operation = null;
         if (isFileLockAcquired) {
-            operation = preprocessSecurityHook(false, FileHelper.METHOD_NAME_SET_WRITABLE, this);
+            operation = preprocessSecurityHook(false, FileHelper.METHOD_NAME_SET_WRITABLE, false, this);
         }
         boolean returnVal = false;
         try {
@@ -270,7 +256,7 @@ public abstract class File_Instrumentation {
         boolean isFileLockAcquired = acquireFileLockIfPossible();
         AbstractOperation operation = null;
         if (isFileLockAcquired) {
-            operation = preprocessSecurityHook(false, FileHelper.METHOD_NAME_SET_WRITABLE, this);
+            operation = preprocessSecurityHook(false, FileHelper.METHOD_NAME_SET_WRITABLE, false, this);
         }
         boolean returnVal = false;
         try {
@@ -288,7 +274,7 @@ public abstract class File_Instrumentation {
         boolean isFileLockAcquired = acquireFileLockIfPossible();
         AbstractOperation operation = null;
         if (isFileLockAcquired) {
-            operation = preprocessSecurityHook(false, FileHelper.METHOD_NAME_SET_READABLE, this);
+            operation = preprocessSecurityHook(false, FileHelper.METHOD_NAME_SET_READABLE, false, this);
         }
         boolean returnVal = false;
         try {
@@ -306,7 +292,7 @@ public abstract class File_Instrumentation {
         boolean isFileLockAcquired = acquireFileLockIfPossible();
         AbstractOperation operation = null;
         if (isFileLockAcquired) {
-            operation = preprocessSecurityHook(false, FileHelper.METHOD_NAME_SET_READABLE, this);
+            operation = preprocessSecurityHook(false, FileHelper.METHOD_NAME_SET_READABLE, false, this);
         }
         boolean returnVal = false;
         try {
@@ -324,7 +310,7 @@ public abstract class File_Instrumentation {
         boolean isFileLockAcquired = acquireFileLockIfPossible();
         AbstractOperation operation = null;
         if (isFileLockAcquired) {
-            operation = preprocessSecurityHook(false, FileHelper.METHOD_NAME_SET_EXECUTABLE, this);
+            operation = preprocessSecurityHook(false, FileHelper.METHOD_NAME_SET_EXECUTABLE, false, this);
         }
         boolean returnVal = false;
         try {
@@ -342,7 +328,7 @@ public abstract class File_Instrumentation {
         boolean isFileLockAcquired = acquireFileLockIfPossible();
         AbstractOperation operation = null;
         if (isFileLockAcquired) {
-            operation = preprocessSecurityHook(false, FileHelper.METHOD_NAME_SET_EXECUTABLE, this);
+            operation = preprocessSecurityHook(false, FileHelper.METHOD_NAME_SET_EXECUTABLE, false, this);
         }
         boolean returnVal = false;
         try {
@@ -391,7 +377,8 @@ public abstract class File_Instrumentation {
         }
     }
 
-    private static AbstractOperation preprocessSecurityHook(boolean isBooleanAttributesCall, String methodName, File_Instrumentation... files) {
+    private static AbstractOperation preprocessSecurityHook(boolean isBooleanAttributesCall, String methodName, boolean isLowSeverityHook,
+            File_Instrumentation... files) {
         try {
             if (!NewRelicSecurity.isHookProcessingActive() ||
                     NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()
@@ -407,6 +394,9 @@ public abstract class File_Instrumentation {
             }
             FileOperation operation = new FileOperation(
                     File_Instrumentation.class.getName(), methodName, isBooleanAttributesCall, fileNames);
+            if(isBooleanAttributesCall) {
+                operation.setLowSeverityHook(isLowSeverityHook);
+            }
             NewRelicSecurity.getAgent().registerOperation(operation);
             return operation;
         } catch (Throwable e) {
