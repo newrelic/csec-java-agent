@@ -55,6 +55,7 @@ public class DynamodbTest {
 
     @BeforeClass
     public static void setUp() throws Exception {
+        System.setProperty("sqlite4java.library.path", "src/test/resources/libs/");
         System.setProperty("aws.accessKeyId", DynamoUtil.ACCESS_KEY);
         System.setProperty("aws.secretAccessKey", DynamoUtil.SECRET_KEY);
 
