@@ -53,41 +53,10 @@ runs:
 
     - name: Setup Gradle
       uses: gradle/gradle-build-action@v2
-      with:
-        cache-disabled: true
 
     - name: Setup Gradle options
       shell: bash
       run: echo "GRADLE_OPTIONS=-Porg.gradle.java.installations.auto-detect=false -Porg.gradle.java.installations.fromEnv=JAVA_HOME_8_X64,JAVA_HOME_11_X64,JAVA_HOME_17_X64,JAVA_HOME_19_X64,JAVA_HOME_20_X64 -Prelease=${{ inputs.is-release }} -Prelease-suffix=${{ inputs.version-suffix }} " >> $GITHUB_ENV
-
-    # Restore the maven cache
-    - name: Cache local Maven repository
-      uses: actions/cache@v3
-      with:
-        path: ~/.m2/repository
-        key: ${{ runner.os }}-maven-${{ github.ref_name }}
-        restore-keys: |
-          ${{ runner.os }}-maven-${{ github.ref_name }}
-          ${{ runner.os }}-maven-develop
-          ${{ runner.os }}-maven-main
-          ${{ runner.os }}-maven
-
-    # Restore the gradle cache
-    - uses: actions/cache@v3
-      with:
-        path: |
-          ~/.gradle/caches
-          ~/.gradle/wrapper
-        # The docs say to use hashfiles, but gradle itself is smart enough to
-        # re-download dependencies if it couldn't resolve them.
-        # Because our gradle cache is _so big_, I think a 90% cache is far
-        # better than a 0% cache.
-        key: ${{ runner.os }}-gradle-${{ github.ref_name }}
-        restore-keys: |
-          ${{ runner.os }}-gradle-${{ github.ref_name }}
-          ${{ runner.os }}-gradle-develop
-          ${{ runner.os }}-gradle-main
-          ${{ runner.os }}-gradle
 
     - name: Checkout APM agent
       uses: actions/checkout@v3
