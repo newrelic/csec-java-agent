@@ -29,14 +29,10 @@ import de.flapdoodle.embed.mongo.Command;
 import de.flapdoodle.embed.mongo.MongodExecutable;
 import de.flapdoodle.embed.mongo.MongodProcess;
 import de.flapdoodle.embed.mongo.MongodStarter;
-import de.flapdoodle.embed.mongo.config.ExtractedArtifactStoreBuilder;
-import de.flapdoodle.embed.mongo.config.IMongodConfig;
-import de.flapdoodle.embed.mongo.config.MongodConfigBuilder;
+import de.flapdoodle.embed.mongo.config.ImmutableMongodConfig;
+import de.flapdoodle.embed.mongo.config.MongodConfig;
 import de.flapdoodle.embed.mongo.config.Net;
-import de.flapdoodle.embed.mongo.config.RuntimeConfigBuilder;
 import de.flapdoodle.embed.mongo.distribution.Version;
-import de.flapdoodle.embed.process.config.IRuntimeConfig;
-import de.flapdoodle.embed.process.extract.ITempNaming;
 import de.flapdoodle.embed.process.runtime.Network;
 import org.bson.Document;
 import org.bson.conversions.Bson;
@@ -60,37 +56,15 @@ import static com.mongodb.client.model.Filters.eq;
 @InstrumentationTestConfig(includePrefixes = {"com.mongodb.operation","com.nr.agent.security.mongo"})
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class OperationExecutorMongoDatabaseTest {
-    private static final MongodStarter mongodStarter;
-
-    static {
-        IRuntimeConfig runtimeConfig = new RuntimeConfigBuilder().defaults(Command.MongoD)
-                .artifactStore(new ExtractedArtifactStoreBuilder()
-                        .defaults(Command.MongoD)
-                        // The default configuration creates executables whose names contain random UUIDs, which
-                        // prompts repetitive firewall dialog popups. Instead, we use a naming strategy that
-                        // produces a stable executable name and only have to acknowledge the firewall dialogs once.
-                        // On macOS systems, the dialogs must be acknowledged quickly in order to be registered.
-                        // Failure to click fast enough will result in additional dialogs on subsequent test runs.
-                        // This firewall dialog issue only seems to occur with versions of mongo < 3.6.0
-                        .executableNaming(new ITempNaming() {
-                            @Override
-                            public String nameFor(String prefix, String postfix) {
-                                return prefix + "-Db310-" + postfix;
-                            }
-                        }))
-                .build();
-        mongodStarter = MongodStarter.getInstance(runtimeConfig);
-    }
-
-
+    private static final MongodStarter mongodStarter = MongodStarter.getDefaultInstance();
     private static MongodExecutable mongodExecutable;
     private static MongodProcess mongodProcess;
     private static MongoClient mongoClient;
 
     @BeforeClass
-    public static void startMongo() throws IOException {
+    public static void startMongo() throws Exception {
         int port = Network.getFreeServerPort();
-        IMongodConfig mongodConfig = new MongodConfigBuilder()
+        MongodConfig mongodConfig = ImmutableMongodConfig.builder()
                 .version(Version.V3_2_0)
                 .net(new Net(port, Network.localhostIsIPv6()))
                 .build();
@@ -98,9 +72,9 @@ public class OperationExecutorMongoDatabaseTest {
         mongodExecutable = mongodStarter.prepare(mongodConfig);
         mongodProcess = mongodExecutable.start();
         mongoClient = new MongoClient("localhost", port);
-        MongoDatabase database= mongoClient.getDatabase("test");
+        MongoDatabase database = mongoClient.getDatabase("test");
         database.createCollection("test");
-        MongoCollection mcollection=database.getCollection("test");
+        MongoCollection mcollection = database.getCollection("test");
         Document doc = new Document("name", "MongoDB").append("type", "database").append("count", 1).append("info",
                 new Document("x", 203).append("y", 102));
         mcollection.insertOne(doc);
@@ -118,6 +92,7 @@ public class OperationExecutorMongoDatabaseTest {
             mongodExecutable.stop();
         }
     }
+
     @Test
     public void testFindOneAndDelete()  {
 

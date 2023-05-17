@@ -68,7 +68,7 @@ public class ServerTest {
         Assert.assertEquals("Invalid executed method name.", HttpServletHelper.SERVICE_METHOD_NAME, operation.getMethodName());
         Assert.assertEquals("Wrong client IP detected", "127.0.0.1", operation.getRequest().getClientIP());
         Assert.assertEquals("Wrong Protocol detected", "http", operation.getRequest().getProtocol());
-        Assert.assertEquals("Wrong URL detected", "/TestUrl", operation.getRequest().getUrl());
+        
         Assert.assertEquals("Wrong port detected", PORT, operation.getRequest().getServerPort());
         Assert.assertEquals("Wrong Content-type detected", "text/plain", operation.getRequest().getContentType());
 
@@ -111,7 +111,7 @@ public class ServerTest {
         Assert.assertEquals("Invalid executed method name.", HttpServletHelper.SERVICE_METHOD_NAME, operation.getMethodName());
         Assert.assertEquals("Wrong client IP detected", "127.0.0.1", operation.getRequest().getClientIP());
         Assert.assertEquals("Wrong Protocol detected", "http", operation.getRequest().getProtocol());
-        Assert.assertEquals("Wrong URL detected", "/TestUrl", operation.getRequest().getUrl());
+        
         Assert.assertEquals("Wrong port detected", PORT, operation.getRequest().getServerPort());
         Assert.assertEquals("Wrong Content-type detected", "text/plain", operation.getRequest().getContentType());
 
@@ -155,7 +155,7 @@ public class ServerTest {
         Assert.assertEquals("Invalid executed method name.", HttpServletHelper.SERVICE_METHOD_NAME, operation.getMethodName());
         Assert.assertEquals("Wrong client IP detected", "127.0.0.1", operation.getRequest().getClientIP());
         Assert.assertEquals("Wrong Protocol detected", "http", operation.getRequest().getProtocol());
-        Assert.assertEquals("Wrong URL detected", "/TestUrl", operation.getRequest().getUrl());
+        
         Assert.assertEquals("Wrong port detected", PORT, operation.getRequest().getServerPort());
         Assert.assertEquals("Wrong Content-type detected", "text/plain", operation.getRequest().getContentType());
     }
@@ -179,7 +179,7 @@ public class ServerTest {
         Assert.assertEquals("Invalid executed method name.", HttpServletHelper.SERVICE_METHOD_NAME, operation.getMethodName());
         Assert.assertEquals("Wrong client IP detected", "127.0.0.1", operation.getRequest().getClientIP());
         Assert.assertEquals("Wrong Protocol detected", "http", operation.getRequest().getProtocol());
-        Assert.assertEquals("Wrong URL detected", "/TestUrl", operation.getRequest().getUrl());
+        
         Assert.assertEquals("Wrong port detected", PORT, operation.getRequest().getServerPort());
         Assert.assertEquals("Wrong Content-type detected", "text/plain", operation.getRequest().getContentType());
     }

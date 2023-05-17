@@ -111,7 +111,9 @@ public class Agent implements SecurityAgent {
     }
 
     private void populateSecurityData(SecurityMetaData meta) {
-        meta.getRequest().setUrl("/TestUrl");
+        int min = 100;
+        int max = 5000;
+        meta.getRequest().setUrl("/TestUrl"+(int)(Math.random()*(max-min+1)+min));
         meta.getRequest().setMethod("GET");
     }
 
