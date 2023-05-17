@@ -28,6 +28,7 @@ jobs:
     name: Instrumentation verifier trigger
     uses: ./.github/workflows/X-Reusable-VerifyInstrumentation.yml
     with:
+      page: 1/1
       ref: ${{ inputs.agent-ref || 'main' }}
     secrets: inherit
 
