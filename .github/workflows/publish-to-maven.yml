@@ -122,7 +122,7 @@ jobs:
 
       - name: Verify CSEC instrumentation
         if: ${{ inputs.csec-run-instrumentation-verify == 'true' }}
-        uses: ./.github/actions/verify-instrumentation
+        uses: ./.github/workflows/verify-instrumentation.yml
 
       - name: Publish CSEC to central
         uses: ./.github/actions/publish-csec
