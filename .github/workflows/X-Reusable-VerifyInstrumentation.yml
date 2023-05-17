@@ -1,0 +1,77 @@
+# Reusable workflow to run Verify Instrumentation on modules.
+# Only processes a fraction of the modules so the they fit into a GHA matrix (which is limited to 255 jobs).
+
+# This workflow does not use the setup-gradle action on purpose. That action retrieves over 1GB from the cache
+# and when many runners do that at the same time, the cache server returns 429s (Too many requests).
+
+name: X - Reusable Verify Instrumentation
+on:
+  workflow_call:
+    inputs:
+      page:
+        required: true
+        type: string
+        description: 'The page to process (eg: 1/2 or 5/5)'
+      ref:
+        required: true
+        default: main
+        type: string
+        description: 'The ref (branch, SHA, tag?) to run the tests on'
+
+jobs:
+  # this job reads the directories in csec-java-agent/instrumentation-security and creates a JSON with the list of the modules
+  # this list is paginated and will be used in the verify-module job.
+  read-modules:
+    runs-on: ubuntu-20.04
+    outputs:
+      modules: ${{ steps.set-modules.outputs.modules }}
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ inputs.ref }}
+
+      - id: set-modules
+        name: get instrumentation modules as json
+        run: |
+          cd instrumentation-security
+          tmpfile=$(mktemp /tmp/dirs.XXXXXXXXXX)
+          # lists the folders inside instrumentation, and removes the trailing '/'
+          ls -d */build.gradle | cut -d'/' -f 1 > $tmpfile
+          # creates an envar with the requested page of the instrumentation modules in a JSON format
+          modules=$((
+            echo '{ "modules" : '
+            split -n l/${{ inputs.page }} $tmpfile | jq -R -s -c 'split("\n")[:-1]'
+            echo " }"
+          ) | jq -c .)
+          # save the output of the job
+          echo "modules=$modules" >> $GITHUB_OUTPUT
+
+  verify-module:
+    name: ${{ matrix.modules }}
+    runs-on: ubuntu-20.04
+    needs: read-modules
+    strategy:
+      fail-fast: false
+      # GHA's IDE think the line below is broken. It is not.
+      matrix: ${{ fromJson(needs.read-modules.outputs.modules) }}
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ inputs.ref }}
+
+      - name: Setup environment
+        uses: ./.github/actions/setup-environment
+        with:
+          apm-repo: 'newrelic/newrelic-java-agent'
+          apm-branch: 'k2-integration'
+          apm-aws-access-key-id: ${{ secrets.APM_AWS_ACCESS_KEY_ID }}
+          apm-aws-secret-access-key: ${{ secrets.APM_AWS_SECRET_ACCESS_KEY }}
+          apm-aws-region: us-east-2
+          is-release: false
+          version-suffix: ''
+
+      # Verify instrumentation must run with Java 17
+      - name: Running verifyInstrumentation on (${{ matrix.modules }})
+        env:
+          JAVA_HOME: ${{ env.JAVA_HOME_17_X64 }}
+        run: ./gradlew $GRADLE_OPTIONS --info :instrumentation:${{ matrix.modules }}:verifyInstrumentation
