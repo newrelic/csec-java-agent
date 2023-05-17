@@ -25,11 +25,9 @@ jobs:
   # Also, this new job must be listed in the `needs` for notify-failure
 
   verify-instrumentation:
-    name: Page 1/2
-    needs: build-agent
+    name: Instrumentation verifier trigger
     uses: ./.github/workflows/X-Reusable-VerifyInstrumentation.yml
     with:
-      page: 1/1
       ref: ${{ inputs.agent-ref || 'main' }}
     secrets: inherit
 
