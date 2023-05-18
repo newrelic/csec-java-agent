@@ -94,7 +94,7 @@ runs:
 
     - name: Configure AWS Credentials
       if: ${{ inputs.apm-aws-secret-access-key != '' }}
-      uses: aws-actions/configure-aws-credentials@v1-node16
+      uses: aws-actions/configure-aws-credentials@v2
       with:
         aws-access-key-id: ${{ inputs.apm-aws-access-key-id }}
         aws-secret-access-key: ${{ inputs.apm-aws-secret-access-key }}
