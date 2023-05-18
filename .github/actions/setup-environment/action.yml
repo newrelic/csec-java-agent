@@ -63,7 +63,7 @@ runs:
       uses: actions/cache@v3
       with:
         path: ~/.m2/repository
-        key: ${{ runner.os }}-maven-${{ github.sha }}
+        key: ${{ runner.os }}-maven-${{ github.run_id }}
 
     - name: Checkout APM agent
       uses: actions/checkout@v3
