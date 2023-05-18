@@ -2,9 +2,9 @@ name: CSEC Instrumentation verification
 
 on:
   workflow_dispatch:
-    inputs: null
+    inputs:
   workflow_call:
-    inputs: null
+    inputs:
   schedule:
     - cron: '0 0 * * *'
 
