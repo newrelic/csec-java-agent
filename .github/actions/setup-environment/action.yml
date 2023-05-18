@@ -39,7 +39,8 @@ runs:
           20
           17
           11
-          8    
+          8
+        cache: maven
 
     # Rewrite gradle.properties
     - name: set gradle.properties for CSEC

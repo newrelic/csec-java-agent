@@ -2,19 +2,9 @@ name: CSEC Instrumentation verification
 
 on:
   workflow_dispatch:
-    inputs:
-      agent-ref:
-        required: true
-        default: main
-        type: string
-        description: 'The ref (branch, SHA, tag?) to run the tests on'
+    inputs: null
   workflow_call:
-    inputs:
-      agent-ref:
-        required: true
-        default: main
-        type: string
-        description: 'The ref (branch, SHA, tag?) to run the tests on'
+    inputs: null
   schedule:
     - cron: '0 0 * * *'
 
@@ -29,7 +19,7 @@ jobs:
     uses: ./.github/workflows/X-Reusable-VerifyInstrumentation.yml
     with:
       page: 1/1
-      ref: ${{ inputs.agent-ref || 'main' }}
+      ref: ${{ github.ref || 'main' }}
     secrets: inherit
 
   notify-failure:

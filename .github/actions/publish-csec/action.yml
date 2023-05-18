@@ -9,6 +9,19 @@ inputs:
     description: 'Sonatype repo access password'
     required: true
     default: ''
+  pgp-signing-key:
+    description: 'PGP Artifact signing key'
+    required: true
+    default: ''
+  pgp-signing-key-id:
+    description: 'PGP Artifact signing key id'
+    required: true
+    default: ''
+  pgp-signing-key-password:
+    description: 'PGP Artifact signing key password'
+    required: true
+    default: ''
+
 
 runs:
   using: composite
@@ -20,9 +33,9 @@ runs:
       env:
         SONATYPE_USERNAME: ${{ inputs.sonatype-username }}
         SONATYPE_PASSWORD: ${{ inputs.sonatype-password }}
-#        ORG_GRADLE_PROJECT_signingKey: ${{ inputs.SIGNING_KEY }}
-#        ORG_GRADLE_PROJECT_signingKeyId: ${{ inputs.SIGNING_KEY_ID }}
-#        ORG_GRADLE_PROJECT_signingPassword: ${{ inputs.SIGNING_PASSWORD }}
+        ORG_GRADLE_PROJECT_signingKey: ${{ inputs.pgp-signing-key }}
+        ORG_GRADLE_PROJECT_signingKeyId: ${{ inputs.pgp-signing-key-id }}
+        ORG_GRADLE_PROJECT_signingPassword: ${{ inputs.pgp-signing-key-password }}
 
     - name: Publish CSEC agent locally
       shell: bash
@@ -30,6 +43,6 @@ runs:
       env:
         SONATYPE_USERNAME: ${{ inputs.sonatype-username }}
         SONATYPE_PASSWORD: ${{ inputs.sonatype-password }}
-#        ORG_GRADLE_PROJECT_signingKey: ${{ secrets.SIGNING_KEY }}
-#        ORG_GRADLE_PROJECT_signingKeyId: ${{ secrets.SIGNING_KEY_ID }}
-#        ORG_GRADLE_PROJECT_signingPassword: ${{ secrets.SIGNING_PASSWORD }}
+        ORG_GRADLE_PROJECT_signingKey: ${{ inputs.pgp-signing-key }}
+        ORG_GRADLE_PROJECT_signingKeyId: ${{ inputs.pgp-signing-key-id }}
+        ORG_GRADLE_PROJECT_signingPassword: ${{ inputs.pgp-signing-key-password }}
