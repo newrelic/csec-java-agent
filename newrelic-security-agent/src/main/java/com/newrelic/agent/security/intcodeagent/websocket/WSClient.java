@@ -166,8 +166,6 @@ public class WSClient extends WebSocketClient {
      * @throws InterruptedException
      */
     public void openConnection() throws InterruptedException {
-        logger.logInit(LogLevel.INFO, String.format(IAgentConstants.INIT_WS_CONNECTION, AgentConfig.getInstance().getConfig().getK2ServiceInfo().getValidatorServiceEndpointURL()),
-                WSClient.class.getName());
         connectBlocking(30, TimeUnit.SECONDS);
         WebSocket conn = getConnection();
         if (conn instanceof WebSocketImpl) {
@@ -177,7 +175,8 @@ public class WSClient extends WebSocketClient {
 
     @Override
     public void onOpen(ServerHandshake handshakedata) {
-        logger.logInit(LogLevel.INFO, String.format(IAgentConstants.WS_CONNECTION_SUCCESSFUL, this.getRemoteSocketAddress()), WSClient.class.getName());
+        logger.logInit(LogLevel.INFO, String.format(IAgentConstants.INIT_WS_CONNECTION, AgentConfig.getInstance().getConfig().getK2ServiceInfo().getValidatorServiceEndpointURL()),
+                WSClient.class.getName());
         logger.logInit(LogLevel.INFO, String.format(IAgentConstants.SENDING_APPLICATION_INFO_ON_WS_CONNECT, AgentInfo.getInstance().getApplicationInfo()), WSClient.class.getName());
         super.send(JsonConverter.toJSON(AgentInfo.getInstance().getApplicationInfo()));
         WSUtils.getInstance().setReconnecting(false);

@@ -45,6 +45,15 @@ public class SchedulerHelper {
         return future;
     }
 
+    public ScheduledFuture<?> scheduleTmpFileCleanup(Runnable command,
+                                                  long initialDelay,
+                                                  long period,
+                                                  TimeUnit unit){
+        ScheduledFuture<?> future = commonExecutor.scheduleWithFixedDelay(command, initialDelay, period, unit);
+        scheduledFutureMap.put("FileCleaner", future);
+        return future;
+    }
+
     public ScheduledFuture<?> scheduleLowSeverityFilterCleanup(Runnable command,
                                                long initialDelay,
                                                long period,

@@ -172,7 +172,7 @@ public class HttpServletHelper {
                     NewRelicSecurity.getAgent().getSecurityMetaData().getResponse(),
                     className, methodName);
             NewRelicSecurity.getAgent().registerOperation(rxssOperation);
-
+            ServletHelper.tmpFileCleanUp(NewRelicSecurity.getAgent().getSecurityMetaData().getFuzzRequestIdentifier().getTempFiles());
         } catch (Throwable e) {
             if (e instanceof NewRelicSecurityException) {
                 e.printStackTrace();

@@ -543,7 +543,7 @@ public interface IAgentConstants {
     String WS_CONNECTION_UNSUCCESSFUL = "[WS] Error connecting to Prevent-Web service at %s :";
     String WS_CONNECTION_UNSUCCESSFUL_INFO = "[WS] Error connecting to Prevent-Web service at %s : %s : %s";
 
-    String INIT_WS_CONNECTION = "[STEP-4] => Web socket connecting to Security Engine at %s.";
+    String INIT_WS_CONNECTION = "[STEP-4] =>Web socket connection to SaaS validator established successfully at %s.";
 
 
     String RECEIVED_AGENT_POLICY = "[STEP-7][POLICY] Received policy data from Prevent-Web service : %s";
@@ -558,7 +558,7 @@ public interface IAgentConstants {
     String UNABLE_TO_SET_AGENT_POLICY_PARAM_DUE_TO_ERROR = "[POLICY] Unable to set Agent Policy Parameters due to error:";
 
     String STARTED_MODULE_LOG = "[COMPLETE][MODULE] Started %s.";
-    String AGENT_INIT_LOG_STEP_FIVE_END = "[STEP-5] => Started Security agent Threads/pools/scheduler.";
+    String AGENT_INIT_LOG_STEP_FIVE_END = "[STEP-5] => Security agent threads started";
 
     String VULNERABLE = "VULNERABLE";
     String TERMINATING = "Terminating";
