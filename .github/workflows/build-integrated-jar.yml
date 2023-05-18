@@ -50,6 +50,7 @@ jobs:
 
   create_integrated_jar:
     name: Create Integrated Agent jar
+    if: ${{ always() }}
     needs: [build-csec-agent, verify-instrumentation]
     runs-on: ubuntu-20.04
     steps:
