@@ -130,7 +130,7 @@ jobs:
             exit 2
           fi
 
-      - name: Publish CSEC agent API locally
+      - name: Publish CSEC agent API
         shell: bash
         run: ./gradlew ${GRADLE_OPTIONS} :newrelic-security-api:publish -PbuildNumber=${{ github.run_id }}-${{ github.run_number }} -PcommitId=${{ github.sha }} --parallel
         env:
@@ -140,7 +140,7 @@ jobs:
           ORG_GRADLE_PROJECT_signingKeyId: ${{ secrets.SIGNING_KEY_ID }}
           ORG_GRADLE_PROJECT_signingPassword: ${{ secrets.SIGNING_KEY_PASSWORD }}
 
-      - name: Publish CSEC agent locally
+      - name: Publish CSEC agent
         shell: bash
         run: ./gradlew ${GRADLE_OPTIONS} publish -PbuildNumber=${{ github.run_id }}-${{ github.run_number }} -PcommitId=${{ github.sha }} --parallel
         env:
