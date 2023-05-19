@@ -9,6 +9,7 @@ package jakarta.servlet;
 
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.instrumentation.helpers.LowSeverityHelper;
+import com.newrelic.api.agent.security.instrumentation.helpers.ServletHelper;
 import com.newrelic.api.agent.security.schema.AgentMetaData;
 import com.newrelic.api.agent.security.schema.HttpRequest;
 import com.newrelic.api.agent.security.schema.SecurityMetaData;
@@ -99,7 +100,7 @@ public abstract class Servlet_Instrumentation {
                     NewRelicSecurity.getAgent().getSecurityMetaData().getResponse(),
                     this.getClass().getName(), HttpServletHelper.SERVICE_METHOD_NAME);
             NewRelicSecurity.getAgent().registerOperation(rxssOperation);
-
+            ServletHelper.tmpFileCleanUp(NewRelicSecurity.getAgent().getSecurityMetaData().getFuzzRequestIdentifier().getTempFiles());
         } catch (Throwable e) {
             if(e instanceof NewRelicSecurityException){
                 e.printStackTrace();

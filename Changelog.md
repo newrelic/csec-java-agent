@@ -4,7 +4,7 @@ Noteworthy changes to the agent are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.0.2-limited-preview] - 2023-05-17
+## [1.0.2-limited-preview] - 2023-05-19
 ### Added
 - [LOGGER] Update init logger : maintain consistncy with all security agents
 - [INSTRUMENTATION] Support for Embedded Jetty 9 & 11
@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added unit test cases for following:
     - Servlet 2.4, 5.0, 6.0
 - Applied instrumentation priority changes
+- Scheduler for FileCleaner
 
 ### Fixed
 - NPE fix in unit test of R2DBC
@@ -28,6 +29,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Skip hook processing on Servlet low priority instrumentations modules
 - Skip hook processing on internal threads
 - Changes for IAST data pull (on demand #CC request)
+- Removal of tmp file created for IAST scanning.
+- First HC to be sent after 30 sec of thread launch
+- Removed @NewField from Nashorn Instrumentation with Transaction map logic to avoid OOM issue
 
 ## [1.0.1-limited-preview] - 2023-04-20
 

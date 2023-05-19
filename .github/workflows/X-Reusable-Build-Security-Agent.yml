@@ -2,11 +2,6 @@ name: X - Reusable Build Security Agent
 on:
   workflow_call:
     inputs:
-      source-ref:
-        description: "Specify source-ref/tag/hash"
-        required: true
-        type: string
-        default: 'main'
       apm-repo:
         description: 'The repo of APM source code to use'
         required: true
@@ -17,6 +12,47 @@ on:
         required: true
         type: string
         default: 'k2-integration'
+      run-unit-test:
+        description: 'Run instrumentation unit tests ?'
+        required: true
+        type: string
+        default: 'true'
+      is-release:
+        description: 'Is this a release run'
+        required: true
+        type: string
+        default: 'false'
+      version-suffix:
+        description: 'version suffix to be added, if any'
+        default: ''
+        type: string
+
+  workflow_dispatch:
+    inputs:
+      apm-repo:
+        description: 'The repo of APM source code to use'
+        required: true
+        type: string
+        default: 'newrelic/newrelic-java-agent'
+      apm-source-ref:
+        description: 'The source-ref of APM source code to use'
+        required: true
+        type: string
+        default: 'k2-integration'
+      run-unit-test:
+        description: 'Run instrumentation unit tests ?'
+        required: true
+        type: string
+        default: 'true'
+      is-release:
+        description: 'Is this a release run'
+        required: true
+        type: string
+        default: 'false'
+      version-suffix:
+        description: 'version suffix to be added, if any'
+        default: ''
+        type: string
 
 jobs:
   # this job reads the directories in csec-java-agent/instrumentation-security and creates a JSON with the list of the modules
@@ -24,6 +60,11 @@ jobs:
   build-agent:
     runs-on: ubuntu-20.04
     steps:
+      - name: Checkout CSEC Repo
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.ref }}
+
       - name: Setup environment
         uses: ./.github/actions/setup-environment
         with:
@@ -57,3 +98,7 @@ jobs:
 
       - name: Publish CSEC to local
         uses: ./.github/actions/publish-csec-local
+
+      - name: Run CSEC unit tests
+        if: ${{ inputs.run-unit-test == 'true' }}
+        uses: ./.github/actions/unit-test

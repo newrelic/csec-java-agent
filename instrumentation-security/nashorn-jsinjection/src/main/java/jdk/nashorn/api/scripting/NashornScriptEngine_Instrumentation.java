@@ -73,12 +73,14 @@ public class NashornScriptEngine_Instrumentation {
     private AbstractOperation preprocessSecurityHook(ScriptFunction_Instrumentation script, String methodName) {
         try {
             if (!NewRelicSecurity.isHookProcessingActive() ||
-                    NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty() ||
-                    !(script.publicData instanceof RecompilableScriptFunctionData)){
+                    NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()){
                 return null;
             }
-            Source source = ((RecompilableScriptFunctionData) script.publicData).getSource();
-            JSInjectionOperation jsInjectionOperation = new JSInjectionOperation(String.valueOf(source.getContent()), this.getClass().getName(), methodName);
+            String content = NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(JSEngineUtils.NASHORN_CONTENT + script.hashCode(), String.class);
+            if(StringUtils.isEmpty(content)){
+                return null;
+            }
+            JSInjectionOperation jsInjectionOperation = new JSInjectionOperation(content, this.getClass().getName(), methodName);
             NewRelicSecurity.getAgent().registerOperation(jsInjectionOperation);
             return jsInjectionOperation;
         } catch (Throwable e) {

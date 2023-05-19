@@ -2,10 +2,6 @@ name: Create Integrated Agent jar
 on:
   workflow_dispatch:
     inputs:
-      source-ref:
-        description: "Specify source-ref/tag/hash"
-        required: true
-        default: 'main'
       apm-repo:
         description: 'The repo of APM source code to use'
         required: true
@@ -36,8 +32,26 @@ permissions:
   contents: read  # This is required for actions/checkout
 
 jobs:
+  build-csec-agent:
+    name: Build CSEC agent artifacts
+    uses: ./.github/workflows/X-Reusable-Build-Security-Agent.yml
+    with:
+      apm-repo: ${{ inputs.apm-repo }}
+      apm-source-ref: ${{ inputs.apm-source-ref }}
+      run-unit-test: ${{ inputs.csec-run-unittest }}
+      is-release: false
+    secrets: inherit
+
+  verify-instrumentation:
+    name: Verify CSEC instrumentation
+    if: ${{ inputs.csec-run-instrumentation-verify == 'true' }}
+    uses: ./.github/workflows/verify-instrumentation.yml
+    secrets: inherit
+
   create_integrated_jar:
     name: Create Integrated Agent jar
+    if: ${{ always() }}
+    needs: [build-csec-agent, verify-instrumentation]
     runs-on: ubuntu-20.04
     steps:
       - name: Print Inputs
@@ -46,7 +60,7 @@ jobs:
       - name: Checkout CSEC Java agent
         uses: actions/checkout@v3
         with:
-          ref: ${{ inputs.source-ref }}
+          ref: ${{ github.ref }}
 
       - name: Setup environment
         uses: ./.github/actions/setup-environment
@@ -79,26 +93,13 @@ jobs:
             exit 2
           fi
 
-      - name: Publish CSEC to local
-        uses: ./.github/actions/publish-csec-local
-
-      - name: Run CSEC unit tests
-        if: ${{ inputs.csec-run-unittest == 'true' }}
-        uses: ./.github/actions/unit-test
-
-      - name: Verify CSEC instrumentation
-        if: ${{ inputs.csec-run-instrumentation-verify == 'true' }}
-        uses: ./.github/workflows/verify-instrumentation.yml
-        with:
-          agent-ref: ${{ inputs.source-ref }}
-
       - name: Build Integrated Agent Jar
         uses: ./.github/actions/build-apm-jar
 
       - name: Set summary
         run: |
           echo "${{ inputs.description }}" >> $GITHUB_STEP_SUMMARY
-          echo "This jar was built from the ref (source-ref/tag/hash): ${{ inputs.source-ref }}." >> $GITHUB_STEP_SUMMARY
+          echo "This jar was built from the ref ${{ github.ref }}." >> $GITHUB_STEP_SUMMARY
 
       - name: Send slack notification
         uses: slackapi/slack-github-action@v1.23.0
@@ -112,11 +113,11 @@ jobs:
               "apm-full-ref": "${{ github.server_url }}/${{ inputs.apm-repo }}/tree/${{ inputs.apm-source-ref }}",
               "apm-source-ref": "${{ inputs.apm-source-ref }}",
               "apm-version": "${{ env.APM_VERSION }}",
-              "security-full-ref": "${{ github.server_url }}/${{ github.repository }}/tree/${{ inputs.source-ref }}",
-              "security-source-ref": "${{ inputs.source-ref }}",
+              "security-full-ref": "${{ github.server_url }}/${{ github.repository }}/tree/${{ github.ref }}",
+              "security-source-ref": "${{ github.ref }}",
               "security-version": "${{ env.SECURITY_VERSION }}",
               "security-json-version": "${{ env.SECURITY_JSON_VERSION }}",
-              "changelog-url": "${{ github.server_url }}/${{ github.repository }}/blob/${{ inputs.source-ref }}/Changelog.md",
+              "changelog-url": "${{ github.server_url }}/${{ github.repository }}/blob/${{ github.ref }}/Changelog.md",
               "custom-message": "${{ inputs.description }}",
               "artifact-download-link": "https://nr-java-sec-agent.s3.us-west-2.amazonaws.com/integrated-builds/${{ github.run_id }}-${{ github.run_number }}/newrelic.zip"
             }

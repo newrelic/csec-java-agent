@@ -7,4 +7,4 @@ runs:
   steps:
     - name: Run instrumentation unit tests
       shell: bash
-      run: ./gradlew ${GRADLE_OPTIONS} test
+      run: ./gradlew ${GRADLE_OPTIONS} --info test

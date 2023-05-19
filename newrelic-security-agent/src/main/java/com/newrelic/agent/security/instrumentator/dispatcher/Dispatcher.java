@@ -41,7 +41,7 @@ public class Dispatcher implements Runnable {
     public static final String DROPPING_APPLICATION_INFO_POSTING_DUE_TO_SIZE_0 = "Dropping application info posting due to size 0 : ";
     public static final String QUESTION_CHAR = SEPARATOR_QUESTIONMARK;
     public static final char SEPARATOR = '.';
-    private static final String EVENT_ZERO_SENT = "[STEP-8][COMPLETE][EVENT] First event sent for validation %s";
+    private static final String EVENT_ZERO_SENT = "[STEP-8] => First event sent for validation. Security agent started successfully. %s";
     private static final String SENDING_EVENT_ZERO = "[EVENT] Sending first event for validation. Security agent started successfully ";
     private static final String POSTING_UPDATED_APPLICATION_INFO = "[APP_INFO][DEPLOYED_APP] Sending updated application info to Prevent-Web service : %s";
 

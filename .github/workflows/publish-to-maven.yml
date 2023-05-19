@@ -2,10 +2,6 @@ name: Publishes artifacts to Maven repos
 on:
   workflow_dispatch:
     inputs:
-      source-ref:
-        description: "Specify source-ref/tag/hash"
-        required: true
-        default: 'main'
       apm-repo:
         description: 'The repo of APM source code to use'
         required: true
@@ -36,11 +32,6 @@ on:
 
   workflow_call:
     inputs:
-      source-ref:
-        description: "Specify source-ref/tag/hash"
-        required: true
-        type: string
-        default: 'main'
       apm-repo:
         description: 'The repo of APM source code to use'
         required: true
@@ -77,17 +68,34 @@ on:
         default: false
 
 jobs:
-  publish_to_maven_central:
-    name: Publish artifacts to maven
+  unit-test:
+    name: Run Unit Test
+    if: ${{ inputs.csec-run-unittest == 'true' }}
+    uses: ./.github/workflows/X-Reusable-Build-Security-Agent.yml
+    with:
+      apm-repo: ${{ inputs.apm-repo }}
+      apm-source-ref: ${{ inputs.apm-source-ref }}
+      run-unit-test: ${{ inputs.csec-run-unittest }}
+      is-release: ${{ inputs.is-release }}
+      version-suffix: ${{ inputs.version-suffix }}
+    secrets: inherit
+
+  verify-instrumentation:
+    name: Verify CSEC instrumentation
+    if: ${{ inputs.csec-run-instrumentation-verify == 'true' }}
+    uses: ./.github/workflows/verify-instrumentation.yml
+    secrets: inherit
+
+  publish-to-maven-central:
+    name: Publish to Maven Central
+    if: ${{ always() }}
+    needs: [verify-instrumentation, unit-test]
     runs-on: ubuntu-20.04
     steps:
-      - name: Print Inputs
-        run: echo "${{ toJSON(github.event.inputs) }}"
-
-      - name: Checkout CSEC Java agent
+      - name: Checkout APM agent
         uses: actions/checkout@v3
         with:
-          ref: ${{ inputs.source-ref }}
+          ref: ${{ github.ref }}
 
       - name: Setup environment
         uses: ./.github/actions/setup-environment
@@ -105,7 +113,7 @@ jobs:
         run: |
           APM_CONFIGURED_CSEC_VERSION=$(./gradlew ${GRADLE_OPTIONS} -p newrelic-java-agent/ properties | grep 'csecCollectorVersion:' | awk -F': ' '{print $2}')
           CSEC_CONFIGURED_APM_VERSION=$(./gradlew ${GRADLE_OPTIONS} properties | grep 'nrAPIVersion:' | awk -F': ' '{print $2}')
-          
+
           if [[ "${APM_VERSION}" != "${CSEC_CONFIGURED_APM_VERSION}" ]]
           then
             printf "${RED}Version mismatch regarding APM: ${NONE}\n"
@@ -113,30 +121,38 @@ jobs:
             printf "${RED}Version of APM API used by CSEC: ${CSEC_CONFIGURED_APM_VERSION} ${NONE}\n"
             exit 1
           fi
-      - name: Publish CSEC to local
-        uses: ./.github/actions/publish-csec-local
 
-      - name: Run CSEC unit tests
-        if: ${{ inputs.csec-run-unittest == 'true' }}
-        uses: ./.github/actions/unit-test
+          if [[ "${SECURITY_VERSION}" != "${APM_CONFIGURED_CSEC_VERSION}" ]]
+          then
+            printf "${RED}Version mismatch regarding Security: ${NONE}\n"
+            printf "${RED}Version of CSEC to build: ${SECURITY_VERSION} ${NONE}\n"
+            printf "${RED}Version of CSEC API used by APM: ${APM_CONFIGURED_CSEC_VERSION} ${NONE}\n"
+            exit 2
+          fi
 
-      - name: Verify CSEC instrumentation
-        if: ${{ inputs.csec-run-instrumentation-verify == 'true' }}
-        uses: ./.github/workflows/verify-instrumentation.yml
-        with:
-          agent-ref: ${{ inputs.source-ref }}
+      - name: Publish CSEC agent API
+        shell: bash
+        run: ./gradlew ${GRADLE_OPTIONS} :newrelic-security-api:publish -PbuildNumber=${{ github.run_id }}-${{ github.run_number }} -PcommitId=${{ github.sha }} --parallel
+        env:
+          SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
+          SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
+          ORG_GRADLE_PROJECT_signingKey: ${{ secrets.SIGNING_KEY }}
+          ORG_GRADLE_PROJECT_signingKeyId: ${{ secrets.SIGNING_KEY_ID }}
+          ORG_GRADLE_PROJECT_signingPassword: ${{ secrets.SIGNING_KEY_PASSWORD }}
 
-      - name: Publish CSEC to central
-        uses: ./.github/actions/publish-csec
-        with:
-          sonatype-username: ${{ secrets.SONATYPE_USERNAME }}
-          sonatype-password: ${{ secrets.SONATYPE_PASSWORD }}
-          is-release: ${{ inputs.is-release }}
-          version-suffix: ${{ inputs.version-suffix }}
+      - name: Publish CSEC agent
+        shell: bash
+        run: ./gradlew ${GRADLE_OPTIONS} publish -PbuildNumber=${{ github.run_id }}-${{ github.run_number }} -PcommitId=${{ github.sha }} --parallel
+        env:
+          SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
+          SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
+          ORG_GRADLE_PROJECT_signingKey: ${{ secrets.SIGNING_KEY }}
+          ORG_GRADLE_PROJECT_signingKeyId: ${{ secrets.SIGNING_KEY_ID }}
+          ORG_GRADLE_PROJECT_signingPassword: ${{ secrets.SIGNING_KEY_PASSWORD }}
 
       - name: Set summary
         run: |
-          echo "This jar was built from the ref (source-ref/tag/hash): ${{ inputs.source-ref }}." >> $GITHUB_STEP_SUMMARY
+          echo "Artifacts from the ref ${{ github.ref }} uploaded to maven. Release type : ${{ inputs.is-release == 'true' && 'Staging' || 'Snapshot' }} " >> $GITHUB_STEP_SUMMARY
 
       - name: Send slack notification
         uses: slackapi/slack-github-action@v1.23.0
@@ -150,12 +166,12 @@ jobs:
               "apm-full-ref": "${{ github.server_url }}/${{ inputs.apm-repo }}/tree/${{ inputs.apm-source-ref }}",
               "apm-source-ref": "${{ inputs.apm-source-ref }}",
               "apm-version": "${{ env.APM_VERSION }}",
-              "security-full-ref": "${{ github.server_url }}/${{ github.repository }}/tree/${{ inputs.source-ref }}",
-              "security-source-ref": "${{ inputs.source-ref }}",
+              "security-full-ref": "${{ github.server_url }}/${{ github.repository }}/tree/${{ github.ref }}",
+              "security-source-ref": "${{ github.ref }}",
               "security-version": "${{ env.SECURITY_VERSION }}",
               "security-json-version": "${{ env.SECURITY_JSON_VERSION }}",
-              "changelog-url": "${{ github.server_url }}/${{ github.repository }}/blob/${{ inputs.source-ref }}/Changelog.md",
-              "custom-message": "Auto trigger from ref ${{ inputs.apm-source-ref }}. Release build : ${{ inputs.is-release }}",
+              "changelog-url": "${{ github.server_url }}/${{ github.repository }}/blob/${{ github.ref }}/Changelog.md",
+              "custom-message": "Trigger from ref ${{ github.ref }}. Release type : ${{ inputs.is-release == 'true' && 'Staging' || 'Snapshot' }}",
               "artifact-download-link": "N/A"
             }
         env:

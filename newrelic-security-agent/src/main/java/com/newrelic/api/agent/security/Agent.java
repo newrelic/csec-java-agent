@@ -14,6 +14,7 @@ import com.newrelic.agent.security.intcodeagent.logging.HealthCheckScheduleThrea
 import com.newrelic.agent.security.intcodeagent.logging.IAgentConstants;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.ExitEventBean;
 import com.newrelic.agent.security.intcodeagent.properties.BuildInfo;
+import com.newrelic.agent.security.intcodeagent.schedulers.FileCleaner;
 import com.newrelic.agent.security.intcodeagent.schedulers.SchedulerHelper;
 import com.newrelic.agent.security.intcodeagent.utils.CommonUtils;
 import com.newrelic.agent.security.intcodeagent.websocket.EventSendPool;
@@ -168,6 +169,7 @@ public class Agent implements SecurityAgent {
 
     private void startK2Services() {
         HealthCheckScheduleThread.getInstance().scheduleNewTask();
+        FileCleaner.scheduleNewTask();
         SchedulerHelper.getInstance().scheduleLowSeverityFilterCleanup(LowSeverityHelper::clearLowSeverityEventFilter,
                 30 , 30, TimeUnit.MINUTES);
         logger.logInit(
@@ -211,6 +213,7 @@ public class Agent implements SecurityAgent {
          */
         WSClient.shutDownWSClient();
         HealthCheckScheduleThread.getInstance().cancelTask(true);
+        FileCleaner.cancelTask();
 
     }
 
@@ -232,6 +235,7 @@ public class Agent implements SecurityAgent {
          * 4. HealthCheck
          **/
         HealthCheckScheduleThread.getInstance().cancelTask(true);
+        FileCleaner.cancelTask();
         WSClient.shutDownWSClient();
         WSReconnectionST.shutDownPool();
         EventSendPool.shutDownPool();

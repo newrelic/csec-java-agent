@@ -9,7 +9,6 @@ jobs:
     uses: ./.github/workflows/publish-to-maven.yml
     secrets: inherit
     with:
-      source-ref: 'main'
       apm-repo: 'newrelic/newrelic-java-agent'
       apm-source-ref: 'k2-integration'
       csec-run-unittest: 'true'

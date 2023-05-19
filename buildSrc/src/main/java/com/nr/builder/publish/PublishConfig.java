@@ -73,7 +73,7 @@ public class PublishConfig {
     }
 
     private static void configurePom(MavenPom pom) {
-        pom.getUrl().set("https://github.com/newrelic/newrelic-java-agent");
+        pom.getUrl().set("https://github.com/newrelic/csec-java-agent");
         pom.licenses(spec -> spec.license(license -> {
             license.getName().set("The Apache License, Version 2.0");
             license.getUrl().set("http://www.apache.org/licenses/LICENSE-2.0.txt");
@@ -87,8 +87,8 @@ public class PublishConfig {
             });
         });
         pom.scm(scm -> {
-            scm.getUrl().set("git@github.com:newrelic/newrelic-java-agent.git");
-            scm.getConnection().set("scm:git@github.com:newrelic/newrelic-java-agent.git");
+            scm.getUrl().set("git@github.com:newrelic/csec-java-agent.git");
+            scm.getConnection().set("scm:git@github.com:newrelic/csec-java-agent.git");
         });
     }
 }

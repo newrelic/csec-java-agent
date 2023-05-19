@@ -7,8 +7,13 @@ import com.newrelic.api.agent.security.schema.SecurityMetaData;
 import com.newrelic.api.agent.security.schema.StringUtils;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class ServletHelper {
     public static final String SEPARATOR_SEMICOLON = ":IAST:";
@@ -23,6 +28,8 @@ public class ServletHelper {
     public static final String SERVLET_GET_WRITER_OPERATION_LOCK = "SERVLET_GET_WRITER_OPERATION_LOCK-";
     public static final String NR_SEC_HTTP_SESSION_ATTRIB_NAME = "NR-CSEC-HTTP-SESSION-";
     public static final String NR_SEC_HTTP_SERVLET_RESPONSE_ATTRIB_NAME = "NR-CSEC-HTTP-SERVLET-RESPONSE-";
+
+    private static Set<String> filesToRemove = ConcurrentHashMap.newKeySet();;
 
     public static K2RequestIdentifier parseFuzzRequestIdentifierHeader(String requestHeaderVal) {
         K2RequestIdentifier k2RequestIdentifierInstance = new K2RequestIdentifier();
@@ -57,9 +64,14 @@ public class ServletHelper {
                                     NewRelicSecurity.getAgent().getAgentTempDir());
                             File fileToCreate = new File(tmpFile);
                             if (fileToCreate.getParentFile() != null) {
+
+                                File parentFile = fileToCreate;
+                                while(!parentFile.getParentFile().exists()){
+                                    parentFile = parentFile.getParentFile();
+                                }
+                                filesToRemove.add(parentFile.getAbsolutePath());
                                 fileToCreate.getParentFile().mkdirs();
                             }
-                            fileToCreate.getParentFile().mkdirs();
                             Files.createFile(fileToCreate.toPath());
                         } catch (Throwable ignored) {
                         }
@@ -83,6 +95,20 @@ public class ServletHelper {
                 securityMetaData.getMetaData().setServiceTrace(Arrays.copyOfRange(trace, 1, trace.length));
             }
         } catch (Throwable ignored) {
+        }
+    }
+
+
+    public static Set<String> getFilesToRemove() {
+        return filesToRemove;
+    }
+
+    public static void tmpFileCleanUp(List<String> files){
+        for (String file : files) {
+            try {
+                Files.deleteIfExists(Paths.get(file));
+            } catch (IOException e) {
+            }
         }
     }
 }
