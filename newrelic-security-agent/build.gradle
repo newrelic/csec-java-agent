@@ -239,7 +239,7 @@ task newrelicVersionedAgentJar(type: Jar) {
 PublishConfig.config(
         project,
         "New Relic Security Java Agent",
-        "The New Relic Security Java agent for full-stack security") { it ->
+        "The New Relic Security Java agent module for full-stack security. To be used in newrelic-java-agent only.") { it ->
     it.artifact(tasks.newrelicVersionedAgentJar)
     it.artifact(tasks.sourcesJar)
     it.artifact(tasks.javadocJar)
