@@ -170,7 +170,7 @@ tasks.withType(Javadoc).configureEach {
 PublishConfig.config(
         project,
         "New Relic Security Java agent API",
-        "The public API of the Security Java agent, and no-op implementations for safe usage without the agent.") { it ->
+        "The public API of the Security Java agent, and no-op implementations for safe usage without the agent. To be used in newrelic-java-agent only.") { it ->
     it.artifact(tasks.newrelicVersionedAPIJar)
     it.artifact(tasks.sourcesJar)
     it.artifact(tasks.javadocJar)
