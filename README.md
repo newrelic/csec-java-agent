@@ -13,6 +13,9 @@ The IAST capability should only be used in pre-production environments and never
 
 This project is built and published as a dependency for use in [newrelic-java-agent](https://github.com/newrelic/newrelic-java-agent) only. Hence this can not be used directly. Typically, most users use the version auto-installed by the APM agent. You can see agent install instructions [here](https://github.com/newrelic/java-newrelic#installation-and-getting-started).
 
+## **Supported Java Versions**
+- Java version 8 and above
+
 ## **Support Matrix**
 
 ### Frameworks and libraries
@@ -25,12 +28,12 @@ The agent automatically instruments the following frameworks.
 - Log4j from 2.0 to latest
 - Servlet from 2.4 to latest
 - Spring from 0 to latest
-- JAX-RS from 1.0 to latest
 
 ### Java Native Operations
 
 - File Operations 0 to latest
 - JNDI operations 0 to latest
+- Low Priority Instrumentation
 
 ### HTTP and messaging
 
@@ -78,6 +81,8 @@ The agent automatically instruments the following HTTP clients and messaging ser
 - PostgreSQL R2DBC from 0.9.0 to latest
 - Oracle R2DBC from 0.0.0 to 1.1.2
 - SQLServer from jdk6 to latest
+- DynamoDB-1.11.80 to latest 
+- DyanamoDB-2.1.0 to latest
 
 ## **Building**
 
