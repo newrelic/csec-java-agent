@@ -111,4 +111,12 @@ public class ServletHelper {
             }
         }
     }
+
+    public static boolean isResponseContentTypeExcluded( String responseContentType) {
+        if (StringUtils.isBlank(responseContentType)) {
+            return false;
+        }
+        responseContentType =  responseContentType.toLowerCase();
+        return StringUtils.startsWithAny(responseContentType, "audio/", "video/", "image/");
+    }
 }
