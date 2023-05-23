@@ -40,7 +40,8 @@ public class IASTDataTransferRequestProcessor {
     private void task() {
         IASTDataTransferRequest request = null;
         try {
-            if (WSUtils.getInstance().isReconnecting()) {
+            if (WSUtils.getInstance().isReconnecting() ||
+                    !WSClient.getInstance().isOpen()) {
                 synchronized (WSUtils.getInstance()) {
                     RestRequestThreadPool.getInstance().isWaiting().set(true);
                     WSUtils.getInstance().wait();

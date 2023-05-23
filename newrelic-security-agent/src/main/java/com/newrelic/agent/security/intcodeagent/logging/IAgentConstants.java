@@ -558,7 +558,7 @@ public interface IAgentConstants {
     String UNABLE_TO_SET_AGENT_POLICY_PARAM_DUE_TO_ERROR = "[POLICY] Unable to set Agent Policy Parameters due to error:";
 
     String STARTED_MODULE_LOG = "[COMPLETE][MODULE] Started %s.";
-    String AGENT_INIT_LOG_STEP_FIVE_END = "[STEP-5] => Security agent threads started";
+    String AGENT_INIT_LOG_STEP_FIVE_END = "[STEP-5] => Security agent components started";
 
     String VULNERABLE = "VULNERABLE";
     String TERMINATING = "Terminating";
