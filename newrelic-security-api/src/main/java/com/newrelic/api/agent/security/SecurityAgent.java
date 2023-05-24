@@ -8,11 +8,13 @@
 package com.newrelic.api.agent.security;
 
 import com.newrelic.api.agent.security.schema.AbstractOperation;
+import com.newrelic.api.agent.security.schema.ApplicationURLMapping;
 import com.newrelic.api.agent.security.schema.SecurityMetaData;
 import com.newrelic.api.agent.security.schema.policy.AgentPolicy;
 
 import java.lang.instrument.Instrumentation;
 import java.net.URL;
+import java.util.List;
 
 /**
  * The New Relic Security Java Agent's API.
@@ -43,4 +45,8 @@ public interface SecurityAgent {
     String getAgentTempDir();
 
     Instrumentation getInstrumentation();
+
+    List<ApplicationURLMapping> getURLMappings();
+
+    void addURLMapping(ApplicationURLMapping mapping);
 }
