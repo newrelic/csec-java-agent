@@ -1,0 +1,27 @@
+plugins {
+    id "org.jetbrains.kotlin.jvm"
+}
+
+dependencies {
+    implementation(project(":newrelic-security-api"))
+    implementation("com.newrelic.agent.java:newrelic-api:${nrAPIVersion}")
+    implementation("com.newrelic.agent.java:newrelic-weaver-api:${nrAPIVersion}")
+    implementation("org.springframework:spring-webmvc:3.1.0.RELEASE")
+}
+
+jar {
+    manifest {
+        attributes 'Implementation-Title': 'com.newrelic.instrumentation.security.spring-webmvc'
+    }
+}
+
+verifyInstrumentation {
+    passesOnly 'org.springframework:spring-webmvc:[3.1.0.RELEASE,5.3.0)'
+    exclude('org.springframework:spring-webmvc:3.2.1.RELEASE') // only version that fails because of missing class (RequestMethod)
+    excludeRegex 'org.springframework:spring-webmvc:.*(rc|m|RC|SEC|M)[0-9]*$'
+}
+
+site {
+    title 'Spring'
+    type 'Framework'
+}
