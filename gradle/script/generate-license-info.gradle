@@ -5,7 +5,7 @@ apply plugin: 'java-library'
 apply plugin: 'com.github.jk1.dependency-license-report'
 
 licenseReport {
-    renderers = [new MarkdownReportRenderer(fileName: "../THIRD_PART_NOTICES.md" )]
+    renderers = [new MarkdownReportRenderer(fileName: "../THIRD_PARTY_NOTICES.md" )]
     filters = [new ExcludeTransitiveDependenciesFilter()]
     outputDir = "./third-party-dependencies"
 }
