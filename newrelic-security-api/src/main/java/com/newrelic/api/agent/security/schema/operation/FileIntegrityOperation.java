@@ -12,11 +12,14 @@ public class FileIntegrityOperation extends AbstractOperation {
     private Integer lineNumber;
     private String fileName;
 
-    public FileIntegrityOperation(Boolean exists, String fileName, String className, String methodName) {
+    private String category;
+
+    public FileIntegrityOperation(Boolean exists, String fileName, String className, String methodName, String category) {
         super(className, methodName);
         this.setCaseType(VulnerabilityCaseType.FILE_INTEGRITY);
         this.exists = exists;
         this.setFileName(fileName);
+        this.category = category;
     }
 
     /**

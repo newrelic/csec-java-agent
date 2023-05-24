@@ -85,10 +85,11 @@ public abstract class File_Instrumentation {
             for (File_Instrumentation file : files) {
                 String filePath = file.getAbsolutePath();
                 fileNames.add(filePath);
-                FileHelper.createEntryOfFileIntegrity(file.getAbsolutePath(), File_Instrumentation.class.getName(), methodName);
+                FileHelper.createEntryOfFileIntegrity(file.getAbsolutePath(), File_Instrumentation.class.getName(),
+                        methodName, FileOperation.EXISTS_OP);
             }
             FileOperation operation = new FileOperation(
-                    File_Instrumentation.class.getName(), methodName, isBooleanAttributesCall, fileNames);
+                    File_Instrumentation.class.getName(), methodName, isBooleanAttributesCall, FileOperation.EXISTS_OP, fileNames);
             if(isBooleanAttributesCall) {
                 operation.setLowSeverityHook(isLowSeverityHook);
             }

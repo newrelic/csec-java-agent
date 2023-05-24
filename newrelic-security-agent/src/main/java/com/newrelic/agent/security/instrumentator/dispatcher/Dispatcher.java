@@ -436,9 +436,7 @@ public class Dispatcher implements Runnable {
         JSONArray params = new JSONArray();
         params.addAll(fileOperationalBean.getFileName());
         eventBean.setParameters(params);
-        if(fileOperationalBean.isGetBooleanAttributesCall()) {
-            eventBean.setEventCategory("FILE_EXISTS");
-        }
+        eventBean.setEventCategory(fileOperationalBean.getCategory());
         return eventBean;
     }
 

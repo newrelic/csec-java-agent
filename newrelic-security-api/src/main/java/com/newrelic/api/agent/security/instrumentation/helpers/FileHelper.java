@@ -80,13 +80,13 @@ public class FileHelper {
             return "";
     }
 
-    public static FileIntegrityOperation createEntryOfFileIntegrity(String fileName, String className, String methodName) {
+    public static FileIntegrityOperation createEntryOfFileIntegrity(String fileName, String className, String methodName, String category) {
         File file = Paths.get(fileName).toFile();
         String extension = getFileExtension(file);
         if (SOURCE_EXENSIONS.contains(extension) &&
                 !NewRelicSecurity.getAgent().getSecurityMetaData().getFileLocalMap().containsKey(fileName)) {
             FileIntegrityOperation fbean = new FileIntegrityOperation(file.exists(), fileName, className,
-                    methodName);
+                    methodName, category);
             NewRelicSecurity.getAgent().getSecurityMetaData().getFileLocalMap().put(fileName,
                     fbean);
             return fbean;

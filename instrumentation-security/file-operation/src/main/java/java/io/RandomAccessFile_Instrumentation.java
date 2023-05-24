@@ -23,7 +23,7 @@ public abstract class RandomAccessFile_Instrumentation {
         boolean isFileLockAcquired = acquireFileLockIfPossible();
         AbstractOperation operation = null;
         if (isFileLockAcquired) {
-            operation = preprocessSecurityHook(name);
+            operation = preprocessSecurityHook(name, mode);
         }
         try {
             Weaver.callOriginal();
@@ -60,7 +60,7 @@ public abstract class RandomAccessFile_Instrumentation {
         } catch (Throwable ignored){}
     }
 
-    private AbstractOperation preprocessSecurityHook(String filename) {
+    private AbstractOperation preprocessSecurityHook(String filename, int mode) {
         try {
             if (!NewRelicSecurity.isHookProcessingActive() ||
                     NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()
@@ -70,8 +70,8 @@ public abstract class RandomAccessFile_Instrumentation {
             }
             String filePath = new File(filename).getAbsolutePath();
             FileOperation operation = new FileOperation(filePath,
-                    this.getClass().getName(), FileHelper.METHOD_NAME_FILEOUTPUTSTREAM_OPEN);
-            FileHelper.createEntryOfFileIntegrity(filePath, this.getClass().getName(), FileHelper.METHOD_NAME_FILEOUTPUTSTREAM_OPEN);
+                    this.getClass().getName(), FileHelper.METHOD_NAME_FILEOUTPUTSTREAM_OPEN, mode==1?FileOperation.READ_OP:FileOperation.WRITE_OP);
+            FileHelper.createEntryOfFileIntegrity(filePath, this.getClass().getName(), FileHelper.METHOD_NAME_FILEOUTPUTSTREAM_OPEN, mode==1?FileOperation.READ_OP:FileOperation.WRITE_OP);
             NewRelicSecurity.getAgent().registerOperation(operation);
             return operation;
         } catch (Throwable e) {
