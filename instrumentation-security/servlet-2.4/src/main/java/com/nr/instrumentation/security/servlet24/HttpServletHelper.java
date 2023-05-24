@@ -138,9 +138,7 @@ public class HttpServletHelper {
                         NewRelicSecurity.getAgent().addURLMapping(new ApplicationURLMapping(WILDCARD, path));
                 }
             }
-        } catch (Exception ex){
-            System.out.println(ex.getMessage());
-            ex.printStackTrace();
+        } catch (Exception ignored){
         }
     }
 }
