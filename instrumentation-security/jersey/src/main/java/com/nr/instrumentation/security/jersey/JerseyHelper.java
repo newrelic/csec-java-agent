@@ -20,7 +20,7 @@ public class JerseyHelper {
         }
     }
 
-    private static void extractMappingsFromResources(List<Resource> resources, String resourceUrl) {
+    private static void extractMappingsFromResources(List<Resource> resources, String resourceUrl) throws Exception{
 
         for( Resource resource: resources) {
             String url = resourceUrl + resource.getPathPattern().getTemplate().getTemplate();
