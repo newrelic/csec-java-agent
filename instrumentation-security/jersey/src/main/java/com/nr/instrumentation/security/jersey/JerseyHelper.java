@@ -5,6 +5,7 @@ import com.newrelic.api.agent.security.schema.ApplicationURLMapping;
 import org.glassfish.jersey.server.model.Resource;
 import org.glassfish.jersey.server.model.ResourceMethod;
 import org.glassfish.jersey.server.model.ResourceModel;
+import org.glassfish.jersey.uri.PathPattern;
 
 import java.util.List;
 
@@ -23,26 +24,29 @@ public class JerseyHelper {
     private static void extractMappingsFromResources(List<Resource> resources, String resourceUrl) throws Exception{
 
         for( Resource resource: resources) {
-            String url = resourceUrl + resource.getPathPattern().getTemplate().getTemplate();
+            PathPattern pathPattern = resource.getPathPattern();
+            if(pathPattern != null && pathPattern.getTemplate() != null) {
+                String url = resourceUrl + pathPattern.getTemplate().getTemplate();
 
-            // extracting all the child-resources recursively
-            if(resource.getChildResources().size() > 0){
-                extractMappingsFromResources(resource.getChildResources(), url);
-            }
-
-            if(resource.getAllMethods().size() > 0){
-                for (ResourceMethod method: resource.getAllMethods()){
-                    String httpMethod = method.getHttpMethod();
-                    if(httpMethod != null){
-                        NewRelicSecurity.getAgent().addURLMapping(new ApplicationURLMapping(httpMethod, url));
-                    } else {
-                        // httpMethod is null in case when method represents a sub-resource locator.
-                        String modifiedUrl = url + SEPARATOR + WILDCARD;
-                        NewRelicSecurity.getAgent().addURLMapping(new ApplicationURLMapping(WILDCARD, modifiedUrl));
-                    }
+                // extracting all the child-resources recursively
+                if(resource.getChildResources().size() > 0){
+                    extractMappingsFromResources(resource.getChildResources(), url);
                 }
-            } else if((resource.getChildResources().size() == 0)){
-                NewRelicSecurity.getAgent().addURLMapping(new ApplicationURLMapping(WILDCARD, url));
+
+                if(resource.getAllMethods().size() > 0){
+                    for (ResourceMethod method: resource.getAllMethods()){
+                        String httpMethod = method.getHttpMethod();
+                        if(httpMethod != null){
+                            NewRelicSecurity.getAgent().addURLMapping(new ApplicationURLMapping(httpMethod, url));
+                        } else {
+                            // httpMethod is null in case when method represents a sub-resource locator.
+                            String modifiedUrl = url + SEPARATOR + WILDCARD;
+                            NewRelicSecurity.getAgent().addURLMapping(new ApplicationURLMapping(WILDCARD, modifiedUrl));
+                        }
+                    }
+                } else if((resource.getChildResources().size() == 0)){
+                    NewRelicSecurity.getAgent().addURLMapping(new ApplicationURLMapping(WILDCARD, url));
+                }
             }
         }
     }
