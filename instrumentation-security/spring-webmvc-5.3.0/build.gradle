@@ -11,7 +11,7 @@ dependencies {
 
 jar {
     manifest {
-        attributes 'Implementation-Title': 'com.newrelic.instrumentation.security.spring-webmvc'
+        attributes 'Implementation-Title': 'com.newrelic.instrumentation.security.spring-webmvc-5.3.0'
     }
 }
 
