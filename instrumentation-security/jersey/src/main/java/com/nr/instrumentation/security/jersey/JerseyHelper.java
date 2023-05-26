@@ -2,6 +2,7 @@ package com.nr.instrumentation.security.jersey;
 
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.schema.ApplicationURLMapping;
+import com.newrelic.api.agent.security.instrumentation.helpers.*;
 import org.glassfish.jersey.server.model.Resource;
 import org.glassfish.jersey.server.model.ResourceMethod;
 import org.glassfish.jersey.server.model.ResourceModel;
@@ -37,15 +38,15 @@ public class JerseyHelper {
                     for (ResourceMethod method: resource.getAllMethods()){
                         String httpMethod = method.getHttpMethod();
                         if(httpMethod != null){
-                            NewRelicSecurity.getAgent().addURLMapping(new ApplicationURLMapping(httpMethod, url));
+                            URLMappingsHelper.addApplicationURLMapping(new ApplicationURLMapping(httpMethod, url));
                         } else {
                             // httpMethod is null in case when method represents a sub-resource locator.
                             String modifiedUrl = url + SEPARATOR + WILDCARD;
-                            NewRelicSecurity.getAgent().addURLMapping(new ApplicationURLMapping(WILDCARD, modifiedUrl));
+                            URLMappingsHelper.addApplicationURLMapping(new ApplicationURLMapping(WILDCARD, modifiedUrl));
                         }
                     }
                 } else if((resource.getChildResources().size() == 0)){
-                    NewRelicSecurity.getAgent().addURLMapping(new ApplicationURLMapping(WILDCARD, url));
+                    URLMappingsHelper.addApplicationURLMapping(new ApplicationURLMapping(WILDCARD, url));
                 }
             }
         }
