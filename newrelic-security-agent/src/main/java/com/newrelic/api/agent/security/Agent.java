@@ -161,17 +161,7 @@ public class Agent implements SecurityAgent {
         startK2Services();
         info.agentStatTrigger();
 
-        sendApplicationURLMappings();
-
         System.out.printf("This application instance is now being protected by New Relic Security under id %s\n", info.getApplicationUUID());
-
-    }
-
-    private static void sendApplicationURLMappings() {
-        ApplicationURLMappings applicationURLMappings = new ApplicationURLMappings(URLMappingsHelper.getApplicationURLMappings());
-        String urlMappings = JsonConverter.toJSON(applicationURLMappings);
-        logger.logInit(LogLevel.INFO, String.format("Collected application url mappings %s", urlMappings), Agent.class.getName());
-        EventSendPool.getInstance().sendEvent(urlMappings);
     }
 
     private BuildInfo readCollectorBuildInfo() {
