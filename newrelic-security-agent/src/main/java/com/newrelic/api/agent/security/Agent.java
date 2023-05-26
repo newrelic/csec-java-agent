@@ -27,7 +27,7 @@ import com.newrelic.agent.security.intcodeagent.websocket.*;
 import com.newrelic.api.agent.NewRelic;
 import com.newrelic.api.agent.Transaction;
 import com.newrelic.api.agent.security.instrumentation.helpers.LowSeverityHelper;
-import com.newrelic.api.agent.security.instrumentation.helpers.URLMappingHelper;
+import com.newrelic.api.agent.security.instrumentation.helpers.URLMappingsHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.AgentMetaData;
 import com.newrelic.api.agent.security.schema.ApplicationURLMapping;
@@ -168,7 +168,7 @@ public class Agent implements SecurityAgent {
     }
 
     private static void sendApplicationURLMappings() {
-        ApplicationURLMappings applicationURLMappings = new ApplicationURLMappings(URLMappingHelper.getApplicationURLMappings());
+        ApplicationURLMappings applicationURLMappings = new ApplicationURLMappings(URLMappingsHelper.getApplicationURLMappings());
         String urlMappings = JsonConverter.toJSON(applicationURLMappings);
         logger.logInit(LogLevel.INFO, String.format("Collected application url mappings %s", urlMappings), Agent.class.getName());
         EventSendPool.getInstance().sendEvent(urlMappings);

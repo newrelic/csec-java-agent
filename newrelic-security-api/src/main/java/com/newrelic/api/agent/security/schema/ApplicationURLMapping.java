@@ -3,12 +3,21 @@ package com.newrelic.api.agent.security.schema;
 public class ApplicationURLMapping {
     private String method;
     private String url;
+    private String handler;
 
     private String handler;
 
     public ApplicationURLMapping(String method, String url) {
         this.method = method;
         this.url = url;
+    }
+
+    public String getHandler() {
+        return handler;
+    }
+
+    public void setHandler(String handler) {
+        this.handler = handler;
     }
 
     public String getMethod() {

@@ -3,7 +3,6 @@ package com.newrelic.api.agent.security;
 import com.newrelic.api.agent.NewRelic;
 import com.newrelic.api.agent.Transaction;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
-import com.newrelic.api.agent.security.schema.ApplicationURLMapping;
 import com.newrelic.api.agent.security.schema.SecurityMetaData;
 import com.newrelic.api.agent.security.schema.policy.AgentPolicy;
 
@@ -132,15 +131,4 @@ public class Agent implements SecurityAgent {
     public Instrumentation getInstrumentation() {
         return null;
     }
-
-    @Override
-    public List<ApplicationURLMapping> getURLMappings() {
-        return null;
-    }
-
-    @Override
-    public void addURLMapping(ApplicationURLMapping mapping) {
-
-    }
-
 }
