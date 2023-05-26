@@ -17,18 +17,17 @@ import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool
 import com.newrelic.agent.security.intcodeagent.filelogging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.logging.HealthCheckScheduleThread;
 import com.newrelic.agent.security.intcodeagent.logging.IAgentConstants;
+import com.newrelic.agent.security.intcodeagent.models.javaagent.ApplicationURLMappings;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.ExitEventBean;
 import com.newrelic.agent.security.intcodeagent.properties.BuildInfo;
 import com.newrelic.agent.security.intcodeagent.schedulers.FileCleaner;
 import com.newrelic.agent.security.intcodeagent.schedulers.SchedulerHelper;
 import com.newrelic.agent.security.intcodeagent.utils.CommonUtils;
-import com.newrelic.agent.security.intcodeagent.websocket.EventSendPool;
-import com.newrelic.agent.security.intcodeagent.websocket.JsonConverter;
-import com.newrelic.agent.security.intcodeagent.websocket.WSClient;
-import com.newrelic.agent.security.intcodeagent.websocket.WSReconnectionST;
+import com.newrelic.agent.security.intcodeagent.websocket.*;
 import com.newrelic.api.agent.NewRelic;
 import com.newrelic.api.agent.Transaction;
 import com.newrelic.api.agent.security.instrumentation.helpers.LowSeverityHelper;
+import com.newrelic.api.agent.security.instrumentation.helpers.URLMappingHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.AgentMetaData;
 import com.newrelic.api.agent.security.schema.ApplicationURLMapping;
@@ -162,19 +161,17 @@ public class Agent implements SecurityAgent {
         startK2Services();
         info.agentStatTrigger();
 
+        sendApplicationURLMappings();
+
         System.out.printf("This application instance is now being protected by New Relic Security under id %s\n", info.getApplicationUUID());
 
-        try {
-            List<ApplicationURLMapping> mappings = getURLMappings();
-            System.out.println("Size :: "+mappings.size());
+    }
 
-            for (ApplicationURLMapping mapping : mappings) {
-                System.out.println(mapping.getMethod() + " => " + mapping.getUrl());
-            }
-        }
-        catch (Exception ex){
-            ex.printStackTrace();
-        }
+    private static void sendApplicationURLMappings() {
+        ApplicationURLMappings applicationURLMappings = new ApplicationURLMappings(URLMappingHelper.getApplicationURLMappings());
+        String urlMappings = JsonConverter.toJSON(applicationURLMappings);
+        logger.logInit(LogLevel.INFO, String.format("Collected application url mappings %s", urlMappings), Agent.class.getName());
+        EventSendPool.getInstance().sendEvent(urlMappings);
     }
 
     private BuildInfo readCollectorBuildInfo() {

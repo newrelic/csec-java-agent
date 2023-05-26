@@ -4,6 +4,8 @@ public class ApplicationURLMapping {
     private String method;
     private String url;
 
+    private String handler;
+
     public ApplicationURLMapping(String method, String url) {
         this.method = method;
         this.url = url;
@@ -25,6 +27,14 @@ public class ApplicationURLMapping {
         this.url = url;
     }
 
+    public String getHandler() {
+        return handler;
+    }
+
+    public void setHandler(String handler) {
+        this.handler = handler;
+    }
+
     public boolean equals(Object obj) {
         if (obj == this) {
             return true;
@@ -40,4 +50,5 @@ public class ApplicationURLMapping {
     public String toString() {
         return "Method: " + method + ", Url: " + url;
     }
+
 }

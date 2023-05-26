@@ -8,15 +8,11 @@
 package com.newrelic.api.agent.security;
 
 import com.newrelic.api.agent.security.schema.AbstractOperation;
-import com.newrelic.api.agent.security.schema.ApplicationURLMapping;
 import com.newrelic.api.agent.security.schema.SecurityMetaData;
 import com.newrelic.api.agent.security.schema.policy.AgentPolicy;
 
 import java.lang.instrument.Instrumentation;
 import java.net.URL;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
 
 /**
  * Provides NoOps for API objects to avoid returning <code>null</code>. Do not call these objects directly.
@@ -74,16 +70,6 @@ class NoOpAgent implements SecurityAgent {
     @Override
     public Instrumentation getInstrumentation() {
         return null;
-    }
-
-    @Override
-    public List<ApplicationURLMapping> getURLMappings() {
-        return null;
-    }
-
-    @Override
-    public void addURLMapping(ApplicationURLMapping mapping) {
-
     }
 
 }
