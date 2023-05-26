@@ -2,6 +2,7 @@ package org.springframework.web.reactive.result.method;
 
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.schema.ApplicationURLMapping;
+import com.newrelic.api.agent.security.instrumentation.helpers.*;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.reactive.result.condition.PatternsRequestCondition;
 import org.springframework.web.util.pattern.PathPattern;
@@ -15,7 +16,7 @@ public class SpringHelper {
             for (RequestMethod requestMethod : mappingInfo.getMethodsCondition().getMethods()) {
                 PatternsRequestCondition patternsCondition = mappingInfo.getPatternsCondition();
                 for (PathPattern url : patternsCondition.getPatterns()) {
-                    NewRelicSecurity.getAgent().addURLMapping(new ApplicationURLMapping(requestMethod.name(), url.getPatternString()));
+                    URLMappingsHelper.addApplicationURLMapping(new ApplicationURLMapping(requestMethod.name(), url.getPatternString()));
                 }
             }
         } catch (Throwable ignored){
