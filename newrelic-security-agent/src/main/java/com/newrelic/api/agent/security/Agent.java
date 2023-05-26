@@ -85,8 +85,6 @@ public class Agent implements SecurityAgent {
     private java.net.URL agentJarURL;
     private Instrumentation instrumentation;
 
-    private static List<ApplicationURLMapping> mappings = new ArrayList<>();
-
     public static SecurityAgent getInstance() {
         if(instance == null) {
             synchronized (lock){
@@ -484,14 +482,5 @@ public class Agent implements SecurityAgent {
     @Override
     public Instrumentation getInstrumentation() {
         return this.instrumentation;
-    }
-
-    public List<ApplicationURLMapping> getURLMappings() {
-        return mappings;
-    }
-
-    public void addURLMapping(ApplicationURLMapping obj) {
-        if(!mappings.contains(obj))
-            this.mappings.add(obj);
     }
 }
