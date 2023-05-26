@@ -1,7 +1,7 @@
 package com.nr.instrumentation.security.servlet6;
 
 import com.newrelic.api.agent.security.NewRelicSecurity;
-import com.newrelic.api.agent.security.instrumentation.helpers.ServletHelper;
+import com.newrelic.api.agent.security.instrumentation.helpers.*;
 import com.newrelic.api.agent.security.schema.AgentMetaData;
 import com.newrelic.api.agent.security.schema.ApplicationURLMapping;
 import com.newrelic.api.agent.security.schema.HttpRequest;
@@ -120,7 +120,7 @@ public class HttpServletHelper {
 
             for (ServletRegistration servletRegistration : servletRegistrations.values()) {
                 for (String s : servletRegistration.getMappings()) {
-                    NewRelicSecurity.getAgent().addURLMapping(new ApplicationURLMapping(WILDCARD, s));
+                    URLMappingsHelper.addApplicationURLMapping(new ApplicationURLMapping(WILDCARD, s));
                 }
             }
         } catch (Exception ignored){
@@ -135,7 +135,7 @@ public class HttpServletHelper {
                     if(path.endsWith(SEPARATOR))
                         getJSPMappings(servletContext, path);
                     else if(path.endsWith(".jsp") || path.endsWith(".jspx") || path.endsWith(".JSP") || path.endsWith(".JSPX"))
-                        NewRelicSecurity.getAgent().addURLMapping(new ApplicationURLMapping(WILDCARD, path));
+                        URLMappingsHelper.addApplicationURLMapping(new ApplicationURLMapping(WILDCARD, path));
                 }
             }
         } catch (Exception ignored){
