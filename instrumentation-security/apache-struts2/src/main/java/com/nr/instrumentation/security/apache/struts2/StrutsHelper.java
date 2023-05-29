@@ -1,6 +1,5 @@
 package com.nr.instrumentation.security.apache.struts2;
 
-import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.schema.ApplicationURLMapping;
 import com.newrelic.api.agent.security.instrumentation.helpers.*;
 import com.opensymphony.xwork2.config.RuntimeConfiguration;
@@ -25,7 +24,7 @@ public class StrutsHelper {
                     } else {
                         mapping = url + SEPARATOR + actionConfig.getName();
                     }
-                    URLMappingsHelper.addApplicationURLMapping(new ApplicationURLMapping(WILDCARD, mapping));
+                    URLMappingsHelper.addApplicationURLMapping(new ApplicationURLMapping(WILDCARD, mapping, actionConfig.getClassName()));
                 }
             }
         } catch (Exception ignored){
