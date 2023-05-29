@@ -17,19 +17,21 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.commons.text.StringSubstitutor;
-import oshi.SystemInfo;
-import oshi.hardware.HardwareAbstractionLayer;
-import oshi.software.os.OperatingSystem;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.management.ManagementFactory;
+import java.lang.management.MemoryMXBean;
+import java.lang.management.MemoryUsage;
+import com.sun.management.OperatingSystemMXBean;
+import java.lang.management.RuntimeMXBean;
+import java.lang.management.ThreadMXBean;
 import java.math.RoundingMode;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.*;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 public class HealthCheckScheduleThread {
@@ -171,36 +173,32 @@ public class HealthCheckScheduleThread {
 
     private static Map<String, Object> populateJVMStats() {
         Map<String, Object> stats = new HashMap<>();
-        try {
-            SystemInfo systemInfo = new SystemInfo();
-            OperatingSystem os = systemInfo.getOperatingSystem();
-            HardwareAbstractionLayer hal = systemInfo.getHardware();
+        MemoryMXBean memoryMXBean = ManagementFactory.getMemoryMXBean();
 
-            long totalMemory = hal.getMemory().getTotal();
-            long processMemory = os.getProcess(os.getProcessId()).getResidentSetSize();
-            stats.put("processHeapUsageMB", NumberUtils.toScaledBigDecimal((Runtime.getRuntime().totalMemory()-Runtime.getRuntime().freeMemory()) / 1048576.0, 2, RoundingMode.HALF_DOWN).doubleValue());
-            stats.put("processMaxHeapMB", NumberUtils.toScaledBigDecimal(Runtime.getRuntime().maxMemory() / 1048576.0, 2, RoundingMode.HALF_DOWN).doubleValue());
-            stats.put("processRssMB", NumberUtils.toScaledBigDecimal(processMemory / 1048576.0, 2, RoundingMode.HALF_DOWN).doubleValue());
+        stats.put("processHeapUsageMB", NumberUtils.toScaledBigDecimal(memoryMXBean.getHeapMemoryUsage().getUsed() / 1048576.0, 2, RoundingMode.HALF_DOWN).doubleValue());
+        stats.put("processMaxHeapMB", NumberUtils.toScaledBigDecimal(memoryMXBean.getHeapMemoryUsage().getMax() / 1048576.0, 2, RoundingMode.HALF_DOWN).doubleValue());
+        stats.put("processRssMB", NumberUtils.toScaledBigDecimal((memoryMXBean.getHeapMemoryUsage().getUsed() + memoryMXBean.getNonHeapMemoryUsage().getUsed()) / 1048576.0, 2, RoundingMode.HALF_DOWN).doubleValue());
 
-            stats.put("processFreeMemoryMB", NumberUtils.toScaledBigDecimal(Runtime.getRuntime().freeMemory() / 1048576.0, 2, RoundingMode.HALF_DOWN).doubleValue());
-            setOsStats(stats, totalMemory, hal.getMemory().getAvailable(), systemInfo.getOperatingSystem().getCurrentProcess().getProcessCpuLoadCumulative());
-            stats.put("nCores", Runtime.getRuntime().availableProcessors());
+        stats.put("processFreeMemoryMB", NumberUtils.toScaledBigDecimal(Runtime.getRuntime().freeMemory() / 1048576.0, 2, RoundingMode.HALF_DOWN).doubleValue());
+        setOsStats(stats);
+        stats.put("nCores", Runtime.getRuntime().availableProcessors());
 
-            stats.put("rootDiskFreeSpaceMB", NumberUtils.toScaledBigDecimal(osVariables.getRootDir().getFreeSpace() / 1048576.0, 2, RoundingMode.HALF_DOWN).doubleValue());
-            stats.put("processDirDiskFreeSpaceMB", NumberUtils.toScaledBigDecimal(new File(".").getFreeSpace() / 1048576.0, 2, RoundingMode.HALF_DOWN).doubleValue());
-        } catch (Throwable ignored){}
+        stats.put("rootDiskFreeSpaceMB", NumberUtils.toScaledBigDecimal(osVariables.getRootDir().getFreeSpace() / 1048576.0, 2, RoundingMode.HALF_DOWN).doubleValue());
+        stats.put("processDirDiskFreeSpaceMB", NumberUtils.toScaledBigDecimal(new File(".").getFreeSpace() / 1048576.0, 2, RoundingMode.HALF_DOWN).doubleValue());
+
         return stats;
     }
 
-    private static void setOsStats(Map<String, Object> stats, long totalMemory, long systemFreeMemory, double processCpuLoadCumulative) {
+    private static void setOsStats(Map<String, Object> stats) {
         try {
-            stats.put("processCpuUsage", NumberUtils.toScaledBigDecimal(processCpuLoadCumulative, 2, RoundingMode.HALF_DOWN).doubleValue());
+            OperatingSystemMXBean osBean = (OperatingSystemMXBean) ManagementFactory.getOperatingSystemMXBean();
 
-            stats.put("systemFreeMemoryMB", NumberUtils.toScaledBigDecimal(systemFreeMemory / 1048576.0, 2, RoundingMode.HALF_DOWN).doubleValue());
-            stats.put("systemTotalMemoryMB", NumberUtils.toScaledBigDecimal(totalMemory / 1048576.0, 2, RoundingMode.HALF_DOWN).doubleValue());
+            stats.put("systemCpuLoad", NumberUtils.toScaledBigDecimal(osBean.getSystemLoadAverage(), 2, RoundingMode.HALF_DOWN).doubleValue());
+            stats.put("processCpuUsage", NumberUtils.toScaledBigDecimal(osBean.getProcessCpuLoad()*100, 2, RoundingMode.HALF_DOWN).doubleValue());
 
+            stats.put("systemFreeMemoryMB", NumberUtils.toScaledBigDecimal(osBean.getFreePhysicalMemorySize() / 1048576.0, 2, RoundingMode.HALF_DOWN).doubleValue());
+            stats.put("systemTotalMemoryMB", NumberUtils.toScaledBigDecimal(osBean.getTotalPhysicalMemorySize() / 1048576.0, 2, RoundingMode.HALF_DOWN).doubleValue());
         } catch (Throwable e) {
-//            logger.log(LogLevel.ERROR, "Error while populating OS related resource usage stats : " + e.toString(), HealthCheckScheduleThread.class.getName());
             logger.log(LogLevel.FINER, "Error while populating OS related resource usage stats : ", e, HealthCheckScheduleThread.class.getName());
         }
     }
@@ -215,5 +213,4 @@ public class HealthCheckScheduleThread {
         }
         throw null;
     }
-
 }
