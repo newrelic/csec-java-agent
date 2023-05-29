@@ -1,5 +1,7 @@
 package com.newrelic.api.agent.security.schema;
 
+import java.util.Objects;
+
 public class ApplicationURLMapping {
     private String method;
     private String url;
@@ -40,6 +42,7 @@ public class ApplicationURLMapping {
         this.url = url;
     }
 
+    @Override
     public boolean equals(Object obj) {
         if (obj == this) {
             return true;
@@ -47,13 +50,18 @@ public class ApplicationURLMapping {
 
         if (obj instanceof ApplicationURLMapping) {
             ApplicationURLMapping mapping = (ApplicationURLMapping) obj;
-            return url.equals(mapping.url) && method.equals(mapping.method);
+            return url.equals(mapping.url) && method.equals(mapping.method) && handler.equals(mapping.handler);
         }
         return false;
     }
 
+    @Override
     public String toString() {
-        return "Method: " + method + ", Url: " + url;
+        return String.format("Method: %s, Url: %s, Handler: %s", method, url, handler);
     }
 
+    @Override
+    public int hashCode() {
+        return Objects.hash(method, url, handler);
+    }
 }
