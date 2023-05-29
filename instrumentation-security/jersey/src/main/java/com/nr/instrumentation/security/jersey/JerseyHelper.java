@@ -1,6 +1,5 @@
 package com.nr.instrumentation.security.jersey;
 
-import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.schema.ApplicationURLMapping;
 import com.newrelic.api.agent.security.instrumentation.helpers.*;
 import org.glassfish.jersey.server.model.Resource;
@@ -9,6 +8,7 @@ import org.glassfish.jersey.server.model.ResourceModel;
 import org.glassfish.jersey.uri.PathPattern;
 
 import java.util.List;
+import java.util.Set;
 
 public class JerseyHelper {
     private static final String EMPTY = "";
@@ -38,17 +38,24 @@ public class JerseyHelper {
                     for (ResourceMethod method: resource.getAllMethods()){
                         String httpMethod = method.getHttpMethod();
                         if(httpMethod != null){
-                            URLMappingsHelper.addApplicationURLMapping(new ApplicationURLMapping(httpMethod, url));
+                            addURLMappings(url, httpMethod, resource.getHandlerClasses());
                         } else {
                             // httpMethod is null in case when method represents a sub-resource locator.
                             String modifiedUrl = url + SEPARATOR + WILDCARD;
-                            URLMappingsHelper.addApplicationURLMapping(new ApplicationURLMapping(WILDCARD, modifiedUrl));
+                            addURLMappings(WILDCARD, modifiedUrl, resource.getHandlerClasses());
                         }
                     }
                 } else if((resource.getChildResources().size() == 0)){
-                    URLMappingsHelper.addApplicationURLMapping(new ApplicationURLMapping(WILDCARD, url));
+                    addURLMappings(WILDCARD, url, resource.getHandlerClasses());
                 }
             }
         }
+    }
+
+    private static void addURLMappings(String url, String httpMethod, Set<Class<?>> handlerClasses) {
+        for (Class<?> handler: handlerClasses) {
+            URLMappingsHelper.addApplicationURLMapping(new ApplicationURLMapping(httpMethod, url, handler.getName()));
+        }
+
     }
 }
