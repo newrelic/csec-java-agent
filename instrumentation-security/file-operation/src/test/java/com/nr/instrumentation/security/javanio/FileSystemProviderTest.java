@@ -197,6 +197,7 @@ public class FileSystemProviderTest {
         Assert.assertTrue("Invalid executed parameters.", operation.getFileName().containsAll(fileNames));
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.FILE_OPERATION, operation.getCaseType());
         Assert.assertEquals("Invalid executed method name.", "newAsynchronousFileChannel", operation.getMethodName());
+        Assert.assertEquals("Invalid operation category", FileOperation.READ_OP, operation.getCategory());
     }
 
     @Test

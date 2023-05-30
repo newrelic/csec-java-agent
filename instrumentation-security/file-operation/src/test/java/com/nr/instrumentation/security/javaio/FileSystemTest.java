@@ -42,7 +42,7 @@ public class FileSystemTest {
         Assert.assertEquals("Invalid method Name", "exists", targetOperation.getMethodName());
         Assert.assertEquals("Invalid executed parameters.", FILE_NAME, targetOperation.getFileName().get(0));
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.FILE_OPERATION, targetOperation.getCaseType());
-        Assert.assertEquals("Invalid operation category", FileOperation.READ_OP, targetOperation.getCategory());
+        Assert.assertEquals("Invalid operation category", FileOperation.EXISTS_OP, targetOperation.getCategory());
     }
 
     @Test

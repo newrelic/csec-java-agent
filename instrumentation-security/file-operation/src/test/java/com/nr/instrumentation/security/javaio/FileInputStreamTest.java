@@ -49,12 +49,12 @@ public class FileInputStreamTest {
         Assert.assertEquals("Invalid method Name", "createNewFile", targetOperation2.getMethodName());
         Assert.assertEquals("Invalid executed parameters.", FILE_NAME, targetOperation2.getFileName().get(0));
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.FILE_OPERATION, targetOperation2.getCaseType());
-        Assert.assertEquals("Invalid operation category", FileOperation.WRITE_OP, targetOperation1.getCategory());
+        Assert.assertEquals("Invalid operation category", FileOperation.WRITE_OP, targetOperation2.getCategory());
 
         Assert.assertEquals("Invalid method Name", "open", targetOperation3.getMethodName());
         Assert.assertEquals("Invalid executed parameters.", FILE_NAME, targetOperation3.getFileName().get(0));
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.FILE_OPERATION, targetOperation3.getCaseType());
-        Assert.assertEquals("Invalid operation category", FileOperation.WRITE_OP, targetOperation1.getCategory());
+        Assert.assertEquals("Invalid operation category", FileOperation.READ_OP, targetOperation3.getCategory());
     }
 
     @Trace(dispatcher = true)
