@@ -107,6 +107,7 @@ public class FileSystemProviderTest {
         Assert.assertTrue("Invalid executed parameters.", operation.getFileName().containsAll(fileNames));
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.FILE_OPERATION, operation.getCaseType());
         Assert.assertEquals("Invalid executed method name.", "copy", operation.getMethodName());
+        Assert.assertEquals("Invalid operation category", FileOperation.WRITE_OP, operation.getCategory());
     }
 
     @Test
@@ -128,6 +129,7 @@ public class FileSystemProviderTest {
         Assert.assertTrue("Invalid executed parameters.", operation.getFileName().containsAll(fileNames));
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.FILE_OPERATION, operation.getCaseType());
         Assert.assertEquals("Invalid executed method name.", "newInputStream", operation.getMethodName());
+        Assert.assertEquals("Invalid operation category", FileOperation.READ_OP, operation.getCategory());
     }
 
     @Test
@@ -149,6 +151,7 @@ public class FileSystemProviderTest {
         Assert.assertTrue("Invalid executed parameters.", operation.getFileName().containsAll(fileNames));
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.FILE_OPERATION, operation.getCaseType());
         Assert.assertEquals("Invalid executed method name.", "newOutputStream", operation.getMethodName());
+        Assert.assertEquals("Invalid operation category", FileOperation.WRITE_OP, operation.getCategory());
     }
 
     @Test
@@ -171,6 +174,7 @@ public class FileSystemProviderTest {
         Assert.assertTrue("Invalid executed parameters.", operation.getFileName().containsAll(fileNames));
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.FILE_OPERATION, operation.getCaseType());
         Assert.assertEquals("Invalid executed method name.", "newFileChannel", operation.getMethodName());
+        Assert.assertEquals("Invalid operation category", FileOperation.READ_OP, operation.getCategory());
     }
 
     @Test
@@ -193,6 +197,7 @@ public class FileSystemProviderTest {
         Assert.assertTrue("Invalid executed parameters.", operation.getFileName().containsAll(fileNames));
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.FILE_OPERATION, operation.getCaseType());
         Assert.assertEquals("Invalid executed method name.", "newAsynchronousFileChannel", operation.getMethodName());
+        Assert.assertEquals("Invalid operation category", FileOperation.READ_OP, operation.getCategory());
     }
 
     @Test
@@ -215,6 +220,7 @@ public class FileSystemProviderTest {
         Assert.assertTrue("Invalid executed parameters.", operation.getFileName().containsAll(fileNames));
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.FILE_OPERATION, operation.getCaseType());
         Assert.assertEquals("Invalid executed method name.", "newByteChannel", operation.getMethodName());
+        Assert.assertEquals("Invalid operation category", FileOperation.READ_OP, operation.getCategory());
     }
 
     @Test
@@ -236,6 +242,7 @@ public class FileSystemProviderTest {
         Assert.assertTrue("Invalid executed parameters.", operation.getFileName().containsAll(fileNames));
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.FILE_OPERATION, operation.getCaseType());
         Assert.assertEquals("Invalid executed method name.", "createDirectory", operation.getMethodName());
+        Assert.assertEquals("Invalid operation category", FileOperation.WRITE_OP, operation.getCategory());
     }
 
     @Test
@@ -258,6 +265,7 @@ public class FileSystemProviderTest {
         Assert.assertTrue("Invalid executed parameters.", operation.getFileName().containsAll(fileNames));
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.FILE_OPERATION, operation.getCaseType());
         Assert.assertEquals("Invalid executed method name.", "move", operation.getMethodName());
+        Assert.assertEquals("Invalid operation category", FileOperation.WRITE_OP, operation.getCategory());
     }
 
     @Test
@@ -280,6 +288,7 @@ public class FileSystemProviderTest {
         Assert.assertTrue("Invalid executed parameters.", operation.getFileName().containsAll(fileNames));
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.FILE_OPERATION, operation.getCaseType());
         Assert.assertEquals("Invalid executed method name.", "createSymbolicLink", operation.getMethodName());
+        Assert.assertEquals("Invalid operation category", FileOperation.READ_OP, operation.getCategory());
     }
 
     @Test
@@ -302,6 +311,7 @@ public class FileSystemProviderTest {
         Assert.assertTrue("Invalid executed parameters.", operation.getFileName().containsAll(fileNames));
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.FILE_OPERATION, operation.getCaseType());
         Assert.assertEquals("Invalid executed method name.", "createLink", operation.getMethodName());
+        Assert.assertEquals("Invalid operation category", FileOperation.READ_OP, operation.getCategory());
     }
 
     @Test
@@ -323,6 +333,7 @@ public class FileSystemProviderTest {
         Assert.assertTrue("Invalid executed parameters.", operation.getFileName().containsAll(fileNames));
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.FILE_OPERATION, operation.getCaseType());
         Assert.assertEquals("Invalid executed method name.", "delete", operation.getMethodName());
+        Assert.assertEquals("Invalid operation category", FileOperation.DELETE_OP, operation.getCategory());
     }
 
     @Test
@@ -344,6 +355,7 @@ public class FileSystemProviderTest {
         Assert.assertTrue("Invalid executed parameters.", operation.getFileName().containsAll(fileNames));
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.FILE_OPERATION, operation.getCaseType());
         Assert.assertEquals("Invalid executed method name.", "deleteIfExists", operation.getMethodName());
+        Assert.assertEquals("Invalid operation category", FileOperation.DELETE_OP, operation.getCategory());
     }
 
     @Test
@@ -365,6 +377,7 @@ public class FileSystemProviderTest {
         Assert.assertTrue("Invalid executed parameters.", operation.getFileName().containsAll(fileNames));
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.FILE_OPERATION, operation.getCaseType());
         Assert.assertEquals("Invalid executed method name.", "setAttribute", operation.getMethodName());
+        Assert.assertEquals("Invalid operation category", FileOperation.READ_OP, operation.getCategory());
     }
 
     @Test
@@ -386,6 +399,7 @@ public class FileSystemProviderTest {
         Assert.assertTrue("Invalid executed parameters.", operation.getFileName().containsAll(fileNames));
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.FILE_OPERATION, operation.getCaseType());
         Assert.assertEquals("Invalid executed method name.", "newDirectoryStream", operation.getMethodName());
+        Assert.assertEquals("Invalid operation category", FileOperation.READ_OP, operation.getCategory());
     }
 
     @Trace(dispatcher = true)
