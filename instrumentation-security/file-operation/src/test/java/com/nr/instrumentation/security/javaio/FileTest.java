@@ -44,6 +44,7 @@ public class FileTest {
         Assert.assertEquals("Invalid method Name", "exists", targetOperation.getMethodName());
         Assert.assertEquals("Invalid executed parameters.", FILE_NAME, targetOperation.getFileName().get(0));
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.FILE_OPERATION, targetOperation.getCaseType());
+        Assert.assertEquals("Invalid operation category", FileOperation.EXISTS_OP, targetOperation.getCategory());
     }
 
     @Test
@@ -58,6 +59,7 @@ public class FileTest {
         Assert.assertEquals("Invalid method Name", "createNewFile", targetOperation.getMethodName());
         Assert.assertEquals("Invalid executed parameters.", FILE_NAME, targetOperation.getFileName().get(0));
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.FILE_OPERATION, targetOperation.getCaseType());
+        Assert.assertEquals("Invalid operation category", FileOperation.WRITE_OP, targetOperation.getCategory());
     }
 
     @Test
@@ -72,6 +74,7 @@ public class FileTest {
         Assert.assertEquals("Invalid method Name", "delete", targetOperation.getMethodName());
         Assert.assertEquals("Invalid executed parameters.", FILE_NAME, targetOperation.getFileName().get(0));
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.FILE_OPERATION, targetOperation.getCaseType());
+        Assert.assertEquals("Invalid operation category", FileOperation.DELETE_OP, targetOperation.getCategory());
     }
 
     @Test
@@ -86,6 +89,7 @@ public class FileTest {
         Assert.assertEquals("Invalid method Name", "deleteOnExit", targetOperation.getMethodName());
         Assert.assertEquals("Invalid executed parameters.", FILE_NAME, targetOperation.getFileName().get(0));
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.FILE_OPERATION, targetOperation.getCaseType());
+        Assert.assertEquals("Invalid operation category", FileOperation.DELETE_OP, targetOperation.getCategory());
     }
 
     @Test
@@ -100,6 +104,7 @@ public class FileTest {
         Assert.assertEquals("Invalid method Name", "list", targetOperation.getMethodName());
         Assert.assertEquals("Invalid executed parameters.", FILE_NAME, targetOperation.getFileName().get(0));
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.FILE_OPERATION, targetOperation.getCaseType());
+        Assert.assertEquals("Invalid operation category", FileOperation.READ_OP, targetOperation.getCategory());
     }
 
     @Test
@@ -114,6 +119,7 @@ public class FileTest {
         Assert.assertEquals("Invalid method Name", "list", targetOperation.getMethodName());
         Assert.assertEquals("Invalid executed parameters.", FILE_NAME, targetOperation.getFileName().get(0));
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.FILE_OPERATION, targetOperation.getCaseType());
+        Assert.assertEquals("Invalid operation category", FileOperation.READ_OP, targetOperation.getCategory());
     }
 
     @Test
@@ -128,6 +134,7 @@ public class FileTest {
         Assert.assertEquals("Invalid method Name", "listFiles", targetOperation.getMethodName());
         Assert.assertEquals("Invalid executed parameters.", FILE_NAME, targetOperation.getFileName().get(0));
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.FILE_OPERATION, targetOperation.getCaseType());
+        Assert.assertEquals("Invalid operation category", FileOperation.READ_OP, targetOperation.getCategory());
     }
 
     @Test
@@ -142,6 +149,7 @@ public class FileTest {
         Assert.assertEquals("Invalid method Name", "listFiles", targetOperation.getMethodName());
         Assert.assertEquals("Invalid executed parameters.", FILE_NAME, targetOperation.getFileName().get(0));
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.FILE_OPERATION, targetOperation.getCaseType());
+        Assert.assertEquals("Invalid operation category", FileOperation.READ_OP, targetOperation.getCategory());
     }
 
     @Test
@@ -156,6 +164,7 @@ public class FileTest {
         Assert.assertEquals("Invalid method Name", "listFiles", targetOperation.getMethodName());
         Assert.assertEquals("Invalid executed parameters.", FILE_NAME, targetOperation.getFileName().get(0));
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.FILE_OPERATION, targetOperation.getCaseType());
+        Assert.assertEquals("Invalid operation category", FileOperation.READ_OP, targetOperation.getCategory());
     }
 
     @Test
@@ -170,6 +179,7 @@ public class FileTest {
         Assert.assertEquals("Invalid method Name", "mkdir", targetOperation.getMethodName());
         Assert.assertEquals("Invalid executed parameters.", FILE_NAME, targetOperation.getFileName().get(0));
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.FILE_OPERATION, targetOperation.getCaseType());
+        Assert.assertEquals("Invalid operation category", FileOperation.WRITE_OP, targetOperation.getCategory());
     }
 
     @Test
@@ -184,6 +194,7 @@ public class FileTest {
         Assert.assertEquals("Invalid method Name", "mkdirs", targetOperation.getMethodName());
         Assert.assertEquals("Invalid executed parameters.", FILE_NAME, targetOperation.getFileName().get(0));
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.FILE_OPERATION, targetOperation.getCaseType());
+        Assert.assertEquals("Invalid operation category", FileOperation.WRITE_OP, targetOperation.getCategory());
     }
 
     @Test
@@ -198,6 +209,7 @@ public class FileTest {
         Assert.assertEquals("Invalid method Name", "renameTo", targetOperation.getMethodName());
         Assert.assertEquals("Invalid executed parameters.", FILE_NAME, targetOperation.getFileName().get(0));
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.FILE_OPERATION, targetOperation.getCaseType());
+        Assert.assertEquals("Invalid operation category", FileOperation.WRITE_OP, targetOperation.getCategory());
     }
 
     @Test
@@ -212,6 +224,7 @@ public class FileTest {
         Assert.assertEquals("Invalid method Name", "setReadOnly", targetOperation.getMethodName());
         Assert.assertEquals("Invalid executed parameters.", FILE_NAME, targetOperation.getFileName().get(0));
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.FILE_OPERATION, targetOperation.getCaseType());
+        Assert.assertEquals("Invalid operation category", FileOperation.READ_OP, targetOperation.getCategory());
     }
 
     @Test
@@ -226,6 +239,7 @@ public class FileTest {
         Assert.assertEquals("Invalid method Name", "setWritable", targetOperation.getMethodName());
         Assert.assertEquals("Invalid executed parameters.", FILE_NAME, targetOperation.getFileName().get(0));
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.FILE_OPERATION, targetOperation.getCaseType());
+        Assert.assertEquals("Invalid operation category", FileOperation.READ_OP, targetOperation.getCategory());
     }
 
     @Test
@@ -240,6 +254,7 @@ public class FileTest {
         Assert.assertEquals("Invalid method Name", "setWritable", targetOperation.getMethodName());
         Assert.assertEquals("Invalid executed parameters.", FILE_NAME, targetOperation.getFileName().get(0));
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.FILE_OPERATION, targetOperation.getCaseType());
+        Assert.assertEquals("Invalid operation category", FileOperation.READ_OP, targetOperation.getCategory());
     }
 
     @Test
@@ -254,6 +269,7 @@ public class FileTest {
         Assert.assertEquals("Invalid method Name", "setReadable", targetOperation.getMethodName());
         Assert.assertEquals("Invalid executed parameters.", FILE_NAME, targetOperation.getFileName().get(0));
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.FILE_OPERATION, targetOperation.getCaseType());
+        Assert.assertEquals("Invalid operation category", FileOperation.READ_OP, targetOperation.getCategory());
     }
 
     @Test
@@ -268,6 +284,7 @@ public class FileTest {
         Assert.assertEquals("Invalid method Name", "setReadable", targetOperation.getMethodName());
         Assert.assertEquals("Invalid executed parameters.", FILE_NAME, targetOperation.getFileName().get(0));
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.FILE_OPERATION, targetOperation.getCaseType());
+        Assert.assertEquals("Invalid operation category", FileOperation.READ_OP, targetOperation.getCategory());
     }
 
     @Test
@@ -282,6 +299,7 @@ public class FileTest {
         Assert.assertEquals("Invalid method Name", "setExecutable", targetOperation.getMethodName());
         Assert.assertEquals("Invalid executed parameters.", FILE_NAME, targetOperation.getFileName().get(0));
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.FILE_OPERATION, targetOperation.getCaseType());
+        Assert.assertEquals("Invalid operation category", FileOperation.READ_OP, targetOperation.getCategory());
     }
 
     @Test
@@ -296,6 +314,7 @@ public class FileTest {
         Assert.assertEquals("Invalid method Name", "setExecutable", targetOperation.getMethodName());
         Assert.assertEquals("Invalid executed parameters.", FILE_NAME, targetOperation.getFileName().get(0));
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.FILE_OPERATION, targetOperation.getCaseType());
+        Assert.assertEquals("Invalid operation category", FileOperation.READ_OP, targetOperation.getCategory());
     }
 
     @Trace(dispatcher = true)

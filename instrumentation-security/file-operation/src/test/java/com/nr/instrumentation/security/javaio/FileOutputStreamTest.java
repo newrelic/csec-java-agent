@@ -41,6 +41,7 @@ public class FileOutputStreamTest {
         Assert.assertEquals("Invalid method Name", "open", targetOperation.getMethodName());
         Assert.assertEquals("Invalid executed parameters.", FILE_NAME, targetOperation.getFileName().get(0));
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.FILE_OPERATION, targetOperation.getCaseType());
+        Assert.assertEquals("Invalid operation category", FileOperation.WRITE_OP, targetOperation.getCategory());
     }
 
     @Trace(dispatcher = true)
