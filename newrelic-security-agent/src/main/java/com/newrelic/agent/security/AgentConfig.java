@@ -87,6 +87,11 @@ public class AgentConfig {
             logLevel = NewRelic.getAgent().getConfig().getValue(IUtilConstants.NR_LOG_LEVEL);
         }
 
+        // Enabling WS lib logging in most verbose level.
+        if (StringUtils.equals(logLevel, "finest")) {
+            System.setProperty("org.slf4j.simpleLogger.defaultLogLevel", "trace");
+        }
+
         try {
             LogWriter.setLogLevel(LogLevel.valueOf(StringUtils.upperCase(logLevel)));
         } catch (Exception e) {

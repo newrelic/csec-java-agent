@@ -43,6 +43,7 @@ import static com.newrelic.agent.security.intcodeagent.logging.IAgentConstants.E
 
 public class WSClient extends WebSocketClient {
 
+    public static final String CRITICAL_ERROR_WHILE_ATTEMPTING_WS_MESSAGE_SEND_SEVERE = "Critical error while attempting WS message send: %s";
     private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
     public static final String SENDING_EVENT = "sending event: ";
     public static final String UNABLE_TO_SEND_EVENT = "Unable to send event : ";
@@ -58,6 +59,7 @@ public class WSClient extends WebSocketClient {
     public static final String COLON_STRING = " : ";
     public static final String RECEIVED_PING_AT_S_SENDING_PONG = "received ping  at %s sending pong";
     public static final String INCOMING_CONTROL_COMMAND_S = "Incoming control command : %s";
+    public static final String CRITICAL_ERROR_WHILE_ATTEMPTING_WS_MESSAGE_SEND = "Critical error while attempting WS message send:";
 
     private static WSClient instance;
 
@@ -234,7 +236,12 @@ public class WSClient extends WebSocketClient {
         }
         if (this.isOpen()) {
             logger.log(LogLevel.FINER, SENDING_EVENT + text, WSClient.class.getName());
-            super.send(text);
+            try {
+                super.send(text);
+            } catch (Throwable e) {
+                logger.log(LogLevel.SEVERE, String.format(CRITICAL_ERROR_WHILE_ATTEMPTING_WS_MESSAGE_SEND_SEVERE, e.toString()), WSClient.class.getName());
+                logger.log(LogLevel.FINEST, CRITICAL_ERROR_WHILE_ATTEMPTING_WS_MESSAGE_SEND, e, WSClient.class.getName());
+            }
         } else {
             logger.log(LogLevel.FINER, UNABLE_TO_SEND_EVENT + text, WSClient.class.getName());
         }
