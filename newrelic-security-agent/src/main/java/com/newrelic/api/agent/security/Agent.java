@@ -21,6 +21,7 @@ import com.newrelic.agent.security.intcodeagent.websocket.EventSendPool;
 import com.newrelic.agent.security.intcodeagent.websocket.JsonConverter;
 import com.newrelic.agent.security.intcodeagent.websocket.WSClient;
 import com.newrelic.agent.security.intcodeagent.websocket.WSReconnectionST;
+import com.newrelic.agent.security.util.IUtilConstants;
 import com.newrelic.api.agent.NewRelic;
 import com.newrelic.api.agent.Transaction;
 import com.newrelic.api.agent.security.instrumentation.helpers.LowSeverityHelper;
@@ -31,6 +32,8 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
 import java.lang.instrument.Instrumentation;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -82,23 +85,7 @@ public class Agent implements SecurityAgent {
         return instance;
     }
 
-    private Agent(){
-        // TODO: All the record keeping or obj init tasks are to be performed here.
-        /**
-         * Object initializations
-         *      App Info
-         *      Health Check
-         *      PID detection
-         *      Set agent status
-         * */
-        System.setProperty("com.newrelic.agent.deps.org.slf4j.simpleLogger.defaultLogLevel", "off");
-        System.setProperty("com.newrelic.agent.deps.org.slf4j.simpleLogger.logFile", "System.out");
-        System.setProperty("com.newrelic.agent.deps.org.slf4j.simpleLogger.showDateTime", "true");
-        System.setProperty("com.newrelic.agent.deps.org.slf4j.simpleLogger.dateTimeFormat", "yyyy-MM-dd HH:mm:ss.SSS");
-        System.setProperty("com.newrelic.agent.deps.org.slf4j.simpleLogger.showThreadName", "true");
-        System.setProperty("com.newrelic.agent.deps.org.slf4j.simpleLogger.showLogName", "false");
-        System.setProperty("com.newrelic.agent.deps.org.slf4j.simpleLogger.levelInBrackets", "true");
-    }
+    private Agent(){}
 
     private void initialise() {
         // TODO: All the bring up tasks are to be performed here.
@@ -198,6 +185,7 @@ public class Agent implements SecurityAgent {
         /**
          * restart k2 services
          **/
+        configureSimpleLoggerIfNeeded();
         this.agentJarURL = agentJarURL;
         this.instrumentation = instrumentation;
         if (isInitialised()) {
@@ -207,6 +195,34 @@ public class Agent implements SecurityAgent {
         initialise();
         NewRelic.getAgent().getLogger().log(Level.INFO, "Security refresh was invoked, Security Agent initiation is successful.");
         return true;
+    }
+
+    private static void configureSimpleLoggerIfNeeded() {
+        if(StringUtils.equals(NewRelic.getAgent().getConfig().getValue("log_level"), "finest")) {
+            if(!System.getProperties().contains("com.newrelic.agent.deps.org.slf4j.simpleLogger.defaultLogLevel")) {
+                System.setProperty("com.newrelic.agent.deps.org.slf4j.simpleLogger.defaultLogLevel", "trace");
+            }
+            if(!System.getProperties().contains("com.newrelic.agent.deps.org.slf4j.simpleLogger.logFile")) {
+                Path securityHomeLogPath = Paths.get(NewRelic.getAgent().getConfig().getValue("agent_home", "."),
+                        IUtilConstants.NR_SECURITY_HOME);
+                if(NewRelic.getAgent().getConfig().getValue("log_file_path") != null) {
+                    securityHomeLogPath = Paths.get(NewRelic.getAgent().getConfig().getValue("log_file_path"), IUtilConstants.NR_SECURITY_HOME, "logs");
+                } else {
+                    securityHomeLogPath = Paths.get(securityHomeLogPath.toString(), "logs");
+                }
+                Path verboseLogFile = Paths.get(securityHomeLogPath.toString(), "nr-verbose.log");
+
+                CommonUtils.forceMkdirs(securityHomeLogPath, "rwxrwxrwx");
+                System.setProperty("com.newrelic.agent.deps.org.slf4j.simpleLogger.logFile", verboseLogFile.toString());
+            }
+        } else {
+            System.setProperty("com.newrelic.agent.deps.org.slf4j.simpleLogger.defaultLogLevel", "off");
+        }
+        System.setProperty("com.newrelic.agent.deps.org.slf4j.simpleLogger.showDateTime", "true");
+        System.setProperty("com.newrelic.agent.deps.org.slf4j.simpleLogger.dateTimeFormat", "yyyy-MM-dd HH:mm:ss.SSS");
+        System.setProperty("com.newrelic.agent.deps.org.slf4j.simpleLogger.showThreadName", "true");
+        System.setProperty("com.newrelic.agent.deps.org.slf4j.simpleLogger.showLogName", "false");
+        System.setProperty("com.newrelic.agent.deps.org.slf4j.simpleLogger.levelInBrackets", "true");
     }
 
     private void cancelActiveServiceTasks() {
