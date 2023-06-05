@@ -91,13 +91,13 @@ public class Agent implements SecurityAgent {
          *      PID detection
          *      Set agent status
          * */
-        System.setProperty("org.slf4j.simpleLogger.defaultLogLevel", "off");
-        System.setProperty("org.slf4j.simpleLogger.logFile", "System.out");
-        System.setProperty("org.slf4j.simpleLogger.showDateTime", "true");
-        System.setProperty("org.slf4j.simpleLogger.dateTimeFormat", "yyyy-MM-dd HH:mm:ss.SSS");
-        System.setProperty("org.slf4j.simpleLogger.showThreadName", "true");
-        System.setProperty("org.slf4j.simpleLogger.showLogName", "false");
-        System.setProperty("org.slf4j.simpleLogger.levelInBrackets", "true");
+        System.setProperty("com.newrelic.agent.deps.org.slf4j.simpleLogger.defaultLogLevel", "off");
+        System.setProperty("com.newrelic.agent.deps.org.slf4j.simpleLogger.logFile", "System.out");
+        System.setProperty("com.newrelic.agent.deps.org.slf4j.simpleLogger.showDateTime", "true");
+        System.setProperty("com.newrelic.agent.deps.org.slf4j.simpleLogger.dateTimeFormat", "yyyy-MM-dd HH:mm:ss.SSS");
+        System.setProperty("com.newrelic.agent.deps.org.slf4j.simpleLogger.showThreadName", "true");
+        System.setProperty("com.newrelic.agent.deps.org.slf4j.simpleLogger.showLogName", "false");
+        System.setProperty("com.newrelic.agent.deps.org.slf4j.simpleLogger.levelInBrackets", "true");
     }
 
     private void initialise() {
