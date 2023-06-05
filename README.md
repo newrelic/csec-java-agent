@@ -28,6 +28,7 @@ The agent automatically instruments the following frameworks.
 - Log4j from 2.0 to latest
 - Servlet from 2.4 to latest
 - Spring from 0 to latest
+- Netty from 4.0.0 to 5.0.0
 
 ### Java Native Operations
 
@@ -82,7 +83,7 @@ The agent automatically instruments the following HTTP clients and messaging ser
 - Oracle R2DBC from 0.0.0 to 1.1.2
 - SQLServer from jdk6 to latest
 - DynamoDB-1.11.80 to latest 
-- DyanamoDB-2.1.0 to latest
+- DynamoDB-2.1.0 to latest
 
 ## **Building**
 

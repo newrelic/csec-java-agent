@@ -10,6 +10,7 @@ import com.newrelic.agent.security.intcodeagent.websocket.WSUtils;
 import com.sun.org.apache.xpath.internal.operations.Bool;
 import org.apache.commons.lang3.StringUtils;
 
+import java.io.File;
 import java.util.concurrent.Callable;
 import java.util.concurrent.RejectedExecutionException;
 
@@ -19,6 +20,8 @@ import java.util.concurrent.RejectedExecutionException;
 public class RestRequestProcessor implements Callable<Boolean> {
 
     public static final String NR_CSEC_VALIDATOR_HOME_TMP = "{{NR_CSEC_VALIDATOR_HOME_TMP}}";
+
+    private static final String NR_CSEC_VALIDATOR_FILE_SEPARATOR = "{{NR_CSEC_VALIDATOR_FILE_SEPARATOR}}";
 
     public static final String ERROR_WHILE_PROCESSING_FUZZING_REQUEST_S = "Error while processing fuzzing request : %s";
     private static final int MAX_REPETITION = 3;
@@ -55,6 +58,7 @@ public class RestRequestProcessor implements Callable<Boolean> {
                 }
             }
             String req = StringUtils.replace(controlCommand.getArguments().get(0), NR_CSEC_VALIDATOR_HOME_TMP, OsVariablesInstance.getInstance().getOsVariables().getTmpDirectory());
+            req = StringUtils.replace(req, NR_CSEC_VALIDATOR_FILE_SEPARATOR, File.separator);
             httpRequest = objectMapper.readValue(req, FuzzRequestBean.class);
             RestClient.getInstance().fireRequest(RequestUtils.generateK2Request(httpRequest), repeatCount);
             return true;
