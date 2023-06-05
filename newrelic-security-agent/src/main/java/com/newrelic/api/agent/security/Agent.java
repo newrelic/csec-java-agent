@@ -103,6 +103,7 @@ public class Agent implements SecurityAgent {
         }
         config.instantiate();
         logger = FileLoggerThreadPool.getInstance();
+        configureSimpleLoggerIfNeeded();
         logger.logInit(
                 LogLevel.INFO,
                 "[STEP-1] => Security agent is starting",
@@ -185,7 +186,6 @@ public class Agent implements SecurityAgent {
         /**
          * restart k2 services
          **/
-        configureSimpleLoggerIfNeeded();
         this.agentJarURL = agentJarURL;
         this.instrumentation = instrumentation;
         if (isInitialised()) {
