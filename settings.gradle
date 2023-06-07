@@ -134,4 +134,7 @@ include 'instrumentation:jdbc-inet-merlia'
 include 'instrumentation:jdbc-inet-oranxo'
 include 'instrumentation:jdbc-sybase-6'
 include 'instrumentation:low-priority-instrumentation'
+include 'instrumentation:grpc-1.4.0'
+include 'instrumentation:grpc-1.22.0'
+include 'instrumentation:grpc-1.40.0'
 
