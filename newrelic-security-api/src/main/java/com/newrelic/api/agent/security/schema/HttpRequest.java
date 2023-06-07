@@ -31,6 +31,7 @@ public class HttpRequest {
     private Map<String, String> pathParameterMap;
 
     private boolean isRequestParsed;
+    private boolean isGrpc;
 
     public HttpRequest() {
         this.clientIP = StringUtils.EMPTY;
@@ -45,6 +46,7 @@ public class HttpRequest {
         this.clientPort = StringUtils.EMPTY;
         this.parameterMap = new HashMap<>();
         this.isRequestParsed = false;
+        this.isGrpc = false;
     }
 
     public HttpRequest(HttpRequest servletInfo) {
@@ -60,6 +62,7 @@ public class HttpRequest {
         this.protocol = new String(servletInfo.protocol);
         this.clientPort = new String(servletInfo.clientPort);
         this.isRequestParsed = servletInfo.isRequestParsed;
+        this.isGrpc = servletInfo.isGrpc;
     }
 
     public String getMethod() {
@@ -195,6 +198,14 @@ public class HttpRequest {
 
     public void setRequestParsed(boolean requestParsed) {
         isRequestParsed = requestParsed;
+    }
+
+    public boolean getIsGrpc() {
+        return isGrpc;
+    }
+
+    public void setIsGrpc(boolean grpc) {
+        isGrpc = grpc;
     }
 }
 

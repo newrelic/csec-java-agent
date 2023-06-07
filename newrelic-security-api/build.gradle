@@ -26,9 +26,10 @@ java {
     withJavadocJar()
 }
 
-//dependencies {
+dependencies {
 //    shadowIntoJar project(":newrelic-security-data-schema")
-//}
+    shadowIntoJar 'com.fasterxml.jackson.core:jackson-databind:2.14.2'
+}
 
 
 /**
@@ -53,6 +54,11 @@ task relocatedShadowJar(type: ShadowJar) {
     }
 
     setConfigurations([project.configurations.shadowIntoJar])
+    [
+            "com.fasterxml"
+    ].each {
+        relocate(it, "com.newrelic.agent.security.deps.$it")
+    }
 
     // For any given shadow task, `exclude` may be called exactly once.
     // Repeated calls replace earlier calls.
