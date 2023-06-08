@@ -23,16 +23,19 @@ public class GrpcUtils {
         try {
             if(receivedMessage!=null){
                 Map<String, Object> message = ProtoMessageToMap.convertibleMessageFormat((MessageOrBuilder) receivedMessage);
-                StringBuilder jsonString;
 
                 switch (type) {
                     case REQUEST:
-                        jsonString = GrpcHelper.convertToJsonString(message, NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().getBody());
-                        NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().setBody(jsonString);
+                        if(NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(GrpcHelper.NR_SEC_GRPC_REQUEST_DATA, List.class)==null){
+                            NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(GrpcHelper.NR_SEC_GRPC_REQUEST_DATA, new ArrayList());
+                        }
+                        NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(GrpcHelper.NR_SEC_GRPC_REQUEST_DATA, List.class).add(message);
                         break;
                     case RESPONSE:
-                        jsonString = GrpcHelper.convertToJsonString(message, NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getResponseBody());
-                        NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setResponseBody(jsonString);
+                        if(NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(GrpcHelper.NR_SEC_GRPC_RESPONSE_DATA, List.class)==null){
+                            NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(GrpcHelper.NR_SEC_GRPC_RESPONSE_DATA, new ArrayList());
+                        }
+                        NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(GrpcHelper.NR_SEC_GRPC_RESPONSE_DATA, List.class).add(message);
                         break;
                 }
             }
