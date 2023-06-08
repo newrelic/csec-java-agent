@@ -13,10 +13,10 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class GrpcHelper {
+    static ObjectMapper objectMapper = new ObjectMapper().configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
     public static <M> StringBuilder convertToJsonString(M message, StringBuilder original) {
         String decodedString = "";
         try {
-            ObjectMapper objectMapper = new ObjectMapper().configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
             decodedString = objectMapper.writeValueAsString(message);
         } catch (JsonProcessingException e) {
             e.printStackTrace();
