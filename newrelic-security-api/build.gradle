@@ -26,9 +26,9 @@ java {
     withJavadocJar()
 }
 
-//dependencies {
+dependencies {
 //    shadowIntoJar project(":newrelic-security-data-schema")
-//}
+}
 
 
 /**
