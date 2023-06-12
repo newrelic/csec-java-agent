@@ -89,6 +89,9 @@ public class GrpcTest {
                 Assert.assertTrue(String.format("Missing K2 header: %s", ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER), operation.getRequest().getHeaders().containsKey(ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER.toLowerCase()));
                 Assert.assertEquals(String.format("Invalid K2 header value for:  %s", ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER), headerValue+";DUMMY_UUID/dummy-api-id/dummy-exec-id", operation.getRequest().getHeaders().get(
                         ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER.toLowerCase()));
+                Assert.assertTrue(String.format("Missing K2 header: %s", ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID), operation.getRequest().getHeaders().containsKey(ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID.toLowerCase()));
+                Assert.assertEquals(String.format("Invalid K2 header value for:  %s", ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID), headerValue, operation.getRequest().getHeaders().get(
+                        ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID.toLowerCase()));
             }
         }
         String request = new ObjectMapper().writeValueAsString(introspector.getGRPCRequest());
@@ -133,6 +136,9 @@ public class GrpcTest {
                 Assert.assertTrue(String.format("Missing K2 header: %s", ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER), operation.getRequest().getHeaders().containsKey(ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER.toLowerCase()));
                 Assert.assertEquals(String.format("Invalid K2 header value for:  %s", ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER), headerValue+";DUMMY_UUID/dummy-api-id/dummy-exec-id", operation.getRequest().getHeaders().get(
                         ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER.toLowerCase()));
+                Assert.assertTrue(String.format("Missing K2 header: %s", ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID), operation.getRequest().getHeaders().containsKey(ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID.toLowerCase()));
+                Assert.assertEquals(String.format("Invalid K2 header value for:  %s", ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID), headerValue, operation.getRequest().getHeaders().get(
+                        ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID.toLowerCase()));
             }
         }
         String request = new ObjectMapper().writeValueAsString(introspector.getGRPCRequest());
@@ -179,6 +185,9 @@ public class GrpcTest {
                 Assert.assertTrue(String.format("Missing K2 header: %s", ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER), operation.getRequest().getHeaders().containsKey(ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER.toLowerCase()));
                 Assert.assertEquals(String.format("Invalid K2 header value for:  %s", ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER), headerValue+";DUMMY_UUID/dummy-api-id/dummy-exec-id", operation.getRequest().getHeaders().get(
                         ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER.toLowerCase()));
+                Assert.assertTrue(String.format("Missing K2 header: %s", ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID), operation.getRequest().getHeaders().containsKey(ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID.toLowerCase()));
+                Assert.assertEquals(String.format("Invalid K2 header value for:  %s", ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID), headerValue, operation.getRequest().getHeaders().get(
+                        ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID.toLowerCase()));
             }
         }
         String request = new ObjectMapper().writeValueAsString(introspector.getGRPCRequest());
@@ -225,6 +234,9 @@ public class GrpcTest {
                 Assert.assertTrue(String.format("Missing K2 header: %s", ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER), operation.getRequest().getHeaders().containsKey(ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER.toLowerCase()));
                 Assert.assertEquals(String.format("Invalid K2 header value for:  %s", ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER), headerValue+";DUMMY_UUID/dummy-api-id/dummy-exec-id", operation.getRequest().getHeaders().get(
                         ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER.toLowerCase()));
+                Assert.assertTrue(String.format("Missing K2 header: %s", ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID), operation.getRequest().getHeaders().containsKey(ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID.toLowerCase()));
+                Assert.assertEquals(String.format("Invalid K2 header value for:  %s", ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID), headerValue, operation.getRequest().getHeaders().get(
+                        ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID.toLowerCase()));
             }
         }
         String request = new ObjectMapper().writeValueAsString(introspector.getGRPCRequest());
