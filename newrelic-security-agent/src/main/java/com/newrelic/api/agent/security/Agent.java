@@ -23,6 +23,7 @@ import com.newrelic.agent.security.intcodeagent.websocket.WSClient;
 import com.newrelic.agent.security.intcodeagent.websocket.WSReconnectionST;
 import com.newrelic.api.agent.NewRelic;
 import com.newrelic.api.agent.Transaction;
+import com.newrelic.api.agent.security.instrumentation.helpers.GrpcHelper;
 import com.newrelic.api.agent.security.instrumentation.helpers.LowSeverityHelper;
 import com.newrelic.api.agent.security.schema.*;
 import com.newrelic.api.agent.security.schema.operation.RXSSOperation;
@@ -254,6 +255,14 @@ public class Agent implements SecurityAgent {
             operation.setStackTrace(securityMetaData.getMetaData().getServiceTrace());
         } else {
             operation.setStackTrace(Thread.currentThread().getStackTrace());
+        }
+
+        // added to fetch request/response in case of grpc requests
+        if (securityMetaData.getRequest().getIsGrpc()){
+            securityMetaData.getRequest().setBody(
+                    new StringBuilder(JsonConverter.toJSON(securityMetaData.getCustomAttribute(GrpcHelper.NR_SEC_GRPC_REQUEST_DATA, List.class))));
+            securityMetaData.getResponse().setResponseBody(
+                    new StringBuilder(JsonConverter.toJSON(securityMetaData.getCustomAttribute(GrpcHelper.NR_SEC_GRPC_RESPONSE_DATA, List.class))));
         }
 
         if(checkIfNRGeneratedEvent(operation, securityMetaData)) {
