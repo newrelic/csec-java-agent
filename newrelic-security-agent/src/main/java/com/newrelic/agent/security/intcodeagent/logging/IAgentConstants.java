@@ -595,4 +595,7 @@ public interface IAgentConstants {
             "Last 5 Heath Checks:\n" +
             "${last-5-hc}";
     String PROCESS_BINARY = "process-binary";
+
+    String NR_APM_TRACE_ID = "trace.id";
+    String NR_APM_SPAN_ID = "span.id";
 }

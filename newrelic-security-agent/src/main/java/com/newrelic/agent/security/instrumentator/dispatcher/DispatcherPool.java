@@ -5,6 +5,9 @@ import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool
 import com.newrelic.agent.security.intcodeagent.filelogging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.logging.IAgentConstants;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.ExitEventBean;
+import com.newrelic.api.agent.NewRelic;
+import com.newrelic.api.agent.TraceMetadata;
+import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.SecurityMetaData;
 import org.apache.commons.lang3.StringUtils;
@@ -12,6 +15,9 @@ import org.apache.commons.lang3.StringUtils;
 import java.util.Set;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import static com.newrelic.agent.security.intcodeagent.logging.IAgentConstants.NR_APM_SPAN_ID;
+import static com.newrelic.agent.security.intcodeagent.logging.IAgentConstants.NR_APM_TRACE_ID;
 
 public class DispatcherPool {
 
@@ -132,6 +138,11 @@ public class DispatcherPool {
                 eid.add(operation.getExecutionId());
             }
         }
+
+        // Update NR Trace info
+        TraceMetadata traceMetadata = NewRelic.getAgent().getTraceMetadata();
+        securityMetaData.addCustomAttribute(NR_APM_TRACE_ID, traceMetadata.getTraceId());
+        securityMetaData.addCustomAttribute(NR_APM_SPAN_ID, traceMetadata.getSpanId());
         this.executor.submit(new Dispatcher(operation, new SecurityMetaData(securityMetaData)));
     }
 
@@ -139,6 +150,12 @@ public class DispatcherPool {
         if (executor.isShutdown()) {
             return;
         }
+
+        // Update NR Trace info
+        SecurityMetaData securityMetaData = NewRelicSecurity.getAgent().getSecurityMetaData();
+        TraceMetadata traceMetadata = NewRelic.getAgent().getTraceMetadata();
+        securityMetaData.addCustomAttribute(NR_APM_TRACE_ID, traceMetadata.getTraceId());
+        securityMetaData.addCustomAttribute(NR_APM_SPAN_ID, traceMetadata.getSpanId());
         this.executor.submit(new Dispatcher(exitEventBean));
     }
 

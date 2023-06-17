@@ -7,6 +7,7 @@ import com.newrelic.agent.security.instrumentator.utils.AgentUtils;
 import com.newrelic.agent.security.instrumentator.utils.INRSettingsKey;
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import static com.newrelic.agent.security.intcodeagent.logging.IAgentConstants.*;
@@ -70,7 +71,7 @@ public class AgentBasicInfo {
         setBuildNumber(AgentInfo.getInstance().getBuildInfo().getBuildNumber());
         setGroupName(AgentConfig.getInstance().getGroupName());
         setNodeId(AgentInfo.getInstance().getLinkingMetadata().getOrDefault(INRSettingsKey.NR_ENTITY_GUID, StringUtils.EMPTY));
-        setLinkingMetadata(AgentInfo.getInstance().getLinkingMetadata());
+        setLinkingMetadata(new HashMap<>(AgentInfo.getInstance().getLinkingMetadata()));
         if (this instanceof ApplicationInfoBean) {
             setJsonName(JSON_NAME_APPLICATION_INFO_BEAN);
         } else if (this instanceof JavaAgentEventBean) {
