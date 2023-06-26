@@ -131,5 +131,4 @@ public class Agent implements SecurityAgent {
     public Instrumentation getInstrumentation() {
         return null;
     }
-
 }
