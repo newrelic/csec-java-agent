@@ -139,4 +139,6 @@ include 'instrumentation:jdbc-sybase-6'
 include 'instrumentation:low-priority-instrumentation'
 include 'instrumentation:apache-struts2'
 include 'instrumentation:jersey'
-
+include 'instrumentation:resteasy-2.2'
+include 'instrumentation:resteasy-3'
+include 'instrumentation:resteasy-4'
