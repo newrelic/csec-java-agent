@@ -1,0 +1,23 @@
+dependencies {
+    implementation(project(":newrelic-security-api"))
+    implementation("com.newrelic.agent.java:newrelic-api:${nrAPIVersion}")
+    implementation("com.newrelic.agent.java:newrelic-weaver-api:${nrAPIVersion}")
+    implementation("com.datastax.oss:java-driver-core:4.13.0") { transitive = false }
+
+    testImplementation("org.cassandraunit:cassandra-unit:4.3.1.0")
+    testImplementation("com.datastax.oss:java-driver-query-builder:4.13.0")
+}
+
+jar {
+    manifest { attributes 'Implementation-Title': 'com.newrelic.instrumentation.security.cassandra-datastax-4' }
+}
+
+verifyInstrumentation {
+    passesOnly 'com.datastax.oss:java-driver-core:[4.0.0,)'
+    excludeRegex ".*(rc|beta|alpha).*"
+}
+
+site {
+    title 'Cassandra'
+    type 'Datastore'
+}
