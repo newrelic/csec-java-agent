@@ -134,4 +134,6 @@ include 'instrumentation:jdbc-inet-merlia'
 include 'instrumentation:jdbc-inet-oranxo'
 include 'instrumentation:jdbc-sybase-6'
 include 'instrumentation:low-priority-instrumentation'
+include 'instrumentation:cassandra-datastax-3'
+include 'instrumentation:cassandra-datastax-4'
 
