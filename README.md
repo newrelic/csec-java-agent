@@ -25,7 +25,7 @@ The agent automatically instruments the following frameworks.
 - JAX-RS 1.0 to latest
 - Spring Boot 1.4 to latest
 - Struts 2.0.5 to latest
-- Log4j from 2.0 to latest
+- Log4j from 2.0 to 2.20.0
 - Servlet from 2.4 to latest
 - Spring from 0 to latest
 
