@@ -285,33 +285,4 @@ public class WSClient extends WebSocketClient {
         instance = null;
     }
 
-    public static void tryWebsocketConnection(int numberOfRetries) {
-        try {
-            int retries = numberOfRetries;
-            WSClient.reconnectWSClient();
-            while (numberOfRetries < 0 || retries > 0) {
-                try {
-                    if (!WSUtils.isConnected()) {
-                        retries--;
-                        int timeout = 15;
-                        logger.logInit(LogLevel.INFO, String.format("WS client connection failed will retry after %s second(s)", timeout), WSClient.class.getName());
-                        TimeUnit.SECONDS.sleep(timeout);
-                        WSClient.reconnectWSClient();
-                    } else {
-                        break;
-                    }
-                } catch (Throwable e) {
-                    logger.log(LogLevel.SEVERE, ERROR_OCCURED_WHILE_TRYING_TO_CONNECT_TO_WSOCKET, e,
-                            WSClient.class.getName());
-                    logger.postLogMessageIfNecessary(LogLevel.SEVERE, ERROR_OCCURED_WHILE_TRYING_TO_CONNECT_TO_WSOCKET, e,
-                            WSClient.class.getName());
-                }
-            }
-            if (!WSUtils.isConnected()) {
-                throw new RuntimeException("Websocket not connected!!!");
-            }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
 }

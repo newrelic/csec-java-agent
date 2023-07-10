@@ -396,6 +396,7 @@ public class Agent implements SecurityAgent {
         K2RequestIdentifier k2RequestIdentifier = NewRelicSecurity.getAgent().getSecurityMetaData().getFuzzRequestIdentifier();
         HttpRequest request = NewRelicSecurity.getAgent().getSecurityMetaData().getRequest();
 
+        // TODO: Generate for only native payloads
         if (!request.isEmpty() && !operation.isEmpty() && k2RequestIdentifier.getK2Request()) {
             if (StringUtils.equals(k2RequestIdentifier.getApiRecordId(), operation.getApiID())
                     && StringUtils.equals(k2RequestIdentifier.getNextStage().getStatus(), IAgentConstants.VULNERABLE)) {
