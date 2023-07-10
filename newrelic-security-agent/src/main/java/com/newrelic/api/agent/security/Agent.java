@@ -262,6 +262,9 @@ public class Agent implements SecurityAgent {
                     Dispatcher.class.getName());
             return;
         }
+
+        logIfIastScanForFirstTime(securityMetaData.getFuzzRequestIdentifier());
+
         setRequiredStackTrace(operation, securityMetaData);
         setUserClassEntity(operation, securityMetaData);
         processStackTrace(operation);
@@ -282,6 +285,14 @@ public class Agent implements SecurityAgent {
 //            blockForResponse(operation.getExecutionId());
 //        }
 //        checkIfClientIPBlocked();
+    }
+
+    private void logIfIastScanForFirstTime(K2RequestIdentifier fuzzRequestIdentifier) {
+
+        if(StringUtils.isNotBlank(fuzzRequestIdentifier.getApiRecordId()) && !AgentUtils.getInstance().getScannedAPIIds().contains(fuzzRequestIdentifier.getApiRecordId())){
+            AgentUtils.getInstance().getScannedAPIIds().add(fuzzRequestIdentifier.getApiRecordId());
+            logger.log(LogLevel.INFO, String.format("IAST Scan for API ID : %s started.", fuzzRequestIdentifier.getApiRecordId()), Agent.class.getName());
+        }
     }
 
     private static boolean checkIfNRGeneratedEvent(AbstractOperation operation, SecurityMetaData securityMetaData) {
