@@ -1,0 +1,87 @@
+package com.nr.agent.instrumentation.security.httpclient50;
+
+import com.newrelic.api.agent.security.NewRelicSecurity;
+import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
+import com.newrelic.api.agent.security.instrumentation.helpers.ServletHelper;
+import com.newrelic.api.agent.security.schema.AbstractOperation;
+import com.newrelic.api.agent.security.schema.SecurityMetaData;
+import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
+import com.newrelic.api.agent.security.schema.operation.SSRFOperation;
+import com.newrelic.api.agent.security.utils.SSRFUtils;
+import org.apache.hc.core5.http.HttpRequest;
+
+public class SecurityHelper {
+
+    public static final String METHOD_NAME_EXECUTE = "execute";
+    public static final String NULL_STRING = "null";
+
+    public static final String NR_SEC_CUSTOM_ATTRIB_NAME = "SSRF_OPERATION_LOCK_APACHE5-";
+
+    public static String getURI(String scheme, String host, int port, String path) {
+        StringBuilder sb = new StringBuilder();
+        if (scheme != null) {
+            sb.append(scheme);
+            sb.append("://");
+        }
+        if (host != null) {
+            sb.append(host);
+            if (port >= 0) {
+                sb.append(":");
+                sb.append(port);
+            }
+        }
+        if (path != null) {
+            sb.append(path);
+        }
+        return sb.toString();
+    }
+
+    public static void registerExitOperation(boolean isProcessingAllowed, AbstractOperation operation) {
+        try {
+            if (operation == null || !isProcessingAllowed || !NewRelicSecurity.isHookProcessingActive() || NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()
+            ) {
+                return;
+            }
+            NewRelicSecurity.getAgent().registerExitEvent(operation);
+        } catch (Throwable ignored) {
+        }
+    }
+
+    public static AbstractOperation preprocessSecurityHook(HttpRequest request, String uri, String className, String methodName) {
+        try {
+            SecurityMetaData securityMetaData = NewRelicSecurity.getAgent().getSecurityMetaData();
+            if (!NewRelicSecurity.isHookProcessingActive() || securityMetaData.getRequest().isEmpty()
+            ) {
+                return null;
+            }
+
+            // TODO : Need to check if this is required anymore in NR case.
+//            // Add Security app topology header
+//            this.addRequestProperty("K2-API-CALLER", "");
+
+            // Add Security IAST header
+            String iastHeader = NewRelicSecurity.getAgent().getSecurityMetaData().getFuzzRequestIdentifier().getRaw();
+            if (iastHeader != null && !iastHeader.trim().isEmpty()) {
+                request.setHeader(ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID, iastHeader);
+            }
+
+            SSRFOperation operation = new SSRFOperation(uri, className, methodName);
+            try {
+                NewRelicSecurity.getAgent().registerOperation(operation);
+            } finally {
+                if (operation.getApiID() != null && !operation.getApiID().trim().isEmpty() &&
+                        operation.getExecutionId() != null && !operation.getExecutionId().trim().isEmpty()) {
+                    // Add Security distributed tracing header
+                    request.setHeader(ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER, SSRFUtils.generateTracingHeaderValue(securityMetaData.getTracingHeaderValue(), operation.getApiID(), operation.getExecutionId(), NewRelicSecurity.getAgent().getAgentUUID()));
+                }
+            }
+            return operation;
+        } catch (Throwable e) {
+            if (e instanceof NewRelicSecurityException) {
+                e.printStackTrace();
+                throw e;
+            }
+        }
+        return null;
+    }
+}
