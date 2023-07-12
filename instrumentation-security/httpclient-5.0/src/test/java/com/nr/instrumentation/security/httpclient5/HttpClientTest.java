@@ -241,6 +241,8 @@ public class HttpClientTest {
         try (CloseableHttpClient httpclient = HttpClients.createDefault()) {
             HttpGet httpGet = new HttpGet(server.getEndPoint().toString());
             httpclient.execute(httpGet);
+            Thread.sleep(100);
+        } catch (InterruptedException e) {
         }
     }
 
@@ -250,6 +252,8 @@ public class HttpClientTest {
             HttpGet httpGet = new HttpGet(server.getEndPoint().toString());
             HttpContext httpContext = new BasicHttpContext();
             httpclient.execute(httpGet, httpContext);
+            Thread.sleep(100);
+        } catch (InterruptedException e) {
         }
     }
 
@@ -259,6 +263,8 @@ public class HttpClientTest {
             HttpHost httpHost = new HttpHost(server.getEndPoint().getScheme(), server.getEndPoint().getHost(), server.getEndPoint().getPort());
             HttpGet httpGet = new HttpGet(server.getEndPoint().toString());
             httpclient.execute(httpHost, httpGet);
+            Thread.sleep(100);
+        } catch (InterruptedException e) {
         }
     }
 
@@ -269,6 +275,8 @@ public class HttpClientTest {
             HttpGet httpGet = new HttpGet(server.getEndPoint().toString());
             HttpContext httpContext = new BasicHttpContext();
             httpclient.execute(httpHost, httpGet, httpContext);
+            Thread.sleep(100);
+        } catch (InterruptedException e) {
         }
     }
 
@@ -278,6 +286,8 @@ public class HttpClientTest {
             HttpGet httpGet = new HttpGet(server.getEndPoint().toString());
             HttpClientResponseHandler<String> responseHandler = new BasicHttpClientResponseHandler();
             httpclient.execute(httpGet, responseHandler);
+            Thread.sleep(100);
+        } catch (InterruptedException e) {
         }
     }
 
@@ -288,6 +298,8 @@ public class HttpClientTest {
             HttpClientResponseHandler<String> responseHandler = new BasicHttpClientResponseHandler();
             HttpContext httpContext = new BasicHttpContext();
             httpclient.execute(httpGet, httpContext, responseHandler);
+            Thread.sleep(100);
+        } catch (InterruptedException e) {
         }
     }
 
@@ -298,6 +310,8 @@ public class HttpClientTest {
             HttpClientResponseHandler<String> responseHandler = new BasicHttpClientResponseHandler();
             HttpHost httpHost = new HttpHost(server.getEndPoint().getScheme(), server.getEndPoint().getHost(), server.getEndPoint().getPort());
             httpclient.execute(httpHost, httpGet, responseHandler);
+            Thread.sleep(100);
+        } catch (InterruptedException e) {
         }
     }
 
@@ -309,6 +323,8 @@ public class HttpClientTest {
             HttpHost httpHost = new HttpHost(server.getEndPoint().getScheme(), server.getEndPoint().getHost(), server.getEndPoint().getPort());
             HttpContext httpContext = new BasicHttpContext();
             httpclient.execute(httpHost, httpGet, httpContext, responseHandler);
+            Thread.sleep(100);
+        } catch (InterruptedException e) {
         }
     }
 }
