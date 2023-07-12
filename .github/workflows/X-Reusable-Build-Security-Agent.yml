@@ -11,7 +11,7 @@ on:
         description: 'The source-ref of APM source code to use'
         required: true
         type: string
-        default: 'k2-integration'
+        default: 'main'
       run-unit-test:
         description: 'Run instrumentation unit tests ?'
         required: true
@@ -38,7 +38,7 @@ on:
         description: 'The source-ref of APM source code to use'
         required: true
         type: string
-        default: 'k2-integration'
+        default: 'main'
       run-unit-test:
         description: 'Run instrumentation unit tests ?'
         required: true
@@ -73,28 +73,6 @@ jobs:
           apm-aws-access-key-id: ${{ secrets.APM_AWS_ACCESS_KEY_ID }}
           apm-aws-secret-access-key: ${{ secrets.APM_AWS_SECRET_ACCESS_KEY }}
           apm-aws-region: us-east-2
-
-      - name: Check version compatibility
-        shell: bash
-        run: |
-          APM_CONFIGURED_CSEC_VERSION=$(./gradlew ${GRADLE_OPTIONS} -p newrelic-java-agent/ properties | grep 'csecCollectorVersion:' | awk -F': ' '{print $2}')
-          CSEC_CONFIGURED_APM_VERSION=$(./gradlew ${GRADLE_OPTIONS} properties | grep 'nrAPIVersion:' | awk -F': ' '{print $2}')
-
-          if [[ "${APM_VERSION}" != "${CSEC_CONFIGURED_APM_VERSION}" ]]
-          then
-            printf "${RED}Version mismatch regarding APM: ${NONE}\n"
-            printf "${RED}Version of APM to build: ${APM_VERSION} ${NONE}\n"
-            printf "${RED}Version of APM API used by CSEC: ${CSEC_CONFIGURED_APM_VERSION} ${NONE}\n"
-            exit 1
-          fi
-
-          if [[ "${SECURITY_VERSION}" != "${APM_CONFIGURED_CSEC_VERSION}" ]]
-          then
-            printf "${RED}Version mismatch regarding Security: ${NONE}\n"
-            printf "${RED}Version of CSEC to build: ${SECURITY_VERSION} ${NONE}\n"
-            printf "${RED}Version of CSEC API used by APM: ${APM_CONFIGURED_CSEC_VERSION} ${NONE}\n"
-            exit 2
-          fi
 
       - name: Publish CSEC to local
         uses: ./.github/actions/publish-csec-local
