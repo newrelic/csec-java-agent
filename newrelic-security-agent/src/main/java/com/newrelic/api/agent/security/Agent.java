@@ -144,8 +144,6 @@ public class Agent implements SecurityAgent {
 
         startK2Services();
         info.agentStatTrigger();
-
-        System.out.printf("This application instance is now being protected by New Relic Security under id %s\n", info.getApplicationUUID());
     }
 
     private BuildInfo readCollectorBuildInfo() {
