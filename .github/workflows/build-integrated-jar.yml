@@ -9,7 +9,7 @@ on:
       apm-source-ref:
         description: 'The source-ref of APM source code to use'
         required: true
-        default: 'k2-integration'
+        default: 'main'
       csec-run-unittest:
         description: 'Whether to run CSEC instrumentation unit tests'
         required: true

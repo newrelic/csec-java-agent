@@ -11,7 +11,7 @@ on:
         description: 'The source-ref of APM source code to use'
         required: true
         type: string
-        default: 'k2-integration'
+        default: 'main'
       run-unit-test:
         description: 'Run instrumentation unit tests ?'
         required: true
@@ -38,7 +38,7 @@ on:
         description: 'The source-ref of APM source code to use'
         required: true
         type: string
-        default: 'k2-integration'
+        default: 'main'
       run-unit-test:
         description: 'Run instrumentation unit tests ?'
         required: true
