@@ -4,11 +4,11 @@ inputs:
   apm-repo:
     description: 'The repo of APM source code to use'
     required: true
-    default: 'newrelic/newrelic-java-agent'
+    default: 'k2io/newrelic-java-agent'
   apm-branch:
     description: 'The branch of APM source code to use'
     required: true
-    default: 'main'
+    default: 'csec-dev'
   apm-aws-access-key-id:
     description: 'APM AWS S3 access key id'
   apm-aws-secret-access-key:
