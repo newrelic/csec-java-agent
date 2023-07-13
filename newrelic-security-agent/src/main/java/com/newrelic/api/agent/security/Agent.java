@@ -144,8 +144,6 @@ public class Agent implements SecurityAgent {
 
         startK2Services();
         info.agentStatTrigger();
-
-        System.out.printf("This application instance is now being protected by New Relic Security under id %s\n", info.getApplicationUUID());
     }
 
     private BuildInfo readCollectorBuildInfo() {
@@ -263,7 +261,7 @@ public class Agent implements SecurityAgent {
             return;
         }
 
-        logIfIastScanForFirstTime(securityMetaData.getFuzzRequestIdentifier());
+        logIfIastScanForFirstTime(securityMetaData.getFuzzRequestIdentifier(), securityMetaData.getRequest());
 
         setRequiredStackTrace(operation, securityMetaData);
         setUserClassEntity(operation, securityMetaData);
@@ -287,11 +285,16 @@ public class Agent implements SecurityAgent {
 //        checkIfClientIPBlocked();
     }
 
-    private void logIfIastScanForFirstTime(K2RequestIdentifier fuzzRequestIdentifier) {
+    private void logIfIastScanForFirstTime(K2RequestIdentifier fuzzRequestIdentifier, HttpRequest request) {
+
+        String url = StringUtils.EMPTY;
+        if(request != null && StringUtils.isNotBlank(request.getUrl())) {
+            url = request.getUrl();
+        }
 
         if(StringUtils.isNotBlank(fuzzRequestIdentifier.getApiRecordId()) && !AgentUtils.getInstance().getScannedAPIIds().contains(fuzzRequestIdentifier.getApiRecordId())){
             AgentUtils.getInstance().getScannedAPIIds().add(fuzzRequestIdentifier.getApiRecordId());
-            logger.log(LogLevel.INFO, String.format("IAST Scan for API ID : %s started.", fuzzRequestIdentifier.getApiRecordId()), Agent.class.getName());
+            logger.log(LogLevel.INFO, String.format("IAST Scan for API %s with ID : %s started.", url, fuzzRequestIdentifier.getApiRecordId()), Agent.class.getName());
         }
     }
 
