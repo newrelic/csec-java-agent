@@ -7,11 +7,11 @@ import com.newrelic.agent.security.intcodeagent.filelogging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.models.FuzzRequestBean;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.IntCodeControlCommand;
 import com.newrelic.agent.security.intcodeagent.websocket.WSUtils;
-import com.sun.org.apache.xpath.internal.operations.Bool;
+import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
+import com.newrelic.api.agent.security.instrumentation.helpers.ServletHelper;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.concurrent.Callable;
-import java.util.concurrent.RejectedExecutionException;
 
 /**
  * Request repeater for IAST
@@ -56,6 +56,8 @@ public class RestRequestProcessor implements Callable<Boolean> {
             }
             String req = StringUtils.replace(controlCommand.getArguments().get(0), NR_CSEC_VALIDATOR_HOME_TMP, OsVariablesInstance.getInstance().getOsVariables().getTmpDirectory());
             httpRequest = objectMapper.readValue(req, FuzzRequestBean.class);
+            httpRequest.getHeaders().put(GenericHelper.CSEC_PARENT_ID, controlCommand.getId());
+            RestRequestThreadPool.getInstance().removeFromProcessedCC(controlCommand.getId());
             RestClient.getInstance().fireRequest(RequestUtils.generateK2Request(httpRequest), repeatCount);
             return true;
         } catch (Throwable e) {
@@ -72,11 +74,7 @@ public class RestRequestProcessor implements Callable<Boolean> {
     public static void processControlCommand(IntCodeControlCommand command) {
         RestRequestThreadPool.getInstance().executor
                 .submit(new RestRequestProcessor(command, MAX_REPETITION));
-    }
-
-    public static void processControlCommand(IntCodeControlCommand command, int repeat) {
-        RestRequestThreadPool.getInstance().executor
-                .submit(new RestRequestProcessor(command, repeat));
+        RestRequestThreadPool.getInstance().getPendingIds().add(command.getId());
     }
 
     public IntCodeControlCommand getControlCommand() {

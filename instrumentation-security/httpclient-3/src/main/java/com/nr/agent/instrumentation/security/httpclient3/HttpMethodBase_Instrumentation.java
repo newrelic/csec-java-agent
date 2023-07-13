@@ -12,6 +12,7 @@ import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.security.instrumentation.helpers.ServletHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.SecurityMetaData;
+import com.newrelic.api.agent.security.schema.StringUtils;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
 import com.newrelic.api.agent.security.schema.operation.SSRFOperation;
 import com.newrelic.api.agent.security.utils.SSRFUtils;
@@ -104,6 +105,11 @@ public abstract class HttpMethodBase_Instrumentation implements HttpMethod {
             String iastHeader = NewRelicSecurity.getAgent().getSecurityMetaData().getFuzzRequestIdentifier().getRaw();
             if (iastHeader != null && !iastHeader.trim().isEmpty()) {
                 this.setRequestHeader(ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID, iastHeader);
+            }
+
+            String csecParaentId = securityMetaData.getCustomAttribute(GenericHelper.CSEC_PARENT_ID, String.class);
+            if(StringUtils.isNotBlank(csecParaentId)){
+                this.setRequestHeader(GenericHelper.CSEC_PARENT_ID, csecParaentId);
             }
 
             SSRFOperation operation = new SSRFOperation(uri,

@@ -1,6 +1,7 @@
 package com.nr.instrumentation.security.servlet5;
 
 import com.newrelic.api.agent.security.NewRelicSecurity;
+import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.security.instrumentation.helpers.ServletHelper;
 import com.newrelic.api.agent.security.schema.AgentMetaData;
 import com.newrelic.api.agent.security.schema.HttpRequest;
@@ -38,7 +39,11 @@ public class HttpServletHelper {
             } else if (ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID.equals(headerKey)) {
                 // TODO: May think of removing this intermediate obj and directly create K2 Identifier.
                 NewRelicSecurity.getAgent().getSecurityMetaData().setFuzzRequestIdentifier(ServletHelper.parseFuzzRequestIdentifierHeader(request.getHeader(headerKey)));
+            } else if(GenericHelper.CSEC_PARENT_ID.equals(headerKey)) {
+                NewRelicSecurity.getAgent().getSecurityMetaData()
+                        .addCustomAttribute(GenericHelper.CSEC_PARENT_ID, request.getHeader(headerKey));
             }
+
             String headerFullValue = EMPTY;
             Enumeration<String> headerElements = request.getHeaders(headerKey);
             while (headerElements.hasMoreElements()) {

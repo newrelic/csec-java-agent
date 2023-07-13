@@ -1,10 +1,12 @@
 package com.newrelic.agent.security.instrumentator.dispatcher;
 
 import com.newrelic.agent.security.AgentInfo;
+import com.newrelic.agent.security.instrumentator.httpclient.RestRequestThreadPool;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.newrelic.agent.security.intcodeagent.filelogging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.logging.IAgentConstants;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.ExitEventBean;
+import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.SecurityMetaData;
 import org.apache.commons.lang3.StringUtils;
@@ -131,6 +133,13 @@ public class DispatcherPool {
             if (StringUtils.equals(securityMetaData.getFuzzRequestIdentifier().getApiRecordId(), operation.getApiID()) && StringUtils.equals(securityMetaData.getFuzzRequestIdentifier().getNextStage().getStatus(), IAgentConstants.VULNERABLE)) {
                 eid.add(operation.getExecutionId());
             }
+        }
+
+        // Register in Processed CC map
+        if(StringUtils.equals(securityMetaData.getFuzzRequestIdentifier().getApiRecordId(), operation.getApiID())) {
+            RestRequestThreadPool.getInstance()
+                    .registerEventForProcessedCC(securityMetaData.getCustomAttribute(
+                            GenericHelper.CSEC_PARENT_ID, String.class), operation.getExecutionId());
         }
         this.executor.submit(new Dispatcher(operation, new SecurityMetaData(securityMetaData)));
     }

@@ -1,19 +1,17 @@
 package com.newrelic.agent.security.instrumentator.httpclient;
 
-import com.newrelic.agent.security.intcodeagent.controlcommand.ControlCommandProcessorThreadPool;
+import com.newrelic.agent.security.intcodeagent.executor.CustomFutureTask;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.newrelic.agent.security.intcodeagent.filelogging.LogLevel;
-import com.newrelic.agent.security.intcodeagent.logging.HealthCheckScheduleThread;
-import com.newrelic.agent.security.intcodeagent.logging.IAgentConstants;
 import com.newrelic.agent.security.intcodeagent.models.IASTDataTransferRequest;
 import com.newrelic.agent.security.intcodeagent.websocket.WSClient;
 import com.newrelic.agent.security.intcodeagent.websocket.WSUtils;
 import com.newrelic.api.agent.NewRelic;
 import com.newrelic.api.agent.security.NewRelicSecurity;
-import org.jetbrains.annotations.NotNull;
 
 import java.time.Instant;
-import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
@@ -67,7 +65,8 @@ public class IASTDataTransferRequestProcessor {
             if (batchSize > 100 && remainingRecordCapacity > batchSize) {
                 request = new IASTDataTransferRequest(NewRelicSecurity.getAgent().getAgentUUID());
                 request.setBatchSize(batchSize);
-                request.setCompletedRequestIds(new ArrayList<>(RestRequestThreadPool.getInstance().getProcessedIds()));
+                request.setCompletedRequests(new HashMap<>(RestRequestThreadPool.getInstance().getProcessedIds()));
+                request.setPendingRequestIds(new HashSet<>(RestRequestThreadPool.getInstance().getPendingIds()));
                 WSClient.getInstance().send(request.toString());
             }
         } catch (Throwable e) {

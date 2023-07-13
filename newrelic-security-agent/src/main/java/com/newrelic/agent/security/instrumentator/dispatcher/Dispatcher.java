@@ -12,6 +12,7 @@ import com.newrelic.agent.security.intcodeagent.models.javaagent.ExitEventBean;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.JavaAgentEventBean;
 import com.newrelic.agent.security.intcodeagent.websocket.EventSendPool;
 import com.newrelic.api.agent.NewRelic;
+import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.security.schema.*;
 import com.newrelic.api.agent.security.schema.helper.DynamoDBRequest;
 import com.newrelic.api.agent.security.schema.operation.*;
@@ -571,6 +572,7 @@ public class Dispatcher implements Runnable {
         eventBean.setPid(AgentInfo.getInstance().getVMPID());
         eventBean.setSourceMethod(objectBean.getSourceMethod());
         eventBean.setId(objectBean.getExecutionId());
+        eventBean.setParentId(securityMetaData.getCustomAttribute(GenericHelper.CSEC_PARENT_ID, String.class));
         eventBean.setStartTime(objectBean.getStartTime());
         eventBean.setBlockingProcessingTime((Long) extraInfo.get(BLOCKING_END_TIME) - eventBean.getStartTime());
         eventBean.setApiId(objectBean.getApiID());

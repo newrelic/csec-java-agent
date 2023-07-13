@@ -6,6 +6,8 @@ import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool
 import com.newrelic.agent.security.intcodeagent.filelogging.LogLevel;
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.Collections;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -32,7 +34,11 @@ public class RestRequestThreadPool {
 
     private static final AtomicBoolean isWaiting = new AtomicBoolean(false);
 
-    private Set<String> processedIds = ConcurrentHashMap.newKeySet();
+    private final Map<String, Set<String>> processedIds = new ConcurrentHashMap();
+
+    private final Map<String, Set<String>> currentProcessingIds = new ConcurrentHashMap();
+
+    private final Set<String> pendingIds = ConcurrentHashMap.newKeySet();
 
     private RestRequestThreadPool() {
         LinkedBlockingQueue<Runnable> processQueue;
@@ -44,8 +50,15 @@ public class RestRequestThreadPool {
             protected void afterExecute(Runnable r, Throwable t) {
                 if (r instanceof CustomFutureTask<?> && ((CustomFutureTask<?>) r).getTask() instanceof RestRequestProcessor) {
                     RestRequestProcessor task = (RestRequestProcessor) ((CustomFutureTask<?>) r).getTask();
-                    if(StringUtils.isNotBlank(task.getControlCommand().getId())){
-                        processedIds.add(task.getControlCommand().getId());
+                    String controlCommandId = task.getControlCommand().getId();
+                    if(StringUtils.isNotBlank(controlCommandId)){
+                        if(!currentProcessingIds.containsKey(controlCommandId)) {
+                            processedIds.put(controlCommandId, Collections.emptySet());
+                        } else {
+                            processedIds.put(controlCommandId, currentProcessingIds.get(controlCommandId));
+                        }
+                        pendingIds.remove(controlCommandId);
+                        currentProcessingIds.remove(controlCommandId);
                     }
                 }
                 super.afterExecute(r, t);
@@ -119,8 +132,38 @@ public class RestRequestThreadPool {
         return executor;
     }
 
-    public Set<String> getProcessedIds() {
+    public Map<String, Set<String>> getProcessedIds() {
         return processedIds;
+    }
+
+    public Set<String> getPendingIds() {
+        return pendingIds;
+    }
+
+    public void registerEventForProcessedCC(String controlCommandId, String eventId) {
+        if(StringUtils.isAnyBlank(controlCommandId, eventId)){
+            return;
+        }
+        Set<String> registeredEvents;
+        if(!currentProcessingIds.containsKey(controlCommandId)){
+            synchronized (currentProcessingIds) {
+                if(!currentProcessingIds.containsKey(controlCommandId)){
+                    registeredEvents = ConcurrentHashMap.newKeySet();
+                    currentProcessingIds.put(controlCommandId, registeredEvents);
+                } else {
+                    registeredEvents = currentProcessingIds.get(controlCommandId);
+                }
+            }
+        } else {
+            registeredEvents = currentProcessingIds.get(controlCommandId);
+        }
+        registeredEvents.add(eventId);
+    }
+
+    public void removeFromProcessedCC(String controlCommandId) {
+        if(StringUtils.isNotBlank(controlCommandId)){
+            processedIds.remove(controlCommandId);
+        }
     }
 
 }
