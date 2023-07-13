@@ -12,7 +12,6 @@ import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.security.instrumentation.helpers.ServletHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.SecurityMetaData;
-import com.newrelic.api.agent.security.schema.StringUtils;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
 import com.newrelic.api.agent.security.schema.operation.SSRFOperation;
 import com.newrelic.api.agent.security.utils.SSRFUtils;
@@ -24,7 +23,9 @@ import org.apache.commons.httpclient.*;
 import java.io.IOException;
 
 @Weave(type = MatchType.ExactClass, originalName = "org.apache.commons.httpclient.HttpMethodBase")
-public abstract class HttpMethodBase_Instrumentation implements HttpMethod {
+public abstract class HttpMethodBase_Instrumentation {
+
+    public abstract URI getURI() throws URIException;
     public abstract void setRequestHeader(String headerName, String headerValue);
 
     public int execute(HttpState state, HttpConnection conn) throws HttpException, IOException {
@@ -107,9 +108,9 @@ public abstract class HttpMethodBase_Instrumentation implements HttpMethod {
                 this.setRequestHeader(ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID, iastHeader);
             }
 
-            String csecParaentId = securityMetaData.getCustomAttribute(GenericHelper.CSEC_PARENT_ID, String.class);
-            if(StringUtils.isNotBlank(csecParaentId)){
-                this.setRequestHeader(GenericHelper.CSEC_PARENT_ID, csecParaentId);
+            String csecParentId = SecurityHelper.getParentId();
+            if(csecParentId!= null && !csecParentId.isEmpty()){
+                this.setRequestHeader(GenericHelper.CSEC_PARENT_ID, csecParentId);
             }
 
             SSRFOperation operation = new SSRFOperation(uri,
