@@ -6,12 +6,12 @@ on:
         description: 'The repo of APM source code to use'
         required: true
         type: string
-        default: 'newrelic/newrelic-java-agent'
+        default: 'k2io/newrelic-java-agent'
       apm-source-ref:
         description: 'The source-ref of APM source code to use'
         required: true
         type: string
-        default: 'main'
+        default: 'csec-dev'
       run-unit-test:
         description: 'Run instrumentation unit tests ?'
         required: true
@@ -33,12 +33,12 @@ on:
         description: 'The repo of APM source code to use'
         required: true
         type: string
-        default: 'newrelic/newrelic-java-agent'
+        default: 'k2io/newrelic-java-agent'
       apm-source-ref:
         description: 'The source-ref of APM source code to use'
         required: true
         type: string
-        default: 'main'
+        default: 'csec-dev'
       run-unit-test:
         description: 'Run instrumentation unit tests ?'
         required: true
