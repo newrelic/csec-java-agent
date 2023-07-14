@@ -1,0 +1,80 @@
+/*
+ *
+ *  * Copyright 2023 New Relic Corporation. All rights reserved.
+ *  * SPDX-License-Identifier: Apache-2.0
+ *
+ */
+
+package com.nr.agent.instrumentation.security.httpclient50;
+
+import com.newrelic.api.agent.security.NewRelicSecurity;
+import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
+import com.newrelic.api.agent.security.instrumentation.helpers.R2dbcHelper;
+import com.newrelic.api.agent.security.instrumentation.helpers.ServletHelper;
+import com.newrelic.api.agent.security.schema.AbstractOperation;
+import com.newrelic.api.agent.security.schema.SecurityMetaData;
+import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
+import com.newrelic.api.agent.security.schema.operation.SSRFOperation;
+import com.newrelic.api.agent.security.utils.SSRFUtils;
+import com.newrelic.api.agent.weaver.MatchType;
+import com.newrelic.api.agent.weaver.Weave;
+import com.newrelic.api.agent.weaver.Weaver;
+import org.apache.hc.core5.concurrent.FutureCallback;
+import org.apache.hc.core5.http.HttpRequest;
+import org.apache.hc.core5.http.nio.AsyncPushConsumer;
+import org.apache.hc.core5.http.nio.AsyncRequestProducer;
+import org.apache.hc.core5.http.nio.AsyncResponseConsumer;
+import org.apache.hc.core5.http.nio.HandlerFactory;
+import org.apache.hc.core5.http.protocol.HttpContext;
+
+import java.net.URISyntaxException;
+import java.util.concurrent.Future;
+
+@Weave(type = MatchType.Interface, originalName = "org.apache.hc.client5.http.async.HttpAsyncClient")
+public class HttpAsyncClient_Instrumentation {
+
+    public <T> Future<T> execute(
+            AsyncRequestProducer requestProducer,
+            AsyncResponseConsumer<T> responseConsumer,
+            HandlerFactory<AsyncPushConsumer> pushHandlerFactory,
+            HttpContext context,
+            FutureCallback<T> callback) {
+        HttpRequest request = ((BasicRequestProducer_Instrumentation)requestProducer).nrRequest;
+
+        boolean isLockAcquired = acquireLockIfPossible();
+        AbstractOperation operation = null;
+        // Preprocess Phase
+        if (isLockAcquired) {
+            try {
+                operation = SecurityHelper.preprocessSecurityHook(request, request.getUri().toString(), this.getClass().getName(), SecurityHelper.METHOD_NAME_EXECUTE);
+            } catch (URISyntaxException ignored) {
+            }
+        }
+        Future<T> returnObj = null;
+        // Actual Call
+        try {
+            returnObj = Weaver.callOriginal();
+        } finally {
+            if (isLockAcquired) {
+                releaseLock();
+            }
+        }
+        SecurityHelper.registerExitOperation(isLockAcquired, operation);
+        return returnObj;
+    }
+
+    private void releaseLock() {
+        try {
+            GenericHelper.releaseLock(SecurityHelper.NR_SEC_CUSTOM_ATTRIB_NAME, this.hashCode());
+        } catch (Throwable ignored) {
+        }
+    }
+
+    private boolean acquireLockIfPossible() {
+        try {
+            return GenericHelper.acquireLockIfPossible(SecurityHelper.NR_SEC_CUSTOM_ATTRIB_NAME, this.hashCode());
+        } catch (Throwable ignored) {
+        }
+        return false;
+    }
+}
