@@ -144,8 +144,6 @@ public class Agent implements SecurityAgent {
 
         startK2Services();
         info.agentStatTrigger();
-
-        System.out.printf("This application instance is now being protected by New Relic Security under id %s\n", info.getApplicationUUID());
     }
 
     private BuildInfo readCollectorBuildInfo() {
@@ -262,6 +260,9 @@ public class Agent implements SecurityAgent {
                     Dispatcher.class.getName());
             return;
         }
+
+        logIfIastScanForFirstTime(securityMetaData.getFuzzRequestIdentifier(), securityMetaData.getRequest());
+
         setRequiredStackTrace(operation, securityMetaData);
         setUserClassEntity(operation, securityMetaData);
         processStackTrace(operation);
@@ -282,6 +283,19 @@ public class Agent implements SecurityAgent {
 //            blockForResponse(operation.getExecutionId());
 //        }
 //        checkIfClientIPBlocked();
+    }
+
+    private void logIfIastScanForFirstTime(K2RequestIdentifier fuzzRequestIdentifier, HttpRequest request) {
+
+        String url = StringUtils.EMPTY;
+        if(request != null && StringUtils.isNotBlank(request.getUrl())) {
+            url = request.getUrl();
+        }
+
+        if(StringUtils.isNotBlank(fuzzRequestIdentifier.getApiRecordId()) && !AgentUtils.getInstance().getScannedAPIIds().contains(fuzzRequestIdentifier.getApiRecordId())){
+            AgentUtils.getInstance().getScannedAPIIds().add(fuzzRequestIdentifier.getApiRecordId());
+            logger.log(LogLevel.INFO, String.format("IAST Scan for API %s with ID : %s started.", url, fuzzRequestIdentifier.getApiRecordId()), Agent.class.getName());
+        }
     }
 
     private static boolean checkIfNRGeneratedEvent(AbstractOperation operation, SecurityMetaData securityMetaData) {
@@ -385,6 +399,7 @@ public class Agent implements SecurityAgent {
         K2RequestIdentifier k2RequestIdentifier = NewRelicSecurity.getAgent().getSecurityMetaData().getFuzzRequestIdentifier();
         HttpRequest request = NewRelicSecurity.getAgent().getSecurityMetaData().getRequest();
 
+        // TODO: Generate for only native payloads
         if (!request.isEmpty() && !operation.isEmpty() && k2RequestIdentifier.getK2Request()) {
             if (StringUtils.equals(k2RequestIdentifier.getApiRecordId(), operation.getApiID())
                     && StringUtils.equals(k2RequestIdentifier.getNextStage().getStatus(), IAgentConstants.VULNERABLE)) {
