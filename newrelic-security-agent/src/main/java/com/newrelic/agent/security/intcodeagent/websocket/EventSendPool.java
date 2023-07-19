@@ -50,6 +50,7 @@ public class EventSendPool {
                         }
                     } catch (Throwable e) {
                         AgentInfo.getInstance().getJaHealthCheck().incrementDropCount();
+                        AgentInfo.getInstance().getJaHealthCheck().incrementEventSendErrorCount();
                     }
                 }
                 super.afterExecute(r, t);
@@ -134,6 +135,7 @@ public class EventSendPool {
             logger.log(LogLevel.FINER, "Event Task " + r.toString() + " rejected from  " + e.toString(), EventSendPool.class.getName());
             AgentInfo.getInstance().getJaHealthCheck().incrementDropCount();
             AgentInfo.getInstance().getJaHealthCheck().incrementProcessedCount();
+            AgentInfo.getInstance().getJaHealthCheck().incrementEventSendRejectionCount();
         }
     }
 

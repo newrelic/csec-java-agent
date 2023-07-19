@@ -146,17 +146,9 @@ public class RestRequestThreadPool {
         }
         Set<String> registeredEvents;
         if(!currentProcessingIds.containsKey(controlCommandId)){
-            synchronized (currentProcessingIds) {
-                if(!currentProcessingIds.containsKey(controlCommandId)){
-                    registeredEvents = ConcurrentHashMap.newKeySet();
-                    currentProcessingIds.put(controlCommandId, registeredEvents);
-                } else {
-                    registeredEvents = currentProcessingIds.get(controlCommandId);
-                }
-            }
-        } else {
-            registeredEvents = currentProcessingIds.get(controlCommandId);
+            currentProcessingIds.putIfAbsent(controlCommandId, ConcurrentHashMap.newKeySet());
         }
+        registeredEvents = currentProcessingIds.get(controlCommandId);
         registeredEvents.add(eventId);
     }
 

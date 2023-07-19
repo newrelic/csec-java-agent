@@ -22,6 +22,14 @@ public class JAHealthCheck extends AgentBasicInfo {
 
     private AtomicInteger eventDropCount;
 
+    private AtomicInteger eventRejectionCount;
+
+    private AtomicInteger eventProcessingErrorCount;
+
+    private AtomicInteger eventSendRejectionCount;
+
+    private AtomicInteger eventSendErrorCount;
+
     private IdentifierEnvs kind;
 
     private AtomicInteger eventProcessed;
@@ -107,6 +115,54 @@ public class JAHealthCheck extends AgentBasicInfo {
 
     public void incrementDropCount() {
         this.eventDropCount.getAndIncrement();
+    }
+
+    public AtomicInteger getEventRejectionCount() {
+        return eventRejectionCount;
+    }
+
+    public void setEventRejectionCount(int eventRejectionCount) {
+        this.eventRejectionCount.set(eventRejectionCount);
+    }
+
+    public int incrementEventRejectionCount(){
+        return eventRejectionCount.incrementAndGet();
+    }
+
+    public AtomicInteger getEventProcessingErrorCount() {
+        return eventProcessingErrorCount;
+    }
+
+    public void setEventProcessingErrorCount(int eventProcessingErrorCount) {
+        this.eventProcessingErrorCount.set(eventProcessingErrorCount);
+    }
+
+    public int incrementEventProcessingErrorCount() {
+        return eventProcessingErrorCount.incrementAndGet();
+    }
+
+    public AtomicInteger getEventSendRejectionCount() {
+        return eventSendRejectionCount;
+    }
+
+    public void setEventSendRejectionCount(int eventSendRejectionCount) {
+        this.eventSendRejectionCount.set(eventSendRejectionCount);
+    }
+
+    public int incrementEventSendRejectionCount() {
+        return this.eventSendRejectionCount.incrementAndGet();
+    }
+
+    public AtomicInteger getEventSendErrorCount() {
+        return eventSendErrorCount;
+    }
+
+    public void setEventSendErrorCount(int eventSendErrorCount) {
+        this.eventSendErrorCount.set(eventSendErrorCount);
+    }
+
+    public int incrementEventSendErrorCount() {
+        return this.eventSendErrorCount.incrementAndGet();
     }
 
     public void incrementProcessedCount() {

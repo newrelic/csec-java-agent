@@ -58,6 +58,7 @@ public class DispatcherPool {
         public void rejectedExecution(Runnable r, ThreadPoolExecutor e) {
             AgentInfo.getInstance().getJaHealthCheck().incrementDropCount();
             AgentInfo.getInstance().getJaHealthCheck().incrementProcessedCount();
+            AgentInfo.getInstance().getJaHealthCheck().incrementEventRejectionCount();
 //			logger.log(LogLevel.FINE,"Event Task " + r.toString() + " rejected from  " + e.toString(), EventThreadPool.class.getName());
         }
     }
@@ -81,6 +82,7 @@ public class DispatcherPool {
                         }
                     } catch (Throwable e) {
                         AgentInfo.getInstance().getJaHealthCheck().incrementDropCount();
+                        AgentInfo.getInstance().getJaHealthCheck().incrementEventProcessingErrorCount();
                     }
                 }
                 super.afterExecute(r, t);
@@ -135,11 +137,16 @@ public class DispatcherPool {
             }
         }
 
-        // Register in Processed CC map
-        if(StringUtils.equals(securityMetaData.getFuzzRequestIdentifier().getApiRecordId(), operation.getApiID())) {
-            RestRequestThreadPool.getInstance()
-                    .registerEventForProcessedCC(securityMetaData.getCustomAttribute(
-                            GenericHelper.CSEC_PARENT_ID, String.class), operation.getExecutionId());
+        try {
+            // Register in Processed CC map
+            if (StringUtils.equals(securityMetaData.getFuzzRequestIdentifier().getApiRecordId(), operation.getApiID())) {
+                RestRequestThreadPool.getInstance()
+                        .registerEventForProcessedCC(securityMetaData.getCustomAttribute(
+                                GenericHelper.CSEC_PARENT_ID, String.class), operation.getExecutionId());
+            }
+        } catch (Throwable e) {
+            // TODO : remove before merge
+            e.printStackTrace();
         }
         this.executor.submit(new Dispatcher(operation, new SecurityMetaData(securityMetaData)));
     }
