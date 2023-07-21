@@ -4,17 +4,17 @@ import java.util.Objects;
 
 public class ApplicationURLMapping {
     private String method;
-    private String url;
+    private String path;
     private String handler;
 
     public ApplicationURLMapping(String method, String url) {
         this.method = method;
-        this.url = url;
+        this.path = url;
     }
 
     public ApplicationURLMapping(String method, String url, String handler) {
         this.method = method;
-        this.url = url;
+        this.path = url;
         this.handler = handler;
     }
 
@@ -34,12 +34,12 @@ public class ApplicationURLMapping {
         this.method = method;
     }
 
-    public String getUrl() {
-        return url;
+    public String getPath() {
+        return path;
     }
 
-    public void setUrl(String url) {
-        this.url = url;
+    public void setPath(String path) {
+        this.path = path;
     }
 
     @Override
@@ -50,18 +50,18 @@ public class ApplicationURLMapping {
 
         if (obj instanceof ApplicationURLMapping) {
             ApplicationURLMapping mapping = (ApplicationURLMapping) obj;
-            return url.equals(mapping.url) && method.equals(mapping.method) && handler.equals(mapping.handler);
+            return path.equals(mapping.path) && method.equals(mapping.method) && handler.equals(mapping.handler);
         }
         return false;
     }
 
     @Override
     public String toString() {
-        return String.format("Method: %s, Url: %s, Handler: %s", method, url, handler);
+        return String.format("Method: %s, Url: %s, Handler: %s", method, path, handler);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(method, url, handler);
+        return Objects.hash(method, path, handler);
     }
 }
