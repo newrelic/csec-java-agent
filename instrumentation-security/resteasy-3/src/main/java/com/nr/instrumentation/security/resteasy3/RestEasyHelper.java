@@ -11,13 +11,6 @@ public class RestEasyHelper {
     private static final String SEPARATOR = "/";
 
     public static void gatherUrlMappings(String path, ResourceInvoker invoker) {
-        try {
-            extractMappingsFromResources(path, invoker);
-        } catch (Exception ignored){
-        }
-    }
-
-    private static void extractMappingsFromResources(String path, ResourceInvoker invoker) {
         try{
             if(!path.startsWith(SEPARATOR)) {
                 path = SEPARATOR + path;

@@ -12,14 +12,7 @@ public class RootClassNode_Instrumentation {
         try {
             Weaver.callOriginal();
         } finally {
-            postProcessing(fullpath, invoker);
-        }
-    }
-
-    private static void postProcessing(String path, ResourceInvoker invoker) {
-        try {
-            RestEasyHelper.gatherUrlMappings(path, invoker);
-        } catch (Throwable ignored) {
+            RestEasyHelper.gatherUrlMappings(fullpath, invoker);
         }
     }
 }

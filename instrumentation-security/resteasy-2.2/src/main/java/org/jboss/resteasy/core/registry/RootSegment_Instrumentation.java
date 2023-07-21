@@ -12,14 +12,7 @@ public class RootSegment_Instrumentation {
         try {
             Weaver.callOriginal();
         } finally {
-            postProcessing(path, invoker);
-        }
-    }
-
-    private void postProcessing(String path, ResourceInvoker invoker) {
-        try {
             RestEasyHelper.gatherUrlMappings(path, invoker);
-        } catch (Throwable ignored) {
         }
     }
 }
