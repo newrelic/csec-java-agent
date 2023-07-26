@@ -56,6 +56,10 @@ public class JAHealthCheck extends AgentBasicInfo {
         this.eventSentCount = new AtomicInteger(0);
         this.httpRequestCount = new AtomicInteger(0);
         this.exitEventSentCount = new AtomicInteger(0);
+        this.eventRejectionCount = new AtomicInteger(0);
+        this.eventProcessingErrorCount = new AtomicInteger(0);
+        this.eventSendRejectionCount = new AtomicInteger(0);
+        this.eventSendErrorCount = new AtomicInteger(0);
         this.stats = new HashMap<>();
         this.serviceStatus = new HashMap<>();
         this.setKind(AgentInfo.getInstance().getApplicationInfo().getIdentifier().getKind());
@@ -70,6 +74,10 @@ public class JAHealthCheck extends AgentBasicInfo {
         this.eventSentCount = jaHealthCheck.eventSentCount;
         this.exitEventSentCount = jaHealthCheck.exitEventSentCount;
         this.httpRequestCount = jaHealthCheck.httpRequestCount;
+        this.eventRejectionCount = jaHealthCheck.eventRejectionCount;
+        this.eventProcessingErrorCount = jaHealthCheck.eventProcessingErrorCount;
+        this.eventSendRejectionCount = jaHealthCheck.eventSendRejectionCount;
+        this.eventSendErrorCount = jaHealthCheck.eventSendErrorCount;
         this.kind = jaHealthCheck.kind;
         this.stats = jaHealthCheck.stats;
         this.serviceStatus = jaHealthCheck.serviceStatus;
