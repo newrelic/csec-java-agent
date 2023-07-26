@@ -212,7 +212,9 @@ public class WSClient extends WebSocketClient {
         }
 
         if (code != CloseFrame.POLICY_VALIDATION && code != CloseFrame.NORMAL) {
-            WSReconnectionST.getInstance().submitNewTaskSchedule(15);
+            int delay = CommonUtils.generateSecureRandomBetween(5, 15);
+            logger.log(LogLevel.INFO, String.format(WSUtils.NEXT_WS_CONNECTION_ATTEMPT_WILL_BE_IN_S_SECONDS, delay), WSReconnectionST.class.getName());
+            WSReconnectionST.getInstance().submitNewTaskSchedule(delay);
         }
     }
 
