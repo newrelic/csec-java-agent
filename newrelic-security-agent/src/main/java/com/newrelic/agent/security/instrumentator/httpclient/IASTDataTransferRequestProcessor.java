@@ -1,11 +1,13 @@
 package com.newrelic.agent.security.instrumentator.httpclient;
 
+import com.newrelic.agent.security.AgentInfo;
 import com.newrelic.agent.security.intcodeagent.executor.CustomFutureTask;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.newrelic.agent.security.intcodeagent.filelogging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.models.IASTDataTransferRequest;
 import com.newrelic.agent.security.intcodeagent.websocket.WSClient;
 import com.newrelic.agent.security.intcodeagent.websocket.WSUtils;
+import com.newrelic.agent.security.util.AgentUsageMetric;
 import com.newrelic.api.agent.NewRelic;
 import com.newrelic.api.agent.security.NewRelicSecurity;
 
@@ -38,6 +40,10 @@ public class IASTDataTransferRequestProcessor {
     private void task() {
         IASTDataTransferRequest request = null;
         try {
+            if(!AgentUsageMetric.isIASTRequestProcessingActive()){
+                return;
+            }
+
             if (WSUtils.getInstance().isReconnecting() ||
                     !WSClient.getInstance().isOpen()) {
                 synchronized (WSUtils.getInstance()) {
@@ -59,6 +65,9 @@ public class IASTDataTransferRequestProcessor {
 
             int currentFetchThreshold = NewRelic.getAgent().getConfig()
                     .getValue(SECURITY_POLICY_VULNERABILITY_SCAN_IAST_SCAN_PROBING_THRESHOLD, 300);
+            if(!AgentUsageMetric.isRASPProcessingActive()){
+                currentFetchThreshold /= 2;
+            }
             int remainingRecordCapacity = RestRequestThreadPool.getInstance().getQueue().remainingCapacity();
             int currentRecordBacklog = RestRequestThreadPool.getInstance().getQueue().size();
             int batchSize = currentFetchThreshold - currentRecordBacklog;

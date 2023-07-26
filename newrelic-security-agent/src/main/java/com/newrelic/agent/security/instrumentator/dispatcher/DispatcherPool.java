@@ -2,10 +2,13 @@ package com.newrelic.agent.security.instrumentator.dispatcher;
 
 import com.newrelic.agent.security.AgentInfo;
 import com.newrelic.agent.security.instrumentator.httpclient.RestRequestThreadPool;
+import com.newrelic.agent.security.intcodeagent.executor.CustomFutureTask;
+import com.newrelic.agent.security.intcodeagent.executor.CustomThreadPoolExecutor;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.newrelic.agent.security.intcodeagent.filelogging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.logging.IAgentConstants;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.ExitEventBean;
+import com.newrelic.agent.security.util.AgentUsageMetric;
 import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.SecurityMetaData;
@@ -56,6 +59,15 @@ public class DispatcherPool {
          * @throws RejectedExecutionException always
          */
         public void rejectedExecution(Runnable r, ThreadPoolExecutor e) {
+            if (r instanceof CustomFutureTask<?> && ((CustomFutureTask<?>) r).getTask() instanceof Dispatcher) {
+                Dispatcher dispatcher = (Dispatcher) ((CustomFutureTask<?>) r).getTask();
+                if(dispatcher.getSecurityMetaData()!= null && dispatcher.getSecurityMetaData().getFuzzRequestIdentifier().getK2Request()){
+                    String fuzzRequestId = dispatcher.getSecurityMetaData().getCustomAttribute(GenericHelper.CSEC_PARENT_ID, String.class);
+                    if(RestRequestThreadPool.getInstance().getCurrentProcessingIds().containsKey(fuzzRequestId)){
+                        RestRequestThreadPool.getInstance().getCurrentProcessingIds().remove(fuzzRequestId);
+                    }
+                }
+            }
             AgentInfo.getInstance().getJaHealthCheck().incrementDropCount();
             AgentInfo.getInstance().getJaHealthCheck().incrementProcessedCount();
             AgentInfo.getInstance().getJaHealthCheck().incrementEventRejectionCount();
@@ -68,7 +80,7 @@ public class DispatcherPool {
         // load the settings
         processQueue = new LinkedBlockingQueue<>(queueSize);
         eid = ConcurrentHashMap.newKeySet();
-        executor = new ThreadPoolExecutor(corePoolSize, maxPoolSize, keepAliveTime, timeUnit, processQueue,
+        executor = new CustomThreadPoolExecutor(corePoolSize, maxPoolSize, keepAliveTime, timeUnit, processQueue,
                 new EventAbortPolicy()) {
 
             @Override
@@ -131,6 +143,12 @@ public class DispatcherPool {
         if (executor.isShutdown()) {
             return;
         }
+
+        if(!securityMetaData.getFuzzRequestIdentifier().getK2Request() && !AgentUsageMetric.isRASPProcessingActive()){
+            AgentInfo.getInstance().getJaHealthCheck().incrementEventRejectionCount();
+            return;
+        }
+
         if (!operation.isEmpty() && securityMetaData.getFuzzRequestIdentifier().getK2Request()) {
             if (StringUtils.equals(securityMetaData.getFuzzRequestIdentifier().getApiRecordId(), operation.getApiID()) && StringUtils.equals(securityMetaData.getFuzzRequestIdentifier().getNextStage().getStatus(), IAgentConstants.VULNERABLE)) {
                 eid.add(operation.getExecutionId());

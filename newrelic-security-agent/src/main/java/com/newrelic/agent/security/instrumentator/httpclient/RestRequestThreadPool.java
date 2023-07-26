@@ -136,6 +136,10 @@ public class RestRequestThreadPool {
         return processedIds;
     }
 
+    public Map<String, Set<String>> getCurrentProcessingIds() {
+        return currentProcessingIds;
+    }
+
     public Set<String> getPendingIds() {
         return pendingIds;
     }

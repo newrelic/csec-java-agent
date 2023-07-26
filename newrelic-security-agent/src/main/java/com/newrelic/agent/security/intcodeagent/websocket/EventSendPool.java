@@ -1,9 +1,13 @@
 package com.newrelic.agent.security.intcodeagent.websocket;
 
 import com.newrelic.agent.security.AgentInfo;
+import com.newrelic.agent.security.instrumentator.httpclient.RestRequestThreadPool;
+import com.newrelic.agent.security.intcodeagent.executor.CustomFutureTask;
+import com.newrelic.agent.security.intcodeagent.executor.CustomThreadPoolExecutor;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.newrelic.agent.security.intcodeagent.filelogging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.JavaAgentEventBean;
+import com.newrelic.agent.security.util.AgentUsageMetric;
 
 import java.util.Map;
 import java.util.concurrent.*;
@@ -38,7 +42,7 @@ public class EventSendPool {
 
         boolean allowCoreThreadTimeOut = false;
 
-        executor = new ThreadPoolExecutor(corePoolSize, maxPoolSize, keepAliveTime, timeUnit,
+        executor = new CustomThreadPoolExecutor(corePoolSize, maxPoolSize, keepAliveTime, timeUnit,
                 new LinkedBlockingQueue<Runnable>(queueSize), new EventAbortPolicy()) {
             @Override
             protected void afterExecute(Runnable r, Throwable t) {
@@ -82,6 +86,10 @@ public class EventSendPool {
     }
 
     public void sendEvent(JavaAgentEventBean event) {
+        if(!event.getIsIASTRequest() && !AgentUsageMetric.isRASPProcessingActive()){
+            AgentInfo.getInstance().getJaHealthCheck().incrementEventSendRejectionCount();
+            return;
+        }
         executor.submit(new EventSender(event));
         AgentInfo.getInstance().getJaHealthCheck().incrementEventSentCount();
     }
@@ -132,6 +140,19 @@ public class EventSendPool {
          * @throws RejectedExecutionException always
          */
         public void rejectedExecution(Runnable r, ThreadPoolExecutor e) {
+            if (r instanceof CustomFutureTask<?> && ((CustomFutureTask<?>) r).getTask() instanceof EventSender) {
+                EventSender eventSender = (EventSender) ((CustomFutureTask<?>) r).getTask();
+                if (eventSender.getEvent() instanceof JavaAgentEventBean) {
+                    JavaAgentEventBean event = (JavaAgentEventBean) eventSender.getEvent();
+                    if(event.getIsIASTRequest()){
+                        String fuzzRequestId = event.getParentId();
+                        if(RestRequestThreadPool.getInstance().getCurrentProcessingIds().containsKey(fuzzRequestId)){
+                            RestRequestThreadPool.getInstance().getCurrentProcessingIds().remove(fuzzRequestId);
+                        }
+                    }
+                }
+            }
+
             logger.log(LogLevel.FINER, "Event Task " + r.toString() + " rejected from  " + e.toString(), EventSendPool.class.getName());
             AgentInfo.getInstance().getJaHealthCheck().incrementDropCount();
             AgentInfo.getInstance().getJaHealthCheck().incrementProcessedCount();
