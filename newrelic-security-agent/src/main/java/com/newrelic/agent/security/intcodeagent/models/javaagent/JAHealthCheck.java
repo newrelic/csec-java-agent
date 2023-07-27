@@ -20,6 +20,8 @@ public class JAHealthCheck extends AgentBasicInfo {
 
 //    private Set protectedDB;
 
+    private AtomicInteger invokedHookCount;
+
     private AtomicInteger eventDropCount;
 
     private AtomicInteger eventRejectionCount;
@@ -40,6 +42,14 @@ public class JAHealthCheck extends AgentBasicInfo {
 
     private AtomicInteger httpRequestCount;
 
+    private EventStats raspEventStats;
+
+    private EventStats iastEventStats;
+
+    private EventStats exitEventStats;
+
+    private ThreadPoolStats threadPoolStats;
+
     private Map<String, Object> stats;
 
     private Map<String, Object> serviceStatus;
@@ -51,6 +61,7 @@ public class JAHealthCheck extends AgentBasicInfo {
     public JAHealthCheck(String applicationUUID) {
         super();
         this.applicationUUID = applicationUUID;
+        this.invokedHookCount = new AtomicInteger(0);
         this.eventDropCount = new AtomicInteger(0);
         this.eventProcessed = new AtomicInteger(0);
         this.eventSentCount = new AtomicInteger(0);
@@ -60,6 +71,10 @@ public class JAHealthCheck extends AgentBasicInfo {
         this.eventProcessingErrorCount = new AtomicInteger(0);
         this.eventSendRejectionCount = new AtomicInteger(0);
         this.eventSendErrorCount = new AtomicInteger(0);
+        this.raspEventStats = new EventStats();
+        this.iastEventStats = new EventStats();
+        this.exitEventStats = new EventStats();
+        this.threadPoolStats = new ThreadPoolStats();
         this.stats = new HashMap<>();
         this.serviceStatus = new HashMap<>();
         this.setKind(AgentInfo.getInstance().getApplicationInfo().getIdentifier().getKind());
@@ -69,6 +84,7 @@ public class JAHealthCheck extends AgentBasicInfo {
     public JAHealthCheck(JAHealthCheck jaHealthCheck) {
         super();
         this.applicationUUID = jaHealthCheck.applicationUUID;
+        this.invokedHookCount = jaHealthCheck.invokedHookCount;
         this.eventDropCount = jaHealthCheck.eventDropCount;
         this.eventProcessed = jaHealthCheck.eventProcessed;
         this.eventSentCount = jaHealthCheck.eventSentCount;
@@ -78,6 +94,10 @@ public class JAHealthCheck extends AgentBasicInfo {
         this.eventProcessingErrorCount = jaHealthCheck.eventProcessingErrorCount;
         this.eventSendRejectionCount = jaHealthCheck.eventSendRejectionCount;
         this.eventSendErrorCount = jaHealthCheck.eventSendErrorCount;
+        this.raspEventStats = new EventStats(jaHealthCheck.raspEventStats);
+        this.iastEventStats = new EventStats(jaHealthCheck.iastEventStats);
+        this.exitEventStats = new EventStats(jaHealthCheck.exitEventStats);
+        this.threadPoolStats = new ThreadPoolStats(jaHealthCheck.threadPoolStats);
         this.kind = jaHealthCheck.kind;
         this.stats = jaHealthCheck.stats;
         this.serviceStatus = jaHealthCheck.serviceStatus;
@@ -272,5 +292,67 @@ public class JAHealthCheck extends AgentBasicInfo {
 
     public void setServiceStatus(Map<String, Object> serviceStatus) {
         this.serviceStatus = serviceStatus;
+    }
+
+    public EventStats getRaspEventStats() {
+        return raspEventStats;
+    }
+
+    public void setRaspEventStats(EventStats raspEventStats) {
+        this.raspEventStats = raspEventStats;
+    }
+
+    public EventStats getIastEventStats() {
+        return iastEventStats;
+    }
+
+    public void setIastEventStats(EventStats iastEventStats) {
+        this.iastEventStats = iastEventStats;
+    }
+
+    public ThreadPoolStats getThreadPoolStats() {
+        return threadPoolStats;
+    }
+
+    public void setThreadPoolStats(ThreadPoolStats threadPoolStats) {
+        this.threadPoolStats = threadPoolStats;
+    }
+
+    public EventStats getExitEventStats() {
+        return exitEventStats;
+    }
+
+    public void setExitEventStats(EventStats exitEventStats) {
+        this.exitEventStats = exitEventStats;
+    }
+
+    public int getInvokedHookCount() {
+        return invokedHookCount.get();
+    }
+
+    public void setInvokedHookCount(int invokedHookCount) {
+        this.invokedHookCount.set(invokedHookCount);
+    }
+
+    public int incrementInvokedHookCount() {
+        return invokedHookCount.incrementAndGet();
+    }
+
+    public void reset(){
+        this.setEventDropCount(0);
+        this.setInvokedHookCount(0);
+        this.setEventProcessed(0);
+        this.setEventSentCount(0);
+        this.setHttpRequestCount(0);
+        this.setExitEventSentCount(0);
+        this.setEventRejectionCount(0);
+        this.setEventProcessingErrorCount(0);
+        this.setEventSendRejectionCount(0);
+        this.setEventSendErrorCount(0);
+        this.raspEventStats.reset();
+        this.iastEventStats.reset();
+        this.exitEventStats.reset();
+        this.stats.clear();
+        this.serviceStatus.clear();
     }
 }

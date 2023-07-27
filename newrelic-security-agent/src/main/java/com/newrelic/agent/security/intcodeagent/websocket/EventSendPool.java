@@ -1,13 +1,17 @@
 package com.newrelic.agent.security.intcodeagent.websocket;
 
 import com.newrelic.agent.security.AgentInfo;
+import com.newrelic.agent.security.instrumentator.dispatcher.DispatcherPool;
 import com.newrelic.agent.security.instrumentator.httpclient.RestRequestThreadPool;
 import com.newrelic.agent.security.intcodeagent.executor.CustomFutureTask;
 import com.newrelic.agent.security.intcodeagent.executor.CustomThreadPoolExecutor;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.newrelic.agent.security.intcodeagent.filelogging.LogLevel;
+import com.newrelic.agent.security.intcodeagent.models.javaagent.EventStats;
+import com.newrelic.agent.security.intcodeagent.models.javaagent.ExitEventBean;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.JavaAgentEventBean;
 import com.newrelic.agent.security.util.AgentUsageMetric;
+import com.newrelic.agent.security.util.IUtilConstants;
 
 import java.util.Map;
 import java.util.concurrent.*;
@@ -46,17 +50,15 @@ public class EventSendPool {
                 new LinkedBlockingQueue<Runnable>(queueSize), new EventAbortPolicy()) {
             @Override
             protected void afterExecute(Runnable r, Throwable t) {
-                if (r instanceof Future<?>) {
-                    try {
-                        Future<?> future = (Future<?>) r;
-                        if (future.isDone()) {
-                            future.get();
-                        }
-                    } catch (Throwable e) {
+                try {
+                    if (t != null) {
                         AgentInfo.getInstance().getJaHealthCheck().incrementDropCount();
                         AgentInfo.getInstance().getJaHealthCheck().incrementEventSendErrorCount();
+                        incrementCount(r, IUtilConstants.ERROR);
+                    } else {
+                        incrementCount(r, IUtilConstants.SENT);
                     }
-                }
+                } catch (Throwable ignored){}
                 super.afterExecute(r, t);
             }
         };
@@ -87,6 +89,7 @@ public class EventSendPool {
 
     public void sendEvent(JavaAgentEventBean event) {
         if(!event.getIsIASTRequest() && !AgentUsageMetric.isRASPProcessingActive()){
+            AgentInfo.getInstance().getJaHealthCheck().getRaspEventStats().incrementRejectedCount();
             AgentInfo.getInstance().getJaHealthCheck().incrementEventSendRejectionCount();
             return;
         }
@@ -146,16 +149,18 @@ public class EventSendPool {
                     JavaAgentEventBean event = (JavaAgentEventBean) eventSender.getEvent();
                     if(event.getIsIASTRequest()){
                         String fuzzRequestId = event.getParentId();
-                        if(RestRequestThreadPool.getInstance().getCurrentProcessingIds().containsKey(fuzzRequestId)){
-                            RestRequestThreadPool.getInstance().getCurrentProcessingIds().remove(fuzzRequestId);
-                        }
+                        RestRequestThreadPool.getInstance().getCurrentProcessingIds().remove(fuzzRequestId);
+                        AgentInfo.getInstance().getJaHealthCheck().getIastEventStats().incrementRejectedCount();
+                    } else {
+                        AgentInfo.getInstance().getJaHealthCheck().getRaspEventStats().incrementRejectedCount();
                     }
+                } else if (eventSender.getEvent() instanceof ExitEventBean) {
+                    AgentInfo.getInstance().getJaHealthCheck().getExitEventStats().incrementRejectedCount();
                 }
             }
 
-            logger.log(LogLevel.FINER, "Event Task " + r.toString() + " rejected from  " + e.toString(), EventSendPool.class.getName());
+            logger.log(LogLevel.FINER, "Event Send Task " + r.toString() + " rejected from  " + e.toString(), EventSendPool.class.getName());
             AgentInfo.getInstance().getJaHealthCheck().incrementDropCount();
-            AgentInfo.getInstance().getJaHealthCheck().incrementProcessedCount();
             AgentInfo.getInstance().getJaHealthCheck().incrementEventSendRejectionCount();
         }
     }
@@ -166,5 +171,42 @@ public class EventSendPool {
 
     public ThreadPoolExecutor getExecutor() {
         return executor;
+    }
+
+    private void incrementCount(Runnable r, String type) {
+        EventStats eventStats = null;
+        if (r instanceof CustomFutureTask<?> && ((CustomFutureTask<?>) r).getTask() instanceof EventSender) {
+            EventSender eventSender = (EventSender) ((CustomFutureTask<?>) r).getTask();
+            if (eventSender.getEvent() instanceof JavaAgentEventBean) {
+                JavaAgentEventBean event = (JavaAgentEventBean) eventSender.getEvent();
+                if (event.getIsIASTRequest()) {
+                    eventStats = AgentInfo.getInstance().getJaHealthCheck().getIastEventStats();
+                } else {
+                    eventStats = AgentInfo.getInstance().getJaHealthCheck().getRaspEventStats();
+                }
+            } else if (eventSender.getEvent() instanceof ExitEventBean) {
+                eventStats = AgentInfo.getInstance().getJaHealthCheck().getExitEventStats();
+            }
+        }
+
+        if(eventStats == null){
+            return;
+        }
+        switch (type){
+            case IUtilConstants.ERROR:
+                eventStats.incrementErrorCount();
+                break;
+            case IUtilConstants.PROCESSED:
+                eventStats.incrementProcessedCount();
+                break;
+            case IUtilConstants.SENT:
+                eventStats.incrementSentCount();
+                break;
+            case IUtilConstants.REJECTED:
+                eventStats.incrementRejectedCount();
+                break;
+            default:
+                logger.log(LogLevel.FINEST, String.format("Couldn't update event matric for task :%s and type : %s", r, type), DispatcherPool.class.getName());
+        }
     }
 }

@@ -65,14 +65,13 @@ public class IASTDataTransferRequestProcessor {
 
             int currentFetchThreshold = NewRelic.getAgent().getConfig()
                     .getValue(SECURITY_POLICY_VULNERABILITY_SCAN_IAST_SCAN_PROBING_THRESHOLD, 300);
-            if(!AgentUsageMetric.isRASPProcessingActive()){
-                currentFetchThreshold /= 2;
-            }
+
             int remainingRecordCapacity = RestRequestThreadPool.getInstance().getQueue().remainingCapacity();
             int currentRecordBacklog = RestRequestThreadPool.getInstance().getQueue().size();
             int batchSize = currentFetchThreshold - currentRecordBacklog;
-
-            // Take dispatcher and eventSender queues into account
+            if(!AgentUsageMetric.isRASPProcessingActive()){
+                batchSize /= 2;
+            }
 
             if (batchSize > 100 && remainingRecordCapacity > batchSize) {
                 request = new IASTDataTransferRequest(NewRelicSecurity.getAgent().getAgentUUID());
