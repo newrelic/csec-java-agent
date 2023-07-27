@@ -3,7 +3,9 @@ package com.newrelic.agent.security.intcodeagent.websocket;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.newrelic.agent.security.intcodeagent.filelogging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.logging.IAgentConstants;
+import com.newrelic.agent.security.intcodeagent.utils.CommonUtils;
 
+import java.security.SecureRandom;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -31,7 +33,9 @@ public class WSReconnectionST {
                 logger.postLogMessageIfNecessary(LogLevel.SEVERE, ERROR_WHILE_WS_RECONNECTION + e.getMessage() + COLON_SEPARATOR + e.getCause(), e, WSClient.class.getName());
             } finally {
                 if (!WSUtils.isConnected()) {
-                    futureTask = scheduledService.schedule(runnable, 15, TimeUnit.SECONDS);
+                    int delay = CommonUtils.generateSecureRandomBetween(5, 15);
+                    logger.log(LogLevel.INFO, String.format(WSUtils.NEXT_WS_CONNECTION_ATTEMPT_WILL_BE_IN_S_SECONDS, delay), WSReconnectionST.class.getName());
+                    futureTask = scheduledService.schedule(runnable, delay, TimeUnit.SECONDS);
                 }
             }
         }
