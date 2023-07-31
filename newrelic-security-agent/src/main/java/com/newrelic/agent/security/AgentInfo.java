@@ -28,8 +28,6 @@ public class AgentInfo {
 
     private static final String APP_INFO_BEAN_NOT_CREATED = "[APP_INFO] Error application info bean not created.";
 
-    private static AgentInfo instance;
-
     private static final Object lock = new Object();
 
     private ApplicationInfoBean applicationInfo;
@@ -59,15 +57,12 @@ public class AgentInfo {
         applicationUUID = UUID.randomUUID().toString();
     }
 
+    private static final class InstanceHolder {
+        static final AgentInfo instance = new AgentInfo();
+    }
+
     public static AgentInfo getInstance(){
-        if (instance == null) {
-            synchronized (lock) {
-                if (instance == null) {
-                    instance = new AgentInfo();
-                }
-            }
-        }
-        return instance;
+        return InstanceHolder.instance;
     }
 
     public void initialiseHC(){

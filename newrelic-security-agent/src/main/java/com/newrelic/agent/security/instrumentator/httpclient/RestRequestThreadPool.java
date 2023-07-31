@@ -6,7 +6,7 @@ import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool
 import com.newrelic.agent.security.intcodeagent.filelogging.LogLevel;
 import org.apache.commons.lang3.StringUtils;
 
-import java.util.Collections;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.*;
@@ -40,6 +40,13 @@ public class RestRequestThreadPool {
 
     private final Set<String> pendingIds = ConcurrentHashMap.newKeySet();
 
+    public void resetIASTProcessing() {
+        processedIds.clear();
+        currentProcessingIds.clear();
+        pendingIds.clear();
+        executor.getQueue().clear();
+    }
+
     private RestRequestThreadPool() {
         LinkedBlockingQueue<Runnable> processQueue;
         // load the settings
@@ -52,13 +59,11 @@ public class RestRequestThreadPool {
                     RestRequestProcessor task = (RestRequestProcessor) ((CustomFutureTask<?>) r).getTask();
                     String controlCommandId = task.getControlCommand().getId();
                     if(StringUtils.isNotBlank(controlCommandId)){
-                        if(!currentProcessingIds.containsKey(controlCommandId)) {
-                            processedIds.put(controlCommandId, Collections.emptySet());
-                        } else {
+                        if(currentProcessingIds.containsKey(controlCommandId)) {
                             processedIds.put(controlCommandId, currentProcessingIds.get(controlCommandId));
+                            pendingIds.remove(controlCommandId);
+                            currentProcessingIds.remove(controlCommandId);
                         }
-                        pendingIds.remove(controlCommandId);
-                        currentProcessingIds.remove(controlCommandId);
                     }
                 }
                 super.afterExecute(r, t);
@@ -66,6 +71,13 @@ public class RestRequestThreadPool {
 
             @Override
             protected void beforeExecute(Thread t, Runnable r) {
+                if (r instanceof CustomFutureTask<?> && ((CustomFutureTask<?>) r).getTask() instanceof RestRequestProcessor) {
+                    RestRequestProcessor task = (RestRequestProcessor) ((CustomFutureTask<?>) r).getTask();
+                    String controlCommandId = task.getControlCommand().getId();
+                    if (StringUtils.isNotBlank(controlCommandId)) {
+                        currentProcessingIds.put(controlCommandId, new HashSet<>());
+                    }
+                }
                 super.beforeExecute(t, r);
             }
 

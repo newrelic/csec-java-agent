@@ -248,6 +248,9 @@ public class Agent implements SecurityAgent {
         operation.setExecutionId(executionId);
         operation.setStartTime(Instant.now().toEpochMilli());
         SecurityMetaData securityMetaData = NewRelicSecurity.getAgent().getSecurityMetaData();
+        if(securityMetaData.getFuzzRequestIdentifier().getK2Request()){
+            logger.log(LogLevel.FINEST, String.format("New Event generation with id %s of type %s", operation.getExecutionId(), operation.getClass().getSimpleName()), Agent.class.getName());
+        }
         if (operation instanceof RXSSOperation) {
             operation.setStackTrace(securityMetaData.getMetaData().getServiceTrace());
         } else {
@@ -257,7 +260,7 @@ public class Agent implements SecurityAgent {
         if(checkIfNRGeneratedEvent(operation, securityMetaData)) {
             logger.log(LogLevel.FINEST, DROPPING_EVENT_AS_IT_WAS_GENERATED_BY_K_2_INTERNAL_API_CALL +
                             JsonConverter.toJSON(operation),
-                    Dispatcher.class.getName());
+                    Agent.class.getName());
             return;
         }
 
@@ -276,13 +279,7 @@ public class Agent implements SecurityAgent {
                         this.getClass().getName());
                 firstEventProcessed.set(true);
             }
-        } else {
-            return;
         }
-//        if (blockNeeded) {
-//            blockForResponse(operation.getExecutionId());
-//        }
-//        checkIfClientIPBlocked();
     }
 
     private void logIfIastScanForFirstTime(K2RequestIdentifier fuzzRequestIdentifier, HttpRequest request) {

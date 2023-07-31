@@ -46,7 +46,7 @@ public class LogWriter implements Runnable {
     Calendar cal = Calendar.getInstance();
     SimpleDateFormat sdf = new SimpleDateFormat(DATE_FORMAT_NOW);
 
-    public static final String DATE_FORMAT_NOW = "yyyy-MM-dd HH:mm:ss";
+    public static final String DATE_FORMAT_NOW = "yyyy-MM-dd HH:mm:ss.SSS";
 
     private static final String fileName;
 
@@ -59,6 +59,7 @@ public class LogWriter implements Runnable {
     private String threadName;
 
     private static OSVariables osVariables = OsVariablesInstance.getInstance().getOsVariables();
+    private String logTime;
 
     private static boolean createLogFile() {
         CommonUtils.forceMkdirs(currentLogFile.getParentFile().toPath(), "rwxrwxrwx");
@@ -102,6 +103,7 @@ public class LogWriter implements Runnable {
         this.logLevelName = logLevel.name();
         this.loggingClassName = loggingClassName;
         this.threadName = threadName;
+        this.logTime = sdf.format(cal.getTime());
     }
 
     public LogWriter(LogLevel logLevel, String logEntry, Throwable throwableLogEntry, String loggingClassName, String threadName) {
@@ -111,6 +113,7 @@ public class LogWriter implements Runnable {
         this.logLevelName = logLevel.name();
         this.loggingClassName = loggingClassName;
         this.threadName = threadName;
+        this.logTime = sdf.format(cal.getTime());
     }
 
     @Override
@@ -120,7 +123,7 @@ public class LogWriter implements Runnable {
         }
         StringBuilder sb = new StringBuilder();
 //		sb.append(K2_LOG);
-        sb.append(sdf.format(cal.getTime()));
+        sb.append(logTime);
         sb.append(STR_COLON);
         sb.append(String.format(THREAD_NAME_TEMPLATE, AgentInfo.getInstance().getVMPID(), threadName));
         sb.append(this.logLevelName);
