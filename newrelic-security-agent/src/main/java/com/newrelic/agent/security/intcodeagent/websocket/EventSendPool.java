@@ -24,15 +24,8 @@ public class EventSendPool {
      */
     private ThreadPoolExecutor executor;
 
-    private static EventSendPool instance;
-
     private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
 
-    public Map<String, Long> getEventMap() {
-        return eventMap;
-    }
-
-    private Map<String, Long> eventMap = new ConcurrentHashMap<>();
     private AtomicBoolean isWaiting = new AtomicBoolean(false);
 
     private EventSendPool() {
@@ -74,13 +67,14 @@ public class EventSendPool {
         });
     }
 
+    private static final class InstanceHolder {
+        static final EventSendPool instance = new EventSendPool();
+    }
     /**
      * @return the instance
      */
     public static EventSendPool getInstance() {
-        if (instance == null)
-            instance = new EventSendPool();
-        return instance;
+        return InstanceHolder.instance;
     }
 
     public void sendEvent(String event) {
@@ -102,10 +96,7 @@ public class EventSendPool {
     }
 
     public static void shutDownPool() {
-        if (instance != null) {
-            instance.shutDownThreadPoolExecutor();
-        }
-        instance = null;
+        InstanceHolder.instance.shutDownThreadPoolExecutor();
     }
 
     public void shutDownThreadPoolExecutor() {
@@ -208,5 +199,9 @@ public class EventSendPool {
             default:
                 logger.log(LogLevel.FINEST, String.format("Couldn't update event matric for task :%s and type : %s", r, type), DispatcherPool.class.getName());
         }
+    }
+
+    public void reset() {
+        executor.getQueue().clear();
     }
 }

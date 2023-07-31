@@ -21,16 +21,12 @@ public class RestRequestThreadPool {
     protected ThreadPoolExecutor executor;
     private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
 
-
-    private static RestRequestThreadPool instance;
-
     private final int queueSize = 1000;
     private final int maxPoolSize = 5;
     private final int corePoolSize = 3;
     private final long keepAliveTime = 10;
     private final TimeUnit timeUnit = TimeUnit.SECONDS;
     private final boolean allowCoreThreadTimeOut = false;
-    private static final Object mutex = new Object();
 
     private static final AtomicBoolean isWaiting = new AtomicBoolean(false);
 
@@ -55,18 +51,25 @@ public class RestRequestThreadPool {
 
             @Override
             protected void afterExecute(Runnable r, Throwable t) {
-                if (r instanceof CustomFutureTask<?> && ((CustomFutureTask<?>) r).getTask() instanceof RestRequestProcessor) {
-                    RestRequestProcessor task = (RestRequestProcessor) ((CustomFutureTask<?>) r).getTask();
-                    String controlCommandId = task.getControlCommand().getId();
-                    if(StringUtils.isNotBlank(controlCommandId)){
-                        if(currentProcessingIds.containsKey(controlCommandId)) {
-                            processedIds.put(controlCommandId, currentProcessingIds.get(controlCommandId));
-                            pendingIds.remove(controlCommandId);
-                            currentProcessingIds.remove(controlCommandId);
+                try {
+                    super.afterExecute(r, t);
+                    if (t != null && r instanceof CustomFutureTask<?> && ((CustomFutureTask<?>) r).getTask() instanceof RestRequestProcessor) {
+                        Boolean result = (Boolean) ((CustomFutureTask<?>) r).get();
+                        if(result) {
+                            RestRequestProcessor task = (RestRequestProcessor) ((CustomFutureTask<?>) r).getTask();
+                            String controlCommandId = task.getControlCommand().getId();
+                            if (StringUtils.isNotBlank(controlCommandId)) {
+                                if (currentProcessingIds.containsKey(controlCommandId)) {
+                                    processedIds.put(controlCommandId, currentProcessingIds.get(controlCommandId));
+                                    pendingIds.remove(controlCommandId);
+                                    currentProcessingIds.remove(controlCommandId);
+                                }
+                            }
                         }
                     }
+                } catch (ExecutionException | InterruptedException e) {
+                    throw new RuntimeException(e);
                 }
-                super.afterExecute(r, t);
             }
 
             @Override
@@ -96,17 +99,11 @@ public class RestRequestThreadPool {
         });
     }
 
+    private static final class InstanceHolder {
+        static final RestRequestThreadPool instance = new RestRequestThreadPool();
+    }
     public static RestRequestThreadPool getInstance() {
-
-        if (instance == null) {
-            synchronized (mutex) {
-                if (instance == null) {
-                    instance = new RestRequestThreadPool();
-                }
-                return instance;
-            }
-        }
-        return instance;
+        return InstanceHolder.instance;
     }
 
 

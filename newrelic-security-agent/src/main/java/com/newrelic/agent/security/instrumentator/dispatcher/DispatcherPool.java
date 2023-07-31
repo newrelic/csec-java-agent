@@ -28,16 +28,12 @@ public class DispatcherPool {
     private ThreadPoolExecutor executor;
     private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
 
-
-    private static DispatcherPool instance;
-
     final int queueSize = 300;
     final int maxPoolSize = 7;
     final int corePoolSize = 4;
     final long keepAliveTime = 10;
     final TimeUnit timeUnit = TimeUnit.SECONDS;
     final boolean allowCoreThreadTimeOut = false;
-    private static Object mutex = new Object();
 
     private Set<String> eid;
 
@@ -168,17 +164,11 @@ public class DispatcherPool {
         }
     }
 
+    private static final class InstanceHolder {
+        static final DispatcherPool instance = new DispatcherPool();
+    }
     public static DispatcherPool getInstance() {
-
-        if (instance == null) {
-            synchronized (mutex) {
-                if (instance == null) {
-                    instance = new DispatcherPool();
-                }
-                return instance;
-            }
-        }
-        return instance;
+        return InstanceHolder.instance;
     }
 
     public Set<String> getEid() {
@@ -221,9 +211,7 @@ public class DispatcherPool {
     }
 
     public static void shutDownPool() {
-        if (instance != null) {
-            instance.shutDownThreadPoolExecutor();
-        }
+        InstanceHolder.instance.shutDownThreadPoolExecutor();
     }
 
     public void shutDownThreadPoolExecutor() {
@@ -244,6 +232,10 @@ public class DispatcherPool {
             }
         }
 
+    }
+
+    public void reset() {
+        executor.getQueue().clear();
     }
 
 }

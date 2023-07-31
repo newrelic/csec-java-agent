@@ -2,6 +2,8 @@ package com.newrelic.agent.security.intcodeagent.websocket;
 
 import com.newrelic.agent.security.AgentConfig;
 import com.newrelic.agent.security.AgentInfo;
+import com.newrelic.agent.security.instrumentator.dispatcher.DispatcherPool;
+import com.newrelic.agent.security.instrumentator.httpclient.RestRequestThreadPool;
 import com.newrelic.agent.security.instrumentator.utils.INRSettingsKey;
 import com.newrelic.agent.security.intcodeagent.controlcommand.ControlCommandProcessor;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
@@ -10,7 +12,6 @@ import com.newrelic.agent.security.intcodeagent.logging.IAgentConstants;
 import com.newrelic.agent.security.intcodeagent.utils.CommonUtils;
 import com.newrelic.agent.security.util.IUtilConstants;
 import com.newrelic.api.agent.NewRelic;
-import com.newrelic.api.agent.security.Agent;
 import org.apache.commons.lang3.StringUtils;
 import org.java_websocket.WebSocket;
 import org.java_websocket.WebSocketImpl;
@@ -178,6 +179,9 @@ public class WSClient extends WebSocketClient {
         logger.logInit(LogLevel.INFO, String.format(IAgentConstants.INIT_WS_CONNECTION, AgentConfig.getInstance().getConfig().getK2ServiceInfo().getValidatorServiceEndpointURL()),
                 WSClient.class.getName());
         logger.logInit(LogLevel.INFO, String.format(IAgentConstants.SENDING_APPLICATION_INFO_ON_WS_CONNECT, AgentInfo.getInstance().getApplicationInfo()), WSClient.class.getName());
+        RestRequestThreadPool.getInstance().resetIASTProcessing();
+        DispatcherPool.getInstance().reset();
+        EventSendPool.getInstance().reset();
         super.send(JsonConverter.toJSON(AgentInfo.getInstance().getApplicationInfo()));
         WSUtils.getInstance().setReconnecting(false);
         synchronized (WSUtils.getInstance()) {
@@ -281,8 +285,9 @@ public class WSClient extends WebSocketClient {
     public static void shutDownWSClient() {
         logger.log(LogLevel.WARNING, "Disconnecting WS client",
                 WSClient.class.getName());
+        RestRequestThreadPool.getInstance().resetIASTProcessing();
         if (instance != null) {
-            instance.close();
+            instance.closeConnection(CloseFrame.NORMAL, "Client disconnecting forced by APM");
         }
         instance = null;
     }

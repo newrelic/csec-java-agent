@@ -5,6 +5,7 @@ import com.newrelic.agent.security.AgentConfig;
 import com.newrelic.agent.security.AgentInfo;
 import com.newrelic.agent.security.instrumentator.dispatcher.Dispatcher;
 import com.newrelic.agent.security.instrumentator.dispatcher.DispatcherPool;
+import com.newrelic.agent.security.instrumentator.httpclient.RestRequestThreadPool;
 import com.newrelic.agent.security.instrumentator.os.OsVariablesInstance;
 import com.newrelic.agent.security.instrumentator.utils.*;
 import com.newrelic.agent.security.intcodeagent.constants.AgentServices;
@@ -205,6 +206,7 @@ public class Agent implements SecurityAgent {
     private void cancelActiveServiceTasks() {
 
         /**
+         * Drain the pools (RestClient, EventSend, Dispatcher) before websocket close
          * Websocket
          * policy
          * HealthCheck
