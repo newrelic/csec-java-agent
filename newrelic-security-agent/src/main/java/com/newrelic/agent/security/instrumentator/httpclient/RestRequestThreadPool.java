@@ -62,13 +62,13 @@ public class RestRequestThreadPool {
                             if (StringUtils.isNotBlank(controlCommandId)) {
                                 if (currentProcessingIds.containsKey(controlCommandId)) {
                                     processedIds.put(controlCommandId, currentProcessingIds.get(controlCommandId));
-                                    pendingIds.remove(controlCommandId);
                                 }
                             }
                         }
                     }
                     if(StringUtils.isNotBlank(controlCommandId)){
                         currentProcessingIds.remove(controlCommandId);
+                        pendingIds.remove(controlCommandId);
                     }
                 } catch (ExecutionException | InterruptedException ignored) {
                 }
