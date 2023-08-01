@@ -53,22 +53,24 @@ public class RestRequestThreadPool {
             protected void afterExecute(Runnable r, Throwable t) {
                 try {
                     super.afterExecute(r, t);
+                    String controlCommandId = null;
                     if (t != null && r instanceof CustomFutureTask<?> && ((CustomFutureTask<?>) r).getTask() instanceof RestRequestProcessor) {
                         Boolean result = (Boolean) ((CustomFutureTask<?>) r).get();
                         if(result) {
                             RestRequestProcessor task = (RestRequestProcessor) ((CustomFutureTask<?>) r).getTask();
-                            String controlCommandId = task.getControlCommand().getId();
+                            controlCommandId = task.getControlCommand().getId();
                             if (StringUtils.isNotBlank(controlCommandId)) {
                                 if (currentProcessingIds.containsKey(controlCommandId)) {
                                     processedIds.put(controlCommandId, currentProcessingIds.get(controlCommandId));
                                     pendingIds.remove(controlCommandId);
-                                    currentProcessingIds.remove(controlCommandId);
                                 }
                             }
                         }
                     }
-                } catch (ExecutionException | InterruptedException e) {
-                    throw new RuntimeException(e);
+                    if(StringUtils.isNotBlank(controlCommandId)){
+                        currentProcessingIds.remove(controlCommandId);
+                    }
+                } catch (ExecutionException | InterruptedException ignored) {
                 }
             }
 
