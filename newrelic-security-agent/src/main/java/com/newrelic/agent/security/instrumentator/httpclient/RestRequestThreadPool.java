@@ -54,11 +54,11 @@ public class RestRequestThreadPool {
                 try {
                     super.afterExecute(r, t);
                     String controlCommandId = null;
-                    if (t != null && r instanceof CustomFutureTask<?> && ((CustomFutureTask<?>) r).getTask() instanceof RestRequestProcessor) {
+                    if (r instanceof CustomFutureTask<?> && ((CustomFutureTask<?>) r).getTask() instanceof RestRequestProcessor) {
                         Boolean result = (Boolean) ((CustomFutureTask<?>) r).get();
-                        if(result) {
-                            RestRequestProcessor task = (RestRequestProcessor) ((CustomFutureTask<?>) r).getTask();
-                            controlCommandId = task.getControlCommand().getId();
+                        RestRequestProcessor task = (RestRequestProcessor) ((CustomFutureTask<?>) r).getTask();
+                        controlCommandId = task.getControlCommand().getId();
+                        if(t == null && result) {
                             if (StringUtils.isNotBlank(controlCommandId)) {
                                 if (currentProcessingIds.containsKey(controlCommandId)) {
                                     processedIds.put(controlCommandId, currentProcessingIds.get(controlCommandId));
