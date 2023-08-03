@@ -177,6 +177,10 @@ public class Dispatcher implements Runnable {
                     XQueryOperation xQueryOperationalBean = (XQueryOperation) operation;
                     eventBean = prepareXQueryInjectionEvent(eventBean, xQueryOperationalBean);
                     break;
+                case MEMCACHED:
+                    MemcachedOperation memcachedOperationalBean = (MemcachedOperation) operation;
+                    eventBean = prepareMemcachedEvent(eventBean, memcachedOperationalBean);
+                    break;
                 default:
 
             }
@@ -453,6 +457,18 @@ public class Dispatcher implements Runnable {
             jsonObject.put("payloadType", noSQLOperationalBean.getPayloadType());
             params.add(jsonObject);
         }
+        eventBean.setParameters(params);
+        return eventBean;
+    }
+
+    private static JavaAgentEventBean prepareMemcachedEvent(JavaAgentEventBean eventBean, MemcachedOperation memcachedOperationalBean) {
+        JSONArray params = new JSONArray();
+        eventBean.setEventCategory(MEMCACHED);
+
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put(memcachedOperationalBean.getKey(), memcachedOperationalBean.getValue());
+        params.add(jsonObject);
+
         eventBean.setParameters(params);
         return eventBean;
     }
