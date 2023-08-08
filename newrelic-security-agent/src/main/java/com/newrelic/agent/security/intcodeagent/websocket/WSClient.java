@@ -208,17 +208,14 @@ public class WSClient extends WebSocketClient {
 
     @Override
     public void onClose(int code, String reason, boolean remote) {
-        WSUtils.getInstance().setConnected(false);
         logger.log(LogLevel.WARNING, CONNECTION_CLOSED_BY + (remote ? REMOTE_PEER : LOCAL) + CODE + code
                 + REASON + reason, WSClient.class.getName());
         if (code == CloseFrame.NEVER_CONNECTED) {
             return;
         }
-
-        if (code != CloseFrame.POLICY_VALIDATION && code != CloseFrame.NORMAL) {
-            int delay = CommonUtils.generateSecureRandomBetween(5, 15);
-            logger.log(LogLevel.INFO, String.format(WSUtils.NEXT_WS_CONNECTION_ATTEMPT_WILL_BE_IN_S_SECONDS, delay), WSReconnectionST.class.getName());
-            WSReconnectionST.getInstance().submitNewTaskSchedule(delay);
+        WSUtils.getInstance().setConnected(false);
+        if (code == CloseFrame.POLICY_VALIDATION) {
+            WSReconnectionST.cancelTask(true);
         }
     }
 
@@ -272,7 +269,7 @@ public class WSClient extends WebSocketClient {
      * @throws InterruptedException
      */
     public static WSClient reconnectWSClient() throws URISyntaxException, InterruptedException {
-        logger.log(LogLevel.WARNING, RECONNECTING_TO_IC,
+        logger.log(LogLevel.INFO, RECONNECTING_TO_IC,
                 WSClient.class.getName());
         if (instance != null && instance.isOpen()) {
             instance.closeBlocking();
@@ -283,13 +280,13 @@ public class WSClient extends WebSocketClient {
     }
 
     public static void shutDownWSClient() {
-        logger.log(LogLevel.WARNING, "Disconnecting WS client",
+        logger.log(LogLevel.WARNING, "Disconnecting WS client forced by APM",
                 WSClient.class.getName());
+        WSUtils.getInstance().setConnected(false);
         RestRequestThreadPool.getInstance().resetIASTProcessing();
         if (instance != null) {
-            instance.closeConnection(CloseFrame.NORMAL, "Client disconnecting forced by APM");
+            instance.close(CloseFrame.ABNORMAL_CLOSE, "Client disconnecting forced by APM");
         }
-        instance = null;
     }
 
 }
