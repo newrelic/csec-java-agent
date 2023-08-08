@@ -161,10 +161,9 @@ public class RestRequestThreadPool {
         }
         Set<String> registeredEvents;
         if(!currentProcessingIds.containsKey(controlCommandId)){
-            currentProcessingIds.putIfAbsent(controlCommandId, ConcurrentHashMap.newKeySet());
+            registeredEvents = currentProcessingIds.get(controlCommandId);
+            registeredEvents.add(eventId);
         }
-        registeredEvents = currentProcessingIds.get(controlCommandId);
-        registeredEvents.add(eventId);
     }
 
     public void removeFromProcessedCC(String controlCommandId) {
