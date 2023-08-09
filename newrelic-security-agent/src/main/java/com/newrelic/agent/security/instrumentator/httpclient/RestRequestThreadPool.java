@@ -160,7 +160,7 @@ public class RestRequestThreadPool {
             return;
         }
         Set<String> registeredEvents;
-        if(!currentProcessingIds.containsKey(controlCommandId)){
+        if(currentProcessingIds.containsKey(controlCommandId)){
             registeredEvents = currentProcessingIds.get(controlCommandId);
             registeredEvents.add(eventId);
         }
