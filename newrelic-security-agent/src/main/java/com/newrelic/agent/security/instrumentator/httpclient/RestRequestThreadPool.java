@@ -62,6 +62,8 @@ public class RestRequestThreadPool {
                             if (StringUtils.isNotBlank(controlCommandId)) {
                                 rejectedIds.add(controlCommandId);
                             }
+                        } else {
+                            processedIds.putIfAbsent(controlCommandId, new HashSet<>());
                         }
                     }
                     if(StringUtils.isNotBlank(controlCommandId)){
@@ -149,10 +151,10 @@ public class RestRequestThreadPool {
         if(StringUtils.isAnyBlank(controlCommandId, eventId)){
             return;
         }
-        Set<String> registeredEvents;
-        processedIds.putIfAbsent(controlCommandId, new HashSet<>());
-        registeredEvents = processedIds.get(controlCommandId);
-        registeredEvents.add(eventId);
+        Set<String> registeredEvents = processedIds.get(controlCommandId);
+        if(registeredEvents != null) {
+            registeredEvents.add(eventId);
+        }
     }
 
     public void removeFromProcessedCC(String controlCommandId) {

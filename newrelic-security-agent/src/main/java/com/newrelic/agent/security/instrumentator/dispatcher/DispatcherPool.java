@@ -16,6 +16,7 @@ import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.SecurityMetaData;
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -195,10 +196,16 @@ public class DispatcherPool {
             }
         }
         // Register in Processed CC map
-        if (StringUtils.equals(securityMetaData.getFuzzRequestIdentifier().getApiRecordId(), operation.getApiID())) {
-            RestRequestThreadPool.getInstance()
-                    .registerEventForProcessedCC(securityMetaData.getCustomAttribute(
-                            GenericHelper.CSEC_PARENT_ID, String.class), operation.getExecutionId());
+        if(securityMetaData.getFuzzRequestIdentifier().getK2Request()) {
+            String parentId = securityMetaData.getCustomAttribute(
+                    GenericHelper.CSEC_PARENT_ID, String.class);
+            if (StringUtils.isNotBlank(parentId)) {
+                RestRequestThreadPool.getInstance().getProcessedIds().putIfAbsent(parentId, new HashSet<>());
+            }
+            if (StringUtils.equals(securityMetaData.getFuzzRequestIdentifier().getApiRecordId(), operation.getApiID())) {
+                RestRequestThreadPool.getInstance()
+                        .registerEventForProcessedCC(parentId, operation.getExecutionId());
+            }
         }
         this.executor.submit(new Dispatcher(operation, new SecurityMetaData(securityMetaData)));
     }
