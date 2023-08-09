@@ -14,6 +14,8 @@ import com.newrelic.api.agent.security.NewRelicSecurity;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
@@ -76,7 +78,7 @@ public class IASTDataTransferRequestProcessor {
             if (batchSize > 100 && remainingRecordCapacity > batchSize) {
                 request = new IASTDataTransferRequest(NewRelicSecurity.getAgent().getAgentUUID());
                 request.setBatchSize(batchSize);
-                request.setCompletedRequests(new HashMap<>(RestRequestThreadPool.getInstance().getProcessedIds()));
+                request.setCompletedRequests(getEffectiveCompletedRequests());
                 request.setPendingRequestIds(new HashSet<>(RestRequestThreadPool.getInstance().getPendingIds()));
                 WSClient.getInstance().send(request.toString());
             }
@@ -84,6 +86,15 @@ public class IASTDataTransferRequestProcessor {
             logger.log(LogLevel.SEVERE, String.format(UNABLE_TO_SEND_IAST_DATA_REQUEST_DUE_TO_ERROR_S_S, e.toString(), e.getCause().toString()), this.getClass().getName());
             logger.log(LogLevel.FINEST, String.format(UNABLE_TO_SEND_IAST_DATA_REQUEST_DUE_TO_ERROR, request), e, this.getClass().getName());
         }
+    }
+
+    private Map<String, Set<String>> getEffectiveCompletedRequests() {
+        Map<String, Set<String>> completedRequest = new HashMap<>(RestRequestThreadPool.getInstance().getProcessedIds());
+        for (String rejectedId : RestRequestThreadPool.getInstance().getRejectedIds()) {
+            completedRequest.remove(rejectedId);
+        }
+        RestRequestThreadPool.getInstance().getRejectedIds().clear();
+        return completedRequest;
     }
 
     private IASTDataTransferRequestProcessor() {

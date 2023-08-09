@@ -32,13 +32,13 @@ public class RestRequestThreadPool {
 
     private final Map<String, Set<String>> processedIds = new ConcurrentHashMap();
 
-    private final Map<String, Set<String>> currentProcessingIds = new ConcurrentHashMap();
-
     private final Set<String> pendingIds = ConcurrentHashMap.newKeySet();
 
+    private final Set<String> rejectedIds = ConcurrentHashMap.newKeySet();
+
     public void resetIASTProcessing() {
+        rejectedIds.addAll(processedIds.keySet());
         processedIds.clear();
-        currentProcessingIds.clear();
         pendingIds.clear();
         executor.getQueue().clear();
     }
@@ -58,16 +58,13 @@ public class RestRequestThreadPool {
                         Boolean result = (Boolean) ((CustomFutureTask<?>) r).get();
                         RestRequestProcessor task = (RestRequestProcessor) ((CustomFutureTask<?>) r).getTask();
                         controlCommandId = task.getControlCommand().getId();
-                        if(t == null && result) {
+                        if(t != null || !result) {
                             if (StringUtils.isNotBlank(controlCommandId)) {
-                                if (currentProcessingIds.containsKey(controlCommandId)) {
-                                    processedIds.put(controlCommandId, currentProcessingIds.get(controlCommandId));
-                                }
+                                rejectedIds.add(controlCommandId);
                             }
                         }
                     }
                     if(StringUtils.isNotBlank(controlCommandId)){
-                        currentProcessingIds.remove(controlCommandId);
                         pendingIds.remove(controlCommandId);
                     }
                 } catch (ExecutionException | InterruptedException ignored) {
@@ -76,13 +73,6 @@ public class RestRequestThreadPool {
 
             @Override
             protected void beforeExecute(Thread t, Runnable r) {
-                if (r instanceof CustomFutureTask<?> && ((CustomFutureTask<?>) r).getTask() instanceof RestRequestProcessor) {
-                    RestRequestProcessor task = (RestRequestProcessor) ((CustomFutureTask<?>) r).getTask();
-                    String controlCommandId = task.getControlCommand().getId();
-                    if (StringUtils.isNotBlank(controlCommandId)) {
-                        currentProcessingIds.put(controlCommandId, new HashSet<>());
-                    }
-                }
                 super.beforeExecute(t, r);
             }
 
@@ -147,8 +137,8 @@ public class RestRequestThreadPool {
         return processedIds;
     }
 
-    public Map<String, Set<String>> getCurrentProcessingIds() {
-        return currentProcessingIds;
+    public Set<String> getRejectedIds() {
+        return rejectedIds;
     }
 
     public Set<String> getPendingIds() {
@@ -160,10 +150,9 @@ public class RestRequestThreadPool {
             return;
         }
         Set<String> registeredEvents;
-        if(currentProcessingIds.containsKey(controlCommandId)){
-            registeredEvents = currentProcessingIds.get(controlCommandId);
-            registeredEvents.add(eventId);
-        }
+        processedIds.putIfAbsent(controlCommandId, new HashSet<>());
+        registeredEvents = processedIds.get(controlCommandId);
+        registeredEvents.add(eventId);
     }
 
     public void removeFromProcessedCC(String controlCommandId) {

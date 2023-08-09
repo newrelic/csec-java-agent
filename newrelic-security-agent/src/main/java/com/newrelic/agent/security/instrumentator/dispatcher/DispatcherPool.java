@@ -65,7 +65,7 @@ public class DispatcherPool {
                 Dispatcher dispatcher = (Dispatcher) ((CustomFutureTask<?>) r).getTask();
                 if(dispatcher.getSecurityMetaData()!= null && dispatcher.getSecurityMetaData().getFuzzRequestIdentifier().getK2Request()){
                     String fuzzRequestId = dispatcher.getSecurityMetaData().getCustomAttribute(GenericHelper.CSEC_PARENT_ID, String.class);
-                    RestRequestThreadPool.getInstance().getCurrentProcessingIds().remove(fuzzRequestId);
+                    RestRequestThreadPool.getInstance().getRejectedIds().add(fuzzRequestId);
                 }
 
                 if(dispatcher.getSecurityMetaData() != null) {

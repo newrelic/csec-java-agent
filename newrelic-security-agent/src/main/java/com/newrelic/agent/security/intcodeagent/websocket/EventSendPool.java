@@ -140,7 +140,7 @@ public class EventSendPool {
                     JavaAgentEventBean event = (JavaAgentEventBean) eventSender.getEvent();
                     if(event.getIsIASTRequest()){
                         String fuzzRequestId = event.getParentId();
-                        RestRequestThreadPool.getInstance().getCurrentProcessingIds().remove(fuzzRequestId);
+                        RestRequestThreadPool.getInstance().getRejectedIds().add(fuzzRequestId);
                         AgentInfo.getInstance().getJaHealthCheck().getIastEventStats().incrementRejectedCount();
                     } else {
                         AgentInfo.getInstance().getJaHealthCheck().getRaspEventStats().incrementRejectedCount();

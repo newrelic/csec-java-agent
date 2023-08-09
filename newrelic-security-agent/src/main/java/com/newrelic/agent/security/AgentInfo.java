@@ -1,5 +1,6 @@
 package com.newrelic.agent.security;
 
+import com.newrelic.agent.security.instrumentator.httpclient.RestRequestThreadPool;
 import com.newrelic.agent.security.instrumentator.utils.AgentUtils;
 import com.newrelic.agent.security.instrumentator.utils.ApplicationInfoUtils;
 import com.newrelic.agent.security.instrumentator.utils.INRSettingsKey;
@@ -163,6 +164,8 @@ public class AgentInfo {
         }
         if(state) {
             logger.logInit(LogLevel.INFO, String.format("Security Agent is now ACTIVE for %s", applicationUUID), AgentInfo.class.getName());
+        } else {
+            RestRequestThreadPool.getInstance().resetIASTProcessing();
         }
 
         if(state && !processProtected){
