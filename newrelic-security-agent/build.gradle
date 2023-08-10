@@ -202,9 +202,10 @@ task newrelicVersionedAgentJar(type: Jar) {
     dependsOn(instrumentProjects().collect { it.tasks["jar"] })
     dependsOn("cyclonedxBom")
 
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+
     from("$rootDir/LICENSE.md")
     from("$rootDir/THIRD_PARTY_NOTICES.md")
-    new File(projectDir, 'src/main/resources/NOTICE')
     from("$buildDir/reports/SBOM.json")
 
     includeEmptyDirs = false

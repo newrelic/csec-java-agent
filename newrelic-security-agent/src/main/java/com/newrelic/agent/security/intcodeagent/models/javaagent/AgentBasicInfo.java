@@ -91,6 +91,9 @@ public class AgentBasicInfo {
             setJsonName(FETCH_POLICY);
         } else if (this instanceof ExitEventBean) {
             setJsonName(JSON_NAME_EXIT_EVENT);
+        } else if (this instanceof ApplicationURLMappings) {
+            setJsonName(JSON_SEC_APPLICATION_URL_MAPPING);
+            setEventType(JSON_SEC_APPLICATION_URL_MAPPING);
         }
     }
 
