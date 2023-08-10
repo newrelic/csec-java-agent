@@ -49,6 +49,7 @@ public class AgentInfo {
     private BuildInfo buildInfo = new BuildInfo();
 
     private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
+    private boolean processProtected = false;
 
     private AgentInfo() {
         RuntimeMXBean runtimeMXBean = ManagementFactory.getRuntimeMXBean();
@@ -167,6 +168,11 @@ public class AgentInfo {
         }
         if(state) {
             logger.logInit(LogLevel.INFO, String.format("Security Agent is now ACTIVE for %s", applicationUUID), AgentInfo.class.getName());
+        }
+
+        if(state && !processProtected){
+            processProtected = true;
+            System.out.printf("This application instance is now being protected by New Relic Security under id %s\n", getApplicationUUID());
         }
         setAgentActive(state);
         return state;

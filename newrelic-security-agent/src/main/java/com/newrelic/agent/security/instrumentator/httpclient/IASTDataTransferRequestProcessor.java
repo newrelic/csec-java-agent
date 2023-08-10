@@ -66,7 +66,7 @@ public class IASTDataTransferRequestProcessor {
             int batchSize = currentFetchThreshold - currentRecordBacklog;
             if (batchSize > 100 && remainingRecordCapacity > batchSize) {
                 request = new IASTDataTransferRequest(NewRelicSecurity.getAgent().getAgentUUID());
-                request.setBatchSize(batchSize * 2);
+                request.setBatchSize(batchSize);
                 request.setCompletedRequestIds(new ArrayList<>(RestRequestThreadPool.getInstance().getProcessedIds()));
                 WSClient.getInstance().send(request.toString());
             }
