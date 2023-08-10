@@ -13,14 +13,7 @@ public class ServletContainerInitializer_Instrumentation {
         try {
             Weaver.callOriginal();
         } finally {
-            postProcessing(ctx);
-        }
-    }
-
-    private static void postProcessing(ServletContext context) {
-        try {
-            HttpServletHelper.gatherURLMappings(context);
-        } catch (Throwable ignored) {
+            HttpServletHelper.gatherURLMappings(ctx);
         }
     }
 }
