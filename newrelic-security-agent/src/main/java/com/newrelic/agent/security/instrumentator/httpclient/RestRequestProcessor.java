@@ -11,6 +11,7 @@ import com.newrelic.agent.security.intcodeagent.models.javaagent.IntCodeControlC
 import com.newrelic.agent.security.intcodeagent.websocket.WSUtils;
 import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.security.instrumentation.helpers.ServletHelper;
+import okhttp3.Request;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.concurrent.Callable;
@@ -65,7 +66,10 @@ public class RestRequestProcessor implements Callable<Boolean> {
             httpRequest = objectMapper.readValue(req, FuzzRequestBean.class);
             httpRequest.getHeaders().put(GenericHelper.CSEC_PARENT_ID, controlCommand.getId());
             RestRequestThreadPool.getInstance().removeFromProcessedCC(controlCommand.getId());
-            RestClient.getInstance().fireRequest(RequestUtils.generateK2Request(httpRequest), repeatCount);
+            Request request = RequestUtils.generateK2Request(httpRequest);
+            if(request != null) {
+                RestClient.getInstance().fireRequest(request, repeatCount);
+            }
             return true;
         } catch (JsonProcessingException e){
             logger.log(LogLevel.SEVERE,
