@@ -84,6 +84,26 @@ The agent automatically instruments the following HTTP clients and messaging ser
 - DynamoDB-1.11.80 to latest 
 - DyanamoDB-2.1.0 to latest
 
+## **Supported Vulnerabilities**
+* Remote Code Execution
+* SQL Injection
+* NoSQL Injection
+* Stored XSS
+* Reflected XSS
+* Reverse Shell attack
+* File Access
+* SSRF
+* Application Integrity Violation
+* LDAP Injection
+* XPath Injection
+* Weak Cryptographic Algorithm
+* Weak Hash Algorithm
+* Insecure Randomness
+* Trust Boundary Violation
+* Secure Cookie
+* XQuery Injection
+* JavaScript Code Injection
+
 ## **Building**
 
 #### **JDK requirements**

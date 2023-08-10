@@ -2,6 +2,7 @@ package com.newrelic.agent.security.intcodeagent.websocket;
 
 import com.newrelic.agent.security.AgentConfig;
 import com.newrelic.agent.security.AgentInfo;
+import com.newrelic.agent.security.instrumentator.utils.AgentUtils;
 import com.newrelic.agent.security.instrumentator.utils.INRSettingsKey;
 import com.newrelic.agent.security.intcodeagent.controlcommand.ControlCommandProcessor;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
@@ -184,6 +185,7 @@ public class WSClient extends WebSocketClient {
             WSUtils.getInstance().notifyAll();
         }
         WSUtils.getInstance().setConnected(true);
+        AgentUtils.sendApplicationURLMappings();
         logger.logInit(LogLevel.INFO, String.format(IAgentConstants.APPLICATION_INFO_SENT_ON_WS_CONNECT, AgentInfo.getInstance().getApplicationInfo()), WSClient.class.getName());
     }
 
@@ -212,7 +214,9 @@ public class WSClient extends WebSocketClient {
         }
 
         if (code != CloseFrame.POLICY_VALIDATION && code != CloseFrame.NORMAL) {
-            WSReconnectionST.getInstance().submitNewTaskSchedule(15);
+            int delay = CommonUtils.generateSecureRandomBetween(5, 15);
+            logger.log(LogLevel.INFO, String.format(WSUtils.NEXT_WS_CONNECTION_ATTEMPT_WILL_BE_IN_S_SECONDS, delay), WSReconnectionST.class.getName());
+            WSReconnectionST.getInstance().submitNewTaskSchedule(delay);
         }
     }
 

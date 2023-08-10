@@ -10,10 +10,10 @@ jobs:
     uses: ./.github/workflows/publish-to-maven.yml
     secrets: inherit
     with:
-      apm-repo: 'newrelic/newrelic-java-agent'
-      apm-source-ref: 'k2-integration'
+      apm-repo: 'k2io/newrelic-java-agent'
+      apm-source-ref: 'csec-dev'
       csec-run-unittest: 'true'
       csec-run-instrumentation-verify: 'true'
       is-release: 'true'
-      version-suffix: '-limited-preview'
+      version-suffix: '-public-preview'
       slack-notify: 'true'
