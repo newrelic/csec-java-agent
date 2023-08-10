@@ -13,12 +13,13 @@ public class SpringHelper {
     public static <T> void gatherURLMappings(T mapping){
         try {
             RequestMappingInfo mappingInfo = (RequestMappingInfo) mapping;
-            for (RequestMethod method : mappingInfo.getMethodsCondition().getMethods()) {
-                PatternsRequestCondition patternsCondition = mappingInfo.getPatternsCondition();
-                if (patternsCondition != null)
+            PatternsRequestCondition patternsCondition = mappingInfo.getPatternsCondition();
+            if (patternsCondition != null) {
+                for (RequestMethod method : mappingInfo.getMethodsCondition().getMethods()) {
                     for (String url : patternsCondition.getPatterns()) {
                         URLMappingsHelper.addApplicationURLMapping(new ApplicationURLMapping(method.name(), url));
                     }
+                }
             }
         } catch (Throwable ignored){
         }
