@@ -15,9 +15,9 @@ public class SpringHelper {
     public static <T> void gatherURLMappings(T mapping){
         try {
             RequestMappingInfo mappingInfo = (RequestMappingInfo) mapping;
+            PatternsRequestCondition patternsCondition = mappingInfo.getPatternsCondition();
+            PathPatternsRequestCondition pathPatternsCondition = mappingInfo.getPathPatternsCondition();
             for (RequestMethod method : mappingInfo.getMethodsCondition().getMethods()) {
-                PatternsRequestCondition patternsCondition = mappingInfo.getPatternsCondition();
-                PathPatternsRequestCondition pathPatternsCondition = mappingInfo.getPathPatternsCondition();
                 if (patternsCondition != null)
                     for (String url : patternsCondition.getPatterns()) {
                         URLMappingsHelper.addApplicationURLMapping(new ApplicationURLMapping(method.name(), url));
