@@ -90,6 +90,8 @@ public class AgentUtils {
 
     private Map<String, EventResponse> eventResponseSet;
 
+    private Set<String> scannedAPIIds;
+
     private Set<String> rxssSentUrls;
 
     private Set<DeployedApplication> deployedApplicationUnderProcessing;
@@ -130,6 +132,7 @@ public class AgentUtils {
     private AgentUtils() {
         eventResponseSet = new ConcurrentHashMap<>();
         classLoaderRecord = new ConcurrentHashMap<>();
+        scannedAPIIds = ConcurrentHashMap.newKeySet();
         rxssSentUrls = new HashSet<>();
         deployedApplicationUnderProcessing = new HashSet<>();
         TRACE_PATTERN = Pattern.compile(IAgentConstants.TRACE_REGEX);
@@ -153,6 +156,10 @@ public class AgentUtils {
 
     public Map<String, EventResponse> getEventResponseSet() {
         return eventResponseSet;
+    }
+
+    public Set<String> getScannedAPIIds() {
+        return scannedAPIIds;
     }
 
     public int incrementOutboundHttpConnectionId() {
