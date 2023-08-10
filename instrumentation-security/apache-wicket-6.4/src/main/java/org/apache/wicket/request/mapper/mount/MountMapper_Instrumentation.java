@@ -10,9 +10,6 @@ import org.apache.wicket.request.IRequestMapper;
 public class MountMapper_Instrumentation {
     private final String[] mountSegments = Weaver.callOriginal();
     public MountMapper_Instrumentation(String mountPath, IRequestMapper mapper) {
-        try {
-            WicketHelper.getMappings(mountSegments, (String)WicketHelper.getMapper().get(mapper.hashCode()), true);
-        } catch (Exception ignored) {
-        }
+        WicketHelper.getMappings(mountSegments, (String)WicketHelper.getMapper().get(mapper.hashCode()), true);
     }
 }

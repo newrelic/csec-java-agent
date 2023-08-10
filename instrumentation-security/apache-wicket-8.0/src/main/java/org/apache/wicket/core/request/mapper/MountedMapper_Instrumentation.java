@@ -14,9 +14,6 @@ public class MountedMapper_Instrumentation {
             Supplier<Class<? extends IRequestablePage>> pageClassProvider,
             IPageParametersEncoder pageParametersEncoder
     ) {
-        try{
-            WicketHelper.getMappings(mountPath, pageClassProvider.get().getName(), false);
-        } catch (Exception ignored) {
-        }
+        WicketHelper.getMappings(mountPath, pageClassProvider.get().getName(), false);
     }
 }

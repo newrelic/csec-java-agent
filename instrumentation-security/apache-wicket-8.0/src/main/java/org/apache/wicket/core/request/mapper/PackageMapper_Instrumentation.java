@@ -10,9 +10,6 @@ import org.apache.wicket.util.lang.PackageName;
 public class PackageMapper_Instrumentation {
     public PackageMapper_Instrumentation(String mountPath, final PackageName packageName,
             final IPageParametersEncoder pageParametersEncoder){
-        try{
-            WicketHelper.getMappings(mountPath, packageName.getName(), true);
-        } catch (Exception ignored) {
-        }
+        WicketHelper.getMappings(mountPath, packageName.getName(), true);
     }
 }

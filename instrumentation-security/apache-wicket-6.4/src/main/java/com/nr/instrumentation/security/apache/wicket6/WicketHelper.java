@@ -12,10 +12,7 @@ public class WicketHelper {
     private static final Map<Integer, Object> mapper = new HashMap<>();
 
     public static void getMappings(String[] path, String handler, boolean isPackageMapper) {
-        try {
-            getMappings(buildUrl(path), handler, isPackageMapper);
-        } catch (Exception ignored){
-        }
+        getMappings(buildUrl(path), handler, isPackageMapper);
     }
 
     private static void getMappings(String path, String handler, boolean isPackageMapper) {
