@@ -8,7 +8,6 @@ import java.util.List;
 
 @Weave(type = MatchType.Interface, originalName = "com.opensymphony.xwork2.config.Configuration")
 public abstract class Configuration_Instrumentation {
-
     abstract public RuntimeConfiguration getRuntimeConfiguration();
 
     // TODO: Need extract action extension
@@ -17,15 +16,8 @@ public abstract class Configuration_Instrumentation {
         try {
             returnVal = Weaver.callOriginal();
         } finally {
-            postProcessing(getRuntimeConfiguration());
+            StrutsHelper.gatherURLMappings(getRuntimeConfiguration());
         }
         return returnVal;
-    }
-
-    private static void postProcessing(RuntimeConfiguration runtimeConfiguration) {
-        try {
-            StrutsHelper.gatherURLMappings(runtimeConfiguration);
-        } catch (Throwable ignored) {
-        }
     }
 }

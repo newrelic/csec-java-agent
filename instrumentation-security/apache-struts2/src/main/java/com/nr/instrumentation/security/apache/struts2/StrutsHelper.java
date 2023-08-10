@@ -12,10 +12,8 @@ public class StrutsHelper {
     private static final String WILDCARD = "*";
     public static void gatherURLMappings(RuntimeConfiguration runtimeConfig) {
         try {
-
             Map<String, Map<String, ActionConfig>> namespaces = runtimeConfig.getActionConfigs();
             for (Map.Entry<String, Map<String, ActionConfig>> namespace : namespaces.entrySet()) {
-
                 String url = namespace.getKey();
                 for (ActionConfig actionConfig : namespace.getValue().values()) {
                     String mapping;
