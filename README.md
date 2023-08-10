@@ -25,7 +25,7 @@ The agent automatically instruments the following frameworks.
 - JAX-RS 1.0 to latest
 - Spring Boot 1.4 to latest
 - Struts 2.0.5 to latest
-- Log4j from 2.0 to latest
+- Log4j from 2.0 to 2.20.0
 - Servlet from 2.4 to latest
 - Spring from 0 to latest
 
@@ -83,6 +83,26 @@ The agent automatically instruments the following HTTP clients and messaging ser
 - SQLServer from jdk6 to latest
 - DynamoDB-1.11.80 to latest 
 - DyanamoDB-2.1.0 to latest
+
+## **Supported Vulnerabilities**
+* Remote Code Execution
+* SQL Injection
+* NoSQL Injection
+* Stored XSS
+* Reflected XSS
+* Reverse Shell attack
+* File Access
+* SSRF
+* Application Integrity Violation
+* LDAP Injection
+* XPath Injection
+* Weak Cryptographic Algorithm
+* Weak Hash Algorithm
+* Insecure Randomness
+* Trust Boundary Violation
+* Secure Cookie
+* XQuery Injection
+* JavaScript Code Injection
 
 ## **Building**
 
