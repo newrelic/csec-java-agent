@@ -649,7 +649,7 @@ public class AgentUtils {
 
     public static void sendApplicationURLMappings() {
         ApplicationURLMappings applicationURLMappings = new ApplicationURLMappings(URLMappingsHelper.getApplicationURLMappings());
-        logger.logInit(LogLevel.INFO, String.format("Collected application url mappings %s", applicationURLMappings.toString()), Agent.class.getName());
+        logger.logInit(LogLevel.INFO, String.format("Collected application url mappings %s", applicationURLMappings), Agent.class.getName());
         EventSendPool.getInstance().sendEvent(applicationURLMappings);
     }
 }
