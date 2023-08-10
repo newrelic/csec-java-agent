@@ -12,7 +12,7 @@ public class URLMappingsHelper {
         return mappings;
     }
 
-    public static void addApplicationURLMapping(ApplicationURLMapping obj) {
-        mappings.add(obj);
+    public static void addApplicationURLMapping(ApplicationURLMapping mapping) {
+        mappings.add(mapping);
     }
 }
