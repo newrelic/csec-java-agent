@@ -14,15 +14,7 @@ public class JerseyResourceContext_Instrumentation {
         try {
             Weaver.callOriginal();
         } finally {
-            postProcessing(resourceModel);
-        }
-    }
-
-
-    private static void postProcessing(ResourceModel resourceModel) {
-        try {
             JerseyHelper.gatherUrlMappings(resourceModel);
-        } catch (Throwable ignored) {
         }
     }
 }

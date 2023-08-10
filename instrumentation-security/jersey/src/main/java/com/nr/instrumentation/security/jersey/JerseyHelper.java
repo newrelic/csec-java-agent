@@ -53,8 +53,8 @@ public class JerseyHelper {
     }
 
     private static void addURLMappings(String url, String httpMethod, Set<Class<?>> handlerClasses) {
-        for (Class<?> handler: handlerClasses) {
-            URLMappingsHelper.addApplicationURLMapping(new ApplicationURLMapping(httpMethod, url, handler.getName()));
+        for (Class<?> handlerClass : handlerClasses) {
+            URLMappingsHelper.addApplicationURLMapping(new ApplicationURLMapping(httpMethod, url, handlerClass.getName()));
         }
 
     }
