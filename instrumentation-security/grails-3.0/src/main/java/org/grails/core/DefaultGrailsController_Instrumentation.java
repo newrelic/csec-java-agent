@@ -17,9 +17,6 @@ public abstract class DefaultGrailsController_Instrumentation {
 
     @WeaveAllConstructors
     public DefaultGrailsController_Instrumentation() {
-        try {
-            GrailsHelper.gatherUrlMappings(actions, getClazz().getName(), getName());
-        }catch (Throwable ignored){
-        }
+        GrailsHelper.gatherUrlMappings(actions, getClazz().getName(), getName());
     }
 }

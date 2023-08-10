@@ -10,12 +10,15 @@ public class GrailsHelper {
     private static final String WILDCARD = "*";
     private static final String SEPARATOR = "/";
     public static void gatherUrlMappings(Map<String, Method> actions, String handler, String controller) {
-        String path = SEPARATOR + controller;
-        for (String action : actions.keySet()) {
-            String finalPath = path + SEPARATOR + action;
-            URLMappingsHelper.addApplicationURLMapping(new ApplicationURLMapping(WILDCARD, finalPath, handler));
+        try {
+            String path = SEPARATOR + controller;
+            for (String action : actions.keySet()) {
+                String finalPath = path + SEPARATOR + action;
+                URLMappingsHelper.addApplicationURLMapping(new ApplicationURLMapping(WILDCARD, finalPath, handler));
+            }
+            // for default action mappings
+            URLMappingsHelper.addApplicationURLMapping(new ApplicationURLMapping(WILDCARD, path, handler));
+        } catch(Throwable ignored) {
         }
-        // for default action mappings
-        URLMappingsHelper.addApplicationURLMapping(new ApplicationURLMapping(WILDCARD, path, handler));
     }
 }
