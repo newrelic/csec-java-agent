@@ -25,6 +25,7 @@ import java.util.Set;
 
 public class NettyUtils {
     public static String NR_SEC_CUSTOM_ATTRIB_NAME = "NETTY-4.8-REQ-BODY-TRACKER";
+    public static String NR_SEC_NETTY_OPERATIONAL_LOCK = "NR_SEC_NETTY_OPERATIONAL_LOCK";
     private static final String X_FORWARDED_FOR = "x-forwarded-for";
     private static final String EMPTY = "";
     public static final String WRITE_METHOD_NAME = "write";
@@ -207,5 +208,36 @@ public class NettyUtils {
             String headerValue = entry.getValue();
             securityResponse.getHeaders().put(headerKey, headerValue);
         }
+    }
+
+    public static boolean isNettyLockAcquired() {
+        try {
+            return NewRelicSecurity.isHookProcessingActive() &&
+                    Boolean.TRUE.equals(NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(getNrSecOperationalLockName(), Boolean.class));
+        } catch (Throwable ignored) {}
+        return false;
+    }
+
+    public static boolean acquireNettyLockIfPossible() {
+        try {
+            if (NewRelicSecurity.isHookProcessingActive() &&
+                    !isNettyLockAcquired()) {
+                NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(getNrSecOperationalLockName(), true);
+                return true;
+            }
+        } catch (Throwable ignored){}
+        return false;
+    }
+
+    public static void releaseNettyLock() {
+        try {
+            if(NewRelicSecurity.isHookProcessingActive()) {
+                NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(getNrSecOperationalLockName(), null);
+            }
+        } catch (Throwable ignored){}
+    }
+
+    private static String getNrSecOperationalLockName() {
+        return NR_SEC_NETTY_OPERATIONAL_LOCK + Thread.currentThread().getId();
     }
 }
