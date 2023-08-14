@@ -1,0 +1,21 @@
+dependencies {
+    implementation(project(":newrelic-security-api"))
+    implementation("com.newrelic.agent.java:newrelic-api:${nrAPIVersion}")
+    implementation("com.newrelic.agent.java:newrelic-weaver-api:${nrAPIVersion}")
+    implementation('org.apache.struts:struts2-core:6.1.2')
+}
+
+jar {
+    manifest { attributes 'Implementation-Title': 'com.newrelic.instrumentation.security.apache-struts2' }
+}
+
+verifyInstrumentation {
+    passesOnly 'org.apache.struts.xwork:xwork-core:[0,)'
+    passesOnly 'org.apache.struts:struts2-core:[2.1.2,)'
+    excludeRegex 'org.apache.struts:struts2-core:2.3.15.1-atlassian-[4-5]$'
+}
+
+site {
+    title 'Struts2'
+    type 'Framework'
+}
