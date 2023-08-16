@@ -17,7 +17,9 @@ public class JerseyHelper {
     public static void gatherUrlMappings(ResourceModel resourceModel) {
         try {
             List<Resource> resources = resourceModel.getResources();
-            extractMappingsFromResources(resources, EMPTY);
+            if(resources != null){
+                extractMappingsFromResources(resources, EMPTY);
+            }
         } catch (Exception ignored){
         }
     }
@@ -42,11 +44,11 @@ public class JerseyHelper {
                         } else {
                             // httpMethod is null in case when method represents a sub-resource locator.
                             String modifiedUrl = url + SEPARATOR + WILDCARD;
-                            addURLMappings(WILDCARD, modifiedUrl, resource.getHandlerClasses());
+                            addURLMappings(modifiedUrl, WILDCARD, resource.getHandlerClasses());
                         }
                     }
                 } else if((resource.getChildResources().size() == 0)){
-                    addURLMappings(WILDCARD, url, resource.getHandlerClasses());
+                    addURLMappings(url, WILDCARD, resource.getHandlerClasses());
                 }
             }
         }
@@ -56,6 +58,5 @@ public class JerseyHelper {
         for (Class<?> handlerClass : handlerClasses) {
             URLMappingsHelper.addApplicationURLMapping(new ApplicationURLMapping(httpMethod, url, handlerClass.getName()));
         }
-
     }
 }
