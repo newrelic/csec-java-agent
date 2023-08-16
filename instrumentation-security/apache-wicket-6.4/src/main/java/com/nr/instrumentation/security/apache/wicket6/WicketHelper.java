@@ -11,11 +11,8 @@ public class WicketHelper {
     private static final String SEPARATOR = "/";
     private static final Map<Integer, Object> mapper = new HashMap<>();
 
-    public static void getMappings(String[] path, String handler, boolean isPackageMapper) {
-        getMappings(buildUrl(path), handler, isPackageMapper);
-    }
-
-    private static void getMappings(String path, String handler, boolean isPackageMapper) {
+    public static void getMappings(String[] pathSegments, String handler, boolean isPackageMapper) {
+        String path = buildUrl(pathSegments);
         try {
             String finalPath = path + (isPackageMapper ? SEPARATOR + WILDCARD : "");
             URLMappingsHelper.addApplicationURLMapping(new ApplicationURLMapping(WILDCARD, finalPath, handler));
@@ -26,7 +23,9 @@ public class WicketHelper {
     public static String buildUrl(String[] mountSegments) {
         StringBuilder path = new StringBuilder();
         try {
-            if(mountSegments.length == 0) return SEPARATOR;
+            if(mountSegments.length == 0) {
+                return SEPARATOR;
+            }
             for (String segment: mountSegments) {
                 path.append(SEPARATOR).append(segment);
             }

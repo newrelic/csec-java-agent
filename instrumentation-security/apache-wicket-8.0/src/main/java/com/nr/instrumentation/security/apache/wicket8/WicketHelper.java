@@ -10,7 +10,9 @@ public class WicketHelper {
 
     public static void getMappings(String path, String handler, boolean isPackageMapper) {
         try{
-            if(!path.startsWith(SEPARATOR)) path = SEPARATOR + path;
+            if(!path.startsWith(SEPARATOR)) {
+                path = SEPARATOR + path;
+            }
 
             if(isPackageMapper){
                 String finalPath = path + SEPARATOR + WILDCARD;
