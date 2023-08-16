@@ -8,22 +8,24 @@ import org.springframework.web.servlet.mvc.condition.PatternsRequestCondition;
 import org.springframework.web.servlet.mvc.method.RequestMappingInfo;
 import org.springframework.web.util.pattern.PathPattern;
 
+import java.lang.reflect.Method;
+
 public class SpringHelper {
-    public static <T> void gatherURLMappings(T mapping){
+    public static <T> void gatherURLMappings(T mapping, Method method){
         try {
             RequestMappingInfo mappingInfo = (RequestMappingInfo) mapping;
             PatternsRequestCondition patternsCondition = mappingInfo.getPatternsCondition();
             PathPatternsRequestCondition pathPatternsCondition = mappingInfo.getPathPatternsCondition();
-            for (RequestMethod method : mappingInfo.getMethodsCondition().getMethods()) {
+            for (RequestMethod requestMethod : mappingInfo.getMethodsCondition().getMethods()) {
                 if (patternsCondition != null) {
                     for (String url : patternsCondition.getPatterns()) {
-                        URLMappingsHelper.addApplicationURLMapping(new ApplicationURLMapping(method.name(), url));
+                        URLMappingsHelper.addApplicationURLMapping(new ApplicationURLMapping(requestMethod.name(), url, method.getDeclaringClass().getName()));
                     }
                 }
                 else if (pathPatternsCondition != null) {
                     for (PathPattern url : pathPatternsCondition.getPatterns()) {
                         if (url != null) {
-                            URLMappingsHelper.addApplicationURLMapping(new ApplicationURLMapping(method.name(), url.getPatternString()));
+                            URLMappingsHelper.addApplicationURLMapping(new ApplicationURLMapping(requestMethod.name(), url.getPatternString(), method.getDeclaringClass().getName()));
                         }
                     }
                 }
