@@ -17,7 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Spring-Webflux
   - Apache Struts2
 - Randomization in WS connection delay
-- 
+- [FIX] Issuw with HealthChecking having empty process stats issue
 
 ## [1.0.4-public-preview] - 2023-06-20
 ### Changes
