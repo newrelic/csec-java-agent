@@ -132,10 +132,12 @@ public class HttpServletHelper {
             if(dir.endsWith(SEPARATOR)){
                 Collection<String> resourcePaths = servletContext.getResourcePaths(dir);
                 for (String path : resourcePaths) {
-                    if(path.endsWith(SEPARATOR))
+                    if(path.endsWith(SEPARATOR)) {
                         getJSPMappings(servletContext, path);
-                    else if(path.endsWith(".jsp") || path.endsWith(".jspx") || path.endsWith(".JSP") || path.endsWith(".JSPX"))
+                    }
+                    else if(path.endsWith(".jsp") || path.endsWith(".jspx") || path.endsWith(".JSP") || path.endsWith(".JSPX")) {
                         URLMappingsHelper.addApplicationURLMapping(new ApplicationURLMapping(WILDCARD, path));
+                    }
                 }
             }
         } catch (Exception ignored){
