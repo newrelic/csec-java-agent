@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.0.5-public-preview] - To Be Decided
 ### Changes
+- [INSTRUMENTATION] Support for Apache log4j 3.0.0-alpha1 (new version released on 21 June 2023)
 
 ## [1.0.4-public-preview] - 2023-06-20
 ### Changes
