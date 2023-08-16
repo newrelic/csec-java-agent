@@ -4,9 +4,20 @@ Noteworthy changes to the agent are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.0.5-public-preview] - To Be Decided
+## [1.0.5-public-preview] - 2023-08-28
 ### Changes
 - [INSTRUMENTATION] Support for Apache log4j 3.0.0-alpha1 (new version released on 21 June 2023)
+- [INSTRUMENTATION] Support for Commons.jxpath
+- [SUPPORT] Generating list of application URL mappings for following Servers and Frameworks
+  - jax-rs/jersey
+  - Spring
+  - Servlet
+  - Grails
+  - RestEasy
+  - Spring-Webflux
+  - Apache Struts2
+- Randomization in WS connection delay
+- 
 
 ## [1.0.4-public-preview] - 2023-06-20
 ### Changes
