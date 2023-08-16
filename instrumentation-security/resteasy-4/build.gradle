@@ -1,0 +1,19 @@
+dependencies {
+    implementation(project(":newrelic-security-api"))
+    implementation("com.newrelic.agent.java:newrelic-api:${nrAPIVersion}")
+    implementation("com.newrelic.agent.java:newrelic-weaver-api:${nrAPIVersion}")
+    implementation("org.jboss.resteasy:resteasy-core:4.0.0.Final")
+}
+
+jar {
+    manifest { attributes 'Implementation-Title': 'com.newrelic.instrumentation.security.resteasy-4' }
+}
+
+verifyInstrumentation {
+    passesOnly 'org.jboss.resteasy:resteasy-core:[0,)'
+}
+
+site {
+    title 'RESTEasy'
+    type 'Framework'
+}
