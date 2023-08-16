@@ -1,0 +1,22 @@
+
+dependencies {
+    implementation(project(":newrelic-security-api"))
+    implementation("com.newrelic.agent.java:newrelic-api:${nrAPIVersion}")
+    implementation("com.newrelic.agent.java:newrelic-weaver-api:${nrAPIVersion}")
+    implementation("org.grails:grails-core:2.2.0")
+}
+
+jar {
+    manifest { attributes 'Implementation-Title': 'com.newrelic.instrumentation.security.grails-2.0' }
+}
+
+verifyInstrumentation {
+    excludeRegex '.*.[RC|M][0-9]'
+//    excludeRegex '.*.M[0-9]'
+    passesOnly('org.grails:grails-core:[2.0,3.0.0.RC1)')
+}
+
+site {
+    title 'Grails'
+    type 'Framework'
+}
