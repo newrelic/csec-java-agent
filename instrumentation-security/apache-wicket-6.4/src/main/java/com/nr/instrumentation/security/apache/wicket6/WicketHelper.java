@@ -9,7 +9,7 @@ import java.util.Map;
 public class WicketHelper {
     private static final String WILDCARD = "*";
     private static final String SEPARATOR = "/";
-    private static final Map<Integer, Object> mapper = new HashMap<>();
+    private static final Map<Integer, String> packageMap = new HashMap<>();
 
     public static void getMappings(String[] pathSegments, String handler, boolean isPackageMapper) {
         String path = buildUrl(pathSegments);
@@ -34,8 +34,8 @@ public class WicketHelper {
         return path.toString();
     }
 
-    public static Map<Integer, Object> getMapper() {
-        return mapper;
+    public static Map<Integer, String> getPackageMap() {
+        return packageMap;
     }
 
 }

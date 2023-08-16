@@ -9,6 +9,6 @@ import org.apache.wicket.util.lang.PackageName;
 @Weave(type = MatchType.ExactClass, originalName = "org.apache.wicket.core.request.mapper.PackageMapper")
 public abstract class PackageMapper_Instrumentation {
     public PackageMapper_Instrumentation (PackageName packageName, IPageParametersEncoder pageParametersEncoder) {
-        WicketHelper.getMapper().put(hashCode(), packageName.getName());
+        WicketHelper.getPackageMap().put(hashCode(), packageName.getName());
     }
 }
