@@ -148,3 +148,7 @@ include 'instrumentation:spring-webflux'
 include 'instrumentation:spring-webmvc-3.1.0'
 include 'instrumentation:spring-webmvc-5.3.0'
 
+
+include 'instrumentation:apache-wicket-6.4'
+include 'instrumentation:apache-wicket-7.0'
+include 'instrumentation:apache-wicket-8.0'
