@@ -13,7 +13,7 @@ public abstract class AbstractHandlerMethodMapping_Instrumentation<T> {
         try {
             Weaver.callOriginal();
         } finally {
-            SpringHelper.gatherURLMappings(mapping);
+            SpringHelper.gatherURLMappings(mapping, method);
         }
     }
 }
