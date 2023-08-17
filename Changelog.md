@@ -14,10 +14,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Servlet
   - Grails
   - RestEasy
-  - Spring-Webflux
+  - Spring-WebFlux
   - Apache Struts2
 - Randomization in WS connection delay
-- [FIX] Issuw with HealthChecking having empty process stats issue
+- [FIX] Issue with HealthChecking having empty process stats issue
+- Limiting the supported version range for Jetty, due to the new version release of Jetty on 7th Aug, 2023
 
 ## [1.0.4-public-preview] - 2023-06-20
 ### Changes
