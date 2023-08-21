@@ -1,0 +1,19 @@
+dependencies {
+    implementation(project(":newrelic-security-api"))
+    implementation("com.newrelic.agent.java:newrelic-weaver-api:${nrAPIVersion}")
+    implementation ("org.apache.httpcomponents.client5:httpclient5:5.0")
+}
+
+jar {
+    manifest { attributes 'Implementation-Title': 'com.newrelic.instrumentation.security.httpclient-5.0' }
+}
+
+verifyInstrumentation {
+    passesOnly 'org.apache.httpcomponents.client5:httpclient5:[5.0,)'
+    excludeRegex '.*-(rc|alpha|beta)[0-9]+'
+}
+
+site {
+    title 'Apache Httpclient'
+    type 'Messaging'
+}
