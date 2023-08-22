@@ -7,7 +7,7 @@ import com.nr.instrumentation.security.servlet24.HttpServletHelper;
 
 import java.util.Set;
 
-@Weave(type = MatchType.Interface, originalName = "javax.servlet.ServletContainerInitializer")
+//@Weave(type = MatchType.Interface, originalName = "javax.servlet.ServletContainerInitializer")
 public class ServletContainerInitializer_Instrumentation {
     public void onStartup(Set<Class<?>> c, ServletContext ctx) throws ServletException {
         try {
