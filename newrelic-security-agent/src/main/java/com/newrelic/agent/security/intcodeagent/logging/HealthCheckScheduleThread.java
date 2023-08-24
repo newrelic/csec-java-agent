@@ -1,6 +1,7 @@
 package com.newrelic.agent.security.intcodeagent.logging;
 
 import com.newrelic.agent.security.AgentInfo;
+import com.newrelic.agent.security.instrumentator.dispatcher.DispatcherPool;
 import com.newrelic.agent.security.instrumentator.httpclient.RestClient;
 import com.newrelic.agent.security.instrumentator.httpclient.RestRequestThreadPool;
 import com.newrelic.agent.security.instrumentator.os.OSVariables;
@@ -9,7 +10,9 @@ import com.newrelic.agent.security.instrumentator.utils.AgentUtils;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.newrelic.agent.security.intcodeagent.filelogging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.JAHealthCheck;
+import com.newrelic.agent.security.intcodeagent.models.javaagent.ThreadPoolStats;
 import com.newrelic.agent.security.intcodeagent.schedulers.SchedulerHelper;
+import com.newrelic.agent.security.intcodeagent.websocket.EventSendPool;
 import com.newrelic.agent.security.intcodeagent.websocket.JsonConverter;
 import com.newrelic.agent.security.intcodeagent.websocket.WSClient;
 import com.newrelic.agent.security.intcodeagent.websocket.WSUtils;
@@ -69,6 +72,7 @@ public class HealthCheckScheduleThread {
 
                 AgentInfo.getInstance().getJaHealthCheck().setStats(populateJVMStats());
                 AgentInfo.getInstance().getJaHealthCheck().setServiceStatus(getServiceStatus());
+                AgentInfo.getInstance().getJaHealthCheck().setThreadPoolStats(populateThreadPoolStats());
 
                 if (!AgentInfo.getInstance().isAgentActive()) {
                     return;
@@ -79,12 +83,12 @@ public class HealthCheckScheduleThread {
                 AgentUtils.getInstance().getStatusLogMostRecentHCs().add(AgentInfo.getInstance().getJaHealthCheck().toString());
 //						channel.write(ByteBuffer.wrap(new JAHealthCheck(AgentNew.JA_HEALTH_CHECK).toString().getBytes()));
                 if (WSClient.getInstance().isOpen()) {
-                    WSClient.getInstance().send(JsonConverter.toJSON(new JAHealthCheck(AgentInfo.getInstance().getJaHealthCheck())));
-                    AgentInfo.getInstance().getJaHealthCheck().setEventDropCount(0);
-                    AgentInfo.getInstance().getJaHealthCheck().setEventProcessed(0);
-                    AgentInfo.getInstance().getJaHealthCheck().setEventSentCount(0);
-                    AgentInfo.getInstance().getJaHealthCheck().setHttpRequestCount(0);
-                    AgentInfo.getInstance().getJaHealthCheck().setExitEventSentCount(0);
+                    JAHealthCheck sendJaHealthCheck;
+                    synchronized (AgentInfo.getInstance().getJaHealthCheck()){
+                        sendJaHealthCheck = new JAHealthCheck(AgentInfo.getInstance().getJaHealthCheck());
+                        AgentInfo.getInstance().getJaHealthCheck().reset();
+                    }
+                    WSClient.getInstance().send(JsonConverter.toJSON(sendJaHealthCheck));
                 }
 
             } catch (NullPointerException ex) {
@@ -98,6 +102,13 @@ public class HealthCheckScheduleThread {
             }
         }
     };
+
+    private ThreadPoolStats populateThreadPoolStats() {
+        ThreadPoolStats threadPoolStats = new ThreadPoolStats();
+        threadPoolStats.setDispatcherQueueSize(DispatcherPool.getInstance().getExecutor().getQueue().size());
+        threadPoolStats.setEventSendQueueSize(EventSendPool.getInstance().getExecutor().getQueue().size());
+        return threadPoolStats;
+    }
 
     private HealthCheckScheduleThread() {}
 

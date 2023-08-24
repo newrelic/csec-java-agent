@@ -1,8 +1,10 @@
 package com.nr.agent.instrumentation.security.okhttp35.internal;
 
 import com.newrelic.api.agent.security.NewRelicSecurity;
+import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.security.instrumentation.helpers.ServletHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
+import com.newrelic.api.agent.security.schema.StringUtils;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
 import com.newrelic.api.agent.security.schema.operation.SSRFOperation;
 import com.newrelic.api.agent.security.utils.SSRFUtils;
@@ -95,6 +97,10 @@ public class OkhttpHelper {
         String iastHeader = NewRelicSecurity.getAgent().getSecurityMetaData().getFuzzRequestIdentifier().getRaw();
         if (iastHeader != null && !iastHeader.trim().isEmpty()) {
             requestBuilder.addHeader(ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID, iastHeader);
+        }
+        String csecParaentId = NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(GenericHelper.CSEC_PARENT_ID, String.class);
+        if(StringUtils.isNotBlank(csecParaentId)){
+            requestBuilder.addHeader(GenericHelper.CSEC_PARENT_ID, csecParaentId);
         }
 
         if (operation.getApiID() != null && !operation.getApiID().trim().isEmpty() &&
