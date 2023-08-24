@@ -99,8 +99,8 @@ public class JAHealthCheck extends AgentBasicInfo {
         this.exitEventStats = new EventStats(jaHealthCheck.exitEventStats);
         this.threadPoolStats = new ThreadPoolStats(jaHealthCheck.threadPoolStats);
         this.kind = jaHealthCheck.kind;
-        this.stats = jaHealthCheck.stats;
-        this.serviceStatus = jaHealthCheck.serviceStatus;
+        this.stats = new HashMap<>(jaHealthCheck.stats);
+        this.serviceStatus = new HashMap<>(jaHealthCheck.serviceStatus);
         this.dsBackLog = jaHealthCheck.dsBackLog;
         logger.log(LogLevel.INFO, String.format(HC_CREATED, JsonConverter.toJSON(this)), JAHealthCheck.class.getName());
     }
