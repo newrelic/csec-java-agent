@@ -1,0 +1,21 @@
+
+dependencies {
+    implementation(project(":newrelic-security-api"))
+    implementation("com.newrelic.agent.java:newrelic-weaver-api:${nrAPIVersion}")
+    implementation("com.sun.jersey:jersey-client:1.9.1")
+}
+
+jar {
+    manifest { attributes 'Implementation-Title': 'com.newrelic.instrumentation.security.jersey-client-1' }
+}
+
+verifyInstrumentation {
+    passesOnly 'com.sun.jersey:jersey-client:[0.9,)'
+
+    exclude('com.sun.jersey:jersey-client:1.0.3-atlassian-1-logpatch')
+}
+
+site {
+    title 'Jersey Client'
+    type 'Framework'
+}
