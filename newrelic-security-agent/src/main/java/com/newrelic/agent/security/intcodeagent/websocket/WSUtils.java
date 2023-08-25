@@ -5,7 +5,6 @@ import com.newrelic.agent.security.AgentInfo;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class WSUtils {
-    public static final String NEXT_WS_CONNECTION_ATTEMPT_WILL_BE_IN_S_SECONDS = "Next WS connection attempt will be in %s seconds";
 
     private boolean isConnected = false;
     private AtomicBoolean isReconnecting = new AtomicBoolean(false);

@@ -36,7 +36,6 @@ public class WSReconnectionST {
                 logger.postLogMessageIfNecessary(LogLevel.SEVERE, ERROR_WHILE_WS_RECONNECTION + e.getMessage() + COLON_SEPARATOR + e.getCause(), e, WSClient.class.getName());
             } finally {
                 int delay = CommonUtils.generateSecureRandomBetween(5, 15);
-                logger.log(LogLevel.INFO, String.format(WSUtils.NEXT_WS_CONNECTION_ATTEMPT_WILL_BE_IN_S_SECONDS, delay), WSReconnectionST.class.getName());
                 futureTask = scheduledService.schedule(runnable, delay, TimeUnit.SECONDS);
             }
         }
