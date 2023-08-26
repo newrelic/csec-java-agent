@@ -17,19 +17,19 @@ import java.io.IOException;
 @Weave(originalName = "com.sun.net.httpserver.HttpHandler", type = MatchType.Interface)
 public class HttpHandler_Instrumentation {
     public void handle (HttpExchange exchange) throws IOException {
-        boolean isHttpServerLockAcquired = acquireServletLockIfPossible();
+        boolean isServletLockAcquired = acquireServletLockIfPossible();
 
-        if (isHttpServerLockAcquired){
+        if (isServletLockAcquired){
             preprocessSecurityHook(exchange);
         }
         try{
             Weaver.callOriginal();
         } finally {
-            if (isHttpServerLockAcquired){
+            if (isServletLockAcquired){
                 releaseServletLock();
             }
         }
-        if (isHttpServerLockAcquired){
+        if (isServletLockAcquired){
             postProcessSecurityHook(exchange);
         }
     }

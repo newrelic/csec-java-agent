@@ -15,22 +15,22 @@ import com.nr.instrumentation.security.httpserver.HttpServerHelper;
 
 import java.io.IOException;
 
-@Weave(originalName = "com.sun.net.httpserver.Filter", type = MatchType.Interface)
+@Weave(originalName = "com.sun.net.httpserver.Filter", type = MatchType.BaseClass)
 public class Filter_Instrumentation {
     public void doFilter (HttpExchange exchange, Filter.Chain chain) throws IOException {
-        boolean isHttpServerLockAcquired = acquireServletLockIfPossible();
+        boolean isServletLockAcquired = acquireServletLockIfPossible();
 
-        if (isHttpServerLockAcquired){
+        if (isServletLockAcquired){
             preprocessSecurityHook(exchange);
         }
         try{
             Weaver.callOriginal();
         } finally {
-            if (isHttpServerLockAcquired){
+            if (isServletLockAcquired){
                 releaseServletLock();
             }
         }
-        if (isHttpServerLockAcquired){
+        if (isServletLockAcquired){
             postProcessSecurityHook(exchange);
         }
     }
