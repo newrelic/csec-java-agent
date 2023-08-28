@@ -1,5 +1,6 @@
 package com.nr.instrumentation.security.httpServer.test;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.newrelic.agent.security.introspec.InstrumentationTestConfig;
 import com.newrelic.agent.security.introspec.SecurityInstrumentationTestRunner;
 import com.newrelic.agent.security.introspec.SecurityIntrospector;
@@ -26,29 +27,26 @@ import java.util.List;
 @RunWith(SecurityInstrumentationTestRunner.class)
 @InstrumentationTestConfig(includePrefixes = { "com.sun.net.httpserver"})
 public class HttpServerTest {
-//    @BeforeClass
-//    public static void setup() throws UnmodifiableClassException, ClassNotFoundException {
-//        SecurityInstrumentationTestRunner.instrumentation.retransformClasses(Class.forName("com.sun.net.httpserver.HttpHandler", true, null));
-//        SecurityInstrumentationTestRunner.instrumentation.retransformClasses(Filter.class);
-//    }
     @ClassRule
     public static Httpserver server = new Httpserver();
 
 
     @Test
-    public void testHandle() throws URISyntaxException, IOException {
+    public void testHandle() throws URISyntaxException, IOException, InterruptedException {
         handle();
+        Thread.sleep(100);
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
         List<AbstractOperation> operations = introspector.getOperations();
         Assert.assertTrue("No operations detected", operations.size() > 0);
+        Assert.assertEquals("Extra operations detected", 1, operations.size());
 
         RXSSOperation targetOperation = (RXSSOperation) operations.get(0);
         Assert.assertNotNull("No target operation detected", targetOperation);
         Assert.assertEquals("Wrong case-type detected", VulnerabilityCaseType.REFLECTED_XSS, targetOperation.getCaseType());
         Assert.assertEquals("Wrong client IP detected", "127.0.0.1", targetOperation.getRequest().getClientIP());
-        Assert.assertEquals("Wrong Protocol detected", "http", targetOperation.getRequest().getProtocol());
+        Assert.assertEquals("Wrong Protocol detected", "HTTP/1.1", targetOperation.getRequest().getProtocol());
 
-//        Assert.assertEquals("Wrong port detected", server.getEndPoint().getPort(), targetOperation.getRequest().getServerPort());
+        Assert.assertEquals("Wrong port detected", server.getEndPoint().getPort(), targetOperation.getRequest().getServerPort());
         Assert.assertEquals("Wrong method name detected", "handle", targetOperation.getMethodName());
         Assert.assertEquals("Wrong Content-type detected", "text/plain", targetOperation.getRequest().getContentType());
     }

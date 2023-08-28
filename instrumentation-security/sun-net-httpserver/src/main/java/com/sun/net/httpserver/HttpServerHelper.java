@@ -1,4 +1,4 @@
-package com.nr.instrumentation.security.httpserver;
+package com.sun.net.httpserver;
 
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.instrumentation.helpers.ServletHelper;
