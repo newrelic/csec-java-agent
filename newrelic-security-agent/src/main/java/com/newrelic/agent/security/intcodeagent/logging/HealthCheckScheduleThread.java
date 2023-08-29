@@ -25,10 +25,7 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
-import java.lang.management.MemoryUsage;
 import com.sun.management.OperatingSystemMXBean;
-import java.lang.management.RuntimeMXBean;
-import java.lang.management.ThreadMXBean;
 import java.math.RoundingMode;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
@@ -64,7 +61,7 @@ public class HealthCheckScheduleThread {
 
     private Runnable runnable = new Runnable() {
         public void run() {
-
+            JAHealthCheck sendJaHealthCheck = null;
             try {
                 // since tcp connection keep alive check is more than 2 hours
                 // we send our custom object to check if connection is still alive or not
@@ -83,7 +80,6 @@ public class HealthCheckScheduleThread {
                 AgentUtils.getInstance().getStatusLogMostRecentHCs().add(AgentInfo.getInstance().getJaHealthCheck().toString());
 //						channel.write(ByteBuffer.wrap(new JAHealthCheck(AgentNew.JA_HEALTH_CHECK).toString().getBytes()));
                 if (WSClient.getInstance().isOpen()) {
-                    JAHealthCheck sendJaHealthCheck;
                     synchronized (AgentInfo.getInstance().getJaHealthCheck()){
                         sendJaHealthCheck = new JAHealthCheck(AgentInfo.getInstance().getJaHealthCheck());
                         AgentInfo.getInstance().getJaHealthCheck().reset();
@@ -98,7 +94,7 @@ public class HealthCheckScheduleThread {
                 logger.log(LogLevel.WARNING, "Error while trying to verify connection: ", e,
                         HealthCheckScheduleThread.class.getName());
             } finally {
-                writeStatusLogFile();
+                writeStatusLogFile(sendJaHealthCheck);
             }
         }
     };
@@ -128,22 +124,27 @@ public class HealthCheckScheduleThread {
         return false;
     }
 
-    private void writeStatusLogFile() {
+    private void writeStatusLogFile(JAHealthCheck sendJaHealthCheck) {
+        JAHealthCheck writerHealthCheck = sendJaHealthCheck;
+        if(writerHealthCheck == null){
+            writerHealthCheck = AgentInfo.getInstance().getJaHealthCheck();
+        }
         File statusLog = new File(osVariables.getSnapshotDir(), String.format(K_2_AGENT_STATUS_LOG, AgentInfo.getInstance().getApplicationUUID()));
         try {
             FileUtils.deleteQuietly(statusLog);
             if (statusLog.createNewFile()) {
                 Map<String, String> substitutes = AgentUtils.getInstance().getStatusLogValues();
                 substitutes.put(STATUS_TIMESTAMP, Instant.now().toString());
-                substitutes.put(LATEST_PROCESS_STATS, AgentInfo.getInstance().getJaHealthCheck().getStats().keySet().stream()
-                        .map(key -> key + SEPARATOR + AgentInfo.getInstance().getJaHealthCheck().getStats().get(key))
+                JAHealthCheck finalWriterHealthCheck = writerHealthCheck;
+                substitutes.put(LATEST_PROCESS_STATS, finalWriterHealthCheck.getStats().keySet().stream()
+                        .map(key -> key + SEPARATOR + finalWriterHealthCheck.getStats().get(key))
                         .collect(Collectors.joining(StringUtils.LF, StringUtils.EMPTY, StringUtils.EMPTY)));
-                substitutes.put(LATEST_SERVICE_STATS, AgentInfo.getInstance().getJaHealthCheck().getServiceStatus().keySet().stream()
-                        .map(key -> key + SEPARATOR + AgentInfo.getInstance().getJaHealthCheck().getServiceStatus().get(key))
+                substitutes.put(LATEST_SERVICE_STATS, finalWriterHealthCheck.getServiceStatus().keySet().stream()
+                        .map(key -> key + SEPARATOR + finalWriterHealthCheck.getServiceStatus().get(key))
                         .collect(Collectors.joining(StringUtils.LF, StringUtils.EMPTY, StringUtils.EMPTY)));
                 substitutes.put(LAST_5_ERRORS, StringUtils.joinWith(StringUtils.LF, AgentUtils.getInstance().getStatusLogMostRecentErrors().toArray()));
                 substitutes.put(LAST_5_HC, StringUtils.joinWith(StringUtils.LF, AgentUtils.getInstance().getStatusLogMostRecentHCs().toArray()));
-                substitutes.put(VALIDATOR_SERVER_STATUS, AgentInfo.getInstance().getJaHealthCheck().getServiceStatus().getOrDefault(WEBSOCKET, StringUtils.EMPTY).toString());
+                substitutes.put(VALIDATOR_SERVER_STATUS, finalWriterHealthCheck.getServiceStatus().getOrDefault(WEBSOCKET, StringUtils.EMPTY).toString());
                 substitutes.put(ENFORCED_POLICY, JsonConverter.toJSON(AgentUtils.getInstance().getAgentPolicy()));
                 StringSubstitutor substitutor = new StringSubstitutor(substitutes);
                 FileUtils.writeStringToFile(statusLog, substitutor.replace(IAgentConstants.STATUS_FILE_TEMPLATE), StandardCharsets.UTF_8);
