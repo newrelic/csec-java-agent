@@ -58,8 +58,8 @@ public class HttpHandler_Instrumentation {
 
             HttpServerHelper.processHttpRequestHeaders(exchange.getRequestHeaders(), securityRequest);
             securityMetaData.setTracingHeaderValue(HttpServerHelper.getTraceHeader(securityRequest.getHeaders()));
-            securityRequest.setProtocol(HttpServerHelper.getScheme(exchange));
-            securityRequest.setUrl(String.valueOf(exchange.getProtocol()));
+            securityRequest.setProtocol(HttpServerHelper.getProtocol(exchange));
+            securityRequest.setUrl(String.valueOf(exchange.getRequestURI()));
 
             String queryString = exchange.getRequestURI().getQuery();
             if (queryString != null && !queryString.trim().isEmpty()) {

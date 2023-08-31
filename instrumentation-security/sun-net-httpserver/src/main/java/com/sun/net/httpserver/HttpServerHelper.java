@@ -14,8 +14,8 @@ public class HttpServerHelper {
     private static final String EMPTY = "";
     private static final String CONTENT_TYPE = "Content-type";
     public static final String QUESTION_MARK = "?";
-    public static final String HTTP_SCHEME = "http";
-    public static final String HTTPS_SCHEME = "https";
+    public static final String HTTP_PROTOCOL = "http";
+    public static final String HTTPS_PROTOCOL = "https";
 
     public static void processHttpRequestHeaders(Headers headers, HttpRequest securityRequest){
         for (String headerKey : headers.keySet()) {
@@ -57,7 +57,7 @@ public class HttpServerHelper {
         }
     }
     public static String getContentType(Headers headers){
-        String data = EMPTY;
+        String data = null;
         if (headers.containsKey(CONTENT_TYPE)) {
             data = headers.getFirst(CONTENT_TYPE);
         }
@@ -101,10 +101,10 @@ public class HttpServerHelper {
         return false;
     }
 
-    public static String getScheme(HttpExchange exchange){
+    public static String getProtocol(HttpExchange exchange){
         if (exchange instanceof HttpsExchange){
-            return HTTPS_SCHEME;
+            return HTTPS_PROTOCOL;
         }
-        return HTTP_SCHEME;
+        return HTTP_PROTOCOL;
     }
 }
