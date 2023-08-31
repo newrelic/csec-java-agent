@@ -1,24 +1,17 @@
 package com.nr.instrumentation.security.httpServer.test;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.newrelic.agent.security.introspec.InstrumentationTestConfig;
 import com.newrelic.agent.security.introspec.SecurityInstrumentationTestRunner;
 import com.newrelic.agent.security.introspec.SecurityIntrospector;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.security.schema.operation.RXSSOperation;
-import com.sun.net.httpserver.Filter;
-import com.sun.net.httpserver.HttpHandler;
 import org.junit.Assert;
-import org.junit.BeforeClass;
 import org.junit.ClassRule;
-import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.junit.runners.MethodSorters;
 
 import java.io.IOException;
-import java.lang.instrument.UnmodifiableClassException;
 import java.net.HttpURLConnection;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -44,7 +37,7 @@ public class HttpServerTest {
         Assert.assertNotNull("No target operation detected", targetOperation);
         Assert.assertEquals("Wrong case-type detected", VulnerabilityCaseType.REFLECTED_XSS, targetOperation.getCaseType());
         Assert.assertEquals("Wrong client IP detected", "127.0.0.1", targetOperation.getRequest().getClientIP());
-        Assert.assertEquals("Wrong Protocol detected", "HTTP/1.1", targetOperation.getRequest().getProtocol());
+        Assert.assertEquals("Wrong Protocol detected", "http", targetOperation.getRequest().getProtocol());
 
         Assert.assertEquals("Wrong port detected", server.getEndPoint().getPort(), targetOperation.getRequest().getServerPort());
         Assert.assertEquals("Wrong method name detected", "handle", targetOperation.getMethodName());
