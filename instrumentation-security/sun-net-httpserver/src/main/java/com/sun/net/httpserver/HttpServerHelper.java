@@ -5,8 +5,6 @@ import com.newrelic.api.agent.security.instrumentation.helpers.ServletHelper;
 import com.newrelic.api.agent.security.schema.AgentMetaData;
 import com.newrelic.api.agent.security.schema.HttpRequest;
 import com.newrelic.api.agent.security.schema.policy.AgentPolicy;
-import com.sun.net.httpserver.Headers;
-
 import java.util.Map;
 
 public class HttpServerHelper {
@@ -16,6 +14,8 @@ public class HttpServerHelper {
     private static final String EMPTY = "";
     private static final String CONTENT_TYPE = "Content-type";
     public static final String QUESTION_MARK = "?";
+    public static final String HTTP_SCHEME = "http";
+    public static final String HTTPS_SCHEME = "https";
 
     public static void processHttpRequestHeaders(Headers headers, HttpRequest securityRequest){
         for (String headerKey : headers.keySet()) {
@@ -101,4 +101,10 @@ public class HttpServerHelper {
         return false;
     }
 
+    public static String getScheme(HttpExchange exchange){
+        if (exchange instanceof HttpsExchange){
+            return HTTPS_SCHEME;
+        }
+        return HTTP_SCHEME;
+    }
 }
