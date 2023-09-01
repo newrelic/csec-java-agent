@@ -44,7 +44,7 @@ public class HttpServerTest {
         Assert.assertNotNull("No target operation detected", targetOperation);
         Assert.assertEquals("Wrong case-type detected", VulnerabilityCaseType.REFLECTED_XSS, targetOperation.getCaseType());
         Assert.assertEquals("Wrong client IP detected", "127.0.0.1", targetOperation.getRequest().getClientIP());
-        Assert.assertEquals("Wrong Protocol detected", "HTTP/1.1", targetOperation.getRequest().getProtocol());
+        Assert.assertEquals("Wrong Protocol detected", "http", targetOperation.getRequest().getProtocol());
 
         Assert.assertEquals("Wrong port detected", server.getEndPoint().getPort(), targetOperation.getRequest().getServerPort());
         Assert.assertEquals("Wrong method name detected", "handle", targetOperation.getMethodName());
