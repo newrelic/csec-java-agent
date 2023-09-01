@@ -16,6 +16,8 @@ public class HttpServerHelper {
     private static final String EMPTY = "";
     private static final String CONTENT_TYPE = "Content-type";
     public static final String QUESTION_MARK = "?";
+    public static final String HTTP_PROTOCOL = "http";
+    public static final String HTTPS_PROTOCOL = "https";
 
     public static void processHttpRequestHeaders(Headers headers, HttpRequest securityRequest){
         for (String headerKey : headers.keySet()) {
@@ -101,4 +103,10 @@ public class HttpServerHelper {
         return false;
     }
 
+    public static String getProtocol(HttpExchange exchange){
+        if (exchange instanceof HttpsExchange){
+            return HTTPS_PROTOCOL;
+        }
+        return HTTP_PROTOCOL;
+    }
 }
