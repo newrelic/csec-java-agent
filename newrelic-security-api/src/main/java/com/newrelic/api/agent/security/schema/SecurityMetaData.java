@@ -1,6 +1,7 @@
 package com.newrelic.api.agent.security.schema;
 
 
+import com.newrelic.api.agent.security.schema.operation.DeserialisationOperation;
 import com.newrelic.api.agent.security.schema.operation.FileIntegrityOperation;
 
 import java.util.HashMap;
@@ -111,4 +112,32 @@ public class SecurityMetaData {
         this.customData.remove(key);
     }
 
+    public Map<String, DeserializationInfo> getDeserializingObjectStack() {
+        if (getCustomAttribute("deserializingObjectStack", Map.class) == null){
+            addCustomAttribute("deserializingObjectStack", new HashMap<String, DeserialisationOperation>());
+        }
+        return getCustomAttribute("deserializingObjectStack", Map.class);
+    }
+
+    public void addToDeserializingObjectStack(DeserializationInfo dinfo) {
+        Map<String, DeserializationInfo> deserializingObjectStack = getDeserializingObjectStack();
+        int nextIndex = deserializingObjectStack.size();
+        deserializingObjectStack.put(Integer.toString(nextIndex), dinfo);
+    }
+
+    public void popFromDeserializingObjectStack() {
+        Map<String, DeserializationInfo> deserializingObjectStack = getDeserializingObjectStack();
+        int nextIndex = deserializingObjectStack.size();
+        if (nextIndex > 0) {
+            deserializingObjectStack.remove(Integer.toString(nextIndex-1));
+        }
+    }
+
+    public DeserializationInfo peekDeserializingObjectStack() {
+        Map<String, DeserializationInfo> deserializingObjectStack = getDeserializingObjectStack();
+        if (deserializingObjectStack == null || deserializingObjectStack.isEmpty()) return null;
+
+        int nextIndex = deserializingObjectStack.size();
+        return deserializingObjectStack.get(Integer.toString(nextIndex-1));
+    }
 }

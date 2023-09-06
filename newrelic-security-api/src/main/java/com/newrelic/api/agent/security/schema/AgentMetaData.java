@@ -38,6 +38,8 @@ public class AgentMetaData {
     @JsonIgnore
     private Set<String> ips;
 
+    private DeserializationInfo deserializationInfo = new DeserializationInfo();
+
     public AgentMetaData() {
         this.rciMethodsCalls = new HashSet<>();
         this.ips = new HashSet<>();
@@ -57,6 +59,7 @@ public class AgentMetaData {
         this.userDataTranslationMap = new HashMap<>(agentMetaData.userDataTranslationMap);
         this.userLevelServiceMethodEncountered = agentMetaData.userLevelServiceMethodEncountered;
         this.reflectedMetaData = agentMetaData.reflectedMetaData;
+        this.deserializationInfo = new DeserializationInfo(agentMetaData.deserializationInfo);
     }
 
     public boolean isTriggerViaRCI() {
@@ -150,5 +153,13 @@ public class AgentMetaData {
 
     public void setUserLevelServiceMethodEncountered(boolean userLevelServiceMethodEncountered) {
         this.userLevelServiceMethodEncountered = userLevelServiceMethodEncountered;
+    }
+
+    public DeserializationInfo getDeserializationInfo() {
+        return deserializationInfo;
+    }
+
+    public void setDeserializationInfo(DeserializationInfo deserializationInfo) {
+        this.deserializationInfo = new DeserializationInfo(deserializationInfo);
     }
 }

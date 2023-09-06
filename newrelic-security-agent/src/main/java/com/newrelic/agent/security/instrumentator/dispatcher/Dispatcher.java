@@ -577,6 +577,7 @@ public class Dispatcher implements Runnable {
         eventBean.setUserAPIInfo(operation.getUserClassEntity().getUserClassElement().getLineNumber(),
                 operation.getUserClassEntity().getUserClassElement().getClassName(),
                 operation.getUserClassEntity().getUserClassElement().getMethodName());
+        eventBean.getMetaData().setDeserializationInfo(operation.getDeserializationInfo());
         return eventBean;
     }
 
