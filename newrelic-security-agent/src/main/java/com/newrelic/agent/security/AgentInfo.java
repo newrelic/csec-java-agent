@@ -1,5 +1,6 @@
 package com.newrelic.agent.security;
 
+import com.newrelic.agent.security.instrumentator.httpclient.RestRequestThreadPool;
 import com.newrelic.agent.security.instrumentator.utils.AgentUtils;
 import com.newrelic.agent.security.instrumentator.utils.ApplicationInfoUtils;
 import com.newrelic.agent.security.instrumentator.utils.INRSettingsKey;
@@ -27,8 +28,6 @@ import static com.newrelic.agent.security.util.IUtilConstants.NOT_AVAILABLE;
 public class AgentInfo {
 
     private static final String APP_INFO_BEAN_NOT_CREATED = "[APP_INFO] Error application info bean not created.";
-
-    private static AgentInfo instance;
 
     private static final Object lock = new Object();
 
@@ -59,15 +58,12 @@ public class AgentInfo {
         applicationUUID = UUID.randomUUID().toString();
     }
 
+    private static final class InstanceHolder {
+        static final AgentInfo instance = new AgentInfo();
+    }
+
     public static AgentInfo getInstance(){
-        if (instance == null) {
-            synchronized (lock) {
-                if (instance == null) {
-                    instance = new AgentInfo();
-                }
-            }
-        }
-        return instance;
+        return InstanceHolder.instance;
     }
 
     public void initialiseHC(){
@@ -168,6 +164,8 @@ public class AgentInfo {
         }
         if(state) {
             logger.logInit(LogLevel.INFO, String.format("Security Agent is now ACTIVE for %s", applicationUUID), AgentInfo.class.getName());
+        } else {
+            RestRequestThreadPool.getInstance().resetIASTProcessing();
         }
 
         if(state && !processProtected){

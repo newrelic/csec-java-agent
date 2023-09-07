@@ -6,6 +6,7 @@ import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.security.instrumentation.helpers.ServletHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.SecurityMetaData;
+import com.newrelic.api.agent.security.schema.StringUtils;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
 import com.newrelic.api.agent.security.schema.operation.SSRFOperation;
 import com.newrelic.api.agent.security.utils.SSRFUtils;
@@ -104,6 +105,11 @@ final class HttpClientImpl_Instrumentation {
             if (iastHeader != null && !iastHeader.trim().isEmpty()) {
                 builder.setHeader(ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID, iastHeader);
             }
+            String csecParaentId = NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(GenericHelper.CSEC_PARENT_ID, String.class);
+            if(StringUtils.isNotBlank(csecParaentId)){
+                builder.setHeader(GenericHelper.CSEC_PARENT_ID, csecParaentId);
+            }
+
             if (operation.getApiID() != null && !operation.getApiID().trim().isEmpty() && operation.getExecutionId() != null &&
                     !operation.getExecutionId().trim().isEmpty()) {
                 updatedRequest = builder.setHeader(ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER,

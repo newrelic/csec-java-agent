@@ -521,6 +521,7 @@ public interface IAgentConstants {
     String JSON_NAME_HTTP_CONNECTION_STAT = "http-connection-stat";
     String JSON_NAME_EXIT_EVENT = "exit-event";
 
+    String JSON_SEC_APPLICATION_URL_MAPPING = "sec-application-url-mapping";
 
 
     String INVOKE_0 = "invoke0";
