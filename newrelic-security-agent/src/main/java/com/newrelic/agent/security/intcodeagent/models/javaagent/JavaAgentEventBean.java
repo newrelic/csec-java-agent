@@ -6,6 +6,8 @@ import com.newrelic.api.agent.security.schema.AgentMetaData;
 import com.newrelic.api.agent.security.schema.HttpRequest;
 import org.json.simple.JSONArray;
 
+import java.util.Arrays;
+
 public class JavaAgentEventBean extends AgentBasicInfo {
     private Integer pid;
     private String applicationUUID;
@@ -43,6 +45,33 @@ public class JavaAgentEventBean extends AgentBasicInfo {
         this.userMethodName = userMethodName;
         this.userFileName = userClassName;
         this.lineNumber = lineNumber;
+    }
+
+    public JavaAgentEventBean(JavaAgentEventBean javaAgentEventBean) {
+        this.pid = javaAgentEventBean.pid;
+        this.applicationUUID = javaAgentEventBean.applicationUUID;
+        this.startTime = javaAgentEventBean.startTime;
+        this.sourceMethod = javaAgentEventBean.sourceMethod;
+        this.userFileName = javaAgentEventBean.userFileName;
+        this.userMethodName = javaAgentEventBean.userMethodName;
+        this.currentMethod = javaAgentEventBean.currentMethod;
+        this.validationBypass = javaAgentEventBean.validationBypass;
+        this.lineNumber = javaAgentEventBean.lineNumber;
+        this.eventGenerationTime = javaAgentEventBean.eventGenerationTime;
+        this.httpRequest = new HttpRequest(javaAgentEventBean.httpRequest);
+        this.id = javaAgentEventBean.id;
+        this.parentId = javaAgentEventBean.parentId;
+        this.stacktrace = Arrays.copyOf(javaAgentEventBean.stacktrace, javaAgentEventBean.stacktrace.length);
+        this.caseType = javaAgentEventBean.caseType;
+        this.eventCategory = javaAgentEventBean.eventCategory;
+        this.preProcessingTime = javaAgentEventBean.preProcessingTime;
+        this.metaData = new AgentMetaData(javaAgentEventBean.metaData);
+        this.blockingProcessingTime = javaAgentEventBean.blockingProcessingTime;
+        this.isAPIBlocked = javaAgentEventBean.isAPIBlocked;
+        this.isIASTEnable = javaAgentEventBean.isIASTEnable;
+        this.isIASTRequest = javaAgentEventBean.isIASTRequest;
+        this.apiId = javaAgentEventBean.apiId;
+        this.webappIdentifier = new DeployedApplication(javaAgentEventBean.webappIdentifier);
     }
 
     public Long getStartTime() {

@@ -596,4 +596,6 @@ public interface IAgentConstants {
             "Last 5 Heath Checks:\n" +
             "${last-5-hc}";
     String PROCESS_BINARY = "process-binary";
+    int MAX_ALLOWED_PARAMETER_LENGTH = 100;
+    int MAX_ALLOWED_RESPONSE_LENGHT = 32000;
 }

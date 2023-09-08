@@ -70,6 +70,16 @@ public class DeployedApplication {
     public DeployedApplication() {
     }
 
+    public DeployedApplication(DeployedApplication deployedApplication) {
+        this.deployedPath = deployedApplication.deployedPath;
+        this.appName = deployedApplication.appName;
+        this.sha256 = deployedApplication.sha256;
+        this.size = deployedApplication.size;
+        this.contextPath = deployedApplication.contextPath;
+        this.ports = new HashSet<>(deployedApplication.ports);
+        this.isEmbedded = deployedApplication.isEmbedded;
+    }
+
     /**
      * Gets the deployed path.
      *

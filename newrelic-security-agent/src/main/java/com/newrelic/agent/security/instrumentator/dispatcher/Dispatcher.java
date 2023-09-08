@@ -207,18 +207,86 @@ public class Dispatcher implements Callable {
                 }
             }
 
-            EventSendPool.getInstance().sendEvent(eventBean);
+            List<JavaAgentEventBean> sendingEvents = createBatch(eventBean);
+            for (JavaAgentEventBean event : sendingEvents) {
+                EventSendPool.getInstance().sendEvent(event);
+            }
             if (!firstEventSent.get()) {
                 logger.logInit(LogLevel.INFO, String.format(EVENT_ZERO_SENT, eventBean), this.getClass().getName());
                 firstEventSent.set(true);
             }
 //        detectDeployedApplication();
         } catch (Throwable e) {
-            e.printStackTrace();
+            logger.log(LogLevel.SEVERE, String.format("error while dispatch event %s", e.toString()), Dispatcher.class.getName());
         }
         return null;
     }
 
+    private List<JavaAgentEventBean> createBatch(JavaAgentEventBean eventBean) {
+        JSONArray parameters = eventBean.getParameters();
+        switch (operation.getCaseType()){
+            case FILE_OPERATION:
+            case SQL_DB_COMMAND:
+            case NOSQL_DB_COMMAND:
+            case DYNAMO_DB_COMMAND:
+                parameters = splitArray(eventBean.getParameters());
+                break;
+            case REFLECTED_XSS:
+                parameters = splitRXSSEvent(eventBean.getParameters());
+                break;
+            default:
+                break;
+        }
+
+        if(parameters.size() > 1){
+            List<JavaAgentEventBean> javaAgentEventBeans = new ArrayList<>();
+            for (Object parameter : parameters) {
+                JavaAgentEventBean javaAgentEventBean = new JavaAgentEventBean(eventBean);
+                javaAgentEventBean.setParameters((JSONArray) parameter);
+            }
+            return javaAgentEventBeans;
+        } else {
+            return Collections.singletonList(eventBean);
+        }
+    }
+
+    private JSONArray splitRXSSEvent(JSONArray oldParameters) {
+        String response = securityMetaData.getResponse().getResponseBody().toString();
+        if(oldParameters != null && oldParameters.size()>=2 && StringUtils.length(response) >= MAX_ALLOWED_RESPONSE_LENGHT) {
+            JSONArray parameters = new JSONArray();
+            int length = 0;
+            while(response.length() > length){
+                int min = Math.min(response.length(), length + MAX_ALLOWED_RESPONSE_LENGHT);
+                JSONArray parameter = subList(oldParameters, 0, oldParameters.size()-2);
+                parameter.add(StringUtils.substring(response, length, min));
+                parameters.add(parameter);
+                length =+ MAX_ALLOWED_RESPONSE_LENGHT;
+            }
+            return parameters;
+        }
+        return oldParameters;
+    }
+
+    private JSONArray splitArray(JSONArray allParameters) {
+        JSONArray parameters = new JSONArray();
+        if(allParameters != null && allParameters.size() > MAX_ALLOWED_PARAMETER_LENGTH){
+            int counter = 0;
+            while(allParameters.size() > counter){
+                int min = Math.min(allParameters.size(), counter + MAX_ALLOWED_PARAMETER_LENGTH);
+                parameters.add(subList(allParameters, counter, min));
+                counter += MAX_ALLOWED_PARAMETER_LENGTH;
+            }
+        }
+        return parameters;
+    }
+
+    private static JSONArray subList(JSONArray array, int fromIndex, int toIndex) {
+        JSONArray jsonArray = new JSONArray();
+        for (int i = fromIndex; i < toIndex; i++) {
+            jsonArray.add(array.get(i));
+        }
+        return jsonArray;
+    }
     @Nullable
     private JavaAgentEventBean processFileOperationEvent(JavaAgentEventBean eventBean, FileOperation fileOperationalBean) {
         prepareFileEvent(eventBean, fileOperationalBean);
@@ -344,18 +412,6 @@ public class Dispatcher implements Callable {
         }
         eventBean.setParameters(params);
         eventBean.setEventCategory(hashCryptoOperationalBean.getEventCategory());
-//        if (eventBean.getSourceMethod().equals(JAVAX_CRYPTO_CIPHER_GETINSTANCE_STRING)
-//                || eventBean.getSourceMethod().equals(JAVAX_CRYPTO_CIPHER_GETINSTANCE_STRING_PROVIDER)) {
-//            eventBean.setEventCategory(CIPHER);
-//        } else if (eventBean.getSourceMethod().equals(JAVAX_CRYPTO_KEYGENERATOR_GETINSTANCE_STRING)
-//                || eventBean.getSourceMethod().equals(JAVAX_CRYPTO_KEYGENERATOR_GETINSTANCE_STRING_STRING)
-//                || eventBean.getSourceMethod().equals(JAVAX_CRYPTO_KEYGENERATOR_GETINSTANCE_STRING_PROVIDER)) {
-//            eventBean.setEventCategory(KEYGENERATOR);
-//        } else if (eventBean.getSourceMethod().equals(JAVA_SECURITY_KEYPAIRGENERATOR_GETINSTANCE_STRING)
-//                || eventBean.getSourceMethod().equals(JAVA_SECURITY_KEYPAIRGENERATOR_GETINSTANCE_STRING_STRING)
-//                || eventBean.getSourceMethod().equals(JAVA_SECURITY_KEYPAIRGENERATOR_GETINSTANCE_STRING_PROVIDER)) {
-//            eventBean.setEventCategory(KEYPAIRGENERATOR);
-//        }
         return eventBean;
     }
 
@@ -482,7 +538,6 @@ public class Dispatcher implements Callable {
             }
             eventBean.setParameters(params);
         } catch (Exception exception) {
-            exception.printStackTrace();
         }
         return eventBean;
     }

@@ -5,6 +5,7 @@ import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 
 public class JSInjectionOperation extends AbstractOperation {
 
+    private static final int MAX_ALLOWED_LENGHT = 32000;
     private String javaScriptCode;
 
     public JSInjectionOperation(String javaScriptCode, String className, String methodName) {
@@ -23,7 +24,7 @@ public class JSInjectionOperation extends AbstractOperation {
 
     @Override
     public boolean isEmpty() {
-        return (javaScriptCode == null || javaScriptCode.trim().isEmpty());
+        return (javaScriptCode == null || javaScriptCode.trim().isEmpty() || javaScriptCode.length() > MAX_ALLOWED_LENGHT);
     }
 
     @Override
