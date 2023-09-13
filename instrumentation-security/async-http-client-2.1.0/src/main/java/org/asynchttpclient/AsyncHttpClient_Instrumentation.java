@@ -11,6 +11,7 @@ import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
+import com.nr.instrumentation.security.org.asynchttpclient.AsynchttpHelper;
 
 import java.net.MalformedURLException;
 import java.net.URI;
