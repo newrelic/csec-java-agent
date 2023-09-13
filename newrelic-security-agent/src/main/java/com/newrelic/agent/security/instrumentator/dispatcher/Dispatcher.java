@@ -191,6 +191,8 @@ public class Dispatcher implements Callable {
                     XQueryOperation xQueryOperationalBean = (XQueryOperation) operation;
                     eventBean = prepareXQueryInjectionEvent(eventBean, xQueryOperationalBean);
                     break;
+                case UNSAFE_DESERIALIZATION:
+                    prepareDeserializationEvent(eventBean, (DeserialisationOperation) operation);
                 default:
 
             }
@@ -495,6 +497,13 @@ public class Dispatcher implements Callable {
         if (ssrfOperationalBean.isJNDILookup()) {
             eventBean.setEventCategory("JNDILookup");
         }
+        return eventBean;
+    }
+
+    private static JavaAgentEventBean prepareDeserializationEvent(JavaAgentEventBean eventBean,
+                                                       DeserialisationOperation deserialisationOperation) {
+        JSONArray params = new JSONArray();
+        eventBean.setParameters(params);
         return eventBean;
     }
 

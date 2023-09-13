@@ -9,75 +9,34 @@ import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
 
 
-@Weave(type = MatchType.BaseClass, originalName = "java.io.ObjectStreamClass")
+@Weave(type = MatchType.ExactClass, originalName = "java.io.ObjectInputStream")
 public abstract class Serializable_Instrumentation {
 
-    void invokeReadObject(Object obj, ObjectInputStream in)
-            throws ClassNotFoundException, IOException,
-            UnsupportedOperationException {
-        if (NewRelicSecurity.isHookProcessingActive() &&
-                !NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()) {
-            try {
+    private void readSerialData(Object obj, ObjectStreamClass desc)
+            throws IOException {
 
+        try {
+            if (NewRelicSecurity.isHookProcessingActive() &&
+                    !NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()) {
                 NewRelicSecurity.getAgent().getSecurityMetaData().addToDeserializingObjectStack(
                         new DeserializationInfo(obj.getClass().getName(), obj)
                 );
-            } catch (Exception e){
-                e.printStackTrace();
             }
-            System.out.println("IN invokeReadObject");
-        }
-        try {
-            System.out.println("CALLING original");
             Weaver.callOriginal();
-            System.out.println("Will create DeserialisationOperation");
+
             DeserialisationOperation operation = new DeserialisationOperation(
                     this.getClass().getName(),
                     SecurityHelper.METHOD_NAME_READ_OBJECT
             );
-            System.out.println("Created DeserialisationOperation");
+
             NewRelicSecurity.getAgent().registerOperation(operation);
-            System.out.println("Registered DeserialisationOperation");
+
+        } catch(Exception e){
 
         } finally {
             if (NewRelicSecurity.isHookProcessingActive() &&
                     !NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()) {
                 NewRelicSecurity.getAgent().getSecurityMetaData().popFromDeserializingObjectStack();
-            }
-        }
-//        registerExitOperation(isFileLockAcquired, operation);
-    }
-
-    void invokeReadObjectNoData(Object obj)
-            throws IOException, UnsupportedOperationException{
-        boolean isLockAcquired = acquireLockIfPossible();
-        if (isLockAcquired && NewRelicSecurity.isHookProcessingActive() &&
-                !NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()) {
-            try {
-
-                NewRelicSecurity.getAgent().getSecurityMetaData().addToDeserializingObjectStack(
-                        new DeserializationInfo(obj.getClass().getName(), obj)
-                );
-            } catch (Exception e){
-                e.printStackTrace();
-            }
-        }
-        try {
-            Weaver.callOriginal();
-
-            DeserialisationOperation operation = new DeserialisationOperation(
-                    this.getClass().getName(),
-                    SecurityHelper.METHOD_NAME_READ_OBJECT
-            );
-            NewRelicSecurity.getAgent().registerOperation(operation);
-
-        } finally {
-            if (isLockAcquired && NewRelicSecurity.isHookProcessingActive() &&
-                    !NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()) {
-                NewRelicSecurity.getAgent().getSecurityMetaData().popFromDeserializingObjectStack();
-            }
-            if (isLockAcquired){
-                releaseLock();
             }
         }
 //        registerExitOperation(isFileLockAcquired, operation);

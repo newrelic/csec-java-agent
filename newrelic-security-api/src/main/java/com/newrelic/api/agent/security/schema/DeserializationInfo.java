@@ -32,6 +32,7 @@ public class DeserializationInfo implements Serializable {
     private Map<String, DeserializationInfo> value;
     private String leafValue;
     private Object instance;
+    private DeserializationInfo next;
 
     public DeserializationInfo(String type, Object instance) {
         this.type = type;
@@ -56,13 +57,17 @@ public class DeserializationInfo implements Serializable {
     public DeserializationInfo(DeserializationInfo instance) {
         this.type = instance.type;
         this.leaf = instance.leaf;
-        if (instance.leaf){
+        if (instance.leaf) {
             this.leafValue = instance.leafValue;
         } else {
             this.value = new HashMap<>();
             this.value.putAll(instance.value);
         }
+//        if (instance.next != null) {
+//            this.next = new DeserializationInfo(instance.next);
+//        }
     }
+
     public DeserializationInfo() {
         this.type = "";
         this.leaf = false;
@@ -122,8 +127,13 @@ public class DeserializationInfo implements Serializable {
         if (obj.getClass() == String.class) {
             DeserializationInfo entry = new DeserializationInfo(obj.getClass().getName(), obj, (String) obj);
             valueMap.put(name, entry);
-        } else if (Collection.class.isAssignableFrom(obj.getClass())) {
-            Object col[] = ((Collection) obj).toArray();
+        } else if (Collection.class.isAssignableFrom(obj.getClass()) || obj.getClass().isArray()) {
+            Object col[];
+            if (obj.getClass().isArray()) {
+                col = (Object []) obj;
+            } else {
+                col = ((Collection) obj).toArray();
+            }
             Map<String, DeserializationInfo> collectionMap = new HashMap<>();
             for (int elementIndex=0; elementIndex<col.length; elementIndex++) {
                 populateForField(col[elementIndex], String.valueOf(elementIndex), collectionMap, depth + 1);
@@ -203,5 +213,13 @@ public class DeserializationInfo implements Serializable {
 
     public void setInstance(Object instance) {
         this.instance = instance;
+    }
+
+    public DeserializationInfo getNext() {
+        return next;
+    }
+
+    public void setNext(DeserializationInfo next) {
+        this.next = next;
     }
 }
