@@ -323,7 +323,10 @@ public class Dispatcher implements Callable {
                     (Long) extraInfo.get(BLOCKING_END_TIME) - eventBean.getStartTime());
 
             eventBean.setApiId(operation.getApiID());
-            EventSendPool.getInstance().sendEvent(eventBean);
+            List<JavaAgentEventBean> sendingEvents = createBatch(eventBean);
+            for (JavaAgentEventBean event : sendingEvents) {
+                EventSendPool.getInstance().sendEvent(event);
+            }
             if (!firstEventSent.get()) {
                 logger.logInit(LogLevel.INFO, String.format(EVENT_ZERO_SENT, eventBean), this.getClass().getName());
                 firstEventSent.set(true);
