@@ -71,7 +71,7 @@ public class JavaAgentEventBean extends AgentBasicInfo {
         this.isIASTEnable = javaAgentEventBean.isIASTEnable;
         this.isIASTRequest = javaAgentEventBean.isIASTRequest;
         this.apiId = javaAgentEventBean.apiId;
-        this.webappIdentifier = new DeployedApplication(javaAgentEventBean.webappIdentifier);
+        this.webappIdentifier = javaAgentEventBean.webappIdentifier;
     }
 
     public Long getStartTime() {
