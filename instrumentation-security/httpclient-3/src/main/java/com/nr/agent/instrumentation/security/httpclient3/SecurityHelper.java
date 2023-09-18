@@ -1,5 +1,8 @@
 package com.nr.agent.instrumentation.security.httpclient3;
 
+import com.newrelic.api.agent.security.NewRelicSecurity;
+import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
+
 public class SecurityHelper {
 
     public static final String METHOD_NAME_EXECUTE = "execute";
@@ -25,5 +28,9 @@ public class SecurityHelper {
             sb.append(path);
         }
         return sb.toString();
+    }
+
+    public static String getParentId(){
+        return NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(GenericHelper.CSEC_PARENT_ID, String.class);
     }
 }

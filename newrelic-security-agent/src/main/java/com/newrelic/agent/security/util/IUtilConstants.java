@@ -22,4 +22,8 @@ public interface IUtilConstants {
     String NR_CSEC_DEBUG_LOGFILE_SIZE = "NR_CSEC_DEBUG_LOGFILE_SIZE";
     String NR_CSEC_DEBUG_LOGFILE_MAX_COUNT = "NR_CSEC_DEBUG_LOGFILE_MAX_COUNT";
     String NR_SECURITY_HOME = "nr-security-home";
+    String PROCESSED = "PROCESSED";
+    String ERROR = "ERROR";
+    String SENT = "SENT";
+    String REJECTED = "REJECTED";
 }
