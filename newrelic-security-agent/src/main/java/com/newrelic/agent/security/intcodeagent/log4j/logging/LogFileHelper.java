@@ -7,15 +7,10 @@
 
 package com.newrelic.agent.security.intcodeagent.log4j.logging;
 
-import com.newrelic.agent.security.AgentConfig;
 import com.newrelic.agent.security.instrumentator.os.OSVariables;
 import com.newrelic.agent.security.instrumentator.os.OsVariablesInstance;
-import com.newrelic.api.agent.NewRelic;
-import org.apache.commons.io.FileUtils;
 
 import java.io.File;
-import java.text.MessageFormat;
-import java.util.logging.Level;
 
 /**
  * Utility class to get the New Relic log file.

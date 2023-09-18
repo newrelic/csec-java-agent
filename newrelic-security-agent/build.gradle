@@ -72,7 +72,7 @@ dependencies {
     shadowIntoJar 'com.squareup.okhttp3:okhttp:4.10.0'
     shadowIntoJar 'org.unbescape:unbescape:1.1.6.RELEASE'
     shadowIntoJar 'commons-codec:commons-codec:1.15'
-    shadowIntoJar 'org.apache.logging.log4j:log4j-core:2.17.1'
+    shadowIntoJar 'org.slf4j:slf4j-simple:1.7.30'
     shadowIntoJar 'com.github.erosb:everit-json-schema:1.14.2'
     shadowIntoJar 'net.openhft:zero-allocation-hashing:0.16'
     shadowIntoJar 'com.github.oshi:oshi-core:6.4.1'
@@ -119,7 +119,7 @@ task relocatedShadowJar(type: ShadowJar) {
             "org.json", "com.fasterxml", "org.java_websocket", "com.google", "org.unbescape",
             "org.apache.commons", "okio", "okhttp3", "org.slf4j", "net.openhft", "oshi", "com.sun.jna",
             "kotlin", "com.damnhandy", "org.joda", "io.opentelemetry", "org.everit", "org.jetbrains", "org.intellij",
-            "org.junit", "org.hamcrest", "org.yaml", "junit", "org.apache.logging"
+            "org.junit", "org.hamcrest", "org.yaml", "junit"
     ].each {
         relocate(it, "com.newrelic.agent.security.deps.$it")
     }

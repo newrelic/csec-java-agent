@@ -2,7 +2,6 @@ package com.newrelic.agent.security.instrumentator.os;
 
 import com.newrelic.agent.security.AgentConfig;
 import com.newrelic.agent.security.AgentInfo;
-import com.newrelic.agent.security.intcodeagent.log4j.logging.LogFileHelper;
 import com.newrelic.agent.security.intcodeagent.logging.IAgentConstants;
 import com.newrelic.agent.security.util.IUtilConstants;
 import com.newrelic.api.agent.NewRelic;
@@ -41,8 +40,8 @@ public class OsVariablesInstance {
 //        osVariables.setLogDirectory(Paths.get(k2root.toString(), LOGS, LANGUAGE_AGENT, AgentInfo.getInstance().getApplicationUUID()).toString());
 
 
-        if(NewRelic.getAgent().getConfig().getValue(LogFileHelper.LOG_FILE_PATH) != null) {
-            osVariables.setLogDirectory(Paths.get(NewRelic.getAgent().getConfig().getValue(LogFileHelper.LOG_FILE_PATH), IUtilConstants.NR_SECURITY_HOME, LOGS).toString());
+        if(NewRelic.getAgent().getConfig().getValue("log_file_path") != null) {
+            osVariables.setLogDirectory(Paths.get(NewRelic.getAgent().getConfig().getValue("log_file_path"), IUtilConstants.NR_SECURITY_HOME, LOGS).toString());
         } else {
             osVariables.setLogDirectory(Paths.get(AgentConfig.getInstance().getK2Home(), LOGS).toString());
         }

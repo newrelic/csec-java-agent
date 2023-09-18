@@ -16,7 +16,6 @@ import com.newrelic.agent.security.instrumentator.utils.INRSettingsKey;
 import com.newrelic.agent.security.intcodeagent.constants.AgentServices;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.newrelic.agent.security.intcodeagent.filelogging.LogLevel;
-import com.newrelic.agent.security.intcodeagent.log4j.logging.Log4jManager;
 import com.newrelic.agent.security.intcodeagent.logging.HealthCheckScheduleThread;
 import com.newrelic.agent.security.intcodeagent.logging.IAgentConstants;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.ApplicationURLMappings;
@@ -41,8 +40,6 @@ import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.security.schema.operation.RXSSOperation;
 import com.newrelic.api.agent.security.schema.policy.AgentPolicy;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.lang.instrument.Instrumentation;
@@ -84,7 +81,7 @@ public class Agent implements SecurityAgent {
 
     private boolean isInitialised;
 
-    private static Logger logger;
+    private static FileLoggerThreadPool logger;
 
     private java.net.URL agentJarURL;
     private Instrumentation instrumentation;
@@ -128,20 +125,27 @@ public class Agent implements SecurityAgent {
             info = AgentInfo.getInstance();
         }
         config.instantiate();
-        Log4jManager.getInstance();
-        logger = LogManager.getLogger(Agent.class);
-        logger.info("[STEP-1] => Security agent is starting");
-        logger.info(String.format("[STEP-2] => Generating unique identifier: %s", AgentInfo.getInstance().getApplicationUUID()));
+        logger = FileLoggerThreadPool.getInstance();
+        logger.logInit(
+                LogLevel.INFO,
+                "[STEP-1] => Security agent is starting",
+                Agent.class.getName());
+        logger.logInit(
+                LogLevel.INFO,
+                String.format("[STEP-2] => Generating unique identifier: %s", AgentInfo.getInstance().getApplicationUUID()), AgentInfo.class.getName());
         config.setConfig(CollectorConfigurationUtils.populateCollectorConfig());
 
         try {
             info.setBuildInfo(readCollectorBuildInfo());
-            logger.info(String.format("CSEC Collector build info : %s", new JavaPropsMapper().writeValueAsProperties(info.getBuildInfo())));
+            logger.log(LogLevel.INFO, String.format("CSEC Collector build info : %s", new JavaPropsMapper().writeValueAsProperties(info.getBuildInfo())), this.getClass().getName());
         } catch (IOException e) {
             // TODO: Need to confirm requirement of this throw.
             throw new RuntimeException("Unable to read CSEC Collector build info", e);
         }
-        logger.info("[STEP-3] => Gathering information about the application");
+        logger.logInit(
+                LogLevel.INFO,
+                "[STEP-3] => Gathering information about the application",
+                this.getClass().getName());
         info.setIdentifier(ApplicationInfoUtils.envDetection());
         ApplicationInfoUtils.continueIdentifierProcessing(info.getIdentifier(), config.getConfig());
         info.generateAppInfo(config.getConfig());
@@ -164,8 +168,8 @@ public class Agent implements SecurityAgent {
             buildInfo = mapper.
                     readValue(CommonUtils.getResourceStreamFromAgentJar("Agent.properties"), BuildInfo.class);
         } catch (Throwable e) {
-            logger.error(String.format(CRITICAL_ERROR_UNABLE_TO_READ_BUILD_INFO_AND_VERSION_S_S, e.getMessage(), e.getCause()));
-            logger.debug(CRITICAL_ERROR_UNABLE_TO_READ_BUILD_INFO_AND_VERSION, e);
+            logger.log(LogLevel.SEVERE, String.format(CRITICAL_ERROR_UNABLE_TO_READ_BUILD_INFO_AND_VERSION_S_S, e.getMessage(), e.getCause()), this.getClass().getName());
+            logger.log(LogLevel.FINER, CRITICAL_ERROR_UNABLE_TO_READ_BUILD_INFO_AND_VERSION, e, this.getClass().getName());
         }
         return buildInfo;
     }
@@ -181,15 +185,19 @@ public class Agent implements SecurityAgent {
         FileCleaner.scheduleNewTask();
         SchedulerHelper.getInstance().scheduleLowSeverityFilterCleanup(LowSeverityHelper::clearLowSeverityEventFilter,
                 30 , 30, TimeUnit.MINUTES);
-        logger.info(
-                String.format(STARTED_MODULE_LOG, AgentServices.HealthCheck.name())
+        logger.logInit(
+                LogLevel.INFO,
+                String.format(STARTED_MODULE_LOG, AgentServices.HealthCheck.name()),
+                Agent.class.getName()
         );
         WSReconnectionST.getInstance().submitNewTaskSchedule(0);
         EventSendPool.getInstance();
-        logger.info(
-                String.format(STARTED_MODULE_LOG, AgentServices.EventWritePool.name())
+        logger.logInit(
+                LogLevel.INFO,
+                String.format(STARTED_MODULE_LOG, AgentServices.EventWritePool.name()),
+                Agent.class.getName()
         );
-        logger.info(AGENT_INIT_LOG_STEP_FIVE_END);
+        logger.logInit(LogLevel.INFO, AGENT_INIT_LOG_STEP_FIVE_END, Agent.class.getName());
 
     }
 
@@ -257,7 +265,7 @@ public class Agent implements SecurityAgent {
         operation.setStartTime(Instant.now().toEpochMilli());
         SecurityMetaData securityMetaData = NewRelicSecurity.getAgent().getSecurityMetaData();
         if(securityMetaData.getFuzzRequestIdentifier().getK2Request()){
-            logger.trace(String.format("New Event generation with id %s of type %s", operation.getExecutionId(), operation.getClass().getSimpleName()));
+            logger.log(LogLevel.FINEST, String.format("New Event generation with id %s of type %s", operation.getExecutionId(), operation.getClass().getSimpleName()), Agent.class.getName());
         }
         if (operation instanceof RXSSOperation) {
             operation.setStackTrace(securityMetaData.getMetaData().getServiceTrace());
@@ -266,8 +274,9 @@ public class Agent implements SecurityAgent {
         }
 
         if(checkIfNRGeneratedEvent(operation, securityMetaData)) {
-            logger.trace(DROPPING_EVENT_AS_IT_WAS_GENERATED_BY_K_2_INTERNAL_API_CALL +
-                            JsonConverter.toJSON(operation));
+            logger.log(LogLevel.FINEST, DROPPING_EVENT_AS_IT_WAS_GENERATED_BY_K_2_INTERNAL_API_CALL +
+                            JsonConverter.toJSON(operation),
+                    Agent.class.getName());
             return;
         }
 
@@ -281,8 +290,9 @@ public class Agent implements SecurityAgent {
         if (needToGenerateEvent(operation.getApiID())) {
             DispatcherPool.getInstance().dispatchEvent(operation, securityMetaData);
             if (!firstEventProcessed.get()) {
-                logger.info(
-                        String.format(EVENT_ZERO_PROCESSED, securityMetaData.getRequest()));
+                logger.logInit(LogLevel.INFO,
+                        String.format(EVENT_ZERO_PROCESSED, securityMetaData.getRequest()),
+                        this.getClass().getName());
                 firstEventProcessed.set(true);
             }
         }
@@ -297,7 +307,7 @@ public class Agent implements SecurityAgent {
 
         if(StringUtils.isNotBlank(fuzzRequestIdentifier.getApiRecordId()) && !AgentUtils.getInstance().getScannedAPIIds().contains(fuzzRequestIdentifier.getApiRecordId())){
             AgentUtils.getInstance().getScannedAPIIds().add(fuzzRequestIdentifier.getApiRecordId());
-            logger.info(String.format("IAST Scan for API %s with ID : %s started.", url, fuzzRequestIdentifier.getApiRecordId()));
+            logger.log(LogLevel.INFO, String.format("IAST Scan for API %s with ID : %s started.", url, fuzzRequestIdentifier.getApiRecordId()), Agent.class.getName());
         }
     }
 
@@ -408,7 +418,7 @@ public class Agent implements SecurityAgent {
                     && StringUtils.equals(k2RequestIdentifier.getNextStage().getStatus(), IAgentConstants.VULNERABLE)) {
                 ExitEventBean exitEventBean = new ExitEventBean(operation.getExecutionId(), operation.getCaseType().getCaseType());
                 exitEventBean.setK2RequestIdentifier(k2RequestIdentifier.getRaw());
-                logger.debug("Exit event : {}", exitEventBean);
+                logger.log(LogLevel.FINER, "Exit event : " + exitEventBean, this.getClass().getName());
                 DispatcherPool.getInstance().dispatchExitEvent(exitEventBean);
                 AgentInfo.getInstance().getJaHealthCheck().incrementExitEventSentCount();
             }
