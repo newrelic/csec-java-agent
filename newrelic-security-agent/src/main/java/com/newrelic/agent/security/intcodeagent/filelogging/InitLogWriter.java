@@ -52,25 +52,31 @@ public class InitLogWriter implements Runnable {
 
     public static final String DATE_FORMAT_NOW = "yyyy-MM-dd HH:mm:ss";
 
-    private static final String fileName;
+    private static String fileName;
 
-    private static final String currentLogFileName;
-
-    private static int logFileCounter = 0;
+    private static String currentLogFileName;
 
     private static BufferedWriter writer;
 
-    private static final File currentLogFile;
+    private static File currentLogFile;
 
     private String threadName;
 
     private static OSVariables osVariables = OsVariablesInstance.getInstance().getOsVariables();
 
     static {
-        fileName = new File(osVariables.getLogDirectory(), "java-security-collector-init.log").getAbsolutePath();
-        currentLogFile = new File(fileName);
-        CommonUtils.forceMkdirs(currentLogFile.getParentFile().toPath(), "rwxrwxrwx");
-        currentLogFileName = fileName;
+        if(FileLoggerThreadPool.getInstance().isLoggingToStdOut){
+            writer = new BufferedWriter(new OutputStreamWriter(System.out));
+        } else {
+            fileName = new File(osVariables.getLogDirectory(), "java-security-collector-init.log").getAbsolutePath();
+            currentLogFile = new File(fileName);
+            CommonUtils.forceMkdirs(currentLogFile.getParentFile().toPath(), "rwxrwxrwx");
+            currentLogFileName = fileName;
+            createLogFile();
+        }
+    }
+
+    private static void createLogFile() {
         try {
             currentLogFile.setReadable(true, false);
             writer = new BufferedWriter(new FileWriter(currentLogFileName, true));
@@ -165,7 +171,7 @@ public class InitLogWriter implements Runnable {
     }
 
     private static void rollover(String fileName) throws IOException {
-        if (!rolloverCheckNeeded()) {
+        if (FileLoggerThreadPool.getInstance().isLoggingToStdOut || !rolloverCheckNeeded()) {
             return;
         }
 

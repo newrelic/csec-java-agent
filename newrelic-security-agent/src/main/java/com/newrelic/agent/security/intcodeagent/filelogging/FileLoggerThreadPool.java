@@ -24,6 +24,8 @@ public class FileLoggerThreadPool {
 
     protected int maxfiles = K2JALogProperties.maxfiles;
 
+    protected boolean isLoggingToStdOut = false;
+
     private FileLoggerThreadPool() throws IOException {
         // load the settings
         int queueSize = 15000;
@@ -66,6 +68,10 @@ public class FileLoggerThreadPool {
 
             if (System.getenv().containsKey(IUtilConstants.NR_CSEC_DEBUG_LOGFILE_MAX_COUNT)) {
                 this.maxfiles = Integer.parseInt(System.getenv().get(IUtilConstants.NR_CSEC_DEBUG_LOGFILE_MAX_COUNT));
+            }
+
+            if(LogFileHelper.isLoggingToStdOut()){
+                this.isLoggingToStdOut = true;
             }
         } catch (NumberFormatException e){}
 
@@ -141,7 +147,9 @@ public class FileLoggerThreadPool {
         if (logLevel.getLevel() == 1 || logLevel.getLevel() > InitLogWriter.defaultLogLevel) {
             return;
         }
-        executor.submit(new InitLogWriter(logLevel, event, logSourceClassName, Thread.currentThread().getName()));
+        if(!isLoggingToStdOut) {
+            executor.submit(new InitLogWriter(logLevel, event, logSourceClassName, Thread.currentThread().getName()));
+        }
         log(logLevel, event, logSourceClassName);
     }
 
@@ -150,7 +158,9 @@ public class FileLoggerThreadPool {
         if (logLevel.getLevel() == 1 || logLevel.getLevel() > InitLogWriter.defaultLogLevel) {
             return;
         }
-        executor.submit(new InitLogWriter(logLevel, event, throwableEvent, logSourceClassName, Thread.currentThread().getName()));
+        if(!isLoggingToStdOut) {
+            executor.submit(new InitLogWriter(logLevel, event, throwableEvent, logSourceClassName, Thread.currentThread().getName()));
+        }
         log(logLevel, event, throwableEvent, logSourceClassName);
     }
 

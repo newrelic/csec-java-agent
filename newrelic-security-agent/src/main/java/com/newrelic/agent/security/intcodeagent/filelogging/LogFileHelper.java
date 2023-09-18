@@ -5,10 +5,12 @@
  *
  */
 
-package com.newrelic.agent.security.intcodeagent.log4j.logging;
+package com.newrelic.agent.security.intcodeagent.filelogging;
 
 import com.newrelic.agent.security.instrumentator.os.OSVariables;
 import com.newrelic.agent.security.instrumentator.os.OsVariablesInstance;
+import com.newrelic.api.agent.NewRelic;
+import com.newrelic.api.agent.security.schema.StringUtils;
 
 import java.io.File;
 
@@ -17,29 +19,26 @@ import java.io.File;
  */
 public class LogFileHelper {
 
-    private static final String NEW_RELIC_LOG_FILE = "newrelic.logfile";
-    private static final String LOGS_DIRECTORY = "logs";
-
     public static final String LOG_DAILY = "log_daily";
     public static final String LOG_FILE_COUNT = "log_file_count";
     public static final String LOG_FILE_NAME = "log_file_name";
-    public static final String LOG_FILE_PATH = "log_file_path";
-    public static final String LOG_LIMIT = "log_limit_in_kbytes";
-    public static final String LOG_LEVEL = "log_level";
     public static final boolean DEFAULT_LOG_DAILY = false;
     public static final int DEFAULT_LOG_FILE_COUNT = 1;
     public static final String DEFAULT_LOG_FILE_NAME = "java-security-collector.log";
 
-    public static final String DEFAULT_LOG_LEVEL = "info";
-    public static final int DEFAULT_LOG_LIMIT = 0;
-
     public static final String STDOUT = "STDOUT";
 
+    public static boolean isLoggingToStdOut() {
+        String logFileName = NewRelic.getAgent().getConfig().getValue(LogFileHelper.LOG_FILE_NAME, LogFileHelper.DEFAULT_LOG_FILE_NAME);
+        return StringUtils.equals(LogFileHelper.STDOUT, logFileName);
+    }
 
-    private static OSVariables osVariables = OsVariablesInstance.getInstance().getOsVariables();
+    public static int logFileCount() {
+        return Math.max(1, NewRelic.getAgent().getConfig().getValue(LogFileHelper.LOG_FILE_COUNT, LogFileHelper.DEFAULT_LOG_FILE_COUNT));
+    }
 
-    public static String getLogFileName() {
-        return new File(osVariables.getLogDirectory(), "java-security-collector-new.log").getAbsolutePath();
+    public static boolean dailyRollover() {
+        return NewRelic.getAgent().getConfig().getValue(LogFileHelper.LOG_DAILY, LogFileHelper.DEFAULT_LOG_DAILY);
     }
 
 }
