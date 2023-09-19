@@ -243,6 +243,7 @@ public class Dispatcher implements Callable {
             for (Object parameter : parameters) {
                 JavaAgentEventBean javaAgentEventBean = new JavaAgentEventBean(eventBean);
                 javaAgentEventBean.setParameters((JSONArray) parameter);
+                javaAgentEventBeans.add(javaAgentEventBean);
             }
             return javaAgentEventBeans;
         } else {
@@ -257,10 +258,10 @@ public class Dispatcher implements Callable {
             int length = 0;
             while(response.length() > length){
                 int min = Math.min(response.length(), length + MAX_ALLOWED_RESPONSE_LENGHT);
-                JSONArray parameter = subList(oldParameters, 0, oldParameters.size()-2);
+                JSONArray parameter = subList(oldParameters, 0, oldParameters.size()-1);
                 parameter.add(StringUtils.substring(response, length, min));
                 parameters.add(parameter);
-                length =+ MAX_ALLOWED_RESPONSE_LENGHT;
+                length += MAX_ALLOWED_RESPONSE_LENGHT;
             }
             return parameters;
         }
