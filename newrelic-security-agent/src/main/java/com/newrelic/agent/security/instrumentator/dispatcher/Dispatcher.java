@@ -253,8 +253,8 @@ public class Dispatcher implements Callable {
 
     private JSONArray splitRXSSEvent(JSONArray oldParameters) {
         String response = securityMetaData.getResponse().getResponseBody().toString();
+        JSONArray parameters = new JSONArray();
         if(oldParameters != null && oldParameters.size()>=2 && StringUtils.length(response) >= MAX_ALLOWED_RESPONSE_LENGHT) {
-            JSONArray parameters = new JSONArray();
             int length = 0;
             while(response.length() > length){
                 int min = Math.min(response.length(), length + MAX_ALLOWED_RESPONSE_LENGHT);
@@ -265,7 +265,8 @@ public class Dispatcher implements Callable {
             }
             return parameters;
         }
-        return oldParameters;
+        parameters.add(oldParameters);
+        return parameters;
     }
 
     private JSONArray splitArray(JSONArray allParameters) {
