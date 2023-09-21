@@ -30,7 +30,7 @@ import java.util.UUID;
 import static org.junit.Assert.assertEquals;
 
 @RunWith(SecurityInstrumentationTestRunner.class)
-@InstrumentationTestConfig(includePrefixes = { "io.grpc", "com.nr.instrumentation.security.grpc1220" })
+@InstrumentationTestConfig(includePrefixes = { "io.grpc", "com.newrelic.agent.security.instrumentation.grpc1220" })
 public class GrpcTest {
 
     private static TestServer server;
