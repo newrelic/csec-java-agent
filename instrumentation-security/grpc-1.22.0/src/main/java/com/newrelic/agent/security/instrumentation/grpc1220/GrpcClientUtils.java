@@ -1,4 +1,4 @@
-package com.nr.instrumentation.security.grpc1220;
+package com.newrelic.agent.security.instrumentation.grpc1220;
 
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.instrumentation.helpers.ServletHelper;
