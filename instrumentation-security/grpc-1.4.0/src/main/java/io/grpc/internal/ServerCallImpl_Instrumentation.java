@@ -10,8 +10,8 @@ package io.grpc.internal;
 import com.newrelic.api.agent.Trace;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
-import com.nr.instrumentation.security.grpc140.GrpcServerUtils;
-import com.nr.instrumentation.security.grpc140.GrpcUtils;
+import com.newrelic.agent.security.instrumentation.grpc140.GrpcServerUtils;
+import com.newrelic.agent.security.instrumentation.grpc140.GrpcUtils;
 import io.grpc.Metadata;
 import io.grpc.Status;
 
