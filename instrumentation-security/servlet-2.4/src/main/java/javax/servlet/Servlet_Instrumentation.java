@@ -18,7 +18,7 @@ import com.newrelic.api.agent.security.schema.operation.RXSSOperation;
 import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
-import com.nr.instrumentation.security.servlet24.HttpServletHelper;
+import com.newrelic.agent.security.instrumentation.servlet24.HttpServletHelper;
 
 import javax.servlet.http.HttpServletRequest;
 
