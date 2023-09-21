@@ -5,7 +5,7 @@
  *
  */
 
-package com.nr.instrumentation.security.grpc1400.app;
+package com.newrelic.agent.security.instrumentation.grpc1400.app;
 
 import com.newrelic.agent.security.introspec.SecurityInstrumentationTestRunner;
 import com.newrelic.api.agent.NewRelic;
