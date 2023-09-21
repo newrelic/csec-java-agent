@@ -1,4 +1,4 @@
-package com.nr.instrumentation.cassandra4;
+package com.newrelic.agent.security.instrumentation.cassandra4;
 
 import com.datastax.oss.driver.api.core.cql.BatchStatement;
 import com.datastax.oss.driver.api.core.cql.BatchType;
@@ -39,7 +39,7 @@ import java.util.UUID;
 
 // Issue when running cassandra unit on Java 9+ - https://github.com/jsevellec/cassandra-unit/issues/249
 @RunWith(SecurityInstrumentationTestRunner.class)
-@InstrumentationTestConfig(includePrefixes = { "com.datastax", "com.nr.instrumentation" })
+@InstrumentationTestConfig(includePrefixes = { "com.datastax", "com.newrelic.agent.security.instrumentation" })
 @Category({ Java9IncompatibleTest.class, Java11IncompatibleTest.class, Java17IncompatibleTest.class })
 public class CassandraTest {
     @ClassRule
