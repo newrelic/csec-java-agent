@@ -1,4 +1,4 @@
-package com.nr.instrumentation.security.org.asynchttpclient;
+package com.newrelic.agent.security.instrumentation.org.asynchttpclient;
 
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
