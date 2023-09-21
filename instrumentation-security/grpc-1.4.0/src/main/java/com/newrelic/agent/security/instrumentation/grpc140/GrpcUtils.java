@@ -1,4 +1,4 @@
-package com.nr.instrumentation.security.grpc140;
+package com.newrelic.agent.security.instrumentation.grpc140;
 
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.MessageOrBuilder;
@@ -6,7 +6,6 @@ import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.instrumentation.helpers.GrpcHelper;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
