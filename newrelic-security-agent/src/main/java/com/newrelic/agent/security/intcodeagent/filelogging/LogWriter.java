@@ -193,7 +193,7 @@ public class LogWriter implements Runnable {
                 } catch (IOException e) {
                 }
 
-                CommonUtils.deleteRolloverLogFiles(currentFile.getName(), FileLoggerThreadPool.getInstance().maxfiles);
+                LogFileHelper.deleteRolloverLogFiles(currentFile.getName(), FileLoggerThreadPool.getInstance().maxfiles);
             }
         } finally {
             writer = new BufferedWriter(new FileWriter(currentFile, true));
@@ -224,4 +224,7 @@ public class LogWriter implements Runnable {
         return fileName;
     }
 
+    public static void setWriter(BufferedWriter writer) {
+        LogWriter.writer = writer;
+    }
 }
