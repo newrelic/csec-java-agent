@@ -1,4 +1,4 @@
-package com.nr.instrumentation.security.httpServer.test;
+package com.newrelic.agent.security.instrumentation.httpServer.test;
 
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;

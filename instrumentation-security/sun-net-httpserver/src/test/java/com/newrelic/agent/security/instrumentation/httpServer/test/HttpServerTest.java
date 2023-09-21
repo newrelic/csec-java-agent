@@ -1,4 +1,4 @@
-package com.nr.instrumentation.security.httpServer.test;
+package com.newrelic.agent.security.instrumentation.httpServer.test;
 
 import com.newrelic.agent.security.introspec.InstrumentationTestConfig;
 import com.newrelic.agent.security.introspec.SecurityInstrumentationTestRunner;
