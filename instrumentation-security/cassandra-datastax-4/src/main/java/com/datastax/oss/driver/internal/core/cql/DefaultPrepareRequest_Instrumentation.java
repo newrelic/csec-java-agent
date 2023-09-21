@@ -8,7 +8,7 @@ import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.WeaveAllConstructors;
 import com.newrelic.api.agent.weaver.Weaver;
-import com.nr.instrumentation.security.cassandra4.CassandraUtils;
+import com.newrelic.agent.security.instrumentation.cassandra4.CassandraUtils;
 
 @Weave(type = MatchType.ExactClass, originalName = "com.datastax.oss.driver.internal.core.cql.DefaultPrepareRequest")
 public abstract class DefaultPrepareRequest_Instrumentation {
