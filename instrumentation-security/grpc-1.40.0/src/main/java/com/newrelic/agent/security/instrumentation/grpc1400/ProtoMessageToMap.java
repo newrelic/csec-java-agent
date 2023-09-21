@@ -1,4 +1,4 @@
-package com.nr.instrumentation.security.grpc1400;
+package com.newrelic.agent.security.instrumentation.grpc1400;
 
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.MapEntry;
