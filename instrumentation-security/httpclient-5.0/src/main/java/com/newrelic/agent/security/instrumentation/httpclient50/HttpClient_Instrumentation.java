@@ -5,17 +5,10 @@
  *
  */
 
-package com.nr.agent.instrumentation.security.httpclient50;
+package com.newrelic.agent.security.instrumentation.httpclient50;
 
-import com.newrelic.api.agent.Trace;
-import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
-import com.newrelic.api.agent.security.instrumentation.helpers.ServletHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
-import com.newrelic.api.agent.security.schema.SecurityMetaData;
-import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
-import com.newrelic.api.agent.security.schema.operation.SSRFOperation;
-import com.newrelic.api.agent.security.utils.SSRFUtils;
 import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
