@@ -1,4 +1,4 @@
-package com.nr.instrumentation.security.httpclient5;
+package com.newrelic.agent.security.instrumentation.httpclient5;
 
 import com.newrelic.agent.security.introspec.InstrumentationTestConfig;
 import com.newrelic.agent.security.introspec.SecurityInstrumentationTestRunner;
@@ -29,7 +29,7 @@ import java.util.Map;
 import java.util.UUID;
 
 @RunWith(SecurityInstrumentationTestRunner.class)
-@InstrumentationTestConfig(includePrefixes = "com.nr.agent.instrumentation.security.httpclient50")
+@InstrumentationTestConfig(includePrefixes = "com.newrelic.agent.security.instrumentation.httpclient50")
 public class HttpClientTest {
     @ClassRule
     public static HttpServerRule server = new HttpServerRule();
