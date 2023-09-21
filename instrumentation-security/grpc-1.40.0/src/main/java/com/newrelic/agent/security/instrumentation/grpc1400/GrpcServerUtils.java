@@ -1,4 +1,4 @@
-package com.nr.instrumentation.security.grpc1400;
+package com.newrelic.agent.security.instrumentation.grpc1400;
 
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.instrumentation.helpers.GrpcHelper;
@@ -21,8 +21,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Map;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class GrpcServerUtils {
     private static final String X_FORWARDED_FOR = "x-forwarded-for";
