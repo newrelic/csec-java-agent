@@ -4,7 +4,7 @@
  *  * SPDX-License-Identifier: Apache-2.0
  *
  */
-package com.nr.instrumentation.security.grpc1220;
+package com.newrelic.agent.security.instrumentation.grpc1220;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -16,8 +16,8 @@ import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.security.schema.operation.RXSSOperation;
 import com.newrelic.api.agent.security.schema.operation.SSRFOperation;
-import com.nr.instrumentation.security.grpc1220.app.TestClient;
-import com.nr.instrumentation.security.grpc1220.app.TestServer;
+import com.newrelic.agent.security.instrumentation.grpc1220.app.TestClient;
+import com.newrelic.agent.security.instrumentation.grpc1220.app.TestServer;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
