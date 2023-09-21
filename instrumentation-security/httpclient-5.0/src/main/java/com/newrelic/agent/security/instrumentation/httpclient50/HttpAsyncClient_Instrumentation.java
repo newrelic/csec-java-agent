@@ -5,7 +5,7 @@
  *
  */
 
-package com.nr.agent.instrumentation.security.httpclient50;
+package com.newrelic.agent.security.instrumentation.httpclient50;
 
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
