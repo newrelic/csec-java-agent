@@ -1,4 +1,4 @@
-package com.nr.instrumentation.security.jetty12.test;
+package com.newrelic.agent.security.instrumentation.jetty12.test;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;

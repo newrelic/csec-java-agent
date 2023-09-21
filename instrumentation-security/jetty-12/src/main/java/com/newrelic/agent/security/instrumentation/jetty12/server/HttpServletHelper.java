@@ -1,4 +1,4 @@
-package com.nr.instrumentation.security.jetty12.server;
+package com.newrelic.agent.security.instrumentation.jetty12.server;
 
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;

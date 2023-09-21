@@ -1,9 +1,8 @@
-package com.nr.instrumentation.security.jetty12.server;
+package com.newrelic.agent.security.instrumentation.jetty12.server;
 
 import com.newrelic.api.agent.security.instrumentation.helpers.ServletHelper;
 import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
-import com.newrelic.api.agent.weaver.WeaveAllConstructors;
 import com.newrelic.api.agent.weaver.Weaver;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Response;

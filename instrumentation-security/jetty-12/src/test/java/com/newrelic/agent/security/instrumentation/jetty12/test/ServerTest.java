@@ -1,4 +1,4 @@
-package com.nr.instrumentation.security.jetty12.test;
+package com.newrelic.agent.security.instrumentation.jetty12.test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.newrelic.agent.security.introspec.InstrumentationTestConfig;
@@ -13,12 +13,11 @@ import com.newrelic.api.agent.security.schema.operation.RXSSOperation;
 import com.newrelic.security.test.marker.Java11IncompatibleTest;
 import com.newrelic.security.test.marker.Java8IncompatibleTest;
 import com.newrelic.security.test.marker.Java9IncompatibleTest;
-import com.nr.instrumentation.security.jetty12.server.HttpServletHelper;
+import com.newrelic.agent.security.instrumentation.jetty12.server.HttpServletHelper;
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Response;
 import org.eclipse.jetty.server.Server;
-import org.eclipse.jetty.server.handler.ContextHandler;
 import org.eclipse.jetty.util.Callback;
 import org.junit.After;
 import org.junit.Assert;
@@ -39,7 +38,7 @@ import java.util.UUID;
 @Category({ Java8IncompatibleTest.class, Java9IncompatibleTest.class, Java11IncompatibleTest.class })
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @RunWith(SecurityInstrumentationTestRunner.class)
-@InstrumentationTestConfig(includePrefixes = {"com.nr.instrumentation.security.jetty12.server"})
+@InstrumentationTestConfig(includePrefixes = {"com.newrelic.agent.security.instrumentation.jetty12.server"})
 public class ServerTest {
     public static int PORT = 0;
     public static String ENDPOINT = "http://localhost:%d/";
