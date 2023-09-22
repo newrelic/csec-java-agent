@@ -1,4 +1,4 @@
-package com.newrelic.agent.security.instrumentation.xpath.camel;
+package com.newrelic.test.agent.security.instrumentation.xpath.camel;
 
 import com.newrelic.agent.security.introspec.InstrumentationTestConfig;
 import com.newrelic.agent.security.introspec.SecurityInstrumentationTestRunner;
