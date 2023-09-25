@@ -1,6 +1,5 @@
 package com.newrelic.agent.security.instrumentation.random.java.security;
 
-import com.newrelic.api.agent.NewRelic;
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.instrumentation.helpers.LowSeverityHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
@@ -15,15 +14,12 @@ import com.newrelic.api.agent.weaver.Weaver;
 import java.security.MessageDigest;
 import java.security.Provider;
 
-import static com.newrelic.api.agent.security.instrumentation.helpers.LowSeverityHelper.DEFAULT;
-import static com.newrelic.api.agent.security.instrumentation.helpers.LowSeverityHelper.LOW_SEVERITY_HOOKS_ENABLED;
-
 @Weave(type = MatchType.ExactClass, originalName = "java.security.MessageDigest")
 public class MessageDigest_Instrumentation {
 
     public static MessageDigest getInstance(String algorithm) {
         AbstractOperation operation = null;
-        boolean isOwaspHookEnabled = NewRelic.getAgent().getConfig().getValue(LOW_SEVERITY_HOOKS_ENABLED, DEFAULT);
+        boolean isOwaspHookEnabled = NewRelicSecurity.getAgent().isLowPriorityInstrumentationEnabled();
         if (isOwaspHookEnabled && LowSeverityHelper.isOwaspHookProcessingNeeded()){
             operation = preprocessSecurityHook(algorithm, StringUtils.EMPTY, MessageDigest.class.getName(), "getInstance");
         }
@@ -40,7 +36,7 @@ public class MessageDigest_Instrumentation {
 
     public static MessageDigest getInstance(String algorithm, String provider) {
         AbstractOperation operation = null;
-        boolean isOwaspHookEnabled = NewRelic.getAgent().getConfig().getValue(LOW_SEVERITY_HOOKS_ENABLED, DEFAULT);
+        boolean isOwaspHookEnabled = NewRelicSecurity.getAgent().isLowPriorityInstrumentationEnabled();
         if (isOwaspHookEnabled && LowSeverityHelper.isOwaspHookProcessingNeeded()){
             operation = preprocessSecurityHook(algorithm, provider, MessageDigest.class.getName(), "getInstance");
         }
@@ -57,7 +53,7 @@ public class MessageDigest_Instrumentation {
 
     public static MessageDigest getInstance(String algorithm, Provider provider) {
         AbstractOperation operation = null;
-        boolean isOwaspHookEnabled = NewRelic.getAgent().getConfig().getValue(LOW_SEVERITY_HOOKS_ENABLED, DEFAULT);
+        boolean isOwaspHookEnabled = NewRelicSecurity.getAgent().isLowPriorityInstrumentationEnabled();
         if (isOwaspHookEnabled && LowSeverityHelper.isOwaspHookProcessingNeeded()){
             operation = preprocessSecurityHook(algorithm, provider.getClass().getSimpleName(), MessageDigest.class.getName(), "getInstance");
         }
