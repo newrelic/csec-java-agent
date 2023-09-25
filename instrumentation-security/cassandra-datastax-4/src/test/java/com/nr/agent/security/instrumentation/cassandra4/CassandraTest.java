@@ -1,4 +1,4 @@
-package com.newrelic.agent.security.instrumentation.cassandra4;
+package com.nr.agent.security.instrumentation.cassandra4;
 
 import com.datastax.oss.driver.api.core.cql.BatchStatement;
 import com.datastax.oss.driver.api.core.cql.BatchType;

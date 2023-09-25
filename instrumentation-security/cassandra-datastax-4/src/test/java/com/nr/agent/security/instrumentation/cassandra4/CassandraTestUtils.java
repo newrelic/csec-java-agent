@@ -1,4 +1,4 @@
-package com.newrelic.agent.security.instrumentation.cassandra4;
+package com.nr.agent.security.instrumentation.cassandra4;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
