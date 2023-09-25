@@ -1,4 +1,4 @@
-package com.newrelic.agent.security.instrumentation.asynchttpclient210;
+package com.nr.agent.security.instrumentation.asynchttpclient210;
 
 import com.newrelic.agent.security.introspec.InstrumentationTestConfig;
 import com.newrelic.agent.security.introspec.SecurityInstrumentationTestRunner;
@@ -35,7 +35,7 @@ import static org.junit.Assert.assertTrue;
 @Category({ Java11IncompatibleTest.class, Java17IncompatibleTest.class })
 @RunWith(SecurityInstrumentationTestRunner.class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-@InstrumentationTestConfig(includePrefixes = {"org.asynchttpclient"})
+@InstrumentationTestConfig(includePrefixes = {"org.asynchttpclient", "com.newrelic.agent.security.instrumentation.org.asynchttpclient"})
 public class AsyncHttpClientTest {
 
     @Rule
