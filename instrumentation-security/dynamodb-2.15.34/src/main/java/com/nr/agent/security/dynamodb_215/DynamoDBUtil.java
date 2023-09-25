@@ -291,7 +291,7 @@ public abstract class DynamoDBUtil {
                         query.setTableName(conditionCheck.tableName());
                         query.setConditionExpression(conditionCheck.conditionExpression());
                         query.setExpressionAttributeNames(conditionCheck.expressionAttributeNames());
-                        query.setExpressionAttributeNames(conditionCheck.expressionAttributeNames());
+                        query.setExpressionAttributeValues(conditionCheck.expressionAttributeValues());
                         requests.add(new DynamoDBRequest(query, OP_READ));
                     }
                     if (transactItems.get(i).put() != null) {
