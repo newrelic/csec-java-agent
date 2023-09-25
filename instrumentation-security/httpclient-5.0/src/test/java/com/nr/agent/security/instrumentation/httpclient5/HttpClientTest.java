@@ -1,4 +1,4 @@
-package com.newrelic.agent.security.instrumentation.httpclient5;
+package com.nr.agent.security.instrumentation.httpclient5;
 
 import com.newrelic.agent.security.introspec.InstrumentationTestConfig;
 import com.newrelic.agent.security.introspec.SecurityInstrumentationTestRunner;
