@@ -1,4 +1,4 @@
-package com.newrelic.agent.security.instrumentation.jetty12.test;
+package com.nr.agent.security.instrumentation.jetty12.test;
 
 import com.newrelic.agent.security.introspec.InstrumentationTestConfig;
 import com.newrelic.agent.security.introspec.SecurityInstrumentationTestRunner;
