@@ -5,7 +5,7 @@
  *
  */
 
-package com.newrelic.agent.security.instrumentation.grpc140.app;
+package com.nr.agent.security.instrumentation.grpc140.app;
 
 import com.google.common.util.concurrent.ListenableFuture;
 import com.newrelic.api.agent.NewRelic;
