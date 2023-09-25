@@ -26,7 +26,7 @@ import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 
 @RunWith(SecurityInstrumentationTestRunner.class)
-@InstrumentationTestConfig(includePrefixes = "com.newrelic.agent.security.instrumentation.security.random")
+@InstrumentationTestConfig(includePrefixes = "com.newrelic.agent.security.instrumentation.random")
 public class RandomTest {
     private static final String SECURE_RANDOM = "SECURERANDOM";
     private static final String WEAK_RANDOM = "WEAKRANDOM";
