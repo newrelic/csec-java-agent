@@ -12,15 +12,9 @@ import com.newrelic.api.agent.security.schema.operation.SSRFOperation;
 import org.apache.hc.client5.http.async.methods.SimpleHttpRequest;
 import org.apache.hc.client5.http.async.methods.SimpleHttpResponse;
 import org.apache.hc.client5.http.async.methods.SimpleRequestBuilder;
-import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.client5.http.impl.async.CloseableHttpAsyncClient;
 import org.apache.hc.client5.http.impl.async.HttpAsyncClients;
-import org.apache.hc.client5.http.impl.classic.BasicHttpClientResponseHandler;
-import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
-import org.apache.hc.client5.http.impl.classic.HttpClients;
-import org.apache.hc.core5.http.HttpHost;
 import org.apache.hc.core5.http.Message;
-import org.apache.hc.core5.http.io.HttpClientResponseHandler;
 import org.apache.hc.core5.http.nio.entity.BasicAsyncEntityConsumer;
 import org.apache.hc.core5.http.nio.entity.BasicAsyncEntityProducer;
 import org.apache.hc.core5.http.nio.support.BasicRequestProducer;
@@ -32,23 +26,20 @@ import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import java.io.IOException;
 import java.net.URISyntaxException;
-import java.net.UnknownHostException;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
 @RunWith(SecurityInstrumentationTestRunner.class)
-@InstrumentationTestConfig(includePrefixes = "com.nr.agent.instrumentation.security.httpclient50")
+@InstrumentationTestConfig(includePrefixes = "com.newrelic.agent.security.instrumentation.httpclient50")
 public class HttpAsyncClientTest {
     @ClassRule
     public static HttpServerRule server = new HttpServerRule();
 
     @Test
-    public void testExecute() throws URISyntaxException, IOException {
+    public void testExecute() throws URISyntaxException {
         String headerValue = String.valueOf(UUID.randomUUID());
 
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
@@ -72,7 +63,7 @@ public class HttpAsyncClientTest {
     }
 
     @Test
-    public void testExecute1() throws URISyntaxException, IOException {
+    public void testExecute1() throws URISyntaxException {
 
         String headerValue = String.valueOf(UUID.randomUUID());
 
@@ -96,7 +87,7 @@ public class HttpAsyncClientTest {
     }
 
     @Test
-    public void testExecute2() throws URISyntaxException, IOException, InterruptedException {
+    public void testExecute2() throws URISyntaxException {
 
         String headerValue = String.valueOf(UUID.randomUUID());
 
@@ -121,7 +112,7 @@ public class HttpAsyncClientTest {
     }
 
     @Test
-    public void testExecute3() throws URISyntaxException, IOException {
+    public void testExecute3() throws URISyntaxException {
 
         String headerValue = String.valueOf(UUID.randomUUID());
 
@@ -146,7 +137,7 @@ public class HttpAsyncClientTest {
     }
 
     @Trace(dispatcher = true)
-    private void callExecute() throws IOException {
+    private void callExecute() {
         try (CloseableHttpAsyncClient httpAsyncClient = HttpAsyncClients.createDefault()) {
             httpAsyncClient.start();
             SimpleHttpRequest request = SimpleRequestBuilder.get(server.getEndPoint()).build();
@@ -158,7 +149,7 @@ public class HttpAsyncClientTest {
     }
 
     @Trace(dispatcher = true)
-    private void callExecute1() throws URISyntaxException, IOException {
+    private void callExecute1() {
         try (CloseableHttpAsyncClient httpAsyncClient = HttpAsyncClients.createDefault()) {
             httpAsyncClient.start();
             SimpleHttpRequest request = SimpleRequestBuilder.get(server.getEndPoint()).build();
@@ -171,7 +162,7 @@ public class HttpAsyncClientTest {
     }
 
     @Trace(dispatcher = true)
-    private void callExecute2() throws URISyntaxException, IOException {
+    private void callExecute2() {
         try (CloseableHttpAsyncClient httpAsyncClient = HttpAsyncClients.createDefault()) {
             httpAsyncClient.start();
             SimpleHttpRequest request = SimpleRequestBuilder.get(server.getEndPoint()).build();
@@ -183,7 +174,7 @@ public class HttpAsyncClientTest {
     }
 
     @Trace(dispatcher = true)
-    public void callExecute3() throws IOException {
+    public void callExecute3() {
         try (CloseableHttpAsyncClient httpAsyncClient = HttpAsyncClients.createDefault()) {
             httpAsyncClient.start();
             SimpleHttpRequest request = SimpleRequestBuilder.get(server.getEndPoint()).build();
