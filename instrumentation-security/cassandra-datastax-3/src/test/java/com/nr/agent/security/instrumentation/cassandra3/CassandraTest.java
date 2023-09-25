@@ -1,4 +1,4 @@
-package com.newrelic.agent.security.instrumentation.cassandra3;
+package com.nr.agent.security.instrumentation.cassandra3;
 
 import com.datastax.driver.core.BatchStatement;
 import com.datastax.driver.core.BoundStatement;
