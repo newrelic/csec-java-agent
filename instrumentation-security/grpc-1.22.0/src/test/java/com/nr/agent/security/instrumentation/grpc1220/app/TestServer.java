@@ -5,7 +5,7 @@
  *
  */
 
-package com.newrelic.agent.security.instrumentation.grpc1220.app;
+package com.nr.agent.security.instrumentation.grpc1220.app;
 
 import com.newrelic.agent.security.introspec.SecurityInstrumentationTestRunner;
 import com.newrelic.api.agent.NewRelic;
