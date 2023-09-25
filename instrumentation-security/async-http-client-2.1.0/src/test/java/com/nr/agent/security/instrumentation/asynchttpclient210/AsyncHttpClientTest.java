@@ -1,4 +1,4 @@
-package com.newrelic.agent.security.instrumentation.asynchttpclient210;
+package com.nr.agent.security.instrumentation.asynchttpclient210;
 
 import com.newrelic.agent.security.introspec.InstrumentationTestConfig;
 import com.newrelic.agent.security.introspec.SecurityInstrumentationTestRunner;
