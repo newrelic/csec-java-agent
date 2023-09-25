@@ -1,6 +1,5 @@
 package com.newrelic.agent.security.instrumentation.jetty12.test;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.newrelic.agent.security.introspec.InstrumentationTestConfig;
 import com.newrelic.agent.security.introspec.SecurityInstrumentationTestRunner;
 import com.newrelic.agent.security.introspec.SecurityIntrospector;
@@ -65,7 +64,7 @@ public class ServerTest {
 
         List<AbstractOperation> operations = introspector.getOperations();
         Assert.assertTrue("No operations detected", operations.size() > 0);
-        System.out.println(new ObjectMapper().writeValueAsString(operations));
+
         RXSSOperation operation = (RXSSOperation) operations.get(0);
 
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.REFLECTED_XSS, operation.getCaseType());
@@ -310,6 +309,7 @@ public class ServerTest {
         conn.connect();
 
         System.out.println(conn.getResponseCode());
+        waitForProcessing();
     }
 
     @Trace(dispatcher = true)
@@ -325,6 +325,7 @@ public class ServerTest {
         conn.connect();
 
         conn.getResponseCode();
+        waitForProcessing();
         return headerValue;
     }
 
@@ -333,6 +334,14 @@ public class ServerTest {
             return socket.getLocalPort();
         } catch (IOException e) {
             throw new RuntimeException("Unable to allocate ephemeral port ");
+        }
+    }
+
+    private static void waitForProcessing() {
+        try {
+            Thread.sleep(50);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
         }
     }
 }
