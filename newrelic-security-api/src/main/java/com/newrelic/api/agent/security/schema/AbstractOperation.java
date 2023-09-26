@@ -45,25 +45,13 @@ public abstract class AbstractOperation {
             this.className = className;
             this.methodName = methodName;
             this.blockingEndTime = 0L;
-        try {
-            SecurityMetaData meta = NewRelicSecurity.getAgent()
-                    .getSecurityMetaData();
-            if (meta != null && meta.peekDeserializingObjectStack() != null) {
-                Map<String, DeserializationInfo> stack = meta.getDeserializingObjectStack();
-                this.deserializationInfo = stack.get("0");
-                DeserializationInfo nextElement = this.deserializationInfo;
-                for (DeserializationInfo element : stack.values()){
-                    element.computeAttributeFlatMap();
-                    if (element == this.deserializationInfo) {
-                        continue;
-                    }
-                    nextElement.setNext(element);
-                    nextElement = element;
-                }
+            if (NewRelicSecurity.getAgent() != null &&
+                    NewRelicSecurity.getAgent().getSecurityMetaData() != null &&
+                    NewRelicSecurity.getAgent().getSecurityMetaData().peekDeserializingObjectStack() != null) {
+                this.deserializationInfo = NewRelicSecurity.getAgent().getSecurityMetaData()
+                        .peekDeserializingObjectStack();
+                this.deserializationInfo.computeObjectMap();
             }
-        }catch (Exception e){
-            e.printStackTrace();
-        }
     }
 
     public String getClassName() {

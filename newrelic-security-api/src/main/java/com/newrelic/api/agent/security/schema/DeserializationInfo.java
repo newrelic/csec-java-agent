@@ -32,7 +32,6 @@ public class DeserializationInfo implements Serializable {
     private Map<String, DeserializationInfo> value;
     private String leafValue;
     private Object instance;
-    private DeserializationInfo next;
 
     public DeserializationInfo(String type, Object instance) {
         this.type = type;
@@ -63,9 +62,6 @@ public class DeserializationInfo implements Serializable {
             this.value = new HashMap<>();
             this.value.putAll(instance.value);
         }
-//        if (instance.next != null) {
-//            this.next = new DeserializationInfo(instance.next);
-//        }
     }
 
     public DeserializationInfo() {
@@ -76,7 +72,7 @@ public class DeserializationInfo implements Serializable {
     }
 
 
-    public Map<String, DeserializationInfo> computeAttributeFlatMap() {
+    public Map<String, DeserializationInfo> computeObjectMap() {
         if (this.value == null || this.leafValue == null || this.leafValue.isEmpty()) {
             try {
                 this.value = computeKeyValueMappingOnObject(this.instance, 0);
@@ -109,9 +105,7 @@ public class DeserializationInfo implements Serializable {
                 populateForField(val, field.getName(), valueMap, depth++);
                 field.setAccessible(accessibility);
             }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        } catch (Exception e) {}
         return valueMap;
     }
 
@@ -158,23 +152,6 @@ public class DeserializationInfo implements Serializable {
         return  fields;
     }
 
-    private Map<String, String> getFlatMap(Map<String, Map.Entry> identifierMap){
-        Map<String, String> flatMap = new HashMap<>();
-        for (Map.Entry<String, Map.Entry> entry : identifierMap.entrySet()) {
-            if (entry.getValue().getKey() == String.class.getName()) {
-                flatMap.put(entry.getKey(), (String) entry.getValue().getValue());
-            } else if (Map.class.isAssignableFrom(entry.getValue().getValue().getClass())){
-                Map<String, Map.Entry> valMap = (Map<String, Map.Entry>) entry.getValue().getValue();
-                Map<String, String> childFlatMap = getFlatMap(valMap);
-                for (Map.Entry<String, String> childEntry : childFlatMap.entrySet()){
-                    String key = String.format("%s.%s", entry.getKey(), childEntry.getKey());
-                    flatMap.put(key, childEntry.getValue());
-                }
-            }
-        }
-        return flatMap;
-    }
-
     public String getType() {
         return type;
     }
@@ -213,13 +190,5 @@ public class DeserializationInfo implements Serializable {
 
     public void setInstance(Object instance) {
         this.instance = instance;
-    }
-
-    public DeserializationInfo getNext() {
-        return next;
-    }
-
-    public void setNext(DeserializationInfo next) {
-        this.next = next;
     }
 }

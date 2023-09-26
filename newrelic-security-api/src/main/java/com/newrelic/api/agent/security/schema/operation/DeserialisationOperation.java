@@ -21,7 +21,7 @@ public class DeserialisationOperation extends AbstractOperation {
             this.entityName = NewRelicSecurity.getAgent().getSecurityMetaData()
                     .peekDeserializingObjectStack().getType();
             this.params = NewRelicSecurity.getAgent().getSecurityMetaData()
-                    .peekDeserializingObjectStack().computeAttributeFlatMap();
+                    .peekDeserializingObjectStack().computeObjectMap();
         }
         this.setCaseType(VulnerabilityCaseType.UNSAFE_DESERIALIZATION);
     }
