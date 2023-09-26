@@ -21,7 +21,7 @@ import java.util.Map;
 
 @RunWith(SecurityInstrumentationTestRunner.class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-@InstrumentationTestConfig(includePrefixes = {"com.nr.agent.security.dynamodb_1_11_80", "com.amazonaws.services.dynamodbv2_1_11_80"})
+@InstrumentationTestConfig(includePrefixes = {"com.newrelic.agent.security.instrumentation.dynamodb_1_11_80", "com.amazonaws.services.dynamodbv2_1_11_80"})
 public class DynamodbTest {
     @ClassRule
     public static DynamoServer dynamo = new DynamoServer();
