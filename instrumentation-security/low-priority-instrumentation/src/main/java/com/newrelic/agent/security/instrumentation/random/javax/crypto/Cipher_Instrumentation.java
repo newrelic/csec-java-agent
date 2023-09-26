@@ -1,6 +1,5 @@
 package com.newrelic.agent.security.instrumentation.random.javax.crypto;
 
-import com.newrelic.api.agent.NewRelic;
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.instrumentation.helpers.LowSeverityHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
@@ -15,14 +14,11 @@ import com.newrelic.api.agent.weaver.Weaver;
 
 import java.security.Provider;
 
-import static com.newrelic.api.agent.security.instrumentation.helpers.LowSeverityHelper.DEFAULT;
-import static com.newrelic.api.agent.security.instrumentation.helpers.LowSeverityHelper.LOW_SEVERITY_HOOKS_ENABLED;
-
 @Weave(type = MatchType.ExactClass, originalName = "javax.crypto.Cipher")
 public class Cipher_Instrumentation {
     public static final Cipher_Instrumentation getInstance(String algorithm) {
         AbstractOperation operation = null;
-        boolean isOwaspHookEnabled = NewRelic.getAgent().getConfig().getValue(LOW_SEVERITY_HOOKS_ENABLED, DEFAULT);
+        boolean isOwaspHookEnabled = NewRelicSecurity.getAgent().isLowPriorityInstrumentationEnabled();
         if (isOwaspHookEnabled && LowSeverityHelper.isOwaspHookProcessingNeeded()){
             operation = preprocessSecurityHook(algorithm, StringUtils.EMPTY, Cipher_Instrumentation.class.getName(), "getInstance", "CIPHER");
         }
@@ -39,7 +35,7 @@ public class Cipher_Instrumentation {
 
     public static final Cipher_Instrumentation getInstance(String transformation, Provider provider) {
         AbstractOperation operation = null;
-        boolean isOwaspHookEnabled = NewRelic.getAgent().getConfig().getValue(LOW_SEVERITY_HOOKS_ENABLED, DEFAULT);
+        boolean isOwaspHookEnabled = NewRelicSecurity.getAgent().isLowPriorityInstrumentationEnabled();
         if (isOwaspHookEnabled && LowSeverityHelper.isOwaspHookProcessingNeeded()){
             operation = preprocessSecurityHook(transformation, provider.getClass().getSimpleName(), Cipher_Instrumentation.class.getName(), "getInstance", "CIPHER");
         }

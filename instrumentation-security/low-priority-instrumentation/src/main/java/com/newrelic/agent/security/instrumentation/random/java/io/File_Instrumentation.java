@@ -1,6 +1,5 @@
 package com.newrelic.agent.security.instrumentation.random.java.io;
 
-import com.newrelic.api.agent.NewRelic;
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.instrumentation.helpers.FileHelper;
 import com.newrelic.api.agent.security.instrumentation.helpers.LowSeverityHelper;
@@ -14,9 +13,6 @@ import com.newrelic.api.agent.weaver.Weaver;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.newrelic.api.agent.security.instrumentation.helpers.LowSeverityHelper.DEFAULT;
-import static com.newrelic.api.agent.security.instrumentation.helpers.LowSeverityHelper.LOW_SEVERITY_HOOKS_ENABLED;
-
 @Weave(type = MatchType.BaseClass, originalName = "java.io.File")
 public abstract class File_Instrumentation {
     public abstract String getName();
@@ -25,7 +21,7 @@ public abstract class File_Instrumentation {
 
     public boolean exists() {
         boolean isFileLockAcquired = acquireFileLockIfPossible();
-        boolean isOwaspHookEnabled = NewRelic.getAgent().getConfig().getValue(LOW_SEVERITY_HOOKS_ENABLED, DEFAULT);
+        boolean isOwaspHookEnabled = NewRelicSecurity.getAgent().isLowPriorityInstrumentationEnabled();
 
         AbstractOperation operation = null;
         if (isOwaspHookEnabled && isFileLockAcquired && !FileHelper.skipExistsEvent(this.getName()) && LowSeverityHelper.isOwaspHookProcessingNeeded()) {
@@ -35,7 +31,9 @@ public abstract class File_Instrumentation {
         try {
             returnVal = Weaver.callOriginal();
         } finally {
-            registerExitOperation(isFileLockAcquired, operation);
+            if (isOwaspHookEnabled) {
+                registerExitOperation(isFileLockAcquired, operation);
+            }
             if (isFileLockAcquired) {
                 releaseFileLock();
             }
