@@ -5,7 +5,7 @@
  *
  */
 
-package com.nr.instrumentation.security.dynamodb212;
+package com.nr.agent.security.instrumentation.dynamodb212;
 
 import software.amazon.awssdk.services.dynamodb.model.AttributeDefinition;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;

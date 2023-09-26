@@ -1,4 +1,4 @@
-package com.nr.instrumentation.security.dynamodb215;
+package com.nr.agent.security.instrumentation.dynamodb212;
 
 import com.amazonaws.services.dynamodbv2.local.main.ServerRunner;
 import com.amazonaws.services.dynamodbv2.local.server.DynamoDBProxyServer;
@@ -22,19 +22,14 @@ import software.amazon.awssdk.services.dynamodb.DynamoDbAsyncClient;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValueUpdate;
-import software.amazon.awssdk.services.dynamodb.model.BatchExecuteStatementRequest;
 import software.amazon.awssdk.services.dynamodb.model.BatchGetItemRequest;
-import software.amazon.awssdk.services.dynamodb.model.BatchStatementRequest;
 import software.amazon.awssdk.services.dynamodb.model.BatchWriteItemRequest;
 import software.amazon.awssdk.services.dynamodb.model.ConditionCheck;
 import software.amazon.awssdk.services.dynamodb.model.Delete;
 import software.amazon.awssdk.services.dynamodb.model.DeleteItemRequest;
 import software.amazon.awssdk.services.dynamodb.model.DescribeTableRequest;
-import software.amazon.awssdk.services.dynamodb.model.ExecuteStatementRequest;
-import software.amazon.awssdk.services.dynamodb.model.ExecuteTransactionRequest;
 import software.amazon.awssdk.services.dynamodb.model.Get;
 import software.amazon.awssdk.services.dynamodb.model.GetItemRequest;
-import software.amazon.awssdk.services.dynamodb.model.ParameterizedStatement;
 import software.amazon.awssdk.services.dynamodb.model.Put;
 import software.amazon.awssdk.services.dynamodb.model.PutItemRequest;
 import software.amazon.awssdk.services.dynamodb.model.PutRequest;
@@ -56,7 +51,7 @@ import java.util.Map;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @RunWith(SecurityInstrumentationTestRunner.class)
-@InstrumentationTestConfig(includePrefixes = {"com.nr.agent.security.dynamodb_215", "software.amazon.awssdk.core"})
+@InstrumentationTestConfig(includePrefixes = {"com.newrelic.agent.security.instrumentation.dynamodb_212", "software.amazon.awssdk.core"})
 public class DynamodbTest {
     private static final int PORT = DynamoUtil.getRandomPort();
     private static DynamoDBProxyServer server;
@@ -192,11 +187,14 @@ public class DynamodbTest {
 
             Assert.assertEquals("Invalid table name", "test", request.getQuery().getTableName());
             Assert.assertNotNull("No such payload detected", query.get("artist"));
+            Assert.assertNotNull("No such payload detected", query.get("year"));
             if (i==0) {
                 Assert.assertEquals("Invalid payload value.", "Monu",query.get("artist").s());
+                Assert.assertEquals("Invalid payload value.", "1998",query.get("year").n());
             }
             else if (i==1) {
                 Assert.assertEquals("Invalid payload value.", "Red",query.get("artist").s());
+                Assert.assertEquals("Invalid payload value.", "1999",query.get("year").n());
             }
             Assert.assertEquals("Invalid payload value.", "artist",request.getQuery().getProjectionExpression());
             Assert.assertEquals("Invalid query-type.", "read", request.getQueryType());
@@ -236,165 +234,6 @@ public class DynamodbTest {
                 Assert.assertEquals("Invalid payload value.", "1998",query.get("year").n());
                 Assert.assertEquals("Invalid query-type.", "write", request.getQueryType());
             }
-            i++;
-        }
-    }
-
-    @Test
-    public void testTransactWriteItemsConditionCheck() {
-        transactWriteItemsConditionCheck();
-
-        SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
-        List<AbstractOperation> operations = introspector.getOperations();
-        Assert.assertTrue("No operations detected", operations.size() > 0);
-
-        DynamoDBOperation operation = (DynamoDBOperation) operations.get(0);
-        Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.DYNAMO_DB_COMMAND, operation.getCaseType());
-        Assert.assertEquals("Invalid executed method name.", "transactWriteItems", operation.getMethodName());
-        Assert.assertEquals("Invalid operation Category.", DynamoDBOperation.Category.DQL, operation.getCategory());
-        Assert.assertTrue("No payload detected", operation.getPayload().size() > 0);
-
-        int i = 0;
-        for(DynamoDBRequest request: operation.getPayload()) {
-            if (i==0) {
-                DynamoDBRequest.Query query = request.getQuery();
-                Map<String, AttributeValue> data = (Map<String, AttributeValue>) query.getKey();
-                Assert.assertEquals("Invalid table name", "test", request.getQuery().getTableName());
-                Assert.assertNotNull("No such payload detected", data.get("artist"));
-                Assert.assertEquals("Invalid payload value.", "Red", data.get("artist").s());
-                Assert.assertEquals("Invalid condition expression.", "#y = :a", query.getConditionExpression());
-                Assert.assertNotNull("No expression attribute name.", query.getExpressionAttributeNames());
-                Assert.assertEquals("Invalid expression attribute name.", "year", ((Map<String, String>)query.getExpressionAttributeNames()).get("#y"));
-                Assert.assertNotNull("No expression attribute value.", query.getExpressionAttributeValues());
-                Assert.assertEquals("Invalid expression attribute value.", "1998", ((Map<String, AttributeValue>)query.getExpressionAttributeValues()).get(":a").n());
-                Assert.assertEquals("Invalid query-type.", "read", request.getQueryType());
-            }
-            i++;
-        }
-    }
-
-    @Test
-    public void testExecuteStmt() {
-        executeStmtTxn();
-
-        SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
-        List<AbstractOperation> operations = introspector.getOperations();
-        Assert.assertTrue("No operations detected", operations.size() > 0);
-
-        DynamoDBOperation operation = (DynamoDBOperation) operations.get(0);
-        Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.DYNAMO_DB_COMMAND, operation.getCaseType());
-        Assert.assertEquals("Invalid executed method name.", "executeStatement", operation.getMethodName());
-        Assert.assertEquals("Invalid operation Category.", DynamoDBOperation.Category.PARTIQL, operation.getCategory());
-        Assert.assertTrue("No payload detected", operation.getPayload().size() > 0);
-
-        for(DynamoDBRequest request: operation.getPayload()) {
-            Assert.assertEquals("Invalid stmt.", "SELECT * FROM test where Genre = ?", request.getQuery().getStatement());
-            Assert.assertEquals("Invalid stmt.", "Jazz", ((List<AttributeValue>)request.getQuery().getParameters()).get(0).s());
-            Assert.assertEquals("Invalid stmt-type.", "read_write", request.getQueryType());
-        }
-    }
-
-    @Test
-    public void testBatchExecuteStmt() {
-        batchExecuteStmtTxn();
-
-        SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
-        List<AbstractOperation> operations = introspector.getOperations();
-        Assert.assertTrue("No operations detected", operations.size() > 0);
-
-        DynamoDBOperation operation = (DynamoDBOperation) operations.get(0);
-        Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.DYNAMO_DB_COMMAND, operation.getCaseType());
-        Assert.assertEquals("Invalid executed method name.", "batchExecuteStatement", operation.getMethodName());
-        Assert.assertEquals("Invalid operation Category.", DynamoDBOperation.Category.PARTIQL, operation.getCategory());
-        Assert.assertTrue("No payload detected", operation.getPayload().size() > 0);
-
-        int i  = 0;
-        for(DynamoDBRequest request: operation.getPayload()) {
-            if (i==0) {
-                Assert.assertEquals("Invalid stmt.", "SELECT * FROM test where Genre = ?", request.getQuery().getStatement());
-                Assert.assertEquals("Invalid stmt.", "Jazz", ((List<AttributeValue>)request.getQuery().getParameters()).get(0).s());
-                Assert.assertEquals("Invalid stmt-type.", "read_write", request.getQueryType());
-            }
-            else if (i != 1) {
-                Assert.assertEquals("Invalid stmt.", "SELECT * FROM test where artist = ?", request.getQuery().getStatement());
-                Assert.assertEquals("Invalid stmt.", "Monu", ((List<AttributeValue>)request.getQuery().getParameters()).get(0).s());
-                Assert.assertEquals("Invalid stmt-type.", "read_write", request.getQueryType());
-            }
-            i++;
-        }
-    }
-
-    @Test
-    public void testExecuteTransaction() {
-        executeTransaction();
-
-        SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
-        List<AbstractOperation> operations = introspector.getOperations();
-        Assert.assertTrue("No operations detected", operations.size() > 0);
-
-        DynamoDBOperation operation = (DynamoDBOperation) operations.get(0);
-        Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.DYNAMO_DB_COMMAND, operation.getCaseType());
-        Assert.assertEquals("Invalid executed method name.", "executeTransaction", operation.getMethodName());
-        Assert.assertEquals("Invalid operation Category.", DynamoDBOperation.Category.PARTIQL, operation.getCategory());
-        Assert.assertTrue("No payload detected", operation.getPayload().size() > 0);
-
-        for(DynamoDBRequest request: operation.getPayload()) {
-            Assert.assertEquals("Invalid transaction.", "INSERT INTO test value {'artist':'XBand','year':'1998'}", request.getQuery().getStatement());
-            Assert.assertTrue("Invalid parameters.", ((List<AttributeValue>)request.getQuery().getParameters()).size()==0);
-            Assert.assertEquals("Invalid stmt-type.", "read_write", request.getQueryType());
-        }
-    }
-
-    @Test
-    public void testExecuteTransactionPrep() {
-        executeTransactionPrep();
-
-        SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
-        List<AbstractOperation> operations = introspector.getOperations();
-        Assert.assertTrue("No operations detected", operations.size() > 0);
-
-        DynamoDBOperation operation = (DynamoDBOperation) operations.get(0);
-        Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.DYNAMO_DB_COMMAND, operation.getCaseType());
-        Assert.assertEquals("Invalid executed method name.", "executeTransaction", operation.getMethodName());
-        Assert.assertEquals("Invalid operation Category.", DynamoDBOperation.Category.PARTIQL, operation.getCategory());
-        Assert.assertTrue("No payload detected", operation.getPayload().size() > 0);
-
-        for(DynamoDBRequest request: operation.getPayload()) {
-            Assert.assertEquals("Invalid transaction.", "INSERT INTO test value {'artist':'?','year':'?'}", request.getQuery().getStatement());
-            Assert.assertEquals("Invalid parameters.", "Acme Band", ((List<AttributeValue>)request.getQuery().getParameters()).get(0).s());
-            Assert.assertEquals("Invalid parameters.", "2023", ((List<AttributeValue>)request.getQuery().getParameters()).get(1).n());
-            Assert.assertEquals("Invalid stmt-type.", "read_write", request.getQueryType());
-        }
-    }
-
-    @Test
-    public void testTransactGetItemsAsync() {
-        transactGetItemsAsync();
-
-        SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
-        List<AbstractOperation> operations = introspector.getOperations();
-        Assert.assertTrue("No operations detected", operations.size() > 0);
-
-        DynamoDBOperation operation = (DynamoDBOperation) operations.get(0);
-        Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.DYNAMO_DB_COMMAND, operation.getCaseType());
-        Assert.assertEquals("Invalid executed method name.", "transactGetItems", operation.getMethodName());
-        Assert.assertEquals("Invalid operation Category.", DynamoDBOperation.Category.DQL, operation.getCategory());
-        Assert.assertTrue("No payload detected", operation.getPayload().size() > 0);
-
-        int i = 0;
-        for(DynamoDBRequest request: operation.getPayload()) {
-            Map<String, AttributeValue> query = (Map<String, AttributeValue>) request.getQuery().getKey();
-
-            Assert.assertEquals("Invalid table name", "test", request.getQuery().getTableName());
-            Assert.assertNotNull("No such payload detected", query.get("artist"));
-            if (i==0) {
-                Assert.assertEquals("Invalid payload value.", "Monu",query.get("artist").s());
-            }
-            else if (i==1) {
-                Assert.assertEquals("Invalid payload value.", "Red",query.get("artist").s());
-            }
-            Assert.assertEquals("Invalid payload value.", "artist",request.getQuery().getProjectionExpression());
-            Assert.assertEquals("Invalid query-type.", "read", request.getQueryType());
             i++;
         }
     }
@@ -449,8 +288,8 @@ public class DynamodbTest {
     }
 
     @Test
-    public void testExecuteStmtAsync() {
-        executeStmtTxnAsync();
+    public void testTransactWriteItemsConditionCheck() {
+        transactWriteItemsConditionCheck();
 
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
         List<AbstractOperation> operations = introspector.getOperations();
@@ -458,87 +297,26 @@ public class DynamodbTest {
 
         DynamoDBOperation operation = (DynamoDBOperation) operations.get(0);
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.DYNAMO_DB_COMMAND, operation.getCaseType());
-        Assert.assertEquals("Invalid executed method name.", "executeStatement", operation.getMethodName());
-        Assert.assertEquals("Invalid operation Category.", DynamoDBOperation.Category.PARTIQL, operation.getCategory());
+        Assert.assertEquals("Invalid executed method name.", "transactWriteItems", operation.getMethodName());
+        Assert.assertEquals("Invalid operation Category.", DynamoDBOperation.Category.DQL, operation.getCategory());
         Assert.assertTrue("No payload detected", operation.getPayload().size() > 0);
 
-        for(DynamoDBRequest request: operation.getPayload()) {
-            Assert.assertEquals("Invalid stmt.", "SELECT * FROM test where Genre = ?", request.getQuery().getStatement());
-            Assert.assertEquals("Invalid stmt.", "Jazz", ((List<AttributeValue>)request.getQuery().getParameters()).get(0).s());
-            Assert.assertEquals("Invalid stmt-type.", "read_write", request.getQueryType());
-        }
-    }
-
-    @Test
-    public void testBatchExecuteStmtAsync() {
-        batchExecuteStmtTxnAsync();
-
-        SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
-        List<AbstractOperation> operations = introspector.getOperations();
-        Assert.assertTrue("No operations detected", operations.size() > 0);
-
-        DynamoDBOperation operation = (DynamoDBOperation) operations.get(0);
-        Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.DYNAMO_DB_COMMAND, operation.getCaseType());
-        Assert.assertEquals("Invalid executed method name.", "batchExecuteStatement", operation.getMethodName());
-        Assert.assertEquals("Invalid operation Category.", DynamoDBOperation.Category.PARTIQL, operation.getCategory());
-        Assert.assertTrue("No payload detected", operation.getPayload().size() > 0);
-
-        int i  = 0;
+        int i = 0;
         for(DynamoDBRequest request: operation.getPayload()) {
             if (i==0) {
-                Assert.assertEquals("Invalid stmt.", "SELECT * FROM test where Genre = ?", request.getQuery().getStatement());
-                Assert.assertEquals("Invalid stmt.", "Jazz", ((List<AttributeValue>)request.getQuery().getParameters()).get(0).s());
-                Assert.assertEquals("Invalid stmt-type.", "read_write", request.getQueryType());
-            }
-            else if (i != 1) {
-                Assert.assertEquals("Invalid stmt.", "SELECT * FROM test where artist = ?", request.getQuery().getStatement());
-                Assert.assertEquals("Invalid stmt.", "Monu", ((List<AttributeValue>)request.getQuery().getParameters()).get(0).s());
-                Assert.assertEquals("Invalid stmt-type.", "read_write", request.getQueryType());
+                DynamoDBRequest.Query query = request.getQuery();
+                Map<String, AttributeValue> data = (Map<String, AttributeValue>) query.getKey();
+                Assert.assertEquals("Invalid table name", "test", request.getQuery().getTableName());
+                Assert.assertNotNull("No such payload detected", data.get("artist"));
+                Assert.assertEquals("Invalid payload value.", "Red", data.get("artist").s());
+                Assert.assertEquals("Invalid condition expression.", "#y = :a", query.getConditionExpression());
+                Assert.assertNotNull("No expression attribute name.", query.getExpressionAttributeNames());
+                Assert.assertEquals("Invalid expression attribute name.", "year", ((Map<String, String>)query.getExpressionAttributeNames()).get("#y"));
+                Assert.assertNotNull("No expression attribute value.", query.getExpressionAttributeValues());
+                Assert.assertEquals("Invalid expression attribute value.", "1998", ((Map<String, AttributeValue>)query.getExpressionAttributeValues()).get(":a").n());
+                Assert.assertEquals("Invalid query-type.", "read", request.getQueryType());
             }
             i++;
-        }
-    }
-
-    @Test
-    public void testExecuteTransactionAsync() {
-        executeTransactionAsync();
-
-        SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
-        List<AbstractOperation> operations = introspector.getOperations();
-        Assert.assertTrue("No operations detected", operations.size() > 0);
-
-        DynamoDBOperation operation = (DynamoDBOperation) operations.get(0);
-        Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.DYNAMO_DB_COMMAND, operation.getCaseType());
-        Assert.assertEquals("Invalid executed method name.", "executeTransaction", operation.getMethodName());
-        Assert.assertEquals("Invalid operation Category.", DynamoDBOperation.Category.PARTIQL, operation.getCategory());
-        Assert.assertTrue("No payload detected", operation.getPayload().size() > 0);
-
-        for(DynamoDBRequest request: operation.getPayload()) {
-            Assert.assertEquals("Invalid transaction.", "INSERT INTO test value {'artist':'XBand','year':'1998'}", request.getQuery().getStatement());
-            Assert.assertTrue("Invalid parameters.", ((List<AttributeValue>)request.getQuery().getParameters()).size()==0);
-            Assert.assertEquals("Invalid stmt-type.", "read_write", request.getQueryType());
-        }
-    }
-
-    @Test
-    public void testExecuteTransactionPrepAsync() {
-        executeTransactionPrepAsync();
-
-        SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
-        List<AbstractOperation> operations = introspector.getOperations();
-        Assert.assertTrue("No operations detected", operations.size() > 0);
-
-        DynamoDBOperation operation = (DynamoDBOperation) operations.get(0);
-        Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.DYNAMO_DB_COMMAND, operation.getCaseType());
-        Assert.assertEquals("Invalid executed method name.", "executeTransaction", operation.getMethodName());
-        Assert.assertEquals("Invalid operation Category.", DynamoDBOperation.Category.PARTIQL, operation.getCategory());
-        Assert.assertTrue("No payload detected", operation.getPayload().size() > 0);
-
-        for(DynamoDBRequest request: operation.getPayload()) {
-            Assert.assertEquals("Invalid transaction.", "INSERT INTO test value {'artist':'?','year':'?'}", request.getQuery().getStatement());
-            Assert.assertEquals("Invalid parameters.", "Acme Band", ((List<AttributeValue>)request.getQuery().getParameters()).get(0).s());
-            Assert.assertEquals("Invalid parameters.", "2023", ((List<AttributeValue>)request.getQuery().getParameters()).get(1).n());
-            Assert.assertEquals("Invalid stmt-type.", "read_write", request.getQueryType());
         }
     }
 
@@ -1076,10 +854,10 @@ public class DynamodbTest {
 
         Map<String, AttributeValue> key = new HashMap<>();
         key.put("artist", AttributeValue.builder().s("Monu").build());
-//        key.put("year", AttributeValue.builder().n("1998").build());
+        key.put("year", AttributeValue.builder().n("1998").build());
         Map<String, AttributeValue> key2 = new HashMap<>();
         key2.put("artist", AttributeValue.builder().s("Red").build());
-//        key2.put("year", AttributeValue.builder().n("1999").build());
+        key2.put("year", AttributeValue.builder().n("1999").build());
 
         TransactGetItemsRequest queryRequest = TransactGetItemsRequest.builder().transactItems(
                 TransactGetItem.builder().get(Get.builder().tableName(DynamoUtil.TABLE).key(key).projectionExpression("artist").build()).build(),
@@ -1102,72 +880,6 @@ public class DynamodbTest {
         client.transactWriteItems(queryRequest);
     }
 
-    private void executeStmtTxn() {
-        String stmt = "SELECT * FROM test where Genre = ?";
-        client.executeStatement(
-                ExecuteStatementRequest.builder()
-                        .statement(stmt)
-                        .parameters(Collections.singletonList(AttributeValue.builder().s("Jazz").build()))
-                        .consistentRead(true)
-                        .build());
-    }
-
-    private void batchExecuteStmtTxn() {
-        String stmt = "SELECT * FROM test where Genre = ?";
-        String stmt2 = "SELECT * FROM test where artist = ?";
-        client.batchExecuteStatement(
-                BatchExecuteStatementRequest.builder()
-                        .statements(
-                                BatchStatementRequest.builder()
-                                        .statement(stmt)
-                                        .parameters(Collections.singletonList(AttributeValue.builder().s("Jazz").build()))
-                                        .consistentRead(true)
-                                        .build(),
-
-                                BatchStatementRequest.builder()
-                                        .statement(stmt2)
-                                        .parameters(Collections.singletonList(AttributeValue.builder().s("Monu").build()))
-                                        .consistentRead(true)
-                                        .build()
-                        )
-                        .build());
-    }
-
-    public void executeTransaction()
-    {
-        ExecuteTransactionRequest executeTransactionRequest = ExecuteTransactionRequest.builder()
-                .transactStatements(Collections.singletonList(ParameterizedStatement.builder()
-                        .statement("INSERT INTO test value {'artist':'XBand','year':'1998'}").build()))
-                .build();
-        client.executeTransaction(executeTransactionRequest);
-    }
-
-    public void executeTransactionPrep()
-    {
-        ExecuteTransactionRequest executeTransactionRequest = ExecuteTransactionRequest.builder()
-                .transactStatements(Collections.singletonList(ParameterizedStatement.builder()
-                        .statement("INSERT INTO test value {'artist':'?','year':'?'}")
-                        .parameters(AttributeValue.builder().s("Acme Band").build(),AttributeValue.builder().n("2023").build()).build()))
-                .build();
-        client.executeTransaction(executeTransactionRequest);
-    }
-
-    public void transactGetItemsAsync() {
-
-        Map<String, AttributeValue> key = new HashMap<>();
-        key.put("artist", AttributeValue.builder().s("Monu").build());
-//        key.put("year", AttributeValue.builder().n("1998").build());
-        Map<String, AttributeValue> key2 = new HashMap<>();
-        key2.put("artist", AttributeValue.builder().s("Red").build());
-//        key2.put("year", AttributeValue.builder().n("1999").build());
-
-        TransactGetItemsRequest queryRequest = TransactGetItemsRequest.builder().transactItems(
-                TransactGetItem.builder().get(Get.builder().tableName(DynamoUtil.TABLE).key(key).projectionExpression("artist").build()).build(),
-                TransactGetItem.builder().get(Get.builder().tableName(DynamoUtil.TABLE).key(key2).projectionExpression("artist").build()).build()).build();
-
-        asyncClient.transactGetItems(queryRequest);
-    }
-
     public void transactWriteItemsAsync() {
         Map<String, AttributeValue> key1 = new HashMap<>();
         key1.put("artist", AttributeValue.builder().s("Monu").build());
@@ -1180,63 +892,13 @@ public class DynamodbTest {
         TransactWriteItemsRequest queryRequest = TransactWriteItemsRequest.builder().transactItems(
                 TransactWriteItem.builder().delete(Delete.builder().tableName(DynamoUtil.TABLE).key(key1).build()).build(),
                 TransactWriteItem.builder().conditionCheck(ConditionCheck.builder().tableName(DynamoUtil.TABLE).key(key2)
-                                .conditionExpression("#y = :a")
+                        .conditionExpression("#y = :a")
                         .expressionAttributeNames(Collections.singletonMap("#y","artist"))
                         .expressionAttributeValues(Collections.singletonMap(":a", AttributeValue.builder().s("Monu").build()))
                         .build()).build(),
                 TransactWriteItem.builder().put(Put.builder().tableName(DynamoUtil.TABLE).item(key3).build()).build()).build();
 
         asyncClient.transactWriteItems(queryRequest);
-    }
-
-    private void executeStmtTxnAsync() {
-        String stmt = "SELECT * FROM test where Genre = ?";
-        asyncClient.executeStatement(
-                ExecuteStatementRequest.builder()
-                        .statement(stmt)
-                        .parameters(Collections.singletonList(AttributeValue.builder().s("Jazz").build()))
-                        .consistentRead(true)
-                        .build());
-    }
-
-    private void batchExecuteStmtTxnAsync() {
-        String stmt = "SELECT * FROM test where Genre = ?";
-        String stmt2 = "SELECT * FROM test where artist = ?";
-        asyncClient.batchExecuteStatement(
-                BatchExecuteStatementRequest.builder()
-                        .statements(
-                                BatchStatementRequest.builder()
-                                        .statement(stmt)
-                                        .parameters(Collections.singletonList(AttributeValue.builder().s("Jazz").build()))
-                                        .consistentRead(true)
-                                        .build(),
-
-                                BatchStatementRequest.builder()
-                                        .statement(stmt2)
-                                        .parameters(Collections.singletonList(AttributeValue.builder().s("Monu").build()))
-                                        .consistentRead(true)
-                                        .build()
-                        )
-                        .build());
-    }
-
-    public void executeTransactionAsync()
-    {
-        ExecuteTransactionRequest executeTransactionRequest = ExecuteTransactionRequest.builder()
-                .transactStatements(Collections.singletonList(ParameterizedStatement.builder()
-                        .statement("INSERT INTO test value {'artist':'XBand','year':'1998'}").build()))
-                .build();
-        asyncClient.executeTransaction(executeTransactionRequest);
-    }
-
-    public void executeTransactionPrepAsync()
-    {
-        ExecuteTransactionRequest executeTransactionRequest = ExecuteTransactionRequest.builder()
-                .transactStatements(Collections.singletonList(ParameterizedStatement.builder()
-                        .statement("INSERT INTO test value {'artist':'?','year':'?'}")
-                        .parameters(AttributeValue.builder().s("Acme Band").build(),AttributeValue.builder().n("2023").build()).build()))
-                .build();
-        asyncClient.executeTransaction(executeTransactionRequest);
     }
 
     public void transactWriteItemsConditionCheck() {

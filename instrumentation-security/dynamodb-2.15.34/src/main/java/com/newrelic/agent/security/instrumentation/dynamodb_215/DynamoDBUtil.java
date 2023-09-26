@@ -5,7 +5,7 @@
  *
  */
 
-package com.nr.agent.security.dynamodb_215;
+package com.newrelic.agent.security.instrumentation.dynamodb_215;
 
 import com.newrelic.api.agent.DatastoreParameters;
 import com.newrelic.api.agent.security.NewRelicSecurity;
