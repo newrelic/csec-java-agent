@@ -21,7 +21,7 @@ import java.security.Security;
 import java.util.List;
 
 @RunWith(SecurityInstrumentationTestRunner.class)
-@InstrumentationTestConfig(includePrefixes = { "com.newrelic.agent.security.instrumentation.random" })
+@InstrumentationTestConfig(includePrefixes = { "com.newrelic.agent.security.instrumentation.security.random" })
 public class KeyPairGeneratorTest {
 
     @Test

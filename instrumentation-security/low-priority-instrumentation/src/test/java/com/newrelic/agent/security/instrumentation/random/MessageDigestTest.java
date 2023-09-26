@@ -25,7 +25,7 @@ import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
 @RunWith(SecurityInstrumentationTestRunner.class)
-@InstrumentationTestConfig(includePrefixes = { "com.newrelic.agent.security.instrumentation.random" })
+@InstrumentationTestConfig(includePrefixes = { "com.newrelic.agent.security.instrumentation.security.random" })
 public class MessageDigestTest {
 
     @BeforeClass
