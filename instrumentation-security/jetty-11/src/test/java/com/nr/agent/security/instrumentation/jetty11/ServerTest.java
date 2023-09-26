@@ -35,7 +35,7 @@ import java.util.UUID;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @RunWith(SecurityInstrumentationTestRunner.class)
-@InstrumentationTestConfig(includePrefixes = {"security.org.eclipse.jetty11"})
+@InstrumentationTestConfig(includePrefixes = {"com.newrelic.agent.security.instrumentation.jetty11"})
 public class ServerTest {
     public final static int PORT = getRandomPort();
     public final static String ENDPOINT = String.format("http://localhost:%d/", PORT);
