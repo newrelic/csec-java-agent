@@ -28,7 +28,7 @@ import java.util.List;
 import java.util.Properties;
 
 @RunWith(SecurityInstrumentationTestRunner.class)
-@InstrumentationTestConfig(includePrefixes = { "javax.naming", "com.newrelic.instrumentation.security.javax" } )
+@InstrumentationTestConfig(includePrefixes = { "javax.naming", "com.newrelic.agent.security.instrumentation.javax.jndi" } )
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class ContextRmiTest {
 
