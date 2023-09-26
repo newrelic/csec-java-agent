@@ -78,14 +78,14 @@ class AkkaHttpCoreTest {
     Assert.assertEquals("Invalid executed method name.", AkkaCoreUtils.METHOD_SINGLE_REQUEST_IMPL, operations.getMethodName)
     Assert.assertEquals("Invalid executed parameters.", baseUrl + "/ping", operations.getArg)
     Assert.assertEquals("Invalid protocol.", introspector.getSecurityMetaData.getRequest.getProtocol, "http")
-    Assert.assertTrue(String.format("Missing K2 header: %s", ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID), headers.exists(header => header.name().contains(ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID)))
-    Assert.assertTrue(String.format("Missing K2 header: %s", ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER), headers.exists(header => header.name().contains(ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER)))
+    Assert.assertTrue(String.format("Missing CSEC header: %s", ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID), headers.exists(header => header.name().contains(ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID)))
+    Assert.assertTrue(String.format("Missing CSEC header: %s", ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER), headers.exists(header => header.name().contains(ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER)))
     for (header <- headers) {
       if(header.name().contains(ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID)) {
-        Assert.assertEquals(String.format("Invalid K2 header value for: %s", ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID), headerValue, header.value())
+        Assert.assertEquals(String.format("Invalid CSEC header value for: %s", ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID), headerValue, header.value())
       }
       if (header.name().contains(ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER)) {
-        Assert.assertEquals(String.format("Invalid K2 header value for: %s", ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER), String.format("%s;DUMMY_UUID/dummy-api-id/dummy-exec-id;", headerValue), header.value())
+        Assert.assertEquals(String.format("Invalid CSEC header value for: %s", ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER), String.format("%s;DUMMY_UUID/dummy-api-id/dummy-exec-id;", headerValue), header.value())
       }
     }
   }
@@ -107,14 +107,14 @@ class AkkaHttpCoreTest {
     Assert.assertEquals("Invalid executed method name.", AkkaCoreUtils.METHOD_SINGLE_REQUEST_IMPL, operations.getMethodName)
     Assert.assertEquals("Invalid executed parameters.", baseUrl + "/asyncPing", operations.getArg)
     Assert.assertEquals("Invalid protocol.", introspector.getSecurityMetaData.getRequest.getProtocol, "http")
-    Assert.assertTrue(String.format("Missing K2 header: %s", ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID), headers.exists(header => header.name().contains(ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID)))
-    Assert.assertTrue(String.format("Missing K2 header: %s", ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER), headers.exists(header => header.name().contains(ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER)))
+    Assert.assertTrue(String.format("Missing CSEC header: %s", ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID), headers.exists(header => header.name().contains(ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID)))
+    Assert.assertTrue(String.format("Missing CSEC header: %s", ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER), headers.exists(header => header.name().contains(ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER)))
     for (header <- headers) {
       if (header.name().contains(ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID)) {
-        Assert.assertEquals(String.format("Invalid K2 header value for: %s", ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID), headerValue, header.value())
+        Assert.assertEquals(String.format("Invalid CSEC header value for: %s", ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID), headerValue, header.value())
       }
       if (header.name().contains(ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER)) {
-        Assert.assertEquals(String.format("Invalid K2 header value for: %s", ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER), String.format("%s;DUMMY_UUID/dummy-api-id/dummy-exec-id;", headerValue), header.value())
+        Assert.assertEquals(String.format("Invalid CSEC header value for: %s", ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER), String.format("%s;DUMMY_UUID/dummy-api-id/dummy-exec-id;", headerValue), header.value())
       }
     }
   }
@@ -136,14 +136,14 @@ class AkkaHttpCoreTest {
     Assert.assertEquals("Invalid executed method name.", AkkaCoreUtils.METHOD_SINGLE_REQUEST_IMPL, operations.getMethodName)
     Assert.assertEquals("Invalid executed parameters.", baseUrl + "/ping", operations.getArg)
     Assert.assertEquals("Invalid protocol.", introspector.getSecurityMetaData.getRequest.getProtocol, "http")
-    Assert.assertTrue(String.format("Missing K2 header: %s", ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID), headers.exists(header => header.name().contains(ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID)))
-    Assert.assertTrue(String.format("Missing K2 header: %s", ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER), headers.exists(header => header.name().contains(ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER)))
+    Assert.assertTrue(String.format("Missing CSEC header: %s", ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID), headers.exists(header => header.name().contains(ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID)))
+    Assert.assertTrue(String.format("Missing CSEC header: %s", ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER), headers.exists(header => header.name().contains(ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER)))
     for (header <- headers) {
       if (header.name().contains(ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID)) {
-        Assert.assertEquals(String.format("Invalid K2 header value for: %s", ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID), headerValue, header.value())
+        Assert.assertEquals(String.format("Invalid CSEC header value for: %s", ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID), headerValue, header.value())
       }
       if (header.name().contains(ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER)) {
-        Assert.assertEquals(String.format("Invalid K2 header value for: %s", ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER), String.format("%s;DUMMY_UUID/dummy-api-id/dummy-exec-id;", headerValue), header.value())
+        Assert.assertEquals(String.format("Invalid CSEC header value for: %s", ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER), String.format("%s;DUMMY_UUID/dummy-api-id/dummy-exec-id;", headerValue), header.value())
       }
     }
   }
@@ -165,14 +165,14 @@ class AkkaHttpCoreTest {
     Assert.assertEquals("Invalid executed method name.", AkkaCoreUtils.METHOD_SINGLE_REQUEST_IMPL, operations.getMethodName)
     Assert.assertEquals("Invalid executed parameters.", baseUrl + "/asyncPing", operations.getArg)
     Assert.assertEquals("Invalid protocol.", introspector.getSecurityMetaData.getRequest.getProtocol, "http")
-    Assert.assertTrue(String.format("Missing K2 header: %s", ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID), headers.exists(header => header.name().contains(ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID)))
-    Assert.assertTrue(String.format("Missing K2 header: %s", ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER), headers.exists(header => header.name().contains(ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER)))
+    Assert.assertTrue(String.format("Missing CSEC header: %s", ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID), headers.exists(header => header.name().contains(ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID)))
+    Assert.assertTrue(String.format("Missing CSEC header: %s", ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER), headers.exists(header => header.name().contains(ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER)))
     for (header <- headers) {
       if (header.name().contains(ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID)) {
-        Assert.assertEquals(String.format("Invalid K2 header value for: %s", ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID), headerValue, header.value())
+        Assert.assertEquals(String.format("Invalid CSEC header value for: %s", ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID), headerValue, header.value())
       }
       if (header.name().contains(ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER)) {
-        Assert.assertEquals(String.format("Invalid K2 header value for: %s", ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER), String.format("%s;DUMMY_UUID/dummy-api-id/dummy-exec-id;", headerValue), header.value())
+        Assert.assertEquals(String.format("Invalid CSEC header value for: %s", ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER), String.format("%s;DUMMY_UUID/dummy-api-id/dummy-exec-id;", headerValue), header.value())
       }
     }
   }
