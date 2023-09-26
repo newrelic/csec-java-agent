@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import static ru.yandex.qatools.embed.postgresql.distribution.Version.Main.V9_6;
 import static ru.yandex.qatools.embed.postgresql.distribution.Version.V11_1;
 
 @Category({ Java12IncompatibleTest.class })
@@ -34,7 +35,7 @@ import static ru.yandex.qatools.embed.postgresql.distribution.Version.V11_1;
 @InstrumentationTestConfig(includePrefixes = "org.postgresql")
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class DriverTest {
-    public static final EmbeddedPostgres postgres = new EmbeddedPostgres(V11_1);
+    public static final EmbeddedPostgres postgres = new EmbeddedPostgres(V9_6);
     public static Connection connection;
     private static final String DB_USER = "user";
     private static final String DB_PASSWORD = "password";
