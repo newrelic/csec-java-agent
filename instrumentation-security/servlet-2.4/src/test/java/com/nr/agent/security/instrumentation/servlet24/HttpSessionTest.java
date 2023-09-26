@@ -21,7 +21,7 @@ import java.net.URL;
 import java.util.List;
 
 @RunWith(SecurityInstrumentationTestRunner.class)
-@InstrumentationTestConfig(includePrefixes = { "javax.servlet" })
+@InstrumentationTestConfig(includePrefixes = { "javax.servlet", "com.newrelic.agent.security.instrumentation.servlet24" })
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class HttpSessionTest {
     @ClassRule

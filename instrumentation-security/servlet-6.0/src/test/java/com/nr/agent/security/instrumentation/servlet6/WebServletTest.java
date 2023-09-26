@@ -17,7 +17,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 
 @RunWith(SecurityInstrumentationTestRunner.class)
-@InstrumentationTestConfig(includePrefixes = { "jakarta.servlet" })
+@InstrumentationTestConfig(includePrefixes = { "jakarta.servlet", "com.newrelic.agent.security.instrumentation.servlet6" })
 public class WebServletTest {
     @ClassRule
     public static HttpServletServer server = new HttpServletServer();

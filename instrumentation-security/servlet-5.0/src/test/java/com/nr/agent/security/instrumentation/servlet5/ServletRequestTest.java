@@ -32,7 +32,7 @@ import java.util.List;
 import java.util.Map;
 
 @RunWith(SecurityInstrumentationTestRunner.class)
-@InstrumentationTestConfig(includePrefixes = "jakarta.servlet")
+@InstrumentationTestConfig(includePrefixes = {"jakarta.servlet", "com.newrelic.agent.security.instrumentation.servlet5"} )
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class ServletRequestTest {
 

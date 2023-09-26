@@ -25,7 +25,7 @@ import org.zapodot.junit.ldap.EmbeddedLdapRuleBuilder;
 import java.util.List;
 
 @RunWith(SecurityInstrumentationTestRunner.class)
-@InstrumentationTestConfig(includePrefixes = { "org.apache.directory.ldap.client.api", "com.nr.instrumentation.security.apache.ldap" })
+@InstrumentationTestConfig(includePrefixes = { "org.apache.directory.ldap.client.api", "com.newrelic.agent.security.instrumentation.apache.ldap" })
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class LdapAsyncConnectionTest {
     public static final String DOMAIN_DSN = "dc=example,dc=com";

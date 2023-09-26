@@ -26,7 +26,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import java.util.List;
 
 @RunWith(SecurityInstrumentationTestRunner.class)
-@InstrumentationTestConfig(includePrefixes = { "com.nr.instrumentation.security.xpath.jaxen", "org.jaxen" })
+@InstrumentationTestConfig(includePrefixes = { "com.newrelic.instrumentation.security.xpath.jaxen", "org.jaxen" })
 public class BaseXPathTest {
     private final String EXPRESSION = "/Customers/Customer";
     private final String XML_DOC = "src/test/resources/Customer.xml";

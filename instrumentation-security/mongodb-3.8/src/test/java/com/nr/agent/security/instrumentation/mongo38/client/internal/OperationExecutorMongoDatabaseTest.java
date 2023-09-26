@@ -50,7 +50,7 @@ import java.util.List;
 import static com.mongodb.client.model.Filters.eq;
 
 @RunWith(SecurityInstrumentationTestRunner.class)
-@InstrumentationTestConfig(includePrefixes = {"com.mongodb.client.internal","com.mongodb.operation","com.nr.agent.security.mongo"})
+@InstrumentationTestConfig(includePrefixes = {"com.mongodb.client.internal","com.mongodb.operation","com.newrelic.agent.security.instrumentation.mongo"})
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class OperationExecutorMongoDatabaseTest {
 

@@ -26,7 +26,7 @@ import java.util.Collections;
 import java.util.List;
 
 @RunWith(SecurityInstrumentationTestRunner.class)
-@InstrumentationTestConfig(includePrefixes = "jakarta.servlet")
+@InstrumentationTestConfig(includePrefixes = {"jakarta.servlet", "com.newrelic.agent.security.instrumentation.servlet5"})
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class ServletResponseTest {
     @ClassRule

@@ -17,7 +17,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 
 @RunWith(SecurityInstrumentationTestRunner.class)
-@InstrumentationTestConfig(includePrefixes = { "com.nr.agent.instrumentation" })
+@InstrumentationTestConfig(includePrefixes = { "com.newrelic.agent.security.instrumentation.springweb" })
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class SpringRestControllerTest {
 

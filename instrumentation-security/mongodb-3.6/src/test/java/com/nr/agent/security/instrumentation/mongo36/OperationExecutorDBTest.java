@@ -44,7 +44,7 @@ import java.util.Iterator;
 import java.util.List;
 
 @RunWith(SecurityInstrumentationTestRunner.class)
-@InstrumentationTestConfig(includePrefixes = { "com.mongodb", "com.nr.agent.security.mongo" })
+@InstrumentationTestConfig(includePrefixes = { "com.mongodb", "com.newrelic.agent.security.instrumentation.mongo" })
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class OperationExecutorDBTest {
     private static final MongodStarter mongodStarter = MongodStarter.getDefaultInstance();

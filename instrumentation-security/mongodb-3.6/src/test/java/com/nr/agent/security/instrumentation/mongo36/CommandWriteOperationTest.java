@@ -34,7 +34,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @RunWith(SecurityInstrumentationTestRunner.class)
-@InstrumentationTestConfig(includePrefixes = {"com.mongodb","com.nr.agent.security.mongo"})
+@InstrumentationTestConfig(includePrefixes = {"com.mongodb","com.newrelic.agent.security.instrumentation.mongo"})
 public class CommandWriteOperationTest {
     private static final MongodStarter mongodStarter = MongodStarter.getDefaultInstance();
     private static MongodExecutable mongodExecutable;

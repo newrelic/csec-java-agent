@@ -22,7 +22,7 @@ import java.net.URL;
 import java.util.List;
 
 @RunWith(SecurityInstrumentationTestRunner.class)
-@InstrumentationTestConfig(includePrefixes = "jakarta.servlet")
+@InstrumentationTestConfig(includePrefixes = {"jakarta.servlet", "com.newrelic.agent.security.instrumentation.servlet6"})
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class ServletTest {
 
