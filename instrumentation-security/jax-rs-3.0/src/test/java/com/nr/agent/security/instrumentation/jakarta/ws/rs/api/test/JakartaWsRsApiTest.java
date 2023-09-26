@@ -1,10 +1,10 @@
 package com.nr.agent.security.instrumentation.jakarta.ws.rs.api.test;
 
-import com.newrelic.agent.security.instrumentation.jakarta.ws.rs.api.app.App;
 import com.newrelic.agent.security.introspec.InstrumentationTestConfig;
 import com.newrelic.agent.security.introspec.SecurityInstrumentationTestRunner;
 import com.newrelic.agent.security.introspec.SecurityIntrospector;
 import com.newrelic.api.agent.security.schema.AgentMetaData;
+import com.nr.agent.security.instrumentation.jakarta.ws.rs.api.app.App;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
