@@ -158,7 +158,7 @@ public class FileSystemProviderTest {
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
         List<AbstractOperation> operations = introspector.getOperations();
         Assert.assertTrue("No operations detected", operations.size() > 0);
-        System.out.println(operations.size()+" "+new ObjectMapper().writeValueAsString(operations));
+
         FileOperation operation = null;
         for (AbstractOperation op : operations) {
             if (FILE.equals(((FileOperation) op).getFileName().get(0))) {
@@ -180,7 +180,7 @@ public class FileSystemProviderTest {
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
         List<AbstractOperation> operations = introspector.getOperations();
         Assert.assertTrue("No operations detected", operations.size() > 0);
-        System.out.println(operations.size()+" "+new ObjectMapper().writeValueAsString(operations));
+
         FileOperation operation = null;
         for (AbstractOperation op : operations) {
             if (FILE.equals(((FileOperation) op).getFileName().get(0))) {
@@ -202,7 +202,7 @@ public class FileSystemProviderTest {
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
         List<AbstractOperation> operations = introspector.getOperations();
         Assert.assertTrue("No operations detected", operations.size() > 0);
-        System.out.println(operations.size()+" "+new ObjectMapper().writeValueAsString(operations));
+
         FileOperation operation = null;
         for (AbstractOperation op : operations) {
             if (FILE.equals(((FileOperation) op).getFileName().get(0))) {
