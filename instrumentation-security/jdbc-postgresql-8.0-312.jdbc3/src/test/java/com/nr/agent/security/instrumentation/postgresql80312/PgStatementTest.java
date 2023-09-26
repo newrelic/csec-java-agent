@@ -1,4 +1,4 @@
-package com.newrelic.agent.security.instrumentation.postgresql80312;
+package com.nr.agent.security.instrumentation.postgresql80312;
 
 import com.newrelic.agent.security.introspec.InstrumentationTestConfig;
 import com.newrelic.agent.security.introspec.SecurityInstrumentationTestRunner;
@@ -8,18 +8,20 @@ import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.security.schema.operation.SQLOperation;
 import com.newrelic.security.test.marker.Java12IncompatibleTest;
+import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
-import org.junit.ClassRule;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
-import org.testcontainers.containers.PostgreSQLContainer;
+import ru.yandex.qatools.embed.postgresql.EmbeddedPostgres;
 
+import java.io.IOException;
 import java.math.BigDecimal;
+import java.net.ServerSocket;
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.DriverManager;
@@ -33,36 +35,58 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static ru.yandex.qatools.embed.postgresql.distribution.Version.Main.V9_6;
+
 @Category({ Java12IncompatibleTest.class })
 @RunWith(SecurityInstrumentationTestRunner.class)
 @InstrumentationTestConfig(includePrefixes = "org.postgresql")
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class PgStatementTest {
-    private static final String DB_USER = "postgres";
-    private static final String DB_PASSWORD = "postgres";
+    public static final EmbeddedPostgres postgres = new EmbeddedPostgres(V9_6);
+    public static Connection CONNECTION;
+    private static final String DB_USER = "user";
+    private static final String DB_PASSWORD = "password";
     private static final String DB_NAME = "test";
+    private static final String HOST = "localhost";
     private static final List<String> QUERIES = new ArrayList<>();
-    @ClassRule
-    public static PostgreSQLContainer postgreSQLContainer = new PostgreSQLContainer("postgres:11.1")
-            .withDatabaseName(DB_NAME)
-            .withUsername(DB_USER)
-            .withPassword(DB_PASSWORD);
-    private static Connection CONNECTION;
+    private static final int PORT = getRandomPort();
+
+    @BeforeClass
+    public static void setup() throws Exception {
+        postgres.start(HOST, PORT, DB_NAME, DB_USER, DB_PASSWORD);
+
+        getConnection();
+        QUERIES.add(
+                "CREATE TABLE IF NOT EXISTS USERS(id int primary key, first_name varchar(255), last_name varchar(255), dob date, dot time, dotz timestamptz, active boolean, arr bytea)");
+        QUERIES.add("TRUNCATE TABLE USERS");
+        QUERIES.add("INSERT INTO USERS(id, first_name, last_name) VALUES(1, 'john', 'doe')");
+        QUERIES.add("SELECT * FROM USERS");
+        QUERIES.add("UPDATE USERS SET \"last_name\"='Doe' WHERE id=1");
+        QUERIES.add(
+                "select * from users where id=? and id=? and id=? and id=? and id=? and id=? and first_name=? and first_name=? and id=? and dob=? and arr=? and active=? and dot=? and dotz=?");
+        QUERIES.add("SELECT * FROM USERS WHERE id=?");
+
+        // set up data in h2
+        Statement stmt = CONNECTION.createStatement();
+        stmt.execute(QUERIES.get(0));
+        stmt.execute(QUERIES.get(1));
+        stmt.execute(QUERIES.get(2));
+        stmt.close();
+    }
 
     @AfterClass
-    public static void cleanup() throws SQLException {
+    public static void stop() throws SQLException {
+        if (postgres!=null)
+            postgres.stop();
         if (CONNECTION != null) {
             CONNECTION.close();
-        }
-        if (postgreSQLContainer != null) {
-            postgreSQLContainer.close();
         }
     }
 
     public static void getConnection() {
         try {
             Class.forName("org.postgresql.Driver");
-            CONNECTION = DriverManager.getConnection(postgreSQLContainer.getJdbcUrl(), DB_USER, DB_PASSWORD);
+            CONNECTION = DriverManager.getConnection(String.format("jdbc:postgresql://%s:%s/%s", HOST, PORT, DB_NAME), DB_USER, DB_PASSWORD);
         } catch (Exception e) {
             System.out.println("Error in DB connection: " + e);
         }
@@ -293,5 +317,17 @@ public class PgStatementTest {
         stmt.execute();
         System.out.println(params);
         return params;
+    }
+
+    private static int getRandomPort() {
+        int port;
+        try {
+            ServerSocket socket = new ServerSocket(0);
+            port = socket.getLocalPort();
+            socket.close();
+        } catch (IOException e) {
+            throw new RuntimeException("Unable to allocate ephemeral port");
+        }
+        return port;
     }
 }

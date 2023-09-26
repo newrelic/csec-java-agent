@@ -6,8 +6,10 @@ import com.newrelic.agent.security.introspec.SecurityIntrospector;
 import com.newrelic.api.agent.Trace;
 import com.newrelic.api.agent.security.schema.JDBCVendor;
 import com.newrelic.security.test.marker.Java12IncompatibleTest;
+import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
@@ -25,30 +27,51 @@ import org.postgresql.jdbc3.Jdbc3ConnectionPool;
 import org.postgresql.jdbc3.Jdbc3PoolingDataSource;
 import org.postgresql.jdbc3.Jdbc3SimpleDataSource;
 import org.postgresql.xa.PGXADataSource;
-import org.testcontainers.containers.PostgreSQLContainer;
+import ru.yandex.qatools.embed.postgresql.EmbeddedPostgres;
 
+import java.io.IOException;
+import java.net.ServerSocket;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+
+import static ru.yandex.qatools.embed.postgresql.distribution.Version.Main.V9_6;
 
 @Category({ Java12IncompatibleTest.class })
 @RunWith(SecurityInstrumentationTestRunner.class)
 @InstrumentationTestConfig(includePrefixes = "org.postgresql")
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class DataStoreTest {
-    private static final String DB_USER = "postgres";
-    private static final String DB_PASSWORD = "postgres";
+    public static final EmbeddedPostgres postgres = new EmbeddedPostgres(V9_6);
+    public static Connection connection;
+    private static final String DB_USER = "user";
+    private static final String DB_PASSWORD = "password";
     private static final String DB_NAME = "test";
-    @ClassRule
-    public static PostgreSQLContainer postgreSQLContainer = new PostgreSQLContainer("postgres:11.1")
-            .withDatabaseName(DB_NAME)
-            .withUsername(DB_USER)
-            .withPassword(DB_PASSWORD);
+    private static final String HOST = "localhost";
+    private static final List<String> QUERIES = new ArrayList<>();
+    private static final int PORT = getRandomPort();
+
+    @BeforeClass
+    public static void setup() throws Exception {
+        QUERIES.add("CREATE TABLE IF NOT EXISTS USERS(id int primary key, first_name varchar(255), last_name varchar(255))");
+        QUERIES.add("INSERT INTO USERS(id, first_name, last_name) VALUES(1, 'Max', 'Power')");
+        QUERIES.add("SELECT * FROM USERS");
+
+        postgres.start(HOST, PORT, DB_NAME, DB_USER, DB_PASSWORD);
+    }
+
+    @After
+    public void teardown() throws SQLException {
+        if (connection!=null) {
+            connection.close();
+        }
+    }
 
     @AfterClass
-    public static void cleanup() throws SQLException {
-        if (postgreSQLContainer != null) {
-            postgreSQLContainer.close();
-        }
+    public static void stop() {
+        if (postgres!=null)
+            postgres.stop();
     }
 
     @Test
@@ -334,7 +357,7 @@ public class DataStoreTest {
 
     private void getConnection(BaseDataSource baseDataSource) throws SQLException {
         baseDataSource.setDatabaseName(DB_NAME);
-        baseDataSource.setPortNumber(postgreSQLContainer.getMappedPort(5432));
+        baseDataSource.setPortNumber(PORT);
         Connection conn = null;
 
         try {
@@ -352,7 +375,7 @@ public class DataStoreTest {
         baseDataSource.setUser(DB_USER);
         baseDataSource.setPassword(DB_PASSWORD);
         baseDataSource.setDatabaseName(DB_NAME);
-        baseDataSource.setPortNumber(postgreSQLContainer.getMappedPort(5432));
+        baseDataSource.setPortNumber(PORT);
         Connection conn = null;
 
         try {
@@ -364,5 +387,17 @@ public class DataStoreTest {
                 conn.close();
             }
         }
+    }
+
+    private static int getRandomPort() {
+        int port;
+        try {
+            ServerSocket socket = new ServerSocket(0);
+            port = socket.getLocalPort();
+            socket.close();
+        } catch (IOException e) {
+            throw new RuntimeException("Unable to allocate ephemeral port");
+        }
+        return port;
     }
 }
