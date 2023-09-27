@@ -68,7 +68,7 @@ public class LogWriter implements Runnable {
             currentLogFile.setReadable(true, false);
             writer = new BufferedWriter(new FileWriter(currentLogFileName, true));
 
-            maxFileSize = FileLoggerThreadPool.getInstance().maxfilesize * 1048576;
+            maxFileSize = FileLoggerThreadPool.getInstance().maxfilesize;
 
             if (!osVariables.getWindows()) {
                 Files.setPosixFilePermissions(currentLogFile.toPath(), PosixFilePermissions.fromString("rw-rw-rw-"));

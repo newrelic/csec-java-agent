@@ -8,6 +8,7 @@
 package com.newrelic.agent.security.intcodeagent.filelogging;
 
 import com.newrelic.agent.security.instrumentator.os.OsVariablesInstance;
+import com.newrelic.agent.security.intcodeagent.properties.K2JALogProperties;
 import com.newrelic.api.agent.NewRelic;
 import com.newrelic.api.agent.security.schema.StringUtils;
 import org.apache.commons.io.FileUtils;
@@ -32,6 +33,8 @@ public class LogFileHelper {
     public static final String LOG_DAILY = "log_daily";
     public static final String LOG_FILE_COUNT = "log_file_count";
     public static final String LOG_FILE_NAME = "log_file_name";
+
+    public static final String LOG_LIMIT = "log_limit_in_kbytes";
     public static final boolean DEFAULT_LOG_DAILY = false;
     public static final int DEFAULT_LOG_FILE_COUNT = 1;
     public static final String DEFAULT_LOG_FILE_NAME = "java-security-collector.log";
@@ -47,6 +50,11 @@ public class LogFileHelper {
 
     public static int logFileCount() {
         return Math.max(1, NewRelic.getAgent().getConfig().getValue(LogFileHelper.LOG_FILE_COUNT, LogFileHelper.DEFAULT_LOG_FILE_COUNT));
+    }
+
+    public static int logFileLimit() {
+        int size = NewRelic.getAgent().getConfig().getValue(LogFileHelper.LOG_LIMIT, 1);
+        return size>1?size: K2JALogProperties.maxfilesize;
     }
 
     public static boolean isDailyRollover() {

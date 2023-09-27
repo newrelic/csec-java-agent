@@ -20,9 +20,9 @@ public class FileLoggerThreadPool {
 
     private boolean isInitLoggingActive = true;
 
-    protected int maxfilesize = K2JALogProperties.maxfilesize;
+    protected final int maxfilesize;
 
-    protected int maxfiles = K2JALogProperties.maxfiles;
+    protected final int maxfiles;
 
     protected boolean isLoggingToStdOut = false;
 
@@ -32,6 +32,8 @@ public class FileLoggerThreadPool {
         int maxPoolSize = 1;
         int corePoolSize = 1;
         long keepAliveTime = 600;
+        maxfiles = Math.max(K2JALogProperties.maxfiles, LogFileHelper.logFileCount());
+        maxfilesize = LogFileHelper.logFileLimit()*1024;
 
         TimeUnit timeUnit = TimeUnit.SECONDS;
 
@@ -62,14 +64,6 @@ public class FileLoggerThreadPool {
             }
         });
         try {
-            if (System.getenv().containsKey(IUtilConstants.NR_CSEC_DEBUG_LOGFILE_SIZE)) {
-                this.maxfilesize = Integer.parseInt(System.getenv().get(IUtilConstants.NR_CSEC_DEBUG_LOGFILE_SIZE));
-            }
-
-            if (System.getenv().containsKey(IUtilConstants.NR_CSEC_DEBUG_LOGFILE_MAX_COUNT)) {
-                this.maxfiles = Integer.parseInt(System.getenv().get(IUtilConstants.NR_CSEC_DEBUG_LOGFILE_MAX_COUNT));
-            }
-
             if(LogFileHelper.isLoggingToStdOut()){
                 this.isLoggingToStdOut = true;
             }
