@@ -18,6 +18,7 @@ import org.junit.runners.MethodSorters;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.net.ServerSocket;
 import java.util.List;
 
 @RunWith(SecurityInstrumentationTestRunner.class)
@@ -31,12 +32,22 @@ public class MemcachedTest {
     private final int expirationInSeconds = 1800;
     private final long casID = 1;
     private static JMemcachedServer server;
+    private static int port = 0;
+    private static int getRandomPort() {
+        try (ServerSocket socket = new ServerSocket(port)){
+            port = socket.getLocalPort();
+        } catch (IOException e) {
+            throw new RuntimeException("Unable to allocate ephemeral port "+ port);
+        }
+        return port;
+    }
 
     @BeforeClass
     public static void setup() throws IOException {
+        port = getRandomPort();
         server = new JMemcachedServer();
-        server.start("127.0.0.1", 11214);
-        memcachedClient = new MemcachedClient(new InetSocketAddress("127.0.0.1", 11214));
+        server.start("127.0.0.1", port);
+        memcachedClient = new MemcachedClient(new InetSocketAddress("127.0.0.1", port));
     }
 
     @AfterClass
@@ -46,7 +57,7 @@ public class MemcachedTest {
         server.clean();
     }
     @Test
-    public void setTest() {
+    public void testSet() {
         memcachedClient.set(key, expirationInSeconds, value);
 
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
@@ -61,7 +72,7 @@ public class MemcachedTest {
         Assert.assertEquals("Invalid executed method-name.", "asyncStore", operation.getMethodName());
     }
     @Test
-    public void addTest() {
+    public void testAdd() {
         memcachedClient.add(key, expirationInSeconds, value);
 
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
@@ -76,7 +87,7 @@ public class MemcachedTest {
         Assert.assertEquals("Invalid executed method-name.", "asyncStore", operation.getMethodName());
     }
     @Test
-    public void replaceTest() {
+    public void testReplace() {
         memcachedClient.replace(key, expirationInSeconds, value);
 
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
@@ -91,7 +102,7 @@ public class MemcachedTest {
         Assert.assertEquals("Invalid executed method-name.", "asyncStore", operation.getMethodName());
     }
     @Test
-    public void appendTest() {
+    public void testAppend() {
         memcachedClient.append(key, value);
 
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
@@ -106,7 +117,7 @@ public class MemcachedTest {
         Assert.assertEquals("Invalid executed method-name.", "asyncCat", operation.getMethodName());
     }
     @Test
-    public void prependTest() {
+    public void testPrepend() {
         memcachedClient.prepend(key, value);
 
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
@@ -121,7 +132,7 @@ public class MemcachedTest {
         Assert.assertEquals("Invalid executed method-name.", "asyncCat", operation.getMethodName());
     }
     @Test
-    public void prependTest1() {
+    public void testPrepend1() {
         memcachedClient.prepend(casID, key, value);
 
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
@@ -136,7 +147,7 @@ public class MemcachedTest {
         Assert.assertEquals("Invalid executed method-name.", "asyncCat", operation.getMethodName());
     }
     @Test
-    public void casTest() {
+    public void testCas() {
         memcachedClient.cas(key, casID, value);
 
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
@@ -151,7 +162,7 @@ public class MemcachedTest {
         Assert.assertEquals("Invalid executed method-name.", "asyncCAS", operation.getMethodName());
     }
     @Test
-    public void casTest1() {
+    public void testCas1() {
         memcachedClient.cas(key, casID, expirationInSeconds, value);
 
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
@@ -167,7 +178,7 @@ public class MemcachedTest {
     }
 
     @Test
-    public void asyncCASTest() {
+    public void testAsyncCAS() {
         memcachedClient.asyncCAS(key, casID, value);
 
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
@@ -182,7 +193,7 @@ public class MemcachedTest {
         Assert.assertEquals("Invalid executed method-name.", "asyncCAS", operation.getMethodName());
     }
     @Test
-    public void asyncCASTest1() {
+    public void testAsyncCAS1() {
         memcachedClient.asyncCAS(key, casID, expirationInSeconds, value);
 
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
