@@ -9,7 +9,7 @@ import com.newrelic.api.agent.security.schema.operation.LDAPOperation;
 import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
-import com.nr.instrumentation.security.unboundid.ldap.LDAPUtils;
+import com.newrelic.agent.security.instrumentation.unboundid.ldap.LDAPUtils;
 
 @Weave(type = MatchType.Interface, originalName = "com.unboundid.ldap.sdk.LDAPInterface")
 public class LDAPInterface_Instrumentation {
