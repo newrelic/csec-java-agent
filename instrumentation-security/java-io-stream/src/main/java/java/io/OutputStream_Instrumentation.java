@@ -11,7 +11,7 @@ import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
-import com.nr.instrumentation.security.javaio.IOStreamHelper;
+import com.newrelic.agent.security.instrumentation.inputstream.IOStreamHelper;
 
 @Weave(type = MatchType.BaseClass, originalName = "java.io.OutputStream")
 public abstract class OutputStream_Instrumentation {

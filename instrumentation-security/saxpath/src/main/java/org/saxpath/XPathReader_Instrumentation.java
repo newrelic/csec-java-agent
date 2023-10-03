@@ -9,7 +9,7 @@ import com.newrelic.api.agent.security.schema.operation.XPathOperation;
 import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
-import com.nr.instrumentation.security.xpath.saxpath.XPATHUtils;
+import com.newrelic.agent.security.instrumentation.saxpath.XPATHUtils;
 
 
 @Weave(type = MatchType.Interface, originalName = "org.saxpath.XPathReader")
