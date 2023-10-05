@@ -2,7 +2,6 @@ package com.newrelic.agent.security.intcodeagent.schedulers;
 
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.newrelic.agent.security.intcodeagent.filelogging.LogFileHelper;
-import com.newrelic.agent.security.intcodeagent.filelogging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.logging.IAgentConstants;
 import com.newrelic.agent.security.util.IUtilConstants;
 import com.newrelic.api.agent.NewRelic;
@@ -68,7 +67,7 @@ public class SchedulerHelper {
     }
 
     public ScheduledFuture<?> scheduleDailyLogRollover(Runnable command) {
-        logger.log(LogLevel.INFO, "Start ", SchedulerHelper.class.getName());
+
         if(LogFileHelper.isDailyRollover()) {
             int period = NewRelic.getAgent().getConfig().getValue(IUtilConstants.NR_LOG_DAILY_ROLLOVER_PERIOD, 24);
             ScheduledFuture<?> future = commonExecutor.scheduleWithFixedDelay(command, period, period, TimeUnit.HOURS);
