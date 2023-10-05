@@ -9,7 +9,7 @@ import com.newrelic.api.agent.security.schema.operation.LDAPOperation;
 import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
-import com.nr.instrumentation.security.apache.ldap.LDAPUtils;
+import com.newrelic.agent.security.instrumentation.apache.ldap.LDAPUtils;
 import org.apache.directory.api.ldap.model.cursor.EntryCursor;
 import org.apache.directory.api.ldap.model.cursor.SearchCursor;
 import org.apache.directory.api.ldap.model.exception.LdapException;

@@ -67,6 +67,7 @@ public class SchedulerHelper {
     }
 
     public ScheduledFuture<?> scheduleDailyLogRollover(Runnable command) {
+
         if(LogFileHelper.isDailyRollover()) {
             int period = NewRelic.getAgent().getConfig().getValue(IUtilConstants.NR_LOG_DAILY_ROLLOVER_PERIOD, 24);
             ScheduledFuture<?> future = commonExecutor.scheduleWithFixedDelay(command, period, period, TimeUnit.HOURS);

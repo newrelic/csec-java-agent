@@ -499,4 +499,9 @@ public class Agent implements SecurityAgent {
     public Instrumentation getInstrumentation() {
         return this.instrumentation;
     }
+
+    @Override
+    public boolean isLowPriorityInstrumentationEnabled() {
+        return NewRelic.getAgent().getConfig().getValue(LowSeverityHelper.LOW_SEVERITY_HOOKS_ENABLED, LowSeverityHelper.DEFAULT);
+    }
 }
