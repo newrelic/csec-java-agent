@@ -11,6 +11,7 @@ jar {
 
 verifyInstrumentation {
     passesOnly 'com.ning:async-http-client:[1.6.1,)'
+    excludeRegex ".*1.9.0-BETA.*"
 }
 
 site {

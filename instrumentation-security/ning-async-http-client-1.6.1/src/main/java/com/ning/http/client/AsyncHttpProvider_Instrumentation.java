@@ -14,7 +14,7 @@ import java.util.concurrent.Future;
 @Weave(type = MatchType.Interface, originalName = "com.ning.http.client.AsyncHttpProvider")
 public class AsyncHttpProvider_Instrumentation {
 
-    public <T> ListenableFuture<T> execute(Request request, AsyncHandler<T> handler) throws IOException {
+    public <T> ListenableFuture<T> execute(Request request, AsyncHandler<T> handler) {
         boolean isLockAcquired = NingHelper.acquireLockIfPossible(this.hashCode());
         AbstractOperation operation = null;
         URI uri = null;
