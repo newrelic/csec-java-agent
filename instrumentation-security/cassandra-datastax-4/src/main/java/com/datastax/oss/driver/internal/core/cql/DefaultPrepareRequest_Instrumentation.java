@@ -6,16 +6,12 @@ import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.security.schema.operation.SQLOperation;
 import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
-import com.newrelic.api.agent.weaver.WeaveAllConstructors;
-import com.newrelic.api.agent.weaver.Weaver;
 import com.newrelic.agent.security.instrumentation.cassandra4.CassandraUtils;
 
 @Weave(type = MatchType.ExactClass, originalName = "com.datastax.oss.driver.internal.core.cql.DefaultPrepareRequest")
 public abstract class DefaultPrepareRequest_Instrumentation {
-    private final SimpleStatement statement = Weaver.callOriginal();
 
-    @WeaveAllConstructors
-    public DefaultPrepareRequest_Instrumentation(){
+    public DefaultPrepareRequest_Instrumentation(SimpleStatement statement){
         boolean isLockAcquired = CassandraUtils.acquireLockIfPossible(hashCode());
         try{
             if(isLockAcquired){
