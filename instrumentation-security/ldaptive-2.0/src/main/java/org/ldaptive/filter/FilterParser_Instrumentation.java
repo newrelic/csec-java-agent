@@ -7,7 +7,7 @@ import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityExcepti
 import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
-import com.nr.instrumentation.security.ldaptive2x.ldap.LDAPUtils;
+import com.newrelic.agent.security.instrumentation.ldaptive2.LDAPUtils;
 
 @Weave(type = MatchType.ExactClass, originalName = "org.ldaptive.filter.FilterParser")
 public final class FilterParser_Instrumentation {
