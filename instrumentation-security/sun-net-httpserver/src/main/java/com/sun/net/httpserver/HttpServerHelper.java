@@ -1,13 +1,16 @@
 package com.sun.net.httpserver;
 
 import com.newrelic.api.agent.security.NewRelicSecurity;
+import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.security.instrumentation.helpers.ServletHelper;
 import com.newrelic.api.agent.security.schema.AgentMetaData;
 import com.newrelic.api.agent.security.schema.HttpRequest;
 import com.newrelic.api.agent.security.schema.policy.AgentPolicy;
 import com.sun.net.httpserver.Headers;
 
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 public class HttpServerHelper {
     private static final String X_FORWARDED_FOR = "x-forwarded-for";
@@ -18,6 +21,8 @@ public class HttpServerHelper {
     public static final String QUESTION_MARK = "?";
     public static final String HTTP_PROTOCOL = "http";
     public static final String HTTPS_PROTOCOL = "https";
+    private static final String REQUEST_INPUTSTREAM_HASH = "REQUEST_INPUTSTREAM_HASH";
+    public static final String SUN_NET_READER_OPERATION_LOCK = "SUN_NET_READER_OPERATION_LOCK-";
 
     public static void processHttpRequestHeaders(Headers headers, HttpRequest securityRequest){
         for (String headerKey : headers.keySet()) {
@@ -74,6 +79,17 @@ public class HttpServerHelper {
             }
         }
         return data;
+    }
+
+    public static void registerInputStreamHashIfNeeded(int inputStreamHash){
+        try {
+            Set<Integer> hashSet = NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(REQUEST_INPUTSTREAM_HASH, Set.class);
+            if(hashSet == null){
+                hashSet = new HashSet<>();
+                NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(REQUEST_INPUTSTREAM_HASH, hashSet);
+            }
+            hashSet.add(inputStreamHash);
+        } catch (Throwable ignored) {}
     }
 
     public static boolean acquireServletLockIfPossible() {
