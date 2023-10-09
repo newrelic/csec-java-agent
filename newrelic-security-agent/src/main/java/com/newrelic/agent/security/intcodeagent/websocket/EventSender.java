@@ -19,6 +19,10 @@ public class EventSender implements Callable<Boolean> {
         this.event = event;
     }
 
+    public Object getEvent() {
+        return event;
+    }
+
     public EventSender(Object event) {
         this.event = event;
     }

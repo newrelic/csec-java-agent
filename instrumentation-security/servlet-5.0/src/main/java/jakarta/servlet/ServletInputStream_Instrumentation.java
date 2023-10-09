@@ -10,10 +10,9 @@ package jakarta.servlet;
 import com.newrelic.api.agent.security.NewRelicSecurity;;
 import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.weaver.MatchType;
-import com.newrelic.api.agent.weaver.NewField;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
-import com.nr.instrumentation.security.servlet5.ServletRequestCallback;
+import com.newrelic.agent.security.instrumentation.servlet5.ServletRequestCallback;
 
 import java.io.IOException;
 
