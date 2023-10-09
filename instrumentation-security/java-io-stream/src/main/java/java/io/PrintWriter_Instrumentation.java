@@ -10,7 +10,7 @@ package java.io;
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.weaver.*;
-import com.newrelic.agent.security.instrumentation.inputstream.IOStreamHelper;
+import com.newrelic.api.agent.security.instrumentation.helpers.IOStreamHelper;
 
 import java.util.Locale;
 

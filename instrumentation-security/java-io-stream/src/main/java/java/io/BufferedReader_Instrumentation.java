@@ -13,7 +13,7 @@ import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.WeaveAllConstructors;
 import com.newrelic.api.agent.weaver.Weaver;
-import com.newrelic.agent.security.instrumentation.inputstream.IOStreamHelper;
+import com.newrelic.api.agent.security.instrumentation.helpers.IOStreamHelper;
 
 @Weave(type = MatchType.BaseClass, originalName = "java.io.BufferedReader")
 public abstract class BufferedReader_Instrumentation {

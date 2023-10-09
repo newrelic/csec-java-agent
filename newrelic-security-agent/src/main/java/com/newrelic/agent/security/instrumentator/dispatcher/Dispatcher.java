@@ -127,13 +127,20 @@ public class Dispatcher implements Callable {
                         break;
                     }
                 case NOSQL_DB_COMMAND:
-                    NoSQLOperation noSQLOperationalBean = (NoSQLOperation) operation;
-                    try {
-                        eventBean = prepareNoSQLEvent(eventBean, noSQLOperationalBean);
-                    } catch (Throwable e) {
-                        return null;
+                    if(operation instanceof SQLOperation) {
+                        eventBean = prepareSQLDbCommandEvent((SQLOperation) operation, eventBean);
+                        break;
+                    } else if (operation instanceof BatchSQLOperation) {
+                        eventBean = prepareSQLDbCommandEvent((BatchSQLOperation) operation, eventBean);
+                        break;
+                    } else if (operation instanceof NoSQLOperation) {
+                        try {
+                            eventBean = prepareNoSQLEvent(eventBean, (NoSQLOperation) operation);
+                        } catch (Throwable e) {
+                            return null;
+                        }
+                        break;
                     }
-                    break;
 
                 case DYNAMO_DB_COMMAND:
                     DynamoDBOperation dynamoDBOperation = (DynamoDBOperation) operation;
