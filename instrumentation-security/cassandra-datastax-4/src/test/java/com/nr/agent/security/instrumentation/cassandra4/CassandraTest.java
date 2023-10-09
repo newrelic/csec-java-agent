@@ -15,7 +15,7 @@ import com.newrelic.api.agent.security.schema.operation.SQLOperation;
 import com.newrelic.security.test.marker.Java11IncompatibleTest;
 import com.newrelic.security.test.marker.Java17IncompatibleTest;
 import com.newrelic.security.test.marker.Java9IncompatibleTest;
-import com.nr.instrumentation.security.cassandra4.CassandraUtils;
+import com.newrelic.agent.security.instrumentation.cassandra4.CassandraUtils;
 import org.apache.cassandra.io.util.FileUtils;
 import org.cassandraunit.CassandraCQLUnit;
 import org.cassandraunit.dataset.cql.ClassPathCQLDataSet;
