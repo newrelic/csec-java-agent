@@ -1,4 +1,4 @@
-package com.datastax.driver.core.querybuilder;
+package com.newrelic.agent.security.instrumentation.cassandra3;
 
 import com.datastax.driver.core.BatchStatement;
 import com.datastax.driver.core.BoundStatement;
@@ -6,6 +6,7 @@ import com.datastax.driver.core.CodecRegistry;
 import com.datastax.driver.core.ColumnDefinitions;
 import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.TypeCodec;
+import com.datastax.driver.core.querybuilder.BuiltStatement;
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
@@ -53,7 +54,7 @@ public class CassandraUtils {
                 BuiltStatement stmt = (BuiltStatement) statement;
                 ArrayList<Object> values = new ArrayList<>();
 
-                cqlOperation.setQuery(stmt.buildQueryString(values, codecRegistry).toString());
+                cqlOperation.setQuery(stmt.getQueryString());
                 cqlOperation.setParams(setParams(values));
                 return cqlOperation;
 

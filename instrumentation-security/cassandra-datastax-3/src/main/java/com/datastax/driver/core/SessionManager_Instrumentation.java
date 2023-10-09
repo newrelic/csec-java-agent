@@ -1,6 +1,6 @@
 package com.datastax.driver.core;
 
-import com.datastax.driver.core.querybuilder.CassandraUtils;
+import com.newrelic.agent.security.instrumentation.cassandra3.CassandraUtils;
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.weaver.MatchType;
