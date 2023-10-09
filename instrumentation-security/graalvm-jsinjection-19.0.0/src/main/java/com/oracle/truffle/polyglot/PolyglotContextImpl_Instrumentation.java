@@ -9,7 +9,7 @@ import com.newrelic.api.agent.security.schema.operation.JSInjectionOperation;
 import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
-import com.nr.agent.security.mongo.jsinjection.graalvm.JSEngineUtils;
+import com.newrelic.agent.security.instrumentation.graalvm19.JSEngineUtils;
 import com.oracle.truffle.api.source.Source;
 import org.graalvm.polyglot.Value;
 
