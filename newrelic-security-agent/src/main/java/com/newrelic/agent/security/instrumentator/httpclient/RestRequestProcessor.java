@@ -1,17 +1,20 @@
 package com.newrelic.agent.security.instrumentator.httpclient;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.newrelic.agent.security.AgentInfo;
 import com.newrelic.agent.security.instrumentator.os.OsVariablesInstance;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.newrelic.agent.security.intcodeagent.filelogging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.models.FuzzRequestBean;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.IntCodeControlCommand;
 import com.newrelic.agent.security.intcodeagent.websocket.WSUtils;
-import com.sun.org.apache.xpath.internal.operations.Bool;
+import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
+import com.newrelic.api.agent.security.instrumentation.helpers.ServletHelper;
+import okhttp3.Request;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.concurrent.Callable;
-import java.util.concurrent.RejectedExecutionException;
 
 /**
  * Request repeater for IAST
@@ -21,6 +24,8 @@ public class RestRequestProcessor implements Callable<Boolean> {
     public static final String NR_CSEC_VALIDATOR_HOME_TMP = "{{NR_CSEC_VALIDATOR_HOME_TMP}}";
 
     public static final String ERROR_WHILE_PROCESSING_FUZZING_REQUEST_S = "Error while processing fuzzing request : %s";
+
+    public static final String JSON_PARSING_ERROR_WHILE_PROCESSING_FUZZING_REQUEST_S = "JSON parsing error while processing fuzzing request : %s";
     private static final int MAX_REPETITION = 3;
     private IntCodeControlCommand controlCommand;
 
@@ -40,12 +45,15 @@ public class RestRequestProcessor implements Callable<Boolean> {
      * Does the request replay in IAST mode.
      */
     @Override
-    public Boolean call() {
-        if (controlCommand.getArguments().size() < 2) {
+    public Boolean call() throws InterruptedException {
+        if (controlCommand.getArguments().size() < 2 ) {
             return true;
         }
+        if( !AgentInfo.getInstance().isAgentActive()) {
+            return false;
+        }
 
-        FuzzRequestBean httpRequest = null;
+        FuzzRequestBean httpRequest;
         try {
             if (WSUtils.getInstance().isReconnecting()) {
                    synchronized (WSUtils.getInstance()) {
@@ -56,8 +64,17 @@ public class RestRequestProcessor implements Callable<Boolean> {
             }
             String req = StringUtils.replace(controlCommand.getArguments().get(0), NR_CSEC_VALIDATOR_HOME_TMP, OsVariablesInstance.getInstance().getOsVariables().getTmpDirectory());
             httpRequest = objectMapper.readValue(req, FuzzRequestBean.class);
-            RestClient.getInstance().fireRequest(RequestUtils.generateK2Request(httpRequest), repeatCount);
+            httpRequest.getHeaders().put(GenericHelper.CSEC_PARENT_ID, controlCommand.getId());
+            RestRequestThreadPool.getInstance().removeFromProcessedCC(controlCommand.getId());
+            Request request = RequestUtils.generateK2Request(httpRequest);
+            if(request != null) {
+                RestClient.getInstance().fireRequest(request, repeatCount);
+            }
             return true;
+        } catch (JsonProcessingException e){
+            logger.log(LogLevel.SEVERE,
+                    String.format(JSON_PARSING_ERROR_WHILE_PROCESSING_FUZZING_REQUEST_S, controlCommand.getArguments().get(0)),
+                    e, RestRequestProcessor.class.getName());
         } catch (Throwable e) {
             logger.log(LogLevel.SEVERE,
                     String.format(ERROR_WHILE_PROCESSING_FUZZING_REQUEST_S, controlCommand.getArguments().get(0)),
@@ -65,18 +82,15 @@ public class RestRequestProcessor implements Callable<Boolean> {
             logger.postLogMessageIfNecessary(LogLevel.SEVERE,
                     String.format(ERROR_WHILE_PROCESSING_FUZZING_REQUEST_S, controlCommand.getArguments().get(0)),
                     e, RestRequestProcessor.class.getName());
+            throw e;
         }
-        return false;
+        return true;
     }
 
     public static void processControlCommand(IntCodeControlCommand command) {
         RestRequestThreadPool.getInstance().executor
                 .submit(new RestRequestProcessor(command, MAX_REPETITION));
-    }
-
-    public static void processControlCommand(IntCodeControlCommand command, int repeat) {
-        RestRequestThreadPool.getInstance().executor
-                .submit(new RestRequestProcessor(command, repeat));
+        RestRequestThreadPool.getInstance().getPendingIds().add(command.getId());
     }
 
     public IntCodeControlCommand getControlCommand() {
