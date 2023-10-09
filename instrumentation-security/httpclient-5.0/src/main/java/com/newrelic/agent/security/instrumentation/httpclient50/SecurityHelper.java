@@ -65,6 +65,11 @@ public class SecurityHelper {
                 request.setHeader(ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID, iastHeader);
             }
 
+            String csecParentId = getParentId();
+            if(csecParentId!= null && !csecParentId.isEmpty()){
+                request.setHeader(GenericHelper.CSEC_PARENT_ID, csecParentId);
+            }
+
             SSRFOperation operation = new SSRFOperation(uri, className, methodName);
             try {
                 NewRelicSecurity.getAgent().registerOperation(operation);
@@ -83,5 +88,9 @@ public class SecurityHelper {
             }
         }
         return null;
+    }
+
+    public static String getParentId(){
+        return NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(GenericHelper.CSEC_PARENT_ID, String.class);
     }
 }
