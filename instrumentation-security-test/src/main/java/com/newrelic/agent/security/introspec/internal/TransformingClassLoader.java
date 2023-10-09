@@ -22,7 +22,7 @@ class TransformingClassLoader extends URLClassLoader {
             "java.lang.ProcessImpl", "java.io", "java.nio", "javax.servlet"
     };
     private static final String[] PROTECTED_PREFIXES = new String[]{"java.", "javax.", "com.sun.", "sun.",
-            "org.junit.", "junit.framework", "com.newrelic", "org.xml", "org.w3c"};
+            "org.junit.", "junit.framework", "com.newrelic.agent", "com.newrelic.api", "org.xml", "org.w3c"};
 
     private static final String[] INTROSPECTOR_MUST_LOADS = new String[]{
             // This class needs to be woven.

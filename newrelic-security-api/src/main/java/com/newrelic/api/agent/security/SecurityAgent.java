@@ -43,4 +43,6 @@ public interface SecurityAgent {
     String getAgentTempDir();
 
     Instrumentation getInstrumentation();
+
+    boolean isLowPriorityInstrumentationEnabled();
 }

@@ -3,6 +3,7 @@ package com.newrelic.api.agent.security.instrumentation.helpers;
 import com.newrelic.api.agent.security.NewRelicSecurity;
 
 public class GenericHelper {
+    public static final String CSEC_PARENT_ID = "nr-csec-parent-id";
 
     public static boolean skipExistsEvent() {
         if (!(NewRelicSecurity.getAgent().getCurrentPolicy().getVulnerabilityScan().getEnabled() &&

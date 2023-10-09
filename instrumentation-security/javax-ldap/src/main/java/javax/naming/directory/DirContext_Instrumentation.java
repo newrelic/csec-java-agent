@@ -9,7 +9,7 @@ import com.newrelic.api.agent.security.schema.operation.LDAPOperation;
 import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
-import com.nr.instrumentation.security.javax.LDAPUtils;
+import com.newrelic.agent.security.instrumentation.javax.ldap.LDAPUtils;
 
 import javax.naming.Context;
 import javax.naming.Name;

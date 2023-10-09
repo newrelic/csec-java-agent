@@ -4,7 +4,8 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.newrelic.agent.security.intcodeagent.websocket.JsonConverter;
 import org.apache.commons.lang3.StringUtils;
 
-import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class IASTDataTransferRequest {
@@ -13,7 +14,9 @@ public class IASTDataTransferRequest {
 
     private int batchSize;
 
-    private List<String> completedRequestIds;
+    private Set<String> pendingRequestIds;
+
+    private Map<String, Set<String>> completedRequests;
 
     private String sequenceNumber;
 
@@ -38,12 +41,20 @@ public class IASTDataTransferRequest {
         this.batchSize = batchSize;
     }
 
-    public List<String> getCompletedRequestIds() {
-        return completedRequestIds;
+    public Map<String, Set<String>> getCompletedRequests() {
+        return completedRequests;
     }
 
-    public void setCompletedRequestIds(List<String> completedRequestIds) {
-        this.completedRequestIds = completedRequestIds;
+    public void setCompletedRequests(Map<String, Set<String>> completedRequests) {
+        this.completedRequests = completedRequests;
+    }
+
+    public Set<String> getPendingRequestIds() {
+        return pendingRequestIds;
+    }
+
+    public void setPendingRequestIds(Set<String> pendingRequestIds) {
+        this.pendingRequestIds = pendingRequestIds;
     }
 
     public String getJsonName() {
