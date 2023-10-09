@@ -26,4 +26,5 @@ public interface IUtilConstants {
     String ERROR = "ERROR";
     String SENT = "SENT";
     String REJECTED = "REJECTED";
+    String NR_LOG_DAILY_ROLLOVER_PERIOD = "log.rollover.period";
 }
