@@ -9,9 +9,11 @@ import com.newrelic.api.agent.weaver.Weaver;
 
 @Weave(type = MatchType.ExactClass, originalName = "com.datastax.driver.core.SessionManager")
 abstract class SessionManager_Instrumentation {
-    final Cluster cluster = Weaver.callOriginal();
+    Configuration configuration() {
+        return Weaver.callOriginal();
+    }
     public ResultSetFuture executeAsync(Statement statement) {
-        boolean isLockAcquired = CassandraUtils.acquireLockIfPossible(hashCode());
+        boolean isLockAcquired = CassandraUtils.acquireLockIfPossible(statement.hashCode());
         ResultSetFuture result;
         AbstractOperation cqlOperation = null;
 
@@ -22,14 +24,14 @@ abstract class SessionManager_Instrumentation {
             }
 
             if(isLockAcquired){
-                cqlOperation = CassandraUtils.preProcessSecurityHook(statement, cluster.getConfiguration().getCodecRegistry(), this.getClass().getName());
+                cqlOperation = CassandraUtils.preProcessSecurityHook(statement, configuration().getCodecRegistry(), this.getClass().getName());
                 if(cqlOperation != null){
                     NewRelicSecurity.getAgent().registerOperation(cqlOperation);
                 }
             }
         } finally {
             if(isLockAcquired){
-                CassandraUtils.releaseLock(hashCode());
+                CassandraUtils.releaseLock(statement.hashCode());
             }
         }
         CassandraUtils.registerExitOperation(isLockAcquired, cqlOperation);
