@@ -9,8 +9,7 @@ import com.newrelic.api.agent.security.schema.operation.XPathOperation;
 import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
-import com.nr.instrumentation.security.xpath.javax.XPATHUtils;
-import com.sun.org.apache.xpath.internal.objects.XObject;
+import com.newrelic.agent.security.instrumentation.xpath.javax.XPATHUtils;
 import org.xml.sax.InputSource;
 
 import javax.xml.namespace.QName;
