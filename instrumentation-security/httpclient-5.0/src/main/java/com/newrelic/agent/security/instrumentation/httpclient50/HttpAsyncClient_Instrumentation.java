@@ -9,13 +9,7 @@ package com.newrelic.agent.security.instrumentation.httpclient50;
 
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
-import com.newrelic.api.agent.security.instrumentation.helpers.R2dbcHelper;
-import com.newrelic.api.agent.security.instrumentation.helpers.ServletHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
-import com.newrelic.api.agent.security.schema.SecurityMetaData;
-import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
-import com.newrelic.api.agent.security.schema.operation.SSRFOperation;
-import com.newrelic.api.agent.security.utils.SSRFUtils;
 import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
@@ -30,6 +24,8 @@ import org.apache.hc.core5.http.protocol.HttpContext;
 import java.net.URISyntaxException;
 import java.util.concurrent.Future;
 
+import static com.newrelic.agent.security.instrumentation.httpclient50.SecurityHelper.APACHE5_ASYNC_REQUEST_PRODUCER;
+
 @Weave(type = MatchType.Interface, originalName = "org.apache.hc.client5.http.async.HttpAsyncClient")
 public class HttpAsyncClient_Instrumentation {
 
@@ -39,7 +35,7 @@ public class HttpAsyncClient_Instrumentation {
             HandlerFactory<AsyncPushConsumer> pushHandlerFactory,
             HttpContext context,
             FutureCallback<T> callback) {
-        HttpRequest request = ((BasicRequestProducer_Instrumentation)requestProducer).nrRequest;
+        HttpRequest request = NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(APACHE5_ASYNC_REQUEST_PRODUCER+requestProducer.hashCode(), HttpRequest.class);;
 
         boolean isLockAcquired = acquireLockIfPossible();
         AbstractOperation operation = null;

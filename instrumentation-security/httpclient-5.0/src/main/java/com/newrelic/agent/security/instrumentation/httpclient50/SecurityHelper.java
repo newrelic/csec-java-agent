@@ -15,6 +15,7 @@ public class SecurityHelper {
     public static final String METHOD_NAME_EXECUTE = "execute";
 
     public static final String NR_SEC_CUSTOM_ATTRIB_NAME = "SSRF_OPERATION_LOCK_APACHE5-";
+    public static final String APACHE5_ASYNC_REQUEST_PRODUCER = "APACHE5_ASYNC_REQUEST_PRODUCER_";
 
     public static void registerExitOperation(boolean isProcessingAllowed, AbstractOperation operation) {
         try {

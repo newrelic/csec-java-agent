@@ -7,19 +7,18 @@
 
 package com.newrelic.agent.security.instrumentation.httpclient50;
 
+import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.weaver.MatchType;
-import com.newrelic.api.agent.weaver.NewField;
 import com.newrelic.api.agent.weaver.Weave;
 import org.apache.hc.core5.http.HttpRequest;
 import org.apache.hc.core5.http.nio.AsyncEntityProducer;
 
+import static com.newrelic.agent.security.instrumentation.httpclient50.SecurityHelper.APACHE5_ASYNC_REQUEST_PRODUCER;
+
 @Weave(type=MatchType.BaseClass, originalName = "org.apache.hc.core5.http.nio.support.BasicRequestProducer")
 public class BasicRequestProducer_Instrumentation {
 
-    @NewField
-    public final HttpRequest nrRequest;
-
     public BasicRequestProducer_Instrumentation(final HttpRequest request, final AsyncEntityProducer dataProducer) {
-        nrRequest = request;
+        NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(APACHE5_ASYNC_REQUEST_PRODUCER+this.hashCode(), request);
     }
 }
