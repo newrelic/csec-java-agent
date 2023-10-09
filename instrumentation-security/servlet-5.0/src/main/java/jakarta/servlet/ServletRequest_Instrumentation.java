@@ -13,7 +13,7 @@ import com.newrelic.api.agent.security.schema.HttpRequest;
 import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
-import com.nr.instrumentation.security.servlet5.ServletRequestCallback;
+import com.newrelic.agent.security.instrumentation.servlet5.ServletRequestCallback;
 
 import java.io.BufferedReader;
 import java.io.IOException;

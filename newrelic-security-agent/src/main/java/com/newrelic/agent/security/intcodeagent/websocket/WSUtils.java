@@ -5,8 +5,6 @@ import com.newrelic.agent.security.AgentInfo;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class WSUtils {
-    private static WSUtils instance;
-    private static final Object lock = new Object();
 
     private boolean isConnected = false;
     private AtomicBoolean isReconnecting = new AtomicBoolean(false);
@@ -14,15 +12,12 @@ public class WSUtils {
     private WSUtils() {
     }
 
+    private static final class InstanceHolder {
+        static final WSUtils instance = new WSUtils();
+    }
+
     public static WSUtils getInstance() {
-        if (instance == null) {
-            synchronized (lock) {
-                if (instance == null) {
-                    instance = new WSUtils();
-                }
-            }
-        }
-        return instance;
+        return InstanceHolder.instance;
     }
 
 
@@ -32,8 +27,8 @@ public class WSUtils {
     }
 
     public static boolean isConnected() {
-        if (instance != null) {
-            return instance.isConnected;
+        if (InstanceHolder.instance != null) {
+            return InstanceHolder.instance.isConnected;
         }
         return false;
     }
