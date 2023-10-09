@@ -4,6 +4,8 @@ import com.datastax.driver.core.BatchStatement;
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.CodecRegistry;
 import com.datastax.driver.core.ColumnDefinitions;
+import com.datastax.driver.core.Configuration;
+import com.datastax.driver.core.ProtocolVersion;
 import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.TypeCodec;
 import com.datastax.driver.core.querybuilder.BuiltStatement;
@@ -15,7 +17,6 @@ import com.newrelic.api.agent.security.schema.operation.BatchSQLOperation;
 import com.newrelic.api.agent.security.schema.operation.SQLOperation;
 
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -33,7 +34,7 @@ public class CassandraUtils {
         return false;
     }
 
-    public static AbstractOperation preProcessSecurityHook(Statement statement, CodecRegistry codecRegistry, String klass) {
+    public static AbstractOperation preProcessSecurityHook(Statement statement, Configuration config, String klass) {
         try {
             SQLOperation cqlOperation = new SQLOperation(klass, CassandraUtils.METHOD_EXECUTE_ASYNC);
             cqlOperation.setCaseType(VulnerabilityCaseType.NOSQL_DB_COMMAND);
@@ -44,7 +45,7 @@ public class CassandraUtils {
                 batchCQLOperation.setCaseType(VulnerabilityCaseType.NOSQL_DB_COMMAND);
 
                 for (Statement stmt: ((BatchStatement) statement).getStatements()) {
-                    AbstractOperation operation = preProcessSecurityHook(stmt, codecRegistry, klass);
+                    AbstractOperation operation = preProcessSecurityHook(stmt, config, klass);
                     if (operation instanceof SQLOperation)
                         batchCQLOperation.addOperation((SQLOperation) operation);
                 }
@@ -52,16 +53,14 @@ public class CassandraUtils {
                 return batchCQLOperation;
             } else if(statement instanceof BuiltStatement){
                 BuiltStatement stmt = (BuiltStatement) statement;
-                ArrayList<Object> values = new ArrayList<>();
-
                 cqlOperation.setQuery(stmt.getQueryString());
-                cqlOperation.setParams(setParams(values));
+                cqlOperation.setParams(setParams(stmt, config.getProtocolOptions().getProtocolVersion(), config.getCodecRegistry()));
                 return cqlOperation;
 
             } else if (statement instanceof BoundStatement) {
-                String query = ((BoundStatement) statement).preparedStatement().getQueryString();
-                cqlOperation.setQuery(query);
-                cqlOperation.setParams(setParams((BoundStatement)statement));
+                BoundStatement stmt = (BoundStatement) statement;
+                cqlOperation.setQuery(stmt.preparedStatement().getQueryString());
+                cqlOperation.setParams(setParams(stmt));
                 return cqlOperation;
 
             } else {
@@ -91,13 +90,14 @@ public class CassandraUtils {
         }
     }
 
-    private static Map<String, String> setParams(List<Object> variables) {
+    private static Map<String, String> setParams(BuiltStatement statement, ProtocolVersion protoVersion, CodecRegistry registry) {
         Map<String, String> params = new HashMap<>();
         try{
-            if(variables != null){
-                for(int i = 0; i < variables.size(); i++){
-                    if(!(variables.get(i) instanceof ByteBuffer)){
-                        params.put(String.valueOf(i), String.valueOf(variables.get(i)));
+            if(statement.hasValues()){
+                for(int i = 0; i < statement.getValues(protoVersion, registry).length; i++){
+                    Object obj;
+                    if(!((obj = statement.getObject(i, registry)) instanceof ByteBuffer)){
+                        params.put(String.valueOf(i), String.valueOf(obj));
                     }
                 }
             }

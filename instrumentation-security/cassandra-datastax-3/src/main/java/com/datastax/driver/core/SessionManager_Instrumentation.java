@@ -24,7 +24,7 @@ abstract class SessionManager_Instrumentation {
             }
 
             if(isLockAcquired){
-                cqlOperation = CassandraUtils.preProcessSecurityHook(statement, configuration().getCodecRegistry(), this.getClass().getName());
+                cqlOperation = CassandraUtils.preProcessSecurityHook(statement, configuration(), this.getClass().getName());
                 if(cqlOperation != null){
                     NewRelicSecurity.getAgent().registerOperation(cqlOperation);
                 }
