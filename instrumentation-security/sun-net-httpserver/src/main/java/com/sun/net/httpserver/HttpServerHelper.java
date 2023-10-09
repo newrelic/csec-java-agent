@@ -6,7 +6,6 @@ import com.newrelic.api.agent.security.instrumentation.helpers.ServletHelper;
 import com.newrelic.api.agent.security.schema.AgentMetaData;
 import com.newrelic.api.agent.security.schema.HttpRequest;
 import com.newrelic.api.agent.security.schema.policy.AgentPolicy;
-import com.sun.net.httpserver.Headers;
 
 import java.util.HashSet;
 import java.util.Map;
@@ -41,6 +40,9 @@ public class HttpServerHelper {
                 // TODO: May think of removing this intermediate obj and directly create K2 Identifier.
                 NewRelicSecurity.getAgent().getSecurityMetaData()
                         .setFuzzRequestIdentifier(ServletHelper.parseFuzzRequestIdentifierHeader(headers.getFirst(headerKey)));
+            } else if(GenericHelper.CSEC_PARENT_ID.equals(headerKey)) {
+                NewRelicSecurity.getAgent().getSecurityMetaData()
+                        .addCustomAttribute(GenericHelper.CSEC_PARENT_ID, headers.getFirst(headerKey));
             }
             String headerFullValue = EMPTY;
             for (String headerValue : headers.get(headerKey)) {
