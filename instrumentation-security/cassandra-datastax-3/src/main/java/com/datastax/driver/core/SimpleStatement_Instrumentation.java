@@ -55,25 +55,19 @@ public abstract class SimpleStatement_Instrumentation {
     }
     private Map<String, String> setParams(Object... values) {
         Map<String, String> params = new HashMap<>();
-        try{
-            for(int i = 0; i < values.length; i++){
-                if(!(values[i] instanceof ByteBuffer)){
-                    params.put(String.valueOf(i), String.valueOf(values[i]));
-                }
+        for(int i = 0; i < values.length; i++){
+            if(!(values[i] instanceof ByteBuffer)){
+                params.put(String.valueOf(i), String.valueOf(values[i]));
             }
-        } catch (Exception ignored){
         }
         return params;
     }
     private Map<String, String> setParams(Map<String, Object> values) {
         Map<String, String> params = new HashMap<>();
-        try{
-            for( Map.Entry<String, Object> namedVal: values.entrySet()) {
-                if(!(namedVal.getValue() instanceof ByteBuffer)){
-                    params.put(namedVal.getKey(), String.valueOf(namedVal.getValue()));
-                }
+        for( Map.Entry<String, Object> namedVal: values.entrySet()) {
+            if(!(namedVal.getValue() instanceof ByteBuffer)){
+                params.put(namedVal.getKey(), String.valueOf(namedVal.getValue()));
             }
-        } catch (Exception ignored){
         }
         return params;
     }
