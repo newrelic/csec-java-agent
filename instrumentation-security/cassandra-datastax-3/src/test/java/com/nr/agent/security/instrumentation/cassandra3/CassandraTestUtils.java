@@ -62,19 +62,23 @@ class CassandraTestUtils {
         QUERIES.add("CREATE TABLE users2 (id uuid PRIMARY KEY, email text, age int, isMarried boolean, img blob, phone decimal, dob DATE, name varchar, events list<text>, address set<text>, marks map<text,int>);");
 
         // QUERIES FOR TABLE, index starts from 4
-        QUERIES.add("INSERT INTO users (age, email) VALUES (35, 'bob@example.com')");
-        QUERIES.add("INSERT INTO users (age, email) VALUES (?, ?)");
-        QUERIES.add("INSERT INTO users (age, email) VALUES (:age, :email)");
-        QUERIES.add("INSERT INTO users2 (id, email, age, isMarried, img, phone, dob, name, events, address, marks) VALUES (?,?,?,?,?,?,?,?,?,?,?)");
+        QUERIES.add("INSERT INTO users (age, email) VALUES (35, 'bob@example.com');");
+        QUERIES.add("INSERT INTO users (age, email) VALUES (?, ?);");
+        QUERIES.add("INSERT INTO users (age, email) VALUES (:age, :email);");
+        QUERIES.add("INSERT INTO users2 (id, email, age, isMarried, img, phone, dob, name, events, address, marks) VALUES (?,?,?,?,?,?,?,?,?,?,?);");
 
         // QUERY for creating a table with custom codec DateTimeCodec
         QUERIES.add("CREATE TABLE users3 (id uuid PRIMARY KEY, timestamp TIMESTAMP);");
-        QUERIES.add("INSERT INTO users3 (id, timestamp) VALUES (?, ?)");
-        QUERIES.add("INSERT INTO users (age,email) VALUES (35,?)");
+        QUERIES.add("INSERT INTO users3 (id, timestamp) VALUES (?, ?);");
+        QUERIES.add("INSERT INTO users (age,email) VALUES (35,?);");
         QUERIES.add("BEGIN BATCH INSERT INTO users (email,age) VALUES (?,30);UPDATE users SET age=50 WHERE email=?;APPLY BATCH;");
-        QUERIES.add("SELECT * FROM users WHERE email=?");
-        QUERIES.add("DELETE FROM users WHERE email=?");
-        QUERIES.add("UPDATE users SET age=50 WHERE email=?");
+        QUERIES.add("SELECT * FROM users WHERE email=?;");
+        QUERIES.add("DELETE FROM users WHERE email=?;");
+        QUERIES.add("UPDATE users SET age=50 WHERE email=?;");
+        QUERIES.add("SELECT * FROM users WHERE email='clun5@gmail.com';");
+        QUERIES.add("INSERT INTO users (age,email) VALUES (35,'clun5@gmail.com');");
+        QUERIES.add("DELETE FROM users WHERE email='clun5@gmail.com';");
+        QUERIES.add("UPDATE users SET age=50 WHERE email='clun5@gmail.com';");
         return QUERIES;
     }
 

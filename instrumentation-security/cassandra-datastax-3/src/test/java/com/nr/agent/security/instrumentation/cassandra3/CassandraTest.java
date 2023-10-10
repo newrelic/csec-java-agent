@@ -9,7 +9,7 @@ import com.datastax.driver.core.Session;
 import com.datastax.driver.core.SimpleStatement;
 import com.datastax.driver.core.TypeCodec;
 import com.datastax.driver.core.querybuilder.Batch;
-import com.datastax.driver.core.querybuilder.CassandraUtils;
+import com.newrelic.agent.security.instrumentation.cassandra3.CassandraUtils;
 import com.datastax.driver.core.querybuilder.Delete;
 import com.datastax.driver.core.querybuilder.Insert;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
@@ -50,7 +50,7 @@ import java.util.UUID;
 
 // Issue when running cassandra unit on Java 9+ - https://github.com/jsevellec/cassandra-unit/issues/249
 @RunWith(SecurityInstrumentationTestRunner.class)
-@InstrumentationTestConfig(includePrefixes = { "com.datastax.driver.core" })
+@InstrumentationTestConfig(includePrefixes = { "com.datastax.driver.core", "com.newrelic.agent.security.instrumentation.cassandra3" })
 @Category({ Java9IncompatibleTest.class, Java11IncompatibleTest.class, Java17IncompatibleTest.class })
 public class CassandraTest {
     private static Cluster CLUSTER;
@@ -66,6 +66,7 @@ public class CassandraTest {
         through to a catch block, which subsequently calls JVMStabilityInspector.inspectThrowable(t), which in turn
         calls DatabaseDescriptor.getDiskFailurePolicy(), and that, in turn, relies on the directory having been created.
         */
+        System.setProperty("java.library.path","src/test/resources/libs/");
         URL config = CassandraTest.class.getResource("/cu-cassandra.yaml");
         System.setProperty("cassandra.config", config.toString());
         EmbeddedCassandraServerHelper.startEmbeddedCassandra();
@@ -200,6 +201,21 @@ public class CassandraTest {
         Assert.assertEquals("Wrong params detected", params, operation.getParams());
     }
     @Test
+    public void testBuiltStmtInsert1() {
+        Map<String, String> params = builtStmtInsert1();
+        SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
+        List<AbstractOperation> operations = introspector.getOperations();
+        Assert.assertTrue("No operations detected", operations.size() > 0);
+
+        SQLOperation operation = (SQLOperation) operations.get(0);
+        Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.NOSQL_DB_COMMAND, operation.getCaseType());
+        Assert.assertEquals("Invalid executed method name.", "executeAsync", operation.getMethodName());
+
+        Assert.assertEquals("Invalid Query detected.", QUERIES.get(16), operation.getQuery());
+        Assert.assertEquals("Invalid DB-Name.", CassandraUtils.EVENT_CATEGORY, operation.getDbName());
+        Assert.assertEquals("Wrong params detected", params, operation.getParams());
+    }
+    @Test
     public void testBuiltStmtSelect() {
         Map<String, String> params = builtStmtSelect();
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
@@ -211,6 +227,21 @@ public class CassandraTest {
         Assert.assertEquals("Invalid executed method name.", "executeAsync", operation.getMethodName());
         
         Assert.assertEquals("Invalid Query detected.", QUERIES.get(12), operation.getQuery());
+        Assert.assertEquals("Invalid DB-Name.", CassandraUtils.EVENT_CATEGORY, operation.getDbName());
+        Assert.assertEquals("Wrong params detected", params, operation.getParams());
+    }
+    @Test
+    public void testBuiltStmtSelect1() {
+        Map<String, String> params = builtStmtSelect1();
+        SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
+        List<AbstractOperation> operations = introspector.getOperations();
+        Assert.assertTrue("No operations detected", operations.size() > 0);
+
+        SQLOperation operation = (SQLOperation) operations.get(0);
+        Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.NOSQL_DB_COMMAND, operation.getCaseType());
+        Assert.assertEquals("Invalid executed method name.", "executeAsync", operation.getMethodName());
+
+        Assert.assertEquals("Invalid Query detected.", QUERIES.get(15), operation.getQuery());
         Assert.assertEquals("Invalid DB-Name.", CassandraUtils.EVENT_CATEGORY, operation.getDbName());
         Assert.assertEquals("Wrong params detected", params, operation.getParams());
     }
@@ -230,6 +261,21 @@ public class CassandraTest {
         Assert.assertEquals("Wrong params detected", params, operation.getParams());
     }
     @Test
+    public void testBuiltStmtUpdate1() {
+        Map<String, String> params = builtStmtUpdate1();
+        SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
+        List<AbstractOperation> operations = introspector.getOperations();
+        Assert.assertTrue("No operations detected", operations.size() > 0);
+
+        SQLOperation operation = (SQLOperation) operations.get(0);
+        Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.NOSQL_DB_COMMAND, operation.getCaseType());
+        Assert.assertEquals("Invalid executed method name.", "executeAsync", operation.getMethodName());
+
+        Assert.assertEquals("Invalid Query detected.", QUERIES.get(18), operation.getQuery());
+        Assert.assertEquals("Invalid DB-Name.", CassandraUtils.EVENT_CATEGORY, operation.getDbName());
+        Assert.assertEquals("Wrong params detected", params, operation.getParams());
+    }
+    @Test
     public void testBuiltStmtDelete() {
         Map<String, String> params = builtStmtDelete();
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
@@ -241,6 +287,21 @@ public class CassandraTest {
         Assert.assertEquals("Invalid executed method name.", "executeAsync", operation.getMethodName());
         
         Assert.assertEquals("Invalid Query detected.", QUERIES.get(13), operation.getQuery());
+        Assert.assertEquals("Invalid DB-Name.", CassandraUtils.EVENT_CATEGORY, operation.getDbName());
+        Assert.assertEquals("Wrong params detected", params, operation.getParams());
+    }
+    @Test
+    public void testBuiltStmtDelete1() {
+        Map<String, String> params = builtStmtDelete1();
+        SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
+        List<AbstractOperation> operations = introspector.getOperations();
+        Assert.assertTrue("No operations detected", operations.size() > 0);
+
+        SQLOperation operation = (SQLOperation) operations.get(0);
+        Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.NOSQL_DB_COMMAND, operation.getCaseType());
+        Assert.assertEquals("Invalid executed method name.", "executeAsync", operation.getMethodName());
+
+        Assert.assertEquals("Invalid Query detected.", QUERIES.get(17), operation.getQuery());
         Assert.assertEquals("Invalid DB-Name.", CassandraUtils.EVENT_CATEGORY, operation.getDbName());
         Assert.assertEquals("Wrong params detected", params, operation.getParams());
     }
@@ -431,20 +492,39 @@ public class CassandraTest {
         Insert stmt1 = QueryBuilder.insertInto("users")
                 .value("age", 35)
                 .value("email", params.get("0"));
-
+        stmt1.setForceNoValues(false);
         SESSION.execute(stmt1);
         return params;
     }
+
+    @Trace(dispatcher = true)
+    private Map<String, String> builtStmtInsert1() {
+        Insert stmt1 = QueryBuilder.insertInto("users")
+                .value("age", 35)
+                .value("email", "clun5@gmail.com");
+        stmt1.setForceNoValues(true);
+        SESSION.execute(stmt1);
+        return new HashMap<>();
+    }
+
     @Trace(dispatcher = true)
     private Map<String, String> builtStmtSelect() {
         Map<String, String> params = new HashMap<>();
         params.put("0", "clun5@gmail.com");
         Select.Where stmt2 = QueryBuilder.select().all().from("users")
                 .where(QueryBuilder.eq("email", params.get("0")));
-        stmt2.setForceNoValues(true);
-
+        stmt2.setForceNoValues(false);
         SESSION.execute(stmt2);
         return params;
+    }
+
+    @Trace(dispatcher = true)
+    private Map<String, String> builtStmtSelect1() {
+        Select.Where stmt2 = QueryBuilder.select().all().from("users")
+                .where(QueryBuilder.eq("email", "clun5@gmail.com"));
+        stmt2.setForceNoValues(true);
+        SESSION.execute(stmt2);
+        return new HashMap<>();
     }
     @Trace(dispatcher = true)
     private Map<String, String> builtStmtDelete() {
@@ -452,8 +532,18 @@ public class CassandraTest {
         params.put("0", "clun5@gmail.com");
         Delete.Where stmt3= QueryBuilder.delete().all().from("users").
                 where(QueryBuilder.eq("email", params.get("0")));
+        stmt3.setForceNoValues(false);
         SESSION.execute(stmt3);
         return params;
+    }
+
+    @Trace(dispatcher = true)
+    private Map<String, String> builtStmtDelete1() {
+        Delete.Where stmt3= QueryBuilder.delete().all().from("users").
+                where(QueryBuilder.eq("email", "clun5@gmail.com"));
+        stmt3.setForceNoValues(true);
+        SESSION.execute(stmt3);
+        return  new HashMap<>();
     }
     @Trace(dispatcher = true)
     private Map<String, String> builtStmtUpdate() {
@@ -465,6 +555,15 @@ public class CassandraTest {
 
         SESSION.execute(stmt4);
         return params;
+    }
+    @Trace(dispatcher = true)
+    private Map<String, String> builtStmtUpdate1() {
+        Update.Where stmt4= QueryBuilder.update("users")
+                .with(QueryBuilder.set("age", 50))
+                .where(QueryBuilder.eq("email", "clun5@gmail.com"));
+        stmt4.setForceNoValues(true);
+        SESSION.execute(stmt4);
+        return new HashMap<>();
     }
     @Trace(dispatcher = true)
     private Map<String, String> builtStmtBatch() {
