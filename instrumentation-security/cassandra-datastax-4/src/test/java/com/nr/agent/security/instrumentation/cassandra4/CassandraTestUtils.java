@@ -53,6 +53,7 @@ class CassandraTestUtils {
 
         QUERIES.add("UPDATE users SET age=? WHERE email=?");
         QUERIES.add("UPDATE users SET age=:age WHERE email=:email");
+        QUERIES.add("SELECT * FROM users where email='bob@example.com'");
         return QUERIES;
     }
 }

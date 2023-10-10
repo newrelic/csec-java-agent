@@ -127,6 +127,36 @@ public class CassandraTest {
         Assert.assertEquals("Wrong params detected", params, operation.getParams());
     }
     @Test
+    public void testBoundStmt1() {
+        Map<String, String> params = boundStmt1();
+        SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
+        List<AbstractOperation> operations = introspector.getOperations();
+        Assert.assertTrue("No operations detected", operations.size() > 0);
+
+        SQLOperation operation = (SQLOperation) operations.get(0);
+        Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.NOSQL_DB_COMMAND, operation.getCaseType());
+        Assert.assertEquals("Invalid executed method name.", "execute", operation.getMethodName());
+
+        Assert.assertEquals("Invalid Query detected.", QUERIES.get(2), operation.getQuery());
+        Assert.assertEquals("Invalid DB-Name.", CassandraUtils.EVENT_CATEGORY, operation.getDbName());
+        Assert.assertEquals("Wrong params detected", params, operation.getParams());
+    }
+    @Test
+    public void testBoundStmt2() {
+        Map<String, String> params = boundStmt2();
+        SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
+        List<AbstractOperation> operations = introspector.getOperations();
+        Assert.assertTrue("No operations detected", operations.size() > 0);
+
+        SQLOperation operation = (SQLOperation) operations.get(0);
+        Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.NOSQL_DB_COMMAND, operation.getCaseType());
+        Assert.assertEquals("Invalid executed method name.", "execute", operation.getMethodName());
+
+        Assert.assertEquals("Invalid Query detected.", QUERIES.get(11), operation.getQuery());
+        Assert.assertEquals("Invalid DB-Name.", CassandraUtils.EVENT_CATEGORY, operation.getDbName());
+        Assert.assertEquals("Wrong params detected", params, operation.getParams());
+    }
+    @Test
     public void testQueryBuilderPositionalValues() {
         Map<String, String> params = queryBuilderPositionalValues();
 
@@ -378,6 +408,24 @@ public class CassandraTest {
             .addPositionalValue(new HashMap<>())
             .build()).bind();
         return params;
+    }
+
+    @Trace(dispatcher = true)
+    private Map<String, String> boundStmt1() {
+        Map<String, String> namedValues = CassandraTestUtils.getNamedParams();
+        namedValues.put("age", "35");
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("age", 35);
+        params.put("email", "bob1@example.com");
+        CASSANDRA.getSession().prepare(SimpleStatement.newInstance(QUERIES.get(2)).setNamedValues(params)).bind();
+        return namedValues;
+    }
+
+    @Trace(dispatcher = true)
+    private Map<String, String> boundStmt2() {
+        CASSANDRA.getSession().prepare(QUERIES.get(11)).bind();
+        return new HashMap<>();
     }
     @Trace(dispatcher = true)
     private Map<String, String> queryBuilderInsertPositionalParams() {
