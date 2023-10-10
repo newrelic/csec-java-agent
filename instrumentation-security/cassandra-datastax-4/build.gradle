@@ -21,3 +21,7 @@ site {
     title 'Cassandra'
     type 'Datastore'
 }
+
+test {
+    jvmArgs(["-Djava.library.path=src/test/resources/libs/"])
+}
