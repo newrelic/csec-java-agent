@@ -54,10 +54,16 @@ public class Httpserver extends ExternalResource {
 
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String response = "Hello, World!\n";
-            exchange.sendResponseHeaders(200, response.length());
             OutputStream os = exchange.getResponseBody();
+            String response;
+            if(exchange.getRequestMethod().equals("POST")){
+                response = String.valueOf(exchange.getRequestBody().hashCode());
+            } else {
+                response = "Hello, World!\n";
+            }
+            exchange.sendResponseHeaders(200, response.length());
             os.write(response.getBytes());
+            os.flush();
             os.close();
         }
     }

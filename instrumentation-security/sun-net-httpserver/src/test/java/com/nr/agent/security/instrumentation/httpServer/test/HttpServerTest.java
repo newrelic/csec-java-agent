@@ -14,10 +14,13 @@ import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -85,8 +88,38 @@ public class HttpServerTest {
                 headerValue,
                 headers.get(ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER.toLowerCase())
         );
+        Assert.assertTrue(
+                String.format("Missing K2 header: %s", GenericHelper.CSEC_PARENT_ID),
+                headers.containsKey(GenericHelper.CSEC_PARENT_ID)
+        );
+        Assert.assertEquals(
+                String.format("Invalid K2 header value for:  %s", GenericHelper.CSEC_PARENT_ID),
+                headerValue, headers.get(GenericHelper.CSEC_PARENT_ID)
+        );
     }
+    @Test
+    public void testHandle2() throws URISyntaxException, IOException, InterruptedException {
+        int expectedHash = handle2();
+        Thread.sleep(100);
 
+        SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
+        List<AbstractOperation> operations = introspector.getOperations();
+        Assert.assertTrue("No operations detected", operations.size() > 0);
+        Assert.assertEquals("Extra operations detected", 1, operations.size());
+
+        RXSSOperation targetOperation = (RXSSOperation) operations.get(0);
+        Assert.assertNotNull("No target operation detected", targetOperation);
+        Assert.assertEquals("Wrong case-type detected", VulnerabilityCaseType.REFLECTED_XSS, targetOperation.getCaseType());
+        Assert.assertEquals("Wrong client IP detected", "127.0.0.1", targetOperation.getRequest().getClientIP());
+        Assert.assertEquals("Wrong Protocol detected", "http", targetOperation.getRequest().getProtocol());
+
+        Assert.assertEquals("Wrong port detected", server.getEndPoint().getPort(), targetOperation.getRequest().getServerPort());
+        Assert.assertEquals("Wrong method name detected", "handle", targetOperation.getMethodName());
+        Assert.assertEquals("Wrong Content-type detected", "text/plain", targetOperation.getRequest().getContentType());
+
+        Assert.assertNotNull("No hashcode detected", introspector.getRequestInStreamHash());
+        Assert.assertEquals("Wrong hashcode detected", Collections.singleton(expectedHash), introspector.getRequestInStreamHash());
+    }
 
     @Trace(dispatcher = true)
     private void handle() throws URISyntaxException, IOException {
@@ -112,5 +145,26 @@ public class HttpServerTest {
         conn.connect();
         conn.getResponseCode();
         return  headerValue;
+    }
+
+    @Trace(dispatcher = true)
+    private int handle2() throws URISyntaxException, IOException {
+        URL url = server.getEndPoint().toURL();
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        conn.setRequestProperty("content-type", "text/plain; charset=utf-8");
+        conn.setRequestMethod("POST");
+
+        conn.connect();
+        conn.getResponseCode();
+
+        BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+        int hashCode = 0;
+        String code;
+
+        if((code = (br.readLine())) != null){
+            hashCode = Integer.parseInt(code);
+        }
+        br.close();
+        return hashCode;
     }
 }
