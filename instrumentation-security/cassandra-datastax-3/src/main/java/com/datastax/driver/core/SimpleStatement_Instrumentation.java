@@ -23,7 +23,9 @@ public abstract class SimpleStatement_Instrumentation {
                 cqlOperation.setQuery(query);
                 cqlOperation.setCaseType(VulnerabilityCaseType.NOSQL_DB_COMMAND);
                 cqlOperation.setDbName(CassandraUtils.EVENT_CATEGORY);
-                cqlOperation.setParams(setParams(values));
+                if (values != null){
+                    cqlOperation.setParams(setParams(values));
+                }
                 NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(
                         CassandraUtils.NR_SEC_CUSTOM_ATTRIB_CQL_STMT + hashCode(), cqlOperation);
             }
