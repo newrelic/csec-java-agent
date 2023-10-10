@@ -11,6 +11,23 @@ import com.newrelic.agent.security.instrumentation.cassandra4.CassandraUtils;
 @Weave(type = MatchType.ExactClass, originalName = "com.datastax.oss.driver.internal.core.cql.DefaultPrepareRequest")
 public abstract class DefaultPrepareRequest_Instrumentation {
 
+    public DefaultPrepareRequest_Instrumentation(String query){
+        boolean isLockAcquired = CassandraUtils.acquireLockIfPossible(hashCode());
+        try{
+            if(isLockAcquired){
+                SQLOperation cqlOperation = new SQLOperation(this.getClass().getName(), CassandraUtils.METHOD_EXECUTE);
+                cqlOperation.setQuery(query);
+                cqlOperation.setCaseType(VulnerabilityCaseType.NOSQL_DB_COMMAND);
+                cqlOperation.setDbName(CassandraUtils.EVENT_CATEGORY);
+                NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(
+                        CassandraUtils.NR_SEC_CUSTOM_ATTRIB_CQL_STMT + hashCode(), cqlOperation);
+            }
+        } finally {
+            if(isLockAcquired){
+                CassandraUtils.releaseLock(hashCode());
+            }
+        }
+    }
     public DefaultPrepareRequest_Instrumentation(SimpleStatement statement){
         boolean isLockAcquired = CassandraUtils.acquireLockIfPossible(hashCode());
         try{
