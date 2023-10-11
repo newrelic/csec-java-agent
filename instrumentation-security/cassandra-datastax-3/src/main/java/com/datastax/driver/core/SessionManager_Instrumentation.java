@@ -9,9 +9,8 @@ import com.newrelic.api.agent.weaver.Weaver;
 
 @Weave(type = MatchType.ExactClass, originalName = "com.datastax.driver.core.SessionManager")
 abstract class SessionManager_Instrumentation {
-    Configuration configuration() {
-        return Weaver.callOriginal();
-    }
+    abstract Configuration configuration();
+
     public ResultSetFuture executeAsync(Statement statement) {
         boolean isLockAcquired = CassandraUtils.acquireLockIfPossible(statement.hashCode());
         ResultSetFuture result;
