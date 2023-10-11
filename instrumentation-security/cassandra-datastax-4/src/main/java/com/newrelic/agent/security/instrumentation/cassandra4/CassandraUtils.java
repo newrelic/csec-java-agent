@@ -60,8 +60,12 @@ public class CassandraUtils {
                 return cqlOperation;
             }
             else if (request instanceof PrepareRequest) {
-                cqlOperation = NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(
-                        NR_SEC_CUSTOM_ATTRIB_CQL_STMT+ request.hashCode(), SQLOperation.class);
+                cqlOperation.setQuery(((PrepareRequest) request).getQuery());
+                Map<String, String> params = NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(
+                        NR_SEC_CUSTOM_ATTRIB_CQL_STMT+ request.hashCode(), Map.class);
+                if(params!=null){
+                    cqlOperation.setParams(params);
+                }
                 return cqlOperation;
             }
             else if (request instanceof BoundStatement) {
