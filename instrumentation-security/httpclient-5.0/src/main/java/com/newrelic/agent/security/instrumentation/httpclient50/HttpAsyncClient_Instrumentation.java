@@ -35,7 +35,7 @@ public class HttpAsyncClient_Instrumentation {
             HandlerFactory<AsyncPushConsumer> pushHandlerFactory,
             HttpContext context,
             FutureCallback<T> callback) {
-        HttpRequest request = NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(APACHE5_ASYNC_REQUEST_PRODUCER+requestProducer.hashCode(), HttpRequest.class);;
+        HttpRequest request = NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(APACHE5_ASYNC_REQUEST_PRODUCER+requestProducer.hashCode(), HttpRequest.class);
 
         boolean isLockAcquired = acquireLockIfPossible();
         AbstractOperation operation = null;
