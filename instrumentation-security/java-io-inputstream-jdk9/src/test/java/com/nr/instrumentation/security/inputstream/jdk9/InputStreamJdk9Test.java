@@ -32,7 +32,7 @@ import java.util.UUID;
 
 @Category({ Java8IncompatibleTest.class, Java11IncompatibleTest.class })
 @RunWith(SecurityInstrumentationTestRunner.class)
-@InstrumentationTestConfig(includePrefixes = {"nr.java.io","com.nr.instrumentation.security.javaio"})
+@InstrumentationTestConfig(includePrefixes = {"com.newrelic.agent.security.instrumentation.javaio.io","com.newrelic.agent.security.instrumentation.javaio"})
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class InputStreamJdk9Test {
     private static String FILE;
