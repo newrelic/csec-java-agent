@@ -30,6 +30,12 @@ public class HttpServerRule extends ExternalResource implements HttpTestServer {
 
     @Override
     public void shutdown() {
+        try {
+            // to prevent socket.io: broken pipe error for async calls
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
         server.shutdown();
     }
 

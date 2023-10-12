@@ -1,4 +1,4 @@
-package com.newrelic.agent.security.instrumentation.javaio;
+package com.newrelic.api.agent.security.instrumentation.helpers;
 
 import com.newrelic.api.agent.security.NewRelicSecurity;
 
