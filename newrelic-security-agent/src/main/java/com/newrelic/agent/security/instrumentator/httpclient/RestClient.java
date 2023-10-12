@@ -114,7 +114,7 @@ public class RestClient {
         return clientThreadLocal.get();
     }
 
-    public void fireRequest(Request request, int repeatCount) throws InterruptedIOException {
+    public void fireRequest(Request request, int repeatCount) {
         OkHttpClient client = clientThreadLocal.get();
 
         logger.log(LogLevel.FINER, String.format(FIRING_REQUEST_METHOD_S, request.method()), RestClient.class.getName());

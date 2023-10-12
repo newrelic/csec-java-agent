@@ -1,17 +1,25 @@
 package com.newrelic.agent.security.instrumentator.dispatcher;
 
 import com.newrelic.agent.security.AgentInfo;
+import com.newrelic.agent.security.instrumentator.httpclient.RestRequestThreadPool;
+import com.newrelic.agent.security.intcodeagent.executor.CustomFutureTask;
+import com.newrelic.agent.security.intcodeagent.executor.CustomThreadPoolExecutor;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.newrelic.agent.security.intcodeagent.filelogging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.logging.IAgentConstants;
+import com.newrelic.agent.security.intcodeagent.models.javaagent.EventStats;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.ExitEventBean;
 import com.newrelic.api.agent.NewRelic;
 import com.newrelic.api.agent.TraceMetadata;
 import com.newrelic.api.agent.security.NewRelicSecurity;
+import com.newrelic.agent.security.util.AgentUsageMetric;
+import com.newrelic.agent.security.util.IUtilConstants;
+import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.SecurityMetaData;
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -27,18 +35,18 @@ public class DispatcherPool {
     private ThreadPoolExecutor executor;
     private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
 
-
-    private static DispatcherPool instance;
-
     final int queueSize = 300;
     final int maxPoolSize = 7;
     final int corePoolSize = 4;
     final long keepAliveTime = 10;
     final TimeUnit timeUnit = TimeUnit.SECONDS;
     final boolean allowCoreThreadTimeOut = false;
-    private static Object mutex = new Object();
 
     private Set<String> eid;
+
+    public ThreadPoolExecutor getExecutor() {
+        return executor;
+    }
 
 
     /**
@@ -60,9 +68,26 @@ public class DispatcherPool {
          * @throws RejectedExecutionException always
          */
         public void rejectedExecution(Runnable r, ThreadPoolExecutor e) {
+            if (r instanceof CustomFutureTask<?> && ((CustomFutureTask<?>) r).getTask() instanceof Dispatcher) {
+                Dispatcher dispatcher = (Dispatcher) ((CustomFutureTask<?>) r).getTask();
+                if(dispatcher.getSecurityMetaData()!= null && dispatcher.getSecurityMetaData().getFuzzRequestIdentifier().getK2Request()){
+                    String fuzzRequestId = dispatcher.getSecurityMetaData().getCustomAttribute(GenericHelper.CSEC_PARENT_ID, String.class);
+                    RestRequestThreadPool.getInstance().getRejectedIds().add(fuzzRequestId);
+                }
+
+                if(dispatcher.getSecurityMetaData() != null) {
+                    if(dispatcher.getSecurityMetaData().getFuzzRequestIdentifier().getK2Request()){
+                        AgentInfo.getInstance().getJaHealthCheck().getIastEventStats().incrementRejectedCount();
+                    } else {
+                        AgentInfo.getInstance().getJaHealthCheck().getRaspEventStats().incrementRejectedCount();
+                    }
+                } else if (dispatcher.getExitEventBean() != null) {
+                    AgentInfo.getInstance().getJaHealthCheck().getExitEventStats().incrementRejectedCount();
+                }
+            }
             AgentInfo.getInstance().getJaHealthCheck().incrementDropCount();
-            AgentInfo.getInstance().getJaHealthCheck().incrementProcessedCount();
-//			logger.log(LogLevel.FINE,"Event Task " + r.toString() + " rejected from  " + e.toString(), EventThreadPool.class.getName());
+            AgentInfo.getInstance().getJaHealthCheck().incrementEventRejectionCount();
+			logger.log(LogLevel.FINEST,"Event Dispatch Task " + r.toString() + " rejected from  " + e.toString(), DispatcherPool.class.getName());
         }
     }
 
@@ -71,28 +96,28 @@ public class DispatcherPool {
         // load the settings
         processQueue = new LinkedBlockingQueue<>(queueSize);
         eid = ConcurrentHashMap.newKeySet();
-        executor = new ThreadPoolExecutor(corePoolSize, maxPoolSize, keepAliveTime, timeUnit, processQueue,
+        executor = new CustomThreadPoolExecutor(corePoolSize, maxPoolSize, keepAliveTime, timeUnit, processQueue,
                 new EventAbortPolicy()) {
 
             @Override
             protected void afterExecute(Runnable r, Throwable t) {
-                if (r instanceof Future<?>) {
-                    try {
-                        Future<?> future = (Future<?>) r;
-                        if (future.isDone()) {
-                            AgentInfo.getInstance().getJaHealthCheck().incrementProcessedCount();
-                            future.get();
-                        }
-                    } catch (Throwable e) {
+                try {
+                    if( t != null) {
                         AgentInfo.getInstance().getJaHealthCheck().incrementDropCount();
+                        AgentInfo.getInstance().getJaHealthCheck().incrementEventProcessingErrorCount();
+                        incrementCount(r, IUtilConstants.ERROR);
+                    } else {
+                        AgentInfo.getInstance().getJaHealthCheck().incrementProcessedCount();
+                        incrementCount(r, IUtilConstants.PROCESSED);
                     }
+                } catch (Throwable ignored) {
+                    logger.log(LogLevel.FINEST, "Error while Dispatcher matric processing", ignored, DispatcherPool.class.getName());
                 }
                 super.afterExecute(r, t);
             }
 
             @Override
             protected void beforeExecute(Thread t, Runnable r) {
-                // TODO increment event proccessed count
                 super.beforeExecute(t, r);
             }
 
@@ -111,17 +136,46 @@ public class DispatcherPool {
         });
     }
 
-    public static DispatcherPool getInstance() {
-
-        if (instance == null) {
-            synchronized (mutex) {
-                if (instance == null) {
-                    instance = new DispatcherPool();
+    private void incrementCount(Runnable r, String type) {
+        EventStats eventStats = null;
+        if (r instanceof CustomFutureTask<?> && ((CustomFutureTask<?>) r).getTask() instanceof Dispatcher) {
+            Dispatcher dispatcher = (Dispatcher) ((CustomFutureTask<?>) r).getTask();
+            if(dispatcher.getSecurityMetaData() != null) {
+                if(dispatcher.getSecurityMetaData().getFuzzRequestIdentifier().getK2Request()){
+                    eventStats = AgentInfo.getInstance().getJaHealthCheck().getIastEventStats();
+                } else {
+                    eventStats = AgentInfo.getInstance().getJaHealthCheck().getRaspEventStats();
                 }
-                return instance;
+            } else if (dispatcher.getExitEventBean() != null) {
+                eventStats = AgentInfo.getInstance().getJaHealthCheck().getExitEventStats();
             }
         }
-        return instance;
+        if(eventStats == null){
+            return;
+        }
+        switch (type){
+            case IUtilConstants.ERROR:
+                eventStats.incrementErrorCount();
+                break;
+            case IUtilConstants.PROCESSED:
+                eventStats.incrementProcessedCount();
+                break;
+            case IUtilConstants.SENT:
+                eventStats.incrementSentCount();
+                break;
+            case IUtilConstants.REJECTED:
+                eventStats.incrementRejectedCount();
+                break;
+            default:
+                logger.log(LogLevel.FINEST, String.format("Couldn't update event matric for task :%s and type : %s", r, type), DispatcherPool.class.getName());
+        }
+    }
+
+    private static final class InstanceHolder {
+        static final DispatcherPool instance = new DispatcherPool();
+    }
+    public static DispatcherPool getInstance() {
+        return InstanceHolder.instance;
     }
 
     public Set<String> getEid() {
@@ -130,12 +184,33 @@ public class DispatcherPool {
 
 
     public void dispatchEvent(AbstractOperation operation, SecurityMetaData securityMetaData) {
+        AgentInfo.getInstance().getJaHealthCheck().incrementInvokedHookCount();
+
         if (executor.isShutdown()) {
             return;
         }
+
+        if(!securityMetaData.getFuzzRequestIdentifier().getK2Request() && !AgentUsageMetric.isRASPProcessingActive()){
+            AgentInfo.getInstance().getJaHealthCheck().getRaspEventStats().incrementRejectedCount();
+            AgentInfo.getInstance().getJaHealthCheck().incrementEventRejectionCount();
+            return;
+        }
+
         if (!operation.isEmpty() && securityMetaData.getFuzzRequestIdentifier().getK2Request()) {
             if (StringUtils.equals(securityMetaData.getFuzzRequestIdentifier().getApiRecordId(), operation.getApiID()) && StringUtils.equals(securityMetaData.getFuzzRequestIdentifier().getNextStage().getStatus(), IAgentConstants.VULNERABLE)) {
                 eid.add(operation.getExecutionId());
+            }
+        }
+        // Register in Processed CC map
+        if(securityMetaData.getFuzzRequestIdentifier().getK2Request()) {
+            String parentId = securityMetaData.getCustomAttribute(
+                    GenericHelper.CSEC_PARENT_ID, String.class);
+            if (StringUtils.isNotBlank(parentId)) {
+                RestRequestThreadPool.getInstance().getProcessedIds().putIfAbsent(parentId, new HashSet<>());
+            }
+            if (StringUtils.equals(securityMetaData.getFuzzRequestIdentifier().getApiRecordId(), operation.getApiID())) {
+                RestRequestThreadPool.getInstance()
+                        .registerEventForProcessedCC(parentId, operation.getExecutionId());
             }
         }
 
@@ -160,9 +235,7 @@ public class DispatcherPool {
     }
 
     public static void shutDownPool() {
-        if (instance != null) {
-            instance.shutDownThreadPoolExecutor();
-        }
+        InstanceHolder.instance.shutDownThreadPoolExecutor();
     }
 
     public void shutDownThreadPoolExecutor() {
@@ -183,6 +256,10 @@ public class DispatcherPool {
             }
         }
 
+    }
+
+    public void reset() {
+        executor.getQueue().clear();
     }
 
 }

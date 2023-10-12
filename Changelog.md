@@ -4,6 +4,35 @@ Noteworthy changes to the agent are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.6-public-preview] - 2023-10-19
+### Changes
+- Cassandra DB v3.0+ Support: The Security agent now supports Cassandra DB version 3.0 and above
+- HttpClient v5.0+ Support: The Security agent now also supports HttpClient version 5.0 and above
+- Support for std-out logging
+- Added feature for Daily log rollover
+- Support for logger config: log_file_count and log_limit_in_kbytes
+- Relocating all our instrumentation packages under the package com.newrelic.agent.security.instrumentation.*
+- Package Refactoring for Unit Tests: Move packaging for all UTs to com.nr.agent.security.instrumentation.*
+- Set default value for low severity instrumentation to false
+
+### Fixes
+- Fixed ClassNotFoundException for IOStreamHelper class with Glassfish
+- Updated PostgreSQL UTs with Embedded Server instead of test container
+
+## [1.0.5-public-preview] - 2023-08-29
+### Changes
+- [INSTRUMENTATION] Support for Apache log4j 3.0.0-alpha1 (new version released on 21 June 2023)
+- [INSTRUMENTATION] Support for Commons.jxpath
+- Randomization in WS connection delay
+- [FIX] Issue with HealthChecking having empty process stats issue
+- Add agent monitoring details and matrix to health check
+- Limiting the supported version range for Jetty, due to the new version release of Jetty on 7th Aug, 2023
+
+## [1.0.4-public-preview] - 2023-06-20
+### Changes
+- Limiting the supported version range for Apache log4j due to the new version release of Apache log4j on 21 June 2023
+- Support for indication what all API-IDs are scanned or being scanned.
+
 ## [1.0.3-limited-preview] - 2023-05-23
 ### Changes
 - License update

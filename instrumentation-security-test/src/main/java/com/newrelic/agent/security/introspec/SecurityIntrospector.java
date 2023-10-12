@@ -41,5 +41,7 @@ public interface SecurityIntrospector {
 
     void setK2TracingData(String value);
 
+    void setK2ParentId(String value);
+
     void clear();
 }
