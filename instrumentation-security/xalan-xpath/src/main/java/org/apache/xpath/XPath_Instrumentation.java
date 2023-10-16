@@ -9,7 +9,7 @@ import com.newrelic.api.agent.security.schema.operation.XPathOperation;
 import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
-import com.nr.instrumentation.security.xpath.xalan.XPATHUtils;
+import com.newrelic.agent.security.instrumentation.xalan.xpath.XPATHUtils;
 import org.apache.xml.utils.PrefixResolver;
 import org.apache.xpath.objects.XObject;
 import org.w3c.dom.Node;
