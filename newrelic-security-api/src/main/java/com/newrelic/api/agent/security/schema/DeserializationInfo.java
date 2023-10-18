@@ -31,6 +31,7 @@ public class DeserializationInfo implements Serializable {
     private boolean leaf;
     private Map<String, DeserializationInfo> value;
     private String leafValue;
+    private List<DeserializationInfo> unlinkedChildren = new ArrayList<>();
     private Object instance;
 
     public DeserializationInfo(String type, Object instance) {
@@ -58,9 +59,15 @@ public class DeserializationInfo implements Serializable {
         this.leaf = instance.leaf;
         if (instance.leaf) {
             this.leafValue = instance.leafValue;
-        } else {
+        } else if (instance.value != null){
             this.value = new HashMap<>();
-            this.value.putAll(instance.value);
+            for(Map.Entry<String, DeserializationInfo> entry: instance.value.entrySet()){
+                this.value.put(entry.getKey(), new DeserializationInfo(entry.getValue()));
+            }
+        }
+        for(DeserializationInfo value: instance.unlinkedChildren){
+            value.computeObjectMap();
+            this.unlinkedChildren.add(new DeserializationInfo(value));
         }
     }
 
@@ -190,5 +197,13 @@ public class DeserializationInfo implements Serializable {
 
     public void setInstance(Object instance) {
         this.instance = instance;
+    }
+
+    public List<DeserializationInfo> getUnlinkedChildren() {
+        return unlinkedChildren;
+    }
+
+    public void setUnlinkedChildren(List<DeserializationInfo> unlinkedChildren) {
+        this.unlinkedChildren = unlinkedChildren;
     }
 }

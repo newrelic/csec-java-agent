@@ -2,8 +2,6 @@ package com.newrelic.api.agent.security.schema;
 
 import com.newrelic.api.agent.security.NewRelicSecurity;
 
-import java.util.Map;
-
 public abstract class AbstractOperation {
 
     public static final String EMPTY = "";
@@ -47,9 +45,9 @@ public abstract class AbstractOperation {
             this.blockingEndTime = 0L;
             if (NewRelicSecurity.getAgent() != null &&
                     NewRelicSecurity.getAgent().getSecurityMetaData() != null &&
-                    NewRelicSecurity.getAgent().getSecurityMetaData().peekDeserializingObjectStack() != null) {
+                    NewRelicSecurity.getAgent().getSecurityMetaData().peekDeserializationRoot() != null) {
                 this.deserializationInfo = NewRelicSecurity.getAgent().getSecurityMetaData()
-                        .peekDeserializingObjectStack();
+                        .peekDeserializationRoot();
                 this.deserializationInfo.computeObjectMap();
             }
     }

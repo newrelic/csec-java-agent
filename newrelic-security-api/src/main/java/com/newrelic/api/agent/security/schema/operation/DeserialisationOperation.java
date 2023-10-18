@@ -17,11 +17,11 @@ public class DeserialisationOperation extends AbstractOperation {
     public DeserialisationOperation(String className, String methodName) {
         super(className, methodName);
         if (NewRelicSecurity.getAgent().getSecurityMetaData()!= null &&
-                NewRelicSecurity.getAgent().getSecurityMetaData().peekDeserializingObjectStack()!=null) {
+                NewRelicSecurity.getAgent().getSecurityMetaData().peekDeserializationRoot()!=null) {
             this.entityName = NewRelicSecurity.getAgent().getSecurityMetaData()
-                    .peekDeserializingObjectStack().getType();
+                    .peekDeserializationRoot().getType();
             this.params = NewRelicSecurity.getAgent().getSecurityMetaData()
-                    .peekDeserializingObjectStack().computeObjectMap();
+                    .peekDeserializationRoot().computeObjectMap();
         }
         this.setCaseType(VulnerabilityCaseType.UNSAFE_DESERIALIZATION);
     }

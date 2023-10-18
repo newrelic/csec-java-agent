@@ -14,31 +14,35 @@ public abstract class Serializable_Instrumentation {
 
     private void readSerialData(Object obj, ObjectStreamClass desc)
             throws IOException {
-
+        DeserializationInfo dInfo = new DeserializationInfo(obj.getClass().getName(), obj);
         try {
             if (NewRelicSecurity.isHookProcessingActive() &&
-                    !NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()) {
-                NewRelicSecurity.getAgent().getSecurityMetaData().addToDeserializingObjectStack(
-                        new DeserializationInfo(obj.getClass().getName(), obj)
-                );
+                !NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()) {
+                dInfo = new DeserializationInfo(obj.getClass().getName(), obj);
+                NewRelicSecurity.getAgent().getSecurityMetaData().addToDeserializationRoot(dInfo);
             }
+
             Weaver.callOriginal();
 
-            DeserialisationOperation operation = new DeserialisationOperation(
-                    this.getClass().getName(),
-                    SecurityHelper.METHOD_NAME_READ_OBJECT
-            );
+            if (NewRelicSecurity.getAgent().getSecurityMetaData().peekDeserializationRoot() == dInfo) {
+                DeserialisationOperation operation = new DeserialisationOperation(
+                        this.getClass().getName(),
+                        SecurityHelper.METHOD_NAME_READ_OBJECT
+                );
 
-            NewRelicSecurity.getAgent().registerOperation(operation);
+                NewRelicSecurity.getAgent().registerOperation(operation);
+            }
 
-        } catch(Exception e){
-
+        } catch (Exception e) {
         } finally {
             if (NewRelicSecurity.isHookProcessingActive() &&
-                    !NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()) {
-                NewRelicSecurity.getAgent().getSecurityMetaData().popFromDeserializingObjectStack();
+                    !NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty() &&
+                    NewRelicSecurity.getAgent().getSecurityMetaData().peekDeserializationRoot() != null &&
+                    NewRelicSecurity.getAgent().getSecurityMetaData().peekDeserializationRoot() == dInfo) {
+                NewRelicSecurity.getAgent().getSecurityMetaData().resetDeserializationRoot();
             }
         }
+
 //        registerExitOperation(isFileLockAcquired, operation);
     }
 
