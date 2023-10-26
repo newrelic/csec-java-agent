@@ -15,6 +15,7 @@ import com.newrelic.agent.security.instrumentator.utils.HashGenerator;
 import com.newrelic.agent.security.instrumentator.utils.INRSettingsKey;
 import com.newrelic.agent.security.intcodeagent.constants.AgentServices;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
+import com.newrelic.agent.security.intcodeagent.filelogging.LogFileHelper;
 import com.newrelic.agent.security.intcodeagent.filelogging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.logging.HealthCheckScheduleThread;
 import com.newrelic.agent.security.intcodeagent.logging.IAgentConstants;
@@ -185,6 +186,7 @@ public class Agent implements SecurityAgent {
         FileCleaner.scheduleNewTask();
         SchedulerHelper.getInstance().scheduleLowSeverityFilterCleanup(LowSeverityHelper::clearLowSeverityEventFilter,
                 30 , 30, TimeUnit.MINUTES);
+        SchedulerHelper.getInstance().scheduleDailyLogRollover(LogFileHelper::performDailyRollover);
         logger.logInit(
                 LogLevel.INFO,
                 String.format(STARTED_MODULE_LOG, AgentServices.HealthCheck.name()),

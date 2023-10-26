@@ -84,16 +84,16 @@ public class JAHealthCheck extends AgentBasicInfo {
     public JAHealthCheck(JAHealthCheck jaHealthCheck) {
         super();
         this.applicationUUID = jaHealthCheck.applicationUUID;
-        this.invokedHookCount = jaHealthCheck.invokedHookCount;
-        this.eventDropCount = jaHealthCheck.eventDropCount;
-        this.eventProcessed = jaHealthCheck.eventProcessed;
-        this.eventSentCount = jaHealthCheck.eventSentCount;
-        this.exitEventSentCount = jaHealthCheck.exitEventSentCount;
-        this.httpRequestCount = jaHealthCheck.httpRequestCount;
-        this.eventRejectionCount = jaHealthCheck.eventRejectionCount;
-        this.eventProcessingErrorCount = jaHealthCheck.eventProcessingErrorCount;
-        this.eventSendRejectionCount = jaHealthCheck.eventSendRejectionCount;
-        this.eventSendErrorCount = jaHealthCheck.eventSendErrorCount;
+        this.invokedHookCount =  new AtomicInteger(jaHealthCheck.invokedHookCount.intValue());
+        this.eventDropCount =  new AtomicInteger(jaHealthCheck.eventDropCount.intValue());
+        this.eventProcessed =  new AtomicInteger(jaHealthCheck.eventProcessed.intValue());
+        this.eventSentCount =  new AtomicInteger(jaHealthCheck.eventSentCount.intValue());
+        this.exitEventSentCount =  new AtomicInteger(jaHealthCheck.exitEventSentCount.intValue());
+        this.httpRequestCount =  new AtomicInteger(jaHealthCheck.httpRequestCount.intValue());
+        this.eventRejectionCount =  new AtomicInteger(jaHealthCheck.eventRejectionCount.intValue());
+        this.eventProcessingErrorCount =  new AtomicInteger(jaHealthCheck.eventProcessingErrorCount.intValue());
+        this.eventSendRejectionCount =  new AtomicInteger(jaHealthCheck.eventSendRejectionCount.intValue());
+        this.eventSendErrorCount =  new AtomicInteger(jaHealthCheck.eventSendErrorCount.intValue());
         this.raspEventStats = new EventStats(jaHealthCheck.raspEventStats);
         this.iastEventStats = new EventStats(jaHealthCheck.iastEventStats);
         this.exitEventStats = new EventStats(jaHealthCheck.exitEventStats);
