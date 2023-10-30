@@ -55,6 +55,9 @@ public class DeserializationInfo implements Serializable {
     }
 
     public DeserializationInfo(DeserializationInfo instance) {
+        if (instance == null) {
+            return;
+        }
         this.type = instance.type;
         this.leaf = instance.leaf;
         if (instance.leaf) {
