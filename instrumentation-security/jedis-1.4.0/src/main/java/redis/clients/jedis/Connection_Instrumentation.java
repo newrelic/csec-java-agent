@@ -16,17 +16,17 @@ public abstract class Connection_Instrumentation {
     protected Connection sendCommand(final Protocol.Command cmd, final byte[]... args) {
         boolean isLockAcquired = JedisHelper.acquireLockIfPossible(cmd.hashCode());
         AbstractOperation operation = null;
-            if(isLockAcquired && cmd!=null && args!=null) {
+            if(isLockAcquired && args != null) {
                 List<Object> argList = new ArrayList<>();
-                for (int i=0; i < args.length; i++) {
+                for (byte[] arg : args) {
                     Object dataByBytes = NewRelicSecurity.getAgent()
                             .getSecurityMetaData()
-                            .getCustomAttribute(GenericHelper.NR_SEC_CUSTOM_SPRING_REDIS_ATTR + args[i].hashCode(), Object.class);
+                            .getCustomAttribute(GenericHelper.NR_SEC_CUSTOM_SPRING_REDIS_ATTR + arg.hashCode(), Object.class);
 
-                    if(dataByBytes!=null){
+                    if (dataByBytes != null) {
                         argList.add(dataByBytes);
                     } else {
-                        argList.add(new String(args[i]));
+                        argList.add(new String(arg));
                     }
                 }
                 operation = JedisHelper.preprocessSecurityHook(cmd.name(), argList, this.getClass().getName(), "sendCommand");
