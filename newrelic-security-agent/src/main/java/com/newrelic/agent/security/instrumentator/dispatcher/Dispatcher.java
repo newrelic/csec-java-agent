@@ -242,7 +242,9 @@ public class Dispatcher implements Callable {
         command.put(REDIS_MODE, redisOperation.getMode());
         command.put(REDIS_ARGUMENTS, params);
         command.put(REDIS_TYPE, redisOperation.getType());
-        eventBean.setParameters(params);
+        JSONArray parameter = new JSONArray();
+        parameter.add(command);
+        eventBean.setParameters(parameter);
         return eventBean;
     }
 
