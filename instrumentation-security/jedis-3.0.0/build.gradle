@@ -1,0 +1,20 @@
+jar {
+    manifest { attributes 'Implementation-Title': 'com.newrelic.instrumentation.security.jedis-3.0.0' }
+}
+
+dependencies {
+    implementation(project(":newrelic-security-api"))
+    implementation("com.newrelic.agent.java:newrelic-api:${nrAPIVersion}")
+    implementation("com.newrelic.agent.java:newrelic-weaver-api:${nrAPIVersion}")
+    implementation("redis.clients:jedis:3.0.0")
+    testImplementation("com.github.codemonstur:embedded-redis:1.0.0")
+}
+
+verifyInstrumentation {
+    passes 'redis.clients:jedis:[3.0.0,4.0.0)'
+}
+
+site {
+    title 'Jedis'
+    type 'Datastore'
+}
