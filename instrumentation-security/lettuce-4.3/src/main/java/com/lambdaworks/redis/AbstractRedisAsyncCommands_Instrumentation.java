@@ -72,7 +72,9 @@ public abstract class AbstractRedisAsyncCommands_Instrumentation<K, V> {
                 Object arg = CommandArgsCsecUtils.getSingularArgs(commandArgs).get(i);
                 arguments.add(CommandArgsCsecUtils.getArgument(arg));
             }
-            System.out.println(String.format("redis command : %s with arguments : %s", type, arguments));
+            RedisOperation redisOperation = new RedisOperation(this.getClass().getName(), "dispatch", type, arguments);
+            NewRelicSecurity.getAgent().registerOperation(redisOperation);
+            return redisOperation;
         } catch (Throwable e) {
             if (e instanceof NewRelicSecurityException) {
                 throw e;
