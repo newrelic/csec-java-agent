@@ -5,6 +5,8 @@ import java.util.List;
 
 public class StringUtils {
     public static final String EMPTY = "";
+
+    public static final String LF = "\n";
     public static final int INDEX_NOT_FOUND = -1;
 
     /**

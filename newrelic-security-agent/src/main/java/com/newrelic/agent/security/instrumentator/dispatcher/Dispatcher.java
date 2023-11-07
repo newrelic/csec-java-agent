@@ -13,6 +13,7 @@ import com.newrelic.agent.security.intcodeagent.models.javaagent.JavaAgentEventB
 import com.newrelic.agent.security.intcodeagent.websocket.EventSendPool;
 import com.newrelic.api.agent.NewRelic;
 import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
+import com.newrelic.api.agent.security.instrumentation.helpers.SystemCommandUtils;
 import com.newrelic.api.agent.security.schema.*;
 import com.newrelic.api.agent.security.schema.helper.DynamoDBRequest;
 import com.newrelic.api.agent.security.schema.operation.*;
@@ -49,6 +50,8 @@ public class Dispatcher implements Callable {
 
     public static final String SEPARATOR1 = ", ";
     public static final String APP_LOCATION = "app-location";
+    public static final String SYSCOMMAND_ENVIRONMENT = "environment";
+    public static final String SYSCOMMAND_SCRIPT_CONTENT = "script-content";
     private ExitEventBean exitEventBean;
     private AbstractOperation operation;
     private SecurityMetaData securityMetaData;
@@ -444,12 +447,23 @@ public class Dispatcher implements Callable {
 
     private JavaAgentEventBean prepareSystemCommandEvent(JavaAgentEventBean eventBean,
             ForkExecOperation operationalBean) {
-        JSONArray params = new JSONArray();
-        params.add(operationalBean.getCommand());
-        if (operationalBean.getEnvironment() != null) {
-            params.add(new JSONObject(operationalBean.getEnvironment()));
+        try {
+            List<String> shellScripts = SystemCommandUtils.isShellScriptExecution(operationalBean.getCommand());
+            List<String> absolutePaths = SystemCommandUtils.getAbsoluteShellScripts(shellScripts);
+            SystemCommandUtils.scriptContent(absolutePaths, operationalBean);
+            JSONArray params = new JSONArray();
+            params.add(operationalBean.getCommand());
+            JSONObject extras = new JSONObject();
+            if (operationalBean.getEnvironment() != null) {
+                extras.put(SYSCOMMAND_ENVIRONMENT, new JSONObject(operationalBean.getEnvironment()));
+            }
+            extras.put(SYSCOMMAND_SCRIPT_CONTENT, operationalBean.getScriptContent());
+            params.add(extras);
+            eventBean.setParameters(params);
+            return eventBean;
+        } catch (Throwable e){
+            e.printStackTrace();
         }
-        eventBean.setParameters(params);
         return eventBean;
     }
 
