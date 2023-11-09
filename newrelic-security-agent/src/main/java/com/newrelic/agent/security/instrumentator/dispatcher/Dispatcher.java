@@ -58,6 +58,7 @@ public class Dispatcher implements Callable {
     private Map<String, Object> extraInfo = new HashMap<String, Object>();
     private boolean isNRCode = false;
     private static AtomicBoolean firstEventSent = new AtomicBoolean(false);
+    private final String SQL_STORED_PROCEDURE ="SQL_STORED_PROCEDURE";
 
     public ExitEventBean getExitEventBean() {
         return exitEventBean;
@@ -441,7 +442,12 @@ public class Dispatcher implements Callable {
         }
         params.add(query);
         eventBean.setParameters(params);
-        eventBean.setEventCategory(operation.getDbName());
+        if (operation.isStoredProcedureCall()) {
+            eventBean.setEventCategory(SQL_STORED_PROCEDURE);
+        } else {
+            eventBean.setEventCategory(operation.getDbName());
+        }
+
         return eventBean;
     }
 
