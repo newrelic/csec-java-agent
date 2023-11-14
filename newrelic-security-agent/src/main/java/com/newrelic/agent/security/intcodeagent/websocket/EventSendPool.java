@@ -28,9 +28,11 @@ public class EventSendPool {
 
     private AtomicBoolean isWaiting = new AtomicBoolean(false);
 
+    private int queueSize = 1500;
+
     private EventSendPool() {
         // load the settings
-        int queueSize = 1500;
+
         int maxPoolSize = 1;
         int corePoolSize = 1;
         long keepAliveTime = 60;
@@ -203,5 +205,9 @@ public class EventSendPool {
 
     public void reset() {
         executor.getQueue().clear();
+    }
+
+    public int getMaxQueueSize() {
+        return queueSize;
     }
 }
