@@ -45,6 +45,10 @@ public abstract class Statement_Instrumentation {
             }
             SQLOperation sqlOperation = new SQLOperation(this.getClass().getName(), methodName);
             sqlOperation.setQuery(sql);
+            // for now only those db servers are supported that uses `call`
+            if (sql.toLowerCase().startsWith("call") || sql.toLowerCase().startsWith("{call")) {
+                sqlOperation.setStoredProcedureCall(true);
+            }
             sqlOperation.setDbName(NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(JDBCVendor.META_CONST_JDBC_VENDOR, String.class));
             sqlOperation.setPreparedCall(false);
             NewRelicSecurity.getAgent().registerOperation(sqlOperation);
