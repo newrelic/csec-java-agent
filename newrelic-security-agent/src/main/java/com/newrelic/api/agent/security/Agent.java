@@ -3,9 +3,7 @@ package com.newrelic.api.agent.security;
 import com.fasterxml.jackson.dataformat.javaprop.JavaPropsMapper;
 import com.newrelic.agent.security.AgentConfig;
 import com.newrelic.agent.security.AgentInfo;
-import com.newrelic.agent.security.instrumentator.dispatcher.Dispatcher;
 import com.newrelic.agent.security.instrumentator.dispatcher.DispatcherPool;
-import com.newrelic.agent.security.instrumentator.httpclient.RestRequestThreadPool;
 import com.newrelic.agent.security.instrumentator.os.OsVariablesInstance;
 import com.newrelic.agent.security.instrumentator.utils.AgentUtils;
 import com.newrelic.agent.security.instrumentator.utils.ApplicationInfoUtils;
@@ -19,7 +17,6 @@ import com.newrelic.agent.security.intcodeagent.filelogging.LogFileHelper;
 import com.newrelic.agent.security.intcodeagent.filelogging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.logging.HealthCheckScheduleThread;
 import com.newrelic.agent.security.intcodeagent.logging.IAgentConstants;
-import com.newrelic.agent.security.intcodeagent.models.javaagent.ApplicationURLMappings;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.ExitEventBean;
 import com.newrelic.agent.security.intcodeagent.properties.BuildInfo;
 import com.newrelic.agent.security.intcodeagent.schedulers.FileCleaner;
@@ -29,10 +26,8 @@ import com.newrelic.agent.security.intcodeagent.websocket.*;
 import com.newrelic.api.agent.NewRelic;
 import com.newrelic.api.agent.Transaction;
 import com.newrelic.api.agent.security.instrumentation.helpers.LowSeverityHelper;
-import com.newrelic.api.agent.security.instrumentation.helpers.URLMappingsHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.AgentMetaData;
-import com.newrelic.api.agent.security.schema.ApplicationURLMapping;
 import com.newrelic.api.agent.security.schema.HttpRequest;
 import com.newrelic.api.agent.security.schema.K2RequestIdentifier;
 import com.newrelic.api.agent.security.schema.SecurityMetaData;
@@ -285,8 +280,8 @@ public class Agent implements SecurityAgent {
         logIfIastScanForFirstTime(securityMetaData.getFuzzRequestIdentifier(), securityMetaData.getRequest());
 
         setRequiredStackTrace(operation, securityMetaData);
-        setUserClassEntity(operation, securityMetaData);
         processStackTrace(operation);
+        operation.setUserClassEntity(setUserClassEntity(operation, securityMetaData));
 //        boolean blockNeeded = checkIfBlockingNeeded(operation.getApiID());
 //        securityMetaData.getMetaData().setApiBlocked(blockNeeded);
         if (needToGenerateEvent(operation.getApiID())) {
@@ -332,11 +327,24 @@ public class Agent implements SecurityAgent {
         );
     }
 
-    private void setUserClassEntity(AbstractOperation operation, SecurityMetaData securityMetaData) {
+    private UserClassEntity setUserClassEntity(AbstractOperation operation, SecurityMetaData securityMetaData) {
         UserClassEntity userClassEntity = new UserClassEntity();
-        userClassEntity.setUserClassElement(operation.getStackTrace()[operation.getStackTrace().length - 2]);
-        userClassEntity.setCalledByUserCode(securityMetaData.getMetaData().isUserLevelServiceMethodEncountered());
-        operation.setUserClassEntity(userClassEntity);
+
+        if(securityMetaData.getMetaData().getServiceTrace() != null && securityMetaData.getMetaData().getServiceTrace().length > 0){
+            StackTraceElement stackTraceElement = securityMetaData.getMetaData().getServiceTrace()[0];
+            userClassEntity.setUserClassElement(stackTraceElement);
+            userClassEntity.setCalledByUserCode(securityMetaData.getMetaData().isUserLevelServiceMethodEncountered());
+            return userClassEntity;
+        }
+
+        for (int i = 0; i < operation.getStackTrace().length; i++) {
+            StackTraceElement stackTraceElement = operation.getStackTrace()[i];
+            if( i+1 < operation.getStackTrace().length && StringUtils.equals(operation.getSourceMethod(), stackTraceElement.toString())){
+                userClassEntity.setUserClassElement(operation.getStackTrace()[i + 1]);
+                userClassEntity.setCalledByUserCode(securityMetaData.getMetaData().isUserLevelServiceMethodEncountered());
+            }
+        }
+        return userClassEntity;
     }
 
     private void setRequiredStackTrace(AbstractOperation operation, SecurityMetaData securityMetaData) {
@@ -399,7 +407,6 @@ public class Agent implements SecurityAgent {
     private static void setAPIId(AbstractOperation operation, List<Integer> traceForIdCalc, VulnerabilityCaseType vulnerabilityCaseType) {
         try {
             traceForIdCalc.add(operation.getSourceMethod().hashCode());
-            traceForIdCalc.add(operation.getUserClassEntity().getUserClassElement().hashCode());
             operation.setApiID(vulnerabilityCaseType.getCaseType() + "-" + HashGenerator.getXxHash64Digest(traceForIdCalc.stream().mapToInt(Integer::intValue).toArray()));
         } catch (IOException e) {
             operation.setApiID("UNDEFINED");
