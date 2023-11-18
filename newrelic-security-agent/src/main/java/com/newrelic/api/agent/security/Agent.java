@@ -267,7 +267,8 @@ public class Agent implements SecurityAgent {
         if (operation instanceof RXSSOperation) {
             operation.setStackTrace(securityMetaData.getMetaData().getServiceTrace());
         } else {
-            operation.setStackTrace(Thread.currentThread().getStackTrace());
+            StackTraceElement[] trace = Thread.currentThread().getStackTrace();
+            operation.setStackTrace(Arrays.copyOfRange(trace, 1, trace.length));
         }
 
         if(checkIfNRGeneratedEvent(operation, securityMetaData)) {
@@ -329,17 +330,21 @@ public class Agent implements SecurityAgent {
 
     private UserClassEntity setUserClassEntity(AbstractOperation operation, SecurityMetaData securityMetaData) {
         UserClassEntity userClassEntity = new UserClassEntity();
-
+        StackTraceElement userStackTraceElement = null;
         if(securityMetaData.getMetaData().getServiceTrace() != null && securityMetaData.getMetaData().getServiceTrace().length > 0){
-            StackTraceElement stackTraceElement = securityMetaData.getMetaData().getServiceTrace()[0];
-            userClassEntity.setUserClassElement(stackTraceElement);
-            userClassEntity.setCalledByUserCode(securityMetaData.getMetaData().isUserLevelServiceMethodEncountered());
-            return userClassEntity;
+            userStackTraceElement = securityMetaData.getMetaData().getServiceTrace()[0];
         }
 
         for (int i = 0; i < operation.getStackTrace().length; i++) {
             StackTraceElement stackTraceElement = operation.getStackTrace()[i];
-            if( i+1 < operation.getStackTrace().length && StringUtils.equals(operation.getSourceMethod(), stackTraceElement.toString())){
+            if(userStackTraceElement != null){
+                if(StringUtils.equals(stackTraceElement.getClassName(), userStackTraceElement.getClassName())
+                        && StringUtils.equals(stackTraceElement.getMethodName(), userStackTraceElement.getMethodName())){
+                    userClassEntity.setUserClassElement(stackTraceElement);
+                    userClassEntity.setCalledByUserCode(securityMetaData.getMetaData().isUserLevelServiceMethodEncountered());
+                    return userClassEntity;
+                }
+            }  else if( i+1 < operation.getStackTrace().length && StringUtils.equals(operation.getSourceMethod(), stackTraceElement.toString())){
                 userClassEntity.setUserClassElement(operation.getStackTrace()[i + 1]);
                 userClassEntity.setCalledByUserCode(securityMetaData.getMetaData().isUserLevelServiceMethodEncountered());
             }
@@ -360,9 +365,8 @@ public class Agent implements SecurityAgent {
 
         ArrayList<Integer> newTraceForIdCalc = new ArrayList<>(stackTrace.length);
 
-        resetFactor++;
         boolean markedForRemoval = false;
-        for (int i = 1, j = 0; i < stackTrace.length; i++) {
+        for (int i = 0, j = -1; i < stackTrace.length; i++) {
             markedForRemoval = false;
 
             // Only remove consecutive top com.newrelic and com.nr. elements from stack.

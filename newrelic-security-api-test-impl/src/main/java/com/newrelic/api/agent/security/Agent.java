@@ -11,6 +11,7 @@ import java.lang.instrument.Instrumentation;
 import java.net.URL;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -64,7 +65,8 @@ public class Agent implements SecurityAgent {
         operation.setExecutionId(executionId);
         operation.setApiID(apiId);
         operation.setStartTime(Instant.now().toEpochMilli());
-        operation.setStackTrace(Thread.currentThread().getStackTrace());
+        StackTraceElement[] trace = Thread.currentThread().getStackTrace();
+        operation.setStackTrace(Arrays.copyOfRange(trace, 1, trace.length));
         this.getSecurityMetaData().getCustomAttribute(OPERATIONS, List.class).add(operation);
     }
 
