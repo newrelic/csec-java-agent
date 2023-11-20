@@ -2,6 +2,8 @@ package com.newrelic.api.agent.security.schema;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.StringJoiner;
 
 public class StringUtils {
     public static final String EMPTY = "";
@@ -940,4 +942,83 @@ public class StringUtils {
         return startsWith(str, prefix, true);
     }
 
+    /**
+     * <p>Joins the elements of the provided array into a single String
+     * containing the provided list of elements.</p>
+     *
+     * <p>No delimiter is added before or after the list.
+     * A {@code null} separator is the same as an empty String ("").
+     * Null objects or empty strings within the array are represented by
+     * empty strings.</p>
+     *
+     * <pre>
+     * StringUtils.join(null, *, *, *)                = null
+     * StringUtils.join([], *, *, *)                  = ""
+     * StringUtils.join([null], *, *, *)              = ""
+     * StringUtils.join(["a", "b", "c"], "--", 0, 3)  = "a--b--c"
+     * StringUtils.join(["a", "b", "c"], "--", 1, 3)  = "b--c"
+     * StringUtils.join(["a", "b", "c"], "--", 2, 3)  = "c"
+     * StringUtils.join(["a", "b", "c"], "--", 2, 2)  = ""
+     * StringUtils.join(["a", "b", "c"], null, 0, 3)  = "abc"
+     * StringUtils.join(["a", "b", "c"], "", 0, 3)    = "abc"
+     * StringUtils.join([null, "", "a"], ',', 0, 3)   = ",,a"
+     * </pre>
+     *
+     * @param array  the array of values to join together, may be null
+     * @param delimiter  the separator character to use, null treated as ""
+     * @param startIndex the first index to start joining from.
+     * @param endIndex the index to stop joining from (exclusive).
+     * @return the joined String, {@code null} if null array input; or the empty string
+     * if {@code endIndex - startIndex <= 0}. The number of joined entries is given by
+     * {@code endIndex - startIndex}
+     * @throws ArrayIndexOutOfBoundsException ife<br>
+     * {@code startIndex < 0} or <br>
+     * {@code startIndex >= array.length()} or <br>
+     * {@code endIndex < 0} or <br>
+     * {@code endIndex > array.length()}
+     */
+    public static String join(final Object[] array, final String delimiter, final int startIndex, final int endIndex) {
+        if (array == null) {
+            return null;
+        }
+        if (endIndex - startIndex <= 0) {
+            return EMPTY;
+        }
+        final StringJoiner joiner = new StringJoiner(toStringOrEmpty(delimiter));
+        for (int i = startIndex; i < endIndex; i++) {
+            joiner.add(toStringOrEmpty(array[i]));
+        }
+        return joiner.toString();
+    }
+
+    /**
+     * <p>Joins the elements of the provided array into a single String
+     * containing the provided list of elements.</p>
+     *
+     * <p>No separator is added to the joined String.
+     * Null objects or empty strings within the array are represented by
+     * empty strings.</p>
+     *
+     * <pre>
+     * StringUtils.join(null)            = null
+     * StringUtils.join([])              = ""
+     * StringUtils.join([null])          = ""
+     * StringUtils.join(["a", "b", "c"]) = "abc"
+     * StringUtils.join([null, "", "a"]) = "a"
+     * </pre>
+     *
+     * @param <T> the specific type of values to join together
+     * @param elements  the values to join together, may be null
+     * @return the joined String, {@code null} if null array input
+     * @since 2.0
+     * @since 3.0 Changed signature to use varargs
+     */
+    @SafeVarargs
+    public static <T> String join(final T... elements) {
+        return join(elements, null, 0, elements.length);
+    }
+
+    private static String toStringOrEmpty(final Object obj) {
+        return Objects.toString(obj, EMPTY);
+    }
 }
