@@ -3,42 +3,56 @@ package com.newrelic.api.agent.security.schema.operation;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 
+import java.util.List;
+
 public class MemcachedOperation extends AbstractOperation {
+    public static String MEMCACHED = "MEMCACHED";
+    private String type;
 
-    private Object value;
-    private String key;
+    private List<Object> arguments;
 
-    public MemcachedOperation(String key, Object value, String className, String methodName) {
+    private String category;
+
+    public MemcachedOperation(List<Object> arguments, String type, String className, String methodName) {
         super(className, methodName);
-        this.setCaseType(VulnerabilityCaseType.MEMCACHED);
-        this.key = key;
-        this.value = value;
+        this.setCaseType(VulnerabilityCaseType.CACHING_DATA_STORE);
+        this.arguments = arguments;
+        this.type = type;
+        this.category = MEMCACHED;
     }
 
-    public Object getValue() {
-        return value;
+    public String getType() {
+        return type;
     }
 
-    public void setValue(Object value) {
-        this.value = value;
+    public void setType(String type) {
+        this.type = type;
     }
 
-    public String getKey() {
-        return key;
+    public List<Object> getArguments() {
+        return arguments;
     }
 
-    public void setKey(String key) {
-        this.key = key;
+    public void setArguments(List<Object> arguments) {
+        this.arguments = arguments;
+    }
+
+    public String getCategory() {
+        return category;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
     }
 
     @Override
     public boolean isEmpty() {
-        return value == null;
+        return arguments == null || arguments.isEmpty();
     }
 
     @Override
     public String toString() {
-        return "key: " + key + "; value: " + value;
+        return "arguments: " + arguments + "; type: " + type;
     }
 
 }
