@@ -202,12 +202,13 @@ public class Dispatcher implements Callable {
                     eventBean = prepareXQueryInjectionEvent(eventBean, xQueryOperationalBean);
                     break;
                 case CACHING_DATA_STORE:
-                    RedisOperation redisOperation = (RedisOperation) operation;
-                    eventBean = prepareCachingDataStoreEvent(eventBean, redisOperation);
-                    break;
-                case MEMCACHED:
-                    MemcachedOperation memcachedOperationalBean = (MemcachedOperation) operation;
-                    eventBean = prepareMemcachedEvent(eventBean, memcachedOperationalBean);
+                    if (operation instanceof RedisOperation) {
+                        RedisOperation redisOperation = (RedisOperation) operation;
+                        eventBean = prepareCachingDataStoreEvent(eventBean, redisOperation);
+                    } else if (operation instanceof MemcachedOperation) {
+                        MemcachedOperation memcachedOperationalBean = (MemcachedOperation) operation;
+                        eventBean = prepareMemcachedEvent(eventBean, memcachedOperationalBean);
+                    }
                     break;
                 default:
 
@@ -507,13 +508,16 @@ public class Dispatcher implements Callable {
 
     private static JavaAgentEventBean prepareMemcachedEvent(JavaAgentEventBean eventBean, MemcachedOperation memcachedOperationalBean) {
         JSONArray params = new JSONArray();
-        eventBean.setEventCategory(MEMCACHED);
-
-        JSONObject jsonObject = new JSONObject();
-        jsonObject.put(memcachedOperationalBean.getKey(), memcachedOperationalBean.getValue());
-        params.add(jsonObject);
-
-        eventBean.setParameters(params);
+        for (Object data : memcachedOperationalBean.getArguments()) {
+            params.add(data);
+        }
+        JSONObject command = new JSONObject();
+        command.put(REDIS_ARGUMENTS, params);
+        command.put(REDIS_TYPE, memcachedOperationalBean.getType());
+        JSONArray parameter = new JSONArray();
+        parameter.add(command);
+        eventBean.setParameters(parameter);
+        eventBean.setEventCategory(memcachedOperationalBean.getCategory());
         return eventBean;
     }
 
