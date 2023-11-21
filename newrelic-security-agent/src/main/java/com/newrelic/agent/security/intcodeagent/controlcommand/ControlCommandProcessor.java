@@ -211,6 +211,7 @@ public class ControlCommandProcessor implements Runnable {
                  * Post reconnect: reset 'reconnecting phase' in WSClient.
                  */
                 try {
+                    //TODO no need for draining IAST since last leg has complete ledger.
                     logger.log(LogLevel.INFO, RECEIVED_WS_RECONNECT_COMMAND_FROM_SERVER_INITIATING_SEQUENCE, this.getClass().getName());
                     if (NewRelicSecurity.getAgent().getCurrentPolicy().getVulnerabilityScan().getEnabled() &&
                             NewRelicSecurity.getAgent().getCurrentPolicy().getVulnerabilityScan().getIastScan().getEnabled()
@@ -226,6 +227,7 @@ public class ControlCommandProcessor implements Runnable {
                         }
                         logger.log(LogLevel.FINER, WS_RECONNECT_IAST_REQUEST_REPLAY_POOL_DRAINED, this.getClass().getName());
                     }
+                    RestRequestThreadPool.getInstance().resetIASTProcessing();
                     WSClient.getInstance().close(CloseFrame.SERVICE_RESTART, "Reconnecting to service");
                 } catch (Throwable e) {
                     logger.log(LogLevel.SEVERE, String.format(ERROR_WHILE_PROCESSING_RECONNECTION_CC_S_S, e.getMessage(), e.getCause()), this.getClass().getName());

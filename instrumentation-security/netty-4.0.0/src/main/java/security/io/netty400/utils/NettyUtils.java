@@ -3,6 +3,7 @@ package security.io.netty400.utils;
 import com.newrelic.api.agent.NewRelic;
 import com.newrelic.api.agent.Transaction;
 import com.newrelic.api.agent.security.NewRelicSecurity;
+import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.security.instrumentation.helpers.LowSeverityHelper;
 import com.newrelic.api.agent.security.instrumentation.helpers.ServletHelper;
 import com.newrelic.api.agent.security.schema.AgentMetaData;
@@ -123,7 +124,11 @@ public class NettyUtils {
             } else if (ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID.equals(headerKey)) {
                 // TODO: May think of removing this intermediate obj and directly create K2 Identifier.
                 NewRelicSecurity.getAgent().getSecurityMetaData().setFuzzRequestIdentifier(ServletHelper.parseFuzzRequestIdentifierHeader(request.headers().get(headerKey)));
+            } else if(GenericHelper.CSEC_PARENT_ID.equals(headerKey)) {
+                NewRelicSecurity.getAgent().getSecurityMetaData()
+                        .addCustomAttribute(GenericHelper.CSEC_PARENT_ID, request.headers().get(headerKey));
             }
+
             String headerFullValue = EMPTY;
             List<String> headerElements = request.headers().getAll(headerKey);
             for (String headerValue : headerElements) {

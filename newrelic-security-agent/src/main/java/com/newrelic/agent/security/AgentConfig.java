@@ -28,10 +28,8 @@ public class AgentConfig {
 
     public static final String CLEANING_STATUS_SNAPSHOTS_FROM_LOG_DIRECTORY_MAX_S_FILE_COUNT_REACHED_REMOVED_S = "Cleaning status-snapshots from snapshots directory, max %s file count reached removed : %s";
 
-    private static AgentConfig instance;
-
     private static final Object lock = new Object();
-    private String K2_HOME;
+    private String NR_CSEC_HOME;
 
     private String logLevel;
 
@@ -61,15 +59,12 @@ public class AgentConfig {
         osVariables = OsVariablesInstance.instantiate().getOsVariables();
     }
 
+    private static final class InstanceHolder {
+        static final AgentConfig instance = new AgentConfig();
+    }
+
     public static AgentConfig getInstance(){
-        if (instance == null) {
-            synchronized (lock) {
-                if (instance == null) {
-                    instance = new AgentConfig();
-                }
-            }
-        }
-        return instance;
+        return InstanceHolder.instance;
     }
 
     private String applyRequiredGroup() {
@@ -99,19 +94,19 @@ public class AgentConfig {
 
     public boolean setK2HomePath() {
         if (NewRelic.getAgent().getConfig().getValue("agent_home") != null) {
-            K2_HOME = NewRelic.getAgent().getConfig().getValue("agent_home");
+            NR_CSEC_HOME = NewRelic.getAgent().getConfig().getValue("agent_home");
         } else {
-            K2_HOME = ".";
+            NR_CSEC_HOME = ".";
         }
-        Path k2homePath = Paths.get(K2_HOME, IUtilConstants.NR_SECURITY_HOME);
+        Path k2homePath = Paths.get(NR_CSEC_HOME, IUtilConstants.NR_SECURITY_HOME);
         CommonUtils.forceMkdirs(k2homePath, "rwxrwxrwx");
-        K2_HOME = k2homePath.toString();
-        AgentUtils.getInstance().getStatusLogValues().put("csec-home", K2_HOME);
+        NR_CSEC_HOME = k2homePath.toString();
+        AgentUtils.getInstance().getStatusLogValues().put("csec-home", NR_CSEC_HOME);
         AgentUtils.getInstance().getStatusLogValues().put("csec-home-permissions", String.valueOf(k2homePath.toFile().canWrite() && k2homePath.toFile().canRead()));
         AgentUtils.getInstance().getStatusLogValues().put("agent-location",
                 NewRelic.getAgent().getConfig().getValue("agent_jar_location"));
-        if (!isValidK2HomePath(K2_HOME)) {
-            System.err.println("[NR-CSEC-JA] Incomplete startup env parameters provided : Missing or Incorrect K2_HOME. Collector exiting.");
+        if (!isValidK2HomePath(NR_CSEC_HOME)) {
+            System.err.println("[NR-CSEC-JA] Incomplete startup env parameters provided : Missing or Incorrect NR_CSEC_HOME. Collector exiting.");
             return false;
         }
         return true;
@@ -188,6 +183,6 @@ public class AgentConfig {
     }
 
     public String getK2Home() {
-        return K2_HOME;
+        return NR_CSEC_HOME;
     }
 }

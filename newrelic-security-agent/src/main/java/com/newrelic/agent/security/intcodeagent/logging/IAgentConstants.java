@@ -479,39 +479,11 @@ public interface IAgentConstants {
     String KUBEPODS_DIR = "kubepods/";
     String KUBEPODS_SLICE_DIR = "kubepods.slice/";
     String LXC_DIR = "lxc/";
-    String JAR_PATH_INIT_MSG = "Pooling getJarPathResultExecutorService to fetch results.";
-    String JAR_PATH_FETCH_SUCCESS_MSG = "getJarPathResultExecutorService result fetched successfully.";
-    String JAR_PATH_EMPTY_RESULT_ERR = "getJarPathResultExecutorService result is empty.";
-    String JAR_PATH_TIMEOUT_ERR = "Timeout reached waiting for getJarPathResultExecutorService.";
-    String HOST_PROP_FILE_NAME = "/opt/k2-ic/hostip.properties";
-    String HOST_IP_FOUND_MSG = "hostip found: ";
     String PROC_DIR = "/proc/";
     String PROC_SELF_DIR = "/proc/self";
     String CMD_LINE_DIR = "/cmdline";
     String STAT = "/stat";
-    String BYTE_BUFFER_FIELD_LIMIT = "limit";
-    String BYTE_BUFFER_FIELD_POSITION = "position";
-    String BYTE_BUFFER_FIELD_BUF = "buf";
-    String BYTE_BUFFER_FIELD_LASTVALID = "lastValid";
-    String BYTE_BUFFER_FIELD_HB = "hb";
-    String TOMCAT_REQUEST_FIELD_INPUTBUFFER = "inputBuffer";
-    String TOMCAT_REQUEST_FIELD_BYTEBUFFER = "byteBuffer";
-    String COYOTE_ABSTRACT_INPUT_BUFFER_CLASS_NAME = "org.apache.coyote.http11.AbstractInputBuffer";
-    String MYSQL_FIELD_ORIGINAL_SQL = "originalSql";
-    String MYSQL_FIELD_QUERY = "query";
-    String NEW_LINE_SEQUENCE = "\n";
-    String TOMCAT_SERVER_INFO_CLASS_NAME = "org.apache.catalina.util.ServerInfo";
-    String TOMCAT_FIELD_SERVERNUMBER = "serverNumber";
-    String TOMCAT_VERSION_DETECTED_MSG = "Detected Tomcat Version ";
-    String VERSION_SPLIT_EXPR = "\\.";
-    String NULL_CHAR_AS_STRING = "\000";
     char VMPID_SPLIT_CHAR = '@';
-    String APPLICATION_INFO_POSTED_MSG = "Posted application info : ";
-    String COLON_SEPERATOR = ":";
-    int TOMCAT_7 = 7;
-    int TOMCAT_8 = 8;
-    int TOMCAT_9 = 9;
-    int K2_IC_TCP_PORT = 54321;
 
     String JSON_NAME_APPLICATION_INFO_BEAN = "applicationinfo";
     String JSON_NAME_INTCODE_RESULT_BEAN = "Event";
@@ -522,6 +494,7 @@ public interface IAgentConstants {
     String JSON_NAME_HTTP_CONNECTION_STAT = "http-connection-stat";
     String JSON_NAME_EXIT_EVENT = "exit-event";
 
+    String JSON_SEC_APPLICATION_URL_MAPPING = "sec-application-url-mapping";
 
 
     String INVOKE_0 = "invoke0";
