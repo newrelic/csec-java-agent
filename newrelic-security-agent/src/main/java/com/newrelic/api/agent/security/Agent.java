@@ -23,8 +23,10 @@ import com.newrelic.agent.security.intcodeagent.schedulers.FileCleaner;
 import com.newrelic.agent.security.intcodeagent.schedulers.SchedulerHelper;
 import com.newrelic.agent.security.intcodeagent.utils.CommonUtils;
 import com.newrelic.agent.security.intcodeagent.websocket.*;
+import com.newrelic.agent.security.util.IUtilConstants;
 import com.newrelic.api.agent.NewRelic;
 import com.newrelic.api.agent.Transaction;
+import com.newrelic.api.agent.security.instrumentation.helpers.AppServerInfoHelper;
 import com.newrelic.api.agent.security.instrumentation.helpers.LowSeverityHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.AgentMetaData;
@@ -504,5 +506,17 @@ public class Agent implements SecurityAgent {
     @Override
     public boolean isLowPriorityInstrumentationEnabled() {
         return NewRelicSecurity.isHookProcessingActive() && NewRelic.getAgent().getConfig().getValue(LowSeverityHelper.LOW_SEVERITY_HOOKS_ENABLED, LowSeverityHelper.DEFAULT);
+    }
+
+    @Override
+    public void setServerInfo(String key, String value) {
+        switch (key) {
+            case IUtilConstants.APPLICATION_DIRECTORY:
+                AppServerInfoHelper.getAppServerInfo().setApplicationDirectory(value);
+                break;
+            default:
+                break;
+        }
+
     }
 }

@@ -139,4 +139,9 @@ public class Agent implements SecurityAgent {
     public boolean isLowPriorityInstrumentationEnabled() {
         return true;
     }
+
+    @Override
+    public void setServerInfo(String key, String value) {
+        //TODO Ishika please fill this as per your needs
+    }
 }

@@ -12,6 +12,7 @@ import com.newrelic.agent.security.intcodeagent.models.javaagent.ExitEventBean;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.JavaAgentEventBean;
 import com.newrelic.agent.security.intcodeagent.websocket.EventSendPool;
 import com.newrelic.api.agent.NewRelic;
+import com.newrelic.api.agent.security.instrumentation.helpers.AppServerInfoHelper;
 import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.security.instrumentation.helpers.SystemCommandUtils;
 import com.newrelic.api.agent.security.schema.*;
@@ -628,6 +629,7 @@ public class Dispatcher implements Callable {
         JavaAgentEventBean eventBean = new JavaAgentEventBean();
         eventBean.setHttpRequest(httpRequestBean);
         eventBean.setMetaData(metaData);
+        eventBean.getMetaData().setAppServerInfo(AppServerInfoHelper.getAppServerInfo());
         eventBean.setCaseType(vulnerabilityCaseType.getCaseType());
         eventBean.setIsAPIBlocked(metaData.isApiBlocked());
         eventBean.setStacktrace(operation.getStackTrace());
