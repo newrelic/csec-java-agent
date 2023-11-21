@@ -140,19 +140,6 @@ public class CommonUtils {
         return null;
     }
 
-    public static void deleteRolloverLogFiles(String fileName, int max) {
-        Collection<File> rolloverLogFiles = FileUtils.listFiles(new File(OsVariablesInstance.getInstance().getOsVariables().getLogDirectory()), FileFilterUtils.prefixFileFilter(fileName + "."), null);
-
-        if (rolloverLogFiles.size() > max) {
-            File[] sortedLogFiles = rolloverLogFiles.toArray(new File[0]);
-            Arrays.sort(sortedLogFiles, LastModifiedFileComparator.LASTMODIFIED_COMPARATOR);
-            for (int i = 0; i < sortedLogFiles.length - max; i++) {
-                FileUtils.deleteQuietly(sortedLogFiles[i]);
-
-            }
-        }
-    }
-
 
     /**
      * Generate random int between range start to end. Both inclusive.

@@ -125,6 +125,7 @@ class IntrospectorServiceManager extends AbstractService implements ServiceManag
         Map<String, Object> sec = new HashMap<>();
         sec.put("enable", true);
         sec.put("validator_service_url", "ws://192.168.5.138:54321");
+        sec.put("low-priority-instrumentation", Collections.singletonMap("enabled", true));
         config.put("security", sec);
 
         if (configOverrides != null) {
