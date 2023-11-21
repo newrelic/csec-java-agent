@@ -16,12 +16,13 @@ import net.spy.memcached.transcoders.Transcoder;
 
 @Weave(originalName = "net.spy.memcached.MemcachedClient")
 public class MemcachedClient_Instrumentation {
+
     private <T> OperationFuture<Boolean> asyncStore(StoreType storeType,
                 String key, int exp, T value, Transcoder<T> tc) {
         boolean isLockAcquired = GenericHelper.acquireLockIfPossible(MemcachedHelper.NR_SEC_CUSTOM_ATTRIB_NAME, value.hashCode());
         AbstractOperation operation = null;
         if (isLockAcquired) {
-            operation = MemcachedHelper.preprocessSecurityHook(key, value, this.getClass().getName(), "asyncStore");
+            operation = MemcachedHelper.preprocessSecurityHook(MemcachedHelper.WRITE, key, value, this.getClass().getName(), MemcachedHelper.METHOD_ASYNC_STORE);
         }
         OperationFuture<Boolean> returnValue = null;
         try {
@@ -40,7 +41,7 @@ public class MemcachedClient_Instrumentation {
         boolean isLockAcquired = GenericHelper.acquireLockIfPossible(MemcachedHelper.NR_SEC_CUSTOM_ATTRIB_NAME, value.hashCode());
         AbstractOperation operation = null;
         if (isLockAcquired) {
-            operation = MemcachedHelper.preprocessSecurityHook(key, value, this.getClass().getName(), "asyncCat");
+            operation = MemcachedHelper.preprocessSecurityHook(MemcachedHelper.UPDATE, key, value, this.getClass().getName(), MemcachedHelper.METHOD_ASYNC_CAT);
         }
         OperationFuture<Boolean> returnValue = null;
         try {
@@ -59,7 +60,7 @@ public class MemcachedClient_Instrumentation {
         boolean isLockAcquired = GenericHelper.acquireLockIfPossible(MemcachedHelper.NR_SEC_CUSTOM_ATTRIB_NAME, value.hashCode());
         AbstractOperation operation = null;
         if (isLockAcquired) {
-            operation = MemcachedHelper.preprocessSecurityHook(key, value, this.getClass().getName(), "asyncCAS");
+            operation = MemcachedHelper.preprocessSecurityHook(MemcachedHelper.WRITE, key, value, this.getClass().getName(), MemcachedHelper.METHOD_ASYNC_CAS);
         }
         OperationFuture<CASResponse> returnValue = null;
         try {

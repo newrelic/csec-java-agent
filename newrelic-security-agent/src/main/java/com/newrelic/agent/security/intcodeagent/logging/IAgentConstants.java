@@ -74,7 +74,6 @@ public interface IAgentConstants {
 
     // MONGO
     String MONGO = "MONGO";
-    String MEMCACHED = "MEMCACHED";
     String CLASS_COM_MONGODB_ASYNC_CLIENT_OPERATION_EXECUTOR_IMPL = "com/mongodb/async/client/OperationExecutorImpl";
     String CLASS_COM_MONGODB_ASYNC_CLIENT_ASYNC_OPERATION_EXECUTOR_IMPL = "com/mongodb/async/client/AsyncOperationExecutorImpl";
     String CLASS_COM_MONGODB_ASYNC_CLIENT_MONGO_CLIENT_IMPL$2 = "com/mongodb/async/client/MongoClientImpl$2";

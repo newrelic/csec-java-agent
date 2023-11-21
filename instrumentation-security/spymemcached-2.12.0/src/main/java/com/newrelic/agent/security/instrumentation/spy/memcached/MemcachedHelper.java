@@ -12,16 +12,22 @@ import net.spy.memcached.ops.StoreOperation;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.util.Arrays;
 
 public class MemcachedHelper {
     public static final String NR_SEC_CUSTOM_ATTRIB_NAME = "MEMCACHED_OPERATION_LOCK_";
+    public static final String WRITE = "write";
+    public static final String UPDATE = "update";
+    public static final String METHOD_ASYNC_STORE = "asyncStore";
+    public static final String METHOD_ASYNC_CAT = "asyncCat";
+    public static final String METHOD_ASYNC_CAS = "asyncCAS";
 
-    public static AbstractOperation preprocessSecurityHook(String key, Object val, String klass, String method) {
+    public static AbstractOperation preprocessSecurityHook(String type, String key, Object val, String klass, String method) {
         try {
             if (!NewRelicSecurity.isHookProcessingActive() || NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()){
                 return null;
             }
-            MemcachedOperation operation = new MemcachedOperation(key, val, klass, method);
+            MemcachedOperation operation = new MemcachedOperation(Arrays.asList(key, val), type, klass, method);
             NewRelicSecurity.getAgent().registerOperation(operation);
             return operation;
         } catch (Throwable e) {
