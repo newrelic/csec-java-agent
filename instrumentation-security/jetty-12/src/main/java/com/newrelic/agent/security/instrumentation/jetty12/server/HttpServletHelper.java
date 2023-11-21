@@ -15,6 +15,7 @@ import org.eclipse.jetty.http.HttpHeader;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Response;
 
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
@@ -150,7 +151,7 @@ public class HttpServletHelper {
 
             securityMetaData.setTracingHeaderValue(HttpServletHelper.getTraceHeader(securityRequest.getHeaders()));
 
-            securityRequest.setProtocol(request.isSecure()?"https":"http");
+            securityRequest.setProtocol(request.getHttpURI().getScheme());
 
             // TODO: Create OutBoundHttp data here : Skipping for now.
 
@@ -160,7 +161,8 @@ public class HttpServletHelper {
             }
             securityRequest.setContentType(request.getHeaders().get(HttpHeader.CONTENT_TYPE));
 
-            securityAgentMetaData.setServiceTrace(Thread.currentThread().getStackTrace());
+            StackTraceElement[] trace = Thread.currentThread().getStackTrace();
+            securityMetaData.getMetaData().setServiceTrace(Arrays.copyOfRange(trace, 2, trace.length));
             securityRequest.setRequestParsed(true);
         } catch (Throwable ignored) {
         }

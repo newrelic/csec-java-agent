@@ -13,7 +13,7 @@ public class RequestHandler_Instrumentation {
 
     public boolean handle(Request request, Response response, Callback callback) {
         ServletHelper.registerUserLevelCode("jetty-handle");
-        boolean isServletLockAcquired = acquireServletLockIfPossible();
+        boolean isServletLockAcquired = HttpServletHelper.acquireServletLockIfPossible();
         if (isServletLockAcquired) {
             HttpServletHelper.preprocessSecurityHook(request);
         }
@@ -22,27 +22,12 @@ public class RequestHandler_Instrumentation {
             result = Weaver.callOriginal();
         } finally {
             if (isServletLockAcquired) {
-                releaseServletLock();
+                HttpServletHelper.releaseServletLock();
             }
         }
         if (isServletLockAcquired) {
             HttpServletHelper.postProcessSecurityHook(request, response, this.getClass().getName(), HttpServletHelper.SERVICE_METHOD_NAME);
         }
         return result;
-    }
-
-    private boolean acquireServletLockIfPossible() {
-        try {
-            return HttpServletHelper.acquireServletLockIfPossible();
-        } catch (Throwable ignored) {
-        }
-        return false;
-    }
-
-    private void releaseServletLock() {
-        try {
-            HttpServletHelper.releaseServletLock();
-        } catch (Throwable e) {
-        }
     }
 }
