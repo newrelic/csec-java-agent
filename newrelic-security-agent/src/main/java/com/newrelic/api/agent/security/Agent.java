@@ -28,17 +28,12 @@ import com.newrelic.api.agent.NewRelic;
 import com.newrelic.api.agent.Transaction;
 import com.newrelic.api.agent.security.instrumentation.helpers.AppServerInfoHelper;
 import com.newrelic.api.agent.security.instrumentation.helpers.LowSeverityHelper;
-import com.newrelic.api.agent.security.schema.AbstractOperation;
-import com.newrelic.api.agent.security.schema.AgentMetaData;
-import com.newrelic.api.agent.security.schema.HttpRequest;
-import com.newrelic.api.agent.security.schema.K2RequestIdentifier;
-import com.newrelic.api.agent.security.schema.SecurityMetaData;
-import com.newrelic.api.agent.security.schema.UserClassEntity;
-import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
+import com.newrelic.api.agent.security.schema.*;
 import com.newrelic.api.agent.security.schema.operation.RXSSOperation;
 import com.newrelic.api.agent.security.schema.policy.AgentPolicy;
 import org.apache.commons.lang3.StringUtils;
 
+import java.io.File;
 import java.io.IOException;
 import java.lang.instrument.Instrumentation;
 import java.time.Instant;
@@ -510,12 +505,21 @@ public class Agent implements SecurityAgent {
 
     @Override
     public void setServerInfo(String key, String value) {
+        AppServerInfo appServerInfo = AppServerInfoHelper.getAppServerInfo();
         switch (key) {
             case IUtilConstants.APPLICATION_DIRECTORY:
-                AppServerInfoHelper.getAppServerInfo().setApplicationDirectory(value);
+                File appBase = new File(value);
+                if(appBase.isAbsolute()){
+                    appServerInfo.setApplicationDirectory(value);
+                } else if(StringUtils.isNotBlank(appServerInfo.getServerBaseDirectory())) {
+                    appServerInfo.setApplicationDirectory(new File(appServerInfo.getServerBaseDirectory(), value).getAbsolutePath());
+                } else if(appBase.isDirectory()) {
+                    appServerInfo.setApplicationDirectory(appBase.getAbsolutePath());
+                }
                 break;
             case IUtilConstants.SERVER_BASE_DIRECTORY:
-                AppServerInfoHelper.getAppServerInfo().setServerBaseDirectory(value);
+                appServerInfo.setServerBaseDirectory(value);
+                break;
             default:
                 break;
         }

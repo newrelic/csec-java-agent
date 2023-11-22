@@ -5,6 +5,8 @@ import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
 
+import java.io.File;
+
 @Weave(type = MatchType.ExactClass, originalName = "org.apache.catalina.core.StandardHost")
 public class StandardHost_Instrumentation {
 
