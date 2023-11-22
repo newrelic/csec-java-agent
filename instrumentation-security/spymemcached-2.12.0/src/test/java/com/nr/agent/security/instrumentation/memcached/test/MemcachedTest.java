@@ -27,6 +27,8 @@ import java.util.List;
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class MemcachedTest {
 
+    public static final String WRITE = "write";
+    public static final String UPDATE = "update";
     private static MemcachedClient memcachedClient;
     private final String key = "someKey";
     private final String value = "value";
@@ -66,7 +68,7 @@ public class MemcachedTest {
         Assert.assertEquals("No operations detected.", 1, operations.size());
         MemcachedOperation operation = (MemcachedOperation) operations.get(0);
 
-        verifier(operation, Arrays.asList(key, value), "asyncStore");
+        verifier(operation, Arrays.asList(key, value), WRITE, "asyncStore");
     }
 
     @Test
@@ -78,7 +80,7 @@ public class MemcachedTest {
         Assert.assertEquals("No operations detected.", 1, operations.size());
         MemcachedOperation operation = (MemcachedOperation) operations.get(0);
 
-        verifier(operation, Arrays.asList(key, value), "asyncStore");
+        verifier(operation, Arrays.asList(key, value), WRITE, "asyncStore");
     }
     @Test
     public void testReplace() {
@@ -89,7 +91,7 @@ public class MemcachedTest {
         Assert.assertEquals("No operations detected.", 1, operations.size());
         MemcachedOperation operation = (MemcachedOperation) operations.get(0);
 
-        verifier(operation, Arrays.asList(key, value), "asyncStore");
+        verifier(operation, Arrays.asList(key, value), WRITE, "asyncStore");
     }
     @Test
     public void testAppend() {
@@ -100,7 +102,7 @@ public class MemcachedTest {
         Assert.assertEquals("No operations detected.", 1, operations.size());
         MemcachedOperation operation = (MemcachedOperation) operations.get(0);
 
-        verifier(operation, Arrays.asList(key, value), "asyncCat");
+        verifier(operation, Arrays.asList(key, value), UPDATE, "asyncCat");
     }
     @Test
     public void testPrepend() {
@@ -111,7 +113,7 @@ public class MemcachedTest {
         Assert.assertEquals("No operations detected.", 1, operations.size());
         MemcachedOperation operation = (MemcachedOperation) operations.get(0);
 
-        verifier(operation, Arrays.asList(key, value), "asyncCat");
+        verifier(operation, Arrays.asList(key, value), UPDATE, "asyncCat");
     }
     @Test
     public void testPrepend1() {
@@ -122,7 +124,7 @@ public class MemcachedTest {
         Assert.assertEquals("No operations detected.", 1, operations.size());
         MemcachedOperation operation = (MemcachedOperation) operations.get(0);
 
-        verifier(operation, Arrays.asList(key, value), "asyncCat");
+        verifier(operation, Arrays.asList(key, value), UPDATE, "asyncCat");
     }
     @Test
     public void testCas() {
@@ -133,7 +135,7 @@ public class MemcachedTest {
         Assert.assertEquals("No operations detected.", 1, operations.size());
         MemcachedOperation operation = (MemcachedOperation) operations.get(0);
 
-        verifier(operation, Arrays.asList(key, value), "asyncCAS");
+        verifier(operation, Arrays.asList(key, value), WRITE, "asyncCAS");
     }
     @Test
     public void testCas1() {
@@ -144,7 +146,7 @@ public class MemcachedTest {
         Assert.assertEquals("No operations detected.", 1, operations.size());
         MemcachedOperation operation = (MemcachedOperation) operations.get(0);
 
-        verifier(operation, Arrays.asList(key, value), "asyncCAS");
+        verifier(operation, Arrays.asList(key, value), WRITE, "asyncCAS");
     }
 
     @Test
@@ -156,7 +158,7 @@ public class MemcachedTest {
         Assert.assertEquals("No operations detected.", 1, operations.size());
         MemcachedOperation operation = (MemcachedOperation) operations.get(0);
 
-        verifier(operation, Arrays.asList(key, value), "asyncCAS");
+        verifier(operation, Arrays.asList(key, value), WRITE, "asyncCAS");
     }
     @Test
     public void testAsyncCAS1() {
@@ -167,13 +169,14 @@ public class MemcachedTest {
         Assert.assertEquals("No operations detected.", 1, operations.size());
         MemcachedOperation operation = (MemcachedOperation) operations.get(0);
 
-        verifier(operation, Arrays.asList(key, value), "asyncCAS");
+        verifier(operation, Arrays.asList(key, value), WRITE, "asyncCAS");
     }
 
-    private void verifier(MemcachedOperation operation, List<?> args, String method) {
+    private void verifier(MemcachedOperation operation, List<?> args, String type, String method) {
         Assert.assertEquals("Incorrect executed parameters.", args, operation.getArguments());
         Assert.assertEquals("Incorrect event case type.", VulnerabilityCaseType.CACHING_DATA_STORE, operation.getCaseType());
         Assert.assertEquals("Incorrect event category.", MemcachedOperation.MEMCACHED, operation.getCategory());
+        Assert.assertEquals("Incorrect event category.", type, operation.getType());
         Assert.assertEquals("Incorrect executed class-name.", memcachedClient.getClass().getName(), operation.getClassName());
         Assert.assertEquals("Incorrect executed method-name.", method, operation.getMethodName());
     }
