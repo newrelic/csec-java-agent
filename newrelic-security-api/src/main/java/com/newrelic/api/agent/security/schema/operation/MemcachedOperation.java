@@ -13,11 +13,14 @@ public class MemcachedOperation extends AbstractOperation {
 
     private String category;
 
-    public MemcachedOperation(List<Object> arguments, String type, String className, String methodName) {
+    private String command;
+
+    public MemcachedOperation(String command, List<Object> arguments, String type, String className, String methodName) {
         super(className, methodName);
         this.setCaseType(VulnerabilityCaseType.CACHING_DATA_STORE);
         this.arguments = arguments;
         this.type = type;
+        this.command = command;
         this.category = MEMCACHED;
     }
 
@@ -37,6 +40,14 @@ public class MemcachedOperation extends AbstractOperation {
         this.arguments = arguments;
     }
 
+    public String getCommand() {
+        return command;
+    }
+
+    public void setCommand(String command) {
+        this.command = command;
+    }
+
     public String getCategory() {
         return category;
     }
@@ -52,7 +63,7 @@ public class MemcachedOperation extends AbstractOperation {
 
     @Override
     public String toString() {
-        return "arguments: " + arguments + "; type: " + type;
+        return "arguments: " + arguments + "; type: " + type + "; command: " + command;
     }
 
 }

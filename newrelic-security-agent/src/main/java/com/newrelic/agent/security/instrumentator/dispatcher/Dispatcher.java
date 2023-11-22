@@ -514,6 +514,7 @@ public class Dispatcher implements Callable {
         JSONObject command = new JSONObject();
         command.put(REDIS_ARGUMENTS, params);
         command.put(REDIS_TYPE, memcachedOperationalBean.getType());
+        command.put(REDIS_MODE, memcachedOperationalBean.getCommand());
         JSONArray parameter = new JSONArray();
         parameter.add(command);
         eventBean.setParameters(parameter);

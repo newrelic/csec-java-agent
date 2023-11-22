@@ -22,7 +22,7 @@ public class MemcachedClient_Instrumentation {
         boolean isLockAcquired = GenericHelper.acquireLockIfPossible(MemcachedHelper.NR_SEC_CUSTOM_ATTRIB_NAME, value.hashCode());
         AbstractOperation operation = null;
         if (isLockAcquired) {
-            operation = MemcachedHelper.preprocessSecurityHook(MemcachedHelper.WRITE, key, value, this.getClass().getName(), MemcachedHelper.METHOD_ASYNC_STORE);
+            operation = MemcachedHelper.preprocessSecurityHook(storeType.name(), MemcachedHelper.WRITE, key, value, this.getClass().getName(), MemcachedHelper.METHOD_ASYNC_STORE);
         }
         OperationFuture<Boolean> returnValue = null;
         try {
@@ -41,7 +41,7 @@ public class MemcachedClient_Instrumentation {
         boolean isLockAcquired = GenericHelper.acquireLockIfPossible(MemcachedHelper.NR_SEC_CUSTOM_ATTRIB_NAME, value.hashCode());
         AbstractOperation operation = null;
         if (isLockAcquired) {
-            operation = MemcachedHelper.preprocessSecurityHook(MemcachedHelper.UPDATE, key, value, this.getClass().getName(), MemcachedHelper.METHOD_ASYNC_CAT);
+            operation = MemcachedHelper.preprocessSecurityHook(catType.name(), MemcachedHelper.UPDATE, key, value, this.getClass().getName(), MemcachedHelper.METHOD_ASYNC_CAT);
         }
         OperationFuture<Boolean> returnValue = null;
         try {
@@ -60,7 +60,7 @@ public class MemcachedClient_Instrumentation {
         boolean isLockAcquired = GenericHelper.acquireLockIfPossible(MemcachedHelper.NR_SEC_CUSTOM_ATTRIB_NAME, value.hashCode());
         AbstractOperation operation = null;
         if (isLockAcquired) {
-            operation = MemcachedHelper.preprocessSecurityHook(MemcachedHelper.WRITE, key, value, this.getClass().getName(), MemcachedHelper.METHOD_ASYNC_CAS);
+            operation = MemcachedHelper.preprocessSecurityHook(StoreType.set.name(), MemcachedHelper.WRITE, key, value, this.getClass().getName(), MemcachedHelper.METHOD_ASYNC_CAS);
         }
         OperationFuture<CASResponse> returnValue = null;
         try {

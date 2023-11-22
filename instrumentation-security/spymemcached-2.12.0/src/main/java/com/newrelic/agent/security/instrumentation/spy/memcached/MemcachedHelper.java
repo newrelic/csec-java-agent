@@ -22,12 +22,12 @@ public class MemcachedHelper {
     public static final String METHOD_ASYNC_CAT = "asyncCat";
     public static final String METHOD_ASYNC_CAS = "asyncCAS";
 
-    public static AbstractOperation preprocessSecurityHook(String type, String key, Object val, String klass, String method) {
+    public static AbstractOperation preprocessSecurityHook(String command, String type, String key, Object val, String klass, String method) {
         try {
             if (!NewRelicSecurity.isHookProcessingActive() || NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()){
                 return null;
             }
-            MemcachedOperation operation = new MemcachedOperation(Arrays.asList(key, val), type, klass, method);
+            MemcachedOperation operation = new MemcachedOperation(command, Arrays.asList(key, val), type, klass, method);
             NewRelicSecurity.getAgent().registerOperation(operation);
             return operation;
         } catch (Throwable e) {
