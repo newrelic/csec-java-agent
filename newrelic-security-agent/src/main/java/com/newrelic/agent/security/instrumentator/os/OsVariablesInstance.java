@@ -18,6 +18,8 @@ public class OsVariablesInstance {
     public static final String TMP = "tmp";
     public static final String SNAPSHOTS = "snapshots";
 
+    public static final String LOG_FILE_PATH = "log_file_path";
+
     private static OsVariablesInstance instance;
 
     private final static Object lock = new Object();
@@ -40,8 +42,8 @@ public class OsVariablesInstance {
 //        osVariables.setLogDirectory(Paths.get(k2root.toString(), LOGS, LANGUAGE_AGENT, AgentInfo.getInstance().getApplicationUUID()).toString());
 
 
-        if(NewRelic.getAgent().getConfig().getValue("log_file_path") != null) {
-            osVariables.setLogDirectory(Paths.get(NewRelic.getAgent().getConfig().getValue("log_file_path"), IUtilConstants.NR_SECURITY_HOME, LOGS).toString());
+        if(NewRelic.getAgent().getConfig().getValue(LOG_FILE_PATH) != null) {
+            osVariables.setLogDirectory(Paths.get(NewRelic.getAgent().getConfig().getValue(LOG_FILE_PATH), IUtilConstants.NR_SECURITY_HOME, LOGS).toString());
         } else {
             osVariables.setLogDirectory(Paths.get(AgentConfig.getInstance().getK2Home(), LOGS).toString());
         }

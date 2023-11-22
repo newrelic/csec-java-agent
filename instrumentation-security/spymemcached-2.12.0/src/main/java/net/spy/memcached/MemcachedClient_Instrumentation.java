@@ -1,5 +1,6 @@
 package net.spy.memcached;
 
+import com.newrelic.agent.security.instrumentation.spy.memcached.MemcachedHelper;
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
@@ -15,12 +16,13 @@ import net.spy.memcached.transcoders.Transcoder;
 
 @Weave(originalName = "net.spy.memcached.MemcachedClient")
 public class MemcachedClient_Instrumentation {
+
     private <T> OperationFuture<Boolean> asyncStore(StoreType storeType,
                 String key, int exp, T value, Transcoder<T> tc) {
         boolean isLockAcquired = GenericHelper.acquireLockIfPossible(MemcachedHelper.NR_SEC_CUSTOM_ATTRIB_NAME, value.hashCode());
         AbstractOperation operation = null;
         if (isLockAcquired) {
-            operation = preprocessSecurityHook(key, value, this.getClass().getName(), "asyncStore");
+            operation = MemcachedHelper.preprocessSecurityHook(storeType.name(), MemcachedHelper.WRITE, key, value, this.getClass().getName(), MemcachedHelper.METHOD_ASYNC_STORE);
         }
         OperationFuture<Boolean> returnValue = null;
         try {
@@ -30,7 +32,7 @@ public class MemcachedClient_Instrumentation {
                 GenericHelper.releaseLock(MemcachedHelper.NR_SEC_CUSTOM_ATTRIB_NAME, value.hashCode());
             }
         }
-        registerExitOperation(isLockAcquired, operation);
+        MemcachedHelper.registerExitOperation(isLockAcquired, operation);
         return returnValue;
     }
 
@@ -39,7 +41,7 @@ public class MemcachedClient_Instrumentation {
         boolean isLockAcquired = GenericHelper.acquireLockIfPossible(MemcachedHelper.NR_SEC_CUSTOM_ATTRIB_NAME, value.hashCode());
         AbstractOperation operation = null;
         if (isLockAcquired) {
-            operation = preprocessSecurityHook(key, value, this.getClass().getName(), "asyncCat");
+            operation = MemcachedHelper.preprocessSecurityHook(catType.name(), MemcachedHelper.UPDATE, key, value, this.getClass().getName(), MemcachedHelper.METHOD_ASYNC_CAT);
         }
         OperationFuture<Boolean> returnValue = null;
         try {
@@ -49,7 +51,7 @@ public class MemcachedClient_Instrumentation {
                 GenericHelper.releaseLock(MemcachedHelper.NR_SEC_CUSTOM_ATTRIB_NAME, value.hashCode());
             }
         }
-        registerExitOperation(isLockAcquired, operation);
+        MemcachedHelper.registerExitOperation(isLockAcquired, operation);
         return returnValue;
     }
 
@@ -58,7 +60,7 @@ public class MemcachedClient_Instrumentation {
         boolean isLockAcquired = GenericHelper.acquireLockIfPossible(MemcachedHelper.NR_SEC_CUSTOM_ATTRIB_NAME, value.hashCode());
         AbstractOperation operation = null;
         if (isLockAcquired) {
-            operation = preprocessSecurityHook(key, value, this.getClass().getName(), "asyncCAS");
+            operation = MemcachedHelper.preprocessSecurityHook(StoreType.set.name(), MemcachedHelper.WRITE, key, value, this.getClass().getName(), MemcachedHelper.METHOD_ASYNC_CAS);
         }
         OperationFuture<CASResponse> returnValue = null;
         try {
@@ -68,33 +70,7 @@ public class MemcachedClient_Instrumentation {
                 GenericHelper.releaseLock(MemcachedHelper.NR_SEC_CUSTOM_ATTRIB_NAME, value.hashCode());
             }
         }
-        registerExitOperation(isLockAcquired, operation);
+        MemcachedHelper.registerExitOperation(isLockAcquired, operation);
         return returnValue;
-    }
-
-    private AbstractOperation preprocessSecurityHook(String key, Object val, String klass, String method) {
-        try {
-            if (!NewRelicSecurity.isHookProcessingActive() || NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()){
-                return null;
-            }
-            MemcachedOperation operation = new MemcachedOperation(key, val, klass, method);
-            NewRelicSecurity.getAgent().registerOperation(operation);
-            return operation;
-        } catch (Throwable e) {
-            if (e instanceof NewRelicSecurityException) {
-                throw e;
-            }
-        }
-        return null;
-    }
-
-    private void registerExitOperation(boolean isProcessingAllowed, AbstractOperation operation) {
-        try {
-            if (operation == null || !isProcessingAllowed || !NewRelicSecurity.isHookProcessingActive() ||
-                    NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()) {
-                return;
-            }
-            NewRelicSecurity.getAgent().registerExitEvent(operation);
-        } catch (Throwable ignored){}
     }
 }

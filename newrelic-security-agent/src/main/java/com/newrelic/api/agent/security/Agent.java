@@ -5,26 +5,39 @@ import com.newrelic.agent.security.AgentConfig;
 import com.newrelic.agent.security.AgentInfo;
 import com.newrelic.agent.security.instrumentator.dispatcher.Dispatcher;
 import com.newrelic.agent.security.instrumentator.dispatcher.DispatcherPool;
+import com.newrelic.agent.security.instrumentator.httpclient.RestRequestThreadPool;
 import com.newrelic.agent.security.instrumentator.os.OsVariablesInstance;
-import com.newrelic.agent.security.instrumentator.utils.*;
+import com.newrelic.agent.security.instrumentator.utils.AgentUtils;
+import com.newrelic.agent.security.instrumentator.utils.ApplicationInfoUtils;
+import com.newrelic.agent.security.instrumentator.utils.CollectorConfigurationUtils;
+import com.newrelic.agent.security.instrumentator.utils.ExecutionIDGenerator;
+import com.newrelic.agent.security.instrumentator.utils.HashGenerator;
+import com.newrelic.agent.security.instrumentator.utils.INRSettingsKey;
 import com.newrelic.agent.security.intcodeagent.constants.AgentServices;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
+import com.newrelic.agent.security.intcodeagent.filelogging.LogFileHelper;
 import com.newrelic.agent.security.intcodeagent.filelogging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.logging.HealthCheckScheduleThread;
 import com.newrelic.agent.security.intcodeagent.logging.IAgentConstants;
+import com.newrelic.agent.security.intcodeagent.models.javaagent.ApplicationURLMappings;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.ExitEventBean;
 import com.newrelic.agent.security.intcodeagent.properties.BuildInfo;
 import com.newrelic.agent.security.intcodeagent.schedulers.FileCleaner;
 import com.newrelic.agent.security.intcodeagent.schedulers.SchedulerHelper;
 import com.newrelic.agent.security.intcodeagent.utils.CommonUtils;
-import com.newrelic.agent.security.intcodeagent.websocket.EventSendPool;
-import com.newrelic.agent.security.intcodeagent.websocket.JsonConverter;
-import com.newrelic.agent.security.intcodeagent.websocket.WSClient;
-import com.newrelic.agent.security.intcodeagent.websocket.WSReconnectionST;
+import com.newrelic.agent.security.intcodeagent.websocket.*;
 import com.newrelic.api.agent.NewRelic;
 import com.newrelic.api.agent.Transaction;
 import com.newrelic.api.agent.security.instrumentation.helpers.LowSeverityHelper;
-import com.newrelic.api.agent.security.schema.*;
+import com.newrelic.api.agent.security.instrumentation.helpers.URLMappingsHelper;
+import com.newrelic.api.agent.security.schema.AbstractOperation;
+import com.newrelic.api.agent.security.schema.AgentMetaData;
+import com.newrelic.api.agent.security.schema.ApplicationURLMapping;
+import com.newrelic.api.agent.security.schema.HttpRequest;
+import com.newrelic.api.agent.security.schema.K2RequestIdentifier;
+import com.newrelic.api.agent.security.schema.SecurityMetaData;
+import com.newrelic.api.agent.security.schema.UserClassEntity;
+import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.security.schema.operation.RXSSOperation;
 import com.newrelic.api.agent.security.schema.policy.AgentPolicy;
 import org.apache.commons.lang3.StringUtils;
@@ -40,7 +53,10 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 
-import static com.newrelic.agent.security.intcodeagent.logging.IAgentConstants.*;
+import static com.newrelic.agent.security.intcodeagent.logging.IAgentConstants.AGENT_INIT_LOG_STEP_FIVE_END;
+import static com.newrelic.agent.security.intcodeagent.logging.IAgentConstants.COM_SUN;
+import static com.newrelic.agent.security.intcodeagent.logging.IAgentConstants.STARTED_MODULE_LOG;
+import static com.newrelic.agent.security.intcodeagent.logging.IAgentConstants.SUN_REFLECT;
 
 public class Agent implements SecurityAgent {
 
@@ -170,6 +186,7 @@ public class Agent implements SecurityAgent {
         FileCleaner.scheduleNewTask();
         SchedulerHelper.getInstance().scheduleLowSeverityFilterCleanup(LowSeverityHelper::clearLowSeverityEventFilter,
                 30 , 30, TimeUnit.MINUTES);
+        SchedulerHelper.getInstance().scheduleDailyLogRollover(LogFileHelper::performDailyRollover);
         logger.logInit(
                 LogLevel.INFO,
                 String.format(STARTED_MODULE_LOG, AgentServices.HealthCheck.name()),
@@ -205,6 +222,7 @@ public class Agent implements SecurityAgent {
     private void cancelActiveServiceTasks() {
 
         /**
+         * Drain the pools (RestClient, EventSend, Dispatcher) before websocket close
          * Websocket
          * policy
          * HealthCheck
@@ -248,6 +266,9 @@ public class Agent implements SecurityAgent {
         operation.setExecutionId(executionId);
         operation.setStartTime(Instant.now().toEpochMilli());
         SecurityMetaData securityMetaData = NewRelicSecurity.getAgent().getSecurityMetaData();
+        if(securityMetaData.getFuzzRequestIdentifier().getK2Request()){
+            logger.log(LogLevel.FINEST, String.format("New Event generation with id %s of type %s", operation.getExecutionId(), operation.getClass().getSimpleName()), Agent.class.getName());
+        }
         if (operation instanceof RXSSOperation) {
             operation.setStackTrace(securityMetaData.getMetaData().getServiceTrace());
         } else {
@@ -257,7 +278,7 @@ public class Agent implements SecurityAgent {
         if(checkIfNRGeneratedEvent(operation, securityMetaData)) {
             logger.log(LogLevel.FINEST, DROPPING_EVENT_AS_IT_WAS_GENERATED_BY_K_2_INTERNAL_API_CALL +
                             JsonConverter.toJSON(operation),
-                    Dispatcher.class.getName());
+                    Agent.class.getName());
             return;
         }
 
@@ -276,13 +297,7 @@ public class Agent implements SecurityAgent {
                         this.getClass().getName());
                 firstEventProcessed.set(true);
             }
-        } else {
-            return;
         }
-//        if (blockNeeded) {
-//            blockForResponse(operation.getExecutionId());
-//        }
-//        checkIfClientIPBlocked();
     }
 
     private void logIfIastScanForFirstTime(K2RequestIdentifier fuzzRequestIdentifier, HttpRequest request) {
@@ -483,5 +498,10 @@ public class Agent implements SecurityAgent {
     @Override
     public Instrumentation getInstrumentation() {
         return this.instrumentation;
+    }
+
+    @Override
+    public boolean isLowPriorityInstrumentationEnabled() {
+        return NewRelic.getAgent().getConfig().getValue(LowSeverityHelper.LOW_SEVERITY_HOOKS_ENABLED, LowSeverityHelper.DEFAULT);
     }
 }

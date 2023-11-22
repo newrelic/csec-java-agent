@@ -36,7 +36,7 @@ jobs:
           cd instrumentation-security
           tmpfile=$(mktemp /tmp/dirs.XXXXXXXXXX)
           # lists the folders inside instrumentation, and removes the trailing '/'
-          ls -d */build.gradle | cut -d'/' -f 1 > $tmpfile
+          cat ../settings.gradle | grep "^include 'instrumentation:" | cut -d"'" -f 2 | cut -d : -f 2 > $tmpfile
           # creates an envar with the requested page of the instrumentation modules in a JSON format
           modules=$((
             echo '{ "modules" : '

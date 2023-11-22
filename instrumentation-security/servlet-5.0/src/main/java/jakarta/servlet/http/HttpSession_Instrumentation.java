@@ -1,6 +1,5 @@
 package jakarta.servlet.http;
 
-import com.newrelic.api.agent.NewRelic;
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.security.instrumentation.helpers.LowSeverityHelper;
@@ -13,16 +12,13 @@ import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
 
-import static com.newrelic.api.agent.security.instrumentation.helpers.LowSeverityHelper.DEFAULT;
-import static com.newrelic.api.agent.security.instrumentation.helpers.LowSeverityHelper.LOW_SEVERITY_HOOKS_ENABLED;
-
 @Weave(type = MatchType.Interface, originalName = "jakarta.servlet.http.HttpSession")
 public class HttpSession_Instrumentation {
 
     public void setAttribute(String name, Object value){
         boolean isLockAcquired = acquireLockIfPossible(hashCode());
         AbstractOperation operation = null;
-        boolean isOwaspHookEnabled = NewRelic.getAgent().getConfig().getValue(LOW_SEVERITY_HOOKS_ENABLED, DEFAULT);
+        boolean isOwaspHookEnabled = NewRelicSecurity.getAgent().isLowPriorityInstrumentationEnabled();
         if (isOwaspHookEnabled && LowSeverityHelper.isOwaspHookProcessingNeeded()){
             if (isLockAcquired)
                 operation = preprocessSecurityHook(name, value, getClass().getName(), "setAttribute");
@@ -42,7 +38,7 @@ public class HttpSession_Instrumentation {
     public void putValue(String name, Object value){
         boolean isLockAcquired = acquireLockIfPossible(hashCode());
         AbstractOperation operation = null;
-        boolean isOwaspHookEnabled = NewRelic.getAgent().getConfig().getValue(LOW_SEVERITY_HOOKS_ENABLED, DEFAULT);
+        boolean isOwaspHookEnabled = NewRelicSecurity.getAgent().isLowPriorityInstrumentationEnabled();
         if (isOwaspHookEnabled){
             if (isLockAcquired)
                 operation = preprocessSecurityHook(name, value, getClass().getName(), "putValue");
