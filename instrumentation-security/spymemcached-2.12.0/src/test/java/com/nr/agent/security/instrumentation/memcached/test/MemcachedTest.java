@@ -19,6 +19,7 @@ import org.junit.runners.MethodSorters;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
+import java.util.Arrays;
 import java.util.List;
 
 @RunWith(SecurityInstrumentationTestRunner.class)
@@ -65,12 +66,9 @@ public class MemcachedTest {
         Assert.assertEquals("No operations detected.", 1, operations.size());
         MemcachedOperation operation = (MemcachedOperation) operations.get(0);
 
-        Assert.assertEquals("Invalid executed key.", key, operation.getKey());
-        Assert.assertEquals("Invalid executed value.", value, operation.getValue());
-        Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.MEMCACHED, operation.getCaseType());
-        Assert.assertEquals("Invalid executed class-name.", memcachedClient.getClass().getName(), operation.getClassName());
-        Assert.assertEquals("Invalid executed method-name.", "asyncStore", operation.getMethodName());
+        verifier(operation, Arrays.asList(key, value), "asyncStore");
     }
+
     @Test
     public void testAdd() {
         memcachedClient.add(key, expirationInSeconds, value);
@@ -80,11 +78,7 @@ public class MemcachedTest {
         Assert.assertEquals("No operations detected.", 1, operations.size());
         MemcachedOperation operation = (MemcachedOperation) operations.get(0);
 
-        Assert.assertEquals("Invalid executed key.", key, operation.getKey());
-        Assert.assertEquals("Invalid executed value.", value, operation.getValue());
-        Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.MEMCACHED, operation.getCaseType());
-        Assert.assertEquals("Invalid executed class-name.", memcachedClient.getClass().getName(), operation.getClassName());
-        Assert.assertEquals("Invalid executed method-name.", "asyncStore", operation.getMethodName());
+        verifier(operation, Arrays.asList(key, value), "asyncStore");
     }
     @Test
     public void testReplace() {
@@ -95,11 +89,7 @@ public class MemcachedTest {
         Assert.assertEquals("No operations detected.", 1, operations.size());
         MemcachedOperation operation = (MemcachedOperation) operations.get(0);
 
-        Assert.assertEquals("Invalid executed key.", key, operation.getKey());
-        Assert.assertEquals("Invalid executed value.", value, operation.getValue());
-        Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.MEMCACHED, operation.getCaseType());
-        Assert.assertEquals("Invalid executed class-name.", memcachedClient.getClass().getName(), operation.getClassName());
-        Assert.assertEquals("Invalid executed method-name.", "asyncStore", operation.getMethodName());
+        verifier(operation, Arrays.asList(key, value), "asyncStore");
     }
     @Test
     public void testAppend() {
@@ -110,11 +100,7 @@ public class MemcachedTest {
         Assert.assertEquals("No operations detected.", 1, operations.size());
         MemcachedOperation operation = (MemcachedOperation) operations.get(0);
 
-        Assert.assertEquals("Invalid executed key.", key, operation.getKey());
-        Assert.assertEquals("Invalid executed value.", value, operation.getValue());
-        Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.MEMCACHED, operation.getCaseType());
-        Assert.assertEquals("Invalid executed class-name.", memcachedClient.getClass().getName(), operation.getClassName());
-        Assert.assertEquals("Invalid executed method-name.", "asyncCat", operation.getMethodName());
+        verifier(operation, Arrays.asList(key, value), "asyncCat");
     }
     @Test
     public void testPrepend() {
@@ -125,11 +111,7 @@ public class MemcachedTest {
         Assert.assertEquals("No operations detected.", 1, operations.size());
         MemcachedOperation operation = (MemcachedOperation) operations.get(0);
 
-        Assert.assertEquals("Invalid executed key.", key, operation.getKey());
-        Assert.assertEquals("Invalid executed value.", value, operation.getValue());
-        Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.MEMCACHED, operation.getCaseType());
-        Assert.assertEquals("Invalid executed class-name.", memcachedClient.getClass().getName(), operation.getClassName());
-        Assert.assertEquals("Invalid executed method-name.", "asyncCat", operation.getMethodName());
+        verifier(operation, Arrays.asList(key, value), "asyncCat");
     }
     @Test
     public void testPrepend1() {
@@ -140,11 +122,7 @@ public class MemcachedTest {
         Assert.assertEquals("No operations detected.", 1, operations.size());
         MemcachedOperation operation = (MemcachedOperation) operations.get(0);
 
-        Assert.assertEquals("Invalid executed key.", key, operation.getKey());
-        Assert.assertEquals("Invalid executed value.", value, operation.getValue());
-        Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.MEMCACHED, operation.getCaseType());
-        Assert.assertEquals("Invalid executed class-name.", memcachedClient.getClass().getName(), operation.getClassName());
-        Assert.assertEquals("Invalid executed method-name.", "asyncCat", operation.getMethodName());
+        verifier(operation, Arrays.asList(key, value), "asyncCat");
     }
     @Test
     public void testCas() {
@@ -155,11 +133,7 @@ public class MemcachedTest {
         Assert.assertEquals("No operations detected.", 1, operations.size());
         MemcachedOperation operation = (MemcachedOperation) operations.get(0);
 
-        Assert.assertEquals("Invalid executed key.", key, operation.getKey());
-        Assert.assertEquals("Invalid executed value.", value, operation.getValue());
-        Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.MEMCACHED, operation.getCaseType());
-        Assert.assertEquals("Invalid executed class-name.", memcachedClient.getClass().getName(), operation.getClassName());
-        Assert.assertEquals("Invalid executed method-name.", "asyncCAS", operation.getMethodName());
+        verifier(operation, Arrays.asList(key, value), "asyncCAS");
     }
     @Test
     public void testCas1() {
@@ -170,11 +144,7 @@ public class MemcachedTest {
         Assert.assertEquals("No operations detected.", 1, operations.size());
         MemcachedOperation operation = (MemcachedOperation) operations.get(0);
 
-        Assert.assertEquals("Invalid executed key.", key, operation.getKey());
-        Assert.assertEquals("Invalid executed value.", value, operation.getValue());
-        Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.MEMCACHED, operation.getCaseType());
-        Assert.assertEquals("Invalid executed class-name.", memcachedClient.getClass().getName(), operation.getClassName());
-        Assert.assertEquals("Invalid executed method-name.", "asyncCAS", operation.getMethodName());
+        verifier(operation, Arrays.asList(key, value), "asyncCAS");
     }
 
     @Test
@@ -186,11 +156,7 @@ public class MemcachedTest {
         Assert.assertEquals("No operations detected.", 1, operations.size());
         MemcachedOperation operation = (MemcachedOperation) operations.get(0);
 
-        Assert.assertEquals("Invalid executed key.", key, operation.getKey());
-        Assert.assertEquals("Invalid executed value.", value, operation.getValue());
-        Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.MEMCACHED, operation.getCaseType());
-        Assert.assertEquals("Invalid executed class-name.", memcachedClient.getClass().getName(), operation.getClassName());
-        Assert.assertEquals("Invalid executed method-name.", "asyncCAS", operation.getMethodName());
+        verifier(operation, Arrays.asList(key, value), "asyncCAS");
     }
     @Test
     public void testAsyncCAS1() {
@@ -201,10 +167,14 @@ public class MemcachedTest {
         Assert.assertEquals("No operations detected.", 1, operations.size());
         MemcachedOperation operation = (MemcachedOperation) operations.get(0);
 
-        Assert.assertEquals("Invalid executed key.", key, operation.getKey());
-        Assert.assertEquals("Invalid executed value.", value, operation.getValue());
-        Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.MEMCACHED, operation.getCaseType());
-        Assert.assertEquals("Invalid executed class-name.", memcachedClient.getClass().getName(), operation.getClassName());
-        Assert.assertEquals("Invalid executed method-name.", "asyncCAS", operation.getMethodName());
+        verifier(operation, Arrays.asList(key, value), "asyncCAS");
+    }
+
+    private void verifier(MemcachedOperation operation, List<?> args, String method) {
+        Assert.assertEquals("Incorrect executed parameters.", args, operation.getArguments());
+        Assert.assertEquals("Incorrect event case type.", VulnerabilityCaseType.CACHING_DATA_STORE, operation.getCaseType());
+        Assert.assertEquals("Incorrect event category.", MemcachedOperation.MEMCACHED, operation.getCategory());
+        Assert.assertEquals("Incorrect executed class-name.", memcachedClient.getClass().getName(), operation.getClassName());
+        Assert.assertEquals("Incorrect executed method-name.", method, operation.getMethodName());
     }
 }
