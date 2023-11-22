@@ -514,6 +514,8 @@ public class Agent implements SecurityAgent {
             case IUtilConstants.APPLICATION_DIRECTORY:
                 AppServerInfoHelper.getAppServerInfo().setApplicationDirectory(value);
                 break;
+            case IUtilConstants.SERVER_BASE_DIRECTORY:
+                AppServerInfoHelper.getAppServerInfo().setServerBaseDirectory(value);
             default:
                 break;
         }

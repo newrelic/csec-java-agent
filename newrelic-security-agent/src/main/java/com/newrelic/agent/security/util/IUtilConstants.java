@@ -28,4 +28,6 @@ public interface IUtilConstants {
     String REJECTED = "REJECTED";
     String NR_LOG_DAILY_ROLLOVER_PERIOD = "log.rollover.period";
     String APPLICATION_DIRECTORY = "APPLICATION_DIRECTORY";
+
+    String SERVER_BASE_DIRECTORY = "SERVER_BASE_DIRECTORY";
 }
