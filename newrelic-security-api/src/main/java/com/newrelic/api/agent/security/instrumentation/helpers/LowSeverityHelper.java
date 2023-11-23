@@ -10,6 +10,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class LowSeverityHelper {
+
+    public static final String LOW_SEVERITY_HOOKS_ENABLED = "security.low-priority-instrumentation.enabled";
+    public static final boolean DEFAULT = true;
     private static AtomicBoolean isLowSeverityhHooksEnabled = new AtomicBoolean(false);
 
     private static Set<Integer> encounteredLowSeverityEventURIHash = ConcurrentHashMap.newKeySet();

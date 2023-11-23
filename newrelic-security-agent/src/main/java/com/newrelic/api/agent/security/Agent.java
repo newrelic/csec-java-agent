@@ -500,7 +500,7 @@ public class Agent implements SecurityAgent {
 
     @Override
     public boolean isLowPriorityInstrumentationEnabled() {
-        return NewRelicSecurity.isHookProcessingActive() &&  LowSeverityHelper.getIsLowSeverityhHooksEnabled();
+        return NewRelicSecurity.isHookProcessingActive() &&  LowSeverityHelper.getIsLowSeverityhHooksEnabled() && NewRelic.getAgent().getConfig().getValue(LowSeverityHelper.LOW_SEVERITY_HOOKS_ENABLED, LowSeverityHelper.DEFAULT);;
     }
 
     @Override
