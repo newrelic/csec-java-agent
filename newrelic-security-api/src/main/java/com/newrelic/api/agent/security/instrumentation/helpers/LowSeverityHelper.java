@@ -7,10 +7,10 @@ import com.newrelic.api.agent.security.schema.StringUtils;
 
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class LowSeverityHelper {
-    public static final String LOW_SEVERITY_HOOKS_ENABLED = "security.low-priority-instrumentation.enabled";
-    public static final boolean DEFAULT = false;
+    private static AtomicBoolean isLowSeverityhHooksEnabled = new AtomicBoolean(false);
 
     private static Set<Integer> encounteredLowSeverityEventURIHash = ConcurrentHashMap.newKeySet();
 
@@ -42,5 +42,15 @@ public class LowSeverityHelper {
                     || (StringUtils.isNotBlank(requestURL) && !LowSeverityHelper.checkIfLowSeverityEventAlreadyEncountered(requestURL.hashCode(), securityMetaData.getRequest().getMethod()));
         }
         return false;
+    }
+
+    public static void enableLowSeverityHooks(String group) {
+        if(StringUtils.equals(group, "IAST")) {
+            isLowSeverityhHooksEnabled.set(true);
+        }
+    }
+
+    public static boolean getIsLowSeverityhHooksEnabled() {
+        return isLowSeverityhHooksEnabled.get();
     }
 }
