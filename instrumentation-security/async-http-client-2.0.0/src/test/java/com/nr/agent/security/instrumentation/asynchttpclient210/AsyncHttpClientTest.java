@@ -12,6 +12,7 @@ import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.security.schema.operation.SSRFOperation;
 import com.newrelic.security.test.marker.Java11IncompatibleTest;
 import com.newrelic.security.test.marker.Java17IncompatibleTest;
+import com.newrelic.agent.security.instrumentation.org.asynchttpclient.AsynchttpHelper;
 import org.asynchttpclient.*;
 import org.junit.Assert;
 import org.junit.FixMethodOrder;
@@ -35,7 +36,7 @@ import static org.junit.Assert.assertTrue;
 @Category({ Java11IncompatibleTest.class, Java17IncompatibleTest.class })
 @RunWith(SecurityInstrumentationTestRunner.class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-@InstrumentationTestConfig(includePrefixes = {"org.asynchttpclient"})
+@InstrumentationTestConfig(includePrefixes = {"org.asynchttpclient", "com.newrelic.agent.security.instrumentation.org.asynchttpclient"})
 public class AsyncHttpClientTest {
 
     @Rule

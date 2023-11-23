@@ -6,11 +6,11 @@
  */
 
 package org.asynchttpclient;
-import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
+import com.newrelic.agent.security.instrumentation.org.asynchttpclient.AsynchttpHelper;
 
 import java.net.MalformedURLException;
 import java.net.URI;

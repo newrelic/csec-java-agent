@@ -1,4 +1,4 @@
-package org.asynchttpclient;
+package com.newrelic.agent.security.instrumentation.org.asynchttpclient;
 
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
@@ -8,6 +8,7 @@ import com.newrelic.api.agent.security.schema.StringUtils;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
 import com.newrelic.api.agent.security.schema.operation.SSRFOperation;
 import com.newrelic.api.agent.security.utils.SSRFUtils;
+import org.asynchttpclient.Request;
 
 public class AsynchttpHelper {
 
