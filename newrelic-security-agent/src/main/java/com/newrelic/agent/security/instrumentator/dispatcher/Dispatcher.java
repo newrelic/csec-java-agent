@@ -49,6 +49,9 @@ public class Dispatcher implements Callable {
 
     public static final String SEPARATOR1 = ", ";
     public static final String APP_LOCATION = "app-location";
+    public static final String REDIS_MODE = "mode";
+    public static final String REDIS_ARGUMENTS = "arguments";
+    public static final String REDIS_TYPE = "type";
     private ExitEventBean exitEventBean;
     private AbstractOperation operation;
     private SecurityMetaData securityMetaData;
@@ -198,6 +201,10 @@ public class Dispatcher implements Callable {
                     XQueryOperation xQueryOperationalBean = (XQueryOperation) operation;
                     eventBean = prepareXQueryInjectionEvent(eventBean, xQueryOperationalBean);
                     break;
+                case CACHING_DATA_STORE:
+                    RedisOperation redisOperation = (RedisOperation) operation;
+                    eventBean = prepareCachingDataStoreEvent(eventBean, redisOperation);
+                    break;
                 default:
 
             }
@@ -224,6 +231,19 @@ public class Dispatcher implements Callable {
             e.printStackTrace();
         }
         return null;
+    }
+
+    private JavaAgentEventBean prepareCachingDataStoreEvent(JavaAgentEventBean eventBean, RedisOperation redisOperation) {
+        JSONArray params = new JSONArray();
+        for (Object data : redisOperation.getArguments()) {
+            params.add(data);
+        }
+        JSONObject command = new JSONObject();
+        command.put(REDIS_MODE, redisOperation.getMode());
+        command.put(REDIS_ARGUMENTS, params);
+        command.put(REDIS_TYPE, redisOperation.getType());
+        eventBean.setParameters(params);
+        return eventBean;
     }
 
     @Nullable
