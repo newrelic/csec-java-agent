@@ -1,0 +1,24 @@
+dependencies {
+    implementation(project(":newrelic-security-api"))
+    implementation("com.newrelic.agent.java:newrelic-api:${nrAPIVersion}")
+    implementation("com.newrelic.agent.java:newrelic-weaver-api:${nrAPIVersion}")
+    implementation("org.springframework.data:spring-data-redis:1.1.0.RELEASE")
+}
+
+jar {
+    manifest {
+        attributes 'Implementation-Title': 'com.newrelic.instrumentation.security.spring-data-redis'
+    }
+}
+
+
+verifyInstrumentation {
+    passesOnly 'org.springframework.data:spring-data-redis:[1.1.0.RELEASE,)'
+    exclude 'org.springframework.data:spring-data-redis:[,1.1.0.RELEASE)'
+    excludeRegex '.*(RC|M).*'
+}
+
+site {
+    title 'spring-data-redis 1.1.0'
+    type 'Framework'
+}
