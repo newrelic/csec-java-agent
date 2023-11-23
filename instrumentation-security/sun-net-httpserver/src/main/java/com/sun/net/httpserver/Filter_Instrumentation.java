@@ -13,6 +13,7 @@ import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
 
 import java.io.IOException;
+import java.util.Arrays;
 
 @Weave(originalName = "com.sun.net.httpserver.Filter", type = MatchType.BaseClass)
 public class Filter_Instrumentation {
@@ -67,8 +68,8 @@ public class Filter_Instrumentation {
             }
 
             securityRequest.setContentType(HttpServerHelper.getContentType(exchange.getRequestHeaders()));
-
-            securityAgentMetaData.setServiceTrace(Thread.currentThread().getStackTrace());
+            StackTraceElement[] stack = Thread.currentThread().getStackTrace();
+            securityAgentMetaData.setServiceTrace(Arrays.copyOfRange(stack, 1, stack.length));
             securityRequest.setRequestParsed(true);
         } catch (Throwable ignored){}
     }
