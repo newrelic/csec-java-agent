@@ -48,13 +48,13 @@ public class LogWriter implements Runnable {
 
     public static final String DATE_FORMAT_NOW = "yyyy-MM-dd HH:mm:ss.SSS";
 
-    private static final String fileName;
+    private static String fileName;
 
-    private static final String currentLogFileName;
+    private static String currentLogFileName;
 
     private static BufferedWriter writer;
 
-    private static final File currentLogFile;
+    private static File currentLogFile;
 
     private String threadName;
 
@@ -68,7 +68,7 @@ public class LogWriter implements Runnable {
             currentLogFile.setReadable(true, false);
             writer = new BufferedWriter(new FileWriter(currentLogFileName, true));
 
-            maxFileSize = FileLoggerThreadPool.getInstance().maxfilesize * 1048576;
+            maxFileSize = FileLoggerThreadPool.getInstance().maxfilesize;
 
             if (!osVariables.getWindows()) {
                 Files.setPosixFilePermissions(currentLogFile.toPath(), PosixFilePermissions.fromString("rw-rw-rw-"));
@@ -91,10 +91,14 @@ public class LogWriter implements Runnable {
     }
 
     static {
-        fileName = new File(osVariables.getLogDirectory(), "java-security-collector.log").getAbsolutePath();
-        currentLogFile = new File(fileName);
-        currentLogFileName = fileName;
-        createLogFile();
+        if(FileLoggerThreadPool.getInstance().isLoggingToStdOut){
+            writer = new BufferedWriter(new OutputStreamWriter(System.out));
+        } else {
+            fileName = new File(osVariables.getLogDirectory(), "java-security-collector.log").getAbsolutePath();
+            currentLogFile = new File(fileName);
+            currentLogFileName = fileName;
+            createLogFile();
+        }
     }
 
     public LogWriter(LogLevel logLevel, String logEntry, String loggingClassName, String threadName) {
@@ -171,7 +175,7 @@ public class LogWriter implements Runnable {
     }
 
     private static void rollover(String fileName) throws IOException {
-        if (!rolloverCheckNeeded()) {
+        if (FileLoggerThreadPool.getInstance().isLoggingToStdOut || !rolloverCheckNeeded()) {
             return;
         }
 
@@ -189,7 +193,7 @@ public class LogWriter implements Runnable {
                 } catch (IOException e) {
                 }
 
-                CommonUtils.deleteRolloverLogFiles(currentFile.getName(), FileLoggerThreadPool.getInstance().maxfiles);
+                LogFileHelper.deleteRolloverLogFiles(currentFile.getName(), FileLoggerThreadPool.getInstance().maxfiles);
             }
         } finally {
             writer = new BufferedWriter(new FileWriter(currentFile, true));
@@ -220,4 +224,7 @@ public class LogWriter implements Runnable {
         return fileName;
     }
 
+    public static void setWriter(BufferedWriter writer) {
+        LogWriter.writer = writer;
+    }
 }

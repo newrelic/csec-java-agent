@@ -9,9 +9,8 @@ import com.newrelic.api.agent.security.schema.operation.JSInjectionOperation;
 import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
-import com.nr.agent.security.jsinjection.nashorn.JSEngineUtils;
+import com.newrelic.agent.security.instrumentation.nashorn.JSEngineUtils;
 import jdk.nashorn.internal.objects.Global;
-import jdk.nashorn.internal.runtime.RecompilableScriptFunctionData;
 import jdk.nashorn.internal.runtime.ScriptFunction_Instrumentation;
 import jdk.nashorn.internal.runtime.Source;
 

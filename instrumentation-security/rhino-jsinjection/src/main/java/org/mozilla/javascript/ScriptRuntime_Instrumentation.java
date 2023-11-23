@@ -8,7 +8,7 @@ import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityExcepti
 import com.newrelic.api.agent.security.schema.operation.JSInjectionOperation;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
-import com.nr.agent.security.mongo.jsinjection.rhino.JSEngineUtils;
+import com.newrelic.agent.security.instrumentation.rhino.JSEngineUtils;
 
 @Weave(originalName = "org.mozilla.javascript.ScriptRuntime")
 public class ScriptRuntime_Instrumentation {

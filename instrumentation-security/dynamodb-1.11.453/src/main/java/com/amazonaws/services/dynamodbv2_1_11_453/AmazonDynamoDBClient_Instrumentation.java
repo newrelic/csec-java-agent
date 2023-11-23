@@ -18,7 +18,7 @@ import com.amazonaws.http.HttpResponseHandler;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
-import com.nr.agent.security.dynamodb_1_11_453.DynamoDBUtil;
+import com.newrelic.agent.security.instrumentation.dynamodb_1_11_453.DynamoDBUtil;
 
 import java.net.URI;
 
