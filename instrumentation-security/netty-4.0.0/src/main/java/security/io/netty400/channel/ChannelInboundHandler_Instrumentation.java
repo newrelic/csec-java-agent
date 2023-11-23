@@ -29,7 +29,9 @@ public abstract class ChannelInboundHandler_Instrumentation {
         try {
             Weaver.callOriginal();
         } finally {
-            NettyUtils.releaseNettyLock();
+            if (isLockAcquired) {
+                NettyUtils.releaseNettyLock();
+            }
         }
     }
 }
