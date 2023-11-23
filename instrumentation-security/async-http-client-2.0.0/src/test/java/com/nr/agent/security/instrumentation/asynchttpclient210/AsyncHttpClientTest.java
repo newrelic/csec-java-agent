@@ -162,12 +162,12 @@ public class AsyncHttpClientTest {
     }
 
     @Test
-    public void testExecuteConnect() throws URISyntaxException, IOException {
+    public void testExecuteConnect() throws URISyntaxException, IOException, InterruptedException {
         String headerValue = String.valueOf(UUID.randomUUID());
 
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
         setCSECHeaders(headerValue, introspector);
-
+        server.getHeaders().clear();
         makeAsyncRequestConnect(server.getEndPoint().toURL().toString());
 
         List<AbstractOperation> operations = introspector.getOperations();
