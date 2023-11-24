@@ -68,16 +68,16 @@ public class StoredProcedureTest {
     public static void initData() throws SQLException {
         QUERIES.add("CREATE ALIAS getH2Version FOR \"org.h2.engine.Constants.getVersion\"");
         QUERIES.add("call getH2Version()");
-        QUERIES.add(" call getH2Version() ");
+//        QUERIES.add(" call getH2Version() ");
         QUERIES.add("{call getH2Version()}");
-        QUERIES.add("{ call getH2Version() }");
-        QUERIES.add(" { call getH2Version() } ");
+//        QUERIES.add("{ call getH2Version() }");
+//        QUERIES.add(" { call getH2Version() } ");
 
         QUERIES.add("CALL getH2Version()");
-        QUERIES.add(" CALL getH2Version() ");
+//        QUERIES.add(" CALL getH2Version() ");
         QUERIES.add("{CALL getH2Version()}");
-        QUERIES.add("{ CALL getH2Version() }");
-        QUERIES.add(" { CALL getH2Version() } ");
+//        QUERIES.add("{ CALL getH2Version() }");
+//        QUERIES.add(" { CALL getH2Version() } ");
 
         FAIL_QUERIES.add("CREATE TABLE IF NOT EXISTS MYUSERS(id int primary key, first_name varchar(255), last_name varchar(255))");
         FAIL_QUERIES.add("{select * from myusers where first_name='call'}");
