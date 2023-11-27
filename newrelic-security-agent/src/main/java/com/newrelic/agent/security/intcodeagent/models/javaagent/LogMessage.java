@@ -10,7 +10,7 @@ import java.util.Map;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class LogMessage {
 
-    private String jsonName = "log-message";
+    private String jsonName = "critical-messages";
 
     private String applicationUUID = AgentInfo.getInstance().getApplicationUUID();
 
@@ -25,6 +25,8 @@ public class LogMessage {
 
     private Map<String, String> linkingMetadata;
 
+    private String threadName;
+
     public LogMessage(String level, String message, String caller, Throwable exception, Map<String, String> linkingMetadata) {
         this.timestamp = Instant.now().toEpochMilli();
         this.level = level;
@@ -34,6 +36,7 @@ public class LogMessage {
         if (exception != null) {
             this.exception = new LogMessageException(exception, 0, 1);
         }
+        this.threadName = Thread.currentThread().getName();
     }
 
     public Long getTimestamp() {
@@ -75,6 +78,15 @@ public class LogMessage {
 
     public void setApplicationUUID(String applicationUUID) {
         this.applicationUUID = applicationUUID;
+    }
+
+
+    public String getThreadName() {
+        return threadName;
+    }
+
+    public void setThreadName(String threadName) {
+        this.threadName = threadName;
     }
 
     @Override
