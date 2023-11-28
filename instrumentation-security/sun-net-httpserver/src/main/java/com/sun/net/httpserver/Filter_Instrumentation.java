@@ -68,8 +68,7 @@ public class Filter_Instrumentation {
             }
 
             securityRequest.setContentType(HttpServerHelper.getContentType(exchange.getRequestHeaders()));
-            StackTraceElement[] stack = Thread.currentThread().getStackTrace();
-            securityAgentMetaData.setServiceTrace(Arrays.copyOfRange(stack, 1, stack.length));
+            ServletHelper.registerUserLevelCode("sun-net-http-server");
             securityRequest.setRequestParsed(true);
         } catch (Throwable ignored){}
     }

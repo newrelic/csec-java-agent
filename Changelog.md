@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add APM trace information population in the event
 - WS headers added : NR-CSEC-ENTITY-GUID & NR-CSEC-ENTITY-NAME
 - JSON version bump to 1.1.1
+- Add critical error logging via LogMessage event
 ### Fixes
 - Insecure cookie attack vulnerability was flagged in secure communication, accounting communication type to mitigate the issue
 - DynamoDB v2 issue: missing attribute values for conditionCheck method in case of transactWriteItems operation on DynamoDB
