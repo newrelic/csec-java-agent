@@ -265,8 +265,4 @@ public class DispatcherPool {
     public void reset() {
         executor.getQueue().clear();
     }
-
-    public int getMaxQueueSize() {
-        return queueSize;
-    }
 }
