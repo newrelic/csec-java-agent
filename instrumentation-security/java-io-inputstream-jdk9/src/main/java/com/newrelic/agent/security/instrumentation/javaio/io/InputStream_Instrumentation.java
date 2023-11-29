@@ -8,8 +8,8 @@
 package com.newrelic.agent.security.instrumentation.javaio.io;
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
+import com.newrelic.api.agent.security.instrumentation.helpers.InputStreamHelper;
 import com.newrelic.api.agent.weaver.*;
-import com.newrelic.agent.security.instrumentation.javaio.InputStreamHelper;
 import java.io.IOException;
 
 @Weave(type = MatchType.BaseClass, originalName = "java.io.InputStream")
