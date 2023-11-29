@@ -11,6 +11,7 @@ import com.newrelic.agent.security.intcodeagent.logging.DeployedApplication;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.ExitEventBean;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.JavaAgentEventBean;
 import com.newrelic.agent.security.intcodeagent.websocket.EventSendPool;
+import com.newrelic.agent.security.intcodeagent.websocket.JsonConverter;
 import com.newrelic.api.agent.NewRelic;
 import com.newrelic.api.agent.security.instrumentation.helpers.AppServerInfoHelper;
 import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
@@ -53,6 +54,7 @@ public class Dispatcher implements Callable {
     public static final String APP_LOCATION = "app-location";
     public static final String SYSCOMMAND_ENVIRONMENT = "environment";
     public static final String SYSCOMMAND_SCRIPT_CONTENT = "script-content";
+    public static final String UNABLE_TO_CONVERT_OPERATION_TO_EVENT = "Unable to convert operation to event: %s, %s, %s";
     private ExitEventBean exitEventBean;
     private AbstractOperation operation;
     private SecurityMetaData securityMetaData;
@@ -226,7 +228,8 @@ public class Dispatcher implements Callable {
             }
 //        detectDeployedApplication();
         } catch (Throwable e) {
-            e.printStackTrace();
+            logger.postLogMessageIfNecessary(LogLevel.WARNING, String.format(UNABLE_TO_CONVERT_OPERATION_TO_EVENT, operation.getApiID(), operation.getSourceMethod(), JsonConverter.getObjectMapper().writeValueAsString(operation.getUserClassEntity())), e,
+                    this.getClass().getName());
         }
         return null;
     }
@@ -621,6 +624,8 @@ public class Dispatcher implements Callable {
         eventBean.setUserAPIInfo(operation.getUserClassEntity().getUserClassElement().getLineNumber(),
                 operation.getUserClassEntity().getUserClassElement().getClassName(),
                 operation.getUserClassEntity().getUserClassElement().getMethodName());
+        eventBean.getLinkingMetadata().put(NR_APM_TRACE_ID, securityMetaData.getCustomAttribute(NR_APM_TRACE_ID, String.class));
+        eventBean.getLinkingMetadata().put(NR_APM_SPAN_ID, securityMetaData.getCustomAttribute(NR_APM_SPAN_ID, String.class));
         return eventBean;
     }
 

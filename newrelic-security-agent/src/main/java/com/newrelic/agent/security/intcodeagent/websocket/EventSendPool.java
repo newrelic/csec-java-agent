@@ -19,6 +19,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public class EventSendPool {
 
+    public static final int QUEUE_SIZE = 1500;
     /**
      * Thread pool executor.
      */
@@ -28,11 +29,9 @@ public class EventSendPool {
 
     private AtomicBoolean isWaiting = new AtomicBoolean(false);
 
-    private int queueSize = 1500;
-
     private EventSendPool() {
         // load the settings
-
+        int queueSize = QUEUE_SIZE;
         int maxPoolSize = 1;
         int corePoolSize = 1;
         long keepAliveTime = 60;
@@ -67,6 +66,10 @@ public class EventSendPool {
                 return t;
             }
         });
+    }
+
+    public int getMaxQueueSize() {
+        return QUEUE_SIZE;
     }
 
     private static final class InstanceHolder {
@@ -205,9 +208,5 @@ public class EventSendPool {
 
     public void reset() {
         executor.getQueue().clear();
-    }
-
-    public int getMaxQueueSize() {
-        return queueSize;
     }
 }
