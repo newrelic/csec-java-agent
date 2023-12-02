@@ -10,7 +10,6 @@ import com.newrelic.agent.security.intcodeagent.models.FuzzRequestBean;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.IntCodeControlCommand;
 import com.newrelic.agent.security.intcodeagent.websocket.WSUtils;
 import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
-import com.newrelic.api.agent.security.instrumentation.helpers.ServletHelper;
 import okhttp3.Request;
 import org.apache.commons.lang3.StringUtils;
 
@@ -68,19 +67,21 @@ public class RestRequestProcessor implements Callable<Boolean> {
             RestRequestThreadPool.getInstance().removeFromProcessedCC(controlCommand.getId());
             Request request = RequestUtils.generateK2Request(httpRequest);
             if(request != null) {
-                RestClient.getInstance().fireRequest(request, repeatCount);
+                RestClient.getInstance().fireRequest(request, repeatCount, controlCommand.getId());
             }
             return true;
         } catch (JsonProcessingException e){
             logger.log(LogLevel.SEVERE,
                     String.format(JSON_PARSING_ERROR_WHILE_PROCESSING_FUZZING_REQUEST_S, controlCommand.getArguments().get(0)),
                     e, RestRequestProcessor.class.getName());
+            logger.postLogMessageIfNecessary(LogLevel.SEVERE,
+                    String.format(JSON_PARSING_ERROR_WHILE_PROCESSING_FUZZING_REQUEST_S, controlCommand.getId()), e, RestRequestProcessor.class.getName());
         } catch (Throwable e) {
             logger.log(LogLevel.SEVERE,
                     String.format(ERROR_WHILE_PROCESSING_FUZZING_REQUEST_S, controlCommand.getArguments().get(0)),
                     e, RestRequestProcessor.class.getName());
             logger.postLogMessageIfNecessary(LogLevel.SEVERE,
-                    String.format(ERROR_WHILE_PROCESSING_FUZZING_REQUEST_S, controlCommand.getArguments().get(0)),
+                    String.format(ERROR_WHILE_PROCESSING_FUZZING_REQUEST_S, controlCommand.getId()),
                     e, RestRequestProcessor.class.getName());
             throw e;
         }

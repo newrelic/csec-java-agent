@@ -43,7 +43,8 @@ public class HttpServletResponse_Instrumentation {
                 return null;
             }
 
-            SecureCookieOperation operation = new SecureCookieOperation(Boolean.toString(cookie.getSecure()), className, methodName);
+            boolean isSecure = "https".equals(securityMetaData.getRequest().getProtocol()) || cookie.getSecure();
+            SecureCookieOperation operation = new SecureCookieOperation(Boolean.toString(isSecure), className, methodName);
             operation.setLowSeverityHook(true);
             NewRelicSecurity.getAgent().registerOperation(operation);
 
