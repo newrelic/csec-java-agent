@@ -4,6 +4,25 @@ Noteworthy changes to the agent are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.7-public-preview] - 2023-12-6
+### Changes
+- Async HttpClient v2+ Support: The security agent now also supports Async HTTP client version 2 and above
+- Sun Net HTTP Server support: The security agent now supports Sun Net HTTP Server
+- Add APM trace information population in the event
+- WS headers added : NR-CSEC-ENTITY-GUID & NR-CSEC-ENTITY-NAME
+- JSON version bump to 1.1.1
+- Add critical error logging via LogMessage event
+### Fixes
+- Insecure cookie attack vulnerability was flagged in secure communication, accounting communication type to mitigate the issue
+- DynamoDB v2 issue: missing attribute values for conditionCheck method in case of transactWriteItems operation on DynamoDB
+- Never print LicenseKey 
+### Misc
+- Updated unit test cases for all the outbound request instrumentation modules to include test cases for csec parent id header
+- Unit test cases for Async HttpClient v2+
+- Unit test cases for Jetty v12+
+- Unit test cases for Sun Net HTTP Server
+- Unit test cases for Netty Server
+
 ## [1.0.6-public-preview] - 2023-10-17
 ### Changes
 - Cassandra DB v3.0+ Support: The Security agent now supports Cassandra DB version 3.0 and above
