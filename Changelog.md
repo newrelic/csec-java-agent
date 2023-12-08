@@ -4,12 +4,14 @@ Noteworthy changes to the agent are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.0.8-public-preview] TO BE DISCLOSED
+## [1.0.8-public-preview] TO BE DECIDED
 ### Changes
 - Support for stored procedure call detection in SQL events
 - Support for extracting environment variables in case of Remote Code Execution events
 - Support for executing script file analysis in case of Remote Code Execution events
 - Enabled the transformation of the low-priority instrumentation module by default in case of IAST
+- SecureCookie Vulnerabilities now take httpOnly and SameSite=Strict into account along with secure flag
+- SecureCookie schema check has been removed
 ### Fixes
 - Incorrect user file details in the vulnerability details
 - Low severity hook event was not generated when the same url can process multiple request methods
