@@ -6,6 +6,7 @@ import com.newrelic.api.agent.security.instrumentation.helpers.LowSeverityHelper
 import com.newrelic.api.agent.security.instrumentation.helpers.ServletHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.SecurityMetaData;
+import com.newrelic.api.agent.security.schema.StringUtils;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
 import com.newrelic.api.agent.security.schema.operation.SecureCookieOperation;
 import com.newrelic.api.agent.weaver.MatchType;
@@ -43,8 +44,10 @@ public class HttpServletResponse_Instrumentation {
                 return null;
             }
 
-            boolean isSecure = "https".equals(securityMetaData.getRequest().getProtocol()) || cookie.getSecure();
-            SecureCookieOperation operation = new SecureCookieOperation(Boolean.toString(isSecure), className, methodName);
+            boolean isSecure = cookie.getSecure();
+            boolean isHttpOnly = cookie.isHttpOnly();
+            boolean sameSiteStrict = StringUtils.containsIgnoreCase(cookie.getValue(), "SameSite=Strict");
+            SecureCookieOperation operation = new SecureCookieOperation(Boolean.toString(isSecure && isHttpOnly && sameSiteStrict), isSecure, isHttpOnly, sameSiteStrict, cookie.getValue(), className, methodName);
             operation.setLowSeverityHook(true);
             NewRelicSecurity.getAgent().registerOperation(operation);
 
