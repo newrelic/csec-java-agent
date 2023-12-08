@@ -21,6 +21,7 @@ import com.newrelic.api.agent.security.schema.operation.RXSSOperation;
 import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.grizzly.http.util.Header;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
+import org.glassfish.jersey.server.ContainerResponse;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -152,7 +153,7 @@ public class JerseyTests {
 
         assertEquals(HttpRequestHelper.CONTAINER_RESPONSE_METHOD_NAME, operation.getMethodName());
         assertEquals(VulnerabilityCaseType.REFLECTED_XSS, operation.getCaseType());
-
+        assertEquals(ContainerResponse.class.getName(), operation.getClassName());
         // assert the security request;
         HttpRequest request = operation.getRequest();
         assertFalse(request.isEmpty());
