@@ -26,7 +26,7 @@ import static com.newrelic.api.agent.security.instrumentation.helpers.ServletHel
 
 @Weave(type = MatchType.ExactClass, originalName = "org.glassfish.jersey.server.ContainerResponse")
 public abstract class ContainerResponse_Instrumentation {
-
+    private boolean closed = Weaver.callOriginal();
     ContainerResponse_Instrumentation(final ContainerRequest requestContext, final OutboundJaxrsResponse response) {
         if(response != null && response.getContext() != null && response.getContext().hasEntity()){
             Object responseObject = response.getContext().getEntity();
@@ -40,7 +40,7 @@ public abstract class ContainerResponse_Instrumentation {
         boolean isLockAcquired = false;
         try {
             isLockAcquired = GenericHelper.acquireLockIfPossible(SERVLET_GET_IS_OPERATION_LOCK);
-            if(isLockAcquired) {
+            if(isLockAcquired && !closed) {
                 HttpRequestHelper.postProcessSecurityHook(this.getClass().getName(), getWrappedMessageContext());
             }
             Weaver.callOriginal();
