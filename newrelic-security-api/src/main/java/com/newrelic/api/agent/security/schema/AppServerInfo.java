@@ -6,6 +6,8 @@ public class AppServerInfo {
 
     String serverBaseDirectory;
 
+    String sameSiteCookies;
+
     public String getApplicationDirectory() {
         return applicationDirectory;
     }
@@ -20,5 +22,13 @@ public class AppServerInfo {
 
     public void setServerBaseDirectory(String serverBaseDirectory) {
         this.serverBaseDirectory = serverBaseDirectory;
+    }
+
+    public String getSameSiteCookies() {
+        return sameSiteCookies;
+    }
+
+    public void setSameSiteCookies(String sameSiteCookies) {
+        this.sameSiteCookies = sameSiteCookies;
     }
 }

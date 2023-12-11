@@ -144,4 +144,9 @@ public class Agent implements SecurityAgent {
     public void setServerInfo(String key, String value) {
         //TODO Ishika please fill this as per your needs
     }
+
+    @Override
+    public String getServerInfo(String key) {
+        return null;
+    }
 }

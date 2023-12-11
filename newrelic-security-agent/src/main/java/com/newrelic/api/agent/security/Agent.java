@@ -513,9 +513,27 @@ public class Agent implements SecurityAgent {
             case IUtilConstants.SERVER_BASE_DIRECTORY:
                 appServerInfo.setServerBaseDirectory(value);
                 break;
+            case IUtilConstants.SAME_SITE_COOKIES:
+                appServerInfo.setSameSiteCookies(value);
+                break;
             default:
                 break;
         }
 
+    }
+
+    @Override
+    public String getServerInfo(String key) {
+        AppServerInfo appServerInfo = AppServerInfoHelper.getAppServerInfo();
+        switch (key) {
+            case IUtilConstants.APPLICATION_DIRECTORY:
+                return appServerInfo.getApplicationDirectory();
+            case IUtilConstants.SERVER_BASE_DIRECTORY:
+                return appServerInfo.getServerBaseDirectory();
+            case IUtilConstants.SAME_SITE_COOKIES:
+                return appServerInfo.getSameSiteCookies();
+            default:
+                return null;
+        }
     }
 }

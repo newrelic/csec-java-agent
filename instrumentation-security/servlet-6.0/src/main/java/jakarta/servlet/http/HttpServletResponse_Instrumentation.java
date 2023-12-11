@@ -47,7 +47,12 @@ public class HttpServletResponse_Instrumentation {
             //"https".equals(securityMetaData.getRequest().getProtocol()) ||
             boolean isSecure = cookie.getSecure();
             boolean isHttpOnly = cookie.isHttpOnly();
-            boolean sameSiteStrict = StringUtils.containsIgnoreCase(cookie.getValue(), "SameSite=Strict");
+            boolean sameSiteStrict = true;
+            if(NewRelicSecurity.getAgent().getServerInfo("SAME_SITE_COOKIES") != null){
+                sameSiteStrict = StringUtils.equals(NewRelicSecurity.getAgent().getServerInfo("SAME_SITE_COOKIES"), "Strict");
+            } else if(StringUtils.containsIgnoreCase(cookie.getValue(), "SameSite")) {
+                sameSiteStrict = StringUtils.containsIgnoreCase(cookie.getValue(), "SameSite=Strict");
+            }
             SecureCookieOperation operation = new SecureCookieOperation(Boolean.toString(isSecure && isHttpOnly && sameSiteStrict), isSecure, isHttpOnly, sameSiteStrict, cookie.getValue(), className, methodName);
             operation.setLowSeverityHook(true);
             NewRelicSecurity.getAgent().registerOperation(operation);

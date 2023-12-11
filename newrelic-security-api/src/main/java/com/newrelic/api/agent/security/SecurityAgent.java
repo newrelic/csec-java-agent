@@ -47,4 +47,6 @@ public interface SecurityAgent {
     boolean isLowPriorityInstrumentationEnabled();
 
     void setServerInfo(String key, String value);
+
+    String getServerInfo(String key);
 }
