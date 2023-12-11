@@ -2,6 +2,7 @@ package com.newrelic.api.agent.security.schema;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import static com.newrelic.api.agent.security.schema.StringUtils.splitByWholeSeparatorWorker;
 
 public class StringUtilsTest {
     @Test
@@ -101,11 +102,21 @@ public class StringUtilsTest {
 
     @Test
     public void testSplitByWholeSeparatorWorker(){
-        Assertions.assertNull(StringUtils.splitByWholeSeparatorWorker(null, "", 1, false), "Should return false");
-        Assertions.assertArrayEquals(StringUtils.splitByWholeSeparatorWorker(StringUtils.EMPTY, "", 1, false), new String[]{},"Should return false");
-        Assertions.assertTrue(StringUtils.isBlank("  "), "Should return false");
-        Assertions.assertFalse(StringUtils.isBlank("some"), "Should return true");
-        Assertions.assertFalse(StringUtils.isBlank(" some "), "Should return true");
+        Assertions.assertNull(splitByWholeSeparatorWorker(null, "", 1, false), "Should return false");
+        Assertions.assertArrayEquals(splitByWholeSeparatorWorker(StringUtils.EMPTY, "", 1, false), new String[]{});
+        Assertions.assertArrayEquals(splitByWholeSeparatorWorker("  ", ":",-1, false), new String[]{"  "});
+        Assertions.assertArrayEquals(splitByWholeSeparatorWorker("some:1:1:val",":",0,false), new String[]{"some","1","1","val"});
+        Assertions.assertArrayEquals(splitByWholeSeparatorWorker("some:1:1:val",":",0,true), new String[]{"some","1","1","val"});
+        Assertions.assertArrayEquals(splitByWholeSeparatorWorker("some:1:1:val",":",1,false), new String[]{"some:1:1:val"});
+        Assertions.assertArrayEquals(splitByWholeSeparatorWorker("some:1:1:val",":",1,true), new String[]{"some:1:1:val"});
+
+        Assertions.assertArrayEquals(splitByWholeSeparatorWorker("some:1::val",":",0,false), new String[]{"some","1","val"});
+        Assertions.assertArrayEquals(splitByWholeSeparatorWorker("some:1::val",":",0,true), new String[]{"some","1","","val"});
+        Assertions.assertArrayEquals(splitByWholeSeparatorWorker("some:1::val",":",1,false), new String[]{"some:1::val"});
+        Assertions.assertArrayEquals(splitByWholeSeparatorWorker("some:1::val",":",1,true), new String[]{"some:1::val"});
+
+        Assertions.assertArrayEquals(splitByWholeSeparatorWorker("some:1::val",":",2,false), new String[]{"some","1::val"});
+        Assertions.assertArrayEquals(splitByWholeSeparatorWorker("some:1::val",":",2,true), new String[]{"some","1::val"});
     }
 
 
