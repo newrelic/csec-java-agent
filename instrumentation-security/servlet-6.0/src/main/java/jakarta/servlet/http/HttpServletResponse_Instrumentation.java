@@ -49,7 +49,7 @@ public class HttpServletResponse_Instrumentation {
             boolean isHttpOnly = cookie.isHttpOnly();
             boolean sameSiteStrict = true;
             if(NewRelicSecurity.getAgent().getServerInfo("SAME_SITE_COOKIES") != null){
-                sameSiteStrict = StringUtils.equals(NewRelicSecurity.getAgent().getServerInfo("SAME_SITE_COOKIES"), "Strict");
+                sameSiteStrict = StringUtils.equalsIgnoreCase(NewRelicSecurity.getAgent().getServerInfo("SAME_SITE_COOKIES"), "Strict");
             } else if(StringUtils.containsIgnoreCase(cookie.getValue(), "SameSite")) {
                 sameSiteStrict = StringUtils.containsIgnoreCase(cookie.getValue(), "SameSite=Strict");
             }
