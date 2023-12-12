@@ -14,6 +14,8 @@ import akka.http.scaladsl.model.headers.RawHeader;
 import akka.http.scaladsl.settings.ConnectionPoolSettings;
 import akka.http.scaladsl.settings.ServerSettings;
 import akka.stream.Materializer;
+import com.newrelic.api.agent.NewRelic;
+import com.newrelic.api.agent.Segment;
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.security.instrumentation.helpers.ServletHelper;
@@ -33,6 +35,13 @@ import java.net.URI;
 
 @Weave(type = MatchType.ExactClass, originalName = "akka.http.scaladsl.HttpExt")
 public class HttpExt_Instrumentation {
+
+    // This method only exists to ensure that this weave module doesn't match for versions of akka-http-core-2.13 prior to 10.2.0.
+    // That said, as of 10.2.0 bind, bindAndHandle, bindAndHandleSync, and bindAndHandleAsync were all deprecated in favor of newServerAt:
+    //   @deprecated("Use Http.newServerAt(...)...connectionSource() to create a source that can be materialized to a binding.", since = "10.2.0")
+    public ServerBuilder newServerAt(String interfaceString, int port) {
+        return Weaver.callOriginal();
+    }
 
     public Future<Http.ServerBinding> bindAndHandleAsync(
             Function1<HttpRequest, Future<HttpResponse>> handler,
@@ -60,10 +69,9 @@ public class HttpExt_Instrumentation {
         return Weaver.callOriginal();
     }
 
-
-    // We are weaving the singleRequestImpl method here rather than just singleRequest because the javadsl only flows through here
-    public Future<HttpResponse> singleRequestImpl(HttpRequest httpRequest, HttpsConnectionContext connectionContext, ConnectionPoolSettings poolSettings,
-                                                  LoggingAdapter loggingAdapter) {
+    public Future<HttpResponse> singleRequest(HttpRequest httpRequest, HttpsConnectionContext connectionContext, ConnectionPoolSettings poolSettings,
+            LoggingAdapter loggingAdapter) {
+        final Segment segment = NewRelic.getAgent().getTransaction().startSegment("Akka", "singleRequest");
 
         boolean isLockAcquired = acquireLockIfPossible();
         AbstractOperation operation = null;

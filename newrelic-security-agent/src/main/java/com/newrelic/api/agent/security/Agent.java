@@ -17,12 +17,11 @@ import com.newrelic.agent.security.intcodeagent.properties.BuildInfo;
 import com.newrelic.agent.security.intcodeagent.schedulers.FileCleaner;
 import com.newrelic.agent.security.intcodeagent.schedulers.SchedulerHelper;
 import com.newrelic.agent.security.intcodeagent.utils.CommonUtils;
-import com.newrelic.agent.security.intcodeagent.websocket.EventSendPool;
-import com.newrelic.agent.security.intcodeagent.websocket.JsonConverter;
-import com.newrelic.agent.security.intcodeagent.websocket.WSClient;
-import com.newrelic.agent.security.intcodeagent.websocket.WSReconnectionST;
+import com.newrelic.agent.security.intcodeagent.websocket.*;
+import com.newrelic.agent.security.util.IUtilConstants;
 import com.newrelic.api.agent.NewRelic;
 import com.newrelic.api.agent.Transaction;
+import com.newrelic.api.agent.security.instrumentation.helpers.InstrumentedClass;
 import com.newrelic.api.agent.security.instrumentation.helpers.LowSeverityHelper;
 import com.newrelic.api.agent.security.schema.*;
 import com.newrelic.api.agent.security.schema.operation.RXSSOperation;
@@ -31,6 +30,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
 import java.lang.instrument.Instrumentation;
+import java.lang.instrument.UnmodifiableClassException;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -488,5 +488,18 @@ public class Agent implements SecurityAgent {
     @Override
     public boolean isLowPriorityInstrumentationEnabled() {
         return NewRelic.getAgent().getConfig().getValue(LowSeverityHelper.LOW_SEVERITY_HOOKS_ENABLED, LowSeverityHelper.DEFAULT);
+    }
+
+    @Override
+    public void retransformUninstrumentedClass(Class<?> classToRetransform) {
+        if (!classToRetransform.isAnnotationPresent(InstrumentedClass.class)) {
+            try {
+                getInstrumentation().retransformClasses(classToRetransform);
+            } catch (UnmodifiableClassException e) {
+                NewRelic.getAgent().getLogger().log(Level.FINE, "Unable to retransform class ", classToRetransform, " : ", e.getMessage());
+            }
+        } else {
+            NewRelic.getAgent().getLogger().log(Level.FINER, "Class ", classToRetransform, " already instrumented.");
+        }
     }
 }

@@ -8,10 +8,9 @@
 package com.nr.agent.security.instrumentation.akka.http.core_10
 
 import akka.actor.ActorSystem
-import akka.http.scaladsl.Http
+import akka.http.scaladsl.{AkkaCoreUtils, Http}
 import akka.http.scaladsl.model.{HttpHeader, HttpRequest, HttpResponse}
 import akka.stream.ActorMaterializer
-import com.newrelic.agent.security.instrumentation.akka.core.AkkaCoreUtils
 import com.newrelic.agent.security.introspec.{InstrumentationTestConfig, SecurityInstrumentationTestRunner, SecurityIntrospector}
 import com.newrelic.api.agent.Trace
 import com.newrelic.api.agent.security.instrumentation.helpers.ServletHelper

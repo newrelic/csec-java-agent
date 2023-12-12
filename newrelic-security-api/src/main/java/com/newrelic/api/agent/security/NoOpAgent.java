@@ -78,4 +78,7 @@ class NoOpAgent implements SecurityAgent {
         return false;
     }
 
+    @Override
+    public void retransformUninstrumentedClass(Class<?> classToRetransform) {}
+
 }

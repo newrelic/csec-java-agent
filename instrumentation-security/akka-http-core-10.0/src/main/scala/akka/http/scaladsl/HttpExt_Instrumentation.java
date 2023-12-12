@@ -12,6 +12,7 @@ import akka.http.scaladsl.model.HttpRequest;
 import akka.http.scaladsl.model.HttpResponse;
 import akka.http.scaladsl.model.headers.RawHeader;
 import akka.http.scaladsl.settings.ConnectionPoolSettings;
+import akka.http.scaladsl.settings.ServerSettings;
 import akka.stream.Materializer;
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
@@ -25,13 +26,39 @@ import com.newrelic.api.agent.security.utils.SSRFUtils;
 import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
-import com.newrelic.agent.security.instrumentation.akka.core.AkkaCoreUtils;
+import scala.Function1;
 import scala.concurrent.Future;
 
 import java.net.URI;
 
 @Weave(type = MatchType.ExactClass, originalName = "akka.http.scaladsl.HttpExt")
 public class HttpExt_Instrumentation {
+
+    public Future<Http.ServerBinding> bindAndHandleAsync(
+            Function1<HttpRequest, Future<HttpResponse>> handler,
+            String interfaceString, int port,
+            ConnectionContext connectionContext,
+            ServerSettings settings, int parallelism,
+            LoggingAdapter adapter, Materializer mat) {
+
+        AkkaAsyncRequestHandler wrapperHandler = new AkkaAsyncRequestHandler(handler, mat);
+        handler = wrapperHandler;
+
+        return Weaver.callOriginal();
+    }
+
+    public Future<Http.ServerBinding> bindAndHandleSync(
+            Function1<HttpRequest, HttpResponse> handler,
+            String interfaceString, int port,
+            ConnectionContext connectionContext,
+            ServerSettings settings,
+            LoggingAdapter adapter, Materializer mat) {
+
+        AkkaSyncRequestHandler wrapperHandler = new AkkaSyncRequestHandler(handler);
+        handler = wrapperHandler;
+
+        return Weaver.callOriginal();
+    }
 
     // We are weaving the singleRequestImpl method here rather than just singleRequest because the javadsl only flows through here
     public Future<HttpResponse> singleRequest(HttpRequest httpRequest, HttpsConnectionContext connectionContext, ConnectionPoolSettings settings,

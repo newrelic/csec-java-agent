@@ -45,4 +45,6 @@ public interface SecurityAgent {
     Instrumentation getInstrumentation();
 
     boolean isLowPriorityInstrumentationEnabled();
+
+    void retransformUninstrumentedClass(Class<?> classToRetransform);
 }
