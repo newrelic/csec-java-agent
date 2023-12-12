@@ -4,6 +4,7 @@ Noteworthy changes to the agent are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+
 ## [1.0.8-public-preview] TO BE DECIDED
 ### Changes
 - Support for stored procedure call detection in SQL events
@@ -16,7 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Low severity hook event was not generated when the same url can process multiple request methods
 - Detection of server app directory to mitigate false positives for File Access vulnerability
 
-## [1.0.7-public-preview] - 2023-11-30
+## [1.0.7-public-preview] - 2023-12-6
 ### Changes
 - Async HttpClient v2+ Support: The security agent now also supports Async HTTP client version 2 and above
 - Sun Net HTTP Server support: The security agent now supports Sun Net HTTP Server
