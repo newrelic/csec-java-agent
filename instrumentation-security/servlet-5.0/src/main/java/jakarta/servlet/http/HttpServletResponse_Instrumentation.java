@@ -52,7 +52,7 @@ public class HttpServletResponse_Instrumentation {
             } else if(StringUtils.containsIgnoreCase(cookie.getValue(), "SameSite")) {
                 sameSiteStrict = StringUtils.containsIgnoreCase(cookie.getValue(), "SameSite=Strict");
             }
-            SecureCookieOperation operation = new SecureCookieOperation(Boolean.toString(isSecure && isHttpOnly && sameSiteStrict), isSecure, isHttpOnly, sameSiteStrict, cookie.getValue(), className, methodName);
+            SecureCookieOperation operation = new SecureCookieOperation(Boolean.toString(isSecure), isSecure, isHttpOnly, sameSiteStrict, cookie.getValue(), className, methodName);
             operation.setLowSeverityHook(true);
             NewRelicSecurity.getAgent().registerOperation(operation);
 

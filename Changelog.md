@@ -10,7 +10,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Support for extracting environment variables in case of Remote Code Execution events
 - Support for executing script file analysis in case of Remote Code Execution events
 - Enabled the transformation of the low-priority instrumentation module by default in case of IAST
-- SecureCookie Vulnerabilities now take httpOnly and SameSite=Strict into account along with secure flag
 - SecureCookie schema check has been removed
 ### Fixes
 - Incorrect user file details in the vulnerability details
