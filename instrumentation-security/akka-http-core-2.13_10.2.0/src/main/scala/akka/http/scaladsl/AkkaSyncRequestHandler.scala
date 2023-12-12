@@ -14,7 +14,7 @@ import scala.runtime.AbstractFunction1
 
 class AkkaSyncRequestHandler(handler: HttpRequest ⇒ HttpResponse) extends AbstractFunction1[HttpRequest, HttpResponse] {
 
-  @Trace
+  @Trace(dispatcher = true)
   override def apply(param: HttpRequest): HttpResponse = {
 
     var body: StringBuilder = new StringBuilder();

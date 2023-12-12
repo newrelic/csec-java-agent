@@ -16,7 +16,7 @@ import scala.runtime.AbstractFunction1
 
 class AkkaAsyncRequestHandler(handler: HttpRequest ⇒ Future[HttpResponse])(implicit materializer: Materializer) extends AbstractFunction1[HttpRequest, Future[HttpResponse]] {
 
-  @Trace
+  @Trace(dispatcher = true)
   override def apply(param: HttpRequest): Future[HttpResponse] = {
 
     var futureResponse: Future[HttpResponse] = null
