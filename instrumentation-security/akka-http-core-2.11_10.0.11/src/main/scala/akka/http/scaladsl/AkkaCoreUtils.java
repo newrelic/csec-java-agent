@@ -4,9 +4,12 @@ import akka.http.javadsl.model.HttpHeader;
 import akka.http.scaladsl.model.HttpRequest;
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
+import com.newrelic.api.agent.security.instrumentation.helpers.LowSeverityHelper;
 import com.newrelic.api.agent.security.instrumentation.helpers.ServletHelper;
 import com.newrelic.api.agent.security.schema.AgentMetaData;
 import com.newrelic.api.agent.security.schema.SecurityMetaData;
+import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
+import com.newrelic.api.agent.security.schema.operation.RXSSOperation;
 import com.newrelic.api.agent.security.schema.policy.AgentPolicy;
 
 import java.util.Enumeration;
@@ -53,8 +56,31 @@ public class AkkaCoreUtils {
         return false;
     }
 
-    public static void preProcessHttpRequest (HttpRequest httpRequest, String requestBody) {
-        boolean isServletLockAcquired = acquireServletLockIfPossible();
+    public static void postProcessHttpRequest(Boolean isServletLockAcquired, String className, String methodName) {
+        try {
+            if(!isServletLockAcquired || !NewRelicSecurity.isHookProcessingActive()){
+                return;
+            }
+            LowSeverityHelper.addRrequestUriToEventFilter(NewRelicSecurity.getAgent().getSecurityMetaData().getRequest());
+
+            RXSSOperation rxssOperation = new RXSSOperation(NewRelicSecurity.getAgent().getSecurityMetaData().getRequest(),
+                    NewRelicSecurity.getAgent().getSecurityMetaData().getResponse(),
+                    className, methodName);
+            NewRelicSecurity.getAgent().registerOperation(rxssOperation);
+            ServletHelper.tmpFileCleanUp(NewRelicSecurity.getAgent().getSecurityMetaData().getFuzzRequestIdentifier().getTempFiles());
+        } catch (Throwable e) {
+            if(e instanceof NewRelicSecurityException){
+                e.printStackTrace();
+                throw e;
+            }
+        } finally {
+            if(isServletLockAcquired){
+                releaseServletLock();
+            }
+        }
+    }
+
+    public static void preProcessHttpRequest (Boolean isServletLockAcquired, HttpRequest httpRequest, String requestBody) {
         if(!isServletLockAcquired) {
             return;
         }
@@ -89,11 +115,6 @@ public class AkkaCoreUtils {
             securityAgentMetaData.setServiceTrace(Thread.currentThread().getStackTrace());
             securityRequest.setRequestParsed(true);
         } catch (Throwable ignored){}
-        finally {
-            if(isServletLockAcquired()){
-                releaseServletLock();
-            }
-        }
     }
 
     public static String getTraceHeader(Map<String, String> headers) {

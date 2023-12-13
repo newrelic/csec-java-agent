@@ -54,7 +54,7 @@ public class HttpExt_Instrumentation {
             ServerSettings settings,
             LoggingAdapter adapter, Materializer mat) {
 
-        AkkaSyncRequestHandler wrapperHandler = new AkkaSyncRequestHandler(handler);
+        AkkaSyncRequestHandler wrapperHandler = new AkkaSyncRequestHandler(handler, mat);
         handler = wrapperHandler;
 
         return Weaver.callOriginal();

@@ -9,6 +9,9 @@ package akka.http.scaladsl
 
 import akka.http.scaladsl.model.{HttpRequest, HttpResponse}
 import akka.stream.Materializer
+import akka.stream.javadsl.Source
+import akka.stream.scaladsl.Sink
+import akka.util.ByteString
 import com.newrelic.api.agent.Trace
 
 import scala.concurrent.Future
@@ -21,12 +24,17 @@ class AkkaAsyncRequestHandler(handler: HttpRequest ⇒ Future[HttpResponse])(imp
 
     var futureResponse: Future[HttpResponse] = null
     var body : StringBuilder = new StringBuilder();
-//    param.entity.getDataBytes().runWith {
-//      Sink.foreach[ByteString]((data) => body.append(data.utf8String))
-//    };
+    val dataBytes: Source[ByteString, _] = param.entity.getDataBytes()
+    dataBytes.runWith(Sink.foreach[ByteString] { byteString =>
+      val chunk = byteString.utf8String
+      body.append(chunk)
+    }, materializer)
 
-    AkkaCoreUtils.preProcessHttpRequest(param, body.toString());
+    val isLockAquired = AkkaCoreUtils.acquireServletLockIfPossible();
+    AkkaCoreUtils.preProcessHttpRequest(isLockAquired, param, body.toString());
     futureResponse = handler.apply(param)
+
+    AkkaCoreUtils.postProcessHttpRequest(isLockAquired, this.getClass.getName, "apply");
     futureResponse
   }
 }

@@ -20,7 +20,7 @@ public class IncomingConnection_Instrumentation {
 
     public void handleWithSyncHandler(Function1<HttpRequest, HttpResponse> func, Materializer mat) {
 
-        AkkaSyncRequestHandler wrapperHandler = new AkkaSyncRequestHandler(func);
+        AkkaSyncRequestHandler wrapperHandler = new AkkaSyncRequestHandler(func, mat);
         func = wrapperHandler;
 
         Weaver.callOriginal();

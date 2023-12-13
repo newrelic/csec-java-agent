@@ -15,12 +15,14 @@ import com.newrelic.api.agent.weaver.Weaver;
 import scala.Function1;
 import scala.concurrent.Future;
 
+import java.net.InetSocketAddress;
+
 @Weave(originalName = "akka.http.scaladsl.Http$IncomingConnection")
 public class IncomingConnection_Instrumentation {
 
     public void handleWithSyncHandler(Function1<HttpRequest, HttpResponse> func, Materializer mat) {
 
-        AkkaSyncRequestHandler wrapperHandler = new AkkaSyncRequestHandler(func);
+        AkkaSyncRequestHandler wrapperHandler = new AkkaSyncRequestHandler(func, mat);
         func = wrapperHandler;
 
         Weaver.callOriginal();
@@ -32,6 +34,14 @@ public class IncomingConnection_Instrumentation {
         func = wrapperHandler;
 
         Weaver.callOriginal();
+    }
+
+    public InetSocketAddress remoteAddress() {
+        return Weaver.callOriginal();
+    }
+
+    public InetSocketAddress localAddress() {
+        return Weaver.callOriginal();
     }
 
 
