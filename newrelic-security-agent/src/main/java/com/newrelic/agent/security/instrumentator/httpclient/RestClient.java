@@ -114,7 +114,7 @@ public class RestClient {
         return clientThreadLocal.get();
     }
 
-    public void fireRequest(Request request, int repeatCount) throws InterruptedIOException {
+    public void fireRequest(Request request, int repeatCount, String fuzzRequestId) {
         OkHttpClient client = clientThreadLocal.get();
 
         logger.log(LogLevel.FINER, String.format(FIRING_REQUEST_METHOD_S, request.method()), RestClient.class.getName());
@@ -131,10 +131,15 @@ public class RestClient {
             }
         } catch (InterruptedIOException e){
             if(repeatCount >= 0){
-                fireRequest(request, --repeatCount);
+                fireRequest(request, --repeatCount, fuzzRequestId);
             }
         } catch (IOException e) {
             logger.log(LogLevel.FINER, String.format(CALL_FAILED_REQUEST_S_REASON, request), e, RestClient.class.getName());
+            logger.postLogMessageIfNecessary(LogLevel.WARNING,
+                    String.format(CALL_FAILED_REQUEST_S_REASON, fuzzRequestId),
+                    e, RestRequestProcessor.class.getName());
+
+            // TODO: Add to fuzz fail count in HC and remove FuzzFailEvent if not needed.
             FuzzFailEvent fuzzFailEvent = new FuzzFailEvent(AgentInfo.getInstance().getApplicationUUID());
             fuzzFailEvent.setFuzzHeader(request.header(ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID));
             EventSendPool.getInstance().sendEvent(fuzzFailEvent);
