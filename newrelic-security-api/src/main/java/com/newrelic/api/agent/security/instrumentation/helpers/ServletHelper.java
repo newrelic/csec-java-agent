@@ -30,6 +30,40 @@ public class ServletHelper {
     public static final String NR_SEC_HTTP_SERVLET_RESPONSE_ATTRIB_NAME = "NR-CSEC-HTTP-SERVLET-RESPONSE-";
 
     private static Set<String> filesToRemove = ConcurrentHashMap.newKeySet();;
+    private static final Set<String> unsupportedContentType = ConcurrentHashMap.newKeySet();
+
+    static {
+        unsupportedContentType.add("application/zip");
+        unsupportedContentType.add("application/epub+zip");
+        unsupportedContentType.add("application/gzip");
+        unsupportedContentType.add("application/java-archive");
+        unsupportedContentType.add("application/msword");
+        unsupportedContentType.add("application/octet-stream");
+        unsupportedContentType.add("application/ogg");
+        unsupportedContentType.add("application/pdf");
+        unsupportedContentType.add("application/rtf");
+        unsupportedContentType.add("application/vnd.amazon.ebook");
+        unsupportedContentType.add("application/vnd.apple.installer+xml");
+        unsupportedContentType.add("application/vnd.ms-excel");
+        unsupportedContentType.add("application/vnd.ms-fontobject");
+        unsupportedContentType.add("application/vnd.ms-powerpoint");
+        unsupportedContentType.add("application/vnd.oasis.opendocument.presentation");
+        unsupportedContentType.add("application/vnd.oasis.opendocument.spreadsheet");
+        unsupportedContentType.add("application/vnd.oasis.opendocument.text");
+        unsupportedContentType.add("application/vnd.openxmlformats-officedocument.presentationml.presentation");
+        unsupportedContentType.add("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        unsupportedContentType.add("application/vnd.openxmlformats-officedocument.wordprocessingml.document");
+        unsupportedContentType.add("application/vnd.rar");
+        unsupportedContentType.add("application/vnd.visio");
+        unsupportedContentType.add("application/x-7z-compressed");
+        unsupportedContentType.add("application/x-abiword");
+        unsupportedContentType.add("application/x-bzip");
+        unsupportedContentType.add("application/x-bzip2");
+        unsupportedContentType.add("application/x-cdf");
+        unsupportedContentType.add("application/x-freearc");
+        unsupportedContentType.add("application/x-tar");
+        unsupportedContentType.add("text/calendar");
+    }
 
     public static K2RequestIdentifier parseFuzzRequestIdentifierHeader(String requestHeaderVal) {
         K2RequestIdentifier k2RequestIdentifierInstance = new K2RequestIdentifier();
@@ -117,6 +151,9 @@ public class ServletHelper {
             return false;
         }
         responseContentType =  responseContentType.toLowerCase();
-        return StringUtils.startsWithAny(responseContentType, "audio/", "video/", "image/");
+        if(StringUtils.startsWithAny(responseContentType, "audio/", "video/", "image/", "font/")){
+            return true;
+        }
+        return unsupportedContentType.contains(responseContentType);
     }
 }
