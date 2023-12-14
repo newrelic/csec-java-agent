@@ -9,10 +9,14 @@ import com.newrelic.agent.security.intcodeagent.filelogging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.models.FuzzRequestBean;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.IntCodeControlCommand;
 import com.newrelic.agent.security.intcodeagent.websocket.WSUtils;
+import com.newrelic.api.agent.security.instrumentation.helpers.GrpcClientRequestReplayHelper;
+import com.newrelic.api.agent.security.schema.ControlCommandDto;
 import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import okhttp3.Request;
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.Callable;
 
 /**
@@ -57,17 +61,41 @@ public class RestRequestProcessor implements Callable<Boolean> {
             if (WSUtils.getInstance().isReconnecting()) {
                    synchronized (WSUtils.getInstance()) {
                     RestRequestThreadPool.getInstance().isWaiting().set(true);
+                    GrpcClientRequestReplayHelper.getInstance().isWaiting().set(true);
                     WSUtils.getInstance().wait();
                     RestRequestThreadPool.getInstance().isWaiting().set(false);
+                    GrpcClientRequestReplayHelper.getInstance().isWaiting().set(false);
                 }
             }
             String req = StringUtils.replace(controlCommand.getArguments().get(0), NR_CSEC_VALIDATOR_HOME_TMP, OsVariablesInstance.getInstance().getOsVariables().getTmpDirectory());
             httpRequest = objectMapper.readValue(req, FuzzRequestBean.class);
             httpRequest.getHeaders().put(GenericHelper.CSEC_PARENT_ID, controlCommand.getId());
-            RestRequestThreadPool.getInstance().removeFromProcessedCC(controlCommand.getId());
-            Request request = RequestUtils.generateK2Request(httpRequest);
-            if(request != null) {
-                RestClient.getInstance().fireRequest(request, repeatCount, controlCommand.getId());
+            if (httpRequest.getIsGrpc()){
+                GrpcClientRequestReplayHelper.getInstance().getPendingIds().add(controlCommand.getId());
+                GrpcClientRequestReplayHelper.getInstance().removeFromProcessedCC(controlCommand.getId());
+            } else {
+                RestRequestThreadPool.getInstance().getPendingIds().add(controlCommand.getId());
+                RestRequestThreadPool.getInstance().removeFromProcessedCC(controlCommand.getId());
+            }
+            httpRequest.setReflectedMetaData(controlCommand.getReflectedMetaData());
+
+            if (httpRequest.getIsGrpc()){
+                List<String> payloadList = new ArrayList<>();
+                try{
+                    List<?> list = objectMapper.readValue(String.valueOf(httpRequest.getBody()), List.class);
+                    for (Object o : list) {
+                        payloadList.add(objectMapper.writeValueAsString(o));
+                    }
+                    System.out.println("--> "+ payloadList);
+                } catch (Throwable ignored) {
+                }
+                MonitorGrpcFuzzFailRequestQueueThread.submitNewTask();
+                GrpcClientRequestReplayHelper.getInstance().addToRequestQueue(new ControlCommandDto(controlCommand.getId(), httpRequest, payloadList));
+            } else {
+                Request request = RequestUtils.generateK2Request(httpRequest);
+                if(request != null) {
+                    RestClient.getInstance().fireRequest(request, repeatCount, controlCommand.getId());
+                }
             }
             return true;
         } catch (JsonProcessingException e){
@@ -91,7 +119,6 @@ public class RestRequestProcessor implements Callable<Boolean> {
     public static void processControlCommand(IntCodeControlCommand command) {
         RestRequestThreadPool.getInstance().executor
                 .submit(new RestRequestProcessor(command, MAX_REPETITION));
-        RestRequestThreadPool.getInstance().getPendingIds().add(command.getId());
     }
 
     public IntCodeControlCommand getControlCommand() {
