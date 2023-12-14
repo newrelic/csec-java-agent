@@ -247,28 +247,29 @@ public class Agent implements SecurityAgent {
 
     @Override
     public void registerOperation(AbstractOperation operation) {
+        // added to fetch request/response in case of grpc requests
+        SecurityMetaData securityMetaData = NewRelicSecurity.getAgent().getSecurityMetaData();
+        if (securityMetaData!=null && securityMetaData.getRequest().getIsGrpc()){
+            securityMetaData.getRequest().setBody(
+                    new StringBuilder(JsonConverter.toJSON(securityMetaData.getCustomAttribute(GrpcHelper.NR_SEC_GRPC_REQUEST_DATA, List.class))));
+            securityMetaData.getResponse().setResponseBody(
+                    new StringBuilder(JsonConverter.toJSON(securityMetaData.getCustomAttribute(GrpcHelper.NR_SEC_GRPC_RESPONSE_DATA, List.class))));
+        }
+        // end
+
         if (operation == null || operation.isEmpty()) {
             return;
         }
         String executionId = ExecutionIDGenerator.getExecutionId();
         operation.setExecutionId(executionId);
         operation.setStartTime(Instant.now().toEpochMilli());
-        SecurityMetaData securityMetaData = NewRelicSecurity.getAgent().getSecurityMetaData();
-        if(securityMetaData.getFuzzRequestIdentifier().getK2Request()){
+        if(securityMetaData!=null && securityMetaData.getFuzzRequestIdentifier().getK2Request()){
             logger.log(LogLevel.FINEST, String.format("New Event generation with id %s of type %s", operation.getExecutionId(), operation.getClass().getSimpleName()), Agent.class.getName());
         }
         if (operation instanceof RXSSOperation) {
             operation.setStackTrace(securityMetaData.getMetaData().getServiceTrace());
         } else {
             operation.setStackTrace(Thread.currentThread().getStackTrace());
-        }
-
-        // added to fetch request/response in case of grpc requests
-        if (securityMetaData.getRequest().getIsGrpc()){
-            securityMetaData.getRequest().setBody(
-                    new StringBuilder(JsonConverter.toJSON(securityMetaData.getCustomAttribute(GrpcHelper.NR_SEC_GRPC_REQUEST_DATA, List.class))));
-            securityMetaData.getResponse().setResponseBody(
-                    new StringBuilder(JsonConverter.toJSON(securityMetaData.getCustomAttribute(GrpcHelper.NR_SEC_GRPC_RESPONSE_DATA, List.class))));
         }
 
         if(checkIfNRGeneratedEvent(operation, securityMetaData)) {
