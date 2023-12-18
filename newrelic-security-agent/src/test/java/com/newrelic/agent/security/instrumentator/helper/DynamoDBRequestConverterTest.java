@@ -4,9 +4,13 @@ import com.newrelic.api.agent.security.schema.helper.DynamoDBRequest;
 import org.json.simple.JSONObject;
 import org.junit.Assert;
 import org.junit.Test;
+import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
+import software.amazon.awssdk.services.dynamodb.model.AttributeValueUpdate;
+import software.amazon.awssdk.services.dynamodb.model.ExpectedAttributeValue;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 
 import static com.newrelic.api.agent.security.schema.operation.DynamoDBOperation.Category.*;
@@ -19,14 +23,15 @@ public class DynamoDBRequestConverterTest {
     private final String OP = "operation";
     private final String EXPRESSION = "#col = :val";
     private final String TABLE = "test";
+    private final String stringVal = "value";
     private final String STMT = "select * from test;";
     private final DynamoDBRequest REQUEST =  new DynamoDBRequest(null, OP);
     @Test(expected = RuntimeException.class)
-    public void testConvert0(){
+    public void Convert0Test(){
         DynamoDBRequestConverter.convert(DQL, REQUEST);
     }
     @Test
-    public void testConvert1(){
+    public void Convert1Test(){
         REQUEST.setQuery(new DynamoDBRequest.Query());
         REQUEST.setQueryType(null);
         JSONObject obj = DynamoDBRequestConverter.convert(DQL, REQUEST);
@@ -34,14 +39,14 @@ public class DynamoDBRequestConverterTest {
         Assert.assertEquals("{}", obj.get(PAYLOAD).toString());
     }
     @Test
-    public void testConvert2(){
+    public void Convert2Test(){
         REQUEST.setQuery(new DynamoDBRequest.Query());
         JSONObject obj = DynamoDBRequestConverter.convert(DQL, REQUEST);
         Assert.assertEquals(OP, obj.get(PAYLOAD_TYPE));
         Assert.assertEquals("{}", obj.get(PAYLOAD).toString());
     }
     @Test
-    public void testConvert3(){
+    public void Convert3Test(){
         REQUEST.setQuery(new DynamoDBRequest.Query());
         JSONObject obj = DynamoDBRequestConverter.convert(DQL, REQUEST);
         Assert.assertEquals(OP, obj.get(PAYLOAD_TYPE));
@@ -49,7 +54,7 @@ public class DynamoDBRequestConverterTest {
     }
 
     @Test
-    public void testPartiQL(){
+    public void PartiQLTest(){
         DynamoDBRequest.Query query = new DynamoDBRequest.Query();
         query.setStatement(STMT);
         query.setParameters(new Object());
@@ -57,9 +62,51 @@ public class DynamoDBRequestConverterTest {
         JSONObject obj = DynamoDBRequestConverter.convert(PARTIQL, REQUEST);
         Assert.assertEquals(STMT, obj.get(QUERY));
     }
+    @Test
+    public void PartiQL1Test(){
+        DynamoDBRequest.Query query = new DynamoDBRequest.Query();
+        query.setStatement(STMT);
+
+        query.setParameters(Collections.singletonList(ExpectedAttributeValue.builder().value(AttributeValue.builder().s(stringVal).build()).build()));
+        REQUEST.setQuery(query);
+        JSONObject obj = DynamoDBRequestConverter.convert(PARTIQL, REQUEST);
+        Assert.assertEquals(STMT, obj.get(QUERY));
+
+        Object[] some = ((Object[])(obj.get(PARAMETERS)));
+        Assert.assertTrue(some[0] instanceof JSONObject);
+        Assert.assertEquals(stringVal, ((JSONObject)(some[0])).get("s"));
+    }
+    @Test
+    public void PartiQL2Test(){
+        DynamoDBRequest.Query query = new DynamoDBRequest.Query();
+        query.setStatement(STMT);
+
+        query.setParameters(Collections.singletonList(AttributeValue.builder().s(stringVal).build()));
+        REQUEST.setQuery(query);
+        JSONObject obj = DynamoDBRequestConverter.convert(PARTIQL, REQUEST);
+        Assert.assertEquals(STMT, obj.get(QUERY));
+
+        Object[] some = ((Object[])(obj.get(PARAMETERS)));
+        Assert.assertTrue(some[0] instanceof JSONObject);
+        Assert.assertEquals(stringVal, ((JSONObject)(some[0])).get("s"));
+    }
+    @Test
+    public void PartiQL3Test(){
+        DynamoDBRequest.Query query = new DynamoDBRequest.Query();
+        query.setStatement(STMT);
+
+        query.setParameters(Collections.singletonList(AttributeValueUpdate.builder().value(AttributeValue.builder().s(stringVal).build()).build()));
+        REQUEST.setQuery(query);
+        JSONObject obj = DynamoDBRequestConverter.convert(PARTIQL, REQUEST);
+        Assert.assertEquals(STMT, obj.get(QUERY));
+
+        Object[] some = ((Object[])(obj.get(PARAMETERS)));
+        Assert.assertTrue(some[0] instanceof JSONObject);
+        Assert.assertEquals(stringVal, ((JSONObject)(some[0])).get("s"));
+    }
 
     @Test
-    public void testConvertKeyEx(){
+    public void ConvertKeyExTest(){
         HashMap<String, String> map = new HashMap<>();
         map.put("key", "val");
         map.put("key1", "val1");
@@ -81,7 +128,7 @@ public class DynamoDBRequestConverterTest {
         Assert.assertEquals(list, new ArrayList<>(Arrays.asList((Object[]) payload.get("key"))));
     }
     @Test
-    public void testConvertItemEx(){
+    public void ConvertItemExTest(){
         HashMap<String, String> map = new HashMap<>();
         map.put("key", "val");
         map.put("key1", "val1");
@@ -100,7 +147,7 @@ public class DynamoDBRequestConverterTest {
         Assert.assertEquals(map, payload.get("item"));
     }
     @Test
-    public void testConvertExAttNames(){
+    public void ConvertExAttNamesTest(){
         HashMap<String, String> map = new HashMap<>();
         map.put("key", "val");
         map.put("key1", "val1");
@@ -119,7 +166,7 @@ public class DynamoDBRequestConverterTest {
         Assert.assertEquals(map, payload.get("expressionAttributeNames"));
     }
     @Test
-    public void testConvertExAttValues(){
+    public void ConvertExAttValuesTest(){
         HashMap<String, String> map = new HashMap<>();
         map.put("key", "val");
         map.put("key1", "val1");
@@ -138,7 +185,7 @@ public class DynamoDBRequestConverterTest {
         Assert.assertEquals(map, payload.get("expressionAttributeValues"));
     }
     @Test
-    public void testConvertAttToGet(){
+    public void ConvertAttToGetTest(){
         ArrayList<String> list1 = new ArrayList<>();
         list1.add("col1");
         list1.add("col2");
@@ -157,7 +204,7 @@ public class DynamoDBRequestConverterTest {
         Assert.assertEquals(list1, payload.get("attributesToGet"));
     }
     @Test
-    public void testConvertScanFilter(){
+    public void ConvertScanFilterTest(){
         HashMap<String, String> map = new HashMap<>();
         map.put("key", "val");
         map.put("key1", "val1");
@@ -176,7 +223,7 @@ public class DynamoDBRequestConverterTest {
         Assert.assertEquals(map, payload.get("scanFilter"));
     }
     @Test
-    public void testConvertQueryFilter(){
+    public void ConvertQueryFilterTest(){
         HashMap<String, String> map = new HashMap<>();
         map.put("key", "val");
         map.put("key1", "val1");
@@ -195,7 +242,7 @@ public class DynamoDBRequestConverterTest {
         Assert.assertEquals(map, payload.get("queryFilter"));
     }
     @Test
-    public void testConvertExpected(){
+    public void ConvertExpectedTest(){
         HashMap<String, String> map = new HashMap<>();
         map.put("key", "val");
         map.put("key1", "val1");
@@ -214,7 +261,7 @@ public class DynamoDBRequestConverterTest {
         Assert.assertEquals(map, payload.get("expected"));
     }
     @Test
-    public void testConvertAttUpdates(){
+    public void ConvertAttUpdatesTest(){
         HashMap<String, String> map = new HashMap<>();
         map.put("key", "val");
         map.put("key1", "val1");
@@ -234,7 +281,7 @@ public class DynamoDBRequestConverterTest {
     }
 
     @Test
-    public void testConvertParameters(){
+    public void ConvertParametersTest(){
         ArrayList<String> list1 = new ArrayList<>();
         list1.add("val1");
         list1.add("val2");
@@ -253,7 +300,7 @@ public class DynamoDBRequestConverterTest {
         Assert.assertEquals(list1, new ArrayList<>(Arrays.asList((Object[]) payload.get(PARAMETERS))));
     }
     @Test
-    public void testConvertAll(){
+    public void ConvertAllTest(){
         HashMap<String, String> map = new HashMap<>();
         map.put("key", "val");
 

@@ -1,11 +1,9 @@
 package com.newrelic.agent.security.instrumentator.dispatcher;
 
 import com.newrelic.agent.security.AgentInfo;
-import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.newrelic.agent.security.intcodeagent.models.collectorconfig.CollectorConfig;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.Identifier;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.IdentifierEnvs;
-import com.newrelic.agent.security.intcodeagent.models.javaagent.JavaAgentEventBean;
 import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.AgentMetaData;
@@ -19,22 +17,12 @@ import com.newrelic.api.agent.security.schema.operation.*;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.mockito.Mock;
 import org.mockito.Mockito;
 
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doReturn;
 
 public class DispatcherTest {
-
-    private final String CLASS_NAME = "className";
-    private final String METHOD_NAME = "methodName";
-    private final String header = "header";
-
-    @Mock
-    private FileLoggerThreadPool logger;
-
-
     @BeforeClass
     public static void beforeClass() {
         CollectorConfig collectorConfig = Mockito.mock(CollectorConfig.class);
@@ -477,6 +465,7 @@ public class DispatcherTest {
         doReturn(Mockito.mock(HttpRequest.class)).when(metaData).getRequest();
         doReturn(Mockito.mock(HttpResponse.class)).when(metaData).getResponse();
         doReturn(Mockito.mock(K2RequestIdentifier.class)).when(metaData).getFuzzRequestIdentifier();
+        String header = "header";
         doReturn(header).when(metaData).getCustomAttribute(GenericHelper.CSEC_PARENT_ID, String.class);
         doReturn(header).when(metaData).getCustomAttribute("trace.id", String.class);
         doReturn(header).when(metaData).getCustomAttribute("span.id", String.class);
