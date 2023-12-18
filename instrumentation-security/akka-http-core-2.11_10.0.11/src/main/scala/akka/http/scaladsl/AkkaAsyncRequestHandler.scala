@@ -7,6 +7,7 @@
 
 package akka.http.scaladsl
 
+import akka.Done
 import akka.http.scaladsl.model.{HttpRequest, HttpResponse}
 import akka.stream.Materializer
 import akka.stream.javadsl.Source
@@ -23,16 +24,16 @@ class AkkaAsyncRequestHandler(handler: HttpRequest ⇒ Future[HttpResponse])(imp
   override def apply(param: HttpRequest): Future[HttpResponse] = {
 
     var futureResponse: Future[HttpResponse] = null
-    var body : StringBuilder = new StringBuilder();
-    val dataBytes: Source[ByteString, _] = param.entity.getDataBytes()
-    dataBytes.runWith(Sink.foreach[ByteString] { byteString =>
+    val body: StringBuilder = new StringBuilder();
+    val dataBytes: Source[ByteString, AnyRef] = param.entity.getDataBytes()
+    val isLockAquired = AkkaCoreUtils.acquireServletLockIfPossible();
+    val sink: Sink[ByteString, Future[Done]] = Sink.foreach[ByteString] { byteString =>
       val chunk = byteString.utf8String
       body.append(chunk)
-    }, materializer)
-
-    val isLockAquired = AkkaCoreUtils.acquireServletLockIfPossible();
-    AkkaCoreUtils.preProcessHttpRequest(isLockAquired, param, body.toString());
+    }
+    val processingResult: Future[Done] = dataBytes.runWith(sink, materializer)
     futureResponse = handler.apply(param)
+    AkkaCoreUtils.preProcessHttpRequest(isLockAquired, param, body.toString());
 
     AkkaCoreUtils.postProcessHttpRequest(isLockAquired, this.getClass.getName, "apply");
     futureResponse

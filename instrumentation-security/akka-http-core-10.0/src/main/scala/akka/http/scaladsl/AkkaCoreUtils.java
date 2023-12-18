@@ -112,6 +112,7 @@ public class AkkaCoreUtils {
             securityRequest.setContentType(httpRequest.entity().getContentType().toString());
 
             securityAgentMetaData.setServiceTrace(Thread.currentThread().getStackTrace());
+            securityRequest.getBody().append(requestBody);
             securityRequest.setRequestParsed(true);
         } catch (Throwable ignored){}
         finally {
