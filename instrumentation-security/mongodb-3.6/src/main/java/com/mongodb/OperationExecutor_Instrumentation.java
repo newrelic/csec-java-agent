@@ -9,7 +9,7 @@ import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
-import com.nr.agent.security.mongo.MongoUtil;
+import com.newrelic.agent.security.instrumentation.mongo.MongoUtil;
 
 @Weave(type = MatchType.Interface, originalName = "com.mongodb.OperationExecutor")
 abstract class OperationExecutor_Instrumentation {

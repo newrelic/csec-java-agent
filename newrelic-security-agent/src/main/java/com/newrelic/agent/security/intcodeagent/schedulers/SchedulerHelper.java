@@ -1,7 +1,10 @@
 package com.newrelic.agent.security.intcodeagent.schedulers;
 
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
+import com.newrelic.agent.security.intcodeagent.filelogging.LogFileHelper;
 import com.newrelic.agent.security.intcodeagent.logging.IAgentConstants;
+import com.newrelic.agent.security.util.IUtilConstants;
+import com.newrelic.api.agent.NewRelic;
 
 import java.util.Map;
 import java.util.concurrent.*;
@@ -61,6 +64,17 @@ public class SchedulerHelper {
         ScheduledFuture<?> future = commonExecutor.scheduleWithFixedDelay(command, initialDelay, period, unit);
         scheduledFutureMap.put("low-severity-hook-filter-cleanup", future);
         return future;
+    }
+
+    public ScheduledFuture<?> scheduleDailyLogRollover(Runnable command) {
+
+        if(LogFileHelper.isDailyRollover()) {
+            int period = NewRelic.getAgent().getConfig().getValue(IUtilConstants.NR_LOG_DAILY_ROLLOVER_PERIOD, 24);
+            ScheduledFuture<?> future = commonExecutor.scheduleWithFixedDelay(command, period, period, TimeUnit.HOURS);
+            scheduledFutureMap.put("daily-log-rollover", future);
+            return future;
+        }
+        return null;
     }
 
 }

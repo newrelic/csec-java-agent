@@ -7,6 +7,7 @@
 
 package com.newrelic.api.agent.security;
 
+import com.newrelic.api.agent.security.instrumentation.helpers.LowSeverityHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.SecurityMetaData;
 import com.newrelic.api.agent.security.schema.policy.AgentPolicy;
@@ -70,6 +71,11 @@ class NoOpAgent implements SecurityAgent {
     @Override
     public Instrumentation getInstrumentation() {
         return null;
+    }
+
+    @Override
+    public boolean isLowPriorityInstrumentationEnabled() {
+        return false;
     }
 
 }
