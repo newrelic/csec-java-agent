@@ -55,11 +55,13 @@ public class AkkaCoreUtils {
         return false;
     }
 
-    public static void postProcessHttpRequest(Boolean isServletLockAcquired, String className, String methodName) {
+    public static void postProcessHttpRequest(Boolean isServletLockAcquired, String response, String contentType, String className, String methodName) {
         try {
             if(!isServletLockAcquired || !NewRelicSecurity.isHookProcessingActive()){
                 return;
             }
+            NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setResponseContentType(contentType);
+            NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getResponseBody().append(response);
             LowSeverityHelper.addRrequestUriToEventFilter(NewRelicSecurity.getAgent().getSecurityMetaData().getRequest());
 
             RXSSOperation rxssOperation = new RXSSOperation(NewRelicSecurity.getAgent().getSecurityMetaData().getRequest(),

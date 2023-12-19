@@ -15,7 +15,6 @@ import akka.stream.javadsl.Source
 import akka.stream.scaladsl.Sink
 import akka.util.ByteString
 import com.newrelic.api.agent.Trace
-
 import scala.concurrent.Future
 import scala.runtime.AbstractFunction1
 import scala.util.{Failure, Success}
@@ -35,8 +34,10 @@ class AkkaAsyncRequestHandler(handler: HttpRequest ⇒ Future[HttpResponse])(imp
     }
     val processingResult: Future[Done] = dataBytes.runWith(sink, materializer)
     futureResponse = handler.apply(param)
+
     AkkaCoreUtils.preProcessHttpRequest(isLockAquired, param, body.toString());
-    AkkaCoreUtils.postProcessHttpRequest(isLockAquired, this.getClass.getName, "apply");
+    futureResponse.flatMap(ResponseFuture.wrapResponseAsync(materializer))
+
     futureResponse
   }
 }

@@ -34,6 +34,7 @@ class AkkaSyncRequestHandler(handler: HttpRequest ⇒ HttpResponse)(implicit mat
     AkkaCoreUtils.preProcessHttpRequest(isLockAquired, param, body.toString());
 
     var updatedResponse: HttpResponse = response
+    ResponseFuture.wrapResponseSync(response, materializer)
     updatedResponse
   }
 }
