@@ -28,7 +28,7 @@ public class IncomingConnection_Instrumentation {
 
     public void handleWithAsyncHandler(Function1<HttpRequest, Future<HttpResponse>> func, int parallel, Materializer mat) {
 
-        AkkaAsyncRequestHandler wrapperHandler = new AkkaAsyncRequestHandler(func, mat);
+        AkkaAsyncRequestHandler wrapperHandler = new AkkaAsyncRequestHandler(func, mat.executionContext(), mat);
         func = wrapperHandler;
 
         Weaver.callOriginal();

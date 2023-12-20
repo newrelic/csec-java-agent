@@ -22,7 +22,6 @@ class AkkaSyncRequestHandler(handler: HttpRequest ⇒ HttpResponse)(implicit mat
 
   @Trace
   override def apply(param: HttpRequest): HttpResponse = {
-
     val body: StringBuilder = new StringBuilder();
     val dataBytes: Source[ByteString, AnyRef] = param.entity.getDataBytes()
     val isLockAquired = AkkaCoreUtils.acquireServletLockIfPossible();
@@ -32,9 +31,10 @@ class AkkaSyncRequestHandler(handler: HttpRequest ⇒ HttpResponse)(implicit mat
     }
     val processingResult: Future[Done] = dataBytes.runWith(sink, materializer)
     val response: HttpResponse = handler.apply(param)
-    AkkaCoreUtils.preProcessHttpRequest(isLockAquired, param, body.toString());
+    AkkaCoreUtils.preProcessHttpRequest(isLockAquired, param, body.toString(), NewRelic.getAgent.getTransaction.getToken);
 
     var updatedResponse: HttpResponse = response
+    ResponseFutureHelper.wrapResponseSync(response, materializer)
     updatedResponse
   }
 }

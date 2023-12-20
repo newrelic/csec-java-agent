@@ -14,7 +14,6 @@ import akka.stream.javadsl.Source
 import akka.stream.scaladsl.Sink
 import akka.util.ByteString
 import com.newrelic.api.agent.{NewRelic, Trace}
-import com.nr.instrumentation.akkahttpcore.ResponseFuture
 
 import scala.concurrent.Future
 import scala.runtime.AbstractFunction1
@@ -35,7 +34,7 @@ class AkkaSyncRequestHandler(handler: HttpRequest ⇒ HttpResponse)(implicit mat
     AkkaCoreUtils.preProcessHttpRequest(isLockAquired, param, body.toString(), NewRelic.getAgent.getTransaction.getToken);
 
     var updatedResponse: HttpResponse = response
-    ResponseFuture.wrapResponseSync(response, materializer)
+    ResponseFutureHelper.wrapResponseSync(response, materializer)
     updatedResponse
   }
 }

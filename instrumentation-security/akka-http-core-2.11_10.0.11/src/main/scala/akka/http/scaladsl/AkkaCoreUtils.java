@@ -2,6 +2,7 @@ package akka.http.scaladsl;
 
 import akka.http.javadsl.model.HttpHeader;
 import akka.http.scaladsl.model.HttpRequest;
+import com.newrelic.api.agent.Token;
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.security.instrumentation.helpers.LowSeverityHelper;
@@ -56,11 +57,14 @@ public class AkkaCoreUtils {
         return false;
     }
 
-    public static void postProcessHttpRequest(Boolean isServletLockAcquired, String className, String methodName) {
+    public static void postProcessHttpRequest(Boolean isServletLockAcquired, String response, String contentType, String className, String methodName, Token token) {
         try {
+            token.linkAndExpire();
             if(!isServletLockAcquired || !NewRelicSecurity.isHookProcessingActive()){
                 return;
             }
+            NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setResponseContentType(contentType);
+            NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getResponseBody().append(response);
             LowSeverityHelper.addRrequestUriToEventFilter(NewRelicSecurity.getAgent().getSecurityMetaData().getRequest());
 
             RXSSOperation rxssOperation = new RXSSOperation(NewRelicSecurity.getAgent().getSecurityMetaData().getRequest(),
@@ -80,12 +84,13 @@ public class AkkaCoreUtils {
         }
     }
 
-    public static void preProcessHttpRequest (Boolean isServletLockAcquired, HttpRequest httpRequest, String requestBody) {
+    public static void preProcessHttpRequest (Boolean isServletLockAcquired, HttpRequest httpRequest, String requestBody, Token token) {
         if(!isServletLockAcquired) {
             return;
         }
 
         try {
+            token.linkAndExpire();
             if (!NewRelicSecurity.isHookProcessingActive()) {
                 return;
             }
@@ -116,6 +121,11 @@ public class AkkaCoreUtils {
             securityRequest.getBody().append(requestBody);
             securityRequest.setRequestParsed(true);
         } catch (Throwable ignored){}
+        finally {
+            if(isServletLockAcquired()){
+                releaseServletLock();
+            }
+        }
     }
 
     public static String getTraceHeader(Map<String, String> headers) {

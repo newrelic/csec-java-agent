@@ -41,7 +41,7 @@ public class HttpExt_Instrumentation {
             ServerSettings settings, int parallelism,
             LoggingAdapter adapter, Materializer mat) {
 
-        AkkaAsyncRequestHandler wrapperHandler = new AkkaAsyncRequestHandler(handler, mat);
+        AkkaAsyncRequestHandler wrapperHandler = new AkkaAsyncRequestHandler(handler, mat.executionContext(), mat);
         handler = wrapperHandler;
 
         return Weaver.callOriginal();

@@ -14,7 +14,6 @@ import akka.stream.javadsl.Source
 import akka.stream.scaladsl.Sink
 import akka.util.ByteString
 import com.newrelic.api.agent.{NewRelic, Trace}
-import com.nr.instrumentation.akkahttpcore.ResponseFuture
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.runtime.AbstractFunction1
@@ -46,7 +45,7 @@ class AkkaAsyncRequestHandler(handler: HttpRequest ⇒ Future[HttpResponse])(imp
       }
     }
 
-    futureResponse.flatMap(ResponseFuture.wrapResponseAsync(NewRelic.getAgent.getTransaction.getToken, materializer))
+    futureResponse.flatMap(ResponseFutureHelper.wrapResponseAsync(NewRelic.getAgent.getTransaction.getToken, materializer))
     futureResponse
   }
 }

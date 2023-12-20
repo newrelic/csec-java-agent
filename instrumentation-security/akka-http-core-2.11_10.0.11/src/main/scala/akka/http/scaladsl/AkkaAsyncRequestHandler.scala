@@ -13,12 +13,12 @@ import akka.stream.Materializer
 import akka.stream.javadsl.Source
 import akka.stream.scaladsl.Sink
 import akka.util.ByteString
-import com.newrelic.api.agent.Trace
+import com.newrelic.api.agent.{NewRelic, Trace}
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 import scala.runtime.AbstractFunction1
 
-class AkkaAsyncRequestHandler(handler: HttpRequest ⇒ Future[HttpResponse])(implicit materializer: Materializer) extends AbstractFunction1[HttpRequest, Future[HttpResponse]] {
+class AkkaAsyncRequestHandler(handler: HttpRequest ⇒ Future[HttpResponse])(implicit ec: ExecutionContext, materializer: Materializer) extends AbstractFunction1[HttpRequest, Future[HttpResponse]] {
 
   @Trace
   override def apply(param: HttpRequest): Future[HttpResponse] = {
@@ -32,10 +32,21 @@ class AkkaAsyncRequestHandler(handler: HttpRequest ⇒ Future[HttpResponse])(imp
       body.append(chunk)
     }
     val processingResult: Future[Done] = dataBytes.runWith(sink, materializer)
+    processingResult.onComplete {
+      _ => {
+        AkkaCoreUtils.preProcessHttpRequest(isLockAquired, param, body.toString(), NewRelic.getAgent.getTransaction.getToken);
+      }
+    }
     futureResponse = handler.apply(param)
-    AkkaCoreUtils.preProcessHttpRequest(isLockAquired, param, body.toString());
+    futureResponse = futureResponse.flatMap {
+      response: HttpResponse =>
+        Future {
+          AkkaCoreUtils.preProcessHttpRequest(isLockAquired, param, body.toString(), NewRelic.getAgent.getTransaction.getToken);
+          response
+        }
+    }
 
-    AkkaCoreUtils.postProcessHttpRequest(isLockAquired, this.getClass.getName, "apply");
+    futureResponse.flatMap(ResponseFutureHelper.wrapResponseAsync(NewRelic.getAgent.getTransaction.getToken, materializer))
     futureResponse
   }
 }

@@ -5,22 +5,21 @@
  *
  */
 
-package com.nr.instrumentation.akkahttpcore
+package akka.http.scaladsl
 
 import akka.Done
-import akka.http.scaladsl.AkkaCoreUtils
 import akka.http.scaladsl.model.HttpResponse
 import akka.stream.Materializer
 import akka.stream.javadsl.Source
 import akka.stream.scaladsl.Sink
 import akka.util.ByteString
-import com.newrelic.api.agent.{NewRelic, Token}
 import com.newrelic.api.agent.security.schema.StringUtils
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException
+import com.newrelic.api.agent.{NewRelic, Token}
 
 import scala.concurrent.{ExecutionContext, Future}
 
-object ResponseFuture {
+object ResponseFutureHelper {
 
   def wrapResponseAsync(token: Token, materializer: Materializer)(implicit ec: ExecutionContext): (HttpResponse) => Future[HttpResponse] = { response:HttpResponse => {
     Future {

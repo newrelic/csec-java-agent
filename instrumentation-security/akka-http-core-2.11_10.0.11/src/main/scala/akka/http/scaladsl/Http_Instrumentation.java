@@ -7,13 +7,17 @@
 
 package akka.http.scaladsl;
 
+import com.newrelic.api.agent.NewRelic;
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.WeaveAllConstructors;
 import com.newrelic.api.agent.weaver.Weaver;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.net.InetSocketAddress;
+import java.util.logging.Level;
 
 @Weave(type = MatchType.ExactClass, originalName = "akka.http.scaladsl.Http")
 public class Http_Instrumentation {
@@ -32,8 +36,19 @@ public class Http_Instrumentation {
             System.out.println("local port "+localAddress().getPort());
 //            AgentBridge.publicApi.setServerInfo("Akka HTTP", ManifestUtils.getVersionFromManifest(getClass(), "akka-http-core", "10.2.0"));
 
-            NewRelicSecurity.getAgent().retransformUninstrumentedClass(AkkaSyncRequestHandler.class);
-            NewRelicSecurity.getAgent().retransformUninstrumentedClass(AkkaAsyncRequestHandler.class);
+            try {
+                Class<?> agentBridgeClass = Class.forName("com.newrelic.agent.bridge.AgentBridge");
+                Field instrumentation = agentBridgeClass.getDeclaredField("instrumentation");
+                Object instrumentationObject = instrumentation.get(null);
+
+                Class<?> instrumentationInterface = Class.forName("com.newrelic.agent.bridge.Instrumentation");
+                Method retransformUninstrumentedClassMethod = instrumentationInterface.getDeclaredMethod("retransformUninstrumentedClass", Class.class);
+
+                retransformUninstrumentedClassMethod.invoke(instrumentationObject, AkkaSyncRequestHandler.class);
+                retransformUninstrumentedClassMethod.invoke(instrumentationObject, AkkaAsyncRequestHandler.class);
+            } catch (Throwable e) {
+                NewRelic.getAgent().getLogger().log(Level.SEVERE, "Unable to instrument com.newrelic.instrumentation.security.akka-http-core-2.13_10.2.0 due to error", e);
+            }
 
         }
     }
