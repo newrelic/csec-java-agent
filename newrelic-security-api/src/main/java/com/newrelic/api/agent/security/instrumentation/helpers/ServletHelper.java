@@ -92,7 +92,7 @@ public class ServletHelper {
             if (!securityMetaData.getMetaData().isUserLevelServiceMethodEncountered(frameworkName)) {
                 securityMetaData.getMetaData().setUserLevelServiceMethodEncountered(true);
                 StackTraceElement[] trace = Thread.currentThread().getStackTrace();
-                securityMetaData.getMetaData().setServiceTrace(Arrays.copyOfRange(trace, 1, trace.length));
+                securityMetaData.getMetaData().setServiceTrace(Arrays.copyOfRange(trace, 2, trace.length));
             }
         } catch (Throwable ignored) {
         }

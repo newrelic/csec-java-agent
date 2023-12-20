@@ -13,9 +13,9 @@ import java.net.URISyntaxException;
 @Weave(originalName = "io.grpc.ClientCall", type = MatchType.Interface)
 public abstract class ClientCall_Instrumentation<ReqT, RespT> {
     @NewField
-    String authority = null;
+    String csecAuthority = null;
     @NewField
-    MethodDescriptor<ReqT, RespT> methodDescriptor = null;
+    MethodDescriptor<ReqT, RespT> csecMethodDescriptor = null;
 
     public void start(ClientCall.Listener<RespT> var1, Metadata var2) {
         boolean isLockAcquired = GrpcClientUtils.acquireLockIfPossible();
@@ -24,9 +24,9 @@ public abstract class ClientCall_Instrumentation<ReqT, RespT> {
         if (isLockAcquired) {
             URI uri = null;
             try {
-                uri = new URI("grpc", authority, "/" + methodDescriptor.getFullMethodName(), null, null);
+                uri = new URI("grpc", csecAuthority, "/" + csecMethodDescriptor.getFullMethodName(), null, null);
             } catch (URISyntaxException e) {
-                e.printStackTrace(); // intentionally added to notify the uri error
+                // TODO: send critical log message
             }
             operation = GrpcClientUtils.preprocessSecurityHook(String.valueOf(uri), var2, this.getClass().getName());
         }

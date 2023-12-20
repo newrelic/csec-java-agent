@@ -1,6 +1,9 @@
 package com.newrelic.agent.security.instrumentation.grpc1400;
 
+import com.google.protobuf.Descriptors;
+import com.google.protobuf.TypeRegistry;
 import com.newrelic.api.agent.security.NewRelicSecurity;
+import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.security.instrumentation.helpers.GrpcHelper;
 import com.newrelic.api.agent.security.instrumentation.helpers.LowSeverityHelper;
 import com.newrelic.api.agent.security.instrumentation.helpers.ServletHelper;
@@ -19,14 +22,18 @@ import io.grpc.internal.ServerStream;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
 public class GrpcServerUtils {
+    public static final String LIBRARY_NAME = "gRPC";
     private static final String X_FORWARDED_FOR = "x-forwarded-for";
     private static final String EMPTY = "";
     public static final String METHOD_NAME_START_CALL = "startCall";
     public static final String NR_SEC_CUSTOM_ATTRIB_NAME = "NR_CSEC_GRPC_SERVER_OPERATIONAL_LOCK_";
+    private static Map<Integer, TypeRegistry> typeRegistries = new HashMap<>();
 
     public static <ReqT, ResT> void preprocessSecurityHook(ServerStream call, ServerMethodDefinition<ReqT, ResT> methodDef, Metadata meta, String klass) {
         try {
@@ -46,15 +53,16 @@ public class GrpcServerUtils {
             try {
                 uri = new URI("grpc", authority, "/" + fullMethodName, null, null);
             } catch (URISyntaxException e) {
-                e.printStackTrace(); // intentionally added to notify the uri error
+                // TODO: send critical log message
             }
 
             AgentMetaData securityAgentMetaData = securityMetaData.getMetaData();
 
             securityRequest.setMethod(fullMethodName);
             String rawClientIP = call.getAttributes().get(Grpc.TRANSPORT_ATTR_REMOTE_ADDR).toString();
+            String rawServerIP = call.getAttributes().get(Grpc.TRANSPORT_ATTR_LOCAL_ADDR).toString();
             securityRequest.setClientIP(GrpcHelper.getFormattedIp(rawClientIP));
-            securityRequest.setServerPort(Integer.parseInt(GrpcHelper.getPort(authority)));
+            securityRequest.setServerPort(Integer.parseInt(GrpcHelper.getPort(rawServerIP)));
 
             if (securityRequest.getClientIP() != null && !securityRequest.getClientIP().trim().isEmpty()) {
                 securityAgentMetaData.getIps().add(securityRequest.getClientIP());
@@ -83,8 +91,12 @@ public class GrpcServerUtils {
             // TODO: Create OutBoundHttp data here : Skipping for now.
             securityRequest.setContentType(meta.get(Metadata.Key.of("content-type", Metadata.ASCII_STRING_MARSHALLER)));
 
-            securityAgentMetaData.setServiceTrace(Thread.currentThread().getStackTrace());
+            StackTraceElement[] trace = Thread.currentThread().getStackTrace();
+            securityMetaData.getMetaData().setServiceTrace(Arrays.copyOfRange(trace, 2, trace.length));
+
             securityRequest.setRequestParsed(true);
+            NewRelicSecurity.getAgent().getSecurityMetaData().getMetaData().addReflectedMetaData(GrpcHelper.REQUEST_TYPE,
+                    String.valueOf(methodDef.getMethodDescriptor().getType()));
         } catch (Throwable ignored) {
         }
     }
@@ -100,6 +112,11 @@ public class GrpcServerUtils {
             Set<String> headerNames = metadata.keys();
             for (String headerKey : headerNames) {
                 NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getHeaders().put(headerKey, metadata.get(Metadata.Key.of(headerKey, Metadata.ASCII_STRING_MARSHALLER)));
+            }
+            if (headerNames.contains("content-type")){
+                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setResponseContentType(metadata.get(Metadata.Key.of("content-type", Metadata.ASCII_STRING_MARSHALLER)));
+            } else {
+                NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setResponseContentType("application/grpc");
             }
 
             RXSSOperation rxssOperation = new RXSSOperation(NewRelicSecurity.getAgent().getSecurityMetaData().getRequest(),
@@ -124,6 +141,7 @@ public class GrpcServerUtils {
                 }
             } catch (Throwable ignored){}
         } catch (Throwable ignored) {
+            ignored.printStackTrace();
         }
     }
 
@@ -176,6 +194,8 @@ public class GrpcServerUtils {
             } else if (ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID.equals(headerKey)) {
                 // TODO: May think of removing this intermediate obj and directly create K2 Identifier.
                 NewRelicSecurity.getAgent().getSecurityMetaData().setFuzzRequestIdentifier(ServletHelper.parseFuzzRequestIdentifierHeader(metadata.get(Metadata.Key.of(headerKey, Metadata.ASCII_STRING_MARSHALLER))));
+            } else if(GenericHelper.CSEC_PARENT_ID.equals(headerKey)) {
+                NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(GenericHelper.CSEC_PARENT_ID, metadata.get(Metadata.Key.of(headerKey, Metadata.ASCII_STRING_MARSHALLER)));
             }
             String headerFullValue = EMPTY;
             String[] headerElements = metadata.get(Metadata.Key.of(headerKey, Metadata.ASCII_STRING_MARSHALLER)).split(";");
@@ -197,5 +217,19 @@ public class GrpcServerUtils {
             }
             securityRequest.getHeaders().put(headerKey, headerFullValue);
         }
+    }
+
+    public static Descriptors.Descriptor getMessageTypeDescriptor(String messageClassName) {
+        for (Map.Entry<Integer, TypeRegistry> typeRegistry : typeRegistries.entrySet()) {
+            Descriptors.Descriptor clazz = typeRegistry.getValue().find(messageClassName);
+            if (clazz!=null) {
+                return clazz;
+            }
+        }
+        return null;
+    }
+
+    public static void createTypeRegistries(Descriptors.Descriptor type) {
+        typeRegistries.put(type.getFile().hashCode(), TypeRegistry.newBuilder().add(type).build());
     }
 }
