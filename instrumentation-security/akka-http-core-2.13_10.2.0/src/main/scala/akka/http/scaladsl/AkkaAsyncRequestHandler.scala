@@ -8,18 +8,18 @@
 package akka.http.scaladsl
 
 import akka.Done
-import akka.actor.TypedActor.dispatcher
 import akka.http.scaladsl.model.{HttpEntity, HttpRequest, HttpResponse}
 import akka.stream.Materializer
 import akka.stream.javadsl.Source
 import akka.stream.scaladsl.Sink
 import akka.util.ByteString
-import com.newrelic.api.agent.Trace
-import scala.concurrent.Future
-import scala.runtime.AbstractFunction1
-import scala.util.{Failure, Success}
+import com.newrelic.api.agent.{NewRelic, Trace}
+import com.nr.instrumentation.akkahttpcore.ResponseFuture
 
-class AkkaAsyncRequestHandler(handler: HttpRequest ⇒ Future[HttpResponse])(implicit materializer: Materializer) extends AbstractFunction1[HttpRequest, Future[HttpResponse]] {
+import scala.concurrent.{ExecutionContext, Future}
+import scala.runtime.AbstractFunction1
+
+class AkkaAsyncRequestHandler(handler: HttpRequest ⇒ Future[HttpResponse])(implicit ec: ExecutionContext, materializer: Materializer) extends AbstractFunction1[HttpRequest, Future[HttpResponse]] {
 
   @Trace(dispatcher = true)
   override def apply(param: HttpRequest): Future[HttpResponse] = {
@@ -33,11 +33,20 @@ class AkkaAsyncRequestHandler(handler: HttpRequest ⇒ Future[HttpResponse])(imp
       body.append(chunk)
     }
     val processingResult: Future[Done] = dataBytes.runWith(sink, materializer)
+    processingResult.onComplete {
+      _ => {
+        AkkaCoreUtils.preProcessHttpRequest(isLockAquired, param, body.toString(), NewRelic.getAgent.getTransaction.getToken);
+      }
+    }
     futureResponse = handler.apply(param)
+    futureResponse = futureResponse.flatMap {
+      response:HttpResponse => Future {
+        AkkaCoreUtils.preProcessHttpRequest(isLockAquired, param, body.toString(), NewRelic.getAgent.getTransaction.getToken);
+        response
+      }
+    }
 
-    AkkaCoreUtils.preProcessHttpRequest(isLockAquired, param, body.toString());
-    futureResponse.flatMap(ResponseFuture.wrapResponseAsync(materializer))
-
+    futureResponse.flatMap(ResponseFuture.wrapResponseAsync(NewRelic.getAgent.getTransaction.getToken, materializer))
     futureResponse
   }
 }

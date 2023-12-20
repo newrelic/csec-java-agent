@@ -13,7 +13,8 @@ import akka.stream.Materializer
 import akka.stream.javadsl.Source
 import akka.stream.scaladsl.Sink
 import akka.util.ByteString
-import com.newrelic.api.agent.Trace
+import com.newrelic.api.agent.{NewRelic, Trace}
+import com.nr.instrumentation.akkahttpcore.ResponseFuture
 
 import scala.concurrent.Future
 import scala.runtime.AbstractFunction1
@@ -31,7 +32,7 @@ class AkkaSyncRequestHandler(handler: HttpRequest ⇒ HttpResponse)(implicit mat
     }
     val processingResult: Future[Done] = dataBytes.runWith(sink, materializer)
     val response: HttpResponse = handler.apply(param)
-    AkkaCoreUtils.preProcessHttpRequest(isLockAquired, param, body.toString());
+    AkkaCoreUtils.preProcessHttpRequest(isLockAquired, param, body.toString(), NewRelic.getAgent.getTransaction.getToken);
 
     var updatedResponse: HttpResponse = response
     ResponseFuture.wrapResponseSync(response, materializer)

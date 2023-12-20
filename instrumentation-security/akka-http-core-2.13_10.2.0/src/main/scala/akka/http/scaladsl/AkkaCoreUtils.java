@@ -2,6 +2,7 @@ package akka.http.scaladsl;
 
 import akka.http.javadsl.model.HttpHeader;
 import akka.http.scaladsl.model.HttpRequest;
+import com.newrelic.api.agent.Token;
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.security.instrumentation.helpers.LowSeverityHelper;
@@ -55,8 +56,9 @@ public class AkkaCoreUtils {
         return false;
     }
 
-    public static void postProcessHttpRequest(Boolean isServletLockAcquired, String response, String contentType, String className, String methodName) {
+    public static void postProcessHttpRequest(Boolean isServletLockAcquired, String response, String contentType, String className, String methodName, Token token) {
         try {
+            token.linkAndExpire();
             if(!isServletLockAcquired || !NewRelicSecurity.isHookProcessingActive()){
                 return;
             }
@@ -81,12 +83,13 @@ public class AkkaCoreUtils {
         }
     }
 
-    public static void preProcessHttpRequest (Boolean isServletLockAcquired, HttpRequest httpRequest, String requestBody) {
+    public static void preProcessHttpRequest (Boolean isServletLockAcquired, HttpRequest httpRequest, String requestBody, Token token) {
         if(!isServletLockAcquired) {
             return;
         }
 
         try {
+            token.linkAndExpire();
             if (!NewRelicSecurity.isHookProcessingActive()) {
                 return;
             }

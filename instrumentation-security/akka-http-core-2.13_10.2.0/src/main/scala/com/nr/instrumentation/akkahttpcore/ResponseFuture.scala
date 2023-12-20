@@ -5,26 +5,24 @@
  *
  */
 
-package akka.http.scaladsl
+package com.nr.instrumentation.akkahttpcore
 
 import akka.Done
+import akka.http.scaladsl.AkkaCoreUtils
 import akka.http.scaladsl.model.HttpResponse
 import akka.stream.Materializer
 import akka.stream.javadsl.Source
 import akka.stream.scaladsl.Sink
 import akka.util.ByteString
-import com.newrelic.api.agent.Transaction
+import com.newrelic.api.agent.{NewRelic, Token}
 import com.newrelic.api.agent.security.schema.StringUtils
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException
-import com.newrelic.api.agent.weaver.Weaver
 
-import java.util.concurrent.TimeUnit
-import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.{ExecutionContext, Future}
 
 object ResponseFuture {
 
-  def wrapResponseAsync(materializer: Materializer)(implicit ec: ExecutionContext): (HttpResponse) => Future[HttpResponse] = { response:HttpResponse => {
+  def wrapResponseAsync(token: Token, materializer: Materializer)(implicit ec: ExecutionContext): (HttpResponse) => Future[HttpResponse] = { response:HttpResponse => {
     Future {
       var updatedResponse: HttpResponse = response
 
@@ -37,14 +35,13 @@ object ResponseFuture {
           stringResponse.append(chunk)
         }
         val processingResult: Future[Done] = dataBytes.runWith(sink, materializer)
-        var contentType = ""
-        response.headers.foreach( header => {
-          if(StringUtils.equalsAny(header.name(), "contenttype", "content-type")){
-            contentType = header.value()
-          }
-        })
+        processingResult.onComplete {
+         _ => {
+           token.linkAndExpire()
+           AkkaCoreUtils.postProcessHttpRequest(isLockAquired, stringResponse.toString(), response.entity.contentType.toString(), this.getClass.getName, "apply", NewRelic.getAgent.getTransaction.getToken)
+         }
+        }
 
-        AkkaCoreUtils.postProcessHttpRequest(isLockAquired, stringResponse.toString(), contentType, this.getClass.getName, "apply")
       } catch {
         case t: NewRelicSecurityException =>
           t.printStackTrace()
@@ -74,7 +71,7 @@ object ResponseFuture {
         }
       })
 
-      AkkaCoreUtils.postProcessHttpRequest(isLockAquired, stringResponse.toString(), contentType, this.getClass.getName, "apply")
+      AkkaCoreUtils.postProcessHttpRequest(isLockAquired, stringResponse.toString(), contentType, this.getClass.getName, "apply", NewRelic.getAgent.getTransaction.getToken())
     } catch {
       case t: NewRelicSecurityException =>
         t.printStackTrace()
