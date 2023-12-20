@@ -24,6 +24,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.PosixFilePermissions;
+import java.security.SecureRandom;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Stack;
@@ -33,6 +34,8 @@ public class CommonUtils {
     private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
     public static final String POLICY_WRITE_FAILED = "policy write failed : ";
     public static final String POLICY_WRITTEN_TO_FILE = "policy written to file : ";
+
+    public static SecureRandom secureRandom = new SecureRandom();
 
     public static boolean validateCollectorPolicyParameterSchema(AgentPolicyParameters policyParameters) {
 
@@ -137,16 +140,14 @@ public class CommonUtils {
         return null;
     }
 
-    public static void deleteRolloverLogFiles(String fileName, int max) {
-        Collection<File> rolloverLogFiles = FileUtils.listFiles(new File(OsVariablesInstance.getInstance().getOsVariables().getLogDirectory()), FileFilterUtils.prefixFileFilter(fileName + "."), null);
 
-        if (rolloverLogFiles.size() > max) {
-            File[] sortedLogFiles = rolloverLogFiles.toArray(new File[0]);
-            Arrays.sort(sortedLogFiles, LastModifiedFileComparator.LASTMODIFIED_COMPARATOR);
-            for (int i = 0; i < sortedLogFiles.length - max; i++) {
-                FileUtils.deleteQuietly(sortedLogFiles[i]);
-
-            }
-        }
+    /**
+     * Generate random int between range start to end. Both inclusive.
+     * @param start lower bound
+     * @param end upper bound
+     * @return random int
+     */
+    public static int generateSecureRandomBetween(int start, int end) {
+        return secureRandom.nextInt(end-start) + start;
     }
 }

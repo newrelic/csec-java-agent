@@ -1,6 +1,5 @@
 package javax.servlet.http;
 
-import com.newrelic.api.agent.NewRelic;
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.security.instrumentation.helpers.LowSeverityHelper;
@@ -13,16 +12,13 @@ import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
 
-import static com.newrelic.api.agent.security.instrumentation.helpers.LowSeverityHelper.DEFAULT;
-import static com.newrelic.api.agent.security.instrumentation.helpers.LowSeverityHelper.LOW_SEVERITY_HOOKS_ENABLED;
-
 @Weave(type = MatchType.Interface, originalName = "javax.servlet.http.HttpServletResponse")
 public class HttpServletResponse_Instrumentation {
 
     public void addCookie(Cookie cookie){
         boolean isLockAcquired = acquireLockIfPossible(cookie.hashCode());
         AbstractOperation operation = null;
-        boolean isOwaspHookEnabled = NewRelic.getAgent().getConfig().getValue(LOW_SEVERITY_HOOKS_ENABLED, DEFAULT);
+        boolean isOwaspHookEnabled = NewRelicSecurity.getAgent().isLowPriorityInstrumentationEnabled();
         if (isOwaspHookEnabled && LowSeverityHelper.isOwaspHookProcessingNeeded()){
             if (isLockAcquired)
                 operation = preprocessSecurityHook(cookie, getClass().getName(), "addCookie");
@@ -47,7 +43,8 @@ public class HttpServletResponse_Instrumentation {
                 return null;
             }
 
-            SecureCookieOperation operation = new SecureCookieOperation(Boolean.toString(cookie.getSecure()), className, methodName);
+            boolean isSecure = "https".equals(securityMetaData.getRequest().getProtocol()) || cookie.getSecure();
+            SecureCookieOperation operation = new SecureCookieOperation(Boolean.toString(isSecure), className, methodName);
             operation.setLowSeverityHook(true);
             NewRelicSecurity.getAgent().registerOperation(operation);
 

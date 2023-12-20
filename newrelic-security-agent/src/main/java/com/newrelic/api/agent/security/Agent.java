@@ -3,12 +3,12 @@ package com.newrelic.api.agent.security;
 import com.fasterxml.jackson.dataformat.javaprop.JavaPropsMapper;
 import com.newrelic.agent.security.AgentConfig;
 import com.newrelic.agent.security.AgentInfo;
-import com.newrelic.agent.security.instrumentator.dispatcher.Dispatcher;
 import com.newrelic.agent.security.instrumentator.dispatcher.DispatcherPool;
 import com.newrelic.agent.security.instrumentator.os.OsVariablesInstance;
 import com.newrelic.agent.security.instrumentator.utils.*;
 import com.newrelic.agent.security.intcodeagent.constants.AgentServices;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
+import com.newrelic.agent.security.intcodeagent.filelogging.LogFileHelper;
 import com.newrelic.agent.security.intcodeagent.filelogging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.logging.HealthCheckScheduleThread;
 import com.newrelic.agent.security.intcodeagent.logging.IAgentConstants;
@@ -145,8 +145,6 @@ public class Agent implements SecurityAgent {
 
         startK2Services();
         info.agentStatTrigger();
-
-        System.out.printf("This application instance is now being protected by New Relic Security under id %s\n", info.getApplicationUUID());
     }
 
     private BuildInfo readCollectorBuildInfo() {
@@ -157,6 +155,9 @@ public class Agent implements SecurityAgent {
                     readValue(CommonUtils.getResourceStreamFromAgentJar("Agent.properties"), BuildInfo.class);
         } catch (Throwable e) {
             logger.log(LogLevel.SEVERE, String.format(CRITICAL_ERROR_UNABLE_TO_READ_BUILD_INFO_AND_VERSION_S_S, e.getMessage(), e.getCause()), this.getClass().getName());
+            logger.postLogMessageIfNecessary(LogLevel.SEVERE,
+                    String.format(CRITICAL_ERROR_UNABLE_TO_READ_BUILD_INFO_AND_VERSION_S_S, e.getMessage(), e.getCause()),
+                    e, this.getClass().getName());
             logger.log(LogLevel.FINER, CRITICAL_ERROR_UNABLE_TO_READ_BUILD_INFO_AND_VERSION, e, this.getClass().getName());
         }
         return buildInfo;
@@ -173,6 +174,7 @@ public class Agent implements SecurityAgent {
         FileCleaner.scheduleNewTask();
         SchedulerHelper.getInstance().scheduleLowSeverityFilterCleanup(LowSeverityHelper::clearLowSeverityEventFilter,
                 30 , 30, TimeUnit.MINUTES);
+        SchedulerHelper.getInstance().scheduleDailyLogRollover(LogFileHelper::performDailyRollover);
         logger.logInit(
                 LogLevel.INFO,
                 String.format(STARTED_MODULE_LOG, AgentServices.HealthCheck.name()),
@@ -208,6 +210,7 @@ public class Agent implements SecurityAgent {
     private void cancelActiveServiceTasks() {
 
         /**
+         * Drain the pools (RestClient, EventSend, Dispatcher) before websocket close
          * Websocket
          * policy
          * HealthCheck
@@ -251,6 +254,9 @@ public class Agent implements SecurityAgent {
         operation.setExecutionId(executionId);
         operation.setStartTime(Instant.now().toEpochMilli());
         SecurityMetaData securityMetaData = NewRelicSecurity.getAgent().getSecurityMetaData();
+        if(securityMetaData.getFuzzRequestIdentifier().getK2Request()){
+            logger.log(LogLevel.FINEST, String.format("New Event generation with id %s of type %s", operation.getExecutionId(), operation.getClass().getSimpleName()), Agent.class.getName());
+        }
         if (operation instanceof RXSSOperation) {
             operation.setStackTrace(securityMetaData.getMetaData().getServiceTrace());
         } else {
@@ -268,9 +274,12 @@ public class Agent implements SecurityAgent {
         if(checkIfNRGeneratedEvent(operation, securityMetaData)) {
             logger.log(LogLevel.FINEST, DROPPING_EVENT_AS_IT_WAS_GENERATED_BY_K_2_INTERNAL_API_CALL +
                             JsonConverter.toJSON(operation),
-                    Dispatcher.class.getName());
+                    Agent.class.getName());
             return;
         }
+
+        logIfIastScanForFirstTime(securityMetaData.getFuzzRequestIdentifier(), securityMetaData.getRequest());
+
         setRequiredStackTrace(operation, securityMetaData);
         setUserClassEntity(operation, securityMetaData);
         processStackTrace(operation);
@@ -284,13 +293,20 @@ public class Agent implements SecurityAgent {
                         this.getClass().getName());
                 firstEventProcessed.set(true);
             }
-        } else {
-            return;
         }
-//        if (blockNeeded) {
-//            blockForResponse(operation.getExecutionId());
-//        }
-//        checkIfClientIPBlocked();
+    }
+
+    private void logIfIastScanForFirstTime(K2RequestIdentifier fuzzRequestIdentifier, HttpRequest request) {
+
+        String url = StringUtils.EMPTY;
+        if(request != null && StringUtils.isNotBlank(request.getUrl())) {
+            url = request.getUrl();
+        }
+
+        if(StringUtils.isNotBlank(fuzzRequestIdentifier.getApiRecordId()) && !AgentUtils.getInstance().getScannedAPIIds().contains(fuzzRequestIdentifier.getApiRecordId())){
+            AgentUtils.getInstance().getScannedAPIIds().add(fuzzRequestIdentifier.getApiRecordId());
+            logger.log(LogLevel.INFO, String.format("IAST Scan for API %s with ID : %s started.", url, fuzzRequestIdentifier.getApiRecordId()), Agent.class.getName());
+        }
     }
 
     private static boolean checkIfNRGeneratedEvent(AbstractOperation operation, SecurityMetaData securityMetaData) {
@@ -394,6 +410,7 @@ public class Agent implements SecurityAgent {
         K2RequestIdentifier k2RequestIdentifier = NewRelicSecurity.getAgent().getSecurityMetaData().getFuzzRequestIdentifier();
         HttpRequest request = NewRelicSecurity.getAgent().getSecurityMetaData().getRequest();
 
+        // TODO: Generate for only native payloads
         if (!request.isEmpty() && !operation.isEmpty() && k2RequestIdentifier.getK2Request()) {
             if (StringUtils.equals(k2RequestIdentifier.getApiRecordId(), operation.getApiID())
                     && StringUtils.equals(k2RequestIdentifier.getNextStage().getStatus(), IAgentConstants.VULNERABLE)) {
@@ -432,9 +449,7 @@ public class Agent implements SecurityAgent {
                     return (SecurityMetaData) meta;
                 }
             }
-        } catch (Throwable e) {
-//            e.printStackTrace();
-        }
+        } catch (Throwable ignored) {}
         return new SecurityMetaData();
     }
 
@@ -477,5 +492,10 @@ public class Agent implements SecurityAgent {
     @Override
     public Instrumentation getInstrumentation() {
         return this.instrumentation;
+    }
+
+    @Override
+    public boolean isLowPriorityInstrumentationEnabled() {
+        return NewRelic.getAgent().getConfig().getValue(LowSeverityHelper.LOW_SEVERITY_HOOKS_ENABLED, LowSeverityHelper.DEFAULT);
     }
 }

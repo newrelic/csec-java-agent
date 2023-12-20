@@ -1,0 +1,20 @@
+
+dependencies {
+    implementation(project(":newrelic-security-api"))
+    implementation("com.newrelic.agent.java:newrelic-api:${nrAPIVersion}")
+    implementation("com.newrelic.agent.java:newrelic-weaver-api:${nrAPIVersion}")
+    implementation("org.apache.wicket:wicket-core:8.0.0")
+}
+
+jar {
+    manifest { attributes 'Implementation-Title': 'com.newrelic.instrumentation.security.apache-wicket-8.0' }
+}
+
+verifyInstrumentation {
+    passes 'org.apache.wicket:wicket-core:[8.0.0-M1,)'
+}
+
+site {
+    title 'Apache Wicket'
+    type 'Framework'
+}
