@@ -1,0 +1,27 @@
+dependencies {
+    implementation(project(":newrelic-security-api"))
+    implementation("com.newrelic.agent.java:newrelic-weaver-api:${nrAPIVersion}")
+    implementation("com.newrelic.agent.java:newrelic-api:${nrAPIVersion}")
+    implementation("org.asynchttpclient:async-http-client:2.0.0")
+}
+
+jar {
+    manifest { attributes 'Implementation-Title': 'com.newrelic.instrumentation.security.async-http-client-2.0.0' }
+}
+
+verifyInstrumentation {
+    passesOnly 'org.asynchttpclient:async-http-client:[2.0.0-RC1,)'
+    excludeRegex ".*(alpha|RC).*"
+}
+
+test {
+    // These instrumentation tests only run on Java 8 regardless of the -PtestN gradle property that is set.
+    onlyIf {
+        project.hasProperty('test8')
+    }
+}
+
+site {
+    title 'Async Http Client'
+    type 'Messaging'
+}
