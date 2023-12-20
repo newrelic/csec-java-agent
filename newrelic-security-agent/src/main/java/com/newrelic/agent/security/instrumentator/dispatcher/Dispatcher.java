@@ -11,7 +11,9 @@ import com.newrelic.agent.security.intcodeagent.logging.DeployedApplication;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.ExitEventBean;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.JavaAgentEventBean;
 import com.newrelic.agent.security.intcodeagent.websocket.EventSendPool;
+import com.newrelic.agent.security.intcodeagent.websocket.JsonConverter;
 import com.newrelic.api.agent.NewRelic;
+import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.security.schema.*;
 import com.newrelic.api.agent.security.schema.helper.DynamoDBRequest;
 import com.newrelic.api.agent.security.schema.operation.*;
@@ -25,6 +27,7 @@ import org.json.simple.parser.ParseException;
 import java.io.File;
 import java.io.ObjectInputStream;
 import java.util.*;
+import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.newrelic.agent.security.intcodeagent.logging.IAgentConstants.*;
@@ -32,7 +35,7 @@ import static com.newrelic.agent.security.intcodeagent.logging.IAgentConstants.*
 /**
  * Agent utility for out of band processing and sending of events to K2 validator.
  */
-public class Dispatcher implements Runnable {
+public class Dispatcher implements Callable {
 
     private static final String SEPARATOR_QUESTIONMARK = "?";
     private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
@@ -47,12 +50,25 @@ public class Dispatcher implements Runnable {
 
     public static final String SEPARATOR1 = ", ";
     public static final String APP_LOCATION = "app-location";
+    public static final String UNABLE_TO_CONVERT_OPERATION_TO_EVENT = "Unable to convert operation to event: %s, %s, %s";
     private ExitEventBean exitEventBean;
     private AbstractOperation operation;
     private SecurityMetaData securityMetaData;
     private Map<String, Object> extraInfo = new HashMap<String, Object>();
     private boolean isNRCode = false;
     private static AtomicBoolean firstEventSent = new AtomicBoolean(false);
+
+    public ExitEventBean getExitEventBean() {
+        return exitEventBean;
+    }
+
+    public AbstractOperation getOperation() {
+        return operation;
+    }
+
+    public SecurityMetaData getSecurityMetaData() {
+        return securityMetaData;
+    }
 
     public Dispatcher(AbstractOperation operation, SecurityMetaData securityMetaData) {
         this.securityMetaData = securityMetaData;
@@ -71,11 +87,11 @@ public class Dispatcher implements Runnable {
      * Followed by delegated sending of event.
      */
     @Override
-    public void run() {
+    public Object call() throws Exception {
         try {
             if (this.exitEventBean != null) {
                 EventSendPool.getInstance().sendEvent(exitEventBean);
-                return;
+                return null;
             }
             if (!firstEventSent.get()) {
                 logger.logInit(LogLevel.INFO, SENDING_EVENT_ZERO, this.getClass().getName());
@@ -83,7 +99,7 @@ public class Dispatcher implements Runnable {
 
             if (operation == null) {
                 // Invalid Event. Just drop.
-                return;
+                return null;
             }
 
             JavaAgentEventBean eventBean = prepareEvent(securityMetaData.getRequest(), securityMetaData.getMetaData(),
@@ -92,12 +108,12 @@ public class Dispatcher implements Runnable {
             switch (operation.getCaseType()) {
                 case REFLECTED_XSS:
                     processReflectedXSSEvent(eventBean);
-                    return;
+                    return null;
                 case FILE_OPERATION:
                     FileOperation fileOperationalBean = (FileOperation) operation;
                     eventBean = processFileOperationEvent(eventBean, fileOperationalBean);
                     if (eventBean == null) {
-                        return;
+                        return null;
                     }
                     break;
                 case SYSTEM_COMMAND:
@@ -113,23 +129,30 @@ public class Dispatcher implements Runnable {
                         break;
                     }
                 case NOSQL_DB_COMMAND:
-                    NoSQLOperation noSQLOperationalBean = (NoSQLOperation) operation;
-                    try {
-                        eventBean = prepareNoSQLEvent(eventBean, noSQLOperationalBean);
-                    } catch (Throwable e) {
-                        return;
+                    if(operation instanceof SQLOperation) {
+                        eventBean = prepareSQLDbCommandEvent((SQLOperation) operation, eventBean);
+                        break;
+                    } else if (operation instanceof BatchSQLOperation) {
+                        eventBean = prepareSQLDbCommandEvent((BatchSQLOperation) operation, eventBean);
+                        break;
+                    } else if (operation instanceof NoSQLOperation) {
+                        try {
+                            eventBean = prepareNoSQLEvent(eventBean, (NoSQLOperation) operation);
+                        } catch (Throwable e) {
+                            return null;
+                        }
+                        break;
                     }
-                    break;
 
                 case DYNAMO_DB_COMMAND:
                     DynamoDBOperation dynamoDBOperation = (DynamoDBOperation) operation;
                     try {
                         eventBean = prepareDynamoDBEvent(eventBean, dynamoDBOperation);
                         if (eventBean == null) {
-                            return;
+                            return null;
                         }
                     } catch (Throwable e) {
-                        return;
+                        return null;
                     }
                     break;
 
@@ -189,7 +212,7 @@ public class Dispatcher implements Runnable {
                     eventBean = processStackTrace(eventBean, operation.getCaseType(), true);
                 }
                 if (eventBean == null) {
-                    return;
+                    return null;
                 }
             }
 
@@ -200,8 +223,10 @@ public class Dispatcher implements Runnable {
             }
 //        detectDeployedApplication();
         } catch (Throwable e) {
-            e.printStackTrace();
+            logger.postLogMessageIfNecessary(LogLevel.WARNING, String.format(UNABLE_TO_CONVERT_OPERATION_TO_EVENT, operation.getApiID(), operation.getSourceMethod(), JsonConverter.getObjectMapper().writeValueAsString(operation.getUserClassEntity())), e,
+                    this.getClass().getName());
         }
+        return null;
     }
 
     @Nullable
@@ -571,12 +596,15 @@ public class Dispatcher implements Runnable {
         eventBean.setPid(AgentInfo.getInstance().getVMPID());
         eventBean.setSourceMethod(objectBean.getSourceMethod());
         eventBean.setId(objectBean.getExecutionId());
+        eventBean.setParentId(securityMetaData.getCustomAttribute(GenericHelper.CSEC_PARENT_ID, String.class));
         eventBean.setStartTime(objectBean.getStartTime());
         eventBean.setBlockingProcessingTime((Long) extraInfo.get(BLOCKING_END_TIME) - eventBean.getStartTime());
         eventBean.setApiId(objectBean.getApiID());
         eventBean.setUserAPIInfo(operation.getUserClassEntity().getUserClassElement().getLineNumber(),
                 operation.getUserClassEntity().getUserClassElement().getClassName(),
                 operation.getUserClassEntity().getUserClassElement().getMethodName());
+        eventBean.getLinkingMetadata().put(NR_APM_TRACE_ID, securityMetaData.getCustomAttribute(NR_APM_TRACE_ID, String.class));
+        eventBean.getLinkingMetadata().put(NR_APM_SPAN_ID, securityMetaData.getCustomAttribute(NR_APM_SPAN_ID, String.class));
         return eventBean;
     }
 
@@ -594,5 +622,4 @@ public class Dispatcher implements Runnable {
         }
         return eventBean;
     }
-
 }

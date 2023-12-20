@@ -3,6 +3,7 @@ package com.newrelic.agent.security.introspec.internal;
 import com.newrelic.agent.security.introspec.SecurityIntrospector;
 import com.newrelic.api.agent.security.Agent;
 import com.newrelic.api.agent.security.NewRelicSecurity;
+import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.security.instrumentation.helpers.JdbcHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.HttpRequest;
@@ -106,6 +107,11 @@ public class SecurityIntrospectorImpl implements SecurityIntrospector {
     @Override
     public void setK2TracingData(String value) {
         NewRelicSecurity.getAgent().getSecurityMetaData().setTracingHeaderValue(value);
+    }
+
+    @Override
+    public void setK2ParentId(String value) {
+        NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(GenericHelper.CSEC_PARENT_ID, value);
     }
 
     @Override

@@ -52,31 +52,37 @@ public class InitLogWriter implements Runnable {
 
     public static final String DATE_FORMAT_NOW = "yyyy-MM-dd HH:mm:ss";
 
-    private static final String fileName;
+    private static String fileName;
 
-    private static final String currentLogFileName;
-
-    private static int logFileCounter = 0;
+    private static String currentLogFileName;
 
     private static BufferedWriter writer;
 
-    private static final File currentLogFile;
+    private static File currentLogFile;
 
     private String threadName;
 
     private static OSVariables osVariables = OsVariablesInstance.getInstance().getOsVariables();
 
     static {
-        fileName = new File(osVariables.getLogDirectory(), "java-security-collector-init.log").getAbsolutePath();
-        currentLogFile = new File(fileName);
-        CommonUtils.forceMkdirs(currentLogFile.getParentFile().toPath(), "rwxrwxrwx");
-        currentLogFileName = fileName;
+        if(FileLoggerThreadPool.getInstance().isLoggingToStdOut){
+            writer = new BufferedWriter(new OutputStreamWriter(System.out));
+        } else {
+            fileName = new File(osVariables.getLogDirectory(), "java-security-collector-init.log").getAbsolutePath();
+            currentLogFile = new File(fileName);
+            CommonUtils.forceMkdirs(currentLogFile.getParentFile().toPath(), "rwxrwxrwx");
+            currentLogFileName = fileName;
+            createLogFile();
+        }
+    }
+
+    private static void createLogFile() {
         try {
             currentLogFile.setReadable(true, false);
             writer = new BufferedWriter(new FileWriter(currentLogFileName, true));
             writer.write(LOG_FILE_INITIATED_MSG);
             writer.flush();
-            maxFileSize = FileLoggerThreadPool.getInstance().maxfilesize * 1048576;
+            maxFileSize = FileLoggerThreadPool.getInstance().maxfilesize;
 
             // k2.log.handler.maxfilesize=10
             // k2.log.handler.maxfilesize.unit=MB
@@ -86,9 +92,7 @@ public class InitLogWriter implements Runnable {
             writer.write(String.format(LOG_CONFIGURED_SUCCESSFULLY_MSG, LogLevel.getLevelName(defaultLogLevel), maxFileSize));
             writer.flush();
         } catch (Throwable e) {
-            //TODO report to cloud
             FileLoggerThreadPool.getInstance().setInitLoggingActive(false);
-
             String tmpDir = System.getProperty("java.io.tmpdir");
             System.err.println("[NR-CSEC-JA] Unable to create status log file!!! Please find the error in  " + tmpDir + File.separator + "NR-CSEC-Logger.err");
             try {
@@ -165,7 +169,7 @@ public class InitLogWriter implements Runnable {
     }
 
     private static void rollover(String fileName) throws IOException {
-        if (!rolloverCheckNeeded()) {
+        if (FileLoggerThreadPool.getInstance().isLoggingToStdOut || !rolloverCheckNeeded()) {
             return;
         }
 
@@ -182,7 +186,7 @@ public class InitLogWriter implements Runnable {
                 } catch (IOException e) {
                 }
 
-                CommonUtils.deleteRolloverLogFiles(currentFile.getName(), FileLoggerThreadPool.getInstance().maxfiles);
+                LogFileHelper.deleteRolloverLogFiles(currentFile.getName(), FileLoggerThreadPool.getInstance().maxfiles);
             }
         } finally {
             writer = new BufferedWriter(new FileWriter(currentFile, true));
@@ -211,4 +215,7 @@ public class InitLogWriter implements Runnable {
         return fileName;
     }
 
+    public static void setWriter(BufferedWriter writer) {
+        InitLogWriter.writer = writer;
+    }
 }

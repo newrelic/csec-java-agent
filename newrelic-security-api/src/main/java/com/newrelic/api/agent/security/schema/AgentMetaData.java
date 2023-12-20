@@ -107,6 +107,13 @@ public class AgentMetaData {
         this.reflectedMetaData = reflectedMetaData;
     }
 
+    public void addReflectedMetaData(String metaKey, String metaData) {
+        if(this.reflectedMetaData==null) {
+            this.reflectedMetaData = new HashMap<>();
+        }
+        this.reflectedMetaData.put(metaKey, metaData);
+    }
+
     public StackTraceElement[] getServiceTrace() {
         return serviceTrace;
     }

@@ -127,8 +127,7 @@ task newrelicVersionedAPIJar(type: Jar) {
     group("build")
     dependsOn("transformedShadowJar")
 
-    from("$rootDir/LICENSE")
-    from("$rootDir/THIRD_PARTY_NOTICES.md")
+    from("$rootDir/LICENSE.md")
 
     includeEmptyDirs = false
 
