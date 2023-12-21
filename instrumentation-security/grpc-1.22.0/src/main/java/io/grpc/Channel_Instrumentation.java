@@ -12,7 +12,7 @@ public class Channel_Instrumentation {
             MethodDescriptor<RequestT, ResponseT> methodDescriptor, CallOptions callOptions) {
         ClientCall_Instrumentation<RequestT, ResponseT> result = Weaver.callOriginal();
         result.methodDescriptor = methodDescriptor;
-        result.authority = authority();
+        result.csecAuthority = authority();
         return result;
     }
 
