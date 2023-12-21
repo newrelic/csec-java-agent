@@ -30,11 +30,9 @@ class AkkaSyncRequestHandler(handler: HttpRequest ⇒ HttpResponse)(implicit mat
       body.append(chunk)
     }
     val processingResult: Future[Done] = dataBytes.runWith(sink, materializer)
+    AkkaCoreUtils.preProcessHttpRequest(isLockAquired, param, body.underlying, NewRelic.getAgent.getTransaction.getToken);
     val response: HttpResponse = handler.apply(param)
-    AkkaCoreUtils.preProcessHttpRequest(isLockAquired, param, body.toString(), NewRelic.getAgent.getTransaction.getToken);
-
-    var updatedResponse: HttpResponse = response
     ResponseFutureHelper.wrapResponseSync(response, materializer)
-    updatedResponse
+    response
   }
 }

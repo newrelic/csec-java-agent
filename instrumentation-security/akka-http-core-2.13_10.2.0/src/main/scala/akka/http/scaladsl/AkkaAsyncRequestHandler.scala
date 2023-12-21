@@ -8,22 +8,20 @@
 package akka.http.scaladsl
 
 import akka.Done
-import akka.http.scaladsl.model.{HttpEntity, HttpRequest, HttpResponse}
+import akka.http.scaladsl.model.{HttpRequest, HttpResponse}
 import akka.stream.Materializer
 import akka.stream.javadsl.Source
 import akka.stream.scaladsl.Sink
 import akka.util.ByteString
 import com.newrelic.api.agent.{NewRelic, Trace}
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.runtime.AbstractFunction1
 
 class AkkaAsyncRequestHandler(handler: HttpRequest ⇒ Future[HttpResponse])(implicit ec: ExecutionContext, materializer: Materializer) extends AbstractFunction1[HttpRequest, Future[HttpResponse]] {
 
   @Trace(dispatcher = true)
   override def apply(param: HttpRequest): Future[HttpResponse] = {
-
-    var futureResponse: Future[HttpResponse] = null
     val body: StringBuilder = new StringBuilder();
     val dataBytes: Source[ByteString, AnyRef] = param.entity.getDataBytes()
     val isLockAquired = AkkaCoreUtils.acquireServletLockIfPossible();
@@ -32,19 +30,8 @@ class AkkaAsyncRequestHandler(handler: HttpRequest ⇒ Future[HttpResponse])(imp
       body.append(chunk)
     }
     val processingResult: Future[Done] = dataBytes.runWith(sink, materializer)
-    processingResult.onComplete {
-      _ => {
-        AkkaCoreUtils.preProcessHttpRequest(isLockAquired, param, body.toString(), NewRelic.getAgent.getTransaction.getToken);
-      }
-    }
-    futureResponse = handler.apply(param)
-    futureResponse = futureResponse.flatMap {
-      response:HttpResponse => Future {
-        AkkaCoreUtils.preProcessHttpRequest(isLockAquired, param, body.toString(), NewRelic.getAgent.getTransaction.getToken);
-        response
-      }
-    }
-
+    AkkaCoreUtils.preProcessHttpRequest(isLockAquired, param, body.underlying, NewRelic.getAgent.getTransaction.getToken);
+    val futureResponse: Future[HttpResponse] = handler.apply(param)
     futureResponse.flatMap(ResponseFutureHelper.wrapResponseAsync(NewRelic.getAgent.getTransaction.getToken, materializer))
     futureResponse
   }

@@ -13,7 +13,6 @@ import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityExcepti
 import com.newrelic.api.agent.security.schema.operation.RXSSOperation;
 import com.newrelic.api.agent.security.schema.policy.AgentPolicy;
 
-import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -84,7 +83,7 @@ public class AkkaCoreUtils {
         }
     }
 
-    public static void preProcessHttpRequest (Boolean isServletLockAcquired, HttpRequest httpRequest, String requestBody, Token token) {
+    public static void preProcessHttpRequest (Boolean isServletLockAcquired, HttpRequest httpRequest, StringBuilder requestBody, Token token) {
         if(!isServletLockAcquired) {
             return;
         }
@@ -118,7 +117,7 @@ public class AkkaCoreUtils {
             securityRequest.setContentType(httpRequest.entity().getContentType().toString());
 
             securityAgentMetaData.setServiceTrace(Thread.currentThread().getStackTrace());
-            securityRequest.getBody().append(requestBody);
+            securityRequest.setBody(requestBody);
             securityRequest.setRequestParsed(true);
         } catch (Throwable ignored){}
         finally {

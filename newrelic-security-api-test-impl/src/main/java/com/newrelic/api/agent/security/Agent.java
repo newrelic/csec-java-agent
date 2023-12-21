@@ -137,4 +137,9 @@ public class Agent implements SecurityAgent {
     public boolean isLowPriorityInstrumentationEnabled() {
         return true;
     }
+
+    @Override
+    public void retransformUninstrumentedClass(Class<?> classToRetransform) {
+
+    }
 }
