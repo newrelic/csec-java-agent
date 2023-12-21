@@ -28,7 +28,6 @@ public class GrpcRequestProcessor implements Callable<Object> {
                 .submit(new GrpcRequestProcessor(request, MAX_REPETITION));
         try {
             Object futureResult = future.get();
-            System.out.println("Future Result :: " + futureResult);
             if (futureResult instanceof Throwable) {
                 GrpcClientRequestReplayHelper.getInstance().addFuzzFailEventToQueue(request.getRequestBean(), (Throwable) futureResult);
             } else {

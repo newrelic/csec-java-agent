@@ -44,13 +44,10 @@ public class GrpcRequestThreadPool {
                     super.afterExecute(r, t);
                     GrpcClientRequestReplayHelper.getInstance().setInProcessRequestQueue(getQueue());
                     String controlCommandId = null;
-                    System.out.println("1 After execute : "+(r instanceof CustomFutureTask<?> && ((CustomFutureTask<?>) r).getTask() instanceof GrpcRequestProcessor));
-                    System.out.println("2 After execute : "+((CustomFutureTask<?>) r).get());
                     if (r instanceof CustomFutureTask<?> && ((CustomFutureTask<?>) r).getTask() instanceof GrpcRequestProcessor) {
                         Object result = (Object) ((CustomFutureTask<?>) r).get();
                         GrpcRequestProcessor task = (GrpcRequestProcessor) ((CustomFutureTask<?>) r).getTask();
                         controlCommandId = task.getPartialControlCommand().getId();
-                        System.out.println("control command id : " + controlCommandId);
                         if (t != null || result != null) {
                             if (StringUtils.isNotBlank(controlCommandId)) {
                                 GrpcClientRequestReplayHelper.getInstance().getRejectedIds().add(controlCommandId);
@@ -59,7 +56,6 @@ public class GrpcRequestThreadPool {
                             GrpcClientRequestReplayHelper.getInstance().getProcessedIds().putIfAbsent(controlCommandId, new HashSet<>());
                         }
                     }
-                    System.out.println("3 After execute");
                     if (StringUtils.isNotBlank(controlCommandId)) {
                         GrpcClientRequestReplayHelper.getInstance().getPendingIds().remove(controlCommandId);
                     }
@@ -121,7 +117,7 @@ public class GrpcRequestThreadPool {
                     executor.shutdownNow(); // cancel currently executing tasks
 
                     if (!executor.awaitTermination(1, TimeUnit.SECONDS)) {
-                        System.out.println("Thread pool executor did not terminate");
+//                        System.out.println("Thread pool executor did not terminate");
                     }
                 }
             } catch (InterruptedException e) {

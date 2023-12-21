@@ -73,7 +73,7 @@ public class GrpcClient {
             ManagedChannel channel = null;
             try {
                 channel = isSecure?getManagedChannelWithSsl("localhost", serverPort):getManagedChannelWithoutSsl("localhost", serverPort);
-                System.out.printf("Client initialised for port :: %s", serverPort);
+//                System.out.printf("Client initialised for port :: %s", serverPort);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -89,9 +89,9 @@ public class GrpcClient {
             isSecure = StringUtils.equals("https", requestBean.getProtocol());
             ManagedChannel channel = clientThreadLocal.get();
 
-            System.out.println(String.format(FIRING_REQUEST_METHOD_S, requestBean.getMethod()));
-            System.out.println(String.format(FIRING_REQUEST_URL_S, requestBean.getUrl()));
-            System.out.println(String.format(FIRING_REQUEST_HEADERS_S, requestBean.getHeaders()));
+//            System.out.println(String.format(FIRING_REQUEST_METHOD_S, requestBean.getMethod()));
+//            System.out.println(String.format(FIRING_REQUEST_URL_S, requestBean.getUrl()));
+//            System.out.println(String.format(FIRING_REQUEST_HEADERS_S, requestBean.getHeaders()));
 
             Object isSuccess = false;
             switch (requestBean.getReflectedMetaData().get(GrpcHelper.REQUEST_TYPE)){
@@ -162,7 +162,7 @@ public class GrpcClient {
 
             @Override
             public void onNext(Any response) {
-                System.out.println(String.format(REQUEST_SUCCESS_S_RESPONSE_S_S, requestBean, response, response.toString()));
+//                System.out.println(String.format(REQUEST_SUCCESS_S_RESPONSE_S_S, requestBean, response, response.toString()));
             }
 
             @Override
@@ -192,7 +192,7 @@ public class GrpcClient {
 
         for (String requestData : payloads) {
             try {
-                System.out.println(requestData);
+//                System.out.println(requestData);
                 Any pack = getMessageOfTypeAny(requestData, requestClass);
                 requestObserver.onNext(pack);
             } catch (Throwable e) {
@@ -225,7 +225,7 @@ public class GrpcClient {
                 Iterator<Any> response = stub.withInterceptors(MetadataUtils.newAttachHeadersInterceptor(headers))
                         .serverStream(pack, serviceName, methodName, getMessageDescriptor(requestClass));
                 while (response.hasNext()) {
-                    System.out.println(String.format(REQUEST_SUCCESS_S_RESPONSE_S_S, requestBean, response, response.toString()));
+//                    System.out.println(String.format(REQUEST_SUCCESS_S_RESPONSE_S_S, requestBean, response, response.toString()));
                 }
             } catch (Throwable e) {
                 return e;
@@ -247,7 +247,7 @@ public class GrpcClient {
         StreamObserver<Any> responseObserver = new StreamObserver<Any>() {
             @Override
             public void onNext(Any response) {
-                System.out.println(String.format(REQUEST_SUCCESS_S_RESPONSE_S_S, requestBean, response, response.toString()));
+//                System.out.println(String.format(REQUEST_SUCCESS_S_RESPONSE_S_S, requestBean, response, response.toString()));
             }
 
             @Override

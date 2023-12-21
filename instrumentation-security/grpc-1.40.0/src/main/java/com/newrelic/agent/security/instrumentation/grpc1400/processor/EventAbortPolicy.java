@@ -9,6 +9,6 @@ public class EventAbortPolicy implements RejectedExecutionHandler {
     }
 
     public void rejectedExecution(Runnable r, ThreadPoolExecutor e) {
-        System.out.println("Fuzz request " + r.toString() + " rejected from  " + e.toString());
+//        System.out.println("Fuzz request " + r.toString() + " rejected from  " + e.toString());
     }
 }

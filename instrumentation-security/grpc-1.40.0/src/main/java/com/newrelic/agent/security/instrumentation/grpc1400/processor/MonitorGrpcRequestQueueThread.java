@@ -27,8 +27,8 @@ public class MonitorGrpcRequestQueueThread {
                 if (GrpcRequestThreadPool.getInstance().executor.getQueue().remainingCapacity()>0) {
                     ControlCommandDto controlCommandDto = GrpcClientRequestReplayHelper.getInstance().getSingleRequestFromRequestQueue();
                     if (controlCommandDto != null) {
-                        System.out.println("Request body received : " + controlCommandDto.getRequestBean().getBody() + " : " +
-                                GrpcClientRequestReplayHelper.getInstance().getRequestQueue().size());
+//                        System.out.println("Request body received : " + controlCommandDto.getRequestBean().getBody() + " : " +
+//                                GrpcClientRequestReplayHelper.getInstance().getRequestQueue().size());
                         GrpcRequestProcessor.executeGrpcRequest(controlCommandDto);
                     }
                 } else {
