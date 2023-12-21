@@ -84,8 +84,6 @@ public class IASTDataTransferRequestProcessor {
             int currentRecordBacklog = Math.max(currentRecordBacklogRest, currentRecordBacklogGrpc);
             int remainingRecordCapacity = Math.min(remainingRecordCapacityRest, remainingRecordCapacityGrpc);
 
-            System.out.println("Current backlog is " + currentRecordBacklog + " and remaining cap is " + remainingRecordCapacity);
-
             int batchSize = currentFetchThreshold - currentRecordBacklog;
             if(!AgentUsageMetric.isRASPProcessingActive()){
                 batchSize /= 2;
