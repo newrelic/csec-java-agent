@@ -18,7 +18,7 @@ import io.grpc.Grpc;
 import io.grpc.Metadata;
 import io.grpc.SecurityLevel;
 import io.grpc.ServerMethodDefinition;
-import io.grpc.internal.ServerStream;
+import io.grpc.internal.ServerStream_Instrumentation;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -35,7 +35,7 @@ public class GrpcServerUtils {
     public static final String NR_SEC_CUSTOM_ATTRIB_NAME = "NR_CSEC_GRPC_SERVER_OPERATIONAL_LOCK_";
     private static Map<Integer, TypeRegistry> typeRegistries = new HashMap<>();
 
-    public static <ReqT, ResT> void preprocessSecurityHook(ServerStream call, ServerMethodDefinition<ReqT, ResT> methodDef, Metadata meta, String klass) {
+    public static <ReqT, ResT> void preprocessSecurityHook(ServerStream_Instrumentation call, ServerMethodDefinition<ReqT, ResT> methodDef, Metadata meta, String klass) {
         try {
             if (!NewRelicSecurity.isHookProcessingActive()) {
                 return;
@@ -90,9 +90,6 @@ public class GrpcServerUtils {
 
             // TODO: Create OutBoundHttp data here : Skipping for now.
             securityRequest.setContentType(meta.get(Metadata.Key.of("content-type", Metadata.ASCII_STRING_MARSHALLER)));
-
-            StackTraceElement[] trace = Thread.currentThread().getStackTrace();
-            securityMetaData.getMetaData().setServiceTrace(Arrays.copyOfRange(trace, 2, trace.length));
 
             securityRequest.setRequestParsed(true);
             NewRelicSecurity.getAgent().getSecurityMetaData().getMetaData().addReflectedMetaData(GrpcHelper.REQUEST_TYPE,

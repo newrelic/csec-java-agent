@@ -7,6 +7,7 @@
 
 package io.grpc.internal;
 
+import com.newrelic.api.agent.NewRelic;
 import com.newrelic.api.agent.weaver.NewField;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
@@ -31,7 +32,8 @@ public class ServerImpl_Instrumentation {
             Weaver.callOriginal();
         }
 
-        private <ReqT, RespT> ServerMethodDefinition<?, ?> wrapMethod(ServerStream stream, ServerMethodDefinition<ReqT, RespT> methodDef, StatsTraceContext statsTraceCtx) {
+        private <ReqT, RespT> ServerMethodDefinition<?, ?> wrapMethod(ServerStream_Instrumentation stream, ServerMethodDefinition<ReqT, RespT> methodDef, StatsTraceContext statsTraceCtx) {
+            stream.tokenForCsec = NewRelic.getAgent().getTransaction().getToken();
             boolean isLockAcquired = GrpcServerUtils.acquireLockIfPossible();
             if (isLockAcquired) {
                 GrpcServerUtils.preprocessSecurityHook(stream, methodDef, headers, this.getClass().getName());
