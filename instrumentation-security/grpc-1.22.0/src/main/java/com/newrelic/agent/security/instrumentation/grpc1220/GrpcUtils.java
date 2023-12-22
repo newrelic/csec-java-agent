@@ -1,6 +1,5 @@
 package com.newrelic.agent.security.instrumentation.grpc1220;
 
-import com.google.protobuf.Descriptors;
 import com.google.protobuf.MessageOrBuilder;
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.instrumentation.helpers.GrpcHelper;

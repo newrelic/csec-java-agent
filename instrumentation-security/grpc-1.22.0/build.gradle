@@ -27,9 +27,7 @@ jar {
 }
 
 verifyInstrumentation {
-    passesOnly('io.grpc:grpc-all:[1.22.0,1.40.0)'){
-        implementation("com.google.protobuf:protobuf-java-util:3.10.0")
-    }
+    passesOnly('io.grpc:grpc-all:[1.29.0,1.40.0)')
 }
 
 // to generate the proto classes, run ./gradlew generateTestProto

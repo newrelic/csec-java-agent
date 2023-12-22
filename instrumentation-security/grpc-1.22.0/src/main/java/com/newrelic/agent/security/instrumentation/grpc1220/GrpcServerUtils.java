@@ -19,6 +19,7 @@ import io.grpc.Metadata;
 import io.grpc.SecurityLevel;
 import io.grpc.ServerMethodDefinition;
 import io.grpc.internal.ServerStream;
+import io.grpc.internal.ServerStream_Instrumentation;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -36,7 +37,7 @@ public class GrpcServerUtils {
     private static Map<Integer, TypeRegistry> typeRegistries = new HashMap<>();
 
 
-    public static <ReqT, ResT> void preprocessSecurityHook(ServerStream call, ServerMethodDefinition<ReqT, ResT> methodDef, Metadata meta, String klass) {
+    public static <ReqT, ResT> void preprocessSecurityHook(ServerStream_Instrumentation call, ServerMethodDefinition<ReqT, ResT> methodDef, Metadata meta, String klass) {
         try {
             if (!NewRelicSecurity.isHookProcessingActive()) {
                 return;
