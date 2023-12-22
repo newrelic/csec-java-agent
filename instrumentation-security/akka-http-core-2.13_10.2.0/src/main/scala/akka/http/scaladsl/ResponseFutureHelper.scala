@@ -63,14 +63,8 @@ object ResponseFutureHelper {
         stringResponse.append(chunk)
       }
       val processingResult: Future[Done] = dataBytes.runWith(sink, materializer)
-      var contentType = ""
-      httpResponse.headers.foreach(header => {
-        if (StringUtils.equalsAny(header.name(), "contenttype", "content-type")) {
-          contentType = header.value()
-        }
-      })
 
-      AkkaCoreUtils.postProcessHttpRequest(isLockAquired, stringResponse.toString(), contentType, this.getClass.getName, "apply", NewRelic.getAgent.getTransaction.getToken())
+      AkkaCoreUtils.postProcessHttpRequest(isLockAquired, stringResponse.toString(), httpResponse.entity.contentType.toString(), this.getClass.getName, "apply", NewRelic.getAgent.getTransaction.getToken())
     } catch {
       case t: NewRelicSecurityException =>
         t.printStackTrace()
