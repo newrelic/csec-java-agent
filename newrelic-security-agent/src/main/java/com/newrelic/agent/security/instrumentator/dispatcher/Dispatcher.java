@@ -1,5 +1,6 @@
 package com.newrelic.agent.security.instrumentator.dispatcher;
 
+import com.google.gson.Gson;
 import com.newrelic.agent.security.AgentInfo;
 import com.newrelic.agent.security.instrumentator.helper.DynamoDBRequestConverter;
 import com.newrelic.agent.security.instrumentator.utils.AgentUtils;
@@ -81,6 +82,8 @@ public class Dispatcher implements Callable {
     public SecurityMetaData getSecurityMetaData() {
         return securityMetaData;
     }
+
+    private static Gson GsonUtil = new Gson();
 
     public Dispatcher(AbstractOperation operation, SecurityMetaData securityMetaData) {
         this.securityMetaData = securityMetaData;
@@ -213,9 +216,12 @@ public class Dispatcher implements Callable {
                     eventBean = prepareXQueryInjectionEvent(eventBean, xQueryOperationalBean);
                     break;
                 case CACHING_DATA_STORE:
-                    if (operation instanceof RedisOperation) {
+                    if(operation instanceof RedisOperation) {
                         RedisOperation redisOperation = (RedisOperation) operation;
                         eventBean = prepareCachingDataStoreEvent(eventBean, redisOperation);
+                    } else if (operation instanceof JCacheOperation) {
+                        JCacheOperation jCacheOperation = (JCacheOperation) operation;
+                        eventBean = prepareJCacheCachingDataStoreEvent(eventBean, jCacheOperation);
                     } else if (operation instanceof MemcachedOperation) {
                         MemcachedOperation memcachedOperationalBean = (MemcachedOperation) operation;
                         eventBean = prepareMemcachedEvent(eventBean, memcachedOperationalBean);
@@ -263,6 +269,33 @@ public class Dispatcher implements Callable {
         parameter.add(command);
         eventBean.setParameters(parameter);
         return eventBean;
+    }
+
+    private JavaAgentEventBean prepareJCacheCachingDataStoreEvent(JavaAgentEventBean eventBean, JCacheOperation jCacheOperation) {
+        JSONArray params = new JSONArray();
+        for (Object data : jCacheOperation.getArguments()) {
+            if (isPrimitiveType(data.getClass())) {
+                params.add(data);
+            } else {
+                params.add(GsonUtil.toJson(data));
+            }
+        }
+
+        JSONObject command = new JSONObject();
+        command.put(REDIS_ARGUMENTS, params);
+        command.put(REDIS_TYPE, jCacheOperation.getType());
+
+        JSONArray parameter = new JSONArray();
+        parameter.add(command);
+        eventBean.setParameters(parameter);
+        eventBean.setEventCategory(jCacheOperation.getCategory());
+        return eventBean;
+    }
+
+    public boolean isPrimitiveType(Class<?> clazz) {
+        return (clazz.isPrimitive() && clazz != void.class) || clazz == Double.class || clazz == Float.class || clazz == Long.class ||
+                clazz == Integer.class || clazz == Short.class || clazz == Character.class || clazz == Byte.class || clazz == Boolean.class ||
+                clazz == String.class;
     }
 
     @Nullable
