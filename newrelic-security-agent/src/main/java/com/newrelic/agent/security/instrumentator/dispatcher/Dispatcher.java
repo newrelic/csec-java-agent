@@ -52,6 +52,9 @@ public class Dispatcher implements Callable {
 
     public static final String SEPARATOR1 = ", ";
     public static final String APP_LOCATION = "app-location";
+    public static final String REDIS_MODE = "mode";
+    public static final String REDIS_ARGUMENTS = "arguments";
+    public static final String REDIS_TYPE = "type";
     public static final String SYSCOMMAND_ENVIRONMENT = "environment";
     public static final String SYSCOMMAND_SCRIPT_CONTENT = "script-content";
     public static final String UNABLE_TO_CONVERT_OPERATION_TO_EVENT = "Unable to convert operation to event: %s, %s, %s";
@@ -209,6 +212,15 @@ public class Dispatcher implements Callable {
                     XQueryOperation xQueryOperationalBean = (XQueryOperation) operation;
                     eventBean = prepareXQueryInjectionEvent(eventBean, xQueryOperationalBean);
                     break;
+                case CACHING_DATA_STORE:
+                    if (operation instanceof RedisOperation) {
+                        RedisOperation redisOperation = (RedisOperation) operation;
+                        eventBean = prepareCachingDataStoreEvent(eventBean, redisOperation);
+                    } else if (operation instanceof MemcachedOperation) {
+                        MemcachedOperation memcachedOperationalBean = (MemcachedOperation) operation;
+                        eventBean = prepareMemcachedEvent(eventBean, memcachedOperationalBean);
+                    }
+                    break;
                 default:
 
             }
@@ -236,6 +248,21 @@ public class Dispatcher implements Callable {
                     this.getClass().getName());
         }
         return null;
+    }
+
+    private JavaAgentEventBean prepareCachingDataStoreEvent(JavaAgentEventBean eventBean, RedisOperation redisOperation) {
+        JSONArray params = new JSONArray();
+        for (Object data : redisOperation.getArguments()) {
+            params.add(data);
+        }
+        JSONObject command = new JSONObject();
+        command.put(REDIS_MODE, redisOperation.getMode());
+        command.put(REDIS_ARGUMENTS, params);
+        command.put(REDIS_TYPE, redisOperation.getType());
+        JSONArray parameter = new JSONArray();
+        parameter.add(command);
+        eventBean.setParameters(parameter);
+        return eventBean;
     }
 
     @Nullable
@@ -510,6 +537,22 @@ public class Dispatcher implements Callable {
             params.add(jsonObject);
         }
         eventBean.setParameters(params);
+        return eventBean;
+    }
+
+    private static JavaAgentEventBean prepareMemcachedEvent(JavaAgentEventBean eventBean, MemcachedOperation memcachedOperationalBean) {
+        JSONArray params = new JSONArray();
+        for (Object data : memcachedOperationalBean.getArguments()) {
+            params.add(data);
+        }
+        JSONObject command = new JSONObject();
+        command.put(REDIS_ARGUMENTS, params);
+        command.put(REDIS_TYPE, memcachedOperationalBean.getType());
+        command.put(REDIS_MODE, memcachedOperationalBean.getCommand());
+        JSONArray parameter = new JSONArray();
+        parameter.add(command);
+        eventBean.setParameters(parameter);
+        eventBean.setEventCategory(memcachedOperationalBean.getCategory());
         return eventBean;
     }
 
