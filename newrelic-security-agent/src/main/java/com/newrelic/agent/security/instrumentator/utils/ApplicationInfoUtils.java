@@ -104,9 +104,7 @@ public class ApplicationInfoUtils {
                     podId = StringUtils.substringBetween(line, "kubepods-besteffort-pod", ".slice");
                 }
             }
-        } catch (Throwable e) {
-            e.printStackTrace();
-        }
+        } catch (Throwable ignored) {}
         return StringUtils.replaceChars(podId, "_", "-");
     }
 

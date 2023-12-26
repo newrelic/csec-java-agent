@@ -22,6 +22,7 @@ public class CustomerInfo {
     public CustomerInfo() {
     }
 
+    @JsonIgnore
     public String getApiAccessorToken() {
         return apiAccessorToken;
     }
