@@ -42,7 +42,6 @@ public class CommandArgsCsecUtils {
     public static Object getSpringDataArgument(Object argument){
         Object returnValue = null;
         try {
-            System.out.println("Get Arguments call for obj "+ argument.hashCode() +":"+argument );
             returnValue = NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(GenericHelper.NR_SEC_CUSTOM_SPRING_REDIS_ATTR + argument.hashCode(), Object.class);
         } catch (Exception e){
             returnValue = argument;
