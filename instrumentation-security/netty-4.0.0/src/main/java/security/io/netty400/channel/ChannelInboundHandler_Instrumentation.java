@@ -19,10 +19,19 @@ import security.io.netty400.utils.NettyUtils;
 public abstract class ChannelInboundHandler_Instrumentation {
 
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-        NettyUtils.processSecurityRequest(ctx, msg, getClass().getName());
-        if (!StringUtils.startsWith(getClass().getName(), NettyUtils.IO_NETTY)) {
-            ServletHelper.registerUserLevelCode(NettyUtils.IO_NETTY);
+        boolean isLockAcquired = NettyUtils.acquireNettyLockIfPossible();
+        if (isLockAcquired) {
+            NettyUtils.processSecurityRequest(ctx, msg, getClass().getName());
+            if (!StringUtils.startsWith(getClass().getName(), NettyUtils.IO_NETTY)) {
+                ServletHelper.registerUserLevelCode(NettyUtils.IO_NETTY);
+            }
         }
-        Weaver.callOriginal();
+        try {
+            Weaver.callOriginal();
+        } finally {
+            if (isLockAcquired) {
+                NettyUtils.releaseNettyLock();
+            }
+        }
     }
 }
