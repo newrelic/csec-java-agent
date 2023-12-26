@@ -10,6 +10,7 @@ public class GenericHelper {
     public static Pattern STORED_PROCEDURE_PATTERN = Pattern.compile("(call\\s+[a-zA-Z0-9_\\$]+\\(.*?\\))",
             Pattern.MULTILINE | Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
     public static final String CSEC_PARENT_ID = "nr-csec-parent-id";
+    public static final String NR_SEC_CUSTOM_SPRING_REDIS_ATTR = "SPRING-DATA-REDIS";
 
     public static boolean skipExistsEvent() {
         if (!(NewRelicSecurity.getAgent().getCurrentPolicy().getVulnerabilityScan().getEnabled() &&
