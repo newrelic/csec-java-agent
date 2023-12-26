@@ -7,6 +7,7 @@
 
 package software.amazon.awssdk.core.client.handler;
 
+import com.newrelic.agent.security.instrumentation.dynamodb_212.DynamoDBUtil;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
