@@ -58,7 +58,7 @@ public class NettyUtils {
                 securityRequest.setProtocol(((HttpRequest) msg).getProtocolVersion().protocolName());
                 securityRequest.setContentType(securityRequest.getHeaders().get("content-type"));
                 StackTraceElement[] stack = Thread.currentThread().getStackTrace();
-                securityMetaData.getMetaData().setServiceTrace(Arrays.copyOfRange(stack, 1, stack.length));
+                securityMetaData.getMetaData().setServiceTrace(Arrays.copyOfRange(stack, 2, stack.length));
                 securityRequest.setRequestParsed(true);
             } else if (msg instanceof HttpContent) {
                 if (!(secMetaObj instanceof SecurityMetaData) ||

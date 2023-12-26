@@ -7,6 +7,8 @@ import com.newrelic.agent.security.intcodeagent.websocket.JsonConverter;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class LogMessageException {
 
+    private String type;
+
     private String message;
 
     private LogMessageException cause;
@@ -14,6 +16,7 @@ public class LogMessageException {
     private String[] stackTrace;
 
     public LogMessageException(Throwable exception, int nestingLevel, int maxNestingLevel) {
+        this.type = exception.getClass().getName();
         this.message = exception.getMessage();
         StackTraceElement[] trace = exception.getStackTrace();
         this.stackTrace = new String[trace.length];
@@ -35,6 +38,10 @@ public class LogMessageException {
 
     public String[] getStackTrace() {
         return stackTrace;
+    }
+
+    public String getType() {
+        return type;
     }
 
     public String toString() {
