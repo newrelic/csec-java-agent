@@ -12,8 +12,11 @@ import com.newrelic.agent.security.intcodeagent.logging.DeployedApplication;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.ExitEventBean;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.JavaAgentEventBean;
 import com.newrelic.agent.security.intcodeagent.websocket.EventSendPool;
+import com.newrelic.agent.security.intcodeagent.websocket.JsonConverter;
 import com.newrelic.api.agent.NewRelic;
+import com.newrelic.api.agent.security.instrumentation.helpers.AppServerInfoHelper;
 import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
+import com.newrelic.api.agent.security.instrumentation.helpers.SystemCommandUtils;
 import com.newrelic.api.agent.security.schema.*;
 import com.newrelic.api.agent.security.schema.helper.DynamoDBRequest;
 import com.newrelic.api.agent.security.schema.operation.*;
@@ -53,12 +56,20 @@ public class Dispatcher implements Callable {
     public static final String REDIS_MODE = "mode";
     public static final String REDIS_ARGUMENTS = "arguments";
     public static final String REDIS_TYPE = "type";
+    public static final String SYSCOMMAND_ENVIRONMENT = "environment";
+    public static final String SYSCOMMAND_SCRIPT_CONTENT = "script-content";
+    public static final String UNABLE_TO_CONVERT_OPERATION_TO_EVENT = "Unable to convert operation to event: %s, %s, %s";
+    public static final String COOKIE_VALUE = "value";
+    public static final String COOKIE_IS_SECURE = "isSecure";
+    public static final String COOKIE_IS_HTTP_ONLY = "isHttpOnly";
+    public static final String COOKIE_IS_SAME_SITE_STRICT = "isSameSiteStrict";
     private ExitEventBean exitEventBean;
     private AbstractOperation operation;
     private SecurityMetaData securityMetaData;
     private Map<String, Object> extraInfo = new HashMap<String, Object>();
     private boolean isNRCode = false;
     private static AtomicBoolean firstEventSent = new AtomicBoolean(false);
+    private final String SQL_STORED_PROCEDURE ="SQL_STORED_PROCEDURE";
 
     public ExitEventBean getExitEventBean() {
         return exitEventBean;
@@ -211,6 +222,9 @@ public class Dispatcher implements Callable {
                     } else if (operation instanceof JCacheOperation) {
                         JCacheOperation jCacheOperation = (JCacheOperation) operation;
                         eventBean = prepareJCacheCachingDataStoreEvent(eventBean, jCacheOperation);
+                    } else if (operation instanceof MemcachedOperation) {
+                        MemcachedOperation memcachedOperationalBean = (MemcachedOperation) operation;
+                        eventBean = prepareMemcachedEvent(eventBean, memcachedOperationalBean);
                     }
                     break;
                 default:
@@ -236,7 +250,8 @@ public class Dispatcher implements Callable {
             }
 //        detectDeployedApplication();
         } catch (Throwable e) {
-            e.printStackTrace();
+            logger.postLogMessageIfNecessary(LogLevel.WARNING, String.format(UNABLE_TO_CONVERT_OPERATION_TO_EVENT, operation.getApiID(), operation.getSourceMethod(), JsonConverter.getObjectMapper().writeValueAsString(operation.getUserClassEntity())), e,
+                    this.getClass().getName());
         }
         return null;
     }
@@ -445,6 +460,12 @@ public class Dispatcher implements Callable {
             SecureCookieOperation secureCookieOperationalBean) {
         JSONArray params = new JSONArray();
         params.add(secureCookieOperationalBean.getValue());
+        JSONObject cookie = new JSONObject();
+        cookie.put(COOKIE_VALUE, secureCookieOperationalBean.getCookie());
+        cookie.put(COOKIE_IS_SECURE, secureCookieOperationalBean.isSecure());
+        cookie.put(COOKIE_IS_HTTP_ONLY, secureCookieOperationalBean.isHttpOnly());
+        cookie.put(COOKIE_IS_SAME_SITE_STRICT, secureCookieOperationalBean.isSameSiteStrict());
+        params.add(cookie);
         eventBean.setParameters(params);
         return eventBean;
     }
@@ -495,18 +516,34 @@ public class Dispatcher implements Callable {
         }
         params.add(query);
         eventBean.setParameters(params);
-        eventBean.setEventCategory(operation.getDbName());
+        if (operation.isStoredProcedureCall()) {
+            eventBean.setEventCategory(SQL_STORED_PROCEDURE);
+        } else {
+            eventBean.setEventCategory(operation.getDbName());
+        }
+
         return eventBean;
     }
 
     private JavaAgentEventBean prepareSystemCommandEvent(JavaAgentEventBean eventBean,
             ForkExecOperation operationalBean) {
-        JSONArray params = new JSONArray();
-        params.add(operationalBean.getCommand());
-        if (operationalBean.getEnvironment() != null) {
-            params.add(new JSONObject(operationalBean.getEnvironment()));
+        try {
+            List<String> shellScripts = SystemCommandUtils.isShellScriptExecution(operationalBean.getCommand());
+            List<String> absolutePaths = SystemCommandUtils.getAbsoluteShellScripts(shellScripts);
+            SystemCommandUtils.scriptContent(absolutePaths, operationalBean);
+            JSONArray params = new JSONArray();
+            params.add(operationalBean.getCommand());
+            JSONObject extras = new JSONObject();
+            if (operationalBean.getEnvironment() != null) {
+                extras.put(SYSCOMMAND_ENVIRONMENT, new JSONObject(operationalBean.getEnvironment()));
+            }
+            extras.put(SYSCOMMAND_SCRIPT_CONTENT, operationalBean.getScriptContent());
+            params.add(extras);
+            eventBean.setParameters(params);
+            return eventBean;
+        } catch (Throwable e){
+            e.printStackTrace();
         }
-        eventBean.setParameters(params);
         return eventBean;
     }
 
@@ -533,6 +570,22 @@ public class Dispatcher implements Callable {
             params.add(jsonObject);
         }
         eventBean.setParameters(params);
+        return eventBean;
+    }
+
+    private static JavaAgentEventBean prepareMemcachedEvent(JavaAgentEventBean eventBean, MemcachedOperation memcachedOperationalBean) {
+        JSONArray params = new JSONArray();
+        for (Object data : memcachedOperationalBean.getArguments()) {
+            params.add(data);
+        }
+        JSONObject command = new JSONObject();
+        command.put(REDIS_ARGUMENTS, params);
+        command.put(REDIS_TYPE, memcachedOperationalBean.getType());
+        command.put(REDIS_MODE, memcachedOperationalBean.getCommand());
+        JSONArray parameter = new JSONArray();
+        parameter.add(command);
+        eventBean.setParameters(parameter);
+        eventBean.setEventCategory(memcachedOperationalBean.getCategory());
         return eventBean;
     }
 
@@ -657,6 +710,8 @@ public class Dispatcher implements Callable {
         eventBean.setUserAPIInfo(operation.getUserClassEntity().getUserClassElement().getLineNumber(),
                 operation.getUserClassEntity().getUserClassElement().getClassName(),
                 operation.getUserClassEntity().getUserClassElement().getMethodName());
+        eventBean.getLinkingMetadata().put(NR_APM_TRACE_ID, securityMetaData.getCustomAttribute(NR_APM_TRACE_ID, String.class));
+        eventBean.getLinkingMetadata().put(NR_APM_SPAN_ID, securityMetaData.getCustomAttribute(NR_APM_SPAN_ID, String.class));
         return eventBean;
     }
 
@@ -665,6 +720,7 @@ public class Dispatcher implements Callable {
         JavaAgentEventBean eventBean = new JavaAgentEventBean();
         eventBean.setHttpRequest(httpRequestBean);
         eventBean.setMetaData(metaData);
+        eventBean.getMetaData().setAppServerInfo(AppServerInfoHelper.getAppServerInfo());
         eventBean.setCaseType(vulnerabilityCaseType.getCaseType());
         eventBean.setIsAPIBlocked(metaData.isApiBlocked());
         eventBean.setStacktrace(operation.getStackTrace());
