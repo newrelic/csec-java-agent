@@ -1,12 +1,18 @@
 package com.newrelic.api.agent.security.instrumentation.helpers;
 
 import com.newrelic.api.agent.security.NewRelicSecurity;
+import com.newrelic.api.agent.security.schema.StringUtils;
 import com.newrelic.api.agent.security.schema.operation.FileIntegrityOperation;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.nio.file.attribute.PosixFileAttributes;
+import java.nio.file.attribute.PosixFilePermission;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
 public class FileHelper {
 
@@ -85,8 +91,19 @@ public class FileHelper {
         String extension = getFileExtension(file);
         if (SOURCE_EXENSIONS.contains(extension) &&
                 !NewRelicSecurity.getAgent().getSecurityMetaData().getFileLocalMap().containsKey(fileName)) {
+            long lastModified = file.exists()? file.lastModified() : -1;
+            String permissions = StringUtils.EMPTY;
+            try {
+                if(file.exists()) {
+                    PosixFileAttributes fileAttributes = Files.readAttributes(Paths.get(file.getPath()), PosixFileAttributes.class);
+                    Set<PosixFilePermission> permissionSet = fileAttributes.permissions();
+                    permissions = permissionSet.toString();
+                }
+            } catch (IOException e) {
+            }
+            long fileLength = file.length();
             FileIntegrityOperation fbean = new FileIntegrityOperation(file.exists(), fileName, className,
-                    methodName);
+                    methodName, lastModified, permissions, fileLength);
             NewRelicSecurity.getAgent().getSecurityMetaData().getFileLocalMap().put(fileName,
                     fbean);
             return fbean;
@@ -99,7 +116,7 @@ public class FileHelper {
             File file = Paths.get(fileName).toFile();
             if(NewRelicSecurity.getAgent().getSecurityMetaData().getFileLocalMap().containsKey(fileName)){
                 FileIntegrityOperation fbean = NewRelicSecurity.getAgent().getSecurityMetaData().getFileLocalMap().get(fileName);
-                if(!fbean.getExists().equals(file.exists())){
+                if(fbean.isIntegrityBreached(file)){
                     NewRelicSecurity.getAgent().registerOperation(fbean);
                 }
             }
