@@ -10,6 +10,7 @@ import com.newrelic.agent.security.intcodeagent.models.collectorconfig.Collector
 import com.newrelic.agent.security.intcodeagent.utils.CommonUtils;
 import com.newrelic.agent.security.util.IUtilConstants;
 import com.newrelic.api.agent.NewRelic;
+import com.newrelic.api.agent.security.instrumentation.helpers.LowSeverityHelper;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.comparator.LastModifiedFileComparator;
 import org.apache.commons.io.filefilter.FileFilterUtils;
@@ -52,6 +53,8 @@ public class AgentConfig {
         isNRSecurityEnabled = NewRelic.getAgent().getConfig().getValue(IUtilConstants.NR_SECURITY_ENABLED, false);
         // Set required Group
         groupName = applyRequiredGroup();
+        // Enable low severity hooks
+        LowSeverityHelper.enableLowSeverityHooks(groupName);
         // Set required LogLevel
         logLevel = applyRequiredLogLevel();
 

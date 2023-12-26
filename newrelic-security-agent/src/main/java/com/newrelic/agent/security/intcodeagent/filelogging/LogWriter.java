@@ -76,7 +76,6 @@ public class LogWriter implements Runnable {
 
         } catch (Throwable e) {
             if (FileLoggerThreadPool.getInstance().isLoggingActive()) {
-                //TODO report to cloud
                 FileLoggerThreadPool.getInstance().setLoggingActive(false);
             }
             String tmpDir = System.getProperty("java.io.tmpdir");
