@@ -1,7 +1,16 @@
 package com.newrelic.api.agent.security.schema.operation;
 
 import com.newrelic.api.agent.security.schema.AbstractOperation;
+import com.newrelic.api.agent.security.schema.StringUtils;
 import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.attribute.PosixFileAttributes;
+import java.nio.file.attribute.PosixFilePermission;
+import java.util.Set;
 
 public class FileIntegrityOperation extends AbstractOperation {
 
@@ -12,11 +21,20 @@ public class FileIntegrityOperation extends AbstractOperation {
     private Integer lineNumber;
     private String fileName;
 
-    public FileIntegrityOperation(Boolean exists, String fileName, String className, String methodName) {
+    private Long lastModified;
+
+    private String permissionString;
+
+    private Long length;
+
+    public FileIntegrityOperation(Boolean exists, String fileName, String className, String methodName, Long lastModified, String permissionString, Long length) {
         super(className, methodName);
         this.setCaseType(VulnerabilityCaseType.FILE_INTEGRITY);
         this.exists = exists;
         this.setFileName(fileName);
+        this.lastModified = lastModified;
+        this.permissionString = permissionString;
+        this.length = length;
     }
 
     /**
@@ -89,14 +107,6 @@ public class FileIntegrityOperation extends AbstractOperation {
         this.lineNumber = lineNumber;
     }
 
-    public void setBeanValues(String methodName, String userFileName, String userMethodName, String currentMethod,
-                              Integer lineNumber) {
-        this.userFileName = userFileName;
-        this.userMethodName = userMethodName;
-        this.currentMethod = currentMethod;
-        this.lineNumber = lineNumber;
-    }
-
     @Override
     public boolean isEmpty() {
         return (fileName == null || fileName.trim().isEmpty());
@@ -114,5 +124,37 @@ public class FileIntegrityOperation extends AbstractOperation {
      */
     public void setFileName(String fileName) {
         this.fileName = fileName;
+    }
+
+    public Long getLastModified() {
+        return lastModified;
+    }
+
+    public void setLastModified(Long lastModified) {
+        this.lastModified = lastModified;
+    }
+
+    public String getPermissionString() {
+        return permissionString;
+    }
+
+    public void setPermissionString(String permissionString) {
+        this.permissionString = permissionString;
+    }
+
+    public boolean isIntegrityBreached(File file){
+        Boolean exists = file.exists();
+        long lastModified = exists? file.lastModified() : -1;
+        String permissions = StringUtils.EMPTY;
+        long length = file.length();
+        try {
+            if(exists) {
+                PosixFileAttributes fileAttributes = Files.readAttributes(Paths.get(file.getPath()), PosixFileAttributes.class);
+                Set<PosixFilePermission> permissionSet = fileAttributes.permissions();
+                permissions = permissionSet.toString();
+            }
+        } catch (IOException e) {
+        }
+        return (exists != this.exists || lastModified != this.lastModified || !StringUtils.equals(permissions, this.permissionString) || length != this.length);
     }
 }

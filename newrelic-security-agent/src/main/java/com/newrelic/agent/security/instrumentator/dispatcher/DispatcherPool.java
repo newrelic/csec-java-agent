@@ -48,6 +48,10 @@ public class DispatcherPool {
         return executor;
     }
 
+    public int getMaxQueueSize() {
+        return queueSize;
+    }
+
 
     /**
      * A handler for rejected tasks that throws a
@@ -261,5 +265,4 @@ public class DispatcherPool {
     public void reset() {
         executor.getQueue().clear();
     }
-
 }

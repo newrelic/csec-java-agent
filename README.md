@@ -28,6 +28,7 @@ The agent automatically instruments the following frameworks.
 - Log4j from 2.0 to 2.20.0
 - Servlet from 2.4 to latest
 - Spring from 0 to latest
+- Sun Net HTTP Server
 
 ### Java Native Operations
 
@@ -55,6 +56,7 @@ The agent automatically instruments the following HTTP clients and messaging ser
 - Jaxen XPATH from 1.1 to latest
 - Saxpath 1.0
 - Xalan XPATH 2.1.0 to latest
+- Async Http Client from 2.0 to latest
 
 ### Datastores
 
