@@ -32,7 +32,7 @@ import java.util.Map;
 class HttpTestServerImpl extends NanoHTTPD implements HttpTestServer {
     private final int port;
 
-    private Map<String, String> headers = new HashMap<>();
+    private static Map<String, String> headers = new HashMap<>();
 
     public HttpTestServerImpl() throws IOException {
         this(getRandomPort());
@@ -83,7 +83,7 @@ class HttpTestServerImpl extends NanoHTTPD implements HttpTestServer {
     private Response serveInternal(IHTTPSession session) {
         NewRelic.addCustomParameter("server.port", this.port);
         final Map<String, String> incomingHeaders = session.getHeaders();
-        headers = incomingHeaders;
+        headers.putAll(incomingHeaders);
 
         if (incomingHeaders.containsKey(SLEEP_MS_HEADER_KEY)) {
             try {

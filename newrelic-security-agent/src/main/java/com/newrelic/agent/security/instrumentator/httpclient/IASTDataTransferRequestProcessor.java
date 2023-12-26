@@ -1,10 +1,9 @@
 package com.newrelic.agent.security.instrumentator.httpclient;
 
-import com.newrelic.agent.security.AgentInfo;
-import com.newrelic.agent.security.intcodeagent.executor.CustomFutureTask;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.newrelic.agent.security.intcodeagent.filelogging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.models.IASTDataTransferRequest;
+import com.newrelic.agent.security.intcodeagent.websocket.JsonConverter;
 import com.newrelic.agent.security.intcodeagent.websocket.WSClient;
 import com.newrelic.agent.security.intcodeagent.websocket.WSUtils;
 import com.newrelic.agent.security.util.AgentUsageMetric;
@@ -85,6 +84,7 @@ public class IASTDataTransferRequestProcessor {
         } catch (Throwable e) {
             logger.log(LogLevel.SEVERE, String.format(UNABLE_TO_SEND_IAST_DATA_REQUEST_DUE_TO_ERROR_S_S, e.toString(), e.getCause().toString()), this.getClass().getName());
             logger.log(LogLevel.FINEST, String.format(UNABLE_TO_SEND_IAST_DATA_REQUEST_DUE_TO_ERROR, request), e, this.getClass().getName());
+            logger.postLogMessageIfNecessary(LogLevel.SEVERE, String.format(UNABLE_TO_SEND_IAST_DATA_REQUEST_DUE_TO_ERROR, JsonConverter.toJSON(request)), e, this.getClass().getName());
         }
     }
 
@@ -125,9 +125,7 @@ public class IASTDataTransferRequestProcessor {
         try {
             stopDataRequestSchedule(true);
             future = executorService.scheduleWithFixedDelay(this::task, 0, delay, timeUnit);
-        } catch (Throwable e){
-            e.printStackTrace();
-        }
+        } catch (Throwable ignored){}
     }
 
     public void stopDataRequestSchedule(boolean force){
@@ -136,9 +134,7 @@ public class IASTDataTransferRequestProcessor {
                 future.cancel(force);
                 future = null;
             }
-        } catch (Throwable e) {
-            e.printStackTrace();
-        }
+        } catch (Throwable ignored) {}
     }
 
     public void setCooldownTillTimestamp(long timestamp) {

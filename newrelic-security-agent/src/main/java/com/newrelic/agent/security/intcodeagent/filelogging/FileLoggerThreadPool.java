@@ -48,8 +48,7 @@ public class FileLoggerThreadPool {
                         if (future.isDone()) {
                             future.get();
                         }
-                    } catch (Throwable e) {
-                    }
+                    } catch (Throwable ignored) {}
                 }
                 super.afterExecute(r, t);
             }
@@ -165,8 +164,8 @@ public class FileLoggerThreadPool {
         postLogMessage(logLevel, event, exception, caller);
     }
 
-    private LogMessage postLogMessage(LogLevel logLevel, String event, Throwable exception, String caller) {
-        LogMessage message = new LogMessage(logLevel.name(), event, caller, exception, AgentInfo.getInstance().getLinkingMetadata());
+    private LogMessage postLogMessage(LogLevel logLevel, String messageString, Throwable exception, String caller) {
+        LogMessage message = new LogMessage(logLevel.name(), messageString, caller, exception, AgentInfo.getInstance().getLinkingMetadata());
         if (logLevel.getLevel() <= LogLevel.WARNING.getLevel()) {
             AgentUtils.getInstance().getStatusLogMostRecentErrors().add(JsonConverter.toJSON(message));
         }

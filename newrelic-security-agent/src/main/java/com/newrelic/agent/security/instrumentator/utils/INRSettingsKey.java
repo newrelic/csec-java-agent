@@ -20,6 +20,8 @@ public interface INRSettingsKey {
     String SECURITY_POLICY_ENFORCE = "security.policy.enforce";
 
     String NR_ENTITY_GUID = "entity.guid";
+
+    String ENTITY_NAME = "entity.name";
     String AGENT_RUN_ID = "agent_run_id";
     String HOSTNAME = "hostname";
 

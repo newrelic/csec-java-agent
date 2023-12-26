@@ -131,6 +131,8 @@ public class WSClient extends WebSocketClient {
         this.setConnectionLostTimeout(30);
         this.addHeader("NR-CSEC-CONNECTION-TYPE", "LANGUAGE_COLLECTOR");
         this.addHeader("NR-AGENT-RUN-TOKEN", AgentInfo.getInstance().getLinkingMetadata().getOrDefault(INRSettingsKey.AGENT_RUN_ID_LINKING_METADATA, StringUtils.EMPTY));
+        this.addHeader("NR-CSEC-ENTITY-GUID", AgentInfo.getInstance().getLinkingMetadata().getOrDefault(INRSettingsKey.NR_ENTITY_GUID, StringUtils.EMPTY));
+        this.addHeader("NR-CSEC-ENTITY-NAME", AgentInfo.getInstance().getLinkingMetadata().getOrDefault(INRSettingsKey.ENTITY_NAME, StringUtils.EMPTY));
         this.addHeader("NR-LICENSE-KEY", AgentConfig.getInstance().getConfig().getCustomerInfo().getApiAccessorToken());
         this.addHeader("NR-CSEC-VERSION", AgentInfo.getInstance().getBuildInfo().getCollectorVersion());
         this.addHeader("NR-CSEC-COLLECTOR-TYPE", "JAVA");
