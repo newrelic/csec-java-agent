@@ -1,4 +1,4 @@
-package com.nr.security.instrumentation.netty400;
+package com.nr.agent.security.instrumentation.netty400;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
