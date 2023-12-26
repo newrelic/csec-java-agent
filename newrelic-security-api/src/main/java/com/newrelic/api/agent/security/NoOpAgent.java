@@ -78,4 +78,12 @@ class NoOpAgent implements SecurityAgent {
         return false;
     }
 
+    @Override
+    public void setServerInfo(String key, String value) {}
+
+    @Override
+    public String getServerInfo(String key) {
+        return null;
+    }
+
 }

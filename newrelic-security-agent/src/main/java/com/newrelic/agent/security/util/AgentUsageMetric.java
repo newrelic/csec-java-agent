@@ -7,11 +7,11 @@ public class AgentUsageMetric {
 
     public static Boolean isRASPProcessingActive() {
         if(EventSendPool.getInstance().getExecutor().getQueue().size() >
-                EventSendPool.getInstance().getExecutor().getMaximumPoolSize()/2){
+                EventSendPool.getInstance().getMaxQueueSize()/2){
             return false;
         }
         if(DispatcherPool.getInstance().getExecutor().getQueue().size() >
-                DispatcherPool.getInstance().getExecutor().getMaximumPoolSize()*2/3){
+                DispatcherPool.getInstance().getMaxQueueSize()*2/3){
             return false;
         }
         return true;
@@ -19,11 +19,11 @@ public class AgentUsageMetric {
 
     public static Boolean isIASTRequestProcessingActive() {
         if(EventSendPool.getInstance().getExecutor().getQueue().size() >
-                EventSendPool.getInstance().getExecutor().getMaximumPoolSize()*2/3){
+                EventSendPool.getInstance().getMaxQueueSize()*2/3){
             return false;
         }
         if(DispatcherPool.getInstance().getExecutor().getQueue().size() >
-                DispatcherPool.getInstance().getExecutor().getMaximumPoolSize()*0.75){
+                DispatcherPool.getInstance().getMaxQueueSize()*0.75){
             return false;
         }
         return true;
