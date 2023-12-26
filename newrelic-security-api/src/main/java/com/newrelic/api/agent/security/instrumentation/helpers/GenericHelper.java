@@ -2,7 +2,13 @@ package com.newrelic.api.agent.security.instrumentation.helpers;
 
 import com.newrelic.api.agent.security.NewRelicSecurity;
 
+import java.util.regex.Pattern;
+
 public class GenericHelper {
+    public static Pattern QUOTED_STRING_PATTERN = Pattern.compile("((\\\\)*?('|\\\"))(([\\s\\S]*?)(?:(?=(\\\\?))\\6.)*?)\\1",
+            Pattern.MULTILINE | Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
+    public static Pattern STORED_PROCEDURE_PATTERN = Pattern.compile("(call\\s+[a-zA-Z0-9_\\$]+\\(.*?\\))",
+            Pattern.MULTILINE | Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
     public static final String CSEC_PARENT_ID = "nr-csec-parent-id";
     public static final String NR_SEC_CUSTOM_SPRING_REDIS_ATTR = "SPRING-DATA-REDIS";
 
