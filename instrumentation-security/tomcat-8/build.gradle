@@ -1,0 +1,22 @@
+dependencies {
+    implementation(project(":newrelic-security-api"))
+    implementation("com.newrelic.agent.java:newrelic-weaver-api:${nrAPIVersion}")
+    implementation("com.newrelic.agent.java:newrelic-api:${nrAPIVersion}")
+    implementation("org.apache.tomcat.embed:tomcat-embed-core:8.5.42")
+
+}
+
+jar {
+    manifest { attributes 'Implementation-Title': 'com.newrelic.instrumentation.security.tomcat-8' }
+}
+
+verifyInstrumentation {
+    passesOnly 'org.apache.tomcat.embed:tomcat-embed-core:[8.5.42,8.5.97)'
+    passesOnly 'org.apache.tomcat.embed:tomcat-embed-core:[9.0.21,)'
+    excludeRegex '.*-(b|gfa|beta|RC)[0-9]*'
+}
+
+site {
+    title 'Tomcat'
+    type 'Appserver'
+}
