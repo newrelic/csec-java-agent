@@ -1040,7 +1040,6 @@ public class StringUtils {
         return str.toLowerCase();
     }
 
- 
     /**
      * <p>Joins the elements of the provided array into a single String
      * containing the provided list of elements.</p>
