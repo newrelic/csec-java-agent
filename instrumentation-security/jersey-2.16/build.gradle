@@ -4,9 +4,6 @@ dependencies {
     implementation("com.newrelic.agent.java:newrelic-api:${nrAPIVersion}")
     implementation("org.glassfish.jersey.core:jersey-server:2.16")
 
-    testImplementation("org.glassfish.jersey.containers:jersey-container-grizzly2-http:2.28")
-    testImplementation("org.glassfish.jersey.containers:jersey-container-servlet:2.28")
-    testImplementation('org.glassfish.jersey.inject:jersey-hk2:2.28')
 }
 
 jar {

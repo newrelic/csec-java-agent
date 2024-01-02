@@ -51,6 +51,8 @@ public class ControlCommandProcessor implements Runnable {
     public static final String UPDATED_POLICY_FAILED_VALIDATION_REVERTING_TO_DEFAULT_POLICY_FOR_THE_MODE = "Updated policy failed validation. Reverting to default policy for the mode";
     public static final String ERROR_WHILE_PROCESSING_RECONNECTION_CC_S_S = "Error while processing reconnection CC : %s : %s";
     public static final String ERROR_WHILE_PROCESSING_RECONNECTION_CC = "Error while processing reconnection CC :";
+    public static final String ERROR_WHILE_PROCESSING_RECONNECTION_CC_ID = "Error while processing reconnection CC : %s";
+
     public static final String UNABLE_TO_PARSE_RECEIVED_DEFAULT_POLICY = "Unable to parse received default policy : ";
     public static final String ERROR_IN_CONTROL_COMMAND_PROCESSOR = "Error in controlCommandProcessor : ";
     public static final String ARGUMENTS = "arguments";
@@ -95,6 +97,10 @@ public class ControlCommandProcessor implements Runnable {
         } catch (Throwable e) {
             logger.log(LogLevel.SEVERE, ERROR_IN_CONTROL_COMMAND_PROCESSOR, e,
                     ControlCommandProcessor.class.getSimpleName());
+
+            logger.postLogMessageIfNecessary(LogLevel.WARNING,
+                    ERROR_IN_CONTROL_COMMAND_PROCESSOR,
+                    e, this.getClass().getName());
             return;
         }
 
@@ -232,6 +238,8 @@ public class ControlCommandProcessor implements Runnable {
                 } catch (Throwable e) {
                     logger.log(LogLevel.SEVERE, String.format(ERROR_WHILE_PROCESSING_RECONNECTION_CC_S_S, e.getMessage(), e.getCause()), this.getClass().getName());
                     logger.log(LogLevel.SEVERE, ERROR_WHILE_PROCESSING_RECONNECTION_CC, e, this.getClass().getName());
+                    logger.postLogMessageIfNecessary(LogLevel.SEVERE, String.format(ERROR_WHILE_PROCESSING_RECONNECTION_CC_ID, controlCommand.getId()), e,
+                            this.getClass().getName());
                 }
                 break;
 
