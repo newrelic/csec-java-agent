@@ -3,45 +3,32 @@ package com.newrelic.api.agent.security;
 import com.fasterxml.jackson.dataformat.javaprop.JavaPropsMapper;
 import com.newrelic.agent.security.AgentConfig;
 import com.newrelic.agent.security.AgentInfo;
-import com.newrelic.agent.security.instrumentator.dispatcher.Dispatcher;
 import com.newrelic.agent.security.instrumentator.dispatcher.DispatcherPool;
-import com.newrelic.agent.security.instrumentator.httpclient.RestRequestThreadPool;
 import com.newrelic.agent.security.instrumentator.os.OsVariablesInstance;
-import com.newrelic.agent.security.instrumentator.utils.AgentUtils;
-import com.newrelic.agent.security.instrumentator.utils.ApplicationInfoUtils;
-import com.newrelic.agent.security.instrumentator.utils.CollectorConfigurationUtils;
-import com.newrelic.agent.security.instrumentator.utils.ExecutionIDGenerator;
-import com.newrelic.agent.security.instrumentator.utils.HashGenerator;
-import com.newrelic.agent.security.instrumentator.utils.INRSettingsKey;
+import com.newrelic.agent.security.instrumentator.utils.*;
 import com.newrelic.agent.security.intcodeagent.constants.AgentServices;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.newrelic.agent.security.intcodeagent.filelogging.LogFileHelper;
 import com.newrelic.agent.security.intcodeagent.filelogging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.logging.HealthCheckScheduleThread;
 import com.newrelic.agent.security.intcodeagent.logging.IAgentConstants;
-import com.newrelic.agent.security.intcodeagent.models.javaagent.ApplicationURLMappings;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.ExitEventBean;
 import com.newrelic.agent.security.intcodeagent.properties.BuildInfo;
 import com.newrelic.agent.security.intcodeagent.schedulers.FileCleaner;
 import com.newrelic.agent.security.intcodeagent.schedulers.SchedulerHelper;
 import com.newrelic.agent.security.intcodeagent.utils.CommonUtils;
 import com.newrelic.agent.security.intcodeagent.websocket.*;
+import com.newrelic.agent.security.util.IUtilConstants;
 import com.newrelic.api.agent.NewRelic;
 import com.newrelic.api.agent.Transaction;
+import com.newrelic.api.agent.security.instrumentation.helpers.AppServerInfoHelper;
 import com.newrelic.api.agent.security.instrumentation.helpers.LowSeverityHelper;
-import com.newrelic.api.agent.security.instrumentation.helpers.URLMappingsHelper;
-import com.newrelic.api.agent.security.schema.AbstractOperation;
-import com.newrelic.api.agent.security.schema.AgentMetaData;
-import com.newrelic.api.agent.security.schema.ApplicationURLMapping;
-import com.newrelic.api.agent.security.schema.HttpRequest;
-import com.newrelic.api.agent.security.schema.K2RequestIdentifier;
-import com.newrelic.api.agent.security.schema.SecurityMetaData;
-import com.newrelic.api.agent.security.schema.UserClassEntity;
-import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
+import com.newrelic.api.agent.security.schema.*;
 import com.newrelic.api.agent.security.schema.operation.RXSSOperation;
 import com.newrelic.api.agent.security.schema.policy.AgentPolicy;
 import org.apache.commons.lang3.StringUtils;
 
+import java.io.File;
 import java.io.IOException;
 import java.lang.instrument.Instrumentation;
 import java.time.Instant;
@@ -53,28 +40,16 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 
-import static com.newrelic.agent.security.intcodeagent.logging.IAgentConstants.AGENT_INIT_LOG_STEP_FIVE_END;
-import static com.newrelic.agent.security.intcodeagent.logging.IAgentConstants.COM_SUN;
-import static com.newrelic.agent.security.intcodeagent.logging.IAgentConstants.STARTED_MODULE_LOG;
-import static com.newrelic.agent.security.intcodeagent.logging.IAgentConstants.SUN_REFLECT;
+import static com.newrelic.agent.security.intcodeagent.logging.IAgentConstants.*;
 
 public class Agent implements SecurityAgent {
 
-    private static final String AGENT_INIT_SUCCESSFUL = "[STEP-2][PROTECTION][COMPLETE] Protecting new process with PID %s and UUID %s : %s.";
     private static final String EVENT_ZERO_PROCESSED = "[EVENT] First event processed : %s";
-    public static final String SCHEDULING_FOR_EVENT_RESPONSE_OF = "Scheduling for event response of : ";
-    public static final String EVENT_RESPONSE_TIMEOUT_FOR = "Event response timeout for : ";
-    public static final String ERROR_WHILE_BLOCKING_FOR_RESPONSE = "Error while blocking for response: ";
-    public static final String ERROR = "Error: ";
-    public static final String CRITICAL_ERROR_UNABLE_TO_READ_BUILD_INFO_AND_VERSION_S_S = "CSEC Critical error. Unable to read buildInfo and version: {1} : {2}";
+    public static final String CRITICAL_ERROR_UNABLE_TO_READ_BUILD_INFO_AND_VERSION_S_S = "CSEC Critical error. Unable to read buildInfo and version: %s : %s";
     public static final String CRITICAL_ERROR_UNABLE_TO_READ_BUILD_INFO_AND_VERSION = "CSEC Critical error. Unable to read buildInfo and version: ";
 
     public static final String DROPPING_EVENT_AS_IT_WAS_GENERATED_BY_K_2_INTERNAL_API_CALL = "Dropping event as it was generated by agent internal API call : ";
-    private static AtomicBoolean firstEventProcessed = new AtomicBoolean(false);
-
-    private static final Object lock = new Object();
-
-    private static Agent instance;
+    private static final AtomicBoolean firstEventProcessed = new AtomicBoolean(false);
 
     private AgentInfo info;
 
@@ -87,15 +62,12 @@ public class Agent implements SecurityAgent {
     private java.net.URL agentJarURL;
     private Instrumentation instrumentation;
 
+    private static final class InstanceHolder {
+        static final Agent instance = new Agent();
+    }
+
     public static SecurityAgent getInstance() {
-        if(instance == null) {
-            synchronized (lock){
-                if(instance == null){
-                    instance = new Agent();
-                }
-            }
-        }
-        return instance;
+        return InstanceHolder.instance;
     }
 
     private Agent(){
@@ -170,6 +142,9 @@ public class Agent implements SecurityAgent {
                     readValue(CommonUtils.getResourceStreamFromAgentJar("Agent.properties"), BuildInfo.class);
         } catch (Throwable e) {
             logger.log(LogLevel.SEVERE, String.format(CRITICAL_ERROR_UNABLE_TO_READ_BUILD_INFO_AND_VERSION_S_S, e.getMessage(), e.getCause()), this.getClass().getName());
+            logger.postLogMessageIfNecessary(LogLevel.SEVERE,
+                    String.format(CRITICAL_ERROR_UNABLE_TO_READ_BUILD_INFO_AND_VERSION_S_S, e.getMessage(), e.getCause()),
+                    e, this.getClass().getName());
             logger.log(LogLevel.FINER, CRITICAL_ERROR_UNABLE_TO_READ_BUILD_INFO_AND_VERSION, e, this.getClass().getName());
         }
         return buildInfo;
@@ -272,10 +247,11 @@ public class Agent implements SecurityAgent {
         if (operation instanceof RXSSOperation) {
             operation.setStackTrace(securityMetaData.getMetaData().getServiceTrace());
         } else {
-            operation.setStackTrace(Thread.currentThread().getStackTrace());
+            StackTraceElement[] trace = Thread.currentThread().getStackTrace();
+            operation.setStackTrace(Arrays.copyOfRange(trace, 1, trace.length));
         }
 
-        if(checkIfNRGeneratedEvent(operation, securityMetaData)) {
+        if(checkIfNRGeneratedEvent(operation)) {
             logger.log(LogLevel.FINEST, DROPPING_EVENT_AS_IT_WAS_GENERATED_BY_K_2_INTERNAL_API_CALL +
                             JsonConverter.toJSON(operation),
                     Agent.class.getName());
@@ -285,8 +261,8 @@ public class Agent implements SecurityAgent {
         logIfIastScanForFirstTime(securityMetaData.getFuzzRequestIdentifier(), securityMetaData.getRequest());
 
         setRequiredStackTrace(operation, securityMetaData);
-        setUserClassEntity(operation, securityMetaData);
         processStackTrace(operation);
+        operation.setUserClassEntity(setUserClassEntity(operation, securityMetaData));
 //        boolean blockNeeded = checkIfBlockingNeeded(operation.getApiID());
 //        securityMetaData.getMetaData().setApiBlocked(blockNeeded);
         if (needToGenerateEvent(operation.getApiID())) {
@@ -313,7 +289,7 @@ public class Agent implements SecurityAgent {
         }
     }
 
-    private static boolean checkIfNRGeneratedEvent(AbstractOperation operation, SecurityMetaData securityMetaData) {
+    private static boolean checkIfNRGeneratedEvent(AbstractOperation operation) {
         for (int i = 1, j = 0; i < operation.getStackTrace().length; i++) {
             // Only remove consecutive top com.newrelic and com.nr. elements from stack.
             if (i - 1 == j && StringUtils.startsWithAny(operation.getStackTrace()[i].getClassName(), "com.newrelic.", "com.nr.")) {
@@ -332,11 +308,30 @@ public class Agent implements SecurityAgent {
         );
     }
 
-    private void setUserClassEntity(AbstractOperation operation, SecurityMetaData securityMetaData) {
+    private UserClassEntity setUserClassEntity(AbstractOperation operation, SecurityMetaData securityMetaData) {
         UserClassEntity userClassEntity = new UserClassEntity();
-        userClassEntity.setUserClassElement(operation.getStackTrace()[operation.getStackTrace().length - 2]);
-        userClassEntity.setCalledByUserCode(securityMetaData.getMetaData().isUserLevelServiceMethodEncountered());
-        operation.setUserClassEntity(userClassEntity);
+        StackTraceElement userStackTraceElement = null;
+        if(securityMetaData.getMetaData().getServiceTrace() != null && securityMetaData.getMetaData().getServiceTrace().length > 0){
+            userStackTraceElement = securityMetaData.getMetaData().getServiceTrace()[0];
+        }
+
+        for (int i = 0; i < operation.getStackTrace().length; i++) {
+            StackTraceElement stackTraceElement = operation.getStackTrace()[i];
+            if(userStackTraceElement != null){
+                if(StringUtils.equals(stackTraceElement.getClassName(), userStackTraceElement.getClassName())
+                        && StringUtils.equals(stackTraceElement.getMethodName(), userStackTraceElement.getMethodName())){
+                    userClassEntity.setUserClassElement(stackTraceElement);
+                    userClassEntity.setCalledByUserCode(securityMetaData.getMetaData().isUserLevelServiceMethodEncountered());
+                    return userClassEntity;
+                }
+            }
+            // TODO: the `if` should be `else if` please check crypto case BenchmarkTest01978. service trace is being registered from doSomething()
+            if( i+1 < operation.getStackTrace().length && StringUtils.equals(operation.getSourceMethod(), stackTraceElement.toString())){
+                userClassEntity.setUserClassElement(operation.getStackTrace()[i + 1]);
+                userClassEntity.setCalledByUserCode(securityMetaData.getMetaData().isUserLevelServiceMethodEncountered());
+            }
+        }
+        return userClassEntity;
     }
 
     private void setRequiredStackTrace(AbstractOperation operation, SecurityMetaData securityMetaData) {
@@ -352,9 +347,8 @@ public class Agent implements SecurityAgent {
 
         ArrayList<Integer> newTraceForIdCalc = new ArrayList<>(stackTrace.length);
 
-        resetFactor++;
-        boolean markedForRemoval = false;
-        for (int i = 1, j = 0; i < stackTrace.length; i++) {
+        boolean markedForRemoval;
+        for (int i = 0, j = -1; i < stackTrace.length; i++) {
             markedForRemoval = false;
 
             // Only remove consecutive top com.newrelic and com.nr. elements from stack.
@@ -399,7 +393,6 @@ public class Agent implements SecurityAgent {
     private static void setAPIId(AbstractOperation operation, List<Integer> traceForIdCalc, VulnerabilityCaseType vulnerabilityCaseType) {
         try {
             traceForIdCalc.add(operation.getSourceMethod().hashCode());
-            traceForIdCalc.add(operation.getUserClassEntity().getUserClassElement().hashCode());
             operation.setApiID(vulnerabilityCaseType.getCaseType() + "-" + HashGenerator.getXxHash64Digest(traceForIdCalc.stream().mapToInt(Integer::intValue).toArray()));
         } catch (IOException e) {
             operation.setApiID("UNDEFINED");
@@ -453,9 +446,7 @@ public class Agent implements SecurityAgent {
                     return (SecurityMetaData) meta;
                 }
             }
-        } catch (Throwable e) {
-//            e.printStackTrace();
-        }
+        } catch (Throwable ignored) {}
         return new SecurityMetaData();
     }
 
@@ -484,7 +475,7 @@ public class Agent implements SecurityAgent {
     }
 
     public static java.net.URL getAgentJarURL() {
-        return instance.agentJarURL;
+        return InstanceHolder.instance.agentJarURL;
     }
 
     public boolean isInitialised() {
@@ -502,6 +493,47 @@ public class Agent implements SecurityAgent {
 
     @Override
     public boolean isLowPriorityInstrumentationEnabled() {
-        return NewRelic.getAgent().getConfig().getValue(LowSeverityHelper.LOW_SEVERITY_HOOKS_ENABLED, LowSeverityHelper.DEFAULT);
+        return NewRelicSecurity.isHookProcessingActive() && LowSeverityHelper.getIsLowSeverityhHooksEnabled() && NewRelic.getAgent().getConfig().getValue(LowSeverityHelper.LOW_SEVERITY_HOOKS_ENABLED, LowSeverityHelper.DEFAULT);
+    }
+
+    @Override
+    public void setServerInfo(String key, String value) {
+        AppServerInfo appServerInfo = AppServerInfoHelper.getAppServerInfo();
+        switch (key) {
+            case IUtilConstants.APPLICATION_DIRECTORY:
+                File appBase = new File(value);
+                if(appBase.isAbsolute()){
+                    appServerInfo.setApplicationDirectory(value);
+                } else if(StringUtils.isNotBlank(appServerInfo.getServerBaseDirectory())) {
+                    appServerInfo.setApplicationDirectory(new File(appServerInfo.getServerBaseDirectory(), value).getAbsolutePath());
+                } else if(appBase.isDirectory()) {
+                    appServerInfo.setApplicationDirectory(appBase.getAbsolutePath());
+                }
+                break;
+            case IUtilConstants.SERVER_BASE_DIRECTORY:
+                appServerInfo.setServerBaseDirectory(value);
+                break;
+            case IUtilConstants.SAME_SITE_COOKIES:
+                appServerInfo.setSameSiteCookies(value);
+                break;
+            default:
+                break;
+        }
+
+    }
+
+    @Override
+    public String getServerInfo(String key) {
+        AppServerInfo appServerInfo = AppServerInfoHelper.getAppServerInfo();
+        switch (key) {
+            case IUtilConstants.APPLICATION_DIRECTORY:
+                return appServerInfo.getApplicationDirectory();
+            case IUtilConstants.SERVER_BASE_DIRECTORY:
+                return appServerInfo.getServerBaseDirectory();
+            case IUtilConstants.SAME_SITE_COOKIES:
+                return appServerInfo.getSameSiteCookies();
+            default:
+                return null;
+        }
     }
 }

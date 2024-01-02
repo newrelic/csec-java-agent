@@ -20,7 +20,6 @@ public final class ApplicationHandler_Handler {
 
     public void handle(final ContainerRequest request) {
         boolean isRequestLockAcquired = false;
-        System.out.println("constructor ContainerResponse_Instrumentation called "+request);
         try {
             if (request != null) {
                 isRequestLockAcquired = HttpRequestHelper.acquireRequestLockIfPossible();

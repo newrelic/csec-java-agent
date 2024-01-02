@@ -56,7 +56,6 @@ public class HttpRequestHelper {
 
     public static void preprocessSecurityHook(ContainerRequest requestContext) {
         try {
-            System.out.println("hook pre processing!!!");
             if (!NewRelicSecurity.isHookProcessingActive()) {
                 return;
             }
@@ -66,7 +65,6 @@ public class HttpRequestHelper {
             if (securityRequest.isRequestParsed()) {
                 return;
             }
-            System.out.println("get meta");
             AgentMetaData securityAgentMetaData = securityMetaData.getMetaData();
             securityRequest.setMethod(requestContext.getMethod());
             HttpRequestHelper.processPropertiesDelegate(requestContext.getPropertiesDelegate(), securityRequest);
@@ -74,14 +72,11 @@ public class HttpRequestHelper {
             if (securityRequest.getClientIP() != null && !securityRequest.getClientIP().trim().isEmpty()) {
                 securityAgentMetaData.getIps().add(securityRequest.getClientIP());
             }
-            System.out.println("process headers");
             HttpRequestHelper.processHttpRequestHeader(requestContext, securityRequest);
 
-            System.out.println("set tracing header");
             securityMetaData.setTracingHeaderValue(HttpRequestHelper.getTraceHeader(securityRequest.getHeaders()));
             securityRequest.setUrl(requestContext.getRequestUri().toString());
 
-            System.out.println("get stack trace");
             StackTraceElement[] trace = Thread.currentThread().getStackTrace();
             securityMetaData.getMetaData().setServiceTrace(Arrays.copyOfRange(trace, 2, trace.length));
             securityRequest.setRequestParsed(true);
@@ -91,7 +86,6 @@ public class HttpRequestHelper {
 
     public static void postProcessSecurityHook(String className, OutboundMessageContext wrappedMessageContext) {
         try {
-            System.out.println("hook post processing!!!");
             if (!NewRelicSecurity.isHookProcessingActive()
             ) {
                 return;
@@ -204,7 +198,6 @@ public class HttpRequestHelper {
         try {
             if (NewRelicSecurity.isHookProcessingActive() &&
                     !isRequestLockAcquired()) {
-                System.out.println("hook acquired!!!");
                 NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(getNrSecCustomAttribName(), true);
                 return true;
             }
@@ -244,7 +237,6 @@ public class HttpRequestHelper {
                 securityRequest.setContentType((String) getContentType.invoke(requestObject));
             } catch (ClassNotFoundException | NoSuchFieldException | IllegalAccessException | NoSuchMethodException |
                      InvocationTargetException e) {
-                e.printStackTrace();
             }
 
         } else if (StringUtils.equals(propertiesDelegate.getClass().getName(), ORG_GLASSFISH_JERSEY_GRIZZLY_2_HTTPSERVER_TRACING_AWARE_PROPERTIES_DELEGATE)){
@@ -255,10 +247,9 @@ public class HttpRequestHelper {
                 Object propertiesDelegateObject = propertiesDelegateField.get(propertiesDelegate);
                 processPropertiesDelegate((PropertiesDelegate) propertiesDelegateObject, securityRequest);
             } catch (ClassNotFoundException | NoSuchFieldException | IllegalAccessException e) {
-                e.printStackTrace();
             }
         } else {
-            System.out.println(propertiesDelegate + " : " + propertiesDelegate.getClass().getName());
+//            System.out.println(propertiesDelegate + " : " + propertiesDelegate.getClass().getName());
         }
     }
 
