@@ -31,7 +31,7 @@ import scala.concurrent.Future;
 
 import java.net.URI;
 
-@Weave(type = MatchType.ExactClass, originalName = "akka.http.scaladsl.HttpExt")
+//@Weave(type = MatchType.ExactClass, originalName = "akka.http.scaladsl.HttpExt")
 public class HttpExt_Instrumentation {
 
     public Future<Http.ServerBinding> bindAndHandleAsync(

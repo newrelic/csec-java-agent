@@ -33,7 +33,7 @@ import scala.concurrent.Future;
 
 import java.net.URI;
 
-@Weave(type = MatchType.ExactClass, originalName = "akka.http.scaladsl.HttpExt")
+//@Weave(type = MatchType.ExactClass, originalName = "akka.http.scaladsl.HttpExt")
 public class HttpExt_Instrumentation {
 
     // This method only exists to ensure that this weave module doesn't match for versions of akka-http-core-2.13 prior to 10.2.0.
