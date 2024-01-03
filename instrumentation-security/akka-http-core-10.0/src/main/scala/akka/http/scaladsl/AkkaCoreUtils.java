@@ -9,6 +9,7 @@ import com.newrelic.api.agent.security.instrumentation.helpers.LowSeverityHelper
 import com.newrelic.api.agent.security.instrumentation.helpers.ServletHelper;
 import com.newrelic.api.agent.security.schema.AgentMetaData;
 import com.newrelic.api.agent.security.schema.SecurityMetaData;
+import com.newrelic.api.agent.security.schema.StringUtils;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
 import com.newrelic.api.agent.security.schema.operation.RXSSOperation;
 import com.newrelic.api.agent.security.schema.policy.AgentPolicy;
@@ -56,14 +57,14 @@ public class AkkaCoreUtils {
         return false;
     }
 
-    public static void postProcessHttpRequest(Boolean isServletLockAcquired, String response, String contentType, String className, String methodName, Token token) {
+    public static void postProcessHttpRequest(Boolean isServletLockAcquired, StringBuilder response, String contentType, String className, String methodName, Token token) {
         try {
             token.linkAndExpire();
             if(!isServletLockAcquired || !NewRelicSecurity.isHookProcessingActive()){
                 return;
             }
             NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setResponseContentType(contentType);
-            NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getResponseBody().append(response);
+            NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setResponseBody(response);
             LowSeverityHelper.addRrequestUriToEventFilter(NewRelicSecurity.getAgent().getSecurityMetaData().getRequest());
 
             RXSSOperation rxssOperation = new RXSSOperation(NewRelicSecurity.getAgent().getSecurityMetaData().getRequest(),
@@ -112,7 +113,7 @@ public class AkkaCoreUtils {
 
             securityMetaData.setTracingHeaderValue(getTraceHeader(securityRequest.getHeaders()));
 
-            securityRequest.setProtocol(httpRequest.protocol().value());
+            securityRequest.setProtocol(getProtocol(httpRequest.protocol().value()));
             securityRequest.setUrl(httpRequest.getUri().toString());
             securityRequest.setContentType(httpRequest.entity().getContentType().toString());
 
@@ -177,5 +178,15 @@ public class AkkaCoreUtils {
             securityRequest.getHeaders().put(headerKey, headerFullValue);
         }
 
+    }
+
+    private static String getProtocol(String value) {
+        if(StringUtils.containsIgnoreCase(value, "https")){
+            return "https";
+        } else if (StringUtils.containsIgnoreCase(value, "http")) {
+            return "http";
+        } else {
+            return value;
+        }
     }
 }
