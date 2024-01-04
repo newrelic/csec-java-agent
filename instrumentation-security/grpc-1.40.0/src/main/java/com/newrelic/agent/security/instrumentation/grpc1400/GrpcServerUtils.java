@@ -13,6 +13,7 @@ import com.newrelic.api.agent.security.schema.SecurityMetaData;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
 import com.newrelic.api.agent.security.schema.operation.RXSSOperation;
 import com.newrelic.api.agent.security.schema.policy.AgentPolicy;
+import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import io.grpc.Attributes;
 import io.grpc.Grpc;
 import io.grpc.Metadata;
@@ -22,7 +23,6 @@ import io.grpc.internal.ServerStream_Instrumentation;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -53,7 +53,8 @@ public class GrpcServerUtils {
             try {
                 uri = new URI("grpc", authority, "/" + fullMethodName, null, null);
             } catch (URISyntaxException e) {
-                // TODO: send critical log message
+                NewRelicSecurity.getAgent().log(LogLevel.SEVERE, e.getMessage(), e, GrpcServerUtils.class.getName());
+                NewRelicSecurity.getAgent().reportIncident(LogLevel.SEVERE, e.getMessage(), e, GrpcServerUtils.class.getName());
             }
 
             AgentMetaData securityAgentMetaData = securityMetaData.getMetaData();

@@ -1,12 +1,11 @@
 package com.newrelic.agent.security.instrumentation.grpc1400.processor;
 
+import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.instrumentation.helpers.GrpcClientRequestReplayHelper;
 import com.newrelic.api.agent.security.schema.ControlCommandDto;
+import com.newrelic.api.agent.security.utils.logging.LogLevel;
 
-import java.util.HashSet;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -27,15 +26,13 @@ public class MonitorGrpcRequestQueueThread {
                 if (GrpcRequestThreadPool.getInstance().executor.getQueue().remainingCapacity()>0) {
                     ControlCommandDto controlCommandDto = GrpcClientRequestReplayHelper.getInstance().getSingleRequestFromRequestQueue();
                     if (controlCommandDto != null) {
-//                        System.out.println("Request body received : " + controlCommandDto.getRequestBean().getBody() + " : " +
-//                                GrpcClientRequestReplayHelper.getInstance().getRequestQueue().size());
                         GrpcRequestProcessor.executeGrpcRequest(controlCommandDto);
                     }
                 } else {
-                    // TODO: if required log queue is full
+                    NewRelicSecurity.getAgent().log(LogLevel.WARNING, "gRPC request processing queue is full.", this.getClass().getName());
                 }
             } catch (InterruptedException e) {
-                // TODO: send critical log message
+                NewRelicSecurity.getAgent().reportIncident(LogLevel.SEVERE, e.getMessage(), e, this.getClass().getName());
             } finally {
                 future = commonExecutor.submit(runnable);
             }

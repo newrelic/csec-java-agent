@@ -7,11 +7,12 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Message;
 import com.google.protobuf.util.JsonFormat;
 import com.newrelic.agent.security.instrumentation.grpc1400.GrpcServerUtils;
-import com.newrelic.api.agent.security.instrumentation.helpers.GrpcClientRequestReplayHelper;
+import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.instrumentation.helpers.GrpcHelper;
 import com.newrelic.api.agent.security.schema.ControlCommandDto;
 import com.newrelic.api.agent.security.schema.FuzzRequestBean;
 import com.newrelic.api.agent.security.schema.StringUtils;
+import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import io.grpc.ChannelCredentials;
 import io.grpc.Grpc;
 import io.grpc.ManagedChannel;
@@ -24,6 +25,7 @@ import io.grpc.stub.StreamObserver;
 import javax.net.ssl.SSLException;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
+import java.io.IOException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Iterator;
@@ -73,28 +75,28 @@ public class GrpcClient {
             ManagedChannel channel = null;
             try {
                 channel = isSecure?getManagedChannelWithSsl("localhost", serverPort):getManagedChannelWithoutSsl("localhost", serverPort);
-//                System.out.printf("Client initialised for port :: %s", serverPort);
             } catch (Exception e) {
-                e.printStackTrace();
+                NewRelicSecurity.getAgent().log(LogLevel.SEVERE, String.format("gRPC Client initialisation failed for port %d.", serverPort), e, GrpcClient.class.getName());
             }
             return channel;
         }
     };
 
     public Object fireRequest(ControlCommandDto controlCommandDto, int repeatCount) {
+        FuzzRequestBean requestBean = null;
         try {
-            FuzzRequestBean requestBean = controlCommandDto.getRequestBean();
+            requestBean = controlCommandDto.getRequestBean();
             List<String> payloads = controlCommandDto.getRequestPayloads();
             serverPort = requestBean.getServerPort();
             isSecure = StringUtils.equals("https", requestBean.getProtocol());
             ManagedChannel channel = clientThreadLocal.get();
 
-//            System.out.println(String.format(FIRING_REQUEST_METHOD_S, requestBean.getMethod()));
-//            System.out.println(String.format(FIRING_REQUEST_URL_S, requestBean.getUrl()));
-//            System.out.println(String.format(FIRING_REQUEST_HEADERS_S, requestBean.getHeaders()));
+            NewRelicSecurity.getAgent().log(LogLevel.FINER, String.format(FIRING_REQUEST_METHOD_S, requestBean.getMethod()), GrpcClient.class.getName());
+            NewRelicSecurity.getAgent().log(LogLevel.FINER, String.format(FIRING_REQUEST_URL_S, requestBean.getUrl()), GrpcClient.class.getName());
+            NewRelicSecurity.getAgent().log(LogLevel.FINER, String.format(FIRING_REQUEST_HEADERS_S, requestBean.getHeaders()), GrpcClient.class.getName());
 
             Object isSuccess = false;
-            switch (requestBean.getReflectedMetaData().get(GrpcHelper.REQUEST_TYPE)){
+            switch (requestBean.getReflectedMetaData().get(GrpcHelper.REQUEST_TYPE)) {
                 case unary:
                     isSuccess = customUnaryCall(channel, requestBean, payloads);
                     break;
@@ -109,12 +111,13 @@ public class GrpcClient {
                     break;
             }
             return isSuccess;
-        } catch (Throwable ex){
-            // TODO: send critical log message
-            if(repeatCount >= 0){
+        } catch (InterruptedException e) {
+            if (repeatCount >= 0) {
                 return fireRequest(controlCommandDto, --repeatCount);
             }
             return false;
+        } catch (Throwable e) {
+            return e;
         }
     }
 
@@ -130,9 +133,6 @@ public class GrpcClient {
 
     private Object customUnaryCall(ManagedChannel channel, FuzzRequestBean requestBean, List<String> payloads) {
         GrpcStubs.CustomStub stub = GrpcStubs.newBlockingStub(channel);
-
-//            StringBuilder body = requestBean.getBody();
-//            String requestData = String.valueOf(body.deleteCharAt(body.length()-1).deleteCharAt(0));
         String[] methodSplitData = requestBean.getMethod().split("/");
         String serviceName = methodSplitData[0];
         String methodName = methodSplitData[1];
@@ -148,7 +148,7 @@ public class GrpcClient {
                 Any pack = getMessageOfTypeAny(requestData, requestClass);
                 Any response = stub.withInterceptors(MetadataUtils.newAttachHeadersInterceptor(headers))
                         .unaryCall(pack, serviceName, methodName, getMessageDescriptor(requestClass));
-//                    System.out.println(String.format(REQUEST_SUCCESS_S_RESPONSE_S_S, requestBean, response, response.toString()));
+                NewRelicSecurity.getAgent().log(LogLevel.FINER, String.format(REQUEST_SUCCESS_S_RESPONSE_S_S, requestBean, response, response.toString()), GrpcClient.class.getName());
             } catch (Throwable e) {
                 return e;
 //                    GrpcClientRequestReplayHelper.getInstance().addFuzzFailEventToQueue(requestBean, e);
@@ -162,7 +162,7 @@ public class GrpcClient {
 
             @Override
             public void onNext(Any response) {
-//                System.out.println(String.format(REQUEST_SUCCESS_S_RESPONSE_S_S, requestBean, response, response.toString()));
+                NewRelicSecurity.getAgent().log(LogLevel.FINER, String.format(REQUEST_SUCCESS_S_RESPONSE_S_S, requestBean, response, response.toString()), GrpcClient.class.getName());
             }
 
             @Override
@@ -177,8 +177,6 @@ public class GrpcClient {
         };
 
         GrpcStubs.CustomStub stub = GrpcStubs.newStub(channel);
-//            StringBuilder body = requestBean.getBody();
-//            String requestData = String.valueOf(body.deleteCharAt(body.length()-1).deleteCharAt(0));
         String[] methodSplitData = requestBean.getMethod().split("/");
         String serviceName = methodSplitData[0];
         String methodName = methodSplitData[1];
@@ -192,7 +190,6 @@ public class GrpcClient {
 
         for (String requestData : payloads) {
             try {
-//                System.out.println(requestData);
                 Any pack = getMessageOfTypeAny(requestData, requestClass);
                 requestObserver.onNext(pack);
             } catch (Throwable e) {
@@ -207,8 +204,6 @@ public class GrpcClient {
 
     private static Object customServerStream(ManagedChannel channel, FuzzRequestBean requestBean, List<String> payloads) {
         GrpcStubs.CustomStub stub = GrpcStubs.newBlockingStub(channel);
-//            StringBuilder body = requestBean.getBody();
-//            String requestData = String.valueOf(body.deleteCharAt(body.length()-1).deleteCharAt(0));
         String[] methodSplitData = requestBean.getMethod().split("/");
         String serviceName = methodSplitData[0];
         String methodName = methodSplitData[1];
@@ -225,7 +220,7 @@ public class GrpcClient {
                 Iterator<Any> response = stub.withInterceptors(MetadataUtils.newAttachHeadersInterceptor(headers))
                         .serverStream(pack, serviceName, methodName, getMessageDescriptor(requestClass));
                 while (response.hasNext()) {
-//                    System.out.println(String.format(REQUEST_SUCCESS_S_RESPONSE_S_S, requestBean, response, response.toString()));
+                    NewRelicSecurity.getAgent().log(LogLevel.FINER, String.format(REQUEST_SUCCESS_S_RESPONSE_S_S, requestBean, response, response.toString()), GrpcClient.class.getName());
                 }
             } catch (Throwable e) {
                 return e;
@@ -238,7 +233,6 @@ public class GrpcClient {
     public static Object customBiDiStream(ManagedChannel channel, FuzzRequestBean requestBean, List<String> payloads) throws InterruptedException {
         GrpcStubs.CustomStub stub = GrpcStubs.newStub(channel);
         StringBuilder body = requestBean.getBody();
-//        String requestData = String.valueOf(body.deleteCharAt(body.length()-1).deleteCharAt(0));
         String[] methodSplitData = requestBean.getMethod().split("/");
         String serviceName = methodSplitData[0];
         String methodName = methodSplitData[1];
@@ -247,7 +241,7 @@ public class GrpcClient {
         StreamObserver<Any> responseObserver = new StreamObserver<Any>() {
             @Override
             public void onNext(Any response) {
-//                System.out.println(String.format(REQUEST_SUCCESS_S_RESPONSE_S_S, requestBean, response, response.toString()));
+                NewRelicSecurity.getAgent().log(LogLevel.FINER, String.format(REQUEST_SUCCESS_S_RESPONSE_S_S, requestBean, response, response.toString()), GrpcClient.class.getName());
             }
 
             @Override
@@ -299,27 +293,6 @@ public class GrpcClient {
     private static Descriptors.Descriptor getMessageDescriptor(String messageClassName) {
         return GrpcServerUtils.getMessageTypeDescriptor(messageClassName);
     }
-
-//    private static Descriptors.Descriptor getMessageDescriptor(String messageClassName) {
-//        Descriptors.Descriptor descriptor = null;
-//
-//        try {
-//            Class<?> messageClass = getRequestClassRef(messageClassName);
-//            Method getDescriptorMethod = messageClass.getMethod("getDescriptor");
-//            descriptor = (Descriptors.Descriptor) getDescriptorMethod.invoke(null);
-//        } catch (Throwable ignored) {
-//        }
-//        return descriptor;
-//    }
-//
-//    private static Class<?> getRequestClassRef(String messageClassName) {
-//        for (Class<?> aClass : NewRelicSecurity.getAgent().getInstrumentation().getAllLoadedClasses()) {
-//            if (aClass.getName().equals(messageClassName)){
-//                return aClass;
-//            }
-//        }
-//        return null;
-//    }
 
     private ManagedChannel getManagedChannelWithSsl(String host, int port) throws SSLException {
         ChannelCredentials creds;

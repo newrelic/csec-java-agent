@@ -1,7 +1,9 @@
 package com.newrelic.agent.security.instrumentation.grpc1400.processor;
 
+import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.instrumentation.helpers.GrpcClientRequestReplayHelper;
 import com.newrelic.api.agent.security.schema.StringUtils;
+import com.newrelic.api.agent.security.utils.logging.LogLevel;
 
 import java.util.HashSet;
 import java.util.concurrent.BlockingQueue;
@@ -117,7 +119,8 @@ public class GrpcRequestThreadPool {
                     executor.shutdownNow(); // cancel currently executing tasks
 
                     if (!executor.awaitTermination(1, TimeUnit.SECONDS)) {
-//                        System.out.println("Thread pool executor did not terminate");
+                        NewRelicSecurity.getAgent().log(LogLevel.SEVERE, "Thread pool executor did not terminate",
+                                GrpcRequestThreadPool.class.getName());
                     }
                 }
             } catch (InterruptedException e) {
