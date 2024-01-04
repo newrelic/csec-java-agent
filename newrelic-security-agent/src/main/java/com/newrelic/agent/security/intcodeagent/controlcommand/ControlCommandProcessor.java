@@ -7,7 +7,7 @@ import com.newrelic.agent.security.instrumentator.httpclient.RestRequestThreadPo
 import com.newrelic.agent.security.instrumentator.utils.AgentUtils;
 import com.newrelic.agent.security.instrumentator.utils.InstrumentationUtils;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
-import com.newrelic.agent.security.intcodeagent.filelogging.LogLevel;
+import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.logging.IAgentConstants;
 import com.newrelic.agent.security.intcodeagent.models.config.AgentPolicyParameters;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.EventResponse;

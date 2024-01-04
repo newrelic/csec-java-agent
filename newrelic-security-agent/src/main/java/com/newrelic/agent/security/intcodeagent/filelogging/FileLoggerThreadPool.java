@@ -6,7 +6,7 @@ import com.newrelic.agent.security.intcodeagent.models.javaagent.LogMessage;
 import com.newrelic.agent.security.intcodeagent.properties.K2JALogProperties;
 import com.newrelic.agent.security.intcodeagent.websocket.EventSendPool;
 import com.newrelic.agent.security.intcodeagent.websocket.JsonConverter;
-import com.newrelic.agent.security.util.IUtilConstants;
+import com.newrelic.api.agent.security.utils.logging.LogLevel;
 
 import java.io.IOException;
 import java.util.concurrent.*;

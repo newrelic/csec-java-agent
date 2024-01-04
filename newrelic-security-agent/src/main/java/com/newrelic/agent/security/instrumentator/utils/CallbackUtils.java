@@ -1,7 +1,7 @@
 package com.newrelic.agent.security.instrumentator.utils;
 
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
-import com.newrelic.agent.security.intcodeagent.filelogging.LogLevel;
+import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.api.agent.security.instrumentation.helpers.ServletHelper;
 import com.newrelic.api.agent.security.schema.HttpRequest;
 import com.newrelic.api.agent.security.schema.HttpResponse;
@@ -11,6 +11,7 @@ import org.apache.commons.text.StringEscapeUtils;
 import org.unbescape.html.HtmlEscape;
 
 import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.Map.Entry;
@@ -100,6 +101,23 @@ public class CallbackUtils {
             decodedString = URLDecoder.decode(encodedString, StandardCharsets.UTF_8.name());
         } catch (Throwable e) {
             decodedString = encodedString;
+        }
+        return decodedString;
+    }
+
+    /**
+     * Method to url encode given data. If the
+     * conversion is not possible, <code>original string</code> is returned.
+     *
+     * @param data data string
+     * @return URL encoded string
+     */
+    public static String urlEncode(String data) {
+        String decodedString = StringUtils.EMPTY;
+        try {
+            decodedString = URLEncoder.encode(data, StandardCharsets.UTF_8.name());
+        } catch (Throwable e) {
+            decodedString = data;
         }
         return decodedString;
     }

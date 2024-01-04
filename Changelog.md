@@ -4,6 +4,19 @@ Noteworthy changes to the agent are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+
+## [1.0.8-public-preview] TO BE DECIDED
+### Changes
+- Support for stored procedure call detection in SQL events
+- Support for extracting environment variables in case of Remote Code Execution events
+- Support for executing script file analysis in case of Remote Code Execution events
+- Enabled the transformation of the low-priority instrumentation module by default in case of IAST
+- SecureCookie schema check has been removed
+### Fixes
+- Incorrect user file details in the vulnerability details
+- Low severity hook event was not generated when the same url can process multiple request methods
+- Detection of server app directory to mitigate false positives for File Access vulnerability
+
 ## [1.0.7-public-preview] - 2023-12-6
 ### Changes
 - Async HttpClient v2+ Support: The security agent now also supports Async HTTP client version 2 and above
