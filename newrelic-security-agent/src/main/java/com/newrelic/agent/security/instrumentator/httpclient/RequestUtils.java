@@ -1,6 +1,7 @@
 package com.newrelic.agent.security.instrumentator.httpclient;
 
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
+import com.newrelic.agent.security.intcodeagent.websocket.JsonConverter;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.models.FuzzRequestBean;
 import okhttp3.*;
@@ -18,7 +19,7 @@ public class RequestUtils {
 
     public static Request generateK2Request(FuzzRequestBean httpRequest) {
         try {
-            logger.log(LogLevel.FINER, String.format("Firing request : %s", httpRequest), RequestUtils.class.getName());
+            logger.log(LogLevel.FINER, String.format("Firing request : %s", JsonConverter.toJSON(httpRequest)), RequestUtils.class.getName());
             StringBuilder url = new StringBuilder(String.format("%s://localhost", httpRequest.getProtocol()));
             url.append(":");
             url.append(httpRequest.getServerPort());
