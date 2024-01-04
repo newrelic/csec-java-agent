@@ -8,6 +8,8 @@ import com.newrelic.api.agent.security.schema.StringUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Arrays;
@@ -17,7 +19,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class ServletHelper {
     public static final String SEPARATOR_SEMICOLON = ":IAST:";
-    public static final String NR_CSEC_VALIDATOR_HOME_TMP = "{{NR_CSEC_VALIDATOR_HOME_TMP}}";
+    public static final String NR_CSEC_VALIDATOR_HOME_TMP_URL_ENCODED = "%7B%7BNR_CSEC_VALIDATOR_HOME_TMP%7D%7D";
+    public static final String NR_CSEC_VALIDATOR_HOME_TMP = "/{{NR_CSEC_VALIDATOR_HOME_TMP}}";
 
     public static final String CSEC_IAST_FUZZ_REQUEST_ID = "nr-csec-fuzz-request-id";
 
@@ -58,10 +61,14 @@ public class ServletHelper {
                 if (data.length >= 7) {
                     for (int i = 6; i < data.length; i++) {
                         String tmpFile = data[i].trim();
+                        if(StringUtils.contains(tmpFile, NR_CSEC_VALIDATOR_HOME_TMP_URL_ENCODED)) {
+                            tmpFile = urlDecode(tmpFile);
+                        }
+                        tmpFile = StringUtils.replace(tmpFile, NR_CSEC_VALIDATOR_HOME_TMP,
+                                NewRelicSecurity.getAgent().getAgentTempDir());
                         k2RequestIdentifierInstance.getTempFiles().add(tmpFile);
                         try {
-                            tmpFile = StringUtils.replace(tmpFile, NR_CSEC_VALIDATOR_HOME_TMP,
-                                    NewRelicSecurity.getAgent().getAgentTempDir());
+
                             File fileToCreate = new File(tmpFile);
                             if (fileToCreate.getParentFile() != null) {
 
@@ -82,6 +89,23 @@ public class ServletHelper {
         return k2RequestIdentifierInstance;
     }
 
+    /**
+     * Method to url decode given encodedString under UTF-8 encoding. If the
+     * conversion is not possible, <code>original string</code> is returned.
+     *
+     * @param encodedString URL encoded string
+     * @return URL decoded string
+     */
+    public static String urlDecode(String encodedString) {
+        String decodedString = StringUtils.EMPTY;
+        try {
+            decodedString = URLDecoder.decode(encodedString, StandardCharsets.UTF_8.name());
+        } catch (Throwable e) {
+            decodedString = encodedString;
+        }
+        return decodedString;
+    }
+
     public static void registerUserLevelCode(String frameworkName) {
         try {
             if (!NewRelicSecurity.isHookProcessingActive() || NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()
@@ -92,7 +116,7 @@ public class ServletHelper {
             if (!securityMetaData.getMetaData().isUserLevelServiceMethodEncountered(frameworkName)) {
                 securityMetaData.getMetaData().setUserLevelServiceMethodEncountered(true);
                 StackTraceElement[] trace = Thread.currentThread().getStackTrace();
-                securityMetaData.getMetaData().setServiceTrace(Arrays.copyOfRange(trace, 1, trace.length));
+                securityMetaData.getMetaData().setServiceTrace(Arrays.copyOfRange(trace, 2, trace.length));
             }
         } catch (Throwable ignored) {
         }
