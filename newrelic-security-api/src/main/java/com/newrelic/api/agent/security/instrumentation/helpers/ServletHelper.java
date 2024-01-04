@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -29,41 +30,39 @@ public class ServletHelper {
     public static final String NR_SEC_HTTP_SESSION_ATTRIB_NAME = "NR-CSEC-HTTP-SESSION-";
     public static final String NR_SEC_HTTP_SERVLET_RESPONSE_ATTRIB_NAME = "NR-CSEC-HTTP-SERVLET-RESPONSE-";
 
-    private static Set<String> filesToRemove = ConcurrentHashMap.newKeySet();;
-    private static final Set<String> unsupportedContentType = ConcurrentHashMap.newKeySet();
-
-    static {
-        unsupportedContentType.add("application/zip");
-        unsupportedContentType.add("application/epub+zip");
-        unsupportedContentType.add("application/gzip");
-        unsupportedContentType.add("application/java-archive");
-        unsupportedContentType.add("application/msword");
-        unsupportedContentType.add("application/octet-stream");
-        unsupportedContentType.add("application/ogg");
-        unsupportedContentType.add("application/pdf");
-        unsupportedContentType.add("application/rtf");
-        unsupportedContentType.add("application/vnd.amazon.ebook");
-        unsupportedContentType.add("application/vnd.apple.installer+xml");
-        unsupportedContentType.add("application/vnd.ms-excel");
-        unsupportedContentType.add("application/vnd.ms-fontobject");
-        unsupportedContentType.add("application/vnd.ms-powerpoint");
-        unsupportedContentType.add("application/vnd.oasis.opendocument.presentation");
-        unsupportedContentType.add("application/vnd.oasis.opendocument.spreadsheet");
-        unsupportedContentType.add("application/vnd.oasis.opendocument.text");
-        unsupportedContentType.add("application/vnd.openxmlformats-officedocument.presentationml.presentation");
-        unsupportedContentType.add("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-        unsupportedContentType.add("application/vnd.openxmlformats-officedocument.wordprocessingml.document");
-        unsupportedContentType.add("application/vnd.rar");
-        unsupportedContentType.add("application/vnd.visio");
-        unsupportedContentType.add("application/x-7z-compressed");
-        unsupportedContentType.add("application/x-abiword");
-        unsupportedContentType.add("application/x-bzip");
-        unsupportedContentType.add("application/x-bzip2");
-        unsupportedContentType.add("application/x-cdf");
-        unsupportedContentType.add("application/x-freearc");
-        unsupportedContentType.add("application/x-tar");
-        unsupportedContentType.add("text/calendar");
-    }
+    private static Set<String> filesToRemove = ConcurrentHashMap.newKeySet();
+    private static final Set<String> unsupportedContentType = new HashSet<String>() {{
+        add("application/zip");
+        add("application/epub+zip");
+        add("application/gzip");
+        add("application/java-archive");
+        add("application/msword");
+        add("application/octet-stream");
+        add("application/ogg");
+        add("application/pdf");
+        add("application/rtf");
+        add("application/vnd.amazon.ebook");
+        add("application/vnd.apple.installer+xml");
+        add("application/vnd.ms-excel");
+        add("application/vnd.ms-fontobject");
+        add("application/vnd.ms-powerpoint");
+        add("application/vnd.oasis.opendocument.presentation");
+        add("application/vnd.oasis.opendocument.spreadsheet");
+        add("application/vnd.oasis.opendocument.text");
+        add("application/vnd.openxmlformats-officedocument.presentationml.presentation");
+        add("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        add("application/vnd.openxmlformats-officedocument.wordprocessingml.document");
+        add("application/vnd.rar");
+        add("application/vnd.visio");
+        add("application/x-7z-compressed");
+        add("application/x-abiword");
+        add("application/x-bzip");
+        add("application/x-bzip2");
+        add("application/x-cdf");
+        add("application/x-freearc");
+        add("application/x-tar");
+        add("text/calendar");
+    }};
 
     public static K2RequestIdentifier parseFuzzRequestIdentifierHeader(String requestHeaderVal) {
         K2RequestIdentifier k2RequestIdentifierInstance = new K2RequestIdentifier();
