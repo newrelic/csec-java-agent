@@ -1,7 +1,7 @@
 package com.newrelic.agent.security.instrumentator.httpclient;
 
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
-import com.newrelic.agent.security.intcodeagent.filelogging.LogLevel;
+import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.models.FuzzRequestBean;
 import okhttp3.*;
 import okhttp3.Request.Builder;
