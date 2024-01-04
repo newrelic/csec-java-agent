@@ -10,6 +10,7 @@ package com.newrelic.api.agent.security;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.SecurityMetaData;
 import com.newrelic.api.agent.security.schema.policy.AgentPolicy;
+import com.newrelic.api.agent.security.utils.logging.LogLevel;
 
 import java.lang.instrument.Instrumentation;
 import java.net.URL;
@@ -45,4 +46,14 @@ public interface SecurityAgent {
     Instrumentation getInstrumentation();
 
     boolean isLowPriorityInstrumentationEnabled();
+
+    void setServerInfo(String key, String value);
+
+    String getServerInfo(String key);
+
+    void log(LogLevel logLevel, String event, Throwable throwableEvent, String logSourceClassName);
+
+    void log(LogLevel logLevel, String event, String logSourceClassName);
+
+    void reportIncident(LogLevel logLevel, String event, Throwable exception, String caller);
 }
