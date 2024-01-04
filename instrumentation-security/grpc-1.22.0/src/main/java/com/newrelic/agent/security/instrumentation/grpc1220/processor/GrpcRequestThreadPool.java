@@ -1,7 +1,10 @@
 package com.newrelic.agent.security.instrumentation.grpc1220.processor;
 
+import com.newrelic.agent.security.instrumentation.grpc1220.client.GrpcClient;
+import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.instrumentation.helpers.GrpcClientRequestReplayHelper;
 import com.newrelic.api.agent.security.schema.StringUtils;
+import com.newrelic.api.agent.security.utils.logging.LogLevel;
 
 import java.util.HashSet;
 import java.util.concurrent.BlockingQueue;
@@ -16,6 +19,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class GrpcRequestThreadPool {
+    public static final String CALL_FAILED_REQUEST_S_REASON = "Call failed : request %s reason : ";
+
     /**
      * Thread pool executor.
      */
@@ -40,15 +45,15 @@ public class GrpcRequestThreadPool {
         executor = new ThreadPoolExecutor(corePoolSize, maxPoolSize, keepAliveTime, timeUnit, processQueue, new EventAbortPolicy()){
             @Override
             protected void afterExecute(Runnable r, Throwable t) {
+                String controlCommandId = null;
                 try {
                     super.afterExecute(r, t);
                     GrpcClientRequestReplayHelper.getInstance().setInProcessRequestQueue(getQueue());
-                    String controlCommandId = null;
+                    controlCommandId = null;
                     if (r instanceof CustomFutureTask<?> && ((CustomFutureTask<?>) r).getTask() instanceof GrpcRequestProcessor) {
                         Object result = (Object) ((CustomFutureTask<?>) r).get();
                         GrpcRequestProcessor task = (GrpcRequestProcessor) ((CustomFutureTask<?>) r).getTask();
                         controlCommandId = task.getPartialControlCommand().getId();
-                        System.out.println("control command id : " + controlCommandId);
                         if (t != null || result != null) {
                             if (StringUtils.isNotBlank(controlCommandId)) {
                                 GrpcClientRequestReplayHelper.getInstance().getRejectedIds().add(controlCommandId);
@@ -60,8 +65,7 @@ public class GrpcRequestThreadPool {
                     if (StringUtils.isNotBlank(controlCommandId)) {
                         GrpcClientRequestReplayHelper.getInstance().getPendingIds().remove(controlCommandId);
                     }
-                } catch (InterruptedException | ExecutionException e) {
-                    // TODO: send critical log message
+                } catch (InterruptedException | ExecutionException ignored) {
                 }
             }
 
@@ -117,8 +121,8 @@ public class GrpcRequestThreadPool {
                     executor.shutdownNow(); // cancel currently executing tasks
 
                     if (!executor.awaitTermination(1, TimeUnit.SECONDS)) {
-//                        System.out.println("Thread pool executor did not terminate");
-                    }
+                        NewRelicSecurity.getAgent().log(LogLevel.SEVERE, "Thread pool executor did not terminate",
+                                GrpcRequestThreadPool.class.getName());                    }
                 }
             } catch (InterruptedException e) {
             }
