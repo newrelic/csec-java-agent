@@ -573,4 +573,6 @@ public interface IAgentConstants {
     String NR_APM_SPAN_ID = "span.id";
     int MAX_ALLOWED_PARAMETER_LENGTH = 100;
     int MAX_ALLOWED_RESPONSE_LENGHT = 32000;
+
+    int MAX_ALLOWED_EVENT_LENGHT = 512000;
 }

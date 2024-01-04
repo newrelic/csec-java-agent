@@ -41,7 +41,7 @@ import java.util.LinkedList;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-import static com.newrelic.agent.security.intcodeagent.logging.IAgentConstants.ERROR_OCCURED_WHILE_TRYING_TO_CONNECT_TO_WSOCKET;
+import static com.newrelic.agent.security.intcodeagent.logging.IAgentConstants.*;
 
 public class WSClient extends WebSocketClient {
 
@@ -60,6 +60,7 @@ public class WSClient extends WebSocketClient {
     public static final String COLON_STRING = " : ";
     public static final String RECEIVED_PING_AT_S_SENDING_PONG = "received ping  at %s sending pong";
     public static final String INCOMING_CONTROL_COMMAND_S = "Incoming control command : %s";
+    public static final String DROPPING_DUE_TO_LARGE_EVENT_SIZE_S = "Dropping due to large event size % : %s";
 
     private static WSClient instance;
 
@@ -238,6 +239,9 @@ public class WSClient extends WebSocketClient {
     public void send(String text) {
         if (StringUtils.isBlank(text)) {
             return;
+        }
+        if(text.length() > MAX_ALLOWED_EVENT_LENGHT){
+            logger.log(LogLevel.WARNING, String.format(DROPPING_DUE_TO_LARGE_EVENT_SIZE_S, text.length(), text), WSClient.class.getName());
         }
         if (this.isOpen()) {
             logger.log(LogLevel.FINER, SENDING_EVENT + text, WSClient.class.getName());
