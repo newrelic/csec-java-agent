@@ -32,6 +32,7 @@ public class MonitorGrpcRequestQueueThread {
                     NewRelicSecurity.getAgent().log(LogLevel.WARNING, "gRPC request processing queue is full.", this.getClass().getName());
                 }
             } catch (InterruptedException e) {
+                NewRelicSecurity.getAgent().log(LogLevel.SEVERE, e.getMessage(), e, this.getClass().getName());
                 NewRelicSecurity.getAgent().reportIncident(LogLevel.SEVERE, e.getMessage(), e, this.getClass().getName());
             } finally {
                 future = commonExecutor.submit(runnable);

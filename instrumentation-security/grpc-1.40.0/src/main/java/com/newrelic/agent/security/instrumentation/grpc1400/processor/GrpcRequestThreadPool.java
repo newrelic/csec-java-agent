@@ -62,8 +62,6 @@ public class GrpcRequestThreadPool {
                         GrpcClientRequestReplayHelper.getInstance().getPendingIds().remove(controlCommandId);
                     }
                 } catch (InterruptedException | ExecutionException e) {
-                    System.out.print("my error :: ");
-                    e.printStackTrace();
                 }
             }
 
