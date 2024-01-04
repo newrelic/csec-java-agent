@@ -7,3 +7,7 @@ dependencies {
 jar {
     manifest { attributes 'Implementation-Title': 'com.newrelic.instrumentation.security.sun-net-httpserver' }
 }
+
+verifyInstrumentation {
+    passes("com.sun.net.httpserver:http:20070405")
+}
