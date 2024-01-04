@@ -38,11 +38,14 @@ public class AgentMetaData {
     @JsonIgnore
     private Set<String> ips;
 
+    private AppServerInfo appServerInfo;
+
     public AgentMetaData() {
         this.rciMethodsCalls = new HashSet<>();
         this.ips = new HashSet<>();
         this.userDataTranslationMap = new HashMap<>();
         this.reflectedMetaData = new HashMap<>();
+        this.appServerInfo = new AppServerInfo();
     }
 
     public AgentMetaData(AgentMetaData agentMetaData) {
@@ -57,6 +60,7 @@ public class AgentMetaData {
         this.userDataTranslationMap = new HashMap<>(agentMetaData.userDataTranslationMap);
         this.userLevelServiceMethodEncountered = agentMetaData.userLevelServiceMethodEncountered;
         this.reflectedMetaData = agentMetaData.reflectedMetaData;
+        this.appServerInfo = agentMetaData.appServerInfo;
     }
 
     public boolean isTriggerViaRCI() {
@@ -157,5 +161,13 @@ public class AgentMetaData {
 
     public void setUserLevelServiceMethodEncountered(boolean userLevelServiceMethodEncountered) {
         this.userLevelServiceMethodEncountered = userLevelServiceMethodEncountered;
+    }
+
+    public AppServerInfo getAppServerInfo() {
+        return appServerInfo;
+    }
+
+    public void setAppServerInfo(AppServerInfo appServerInfo) {
+        this.appServerInfo = appServerInfo;
     }
 }
