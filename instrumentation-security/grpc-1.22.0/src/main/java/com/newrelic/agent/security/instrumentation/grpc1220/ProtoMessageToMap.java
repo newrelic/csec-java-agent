@@ -46,7 +46,7 @@ public class ProtoMessageToMap {
         return list;
     }
 
-    public static Map<Object, Object> convertListToMap(Collection<MapEntry<Object, Object>> entryList) {
+    private static Map<Object, Object> convertListToMap(Collection<MapEntry<Object, Object>> entryList) {
         Map<Object, Object> messageMap = new HashMap<>();
         for (MapEntry<Object, Object> entry : entryList) {
             Object key = entry.getKey();

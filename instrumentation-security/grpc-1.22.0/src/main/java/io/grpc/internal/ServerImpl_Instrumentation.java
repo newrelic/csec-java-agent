@@ -7,6 +7,8 @@
 
 package io.grpc.internal;
 
+import com.newrelic.agent.security.instrumentation.grpc1220.processor.MonitorGrpcRequestQueueThread;
+import com.newrelic.api.agent.NewRelic;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
 import com.newrelic.agent.security.instrumentation.grpc1220.GrpcServerUtils;
@@ -21,11 +23,12 @@ public class ServerImpl_Instrumentation {
     @Weave(originalName = "io.grpc.internal.ServerImpl$ServerTransportListenerImpl")
     private static final class ServerTransportListenerImpl_Instrumentation {
 
-        private <ReqT, RespT> ServerStreamListener startCall(ServerStream stream, String fullMethodName,
+        private <ReqT, RespT> ServerStreamListener startCall(ServerStream_Instrumentation stream, String fullMethodName,
                 ServerMethodDefinition<ReqT, RespT> methodDef, Metadata headers,
                 Context.CancellableContext context, StatsTraceContext statsTraceCtx, Tag tag) {
+            stream.tokenForCsec = NewRelic.getAgent().getTransaction().getToken();
+            MonitorGrpcRequestQueueThread.submitNewTask();
             boolean isLockAcquired = GrpcServerUtils.acquireLockIfPossible();
-
             if (isLockAcquired) {
                 GrpcServerUtils.preprocessSecurityHook(stream, methodDef, headers, this.getClass().getName());
             }

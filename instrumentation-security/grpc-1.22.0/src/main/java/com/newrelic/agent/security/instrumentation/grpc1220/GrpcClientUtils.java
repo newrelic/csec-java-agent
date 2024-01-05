@@ -1,9 +1,11 @@
 package com.newrelic.agent.security.instrumentation.grpc1220;
 
 import com.newrelic.api.agent.security.NewRelicSecurity;
+import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.security.instrumentation.helpers.ServletHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.SecurityMetaData;
+import com.newrelic.api.agent.security.schema.StringUtils;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
 import com.newrelic.api.agent.security.schema.operation.SSRFOperation;
 import com.newrelic.api.agent.security.utils.SSRFUtils;
@@ -42,6 +44,10 @@ public class GrpcClientUtils {
             if (operation.getApiID() != null && !operation.getApiID().trim().isEmpty() && operation.getExecutionId() != null &&
                     !operation.getExecutionId().trim().isEmpty()) {
                 meta.put(Metadata.Key.of(ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER, Metadata.ASCII_STRING_MARSHALLER), SSRFUtils.generateTracingHeaderValue(NewRelicSecurity.getAgent().getSecurityMetaData().getTracingHeaderValue(), operation.getApiID(), operation.getExecutionId(), NewRelicSecurity.getAgent().getAgentUUID()));
+            }
+            String csecParaentId = NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(GenericHelper.CSEC_PARENT_ID, String.class);
+            if(StringUtils.isNotBlank(csecParaentId)){
+                meta.put(Metadata.Key.of(GenericHelper.CSEC_PARENT_ID, Metadata.ASCII_STRING_MARSHALLER), csecParaentId);
             }
             return operation;
         } catch (Throwable e) {
