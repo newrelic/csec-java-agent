@@ -90,7 +90,6 @@ public class RestRequestProcessor implements Callable<Boolean> {
                     for (Object o : list) {
                         payloadList.add(objectMapper.writeValueAsString(o));
                     }
-                    System.out.println("--> "+ payloadList);
                 } catch (Throwable ignored) {
                 }
                 MonitorGrpcFuzzFailRequestQueueThread.submitNewTask();
