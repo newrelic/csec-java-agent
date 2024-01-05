@@ -1,0 +1,23 @@
+dependencies {
+    implementation("net.spy:spymemcached:2.12.0")
+    implementation(project(":newrelic-security-api"))
+    implementation("com.newrelic.agent.java:newrelic-api:${nrAPIVersion}")
+    implementation("com.newrelic.agent.java:newrelic-weaver-api:${nrAPIVersion}")
+    testImplementation("com.github.mwarc:embedded-memcached-spring:0.1.4")
+}
+
+jar {
+    manifest {
+        attributes 'Implementation-Title': 'com.newrelic.instrumentation.security.spymemcached-2.12.0'
+        attributes 'Implementation-Vendor': 'com.newrelic', 'Implementation-Version': 1.0
+    }
+}
+
+verifyInstrumentation {
+    passesOnly 'net.spy:spymemcached:[2.9.0,)'
+}
+
+site {
+    title 'Spymemcached'
+    type 'Messaging'
+}

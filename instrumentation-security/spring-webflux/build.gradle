@@ -1,0 +1,26 @@
+plugins {
+    id "org.jetbrains.kotlin.jvm"
+}
+
+dependencies {
+    implementation(project(":newrelic-security-api"))
+    implementation("com.newrelic.agent.java:newrelic-api:${nrAPIVersion}")
+    implementation("com.newrelic.agent.java:newrelic-weaver-api:${nrAPIVersion}")
+    implementation("org.springframework:spring-webflux:5.0.0.RELEASE")
+}
+
+jar {
+    manifest {
+        attributes 'Implementation-Title': 'com.newrelic.instrumentation.security.spring-webflux'
+    }
+}
+
+verifyInstrumentation {
+    passesOnly 'org.springframework:spring-webflux:[0,)'
+    excludeRegex 'org.springframework:spring-webflux:.*(rc|m|RC|SEC|M)[0-9]*$'
+}
+
+site {
+    title 'Spring'
+    type 'Framework'
+}

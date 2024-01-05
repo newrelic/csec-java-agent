@@ -9,7 +9,7 @@ package java.io;
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.weaver.*;
-import com.nr.instrumentation.security.javaio.InputStreamHelper;
+import com.newrelic.api.agent.security.instrumentation.helpers.InputStreamHelper;
 
 @Weave(type = MatchType.BaseClass, originalName = "java.io.InputStream")
 public abstract class InputStream_Instrumentation {
