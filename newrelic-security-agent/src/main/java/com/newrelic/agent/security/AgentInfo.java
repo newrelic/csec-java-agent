@@ -1,16 +1,18 @@
 package com.newrelic.agent.security;
 
+import com.newrelic.agent.security.instrumentator.httpclient.RestRequestThreadPool;
 import com.newrelic.agent.security.instrumentator.utils.AgentUtils;
 import com.newrelic.agent.security.instrumentator.utils.ApplicationInfoUtils;
 import com.newrelic.agent.security.instrumentator.utils.INRSettingsKey;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
-import com.newrelic.agent.security.intcodeagent.filelogging.LogLevel;
+import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.models.collectorconfig.CollectorConfig;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.ApplicationInfoBean;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.Identifier;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.JAHealthCheck;
 import com.newrelic.agent.security.intcodeagent.properties.BuildInfo;
 import com.newrelic.agent.security.intcodeagent.websocket.WSUtils;
+import com.newrelic.api.agent.security.instrumentation.helpers.GrpcClientRequestReplayHelper;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
@@ -27,8 +29,6 @@ import static com.newrelic.agent.security.util.IUtilConstants.NOT_AVAILABLE;
 public class AgentInfo {
 
     private static final String APP_INFO_BEAN_NOT_CREATED = "[APP_INFO] Error application info bean not created.";
-
-    private static AgentInfo instance;
 
     private static final Object lock = new Object();
 
@@ -49,6 +49,7 @@ public class AgentInfo {
     private BuildInfo buildInfo = new BuildInfo();
 
     private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
+    private boolean processProtected = false;
 
     private AgentInfo() {
         RuntimeMXBean runtimeMXBean = ManagementFactory.getRuntimeMXBean();
@@ -58,15 +59,12 @@ public class AgentInfo {
         applicationUUID = UUID.randomUUID().toString();
     }
 
+    private static final class InstanceHolder {
+        static final AgentInfo instance = new AgentInfo();
+    }
+
     public static AgentInfo getInstance(){
-        if (instance == null) {
-            synchronized (lock) {
-                if (instance == null) {
-                    instance = new AgentInfo();
-                }
-            }
-        }
-        return instance;
+        return InstanceHolder.instance;
     }
 
     public void initialiseHC(){
@@ -167,6 +165,14 @@ public class AgentInfo {
         }
         if(state) {
             logger.logInit(LogLevel.INFO, String.format("Security Agent is now ACTIVE for %s", applicationUUID), AgentInfo.class.getName());
+        } else {
+            RestRequestThreadPool.getInstance().resetIASTProcessing();
+            GrpcClientRequestReplayHelper.getInstance().resetIASTProcessing();
+        }
+
+        if(state && !processProtected){
+            processProtected = true;
+            System.out.printf("This application instance is now being protected by New Relic Security under id %s\n", getApplicationUUID());
         }
         setAgentActive(state);
         return state;

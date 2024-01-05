@@ -8,6 +8,9 @@ repositories {
     mavenLocal()
     mavenCentral()
     jcenter()
+    maven {
+        url 'https://plugins.gradle.org/m2/'
+    }
 }
 
 dependencies {
@@ -22,4 +25,5 @@ dependencies {
     // Reflections and GSON are used for building the manifest of annotated classes.
     implementation("org.reflections:reflections:0.9.11")
     implementation("com.google.code.gson:gson:2.8.6")
+    implementation ('com.github.jk1:gradle-license-report:1.17')
 }

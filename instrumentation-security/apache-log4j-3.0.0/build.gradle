@@ -1,0 +1,25 @@
+jar {
+    manifest { attributes 'Implementation-Title': 'com.newrelic.instrumentation.security.apache-log4j' }
+}
+
+dependencies {
+    implementation(project(":newrelic-security-api"))
+    implementation("com.newrelic.agent.java:newrelic-api:${nrAPIVersion}")
+    implementation("com.newrelic.agent.java:newrelic-weaver-api:${nrAPIVersion}")
+    implementation("org.apache.logging.log4j:log4j-core:3.0.0-alpha1")
+}
+
+verifyInstrumentation {
+    passes("org.apache.logging.log4j:log4j-core:[3.0.0-alpha1,)")
+}
+
+site {
+    title 'Log4j'
+    type 'Framework'
+}
+
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(11))
+    }
+}

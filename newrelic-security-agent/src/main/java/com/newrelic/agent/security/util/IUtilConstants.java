@@ -22,4 +22,13 @@ public interface IUtilConstants {
     String NR_CSEC_DEBUG_LOGFILE_SIZE = "NR_CSEC_DEBUG_LOGFILE_SIZE";
     String NR_CSEC_DEBUG_LOGFILE_MAX_COUNT = "NR_CSEC_DEBUG_LOGFILE_MAX_COUNT";
     String NR_SECURITY_HOME = "nr-security-home";
+    String PROCESSED = "PROCESSED";
+    String ERROR = "ERROR";
+    String SENT = "SENT";
+    String REJECTED = "REJECTED";
+    String NR_LOG_DAILY_ROLLOVER_PERIOD = "log.rollover.period";
+    String APPLICATION_DIRECTORY = "APPLICATION_DIRECTORY";
+
+    String SERVER_BASE_DIRECTORY = "SERVER_BASE_DIRECTORY";
+    String SAME_SITE_COOKIES = "SAME_SITE_COOKIES";
 }
