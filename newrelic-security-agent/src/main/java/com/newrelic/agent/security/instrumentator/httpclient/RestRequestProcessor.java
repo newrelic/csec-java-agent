@@ -28,6 +28,8 @@ public class RestRequestProcessor implements Callable<Boolean> {
     public static final String NR_CSEC_VALIDATOR_HOME_TMP = "/{{NR_CSEC_VALIDATOR_HOME_TMP}}";
     public static final String NR_CSEC_VALIDATOR_HOME_TMP_URL_ENCODED = "%2F%7B%7BNR_CSEC_VALIDATOR_HOME_TMP%7D%7D";
 
+    public static final String ERROR_IN_FUZZ_REQUEST_GENERATION = "Error in fuzz request generation %s";
+
     public static final String ERROR_WHILE_PROCESSING_FUZZING_REQUEST_S = "Error while processing fuzzing request : %s";
 
     public static final String JSON_PARSING_ERROR_WHILE_PROCESSING_FUZZING_REQUEST_S = "JSON parsing error while processing fuzzing request : %s";
@@ -86,12 +88,13 @@ public class RestRequestProcessor implements Callable<Boolean> {
             if (httpRequest.getIsGrpc()){
                 List<String> payloadList = new ArrayList<>();
                 try{
+                    logger.log(LogLevel.FINER, String.format("Firing request : %s", objectMapper.writeValueAsString(httpRequest)), RestRequestProcessor.class.getName());
                     List<?> list = objectMapper.readValue(String.valueOf(httpRequest.getBody()), List.class);
                     for (Object o : list) {
                         payloadList.add(objectMapper.writeValueAsString(o));
                     }
-                    System.out.println("--> "+ payloadList);
-                } catch (Throwable ignored) {
+                } catch (Throwable e) {
+                    logger.log(LogLevel.FINEST, String.format(ERROR_IN_FUZZ_REQUEST_GENERATION, e.getMessage()), RestRequestProcessor.class.getSimpleName());
                 }
                 MonitorGrpcFuzzFailRequestQueueThread.submitNewTask();
                 GrpcClientRequestReplayHelper.getInstance().addToRequestQueue(new ControlCommandDto(controlCommand.getId(), httpRequest, payloadList));
