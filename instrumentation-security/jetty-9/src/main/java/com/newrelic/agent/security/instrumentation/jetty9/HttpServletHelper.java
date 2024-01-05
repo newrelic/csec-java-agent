@@ -13,6 +13,7 @@ import com.newrelic.api.agent.security.schema.policy.AgentPolicy;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.Map;
 
@@ -157,7 +158,8 @@ public class HttpServletHelper {
             }
             securityRequest.setContentType(httpServletRequest.getContentType());
 
-            securityAgentMetaData.setServiceTrace(Thread.currentThread().getStackTrace());
+            StackTraceElement[] trace = Thread.currentThread().getStackTrace();
+            securityMetaData.getMetaData().setServiceTrace(Arrays.copyOfRange(trace, 2, trace.length));
             securityRequest.setRequestParsed(true);
         } catch (Throwable ignored) {
         }

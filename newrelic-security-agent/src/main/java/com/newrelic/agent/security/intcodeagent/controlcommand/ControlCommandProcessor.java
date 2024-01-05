@@ -6,9 +6,8 @@ import com.newrelic.agent.security.instrumentator.httpclient.RestRequestProcesso
 import com.newrelic.agent.security.instrumentator.httpclient.RestRequestThreadPool;
 import com.newrelic.agent.security.instrumentator.utils.AgentUtils;
 import com.newrelic.agent.security.instrumentator.utils.InstrumentationUtils;
-import com.newrelic.agent.security.intcodeagent.constants.AgentServices;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
-import com.newrelic.agent.security.intcodeagent.filelogging.LogLevel;
+import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.logging.IAgentConstants;
 import com.newrelic.agent.security.intcodeagent.models.config.AgentPolicyParameters;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.EventResponse;
@@ -28,9 +27,6 @@ import org.json.simple.parser.JSONParser;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
-
-import static com.newrelic.agent.security.intcodeagent.logging.IAgentConstants.STARTED_MODULE_LOG;
 
 public class ControlCommandProcessor implements Runnable {
 

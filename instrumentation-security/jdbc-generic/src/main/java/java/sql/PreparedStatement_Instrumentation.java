@@ -8,6 +8,7 @@
 package java.sql;
 
 import com.newrelic.api.agent.security.NewRelicSecurity;
+import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.security.instrumentation.helpers.JdbcHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.JDBCVendor;
@@ -22,6 +23,7 @@ import com.newrelic.api.agent.weaver.Weaver;
 import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Matcher;
 
 @Weave(originalName = "java.sql.PreparedStatement", type = MatchType.Interface)
 public abstract class PreparedStatement_Instrumentation {
@@ -53,6 +55,21 @@ public abstract class PreparedStatement_Instrumentation {
             SQLOperation sqlOperation = new SQLOperation(this.getClass().getName(), methodName);
             sqlOperation.setQuery(sql);
             sqlOperation.setParams(this.params);
+
+            // first check for quoted strings and remove them for final check
+            String localSqlCopy = new String(sql);
+            Matcher quotedStringMatcher = GenericHelper.QUOTED_STRING_PATTERN.matcher(localSqlCopy);
+            while (quotedStringMatcher.find()) {
+                String replaceChars = quotedStringMatcher.group();
+                localSqlCopy = localSqlCopy.replace(replaceChars, "_TEMP_");
+            }
+            // final check to identify the stored procedure call
+            Matcher storedProcedureMatcher = GenericHelper.STORED_PROCEDURE_PATTERN.matcher(localSqlCopy);
+            while (storedProcedureMatcher.find()) {
+                sqlOperation.setStoredProcedureCall(true);
+                break;
+            }
+
             sqlOperation.setDbName(NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(JDBCVendor.META_CONST_JDBC_VENDOR, String.class));
             sqlOperation.setPreparedCall(true);
             NewRelicSecurity.getAgent().registerOperation(sqlOperation);
