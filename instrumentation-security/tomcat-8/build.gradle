@@ -13,7 +13,7 @@ jar {
 verifyInstrumentation {
     passesOnly 'org.apache.tomcat.embed:tomcat-embed-core:[8.5.42,9.0.0)'
     passesOnly 'org.apache.tomcat.embed:tomcat-embed-core:[9.0.21,)'
-    excludeRegex '.*-(b|gfa|beta|RC)[0-9]*'
+    excludeRegex '.*(b|gfa|beta|RC|M)[0-9]*'
 }
 
 site {
