@@ -172,4 +172,3 @@ include 'instrumentation:tomcat-8'
 include 'instrumentation:grpc-1.4.0'
 include 'instrumentation:grpc-1.22.0'
 include 'instrumentation:grpc-1.40.0'
-
