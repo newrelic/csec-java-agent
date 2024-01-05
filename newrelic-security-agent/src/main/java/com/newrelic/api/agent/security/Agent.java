@@ -9,7 +9,7 @@ import com.newrelic.agent.security.instrumentator.utils.*;
 import com.newrelic.agent.security.intcodeagent.constants.AgentServices;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.newrelic.agent.security.intcodeagent.filelogging.LogFileHelper;
-import com.newrelic.agent.security.intcodeagent.filelogging.LogLevel;
+import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.logging.HealthCheckScheduleThread;
 import com.newrelic.agent.security.intcodeagent.logging.IAgentConstants;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.ExitEventBean;
@@ -534,6 +534,27 @@ public class Agent implements SecurityAgent {
                 return appServerInfo.getSameSiteCookies();
             default:
                 return null;
+        }
+    }
+
+    @Override
+    public void log(LogLevel logLevel, String event, Throwable throwableEvent, String logSourceClassName) {
+        if(logger != null){
+            logger.log(logLevel, event, throwableEvent, logSourceClassName);
+        }
+    }
+
+    @Override
+    public void log(LogLevel logLevel, String event, String logSourceClassName) {
+        if(logger != null){
+            logger.log(logLevel, event, logSourceClassName);
+        }
+    }
+
+    @Override
+    public void reportIncident(LogLevel logLevel, String event, Throwable exception, String caller) {
+        if(logger != null){
+            logger.postLogMessageIfNecessary(logLevel, event, exception, caller);
         }
     }
 }

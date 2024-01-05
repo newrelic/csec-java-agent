@@ -1,4 +1,4 @@
-package com.newrelic.agent.security.intcodeagent.filelogging;
+package com.newrelic.api.agent.security.utils.logging;
 
 public enum LogLevel {
 

@@ -6,7 +6,7 @@ import com.newrelic.agent.security.AgentInfo;
 import com.newrelic.agent.security.instrumentator.os.OsVariablesInstance;
 import com.newrelic.agent.security.instrumentator.utils.CallbackUtils;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
-import com.newrelic.agent.security.intcodeagent.filelogging.LogLevel;
+import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.models.FuzzRequestBean;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.IntCodeControlCommand;
 import com.newrelic.agent.security.intcodeagent.websocket.WSUtils;

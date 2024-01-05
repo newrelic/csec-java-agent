@@ -4,6 +4,7 @@ import com.newrelic.agent.security.AgentInfo;
 import com.newrelic.agent.security.instrumentator.os.OSVariables;
 import com.newrelic.agent.security.instrumentator.os.OsVariablesInstance;
 import com.newrelic.agent.security.intcodeagent.utils.CommonUtils;
+import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 

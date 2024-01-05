@@ -1,7 +1,7 @@
 package com.newrelic.agent.security.instrumentator.utils;
 
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
-import com.newrelic.agent.security.intcodeagent.filelogging.LogLevel;
+import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.logging.DeployedApplication;
 import net.openhft.hashing.LongHashFunction;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
