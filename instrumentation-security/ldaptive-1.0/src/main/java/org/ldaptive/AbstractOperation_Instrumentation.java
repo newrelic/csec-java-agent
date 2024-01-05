@@ -9,7 +9,7 @@ import com.newrelic.api.agent.security.schema.operation.LDAPOperation;
 import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
-import com.nr.instrumentation.security.ldaptive1x.ldap.LDAPUtils;
+import com.newrelic.agent.security.instrumentation.ldaptive1.LDAPUtils;
 
 @Weave(type = MatchType.BaseClass, originalName = "org.ldaptive.AbstractOperation")
 public abstract class AbstractOperation_Instrumentation<Q extends Request, S>

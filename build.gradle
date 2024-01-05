@@ -34,6 +34,9 @@ allprojects {
     tasks.withType(Copy) {
         includeEmptyDirs = false
     }
+    if ('newrelic-security-agent'.equals(project.name)){
+        apply from: "$rootProject.projectDir/gradle/script/generate-license-info.gradle"
+    }
 }
 
 // This fixes an issue with intellij where the test output build path is incorrect for the top-level java_agent module
