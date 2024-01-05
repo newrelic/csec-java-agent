@@ -76,6 +76,7 @@ dependencies {
     shadowIntoJar 'com.github.erosb:everit-json-schema:1.14.2'
     shadowIntoJar 'net.openhft:zero-allocation-hashing:0.16'
     shadowIntoJar 'com.github.oshi:oshi-core:6.4.1'
+    shadowIntoJar 'com.google.code.gson:gson:2.10.1'
     shadowIntoJar "com.newrelic.agent.java:newrelic-api:${nrAPIVersion}"
 }
 
@@ -202,9 +203,10 @@ task newrelicVersionedAgentJar(type: Jar) {
     dependsOn(instrumentProjects().collect { it.tasks["jar"] })
     dependsOn("cyclonedxBom")
 
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+
     from("$rootDir/LICENSE.md")
     from("$rootDir/THIRD_PARTY_NOTICES.md")
-    new File(projectDir, 'src/main/resources/NOTICE')
     from("$buildDir/reports/SBOM.json")
 
     includeEmptyDirs = false

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<studentClass>
+    <name>MPC</name>
+    <subjects_list>
+        <subject>Maths</subject>
+        <subject>Physics</subject>
+        <subject>Chemistry</subject>
+    </subjects_list>
+    <student_list>
+        <student id="1">
+            <age>2</age>
+            <dob>2011-09-25T16:41:56.250+05:30</dob>
+            <firstName>Sriram</firstName>
+            <hobby>Painting</hobby>
+            <lastName>Kasireddi</lastName>
+        </student>
+        <student id="2">
+            <age>26</age>
+            <dob>2011-09-25T16:41:56.250+05:30</dob>
+            <firstName>Sudhakar</firstName>
+            <hobby>Coding</hobby>
+            <lastName>Kasireddi</lastName>
+        </student>
+    </student_list>
+</studentClass>

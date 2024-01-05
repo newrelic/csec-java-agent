@@ -4,8 +4,8 @@ package com.newrelic.api.agent.security.schema.policy;
 import java.util.Objects;
 public class Probing {
 
-    private Integer interval = 1;
-    private Integer batchSize = 10;
+    private Integer interval = 5;
+    private Integer batchSize = 50;
 
     /**
      * No args constructor for use in serialization

@@ -2,14 +2,17 @@ package com.newrelic.api.agent.security;
 
 import com.newrelic.api.agent.NewRelic;
 import com.newrelic.api.agent.Transaction;
+import com.newrelic.api.agent.security.instrumentation.helpers.LowSeverityHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.SecurityMetaData;
 import com.newrelic.api.agent.security.schema.policy.AgentPolicy;
+import com.newrelic.api.agent.security.utils.logging.LogLevel;
 
 import java.lang.instrument.Instrumentation;
 import java.net.URL;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -63,7 +66,8 @@ public class Agent implements SecurityAgent {
         operation.setExecutionId(executionId);
         operation.setApiID(apiId);
         operation.setStartTime(Instant.now().toEpochMilli());
-        operation.setStackTrace(Thread.currentThread().getStackTrace());
+        StackTraceElement[] trace = Thread.currentThread().getStackTrace();
+        operation.setStackTrace(Arrays.copyOfRange(trace, 1, trace.length));
         this.getSecurityMetaData().getCustomAttribute(OPERATIONS, List.class).add(operation);
     }
 
@@ -132,4 +136,33 @@ public class Agent implements SecurityAgent {
         return null;
     }
 
+    @Override
+    public boolean isLowPriorityInstrumentationEnabled() {
+        return true;
+    }
+
+    @Override
+    public void setServerInfo(String key, String value) {
+        //TODO Ishika please fill this as per your needs
+    }
+
+    @Override
+    public String getServerInfo(String key) {
+        return null;
+    }
+
+    @Override
+    public void log(LogLevel logLevel, String event, Throwable throwableEvent, String logSourceClassName) {
+
+    }
+
+    @Override
+    public void log(LogLevel logLevel, String event, String logSourceClassName) {
+
+    }
+
+    @Override
+    public void reportIncident(LogLevel logLevel, String event, Throwable exception, String caller) {
+
+    }
 }

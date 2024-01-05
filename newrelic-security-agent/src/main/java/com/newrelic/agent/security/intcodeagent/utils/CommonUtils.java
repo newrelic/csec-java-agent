@@ -1,15 +1,12 @@
 package com.newrelic.agent.security.intcodeagent.utils;
 
-import com.newrelic.agent.security.instrumentator.os.OsVariablesInstance;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
-import com.newrelic.agent.security.intcodeagent.filelogging.LogLevel;
+import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.models.config.AgentPolicyParameters;
 import com.newrelic.agent.security.intcodeagent.websocket.JsonConverter;
 import com.newrelic.api.agent.security.Agent;
 import com.newrelic.api.agent.security.schema.policy.AgentPolicy;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.comparator.LastModifiedFileComparator;
-import org.apache.commons.io.filefilter.FileFilterUtils;
 import org.everit.json.schema.Schema;
 import org.everit.json.schema.ValidationException;
 import org.everit.json.schema.loader.SchemaLoader;
@@ -24,8 +21,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.PosixFilePermissions;
-import java.util.Arrays;
-import java.util.Collection;
+import java.security.SecureRandom;
 import java.util.Stack;
 
 public class CommonUtils {
@@ -33,6 +29,8 @@ public class CommonUtils {
     private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
     public static final String POLICY_WRITE_FAILED = "policy write failed : ";
     public static final String POLICY_WRITTEN_TO_FILE = "policy written to file : ";
+
+    public static SecureRandom secureRandom = new SecureRandom();
 
     public static boolean validateCollectorPolicyParameterSchema(AgentPolicyParameters policyParameters) {
 
@@ -137,16 +135,14 @@ public class CommonUtils {
         return null;
     }
 
-    public static void deleteRolloverLogFiles(String fileName, int max) {
-        Collection<File> rolloverLogFiles = FileUtils.listFiles(new File(OsVariablesInstance.getInstance().getOsVariables().getLogDirectory()), FileFilterUtils.prefixFileFilter(fileName + "."), null);
 
-        if (rolloverLogFiles.size() > max) {
-            File[] sortedLogFiles = rolloverLogFiles.toArray(new File[0]);
-            Arrays.sort(sortedLogFiles, LastModifiedFileComparator.LASTMODIFIED_COMPARATOR);
-            for (int i = 0; i < sortedLogFiles.length - max; i++) {
-                FileUtils.deleteQuietly(sortedLogFiles[i]);
-
-            }
-        }
+    /**
+     * Generate random int between range start to end. Both inclusive.
+     * @param start lower bound
+     * @param end upper bound
+     * @return random int
+     */
+    public static int generateSecureRandomBetween(int start, int end) {
+        return secureRandom.nextInt(end-start) + start;
     }
 }

@@ -17,6 +17,7 @@ public class SQLOperation extends AbstractOperation {
     private String dbName = "UNKNOWN";
 
     private boolean isPreparedCall;
+    private boolean isStoredProcedureCall;
 
     public SQLOperation(String className, String methodName) {
         super(className, methodName);
@@ -90,6 +91,14 @@ public class SQLOperation extends AbstractOperation {
         } else {
             this.dbName = dbName;
         }
+    }
+
+    public boolean isStoredProcedureCall() {
+        return isStoredProcedureCall;
+    }
+
+    public void setStoredProcedureCall(boolean storedProcedureCall) {
+        isStoredProcedureCall = storedProcedureCall;
     }
 }
 
