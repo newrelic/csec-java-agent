@@ -1,0 +1,24 @@
+dependencies {
+    implementation(project(":newrelic-security-api"))
+    implementation("com.newrelic.agent.java:newrelic-api:${nrAPIVersion}")
+    implementation("com.newrelic.agent.java:newrelic-weaver-api:${nrAPIVersion}")
+    implementation group: 'io.lettuce', name: 'lettuce-core', version: '5.0.3.RELEASE'
+//    implementation("org.springframework.data:spring-data-redis:3.1.5")
+    testImplementation("com.github.codemonstur:embedded-redis:1.0.0")
+}
+
+jar {
+    manifest {
+        attributes 'Implementation-Title': 'com.newrelic.instrumentation.security.lettuce-5.0'
+    }
+}
+
+verifyInstrumentation {
+    passesOnly 'io.lettuce:lettuce-core:[5.0.0.RELEASE,)'
+    excludeRegex '.*(RC|M).*'
+}
+
+site {
+    title 'Lettuce 5.0'
+    type 'Framework'
+}

@@ -20,6 +20,7 @@ public class JavaAgentEventBean extends AgentBasicInfo {
     private Long eventGenerationTime;
     private HttpRequest httpRequest;
     private String id;
+    private String parentId;
     private StackTraceElement[] stacktrace;
     private String caseType;
     private String eventCategory;
@@ -293,5 +294,13 @@ public class JavaAgentEventBean extends AgentBasicInfo {
 
     public void setIsIASTRequest(boolean isIASTRequest) {
         this.isIASTRequest = isIASTRequest;
+    }
+
+    public String getParentId() {
+        return parentId;
+    }
+
+    public void setParentId(String parentId) {
+        this.parentId = parentId;
     }
 }

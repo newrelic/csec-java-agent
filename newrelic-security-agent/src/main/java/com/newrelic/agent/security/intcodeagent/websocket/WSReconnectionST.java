@@ -1,8 +1,9 @@
 package com.newrelic.agent.security.intcodeagent.websocket;
 
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
-import com.newrelic.agent.security.intcodeagent.filelogging.LogLevel;
+import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.logging.IAgentConstants;
+import com.newrelic.agent.security.intcodeagent.utils.CommonUtils;
 
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -24,15 +25,17 @@ public class WSReconnectionST {
         @Override
         public void run() {
             try {
-                WSClient.reconnectWSClient();
-            } catch (Exception e) {
+                if(!WSClient.getInstance().isOpen() || !WSUtils.isConnected()) {
+                    logger.log(LogLevel.INFO, "WS is marked disconnected, reconnecting ...", WSReconnectionST.class.getName());
+                    WSClient.reconnectWSClient();
+                }
+            } catch (Throwable e) {
                 logger.log(LogLevel.SEVERE, ERROR_WHILE_WS_RECONNECTION + e.getMessage() + COLON_SEPARATOR + e.getCause(), WSClient.class.getName());
                 logger.log(LogLevel.FINER, ERROR_WHILE_WS_RECONNECTION, e, WSClient.class.getName());
                 logger.postLogMessageIfNecessary(LogLevel.SEVERE, ERROR_WHILE_WS_RECONNECTION + e.getMessage() + COLON_SEPARATOR + e.getCause(), e, WSClient.class.getName());
             } finally {
-                if (!WSUtils.isConnected()) {
-                    futureTask = scheduledService.schedule(runnable, 15, TimeUnit.SECONDS);
-                }
+                int delay = CommonUtils.generateSecureRandomBetween(5, 15);
+                futureTask = scheduledService.schedule(runnable, delay, TimeUnit.SECONDS);
             }
         }
     };
@@ -86,7 +89,7 @@ public class WSReconnectionST {
             if (instance.futureTask == null) {
                 return;
             }
-            if (instance.futureTask != null && (force || instance.futureTask.isDone())) {
+            if (force || !instance.futureTask.isDone()) {
                 instance.futureTask.cancel(force);
             }
         }

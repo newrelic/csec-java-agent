@@ -45,6 +45,8 @@ public interface SecurityIntrospector {
 
     List<?> getGRPCResponse();
 
+    void setK2ParentId(String value);
+
     void clear();
 
     int getRandomPort();

@@ -3,9 +3,11 @@ package com.newrelic.agent.security.instrumentator.httpclient;
 import com.newrelic.agent.security.intcodeagent.executor.CustomFutureTask;
 import com.newrelic.agent.security.intcodeagent.executor.CustomThreadPoolExecutor;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
-import com.newrelic.agent.security.intcodeagent.filelogging.LogLevel;
+import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -19,20 +21,27 @@ public class RestRequestThreadPool {
     protected ThreadPoolExecutor executor;
     private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
 
-
-    private static RestRequestThreadPool instance;
-
     private final int queueSize = 1000;
     private final int maxPoolSize = 5;
     private final int corePoolSize = 3;
     private final long keepAliveTime = 10;
     private final TimeUnit timeUnit = TimeUnit.SECONDS;
     private final boolean allowCoreThreadTimeOut = false;
-    private static final Object mutex = new Object();
 
     private static final AtomicBoolean isWaiting = new AtomicBoolean(false);
 
-    private Set<String> processedIds = ConcurrentHashMap.newKeySet();
+    private final Map<String, Set<String>> processedIds = new ConcurrentHashMap();
+
+    private final Set<String> pendingIds = ConcurrentHashMap.newKeySet();
+
+    private final Set<String> rejectedIds = ConcurrentHashMap.newKeySet();
+
+    public void resetIASTProcessing() {
+        rejectedIds.addAll(processedIds.keySet());
+        processedIds.clear();
+        pendingIds.clear();
+        executor.getQueue().clear();
+    }
 
     private RestRequestThreadPool() {
         LinkedBlockingQueue<Runnable> processQueue;
@@ -42,13 +51,26 @@ public class RestRequestThreadPool {
 
             @Override
             protected void afterExecute(Runnable r, Throwable t) {
-                if (r instanceof CustomFutureTask<?> && ((CustomFutureTask<?>) r).getTask() instanceof RestRequestProcessor) {
-                    RestRequestProcessor task = (RestRequestProcessor) ((CustomFutureTask<?>) r).getTask();
-                    if(StringUtils.isNotBlank(task.getControlCommand().getId())){
-                        processedIds.add(task.getControlCommand().getId());
+                try {
+                    super.afterExecute(r, t);
+                    String controlCommandId = null;
+                    if (r instanceof CustomFutureTask<?> && ((CustomFutureTask<?>) r).getTask() instanceof RestRequestProcessor) {
+                        Boolean result = (Boolean) ((CustomFutureTask<?>) r).get();
+                        RestRequestProcessor task = (RestRequestProcessor) ((CustomFutureTask<?>) r).getTask();
+                        controlCommandId = task.getControlCommand().getId();
+                        if(t != null || !result) {
+                            if (StringUtils.isNotBlank(controlCommandId)) {
+                                rejectedIds.add(controlCommandId);
+                            }
+                        } else {
+                            processedIds.putIfAbsent(controlCommandId, new HashSet<>());
+                        }
                     }
+                    if(StringUtils.isNotBlank(controlCommandId)){
+                        pendingIds.remove(controlCommandId);
+                    }
+                } catch (ExecutionException | InterruptedException ignored) {
                 }
-                super.afterExecute(r, t);
             }
 
             @Override
@@ -71,17 +93,11 @@ public class RestRequestThreadPool {
         });
     }
 
+    private static final class InstanceHolder {
+        static final RestRequestThreadPool instance = new RestRequestThreadPool();
+    }
     public static RestRequestThreadPool getInstance() {
-
-        if (instance == null) {
-            synchronized (mutex) {
-                if (instance == null) {
-                    instance = new RestRequestThreadPool();
-                }
-                return instance;
-            }
-        }
-        return instance;
+        return InstanceHolder.instance;
     }
 
 
@@ -119,8 +135,32 @@ public class RestRequestThreadPool {
         return executor;
     }
 
-    public Set<String> getProcessedIds() {
+    public Map<String, Set<String>> getProcessedIds() {
         return processedIds;
+    }
+
+    public Set<String> getRejectedIds() {
+        return rejectedIds;
+    }
+
+    public Set<String> getPendingIds() {
+        return pendingIds;
+    }
+
+    public void registerEventForProcessedCC(String controlCommandId, String eventId) {
+        if(StringUtils.isAnyBlank(controlCommandId, eventId)){
+            return;
+        }
+        Set<String> registeredEvents = processedIds.get(controlCommandId);
+        if(registeredEvents != null) {
+            registeredEvents.add(eventId);
+        }
+    }
+
+    public void removeFromProcessedCC(String controlCommandId) {
+        if(StringUtils.isNotBlank(controlCommandId)){
+            processedIds.remove(controlCommandId);
+        }
     }
 
 }

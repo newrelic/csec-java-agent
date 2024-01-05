@@ -2,15 +2,16 @@ package com.newrelic.agent.security.intcodeagent.websocket;
 
 import com.newrelic.agent.security.AgentConfig;
 import com.newrelic.agent.security.AgentInfo;
+import com.newrelic.agent.security.instrumentator.dispatcher.DispatcherPool;
+import com.newrelic.agent.security.instrumentator.httpclient.RestRequestThreadPool;
 import com.newrelic.agent.security.instrumentator.utils.INRSettingsKey;
 import com.newrelic.agent.security.intcodeagent.controlcommand.ControlCommandProcessor;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
-import com.newrelic.agent.security.intcodeagent.filelogging.LogLevel;
+import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.logging.IAgentConstants;
 import com.newrelic.agent.security.intcodeagent.utils.CommonUtils;
 import com.newrelic.agent.security.util.IUtilConstants;
 import com.newrelic.api.agent.NewRelic;
-import com.newrelic.api.agent.security.Agent;
 import org.apache.commons.lang3.StringUtils;
 import org.java_websocket.WebSocket;
 import org.java_websocket.WebSocketImpl;
@@ -38,8 +39,6 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
-
-import static com.newrelic.agent.security.intcodeagent.logging.IAgentConstants.ERROR_OCCURED_WHILE_TRYING_TO_CONNECT_TO_WSOCKET;
 
 public class WSClient extends WebSocketClient {
 
@@ -129,6 +128,8 @@ public class WSClient extends WebSocketClient {
         this.setConnectionLostTimeout(30);
         this.addHeader("NR-CSEC-CONNECTION-TYPE", "LANGUAGE_COLLECTOR");
         this.addHeader("NR-AGENT-RUN-TOKEN", AgentInfo.getInstance().getLinkingMetadata().getOrDefault(INRSettingsKey.AGENT_RUN_ID_LINKING_METADATA, StringUtils.EMPTY));
+        this.addHeader("NR-CSEC-ENTITY-GUID", AgentInfo.getInstance().getLinkingMetadata().getOrDefault(INRSettingsKey.NR_ENTITY_GUID, StringUtils.EMPTY));
+        this.addHeader("NR-CSEC-ENTITY-NAME", AgentInfo.getInstance().getLinkingMetadata().getOrDefault(INRSettingsKey.ENTITY_NAME, StringUtils.EMPTY));
         this.addHeader("NR-LICENSE-KEY", AgentConfig.getInstance().getConfig().getCustomerInfo().getApiAccessorToken());
         this.addHeader("NR-CSEC-VERSION", AgentInfo.getInstance().getBuildInfo().getCollectorVersion());
         this.addHeader("NR-CSEC-COLLECTOR-TYPE", "JAVA");
@@ -178,12 +179,16 @@ public class WSClient extends WebSocketClient {
         logger.logInit(LogLevel.INFO, String.format(IAgentConstants.INIT_WS_CONNECTION, AgentConfig.getInstance().getConfig().getK2ServiceInfo().getValidatorServiceEndpointURL()),
                 WSClient.class.getName());
         logger.logInit(LogLevel.INFO, String.format(IAgentConstants.SENDING_APPLICATION_INFO_ON_WS_CONNECT, AgentInfo.getInstance().getApplicationInfo()), WSClient.class.getName());
+        RestRequestThreadPool.getInstance().resetIASTProcessing();
+        DispatcherPool.getInstance().reset();
+        EventSendPool.getInstance().reset();
         super.send(JsonConverter.toJSON(AgentInfo.getInstance().getApplicationInfo()));
         WSUtils.getInstance().setReconnecting(false);
         synchronized (WSUtils.getInstance()) {
             WSUtils.getInstance().notifyAll();
         }
         WSUtils.getInstance().setConnected(true);
+//        AgentUtils.sendApplicationURLMappings();
         logger.logInit(LogLevel.INFO, String.format(IAgentConstants.APPLICATION_INFO_SENT_ON_WS_CONNECT, AgentInfo.getInstance().getApplicationInfo()), WSClient.class.getName());
     }
 
@@ -204,15 +209,14 @@ public class WSClient extends WebSocketClient {
 
     @Override
     public void onClose(int code, String reason, boolean remote) {
-        WSUtils.getInstance().setConnected(false);
         logger.log(LogLevel.WARNING, CONNECTION_CLOSED_BY + (remote ? REMOTE_PEER : LOCAL) + CODE + code
                 + REASON + reason, WSClient.class.getName());
         if (code == CloseFrame.NEVER_CONNECTED) {
             return;
         }
-
-        if (code != CloseFrame.POLICY_VALIDATION && code != CloseFrame.NORMAL) {
-            WSReconnectionST.getInstance().submitNewTaskSchedule(15);
+        WSUtils.getInstance().setConnected(false);
+        if (code == CloseFrame.POLICY_VALIDATION) {
+            WSReconnectionST.cancelTask(true);
         }
     }
 
@@ -266,7 +270,7 @@ public class WSClient extends WebSocketClient {
      * @throws InterruptedException
      */
     public static WSClient reconnectWSClient() throws URISyntaxException, InterruptedException {
-        logger.log(LogLevel.WARNING, RECONNECTING_TO_IC,
+        logger.log(LogLevel.INFO, RECONNECTING_TO_IC,
                 WSClient.class.getName());
         if (instance != null && instance.isOpen()) {
             instance.closeBlocking();
@@ -277,41 +281,13 @@ public class WSClient extends WebSocketClient {
     }
 
     public static void shutDownWSClient() {
-        logger.log(LogLevel.WARNING, "Disconnecting WS client",
+        logger.log(LogLevel.WARNING, "Disconnecting WS client forced by APM",
                 WSClient.class.getName());
+        WSUtils.getInstance().setConnected(false);
+        RestRequestThreadPool.getInstance().resetIASTProcessing();
         if (instance != null) {
-            instance.close();
+            instance.close(CloseFrame.ABNORMAL_CLOSE, "Client disconnecting forced by APM");
         }
-        instance = null;
     }
 
-    public static void tryWebsocketConnection(int numberOfRetries) {
-        try {
-            int retries = numberOfRetries;
-            WSClient.reconnectWSClient();
-            while (numberOfRetries < 0 || retries > 0) {
-                try {
-                    if (!WSUtils.isConnected()) {
-                        retries--;
-                        int timeout = 15;
-                        logger.logInit(LogLevel.INFO, String.format("WS client connection failed will retry after %s second(s)", timeout), WSClient.class.getName());
-                        TimeUnit.SECONDS.sleep(timeout);
-                        WSClient.reconnectWSClient();
-                    } else {
-                        break;
-                    }
-                } catch (Throwable e) {
-                    logger.log(LogLevel.SEVERE, ERROR_OCCURED_WHILE_TRYING_TO_CONNECT_TO_WSOCKET, e,
-                            WSClient.class.getName());
-                    logger.postLogMessageIfNecessary(LogLevel.SEVERE, ERROR_OCCURED_WHILE_TRYING_TO_CONNECT_TO_WSOCKET, e,
-                            WSClient.class.getName());
-                }
-            }
-            if (!WSUtils.isConnected()) {
-                throw new RuntimeException("Websocket not connected!!!");
-            }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
 }

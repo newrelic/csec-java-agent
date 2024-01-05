@@ -9,7 +9,7 @@ import com.newrelic.api.agent.security.schema.operation.XPathOperation;
 import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
-import com.nr.instrumentation.security.xpath.camel.XPATHUtils;
+import com.newrelic.agent.security.instrumentation.xpath.camel.XPATHUtils;
 import org.apache.camel.support.builder.Namespaces;
 
 @Weave(type = MatchType.BaseClass, originalName = "org.apache.camel.builder.BuilderSupport")

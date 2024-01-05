@@ -1,24 +1,13 @@
 package com.mongodb.operation;
 
 import com.mongodb.ReadPreference;
-import com.mongodb.bulk.DeleteRequest;
-import com.mongodb.bulk.InsertRequest;
-import com.mongodb.bulk.UpdateRequest;
-import com.mongodb.bulk.WriteRequest;
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
-import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
-import com.newrelic.api.agent.security.schema.operation.NoSQLOperation;
 import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
-import com.nr.agent.security.mongo.MongoUtil;
-import org.bson.BsonDocument;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.Predicate;
+import com.newrelic.agent.security.instrumentation.mongo.MongoUtil;
 
 @Weave(type = MatchType.Interface, originalName = "com.mongodb.operation.OperationExecutor")
 public abstract class OperationExecutor_Instrumentation {
