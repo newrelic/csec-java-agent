@@ -27,7 +27,7 @@ public abstract class ServerCallListener_Instrumentation<ReqT> {
             tokenForCsec.link();
         }
         Descriptors.Descriptor descriptorForType = ((GeneratedMessageV3) message).getDescriptorForType();
-        GrpcServerUtils.createTypeRegistries(descriptorForType);
+        GrpcServerUtils.addToTypeRegistries(descriptorForType);
         boolean isLockAcquired = GrpcUtils.acquireLockIfPossible(message.hashCode());
         if (isLockAcquired) {
             GrpcUtils.preProcessSecurityHook(message, GrpcUtils.Type.REQUEST, descriptorForType.getFullName());
