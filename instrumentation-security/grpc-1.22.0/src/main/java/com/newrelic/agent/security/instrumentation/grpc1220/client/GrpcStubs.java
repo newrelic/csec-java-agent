@@ -29,24 +29,24 @@ public class GrpcStubs {
             return new CustomStub(channel, callOptions);
         }
 
-        public Any unaryCall(Any request, String serviceName, String methodName, Descriptors.Descriptor descriptor) {
+        public Any unaryCall(Any request, String serviceName, String methodName) {
             return io.grpc.stub.ClientCalls.blockingUnaryCall(
-                    getChannel(), getSimpleMethod(serviceName, methodName, descriptor), getCallOptions(), request);
+                    getChannel(), getSimpleMethod(serviceName, methodName), getCallOptions(), request);
         }
 
-        public Iterator<Any> serverStream(Any request, String serviceName, String methodName, Descriptors.Descriptor descriptor) {
+        public Iterator<Any> serverStream(Any request, String serviceName, String methodName) {
             return io.grpc.stub.ClientCalls.blockingServerStreamingCall(
-                    getChannel(), getServerStreamMethod(serviceName, methodName, descriptor), getCallOptions(), request);
+                    getChannel(), getServerStreamMethod(serviceName, methodName), getCallOptions(), request);
         }
 
-        public StreamObserver<Any> clientStream(StreamObserver<Any> responseObserver, String serviceName, String methodName, Descriptors.Descriptor descriptor) {
+        public StreamObserver<Any> clientStream(StreamObserver<Any> responseObserver, String serviceName, String methodName) {
             return io.grpc.stub.ClientCalls.asyncClientStreamingCall(
-                    getChannel().newCall(getClientStreamMethod(serviceName, methodName, descriptor), getCallOptions()), responseObserver);
+                    getChannel().newCall(getClientStreamMethod(serviceName, methodName), getCallOptions()), responseObserver);
         }
 
-        public StreamObserver<Any> biDiStream(StreamObserver<Any> responseObserver, String serviceName, String methodName, Descriptors.Descriptor descriptor) {
+        public StreamObserver<Any> biDiStream(StreamObserver<Any> responseObserver, String serviceName, String methodName) {
             return io.grpc.stub.ClientCalls.asyncBidiStreamingCall(
-                    getChannel().newCall(getBiDiMethod(serviceName, methodName, descriptor), getCallOptions()), responseObserver);
+                    getChannel().newCall(getBiDiMethod(serviceName, methodName), getCallOptions()), responseObserver);
         }
     }
 
@@ -74,7 +74,7 @@ public class GrpcStubs {
         }
     }
 
-    public static MethodDescriptor<Any, Any> getSimpleMethod(String serviceName, String methodName, Descriptors.Descriptor descriptor) {
+    public static MethodDescriptor<Any, Any> getSimpleMethod(String serviceName, String methodName) {
         MethodDescriptor<Any, Any> getMethod;
         synchronized (GrpcStubs.class) {
             getMethod = MethodDescriptor.<Any, Any>newBuilder()
@@ -89,7 +89,7 @@ public class GrpcStubs {
         return getMethod;
     }
 
-    public static MethodDescriptor<Any, Any> getServerStreamMethod(String serviceName, String methodName, Descriptors.Descriptor descriptor) {
+    public static MethodDescriptor<Any, Any> getServerStreamMethod(String serviceName, String methodName) {
         MethodDescriptor<Any, Any> getMethod;
         synchronized (GrpcStubs.class) {
             getMethod = MethodDescriptor.<Any, Any>newBuilder()
@@ -104,7 +104,7 @@ public class GrpcStubs {
         return getMethod;
     }
 
-    public static MethodDescriptor<Any, Any> getClientStreamMethod(String serviceName, String methodName, Descriptors.Descriptor descriptor) {
+    public static MethodDescriptor<Any, Any> getClientStreamMethod(String serviceName, String methodName) {
         MethodDescriptor<Any, Any> getMethod;
         synchronized (GrpcStubs.class) {
             getMethod = MethodDescriptor.<Any, Any>newBuilder()
@@ -119,7 +119,7 @@ public class GrpcStubs {
         return getMethod;
     }
 
-    public static MethodDescriptor<Any, Any> getBiDiMethod(String serviceName, String methodName, Descriptors.Descriptor descriptor) {
+    public static MethodDescriptor<Any, Any> getBiDiMethod(String serviceName, String methodName) {
         io.grpc.MethodDescriptor<Any, Any> getMethod;
         synchronized (GrpcStubs.class) {
             getMethod = MethodDescriptor.<Any, Any>newBuilder()
