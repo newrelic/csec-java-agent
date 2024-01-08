@@ -147,7 +147,7 @@ public class GrpcClient {
             try {
                 Any pack = getMessageOfTypeAny(requestData, requestClass);
                 Any response = stub.withInterceptors(MetadataUtils.newAttachHeadersInterceptor(headers))
-                        .unaryCall(pack, serviceName, methodName, getMessageDescriptor(requestClass));
+                        .unaryCall(pack, serviceName, methodName);
                 NewRelicSecurity.getAgent().log(LogLevel.FINER, String.format(REQUEST_SUCCESS_S_RESPONSE_S_S, requestBean, response, response.toString()), GrpcClient.class.getName());
             } catch (Throwable e) {
                 return e;
@@ -186,7 +186,7 @@ public class GrpcClient {
         for (Map.Entry<String, String> header : requestBean.getHeaders().entrySet()) {
             headers.put(Metadata.Key.of(header.getKey(), Metadata.ASCII_STRING_MARSHALLER), header.getValue());
         }
-        StreamObserver<Any> requestObserver = stub.withInterceptors(MetadataUtils.newAttachHeadersInterceptor(headers)).clientStream(responseObserver, serviceName, methodName, getMessageDescriptor(requestClass));
+        StreamObserver<Any> requestObserver = stub.withInterceptors(MetadataUtils.newAttachHeadersInterceptor(headers)).clientStream(responseObserver, serviceName, methodName);
 
         for (String requestData : payloads) {
             try {
@@ -197,7 +197,6 @@ public class GrpcClient {
 //                    GrpcClientRequestReplayHelper.getInstance().addFuzzFailEventToQueue(requestBean, e);
             }
         }
-        Thread.sleep(100);
         requestObserver.onCompleted();
         return null;
     }
@@ -218,7 +217,7 @@ public class GrpcClient {
             try {
                 Any pack = getMessageOfTypeAny(requestData, requestClass);
                 Iterator<Any> response = stub.withInterceptors(MetadataUtils.newAttachHeadersInterceptor(headers))
-                        .serverStream(pack, serviceName, methodName, getMessageDescriptor(requestClass));
+                        .serverStream(pack, serviceName, methodName);
                 while (response.hasNext()) {
                     NewRelicSecurity.getAgent().log(LogLevel.FINER, String.format(REQUEST_SUCCESS_S_RESPONSE_S_S, requestBean, response, response.toString()), GrpcClient.class.getName());
                 }
@@ -260,7 +259,7 @@ public class GrpcClient {
             headers.put(Metadata.Key.of(header.getKey(), Metadata.ASCII_STRING_MARSHALLER), header.getValue());
         }
         StreamObserver<Any> requestObserver = stub.withInterceptors(MetadataUtils.newAttachHeadersInterceptor(headers))
-                .biDiStream(responseObserver, serviceName, methodName, getMessageDescriptor(requestClass));
+                .biDiStream(responseObserver, serviceName, methodName);
 
         for (String requestData : payloads) {
             try{
@@ -271,8 +270,6 @@ public class GrpcClient {
 //                    GrpcClientRequestReplayHelper.getInstance().addFuzzFailEventToQueue(requestBean, e);
             }
         }
-
-        Thread.sleep(100);
         requestObserver.onCompleted();
         return null;
     }
