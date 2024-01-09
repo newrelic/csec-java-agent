@@ -12,11 +12,11 @@ import java.util.HashSet;
 
 public class IOSTreamHelperTest {
     @Test
-    public void processRequestReaderHookData(){
+    public void processRequestReaderHookDataTest(){
         Assertions.assertFalse(IOStreamHelper.processRequestReaderHookData(null));
     }
     @Test
-    public void processRequestReaderHookData1(){
+    public void processRequestReaderHookDataTest1(){
         try (MockedStatic<NewRelicSecurity> nrMock = Mockito.mockStatic(NewRelicSecurity.class, Answers.RETURNS_DEEP_STUBS)) {
             nrMock.when(() -> NewRelicSecurity.isHookProcessingActive()).thenReturn(true);
             Assertions.assertFalse(IOStreamHelper.processRequestReaderHookData(null));
@@ -25,7 +25,7 @@ public class IOSTreamHelperTest {
         }
     }
     @Test
-    public void processRequestReaderHookData2(){
+    public void processRequestReaderHookDataTest2(){
         try (MockedStatic<NewRelicSecurity> nrMock = Mockito.mockStatic(NewRelicSecurity.class, Answers.RETURNS_DEEP_STUBS)) {
             nrMock.when(() -> NewRelicSecurity.isHookProcessingActive()).thenReturn(true);
             nrMock.when(() -> NewRelicSecurity.getAgent().getSecurityMetaData()).thenReturn(new SecurityMetaData());
@@ -35,7 +35,7 @@ public class IOSTreamHelperTest {
         }
     }
     @Test
-    public void processRequestReaderHookData3(){
+    public void processRequestReaderHookDataTest3(){
         try (MockedStatic<NewRelicSecurity> nrMock = Mockito.mockStatic(NewRelicSecurity.class, Answers.RETURNS_DEEP_STUBS)) {
             nrMock.when(() -> NewRelicSecurity.isHookProcessingActive()).thenReturn(true);
             HashSet<Integer> set = new HashSet<>(); set.add(hashCode());
@@ -49,11 +49,11 @@ public class IOSTreamHelperTest {
     }
 
     @Test
-    public void processResponseWriterHookData(){
+    public void processResponseWriterHookDataTest(){
         Assertions.assertFalse(IOStreamHelper.processResponseWriterHookData(null));
     }
     @Test
-    public void processResponseWriterHookData1(){
+    public void processResponseWriterHookDataTest1(){
         try (MockedStatic<NewRelicSecurity> nrMock = Mockito.mockStatic(NewRelicSecurity.class, Answers.RETURNS_DEEP_STUBS)) {
             nrMock.when(() -> NewRelicSecurity.isHookProcessingActive()).thenReturn(true);
             Assertions.assertFalse(IOStreamHelper.processResponseWriterHookData(null));
@@ -62,7 +62,7 @@ public class IOSTreamHelperTest {
         }
     }
     @Test
-    public void processResponseWriterHookData2(){
+    public void processResponseWriterHookDataTest2(){
         try (MockedStatic<NewRelicSecurity> nrMock = Mockito.mockStatic(NewRelicSecurity.class, Answers.RETURNS_DEEP_STUBS)) {
             nrMock.when(() -> NewRelicSecurity.isHookProcessingActive()).thenReturn(true);
             nrMock.when(() -> NewRelicSecurity.getAgent().getSecurityMetaData()).thenReturn(new SecurityMetaData());
@@ -72,7 +72,7 @@ public class IOSTreamHelperTest {
         }
     }
     @Test
-    public void processResponseWriterHookData3(){
+    public void processResponseWriterHookDataTest3(){
         try (MockedStatic<NewRelicSecurity> nrMock = Mockito.mockStatic(NewRelicSecurity.class, Answers.RETURNS_DEEP_STUBS)) {
             nrMock.when(() -> NewRelicSecurity.isHookProcessingActive()).thenReturn(true);
             HashSet<Integer> set = new HashSet<>(); set.add(hashCode());
@@ -86,11 +86,11 @@ public class IOSTreamHelperTest {
     }
 
     @Test
-    public void processResponseOutputStreamHookData(){
+    public void processResponseOutputStreamHookDataTest(){
         Assertions.assertFalse(IOStreamHelper.processResponseOutputStreamHookData(null));
     }
     @Test
-    public void processResponseOutputStreamHookData1(){
+    public void processResponseOutputStreamHookDataTest1(){
         try (MockedStatic<NewRelicSecurity> nrMock = Mockito.mockStatic(NewRelicSecurity.class, Answers.RETURNS_DEEP_STUBS)) {
             nrMock.when(() -> NewRelicSecurity.isHookProcessingActive()).thenReturn(true);
             Assertions.assertFalse(IOStreamHelper.processResponseOutputStreamHookData(null));
@@ -99,7 +99,7 @@ public class IOSTreamHelperTest {
         }
     }
     @Test
-    public void processResponseOutputStreamHookData2(){
+    public void processResponseOutputStreamHookDataTest2(){
         try (MockedStatic<NewRelicSecurity> nrMock = Mockito.mockStatic(NewRelicSecurity.class, Answers.RETURNS_DEEP_STUBS)) {
             nrMock.when(() -> NewRelicSecurity.isHookProcessingActive()).thenReturn(true);
             nrMock.when(() -> NewRelicSecurity.getAgent().getSecurityMetaData()).thenReturn(new SecurityMetaData());
@@ -109,7 +109,7 @@ public class IOSTreamHelperTest {
         }
     }
     @Test
-    public void processResponseOutputStreamHookData3(){
+    public void processResponseOutputStreamHookDataTest3(){
         try (MockedStatic<NewRelicSecurity> nrMock = Mockito.mockStatic(NewRelicSecurity.class, Answers.RETURNS_DEEP_STUBS)) {
             nrMock.when(() -> NewRelicSecurity.isHookProcessingActive()).thenReturn(true);
             HashSet<Integer> set = new HashSet<>(); set.add(hashCode());

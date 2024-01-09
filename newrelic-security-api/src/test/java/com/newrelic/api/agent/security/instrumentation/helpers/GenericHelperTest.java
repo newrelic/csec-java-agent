@@ -46,11 +46,11 @@ public class GenericHelperTest {
         }
     }
     @Test
-    public void isLockAcquired(){
+    public void isLockAcquiredTest(){
         Assertions.assertFalse(GenericHelper.isLockAcquired(nrSecCustomAttrName));
     }
     @Test
-    public void isLockAcquired1() {
+    public void isLockAcquiredTest1(){
         String customAttribute = nrSecCustomAttrName + Thread.currentThread().getId() + hashCode;
         try (MockedStatic<NewRelicSecurity> nrMock = Mockito.mockStatic(NewRelicSecurity.class, Answers.RETURNS_DEEP_STUBS)){
             nrMock.when(() -> NewRelicSecurity.isHookProcessingActive()).thenReturn(true);
@@ -61,11 +61,11 @@ public class GenericHelperTest {
         }
     }
     @Test
-    public void acquireLockIfPossible(){
+    public void acquireLockIfPossibleTest(){
         Assertions.assertFalse(GenericHelper.acquireLockIfPossible(nrSecCustomAttrName));
     }
     @Test
-    public void acquireLockIfPossible1() {
+    public void acquireLockIfPossibleTest1(){
         String customAttribute = nrSecCustomAttrName + Thread.currentThread().getId() + hashCode;
         try (MockedStatic<NewRelicSecurity> nrMock = Mockito.mockStatic(NewRelicSecurity.class, Answers.RETURNS_DEEP_STUBS)){
             nrMock.when(() -> NewRelicSecurity.isHookProcessingActive()).thenReturn(true);
@@ -78,7 +78,7 @@ public class GenericHelperTest {
         }
     }
     @Test
-    public void acquireLockIfPossible2() {
+    public void acquireLockIfPossibleTest2(){
         try (MockedStatic<NewRelicSecurity> nrMock = Mockito.mockStatic(NewRelicSecurity.class, Answers.RETURNS_DEEP_STUBS)){
             nrMock.when(() -> NewRelicSecurity.isHookProcessingActive()).thenReturn(true);
             nrMock.when(() -> NewRelicSecurity.getAgent().getSecurityMetaData()).thenReturn(new SecurityMetaData());

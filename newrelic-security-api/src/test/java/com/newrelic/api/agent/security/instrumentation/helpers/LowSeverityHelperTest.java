@@ -13,43 +13,43 @@ import org.mockito.Mockito;
 
 public class LowSeverityHelperTest {
     @Test
-    public void addLowSeverityEventToEncounteredList(){
+    public void addLowSeverityEventToEncounteredListTest(){
         Assertions.assertTrue(LowSeverityHelper.addLowSeverityEventToEncounteredList(hashCode()));
         Assertions.assertFalse(LowSeverityHelper.addLowSeverityEventToEncounteredList(hashCode()));
     }
     @Test
-    public void checkIfLowSeverityEventAlreadyEncountered(){
+    public void checkIfLowSeverityEventAlreadyEncounteredTest(){
         Assertions.assertFalse(LowSeverityHelper.checkIfLowSeverityEventAlreadyEncountered(hashCode()));
     }
     @Test
-    public void checkIfLowSeverityEventAlreadyEncountered1(){
+    public void checkIfLowSeverityEventAlreadyEncounteredTest1(){
         LowSeverityHelper.addLowSeverityEventToEncounteredList(hashCode());
         LowSeverityHelper.clearLowSeverityEventFilter();
         Assertions.assertFalse(LowSeverityHelper.checkIfLowSeverityEventAlreadyEncountered(hashCode()));
     }
     @Test
-    public void checkIfLowSeverityEventAlreadyEncountered2(){
+    public void checkIfLowSeverityEventAlreadyEncounteredTest2(){
         LowSeverityHelper.addLowSeverityEventToEncounteredList(hashCode());
         Assertions.assertTrue(LowSeverityHelper.checkIfLowSeverityEventAlreadyEncountered(hashCode()));
     }
     @Test
-    public void addRequestUriToEventFilterFalse(){
+    public void addRequestUriToEventFilterFalseTest(){
         Assertions.assertFalse(LowSeverityHelper.addRrequestUriToEventFilter(null));
         Assertions.assertFalse(LowSeverityHelper.addRrequestUriToEventFilter(Mockito.mock(HttpRequest.class)));
     }
     @Test
-    public void addRequestUriToEventFilterTrue(){
+    public void addRequestUriToEventFilterTrueTest(){
         HttpRequest req = new HttpRequest();
         req.setUrl("url");
         Assertions.assertTrue(LowSeverityHelper.addRrequestUriToEventFilter(req));
         Assertions.assertFalse(LowSeverityHelper.addRrequestUriToEventFilter(req));
     }
     @Test
-    public void isOwaspHookProcessingNeeded(){
+    public void isOwaspHookProcessingNeededTest(){
         Assertions.assertFalse(LowSeverityHelper.isOwaspHookProcessingNeeded());
     }
     @Test
-    public void isOwaspHookProcessingNeeded1(){
+    public void isOwaspHookProcessingNeededTest1(){
         try (MockedStatic<NewRelicSecurity> nrMock = Mockito.mockStatic(NewRelicSecurity.class, Answers.RETURNS_DEEP_STUBS)) {
             nrMock.when(() -> NewRelicSecurity.getAgent().getSecurityMetaData()).thenReturn(new SecurityMetaData());
             Assertions.assertFalse(LowSeverityHelper.isOwaspHookProcessingNeeded());
@@ -58,7 +58,7 @@ public class LowSeverityHelperTest {
         }
     }
     @Test
-    public void isOwaspHookProcessingNeeded2(){
+    public void isOwaspHookProcessingNeededTest2(){
         try (MockedStatic<NewRelicSecurity> nrMock = Mockito.mockStatic(NewRelicSecurity.class, Answers.RETURNS_DEEP_STUBS)) {
             SecurityMetaData metaData = new SecurityMetaData();
 
@@ -74,7 +74,7 @@ public class LowSeverityHelperTest {
         }
     }
     @Test
-    public void isOwaspHookProcessingNeeded3(){
+    public void isOwaspHookProcessingNeededTest3(){
         try (MockedStatic<NewRelicSecurity> nrMock = Mockito.mockStatic(NewRelicSecurity.class, Answers.RETURNS_DEEP_STUBS)) {
             SecurityMetaData metaData = new SecurityMetaData();
 
@@ -92,7 +92,7 @@ public class LowSeverityHelperTest {
         }
     }
     @Test
-    public void isOwaspHookProcessingNeeded4(){
+    public void isOwaspHookProcessingNeededTest4(){
         try (MockedStatic<NewRelicSecurity> nrMock = Mockito.mockStatic(NewRelicSecurity.class, Answers.RETURNS_DEEP_STUBS)) {
             SecurityMetaData metaData = new SecurityMetaData();
 

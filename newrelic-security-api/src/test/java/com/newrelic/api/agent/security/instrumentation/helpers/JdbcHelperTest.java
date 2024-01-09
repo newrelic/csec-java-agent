@@ -13,11 +13,11 @@ import static com.newrelic.api.agent.security.instrumentation.helpers.JdbcHelper
 
 public class JdbcHelperTest {
     @Test
-    public void skipExistsEvent() {
+    public void skipExistsEventTest() {
         Assertions.assertTrue(JdbcHelper.skipExistsEvent());
     }
     @Test
-    public void skipExistsEvent1() {
+    public void skipExistsEventTest1() {
         try (MockedStatic<NewRelicSecurity> nrMock = Mockito.mockStatic(NewRelicSecurity.class, Answers.RETURNS_DEEP_STUBS)){
             nrMock.when(() -> NewRelicSecurity.getAgent().getCurrentPolicy().getVulnerabilityScan().getEnabled()).thenReturn(true);
             Assertions.assertTrue(JdbcHelper.skipExistsEvent());
@@ -26,7 +26,7 @@ public class JdbcHelperTest {
         }
     }
     @Test
-    public void skipExistsEvent2() {
+    public void skipExistsEventTest2() {
         try (MockedStatic<NewRelicSecurity> nrMock = Mockito.mockStatic(NewRelicSecurity.class, Answers.RETURNS_DEEP_STUBS)){
             nrMock.when(() -> NewRelicSecurity.getAgent().getCurrentPolicy().getVulnerabilityScan().getEnabled()).thenReturn(false);
             nrMock.when(() -> NewRelicSecurity.getAgent().getCurrentPolicy().getVulnerabilityScan().getIastScan().getEnabled()).thenReturn(false);
@@ -36,7 +36,7 @@ public class JdbcHelperTest {
         }
     }
     @Test
-    public void skipExistsEvent3() {
+    public void skipExistsEventTest3() {
         try (MockedStatic<NewRelicSecurity> nrMock = Mockito.mockStatic(NewRelicSecurity.class, Answers.RETURNS_DEEP_STUBS)){
             nrMock.when(() -> NewRelicSecurity.getAgent().getCurrentPolicy().getVulnerabilityScan().getEnabled()).thenReturn(true);
             nrMock.when(() -> NewRelicSecurity.getAgent().getCurrentPolicy().getVulnerabilityScan().getIastScan().getEnabled()).thenReturn(true);
@@ -47,11 +47,11 @@ public class JdbcHelperTest {
     }
 
     @Test
-    public void isLockAcquired(){
+    public void isLockAcquiredTest(){
         Assertions.assertFalse(JdbcHelper.isLockAcquired());
     }
     @Test
-    public void isLockAcquired1() {
+    public void isLockAcquiredTest1() {
         String customAttribute = NR_SEC_CUSTOM_ATTRIB_NAME + Thread.currentThread().getId();
         try (MockedStatic<NewRelicSecurity> nrMock = Mockito.mockStatic(NewRelicSecurity.class, Answers.RETURNS_DEEP_STUBS)){
             nrMock.when(() -> NewRelicSecurity.isHookProcessingActive()).thenReturn(true);
@@ -63,11 +63,11 @@ public class JdbcHelperTest {
     }
 
     @Test
-    public void acquireLockIfPossible(){
+    public void acquireLockIfPossibleTest(){
         Assertions.assertFalse(JdbcHelper.acquireLockIfPossible());
     }
     @Test
-    public void acquireLockIfPossible1() {
+    public void acquireLockIfPossibleTest1() {
         String customAttribute = NR_SEC_CUSTOM_ATTRIB_NAME + Thread.currentThread().getId();
         try (MockedStatic<NewRelicSecurity> nrMock = Mockito.mockStatic(NewRelicSecurity.class, Answers.RETURNS_DEEP_STUBS)){
             nrMock.when(() -> NewRelicSecurity.isHookProcessingActive()).thenReturn(true);
@@ -80,7 +80,7 @@ public class JdbcHelperTest {
         }
     }
     @Test
-    public void acquireLockIfPossible2() {
+    public void acquireLockIfPossibleTest2() {
         try (MockedStatic<NewRelicSecurity> nrMock = Mockito.mockStatic(NewRelicSecurity.class, Answers.RETURNS_DEEP_STUBS)){
             nrMock.when(() -> NewRelicSecurity.isHookProcessingActive()).thenReturn(true);
             nrMock.when(() -> NewRelicSecurity.getAgent().getSecurityMetaData()).thenReturn(new SecurityMetaData());
@@ -90,7 +90,17 @@ public class JdbcHelperTest {
         }
     }
     @Test
-    public void detectDatabaseProduct() {
+    public void getSQLTest() {
+        try (MockedStatic<NewRelicSecurity> nrMock = Mockito.mockStatic(NewRelicSecurity.class, Answers.RETURNS_DEEP_STUBS)){
+            nrMock.when(() -> NewRelicSecurity.isHookProcessingActive()).thenReturn(true);
+            nrMock.when(() -> NewRelicSecurity.getAgent().getSecurityMetaData()).thenReturn(new SecurityMetaData());
+            Assertions.assertTrue(JdbcHelper.acquireLockIfPossible());
+            nrMock.clearInvocations();
+            nrMock.reset();
+        }
+    }
+    @Test
+    public void detectDatabaseProductTest() {
         Assertions.assertEquals(JDBCVendor.MYSQL, JdbcHelper.detectDatabaseProduct(JdbcHelper.MY_SQL));
         Assertions.assertEquals(JDBCVendor.ORACLE, JdbcHelper.detectDatabaseProduct(JdbcHelper.ORACLE));
         Assertions.assertEquals(JDBCVendor.DERBY, JdbcHelper.detectDatabaseProduct(JdbcHelper.APACHE_DERBY));

@@ -6,7 +6,7 @@ import static com.newrelic.api.agent.security.schema.StringUtils.splitByWholeSep
 
 public class StringUtilsTest {
     @Test
-    public void testIsNotBlank(){
+    public void IsNotBlankTest(){
         Assertions.assertFalse(StringUtils.isNotBlank(StringUtils.EMPTY), "Should return false");
         Assertions.assertFalse(StringUtils.isNotBlank(null), "Should return false");
         Assertions.assertFalse(StringUtils.isNotBlank("  "), "Should return false");
@@ -14,7 +14,7 @@ public class StringUtilsTest {
         Assertions.assertTrue(StringUtils.isNotBlank(" some "), "Should return true");
     }
     @Test
-    public void testIsBlank(){
+    public void IsBlankTest(){
         Assertions.assertTrue(StringUtils.isBlank(StringUtils.EMPTY), "Should return true");
         Assertions.assertTrue(StringUtils.isBlank(null), "Should return true");
         Assertions.assertTrue(StringUtils.isBlank("  "), "Should return true");
@@ -22,7 +22,7 @@ public class StringUtilsTest {
         Assertions.assertFalse(StringUtils.isBlank(" some "), "Should return false");
     }
     @Test
-    public void testIsAnyBlank(){
+    public void IsAnyBlankTest(){
         Assertions.assertTrue(StringUtils.isAnyBlank(StringUtils.EMPTY, null, " "), "Should return true");
         Assertions.assertTrue(StringUtils.isAnyBlank(null, " "), "Should return true");
         Assertions.assertTrue(StringUtils.isAnyBlank(StringUtils.EMPTY, " some"), "Should return true");
@@ -30,7 +30,7 @@ public class StringUtilsTest {
         Assertions.assertFalse(StringUtils.isAnyBlank(" some "), "Should return false");
     }
     @Test
-    public void testSubstringBefore(){
+    public void SubstringBeforeTest(){
         Assertions.assertNull(StringUtils.substringBefore(null, "*"));
         Assertions.assertEquals(StringUtils.EMPTY, StringUtils.substringBefore(StringUtils.EMPTY, "*"));
         Assertions.assertEquals("  ", StringUtils.substringBefore("  ", "*"));
@@ -40,7 +40,7 @@ public class StringUtilsTest {
         Assertions.assertEquals(" s", StringUtils.substringBefore(" some ", "o"));
     }
     @Test
-    public void testSubstringBeforeLast(){
+    public void SubstringBeforeLastTest(){
         Assertions.assertNull(StringUtils.substringBeforeLast(null, "*"));
         Assertions.assertEquals(StringUtils.EMPTY, StringUtils.substringBeforeLast(StringUtils.EMPTY, "*"));
         Assertions.assertEquals("  ", StringUtils.substringBeforeLast("  ", "*"));
@@ -53,7 +53,7 @@ public class StringUtilsTest {
     }
 
     @Test
-    public void testSubstring(){
+    public void SubstringTest(){
         Assertions.assertNull(StringUtils.substring(null, 0, 0));
         Assertions.assertEquals(StringUtils.EMPTY, StringUtils.substring(StringUtils.EMPTY, 0, 0));
         Assertions.assertEquals("", StringUtils.substring("  ", 0, 0));
@@ -65,7 +65,7 @@ public class StringUtilsTest {
         Assertions.assertEquals("", StringUtils.substring("some", -5, -6));
     }
     @Test
-    public void testAppendIfMissing0(){
+    public void AppendIfMissingTest(){
         String FILES = "files";
         String FILES_EXT = "files.ext";
         Assertions.assertEquals(StringUtils.appendIfMissing(StringUtils.EMPTY, ""), "");
@@ -79,7 +79,7 @@ public class StringUtilsTest {
     }
 
     @Test
-    public void testAppendIfMissingIgnoreCase(){
+    public void AppendIfMissingIgnoreCaseTest(){
         String FILES = "files";
         String FILES_EXT = "files.ext";
         Assertions.assertEquals(StringUtils.appendIfMissingIgnoreCase(StringUtils.EMPTY, ""), "");
@@ -92,7 +92,7 @@ public class StringUtilsTest {
         Assertions.assertEquals(StringUtils.appendIfMissingIgnoreCase(FILES, ".txt", ".pdf", ".jar"), "files.txt");
     }
     @Test
-    public void testIsEmpty(){
+    public void IsEmptyTest(){
         Assertions.assertTrue(StringUtils.isEmpty(StringUtils.EMPTY), "Should return false");
         Assertions.assertTrue(StringUtils.isEmpty(null), "Should return true");
         Assertions.assertFalse(StringUtils.isEmpty("  "), "Should return false");
@@ -101,7 +101,7 @@ public class StringUtilsTest {
     }
 
     @Test
-    public void testSplitByWholeSeparatorWorker(){
+    public void SplitByWholeSeparatorWorkerTest(){
         Assertions.assertNull(splitByWholeSeparatorWorker(null, "", 1, false), "Should return false");
         Assertions.assertArrayEquals(splitByWholeSeparatorWorker(StringUtils.EMPTY, "", 1, false), new String[]{});
         Assertions.assertArrayEquals(splitByWholeSeparatorWorker("  ", ":",-1, false), new String[]{"  "});
@@ -121,7 +121,7 @@ public class StringUtilsTest {
 
 
     @Test
-    public void testReplace(){
+    public void ReplaceTest(){
         String txt = "some";
         Assertions.assertNull(StringUtils.replace(null, null, null), "Should return true");
         Assertions.assertEquals(StringUtils.EMPTY, StringUtils.replace(StringUtils.EMPTY, StringUtils.EMPTY, StringUtils.EMPTY));
@@ -131,7 +131,7 @@ public class StringUtilsTest {
         Assertions.assertEquals(StringUtils.EMPTY, StringUtils.replace(StringUtils.EMPTY, StringUtils.EMPTY, StringUtils.EMPTY));
     }
     @Test
-    public void testEquals(){
+    public void EqualsTest(){
         Assertions.assertTrue(StringUtils.equals(null, null), "Should return true");
         Assertions.assertFalse(StringUtils.equals(null, StringUtils.EMPTY), "Should return false");
         Assertions.assertTrue(StringUtils.equals(StringUtils.EMPTY, StringUtils.EMPTY), "Should return true");
@@ -140,7 +140,7 @@ public class StringUtilsTest {
         Assertions.assertFalse(StringUtils.equals("some", "somE"), "Should return false");
     }
     @Test
-    public void testEqualsAny(){
+    public void EqualsAnyTest(){
         Assertions.assertTrue(StringUtils.equalsAny(null, (CharSequence) null), "Should return true");
         Assertions.assertTrue(StringUtils.equalsAny(null, StringUtils.EMPTY, null), "Should return false");
         Assertions.assertTrue(StringUtils.equalsAny(StringUtils.EMPTY, StringUtils.EMPTY), "Should return true");
@@ -151,7 +151,7 @@ public class StringUtilsTest {
         Assertions.assertTrue(StringUtils.equalsAny("some", "somE", "some"), "Should return true");
     }
     @Test
-    public void testStartsWith(){
+    public void StartsWithTest(){
         Assertions.assertTrue(StringUtils.startsWith(null, (CharSequence) null), "Should return true");
         Assertions.assertFalse(StringUtils.startsWith(null, StringUtils.EMPTY), "Should return false");
         Assertions.assertTrue(StringUtils.startsWith(StringUtils.EMPTY, StringUtils.EMPTY), "Should return true");
@@ -161,7 +161,7 @@ public class StringUtilsTest {
         Assertions.assertFalse(StringUtils.startsWith("something", "thing"), "Should return true");
     }
     @Test
-    public void testStartsWithAny(){
+    public void StartsWithAnyTest(){
         Assertions.assertTrue(StringUtils.startsWith(null, (CharSequence) null), "Should return true");
         Assertions.assertFalse(StringUtils.startsWith(null, StringUtils.EMPTY), "Should return false");
         Assertions.assertTrue(StringUtils.startsWith(StringUtils.EMPTY, StringUtils.EMPTY), "Should return true");
@@ -172,7 +172,7 @@ public class StringUtilsTest {
         Assertions.assertTrue(StringUtils.startsWithAny("something", "thing", "so"), "Should return true");
     }
     @Test
-    public void testStartsWithIgnoreCase(){
+    public void StartsWithIgnoreCaseTest(){
         Assertions.assertTrue(StringUtils.startsWithIgnoreCase(null, (CharSequence) null), "Should return true");
         Assertions.assertFalse(StringUtils.startsWithIgnoreCase(null, StringUtils.EMPTY), "Should return false");
         Assertions.assertTrue(StringUtils.startsWithIgnoreCase(StringUtils.EMPTY, StringUtils.EMPTY), "Should return true");

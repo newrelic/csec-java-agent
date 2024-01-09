@@ -27,7 +27,7 @@ public class R2dbcHelperTest {
         Assertions.assertTrue(R2dbcHelper.skipExistsEvent());
     }
     @Test
-    public void skipExistsEvent1() {
+    public void skipExistsEventTest1(){
         try (MockedStatic<NewRelicSecurity> nrMock = Mockito.mockStatic(NewRelicSecurity.class, Answers.RETURNS_DEEP_STUBS)){
             nrMock.when(() -> NewRelicSecurity.getAgent().getCurrentPolicy().getVulnerabilityScan().getEnabled()).thenReturn(true);
             Assertions.assertTrue(R2dbcHelper.skipExistsEvent());
@@ -36,7 +36,7 @@ public class R2dbcHelperTest {
         }
     }
     @Test
-    public void skipExistsEvent2() {
+    public void skipExistsEventTest2(){
         try (MockedStatic<NewRelicSecurity> nrMock = Mockito.mockStatic(NewRelicSecurity.class, Answers.RETURNS_DEEP_STUBS)){
             nrMock.when(() -> NewRelicSecurity.getAgent().getCurrentPolicy().getVulnerabilityScan().getEnabled()).thenReturn(false);
             nrMock.when(() -> NewRelicSecurity.getAgent().getCurrentPolicy().getVulnerabilityScan().getIastScan().getEnabled()).thenReturn(false);
@@ -46,7 +46,7 @@ public class R2dbcHelperTest {
         }
     }
     @Test
-    public void skipExistsEvent3() {
+    public void skipExistsEventTest3(){
         try (MockedStatic<NewRelicSecurity> nrMock = Mockito.mockStatic(NewRelicSecurity.class, Answers.RETURNS_DEEP_STUBS)){
             nrMock.when(() -> NewRelicSecurity.getAgent().getCurrentPolicy().getVulnerabilityScan().getEnabled()).thenReturn(true);
             nrMock.when(() -> NewRelicSecurity.getAgent().getCurrentPolicy().getVulnerabilityScan().getIastScan().getEnabled()).thenReturn(true);
@@ -57,11 +57,11 @@ public class R2dbcHelperTest {
     }
 
     @Test
-    public void isLockAcquired(){
+    public void isLockAcquiredTest(){
         Assertions.assertFalse(R2dbcHelper.isLockAcquired());
     }
     @Test
-    public void isLockAcquired1() {
+    public void isLockAcquiredTest1(){
         String customAttribute = NR_SEC_CUSTOM_ATTRIB_NAME + Thread.currentThread().getId();
         try (MockedStatic<NewRelicSecurity> nrMock = Mockito.mockStatic(NewRelicSecurity.class, Answers.RETURNS_DEEP_STUBS)){
             nrMock.when(() -> NewRelicSecurity.isHookProcessingActive()).thenReturn(true);
@@ -73,11 +73,11 @@ public class R2dbcHelperTest {
     }
 
     @Test
-    public void acquireLockIfPossible(){
+    public void acquireLockIfPossibleTest(){
         Assertions.assertFalse(R2dbcHelper.acquireLockIfPossible());
     }
     @Test
-    public void acquireLockIfPossible1() {
+    public void acquireLockIfPossibleTest1(){
         String customAttribute = NR_SEC_CUSTOM_ATTRIB_NAME + Thread.currentThread().getId();
         try (MockedStatic<NewRelicSecurity> nrMock = Mockito.mockStatic(NewRelicSecurity.class, Answers.RETURNS_DEEP_STUBS)){
             nrMock.when(() -> NewRelicSecurity.isHookProcessingActive()).thenReturn(true);
@@ -90,7 +90,7 @@ public class R2dbcHelperTest {
         }
     }
     @Test
-    public void acquireLockIfPossible2() {
+    public void acquireLockIfPossibleTest2(){
         try (MockedStatic<NewRelicSecurity> nrMock = Mockito.mockStatic(NewRelicSecurity.class, Answers.RETURNS_DEEP_STUBS)){
             nrMock.when(() -> NewRelicSecurity.isHookProcessingActive()).thenReturn(true);
             nrMock.when(() -> NewRelicSecurity.getAgent().getSecurityMetaData()).thenReturn(new SecurityMetaData());
@@ -100,11 +100,11 @@ public class R2dbcHelperTest {
         }
     }
     @Test
-    public void preprocessSecurityHookNull() {
+    public void preprocessSecurityHookNullTest(){
         Assertions.assertNull(R2dbcHelper.preprocessSecurityHook(SQL, METHOD_NAME, CLASS_NAME, null, false));
     }
     @Test
-    public void preprocessSecurityHookNull1() {
+    public void preprocessSecurityHookNullTest1(){
         try (MockedStatic<NewRelicSecurity> nrMock = Mockito.mockStatic(NewRelicSecurity.class, Answers.RETURNS_DEEP_STUBS)) {
             nrMock.when(() -> NewRelicSecurity.isHookProcessingActive()).thenReturn(true);
             nrMock.when(() -> NewRelicSecurity.getAgent().getSecurityMetaData()).thenReturn(null);
@@ -114,7 +114,7 @@ public class R2dbcHelperTest {
         }
     }
     @Test
-    public void preprocessSecurityHookNull2() {
+    public void preprocessSecurityHookNullTest2(){
         try (MockedStatic<NewRelicSecurity> nrMock = Mockito.mockStatic(NewRelicSecurity.class, Answers.RETURNS_DEEP_STUBS)) {
             nrMock.when(() -> NewRelicSecurity.isHookProcessingActive()).thenReturn(true);
             Assertions.assertNull(R2dbcHelper.preprocessSecurityHook(null, METHOD_NAME, CLASS_NAME, null, false));
@@ -123,7 +123,7 @@ public class R2dbcHelperTest {
         }
     }
     @Test
-    public void preprocessSecurityHookNull3() {
+    public void preprocessSecurityHookNullTest3(){
         try (MockedStatic<NewRelicSecurity> nrMock = Mockito.mockStatic(NewRelicSecurity.class, Answers.RETURNS_DEEP_STUBS)) {
             nrMock.when(() -> NewRelicSecurity.isHookProcessingActive()).thenReturn(true);
             Assertions.assertNull(R2dbcHelper.preprocessSecurityHook(StringUtils.EMPTY, METHOD_NAME, CLASS_NAME, null, false));
@@ -132,7 +132,7 @@ public class R2dbcHelperTest {
         }
     }
     @Test
-    public void preprocessSecurityHookNull4() {
+    public void preprocessSecurityHookNullTest4(){
         try (MockedStatic<NewRelicSecurity> nrMock = Mockito.mockStatic(NewRelicSecurity.class, Answers.RETURNS_DEEP_STUBS)) {
             nrMock.when(() -> NewRelicSecurity.isHookProcessingActive()).thenReturn(true);
             Assertions.assertNull(R2dbcHelper.preprocessSecurityHook("  ", METHOD_NAME, CLASS_NAME, null, false));
@@ -141,7 +141,7 @@ public class R2dbcHelperTest {
         }
     }
     @Test
-    public void preprocessSecurityHook() {
+    public void preprocessSecurityHookTest(){
         try (MockedStatic<NewRelicSecurity> nrMock = Mockito.mockStatic(NewRelicSecurity.class, Answers.RETURNS_DEEP_STUBS)) {
             nrMock.when(() -> NewRelicSecurity.isHookProcessingActive()).thenReturn(true);
             Map<String, String> param = null;
@@ -152,7 +152,7 @@ public class R2dbcHelperTest {
         }
     }
     @Test
-    public void preprocessSecurityHook1() {
+    public void preprocessSecurityHookTest1(){
         try (MockedStatic<NewRelicSecurity> nrMock = Mockito.mockStatic(NewRelicSecurity.class, Answers.RETURNS_DEEP_STUBS)) {
             nrMock.when(() -> NewRelicSecurity.isHookProcessingActive()).thenReturn(true);
             nrMock.when(() -> NewRelicSecurity.getAgent().getSecurityMetaData()
@@ -165,7 +165,7 @@ public class R2dbcHelperTest {
         }
     }
     @Test
-    public void preprocessSecurityHook2() {
+    public void preprocessSecurityHookTest2(){
         try (MockedStatic<NewRelicSecurity> nrMock = Mockito.mockStatic(NewRelicSecurity.class, Answers.RETURNS_DEEP_STUBS)) {
             nrMock.when(() -> NewRelicSecurity.isHookProcessingActive()).thenReturn(true);
             nrMock.when(() -> NewRelicSecurity.getAgent().getSecurityMetaData()

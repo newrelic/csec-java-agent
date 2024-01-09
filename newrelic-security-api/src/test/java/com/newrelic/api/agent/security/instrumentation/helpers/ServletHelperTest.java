@@ -15,15 +15,15 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class ServletHelperTest {
 
     @Test
-    public void parseFuzzRequestIdentifierHeader() {
+    public void parseFuzzRequestIdentifierHeaderTest() {
         assertEquals(EMPTY, ServletHelper.parseFuzzRequestIdentifierHeader(EMPTY).getRaw());
     }
     @Test
-    public void parseFuzzRequestIdentifierHeader1() {
+    public void parseFuzzRequestIdentifierHeaderTest1() {
         assertEquals("header", ServletHelper.parseFuzzRequestIdentifierHeader("header").getRaw());
     }
     @Test
-    public void parseFuzzRequestIdentifierHeader2() {
+    public void parseFuzzRequestIdentifierHeaderTest2() {
         try (MockedStatic<NewRelicSecurity> nrMock = Mockito.mockStatic(NewRelicSecurity.class, Answers.RETURNS_DEEP_STUBS)) {
             nrMock.when(() -> NewRelicSecurity.getAgent().getCurrentPolicy().getVulnerabilityScan().getEnabled()).thenReturn(true);
             nrMock.when(() -> NewRelicSecurity.getAgent().getCurrentPolicy().getVulnerabilityScan().getIastScan().getEnabled()).thenReturn(true);
@@ -31,7 +31,7 @@ public class ServletHelperTest {
         }
     }
     @Test
-    public void parseFuzzRequestIdentifierHeader3() {
+    public void parseFuzzRequestIdentifierHeaderTest3() {
         try (MockedStatic<NewRelicSecurity> nrMock = Mockito.mockStatic(NewRelicSecurity.class, Answers.RETURNS_DEEP_STUBS)) {
             nrMock.when(() -> NewRelicSecurity.getAgent().getCurrentPolicy().getVulnerabilityScan().getEnabled()).thenReturn(true);
             nrMock.when(() -> NewRelicSecurity.getAgent().getCurrentPolicy().getVulnerabilityScan().getIastScan().getEnabled()).thenReturn(true);
@@ -40,7 +40,7 @@ public class ServletHelperTest {
         }
     }
     @Test
-    public void parseFuzzRequestIdentifierHeader4() {
+    public void parseFuzzRequestIdentifierHeaderTest4() {
         try (MockedStatic<NewRelicSecurity> nrMock = Mockito.mockStatic(NewRelicSecurity.class, Answers.RETURNS_DEEP_STUBS)) {
             nrMock.when(() -> NewRelicSecurity.getAgent().getCurrentPolicy().getVulnerabilityScan().getEnabled()).thenReturn(true);
             nrMock.when(() -> NewRelicSecurity.getAgent().getCurrentPolicy().getVulnerabilityScan().getIastScan().getEnabled()).thenReturn(true);
@@ -49,7 +49,7 @@ public class ServletHelperTest {
         }
     }
     @Test
-    public void parseFuzzRequestIdentifierHeader5() {
+    public void parseFuzzRequestIdentifierHeaderTest5() {
         try (MockedStatic<NewRelicSecurity> nrMock = Mockito.mockStatic(NewRelicSecurity.class, Answers.RETURNS_DEEP_STUBS)) {
             nrMock.when(() -> NewRelicSecurity.getAgent().getCurrentPolicy().getVulnerabilityScan().getEnabled()).thenReturn(true);
             nrMock.when(() -> NewRelicSecurity.getAgent().getCurrentPolicy().getVulnerabilityScan().getIastScan().getEnabled()).thenReturn(true);

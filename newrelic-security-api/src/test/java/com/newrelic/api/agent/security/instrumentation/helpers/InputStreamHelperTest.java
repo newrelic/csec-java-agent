@@ -13,18 +13,18 @@ import java.util.HashSet;
 
 public class InputStreamHelperTest {
     @Test
-    public void processRequestInputStreamHookData(){
+    public void processRequestInputStreamHookDataTest(){
         Assertions.assertFalse(InputStreamHelper.processRequestInputStreamHookData(null));
     }
     @Test
-    public void processRequestInputStreamHookData1(){
+    public void processRequestInputStreamHookDataTest1(){
         try (MockedStatic<NewRelicSecurity> nrMock = Mockito.mockStatic(NewRelicSecurity.class, Answers.RETURNS_DEEP_STUBS)) {
             nrMock.when(() -> NewRelicSecurity.isHookProcessingActive()).thenReturn(true);
             Assertions.assertFalse(InputStreamHelper.processRequestInputStreamHookData(null));
         }
     }
     @Test
-    public void processRequestInputStreamHookData2(){
+    public void processRequestInputStreamHookDataTest2(){
         try (MockedStatic<NewRelicSecurity> nrMock = Mockito.mockStatic(NewRelicSecurity.class, Answers.RETURNS_DEEP_STUBS)) {
             nrMock.when(() -> NewRelicSecurity.isHookProcessingActive()).thenReturn(true);
             nrMock.when(() -> NewRelicSecurity.getAgent().getSecurityMetaData()).thenReturn(new SecurityMetaData());
@@ -32,7 +32,7 @@ public class InputStreamHelperTest {
         }
     }
     @Test
-    public void processRequestInputStreamHookData3(){
+    public void processRequestInputStreamHookDataTest3(){
         try (MockedStatic<NewRelicSecurity> nrMock = Mockito.mockStatic(NewRelicSecurity.class, Answers.RETURNS_DEEP_STUBS)) {
             nrMock.when(() -> NewRelicSecurity.isHookProcessingActive()).thenReturn(true);
             SecurityMetaData metaData = new SecurityMetaData();
@@ -42,7 +42,7 @@ public class InputStreamHelperTest {
         }
     }
     @Test
-    public void processRequestInputStreamHookData4(){
+    public void processRequestInputStreamHookDataTest4(){
         try (MockedStatic<NewRelicSecurity> nrMock = Mockito.mockStatic(NewRelicSecurity.class, Answers.RETURNS_DEEP_STUBS)) {
             nrMock.when(() -> NewRelicSecurity.isHookProcessingActive()).thenReturn(true);
             SecurityMetaData metaData = new SecurityMetaData();

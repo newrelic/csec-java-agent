@@ -19,31 +19,31 @@ public class FileHelperTest {
     private final String CLASS_NAME = "className", METHOD_NAME = "methodName";
     private final File file = new File(String.format("/tmp/%s_file.java", UUID.randomUUID()));
     @Test
-    public void getFileExtension(){
+    public void getFileExtensionTest(){
         Assertions.assertEquals("", FileHelper.getFileExtension("file"));
         Assertions.assertEquals("txt", FileHelper.getFileExtension("file.txt"));
     }
     @Test
-    public void createEntryOfFileIntegrityNull(){
+    public void createEntryOfFileIntegrityNullTest(){
         Assertions.assertNull(FileHelper.createEntryOfFileIntegrity("file", CLASS_NAME, METHOD_NAME));
         Assertions.assertNull(FileHelper.createEntryOfFileIntegrity("file.txt", CLASS_NAME, METHOD_NAME));
     }
     @Test
-    public void createEntryOfFileIntegrity(){
+    public void createEntryOfFileIntegrityTest(){
         try (MockedStatic<NewRelicSecurity> nrMock = Mockito.mockStatic(NewRelicSecurity.class, Answers.RETURNS_DEEP_STUBS)){
             nrMock.when(() -> NewRelicSecurity.getAgent().getSecurityMetaData().getFileLocalMap().containsKey(file.getAbsolutePath())).thenReturn(false);
             assertion(file.exists(), file.getAbsolutePath(), FileHelper.createEntryOfFileIntegrity(file.getAbsolutePath(), CLASS_NAME, METHOD_NAME));
         }
     }
     @Test
-    public void createEntryOfFileIntegrity1(){
+    public void createEntryOfFileIntegrityTest1(){
         try (MockedStatic<NewRelicSecurity> nrMock = Mockito.mockStatic(NewRelicSecurity.class, Answers.RETURNS_DEEP_STUBS)){
             nrMock.when(() -> NewRelicSecurity.getAgent().getSecurityMetaData().getFileLocalMap().containsKey(file.getAbsolutePath())).thenReturn(true);
             Assertions.assertNull(FileHelper.createEntryOfFileIntegrity(file.getAbsolutePath(), CLASS_NAME, METHOD_NAME));
         }
     }
     @Test
-    public void createEntryOfFileIntegrity2() throws IOException {
+    public void createEntryOfFileIntegrityTest2() throws IOException {
         try (MockedStatic<NewRelicSecurity> nrMock = Mockito.mockStatic(NewRelicSecurity.class, Answers.RETURNS_DEEP_STUBS)){
             file.createNewFile();
             nrMock.when(() -> NewRelicSecurity.getAgent().getSecurityMetaData().getFileLocalMap().containsKey(file.getAbsolutePath())).thenReturn(false);
@@ -52,7 +52,7 @@ public class FileHelperTest {
         }
     }
     @Test
-    public void createEntryOfFileIntegrity3() throws IOException {
+    public void createEntryOfFileIntegrityTest3() throws IOException {
         try (MockedStatic<NewRelicSecurity> nrMock = Mockito.mockStatic(NewRelicSecurity.class, Answers.RETURNS_DEEP_STUBS)){
             file.createNewFile();
             nrMock.when(() -> NewRelicSecurity.getAgent().getSecurityMetaData().getFileLocalMap().containsKey(file.getAbsolutePath())).thenReturn(true);
@@ -62,11 +62,11 @@ public class FileHelperTest {
     }
 
     @Test
-    public void isFileLockAcquired(){
+    public void isFileLockAcquiredTest(){
         Assertions.assertFalse(FileHelper.isFileLockAcquired());
     }
     @Test
-    public void isFileLockAcquired1() {
+    public void isFileLockAcquiredTest1() {
         String customAttribute = NR_SEC_CUSTOM_ATTRIB_NAME + Thread.currentThread().getId();
         try (MockedStatic<NewRelicSecurity> nrMock = Mockito.mockStatic(NewRelicSecurity.class, Answers.RETURNS_DEEP_STUBS)){
             nrMock.when(() -> NewRelicSecurity.isHookProcessingActive()).thenReturn(true);
@@ -78,11 +78,11 @@ public class FileHelperTest {
     }
 
     @Test
-    public void acquireLockIfPossible(){
+    public void acquireLockIfPossibleTest(){
         Assertions.assertFalse(FileHelper.acquireFileLockIfPossible());
     }
     @Test
-    public void acquireLockIfPossible1() {
+    public void acquireLockIfPossibleTest1() {
         String customAttribute = NR_SEC_CUSTOM_ATTRIB_NAME + Thread.currentThread().getId();
         try (MockedStatic<NewRelicSecurity> nrMock = Mockito.mockStatic(NewRelicSecurity.class, Answers.RETURNS_DEEP_STUBS)){
             nrMock.when(() -> NewRelicSecurity.isHookProcessingActive()).thenReturn(true);
@@ -95,7 +95,7 @@ public class FileHelperTest {
         }
     }
     @Test
-    public void acquireLockIfPossible2() {
+    public void acquireLockIfPossibleTest2() {
         try (MockedStatic<NewRelicSecurity> nrMock = Mockito.mockStatic(NewRelicSecurity.class, Answers.RETURNS_DEEP_STUBS)){
             nrMock.when(() -> NewRelicSecurity.isHookProcessingActive()).thenReturn(true);
             nrMock.when(() -> NewRelicSecurity.getAgent().getSecurityMetaData()).thenReturn(new SecurityMetaData());
