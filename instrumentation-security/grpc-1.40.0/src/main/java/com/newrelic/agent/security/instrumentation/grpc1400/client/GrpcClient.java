@@ -25,7 +25,6 @@ import io.grpc.stub.StreamObserver;
 import javax.net.ssl.SSLException;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
-import java.io.IOException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Iterator;
@@ -132,7 +131,7 @@ public class GrpcClient {
     }
 
     private Object customUnaryCall(ManagedChannel channel, FuzzRequestBean requestBean, List<String> payloads) {
-        GrpcStubs.CustomStub stub = GrpcStubs.newBlockingStub(channel);
+        GrpcStubs.CustomStub stub = GrpcStubs.newStub(channel);
         String[] methodSplitData = requestBean.getMethod().split("/");
         String serviceName = methodSplitData[0];
         String methodName = methodSplitData[1];
@@ -216,9 +215,10 @@ public class GrpcClient {
         for (String requestData : payloads) {
             try {
                 Any pack = getMessageOfTypeAny(requestData, requestClass);
-                Iterator<Any> response = stub.withInterceptors(MetadataUtils.newAttachHeadersInterceptor(headers))
+                Iterator<Any> responses = stub.withInterceptors(MetadataUtils.newAttachHeadersInterceptor(headers))
                         .serverStream(pack, serviceName, methodName);
-                while (response.hasNext()) {
+                while (responses.hasNext()) {
+                    Any response = responses.next();
                     NewRelicSecurity.getAgent().log(LogLevel.FINER, String.format(REQUEST_SUCCESS_S_RESPONSE_S_S, requestBean, response, response.toString()), GrpcClient.class.getName());
                 }
             } catch (Throwable e) {
