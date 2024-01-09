@@ -213,9 +213,10 @@ public class GrpcClient {
         for (String requestData : payloads) {
             try {
                 Any pack = getMessageOfTypeAny(requestData, requestClass);
-                Iterator<Any> response = stub.withInterceptors(MetadataUtils.newAttachHeadersInterceptor(headers))
+                Iterator<Any> responses = stub.withInterceptors(MetadataUtils.newAttachHeadersInterceptor(headers))
                         .serverStream(pack, serviceName, methodName);
-                while (response.hasNext()) {
+                while (responses.hasNext()) {
+                    Any response = responses.next();
                     NewRelicSecurity.getAgent().log(LogLevel.FINER, String.format(REQUEST_SUCCESS_S_RESPONSE_S_S, requestBean, response, response.toString()), GrpcClient.class.getName());
                 }
             } catch (Throwable e) {
