@@ -1,10 +1,3 @@
-/*
- *
- *  * Copyright 2021 New Relic Corporation. All rights reserved.
- *  * SPDX-License-Identifier: Apache-2.0
- *
- */
-
 package io.grpc.internal;
 
 import com.newrelic.api.agent.NewRelic;

@@ -62,11 +62,9 @@ public class GrpcClientUtils {
 
     public static void releaseLock() {
         try {
-            try {
-                if(NewRelicSecurity.isHookProcessingActive()) {
-                    NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(getNrSecCustomAttrName(), null);
-                }
-            } catch (Throwable ignored){}
+            if(NewRelicSecurity.isHookProcessingActive()) {
+                NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(getNrSecCustomAttrName(), null);
+            }
         } catch (Throwable ignored) {
         }
     }

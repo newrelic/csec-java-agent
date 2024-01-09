@@ -43,13 +43,10 @@ public class GrpcUtils {
 
     public static void releaseLock(int hashcode) {
         try {
-            try {
-                if(NewRelicSecurity.isHookProcessingActive()) {
-                    NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(NR_SEC_CUSTOM_ATTRIB_NAME+hashcode, null);
-                }
-            } catch (Throwable ignored){}
-        } catch (Throwable ignored) {
-        }
+            if(NewRelicSecurity.isHookProcessingActive()) {
+                NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(NR_SEC_CUSTOM_ATTRIB_NAME+hashcode, null);
+            }
+        } catch (Throwable ignored){}
     }
 
     public static boolean acquireLockIfPossible(int hashcode) {
@@ -60,7 +57,6 @@ public class GrpcUtils {
                 return true;
             }
         } catch (Throwable ignored){
-            ignored.printStackTrace();
         }
         return false;
     }
@@ -70,7 +66,6 @@ public class GrpcUtils {
             return NewRelicSecurity.isHookProcessingActive() &&
                     Boolean.TRUE.equals(NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(nrSecCustomAttrName, Boolean.class));
         } catch (Throwable ignored) {
-            ignored.printStackTrace();
         }
         return false;
     }

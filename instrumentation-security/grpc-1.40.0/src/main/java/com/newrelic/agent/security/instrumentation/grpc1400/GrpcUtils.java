@@ -45,13 +45,10 @@ public class GrpcUtils {
 
     public static void releaseLock(int hashcode) {
         try {
-            try {
-                if(NewRelicSecurity.isHookProcessingActive()) {
-                    NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(NR_SEC_CUSTOM_ATTRIB_NAME+hashcode, null);
-                }
-            } catch (Throwable ignored){}
-        } catch (Throwable ignored) {
-        }
+            if(NewRelicSecurity.isHookProcessingActive()) {
+                NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(NR_SEC_CUSTOM_ATTRIB_NAME+hashcode, null);
+            }
+        } catch (Throwable ignored){}
     }
 
     public static boolean acquireLockIfPossible(int hashcode) {
