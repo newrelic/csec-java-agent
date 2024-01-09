@@ -9,7 +9,7 @@ buildscript {
 apply plugin: 'com.google.protobuf'
 
 def grpcVersion = '1.4.0'
-def protobufVersion = '3.7.0'
+def protobufVersion = '3.0.0'
 
 dependencies {
     implementation(project(":newrelic-security-api"))
@@ -26,7 +26,9 @@ jar {
 }
 
 verifyInstrumentation {
-    passesOnly 'io.grpc:grpc-all:[1.4.0,1.22.0)'
+    passesOnly('io.grpc:grpc-all:[1.4.0,1.22.0)') {
+        implementation("com.google.protobuf:protobuf-java-util:${protobufVersion}")
+    }
 }
 
 // to generate the proto classes, run ./gradlew generateTestProto

@@ -1,6 +1,5 @@
 package com.newrelic.agent.security.instrumentation.grpc140;
 
-import com.google.protobuf.Descriptors;
 import com.google.protobuf.MessageOrBuilder;
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.instrumentation.helpers.GrpcHelper;
@@ -17,7 +16,7 @@ public class GrpcUtils {
         RESPONSE
     }
 
-    public static <T> void preProcessSecurityHook(T receivedMessage, Type type) {
+    public static <T> void preProcessSecurityHook(T receivedMessage, Type type, String dataType) {
         try {
             if(receivedMessage!=null){
                 Map<String, Object> message = ProtoMessageToMap.convertibleMessageFormat((MessageOrBuilder) receivedMessage);
@@ -28,12 +27,14 @@ public class GrpcUtils {
                             NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(GrpcHelper.NR_SEC_GRPC_REQUEST_DATA, new ArrayList());
                         }
                         NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(GrpcHelper.NR_SEC_GRPC_REQUEST_DATA, List.class).add(message);
+                        NewRelicSecurity.getAgent().getSecurityMetaData().getMetaData().addReflectedMetaData(GrpcHelper.NR_SEC_GRPC_REQUEST_DATA_TYPE, dataType);
                         break;
                     case RESPONSE:
                         if(NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(GrpcHelper.NR_SEC_GRPC_RESPONSE_DATA, List.class)==null){
                             NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(GrpcHelper.NR_SEC_GRPC_RESPONSE_DATA, new ArrayList());
                         }
                         NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(GrpcHelper.NR_SEC_GRPC_RESPONSE_DATA, List.class).add(message);
+                        NewRelicSecurity.getAgent().getSecurityMetaData().getMetaData().addReflectedMetaData(GrpcHelper.NR_SEC_GRPC_RESPONSE_DATA_TYPE, dataType);
                         break;
                 }
             }
@@ -43,11 +44,9 @@ public class GrpcUtils {
 
     public static void releaseLock(int hashcode) {
         try {
-            try {
-                if(NewRelicSecurity.isHookProcessingActive()) {
-                    NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(NR_SEC_CUSTOM_ATTRIB_NAME+hashcode, null);
-                }
-            } catch (Throwable ignored){}
+            if(NewRelicSecurity.isHookProcessingActive()) {
+                NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(NR_SEC_CUSTOM_ATTRIB_NAME+hashcode, null);
+            }
         } catch (Throwable ignored) {
         }
     }

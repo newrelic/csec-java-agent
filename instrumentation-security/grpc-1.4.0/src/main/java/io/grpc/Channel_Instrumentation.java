@@ -1,6 +1,5 @@
 package io.grpc;
 
-import com.newrelic.api.agent.NewRelic;
 import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
@@ -12,7 +11,7 @@ public class Channel_Instrumentation {
             MethodDescriptor<RequestT, ResponseT> methodDescriptor, CallOptions callOptions) {
         ClientCall_Instrumentation<RequestT, ResponseT> result = Weaver.callOriginal();
         result.methodDescriptor = methodDescriptor;
-        result.authority = authority();
+        result.csecAuthority = authority();
         return result;
     }
 
