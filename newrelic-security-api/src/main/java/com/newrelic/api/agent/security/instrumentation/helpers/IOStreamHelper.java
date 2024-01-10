@@ -2,6 +2,7 @@ package com.newrelic.api.agent.security.instrumentation.helpers;
 
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
+import com.newrelic.api.agent.security.utils.logging.LogLevel;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -15,9 +16,10 @@ public class IOStreamHelper {
 
     private static final String RESPONSE_WRITER_HASH = "RESPONSE_WRITER_HASH";
     private static final String RESPONSE_OUTPUTSTREAM_HASH = "RESPONSE_OUTPUTSTREAM_HASH";
+    public static final String JAVA_IO_STREAM = "JAVA-IO-STREAM";
 
     public static final String LF = "\n";
-
+    public static final String ERROR_WHILE_READING_STREAM = "Instrumentation library: %s , error while reading stream : %s";
 
     public static Boolean processRequestReaderHookData(Integer readerHash) {
         try {
@@ -66,7 +68,9 @@ public class IOStreamHelper {
 //                        System.out.println("Writing from IS 2" + this.hashCode() + " : " + String.valueOf(data));
                 NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getResponseBody().append(data);
             }
-        } catch(Throwable ignored) {}
+        } catch(Throwable ignored) {
+            NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(ERROR_WHILE_READING_STREAM, JAVA_IO_STREAM, ignored.getMessage()), ignored, IOStreamHelper.class.getName());
+        }
     }
 
 
