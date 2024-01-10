@@ -60,8 +60,8 @@ public class SecurityHelper {
             }
             return operation;
         } catch (Throwable e) {
-            String message = "Instrumentation library: %s , error while creating operation : %s";
-            NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(message, "HTTPCLIENT-5.0", e.getMessage()), e, SecurityHelper.class.getName());
+            String message = "Instrumentation library: %s , error in hook processing : %s";
+            NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(message, "HTTPCLIENT-5", e.getMessage()), e, SecurityHelper.class.getName());
             if (e instanceof NewRelicSecurityException) {
                 e.printStackTrace();
                 throw e;

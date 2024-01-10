@@ -15,6 +15,7 @@ import com.newrelic.api.agent.security.schema.JDBCVendor;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
 import com.newrelic.api.agent.security.schema.operation.BatchSQLOperation;
 import com.newrelic.api.agent.security.schema.operation.SQLOperation;
+import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.NewField;
 import com.newrelic.api.agent.weaver.Weave;
@@ -75,6 +76,8 @@ public abstract class PreparedStatement_Instrumentation {
             NewRelicSecurity.getAgent().registerOperation(sqlOperation);
             return sqlOperation;
         } catch (Throwable e) {
+            String message = "Instrumentation library: %s , error in hook processing : %s";
+            NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(message, "JDBC-GENERIC", e.getMessage()), e, this.getClass().getName());
             if (e instanceof NewRelicSecurityException) {
                 throw e;
             }

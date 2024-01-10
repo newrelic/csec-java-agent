@@ -129,6 +129,8 @@ public abstract class HttpMethodBase_Instrumentation {
             }
             return operation;
         } catch (Throwable e) {
+            String message = "Instrumentation library: %s , error in hook processing : %s";
+            NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(message, "HTTPCLIENT-3", e.getMessage()), e, this.getClass().getName());
             if (e instanceof NewRelicSecurityException) {
                 e.printStackTrace();
                 throw e;
