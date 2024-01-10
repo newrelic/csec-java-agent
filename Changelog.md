@@ -5,7 +5,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
-## [1.0.8-public-preview] TO BE DECIDED
+## [1.0.8-public-preview] - 2024-1-11
 ### Changes
 - Support for stored procedure call detection in SQL events
 - Support for extracting environment variables in case of Remote Code Execution events
