@@ -15,6 +15,7 @@ import com.newrelic.agent.security.instrumentation.servlet24.HttpServletHelper;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
+import java.util.Arrays;
 
 @Weave(type = MatchType.Interface, originalName = "javax.servlet.Filter")
 public abstract class Filter_Instrumentation {
@@ -79,7 +80,8 @@ public abstract class Filter_Instrumentation {
             }
             securityRequest.setContentType(httpServletRequest.getContentType());
 
-            securityAgentMetaData.setServiceTrace(Thread.currentThread().getStackTrace());
+            StackTraceElement[] trace = Thread.currentThread().getStackTrace();
+            securityMetaData.getMetaData().setServiceTrace(Arrays.copyOfRange(trace, 1, trace.length));
             securityRequest.setRequestParsed(true);
         } catch (Throwable ignored){}
     }
