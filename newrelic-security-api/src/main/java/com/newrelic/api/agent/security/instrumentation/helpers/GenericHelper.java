@@ -12,6 +12,8 @@ public class GenericHelper {
     public static final String CSEC_PARENT_ID = "nr-csec-parent-id";
     public static final String NR_SEC_CUSTOM_SPRING_REDIS_ATTR = "SPRING-DATA-REDIS";
 
+    public static final String REGISTER_OPERATION_EXCEPTION_MESSAGE = "Operation registration failed for Instrumentation library: %s, reason: %s ";
+    public static final String EXIT_OPERATION_EXCEPTION_MESSAGE = "Exit Operation registration failed for Instrumentation library: %s, reason: %s ";
     public static boolean skipExistsEvent() {
         if (!(NewRelicSecurity.getAgent().getCurrentPolicy().getVulnerabilityScan().getEnabled() &&
                 NewRelicSecurity.getAgent().getCurrentPolicy().getVulnerabilityScan().getIastScan().getEnabled())) {
