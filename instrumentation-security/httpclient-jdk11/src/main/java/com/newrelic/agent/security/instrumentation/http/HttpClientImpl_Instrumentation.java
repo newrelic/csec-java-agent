@@ -11,6 +11,7 @@ import com.newrelic.api.agent.security.schema.StringUtils;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
 import com.newrelic.api.agent.security.schema.operation.SSRFOperation;
 import com.newrelic.api.agent.security.utils.SSRFUtils;
+import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
@@ -117,7 +118,9 @@ final class HttpClientImpl_Instrumentation {
                                 operation.getExecutionId(), NewRelicSecurity.getAgent().getAgentUUID())).build();
                 return updatedRequest;
             }
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            String message = "Instrumentation library: %s , error while adding outbound header : %s";
+            NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(message, "HTTPCLIENT-JDK11", e.getMessage()), e, HttpClientImpl_Instrumentation.class.getName());
         }
         return req.newBuilder(req.uri()).build();
     }

@@ -6,6 +6,7 @@ import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.StringUtils;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
 import com.newrelic.api.agent.security.schema.operation.XPathOperation;
+import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
@@ -110,6 +111,8 @@ public class JXPathContextReferenceImpl_Instrumentation {
             NewRelicSecurity.getAgent().registerOperation(xPathOperation);
             return xPathOperation;
         } catch (Throwable e) {
+            String message = "Instrumentation library: %s , error while creating operation from method : %s";
+            NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(message, "COMMONS-JXPATH", methodName), e, this.getClass().getName());
             if (e instanceof NewRelicSecurityException) {
                 throw e;
             }

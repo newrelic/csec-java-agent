@@ -17,6 +17,7 @@ import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.security.schema.operation.BatchSQLOperation;
 import com.newrelic.api.agent.security.schema.operation.SQLOperation;
+import com.newrelic.api.agent.security.utils.logging.LogLevel;
 
 import java.nio.ByteBuffer;
 import java.util.HashMap;
@@ -74,6 +75,8 @@ public class CassandraUtils {
                 return cqlOperation;
             }
         } catch (Exception ignored) {
+            String message = "Instrumentation library: %s , error while extracting statement/query : %s";
+            NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(message, "CASSANDRA-DATASTAX-4", ignored.getMessage()), ignored, CassandraUtils.class.getName());
         }
         return null;
     }
@@ -92,6 +95,8 @@ public class CassandraUtils {
                 }
             }
         } catch (Exception ignored){
+            String message = "Instrumentation library: %s , error while extracting query parameters : %s";
+            NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(message, "CASSANDRA-DATASTAX-4", ignored.getMessage()), ignored, CassandraUtils.class.getName());
         }
         return params;
     }
@@ -114,6 +119,8 @@ public class CassandraUtils {
                 }
             }
         } catch (Exception ignored){
+            String message = "Instrumentation library: %s , error while extracting query parameters : %s";
+            NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(message, "CASSANDRA-DATASTAX-4", ignored.getMessage()), ignored, CassandraUtils.class.getName());
         }
         return params;
     }

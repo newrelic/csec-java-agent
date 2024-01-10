@@ -8,6 +8,7 @@ import com.newrelic.api.agent.security.schema.HttpRequest;
 import com.newrelic.api.agent.security.schema.SecurityMetaData;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
 import com.newrelic.api.agent.security.schema.operation.RXSSOperation;
+import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
@@ -83,7 +84,10 @@ public abstract class Filter_Instrumentation {
             StackTraceElement[] trace = Thread.currentThread().getStackTrace();
             securityMetaData.getMetaData().setServiceTrace(Arrays.copyOfRange(trace, 1, trace.length));
             securityRequest.setRequestParsed(true);
-        } catch (Throwable ignored){}
+        } catch (Throwable e){
+            String message = "Instrumentation library: %s , error while generating HTTP request : %s";
+            NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(message, "SERVLET-2.4", e.getMessage()), e, this.getClass().getName());
+        }
     }
 
     private void postProcessSecurityHook(ServletRequest request, ServletResponse response) {

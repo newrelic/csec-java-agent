@@ -10,6 +10,7 @@ package com.newrelic.agent.security.instrumentation.httpclient50;
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
+import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
@@ -43,7 +44,9 @@ public class HttpAsyncClient_Instrumentation {
         if (isLockAcquired) {
             try {
                 operation = SecurityHelper.preprocessSecurityHook(request, request.getUri().toString(), this.getClass().getName(), SecurityHelper.METHOD_NAME_EXECUTE);
-            } catch (URISyntaxException ignored) {
+            } catch (URISyntaxException e) {
+                String message = "Instrumentation library: %s , error while get URI : %s";
+                NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(message, "HTTPCLIENT-5.0", e.getMessage()), e, this.getClass().getName());
             }
         }
         Future<T> returnObj = null;

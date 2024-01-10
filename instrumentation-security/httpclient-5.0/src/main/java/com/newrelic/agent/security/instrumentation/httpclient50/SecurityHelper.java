@@ -8,6 +8,7 @@ import com.newrelic.api.agent.security.schema.SecurityMetaData;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
 import com.newrelic.api.agent.security.schema.operation.SSRFOperation;
 import com.newrelic.api.agent.security.utils.SSRFUtils;
+import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import org.apache.hc.core5.http.HttpRequest;
 
 public class SecurityHelper {
@@ -59,6 +60,8 @@ public class SecurityHelper {
             }
             return operation;
         } catch (Throwable e) {
+            String message = "Instrumentation library: %s , error while creating operation : %s";
+            NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(message, "HTTPCLIENT-5.0", e.getMessage()), e, SecurityHelper.class.getName());
             if (e instanceof NewRelicSecurityException) {
                 e.printStackTrace();
                 throw e;

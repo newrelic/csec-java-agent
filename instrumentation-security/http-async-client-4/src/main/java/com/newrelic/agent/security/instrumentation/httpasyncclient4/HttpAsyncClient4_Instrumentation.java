@@ -16,6 +16,7 @@ import com.newrelic.api.agent.security.schema.StringUtils;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
 import com.newrelic.api.agent.security.schema.operation.SSRFOperation;
 import com.newrelic.api.agent.security.utils.SSRFUtils;
+import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
@@ -225,6 +226,8 @@ public class HttpAsyncClient4_Instrumentation {
             }
             return operation;
         } catch (Throwable e) {
+            String message = "Instrumentation library: %s , error while creating operation : %s";
+            NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(message, "HTTP-ASYNC-CLIENT-4", e.getMessage()), e, this.getClass().getName());
             if (e instanceof NewRelicSecurityException) {
                 e.printStackTrace();
                 throw e;

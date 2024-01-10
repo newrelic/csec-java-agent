@@ -15,6 +15,7 @@ import com.newrelic.api.agent.security.schema.SecurityMetaData;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
 import com.newrelic.api.agent.security.schema.operation.SSRFOperation;
 import com.newrelic.api.agent.security.utils.SSRFUtils;
+import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
@@ -93,7 +94,9 @@ public abstract class HttpMethodBase_Instrumentation {
                     host = methodURI.getHost();
                     uri = SecurityHelper.getURI(methodURI.getScheme(), host, conn.getPort(), methodURI.getPath());
                 }
-            } catch (URIException ignored) {
+            } catch (Exception e) {
+                String message = "Instrumentation library: %s , error while creating operation : %s";
+                NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(message, "HTTPCLIENT-3", e.getMessage()), e, this.getClass().getName());
                 return null;
             }
 

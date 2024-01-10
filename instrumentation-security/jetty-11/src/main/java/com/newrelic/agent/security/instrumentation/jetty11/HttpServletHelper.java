@@ -10,6 +10,7 @@ import com.newrelic.api.agent.security.schema.SecurityMetaData;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
 import com.newrelic.api.agent.security.schema.operation.RXSSOperation;
 import com.newrelic.api.agent.security.schema.policy.AgentPolicy;
+import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
@@ -161,7 +162,9 @@ public class HttpServletHelper {
             StackTraceElement[] trace = Thread.currentThread().getStackTrace();
             securityMetaData.getMetaData().setServiceTrace(Arrays.copyOfRange(trace, 2, trace.length));
             securityRequest.setRequestParsed(true);
-        } catch (Throwable ignored) {
+        } catch (Throwable e) {
+            String message = "Instrumentation library: %s , error while generating http request : %s";
+            NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(message, "JETTY-11", e.getMessage()), e, HttpServletHelper.class.getName());
         }
     }
 

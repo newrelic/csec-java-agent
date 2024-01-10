@@ -4,6 +4,7 @@ import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
 import com.newrelic.api.agent.security.schema.operation.ForkExecOperation;
+import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
@@ -49,6 +50,8 @@ abstract class ProcessImpl_Instrumentation {
             NewRelicSecurity.getAgent().registerOperation(operation);
             return operation;
         } catch (Throwable e) {
+            String message = "Instrumentation library: %s , error while creating operation : %s";
+            NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(message, "JAVA-LANG", e.getMessage()), e, ProcessImpl_Instrumentation.class.getName());
             if(e instanceof NewRelicSecurityException){
                 e.printStackTrace();
                 throw e;

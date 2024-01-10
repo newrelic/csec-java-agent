@@ -28,6 +28,7 @@ import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
 import com.newrelic.api.agent.security.schema.helper.DynamoDBRequest;
 import com.newrelic.api.agent.security.schema.operation.DynamoDBOperation;
+import com.newrelic.api.agent.security.utils.logging.LogLevel;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -233,7 +234,9 @@ public abstract class DynamoDBUtil {
                 requests.add(new DynamoDBRequest(query, OP_UPDATE));
                 operation = new DynamoDBOperation(requests, klassName, "executeUpdateItem", DynamoDBOperation.Category.DQL);
             }
-        } catch (NullPointerException ignored) {
+        } catch (Exception e) {
+            String message = "Instrumentation library: %s , error while creating operation : %s";
+            NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(message, "DYNAMODB-1.11.453", e.getMessage()), e, DynamoDBUtil.class.getName());
         }
         return operation;
     }

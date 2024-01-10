@@ -23,7 +23,8 @@ public class BuilderSupport_Instrumentation {
                 return;
             }
             NewRelicSecurity.getAgent().registerExitEvent(operation);
-        } catch (Throwable ignored){}
+        } catch (Throwable ignored){
+        }
     }
 
     private AbstractOperation preprocessSecurityHook (String expression, String methodName){

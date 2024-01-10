@@ -33,7 +33,9 @@ public class JNDIUtils {
                 NewRelicSecurity.getAgent().registerOperation(operation);
                 return operation;
             }
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+
+        }
         return null;
     }
 

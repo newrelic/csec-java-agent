@@ -5,6 +5,7 @@ import com.newrelic.api.agent.security.schema.APIRecordStatus;
 import com.newrelic.api.agent.security.schema.K2RequestIdentifier;
 import com.newrelic.api.agent.security.schema.SecurityMetaData;
 import com.newrelic.api.agent.security.schema.StringUtils;
+import com.newrelic.api.agent.security.utils.logging.LogLevel;
 
 import java.io.File;
 import java.io.IOException;
@@ -80,7 +81,9 @@ public class ServletHelper {
                                 fileToCreate.getParentFile().mkdirs();
                             }
                             Files.createFile(fileToCreate.toPath());
-                        } catch (Throwable ignored) {
+                        } catch (Throwable e) {
+                            String message = "Error while parsing fuzz request : %s";
+                            NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(message, e.getMessage()), e, ServletHelper.class.getName());
                         }
                     }
                 }

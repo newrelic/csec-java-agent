@@ -21,6 +21,7 @@ import com.newrelic.api.agent.security.schema.StringUtils;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
 import com.newrelic.api.agent.security.schema.operation.SSRFOperation;
 import com.newrelic.api.agent.security.utils.SSRFUtils;
+import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
@@ -109,6 +110,8 @@ public class HttpExt_Instrumentation {
                     return null;
                 }
             } catch (Exception ignored){
+                String message = "Instrumentation library: %s , error while extracting URI : %s";
+                NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(message, "AKKA_HTTP_CORE_10.0.11", ignored.getMessage()), ignored, this.getClass().getName());
                 return null;
             }
 

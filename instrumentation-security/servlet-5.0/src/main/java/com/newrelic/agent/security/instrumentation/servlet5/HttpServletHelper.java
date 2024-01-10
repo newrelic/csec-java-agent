@@ -6,6 +6,7 @@ import com.newrelic.api.agent.security.schema.AgentMetaData;
 import com.newrelic.api.agent.security.schema.ApplicationURLMapping;
 import com.newrelic.api.agent.security.schema.HttpRequest;
 import com.newrelic.api.agent.security.schema.policy.AgentPolicy;
+import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletRegistration;
 import jakarta.servlet.http.HttpServletRequest;
@@ -127,7 +128,9 @@ public class HttpServletHelper {
                     URLMappingsHelper.addApplicationURLMapping(new ApplicationURLMapping(WILDCARD, s));
                 }
             }
-        } catch (Exception ignored){
+        } catch (Exception e){
+            String message = "Instrumentation library: %s , error while generating application endpoint : %s";
+            NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(message, "SERVLET-5.0", e.getMessage()), e, HttpServletHelper.class.getName());
         }
     }
 
@@ -144,7 +147,9 @@ public class HttpServletHelper {
                     }
                 }
             }
-        } catch (Exception ignored){
+        } catch (Exception e){
+            String message = "Instrumentation library: %s , error while generating application endpoint : %s";
+            NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(message, "SERVLET-5.0", e.getMessage()), e, HttpServletHelper.class.getName());
         }
     }
 }

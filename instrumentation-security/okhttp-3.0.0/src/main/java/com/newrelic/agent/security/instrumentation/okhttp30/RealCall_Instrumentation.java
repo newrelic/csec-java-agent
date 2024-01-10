@@ -7,7 +7,9 @@
 
 package com.newrelic.agent.security.instrumentation.okhttp30;
 
+import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
+import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
@@ -64,7 +66,10 @@ abstract class RealCall_Instrumentation {
             if (originalRequest != null) {
                 return originalRequest.url().toString();
             }
-        }catch (Exception ignored){}
+        }catch (Exception e){
+            String message = "Instrumentation library: %s , error while generating request URI : %s";
+            NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(message, "OKHTTP-3.0.0", e.getMessage()), e, this.getClass().getName());
+        }
         return null;
     }
 

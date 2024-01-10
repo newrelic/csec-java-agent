@@ -14,6 +14,7 @@ import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
 import com.newrelic.api.agent.security.schema.helper.DynamoDBRequest;
 import com.newrelic.api.agent.security.schema.operation.DynamoDBOperation;
+import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import software.amazon.awssdk.core.SdkRequest;
 import software.amazon.awssdk.core.SdkResponse;
 import software.amazon.awssdk.core.client.handler.ClientExecutionParams;
@@ -356,7 +357,9 @@ public abstract class DynamoDBUtil {
                 }
                 operation = new DynamoDBOperation(requests, klassName, "executeTransaction", DynamoDBOperation.Category.PARTIQL);
             }
-        } catch (NullPointerException ignored) {
+        } catch (Exception e) {
+            String message = "Instrumentation library: %s , error while creating operation : %s";
+            NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(message, "DYNAMODB-2.15.34", e.getMessage()), e, DynamoDBUtil.class.getName());
         }
         return operation;
     }
