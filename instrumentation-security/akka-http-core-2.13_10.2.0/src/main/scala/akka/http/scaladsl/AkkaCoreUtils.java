@@ -86,7 +86,7 @@ public class AkkaCoreUtils {
         }
     }
 
-    public static void preProcessHttpRequest (Boolean isServletLockAcquired, HttpRequest httpRequest, StringBuilder requestBody, Token token) {
+    public static void preProcessHttpRequest (Boolean isServletLockAcquired, HttpRequest httpRequest, String requestBody, Token token) {
         if(!isServletLockAcquired) {
             return;
         }
@@ -120,7 +120,7 @@ public class AkkaCoreUtils {
             securityRequest.setContentType(httpRequest.entity().getContentType().toString());
 
             securityAgentMetaData.setServiceTrace(Thread.currentThread().getStackTrace());
-            securityRequest.setBody(requestBody);
+            securityRequest.setBody(new StringBuilder(requestBody));
             securityRequest.setRequestParsed(true);
         } catch (Throwable ignored){}
         finally {

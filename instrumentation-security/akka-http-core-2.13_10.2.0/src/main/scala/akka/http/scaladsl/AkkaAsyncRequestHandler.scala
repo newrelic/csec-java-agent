@@ -30,7 +30,7 @@ class AkkaAsyncRequestHandler(handler: HttpRequest ⇒ Future[HttpResponse])(imp
       body.append(chunk)
     }
     val processingResult: Future[Done] = dataBytes.runWith(sink, materializer)
-    AkkaCoreUtils.preProcessHttpRequest(isLockAquired, param, body.underlying, NewRelic.getAgent.getTransaction.getToken);
+    AkkaCoreUtils.preProcessHttpRequest(isLockAquired, param, body.toString(), NewRelic.getAgent.getTransaction.getToken);
     val futureResponse: Future[HttpResponse] = handler.apply(param)
     futureResponse.flatMap(ResponseFutureHelper.wrapResponseAsync(NewRelic.getAgent.getTransaction.getToken, materializer))
     futureResponse
