@@ -1,6 +1,7 @@
 package jakarta.servlet;
 
 import com.newrelic.api.agent.security.NewRelicSecurity;
+import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.security.instrumentation.helpers.LowSeverityHelper;
 import com.newrelic.api.agent.security.instrumentation.helpers.ServletHelper;
 import com.newrelic.api.agent.security.schema.AgentMetaData;
@@ -104,10 +105,12 @@ public abstract class FilterChain_Instrumentation {
             NewRelicSecurity.getAgent().registerOperation(rxssOperation);
             ServletHelper.tmpFileCleanUp(NewRelicSecurity.getAgent().getSecurityMetaData().getFuzzRequestIdentifier().getTempFiles());
         } catch (Throwable e) {
-            if(e instanceof NewRelicSecurityException){
-                e.printStackTrace();
+            if (e instanceof NewRelicSecurityException) {
+                NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.SECURITY_EXCEPTION_MESSAGE, HttpServletHelper.SERVLET_6_0, e.getMessage()), e, FilterChain_Instrumentation.class.getName());
                 throw e;
             }
+            NewRelicSecurity.getAgent().log(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, HttpServletHelper.SERVLET_6_0, e.getMessage()), e, FilterChain_Instrumentation.class.getName());
+            NewRelicSecurity.getAgent().reportIncident(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, HttpServletHelper.SERVLET_6_0, e.getMessage()), e, FilterChain_Instrumentation.class.getName());
         }
     }
 

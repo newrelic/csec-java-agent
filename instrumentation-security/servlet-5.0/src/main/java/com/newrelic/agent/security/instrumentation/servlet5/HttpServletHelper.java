@@ -26,6 +26,7 @@ public class HttpServletHelper {
     public static final String NR_SEC_CUSTOM_ATTRIB_NAME = "SERVLET_LOCK-";
     private static final String WILDCARD = "*";
     private static final String SEPARATOR = "/";
+    public static final String SERVLET_5_0 = "SERVLET-5.0";
 
     public static void processHttpRequestHeader(HttpServletRequest request, HttpRequest securityRequest){
         Enumeration<String> headerNames = request.getHeaderNames();
@@ -130,7 +131,7 @@ public class HttpServletHelper {
             }
         } catch (Exception e){
             String message = "Instrumentation library: %s , error while generating application endpoint : %s";
-            NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(message, "SERVLET-5.0", e.getMessage()), e, HttpServletHelper.class.getName());
+            NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(message, SERVLET_5_0, e.getMessage()), e, HttpServletHelper.class.getName());
         }
     }
 
@@ -149,7 +150,7 @@ public class HttpServletHelper {
             }
         } catch (Exception e){
             String message = "Instrumentation library: %s , error while generating application endpoint : %s";
-            NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(message, "SERVLET-5.0", e.getMessage()), e, HttpServletHelper.class.getName());
+            NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(message, SERVLET_5_0, e.getMessage()), e, HttpServletHelper.class.getName());
         }
     }
 }
