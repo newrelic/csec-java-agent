@@ -15,6 +15,7 @@ import com.newrelic.api.agent.security.schema.JDBCVendor;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
 import com.newrelic.api.agent.security.schema.operation.BatchSQLOperation;
 import com.newrelic.api.agent.security.schema.operation.SQLOperation;
+import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.NewField;
 import com.newrelic.api.agent.weaver.Weave;
@@ -24,6 +25,8 @@ import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
+
+import static com.newrelic.api.agent.security.instrumentation.helpers.JdbcHelper.JDBC_GENERIC;
 
 @Weave(originalName = "java.sql.PreparedStatement", type = MatchType.Interface)
 public abstract class PreparedStatement_Instrumentation {
@@ -42,7 +45,9 @@ public abstract class PreparedStatement_Instrumentation {
                 return;
             }
             NewRelicSecurity.getAgent().registerExitEvent(operation);
-        } catch (Throwable ignored){}
+        } catch (Throwable ignored){
+            NewRelicSecurity.getAgent().log(LogLevel.FINEST, String.format(GenericHelper.EXIT_OPERATION_EXCEPTION_MESSAGE, JDBC_GENERIC, ignored.getMessage()), ignored, this.getClass().getName());
+        }
     }
 
     private AbstractOperation preprocessSecurityHook (String sql, String methodName){
@@ -75,7 +80,10 @@ public abstract class PreparedStatement_Instrumentation {
             NewRelicSecurity.getAgent().registerOperation(sqlOperation);
             return sqlOperation;
         } catch (Throwable e) {
+            NewRelicSecurity.getAgent().log(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, JDBC_GENERIC, e.getMessage()), e, this.getClass().getName());
+            NewRelicSecurity.getAgent().reportIncident(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, JDBC_GENERIC, e.getMessage()), e, this.getClass().getName());
             if (e instanceof NewRelicSecurityException) {
+                NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.SECURITY_EXCEPTION_MESSAGE, JDBC_GENERIC, e.getMessage()), e, this.getClass().getName());
                 throw e;
             }
         }

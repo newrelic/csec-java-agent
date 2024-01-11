@@ -8,6 +8,7 @@
 package com.newrelic.agent.security.instrumentation.javaio.io;
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
+import com.newrelic.api.agent.security.instrumentation.helpers.IOStreamHelper;
 import com.newrelic.api.agent.security.instrumentation.helpers.InputStreamHelper;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.api.agent.weaver.*;
@@ -154,8 +155,7 @@ public abstract class InputStream_Instrumentation {
 
             }
         } catch (Throwable e) {
-            String message = "Instrumentation library: %s , error while reading stream : %s";
-            NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(message, "JAVA-IO-INPUTSTREAM-JDK9", e.getMessage()), e, this.getClass().getName());
+            NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(IOStreamHelper.ERROR_WHILE_READING_STREAM, "JAVA-IO-INPUTSTREAM-JDK9", e.getMessage()), e, this.getClass().getName());
         }
     }
 

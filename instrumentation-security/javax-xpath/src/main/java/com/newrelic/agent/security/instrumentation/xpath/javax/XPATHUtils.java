@@ -6,4 +6,5 @@ public class XPATHUtils {
     public static final String METHOD_EVALUATE = "evaluate";
 
     public static final String METHOD_EXECUTE = "execute";
+    public static final Object JAVAX_XPATH = "JAVAX-XPATH";
 }

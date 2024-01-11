@@ -97,7 +97,9 @@ public class JXPathContextReferenceImpl_Instrumentation {
                 return;
             }
             NewRelicSecurity.getAgent().registerExitEvent(operation);
-        } catch (Throwable ignored){}
+        } catch (Throwable ignored){
+            NewRelicSecurity.getAgent().log(LogLevel.FINEST, String.format(GenericHelper.EXIT_OPERATION_EXCEPTION_MESSAGE, XPATHUtils.COMMONS_JXPATH, ignored.getMessage()), ignored, this.getClass().getName());
+        }
     }
 
     private AbstractOperation preprocessSecurityHook (String patternString, String methodName){
@@ -111,9 +113,10 @@ public class JXPathContextReferenceImpl_Instrumentation {
             NewRelicSecurity.getAgent().registerOperation(xPathOperation);
             return xPathOperation;
         } catch (Throwable e) {
-            String message = "Instrumentation library: %s , error while creating operation from method : %s";
-            NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(message, "COMMONS-JXPATH", methodName), e, this.getClass().getName());
+            NewRelicSecurity.getAgent().log(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, XPATHUtils.COMMONS_JXPATH, e.getMessage()), e, this.getClass().getName());
+            NewRelicSecurity.getAgent().reportIncident(LogLevel.SEVERE , String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, XPATHUtils.COMMONS_JXPATH, e.getMessage()), e, this.getClass().getName());
             if (e instanceof NewRelicSecurityException) {
+                NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.SECURITY_EXCEPTION_MESSAGE, XPATHUtils.COMMONS_JXPATH, e.getMessage()), e, this.getClass().getName());
                 throw e;
             }
         }

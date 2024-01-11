@@ -40,7 +40,7 @@ public abstract class DataSource_Weaved {
             }
         } catch (Exception e) {
             String message = "Instrumentation library: %s , error while creating operation : %s";
-            NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(message, "JDBC-GENERIC", e.getMessage()), e, this.getClass().getName());
+            NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(message, JdbcHelper.JDBC_GENERIC, e.getMessage()), e, this.getClass().getName());
         }
     }
 

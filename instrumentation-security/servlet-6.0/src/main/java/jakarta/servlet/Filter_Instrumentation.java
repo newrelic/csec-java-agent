@@ -86,8 +86,7 @@ public abstract class Filter_Instrumentation {
             securityMetaData.getMetaData().setServiceTrace(Arrays.copyOfRange(trace, 1, trace.length));
             securityRequest.setRequestParsed(true);
         } catch (Throwable e){
-            String message = "Instrumentation library: %s , error while generating HTTP request : %s";
-            NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(message, "SERVLET-6.0", e.getMessage()), e, this.getClass().getName());
+            NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.ERROR_GENERATING_HTTP_REQUEST, HttpServletHelper.SERVLET_6_0, e.getMessage()), e, this.getClass().getName());
         }
     }
 

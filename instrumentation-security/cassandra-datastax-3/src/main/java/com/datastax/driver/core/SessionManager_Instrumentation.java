@@ -2,7 +2,9 @@ package com.datastax.driver.core;
 
 import com.newrelic.agent.security.instrumentation.cassandra3.CassandraUtils;
 import com.newrelic.api.agent.security.NewRelicSecurity;
+import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
+import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
@@ -13,7 +15,7 @@ abstract class SessionManager_Instrumentation {
 
     public ResultSetFuture executeAsync(Statement statement) {
         boolean isLockAcquired = CassandraUtils.acquireLockIfPossible(statement.hashCode());
-        ResultSetFuture result;
+        ResultSetFuture result = null;
         AbstractOperation cqlOperation = null;
 
         try {
@@ -28,7 +30,11 @@ abstract class SessionManager_Instrumentation {
                     NewRelicSecurity.getAgent().registerOperation(cqlOperation);
                 }
             }
-        } finally {
+        } catch (Exception e) {
+            NewRelicSecurity.getAgent().log(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, CassandraUtils.CASSANDRA_DATASTAX_3, e.getMessage()), e, this.getClass().getName());
+            NewRelicSecurity.getAgent().reportIncident(LogLevel.SEVERE , String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, CassandraUtils.CASSANDRA_DATASTAX_3, e.getMessage()), e, this.getClass().getName());
+        }
+        finally {
             if(isLockAcquired){
                 CassandraUtils.releaseLock(statement.hashCode());
             }

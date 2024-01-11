@@ -73,8 +73,7 @@ public class HttpHandler_Instrumentation {
             ServletHelper.registerUserLevelCode("sun-net-http-server");
             securityRequest.setRequestParsed(true);
         } catch (Throwable e){
-            String message = "Instrumentation library: %s , error while generating HTTP request : %s";
-            NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(message, "SUN-NET-HTTPSERVER", e.getMessage()), e, this.getClass().getName());
+            NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.ERROR_GENERATING_HTTP_REQUEST, HttpServerHelper.SUN_NET_HTTPSERVER, e.getMessage()), e, this.getClass().getName());
         }
     }
     private void postProcessSecurityHook(HttpExchange exchange) {

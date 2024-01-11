@@ -27,6 +27,8 @@ public class CassandraUtils {
     public static final String NR_SEC_CUSTOM_ATTRIB_CQL_STMT = "NR-CQL-STMT";
     public static final String EVENT_CATEGORY = "CQL";
     public static final String NR_SEC_CASSANDRA_LOCK = "CASSANDRA_OPERATION_LOCK";
+    public static final String CASSANDRA_DATASTAX_3 = "CASSANDRA-DATASTAX-3";
+
     public static boolean acquireLockIfPossible(int hashcode) {
         try {
             return GenericHelper.acquireLockIfPossible(NR_SEC_CASSANDRA_LOCK + hashcode);
@@ -70,7 +72,7 @@ public class CassandraUtils {
             }
         } catch (Exception ignored) {
             String message = "Instrumentation library: %s , error while extracting statement/query : %s";
-            NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(message, "CASSANDRA-DATASTAX-3", ignored.getMessage()), ignored, CassandraUtils.class.getName());
+            NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(message, CASSANDRA_DATASTAX_3, ignored.getMessage()), ignored, CassandraUtils.class.getName());
         }
         return null;
     }
@@ -90,6 +92,7 @@ public class CassandraUtils {
             }
             NewRelicSecurity.getAgent().registerExitEvent(operation);
         } catch (Exception ignored) {
+            NewRelicSecurity.getAgent().log(LogLevel.FINEST, String.format(GenericHelper.EXIT_OPERATION_EXCEPTION_MESSAGE, CASSANDRA_DATASTAX_3, ignored.getMessage()), ignored,CassandraUtils.class.getName());
         }
     }
 
@@ -105,6 +108,8 @@ public class CassandraUtils {
                 }
             }
         } catch (Exception ignored){
+            String message = "Instrumentation library: %s , error while extracting query parameters : %s";
+            NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(message, CASSANDRA_DATASTAX_3, ignored.getMessage()), ignored, CassandraUtils.class.getName());
         }
         return params;
     }
@@ -124,6 +129,8 @@ public class CassandraUtils {
                 }
             }
         } catch (Exception ignored){
+            String message = "Instrumentation library: %s , error while extracting query parameters : %s";
+            NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(message, CASSANDRA_DATASTAX_3, ignored.getMessage()), ignored, CassandraUtils.class.getName());
         }
         return params;
     }

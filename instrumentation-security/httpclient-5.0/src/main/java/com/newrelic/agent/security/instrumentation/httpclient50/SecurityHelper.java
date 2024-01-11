@@ -17,6 +17,7 @@ public class SecurityHelper {
 
     public static final String NR_SEC_CUSTOM_ATTRIB_NAME = "SSRF_OPERATION_LOCK_APACHE5-";
     public static final String APACHE5_ASYNC_REQUEST_PRODUCER = "APACHE5_ASYNC_REQUEST_PRODUCER_";
+    public static final String HTTPCLIENT_5_0 = "HTTPCLIENT-5.0";
 
     public static void registerExitOperation(boolean isProcessingAllowed, AbstractOperation operation) {
         try {
@@ -26,6 +27,7 @@ public class SecurityHelper {
             }
             NewRelicSecurity.getAgent().registerExitEvent(operation);
         } catch (Throwable ignored) {
+            NewRelicSecurity.getAgent().log(LogLevel.FINEST, String.format(GenericHelper.EXIT_OPERATION_EXCEPTION_MESSAGE, HTTPCLIENT_5_0, ignored.getMessage()), ignored, HttpClient_Instrumentation.class.getName());
         }
     }
 
@@ -60,10 +62,10 @@ public class SecurityHelper {
             }
             return operation;
         } catch (Throwable e) {
-            String message = "Instrumentation library: %s , error while creating operation : %s";
-            NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(message, "HTTPCLIENT-5.0", e.getMessage()), e, SecurityHelper.class.getName());
+            NewRelicSecurity.getAgent().log(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, HTTPCLIENT_5_0, e.getMessage()), e, SecurityHelper.class.getName());
+            NewRelicSecurity.getAgent().reportIncident(LogLevel.SEVERE , String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, HTTPCLIENT_5_0, e.getMessage()), e, SecurityHelper.class.getName());
             if (e instanceof NewRelicSecurityException) {
-                e.printStackTrace();
+                NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.SECURITY_EXCEPTION_MESSAGE, HTTPCLIENT_5_0, e.getMessage()), e, SecurityHelper.class.getName());
                 throw e;
             }
         }

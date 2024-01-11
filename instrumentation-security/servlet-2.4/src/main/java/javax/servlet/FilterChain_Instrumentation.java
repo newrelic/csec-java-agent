@@ -85,8 +85,7 @@ public abstract class FilterChain_Instrumentation {
             securityMetaData.getMetaData().setServiceTrace(Arrays.copyOfRange(trace, 1, trace.length));
             securityRequest.setRequestParsed(true);
         } catch (Throwable e){
-            String message = "Instrumentation library: %s , error while generating HTTP request : %s";
-            NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(message, "SERVLET-2.4", e.getMessage()), e, this.getClass().getName());
+            NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.ERROR_GENERATING_HTTP_REQUEST, HttpServletHelper.SERVLET_2_4, e.getMessage()), e, this.getClass().getName());
         }
     }
 
