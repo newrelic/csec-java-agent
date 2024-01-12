@@ -9,7 +9,7 @@ buildscript {
 apply plugin: 'com.google.protobuf'
 
 def grpcVersion = '1.40.0'
-def protobufVersion = '3.7.0'
+def protobufVersion = '3.0.0'
 
 dependencies {
     implementation(project(":newrelic-security-api"))

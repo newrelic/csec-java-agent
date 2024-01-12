@@ -24,6 +24,7 @@ import io.grpc.internal.ServerStream_Instrumentation;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -33,7 +34,7 @@ public class GrpcServerUtils {
     private static final String EMPTY = "";
     public static final String METHOD_NAME_START_CALL = "startCall";
     public static final String NR_SEC_CUSTOM_ATTRIB_NAME = "NR_CSEC_GRPC_SERVER_OPERATIONAL_LOCK_";
-    private static Map<Integer, TypeRegistry> typeRegistries = new HashMap<>();
+    private static Set<Descriptors.Descriptor> typeRegistries = new HashSet<>();
 
     public static <ReqT, ResT> void preprocessSecurityHook(ServerStream_Instrumentation call, ServerMethodDefinition<ReqT, ResT> methodDef, Metadata meta, String klass) {
         try {
@@ -214,16 +215,15 @@ public class GrpcServerUtils {
     }
 
     public static Descriptors.Descriptor getMessageTypeDescriptor(String messageClassName) {
-        for (Map.Entry<Integer, TypeRegistry> typeRegistry : typeRegistries.entrySet()) {
-            Descriptors.Descriptor clazz = typeRegistry.getValue().find(messageClassName);
-            if (clazz!=null) {
-                return clazz;
+        for (Descriptors.Descriptor descriptor : typeRegistries) {
+            if (descriptor != null && messageClassName.equals(descriptor.getFullName())) {
+                return descriptor;
             }
         }
         return null;
     }
 
-    public static void createTypeRegistries(Descriptors.Descriptor type) {
-        typeRegistries.put(type.getFile().hashCode(), TypeRegistry.newBuilder().add(type).build());
+    public static void addToTypeRegistries(Descriptors.Descriptor type) {
+        typeRegistries.add(type);
     }
 }
