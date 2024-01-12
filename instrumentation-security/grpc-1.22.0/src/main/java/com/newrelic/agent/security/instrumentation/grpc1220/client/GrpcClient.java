@@ -20,6 +20,7 @@ import io.grpc.netty.GrpcSslContexts;
 import io.grpc.netty.NettyChannelBuilder;
 import io.grpc.stub.MetadataUtils;
 import io.grpc.stub.StreamObserver;
+import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 
 import javax.net.ssl.SSLException;
 import javax.net.ssl.TrustManager;
@@ -44,28 +45,6 @@ public class GrpcClient {
     private final String client_streaming = "CLIENT_STREAMING";
     private final String server_streaming = "SERVER_STREAMING";
     private final String bidi_streaming = "BIDI_STREAMING";
-
-    private final X509TrustManager x509TrustManager = new X509TrustManager() {
-        @Override
-        public void checkClientTrusted(X509Certificate[] chain, String authType)
-                throws CertificateException {
-        }
-
-        @Override
-        public void checkServerTrusted(X509Certificate[] chain, String authType)
-                throws CertificateException {
-        }
-
-        @Override
-        public X509Certificate[] getAcceptedIssuers() {
-            return new X509Certificate[] {};
-        }
-    };
-
-    // Create a trust manager that does not validate certificate chains
-    private final TrustManager[] trustAllCerts = new TrustManager[]{
-            x509TrustManager
-    };
 
     private final ThreadLocal<ManagedChannel> clientThreadLocal = new ThreadLocal<ManagedChannel>() {
         @Override
@@ -293,7 +272,7 @@ public class GrpcClient {
         return NettyChannelBuilder.forAddress(host, port)
                 .sslContext(
                         GrpcSslContexts.forClient()
-                                .trustManager((X509Certificate) x509TrustManager)
+                                .trustManager(InsecureTrustManagerFactory.INSTANCE)
                                 .build()
                 )
                 .build();

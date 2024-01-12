@@ -21,6 +21,7 @@ import io.grpc.Metadata;
 import io.grpc.TlsChannelCredentials;
 import io.grpc.stub.MetadataUtils;
 import io.grpc.stub.StreamObserver;
+import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 
 import javax.net.ssl.SSLException;
 import javax.net.ssl.TrustManager;
@@ -45,28 +46,6 @@ public class GrpcClient {
     private final String client_streaming = "CLIENT_STREAMING";
     private final String server_streaming = "SERVER_STREAMING";
     private final String bidi_streaming = "BIDI_STREAMING";
-
-    private final X509TrustManager x509TrustManager = new X509TrustManager() {
-        @Override
-        public void checkClientTrusted(X509Certificate[] chain, String authType)
-                throws CertificateException {
-        }
-
-        @Override
-        public void checkServerTrusted(X509Certificate[] chain, String authType)
-                throws CertificateException {
-        }
-
-        @Override
-        public X509Certificate[] getAcceptedIssuers() {
-            return new X509Certificate[] {};
-        }
-    };
-
-    // Create a trust manager that does not validate certificate chains
-    private final TrustManager[] trustAllCerts = new TrustManager[]{
-            x509TrustManager
-    };
 
     private final ThreadLocal<ManagedChannel> clientThreadLocal = new ThreadLocal<ManagedChannel>() {
         @Override
@@ -293,13 +272,9 @@ public class GrpcClient {
 
     private ManagedChannel getManagedChannelWithSsl(String host, int port) throws SSLException {
         ChannelCredentials creds;
-        try {
-            creds = TlsChannelCredentials.newBuilder()
-                    .trustManager(trustAllCerts)
-                    .build();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        creds = TlsChannelCredentials.newBuilder()
+                .trustManager(InsecureTrustManagerFactory.INSTANCE.getTrustManagers())
+                .build();
 
         return Grpc.newChannelBuilder(String.format("%s:%s", host, port), creds)
                 .build();
