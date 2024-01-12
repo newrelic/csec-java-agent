@@ -4,6 +4,25 @@ Noteworthy changes to the agent are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0-public-preview] TO BE DECIDED
+### Changes
+- FileIntegrity is marked if any of following is changed - existence, length, permissions, last modified
+- Add a Logger and Cloud Reporting API for instrumentation modules
+- Glassfish Support: The security agent now also supports Glassfish server
+- Resin Support: The security agent now also supports resin server
+- Anorm Support: The security agent now also supports Anorm Datastore version 2.0 to 2.5
+- Jetty v12 Support: The security agent now also support Jetty version 12 and above
+- Ning Async HTTP client Support: Add support for com.ning:async-http-client 1.0.0 and above
+- Lettuce Support: The security agent now also supports Lettuce 4.4.0.Final and above
+- Jcache Support: The security agent now also supports jCache 1.0.0 and above
+- Jersey Support: The security agent now also supports Jersey 2.0 and above
+- Mule Support: The security agent now also supports Mule server version 3.6 to 3.9.x
+
+### Misc
+- Unit test cases for Ning Async HTTP client support
+- Unit test cases for Lettuce support
+- Unit test cases for jCache support
+- Unit test cases for jersey support
 
 ## [1.0.8-public-preview] TO BE DECIDED
 ### Changes
@@ -12,6 +31,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Support for executing script file analysis in case of Remote Code Execution events
 - Enabled the transformation of the low-priority instrumentation module by default in case of IAST
 - SecureCookie schema check has been removed
+
 ### Fixes
 - Incorrect user file details in the vulnerability details
 - Low severity hook event was not generated when the same url can process multiple request methods
