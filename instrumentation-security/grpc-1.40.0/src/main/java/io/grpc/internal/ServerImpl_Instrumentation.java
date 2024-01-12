@@ -1,11 +1,11 @@
 package io.grpc.internal;
 
+import com.newrelic.agent.security.instrumentation.grpc1400.GrpcServerUtils;
+import com.newrelic.agent.security.instrumentation.grpc1400.processor.MonitorGrpcRequestQueueThread;
 import com.newrelic.api.agent.NewRelic;
 import com.newrelic.api.agent.weaver.NewField;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
-import com.newrelic.agent.security.instrumentation.grpc1400.GrpcServerUtils;
-import com.newrelic.agent.security.instrumentation.grpc1400.processor.MonitorGrpcRequestQueueThread;
 import io.grpc.Metadata;
 import io.grpc.ServerMethodDefinition;
 import io.perfmark.Tag;

@@ -2,7 +2,6 @@ package com.newrelic.agent.security.instrumentation.grpc1220.client;
 
 import com.google.protobuf.Any;
 import com.google.protobuf.Descriptors;
-import com.sun.corba.se.spi.presentation.rmi.PresentationManager;
 import io.grpc.CallOptions;
 import io.grpc.Channel;
 import io.grpc.MethodDescriptor;

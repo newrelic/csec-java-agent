@@ -1,6 +1,5 @@
 package com.newrelic.agent.security.instrumentation.grpc1220.processor;
 
-import com.newrelic.agent.security.instrumentation.grpc1220.client.GrpcClient;
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.instrumentation.helpers.GrpcClientRequestReplayHelper;
 import com.newrelic.api.agent.security.schema.StringUtils;

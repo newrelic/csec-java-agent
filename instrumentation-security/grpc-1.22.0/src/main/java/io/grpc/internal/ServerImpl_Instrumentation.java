@@ -7,11 +7,11 @@
 
 package io.grpc.internal;
 
+import com.newrelic.agent.security.instrumentation.grpc1220.GrpcServerUtils;
 import com.newrelic.agent.security.instrumentation.grpc1220.processor.MonitorGrpcRequestQueueThread;
 import com.newrelic.api.agent.NewRelic;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
-import com.newrelic.agent.security.instrumentation.grpc1220.GrpcServerUtils;
 import io.grpc.Context;
 import io.grpc.Metadata;
 import io.grpc.ServerMethodDefinition;

@@ -1,5 +1,6 @@
 package io.grpc;
 
+import com.newrelic.agent.security.instrumentation.grpc1220.GrpcClientUtils;
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
@@ -7,7 +8,6 @@ import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.NewField;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
-import com.newrelic.agent.security.instrumentation.grpc1220.GrpcClientUtils;
 
 import java.net.URI;
 import java.net.URISyntaxException;

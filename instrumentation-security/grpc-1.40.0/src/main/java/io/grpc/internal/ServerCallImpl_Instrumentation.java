@@ -2,14 +2,13 @@ package io.grpc.internal;
 
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.GeneratedMessageV3;
-import com.newrelic.api.agent.NewRelic;
+import com.newrelic.agent.security.instrumentation.grpc1400.GrpcServerUtils;
+import com.newrelic.agent.security.instrumentation.grpc1400.GrpcUtils;
 import com.newrelic.api.agent.Token;
 import com.newrelic.api.agent.Trace;
 import com.newrelic.api.agent.weaver.NewField;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
-import com.newrelic.agent.security.instrumentation.grpc1400.GrpcServerUtils;
-import com.newrelic.agent.security.instrumentation.grpc1400.GrpcUtils;
 import io.grpc.CompressorRegistry;
 import io.grpc.Context;
 import io.grpc.DecompressorRegistry;

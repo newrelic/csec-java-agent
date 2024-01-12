@@ -1,7 +1,6 @@
 package com.newrelic.agent.security.instrumentation.grpc140.client;
 
 import com.google.protobuf.Any;
-import com.google.protobuf.Descriptors;
 import io.grpc.CallOptions;
 import io.grpc.Channel;
 import io.grpc.MethodDescriptor;

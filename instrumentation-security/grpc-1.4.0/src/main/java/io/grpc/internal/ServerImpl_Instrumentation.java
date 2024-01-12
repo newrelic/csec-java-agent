@@ -7,15 +7,14 @@
 
 package io.grpc.internal;
 
+import com.newrelic.agent.security.instrumentation.grpc140.GrpcServerUtils;
 import com.newrelic.agent.security.instrumentation.grpc140.processor.MonitorGrpcRequestQueueThread;
 import com.newrelic.api.agent.NewRelic;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
-import com.newrelic.agent.security.instrumentation.grpc140.GrpcServerUtils;
 import io.grpc.Context;
 import io.grpc.Metadata;
 import io.grpc.ServerMethodDefinition;
-import io.perfmark.Tag;
 
 @Weave(originalName = "io.grpc.internal.ServerImpl")
 public class ServerImpl_Instrumentation {
