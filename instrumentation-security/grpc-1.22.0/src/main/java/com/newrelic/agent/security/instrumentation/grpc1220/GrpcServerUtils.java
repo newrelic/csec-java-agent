@@ -13,10 +13,8 @@ import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityExcepti
 import com.newrelic.api.agent.security.schema.operation.RXSSOperation;
 import com.newrelic.api.agent.security.schema.policy.AgentPolicy;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
-import io.grpc.Attributes;
 import io.grpc.Grpc;
 import io.grpc.Metadata;
-import io.grpc.SecurityLevel;
 import io.grpc.ServerMethodDefinition;
 import io.grpc.internal.ServerStream_Instrumentation;
 
@@ -74,16 +72,10 @@ public class GrpcServerUtils {
 
             securityMetaData.setTracingHeaderValue(getTraceHeader(securityRequest.getHeaders()));
 
-            for (Attributes.Key o : call.getAttributes().keys()) {
-                if ("io.grpc.internal.GrpcAttributes.securityLevel".equals(o.toString()) ||
-                        "io.grpc.CallCredentials.securityLevel".equals(o.toString()))
-                    if (call.getAttributes().get(o) == SecurityLevel.NONE) {
-                        securityRequest.setProtocol("http");
-                        break;
-                    } else if (call.getAttributes().get(o) == SecurityLevel.INTEGRITY || call.getAttributes().get(o) == SecurityLevel.PRIVACY_AND_INTEGRITY) {
-                        securityRequest.setProtocol("https");
-                        break;
-                    }
+            if (call.getAttributes().get(Grpc.TRANSPORT_ATTR_SSL_SESSION) != null) {
+                securityRequest.setProtocol("https");
+            } else {
+                securityRequest.setProtocol("http");
             }
 
             securityRequest.setUrl(String.valueOf(uri));
