@@ -17,6 +17,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Jcache Support: The security agent now also supports jCache 1.0.0 and above
 - Jersey Support: The security agent now also supports Jersey 2.0 and above
 - Mule Support: The security agent now also supports Mule server version 3.6 to 3.9.x
+- gRPC client v1.4.0+ Support: The security agent now supports gRPC client version 1.4.0 and above (with protobuf-java-utils version 3.0.0 and above)
+- gRPC server v1.4.0+ Support: The security agent now supports gRPC server version 1.4.0 and above (with protobuf-java-utils version 3.0.0 and above)
 
 ### Misc
 - Unit test cases for Ning Async HTTP client support
