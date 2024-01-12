@@ -211,16 +211,20 @@ public class DispatcherPool {
             }
         }
         // Register in Processed CC map
-        if (StringUtils.equals(securityMetaData.getFuzzRequestIdentifier().getApiRecordId(), operation.getApiID())) {
-            if (securityMetaData.getRequest().getIsGrpc()) {
-                GrpcClientRequestReplayHelper.getInstance()
-                        .registerEventForProcessedCC(securityMetaData.getCustomAttribute(
-                                GenericHelper.CSEC_PARENT_ID, String.class), operation.getExecutionId());
-            }
-            else {
-                RestRequestThreadPool.getInstance()
-                        .registerEventForProcessedCC(securityMetaData.getCustomAttribute(
-                                GenericHelper.CSEC_PARENT_ID, String.class), operation.getExecutionId());
+        if (securityMetaData.getFuzzRequestIdentifier().getK2Request()) {
+            String parentId = securityMetaData.getCustomAttribute(GenericHelper.CSEC_PARENT_ID, String.class);
+            if (StringUtils.isNotBlank(parentId)) {
+                if (securityMetaData.getRequest().getIsGrpc()) {
+                    GrpcClientRequestReplayHelper.getInstance().getProcessedIds().putIfAbsent(parentId, new HashSet<>());
+                    if (StringUtils.equals(securityMetaData.getFuzzRequestIdentifier().getApiRecordId(), operation.getApiID())) {
+                        GrpcClientRequestReplayHelper.getInstance().registerEventForProcessedCC(parentId, operation.getExecutionId());
+                    }
+                } else {
+                    RestRequestThreadPool.getInstance().getProcessedIds().putIfAbsent(parentId, new HashSet<>());
+                    if (StringUtils.equals(securityMetaData.getFuzzRequestIdentifier().getApiRecordId(), operation.getApiID())) {
+                        RestRequestThreadPool.getInstance().registerEventForProcessedCC(parentId, operation.getExecutionId());
+                    }
+                }
             }
         }
 
