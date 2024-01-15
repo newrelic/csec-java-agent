@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - gRPC server v1.4.0+ Support: The security agent now supports gRPC server version 1.4.0 and above (with protobuf-java-utils version 3.0.0 and above)
 - Add a Logger and Cloud Reporting API for instrumentation modules
 - Glassfish Support: The security agent now also supports Glassfish server
+- FileIntegrity is marked if any of following is changed - existence, length, permissions, last modified
 
 ## [1.0.8-public-preview] - 2024-1-11
 ### Changes
