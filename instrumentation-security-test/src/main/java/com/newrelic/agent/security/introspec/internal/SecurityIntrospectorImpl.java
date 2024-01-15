@@ -3,6 +3,7 @@ package com.newrelic.agent.security.introspec.internal;
 import com.newrelic.agent.security.introspec.SecurityIntrospector;
 import com.newrelic.api.agent.security.Agent;
 import com.newrelic.api.agent.security.NewRelicSecurity;
+import com.newrelic.api.agent.security.instrumentation.helpers.GrpcHelper;
 import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.security.instrumentation.helpers.JdbcHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
@@ -15,6 +16,8 @@ import com.newrelic.api.agent.security.schema.SecurityMetaData;
 import com.newrelic.api.agent.security.schema.helper.Log4JStrSubstitutor;
 import com.newrelic.api.agent.security.utils.UserDataTranslationHelper;
 
+import java.io.IOException;
+import java.net.ServerSocket;
 import java.sql.Statement;
 import java.util.Collections;
 import java.util.List;
@@ -110,6 +113,16 @@ public class SecurityIntrospectorImpl implements SecurityIntrospector {
     }
 
     @Override
+    public List<?> getGRPCRequest() {
+        return NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(GrpcHelper.NR_SEC_GRPC_REQUEST_DATA, List.class);
+    }
+
+    @Override
+    public List<?> getGRPCResponse() {
+        return NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(GrpcHelper.NR_SEC_GRPC_RESPONSE_DATA, List.class);
+    }
+
+    @Override
     public void setK2ParentId(String value) {
         NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(GenericHelper.CSEC_PARENT_ID, value);
     }
@@ -135,10 +148,26 @@ public class SecurityIntrospectorImpl implements SecurityIntrospector {
         NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(REQUEST_STREAM_OR_READER_CALLED, null);
         NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(RESPONSE_STREAM_OR_WRITER_CALLED, null);
 
+        NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(GrpcHelper.NR_SEC_GRPC_REQUEST_DATA, null);
+        NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(GrpcHelper.NR_SEC_GRPC_RESPONSE_DATA, null);
+
         SecurityMetaData meta = NewRelicSecurity.getAgent().getSecurityMetaData();
         meta.setRequest(new HttpRequest());
         meta.setResponse(new HttpResponse());
         meta.getRequest().setUrl("/TestUrl");
         meta.getRequest().setMethod("GET");
+    }
+
+    @Override
+    public int getRandomPort() {
+        int port;
+        try {
+            ServerSocket socket = new ServerSocket(0);
+            port = socket.getLocalPort();
+            socket.close();
+        } catch (IOException e) {
+            throw new RuntimeException("Unable to allocate ephemeral port");
+        }
+        return port;
     }
 }

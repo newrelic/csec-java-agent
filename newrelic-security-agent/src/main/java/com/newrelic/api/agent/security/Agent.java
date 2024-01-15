@@ -21,6 +21,7 @@ import com.newrelic.agent.security.intcodeagent.websocket.*;
 import com.newrelic.agent.security.util.IUtilConstants;
 import com.newrelic.api.agent.NewRelic;
 import com.newrelic.api.agent.Transaction;
+import com.newrelic.api.agent.security.instrumentation.helpers.GrpcHelper;
 import com.newrelic.api.agent.security.instrumentation.helpers.AppServerInfoHelper;
 import com.newrelic.api.agent.security.instrumentation.helpers.LowSeverityHelper;
 import com.newrelic.api.agent.security.schema.*;
@@ -236,14 +237,23 @@ public class Agent implements SecurityAgent {
 
     @Override
     public void registerOperation(AbstractOperation operation) {
+        // added to fetch request/response in case of grpc requests
+        SecurityMetaData securityMetaData = NewRelicSecurity.getAgent().getSecurityMetaData();
+        if (securityMetaData!=null && securityMetaData.getRequest().getIsGrpc()){
+            securityMetaData.getRequest().setBody(
+                    new StringBuilder(JsonConverter.toJSON(securityMetaData.getCustomAttribute(GrpcHelper.NR_SEC_GRPC_REQUEST_DATA, List.class))));
+            securityMetaData.getResponse().setResponseBody(
+                    new StringBuilder(JsonConverter.toJSON(securityMetaData.getCustomAttribute(GrpcHelper.NR_SEC_GRPC_RESPONSE_DATA, List.class))));
+        }
+        // end
+
         if (operation == null || operation.isEmpty()) {
             return;
         }
         String executionId = ExecutionIDGenerator.getExecutionId();
         operation.setExecutionId(executionId);
         operation.setStartTime(Instant.now().toEpochMilli());
-        SecurityMetaData securityMetaData = NewRelicSecurity.getAgent().getSecurityMetaData();
-        if(securityMetaData.getFuzzRequestIdentifier().getK2Request()){
+        if(securityMetaData!=null && securityMetaData.getFuzzRequestIdentifier().getK2Request()){
             logger.log(LogLevel.FINEST, String.format("New Event generation with id %s of type %s", operation.getExecutionId(), operation.getClass().getSimpleName()), Agent.class.getName());
         }
         if (operation instanceof RXSSOperation) {
@@ -251,6 +261,14 @@ public class Agent implements SecurityAgent {
         } else {
             StackTraceElement[] trace = Thread.currentThread().getStackTrace();
             operation.setStackTrace(Arrays.copyOfRange(trace, 1, trace.length));
+        }
+
+        // added to fetch request/response in case of grpc requests
+        if (securityMetaData.getRequest().getIsGrpc()){
+            securityMetaData.getRequest().setBody(
+                    new StringBuilder(JsonConverter.toJSON(securityMetaData.getCustomAttribute(GrpcHelper.NR_SEC_GRPC_REQUEST_DATA, List.class))));
+            securityMetaData.getResponse().setResponseBody(
+                    new StringBuilder(JsonConverter.toJSON(securityMetaData.getCustomAttribute(GrpcHelper.NR_SEC_GRPC_RESPONSE_DATA, List.class))));
         }
 
         if(checkIfNRGeneratedEvent(operation)) {
