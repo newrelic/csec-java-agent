@@ -33,7 +33,6 @@ public class Http_Instrumentation {
         public ServerBinding() {
             //            AgentBridge.getAgent().getLogger().log(Level.FINE, "Setting akka-http port to: {0,number,#}", localAddress().getPort());
 //            AgentBridge.publicApi.setAppServerPort(localAddress().getPort());
-            System.out.println("local port "+localAddress().getPort());
 //            AgentBridge.publicApi.setServerInfo("Akka HTTP", ManifestUtils.getVersionFromManifest(getClass(), "akka-http-core", "10.2.0"));
 
             try {

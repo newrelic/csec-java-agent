@@ -11,6 +11,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add a Logger and Cloud Reporting API for instrumentation modules
 - Glassfish Support: The security agent now also supports Glassfish server
 - FileIntegrity is marked if any of following is changed - existence, length, permissions, last modified
+- Drop RXSS events on the basis of Content-Type Exclusion List
+- Akka server v10.0+ Support: The security agent now supports Akka server version 10.0 and above (with scala 2.11 and above)
+
+### Fixes
+- NR-212335 : support lower case stdout for log_file_name
 
 ## [1.0.8-public-preview] - 2024-1-11
 ### Changes
