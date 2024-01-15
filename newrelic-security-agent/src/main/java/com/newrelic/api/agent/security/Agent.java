@@ -261,6 +261,14 @@ public class Agent implements SecurityAgent {
             operation.setStackTrace(Arrays.copyOfRange(trace, 1, trace.length));
         }
 
+        // added to fetch request/response in case of grpc requests
+        if (securityMetaData.getRequest().getIsGrpc()){
+            securityMetaData.getRequest().setBody(
+                    new StringBuilder(JsonConverter.toJSON(securityMetaData.getCustomAttribute(GrpcHelper.NR_SEC_GRPC_REQUEST_DATA, List.class))));
+            securityMetaData.getResponse().setResponseBody(
+                    new StringBuilder(JsonConverter.toJSON(securityMetaData.getCustomAttribute(GrpcHelper.NR_SEC_GRPC_RESPONSE_DATA, List.class))));
+        }
+
         if(checkIfNRGeneratedEvent(operation)) {
             logger.log(LogLevel.FINEST, DROPPING_EVENT_AS_IT_WAS_GENERATED_BY_K_2_INTERNAL_API_CALL +
                             JsonConverter.toJSON(operation),

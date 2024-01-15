@@ -41,7 +41,13 @@ public interface SecurityIntrospector {
 
     void setK2TracingData(String value);
 
+    List<?> getGRPCRequest();
+
+    List<?> getGRPCResponse();
+
     void setK2ParentId(String value);
 
     void clear();
+
+    int getRandomPort();
 }
