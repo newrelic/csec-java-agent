@@ -29,6 +29,10 @@ The agent automatically instruments the following frameworks.
 - Servlet from 2.4 to latest
 - Spring from 0 to latest
 - Sun Net HTTP Server
+- Glassfish 3.0 to latest
+- Resin 3.1.9 to 4.0.x
+- Jetty 9.3.0.M1 to latest
+- Mule ESB 3.6 to 3.9.x
 
 ### Java Native Operations
 
@@ -85,6 +89,7 @@ The agent automatically instruments the following HTTP clients and messaging ser
 - SQLServer from jdk6 to latest
 - DynamoDB-1.11.80 to latest 
 - DyanamoDB-2.1.0 to latest
+- Anorm from 2.0 to 2.5
 
 ## **Supported Vulnerabilities**
 * Remote Code Execution
