@@ -31,6 +31,7 @@ final class HttpClientImpl_Instrumentation {
             }
             NewRelicSecurity.getAgent().registerExitEvent(operation);
         } catch (Throwable ignored) {
+            NewRelicSecurity.getAgent().log(LogLevel.FINEST, String.format(GenericHelper.EXIT_OPERATION_EXCEPTION_MESSAGE, SecurityHelper.HTTPCLIENT_JDK_11, ignored.getMessage()), ignored, HttpClientImpl_Instrumentation.class.getName());
         }
     }
 
@@ -72,8 +73,10 @@ final class HttpClientImpl_Instrumentation {
 
             return operation;
         } catch (Throwable e) {
+            NewRelicSecurity.getAgent().log(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, SecurityHelper.HTTPCLIENT_JDK_11, e.getMessage()), e, SecurityHelper.class.getName());
+            NewRelicSecurity.getAgent().reportIncident(LogLevel.SEVERE , String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, SecurityHelper.HTTPCLIENT_JDK_11, e.getMessage()), e, SecurityHelper.class.getName());
             if (e instanceof NewRelicSecurityException) {
-                e.printStackTrace();
+                NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.SECURITY_EXCEPTION_MESSAGE, SecurityHelper.HTTPCLIENT_JDK_11, e.getMessage()), e, SecurityHelper.class.getName());
                 throw e;
             }
         }
@@ -120,7 +123,7 @@ final class HttpClientImpl_Instrumentation {
             }
         } catch (Exception e) {
             String message = "Instrumentation library: %s , error while adding outbound header : %s";
-            NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(message, "HTTPCLIENT-JDK11", e.getMessage()), e, HttpClientImpl_Instrumentation.class.getName());
+            NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(message, SecurityHelper.HTTPCLIENT_JDK_11, e.getMessage()), e, HttpClientImpl_Instrumentation.class.getName());
         }
         return req.newBuilder(req.uri()).build();
     }

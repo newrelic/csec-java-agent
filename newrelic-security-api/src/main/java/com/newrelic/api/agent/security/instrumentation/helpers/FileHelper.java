@@ -60,7 +60,7 @@ public class FileHelper {
     public static final String METHOD_NAME_SET_READABLE = "setReadable";
     public static final String METHOD_NAME_SET_EXECUTABLE = "setExecutable";
     public static final String METHOD_NAME_EXISTS = "exists";
-
+    public static final String FILE_OPERATION = "FILE_OPERATION";
 
     public static boolean skipExistsEvent(String filename) {
         String extension = getFileExtension(filename);

@@ -49,6 +49,7 @@ public abstract class DynamoDBUtil {
     private static final String OP_DELETE = "delete";
     // TODO: used for setting uo the command type of PartiQL request that will be discussed later and updated accordingly
     private static final String OP_READ_WRITE = "read_write";
+    public static final String DYNAMODB_2_1_0 = "DYNAMODB-2.1.0";
 
     public static <InputT extends SdkRequest, OutputT extends SdkResponse> AbstractOperation processDynamoDBRequest(
             ClientExecutionParams<InputT, OutputT> yRequest, String klassName) {
@@ -65,9 +66,11 @@ public abstract class DynamoDBUtil {
                 }
             }
         } catch (Throwable e) {
-            e.printStackTrace();
+            NewRelicSecurity.getAgent().log(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, DYNAMODB_2_1_0, e.getMessage()), e, DynamoDBUtil.class.getName());
+            NewRelicSecurity.getAgent().reportIncident(LogLevel.SEVERE , String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, DYNAMODB_2_1_0, e.getMessage()), e, DynamoDBUtil.class.getName());
             if (e instanceof NewRelicSecurityException) {
-                e.printStackTrace();
+                NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.SECURITY_EXCEPTION_MESSAGE, DYNAMODB_2_1_0, e.getMessage()), e, DynamoDBUtil.class.getName());
+                throw e;
             }
         }
         return operation;
@@ -81,6 +84,7 @@ public abstract class DynamoDBUtil {
             }
             NewRelicSecurity.getAgent().registerExitEvent(operation);
         } catch (Throwable ignored) {
+            NewRelicSecurity.getAgent().log(LogLevel.FINEST, String.format(GenericHelper.EXIT_OPERATION_EXCEPTION_MESSAGE, DYNAMODB_2_1_0, ignored.getMessage()), ignored, DynamoDBUtil.class.getName());
         }
     }
 
@@ -243,7 +247,7 @@ public abstract class DynamoDBUtil {
             }
         } catch (Exception e) {
             String message = "Instrumentation library: %s , error while creating operation : %s";
-            NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(message, "DYNAMODB-2.1.0", e.getMessage()), e, DynamoDBUtil.class.getName());
+            NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(message, DYNAMODB_2_1_0, e.getMessage()), e, DynamoDBUtil.class.getName());
         }
         return operation;
     }

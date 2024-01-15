@@ -1,6 +1,7 @@
 package jakarta.servlet;
 
 import com.newrelic.api.agent.security.NewRelicSecurity;
+import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.security.instrumentation.helpers.LowSeverityHelper;
 import com.newrelic.api.agent.security.instrumentation.helpers.ServletHelper;
 import com.newrelic.api.agent.security.schema.AgentMetaData;
@@ -85,8 +86,7 @@ public abstract class Filter_Instrumentation {
             securityMetaData.getMetaData().setServiceTrace(Arrays.copyOfRange(trace, 1, trace.length));
             securityRequest.setRequestParsed(true);
         } catch (Throwable e){
-            String message = "Instrumentation library: %s , error while generating HTTP request : %s";
-            NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(message, "SERVLET-6.0", e.getMessage()), e, this.getClass().getName());
+            NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.ERROR_GENERATING_HTTP_REQUEST, HttpServletHelper.SERVLET_6_0, e.getMessage()), e, this.getClass().getName());
         }
     }
 
@@ -105,10 +105,12 @@ public abstract class Filter_Instrumentation {
             NewRelicSecurity.getAgent().registerOperation(rxssOperation);
             ServletHelper.tmpFileCleanUp(NewRelicSecurity.getAgent().getSecurityMetaData().getFuzzRequestIdentifier().getTempFiles());
         } catch (Throwable e) {
-            if(e instanceof NewRelicSecurityException){
-                e.printStackTrace();
+            if (e instanceof NewRelicSecurityException) {
+                NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.SECURITY_EXCEPTION_MESSAGE, HttpServletHelper.SERVLET_6_0, e.getMessage()), e, Filter_Instrumentation.class.getName());
                 throw e;
             }
+            NewRelicSecurity.getAgent().log(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, HttpServletHelper.SERVLET_6_0, e.getMessage()), e, Filter_Instrumentation.class.getName());
+            NewRelicSecurity.getAgent().reportIncident(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, HttpServletHelper.SERVLET_6_0, e.getMessage()), e, Filter_Instrumentation.class.getName());
         }
     }
 

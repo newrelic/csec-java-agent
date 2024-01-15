@@ -5,12 +5,14 @@ import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.R2DBCVendor;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
 import com.newrelic.api.agent.security.schema.operation.SQLOperation;
+import com.newrelic.api.agent.security.utils.logging.LogLevel;
 
 import java.util.Map;
 
 public class R2dbcHelper {
     public static final String NR_SEC_CUSTOM_ATTRIB_NAME = "R2DBC_OPERATION_LOCK-";
     public static final String METHOD_EXECUTE = "execute";
+    public static final String R2DBC_GENERIC = "R2DBC-GENERIC";
 
     public static void registerExitOperation(boolean isProcessingAllowed, AbstractOperation operation) {
         try {
@@ -20,7 +22,8 @@ public class R2dbcHelper {
                 return;
             }
             NewRelicSecurity.getAgent().registerExitEvent(operation);
-        } catch (Throwable ignored) {
+        } catch (Throwable e) {
+            NewRelicSecurity.getAgent().log(LogLevel.FINEST, String.format(GenericHelper.EXIT_OPERATION_EXCEPTION_MESSAGE, R2DBC_GENERIC, e.getMessage()), e, R2dbcHelper.class.getName());
         }
     }
 
@@ -42,9 +45,11 @@ public class R2dbcHelper {
             return sqlOperation;
         } catch (Throwable e) {
             if (e instanceof NewRelicSecurityException) {
-                e.printStackTrace();
+                NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.SECURITY_EXCEPTION_MESSAGE, R2DBC_GENERIC, e.getMessage()), e, R2dbcHelper.class.getName());
                 throw e;
             }
+            NewRelicSecurity.getAgent().log(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, R2DBC_GENERIC, e.getMessage()), e, R2dbcHelper.class.getName());
+            NewRelicSecurity.getAgent().reportIncident(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, R2DBC_GENERIC, e.getMessage()), e, R2dbcHelper.class.getName());
         }
         return null;
     }

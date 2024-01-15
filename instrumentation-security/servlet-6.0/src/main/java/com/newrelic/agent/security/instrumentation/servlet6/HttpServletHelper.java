@@ -26,6 +26,7 @@ public class HttpServletHelper {
     public static final String NR_SEC_CUSTOM_ATTRIB_NAME = "SERVLET_LOCK-";
     private static final String WILDCARD = "*";
     private static final String SEPARATOR = "/";
+    public static final String SERVLET_6_0 = "SERVLET-6.0";
 
     public static void processHttpRequestHeader(HttpServletRequest request, HttpRequest securityRequest){
         Enumeration<String> headerNames = request.getHeaderNames();
@@ -130,7 +131,7 @@ public class HttpServletHelper {
             }
         } catch (Exception e){
             String message = "Instrumentation library: %s , error while getting app endpoints : %s";
-            NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(message, "SERVLET-6.0", e.getMessage()), e, HttpServletHelper.class.getName());
+            NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(message, SERVLET_6_0, e.getMessage()), e, HttpServletHelper.class.getName());
         }
     }
 
@@ -149,7 +150,7 @@ public class HttpServletHelper {
             }
         } catch (Exception e){
             String message = "Instrumentation library: %s , error while getting app endpoints : %s";
-            NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(message, "SERVLET-6.0", e.getMessage()), e, HttpServletHelper.class.getName());
+            NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(message, SERVLET_6_0, e.getMessage()), e, HttpServletHelper.class.getName());
         }
     }
 }

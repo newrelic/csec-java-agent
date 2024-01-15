@@ -1,6 +1,7 @@
 package com.sun.net.httpserver;
 
 import com.newrelic.api.agent.security.NewRelicSecurity;
+import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.security.instrumentation.helpers.LowSeverityHelper;
 import com.newrelic.api.agent.security.instrumentation.helpers.ServletHelper;
 import com.newrelic.api.agent.security.schema.AgentMetaData;
@@ -14,7 +15,6 @@ import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
 
 import java.io.IOException;
-import java.util.Arrays;
 
 @Weave(originalName = "com.sun.net.httpserver.Filter", type = MatchType.BaseClass)
 public class Filter_Instrumentation {
@@ -72,8 +72,7 @@ public class Filter_Instrumentation {
             ServletHelper.registerUserLevelCode("sun-net-http-server");
             securityRequest.setRequestParsed(true);
         } catch (Throwable e){
-            String message = "Instrumentation library: %s , error while generating HTTP request : %s";
-            NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(message, "SUN-NET-HTTPSERVER", e.getMessage()), e, this.getClass().getName());
+            NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.ERROR_GENERATING_HTTP_REQUEST, HttpServerHelper.SUN_NET_HTTPSERVER, e.getMessage()), e, this.getClass().getName());
         }
     }
     private void postProcessSecurityHook(HttpExchange exchange) {
@@ -90,10 +89,12 @@ public class Filter_Instrumentation {
             NewRelicSecurity.getAgent().registerOperation(rxssOperation);
             ServletHelper.tmpFileCleanUp(NewRelicSecurity.getAgent().getSecurityMetaData().getFuzzRequestIdentifier().getTempFiles());
         } catch (Throwable e) {
-            if(e instanceof NewRelicSecurityException){
-                e.printStackTrace();
+            if (e instanceof NewRelicSecurityException) {
+                NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.SECURITY_EXCEPTION_MESSAGE, HttpServerHelper.SUN_NET_HTTPSERVER, e.getMessage()), e, this.getClass().getName());
                 throw e;
             }
+            NewRelicSecurity.getAgent().log(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, HttpServerHelper.SUN_NET_HTTPSERVER, e.getMessage()), e, this.getClass().getName());
+            NewRelicSecurity.getAgent().reportIncident(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, HttpServerHelper.SUN_NET_HTTPSERVER, e.getMessage()), e, this.getClass().getName());
         }
     }
 

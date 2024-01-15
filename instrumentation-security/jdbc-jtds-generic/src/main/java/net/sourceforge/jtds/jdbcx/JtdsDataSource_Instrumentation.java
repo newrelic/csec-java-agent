@@ -32,7 +32,7 @@ public abstract class JtdsDataSource_Instrumentation {
             }
         } catch (Exception e) {
             String message = "Instrumentation library: %s , error while creating operation : %s";
-            NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(message, "JDBC-JTDS-GENERIC", e.getMessage()), e, this.getClass().getName());
+            NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(message, JdbcHelper.JDBC_JTDS_GENERIC, e.getMessage()), e, this.getClass().getName());
         }
     }
 

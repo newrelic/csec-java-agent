@@ -27,6 +27,7 @@ public class HttpServletHelper {
     public static final String SERVICE_ASYNC_METHOD_NAME = "handleAsync";
 
     public static final String NR_SEC_CUSTOM_ATTRIB_NAME = "SERVLET_LOCK-";
+    public static final String JETTY_11 = "JETTY-11";
 
     public static void processHttpRequestHeader(HttpServletRequest request, HttpRequest securityRequest) {
         Enumeration<String> headerNames = request.getHeaderNames();
@@ -163,8 +164,7 @@ public class HttpServletHelper {
             securityMetaData.getMetaData().setServiceTrace(Arrays.copyOfRange(trace, 2, trace.length));
             securityRequest.setRequestParsed(true);
         } catch (Throwable e) {
-            String message = "Instrumentation library: %s , error while generating http request : %s";
-            NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(message, "JETTY-11", e.getMessage()), e, HttpServletHelper.class.getName());
+            NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.ERROR_GENERATING_HTTP_REQUEST, JETTY_11, e.getMessage()), e, HttpServletHelper.class.getName());
         }
     }
 
@@ -184,9 +184,11 @@ public class HttpServletHelper {
             ServletHelper.tmpFileCleanUp(NewRelicSecurity.getAgent().getSecurityMetaData().getFuzzRequestIdentifier().getTempFiles());
         } catch (Throwable e) {
             if (e instanceof NewRelicSecurityException) {
-                e.printStackTrace();
+                NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.SECURITY_EXCEPTION_MESSAGE, JETTY_11, e.getMessage()), e, HttpServletHelper.class.getName());
                 throw e;
             }
+            NewRelicSecurity.getAgent().log(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, JETTY_11, e.getMessage()), e, HttpServletHelper.class.getName());
+            NewRelicSecurity.getAgent().reportIncident(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, JETTY_11, e.getMessage()), e, HttpServletHelper.class.getName());
         }
     }
 }

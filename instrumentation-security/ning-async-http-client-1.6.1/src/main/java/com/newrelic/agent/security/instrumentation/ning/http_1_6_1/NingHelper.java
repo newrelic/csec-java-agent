@@ -9,11 +9,13 @@ import com.newrelic.api.agent.security.schema.StringUtils;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
 import com.newrelic.api.agent.security.schema.operation.SSRFOperation;
 import com.newrelic.api.agent.security.utils.SSRFUtils;
+import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.ning.http.client.Request;
 
 public class NingHelper {
     public static final String METHOD_NAME_EXECUTE = "execute";
     public static final String NR_SEC_CUSTOM_ATTRIB_NAME = "SSRF_OPERATION_LOCK_NING-";
+    public static final String NING_ASYNC_HTTP_CLIENT_1_6_1 = "NING-ASYNC-HTTP-CLIENT-1.6.1";
 
     public static void registerExitOperation(boolean isProcessingAllowed, AbstractOperation operation) {
         try {
@@ -22,7 +24,8 @@ public class NingHelper {
                 return;
             }
             NewRelicSecurity.getAgent().registerExitEvent(operation);
-        } catch (Throwable ignored) {
+        } catch (Throwable e) {
+            NewRelicSecurity.getAgent().log(LogLevel.FINEST, String.format(GenericHelper.EXIT_OPERATION_EXCEPTION_MESSAGE, NING_ASYNC_HTTP_CLIENT_1_6_1, e.getMessage()), e, NingHelper.class.getName());
         }
     }
 
@@ -58,9 +61,11 @@ public class NingHelper {
             return operation;
         } catch (Throwable e) {
             if (e instanceof NewRelicSecurityException) {
-                e.printStackTrace();
+                NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.SECURITY_EXCEPTION_MESSAGE, NING_ASYNC_HTTP_CLIENT_1_6_1, e.getMessage()), e, NingHelper.class.getName());
                 throw e;
             }
+            NewRelicSecurity.getAgent().log(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, NING_ASYNC_HTTP_CLIENT_1_6_1, e.getMessage()), e, NingHelper.class.getName());
+            NewRelicSecurity.getAgent().reportIncident(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, NING_ASYNC_HTTP_CLIENT_1_6_1, e.getMessage()), e, NingHelper.class.getName());
         }
         return null;
     }

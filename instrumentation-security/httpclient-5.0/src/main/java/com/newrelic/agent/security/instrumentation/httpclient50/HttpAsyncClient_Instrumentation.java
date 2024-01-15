@@ -45,8 +45,7 @@ public class HttpAsyncClient_Instrumentation {
             try {
                 operation = SecurityHelper.preprocessSecurityHook(request, request.getUri().toString(), this.getClass().getName(), SecurityHelper.METHOD_NAME_EXECUTE);
             } catch (URISyntaxException e) {
-                String message = "Instrumentation library: %s , error while get URI : %s";
-                NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(message, "HTTPCLIENT-5.0", e.getMessage()), e, this.getClass().getName());
+                NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.URI_EXCEPTION_MESSAGE, SecurityHelper.HTTPCLIENT_5_0, e.getMessage()), e, this.getClass().getName());
             }
         }
         Future<T> returnObj = null;
