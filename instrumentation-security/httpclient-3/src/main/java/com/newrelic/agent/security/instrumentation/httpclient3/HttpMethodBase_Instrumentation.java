@@ -49,7 +49,7 @@ public abstract class HttpMethodBase_Instrumentation {
         return returnCode;
     }
 
-    private static void registerExitOperation(boolean isProcessingAllowed, AbstractOperation operation) {
+    private void registerExitOperation(boolean isProcessingAllowed, AbstractOperation operation) {
         try {
             if (operation == null || !isProcessingAllowed || !NewRelicSecurity.isHookProcessingActive() || NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()
             ) {
@@ -57,7 +57,7 @@ public abstract class HttpMethodBase_Instrumentation {
             }
             NewRelicSecurity.getAgent().registerExitEvent(operation);
         } catch (Throwable ignored) {
-            NewRelicSecurity.getAgent().log(LogLevel.FINEST, String.format(GenericHelper.EXIT_OPERATION_EXCEPTION_MESSAGE, SecurityHelper.HTTP_CLIENT_3, ignored.getMessage()), ignored, HttpMethodBase_Instrumentation.class.getName());
+            NewRelicSecurity.getAgent().log(LogLevel.FINEST, String.format(GenericHelper.EXIT_OPERATION_EXCEPTION_MESSAGE, SecurityHelper.HTTP_CLIENT_3, ignored.getMessage()), ignored, this.getClass().getName());
         }
     }
 

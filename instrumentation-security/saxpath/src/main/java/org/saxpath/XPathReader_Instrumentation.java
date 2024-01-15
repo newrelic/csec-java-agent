@@ -42,7 +42,7 @@ public abstract class XPathReader_Instrumentation {
             }
             NewRelicSecurity.getAgent().registerExitEvent(operation);
         } catch (Throwable e){
-            NewRelicSecurity.getAgent().log(LogLevel.FINEST, String.format(GenericHelper.EXIT_OPERATION_EXCEPTION_MESSAGE, XPATHUtils.SAXPATH, e.getMessage()), e, XPathReader_Instrumentation.class.getName());
+            NewRelicSecurity.getAgent().log(LogLevel.FINEST, String.format(GenericHelper.EXIT_OPERATION_EXCEPTION_MESSAGE, XPATHUtils.SAXPATH, e.getMessage()), e, this.getClass().getName());
         }
     }
 
@@ -58,11 +58,11 @@ public abstract class XPathReader_Instrumentation {
             return xPathOperation;
         } catch (Throwable e) {
             if (e instanceof NewRelicSecurityException) {
-                NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.SECURITY_EXCEPTION_MESSAGE, XPATHUtils.SAXPATH, e.getMessage()), e, XPathReader_Instrumentation.class.getName());
+                NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.SECURITY_EXCEPTION_MESSAGE, XPATHUtils.SAXPATH, e.getMessage()), e, this.getClass().getName());
                 throw e;
             }
-            NewRelicSecurity.getAgent().log(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, XPATHUtils.SAXPATH, e.getMessage()), e, XPathReader_Instrumentation.class.getName());
-            NewRelicSecurity.getAgent().reportIncident(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, XPATHUtils.SAXPATH, e.getMessage()), e, XPathReader_Instrumentation.class.getName());
+            NewRelicSecurity.getAgent().log(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, XPATHUtils.SAXPATH, e.getMessage()), e, this.getClass().getName());
+            NewRelicSecurity.getAgent().reportIncident(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, XPATHUtils.SAXPATH, e.getMessage()), e, this.getClass().getName());
         }
         return null;
     }
