@@ -19,8 +19,11 @@ import java.util.concurrent.TimeUnit;
 public class RestClient {
 
 
-    public static final String REQUEST_SUCCESS_S_RESPONSE_S_S = "Request success : %s :: response : %s : %s";
+    public static final String REQUEST_FIRED_SUCCESS = "Request Fired successfuly : %s ";
+    public static final String REQUEST_SUCCESS_S_RESPONSE_S_S = "Request Fired successfuly : %s :: response : %s : %s";
     public static final String CALL_FAILED_REQUEST_S_REASON = "Call failed : request %s reason : ";
+
+    public static final String CALL_FAILED_REQUEST_S_REASON_S = "Call failed : request %s reason : %s : body : %s";
     public static final String FIRING_REQUEST_METHOD_S = "Firing request :: Method : %s";
     public static final String FIRING_REQUEST_URL_S = "Firing request :: URL : %s";
     public static final String FIRING_REQUEST_HEADERS_S = "Firing request :: Headers : %s";
@@ -124,7 +127,14 @@ public class RestClient {
         Call call = client.newCall(request);
         try {
             Response response = call.execute();
-            logger.log(LogLevel.FINER, String.format(REQUEST_SUCCESS_S_RESPONSE_S_S, request, response, response.body().string()), RestClient.class.getName());
+            logger.log(LogLevel.FINER, String.format(REQUEST_FIRED_SUCCESS, request), RestClient.class.getName());
+            if(!response.isSuccessful()){
+                logger.postLogMessageIfNecessary(LogLevel.WARNING,
+                        String.format(RestClient.CALL_FAILED_REQUEST_S_REASON_S, fuzzRequestId,  response, response.body().string()), null,
+                        RestRequestProcessor.class.getName());
+            } else {
+                logger.log(LogLevel.FINER, String.format(REQUEST_SUCCESS_S_RESPONSE_S_S, request, response, response.body().string()), RestClient.class.getName());
+            }
             response.body().close();
             if (client.connectionPool() != null) {
                 client.connectionPool().evictAll();
