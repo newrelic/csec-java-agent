@@ -41,11 +41,13 @@ public class LogFileHelper {
 
     public static final String STDOUT = "STDOUT";
 
+    public static final String STDOUT_LC = "stdout";
+
     private static final String STRING_DOT = ".";
 
     public static boolean isLoggingToStdOut() {
         String logFileName = NewRelic.getAgent().getConfig().getValue(LogFileHelper.LOG_FILE_NAME, LogFileHelper.DEFAULT_LOG_FILE_NAME);
-        return StringUtils.equals(LogFileHelper.STDOUT, logFileName);
+        return StringUtils.equalsAny(logFileName, STDOUT, STDOUT_LC);
     }
 
     public static int logFileCount() {
