@@ -11,7 +11,6 @@ import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model.HttpMethods._
 import akka.http.scaladsl.model._
-import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.{Source, _}
 import akka.util.Timeout
 
@@ -23,7 +22,6 @@ import scala.language.postfixOps
 class AkkaServer() {
   implicit val system: ActorSystem = ActorSystem()
   implicit val executor: ExecutionContextExecutor = system.dispatcher
-  implicit val materializer: ActorMaterializer = ActorMaterializer()
   implicit val timeout: Timeout = 3 seconds
 
   var serverSource: Source[Http.IncomingConnection, Future[Http.ServerBinding]] = _
