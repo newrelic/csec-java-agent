@@ -119,6 +119,8 @@ public class Agent implements SecurityAgent {
                 LogLevel.INFO,
                 "[STEP-3] => Gathering information about the application",
                 this.getClass().getName());
+        logger.logInit(LogLevel.INFO, LowSeverityHelper.getIsLowSeverityhHooksEnabled() && NewRelic.getAgent().getConfig().getValue(LowSeverityHelper.LOW_SEVERITY_HOOKS_ENABLED, LowSeverityHelper.DEFAULT)?
+                "Low priority instrumentations are enabled.":"Low priority instrumentations are disabled!", this.getClass().getName());
         info.setIdentifier(ApplicationInfoUtils.envDetection());
         ApplicationInfoUtils.continueIdentifierProcessing(info.getIdentifier(), config.getConfig());
         info.generateAppInfo(config.getConfig());
