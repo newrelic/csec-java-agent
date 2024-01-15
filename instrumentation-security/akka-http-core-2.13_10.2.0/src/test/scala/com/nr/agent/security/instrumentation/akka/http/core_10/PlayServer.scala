@@ -11,28 +11,24 @@ import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model.HttpMethods._
 import akka.http.scaladsl.model._
-import akka.stream.ActorMaterializer
-import akka.stream.scaladsl.{Source, _}
 import akka.util.Timeout
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, ExecutionContextExecutor, Future}
 import scala.language.postfixOps
 
-//how the akka http core docs' example sets up a server
-class AkkaServer() {
+//how play 2.6 sets up a server
+class PlayServer() {
   implicit val system: ActorSystem = ActorSystem()
   implicit val executor: ExecutionContextExecutor = system.dispatcher
-  implicit val materializer: ActorMaterializer = ActorMaterializer()
   implicit val timeout: Timeout = 3 seconds
 
-  var serverSource: Source[Http.IncomingConnection, Future[Http.ServerBinding]] = _
+  val host: String = "localhost"
+
   var bindingFuture: Future[Http.ServerBinding] = _
   var headers: Seq[HttpHeader] = Seq()
 
   def start(port: Int, async: Boolean): Unit = {
-
-    serverSource = Http().bind(interface = "localhost", port)
 
     if (async) {
 
@@ -43,11 +39,8 @@ class AkkaServer() {
         }
       }
 
-      bindingFuture = serverSource.to(Sink.foreach {
-        connection =>
-          println("accepted connection from: " + connection.remoteAddress)
-          connection handleWithAsyncHandler asyncRequestHandler
-      }).run()
+      bindingFuture = Http().newServerAt(host, port).bind(asyncRequestHandler)
+
     }
     else {
 
@@ -58,11 +51,7 @@ class AkkaServer() {
         }
       }
 
-      bindingFuture = serverSource.to(Sink.foreach {
-        connection =>
-          println("accepted connection from: " + connection.remoteAddress)
-          connection handleWithSyncHandler requestHandler
-      }).run()
+      bindingFuture = Http().newServerAt(host, port).bindSync(requestHandler)
     }
 
     Await.ready({
@@ -72,7 +61,9 @@ class AkkaServer() {
 
   def stop(): Unit = {
     if (bindingFuture != null) {
-      bindingFuture.flatMap(_.unbind()).onComplete(_ => system.terminate())
+      bindingFuture.flatMap(_.unbind()).onComplete(_ => {
+        system.terminate()
+      })
     }
   }
 

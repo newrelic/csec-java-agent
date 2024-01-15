@@ -56,7 +56,7 @@ public class RequestUtils {
 
             return requestBuilder.build();
         } catch (Exception e){
-            logger.log(LogLevel.FINEST, String.format(ERROR_IN_FUZZ_REQUEST_GENERATION, e.getMessage()), RequestUtils.class.getSimpleName());
+            logger.log(LogLevel.FINEST, String.format(ERROR_IN_FUZZ_REQUEST_GENERATION, e.toString()), RequestUtils.class.getSimpleName());
         }
         return null;
     }

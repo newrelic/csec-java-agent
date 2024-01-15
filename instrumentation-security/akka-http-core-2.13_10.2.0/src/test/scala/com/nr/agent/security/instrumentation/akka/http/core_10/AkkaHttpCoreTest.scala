@@ -10,7 +10,6 @@ package com.nr.agent.security.instrumentation.akka.http.core_10
 import akka.actor.ActorSystem
 import akka.http.scaladsl.{AkkaCoreUtils, Http}
 import akka.http.scaladsl.model.{ContentTypes, HttpEntity, HttpHeader, HttpRequest}
-import akka.stream.ActorMaterializer
 import akka.util.ByteString
 import com.newrelic.agent.security.introspec.{InstrumentationTestConfig, SecurityInstrumentationTestRunner, SecurityIntrospector}
 import com.newrelic.api.agent.Trace
@@ -23,9 +22,9 @@ import org.junit.{Assert, FixMethodOrder, Test}
 
 import java.net.ServerSocket
 import java.util.UUID
-import scala.collection.JavaConversions
 import scala.concurrent.duration.DurationInt
 import scala.concurrent.Await
+import scala.jdk.CollectionConverters._
 
 @RunWith(classOf[SecurityInstrumentationTestRunner])
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
@@ -33,7 +32,6 @@ import scala.concurrent.Await
 class AkkaHttpCoreTest {
 
   implicit val system: ActorSystem = ActorSystem()
-  implicit val materializer: ActorMaterializer = ActorMaterializer()
 
   val akkaServer = new AkkaServer()
   val playServer = new PlayServer()
@@ -59,7 +57,7 @@ class AkkaHttpCoreTest {
     Assert.assertTrue("No operations detected", introspector.getOperations.size() > 0)
     assertCSECHeaders(headers, headerValue)
     val operations = introspector.getOperations
-    for (op <- JavaConversions.collectionAsScalaIterable(operations)){
+    for (op <- operations.asScala){
       op match {
         case operation: SSRFOperation => assertSSRFOperation(operation, syncUrl)
         case operation: RXSSOperation => assertRXSSOperation(operation)
@@ -83,7 +81,7 @@ class AkkaHttpCoreTest {
     Assert.assertTrue("No operations detected", introspector.getOperations.size() > 0)
     assertCSECHeaders(headers, headerValue)
     val operations = introspector.getOperations
-    for (op <- JavaConversions.collectionAsScalaIterable(operations)){
+    for (op <- operations.asScala){
       op match {
         case operation: SSRFOperation => assertSSRFOperation(operation, asyncUrl)
         case operation: RXSSOperation => assertRXSSOperation(operation)
@@ -107,7 +105,7 @@ class AkkaHttpCoreTest {
     Assert.assertTrue("No operations detected", introspector.getOperations.size() > 0)
     assertCSECHeaders(headers, headerValue)
     val operations = introspector.getOperations
-    for (op <- JavaConversions.collectionAsScalaIterable(operations)){
+    for (op <- operations.asScala){
       op match {
         case operation: SSRFOperation => assertSSRFOperation(operation, syncUrl)
         case operation: RXSSOperation => assertRXSSOperation(operation)
@@ -131,7 +129,7 @@ class AkkaHttpCoreTest {
     Assert.assertTrue("No operations detected", introspector.getOperations.size() > 0)
     assertCSECHeaders(headers, headerValue)
     val operations = introspector.getOperations
-    for (op <- JavaConversions.collectionAsScalaIterable(operations)){
+    for (op <- operations.asScala){
       op match {
         case operation: SSRFOperation => assertSSRFOperation(operation, asyncUrl)
         case operation: RXSSOperation => assertRXSSOperation(operation)

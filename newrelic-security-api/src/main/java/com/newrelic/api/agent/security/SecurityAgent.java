@@ -56,4 +56,6 @@ public interface SecurityAgent {
     void log(LogLevel logLevel, String event, String logSourceClassName);
 
     void reportIncident(LogLevel logLevel, String event, Throwable exception, String caller);
+
+    void retransformUninstrumentedClass(Class<?> classToRetransform);
 }

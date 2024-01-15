@@ -23,6 +23,7 @@ import com.newrelic.api.agent.NewRelic;
 import com.newrelic.api.agent.Transaction;
 import com.newrelic.api.agent.security.instrumentation.helpers.GrpcHelper;
 import com.newrelic.api.agent.security.instrumentation.helpers.AppServerInfoHelper;
+import com.newrelic.api.agent.security.instrumentation.helpers.InstrumentedClass;
 import com.newrelic.api.agent.security.instrumentation.helpers.LowSeverityHelper;
 import com.newrelic.api.agent.security.schema.*;
 import com.newrelic.api.agent.security.schema.operation.RXSSOperation;
@@ -32,6 +33,7 @@ import org.apache.commons.lang3.StringUtils;
 import java.io.File;
 import java.io.IOException;
 import java.lang.instrument.Instrumentation;
+import java.lang.instrument.UnmodifiableClassException;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -575,6 +577,19 @@ public class Agent implements SecurityAgent {
     public void reportIncident(LogLevel logLevel, String event, Throwable exception, String caller) {
         if(logger != null){
             logger.postLogMessageIfNecessary(logLevel, event, exception, caller);
+        }
+    }
+
+    @Override
+    public void retransformUninstrumentedClass(Class<?> classToRetransform) {
+        if (!classToRetransform.isAnnotationPresent(InstrumentedClass.class)) {
+            try {
+                getInstrumentation().retransformClasses(classToRetransform);
+            } catch (UnmodifiableClassException e) {
+                NewRelic.getAgent().getLogger().log(Level.FINE, "Unable to retransform class ", classToRetransform, " : ", e.getMessage());
+            }
+        } else {
+            NewRelic.getAgent().getLogger().log(Level.FINER, "Class ", classToRetransform, " already instrumented.");
         }
     }
 }

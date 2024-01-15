@@ -165,4 +165,9 @@ public class Agent implements SecurityAgent {
     public void reportIncident(LogLevel logLevel, String event, Throwable exception, String caller) {
 
     }
+
+    @Override
+    public void retransformUninstrumentedClass(Class<?> classToRetransform) {
+
+    }
 }

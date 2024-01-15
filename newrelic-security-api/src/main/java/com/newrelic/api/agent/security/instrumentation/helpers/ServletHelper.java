@@ -106,20 +106,26 @@ public class ServletHelper {
         return decodedString;
     }
 
-    public static void registerUserLevelCode(String frameworkName) {
+    public static boolean registerUserLevelCode(String frameworkName) {
+        return registerUserLevelCode(frameworkName, false);
+    }
+
+    public static boolean registerUserLevelCode(String frameworkName, boolean asyncContext) {
         try {
-            if (!NewRelicSecurity.isHookProcessingActive() || NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()
+            if (!NewRelicSecurity.isHookProcessingActive() || (NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty() && !asyncContext)
             ) {
-                return;
+                return false;
             }
             SecurityMetaData securityMetaData = NewRelicSecurity.getAgent().getSecurityMetaData();
             if (!securityMetaData.getMetaData().isUserLevelServiceMethodEncountered(frameworkName)) {
                 securityMetaData.getMetaData().setUserLevelServiceMethodEncountered(true);
                 StackTraceElement[] trace = Thread.currentThread().getStackTrace();
                 securityMetaData.getMetaData().setServiceTrace(Arrays.copyOfRange(trace, 2, trace.length));
+                return true;
             }
         } catch (Throwable ignored) {
         }
+        return false;
     }
 
 

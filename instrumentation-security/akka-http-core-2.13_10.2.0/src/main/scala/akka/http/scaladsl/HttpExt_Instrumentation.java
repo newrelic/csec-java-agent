@@ -14,6 +14,8 @@ import akka.http.scaladsl.model.headers.RawHeader;
 import akka.http.scaladsl.settings.ConnectionPoolSettings;
 import akka.http.scaladsl.settings.ServerSettings;
 import akka.stream.Materializer;
+import com.newrelic.api.agent.NewRelic;
+import com.newrelic.api.agent.Segment;
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.security.instrumentation.helpers.ServletHelper;
@@ -33,6 +35,13 @@ import java.net.URI;
 
 @Weave(type = MatchType.ExactClass, originalName = "akka.http.scaladsl.HttpExt")
 public class HttpExt_Instrumentation {
+
+    // This method only exists to ensure that this weave module doesn't match for versions of akka-http-core-2.13 prior to 10.2.0.
+    // That said, as of 10.2.0 bind, bindAndHandle, bindAndHandleSync, and bindAndHandleAsync were all deprecated in favor of newServerAt:
+    //   @deprecated("Use Http.newServerAt(...)...connectionSource() to create a source that can be materialized to a binding.", since = "10.2.0")
+    public ServerBuilder newServerAt(String interfaceString, int port) {
+        return Weaver.callOriginal();
+    }
 
     public Future<Http.ServerBinding> bindAndHandleAsync(
             Function1<HttpRequest, Future<HttpResponse>> handler,
@@ -60,19 +69,19 @@ public class HttpExt_Instrumentation {
         return Weaver.callOriginal();
     }
 
-    // We are weaving the singleRequestImpl method here rather than just singleRequest because the javadsl only flows through here
-    public Future<HttpResponse> singleRequest(HttpRequest httpRequest, HttpsConnectionContext connectionContext, ConnectionPoolSettings settings,
-                                              LoggingAdapter log, Materializer fm) {
+    public Future<HttpResponse> singleRequest(HttpRequest httpRequest, HttpsConnectionContext connectionContext, ConnectionPoolSettings poolSettings,
+            LoggingAdapter loggingAdapter) {
+        final Segment segment = NewRelic.getAgent().getTransaction().startSegment("Akka", "singleRequest");
 
         boolean isLockAcquired = acquireLockIfPossible();
         AbstractOperation operation = null;
         // Preprocess Phase
+        SecurityMetaData securityMetaData = NewRelicSecurity.getAgent().getSecurityMetaData();
         if (isLockAcquired) {
             operation = preprocessSecurityHook(httpRequest, AkkaCoreUtils.METHOD_SINGLE_REQUEST_IMPL);
         }
-        if(operation!=null){
-            SecurityMetaData securityMetaData = NewRelicSecurity.getAgent().getSecurityMetaData();
-            // Add Security IAST header
+
+        if (operation!=null) {
             String iastHeader = NewRelicSecurity.getAgent().getSecurityMetaData().getFuzzRequestIdentifier().getRaw();
             if (iastHeader != null && !iastHeader.trim().isEmpty()) {
                 httpRequest = (HttpRequest) httpRequest.addHeader(RawHeader.apply(ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID, iastHeader));
@@ -89,10 +98,13 @@ public class HttpExt_Instrumentation {
                 if (operation.getApiID() != null && !operation.getApiID().trim().isEmpty() &&
                         operation.getExecutionId() != null && !operation.getExecutionId().trim().isEmpty()) {
                     // Add Security distributed tracing header
-                    httpRequest = (HttpRequest) httpRequest.addHeader(RawHeader.apply(ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER, SSRFUtils.generateTracingHeaderValue(securityMetaData.getTracingHeaderValue(), operation.getApiID(), operation.getExecutionId(), NewRelicSecurity.getAgent().getAgentUUID())));
+                    httpRequest = (HttpRequest) httpRequest.addHeader(RawHeader.apply(ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER,
+                            SSRFUtils.generateTracingHeaderValue(securityMetaData.getTracingHeaderValue(), operation.getApiID(), operation.getExecutionId(),
+                                    NewRelicSecurity.getAgent().getAgentUUID())));
                 }
             }
         }
+
         Future<HttpResponse> returnCode = null;
         // Actual Call
         try {
@@ -136,6 +148,7 @@ public class HttpExt_Instrumentation {
             } catch (Exception ignored){
                 return null;
             }
+
             SSRFOperation operation = new SSRFOperation(uri, this.getClass().getName(), methodName);
             return operation;
         } catch (Throwable e) {
