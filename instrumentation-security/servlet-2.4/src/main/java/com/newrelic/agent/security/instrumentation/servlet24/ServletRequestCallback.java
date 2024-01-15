@@ -42,7 +42,9 @@ public class ServletRequestCallback {
                     return hashSet.contains(inputStreamHash);
                 }
             }
-        } catch (Throwable ignored) {}
+        } catch (Throwable ignored) {
+
+        }
         return false;
     }
 }

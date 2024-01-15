@@ -6,6 +6,7 @@ import com.newrelic.api.agent.security.schema.AgentMetaData;
 import com.newrelic.api.agent.security.schema.ApplicationURLMapping;
 import com.newrelic.api.agent.security.schema.HttpRequest;
 import com.newrelic.api.agent.security.schema.policy.AgentPolicy;
+import com.newrelic.api.agent.security.utils.logging.LogLevel;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletRegistration;
@@ -25,6 +26,7 @@ public class HttpServletHelper {
     public static final String NR_SEC_CUSTOM_ATTRIB_NAME = "SERVLET_LOCK-";
     private static final String WILDCARD = "*";
     private static final String SEPARATOR = "/";
+    public static final String SERVLET_2_4 = "SERVLET-2.4";
 
     public static void processHttpRequestHeader(HttpServletRequest request, HttpRequest securityRequest){
         Enumeration<String> headerNames = request.getHeaderNames();
@@ -127,7 +129,9 @@ public class HttpServletHelper {
                     URLMappingsHelper.addApplicationURLMapping(new ApplicationURLMapping(WILDCARD, s));
                 }
             }
-        } catch (Exception ignored){
+        } catch (Exception e){
+            String message = "Instrumentation library: %s , error while getting app endpoints : %s";
+            NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(message, SERVLET_2_4, e.getMessage()), e, HttpServletHelper.class.getName());
         }
     }
 
@@ -144,7 +148,9 @@ public class HttpServletHelper {
                     }
                 }
             }
-        } catch (Exception ignored){
+        } catch (Exception e){
+            String message = "Instrumentation library: %s , error while getting app endpoints : %s";
+            NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(message, SERVLET_2_4, e.getMessage()), e, HttpServletHelper.class.getName());
         }
     }
 }

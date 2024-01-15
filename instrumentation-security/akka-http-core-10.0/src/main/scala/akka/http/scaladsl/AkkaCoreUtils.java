@@ -23,6 +23,8 @@ public class AkkaCoreUtils {
 
     public static final String NR_SEC_CUSTOM_ATTRIB_NAME = "HTTPREQUEST_OPERATION_LOCK_AKKA-";
 
+    public static final String AKKA_HTTP_CORE_10_0 = "AKKA_HTTP_CORE_10.0";
+
     private static final String X_FORWARDED_FOR = "x-forwarded-for";
     private static final String EMPTY = "";
 

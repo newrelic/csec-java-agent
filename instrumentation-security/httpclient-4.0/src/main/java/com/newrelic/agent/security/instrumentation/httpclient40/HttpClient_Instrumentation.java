@@ -16,6 +16,7 @@ import com.newrelic.api.agent.security.schema.StringUtils;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
 import com.newrelic.api.agent.security.schema.operation.SSRFOperation;
 import com.newrelic.api.agent.security.utils.SSRFUtils;
+import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
@@ -78,7 +79,12 @@ public abstract class HttpClient_Instrumentation {
 
         // Preprocess Phase
         if (isLockAcquired) {
-            String actualURI = getUri(target, request).toString();
+            String actualURI = null;
+            try {
+                actualURI = getUri(target, request).toString();
+            } catch (Exception ignored){
+                NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.URI_EXCEPTION_MESSAGE, SecurityHelper.HTTP_CLIENT_4, ignored.getMessage()), ignored, this.getClass().getName());
+            }
             operation = preprocessSecurityHook(request, actualURI, SecurityHelper.METHOD_NAME_EXECUTE);
         }
 
@@ -101,7 +107,12 @@ public abstract class HttpClient_Instrumentation {
 
         // Preprocess Phase
         if (isLockAcquired) {
-            String actualURI = getUri(target, request).toString();
+            String actualURI = null;
+            try {
+                actualURI = getUri(target, request).toString();
+            } catch (Exception ignored){
+                NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.URI_EXCEPTION_MESSAGE, SecurityHelper.HTTP_CLIENT_4, ignored.getMessage()), ignored, this.getClass().getName());
+            }
             operation = preprocessSecurityHook(request, actualURI, SecurityHelper.METHOD_NAME_EXECUTE);
         }
 
@@ -167,7 +178,12 @@ public abstract class HttpClient_Instrumentation {
 
         // Preprocess Phase
         if (isLockAcquired) {
-            String actualURI = getUri(target, request).toString();
+            String actualURI = null;
+            try {
+                actualURI = getUri(target, request).toString();
+            } catch (Exception ignored){
+                NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.URI_EXCEPTION_MESSAGE, SecurityHelper.HTTP_CLIENT_4, ignored.getMessage()), ignored, this.getClass().getName());
+            }
             operation = preprocessSecurityHook(request, actualURI, SecurityHelper.METHOD_NAME_EXECUTE);
         }
 
@@ -191,7 +207,12 @@ public abstract class HttpClient_Instrumentation {
 
         // Preprocess Phase
         if (isLockAcquired) {
-            String actualURI = getUri(target, request).toString();
+            String actualURI = null;
+            try {
+                actualURI = getUri(target, request).toString();
+            } catch (Exception ignored){
+                NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.URI_EXCEPTION_MESSAGE, SecurityHelper.HTTP_CLIENT_4, ignored.getMessage()), ignored, this.getClass().getName());
+            }
             operation = preprocessSecurityHook(request, actualURI, SecurityHelper.METHOD_NAME_EXECUTE);
         }
 
@@ -222,6 +243,7 @@ public abstract class HttpClient_Instrumentation {
             }
             NewRelicSecurity.getAgent().registerExitEvent(operation);
         } catch (Throwable ignored) {
+            NewRelicSecurity.getAgent().log(LogLevel.FINEST, String.format(GenericHelper.EXIT_OPERATION_EXCEPTION_MESSAGE, SecurityHelper.HTTP_CLIENT_4, ignored.getMessage()), ignored, HttpClient_Instrumentation.class.getName());
         }
     }
 
@@ -252,7 +274,11 @@ public abstract class HttpClient_Instrumentation {
                     this.getClass().getName(), methodName);
             try {
                 NewRelicSecurity.getAgent().registerOperation(operation);
-            } finally {
+            }  catch (Exception e) {
+                NewRelicSecurity.getAgent().log(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, SecurityHelper.HTTP_CLIENT_4, e.getMessage()), e, this.getClass().getName());
+                NewRelicSecurity.getAgent().reportIncident(LogLevel.SEVERE , String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, SecurityHelper.HTTP_CLIENT_4, e.getMessage()), e, this.getClass().getName());
+            }
+            finally {
                 if (operation.getApiID() != null && !operation.getApiID().trim().isEmpty() &&
                         operation.getExecutionId() != null && !operation.getExecutionId().trim().isEmpty()) {
                     // Add Security distributed tracing header
@@ -261,8 +287,10 @@ public abstract class HttpClient_Instrumentation {
             }
             return operation;
         } catch (Throwable e) {
+            NewRelicSecurity.getAgent().log(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, SecurityHelper.HTTP_CLIENT_4, e.getMessage()), e, this.getClass().getName());
+            NewRelicSecurity.getAgent().reportIncident(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, SecurityHelper.HTTP_CLIENT_4, e.getMessage()), e, this.getClass().getName());
             if (e instanceof NewRelicSecurityException) {
-                e.printStackTrace();
+                NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.SECURITY_EXCEPTION_MESSAGE, SecurityHelper.HTTP_CLIENT_4, e.getMessage()), e, this.getClass().getName());
                 throw e;
             }
         }

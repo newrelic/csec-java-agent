@@ -15,6 +15,7 @@ import com.newrelic.api.agent.security.schema.SecurityMetaData;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
 import com.newrelic.api.agent.security.schema.operation.SSRFOperation;
 import com.newrelic.api.agent.security.utils.SSRFUtils;
+import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
@@ -56,6 +57,7 @@ public abstract class HttpMethodBase_Instrumentation {
             }
             NewRelicSecurity.getAgent().registerExitEvent(operation);
         } catch (Throwable ignored) {
+            NewRelicSecurity.getAgent().log(LogLevel.FINEST, String.format(GenericHelper.EXIT_OPERATION_EXCEPTION_MESSAGE, SecurityHelper.HTTP_CLIENT_3, ignored.getMessage()), ignored, HttpMethodBase_Instrumentation.class.getName());
         }
     }
 
@@ -93,7 +95,8 @@ public abstract class HttpMethodBase_Instrumentation {
                     host = methodURI.getHost();
                     uri = SecurityHelper.getURI(methodURI.getScheme(), host, conn.getPort(), methodURI.getPath());
                 }
-            } catch (URIException ignored) {
+            } catch (Exception e) {
+                NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.URI_EXCEPTION_MESSAGE, SecurityHelper.HTTP_CLIENT_3, e.getMessage()), e, this.getClass().getName());
                 return null;
             }
 
@@ -117,7 +120,11 @@ public abstract class HttpMethodBase_Instrumentation {
                     this.getClass().getName(), methodName);
             try {
                 NewRelicSecurity.getAgent().registerOperation(operation);
-            } finally {
+            } catch (Exception e) {
+                NewRelicSecurity.getAgent().log(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, SecurityHelper.HTTP_CLIENT_3, e.getMessage()), e, this.getClass().getName());
+                NewRelicSecurity.getAgent().reportIncident(LogLevel.SEVERE , String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, SecurityHelper.HTTP_CLIENT_3, e.getMessage()), e, this.getClass().getName());
+            }
+            finally {
                 if (operation.getApiID() != null && !operation.getApiID().trim().isEmpty() &&
                         operation.getExecutionId() != null && !operation.getExecutionId().trim().isEmpty()) {
                     // Add Security distributed tracing header
@@ -126,8 +133,10 @@ public abstract class HttpMethodBase_Instrumentation {
             }
             return operation;
         } catch (Throwable e) {
+            NewRelicSecurity.getAgent().log(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, SecurityHelper.HTTP_CLIENT_3, e.getMessage()), e, this.getClass().getName());
+            NewRelicSecurity.getAgent().reportIncident(LogLevel.SEVERE , String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, SecurityHelper.HTTP_CLIENT_3, e.getMessage()), e, this.getClass().getName());
             if (e instanceof NewRelicSecurityException) {
-                e.printStackTrace();
+                NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.SECURITY_EXCEPTION_MESSAGE, SecurityHelper.HTTP_CLIENT_3, e.getMessage()), e, this.getClass().getName());
                 throw e;
             }
         }

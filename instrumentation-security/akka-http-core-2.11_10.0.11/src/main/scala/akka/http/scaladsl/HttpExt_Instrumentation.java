@@ -23,6 +23,7 @@ import com.newrelic.api.agent.security.schema.StringUtils;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
 import com.newrelic.api.agent.security.schema.operation.SSRFOperation;
 import com.newrelic.api.agent.security.utils.SSRFUtils;
+import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
@@ -86,6 +87,9 @@ public class HttpExt_Instrumentation {
 
             try {
                 NewRelicSecurity.getAgent().registerOperation(operation);
+            } catch (Exception e) {
+                NewRelicSecurity.getAgent().log(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, AkkaCoreUtils.AKKA_HTTP_CORE_10_0_11, e.getMessage()), e, this.getClass().getName());
+                NewRelicSecurity.getAgent().reportIncident(LogLevel.SEVERE , String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, AkkaCoreUtils.AKKA_HTTP_CORE_10_0_11, e.getMessage()), e, this.getClass().getName());
             } finally {
                 if (operation.getApiID() != null && !operation.getApiID().trim().isEmpty() &&
                         operation.getExecutionId() != null && !operation.getExecutionId().trim().isEmpty()) {
@@ -118,6 +122,7 @@ public class HttpExt_Instrumentation {
             }
             NewRelicSecurity.getAgent().registerExitEvent(operation);
         } catch (Throwable ignored) {
+            NewRelicSecurity.getAgent().log(LogLevel.FINEST, String.format(GenericHelper.EXIT_OPERATION_EXCEPTION_MESSAGE, AkkaCoreUtils.AKKA_HTTP_CORE_10_0_11, ignored.getMessage()), ignored, HttpExt_Instrumentation.class.getName());
         }
     }
 
@@ -138,14 +143,17 @@ public class HttpExt_Instrumentation {
                     return null;
                 }
             } catch (Exception ignored){
+                NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.URI_EXCEPTION_MESSAGE, AkkaCoreUtils.AKKA_HTTP_CORE_10_0_11, ignored.getMessage()), ignored, this.getClass().getName());
                 return null;
             }
 
             SSRFOperation operation = new SSRFOperation(uri, this.getClass().getName(), methodName);
             return operation;
         } catch (Throwable e) {
+            NewRelicSecurity.getAgent().log(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, AkkaCoreUtils.AKKA_HTTP_CORE_10_0_11, e.getMessage()), e, this.getClass().getName());
+            NewRelicSecurity.getAgent().reportIncident(LogLevel.SEVERE , String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, AkkaCoreUtils.AKKA_HTTP_CORE_10_0_11, e.getMessage()), e, this.getClass().getName());
             if (e instanceof NewRelicSecurityException) {
-                e.printStackTrace();
+                NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.SECURITY_EXCEPTION_MESSAGE, AkkaCoreUtils.AKKA_HTTP_CORE_10_0_11, e.getMessage()), e, this.getClass().getName());
                 throw e;
             }
         }

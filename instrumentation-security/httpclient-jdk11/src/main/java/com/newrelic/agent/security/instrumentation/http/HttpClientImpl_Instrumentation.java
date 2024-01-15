@@ -11,6 +11,7 @@ import com.newrelic.api.agent.security.schema.StringUtils;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
 import com.newrelic.api.agent.security.schema.operation.SSRFOperation;
 import com.newrelic.api.agent.security.utils.SSRFUtils;
+import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
@@ -30,6 +31,7 @@ final class HttpClientImpl_Instrumentation {
             }
             NewRelicSecurity.getAgent().registerExitEvent(operation);
         } catch (Throwable ignored) {
+            NewRelicSecurity.getAgent().log(LogLevel.FINEST, String.format(GenericHelper.EXIT_OPERATION_EXCEPTION_MESSAGE, SecurityHelper.HTTPCLIENT_JDK_11, ignored.getMessage()), ignored, HttpClientImpl_Instrumentation.class.getName());
         }
     }
 
@@ -71,8 +73,10 @@ final class HttpClientImpl_Instrumentation {
 
             return operation;
         } catch (Throwable e) {
+            NewRelicSecurity.getAgent().log(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, SecurityHelper.HTTPCLIENT_JDK_11, e.getMessage()), e, SecurityHelper.class.getName());
+            NewRelicSecurity.getAgent().reportIncident(LogLevel.SEVERE , String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, SecurityHelper.HTTPCLIENT_JDK_11, e.getMessage()), e, SecurityHelper.class.getName());
             if (e instanceof NewRelicSecurityException) {
-                e.printStackTrace();
+                NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.SECURITY_EXCEPTION_MESSAGE, SecurityHelper.HTTPCLIENT_JDK_11, e.getMessage()), e, SecurityHelper.class.getName());
                 throw e;
             }
         }
@@ -117,7 +121,9 @@ final class HttpClientImpl_Instrumentation {
                                 operation.getExecutionId(), NewRelicSecurity.getAgent().getAgentUUID())).build();
                 return updatedRequest;
             }
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            String message = "Instrumentation library: %s , error while adding outbound header : %s";
+            NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(message, SecurityHelper.HTTPCLIENT_JDK_11, e.getMessage()), e, HttpClientImpl_Instrumentation.class.getName());
         }
         return req.newBuilder(req.uri()).build();
     }

@@ -6,7 +6,10 @@
  */
 
 package org.asynchttpclient;
+import com.newrelic.api.agent.security.NewRelicSecurity;
+import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
+import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
@@ -44,6 +47,7 @@ public abstract class AsyncHttpClient_Instrumentation {
             } catch (URISyntaxException | MalformedURLException uriSyntaxException) {
                 // if Java can't parse the URI, asynchttpclient won't be able to either
                 // let's just proceed without instrumentation
+                NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.URI_EXCEPTION_MESSAGE, AsynchttpHelper.ASYNC_HTTP_CLIENT_2_0_0, uriSyntaxException.getMessage()), uriSyntaxException, this.getClass().getName());
             }
         }
         ListenableFuture<T> returnVal = null;

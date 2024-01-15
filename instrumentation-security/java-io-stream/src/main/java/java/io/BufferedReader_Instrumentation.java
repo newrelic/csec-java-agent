@@ -9,11 +9,14 @@ package java.io;
 
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
+import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.WeaveAllConstructors;
 import com.newrelic.api.agent.weaver.Weaver;
 import com.newrelic.api.agent.security.instrumentation.helpers.IOStreamHelper;
+
+import static com.newrelic.api.agent.security.instrumentation.helpers.IOStreamHelper.JAVA_IO_STREAM;
 
 @Weave(type = MatchType.BaseClass, originalName = "java.io.BufferedReader")
 public abstract class BufferedReader_Instrumentation {
@@ -83,6 +86,7 @@ public abstract class BufferedReader_Instrumentation {
             try {
                 NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().getBody().append(cbuf, off, returnData);
             } catch (Throwable ignored) {
+                NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(IOStreamHelper.ERROR_WHILE_READING_STREAM, JAVA_IO_STREAM, ignored.getMessage()), ignored, this.getClass().getName());
 //                    ignored.printStackTrace(System.out);
             }
         }
@@ -109,6 +113,8 @@ public abstract class BufferedReader_Instrumentation {
             try {
                 NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().getBody().append(returnData);
             } catch (Throwable ignored) {
+                String message = IOStreamHelper.ERROR_WHILE_READING_STREAM;
+                NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(message, JAVA_IO_STREAM, ignored.getMessage()), ignored, this.getClass().getName());
 //                    ignored.printStackTrace(System.out);
             }
         }

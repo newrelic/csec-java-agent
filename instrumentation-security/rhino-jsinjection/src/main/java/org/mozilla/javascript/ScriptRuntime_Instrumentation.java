@@ -6,6 +6,7 @@ import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.StringUtils;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
 import com.newrelic.api.agent.security.schema.operation.JSInjectionOperation;
+import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
 import com.newrelic.agent.security.instrumentation.rhino.JSEngineUtils;
@@ -42,7 +43,9 @@ public class ScriptRuntime_Instrumentation {
                 return;
             }
             NewRelicSecurity.getAgent().registerExitEvent(operation);
-        } catch (Throwable ignored){}
+        } catch (Throwable e){
+            NewRelicSecurity.getAgent().log(LogLevel.FINEST, String.format(GenericHelper.EXIT_OPERATION_EXCEPTION_MESSAGE, JSEngineUtils.RHINO_JS_INJECTION, e.getMessage()), e, ScriptRuntime_Instrumentation.class.getName());
+        }
     }
 
     private static AbstractOperation preprocessSecurityHook(int hashCode, String methodName, Context_Instrumentation context){
@@ -58,8 +61,11 @@ public class ScriptRuntime_Instrumentation {
             }
         } catch (Throwable e) {
             if (e instanceof NewRelicSecurityException) {
+                NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.SECURITY_EXCEPTION_MESSAGE, JSEngineUtils.RHINO_JS_INJECTION, e.getMessage()), e, ScriptRuntime_Instrumentation.class.getName());
                 throw e;
             }
+            NewRelicSecurity.getAgent().log(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, JSEngineUtils.RHINO_JS_INJECTION, e.getMessage()), e, ScriptRuntime_Instrumentation.class.getName());
+            NewRelicSecurity.getAgent().reportIncident(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, JSEngineUtils.RHINO_JS_INJECTION, e.getMessage()), e, ScriptRuntime_Instrumentation.class.getName());
         }
         return null;
     }

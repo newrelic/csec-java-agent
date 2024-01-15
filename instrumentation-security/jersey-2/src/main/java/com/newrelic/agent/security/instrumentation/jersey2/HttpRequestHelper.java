@@ -11,6 +11,7 @@ import com.newrelic.api.agent.security.schema.StringUtils;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
 import com.newrelic.api.agent.security.schema.operation.RXSSOperation;
 import com.newrelic.api.agent.security.schema.policy.AgentPolicy;
+import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import org.glassfish.jersey.internal.PropertiesDelegate;
 import org.glassfish.jersey.message.internal.OutboundMessageContext;
 import org.glassfish.jersey.server.ContainerRequest;
@@ -49,6 +50,7 @@ public class HttpRequestHelper {
     private static final String REQUEST_INPUTSTREAM_HASH = "REQUEST_INPUTSTREAM_HASH";
     public static final String CONTENT_TYPE = "content-type";
     public static final String HEADER_CONTENT_TYPE = "contenttype";
+    public static final String JERSEY_2 = "JERSEY-2";
 
     public static Class grizzlyRequestPropertiesDelegateKlass = null;
 
@@ -82,7 +84,8 @@ public class HttpRequestHelper {
             StackTraceElement[] trace = Thread.currentThread().getStackTrace();
             securityMetaData.getMetaData().setServiceTrace(Arrays.copyOfRange(trace, 2, trace.length));
             securityRequest.setRequestParsed(true);
-        } catch (Throwable ignored) {
+        } catch (Throwable e) {
+            NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.ERROR_GENERATING_HTTP_REQUEST, JERSEY_2, e.getMessage()), e, HttpRequestHelper.class.getName());
         }
     }
 
@@ -102,10 +105,12 @@ public class HttpRequestHelper {
             NewRelicSecurity.getAgent().registerOperation(rxssOperation);
             ServletHelper.tmpFileCleanUp(NewRelicSecurity.getAgent().getSecurityMetaData().getFuzzRequestIdentifier().getTempFiles());
         } catch (Throwable e) {
-            if(e instanceof NewRelicSecurityException){
-                e.printStackTrace();
+            if (e instanceof NewRelicSecurityException) {
+                NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.SECURITY_EXCEPTION_MESSAGE, JERSEY_2, e.getMessage()), e, HttpRequestHelper.class.getName());
                 throw e;
             }
+            NewRelicSecurity.getAgent().log(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, JERSEY_2, e.getMessage()), e, HttpRequestHelper.class.getName());
+            NewRelicSecurity.getAgent().reportIncident(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, JERSEY_2, e.getMessage()), e, HttpRequestHelper.class.getName());
         }
     }
 
@@ -239,6 +244,8 @@ public class HttpRequestHelper {
                 securityRequest.setContentType((String) getContentType.invoke(requestObject));
             } catch (ClassNotFoundException | NoSuchFieldException | IllegalAccessException | NoSuchMethodException |
                      InvocationTargetException e) {
+                NewRelicSecurity.getAgent().log(LogLevel.SEVERE, String.format(GenericHelper.ERROR_GENERATING_HTTP_REQUEST, JERSEY_2, e.getMessage()), e, HttpRequestHelper.class.getName());
+                NewRelicSecurity.getAgent().reportIncident(LogLevel.SEVERE, String.format(GenericHelper.ERROR_GENERATING_HTTP_REQUEST, JERSEY_2, e.getMessage()), e, HttpRequestHelper.class.getName());
             }
 
         } else if (StringUtils.equals(propertiesDelegate.getClass().getName(), ORG_GLASSFISH_JERSEY_GRIZZLY_2_HTTPSERVER_TRACING_AWARE_PROPERTIES_DELEGATE)){
@@ -249,9 +256,12 @@ public class HttpRequestHelper {
                 Object propertiesDelegateObject = propertiesDelegateField.get(propertiesDelegate);
                 processPropertiesDelegate((PropertiesDelegate) propertiesDelegateObject, securityRequest);
             } catch (ClassNotFoundException | NoSuchFieldException | IllegalAccessException e) {
+                NewRelicSecurity.getAgent().log(LogLevel.SEVERE, String.format(GenericHelper.ERROR_GENERATING_HTTP_REQUEST, JERSEY_2, e.getMessage()), e, HttpRequestHelper.class.getName());
+                NewRelicSecurity.getAgent().reportIncident(LogLevel.SEVERE, String.format(GenericHelper.ERROR_GENERATING_HTTP_REQUEST, JERSEY_2, e.getMessage()), e, HttpRequestHelper.class.getName());
             }
         } else {
-//            System.out.println(propertiesDelegate + " : " + propertiesDelegate.getClass().getName());
+            NewRelicSecurity.getAgent().log(LogLevel.SEVERE, String.format(GenericHelper.ERROR_GENERATING_HTTP_REQUEST, JERSEY_2, "This case is not covered."), HttpRequestHelper.class.getName());
+            NewRelicSecurity.getAgent().reportIncident(LogLevel.SEVERE, String.format(GenericHelper.ERROR_GENERATING_HTTP_REQUEST, JERSEY_2, "This case is not covered."), null, HttpRequestHelper.class.getName());
         }
     }
 
