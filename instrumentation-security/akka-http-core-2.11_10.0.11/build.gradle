@@ -1,6 +1,6 @@
 apply plugin: 'scala'
 
-isScalaProjectEnabled(project, "scala-2.11")
+isScalaProjectEnabled(project, "scala-2.12")
 
 jar {
     manifest { attributes 'Implementation-Title': 'com.newrelic.instrumentation.security.akka-http-core-10.0.11' }
@@ -10,8 +10,8 @@ dependencies {
     implementation(project(":newrelic-security-api"))
     implementation("com.newrelic.agent.java:newrelic-api:${nrAPIVersion}")
     implementation("com.newrelic.agent.java:newrelic-weaver-api:${nrAPIVersion}")
-    implementation("com.typesafe.akka:akka-http-core_2.11:10.0.11")
-    implementation("com.typesafe.akka:akka-stream_2.11:2.5.11")
+    implementation("com.typesafe.akka:akka-http-core_2.12:10.0.11")
+    implementation("com.typesafe.akka:akka-stream_2.12:2.5.23")
 }
 
 verifyInstrumentation {
