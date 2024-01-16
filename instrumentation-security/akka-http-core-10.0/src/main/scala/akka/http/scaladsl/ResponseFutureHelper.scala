@@ -13,8 +13,11 @@ import akka.stream.Materializer
 import akka.stream.javadsl.Source
 import akka.stream.scaladsl.Sink
 import akka.util.ByteString
+import com.newrelic.api.agent.security.NewRelicSecurity
+import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper
 import com.newrelic.api.agent.security.schema.StringUtils
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException
+import com.newrelic.api.agent.security.utils.logging.LogLevel
 import com.newrelic.api.agent.{NewRelic, Token}
 
 import java.lang
@@ -44,7 +47,7 @@ object ResponseFutureHelper {
 
       } catch {
         case t: NewRelicSecurityException =>
-          t.printStackTrace()
+          NewRelicSecurity.getAgent.log(LogLevel.WARNING, String.format(GenericHelper.SECURITY_EXCEPTION_MESSAGE, AkkaCoreUtils.AKKA_HTTP_CORE_10_0, t.getMessage), t, classOf[AkkaCoreUtils].getName)
           throw t
         case _: Throwable =>
       }
@@ -68,7 +71,7 @@ object ResponseFutureHelper {
       AkkaCoreUtils.postProcessHttpRequest(isLockAquired, stringResponse, httpResponse.entity.contentType.toString(), this.getClass.getName, "apply", NewRelic.getAgent.getTransaction.getToken())
     } catch {
       case t: NewRelicSecurityException =>
-        t.printStackTrace()
+        NewRelicSecurity.getAgent.log(LogLevel.WARNING, String.format(GenericHelper.SECURITY_EXCEPTION_MESSAGE, AkkaCoreUtils.AKKA_HTTP_CORE_10_0, t.getMessage), t, classOf[AkkaCoreUtils].getName)
         throw t
       case _: Throwable =>
     }

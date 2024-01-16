@@ -13,6 +13,7 @@ import com.newrelic.api.agent.security.schema.StringUtils;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
 import com.newrelic.api.agent.security.schema.operation.RXSSOperation;
 import com.newrelic.api.agent.security.schema.policy.AgentPolicy;
+import com.newrelic.api.agent.security.utils.logging.LogLevel;
 
 import java.util.Iterator;
 import java.util.Map;
@@ -75,8 +76,10 @@ public class AkkaCoreUtils {
             NewRelicSecurity.getAgent().registerOperation(rxssOperation);
             ServletHelper.tmpFileCleanUp(NewRelicSecurity.getAgent().getSecurityMetaData().getFuzzRequestIdentifier().getTempFiles());
         } catch (Throwable e) {
+            NewRelicSecurity.getAgent().log(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, AKKA_HTTP_CORE_10_0_11, e.getMessage()), e, AkkaCoreUtils.class.getName());
+            NewRelicSecurity.getAgent().reportIncident(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, AKKA_HTTP_CORE_10_0_11, e.getMessage()), e, AkkaCoreUtils.class.getName());
             if(e instanceof NewRelicSecurityException){
-                e.printStackTrace();
+                NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.SECURITY_EXCEPTION_MESSAGE, AKKA_HTTP_CORE_10_0_11, e.getMessage()), e, AkkaCoreUtils.class.getName());
                 throw e;
             }
         } finally {
@@ -122,7 +125,9 @@ public class AkkaCoreUtils {
             securityAgentMetaData.setServiceTrace(Thread.currentThread().getStackTrace());
             securityRequest.setBody(requestBody);
             securityRequest.setRequestParsed(true);
-        } catch (Throwable ignored){}
+        } catch (Throwable ignored){
+            NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.ERROR_GENERATING_HTTP_REQUEST, AKKA_HTTP_CORE_10_0_11, ignored.getMessage()), ignored, AkkaCoreUtils.class.getName());
+        }
         finally {
             if(isServletLockAcquired()){
                 releaseServletLock();

@@ -146,8 +146,8 @@ public class HttpExt_Instrumentation {
             SSRFOperation operation = new SSRFOperation(uri, this.getClass().getName(), methodName);
             return operation;
         } catch (Throwable e) {
-            NewRelicSecurity.getAgent().log(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, AkkaCoreUtils.AKKA_HTTP_CORE_10_0, e.getMessage()), e, this.getClass().getName());
-            NewRelicSecurity.getAgent().reportIncident(LogLevel.SEVERE , String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, AkkaCoreUtils.AKKA_HTTP_CORE_10_0, e.getMessage()), e, this.getClass().getName());
+            String message = "Instrumentation library: %s , error while creating operation : %s";
+            NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(message, AkkaCoreUtils.AKKA_HTTP_CORE_10_0, e.getMessage()), e, this.getClass().getName());
             if (e instanceof NewRelicSecurityException) {
                 NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.SECURITY_EXCEPTION_MESSAGE, AkkaCoreUtils.AKKA_HTTP_CORE_10_0, e.getMessage()), e, this.getClass().getName());
                 throw e;

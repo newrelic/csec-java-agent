@@ -13,6 +13,7 @@ import com.newrelic.api.agent.security.schema.StringUtils;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
 import com.newrelic.api.agent.security.schema.operation.RXSSOperation;
 import com.newrelic.api.agent.security.schema.policy.AgentPolicy;
+import com.newrelic.api.agent.security.utils.logging.LogLevel;
 
 import java.util.Iterator;
 import java.util.Map;
@@ -76,7 +77,7 @@ public class AkkaCoreUtils {
             ServletHelper.tmpFileCleanUp(NewRelicSecurity.getAgent().getSecurityMetaData().getFuzzRequestIdentifier().getTempFiles());
         } catch (Throwable e) {
             if(e instanceof NewRelicSecurityException){
-                e.printStackTrace();
+                NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.SECURITY_EXCEPTION_MESSAGE, AkkaCoreUtils.AKKA_HTTP_CORE_10_0, e.getMessage()), e, AkkaCoreUtils.class.getName());
                 throw e;
             }
         } finally {
@@ -122,7 +123,9 @@ public class AkkaCoreUtils {
             securityAgentMetaData.setServiceTrace(Thread.currentThread().getStackTrace());
             securityRequest.setBody(requestBody);
             securityRequest.setRequestParsed(true);
-        } catch (Throwable ignored){}
+        } catch (Throwable ignored){
+            NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.ERROR_GENERATING_HTTP_REQUEST, AKKA_HTTP_CORE_10_0, ignored.getMessage()), ignored, AkkaCoreUtils.class.getName());
+        }
         finally {
             if(isServletLockAcquired()){
                 releaseServletLock();
