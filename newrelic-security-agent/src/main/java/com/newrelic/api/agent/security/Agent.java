@@ -134,12 +134,12 @@ public class Agent implements SecurityAgent {
         info.initStatusLogValues();
         setInitialised(true);
         populateLinkingMetadata();
-        populateApplccationTmpDir();
+        populateApplicationTmpDir();
         startK2Services();
         info.agentStatTrigger();
     }
 
-    private void populateApplccationTmpDir() {
+    private void populateApplicationTmpDir() {
         String tmpDir = System.getProperty(IUtilConstants.JAVA_IO_TMPDIR);
         setServerInfo(IUtilConstants.APPLICATION_TMP_DIRECTORY, tmpDir);
     }
