@@ -17,6 +17,7 @@ import okhttp3.Request;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.Callable;
 
@@ -111,6 +112,7 @@ public class RestRequestProcessor implements Callable<Boolean> {
                     e, RestRequestProcessor.class.getName());
             logger.postLogMessageIfNecessary(LogLevel.SEVERE,
                     String.format(JSON_PARSING_ERROR_WHILE_PROCESSING_FUZZING_REQUEST_S, controlCommand.getId()), e, RestRequestProcessor.class.getName());
+            RestRequestThreadPool.getInstance().getProcessedIds().putIfAbsent(controlCommand.getId(), new HashSet<>());
         } catch (Throwable e) {
             logger.log(LogLevel.SEVERE,
                     String.format(ERROR_WHILE_PROCESSING_FUZZING_REQUEST_S, controlCommand.getArguments().get(0)),
@@ -118,6 +120,7 @@ public class RestRequestProcessor implements Callable<Boolean> {
             logger.postLogMessageIfNecessary(LogLevel.SEVERE,
                     String.format(ERROR_WHILE_PROCESSING_FUZZING_REQUEST_S, controlCommand.getId()),
                     e, RestRequestProcessor.class.getName());
+            RestRequestThreadPool.getInstance().getProcessedIds().putIfAbsent(controlCommand.getId(), new HashSet<>());
             throw e;
         }
         return true;

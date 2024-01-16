@@ -14,6 +14,7 @@ import javax.net.ssl.*;
 import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.security.cert.CertificateException;
+import java.util.HashSet;
 import java.util.concurrent.TimeUnit;
 
 public class RestClient {
@@ -128,7 +129,8 @@ public class RestClient {
         try {
             Response response = call.execute();
             logger.log(LogLevel.FINER, String.format(REQUEST_FIRED_SUCCESS, request), RestClient.class.getName());
-            if(!response.isSuccessful()){
+            if(response.code() >= 400 && response.code() < 500){
+                RestRequestThreadPool.getInstance().getProcessedIds().putIfAbsent(fuzzRequestId, new HashSet<>());
                 logger.postLogMessageIfNecessary(LogLevel.WARNING,
                         String.format(RestClient.CALL_FAILED_REQUEST_S_REASON_S, fuzzRequestId,  response, response.body().string()), null,
                         RestRequestProcessor.class.getName());
@@ -148,7 +150,7 @@ public class RestClient {
             logger.postLogMessageIfNecessary(LogLevel.WARNING,
                     String.format(CALL_FAILED_REQUEST_S_REASON, fuzzRequestId),
                     e, RestRequestProcessor.class.getName());
-
+            RestRequestThreadPool.getInstance().getProcessedIds().putIfAbsent(fuzzRequestId, new HashSet<>());
             // TODO: Add to fuzz fail count in HC and remove FuzzFailEvent if not needed.
             FuzzFailEvent fuzzFailEvent = new FuzzFailEvent(AgentInfo.getInstance().getApplicationUUID());
             fuzzFailEvent.setFuzzHeader(request.header(ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID));
