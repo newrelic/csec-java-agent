@@ -91,7 +91,8 @@ public class GrpcServerUtils {
             securityRequest.setRequestParsed(true);
             NewRelicSecurity.getAgent().getSecurityMetaData().getMetaData().addReflectedMetaData(GrpcHelper.REQUEST_TYPE,
                     String.valueOf(methodDef.getMethodDescriptor().getType()));
-        } catch (Throwable ignored) {
+        } catch (Throwable e) {
+            NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.ERROR_GENERATING_HTTP_REQUEST, GrpcUtils.GRPC_1_4_0, e.getMessage()), e, GrpcServerUtils.class.getName());
         }
     }
 
@@ -120,9 +121,11 @@ public class GrpcServerUtils {
             ServletHelper.tmpFileCleanUp(NewRelicSecurity.getAgent().getSecurityMetaData().getFuzzRequestIdentifier().getTempFiles());
         } catch (Throwable e) {
             if (e instanceof NewRelicSecurityException) {
-                e.printStackTrace();
+                NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.SECURITY_EXCEPTION_MESSAGE, GrpcUtils.GRPC_1_4_0, e.getMessage()), e, GrpcServerUtils.class.getName());
                 throw e;
             }
+            NewRelicSecurity.getAgent().log(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, GrpcUtils.GRPC_1_4_0, e.getMessage()), e, GrpcServerUtils.class.getName());
+            NewRelicSecurity.getAgent().reportIncident(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, GrpcUtils.GRPC_1_4_0, e.getMessage()), e, GrpcServerUtils.class.getName());
         }
     }
 

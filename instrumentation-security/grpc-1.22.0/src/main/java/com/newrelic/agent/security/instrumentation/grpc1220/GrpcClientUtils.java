@@ -9,6 +9,7 @@ import com.newrelic.api.agent.security.schema.StringUtils;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
 import com.newrelic.api.agent.security.schema.operation.SSRFOperation;
 import com.newrelic.api.agent.security.utils.SSRFUtils;
+import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import io.grpc.Metadata;
 
 public class GrpcClientUtils {
@@ -22,7 +23,9 @@ public class GrpcClientUtils {
                 return;
             }
             NewRelicSecurity.getAgent().registerExitEvent(operation);
-        } catch (Throwable ignored) {
+        } catch (Throwable e) {
+            NewRelicSecurity.getAgent().log(
+                    LogLevel.FINEST, String.format(GenericHelper.EXIT_OPERATION_EXCEPTION_MESSAGE, GrpcUtils.GRPC_1_22_0, e.getMessage()), e, GrpcClientUtils.class.getName());
         }
     }
 
@@ -52,9 +55,11 @@ public class GrpcClientUtils {
             return operation;
         } catch (Throwable e) {
             if (e instanceof NewRelicSecurityException) {
-                e.printStackTrace();
+                NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.SECURITY_EXCEPTION_MESSAGE, GrpcUtils.GRPC_1_22_0, e.getMessage()), e, GrpcClientUtils.class.getName());
                 throw e;
             }
+            NewRelicSecurity.getAgent().log(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, GrpcUtils.GRPC_1_22_0, e.getMessage()), e, GrpcClientUtils.class.getName());
+            NewRelicSecurity.getAgent().reportIncident(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, GrpcUtils.GRPC_1_22_0, e.getMessage()), e, GrpcClientUtils.class.getName());
         }
         return null;
     }

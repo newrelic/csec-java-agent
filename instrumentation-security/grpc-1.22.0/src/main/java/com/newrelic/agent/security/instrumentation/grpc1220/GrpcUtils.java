@@ -2,7 +2,9 @@ package com.newrelic.agent.security.instrumentation.grpc1220;
 
 import com.google.protobuf.MessageOrBuilder;
 import com.newrelic.api.agent.security.NewRelicSecurity;
+import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.security.instrumentation.helpers.GrpcHelper;
+import com.newrelic.api.agent.security.utils.logging.LogLevel;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,6 +12,7 @@ import java.util.Map;
 
 public class GrpcUtils {
     public static final String NR_SEC_CUSTOM_ATTRIB_NAME = "NR_CSEC_GRPC_OBJECT_LOCK_";
+    public static final String GRPC_1_22_0 = "GRPC-1.22.0";
 
     public enum Type {
         REQUEST,
@@ -37,7 +40,9 @@ public class GrpcUtils {
                         break;
                 }
             }
-        } catch (Throwable ignored) {
+        } catch (Throwable e) {
+            NewRelicSecurity.getAgent().log(
+                    LogLevel.WARNING, String.format(GenericHelper.ERROR_PARSING_HTTP_REQUEST_DATA, GRPC_1_22_0, e.getMessage()), e, GrpcUtils.class.getName());
         }
     }
 
