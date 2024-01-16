@@ -134,9 +134,14 @@ public class Agent implements SecurityAgent {
         info.initStatusLogValues();
         setInitialised(true);
         populateLinkingMetadata();
-
+        populateApplicationTmpDir();
         startK2Services();
         info.agentStatTrigger();
+    }
+
+    private void populateApplicationTmpDir() {
+        String tmpDir = System.getProperty(IUtilConstants.JAVA_IO_TMPDIR);
+        setServerInfo(IUtilConstants.APPLICATION_TMP_DIRECTORY, tmpDir);
     }
 
     private BuildInfo readCollectorBuildInfo() {
@@ -538,6 +543,8 @@ public class Agent implements SecurityAgent {
             case IUtilConstants.SAME_SITE_COOKIES:
                 appServerInfo.setSameSiteCookies(value);
                 break;
+            case IUtilConstants.APPLICATION_TMP_DIRECTORY:
+                appServerInfo.setApplicationTmpDirectory(value);
             default:
                 break;
         }
@@ -554,6 +561,8 @@ public class Agent implements SecurityAgent {
                 return appServerInfo.getServerBaseDirectory();
             case IUtilConstants.SAME_SITE_COOKIES:
                 return appServerInfo.getSameSiteCookies();
+            case IUtilConstants.APPLICATION_TMP_DIRECTORY:
+                return appServerInfo.getApplicationTmpDirectory();
             default:
                 return null;
         }

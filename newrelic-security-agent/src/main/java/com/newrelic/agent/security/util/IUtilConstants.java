@@ -31,4 +31,7 @@ public interface IUtilConstants {
 
     String SERVER_BASE_DIRECTORY = "SERVER_BASE_DIRECTORY";
     String SAME_SITE_COOKIES = "SAME_SITE_COOKIES";
+
+    String APPLICATION_TMP_DIRECTORY = "APPLICATION_TMP_DIRECTORY";
+    String JAVA_IO_TMPDIR = "java.io.tmpdir";
 }
