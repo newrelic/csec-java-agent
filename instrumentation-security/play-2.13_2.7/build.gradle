@@ -1,0 +1,32 @@
+apply plugin: 'scala'
+
+scala {
+    zincVersion = "1.7.1"
+}
+isScalaProjectEnabled(project, "scala-2.13")
+
+dependencies {
+    implementation(project(":newrelic-security-api"))
+    implementation("com.newrelic.agent.java:newrelic-api:${nrAPIVersion}")
+    implementation("com.newrelic.agent.java:newrelic-weaver-api:${nrAPIVersion}")
+    implementation("org.scala-lang:scala-library:2.13.12")
+    implementation("com.typesafe.play:play_2.13:2.7.3")
+}
+
+jar {
+    manifest { attributes 'Implementation-Title': 'com.newrelic.security.instrumentation.play-2.13_2.7' }
+}
+
+verifyInstrumentation {
+    passesOnly 'com.typesafe.play:play_2.13:[2.7.0-M1,)'
+    passesOnly 'org.playframework:play_2.13:[3.0.0-M1,)'
+    passesOnly 'org.playframework:play_3:[3.0.0-M1,)'
+
+    // build snapshots
+    excludeRegex '.*-[0-9]{4}-[0-9]{2}-[0-9]{2}-[a-z0-9]{7}$'
+}
+
+site {
+    title 'Play'
+    type 'Appserver'
+}
