@@ -7,7 +7,7 @@ sourceSets.test.scala.srcDir "src/test/java"
 sourceSets.test.java.srcDirs = []
 
 jar {
-    manifest { attributes 'Implementation-Title': 'com.newrelic.instrumentation.security.akka-http-2.11_2.4.5' }
+    manifest { attributes 'Implementation-Title': 'com.newrelic.instrumentation.security.akka-http-2.11_10.0.0' }
 }
 
 dependencies {
