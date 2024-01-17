@@ -36,7 +36,7 @@ object CsecAkkaHttpContextFunction {
         val instrumentationObject = instrumentation.get(null)
         val instrumentationInterface = Class.forName("com.newrelic.agent.bridge.Instrumentation")
         val retransformUninstrumentedClassMethod = instrumentationInterface.getDeclaredMethod("retransformUninstrumentedClass", classOf[Class[_]])
-        retransformUninstrumentedClassMethod.invoke(instrumentationObject, classOf[ContextWrapper])
+        retransformUninstrumentedClassMethod.invoke(instrumentationObject, classOf[CsecContextWrapper])
       } catch {
         case e: Throwable =>
           NewRelic.getAgent.getLogger.log(Level.SEVERE, "Unable to instrument akka.http.scaladsl.server.AkkaHttpContextFunction [akka-http-2.11_2.4.5] due to error", e)
@@ -44,12 +44,12 @@ object CsecAkkaHttpContextFunction {
       NewRelicSecurity.getAgent.log(LogLevel.FINER, "Retransformed akka.http.scaladsl.server.AkkaHttpContextFunction", this.getClass.getName);
     }
 
-    new ContextWrapper(original)
+    new CsecContextWrapper(original)
   }
 
 }
 
-class ContextWrapper(original: Function1[RequestContext, Future[RouteResult]]) extends AbstractFunction1[RequestContext, Future[RouteResult]] {
+class CsecContextWrapper(original: Function1[RequestContext, Future[RouteResult]]) extends AbstractFunction1[RequestContext, Future[RouteResult]] {
 
   @Trace(dispatcher = true)
   override def apply(ctx: RequestContext): Future[RouteResult] = {
