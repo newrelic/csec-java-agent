@@ -7,6 +7,7 @@
 
 package akka.http.scaladsl.marshalling;
 
+import akka.http.scaladsl.AkkaResponseHelper;
 import akka.http.scaladsl.model.HttpResponse;
 import akka.stream.scaladsl.Flow;
 import com.newrelic.api.agent.Token;
@@ -23,7 +24,7 @@ public abstract class AkkaHttpToResponseMarshallable {
 
     public Marshaller<Object, HttpResponse> marshaller() {
         Marshaller<Object, HttpResponse> marshaller = Weaver.callOriginal();
-        return marshaller;
+        return marshaller.map(new AkkaResponseHelper());
     }
 
 }
