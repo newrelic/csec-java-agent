@@ -21,7 +21,7 @@ import java.util.Map;
 public class AkkaCoreUtils {
 
     public static final String NR_SEC_CUSTOM_ATTRIB_NAME = "HTTPREQUEST_OPERATION_LOCK_AKKA-";
-
+    public static final String AKKA_HTTP_2_4_5 = "AKKA_HTTP_2.4.5";
     private static final String X_FORWARDED_FOR = "x-forwarded-for";
     private static final String EMPTY = "";
 
@@ -72,10 +72,10 @@ public class AkkaCoreUtils {
             NewRelicSecurity.getAgent().registerOperation(rxssOperation);
             ServletHelper.tmpFileCleanUp(NewRelicSecurity.getAgent().getSecurityMetaData().getFuzzRequestIdentifier().getTempFiles());
         } catch (Throwable e) {
-            NewRelicSecurity.getAgent().log(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, AKKA_HTTP_CORE_10_0_11, e.getMessage()), e, AkkaCoreUtils.class.getName());
-            NewRelicSecurity.getAgent().reportIncident(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, AKKA_HTTP_CORE_10_0_11, e.getMessage()), e, AkkaCoreUtils.class.getName());
+            NewRelicSecurity.getAgent().log(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, AKKA_HTTP_2_4_5, e.getMessage()), e, AkkaCoreUtils.class.getName());
+            NewRelicSecurity.getAgent().reportIncident(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, AKKA_HTTP_2_4_5, e.getMessage()), e, AkkaCoreUtils.class.getName());
             if(e instanceof NewRelicSecurityException){
-                NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.SECURITY_EXCEPTION_MESSAGE, AKKA_HTTP_CORE_10_0_11, e.getMessage()), e, AkkaCoreUtils.class.getName());
+                NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.SECURITY_EXCEPTION_MESSAGE, AKKA_HTTP_2_4_5, e.getMessage()), e, AkkaCoreUtils.class.getName());
                 throw e;
             }
         } finally {
@@ -108,7 +108,7 @@ public class AkkaCoreUtils {
             //TODO Client IP and PORT extraction is pending
 
 //            securityRequest.setClientIP();
-            securityRequest.setServerPort(httpRequest.getUri().getPort());
+            securityRequest.setServerPort(httpRequest.getUri().port());
 
             processHttpRequestHeader(httpRequest, securityRequest);
 
@@ -122,7 +122,7 @@ public class AkkaCoreUtils {
             securityRequest.setBody(requestBody);
             securityRequest.setRequestParsed(true);
         } catch (Throwable ignored){
-            NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.ERROR_GENERATING_HTTP_REQUEST, AKKA_HTTP_CORE_10_0_11, ignored.getMessage()), ignored, AkkaCoreUtils.class.getName());
+            NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.ERROR_GENERATING_HTTP_REQUEST, AKKA_HTTP_2_4_5, ignored.getMessage()), ignored, AkkaCoreUtils.class.getName());
         }
         finally {
             if(isServletLockAcquired()){
