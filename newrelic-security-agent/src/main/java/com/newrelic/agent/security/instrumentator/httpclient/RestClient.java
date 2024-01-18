@@ -134,7 +134,9 @@ public class RestClient {
                 logger.postLogMessageIfNecessary(LogLevel.WARNING,
                         String.format(RestClient.CALL_FAILED_REQUEST_S_REASON_S, fuzzRequestId,  response, response.body().string()), null,
                         RestRequestProcessor.class.getName());
-            } else {
+            } else if(response.isSuccessful()){
+                RestRequestThreadPool.getInstance().getProcessedIds().putIfAbsent(fuzzRequestId, new HashSet<>());
+            }else {
                 logger.log(LogLevel.FINER, String.format(REQUEST_SUCCESS_S_RESPONSE_S_S, request, response, response.body().string()), RestClient.class.getName());
             }
             response.body().close();
