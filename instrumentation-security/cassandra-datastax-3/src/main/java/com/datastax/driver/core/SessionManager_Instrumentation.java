@@ -8,6 +8,8 @@ import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
+import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
+
 
 @Weave(type = MatchType.ExactClass, originalName = "com.datastax.driver.core.SessionManager")
 abstract class SessionManager_Instrumentation {

@@ -10,6 +10,8 @@ import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
 import com.newrelic.agent.security.instrumentation.cassandra4.CassandraUtils;
+import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
+
 
 @Weave(type = MatchType.Interface, originalName = "com.datastax.oss.driver.api.core.session.Session")
 public class Session_Instrumentation {
