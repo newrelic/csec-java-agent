@@ -14,6 +14,8 @@ public class JerseyHelper {
     private static final String EMPTY = "";
     private static final String WILDCARD = "*";
     private static final String SEPARATOR = "/";
+    public static final String ORG_GLASSFISH_JERSEY_SERVER_WADL = "org.glassfish.jersey.server.wadl";
+
     public static void gatherUrlMappings(ResourceModel resourceModel) {
         try {
             List<Resource> resources = resourceModel.getResources();
@@ -56,7 +58,9 @@ public class JerseyHelper {
 
     private static void addURLMappings(String url, String httpMethod, Set<Class<?>> handlerClasses) {
         for (Class<?> handlerClass : handlerClasses) {
-            URLMappingsHelper.addApplicationURLMapping(new ApplicationURLMapping(httpMethod, url, handlerClass.getName()));
+            if (!handlerClass.getName().startsWith(ORG_GLASSFISH_JERSEY_SERVER_WADL)){
+                URLMappingsHelper.addApplicationURLMapping(new ApplicationURLMapping(httpMethod, url, handlerClass.getName()));
+            }
         }
     }
 }
