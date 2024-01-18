@@ -29,9 +29,9 @@ public class Session_Instrumentation {
                 }
             }
         } catch (Exception ignored) {
-            if (e instanceof NewRelicSecurityException) {
-                NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.SECURITY_EXCEPTION_MESSAGE, CassandraUtils.CASSANDRA_DATASTAX_4, e.getMessage()), e, this.getClass().getName());
-                throw e;
+            if (ignored instanceof NewRelicSecurityException) {
+                NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.SECURITY_EXCEPTION_MESSAGE, CassandraUtils.CASSANDRA_DATASTAX_4, ignored.getMessage()), ignored, this.getClass().getName());
+                throw ignored;
             }
             NewRelicSecurity.getAgent().log(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, CassandraUtils.CASSANDRA_DATASTAX_4, ignored.getMessage()), ignored, this.getClass().getName());
             NewRelicSecurity.getAgent().reportIncident(LogLevel.SEVERE , String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, CassandraUtils.CASSANDRA_DATASTAX_4, ignored.getMessage()), ignored, this.getClass().getName());
