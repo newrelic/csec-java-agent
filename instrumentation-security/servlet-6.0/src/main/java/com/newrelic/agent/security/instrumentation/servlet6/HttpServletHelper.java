@@ -124,7 +124,7 @@ public class HttpServletHelper {
 
             for (ServletRegistration servletRegistration : servletRegistrations.values()) {
                 for (String s : servletRegistration.getMappings()) {
-                    URLMappingsHelper.addApplicationURLMapping(new ApplicationURLMapping(WILDCARD, s));
+                    URLMappingsHelper.addApplicationURLMapping(new ApplicationURLMapping(WILDCARD, s, servletRegistration.getClassName()));
                 }
             }
         } catch (Exception ignored){
