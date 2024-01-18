@@ -363,9 +363,11 @@ public class Agent implements SecurityAgent {
 
     private void setRequiredStackTrace(AbstractOperation operation, SecurityMetaData securityMetaData) {
         StackTraceElement[] currentStackTrace = operation.getStackTrace();
-        int targetBottomStackLength = currentStackTrace.length - securityMetaData.getMetaData().getServiceTrace().length + 3;
-        currentStackTrace = Arrays.copyOfRange(currentStackTrace, 0, targetBottomStackLength);
-        operation.setStackTrace(currentStackTrace);
+        if (securityMetaData.getMetaData().getServiceTrace() != null && securityMetaData.getMetaData().getServiceTrace().length + 3 < currentStackTrace.length) {
+            int targetBottomStackLength = currentStackTrace.length - securityMetaData.getMetaData().getServiceTrace().length + 3;
+            currentStackTrace = Arrays.copyOfRange(currentStackTrace, 0, targetBottomStackLength);
+            operation.setStackTrace(currentStackTrace);
+        }
     }
 
     private static void processStackTrace(AbstractOperation operation) {
