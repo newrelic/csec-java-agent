@@ -28,6 +28,7 @@ public class AkkaCoreUtils {
 
     private static final String X_FORWARDED_FOR = "x-forwarded-for";
     private static final String EMPTY = "";
+    public static final String QUESTION_MARK = "?";
 
     public static boolean isServletLockAcquired() {
         try {
@@ -119,7 +120,13 @@ public class AkkaCoreUtils {
             securityMetaData.setTracingHeaderValue(getTraceHeader(securityRequest.getHeaders()));
 
             securityRequest.setProtocol(getProtocol(httpRequest.protocol().value()));
+
             securityRequest.setUrl(httpRequest.getUri().path());
+            String queryString = httpRequest.getUri().rawQueryString().get();
+            if (queryString != null && !queryString.trim().isEmpty()) {
+                securityRequest.setUrl(securityRequest.getUrl() + QUESTION_MARK + queryString);
+            }
+
             securityRequest.setContentType(httpRequest.entity().getContentType().toString());
 
             securityAgentMetaData.setServiceTrace(Thread.currentThread().getStackTrace());
@@ -169,7 +176,7 @@ public class AkkaCoreUtils {
                         .setFuzzRequestIdentifier(ServletHelper.parseFuzzRequestIdentifierHeader(nextHeader.value()));
             } else if(GenericHelper.CSEC_PARENT_ID.equals(headerKey)) {
                 NewRelicSecurity.getAgent().getSecurityMetaData()
-                        .addCustomAttribute(GenericHelper.CSEC_PARENT_ID, request.getHeader(headerKey));
+                        .addCustomAttribute(GenericHelper.CSEC_PARENT_ID, request.getHeader(headerKey).get().value());
             }
             String headerFullValue = nextHeader.value();
             if (headerFullValue != null && !headerFullValue.trim().isEmpty()) {
