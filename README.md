@@ -33,6 +33,9 @@ The agent automatically instruments the following frameworks.
 - Resin 3.1.9 to 4.0.x
 - Jetty 9.3.0.M1 to latest
 - Mule ESB 3.6 to 3.9.x
+- gRPC 1.4.0 to latest**
+
+** IAST for **gRPC** requires the dependency [protobuf-java-util](https://mvnrepository.com/artifact/com.google.protobuf/protobuf-java-util) for IAST request replay.
 
 ### Java Native Operations
 
@@ -138,6 +141,8 @@ From APM Java agent root directory :
 ```./gradlew clean :newrelic-api:publishToMavenLocal :agent-bridge:publishToMavenLocal :agent-bridge-datastore:publishToMavenLocal :newrelic-weaver-api:publishToMavenLocal :newrelic-weaver:publishToMavenLocal :newrelic-weaver-scala:publishToMavenLocal :newrelic-weaver-scala-api:publishToMavenLocal --parallel```
 
 From CSEC java agent root dir :
+
+```./gradlew clean :newrelic-security-api:publishToMavenLocal```
 
 ```./gradlew clean jar --parallel```
 
