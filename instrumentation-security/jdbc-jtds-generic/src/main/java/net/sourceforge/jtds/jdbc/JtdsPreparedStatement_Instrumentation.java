@@ -25,7 +25,6 @@ import java.sql.ResultSet;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.newrelic.api.agent.security.instrumentation.helpers.JdbcHelper.JDBC_GENERIC;
 import static com.newrelic.api.agent.security.instrumentation.helpers.JdbcHelper.JDBC_JTDS_GENERIC;
 
 @Weave(type = MatchType.BaseClass, originalName = "net.sourceforge.jtds.jdbc.JtdsPreparedStatement")
@@ -63,12 +62,12 @@ public abstract class JtdsPreparedStatement_Instrumentation {
             NewRelicSecurity.getAgent().registerOperation(sqlOperation);
             return sqlOperation;
         } catch (Throwable e) {
-            NewRelicSecurity.getAgent().log(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, JDBC_JTDS_GENERIC, e.getMessage()), e, this.getClass().getName());
-            NewRelicSecurity.getAgent().reportIncident(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, JDBC_JTDS_GENERIC, e.getMessage()), e, this.getClass().getName());
             if (e instanceof NewRelicSecurityException) {
                 NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.SECURITY_EXCEPTION_MESSAGE, JDBC_JTDS_GENERIC, e.getMessage()), e, this.getClass().getName());
                 throw e;
             }
+            NewRelicSecurity.getAgent().log(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, JDBC_JTDS_GENERIC, e.getMessage()), e, this.getClass().getName());
+            NewRelicSecurity.getAgent().reportIncident(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, JDBC_JTDS_GENERIC, e.getMessage()), e, this.getClass().getName());
         }
         return null;
     }

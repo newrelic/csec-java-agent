@@ -31,6 +31,10 @@ abstract class SessionManager_Instrumentation {
                 }
             }
         } catch (Exception e) {
+            if (e instanceof NewRelicSecurityException) {
+                NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.SECURITY_EXCEPTION_MESSAGE, CassandraUtils.CASSANDRA_DATASTAX_3, e.getMessage()), e, this.getClass().getName());
+                throw e;
+            }
             NewRelicSecurity.getAgent().log(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, CassandraUtils.CASSANDRA_DATASTAX_3, e.getMessage()), e, this.getClass().getName());
             NewRelicSecurity.getAgent().reportIncident(LogLevel.SEVERE , String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, CassandraUtils.CASSANDRA_DATASTAX_3, e.getMessage()), e, this.getClass().getName());
         }

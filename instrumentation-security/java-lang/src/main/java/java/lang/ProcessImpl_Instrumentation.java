@@ -53,12 +53,12 @@ abstract class ProcessImpl_Instrumentation {
             NewRelicSecurity.getAgent().registerOperation(operation);
             return operation;
         } catch (Throwable e) {
-            NewRelicSecurity.getAgent().log(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, "JAVA-LANG", e.getMessage()), e, ProcessImpl_Instrumentation.class.getName());
-            NewRelicSecurity.getAgent().reportIncident(LogLevel.SEVERE , String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, "JAVA-LANG", e.getMessage()), e, ProcessImpl_Instrumentation.class.getName());
             if(e instanceof NewRelicSecurityException){
                 NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.SECURITY_EXCEPTION_MESSAGE, "JAVA-LANG", e.getMessage()), e, ProcessImpl_Instrumentation.class.getName());
                 throw e;
             }
+            NewRelicSecurity.getAgent().log(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, "JAVA-LANG", e.getMessage()), e, ProcessImpl_Instrumentation.class.getName());
+            NewRelicSecurity.getAgent().reportIncident(LogLevel.SEVERE , String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, "JAVA-LANG", e.getMessage()), e, ProcessImpl_Instrumentation.class.getName());
         }
         return null;
     }

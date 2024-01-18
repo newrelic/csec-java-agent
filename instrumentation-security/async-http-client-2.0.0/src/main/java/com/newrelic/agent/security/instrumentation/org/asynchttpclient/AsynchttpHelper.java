@@ -73,12 +73,12 @@ public class AsynchttpHelper {
             NewRelicSecurity.getAgent().registerOperation(operation);
             return operation;
         } catch (Throwable e) {
-            NewRelicSecurity.getAgent().log(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, ASYNC_HTTP_CLIENT_2_0_0, e.getMessage()), e, AsynchttpHelper.class.getName());
-            NewRelicSecurity.getAgent().reportIncident(LogLevel.SEVERE , String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, ASYNC_HTTP_CLIENT_2_0_0, e.getMessage()), e, AsynchttpHelper.class.getName());
             if (e instanceof NewRelicSecurityException) {
                 NewRelicSecurity.getAgent().log(LogLevel.FINEST, String.format(GenericHelper.EXIT_OPERATION_EXCEPTION_MESSAGE, ASYNC_HTTP_CLIENT_2_0_0, e.getMessage()), e, AsynchttpHelper.class.getName());
                 throw e;
             }
+            NewRelicSecurity.getAgent().log(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, ASYNC_HTTP_CLIENT_2_0_0, e.getMessage()), e, AsynchttpHelper.class.getName());
+            NewRelicSecurity.getAgent().reportIncident(LogLevel.SEVERE , String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, ASYNC_HTTP_CLIENT_2_0_0, e.getMessage()), e, AsynchttpHelper.class.getName());
         }
         return null;
     }
