@@ -119,7 +119,7 @@ public class AkkaCoreUtils {
             securityMetaData.setTracingHeaderValue(getTraceHeader(securityRequest.getHeaders()));
 
             securityRequest.setProtocol(getProtocol(httpRequest.protocol().value()));
-            securityRequest.setUrl(httpRequest.getUri().toString());
+            securityRequest.setUrl(httpRequest.getUri().path());
             securityRequest.setContentType(httpRequest.entity().getContentType().toString());
 
             securityAgentMetaData.setServiceTrace(Thread.currentThread().getStackTrace());
