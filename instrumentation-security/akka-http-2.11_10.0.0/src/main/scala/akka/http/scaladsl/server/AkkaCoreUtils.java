@@ -17,13 +17,15 @@ import com.newrelic.api.agent.security.utils.logging.LogLevel;
 
 import java.util.Iterator;
 import java.util.Map;
+import java.util.NoSuchElementException;
 
 public class AkkaCoreUtils {
 
     public static final String NR_SEC_CUSTOM_ATTRIB_NAME = "HTTPREQUEST_OPERATION_LOCK_AKKA-";
-    public static final String AKKA_HTTP_2_4_5 = "AKKA_HTTP_2.4.5";
+    public static final String AKKA_HTTP_10_0_0 = "AKKA_HTTP_10.0.0";
     private static final String X_FORWARDED_FOR = "x-forwarded-for";
     private static final String EMPTY = "";
+    public static final String QUESTION_MARK = "?";
 
     public static boolean isServletLockAcquired() {
         try {
@@ -72,10 +74,10 @@ public class AkkaCoreUtils {
             NewRelicSecurity.getAgent().registerOperation(rxssOperation);
             ServletHelper.tmpFileCleanUp(NewRelicSecurity.getAgent().getSecurityMetaData().getFuzzRequestIdentifier().getTempFiles());
         } catch (Throwable e) {
-            NewRelicSecurity.getAgent().log(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, AKKA_HTTP_2_4_5, e.getMessage()), e, AkkaCoreUtils.class.getName());
-            NewRelicSecurity.getAgent().reportIncident(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, AKKA_HTTP_2_4_5, e.getMessage()), e, AkkaCoreUtils.class.getName());
+            NewRelicSecurity.getAgent().log(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, AKKA_HTTP_10_0_0, e.getMessage()), e, AkkaCoreUtils.class.getName());
+            NewRelicSecurity.getAgent().reportIncident(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, AKKA_HTTP_10_0_0, e.getMessage()), e, AkkaCoreUtils.class.getName());
             if(e instanceof NewRelicSecurityException){
-                NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.SECURITY_EXCEPTION_MESSAGE, AKKA_HTTP_2_4_5, e.getMessage()), e, AkkaCoreUtils.class.getName());
+                NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.SECURITY_EXCEPTION_MESSAGE, AKKA_HTTP_10_0_0, e.getMessage()), e, AkkaCoreUtils.class.getName());
                 throw e;
             }
         } finally {
@@ -115,14 +117,26 @@ public class AkkaCoreUtils {
             securityMetaData.setTracingHeaderValue(getTraceHeader(securityRequest.getHeaders()));
 
             securityRequest.setProtocol(getProtocol(httpRequest.protocol().value()));
-            securityRequest.setUrl(httpRequest.getUri().toString());
+
+            securityRequest.setUrl(httpRequest.getUri().path());
+            String queryString = null;
+            try {
+                queryString = httpRequest.getUri().rawQueryString().get();
+            } catch (NoSuchElementException ignored) {
+                // ignore NoSuchElementException – there is no value present in rawQueryString
+            } finally {
+                if (queryString != null && !queryString.trim().isEmpty()) {
+                    securityRequest.setUrl(securityRequest.getUrl() + QUESTION_MARK + queryString);
+                }
+            }
+
             securityRequest.setContentType(httpRequest.entity().getContentType().toString());
 
             securityAgentMetaData.setServiceTrace(Thread.currentThread().getStackTrace());
             securityRequest.setBody(requestBody);
             securityRequest.setRequestParsed(true);
         } catch (Throwable ignored){
-            NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.ERROR_GENERATING_HTTP_REQUEST, AKKA_HTTP_2_4_5, ignored.getMessage()), ignored, AkkaCoreUtils.class.getName());
+            NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.ERROR_GENERATING_HTTP_REQUEST, AKKA_HTTP_10_0_0, ignored.getMessage()), ignored, AkkaCoreUtils.class.getName());
         }
         finally {
             if(isServletLockAcquired()){
@@ -165,7 +179,7 @@ public class AkkaCoreUtils {
                         .setFuzzRequestIdentifier(ServletHelper.parseFuzzRequestIdentifierHeader(nextHeader.value()));
             } else if(GenericHelper.CSEC_PARENT_ID.equals(headerKey)) {
                 NewRelicSecurity.getAgent().getSecurityMetaData()
-                        .addCustomAttribute(GenericHelper.CSEC_PARENT_ID, request.getHeader(headerKey));
+                        .addCustomAttribute(GenericHelper.CSEC_PARENT_ID, request.getHeader(headerKey).get().value());
             }
             String headerFullValue = nextHeader.value();
             if (headerFullValue != null && !headerFullValue.trim().isEmpty()) {

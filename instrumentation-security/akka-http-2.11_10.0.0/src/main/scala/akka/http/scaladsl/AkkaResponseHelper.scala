@@ -34,7 +34,7 @@ class AkkaResponseHelper extends AbstractFunction1[HttpResponse, HttpResponse] {
       AkkaCoreUtils.postProcessHttpRequest(isLockAquired, stringResponse, httpResponse.entity.contentType.toString(), this.getClass.getName, "apply", NewRelic.getAgent.getTransaction.getToken())
     } catch {
       case t: NewRelicSecurityException =>
-        NewRelicSecurity.getAgent.log(LogLevel.WARNING, String.format(GenericHelper.SECURITY_EXCEPTION_MESSAGE, AkkaCoreUtils.AKKA_HTTP_2_4_5, t.getMessage), t, classOf[AkkaCoreUtils].getName)
+        NewRelicSecurity.getAgent.log(LogLevel.WARNING, String.format(GenericHelper.SECURITY_EXCEPTION_MESSAGE, AkkaCoreUtils.AKKA_HTTP_10_0_0, t.getMessage), t, classOf[AkkaCoreUtils].getName)
         throw t
       case _: Throwable =>
     }
