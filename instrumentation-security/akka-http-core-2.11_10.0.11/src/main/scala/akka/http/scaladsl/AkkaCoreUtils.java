@@ -17,6 +17,7 @@ import com.newrelic.api.agent.security.utils.logging.LogLevel;
 
 import java.util.Iterator;
 import java.util.Map;
+import java.util.NoSuchElementException;
 
 public class AkkaCoreUtils {
 
@@ -122,9 +123,14 @@ public class AkkaCoreUtils {
             securityRequest.setProtocol(getProtocol(httpRequest.protocol().value()));
 
             securityRequest.setUrl(httpRequest.getUri().path());
-            String queryString = httpRequest.getUri().rawQueryString().get();
-            if (queryString != null && !queryString.trim().isEmpty()) {
-                securityRequest.setUrl(securityRequest.getUrl() + QUESTION_MARK + queryString);
+            String queryString = null;
+            try {
+                queryString = httpRequest.getUri().rawQueryString().get();
+            } catch (NoSuchElementException ignored) {
+            } finally {
+                if (queryString != null && !queryString.trim().isEmpty()) {
+                    securityRequest.setUrl(securityRequest.getUrl() + QUESTION_MARK + queryString);
+                }
             }
 
             securityRequest.setContentType(httpRequest.entity().getContentType().toString());
