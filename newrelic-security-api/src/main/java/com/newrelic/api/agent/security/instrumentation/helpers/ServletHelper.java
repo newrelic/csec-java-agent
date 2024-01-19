@@ -14,6 +14,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -33,7 +34,39 @@ public class ServletHelper {
     public static final String NR_SEC_HTTP_SESSION_ATTRIB_NAME = "NR-CSEC-HTTP-SESSION-";
     public static final String NR_SEC_HTTP_SERVLET_RESPONSE_ATTRIB_NAME = "NR-CSEC-HTTP-SERVLET-RESPONSE-";
 
-    private static Set<String> filesToRemove = ConcurrentHashMap.newKeySet();;
+    private static Set<String> filesToRemove = ConcurrentHashMap.newKeySet();
+    private static final Set<String> unsupportedContentType = new HashSet<String>() {{
+        add("application/zip");
+        add("application/epub+zip");
+        add("application/gzip");
+        add("application/java-archive");
+        add("application/msword");
+        add("application/octet-stream");
+        add("application/ogg");
+        add("application/pdf");
+        add("application/rtf");
+        add("application/vnd.amazon.ebook");
+        add("application/vnd.apple.installer+xml");
+        add("application/vnd.ms-excel");
+        add("application/vnd.ms-fontobject");
+        add("application/vnd.ms-powerpoint");
+        add("application/vnd.oasis.opendocument.presentation");
+        add("application/vnd.oasis.opendocument.spreadsheet");
+        add("application/vnd.oasis.opendocument.text");
+        add("application/vnd.openxmlformats-officedocument.presentationml.presentation");
+        add("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        add("application/vnd.openxmlformats-officedocument.wordprocessingml.document");
+        add("application/vnd.rar");
+        add("application/vnd.visio");
+        add("application/x-7z-compressed");
+        add("application/x-abiword");
+        add("application/x-bzip");
+        add("application/x-bzip2");
+        add("application/x-cdf");
+        add("application/x-freearc");
+        add("application/x-tar");
+        add("text/calendar");
+    }};
 
     public static K2RequestIdentifier parseFuzzRequestIdentifierHeader(String requestHeaderVal) {
         K2RequestIdentifier k2RequestIdentifierInstance = new K2RequestIdentifier();
@@ -143,5 +176,16 @@ public class ServletHelper {
             } catch (IOException e) {
             }
         }
+    }
+
+    public static boolean isResponseContentTypeExcluded( String responseContentType) {
+        if (StringUtils.isBlank(responseContentType)) {
+            return false;
+        }
+        responseContentType =  responseContentType.toLowerCase();
+        if(StringUtils.startsWithAny(responseContentType, "audio/", "video/", "image/", "font/")){
+            return true;
+        }
+        return unsupportedContentType.contains(responseContentType);
     }
 }

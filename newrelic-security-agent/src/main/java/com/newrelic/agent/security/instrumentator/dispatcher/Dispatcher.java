@@ -321,6 +321,7 @@ public class Dispatcher implements Callable {
             params.addAll(xssConstructs);
             params.add(securityMetaData.getResponse().getResponseBody());
             eventBean.setParameters(params);
+            eventBean.setHttpResponse(securityMetaData.getResponse());
             eventBean.setApplicationUUID(AgentInfo.getInstance().getApplicationUUID());
             eventBean.setPid(AgentInfo.getInstance().getVMPID());
             eventBean.setId(operation.getExecutionId());
