@@ -113,12 +113,12 @@ public class JXPathContextReferenceImpl_Instrumentation {
             NewRelicSecurity.getAgent().registerOperation(xPathOperation);
             return xPathOperation;
         } catch (Throwable e) {
-            NewRelicSecurity.getAgent().log(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, XPATHUtils.COMMONS_JXPATH, e.getMessage()), e, this.getClass().getName());
-            NewRelicSecurity.getAgent().reportIncident(LogLevel.SEVERE , String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, XPATHUtils.COMMONS_JXPATH, e.getMessage()), e, this.getClass().getName());
             if (e instanceof NewRelicSecurityException) {
                 NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.SECURITY_EXCEPTION_MESSAGE, XPATHUtils.COMMONS_JXPATH, e.getMessage()), e, this.getClass().getName());
                 throw e;
             }
+            NewRelicSecurity.getAgent().log(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, XPATHUtils.COMMONS_JXPATH, e.getMessage()), e, this.getClass().getName());
+            NewRelicSecurity.getAgent().reportIncident(LogLevel.SEVERE , String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, XPATHUtils.COMMONS_JXPATH, e.getMessage()), e, this.getClass().getName());
         }
         return null;
     }

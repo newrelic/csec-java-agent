@@ -81,6 +81,8 @@ public class AkkaCoreUtils {
                 NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.SECURITY_EXCEPTION_MESSAGE, AkkaCoreUtils.AKKA_HTTP_CORE_10_0, e.getMessage()), e, AkkaCoreUtils.class.getName());
                 throw e;
             }
+            NewRelicSecurity.getAgent().log(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, AKKA_HTTP_CORE_10_0, e.getMessage()), e, AkkaCoreUtils.class.getName());
+            NewRelicSecurity.getAgent().reportIncident(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, AKKA_HTTP_CORE_10_0, e.getMessage()), e, AkkaCoreUtils.class.getName());            
         } finally {
             if(isServletLockAcquired){
                 releaseServletLock();

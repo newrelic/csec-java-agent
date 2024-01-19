@@ -128,12 +128,12 @@ public abstract class Context_Instrumentation {
             UserDataTranslationHelper.placeJNDIAdditionalTemplateData();
             return JNDIUtils.handleJNDIHook(names, methodName, this.getClass().getName());
         } catch (Throwable e) {
-            NewRelicSecurity.getAgent().log(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, JNDIUtils.JAVAX_JNDI, e.getMessage()), e, this.getClass().getName());
-            NewRelicSecurity.getAgent().reportIncident(LogLevel.SEVERE , String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, JNDIUtils.JAVAX_JNDI, e.getMessage()), e, this.getClass().getName());
             if(e instanceof NewRelicSecurityException){
                 NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.SECURITY_EXCEPTION_MESSAGE, JNDIUtils.JAVAX_JNDI, e.getMessage()), e, this.getClass().getName());
                 throw e;
             }
+            NewRelicSecurity.getAgent().log(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, JNDIUtils.JAVAX_JNDI, e.getMessage()), e, this.getClass().getName());
+            NewRelicSecurity.getAgent().reportIncident(LogLevel.SEVERE , String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, JNDIUtils.JAVAX_JNDI, e.getMessage()), e, this.getClass().getName());
         }
         return null;
     }
@@ -148,12 +148,12 @@ public abstract class Context_Instrumentation {
             UserDataTranslationHelper.placeJNDIAdditionalTemplateData();
             return JNDIUtils.handleJNDIHook(name, methodName, this.getClass().getName());
         } catch (Throwable e) {
-            NewRelicSecurity.getAgent().log(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, JNDIUtils.JAVAX_JNDI, e.getMessage()), e, this.getClass().getName());
-            NewRelicSecurity.getAgent().reportIncident(LogLevel.SEVERE , String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, JNDIUtils.JAVAX_JNDI, e.getMessage()), e, this.getClass().getName());
             if(e instanceof NewRelicSecurityException){
                 NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.SECURITY_EXCEPTION_MESSAGE, JNDIUtils.JAVAX_JNDI, e.getMessage()), e, this.getClass().getName());
                 throw e;
             }
+            NewRelicSecurity.getAgent().log(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, JNDIUtils.JAVAX_JNDI, e.getMessage()), e, this.getClass().getName());
+            NewRelicSecurity.getAgent().reportIncident(LogLevel.SEVERE , String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, JNDIUtils.JAVAX_JNDI, e.getMessage()), e, this.getClass().getName());
         }
         return null;
     }
