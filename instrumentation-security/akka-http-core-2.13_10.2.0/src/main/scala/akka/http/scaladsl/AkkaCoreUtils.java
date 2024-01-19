@@ -18,6 +18,8 @@ import com.newrelic.api.agent.security.utils.logging.LogLevel;
 
 import java.util.Iterator;
 import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.Optional;
 
 public class AkkaCoreUtils {
 
@@ -90,7 +92,7 @@ public class AkkaCoreUtils {
         }
     }
 
-    public static void preProcessHttpRequest (Boolean isServletLockAcquired, HttpRequest httpRequest, String requestBody, Token token) {
+    public static void preProcessHttpRequest (Boolean isServletLockAcquired, HttpRequest httpRequest, StringBuilder requestBody, Token token) {
         if(!isServletLockAcquired) {
             return;
         }
@@ -122,7 +124,11 @@ public class AkkaCoreUtils {
             securityRequest.setProtocol(getProtocol(httpRequest.protocol().value()));
 
             securityRequest.setUrl(httpRequest.getUri().path());
-            String queryString = httpRequest.getUri().rawQueryString().get();
+            String queryString = null;
+            Optional<String> rawQueryString = httpRequest.getUri().rawQueryString();
+            if(rawQueryString.isPresent()) {
+                queryString = rawQueryString.get();
+            }
             if (queryString != null && !queryString.trim().isEmpty()) {
                 securityRequest.setUrl(securityRequest.getUrl() + QUESTION_MARK + queryString);
             }
@@ -130,7 +136,7 @@ public class AkkaCoreUtils {
             securityRequest.setContentType(httpRequest.entity().getContentType().toString());
 
             securityAgentMetaData.setServiceTrace(Thread.currentThread().getStackTrace());
-            securityRequest.setBody(new StringBuilder(requestBody));
+            securityRequest.setBody(requestBody);
             securityRequest.setRequestParsed(true);
         } catch (Throwable ignored){
             NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.ERROR_GENERATING_HTTP_REQUEST, AKKA_HTTP_CORE_2_13_10_2_0, ignored.getMessage()), ignored, AkkaCoreUtils.class.getName());
