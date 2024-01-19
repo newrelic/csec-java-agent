@@ -74,7 +74,7 @@ public class ServletHelper {
                             if (fileToCreate.getParentFile() != null) {
 
                                 File parentFile = fileToCreate;
-                                while(!parentFile.getParentFile().exists()){
+                                while(parentFile != null && parentFile.getParentFile() != null && !parentFile.getParentFile().exists()){
                                     parentFile = parentFile.getParentFile();
                                 }
                                 filesToRemove.add(parentFile.getAbsolutePath());
