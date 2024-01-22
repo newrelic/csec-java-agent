@@ -88,13 +88,15 @@ public class RequestHandler_Instrumentation {
             //Add request URI hash to low severity event filter
             LowSeverityHelper.addRrequestUriToEventFilter(NewRelicSecurity.getAgent().getSecurityMetaData().getRequest());
 
-            RXSSOperation rxssOperation = new RXSSOperation(
-                    NewRelicSecurity.getAgent().getSecurityMetaData().getRequest(),
-                    NewRelicSecurity.getAgent().getSecurityMetaData().getResponse(),
-                    this.getClass().getName(),
-                    MuleHelper.HANDLE_REQUEST_METHOD
-            );
-            NewRelicSecurity.getAgent().registerOperation(rxssOperation);
+            if(!ServletHelper.isResponseContentTypeExcluded(NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getResponseContentType())) {
+                RXSSOperation rxssOperation = new RXSSOperation(
+                        NewRelicSecurity.getAgent().getSecurityMetaData().getRequest(),
+                        NewRelicSecurity.getAgent().getSecurityMetaData().getResponse(),
+                        this.getClass().getName(),
+                        MuleHelper.HANDLE_REQUEST_METHOD
+                );
+                NewRelicSecurity.getAgent().registerOperation(rxssOperation);
+            }
             ServletHelper.tmpFileCleanUp(NewRelicSecurity.getAgent().getSecurityMetaData().getFuzzRequestIdentifier().getTempFiles());
         } catch (Throwable e) {
             if(e instanceof NewRelicSecurityException){

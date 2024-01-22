@@ -73,10 +73,12 @@ public class AkkaCoreUtils {
             NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setResponseBody(response);
             LowSeverityHelper.addRrequestUriToEventFilter(NewRelicSecurity.getAgent().getSecurityMetaData().getRequest());
 
-            RXSSOperation rxssOperation = new RXSSOperation(NewRelicSecurity.getAgent().getSecurityMetaData().getRequest(),
-                    NewRelicSecurity.getAgent().getSecurityMetaData().getResponse(),
-                    className, methodName);
-            NewRelicSecurity.getAgent().registerOperation(rxssOperation);
+            if(!ServletHelper.isResponseContentTypeExcluded(NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getResponseContentType())) {
+                RXSSOperation rxssOperation = new RXSSOperation(NewRelicSecurity.getAgent().getSecurityMetaData().getRequest(),
+                        NewRelicSecurity.getAgent().getSecurityMetaData().getResponse(),
+                        className, methodName);
+                NewRelicSecurity.getAgent().registerOperation(rxssOperation);
+            }
             ServletHelper.tmpFileCleanUp(NewRelicSecurity.getAgent().getSecurityMetaData().getFuzzRequestIdentifier().getTempFiles());
         } catch (Throwable e) {
             if(e instanceof NewRelicSecurityException){
