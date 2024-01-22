@@ -109,10 +109,12 @@ public class GrpcServerUtils {
                 NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setResponseContentType("application/grpc");
             }
 
-            RXSSOperation rxssOperation = new RXSSOperation(NewRelicSecurity.getAgent().getSecurityMetaData().getRequest(),
-                    NewRelicSecurity.getAgent().getSecurityMetaData().getResponse(),
-                    className, methodName);
-            NewRelicSecurity.getAgent().registerOperation(rxssOperation);
+            if(!ServletHelper.isResponseContentTypeExcluded(NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().getResponseContentType())) {
+                RXSSOperation rxssOperation = new RXSSOperation(NewRelicSecurity.getAgent().getSecurityMetaData().getRequest(),
+                        NewRelicSecurity.getAgent().getSecurityMetaData().getResponse(),
+                        className, methodName);
+                NewRelicSecurity.getAgent().registerOperation(rxssOperation);
+            }
             ServletHelper.tmpFileCleanUp(NewRelicSecurity.getAgent().getSecurityMetaData().getFuzzRequestIdentifier().getTempFiles());
         } catch (Throwable e) {
             if (e instanceof NewRelicSecurityException) {
