@@ -180,10 +180,10 @@ public class WSClient extends WebSocketClient {
         logger.logInit(LogLevel.INFO, String.format(IAgentConstants.INIT_WS_CONNECTION, AgentConfig.getInstance().getConfig().getK2ServiceInfo().getValidatorServiceEndpointURL()),
                 WSClient.class.getName());
         logger.logInit(LogLevel.INFO, String.format(IAgentConstants.SENDING_APPLICATION_INFO_ON_WS_CONNECT, AgentInfo.getInstance().getApplicationInfo()), WSClient.class.getName());
-        RestRequestThreadPool.getInstance().resetIASTProcessing();
-        GrpcClientRequestReplayHelper.getInstance().resetIASTProcessing();
-        DispatcherPool.getInstance().reset();
-        EventSendPool.getInstance().reset();
+//        RestRequestThreadPool.getInstance().resetIASTProcessing();
+//        GrpcClientRequestReplayHelper.getInstance().resetIASTProcessing();
+//        DispatcherPool.getInstance().reset();
+//        EventSendPool.getInstance().reset();
         super.send(JsonConverter.toJSON(AgentInfo.getInstance().getApplicationInfo()));
         WSUtils.getInstance().setReconnecting(false);
         synchronized (WSUtils.getInstance()) {
