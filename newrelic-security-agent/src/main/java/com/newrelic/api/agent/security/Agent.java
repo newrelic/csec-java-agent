@@ -136,7 +136,7 @@ public class Agent implements SecurityAgent {
         populateLinkingMetadata();
         populateApplicationTmpDir();
         startK2Services();
-        info.agentStatTrigger();
+        info.agentStatTrigger(true);
     }
 
     private void populateApplicationTmpDir() {
@@ -212,7 +212,7 @@ public class Agent implements SecurityAgent {
          * policy
          * HealthCheck
          */
-        WSClient.shutDownWSClient();
+        WSClient.shutDownWSClient(false);
         HealthCheckScheduleThread.getInstance().cancelTask(true);
         FileCleaner.cancelTask();
 
@@ -237,7 +237,7 @@ public class Agent implements SecurityAgent {
          **/
         HealthCheckScheduleThread.getInstance().cancelTask(true);
         FileCleaner.cancelTask();
-        WSClient.shutDownWSClient();
+        WSClient.shutDownWSClient(true);
         WSReconnectionST.shutDownPool();
         EventSendPool.shutDownPool();
     }

@@ -233,8 +233,8 @@ public class ControlCommandProcessor implements Runnable {
                         }
                         logger.log(LogLevel.FINER, WS_RECONNECT_IAST_REQUEST_REPLAY_POOL_DRAINED, this.getClass().getName());
                     }
-                    RestRequestThreadPool.getInstance().resetIASTProcessing();
-                    GrpcClientRequestReplayHelper.getInstance().resetIASTProcessing();
+//                    RestRequestThreadPool.getInstance().resetIASTProcessing();
+//                    GrpcClientRequestReplayHelper.getInstance().resetIASTProcessing();
                     WSClient.getInstance().close(CloseFrame.SERVICE_RESTART, "Reconnecting to service");
                 } catch (Throwable e) {
                     logger.log(LogLevel.SEVERE, String.format(ERROR_WHILE_PROCESSING_RECONNECTION_CC_S_S, e.getMessage(), e.getCause()), this.getClass().getName());

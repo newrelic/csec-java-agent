@@ -282,12 +282,14 @@ public class WSClient extends WebSocketClient {
         return instance;
     }
 
-    public static void shutDownWSClient() {
+    public static void shutDownWSClient(boolean clean) {
         logger.log(LogLevel.WARNING, "Disconnecting WS client forced by APM",
                 WSClient.class.getName());
         WSUtils.getInstance().setConnected(false);
-        RestRequestThreadPool.getInstance().resetIASTProcessing();
-        GrpcClientRequestReplayHelper.getInstance().resetIASTProcessing();
+        if(clean) {
+            RestRequestThreadPool.getInstance().resetIASTProcessing();
+            GrpcClientRequestReplayHelper.getInstance().resetIASTProcessing();
+        }
         if (instance != null) {
             instance.close(CloseFrame.ABNORMAL_CLOSE, "Client disconnecting forced by APM");
         }
