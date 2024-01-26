@@ -267,7 +267,7 @@ public class Agent implements SecurityAgent {
             operation.setStackTrace(securityMetaData.getMetaData().getServiceTrace());
         } else {
             StackTraceElement[] trace = Thread.currentThread().getStackTrace();
-            operation.setStackTrace(Arrays.copyOfRange(trace, 1, trace.length));
+            operation.setStackTrace(Arrays.copyOfRange(trace, 2, trace.length));
         }
 
         // added to fetch request/response in case of grpc requests
@@ -288,8 +288,8 @@ public class Agent implements SecurityAgent {
         logIfIastScanForFirstTime(securityMetaData.getFuzzRequestIdentifier(), securityMetaData.getRequest());
 
         setRequiredStackTrace(operation, securityMetaData);
-        processStackTrace(operation);
         operation.setUserClassEntity(setUserClassEntity(operation, securityMetaData));
+        processStackTrace(operation);
 //        boolean blockNeeded = checkIfBlockingNeeded(operation.getApiID());
 //        securityMetaData.getMetaData().setApiBlocked(blockNeeded);
         if (needToGenerateEvent(operation.getApiID())) {
