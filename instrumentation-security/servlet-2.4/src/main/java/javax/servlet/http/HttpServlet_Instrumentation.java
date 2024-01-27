@@ -39,4 +39,8 @@ public class HttpServlet_Instrumentation {
         Weaver.callOriginal();
     }
 
+    protected void service(HttpServletRequest req, HttpServletResponse resp) {
+        ServletHelper.registerUserLevelCode(LIBRARY_NAME);
+        Weaver.callOriginal();
+    }
 }
