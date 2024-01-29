@@ -136,7 +136,7 @@ public class Agent implements SecurityAgent {
         populateLinkingMetadata();
         populateApplicationTmpDir();
         startK2Services();
-        info.agentStatTrigger();
+        info.agentStatTrigger(true);
     }
 
     private void populateApplicationTmpDir() {
@@ -212,7 +212,7 @@ public class Agent implements SecurityAgent {
          * policy
          * HealthCheck
          */
-        WSClient.shutDownWSClient();
+        WSClient.shutDownWSClient(false);
         HealthCheckScheduleThread.getInstance().cancelTask(true);
         FileCleaner.cancelTask();
 
@@ -237,7 +237,7 @@ public class Agent implements SecurityAgent {
          **/
         HealthCheckScheduleThread.getInstance().cancelTask(true);
         FileCleaner.cancelTask();
-        WSClient.shutDownWSClient();
+        WSClient.shutDownWSClient(true);
         WSReconnectionST.shutDownPool();
         EventSendPool.shutDownPool();
     }
@@ -357,6 +357,11 @@ public class Agent implements SecurityAgent {
                 userClassEntity.setUserClassElement(operation.getStackTrace()[i + 1]);
                 userClassEntity.setCalledByUserCode(securityMetaData.getMetaData().isUserLevelServiceMethodEncountered());
             }
+        }
+
+        if(userClassEntity.getUserClassElement() == null && operation.getStackTrace().length >= 2){
+            userClassEntity.setUserClassElement(operation.getStackTrace()[1]);
+            userClassEntity.setCalledByUserCode(securityMetaData.getMetaData().isUserLevelServiceMethodEncountered());
         }
         return userClassEntity;
     }
