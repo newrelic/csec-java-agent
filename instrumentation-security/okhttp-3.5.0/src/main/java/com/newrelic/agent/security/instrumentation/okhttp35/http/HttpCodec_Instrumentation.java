@@ -7,7 +7,10 @@
 
 package com.newrelic.agent.security.instrumentation.okhttp35.http;
 
+import com.newrelic.api.agent.security.NewRelicSecurity;
+import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
+import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
@@ -58,7 +61,8 @@ public abstract class HttpCodec_Instrumentation {
             if (originalRequest != null) {
                 return originalRequest.url().toString();
             }
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.URI_EXCEPTION_MESSAGE, OkhttpHelper.OKHTTP_3_5_0, e.getMessage()), e, this.getClass().getName());
         }
         return null;
     }

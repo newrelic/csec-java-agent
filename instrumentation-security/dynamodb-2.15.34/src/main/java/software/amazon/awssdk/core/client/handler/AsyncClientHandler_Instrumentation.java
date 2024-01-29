@@ -32,8 +32,6 @@ public class AsyncClientHandler_Instrumentation {
         CompletableFuture<OutputT> returnVal = null;
         try {
             returnVal = Weaver.callOriginal();
-        } catch (Throwable ignored) {
-            ignored.printStackTrace();
         } finally {
             if (isLockAcquired) {
                 DynamoDBUtil.releaseLock(this.hashCode());
@@ -54,8 +52,6 @@ public class AsyncClientHandler_Instrumentation {
         CompletableFuture<ReturnT> returnVal = null;
         try {
             returnVal = Weaver.callOriginal();
-        } catch (Throwable ignored) {
-            ignored.printStackTrace();
         } finally {
             if (isLockAcquired) {
                 DynamoDBUtil.releaseLock(this.hashCode());

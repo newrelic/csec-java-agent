@@ -6,9 +6,8 @@ import com.newrelic.agent.security.instrumentator.httpclient.RestRequestProcesso
 import com.newrelic.agent.security.instrumentator.httpclient.RestRequestThreadPool;
 import com.newrelic.agent.security.instrumentator.utils.AgentUtils;
 import com.newrelic.agent.security.instrumentator.utils.InstrumentationUtils;
-import com.newrelic.agent.security.intcodeagent.constants.AgentServices;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
-import com.newrelic.agent.security.intcodeagent.filelogging.LogLevel;
+import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.logging.IAgentConstants;
 import com.newrelic.agent.security.intcodeagent.models.config.AgentPolicyParameters;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.EventResponse;
@@ -19,6 +18,7 @@ import com.newrelic.agent.security.intcodeagent.websocket.JsonConverter;
 import com.newrelic.agent.security.intcodeagent.websocket.WSClient;
 import com.newrelic.agent.security.intcodeagent.websocket.WSUtils;
 import com.newrelic.api.agent.security.NewRelicSecurity;
+import com.newrelic.api.agent.security.instrumentation.helpers.GrpcClientRequestReplayHelper;
 import com.newrelic.api.agent.security.schema.policy.AgentPolicy;
 import org.apache.commons.lang3.StringUtils;
 import org.java_websocket.framing.CloseFrame;
@@ -28,9 +28,7 @@ import org.json.simple.parser.JSONParser;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
-
-import static com.newrelic.agent.security.intcodeagent.logging.IAgentConstants.STARTED_MODULE_LOG;
+import java.util.Map;
 
 public class ControlCommandProcessor implements Runnable {
 
@@ -58,6 +56,7 @@ public class ControlCommandProcessor implements Runnable {
     public static final String ARGUMENTS = "arguments";
     public static final String DATA = "data";
     public static final String CONTROL_COMMAND = "controlCommand";
+    public static final String REFLECTED_METADATA = "reflectedMetaData";
     public static final String RECEIVED_WS_RECONNECT_COMMAND_FROM_SERVER_INITIATING_SEQUENCE = "Received WS 'reconnect' command from server. Initiating sequence.";
     public static final String WS_RECONNECT_EVENT_SEND_POOL_DRAINED = "[WS RECONNECT] EventSend pool drained.";
     public static final String WS_RECONNECT_IAST_REQUEST_REPLAY_POOL_DRAINED = "[WS RECONNECT] IAST request replay pool drained.";
@@ -93,6 +92,7 @@ public class ControlCommandProcessor implements Runnable {
             controlCommand.setArguments((List<String>) object.get(ARGUMENTS));
             controlCommand.setData(object.get(DATA));
             controlCommand.setControlCommand(Integer.valueOf(object.get(CONTROL_COMMAND).toString()));
+            controlCommand.setReflectedMetaData((Map<String, String>) object.get(REFLECTED_METADATA));
 
         } catch (Throwable e) {
             logger.log(LogLevel.SEVERE, ERROR_IN_CONTROL_COMMAND_PROCESSOR, e,
@@ -123,10 +123,6 @@ public class ControlCommandProcessor implements Runnable {
                 try {
                     AgentPolicyParameters parameters = JsonConverter.getObjectMapper()
                             .readValue(controlCommand.getData().toString(), AgentPolicyParameters.class);
-                    if (!CommonUtils.validateCollectorPolicyParameterSchema(parameters)) {
-                        logger.log(LogLevel.WARNING, String.format(IAgentConstants.UNABLE_TO_VALIDATE_AGENT_POLICY_PARAMETER_DUE_TO_ERROR, parameters), ControlCommandProcessor.class.getName());
-                        return;
-                    }
                     AgentUtils.getInstance().setAgentPolicyParameters(parameters);
                     logger.logInit(LogLevel.INFO,
                             String.format(IAgentConstants.AGENT_POLICY_PARAM_APPLIED_S, AgentUtils.getInstance().getAgentPolicyParameters()),
@@ -231,9 +227,14 @@ public class ControlCommandProcessor implements Runnable {
                         while (RestRequestThreadPool.getInstance().getExecutor().getActiveCount() > 0 && !RestRequestThreadPool.getInstance().isWaiting().get()) {
                             Thread.sleep(100);
                         }
+                        logger.log(LogLevel.FINER, String.format("Request = %s, in process = %s", GrpcClientRequestReplayHelper.getInstance().getRequestQueue().size(), GrpcClientRequestReplayHelper.getInstance().getInProcessRequestQueue().size()), this.getClass().getName());
+                        while (GrpcClientRequestReplayHelper.getInstance().getRequestQueue().size() > 0 && GrpcClientRequestReplayHelper.getInstance().getInProcessRequestQueue().size() > 0 && !GrpcClientRequestReplayHelper.getInstance().isWaiting().get()) {
+                            Thread.sleep(100);
+                        }
                         logger.log(LogLevel.FINER, WS_RECONNECT_IAST_REQUEST_REPLAY_POOL_DRAINED, this.getClass().getName());
                     }
-                    RestRequestThreadPool.getInstance().resetIASTProcessing();
+//                    RestRequestThreadPool.getInstance().resetIASTProcessing();
+//                    GrpcClientRequestReplayHelper.getInstance().resetIASTProcessing();
                     WSClient.getInstance().close(CloseFrame.SERVICE_RESTART, "Reconnecting to service");
                 } catch (Throwable e) {
                     logger.log(LogLevel.SEVERE, String.format(ERROR_WHILE_PROCESSING_RECONNECTION_CC_S_S, e.getMessage(), e.getCause()), this.getClass().getName());
@@ -258,6 +259,7 @@ public class ControlCommandProcessor implements Runnable {
                 logger.log(LogLevel.FINEST, String.format(PURGING_CONFIRMED_IAST_PROCESSED_RECORDS_S,
                         controlCommand.getArguments()), this.getClass().getName());
                 controlCommand.getArguments().forEach(RestRequestThreadPool.getInstance().getProcessedIds()::remove);
+                controlCommand.getArguments().forEach(GrpcClientRequestReplayHelper.getInstance().getProcessedIds()::remove);
                 break;
             default:
                 logger.log(LogLevel.WARNING, String.format(UNKNOWN_CONTROL_COMMAND_S, controlCommandMessage),

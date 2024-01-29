@@ -8,6 +8,7 @@ import com.newrelic.api.agent.security.schema.StringUtils;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
 import com.newrelic.api.agent.security.schema.operation.SSRFOperation;
 import com.newrelic.api.agent.security.utils.SSRFUtils;
+import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import org.asynchttpclient.Request;
 
 public class AsynchttpHelper {
@@ -16,6 +17,7 @@ public class AsynchttpHelper {
     public static final String NR_SEC_CUSTOM_ATTRIB_NAME = "ASYNCHTTP_OPERATION_LOCK-";
 
     public static final String METHOD_EXECUTE = "executeRequest";
+    public static final String ASYNC_HTTP_CLIENT_2_0_0 = "ASYNC_HTTP_CLIENT_2.0.0";
 
     public static boolean skipExistsEvent() {
         if (!(NewRelicSecurity.getAgent().getCurrentPolicy().getVulnerabilityScan().getEnabled() &&
@@ -72,9 +74,11 @@ public class AsynchttpHelper {
             return operation;
         } catch (Throwable e) {
             if (e instanceof NewRelicSecurityException) {
-                e.printStackTrace();
+                NewRelicSecurity.getAgent().log(LogLevel.FINEST, String.format(GenericHelper.EXIT_OPERATION_EXCEPTION_MESSAGE, ASYNC_HTTP_CLIENT_2_0_0, e.getMessage()), e, AsynchttpHelper.class.getName());
                 throw e;
             }
+            NewRelicSecurity.getAgent().log(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, ASYNC_HTTP_CLIENT_2_0_0, e.getMessage()), e, AsynchttpHelper.class.getName());
+            NewRelicSecurity.getAgent().reportIncident(LogLevel.SEVERE , String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, ASYNC_HTTP_CLIENT_2_0_0, e.getMessage()), e, AsynchttpHelper.class.getName());
         }
         return null;
     }
@@ -88,6 +92,7 @@ public class AsynchttpHelper {
             }
             NewRelicSecurity.getAgent().registerExitEvent(operation);
         } catch (Throwable ignored) {
+            NewRelicSecurity.getAgent().log(LogLevel.FINEST, String.format(GenericHelper.EXIT_OPERATION_EXCEPTION_MESSAGE, AsynchttpHelper.ASYNC_HTTP_CLIENT_2_0_0, ignored.getMessage()), ignored, AsynchttpHelper.class.getName());
         }
     }
 

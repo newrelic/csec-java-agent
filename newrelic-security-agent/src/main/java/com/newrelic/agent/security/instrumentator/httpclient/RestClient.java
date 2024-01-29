@@ -2,7 +2,7 @@ package com.newrelic.agent.security.instrumentator.httpclient;
 
 import com.newrelic.agent.security.AgentInfo;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
-import com.newrelic.agent.security.intcodeagent.filelogging.LogLevel;
+import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.FuzzFailEvent;
 import com.newrelic.agent.security.intcodeagent.websocket.EventSendPool;
 import com.newrelic.api.agent.security.instrumentation.helpers.ServletHelper;
@@ -14,13 +14,17 @@ import javax.net.ssl.*;
 import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.security.cert.CertificateException;
+import java.util.HashSet;
 import java.util.concurrent.TimeUnit;
 
 public class RestClient {
 
 
-    public static final String REQUEST_SUCCESS_S_RESPONSE_S_S = "Request success : %s :: response : %s : %s";
+    public static final String REQUEST_FIRED_SUCCESS = "Request Fired successfuly : %s ";
+    public static final String REQUEST_SUCCESS_S_RESPONSE_S_S = "Request Fired successfuly : %s :: response : %s : %s";
     public static final String CALL_FAILED_REQUEST_S_REASON = "Call failed : request %s reason : ";
+
+    public static final String CALL_FAILED_REQUEST_S_REASON_S = "Call failed : request %s reason : %s : body : %s";
     public static final String FIRING_REQUEST_METHOD_S = "Firing request :: Method : %s";
     public static final String FIRING_REQUEST_URL_S = "Firing request :: URL : %s";
     public static final String FIRING_REQUEST_HEADERS_S = "Firing request :: Headers : %s";
@@ -124,7 +128,17 @@ public class RestClient {
         Call call = client.newCall(request);
         try {
             Response response = call.execute();
-            logger.log(LogLevel.FINER, String.format(REQUEST_SUCCESS_S_RESPONSE_S_S, request, response, response.body().string()), RestClient.class.getName());
+            logger.log(LogLevel.FINER, String.format(REQUEST_FIRED_SUCCESS, request), RestClient.class.getName());
+            if(response.code() >= 400 && response.code() < 500){
+                RestRequestThreadPool.getInstance().getProcessedIds().putIfAbsent(fuzzRequestId, new HashSet<>());
+                logger.postLogMessageIfNecessary(LogLevel.WARNING,
+                        String.format(RestClient.CALL_FAILED_REQUEST_S_REASON_S, fuzzRequestId,  response, response.body().string()), null,
+                        RestRequestProcessor.class.getName());
+            } else if(response.isSuccessful()){
+                RestRequestThreadPool.getInstance().getProcessedIds().putIfAbsent(fuzzRequestId, new HashSet<>());
+            }else {
+                logger.log(LogLevel.FINER, String.format(REQUEST_SUCCESS_S_RESPONSE_S_S, request, response, response.body().string()), RestClient.class.getName());
+            }
             response.body().close();
             if (client.connectionPool() != null) {
                 client.connectionPool().evictAll();
@@ -138,7 +152,7 @@ public class RestClient {
             logger.postLogMessageIfNecessary(LogLevel.WARNING,
                     String.format(CALL_FAILED_REQUEST_S_REASON, fuzzRequestId),
                     e, RestRequestProcessor.class.getName());
-
+            RestRequestThreadPool.getInstance().getProcessedIds().putIfAbsent(fuzzRequestId, new HashSet<>());
             // TODO: Add to fuzz fail count in HC and remove FuzzFailEvent if not needed.
             FuzzFailEvent fuzzFailEvent = new FuzzFailEvent(AgentInfo.getInstance().getApplicationUUID());
             fuzzFailEvent.setFuzzHeader(request.header(ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID));

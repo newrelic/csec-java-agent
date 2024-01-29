@@ -6,4 +6,5 @@ public class LDAPUtils {
     public static final String METHOD_SEARCH = "search";
 
     public static final String METHOD_SEARCH_ASYNC = "searchAsync";
+    public static final String APACHE_LDAP = "APACHE-LDAP";
 }
