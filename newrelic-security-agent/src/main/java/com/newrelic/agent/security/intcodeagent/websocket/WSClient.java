@@ -148,6 +148,7 @@ public class WSClient extends WebSocketClient {
                 logger.log(LogLevel.FINER, "Error creating socket factory", e, WSClient.class.getName());
             }
         }
+        logger.log(LogLevel.INFO, String.format("Connecting to WS client %s", AgentConfig.getInstance().getConfig().getK2ServiceInfo().getValidatorServiceEndpointURL()), WSClient.class.getName());
     }
 
     @Override
