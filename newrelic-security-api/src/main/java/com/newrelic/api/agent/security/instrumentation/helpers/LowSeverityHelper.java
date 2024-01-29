@@ -12,7 +12,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class LowSeverityHelper {
 
     public static final String LOW_SEVERITY_HOOKS_ENABLED = "security.low-priority-instrumentation.enabled";
-    public static final boolean DEFAULT = true;
+    public static final boolean DEFAULT = false;
     public static final String LOW_PRIORITY_INSTRUMENTATION = "LOW-PRIORITY-INSTRUMENTATION";
     private static AtomicBoolean isLowSeverityhHooksEnabled = new AtomicBoolean(false);
 
