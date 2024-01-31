@@ -23,6 +23,7 @@ public class AgentBasicInfo {
     public static final String SEC_EVENT = "sec_event";
     public static final String SEC_HEALTH_CHECK = "sec_health_check_lc";
     public static final String NR_ENTITY_GUID = "entityGuid";
+    public static final String EXCEPTION_INCIDENT = "exception-incident";
 
     /**
      * Tool id for Language Agent.
@@ -95,6 +96,9 @@ public class AgentBasicInfo {
         } else if (this instanceof ApplicationURLMappings) {
             setJsonName(JSON_SEC_APPLICATION_URL_MAPPING);
             setEventType(JSON_SEC_APPLICATION_URL_MAPPING);
+        } else if (this instanceof ErrorIncident) {
+            setJsonName(EXCEPTION_INCIDENT);
+            setEventType(EXCEPTION_INCIDENT);
         }
     }
 
