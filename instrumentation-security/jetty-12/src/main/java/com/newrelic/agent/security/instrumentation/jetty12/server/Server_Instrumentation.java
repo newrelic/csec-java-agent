@@ -7,20 +7,13 @@
 
 package com.newrelic.agent.security.instrumentation.jetty12.server;
 
-import com.newrelic.agent.bridge.AgentBridge;
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
-import com.nr.agent.instrumentation.jetty12.JettySampler;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.NetworkConnector;
-import org.eclipse.jetty.server.Request;
-import org.eclipse.jetty.server.Response;
-import org.eclipse.jetty.util.Callback;
-import org.eclipse.jetty.util.thread.ThreadPool;
 
-import java.util.concurrent.TimeUnit;
 
 @Weave(type = MatchType.ExactClass, originalName = "org.eclipse.jetty.server.Server")
 public abstract class Server_Instrumentation {
