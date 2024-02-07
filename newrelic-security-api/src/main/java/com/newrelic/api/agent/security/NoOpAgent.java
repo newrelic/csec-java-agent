@@ -88,6 +88,15 @@ class NoOpAgent implements SecurityAgent {
     }
 
     @Override
+    public void setApplicationConnectionConfig(int port, String scheme) {
+    }
+
+    @Override
+    public String getApplicationConnectionConfig(int port) {
+        return null;
+    }
+
+    @Override
     public void log(LogLevel logLevel, String event, Throwable throwableEvent, String logSourceClassName) {
 
     }

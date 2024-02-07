@@ -51,6 +51,10 @@ public interface SecurityAgent {
 
     String getServerInfo(String key);
 
+    void setApplicationConnectionConfig(int port, String scheme);
+
+    String getApplicationConnectionConfig(int port);
+
     void log(LogLevel logLevel, String event, Throwable throwableEvent, String logSourceClassName);
 
     void log(LogLevel logLevel, String event, String logSourceClassName);
