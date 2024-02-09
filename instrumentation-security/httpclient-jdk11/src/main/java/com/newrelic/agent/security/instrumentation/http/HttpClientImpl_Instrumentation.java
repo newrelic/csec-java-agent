@@ -73,12 +73,12 @@ final class HttpClientImpl_Instrumentation {
 
             return operation;
         } catch (Throwable e) {
-            NewRelicSecurity.getAgent().log(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, SecurityHelper.HTTPCLIENT_JDK_11, e.getMessage()), e, SecurityHelper.class.getName());
-            NewRelicSecurity.getAgent().reportIncident(LogLevel.SEVERE , String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, SecurityHelper.HTTPCLIENT_JDK_11, e.getMessage()), e, SecurityHelper.class.getName());
             if (e instanceof NewRelicSecurityException) {
                 NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.SECURITY_EXCEPTION_MESSAGE, SecurityHelper.HTTPCLIENT_JDK_11, e.getMessage()), e, SecurityHelper.class.getName());
                 throw e;
             }
+            NewRelicSecurity.getAgent().log(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, SecurityHelper.HTTPCLIENT_JDK_11, e.getMessage()), e, SecurityHelper.class.getName());
+            NewRelicSecurity.getAgent().reportIncident(LogLevel.SEVERE , String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, SecurityHelper.HTTPCLIENT_JDK_11, e.getMessage()), e, SecurityHelper.class.getName());
         }
         return null;
     }

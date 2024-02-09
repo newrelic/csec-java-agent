@@ -123,10 +123,6 @@ public class ControlCommandProcessor implements Runnable {
                 try {
                     AgentPolicyParameters parameters = JsonConverter.getObjectMapper()
                             .readValue(controlCommand.getData().toString(), AgentPolicyParameters.class);
-                    if (!CommonUtils.validateCollectorPolicyParameterSchema(parameters)) {
-                        logger.log(LogLevel.WARNING, String.format(IAgentConstants.UNABLE_TO_VALIDATE_AGENT_POLICY_PARAMETER_DUE_TO_ERROR, parameters), ControlCommandProcessor.class.getName());
-                        return;
-                    }
                     AgentUtils.getInstance().setAgentPolicyParameters(parameters);
                     logger.logInit(LogLevel.INFO,
                             String.format(IAgentConstants.AGENT_POLICY_PARAM_APPLIED_S, AgentUtils.getInstance().getAgentPolicyParameters()),
@@ -237,8 +233,8 @@ public class ControlCommandProcessor implements Runnable {
                         }
                         logger.log(LogLevel.FINER, WS_RECONNECT_IAST_REQUEST_REPLAY_POOL_DRAINED, this.getClass().getName());
                     }
-                    RestRequestThreadPool.getInstance().resetIASTProcessing();
-                    GrpcClientRequestReplayHelper.getInstance().resetIASTProcessing();
+//                    RestRequestThreadPool.getInstance().resetIASTProcessing();
+//                    GrpcClientRequestReplayHelper.getInstance().resetIASTProcessing();
                     WSClient.getInstance().close(CloseFrame.SERVICE_RESTART, "Reconnecting to service");
                 } catch (Throwable e) {
                     logger.log(LogLevel.SEVERE, String.format(ERROR_WHILE_PROCESSING_RECONNECTION_CC_S_S, e.getMessage(), e.getCause()), this.getClass().getName());

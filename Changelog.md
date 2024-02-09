@@ -4,7 +4,9 @@ Noteworthy changes to the agent are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.0.9-public-preview] - TO BE DECIDED
+## [1.1.1] - TBD
+
+## [1.1.0] - 2024-1-29
 ### Changes
 - gRPC client v1.4.0+ Support: The security agent now supports gRPC client version 1.4.0 and above (with protobuf-java-utils version 3.0.0 and above)
 - gRPC server v1.4.0+ Support: The security agent now supports gRPC server version 1.4.0 and above (with protobuf-java-utils version 3.0.0 and above)
@@ -14,10 +16,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Drop RXSS events on the basis of Content-Type Exclusion List
 - Akka server v10.0+ Support: The security agent now supports Akka server version 10.0 and above (with scala 2.11 and above)
 - Separate out File.exists instrumentation from low-priority instrumentation module
+- Removed Schema validation dependency everit-json-schema:1.14.2
+- Introduced new dependency commons-collections4:4.4
+- Update software license to New Relic Software License Version 1.0
 
 ### Fixes
 - NR-212335 : support lower case stdout for log_file_name
 - NR-215332 : Add java working temp directory to server info for exclusion
+- NR-216474 : fix for Null Pointer exception for FILE_OPERATION
+- NR-216456 : Fix for Class Cast Exception
+- NR-215452 : Added the CC#_id to the completed list empty if absent in case of 2xx or 4xx response
+- NR-213477 : Added missing instrumentation for servlet service method
+- NR-214326 : Fix class circluarity error generated for BadPaddingException 
 
 ## [1.0.8-public-preview] - 2024-1-11
 ### Changes

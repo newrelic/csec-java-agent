@@ -22,20 +22,10 @@ public class RequestUtils {
     public static Request generateK2Request(FuzzRequestBean httpRequest) {
         try {
             logger.log(LogLevel.FINER, String.format("Firing request : %s", JsonConverter.toJSON(httpRequest)), RequestUtils.class.getName());
-            boolean formulateURL = false;
-            StringBuilder url = new StringBuilder();
-            try {
-                new URL(httpRequest.getUrl()).toURI();
-                url.append(httpRequest.getUrl());
-            } catch (MalformedURLException e){
-                formulateURL = true;
-            }
-            if(formulateURL){
-                url.append(String.format("%s://localhost", httpRequest.getProtocol()));
-                url.append(":");
-                url.append(httpRequest.getServerPort());
-                url.append(httpRequest.getUrl());
-            }
+            StringBuilder url = new StringBuilder(String.format("%s://localhost", httpRequest.getProtocol()));
+            url.append(":");
+            url.append(httpRequest.getServerPort());
+            url.append(httpRequest.getUrl());
             RequestBody requestBody = null;
 
             if (StringUtils.isNotBlank(httpRequest.getContentType())) {

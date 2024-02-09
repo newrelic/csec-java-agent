@@ -148,6 +148,7 @@ public class WSClient extends WebSocketClient {
                 logger.log(LogLevel.FINER, "Error creating socket factory", e, WSClient.class.getName());
             }
         }
+        logger.log(LogLevel.INFO, String.format("Connecting to WS client %s", AgentConfig.getInstance().getConfig().getK2ServiceInfo().getValidatorServiceEndpointURL()), WSClient.class.getName());
     }
 
     @Override
@@ -180,10 +181,10 @@ public class WSClient extends WebSocketClient {
         logger.logInit(LogLevel.INFO, String.format(IAgentConstants.INIT_WS_CONNECTION, AgentConfig.getInstance().getConfig().getK2ServiceInfo().getValidatorServiceEndpointURL()),
                 WSClient.class.getName());
         logger.logInit(LogLevel.INFO, String.format(IAgentConstants.SENDING_APPLICATION_INFO_ON_WS_CONNECT, AgentInfo.getInstance().getApplicationInfo()), WSClient.class.getName());
-        RestRequestThreadPool.getInstance().resetIASTProcessing();
-        GrpcClientRequestReplayHelper.getInstance().resetIASTProcessing();
-        DispatcherPool.getInstance().reset();
-        EventSendPool.getInstance().reset();
+//        RestRequestThreadPool.getInstance().resetIASTProcessing();
+//        GrpcClientRequestReplayHelper.getInstance().resetIASTProcessing();
+//        DispatcherPool.getInstance().reset();
+//        EventSendPool.getInstance().reset();
         super.send(JsonConverter.toJSON(AgentInfo.getInstance().getApplicationInfo()));
         WSUtils.getInstance().setReconnecting(false);
         synchronized (WSUtils.getInstance()) {
@@ -282,12 +283,14 @@ public class WSClient extends WebSocketClient {
         return instance;
     }
 
-    public static void shutDownWSClient() {
+    public static void shutDownWSClient(boolean clean) {
         logger.log(LogLevel.WARNING, "Disconnecting WS client forced by APM",
                 WSClient.class.getName());
         WSUtils.getInstance().setConnected(false);
-        RestRequestThreadPool.getInstance().resetIASTProcessing();
-        GrpcClientRequestReplayHelper.getInstance().resetIASTProcessing();
+        if(clean) {
+            RestRequestThreadPool.getInstance().resetIASTProcessing();
+            GrpcClientRequestReplayHelper.getInstance().resetIASTProcessing();
+        }
         if (instance != null) {
             instance.close(CloseFrame.ABNORMAL_CLOSE, "Client disconnecting forced by APM");
         }

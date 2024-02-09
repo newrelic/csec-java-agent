@@ -136,7 +136,7 @@ public class Agent implements SecurityAgent {
         populateLinkingMetadata();
         populateApplicationTmpDir();
         startK2Services();
-        info.agentStatTrigger();
+        info.agentStatTrigger(true);
     }
 
     private void populateApplicationTmpDir() {
@@ -212,7 +212,7 @@ public class Agent implements SecurityAgent {
          * policy
          * HealthCheck
          */
-        WSClient.shutDownWSClient();
+        WSClient.shutDownWSClient(false);
         HealthCheckScheduleThread.getInstance().cancelTask(true);
         FileCleaner.cancelTask();
 
@@ -237,7 +237,7 @@ public class Agent implements SecurityAgent {
          **/
         HealthCheckScheduleThread.getInstance().cancelTask(true);
         FileCleaner.cancelTask();
-        WSClient.shutDownWSClient();
+        WSClient.shutDownWSClient(true);
         WSReconnectionST.shutDownPool();
         EventSendPool.shutDownPool();
     }
@@ -267,7 +267,7 @@ public class Agent implements SecurityAgent {
             operation.setStackTrace(securityMetaData.getMetaData().getServiceTrace());
         } else {
             StackTraceElement[] trace = Thread.currentThread().getStackTrace();
-            operation.setStackTrace(Arrays.copyOfRange(trace, 1, trace.length));
+            operation.setStackTrace(Arrays.copyOfRange(trace, 2, trace.length));
         }
 
         // added to fetch request/response in case of grpc requests
@@ -288,8 +288,8 @@ public class Agent implements SecurityAgent {
         logIfIastScanForFirstTime(securityMetaData.getFuzzRequestIdentifier(), securityMetaData.getRequest());
 
         setRequiredStackTrace(operation, securityMetaData);
-        processStackTrace(operation);
         operation.setUserClassEntity(setUserClassEntity(operation, securityMetaData));
+        processStackTrace(operation);
 //        boolean blockNeeded = checkIfBlockingNeeded(operation.getApiID());
 //        securityMetaData.getMetaData().setApiBlocked(blockNeeded);
         if (needToGenerateEvent(operation.getApiID())) {
@@ -358,14 +358,21 @@ public class Agent implements SecurityAgent {
                 userClassEntity.setCalledByUserCode(securityMetaData.getMetaData().isUserLevelServiceMethodEncountered());
             }
         }
+
+        if(userClassEntity.getUserClassElement() == null && operation.getStackTrace().length >= 2){
+            userClassEntity.setUserClassElement(operation.getStackTrace()[1]);
+            userClassEntity.setCalledByUserCode(securityMetaData.getMetaData().isUserLevelServiceMethodEncountered());
+        }
         return userClassEntity;
     }
 
     private void setRequiredStackTrace(AbstractOperation operation, SecurityMetaData securityMetaData) {
         StackTraceElement[] currentStackTrace = operation.getStackTrace();
-        int targetBottomStackLength = currentStackTrace.length - securityMetaData.getMetaData().getServiceTrace().length + 3;
-        currentStackTrace = Arrays.copyOfRange(currentStackTrace, 0, targetBottomStackLength);
-        operation.setStackTrace(currentStackTrace);
+        if (securityMetaData.getMetaData().getServiceTrace() != null && securityMetaData.getMetaData().getServiceTrace().length + 3 < currentStackTrace.length) {
+            int targetBottomStackLength = currentStackTrace.length - securityMetaData.getMetaData().getServiceTrace().length + 3;
+            currentStackTrace = Arrays.copyOfRange(currentStackTrace, 0, targetBottomStackLength);
+            operation.setStackTrace(currentStackTrace);
+        }
     }
 
     private static void processStackTrace(AbstractOperation operation) {

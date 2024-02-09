@@ -62,12 +62,12 @@ final class PolyglotContextImpl_Instrumentation {
             NewRelicSecurity.getAgent().registerOperation(jsInjectionOperation);
             return jsInjectionOperation;
         } catch (Throwable e) {
-            NewRelicSecurity.getAgent().log(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, GRAALVM_JS_INJECTION_22_0_0, e.getMessage()), e, this.getClass().getName());
-            NewRelicSecurity.getAgent().reportIncident(LogLevel.SEVERE , String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, GRAALVM_JS_INJECTION_22_0_0, e.getMessage()), e, this.getClass().getName());
             if (e instanceof NewRelicSecurityException) {
                 NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.SECURITY_EXCEPTION_MESSAGE, GRAALVM_JS_INJECTION_22_0_0, e.getMessage()), e, this.getClass().getName());
                 throw e;
             }
+            NewRelicSecurity.getAgent().log(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, GRAALVM_JS_INJECTION_22_0_0, e.getMessage()), e, this.getClass().getName());
+            NewRelicSecurity.getAgent().reportIncident(LogLevel.SEVERE , String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, GRAALVM_JS_INJECTION_22_0_0, e.getMessage()), e, this.getClass().getName());
         }
         return null;
     }

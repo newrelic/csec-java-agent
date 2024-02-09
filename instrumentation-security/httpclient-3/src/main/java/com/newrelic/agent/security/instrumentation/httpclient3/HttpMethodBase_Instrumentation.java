@@ -133,12 +133,12 @@ public abstract class HttpMethodBase_Instrumentation {
             }
             return operation;
         } catch (Throwable e) {
-            NewRelicSecurity.getAgent().log(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, SecurityHelper.HTTP_CLIENT_3, e.getMessage()), e, this.getClass().getName());
-            NewRelicSecurity.getAgent().reportIncident(LogLevel.SEVERE , String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, SecurityHelper.HTTP_CLIENT_3, e.getMessage()), e, this.getClass().getName());
             if (e instanceof NewRelicSecurityException) {
                 NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.SECURITY_EXCEPTION_MESSAGE, SecurityHelper.HTTP_CLIENT_3, e.getMessage()), e, this.getClass().getName());
                 throw e;
             }
+            NewRelicSecurity.getAgent().log(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, SecurityHelper.HTTP_CLIENT_3, e.getMessage()), e, this.getClass().getName());
+            NewRelicSecurity.getAgent().reportIncident(LogLevel.SEVERE , String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, SecurityHelper.HTTP_CLIENT_3, e.getMessage()), e, this.getClass().getName());
         }
         return null;
     }

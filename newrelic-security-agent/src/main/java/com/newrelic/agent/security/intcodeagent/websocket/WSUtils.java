@@ -23,7 +23,7 @@ public class WSUtils {
 
     void setConnected(boolean connected) {
         isConnected = connected;
-        AgentInfo.getInstance().agentStatTrigger();
+        AgentInfo.getInstance().agentStatTrigger(false);
     }
 
     public static boolean isConnected() {
