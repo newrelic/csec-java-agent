@@ -10,8 +10,7 @@ import okhttp3.Request.Builder;
 import okhttp3.internal.http.HttpMethod;
 import org.apache.commons.lang3.StringUtils;
 
-import java.net.MalformedURLException;
-import java.net.URL;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -20,13 +19,11 @@ public class RequestUtils {
     private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
     public static final String ERROR_IN_FUZZ_REQUEST_GENERATION = "Error in fuzz request generation {}";
 
-    public static Request generateK2Request(FuzzRequestBean httpRequest) {
+    public static Request generateK2Request(FuzzRequestBean httpRequest, String endpoint) {
         try {
             String scheme = NewRelicSecurity.getAgent().getApplicationConnectionConfig(httpRequest.getServerPort());
             logger.log(LogLevel.FINER, String.format("Firing request : %s", JsonConverter.toJSON(httpRequest)), RequestUtils.class.getName());
-            StringBuilder url = new StringBuilder(String.format("%s://localhost", scheme!=null?scheme:httpRequest.getProtocol()));
-            url.append(":");
-            url.append(httpRequest.getServerPort());
+            StringBuilder url = new StringBuilder(endpoint);
             url.append(httpRequest.getUrl());
             RequestBody requestBody = null;
 

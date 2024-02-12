@@ -35,7 +35,6 @@ public abstract class Server_Instrumentation {
                     String protocol = JettyUtils.getProtocol(connector.getProtocols());
                     if(protocol != null) {
                         NewRelicSecurity.getAgent().setApplicationConnectionConfig(((NetworkConnector) connector).getPort(), protocol);
-                        System.out.println("setting server config as : "+((NetworkConnector) connector).getPort() + ":"+protocol);
                     }
                 }
             }
