@@ -21,7 +21,6 @@ public class RequestUtils {
 
     public static Request generateK2Request(FuzzRequestBean httpRequest, String endpoint) {
         try {
-            String scheme = NewRelicSecurity.getAgent().getApplicationConnectionConfig(httpRequest.getServerPort());
             logger.log(LogLevel.FINER, String.format("Firing request : %s", JsonConverter.toJSON(httpRequest)), RequestUtils.class.getName());
             StringBuilder url = new StringBuilder(endpoint);
             url.append(httpRequest.getUrl());
