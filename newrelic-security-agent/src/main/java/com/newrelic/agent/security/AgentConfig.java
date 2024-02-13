@@ -23,7 +23,7 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collection;
 
-import static com.newrelic.agent.security.util.IUtilConstants.PERMISSIONS_ALL;
+import static com.newrelic.agent.security.util.IUtilConstants.DIRECTORY_PERMISSION;
 
 public class AgentConfig {
 
@@ -102,7 +102,7 @@ public class AgentConfig {
             NR_CSEC_HOME = ".";
         }
         Path k2homePath = Paths.get(NR_CSEC_HOME, IUtilConstants.NR_SECURITY_HOME);
-        CommonUtils.forceMkdirs(k2homePath, "rwxrwxrwx");
+        CommonUtils.forceMkdirs(k2homePath, DIRECTORY_PERMISSION);
         NR_CSEC_HOME = k2homePath.toString();
         AgentUtils.getInstance().getStatusLogValues().put("csec-home", NR_CSEC_HOME);
         AgentUtils.getInstance().getStatusLogValues().put("csec-home-permissions", String.valueOf(k2homePath.toFile().canWrite() && k2homePath.toFile().canRead()));
@@ -155,7 +155,7 @@ public class AgentConfig {
         if (!snapshotDir.toFile().isDirectory()) {
             FileUtils.deleteQuietly(snapshotDir.toFile());
         }
-        CommonUtils.forceMkdirs(snapshotDir, PERMISSIONS_ALL);
+        CommonUtils.forceMkdirs(snapshotDir, DIRECTORY_PERMISSION);
     }
 
     private void keepMaxStatusLogFiles(int max) {
