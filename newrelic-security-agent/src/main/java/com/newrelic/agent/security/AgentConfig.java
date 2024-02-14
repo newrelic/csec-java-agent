@@ -54,7 +54,6 @@ public class AgentConfig {
         // Set required Group
         groupName = applyRequiredGroup();
         // Enable low severity hooks
-        LowSeverityHelper.enableLowSeverityHooks(groupName);
         // Set required LogLevel
         logLevel = applyRequiredLogLevel();
 
