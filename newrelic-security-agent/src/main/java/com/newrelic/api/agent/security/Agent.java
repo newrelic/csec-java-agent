@@ -530,6 +530,21 @@ public class Agent implements SecurityAgent {
         return NewRelicSecurity.isHookProcessingActive() && LowSeverityHelper.getIsLowSeverityhHooksEnabled() && NewRelic.getAgent().getConfig().getValue(LowSeverityHelper.LOW_SEVERITY_HOOKS_ENABLED, LowSeverityHelper.DEFAULT);
     }
 
+    public void setApplicationConnectionConfig(int port, String scheme) {
+        AppServerInfo appServerInfo = AppServerInfoHelper.getAppServerInfo();
+        appServerInfo.getConnectionConfiguration().put(port, scheme);
+    }
+
+    public String getApplicationConnectionConfig(int port) {
+        AppServerInfo appServerInfo = AppServerInfoHelper.getAppServerInfo();
+        return appServerInfo.getConnectionConfiguration().get(port);
+    }
+
+    @Override
+    public Map<Integer, String> getApplicationConnectionConfig() {
+        return AppServerInfoHelper.getAppServerInfo().getConnectionConfiguration();
+    }
+
     @Override
     public void setServerInfo(String key, String value) {
         AppServerInfo appServerInfo = AppServerInfoHelper.getAppServerInfo();

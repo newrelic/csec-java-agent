@@ -2,6 +2,7 @@ package com.newrelic.agent.security.instrumentator.httpclient;
 
 import com.newrelic.agent.security.AgentInfo;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
+import com.newrelic.agent.security.intcodeagent.models.FuzzRequestBean;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.FuzzFailEvent;
 import com.newrelic.agent.security.intcodeagent.websocket.EventSendPool;
@@ -15,6 +16,7 @@ import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.security.cert.CertificateException;
 import java.util.HashSet;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 public class RestClient {
@@ -118,7 +120,24 @@ public class RestClient {
         return clientThreadLocal.get();
     }
 
-    public void fireRequest(Request request, int repeatCount, String fuzzRequestId) {
+    public void fireRequest(FuzzRequestBean httpRequest, List<String> endpoints, int repeatCount, String fuzzRequestId){
+
+        int responseCode = 999;
+        for (String endpoint : endpoints) {
+            try {
+                Request request = RequestUtils.generateK2Request(httpRequest, endpoint);
+                if (request != null) {
+                    responseCode = RestClient.getInstance().fireRequest(request, repeatCount + endpoints.size() -1, fuzzRequestId);
+                }
+                if(responseCode == 301){continue;}
+                break;
+            } catch (SSLException e){}
+        }
+
+
+    }
+
+    public int fireRequest(Request request, int repeatCount, String fuzzRequestId) throws SSLException {
         OkHttpClient client = clientThreadLocal.get();
 
         logger.log(LogLevel.FINER, String.format(FIRING_REQUEST_METHOD_S, request.method()), RestClient.class.getName());
@@ -143,9 +162,13 @@ public class RestClient {
             if (client.connectionPool() != null) {
                 client.connectionPool().evictAll();
             }
+            return response.code();
+        } catch (SSLException e){
+            logger.log(LogLevel.FINE, String.format("Request failed due to SSL Exception %s ", request, e), RestClient.class.getName());
+            throw e;
         } catch (InterruptedIOException e){
             if(repeatCount >= 0){
-                fireRequest(request, --repeatCount, fuzzRequestId);
+                return fireRequest(request, --repeatCount, fuzzRequestId);
             }
         } catch (IOException e) {
             logger.log(LogLevel.FINER, String.format(CALL_FAILED_REQUEST_S_REASON, request), e, RestClient.class.getName());
@@ -159,6 +182,7 @@ public class RestClient {
             EventSendPool.getInstance().sendEvent(fuzzFailEvent);
         }
 
+        return 999;
     }
 
     public boolean isConnected() {
