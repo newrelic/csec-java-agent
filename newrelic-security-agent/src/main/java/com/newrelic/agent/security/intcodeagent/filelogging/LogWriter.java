@@ -4,6 +4,7 @@ import com.newrelic.agent.security.AgentInfo;
 import com.newrelic.agent.security.instrumentator.os.OSVariables;
 import com.newrelic.agent.security.instrumentator.os.OsVariablesInstance;
 import com.newrelic.agent.security.intcodeagent.utils.CommonUtils;
+import com.newrelic.agent.security.util.IUtilConstants;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -63,7 +64,7 @@ public class LogWriter implements Runnable {
     private String logTime;
 
     private static boolean createLogFile() {
-        CommonUtils.forceMkdirs(currentLogFile.getParentFile().toPath(), "rwxrwxrwx");
+        CommonUtils.forceMkdirs(currentLogFile.getParentFile().toPath(), IUtilConstants.DIRECTORY_PERMISSION);
 
         try {
             currentLogFile.setReadable(true, false);
@@ -72,7 +73,7 @@ public class LogWriter implements Runnable {
             maxFileSize = FileLoggerThreadPool.getInstance().maxfilesize;
 
             if (!osVariables.getWindows()) {
-                Files.setPosixFilePermissions(currentLogFile.toPath(), PosixFilePermissions.fromString("rw-rw-rw-"));
+                Files.setPosixFilePermissions(currentLogFile.toPath(), PosixFilePermissions.fromString(IUtilConstants.FILE_PERMISSIONS));
             }
 
         } catch (Throwable e) {
@@ -200,7 +201,7 @@ public class LogWriter implements Runnable {
             currentFile.setReadable(true, false);
             currentFile.setWritable(true, false);
             if (!osVariables.getWindows()) {
-                Files.setPosixFilePermissions(currentFile.toPath(), PosixFilePermissions.fromString("rw-rw-rw-"));
+                Files.setPosixFilePermissions(currentFile.toPath(), PosixFilePermissions.fromString(IUtilConstants.FILE_PERMISSIONS));
             }
         }
 

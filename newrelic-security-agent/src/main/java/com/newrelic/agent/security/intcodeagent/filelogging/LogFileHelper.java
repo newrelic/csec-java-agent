@@ -9,6 +9,7 @@ package com.newrelic.agent.security.intcodeagent.filelogging;
 
 import com.newrelic.agent.security.instrumentator.os.OsVariablesInstance;
 import com.newrelic.agent.security.intcodeagent.properties.K2JALogProperties;
+import com.newrelic.agent.security.util.IUtilConstants;
 import com.newrelic.api.agent.NewRelic;
 import com.newrelic.api.agent.security.schema.StringUtils;
 import org.apache.commons.io.FileUtils;
@@ -82,7 +83,7 @@ public class LogFileHelper {
             currentFile.setReadable(true, false);
             currentFile.setWritable(true, false);
             if (!OsVariablesInstance.getInstance().getOsVariables().getWindows()) {
-                Files.setPosixFilePermissions(currentFile.toPath(), PosixFilePermissions.fromString("rw-rw-rw-"));
+                Files.setPosixFilePermissions(currentFile.toPath(), PosixFilePermissions.fromString(IUtilConstants.FILE_PERMISSIONS));
             }
         } catch (IOException e) {
         }
