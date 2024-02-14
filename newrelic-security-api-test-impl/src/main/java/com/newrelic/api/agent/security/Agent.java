@@ -162,6 +162,12 @@ public class Agent implements SecurityAgent {
     }
 
     @Override
+    public Map<Integer, String> getApplicationConnectionConfig() {
+        //TODO Ishika please fill this as per your needs
+        return null;
+    }
+
+    @Override
     public void log(LogLevel logLevel, String event, Throwable throwableEvent, String logSourceClassName) {
 
     }

@@ -541,6 +541,11 @@ public class Agent implements SecurityAgent {
     }
 
     @Override
+    public Map<Integer, String> getApplicationConnectionConfig() {
+        return AppServerInfoHelper.getAppServerInfo().getConnectionConfiguration();
+    }
+
+    @Override
     public void setServerInfo(String key, String value) {
         AppServerInfo appServerInfo = AppServerInfoHelper.getAppServerInfo();
         switch (key) {

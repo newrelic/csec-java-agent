@@ -15,6 +15,8 @@ import com.newrelic.api.agent.security.utils.logging.LogLevel;
 
 import java.lang.instrument.Instrumentation;
 import java.net.URL;
+import java.util.Collections;
+import java.util.Map;
 
 /**
  * Provides NoOps for API objects to avoid returning <code>null</code>. Do not call these objects directly.
@@ -94,6 +96,11 @@ class NoOpAgent implements SecurityAgent {
     @Override
     public String getApplicationConnectionConfig(int port) {
         return null;
+    }
+
+    @Override
+    public Map<Integer, String> getApplicationConnectionConfig() {
+        return Collections.emptyMap();
     }
 
     @Override
