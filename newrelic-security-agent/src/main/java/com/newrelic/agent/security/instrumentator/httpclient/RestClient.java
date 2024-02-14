@@ -2,6 +2,7 @@ package com.newrelic.agent.security.instrumentator.httpclient;
 
 import com.newrelic.agent.security.AgentInfo;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
+import com.newrelic.agent.security.intcodeagent.logging.IAgentConstants;
 import com.newrelic.agent.security.intcodeagent.models.FuzzRequestBean;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.FuzzFailEvent;
@@ -123,15 +124,36 @@ public class RestClient {
     public void fireRequest(FuzzRequestBean httpRequest, List<String> endpoints, int repeatCount, String fuzzRequestId){
 
         int responseCode = 999;
+        if(endpoints.isEmpty()){
+            Request request = RequestUtils.generateK2Request(httpRequest, String.format(IAgentConstants.ENDPOINT_LOCALHOST_S, httpRequest.getProtocol(), httpRequest.getServerPort()));
+            if (request != null) {
+                try {
+                    responseCode = RestClient.getInstance().fireRequest(request, repeatCount + endpoints.size() -1, fuzzRequestId);
+                } catch (SSLException e) {
+                    logger.log(LogLevel.FINER, String.format(CALL_FAILED_REQUEST_S_REASON, request), e, RestClient.class.getName());
+                    logger.postLogMessageIfNecessary(LogLevel.WARNING,
+                            String.format(CALL_FAILED_REQUEST_S_REASON, fuzzRequestId),
+                            e, RestRequestProcessor.class.getName());
+                    RestRequestThreadPool.getInstance().getProcessedIds().putIfAbsent(fuzzRequestId, new HashSet<>());
+                    // TODO: Add to fuzz fail count in HC and remove FuzzFailEvent if not needed.
+                    FuzzFailEvent fuzzFailEvent = new FuzzFailEvent(AgentInfo.getInstance().getApplicationUUID());
+                    fuzzFailEvent.setFuzzHeader(request.header(ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID));
+                    EventSendPool.getInstance().sendEvent(fuzzFailEvent);
+                }
+            }
+            return;
+        }
         for (String endpoint : endpoints) {
+            Request request = RequestUtils.generateK2Request(httpRequest, endpoint);
             try {
-                Request request = RequestUtils.generateK2Request(httpRequest, endpoint);
                 if (request != null) {
                     responseCode = RestClient.getInstance().fireRequest(request, repeatCount + endpoints.size() -1, fuzzRequestId);
                 }
                 if(responseCode == 301){continue;}
                 break;
-            } catch (SSLException e){}
+            } catch (SSLException e){
+                logger.log(LogLevel.FINER, String.format(CALL_FAILED_REQUEST_S_REASON, request), e, RestClient.class.getName());
+            }
         }
 
 

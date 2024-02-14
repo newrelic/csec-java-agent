@@ -34,6 +34,7 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.instrument.Instrumentation;
 import java.lang.instrument.UnmodifiableClassException;
+import java.net.Socket;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -532,7 +533,23 @@ public class Agent implements SecurityAgent {
 
     public void setApplicationConnectionConfig(int port, String scheme) {
         AppServerInfo appServerInfo = AppServerInfoHelper.getAppServerInfo();
-        appServerInfo.getConnectionConfiguration().put(port, scheme);
+        verifyConnectionAndPut(port, scheme, appServerInfo);
+    }
+
+    private void verifyConnectionAndPut(int port, String scheme, AppServerInfo appServerInfo) {
+        if(isConnectionSuccessful(port, scheme)){
+            appServerInfo.getConnectionConfiguration().put(port, scheme);
+        } else if (isConnectionSuccessful(port,StringUtils.equalsAnyIgnoreCase(scheme, HTTPS_STR)? HTTP_STR : HTTPS_STR)) {
+            appServerInfo.getConnectionConfiguration().put(port, StringUtils.equalsAnyIgnoreCase(scheme, HTTPS_STR)? HTTP_STR : HTTPS_STR);
+        }
+    }
+
+    private boolean isConnectionSuccessful(int port, String scheme) {
+        try (Socket socket = new Socket(String.format("%s://localhost", scheme), port)) {
+            return true;
+        } catch (IOException e) {
+            return false;
+        }
     }
 
     public String getApplicationConnectionConfig(int port) {
