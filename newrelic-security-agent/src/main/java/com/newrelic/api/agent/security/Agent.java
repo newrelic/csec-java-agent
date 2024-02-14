@@ -541,7 +541,6 @@ public class Agent implements SecurityAgent {
             appServerInfo.getConnectionConfiguration().put(port, scheme);
         } else if (isConnectionSuccessful(port,StringUtils.equalsAnyIgnoreCase(scheme, HTTPS_STR)? HTTP_STR : HTTPS_STR)) {
             appServerInfo.getConnectionConfiguration().put(port, StringUtils.equalsAnyIgnoreCase(scheme, HTTPS_STR)? HTTP_STR : HTTPS_STR);
-            appServerInfo.getConnectionConfiguration().put(port, StringUtils.equalsAnyIgnoreCase(scheme, HTTPS_STR)? HTTP_STR : HTTPS_STR);
         }
     }
 
