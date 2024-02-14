@@ -34,7 +34,9 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.instrument.Instrumentation;
 import java.lang.instrument.UnmodifiableClassException;
+import java.net.HttpURLConnection;
 import java.net.Socket;
+import java.net.URL;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -545,8 +547,22 @@ public class Agent implements SecurityAgent {
     }
 
     private boolean isConnectionSuccessful(int port, String scheme) {
-        try (Socket socket = new Socket(String.format("%s://localhost", scheme), port)) {
-            return true;
+        try {
+            java.net.URL endpoint = new URL(String.format("%s://localhost:%s", scheme, port));
+            HttpURLConnection connection = (HttpURLConnection) endpoint.openConnection();
+
+            // Set the request method to HEAD (you won't download the whole content)
+            connection.setRequestMethod("HEAD");
+
+            int responseCode = connection.getResponseCode();
+
+            if (responseCode == HttpURLConnection.HTTP_OK) {
+                return true;
+            } else if (responseCode == HttpURLConnection.HTTP_NOT_FOUND) {
+                return true;
+            } else {
+                return false;
+            }
         } catch (IOException e) {
             return false;
         }
