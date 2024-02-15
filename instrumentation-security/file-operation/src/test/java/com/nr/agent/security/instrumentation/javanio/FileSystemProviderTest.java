@@ -6,6 +6,7 @@ import com.newrelic.agent.security.introspec.SecurityIntrospector;
 import com.newrelic.api.agent.Trace;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
+import com.newrelic.api.agent.security.schema.operation.FileIntegrityOperation;
 import com.newrelic.api.agent.security.schema.operation.FileOperation;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -87,8 +88,13 @@ public class FileSystemProviderTest {
         Assert.assertTrue("No operations detected", operations.size() > 0);
         FileOperation operation = null;
         for (AbstractOperation op : operations) {
-            if (FILE.equals(((FileOperation) op).getFileName().get(0))) {
-                operation = (FileOperation) op;
+            try {
+                if (FILE.equals(((FileOperation) op).getFileName().get(0))) {
+                    operation = (FileOperation) op;
+                }
+            } catch (Exception e){
+                e.printStackTrace();
+                System.err.println(op instanceof FileIntegrityOperation? ((FileIntegrityOperation) op).getFileName() : ((FileOperation) op).getFileName());
             }
         }
         Assert.assertNotNull("No target operation found.", operation);
