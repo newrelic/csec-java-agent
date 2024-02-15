@@ -535,7 +535,8 @@ public class Agent implements SecurityAgent {
 
     public void setApplicationConnectionConfig(int port, String scheme) {
         AppServerInfo appServerInfo = AppServerInfoHelper.getAppServerInfo();
-        verifyConnectionAndPut(port, scheme, appServerInfo);
+        appServerInfo.getConnectionConfiguration().put(port, scheme);
+//        verifyConnectionAndPut(port, scheme, appServerInfo);
     }
 
     private void verifyConnectionAndPut(int port, String scheme, AppServerInfo appServerInfo) {

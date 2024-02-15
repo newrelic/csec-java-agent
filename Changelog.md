@@ -11,7 +11,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixes
 - Extract Server Configuration to resolve IAST localhost connection with application [PR-183](https://github.com/newrelic/csec-java-agent/pull/183)
-- Improve detection of application server connectivity endpoint [PR-181](https://github.com/newrelic/csec-java-agent/pull/181)
 - Retry IAST request with different endpoint, if failure reason is SSLException or 301 [PR-182](https://github.com/newrelic/csec-java-agent/pull/182)
 
 ## [1.1.0] - 2024-1-29
