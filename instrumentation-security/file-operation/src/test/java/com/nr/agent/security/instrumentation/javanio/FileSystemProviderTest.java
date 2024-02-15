@@ -6,7 +6,6 @@ import com.newrelic.agent.security.introspec.SecurityIntrospector;
 import com.newrelic.api.agent.Trace;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
-import com.newrelic.api.agent.security.schema.operation.FileIntegrityOperation;
 import com.newrelic.api.agent.security.schema.operation.FileOperation;
 import org.junit.AfterClass;
 import org.junit.Assert;
