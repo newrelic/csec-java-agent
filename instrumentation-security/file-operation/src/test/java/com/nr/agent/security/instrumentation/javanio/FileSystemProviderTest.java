@@ -88,14 +88,8 @@ public class FileSystemProviderTest {
         Assert.assertTrue("No operations detected", operations.size() > 0);
         FileOperation operation = null;
         for (AbstractOperation op : operations) {
-            if(op instanceof FileIntegrityOperation){continue;}
-            try {
-                if (FILE.equals(((FileOperation) op).getFileName().get(0))) {
-                    operation = (FileOperation) op;
-                }
-            } catch (Exception e){
-                e.printStackTrace();
-                System.err.println(op instanceof FileIntegrityOperation? ((FileIntegrityOperation) op).getFileName() : ((FileOperation) op).getFileName());
+            if (FILE.equals(((FileOperation) op).getFileName().get(0))) {
+                operation = (FileOperation) op;
             }
         }
         Assert.assertNotNull("No target operation found.", operation);
