@@ -15,7 +15,7 @@ public class HttpServletHelper {
     private static final String WILDCARD = "*";
     private static final String NULL = "null";
     private static final String SEPARATOR = "/";
-    public static final String TOMCAT_7 = "TOMCAT-7";
+    public static final String APACHE_TOMCAT_10 = "APACHE-TOMCAT-10";
 
     public static void gatherURLMappings(ServletContext servletContext) {
         try {
@@ -30,7 +30,7 @@ public class HttpServletHelper {
             }
         } catch (Exception e){
             String message = "Instrumentation library: %s , error while getting app endpoints : %s";
-            NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(message, TOMCAT_7, e.getMessage()), e, HttpServletHelper.class.getName());
+            NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(message, APACHE_TOMCAT_10, e.getMessage()), e, HttpServletHelper.class.getName());
         }
     }
 
@@ -49,7 +49,7 @@ public class HttpServletHelper {
             }
         } catch (Exception e){
             String message = "Instrumentation library: %s , error while getting app endpoints : %s";
-            NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(message, TOMCAT_7, e.getMessage()), e, HttpServletHelper.class.getName());
+            NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(message, APACHE_TOMCAT_10, e.getMessage()), e, HttpServletHelper.class.getName());
         }
     }
 }
