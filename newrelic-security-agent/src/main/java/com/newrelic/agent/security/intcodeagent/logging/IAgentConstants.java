@@ -571,4 +571,7 @@ public interface IAgentConstants {
 
     String NR_APM_TRACE_ID = "trace.id";
     String NR_APM_SPAN_ID = "span.id";
+    String HTTP_STR = "http";
+    String HTTPS_STR = "https";
+    String ENDPOINT_LOCALHOST_S = "%s://localhost:%s";
 }

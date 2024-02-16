@@ -34,6 +34,9 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.instrument.Instrumentation;
 import java.lang.instrument.UnmodifiableClassException;
+import java.net.HttpURLConnection;
+import java.net.Socket;
+import java.net.URL;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -122,7 +125,7 @@ public class Agent implements SecurityAgent {
                 LogLevel.INFO,
                 "[STEP-3] => Gathering information about the application",
                 this.getClass().getName());
-        logger.logInit(LogLevel.INFO, LowSeverityHelper.getIsLowSeverityhHooksEnabled() && NewRelic.getAgent().getConfig().getValue(LowSeverityHelper.LOW_SEVERITY_HOOKS_ENABLED, LowSeverityHelper.DEFAULT)?
+        logger.logInit(LogLevel.INFO, NewRelic.getAgent().getConfig().getValue(LowSeverityHelper.LOW_SEVERITY_HOOKS_ENABLED, LowSeverityHelper.DEFAULT)?
                 "Low priority instrumentations are enabled.":"Low priority instrumentations are disabled!", this.getClass().getName());
         info.setIdentifier(ApplicationInfoUtils.envDetection());
         ApplicationInfoUtils.continueIdentifierProcessing(info.getIdentifier(), config.getConfig());
@@ -527,7 +530,53 @@ public class Agent implements SecurityAgent {
 
     @Override
     public boolean isLowPriorityInstrumentationEnabled() {
-        return NewRelicSecurity.isHookProcessingActive() && LowSeverityHelper.getIsLowSeverityhHooksEnabled() && NewRelic.getAgent().getConfig().getValue(LowSeverityHelper.LOW_SEVERITY_HOOKS_ENABLED, LowSeverityHelper.DEFAULT);
+        return NewRelicSecurity.isHookProcessingActive() && NewRelic.getAgent().getConfig().getValue(LowSeverityHelper.LOW_SEVERITY_HOOKS_ENABLED, LowSeverityHelper.DEFAULT);
+    }
+
+    public void setApplicationConnectionConfig(int port, String scheme) {
+        AppServerInfo appServerInfo = AppServerInfoHelper.getAppServerInfo();
+        appServerInfo.getConnectionConfiguration().put(port, scheme);
+//        verifyConnectionAndPut(port, scheme, appServerInfo);
+    }
+
+    private void verifyConnectionAndPut(int port, String scheme, AppServerInfo appServerInfo) {
+        if(isConnectionSuccessful(port, scheme)){
+            appServerInfo.getConnectionConfiguration().put(port, scheme);
+        } else if (isConnectionSuccessful(port,StringUtils.equalsAnyIgnoreCase(scheme, HTTPS_STR)? HTTP_STR : HTTPS_STR)) {
+            appServerInfo.getConnectionConfiguration().put(port, StringUtils.equalsAnyIgnoreCase(scheme, HTTPS_STR)? HTTP_STR : HTTPS_STR);
+        }
+    }
+
+    private boolean isConnectionSuccessful(int port, String scheme) {
+        try {
+            java.net.URL endpoint = new URL(String.format("%s://localhost:%s", scheme, port));
+            HttpURLConnection connection = (HttpURLConnection) endpoint.openConnection();
+
+            // Set the request method to HEAD (you won't download the whole content)
+            connection.setRequestMethod("HEAD");
+
+            int responseCode = connection.getResponseCode();
+
+            if (responseCode == HttpURLConnection.HTTP_OK) {
+                return true;
+            } else if (responseCode == HttpURLConnection.HTTP_NOT_FOUND) {
+                return true;
+            } else {
+                return false;
+            }
+        } catch (IOException e) {
+            return false;
+        }
+    }
+
+    public String getApplicationConnectionConfig(int port) {
+        AppServerInfo appServerInfo = AppServerInfoHelper.getAppServerInfo();
+        return appServerInfo.getConnectionConfiguration().get(port);
+    }
+
+    @Override
+    public Map<Integer, String> getApplicationConnectionConfig() {
+        return AppServerInfoHelper.getAppServerInfo().getConnectionConfiguration();
     }
 
     @Override

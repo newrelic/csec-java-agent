@@ -14,6 +14,10 @@ public interface IUtilConstants {
 
     String PERMISSIONS_ALL = "rwxrwxrwx";
 
+    String DIRECTORY_PERMISSION = "rwxrwx---";
+
+    String FILE_PERMISSIONS = "rw-rw----";
+
     String NOT_AVAILABLE = "Not Available";
 
     String NR_SECURITY_ENABLED = "security.enabled";
