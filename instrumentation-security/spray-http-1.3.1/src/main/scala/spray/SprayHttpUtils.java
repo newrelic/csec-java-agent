@@ -12,11 +12,16 @@ import com.newrelic.api.agent.security.schema.operation.RXSSOperation;
 import com.newrelic.api.agent.security.schema.policy.AgentPolicy;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import scala.collection.Iterator;
+import scala.collection.Seq$;
 import scala.collection.immutable.List;
+import scala.collection.immutable.List$;
+import scala.collection.mutable.Seq;
 import spray.http.*;
 
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Map;
 
 public class SprayHttpUtils {
 
@@ -57,6 +62,9 @@ public class SprayHttpUtils {
             securityRequest.setUrl(processURL(request.uri()));
             securityRequest.setServerPort(request.uri().effectivePort());
             processHttpRequestHeader(request.headers(), securityRequest);
+
+            securityMetaData.setTracingHeaderValue(getTraceHeader(securityRequest.getHeaders()));
+
             if (!request.entity().isEmpty()) {
                 if (request.entity() instanceof HttpEntity.NonEmpty) {
                     securityRequest.setContentType(((HttpEntity.NonEmpty) request.entity()).contentType().value());
@@ -71,6 +79,17 @@ public class SprayHttpUtils {
             NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.ERROR_GENERATING_HTTP_REQUEST, SPRAY_HTTP_1_3_1, e.getMessage()), e, SprayHttpUtils.class.getName());
             e.printStackTrace();
         }
+    }
+
+    public static String getTraceHeader(Map<String, String> headers) {
+        String data = StringUtils.EMPTY;
+        if (headers.containsKey(ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER) || headers.containsKey(ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER.toLowerCase())) {
+            data = headers.get(ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER);
+            if (data == null || data.trim().isEmpty()) {
+                data = headers.get(ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER.toLowerCase());
+            }
+        }
+        return data;
     }
 
     private static void processHttpRequestHeader(List<HttpHeader> headers, com.newrelic.api.agent.security.schema.HttpRequest securityRequest) {
