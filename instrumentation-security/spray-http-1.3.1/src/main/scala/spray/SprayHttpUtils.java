@@ -11,6 +11,7 @@ import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityExcepti
 import com.newrelic.api.agent.security.schema.operation.RXSSOperation;
 import com.newrelic.api.agent.security.schema.policy.AgentPolicy;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
+import scala.collection.Iterator;
 import scala.collection.immutable.List;
 import spray.http.*;
 
@@ -63,7 +64,9 @@ public class SprayHttpUtils {
     }
 
     private static void processHttpRequestHeader(List<HttpHeader> headers, com.newrelic.api.agent.security.schema.HttpRequest securityRequest) {
-        headers.foreach( element -> {
+        Iterator<HttpHeader> headerIterator = headers.iterator();
+        while (headerIterator.hasNext()){
+            HttpHeader element = headerIterator.next();
             String headerKey = element.lowercaseName();
             String headerValue = element.value();
             boolean takeNextValue = false;
@@ -89,9 +92,7 @@ public class SprayHttpUtils {
                         .add(securityRequest.getClientIP());
             }
             securityRequest.getHeaders().put(headerKey, headerValue);
-
-            return null;
-        });
+        }
     }
 
     private static String processURL(Uri uri) {
