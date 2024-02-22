@@ -53,7 +53,7 @@ public class SprayHttpUtils {
 
             AgentMetaData securityAgentMetaData = securityMetaData.getMetaData();
             securityRequest.setMethod(request.method().name());
-            securityRequest.setProtocol(getProtocol(request.protocol().value()));
+            securityRequest.setProtocol(request.uri().scheme());
             securityRequest.setUrl(processURL(request.uri()));
             securityRequest.setServerPort(request.uri().effectivePort());
             processHttpRequestHeader(request.headers(), securityRequest);
