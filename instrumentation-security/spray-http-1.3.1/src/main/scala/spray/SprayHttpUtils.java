@@ -12,14 +12,10 @@ import com.newrelic.api.agent.security.schema.operation.RXSSOperation;
 import com.newrelic.api.agent.security.schema.policy.AgentPolicy;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import scala.collection.Iterator;
-import scala.collection.Seq$;
 import scala.collection.immutable.List;
-import scala.collection.immutable.List$;
-import scala.collection.mutable.Seq;
 import spray.http.*;
 
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Map;
 
@@ -35,16 +31,6 @@ public class SprayHttpUtils {
     }
     public static String getNrSecCustomAttribNameForResponse() {
         return "SPRAY-HTTP-RXSS" + Thread.currentThread().getId();
-    }
-
-    private static String getProtocol(String value) {
-        if(StringUtils.containsIgnoreCase(value, "https")){
-            return "https";
-        } else if (StringUtils.containsIgnoreCase(value, "http")) {
-            return "http";
-        } else {
-            return value;
-        }
     }
 
     public static void preProcessRequestHook(HttpRequest request) {
@@ -80,7 +66,6 @@ public class SprayHttpUtils {
             securityRequest.setRequestParsed(true);
         } catch (Exception e){
             NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.ERROR_GENERATING_HTTP_REQUEST, SPRAY_HTTP_1_3_1, e.getMessage()), e, SprayHttpUtils.class.getName());
-            e.printStackTrace();
         }
     }
 
@@ -129,8 +114,7 @@ public class SprayHttpUtils {
 
     private static String processURL(Uri uri) {
         String path = uri.path().toString();
-        String suri = uri.toString();
-        String queryString = StringUtils.substringAfter(suri, QUESTION_MARK);
+        String queryString = StringUtils.substringAfter(uri.toString(), QUESTION_MARK);
         if(StringUtils.isBlank(queryString)){
             return path;
         } else {
@@ -155,7 +139,6 @@ public class SprayHttpUtils {
             }
             ServletHelper.tmpFileCleanUp(NewRelicSecurity.getAgent().getSecurityMetaData().getFuzzRequestIdentifier().getTempFiles());
         } catch (Throwable e) {
-            e.printStackTrace();
             if (e instanceof NewRelicSecurityException) {
                 NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.SECURITY_EXCEPTION_MESSAGE, SPRAY_HTTP_1_3_1, e.getMessage()), e, SprayHttpUtils.class.getName());
                 throw e;

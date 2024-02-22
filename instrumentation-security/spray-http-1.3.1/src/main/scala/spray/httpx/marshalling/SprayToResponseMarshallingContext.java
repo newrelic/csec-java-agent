@@ -11,26 +11,20 @@ package spray.httpx.marshalling;
 import com.newrelic.api.agent.Trace;
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
+import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
-import scala.collection.JavaConversions;
 import spray.SprayHttpUtils;
 import spray.http.HttpEntity;
-import spray.http.HttpHeader;
 import spray.http.HttpResponse;
-
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
 
 @Weave(type = MatchType.Interface, originalName = "spray.httpx.marshalling.ToResponseMarshallingContext")
 public class SprayToResponseMarshallingContext {
 
     @Trace(async = true)
     public void marshalTo(HttpResponse httpResponse) {
-        System.out.println("Response handling!!! : "+httpResponse.status().value());
         boolean isLockAcquired = GenericHelper.acquireLockIfPossible(SprayHttpUtils.getNrSecCustomAttribNameForResponse());
         try {
             if (isLockAcquired && httpResponse.entity().nonEmpty()) {
@@ -41,7 +35,7 @@ public class SprayToResponseMarshallingContext {
                 SprayHttpUtils.postProcessSecurityHook(httpResponse, this.getClass().getName(), "marshalTo");
             }
         } catch (Exception e){
-            e.printStackTrace();
+            NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.ERROR_PARSING_HTTP_RESPONSE, SprayHttpUtils.SPRAY_HTTP_1_3_1, e.getMessage()), e, this.getClass().getName());
         }
         try {
              Weaver.callOriginal();
