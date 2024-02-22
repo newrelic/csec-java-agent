@@ -29,6 +29,16 @@ public class SprayHttpUtils {
         return "SPRAY-HTTP-" + Thread.currentThread().getId();
     }
 
+    private static String getProtocol(String value) {
+        if(StringUtils.containsIgnoreCase(value, "https")){
+            return "https";
+        } else if (StringUtils.containsIgnoreCase(value, "http")) {
+            return "http";
+        } else {
+            return value;
+        }
+    }
+
     public static void preProcessRequestHook(HttpRequest request) {
         try {
             if (!NewRelicSecurity.isHookProcessingActive()) {
@@ -43,7 +53,7 @@ public class SprayHttpUtils {
 
             AgentMetaData securityAgentMetaData = securityMetaData.getMetaData();
             securityRequest.setMethod(request.method().name());
-            securityRequest.setProtocol(request.protocol().value());
+            securityRequest.setProtocol(getProtocol(request.protocol().value()));
             securityRequest.setUrl(processURL(request.uri()));
             securityRequest.setServerPort(request.uri().effectivePort());
             processHttpRequestHeader(request.headers(), securityRequest);
