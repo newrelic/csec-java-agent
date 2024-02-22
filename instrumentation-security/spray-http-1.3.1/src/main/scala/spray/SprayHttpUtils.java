@@ -33,6 +33,9 @@ public class SprayHttpUtils {
     public static String getNrSecCustomAttribName() {
         return "SPRAY-HTTP-" + Thread.currentThread().getId();
     }
+    public static String getNrSecCustomAttribNameForResponse() {
+        return "SPRAY-HTTP-RXSS" + Thread.currentThread().getId();
+    }
 
     private static String getProtocol(String value) {
         if(StringUtils.containsIgnoreCase(value, "https")){

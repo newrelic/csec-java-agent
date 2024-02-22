@@ -31,7 +31,7 @@ public class SprayToResponseMarshallingContext {
     @Trace(async = true)
     public void marshalTo(HttpResponse httpResponse) {
         System.out.println("Response handling!!! : "+httpResponse.status().value());
-        boolean isLockAcquired = GenericHelper.acquireLockIfPossible(SprayHttpUtils.getNrSecCustomAttribName());
+        boolean isLockAcquired = GenericHelper.acquireLockIfPossible(SprayHttpUtils.getNrSecCustomAttribNameForResponse());
         try {
             if (isLockAcquired && httpResponse.entity().nonEmpty()) {
                 NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setResponseBody(new StringBuilder(httpResponse.entity().data().asString(StandardCharsets.UTF_8)));
@@ -47,7 +47,7 @@ public class SprayToResponseMarshallingContext {
              Weaver.callOriginal();
         } finally {
              if(isLockAcquired){
-                 GenericHelper.releaseLock(SprayHttpUtils.getNrSecCustomAttribName());
+                 GenericHelper.releaseLock(SprayHttpUtils.getNrSecCustomAttribNameForResponse());
              }
         }
     }
