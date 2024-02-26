@@ -167,6 +167,8 @@ include 'instrumentation:grpc-1.40.0'
 include 'instrumentation:play-2.4'
 include 'instrumentation:play-2.6'
 include 'instrumentation:play-2.13_2.7'
+include 'instrumentation:apache-tomcat-7'
+include 'instrumentation:apache-tomcat-10'
 
 //include 'instrumentation:ning-async-http-client-1.1.0'
 //include 'instrumentation:ning-async-http-client-1.6.1'
@@ -182,3 +184,4 @@ include 'instrumentation:play-2.13_2.7'
 //include 'instrumentation:jetty-12'
 //include 'instrumentation:mule-3.7'
 //include 'instrumentation:mule-3.6'
+
