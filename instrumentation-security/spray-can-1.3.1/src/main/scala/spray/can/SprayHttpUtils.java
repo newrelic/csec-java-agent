@@ -27,7 +27,7 @@ public class SprayHttpUtils {
     public static final String SPRAY_HTTP_1_3_1 = "SPRAY-CAN-1.3.1";
 
     public static String getNrSecCustomAttribName() {
-        return "SPRAY-HTTP-" + Thread.currentThread().getId();
+        return "SPRAY-CAN-" + Thread.currentThread().getId();
     }
     public static String getNrSecCustomAttribNameForResponse() {
         return "SPRAY-CAN-RXSS" + Thread.currentThread().getId();
