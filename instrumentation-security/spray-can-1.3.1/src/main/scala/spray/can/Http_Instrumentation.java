@@ -13,7 +13,6 @@ import akka.actor.ActorRef;
 import akka.io.Inet;
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.weaver.Weave;
-import com.newrelic.api.agent.weaver.Weaver;
 import scala.Option;
 import scala.collection.immutable.Traversable;
 import spray.can.server.ServerSettings;
@@ -28,11 +27,7 @@ public class Http_Instrumentation {
         public Bind(final ActorRef listener, final InetSocketAddress endpoint, final int backlog,
                 final Traversable<Inet.SocketOption> options, final Option<ServerSettings> settings,
                 final ServerSSLEngineProvider sslEngineProvider) {
-            Weaver.callOriginal();
             NewRelicSecurity.getAgent().setApplicationConnectionConfig(endpoint.getPort(), "http");
-
-//            setServerInfo("spray-can HTTP", ManifestUtils.getVersionFromManifest(getClass(),
-//                    "spray-can", "1.3.1-1.3.3"));
         }
 
     }
