@@ -8,31 +8,27 @@
 package com.nr.agent.security.instrumentation.akka.http.core_10
 
 import akka.actor.ActorSystem
-import akka.event.Logging
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model.HttpMethods._
 import akka.http.scaladsl.model._
 import akka.stream.ActorMaterializer
 import akka.util.Timeout
-import com.typesafe.config.ConfigFactory
 
 import scala.concurrent.duration._
-import scala.concurrent.{Await, Future}
+import scala.concurrent.{Await, ExecutionContextExecutor, Future}
+import scala.language.postfixOps
 
 //how play 2.6 sets up a server
-class PlayServer() {
-  implicit val system = ActorSystem()
-  implicit val executor = system.dispatcher
-  implicit val materializer = ActorMaterializer()
+class PlayServer {
+  implicit val system: ActorSystem = ActorSystem()
+  implicit val executor: ExecutionContextExecutor = system.dispatcher
+  implicit val materializer: ActorMaterializer = ActorMaterializer()
   implicit val timeout: Timeout = 3 seconds
-
-  val config = ConfigFactory.load()
-  val logger = Logging(system, getClass)
 
   var bindingFuture: Future[Http.ServerBinding] = _
   var headers: Seq[HttpHeader] = Seq()
 
-  def start(port: Int, async: Boolean) = {
+  def start(port: Int, async: Boolean): Unit = {
 
     if (async) {
 
@@ -51,7 +47,7 @@ class PlayServer() {
       val requestHandler: HttpRequest => HttpResponse = {
         case HttpRequest(GET, Uri.Path("/ping"), var1, _, _) => {
           headers = var1
-          HttpResponse(entity = "Boops!")
+          HttpResponse(entity = "Hoops!")
         }
       }
 
@@ -63,7 +59,7 @@ class PlayServer() {
     }, timeout.duration)
   }
 
-  def stop() = {
+  def stop(): Unit = {
     if (bindingFuture != null) {
       bindingFuture.flatMap(_.unbind()).onComplete(_ => {
         system.terminate()
@@ -71,7 +67,7 @@ class PlayServer() {
     }
   }
 
-  def getHeders(): Seq[HttpHeader] = {
+  def getHeaders: Seq[HttpHeader] = {
     headers
   }
 }

@@ -29,6 +29,13 @@ The agent automatically instruments the following frameworks.
 - Servlet from 2.4 to latest
 - Spring from 0 to latest
 - Sun Net HTTP Server
+- Glassfish 3.0 to latest
+- Resin 3.1.9 to 4.0.x
+- Jetty 9.3.0.M1 to latest
+- Mule ESB 3.6 to 3.9.x
+- gRPC 1.4.0 to latest**
+
+** IAST for **gRPC** requires the dependency [protobuf-java-util](https://mvnrepository.com/artifact/com.google.protobuf/protobuf-java-util) for IAST request replay.
 
 ### Java Native Operations
 
@@ -85,6 +92,7 @@ The agent automatically instruments the following HTTP clients and messaging ser
 - SQLServer from jdk6 to latest
 - DynamoDB-1.11.80 to latest 
 - DyanamoDB-2.1.0 to latest
+- Anorm from 2.0 to 2.5
 
 ## **Supported Vulnerabilities**
 * Remote Code Execution
@@ -133,6 +141,8 @@ From APM Java agent root directory :
 ```./gradlew clean :newrelic-api:publishToMavenLocal :agent-bridge:publishToMavenLocal :agent-bridge-datastore:publishToMavenLocal :newrelic-weaver-api:publishToMavenLocal :newrelic-weaver:publishToMavenLocal :newrelic-weaver-scala:publishToMavenLocal :newrelic-weaver-scala-api:publishToMavenLocal --parallel```
 
 From CSEC java agent root dir :
+
+```./gradlew clean :newrelic-security-api:publishToMavenLocal```
 
 ```./gradlew clean jar --parallel```
 

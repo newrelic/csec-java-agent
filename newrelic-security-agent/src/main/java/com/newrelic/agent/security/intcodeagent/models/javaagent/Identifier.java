@@ -5,10 +5,6 @@ package com.newrelic.agent.security.intcodeagent.models.javaagent;
 
 import com.newrelic.agent.security.intcodeagent.websocket.JsonConverter;
 
-/**
- * @author lovesh
- *
- */
 public class Identifier {
 
     private String id;

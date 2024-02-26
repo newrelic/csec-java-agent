@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.Set;
 
 public class HttpServerHelper {
+    public static final String SUN_NET_HTTPSERVER = "SUN NET HTTPSERVER";
     private static final String X_FORWARDED_FOR = "x-forwarded-for";
     private static final String NR_SEC_CUSTOM_ATTRIB_NAME = "HTTPSERVER_LOCK-";
     public static final String HANDLE_METHOD_NAME = "handle";

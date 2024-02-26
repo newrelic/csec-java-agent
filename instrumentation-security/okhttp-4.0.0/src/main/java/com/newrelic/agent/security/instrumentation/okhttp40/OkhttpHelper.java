@@ -8,6 +8,7 @@ import com.newrelic.api.agent.security.schema.StringUtils;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
 import com.newrelic.api.agent.security.schema.operation.SSRFOperation;
 import com.newrelic.api.agent.security.utils.SSRFUtils;
+import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import okhttp3.Request;
 
 public class OkhttpHelper {
@@ -15,6 +16,7 @@ public class OkhttpHelper {
     public static final String NR_SEC_CUSTOM_ATTRIB_NAME = "OKHTTP_OPERATION_LOCK-";
 
     public static final String METHOD_EXECUTE = "execute";
+    public static final String OKHTTP_4_0_0 = "OKHTTP-4.0.0";
 
     public static boolean skipExistsEvent() {
         if (!(NewRelicSecurity.getAgent().getCurrentPolicy().getVulnerabilityScan().getEnabled() &&
@@ -70,9 +72,11 @@ public class OkhttpHelper {
             return ssrfOperation;
         } catch (Throwable e) {
             if (e instanceof NewRelicSecurityException) {
-                e.printStackTrace();
+                NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.SECURITY_EXCEPTION_MESSAGE, OKHTTP_4_0_0, e.getMessage()), e, OkhttpHelper.class.getName());
                 throw e;
             }
+            NewRelicSecurity.getAgent().log(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, OKHTTP_4_0_0, e.getMessage()), e, OkhttpHelper.class.getName());
+            NewRelicSecurity.getAgent().reportIncident(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, OKHTTP_4_0_0, e.getMessage()), e, OkhttpHelper.class.getName());
         }
         return null;
     }
@@ -85,7 +89,8 @@ public class OkhttpHelper {
                 return;
             }
             NewRelicSecurity.getAgent().registerExitEvent(operation);
-        } catch (Throwable ignored) {
+        } catch (Throwable e) {
+            NewRelicSecurity.getAgent().log(LogLevel.FINEST, String.format(GenericHelper.EXIT_OPERATION_EXCEPTION_MESSAGE, OKHTTP_4_0_0, e.getMessage()), e, OkhttpHelper.class.getName());
         }
     }
 

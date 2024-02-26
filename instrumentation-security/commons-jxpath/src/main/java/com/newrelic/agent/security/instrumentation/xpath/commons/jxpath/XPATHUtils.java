@@ -6,4 +6,5 @@ public class XPATHUtils {
     public static final String METHOD_ITERATE = "iterate";
     public static final String METHOD_REMOVE_PATH = "removePath";
     public static final String METHOD_REMOVE_ALL = "removeAll";
+    public static final String COMMONS_JXPATH = "COMMONS-JXPATH";
 }

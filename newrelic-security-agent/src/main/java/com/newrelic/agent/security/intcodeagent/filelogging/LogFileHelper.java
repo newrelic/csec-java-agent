@@ -45,7 +45,7 @@ public class LogFileHelper {
 
     public static boolean isLoggingToStdOut() {
         String logFileName = NewRelic.getAgent().getConfig().getValue(LogFileHelper.LOG_FILE_NAME, LogFileHelper.DEFAULT_LOG_FILE_NAME);
-        return StringUtils.equals(LogFileHelper.STDOUT, logFileName);
+        return StringUtils.equalsIgnoreCase(logFileName, STDOUT);
     }
 
     public static int logFileCount() {
