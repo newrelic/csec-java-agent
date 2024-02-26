@@ -1,12 +1,16 @@
 package spray.client;
 
+import com.newrelic.agent.security.instrumentation.spray.client.OutboundRequest;
 import com.newrelic.agent.security.instrumentation.spray.client.SprayUtils;
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
+import com.newrelic.api.agent.security.instrumentation.helpers.ServletHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.SecurityMetaData;
+import com.newrelic.api.agent.security.schema.StringUtils;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
 import com.newrelic.api.agent.security.schema.operation.SSRFOperation;
+import com.newrelic.api.agent.security.utils.SSRFUtils;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
@@ -26,6 +30,7 @@ public class SendReceive_Instrumentation {
         // Preprocess Phase
         if (isLockAcquired) {
             operation = preprocessSecurityHook(request);
+            request = addSecurityHeaders(request, operation);
         }
 
         Future<HttpResponse> returnCode;
@@ -40,6 +45,34 @@ public class SendReceive_Instrumentation {
         return returnCode;
     }
 
+    private HttpRequest addSecurityHeaders(HttpRequest request, AbstractOperation operation) {
+        OutboundRequest outboundRequest = new OutboundRequest(request);
+        if (operation!=null) {
+            SecurityMetaData securityMetaData = NewRelicSecurity.getAgent().getSecurityMetaData();
+            String iastHeader = NewRelicSecurity.getAgent().getSecurityMetaData().getFuzzRequestIdentifier().getRaw();
+            if (iastHeader != null && !iastHeader.trim().isEmpty()) {
+                outboundRequest.setHeader(ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID, iastHeader);
+            }
+            String csecParentId = securityMetaData.getCustomAttribute(GenericHelper.CSEC_PARENT_ID, String.class);
+            if(StringUtils.isNotBlank(csecParentId)){
+                outboundRequest.setHeader(GenericHelper.CSEC_PARENT_ID, csecParentId);
+            }
+
+            try {
+                NewRelicSecurity.getAgent().registerOperation(operation);
+            } finally {
+                if (operation.getApiID() != null && !operation.getApiID().trim().isEmpty() &&
+                        operation.getExecutionId() != null && !operation.getExecutionId().trim().isEmpty()) {
+                    // Add Security distributed tracing header
+                    outboundRequest.setHeader(ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER,
+                        SSRFUtils.generateTracingHeaderValue(securityMetaData.getTracingHeaderValue(),
+                                operation.getApiID(), operation.getExecutionId(),
+                                NewRelicSecurity.getAgent().getAgentUUID()));
+                }
+            }
+        }
+        return outboundRequest.getRequest();
+    }
     private void releaseLock() {
         try {
             GenericHelper.releaseLock(SprayUtils.getNrSecCustomAttribName());
