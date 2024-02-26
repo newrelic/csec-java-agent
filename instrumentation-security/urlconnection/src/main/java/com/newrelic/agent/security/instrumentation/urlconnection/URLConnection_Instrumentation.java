@@ -16,6 +16,7 @@ import com.newrelic.api.agent.security.schema.StringUtils;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
 import com.newrelic.api.agent.security.schema.operation.SSRFOperation;
 import com.newrelic.api.agent.security.utils.SSRFUtils;
+import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.NewField;
 import com.newrelic.api.agent.weaver.Weave;
@@ -116,7 +117,9 @@ public abstract class URLConnection_Instrumentation {
                 return;
             }
             NewRelicSecurity.getAgent().registerExitEvent(operation);
-        } catch (Throwable ignored){}
+        } catch (Throwable e){
+            NewRelicSecurity.getAgent().log(LogLevel.FINEST, String.format(GenericHelper.EXIT_OPERATION_EXCEPTION_MESSAGE, Helper.URLCONNECTION, e.getMessage()), e, URLConnection_Instrumentation.class.getClass().getName());
+        }
     }
 
     private AbstractOperation preprocessSecurityHook(boolean currentCascadedCall, String callArgs, String protocol, String methodName) {
@@ -155,6 +158,10 @@ public abstract class URLConnection_Instrumentation {
                     this.getClass().getName(), methodName);
             try {
                 NewRelicSecurity.getAgent().registerOperation(operation);
+            } catch (Throwable e) {
+                NewRelicSecurity.getAgent().log(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, Helper.URLCONNECTION, e.getMessage()), e, this.getClass().getName());
+                NewRelicSecurity.getAgent().reportIncident(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE,
+                        Helper.URLCONNECTION, e.getMessage()), e, this.getClass().getName());
             } finally {
                 if(operation.getApiID() != null && !operation.getApiID().trim().isEmpty() &&
                         operation.getExecutionId() != null && !operation.getExecutionId().trim().isEmpty()) {
@@ -164,10 +171,12 @@ public abstract class URLConnection_Instrumentation {
             }
             return operation;
         } catch (Throwable e) {
-            if(e instanceof NewRelicSecurityException){
-                e.printStackTrace();
+            if (e instanceof NewRelicSecurityException) {
+                NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.SECURITY_EXCEPTION_MESSAGE, Helper.URLCONNECTION, e.getMessage()), e, this.getClass().getName());
                 throw e;
             }
+            NewRelicSecurity.getAgent().log(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, Helper.URLCONNECTION, e.getMessage()), e, this.getClass().getName());
+            NewRelicSecurity.getAgent().reportIncident(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, Helper.URLCONNECTION, e.getMessage()), e, this.getClass().getName());
         }
         return null;
     }

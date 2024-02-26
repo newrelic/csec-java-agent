@@ -1,12 +1,14 @@
 package com.newrelic.agent.security.instrumentator.dispatcher;
 
+import com.google.gson.Gson;
 import com.newrelic.agent.security.AgentInfo;
 import com.newrelic.agent.security.instrumentator.helper.DynamoDBRequestConverter;
 import com.newrelic.agent.security.instrumentator.utils.AgentUtils;
 import com.newrelic.agent.security.instrumentator.utils.CallbackUtils;
 import com.newrelic.agent.security.instrumentator.utils.INRSettingsKey;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
-import com.newrelic.agent.security.intcodeagent.filelogging.LogLevel;
+import com.newrelic.api.agent.security.Agent;
+import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.logging.DeployedApplication;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.ExitEventBean;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.JavaAgentEventBean;
@@ -48,10 +50,13 @@ public class Dispatcher implements Callable {
     public static final char SEPARATOR = '.';
     private static final String EVENT_ZERO_SENT = "[STEP-8] => First event sent for validation. Security agent started successfully. %s";
     private static final String SENDING_EVENT_ZERO = "[EVENT] Sending first event for validation. Security agent started successfully ";
-    private static final String POSTING_UPDATED_APPLICATION_INFO = "[APP_INFO][DEPLOYED_APP] Sending updated application info to Prevent-Web service : %s";
+    private static final String POSTING_UPDATED_APPLICATION_INFO = "[APP_INFO][DEPLOYED_APP] Sending updated application info to Security Engine : %s";
 
     public static final String SEPARATOR1 = ", ";
     public static final String APP_LOCATION = "app-location";
+    public static final String REDIS_MODE = "mode";
+    public static final String REDIS_ARGUMENTS = "arguments";
+    public static final String REDIS_TYPE = "type";
     public static final String SYSCOMMAND_ENVIRONMENT = "environment";
     public static final String SYSCOMMAND_SCRIPT_CONTENT = "script-content";
     public static final String UNABLE_TO_CONVERT_OPERATION_TO_EVENT = "Unable to convert operation to event: %s, %s, %s";
@@ -78,6 +83,8 @@ public class Dispatcher implements Callable {
     public SecurityMetaData getSecurityMetaData() {
         return securityMetaData;
     }
+
+    private static Gson GsonUtil = new Gson();
 
     public Dispatcher(AbstractOperation operation, SecurityMetaData securityMetaData) {
         this.securityMetaData = securityMetaData;
@@ -145,22 +152,14 @@ public class Dispatcher implements Callable {
                         eventBean = prepareSQLDbCommandEvent((BatchSQLOperation) operation, eventBean);
                         break;
                     } else if (operation instanceof NoSQLOperation) {
-                        try {
-                            eventBean = prepareNoSQLEvent(eventBean, (NoSQLOperation) operation);
-                        } catch (Throwable e) {
-                            return null;
-                        }
+                        eventBean = prepareNoSQLEvent(eventBean, (NoSQLOperation) operation);
                         break;
                     }
 
                 case DYNAMO_DB_COMMAND:
                     DynamoDBOperation dynamoDBOperation = (DynamoDBOperation) operation;
-                    try {
-                        eventBean = prepareDynamoDBEvent(eventBean, dynamoDBOperation);
-                        if (eventBean == null) {
-                            return null;
-                        }
-                    } catch (Throwable e) {
+                    eventBean = prepareDynamoDBEvent(eventBean, dynamoDBOperation);
+                    if (eventBean == null) {
                         return null;
                     }
                     break;
@@ -209,6 +208,18 @@ public class Dispatcher implements Callable {
                     XQueryOperation xQueryOperationalBean = (XQueryOperation) operation;
                     eventBean = prepareXQueryInjectionEvent(eventBean, xQueryOperationalBean);
                     break;
+                case CACHING_DATA_STORE:
+                    if(operation instanceof RedisOperation) {
+                        RedisOperation redisOperation = (RedisOperation) operation;
+                        eventBean = prepareCachingDataStoreEvent(eventBean, redisOperation);
+                    } else if (operation instanceof JCacheOperation) {
+                        JCacheOperation jCacheOperation = (JCacheOperation) operation;
+                        eventBean = prepareJCacheCachingDataStoreEvent(eventBean, jCacheOperation);
+                    } else if (operation instanceof MemcachedOperation) {
+                        MemcachedOperation memcachedOperationalBean = (MemcachedOperation) operation;
+                        eventBean = prepareMemcachedEvent(eventBean, memcachedOperationalBean);
+                    }
+                    break;
                 default:
 
             }
@@ -234,8 +245,52 @@ public class Dispatcher implements Callable {
         } catch (Throwable e) {
             logger.postLogMessageIfNecessary(LogLevel.WARNING, String.format(UNABLE_TO_CONVERT_OPERATION_TO_EVENT, operation.getApiID(), operation.getSourceMethod(), JsonConverter.getObjectMapper().writeValueAsString(operation.getUserClassEntity())), e,
                     this.getClass().getName());
+            Agent.getInstance().reportIncident(LogLevel.WARNING, String.format(UNABLE_TO_CONVERT_OPERATION_TO_EVENT, operation.getApiID(), operation.getSourceMethod(), JsonConverter.getObjectMapper().writeValueAsString(operation.getUserClassEntity())), e,
+                    this.getClass().getName());
         }
         return null;
+    }
+
+    private JavaAgentEventBean prepareCachingDataStoreEvent(JavaAgentEventBean eventBean, RedisOperation redisOperation) {
+        JSONArray params = new JSONArray();
+        for (Object data : redisOperation.getArguments()) {
+            params.add(data);
+        }
+        JSONObject command = new JSONObject();
+        command.put(REDIS_MODE, redisOperation.getMode());
+        command.put(REDIS_ARGUMENTS, params);
+        command.put(REDIS_TYPE, redisOperation.getType());
+        JSONArray parameter = new JSONArray();
+        parameter.add(command);
+        eventBean.setParameters(parameter);
+        return eventBean;
+    }
+
+    private JavaAgentEventBean prepareJCacheCachingDataStoreEvent(JavaAgentEventBean eventBean, JCacheOperation jCacheOperation) {
+        JSONArray params = new JSONArray();
+        for (Object data : jCacheOperation.getArguments()) {
+            if (isPrimitiveType(data.getClass())) {
+                params.add(data);
+            } else {
+                params.add(GsonUtil.toJson(data));
+            }
+        }
+
+        JSONObject command = new JSONObject();
+        command.put(REDIS_ARGUMENTS, params);
+        command.put(REDIS_TYPE, jCacheOperation.getType());
+
+        JSONArray parameter = new JSONArray();
+        parameter.add(command);
+        eventBean.setParameters(parameter);
+        eventBean.setEventCategory(jCacheOperation.getCategory());
+        return eventBean;
+    }
+
+    public boolean isPrimitiveType(Class<?> clazz) {
+        return (clazz.isPrimitive() && clazz != void.class) || clazz == Double.class || clazz == Float.class || clazz == Long.class ||
+                clazz == Integer.class || clazz == Short.class || clazz == Character.class || clazz == Byte.class || clazz == Boolean.class ||
+                clazz == String.class;
     }
 
     @Nullable
@@ -266,6 +321,7 @@ public class Dispatcher implements Callable {
             params.addAll(xssConstructs);
             params.add(securityMetaData.getResponse().getResponseBody());
             eventBean.setParameters(params);
+            eventBean.setHttpResponse(securityMetaData.getResponse());
             eventBean.setApplicationUUID(AgentInfo.getInstance().getApplicationUUID());
             eventBean.setPid(AgentInfo.getInstance().getVMPID());
             eventBean.setId(operation.getExecutionId());
@@ -513,18 +569,30 @@ public class Dispatcher implements Callable {
         return eventBean;
     }
 
-    private static JavaAgentEventBean prepareDynamoDBEvent(JavaAgentEventBean eventBean, DynamoDBOperation dynamoDBOperation) throws ParseException {
+    private static JavaAgentEventBean prepareMemcachedEvent(JavaAgentEventBean eventBean, MemcachedOperation memcachedOperationalBean) {
+        JSONArray params = new JSONArray();
+        for (Object data : memcachedOperationalBean.getArguments()) {
+            params.add(data);
+        }
+        JSONObject command = new JSONObject();
+        command.put(REDIS_ARGUMENTS, params);
+        command.put(REDIS_TYPE, memcachedOperationalBean.getType());
+        command.put(REDIS_MODE, memcachedOperationalBean.getCommand());
+        JSONArray parameter = new JSONArray();
+        parameter.add(command);
+        eventBean.setParameters(parameter);
+        eventBean.setEventCategory(memcachedOperationalBean.getCategory());
+        return eventBean;
+    }
+
+    private static JavaAgentEventBean prepareDynamoDBEvent(JavaAgentEventBean eventBean, DynamoDBOperation dynamoDBOperation) {
         JSONArray params = new JSONArray();
         eventBean.setEventCategory(dynamoDBOperation.getCategory().toString());
         List<DynamoDBRequest> originalPayloads = dynamoDBOperation.getPayload();
-        try {
-            for (DynamoDBRequest data : originalPayloads) {
-                params.add(DynamoDBRequestConverter.convert(dynamoDBOperation.getCategory(), data));
-            }
-            eventBean.setParameters(params);
-        } catch (Exception exception) {
-            exception.printStackTrace();
+        for (DynamoDBRequest data : originalPayloads) {
+            params.add(DynamoDBRequestConverter.convert(dynamoDBOperation.getCategory(), data));
         }
+        eventBean.setParameters(params);
         return eventBean;
     }
 

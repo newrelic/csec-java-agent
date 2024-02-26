@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.StringJoiner;
+import java.util.Locale;
 
 public class StringUtils {
     public static final String EMPTY = "";
@@ -450,7 +451,7 @@ public class StringUtils {
      * @return whether the region matched
      */
     private static boolean regionMatches(final CharSequence cs, final boolean ignoreCase, final int thisStart,
-                                 final CharSequence substring, final int start, final int length)    {
+                                         final CharSequence substring, final int start, final int length)    {
         if (cs instanceof String && substring instanceof String) {
             return ((String) cs).regionMatches(ignoreCase, thisStart, (String) substring, start, length);
         }
@@ -1012,6 +1013,31 @@ public class StringUtils {
      */
     public static boolean startsWithIgnoreCase(final CharSequence str, final CharSequence prefix) {
         return startsWith(str, prefix, true);
+    }
+
+    /**
+     * <p>Converts a String to lower case as per {@link String#toLowerCase()}.</p>
+     *
+     * <p>A {@code null} input String returns {@code null}.</p>
+     *
+     * <pre>
+     * StringUtils.lowerCase(null)  = null
+     * StringUtils.lowerCase("")    = ""
+     * StringUtils.lowerCase("aBc") = "abc"
+     * </pre>
+     *
+     * <p><strong>Note:</strong> As described in the documentation for {@link String#toLowerCase()},
+     * the result of this method is affected by the current locale.
+     * should be used with a specific locale (e.g. {@link Locale#ENGLISH}).</p>
+     *
+     * @param str  the String to lower case, may be null
+     * @return the lower cased String, {@code null} if null String input
+     */
+    public static String lowerCase(final String str) {
+        if (str == null) {
+            return null;
+        }
+        return str.toLowerCase();
     }
 
     /**

@@ -6,6 +6,7 @@ import com.newrelic.api.agent.security.instrumentation.helpers.LowSeverityHelper
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.SecurityMetaData;
 import com.newrelic.api.agent.security.schema.policy.AgentPolicy;
+import com.newrelic.api.agent.security.utils.logging.LogLevel;
 
 import java.lang.instrument.Instrumentation;
 import java.net.URL;
@@ -148,5 +149,25 @@ public class Agent implements SecurityAgent {
     @Override
     public String getServerInfo(String key) {
         return null;
+    }
+
+    @Override
+    public void log(LogLevel logLevel, String event, Throwable throwableEvent, String logSourceClassName) {
+
+    }
+
+    @Override
+    public void log(LogLevel logLevel, String event, String logSourceClassName) {
+
+    }
+
+    @Override
+    public void reportIncident(LogLevel logLevel, String event, Throwable exception, String caller) {
+
+    }
+
+    @Override
+    public void retransformUninstrumentedClass(Class<?> classToRetransform) {
+
     }
 }

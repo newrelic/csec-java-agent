@@ -1,0 +1,21 @@
+
+dependencies {
+    implementation(project(":newrelic-security-api"))
+    implementation("com.newrelic.agent.java:newrelic-api:${nrAPIVersion}")
+    implementation("com.newrelic.agent.java:newrelic-weaver-api:${nrAPIVersion}")
+    implementation("javax.cache:cache-api:1.0.0")
+    testImplementation("com.hazelcast:hazelcast:4.2.8")
+}
+
+jar {
+    manifest { attributes 'Implementation-Title': 'com.newrelic.instrumentation.security.jcache-1.0.0' }
+}
+
+verifyInstrumentation {
+    passes 'javax.cache:cache-api:[1.0.0,)'
+}
+
+site {
+    title 'JCache API'
+    type 'Framework'
+}

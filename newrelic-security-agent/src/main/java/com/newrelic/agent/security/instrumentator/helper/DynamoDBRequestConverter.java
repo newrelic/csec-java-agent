@@ -1,7 +1,10 @@
 package com.newrelic.agent.security.instrumentator.helper;
 
+import com.newrelic.agent.security.intcodeagent.websocket.JsonConverter;
+import com.newrelic.api.agent.security.Agent;
 import com.newrelic.api.agent.security.schema.helper.DynamoDBRequest;
 import com.newrelic.api.agent.security.schema.operation.DynamoDBOperation;
+import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import org.json.simple.JSONObject;
 
 import java.lang.reflect.Field;
@@ -11,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 
 public class DynamoDBRequestConverter {
+    public static final String UNABLE_TO_PARSE_DYNAMO_DB_REQUEST = "Unable to parse DynamoDB request: %s";
     private static List<String> allowedFields = Arrays.asList("s","n","b","ss","ns","bs","m","l");
     public static JSONObject convert(DynamoDBOperation.Category category, DynamoDBRequest request) {
         JSONObject json = new JSONObject();
@@ -19,7 +23,7 @@ public class DynamoDBRequestConverter {
             try {
                 json.put("payload", convertQuery(request.getQuery()));
             } catch (NoSuchFieldException | IllegalAccessException e) {
-                throw new RuntimeException(e);
+                Agent.getInstance().reportIncident(LogLevel.WARNING, String.format(UNABLE_TO_PARSE_DYNAMO_DB_REQUEST, JsonConverter.toJSON(request)), e, DynamoDBRequestConverter.class.getName());
             }
         }
         else if (category==DynamoDBOperation.Category.PARTIQL) {
@@ -27,7 +31,7 @@ public class DynamoDBRequestConverter {
             try {
                 json.put("parameters", convertAttributeValue(request.getQuery().getParameters()));
             } catch (NoSuchFieldException | IllegalAccessException e) {
-                throw new RuntimeException(e);
+                Agent.getInstance().reportIncident(LogLevel.WARNING, String.format(UNABLE_TO_PARSE_DYNAMO_DB_REQUEST, JsonConverter.toJSON(request)), e, DynamoDBRequestConverter.class.getName());
             }
         }
         return json;

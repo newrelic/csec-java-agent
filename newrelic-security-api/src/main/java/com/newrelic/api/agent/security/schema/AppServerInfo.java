@@ -8,6 +8,8 @@ public class AppServerInfo {
 
     String sameSiteCookies;
 
+    String applicationTmpDirectory;
+
     public String getApplicationDirectory() {
         return applicationDirectory;
     }
@@ -30,5 +32,13 @@ public class AppServerInfo {
 
     public void setSameSiteCookies(String sameSiteCookies) {
         this.sameSiteCookies = sameSiteCookies;
+    }
+
+    public String getApplicationTmpDirectory() {
+        return applicationTmpDirectory;
+    }
+
+    public void setApplicationTmpDirectory(String applicationTmpDirectory) {
+        this.applicationTmpDirectory = applicationTmpDirectory;
     }
 }
