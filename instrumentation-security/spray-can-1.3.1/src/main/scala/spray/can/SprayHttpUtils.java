@@ -24,7 +24,7 @@ public class SprayHttpUtils {
     public static final String QUESTION_MARK = "?";
 
     private static final String X_FORWARDED_FOR = "x-forwarded-for";
-    public static final String SPRAY_HTTP_1_3_1 = "SPRAY-CAN-1.3.1";
+    public static final String SPRAY_CAN_1_3_1 = "SPRAY-CAN-1.3.1";
 
     public static String getNrSecCustomAttribName() {
         return "SPRAY-CAN-" + Thread.currentThread().getId();
@@ -65,7 +65,7 @@ public class SprayHttpUtils {
             securityMetaData.getMetaData().setServiceTrace(Arrays.copyOfRange(trace, 2, trace.length));
             securityRequest.setRequestParsed(true);
         } catch (Exception e){
-            NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.ERROR_GENERATING_HTTP_REQUEST, SPRAY_HTTP_1_3_1, e.getMessage()), e, SprayHttpUtils.class.getName());
+            NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.ERROR_GENERATING_HTTP_REQUEST, SPRAY_CAN_1_3_1, e.getMessage()), e, SprayHttpUtils.class.getName());
         }
     }
 
@@ -140,11 +140,11 @@ public class SprayHttpUtils {
             ServletHelper.tmpFileCleanUp(NewRelicSecurity.getAgent().getSecurityMetaData().getFuzzRequestIdentifier().getTempFiles());
         } catch (Throwable e) {
             if (e instanceof NewRelicSecurityException) {
-                NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.SECURITY_EXCEPTION_MESSAGE, SPRAY_HTTP_1_3_1, e.getMessage()), e, SprayHttpUtils.class.getName());
+                NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.SECURITY_EXCEPTION_MESSAGE, SPRAY_CAN_1_3_1, e.getMessage()), e, SprayHttpUtils.class.getName());
                 throw e;
             }
-            NewRelicSecurity.getAgent().log(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, SPRAY_HTTP_1_3_1, e.getMessage()), e, SprayHttpUtils.class.getName());
-            NewRelicSecurity.getAgent().reportIncident(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, SPRAY_HTTP_1_3_1, e.getMessage()), e, SprayHttpUtils.class.getName());
+            NewRelicSecurity.getAgent().log(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, SPRAY_CAN_1_3_1, e.getMessage()), e, SprayHttpUtils.class.getName());
+            NewRelicSecurity.getAgent().reportIncident(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, SPRAY_CAN_1_3_1, e.getMessage()), e, SprayHttpUtils.class.getName());
         }
     }
 }

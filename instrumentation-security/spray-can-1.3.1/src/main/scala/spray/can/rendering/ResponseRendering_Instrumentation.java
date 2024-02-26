@@ -28,7 +28,7 @@ public class ResponseRendering_Instrumentation {
                 SprayHttpUtils.postProcessSecurityHook(response, ResponseRendering_Instrumentation.class.getName(), "renderResponse$1");
             }
         } catch (Exception e){
-            e.printStackTrace();
+            NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.ERROR_PARSING_HTTP_RESPONSE, SprayHttpUtils.SPRAY_CAN_1_3_1, e.getMessage()), e, ResponseRendering_Instrumentation.class.getName());
         }
         boolean result;
         try {
