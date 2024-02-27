@@ -19,7 +19,6 @@ import spray.SprayHttpUtils;
 @Weave(type = MatchType.ExactClass, originalName = "spray.routing.HttpServiceBase$class")
 public class SprayRoutingHttpServer {
 
-    @Trace(dispatcher = true)
     public static final void runSealedRoute$1(final HttpServiceBase $this, final RequestContext ctx, final PartialFunction sealedExceptionHandler$1, final Function1 sealedRoute$1) {
         boolean isLockAcquired = GenericHelper.acquireLockIfPossible(SprayHttpUtils.getNrSecCustomAttribName());
         if (isLockAcquired) {
