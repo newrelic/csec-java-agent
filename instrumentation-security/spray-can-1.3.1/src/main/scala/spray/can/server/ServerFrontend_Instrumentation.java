@@ -5,24 +5,23 @@
  *
  */
 
-package spray.routing;
+package spray.can.server;
+
 import com.newrelic.api.agent.Trace;
 import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
-import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
+import spray.can.SprayHttpUtils;
+import spray.http.HttpRequest;
 
-import scala.Function1;
-import scala.PartialFunction;
-import spray.SprayHttpUtils;
+@Weave(originalName = "spray.can.server.ServerFrontend$$anon$2$$anon$1")
+public class ServerFrontend_Instrumentation {
 
-@Weave(type = MatchType.ExactClass, originalName = "spray.routing.HttpServiceBase$class")
-public class SprayRoutingHttpServer {
-
-    public static final void runSealedRoute$1(final HttpServiceBase $this, final RequestContext ctx, final PartialFunction sealedExceptionHandler$1, final Function1 sealedRoute$1) {
+    public void spray$can$server$ServerFrontend$$anon$$anon$$openNewRequest(final HttpRequest request,
+            final boolean closeAfterResponseCompletion, final RequestState state) {
         boolean isLockAcquired = GenericHelper.acquireLockIfPossible(SprayHttpUtils.getNrSecCustomAttribName());
         if (isLockAcquired) {
-            SprayHttpUtils.preProcessRequestHook(ctx.request());
+            SprayHttpUtils.preProcessRequestHook(request);
         }
         try {
             Weaver.callOriginal();
@@ -32,5 +31,4 @@ public class SprayRoutingHttpServer {
             }
         }
     }
-
 }
