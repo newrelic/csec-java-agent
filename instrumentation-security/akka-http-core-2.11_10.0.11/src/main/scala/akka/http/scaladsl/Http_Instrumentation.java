@@ -35,6 +35,7 @@ public class Http_Instrumentation {
 //            AgentBridge.publicApi.setAppServerPort(localAddress().getPort());
 //            AgentBridge.publicApi.setServerInfo("Akka HTTP", ManifestUtils.getVersionFromManifest(getClass(), "akka-http-core", "10.2.0"));
 
+            NewRelicSecurity.getAgent().setApplicationConnectionConfig(localAddress().getPort(), "http");
             try {
                 Class<?> agentBridgeClass = Class.forName("com.newrelic.agent.bridge.AgentBridge");
                 Field instrumentation = agentBridgeClass.getDeclaredField("instrumentation");

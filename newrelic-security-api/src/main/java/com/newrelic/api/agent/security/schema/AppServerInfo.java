@@ -1,5 +1,8 @@
 package com.newrelic.api.agent.security.schema;
 
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 public class AppServerInfo {
 
     String applicationDirectory;
@@ -9,6 +12,12 @@ public class AppServerInfo {
     String sameSiteCookies;
 
     String applicationTmpDirectory;
+
+    Map<Integer, String> connectionConfiguration;
+
+    public AppServerInfo() {
+        connectionConfiguration = new ConcurrentHashMap<>();
+    }
 
     public String getApplicationDirectory() {
         return applicationDirectory;
@@ -40,5 +49,13 @@ public class AppServerInfo {
 
     public void setApplicationTmpDirectory(String applicationTmpDirectory) {
         this.applicationTmpDirectory = applicationTmpDirectory;
+    }
+
+    public Map<Integer, String> getConnectionConfiguration() {
+        return connectionConfiguration;
+    }
+
+    public void setConnectionConfiguration(Map<Integer, String> connectionConfiguration) {
+        this.connectionConfiguration = connectionConfiguration;
     }
 }
