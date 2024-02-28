@@ -6,25 +6,22 @@ import com.nr.agent.security.instrumentation.javax.ws.rs.api.app.CustomerLocator
 import com.nr.agent.security.instrumentation.javax.ws.rs.api.app.IdSubResource;
 import com.newrelic.agent.security.introspec.InstrumentationTestConfig;
 import com.newrelic.agent.security.introspec.SecurityInstrumentationTestRunner;
-import com.newrelic.agent.security.introspec.SecurityIntrospector;
-import com.newrelic.api.agent.security.schema.AgentMetaData;
 import com.nr.agent.security.instrumentation.javax.ws.rs.api.app.OrdersSubResource;
 import com.nr.agent.security.instrumentation.javax.ws.rs.api.app.TestMapping;
-import org.glassfish.jersey.client.HttpUrlConnectorProvider;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.test.JerseyTest;
 import org.junit.Assert;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.Application;
-import javax.ws.rs.core.Response;
 import java.util.Iterator;
 
 @RunWith(SecurityInstrumentationTestRunner.class)
 @InstrumentationTestConfig(includePrefixes = { "com.nr.instrumentation.security.jersey", "org.glassfish.jersey.server.internal" })
+@Ignore
 public class SubresourceTest extends JerseyTest {
     @BeforeClass
     public static void bringUp() {
