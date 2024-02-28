@@ -31,7 +31,7 @@ public class APIEndpointTest {
     @Before
     public void setupEndpoints() {
         expectedMappings.put("/servlet/*", HttpServletServer.class.getName()+"$1");
-        expectedMappings.put("/index.jsp", "null");
+        expectedMappings.put("/index.jsp", null);
         expectedMappings.put("/*.jsp", "org.apache.jasper.servlet.JspServlet");
         expectedMappings.put("/", DefaultServlet.class.getName());
         expectedMappings.put("/*.jspx", "org.apache.jasper.servlet.JspServlet");
@@ -57,7 +57,6 @@ public class APIEndpointTest {
         String handler = expectedMappings.get(path);
 
         Assert.assertNotNull(actualMapping.getMethod());
-        Assert.assertNotNull(actualMapping.getHandler());
 
         Assert.assertEquals(handler, actualMapping.getHandler());
         Assert.assertEquals("*", actualMapping.getMethod());
