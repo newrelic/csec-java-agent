@@ -193,7 +193,7 @@ public class DynamodbTest {
             else if (i==1) {
                 Assert.assertEquals("Invalid payload value.", "Red",query.get("artist").s());
             }
-            Assert.assertEquals("Invalid payload value.", "artist",request.getQuery().getProjectionExpression());
+            Assert.assertEquals("Invalid payload value.", "artist,Genre",request.getQuery().getProjectionExpression());
             Assert.assertEquals("Invalid query-type.", "read", request.getQueryType());
             i++;
         }
@@ -855,8 +855,8 @@ public class DynamodbTest {
         key2.put("artist", AttributeValue.builder().s("Red").build());
 
         TransactGetItemsRequest queryRequest = TransactGetItemsRequest.builder().transactItems(
-                TransactGetItem.builder().get(Get.builder().tableName(DynamoUtil.TABLE).key(key).projectionExpression("artist").build()).build(),
-                TransactGetItem.builder().get(Get.builder().tableName(DynamoUtil.TABLE).key(key2).projectionExpression("artist").build()).build()).build();
+                TransactGetItem.builder().get(Get.builder().tableName(DynamoUtil.TABLE).key(key).projectionExpression("artist,Genre").build()).build(),
+                TransactGetItem.builder().get(Get.builder().tableName(DynamoUtil.TABLE).key(key2).projectionExpression("artist,Genre").build()).build()).build();
 
         client.transactGetItems(queryRequest);
     }
