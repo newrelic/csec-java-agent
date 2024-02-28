@@ -167,7 +167,7 @@ public class FileLoggerThreadPool {
     private LogMessage postLogMessage(LogLevel logLevel, String messageString, Throwable exception, String caller) {
         LogMessage message = new LogMessage(logLevel.name(), messageString, caller, exception, AgentInfo.getInstance().getLinkingMetadata());
         if (logLevel.getLevel() <= LogLevel.WARNING.getLevel()) {
-            AgentUtils.getInstance().getStatusLogMostRecentErrors().add(JsonConverter.toJSON(message));
+            AgentUtils.getInstance().addStatusLogMostRecentErrors(JsonConverter.toJSON(message));
         }
         EventSendPool.getInstance().sendEvent(message);
         return message;

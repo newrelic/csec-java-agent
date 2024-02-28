@@ -12,6 +12,7 @@ import com.newrelic.agent.security.intcodeagent.models.javaagent.Identifier;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.JAHealthCheck;
 import com.newrelic.agent.security.intcodeagent.properties.BuildInfo;
 import com.newrelic.agent.security.intcodeagent.websocket.WSUtils;
+import com.newrelic.api.agent.security.instrumentation.helpers.GrpcClientRequestReplayHelper;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
@@ -145,7 +146,7 @@ public class AgentInfo {
         AgentUtils.getInstance().getStatusLogValues().put("framework", NOT_AVAILABLE);
     }
 
-    public boolean agentStatTrigger(){
+    public boolean agentStatTrigger(boolean clean){
         boolean state = true;
         if(StringUtils.isBlank(getLinkingMetadata().getOrDefault(INRSettingsKey.NR_ENTITY_GUID, StringUtils.EMPTY))){
             logger.log(LogLevel.WARNING, "NewRelic security Agent INACTIVE!!! since entity.guid is not known.", AgentInfo.class.getName());
@@ -159,13 +160,14 @@ public class AgentInfo {
             logger.log(LogLevel.WARNING, "NewRelic security Agent INACTIVE!!! since security config is disabled.", AgentInfo.class.getName());
             state = false;
         } else if (!WSUtils.isConnected()) {
-            logger.log(LogLevel.WARNING, "NewRelic security Agent INACTIVE!!! Can't connect with prevent web agent.", AgentInfo.class.getName());
+            logger.log(LogLevel.WARNING, "NewRelic security Agent INACTIVE!!! Can't connect with Security Engine.", AgentInfo.class.getName());
             state = false;
         }
         if(state) {
             logger.logInit(LogLevel.INFO, String.format("Security Agent is now ACTIVE for %s", applicationUUID), AgentInfo.class.getName());
-        } else {
+        } else if(clean) {
             RestRequestThreadPool.getInstance().resetIASTProcessing();
+            GrpcClientRequestReplayHelper.getInstance().resetIASTProcessing();
         }
 
         if(state && !processProtected){

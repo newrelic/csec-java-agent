@@ -15,6 +15,8 @@ import com.newrelic.api.agent.security.utils.logging.LogLevel;
 
 import java.lang.instrument.Instrumentation;
 import java.net.URL;
+import java.util.Collections;
+import java.util.Map;
 
 /**
  * Provides NoOps for API objects to avoid returning <code>null</code>. Do not call these objects directly.
@@ -88,6 +90,20 @@ class NoOpAgent implements SecurityAgent {
     }
 
     @Override
+    public void setApplicationConnectionConfig(int port, String scheme) {
+    }
+
+    @Override
+    public String getApplicationConnectionConfig(int port) {
+        return null;
+    }
+
+    @Override
+    public Map<Integer, String> getApplicationConnectionConfig() {
+        return Collections.emptyMap();
+    }
+
+    @Override
     public void log(LogLevel logLevel, String event, Throwable throwableEvent, String logSourceClassName) {
 
     }
@@ -101,5 +117,9 @@ class NoOpAgent implements SecurityAgent {
     public void reportIncident(LogLevel logLevel, String event, Throwable exception, String caller) {
 
     }
+
+    @Override
+    public void retransformUninstrumentedClass(Class<?> classToRetransform) {}
+
 
 }

@@ -11,6 +11,7 @@ import com.newrelic.agent.security.intcodeagent.models.javaagent.ExitEventBean;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.JavaAgentEventBean;
 import com.newrelic.agent.security.util.AgentUsageMetric;
 import com.newrelic.agent.security.util.IUtilConstants;
+import com.newrelic.api.agent.security.instrumentation.helpers.GrpcClientRequestReplayHelper;
 
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -143,7 +144,11 @@ public class EventSendPool {
                     JavaAgentEventBean event = (JavaAgentEventBean) eventSender.getEvent();
                     if(event.getIsIASTRequest()){
                         String fuzzRequestId = event.getParentId();
-                        RestRequestThreadPool.getInstance().getRejectedIds().add(fuzzRequestId);
+                        if (event.getHttpRequest().getIsGrpc()) {
+                            GrpcClientRequestReplayHelper.getInstance().getRejectedIds().add(fuzzRequestId);
+                        } else {
+                            RestRequestThreadPool.getInstance().getRejectedIds().add(fuzzRequestId);
+                        }
                         AgentInfo.getInstance().getJaHealthCheck().getIastEventStats().incrementRejectedCount();
                     } else {
                         AgentInfo.getInstance().getJaHealthCheck().getRaspEventStats().incrementRejectedCount();

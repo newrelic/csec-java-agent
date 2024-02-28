@@ -21,7 +21,9 @@ import com.newrelic.agent.security.intcodeagent.websocket.*;
 import com.newrelic.agent.security.util.IUtilConstants;
 import com.newrelic.api.agent.NewRelic;
 import com.newrelic.api.agent.Transaction;
+import com.newrelic.api.agent.security.instrumentation.helpers.GrpcHelper;
 import com.newrelic.api.agent.security.instrumentation.helpers.AppServerInfoHelper;
+import com.newrelic.api.agent.security.instrumentation.helpers.InstrumentedClass;
 import com.newrelic.api.agent.security.instrumentation.helpers.LowSeverityHelper;
 import com.newrelic.api.agent.security.schema.*;
 import com.newrelic.api.agent.security.schema.operation.RXSSOperation;
@@ -31,6 +33,10 @@ import org.apache.commons.lang3.StringUtils;
 import java.io.File;
 import java.io.IOException;
 import java.lang.instrument.Instrumentation;
+import java.lang.instrument.UnmodifiableClassException;
+import java.net.HttpURLConnection;
+import java.net.Socket;
+import java.net.URL;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -119,7 +125,7 @@ public class Agent implements SecurityAgent {
                 LogLevel.INFO,
                 "[STEP-3] => Gathering information about the application",
                 this.getClass().getName());
-        logger.logInit(LogLevel.INFO, LowSeverityHelper.getIsLowSeverityhHooksEnabled() && NewRelic.getAgent().getConfig().getValue(LowSeverityHelper.LOW_SEVERITY_HOOKS_ENABLED, LowSeverityHelper.DEFAULT)?
+        logger.logInit(LogLevel.INFO, NewRelic.getAgent().getConfig().getValue(LowSeverityHelper.LOW_SEVERITY_HOOKS_ENABLED, LowSeverityHelper.DEFAULT)?
                 "Low priority instrumentations are enabled.":"Low priority instrumentations are disabled!", this.getClass().getName());
         info.setIdentifier(ApplicationInfoUtils.envDetection());
         ApplicationInfoUtils.continueIdentifierProcessing(info.getIdentifier(), config.getConfig());
@@ -131,9 +137,14 @@ public class Agent implements SecurityAgent {
         info.initStatusLogValues();
         setInitialised(true);
         populateLinkingMetadata();
-
+        populateApplicationTmpDir();
         startK2Services();
-        info.agentStatTrigger();
+        info.agentStatTrigger(true);
+    }
+
+    private void populateApplicationTmpDir() {
+        String tmpDir = System.getProperty(IUtilConstants.JAVA_IO_TMPDIR);
+        setServerInfo(IUtilConstants.APPLICATION_TMP_DIRECTORY, tmpDir);
     }
 
     private BuildInfo readCollectorBuildInfo() {
@@ -204,7 +215,7 @@ public class Agent implements SecurityAgent {
          * policy
          * HealthCheck
          */
-        WSClient.shutDownWSClient();
+        WSClient.shutDownWSClient(false);
         HealthCheckScheduleThread.getInstance().cancelTask(true);
         FileCleaner.cancelTask();
 
@@ -229,28 +240,45 @@ public class Agent implements SecurityAgent {
          **/
         HealthCheckScheduleThread.getInstance().cancelTask(true);
         FileCleaner.cancelTask();
-        WSClient.shutDownWSClient();
+        WSClient.shutDownWSClient(true);
         WSReconnectionST.shutDownPool();
         EventSendPool.shutDownPool();
     }
 
     @Override
     public void registerOperation(AbstractOperation operation) {
+        // added to fetch request/response in case of grpc requests
+        SecurityMetaData securityMetaData = NewRelicSecurity.getAgent().getSecurityMetaData();
+        if (securityMetaData!=null && securityMetaData.getRequest().getIsGrpc()){
+            securityMetaData.getRequest().setBody(
+                    new StringBuilder(JsonConverter.toJSON(securityMetaData.getCustomAttribute(GrpcHelper.NR_SEC_GRPC_REQUEST_DATA, List.class))));
+            securityMetaData.getResponse().setResponseBody(
+                    new StringBuilder(JsonConverter.toJSON(securityMetaData.getCustomAttribute(GrpcHelper.NR_SEC_GRPC_RESPONSE_DATA, List.class))));
+        }
+        // end
+
         if (operation == null || operation.isEmpty()) {
             return;
         }
         String executionId = ExecutionIDGenerator.getExecutionId();
         operation.setExecutionId(executionId);
         operation.setStartTime(Instant.now().toEpochMilli());
-        SecurityMetaData securityMetaData = NewRelicSecurity.getAgent().getSecurityMetaData();
-        if(securityMetaData.getFuzzRequestIdentifier().getK2Request()){
+        if(securityMetaData!=null && securityMetaData.getFuzzRequestIdentifier().getK2Request()){
             logger.log(LogLevel.FINEST, String.format("New Event generation with id %s of type %s", operation.getExecutionId(), operation.getClass().getSimpleName()), Agent.class.getName());
         }
         if (operation instanceof RXSSOperation) {
             operation.setStackTrace(securityMetaData.getMetaData().getServiceTrace());
         } else {
             StackTraceElement[] trace = Thread.currentThread().getStackTrace();
-            operation.setStackTrace(Arrays.copyOfRange(trace, 1, trace.length));
+            operation.setStackTrace(Arrays.copyOfRange(trace, 2, trace.length));
+        }
+
+        // added to fetch request/response in case of grpc requests
+        if (securityMetaData.getRequest().getIsGrpc()){
+            securityMetaData.getRequest().setBody(
+                    new StringBuilder(JsonConverter.toJSON(securityMetaData.getCustomAttribute(GrpcHelper.NR_SEC_GRPC_REQUEST_DATA, List.class))));
+            securityMetaData.getResponse().setResponseBody(
+                    new StringBuilder(JsonConverter.toJSON(securityMetaData.getCustomAttribute(GrpcHelper.NR_SEC_GRPC_RESPONSE_DATA, List.class))));
         }
 
         if(checkIfNRGeneratedEvent(operation)) {
@@ -263,8 +291,8 @@ public class Agent implements SecurityAgent {
         logIfIastScanForFirstTime(securityMetaData.getFuzzRequestIdentifier(), securityMetaData.getRequest());
 
         setRequiredStackTrace(operation, securityMetaData);
-        processStackTrace(operation);
         operation.setUserClassEntity(setUserClassEntity(operation, securityMetaData));
+        processStackTrace(operation);
 //        boolean blockNeeded = checkIfBlockingNeeded(operation.getApiID());
 //        securityMetaData.getMetaData().setApiBlocked(blockNeeded);
         if (needToGenerateEvent(operation.getApiID())) {
@@ -333,14 +361,21 @@ public class Agent implements SecurityAgent {
                 userClassEntity.setCalledByUserCode(securityMetaData.getMetaData().isUserLevelServiceMethodEncountered());
             }
         }
+
+        if(userClassEntity.getUserClassElement() == null && operation.getStackTrace().length >= 2){
+            userClassEntity.setUserClassElement(operation.getStackTrace()[1]);
+            userClassEntity.setCalledByUserCode(securityMetaData.getMetaData().isUserLevelServiceMethodEncountered());
+        }
         return userClassEntity;
     }
 
     private void setRequiredStackTrace(AbstractOperation operation, SecurityMetaData securityMetaData) {
         StackTraceElement[] currentStackTrace = operation.getStackTrace();
-        int targetBottomStackLength = currentStackTrace.length - securityMetaData.getMetaData().getServiceTrace().length + 3;
-        currentStackTrace = Arrays.copyOfRange(currentStackTrace, 0, targetBottomStackLength);
-        operation.setStackTrace(currentStackTrace);
+        if (securityMetaData.getMetaData().getServiceTrace() != null && securityMetaData.getMetaData().getServiceTrace().length + 3 < currentStackTrace.length) {
+            int targetBottomStackLength = currentStackTrace.length - securityMetaData.getMetaData().getServiceTrace().length + 3;
+            currentStackTrace = Arrays.copyOfRange(currentStackTrace, 0, targetBottomStackLength);
+            operation.setStackTrace(currentStackTrace);
+        }
     }
 
     private static void processStackTrace(AbstractOperation operation) {
@@ -495,7 +530,53 @@ public class Agent implements SecurityAgent {
 
     @Override
     public boolean isLowPriorityInstrumentationEnabled() {
-        return NewRelicSecurity.isHookProcessingActive() && LowSeverityHelper.getIsLowSeverityhHooksEnabled() && NewRelic.getAgent().getConfig().getValue(LowSeverityHelper.LOW_SEVERITY_HOOKS_ENABLED, LowSeverityHelper.DEFAULT);
+        return NewRelicSecurity.isHookProcessingActive() && NewRelic.getAgent().getConfig().getValue(LowSeverityHelper.LOW_SEVERITY_HOOKS_ENABLED, LowSeverityHelper.DEFAULT);
+    }
+
+    public void setApplicationConnectionConfig(int port, String scheme) {
+        AppServerInfo appServerInfo = AppServerInfoHelper.getAppServerInfo();
+        appServerInfo.getConnectionConfiguration().put(port, scheme);
+//        verifyConnectionAndPut(port, scheme, appServerInfo);
+    }
+
+    private void verifyConnectionAndPut(int port, String scheme, AppServerInfo appServerInfo) {
+        if(isConnectionSuccessful(port, scheme)){
+            appServerInfo.getConnectionConfiguration().put(port, scheme);
+        } else if (isConnectionSuccessful(port,StringUtils.equalsAnyIgnoreCase(scheme, HTTPS_STR)? HTTP_STR : HTTPS_STR)) {
+            appServerInfo.getConnectionConfiguration().put(port, StringUtils.equalsAnyIgnoreCase(scheme, HTTPS_STR)? HTTP_STR : HTTPS_STR);
+        }
+    }
+
+    private boolean isConnectionSuccessful(int port, String scheme) {
+        try {
+            java.net.URL endpoint = new URL(String.format("%s://localhost:%s", scheme, port));
+            HttpURLConnection connection = (HttpURLConnection) endpoint.openConnection();
+
+            // Set the request method to HEAD (you won't download the whole content)
+            connection.setRequestMethod("HEAD");
+
+            int responseCode = connection.getResponseCode();
+
+            if (responseCode == HttpURLConnection.HTTP_OK) {
+                return true;
+            } else if (responseCode == HttpURLConnection.HTTP_NOT_FOUND) {
+                return true;
+            } else {
+                return false;
+            }
+        } catch (IOException e) {
+            return false;
+        }
+    }
+
+    public String getApplicationConnectionConfig(int port) {
+        AppServerInfo appServerInfo = AppServerInfoHelper.getAppServerInfo();
+        return appServerInfo.getConnectionConfiguration().get(port);
+    }
+
+    @Override
+    public Map<Integer, String> getApplicationConnectionConfig() {
+        return AppServerInfoHelper.getAppServerInfo().getConnectionConfiguration();
     }
 
     @Override
@@ -518,6 +599,8 @@ public class Agent implements SecurityAgent {
             case IUtilConstants.SAME_SITE_COOKIES:
                 appServerInfo.setSameSiteCookies(value);
                 break;
+            case IUtilConstants.APPLICATION_TMP_DIRECTORY:
+                appServerInfo.setApplicationTmpDirectory(value);
             default:
                 break;
         }
@@ -534,6 +617,8 @@ public class Agent implements SecurityAgent {
                 return appServerInfo.getServerBaseDirectory();
             case IUtilConstants.SAME_SITE_COOKIES:
                 return appServerInfo.getSameSiteCookies();
+            case IUtilConstants.APPLICATION_TMP_DIRECTORY:
+                return appServerInfo.getApplicationTmpDirectory();
             default:
                 return null;
         }
@@ -557,6 +642,19 @@ public class Agent implements SecurityAgent {
     public void reportIncident(LogLevel logLevel, String event, Throwable exception, String caller) {
         if(logger != null){
             logger.postLogMessageIfNecessary(logLevel, event, exception, caller);
+        }
+    }
+
+    @Override
+    public void retransformUninstrumentedClass(Class<?> classToRetransform) {
+        if (!classToRetransform.isAnnotationPresent(InstrumentedClass.class)) {
+            try {
+                getInstrumentation().retransformClasses(classToRetransform);
+            } catch (UnmodifiableClassException e) {
+                NewRelic.getAgent().getLogger().log(Level.FINE, "Unable to retransform class ", classToRetransform, " : ", e.getMessage());
+            }
+        } else {
+            NewRelic.getAgent().getLogger().log(Level.FINER, "Class ", classToRetransform, " already instrumented.");
         }
     }
 }

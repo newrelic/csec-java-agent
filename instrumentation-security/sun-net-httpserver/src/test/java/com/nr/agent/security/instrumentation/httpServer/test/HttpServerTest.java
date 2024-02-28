@@ -6,7 +6,9 @@ import com.newrelic.agent.security.introspec.SecurityIntrospector;
 import com.newrelic.api.agent.Trace;
 import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.security.instrumentation.helpers.ServletHelper;
+import com.newrelic.api.agent.security.instrumentation.helpers.URLMappingsHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
+import com.newrelic.api.agent.security.schema.ApplicationURLMapping;
 import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.security.schema.operation.RXSSOperation;
 import org.junit.Assert;
@@ -21,8 +23,10 @@ import java.net.HttpURLConnection;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 @RunWith(SecurityInstrumentationTestRunner.class)
@@ -119,6 +123,24 @@ public class HttpServerTest {
 
         Assert.assertNotNull("No hashcode detected", introspector.getRequestInStreamHash());
         Assert.assertEquals("Wrong hashcode detected", Collections.singleton(expectedHash), introspector.getRequestInStreamHash());
+    }
+
+    @Test
+    public void testURLMapping() {
+        Iterator<ApplicationURLMapping> urlMappings = URLMappingsHelper.getApplicationURLMappings().iterator();
+        Assert.assertTrue("should have elements", urlMappings.hasNext());
+
+        ApplicationURLMapping urlMapping = urlMappings.next();
+        Assert.assertEquals("invalid handler", Httpserver.Handler.class.getName(), urlMapping.getHandler());
+        Assert.assertEquals("invalid http-method", "*", urlMapping.getMethod());
+        Assert.assertEquals("invalid path", "/", urlMapping.getPath());
+
+        Assert.assertTrue("should have elements", urlMappings.hasNext());
+
+        urlMapping = urlMappings.next();
+        Assert.assertEquals("invalid handler", Httpserver.Handler.class.getName(), urlMapping.getHandler());
+        Assert.assertEquals("invalid http-method", "*", urlMapping.getMethod());
+        Assert.assertEquals("invalid path", "/new", urlMapping.getPath());
     }
 
     @Trace(dispatcher = true)

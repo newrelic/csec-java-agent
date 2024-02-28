@@ -4,6 +4,7 @@ import com.newrelic.agent.security.AgentConfig;
 import com.newrelic.agent.security.AgentInfo;
 import com.newrelic.agent.security.instrumentator.dispatcher.DispatcherPool;
 import com.newrelic.agent.security.instrumentator.httpclient.RestRequestThreadPool;
+import com.newrelic.agent.security.instrumentator.utils.AgentUtils;
 import com.newrelic.agent.security.instrumentator.utils.INRSettingsKey;
 import com.newrelic.agent.security.intcodeagent.controlcommand.ControlCommandProcessor;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
@@ -12,6 +13,7 @@ import com.newrelic.agent.security.intcodeagent.logging.IAgentConstants;
 import com.newrelic.agent.security.intcodeagent.utils.CommonUtils;
 import com.newrelic.agent.security.util.IUtilConstants;
 import com.newrelic.api.agent.NewRelic;
+import com.newrelic.api.agent.security.instrumentation.helpers.GrpcClientRequestReplayHelper;
 import org.apache.commons.lang3.StringUtils;
 import org.java_websocket.WebSocket;
 import org.java_websocket.WebSocketImpl;
@@ -147,6 +149,7 @@ public class WSClient extends WebSocketClient {
                 logger.log(LogLevel.FINER, "Error creating socket factory", e, WSClient.class.getName());
             }
         }
+        logger.log(LogLevel.INFO, String.format("Connecting to WS client %s", AgentConfig.getInstance().getConfig().getK2ServiceInfo().getValidatorServiceEndpointURL()), WSClient.class.getName());
     }
 
     @Override
@@ -179,16 +182,17 @@ public class WSClient extends WebSocketClient {
         logger.logInit(LogLevel.INFO, String.format(IAgentConstants.INIT_WS_CONNECTION, AgentConfig.getInstance().getConfig().getK2ServiceInfo().getValidatorServiceEndpointURL()),
                 WSClient.class.getName());
         logger.logInit(LogLevel.INFO, String.format(IAgentConstants.SENDING_APPLICATION_INFO_ON_WS_CONNECT, AgentInfo.getInstance().getApplicationInfo()), WSClient.class.getName());
-        RestRequestThreadPool.getInstance().resetIASTProcessing();
-        DispatcherPool.getInstance().reset();
-        EventSendPool.getInstance().reset();
+//        RestRequestThreadPool.getInstance().resetIASTProcessing();
+//        GrpcClientRequestReplayHelper.getInstance().resetIASTProcessing();
+//        DispatcherPool.getInstance().reset();
+//        EventSendPool.getInstance().reset();
         super.send(JsonConverter.toJSON(AgentInfo.getInstance().getApplicationInfo()));
         WSUtils.getInstance().setReconnecting(false);
         synchronized (WSUtils.getInstance()) {
             WSUtils.getInstance().notifyAll();
         }
         WSUtils.getInstance().setConnected(true);
-//        AgentUtils.sendApplicationURLMappings();
+        AgentUtils.sendApplicationURLMappings();
         logger.logInit(LogLevel.INFO, String.format(IAgentConstants.APPLICATION_INFO_SENT_ON_WS_CONNECT, AgentInfo.getInstance().getApplicationInfo()), WSClient.class.getName());
     }
 
@@ -280,11 +284,14 @@ public class WSClient extends WebSocketClient {
         return instance;
     }
 
-    public static void shutDownWSClient() {
+    public static void shutDownWSClient(boolean clean) {
         logger.log(LogLevel.WARNING, "Disconnecting WS client forced by APM",
                 WSClient.class.getName());
         WSUtils.getInstance().setConnected(false);
-        RestRequestThreadPool.getInstance().resetIASTProcessing();
+        if(clean) {
+            RestRequestThreadPool.getInstance().resetIASTProcessing();
+            GrpcClientRequestReplayHelper.getInstance().resetIASTProcessing();
+        }
         if (instance != null) {
             instance.close(CloseFrame.ABNORMAL_CLOSE, "Client disconnecting forced by APM");
         }

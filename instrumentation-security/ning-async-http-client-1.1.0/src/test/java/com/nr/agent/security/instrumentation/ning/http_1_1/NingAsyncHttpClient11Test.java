@@ -5,6 +5,7 @@ import com.newrelic.agent.security.introspec.SecurityInstrumentationTestRunner;
 import com.newrelic.agent.security.introspec.SecurityIntrospector;
 import com.newrelic.agent.security.introspec.internal.HttpServerRule;
 import com.newrelic.api.agent.Trace;
+import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.security.instrumentation.helpers.ServletHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
@@ -48,8 +49,7 @@ public class NingAsyncHttpClient11Test {
         String headerValue = String.valueOf(UUID.randomUUID());
 
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
-        introspector.setK2FuzzRequestId(headerValue);
-        introspector.setK2TracingData(headerValue);
+        setCSECHeaders(headerValue, introspector);
 
         makeAsyncRequest(endpoint.toURL().toString());
 
@@ -60,11 +60,7 @@ public class NingAsyncHttpClient11Test {
         Assert.assertEquals("Invalid executed parameters.", server.getEndPoint().toString(), operation.getArg());
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.HTTP_REQUEST, operation.getCaseType());
         Assert.assertEquals("Invalid executed method name.", "execute", operation.getMethodName());
-        Assert.assertTrue(String.format("Missing CSEC header: %s", ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID), headers.containsKey(ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID));
-        Assert.assertEquals(String.format("Invalid CSEC header value for:  %s", ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID), headerValue, headers.get(ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID));
-        Assert.assertTrue(String.format("Missing CSEC header: %s", ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER), headers.containsKey(ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER.toLowerCase()));
-        Assert.assertEquals(String.format("Invalid CSEC header value for:  %s", ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER), String.format("%s;DUMMY_UUID/dummy-api-id/dummy-exec-id;", headerValue), headers.get(
-                ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER.toLowerCase()));
+        verifyHeaders(headerValue, headers);
     }
 
     @Test
@@ -75,8 +71,7 @@ public class NingAsyncHttpClient11Test {
         String headerValue = String.valueOf(UUID.randomUUID());
 
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
-        introspector.setK2FuzzRequestId(headerValue);
-        introspector.setK2TracingData(headerValue);
+        setCSECHeaders(headerValue, introspector);
 
         makeAsyncRequestGet(endpoint.toURL().toString());
 
@@ -87,11 +82,7 @@ public class NingAsyncHttpClient11Test {
         Assert.assertEquals("Invalid executed parameters.", server.getEndPoint().toString(), operation.getArg());
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.HTTP_REQUEST, operation.getCaseType());
         Assert.assertEquals("Invalid executed method name.", "execute", operation.getMethodName());
-        Assert.assertTrue(String.format("Missing CSEC header: %s", ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID), headers.containsKey(ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID));
-        Assert.assertEquals(String.format("Invalid CSEC header value for:  %s", ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID), headerValue, headers.get(ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID));
-        Assert.assertTrue(String.format("Missing CSEC header: %s", ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER), headers.containsKey(ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER.toLowerCase()));
-        Assert.assertEquals(String.format("Invalid CSEC header value for:  %s", ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER), String.format("%s;DUMMY_UUID/dummy-api-id/dummy-exec-id;", headerValue), headers.get(
-                ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER.toLowerCase()));
+        verifyHeaders(headerValue, headers);
     }
 
     @Test
@@ -102,8 +93,7 @@ public class NingAsyncHttpClient11Test {
         String headerValue = String.valueOf(UUID.randomUUID());
 
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
-        introspector.setK2FuzzRequestId(headerValue);
-        introspector.setK2TracingData(headerValue);
+        setCSECHeaders(headerValue, introspector);
 
         makeAsyncRequestPost(endpoint.toURL().toString());
 
@@ -114,11 +104,7 @@ public class NingAsyncHttpClient11Test {
         Assert.assertEquals("Invalid executed parameters.", server.getEndPoint().toString(), operation.getArg());
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.HTTP_REQUEST, operation.getCaseType());
         Assert.assertEquals("Invalid executed method name.", "execute", operation.getMethodName());
-        Assert.assertTrue(String.format("Missing CSEC header: %s", ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID), headers.containsKey(ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID));
-        Assert.assertEquals(String.format("Invalid CSEC header value for:  %s", ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID), headerValue, headers.get(ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID));
-        Assert.assertTrue(String.format("Missing CSEC header: %s", ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER), headers.containsKey(ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER.toLowerCase()));
-        Assert.assertEquals(String.format("Invalid CSEC header value for:  %s", ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER), String.format("%s;DUMMY_UUID/dummy-api-id/dummy-exec-id;", headerValue), headers.get(
-                ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER.toLowerCase()));
+        verifyHeaders(headerValue, headers);
     }
 
     @Test
@@ -129,8 +115,7 @@ public class NingAsyncHttpClient11Test {
         String headerValue = String.valueOf(UUID.randomUUID());
 
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
-        introspector.setK2FuzzRequestId(headerValue);
-        introspector.setK2TracingData(headerValue);
+        setCSECHeaders(headerValue, introspector);
 
         makeAsyncRequestPut(endpoint.toURL().toString());
 
@@ -141,11 +126,7 @@ public class NingAsyncHttpClient11Test {
         Assert.assertEquals("Invalid executed parameters.", server.getEndPoint().toString(), operation.getArg());
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.HTTP_REQUEST, operation.getCaseType());
         Assert.assertEquals("Invalid executed method name.", "execute", operation.getMethodName());
-        Assert.assertTrue(String.format("Missing CSEC header: %s", ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID), headers.containsKey(ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID));
-        Assert.assertEquals(String.format("Invalid CSEC header value for:  %s", ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID), headerValue, headers.get(ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID));
-        Assert.assertTrue(String.format("Missing CSEC header: %s", ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER), headers.containsKey(ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER.toLowerCase()));
-        Assert.assertEquals(String.format("Invalid CSEC header value for:  %s", ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER), String.format("%s;DUMMY_UUID/dummy-api-id/dummy-exec-id;", headerValue), headers.get(
-                ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER.toLowerCase()));
+        verifyHeaders(headerValue, headers);
     }
 
     @Test
@@ -156,8 +137,7 @@ public class NingAsyncHttpClient11Test {
         String headerValue = String.valueOf(UUID.randomUUID());
 
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
-        introspector.setK2FuzzRequestId(headerValue);
-        introspector.setK2TracingData(headerValue);
+        setCSECHeaders(headerValue, introspector);
 
         makeAsyncRequestDelete(endpoint.toURL().toString());
 
@@ -168,11 +148,7 @@ public class NingAsyncHttpClient11Test {
         Assert.assertEquals("Invalid executed parameters.", server.getEndPoint().toString(), operation.getArg());
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.HTTP_REQUEST, operation.getCaseType());
         Assert.assertEquals("Invalid executed method name.", "execute", operation.getMethodName());
-        Assert.assertTrue(String.format("Missing CSEC header: %s", ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID), headers.containsKey(ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID));
-        Assert.assertEquals(String.format("Invalid CSEC header value for:  %s", ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID), headerValue, headers.get(ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID));
-        Assert.assertTrue(String.format("Missing CSEC header: %s", ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER), headers.containsKey(ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER.toLowerCase()));
-        Assert.assertEquals(String.format("Invalid CSEC header value for:  %s", ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER), String.format("%s;DUMMY_UUID/dummy-api-id/dummy-exec-id;", headerValue), headers.get(
-                ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER.toLowerCase()));
+        verifyHeaders(headerValue, headers);
     }
 
     @Test
@@ -183,8 +159,7 @@ public class NingAsyncHttpClient11Test {
         String headerValue = String.valueOf(UUID.randomUUID());
 
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
-        introspector.setK2FuzzRequestId(headerValue);
-        introspector.setK2TracingData(headerValue);
+        setCSECHeaders(headerValue, introspector);
 
         makeAsyncRequestHead(endpoint.toURL().toString());
 
@@ -195,11 +170,7 @@ public class NingAsyncHttpClient11Test {
         Assert.assertEquals("Invalid executed parameters.", server.getEndPoint().toString(), operation.getArg());
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.HTTP_REQUEST, operation.getCaseType());
         Assert.assertEquals("Invalid executed method name.", "execute", operation.getMethodName());
-        Assert.assertTrue(String.format("Missing CSEC header: %s", ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID), headers.containsKey(ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID));
-        Assert.assertEquals(String.format("Invalid CSEC header value for:  %s", ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID), headerValue, headers.get(ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID));
-        Assert.assertTrue(String.format("Missing CSEC header: %s", ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER), headers.containsKey(ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER.toLowerCase()));
-        Assert.assertEquals(String.format("Invalid CSEC header value for:  %s", ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER), String.format("%s;DUMMY_UUID/dummy-api-id/dummy-exec-id;", headerValue), headers.get(
-                ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER.toLowerCase()));
+        verifyHeaders(headerValue, headers);
     }
 
     @Test
@@ -210,8 +181,7 @@ public class NingAsyncHttpClient11Test {
         String headerValue = String.valueOf(UUID.randomUUID());
 
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
-        introspector.setK2FuzzRequestId(headerValue);
-        introspector.setK2TracingData(headerValue);
+        setCSECHeaders(headerValue, introspector);
 
         makeAsyncRequestOptions(endpoint.toURL().toString());
 
@@ -222,11 +192,7 @@ public class NingAsyncHttpClient11Test {
         Assert.assertEquals("Invalid executed parameters.", server.getEndPoint().toString(), operation.getArg());
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.HTTP_REQUEST, operation.getCaseType());
         Assert.assertEquals("Invalid executed method name.", "execute", operation.getMethodName());
-        Assert.assertTrue(String.format("Missing CSEC header: %s", ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID), headers.containsKey(ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID));
-        Assert.assertEquals(String.format("Invalid CSEC header value for:  %s", ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID), headerValue, headers.get(ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID));
-        Assert.assertTrue(String.format("Missing CSEC header: %s", ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER), headers.containsKey(ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER.toLowerCase()));
-        Assert.assertEquals(String.format("Invalid CSEC header value for:  %s", ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER), String.format("%s;DUMMY_UUID/dummy-api-id/dummy-exec-id;", headerValue), headers.get(
-                ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER.toLowerCase()));
+        verifyHeaders(headerValue, headers);
     }
 
     @Test
@@ -237,8 +203,7 @@ public class NingAsyncHttpClient11Test {
         String headerValue = String.valueOf(UUID.randomUUID());
 
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
-        introspector.setK2FuzzRequestId(headerValue);
-        introspector.setK2TracingData(headerValue);
+        setCSECHeaders(headerValue, introspector);
 
         makeAsyncExecuteRequest1(endpoint.toURL().toString());
 
@@ -249,11 +214,7 @@ public class NingAsyncHttpClient11Test {
         Assert.assertEquals("Invalid executed parameters.", server.getEndPoint().toString(), operation.getArg());
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.HTTP_REQUEST, operation.getCaseType());
         Assert.assertEquals("Invalid executed method name.", "execute", operation.getMethodName());
-        Assert.assertTrue(String.format("Missing CSEC header: %s", ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID), headers.containsKey(ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID));
-        Assert.assertEquals(String.format("Invalid CSEC header value for:  %s", ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID), headerValue, headers.get(ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID));
-        Assert.assertTrue(String.format("Missing CSEC header: %s", ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER), headers.containsKey(ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER.toLowerCase()));
-        Assert.assertEquals(String.format("Invalid CSEC header value for:  %s", ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER), String.format("%s;DUMMY_UUID/dummy-api-id/dummy-exec-id;", headerValue), headers.get(
-                ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER.toLowerCase()));
+        verifyHeaders(headerValue, headers);
     }
 
     @Test
@@ -264,8 +225,7 @@ public class NingAsyncHttpClient11Test {
         String headerValue = String.valueOf(UUID.randomUUID());
 
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
-        introspector.setK2FuzzRequestId(headerValue);
-        introspector.setK2TracingData(headerValue);
+        setCSECHeaders(headerValue, introspector);
 
         makeAsyncExecuteRequest2(endpoint.toURL().toString());
 
@@ -276,11 +236,7 @@ public class NingAsyncHttpClient11Test {
         Assert.assertEquals("Invalid executed parameters.", server.getEndPoint().toString(), operation.getArg());
         Assert.assertEquals("Invalid event category.", VulnerabilityCaseType.HTTP_REQUEST, operation.getCaseType());
         Assert.assertEquals("Invalid executed method name.", "execute", operation.getMethodName());
-        Assert.assertTrue(String.format("Missing CSEC header: %s", ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID), headers.containsKey(ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID));
-        Assert.assertEquals(String.format("Invalid CSEC header value for:  %s", ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID), headerValue, headers.get(ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID));
-        Assert.assertTrue(String.format("Missing CSEC header: %s", ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER), headers.containsKey(ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER.toLowerCase()));
-        Assert.assertEquals(String.format("Invalid CSEC header value for:  %s", ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER), String.format("%s;DUMMY_UUID/dummy-api-id/dummy-exec-id;", headerValue), headers.get(
-                ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER.toLowerCase()));
+        verifyHeaders(headerValue, headers);
     }
 
     @Trace(dispatcher = true)
@@ -421,5 +377,22 @@ public class NingAsyncHttpClient11Test {
             response.getStatusCode();
         } catch (InterruptedException | IOException | ExecutionException e) {
         }
+    }
+
+    private void setCSECHeaders(String headerValue, SecurityIntrospector introspector) {
+        introspector.setK2FuzzRequestId(headerValue+"a");
+        introspector.setK2ParentId(headerValue+"b");
+        introspector.setK2TracingData(headerValue);
+    }
+
+    private void verifyHeaders(String headerValue, Map<String, String> headers) {
+        Assert.assertTrue(String.format("Missing K2 header: %s", ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID), headers.containsKey(ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID));
+        Assert.assertEquals(String.format("Invalid K2 header value for:  %s", ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID), headerValue+"a", headers.get(ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID));
+        Assert.assertTrue(String.format("Missing K2 header: %s", GenericHelper.CSEC_PARENT_ID), headers.containsKey(GenericHelper.CSEC_PARENT_ID));
+        Assert.assertEquals(String.format("Invalid K2 header value for:  %s", GenericHelper.CSEC_PARENT_ID), headerValue+"b", headers.get(GenericHelper.CSEC_PARENT_ID));
+        Assert.assertTrue(String.format("Missing K2 header: %s", ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER), headers.containsKey(ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER.toLowerCase()));
+        Assert.assertEquals(String.format("Invalid K2 header value for:  %s", ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER), String.format("%s;DUMMY_UUID/dummy-api-id/dummy-exec-id;",
+                headerValue), headers.get(
+                ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER.toLowerCase()));
     }
 }

@@ -14,6 +14,7 @@ import com.newrelic.api.agent.security.utils.logging.LogLevel;
 
 import java.lang.instrument.Instrumentation;
 import java.net.URL;
+import java.util.Map;
 
 /**
  * The New Relic Security Java Agent's API.
@@ -51,9 +52,17 @@ public interface SecurityAgent {
 
     String getServerInfo(String key);
 
+    void setApplicationConnectionConfig(int port, String scheme);
+
+    String getApplicationConnectionConfig(int port);
+
+    Map<Integer, String> getApplicationConnectionConfig();
+
     void log(LogLevel logLevel, String event, Throwable throwableEvent, String logSourceClassName);
 
     void log(LogLevel logLevel, String event, String logSourceClassName);
 
     void reportIncident(LogLevel logLevel, String event, Throwable exception, String caller);
+
+    void retransformUninstrumentedClass(Class<?> classToRetransform);
 }

@@ -13,7 +13,7 @@ public class LowSeverityHelper {
 
     public static final String LOW_SEVERITY_HOOKS_ENABLED = "security.low-priority-instrumentation.enabled";
     public static final boolean DEFAULT = true;
-    private static AtomicBoolean isLowSeverityhHooksEnabled = new AtomicBoolean(false);
+    public static final String LOW_PRIORITY_INSTRUMENTATION = "LOW-PRIORITY-INSTRUMENTATION";
 
     private static Set<Integer> encounteredLowSeverityEventURIHash = ConcurrentHashMap.newKeySet();
 
@@ -47,13 +47,4 @@ public class LowSeverityHelper {
         return false;
     }
 
-    public static void enableLowSeverityHooks(String group) {
-        if(StringUtils.equals(group, "IAST")) {
-            isLowSeverityhHooksEnabled.set(true);
-        }
-    }
-
-    public static boolean getIsLowSeverityhHooksEnabled() {
-        return isLowSeverityhHooksEnabled.get();
-    }
 }

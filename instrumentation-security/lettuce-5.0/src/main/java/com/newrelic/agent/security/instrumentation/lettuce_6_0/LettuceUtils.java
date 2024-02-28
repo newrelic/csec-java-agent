@@ -6,6 +6,7 @@ public class LettuceUtils {
 
     public static final String NR_SEC_CUSTOM_ATTR_FILTER_NAME = "REDIS_FILTER-";
     public static final String METHOD_DISPATCH = "dispatch";
+    public static final String LETTUCE_5_0 = "LETTUCE-5.0";
 
     public static String getNrSecCustomAttribName(int hashCode) {
         return NR_SEC_CUSTOM_ATTR_FILTER_NAME + hashCode;

@@ -4,25 +4,38 @@ Noteworthy changes to the agent are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.1.0-public-preview] TO BE DECIDED
+## [1.1.1] - 2024-2-16
 ### Changes
-- FileIntegrity is marked if any of following is changed - existence, length, permissions, last modified
+- [NR-223414](https://new-relic.atlassian.net/browse/NR-223414) Enable Low Priority Instrumentation by default [PR-179](https://github.com/newrelic/csec-java-agent/pull/179)
+- [NR-219439](https://new-relic.atlassian.net/browse/NR-219439) Akka server v10.0+ Support: The security agent now supports Akka server version 10.0 and above (with scala 2.11 and above) [PR-175](https://github.com/newrelic/csec-java-agent/pull/175)
+
+### Fixes
+- [NR-222151](https://new-relic.atlassian.net/browse/NR-222151) Extract Server Configuration to resolve IAST localhost connection with application [PR-183](https://github.com/newrelic/csec-java-agent/pull/183)
+- [NR-223852](https://new-relic.atlassian.net/browse/NR-223852) Retry IAST request with different endpoint, if failure reason is SSLException or 301 [PR-182](https://github.com/newrelic/csec-java-agent/pull/182)
+- [NR-218729](https://new-relic.atlassian.net/browse/NR-218729) Add instrumentation of java.nio.file.Files#setPosixFilePermissions [PR-178](https://github.com/newrelic/csec-java-agent/pull/178)
+
+## [1.1.0] - 2024-1-29
+### Changes
+- gRPC client v1.4.0+ Support: The security agent now supports gRPC client version 1.4.0 and above (with protobuf-java-utils version 3.0.0 and above)
+- gRPC server v1.4.0+ Support: The security agent now supports gRPC server version 1.4.0 and above (with protobuf-java-utils version 3.0.0 and above)
 - Add a Logger and Cloud Reporting API for instrumentation modules
 - Glassfish Support: The security agent now also supports Glassfish server
-- Resin Support: The security agent now also supports resin server
-- Anorm Support: The security agent now also supports Anorm Datastore version 2.0 to 2.5
-- Jetty v12 Support: The security agent now also support Jetty version 12 and above
-- Ning Async HTTP client Support: Add support for com.ning:async-http-client 1.0.0 and above
-- Lettuce Support: The security agent now also supports Lettuce 4.4.0.Final and above
-- Jcache Support: The security agent now also supports jCache 1.0.0 and above
-- Jersey Support: The security agent now also supports Jersey 2.0 and above
-- Mule Support: The security agent now also supports Mule server version 3.6 to 3.9.x
+- FileIntegrity is marked if any of following is changed - existence, length, permissions, last modified
+- Drop RXSS events on the basis of Content-Type Exclusion List
+- Akka server v10.0+ Support: The security agent now supports Akka server version 10.0 and above (with scala 2.11 and above)
+- Separate out File.exists instrumentation from low-priority instrumentation module
+- Removed Schema validation dependency everit-json-schema:1.14.2
+- Introduced new dependency commons-collections4:4.4
+- Update software license to New Relic Software License Version 1.0
 
-### Misc
-- Unit test cases for Ning Async HTTP client support
-- Unit test cases for Lettuce support
-- Unit test cases for jCache support
-- Unit test cases for jersey support
+### Fixes
+- NR-212335 : support lower case stdout for log_file_name
+- NR-215332 : Add java working temp directory to server info for exclusion
+- NR-216474 : fix for Null Pointer exception for FILE_OPERATION
+- NR-216456 : Fix for Class Cast Exception
+- NR-215452 : Added the CC#_id to the completed list empty if absent in case of 2xx or 4xx response
+- NR-213477 : Added missing instrumentation for servlet service method
+- NR-214326 : Fix class circluarity error generated for BadPaddingException 
 
 ## [1.0.8-public-preview] - 2024-1-11
 ### Changes

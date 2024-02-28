@@ -21,8 +21,7 @@ import com.newrelic.api.agent.security.schema.policy.AgentPolicy;
 import com.sun.jna.Pointer;
 import com.sun.jna.platform.win32.Kernel32;
 import com.sun.jna.platform.win32.WinNT;
-import org.apache.commons.collections.BufferUtils;
-import org.apache.commons.collections.buffer.CircularFifoBuffer;
+import org.apache.commons.collections4.queue.CircularFifoQueue;
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipArchiveInputStream;
 import org.apache.commons.io.IOUtils;
@@ -99,6 +98,7 @@ public class AgentUtils {
     private static AgentUtils instance;
 
     private static final Object lock = new Object();
+    private Object mutex = new Object();
 
     public Set<String> getProtectedVulnerabilties() {
         return protectedVulnerabilties;
@@ -123,9 +123,9 @@ public class AgentUtils {
     private boolean collectAppInfoFromEnv = false;
     private Map<String, String> statusLogValues = new HashMap<>();
 
-    private Collection<String> statusLogMostRecentHCs = BufferUtils.synchronizedBuffer(new CircularFifoBuffer(5));
+    private Collection<String> statusLogMostRecentHCs = new CircularFifoQueue<>(5);
 
-    private Collection<String> statusLogMostRecentErrors = BufferUtils.synchronizedBuffer(new CircularFifoBuffer(5));
+    private Collection<String> statusLogMostRecentErrors = new CircularFifoQueue<>(5);
 
     private boolean isPolicyOverridden = false;
 
@@ -202,12 +202,24 @@ public class AgentUtils {
         this.statusLogValues = statusLogValues;
     }
 
+    public boolean addStatusLogMostRecentHCs(String healthCheck) {
+        synchronized (mutex) {
+            return statusLogMostRecentHCs.add(healthCheck);
+        }
+    }
+
     public Collection<String> getStatusLogMostRecentHCs() {
         return statusLogMostRecentHCs;
     }
 
     public void setStatusLogMostRecentHCs(Collection<String> statusLogMostRecentHCs) {
         this.statusLogMostRecentHCs = statusLogMostRecentHCs;
+    }
+
+    public boolean addStatusLogMostRecentErrors(String error){
+        synchronized (mutex) {
+            return this.statusLogMostRecentErrors.add(error);
+        }
     }
 
     public Collection<String> getStatusLogMostRecentErrors() {
@@ -657,6 +669,7 @@ public class AgentUtils {
     public static void sendApplicationURLMappings() {
         //TODO mappings to be send once new mappings are discovered, after startup.
         ApplicationURLMappings applicationURLMappings = new ApplicationURLMappings(URLMappingsHelper.getApplicationURLMappings());
+        applicationURLMappings.setApplicationUUID(AgentInfo.getInstance().getApplicationUUID());
         logger.logInit(LogLevel.INFO, String.format("Collected application url mappings %s", applicationURLMappings), Agent.class.getName());
         EventSendPool.getInstance().sendEvent(applicationURLMappings);
     }

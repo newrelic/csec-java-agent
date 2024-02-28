@@ -10,6 +10,7 @@ import com.newrelic.api.agent.security.schema.SecurityMetaData;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
 import com.newrelic.api.agent.security.schema.operation.RXSSOperation;
 import com.newrelic.api.agent.security.schema.policy.AgentPolicy;
+import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import org.eclipse.jetty.http.HttpFields;
 import org.eclipse.jetty.http.HttpHeader;
 import org.eclipse.jetty.server.Request;
@@ -29,6 +30,7 @@ public class HttpServletHelper {
     public static final String SERVICE_ASYNC_METHOD_NAME = "handleAsync";
 
     public static final String NR_SEC_CUSTOM_ATTRIB_NAME = "JETTY_SERVLET_LOCK-";
+    public static final String JETTY_12 = "JETTY-12";
 
     public static void processHttpRequestHeader(Request request, HttpRequest securityRequest) {
         HttpFields headers = request.getHeaders();
@@ -164,7 +166,8 @@ public class HttpServletHelper {
             StackTraceElement[] trace = Thread.currentThread().getStackTrace();
             securityMetaData.getMetaData().setServiceTrace(Arrays.copyOfRange(trace, 2, trace.length));
             securityRequest.setRequestParsed(true);
-        } catch (Throwable ignored) {
+        } catch (Throwable e) {
+            NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.ERROR_GENERATING_HTTP_REQUEST, JETTY_12, e.getMessage()), e, HttpServletHelper.class.getName());
         }
     }
 
@@ -183,9 +186,11 @@ public class HttpServletHelper {
             ServletHelper.tmpFileCleanUp(NewRelicSecurity.getAgent().getSecurityMetaData().getFuzzRequestIdentifier().getTempFiles());
         } catch (Throwable e) {
             if (e instanceof NewRelicSecurityException) {
-                e.printStackTrace();
+                NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.SECURITY_EXCEPTION_MESSAGE, JETTY_12, e.getMessage()), e, HttpServletHelper.class.getName());
                 throw e;
             }
+            NewRelicSecurity.getAgent().log(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, JETTY_12, e.getMessage()), e, HttpServletHelper.class.getName());
+            NewRelicSecurity.getAgent().reportIncident(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, JETTY_12, e.getMessage()), e, HttpServletHelper.class.getName());
         }
     }
 }

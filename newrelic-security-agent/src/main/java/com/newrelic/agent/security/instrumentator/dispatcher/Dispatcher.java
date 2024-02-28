@@ -7,6 +7,7 @@ import com.newrelic.agent.security.instrumentator.utils.AgentUtils;
 import com.newrelic.agent.security.instrumentator.utils.CallbackUtils;
 import com.newrelic.agent.security.instrumentator.utils.INRSettingsKey;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
+import com.newrelic.api.agent.security.Agent;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.logging.DeployedApplication;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.ExitEventBean;
@@ -49,7 +50,7 @@ public class Dispatcher implements Callable {
     public static final char SEPARATOR = '.';
     private static final String EVENT_ZERO_SENT = "[STEP-8] => First event sent for validation. Security agent started successfully. %s";
     private static final String SENDING_EVENT_ZERO = "[EVENT] Sending first event for validation. Security agent started successfully ";
-    private static final String POSTING_UPDATED_APPLICATION_INFO = "[APP_INFO][DEPLOYED_APP] Sending updated application info to Prevent-Web service : %s";
+    private static final String POSTING_UPDATED_APPLICATION_INFO = "[APP_INFO][DEPLOYED_APP] Sending updated application info to Security Engine : %s";
 
     public static final String SEPARATOR1 = ", ";
     public static final String APP_LOCATION = "app-location";
@@ -151,22 +152,14 @@ public class Dispatcher implements Callable {
                         eventBean = prepareSQLDbCommandEvent((BatchSQLOperation) operation, eventBean);
                         break;
                     } else if (operation instanceof NoSQLOperation) {
-                        try {
-                            eventBean = prepareNoSQLEvent(eventBean, (NoSQLOperation) operation);
-                        } catch (Throwable e) {
-                            return null;
-                        }
+                        eventBean = prepareNoSQLEvent(eventBean, (NoSQLOperation) operation);
                         break;
                     }
 
                 case DYNAMO_DB_COMMAND:
                     DynamoDBOperation dynamoDBOperation = (DynamoDBOperation) operation;
-                    try {
-                        eventBean = prepareDynamoDBEvent(eventBean, dynamoDBOperation);
-                        if (eventBean == null) {
-                            return null;
-                        }
-                    } catch (Throwable e) {
+                    eventBean = prepareDynamoDBEvent(eventBean, dynamoDBOperation);
+                    if (eventBean == null) {
                         return null;
                     }
                     break;
@@ -252,6 +245,8 @@ public class Dispatcher implements Callable {
         } catch (Throwable e) {
             logger.postLogMessageIfNecessary(LogLevel.WARNING, String.format(UNABLE_TO_CONVERT_OPERATION_TO_EVENT, operation.getApiID(), operation.getSourceMethod(), JsonConverter.getObjectMapper().writeValueAsString(operation.getUserClassEntity())), e,
                     this.getClass().getName());
+            Agent.getInstance().reportIncident(LogLevel.WARNING, String.format(UNABLE_TO_CONVERT_OPERATION_TO_EVENT, operation.getApiID(), operation.getSourceMethod(), JsonConverter.getObjectMapper().writeValueAsString(operation.getUserClassEntity())), e,
+                    this.getClass().getName());
         }
         return null;
     }
@@ -326,6 +321,7 @@ public class Dispatcher implements Callable {
             params.addAll(xssConstructs);
             params.add(securityMetaData.getResponse().getResponseBody());
             eventBean.setParameters(params);
+            eventBean.setHttpResponse(securityMetaData.getResponse());
             eventBean.setApplicationUUID(AgentInfo.getInstance().getApplicationUUID());
             eventBean.setPid(AgentInfo.getInstance().getVMPID());
             eventBean.setId(operation.getExecutionId());
@@ -589,18 +585,14 @@ public class Dispatcher implements Callable {
         return eventBean;
     }
 
-    private static JavaAgentEventBean prepareDynamoDBEvent(JavaAgentEventBean eventBean, DynamoDBOperation dynamoDBOperation) throws ParseException {
+    private static JavaAgentEventBean prepareDynamoDBEvent(JavaAgentEventBean eventBean, DynamoDBOperation dynamoDBOperation) {
         JSONArray params = new JSONArray();
         eventBean.setEventCategory(dynamoDBOperation.getCategory().toString());
         List<DynamoDBRequest> originalPayloads = dynamoDBOperation.getPayload();
-        try {
-            for (DynamoDBRequest data : originalPayloads) {
-                params.add(DynamoDBRequestConverter.convert(dynamoDBOperation.getCategory(), data));
-            }
-            eventBean.setParameters(params);
-        } catch (Exception exception) {
-            exception.printStackTrace();
+        for (DynamoDBRequest data : originalPayloads) {
+            params.add(DynamoDBRequestConverter.convert(dynamoDBOperation.getCategory(), data));
         }
+        eventBean.setParameters(params);
         return eventBean;
     }
 
