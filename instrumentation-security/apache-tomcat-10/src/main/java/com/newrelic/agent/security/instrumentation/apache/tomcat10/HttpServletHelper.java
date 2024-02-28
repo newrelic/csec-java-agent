@@ -13,7 +13,6 @@ import java.util.Map;
 public class HttpServletHelper {
     private static final String EMPTY = "";
     private static final String WILDCARD = "*";
-    private static final String NULL = "null";
     private static final String SEPARATOR = "/";
     public static final String APACHE_TOMCAT_10 = "APACHE-TOMCAT-10";
 
@@ -43,7 +42,7 @@ public class HttpServletHelper {
                         getJSPMappings(servletContext, path);
                     }
                     else if(path.endsWith(".jsp") || path.endsWith(".jspx") || path.endsWith(".JSP") || path.endsWith(".JSPX")) {
-                        URLMappingsHelper.addApplicationURLMapping(new ApplicationURLMapping(WILDCARD, (path.startsWith(SEPARATOR) ? EMPTY : SEPARATOR) + path, NULL));
+                        URLMappingsHelper.addApplicationURLMapping(new ApplicationURLMapping(WILDCARD, (path.startsWith(SEPARATOR) ? EMPTY : SEPARATOR) + path));
                     }
                 }
             }
