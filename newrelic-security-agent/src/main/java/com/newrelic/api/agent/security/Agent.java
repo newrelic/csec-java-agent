@@ -127,6 +127,9 @@ public class Agent implements SecurityAgent {
                 this.getClass().getName());
         logger.logInit(LogLevel.INFO, NewRelic.getAgent().getConfig().getValue(LowSeverityHelper.LOW_SEVERITY_HOOKS_ENABLED, LowSeverityHelper.DEFAULT)?
                 "Low priority instrumentations are enabled.":"Low priority instrumentations are disabled!", this.getClass().getName());
+        if( NewRelic.getAgent().getConfig().getValue(IUtilConstants.NR_SECURITY_HOME_APP, false) ) {
+            logger.logInit(LogLevel.INFO, "App being scanned is a Newrelic's Home Grown application", this.getClass().getName());
+        }
         info.setIdentifier(ApplicationInfoUtils.envDetection());
         ApplicationInfoUtils.continueIdentifierProcessing(info.getIdentifier(), config.getConfig());
         info.generateAppInfo(config.getConfig());
@@ -281,7 +284,7 @@ public class Agent implements SecurityAgent {
                     new StringBuilder(JsonConverter.toJSON(securityMetaData.getCustomAttribute(GrpcHelper.NR_SEC_GRPC_RESPONSE_DATA, List.class))));
         }
 
-        if(checkIfNRGeneratedEvent(operation)) {
+        if(!NewRelic.getAgent().getConfig().getValue(IUtilConstants.NR_SECURITY_HOME_APP, false) && checkIfNRGeneratedEvent(operation)) {
             logger.log(LogLevel.FINEST, DROPPING_EVENT_AS_IT_WAS_GENERATED_BY_K_2_INTERNAL_API_CALL +
                             JsonConverter.toJSON(operation),
                     Agent.class.getName());
