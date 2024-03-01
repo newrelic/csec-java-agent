@@ -34,7 +34,7 @@ dependencies {
 }
 
 jar {
-    manifest { attributes 'Implementation-Title': 'com.newrelic.security.instrumentation.play-2.6' }
+    manifest { attributes 'Implementation-Title': 'com.newrelic.instrumentation.security.play-2.6' }
 }
 
 verifyInstrumentation {
