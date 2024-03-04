@@ -15,6 +15,7 @@ import com.newrelic.api.agent.security.schema.policy.AgentPolicy;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.HttpContent;
+import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponse;
 
@@ -26,7 +27,8 @@ import java.util.Set;
 
 public class NettyUtils {
     public static String NR_SEC_CUSTOM_ATTRIB_NAME = "NETTY-4.8-REQ-BODY-TRACKER";
-    public static String NR_SEC_NETTY_OPERATIONAL_LOCK = "NR_SEC_NETTY_OPERATIONAL_LOCK";
+    public static String NR_SEC_NETTY_OPERATIONAL_LOCK = "NR_SEC_NETTY_OPERATIONAL_LOCK_INBOUND";
+    public static String NR_SEC_NETTY_OPERATIONAL_LOCK_OUTBOUND = "NR_SEC_NETTY_OPERATIONAL_LOCK_OUTBOUND";
     private static final String X_FORWARDED_FOR = "x-forwarded-for";
     private static final String EMPTY = "";
     public static final String WRITE_METHOD_NAME = "write";
@@ -57,7 +59,7 @@ public class NettyUtils {
                 securityMetaData.setTracingHeaderValue(getTraceHeader(securityRequest.getHeaders()));
 
                 securityRequest.setProtocol(((HttpRequest) msg).getProtocolVersion().protocolName());
-                securityRequest.setContentType(securityRequest.getHeaders().get("content-type"));
+                securityRequest.setContentType(securityRequest.getHeaders().get(HttpHeaders.Names.CONTENT_TYPE));
                 StackTraceElement[] stack = Thread.currentThread().getStackTrace();
                 securityMetaData.getMetaData().setServiceTrace(Arrays.copyOfRange(stack, 2, stack.length));
                 securityRequest.setRequestParsed(true);
@@ -178,7 +180,7 @@ public class NettyUtils {
                 com.newrelic.api.agent.security.schema.HttpResponse securityResponse =
                         securityMetaData.getResponse();
                 processResponseHeaders((HttpResponse) msg, securityResponse);
-                securityResponse.setResponseContentType(((FullHttpResponse) msg).headers().get("content-type"));
+                securityResponse.setResponseContentType(((FullHttpResponse) msg).headers().get(HttpHeaders.Names.CONTENT_TYPE));
                 securityResponse.getResponseBody().append(((FullHttpResponse) msg).content().toString(StandardCharsets.UTF_8));
             }
         } catch (Throwable e) {
@@ -217,29 +219,29 @@ public class NettyUtils {
         }
     }
 
-    public static boolean isNettyLockAcquired() {
+    public static boolean isNettyLockAcquired(String operationLock) {
         try {
             return NewRelicSecurity.isHookProcessingActive() &&
-                    Boolean.TRUE.equals(NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(getNrSecOperationalLockName(), Boolean.class));
+                    Boolean.TRUE.equals(NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(operationLock + Thread.currentThread().getId(), Boolean.class));
         } catch (Throwable ignored) {}
         return false;
     }
 
-    public static boolean acquireNettyLockIfPossible() {
+    public static boolean acquireNettyLockIfPossible(String operationLock) {
         try {
             if (NewRelicSecurity.isHookProcessingActive() &&
-                    !isNettyLockAcquired()) {
-                NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(getNrSecOperationalLockName(), true);
+                    !isNettyLockAcquired(operationLock)) {
+                NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(operationLock + Thread.currentThread().getId(), true);
                 return true;
             }
         } catch (Throwable ignored){}
         return false;
     }
 
-    public static void releaseNettyLock() {
+    public static void releaseNettyLock(String operationLock) {
         try {
             if(NewRelicSecurity.isHookProcessingActive()) {
-                NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(getNrSecOperationalLockName(), null);
+                NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(operationLock + Thread.currentThread().getId(), null);
             }
         } catch (Throwable ignored){}
     }

@@ -18,7 +18,7 @@ import security.io.netty400.utils.NettyUtils;
 public abstract class ChannelOutboundHandler_Instrumentation {
 
     public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
-        boolean isLockAcquired = NettyUtils.acquireNettyLockIfPossible();
+        boolean isLockAcquired = NettyUtils.acquireNettyLockIfPossible(NettyUtils.NR_SEC_NETTY_OPERATIONAL_LOCK_OUTBOUND);
         if (isLockAcquired) {
             NettyUtils.processSecurityResponse(ctx, msg);
             NettyUtils.sendRXSSEvent(ctx, msg, getClass().getName(), NettyUtils.WRITE_METHOD_NAME);
@@ -27,7 +27,7 @@ public abstract class ChannelOutboundHandler_Instrumentation {
             Weaver.callOriginal();
         } finally {
             if (isLockAcquired) {
-                NettyUtils.releaseNettyLock();
+                NettyUtils.releaseNettyLock(NettyUtils.NR_SEC_NETTY_OPERATIONAL_LOCK_OUTBOUND);
             }
         }
     }

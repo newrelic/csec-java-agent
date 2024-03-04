@@ -19,7 +19,7 @@ import security.io.netty400.utils.NettyUtils;
 public abstract class ChannelInboundHandler_Instrumentation {
 
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-        boolean isLockAcquired = NettyUtils.acquireNettyLockIfPossible();
+        boolean isLockAcquired = NettyUtils.acquireNettyLockIfPossible(NettyUtils.NR_SEC_NETTY_OPERATIONAL_LOCK);
         if (isLockAcquired) {
             NettyUtils.processSecurityRequest(ctx, msg, getClass().getName());
             if (!StringUtils.startsWith(getClass().getName(), NettyUtils.IO_NETTY)) {
@@ -30,7 +30,7 @@ public abstract class ChannelInboundHandler_Instrumentation {
             Weaver.callOriginal();
         } finally {
             if (isLockAcquired) {
-                NettyUtils.releaseNettyLock();
+                NettyUtils.releaseNettyLock(NettyUtils.NR_SEC_NETTY_OPERATIONAL_LOCK);
             }
         }
     }
