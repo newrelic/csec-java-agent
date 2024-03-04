@@ -433,7 +433,11 @@ public class Agent implements SecurityAgent {
     private static void setAPIId(AbstractOperation operation, List<Integer> traceForIdCalc, VulnerabilityCaseType vulnerabilityCaseType) {
         try {
             traceForIdCalc.add(operation.getSourceMethod().hashCode());
-            operation.setApiID(vulnerabilityCaseType.getCaseType() + "-" + HashGenerator.getXxHash64Digest(traceForIdCalc.stream().mapToInt(Integer::intValue).toArray()));
+            int[] traceArray = new int[traceForIdCalc.size()];
+            for (int i = 0; i < traceForIdCalc.size(); i++) {
+                traceArray[i] = traceForIdCalc.get(i);
+            }
+            operation.setApiID(vulnerabilityCaseType.getCaseType() + "-" + HashGenerator.getXxHash64Digest(traceArray));
         } catch (IOException e) {
             operation.setApiID("UNDEFINED");
         }
