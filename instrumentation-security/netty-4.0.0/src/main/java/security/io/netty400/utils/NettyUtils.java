@@ -59,9 +59,11 @@ public class NettyUtils {
                 securityMetaData.setTracingHeaderValue(getTraceHeader(securityRequest.getHeaders()));
 
                 securityRequest.setProtocol(((HttpRequest) msg).getProtocolVersion().protocolName());
-                securityRequest.setContentType(securityRequest.getHeaders().get(HttpHeaders.Names.CONTENT_TYPE));
-                StackTraceElement[] stack = Thread.currentThread().getStackTrace();
-                securityMetaData.getMetaData().setServiceTrace(Arrays.copyOfRange(stack, 2, stack.length));
+                securityRequest.setContentType(securityRequest.getHeaders().get("content-type"));
+                if (!securityMetaData.getMetaData().isUserLevelServiceMethodEncountered(IO_NETTY)){
+                    StackTraceElement[] stack = Thread.currentThread().getStackTrace();
+                    securityMetaData.getMetaData().setServiceTrace(Arrays.copyOfRange(stack, 2, stack.length));
+                }
                 securityRequest.setRequestParsed(true);
             } else if (msg instanceof HttpContent) {
                 if (!(secMetaObj instanceof SecurityMetaData) ||
