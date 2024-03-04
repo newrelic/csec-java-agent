@@ -13,13 +13,18 @@ import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.handler.codec.http.HttpContent;
+import io.netty.handler.codec.http.HttpRequest;
 import security.io.netty400.utils.NettyUtils;
 
 @Weave(type = MatchType.Interface, originalName = "io.netty.channel.ChannelInboundHandler")
 public abstract class ChannelInboundHandler_Instrumentation {
 
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-        boolean isLockAcquired = NettyUtils.acquireNettyLockIfPossible(NettyUtils.NR_SEC_NETTY_OPERATIONAL_LOCK);
+        boolean isLockAcquired = false;
+        if (msg instanceof HttpRequest || msg instanceof HttpContent){
+            isLockAcquired = NettyUtils.acquireNettyLockIfPossible(NettyUtils.NR_SEC_NETTY_OPERATIONAL_LOCK);
+        }
         if (isLockAcquired) {
             NettyUtils.processSecurityRequest(ctx, msg, getClass().getName());
             if (!StringUtils.startsWith(getClass().getName(), NettyUtils.IO_NETTY)) {
