@@ -121,28 +121,9 @@ public class RestClient {
         return clientThreadLocal.get();
     }
 
-    public void fireRequest(FuzzRequestBean httpRequest, List<String> endpoints, int repeatCount, String fuzzRequestId){
+    public void fireRequest(FuzzRequestBean httpRequest, List<String> endpoints, int repeatCount, String fuzzRequestId, boolean postSSL){
 
         int responseCode = 999;
-        if(endpoints.isEmpty()){
-            Request request = RequestUtils.generateK2Request(httpRequest, String.format(IAgentConstants.ENDPOINT_LOCALHOST_S, httpRequest.getProtocol(), httpRequest.getServerPort()));
-            if (request != null) {
-                try {
-                    responseCode = RestClient.getInstance().fireRequest(request, repeatCount + endpoints.size() -1, fuzzRequestId);
-                } catch (SSLException e) {
-                    logger.log(LogLevel.FINER, String.format(CALL_FAILED_REQUEST_S_REASON, request), e, RestClient.class.getName());
-                    logger.postLogMessageIfNecessary(LogLevel.WARNING,
-                            String.format(CALL_FAILED_REQUEST_S_REASON, fuzzRequestId),
-                            e, RestRequestProcessor.class.getName());
-                    RestRequestThreadPool.getInstance().getProcessedIds().putIfAbsent(fuzzRequestId, new HashSet<>());
-                    // TODO: Add to fuzz fail count in HC and remove FuzzFailEvent if not needed.
-                    FuzzFailEvent fuzzFailEvent = new FuzzFailEvent(AgentInfo.getInstance().getApplicationUUID());
-                    fuzzFailEvent.setFuzzHeader(request.header(ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID));
-                    EventSendPool.getInstance().sendEvent(fuzzFailEvent);
-                }
-            }
-            return;
-        }
         for (String endpoint : endpoints) {
             Request request = RequestUtils.generateK2Request(httpRequest, endpoint);
             try {
@@ -153,6 +134,16 @@ public class RestClient {
                 break;
             } catch (SSLException e){
                 logger.log(LogLevel.FINER, String.format(CALL_FAILED_REQUEST_S_REASON, request), e, RestClient.class.getName());
+                if(postSSL){
+                    logger.postLogMessageIfNecessary(LogLevel.WARNING,
+                            String.format(CALL_FAILED_REQUEST_S_REASON, fuzzRequestId),
+                            e, RestRequestProcessor.class.getName());
+                    RestRequestThreadPool.getInstance().getProcessedIds().putIfAbsent(fuzzRequestId, new HashSet<>());
+                    // TODO: Add to fuzz fail count in HC and remove FuzzFailEvent if not needed.
+                    FuzzFailEvent fuzzFailEvent = new FuzzFailEvent(AgentInfo.getInstance().getApplicationUUID());
+                    fuzzFailEvent.setFuzzHeader(request.header(ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID));
+                    EventSendPool.getInstance().sendEvent(fuzzFailEvent);
+                }
             }
         }
 
