@@ -12,6 +12,7 @@ import com.newrelic.api.agent.security.schema.StringUtils;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
 import com.newrelic.api.agent.security.schema.operation.RXSSOperation;
 import com.newrelic.api.agent.security.schema.policy.AgentPolicy;
+import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.HttpContent;
@@ -26,6 +27,7 @@ import java.util.Map;
 import java.util.Set;
 
 public class NettyUtils {
+    public static final String NETTY_4_0_0 = "NETTY-4.0.0";
     public static String NR_SEC_CUSTOM_ATTRIB_NAME = "NETTY-4.8-REQ-BODY-TRACKER";
     public static String NR_SEC_NETTY_OPERATIONAL_LOCK = "NR_SEC_NETTY_OPERATIONAL_LOCK_INBOUND";
     public static String NR_SEC_NETTY_OPERATIONAL_LOCK_OUTBOUND = "NR_SEC_NETTY_OPERATIONAL_LOCK_OUTBOUND";
@@ -34,6 +36,8 @@ public class NettyUtils {
     public static final String WRITE_METHOD_NAME = "write";
 
     public static final String IO_NETTY = "io.netty.";
+    private static final String ERROR_GETTING_SERVER_PORT = "Instrumentation library: %s , error while getting server port %s";
+    private static final String ERROR_PARSING_HTTP_RESPONSE_DATA = "Instrumentation library: %s , error while parsing HTTP response data : %s";
 
     public static void processSecurityRequest(ChannelHandlerContext ctx, Object msg, String className) {
         try {
@@ -84,7 +88,7 @@ public class NettyUtils {
                 }
             }
         } catch (Throwable ignored) {
-            ignored.printStackTrace();
+            NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.ERROR_PARSING_HTTP_REQUEST_DATA, NETTY_4_0_0, ignored.getMessage()), ignored, NettyUtils.class.getName());
         }
     }
 
@@ -95,7 +99,9 @@ public class NettyUtils {
                 return;
             }
             securityRequest.setServerPort(Integer.parseInt(port));
-        } catch (Throwable throwable) {}
+        } catch (Throwable throwable) {
+            NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(ERROR_GETTING_SERVER_PORT, NETTY_4_0_0, throwable.getMessage()), throwable, NettyUtils.class.getName());
+        }
     }
 
     private static void setClientAddressDetails(SecurityMetaData securityMetaData, String address) {
@@ -186,7 +192,7 @@ public class NettyUtils {
                 securityResponse.getResponseBody().append(((FullHttpResponse) msg).content().toString(StandardCharsets.UTF_8));
             }
         } catch (Throwable e) {
-            e.printStackTrace();
+            NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(ERROR_PARSING_HTTP_RESPONSE_DATA, NETTY_4_0_0, e.getMessage()), e, NettyUtils.class.getName());
         }
     }
 
@@ -207,9 +213,11 @@ public class NettyUtils {
             ServletHelper.tmpFileCleanUp(NewRelicSecurity.getAgent().getSecurityMetaData().getFuzzRequestIdentifier().getTempFiles());
         } catch (Throwable e) {
             if (e instanceof NewRelicSecurityException) {
-                e.printStackTrace();
+                NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.SECURITY_EXCEPTION_MESSAGE, NETTY_4_0_0, e.getMessage()), e, NettyUtils.class.getName());
                 throw e;
             }
+            NewRelicSecurity.getAgent().log(LogLevel.SEVERE, String.format(GenericHelper.ERROR_GENERATING_HTTP_REQUEST, NETTY_4_0_0, e.getMessage()), e, NettyUtils.class.getName());
+            NewRelicSecurity.getAgent().reportIncident(LogLevel.SEVERE, String.format(GenericHelper.ERROR_GENERATING_HTTP_REQUEST, NETTY_4_0_0, e.getMessage()), e, NettyUtils.class.getName());
         }
     }
 
@@ -246,9 +254,5 @@ public class NettyUtils {
                 NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(operationLock + Thread.currentThread().getId(), null);
             }
         } catch (Throwable ignored){}
-    }
-
-    private static String getNrSecOperationalLockName() {
-        return NR_SEC_NETTY_OPERATIONAL_LOCK + Thread.currentThread().getId();
     }
 }
