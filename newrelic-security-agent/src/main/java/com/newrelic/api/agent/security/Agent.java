@@ -284,6 +284,13 @@ public class Agent implements SecurityAgent {
                     new StringBuilder(JsonConverter.toJSON(securityMetaData.getCustomAttribute(GrpcHelper.NR_SEC_GRPC_RESPONSE_DATA, List.class))));
         }
 
+        if(NewRelic.getAgent().getConfig().getValue(IUtilConstants.NR_SECURITY_HOME_APP, false) && checkIfCSECGeneratedEvent(operation)) {
+            logger.log(LogLevel.FINEST, DROPPING_EVENT_AS_IT_WAS_GENERATED_BY_K_2_INTERNAL_API_CALL +
+                            JsonConverter.toJSON(operation),
+                    Agent.class.getName());
+            return;
+        }
+
         if(!NewRelic.getAgent().getConfig().getValue(IUtilConstants.NR_SECURITY_HOME_APP, false) && checkIfNRGeneratedEvent(operation)) {
             logger.log(LogLevel.FINEST, DROPPING_EVENT_AS_IT_WAS_GENERATED_BY_K_2_INTERNAL_API_CALL +
                             JsonConverter.toJSON(operation),
@@ -307,6 +314,18 @@ public class Agent implements SecurityAgent {
                 firstEventProcessed.set(true);
             }
         }
+    }
+
+    private boolean checkIfCSECGeneratedEvent(AbstractOperation operation) {
+        for (int i = 1, j = 0; i < operation.getStackTrace().length; i++) {
+            // Only remove consecutive top com.newrelic and com.nr. elements from stack.
+            if (i - 1 == j && StringUtils.startsWithAny(operation.getStackTrace()[i].getClassName(), "com.newrelic.agent.security.", "com.newrelic.api.agent.")) {
+                j++;
+            } else if (StringUtils.startsWithAny(operation.getStackTrace()[i].getClassName(), "com.newrelic.agent.security.", "com.newrelic.api.agent.")) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private void logIfIastScanForFirstTime(K2RequestIdentifier fuzzRequestIdentifier, HttpRequest request) {
