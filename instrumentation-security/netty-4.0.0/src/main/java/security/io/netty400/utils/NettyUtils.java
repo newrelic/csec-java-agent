@@ -1,7 +1,5 @@
 package security.io.netty400.utils;
 
-import com.newrelic.api.agent.NewRelic;
-import com.newrelic.api.agent.Transaction;
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.security.instrumentation.helpers.LowSeverityHelper;
@@ -41,13 +39,10 @@ public class NettyUtils {
 
     public static void processSecurityRequest(ChannelHandlerContext ctx, Object msg, String className) {
         try {
-            Transaction tx = NewRelic.getAgent().getTransaction();
-            Object secMetaObj = tx.getSecurityMetaData();
+            if (!NewRelicSecurity.isHookProcessingActive()) {
+                return;
+            }
             if (msg instanceof HttpRequest) {
-                if (!(secMetaObj instanceof SecurityMetaData) ||
-                        NewRelicSecurity.getAgent().getSecurityMetaData() == null) {
-                    return;
-                }
                 SecurityMetaData securityMetaData = NewRelicSecurity.getAgent().getSecurityMetaData();
                 com.newrelic.api.agent.security.schema.HttpRequest securityRequest =
                         securityMetaData.getRequest();
@@ -62,18 +57,15 @@ public class NettyUtils {
                 processHttpRequestHeader((HttpRequest)msg, securityRequest);
                 securityMetaData.setTracingHeaderValue(getTraceHeader(securityRequest.getHeaders()));
 
-                securityRequest.setProtocol(((HttpRequest) msg).getProtocolVersion().protocolName());
+                securityRequest.setProtocol(((HttpRequest) msg).getProtocolVersion().protocolName().toLowerCase());
                 securityRequest.setContentType(securityRequest.getHeaders().get("content-type"));
                 if (!securityMetaData.getMetaData().isUserLevelServiceMethodEncountered(IO_NETTY)){
                     StackTraceElement[] stack = Thread.currentThread().getStackTrace();
                     securityMetaData.getMetaData().setServiceTrace(Arrays.copyOfRange(stack, 2, stack.length));
                 }
                 securityRequest.setRequestParsed(true);
-            } else if (msg instanceof HttpContent) {
-                if (!(secMetaObj instanceof SecurityMetaData) ||
-                        NewRelicSecurity.getAgent().getSecurityMetaData() == null) {
-                    return;
-                }
+            }
+            if (msg instanceof HttpContent) {
                 Integer reqBodyTrackerContextId = NewRelicSecurity.getAgent().getSecurityMetaData()
                         .getCustomAttribute(NR_SEC_CUSTOM_ATTRIB_NAME, Integer.class);
                 if (reqBodyTrackerContextId == null) {
