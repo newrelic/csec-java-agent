@@ -169,13 +169,7 @@ public class NettyUtils {
 
     public static void processSecurityResponse(ChannelHandlerContext ctx, Object msg) {
         try {
-            Transaction tx = NewRelic.getAgent().getTransaction();
-            Object secMetaObj = tx.getSecurityMetaData();
-            if (msg instanceof FullHttpResponse) {
-                if (!(secMetaObj instanceof SecurityMetaData) ||
-                        NewRelicSecurity.getAgent().getSecurityMetaData() == null) {
-                    return;
-                }
+            if (NewRelicSecurity.isHookProcessingActive() && msg instanceof FullHttpResponse) {
                 SecurityMetaData securityMetaData = NewRelicSecurity.getAgent().getSecurityMetaData();
                 com.newrelic.api.agent.security.schema.HttpResponse securityResponse =
                         securityMetaData.getResponse();
