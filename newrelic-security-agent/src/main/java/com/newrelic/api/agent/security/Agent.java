@@ -271,6 +271,7 @@ public class Agent implements SecurityAgent {
         }
         if (operation instanceof RXSSOperation) {
             operation.setStackTrace(securityMetaData.getMetaData().getServiceTrace());
+            securityMetaData.addCustomAttribute("RXSS_PROCESSED", true);
         } else {
             StackTraceElement[] trace = Thread.currentThread().getStackTrace();
             operation.setStackTrace(Arrays.copyOfRange(trace, 2, trace.length));
@@ -411,7 +412,7 @@ public class Agent implements SecurityAgent {
             markedForRemoval = false;
 
             // Only remove consecutive top com.newrelic and com.nr. elements from stack.
-            if (i - 1 == j && StringUtils.startsWithAny(stackTrace[i].getClassName(), "com.newrelic.", "com.nr.")) {
+            if (i - 1 == j && StringUtils.startsWithAny(stackTrace[i].getClassName(), "com.newrelic.agent.security.", "com.newrelic.api.agent.")) {
                 resetFactor++;
                 j++;
                 markedForRemoval = true;

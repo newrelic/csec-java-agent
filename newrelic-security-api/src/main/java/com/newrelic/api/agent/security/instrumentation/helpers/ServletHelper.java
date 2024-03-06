@@ -153,13 +153,28 @@ public class ServletHelper {
                 return false;
             }
             SecurityMetaData securityMetaData = NewRelicSecurity.getAgent().getSecurityMetaData();
-            if (!securityMetaData.getMetaData().isUserLevelServiceMethodEncountered(frameworkName)) {
+            if (!securityMetaData.getMetaData().isUserLevelServiceMethodEncountered(frameworkName) || !securityMetaData.getMetaData().isFoundAnnotedUserLevelServiceMethod()) {
                 securityMetaData.getMetaData().setUserLevelServiceMethodEncountered(true);
+                securityMetaData.getMetaData().setUserLevelServiceMethodEncounteredFramework(frameworkName);
                 StackTraceElement[] trace = Thread.currentThread().getStackTrace();
                 securityMetaData.getMetaData().setServiceTrace(Arrays.copyOfRange(trace, asyncContext?2:3, trace.length));
                 return true;
             }
         } catch (Throwable ignored) {
+        }
+        return false;
+    }
+
+    public static boolean setFoundAnnotedUserLevelServiceMethod() {
+        try {
+            if (!NewRelicSecurity.isHookProcessingActive() || (NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty())
+            ) {
+                return false;
+            }
+            SecurityMetaData securityMetaData = NewRelicSecurity.getAgent().getSecurityMetaData();
+            securityMetaData.getMetaData().setFoundAnnotedUserLevelServiceMethod(true);
+            return true;
+        } catch (Throwable ignored){
         }
         return false;
     }
