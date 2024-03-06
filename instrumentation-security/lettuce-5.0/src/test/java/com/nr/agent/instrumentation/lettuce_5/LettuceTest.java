@@ -22,6 +22,7 @@ import redis.embedded.RedisServer;
 
 import java.io.IOException;
 import java.net.ServerSocket;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -457,9 +458,13 @@ public class LettuceTest {
         Assert.assertEquals(String.format("[%s] Invalid Command.", cmd), cmd.toString(), operation.getType());
         Assert.assertEquals(String.format("[%s] Invalid Category.", cmd), RedisOperation.REDIS, operation.getCategory());
         for(int i=0; i< keyValuePair.size(); i++) {
-            Assert.assertEquals(String.format("[%s] Invalid executed parameter.", cmd), keyValuePair.get(i), operation.getArguments().get(i));
+            if (operation.getArguments().get(i) instanceof byte[]){
+                String val = new String((byte[]) operation.getArguments().get(i), StandardCharsets.UTF_8);
+                Assert.assertEquals(String.format("[%s] Invalid executed parameter.", cmd), keyValuePair.get(i), val);
+            } else {
+                Assert.assertEquals(String.format("[%s] Invalid executed parameter.", cmd), keyValuePair.get(i), operation.getArguments().get(i));
+            }
         }
-//        Assert.assertEquals(String.format("[%s] Invalid executed parameter.", cmd), keyValuePair, operation.getArguments());
         Assert.assertEquals(String.format("[%s] Invalid event category.", cmd), VulnerabilityCaseType.CACHING_DATA_STORE, operation.getCaseType());
         Assert.assertEquals(String.format("[%s] Invalid executed class name.", cmd), RedisAsyncCommandsImpl.class.getName(), operation.getClassName());
         Assert.assertEquals(String.format("[%s] Invalid executed method name.", cmd), "dispatch", operation.getMethodName());
