@@ -59,6 +59,10 @@ jobs:
   # this list is paginated and will be used in the verify-module job.
   build-agent:
     runs-on: ubuntu-20.04
+    strategy:
+      matrix:
+        java-version: [ 8, 11, 17, 20 ]
+
     steps:
       - name: Checkout CSEC Repo
         uses: actions/checkout@v3
@@ -80,3 +84,5 @@ jobs:
       - name: Run CSEC unit tests
         if: ${{ inputs.run-unit-test == 'true' }}
         uses: ./.github/actions/unit-test
+        with:
+          java-version: ${{ matrix.java-version }}
