@@ -14,6 +14,6 @@ runs:
         for version in 8 11 17 20; do
           for attempt in {1..4}; do
             echo "Attempt $attempt"
-            ./gradlew ${GRADLE_OPTIONS} --info -Ptest${version} test && break || (echo "Run instrumentation unit tests attempt $attempt failed, waiting 5 seconds..." && sleep 5)
+            ./gradlew ${GRADLE_OPTIONS} --info -Ptest${{version}} test && break || (echo "Run instrumentation unit tests attempt $attempt failed, waiting 5 seconds..." && sleep 5)
           done
         done
