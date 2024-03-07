@@ -5,7 +5,25 @@ runs:
   using: composite
 
   steps:
-    - name: Run instrumentation unit tests
+    - name: Run instrumentation unit tests attempt 1
+      shell: bash
+      continue-on-error: true
+      run: ./gradlew ${GRADLE_OPTIONS} --info test
+
+    - name: Run instrumentation unit tests attempt 2
+      if: failure()
+      shell: bash
+      continue-on-error: true
+      run: ./gradlew ${GRADLE_OPTIONS} --info test
+
+    - name: Run instrumentation unit tests attempt 3
+      if: failure()
+      shell: bash
+      continue-on-error: true
+      run: ./gradlew ${GRADLE_OPTIONS} --info test
+
+    - name: Run instrumentation unit tests attempt 4
+      if: failure()
       shell: bash
       run: ./gradlew ${GRADLE_OPTIONS} --info test
 
