@@ -25,8 +25,8 @@ java {
 }
 
 test {
-//     These instrumentation tests only run on Java 9+ regardless of the -PtestN gradle property that is set.
+    // These instrumentation tests only run on Java 11+ regardless of the -PtestN gradle property that is set.
     onlyIf {
-        java.toolchain.getLanguageVersion().get().asInt() > 10
+        !project.hasProperty('test8')
     }
 }
