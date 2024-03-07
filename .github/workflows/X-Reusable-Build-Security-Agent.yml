@@ -82,5 +82,5 @@ jobs:
         run: |
           java_versions=("8" "11" "17" "20")
           for version in "${java_versions[@]}"; do
-            ./.github/actions/unit-test $version
+            ./.github/actions/unit-test/action.yml $version
           done
