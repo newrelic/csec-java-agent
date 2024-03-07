@@ -25,7 +25,7 @@ runs:
       if: steps.run_tests_1.outcome == 'failure'
       run: |
         echo "Running attempt 2"
-      ./gradlew ${GRADLE_OPTIONS} --info test -Ptest${{ inputs.java-version }} --continue
+        ./gradlew ${GRADLE_OPTIONS} --info test -Ptest${{ inputs.java-version }} --continue
 
     - name: Run instrumentation unit tests on Java ${{ inputs.java-version }} attempt 3
       id: run_tests_3
@@ -34,7 +34,7 @@ runs:
       if: steps.run_tests_2.outcome == 'failure'
       run: |
         echo "Running attempt 3"
-      ./gradlew ${GRADLE_OPTIONS} --info test -Ptest${{ inputs.java-version }} --continue
+        ./gradlew ${GRADLE_OPTIONS} --info test -Ptest${{ inputs.java-version }} --continue
 
     - name: Run instrumentation unit tests on Java ${{ inputs.java-version }} attempt 4
       id: run_tests_4
