@@ -1,20 +1,15 @@
 name: Instrumentation unit tests
 description: Run all the instrumentation unit test.
-inputs:
-  java-version:
-    description: 'The JVM Version to use'
-    required: true
-    default: '8'
 
 runs:
   using: composite
 
   steps:
-    - name: Run instrumentation unit tests on Java ${{ inputs.java-version }} attempt 1
+    - name: Run instrumentation unit tests
       id: run_tests
       shell: bash
       run: |
         for attempt in {1..4}; do
           echo "Attempt $attempt"
-          ./gradlew ${GRADLE_OPTIONS} --info test -Ptest${{ inputs.java-version }} && break || (echo "Run instrumentation unit tests on Java ${{ inputs.java-version }} attempt $attempt failed, waiting 5 seconds..." && sleep 5)
+          ./gradlew ${GRADLE_OPTIONS} --info test && break || (echo "Run instrumentation unit tests attempt $attempt failed, waiting 5 seconds..." && sleep 5)
         done

@@ -79,8 +79,4 @@ jobs:
 
       - name: Run CSEC unit tests
         if: ${{ inputs.run-unit-test == 'true' }}
-        run: |
-          java_versions=("8" "11" "17" "20")
-          for version in "${java_versions[@]}"; do
-            ./.github/actions/unit-test/action.yml $version
-          done
+        uses: ./.github/actions/unit-test
