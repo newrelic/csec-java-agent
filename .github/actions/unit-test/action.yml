@@ -7,17 +7,5 @@ runs:
   steps:
     - name: Run instrumentation unit tests
       shell: bash
-      run: ./gradlew ${GRADLE_OPTIONS} -Ptest8 --info test
-
-    - name: Run instrumentation unit tests
-      shell: bash
-      run: ./gradlew ${GRADLE_OPTIONS} -Ptest11 --info test
-
-    - name: Run instrumentation unit tests
-      shell: bash
-      run: ./gradlew ${GRADLE_OPTIONS} -Ptest17 --info test
-
-    - name: Run instrumentation unit tests
-      shell: bash
-      run: ./gradlew ${GRADLE_OPTIONS} -Ptest21 --info test
+      run: ./gradlew ${GRADLE_OPTIONS} --info test
 
