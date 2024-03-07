@@ -11,28 +11,10 @@ runs:
 
   steps:
     - name: Run instrumentation unit tests on Java ${{ inputs.java-version }} attempt 1
-      id: run_tests_1
+      id: run_tests
       shell: bash
-      continue-on-error: true
-      run: ./gradlew ${GRADLE_OPTIONS} --info test -Ptest${{ inputs.java-version }} --continue
-
-    - name: Run instrumentation unit tests on Java ${{ inputs.java-version }} attempt 2
-      id: run_tests_2
-      shell: bash
-      continue-on-error: true
-      if: steps.run_tests_1.outcome == 'failure'
-      run: ./gradlew ${GRADLE_OPTIONS} --info test -Ptest${{ inputs.java-version }} --continue
-
-    - name: Run instrumentation unit tests on Java ${{ inputs.java-version }} attempt 3
-      id: run_tests_3
-      shell: bash
-      continue-on-error: true
-      if: steps.run_tests_2.outcome == 'failure'
-      run: ./gradlew ${GRADLE_OPTIONS} --info test -Ptest${{ inputs.java-version }} --continue
-
-    - name: Run instrumentation unit tests on Java ${{ inputs.java-version }} attempt 4
-      id: run_tests_4
-      shell: bash
-      if: steps.run_tests_3.outcome == 'failure'
-      run: ./gradlew ${GRADLE_OPTIONS} --info test -Ptest${{ inputs.java-version }} --continue
-
+      run: |
+        for attempt in {1..4}; do
+          echo "Attempt $attempt"
+          ./gradlew ${GRADLE_OPTIONS} --info test -Ptest${{ inputs.java-version }} && break || (echo "Run instrumentation unit tests on Java ${{ inputs.java-version }} attempt $attempt failed, waiting 5 seconds..." && sleep 5)
+        done
