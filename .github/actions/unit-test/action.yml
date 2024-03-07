@@ -10,28 +10,28 @@ runs:
   using: composite
 
   steps:
-    - name: Run instrumentation unit tests on Java ${{ java-version }} attempt 1
+    - name: Run instrumentation unit tests on Java ${{ inputs.java-version }} attempt 1
       id: run_tests_1
       shell: bash
       continue-on-error: true
-      run: ./gradlew ${GRADLE_OPTIONS} --info test -Ptest${{ java-version }} --continue
+      run: ./gradlew ${GRADLE_OPTIONS} --info test -Ptest${{ inputs.java-version }} --continue
 
-    - name: Run instrumentation unit tests on Java ${{ java-version }} attempt 2
+    - name: Run instrumentation unit tests on Java ${{ inputs.java-version }} attempt 2
       id: run_tests_2
       shell: bash
       continue-on-error: true
       if: steps.run_tests_1.outcome == 'failure'
-      run: ./gradlew ${GRADLE_OPTIONS} --info test -Ptest${{ java-version }} --continue
+      run: ./gradlew ${GRADLE_OPTIONS} --info test -Ptest${{ inputs.java-version }} --continue
 
-    - name: Run instrumentation unit tests on Java ${{ java-version }} attempt 3
+    - name: Run instrumentation unit tests on Java ${{ inputs.java-version }} attempt 3
       id: run_tests_3
       shell: bash
       continue-on-error: true
       if: steps.run_tests_2.outcome == 'failure'
-      run: ./gradlew ${GRADLE_OPTIONS} --info test -Ptest${{ java-version }} --continue
+      run: ./gradlew ${GRADLE_OPTIONS} --info test -Ptest${{ inputs.java-version }} --continue
 
-    - name: Run instrumentation unit tests on Java ${{ java-version }} attempt 4
+    - name: Run instrumentation unit tests on Java ${{ inputs.java-version }} attempt 4
       id: run_tests_4
       shell: bash
       if: steps.run_tests_3.outcome == 'failure'
-      run: ./gradlew ${GRADLE_OPTIONS} --info test -Ptest${{ java-version }} --continue
+      run: ./gradlew ${GRADLE_OPTIONS} --info test -Ptest${{ inputs.java-version }} --continue
