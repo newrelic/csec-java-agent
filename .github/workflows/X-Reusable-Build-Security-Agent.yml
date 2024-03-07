@@ -81,8 +81,22 @@ jobs:
         if: ${{ inputs.run-unit-test == 'true' }}
         uses: ./.github/actions/unit-test
         with:
-          java-version: |
-            20
-            17
-            11
-            8
+          java-version: 8
+
+      - name: Run CSEC unit tests
+        if: ${{ inputs.run-unit-test == 'true' }}
+        uses: ./.github/actions/unit-test
+        with:
+          java-version: 11
+
+      - name: Run CSEC unit tests
+        if: ${{ inputs.run-unit-test == 'true' }}
+        uses: ./.github/actions/unit-test
+        with:
+          java-version: 17
+
+      - name: Run CSEC unit tests
+        if: ${{ inputs.run-unit-test == 'true' }}
+        uses: ./.github/actions/unit-test
+        with:
+          java-version: 20
