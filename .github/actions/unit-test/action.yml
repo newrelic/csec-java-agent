@@ -13,8 +13,10 @@ runs:
       run: |
         java_versions=("8" "11" "17" "20")
         for version in "${java_versions[@]}"; do
-          for attempt in {1..4}; do
-            echo "Attempt $attempt"
-            ./gradlew ${GRADLE_OPTIONS} --info -Ptest$version test && break || (echo "Run instrumentation unit tests attempt $attempt failed, waiting 5 seconds..." && sleep 5)
+#          for attempt in {1..4}; do
+          echo "Running Unit tests on java version $version"
+#            echo "Attempt $attempt"
+          ./gradlew ${GRADLE_OPTIONS} --info -Ptest$version test && break 
+#             || (echo "Run instrumentation unit tests attempt $attempt failed, waiting 5 seconds..." && sleep 5)
           done
         done
