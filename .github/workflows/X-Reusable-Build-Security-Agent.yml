@@ -80,3 +80,9 @@ jobs:
       - name: Run CSEC unit tests
         if: ${{ inputs.run-unit-test == 'true' }}
         uses: ./.github/actions/unit-test
+        with:
+          java-version: |
+            20
+            17
+            11
+            8
