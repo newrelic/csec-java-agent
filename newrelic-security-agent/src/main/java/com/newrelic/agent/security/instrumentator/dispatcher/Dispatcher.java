@@ -438,7 +438,7 @@ public class Dispatcher implements Callable {
             TrustBoundaryOperation trustBoundaryOperationalBean) {
         JSONArray params = new JSONArray();
         params.add(trustBoundaryOperationalBean.getKey());
-        params.add(trustBoundaryOperationalBean.getValue());
+        params.add(JsonConverter.toJSON(trustBoundaryOperationalBean.getValue()));
         eventBean.setParameters(params);
         return eventBean;
     }
