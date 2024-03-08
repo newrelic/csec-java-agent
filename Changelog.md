@@ -5,15 +5,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [1.1.2] - TO BE DECIDED
 ### Changes
-- Ning Async HTTP client Support: The security agent now also supports com.ning:async-http-client 1.0.0 and above
-- Jersey Support: The security agent now also supports Jersey 2.0 and above
-- Mule Support: The security agent now also supports Mule server version 3.6 to 3.9.x
-- Jetty v12 Support: The security agent now also support Jetty version 12 and above
-- Lettuce Support: The security agent now also supports Lettuce 4.4.0.Final and above
+- [NR-174177](https://new-relic.atlassian.net/browse/NR-174177) Ning Async HTTP client Support: The security agent now also supports com.ning:async-http-client 1.0.0 and above [PR-152](https://github.com/newrelic/csec-java-agent/pull/152), [PR-118](https://github.com/newrelic/csec-java-agent/pull/118), [PR-116](https://github.com/newrelic/csec-java-agent/pull/116)
+- [NR-181375](https://new-relic.atlassian.net/browse/NR-181375) Jersey Support: The security agent now also supports Jersey 2.0 and above [PR-150](https://github.com/newrelic/csec-java-agent/pull/150), [PR-149](https://github.com/newrelic/csec-java-agent/pull/149) 
+- [NR-187224](https://new-relic.atlassian.net/browse/NR-187224) Mule Support: The security agent now also supports Mule server version 3.6 to 3.9.x [PR-144](https://github.com/newrelic/csec-java-agent/pull/144), [PR-143](https://github.com/newrelic/csec-java-agent/pull/143)
+- Jetty v12 Support: The security agent now also support Jetty version 12 and above [PR-106](https://github.com/newrelic/csec-java-agent/pull/106)
+- [NR-174175](https://new-relic.atlassian.net/browse/NR-174175) Lettuce Support: The security agent now also supports Lettuce 4.4.0.Final and above [PR-125](https://github.com/newrelic/csec-java-agent/pull/125)
 - [NR-234869](https://new-relic.atlassian.net/browse/NR-234869) GHA Update Unit Test Action for Testing Unit tests with different java-version with re-tries on failure [PR-204](https://github.com/newrelic/csec-java-agent/pull/204)
 
 ### Fixes
-- Extract Server Configuration to resolve IAST localhost connection with application for wildfly server
+- [NR-223811](https://new-relic.atlassian.net/browse/NR-223811) Extract Server Configuration to resolve IAST localhost connection with application for wildfly server [PR-192](https://github.com/newrelic/csec-java-agent/pull/192)
 - [NR-234903](https://new-relic.atlassian.net/browse/NR-234903) Trustboundary events now will have list of string as parameter schema
 
 ## [1.1.1] - 2024-2-16
