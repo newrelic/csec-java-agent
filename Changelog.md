@@ -10,9 +10,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Mule Support: The security agent now also supports Mule server version 3.6 to 3.9.x
 - Jetty v12 Support: The security agent now also support Jetty version 12 and above
 - Lettuce Support: The security agent now also supports Lettuce 4.4.0.Final and above
+- [NR-234869](https://new-relic.atlassian.net/browse/NR-234869) GHA Update Unit Test Action for Testing Unit tests with different java-version with re-tries on failure [PR-204](https://github.com/newrelic/csec-java-agent/pull/204)
 
 ### Fixes
 - Extract Server Configuration to resolve IAST localhost connection with application for wildfly server
+- [NR-234903](https://new-relic.atlassian.net/browse/NR-234903) Trustboundary events now will have list of string as parameter schema
 
 ## [1.1.1] - 2024-2-16
 ### Changes
