@@ -71,9 +71,6 @@ jobs:
           apm-aws-secret-access-key: ${{ secrets.APM_AWS_SECRET_ACCESS_KEY }}
           apm-aws-region: us-east-2
 
-      - name: Publish CSEC to local
-        uses: ./.github/actions/publish-csec-local
-
       - name: Build Integrated Agent Jar
         uses: ./.github/actions/build-apm-jar
 
