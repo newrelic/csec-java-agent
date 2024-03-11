@@ -34,6 +34,7 @@ The agent automatically instruments the following frameworks.
 - Jetty 9.3.0.M1 to latest
 - Mule ESB 3.6 to 3.9.x
 - gRPC 1.4.0 to latest**
+- Jersey 2.0 to latest
 
 ** IAST for **gRPC** requires the dependency [protobuf-java-util](https://mvnrepository.com/artifact/com.google.protobuf/protobuf-java-util) for IAST request replay.
 
@@ -64,6 +65,7 @@ The agent automatically instruments the following HTTP clients and messaging ser
 - Saxpath 1.0
 - Xalan XPATH 2.1.0 to latest
 - Async Http Client from 2.0 to latest
+- Ning Async HTTP Client 1.0.0 to latest
 
 ### Datastores
 
