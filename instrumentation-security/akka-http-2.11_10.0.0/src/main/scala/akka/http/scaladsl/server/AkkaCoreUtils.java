@@ -123,7 +123,7 @@ public class AkkaCoreUtils {
             try {
                 queryString = httpRequest.getUri().rawQueryString().get();
             } catch (NoSuchElementException ignored) {
-                // ignore NoSuchElementException – there is no value present in rawQueryString
+                // ignore NoSuchElementException there is no value present in rawQueryString
             } finally {
                 if (queryString != null && !queryString.trim().isEmpty()) {
                     securityRequest.setUrl(securityRequest.getUrl() + QUESTION_MARK + queryString);
