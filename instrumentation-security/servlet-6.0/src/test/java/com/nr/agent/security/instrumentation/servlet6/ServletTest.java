@@ -4,7 +4,11 @@ import com.newrelic.agent.security.introspec.InstrumentationTestConfig;
 import com.newrelic.agent.security.introspec.SecurityInstrumentationTestRunner;
 import com.newrelic.agent.security.introspec.SecurityIntrospector;
 import com.newrelic.api.agent.Trace;
+import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
+import com.newrelic.api.agent.security.instrumentation.helpers.ServletHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
+import com.newrelic.api.agent.security.schema.K2RequestIdentifier;
+import com.newrelic.api.agent.security.schema.StringUtils;
 import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.security.schema.operation.RXSSOperation;
 
@@ -15,11 +19,14 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 @RunWith(SecurityInstrumentationTestRunner.class)
 @InstrumentationTestConfig(includePrefixes = {"jakarta.servlet", "com.newrelic.agent.security.instrumentation.servlet6"})
@@ -49,7 +56,83 @@ public class ServletTest {
         Assert.assertEquals("Wrong method name detected", "service", targetOperation.getMethodName());
         Assert.assertEquals("Wrong Content-type detected", "text/plain", targetOperation.getRequest().getContentType());
     }
+    @Test
+    public void testCSECHeaders() throws InterruptedException, URISyntaxException, IOException {
+        String fuzzHeader = "FILE_OPERATION--123:IAST:native:__K2PM0__:IAST:./tmp/file:IAST:SAFE:IAST:1:IAST:1:IAST:2aabd9833907ae4cde0120e4352c0da72d9e1acfcf298d6801b7120586d1df9d:IAST:02642fa0c3542fe5997eea314c0f5eec5b744ea83f168e998006111f9fa4fbd2";
+        String headerValue = serviceWithHeaders(fuzzHeader);
 
+        Thread.sleep(100);
+        SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
+        List<AbstractOperation> operations = introspector.getOperations();
+        Assert.assertFalse("No operations detected", operations.isEmpty());
+        Assert.assertEquals("Extra operations detected", 1, operations.size());
+
+        RXSSOperation targetOperation = (RXSSOperation) operations.get(0);
+        Assert.assertNotNull("No target operation detected", targetOperation);
+        Assert.assertEquals("Wrong case-type detected", VulnerabilityCaseType.REFLECTED_XSS, targetOperation.getCaseType());
+        Assert.assertEquals("Wrong client IP detected", "127.0.0.1", targetOperation.getRequest().getClientIP());
+        Assert.assertEquals("Wrong Protocol detected", "http", targetOperation.getRequest().getProtocol());
+
+        Assert.assertEquals("Wrong port detected", server.getEndPoint("test").getPort(), targetOperation.getRequest().getServerPort());
+        Assert.assertEquals("Wrong method name detected", "service", targetOperation.getMethodName());
+        Assert.assertEquals("Wrong Content-type detected", "text/plain", targetOperation.getRequest().getContentType());
+
+        Map<String, String> headers = targetOperation.getRequest().getHeaders();
+        Assert.assertTrue(
+                String.format("Missing header: %s", ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID),
+                headers.containsKey(ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID)
+        );
+        Assert.assertEquals(
+                String.format("Invalid header value for:  %s", ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID),
+                fuzzHeader,
+                headers.get(ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID)
+        );
+        Assert.assertTrue(
+                String.format("Missing header: %s", ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER),
+                headers.containsKey(ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER.toLowerCase())
+        );
+        Assert.assertEquals(
+                String.format("Invalid header value for:  %s", ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER),
+                headerValue,
+                headers.get(ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER.toLowerCase())
+        );
+        Assert.assertTrue(
+                String.format("Missing K2 header: %s", GenericHelper.CSEC_PARENT_ID),
+                headers.containsKey(GenericHelper.CSEC_PARENT_ID)
+        );
+        Assert.assertEquals(
+                String.format("Invalid K2 header value for:  %s", GenericHelper.CSEC_PARENT_ID),
+                headerValue, headers.get(GenericHelper.CSEC_PARENT_ID)
+        );
+
+        File f = new File("./tmp123");
+        K2RequestIdentifier identifier = introspector.getSecurityMetaData().getFuzzRequestIdentifier();
+        String[] data = StringUtils.splitByWholeSeparatorWorker(fuzzHeader, ":IAST:", -1, false);
+        Assert.assertTrue(data.length > 4);
+        Assert.assertNotNull(identifier);
+        Assert.assertEquals(fuzzHeader, identifier.getRaw());
+        Assert.assertEquals(data[0], identifier.getApiRecordId());
+        Assert.assertEquals(data[1], identifier.getRefId());
+        Assert.assertEquals(data[2], identifier.getRefValue());
+        Assert.assertEquals(data[3], identifier.getNextStage().getStatus());
+        Assert.assertEquals(1, identifier.getTempFiles().size());
+        Assert.assertEquals(f.getPath(), identifier.getTempFiles().get(0));
+        f.deleteOnExit();
+    }
+    @Trace(dispatcher = true)
+    private String serviceWithHeaders(String fuzzHeader) throws IOException, URISyntaxException {
+        String headerValue = String.valueOf(UUID.randomUUID());
+        URL url = server.getEndPoint("test").toURL();
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        conn.setRequestProperty("content-type", "text/plain; charset=utf-8");
+
+        conn.setRequestProperty(ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID, fuzzHeader);
+        conn.setRequestProperty(ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER, headerValue);
+        conn.setRequestProperty(GenericHelper.CSEC_PARENT_ID, headerValue);
+        conn.connect();
+        conn.getResponseCode();
+        return  headerValue;
+    }
     @Trace(dispatcher = true)
     private void service() throws IOException, URISyntaxException {
         URL u = server.getEndPoint("test").toURL();
