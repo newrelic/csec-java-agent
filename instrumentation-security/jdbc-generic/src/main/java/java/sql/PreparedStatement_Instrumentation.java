@@ -23,6 +23,7 @@ import com.newrelic.api.agent.weaver.Weaver;
 
 import java.math.BigDecimal;
 import java.net.URL;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -259,6 +260,26 @@ public abstract class PreparedStatement_Instrumentation {
         setObjectParams(parameterIndex, x.getArray());
         Weaver.callOriginal();
     }
+    public void setDate(int parameterIndex, java.sql.Date x, Calendar cal) throws SQLException {
+        setParamValue(parameterIndex, x);
+        Weaver.callOriginal();
+    }
+    public void setTime(int parameterIndex, java.sql.Time x, Calendar cal) throws SQLException {
+        setParamValue(parameterIndex, x);
+        Weaver.callOriginal();
+    }
+    public void setTimestamp(int parameterIndex, java.sql.Timestamp x, Calendar cal) throws SQLException {
+        setParamValue(parameterIndex, x);
+        Weaver.callOriginal();
+    }
+    public void setNull(int parameterIndex, int sqlType, String typeName) throws SQLException {
+        setParamValue(parameterIndex, "null");
+        Weaver.callOriginal();
+    }
+    public void setNString(int parameterIndex, String value) throws SQLException {
+        setParamValue(parameterIndex, value);
+        Weaver.callOriginal();
+    }
 
     public void setObject(int parameterIndex, Object x) throws SQLException {
         if(x instanceof Long || x instanceof Integer || x instanceof Double ||
@@ -272,6 +293,71 @@ public abstract class PreparedStatement_Instrumentation {
             setParamValue(parameterIndex, x.toString());
         } else {
             //TODO critical-message for inconvertible
+            setObjectParams(parameterIndex, x);
+        }
+        Weaver.callOriginal();
+    }
+
+    public void setObject(int parameterIndex, Object x, int targetSqlType) throws SQLException {
+        if(x instanceof Long || x instanceof Integer || x instanceof Double ||
+                x instanceof Float || x instanceof Boolean || x instanceof Short ||
+                x instanceof String || x instanceof byte[] || x instanceof Timestamp ||
+                x instanceof Date || x instanceof BigDecimal || x instanceof Time) {
+            setParamValue(parameterIndex, x);
+        } else if (x instanceof SQLXML) {
+            setParamValue(parameterIndex, ((SQLXML) x).getString());
+        } else if (x instanceof RowId || x instanceof URL) {
+            setParamValue(parameterIndex, x.toString());
+        } else {
+            NewRelicSecurity.getAgent().log(LogLevel.FINEST, String.format("Instrumentation library: %s , Inconvertible for type : %s", JDBC_GENERIC, x.getClass()), this.getClass().getName());
+            setObjectParams(parameterIndex, x);
+        }
+        Weaver.callOriginal();
+    }
+    public void setObject(int parameterIndex, Object x, int targetSqlType, int scaleOrLength) throws SQLException {
+        if(x instanceof Long || x instanceof Integer || x instanceof Double ||
+                x instanceof Float || x instanceof Boolean || x instanceof Short ||
+                x instanceof String || x instanceof byte[] || x instanceof Timestamp ||
+                x instanceof Date || x instanceof BigDecimal || x instanceof Time) {
+            setParamValue(parameterIndex, x);
+        } else if (x instanceof SQLXML) {
+            setParamValue(parameterIndex, ((SQLXML) x).getString());
+        } else if (x instanceof RowId || x instanceof URL) {
+            setParamValue(parameterIndex, x.toString());
+        } else {
+            NewRelicSecurity.getAgent().log(LogLevel.FINEST, String.format("Instrumentation library: %s , Inconvertible for type : %s", JDBC_GENERIC, x.getClass()), this.getClass().getName());
+            setObjectParams(parameterIndex, x);
+        }
+        Weaver.callOriginal();
+    }
+    public void setObject(int parameterIndex, Object x, SQLType targetSqlType) throws SQLException {
+        if(x instanceof Long || x instanceof Integer || x instanceof Double ||
+                x instanceof Float || x instanceof Boolean || x instanceof Short ||
+                x instanceof String || x instanceof byte[] || x instanceof Timestamp ||
+                x instanceof Date || x instanceof BigDecimal || x instanceof Time) {
+            setParamValue(parameterIndex, x);
+        } else if (x instanceof SQLXML) {
+            setParamValue(parameterIndex, ((SQLXML) x).getString());
+        } else if (x instanceof RowId || x instanceof URL) {
+            setParamValue(parameterIndex, x.toString());
+        } else {
+            NewRelicSecurity.getAgent().log(LogLevel.FINEST, String.format("Instrumentation library: %s , Inconvertible for type : %s", JDBC_GENERIC, x.getClass()), this.getClass().getName());
+            setObjectParams(parameterIndex, x);
+        }
+        Weaver.callOriginal();
+    }
+    public void setObject(int parameterIndex, Object x, SQLType targetSqlType, int scaleOrLength) throws SQLException {
+        if(x instanceof Long || x instanceof Integer || x instanceof Double ||
+                x instanceof Float || x instanceof Boolean || x instanceof Short ||
+                x instanceof String || x instanceof byte[] || x instanceof Timestamp ||
+                x instanceof Date || x instanceof BigDecimal || x instanceof Time) {
+            setParamValue(parameterIndex, x);
+        } else if (x instanceof SQLXML) {
+            setParamValue(parameterIndex, ((SQLXML) x).getString());
+        } else if (x instanceof RowId || x instanceof URL) {
+            setParamValue(parameterIndex, x.toString());
+        } else {
+            NewRelicSecurity.getAgent().log(LogLevel.FINEST, String.format("Instrumentation library: %s , Inconvertible for type : %s", JDBC_GENERIC, x.getClass()), this.getClass().getName());
             setObjectParams(parameterIndex, x);
         }
         Weaver.callOriginal();
