@@ -104,7 +104,7 @@ public class ServletHelper {
                     String[] allFiles = StringUtils.splitByWholeSeparatorWorker(filesToCreate, StringUtils.COMMA_DELIMETER, -1, false);
 
                     for (int i = 0; i < allFiles.length; i++) {
-                        String tmpFile = data[i].trim();
+                        String tmpFile = allFiles[i].trim();
                         if(StringUtils.contains(tmpFile, NR_CSEC_VALIDATOR_HOME_TMP_URL_ENCODED)) {
                             tmpFile = urlDecode(tmpFile);
                         }
