@@ -1,5 +1,6 @@
 package com.newrelic.agent.security.intcodeagent.utils;
 
+import com.newrelic.agent.security.AgentInfo;
 import com.newrelic.agent.security.instrumentator.utils.HashGenerator;
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
@@ -65,7 +66,7 @@ public class EncryptorUtils {
         return null;
     }
 
-    private static boolean verifyHashData(String knownDecryptedDataHash, String decryptedData) {
+    public static boolean verifyHashData(String knownDecryptedDataHash, String decryptedData) {
         return StringUtils.equals(HashGenerator.getSHA256HexDigest(decryptedData), knownDecryptedDataHash);
     }
 

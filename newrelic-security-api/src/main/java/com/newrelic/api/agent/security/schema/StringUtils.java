@@ -11,6 +11,7 @@ public class StringUtils {
 
     public static final String LF = "\n";
     public static final int INDEX_NOT_FOUND = -1;
+    public static final String COMMA_DELIMETER = ",";
 
     /**
      * <p>Checks if a CharSequence is not empty (""), not null and not whitespace only.</p>
