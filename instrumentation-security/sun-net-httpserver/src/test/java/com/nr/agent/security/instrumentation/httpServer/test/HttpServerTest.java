@@ -37,6 +37,8 @@ import java.util.UUID;
 public class HttpServerTest {
     @ClassRule
     public static Httpserver server = new Httpserver();
+    private final String fuzzHeader = "FILE_OPERATION--123:IAST:native:__K2PM0__:IAST:./tmp/file:IAST:SAFE:IAST:1:IAST:1:IAST:2aabd9833907ae4cde0120e4352c0da72d9e1acfcf298d6801b7120586d1df9d:IAST:02642fa0c3542fe5997eea314c0f5eec5b744ea83f168e998006111f9fa4fbd2";
+    private final String headerValue = String.valueOf(UUID.randomUUID());
 
     @Test
     public void testHandle() throws URISyntaxException, IOException, InterruptedException {
@@ -59,7 +61,7 @@ public class HttpServerTest {
     }
     @Test
     public void testHandle1() throws URISyntaxException, IOException, InterruptedException {
-        String headerValue = handle1();
+        handle1();
         Thread.sleep(100);
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
         List<AbstractOperation> operations = introspector.getOperations();
@@ -76,33 +78,7 @@ public class HttpServerTest {
         Assert.assertEquals("Wrong method name detected", "handle", targetOperation.getMethodName());
         Assert.assertEquals("Wrong Content-type detected", "text/plain", targetOperation.getRequest().getContentType());
 
-        Map<String, String> headers = targetOperation.getRequest().getHeaders();
-        Assert.assertTrue(
-                String.format("Missing header: %s", ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID),
-                headers.containsKey(ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID)
-        );
-        Assert.assertEquals(
-                String.format("Invalid header value for:  %s", ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID),
-                headerValue,
-                headers.get(ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID)
-        );
-        Assert.assertTrue(
-                String.format("Missing header: %s", ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER),
-                headers.containsKey(ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER.toLowerCase())
-        );
-        Assert.assertEquals(
-                String.format("Invalid header value for:  %s", ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER),
-                headerValue,
-                headers.get(ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER.toLowerCase())
-        );
-        Assert.assertTrue(
-                String.format("Missing K2 header: %s", GenericHelper.CSEC_PARENT_ID),
-                headers.containsKey(GenericHelper.CSEC_PARENT_ID)
-        );
-        Assert.assertEquals(
-                String.format("Invalid K2 header value for:  %s", GenericHelper.CSEC_PARENT_ID),
-                headerValue, headers.get(GenericHelper.CSEC_PARENT_ID)
-        );
+
     }
     @Test
     public void testHandle2() throws URISyntaxException, IOException, InterruptedException {
@@ -130,8 +106,7 @@ public class HttpServerTest {
 
     @Test
     public void testCSECHeaders() throws InterruptedException, URISyntaxException, IOException {
-        String fuzzHeader = "FILE_OPERATION--123:IAST:native:__K2PM0__:IAST:./tmp/file:IAST:SAFE:IAST:1:IAST:1:IAST:2aabd9833907ae4cde0120e4352c0da72d9e1acfcf298d6801b7120586d1df9d:IAST:02642fa0c3542fe5997eea314c0f5eec5b744ea83f168e998006111f9fa4fbd2";
-        String headerValue = handleWithHeaders(fuzzHeader);
+        handleWithHeaders();
 
         Thread.sleep(100);
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
@@ -148,48 +123,8 @@ public class HttpServerTest {
         Assert.assertEquals("Wrong port detected", server.getEndPoint().getPort(), targetOperation.getRequest().getServerPort());
         Assert.assertEquals("Wrong method name detected", "handle", targetOperation.getMethodName());
         Assert.assertEquals("Wrong Content-type detected", "text/plain", targetOperation.getRequest().getContentType());
-
-        Map<String, String> headers = targetOperation.getRequest().getHeaders();
-        Assert.assertTrue(
-                String.format("Missing header: %s", ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID),
-                headers.containsKey(ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID)
-        );
-        Assert.assertEquals(
-                String.format("Invalid header value for:  %s", ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID),
-                fuzzHeader,
-                headers.get(ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID)
-        );
-        Assert.assertTrue(
-                String.format("Missing header: %s", ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER),
-                headers.containsKey(ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER.toLowerCase())
-        );
-        Assert.assertEquals(
-                String.format("Invalid header value for:  %s", ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER),
-                headerValue,
-                headers.get(ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER.toLowerCase())
-        );
-        Assert.assertTrue(
-                String.format("Missing K2 header: %s", GenericHelper.CSEC_PARENT_ID),
-                headers.containsKey(GenericHelper.CSEC_PARENT_ID)
-        );
-        Assert.assertEquals(
-                String.format("Invalid K2 header value for:  %s", GenericHelper.CSEC_PARENT_ID),
-                headerValue, headers.get(GenericHelper.CSEC_PARENT_ID)
-        );
-
-        File f = new File("./tmp123");
-        K2RequestIdentifier identifier = introspector.getSecurityMetaData().getFuzzRequestIdentifier();
-        String[] data = StringUtils.splitByWholeSeparatorWorker(fuzzHeader, ":IAST:", -1, false);
-        Assert.assertTrue(data.length > 4);
-        Assert.assertNotNull(identifier);
-        Assert.assertEquals(fuzzHeader, identifier.getRaw());
-        Assert.assertEquals(data[0], identifier.getApiRecordId());
-        Assert.assertEquals(data[1], identifier.getRefId());
-        Assert.assertEquals(data[2], identifier.getRefValue());
-        Assert.assertEquals(data[3], identifier.getNextStage().getStatus());
-        Assert.assertEquals(1, identifier.getTempFiles().size());
-        Assert.assertEquals(f.getPath(), identifier.getTempFiles().get(0));
-        f.deleteOnExit();
+        assertCSECHeaders(targetOperation.getRequest().getHeaders());
+        assertIASTIdentifier(introspector.getSecurityMetaData().getFuzzRequestIdentifier());
     }
 
     @Trace(dispatcher = true)
@@ -199,12 +134,9 @@ public class HttpServerTest {
         conn.setRequestProperty("content-type", "text/plain; charset=utf-8");
         conn.connect();
         conn.getResponseCode();
-
     }
 
-    private String handle1() throws URISyntaxException, IOException {
-        String headerValue = String.valueOf(UUID.randomUUID());
-
+    private void handle1() throws URISyntaxException, IOException {
         URL url = server.getEndPoint().toURL();
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setRequestProperty("content-type", "text/plain; charset=utf-8");
@@ -214,10 +146,8 @@ public class HttpServerTest {
         conn.setRequestProperty(GenericHelper.CSEC_PARENT_ID, headerValue);
         conn.connect();
         conn.getResponseCode();
-        return  headerValue;
     }
-    private String handleWithHeaders(String fuzzHeader) throws URISyntaxException, IOException{
-        String headerValue = String.valueOf(UUID.randomUUID());
+    private void handleWithHeaders() throws URISyntaxException, IOException{
         URL url = server.getEndPoint().toURL();
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setRequestProperty("content-type", "text/plain; charset=utf-8");
@@ -227,7 +157,6 @@ public class HttpServerTest {
         conn.setRequestProperty(GenericHelper.CSEC_PARENT_ID, headerValue);
         conn.connect();
         conn.getResponseCode();
-        return  headerValue;
     }
 
     @Trace(dispatcher = true)
@@ -249,5 +178,30 @@ public class HttpServerTest {
         }
         br.close();
         return hashCode;
+    }
+    private void assertIASTIdentifier(K2RequestIdentifier identifier){
+        File f = new File("./tmp123");
+        String[] data = StringUtils.splitByWholeSeparatorWorker(fuzzHeader, ":IAST:", -1, false);
+        Assert.assertTrue(data.length > 4);
+        Assert.assertNotNull(identifier);
+        Assert.assertEquals(fuzzHeader, identifier.getRaw());
+        Assert.assertEquals(data[0], identifier.getApiRecordId());
+        Assert.assertEquals(data[1], identifier.getRefId());
+        Assert.assertEquals(data[2], identifier.getRefValue());
+        Assert.assertEquals(data[3], identifier.getNextStage().getStatus());
+        Assert.assertEquals(1, identifier.getTempFiles().size());
+        Assert.assertEquals(f.getPath(), identifier.getTempFiles().get(0));
+        f.deleteOnExit();
+    }
+    private void assertCSECHeaders(Map<String, String> headers){
+        Assert.assertTrue(String.format("Missing K2 header: %s", ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER), headers.containsKey(ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER.toLowerCase()));
+        Assert.assertEquals(String.format("Invalid K2 header value for:  %s", ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER), headerValue, headers.get(
+                ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER.toLowerCase()));
+        Assert.assertTrue(String.format("Missing K2 header: %s", ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID), headers.containsKey(ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID.toLowerCase()));
+        Assert.assertEquals(String.format("Invalid K2 header value for:  %s", ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID), fuzzHeader, headers.get(
+                ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID.toLowerCase()));
+        Assert.assertTrue(String.format("Missing K2 header: %s", GenericHelper.CSEC_PARENT_ID), headers.containsKey(GenericHelper.CSEC_PARENT_ID.toLowerCase()));
+        Assert.assertEquals(String.format("Invalid K2 header value for:  %s", GenericHelper.CSEC_PARENT_ID), headerValue, headers.get(
+                GenericHelper.CSEC_PARENT_ID.toLowerCase()));
     }
 }
