@@ -2,7 +2,7 @@ package com.newrelic.api.agent.security.instrumentation.helpers;
 
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.schema.APIRecordStatus;
-import com.newrelic.api.agent.security.schema.K2RequestIdentifier;
+import com.newrelic.api.agent.security.schema.NRRequestIdentifier;
 import com.newrelic.api.agent.security.schema.SecurityMetaData;
 import com.newrelic.api.agent.security.schema.StringUtils;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
@@ -68,29 +68,29 @@ public class ServletHelper {
         add("text/calendar");
     }};
 
-    public static K2RequestIdentifier parseFuzzRequestIdentifierHeader(String requestHeaderVal) {
-        K2RequestIdentifier k2RequestIdentifierInstance = new K2RequestIdentifier();
+    public static NRRequestIdentifier parseFuzzRequestIdentifierHeader(String requestHeaderVal) {
+        NRRequestIdentifier NRRequestIdentifierInstance = new NRRequestIdentifier();
         if (StringUtils.isBlank(requestHeaderVal)) {
-            k2RequestIdentifierInstance.setRaw(StringUtils.EMPTY);
-            return k2RequestIdentifierInstance;
+            NRRequestIdentifierInstance.setRaw(StringUtils.EMPTY);
+            return NRRequestIdentifierInstance;
         }
         if (StringUtils.isNotBlank(requestHeaderVal)) {
-            k2RequestIdentifierInstance.setRaw(requestHeaderVal);
+            NRRequestIdentifierInstance.setRaw(requestHeaderVal);
             if (!(NewRelicSecurity.getAgent().getCurrentPolicy().getVulnerabilityScan().getEnabled()
                     && NewRelicSecurity.getAgent().getCurrentPolicy().getVulnerabilityScan().getIastScan().getEnabled())) {
-                return k2RequestIdentifierInstance;
+                return NRRequestIdentifierInstance;
             }
             String[] data = StringUtils.splitByWholeSeparatorWorker(requestHeaderVal, SEPARATOR_SEMICOLON, -1, false);
 
             if (data.length >= 5) {
-                k2RequestIdentifierInstance.setApiRecordId(data[0].trim());
-                k2RequestIdentifierInstance.setRefId(data[1].trim());
-                k2RequestIdentifierInstance.setRefValue(data[2].trim());
-                k2RequestIdentifierInstance.setNextStage(APIRecordStatus.valueOf(data[3].trim()));
-                k2RequestIdentifierInstance.setRecordIndex(Integer.parseInt(data[4].trim()));
-                k2RequestIdentifierInstance.setK2Request(true);
+                NRRequestIdentifierInstance.setApiRecordId(data[0].trim());
+                NRRequestIdentifierInstance.setRefId(data[1].trim());
+                NRRequestIdentifierInstance.setRefValue(data[2].trim());
+                NRRequestIdentifierInstance.setNextStage(APIRecordStatus.valueOf(data[3].trim()));
+                NRRequestIdentifierInstance.setRecordIndex(Integer.parseInt(data[4].trim()));
+                NRRequestIdentifierInstance.setNRRequest(true);
                 if (data.length >= 6 && StringUtils.isNotBlank(data[5])) {
-                    k2RequestIdentifierInstance.setRefKey(data[5].trim());
+                    NRRequestIdentifierInstance.setRefKey(data[5].trim());
                 }
                 if (data.length >= 7) {
                     for (int i = 6; i < data.length; i++) {
@@ -100,7 +100,7 @@ public class ServletHelper {
                         }
                         tmpFile = StringUtils.replace(tmpFile, NR_CSEC_VALIDATOR_HOME_TMP,
                                 NewRelicSecurity.getAgent().getAgentTempDir());
-                        k2RequestIdentifierInstance.getTempFiles().add(tmpFile);
+                        NRRequestIdentifierInstance.getTempFiles().add(tmpFile);
                         try {
 
                             File fileToCreate = new File(tmpFile);
@@ -122,7 +122,7 @@ public class ServletHelper {
                 }
             }
         }
-        return k2RequestIdentifierInstance;
+        return NRRequestIdentifierInstance;
     }
 
     /**

@@ -10,7 +10,7 @@ import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.HttpRequest;
 import com.newrelic.api.agent.security.schema.HttpResponse;
 import com.newrelic.api.agent.security.schema.JDBCVendor;
-import com.newrelic.api.agent.security.schema.K2RequestIdentifier;
+import com.newrelic.api.agent.security.schema.NRRequestIdentifier;
 import com.newrelic.api.agent.security.schema.R2DBCVendor;
 import com.newrelic.api.agent.security.schema.SecurityMetaData;
 import com.newrelic.api.agent.security.schema.helper.Log4JStrSubstitutor;
@@ -103,9 +103,9 @@ public class SecurityIntrospectorImpl implements SecurityIntrospector {
 
     @Override
     public void setK2FuzzRequestId(String value) {
-        K2RequestIdentifier k2RequestIdentifierInstance = new K2RequestIdentifier();
-        k2RequestIdentifierInstance.setRaw(value);
-        NewRelicSecurity.getAgent().getSecurityMetaData().setFuzzRequestIdentifier(k2RequestIdentifierInstance);
+        NRRequestIdentifier NRRequestIdentifierInstance = new NRRequestIdentifier();
+        NRRequestIdentifierInstance.setRaw(value);
+        NewRelicSecurity.getAgent().getSecurityMetaData().setFuzzRequestIdentifier(NRRequestIdentifierInstance);
     }
 
     @Override

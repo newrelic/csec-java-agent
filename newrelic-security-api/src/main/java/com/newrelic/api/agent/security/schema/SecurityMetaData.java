@@ -21,7 +21,7 @@ public class SecurityMetaData {
 
     private String tracingHeaderValue;
 
-    private K2RequestIdentifier fuzzRequestIdentifier;
+    private NRRequestIdentifier fuzzRequestIdentifier;
 
     private Map<String, FileIntegrityOperation> fileLocalMap;
 
@@ -33,7 +33,7 @@ public class SecurityMetaData {
         metaData = new AgentMetaData();
         tracingHeaderValue = EMPTY;
         fileLocalMap = new HashMap<>();
-        fuzzRequestIdentifier = new K2RequestIdentifier();
+        fuzzRequestIdentifier = new NRRequestIdentifier();
         customData = new ConcurrentHashMap<>();
     }
 
@@ -43,7 +43,7 @@ public class SecurityMetaData {
         metaData = new AgentMetaData(securityMetaData.getMetaData());
         tracingHeaderValue = EMPTY;
         fileLocalMap = new HashMap<>(securityMetaData.getFileLocalMap());
-        fuzzRequestIdentifier = new K2RequestIdentifier(securityMetaData.getFuzzRequestIdentifier());
+        fuzzRequestIdentifier = new NRRequestIdentifier(securityMetaData.getFuzzRequestIdentifier());
         customData = new ConcurrentHashMap<>(securityMetaData.customData);
     }
 
@@ -87,11 +87,11 @@ public class SecurityMetaData {
         this.fileLocalMap = fileLocalMap;
     }
 
-    public K2RequestIdentifier getFuzzRequestIdentifier() {
+    public NRRequestIdentifier getFuzzRequestIdentifier() {
         return fuzzRequestIdentifier;
     }
 
-    public void setFuzzRequestIdentifier(K2RequestIdentifier fuzzRequestIdentifier) {
+    public void setFuzzRequestIdentifier(NRRequestIdentifier fuzzRequestIdentifier) {
         this.fuzzRequestIdentifier = fuzzRequestIdentifier;
     }
 
