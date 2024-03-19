@@ -370,11 +370,12 @@ public class Agent implements SecurityAgent {
             StackTraceElement stackTraceElement = operation.getStackTrace()[i];
 
             // Section for user class identification using API handlers
-            if( !securityMetaData.getMetaData().isFoundAnnotedUserLevelServiceMethod() && URLMappingsHelper.getHandlersHash().contains(operation.getClassName().hashCode())){
+            if( !securityMetaData.getMetaData().isFoundAnnotedUserLevelServiceMethod() && URLMappingsHelper.getHandlersHash().contains(stackTraceElement.getClassName().hashCode())){
                 //Found -> assign user class and return
                 userClassEntity.setUserClassElement(stackTraceElement);
                 securityMetaData.getMetaData().setUserLevelServiceMethodEncountered(true);
                 userClassEntity.setCalledByUserCode(true);
+                return userClassEntity;
             }
 
             //Fallback to old mechanism
