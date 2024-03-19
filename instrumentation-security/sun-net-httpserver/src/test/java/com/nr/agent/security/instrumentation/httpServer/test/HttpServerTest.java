@@ -11,9 +11,13 @@ import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.ApplicationURLMapping;
 import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.security.schema.operation.RXSSOperation;
+import com.newrelic.security.test.marker.Java11IncompatibleTest;
+import com.newrelic.security.test.marker.Java17IncompatibleTest;
+import com.newrelic.security.test.marker.Java9IncompatibleTest;
 import org.junit.Assert;
 import org.junit.ClassRule;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
 import java.io.BufferedReader;
@@ -31,6 +35,7 @@ import java.util.UUID;
 
 @RunWith(SecurityInstrumentationTestRunner.class)
 @InstrumentationTestConfig(includePrefixes = { "com.sun.net.httpserver"})
+@Category({ Java11IncompatibleTest.class, Java17IncompatibleTest.class })
 public class HttpServerTest {
     @ClassRule
     public static Httpserver server = new Httpserver();

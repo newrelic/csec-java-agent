@@ -7,10 +7,12 @@ import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.security.schema.operation.XPathOperation;
 import com.newrelic.agent.security.instrumentation.xpath.javax.XPATHUtils;
+import com.newrelic.security.test.marker.Java17IncompatibleTest;
 import org.junit.Assert;
 import org.junit.FixMethodOrder;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 import org.w3c.dom.Document;
@@ -25,6 +27,7 @@ import java.util.List;
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @RunWith(SecurityInstrumentationTestRunner.class)
 @InstrumentationTestConfig(includePrefixes = { "javax.xml.xpath", "com.sun.org.apache.xpath.internal" })
+@Category({ Java17IncompatibleTest.class})
 public class XPathTest {
 
     private final String XML_DOC = "src/test/resources/Customer.xml";
