@@ -67,6 +67,14 @@ public class EncryptorUtils {
     }
 
     public static boolean verifyHashData(String knownDecryptedDataHash, String decryptedData) {
+        if (StringUtils.isBlank(decryptedData)){
+            NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format("Decrypted Data is empty %s", decryptedData), EncryptorUtils.class.getName());
+            return false;
+        }
+        if (StringUtils.isBlank(knownDecryptedDataHash)){
+            NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format("Known-Decrypted Data Hash is empty %s", knownDecryptedDataHash), EncryptorUtils.class.getName());
+            return false;
+        }
         return StringUtils.equals(HashGenerator.getSHA256HexDigest(decryptedData), knownDecryptedDataHash);
     }
 
