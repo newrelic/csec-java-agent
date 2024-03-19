@@ -9,6 +9,8 @@ import com.newrelic.agent.security.instrumentator.utils.*;
 import com.newrelic.agent.security.intcodeagent.constants.AgentServices;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.newrelic.agent.security.intcodeagent.filelogging.LogFileHelper;
+import com.newrelic.agent.security.intcodeagent.utils.EncryptorUtils;
+import com.newrelic.api.agent.security.instrumentation.helpers.*;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.logging.HealthCheckScheduleThread;
 import com.newrelic.agent.security.intcodeagent.logging.IAgentConstants;
@@ -21,10 +23,6 @@ import com.newrelic.agent.security.intcodeagent.websocket.*;
 import com.newrelic.agent.security.util.IUtilConstants;
 import com.newrelic.api.agent.NewRelic;
 import com.newrelic.api.agent.Transaction;
-import com.newrelic.api.agent.security.instrumentation.helpers.GrpcHelper;
-import com.newrelic.api.agent.security.instrumentation.helpers.AppServerInfoHelper;
-import com.newrelic.api.agent.security.instrumentation.helpers.InstrumentedClass;
-import com.newrelic.api.agent.security.instrumentation.helpers.LowSeverityHelper;
 import com.newrelic.api.agent.security.schema.*;
 import com.newrelic.api.agent.security.schema.operation.RXSSOperation;
 import com.newrelic.api.agent.security.schema.policy.AgentPolicy;
@@ -370,12 +368,22 @@ public class Agent implements SecurityAgent {
 
         for (int i = 0; i < operation.getStackTrace().length; i++) {
             StackTraceElement stackTraceElement = operation.getStackTrace()[i];
+
+            // Section for user class identification using API handlers
+            if( !securityMetaData.getMetaData().isFoundAnnotedUserLevelServiceMethod() && URLMappingsHelper.getHandlersHash().contains(operation.getClassName().hashCode())){
+                //Found -> assign user class and return
+                userClassEntity.setUserClassElement(stackTraceElement);
+                securityMetaData.getMetaData().setUserLevelServiceMethodEncountered(true);
+                userClassEntity.setCalledByUserCode(true);
+            }
+
+            //Fallback to old mechanism
             if(userStackTraceElement != null){
                 if(StringUtils.equals(stackTraceElement.getClassName(), userStackTraceElement.getClassName())
                         && StringUtils.equals(stackTraceElement.getMethodName(), userStackTraceElement.getMethodName())){
                     userClassEntity.setUserClassElement(stackTraceElement);
                     userClassEntity.setCalledByUserCode(securityMetaData.getMetaData().isUserLevelServiceMethodEncountered());
-                    return userClassEntity;
+                    userStackTraceElement = stackTraceElement;
                 }
             }
             // TODO: the `if` should be `else if` please check crypto case BenchmarkTest01978. service trace is being registered from doSomething()
@@ -682,6 +690,17 @@ public class Agent implements SecurityAgent {
             }
         } else {
             NewRelic.getAgent().getLogger().log(Level.FINER, "Class ", classToRetransform, " already instrumented.");
+        }
+    }
+
+    @Override
+    public String decryptAndVerify(String encryptedData, String hashVerifier) {
+        String decryptedData = EncryptorUtils.decrypt(AgentInfo.getInstance().getLinkingMetadata().get(INRSettingsKey.NR_ENTITY_GUID), encryptedData);
+        if(EncryptorUtils.verifyHashData(hashVerifier, decryptedData)) {
+            return decryptedData;
+        } else {
+            NewRelic.getAgent().getLogger().log(Level.WARNING, String.format("Agent data decryption verifier fails on data : %s hash : %s", encryptedData, hashVerifier), Agent.class.getName());
+            return null;
         }
     }
 }
