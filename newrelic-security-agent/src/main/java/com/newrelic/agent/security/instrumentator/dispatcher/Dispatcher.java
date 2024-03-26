@@ -716,7 +716,7 @@ public class Dispatcher implements Callable {
         eventBean.setCaseType(vulnerabilityCaseType.getCaseType());
         eventBean.setIsAPIBlocked(metaData.isApiBlocked());
         eventBean.setStacktrace(operation.getStackTrace());
-        eventBean.setIsIASTRequest(CSECRequestIdentifier.getNRRequest());
+        eventBean.setIsIASTRequest(CSECRequestIdentifier.getCSECRequest());
         if (AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getEnabled() && AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getIastScan().getEnabled()) {
             eventBean.setIsIASTEnable(true);
         }

@@ -88,7 +88,7 @@ public class ServletHelper {
                 CSECRequestIdentifierInstance.setRefValue(data[2].trim());
                 CSECRequestIdentifierInstance.setNextStage(APIRecordStatus.valueOf(data[3].trim()));
                 CSECRequestIdentifierInstance.setRecordIndex(Integer.parseInt(data[4].trim()));
-                CSECRequestIdentifierInstance.setNRRequest(true);
+                CSECRequestIdentifierInstance.setCSECRequest(true);
                 if (data.length >= 6 && StringUtils.isNotBlank(data[5])) {
                     CSECRequestIdentifierInstance.setRefKey(data[5].trim());
                 }

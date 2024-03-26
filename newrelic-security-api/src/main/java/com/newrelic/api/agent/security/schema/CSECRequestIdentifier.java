@@ -8,14 +8,14 @@ public class CSECRequestIdentifier {
     private String refId;
     private String refValue;
     private String apiRecordId;
-    private boolean NRRequest;
+    private boolean CSECRequest;
     private APIRecordStatus nextStage;
     private Integer recordIndex;
     private String refKey;
     private List<String> tempFiles;
 
     public CSECRequestIdentifier() {
-        NRRequest = false;
+        CSECRequest = false;
         tempFiles = new ArrayList<>();
         raw = StringUtils.EMPTY;
     }
@@ -24,7 +24,7 @@ public class CSECRequestIdentifier {
         this.refId = (StringUtils.isNotBlank(CSECRequestIdentifierInstance.refId)) ? new String(CSECRequestIdentifierInstance.refId) : null;
         this.refValue = (StringUtils.isNotBlank(CSECRequestIdentifierInstance.refValue)) ? new String(CSECRequestIdentifierInstance.refValue) : null;
         this.apiRecordId = (StringUtils.isNotBlank(CSECRequestIdentifierInstance.apiRecordId)) ? new String(CSECRequestIdentifierInstance.apiRecordId) : null;
-        this.NRRequest = CSECRequestIdentifierInstance.NRRequest;
+        this.CSECRequest = CSECRequestIdentifierInstance.CSECRequest;
         this.nextStage = CSECRequestIdentifierInstance.nextStage;
         this.recordIndex = (CSECRequestIdentifierInstance.recordIndex != null) ? Integer.valueOf(CSECRequestIdentifierInstance.recordIndex) : null;
         this.refKey = (StringUtils.isNotBlank(CSECRequestIdentifierInstance.refKey)) ? new String(CSECRequestIdentifierInstance.refKey) : null;
@@ -58,12 +58,12 @@ public class CSECRequestIdentifier {
         this.apiRecordId = apiRecordId;
     }
 
-    public boolean getNRRequest() {
-        return NRRequest;
+    public boolean getCSECRequest() {
+        return CSECRequest;
     }
 
-    public void setNRRequest(boolean NRRequest) {
-        this.NRRequest = NRRequest;
+    public void setCSECRequest(boolean CSECRequest) {
+        this.CSECRequest = CSECRequest;
     }
 
     public APIRecordStatus getNextStage() {

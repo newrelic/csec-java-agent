@@ -75,7 +75,7 @@ public class DispatcherPool {
         public void rejectedExecution(Runnable r, ThreadPoolExecutor e) {
             if (r instanceof CustomFutureTask<?> && ((CustomFutureTask<?>) r).getTask() instanceof Dispatcher) {
                 Dispatcher dispatcher = (Dispatcher) ((CustomFutureTask<?>) r).getTask();
-                if(dispatcher.getSecurityMetaData()!= null && dispatcher.getSecurityMetaData().getFuzzRequestIdentifier().getNRRequest()){
+                if(dispatcher.getSecurityMetaData()!= null && dispatcher.getSecurityMetaData().getFuzzRequestIdentifier().getCSECRequest()){
                     String fuzzRequestId = dispatcher.getSecurityMetaData().getCustomAttribute(GenericHelper.CSEC_PARENT_ID, String.class);
                     if (dispatcher.getSecurityMetaData().getRequest().getIsGrpc()) {
                         GrpcClientRequestReplayHelper.getInstance().getRejectedIds().add(fuzzRequestId);
@@ -85,7 +85,7 @@ public class DispatcherPool {
                 }
 
                 if(dispatcher.getSecurityMetaData() != null) {
-                    if(dispatcher.getSecurityMetaData().getFuzzRequestIdentifier().getNRRequest()){
+                    if(dispatcher.getSecurityMetaData().getFuzzRequestIdentifier().getCSECRequest()){
                         AgentInfo.getInstance().getJaHealthCheck().getIastEventStats().incrementRejectedCount();
                     } else {
                         AgentInfo.getInstance().getJaHealthCheck().getRaspEventStats().incrementRejectedCount();
@@ -150,7 +150,7 @@ public class DispatcherPool {
         if (r instanceof CustomFutureTask<?> && ((CustomFutureTask<?>) r).getTask() instanceof Dispatcher) {
             Dispatcher dispatcher = (Dispatcher) ((CustomFutureTask<?>) r).getTask();
             if(dispatcher.getSecurityMetaData() != null) {
-                if(dispatcher.getSecurityMetaData().getFuzzRequestIdentifier().getNRRequest()){
+                if(dispatcher.getSecurityMetaData().getFuzzRequestIdentifier().getCSECRequest()){
                     eventStats = AgentInfo.getInstance().getJaHealthCheck().getIastEventStats();
                 } else {
                     eventStats = AgentInfo.getInstance().getJaHealthCheck().getRaspEventStats();
@@ -199,19 +199,19 @@ public class DispatcherPool {
             return;
         }
 
-        if(!securityMetaData.getFuzzRequestIdentifier().getNRRequest() && !AgentUsageMetric.isRASPProcessingActive()){
+        if(!securityMetaData.getFuzzRequestIdentifier().getCSECRequest() && !AgentUsageMetric.isRASPProcessingActive()){
             AgentInfo.getInstance().getJaHealthCheck().getRaspEventStats().incrementRejectedCount();
             AgentInfo.getInstance().getJaHealthCheck().incrementEventRejectionCount();
             return;
         }
 
-        if (!operation.isEmpty() && securityMetaData.getFuzzRequestIdentifier().getNRRequest()) {
+        if (!operation.isEmpty() && securityMetaData.getFuzzRequestIdentifier().getCSECRequest()) {
             if (StringUtils.equals(securityMetaData.getFuzzRequestIdentifier().getApiRecordId(), operation.getApiID()) && StringUtils.equals(securityMetaData.getFuzzRequestIdentifier().getNextStage().getStatus(), IAgentConstants.VULNERABLE)) {
                 eid.add(operation.getExecutionId());
             }
         }
         // Register in Processed CC map
-        if (securityMetaData.getFuzzRequestIdentifier().getNRRequest()) {
+        if (securityMetaData.getFuzzRequestIdentifier().getCSECRequest()) {
             String parentId = securityMetaData.getCustomAttribute(GenericHelper.CSEC_PARENT_ID, String.class);
             if (StringUtils.isNotBlank(parentId)) {
                 if (securityMetaData.getRequest().getIsGrpc()) {

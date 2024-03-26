@@ -40,7 +40,7 @@ public class LowSeverityHelper {
         SecurityMetaData securityMetaData = NewRelicSecurity.getAgent().getSecurityMetaData();
         if(NewRelicSecurity.isHookProcessingActive() && securityMetaData != null && !securityMetaData.getRequest().isEmpty()) {
             String requestURL = securityMetaData.getRequest().getUrl();
-            return (securityMetaData.getFuzzRequestIdentifier() != null && securityMetaData.getFuzzRequestIdentifier().getNRRequest())
+            return (securityMetaData.getFuzzRequestIdentifier() != null && securityMetaData.getFuzzRequestIdentifier().getCSECRequest())
                     || (StringUtils.isNotBlank(requestURL) && !LowSeverityHelper.checkIfLowSeverityEventAlreadyEncountered(requestURL.hashCode(), securityMetaData.getRequest().getMethod()));
         }
         return false;

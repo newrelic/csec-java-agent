@@ -262,7 +262,7 @@ public class Agent implements SecurityAgent {
         String executionId = ExecutionIDGenerator.getExecutionId();
         operation.setExecutionId(executionId);
         operation.setStartTime(Instant.now().toEpochMilli());
-        if(securityMetaData!=null && securityMetaData.getFuzzRequestIdentifier().getNRRequest()){
+        if(securityMetaData!=null && securityMetaData.getFuzzRequestIdentifier().getCSECRequest()){
             logger.log(LogLevel.FINEST, String.format("New Event generation with id %s of type %s", operation.getExecutionId(), operation.getClass().getSimpleName()), Agent.class.getName());
         }
         if (operation instanceof RXSSOperation) {
@@ -444,7 +444,7 @@ public class Agent implements SecurityAgent {
         HttpRequest request = NewRelicSecurity.getAgent().getSecurityMetaData().getRequest();
 
         // TODO: Generate for only native payloads
-        if (!request.isEmpty() && !operation.isEmpty() && CSECRequestIdentifier.getNRRequest()) {
+        if (!request.isEmpty() && !operation.isEmpty() && CSECRequestIdentifier.getCSECRequest()) {
             if (StringUtils.equals(CSECRequestIdentifier.getApiRecordId(), operation.getApiID())
                     && StringUtils.equals(CSECRequestIdentifier.getNextStage().getStatus(), IAgentConstants.VULNERABLE)) {
                 ExitEventBean exitEventBean = new ExitEventBean(operation.getExecutionId(), operation.getCaseType().getCaseType());
