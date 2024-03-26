@@ -3,7 +3,7 @@ package com.newrelic.api.agent.security.schema;
 import java.util.ArrayList;
 import java.util.List;
 
-public class NRRequestIdentifier {
+public class CSECRequestIdentifier {
     private String raw;
     private String refId;
     private String refValue;
@@ -14,24 +14,24 @@ public class NRRequestIdentifier {
     private String refKey;
     private List<String> tempFiles;
 
-    public NRRequestIdentifier() {
+    public CSECRequestIdentifier() {
         NRRequest = false;
         tempFiles = new ArrayList<>();
         raw = StringUtils.EMPTY;
     }
 
-    public NRRequestIdentifier(NRRequestIdentifier NRRequestIdentifierInstance) {
-        this.refId = (StringUtils.isNotBlank(NRRequestIdentifierInstance.refId)) ? new String(NRRequestIdentifierInstance.refId) : null;
-        this.refValue = (StringUtils.isNotBlank(NRRequestIdentifierInstance.refValue)) ? new String(NRRequestIdentifierInstance.refValue) : null;
-        this.apiRecordId = (StringUtils.isNotBlank(NRRequestIdentifierInstance.apiRecordId)) ? new String(NRRequestIdentifierInstance.apiRecordId) : null;
-        this.NRRequest = NRRequestIdentifierInstance.NRRequest;
-        this.nextStage = NRRequestIdentifierInstance.nextStage;
-        this.recordIndex = (NRRequestIdentifierInstance.recordIndex != null) ? Integer.valueOf(NRRequestIdentifierInstance.recordIndex) : null;
-        this.refKey = (StringUtils.isNotBlank(NRRequestIdentifierInstance.refKey)) ? new String(NRRequestIdentifierInstance.refKey) : null;
-        if (NRRequestIdentifierInstance.tempFiles != null) {
-            this.tempFiles = new ArrayList<>(NRRequestIdentifierInstance.tempFiles);
+    public CSECRequestIdentifier(CSECRequestIdentifier CSECRequestIdentifierInstance) {
+        this.refId = (StringUtils.isNotBlank(CSECRequestIdentifierInstance.refId)) ? new String(CSECRequestIdentifierInstance.refId) : null;
+        this.refValue = (StringUtils.isNotBlank(CSECRequestIdentifierInstance.refValue)) ? new String(CSECRequestIdentifierInstance.refValue) : null;
+        this.apiRecordId = (StringUtils.isNotBlank(CSECRequestIdentifierInstance.apiRecordId)) ? new String(CSECRequestIdentifierInstance.apiRecordId) : null;
+        this.NRRequest = CSECRequestIdentifierInstance.NRRequest;
+        this.nextStage = CSECRequestIdentifierInstance.nextStage;
+        this.recordIndex = (CSECRequestIdentifierInstance.recordIndex != null) ? Integer.valueOf(CSECRequestIdentifierInstance.recordIndex) : null;
+        this.refKey = (StringUtils.isNotBlank(CSECRequestIdentifierInstance.refKey)) ? new String(CSECRequestIdentifierInstance.refKey) : null;
+        if (CSECRequestIdentifierInstance.tempFiles != null) {
+            this.tempFiles = new ArrayList<>(CSECRequestIdentifierInstance.tempFiles);
         }
-        this.raw = (StringUtils.isNotBlank(NRRequestIdentifierInstance.raw)) ? new String(NRRequestIdentifierInstance.raw) : null;
+        this.raw = (StringUtils.isNotBlank(CSECRequestIdentifierInstance.raw)) ? new String(CSECRequestIdentifierInstance.raw) : null;
     }
 
     public String getRefId() {

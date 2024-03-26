@@ -2,7 +2,7 @@ package com.newrelic.api.agent.security.instrumentation.helpers;
 
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.schema.APIRecordStatus;
-import com.newrelic.api.agent.security.schema.NRRequestIdentifier;
+import com.newrelic.api.agent.security.schema.CSECRequestIdentifier;
 import com.newrelic.api.agent.security.schema.SecurityMetaData;
 import com.newrelic.api.agent.security.schema.StringUtils;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
@@ -68,29 +68,29 @@ public class ServletHelper {
         add("text/calendar");
     }};
 
-    public static NRRequestIdentifier parseFuzzRequestIdentifierHeader(String requestHeaderVal) {
-        NRRequestIdentifier NRRequestIdentifierInstance = new NRRequestIdentifier();
+    public static CSECRequestIdentifier parseFuzzRequestIdentifierHeader(String requestHeaderVal) {
+        CSECRequestIdentifier CSECRequestIdentifierInstance = new CSECRequestIdentifier();
         if (StringUtils.isBlank(requestHeaderVal)) {
-            NRRequestIdentifierInstance.setRaw(StringUtils.EMPTY);
-            return NRRequestIdentifierInstance;
+            CSECRequestIdentifierInstance.setRaw(StringUtils.EMPTY);
+            return CSECRequestIdentifierInstance;
         }
         if (StringUtils.isNotBlank(requestHeaderVal)) {
-            NRRequestIdentifierInstance.setRaw(requestHeaderVal);
+            CSECRequestIdentifierInstance.setRaw(requestHeaderVal);
             if (!(NewRelicSecurity.getAgent().getCurrentPolicy().getVulnerabilityScan().getEnabled()
                     && NewRelicSecurity.getAgent().getCurrentPolicy().getVulnerabilityScan().getIastScan().getEnabled())) {
-                return NRRequestIdentifierInstance;
+                return CSECRequestIdentifierInstance;
             }
             String[] data = StringUtils.splitByWholeSeparatorWorker(requestHeaderVal, SEPARATOR_SEMICOLON, -1, false);
 
             if (data.length >= 5) {
-                NRRequestIdentifierInstance.setApiRecordId(data[0].trim());
-                NRRequestIdentifierInstance.setRefId(data[1].trim());
-                NRRequestIdentifierInstance.setRefValue(data[2].trim());
-                NRRequestIdentifierInstance.setNextStage(APIRecordStatus.valueOf(data[3].trim()));
-                NRRequestIdentifierInstance.setRecordIndex(Integer.parseInt(data[4].trim()));
-                NRRequestIdentifierInstance.setNRRequest(true);
+                CSECRequestIdentifierInstance.setApiRecordId(data[0].trim());
+                CSECRequestIdentifierInstance.setRefId(data[1].trim());
+                CSECRequestIdentifierInstance.setRefValue(data[2].trim());
+                CSECRequestIdentifierInstance.setNextStage(APIRecordStatus.valueOf(data[3].trim()));
+                CSECRequestIdentifierInstance.setRecordIndex(Integer.parseInt(data[4].trim()));
+                CSECRequestIdentifierInstance.setNRRequest(true);
                 if (data.length >= 6 && StringUtils.isNotBlank(data[5])) {
-                    NRRequestIdentifierInstance.setRefKey(data[5].trim());
+                    CSECRequestIdentifierInstance.setRefKey(data[5].trim());
                 }
                 if (data.length >= 7) {
                     for (int i = 6; i < data.length; i++) {
@@ -100,7 +100,7 @@ public class ServletHelper {
                         }
                         tmpFile = StringUtils.replace(tmpFile, NR_CSEC_VALIDATOR_HOME_TMP,
                                 NewRelicSecurity.getAgent().getAgentTempDir());
-                        NRRequestIdentifierInstance.getTempFiles().add(tmpFile);
+                        CSECRequestIdentifierInstance.getTempFiles().add(tmpFile);
                         try {
 
                             File fileToCreate = new File(tmpFile);
@@ -122,7 +122,7 @@ public class ServletHelper {
                 }
             }
         }
-        return NRRequestIdentifierInstance;
+        return CSECRequestIdentifierInstance;
     }
 
     /**
