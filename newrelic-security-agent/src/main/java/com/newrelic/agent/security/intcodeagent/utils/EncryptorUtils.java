@@ -48,7 +48,7 @@ public class EncryptorUtils {
             SecretKey tmp = factory.generateSecret(spec);
             SecretKey secret = new SecretKeySpec(tmp.getEncoded(), AES);
 
-            Cipher cipher = Cipher.getInstance(AES_CBC_PKCS_5_PADDING);
+            Cipher cipher = Cipher.getInstance(AES);
             SecureRandom secureRandom = new SecureRandom();
             byte[] iv = new byte[OFFSET];
             secureRandom.nextBytes(iv);
