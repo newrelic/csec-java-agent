@@ -65,6 +65,7 @@ public class JerseyTests {
     private static final String PACKAGE = "com.nr.agent.security.instrumentation.jersey2.resources";
     private static URL url;
     private final String headerValue = String.valueOf(UUID.randomUUID());
+    private final String fuzzHeader = "FILE_OPERATION--123:IAST:native:__K2PM0__:IAST:./tmp/file:IAST:SAFE:IAST:1:IAST:1:IAST:2aabd9833907ae4cde0120e4352c0da72d9e1acfcf298d6801b7120586d1df9d:IAST:02642fa0c3542fe5997eea314c0f5eec5b744ea83f168e998006111f9fa4fbd2";
 
     @BeforeClass
     public static void setUp() throws MalformedURLException, URISyntaxException {
@@ -138,7 +139,7 @@ public class JerseyTests {
         Client client = ClientBuilder.newClient();
         WebTarget target = client.target(url.toString()).path(path);
         Response response = target.request().header(Header.ContentType.toString(), MediaType.APPLICATION_JSON)
-                .header(ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID, headerValue)
+                .header(ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID, fuzzHeader)
                 .header(ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER, headerValue)
                 .header(GenericHelper.CSEC_PARENT_ID, headerValue)
                 .get();
@@ -180,7 +181,7 @@ public class JerseyTests {
             );
             assertEquals(
                     String.format("Invalid CSEC header value for:  %s", ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID),
-                    headerValue, headers.get(ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID)
+                    fuzzHeader, headers.get(ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID)
             );
             assertTrue(
                     String.format("Missing CSEC header: %s", ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER),
