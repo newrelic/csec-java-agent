@@ -2,6 +2,7 @@ package com.newrelic.agent.security.instrumentation.servlet30;
 
 
 import com.newrelic.api.agent.security.NewRelicSecurity;
+import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.security.instrumentation.helpers.URLMappingsHelper;
 import com.newrelic.api.agent.security.schema.ApplicationURLMapping;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
@@ -26,8 +27,7 @@ public class HttpServletHelper {
                 }
             }
         } catch (Exception e){
-            String message = "Instrumentation library: %s , error while getting app endpoints : %s";
-            NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(message, SERVLET_3_0, e.getMessage()), e, HttpServletHelper.class.getName());
+            NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.ERROR_WHILE_GETTING_APP_ENDPOINTS, SERVLET_3_0, e.getMessage()), e, HttpServletHelper.class.getName());
         }
     }
 
@@ -45,8 +45,7 @@ public class HttpServletHelper {
                 }
             }
         } catch (Exception e){
-            String message = "Instrumentation library: %s , error while getting app endpoints : %s";
-            NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(message, SERVLET_3_0, e.getMessage()), e, HttpServletHelper.class.getName());
+            NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.ERROR_WHILE_GETTING_APP_ENDPOINTS, SERVLET_3_0, e.getMessage()), e, HttpServletHelper.class.getName());
         }
     }
 }
