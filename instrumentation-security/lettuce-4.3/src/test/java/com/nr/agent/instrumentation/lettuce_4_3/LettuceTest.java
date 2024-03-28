@@ -1,6 +1,5 @@
 package com.nr.agent.instrumentation.lettuce_4_3;
 
-import com.lambdaworks.redis.AbstractRedisAsyncCommands;
 import com.lambdaworks.redis.RedisAsyncCommandsImpl;
 import com.lambdaworks.redis.RedisClient;
 import com.lambdaworks.redis.api.StatefulRedisConnection;
@@ -19,31 +18,35 @@ import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
-import redis.embedded.RedisServer;
+import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.utility.DockerImageName;
 
 import java.io.IOException;
 import java.net.ServerSocket;
-import java.util.ArrayList;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
-import static com.lambdaworks.redis.protocol.CommandType.SET;
-
 @RunWith(SecurityInstrumentationTestRunner.class)
 @InstrumentationTestConfig(includePrefixes = "com.lambdaworks.redis")
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class LettuceTest {
-    private static RedisServer redisServer;
     private static int PORT = 0;
 
+    public static GenericContainer<?> redis;
+
     @BeforeClass
-    public static void setup() throws Exception {
-        PORT = getRandomPort();
-        redisServer = new RedisServer(PORT);
-        redisServer.start();
-        System.out.println(redisServer);
+    public static void setup() {
+        PORT = SecurityInstrumentationTestRunner.getIntrospector().getRandomPort();
+        redis = new GenericContainer<>(DockerImageName.parse("redis:5.0.3-alpine"));
+        redis.setPortBindings(Collections.singletonList(PORT + ":6379"));
+        redis.start();
+    }
+    @AfterClass
+    public static void tearDown() {
+        redis.stop();
     }
 
     @Test
@@ -446,11 +449,6 @@ public class LettuceTest {
         verifier(CommandType.SREM, operation, Arrays.asList(keyValuePair1.getKey(), "test"));
     }
 
-    @AfterClass
-    public static void tearDown() throws Exception {
-        redisServer.stop();
-    }
-
     private static void opVerifier(List<AbstractOperation> operations, int expected) {
         Assert.assertTrue("No operations detected.", operations.size() > 0);
         Assert.assertEquals("Unexpected number of operations detected.", expected, operations.size());
@@ -460,26 +458,19 @@ public class LettuceTest {
         Assert.assertEquals(String.format("[%s] Invalid Command.", cmd), cmd.toString(), operation.getType());
         Assert.assertEquals(String.format("[%s] Invalid Category.", cmd), RedisOperation.REDIS, operation.getCategory());
         for(int i=0; i< keyValuePair.size(); i++) {
-            Assert.assertEquals(String.format("[%s] Invalid executed parameter.", cmd), keyValuePair.get(i), operation.getArguments().get(i));
+            if (operation.getArguments().get(i) instanceof byte[]){
+                String val = new String((byte[]) operation.getArguments().get(i), StandardCharsets.UTF_8);
+                Assert.assertEquals(String.format("[%s] Invalid executed parameter.", cmd), keyValuePair.get(i), val);
+            } else {
+                Assert.assertEquals(String.format("[%s] Invalid executed parameter.", cmd), keyValuePair.get(i), operation.getArguments().get(i));
+            }
         }
 //        Assert.assertEquals(String.format("[%s] Invalid executed parameter.", cmd), keyValuePair, operation.getArguments());
         Assert.assertEquals(String.format("[%s] Invalid event category.", cmd), VulnerabilityCaseType.CACHING_DATA_STORE, operation.getCaseType());
         Assert.assertEquals(String.format("[%s] Invalid executed class name.", cmd), RedisAsyncCommandsImpl.class.getName(), operation.getClassName());
         Assert.assertEquals(String.format("[%s] Invalid executed method name.", cmd), "dispatch", operation.getMethodName());
     }
-
-    private static int getRandomPort() {
-        int port;
-
-        try {
-            ServerSocket socket = new ServerSocket(0);
-            port = socket.getLocalPort();
-            socket.close();
-        } catch (IOException e) {
-            throw new RuntimeException("Unable to allocate ephemeral port");
-        }
-        return port;
-    }
+    
 
     static class KeyValuePair {
         private String key;

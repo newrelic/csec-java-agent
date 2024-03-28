@@ -130,8 +130,7 @@ public class HttpServletHelper {
                 }
             }
         } catch (Exception e){
-            String message = "Instrumentation library: %s , error while getting app endpoints : %s";
-            NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(message, SERVLET_2_4, e.getMessage()), e, HttpServletHelper.class.getName());
+            NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.ERROR_WHILE_GETTING_APP_ENDPOINTS, SERVLET_2_4, e.getMessage()), e, HttpServletHelper.class.getName());
         }
     }
 
@@ -149,8 +148,7 @@ public class HttpServletHelper {
                 }
             }
         } catch (Exception e){
-            String message = "Instrumentation library: %s , error while getting app endpoints : %s";
-            NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(message, SERVLET_2_4, e.getMessage()), e, HttpServletHelper.class.getName());
+            NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.ERROR_WHILE_GETTING_APP_ENDPOINTS, SERVLET_2_4, e.getMessage()), e, HttpServletHelper.class.getName());
         }
     }
 }
