@@ -179,3 +179,6 @@ include 'instrumentation:lettuce-5.0'
 include 'instrumentation:jetty-12'
 include 'instrumentation:mule-3.7'
 include 'instrumentation:mule-3.6'
+
+include 'instrumentation:weblogic-12'
+include 'instrumentation:weblogic-12.2'
