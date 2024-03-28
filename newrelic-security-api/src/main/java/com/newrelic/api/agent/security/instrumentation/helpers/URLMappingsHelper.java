@@ -20,7 +20,6 @@ public class URLMappingsHelper {
 
     public static void addApplicationURLMapping(ApplicationURLMapping mapping) {
         if (mapping.getHandler() != null){
-            mapping.setHandlerHash(mapping.getHandler().hashCode());
             handlers.add(mapping.getHandler().hashCode());
         }
         mappings.add(mapping);

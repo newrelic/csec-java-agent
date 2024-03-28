@@ -7,8 +7,6 @@ public class ApplicationURLMapping {
     private String path;
     private String handler;
 
-    private int handlerHash;
-
     public ApplicationURLMapping(String method, String url) {
         this.method = method;
         this.path = url;
@@ -42,14 +40,6 @@ public class ApplicationURLMapping {
 
     public void setPath(String path) {
         this.path = path;
-    }
-
-    public int getHandlerHash() {
-        return handlerHash;
-    }
-
-    public void setHandlerHash(int handlerHash) {
-        this.handlerHash = handlerHash;
     }
 
     @Override
