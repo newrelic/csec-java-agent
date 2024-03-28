@@ -147,6 +147,10 @@ public class HashGenerator {
         String input = StringUtils.join(data);
         return getChecksum(input);
     }
+    public static String getSHA256HexDigest(String data) {
+        String input = StringUtils.join(data);
+        return getChecksum(input);
+    }
     
     /**
      * Gets the xxHash64 hex digest.

@@ -190,4 +190,9 @@ public class Agent implements SecurityAgent {
     public void retransformUninstrumentedClass(Class<?> classToRetransform) {
 
     }
+
+    @Override
+    public String decryptAndVerify(String encryptedData, String hashVerifier) {
+        return null;
+    }
 }
