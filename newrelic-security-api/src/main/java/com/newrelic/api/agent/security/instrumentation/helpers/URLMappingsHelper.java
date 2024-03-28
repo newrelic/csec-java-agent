@@ -12,7 +12,16 @@ public class URLMappingsHelper {
         return mappings;
     }
 
+    private static Set<Integer> handlers = ConcurrentHashMap.newKeySet();
+
+    public static Set<Integer> getHandlersHash() {
+        return handlers;
+    }
+
     public static void addApplicationURLMapping(ApplicationURLMapping mapping) {
+        if (mapping.getHandler() != null){
+            handlers.add(mapping.getHandler().hashCode());
+        }
         mappings.add(mapping);
     }
 }
