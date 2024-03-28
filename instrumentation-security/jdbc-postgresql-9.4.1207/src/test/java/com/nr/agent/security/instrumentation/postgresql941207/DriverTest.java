@@ -6,6 +6,7 @@ import com.newrelic.agent.security.introspec.SecurityIntrospector;
 import com.newrelic.api.agent.Trace;
 import com.newrelic.api.agent.security.schema.JDBCVendor;
 import com.newrelic.security.test.marker.Java12IncompatibleTest;
+import com.newrelic.security.test.marker.Java17IncompatibleTest;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -29,7 +30,7 @@ import java.util.Properties;
 
 import static ru.yandex.qatools.embed.postgresql.distribution.Version.Main.V9_6;
 
-@Category({ Java12IncompatibleTest.class })
+@Category({ Java12IncompatibleTest.class, Java17IncompatibleTest.class })
 @RunWith(SecurityInstrumentationTestRunner.class)
 @InstrumentationTestConfig(includePrefixes = "org.postgresql")
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
