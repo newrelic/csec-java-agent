@@ -2,7 +2,7 @@ package org.apache.wicket.request.mapper.mount;
 
 import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
-import com.nr.instrumentation.security.apache.wicket6.WicketHelper;
+import com.newrelic.agent.security.instrumentation.apache.wicket6.WicketHelper;
 import org.apache.wicket.request.IRequestMapper;
 
 @Weave(type = MatchType.ExactClass, originalName = "org.apache.wicket.request.mapper.mount.MountMapper")

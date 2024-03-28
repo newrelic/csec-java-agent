@@ -7,6 +7,7 @@ import java.util.Set;
 
 public class ApplicationURLMappings extends AgentBasicInfo{
 
+    private String applicationUUID;
     private Set<ApplicationURLMapping> mappings;
 
     public ApplicationURLMappings(Set<ApplicationURLMapping> mappings) {
@@ -24,5 +25,13 @@ public class ApplicationURLMappings extends AgentBasicInfo{
     @Override
     public String toString() {
         return JsonConverter.toJSON(this);
+    }
+
+    public String getApplicationUUID() {
+        return applicationUUID;
+    }
+
+    public void setApplicationUUID(String applicationUUID) {
+        this.applicationUUID = applicationUUID;
     }
 }

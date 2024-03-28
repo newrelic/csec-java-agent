@@ -25,12 +25,7 @@ public class Context_Instrumentation {
             if (sourceString!=null) {
                 newScript = new StringBuilder(sourceString);
             } else if (sourceReader!=null && StringUtils.isBlank(newScript)) {
-                newScript = new StringBuilder("");
-                int data = sourceReader.read();
-                while (data != -1) {
-                    newScript.append((char)data);
-                    data = sourceReader.read();
-                }
+                //TODO can't read reader we need to instrument Reader class
             }
         } catch (Throwable e) {
             if (e instanceof NewRelicSecurityException) {

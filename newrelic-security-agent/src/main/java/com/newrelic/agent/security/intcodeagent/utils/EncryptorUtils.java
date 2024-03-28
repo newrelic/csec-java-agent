@@ -15,6 +15,7 @@ import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.SecretKeySpec;
 import java.security.InvalidAlgorithmParameterException;
+import java.security.SecureRandom;
 import java.security.spec.KeySpec;
 
 public class EncryptorUtils {
@@ -48,7 +49,10 @@ public class EncryptorUtils {
             SecretKey secret = new SecretKeySpec(tmp.getEncoded(), AES);
 
             Cipher cipher = Cipher.getInstance(AES_CBC_PKCS_5_PADDING);
-            cipher.init(Cipher.DECRYPT_MODE, secret, new IvParameterSpec(new byte[OFFSET]));
+            SecureRandom secureRandom = new SecureRandom();
+            byte[] iv = new byte[OFFSET];
+            secureRandom.nextBytes(iv);
+            cipher.init(Cipher.DECRYPT_MODE, secret, new IvParameterSpec(iv));
 
             // Decrypt the content
             byte[] decryptedBytes = cipher.doFinal(Hex.decodeHex(encryptedData));

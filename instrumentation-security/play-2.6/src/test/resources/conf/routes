@@ -1,0 +1,5 @@
+GET     /hello          com.nr.agent.security.instrumentation.play26.SimpleJavaController.hello
+GET     /index          com.nr.agent.security.instrumentation.play26.SimpleJavaController.index
+GET     /simple         com.nr.agent.security.instrumentation.play26.SimpleJavaController.simple
+GET     /scalaHello     com.nr.agent.security.instrumentation.play26.SimpleScalaController.scalaHello
+POST    /post           com.nr.agent.security.instrumentation.play26.SimpleJavaController.post(data: String)

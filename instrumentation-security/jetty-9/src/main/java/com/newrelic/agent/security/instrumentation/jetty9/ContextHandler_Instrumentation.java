@@ -4,12 +4,15 @@ import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
 import org.eclipse.jetty.server.Request;
+import org.eclipse.jetty.server.handler.ContextHandler;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 @Weave(type = MatchType.ExactClass, originalName = "org.eclipse.jetty.server.handler.ContextHandler")
-public class ContextHandler_Instrumentation {
+public abstract class ContextHandler_Instrumentation {
+
+    public abstract ContextHandler.Context getServletContext();
 
     public void doHandle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response) {
         boolean isServletLockAcquired = acquireServletLockIfPossible();
@@ -26,6 +29,14 @@ public class ContextHandler_Instrumentation {
         if (isServletLockAcquired) {
             HttpServletHelper.postProcessSecurityHook(request, response, this.getClass().getName(),
                     HttpServletHelper.SERVICE_METHOD_NAME);
+        }
+    }
+
+    protected void doStart() throws Exception {
+        try {
+            Weaver.callOriginal();
+        } finally {
+            HttpServletHelper.gatherURLMappings(getServletContext());
         }
     }
 

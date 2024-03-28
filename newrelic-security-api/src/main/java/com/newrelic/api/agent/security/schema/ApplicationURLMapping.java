@@ -47,10 +47,11 @@ public class ApplicationURLMapping {
         if (obj == this) {
             return true;
         }
-
         if (obj instanceof ApplicationURLMapping) {
             ApplicationURLMapping mapping = (ApplicationURLMapping) obj;
-            return path.equals(mapping.path) && method.equals(mapping.method) && handler.equals(mapping.handler);
+            return Objects.equals(this.path, mapping.path) &&
+                    Objects.equals(this.method, mapping.method) &&
+                    Objects.equals(this.handler, mapping.handler);
         }
         return false;
     }

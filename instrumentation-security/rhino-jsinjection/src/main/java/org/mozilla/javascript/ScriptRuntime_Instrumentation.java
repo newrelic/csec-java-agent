@@ -7,20 +7,25 @@ import com.newrelic.api.agent.security.schema.StringUtils;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
 import com.newrelic.api.agent.security.schema.operation.JSInjectionOperation;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
+import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
 import com.newrelic.agent.security.instrumentation.rhino.JSEngineUtils;
 
-@Weave(originalName = "org.mozilla.javascript.ScriptRuntime")
+@Weave(type = MatchType.ExactClass, originalName = "org.mozilla.javascript.ScriptRuntime")
 public class ScriptRuntime_Instrumentation {
 
     // TODO: changes for parameterized function calls in js script
     public static Object doTopCall(Callable callable, Context_Instrumentation cx, Scriptable scope, Scriptable thisObj, Object[] args){
-        int code = cx.hashCode();
-        boolean isLockAcquired = acquireLockIfPossible(code);
+        boolean isLockAcquired = false;
+        int code = 0;
         AbstractOperation operation = null;
-        if(isLockAcquired) {
-            operation = preprocessSecurityHook(code, JSEngineUtils.METHOD_EXEC, cx);
+        if(cx != null) {
+            code = cx.hashCode();
+            isLockAcquired = acquireLockIfPossible(code);
+            if (isLockAcquired) {
+                operation = preprocessSecurityHook(code, JSEngineUtils.METHOD_EXEC, cx);
+            }
         }
 
         Object returnVal = null;

@@ -3,7 +3,7 @@ package org.jboss.resteasy.core.registry;
 import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
-import com.nr.instrumentation.security.resteasy4.RestEasyHelper;
+import com.newrelic.agent.security.instrumentation.resteasy4.RestEasyHelper;
 import org.jboss.resteasy.spi.ResourceInvoker;
 
 @Weave(type = MatchType.ExactClass, originalName = "org.jboss.resteasy.core.registry.RootClassNode")

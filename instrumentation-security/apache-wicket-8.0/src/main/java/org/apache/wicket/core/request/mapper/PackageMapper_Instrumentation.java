@@ -2,7 +2,7 @@ package org.apache.wicket.core.request.mapper;
 
 import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
-import com.nr.instrumentation.security.apache.wicket8.WicketHelper;
+import com.newrelic.agent.security.instrumentation.apache.wicket8.WicketHelper;
 import org.apache.wicket.request.mapper.parameter.IPageParametersEncoder;
 import org.apache.wicket.util.lang.PackageName;
 

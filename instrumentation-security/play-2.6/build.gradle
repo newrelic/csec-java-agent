@@ -1,0 +1,76 @@
+import play.routes.compiler.InjectedRoutesGenerator$
+import play.routes.compiler.RoutesCompiler
+import play.routes.compiler.RoutesCompiler$
+
+apply plugin: 'scala'
+
+isScalaProjectEnabled(project, "scala-2.11")
+
+sourceSets.test.scala.srcDir "src/test/java"
+sourceSets.test.java.srcDirs = []
+
+compileJava.options.bootstrapClasspath = null
+
+buildscript {
+    dependencies {
+        classpath 'com.typesafe.play:routes-compiler_2.13:2.7.3'
+    }
+    repositories {
+        mavenCentral()
+    }
+}
+
+dependencies {
+    implementation(project(":newrelic-security-api"))
+    implementation("com.newrelic.agent.java:newrelic-api:${nrAPIVersion}")
+    implementation("com.newrelic.agent.java:newrelic-weaver-api:${nrAPIVersion}")
+    implementation("org.scala-lang:scala-library:2.11.12")
+    implementation("com.typesafe.play:play_2.11:2.7.0")
+    testImplementation("com.typesafe.play:routes-compiler_2.11:2.7.0")
+    testImplementation("com.typesafe.play:play-test_2.11:2.7.0")
+    testImplementation("com.typesafe.play:play-akka-http-server_2.11:2.7.0")
+    testImplementation("com.typesafe.play:play-java_2.11:2.7.0")
+    testImplementation("jakarta.xml.ws:jakarta.xml.ws-api:2.3.3")
+}
+
+jar {
+    manifest { attributes 'Implementation-Title': 'com.newrelic.instrumentation.security.play-2.6' }
+}
+
+verifyInstrumentation {
+    passesOnly 'com.typesafe.play:play_2.12:[2.6.0-M1,)'
+    passesOnly 'com.typesafe.play:play_2.11:[2.6.0-M1,)'
+    fails 'com.typesafe.play:play_2.13:[2.7.0-M1,)'
+
+    // build snapshots
+    excludeRegex '.*-[0-9]{4}-[0-9]{2}-[0-9]{2}-[a-z0-9]{7}$'
+}
+
+compileTestScala {
+    def routeFile = file("src/test/resources/conf/routes")
+    def generatedSourcesDir = layout.buildDirectory.dir("generated/scala")
+
+    options.compilerArgs += '-proc:none'
+
+    inputs.file(routeFile)
+    localState.register(generatedSourcesDir)
+
+    // this manually compiles the conf/routes file into an Routes.scala file, which is subsequently read on startup by our test application
+    doFirst {
+        def RoutesCompiler.RoutesCompilerTask routesCompilerTask = new RoutesCompiler.RoutesCompilerTask(
+                routeFile, scala.collection.immutable.List$.MODULE$.empty().toSeq(), true, false, false)
+        RoutesCompiler$.MODULE$.compile(routesCompilerTask, InjectedRoutesGenerator$.MODULE$, generatedSourcesDir.get().asFile)
+        source generatedSourcesDir
+        scala.collection.immutable.List$.MODULE$.empty()
+    }
+}
+
+clean {
+    // Clean up any residual generated Routes files to avoid duplicate classes
+    delete 'src/test/scala/router'
+}
+
+site {
+    title 'Play'
+    type 'Appserver'
+}

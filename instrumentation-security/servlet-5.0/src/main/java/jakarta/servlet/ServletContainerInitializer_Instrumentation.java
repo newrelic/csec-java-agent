@@ -1,10 +1,12 @@
 package jakarta.servlet;
 
+import com.newrelic.api.agent.weaver.MatchType;
+import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
 import com.newrelic.agent.security.instrumentation.servlet5.HttpServletHelper;
 import java.util.Set;
 
-//@Weave(type = MatchType.Interface, originalName = "jakarta.servlet.ServletContainerInitializer")
+@Weave(type = MatchType.Interface, originalName = "jakarta.servlet.ServletContainerInitializer")
 public class ServletContainerInitializer_Instrumentation {
     public void onStartup(Set<Class<?>> var1, ServletContext var2) throws ServletException {
         try {
