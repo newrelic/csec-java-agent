@@ -163,6 +163,10 @@ public class AgentMetaData {
         this.userLevelServiceMethodEncountered = userLevelServiceMethodEncountered;
     }
 
+    public void setUserLevelServiceMethodEncounteredFramework(String userLevelServiceMethodEncounteredFramework) {
+        this.userLevelServiceMethodEncounteredFramework = userLevelServiceMethodEncounteredFramework;
+    }
+
     public AppServerInfo getAppServerInfo() {
         return appServerInfo;
     }
