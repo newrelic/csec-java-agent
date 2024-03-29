@@ -448,7 +448,7 @@ public class Agent implements SecurityAgent {
             if (StringUtils.equals(CSECRequestIdentifier.getApiRecordId(), operation.getApiID())
                     && StringUtils.equals(CSECRequestIdentifier.getNextStage().getStatus(), IAgentConstants.VULNERABLE)) {
                 ExitEventBean exitEventBean = new ExitEventBean(operation.getExecutionId(), operation.getCaseType().getCaseType());
-                exitEventBean.setCSECRequestIdentifier(CSECRequestIdentifier.getRaw());
+                exitEventBean.setNRRequestIdentifier(CSECRequestIdentifier.getRaw());
                 logger.log(LogLevel.FINER, "Exit event : " + exitEventBean, this.getClass().getName());
                 DispatcherPool.getInstance().dispatchExitEvent(exitEventBean);
                 AgentInfo.getInstance().getJaHealthCheck().incrementExitEventSentCount();

@@ -6,7 +6,7 @@ import com.newrelic.agent.security.intcodeagent.websocket.JsonConverter;
 public class ExitEventBean extends AgentBasicInfo {
     private String executionId;
     private String caseType;
-    private String CSECRequestIdentifier;
+    private String nrRequestIdentifier;
     private String applicationUUID;
 
     public ExitEventBean() {
@@ -36,12 +36,12 @@ public class ExitEventBean extends AgentBasicInfo {
         this.caseType = caseType;
     }
 
-    public String getCSECRequestIdentifier() {
-        return CSECRequestIdentifier;
+    public String getNRRequestIdentifier() {
+        return nrRequestIdentifier;
     }
 
-    public void setCSECRequestIdentifier(String nrRequestIdentifier) {
-        this.CSECRequestIdentifier = nrRequestIdentifier;
+    public void setNRRequestIdentifier(String nrRequestIdentifier) {
+        this.nrRequestIdentifier = nrRequestIdentifier;
     }
 
     public String getApplicationUUID() {
