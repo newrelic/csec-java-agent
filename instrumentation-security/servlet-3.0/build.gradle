@@ -1,0 +1,24 @@
+dependencies {
+    implementation(project(":newrelic-security-api"))
+    implementation("com.newrelic.agent.java:newrelic-api:${nrAPIVersion}")
+    implementation("com.newrelic.agent.java:newrelic-weaver-api:${nrAPIVersion}")
+    implementation('jakarta.servlet:jakarta.servlet-api:4.0.4')
+
+    testImplementation('org.apache.tomcat.embed:tomcat-embed-core:9.0.70')
+}
+
+jar {
+    manifest { attributes 'Implementation-Title': 'com.newrelic.instrumentation.security.servlet-3.0' }
+}
+
+verifyInstrumentation {
+    passesOnly 'jakarta.servlet:jakarta.servlet-api:[4.0.2,5.0.0-M1)'
+    passesOnly 'javax.servlet:javax.servlet-api:[0,)'
+    fails 'javax.servlet:servlet-api:[2.4,)'
+    exclude 'javax.servlet:servlet-api:2.4.public_draft'
+}
+
+site {
+    title 'Servlet'
+    type 'Framework'
+}
