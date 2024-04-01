@@ -19,6 +19,7 @@ public class GenericHelper {
     public static final String ERROR_GENERATING_HTTP_REQUEST = "Instrumentation library: %s , error while generating HTTP request : %s";
     public static final String ERROR_PARSING_HTTP_REQUEST_DATA = "Instrumentation library: %s , error while parsing HTTP request data : %s";
     public static final String ERROR_WHILE_GETTING_APP_ENDPOINTS = "Instrumentation library: %s , error while getting application API endpoints : %s";
+    public static final String ERROR_PARSING_HTTP_RESPONSE = "Instrumentation library: %s , error while parsing HTTP Response data : %s";
 
     public static boolean skipExistsEvent() {
         if (!(NewRelicSecurity.getAgent().getCurrentPolicy().getVulnerabilityScan().getEnabled() &&
