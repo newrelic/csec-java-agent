@@ -6,6 +6,7 @@ import com.newrelic.agent.security.introspec.SecurityIntrospector;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.security.schema.operation.XPathOperation;
+import com.newrelic.security.test.marker.Java17IncompatibleTest;
 import org.apache.xml.utils.PrefixResolver;
 import org.apache.xml.utils.PrefixResolverDefault;
 import org.apache.xml.utils.SAXSourceLocator;
@@ -14,6 +15,7 @@ import org.apache.xpath.XPathContext;
 import org.junit.Assert;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 import org.w3c.dom.Document;
@@ -30,6 +32,7 @@ import java.util.List;
 @RunWith(SecurityInstrumentationTestRunner.class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @InstrumentationTestConfig(includePrefixes = "org.apache.xpath")
+@Category({ Java17IncompatibleTest.class})
 public class XPathTest {
     private final String XML_DOC = "src/test/resources/Customer.xml";
     private final String EXPRESSION = "/Customers/Customer";

@@ -8,6 +8,7 @@ import com.newrelic.api.agent.security.instrumentation.helpers.R2dbcHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.security.schema.operation.SQLOperation;
+import com.newrelic.security.test.marker.Java17IncompatibleTest;
 import io.r2dbc.spi.Connection;
 import io.r2dbc.spi.ConnectionFactories;
 import io.r2dbc.spi.ConnectionFactory;
@@ -17,6 +18,7 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 import reactor.core.publisher.Flux;
@@ -33,6 +35,7 @@ import static ru.yandex.qatools.embed.postgresql.distribution.Version.Main.V9_6;
 @RunWith(SecurityInstrumentationTestRunner.class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @InstrumentationTestConfig(includePrefixes = "io.r2dbc.spi")
+@Category({ Java17IncompatibleTest.class })
 public class PostgresTest {
     public static final EmbeddedPostgres postgres = new EmbeddedPostgres(V9_6);
     public static Connection connection;
