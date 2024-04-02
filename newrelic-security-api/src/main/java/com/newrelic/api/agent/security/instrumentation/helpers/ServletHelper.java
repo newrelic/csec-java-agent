@@ -163,13 +163,13 @@ public class ServletHelper {
                 return false;
             }
             SecurityMetaData securityMetaData = NewRelicSecurity.getAgent().getSecurityMetaData();
-            if (!securityMetaData.getMetaData().isUserLevelServiceMethodEncountered(frameworkName)) {
+//            if (!securityMetaData.getMetaData().isUserLevelServiceMethodEncountered(frameworkName)) {
                 securityMetaData.getMetaData().setUserLevelServiceMethodEncountered(true);
                 securityMetaData.getMetaData().setUserLevelServiceMethodEncounteredFramework(frameworkName);
                 StackTraceElement[] trace = Thread.currentThread().getStackTrace();
                 securityMetaData.getMetaData().setServiceTrace(Arrays.copyOfRange(trace, asyncContext?2:3, trace.length));
                 return true;
-            }
+//            }
         } catch (Throwable ignored) {
         }
         return false;

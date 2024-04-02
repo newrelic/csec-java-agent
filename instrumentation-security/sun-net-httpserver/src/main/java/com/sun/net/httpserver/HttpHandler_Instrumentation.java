@@ -24,6 +24,7 @@ public class HttpHandler_Instrumentation {
         if (isServletLockAcquired){
             preprocessSecurityHook(exchange);
         }
+        ServletHelper.registerUserLevelCode("sun-net-http-server");
         try{
             Weaver.callOriginal();
         } finally {
@@ -69,8 +70,6 @@ public class HttpHandler_Instrumentation {
             }
 
             securityRequest.setContentType(HttpServerHelper.getContentType(exchange.getRequestHeaders()));
-
-            ServletHelper.registerUserLevelCode("sun-net-http-server");
             securityRequest.setRequestParsed(true);
         } catch (Throwable e){
             NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.ERROR_GENERATING_HTTP_REQUEST, HttpServerHelper.SUN_NET_HTTPSERVER, e.getMessage()), e, this.getClass().getName());
