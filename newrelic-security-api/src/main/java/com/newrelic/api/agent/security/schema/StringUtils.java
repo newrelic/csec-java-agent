@@ -11,6 +11,7 @@ public class StringUtils {
 
     public static final String LF = "\n";
     public static final int INDEX_NOT_FOUND = -1;
+    public static final String COMMA_DELIMETER = ",";
 
     /**
      * <p>Checks if a CharSequence is not empty (""), not null and not whitespace only.</p>
@@ -180,6 +181,49 @@ public class StringUtils {
         }
         return str.substring(0, pos);
     }
+
+    /**
+     * <p>Gets the substring after the first occurrence of a separator.
+     * The separator is not returned.</p>
+     *
+     * <p>A {@code null} string input will return {@code null}.
+     * An empty ("") string input will return the empty string.
+     * A {@code null} separator will return the empty string if the
+     * input string is not {@code null}.</p>
+     *
+     * <p>If nothing is found, the empty string is returned.</p>
+     *
+     * <pre>
+     * StringUtils.substringAfter(null, *)      = null
+     * StringUtils.substringAfter("", *)        = ""
+     * StringUtils.substringAfter(*, null)      = ""
+     * StringUtils.substringAfter("abc", "a")   = "bc"
+     * StringUtils.substringAfter("abcba", "b") = "cba"
+     * StringUtils.substringAfter("abc", "c")   = ""
+     * StringUtils.substringAfter("abc", "d")   = ""
+     * StringUtils.substringAfter("abc", "")    = "abc"
+     * </pre>
+     *
+     * @param str  the String to get a substring from, may be null
+     * @param separator  the String to search for, may be null
+     * @return the substring after the first occurrence of the separator,
+     *  {@code null} if null String input
+     * @since 2.0
+     */
+    public static String substringAfter(final String str, final String separator) {
+        if (isEmpty(str)) {
+            return str;
+        }
+        if (separator == null) {
+            return EMPTY;
+        }
+        final int pos = str.indexOf(separator);
+        if (pos == INDEX_NOT_FOUND) {
+            return EMPTY;
+        }
+        return str.substring(pos + separator.length());
+    }
+
 
     /**
      * <p>Gets the substring after the last occurrence of a separator.
