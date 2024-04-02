@@ -123,7 +123,9 @@ public class ServletHelper {
                                 filesToRemove.add(parentFile.getAbsolutePath());
                                 fileToCreate.getParentFile().mkdirs();
                             }
-                            Files.createFile(fileToCreate.toPath());
+                            if(!fileToCreate.exists()) {
+                                Files.createFile(fileToCreate.toPath());
+                            }
                         } catch (Throwable e) {
                             String message = "Error while parsing fuzz request : %s";
                             NewRelicSecurity.getAgent().log(LogLevel.INFO, String.format(message, e.getMessage()), e, ServletHelper.class.getName());
