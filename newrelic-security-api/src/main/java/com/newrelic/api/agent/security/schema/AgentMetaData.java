@@ -32,10 +32,6 @@ public class AgentMetaData {
     @JsonIgnore
     private boolean userLevelServiceMethodEncountered = false;
 
-    public void setUserLevelServiceMethodEncounteredFramework(String userLevelServiceMethodEncounteredFramework) {
-        this.userLevelServiceMethodEncounteredFramework = userLevelServiceMethodEncounteredFramework;
-    }
-
     @JsonIgnore
     private String userLevelServiceMethodEncounteredFramework;
 

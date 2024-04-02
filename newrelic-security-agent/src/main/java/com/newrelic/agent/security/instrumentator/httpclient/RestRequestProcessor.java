@@ -110,7 +110,7 @@ public class RestRequestProcessor implements Callable<Boolean> {
                     endpoints = prepareAllEndpoints(httpRequest);
                     postSSL = true;
                 }
-                RestClient.getInstance().fireRequest(httpRequest, endpoints, repeatCount + endpoints.size() -1, controlCommand.getId(), postSSL);
+                RestClient.getInstance().fireRequest(httpRequest, endpoints, repeatCount + endpoints.size() -1, controlCommand.getId());
             }
             return true;
         } catch (JsonProcessingException e){
