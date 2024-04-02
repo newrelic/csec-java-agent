@@ -15,6 +15,7 @@ import com.newrelic.api.agent.security.schema.StringUtils;
 import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.security.schema.operation.RXSSOperation;
 import com.newrelic.agent.security.instrumentation.jetty9.HttpServletHelper;
+import com.newrelic.security.test.marker.Java17IncompatibleTest;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.handler.AbstractHandler;
@@ -24,6 +25,7 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 
@@ -44,6 +46,7 @@ import java.util.UUID;
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @RunWith(SecurityInstrumentationTestRunner.class)
 @InstrumentationTestConfig(includePrefixes = {"org.eclipse.jetty", "com.newrelic.agent.security.instrumentation.jetty9"})
+@Category({ Java17IncompatibleTest.class})
 public class ServerTest {
     public final static int PORT = getRandomPort();
     public final static String ENDPOINT = String.format("http://localhost:%d/", PORT);
