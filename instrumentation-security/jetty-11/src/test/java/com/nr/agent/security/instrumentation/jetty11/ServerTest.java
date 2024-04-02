@@ -19,11 +19,9 @@ import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.handler.AbstractHandler;
 import org.eclipse.jetty.servlet.ServletContextHandler;
-import org.eclipse.jetty.servlet.ServletHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.junit.After;
 import org.junit.Assert;
-import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -37,9 +35,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.ServerSocket;
-import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -53,13 +49,6 @@ public class ServerTest {
     public final static String ENDPOINT = String.format("http://localhost:%d/", PORT);
 
     private Server server;
-
-    private static final Map<String, String> actualMappings = new HashMap<>();
-    @BeforeClass
-    public static void addMappings() {
-        actualMappings.put("/servlet/*", MyServlet.class.getName());
-        actualMappings.put("/", ServletHandler.Default404Servlet.class.getName());
-    }
     @After
     public void teardown() throws Exception {
         if (server.isRunning()) {
@@ -207,15 +196,15 @@ public class ServerTest {
         start();
 
         Set<ApplicationURLMapping> mappings = URLMappingsHelper.getApplicationURLMappings();
-        Assert.assertEquals(2, mappings.size());
+        Assert.assertEquals(1, mappings.size());
         for (ApplicationURLMapping mapping : mappings) {
             Assert.assertNotNull(mapping);
 
             Assert.assertNotNull(mapping.getHandler());
             Assert.assertNotNull(mapping.getPath());
             Assert.assertNotNull(mapping.getMethod());
-
-            Assert.assertEquals(actualMappings.get(mapping.getPath()), mapping.getHandler());
+            Assert.assertEquals("/servlet/*", mapping.getPath());;
+            Assert.assertEquals(MyServlet.class.getName(), mapping.getHandler());
             Assert.assertEquals("*", mapping.getMethod());
         }
     }
@@ -284,7 +273,7 @@ public class ServerTest {
         f.deleteOnExit();
     }
     @Trace(dispatcher = true)
-    private String serviceWithHeaders(String fuzzHeader) throws IOException, URISyntaxException {
+    private String serviceWithHeaders(String fuzzHeader) throws IOException {
         String headerValue = String.valueOf(UUID.randomUUID());
         URL url = new URL(ENDPOINT);
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
