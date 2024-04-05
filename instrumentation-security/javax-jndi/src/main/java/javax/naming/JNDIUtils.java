@@ -1,4 +1,4 @@
-package com.newrelic.agent.security.instrumentation.javax.jndi;
+package javax.naming;
 
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;

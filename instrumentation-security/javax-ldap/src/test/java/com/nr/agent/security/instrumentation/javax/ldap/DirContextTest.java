@@ -31,7 +31,7 @@ import java.util.Hashtable;
 import java.util.List;
 
 @RunWith(SecurityInstrumentationTestRunner.class)
-@InstrumentationTestConfig(includePrefixes = { "javax.naming", "com.newrelic.agent.security.instrumentation.javax.ldap.LDAPUtils" } )
+@InstrumentationTestConfig(includePrefixes = { "javax.naming", "javax.naming.directory.LDAPUtils" } )
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 //FIXME: after instrumentation works
 @Ignore

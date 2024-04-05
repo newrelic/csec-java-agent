@@ -6,7 +6,7 @@ import com.newrelic.agent.security.introspec.SecurityIntrospector;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.security.schema.operation.SSRFOperation;
-import com.newrelic.agent.security.instrumentation.javax.jndi.JNDIUtils;
+import javax.naming.JNDIUtils;
 import com.unboundid.ldap.sdk.LDAPException;
 import org.junit.Assert;
 import org.junit.BeforeClass;
