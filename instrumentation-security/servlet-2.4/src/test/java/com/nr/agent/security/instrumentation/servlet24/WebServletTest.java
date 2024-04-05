@@ -6,9 +6,11 @@ import com.newrelic.agent.security.introspec.SecurityIntrospector;
 import com.newrelic.api.agent.Trace;
 import com.newrelic.api.agent.security.schema.AgentMetaData;
 
+import com.newrelic.security.test.marker.Java17IncompatibleTest;
 import org.junit.Assert;
 import org.junit.ClassRule;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
 import java.io.IOException;
@@ -18,6 +20,7 @@ import java.net.URL;
 
 @RunWith(SecurityInstrumentationTestRunner.class)
 @InstrumentationTestConfig(includePrefixes = { "javax.servlet", "com.newrelic.agent.security.instrumentation.servlet24" })
+@Category({ Java17IncompatibleTest.class})
 public class WebServletTest {
     @ClassRule
     public static HttpServletServer server = new HttpServletServer();

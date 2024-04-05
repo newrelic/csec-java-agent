@@ -3,6 +3,30 @@ Noteworthy changes to the agent are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [1.2.1] - TBD
+### Changes
+- [NR-222163](https://new-relic.atlassian.net/browse/NR-222163) Feature to detect API Endpoint of the Application [PR-186](https://github.com/newrelic/csec-java-agent/pull/186)
+- [NR-171577](https://new-relic.atlassian.net/browse/NR-171577) Resin Support : The security agent now also supports resin server
+- [NR-171575](https://new-relic.atlassian.net/browse/NR-171575) Anorm Support : The security agent now also supports Anorm Datastore version 2.0 to 2.5
+- [NR-175383](https://new-relic.atlassian.net/browse/NR-175383) JCache Support : The security agent now also supports jCache 1.0.0 and above [PR-132](https://github.com/newrelic/csec-java-agent/pull/132)
+- [NR-230246](https://new-relic.atlassian.net/browse/NR-230246), [NR-230248](https://new-relic.atlassian.net/browse/NR-230248) Spray HTTP Server Support : The security agent now also supports Spray HTTP Server version 1.3.1 and above (with scala 2.11 and above) [PR-193](https://github.com/newrelic/csec-java-agent/pull/193)
+- [NR-230246](https://new-relic.atlassian.net/browse/NR-230246), [NR-230248](https://new-relic.atlassian.net/browse/NR-230248) Spray Can Server Support : The security agent now also supports Spray Can Server version 1.3.1 and above (with scala 2.11 and above) [PR-195](https://github.com/newrelic/csec-java-agent/pull/195)
+- [NR-230243](https://new-relic.atlassian.net/browse/NR-230243), [NR-230245](https://new-relic.atlassian.net/browse/NR-230245) Spray Client Support : The security agent now also supports Spray Client version 1.3.1 and above (with scala 2.11 and above) [PR-194](https://github.com/newrelic/csec-java-agent/pull/194)
+- [NR-234864](https://new-relic.atlassian.net/browse/NR-234864) Netty Server support : The security agent now also supports Netty Server version 4.0.0.Final and above. [PR-202](https://github.com/newrelic/csec-java-agent/pull/202)
+
+### Fixes
+- [NR-238324](https://new-relic.atlassian.net/browse/NR-238324) Extract Server Configuration to resolve IAST localhost connection with application for Netty server. [PR-202](https://github.com/newrelic/csec-java-agent/pull/202)
+- Exclude Milestone Release for Jax-RS, due to release of version 4.0.0-M2 on 9th March 2024 [PR-222](https://github.com/newrelic/csec-java-agent/pull/222)
+
+## [1.2.0] - 2024-3-28
+### Changes
+- Json Version bump to 1.2.0 due to [NR-235776](https://new-relic.atlassian.net/browse/NR-235776) implementation.
+- [NR-234886](https://new-relic.atlassian.net/browse/NR-234886) IAST replay header decryption due to Security Findings [PR-207](https://github.com/newrelic/csec-java-agent/pull/207)
+
+### Fixes
+- [NR-253538](https://new-relic.atlassian.net/browse/NR-253538) Fix issue related to the instrumentation of the Rhino JavaScript Engine that occurred while reading the script. [PR-211](https://github.com/newrelic/csec-java-agent/pull/211) 
+
 ## [1.1.2] - 2024-3-11
 ### Changes
 - [NR-174177](https://new-relic.atlassian.net/browse/NR-174177) Ning Async HTTP client Support: The security agent now also supports com.ning:async-http-client 1.0.0 and above [PR-152](https://github.com/newrelic/csec-java-agent/pull/152), [PR-118](https://github.com/newrelic/csec-java-agent/pull/118), [PR-116](https://github.com/newrelic/csec-java-agent/pull/116)

@@ -9,6 +9,7 @@ import com.newrelic.agent.security.instrumentator.utils.*;
 import com.newrelic.agent.security.intcodeagent.constants.AgentServices;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.newrelic.agent.security.intcodeagent.filelogging.LogFileHelper;
+import com.newrelic.agent.security.intcodeagent.utils.EncryptorUtils;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.logging.HealthCheckScheduleThread;
 import com.newrelic.agent.security.intcodeagent.logging.IAgentConstants;
@@ -655,6 +656,17 @@ public class Agent implements SecurityAgent {
             }
         } else {
             NewRelic.getAgent().getLogger().log(Level.FINER, "Class ", classToRetransform, " already instrumented.");
+        }
+    }
+
+    @Override
+    public String decryptAndVerify(String encryptedData, String hashVerifier) {
+        String decryptedData = EncryptorUtils.decrypt(AgentInfo.getInstance().getLinkingMetadata().get(INRSettingsKey.NR_ENTITY_GUID), encryptedData);
+        if(EncryptorUtils.verifyHashData(hashVerifier, decryptedData)) {
+            return decryptedData;
+        } else {
+            NewRelic.getAgent().getLogger().log(Level.WARNING, String.format("Agent data decryption verifier fails on data : %s hash : %s", encryptedData, hashVerifier), Agent.class.getName());
+            return null;
         }
     }
 }
