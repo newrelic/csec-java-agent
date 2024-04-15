@@ -189,3 +189,5 @@ include 'instrumentation:servlet-3.0'
 include 'instrumentation:spray-http-1.3.1'
 include 'instrumentation:spray-client'
 include 'instrumentation:spray-can-1.3.1'
+
+include 'instrumentation:spring-webclient-5.0'
