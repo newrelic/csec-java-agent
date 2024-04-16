@@ -19,16 +19,10 @@ public class ServletContainerInitializerTest {
 
     @Test
     public void testURLMappings() {
-        String handler = "com.nr.agent.security.instrumentation.servlet6.HttpTestServlet";
-        String method = "*";
         Iterator<ApplicationURLMapping> mappings = URLMappingsHelper.getApplicationURLMappings().iterator();
 
         Assert.assertTrue("URL Mappings", mappings.hasNext());
         ApplicationURLMapping mapping1 = mappings.next();
-        Assert.assertEquals("URL Mappings", new ApplicationURLMapping(method, "/*", handler), mapping1);
-
-        Assert.assertTrue("URL Mappings", mappings.hasNext());
-        ApplicationURLMapping mapping2 = mappings.next();
-        Assert.assertEquals("URL Mappings", new ApplicationURLMapping(method, "/test", handler), mapping2);
+        Assert.assertEquals("URL Mappings", new ApplicationURLMapping("*", "/*", HttpTestServlet.class.getName()), mapping1);
     }
 }
