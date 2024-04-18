@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changes
 - [NR-256459](https://new-relic.atlassian.net/browse/NR-256459) Exclude JAX RS 4.0.0-M2 version from Instrumentation [PR-231](https://github.com/newrelic/csec-java-agent/pull/231)
 - [NR-256461](https://new-relic.atlassian.net/browse/NR-256461) Exclude mssql-jdbc version 12.7.0 from Instrumentation [PR-232](https://github.com/newrelic/csec-java-agent/pull/232)
+- 
 
 ## [1.2.0] - 2024-3-28
 ### Changes
