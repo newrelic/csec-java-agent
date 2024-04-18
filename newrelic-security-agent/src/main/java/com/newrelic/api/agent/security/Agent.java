@@ -9,11 +9,11 @@ import com.newrelic.agent.security.instrumentator.utils.*;
 import com.newrelic.agent.security.intcodeagent.constants.AgentServices;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.newrelic.agent.security.intcodeagent.filelogging.LogFileHelper;
+import com.newrelic.agent.security.intcodeagent.models.javaagent.*;
 import com.newrelic.agent.security.intcodeagent.utils.EncryptorUtils;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.logging.HealthCheckScheduleThread;
 import com.newrelic.agent.security.intcodeagent.logging.IAgentConstants;
-import com.newrelic.agent.security.intcodeagent.models.javaagent.ExitEventBean;
 import com.newrelic.agent.security.intcodeagent.properties.BuildInfo;
 import com.newrelic.agent.security.intcodeagent.schedulers.FileCleaner;
 import com.newrelic.agent.security.intcodeagent.schedulers.SchedulerHelper;
@@ -643,6 +643,17 @@ public class Agent implements SecurityAgent {
     public void reportIncident(LogLevel logLevel, String event, Throwable exception, String caller) {
         if(logger != null){
             logger.postLogMessageIfNecessary(logLevel, event, exception, caller);
+        }
+    }
+
+    @Override
+    public void reportIASTScanFailure(SecurityMetaData securityMetaData, String apiId, Throwable exception,
+                                      String nrCsecFuzzRequestId, String controlCommandId, String failureMessage) {
+        if(WSUtils.isConnected()){
+            LogMessageException message = new LogMessageException(exception, 0, 1);
+            IASTReplayFailure replayFailure = new IASTReplayFailure(apiId, nrCsecFuzzRequestId, controlCommandId, failureMessage, message);
+            IASTScanFailure scanFailure = new IASTScanFailure(replayFailure, new SecurityMetaData(securityMetaData));
+            EventSendPool.getInstance().sendEvent(scanFailure);
         }
     }
 

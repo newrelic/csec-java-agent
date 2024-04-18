@@ -64,6 +64,9 @@ public interface SecurityAgent {
 
     void reportIncident(LogLevel logLevel, String event, Throwable exception, String caller);
 
+    void reportIASTScanFailure(SecurityMetaData securityMetaData, String apiId, Throwable exception,
+                               String nrCsecFuzzRequestId, String controlCommandId, String failureMessage);
+
     void retransformUninstrumentedClass(Class<?> classToRetransform);
 
     String decryptAndVerify(String encryptedData, String hashVerifier);
