@@ -4,6 +4,7 @@ import com.newrelic.agent.security.AgentInfo;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.newrelic.agent.security.intcodeagent.logging.IAgentConstants;
 import com.newrelic.agent.security.intcodeagent.models.FuzzRequestBean;
+import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.FuzzFailEvent;
 import com.newrelic.agent.security.intcodeagent.websocket.EventSendPool;
@@ -130,6 +131,9 @@ public class RestClient {
                 try {
                     responseCode = RestClient.getInstance().fireRequest(request, repeatCount + endpoints.size() -1, fuzzRequestId);
                 } catch (SSLException e) {
+                    NewRelicSecurity.getAgent().reportIASTScanFailure(null, null,
+                            e, RequestUtils.extractNRCsecFuzzReqHeader(httpRequest), fuzzRequestId,
+                            String.format(IAgentConstants.SSL_EXCEPTION_FAILURE_MESSAGE, request.url()));
                     logger.log(LogLevel.FINER, String.format(CALL_FAILED_REQUEST_S_REASON, request), e, RestClient.class.getName());
                     logger.postLogMessageIfNecessary(LogLevel.WARNING,
                             String.format(CALL_FAILED_REQUEST_S_REASON, fuzzRequestId),
@@ -193,6 +197,10 @@ public class RestClient {
                 return fireRequest(request, --repeatCount, fuzzRequestId);
             }
         } catch (IOException e) {
+            NewRelicSecurity.getAgent().reportIASTScanFailure(null, null,
+                    e, RequestUtils.extractNRCsecFuzzReqHeader(request.headers()), fuzzRequestId,
+                    IAgentConstants.REQUEST_FAILURE_DUE_TO_IOEXCEPTION);
+
             logger.log(LogLevel.FINER, String.format(CALL_FAILED_REQUEST_S_REASON, request), e, RestClient.class.getName());
             logger.postLogMessageIfNecessary(LogLevel.WARNING,
                     String.format(CALL_FAILED_REQUEST_S_REASON, fuzzRequestId),
