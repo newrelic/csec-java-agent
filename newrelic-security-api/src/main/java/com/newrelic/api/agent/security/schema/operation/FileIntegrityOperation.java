@@ -1,5 +1,6 @@
 package com.newrelic.api.agent.security.schema.operation;
 
+import com.newrelic.api.agent.security.instrumentation.helpers.ThreadLocalLockHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.StringUtils;
 import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
@@ -143,18 +144,26 @@ public class FileIntegrityOperation extends AbstractOperation {
     }
 
     public boolean isIntegrityBreached(File file){
-        Boolean exists = file.exists();
-        long lastModified = exists? file.lastModified() : -1;
-        String permissions = StringUtils.EMPTY;
-        long length = file.length();
+        boolean lockAcquired = ThreadLocalLockHelper.acquireLock();
         try {
-            if(exists) {
-                PosixFileAttributes fileAttributes = Files.readAttributes(Paths.get(file.getPath()), PosixFileAttributes.class);
-                Set<PosixFilePermission> permissionSet = fileAttributes.permissions();
-                permissions = permissionSet.toString();
+            if(lockAcquired) {
+                Boolean exists = file.exists();
+                long lastModified = exists ? file.lastModified() : -1;
+                String permissions = StringUtils.EMPTY;
+                long length = file.length();
+                if (exists) {
+                    PosixFileAttributes fileAttributes = Files.readAttributes(Paths.get(file.getPath()), PosixFileAttributes.class);
+                    Set<PosixFilePermission> permissionSet = fileAttributes.permissions();
+                    permissions = permissionSet.toString();
+                }
+                return (exists != this.exists || lastModified != this.lastModified || !StringUtils.equals(permissions, this.permissionString) || length != this.length);
             }
         } catch (IOException e) {
+        } finally {
+            if(lockAcquired) {
+                ThreadLocalLockHelper.releaseLock();
+            }
         }
-        return (exists != this.exists || lastModified != this.lastModified || !StringUtils.equals(permissions, this.permissionString) || length != this.length);
+        return false;
     }
 }
