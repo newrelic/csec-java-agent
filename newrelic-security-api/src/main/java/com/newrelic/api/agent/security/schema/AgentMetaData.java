@@ -35,6 +35,8 @@ public class AgentMetaData {
     @JsonIgnore
     private String userLevelServiceMethodEncounteredFramework;
 
+    private boolean foundAnnotedUserLevelServiceMethod = false;
+
     @JsonIgnore
     private Set<String> ips;
 
@@ -173,5 +175,13 @@ public class AgentMetaData {
 
     public void setAppServerInfo(AppServerInfo appServerInfo) {
         this.appServerInfo = appServerInfo;
+    }
+
+    public boolean isFoundAnnotedUserLevelServiceMethod() {
+        return foundAnnotedUserLevelServiceMethod;
+    }
+
+    public void setFoundAnnotedUserLevelServiceMethod(boolean foundAnnotedUserLevelServiceMethod) {
+        this.foundAnnotedUserLevelServiceMethod = foundAnnotedUserLevelServiceMethod;
     }
 }
