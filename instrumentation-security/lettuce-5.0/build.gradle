@@ -3,8 +3,7 @@ dependencies {
     implementation("com.newrelic.agent.java:newrelic-api:${nrAPIVersion}")
     implementation("com.newrelic.agent.java:newrelic-weaver-api:${nrAPIVersion}")
     implementation group: 'io.lettuce', name: 'lettuce-core', version: '5.0.3.RELEASE'
-//    implementation("org.springframework.data:spring-data-redis:3.1.5")
-    testImplementation("com.github.codemonstur:embedded-redis:1.0.0")
+    testImplementation('org.testcontainers:testcontainers:1.17.1')
 }
 
 jar {

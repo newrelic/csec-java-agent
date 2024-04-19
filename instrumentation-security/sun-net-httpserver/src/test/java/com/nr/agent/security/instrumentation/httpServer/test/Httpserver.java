@@ -1,5 +1,6 @@
 package com.nr.agent.security.instrumentation.httpServer.test;
 
+import com.sun.net.httpserver.HttpContext;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
@@ -29,7 +30,12 @@ public class Httpserver extends ExternalResource {
     public void startServer() throws IOException {
         server = HttpServer.create(new InetSocketAddress(InetAddress.getLoopbackAddress(), PORT), 0);
         server.createContext("/", new Handler());
+
+        // creating HttpContext and will specify the handler later
+        HttpContext context = server.createContext("/new");
         server.setExecutor(null);
+
+        context.setHandler(new Handler());
         server.start();
     }
 
