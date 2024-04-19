@@ -4,7 +4,7 @@ Noteworthy changes to the agent are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.2.1] - TBD
+## [1.3.0] - TBD
 ### Changes
 - [NR-222163](https://new-relic.atlassian.net/browse/NR-222163) Feature to detect API Endpoint of the Application [PR-186](https://github.com/newrelic/csec-java-agent/pull/186)
 - [NR-171577](https://new-relic.atlassian.net/browse/NR-171577) Resin Support : The security agent now also supports resin server
@@ -18,6 +18,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixes
 - [NR-238324](https://new-relic.atlassian.net/browse/NR-238324) Extract Server Configuration to resolve IAST localhost connection with application for Netty server. [PR-202](https://github.com/newrelic/csec-java-agent/pull/202)
 - Exclude Milestone Release for Jax-RS, due to release of version 4.0.0-M2 on 9th March 2024 [PR-222](https://github.com/newrelic/csec-java-agent/pull/222)
+
+
+## [1.2.1] - 2024-4-19
+### Fixes
+- [NR-259467](https://new-relic.atlassian.net/browse/NR-259467) Fix issue of nested event generation from CSEC's agent itself [PR-230](https://github.com/newrelic/csec-java-agent/pull/230)
+
+### Changes
+- [NR-256459](https://new-relic.atlassian.net/browse/NR-256459) Exclude JAX RS 4.0.0-M2 version from Instrumentation [PR-231](https://github.com/newrelic/csec-java-agent/pull/231)
+- [NR-256461](https://new-relic.atlassian.net/browse/NR-256461) Exclude mssql-jdbc version 12.7.0 from Instrumentation [PR-232](https://github.com/newrelic/csec-java-agent/pull/232)
+- [NR-260369](https://new-relic.atlassian.net/browse/NR-260369) Dependency version bump of commons-compress:1.21 to commons-compress:1.26.0 
 
 ## [1.2.0] - 2024-3-28
 ### Changes
