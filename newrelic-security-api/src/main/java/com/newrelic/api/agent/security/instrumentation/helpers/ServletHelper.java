@@ -98,7 +98,7 @@ public class ServletHelper {
                     String filesToCreate = NewRelicSecurity.getAgent().decryptAndVerify(encryptedData, hashVerifier);
                     if(StringUtils.isBlank(filesToCreate)){
                         NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format("Request Identifier decryption of files failed : %s hash : %s", encryptedData, hashVerifier), ServletHelper.class.getName());
-                        return k2RequestIdentifierInstance;
+                        return CSECRequestIdentifierInstance;
                     }
 
                     String[] allFiles = StringUtils.splitByWholeSeparatorWorker(filesToCreate, StringUtils.COMMA_DELIMETER, -1, false);
