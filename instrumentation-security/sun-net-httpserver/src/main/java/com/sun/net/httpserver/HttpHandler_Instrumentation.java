@@ -24,7 +24,7 @@ public class HttpHandler_Instrumentation {
         if (isServletLockAcquired){
             preprocessSecurityHook(exchange);
         }
-        ServletHelper.registerUserLevelCode("sun-net-http-server");
+        ServletHelper.registerUserLevelCode(HttpServerHelper.SUN_NET_HTTP_SERVER);
         try{
             Weaver.callOriginal();
         } finally {
