@@ -19,7 +19,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [NR-238324](https://new-relic.atlassian.net/browse/NR-238324) Extract Server Configuration to resolve IAST localhost connection with application for Netty server. [PR-202](https://github.com/newrelic/csec-java-agent/pull/202)
 - Exclude Milestone Release for Jax-RS, due to release of version 4.0.0-M2 on 9th March 2024 [PR-222](https://github.com/newrelic/csec-java-agent/pull/222)
 
-
 ## [1.2.1] - 2024-4-19
 ### Fixes
 - [NR-259467](https://new-relic.atlassian.net/browse/NR-259467) Fix issue of nested event generation from CSEC's agent itself [PR-230](https://github.com/newrelic/csec-java-agent/pull/230)
