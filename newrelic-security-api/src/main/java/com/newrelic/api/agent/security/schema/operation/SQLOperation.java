@@ -14,8 +14,6 @@ public class SQLOperation extends AbstractOperation {
 
     private Map<String, String> params;
 
-    private Map<String, Object> objectParams;
-
     private String dbName = "UNKNOWN";
 
     private boolean isPreparedCall;
@@ -26,7 +24,6 @@ public class SQLOperation extends AbstractOperation {
         this.setCaseType(VulnerabilityCaseType.SQL_DB_COMMAND);
         this.query = EMPTY;
         this.params = new HashMap<>();
-        this.objectParams = new HashMap<>();
     }
 
     public String getQuery() {
@@ -57,7 +54,7 @@ public class SQLOperation extends AbstractOperation {
     public boolean isEmpty() {
         if (query == null || query.trim().isEmpty()) {
             return true;
-        } else if (isPreparedCall && params != null) {
+        } else if (isPreparedCall) {
             return query.contains("?") && params.isEmpty();
         }
         return false;
@@ -83,14 +80,6 @@ public class SQLOperation extends AbstractOperation {
      */
     public String getDbName() {
         return dbName;
-    }
-
-    public Map<String, Object> getObjectParams() {
-        return objectParams;
-    }
-
-    public void setObjectParams(Map<String, Object> objectParams) {
-        this.objectParams = objectParams;
     }
 
     /**

@@ -6,7 +6,6 @@ import com.newrelic.agent.security.introspec.SecurityIntrospector;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.security.schema.operation.LDAPOperation;
-import com.newrelic.security.test.marker.Java17IncompatibleTest;
 import com.unboundid.ldap.sdk.LDAPException;
 import com.unboundid.ldap.sdk.LDAPInterface;
 import org.junit.Assert;
@@ -15,7 +14,6 @@ import org.junit.ClassRule;
 import org.junit.FixMethodOrder;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 import org.zapodot.junit.ldap.EmbeddedLdapRule;
@@ -37,7 +35,6 @@ import java.util.List;
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 //FIXME: after instrumentation works
 @Ignore
-@Category({ Java17IncompatibleTest.class})
 public class DirContextTest {
     public static final String DOMAIN_DSN = "dc=example,dc=com";
     @ClassRule

@@ -4,7 +4,6 @@ import com.newrelic.agent.security.introspec.InstrumentationTestConfig;
 import com.newrelic.agent.security.introspec.SecurityInstrumentationTestRunner;
 import com.newrelic.agent.security.introspec.SecurityIntrospector;
 import com.newrelic.api.agent.Trace;
-import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.security.instrumentation.helpers.ServletHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.AgentMetaData;
@@ -42,7 +41,7 @@ import java.util.UUID;
 public class ServerTest {
     public static int PORT = 0;
     public static String ENDPOINT = "http://localhost:%d/";
-    private final String fuzzHeader = "FILE_OPERATION--123:IAST:native:__K2PM0__:IAST:./tmp/file:IAST:SAFE:IAST:1:IAST:1:IAST:2aabd9833907ae4cde0120e4352c0da72d9e1acfcf298d6801b7120586d1df9d:IAST:02642fa0c3542fe5997eea314c0f5eec5b744ea83f168e998006111f9fa4fbd2";
+
     private Server server;
 
     @After
@@ -84,7 +83,7 @@ public class ServerTest {
         );
         Assert.assertEquals(
                 String.format("Invalid header value for:  %s", ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID),
-                fuzzHeader,
+                headerValue,
                 headers.get(ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID)
         );
         Assert.assertTrue(
@@ -95,15 +94,6 @@ public class ServerTest {
                 String.format("Invalid header value for:  %s", ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER),
                 headerValue,
                 headers.get(ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER.toLowerCase())
-        );
-        Assert.assertTrue(
-                String.format("Missing header: %s", GenericHelper.CSEC_PARENT_ID),
-                headers.containsKey(GenericHelper.CSEC_PARENT_ID.toLowerCase())
-        );
-        Assert.assertEquals(
-                String.format("Invalid header value for:  %s", GenericHelper.CSEC_PARENT_ID),
-                headerValue,
-                headers.get(GenericHelper.CSEC_PARENT_ID.toLowerCase())
         );
     }
 
@@ -137,7 +127,7 @@ public class ServerTest {
         );
         Assert.assertEquals(
                 String.format("Invalid header value for:  %s", ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID),
-                fuzzHeader,
+                headerValue,
                 headers.get(ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID)
         );
         Assert.assertTrue(
@@ -148,15 +138,6 @@ public class ServerTest {
                 String.format("Invalid K2 header value for:  %s", ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER),
                 headerValue,
                 headers.get(ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER.toLowerCase())
-        );
-        Assert.assertTrue(
-                String.format("Missing header: %s", GenericHelper.CSEC_PARENT_ID),
-                headers.containsKey(GenericHelper.CSEC_PARENT_ID.toLowerCase())
-        );
-        Assert.assertEquals(
-                String.format("Invalid header value for:  %s", GenericHelper.CSEC_PARENT_ID),
-                headerValue,
-                headers.get(GenericHelper.CSEC_PARENT_ID.toLowerCase())
         );
     }
 
@@ -266,7 +247,7 @@ public class ServerTest {
         );
         Assert.assertEquals(
                 String.format("Invalid header value for:  %s", ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID),
-                fuzzHeader,
+                headerValue,
                 headers.get(ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID)
         );
         Assert.assertTrue(
@@ -277,15 +258,6 @@ public class ServerTest {
                 String.format("Invalid header value for:  %s", ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER),
                 headerValue,
                 headers.get(ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER.toLowerCase())
-        );
-        Assert.assertTrue(
-                String.format("Missing header: %s", GenericHelper.CSEC_PARENT_ID),
-                headers.containsKey(GenericHelper.CSEC_PARENT_ID.toLowerCase())
-        );
-        Assert.assertEquals(
-                String.format("Invalid header value for:  %s", GenericHelper.CSEC_PARENT_ID),
-                headerValue,
-                headers.get(GenericHelper.CSEC_PARENT_ID.toLowerCase())
         );
     }
 
@@ -348,9 +320,8 @@ public class ServerTest {
 
         conn.setRequestProperty("content-type", "text/plain;charset=utf-8");
         conn.setRequestMethod("GET");
-        conn.setRequestProperty(ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID, fuzzHeader);
+        conn.setRequestProperty(ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID, headerValue);
         conn.setRequestProperty(ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER, headerValue);
-        conn.setRequestProperty(GenericHelper.CSEC_PARENT_ID, headerValue);
         conn.connect();
 
         conn.getResponseCode();
