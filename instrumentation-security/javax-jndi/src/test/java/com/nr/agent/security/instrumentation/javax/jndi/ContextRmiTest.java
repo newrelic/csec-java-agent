@@ -7,11 +7,9 @@ import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.security.schema.operation.SSRFOperation;
 import com.newrelic.agent.security.instrumentation.javax.jndi.JNDIUtils;
-import com.newrelic.security.test.marker.Java17IncompatibleTest;
 import org.junit.Assert;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 
@@ -32,7 +30,6 @@ import java.util.Properties;
 @RunWith(SecurityInstrumentationTestRunner.class)
 @InstrumentationTestConfig(includePrefixes = { "javax.naming", "com.newrelic.agent.security.instrumentation.javax.jndi" } )
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-@Category({ Java17IncompatibleTest.class})
 public class ContextRmiTest {
 
     private final int PORT = getRandomPort();

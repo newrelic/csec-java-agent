@@ -22,8 +22,6 @@ import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
 
 import java.math.BigDecimal;
-import java.net.URL;
-import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -34,9 +32,6 @@ import static com.newrelic.api.agent.security.instrumentation.helpers.JdbcHelper
 public abstract class PreparedStatement_Instrumentation {
     @NewField
     private Map<String, String> params;
-
-    @NewField
-    private Map<String, Object> objectParams;
     @NewField
     String preparedSql;
     @NewField
@@ -241,128 +236,6 @@ public abstract class PreparedStatement_Instrumentation {
         Weaver.callOriginal();
     }
 
-    public void setSQLXML(int parameterIndex, SQLXML xmlObject) throws SQLException {
-        setParamValue(parameterIndex, xmlObject.getString());
-        Weaver.callOriginal();
-    }
-
-    public void setRowId(int parameterIndex, RowId x) throws SQLException {
-        setParamValue(parameterIndex, x.toString());
-        Weaver.callOriginal();
-    }
-
-    public void setURL(int parameterIndex, java.net.URL x) throws SQLException {
-        setParamValue(parameterIndex, x.toString());
-        Weaver.callOriginal();
-    }
-
-    public void setArray (int parameterIndex, Array x) throws SQLException {
-        setObjectParams(parameterIndex, x.getArray());
-        Weaver.callOriginal();
-    }
-    public void setDate(int parameterIndex, java.sql.Date x, Calendar cal) throws SQLException {
-        setParamValue(parameterIndex, x);
-        Weaver.callOriginal();
-    }
-    public void setTime(int parameterIndex, java.sql.Time x, Calendar cal) throws SQLException {
-        setParamValue(parameterIndex, x);
-        Weaver.callOriginal();
-    }
-    public void setTimestamp(int parameterIndex, java.sql.Timestamp x, Calendar cal) throws SQLException {
-        setParamValue(parameterIndex, x);
-        Weaver.callOriginal();
-    }
-    public void setNull(int parameterIndex, int sqlType, String typeName) throws SQLException {
-        setParamValue(parameterIndex, "null");
-        Weaver.callOriginal();
-    }
-    public void setNString(int parameterIndex, String value) throws SQLException {
-        setParamValue(parameterIndex, value);
-        Weaver.callOriginal();
-    }
-
-    public void setObject(int parameterIndex, Object x) throws SQLException {
-        if(x instanceof Long || x instanceof Integer || x instanceof Double ||
-                x instanceof Float || x instanceof Boolean || x instanceof Short ||
-                x instanceof String || x instanceof byte[] || x instanceof Timestamp ||
-                x instanceof Date || x instanceof BigDecimal || x instanceof Time) {
-            setParamValue(parameterIndex, x);
-        } else if (x instanceof SQLXML) {
-            setParamValue(parameterIndex, ((SQLXML) x).getString());
-        } else if (x instanceof RowId || x instanceof URL) {
-            setParamValue(parameterIndex, x.toString());
-        } else {
-            //TODO critical-message for inconvertible
-            setObjectParams(parameterIndex, x);
-        }
-        Weaver.callOriginal();
-    }
-
-    public void setObject(int parameterIndex, Object x, int targetSqlType) throws SQLException {
-        if(x instanceof Long || x instanceof Integer || x instanceof Double ||
-                x instanceof Float || x instanceof Boolean || x instanceof Short ||
-                x instanceof String || x instanceof byte[] || x instanceof Timestamp ||
-                x instanceof Date || x instanceof BigDecimal || x instanceof Time) {
-            setParamValue(parameterIndex, x);
-        } else if (x instanceof SQLXML) {
-            setParamValue(parameterIndex, ((SQLXML) x).getString());
-        } else if (x instanceof RowId || x instanceof URL) {
-            setParamValue(parameterIndex, x.toString());
-        } else {
-            NewRelicSecurity.getAgent().log(LogLevel.FINEST, String.format("Instrumentation library: %s , Inconvertible for type : %s", JDBC_GENERIC, x.getClass()), this.getClass().getName());
-            setObjectParams(parameterIndex, x);
-        }
-        Weaver.callOriginal();
-    }
-    public void setObject(int parameterIndex, Object x, int targetSqlType, int scaleOrLength) throws SQLException {
-        if(x instanceof Long || x instanceof Integer || x instanceof Double ||
-                x instanceof Float || x instanceof Boolean || x instanceof Short ||
-                x instanceof String || x instanceof byte[] || x instanceof Timestamp ||
-                x instanceof Date || x instanceof BigDecimal || x instanceof Time) {
-            setParamValue(parameterIndex, x);
-        } else if (x instanceof SQLXML) {
-            setParamValue(parameterIndex, ((SQLXML) x).getString());
-        } else if (x instanceof RowId || x instanceof URL) {
-            setParamValue(parameterIndex, x.toString());
-        } else {
-            NewRelicSecurity.getAgent().log(LogLevel.FINEST, String.format("Instrumentation library: %s , Inconvertible for type : %s", JDBC_GENERIC, x.getClass()), this.getClass().getName());
-            setObjectParams(parameterIndex, x);
-        }
-        Weaver.callOriginal();
-    }
-    public void setObject(int parameterIndex, Object x, SQLType targetSqlType) throws SQLException {
-        if(x instanceof Long || x instanceof Integer || x instanceof Double ||
-                x instanceof Float || x instanceof Boolean || x instanceof Short ||
-                x instanceof String || x instanceof byte[] || x instanceof Timestamp ||
-                x instanceof Date || x instanceof BigDecimal || x instanceof Time) {
-            setParamValue(parameterIndex, x);
-        } else if (x instanceof SQLXML) {
-            setParamValue(parameterIndex, ((SQLXML) x).getString());
-        } else if (x instanceof RowId || x instanceof URL) {
-            setParamValue(parameterIndex, x.toString());
-        } else {
-            NewRelicSecurity.getAgent().log(LogLevel.FINEST, String.format("Instrumentation library: %s , Inconvertible for type : %s", JDBC_GENERIC, x.getClass()), this.getClass().getName());
-            setObjectParams(parameterIndex, x);
-        }
-        Weaver.callOriginal();
-    }
-    public void setObject(int parameterIndex, Object x, SQLType targetSqlType, int scaleOrLength) throws SQLException {
-        if(x instanceof Long || x instanceof Integer || x instanceof Double ||
-                x instanceof Float || x instanceof Boolean || x instanceof Short ||
-                x instanceof String || x instanceof byte[] || x instanceof Timestamp ||
-                x instanceof Date || x instanceof BigDecimal || x instanceof Time) {
-            setParamValue(parameterIndex, x);
-        } else if (x instanceof SQLXML) {
-            setParamValue(parameterIndex, ((SQLXML) x).getString());
-        } else if (x instanceof RowId || x instanceof URL) {
-            setParamValue(parameterIndex, x.toString());
-        } else {
-            NewRelicSecurity.getAgent().log(LogLevel.FINEST, String.format("Instrumentation library: %s , Inconvertible for type : %s", JDBC_GENERIC, x.getClass()), this.getClass().getName());
-            setObjectParams(parameterIndex, x);
-        }
-        Weaver.callOriginal();
-    }
-
     public void clearParameters() throws SQLException {
         if(params != null){
             params.clear();
@@ -387,13 +260,6 @@ public abstract class PreparedStatement_Instrumentation {
         params.put(String.valueOf(index), new String(value));
     }
 
-    private void setObjectParams(int index, Object data) {
-        if (objectParams == null) {
-            objectParams = new HashMap<>();
-        }
-
-        objectParams.put(String.valueOf(index), data);
-    }
     public void addBatch() throws SQLException {
         boolean isLockAcquired = acquireLockIfPossible();
         SQLOperation sqlOperation = null;
@@ -403,9 +269,6 @@ public abstract class PreparedStatement_Instrumentation {
             Map<String, String> localParams = new HashMap<>();
             localParams.putAll(params);
             sqlOperation.setParams(localParams);
-            Map<String, Object> localObjParams = new HashMap<>();
-            localObjParams.putAll(objectParams);
-            sqlOperation.setObjectParams(localObjParams);
             sqlOperation.setDbName(NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(JDBCVendor.META_CONST_JDBC_VENDOR, String.class));
             sqlOperation.setPreparedCall(true);
             if(batchSQLOperation==null)

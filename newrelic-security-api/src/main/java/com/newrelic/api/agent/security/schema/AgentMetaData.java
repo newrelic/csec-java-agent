@@ -51,8 +51,8 @@ public class AgentMetaData {
     }
 
     public AgentMetaData(AgentMetaData agentMetaData) {
-        agentMetaData.rciMethodsCalls.remove(null);
-        this.rciMethodsCalls = new HashSet<>(agentMetaData.rciMethodsCalls);
+        this.rciMethodsCalls = new HashSet<>();
+        this.rciMethodsCalls.addAll(agentMetaData.rciMethodsCalls);
         this.triggerViaDeserialisation = agentMetaData.triggerViaDeserialisation;
         this.triggerViaRCI = agentMetaData.triggerViaRCI;
         this.isClientDetectedFromXFF = agentMetaData.isClientDetectedFromXFF;
