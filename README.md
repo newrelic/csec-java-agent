@@ -171,6 +171,6 @@ If you would like to contribute to this project, review [these guidelines](https
 
 ## **License**
 
-New Relic Security Agent for Java is licensed under the New Relic Pre-Release Software Notice.
+New Relic Security Agent for Java is licensed under the New Relic Software License v. 1.0
 
 The New Relic Security Agent for Java also uses source code from third-party libraries. You can find full details on which libraries are used and the terms under which they are licensed in the third-party notices document.
