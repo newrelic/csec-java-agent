@@ -10,7 +10,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 
 public class GrpcRequestProcessor implements Callable<Object> {
-    public static final String CALL_FAILED_REQUEST_S_REASON = "Call failed : request %s reason : ";
+    public static final String CALL_FAILED_REQUEST_S_REASON = "Call failed : request %s reason : %s ";
     private ControlCommandDto controlCommandDto;
     private int repeatCount;
     private static final int MAX_REPETITION = 3;
@@ -31,18 +31,18 @@ public class GrpcRequestProcessor implements Callable<Object> {
         try {
             Object futureResult = future.get();
             if (futureResult instanceof Throwable) {
-                NewRelicSecurity.getAgent().log(LogLevel.FINER, String.format(CALL_FAILED_REQUEST_S_REASON, controlCommandDto.getRequestBean()), (Throwable) futureResult, GrpcClient.class.getName());
+                NewRelicSecurity.getAgent().log(LogLevel.FINER, String.format(CALL_FAILED_REQUEST_S_REASON, controlCommandDto.getRequestBean(), ((Throwable) futureResult).getMessage()), (Throwable) futureResult, GrpcClient.class.getName());
                 NewRelicSecurity.getAgent().reportIncident(LogLevel.WARNING,
-                        String.format(CALL_FAILED_REQUEST_S_REASON, controlCommandDto.getId()),
+                        String.format(CALL_FAILED_REQUEST_S_REASON, controlCommandDto.getId(), ((Throwable) futureResult).getMessage()),
                         (Throwable) futureResult, GrpcClient.class.getName());
                 GrpcClientRequestReplayHelper.getInstance().addFuzzFailEventToQueue(controlCommandDto.getRequestBean(), (Throwable) futureResult);
             } else {
                 GrpcClientRequestReplayHelper.getInstance().getPendingIds().remove(controlCommandDto.getId());
             }
         } catch (Throwable e) {
-            NewRelicSecurity.getAgent().log(LogLevel.SEVERE, String.format(CALL_FAILED_REQUEST_S_REASON, controlCommandDto.getRequestBean()), e, GrpcRequestProcessor.class.getName());
+            NewRelicSecurity.getAgent().log(LogLevel.SEVERE, String.format(CALL_FAILED_REQUEST_S_REASON, controlCommandDto.getRequestBean(), e.getMessage()), e, GrpcRequestProcessor.class.getName());
             NewRelicSecurity.getAgent().reportIncident(LogLevel.SEVERE,
-                    String.format(CALL_FAILED_REQUEST_S_REASON, controlCommandDto.getId()),
+                    String.format(CALL_FAILED_REQUEST_S_REASON, controlCommandDto.getId(), e.getMessage()),
                     e, GrpcRequestProcessor.class.getName());
             GrpcClientRequestReplayHelper.getInstance().addFuzzFailEventToQueue(controlCommandDto.getRequestBean(), e);
         }

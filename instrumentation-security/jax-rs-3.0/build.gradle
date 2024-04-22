@@ -19,6 +19,7 @@ jar {
 
 verifyInstrumentation {
     passesOnly 'jakarta.ws.rs:jakarta.ws.rs-api:[3.0-M1,)'
+    excludeRegex '.*-M[0-9]+'
 }
 
 compileJava {

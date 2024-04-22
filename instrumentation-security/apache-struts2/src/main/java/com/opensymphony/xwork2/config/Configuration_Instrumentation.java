@@ -3,7 +3,7 @@ package com.opensymphony.xwork2.config;
 import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
-import com.nr.instrumentation.security.apache.struts2.StrutsHelper;
+import com.newrelic.agent.security.instrumentation.apache.struts2.StrutsHelper;
 import java.util.List;
 
 @Weave(type = MatchType.Interface, originalName = "com.opensymphony.xwork2.config.Configuration")

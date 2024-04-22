@@ -61,7 +61,7 @@ public class AkkaCoreUtils {
     public static void postProcessHttpRequest(Boolean isServletLockAcquired, StringBuilder responseBody, String contentType, String className, String methodName, Token token) {
         try {
             token.linkAndExpire();
-            if(!isServletLockAcquired || !NewRelicSecurity.isHookProcessingActive()){
+            if(!isServletLockAcquired || !NewRelicSecurity.isHookProcessingActive() || Boolean.TRUE.equals(NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute("RXSS_PROCESSED", Boolean.class))){
                 return;
             }
             NewRelicSecurity.getAgent().getSecurityMetaData().getResponse().setResponseContentType(contentType);
@@ -123,7 +123,7 @@ public class AkkaCoreUtils {
             try {
                 queryString = httpRequest.getUri().rawQueryString().get();
             } catch (NoSuchElementException ignored) {
-                // ignore NoSuchElementException – there is no value present in rawQueryString
+                // ignore NoSuchElementException there is no value present in rawQueryString
             } finally {
                 if (queryString != null && !queryString.trim().isEmpty()) {
                     securityRequest.setUrl(securityRequest.getUrl() + QUESTION_MARK + queryString);

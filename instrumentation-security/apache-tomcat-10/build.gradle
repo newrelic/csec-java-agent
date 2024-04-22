@@ -1,0 +1,22 @@
+dependencies {
+    implementation(project(":newrelic-security-api"))
+    implementation("com.newrelic.agent.java:newrelic-weaver-api:${nrAPIVersion}")
+    implementation("com.newrelic.agent.java:newrelic-api:${nrAPIVersion}")
+    implementation("org.apache.tomcat.embed:tomcat-embed-core:10.0.0")
+    implementation("org.apache.tomcat:tomcat-juli:10.0.0")
+}
+
+jar {
+    manifest { attributes 'Implementation-Title': 'com.newrelic.instrumentation.security.apache-tomcat-10' }
+}
+
+verifyInstrumentation {
+    passesOnly('org.apache.tomcat.embed:tomcat-embed-core:[10.0.0-M1,)')
+    fails('org.apache.tomcat.embed:tomcat-embed-core:[7.0.0,10.0.0-M1)')
+    excludeRegex '.*-(b|gfa|beta|RC)[0-9]*'
+}
+
+site {
+    title 'Tomcat'
+    type 'Appserver'
+}
