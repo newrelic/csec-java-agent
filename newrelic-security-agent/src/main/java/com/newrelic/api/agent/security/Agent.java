@@ -349,7 +349,7 @@ public class Agent implements SecurityAgent {
     }
 
     private static boolean checkIfNRGeneratedEvent(AbstractOperation operation) {
-        boolean isNettyReactor = false;
+        boolean isNettyReactor = false, isNRGeneratedEvent = false;
         for (int i = 1, j = 0; i < operation.getStackTrace().length; i++) {
             if(!isNettyReactor && StringUtils.equalsAny(operation.getStackTrace()[i].getClassName(), "com.nr.instrumentation.TokenLinkingSubscriber", "com.nr.instrumentation.reactor.netty.TokenLinkingSubscriber")){
                 isNettyReactor = true;
@@ -360,13 +360,13 @@ public class Agent implements SecurityAgent {
             if (i - 1 == j && StringUtils.startsWithAny(operation.getStackTrace()[i].getClassName(), "com.newrelic.", "com.nr.")) {
                 j++;
             } else if (StringUtils.startsWithAny(operation.getStackTrace()[i].getClassName(), "com.newrelic.", "com.nr.")) {
-                return true;
+                isNRGeneratedEvent = true;
             }
         }
         if (isNettyReactor) {
             operation.setStackTrace(removeNettyReactorLinkingTraces(operation.getStackTrace()));
         }
-        return false;
+        return isNRGeneratedEvent;
     }
 
     private static StackTraceElement[] removeNettyReactorLinkingTraces(StackTraceElement[] stackTrace) {
