@@ -1,7 +1,10 @@
 package com.newrelic.agent.security.intcodeagent.models.javaagent;
 
 import com.newrelic.agent.security.AgentInfo;
+import com.newrelic.agent.security.instrumentator.dispatcher.DispatcherPool;
 import com.newrelic.agent.security.intcodeagent.websocket.JsonConverter;
+import com.newrelic.api.agent.security.schema.operation.FileOperation;
+import com.newrelic.api.agent.security.utils.logging.LogLevel;
 
 public class ExitEventBean extends AgentBasicInfo {
     private String executionId;
@@ -36,11 +39,11 @@ public class ExitEventBean extends AgentBasicInfo {
         this.caseType = caseType;
     }
 
-    public String getCSECRequestIdentifier() {
+    public String getCsecRequestIdentifier() {
         return csecRequestIdentifier;
     }
 
-    public void setCSECRequestIdentifier(String csecRequestIdentifier) {
+    public void setCsecRequestIdentifier(String csecRequestIdentifier) {
         this.csecRequestIdentifier = csecRequestIdentifier;
     }
 
