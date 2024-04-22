@@ -1,32 +1,28 @@
 package com.nr.agent.security.instrumentation.random;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.newrelic.agent.security.introspec.InstrumentationTestConfig;
 import com.newrelic.agent.security.introspec.SecurityInstrumentationTestRunner;
 import com.newrelic.agent.security.introspec.SecurityIntrospector;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
-import com.newrelic.api.agent.security.schema.operation.HashCryptoOperation;
 import com.newrelic.api.agent.security.schema.operation.RandomOperation;
+import com.newrelic.security.test.marker.Java17IncompatibleTest;
 import org.bouncycastle.crypto.prng.FixedSecureRandom;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
-import javax.crypto.Cipher;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.lang.instrument.UnmodifiableClassException;
-import java.security.SecureRandom;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 
 @RunWith(SecurityInstrumentationTestRunner.class)
 @InstrumentationTestConfig(includePrefixes = "com.newrelic.agent.security.instrumentation.random")
+@Category({ Java17IncompatibleTest.class})
 public class RandomTest {
     private static final String SECURE_RANDOM = "SECURERANDOM";
     private static final String WEAK_RANDOM = "WEAKRANDOM";

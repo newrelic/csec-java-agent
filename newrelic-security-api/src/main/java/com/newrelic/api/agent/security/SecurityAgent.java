@@ -65,4 +65,6 @@ public interface SecurityAgent {
     void reportIncident(LogLevel logLevel, String event, Throwable exception, String caller);
 
     void retransformUninstrumentedClass(Class<?> classToRetransform);
+
+    String decryptAndVerify(String encryptedData, String hashVerifier);
 }

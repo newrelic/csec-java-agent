@@ -92,9 +92,19 @@ public class ServletHelper {
                 if (data.length >= 6 && StringUtils.isNotBlank(data[5])) {
                     k2RequestIdentifierInstance.setRefKey(data[5].trim());
                 }
-                if (data.length >= 7) {
-                    for (int i = 6; i < data.length; i++) {
-                        String tmpFile = data[i].trim();
+                if (data.length >= 8) {
+                    String encryptedData = data[6].trim();
+                    String hashVerifier = data[7].trim();
+                    String filesToCreate = NewRelicSecurity.getAgent().decryptAndVerify(encryptedData, hashVerifier);
+                    if(StringUtils.isBlank(filesToCreate)){
+                        NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format("Request Identifier decryption of files failed : %s hash : %s", encryptedData, hashVerifier), ServletHelper.class.getName());
+                        return k2RequestIdentifierInstance;
+                    }
+
+                    String[] allFiles = StringUtils.splitByWholeSeparatorWorker(filesToCreate, StringUtils.COMMA_DELIMETER, -1, false);
+
+                    for (int i = 0; i < allFiles.length; i++) {
+                        String tmpFile = allFiles[i].trim();
                         if(StringUtils.contains(tmpFile, NR_CSEC_VALIDATOR_HOME_TMP_URL_ENCODED)) {
                             tmpFile = urlDecode(tmpFile);
                         }
@@ -116,7 +126,7 @@ public class ServletHelper {
                             Files.createFile(fileToCreate.toPath());
                         } catch (Throwable e) {
                             String message = "Error while parsing fuzz request : %s";
-                            NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(message, e.getMessage()), e, ServletHelper.class.getName());
+                            NewRelicSecurity.getAgent().log(LogLevel.INFO, String.format(message, e.getMessage()), e, ServletHelper.class.getName());
                         }
                     }
                 }
@@ -153,7 +163,7 @@ public class ServletHelper {
                 return false;
             }
             SecurityMetaData securityMetaData = NewRelicSecurity.getAgent().getSecurityMetaData();
-            if (!securityMetaData.getMetaData().isUserLevelServiceMethodEncountered(frameworkName)) {
+            if (!securityMetaData.getMetaData().isUserLevelServiceMethodEncountered(frameworkName) || !securityMetaData.getMetaData().isFoundAnnotedUserLevelServiceMethod()) {
                 securityMetaData.getMetaData().setUserLevelServiceMethodEncountered(true);
                 securityMetaData.getMetaData().setUserLevelServiceMethodEncounteredFramework(frameworkName);
                 StackTraceElement[] trace = Thread.currentThread().getStackTrace();
@@ -161,6 +171,20 @@ public class ServletHelper {
                 return true;
             }
         } catch (Throwable ignored) {
+        }
+        return false;
+    }
+
+    public static boolean setFoundAnnotedUserLevelServiceMethod() {
+        try {
+            if (!NewRelicSecurity.isHookProcessingActive() || (NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty())
+            ) {
+                return false;
+            }
+            SecurityMetaData securityMetaData = NewRelicSecurity.getAgent().getSecurityMetaData();
+            securityMetaData.getMetaData().setFoundAnnotedUserLevelServiceMethod(true);
+            return true;
+        } catch (Throwable ignored){
         }
         return false;
     }

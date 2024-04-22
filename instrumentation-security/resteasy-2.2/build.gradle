@@ -3,6 +3,7 @@ dependencies {
     implementation("com.newrelic.agent.java:newrelic-api:${nrAPIVersion}")
     implementation("com.newrelic.agent.java:newrelic-weaver-api:${nrAPIVersion}")
     implementation("org.jboss.resteasy:resteasy-jaxrs:2.3.3.Final")
+    testImplementation('org.apache.tomcat.embed:tomcat-embed-core:9.0.62')
 }
 
 jar {

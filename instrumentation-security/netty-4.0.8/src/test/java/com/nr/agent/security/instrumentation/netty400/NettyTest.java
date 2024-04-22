@@ -27,84 +27,109 @@ import io.netty.handler.codec.http.HttpResponseEncoder;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpVersion;
 import org.junit.Assert;
+import org.junit.ClassRule;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 import security.io.netty400.utils.NettyUtils;
 
+import java.io.IOException;
+import java.net.HttpURLConnection;
 import java.util.List;
 
 @RunWith(SecurityInstrumentationTestRunner.class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @InstrumentationTestConfig(includePrefixes = {"security.io.netty400"})
 public class NettyTest {
+    @ClassRule
+    public static NettyServer server = new NettyServer();
+
+    private final String header = "text/html";
     @Test
-    public void testChannelRead() throws JsonProcessingException {
+    public void testChannelRXSS() throws IOException {
+        connect();
+
+        SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
+        List<AbstractOperation> operations = introspector.getOperations();
+        Assert.assertFalse("No operations detected", operations.isEmpty());
+
+        RXSSOperation operation = (RXSSOperation) operations.get(0);
+        Assert.assertEquals("Invalid executed method name", NettyUtils.WRITE_METHOD_NAME, operation.getMethodName());
+        Assert.assertEquals("Invalid event category", VulnerabilityCaseType.REFLECTED_XSS, operation.getCaseType());
+
+        HttpResponse response = introspector.getSecurityMetaData().getResponse();
+        Assert.assertEquals("Invalid content-type body", header, response.getResponseContentType());
+        Assert.assertEquals("Invalid content-type body", header, response.getHeaders().get("content-type"));
+        Assert.assertEquals("Invalid response body", "write data", response.getResponseBody().toString());
+    }
+    @Test
+    public void testChannelRead() {
         channelRead();
 
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
         List<AbstractOperation> operations = introspector.getOperations();
-        Assert.assertTrue("Operations detected", operations.size() == 0);
+        Assert.assertTrue("Operations detected", operations.isEmpty());
+
         HttpRequest request = introspector.getSecurityMetaData().getRequest();
-        Assert.assertEquals("Invalid protocol", "HTTP", request.getProtocol());
+        Assert.assertEquals("Invalid protocol", "http", request.getProtocol());
         Assert.assertNotNull("No URL", request.getUrl());
-        Assert.assertEquals("Invalid content-type", "text/html", request.getContentType());
-        Assert.assertEquals("Invalid headers", "text/html", request.getHeaders().get("content-type"));
-        Assert.assertEquals("Invalid response body", "read data", request.getBody().toString());
+        Assert.assertEquals("Invalid content-type", header, request.getContentType());
+        Assert.assertEquals("Invalid headers", header, request.getHeaders().get("content-type"));
+        Assert.assertEquals("Invalid request body", "read data", request.getBody().toString());
     }
 
     @Test
-    public void testWrite() throws JsonProcessingException {
+    public void testWrite() {
         write();
 
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
         List<AbstractOperation> operations = introspector.getOperations();
-        Assert.assertTrue("No operations detected", operations.size() > 0);
+        Assert.assertFalse("No operations detected", operations.isEmpty());
 
         RXSSOperation operation = (RXSSOperation) operations.get(0);
         Assert.assertEquals("Invalid executed method name", NettyUtils.WRITE_METHOD_NAME, operation.getMethodName());
         Assert.assertEquals("Invalid event category", VulnerabilityCaseType.REFLECTED_XSS, operation.getCaseType());
 
         HttpResponse response = introspector.getSecurityMetaData().getResponse();
-        Assert.assertEquals("Invalid content-type body", "text/html", response.getResponseContentType());
-        Assert.assertEquals("Invalid content-type body", "text/html", response.getHeaders().get("content-type"));
+        Assert.assertEquals("Invalid content-type body", header, response.getResponseContentType());
+        Assert.assertEquals("Invalid content-type body", header, response.getHeaders().get("content-type"));
         Assert.assertEquals("Invalid response body", "write data", response.getResponseBody().toString());
     }
 
     @Test
-    public void testWriteAndFlush() throws JsonProcessingException {
+    public void testWriteAndFlush() {
         writeAndFlush();
 
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
         List<AbstractOperation> operations = introspector.getOperations();
-        Assert.assertTrue("No operations detected", operations.size() > 0);
+        Assert.assertFalse("No operations detected", operations.isEmpty());
 
         RXSSOperation operation = (RXSSOperation) operations.get(0);
         Assert.assertEquals("Invalid executed method name", NettyUtils.WRITE_METHOD_NAME, operation.getMethodName());
         Assert.assertEquals("Invalid event category", VulnerabilityCaseType.REFLECTED_XSS, operation.getCaseType());
 
         HttpResponse response = introspector.getSecurityMetaData().getResponse();
-        Assert.assertEquals("Invalid content-type body", "text/html", response.getResponseContentType());
-        Assert.assertEquals("Invalid content-type body", "text/html", response.getHeaders().get("content-type"));
+        Assert.assertEquals("Invalid content-type body", header, response.getResponseContentType());
+        Assert.assertEquals("Invalid content-type body", header, response.getHeaders().get("content-type"));
         Assert.assertEquals("Invalid response body", "write flush data", response.getResponseBody().toString());
     }
 
     @Test
-    public void testWriteAndFlushPromise() throws JsonProcessingException {
+    public void testWriteAndFlushPromise() {
         writeAndFlushPromise();
 
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
         List<AbstractOperation> operations = introspector.getOperations();
-        Assert.assertTrue("No operations detected", operations.size() > 0);
+        Assert.assertFalse("No operations detected", operations.isEmpty());
 
         RXSSOperation operation = (RXSSOperation) operations.get(0);
         Assert.assertEquals("Invalid executed method name", NettyUtils.WRITE_METHOD_NAME, operation.getMethodName());
         Assert.assertEquals("Invalid event category", VulnerabilityCaseType.REFLECTED_XSS, operation.getCaseType());
 
         HttpResponse response = introspector.getSecurityMetaData().getResponse();
-        Assert.assertEquals("Invalid content-type body", "text/html", response.getResponseContentType());
-        Assert.assertEquals("Invalid content-type body", "text/html", response.getHeaders().get("content-type"));
+        Assert.assertEquals("Invalid content-type body", header, response.getResponseContentType());
+        Assert.assertEquals("Invalid content-type body", header, response.getHeaders().get("content-type"));
         Assert.assertEquals("Invalid response body", "write flush promise data", response.getResponseBody().toString());
     }
 
@@ -114,24 +139,25 @@ public class NettyTest {
 
         SecurityIntrospector introspector = SecurityInstrumentationTestRunner.getIntrospector();
         List<AbstractOperation> operations = introspector.getOperations();
-        Assert.assertTrue("No operations detected", operations.size() > 0);
+        Assert.assertFalse("No operations detected", operations.isEmpty());
 
         RXSSOperation operation = (RXSSOperation) operations.get(0);
         Assert.assertEquals("Invalid executed method name", NettyUtils.WRITE_METHOD_NAME, operation.getMethodName());
         Assert.assertEquals("Invalid event category", VulnerabilityCaseType.REFLECTED_XSS, operation.getCaseType());
 
         HttpResponse response = introspector.getSecurityMetaData().getResponse();
-        Assert.assertEquals("Invalid content-type body", "text/html", response.getResponseContentType());
-        Assert.assertEquals("Invalid content-type body", "text/html", response.getHeaders().get("content-type"));
+        Assert.assertEquals("Invalid content-type body", header, response.getResponseContentType());
+        Assert.assertEquals("Invalid content-type body", header, response.getHeaders().get("content-type"));
         Assert.assertEquals("Invalid response body", "encode data", response.getResponseBody().toString());
     }
 
     @Trace(dispatcher = true)
     private void channelRead() {
         EmbeddedChannel channel = new EmbeddedChannel(new ChannelInboundHandlerAdapter());
-        FullHttpRequest httpRequest = new DefaultFullHttpRequest(HttpVersion.HTTP_1_0, HttpMethod.GET, "/test");
-        httpRequest.headers().add("content-type", "text/html");
+        FullHttpRequest httpRequest = new DefaultFullHttpRequest(HttpVersion.HTTP_1_0, HttpMethod.POST, "/test");
+        httpRequest.headers().add("content-type", header);
         DefaultHttpContent httpContent = new DefaultHttpContent(Unpooled.wrappedBuffer("read data".getBytes()));
+//        httpRequest.content().writeBytes("read data".getBytes());
         channel.writeInbound(httpRequest, httpContent);
         channel.read();
     }
@@ -140,7 +166,7 @@ public class NettyTest {
     private void write() {
         EmbeddedChannel channel = new EmbeddedChannel(new ChannelOutboundHandlerAdapter());
         FullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_0, HttpResponseStatus.ACCEPTED);
-        response.headers().add("content-type","text/html");
+        response.headers().add("content-type", header);
         response.content().writeBytes("write data".getBytes());
 
         channel.write(response);
@@ -151,7 +177,7 @@ public class NettyTest {
     private void writeAndFlush() {
         EmbeddedChannel channel = new EmbeddedChannel(new ChannelOutboundHandlerAdapter());
         FullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_0, HttpResponseStatus.ACCEPTED);
-        response.headers().add("content-type","text/html");
+        response.headers().add("content-type", header);
         response.content().writeBytes("write flush data".getBytes());
 
         channel.writeAndFlush(response);
@@ -161,7 +187,7 @@ public class NettyTest {
     private void writeAndFlushPromise() {
         EmbeddedChannel channel = new EmbeddedChannel(new ChannelOutboundHandlerAdapter());
         FullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_0, HttpResponseStatus.ACCEPTED);
-        response.headers().add("content-type","text/html");
+        response.headers().add("content-type", header);
         response.content().writeBytes("write flush promise data".getBytes());
 
         channel.writeAndFlush(response, channel.newPromise());
@@ -171,11 +197,22 @@ public class NettyTest {
     private void encode() {
         EmbeddedChannel channel = new EmbeddedChannel(new ChannelOutboundHandlerAdapter());
         channel.pipeline().addLast(new HttpResponseEncoder());
-        FullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_0, HttpResponseStatus.ACCEPTED);
-        response.headers().add("content-type","text/html");
+        FullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.ACCEPTED);
+        response.headers().add("content-type", header);
         response.content().writeBytes("encode data".getBytes());
 
         channel.write(response);
         channel.flush();
+    }
+    @Trace(dispatcher = true)
+    private void connect() throws IOException {
+        HttpURLConnection connection = (HttpURLConnection) server.getEndPoint().openConnection();
+        connection.setDoOutput(true);
+        connection.setRequestMethod("POST");
+        connection.setRequestProperty("content-type", header);
+        connection.getOutputStream().write("name=ishi".getBytes());
+
+        connection.connect();
+        System.out.println(connection.getResponseCode());
     }
 }
