@@ -14,9 +14,15 @@ public interface IUtilConstants {
 
     String PERMISSIONS_ALL = "rwxrwxrwx";
 
+    String DIRECTORY_PERMISSION = "rwxrwx---";
+
+    String FILE_PERMISSIONS = "rw-rw----";
+
     String NOT_AVAILABLE = "Not Available";
 
     String NR_SECURITY_ENABLED = "security.enabled";
+
+    String NR_SECURITY_HOME_APP = "security.is_home_app";
 
     String NR_SECURITY_CA_BUNDLE_PATH = "security.ca_bundle_path";
     String NR_CSEC_DEBUG_LOGFILE_SIZE = "NR_CSEC_DEBUG_LOGFILE_SIZE";

@@ -8,6 +8,7 @@
 package com.newrelic.api.agent.security;
 
 import com.newrelic.api.agent.NewRelic;
+import com.newrelic.api.agent.security.instrumentation.helpers.ThreadLocalLockHelper;
 import com.newrelic.api.agent.security.schema.SecurityMetaData;
 import org.apache.commons.lang3.StringUtils;
 
@@ -34,7 +35,7 @@ public final class NewRelicSecurity {
      * {@code false} otherwise.
      */
     public static boolean isHookProcessingActive(){
-        return isAgentInitComplete && Agent.getInstance().isSecurityActive() && !isInternalThread()
+        return !ThreadLocalLockHelper.isLockHeldByCurrentThread() && isAgentInitComplete && Agent.getInstance().isSecurityActive() && !isInternalThread()
                 && NewRelic.getAgent().getTransaction() != null
                 && NewRelic.getAgent().getTransaction().getSecurityMetaData() instanceof SecurityMetaData;
 //                (Agent.getInstance().getSecurityMetaData() != null);

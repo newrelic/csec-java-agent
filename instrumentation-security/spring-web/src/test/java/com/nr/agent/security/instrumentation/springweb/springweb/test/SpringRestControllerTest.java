@@ -30,6 +30,7 @@ public class SpringRestControllerTest {
         AgentMetaData meta = introspector.getSecurityMetaData().getMetaData();
         Assert.assertNotNull("Service trace can not be empty/null.", meta.getServiceTrace());
         Assert.assertTrue("user level service method was not encountered.", meta.isUserLevelServiceMethodEncountered());
+        Assert.assertTrue("Annotated userLevelService Method was not encountered.", meta.isFoundAnnotedUserLevelServiceMethod());
     }
 
     @Test
@@ -40,6 +41,7 @@ public class SpringRestControllerTest {
         AgentMetaData meta = introspector.getSecurityMetaData().getMetaData();
         Assert.assertNotNull("Service trace can not be empty/null.", meta.getServiceTrace());
         Assert.assertTrue("user level service method was not encountered.", meta.isUserLevelServiceMethodEncountered());
+        Assert.assertTrue("Annotated userLevelService Method was not encountered.", meta.isFoundAnnotedUserLevelServiceMethod());
     }
 
     @Test
@@ -50,6 +52,7 @@ public class SpringRestControllerTest {
         AgentMetaData meta = introspector.getSecurityMetaData().getMetaData();
         Assert.assertNotNull("Service trace can not be empty/null.", meta.getServiceTrace());
         Assert.assertTrue("user level service method was not encountered.", meta.isUserLevelServiceMethodEncountered());
+        Assert.assertTrue("Annotated userLevelService Method was not encountered.", meta.isFoundAnnotedUserLevelServiceMethod());
     }
 
     @Test
@@ -60,6 +63,7 @@ public class SpringRestControllerTest {
         AgentMetaData meta = introspector.getSecurityMetaData().getMetaData();
         Assert.assertNotNull("Service trace can not be empty/null.", meta.getServiceTrace());
         Assert.assertTrue("user level service method was not encountered.", meta.isUserLevelServiceMethodEncountered());
+        Assert.assertTrue("Annotated userLevelService Method was not encountered.", meta.isFoundAnnotedUserLevelServiceMethod());
     }
 
     @Test
@@ -70,6 +74,7 @@ public class SpringRestControllerTest {
         AgentMetaData meta = introspector.getSecurityMetaData().getMetaData();
         Assert.assertNotNull("Service trace can not be empty/null.", meta.getServiceTrace());
         Assert.assertTrue("user level service method was not encountered.", meta.isUserLevelServiceMethodEncountered());
+        Assert.assertTrue("Annotated userLevelService Method was not encountered.", meta.isFoundAnnotedUserLevelServiceMethod());
     }
 
     @Test
@@ -80,5 +85,6 @@ public class SpringRestControllerTest {
         AgentMetaData meta = introspector.getSecurityMetaData().getMetaData();
         Assert.assertNotNull("Service trace can not be empty/null.", meta.getServiceTrace());
         Assert.assertTrue("user level service method was not encountered.", meta.isUserLevelServiceMethodEncountered());
+        Assert.assertTrue("Annotated userLevelService Method was not encountered.", meta.isFoundAnnotedUserLevelServiceMethod());
     }
 }

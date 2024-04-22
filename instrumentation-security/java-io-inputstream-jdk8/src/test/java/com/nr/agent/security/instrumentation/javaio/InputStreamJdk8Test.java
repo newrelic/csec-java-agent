@@ -5,6 +5,7 @@ import com.newrelic.agent.security.introspec.InstrumentationTestConfig;
 import com.newrelic.agent.security.introspec.SecurityInstrumentationTestRunner;
 import com.newrelic.agent.security.introspec.SecurityIntrospector;
 import com.newrelic.api.agent.security.schema.SecurityMetaData;
+import com.newrelic.security.test.marker.Java17IncompatibleTest;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
@@ -12,6 +13,7 @@ import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 
@@ -31,6 +33,7 @@ import java.util.UUID;
 @RunWith(SecurityInstrumentationTestRunner.class)
 @InstrumentationTestConfig(includePrefixes = {"java.io","com.newrelic.agent.security.instrumentation.javaio"})
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
+@Category({Java17IncompatibleTest.class})
 public class InputStreamJdk8Test {
     private static String FILE;
     private static String FILE_TEMP;

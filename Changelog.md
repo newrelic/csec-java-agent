@@ -4,7 +4,47 @@ Noteworthy changes to the agent are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.0.9-public-preview] - TO BE DECIDED
+## [1.2.1] - 2024-4-19
+### Fixes
+- [NR-259467](https://new-relic.atlassian.net/browse/NR-259467) Fix issue of nested event generation from CSEC's agent itself [PR-230](https://github.com/newrelic/csec-java-agent/pull/230)
+
+### Changes
+- [NR-256459](https://new-relic.atlassian.net/browse/NR-256459) Exclude JAX RS 4.0.0-M2 version from Instrumentation [PR-231](https://github.com/newrelic/csec-java-agent/pull/231)
+- [NR-256461](https://new-relic.atlassian.net/browse/NR-256461) Exclude mssql-jdbc version 12.7.0 from Instrumentation [PR-232](https://github.com/newrelic/csec-java-agent/pull/232)
+- [NR-260369](https://new-relic.atlassian.net/browse/NR-260369) Dependency version bump of commons-compress:1.21 to commons-compress:1.26.0 
+
+## [1.2.0] - 2024-3-28
+### Changes
+- Json Version bump to 1.2.0 due to [NR-235776](https://new-relic.atlassian.net/browse/NR-235776) implementation.
+- [NR-234886](https://new-relic.atlassian.net/browse/NR-234886) IAST replay header decryption due to Security Findings [PR-207](https://github.com/newrelic/csec-java-agent/pull/207)
+
+### Fixes
+- [NR-253538](https://new-relic.atlassian.net/browse/NR-253538) Fix issue related to the instrumentation of the Rhino JavaScript Engine that occurred while reading the script. [PR-211](https://github.com/newrelic/csec-java-agent/pull/211) 
+
+## [1.1.2] - 2024-3-11
+### Changes
+- [NR-174177](https://new-relic.atlassian.net/browse/NR-174177) Ning Async HTTP client Support: The security agent now also supports com.ning:async-http-client 1.0.0 and above [PR-152](https://github.com/newrelic/csec-java-agent/pull/152), [PR-118](https://github.com/newrelic/csec-java-agent/pull/118), [PR-116](https://github.com/newrelic/csec-java-agent/pull/116)
+- [NR-181375](https://new-relic.atlassian.net/browse/NR-181375) Jersey Support: The security agent now also supports Jersey 2.0 and above [PR-150](https://github.com/newrelic/csec-java-agent/pull/150), [PR-149](https://github.com/newrelic/csec-java-agent/pull/149) 
+- [NR-187224](https://new-relic.atlassian.net/browse/NR-187224) Mule Support: The security agent now also supports Mule server version 3.6 to 3.9.x [PR-144](https://github.com/newrelic/csec-java-agent/pull/144), [PR-143](https://github.com/newrelic/csec-java-agent/pull/143)
+- Jetty v12 Support: The security agent now also support Jetty version 12 and above [PR-106](https://github.com/newrelic/csec-java-agent/pull/106)
+- [NR-174175](https://new-relic.atlassian.net/browse/NR-174175) Lettuce Support: The security agent now also supports Lettuce 4.4.0.Final and above [PR-125](https://github.com/newrelic/csec-java-agent/pull/125)
+- [NR-234869](https://new-relic.atlassian.net/browse/NR-234869) GHA Update Unit Test Action for Testing Unit tests with different java-version with re-tries on failure [PR-204](https://github.com/newrelic/csec-java-agent/pull/204)
+
+### Fixes
+- [NR-223811](https://new-relic.atlassian.net/browse/NR-223811) Extract Server Configuration to resolve IAST localhost connection with application for wildfly server [PR-192](https://github.com/newrelic/csec-java-agent/pull/192)
+- [NR-234903](https://new-relic.atlassian.net/browse/NR-234903) Trustboundary events now will have list of string as parameter schema
+
+## [1.1.1] - 2024-2-16
+### Changes
+- [NR-223414](https://new-relic.atlassian.net/browse/NR-223414) Enable Low Priority Instrumentation by default [PR-179](https://github.com/newrelic/csec-java-agent/pull/179)
+- [NR-219439](https://new-relic.atlassian.net/browse/NR-219439) Akka server v10.0+ Support: The security agent now supports Akka server version 10.0 and above (with scala 2.11 and above) [PR-175](https://github.com/newrelic/csec-java-agent/pull/175)
+
+### Fixes
+- [NR-222151](https://new-relic.atlassian.net/browse/NR-222151) Extract Server Configuration to resolve IAST localhost connection with application [PR-183](https://github.com/newrelic/csec-java-agent/pull/183)
+- [NR-223852](https://new-relic.atlassian.net/browse/NR-223852) Retry IAST request with different endpoint, if failure reason is SSLException or 301 [PR-182](https://github.com/newrelic/csec-java-agent/pull/182)
+- [NR-218729](https://new-relic.atlassian.net/browse/NR-218729) Add instrumentation of java.nio.file.Files#setPosixFilePermissions [PR-178](https://github.com/newrelic/csec-java-agent/pull/178)
+
+## [1.1.0] - 2024-1-29
 ### Changes
 - gRPC client v1.4.0+ Support: The security agent now supports gRPC client version 1.4.0 and above (with protobuf-java-utils version 3.0.0 and above)
 - gRPC server v1.4.0+ Support: The security agent now supports gRPC server version 1.4.0 and above (with protobuf-java-utils version 3.0.0 and above)
@@ -16,6 +56,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Separate out File.exists instrumentation from low-priority instrumentation module
 - Removed Schema validation dependency everit-json-schema:1.14.2
 - Introduced new dependency commons-collections4:4.4
+- Update software license to New Relic Software License Version 1.0
 
 ### Fixes
 - NR-212335 : support lower case stdout for log_file_name
@@ -23,6 +64,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - NR-216474 : fix for Null Pointer exception for FILE_OPERATION
 - NR-216456 : Fix for Class Cast Exception
 - NR-215452 : Added the CC#_id to the completed list empty if absent in case of 2xx or 4xx response
+- NR-213477 : Added missing instrumentation for servlet service method
+- NR-214326 : Fix class circluarity error generated for BadPaddingException 
 
 ## [1.0.8-public-preview] - 2024-1-11
 ### Changes
