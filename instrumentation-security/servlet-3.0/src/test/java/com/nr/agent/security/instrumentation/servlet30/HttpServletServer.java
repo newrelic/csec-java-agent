@@ -13,9 +13,6 @@ import javax.servlet.ServletContainerInitializer;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -67,7 +64,7 @@ public class HttpServletServer extends ExternalResource {
             }
         }, Collections.emptySet());
 
-        Tomcat.addServlet(context, "servlet", new MyServlet());
+        Tomcat.addServlet(context, "servlet", new DefaultServlet());
         context.addServletMappingDecoded("/*","servlet");
         context.addServletMappingDecoded("/test","servlet");
 
@@ -90,12 +87,5 @@ public class HttpServletServer extends ExternalResource {
                 e.printStackTrace();
             }
         }
-    }
-}
-
-class MyServlet extends HttpServlet {
-    @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        super.doGet(req, resp);
     }
 }

@@ -6,7 +6,6 @@ import com.newrelic.agent.security.introspec.SecurityIntrospector;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.security.schema.operation.XPathOperation;
-import com.newrelic.security.test.marker.Java17IncompatibleTest;
 import org.jaxen.BaseXPath;
 import org.jaxen.Context;
 import org.jaxen.ContextSupport;
@@ -19,7 +18,6 @@ import org.jaxen.jdom.JDOMXPath;
 import org.jaxen.xom.XOMXPath;
 import org.junit.Assert;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.w3c.dom.Document;
 
@@ -29,7 +27,6 @@ import java.util.List;
 
 @RunWith(SecurityInstrumentationTestRunner.class)
 @InstrumentationTestConfig(includePrefixes = { "com.newrelic.instrumentation.security.xpath.jaxen", "org.jaxen" })
-@Category({ Java17IncompatibleTest.class})
 public class BaseXPathTest {
     private final String EXPRESSION = "/Customers/Customer";
     private final String XML_DOC = "src/test/resources/Customer.xml";

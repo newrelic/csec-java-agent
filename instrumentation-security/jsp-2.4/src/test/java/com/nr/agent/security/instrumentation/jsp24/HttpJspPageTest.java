@@ -5,7 +5,6 @@ import com.newrelic.agent.security.introspec.SecurityInstrumentationTestRunner;
 import com.newrelic.agent.security.introspec.SecurityIntrospector;
 import com.newrelic.api.agent.Trace;
 import com.newrelic.api.agent.security.schema.AgentMetaData;
-import com.newrelic.security.test.marker.Java17IncompatibleTest;
 import org.apache.catalina.Context;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.LifecycleState;
@@ -16,7 +15,6 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
 import javax.servlet.ServletException;
@@ -34,7 +32,6 @@ import java.net.URL;
 
 @RunWith(SecurityInstrumentationTestRunner.class)
 @InstrumentationTestConfig(includePrefixes = "javax.servlet.jsp")
-@Category({ Java17IncompatibleTest.class})
 public class HttpJspPageTest {
     private static final int port = getRandomPort();
     private static Tomcat server;

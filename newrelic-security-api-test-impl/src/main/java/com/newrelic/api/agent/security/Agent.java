@@ -1,8 +1,8 @@
 package com.newrelic.api.agent.security;
 
-import com.newrelic.agent.security.intcodeagent.utils.EncryptorUtils;
 import com.newrelic.api.agent.NewRelic;
 import com.newrelic.api.agent.Transaction;
+import com.newrelic.api.agent.security.instrumentation.helpers.LowSeverityHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.SecurityMetaData;
 import com.newrelic.api.agent.security.schema.operation.FileIntegrityOperation;
@@ -87,8 +87,6 @@ public class Agent implements SecurityAgent {
 
     @Override
     public AgentPolicy getCurrentPolicy() {
-        policy.getVulnerabilityScan().setEnabled(true);
-        policy.getVulnerabilityScan().getIastScan().setEnabled(true);
         return policy;
     }
 
@@ -195,12 +193,6 @@ public class Agent implements SecurityAgent {
 
     @Override
     public String decryptAndVerify(String encryptedData, String hashVerifier) {
-        String password= "11111111111111111111111111111111111111111111";
-        String decryptedData = EncryptorUtils.decrypt(password, encryptedData);
-        if(EncryptorUtils.verifyHashData(hashVerifier, decryptedData)) {
-            return decryptedData;
-        } else {
-            return null;
-        }
+        return null;
     }
 }

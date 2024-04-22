@@ -20,10 +20,16 @@ public class ApiEndpointTest {
 
     @Test
     public void testURLMappings() {
+        String handler = DefaultServlet.class.getName();
+        String method = "*";
         Iterator<ApplicationURLMapping> mappings = URLMappingsHelper.getApplicationURLMappings().iterator();
 
         Assert.assertTrue("URL Mappings", mappings.hasNext());
         ApplicationURLMapping mapping1 = mappings.next();
-        Assert.assertEquals("URL Mappings", new ApplicationURLMapping("*", "/*", MyServlet.class.getName()), mapping1);
+        Assert.assertEquals("URL Mappings", new ApplicationURLMapping(method, "/*", handler), mapping1);
+
+        Assert.assertTrue("URL Mappings", mappings.hasNext());
+        ApplicationURLMapping mapping2 = mappings.next();
+        Assert.assertEquals("URL Mappings", new ApplicationURLMapping(method, "/test", handler), mapping2);
     }
 }

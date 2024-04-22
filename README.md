@@ -11,7 +11,7 @@ The IAST capability should only be used in pre-production environments and never
 
 ## **Installation**
 
-This project is built and published as a dependency for use in [newrelic-java-agent](https://github.com/newrelic/newrelic-java-agent) only. Hence this can not be used directly. Typically, most users use the version auto-installed by the APM agent. You can see agent install instructions [here](https://github.com/newrelic/java-newrelic#installation-and-getting-started).
+This project is built and published as a dependency for use in [newrelic-java-agent](https://github.com/newrelic/newrelic-java-agent) only. Hence this can not be used directly. Typically, most users use the version auto-installed by the APM agent. You can see agent install instructions [here](https://docs.newrelic.com/docs/iast/install/).
 
 ## **Supported Java Versions**
 - Java version 8 and above
