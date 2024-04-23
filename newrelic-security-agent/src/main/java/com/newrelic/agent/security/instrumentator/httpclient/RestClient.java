@@ -174,7 +174,12 @@ public class RestClient {
         try {
             Response response = call.execute();
             logger.log(LogLevel.FINER, String.format(REQUEST_FIRED_SUCCESS, request), RestClient.class.getName());
-            if(response.code() >= 400 && response.code() < 500){
+            if (response.code() >= 500) {
+                NewRelicSecurity.getAgent().reportIASTScanFailure(null, null, null,
+                        RequestUtils.extractNRCsecFuzzReqHeader(request.headers()), fuzzRequestId,
+                        String.format(IAgentConstants.REQUEST_FAILURE_FOR_S_WITH_RESPONSE_CODE, request.url(), response, response.body().string()));
+            }
+            else if(response.code() >= 400){
                 RestRequestThreadPool.getInstance().getProcessedIds().putIfAbsent(fuzzRequestId, new HashSet<>());
                 logger.postLogMessageIfNecessary(LogLevel.WARNING,
                         String.format(RestClient.CALL_FAILED_REQUEST_S_REASON_S, fuzzRequestId,  response, response.body().string()), null,
