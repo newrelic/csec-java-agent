@@ -13,6 +13,8 @@ import org.springframework.http.HttpMethod;
 import org.springframework.web.reactive.function.client.ClientRequest;
 
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
 
 public class SpringWebClientHelper {
 
@@ -20,6 +22,7 @@ public class SpringWebClientHelper {
     public static final String METHOD_EXECHANGE = "exchange";
 
     public static final String SPRING_WEBCLIENT_5_0 = "spring-webclient-5.0";
+    public static final String SPRING_WEB_CLIENT_REQUEST_LIST_CUSTOM_ATTRIB = "SPRING-WEB-CLIENT-REQUEST-LIST";
 
     public static String getNrSecCustomAttribName() {
         return NR_SEC_CUSTOM_ATTRIB_NAME + Thread.currentThread().getId();
@@ -32,9 +35,17 @@ public class SpringWebClientHelper {
                     url == null || url.getPath().isEmpty()) {
                 return null;
             }
-            SSRFOperation ssrfOperation = new SSRFOperation(url.toString(), className, methodName);
-            NewRelicSecurity.getAgent().registerOperation(ssrfOperation);
-            return ssrfOperation;
+            ArrayList<String> springClientRequestURIs = NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(SPRING_WEB_CLIENT_REQUEST_LIST_CUSTOM_ATTRIB, ArrayList.class);
+            if (springClientRequestURIs == null){
+                springClientRequestURIs = new ArrayList<>();
+            }
+            if (!springClientRequestURIs.contains(url.toString())) {
+                SSRFOperation ssrfOperation = new SSRFOperation(url.toString(), className, methodName);
+                NewRelicSecurity.getAgent().registerOperation(ssrfOperation);
+                springClientRequestURIs.add(url.toString());
+                NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(SPRING_WEB_CLIENT_REQUEST_LIST_CUSTOM_ATTRIB, springClientRequestURIs);
+                return ssrfOperation;
+            }
         } catch (Throwable e) {
             if (e instanceof NewRelicSecurityException) {
                 NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.SECURITY_EXCEPTION_MESSAGE, SPRING_WEBCLIENT_5_0, e.getMessage()), e, SpringWebClientHelper.class.getName());
