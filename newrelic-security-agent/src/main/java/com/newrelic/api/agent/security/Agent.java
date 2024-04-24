@@ -375,20 +375,23 @@ public class Agent implements SecurityAgent {
             userStackTraceElement = securityMetaData.getMetaData().getServiceTrace()[0];
         }
 
-        for (int i = 0; i < operation.getStackTrace().length; i++) {
-            StackTraceElement stackTraceElement = operation.getStackTrace()[i];
-            if(userStackTraceElement != null){
-                if(StringUtils.equals(stackTraceElement.getClassName(), userStackTraceElement.getClassName())
-                        && StringUtils.equals(stackTraceElement.getMethodName(), userStackTraceElement.getMethodName())){
-                    userClassEntity.setUserClassElement(stackTraceElement);
-                    userClassEntity.setCalledByUserCode(securityMetaData.getMetaData().isUserLevelServiceMethodEncountered());
-                    return userClassEntity;
-                }
-            }
-            // TODO: the `if` should be `else if` please check crypto case BenchmarkTest01978. service trace is being registered from doSomething()
-            if( i+1 < operation.getStackTrace().length && StringUtils.equals(operation.getSourceMethod(), stackTraceElement.toString())){
-                userClassEntity.setUserClassElement(operation.getStackTrace()[i + 1]);
-                userClassEntity.setCalledByUserCode(securityMetaData.getMetaData().isUserLevelServiceMethodEncountered());
+        for (int i = operation.getStackTrace().length-1; i >=0 ; i--) {
+            switch (securityMetaData.getMetaData().getUserLevelServiceMethodEncounteredFramework()){
+                case "vertx-web":
+                    if(i-1 >= 0) {
+                        userClassEntity = setUserClassEntityForVertx(operation, userClassEntity, securityMetaData.getMetaData().isUserLevelServiceMethodEncountered(), i);
+                    }
+                    break;
+                default:
+                    StackTraceElement stackTraceElement = operation.getStackTrace()[i];
+                    if(userStackTraceElement != null){
+                        if(StringUtils.equals(stackTraceElement.getClassName(), userStackTraceElement.getClassName())
+                                && StringUtils.equals(stackTraceElement.getMethodName(), userStackTraceElement.getMethodName())){
+                            userClassEntity.setUserClassElement(stackTraceElement);
+                            userClassEntity.setCalledByUserCode(securityMetaData.getMetaData().isUserLevelServiceMethodEncountered());
+                            return userClassEntity;
+                        }
+                    }
             }
         }
 
@@ -397,6 +400,20 @@ public class Agent implements SecurityAgent {
             userClassEntity.setCalledByUserCode(securityMetaData.getMetaData().isUserLevelServiceMethodEncountered());
         }
         return userClassEntity;
+    }
+
+    private UserClassEntity setUserClassEntityForVertx(AbstractOperation operation, UserClassEntity userClassEntity, boolean userLevelServiceMethodEncountered, int i) {
+        StackTraceElement serviceTraceElement = operation.getStackTrace()[i];
+        if(serviceTraceElement != null){
+            if(StringUtils.equals(serviceTraceElement.getClassName(), serviceTraceElement.getClassName())
+                    && StringUtils.equals(serviceTraceElement.getMethodName(), serviceTraceElement.getMethodName())){
+                StackTraceElement stackTraceElement = operation.getStackTrace()[i-1];
+                userClassEntity.setUserClassElement(stackTraceElement);
+                userClassEntity.setCalledByUserCode(userLevelServiceMethodEncountered);
+                return userClassEntity;
+            }
+        }
+        return new UserClassEntity();
     }
 
     private void setRequiredStackTrace(AbstractOperation operation, SecurityMetaData securityMetaData) {
@@ -415,11 +432,11 @@ public class Agent implements SecurityAgent {
         ArrayList<Integer> newTraceForIdCalc = new ArrayList<>(stackTrace.length);
 
         boolean markedForRemoval;
-        for (int i = 0, j = -1; i < stackTrace.length; i++) {
+        for (int i = 0, j = 0; i < stackTrace.length; i++) {
             markedForRemoval = false;
 
             // Only remove consecutive top com.newrelic and com.nr. elements from stack.
-            if (i - 1 == j && StringUtils.startsWithAny(stackTrace[i].getClassName(), "com.newrelic.agent.security.", "com.newrelic.api.agent.")) {
+            if (i == j && StringUtils.startsWithAny(stackTrace[i].getClassName(), "com.newrelic.agent.security.", "com.newrelic.api.agent.")) {
                 resetFactor++;
                 j++;
                 markedForRemoval = true;
