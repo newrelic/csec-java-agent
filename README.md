@@ -1,13 +1,13 @@
 #
-# **The New Relic Security Agent for Java is in preview and licensed under the New Relic Pre-Release Software Notice.**
+# **New Relic Security Agent for Java**
 
 **Repo:** [https://github.com/newrelic/csec-java-agent](https://github.com/newrelic/csec-java-agent)
 
 **Artifact Name:** newrelic-security-agent.jar
 
-The New Relic Security Agent for Java is in preview and is not generally available. This enables instrumentation of Java applications for security analysis and runtime application protection. This project is built as a dependency for use in [newrelic-java-agent](https://github.com/newrelic/newrelic-java-agent) only. Other use cases are not supported.
-
 The IAST capability should only be used in pre-production environments and never in production.
+
+The New Relic Security Agent enables instrumentation of a Java application for Interactive Application Security Testing(IAST) and exposes exploitable vulnerabilities.
 
 ## **Installation**
 
@@ -156,7 +156,7 @@ To publish csec agent on maven local use below command :
 
 ## **Contributing Feedback**
 
-Any feedback provided to New Relic about the New Relic csec-java-agent, including feedback provided as source code, comments, or other copyrightable or patentable material, is provided to New Relic under the terms of the Apache Software License, version 2. If you do not provide attribution information or a copy of the license with your feedback, you waive the performance of those requirements of the Apache License with respect to New Relic. The license grant regarding any feedback is irrevocable and persists past the termination of the preview license.
+Any feedback provided to New Relic about the New Relic csec-java-agent, including feedback provided as source code, comments, or other copyrightable or patentable material, is provided to New Relic under the terms of the New Relic Software License version, 1.0. If you do not provide attribution information or a copy of the license with your feedback, you waive the performance of those requirements of the New Relic Software License with respect to New Relic. The license grant regarding any feedback is irrevocable.
 
 Keep in mind that when you submit a pull request or other feedback, you'll need to sign the CLA via the click-through using CLA-Assistant. You only have to sign the CLA one time per project.
 If you have any questions drop us an email at opensource@newrelic.com.
