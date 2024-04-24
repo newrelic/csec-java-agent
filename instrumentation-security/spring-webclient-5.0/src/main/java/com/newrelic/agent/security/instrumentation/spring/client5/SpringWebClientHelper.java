@@ -41,6 +41,7 @@ public class SpringWebClientHelper {
             }
             if (!springClientRequestURIs.contains(url.toString())) {
                 SSRFOperation ssrfOperation = new SSRFOperation(url.toString(), className, methodName);
+                NewRelicSecurity.getAgent().getSecurityMetaData().getMetaData().setFromJumpRequiredInStackTrace(3);
                 NewRelicSecurity.getAgent().registerOperation(ssrfOperation);
                 springClientRequestURIs.add(url.toString());
                 NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(SPRING_WEB_CLIENT_REQUEST_LIST_CUSTOM_ATTRIB, springClientRequestURIs);
