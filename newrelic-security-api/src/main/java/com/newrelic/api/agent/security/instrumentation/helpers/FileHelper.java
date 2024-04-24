@@ -65,12 +65,21 @@ public class FileHelper {
     public static final String FILE_OPERATION = "FILE_OPERATION";
 
     public static boolean skipExistsEvent(String filename) {
-        String extension = getFileExtension(filename);
-        if (!(NewRelicSecurity.getAgent().getCurrentPolicy().getVulnerabilityScan().getEnabled() &&
-                NewRelicSecurity.getAgent().getCurrentPolicy().getVulnerabilityScan().getIastScan().getEnabled()) &&
-                extension != null && !extension.trim().isEmpty() &&
-                (SOURCE_EXENSIONS.contains(extension) || ALLOWED_EXTENSIONS.contains(extension))) {
-            return true;
+        boolean lockAcquired = ThreadLocalLockHelper.acquireLock();
+        try {
+            if(lockAcquired) {
+                String extension = getFileExtension(filename);
+                if (!(NewRelicSecurity.getAgent().getCurrentPolicy().getVulnerabilityScan().getEnabled() &&
+                        NewRelicSecurity.getAgent().getCurrentPolicy().getVulnerabilityScan().getIastScan().getEnabled()) &&
+                        extension != null && !extension.trim().isEmpty() &&
+                        (SOURCE_EXENSIONS.contains(extension) || ALLOWED_EXTENSIONS.contains(extension))) {
+                    return true;
+                }
+            }
+        } finally {
+            if(lockAcquired){
+                ThreadLocalLockHelper.releaseLock();
+            }
         }
 
         return false;
@@ -89,38 +98,57 @@ public class FileHelper {
     }
 
     public static FileIntegrityOperation createEntryOfFileIntegrity(String fileName, String className, String methodName) {
-        File file = Paths.get(fileName).toFile();
-        String extension = getFileExtension(file);
-        if (SOURCE_EXENSIONS.contains(extension) &&
-                !NewRelicSecurity.getAgent().getSecurityMetaData().getFileLocalMap().containsKey(fileName)) {
-            long lastModified = file.exists()? file.lastModified() : -1;
-            String permissions = StringUtils.EMPTY;
-            try {
-                if(file.exists()) {
-                    PosixFileAttributes fileAttributes = Files.readAttributes(Paths.get(file.getPath()), PosixFileAttributes.class);
-                    Set<PosixFilePermission> permissionSet = fileAttributes.permissions();
-                    permissions = permissionSet.toString();
+        boolean lockAcquired = ThreadLocalLockHelper.acquireLock();
+        try {
+            if(lockAcquired) {
+                File file = Paths.get(fileName).toFile();
+                String extension = getFileExtension(file);
+                if (SOURCE_EXENSIONS.contains(extension) &&
+                        !NewRelicSecurity.getAgent().getSecurityMetaData().getFileLocalMap().containsKey(fileName)) {
+                    long lastModified = file.exists() ? file.lastModified() : -1;
+                    String permissions = StringUtils.EMPTY;
+                    try {
+                        if (file.exists()) {
+                            PosixFileAttributes fileAttributes = Files.readAttributes(Paths.get(file.getPath()), PosixFileAttributes.class);
+                            Set<PosixFilePermission> permissionSet = fileAttributes.permissions();
+                            permissions = permissionSet.toString();
+                        }
+                    } catch (IOException e) {
+                    }
+                    long fileLength = file.length();
+                    FileIntegrityOperation fbean = new FileIntegrityOperation(file.exists(), fileName, className,
+                            methodName, lastModified, permissions, fileLength);
+                    NewRelicSecurity.getAgent().getSecurityMetaData().getFileLocalMap().put(fileName,
+                            fbean);
+                    return fbean;
                 }
-            } catch (IOException e) {
             }
-            long fileLength = file.length();
-            FileIntegrityOperation fbean = new FileIntegrityOperation(file.exists(), fileName, className,
-                    methodName, lastModified, permissions, fileLength);
-            NewRelicSecurity.getAgent().getSecurityMetaData().getFileLocalMap().put(fileName,
-                    fbean);
-            return fbean;
+        } finally {
+            if(lockAcquired){
+                ThreadLocalLockHelper.releaseLock();
+            }
         }
         return null;
+
     }
 
     public static void checkEntryOfFileIntegrity(List<String> fileNames) {
-        for (String fileName : fileNames) {
-            File file = Paths.get(fileName).toFile();
-            if(NewRelicSecurity.getAgent().getSecurityMetaData().getFileLocalMap().containsKey(fileName)){
-                FileIntegrityOperation fbean = NewRelicSecurity.getAgent().getSecurityMetaData().getFileLocalMap().get(fileName);
-                if(fbean.isIntegrityBreached(file)){
-                    NewRelicSecurity.getAgent().registerOperation(fbean);
+        boolean lockAcquired = ThreadLocalLockHelper.acquireLock();
+        try {
+            if(lockAcquired) {
+                for (String fileName : fileNames) {
+                    File file = Paths.get(fileName).toFile();
+                    if(NewRelicSecurity.getAgent().getSecurityMetaData().getFileLocalMap().containsKey(fileName)){
+                        FileIntegrityOperation fbean = NewRelicSecurity.getAgent().getSecurityMetaData().getFileLocalMap().get(fileName);
+                        if(fbean.isIntegrityBreached(file)){
+                            NewRelicSecurity.getAgent().registerOperation(fbean);
+                        }
+                    }
                 }
+            }
+        } finally {
+            if(lockAcquired) {
+                ThreadLocalLockHelper.releaseLock();
             }
         }
     }
