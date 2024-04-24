@@ -33,7 +33,6 @@ import java.io.IOException;
 import java.lang.instrument.Instrumentation;
 import java.lang.instrument.UnmodifiableClassException;
 import java.net.HttpURLConnection;
-import java.net.Socket;
 import java.net.URL;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -379,7 +378,10 @@ public class Agent implements SecurityAgent {
             switch (securityMetaData.getMetaData().getUserLevelServiceMethodEncounteredFramework()){
                 case "vertx-web":
                     if(i-1 >= 0) {
-                        userClassEntity = setUserClassEntityForVertx(operation, userClassEntity, securityMetaData.getMetaData().isUserLevelServiceMethodEncountered(), i);
+                        userClassEntity = setUserClassEntityForVertx(operation, userStackTraceElement, userClassEntity, securityMetaData.getMetaData().isUserLevelServiceMethodEncountered(), i);
+                        if(userClassEntity.getUserClassElement() != null){
+                            return userClassEntity;
+                        }
                     }
                     break;
                 default:
@@ -402,11 +404,11 @@ public class Agent implements SecurityAgent {
         return userClassEntity;
     }
 
-    private UserClassEntity setUserClassEntityForVertx(AbstractOperation operation, UserClassEntity userClassEntity, boolean userLevelServiceMethodEncountered, int i) {
+    private UserClassEntity setUserClassEntityForVertx(AbstractOperation operation, StackTraceElement userStackTraceElement, UserClassEntity userClassEntity, boolean userLevelServiceMethodEncountered, int i) {
         StackTraceElement serviceTraceElement = operation.getStackTrace()[i];
         if(serviceTraceElement != null){
-            if(StringUtils.equals(serviceTraceElement.getClassName(), serviceTraceElement.getClassName())
-                    && StringUtils.equals(serviceTraceElement.getMethodName(), serviceTraceElement.getMethodName())){
+            if(StringUtils.equals(serviceTraceElement.getClassName(), userStackTraceElement.getClassName())
+                    && StringUtils.equals(serviceTraceElement.getMethodName(), userStackTraceElement.getMethodName())){
                 StackTraceElement stackTraceElement = operation.getStackTrace()[i-1];
                 userClassEntity.setUserClassElement(stackTraceElement);
                 userClassEntity.setCalledByUserCode(userLevelServiceMethodEncountered);
