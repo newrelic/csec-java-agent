@@ -63,6 +63,9 @@ public class AgentMetaData {
         this.userLevelServiceMethodEncountered = agentMetaData.userLevelServiceMethodEncountered;
         this.reflectedMetaData = agentMetaData.reflectedMetaData;
         this.appServerInfo = agentMetaData.appServerInfo;
+        this.triggerViaXXE = agentMetaData.triggerViaXXE;
+        this.userLevelServiceMethodEncounteredFramework = agentMetaData.userLevelServiceMethodEncounteredFramework;
+        this.foundAnnotedUserLevelServiceMethod = agentMetaData.foundAnnotedUserLevelServiceMethod;
     }
 
     public boolean isTriggerViaRCI() {

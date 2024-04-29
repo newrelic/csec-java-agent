@@ -163,7 +163,7 @@ public class ServletHelper {
                 return false;
             }
             SecurityMetaData securityMetaData = NewRelicSecurity.getAgent().getSecurityMetaData();
-            if (!securityMetaData.getMetaData().isUserLevelServiceMethodEncountered(frameworkName) || !securityMetaData.getMetaData().isFoundAnnotedUserLevelServiceMethod()) {
+            if (!securityMetaData.getMetaData().isFoundAnnotedUserLevelServiceMethod()) {
                 securityMetaData.getMetaData().setUserLevelServiceMethodEncountered(true);
                 securityMetaData.getMetaData().setUserLevelServiceMethodEncounteredFramework(frameworkName);
                 StackTraceElement[] trace = Thread.currentThread().getStackTrace();
