@@ -10,7 +10,6 @@ import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
-import com.newrelic.agent.security.instrumentation.javax.jndi.JNDIUtils;
 
 import java.util.Enumeration;
 import java.util.List;
