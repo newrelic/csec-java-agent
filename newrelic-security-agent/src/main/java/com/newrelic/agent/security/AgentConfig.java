@@ -107,7 +107,10 @@ public class AgentConfig {
             return false;
         }
         Path k2homePath = Paths.get(NR_CSEC_HOME, IUtilConstants.NR_SECURITY_HOME);
-        CommonUtils.forceMkdirs(k2homePath, DIRECTORY_PERMISSION);
+        if(!CommonUtils.forceMkdirs(k2homePath, DIRECTORY_PERMISSION)){
+            System.err.println(String.format("[NR-CSEC-JA] CSEC home directory creation failed at %s", NR_CSEC_HOME));
+            return false;
+        }
         NR_CSEC_HOME = k2homePath.toString();
         AgentUtils.getInstance().getStatusLogValues().put("csec-home", NR_CSEC_HOME);
         AgentUtils.getInstance().getStatusLogValues().put("csec-home-permissions", String.valueOf(k2homePath.toFile().canWrite() && k2homePath.toFile().canRead()));
