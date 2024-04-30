@@ -5,12 +5,10 @@ import com.newrelic.agent.security.introspec.SecurityInstrumentationTestRunner;
 import com.newrelic.agent.security.introspec.SecurityIntrospector;
 import com.newrelic.api.agent.Trace;
 import com.newrelic.api.agent.security.schema.AgentMetaData;
-import com.newrelic.security.test.marker.Java17IncompatibleTest;
 import org.junit.Assert;
 import org.junit.ClassRule;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 
@@ -23,7 +21,6 @@ import java.net.URL;
 @RunWith(SecurityInstrumentationTestRunner.class)
 @InstrumentationTestConfig(includePrefixes = { "javax.servlet", "com.newrelic.agent.security.instrumentation.servlet24" })
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-@Category({ Java17IncompatibleTest.class})
 public class HttpServletTest {
     @ClassRule
     public static HttpServletServer server = new HttpServletServer();

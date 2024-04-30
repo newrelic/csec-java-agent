@@ -18,7 +18,7 @@ public class MemcachedHelper {
     public static final String METHOD_ASYNC_CAS = "asyncCAS";
     private static final String SPYMEMCACHED_2_12_0 = "SPYMEMCACHED-2.12.0";
 
-    public static AbstractOperation preprocessSecurityHook(String command, String type, String key, Object val, String klass, String method) {
+    public static AbstractOperation preprocessSecurityHook(String type, String command, String key, Object val, String klass, String method) {
         try {
             if (!NewRelicSecurity.isHookProcessingActive() || NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty()){
                 return null;

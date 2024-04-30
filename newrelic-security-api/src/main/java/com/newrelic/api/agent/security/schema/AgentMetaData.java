@@ -35,6 +35,8 @@ public class AgentMetaData {
     @JsonIgnore
     private String userLevelServiceMethodEncounteredFramework;
 
+    private boolean foundAnnotedUserLevelServiceMethod = false;
+
     @JsonIgnore
     private Set<String> ips;
 
@@ -61,6 +63,9 @@ public class AgentMetaData {
         this.userLevelServiceMethodEncountered = agentMetaData.userLevelServiceMethodEncountered;
         this.reflectedMetaData = agentMetaData.reflectedMetaData;
         this.appServerInfo = agentMetaData.appServerInfo;
+        this.triggerViaXXE = agentMetaData.triggerViaXXE;
+        this.userLevelServiceMethodEncounteredFramework = agentMetaData.userLevelServiceMethodEncounteredFramework;
+        this.foundAnnotedUserLevelServiceMethod = agentMetaData.foundAnnotedUserLevelServiceMethod;
     }
 
     public boolean isTriggerViaRCI() {
@@ -173,5 +178,13 @@ public class AgentMetaData {
 
     public void setAppServerInfo(AppServerInfo appServerInfo) {
         this.appServerInfo = appServerInfo;
+    }
+
+    public boolean isFoundAnnotedUserLevelServiceMethod() {
+        return foundAnnotedUserLevelServiceMethod;
+    }
+
+    public void setFoundAnnotedUserLevelServiceMethod(boolean foundAnnotedUserLevelServiceMethod) {
+        this.foundAnnotedUserLevelServiceMethod = foundAnnotedUserLevelServiceMethod;
     }
 }

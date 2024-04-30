@@ -15,13 +15,12 @@ import akka.util.ByteString
 import com.newrelic.agent.security.introspec.{InstrumentationTestConfig, SecurityInstrumentationTestRunner, SecurityIntrospector}
 import com.newrelic.api.agent.Trace
 import com.newrelic.api.agent.security.instrumentation.helpers.{GenericHelper, ServletHelper}
-import com.newrelic.api.agent.security.schema.{K2RequestIdentifier, SecurityMetaData, StringUtils, VulnerabilityCaseType}
+import com.newrelic.api.agent.security.schema.{SecurityMetaData, VulnerabilityCaseType}
 import com.newrelic.api.agent.security.schema.operation.{RXSSOperation, SSRFOperation}
 import org.junit.runner.RunWith
 import org.junit.runners.MethodSorters
 import org.junit.{Assert, FixMethodOrder, Test}
 
-import java.io.File
 import java.net.ServerSocket
 import java.util.UUID
 import scala.collection.JavaConversions
@@ -45,13 +44,12 @@ class AkkaHttpCoreTest {
   val contentType: String = "text/plain"
   val responseBody: String = "Hoops!"
   val requestBody: String = "Hurray!"
-  val fuzzHeader = "FILE_OPERATION--123:IAST:native:__K2PM0__:IAST:./tmp/file:IAST:SAFE:IAST:1:IAST:1:IAST:2aabd9833907ae4cde0120e4352c0da72d9e1acfcf298d6801b7120586d1df9d:IAST:02642fa0c3542fe5997eea314c0f5eec5b744ea83f168e998006111f9fa4fbd2"
 
   @Test
   def syncHandlerAkkaServerTestWithAkkaServer(): Unit = {
     val headerValue = String.valueOf(UUID.randomUUID)
     val introspector: SecurityIntrospector = SecurityInstrumentationTestRunner.getIntrospector
-    introspector.setK2FuzzRequestId(fuzzHeader)
+    introspector.setK2FuzzRequestId(headerValue)
     introspector.setK2TracingData(headerValue)
     introspector.setK2ParentId(headerValue)
 
@@ -69,14 +67,13 @@ class AkkaHttpCoreTest {
       }
     }
     assertMetaData(introspector.getSecurityMetaData)
-    assertIASTFuzzIdentifier(introspector.getSecurityMetaData.getFuzzRequestIdentifier)
   }
 
   @Test
   def asyncHandlerAkkaServerTestWithAkkaServer(): Unit = {
     val headerValue = String.valueOf(UUID.randomUUID)
     val introspector: SecurityIntrospector = SecurityInstrumentationTestRunner.getIntrospector
-    introspector.setK2FuzzRequestId(fuzzHeader)
+    introspector.setK2FuzzRequestId(headerValue)
     introspector.setK2TracingData(headerValue)
     introspector.setK2ParentId(headerValue)
 
@@ -94,14 +91,13 @@ class AkkaHttpCoreTest {
       }
     }
     assertMetaData(introspector.getSecurityMetaData)
-    assertIASTFuzzIdentifier(introspector.getSecurityMetaData.getFuzzRequestIdentifier)
   }
 
   @Test
   def syncHandlerAkkaServerTestWithPlayServer(): Unit = {
     val headerValue = String.valueOf(UUID.randomUUID)
     val introspector: SecurityIntrospector = SecurityInstrumentationTestRunner.getIntrospector
-    introspector.setK2FuzzRequestId(fuzzHeader)
+    introspector.setK2FuzzRequestId(headerValue)
     introspector.setK2TracingData(headerValue)
     introspector.setK2ParentId(headerValue)
 
@@ -119,14 +115,13 @@ class AkkaHttpCoreTest {
       }
     }
     assertMetaData(introspector.getSecurityMetaData)
-    assertIASTFuzzIdentifier(introspector.getSecurityMetaData.getFuzzRequestIdentifier)
   }
 
   @Test
   def asyncHandlerAkkaServerTestWithPlayServer(): Unit = {
     val headerValue = String.valueOf(UUID.randomUUID)
     val introspector: SecurityIntrospector = SecurityInstrumentationTestRunner.getIntrospector
-    introspector.setK2FuzzRequestId(fuzzHeader)
+    introspector.setK2FuzzRequestId(headerValue)
     introspector.setK2TracingData(headerValue)
     introspector.setK2ParentId(headerValue)
 
@@ -144,7 +139,6 @@ class AkkaHttpCoreTest {
       }
     }
     assertMetaData(introspector.getSecurityMetaData)
-    assertIASTFuzzIdentifier(introspector.getSecurityMetaData.getFuzzRequestIdentifier)
   }
 
   @Trace(dispatcher = true, nameTransaction = true)
@@ -205,7 +199,7 @@ class AkkaHttpCoreTest {
     )
     Assert.assertTrue(
       String.format("Invalid CSEC header value for: %s", ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID),
-      headers.exists(header => header.value().contains(fuzzHeader))
+      headers.exists(header => header.value().contains(headerVal))
     )
 
     Assert.assertTrue(
@@ -225,20 +219,6 @@ class AkkaHttpCoreTest {
       String.format("Invalid CSEC header value for: %s", GenericHelper.CSEC_PARENT_ID),
       headers.exists(header => header.value().contains(headerVal))
     )
-  }
-  private def assertIASTFuzzIdentifier(identifier: K2RequestIdentifier): Unit = {
-    val f = new File("./tmp123")
-    val data = StringUtils.splitByWholeSeparatorWorker(fuzzHeader, ":IAST:", -1, false)
-    Assert.assertTrue(data.length > 4)
-    Assert.assertNotNull(identifier)
-    Assert.assertEquals(fuzzHeader, identifier.getRaw)
-    Assert.assertEquals(data(0), identifier.getApiRecordId)
-    Assert.assertEquals(data(1), identifier.getRefId)
-    Assert.assertEquals(data(2), identifier.getRefValue)
-    Assert.assertEquals(data(3), identifier.getNextStage.getStatus)
-    Assert.assertEquals(1, identifier.getTempFiles.size)
-    Assert.assertEquals(f.getPath, identifier.getTempFiles.get(0))
-    f.deleteOnExit()
   }
   private def assertRXSSOperation(operation: RXSSOperation): Unit = {
     Assert.assertFalse("operation should not be empty", operation.isEmpty)

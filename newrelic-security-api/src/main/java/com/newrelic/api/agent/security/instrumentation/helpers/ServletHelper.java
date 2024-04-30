@@ -123,7 +123,9 @@ public class ServletHelper {
                                 filesToRemove.add(parentFile.getAbsolutePath());
                                 fileToCreate.getParentFile().mkdirs();
                             }
-                            Files.createFile(fileToCreate.toPath());
+                            if(!fileToCreate.exists()) {
+                                Files.createFile(fileToCreate.toPath());
+                            }
                         } catch (Throwable e) {
                             String message = "Error while parsing fuzz request : %s";
                             NewRelicSecurity.getAgent().log(LogLevel.INFO, String.format(message, e.getMessage()), e, ServletHelper.class.getName());
@@ -163,7 +165,7 @@ public class ServletHelper {
                 return false;
             }
             SecurityMetaData securityMetaData = NewRelicSecurity.getAgent().getSecurityMetaData();
-            if (!securityMetaData.getMetaData().isUserLevelServiceMethodEncountered(frameworkName)) {
+            if (!securityMetaData.getMetaData().isFoundAnnotedUserLevelServiceMethod()) {
                 securityMetaData.getMetaData().setUserLevelServiceMethodEncountered(true);
                 securityMetaData.getMetaData().setUserLevelServiceMethodEncounteredFramework(frameworkName);
                 StackTraceElement[] trace = Thread.currentThread().getStackTrace();
@@ -171,6 +173,20 @@ public class ServletHelper {
                 return true;
             }
         } catch (Throwable ignored) {
+        }
+        return false;
+    }
+
+    public static boolean setFoundAnnotedUserLevelServiceMethod() {
+        try {
+            if (!NewRelicSecurity.isHookProcessingActive() || (NewRelicSecurity.getAgent().getSecurityMetaData().getRequest().isEmpty())
+            ) {
+                return false;
+            }
+            SecurityMetaData securityMetaData = NewRelicSecurity.getAgent().getSecurityMetaData();
+            securityMetaData.getMetaData().setFoundAnnotedUserLevelServiceMethod(true);
+            return true;
+        } catch (Throwable ignored){
         }
         return false;
     }
