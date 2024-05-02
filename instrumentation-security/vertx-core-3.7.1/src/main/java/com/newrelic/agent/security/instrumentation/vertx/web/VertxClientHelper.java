@@ -17,7 +17,7 @@ public class VertxClientHelper {
 
     public static final String METHOD_END = "end";
 
-    public static final String VERTX_WEB_3_8_0 = "Vertx-Web-3.8.0";
+    public static final String VERTX_WEB_3_7_1 = "Vertx-Web-3.7.1";
 
 
     public static AbstractOperation preprocessSecurityHook(String url, String className, String methodName) {
@@ -34,11 +34,11 @@ public class VertxClientHelper {
             return operation;
         } catch (Throwable e) {
             if (e instanceof NewRelicSecurityException) {
-                NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.SECURITY_EXCEPTION_MESSAGE, VERTX_WEB_3_8_0, e.getMessage()), e, VertxClientHelper.class.getName());
+                NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.SECURITY_EXCEPTION_MESSAGE, VERTX_WEB_3_7_1, e.getMessage()), e, VertxClientHelper.class.getName());
                 throw e;
             }
-            NewRelicSecurity.getAgent().log(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, VERTX_WEB_3_8_0, e.getMessage()), e, VertxClientHelper.class.getName());
-            NewRelicSecurity.getAgent().reportIncident(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, VERTX_WEB_3_8_0, e.getMessage()), e, VertxClientHelper.class.getName());
+            NewRelicSecurity.getAgent().log(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, VERTX_WEB_3_7_1, e.getMessage()), e, VertxClientHelper.class.getName());
+            NewRelicSecurity.getAgent().reportIncident(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, VERTX_WEB_3_7_1, e.getMessage()), e, VertxClientHelper.class.getName());
         }
         return null;
     }
@@ -80,7 +80,7 @@ public class VertxClientHelper {
             }
             NewRelicSecurity.getAgent().registerExitEvent(operation);
         } catch (Throwable e) {
-            NewRelicSecurity.getAgent().log(LogLevel.FINEST, String.format(GenericHelper.EXIT_OPERATION_EXCEPTION_MESSAGE, VERTX_WEB_3_8_0, e.getMessage()), e, VertxClientHelper.class.getName());
+            NewRelicSecurity.getAgent().log(LogLevel.FINEST, String.format(GenericHelper.EXIT_OPERATION_EXCEPTION_MESSAGE, VERTX_WEB_3_7_1, e.getMessage()), e, VertxClientHelper.class.getName());
         }
     }
 

@@ -8,7 +8,6 @@
 package io.vertx.core.http.impl;
 
 import com.newrelic.agent.security.instrumentation.vertx.web.VertxClientHelper;
-import com.newrelic.api.agent.NewRelic;
 import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.weaver.Weave;
@@ -42,14 +41,6 @@ public abstract class HttpClientRequestImpl_Instrumentation {
             }
         }
         VertxClientHelper.registerExitOperation(isLockAcquired, operation);
-    }
-
-    private void releaseLock() {
-        GenericHelper.releaseLock(VertxClientHelper.getNrSecCustomAttribName());
-    }
-
-    private boolean acquireLockIfPossible() {
-        return GenericHelper.acquireLockIfPossible(VertxClientHelper.getNrSecCustomAttribName());
     }
 
     public void end(Buffer chunk, Handler<AsyncResult<Void>> handler) {
@@ -108,5 +99,11 @@ public abstract class HttpClientRequestImpl_Instrumentation {
         }
         VertxClientHelper.registerExitOperation(isLockAcquired, operation);
     }
+    private void releaseLock() {
+        GenericHelper.releaseLock(VertxClientHelper.getNrSecCustomAttribName());
+    }
 
+    private boolean acquireLockIfPossible() {
+        return GenericHelper.acquireLockIfPossible(VertxClientHelper.getNrSecCustomAttribName());
+    }
 }
