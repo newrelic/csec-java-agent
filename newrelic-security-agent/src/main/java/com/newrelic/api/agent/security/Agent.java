@@ -373,9 +373,12 @@ public class Agent implements SecurityAgent {
         if(securityMetaData.getMetaData().getServiceTrace() != null && securityMetaData.getMetaData().getServiceTrace().length > 0){
             userStackTraceElement = securityMetaData.getMetaData().getServiceTrace()[0];
         }
-
+        String framework = securityMetaData.getMetaData().getUserLevelServiceMethodEncounteredFramework();
+        if (framework == null){
+            framework = StringUtils.EMPTY;
+        }
         for (int i = operation.getStackTrace().length-1; i >=0 ; i--) {
-            switch (securityMetaData.getMetaData().getUserLevelServiceMethodEncounteredFramework()){
+            switch (framework){
                 case "vertx-web":
                     if(i-1 >= 0) {
                         userClassEntity = setUserClassEntityForVertx(operation, userStackTraceElement, userClassEntity, securityMetaData.getMetaData().isUserLevelServiceMethodEncountered(), i);
