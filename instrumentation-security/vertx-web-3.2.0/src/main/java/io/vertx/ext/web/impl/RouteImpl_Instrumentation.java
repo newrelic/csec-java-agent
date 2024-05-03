@@ -9,7 +9,7 @@ import io.vertx.ext.web.RoutingContext;
 public class RouteImpl_Instrumentation {
 
     synchronized void handleContext(RoutingContext context) {
-        Weaver.callOriginal();
         ServletHelper.registerUserLevelCode("vertx-web");
+        Weaver.callOriginal();
     }
 }

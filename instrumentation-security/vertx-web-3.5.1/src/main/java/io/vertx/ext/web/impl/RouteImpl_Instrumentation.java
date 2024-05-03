@@ -7,8 +7,8 @@ import com.newrelic.api.agent.weaver.Weaver;
 @Weave(originalName = "io.vertx.ext.web.impl.RouteImpl")
 public class RouteImpl_Instrumentation {
 
-    synchronized void handleContext(RoutingContextImplBase context) {
-        Weaver.callOriginal();
+    void handleContext(RoutingContextImplBase context) {
         ServletHelper.registerUserLevelCode("vertx-web");
+        Weaver.callOriginal();
     }
 }
