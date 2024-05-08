@@ -7,7 +7,7 @@ import com.newrelic.api.agent.weaver.Weaver;
 @Weave(originalName = "io.vertx.ext.web.impl.RouteState")
 abstract class RouteState_Instrumentation {
     void handleContext(RoutingContextImplBase context){
-        Weaver.callOriginal();
         ServletHelper.registerUserLevelCode("vertx-web");
+        Weaver.callOriginal();
     }
 }

@@ -373,9 +373,9 @@ public class Agent implements SecurityAgent {
         if(userStackTraceElement == null && securityMetaData.getMetaData().getServiceTrace() != null && securityMetaData.getMetaData().getServiceTrace().length > 0){
             userStackTraceElement = securityMetaData.getMetaData().getServiceTrace()[0];
         }
-
+      
         String framework = securityMetaData.getMetaData().getUserLevelServiceMethodEncounteredFramework();
-        if (framework == null) {
+        if (framework == null){
             framework = StringUtils.EMPTY;
         }
         for (int i = operation.getStackTrace().length-1; i >=0 ; i--) {
