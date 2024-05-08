@@ -79,7 +79,9 @@ public class RestRequestThreadPool {
                     if (r instanceof CustomFutureTask<?> && ((CustomFutureTask<?>) r).getTask() instanceof RestRequestProcessor) {
                         RestRequestProcessor task = (RestRequestProcessor) ((CustomFutureTask<?>) r).getTask();
                         controlCommandId = task.getControlCommand().getId();
-                        if(task.isSuccessful()){
+                        if(task.isSuccessful() && 500 < task.getResponseCode() && task.getResponseCode() >= 400){
+                            errorInReplay.add(controlCommandId);
+                        } else if (task.isSuccessful()) {
                             completedReplay.add(controlCommandId);
                         } else if (task.isExceptionRaised() && task.getError() instanceof InterruptedIOException) {
                             clearFromPending.add(controlCommandId);
