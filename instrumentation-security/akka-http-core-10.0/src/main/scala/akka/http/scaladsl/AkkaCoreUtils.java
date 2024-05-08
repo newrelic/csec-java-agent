@@ -118,7 +118,10 @@ public class AkkaCoreUtils {
 
             processHttpRequestHeader(httpRequest, securityRequest);
 
-            securityMetaData.setTracingHeaderValue(getTraceHeader(securityRequest.getHeaders()));
+            securityMetaData.setTracingHeaderValue(ServletHelper.getTraceHeader(securityRequest.getHeaders()));
+
+            NewRelicSecurity.getAgent().setEmptyIastDataRequestEntry(ServletHelper.iastDataRequestAddEmptyEntry(securityMetaData.getFuzzRequestIdentifier(), securityMetaData.getTracingHeaderValue(),
+                    securityMetaData.getCustomAttribute(GenericHelper.CSEC_PARENT_ID, String.class)));
 
             securityRequest.setProtocol(getProtocol(httpRequest.protocol().value()));
 
@@ -146,17 +149,6 @@ public class AkkaCoreUtils {
                 releaseServletLock();
             }
         }
-    }
-
-    public static String getTraceHeader(Map<String, String> headers) {
-        String data = EMPTY;
-        if (headers.containsKey(ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER) || headers.containsKey(ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER.toLowerCase())) {
-            data = headers.get(ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER);
-            if (data == null || data.trim().isEmpty()) {
-                data = headers.get(ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER.toLowerCase());
-            }
-        }
-        return data;
     }
 
     public static void processHttpRequestHeader(HttpRequest request, com.newrelic.api.agent.security.schema.HttpRequest securityRequest){

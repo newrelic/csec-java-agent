@@ -70,7 +70,9 @@ public class GrpcServerUtils {
 
             processGRPCRequestMetadata(meta, securityRequest);
 
-            securityMetaData.setTracingHeaderValue(getTraceHeader(securityRequest.getHeaders()));
+            securityMetaData.setTracingHeaderValue(ServletHelper.getTraceHeader(securityRequest.getHeaders()));
+
+            NewRelicSecurity.getAgent().setEmptyIastDataRequestEntry(ServletHelper.iastDataRequestAddEmptyEntry(securityMetaData.getFuzzRequestIdentifier(), securityMetaData.getTracingHeaderValue(), securityMetaData.getCustomAttribute(GenericHelper.CSEC_PARENT_ID, String.class)));
 
             if (call.getAttributes().get(Grpc.TRANSPORT_ATTR_SSL_SESSION) != null) {
                 securityRequest.setProtocol("https");
@@ -158,17 +160,6 @@ public class GrpcServerUtils {
                     Boolean.TRUE.equals(NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(nrSecCustomAttrName, Boolean.class));
         } catch (Throwable ignored) {}
         return false;
-    }
-
-    public static String getTraceHeader(Map<String, String> headers) {
-        String data = EMPTY;
-        if (headers.containsKey(ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER) || headers.containsKey(ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER.toLowerCase())) {
-            data = headers.get(ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER);
-            if (data == null || data.trim().isEmpty()) {
-                data = headers.get(ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER.toLowerCase());
-            }
-        }
-        return data;
     }
 
     public static void processGRPCRequestMetadata(Metadata metadata, HttpRequest securityRequest) {

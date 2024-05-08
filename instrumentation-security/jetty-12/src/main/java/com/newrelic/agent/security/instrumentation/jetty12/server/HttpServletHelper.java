@@ -81,17 +81,6 @@ public class HttpServletHelper {
         }
     }
 
-    public static String getTraceHeader(Map<String, String> headers) {
-        String data = EMPTY;
-        if (headers.containsKey(ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER) || headers.containsKey(ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER.toLowerCase())) {
-            data = headers.get(ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER);
-            if (data == null || data.trim().isEmpty()) {
-                data = headers.get(ServletHelper.CSEC_DISTRIBUTED_TRACING_HEADER.toLowerCase());
-            }
-        }
-        return data;
-    }
-
     public static boolean isServletLockAcquired() {
         try {
             return NewRelicSecurity.isHookProcessingActive() &&
@@ -151,7 +140,9 @@ public class HttpServletHelper {
 
             HttpServletHelper.processHttpRequestHeader(request, securityRequest);
 
-            securityMetaData.setTracingHeaderValue(HttpServletHelper.getTraceHeader(securityRequest.getHeaders()));
+            securityMetaData.setTracingHeaderValue(ServletHelper.getTraceHeader(securityRequest.getHeaders()));
+
+            NewRelicSecurity.getAgent().setEmptyIastDataRequestEntry(ServletHelper.iastDataRequestAddEmptyEntry(securityMetaData.getFuzzRequestIdentifier(), securityMetaData.getTracingHeaderValue(), securityMetaData.getCustomAttribute(GenericHelper.CSEC_PARENT_ID, String.class)));
 
             securityRequest.setProtocol(request.getHttpURI().getScheme());
 

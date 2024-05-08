@@ -8,6 +8,7 @@
 package com.newrelic.api.agent.security;
 
 import com.newrelic.api.agent.security.schema.AbstractOperation;
+import com.newrelic.api.agent.security.schema.FuzzRequestEmptyEntry;
 import com.newrelic.api.agent.security.schema.SecurityMetaData;
 import com.newrelic.api.agent.security.schema.policy.AgentPolicy;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
@@ -15,6 +16,7 @@ import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import java.lang.instrument.Instrumentation;
 import java.net.URL;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * The New Relic Security Java Agent's API.
@@ -67,4 +69,6 @@ public interface SecurityAgent {
     void retransformUninstrumentedClass(Class<?> classToRetransform);
 
     String decryptAndVerify(String encryptedData, String hashVerifier);
+
+    void setEmptyIastDataRequestEntry(FuzzRequestEmptyEntry emptyEntry);
 }

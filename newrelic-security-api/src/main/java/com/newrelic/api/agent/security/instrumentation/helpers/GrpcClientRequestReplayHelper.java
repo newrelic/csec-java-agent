@@ -30,6 +30,7 @@ public class GrpcClientRequestReplayHelper {
         static final GrpcClientRequestReplayHelper instance = new GrpcClientRequestReplayHelper();
     }
 
+    //TODO Update MicrosService Arch
     public void resetIASTProcessing() {
         rejectedIds.addAll(processedIds.keySet());
         processedIds.clear();
@@ -94,6 +95,7 @@ public class GrpcClientRequestReplayHelper {
     }
 
     public void registerEventForProcessedCC(String controlCommandId, String eventId) {
+        //TODO Update MicrosService Arch
         if(StringUtils.isAnyBlank(controlCommandId, eventId)){
             return;
         }
@@ -104,6 +106,7 @@ public class GrpcClientRequestReplayHelper {
     }
 
     public void removeFromProcessedCC(String controlCommandId) {
+        //TODO Update MicrosService Arch
         if(StringUtils.isNotBlank(controlCommandId)){
             processedIds.remove(controlCommandId);
         }

@@ -220,9 +220,12 @@ public class DispatcherPool {
                         GrpcClientRequestReplayHelper.getInstance().registerEventForProcessedCC(parentId, operation.getExecutionId());
                     }
                 } else {
-                    RestRequestThreadPool.getInstance().getProcessedIds().putIfAbsent(parentId, new HashSet<>());
                     if (StringUtils.equals(securityMetaData.getFuzzRequestIdentifier().getApiRecordId(), operation.getApiID())) {
-                        RestRequestThreadPool.getInstance().registerEventForProcessedCC(parentId, operation.getExecutionId());
+                        String originAppUUID = securityMetaData.getFuzzRequestIdentifier().getOriginApplicationUUID();
+                        if(StringUtils.isBlank(originAppUUID)){
+                            originAppUUID = AgentInfo.getInstance().getApplicationUUID();
+                        }
+                        RestRequestThreadPool.getInstance().registerEventForProcessedCC(parentId, operation.getExecutionId(), originAppUUID);
                     }
                 }
             }

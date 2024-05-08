@@ -1,18 +1,19 @@
 package com.newrelic.agent.security.intcodeagent.controlcommand;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.newrelic.agent.security.instrumentator.httpclient.IASTDataTransferRequestProcessor;
 import com.newrelic.agent.security.instrumentator.httpclient.RestRequestProcessor;
 import com.newrelic.agent.security.instrumentator.httpclient.RestRequestThreadPool;
 import com.newrelic.agent.security.instrumentator.utils.AgentUtils;
 import com.newrelic.agent.security.instrumentator.utils.InstrumentationUtils;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
+import com.newrelic.agent.security.intcodeagent.models.IASTDataTransferRequest;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.logging.IAgentConstants;
 import com.newrelic.agent.security.intcodeagent.models.config.AgentPolicyParameters;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.EventResponse;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.IntCodeControlCommand;
-import com.newrelic.agent.security.intcodeagent.utils.CommonUtils;
 import com.newrelic.agent.security.intcodeagent.websocket.EventSendPool;
 import com.newrelic.agent.security.intcodeagent.websocket.JsonConverter;
 import com.newrelic.agent.security.intcodeagent.websocket.WSClient;
@@ -29,6 +30,7 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class ControlCommandProcessor implements Runnable {
 
@@ -65,6 +67,7 @@ public class ControlCommandProcessor implements Runnable {
     public static final String PURGING_CONFIRMED_IAST_PROCESSED_RECORDS_COUNT_S = "Purging confirmed IAST processed records count : %s";
     public static final String PURGING_CONFIRMED_IAST_PROCESSED_RECORDS_S = "Purging confirmed IAST processed records : %s";
 
+    private ObjectMapper objectMapper = new ObjectMapper();
 
     private String controlCommandMessage;
 
@@ -258,13 +261,26 @@ public class ControlCommandProcessor implements Runnable {
                         controlCommand.getArguments().size()), this.getClass().getName());
                 logger.log(LogLevel.FINEST, String.format(PURGING_CONFIRMED_IAST_PROCESSED_RECORDS_S,
                         controlCommand.getArguments()), this.getClass().getName());
-                controlCommand.getArguments().forEach(RestRequestThreadPool.getInstance().getProcessedIds()::remove);
+                //TODO Update MicrosService Arch
+                IASTDataTransferRequest requestForPurge = objectMapper.convertValue(controlCommand.getData(), IASTDataTransferRequest.class);
+                purgeIastDataTransferRequest(requestForPurge);
                 controlCommand.getArguments().forEach(GrpcClientRequestReplayHelper.getInstance().getProcessedIds()::remove);
                 break;
             default:
                 logger.log(LogLevel.WARNING, String.format(UNKNOWN_CONTROL_COMMAND_S, controlCommandMessage),
                         ControlCommandProcessor.class.getName());
                 break;
+        }
+    }
+
+    private static void purgeIastDataTransferRequest(IASTDataTransferRequest requestForPurge) {
+        RestRequestThreadPool.getInstance().getCompletedReplay().removeAll(requestForPurge.getCompletedReplay());
+        RestRequestThreadPool.getInstance().getErrorInReplay().removeAll(requestForPurge.getErrorInReplay());
+        RestRequestThreadPool.getInstance().getClearFromPending().removeAll(requestForPurge.getClearFromPending());
+        for (Map.Entry<String, Map<String, Set<String>>> applicationMap : RestRequestThreadPool.getInstance().getGeneratedEvents().entrySet()) {
+            String originAppUUID = applicationMap.getKey();
+            Map<String, Set<String>> purgeApplicationMap = requestForPurge.getGeneratedEvent().get(originAppUUID);
+            purgeApplicationMap.forEach(applicationMap.getValue()::remove);
         }
     }
 

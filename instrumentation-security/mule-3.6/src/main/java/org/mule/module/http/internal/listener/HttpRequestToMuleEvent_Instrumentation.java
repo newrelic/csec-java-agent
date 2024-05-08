@@ -70,7 +70,9 @@ public class HttpRequestToMuleEvent_Instrumentation {
             }
 
             MuleHelper.processHttpRequestHeader(httpRequest, securityRequest);
-            securityMetaData.setTracingHeaderValue(MuleHelper.getTraceHeader(securityRequest.getHeaders()));
+            securityMetaData.setTracingHeaderValue(ServletHelper.getTraceHeader(securityRequest.getHeaders()));
+
+            NewRelicSecurity.getAgent().setEmptyIastDataRequestEntry(ServletHelper.iastDataRequestAddEmptyEntry(securityMetaData.getFuzzRequestIdentifier(), securityMetaData.getTracingHeaderValue(), securityMetaData.getCustomAttribute(GenericHelper.CSEC_PARENT_ID, String.class)));
 
             securityRequest.setProtocol(requestContext.getScheme());
             securityRequest.setUrl(httpRequest.getUri());

@@ -13,10 +13,7 @@ import com.newrelic.api.agent.security.instrumentation.helpers.GrpcClientRequest
 
 import java.time.Instant;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
-import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -76,6 +73,7 @@ public class IASTDataTransferRequestProcessor {
             int currentFetchThreshold = NewRelic.getAgent().getConfig()
                     .getValue(SECURITY_POLICY_VULNERABILITY_SCAN_IAST_SCAN_PROBING_THRESHOLD, 300);
 
+            //TODO Update MicrosService Arch
             int remainingRecordCapacityRest = RestRequestThreadPool.getInstance().getQueue().remainingCapacity();
             int currentRecordBacklogRest = RestRequestThreadPool.getInstance().getQueue().size();
             int remainingRecordCapacityGrpc = GrpcClientRequestReplayHelper.getInstance().getRequestQueue().remainingCapacity();
@@ -93,12 +91,10 @@ public class IASTDataTransferRequestProcessor {
                 request = new IASTDataTransferRequest(NewRelicSecurity.getAgent().getAgentUUID());
 
                 request.setBatchSize(batchSize);
-                request.setCompletedRequests(getEffectiveCompletedRequests());
-
-                HashSet<String> pendingRequestIds = new HashSet<>();
-                pendingRequestIds.addAll(RestRequestThreadPool.getInstance().getPendingIds());
-                pendingRequestIds.addAll(GrpcClientRequestReplayHelper.getInstance().getPendingIds());
-                request.setPendingRequestIds(pendingRequestIds);
+                request.setGeneratedEvent(getEffectiveCompletedRequests());
+                request.setClearFromPending(RestRequestThreadPool.getInstance().getClearFromPending());
+                request.setCompletedReplay(RestRequestThreadPool.getInstance().getCompletedReplay());
+                request.setErrorInReplay(RestRequestThreadPool.getInstance().getErrorInReplay());
                 WSClient.getInstance().send(request.toString());
             }
         } catch (Throwable e) {
@@ -108,19 +104,22 @@ public class IASTDataTransferRequestProcessor {
         }
     }
 
-    private Map<String, Set<String>> getEffectiveCompletedRequests() {
-        Map<String, Set<String>> completedRequest = new HashMap<>();
-        completedRequest.putAll(RestRequestThreadPool.getInstance().getProcessedIds());
-        completedRequest.putAll(GrpcClientRequestReplayHelper.getInstance().getProcessedIds());
+    private Map<String, Map<String, Set<String>>> getEffectiveCompletedRequests() {
+        Map<String, Map<String, Set<String>>> generatedEvents = new HashMap<>();
+        generatedEvents.putAll(RestRequestThreadPool.getInstance().getGeneratedEvents());
         for (String rejectedId : RestRequestThreadPool.getInstance().getRejectedIds()) {
-            completedRequest.remove(rejectedId);
+            for (Map.Entry<String, Map<String, Set<String>>> applicationMap : generatedEvents.entrySet()) {
+                applicationMap.getValue().remove(rejectedId);
+            }
         }
         RestRequestThreadPool.getInstance().getRejectedIds().clear();
         for (String rejectedId : GrpcClientRequestReplayHelper.getInstance().getRejectedIds()) {
-            completedRequest.remove(rejectedId);
+            for (Map.Entry<String, Map<String, Set<String>>> applicationMap : generatedEvents.entrySet()) {
+                applicationMap.getValue().remove(rejectedId);
+            }
         }
         GrpcClientRequestReplayHelper.getInstance().getRejectedIds().clear();
-        return completedRequest;
+        return generatedEvents;
     }
 
     private IASTDataTransferRequestProcessor() {

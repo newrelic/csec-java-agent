@@ -73,7 +73,9 @@ public abstract class Servlet_Instrumentation {
 
             HttpServletHelper.processHttpRequestHeader(httpServletRequest, securityRequest);
 
-            securityMetaData.setTracingHeaderValue(HttpServletHelper.getTraceHeader(securityRequest.getHeaders()));
+            securityMetaData.setTracingHeaderValue(ServletHelper.getTraceHeader(securityRequest.getHeaders()));
+
+            NewRelicSecurity.getAgent().setEmptyIastDataRequestEntry(ServletHelper.iastDataRequestAddEmptyEntry(securityMetaData.getFuzzRequestIdentifier(), securityMetaData.getTracingHeaderValue(), securityMetaData.getCustomAttribute(GenericHelper.CSEC_PARENT_ID, String.class)));
 
             securityRequest.setProtocol(httpServletRequest.getScheme());
             securityRequest.setUrl(httpServletRequest.getRequestURI());

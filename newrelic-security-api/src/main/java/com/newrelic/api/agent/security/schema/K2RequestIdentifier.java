@@ -14,6 +14,10 @@ public class K2RequestIdentifier {
     private String refKey;
     private List<String> tempFiles;
 
+    private String originApplicationUUID;
+
+    private String originEntityGuid;
+
     public K2RequestIdentifier() {
         k2Request = false;
         tempFiles = new ArrayList<>();
@@ -32,6 +36,8 @@ public class K2RequestIdentifier {
             this.tempFiles = new ArrayList<>(k2RequestIdentifierInstance.tempFiles);
         }
         this.raw = (StringUtils.isNotBlank(k2RequestIdentifierInstance.raw)) ? new String(k2RequestIdentifierInstance.raw) : null;
+        this.originApplicationUUID = (StringUtils.isNotBlank(k2RequestIdentifierInstance.originApplicationUUID)) ? new String(k2RequestIdentifierInstance.originApplicationUUID) : null;
+        this.originEntityGuid = (StringUtils.isNotBlank(k2RequestIdentifierInstance.originEntityGuid)) ? new String(k2RequestIdentifierInstance.originEntityGuid) : null;
     }
 
     public String getRefId() {
@@ -110,5 +116,21 @@ public class K2RequestIdentifier {
 
     public void setRefKey(String refKey) {
         this.refKey = refKey;
+    }
+
+    public String getOriginApplicationUUID() {
+        return originApplicationUUID;
+    }
+
+    public void setOriginApplicationUUID(String originApplicationUUID) {
+        this.originApplicationUUID = originApplicationUUID;
+    }
+
+    public String getOriginEntityGuid() {
+        return originEntityGuid;
+    }
+
+    public void setOriginEntityGuid(String originEntityGuid) {
+        this.originEntityGuid = originEntityGuid;
     }
 }

@@ -59,7 +59,10 @@ public class Filter_Instrumentation {
             }
 
             HttpServerHelper.processHttpRequestHeaders(exchange.getRequestHeaders(), securityRequest);
-            securityMetaData.setTracingHeaderValue(HttpServerHelper.getTraceHeader(securityRequest.getHeaders()));
+            securityMetaData.setTracingHeaderValue(ServletHelper.getTraceHeader(securityRequest.getHeaders()));
+
+            NewRelicSecurity.getAgent().setEmptyIastDataRequestEntry(ServletHelper.iastDataRequestAddEmptyEntry(securityMetaData.getFuzzRequestIdentifier(), securityMetaData.getTracingHeaderValue(), securityMetaData.getCustomAttribute(GenericHelper.CSEC_PARENT_ID, String.class)));
+
             securityRequest.setProtocol(HttpServerHelper.getProtocol(exchange));
             securityRequest.setUrl(String.valueOf(exchange.getRequestURI()));
 

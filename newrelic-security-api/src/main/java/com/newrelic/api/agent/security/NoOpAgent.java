@@ -7,8 +7,8 @@
 
 package com.newrelic.api.agent.security;
 
-import com.newrelic.api.agent.security.instrumentation.helpers.LowSeverityHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
+import com.newrelic.api.agent.security.schema.FuzzRequestEmptyEntry;
 import com.newrelic.api.agent.security.schema.SecurityMetaData;
 import com.newrelic.api.agent.security.schema.policy.AgentPolicy;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
@@ -124,6 +124,11 @@ class NoOpAgent implements SecurityAgent {
     @Override
     public String decryptAndVerify(String encryptedData, String hashVerifier) {
         return null;
+    }
+
+    @Override
+    public void setEmptyIastDataRequestEntry(FuzzRequestEmptyEntry emptyEntry) {
+
     }
 
 

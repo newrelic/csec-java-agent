@@ -14,11 +14,13 @@ public class IASTDataTransferRequest {
 
     private int batchSize;
 
-    private Set<String> pendingRequestIds;
+    private Set<String> completedReplay;
 
-    private Map<String, Set<String>> completedRequests;
+    private Set<String> errorInReplay;
 
-    private String sequenceNumber;
+    private Set<String> clearFromPending;
+
+    private Map<String, Map<String, Set<String>>> generatedEvent;
 
     public IASTDataTransferRequest() {}
     public IASTDataTransferRequest(String applicationUUID) {
@@ -41,28 +43,44 @@ public class IASTDataTransferRequest {
         this.batchSize = batchSize;
     }
 
-    public Map<String, Set<String>> getCompletedRequests() {
-        return completedRequests;
-    }
-
-    public void setCompletedRequests(Map<String, Set<String>> completedRequests) {
-        this.completedRequests = completedRequests;
-    }
-
-    public Set<String> getPendingRequestIds() {
-        return pendingRequestIds;
-    }
-
-    public void setPendingRequestIds(Set<String> pendingRequestIds) {
-        this.pendingRequestIds = pendingRequestIds;
-    }
-
     public String getJsonName() {
         return jsonName;
     }
 
     public void setJsonName(String jsonName) {
         this.jsonName = jsonName;
+    }
+
+    public Set<String> getCompletedReplay() {
+        return completedReplay;
+    }
+
+    public void setCompletedReplay(Set<String> completedReplay) {
+        this.completedReplay = completedReplay;
+    }
+
+    public Set<String> getErrorInReplay() {
+        return errorInReplay;
+    }
+
+    public void setErrorInReplay(Set<String> errorInReplay) {
+        this.errorInReplay = errorInReplay;
+    }
+
+    public Set<String> getClearFromPending() {
+        return clearFromPending;
+    }
+
+    public void setClearFromPending(Set<String> clearFromPending) {
+        this.clearFromPending = clearFromPending;
+    }
+
+    public Map<String, Map<String, Set<String>>> getGeneratedEvent() {
+        return generatedEvent;
+    }
+
+    public void setGeneratedEvent(Map<String, Map<String, Set<String>>> generatedEvent) {
+        this.generatedEvent = generatedEvent;
     }
 
     @Override

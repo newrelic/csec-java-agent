@@ -148,8 +148,7 @@ public class HashGenerator {
         return getChecksum(input);
     }
     public static String getSHA256HexDigest(String data) {
-        String input = StringUtils.join(data);
-        return getChecksum(input);
+        return getChecksum(data);
     }
     
     /**

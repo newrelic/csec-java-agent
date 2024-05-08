@@ -42,6 +42,14 @@ public class RestRequestProcessor implements Callable<Boolean> {
 
     private int repeatCount;
 
+    private boolean isSuccessful = false;
+
+    private int responseCode;
+
+    private boolean exceptionRaised = false;
+
+    private Throwable error;
+
     private ObjectMapper objectMapper = new ObjectMapper();
 
     private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
@@ -51,6 +59,41 @@ public class RestRequestProcessor implements Callable<Boolean> {
         this.repeatCount = repeatCount;
     }
 
+    public boolean isSuccessful() {
+        return isSuccessful;
+    }
+
+    public void setSuccessful(boolean successful) {
+        isSuccessful = successful;
+    }
+
+    public int getResponseCode() {
+        return responseCode;
+    }
+
+    public void setResponseCode(int responseCode) {
+        this.responseCode = responseCode;
+    }
+
+    public boolean isExceptionRaised() {
+        return exceptionRaised;
+    }
+
+    public void setExceptionRaised(boolean exceptionRaised) {
+        this.exceptionRaised = exceptionRaised;
+    }
+
+    public Throwable getError() {
+        return error;
+    }
+
+    public void setError(Throwable error) {
+        this.error = error;
+    }
+
+    public int getRepeatCount() {
+        return repeatCount;
+    }
 
     /**
      * Does the request replay in IAST mode.
@@ -80,13 +123,7 @@ public class RestRequestProcessor implements Callable<Boolean> {
 
             httpRequest = objectMapper.readValue(req, FuzzRequestBean.class);
             httpRequest.getHeaders().put(GenericHelper.CSEC_PARENT_ID, controlCommand.getId());
-            if (httpRequest.getIsGrpc()){
-                GrpcClientRequestReplayHelper.getInstance().getPendingIds().add(controlCommand.getId());
-                GrpcClientRequestReplayHelper.getInstance().removeFromProcessedCC(controlCommand.getId());
-            } else {
-                RestRequestThreadPool.getInstance().getPendingIds().add(controlCommand.getId());
-                RestRequestThreadPool.getInstance().removeFromProcessedCC(controlCommand.getId());
-            }
+
             httpRequest.setReflectedMetaData(controlCommand.getReflectedMetaData());
 
             if (httpRequest.getIsGrpc()){
@@ -104,24 +141,26 @@ public class RestRequestProcessor implements Callable<Boolean> {
                 GrpcClientRequestReplayHelper.getInstance().addToRequestQueue(new ControlCommandDto(controlCommand.getId(), httpRequest, payloadList));
             } else {
                 List<String> endpoints = prepareAllEndpoints(NewRelicSecurity.getAgent().getApplicationConnectionConfig());
-                RestClient.getInstance().fireRequest(httpRequest, endpoints, repeatCount + endpoints.size() -1, controlCommand.getId());
+                RestClient.getInstance().fireRequest(httpRequest, endpoints, this, repeatCount + endpoints.size() -1);
             }
             return true;
         } catch (JsonProcessingException e){
+            setExceptionRaised(true);
+            setError(e);
             logger.log(LogLevel.SEVERE,
                     String.format(JSON_PARSING_ERROR_WHILE_PROCESSING_FUZZING_REQUEST_S, controlCommand.getArguments().get(0)),
                     e, RestRequestProcessor.class.getName());
             logger.postLogMessageIfNecessary(LogLevel.SEVERE,
                     String.format(JSON_PARSING_ERROR_WHILE_PROCESSING_FUZZING_REQUEST_S, controlCommand.getId()), e, RestRequestProcessor.class.getName());
-            RestRequestThreadPool.getInstance().getProcessedIds().putIfAbsent(controlCommand.getId(), new HashSet<>());
         } catch (Throwable e) {
+            setExceptionRaised(true);
+            setError(e);
             logger.log(LogLevel.SEVERE,
                     String.format(ERROR_WHILE_PROCESSING_FUZZING_REQUEST_S, controlCommand.getArguments().get(0)),
                     e, RestRequestProcessor.class.getName());
             logger.postLogMessageIfNecessary(LogLevel.SEVERE,
                     String.format(ERROR_WHILE_PROCESSING_FUZZING_REQUEST_S, controlCommand.getId()),
                     e, RestRequestProcessor.class.getName());
-            RestRequestThreadPool.getInstance().getProcessedIds().putIfAbsent(controlCommand.getId(), new HashSet<>());
             throw e;
         }
         return true;

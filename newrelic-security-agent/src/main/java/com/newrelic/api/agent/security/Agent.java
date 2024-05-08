@@ -4,6 +4,7 @@ import com.fasterxml.jackson.dataformat.javaprop.JavaPropsMapper;
 import com.newrelic.agent.security.AgentConfig;
 import com.newrelic.agent.security.AgentInfo;
 import com.newrelic.agent.security.instrumentator.dispatcher.DispatcherPool;
+import com.newrelic.agent.security.instrumentator.httpclient.RestRequestThreadPool;
 import com.newrelic.agent.security.instrumentator.os.OsVariablesInstance;
 import com.newrelic.agent.security.instrumentator.utils.*;
 import com.newrelic.agent.security.intcodeagent.constants.AgentServices;
@@ -33,13 +34,10 @@ import java.io.IOException;
 import java.lang.instrument.Instrumentation;
 import java.lang.instrument.UnmodifiableClassException;
 import java.net.HttpURLConnection;
-import java.net.Socket;
 import java.net.URL;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
@@ -682,6 +680,25 @@ public class Agent implements SecurityAgent {
         } else {
             NewRelic.getAgent().getLogger().log(Level.WARNING, String.format("Agent data decryption verifier fails on data : %s hash : %s", encryptedData, hashVerifier), Agent.class.getName());
             return null;
+        }
+    }
+
+    @Override
+    public void setEmptyIastDataRequestEntry(FuzzRequestEmptyEntry fuzzRequestEmptyEntry) {
+        String currentEntityGuid = AgentInfo.getInstance().getLinkingMetadata().getOrDefault(INRSettingsKey.NR_ENTITY_GUID, StringUtils.EMPTY);
+        String originAppUUID = fuzzRequestEmptyEntry.getOriginAppUuid();
+        if(StringUtils.isBlank(originAppUUID)){
+            originAppUUID = AgentInfo.getInstance().getApplicationUUID();
+        }
+        String shaDigestOfCurrentEntityGuid = HashGenerator.getSHA256HexDigest(currentEntityGuid);
+        if(StringUtils.equals(shaDigestOfCurrentEntityGuid, fuzzRequestEmptyEntry.getOriginEntityGuid())){
+            if(RestRequestThreadPool.getInstance().getGeneratedEvents().containsKey(originAppUUID)) {
+                RestRequestThreadPool.getInstance().getGeneratedEvents().get(originAppUUID).put(fuzzRequestEmptyEntry.getControlCommandId(), ConcurrentHashMap.newKeySet());
+            } else {
+                Map<String, Set<String>> emptyEntry = new ConcurrentHashMap<>();
+                emptyEntry.put(fuzzRequestEmptyEntry.getControlCommandId(), ConcurrentHashMap.newKeySet());
+                RestRequestThreadPool.getInstance().getGeneratedEvents().put(originAppUUID, emptyEntry);
+            }
         }
     }
 }
