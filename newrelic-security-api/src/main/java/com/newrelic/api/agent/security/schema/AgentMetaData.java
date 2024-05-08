@@ -37,6 +37,8 @@ public class AgentMetaData {
 
     private int fromJumpRequiredInStackTrace = 2;
 
+    private boolean foundAnnotedUserLevelServiceMethod = false;
+
     @JsonIgnore
     private Set<String> ips;
 
@@ -63,6 +65,9 @@ public class AgentMetaData {
         this.userLevelServiceMethodEncountered = agentMetaData.userLevelServiceMethodEncountered;
         this.reflectedMetaData = agentMetaData.reflectedMetaData;
         this.appServerInfo = agentMetaData.appServerInfo;
+        this.triggerViaXXE = agentMetaData.triggerViaXXE;
+        this.userLevelServiceMethodEncounteredFramework = agentMetaData.userLevelServiceMethodEncounteredFramework;
+        this.foundAnnotedUserLevelServiceMethod = agentMetaData.foundAnnotedUserLevelServiceMethod;
     }
 
     public boolean isTriggerViaRCI() {
@@ -183,5 +188,12 @@ public class AgentMetaData {
 
     public void setFromJumpRequiredInStackTrace(int fromJumpRequiredInStackTrace) {
         this.fromJumpRequiredInStackTrace = fromJumpRequiredInStackTrace;
+
+    public boolean isFoundAnnotedUserLevelServiceMethod() {
+        return foundAnnotedUserLevelServiceMethod;
+    }
+
+    public void setFoundAnnotedUserLevelServiceMethod(boolean foundAnnotedUserLevelServiceMethod) {
+        this.foundAnnotedUserLevelServiceMethod = foundAnnotedUserLevelServiceMethod;
     }
 }

@@ -15,6 +15,7 @@ public class URLMappingsHelper {
         add("org.apache.jasper.servlet.JspServlet");
         add("org.apache.catalina.servlets.DefaultServlet");
         add("org.eclipse.jetty.servlet.DefaultServlet");
+        add("grails.plugin.databasemigration.DbdocController");
     }};
 
     public static Set<ApplicationURLMapping> getApplicationURLMappings() {

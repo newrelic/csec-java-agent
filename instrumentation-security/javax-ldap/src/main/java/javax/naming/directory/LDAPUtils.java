@@ -1,4 +1,4 @@
-package com.newrelic.agent.security.instrumentation.javax.ldap;
+package javax.naming.directory;
 
 public class LDAPUtils {
 

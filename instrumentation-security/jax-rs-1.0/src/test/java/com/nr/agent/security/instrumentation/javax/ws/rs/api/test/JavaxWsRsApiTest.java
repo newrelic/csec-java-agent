@@ -21,6 +21,7 @@ public class JavaxWsRsApiTest {
   
         Assert.assertNotNull("Service trace can not be empty/null.", meta.getServiceTrace());
         Assert.assertTrue("user level service method was not encountered.", meta.isUserLevelServiceMethodEncountered());
+        Assert.assertTrue("Annotated userLevelService Method was not encountered.", meta.isFoundAnnotedUserLevelServiceMethod());
     }
     @Test
     public void testPost() {
@@ -31,6 +32,7 @@ public class JavaxWsRsApiTest {
 
         Assert.assertNotNull("Service trace can not be empty/null.", meta.getServiceTrace());
         Assert.assertTrue("user level service method was not encountered.", meta.isUserLevelServiceMethodEncountered());
+        Assert.assertTrue("Annotated userLevelService Method was not encountered.", meta.isFoundAnnotedUserLevelServiceMethod());
     }
     @Test
     public void testGet() {
@@ -41,6 +43,7 @@ public class JavaxWsRsApiTest {
   
         Assert.assertNotNull("Service trace can not be empty/null.", meta.getServiceTrace());
         Assert.assertTrue("user level service method was not encountered.", meta.isUserLevelServiceMethodEncountered());
+        Assert.assertTrue("Annotated userLevelService Method was not encountered.", meta.isFoundAnnotedUserLevelServiceMethod());
     }
     @Test
     public void testDelete() {
@@ -51,6 +54,7 @@ public class JavaxWsRsApiTest {
 
         Assert.assertNotNull("Service trace can not be empty/null.", meta.getServiceTrace());
         Assert.assertTrue("user level service method was not encountered.", meta.isUserLevelServiceMethodEncountered());
+        Assert.assertTrue("Annotated userLevelService Method was not encountered.", meta.isFoundAnnotedUserLevelServiceMethod());
     }
     @Test
     public void testHead() {
@@ -60,6 +64,7 @@ public class JavaxWsRsApiTest {
         AgentMetaData meta = introspector.getSecurityMetaData().getMetaData();
         Assert.assertNotNull("Service trace can not be empty/null.", meta.getServiceTrace());
         Assert.assertTrue("user level service method was not encountered.", meta.isUserLevelServiceMethodEncountered());
+        Assert.assertTrue("Annotated userLevelService Method was not encountered.", meta.isFoundAnnotedUserLevelServiceMethod());
     }
     @Test
     public void testOptions() {
@@ -70,6 +75,7 @@ public class JavaxWsRsApiTest {
 
         Assert.assertNotNull("Service trace can not be empty/null.", meta.getServiceTrace());
         Assert.assertTrue("user level service method was not encountered.", meta.isUserLevelServiceMethodEncountered());
+        Assert.assertTrue("Annotated userLevelService Method was not encountered.", meta.isFoundAnnotedUserLevelServiceMethod());
     }
     @Test
     public void testPatch() {
@@ -80,6 +86,7 @@ public class JavaxWsRsApiTest {
 
         Assert.assertNotNull("Service trace can not be empty/null.", meta.getServiceTrace());
         Assert.assertTrue("user level service method was not encountered.", meta.isUserLevelServiceMethodEncountered());
+        Assert.assertTrue("Annotated userLevelService Method was not encountered.", meta.isFoundAnnotedUserLevelServiceMethod());
     }
 
     @Test
@@ -91,5 +98,6 @@ public class JavaxWsRsApiTest {
 
         Assert.assertNotNull("Service trace can not be empty/null.", meta.getServiceTrace());
         Assert.assertTrue("user level service method was not encountered.", meta.isUserLevelServiceMethodEncountered());
+        Assert.assertTrue("Annotated userLevelService Method was not encountered.", meta.isFoundAnnotedUserLevelServiceMethod());
     }
 }

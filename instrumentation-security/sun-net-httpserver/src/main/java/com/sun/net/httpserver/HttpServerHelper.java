@@ -24,6 +24,7 @@ public class HttpServerHelper {
     private static final String REQUEST_INPUTSTREAM_HASH = "REQUEST_INPUTSTREAM_HASH";
     public static final String SUN_NET_READER_OPERATION_LOCK = "SUN_NET_READER_OPERATION_LOCK-";
     public static final String HTTP_METHOD = "*";
+    public static final String SUN_NET_HTTP_SERVER = "sun-net-http-server";
 
     public static void processHttpRequestHeaders(Headers headers, HttpRequest securityRequest){
         for (String headerKey : headers.keySet()) {
