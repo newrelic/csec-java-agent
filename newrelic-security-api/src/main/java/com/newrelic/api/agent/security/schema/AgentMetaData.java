@@ -188,7 +188,7 @@ public class AgentMetaData {
 
     public void setFromJumpRequiredInStackTrace(int fromJumpRequiredInStackTrace) {
         this.fromJumpRequiredInStackTrace = fromJumpRequiredInStackTrace;
-
+    }
     public boolean isFoundAnnotedUserLevelServiceMethod() {
         return foundAnnotedUserLevelServiceMethod;
     }
