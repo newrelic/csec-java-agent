@@ -19,7 +19,6 @@ import reactor.core.publisher.Mono;
 public class ExchangeFunction_Instrumentation {
 
     public Mono<ClientResponse> exchange(ClientRequest request) {
-        System.out.println("invoked instrumented exchange method");
         boolean isLockAcquired = acquireLockIfPossible();
         AbstractOperation operation = null;
         if(isLockAcquired) {
