@@ -33,7 +33,6 @@ import java.io.IOException;
 import java.lang.instrument.Instrumentation;
 import java.lang.instrument.UnmodifiableClassException;
 import java.net.HttpURLConnection;
-import java.net.Socket;
 import java.net.URL;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -350,15 +349,30 @@ public class Agent implements SecurityAgent {
     }
 
     private static boolean checkIfNRGeneratedEvent(AbstractOperation operation) {
+        boolean isNettyReactor = false, isNRGeneratedEvent = false;
         for (int i = 1, j = 0; i < operation.getStackTrace().length; i++) {
+            if(StringUtils.equalsAny(operation.getStackTrace()[i].getClassName(), "com.nr.instrumentation.TokenLinkingSubscriber", "com.nr.instrumentation.reactor.netty.TokenLinkingSubscriber")){
+                isNettyReactor = true;
+                continue;
+            }
+
             // Only remove consecutive top com.newrelic and com.nr. elements from stack.
             if (i - 1 == j && StringUtils.startsWithAny(operation.getStackTrace()[i].getClassName(), "com.newrelic.", "com.nr.")) {
                 j++;
             } else if (StringUtils.startsWithAny(operation.getStackTrace()[i].getClassName(), "com.newrelic.", "com.nr.")) {
-                return true;
+                isNRGeneratedEvent = true;
             }
         }
-        return false;
+        if (isNettyReactor) {
+            operation.setStackTrace(removeNettyReactorLinkingTraces(operation.getStackTrace()));
+        }
+        return isNRGeneratedEvent;
+    }
+
+    private static StackTraceElement[] removeNettyReactorLinkingTraces(StackTraceElement[] stackTrace) {
+        return Arrays.stream(stackTrace).filter(stackTraceElement ->
+            !StringUtils.equalsAny(stackTraceElement.getClassName(), "com.nr.instrumentation.TokenLinkingSubscriber", "com.nr.instrumentation.reactor.netty.TokenLinkingSubscriber")
+        ).toArray(StackTraceElement[]::new);
     }
 
     private static boolean needToGenerateEvent(String apiID) {
