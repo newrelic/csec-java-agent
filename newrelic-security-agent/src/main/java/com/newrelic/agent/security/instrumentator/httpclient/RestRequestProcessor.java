@@ -106,10 +106,13 @@ public class RestRequestProcessor implements Callable<Boolean> {
             } else {
                 boolean postSSL = false;
                 List<String> endpoints = prepareAllEndpoints(NewRelicSecurity.getAgent().getApplicationConnectionConfig());
+                logger.log(LogLevel.FINER, String.format("Endpoints to fire : ", endpoints), RestRequestProcessor.class.getSimpleName());
                 if (endpoints.isEmpty()){
                     endpoints = prepareAllEndpoints(httpRequest);
+                    logger.log(LogLevel.FINER, String.format("Endpoints to fire in empty: ", endpoints), RestRequestProcessor.class.getSimpleName());
                     postSSL = true;
                 }
+                endpoints = RequestUtils.refineEndpoints(httpRequest, endpoints);
                 RestClient.getInstance().fireRequest(httpRequest, endpoints, repeatCount + endpoints.size() -1, controlCommand.getId());
             }
             return true;

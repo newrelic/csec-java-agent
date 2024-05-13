@@ -70,7 +70,7 @@ public class RestClient {
             try {
                 ConnectionPool connectionPool = new ConnectionPool(1, 5, TimeUnit.MINUTES);
                 builder = builder.connectionPool(connectionPool);
-                builder = builder.callTimeout(10, TimeUnit.SECONDS);
+                builder = builder.callTimeout(5, TimeUnit.SECONDS);
 
                 // Install the all-trusting trust manager
                 final SSLContext sslContext = SSLContext.getInstance("TLSv1.2");
@@ -159,6 +159,25 @@ public class RestClient {
 
     }
 
+    public boolean isListening(Request request) {
+        if(request == null){
+            return false;
+        }
+
+        OkHttpClient client = clientThreadLocal.get();
+        Call call = client.newCall(request);
+        try {
+            Response response = call.execute();
+            if(response.isSuccessful()){
+                return true;
+            }
+        } catch (IOException e) {
+            logger.log(LogLevel.FINER, String.format("Server is not reachable url: %s", request.url()), RestClient.class.getName());
+            return false;
+        }
+        return false;
+    }
+
     public int fireRequest(Request request, int repeatCount, String fuzzRequestId) throws SSLException {
         OkHttpClient client = clientThreadLocal.get();
 
@@ -189,6 +208,7 @@ public class RestClient {
             logger.log(LogLevel.FINE, String.format("Request failed due to SSL Exception %s : reason %s", request, e.getMessage()), e, RestClient.class.getName());
             throw e;
         } catch (InterruptedIOException e){
+            e.printStackTrace();
             if(repeatCount >= 0){
                 return fireRequest(request, --repeatCount, fuzzRequestId);
             }
@@ -202,6 +222,9 @@ public class RestClient {
             FuzzFailEvent fuzzFailEvent = new FuzzFailEvent(AgentInfo.getInstance().getApplicationUUID());
             fuzzFailEvent.setFuzzHeader(request.header(ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID));
             EventSendPool.getInstance().sendEvent(fuzzFailEvent);
+        } catch (Exception e){
+            e.printStackTrace();
+            logger.log(LogLevel.FINER, String.format(CALL_FAILED_REQUEST_S_REASON, e.getMessage(), request), e, RestClient.class.getName());
         }
 
         return 999;

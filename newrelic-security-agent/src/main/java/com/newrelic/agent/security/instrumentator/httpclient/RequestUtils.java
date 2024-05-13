@@ -10,6 +10,7 @@ import okhttp3.Request.Builder;
 import okhttp3.internal.http.HttpMethod;
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -19,6 +20,33 @@ public class RequestUtils {
     private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
     public static final String ERROR_IN_FUZZ_REQUEST_GENERATION = "Error in fuzz request generation {}";
     public static final String APPLICATION_X_WWW_FORM_URLENCODED = "application/x-www-form-urlencoded";
+
+    public static Request generateHeadRequest(FuzzRequestBean httpRequest, String endpoint) {
+        try {
+            logger.log(LogLevel.FINEST, String.format("Generate HEAD request : %s", JsonConverter.toJSON(httpRequest.getUrl())), RequestUtils.class.getName());
+            StringBuilder url = new StringBuilder(endpoint);
+            url.append(httpRequest.getUrl());
+            Request request = new Request.Builder()
+                    .url(url.toString())
+                    .head() // Use HEAD to fetch only headers without the body
+                    .build();
+            return request;
+        } catch (Exception e) {
+            logger.log(LogLevel.FINEST, String.format("Error while Generating HEAD request : %s", JsonConverter.toJSON(httpRequest.getUrl())), RequestUtils.class.getName());
+        }
+        return null;
+    }
+
+    public static List<String> refineEndpoints(FuzzRequestBean httpRequest, List<String> endpoints) {
+        List<String> refinedEndpoints = new ArrayList<>();
+        for (String endpoint : endpoints) {
+            Request request = generateHeadRequest(httpRequest, endpoint);
+            if(RestClient.getInstance().isListening(request)){
+                refinedEndpoints.add(endpoint);
+            }
+        }
+        return refinedEndpoints;
+    }
 
     public static Request generateK2Request(FuzzRequestBean httpRequest, String endpoint) {
         try {
