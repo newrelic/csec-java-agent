@@ -83,7 +83,7 @@ public class RequestUtils {
             for (Map.Entry<String, List<String>> header : headers.toMultimap().entrySet()) {
                 String key = header.getKey().toLowerCase();
                 if (ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID.equals(key)){
-                    return com.newrelic.api.agent.security.schema.StringUtils.join(header.getValue());
+                    return com.newrelic.api.agent.security.schema.StringUtils.join(header.getValue().toArray(new String[0]));
                 }
             }
         } catch (Exception e){

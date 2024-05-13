@@ -665,9 +665,15 @@ public class Agent implements SecurityAgent {
     public void reportIASTScanFailure(SecurityMetaData securityMetaData, String apiId, Throwable exception,
                                       String nrCsecFuzzRequestId, String controlCommandId, String failureMessage) {
         if(WSUtils.isConnected()){
-            LogMessageException message = new LogMessageException(exception, 0, 1);
+            LogMessageException message = null; SecurityMetaData metaData = null;
+            if(exception != null) {
+                message = new LogMessageException(exception, 0, 1);
+            }
+            if(securityMetaData != null){
+                metaData = new SecurityMetaData(securityMetaData);
+            }
             IASTReplayFailure replayFailure = new IASTReplayFailure(apiId, nrCsecFuzzRequestId, controlCommandId, failureMessage, message);
-            IASTScanFailure scanFailure = new IASTScanFailure(replayFailure, new SecurityMetaData(securityMetaData));
+            IASTScanFailure scanFailure = new IASTScanFailure(replayFailure, metaData);
             EventSendPool.getInstance().sendEvent(scanFailure);
         }
     }
