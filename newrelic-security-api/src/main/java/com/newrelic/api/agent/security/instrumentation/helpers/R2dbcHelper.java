@@ -41,6 +41,7 @@ public class R2dbcHelper {
             sqlOperation.setPreparedCall(isPrepared);
             sqlOperation.setParams(params);
 
+            NewRelicSecurity.getAgent().getSecurityMetaData().getMetaData().setFromJumpRequiredInStackTrace(3);
             NewRelicSecurity.getAgent().registerOperation(sqlOperation);
             return sqlOperation;
         } catch (Throwable e) {

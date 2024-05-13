@@ -67,6 +67,7 @@ public class OkhttpHelper {
                 return null;
             }
             SSRFOperation ssrfOperation = new SSRFOperation(url, className, methodName);
+            NewRelicSecurity.getAgent().getSecurityMetaData().getMetaData().setFromJumpRequiredInStackTrace(3);
             NewRelicSecurity.getAgent().registerOperation(ssrfOperation);
             return ssrfOperation;
         } catch (Throwable e) {
