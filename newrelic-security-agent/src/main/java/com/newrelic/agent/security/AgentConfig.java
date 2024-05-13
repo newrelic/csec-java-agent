@@ -17,6 +17,7 @@ import org.apache.commons.io.filefilter.FileFilterUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -50,7 +51,14 @@ public class AgentConfig {
 
     public void instantiate(){
         //Set k2 home path
-        boolean validHomePath = setK2HomePath();
+        try {
+            boolean validHomePath = setK2HomePath();
+            System.out.println("New Relic Security Agent: Setting csec home path to directory:"+NR_CSEC_HOME);
+        } catch (IOException e) {
+            String tmpDir = System.getProperty("java.io.tmpdir");
+            System.err.println("[NR-CSEC-JA] "+e.getMessage()+" Please find the error in  " + tmpDir + File.separator + "NR-CSEC-Logger.err");
+            throw new RuntimeException("CSEC Agent Exiting!!! Unable to create csec home directory", e);
+        }
         isNRSecurityEnabled = NewRelic.getAgent().getConfig().getValue(IUtilConstants.NR_SECURITY_ENABLED, false);
         // Set required Group
         groupName = applyRequiredGroup();
@@ -95,7 +103,7 @@ public class AgentConfig {
         return logLevel;
     }
 
-    public boolean setK2HomePath() {
+    public boolean setK2HomePath() throws IOException {
         String agentJarLocation = NewRelic.getAgent().getConfig().getValue(AGENT_JAR_LOCATION);
         if (NewRelic.getAgent().getConfig().getValue(AGENT_HOME) != null) {
             NR_CSEC_HOME = NewRelic.getAgent().getConfig().getValue(AGENT_HOME);
@@ -156,7 +164,7 @@ public class AgentConfig {
         this.config = config;
     }
 
-    public void createSnapshotDirectory() {
+    public void createSnapshotDirectory() throws IOException {
         Path snapshotDir = Paths.get(osVariables.getSnapshotDir());
         // Remove any file with this name from target.
         if (!snapshotDir.toFile().isDirectory()) {
@@ -171,13 +179,17 @@ public class AgentConfig {
             File[] sortedStatusFiles = statusFiles.toArray(new File[0]);
             Arrays.sort(sortedStatusFiles, LastModifiedFileComparator.LASTMODIFIED_COMPARATOR);
             FileUtils.deleteQuietly(sortedStatusFiles[0]);
-            logger.log(LogLevel.INFO, String.format(CLEANING_STATUS_SNAPSHOTS_FROM_LOG_DIRECTORY_MAX_S_FILE_COUNT_REACHED_REMOVED_S, max, sortedStatusFiles[0].getAbsolutePath()), FileLoggerThreadPool.class.getName());
+            logger.log(LogLevel.INFO, String.format(CLEANING_STATUS_SNAPSHOTS_FROM_LOG_DIRECTORY_MAX_S_FILE_COUNT_REACHED_REMOVED_S, max, sortedStatusFiles[0].getAbsolutePath()), AgentConfig.class.getName());
         }
     }
 
     public void setupSnapshotDir() {
-        createSnapshotDirectory();
-        keepMaxStatusLogFiles(100);
+        try {
+            createSnapshotDirectory();
+            keepMaxStatusLogFiles(100);
+        } catch (Exception e) {
+            logger.log(LogLevel.WARNING, String.format("Snapshot directory creation failed !!! Please check file permissions. error:%s ", e.getMessage()), e, AgentConfig.class.getName());
+        }
     }
 
     public String getGroupName() {
