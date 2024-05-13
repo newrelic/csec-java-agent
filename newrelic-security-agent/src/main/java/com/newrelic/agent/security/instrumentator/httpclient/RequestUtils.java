@@ -18,6 +18,7 @@ public class RequestUtils {
 
     private static final FileLoggerThreadPool logger = FileLoggerThreadPool.getInstance();
     public static final String ERROR_IN_FUZZ_REQUEST_GENERATION = "Error in fuzz request generation {}";
+    public static final String APPLICATION_X_WWW_FORM_URLENCODED = "application/x-www-form-urlencoded";
 
     public static Request generateK2Request(FuzzRequestBean httpRequest, String endpoint) {
         try {
@@ -27,7 +28,7 @@ public class RequestUtils {
             RequestBody requestBody = null;
 
             if (StringUtils.isNotBlank(httpRequest.getContentType())) {
-                if (httpRequest.getParameterMap() != null && !httpRequest.getParameterMap().isEmpty()) {
+                if (httpRequest.getParameterMap() != null && !httpRequest.getParameterMap().isEmpty() && StringUtils.startsWith(httpRequest.getContentType(), APPLICATION_X_WWW_FORM_URLENCODED)) {
                     FormBody.Builder builder = new FormBody.Builder();
                     for (Entry<String, String[]> param : httpRequest.getParameterMap().entrySet()) {
                         for (int i = 0; i < param.getValue().length; i++) {
@@ -35,11 +36,12 @@ public class RequestUtils {
                         }
                     }
                     requestBody = builder.build();
-                } else {
+                } else if( StringUtils.isNotBlank(httpRequest.getBody().toString())) {
                     requestBody = RequestBody.create(httpRequest.getBody().toString(),
                             MediaType.parse(httpRequest.getContentType()));
                 }
-            } else if (StringUtils.equalsIgnoreCase(httpRequest.getMethod(), "POST")) {
+            }
+            if (requestBody == null && HttpMethod.permitsRequestBody(httpRequest.getMethod())) {
                 requestBody = RequestBody.create(httpRequest.getBody().toString(), null);
             }
 
