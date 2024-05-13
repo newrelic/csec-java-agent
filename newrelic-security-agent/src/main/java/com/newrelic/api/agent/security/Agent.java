@@ -274,7 +274,7 @@ public class Agent implements SecurityAgent {
                     securityMetaData.addCustomAttribute("RXSS_PROCESSED", true);
                 } else {
                     StackTraceElement[] trace = Thread.currentThread().getStackTrace();
-                    operation.setStackTrace(Arrays.copyOfRange(trace, 2, trace.length));
+                    operation.setStackTrace(Arrays.copyOfRange(trace, securityMetaData.getMetaData().getFromJumpRequiredInStackTrace(), trace.length));
                 }
 
                 // added to fetch request/response in case of grpc requests

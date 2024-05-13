@@ -35,6 +35,8 @@ public class AgentMetaData {
     @JsonIgnore
     private String userLevelServiceMethodEncounteredFramework;
 
+    private int fromJumpRequiredInStackTrace = 2;
+
     private boolean foundAnnotedUserLevelServiceMethod = false;
 
     @JsonIgnore
@@ -180,6 +182,13 @@ public class AgentMetaData {
         this.appServerInfo = appServerInfo;
     }
 
+    public int getFromJumpRequiredInStackTrace() {
+        return fromJumpRequiredInStackTrace;
+    }
+
+    public void setFromJumpRequiredInStackTrace(int fromJumpRequiredInStackTrace) {
+        this.fromJumpRequiredInStackTrace = fromJumpRequiredInStackTrace;
+    }
     public boolean isFoundAnnotedUserLevelServiceMethod() {
         return foundAnnotedUserLevelServiceMethod;
     }
