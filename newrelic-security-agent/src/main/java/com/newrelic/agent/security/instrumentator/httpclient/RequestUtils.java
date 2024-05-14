@@ -2,7 +2,7 @@ package com.newrelic.agent.security.instrumentator.httpclient;
 
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.newrelic.agent.security.intcodeagent.websocket.JsonConverter;
-import com.newrelic.api.agent.security.NewRelicSecurity;
+import com.newrelic.api.agent.security.instrumentation.helpers.ServletHelper;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.models.FuzzRequestBean;
 import okhttp3.*;
@@ -59,5 +59,36 @@ public class RequestUtils {
         }
         return null;
     }
-
+    public static String extractNRCsecFuzzReqHeader(FuzzRequestBean httpRequest) {
+        if( httpRequest == null) {
+            return null;
+        }
+        try {
+            for (Map.Entry<String, String> header : httpRequest.getHeaders().entrySet()) {
+                String key = header.getKey().toLowerCase();
+                if (ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID.equals(key)){
+                    return header.getValue();
+                }
+            }
+        } catch (Exception e){
+            return null;
+        }
+        return null;
+    }
+    public static String extractNRCsecFuzzReqHeader(Headers headers) {
+        if (headers == null){
+            return null;
+        }
+        try{
+            for (Map.Entry<String, List<String>> header : headers.toMultimap().entrySet()) {
+                String key = header.getKey().toLowerCase();
+                if (ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID.equals(key)){
+                    return com.newrelic.api.agent.security.schema.StringUtils.join(header.getValue().toArray(new String[0]));
+                }
+            }
+        } catch (Exception e){
+            return null;
+        }
+        return null;
+    }
 }

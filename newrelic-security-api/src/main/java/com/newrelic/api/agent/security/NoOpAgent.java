@@ -119,6 +119,11 @@ class NoOpAgent implements SecurityAgent {
     }
 
     @Override
+    public void reportIASTScanFailure(SecurityMetaData securityMetaData, String apiId, Throwable exception, String nrCsecFuzzRequestId, String controlCommandId, String failureMessage) {
+
+    }
+
+    @Override
     public void retransformUninstrumentedClass(Class<?> classToRetransform) {}
 
     @Override
