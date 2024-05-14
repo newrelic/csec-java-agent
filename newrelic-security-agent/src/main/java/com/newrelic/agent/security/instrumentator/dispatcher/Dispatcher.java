@@ -708,7 +708,7 @@ public class Dispatcher implements Callable {
     }
 
     private JavaAgentEventBean prepareEvent(HttpRequest httpRequestBean, AgentMetaData metaData,
-            VulnerabilityCaseType vulnerabilityCaseType, K2RequestIdentifier k2RequestIdentifier) {
+            VulnerabilityCaseType vulnerabilityCaseType, CSECRequestIdentifier CSECRequestIdentifier) {
         JavaAgentEventBean eventBean = new JavaAgentEventBean();
         eventBean.setHttpRequest(httpRequestBean);
         eventBean.setMetaData(metaData);
@@ -716,7 +716,7 @@ public class Dispatcher implements Callable {
         eventBean.setCaseType(vulnerabilityCaseType.getCaseType());
         eventBean.setIsAPIBlocked(metaData.isApiBlocked());
         eventBean.setStacktrace(operation.getStackTrace());
-        eventBean.setIsIASTRequest(k2RequestIdentifier.getK2Request());
+        eventBean.setIsIASTRequest(CSECRequestIdentifier.getCSECRequest());
         if (AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getEnabled() && AgentUtils.getInstance().getAgentPolicy().getVulnerabilityScan().getIastScan().getEnabled()) {
             eventBean.setIsIASTEnable(true);
         }

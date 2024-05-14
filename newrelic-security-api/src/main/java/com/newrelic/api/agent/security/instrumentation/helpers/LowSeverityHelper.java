@@ -7,7 +7,6 @@ import com.newrelic.api.agent.security.schema.StringUtils;
 
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 public class LowSeverityHelper {
 
@@ -41,7 +40,7 @@ public class LowSeverityHelper {
         SecurityMetaData securityMetaData = NewRelicSecurity.getAgent().getSecurityMetaData();
         if(NewRelicSecurity.isHookProcessingActive() && securityMetaData != null && !securityMetaData.getRequest().isEmpty()) {
             String requestURL = securityMetaData.getRequest().getUrl();
-            return (securityMetaData.getFuzzRequestIdentifier() != null && securityMetaData.getFuzzRequestIdentifier().getK2Request())
+            return (securityMetaData.getFuzzRequestIdentifier() != null && securityMetaData.getFuzzRequestIdentifier().getCSECRequest())
                     || (StringUtils.isNotBlank(requestURL) && !LowSeverityHelper.checkIfLowSeverityEventAlreadyEncountered(requestURL.hashCode(), securityMetaData.getRequest().getMethod()));
         }
         return false;

@@ -266,7 +266,7 @@ public class Agent implements SecurityAgent {
                 String executionId = ExecutionIDGenerator.getExecutionId();
                 operation.setExecutionId(executionId);
                 operation.setStartTime(Instant.now().toEpochMilli());
-                if (securityMetaData != null && securityMetaData.getFuzzRequestIdentifier().getK2Request()) {
+                if (securityMetaData != null && securityMetaData.getFuzzRequestIdentifier().getCSECRequest()) {
                     logger.log(LogLevel.FINEST, String.format("New Event generation with id %s of type %s", operation.getExecutionId(), operation.getClass().getSimpleName()), Agent.class.getName());
                 }
                 if (operation instanceof RXSSOperation) {
@@ -335,7 +335,7 @@ public class Agent implements SecurityAgent {
         return false;
     }
 
-    private void logIfIastScanForFirstTime(K2RequestIdentifier fuzzRequestIdentifier, HttpRequest request) {
+    private void logIfIastScanForFirstTime(CSECRequestIdentifier fuzzRequestIdentifier, HttpRequest request) {
 
         String url = StringUtils.EMPTY;
         if(request != null && StringUtils.isNotBlank(request.getUrl())) {
@@ -503,15 +503,15 @@ public class Agent implements SecurityAgent {
                 if (operation == null) {
                     return;
                 }
-                K2RequestIdentifier k2RequestIdentifier = NewRelicSecurity.getAgent().getSecurityMetaData().getFuzzRequestIdentifier();
+                CSECRequestIdentifier CSECRequestIdentifier = NewRelicSecurity.getAgent().getSecurityMetaData().getFuzzRequestIdentifier();
                 HttpRequest request = NewRelicSecurity.getAgent().getSecurityMetaData().getRequest();
 
                 // TODO: Generate for only native payloads
-                if (!request.isEmpty() && !operation.isEmpty() && k2RequestIdentifier.getK2Request()) {
-                    if (StringUtils.equals(k2RequestIdentifier.getApiRecordId(), operation.getApiID())
-                            && StringUtils.equals(k2RequestIdentifier.getNextStage().getStatus(), IAgentConstants.VULNERABLE)) {
+                if (!request.isEmpty() && !operation.isEmpty() && CSECRequestIdentifier.getCSECRequest()) {
+                    if (StringUtils.equals(CSECRequestIdentifier.getApiRecordId(), operation.getApiID())
+                            && StringUtils.equals(CSECRequestIdentifier.getNextStage().getStatus(), IAgentConstants.VULNERABLE)) {
                         ExitEventBean exitEventBean = new ExitEventBean(operation.getExecutionId(), operation.getCaseType().getCaseType());
-                        exitEventBean.setK2RequestIdentifier(k2RequestIdentifier.getRaw());
+                        exitEventBean.setCsecRequestIdentifier(CSECRequestIdentifier.getRaw());
                         logger.log(LogLevel.FINER, "Exit event : " + exitEventBean, this.getClass().getName());
                         DispatcherPool.getInstance().dispatchExitEvent(exitEventBean);
                         AgentInfo.getInstance().getJaHealthCheck().incrementExitEventSentCount();

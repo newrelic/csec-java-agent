@@ -1,12 +1,15 @@
 package com.newrelic.agent.security.intcodeagent.models.javaagent;
 
 import com.newrelic.agent.security.AgentInfo;
+import com.newrelic.agent.security.instrumentator.dispatcher.DispatcherPool;
 import com.newrelic.agent.security.intcodeagent.websocket.JsonConverter;
+import com.newrelic.api.agent.security.schema.operation.FileOperation;
+import com.newrelic.api.agent.security.utils.logging.LogLevel;
 
 public class ExitEventBean extends AgentBasicInfo {
     private String executionId;
     private String caseType;
-    private String k2RequestIdentifier;
+    private String csecRequestIdentifier;
     private String applicationUUID;
 
     public ExitEventBean() {
@@ -36,12 +39,12 @@ public class ExitEventBean extends AgentBasicInfo {
         this.caseType = caseType;
     }
 
-    public String getK2RequestIdentifier() {
-        return k2RequestIdentifier;
+    public String getCsecRequestIdentifier() {
+        return csecRequestIdentifier;
     }
 
-    public void setK2RequestIdentifier(String k2RequestIdentifier) {
-        this.k2RequestIdentifier = k2RequestIdentifier;
+    public void setCsecRequestIdentifier(String csecRequestIdentifier) {
+        this.csecRequestIdentifier = csecRequestIdentifier;
     }
 
     public String getApplicationUUID() {

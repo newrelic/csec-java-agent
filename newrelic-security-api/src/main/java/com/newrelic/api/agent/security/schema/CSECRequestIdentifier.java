@@ -3,35 +3,35 @@ package com.newrelic.api.agent.security.schema;
 import java.util.ArrayList;
 import java.util.List;
 
-public class K2RequestIdentifier {
+public class CSECRequestIdentifier {
     private String raw;
     private String refId;
     private String refValue;
     private String apiRecordId;
-    private boolean k2Request;
+    private boolean CSECRequest;
     private APIRecordStatus nextStage;
     private Integer recordIndex;
     private String refKey;
     private List<String> tempFiles;
 
-    public K2RequestIdentifier() {
-        k2Request = false;
+    public CSECRequestIdentifier() {
+        CSECRequest = false;
         tempFiles = new ArrayList<>();
         raw = StringUtils.EMPTY;
     }
 
-    public K2RequestIdentifier(K2RequestIdentifier k2RequestIdentifierInstance) {
-        this.refId = (StringUtils.isNotBlank(k2RequestIdentifierInstance.refId)) ? new String(k2RequestIdentifierInstance.refId) : null;
-        this.refValue = (StringUtils.isNotBlank(k2RequestIdentifierInstance.refValue)) ? new String(k2RequestIdentifierInstance.refValue) : null;
-        this.apiRecordId = (StringUtils.isNotBlank(k2RequestIdentifierInstance.apiRecordId)) ? new String(k2RequestIdentifierInstance.apiRecordId) : null;
-        this.k2Request = k2RequestIdentifierInstance.k2Request;
-        this.nextStage = k2RequestIdentifierInstance.nextStage;
-        this.recordIndex = (k2RequestIdentifierInstance.recordIndex != null) ? Integer.valueOf(k2RequestIdentifierInstance.recordIndex) : null;
-        this.refKey = (StringUtils.isNotBlank(k2RequestIdentifierInstance.refKey)) ? new String(k2RequestIdentifierInstance.refKey) : null;
-        if (k2RequestIdentifierInstance.tempFiles != null) {
-            this.tempFiles = new ArrayList<>(k2RequestIdentifierInstance.tempFiles);
+    public CSECRequestIdentifier(CSECRequestIdentifier CSECRequestIdentifierInstance) {
+        this.refId = (StringUtils.isNotBlank(CSECRequestIdentifierInstance.refId)) ? new String(CSECRequestIdentifierInstance.refId) : null;
+        this.refValue = (StringUtils.isNotBlank(CSECRequestIdentifierInstance.refValue)) ? new String(CSECRequestIdentifierInstance.refValue) : null;
+        this.apiRecordId = (StringUtils.isNotBlank(CSECRequestIdentifierInstance.apiRecordId)) ? new String(CSECRequestIdentifierInstance.apiRecordId) : null;
+        this.CSECRequest = CSECRequestIdentifierInstance.CSECRequest;
+        this.nextStage = CSECRequestIdentifierInstance.nextStage;
+        this.recordIndex = (CSECRequestIdentifierInstance.recordIndex != null) ? Integer.valueOf(CSECRequestIdentifierInstance.recordIndex) : null;
+        this.refKey = (StringUtils.isNotBlank(CSECRequestIdentifierInstance.refKey)) ? new String(CSECRequestIdentifierInstance.refKey) : null;
+        if (CSECRequestIdentifierInstance.tempFiles != null) {
+            this.tempFiles = new ArrayList<>(CSECRequestIdentifierInstance.tempFiles);
         }
-        this.raw = (StringUtils.isNotBlank(k2RequestIdentifierInstance.raw)) ? new String(k2RequestIdentifierInstance.raw) : null;
+        this.raw = (StringUtils.isNotBlank(CSECRequestIdentifierInstance.raw)) ? new String(CSECRequestIdentifierInstance.raw) : null;
     }
 
     public String getRefId() {
@@ -58,12 +58,12 @@ public class K2RequestIdentifier {
         this.apiRecordId = apiRecordId;
     }
 
-    public boolean getK2Request() {
-        return k2Request;
+    public boolean getCSECRequest() {
+        return CSECRequest;
     }
 
-    public void setK2Request(boolean k2Request) {
-        this.k2Request = k2Request;
+    public void setCSECRequest(boolean CSECRequest) {
+        this.CSECRequest = CSECRequest;
     }
 
     public APIRecordStatus getNextStage() {
