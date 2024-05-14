@@ -37,6 +37,7 @@ public class RestRequestProcessor implements Callable<Boolean> {
 
     public static final String JSON_PARSING_ERROR_WHILE_PROCESSING_FUZZING_REQUEST_S = "JSON parsing error while processing fuzzing request : %s";
     private static final int MAX_REPETITION = 3;
+    public static final String ENDPOINT_LOCALHOST_S = "%s://localhost:%s";
     private IntCodeControlCommand controlCommand;
 
     private int repeatCount;
@@ -104,7 +105,15 @@ public class RestRequestProcessor implements Callable<Boolean> {
                 MonitorGrpcFuzzFailRequestQueueThread.submitNewTask();
                 GrpcClientRequestReplayHelper.getInstance().addToRequestQueue(new ControlCommandDto(controlCommand.getId(), httpRequest, payloadList));
             } else {
+                boolean postSSL = false;
                 List<String> endpoints = prepareAllEndpoints(NewRelicSecurity.getAgent().getApplicationConnectionConfig());
+                logger.log(LogLevel.FINER, String.format("Endpoints to fire : ", endpoints), RestRequestProcessor.class.getSimpleName());
+                if (endpoints.isEmpty()){
+                    endpoints = prepareAllEndpoints(httpRequest);
+                    logger.log(LogLevel.FINER, String.format("Endpoints to fire in empty: ", endpoints), RestRequestProcessor.class.getSimpleName());
+                    postSSL = true;
+                }
+                endpoints = RequestUtils.refineEndpoints(httpRequest, endpoints);
                 RestClient.getInstance().fireRequest(httpRequest, endpoints, repeatCount + endpoints.size() -1, controlCommand.getId());
             }
             return true;
@@ -136,11 +145,18 @@ public class RestRequestProcessor implements Callable<Boolean> {
         return true;
     }
 
+    private List<String> prepareAllEndpoints(FuzzRequestBean httpRequest) {
+        List<String> endpoitns = new ArrayList<>();
+        endpoitns.add(String.format(ENDPOINT_LOCALHOST_S, httpRequest.getProtocol(), httpRequest.getServerPort()));
+        endpoitns.add(String.format(ENDPOINT_LOCALHOST_S, toggleProtocol(httpRequest.getProtocol()), httpRequest.getServerPort()));
+        return endpoitns;
+    }
+
     private List<String> prepareAllEndpoints(Map<Integer, String> applicationConnectionConfig) {
         List<String> endpoitns = new ArrayList<>();
         for (Map.Entry<Integer, String> connectionConfig : applicationConnectionConfig.entrySet()) {
-            endpoitns.add(String.format("%s://localhost:%s", connectionConfig.getValue(), connectionConfig.getKey()));
-            endpoitns.add(String.format("%s://localhost:%s", toggleProtocol(connectionConfig.getValue()), connectionConfig.getKey()));
+            endpoitns.add(String.format(ENDPOINT_LOCALHOST_S, connectionConfig.getValue(), connectionConfig.getKey()));
+            endpoitns.add(String.format(ENDPOINT_LOCALHOST_S, toggleProtocol(connectionConfig.getValue()), connectionConfig.getKey()));
         }
         return endpoitns;
     }

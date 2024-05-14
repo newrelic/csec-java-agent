@@ -33,7 +33,6 @@ import java.io.IOException;
 import java.lang.instrument.Instrumentation;
 import java.lang.instrument.UnmodifiableClassException;
 import java.net.HttpURLConnection;
-import java.net.Socket;
 import java.net.URL;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -125,6 +124,9 @@ public class Agent implements SecurityAgent {
                 this.getClass().getName());
         logger.logInit(LogLevel.INFO, NewRelic.getAgent().getConfig().getValue(LowSeverityHelper.LOW_SEVERITY_HOOKS_ENABLED, LowSeverityHelper.DEFAULT)?
                 "Low priority instrumentations are enabled.":"Low priority instrumentations are disabled!", this.getClass().getName());
+        if( NewRelic.getAgent().getConfig().getValue(IUtilConstants.NR_SECURITY_HOME_APP, false) ) {
+            logger.logInit(LogLevel.INFO, "App being scanned is a Newrelic's Home Grown application", this.getClass().getName());
+        }
         info.setIdentifier(ApplicationInfoUtils.envDetection());
         ApplicationInfoUtils.continueIdentifierProcessing(info.getIdentifier(), config.getConfig());
         info.generateAppInfo(config.getConfig());
@@ -269,9 +271,10 @@ public class Agent implements SecurityAgent {
                 }
                 if (operation instanceof RXSSOperation) {
                     operation.setStackTrace(securityMetaData.getMetaData().getServiceTrace());
+                    securityMetaData.addCustomAttribute("RXSS_PROCESSED", true);
                 } else {
                     StackTraceElement[] trace = Thread.currentThread().getStackTrace();
-                    operation.setStackTrace(Arrays.copyOfRange(trace, 2, trace.length));
+                    operation.setStackTrace(Arrays.copyOfRange(trace, securityMetaData.getMetaData().getFromJumpRequiredInStackTrace(), trace.length));
                 }
 
                 // added to fetch request/response in case of grpc requests
@@ -282,7 +285,14 @@ public class Agent implements SecurityAgent {
                             new StringBuilder(JsonConverter.toJSON(securityMetaData.getCustomAttribute(GrpcHelper.NR_SEC_GRPC_RESPONSE_DATA, List.class))));
                 }
 
-                if (checkIfNRGeneratedEvent(operation)) {
+                if(NewRelic.getAgent().getConfig().getValue(IUtilConstants.NR_SECURITY_HOME_APP, false) && checkIfCSECGeneratedEvent(operation)) {
+                    logger.log(LogLevel.FINEST, DROPPING_EVENT_AS_IT_WAS_GENERATED_BY_K_2_INTERNAL_API_CALL +
+                                    JsonConverter.toJSON(operation),
+                            Agent.class.getName());
+                    return;
+                }
+
+                if(!NewRelic.getAgent().getConfig().getValue(IUtilConstants.NR_SECURITY_HOME_APP, false) && checkIfNRGeneratedEvent(operation)) {
                     logger.log(LogLevel.FINEST, DROPPING_EVENT_AS_IT_WAS_GENERATED_BY_K_2_INTERNAL_API_CALL +
                                     JsonConverter.toJSON(operation),
                             Agent.class.getName());
@@ -313,6 +323,18 @@ public class Agent implements SecurityAgent {
         }
     }
 
+    private boolean checkIfCSECGeneratedEvent(AbstractOperation operation) {
+        for (int i = 1, j = 0; i < operation.getStackTrace().length; i++) {
+            // Only remove consecutive top com.newrelic and com.nr. elements from stack.
+            if (i - 1 == j && StringUtils.startsWithAny(operation.getStackTrace()[i].getClassName(), "com.newrelic.agent.security.", "com.newrelic.api.agent.")) {
+                j++;
+            } else if (StringUtils.startsWithAny(operation.getStackTrace()[i].getClassName(), "com.newrelic.agent.security.", "com.newrelic.api.agent.")) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private void logIfIastScanForFirstTime(K2RequestIdentifier fuzzRequestIdentifier, HttpRequest request) {
 
         String url = StringUtils.EMPTY;
@@ -327,15 +349,30 @@ public class Agent implements SecurityAgent {
     }
 
     private static boolean checkIfNRGeneratedEvent(AbstractOperation operation) {
+        boolean isNettyReactor = false, isNRGeneratedEvent = false;
         for (int i = 1, j = 0; i < operation.getStackTrace().length; i++) {
+            if(StringUtils.equalsAny(operation.getStackTrace()[i].getClassName(), "com.nr.instrumentation.TokenLinkingSubscriber", "com.nr.instrumentation.reactor.netty.TokenLinkingSubscriber")){
+                isNettyReactor = true;
+                continue;
+            }
+
             // Only remove consecutive top com.newrelic and com.nr. elements from stack.
             if (i - 1 == j && StringUtils.startsWithAny(operation.getStackTrace()[i].getClassName(), "com.newrelic.", "com.nr.")) {
                 j++;
             } else if (StringUtils.startsWithAny(operation.getStackTrace()[i].getClassName(), "com.newrelic.", "com.nr.")) {
-                return true;
+                isNRGeneratedEvent = true;
             }
         }
-        return false;
+        if (isNettyReactor) {
+            operation.setStackTrace(removeNettyReactorLinkingTraces(operation.getStackTrace()));
+        }
+        return isNRGeneratedEvent;
+    }
+
+    private static StackTraceElement[] removeNettyReactorLinkingTraces(StackTraceElement[] stackTrace) {
+        return Arrays.stream(stackTrace).filter(stackTraceElement ->
+            !StringUtils.equalsAny(stackTraceElement.getClassName(), "com.nr.instrumentation.TokenLinkingSubscriber", "com.nr.instrumentation.reactor.netty.TokenLinkingSubscriber")
+        ).toArray(StackTraceElement[]::new);
     }
 
     private static boolean needToGenerateEvent(String apiID) {
@@ -354,12 +391,23 @@ public class Agent implements SecurityAgent {
 
         for (int i = 0; i < operation.getStackTrace().length; i++) {
             StackTraceElement stackTraceElement = operation.getStackTrace()[i];
+
+            // Section for user class identification using API handlers
+            if( !securityMetaData.getMetaData().isFoundAnnotedUserLevelServiceMethod() && URLMappingsHelper.getHandlersHash().contains(stackTraceElement.getClassName().hashCode())){
+                //Found -> assign user class and return
+                userClassEntity.setUserClassElement(stackTraceElement);
+                securityMetaData.getMetaData().setUserLevelServiceMethodEncountered(true);
+                userClassEntity.setCalledByUserCode(true);
+                return userClassEntity;
+            }
+
+            //Fallback to old mechanism
             if(userStackTraceElement != null){
                 if(StringUtils.equals(stackTraceElement.getClassName(), userStackTraceElement.getClassName())
                         && StringUtils.equals(stackTraceElement.getMethodName(), userStackTraceElement.getMethodName())){
                     userClassEntity.setUserClassElement(stackTraceElement);
                     userClassEntity.setCalledByUserCode(securityMetaData.getMetaData().isUserLevelServiceMethodEncountered());
-                    return userClassEntity;
+                    userStackTraceElement = stackTraceElement;
                 }
             }
             // TODO: the `if` should be `else if` please check crypto case BenchmarkTest01978. service trace is being registered from doSomething()
@@ -396,7 +444,7 @@ public class Agent implements SecurityAgent {
             markedForRemoval = false;
 
             // Only remove consecutive top com.newrelic and com.nr. elements from stack.
-            if (i - 1 == j && StringUtils.startsWithAny(stackTrace[i].getClassName(), "com.newrelic.", "com.nr.")) {
+            if (i - 1 == j && StringUtils.startsWithAny(stackTrace[i].getClassName(), "com.newrelic.agent.security.", "com.newrelic.api.agent.")) {
                 resetFactor++;
                 j++;
                 markedForRemoval = true;
@@ -437,7 +485,11 @@ public class Agent implements SecurityAgent {
     private static void setAPIId(AbstractOperation operation, List<Integer> traceForIdCalc, VulnerabilityCaseType vulnerabilityCaseType) {
         try {
             traceForIdCalc.add(operation.getSourceMethod().hashCode());
-            operation.setApiID(vulnerabilityCaseType.getCaseType() + "-" + HashGenerator.getXxHash64Digest(traceForIdCalc.stream().mapToInt(Integer::intValue).toArray()));
+            int[] traceArray = new int[traceForIdCalc.size()];
+            for (int i = 0; i < traceForIdCalc.size(); i++) {
+                traceArray[i] = traceForIdCalc.get(i);
+            }
+            operation.setApiID(vulnerabilityCaseType.getCaseType() + "-" + HashGenerator.getXxHash64Digest(traceArray));
         } catch (IOException e) {
             operation.setApiID("UNDEFINED");
         }
@@ -701,4 +753,5 @@ public class Agent implements SecurityAgent {
             return null;
         }
     }
+
 }

@@ -52,6 +52,7 @@ public class SecurityHelper {
 
             SSRFOperation operation = new SSRFOperation(uri, className, methodName);
             try {
+                NewRelicSecurity.getAgent().getSecurityMetaData().getMetaData().setFromJumpRequiredInStackTrace(3);
                 NewRelicSecurity.getAgent().registerOperation(operation);
             } finally {
                 if (operation.getApiID() != null && !operation.getApiID().trim().isEmpty() &&

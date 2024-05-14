@@ -1,5 +1,8 @@
 package com.nr.agent.security.instrumentation.servlet6;
 
+import jakarta.servlet.ServletContainerInitializer;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import org.apache.catalina.Context;
 import org.apache.catalina.LifecycleState;
@@ -15,6 +18,8 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Collections;
+import java.util.Set;
 
 @WebServlet("/*")
 public class HttpServletServer extends ExternalResource {
@@ -59,8 +64,16 @@ public class HttpServletServer extends ExternalResource {
         server.setBaseDir(tmp.getAbsolutePath());
 
         Context context = server.addContext("", tmp.getAbsolutePath());
+        context.addServletContainerInitializer(new ServletContainerInitializer() {
+            @Override
+            public void onStartup(Set<Class<?>> c, ServletContext ctx) throws ServletException {
+                System.out.println("testing...");
+            }
+        }, Collections.emptySet());
+
         Tomcat.addServlet( context, "servlet" , servlet);
         context.addServletMappingDecoded("/*","servlet");
+        context.addServletMappingDecoded("/test","servlet");
 
         final Connector connector = new Connector();
         connector.setPort(port);
