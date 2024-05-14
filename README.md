@@ -35,6 +35,12 @@ The agent automatically instruments the following frameworks.
 - Mule ESB 3.6 to 3.9.x
 - gRPC 1.4.0 to latest**
 - Jersey 2.0 to latest
+- Akka Server 10.0 to latest (with scala 2.11 and above)
+- Spray Can 1.3.1 to latest (with scala 2.11 and above)
+- Akka HTTP Server 10.0 to latest (with scala 2.11 and above)
+- Spray HTTP 1.3.1 to latest (with scala 2.11 and above)
+- Netty Server 4.0.0.Final to latest
+- Netty Reactor Server 0.7.0.RELEASE to latest
 
 ** IAST for **gRPC** requires the dependency [protobuf-java-util](https://mvnrepository.com/artifact/com.google.protobuf/protobuf-java-util) for IAST request replay.
 
@@ -66,6 +72,9 @@ The agent automatically instruments the following HTTP clients and messaging ser
 - Xalan XPATH 2.1.0 to latest
 - Async Http Client from 2.0 to latest
 - Ning Async HTTP Client 1.0.0 to latest
+- Akka Client 10.0 to latest (with scala 2.11 and above)
+- Spray Can Client 1.3.1 to latest (with scala 2.11 and above)
+- Spring WebClient 5.0.0.RELEASE to latest
 
 ### Datastores
 
