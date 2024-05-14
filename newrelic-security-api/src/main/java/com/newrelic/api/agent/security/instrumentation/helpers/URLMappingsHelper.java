@@ -22,9 +22,18 @@ public class URLMappingsHelper {
         return mappings;
     }
 
+    private static Set<Integer> handlers = ConcurrentHashMap.newKeySet();
+
+    public static Set<Integer> getHandlersHash() {
+        return handlers;
+    }
+
     public static void addApplicationURLMapping(ApplicationURLMapping mapping) {
         if (mapping.getHandler() == null || (mapping.getHandler() != null && !defaultHandlers.contains(mapping.getHandler()))) {
             mappings.add(mapping);
+        }
+        if (mapping.getHandler() != null){
+            handlers.add(mapping.getHandler().hashCode());
         }
     }
 }

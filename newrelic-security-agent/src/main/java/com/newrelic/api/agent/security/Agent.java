@@ -391,12 +391,23 @@ public class Agent implements SecurityAgent {
 
         for (int i = 0; i < operation.getStackTrace().length; i++) {
             StackTraceElement stackTraceElement = operation.getStackTrace()[i];
+
+            // Section for user class identification using API handlers
+            if( !securityMetaData.getMetaData().isFoundAnnotedUserLevelServiceMethod() && URLMappingsHelper.getHandlersHash().contains(stackTraceElement.getClassName().hashCode())){
+                //Found -> assign user class and return
+                userClassEntity.setUserClassElement(stackTraceElement);
+                securityMetaData.getMetaData().setUserLevelServiceMethodEncountered(true);
+                userClassEntity.setCalledByUserCode(true);
+                return userClassEntity;
+            }
+
+            //Fallback to old mechanism
             if(userStackTraceElement != null){
                 if(StringUtils.equals(stackTraceElement.getClassName(), userStackTraceElement.getClassName())
                         && StringUtils.equals(stackTraceElement.getMethodName(), userStackTraceElement.getMethodName())){
                     userClassEntity.setUserClassElement(stackTraceElement);
                     userClassEntity.setCalledByUserCode(securityMetaData.getMetaData().isUserLevelServiceMethodEncountered());
-                    return userClassEntity;
+                    userStackTraceElement = stackTraceElement;
                 }
             }
             // TODO: the `if` should be `else if` please check crypto case BenchmarkTest01978. service trace is being registered from doSomething()
@@ -725,4 +736,5 @@ public class Agent implements SecurityAgent {
             return null;
         }
     }
+
 }
