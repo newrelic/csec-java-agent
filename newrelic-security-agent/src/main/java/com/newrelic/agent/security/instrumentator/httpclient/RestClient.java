@@ -208,7 +208,6 @@ public class RestClient {
             logger.log(LogLevel.FINE, String.format("Request failed due to SSL Exception %s : reason %s", request, e.getMessage()), e, RestClient.class.getName());
             throw e;
         } catch (InterruptedIOException e){
-            e.printStackTrace();
             if(repeatCount >= 0){
                 return fireRequest(request, --repeatCount, fuzzRequestId);
             }
@@ -223,7 +222,6 @@ public class RestClient {
             fuzzFailEvent.setFuzzHeader(request.header(ServletHelper.CSEC_IAST_FUZZ_REQUEST_ID));
             EventSendPool.getInstance().sendEvent(fuzzFailEvent);
         } catch (Exception e){
-            e.printStackTrace();
             logger.log(LogLevel.FINER, String.format(CALL_FAILED_REQUEST_S_REASON, e.getMessage(), request), e, RestClient.class.getName());
         }
 
