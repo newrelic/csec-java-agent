@@ -369,10 +369,11 @@ public class Agent implements SecurityAgent {
 
     private UserClassEntity setUserClassEntity(AbstractOperation operation, SecurityMetaData securityMetaData) {
         UserClassEntity userClassEntity = new UserClassEntity();
-        StackTraceElement userStackTraceElement = null;
-        if(securityMetaData.getMetaData().getServiceTrace() != null && securityMetaData.getMetaData().getServiceTrace().length > 0){
+        StackTraceElement userStackTraceElement = securityMetaData.getCustomAttribute(GenericHelper.USER_CLASS_ENTITY, StackTraceElement.class);
+        if(userStackTraceElement == null && securityMetaData.getMetaData().getServiceTrace() != null && securityMetaData.getMetaData().getServiceTrace().length > 0){
             userStackTraceElement = securityMetaData.getMetaData().getServiceTrace()[0];
         }
+      
         String framework = securityMetaData.getMetaData().getUserLevelServiceMethodEncounteredFramework();
         if (framework == null){
             framework = StringUtils.EMPTY;
@@ -399,7 +400,11 @@ public class Agent implements SecurityAgent {
                     }
             }
         }
-
+        if (securityMetaData.getCustomAttribute(GenericHelper.USER_CLASS_ENTITY, StackTraceElement.class) != null){
+            userClassEntity.setUserClassElement(userStackTraceElement);
+            userClassEntity.setCalledByUserCode(securityMetaData.getMetaData().isUserLevelServiceMethodEncountered());
+            return userClassEntity;
+        }
         if(userClassEntity.getUserClassElement() == null && operation.getStackTrace().length >= 2){
             userClassEntity.setUserClassElement(operation.getStackTrace()[1]);
             userClassEntity.setCalledByUserCode(securityMetaData.getMetaData().isUserLevelServiceMethodEncountered());
