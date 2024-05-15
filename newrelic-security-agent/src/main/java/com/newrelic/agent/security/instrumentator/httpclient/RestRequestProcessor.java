@@ -8,6 +8,7 @@ import com.newrelic.agent.security.instrumentator.utils.CallbackUtils;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.newrelic.agent.security.intcodeagent.logging.IAgentConstants;
 import com.newrelic.api.agent.security.NewRelicSecurity;
+import com.newrelic.api.agent.security.schema.ServerConnectionConfiguration;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.models.FuzzRequestBean;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.IntCodeControlCommand;
@@ -106,14 +107,13 @@ public class RestRequestProcessor implements Callable<Boolean> {
                 GrpcClientRequestReplayHelper.getInstance().addToRequestQueue(new ControlCommandDto(controlCommand.getId(), httpRequest, payloadList));
             } else {
                 boolean postSSL = false;
-                List<String> endpoints = prepareAllEndpoints(NewRelicSecurity.getAgent().getApplicationConnectionConfig());
+                List<String> endpoints = prepareAllEndpoints(NewRelicSecurity.getAgent().getApplicationConnectionConfig(), httpRequest);
                 logger.log(LogLevel.FINER, String.format("Endpoints to fire : ", endpoints), RestRequestProcessor.class.getSimpleName());
                 if (endpoints.isEmpty()){
                     endpoints = prepareAllEndpoints(httpRequest);
                     logger.log(LogLevel.FINER, String.format("Endpoints to fire in empty: ", endpoints), RestRequestProcessor.class.getSimpleName());
                     postSSL = true;
                 }
-                endpoints = RequestUtils.refineEndpoints(httpRequest, endpoints);
                 RestClient.getInstance().fireRequest(httpRequest, endpoints, repeatCount + endpoints.size() -1, controlCommand.getId());
             }
             return true;
@@ -152,13 +152,26 @@ public class RestRequestProcessor implements Callable<Boolean> {
         return endpoitns;
     }
 
-    private List<String> prepareAllEndpoints(Map<Integer, String> applicationConnectionConfig) {
+    private List<String> prepareAllEndpoints(Map<Integer, ServerConnectionConfiguration> applicationConnectionConfig, FuzzRequestBean httpRequest) {
         List<String> endpoitns = new ArrayList<>();
-        for (Map.Entry<Integer, String> connectionConfig : applicationConnectionConfig.entrySet()) {
-            endpoitns.add(String.format(ENDPOINT_LOCALHOST_S, connectionConfig.getValue(), connectionConfig.getKey()));
-            endpoitns.add(String.format(ENDPOINT_LOCALHOST_S, toggleProtocol(connectionConfig.getValue()), connectionConfig.getKey()));
+        for (Map.Entry<Integer, ServerConnectionConfiguration> connectionConfig : applicationConnectionConfig.entrySet()) {
+            ServerConnectionConfiguration connectionConfiguration = connectionConfig.getValue();
+            if(!connectionConfig.getValue().isConfirmed()){
+                if (RequestUtils.refineEndpoints(httpRequest, String.format(ENDPOINT_LOCALHOST_S, connectionConfiguration.getProtocol(), connectionConfiguration.getPort()))) {
+                    updateServerConnectionConfiguration(connectionConfiguration, connectionConfiguration.getProtocol());
+                } else if (RequestUtils.refineEndpoints(httpRequest, String.format(ENDPOINT_LOCALHOST_S, toggleProtocol(connectionConfiguration.getProtocol()), connectionConfiguration.getPort()))) {
+                    updateServerConnectionConfiguration(connectionConfiguration, toggleProtocol(connectionConfiguration.getProtocol()));
+                }
+            }
+            endpoitns.add(connectionConfiguration.getEndpoint());
         }
         return endpoitns;
+    }
+
+    private void updateServerConnectionConfiguration(ServerConnectionConfiguration connectionConfiguration, String protocol) {
+        connectionConfiguration.setEndpoint(String.format(ENDPOINT_LOCALHOST_S, protocol, connectionConfiguration.getPort()));
+        connectionConfiguration.setProtocol(protocol);
+        connectionConfiguration.setConfirmed(true);
     }
 
     private String toggleProtocol(String value) {

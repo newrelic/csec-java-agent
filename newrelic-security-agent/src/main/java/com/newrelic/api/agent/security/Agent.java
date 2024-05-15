@@ -258,11 +258,15 @@ public class Agent implements SecurityAgent {
                     securityMetaData.getResponse().setResponseBody(
                             new StringBuilder(JsonConverter.toJSON(securityMetaData.getCustomAttribute(GrpcHelper.NR_SEC_GRPC_RESPONSE_DATA, List.class))));
                 }
-                // end
 
                 if (operation == null || operation.isEmpty()) {
                     return;
                 }
+                Boolean csecJavaHeadRequest = securityMetaData.getCustomAttribute(ICsecApiConstants.NR_CSEC_JAVA_HEAD_REQUEST, Boolean.class);
+                if(csecJavaHeadRequest != null && csecJavaHeadRequest){
+                    return;
+                }
+
                 String executionId = ExecutionIDGenerator.getExecutionId();
                 operation.setExecutionId(executionId);
                 operation.setStartTime(Instant.now().toEpochMilli());
@@ -603,16 +607,9 @@ public class Agent implements SecurityAgent {
 
     public void setApplicationConnectionConfig(int port, String scheme) {
         AppServerInfo appServerInfo = AppServerInfoHelper.getAppServerInfo();
-        appServerInfo.getConnectionConfiguration().put(port, scheme);
+        ServerConnectionConfiguration serverConnectionConfiguration = new ServerConnectionConfiguration(port, scheme);
+        appServerInfo.getConnectionConfiguration().put(port, serverConnectionConfiguration);
 //        verifyConnectionAndPut(port, scheme, appServerInfo);
-    }
-
-    private void verifyConnectionAndPut(int port, String scheme, AppServerInfo appServerInfo) {
-        if(isConnectionSuccessful(port, scheme)){
-            appServerInfo.getConnectionConfiguration().put(port, scheme);
-        } else if (isConnectionSuccessful(port,StringUtils.equalsAnyIgnoreCase(scheme, HTTPS_STR)? HTTP_STR : HTTPS_STR)) {
-            appServerInfo.getConnectionConfiguration().put(port, StringUtils.equalsAnyIgnoreCase(scheme, HTTPS_STR)? HTTP_STR : HTTPS_STR);
-        }
     }
 
     private boolean isConnectionSuccessful(int port, String scheme) {
@@ -637,13 +634,13 @@ public class Agent implements SecurityAgent {
         }
     }
 
-    public String getApplicationConnectionConfig(int port) {
+    public ServerConnectionConfiguration getApplicationConnectionConfig(int port) {
         AppServerInfo appServerInfo = AppServerInfoHelper.getAppServerInfo();
         return appServerInfo.getConnectionConfiguration().get(port);
     }
 
     @Override
-    public Map<Integer, String> getApplicationConnectionConfig() {
+    public Map<Integer, ServerConnectionConfiguration> getApplicationConnectionConfig() {
         return AppServerInfoHelper.getAppServerInfo().getConnectionConfiguration();
     }
 

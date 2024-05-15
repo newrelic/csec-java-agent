@@ -2,6 +2,7 @@ package com.newrelic.agent.security.instrumentator.httpclient;
 
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
 import com.newrelic.agent.security.intcodeagent.websocket.JsonConverter;
+import com.newrelic.api.agent.security.instrumentation.helpers.ICsecApiConstants;
 import com.newrelic.api.agent.security.instrumentation.helpers.ServletHelper;
 import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.models.FuzzRequestBean;
@@ -10,7 +11,9 @@ import okhttp3.Request.Builder;
 import okhttp3.internal.http.HttpMethod;
 import org.apache.commons.lang3.StringUtils;
 
-import java.util.ArrayList;
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.net.Socket;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -29,6 +32,8 @@ public class RequestUtils {
             Request request = new Request.Builder()
                     .url(url.toString())
                     .head() // Use HEAD to fetch only headers without the body
+                    .headers(Headers.of((Map<String, String>) httpRequest.getHeaders()))
+                    .addHeader(ICsecApiConstants.NR_CSEC_JAVA_HEAD_REQUEST, "true")
                     .build();
             return request;
         } catch (Exception e) {
@@ -37,15 +42,10 @@ public class RequestUtils {
         return null;
     }
 
-    public static List<String> refineEndpoints(FuzzRequestBean httpRequest, List<String> endpoints) {
-        List<String> refinedEndpoints = new ArrayList<>();
-        for (String endpoint : endpoints) {
-            Request request = generateHeadRequest(httpRequest, endpoint);
-            if(RestClient.getInstance().isListening(request)){
-                refinedEndpoints.add(endpoint);
-            }
-        }
-        return refinedEndpoints;
+
+    public static boolean refineEndpoints(FuzzRequestBean httpRequest, String endpoint) {
+        Request request = generateHeadRequest(httpRequest, endpoint);
+        return RestClient.getInstance().isListening(request);
     }
 
     public static Request generateK2Request(FuzzRequestBean httpRequest, String endpoint) {
@@ -121,4 +121,6 @@ public class RequestUtils {
         }
         return null;
     }
+
+
 }
