@@ -14,7 +14,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [PR-202](https://github.com/newrelic/csec-java-agent/pull/202) Netty Server support : The security agent now also supports Netty Server version 4.0.0.Final and above. [NR-234864](https://new-relic.atlassian.net/browse/NR-234864)
 - [PR-220](https://github.com/newrelic/csec-java-agent/pull/220) Netty Reactor Server support : The security agent now also supports Netty Reactor Server version 0.7.0.RELEASE and above. [NR-249812](https://new-relic.atlassian.net/browse/NR-249812)
 - [PR-239](https://github.com/newrelic/csec-java-agent/pull/239) Spring WebClient Support : The security agent now also supports Spring WebClient version 5.0.0.RELEASE and above. [NR-258894](https://new-relic.atlassian.net/browse/NR-258894), [NR-258895](https://new-relic.atlassian.net/browse/NR-258895)
-- [PR-112](https://github.com/newrelic/csec-java-agent/pull/112) Spymemcached Support : The security agent now also supports Spymemcached version 2.11 and above. [NR-171576](https://new-relic.atlassian.net/browse/NR-171576)
 - Resin Support : The security agent now also supports resin server [NR-171577](https://new-relic.atlassian.net/browse/NR-171577)
 - Anorm Support : The security agent now also supports Anorm Datastore version 2.0 to 2.5 [NR-171575](https://new-relic.atlassian.net/browse/NR-171575)
 
