@@ -13,7 +13,7 @@ public class AppServerInfo {
 
     String applicationTmpDirectory;
 
-    Map<Integer, String> connectionConfiguration;
+    Map<Integer, ServerConnectionConfiguration> connectionConfiguration;
 
     public AppServerInfo() {
         connectionConfiguration = new ConcurrentHashMap<>();
@@ -51,11 +51,7 @@ public class AppServerInfo {
         this.applicationTmpDirectory = applicationTmpDirectory;
     }
 
-    public Map<Integer, String> getConnectionConfiguration() {
+    public Map<Integer, ServerConnectionConfiguration> getConnectionConfiguration() {
         return connectionConfiguration;
-    }
-
-    public void setConnectionConfiguration(Map<Integer, String> connectionConfiguration) {
-        this.connectionConfiguration = connectionConfiguration;
     }
 }
