@@ -50,6 +50,7 @@ public class AgentMetaData {
 
     public AgentMetaData(AgentMetaData agentMetaData) {
         this.rciMethodsCalls = new HashSet<>();
+        agentMetaData.rciMethodsCalls.remove(null);
         this.rciMethodsCalls.addAll(agentMetaData.rciMethodsCalls);
         this.triggerViaDeserialisation = agentMetaData.triggerViaDeserialisation;
         this.triggerViaRCI = agentMetaData.triggerViaRCI;
