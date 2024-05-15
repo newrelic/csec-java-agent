@@ -170,9 +170,9 @@ public class RestClient {
 
         OkHttpClient client = clientThreadLocal.get();
         Call call = client.newCall(request);
-        try {
-            Response response = call.execute();
+        try(Response response = call.execute()) {
             if(response.isSuccessful()){
+                logger.log(LogLevel.FINER, String.format("Server is reachable url: %s", request.url()), RestClient.class.getName());
                 return true;
             }
         } catch (IOException e) {

@@ -108,10 +108,10 @@ public class RestRequestProcessor implements Callable<Boolean> {
             } else {
                 boolean postSSL = false;
                 List<String> endpoints = prepareAllEndpoints(NewRelicSecurity.getAgent().getApplicationConnectionConfig(), httpRequest);
-                logger.log(LogLevel.FINER, String.format("Endpoints to fire : ", endpoints), RestRequestProcessor.class.getSimpleName());
+                logger.log(LogLevel.FINER, String.format("Endpoints to fire : %s", endpoints), RestRequestProcessor.class.getSimpleName());
                 if (endpoints.isEmpty()){
                     endpoints = prepareAllEndpoints(httpRequest);
-                    logger.log(LogLevel.FINER, String.format("Endpoints to fire in empty: ", endpoints), RestRequestProcessor.class.getSimpleName());
+                    logger.log(LogLevel.FINER, String.format("Endpoints to fire in empty: %s", endpoints), RestRequestProcessor.class.getSimpleName());
                     postSSL = true;
                 }
                 RestClient.getInstance().fireRequest(httpRequest, endpoints, repeatCount + endpoints.size() -1, controlCommand.getId());
@@ -153,19 +153,22 @@ public class RestRequestProcessor implements Callable<Boolean> {
     }
 
     private List<String> prepareAllEndpoints(Map<Integer, ServerConnectionConfiguration> applicationConnectionConfig, FuzzRequestBean httpRequest) {
-        List<String> endpoitns = new ArrayList<>();
+        List<String> endpoints = new ArrayList<>();
         for (Map.Entry<Integer, ServerConnectionConfiguration> connectionConfig : applicationConnectionConfig.entrySet()) {
             ServerConnectionConfiguration connectionConfiguration = connectionConfig.getValue();
             if(!connectionConfig.getValue().isConfirmed()){
                 if (RequestUtils.refineEndpoints(httpRequest, String.format(ENDPOINT_LOCALHOST_S, connectionConfiguration.getProtocol(), connectionConfiguration.getPort()))) {
                     updateServerConnectionConfiguration(connectionConfiguration, connectionConfiguration.getProtocol());
+                    endpoints.add(connectionConfiguration.getEndpoint());
                 } else if (RequestUtils.refineEndpoints(httpRequest, String.format(ENDPOINT_LOCALHOST_S, toggleProtocol(connectionConfiguration.getProtocol()), connectionConfiguration.getPort()))) {
                     updateServerConnectionConfiguration(connectionConfiguration, toggleProtocol(connectionConfiguration.getProtocol()));
+                    endpoints.add(connectionConfiguration.getEndpoint());
                 }
+            } else {
+                endpoints.add(connectionConfiguration.getEndpoint());
             }
-            endpoitns.add(connectionConfiguration.getEndpoint());
         }
-        return endpoitns;
+        return endpoints;
     }
 
     private void updateServerConnectionConfiguration(ServerConnectionConfiguration connectionConfiguration, String protocol) {

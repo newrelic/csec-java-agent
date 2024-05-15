@@ -26,7 +26,7 @@ public class RequestUtils {
 
     public static Request generateHeadRequest(FuzzRequestBean httpRequest, String endpoint) {
         try {
-            logger.log(LogLevel.FINEST, String.format("Generate HEAD request : %s", JsonConverter.toJSON(httpRequest.getUrl())), RequestUtils.class.getName());
+            logger.log(LogLevel.FINEST, String.format("Generate HEAD request : %s%s", endpoint, httpRequest.getUrl()), RequestUtils.class.getName());
             StringBuilder url = new StringBuilder(endpoint);
             url.append(httpRequest.getUrl());
             Request request = new Request.Builder()
