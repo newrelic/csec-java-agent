@@ -175,6 +175,9 @@ public class RestClient {
                 logger.log(LogLevel.FINER, String.format("Server is reachable url: %s", request.url()), RestClient.class.getName());
                 return true;
             }
+            if (client.connectionPool() != null) {
+                client.connectionPool().evictAll();
+            }
         } catch (IOException e) {
             logger.log(LogLevel.FINER, String.format("Server is not reachable url: %s", request.url()), RestClient.class.getName());
             return false;
@@ -190,8 +193,7 @@ public class RestClient {
         logger.log(LogLevel.FINER, String.format(FIRING_REQUEST_HEADERS_S, request.headers()), RestClient.class.getName());
 
         Call call = client.newCall(request);
-        try {
-            Response response = call.execute();
+        try (Response response = call.execute()){
             logger.log(LogLevel.FINER, String.format(REQUEST_FIRED_SUCCESS, request), RestClient.class.getName());
             if (response.code() >= 500) {
                 logger.postLogMessageIfNecessary(LogLevel.WARNING,
