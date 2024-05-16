@@ -413,7 +413,8 @@ public class Agent implements SecurityAgent {
                     AgentMetaData metaData = NewRelicSecurity.getAgent().getSecurityMetaData().getMetaData();
                     if (stackTrace[i - 1].getLineNumber() > 0 &&
                             StringUtils.isNotBlank(stackTrace[i - 1].getFileName()) &&
-                            !StringUtils.startsWithAny(stackTrace[i - 1].getClassName(), "com.newrelic.", "com.nr.")
+                            !StringUtils.startsWithAny(stackTrace[i - 1].getClassName(), "com.newrelic.agent.security.", "com.newrelic.api.agent.",
+                                    "com.newrelic.agent.deps.", "com.nr.instrumentation.")
                     ) {
                         metaData.setTriggerViaRCI(true);
                         metaData.getRciMethodsCalls()
