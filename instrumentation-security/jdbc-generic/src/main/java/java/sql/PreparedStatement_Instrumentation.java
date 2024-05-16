@@ -401,10 +401,14 @@ public abstract class PreparedStatement_Instrumentation {
             sqlOperation = new SQLOperation(this.getClass().getName(), JdbcHelper.METHOD_EXECUTE_BATCH);
             sqlOperation.setQuery(preparedSql);
             Map<String, String> localParams = new HashMap<>();
-            localParams.putAll(params);
+            if(params != null) {
+                localParams.putAll(params);
+            }
             sqlOperation.setParams(localParams);
             Map<String, Object> localObjParams = new HashMap<>();
-            localObjParams.putAll(objectParams);
+            if (objectParams != null) {
+                localObjParams.putAll(objectParams);
+            }
             sqlOperation.setObjectParams(localObjParams);
             sqlOperation.setDbName(NewRelicSecurity.getAgent().getSecurityMetaData().getCustomAttribute(JDBCVendor.META_CONST_JDBC_VENDOR, String.class));
             sqlOperation.setPreparedCall(true);
