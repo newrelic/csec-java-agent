@@ -30,8 +30,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [PR-222](https://github.com/newrelic/csec-java-agent/pull/222) Exclude Milestone Release for Jax-RS, due to release of version 4.0.0-M2 on 9th March 2024 [NR-256459](https://new-relic.atlassian.net/browse/NR-256459)
 - [PR-232](https://github.com/newrelic/csec-java-agent/pull/232) Exclude Latest Release version 12.7.0 for mssql-jdbc released on 08th April 2024 [NR-256461](https://new-relic.atlassian.net/browse/NR-256461)
 - [PR-247](https://github.com/newrelic/csec-java-agent/pull/247) Exclude Latest Release version 1.7.14 for Rhino-JS-Engine released on 29th April 2024 [NR-265206](https://new-relic.atlassian.net/browse/NR-265206)
-- [PR-219](https://github.com/newrelic/csec-java-agent/pull/219) Fixed an issue where lambda functions were causing class circularity errors [NR-239192](https://new-relic.atlassian.net/browse/NR-239192) 
-- [PR-219](https://github.com/newrelic/csec-java-agent/pull/219) Resolved a problem where multiple RXSS events were being generated unnecessarily, optimizing the system to only produce a single event as intended.
+- [PR-219](https://github.com/newrelic/csec-java-agent/pull/219) Fixed an issue where lambda functions were causing class circularity errors [NR-239192](https://new-relic.atlassian.net/browse/NR-239192)
 
 ## [1.2.1] - 2024-4-19
 ### Fixes
