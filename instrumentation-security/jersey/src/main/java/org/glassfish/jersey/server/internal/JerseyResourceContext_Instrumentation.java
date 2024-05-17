@@ -3,7 +3,7 @@ package org.glassfish.jersey.server.internal;
 import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
-import com.nr.instrumentation.security.jersey.JerseyHelper;
+import com.newrelic.agent.security.instrumentation.jersey.JerseyHelper;
 import org.glassfish.jersey.server.model.ResourceModel;
 
 

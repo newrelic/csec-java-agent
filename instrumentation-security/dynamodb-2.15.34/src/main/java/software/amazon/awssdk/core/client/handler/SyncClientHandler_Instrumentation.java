@@ -7,6 +7,7 @@
 
 package software.amazon.awssdk.core.client.handler;
 
+import com.newrelic.agent.security.instrumentation.dynamodb_215.DynamoDBUtil;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
@@ -29,8 +30,6 @@ public class SyncClientHandler_Instrumentation {
         OutputT returnVal = null;
         try {
             returnVal = Weaver.callOriginal();
-        } catch (Throwable ignored) {
-            ignored.printStackTrace();
         } finally {
             if (isLockAcquired) {
                 DynamoDBUtil.releaseLock(this.hashCode());
@@ -51,8 +50,6 @@ public class SyncClientHandler_Instrumentation {
         ReturnT returnVal = null;
         try {
             returnVal = Weaver.callOriginal();
-        } catch (Throwable ignored) {
-            ignored.printStackTrace();
         } finally {
             if (isLockAcquired) {
                 DynamoDBUtil.releaseLock(this.hashCode());

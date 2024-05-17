@@ -7,6 +7,7 @@ import com.newrelic.agent.security.instrumentator.utils.AgentUtils;
 import com.newrelic.agent.security.instrumentator.utils.INRSettingsKey;
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import static com.newrelic.agent.security.intcodeagent.logging.IAgentConstants.*;
@@ -22,6 +23,7 @@ public class AgentBasicInfo {
     public static final String SEC_EVENT = "sec_event";
     public static final String SEC_HEALTH_CHECK = "sec_health_check_lc";
     public static final String NR_ENTITY_GUID = "entityGuid";
+    public static final String EXCEPTION_INCIDENT = "exception-incident";
 
     /**
      * Tool id for Language Agent.
@@ -70,7 +72,7 @@ public class AgentBasicInfo {
         setBuildNumber(AgentInfo.getInstance().getBuildInfo().getBuildNumber());
         setGroupName(AgentConfig.getInstance().getGroupName());
         setNodeId(AgentInfo.getInstance().getLinkingMetadata().getOrDefault(INRSettingsKey.NR_ENTITY_GUID, StringUtils.EMPTY));
-        setLinkingMetadata(AgentInfo.getInstance().getLinkingMetadata());
+        setLinkingMetadata(new HashMap<>(AgentInfo.getInstance().getLinkingMetadata()));
         if (this instanceof ApplicationInfoBean) {
             setJsonName(JSON_NAME_APPLICATION_INFO_BEAN);
         } else if (this instanceof JavaAgentEventBean) {
@@ -94,6 +96,9 @@ public class AgentBasicInfo {
         } else if (this instanceof ApplicationURLMappings) {
             setJsonName(JSON_SEC_APPLICATION_URL_MAPPING);
             setEventType(JSON_SEC_APPLICATION_URL_MAPPING);
+        } else if (this instanceof ErrorIncident) {
+            setJsonName(EXCEPTION_INCIDENT);
+            setEventType(EXCEPTION_INCIDENT);
         }
     }
 

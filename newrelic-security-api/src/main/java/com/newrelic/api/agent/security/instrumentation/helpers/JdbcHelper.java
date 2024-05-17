@@ -34,6 +34,8 @@ public class JdbcHelper {
 
     public static final String NR_SEC_CUSTOM_ATTRIB_SQL_NAME = "SQL-QUERY-";
     public static final String NR_SEC_CUSTOM_ATTRIB_BATCH_SQL_NAME = "NR-BATCH-SQL-QUERY-";
+    public static final String JDBC_GENERIC = "JDBC-GENERIC";
+    public static final String JDBC_JTDS_GENERIC = "JDBC-JTDS-GENERIC";
 
     public static void putSql(Statement statement, String sql) {
         try {

@@ -8,4 +8,5 @@ public class Helper {
     public static final String METHOD_NAME_CONNECT = "connect";
     public static final String METHOD_NAME_GET_OUTPUT_STREAM = "getOutputStream";
     public static final String METHOD_NAME_GET_INPUT_STREAM = "getInputStream";
+    public static final String URLCONNECTION = "URLCONNECTION";
 }

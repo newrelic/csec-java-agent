@@ -7,6 +7,7 @@
 
 package software.amazon.awssdk.core.client.handler;
 
+import com.newrelic.agent.security.instrumentation.dynamodb_212.DynamoDBUtil;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
@@ -31,8 +32,6 @@ public class AsyncClientHandler_Instrumentation {
         CompletableFuture<OutputT> returnVal = null;
         try {
             returnVal = Weaver.callOriginal();
-        } catch (Throwable ignored) {
-            ignored.printStackTrace();
         } finally {
             if (isLockAcquired) {
                 DynamoDBUtil.releaseLock(this.hashCode());
@@ -53,8 +52,6 @@ public class AsyncClientHandler_Instrumentation {
         CompletableFuture<ReturnT> returnVal = null;
         try {
             returnVal = Weaver.callOriginal();
-        } catch (Throwable ignored) {
-            ignored.printStackTrace();
         } finally {
             if (isLockAcquired) {
                 DynamoDBUtil.releaseLock(this.hashCode());

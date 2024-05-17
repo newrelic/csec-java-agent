@@ -14,6 +14,7 @@ import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
 import com.newrelic.api.agent.security.schema.helper.DynamoDBRequest;
 import com.newrelic.api.agent.security.schema.operation.DynamoDBOperation;
+import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import software.amazon.awssdk.core.SdkRequest;
 import software.amazon.awssdk.core.SdkResponse;
 import software.amazon.awssdk.core.client.handler.ClientExecutionParams;
@@ -57,6 +58,7 @@ public abstract class DynamoDBUtil {
     private static final String OP_DELETE = "delete";
     // TODO: used for setting uo the command type of PartiQL request that will be discussed later and updated accordingly
     private static final String OP_READ_WRITE = "read_write";
+    public static final String DYNAMODB_2_1_2 = "DYNAMODB-2.1.2";
 
     public static <InputT extends SdkRequest, OutputT extends SdkResponse> AbstractOperation processDynamoDBRequest(
             ClientExecutionParams<InputT, OutputT> yRequest, String klassName) {
@@ -69,14 +71,17 @@ public abstract class DynamoDBUtil {
                 operation = checkAndGenerateOperation(request, requests, klassName);
 
                 if (operation!=null) {
+                    NewRelicSecurity.getAgent().getSecurityMetaData().getMetaData().setFromJumpRequiredInStackTrace(3);
                     NewRelicSecurity.getAgent().registerOperation(operation);
                 }
             }
         } catch (Throwable e) {
-            e.printStackTrace();
             if (e instanceof NewRelicSecurityException) {
-                e.printStackTrace();
+                NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.SECURITY_EXCEPTION_MESSAGE, DYNAMODB_2_1_2, e.getMessage()), e, DynamoDBUtil.class.getName());
+                throw e;
             }
+            NewRelicSecurity.getAgent().log(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, DYNAMODB_2_1_2, e.getMessage()), e, DynamoDBUtil.class.getName());
+            NewRelicSecurity.getAgent().reportIncident(LogLevel.SEVERE , String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, DYNAMODB_2_1_2, e.getMessage()), e, DynamoDBUtil.class.getName());
         }
         return operation;
     }
@@ -89,6 +94,7 @@ public abstract class DynamoDBUtil {
             }
             NewRelicSecurity.getAgent().registerExitEvent(operation);
         } catch (Throwable ignored) {
+            NewRelicSecurity.getAgent().log(LogLevel.FINEST, String.format(GenericHelper.EXIT_OPERATION_EXCEPTION_MESSAGE, DYNAMODB_2_1_2, ignored.getMessage()), ignored, DynamoDBUtil.class.getName());
         }
     }
 
@@ -286,7 +292,7 @@ public abstract class DynamoDBUtil {
                         query.setTableName(conditionCheck.tableName());
                         query.setConditionExpression(conditionCheck.conditionExpression());
                         query.setExpressionAttributeNames(conditionCheck.expressionAttributeNames());
-                        query.setExpressionAttributeNames(conditionCheck.expressionAttributeNames());
+                        query.setExpressionAttributeValues(conditionCheck.expressionAttributeValues());
                         requests.add(new DynamoDBRequest(query, OP_READ));
                     }
                     if (transactItems.get(i).put() != null) {
@@ -323,7 +329,9 @@ public abstract class DynamoDBUtil {
                 }
                 operation = new DynamoDBOperation(requests, klassName, "transactWriteItems", DynamoDBOperation.Category.DQL);
             }
-        } catch (NullPointerException ignored) {
+        } catch (Exception e) {
+            String message = "Instrumentation library: %s , error while creating operation : %s";
+            NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(message, DYNAMODB_2_1_2, e.getMessage()), e, DynamoDBUtil.class.getName());
         }
         return operation;
     }

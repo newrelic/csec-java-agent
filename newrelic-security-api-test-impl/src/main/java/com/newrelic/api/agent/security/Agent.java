@@ -5,12 +5,15 @@ import com.newrelic.api.agent.Transaction;
 import com.newrelic.api.agent.security.instrumentation.helpers.LowSeverityHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.SecurityMetaData;
+import com.newrelic.api.agent.security.schema.operation.FileIntegrityOperation;
 import com.newrelic.api.agent.security.schema.policy.AgentPolicy;
+import com.newrelic.api.agent.security.utils.logging.LogLevel;
 
 import java.lang.instrument.Instrumentation;
 import java.net.URL;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -61,10 +64,14 @@ public class Agent implements SecurityAgent {
         System.out.println("Registering operation : " + operation.hashCode() + " : " + NewRelic.getAgent().getTransaction().hashCode());
         String executionId = "dummy-exec-id";
         String apiId = "dummy-api-id";
+        if(operation instanceof FileIntegrityOperation && ((FileIntegrityOperation) operation).getFileName().endsWith(".new.class")){
+            return;
+        }
         operation.setExecutionId(executionId);
         operation.setApiID(apiId);
         operation.setStartTime(Instant.now().toEpochMilli());
-        operation.setStackTrace(Thread.currentThread().getStackTrace());
+        StackTraceElement[] trace = Thread.currentThread().getStackTrace();
+        operation.setStackTrace(Arrays.copyOfRange(trace, 1, trace.length));
         this.getSecurityMetaData().getCustomAttribute(OPERATIONS, List.class).add(operation);
     }
 
@@ -136,5 +143,56 @@ public class Agent implements SecurityAgent {
     @Override
     public boolean isLowPriorityInstrumentationEnabled() {
         return true;
+    }
+
+    @Override
+    public void setServerInfo(String key, String value) {
+        //TODO Ishika please fill this as per your needs
+    }
+
+    @Override
+    public String getServerInfo(String key) {
+        return null;
+    }
+
+    @Override
+    public void setApplicationConnectionConfig(int port, String scheme) {
+        //TODO Ishika please fill this as per your needs
+    }
+
+    @Override
+    public String getApplicationConnectionConfig(int port) {
+        return null;
+    }
+
+    @Override
+    public Map<Integer, String> getApplicationConnectionConfig() {
+        //TODO Ishika please fill this as per your needs
+        return null;
+    }
+
+    @Override
+    public void log(LogLevel logLevel, String event, Throwable throwableEvent, String logSourceClassName) {
+
+    }
+
+    @Override
+    public void log(LogLevel logLevel, String event, String logSourceClassName) {
+
+    }
+
+    @Override
+    public void reportIncident(LogLevel logLevel, String event, Throwable exception, String caller) {
+
+    }
+
+    @Override
+    public void retransformUninstrumentedClass(Class<?> classToRetransform) {
+
+    }
+
+    @Override
+    public String decryptAndVerify(String encryptedData, String hashVerifier) {
+        return null;
     }
 }

@@ -5,22 +5,24 @@ import com.newrelic.api.agent.security.schema.HttpRequest;
 import com.newrelic.api.agent.security.schema.SecurityMetaData;
 import com.newrelic.api.agent.security.schema.StringUtils;
 
-import java.security.MessageDigest;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class LowSeverityHelper {
+
     public static final String LOW_SEVERITY_HOOKS_ENABLED = "security.low-priority-instrumentation.enabled";
-    public static final boolean DEFAULT = false;
+    public static final boolean DEFAULT = true;
+    public static final String LOW_PRIORITY_INSTRUMENTATION = "LOW-PRIORITY-INSTRUMENTATION";
 
     private static Set<Integer> encounteredLowSeverityEventURIHash = ConcurrentHashMap.newKeySet();
 
-    public static boolean addLowSeverityEventToEncounteredList(Integer owaspEventApiId) {
-        return encounteredLowSeverityEventURIHash.add(owaspEventApiId);
+    public static boolean addLowSeverityEventToEncounteredList(Integer urlHashCode, String method) {
+        return encounteredLowSeverityEventURIHash.add(StringUtils.join(urlHashCode, method).hashCode());
     }
 
-    public static boolean checkIfLowSeverityEventAlreadyEncountered(Integer eventApiId) {
-        return encounteredLowSeverityEventURIHash.contains(eventApiId);
+    public static boolean checkIfLowSeverityEventAlreadyEncountered(Integer urlHashCode, String method) {
+        return encounteredLowSeverityEventURIHash.contains(StringUtils.join(urlHashCode, method).hashCode());
     }
 
     public static void clearLowSeverityEventFilter() {
@@ -30,18 +32,19 @@ public class LowSeverityHelper {
 
     public static boolean addRrequestUriToEventFilter(HttpRequest request) {
         if(request!= null && StringUtils.isNotBlank(request.getUrl())) {
-            return addLowSeverityEventToEncounteredList(request.getUrl().hashCode());
+            return addLowSeverityEventToEncounteredList(request.getUrl().hashCode(), request.getMethod());
         }
         return false;
     }
 
     public static boolean isOwaspHookProcessingNeeded(){
         SecurityMetaData securityMetaData = NewRelicSecurity.getAgent().getSecurityMetaData();
-        if(securityMetaData != null) {
+        if(NewRelicSecurity.isHookProcessingActive() && securityMetaData != null && !securityMetaData.getRequest().isEmpty()) {
             String requestURL = securityMetaData.getRequest().getUrl();
             return (securityMetaData.getFuzzRequestIdentifier() != null && securityMetaData.getFuzzRequestIdentifier().getK2Request())
-                    || (StringUtils.isNotBlank(requestURL) && !LowSeverityHelper.checkIfLowSeverityEventAlreadyEncountered(requestURL.hashCode()));
+                    || (StringUtils.isNotBlank(requestURL) && !LowSeverityHelper.checkIfLowSeverityEventAlreadyEncountered(requestURL.hashCode(), securityMetaData.getRequest().getMethod()));
         }
         return false;
     }
+
 }
