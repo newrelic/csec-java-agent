@@ -1,24 +1,24 @@
 package com.newrelic.agent.security.intcodeagent.websocket;
 
 import com.newrelic.agent.security.AgentInfo;
-import com.newrelic.agent.security.instrumentator.dispatcher.DispatcherPool;
 import com.newrelic.agent.security.instrumentator.httpclient.RestRequestThreadPool;
 import com.newrelic.agent.security.intcodeagent.executor.CustomFutureTask;
 import com.newrelic.agent.security.intcodeagent.executor.CustomThreadPoolExecutor;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
-import com.newrelic.agent.security.intcodeagent.filelogging.LogLevel;
+import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.EventStats;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.ExitEventBean;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.JavaAgentEventBean;
 import com.newrelic.agent.security.util.AgentUsageMetric;
 import com.newrelic.agent.security.util.IUtilConstants;
+import com.newrelic.api.agent.security.instrumentation.helpers.GrpcClientRequestReplayHelper;
 
-import java.util.Map;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class EventSendPool {
 
+    public static final int QUEUE_SIZE = 1500;
     /**
      * Thread pool executor.
      */
@@ -30,7 +30,7 @@ public class EventSendPool {
 
     private EventSendPool() {
         // load the settings
-        int queueSize = 1500;
+        int queueSize = QUEUE_SIZE;
         int maxPoolSize = 1;
         int corePoolSize = 1;
         long keepAliveTime = 60;
@@ -65,6 +65,10 @@ public class EventSendPool {
                 return t;
             }
         });
+    }
+
+    public int getMaxQueueSize() {
+        return QUEUE_SIZE;
     }
 
     private static final class InstanceHolder {
@@ -140,7 +144,11 @@ public class EventSendPool {
                     JavaAgentEventBean event = (JavaAgentEventBean) eventSender.getEvent();
                     if(event.getIsIASTRequest()){
                         String fuzzRequestId = event.getParentId();
-                        RestRequestThreadPool.getInstance().getRejectedIds().add(fuzzRequestId);
+                        if (event.getHttpRequest().getIsGrpc()) {
+                            GrpcClientRequestReplayHelper.getInstance().getRejectedIds().add(fuzzRequestId);
+                        } else {
+                            RestRequestThreadPool.getInstance().getRejectedIds().add(fuzzRequestId);
+                        }
                         AgentInfo.getInstance().getJaHealthCheck().getIastEventStats().incrementRejectedCount();
                     } else {
                         AgentInfo.getInstance().getJaHealthCheck().getRaspEventStats().incrementRejectedCount();
@@ -197,7 +205,7 @@ public class EventSendPool {
                 eventStats.incrementRejectedCount();
                 break;
             default:
-                logger.log(LogLevel.FINEST, String.format("Couldn't update event matric for task :%s and type : %s", r, type), DispatcherPool.class.getName());
+                logger.log(LogLevel.FINEST, String.format("Couldn't update event matric for task :%s and type : %s", r, type), EventSendPool.class.getName());
         }
     }
 

@@ -2,9 +2,24 @@ package com.newrelic.api.agent.security.instrumentation.helpers;
 
 import com.newrelic.api.agent.security.NewRelicSecurity;
 
+import java.util.regex.Pattern;
+
 public class GenericHelper {
+    public static Pattern QUOTED_STRING_PATTERN = Pattern.compile("((\\\\)*?('|\\\"))(([\\s\\S]*?)(?:(?=(\\\\?))\\6.)*?)\\1",
+            Pattern.MULTILINE | Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
+    public static Pattern STORED_PROCEDURE_PATTERN = Pattern.compile("(call\\s+[a-zA-Z0-9_\\$]+\\(.*?\\))",
+            Pattern.MULTILINE | Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
     public static final String CSEC_PARENT_ID = "nr-csec-parent-id";
     public static final String NR_SEC_CUSTOM_SPRING_REDIS_ATTR = "SPRING-DATA-REDIS";
+
+    public static final String REGISTER_OPERATION_EXCEPTION_MESSAGE = "Instrumentation library: %s , error while library instrumented call processing : %s";
+    public static final String EXIT_OPERATION_EXCEPTION_MESSAGE = "Instrumentation library: %s , error while generating exit operation: %s";
+    public static final String SECURITY_EXCEPTION_MESSAGE = "New Relic Security Exception raised for Instrumentation library: %s, reason: %s ";
+    public static final String URI_EXCEPTION_MESSAGE = "Instrumentation library: %s , error while extracting URI : %s";
+    public static final String ERROR_GENERATING_HTTP_REQUEST = "Instrumentation library: %s , error while generating HTTP request : %s";
+    public static final String ERROR_PARSING_HTTP_REQUEST_DATA = "Instrumentation library: %s , error while parsing HTTP request data : %s";
+    public static final String ERROR_WHILE_GETTING_APP_ENDPOINTS = "Instrumentation library: %s , error while getting application API endpoints : %s";
+    public static final String ERROR_PARSING_HTTP_RESPONSE = "Instrumentation library: %s , error while parsing HTTP Response data : %s";
 
     public static boolean skipExistsEvent() {
         if (!(NewRelicSecurity.getAgent().getCurrentPolicy().getVulnerabilityScan().getEnabled() &&

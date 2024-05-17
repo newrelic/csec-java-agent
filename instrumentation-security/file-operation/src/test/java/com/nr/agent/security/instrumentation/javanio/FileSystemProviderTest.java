@@ -1,6 +1,5 @@
 package com.nr.agent.security.instrumentation.javanio;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.newrelic.agent.security.introspec.InstrumentationTestConfig;
 import com.newrelic.agent.security.introspec.SecurityInstrumentationTestRunner;
 import com.newrelic.agent.security.introspec.SecurityIntrospector;
@@ -28,15 +27,7 @@ import java.net.URISyntaxException;
 import java.nio.channels.AsynchronousFileChannel;
 import java.nio.channels.ByteChannel;
 import java.nio.channels.FileChannel;
-import java.nio.file.DirectoryStream;
-import java.nio.file.FileSystem;
-import java.nio.file.FileSystems;
-import java.nio.file.Files;
-import java.nio.file.OpenOption;
-import java.nio.file.Path;
-import java.nio.file.PathMatcher;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
+import java.nio.file.*;
 import java.nio.file.attribute.FileAttribute;
 import java.nio.file.attribute.FileTime;
 import java.nio.file.attribute.PosixFilePermission;

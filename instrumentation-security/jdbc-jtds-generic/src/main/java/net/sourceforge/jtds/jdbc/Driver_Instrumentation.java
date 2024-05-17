@@ -10,6 +10,7 @@ package net.sourceforge.jtds.jdbc;
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.instrumentation.helpers.JdbcHelper;
 import com.newrelic.api.agent.security.schema.JDBCVendor;
+import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
@@ -31,7 +32,10 @@ public class Driver_Instrumentation {
                     NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(JDBCVendor.META_CONST_JDBC_VENDOR, vendor);
                 }
             }
-        } catch (Exception ignored) {}
+        } catch (Exception e) {
+            String message = "Instrumentation library: %s , error while creating operation : %s";
+            NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(message, JdbcHelper.JDBC_JTDS_GENERIC, e.getMessage()), e, this.getClass().getName());
+        }
     }
 
     public Connection connect(String url, Properties props) throws SQLException {

@@ -1,7 +1,7 @@
 package com.newrelic.agent.security.intcodeagent.controlcommand;
 
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
-import com.newrelic.agent.security.intcodeagent.filelogging.LogLevel;
+import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.logging.IAgentConstants;
 
 import java.util.concurrent.*;
@@ -9,6 +9,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class ControlCommandProcessorThreadPool {
 
+    public static final String UNEXPECTED_ERROR_WHILE_PROCESSING_CONTROL_COMMAND = "Unexpected error while processing control command";
     /**
      * Thread pool executor.
      */
@@ -70,6 +71,8 @@ public class ControlCommandProcessorThreadPool {
                             future.get();
                         }
                     } catch (Throwable e) {
+                        logger.postLogMessageIfNecessary(LogLevel.WARNING, UNEXPECTED_ERROR_WHILE_PROCESSING_CONTROL_COMMAND, e,
+                                this.getClass().getName());
                     }
                 }
                 super.afterExecute(r, t);

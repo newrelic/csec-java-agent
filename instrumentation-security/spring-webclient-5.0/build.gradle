@@ -1,0 +1,23 @@
+dependencies {
+    implementation(project(":newrelic-security-api"))
+    implementation("com.newrelic.agent.java:newrelic-api:${nrAPIVersion}")
+    implementation("com.newrelic.agent.java:newrelic-weaver-api:${nrAPIVersion}")
+    implementation("org.springframework:spring-webflux:5.0.0.RELEASE")
+
+}
+
+
+
+jar {
+    manifest { attributes 'Implementation-Title': 'com.newrelic.instrumentation.security.spring-webclient-5.0' }
+}
+
+verifyInstrumentation {
+    passesOnly 'org.springframework:spring-webflux:[5.0.0.RELEASE,)'
+    excludeRegex 'org.springframework:spring-webflux:.*(RC|SEC|M)[0-9]*$'
+}
+
+site {
+    title 'Spring webclient'
+    type 'Messaging'
+}

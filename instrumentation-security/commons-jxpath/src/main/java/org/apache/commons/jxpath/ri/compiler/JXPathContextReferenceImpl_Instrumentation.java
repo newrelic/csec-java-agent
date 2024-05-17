@@ -6,6 +6,7 @@ import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.StringUtils;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
 import com.newrelic.api.agent.security.schema.operation.XPathOperation;
+import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
@@ -96,7 +97,9 @@ public class JXPathContextReferenceImpl_Instrumentation {
                 return;
             }
             NewRelicSecurity.getAgent().registerExitEvent(operation);
-        } catch (Throwable ignored){}
+        } catch (Throwable ignored){
+            NewRelicSecurity.getAgent().log(LogLevel.FINEST, String.format(GenericHelper.EXIT_OPERATION_EXCEPTION_MESSAGE, XPATHUtils.COMMONS_JXPATH, ignored.getMessage()), ignored, this.getClass().getName());
+        }
     }
 
     private AbstractOperation preprocessSecurityHook (String patternString, String methodName){
@@ -111,8 +114,11 @@ public class JXPathContextReferenceImpl_Instrumentation {
             return xPathOperation;
         } catch (Throwable e) {
             if (e instanceof NewRelicSecurityException) {
+                NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.SECURITY_EXCEPTION_MESSAGE, XPATHUtils.COMMONS_JXPATH, e.getMessage()), e, this.getClass().getName());
                 throw e;
             }
+            NewRelicSecurity.getAgent().log(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, XPATHUtils.COMMONS_JXPATH, e.getMessage()), e, this.getClass().getName());
+            NewRelicSecurity.getAgent().reportIncident(LogLevel.SEVERE , String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, XPATHUtils.COMMONS_JXPATH, e.getMessage()), e, this.getClass().getName());
         }
         return null;
     }

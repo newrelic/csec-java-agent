@@ -6,10 +6,10 @@ import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.StringUtils;
 import com.newrelic.api.agent.security.schema.exceptions.NewRelicSecurityException;
 import com.newrelic.api.agent.security.utils.UserDataTranslationHelper;
+import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
 import com.newrelic.api.agent.weaver.Weaver;
-import com.newrelic.agent.security.instrumentation.javax.jndi.JNDIUtils;
 
 import java.util.Enumeration;
 import java.util.List;
@@ -99,7 +99,9 @@ public abstract class Context_Instrumentation {
             for (AbstractOperation operation : operations) {
                 NewRelicSecurity.getAgent().registerExitEvent(operation);
             }
-        } catch (Throwable ignored){}
+        } catch (Throwable ignored){
+            NewRelicSecurity.getAgent().log(LogLevel.FINEST, String.format(GenericHelper.EXIT_OPERATION_EXCEPTION_MESSAGE, JNDIUtils.JAVAX_JNDI, ignored.getMessage()), ignored, this.getClass().getName());
+        }
     }
 
     private void registerExitOperation(boolean isProcessingAllowed, AbstractOperation operation) {
@@ -110,7 +112,9 @@ public abstract class Context_Instrumentation {
                 return;
             }
             NewRelicSecurity.getAgent().registerExitEvent(operation);
-        } catch (Throwable ignored){}
+        } catch (Throwable ignored){
+            NewRelicSecurity.getAgent().log(LogLevel.FINEST, String.format(GenericHelper.EXIT_OPERATION_EXCEPTION_MESSAGE, JNDIUtils.JAVAX_JNDI, ignored.getMessage()), ignored, this.getClass().getName());
+        }
     }
 
     private List<AbstractOperation> preprocessSecurityHook (Enumeration<String> names, String methodName){
@@ -123,9 +127,12 @@ public abstract class Context_Instrumentation {
             UserDataTranslationHelper.placeJNDIAdditionalTemplateData();
             return JNDIUtils.handleJNDIHook(names, methodName, this.getClass().getName());
         } catch (Throwable e) {
-            if (e instanceof NewRelicSecurityException) {
+            if(e instanceof NewRelicSecurityException){
+                NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.SECURITY_EXCEPTION_MESSAGE, JNDIUtils.JAVAX_JNDI, e.getMessage()), e, this.getClass().getName());
                 throw e;
             }
+            NewRelicSecurity.getAgent().log(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, JNDIUtils.JAVAX_JNDI, e.getMessage()), e, this.getClass().getName());
+            NewRelicSecurity.getAgent().reportIncident(LogLevel.SEVERE , String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, JNDIUtils.JAVAX_JNDI, e.getMessage()), e, this.getClass().getName());
         }
         return null;
     }
@@ -140,9 +147,12 @@ public abstract class Context_Instrumentation {
             UserDataTranslationHelper.placeJNDIAdditionalTemplateData();
             return JNDIUtils.handleJNDIHook(name, methodName, this.getClass().getName());
         } catch (Throwable e) {
-            if (e instanceof NewRelicSecurityException) {
+            if(e instanceof NewRelicSecurityException){
+                NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(GenericHelper.SECURITY_EXCEPTION_MESSAGE, JNDIUtils.JAVAX_JNDI, e.getMessage()), e, this.getClass().getName());
                 throw e;
             }
+            NewRelicSecurity.getAgent().log(LogLevel.SEVERE, String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, JNDIUtils.JAVAX_JNDI, e.getMessage()), e, this.getClass().getName());
+            NewRelicSecurity.getAgent().reportIncident(LogLevel.SEVERE , String.format(GenericHelper.REGISTER_OPERATION_EXCEPTION_MESSAGE, JNDIUtils.JAVAX_JNDI, e.getMessage()), e, this.getClass().getName());
         }
         return null;
     }

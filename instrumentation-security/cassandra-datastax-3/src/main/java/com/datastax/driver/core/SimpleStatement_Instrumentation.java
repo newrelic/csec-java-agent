@@ -4,6 +4,7 @@ import com.newrelic.agent.security.instrumentation.cassandra3.CassandraUtils;
 import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.api.agent.security.schema.VulnerabilityCaseType;
 import com.newrelic.api.agent.security.schema.operation.SQLOperation;
+import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.api.agent.weaver.MatchType;
 import com.newrelic.api.agent.weaver.Weave;
 
@@ -29,6 +30,9 @@ public abstract class SimpleStatement_Instrumentation {
                 NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(
                         CassandraUtils.NR_SEC_CUSTOM_ATTRIB_CQL_STMT + hashCode(), cqlOperation);
             }
+        } catch (Exception ignored){
+            String message = "Instrumentation library: %s , error while extracting query parameters : %s";
+            NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(message, CassandraUtils.CASSANDRA_DATASTAX_3, ignored.getMessage()), ignored, CassandraUtils.class.getName());
         } finally {
             if(isLockAcquired){
                 CassandraUtils.releaseLock(hashCode());
@@ -49,6 +53,9 @@ public abstract class SimpleStatement_Instrumentation {
                 NewRelicSecurity.getAgent().getSecurityMetaData().addCustomAttribute(
                         CassandraUtils.NR_SEC_CUSTOM_ATTRIB_CQL_STMT + hashCode(), cqlOperation);
             }
+        } catch (Exception ignored){
+            String message = "Instrumentation library: %s , error while extracting query parameters : %s";
+            NewRelicSecurity.getAgent().log(LogLevel.WARNING, String.format(message, CassandraUtils.CASSANDRA_DATASTAX_3, ignored.getMessage()), ignored, CassandraUtils.class.getName());
         } finally {
             if(isLockAcquired){
                 CassandraUtils.releaseLock(hashCode());

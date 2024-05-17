@@ -15,5 +15,5 @@ jobs:
       csec-run-unittest: 'true'
       csec-run-instrumentation-verify: 'true'
       is-release: 'true'
-      version-suffix: '-public-preview'
+      version-suffix: ''
       slack-notify: 'true'

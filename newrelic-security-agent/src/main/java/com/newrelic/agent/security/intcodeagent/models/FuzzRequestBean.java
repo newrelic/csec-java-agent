@@ -6,5 +6,5 @@ import com.newrelic.api.agent.security.schema.HttpRequest;
 import java.io.Serializable;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class FuzzRequestBean extends HttpRequest implements Serializable {
+public class FuzzRequestBean extends com.newrelic.api.agent.security.schema.FuzzRequestBean implements Serializable {
 }

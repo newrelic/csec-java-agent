@@ -30,7 +30,6 @@ import java.util.Set;
 /**
  * ServerInfo contains basic field representing a server and it's deployed application.
  *
- * @author Team AppPerfect
  * @version 1.0
  */
 public class ServerInfo implements Serializable {

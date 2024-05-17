@@ -29,8 +29,6 @@ public class SyncClientHandler_Instrumentation {
         OutputT returnVal = null;
         try {
             returnVal = Weaver.callOriginal();
-        } catch (Throwable ignored) {
-            ignored.printStackTrace();
         } finally {
             if (isLockAcquired) {
                 DynamoDBUtil.releaseLock(this.hashCode());
@@ -51,8 +49,6 @@ public class SyncClientHandler_Instrumentation {
         ReturnT returnVal = null;
         try {
             returnVal = Weaver.callOriginal();
-        } catch (Throwable ignored) {
-            ignored.printStackTrace();
         } finally {
             if (isLockAcquired) {
                 DynamoDBUtil.releaseLock(this.hashCode());

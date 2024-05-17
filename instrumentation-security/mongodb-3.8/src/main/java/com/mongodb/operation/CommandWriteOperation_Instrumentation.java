@@ -24,7 +24,6 @@ public class CommandWriteOperation_Instrumentation<T> {
         T returnVal = null;
         try {
             returnVal = Weaver.callOriginal();
-        } catch (Throwable ignored) {
         } finally {
             if (isLockAcquired) {
                 MongoUtil.releaseLock(this.hashCode());
@@ -42,7 +41,6 @@ public class CommandWriteOperation_Instrumentation<T> {
         }
         try {
             Weaver.callOriginal();
-        } catch (Throwable ignored) {
         } finally {
             if (isLockAcquired) {
                 MongoUtil.releaseLock(this.hashCode());

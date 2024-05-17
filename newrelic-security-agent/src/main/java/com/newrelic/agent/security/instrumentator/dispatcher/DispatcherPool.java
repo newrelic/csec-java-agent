@@ -5,13 +5,17 @@ import com.newrelic.agent.security.instrumentator.httpclient.RestRequestThreadPo
 import com.newrelic.agent.security.intcodeagent.executor.CustomFutureTask;
 import com.newrelic.agent.security.intcodeagent.executor.CustomThreadPoolExecutor;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
-import com.newrelic.agent.security.intcodeagent.filelogging.LogLevel;
+import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.logging.IAgentConstants;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.EventStats;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.ExitEventBean;
+import com.newrelic.api.agent.NewRelic;
+import com.newrelic.api.agent.TraceMetadata;
+import com.newrelic.api.agent.security.NewRelicSecurity;
 import com.newrelic.agent.security.util.AgentUsageMetric;
 import com.newrelic.agent.security.util.IUtilConstants;
 import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
+import com.newrelic.api.agent.security.instrumentation.helpers.GrpcClientRequestReplayHelper;
 import com.newrelic.api.agent.security.schema.AbstractOperation;
 import com.newrelic.api.agent.security.schema.SecurityMetaData;
 import org.apache.commons.lang3.StringUtils;
@@ -20,6 +24,9 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import static com.newrelic.agent.security.intcodeagent.logging.IAgentConstants.NR_APM_SPAN_ID;
+import static com.newrelic.agent.security.intcodeagent.logging.IAgentConstants.NR_APM_TRACE_ID;
 
 public class DispatcherPool {
 
@@ -40,6 +47,10 @@ public class DispatcherPool {
 
     public ThreadPoolExecutor getExecutor() {
         return executor;
+    }
+
+    public int getMaxQueueSize() {
+        return queueSize;
     }
 
 
@@ -66,7 +77,11 @@ public class DispatcherPool {
                 Dispatcher dispatcher = (Dispatcher) ((CustomFutureTask<?>) r).getTask();
                 if(dispatcher.getSecurityMetaData()!= null && dispatcher.getSecurityMetaData().getFuzzRequestIdentifier().getK2Request()){
                     String fuzzRequestId = dispatcher.getSecurityMetaData().getCustomAttribute(GenericHelper.CSEC_PARENT_ID, String.class);
-                    RestRequestThreadPool.getInstance().getRejectedIds().add(fuzzRequestId);
+                    if (dispatcher.getSecurityMetaData().getRequest().getIsGrpc()) {
+                        GrpcClientRequestReplayHelper.getInstance().getRejectedIds().add(fuzzRequestId);
+                    } else {
+                        RestRequestThreadPool.getInstance().getRejectedIds().add(fuzzRequestId);
+                    }
                 }
 
                 if(dispatcher.getSecurityMetaData() != null) {
@@ -196,17 +211,27 @@ public class DispatcherPool {
             }
         }
         // Register in Processed CC map
-        if(securityMetaData.getFuzzRequestIdentifier().getK2Request()) {
-            String parentId = securityMetaData.getCustomAttribute(
-                    GenericHelper.CSEC_PARENT_ID, String.class);
+        if (securityMetaData.getFuzzRequestIdentifier().getK2Request()) {
+            String parentId = securityMetaData.getCustomAttribute(GenericHelper.CSEC_PARENT_ID, String.class);
             if (StringUtils.isNotBlank(parentId)) {
-                RestRequestThreadPool.getInstance().getProcessedIds().putIfAbsent(parentId, new HashSet<>());
-            }
-            if (StringUtils.equals(securityMetaData.getFuzzRequestIdentifier().getApiRecordId(), operation.getApiID())) {
-                RestRequestThreadPool.getInstance()
-                        .registerEventForProcessedCC(parentId, operation.getExecutionId());
+                if (securityMetaData.getRequest().getIsGrpc()) {
+                    GrpcClientRequestReplayHelper.getInstance().getProcessedIds().putIfAbsent(parentId, new HashSet<>());
+                    if (StringUtils.equals(securityMetaData.getFuzzRequestIdentifier().getApiRecordId(), operation.getApiID())) {
+                        GrpcClientRequestReplayHelper.getInstance().registerEventForProcessedCC(parentId, operation.getExecutionId());
+                    }
+                } else {
+                    RestRequestThreadPool.getInstance().getProcessedIds().putIfAbsent(parentId, new HashSet<>());
+                    if (StringUtils.equals(securityMetaData.getFuzzRequestIdentifier().getApiRecordId(), operation.getApiID())) {
+                        RestRequestThreadPool.getInstance().registerEventForProcessedCC(parentId, operation.getExecutionId());
+                    }
+                }
             }
         }
+
+        // Update NR Trace info
+        TraceMetadata traceMetadata = NewRelic.getAgent().getTraceMetadata();
+        securityMetaData.addCustomAttribute(NR_APM_TRACE_ID, traceMetadata.getTraceId());
+        securityMetaData.addCustomAttribute(NR_APM_SPAN_ID, traceMetadata.getSpanId());
         this.executor.submit(new Dispatcher(operation, new SecurityMetaData(securityMetaData)));
     }
 
@@ -214,6 +239,12 @@ public class DispatcherPool {
         if (executor.isShutdown()) {
             return;
         }
+
+        // Update NR Trace info
+        SecurityMetaData securityMetaData = NewRelicSecurity.getAgent().getSecurityMetaData();
+        TraceMetadata traceMetadata = NewRelic.getAgent().getTraceMetadata();
+        securityMetaData.addCustomAttribute(NR_APM_TRACE_ID, traceMetadata.getTraceId());
+        securityMetaData.addCustomAttribute(NR_APM_SPAN_ID, traceMetadata.getSpanId());
         this.executor.submit(new Dispatcher(exitEventBean));
     }
 
@@ -244,5 +275,4 @@ public class DispatcherPool {
     public void reset() {
         executor.getQueue().clear();
     }
-
 }

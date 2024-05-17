@@ -4,16 +4,24 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.newrelic.agent.security.AgentInfo;
 import com.newrelic.agent.security.instrumentator.os.OsVariablesInstance;
+import com.newrelic.agent.security.instrumentator.utils.CallbackUtils;
 import com.newrelic.agent.security.intcodeagent.filelogging.FileLoggerThreadPool;
-import com.newrelic.agent.security.intcodeagent.filelogging.LogLevel;
+import com.newrelic.api.agent.security.NewRelicSecurity;
+import com.newrelic.api.agent.security.utils.logging.LogLevel;
 import com.newrelic.agent.security.intcodeagent.models.FuzzRequestBean;
 import com.newrelic.agent.security.intcodeagent.models.javaagent.IntCodeControlCommand;
 import com.newrelic.agent.security.intcodeagent.websocket.WSUtils;
+import com.newrelic.api.agent.security.instrumentation.helpers.GrpcClientRequestReplayHelper;
+import com.newrelic.api.agent.security.schema.ControlCommandDto;
 import com.newrelic.api.agent.security.instrumentation.helpers.GenericHelper;
-import com.newrelic.api.agent.security.instrumentation.helpers.ServletHelper;
 import okhttp3.Request;
 import org.apache.commons.lang3.StringUtils;
 
+import javax.net.ssl.SSLException;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Callable;
 
 /**
@@ -21,12 +29,16 @@ import java.util.concurrent.Callable;
  */
 public class RestRequestProcessor implements Callable<Boolean> {
 
-    public static final String NR_CSEC_VALIDATOR_HOME_TMP = "{{NR_CSEC_VALIDATOR_HOME_TMP}}";
+    public static final String NR_CSEC_VALIDATOR_HOME_TMP = "/{{NR_CSEC_VALIDATOR_HOME_TMP}}";
+    public static final String NR_CSEC_VALIDATOR_HOME_TMP_URL_ENCODED = "%2F%7B%7BNR_CSEC_VALIDATOR_HOME_TMP%7D%7D";
+
+    public static final String ERROR_IN_FUZZ_REQUEST_GENERATION = "Error in fuzz request generation %s";
 
     public static final String ERROR_WHILE_PROCESSING_FUZZING_REQUEST_S = "Error while processing fuzzing request : %s";
 
     public static final String JSON_PARSING_ERROR_WHILE_PROCESSING_FUZZING_REQUEST_S = "JSON parsing error while processing fuzzing request : %s";
     private static final int MAX_REPETITION = 3;
+    public static final String ENDPOINT_LOCALHOST_S = "%s://localhost:%s";
     private IntCodeControlCommand controlCommand;
 
     private int repeatCount;
@@ -58,39 +70,95 @@ public class RestRequestProcessor implements Callable<Boolean> {
             if (WSUtils.getInstance().isReconnecting()) {
                    synchronized (WSUtils.getInstance()) {
                     RestRequestThreadPool.getInstance().isWaiting().set(true);
+                    GrpcClientRequestReplayHelper.getInstance().isWaiting().set(true);
                     WSUtils.getInstance().wait();
                     RestRequestThreadPool.getInstance().isWaiting().set(false);
+                    GrpcClientRequestReplayHelper.getInstance().isWaiting().set(false);
                 }
             }
             String req = StringUtils.replace(controlCommand.getArguments().get(0), NR_CSEC_VALIDATOR_HOME_TMP, OsVariablesInstance.getInstance().getOsVariables().getTmpDirectory());
+            req = StringUtils.replace(req, NR_CSEC_VALIDATOR_HOME_TMP_URL_ENCODED, CallbackUtils.urlEncode(OsVariablesInstance.getInstance().getOsVariables().getTmpDirectory()));
+
             httpRequest = objectMapper.readValue(req, FuzzRequestBean.class);
             httpRequest.getHeaders().put(GenericHelper.CSEC_PARENT_ID, controlCommand.getId());
-            RestRequestThreadPool.getInstance().removeFromProcessedCC(controlCommand.getId());
-            Request request = RequestUtils.generateK2Request(httpRequest);
-            if(request != null) {
-                RestClient.getInstance().fireRequest(request, repeatCount);
+            if (httpRequest.getIsGrpc()){
+                GrpcClientRequestReplayHelper.getInstance().getPendingIds().add(controlCommand.getId());
+                GrpcClientRequestReplayHelper.getInstance().removeFromProcessedCC(controlCommand.getId());
+            } else {
+                RestRequestThreadPool.getInstance().getPendingIds().add(controlCommand.getId());
+                RestRequestThreadPool.getInstance().removeFromProcessedCC(controlCommand.getId());
+            }
+            httpRequest.setReflectedMetaData(controlCommand.getReflectedMetaData());
+
+            if (httpRequest.getIsGrpc()){
+                List<String> payloadList = new ArrayList<>();
+                try{
+                    logger.log(LogLevel.FINER, String.format("Firing request : %s", objectMapper.writeValueAsString(httpRequest)), RestRequestProcessor.class.getName());
+                    List<?> list = objectMapper.readValue(String.valueOf(httpRequest.getBody()), List.class);
+                    for (Object o : list) {
+                        payloadList.add(objectMapper.writeValueAsString(o));
+                    }
+                } catch (Throwable e) {
+                    logger.log(LogLevel.FINEST, String.format(ERROR_IN_FUZZ_REQUEST_GENERATION, e.getMessage()), RestRequestProcessor.class.getSimpleName());
+                }
+                MonitorGrpcFuzzFailRequestQueueThread.submitNewTask();
+                GrpcClientRequestReplayHelper.getInstance().addToRequestQueue(new ControlCommandDto(controlCommand.getId(), httpRequest, payloadList));
+            } else {
+                boolean postSSL = false;
+                List<String> endpoints = prepareAllEndpoints(NewRelicSecurity.getAgent().getApplicationConnectionConfig());
+                logger.log(LogLevel.FINER, String.format("Endpoints to fire : ", endpoints), RestRequestProcessor.class.getSimpleName());
+                if (endpoints.isEmpty()){
+                    endpoints = prepareAllEndpoints(httpRequest);
+                    logger.log(LogLevel.FINER, String.format("Endpoints to fire in empty: ", endpoints), RestRequestProcessor.class.getSimpleName());
+                    postSSL = true;
+                }
+                endpoints = RequestUtils.refineEndpoints(httpRequest, endpoints);
+                RestClient.getInstance().fireRequest(httpRequest, endpoints, repeatCount + endpoints.size() -1, controlCommand.getId());
             }
             return true;
         } catch (JsonProcessingException e){
             logger.log(LogLevel.SEVERE,
                     String.format(JSON_PARSING_ERROR_WHILE_PROCESSING_FUZZING_REQUEST_S, controlCommand.getArguments().get(0)),
                     e, RestRequestProcessor.class.getName());
+            logger.postLogMessageIfNecessary(LogLevel.SEVERE,
+                    String.format(JSON_PARSING_ERROR_WHILE_PROCESSING_FUZZING_REQUEST_S, controlCommand.getId()), e, RestRequestProcessor.class.getName());
+            RestRequestThreadPool.getInstance().getProcessedIds().putIfAbsent(controlCommand.getId(), new HashSet<>());
         } catch (Throwable e) {
             logger.log(LogLevel.SEVERE,
                     String.format(ERROR_WHILE_PROCESSING_FUZZING_REQUEST_S, controlCommand.getArguments().get(0)),
                     e, RestRequestProcessor.class.getName());
             logger.postLogMessageIfNecessary(LogLevel.SEVERE,
-                    String.format(ERROR_WHILE_PROCESSING_FUZZING_REQUEST_S, controlCommand.getArguments().get(0)),
+                    String.format(ERROR_WHILE_PROCESSING_FUZZING_REQUEST_S, controlCommand.getId()),
                     e, RestRequestProcessor.class.getName());
+            RestRequestThreadPool.getInstance().getProcessedIds().putIfAbsent(controlCommand.getId(), new HashSet<>());
             throw e;
         }
         return true;
     }
 
+    private List<String> prepareAllEndpoints(FuzzRequestBean httpRequest) {
+        List<String> endpoitns = new ArrayList<>();
+        endpoitns.add(String.format(ENDPOINT_LOCALHOST_S, httpRequest.getProtocol(), httpRequest.getServerPort()));
+        endpoitns.add(String.format(ENDPOINT_LOCALHOST_S, toggleProtocol(httpRequest.getProtocol()), httpRequest.getServerPort()));
+        return endpoitns;
+    }
+
+    private List<String> prepareAllEndpoints(Map<Integer, String> applicationConnectionConfig) {
+        List<String> endpoitns = new ArrayList<>();
+        for (Map.Entry<Integer, String> connectionConfig : applicationConnectionConfig.entrySet()) {
+            endpoitns.add(String.format(ENDPOINT_LOCALHOST_S, connectionConfig.getValue(), connectionConfig.getKey()));
+            endpoitns.add(String.format(ENDPOINT_LOCALHOST_S, toggleProtocol(connectionConfig.getValue()), connectionConfig.getKey()));
+        }
+        return endpoitns;
+    }
+
+    private String toggleProtocol(String value) {
+        return StringUtils.equalsAnyIgnoreCase(value, "https")? "http": "https";
+    }
+
     public static void processControlCommand(IntCodeControlCommand command) {
         RestRequestThreadPool.getInstance().executor
                 .submit(new RestRequestProcessor(command, MAX_REPETITION));
-        RestRequestThreadPool.getInstance().getPendingIds().add(command.getId());
     }
 
     public IntCodeControlCommand getControlCommand() {
